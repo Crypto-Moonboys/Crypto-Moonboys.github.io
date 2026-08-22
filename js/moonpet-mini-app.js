@@ -13,6 +13,10 @@
   var lastSeasonServerRefreshAt = 0;
   var seasonRefreshBusy = false;
   var stateRequestGate = createStateRequestGate();
+  var serverClockOffsetMs = 0;
+  var cooldownRefreshTimer = 0;
+  var cooldownRefreshInFlight = false;
+  var lastCooldownRefreshKey = '';
   var SCREEN_ORDER = ['home', 'missions', 'explore', 'work', 'economy', 'profile'];
   var requestedScreen = launchParameter('screen');
   var requestedFocus = launchParameter('focus');
@@ -132,6 +136,64 @@
   function number(value) {
     return Math.max(0, Math.floor(Number(value) || 0)).toLocaleString('en-GB');
   }
+
+  // TEST-EXPORT: countdownComponent:start
+  function serverNowMs() {
+    return Date.now() + serverClockOffsetMs;
+  }
+
+  function cooldownRemainingSeconds(source, nowMs) {
+    source = source || {};
+    var sourceNowMs = Date.parse(source.server_time || '');
+    nowMs = Number.isFinite(Number(nowMs)) ? Number(nowMs) : Number.isFinite(sourceNowMs) ? sourceNowMs : serverNowMs();
+    var expiresAt = Date.parse(source.expires_at || source.cooldown_until || source.available_at || source.retry_at || '');
+    if (Number.isFinite(expiresAt)) return Math.max(0, Math.ceil((expiresAt - nowMs) / 1000));
+    var explicit = Number(source.remaining_seconds);
+    if (Number.isFinite(explicit) && explicit > 0) return Math.ceil(explicit);
+    var retry = Number(source.retry_after_seconds != null ? source.retry_after_seconds : source.cooldown_seconds != null ? source.cooldown_seconds : source.seconds);
+    if (Number.isFinite(retry) && retry > 0) return Math.ceil(retry);
+    var ms = Number(source.cooldown_ms_remaining != null ? source.cooldown_ms_remaining : source.ms_remaining);
+    return Number.isFinite(ms) && ms > 0 ? Math.ceil(ms / 1000) : 0;
+  }
+
+  function cooldownExpiresAt(source, nowMs) {
+    source = source || {};
+    var sourceNowMs = Date.parse(source.server_time || '');
+    nowMs = Number.isFinite(Number(nowMs)) ? Number(nowMs) : Number.isFinite(sourceNowMs) ? sourceNowMs : serverNowMs();
+    var expires = Date.parse(source.expires_at || source.cooldown_until || source.available_at || source.retry_at || '');
+    if (Number.isFinite(expires)) return new Date(expires).toISOString();
+    var remaining = cooldownRemainingSeconds(source, nowMs);
+    return remaining > 0 ? new Date(nowMs + remaining * 1000).toISOString() : '';
+  }
+
+  function formatCountdownSeconds(seconds) {
+    var remaining = Math.max(0, Math.ceil(Number(seconds) || 0));
+    var days = Math.floor(remaining / 86400);
+    remaining -= days * 86400;
+    var hours = Math.floor(remaining / 3600);
+    remaining -= hours * 3600;
+    var minutes = Math.floor(remaining / 60);
+    var secs = remaining - minutes * 60;
+    if (days > 0) return days + 'd ' + String(hours).padStart(2, '0') + 'h ' + String(minutes).padStart(2, '0') + 'm';
+    if (hours > 0) return hours + 'h ' + String(minutes).padStart(2, '0') + 'm ' + String(secs).padStart(2, '0') + 's';
+    if (minutes > 0) return minutes + 'm ' + String(secs).padStart(2, '0') + 's';
+    return secs + 's';
+  }
+
+  function countdownText(source, prefix) {
+    var remaining = cooldownRemainingSeconds(source, serverNowMs());
+    return remaining > 0 ? (prefix || 'Available in ') + formatCountdownSeconds(remaining) : 'Ready now';
+  }
+
+  function countdownMarkup(source, prefix) {
+    source = source || {};
+    var nowMs = serverNowMs();
+    var expiresAt = cooldownExpiresAt(source, nowMs);
+    var remaining = cooldownRemainingSeconds(expiresAt ? { expires_at: expiresAt } : source, nowMs);
+    if (remaining <= 0) return 'Ready now';
+    return '<span class="cooldown-countdown" data-cooldown-expires-at="' + escapeHtml(expiresAt) + '" data-cooldown-prefix="' + escapeHtml(prefix || 'Available in ') + '">' + escapeHtml((prefix || 'Available in ') + formatCountdownSeconds(remaining)) + '</span>';
+  }
+  // TEST-EXPORT: countdownComponent:end
 
   function readAudioPreference() {
     try { return window.localStorage.getItem('moonpet-audio') !== 'off'; } catch (_) { return true; }
@@ -344,21 +406,7 @@
 
   // TEST-EXPORT: actionAvailability:start
   function cooldownDisplay(source) {
-    if (!source) return 'Ready now';
-    var seconds = Number(source.retry_after_seconds != null ? source.retry_after_seconds : source.seconds);
-    if (Number.isFinite(seconds) && seconds > 0) {
-      if (seconds < 60) return 'Available in ' + number(seconds) + 's';
-      if (seconds < 86400) return 'Available in ' + number(Math.ceil(seconds / 60)) + 'm';
-      return 'Available tomorrow UTC';
-    }
-    var ms = Number(source.cooldown_ms_remaining != null ? source.cooldown_ms_remaining : source.ms_remaining);
-    if (Number.isFinite(ms) && ms > 0) return cooldownDisplay({ seconds: Math.ceil(ms / 1000) });
-    var until = Date.parse(source.cooldown_until || source.available_at || source.retry_at || '');
-    if (Number.isFinite(until)) {
-      var remaining = Math.ceil((until - Date.now()) / 1000);
-      if (remaining > 0) return cooldownDisplay({ seconds: remaining });
-    }
-    return 'Ready now';
+    return countdownText(source, 'Available in ');
   }
 
   function availabilityLabel(options) {
@@ -379,6 +427,13 @@
     var label = availabilityLabel(options);
     var detail = options.detail ? String(options.detail) : '';
     return detail ? label + ' // ' + detail : label;
+  }
+
+  function availabilityDetailMarkup(options) {
+    options = options || {};
+    var label = options.cooldown ? countdownMarkup(options.cooldown, 'Available in ') : escapeHtml(availabilityLabel(options));
+    var detail = options.detail ? String(options.detail) : '';
+    return detail ? label + ' // ' + escapeHtml(detail) : label;
   }
 
   function shouldShowAvailability(options) {
@@ -403,7 +458,9 @@
       || source.ms_remaining != null
       || source.cooldown_until
       || source.available_at
-      || source.retry_at;
+      || source.retry_at
+      || source.expires_at
+      || source.remaining_seconds != null;
     return hasCooldownField && cooldownDisplay(source) !== 'Ready now' ? source : null;
   }
 
@@ -413,13 +470,33 @@
     var waitingDetail = !activity.ready && !cooldown && activity.detail ? String(activity.detail) : '';
     return { disabled: !activity.ready, cooldown: cooldown, statusLabel: waitingDetail ? 'WAITING' : '', detail: waitingDetail };
   }
+
+  function actionCooldownEntry(action) {
+    var key = 'action:' + String(action || '');
+    var entries = Array.isArray(state && state.cooldowns && state.cooldowns.entries) ? state.cooldowns.entries : [];
+    var entry = entries.find(function (candidate) { return candidate && candidate.key === key; }) || null;
+    if (!entry) return null;
+    return cooldownRemainingSeconds(entry) > 0 ? entry : null;
+  }
+
+  function actionCooldownButtonOptions(action, options) {
+    options = options || {};
+    if (options.cooldown && cooldownRemainingSeconds(options.cooldown) > 0) return options;
+    var actionCooldown = actionCooldownEntry(action);
+    if (!actionCooldown) return options;
+    return Object.assign({}, options, {
+      disabled: true,
+      cooldown: actionCooldown,
+      statusLabel: '',
+    });
+  }
   // TEST-EXPORT: actionAvailability:end
 
   function button(label, action, payload, options) {
-    options = options || {};
+    options = actionCooldownButtonOptions(action, options);
     var disabled = options && options.disabled;
     var detail = shouldShowAvailability(options)
-      ? '<small>' + escapeHtml(availabilityDetail(options)) + '</small>'
+      ? '<small>' + availabilityDetailMarkup(options) + '</small>'
       : '';
     return '<button class="terminal-button' + (options && options.danger ? ' danger' : '') + '" type="button" data-action="' + escapeHtml(action) + '" data-payload="' + escapeHtml(JSON.stringify(payload || {})) + '"' + (disabled ? ' disabled' : '') + '>' + escapeHtml(label) + detail + '</button>';
   }
@@ -757,12 +834,13 @@
         '<div class="line muted">NEXT // Initialise, incubate, or hatch your Moonpet before Daily Journey progress starts.</div>';
     }
     var dailyPercent = dailyRequired > 0 ? Math.round(Math.min(dailyRequired, dailyCompleted) / dailyRequired * 100) : 0;
+    var dailyReset = dailyAuthority.cooldown ? ' // RESET ' + countdownMarkup(dailyAuthority.cooldown, 'in ') : '';
     var dailyStatus = dailyAuthority.growth_mark_awarded ? 'GROWTH MARK ALREADY SETTLED'
       : dailyAuthority.duplicate_blocked ? 'DUPLICATE GROWTH MARK BLOCKED'
         : dailyRequired > 0 && dailyCompleted >= dailyRequired ? 'GROWTH MARK ELIGIBLE' : 'COMPLETE DAILY OBJECTIVES TO QUALIFY';
     return dailyAuthorityReady
       ? '<div class="line complete">DAILY JOURNEY // ' + number(dailyCompleted) + '/' + number(dailyRequired) + ' OBJECTIVES</div>' +
-        '<div class="line muted">TODAY ' + escapeHtml(dailyAuthority.utc_day || guidance.day_key || 'UTC') + ' // Growth Mark eligibility comes from completed daily objectives and server-side receipts.</div>' +
+        '<div class="line muted">TODAY ' + escapeHtml(dailyAuthority.utc_day || guidance.day_key || 'UTC') + dailyReset + ' // Growth Mark eligibility comes from completed daily objectives and server-side receipts.</div>' +
         meter('GROWTH MARK', dailyPercent) +
         '<div class="line muted">' + dailyStatus + ' // ' + escapeHtml(words(dailyAuthority.reason || 'daily journey in progress')) + '</div>' +
         '<div class="line muted">NEXT // ' + escapeHtml(dailyJourneyNextAction(dailyAuthority, completedMissions, guidance, stateValue)) + '</div>' +
@@ -864,7 +942,9 @@
       : Array.isArray(weeklyCapability.objectives) ? weeklyCapability.objectives : [];
     var weeklyPercent = Math.round(Math.min(weeklyRequired, weeklyCompleted) / weeklyRequired * 100);
     var resetAt = weeklyAuthority.week_reset_at || weeklyCapability.week_reset_at || '';
-    var resetCopy = resetAt ? ' // RESET ' + escapeHtml(resetAt) : '';
+    var resetCopy = (weeklyAuthority.cooldown || weeklyCapability.cooldown)
+      ? ' // RESET ' + countdownMarkup(weeklyAuthority.cooldown || weeklyCapability.cooldown, 'in ')
+      : resetAt ? ' // RESET ' + escapeHtml(resetAt) : '';
     var weeklyCrestAwarded = weeklyAuthority.weekly_crest_awarded != null
       ? Boolean(weeklyAuthority.weekly_crest_awarded)
       : Boolean(weeklyCapability.weekly_crest_awarded);
@@ -1071,11 +1151,127 @@
 
   function setStateSnapshot(nextState, requestGeneration) {
     if (!nextState || !stateRequestGate.isCurrent(requestGeneration)) return false;
+    var serverTime = Date.parse(nextState.server_time || nextState.cooldowns && nextState.cooldowns.server_time || '');
+    if (Number.isFinite(serverTime)) serverClockOffsetMs = serverTime - Date.now();
     state = nextState;
     seasonSnapshotReceivedAt = performance.now();
     lastSeasonServerRefreshAt = seasonSnapshotReceivedAt;
+    scheduleCooldownRefresh();
     return true;
   }
+
+  // TEST-EXPORT: cooldownRefresh:start
+  function collectCooldownEntries(snapshot) {
+    var entries = [];
+    if (Array.isArray(snapshot && snapshot.cooldowns && snapshot.cooldowns.entries)) {
+      entries = entries.concat(snapshot.cooldowns.entries);
+    }
+    ['daily_journey', 'weekly_journey'].forEach(function (key) {
+      if (snapshot && snapshot[key] && snapshot[key].cooldown) entries.push(snapshot[key].cooldown);
+    });
+    var activity = snapshot && snapshot.guidance && snapshot.guidance.activity;
+    if (activity && activity.cooldown) entries.push(activity.cooldown);
+    var weeklyBoss = snapshot && snapshot.guidance && snapshot.guidance.weekly_boss;
+    if (weeklyBoss && !weeklyBoss.defeated && weeklyBoss.cooldown) entries.push(weeklyBoss.cooldown);
+    var live = snapshot && snapshot.live_systems || {};
+    if (live.seasonal_boss && !live.seasonal_boss.defeated_at && live.seasonal_boss.cooldown) entries.push(live.seasonal_boss.cooldown);
+    (snapshot && snapshot.regions || []).forEach(function (region) { if (region && region.cooldown) entries.push(region.cooldown); });
+    (live.chains || []).forEach(function (chain) { if (chain && chain.cooldown) entries.push(chain.cooldown); });
+    return entries;
+  }
+
+  function nextCooldownDelayMs(snapshot) {
+    var nowMs = serverNowMs();
+    var soonest = collectCooldownEntries(snapshot).reduce(function (best, entry) {
+      var expires = Date.parse(entry && entry.expires_at || '');
+      if (!Number.isFinite(expires)) return best;
+      if (expires <= nowMs) return 250;
+      return Math.min(best, expires - nowMs);
+    }, Infinity);
+    return Number.isFinite(soonest) ? Math.max(250, soonest + 250) : 0;
+  }
+
+  function scheduleCooldownRefresh(delayOverrideMs) {
+    window.clearTimeout(cooldownRefreshTimer);
+    cooldownRefreshTimer = 0;
+    var override = Number(delayOverrideMs);
+    var delay = Number.isFinite(override) && override > 0 ? Math.ceil(override) : nextCooldownDelayMs(state);
+    if (!delay) return;
+    cooldownRefreshTimer = window.setTimeout(function () {
+      cooldownRefreshTimer = 0;
+      refreshExpiredCooldownState();
+    }, Math.min(delay, 2147483647));
+  }
+
+  async function refreshExpiredCooldownState() {
+    if (!state || !state.adopted) return;
+    if (busy || noticesBusy || cooldownRefreshInFlight) {
+      scheduleCooldownRefresh(1000);
+      return;
+    }
+    var refreshKey = state && state.cooldowns && state.cooldowns.next_expires_at || collectCooldownEntries(state).map(function (entry) { return entry && entry.expires_at || ''; }).sort()[0] || '';
+    if (refreshKey && refreshKey === lastCooldownRefreshKey) {
+      scheduleCooldownRefresh(1000);
+      return;
+    }
+    cooldownRefreshInFlight = true;
+    if (refreshKey) lastCooldownRefreshKey = refreshKey;
+    try {
+      var requestGeneration = beginStateRequest();
+      var data = await post('/telegram-pets/app/state');
+      if (!setStateSnapshot(data.state, requestGeneration)) return;
+      var scrollTop = screen.scrollTop;
+      render();
+      screen.scrollTop = scrollTop;
+      tell('COOLDOWN EXPIRED. STATE REFRESHED.');
+      await showPendingNotices();
+    } catch (_) {
+      if (refreshKey && refreshKey === lastCooldownRefreshKey) lastCooldownRefreshKey = '';
+      scheduleCooldownRefresh();
+    } finally {
+      cooldownRefreshInFlight = false;
+    }
+  }
+
+  function tickCooldownDom() {
+    var nodes = document.querySelectorAll('[data-cooldown-expires-at]');
+    nodes.forEach(function (node) {
+      var text = countdownText({ expires_at: node.getAttribute('data-cooldown-expires-at') }, node.getAttribute('data-cooldown-prefix') || 'Available in ');
+      node.textContent = text;
+    });
+  }
+  // TEST-EXPORT: cooldownRefresh:end
+
+  // TEST-EXPORT: actionCooldownMerge:start
+  function mergeActionResultCooldown(nextState, result, action) {
+    if (!nextState || !result) return nextState;
+    var source = result.cooldown || result;
+    var expiresAt = cooldownExpiresAt(source);
+    if (!expiresAt) return nextState;
+    var remaining = cooldownRemainingSeconds({ expires_at: expiresAt });
+    if (remaining <= 0) return nextState;
+    var output = Object.assign({}, nextState);
+    var cooldowns = Object.assign({}, output.cooldowns || {});
+    var entries = Array.isArray(cooldowns.entries) ? cooldowns.entries.slice() : [];
+    var key = 'action:' + String(action || result.action || result.reason || 'cooldown');
+    var entry = {
+      key: key,
+      label: words(action || result.action || result.reason || 'Action') + ' cooldown',
+      kind: 'action',
+      expires_at: expiresAt,
+      remaining_seconds: remaining,
+      server_time: result.server_time || source.server_time || output.server_time || cooldowns.server_time || null,
+    };
+    entries = entries.filter(function (item) { return item && item.key !== key; });
+    entries.push(entry);
+    entries.sort(function (left, right) { return Date.parse(left.expires_at) - Date.parse(right.expires_at) || String(left.key).localeCompare(String(right.key)); });
+    cooldowns.entries = entries;
+    cooldowns.next_expires_at = entries[0] && entries[0].expires_at || cooldowns.next_expires_at || null;
+    cooldowns.server_time = cooldowns.server_time || output.server_time || entry.server_time || null;
+    output.cooldowns = cooldowns;
+    return output;
+  }
+  // TEST-EXPORT: actionCooldownMerge:end
 
   function seasonSnapshotElapsed() {
     return seasonSnapshotReceivedAt > 0 ? Math.max(0, performance.now() - seasonSnapshotReceivedAt) : 0;
@@ -1171,7 +1367,7 @@
     }).join('');
     var timingCopy = timing.status === 'UNAVAILABLE'
       ? '<div class="line muted">RUNTIME SEASON TIMING UNAVAILABLE.</div>'
-      : '<div class="season-status-grid"><div><span>PHASE</span><strong>' + timing.status + '</strong></div><div><span>POSITION</span><strong>DAY ' + number(timing.day) + ' / ' + number(timing.totalDays) + '</strong></div><div><span>REMAINING</span><strong>' + number(timing.remaining) + ' DAYS</strong></div><div><span>CYCLE</span><strong>' + (timing.partial ? 'YEAR-END PARTIAL' : '90-DAY TARGET') + '</strong></div></div>' + meter('SEASON', timing.percent);
+      : '<div class="season-status-grid"><div><span>PHASE</span><strong>' + timing.status + '</strong></div><div><span>POSITION</span><strong>DAY ' + number(timing.day) + ' / ' + number(timing.totalDays) + '</strong></div><div><span>REMAINING</span><strong>' + countdownMarkup({ expires_at: season.end_at }, '') + '</strong></div><div><span>CYCLE</span><strong>' + (timing.partial ? 'YEAR-END PARTIAL' : '90-DAY TARGET') + '</strong></div></div>' + meter('SEASON', timing.percent);
     return panel('SEASON STATUS // LIVE',
       '<div class="season-identity"><strong>SEASON ' + number(season.season_number || 1) + ' // ' + escapeHtml(season.key || 'CURRENT') + '</strong><span>SERVER-AUTHORITATIVE CALENDAR</span></div>' + timingCopy +
       journeyPanel + '<div class="progression-split"><div><strong>PET PROGRESSION</strong><span>Identity // stats // lifecycle // Pet XP stay with each pet instance.</span></div><div><strong>SEASON PROGRESSION</strong><span>' + number(accountSeason.xp) + ' seasonal XP // ' + number(unlockedTiers) + '/' + number(tiers.length) + ' tiers // account leaderboard status</span></div></div>' +
@@ -1333,7 +1529,7 @@
       var brief = mission.title
         ? '<div class="district-mission"><div class="line signal"><strong>' + escapeHtml(mission.title) + '</strong> // THREAT ' + number(mission.threat) + '/5' + (mission.boss ? ' // BOSS CHECKPOINT' : '') + '</div><div class="line">' + escapeHtml(mission.intro) + '</div><div class="line muted">OBJECTIVE // ' + escapeHtml(mission.objective) + '</div>' + (opponent.name ? '<div class="run-opponent"><strong>' + escapeHtml(opponent.name) + '</strong> // ' + escapeHtml(words(opponent.role)) + '<small>' + escapeHtml(opponent.intro || '') + '</small></div>' : '') + '</div>'
         : '';
-      return '<div class="region-entry ' + (region.playable ? 'complete' : 'locked') + '"><div class="line"><strong>' + escapeHtml(region.title) + '</strong> // ' + escapeHtml(region.used_today ? 'COMPLETE TODAY' : region.playable ? 'ONLINE' : region.status.toUpperCase()) + '</div><div class="line muted">' + escapeHtml(region.strapline) + '</div><div class="line">' + escapeHtml(region.lore) + '</div><div class="line">MASTERY ' + number(region.mastery_xp) + ' // BOSS: ' + escapeHtml(words(region.boss)) + ' // FOCUS: ' + escapeHtml(region.focus.map(words).join(' + ')) + '</div>' + brief + (region.lock_reason ? '<div class="line locked">LOCK: ' + escapeHtml(region.lock_reason) + '</div>' : region.used_today ? '<div class="line complete">DISTRICT PLAY COMPLETE TODAY</div>' : '<div class="button-grid district-decisions">' + decisions + '</div>') + '</div>';
+      return '<div class="region-entry ' + (region.playable ? 'complete' : 'locked') + '"><div class="line"><strong>' + escapeHtml(region.title) + '</strong> // ' + escapeHtml(region.used_today ? 'COMPLETE TODAY' : region.playable ? 'ONLINE' : region.status.toUpperCase()) + '</div><div class="line muted">' + escapeHtml(region.strapline) + '</div><div class="line">' + escapeHtml(region.lore) + '</div><div class="line">MASTERY ' + number(region.mastery_xp) + ' // BOSS: ' + escapeHtml(words(region.boss)) + ' // FOCUS: ' + escapeHtml(region.focus.map(words).join(' + ')) + '</div>' + brief + (region.lock_reason ? '<div class="line locked">LOCK: ' + escapeHtml(region.lock_reason) + '</div>' : region.used_today ? '<div class="line complete">DISTRICT PLAY COMPLETE TODAY // RESET ' + countdownMarkup(region.cooldown, 'in ') + '</div>' : '<div class="button-grid district-decisions">' + decisions + '</div>') + '</div>';
     }).join('');
     var live = state.live_systems || {};
     var chains = (live.chains || []).map(function (chain) {
@@ -1342,15 +1538,19 @@
         var bonus = valueText(choice.reward_bonus);
         return button(choice.label, 'event_chain', { chain_key: chain.key, choice_key: choice.key }, { disabled: !chain.available, detail: choice.detail + (bonus === 'FREE' ? '' : ' // BONUS ' + bonus) });
       }).join('');
-      return '<div class="story-scene"><div class="line signal"><strong>' + escapeHtml(chain.title || words(chain.key)) + '</strong> // STEP ' + number(chain.step_index + 1) + '/' + number(chain.steps.length) + '</div><div class="line"><strong>' + escapeHtml(scene.title || words(chain.current_step)) + '</strong></div><div class="line">' + escapeHtml(scene.intro || '') + '</div><div class="line muted">OBJECTIVE // ' + escapeHtml(scene.objective || '') + '</div>' + (chain.used_today ? '<div class="line complete">STORY CHOICE LOCKED IN TODAY</div>' : '<div class="button-grid story-decisions">' + decisions + '</div>') + '</div>';
+      return '<div class="story-scene"><div class="line signal"><strong>' + escapeHtml(chain.title || words(chain.key)) + '</strong> // STEP ' + number(chain.step_index + 1) + '/' + number(chain.steps.length) + '</div><div class="line"><strong>' + escapeHtml(scene.title || words(chain.current_step)) + '</strong></div><div class="line">' + escapeHtml(scene.intro || '') + '</div><div class="line muted">OBJECTIVE // ' + escapeHtml(scene.objective || '') + '</div>' + (chain.used_today ? '<div class="line complete">STORY CHOICE LOCKED IN TODAY // RESET ' + countdownMarkup(chain.cooldown, 'in ') + '</div>' : '<div class="button-grid story-decisions">' + decisions + '</div>') + '</div>';
     }).join('');
     var seasonal = live.seasonal_boss || {};
-    var seasonalBody = '<div class="line">' + escapeHtml(words(seasonal.title || 'offline')) + ' // ' + number(seasonal.damage) + '/' + number(seasonal.hp) + ' DAMAGE</div><div class="line muted">WEAKNESS ' + escapeHtml(words(seasonal.weakness)) + ' // REWARD ' + escapeHtml(words(seasonal.reward)) + '</div><div class="button-grid one">' + button(seasonal.attempted_today ? 'ATTACK USED TODAY' : 'ATTACK SEASONAL BOSS // 18 ENERGY', 'seasonal_boss', {}, { disabled: !seasonal.available, statusLabel: seasonal.attempted_today ? 'USED TODAY' : '' }) + '</div>';
+    var seasonalDefeated = Boolean(seasonal.defeated_at);
+    var seasonalButtonLabel = seasonalDefeated ? 'SEASONAL BOSS DEFEATED' : seasonal.attempted_today ? 'ATTACK USED TODAY' : 'ATTACK SEASONAL BOSS // 18 ENERGY';
+    var seasonalStatusLabel = seasonalDefeated ? 'DEFEATED' : seasonal.attempted_today ? 'USED TODAY' : '';
+    var seasonalBody = '<div class="line">' + escapeHtml(words(seasonal.title || 'offline')) + ' // ' + number(seasonal.damage) + '/' + number(seasonal.hp) + ' DAMAGE</div><div class="line muted">WEAKNESS ' + escapeHtml(words(seasonal.weakness)) + ' // REWARD ' + escapeHtml(words(seasonal.reward)) + '</div><div class="button-grid one">' + button(seasonalButtonLabel, 'seasonal_boss', {}, { disabled: !seasonal.available, statusLabel: seasonalStatusLabel, cooldown: seasonalDefeated ? null : seasonal.cooldown }) + '</div>';
     var bossReward = valueText(boss.reward);
+    var bossStatusLabel = boss.defeated ? 'DEFEATED' : boss.attempt_used ? 'USED TODAY' : '';
     var bossBody = '<div class="line">' + (boss.defeated ? 'TARGET DEFEATED.' : boss.attempt_used ? 'DAILY ATTEMPT USED.' : 'SELECT AN ATTACK ROUTINE.') + '</div>' +
       '<div class="line muted">HP ' + number(boss.remaining_hp) + '/' + number(boss.hp) + ' // DAMAGE ' + number(boss.damage) + ' // ATTEMPTS ' + number(boss.attempts) + '/' + number(boss.max_attempts || 7) + '</div>' +
       '<div class="line muted">WEAKNESS ' + escapeHtml(words(boss.weakness || 'unknown')) + ' // REWARD ' + escapeHtml(bossReward) + '</div>' +
-      '<div class="button-grid three">' + button('STRIKE', 'weekly_boss', { move: 'strike' }, { disabled: !boss.available }) + button('OUTSMART', 'weekly_boss', { move: 'outsmart' }, { disabled: !boss.available }) + button('ENDURE', 'weekly_boss', { move: 'endure' }, { disabled: !boss.available }) + '</div>';
+      '<div class="button-grid three">' + button('STRIKE', 'weekly_boss', { move: 'strike' }, { disabled: !boss.available, statusLabel: bossStatusLabel, cooldown: boss.defeated ? null : boss.cooldown }) + button('OUTSMART', 'weekly_boss', { move: 'outsmart' }, { disabled: !boss.available, statusLabel: bossStatusLabel, cooldown: boss.defeated ? null : boss.cooldown }) + button('ENDURE', 'weekly_boss', { move: 'endure' }, { disabled: !boss.available, statusLabel: bossStatusLabel, cooldown: boss.defeated ? null : boss.cooldown }) + '</div>';
     return panel('DISTRICT NETWORK', '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + regions, 'districts') + panel('MOON RUN', '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + runBody, 'moon-run') +
       panel(adventure ? adventure.title : 'PET ADVENTURE', '<div class="line">' + escapeHtml(adventure ? adventure.intro : 'NO ADVENTURE SIGNAL.') + '</div><div class="button-grid three">' + adventureButtons + '</div>', 'adventure') +
       panel(encounter ? encounter.title : 'STREET EVENT', '<div class="line">' + escapeHtml(encounter ? encounter.intro : 'NO EVENT SIGNAL.') + '</div><div class="button-grid three">' + eventButtons + '</div>', 'street-event') +
@@ -1369,7 +1569,7 @@
     }).join('');
     var activity = guidance.activity;
     var activityHtml = activity
-      ? '<div class="line">ACTIVE: ' + escapeHtml(words(activity.activity_type)) + ' // ' + escapeHtml(activity.detail) + '</div><div class="button-grid">' + button('CLAIM', 'activity_claim', {}, activityClaimButtonOptions(activity)) + button('CANCEL', 'activity_cancel', {}, { danger: true }) + '</div>'
+      ? '<div class="line">ACTIVE: ' + escapeHtml(words(activity.activity_type)) + ' // ' + (activity.ready ? escapeHtml(activity.detail) : countdownMarkup(activity.cooldown || activity, 'Claim ready in ')) + '</div><div class="button-grid">' + button('CLAIM', 'activity_claim', {}, activityClaimButtonOptions(activity)) + button('CANCEL', 'activity_cancel', {}, { danger: true }) + '</div>'
       : '<div class="button-grid">' + ['sleep', 'train', 'work', 'explore'].map(function (kind) { return button(kind, 'activity_start', { activity_type: kind }); }).join('') + '</div>';
     return panel('TIMED ACTIVITY', activityHtml, 'timed-activity') + panel('JOB TERMINAL', '<div class="button-grid">' + jobsHtml + '</div>', 'jobs');
   }
@@ -2017,7 +2217,8 @@
       var stateBeforeAction = state;
       var requestGeneration = beginStateRequest();
       var data = await post('/telegram-pets/app/action', Object.assign({ action: action, request_id: crypto.randomUUID() }, payload || {}));
-      if (!setStateSnapshot(data.state, requestGeneration)) return;
+      var responseState = mergeActionResultCooldown(data.state, data.result, action);
+      if (!setStateSnapshot(responseState, requestGeneration)) return;
       var nextState = state;
       var plannedCeremony = planLifecycleCeremony(stateBeforeAction, nextState, action, data.result);
       var message = resultMessage(data.result, stateBeforeAction, nextState);
@@ -3450,6 +3651,7 @@
       await showPendingNotices();
       applyRequestedFocus();
       window.setInterval(refreshLiveState, 5000);
+      window.setInterval(tickCooldownDom, 1000);
       window.setInterval(tickSeasonDisplay, 30000);
     } catch (error) {
       tell(error.message || 'STARTUP FAILED', 'danger');

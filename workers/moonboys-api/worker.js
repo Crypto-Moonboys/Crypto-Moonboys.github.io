@@ -3339,7 +3339,8 @@ async function processPetJob(db, telegramId, jobKeyRaw, options = {}) {
   if (lastWork?.created_at) {
     const elapsedSeconds = (now.getTime() - (parseSqliteTs(lastWork.created_at) ?? now.getTime())) / 1000;
     if (elapsedSeconds < PETS_ACTION_COOLDOWN_SECONDS) {
-      return { accepted: false, reason: 'cooldown', retry_after_seconds: Math.max(1, Math.ceil(PETS_ACTION_COOLDOWN_SECONDS - elapsedSeconds)), pet };
+      const cooldown = buildPetCooldownFromStart(lastWork.created_at, PETS_ACTION_COOLDOWN_SECONDS, now);
+      return attachPetCooldown({ accepted: false, reason: 'cooldown', retry_after_seconds: Math.max(1, Math.ceil(PETS_ACTION_COOLDOWN_SECONDS - elapsedSeconds)), cooldown, pet }, cooldown);
     }
   }
   const sourceAuthority = activePetRewardAuthority(pet);
@@ -5887,7 +5888,9 @@ async function claimPetActivitySession(db, telegramId, options = {}) {
     if (startedAtMs == null) return { accepted: false, reason: 'activity_timestamp_invalid', session };
     const elapsedSeconds = Math.floor((now.getTime() - startedAtMs) / 1000);
     if (elapsedSeconds < PET_ACTIVITY_MIN_SECONDS) {
-      return { accepted: false, reason: 'activity_too_short', retry_after_seconds: PET_ACTIVITY_MIN_SECONDS - elapsedSeconds, session };
+      const unlockAt = new Date(startedAtMs + PET_ACTIVITY_MIN_SECONDS * 1000).toISOString();
+      const cooldown = normalizePetCooldownWindow(unlockAt, now);
+      return attachPetCooldown({ accepted: false, reason: 'activity_too_short', retry_after_seconds: cooldown?.remaining_seconds || 0, cooldown, session }, cooldown);
     }
     eventKey = buildStablePetEventKey(['pet_activity_claim', telegramId, session.id]);
     computed = computePetActivityRewards(session.activity_type, elapsedSeconds);
@@ -6082,10 +6085,14 @@ async function processPetAction(db, telegramId, action, options = {}) {
   if (lastAction?.created_at) {
     const elapsedSeconds = (now.getTime() - (parseSqliteTs(lastAction.created_at) ?? now.getTime())) / 1000;
     if (elapsedSeconds < PETS_ACTION_COOLDOWN_SECONDS) {
+      const cooldown = buildPetCooldownFromStart(lastAction.created_at, PETS_ACTION_COOLDOWN_SECONDS, now);
       return {
         accepted: false,
         reason: 'cooldown',
         retry_after_seconds: Math.max(1, Math.ceil(PETS_ACTION_COOLDOWN_SECONDS - elapsedSeconds)),
+        cooldown,
+        expires_at: cooldown?.expires_at || null,
+        remaining_seconds: cooldown?.remaining_seconds || 0,
         xp_awarded: 0,
         pet_xp_awarded: 0,
         pet,
@@ -6362,10 +6369,14 @@ async function processPetGoldTrade(db, telegramId, wagerRaw, options = {}) {
   if (lastTrade?.created_at) {
     const elapsedSeconds = (now.getTime() - (parseSqliteTs(lastTrade.created_at) ?? now.getTime())) / 1000;
     if (elapsedSeconds < PET_TRADE_COOLDOWN_SECONDS) {
+      const cooldown = buildPetCooldownFromStart(lastTrade.created_at, PET_TRADE_COOLDOWN_SECONDS, now);
       return {
         accepted: false,
         reason: 'trade_cooldown',
         retry_after_seconds: Math.max(1, Math.ceil(PET_TRADE_COOLDOWN_SECONDS - elapsedSeconds)),
+        cooldown,
+        expires_at: cooldown?.expires_at || null,
+        remaining_seconds: cooldown?.remaining_seconds || 0,
         xp_awarded: 0,
         pet_xp_awarded: 0,
         pet,
@@ -6475,10 +6486,14 @@ async function processPetAdventure(db, telegramId, adventureKeyRaw, options = {}
   if (lastAdventure?.created_at) {
     const elapsedSeconds = (now.getTime() - (parseSqliteTs(lastAdventure.created_at) ?? now.getTime())) / 1000;
     if (elapsedSeconds < PET_ADVENTURE_COOLDOWN_SECONDS) {
+      const cooldown = buildPetCooldownFromStart(lastAdventure.created_at, PET_ADVENTURE_COOLDOWN_SECONDS, now);
       return {
         accepted: false,
         reason: 'adventure_cooldown',
         retry_after_seconds: Math.max(1, Math.ceil(PET_ADVENTURE_COOLDOWN_SECONDS - elapsedSeconds)),
+        cooldown,
+        expires_at: cooldown?.expires_at || null,
+        remaining_seconds: cooldown?.remaining_seconds || 0,
         xp_awarded: 0,
         pet_xp_awarded: 0,
         encounter,
@@ -8560,6 +8575,45 @@ async function buildPetMiniAppLeaderboard(db, telegramId, requestedPeriod = 'sea
 
 const miniAppProgressInteger = (value, fallback = 0) => Math.max(0, Math.floor(Number(value ?? fallback) || 0));
 
+function normalizePetCooldownWindow(expiresAtRaw, now = new Date()) {
+  const nowMs = now instanceof Date ? now.getTime() : Date.parse(now);
+  const expiresMs = expiresAtRaw instanceof Date ? expiresAtRaw.getTime() : Date.parse(String(expiresAtRaw || ''));
+  if (!Number.isFinite(nowMs) || !Number.isFinite(expiresMs)) return null;
+  return {
+    expires_at: new Date(expiresMs).toISOString(),
+    remaining_seconds: Math.max(0, Math.ceil((expiresMs - nowMs) / 1000)),
+    server_time: new Date(nowMs).toISOString(),
+  };
+}
+
+function buildPetCooldownFromSeconds(seconds, now = new Date()) {
+  const nowMs = now instanceof Date ? now.getTime() : Date.parse(now);
+  const remaining = Math.max(0, Math.ceil(Number(seconds) || 0));
+  if (!Number.isFinite(nowMs) || remaining <= 0) return null;
+  return normalizePetCooldownWindow(new Date(nowMs + remaining * 1000), new Date(nowMs));
+}
+
+function buildPetCooldownFromStart(startedAtRaw, cooldownSeconds, now = new Date()) {
+  const startedMs = parseSqliteTs(startedAtRaw);
+  const seconds = Math.max(0, Math.ceil(Number(cooldownSeconds) || 0));
+  if (startedMs == null || seconds <= 0) return null;
+  return normalizePetCooldownWindow(new Date(startedMs + seconds * 1000), now);
+}
+
+function getNextPetUtcDayResetAt(now = new Date()) {
+  const date = now instanceof Date ? now : new Date(now);
+  if (!Number.isFinite(date.getTime())) return null;
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + 1)).toISOString();
+}
+
+function attachPetCooldown(target, cooldown) {
+  if (!target || !cooldown || cooldown.remaining_seconds <= 0) return target;
+  target.expires_at = cooldown.expires_at;
+  target.remaining_seconds = cooldown.remaining_seconds;
+  target.server_time = cooldown.server_time;
+  return target;
+}
+
 function countMiniAppCompletedJourneyObjectives(rows = [], definitions = {}) {
   return rows.reduce((count, row) => {
     const objective = definitions[String(row.challenge_id || row.objective_id || '')];
@@ -8638,10 +8692,13 @@ async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = 
   const dayKey = getPetDayKey(now);
   const week = Math.min(13, Math.max(1, Number(seasonSlots?.current_season_week || getPetSeasonWeek(seasonSlots?.season || getPetSeasonInfo(now), now)) || 1));
   const week_reset_at = getPetMiniAppWeekResetAt(seasonSlots, now);
+  const day_reset_at = getNextPetUtcDayResetAt(now);
+  const dailyCooldown = normalizePetCooldownWindow(day_reset_at, now);
+  const weeklyCooldown = normalizePetCooldownWindow(week_reset_at, now);
   if (!petId || !seasonKey) {
     return {
-      daily: { utc_day: dayKey, completed_objectives: 0, required_objectives: DAILY_JOURNEY_REQUIRED_OBJECTIVES, growth_mark_awarded: false, duplicate_blocked: false, reason: 'active_pet_required' },
-      weekly: { qualification_week: week, week_reset_at, completed_objectives: 0, required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES, objectives: [], weekly_crest_awarded: false, duplicate_blocked: false, reason: 'active_pet_required', authority_available: false },
+      daily: { utc_day: dayKey, day_reset_at, cooldown: dailyCooldown, expires_at: dailyCooldown?.expires_at || null, remaining_seconds: dailyCooldown?.remaining_seconds || 0, server_time: dailyCooldown?.server_time || now.toISOString(), completed_objectives: 0, required_objectives: DAILY_JOURNEY_REQUIRED_OBJECTIVES, growth_mark_awarded: false, duplicate_blocked: false, reason: 'active_pet_required' },
+      weekly: { qualification_week: week, week_reset_at, cooldown: weeklyCooldown, expires_at: weeklyCooldown?.expires_at || null, remaining_seconds: weeklyCooldown?.remaining_seconds || 0, server_time: weeklyCooldown?.server_time || now.toISOString(), completed_objectives: 0, required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES, objectives: [], weekly_crest_awarded: false, duplicate_blocked: false, reason: 'active_pet_required', authority_available: false },
     };
   }
   const [dailyObjectives, dailyReceipt, dailyAcceptedReceipt] = await Promise.all([
@@ -8685,6 +8742,11 @@ async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = 
     return {
       daily: {
         pet_id: petId, season_key: seasonKey, utc_day: dayKey,
+        day_reset_at,
+        cooldown: dailyCooldown,
+        expires_at: dailyCooldown?.expires_at || null,
+        remaining_seconds: dailyCooldown?.remaining_seconds || 0,
+        server_time: dailyCooldown?.server_time || now.toISOString(),
         completed_objectives: dailyCompleted, required_objectives: DAILY_JOURNEY_REQUIRED_OBJECTIVES,
         growth_mark_awarded: Boolean(dailyAcceptedReceipt?.growth_mark_id),
         duplicate_blocked: dailyReceipt?.reason === 'daily_journey_growth_mark_duplicate',
@@ -8692,6 +8754,10 @@ async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = 
       },
       weekly: {
         pet_id: null, season_key: seasonKey, qualification_week: week, week_reset_at,
+        cooldown: weeklyCooldown,
+        expires_at: weeklyCooldown?.expires_at || null,
+        remaining_seconds: weeklyCooldown?.remaining_seconds || 0,
+        server_time: weeklyCooldown?.server_time || now.toISOString(),
         completed_objectives: 0, required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES,
         objectives: [],
         weekly_crest_awarded: false,
@@ -8705,6 +8771,11 @@ async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = 
   return {
     daily: {
       pet_id: petId, season_key: seasonKey, utc_day: dayKey,
+      day_reset_at,
+      cooldown: dailyCooldown,
+      expires_at: dailyCooldown?.expires_at || null,
+      remaining_seconds: dailyCooldown?.remaining_seconds || 0,
+      server_time: dailyCooldown?.server_time || now.toISOString(),
       completed_objectives: dailyCompleted, required_objectives: DAILY_JOURNEY_REQUIRED_OBJECTIVES,
       growth_mark_awarded: Boolean(dailyAcceptedReceipt?.growth_mark_id),
       duplicate_blocked: dailyReceipt?.reason === 'daily_journey_growth_mark_duplicate',
@@ -8712,6 +8783,10 @@ async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = 
     },
     weekly: {
       pet_id: petId, season_key: seasonKey, qualification_week: week, week_reset_at,
+      cooldown: weeklyCooldown,
+      expires_at: weeklyCooldown?.expires_at || null,
+      remaining_seconds: weeklyCooldown?.remaining_seconds || 0,
+      server_time: weeklyCooldown?.server_time || now.toISOString(),
       completed_objectives: weeklyCompleted, required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES,
       objectives: weeklyObjectiveList || [],
       weekly_crest_awarded: Boolean(weeklyAcceptedReceipt?.crest_id),
@@ -8788,6 +8863,9 @@ function buildPetMiniAppCapabilities(combatEligibility = {}, weeklyJourneySummar
     message: 'Weekly Journey live tracking is active.',
     qualification_week: miniAppProgressInteger(weeklyJourneySummary.qualification_week, 1),
     week_reset_at: weeklyJourneySummary.week_reset_at || null,
+    cooldown: weeklyJourneySummary.cooldown || null,
+    expires_at: weeklyJourneySummary.cooldown?.expires_at || null,
+    remaining_seconds: weeklyJourneySummary.cooldown?.remaining_seconds || 0,
     completed_objectives: miniAppProgressInteger(weeklyJourneySummary.completed_objectives, 0),
     required_objectives: miniAppProgressInteger(weeklyJourneySummary.required_objectives, WEEKLY_JOURNEY_REQUIRED_OBJECTIVES),
     objectives: Array.isArray(weeklyJourneySummary.objectives) ? weeklyJourneySummary.objectives : [],
@@ -8803,6 +8881,9 @@ function buildPetMiniAppCapabilities(combatEligibility = {}, weeklyJourneySummar
       : 'Weekly Journey authority is syncing.',
     qualification_week: null,
     week_reset_at: weeklyJourneySummary?.week_reset_at || null,
+    cooldown: weeklyJourneySummary?.cooldown || null,
+    expires_at: weeklyJourneySummary?.cooldown?.expires_at || null,
+    remaining_seconds: weeklyJourneySummary?.cooldown?.remaining_seconds || 0,
     completed_objectives: 0,
     required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES,
     objectives: [],
@@ -8841,10 +8922,45 @@ function buildPetMiniAppCapabilities(combatEligibility = {}, weeklyJourneySummar
   };
 }
 
+function addPetCooldownEntry(entries, key, label, cooldown, kind = 'action') {
+  if (!cooldown || !cooldown.expires_at || Number(cooldown.remaining_seconds || 0) <= 0) return;
+  entries.push({
+    key,
+    label,
+    kind,
+    expires_at: cooldown.expires_at,
+    remaining_seconds: Math.max(0, Math.ceil(Number(cooldown.remaining_seconds) || 0)),
+    server_time: cooldown.server_time || null,
+  });
+}
+
+function buildPetMiniAppCooldownSummary({ journeySummary = null, guidance = null, liveSystems = null, seasonSlots = null, now = new Date() } = {}) {
+  const entries = [];
+  addPetCooldownEntry(entries, 'daily_journey_reset', 'Daily Journey reset', journeySummary?.daily?.cooldown, 'daily');
+  addPetCooldownEntry(entries, 'weekly_journey_reset', 'Weekly Journey reset', journeySummary?.weekly?.cooldown, 'weekly');
+  addPetCooldownEntry(entries, 'timed_activity_claim', 'Timed activity claim', guidance?.activity?.cooldown, 'action');
+  addPetCooldownEntry(entries, 'weekly_boss_attempt', 'Weekly Boss daily attempt', guidance?.weekly_boss?.defeated ? null : guidance?.weekly_boss?.cooldown, 'daily');
+  for (const region of liveSystems?.regions || []) {
+    addPetCooldownEntry(entries, `district:${region.key}`, `${region.title || region.key} district reset`, region.cooldown, 'daily');
+  }
+  for (const chain of liveSystems?.chains || []) {
+    addPetCooldownEntry(entries, `story:${chain.key}`, `${chain.title || chain.key} story reset`, chain.cooldown, 'daily');
+  }
+  addPetCooldownEntry(entries, 'seasonal_boss_attempt', 'Seasonal Raid daily attempt', liveSystems?.seasonal_boss?.defeated_at ? null : liveSystems?.seasonal_boss?.cooldown, 'daily');
+  addPetCooldownEntry(entries, 'season_end', 'Moonpet season ends', normalizePetCooldownWindow(seasonSlots?.season?.end_at, now), 'seasonal');
+  entries.sort((left, right) => Date.parse(left.expires_at) - Date.parse(right.expires_at) || left.key.localeCompare(right.key));
+  return {
+    server_time: (now instanceof Date ? now : new Date(now)).toISOString(),
+    next_expires_at: entries[0]?.expires_at || null,
+    entries,
+  };
+}
+
 async function buildPetMiniAppState(db, telegramId, botToken) {
+  const now = new Date();
   // State preparation owns current-season initialization. Roster projection
   // remains read-only and assumes this authoritative bootstrap already ran.
-  await preparePetMiniAppState(db, telegramId);
+  await preparePetMiniAppState(db, telegramId, now);
   const petRaw = await getPetProfile(db, telegramId).catch(() => null);
   if (!petRaw) {
     return {
@@ -8866,7 +8982,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
   const [guidance, inventory, runtime, gear, materials, relics, arena, arenaQueue, recentArena, kaiju, kaijuQueue, recentKaiju, leaderboard, notifications, seasonSlots] = await Promise.all([
     buildPetGuidanceState(db, telegramId, petRaw),
     getPetInventory(db, telegramId).catch(() => []),
-    getOrCreatePetRuntimeState(db, telegramId, getPetDayKey(new Date())).catch(() => null),
+    getOrCreatePetRuntimeState(db, telegramId, getPetDayKey(now)).catch(() => null),
     db.prepare(`SELECT item_key, slot, item_level, item_xp, mastery_xp, mastery_tier
       FROM telegram_pet_equipment_progression WHERE telegram_id = ?
       ORDER BY slot, item_level DESC, item_key`).bind(telegramId).all().catch(() => ({ results: [] })),
@@ -8910,7 +9026,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
   ]);
   const leaderboardRows = await materializePetLeaderboardRows(db, leaderboard.results || []);
   const [journeySummary, hydratedKaiju] = await Promise.all([
-    buildPetMiniAppJourneySummary(db, telegramId, seasonSlots).catch(() => null),
+    buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now).catch(() => null),
     ensurePetKaijuMatchCategory(db, kaiju).catch(() => kaiju),
   ]);
   const combatEligibility = await getPetMiniAppCombatEligibility(db, telegramId, lifecycle);
@@ -8929,7 +9045,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     guidance.pet = canonicalPet;
     if (guidance.identity) guidance.identity.lifecycle = lifecycle;
   }
-  const liveSystems = await buildPetLiveSystemsState(db, telegramId, canonicalPet, runtime, gear.results || [], materials.results || []);
+  const liveSystems = await buildPetLiveSystemsState(db, telegramId, canonicalPet, runtime, gear.results || [], materials.results || [], now);
   const guidedNext = guidance ? choosePetNextAction(guidance) : null;
   const affordableUpgrade = liveSystems.upgrades.find((item) => item.affordable && !item.maxed);
   const availableDistrict = liveSystems.regions.find((region) => region.available && !region.completed);
@@ -9063,7 +9179,8 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       last_notified_at: notifications?.last_notified_at || null,
       last_reason: notifications?.last_reason || null,
     },
-    server_time: new Date().toISOString(),
+    cooldowns: buildPetMiniAppCooldownSummary({ journeySummary, guidance, liveSystems, seasonSlots, now }),
+    server_time: now.toISOString(),
   };
 }
 
@@ -9334,10 +9451,10 @@ function serializePetMiniAppActionResult(result = {}, identity = null, telegramI
     duplicate: Boolean(result.duplicate),
     reason: String(result.reason || (result.accepted ? 'accepted' : 'rejected')),
   };
-  for (const key of ['pet_xp_awarded', 'xp_awarded', 'damage', 'action', 'attempt', 'retry_after_seconds', 'gold_delta', 'crystal_delta', 'won']) {
+  for (const key of ['pet_xp_awarded', 'xp_awarded', 'damage', 'action', 'attempt', 'retry_after_seconds', 'remaining_seconds', 'server_time', 'gold_delta', 'crystal_delta', 'won']) {
     if (result[key] !== undefined) output[key] = result[key];
   }
-  for (const key of ['rewards', 'applied', 'job', 'item', 'recipe', 'encounter', 'choice', 'result_copy', 'reaction', 'boss', 'progress', 'tier', 'expedition', 'offer', 'bounty', 'queue', 'run', 'room', 'session', 'computed', 'resolved', 'match', 'reward_results', 'region', 'chain_key', 'step', 'final', 'cosmetic', 'cost', 'faction_bonus', 'prestige_count', 'acknowledged', 'lifecycle', 'species', 'rare_morph', 'care_type', 'season_slots', 'capabilities_version', 'capabilities']) {
+  for (const key of ['rewards', 'applied', 'job', 'item', 'recipe', 'encounter', 'choice', 'result_copy', 'reaction', 'boss', 'progress', 'tier', 'expedition', 'offer', 'bounty', 'queue', 'run', 'room', 'session', 'computed', 'resolved', 'match', 'reward_results', 'region', 'chain_key', 'step', 'final', 'cosmetic', 'cost', 'faction_bonus', 'prestige_count', 'acknowledged', 'lifecycle', 'species', 'rare_morph', 'care_type', 'season_slots', 'capabilities_version', 'capabilities', 'cooldown', 'expires_at']) {
     if (result[key] !== undefined) output[key] = result[key];
   }
   if (output.result_copy === undefined && result.outcome?.copy) {
@@ -13990,6 +14107,9 @@ function resolvePetOutcomeMediaKey(action, beforePet, result = null) {
 }
 
 export const __petMediaTestHooks = Object.freeze({
+  normalizePetCooldownWindow,
+  buildPetCooldownFromSeconds,
+  buildPetMiniAppCooldownSummary,
   ensurePetStarterSeasonSlot,
   preparePetMiniAppState,
   findActivePetSlot,
@@ -15158,7 +15278,11 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null) {
   const level = getPetLevel(pet.pet_xp);
   const stage = Math.max(0, Number(identity?.current_stage?.stage) || 0);
   const elapsedSeconds = activity ? Math.max(0, Math.floor((now.getTime() - (parseSqliteTs(activity.started_at) ?? now.getTime())) / 1000)) : 0;
+  const activityReadyAt = activity ? new Date((parseSqliteTs(activity.started_at) ?? now.getTime()) + PET_ACTIVITY_MIN_SECONDS * 1000).toISOString() : null;
+  const activityCooldown = activity ? normalizePetCooldownWindow(activityReadyAt, now) : null;
   const boss = getPetWeeklyBoss(weekKey);
+  const weeklyBossDefeated = Boolean(weeklyProgress?.defeated_at);
+  const weeklyAttemptCooldown = weeklyAttempt && !weeklyBossDefeated ? normalizePetCooldownWindow(getNextPetUtcDayResetAt(now), now) : null;
   return {
     pet,
     day_key: dayKey,
@@ -15167,6 +15291,9 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null) {
     activity: activity ? {
       ...activity,
       ready: elapsedSeconds >= PET_ACTIVITY_MIN_SECONDS,
+      expires_at: activityCooldown?.expires_at || activityReadyAt,
+      remaining_seconds: activityCooldown?.remaining_seconds || 0,
+      cooldown: activityCooldown,
       detail: elapsedSeconds >= PET_ACTIVITY_MIN_SECONDS ? 'Claim ready now.' : `Claim ready in ${formatPetDuration(PET_ACTIVITY_MIN_SECONDS - elapsedSeconds)}.`,
     } : null,
     active_run: activeRun,
@@ -15191,9 +15318,12 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null) {
       max_attempts: 7,
       weakness: boss.weakness,
       reward: boss.reward,
-      available: level >= 5 && !weeklyProgress?.defeated_at && !weeklyAttempt && Number(pet.energy || 0) >= 12,
+      available: level >= 5 && !weeklyBossDefeated && !weeklyAttempt && Number(pet.energy || 0) >= 12,
       attempt_used: Boolean(weeklyAttempt),
-      defeated: Boolean(weeklyProgress?.defeated_at),
+      cooldown: weeklyAttemptCooldown,
+      expires_at: weeklyAttemptCooldown?.expires_at || null,
+      remaining_seconds: weeklyAttemptCooldown?.remaining_seconds || 0,
+      defeated: weeklyBossDefeated,
     },
     features: getPetGuidanceFeatures(level, combatEligibility),
     jobs: Object.values(PET_JOBS).map((job) => ({

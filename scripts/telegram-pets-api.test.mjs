@@ -5,6 +5,7 @@ import { DatabaseSync } from 'node:sqlite';
 import moonboysApiWorker, { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
 
 const worker = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
+const liveSystemsSource = fs.readFileSync(new URL('../workers/moonboys-api/pets/live-systems.js', import.meta.url), 'utf8');
 const walletReconciliation = fs.readFileSync(new URL('../workers/moonboys-api/pets/wallet-reconciliation.js', import.meta.url), 'utf8');
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/030_telegram_pets.sql', import.meta.url), 'utf8');
@@ -73,6 +74,9 @@ const {
   PET_SEASON_EXTRA_SLOT_COSTS,
   buildPetSeasonSlotSummary,
   processPetMiniAppAction,
+  normalizePetCooldownWindow,
+  buildPetCooldownFromSeconds,
+  buildPetMiniAppCooldownSummary,
   sumPetArenaGearPower,
   scalePetArenaRewardsForPlayer,
   getPetArenaBucketDistance,
@@ -136,6 +140,102 @@ function assertOrder(block, earlier, later, message) {
   assert.ok(block.includes(earlier), `${message} (earlier snippet missing)`);
   assert.ok(block.includes(later), `${message} (later snippet missing)`);
   assert.ok(block.indexOf(earlier) < block.indexOf(later), message);
+}
+
+const cooldownNow = new Date('2026-08-22T12:00:00.000Z');
+assert.deepEqual(
+  normalizePetCooldownWindow('2026-08-22T12:05:00.000Z', cooldownNow),
+  { expires_at: '2026-08-22T12:05:00.000Z', remaining_seconds: 300, server_time: '2026-08-22T12:00:00.000Z' },
+  'authoritative cooldown windows must expose expires_at, remaining_seconds, and server_time',
+);
+assert.equal(
+  normalizePetCooldownWindow('2026-08-22T11:59:59.000Z', cooldownNow).remaining_seconds,
+  0,
+  'expired cooldown windows must clamp remaining_seconds to zero',
+);
+assert.deepEqual(
+  buildPetCooldownFromSeconds(90, cooldownNow),
+  { expires_at: '2026-08-22T12:01:30.000Z', remaining_seconds: 90, server_time: '2026-08-22T12:00:00.000Z' },
+  'relative action cooldowns must resolve to a server-authoritative expiry timestamp',
+);
+const serializedCooldownAction = serializePetMiniAppActionResult({
+  accepted: false,
+  reason: 'cooldown',
+  cooldown: normalizePetCooldownWindow('2026-08-22T12:02:00.000Z', cooldownNow),
+  expires_at: '2026-08-22T12:02:00.000Z',
+  remaining_seconds: 120,
+  server_time: '2026-08-22T12:00:00.000Z',
+});
+assert.deepEqual(serializedCooldownAction.cooldown, {
+  expires_at: '2026-08-22T12:02:00.000Z',
+  remaining_seconds: 120,
+  server_time: '2026-08-22T12:00:00.000Z',
+}, 'rejected action cooldown metadata must reach the Mini App result payload');
+assert.equal(serializedCooldownAction.expires_at, '2026-08-22T12:02:00.000Z',
+  'rejected action expires_at must not be dropped from the Mini App result payload');
+assert.equal(serializedCooldownAction.server_time, '2026-08-22T12:00:00.000Z',
+  'rejected action server_time must not be dropped from the Mini App result payload');
+const simultaneousCooldowns = buildPetMiniAppCooldownSummary({
+  now: cooldownNow,
+  journeySummary: {
+    daily: { cooldown: normalizePetCooldownWindow('2026-08-23T00:00:00.000Z', cooldownNow) },
+    weekly: { cooldown: normalizePetCooldownWindow('2026-08-24T00:00:00.000Z', cooldownNow) },
+  },
+  guidance: {
+    activity: { cooldown: normalizePetCooldownWindow('2026-08-22T12:03:00.000Z', cooldownNow) },
+    weekly_boss: { cooldown: normalizePetCooldownWindow('2026-08-22T23:59:59.000Z', cooldownNow) },
+  },
+  liveSystems: {
+    regions: [{ key: 'alley', title: 'Moon Alley', cooldown: normalizePetCooldownWindow('2026-08-22T12:02:00.000Z', cooldownNow) }],
+    chains: [{ key: 'signal', title: 'Signal Chain', cooldown: normalizePetCooldownWindow('2026-08-22T12:04:00.000Z', cooldownNow) }],
+    seasonal_boss: { cooldown: normalizePetCooldownWindow('2026-08-22T12:01:00.000Z', cooldownNow) },
+  },
+  seasonSlots: { season: { end_at: '2026-10-01T00:00:00.000Z' } },
+});
+assert.equal(simultaneousCooldowns.next_expires_at, '2026-08-22T12:01:00.000Z',
+  'multiple simultaneous cooldowns must advertise the earliest expiry for auto-refresh');
+assert.deepEqual(
+  simultaneousCooldowns.entries.slice(0, 4).map((entry) => entry.key),
+  ['seasonal_boss_attempt', 'district:alley', 'timed_activity_claim', 'story:signal'],
+  'cooldown summary must preserve independent action timers in expiry order',
+);
+const defeatedBossCooldowns = buildPetMiniAppCooldownSummary({
+  now: cooldownNow,
+  guidance: {
+    weekly_boss: { defeated: true, attempt_used: true, cooldown: normalizePetCooldownWindow('2026-08-23T00:00:00.000Z', cooldownNow) },
+  },
+  liveSystems: {
+    seasonal_boss: { defeated_at: '2026-08-22T12:00:00.000Z', attempted_today: true, cooldown: normalizePetCooldownWindow('2026-08-23T00:00:00.000Z', cooldownNow) },
+  },
+});
+assert.equal(defeatedBossCooldowns.entries.some((entry) => entry.key === 'weekly_boss_attempt'), false,
+  'weekly boss defeated state must not emit a daily-attempt cooldown even when stale cooldown metadata exists');
+assert.equal(defeatedBossCooldowns.entries.some((entry) => entry.key === 'seasonal_boss_attempt'), false,
+  'seasonal boss defeated state must not emit a daily-attempt cooldown even when stale cooldown metadata exists');
+for (const entry of simultaneousCooldowns.entries) {
+  assert.equal(entry.server_time, '2026-08-22T12:00:00.000Z',
+    `${entry.key} cooldown entry must carry server_time for clock-drift-safe ticking`);
+  assert.match(entry.expires_at, /^\d{4}-\d{2}-\d{2}T/,
+    `${entry.key} cooldown entry must carry expires_at`);
+  assert.equal(typeof entry.remaining_seconds, 'number',
+    `${entry.key} cooldown entry must carry remaining_seconds`);
+}
+assert.match(worker, /daily: \{ utc_day: dayKey, day_reset_at, cooldown: dailyCooldown, expires_at: dailyCooldown\?\.expires_at[^}]*remaining_seconds: dailyCooldown\?\.remaining_seconds[^}]*server_time: dailyCooldown\?\.server_time/s,
+  'daily journey summary must expose the complete cooldown contract at top level');
+assert.match(worker, /weekly: \{ qualification_week: week, week_reset_at, cooldown: weeklyCooldown, expires_at: weeklyCooldown\?\.expires_at[^}]*remaining_seconds: weeklyCooldown\?\.remaining_seconds[^}]*server_time: weeklyCooldown\?\.server_time/s,
+  'weekly journey summary must expose the complete cooldown contract at top level');
+assert.match(worker, /const weeklyBossDefeated = Boolean\(weeklyProgress\?\.defeated_at\);[\s\S]*const weeklyAttemptCooldown = weeklyAttempt && !weeklyBossDefeated \? normalizePetCooldownWindow/,
+  'weekly boss daily cooldown must only attach when the daily attempt is consumed and the boss is not defeated');
+assert.match(worker, /const unlockAt = new Date\(startedAtMs \+ PET_ACTIVITY_MIN_SECONDS \* 1000\)\.toISOString\(\);[\s\S]*const cooldown = normalizePetCooldownWindow\(unlockAt, now\)/,
+  'pet activity cooldown expiry must be built from started_at plus PET_ACTIVITY_MIN_SECONDS');
+for (const snippet of [
+  'server_time: dailyUsed ? dailyCooldown?.server_time : null',
+  'server_time: chain.used_today ? dailyCooldown?.server_time : null',
+  'const bossCooldown = bossUsedToday && !bossDefeated ? dailyCooldown : null',
+  'server_time: bossCooldown?.server_time || null',
+]) {
+  assert.ok(liveSystemsSource.includes(snippet),
+    'region, story, and seasonal locks must expose server_time and defeated boss cooldown precedence');
 }
 
 assert.ok(worker.includes('TELEGRAM_PETS_BOT_SECRET'), 'pet-only bot secret must be used');

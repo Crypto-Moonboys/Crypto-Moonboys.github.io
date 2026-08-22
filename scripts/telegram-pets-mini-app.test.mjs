@@ -112,21 +112,30 @@ assert.equal(new Function('state', capabilityCombatHelperSource + '; return hasC
   'available capability payload must unlock combat');
 
 const actionAvailabilitySource = extractTestExport(client, 'actionAvailability');
+const countdownComponentSource = extractTestExport(client, 'countdownComponent');
+assert.ok(countdownComponentSource, 'shared countdown component must be extractable for runtime coverage');
 assert.ok(actionAvailabilitySource, 'action availability helper must be extractable for runtime coverage');
 const actionAvailabilityRuntime = new Function(
   'option',
   `function number(value) { return Number(value || 0).toLocaleString('en-US'); }
-function escapeHtml(value) { return String(value == null ? '' : value); }
+function escapeHtml(value) {
+  return String(value == null ? '' : value).replace(/[&<>"']/g, function (char) {
+    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char];
+  });
+}
+var serverClockOffsetMs = 0;
+var state = option && option.state || null;
+${countdownComponentSource}
 ${actionAvailabilitySource}
 function button(label, action, payload, options) {
-  options = options || {};
+  options = actionCooldownButtonOptions(action, options);
   var disabled = options && options.disabled;
   var detail = shouldShowAvailability(options)
-    ? '<small>' + escapeHtml(availabilityDetail(options)) + '</small>'
+    ? '<small>' + availabilityDetailMarkup(options) + '</small>'
     : '';
   return '<button class="terminal-button' + (options && options.danger ? ' danger' : '') + '" type="button" data-action="' + escapeHtml(action) + '" data-payload="' + escapeHtml(JSON.stringify(payload || {})) + '"' + (disabled ? ' disabled' : '') + '>' + escapeHtml(label) + detail + '</button>';
 }
-return { cooldownDisplay, availabilityLabel, availabilityDetail, shouldShowAvailability, cooldownMetadata, activityClaimButtonOptions, button };`,
+return { cooldownDisplay, availabilityLabel, availabilityDetail, shouldShowAvailability, cooldownMetadata, activityClaimButtonOptions, button, cooldownRemainingSeconds, cooldownExpiresAt, formatCountdownSeconds, countdownText, countdownMarkup, actionCooldownButtonOptions, setOffset: function (value) { serverClockOffsetMs = value; }, setState: function (value) { state = value; } };`,
 )({});
 assert.equal(actionAvailabilityRuntime.availabilityDetail({ detail: 'CARE ACTION' }), 'Ready now // CARE ACTION',
   'available action buttons must not show locked copy');
@@ -179,14 +188,49 @@ assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futur
   'active-pet gates must remain explicit without egg/incubation gating');
 assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true, resourceRequired: true }), 'NOT ENOUGH RESOURCE',
   'resource gates must outrank future-expansion labels');
-assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true, cooldown: { retry_after_seconds: 720 } }), 'Available in 12m',
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true, cooldown: { retry_after_seconds: 720 } }), 'Available in 12m 00s',
   'cooldown labels must outrank future-expansion labels');
 assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true }), 'FUTURE EXPANSION',
   'future expansion copy must not imply live gameplay');
-assert.equal(actionAvailabilityRuntime.cooldownDisplay({ retry_after_seconds: 720 }), 'Available in 12m',
+assert.equal(actionAvailabilityRuntime.cooldownDisplay({ retry_after_seconds: 720 }), 'Available in 12m 00s',
   'cooldown display must use existing retry_after_seconds safely');
-assert.equal(actionAvailabilityRuntime.cooldownDisplay({ retry_after_seconds: 90000 }), 'Available tomorrow UTC',
-  'long cooldown display must use plain UTC copy');
+assert.equal(actionAvailabilityRuntime.cooldownDisplay({ retry_after_seconds: 90000 }), 'Available in 1d 01h 00m',
+  'long cooldown display must use an accurate countdown instead of vague UTC copy');
+assert.equal(actionAvailabilityRuntime.formatCountdownSeconds(3661), '1h 01m 01s',
+  'countdown formatter must preserve seconds for action timers');
+const realNow = Date.now();
+actionAvailabilityRuntime.setOffset(Date.parse('2026-08-22T12:00:00.000Z') - realNow);
+assert.equal(actionAvailabilityRuntime.cooldownRemainingSeconds({ expires_at: '2026-08-22T12:05:00.000Z' }, Date.parse('2026-08-22T12:00:00.000Z')), 300,
+  'expires_at countdowns must be computed from the server snapshot clock');
+assert.equal(actionAvailabilityRuntime.countdownText({ expires_at: '2026-08-22T12:05:00.000Z' }, 'Reset in '), 'Reset in 5m 00s',
+  'clock drift correction must make live countdown labels server-authoritative');
+assert.match(actionAvailabilityRuntime.countdownMarkup({ expires_at: '2026-08-22T12:05:00.000Z' }, 'Reset in '), /data-cooldown-expires-at="2026-08-22T12:05:00\.000Z"/,
+  'countdown markup must carry expiry metadata for live DOM ticking');
+assert.match(actionAvailabilityRuntime.countdownMarkup({ seconds: 90 }, 'Available in '), /data-cooldown-expires-at="2026-08-22T12:01:30\.\d{3}Z"/,
+  'legacy seconds-only timers must normalize to expires_at so DOM ticking continues after initial render');
+assert.match(actionAvailabilityRuntime.countdownMarkup({ cooldown_ms_remaining: 90000 }, 'Available in '), /data-cooldown-expires-at="2026-08-22T12:01:30\.\d{3}Z"/,
+  'legacy millisecond timers must normalize to expires_at so DOM ticking continues after initial render');
+assert.match(actionAvailabilityRuntime.countdownMarkup({ remaining_seconds: 30 }, 'Ready <img src=x onerror=alert(1)> '), /data-cooldown-expires-at="2026-08-22T12:00:30\.000Z"/,
+  'remaining_seconds-only timers must be normalized to expires_at for DOM ticking');
+assert.match(actionAvailabilityRuntime.countdownMarkup({ remaining_seconds: 30 }, 'Ready <img src=x onerror=alert(1)> '), /Ready &lt;img src=x onerror=alert\(1\)&gt; 30s/,
+  'countdown prefix must be HTML-encoded before entering markup');
+assert.doesNotMatch(actionAvailabilityRuntime.countdownMarkup({ remaining_seconds: 30 }, 'Ready <img src=x onerror=alert(1)> '), /<img/i,
+  'countdown prefix must be escaped before entering markup');
+const maliciousExpiresMarkup = actionAvailabilityRuntime.countdownMarkup({
+  expires_at: '2026-08-22T12:05:00.000Z&quot; autofocus onfocus=alert(1) x=&quot;',
+  remaining_seconds: 45,
+}, 'Reset "soon" <script>alert(1)</script> ');
+assert.match(maliciousExpiresMarkup, /data-cooldown-expires-at="2026-08-22T12:00:45\.\d{3}Z"/,
+  'malicious expires_at values must not be trusted when they fail timestamp parsing');
+assert.doesNotMatch(maliciousExpiresMarkup, /autofocus|onfocus|<script/i,
+  'malicious countdown expires_at and prefix values must be escaped or discarded');
+const simultaneousCooldownButton = actionAvailabilityRuntime.button('ATTACK USED TODAY', 'seasonal_boss', {}, {
+  disabled: true,
+  statusLabel: 'USED TODAY',
+  cooldown: { expires_at: '2026-08-22T12:05:00.000Z', remaining_seconds: 300 },
+});
+assert.match(simultaneousCooldownButton, /Reset in|Available in 5m 00s/,
+  'disabled cooldown buttons must render a live timer even when status copy is present');
 assert.match(actionAvailabilityRuntime.button('CLAIM', 'activity_claim', {}, actionAvailabilityRuntime.activityClaimButtonOptions({ ready: false, retry_after_seconds: 720 })), /Available in 12m/,
   'real timed-activity claim button options must render existing-state cooldown metadata');
 const productionActivityClaim = actionAvailabilityRuntime.button('CLAIM', 'activity_claim', {}, actionAvailabilityRuntime.activityClaimButtonOptions({ ready: false, detail: 'Claim ready in 11m.' }));
@@ -212,6 +256,131 @@ assert.match(seasonalUsedToday, /USED TODAY/,
   'seasonal attack used-today state must show used-today status');
 assert.doesNotMatch(seasonalUsedToday, /LOCKED/,
   'seasonal attack used-today state must not render locked copy');
+const defeatedBossButton = actionAvailabilityRuntime.button('STRIKE', 'weekly_boss', { move: 'strike' }, { disabled: true, statusLabel: 'DEFEATED', cooldown: null });
+assert.match(defeatedBossButton, /DEFEATED/,
+  'defeated boss buttons must render defeated status copy');
+assert.doesNotMatch(defeatedBossButton, /Available in|data-cooldown-expires-at/,
+  'defeated bosses must not render false availability cooldown timers');
+actionAvailabilityRuntime.setOffset(Date.parse('2026-08-22T12:00:00.000Z') - Date.now());
+actionAvailabilityRuntime.setState({
+  cooldowns: {
+    entries: [{ key: 'action:work', expires_at: '2026-08-22T12:01:00.000Z', remaining_seconds: 60 }],
+  },
+});
+const actionCooldownButton = actionAvailabilityRuntime.button('WORK SHIFT', 'work', {}, {});
+assert.match(actionCooldownButton, /disabled/,
+  'action-level cooldown entries must disable matching action controls');
+assert.match(actionCooldownButton, /Available in 1m 00s/,
+  'action-level cooldown entries must render a live countdown on matching action controls');
+actionAvailabilityRuntime.setState({
+  cooldowns: {
+    entries: [{ key: 'action:work', expires_at: '2026-08-22T11:59:00.000Z', remaining_seconds: 0 }],
+  },
+});
+assert.doesNotMatch(actionAvailabilityRuntime.button('WORK SHIFT', 'work', {}, {}), /disabled|Available in/,
+  'expired action-level cooldown entries must not keep controls disabled');
+
+const cooldownRefreshSource = extractTestExport(client, 'cooldownRefresh');
+assert.ok(cooldownRefreshSource, 'cooldown refresh helper must be extractable for debounce coverage');
+const actionCooldownMergeSource = extractTestExport(client, 'actionCooldownMerge');
+assert.ok(actionCooldownMergeSource, 'action cooldown merge helper must be extractable for action-result cooldown coverage');
+const actionCooldownMergeRuntime = new Function(
+  countdownComponentSource + `
+var serverClockOffsetMs = Date.parse('2026-08-22T12:00:00.000Z') - Date.now();
+function words(value) { return String(value || '').replaceAll('_', ' ').replace(/\\b\\w/g, function (letter) { return letter.toUpperCase(); }); }
+${actionCooldownMergeSource}
+return { mergeActionResultCooldown: mergeActionResultCooldown };`,
+)();
+const mergedActionCooldownState = actionCooldownMergeRuntime.mergeActionResultCooldown(
+  { server_time: '2026-08-22T12:00:00.000Z', cooldowns: { entries: [] } },
+  { accepted: false, reason: 'cooldown', cooldown: { retry_after_seconds: 90, server_time: '2026-08-22T12:00:00.000Z' } },
+  'work',
+);
+assert.equal(mergedActionCooldownState.cooldowns.entries[0].key, 'action:work',
+  'rejected action cooldown must be merged into Mini App state cooldowns');
+assert.match(mergedActionCooldownState.cooldowns.entries[0].expires_at, /^2026-08-22T12:01:30\.\d{3}Z$/,
+  'rejected action cooldown must normalize retry_after_seconds to expires_at for ticking');
+const cooldownRefreshRuntime = new Function(
+  countdownComponentSource + `
+var state = null;
+var cooldownRefreshTimer = 0;
+var cooldownRefreshInFlight = false;
+var lastCooldownRefreshKey = '';
+var serverClockOffsetMs = Date.parse('2026-08-22T12:00:00.000Z') - Date.now();
+var busy = false;
+var noticesBusy = false;
+var generation = 0;
+var postCalls = 0;
+var renderCalls = 0;
+var scheduled = [];
+var cleared = [];
+var screen = { scrollTop: 0 };
+var window = {
+  clearTimeout: function (id) { if (id) cleared.push(id); },
+  setTimeout: function (fn, delay) { scheduled.push({ fn: fn, delay: delay }); return scheduled.length; },
+};
+function beginStateRequest() { generation += 1; return generation; }
+function setStateSnapshot(nextState) { state = nextState; return true; }
+function render() { renderCalls += 1; }
+function tell() {}
+async function showPendingNotices() {}
+async function post() {
+  postCalls += 1;
+  await new Promise(function (resolve) { setTimeout(resolve, 5); });
+  return { state: { adopted: true, cooldowns: { next_expires_at: '2026-08-22T12:10:00.000Z', entries: [{ expires_at: '2026-08-22T12:10:00.000Z', remaining_seconds: 600 }] } } };
+}
+${cooldownRefreshSource}
+return {
+  setState: function (next) { state = next; },
+  setBusy: function (next) { busy = next; },
+  setNoticesBusy: function (next) { noticesBusy = next; },
+  scheduleCooldownRefresh: scheduleCooldownRefresh,
+  refreshExpiredCooldownState: refreshExpiredCooldownState,
+  nextCooldownDelayMs: nextCooldownDelayMs,
+  stats: function () { return { postCalls: postCalls, renderCalls: renderCalls, scheduled: scheduled.slice(), cleared: cleared.slice() }; },
+};`,
+)();
+cooldownRefreshRuntime.setState({
+  adopted: true,
+  cooldowns: { next_expires_at: '2026-08-22T12:00:10.000Z', entries: [
+    { expires_at: '2026-08-22T12:00:10.000Z', remaining_seconds: 10 },
+    { expires_at: '2026-08-22T12:00:10.000Z', remaining_seconds: 10 },
+  ] },
+});
+cooldownRefreshRuntime.scheduleCooldownRefresh();
+cooldownRefreshRuntime.scheduleCooldownRefresh();
+assert.equal(cooldownRefreshRuntime.stats().scheduled.length, 2,
+  'scheduling may replace a pending expiry timer');
+assert.equal(cooldownRefreshRuntime.stats().cleared.length, 1,
+  'cooldown expiry refresh must debounce by clearing the previous timer');
+await Promise.all([
+  cooldownRefreshRuntime.refreshExpiredCooldownState(),
+  cooldownRefreshRuntime.refreshExpiredCooldownState(),
+]);
+assert.equal(cooldownRefreshRuntime.stats().postCalls, 1,
+  'concurrent expiry refresh attempts must collapse to one state refresh');
+assert.equal(cooldownRefreshRuntime.stats().renderCalls, 1,
+  'one expiry refresh should render exactly once');
+cooldownRefreshRuntime.setState({
+  adopted: true,
+  cooldowns: { next_expires_at: '2026-08-22T12:00:10.000Z', entries: [
+    { expires_at: '2026-08-22T12:00:10.000Z', remaining_seconds: 0 },
+  ] },
+});
+await cooldownRefreshRuntime.refreshExpiredCooldownState();
+assert.ok(cooldownRefreshRuntime.stats().scheduled.some((entry) => entry.delay === 1000),
+  'same-key expired refreshes must retry later instead of being silently dropped');
+cooldownRefreshRuntime.setState({
+  adopted: true,
+  cooldowns: { next_expires_at: '2026-08-22T11:59:59.000Z', entries: [
+    { expires_at: '2026-08-22T11:59:59.000Z', remaining_seconds: 0 },
+  ] },
+});
+cooldownRefreshRuntime.setBusy(true);
+cooldownRefreshRuntime.refreshExpiredCooldownState();
+assert.ok(cooldownRefreshRuntime.stats().scheduled.some((entry) => entry.delay === 1000),
+  'busy cooldown expiry refreshes must retry later instead of being dropped');
+cooldownRefreshRuntime.setBusy(false);
 
 const dailyJourneyMarkupSource = extractTestExport(client, 'dailyJourneyMarkup');
 assert.ok(dailyJourneyMarkupSource, 'Daily Journey markup helper must be extractable for runtime coverage');
@@ -972,8 +1141,14 @@ assert.match(client, /function combatLockedButtonOptions\(entryDetail\)[\s\S]*di
 const renderExploreSource = client.slice(client.indexOf('  function renderExplore()'), client.indexOf('  function renderWork()', client.indexOf('  function renderExplore()')));
 assert.match(renderExploreSource, /button\('ACCEPT ANY RANK'[\s\S]*statusLabel: arenaQueue\.accept_any_rank \? 'CURRENT' : ''/,
   'ACCEPT ANY RANK current queue state must use an explicit CURRENT status label');
-assert.match(renderExploreSource, /button\(seasonal\.attempted_today \? 'ATTACK USED TODAY'[\s\S]*statusLabel: seasonal\.attempted_today \? 'USED TODAY' : ''/,
-  'seasonal attack used-today button must use an explicit USED TODAY status label');
+assert.match(renderExploreSource, /var seasonalDefeated = Boolean\(seasonal\.defeated_at\);[\s\S]*seasonalDefeated \? 'SEASONAL BOSS DEFEATED'[\s\S]*seasonalDefeated \? 'DEFEATED'/,
+  'seasonal defeated state must take precedence over used-today button copy');
+assert.match(renderExploreSource, /var bossStatusLabel = boss\.defeated \? 'DEFEATED' : boss\.attempt_used \? 'USED TODAY' : ''/,
+  'weekly boss defeated state must take precedence over used-today button copy');
+assert.match(renderExploreSource, /cooldown: seasonalDefeated \? null : seasonal\.cooldown/,
+  'seasonal defeated state must suppress stale cooldown metadata in the UI');
+assert.match(renderExploreSource, /cooldown: boss\.defeated \? null : boss\.cooldown/,
+  'weekly boss defeated state must suppress stale cooldown metadata in the UI');
 const arenaLockIndex = renderExploreSource.indexOf('if (!hasCombatUnlocked())');
 const arenaStateIndex = renderExploreSource.indexOf('var arena = state.arena;');
 const arenaQueueIndex = renderExploreSource.indexOf('var arenaQueue = state.arena_queue;');
