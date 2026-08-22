@@ -37,6 +37,8 @@ const PET_OWNED_TABLES = new Set([
   'telegram_pet_run_analytics',
   'telegram_pet_live_progression_state',
   'telegram_pet_weekly_boss_progress',
+  'telegram_pet_event_chain_progress',
+  'telegram_pet_seasonal_boss_progress',
 ]);
 const ACCOUNT_OWNED_TABLES = new Set([
   'telegram_pet_profiles',
@@ -610,7 +612,16 @@ function assertRequiredTablesAndIndexes(db) {
   if (!view) throw new Error('missing identity authority verification view');
 }
 
+const SHARED_AUTHORITY_DEPENDENCY_TABLES = [
+  'telegram_pet_season_slots',
+  'telegram_pet_instances',
+];
+
 function assertOwnershipAuditSurfaceTables(db) {
+  for (const depTable of SHARED_AUTHORITY_DEPENDENCY_TABLES) {
+    const row = db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?").get(depTable);
+    if (!row) throw new Error(`missing ownership audit table: ${depTable}`);
+  }
   for (const { table } of OWNERSHIP_AUDIT_TUPLE_TABLE_SPECS) {
     const row = db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?").get(table);
     if (!row) throw new Error(`missing ownership audit table: ${table}`);

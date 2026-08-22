@@ -439,7 +439,13 @@ const originalWriteTables = [...identityClassificationRow.write_tables];
 try {
   identityClassificationRow.write_tables = identityClassificationRow.write_tables
     .filter((table) => table !== 'telegram_pet_memories');
-  const coverageViolations = auditMoonpetOwnershipBoundariesDb(new DatabaseSync(':memory:'));
+  const coverageDb = new DatabaseSync(':memory:');
+  let coverageViolations;
+  try {
+    coverageViolations = auditMoonpetOwnershipBoundariesDb(coverageDb);
+  } finally {
+    coverageDb.close();
+  }
   assert.ok(coverageViolations.some((row) => row.reason === 'pet_owned_table_missing_classification' && row.row_key === 'telegram_pet_memories'),
     'ownership audit fails when a pet-owned table is removed from live ownership classification');
 } finally {
