@@ -7,6 +7,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
 import {
   auditIdentityAuthorityDb,
+  auditMoonpetOwnershipBoundariesDb,
   auditRuntimeIdentityQueries,
   IDENTITY_AUTHORITY_TABLES,
 } from './verify-moonpet-identity-authority.mjs';
@@ -336,6 +337,31 @@ try {
     'verifier fails when the migration view rows differ from the standalone authority query');
 } finally {
   mismatchDb.close();
+}
+
+const staleAuthorityDb = new DatabaseSync(':memory:');
+try {
+  staleAuthorityDb.exec(`
+    CREATE TABLE telegram_pet_active_slots (telegram_id TEXT PRIMARY KEY, pet_id TEXT NOT NULL, season_key TEXT NOT NULL);
+    CREATE TABLE telegram_pet_season_slots (pet_id TEXT, telegram_id TEXT, season_key TEXT, slot_number INTEGER);
+    CREATE TABLE telegram_pet_instances (pet_id TEXT, telegram_id TEXT, season_key TEXT, slot_number INTEGER);
+    CREATE TABLE telegram_pet_specialist_progression (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key) VALUES ('owner', 'pet:missing', 'season-a');
+    INSERT INTO telegram_pet_specialist_progression (pet_id, telegram_id, season_key) VALUES
+      ('pet:missing', 'owner', 'season-a'),
+      ('pet:no-season', 'owner', '');
+  `);
+  const ownershipViolations = auditMoonpetOwnershipBoundariesDb(staleAuthorityDb);
+  assert.ok(ownershipViolations.some((row) => row.reason === 'stale_active_slot_authority_link'),
+    'ownership audit reports stale active-slot authority links');
+  assert.ok(ownershipViolations.some((row) => row.table_name === 'telegram_pet_specialist_progression' && row.reason === 'season_key_missing'),
+    'ownership audit reports missing season_key in pet-owned progression ledgers');
+  assert.ok(ownershipViolations.some((row) => row.table_name === 'telegram_pet_specialist_progression' && row.reason === 'invalid_pet_authority_reference'),
+    'ownership audit reports invalid pet ownership references in pet-owned progression ledgers');
+  assert.ok(!ownershipViolations.some((row) => row.reason === 'account_system_writes_pet_owned_table' || row.reason === 'pet_system_writes_account_owned_table'),
+    'live ownership classification must not drift account-owned and pet-owned table boundaries');
+} finally {
+  staleAuthorityDb.close();
 }
 
 const cliResult = spawnSync(process.execPath, ['scripts/verify-moonpet-identity-authority.mjs', '--sqlite'], {

@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { DatabaseSync } from 'node:sqlite';
+import { MOONPET_LIVE_SYSTEM_OWNERSHIP_CLASSIFICATION } from '../workers/moonboys-api/pets/live-system-ownership-classification.js';
 
 export const IDENTITY_AUTHORITY_TABLES = [
   'telegram_pet_memories',
@@ -16,6 +17,35 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '..');
 const workerRoot = path.join(repoRoot, 'workers', 'moonboys-api');
 const migrationsRoot = path.join(workerRoot, 'migrations');
+const PET_OWNED_TABLES = new Set([
+  'telegram_pet_memories',
+  'telegram_pet_personality_traits',
+  'telegram_pet_boss_victories',
+  'telegram_pet_identity_events',
+  'telegram_pet_identity_analytics',
+  'telegram_pet_achievements',
+  'telegram_pet_specialist_progression',
+  'telegram_pet_specialist_events',
+  'telegram_pet_daily_journey_objectives',
+  'telegram_pet_daily_journey_receipts',
+  'telegram_pet_growth_marks',
+  'telegram_pet_weekly_journey_objectives',
+  'telegram_pet_weekly_journey_receipts',
+  'telegram_pet_weekly_crests',
+  'telegram_pet_daily_runs',
+  'telegram_pet_runs',
+  'telegram_pet_run_analytics',
+  'telegram_pet_live_progression_state',
+  'telegram_pet_weekly_boss_progress',
+]);
+const ACCOUNT_OWNED_TABLES = new Set([
+  'telegram_pet_profiles',
+  'telegram_pet_material_balances',
+  'telegram_pet_inventory',
+  'telegram_pet_cosmetic_unlocks',
+  'telegram_pet_equipment_progression',
+  'telegram_pet_equipment_events',
+]);
 
 function readRepoFile(relativePath) {
   return fs.readFileSync(path.join(repoRoot, relativePath), 'utf8');
@@ -212,6 +242,146 @@ function compareViolationRows(expectedRows, viewRows) {
   }];
 }
 
+function hasTable(db, name) {
+  return !!db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?").get(name);
+}
+
+function hasColumns(db, table, columns) {
+  const defined = new Set(
+    db.prepare(`PRAGMA table_info(${table})`).all()
+      .map((row) => String(row?.name || '').toLowerCase()),
+  );
+  return columns.every((column) => defined.has(String(column).toLowerCase()));
+}
+
+function normalizeOwnershipClassificationViolations() {
+  const violations = [];
+  for (const row of MOONPET_LIVE_SYSTEM_OWNERSHIP_CLASSIFICATION) {
+    if (row.authority_owner === 'account') {
+      const petWrites = row.write_tables.filter((table) => PET_OWNED_TABLES.has(table));
+      if (petWrites.length) {
+        violations.push({
+          table_name: 'moonpet_live_system_ownership_classification',
+          row_key: row.system_key,
+          reason: 'account_system_writes_pet_owned_table',
+          offending_tables: petWrites,
+        });
+      }
+    }
+    if (row.authority_owner === 'pet') {
+      const accountWrites = row.write_tables.filter((table) => ACCOUNT_OWNED_TABLES.has(table));
+      if (accountWrites.length) {
+        violations.push({
+          table_name: 'moonpet_live_system_ownership_classification',
+          row_key: row.system_key,
+          reason: 'pet_system_writes_account_owned_table',
+          offending_tables: accountWrites,
+        });
+      }
+    }
+  }
+  return violations;
+}
+
+function auditStaleAuthorityLinks(db) {
+  const violations = [];
+  if (hasTable(db, 'telegram_pet_active_slots') && hasTable(db, 'telegram_pet_season_slots') && hasTable(db, 'telegram_pet_instances')) {
+    const staleActiveRows = db.prepare(`
+      SELECT a.telegram_id, a.pet_id, a.season_key
+      FROM telegram_pet_active_slots a
+      LEFT JOIN telegram_pet_season_slots s
+        ON s.pet_id = a.pet_id
+       AND s.telegram_id = a.telegram_id
+       AND s.season_key = a.season_key
+      LEFT JOIN telegram_pet_instances i
+        ON i.pet_id = a.pet_id
+       AND i.telegram_id = a.telegram_id
+       AND i.season_key = a.season_key
+      WHERE s.pet_id IS NULL
+         OR i.pet_id IS NULL
+      ORDER BY a.telegram_id, a.pet_id, a.season_key
+    `).all();
+    for (const row of staleActiveRows) {
+      violations.push({
+        table_name: 'telegram_pet_active_slots',
+        pet_id: row.pet_id,
+        telegram_id: row.telegram_id,
+        season_key: row.season_key,
+        row_key: `${row.telegram_id}:${row.pet_id}:${row.season_key}`,
+        reason: 'stale_active_slot_authority_link',
+      });
+    }
+  }
+  const tupleTableSpecs = [
+    ['telegram_pet_specialist_progression', 'season_key'],
+    ['telegram_pet_specialist_events', 'season_key'],
+    ['telegram_pet_daily_journey_objectives', 'season_key'],
+    ['telegram_pet_daily_journey_receipts', 'season_key'],
+    ['telegram_pet_growth_marks', 'season_key'],
+    ['telegram_pet_weekly_journey_objectives', 'season_key'],
+    ['telegram_pet_weekly_journey_receipts', 'season_key'],
+    ['telegram_pet_weekly_crests', 'season_key'],
+    ['telegram_pet_daily_runs', 'season_key'],
+    ['telegram_pet_runs', 'season_key'],
+    ['telegram_pet_run_analytics', 'season_key'],
+    ['telegram_pet_live_progression_state', 'season_key'],
+    ['telegram_pet_system_events', 'season_key'],
+    ['telegram_pet_event_chain_progress', 'season_key'],
+    ['telegram_pet_weekly_boss_progress', 'season_key'],
+    ['telegram_pet_seasonal_boss_progress', 'pet_season_key'],
+  ];
+  for (const [table, seasonColumn] of tupleTableSpecs) {
+    if (!hasTable(db, table)) continue;
+    if (!hasColumns(db, table, ['pet_id', 'telegram_id', seasonColumn])) continue;
+    const invalidRows = db.prepare(`
+      SELECT t.pet_id, t.telegram_id, t.${seasonColumn} AS season_key
+      FROM ${table} t
+      LEFT JOIN telegram_pet_season_slots s
+        ON s.pet_id = t.pet_id
+       AND s.telegram_id = t.telegram_id
+       AND s.season_key = t.${seasonColumn}
+      LEFT JOIN telegram_pet_instances i
+        ON i.pet_id = t.pet_id
+       AND i.telegram_id = t.telegram_id
+       AND i.season_key = t.${seasonColumn}
+      WHERE t.pet_id IS NOT NULL
+        AND t.pet_id <> ''
+        AND (
+          t.telegram_id IS NULL
+          OR t.telegram_id = ''
+          OR t.${seasonColumn} IS NULL
+          OR t.${seasonColumn} = ''
+          OR s.pet_id IS NULL
+          OR i.pet_id IS NULL
+        )
+      ORDER BY t.telegram_id, t.pet_id
+      LIMIT 200
+    `).all();
+    for (const row of invalidRows) {
+      let reason = 'invalid_pet_authority_reference';
+      if (row.pet_id == null || row.pet_id === '') reason = 'pet_id_missing';
+      else if (row.season_key == null || row.season_key === '') reason = 'season_key_missing';
+      else if (row.telegram_id == null || row.telegram_id === '') reason = 'telegram_id_missing';
+      violations.push({
+        table_name: table,
+        pet_id: row.pet_id,
+        telegram_id: row.telegram_id,
+        season_key: row.season_key,
+        row_key: `${row.pet_id}:${row.telegram_id}:${row.season_key}`,
+        reason,
+      });
+    }
+  }
+  return violations;
+}
+
+export function auditMoonpetOwnershipBoundariesDb(db) {
+  return [
+    ...auditStaleAuthorityLinks(db),
+    ...normalizeOwnershipClassificationViolations(),
+  ];
+}
+
 export function auditIdentityAuthorityDb(db) {
   const tableCounts = Object.fromEntries(IDENTITY_AUTHORITY_TABLES.map((table) => [
     table,
@@ -222,6 +392,7 @@ export function auditIdentityAuthorityDb(db) {
   const viewRows = db.prepare(`SELECT table_name, pet_id, telegram_id, season_key, row_key, reason
     FROM moonpet_invalid_identity_authority_rows`).all();
   violations.push(...compareViolationRows(violations, viewRows));
+  violations.push(...auditMoonpetOwnershipBoundariesDb(db));
   return { checkedRows, tableCounts, violations };
 }
 
