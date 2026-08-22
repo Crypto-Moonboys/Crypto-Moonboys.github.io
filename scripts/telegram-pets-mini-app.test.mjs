@@ -112,21 +112,25 @@ assert.equal(new Function('state', capabilityCombatHelperSource + '; return hasC
   'available capability payload must unlock combat');
 
 const actionAvailabilitySource = extractTestExport(client, 'actionAvailability');
+const countdownComponentSource = extractTestExport(client, 'countdownComponent');
+assert.ok(countdownComponentSource, 'shared countdown component must be extractable for runtime coverage');
 assert.ok(actionAvailabilitySource, 'action availability helper must be extractable for runtime coverage');
 const actionAvailabilityRuntime = new Function(
   'option',
   `function number(value) { return Number(value || 0).toLocaleString('en-US'); }
 function escapeHtml(value) { return String(value == null ? '' : value); }
+var serverClockOffsetMs = 0;
+${countdownComponentSource}
 ${actionAvailabilitySource}
 function button(label, action, payload, options) {
   options = options || {};
   var disabled = options && options.disabled;
   var detail = shouldShowAvailability(options)
-    ? '<small>' + escapeHtml(availabilityDetail(options)) + '</small>'
+    ? '<small>' + availabilityDetailMarkup(options) + '</small>'
     : '';
   return '<button class="terminal-button' + (options && options.danger ? ' danger' : '') + '" type="button" data-action="' + escapeHtml(action) + '" data-payload="' + escapeHtml(JSON.stringify(payload || {})) + '"' + (disabled ? ' disabled' : '') + '>' + escapeHtml(label) + detail + '</button>';
 }
-return { cooldownDisplay, availabilityLabel, availabilityDetail, shouldShowAvailability, cooldownMetadata, activityClaimButtonOptions, button };`,
+return { cooldownDisplay, availabilityLabel, availabilityDetail, shouldShowAvailability, cooldownMetadata, activityClaimButtonOptions, button, cooldownRemainingSeconds, formatCountdownSeconds, countdownText, countdownMarkup, setOffset: function (value) { serverClockOffsetMs = value; } };`,
 )({});
 assert.equal(actionAvailabilityRuntime.availabilityDetail({ detail: 'CARE ACTION' }), 'Ready now // CARE ACTION',
   'available action buttons must not show locked copy');
@@ -179,14 +183,31 @@ assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futur
   'active-pet gates must remain explicit without egg/incubation gating');
 assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true, resourceRequired: true }), 'NOT ENOUGH RESOURCE',
   'resource gates must outrank future-expansion labels');
-assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true, cooldown: { retry_after_seconds: 720 } }), 'Available in 12m',
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true, cooldown: { retry_after_seconds: 720 } }), 'Available in 12m 00s',
   'cooldown labels must outrank future-expansion labels');
 assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true }), 'FUTURE EXPANSION',
   'future expansion copy must not imply live gameplay');
-assert.equal(actionAvailabilityRuntime.cooldownDisplay({ retry_after_seconds: 720 }), 'Available in 12m',
+assert.equal(actionAvailabilityRuntime.cooldownDisplay({ retry_after_seconds: 720 }), 'Available in 12m 00s',
   'cooldown display must use existing retry_after_seconds safely');
-assert.equal(actionAvailabilityRuntime.cooldownDisplay({ retry_after_seconds: 90000 }), 'Available tomorrow UTC',
-  'long cooldown display must use plain UTC copy');
+assert.equal(actionAvailabilityRuntime.cooldownDisplay({ retry_after_seconds: 90000 }), 'Available in 1d 01h 00m',
+  'long cooldown display must use an accurate countdown instead of vague UTC copy');
+assert.equal(actionAvailabilityRuntime.formatCountdownSeconds(3661), '1h 01m 01s',
+  'countdown formatter must preserve seconds for action timers');
+const realNow = Date.now();
+actionAvailabilityRuntime.setOffset(Date.parse('2026-08-22T12:00:00.000Z') - realNow);
+assert.equal(actionAvailabilityRuntime.cooldownRemainingSeconds({ expires_at: '2026-08-22T12:05:00.000Z' }, Date.parse('2026-08-22T12:00:00.000Z')), 300,
+  'expires_at countdowns must be computed from the server snapshot clock');
+assert.equal(actionAvailabilityRuntime.countdownText({ expires_at: '2026-08-22T12:05:00.000Z' }, 'Reset in '), 'Reset in 5m 00s',
+  'clock drift correction must make live countdown labels server-authoritative');
+assert.match(actionAvailabilityRuntime.countdownMarkup({ expires_at: '2026-08-22T12:05:00.000Z' }, 'Reset in '), /data-cooldown-expires-at="2026-08-22T12:05:00\.000Z"/,
+  'countdown markup must carry expiry metadata for live DOM ticking');
+const simultaneousCooldownButton = actionAvailabilityRuntime.button('ATTACK USED TODAY', 'seasonal_boss', {}, {
+  disabled: true,
+  statusLabel: 'USED TODAY',
+  cooldown: { expires_at: '2026-08-22T12:05:00.000Z', remaining_seconds: 300 },
+});
+assert.match(simultaneousCooldownButton, /Reset in|Available in 5m 00s/,
+  'disabled cooldown buttons must render a live timer even when status copy is present');
 assert.match(actionAvailabilityRuntime.button('CLAIM', 'activity_claim', {}, actionAvailabilityRuntime.activityClaimButtonOptions({ ready: false, retry_after_seconds: 720 })), /Available in 12m/,
   'real timed-activity claim button options must render existing-state cooldown metadata');
 const productionActivityClaim = actionAvailabilityRuntime.button('CLAIM', 'activity_claim', {}, actionAvailabilityRuntime.activityClaimButtonOptions({ ready: false, detail: 'Claim ready in 11m.' }));

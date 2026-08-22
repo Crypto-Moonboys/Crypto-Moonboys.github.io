@@ -73,6 +73,9 @@ const {
   PET_SEASON_EXTRA_SLOT_COSTS,
   buildPetSeasonSlotSummary,
   processPetMiniAppAction,
+  normalizePetCooldownWindow,
+  buildPetCooldownFromSeconds,
+  buildPetMiniAppCooldownSummary,
   sumPetArenaGearPower,
   scalePetArenaRewardsForPlayer,
   getPetArenaBucketDistance,
@@ -137,6 +140,47 @@ function assertOrder(block, earlier, later, message) {
   assert.ok(block.includes(later), `${message} (later snippet missing)`);
   assert.ok(block.indexOf(earlier) < block.indexOf(later), message);
 }
+
+const cooldownNow = new Date('2026-08-22T12:00:00.000Z');
+assert.deepEqual(
+  normalizePetCooldownWindow('2026-08-22T12:05:00.000Z', cooldownNow),
+  { expires_at: '2026-08-22T12:05:00.000Z', remaining_seconds: 300 },
+  'authoritative cooldown windows must expose expires_at and remaining_seconds',
+);
+assert.equal(
+  normalizePetCooldownWindow('2026-08-22T11:59:59.000Z', cooldownNow).remaining_seconds,
+  0,
+  'expired cooldown windows must clamp remaining_seconds to zero',
+);
+assert.deepEqual(
+  buildPetCooldownFromSeconds(90, cooldownNow),
+  { expires_at: '2026-08-22T12:01:30.000Z', remaining_seconds: 90 },
+  'relative action cooldowns must resolve to a server-authoritative expiry timestamp',
+);
+const simultaneousCooldowns = buildPetMiniAppCooldownSummary({
+  now: cooldownNow,
+  journeySummary: {
+    daily: { cooldown: normalizePetCooldownWindow('2026-08-23T00:00:00.000Z', cooldownNow) },
+    weekly: { cooldown: normalizePetCooldownWindow('2026-08-24T00:00:00.000Z', cooldownNow) },
+  },
+  guidance: {
+    activity: { cooldown: normalizePetCooldownWindow('2026-08-22T12:03:00.000Z', cooldownNow) },
+    weekly_boss: { cooldown: normalizePetCooldownWindow('2026-08-22T23:59:59.000Z', cooldownNow) },
+  },
+  liveSystems: {
+    regions: [{ key: 'alley', title: 'Moon Alley', cooldown: normalizePetCooldownWindow('2026-08-22T12:02:00.000Z', cooldownNow) }],
+    chains: [{ key: 'signal', title: 'Signal Chain', cooldown: normalizePetCooldownWindow('2026-08-22T12:04:00.000Z', cooldownNow) }],
+    seasonal_boss: { cooldown: normalizePetCooldownWindow('2026-08-22T12:01:00.000Z', cooldownNow) },
+  },
+  seasonSlots: { season: { end_at: '2026-10-01T00:00:00.000Z' } },
+});
+assert.equal(simultaneousCooldowns.next_expires_at, '2026-08-22T12:01:00.000Z',
+  'multiple simultaneous cooldowns must advertise the earliest expiry for auto-refresh');
+assert.deepEqual(
+  simultaneousCooldowns.entries.slice(0, 4).map((entry) => entry.key),
+  ['seasonal_boss_attempt', 'district:alley', 'timed_activity_claim', 'story:signal'],
+  'cooldown summary must preserve independent action timers in expiry order',
+);
 
 assert.ok(worker.includes('TELEGRAM_PETS_BOT_SECRET'), 'pet-only bot secret must be used');
 assert.ok(worker.includes('X-Pets-Bot-Secret'), 'pet-only header must be used');
