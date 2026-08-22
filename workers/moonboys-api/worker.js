@@ -6608,6 +6608,7 @@ function serializePet(pet, identity = null) {
   return {
     pet_id: decayed.pet_id || null,
     telegram_id: decayed.telegram_id,
+    season_key: decayed.season_key || null,
     pet_name: decayed.pet_name,
     species: decayed.species,
     stage: currentEvolution?.name || null,

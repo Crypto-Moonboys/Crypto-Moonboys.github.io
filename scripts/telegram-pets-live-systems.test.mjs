@@ -11,6 +11,7 @@ import {
   MOONPET_LIVE_SYSTEM_OWNERSHIP_CLASSIFICATION,
   validateMoonpetLiveSystemOwnershipClassification,
 } from '../workers/moonboys-api/pets/live-system-ownership-classification.js';
+import { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
 import { awardPetReward, PET_REWARD_SOURCES } from '../workers/moonboys-api/pets/roguelite-foundation.js';
 import { buildPetRegionDirectory, PET_REGION_LORE } from '../workers/moonboys-api/pets/game-content.js';
 import {
@@ -21,6 +22,7 @@ import {
 } from '../workers/moonboys-api/pets/wallet-reconciliation.js';
 
 const root = new URL('../', import.meta.url);
+const { serializePet } = __petMediaTestHooks;
 function normalizeSourceNewlines(source) {
   return source.replace(/\r\n?/g, '\n');
 }
@@ -79,6 +81,7 @@ for (const row of MOONPET_LIVE_SYSTEM_OWNERSHIP_CLASSIFICATION.filter((entry) =>
 }
 for (const row of MOONPET_LIVE_SYSTEM_OWNERSHIP_CLASSIFICATION.filter((entry) => ['pet', 'mixed'].includes(entry.authority_owner))) {
   assert.ok(row.required_authority_keys.includes('pet_id'), `${row.system_key} must declare pet_id authority`);
+  assert.ok(row.required_authority_keys.includes('season_key'), `${row.system_key} must declare season_key authority`);
 }
 
 for (const action of ['district_mission', 'event_chain', 'seasonal_boss', 'gear_upgrade', 'craft', 'cosmetic_unlock', 'prestige']) {
@@ -217,6 +220,33 @@ for (let index = 0; index < 3; index += 1) runtimeDb.prepare('INSERT INTO telegr
 runtimeDb.prepare("INSERT INTO telegram_pet_equipment_progression (telegram_id, item_key, slot) VALUES ('live-1', 'hoverboard', 'toy')").run();
 
 const reward = (request) => awardPetReward(d1, request);
+seedPlayer('serialized-authority');
+const serializedRawPet = { ...livePet('serialized-authority'), telegram_id: 'serialized-authority', pet_name: 'Tuple Cat' };
+const serializedActivePet = serializePet(serializedRawPet);
+assert.equal(serializedActivePet.telegram_id, 'serialized-authority', 'serialized active pet must preserve telegram_id authority');
+assert.equal(serializedActivePet.pet_id, serializedRawPet.pet_id, 'serialized active pet must preserve pet_id authority');
+assert.equal(serializedActivePet.season_key, serializedRawPet.season_key, 'serialized active pet must preserve season_key authority');
+const serializedRuntime = runtimeDb.prepare("SELECT * FROM telegram_pet_progression_state WHERE telegram_id='serialized-authority'").get();
+const serializedState = await buildPetLiveSystemsState(d1, 'serialized-authority', serializedActivePet, serializedRuntime, [], []);
+assert.equal(serializedState.regions.find((region) => region.key === 'moon_alley').available, true,
+  'live-system state must accept complete serialized pet authority');
+const serializedDistrict = await processPetDistrictMission(d1, 'serialized-authority', 'moon_alley', serializedActivePet, serializedRuntime, reward, null);
+assert.equal(serializedDistrict.accepted, true, 'district missions must settle with serialized pet authority');
+assert.equal(runtimeDb.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id='serialized-authority' AND pet_id=? AND season_key=?")
+  .get(serializedActivePet.pet_id, serializedActivePet.season_key).count, 1,
+  'serialized district settlement must write the complete pet authority tuple');
+const missingSeasonDistrict = await processPetDistrictMission(d1, 'serialized-authority-missing', 'moon_alley',
+  { ...serializedActivePet, telegram_id: 'serialized-authority-missing', season_key: null },
+  {}, reward, null);
+assert.equal(missingSeasonDistrict.reason, 'source_pet_authority_required',
+  'missing serialized season authority must fail closed before district settlement');
+const wrongSeasonDistrict = await processPetDistrictMission(d1, 'serialized-authority', 'moon_alley',
+  { ...serializedActivePet, season_key: 'pet-s2099-999' }, serializedRuntime, reward, null);
+assert.equal(wrongSeasonDistrict.reason, 'source_pet_authority_required',
+  'invalid serialized season authority must fail closed before district settlement');
+assert.equal(runtimeDb.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id='serialized-authority'").get().energy, 90,
+  'invalid serialized authority must not spend Energy after the valid district action');
+
 const runtimeState = runtimeDb.prepare("SELECT * FROM telegram_pet_progression_state WHERE telegram_id='live-1'").get();
 const district = await processPetDistrictMission(d1, 'live-1', 'moon_alley', livePet('live-1'), runtimeState, reward, 'nomad-bears');
 assert.equal(district.accepted, true);
@@ -290,19 +320,19 @@ assert.equal((await processPetEventChain(d1, 'live-1', 'lost_delivery_drone', re
 
 seedPlayer('live-switch');
 const switchPetA = livePet('live-switch');
-const switchPetB = { ...livePet('live-switch'), pet_id: 'pet:live-switch:pet-s2026-003:2', slot_number: 2 };
+const switchPetB = { ...livePet('live-switch', { season_key: 'pet-s2026-004', slot_number: 1 }), pet_id: 'pet:live-switch:pet-s2026-004:1' };
 runtimeDb.prepare(`INSERT INTO telegram_pet_season_slots
   (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status)
-  VALUES (?, 'live-switch', 'pet-s2026-003', 2, 'free', 'switch-fixture', 0, 'active')`).run(switchPetB.pet_id);
+  VALUES (?, 'live-switch', ?, 1, 'free', 'switch-fixture', 0, 'active')`).run(switchPetB.pet_id, switchPetB.season_key);
 runtimeDb.prepare(`INSERT INTO telegram_pet_instances
   (pet_id, telegram_id, season_key, slot_number, pet_xp, level, energy, source_profile_updated_at, status)
-  VALUES (?, 'live-switch', 'pet-s2026-003', 2, 0, 1, 100, 'switch-fixture', 'active')`).run(switchPetB.pet_id);
+  VALUES (?, 'live-switch', ?, 1, 0, 1, 100, 'switch-fixture', 'active')`).run(switchPetB.pet_id, switchPetB.season_key);
 const switchRuntime = runtimeDb.prepare("SELECT * FROM telegram_pet_progression_state WHERE telegram_id='live-switch'").get();
 const switchDistrict = await processPetDistrictMission(d1, 'live-switch', 'moon_alley', switchPetA, switchRuntime, reward, null);
 assert.equal(switchDistrict.accepted, true, 'Pet A can start and settle a live district mission');
-runtimeDb.prepare("UPDATE telegram_pet_active_slots SET pet_id=? WHERE telegram_id='live-switch'").run(switchPetB.pet_id);
+runtimeDb.prepare("UPDATE telegram_pet_active_slots SET pet_id=?, season_key=? WHERE telegram_id='live-switch'").run(switchPetB.pet_id, switchPetB.season_key);
 assert.equal((await processPetDistrictMission(d1, 'live-switch', 'moon_alley', switchPetA, switchRuntime, reward, null)).duplicate, true,
-  'active Pet B cannot redirect Pet A district replay');
+  'active Pet B from another season cannot redirect Pet A district replay');
 assert.equal(runtimeDb.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id='live-switch' AND pet_id=?").get(switchPetA.pet_id).count, 1,
   'live district Pet XP evidence stays on Pet A');
 assert.equal(runtimeDb.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id='live-switch' AND pet_id=?").get(switchPetB.pet_id).count, 0,
@@ -310,7 +340,7 @@ assert.equal(runtimeDb.prepare("SELECT COUNT(*) AS count FROM telegram_pet_event
 assert.equal(runtimeDb.prepare("SELECT COUNT(*) AS count FROM telegram_pet_live_progression_state WHERE pet_id=? AND json_extract(region_mastery_json, '$.moon_alley') > 0").get(switchPetA.pet_id).count, 1,
   'Pet A owns district mastery progress');
 assert.equal(runtimeDb.prepare("SELECT COUNT(*) AS count FROM telegram_pet_live_progression_state WHERE pet_id=?").get(switchPetB.pet_id).count, 0,
-  'Pet B does not inherit Pet A live progression state');
+  'Pet B in another season does not inherit Pet A live progression state');
 
 seedPlayer('chain-recovery');
 let chainFailure = true;
@@ -466,8 +496,22 @@ const checkpointProgress = runtimeDb.prepare('SELECT region_mastery_json, comple
 assert.ok(JSON.parse(checkpointProgress.region_mastery_json).moon_alley < 100);
 assert.equal(JSON.parse(checkpointProgress.completed_regions_json).includes('moon_alley'), false, 'a setback must not unlock the next district');
 
-seedPlayer('boss-1');
 const boss = getActiveSeasonalBoss();
+seedPlayer('serialized-boss');
+const serializedBossPet = serializePet({ ...livePet('serialized-boss'), telegram_id: 'serialized-boss', pet_name: 'Boss Tuple' });
+runtimeDb.prepare('INSERT INTO telegram_pet_seasonal_boss_progress (pet_id, telegram_id, pet_season_key, season_key, boss_key, damage) VALUES (?, ?, ?, ?, ?, ?)')
+  .run(serializedBossPet.pet_id, 'serialized-boss', serializedBossPet.season_key, boss.season_instance, boss.key, boss.hp - 1);
+const serializedBossResult = await processPetSeasonalBoss(d1, 'serialized-boss', serializedBossPet, reward);
+assert.equal(serializedBossResult.progress.defeated, true, 'seasonal boss must settle with serialized pet authority');
+assert.ok(runtimeDb.prepare('SELECT reward_claimed_at FROM telegram_pet_seasonal_boss_progress WHERE pet_id=? AND telegram_id=? AND pet_season_key=? AND season_key=? AND boss_key=?')
+  .get(serializedBossPet.pet_id, 'serialized-boss', serializedBossPet.season_key, boss.season_instance, boss.key).reward_claimed_at,
+  'serialized boss settlement must write the complete pet authority tuple');
+assert.equal((await processPetSeasonalBoss(d1, 'serialized-boss', { ...serializedBossPet, season_key: '' }, reward)).reason, 'source_pet_authority_required',
+  'missing serialized season authority must fail closed before boss settlement');
+assert.equal((await processPetSeasonalBoss(d1, 'serialized-boss', { ...serializedBossPet, season_key: 'pet-s2099-999' }, reward)).reason, 'source_pet_authority_required',
+  'invalid serialized season authority must fail closed before boss settlement');
+
+seedPlayer('boss-1');
 runtimeDb.prepare('INSERT INTO telegram_pet_seasonal_boss_progress (pet_id, telegram_id, pet_season_key, season_key, boss_key, damage) VALUES (?, ?, ?, ?, ?, ?)')
   .run(livePet('boss-1').pet_id, 'boss-1', livePet('boss-1').season_key, boss.season_instance, boss.key, boss.hp - 1);
 const bossResult = await processPetSeasonalBoss(d1, 'boss-1', livePet('boss-1'), reward);

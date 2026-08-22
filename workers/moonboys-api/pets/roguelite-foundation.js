@@ -242,7 +242,7 @@ export async function awardPetReward(db, request = {}) {
   // dedicated account wallet table exists.
   const petAuthority = Boolean(petId);
   const petOwnerGuard = petAuthority
-    ? 'AND EXISTS (SELECT 1 FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ?)'
+    ? 'AND EXISTS (SELECT 1 FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ? AND season_key = ?)'
     : '';
   const petEventScope = petAuthority ? 'AND pet_id = ?' : 'AND pet_id IS NULL';
   const metadata = safeJson({ finalization_id: finalizationId, source, idempotency_key: idempotencyKey, requested: rewards, currency_costs: currencyCosts, profile_deltas: profileDeltas, context: request.context || {} });
@@ -256,7 +256,7 @@ export async function awardPetReward(db, request = {}) {
       ${petOwnerGuard} ${authorization.sql} ${reservationGuard}`)
       .bind(claimId, petId || null, telegramId, source, idempotencyKey, dayKey, safeJson(rewards), metadata, telegramId,
         currencyCosts.moon_gold, currencyCosts.moon_crystals, currencyCosts.style_tokens,
-        ...(petAuthority ? [petId, telegramId] : []),
+        ...(petAuthority ? [petId, telegramId, seasonKey] : []),
         ...authorization.args, ...(reservationId ? [reservationId, telegramId] : [])),
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_events
       (id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)

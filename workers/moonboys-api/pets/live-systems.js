@@ -67,8 +67,16 @@ function livePetAuthority(telegramId, pet = {}) {
   return owner && petId && seasonKey ? { telegram_id: owner, pet_id: petId, season_key: seasonKey } : null;
 }
 
-async function getPetLiveProgressionState(db, telegramId, pet, runtime = {}) {
+async function resolveLivePetAuthority(db, telegramId, pet = {}) {
   const authority = livePetAuthority(telegramId, pet);
+  if (!authority) return null;
+  const row = await db.prepare('SELECT 1 AS ok FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=? AND season_key=? LIMIT 1')
+    .bind(authority.pet_id, authority.telegram_id, authority.season_key).first().catch(() => null);
+  return row ? authority : null;
+}
+
+async function getPetLiveProgressionState(db, telegramId, pet, runtime = {}, resolvedAuthority = null) {
+  const authority = resolvedAuthority || await resolveLivePetAuthority(db, telegramId, pet);
   if (!authority) return runtime || {};
   await db.prepare(`INSERT OR IGNORE INTO telegram_pet_live_progression_state
     (pet_id, telegram_id, season_key, region_mastery_json, completed_regions_json, prestige_count)
@@ -126,8 +134,8 @@ function getEventChainScene(chain, stepIndex) {
 }
 
 export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gear = [], materials = [], now = new Date()) {
-  const authority = livePetAuthority(telegramId, pet);
-  const liveProgression = await getPetLiveProgressionState(db, telegramId, pet, runtime);
+  const authority = await resolveLivePetAuthority(db, telegramId, pet);
+  const liveProgression = await getPetLiveProgressionState(db, telegramId, pet, runtime, authority);
   const visibleLevel = getRuntimePetLevel(pet);
   const mastery = parse(liveProgression?.region_mastery_json, {});
   const completed = parse(liveProgression?.completed_regions_json, []);
@@ -318,7 +326,7 @@ async function releaseSettlement(db, reservationId, token) {
 }
 
 export async function processPetDistrictMission(db, telegramId, regionKey, pet, runtime, awardReward, factionKey, approachKey) {
-  const authority = livePetAuthority(telegramId, pet);
+  const authority = await resolveLivePetAuthority(db, telegramId, pet);
   if (!authority) return { accepted: false, reason: 'source_pet_authority_required' };
   const liveProgression = await getPetLiveProgressionState(db, telegramId, pet, runtime);
   const visibleLevel = getRuntimePetLevel(pet);
@@ -376,7 +384,7 @@ export async function processPetDistrictMission(db, telegramId, regionKey, pet, 
 }
 
 export async function processPetEventChain(db, telegramId, chainKey, awardReward, factionKey, choiceKey, pet = {}) {
-  const authority = livePetAuthority(telegramId, pet);
+  const authority = await resolveLivePetAuthority(db, telegramId, pet);
   if (!authority) return { accepted: false, reason: 'source_pet_authority_required' };
   const chain = PET_EVENT_CHAINS[String(chainKey || '')];
   if (!chain) return { accepted: false, reason: 'event_chain_invalid' };
@@ -414,7 +422,7 @@ export async function processPetEventChain(db, telegramId, chainKey, awardReward
 }
 
 export async function processPetSeasonalBoss(db, telegramId, pet, awardReward) {
-  const authority = livePetAuthority(telegramId, pet);
+  const authority = await resolveLivePetAuthority(db, telegramId, pet);
   if (!authority) return { accepted: false, reason: 'source_pet_authority_required' };
   const boss = getActiveSeasonalBoss();
   const visibleLevel = getRuntimePetLevel(pet);

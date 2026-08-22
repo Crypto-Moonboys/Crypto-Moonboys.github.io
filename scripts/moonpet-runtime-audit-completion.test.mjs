@@ -47,8 +47,8 @@ assert.match(weeklyJourney, /dayBelongsToQualificationWeek\(day, season, qualifi
 assert.match(weeklyJourney, /awardPetWeeklyCrest\(db, \{[\s\S]*objective: 'weekly_journey'/,
   'Weekly Journey Crest minting must go through the shared Crest authority helper.');
 
-assert.match(rogueliteFoundation, /const petOwnerGuard = petAuthority[\s\S]*EXISTS \(SELECT 1 FROM telegram_pet_instances WHERE pet_id = \? AND telegram_id = \?\)/,
-  'Reward settlement must prove the requested pet_id belongs to the Telegram owner.');
+assert.match(rogueliteFoundation, /const petOwnerGuard = petAuthority[\s\S]*EXISTS \(SELECT 1 FROM telegram_pet_instances WHERE pet_id = \? AND telegram_id = \? AND season_key = \?\)/,
+  'Reward settlement must prove the requested pet_id belongs to the Telegram owner and season.');
 assert.match(rogueliteFoundation, /\$\{petOwnerGuard\}\s+\$\{authorization\.sql\}\s+\$\{reservationGuard\}/,
   'Reward settlement SQL must inject the pet ownership guard into the claim reservation query.');
 assert.match(rogueliteFoundation, /source = \? AND idempotency_key = \?/,
