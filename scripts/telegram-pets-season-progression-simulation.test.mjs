@@ -122,9 +122,40 @@ function blankTrackState() {
   return Object.fromEntries(Object.keys(PET_PROGRESSION_TRACKS).map((track) => [track, 0]));
 }
 
+function clampRate(value) {
+  return Math.max(0, Math.min(1, Number(value) || 0));
+}
+
+function accrueDailyJourneyMarks(accumulator, rate) {
+  let nextAccumulator = accumulator + clampRate(rate);
+  let awarded = 0;
+  while (nextAccumulator >= 1) {
+    awarded += 1;
+    nextAccumulator -= 1;
+  }
+  return { awarded, accumulator: nextAccumulator };
+}
+
+function simulateActiveDayGrowthMarks(rate, activeDays) {
+  let marks = 0;
+  let accumulator = 0;
+  for (let day = 0; day < activeDays; day += 1) {
+    const result = accrueDailyJourneyMarks(accumulator, rate);
+    marks += result.awarded;
+    accumulator = result.accumulator;
+  }
+  return marks;
+}
+
+assert.ok([76, 77].includes(simulateActiveDayGrowthMarks(0.85, 90)),
+  '0.85 daily journey completion rate over 90 active days must award about 76-77 Growth Marks');
+assert.equal(simulateActiveDayGrowthMarks(1, 90), 90, '1.0 daily journey completion rate awards one Growth Mark per active day');
+assert.equal(simulateActiveDayGrowthMarks(0, 90), 0, '0 daily journey completion rate awards zero Growth Marks');
+
 function simulateProfile(profile) {
   let petXp = 0;
   let marks = 0;
+  let dailyJourneyAccumulator = 0;
   let crests = 0;
   let stage = 0;
   let hatchProgress = 0;
@@ -142,7 +173,9 @@ function simulateProfile(profile) {
     const active = activeOnDay(profile, day);
     if (active) {
       petXp += Math.min(PET_DAILY_XP_CAP, profile.dailyPetXp);
-      marks += day % Math.ceil(1 / profile.dailyJourneyCompletionRate) === 0 ? 1 : 0;
+      const journeyMarks = accrueDailyJourneyMarks(dailyJourneyAccumulator, profile.dailyJourneyCompletionRate);
+      marks += journeyMarks.awarded;
+      dailyJourneyAccumulator = journeyMarks.accumulator;
       hatchProgress += 1;
       materials.scrap_metal += 2;
       materials.evolution_fragment += 1;

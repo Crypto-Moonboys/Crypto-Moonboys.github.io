@@ -426,6 +426,9 @@ const arenaStatusCopy = formatPetStatus({ ...baseArenaPet, pet_name: 'Arena Pet'
 assert.ok(!arenaStatusCopy.includes('Armor:') && !arenaStatusCopy.includes('Wallet'), '/pet status copy must keep gear and wallet details out of the default viewport');
 const arenaDetailsCopy = formatPetDetails({ ...baseArenaPet, pet_name: 'Arena Pet', species: 'neon_raccoon', stage: 'teen', hunger: 20, moon_gold: 0, moon_crystals: 0, style_tokens: 0, streak_days: 1, equipped_armor: 'moon_helmet', equipped_weapon: 'laser_claws', equipped_charm: 'shield_charm' });
 assert.ok(arenaDetailsCopy.includes('🛡️ <b>Armor</b> — Moon Helmet') && arenaDetailsCopy.includes('🥊 <b>Weapon</b> — Laser Claws') && arenaDetailsCopy.includes('🧿 <b>Charm</b> — Shield Charm'), '/pet details copy must present equipped battle gear with icons and player-facing names');
+const maxLevelDetailsCopy = formatPetDetails({ ...baseArenaPet, pet_name: 'Max Pet', pet_xp: 392040, level: 100 });
+assert.ok(maxLevelDetailsCopy.includes('📈 Level 100 cap reached'), '/pet details must show max-level copy at the visible level cap');
+assert.ok(!maxLevelDetailsCopy.includes('Level 101'), '/pet details must not imply Level 101 exists at the visible level cap');
 
 const polishedDetailsCopy = formatPetDetails({
   ...baseArenaPet,

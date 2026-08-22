@@ -55,7 +55,7 @@ import {
 import { PET_CRAFTING_MATERIALS, getActivePetSetBonuses } from './pets/economy-phase-3.js';
 import { PET_ELITE_JOBS, canStartPetEliteJob } from './pets/content-phase-4.js';
 import { PET_JOB_LORE, buildPetRegionDirectory } from './pets/game-content.js';
-import { getPetVisibleLevel, getPetVisibleLevelSql, getPetXpToNextVisibleLevel } from './pets/progression-phase-2.js';
+import { PET_VISIBLE_LEVEL_CURVE, getPetVisibleLevel, getPetVisibleLevelSql, getPetXpToNextVisibleLevel } from './pets/progression-phase-2.js';
 import {
   applyPetFactionBonus, buildPetLiveSystemsState, processPetCosmeticUnlock, processPetCraftRecipe, processPetDistrictMission,
   processPetEquipmentUpgrade, processPetEventChain, processPetSeasonalBoss,
@@ -15111,11 +15111,15 @@ function formatPetDetails(pet, missions = null, activity = null, identity = null
   if (p.energy <= 25) warnings.push('😴 Low energy: sleep before adventure.');
   const stage = p.stage || 'Moon Egg';
   const visibleLevel = getPetLevel(p.pet_xp);
+  const xpToNextVisibleLevel = getPetXpToNextVisibleLevel(p.pet_xp);
+  const levelProgressLine = visibleLevel >= PET_VISIBLE_LEVEL_CURVE.max_level || xpToNextVisibleLevel === 0
+    ? `📈 Level ${formatPetDisplayNumber(PET_VISIBLE_LEVEL_CURVE.max_level)} cap reached`
+    : `📈 ${formatPetDisplayNumber(xpToNextVisibleLevel)} XP to Level ${formatPetDisplayNumber(visibleLevel + 1)}`;
   return [
     `📋 <b>${escapeHtml(p.pet_name)} Details</b>`,
     `${getPetStageIcon(stage)} <b>${escapeHtml(stage)}</b>`,
     `⭐ Level ${formatPetDisplayNumber(visibleLevel)} · ✨ ${formatPetDisplayNumber(p.pet_xp)} XP`,
-    `📈 ${formatPetDisplayNumber(getPetXpToNextVisibleLevel(p.pet_xp))} XP to Level ${formatPetDisplayNumber(visibleLevel + 1)}`,
+    levelProgressLine,
     activity ? `⏱️ <b>Current activity:</b> ${formatPetActivityLine(activity)}` : '',
     '',
     '💰 <b>Wallet</b>',
