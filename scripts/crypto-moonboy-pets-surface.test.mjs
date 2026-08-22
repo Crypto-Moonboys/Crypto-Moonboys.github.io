@@ -24,7 +24,7 @@ assert.ok(howTo.includes('Food, Toy and Outfit'), 'How To Play must define care 
 assert.ok(howTo.includes('Armor, Weapon and Charm'), 'How To Play must define battle slots');
 assert.ok(howTo.includes('Changing one does not reset the other'), 'How To Play must state loadouts are independent');
 assert.ok(howTo.includes('Empty battle slots display') && howTo.includes('<strong>none</strong>'), 'How To Play must explain empty battle slots');
-assert.ok(howTo.includes('Pet Arena unlocks at level 10'), 'docs mention Pet Arena level unlock');
+assert.ok(howTo.includes('Pet Arena unlocks when your active Moonpet has hatched and reaches level 10'), 'docs mention Pet Arena hatch and level unlock');
 assert.ok(howTo.includes('Pet Arena equipment') || howTo.includes('Gear Shop'), 'docs explain the Arena equipment shop');
 assert.ok(howTo.includes('Pet XP'), 'How To Play must explain pet XP');
 assert.ok(howTo.includes('Community XP'), 'How To Play must explain Community XP');

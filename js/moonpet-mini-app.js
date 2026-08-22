@@ -582,8 +582,8 @@
 
   function guideMarkup() {
     var combatGuideCopy = hasCombatUnlocked()
-      ? 'Arena and Kaiju are available for completed Season players with a hatched active Moonpet.'
-      : 'Arena and Kaiju remain locked future panels with stale-state cleanup only.';
+      ? 'Kaiju is available for hatched active Moonpets; Arena opens at level 10.'
+      : 'Arena and Kaiju stay locked until you adopt and hatch an active Moonpet.';
     return '<div class="guide-step"><strong>1 // WAKE THE EGG</strong>Initialise your Moon Egg, then use at least three kinds of incubation care. Your care pattern shapes the hatch.</div>' +
       '<div class="guide-step"><strong>2 // KEEP NEEDS STABLE</strong>Feed, play, clean and rest. Training, care and daily routines build Pet XP, specialist XP, traits and equipment mastery.</div>' +
       '<div class="guide-step"><strong>3 // FOLLOW THE ROUTE</strong>The PET screen recommends the best next move. TASKS contains daily missions and achievements.</div>' +
@@ -702,6 +702,8 @@
         active_pet_exists: false,
         active_pet_lifecycle_known: false,
         active_pet_hatched: false,
+        active_pet_level: 0,
+        arena_level_met: false,
       },
     };
     var version = Number(source && (source.capabilities_version || source.capabilities && source.capabilities.capabilities_version) || 0);
@@ -714,11 +716,11 @@
       'active_pet_exists',
       'active_pet_lifecycle_known',
       'active_pet_hatched',
+      'arena_level_met',
     ].every(function (key) { return typeof requirements[key] === 'boolean'; });
-    if (!completeRequirements) return fallback;
+    if (!completeRequirements || typeof requirements.active_pet_level !== 'number') return fallback;
     var stateLabel = String(combat.state || '').toUpperCase();
-    var requirementReady = requirements.completed_season_pet === true
-      && requirements.active_pet_exists === true
+    var requirementReady = requirements.active_pet_exists === true
       && requirements.active_pet_lifecycle_known === true
       && requirements.active_pet_hatched === true;
     if (typeof combat.active !== 'boolean') return fallback;
@@ -745,40 +747,67 @@
     return combat.state === 'AVAILABLE' && combat.unlocked === true;
   }
 
-  function combatLockCopy() {
-    var reason = combatCapability(state).reason;
+  function systemCapability(source, key) {
+    var version = Number(source && (source.capabilities_version || source.capabilities && source.capabilities.capabilities_version) || 0);
+    var systems = source && source.capabilities && source.capabilities.systems;
+    var system = systems && systems[key];
+    if (version !== 1 || !system || typeof system !== 'object') return { state: 'LOCKED', unlocked: false, active: false, reason: 'capability_unavailable' };
+    var stateLabel = String(system.state || '').toUpperCase();
+    return {
+      state: stateLabel === 'AVAILABLE' ? 'AVAILABLE' : stateLabel === 'COMING_SOON' ? 'COMING_SOON' : 'LOCKED',
+      unlocked: system.unlocked === true,
+      active: system.active === true,
+      reason: system.reason || (stateLabel === 'COMING_SOON' ? 'feature_not_available' : 'capability_unavailable'),
+      message: system.message || '',
+    };
+  }
+
+  function hasSystemUnlocked(key, source) {
+    var system = systemCapability(source || state, key);
+    return system.state === 'AVAILABLE' && system.unlocked === true && system.active === true;
+  }
+
+  function combatLockCopy(reasonOverride) {
+    var reason = reasonOverride || combatCapability(state).reason;
     if (reason === 'moon_egg_must_hatch') {
       return {
         title: 'COMBAT LOCKED UNTIL YOUR ACTIVE MOONPET HATCHES.',
-        detail: 'Requires a completed Season pet and a hatched active Moonpet. This is future expansion content and is not available during early Season 1.',
+        detail: 'Requires a hatched active Moonpet.',
         entryDetail: 'REQUIRES HATCHED ACTIVE MOONPET',
       };
     }
     if (reason === 'pet_not_adopted') {
       return {
         title: 'COMBAT LOCKED UNTIL YOU ADOPT A MOONPET.',
-        detail: 'Requires a completed Season pet and an active adult Moonpet. This is future expansion content and is not available during early Season 1.',
+        detail: 'Requires an adopted active Moonpet.',
         entryDetail: 'REQUIRES ACTIVE MOONPET',
       };
     }
     if (reason === 'moonpet_lifecycle_required') {
       return {
         title: 'COMBAT LOCKED UNTIL YOUR MOONPET STATE SYNCS.',
-        detail: 'Requires synced lifecycle authority before future combat can unlock.',
+        detail: 'Requires synced lifecycle authority before combat can unlock.',
         entryDetail: 'REQUIRES SYNCED MOONPET',
+      };
+    }
+    if (reason === 'arena_level_locked') {
+      return {
+        title: 'ARENA LOCKED UNTIL LEVEL 10.',
+        detail: 'Kaiju can run after hatch; Pet Arena needs a level 10 active Moonpet.',
+        entryDetail: 'REQUIRES LEVEL 10',
       };
     }
     if (reason === 'capability_unavailable') {
       return {
         title: 'COMBAT LOCKED UNTIL CAPABILITY STATE SYNCS.',
-        detail: 'Requires worker capability authority before future combat can unlock.',
+        detail: 'Requires worker capability authority before combat can unlock.',
         entryDetail: 'REQUIRES CAPABILITY SYNC',
       };
     }
     return {
-      title: 'LOCKED UNTIL YOU COMPLETE A SEASON PET.',
-      detail: 'Requires a completed adult Moonpet. This is future expansion content and is not available during early Season 1.',
-      entryDetail: 'REQUIRES COMPLETED SEASON PET',
+      title: 'COMBAT LOCKED.',
+      detail: 'Requires current beta combat authority.',
+      entryDetail: 'REQUIRES CURRENT COMBAT AUTHORITY',
     };
   }
 
@@ -1451,8 +1480,8 @@
     var arenaQueue = state.arena_queue;
     var arenaResult = state.arena_result;
     var arenaBody;
-    if (!hasCombatUnlocked()) {
-      var arenaLock = combatLockCopy();
+    if (!hasSystemUnlocked('arena')) {
+      var arenaLock = combatLockCopy(systemCapability(state, 'arena').reason);
       var arenaEntryOptions = combatLockedButtonOptions(arenaLock.entryDetail);
       var arenaCleanup = arena
         ? button('FORFEIT MATCH', 'arena_forfeit', { battle_id: arena.battle_id }, { danger: true })
@@ -1495,8 +1524,8 @@
     var kaijuMatch = kaiju.match;
     var kaijuQueue = kaiju.queue;
     var kaijuBody;
-    if (!hasCombatUnlocked()) {
-      var kaijuLock = combatLockCopy();
+    if (!hasSystemUnlocked('kaiju')) {
+      var kaijuLock = combatLockCopy(systemCapability(state, 'kaiju').reason);
       var kaijuEntryOptions = combatLockedButtonOptions(kaijuLock.entryDetail);
       var kaijuSoloCleanup = kaijuMatch && kaijuMatch.mode !== 'group' && !kaijuMatch.player2_telegram_id;
       var kaijuCleanup = kaijuSoloCleanup
@@ -1714,7 +1743,7 @@
     var futureSystems = Object.keys(futureSystemTitles).map(function (key) {
       var system = capabilitySystems[key] || {};
       var status = String(system.state || 'LOCKED').toUpperCase();
-      var message = system.message || (status === 'COMING_SOON' ? 'Future expansion content. Not available yet.' : 'Requires completed Season pet. Locked until you complete a Season pet.');
+      var message = system.message || (status === 'COMING_SOON' ? 'Future expansion content. Not available yet.' : 'Current beta requirements not met.');
       return {
         key: key,
         title: futureSystemTitles[key],
@@ -1732,14 +1761,14 @@
       return futureSystems.find(function (system) { return system.key === key; }) || {
         key: key,
         status: fallbackStatus || 'LOCKED',
-        detail: fallbackStatus === 'COMING_SOON' ? 'Future expansion content. Not available yet.' : 'Requires completed Season pet. Locked until you complete a Season pet.',
+        detail: fallbackStatus === 'COMING_SOON' ? 'Future expansion content. Not available yet.' : 'Current beta requirements not met.',
       };
     }
     function futureSystemPanelCopy(system) {
       var status = String(system.status || 'LOCKED').toUpperCase();
       if (status === 'COMING_SOON') return '<div class="line locked">FUTURE EXPANSION CONTENT.</div><div class="line muted">NOT AVAILABLE YET.</div>';
       if (status === 'AVAILABLE') return '<div class="line complete">AVAILABLE.</div><div class="line muted">' + escapeHtml(system.detail || '') + '</div>';
-      return '<div class="line locked">LOCKED UNTIL YOU COMPLETE A SEASON PET.</div><div class="line muted">' + escapeHtml(system.detail || 'Requires completed Season pet. Locked until you complete a Season pet.') + '</div>';
+      return '<div class="line locked">LOCKED.</div><div class="line muted">' + escapeHtml(system.detail || 'Current beta requirements not met.') + '</div>';
     }
     var featureRows = (guidance.features || []).map(function (feature) {
       var available = feature.available === true;
@@ -2595,6 +2624,10 @@
     return combat.state === 'AVAILABLE' && combat.unlocked === true;
   }
 
+  function snapshotHasSystemUnlocked(snapshot, key) {
+    return hasSystemUnlocked(key, snapshot);
+  }
+
   function updateCombatPresentation(snapshot) {
     if (snapshot === combatSnapshot && activeScreen === combatScreen) return COMBAT_PRESENTATION_FRAME;
     combatSnapshot = snapshot;
@@ -2602,7 +2635,7 @@
     clearCombatPresentation();
     if (activeScreen !== 'explore' || !snapshot || !snapshot.adopted) return COMBAT_PRESENTATION_FRAME;
     var arena = snapshot.arena;
-    if (arena && snapshotHasCombatUnlocked(snapshot) && arena.status !== 'completed' && !arena.outcome) {
+    if (arena && snapshotHasSystemUnlocked(snapshot, 'arena') && arena.status !== 'completed' && !arena.outcome) {
       COMBAT_PRESENTATION_FRAME.active = true;
       COMBAT_PRESENTATION_FRAME.mode = 'arena';
       COMBAT_PRESENTATION_FRAME.title = arena.mode === 'multiplayer' ? 'PLAYER ARENA' : 'CRT ARENA';
@@ -2622,7 +2655,7 @@
       return COMBAT_PRESENTATION_FRAME;
     }
     var kaiju = snapshot.kaiju && snapshot.kaiju.match;
-    if (kaiju && snapshotHasCombatUnlocked(snapshot) && kaiju.status !== 'completed' && !kaiju.outcome) {
+    if (kaiju && snapshotHasSystemUnlocked(snapshot, 'kaiju') && kaiju.status !== 'completed' && !kaiju.outcome) {
       COMBAT_PRESENTATION_FRAME.active = true;
       COMBAT_PRESENTATION_FRAME.mode = 'kaiju';
       COMBAT_PRESENTATION_FRAME.title = kaiju.mode === 'group' ? 'PLAYER KAIJU DUEL' : 'CRT KAIJU DUEL';

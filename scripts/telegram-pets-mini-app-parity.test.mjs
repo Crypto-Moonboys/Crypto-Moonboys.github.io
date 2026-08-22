@@ -132,8 +132,8 @@ for (const action of ['arena_start', 'arena_matchmake', 'kaiju_start', 'kaiju_ma
     match_id: 'locked-kaiju-match',
     request_id: `locked:${action}`,
   }, '123456:test-token');
-  assert.equal(result.accepted, false, `${action} must reject early Season 1 users`);
-  assert.equal(result.reason, 'completed_season_pet_required', `${action} must explain the completed-pet requirement`);
+  assert.equal(result.accepted, false, `${action} must reject players without synced active pet lifecycle`);
+  assert.equal(result.reason, 'moonpet_lifecycle_required', `${action} must explain the current active-pet requirement`);
 }
 assert.equal(lockedCombatDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_arena_queue WHERE telegram_id='future-locked'").get().count, 0,
   'locked Arena matchmaking must not create queue rows');
@@ -213,11 +213,11 @@ assert.equal(completedSanctuaryUnavailable.capabilities?.systems?.sanctuary?.sta
 assert.notEqual((await processPetMiniAppAction(completedCombatDb, 'future-complete', { id: 'future-complete' }, {
   action: 'arena_matchmake',
   request_id: 'completed:arena_matchmake',
-}, '123456:test-token')).reason, 'completed_season_pet_required', 'completed Season pet must pass the Arena future-combat gate');
+}, '123456:test-token')).reason, 'completed_season_pet_required', 'Arena must not use a completed-season beta-combat gate');
 assert.notEqual((await processPetMiniAppAction(completedCombatDb, 'future-complete', { id: 'future-complete' }, {
   action: 'kaiju_matchmake',
   request_id: 'completed:kaiju_matchmake',
-}, '123456:test-token')).reason, 'completed_season_pet_required', 'completed Season pet must pass the Kaiju future-combat gate');
+}, '123456:test-token')).reason, 'completed_season_pet_required', 'Kaiju must not use a completed-season beta-combat gate');
 
 const combatAuthorityDb = new D1();
 installSeasonCompletionMarkerTable(combatAuthorityDb);
@@ -247,6 +247,7 @@ assert.equal(combatEggCapabilities.combat.state, 'LOCKED', 'combat capability st
 assert.equal(combatEggCapabilities.combat.active, false, 'locked combat capability must be inactive');
 assert.equal(combatEggCapabilities.combat.requirements.completed_season_pet, true, 'player capabilities must preserve completed-season authority');
 assert.equal(combatEggCapabilities.combat.requirements.active_pet_hatched, false, 'player capabilities must expose active egg requirement state');
+assert.equal(combatEggCapabilities.combat.requirements.arena_level_met, true, 'capabilities must expose Arena level authority separately from hatch state');
 assert.equal(combatEggCapabilities.systems.arena.state, 'LOCKED', 'central systems map must lock Arena for active eggs');
 assert.equal(combatEggCapabilities.systems.kaiju.state, 'LOCKED', 'central systems map must lock Kaiju for active eggs');
 assert.equal(combatEggCapabilities.systems.prestige.state, 'COMING_SOON', 'central systems map must keep Prestige coming soon');
@@ -332,17 +333,14 @@ assert.equal(Object.prototype.hasOwnProperty.call(combatAdultCapabilities, 'comb
   'capabilities must not serialize duplicate top-level combat authority');
 const combatNewEligibility = await getPetMiniAppCombatEligibility(combatAuthorityDb, 'combat-new');
 assert.equal(combatNewEligibility.has_completed_season_pet, false, 'combat authority must expose missing completion state for new users');
-assert.equal(combatNewEligibility.combat_unlocked, false, 'new users must not see combat as unlocked');
+assert.equal(combatNewEligibility.combat_unlocked, true, 'hatched active users can unlock current beta combat without completed-season authority');
 const combatNewAction = await processPetMiniAppAction(combatAuthorityDb, 'combat-new', { id: 'combat-new' }, {
   action: 'kaiju_matchmake',
   request_id: 'combat-new:kaiju_matchmake',
 }, '123456:test-token');
-assert.equal(combatNewAction.reason, 'completed_season_pet_required', 'API combat lock must match the missing-completion UI reason');
-assert.equal(combatNewAction.capabilities?.combat?.state, 'LOCKED', 'API must return the shared combat capability state for missing-completion rejection');
-assert.equal(combatNewAction.capabilities?.combat?.requirements?.completed_season_pet, false,
-  'stale-client combat rejection must expose unmet completed-season capability');
+assert.notEqual(combatNewAction.reason, 'completed_season_pet_required', 'API combat gate must not require completed-season authority for current Kaiju');
 assert.equal((await getPetMiniAppCombatEligibility(combatAuthorityDb, 'combat-adult')).combat_unlocked, true,
-  'shared combat eligibility helper must unlock only completed users with eligible active pets');
+  'shared combat eligibility helper must unlock eligible active pets');
 seedPlayer(combatAuthorityDb, 'combat-missing-lifecycle', 'Missing Lifecycle Cat', 1500);
 const combatMissingLifecycleEligibility = await getPetMiniAppCombatEligibility(combatAuthorityDb, 'combat-missing-lifecycle');
 assert.equal(combatMissingLifecycleEligibility.has_completed_season_pet, true, 'combat authority must preserve completed-season state with missing lifecycle data');
@@ -371,8 +369,10 @@ assert.equal(unlockedGuidanceFeatures.find((feature) => feature.key === 'prestig
 const lockedFutureSystems = buildPetMiniAppFutureSystemState(combatNewEligibility);
 assert.equal(lockedFutureSystems.find((system) => system.key === 'breeding')?.status, 'LOCKED',
   'future system authority must lock completion-gated expansion systems before completed-season authority');
-assert.equal(lockedFutureSystems.find((system) => system.key === 'arena')?.status, 'LOCKED',
-  'future system authority must lock Arena before shared combat eligibility');
+assert.equal(lockedFutureSystems.find((system) => system.key === 'arena')?.status, 'AVAILABLE',
+  'Arena current beta authority must not wait for completed-season authority');
+assert.equal(buildPetMiniAppCapabilities(combatNewEligibility).systems.breeding.reason, 'completed_season_pet_required',
+  'post-season systems must keep completed-season reason while current combat is available');
 const comingSoonFutureSystems = buildPetMiniAppFutureSystemState(combatEggEligibility);
 assert.equal(comingSoonFutureSystems.find((system) => system.key === 'breeding')?.status, 'COMING_SOON',
   'completed-season users must see unavailable expansion systems as coming soon');
@@ -392,16 +392,16 @@ seedPlayer(transitionDb, 'combat-transition', 'Transition Cat', 1500);
 await setActivePetLifecyclePhase(transitionDb, 'combat-transition', 'adult');
 const transitionBeforeEligibility = await getPetMiniAppCombatEligibility(transitionDb, 'combat-transition');
 const transitionBeforeCapabilities = buildPetMiniAppCapabilities(transitionBeforeEligibility);
-assert.equal(transitionBeforeCapabilities.systems.arena.state, 'LOCKED', 'Arena must lock before completed-season authority exists');
-assert.equal(transitionBeforeCapabilities.systems.kaiju.state, 'LOCKED', 'Kaiju must lock before completed-season authority exists');
-assert.equal(getPetGuidanceFeatures(100, transitionBeforeEligibility).find((feature) => feature.key === 'pet_arena')?.available, false,
-  'guidance must not recommend Arena before the shared capability unlocks');
+assert.equal(transitionBeforeCapabilities.systems.arena.state, 'AVAILABLE', 'Arena must unlock from current active-pet and level authority');
+assert.equal(transitionBeforeCapabilities.systems.kaiju.state, 'AVAILABLE', 'Kaiju must unlock from current active-pet authority');
+assert.equal(getPetGuidanceFeatures(100, transitionBeforeEligibility).find((feature) => feature.key === 'pet_arena')?.available, true,
+  'guidance may recommend Arena before completed-season authority exists');
 const transitionBeforeAction = await processPetMiniAppAction(transitionDb, 'combat-transition', { id: 'combat-transition' }, {
   action: 'arena_matchmake',
   request_id: 'transition:before:arena_matchmake',
 }, '123456:test-token');
-assert.equal(transitionBeforeAction.accepted, false, 'API must reject combat before completed-season authority exists');
-assert.equal(transitionBeforeAction.reason, 'completed_season_pet_required');
+assert.notEqual(transitionBeforeAction.reason, 'completed_season_pet_required',
+  'API must not reject current Arena before completed-season authority exists');
 markSeasonComplete(transitionDb, 'combat-transition');
 const transitionAfterEligibility = await getPetMiniAppCombatEligibility(transitionDb, 'combat-transition');
 const transitionAfterCapabilities = buildPetMiniAppCapabilities(transitionAfterEligibility);
@@ -414,7 +414,7 @@ const transitionAfterAction = await processPetMiniAppAction(transitionDb, 'comba
   request_id: 'transition:after:arena_matchmake',
 }, '123456:test-token');
 assert.notEqual(transitionAfterAction.reason, 'completed_season_pet_required',
-  'API must follow the same completed-season capability transition as the UI and guidance surfaces');
+  'API must keep completed-season authority out of current combat gates');
 
 const priorSeasonCombatDb = new D1();
 installSeasonCompletionMarkerTable(priorSeasonCombatDb);
@@ -426,7 +426,7 @@ for (const action of ['arena_start', 'arena_matchmake', 'kaiju_start', 'kaiju_ma
     action,
     request_id: `prior:${action}:${crypto.randomUUID()}`,
   }, '123456:test-token');
-  assert.notEqual(result.reason, 'completed_season_pet_required', `${action} must accept a prior-season completed pet for the completed-season gate`);
+  assert.notEqual(result.reason, 'completed_season_pet_required', `${action} must not depend on prior-season completion for current combat`);
 }
 
 const journeySummaryDb = new D1();

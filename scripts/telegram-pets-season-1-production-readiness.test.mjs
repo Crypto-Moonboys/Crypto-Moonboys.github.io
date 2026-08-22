@@ -212,8 +212,23 @@ assert.equal(eggAction.capabilities?.combat?.unlocked, false, 'combat rejection 
 seedUser(db, '100003', 'Hatched Player');
 await setActivePetLifecyclePhase(db, '100003', 'adult');
 const hatchedEligibility = await getPetMiniAppCombatEligibility(db, '100003');
-assert.equal(hatchedEligibility.combat_unlocked, false, 'hatched active pets still need completed Season authority');
-assert.equal(hatchedEligibility.reason, 'completed_season_pet_required');
+assert.equal(hatchedEligibility.combat_unlocked, true, 'hatched active pets unlock current beta combat without completed Season authority');
+assert.equal(hatchedEligibility.arena_unlocked, true, 'level 10+ hatched active pets unlock Arena without completed Season authority');
+assert.equal(hatchedEligibility.kaiju_unlocked, true, 'hatched active pets unlock Kaiju without completed Season authority');
+assert.equal(hatchedEligibility.reason, 'combat_unlocked');
+assert.notEqual((await act(db, '100003', 'arena_matchmake')).reason, 'completed_season_pet_required',
+  'level 10+ hatched active pet can enter Arena without completed-season authority');
+
+seedUser(db, '100007', 'Low Arena Player', 800);
+await setActivePetLifecyclePhase(db, '100007', 'adult');
+const lowArenaEligibility = await getPetMiniAppCombatEligibility(db, '100007');
+assert.equal(lowArenaEligibility.combat_unlocked, true, 'below-Arena-level hatched pets still have current combat authority');
+assert.equal(lowArenaEligibility.arena_unlocked, false, 'hatched pets below Arena level cannot enter Arena');
+assert.equal(lowArenaEligibility.kaiju_unlocked, true, 'Kaiju does not require completed-season authority');
+assert.equal(lowArenaEligibility.arena_reason, 'arena_level_locked');
+assert.equal((await act(db, '100007', 'arena_matchmake')).reason, 'arena_level_locked');
+assert.notEqual((await act(db, '100007', 'kaiju_start')).reason, 'completed_season_pet_required',
+  'Kaiju uses its current-game gate and does not require completed-season authority');
 
 seedUser(db, '100004', 'Completed Egg');
 markSeasonComplete(db, '100004');
@@ -229,10 +244,10 @@ seedUser(db, '100005', 'Completed Adult');
 markSeasonComplete(db, '100005');
 await setActivePetLifecyclePhase(db, '100005', 'adult');
 const completedAdultEligibility = await getPetMiniAppCombatEligibility(db, '100005');
-assert.equal(completedAdultEligibility.combat_unlocked, true, 'completed Season pet plus hatched active pet passes combat gate');
+assert.equal(completedAdultEligibility.combat_unlocked, true, 'completed Season pet plus hatched active pet passes current combat gate');
 assert.equal(buildPetMiniAppCapabilities(completedAdultEligibility).systems.arena.state, 'AVAILABLE');
 assert.notEqual((await act(db, '100005', 'arena_matchmake')).reason, 'completed_season_pet_required',
-  'completed hatched users are not blocked by the completed-season combat gate');
+  'completed hatched users are not blocked by any completed-season combat gate');
 
 seedUser(db, '100006', 'Missing Lifecycle');
 markSeasonComplete(db, '100006');
