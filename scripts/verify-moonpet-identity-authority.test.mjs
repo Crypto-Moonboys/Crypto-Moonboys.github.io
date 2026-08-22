@@ -69,7 +69,7 @@ async function assertSelectedPetIdentityScoping() {
         season_key TEXT NOT NULL
       );
       CREATE TABLE telegram_pet_season_slots (
-        pet_id TEXT PRIMARY KEY,
+        pet_id TEXT NOT NULL,
         telegram_id TEXT NOT NULL,
         season_key TEXT NOT NULL,
         slot_number INTEGER NOT NULL,
@@ -145,6 +145,7 @@ async function assertSelectedPetIdentityScoping() {
         ('pet:owner:season-a:1', 'owner', 'season-a', 1, 'free', 'active'),
         ('pet:owner:season-a:2', 'owner', 'season-a', 2, 'arcade_xp', 'active'),
         ('pet:owner:season-a:3', 'owner', 'season-a', 3, 'arcade_xp', 'active'),
+        ('pet:owner:season-a:2', 'owner', 'season-stale', 2, 'arcade_xp', 'archived'),
         ('pet:owner:season-old:1', 'owner', 'season-old', 1, 'free', 'archived');
       INSERT INTO telegram_pet_instances (pet_id, telegram_id, season_key, slot_number, status) VALUES
         ('pet:owner:season-a:1', 'owner', 'season-a', 1, 'active'),
@@ -158,8 +159,9 @@ async function assertSelectedPetIdentityScoping() {
       INSERT INTO telegram_pet_evolutions_by_pet (pet_id, telegram_id, evolution_id, stage, unlocked_at) VALUES
         ('pet:owner:season-a:1', 'owner', 'street_moonpet', 1, '2026-08-02T00:00:00Z'),
         ('pet:owner:season-a:2', 'owner', 'moon_egg', 0, '2026-08-03T00:00:00Z'),
+        ('pet:owner:season-a:2', 'owner', 'legendary_guardian', 5, '2026-08-04T00:00:00Z'),
         ('pet:owner:season-old:1', 'owner', 'cyber_moonpet', 2, '2026-07-01T00:00:00Z'),
-        ('pet:owner:season-a:2', 'intruder', 'legendary_guardian', 5, '2026-08-04T00:00:00Z');
+        ('pet:owner:season-a:2', 'intruder', 'moon_guardian', 4, '2026-08-04T00:00:00Z');
       INSERT INTO telegram_pet_personality_traits
         (pet_id, telegram_id, season_key, trait_id, progress, unlocked_at) VALUES
         ('pet:owner:season-a:1', 'owner', 'season-a', 'street_fighter', 20, '2026-08-02T01:00:00Z'),

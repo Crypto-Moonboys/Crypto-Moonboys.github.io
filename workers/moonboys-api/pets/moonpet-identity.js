@@ -433,8 +433,17 @@ function evolutionRequirementSql(definition, telegramId, petId, seasonKey) {
   const args = [telegramId, requirements.pet_level];
   if (definition.stage > 0) {
     const previous = evolutions[definition.stage - 1];
-    clauses.push(`EXISTS (SELECT 1 FROM telegram_pet_evolutions_by_pet WHERE pet_id=? AND telegram_id=? AND evolution_id=?)`);
-    args.push(petId, telegramId, previous.evolution_id);
+    clauses.push(`EXISTS (SELECT 1 FROM telegram_pet_evolutions_by_pet
+      WHERE pet_id=? AND telegram_id=? AND evolution_id=?
+        AND NOT EXISTS (SELECT 1 FROM telegram_pet_instances stale_i
+          WHERE stale_i.pet_id = telegram_pet_evolutions_by_pet.pet_id
+            AND stale_i.telegram_id = telegram_pet_evolutions_by_pet.telegram_id
+            AND stale_i.season_key <> ?)
+        AND NOT EXISTS (SELECT 1 FROM telegram_pet_season_slots stale_s
+          WHERE stale_s.pet_id = telegram_pet_evolutions_by_pet.pet_id
+            AND stale_s.telegram_id = telegram_pet_evolutions_by_pet.telegram_id
+            AND stale_s.season_key <> ?))`);
+    args.push(petId, telegramId, previous.evolution_id, seasonKey, seasonKey);
     clauses.push(`EXISTS (SELECT 1 FROM telegram_pet_season_slots s
       WHERE s.pet_id=? AND s.telegram_id=? AND s.season_key=?
         AND datetime(s.created_at, '+' || ? || ' days') <= CURRENT_TIMESTAMP)`);
@@ -518,8 +527,9 @@ export async function evolveMoonpet(db, request = {}) {
   }
   const petId = scope?.pet_id || null;
   if (!petId || !scope?.season_key) return { accepted: false, duplicate: false, reason: 'evolution_authority_unavailable' };
-  const existing = await db.prepare(`SELECT evolution_id, stage, unlocked_at FROM telegram_pet_evolutions_by_pet WHERE pet_id = ? AND evolution_id = ?`)
-    .bind(petId, evolutionId).first().catch(() => null);
+  const existing = await db.prepare(`SELECT evolution_id, stage, unlocked_at FROM telegram_pet_evolutions_by_pet
+    WHERE pet_id = ? AND telegram_id = ? AND evolution_id = ?`)
+    .bind(petId, telegramId, evolutionId).first().catch(() => null);
   if (existing) return { accepted: true, duplicate: true, reason: 'already_evolved', evolution: existing };
   const requirements = evolutionRequirementSql(definition, telegramId, petId, scope.season_key);
   const evolutionMilestone = `evolution_${evolutionId}`;
@@ -541,13 +551,13 @@ export async function evolveMoonpet(db, request = {}) {
     if (assetType === 'material') {
       statements.push(db.prepare(`UPDATE telegram_pet_material_balances SET quantity = quantity - ?, updated_at = CURRENT_TIMESTAMP
           WHERE telegram_id = ? AND material_key = ? AND quantity >= ?
-            AND EXISTS (SELECT 1 FROM telegram_pet_evolutions_by_pet WHERE pet_id = ? AND evolution_id = ? AND materials_consumed = 0)`)
-          .bind(quantity, telegramId, assetKey, quantity, petId, evolutionId));
+            AND EXISTS (SELECT 1 FROM telegram_pet_evolutions_by_pet WHERE pet_id = ? AND telegram_id = ? AND evolution_id = ? AND materials_consumed = 0)`)
+          .bind(quantity, telegramId, assetKey, quantity, petId, telegramId, evolutionId));
     } else {
       statements.push(db.prepare(`UPDATE telegram_pet_inventory SET quantity = quantity - ?, updated_at = CURRENT_TIMESTAMP
           WHERE telegram_id = ? AND asset_type = ? AND asset_key = ? AND quantity >= ?
-            AND EXISTS (SELECT 1 FROM telegram_pet_evolutions_by_pet WHERE pet_id = ? AND evolution_id = ? AND materials_consumed = 0)`)
-          .bind(quantity, telegramId, assetType, assetKey, quantity, petId, evolutionId));
+            AND EXISTS (SELECT 1 FROM telegram_pet_evolutions_by_pet WHERE pet_id = ? AND telegram_id = ? AND evolution_id = ? AND materials_consumed = 0)`)
+          .bind(quantity, telegramId, assetType, assetKey, quantity, petId, telegramId, evolutionId));
     }
   }
   statements.push(db.prepare(`INSERT INTO telegram_pet_memories (pet_id, telegram_id, season_key, milestones)
@@ -581,8 +591,9 @@ export async function evolveMoonpet(db, request = {}) {
         safeJson({ memory_type: 'milestone', evolution_id: evolutionId, pet_id: petId }), petId, telegramId, evolutionId));
   const results = await db.batch(statements);
   if (!results?.[0]?.meta?.changes) {
-    const concurrent = await db.prepare(`SELECT evolution_id, stage, unlocked_at FROM telegram_pet_evolutions_by_pet WHERE pet_id = ? AND evolution_id = ?`)
-      .bind(petId, evolutionId).first().catch(() => null);
+    const concurrent = await db.prepare(`SELECT evolution_id, stage, unlocked_at FROM telegram_pet_evolutions_by_pet
+      WHERE pet_id = ? AND telegram_id = ? AND evolution_id = ?`)
+      .bind(petId, telegramId, evolutionId).first().catch(() => null);
     if (concurrent) return { accepted: true, duplicate: true, reason: 'already_evolved', evolution: concurrent };
     return { accepted: false, duplicate: false, reason: 'requirements_not_met' };
   }
@@ -599,8 +610,12 @@ export async function getMoonpetIdentitySummary(db, telegramIdRaw, request = {})
         FROM telegram_pet_evolutions_by_pet e
         JOIN telegram_pet_instances i ON i.pet_id = e.pet_id AND i.telegram_id = e.telegram_id
         WHERE e.pet_id = ? AND e.telegram_id = ? AND i.season_key = ?
+          AND NOT EXISTS (SELECT 1 FROM telegram_pet_instances stale_i
+            WHERE stale_i.pet_id = e.pet_id AND stale_i.telegram_id = e.telegram_id AND stale_i.season_key <> ?)
+          AND NOT EXISTS (SELECT 1 FROM telegram_pet_season_slots stale_s
+            WHERE stale_s.pet_id = e.pet_id AND stale_s.telegram_id = e.telegram_id AND stale_s.season_key <> ?)
         ORDER BY e.stage DESC LIMIT 1`)
-      .bind(scope.pet_id, telegramId, scope.season_key).first().catch(() => null)
+      .bind(scope.pet_id, telegramId, scope.season_key, scope.season_key, scope.season_key).first().catch(() => null)
     : null;
   const [legacyEvolution, traits, memory, bossVictories] = await Promise.all([
     (!explicitScopeRequested && !evolution && (!scope?.pet_id || Number(scope?.slot_number || 1) <= 1 || scope?.acquisition_type === 'free'))
