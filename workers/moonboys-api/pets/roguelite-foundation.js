@@ -138,10 +138,12 @@ function getRewardAuthorization(source, telegramId, context = {}) {
   const roomId = String(context.room_id || '').trim();
   if (source === 'pet_district' || source === 'pet_event_chain') {
     const systemEventId = String(context.system_event_id || '').trim();
-    if (!systemEventId) throw new Error('invalid_pet_reward_context');
+    const petId = String(context.pet_id || '').trim();
+    const petSeasonKey = String(context.pet_season_key || '').trim();
+    if (!systemEventId || !petId || !petSeasonKey) throw new Error('invalid_pet_reward_context');
     return {
-      sql: "AND EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id = ? AND telegram_id = ? AND status IN ('settling','completed'))",
-      args: [systemEventId, telegramId],
+      sql: "AND EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id = ? AND telegram_id = ? AND pet_id = ? AND season_key = ? AND status IN ('settling','completed'))",
+      args: [systemEventId, telegramId, petId, petSeasonKey],
     };
   }
   if (source === 'pet_seasonal_boss') {

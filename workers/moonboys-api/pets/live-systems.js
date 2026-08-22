@@ -303,8 +303,9 @@ async function claimEnergySettlement(db, reservation, telegramId, energyCost, au
         SELECT energy FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=? AND season_key=?
       ), updated_at=CURRENT_TIMESTAMP
       WHERE telegram_id=? AND EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling'
-        AND json_extract(payload_json, '$.claim_token')=?)`)
-      .bind(authority.pet_id, telegramId, authority.season_key, telegramId, reservation.id, token),
+        AND json_extract(payload_json, '$.claim_token')=?)
+        AND EXISTS (SELECT 1 FROM telegram_pet_active_slots WHERE telegram_id=? AND pet_id=? AND season_key=?)`)
+      .bind(authority.pet_id, telegramId, authority.season_key, telegramId, reservation.id, token, telegramId, authority.pet_id, authority.season_key),
   ] : [
     db.prepare(`UPDATE telegram_pet_system_events
       SET status='settling', payload_json=json_set(COALESCE(payload_json, '{}'), '$.claim_token', ?, '$.energy_charged', 1,
@@ -381,7 +382,7 @@ export async function processPetDistrictMission(db, telegramId, regionKey, pet, 
   try { awarded = await awardReward({
     telegram_id: telegramId, pet_id: authority.pet_id, season_key: authority.season_key, source: 'pet_district', idempotency_key: `district:${reservation.id}`, event_key: `district:${reservation.id}`,
     event_type: 'district_mission', reason: `${region.key}:${mission.key}:${choice.key}:${succeeded ? 'clear' : 'setback'}`, rewards: adjusted.rewards,
-    touch_streak: true, context: { system_event_id: reservation.id, region_key: region.key, mission_key: mission.key, approach_key: choice.key, succeeded, boss: bossVictory ? content.boss : null, faction_bonus: adjusted.bonus },
+    touch_streak: true, context: { system_event_id: reservation.id, pet_id: authority.pet_id, pet_season_key: authority.season_key, region_key: region.key, mission_key: mission.key, approach_key: choice.key, succeeded, boss: bossVictory ? content.boss : null, faction_bonus: adjusted.bonus },
   }); } catch (error) { await releaseSettlement(db, reservation.id, claim.token); throw error; }
   if (!awarded.accepted) { await releaseSettlement(db, reservation.id, claim.token); return awarded; }
   const completionPayload = JSON.stringify({ region_key: region.key, mission_key: mission.key, approach_key: choice.key, succeeded, mastery: nextMastery, mastery_gain: masteryGain, boss: bossVictory, result_copy: resultCopy });
@@ -423,7 +424,7 @@ export async function processPetEventChain(db, telegramId, chainKey, awardReward
   for (const [key, amount] of Object.entries(selectedChoice.reward_bonus || {})) baseRewards[key] = integer(baseRewards[key]) + integer(amount);
   const reward = applyPetFactionBonus(baseRewards, factionKey, 'events');
   let awarded;
-  try { awarded = await awardReward({ telegram_id: telegramId, pet_id: authority.pet_id, season_key: authority.season_key, source: 'pet_event_chain', idempotency_key: `chain:${reservation.id}`, event_key: `chain:${reservation.id}`, event_type: 'event_chain', reason: `${chainKey}:${scene.key}:${selectedChoice.key}`, rewards: reward.rewards, touch_streak: true, context: { system_event_id: reservation.id, chain_key: chainKey, step: scene.key, choice_key: selectedChoice.key, final, faction_bonus: reward.bonus } }); }
+  try { awarded = await awardReward({ telegram_id: telegramId, pet_id: authority.pet_id, season_key: authority.season_key, source: 'pet_event_chain', idempotency_key: `chain:${reservation.id}`, event_key: `chain:${reservation.id}`, event_type: 'event_chain', reason: `${chainKey}:${scene.key}:${selectedChoice.key}`, rewards: reward.rewards, touch_streak: true, context: { system_event_id: reservation.id, pet_id: authority.pet_id, pet_season_key: authority.season_key, chain_key: chainKey, step: scene.key, choice_key: selectedChoice.key, final, faction_bonus: reward.bonus } }); }
   catch (error) { await releaseSettlement(db, reservation.id, claim.token); throw error; }
   if (!awarded.accepted) { await releaseSettlement(db, reservation.id, claim.token); return awarded; }
   const resultCopy = selectedChoice.result_copy || `${selectedChoice.label} advances ${chain.title || words(chainKey)}.`;

@@ -92,12 +92,12 @@ export const MOONPET_LIVE_SYSTEM_OWNERSHIP_CLASSIFICATION = Object.freeze([
   {
     system_key: 'kaiju',
     status: 'live',
-    authority_owner: 'mixed',
-    required_authority_keys: ['telegram_id', 'pet_id', 'season_key', 'match_id'],
+    authority_owner: 'account',
+    required_authority_keys: ['telegram_id', 'match_id', 'day_key'],
     write_tables: ['telegram_pet_kaiju_matches', 'telegram_pet_reward_claims', 'telegram_pet_events'],
-    read_tables: ['telegram_pet_kaiju_matches', 'telegram_pet_instances', 'telegram_pet_specialist_progression'],
-    risk_notes: 'Kaiju is current-game combat and must use participant columns for pending work.',
-    expected_ownership_rule: 'Kaiju rewards and evidence use the match pet authority.',
+    read_tables: ['telegram_pet_kaiju_matches', 'telegram_pet_profiles', 'telegram_pet_specialist_progression'],
+    risk_notes: 'Runtime reward settlement is still account-scoped; do not claim pet authority until a Kaiju migration exists.',
+    expected_ownership_rule: 'Kaiju match state and rewards are account-scoped in the current runtime; pet runtime side-effects are best-effort only.',
   },
   {
     system_key: 'district_story_missions',

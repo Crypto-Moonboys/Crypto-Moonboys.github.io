@@ -85,6 +85,9 @@ for (const row of MOONPET_LIVE_SYSTEM_OWNERSHIP_CLASSIFICATION.filter((entry) =>
   assert.ok(row.required_authority_keys.includes('pet_id'), `${row.system_key} must declare pet_id authority`);
   assert.ok(row.required_authority_keys.includes('season_key'), `${row.system_key} must declare season_key authority`);
 }
+const kaijuClassification = MOONPET_LIVE_SYSTEM_OWNERSHIP_CLASSIFICATION.find((row) => row.system_key === 'kaiju');
+assert.equal(kaijuClassification.authority_owner, 'account',
+  'Kaiju classification must match the current account-scoped reward settlement runtime until a pet-authority migration exists');
 
 for (const action of ['district_mission', 'event_chain', 'seasonal_boss', 'gear_upgrade', 'craft', 'cosmetic_unlock', 'prestige']) {
   assert.match(workerSource, new RegExp(`action === '${action}'`), `${action} needs a server action`);
@@ -103,10 +106,14 @@ assert.match(normalizeSourceWhitespace(liveSystemsSource), /INSERT OR IGNORE INT
   'live progression lazy creation must initialize empty rows instead of copying legacy account progress');
 assert.match(normalizeSourceWhitespace(liveSystemsSource), /UPDATE telegram_pet_instances SET energy=energy-\?/,
   'pet action Energy settlement must debit the authoritative pet instance');
+assert.match(normalizeSourceWhitespace(liveSystemsSource), /telegram_pet_active_slots WHERE telegram_id=\? AND pet_id=\? AND season_key=\?/,
+  'profile Energy mirror must only update when the charged pet remains active');
 assert.match(normalizeSourceWhitespace(liveSystemsSource), /if \(reservation\.status === 'completed'\) return \{ state: 'completed', token: null \};/,
   'Energy settlement completed reservations must keep the structured object return contract');
 assert.match(normalizeSourceWhitespace(liveSystemsSource), /UPDATE telegram_pet_live_progression_state SET prestige_count=prestige_count\+1/,
   'prestige settlement must write the live progression authority table');
+assert.match(normalizeSourceWhitespace(rewardSource), /telegram_pet_system_events WHERE id = \? AND telegram_id = \? AND pet_id = \? AND season_key = \?/,
+  'district and event-chain reward authorization must match the stored pet-scoped system event tuple');
 assert.match(normalizeSourceWhitespace(rewardSource), /if \(\(petId && !petSeasonKey\) \|\| \(!petId && petSeasonKey\)\) throw new Error\('invalid_pet_reward_context'\)/,
   'seasonal boss reward authorization must fail closed for partial pet authority tuples');
 assert.match(normalizeSourceWhitespace(rewardSource), /pet_id = '' AND telegram_id = \? AND pet_season_key = '' AND season_key = \? AND boss_key = \?/,
@@ -387,6 +394,78 @@ assert.equal(runtimeDb.prepare("SELECT COUNT(*) AS count FROM telegram_pet_live_
   'Pet A owns district mastery progress');
 assert.equal(runtimeDb.prepare("SELECT COUNT(*) AS count FROM telegram_pet_live_progression_state WHERE pet_id=?").get(switchPetB.pet_id).count, 0,
   'Pet B in another season does not inherit Pet A live progression state');
+
+seedPlayer('reward-authority');
+const rewardPetA = livePet('reward-authority');
+const rewardPetB = { ...livePet('reward-authority'), pet_id: 'pet:reward-authority:pet-s2026-003:2', slot_number: 2 };
+runtimeDb.prepare(`INSERT INTO telegram_pet_season_slots
+  (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status)
+  VALUES (?, 'reward-authority', 'pet-s2026-003', 2, 'free', 'reward-authority-fixture', 0, 'active')`).run(rewardPetB.pet_id);
+runtimeDb.prepare(`INSERT INTO telegram_pet_instances
+  (pet_id, telegram_id, season_key, slot_number, pet_xp, level, energy, source_profile_updated_at, status)
+  VALUES (?, 'reward-authority', 'pet-s2026-003', 2, 0, 1, 100, 'reward-authority-fixture', 'active')`).run(rewardPetB.pet_id);
+runtimeDb.prepare(`INSERT INTO telegram_pet_system_events
+  (id, pet_id, telegram_id, season_key, system_key, action_key, period_key, status, payload_json)
+  VALUES ('reward-district-a', ?, 'reward-authority', ?, 'district', 'moon_alley', '2026-08-18', 'settling', '{}')`)
+  .run(rewardPetA.pet_id, rewardPetA.season_key);
+const districtPetBClaim = await awardPetReward(d1, {
+  telegram_id: 'reward-authority',
+  pet_id: rewardPetB.pet_id,
+  season_key: rewardPetB.season_key,
+  source: 'pet_district',
+  idempotency_key: 'reward-district-b',
+  event_key: 'reward-district-b',
+  rewards: { pet_xp: 1 },
+  context: { system_event_id: 'reward-district-a', pet_id: rewardPetB.pet_id, pet_season_key: rewardPetB.season_key },
+});
+assert.equal(districtPetBClaim.reason, 'reward_not_authorized', 'Pet B cannot claim Pet A district reward reservation');
+runtimeDb.prepare(`INSERT INTO telegram_pet_system_events
+  (id, pet_id, telegram_id, season_key, system_key, action_key, period_key, status, payload_json)
+  VALUES ('reward-chain-a', ?, 'reward-authority', ?, 'event_chain', 'lost_delivery_drone', '2026-08-18', 'settling', '{}')`)
+  .run(rewardPetA.pet_id, rewardPetA.season_key);
+const chainPetBClaim = await awardPetReward(d1, {
+  telegram_id: 'reward-authority',
+  pet_id: rewardPetB.pet_id,
+  season_key: rewardPetB.season_key,
+  source: 'pet_event_chain',
+  idempotency_key: 'reward-chain-b',
+  event_key: 'reward-chain-b',
+  rewards: { pet_xp: 1 },
+  context: { system_event_id: 'reward-chain-a', pet_id: rewardPetB.pet_id, pet_season_key: rewardPetB.season_key },
+});
+assert.equal(chainPetBClaim.reason, 'reward_not_authorized', 'Pet B cannot claim Pet A event-chain reward reservation');
+await assert.rejects(() => awardPetReward(d1, {
+  telegram_id: 'reward-authority',
+  pet_id: rewardPetA.pet_id,
+  season_key: rewardPetA.season_key,
+  source: 'pet_district',
+  idempotency_key: 'reward-district-missing-authority',
+  event_key: 'reward-district-missing-authority',
+  rewards: { pet_xp: 1 },
+  context: { system_event_id: 'reward-district-a' },
+}), /invalid_pet_reward_context/, 'missing pet reward authority must fail closed for district rewards');
+
+seedPlayer('energy-mirror-switch');
+const energyPetA = livePet('energy-mirror-switch');
+const energyPetB = { ...livePet('energy-mirror-switch'), pet_id: 'pet:energy-mirror-switch:pet-s2026-003:2', slot_number: 2, energy: 77 };
+runtimeDb.prepare(`INSERT INTO telegram_pet_season_slots
+  (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status)
+  VALUES (?, 'energy-mirror-switch', 'pet-s2026-003', 2, 'free', 'energy-mirror-fixture', 0, 'active')`).run(energyPetB.pet_id);
+runtimeDb.prepare(`INSERT INTO telegram_pet_instances
+  (pet_id, telegram_id, season_key, slot_number, pet_xp, level, energy, source_profile_updated_at, status)
+  VALUES (?, 'energy-mirror-switch', 'pet-s2026-003', 2, 0, 1, 77, 'energy-mirror-fixture', 'active')`).run(energyPetB.pet_id);
+const energyMirrorRuntime = runtimeDb.prepare("SELECT * FROM telegram_pet_progression_state WHERE telegram_id='energy-mirror-switch'").get();
+d1.afterReservation = () => {
+  d1.afterReservation = null;
+  runtimeDb.prepare("UPDATE telegram_pet_active_slots SET pet_id=?, season_key=? WHERE telegram_id='energy-mirror-switch'").run(energyPetB.pet_id, energyPetB.season_key);
+  runtimeDb.prepare("UPDATE telegram_pet_profiles SET energy=77 WHERE telegram_id='energy-mirror-switch'").run();
+};
+const switchedEnergyDistrict = await processPetDistrictMission(d1, 'energy-mirror-switch', 'moon_alley', energyPetA, energyMirrorRuntime, reward, null, 'tactical');
+assert.equal(switchedEnergyDistrict.accepted, true, 'Pet A district can complete after active pet switches');
+assert.equal(runtimeDb.prepare("SELECT energy FROM telegram_pet_instances WHERE pet_id=? AND telegram_id='energy-mirror-switch' AND season_key=?").get(energyPetA.pet_id, energyPetA.season_key).energy, 90,
+  'Pet A instance pays district Energy exactly once');
+assert.equal(runtimeDb.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id='energy-mirror-switch'").get().energy, 77,
+  'Pet A settlement must not mirror stale Energy into Pet B active profile');
 
 seedPlayer('live-migration');
 const migratedPetA = livePet('live-migration');
