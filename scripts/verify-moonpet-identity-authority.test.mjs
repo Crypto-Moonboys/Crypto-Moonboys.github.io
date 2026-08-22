@@ -7,9 +7,11 @@ import { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
 import {
   auditIdentityAuthorityDb,
+  auditMoonpetOwnershipBoundariesDb,
   auditRuntimeIdentityQueries,
   IDENTITY_AUTHORITY_TABLES,
 } from './verify-moonpet-identity-authority.mjs';
+import { MOONPET_LIVE_SYSTEM_OWNERSHIP_CLASSIFICATION } from '../workers/moonboys-api/pets/live-system-ownership-classification.js';
 import { getMoonpetIdentitySummary } from '../workers/moonboys-api/pets/moonpet-identity.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -338,6 +340,147 @@ try {
   mismatchDb.close();
 }
 
+const staleAuthorityDb = new DatabaseSync(':memory:');
+try {
+  staleAuthorityDb.exec(`
+    CREATE TABLE telegram_pet_active_slots (telegram_id TEXT PRIMARY KEY, pet_id TEXT NOT NULL, season_key TEXT NOT NULL);
+    CREATE TABLE telegram_pet_season_slots (pet_id TEXT, telegram_id TEXT, season_key TEXT, slot_number INTEGER);
+    CREATE TABLE telegram_pet_instances (pet_id TEXT, telegram_id TEXT, season_key TEXT, slot_number INTEGER);
+    CREATE TABLE telegram_pet_specialist_progression (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key) VALUES ('owner', 'pet:missing', 'season-a');
+    INSERT INTO telegram_pet_specialist_progression (pet_id, telegram_id, season_key) VALUES
+      ('pet:missing', 'owner', 'season-a'),
+      ('', 'owner', 'season-a'),
+      (NULL, 'owner', 'season-a'),
+      ('pet:no-season', 'owner', ''),
+      ('pet:null-season', 'owner', NULL);
+  `);
+  const ownershipViolations = auditMoonpetOwnershipBoundariesDb(staleAuthorityDb);
+  assert.ok(ownershipViolations.some((row) => row.reason === 'stale_active_slot_authority_link'),
+    'ownership audit reports stale active-slot authority links');
+  assert.ok(ownershipViolations.some((row) =>
+    row.table_name === 'telegram_pet_specialist_progression'
+      && row.reason === 'pet_id_missing'
+      && row.pet_id === ''),
+  'ownership audit reports empty pet_id in pet-owned progression ledgers');
+  assert.ok(ownershipViolations.some((row) =>
+    row.table_name === 'telegram_pet_specialist_progression'
+      && row.reason === 'pet_id_missing'
+      && row.pet_id == null),
+  'ownership audit reports NULL pet_id in pet-owned progression ledgers');
+  assert.ok(ownershipViolations.some((row) =>
+    row.table_name === 'telegram_pet_specialist_progression'
+      && row.reason === 'season_key_missing'
+      && row.season_key === ''),
+  'ownership audit reports empty season_key in pet-owned progression ledgers');
+  assert.ok(ownershipViolations.some((row) =>
+    row.table_name === 'telegram_pet_specialist_progression'
+      && row.reason === 'season_key_missing'
+      && row.season_key == null),
+  'ownership audit reports NULL season_key in pet-owned progression ledgers');
+  assert.ok(ownershipViolations.some((row) => row.table_name === 'telegram_pet_specialist_progression' && row.reason === 'invalid_pet_authority_reference'),
+    'ownership audit reports invalid pet ownership references in pet-owned progression ledgers');
+  assert.ok(!ownershipViolations.some((row) => row.reason === 'account_system_writes_pet_owned_table' || row.reason === 'pet_system_writes_account_owned_table'),
+    'live ownership classification must not drift account-owned and pet-owned table boundaries');
+  assert.ok(!ownershipViolations.some((row) => row.reason === 'pet_owned_table_missing_classification' || row.reason === 'account_owned_table_missing_classification'),
+    'live ownership classification must cover every owned table boundary');
+  assert.ok(!ownershipViolations.some((row) => row.reason === 'ownership_classification_missing' || row.reason === 'ownership_classification_ambiguous'),
+    'live ownership classification must resolve every telegram_pet table to exactly one ownership class');
+} finally {
+  staleAuthorityDb.close();
+}
+
+const systemEventsOwnershipDb = new DatabaseSync(':memory:');
+try {
+  systemEventsOwnershipDb.exec(`
+    CREATE TABLE telegram_pet_season_slots (pet_id TEXT, telegram_id TEXT, season_key TEXT, slot_number INTEGER);
+    CREATE TABLE telegram_pet_instances (pet_id TEXT, telegram_id TEXT, season_key TEXT, slot_number INTEGER);
+    CREATE TABLE telegram_pet_system_events (
+      id TEXT PRIMARY KEY,
+      pet_id TEXT,
+      telegram_id TEXT,
+      season_key TEXT,
+      system_key TEXT
+    );
+    INSERT INTO telegram_pet_system_events (id, pet_id, telegram_id, season_key, system_key) VALUES
+      ('account-row', '', 'owner', '', 'kaiju'),
+      ('pet-row-missing-pet', '', 'owner', 'season-a', 'district'),
+      ('pet-row-null-pet', NULL, 'owner', 'season-a', 'event_chain'),
+      ('pet-row-missing-season', 'pet:district', 'owner', '', 'district'),
+      ('pet-row-null-season', 'pet:seasonal', 'owner', NULL, 'seasonal_boss');
+  `);
+  const systemEventViolations = auditMoonpetOwnershipBoundariesDb(systemEventsOwnershipDb);
+  assert.ok(systemEventViolations.some((row) =>
+    row.table_name === 'telegram_pet_system_events'
+      && row.reason === 'invalid_pet_authority_reference'
+      && row.pet_id === ''
+      && row.season_key === 'season-a'),
+  'ownership audit flags empty pet_id as an invalid authority reference for pet-owned system event rows');
+  assert.ok(systemEventViolations.some((row) =>
+    row.table_name === 'telegram_pet_system_events'
+      && row.reason === 'season_key_missing'
+      && row.season_key === ''),
+  'ownership audit flags empty season_key for pet-owned system event rows');
+  assert.ok(systemEventViolations.some((row) =>
+    row.table_name === 'telegram_pet_system_events'
+      && row.reason === 'season_key_missing'
+      && row.season_key == null),
+  'ownership audit flags NULL season_key for pet-owned system event rows');
+  assert.ok(!systemEventViolations.some((row) => row.table_name === 'telegram_pet_system_events' && row.row_key === ':owner:' && row.reason === 'pet_id_missing'),
+    'ownership audit does not treat account-owned system event rows as pet-owned corruption');
+} finally {
+  systemEventsOwnershipDb.close();
+}
+
+const identityClassificationRow = MOONPET_LIVE_SYSTEM_OWNERSHIP_CLASSIFICATION
+  .find((row) => row.system_key === 'achievements_identity_memories_personality');
+assert.ok(identityClassificationRow, 'identity ownership classification row must exist');
+const originalWriteTables = [...identityClassificationRow.write_tables];
+try {
+  identityClassificationRow.write_tables = identityClassificationRow.write_tables
+    .filter((table) => table !== 'telegram_pet_memories');
+  const coverageDb = new DatabaseSync(':memory:');
+  let coverageViolations;
+  try {
+    coverageViolations = auditMoonpetOwnershipBoundariesDb(coverageDb);
+  } finally {
+    coverageDb.close();
+  }
+  assert.ok(coverageViolations.some((row) => row.reason === 'pet_owned_table_missing_classification' && row.row_key === 'telegram_pet_memories'),
+    'ownership audit fails when a pet-owned table is removed from live ownership classification');
+} finally {
+  identityClassificationRow.write_tables = originalWriteTables;
+}
+
+const missingClassificationDb = new DatabaseSync(':memory:');
+try {
+  missingClassificationDb.exec(`
+    CREATE TABLE telegram_pet_new_feature_state (id TEXT PRIMARY KEY);
+  `);
+  const missingClassificationViolations = auditMoonpetOwnershipBoundariesDb(missingClassificationDb);
+  assert.ok(missingClassificationViolations.some((row) =>
+    row.reason === 'ownership_classification_missing' && row.row_key === 'telegram_pet_new_feature_state'),
+  'ownership audit fails when a new telegram_pet table has no declared ownership classification');
+} finally {
+  missingClassificationDb.close();
+}
+
+const defaultCliResult = spawnSync(process.execPath, ['scripts/verify-moonpet-identity-authority.mjs'], {
+  cwd: repoRoot,
+  encoding: 'utf8',
+});
+assert.equal(defaultCliResult.status, 0, 'default CLI audit fixture must execute complete ownership audit surface');
+assert.match(defaultCliResult.stdout, /STATUS: PASS/);
+assert.match(defaultCliResult.stdout, /telegram_pet_specialist_progression:\s*\d+/);
+assert.match(defaultCliResult.stdout, /telegram_pet_daily_journey_objectives:\s*\d+/);
+assert.match(defaultCliResult.stdout, /telegram_pet_daily_runs:\s*\d+/);
+assert.match(defaultCliResult.stdout, /telegram_pet_live_progression_state:\s*\d+/);
+assert.match(defaultCliResult.stdout, /audited tables:\s*\d+/);
+assert.match(defaultCliResult.stdout, /violations:\s*0/);
+assert.match(defaultCliResult.stdout, /AUDIT TABLES CHECKED:\s*\d+/);
+assert.match(defaultCliResult.stdout, /OWNERSHIP CHECKS RUN:\s*\d+/);
+assert.match(defaultCliResult.stdout, /VIOLATIONS:\s*0/);
+
 const cliResult = spawnSync(process.execPath, ['scripts/verify-moonpet-identity-authority.mjs', '--sqlite'], {
   cwd: repoRoot,
   encoding: 'utf8',
@@ -357,6 +500,22 @@ try {
     CREATE TABLE telegram_pet_identity_events (event_id TEXT, pet_id TEXT, telegram_id TEXT, season_key TEXT);
     CREATE TABLE telegram_pet_identity_analytics (analytics_id TEXT, pet_id TEXT, telegram_id TEXT, season_key TEXT);
     CREATE TABLE telegram_pet_achievements (pet_id TEXT, telegram_id TEXT, season_key TEXT, achievement_id TEXT);
+    CREATE TABLE telegram_pet_specialist_progression (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_specialist_events (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_daily_journey_objectives (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_daily_journey_receipts (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_growth_marks (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_weekly_journey_objectives (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_weekly_journey_receipts (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_weekly_crests (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_daily_runs (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_runs (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_run_analytics (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_live_progression_state (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_system_events (pet_id TEXT, telegram_id TEXT, season_key TEXT, system_key TEXT);
+    CREATE TABLE telegram_pet_event_chain_progress (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_weekly_boss_progress (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_seasonal_boss_progress (pet_id TEXT, telegram_id TEXT, pet_season_key TEXT);
     CREATE VIEW moonpet_invalid_identity_authority_rows AS
       SELECT 'telegram_pet_memories' AS table_name, NULL AS pet_id, NULL AS telegram_id, NULL AS season_key, NULL AS row_key, 'empty' AS reason WHERE 1 = 0;
   `);
@@ -372,6 +531,111 @@ try {
   assert.match(`${externalCliResult.stderr}\n${externalCliResult.stdout}`, /missing identity authority index/);
 } finally {
   fs.rmSync(externalDbPath, { force: true });
+}
+
+const incompleteOwnershipSurfaceDbPath = path.join(os.tmpdir(), `moonpet-authority-incomplete-${process.pid}.sqlite`);
+const incompleteOwnershipSurfaceDb = new DatabaseSync(incompleteOwnershipSurfaceDbPath);
+try {
+  incompleteOwnershipSurfaceDb.exec(`
+    CREATE TABLE telegram_pet_season_slots (pet_id TEXT, telegram_id TEXT, season_key TEXT, slot_number INTEGER);
+    CREATE TABLE telegram_pet_instances (pet_id TEXT, telegram_id TEXT, season_key TEXT, slot_number INTEGER);
+    CREATE TABLE telegram_pet_memories (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_personality_traits (pet_id TEXT, telegram_id TEXT, season_key TEXT, trait_id TEXT);
+    CREATE TABLE telegram_pet_boss_victories (pet_id TEXT, telegram_id TEXT, season_key TEXT, boss_id TEXT);
+    CREATE TABLE telegram_pet_identity_events (event_id TEXT, pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_identity_analytics (analytics_id TEXT, pet_id TEXT, telegram_id TEXT, season_key TEXT, created_at TEXT);
+    CREATE TABLE telegram_pet_achievements (pet_id TEXT, telegram_id TEXT, season_key TEXT, achievement_id TEXT);
+    CREATE VIEW moonpet_invalid_identity_authority_rows AS
+      SELECT 'telegram_pet_memories' AS table_name, NULL AS pet_id, NULL AS telegram_id, NULL AS season_key, NULL AS row_key, 'empty' AS reason WHERE 1 = 0;
+  `);
+} finally {
+  incompleteOwnershipSurfaceDb.close();
+}
+const incompleteOwnershipSurfaceCli = spawnSync(
+  process.execPath,
+  ['scripts/verify-moonpet-identity-authority.mjs', '--sqlite', incompleteOwnershipSurfaceDbPath],
+  {
+    cwd: repoRoot,
+    encoding: 'utf8',
+  },
+);
+try {
+  assert.notEqual(incompleteOwnershipSurfaceCli.status, 0, '--sqlite must fail closed when ownership audit tables are missing');
+  assert.match(`${incompleteOwnershipSurfaceCli.stderr}\n${incompleteOwnershipSurfaceCli.stdout}`, /missing ownership audit table/);
+} finally {
+  fs.rmSync(incompleteOwnershipSurfaceDbPath, { force: true });
+}
+
+const badAuthorityDbPath = path.join(os.tmpdir(), `moonpet-authority-bad-row-${process.pid}.sqlite`);
+const badAuthorityDb = new DatabaseSync(badAuthorityDbPath);
+try {
+  badAuthorityDb.exec(`
+    CREATE TABLE telegram_pet_season_slots (pet_id TEXT, telegram_id TEXT, season_key TEXT, slot_number INTEGER);
+    CREATE TABLE telegram_pet_instances (pet_id TEXT, telegram_id TEXT, season_key TEXT, slot_number INTEGER);
+    CREATE TABLE telegram_pet_memories (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_personality_traits (pet_id TEXT, telegram_id TEXT, season_key TEXT, trait_id TEXT);
+    CREATE TABLE telegram_pet_boss_victories (pet_id TEXT, telegram_id TEXT, season_key TEXT, boss_id TEXT);
+    CREATE TABLE telegram_pet_identity_events (event_id TEXT, pet_id TEXT, telegram_id TEXT, season_key TEXT, event_key TEXT, event_kind TEXT, created_at TEXT);
+    CREATE TABLE telegram_pet_identity_analytics (analytics_id TEXT, pet_id TEXT, telegram_id TEXT, season_key TEXT, event_type TEXT, created_at TEXT);
+    CREATE TABLE telegram_pet_achievements (pet_id TEXT, telegram_id TEXT, season_key TEXT, achievement_id TEXT);
+    CREATE TABLE telegram_pet_specialist_progression (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_specialist_events (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_daily_journey_objectives (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_daily_journey_receipts (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_growth_marks (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_weekly_journey_objectives (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_weekly_journey_receipts (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_weekly_crests (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_daily_runs (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_runs (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_run_analytics (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_live_progression_state (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_system_events (pet_id TEXT, telegram_id TEXT, season_key TEXT, system_key TEXT);
+    CREATE TABLE telegram_pet_event_chain_progress (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_weekly_boss_progress (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_seasonal_boss_progress (pet_id TEXT, telegram_id TEXT, pet_season_key TEXT);
+    CREATE INDEX idx_telegram_pet_identity_events_owner
+      ON telegram_pet_identity_events(pet_id, telegram_id, season_key, created_at);
+    CREATE INDEX idx_telegram_pet_identity_events_pet_kind_day
+      ON telegram_pet_identity_events(pet_id, event_kind, created_at);
+    CREATE INDEX idx_telegram_pet_achievements_owner
+      ON telegram_pet_achievements(pet_id, telegram_id, season_key, achievement_id);
+    CREATE INDEX idx_telegram_pet_identity_analytics_owner
+      ON telegram_pet_identity_analytics(pet_id, telegram_id, season_key, created_at);
+    CREATE VIEW moonpet_invalid_identity_authority_rows AS
+      SELECT 'telegram_pet_memories' AS table_name, NULL AS pet_id, NULL AS telegram_id, NULL AS season_key, NULL AS row_key, 'empty' AS reason WHERE 1 = 0;
+    INSERT INTO telegram_pet_specialist_progression (pet_id, telegram_id, season_key) VALUES
+      (NULL, 'owner', 'season-a'),
+      ('', 'owner', 'season-a'),
+      ('pet:missing-season-null', 'owner', NULL),
+      ('pet:missing-season-empty', 'owner', '');
+    INSERT INTO telegram_pet_system_events (pet_id, telegram_id, season_key, system_key) VALUES
+      ('', 'owner', 'season-a', 'district'),
+      ('pet:orphan-district', 'owner', 'season-a', 'district');
+    INSERT INTO telegram_pet_event_chain_progress (pet_id, telegram_id, season_key) VALUES
+      ('pet:event-chain-missing-season', 'owner', NULL);
+  `);
+} finally {
+  badAuthorityDb.close();
+}
+const badAuthorityCli = spawnSync(
+  process.execPath,
+  ['scripts/verify-moonpet-identity-authority.mjs', '--sqlite', badAuthorityDbPath],
+  {
+    cwd: repoRoot,
+    encoding: 'utf8',
+  },
+);
+try {
+  assert.notEqual(badAuthorityCli.status, 0, 'bad ownership authority rows must force STATUS: FAIL');
+  assert.match(badAuthorityCli.stdout, /STATUS: FAIL/);
+  assert.match(`${badAuthorityCli.stderr}\n${badAuthorityCli.stdout}`, /"table_name":\s*"telegram_pet_specialist_progression"[\s\S]*"reason":\s*"pet_id_missing"/);
+  assert.match(`${badAuthorityCli.stderr}\n${badAuthorityCli.stdout}`, /"table_name":\s*"telegram_pet_system_events"[\s\S]*"reason":\s*"invalid_pet_authority_reference"/);
+  assert.match(`${badAuthorityCli.stderr}\n${badAuthorityCli.stdout}`, /"table_name":\s*"telegram_pet_event_chain_progress"[\s\S]*"reason":\s*"season_key_missing"/);
+  assert.match(`${badAuthorityCli.stderr}\n${badAuthorityCli.stdout}`, /"reason":\s*"pet_id_missing"/);
+  assert.match(`${badAuthorityCli.stderr}\n${badAuthorityCli.stdout}`, /"reason":\s*"season_key_missing"/);
+} finally {
+  fs.rmSync(badAuthorityDbPath, { force: true });
 }
 
 assert.deepEqual(IDENTITY_AUTHORITY_TABLES, [

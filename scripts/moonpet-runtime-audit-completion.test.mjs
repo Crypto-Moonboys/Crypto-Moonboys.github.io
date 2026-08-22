@@ -8,9 +8,14 @@ const seasonAuthority = read('workers/moonboys-api/pets/season-authority.js');
 const dailyMoonRun = read('workers/moonboys-api/pets/daily-moon-run.js');
 const weeklyJourney = read('workers/moonboys-api/pets/weekly-journey.js');
 const rogueliteFoundation = read('workers/moonboys-api/pets/roguelite-foundation.js');
+const runtimePhase5a = read('workers/moonboys-api/pets/runtime-phase-5a.js');
+const liveSystems = read('workers/moonboys-api/pets/live-systems.js');
+const specialistMigration = read('workers/moonboys-api/migrations/073_moonpet_per_pet_specialist_progression.sql');
 const breedingAuthority = read('workers/moonboys-api/pets/breeding-authority.js');
 const sanctuary = read('workers/moonboys-api/pets/sanctuary.js');
 const worker = read('workers/moonboys-api/worker.js');
+const rewardAuthorityRegression = read('scripts/moonpet-reward-pet-id-authority.test.mjs');
+const identityIsolationRegression = read('scripts/telegram-pets-identity-expansion.test.mjs');
 
 assert.match(seasonCompletion, /required_growth_marks:\s*60/, 'Season completion must keep the 60 Growth Mark target.');
 assert.match(seasonCompletion, /required_weekly_crests:\s*10/, 'Season completion must keep the 10 Weekly Crest target.');
@@ -61,6 +66,30 @@ assert.match(rogueliteFoundation, /style_tokens:\s*Math\.min\(rewards\.style_tok
   'Roguelite Style rewards must be clamped in the settlement path.');
 assert.match(rogueliteFoundation, /requestedPetId && \(existingPetId !== petId \|\| existingSeasonKey !== seasonKey\)/,
   'Existing runs must reject stale pet or season authority reuse.');
+assert.match(specialistMigration, /PRIMARY KEY \(pet_id, telegram_id, season_key\)/,
+  'Specialist progression must remain isolated to the pet ownership tuple.');
+assert.match(specialistMigration, /UNIQUE \(pet_id, telegram_id, season_key, event_key\)/,
+  'Specialist progression events must stay idempotent per pet ownership tuple.');
+assert.match(runtimePhase5a, /SELECT \* FROM telegram_pet_specialist_progression WHERE pet_id = \? AND telegram_id = \? AND season_key = \?/,
+  'Specialist progression reads must stay scoped to the selected pet ownership tuple.');
+assert.match(rewardAuthorityRegression, /switching active pets cannot redirect Pet XP or hide the account-owned wallet/,
+  'Live reward ownership must remain pinned to the source pet after active-pet switches.');
+assert.match(identityIsolationRegression, /Pet A receives personality authority after active pet switch/,
+  'Identity/personality ownership must remain on the source pet after active-pet switches.');
+assert.match(identityIsolationRegression, /Pet A receives achievement authority after active pet switch/,
+  'Achievement ownership must remain on the source pet after active-pet switches.');
+assert.match(identityIsolationRegression, /Pet A receives boss victory authority after active pet switch/,
+  'Boss history ownership must remain on the source pet after active-pet switches.');
+assert.match(rogueliteFoundation, /source === 'pet_district' \|\| source === 'pet_event_chain'/,
+  'District and event-chain rewards must keep explicit pet-owned source checks.');
+assert.match(rogueliteFoundation, /telegram_pet_system_events WHERE id = \? AND telegram_id = \? AND pet_id = \? AND season_key = \?/,
+  'District and event-chain rewards must verify the stored pet ownership tuple.');
+assert.match(rogueliteFoundation, /source === 'pet_seasonal_boss'/,
+  'Seasonal boss reward settlement must keep explicit pet-owned source checks.');
+assert.match(rogueliteFoundation, /telegram_pet_seasonal_boss_progress WHERE pet_id = \? AND telegram_id = \? AND pet_season_key = \? AND season_key = \? AND boss_key = \? AND defeated_at IS NOT NULL/,
+  'Seasonal boss rewards must verify pet/owner/season authority on boss progress rows.');
+assert.match(liveSystems, /INSERT OR IGNORE INTO telegram_pet_system_events[\s\S]*authority\.pet_id, telegramId, authority\.season_key/,
+  'Live-system event reservations must persist pet-owned authority tuples.');
 
 assert.match(breedingAuthority, /JOIN telegram_pet_season_completions c[\s\S]*WHERE i\.pet_id=\? AND i\.telegram_id=\? AND i\.season_key=\?/,
   'Future parent systems must remain locked behind completed pets in the same season.');

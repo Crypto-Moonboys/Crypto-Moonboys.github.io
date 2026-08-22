@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { DatabaseSync } from 'node:sqlite';
+import { MOONPET_LIVE_SYSTEM_OWNERSHIP_CLASSIFICATION } from '../workers/moonboys-api/pets/live-system-ownership-classification.js';
 
 export const IDENTITY_AUTHORITY_TABLES = [
   'telegram_pet_memories',
@@ -16,6 +17,59 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '..');
 const workerRoot = path.join(repoRoot, 'workers', 'moonboys-api');
 const migrationsRoot = path.join(workerRoot, 'migrations');
+const PET_OWNED_TABLES = new Set([
+  'telegram_pet_memories',
+  'telegram_pet_personality_traits',
+  'telegram_pet_boss_victories',
+  'telegram_pet_identity_events',
+  'telegram_pet_identity_analytics',
+  'telegram_pet_achievements',
+  'telegram_pet_specialist_progression',
+  'telegram_pet_specialist_events',
+  'telegram_pet_daily_journey_objectives',
+  'telegram_pet_daily_journey_receipts',
+  'telegram_pet_growth_marks',
+  'telegram_pet_weekly_journey_objectives',
+  'telegram_pet_weekly_journey_receipts',
+  'telegram_pet_weekly_crests',
+  'telegram_pet_daily_runs',
+  'telegram_pet_runs',
+  'telegram_pet_run_analytics',
+  'telegram_pet_live_progression_state',
+  'telegram_pet_weekly_boss_progress',
+  'telegram_pet_event_chain_progress',
+  'telegram_pet_seasonal_boss_progress',
+]);
+const ACCOUNT_OWNED_TABLES = new Set([
+  'telegram_pet_profiles',
+  'telegram_pet_material_balances',
+  'telegram_pet_inventory',
+  'telegram_pet_cosmetic_unlocks',
+  'telegram_pet_equipment_progression',
+  'telegram_pet_equipment_events',
+]);
+const OWNERSHIP_AUDIT_TUPLE_TABLE_SPECS = [
+  { table: 'telegram_pet_specialist_progression', seasonColumn: 'season_key' },
+  { table: 'telegram_pet_specialist_events', seasonColumn: 'season_key' },
+  { table: 'telegram_pet_daily_journey_objectives', seasonColumn: 'season_key' },
+  { table: 'telegram_pet_daily_journey_receipts', seasonColumn: 'season_key' },
+  { table: 'telegram_pet_growth_marks', seasonColumn: 'season_key' },
+  { table: 'telegram_pet_weekly_journey_objectives', seasonColumn: 'season_key' },
+  { table: 'telegram_pet_weekly_journey_receipts', seasonColumn: 'season_key' },
+  { table: 'telegram_pet_weekly_crests', seasonColumn: 'season_key' },
+  { table: 'telegram_pet_daily_runs', seasonColumn: 'season_key' },
+  { table: 'telegram_pet_runs', seasonColumn: 'season_key' },
+  { table: 'telegram_pet_run_analytics', seasonColumn: 'season_key' },
+  { table: 'telegram_pet_live_progression_state', seasonColumn: 'season_key' },
+  {
+    table: 'telegram_pet_system_events',
+    seasonColumn: 'season_key',
+    petOwnedRowFilter: "t.system_key IN ('district', 'event_chain', 'seasonal_boss')",
+  },
+  { table: 'telegram_pet_event_chain_progress', seasonColumn: 'season_key' },
+  { table: 'telegram_pet_weekly_boss_progress', seasonColumn: 'season_key' },
+  { table: 'telegram_pet_seasonal_boss_progress', seasonColumn: 'pet_season_key' },
+];
 
 function readRepoFile(relativePath) {
   return fs.readFileSync(path.join(repoRoot, relativePath), 'utf8');
@@ -212,6 +266,204 @@ function compareViolationRows(expectedRows, viewRows) {
   }];
 }
 
+function hasTable(db, name) {
+  return !!db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?").get(name);
+}
+
+function hasColumns(db, table, columns) {
+  const defined = new Set(
+    db.prepare(`PRAGMA table_info(${table})`).all()
+      .map((row) => String(row?.name || '').toLowerCase()),
+  );
+  return columns.every((column) => defined.has(String(column).toLowerCase()));
+}
+
+function normalizeOwnershipClassificationViolations(db) {
+  const violations = [];
+  const classifiedPetOwnedTables = new Set();
+  const classifiedAccountOwnedTables = new Set();
+  const explicitlyMixedEventOwnedTables = new Set();
+  const addMixedEventOwnedTable = (table) => {
+    if (!PET_OWNED_TABLES.has(table) && !ACCOUNT_OWNED_TABLES.has(table) && /^telegram_pet_/i.test(table)) {
+      explicitlyMixedEventOwnedTables.add(table);
+    }
+  };
+  for (const row of MOONPET_LIVE_SYSTEM_OWNERSHIP_CLASSIFICATION) {
+    for (const table of row.write_tables) addMixedEventOwnedTable(table);
+    for (const table of row.read_tables) addMixedEventOwnedTable(table);
+    if (row.authority_owner === 'pet' || row.authority_owner === 'mixed') {
+      for (const table of row.write_tables) {
+        if (PET_OWNED_TABLES.has(table)) classifiedPetOwnedTables.add(table);
+      }
+    }
+    if (row.authority_owner === 'account' || row.authority_owner === 'mixed') {
+      for (const table of row.write_tables) {
+        if (ACCOUNT_OWNED_TABLES.has(table)) classifiedAccountOwnedTables.add(table);
+      }
+    }
+    if (row.authority_owner === 'account') {
+      const petWrites = row.write_tables.filter((table) => PET_OWNED_TABLES.has(table));
+      if (petWrites.length) {
+        violations.push({
+          table_name: 'moonpet_live_system_ownership_classification',
+          row_key: row.system_key,
+          reason: 'account_system_writes_pet_owned_table',
+          offending_tables: petWrites,
+        });
+      }
+    }
+    if (row.authority_owner === 'pet') {
+      const accountWrites = row.write_tables.filter((table) => ACCOUNT_OWNED_TABLES.has(table));
+      if (accountWrites.length) {
+        violations.push({
+          table_name: 'moonpet_live_system_ownership_classification',
+          row_key: row.system_key,
+          reason: 'pet_system_writes_account_owned_table',
+          offending_tables: accountWrites,
+        });
+      }
+    }
+  }
+  for (const table of PET_OWNED_TABLES) {
+    if (!classifiedPetOwnedTables.has(table)) {
+      violations.push({
+        table_name: 'moonpet_live_system_ownership_classification',
+        row_key: table,
+        reason: 'pet_owned_table_missing_classification',
+      });
+    }
+  }
+  for (const table of ACCOUNT_OWNED_TABLES) {
+    if (!classifiedAccountOwnedTables.has(table)) {
+      violations.push({
+        table_name: 'moonpet_live_system_ownership_classification',
+        row_key: table,
+        reason: 'account_owned_table_missing_classification',
+      });
+    }
+  }
+  if (db) {
+    const moonpetTables = db.prepare(`
+      SELECT name
+      FROM sqlite_master
+      WHERE type = 'table'
+        AND name LIKE 'telegram_pet_%'
+      ORDER BY name
+    `).all().map((row) => String(row.name || ''));
+    for (const table of moonpetTables) {
+      const classes = [];
+      if (PET_OWNED_TABLES.has(table)) classes.push('pet-owned');
+      if (ACCOUNT_OWNED_TABLES.has(table)) classes.push('account-owned');
+      if (explicitlyMixedEventOwnedTables.has(table)) classes.push('mixed/event-owned');
+      if (classes.length === 0) {
+        violations.push({
+          table_name: 'moonpet_live_system_ownership_classification',
+          row_key: table,
+          reason: 'ownership_classification_missing',
+        });
+      } else if (classes.length > 1) {
+        violations.push({
+          table_name: 'moonpet_live_system_ownership_classification',
+          row_key: table,
+          reason: 'ownership_classification_ambiguous',
+          ownership_classes: classes,
+        });
+      }
+    }
+  }
+  return violations;
+}
+
+function auditStaleAuthorityLinks(db) {
+  const violations = [];
+  if (hasTable(db, 'telegram_pet_active_slots') && hasTable(db, 'telegram_pet_season_slots') && hasTable(db, 'telegram_pet_instances')) {
+    const staleActiveRows = db.prepare(`
+      SELECT a.telegram_id, a.pet_id, a.season_key
+      FROM telegram_pet_active_slots a
+      LEFT JOIN telegram_pet_season_slots s
+        ON s.pet_id = a.pet_id
+       AND s.telegram_id = a.telegram_id
+       AND s.season_key = a.season_key
+      LEFT JOIN telegram_pet_instances i
+        ON i.pet_id = a.pet_id
+       AND i.telegram_id = a.telegram_id
+       AND i.season_key = a.season_key
+      WHERE s.pet_id IS NULL
+         OR i.pet_id IS NULL
+      ORDER BY a.telegram_id, a.pet_id, a.season_key
+    `).all();
+    for (const row of staleActiveRows) {
+      violations.push({
+        table_name: 'telegram_pet_active_slots',
+        pet_id: row.pet_id,
+        telegram_id: row.telegram_id,
+        season_key: row.season_key,
+        row_key: `${row.telegram_id}:${row.pet_id}:${row.season_key}`,
+        reason: 'stale_active_slot_authority_link',
+      });
+    }
+  }
+  for (const { table, seasonColumn, petOwnedRowFilter = '1=1' } of OWNERSHIP_AUDIT_TUPLE_TABLE_SPECS) {
+    if (!hasTable(db, table)) continue;
+    if (!hasColumns(db, table, ['pet_id', 'telegram_id', seasonColumn])) continue;
+    const invalidRows = db.prepare(`
+      SELECT t.pet_id, t.telegram_id, t.${seasonColumn} AS season_key
+      FROM ${table} t
+      LEFT JOIN telegram_pet_season_slots s
+        ON s.pet_id = t.pet_id
+       AND s.telegram_id = t.telegram_id
+       AND s.season_key = t.${seasonColumn}
+      LEFT JOIN telegram_pet_instances i
+        ON i.pet_id = t.pet_id
+       AND i.telegram_id = t.telegram_id
+       AND i.season_key = t.${seasonColumn}
+      WHERE (${petOwnedRowFilter})
+        AND (
+          t.pet_id IS NULL
+          OR t.pet_id = ''
+          OR t.telegram_id IS NULL
+          OR t.telegram_id = ''
+          OR t.${seasonColumn} IS NULL
+          OR t.${seasonColumn} = ''
+          OR s.pet_id IS NULL
+          OR i.pet_id IS NULL
+        )
+      ORDER BY t.telegram_id, t.pet_id
+      LIMIT 200
+    `).all();
+    for (const row of invalidRows) {
+      let reason = 'invalid_pet_authority_reference';
+      if (row.pet_id == null || row.pet_id === '') reason = 'pet_id_missing';
+      else if (row.season_key == null || row.season_key === '') reason = 'season_key_missing';
+      else if (row.telegram_id == null || row.telegram_id === '') reason = 'telegram_id_missing';
+      if (
+        table === 'telegram_pet_system_events'
+        && (row.pet_id == null || row.pet_id === '')
+        && row.season_key != null
+        && row.season_key !== ''
+      ) {
+        reason = 'invalid_pet_authority_reference';
+      }
+      violations.push({
+        table_name: table,
+        pet_id: row.pet_id,
+        telegram_id: row.telegram_id,
+        season_key: row.season_key,
+        row_key: `${row.pet_id}:${row.telegram_id}:${row.season_key}`,
+        reason,
+      });
+    }
+  }
+  return violations;
+}
+
+export function auditMoonpetOwnershipBoundariesDb(db) {
+  return [
+    ...auditStaleAuthorityLinks(db),
+    ...normalizeOwnershipClassificationViolations(db),
+  ];
+}
+
 export function auditIdentityAuthorityDb(db) {
   const tableCounts = Object.fromEntries(IDENTITY_AUTHORITY_TABLES.map((table) => [
     table,
@@ -222,6 +474,7 @@ export function auditIdentityAuthorityDb(db) {
   const viewRows = db.prepare(`SELECT table_name, pet_id, telegram_id, season_key, row_key, reason
     FROM moonpet_invalid_identity_authority_rows`).all();
   violations.push(...compareViolationRows(violations, viewRows));
+  violations.push(...auditMoonpetOwnershipBoundariesDb(db));
   return { checkedRows, tableCounts, violations };
 }
 
@@ -278,6 +531,22 @@ function createProductionSchemaBeforeAuthorityChain() {
     CREATE TABLE telegram_pet_identity_events (event_id TEXT PRIMARY KEY, telegram_id TEXT NOT NULL, event_key TEXT NOT NULL, event_kind TEXT NOT NULL, payload TEXT DEFAULT '{}', day_key TEXT DEFAULT '2026-08-01', progress_delta INTEGER DEFAULT 0, created_at TEXT, applied_at TEXT, UNIQUE(telegram_id,event_key,event_kind));
     CREATE TABLE telegram_pet_identity_analytics (analytics_id TEXT PRIMARY KEY, telegram_id TEXT NOT NULL, event_type TEXT NOT NULL, evolution_id TEXT, trait_id TEXT, milestone_id TEXT, duration_seconds INTEGER, event_data TEXT DEFAULT '{}', created_at TEXT);
     CREATE TABLE telegram_pet_achievements (telegram_id TEXT NOT NULL, achievement_id TEXT NOT NULL, progress INTEGER DEFAULT 0, target INTEGER, unlocked_at TEXT, updated_at TEXT, PRIMARY KEY(telegram_id,achievement_id));
+    CREATE TABLE telegram_pet_specialist_progression (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_specialist_events (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_daily_journey_objectives (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_daily_journey_receipts (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_growth_marks (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_weekly_journey_objectives (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_weekly_journey_receipts (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_weekly_crests (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_daily_runs (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_runs (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_run_analytics (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_live_progression_state (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_system_events (pet_id TEXT, telegram_id TEXT, season_key TEXT, system_key TEXT);
+    CREATE TABLE telegram_pet_event_chain_progress (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_weekly_boss_progress (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_seasonal_boss_progress (pet_id TEXT, telegram_id TEXT, pet_season_key TEXT);
   `;
 }
 
@@ -343,6 +612,33 @@ function assertRequiredTablesAndIndexes(db) {
   if (!view) throw new Error('missing identity authority verification view');
 }
 
+const SHARED_AUTHORITY_DEPENDENCY_TABLES = [
+  'telegram_pet_season_slots',
+  'telegram_pet_instances',
+];
+
+function assertOwnershipAuditSurfaceTables(db) {
+  for (const depTable of SHARED_AUTHORITY_DEPENDENCY_TABLES) {
+    const row = db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?").get(depTable);
+    if (!row) throw new Error(`missing ownership audit table: ${depTable}`);
+  }
+  for (const { table } of OWNERSHIP_AUDIT_TUPLE_TABLE_SPECS) {
+    const row = db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?").get(table);
+    if (!row) throw new Error(`missing ownership audit table: ${table}`);
+  }
+}
+
+function ownershipAuditTableNames() {
+  return [...new Set(OWNERSHIP_AUDIT_TUPLE_TABLE_SPECS.map(({ table }) => table))];
+}
+
+function ownershipAuditTableCounts(db) {
+  return Object.fromEntries(ownershipAuditTableNames().map((table) => [
+    table,
+    Number(db.prepare(`SELECT COUNT(*) AS count FROM ${table}`).get().count || 0),
+  ]));
+}
+
 function assertArenaAuthorityIntegration() {
   const worker = readRepoFile('workers/moonboys-api/worker.js');
   const queueInsert = /INSERT INTO telegram_pet_arena_queue\s+\(id,chat_id,telegram_id,pet_id,season_key,/i.test(worker);
@@ -378,6 +674,7 @@ export async function runMoonpetIdentityAuthorityAudit({ sqlitePath = null } = {
     return {
       checkedRows: 0,
       tableCounts: Object.fromEntries(IDENTITY_AUTHORITY_TABLES.map((table) => [table, 0])),
+      ownershipTableCounts: Object.fromEntries(ownershipAuditTableNames().map((table) => [table, 0])),
       violations: runtimeViolations,
     };
   }
@@ -390,16 +687,21 @@ export async function runMoonpetIdentityAuthorityAudit({ sqlitePath = null } = {
       applyMigrationChain(db);
       seedValidIdentityRows(db);
     }
+    assertOwnershipAuditSurfaceTables(db);
     assertRequiredTablesAndIndexes(db);
     const foreignKeyViolations = db.prepare('PRAGMA foreign_key_check').all();
     if (foreignKeyViolations.length) {
       return {
         checkedRows: 0,
         tableCounts: Object.fromEntries(IDENTITY_AUTHORITY_TABLES.map((table) => [table, 0])),
+        ownershipTableCounts: ownershipAuditTableCounts(db),
         violations: foreignKeyViolations.map((row) => ({ ...row, reason: 'foreign_key_violation' })),
       };
     }
-    return auditIdentityAuthorityDb(db);
+    return {
+      ...auditIdentityAuthorityDb(db),
+      ownershipTableCounts: ownershipAuditTableCounts(db),
+    };
   } finally {
     db.close();
   }
@@ -428,6 +730,18 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   for (const table of IDENTITY_AUTHORITY_TABLES) {
     console.log(`${table}: ${Number(result.tableCounts?.[table] || 0)}`);
   }
+  console.log('');
+  for (const table of ownershipAuditTableNames()) {
+    console.log(`${table}: ${Number(result.ownershipTableCounts?.[table] || 0)}`);
+  }
+  console.log('');
+  const auditedTableCount = IDENTITY_AUTHORITY_TABLES.length + ownershipAuditTableNames().length;
+  const ownershipChecksRun = ownershipAuditTableNames().length;
+  console.log(`audited tables: ${auditedTableCount}`);
+  console.log(`violations: ${result.violations.length}`);
+  console.log(`AUDIT TABLES CHECKED: ${auditedTableCount}`);
+  console.log(`OWNERSHIP CHECKS RUN: ${ownershipChecksRun}`);
+  console.log(`VIOLATIONS: ${result.violations.length}`);
   console.log('');
   console.log(`Invalid authority rows: ${result.violations.length}`);
   console.log('');
