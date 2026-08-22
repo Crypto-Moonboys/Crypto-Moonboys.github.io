@@ -254,11 +254,19 @@ function hasColumns(db, table, columns) {
   return columns.every((column) => defined.has(String(column).toLowerCase()));
 }
 
-function normalizeOwnershipClassificationViolations() {
+function normalizeOwnershipClassificationViolations(db) {
   const violations = [];
   const classifiedPetOwnedTables = new Set();
   const classifiedAccountOwnedTables = new Set();
+  const explicitlyMixedEventOwnedTables = new Set();
+  const addMixedEventOwnedTable = (table) => {
+    if (!PET_OWNED_TABLES.has(table) && !ACCOUNT_OWNED_TABLES.has(table) && /^telegram_pet_/i.test(table)) {
+      explicitlyMixedEventOwnedTables.add(table);
+    }
+  };
   for (const row of MOONPET_LIVE_SYSTEM_OWNERSHIP_CLASSIFICATION) {
+    for (const table of row.write_tables) addMixedEventOwnedTable(table);
+    for (const table of row.read_tables) addMixedEventOwnedTable(table);
     if (row.authority_owner === 'pet' || row.authority_owner === 'mixed') {
       for (const table of row.write_tables) {
         if (PET_OWNED_TABLES.has(table)) classifiedPetOwnedTables.add(table);
@@ -308,6 +316,35 @@ function normalizeOwnershipClassificationViolations() {
         row_key: table,
         reason: 'account_owned_table_missing_classification',
       });
+    }
+  }
+  if (db) {
+    const moonpetTables = db.prepare(`
+      SELECT name
+      FROM sqlite_master
+      WHERE type = 'table'
+        AND name LIKE 'telegram_pet_%'
+      ORDER BY name
+    `).all().map((row) => String(row.name || ''));
+    for (const table of moonpetTables) {
+      const classes = [];
+      if (PET_OWNED_TABLES.has(table)) classes.push('pet-owned');
+      if (ACCOUNT_OWNED_TABLES.has(table)) classes.push('account-owned');
+      if (explicitlyMixedEventOwnedTables.has(table)) classes.push('mixed/event-owned');
+      if (classes.length === 0) {
+        violations.push({
+          table_name: 'moonpet_live_system_ownership_classification',
+          row_key: table,
+          reason: 'ownership_classification_missing',
+        });
+      } else if (classes.length > 1) {
+        violations.push({
+          table_name: 'moonpet_live_system_ownership_classification',
+          row_key: table,
+          reason: 'ownership_classification_ambiguous',
+          ownership_classes: classes,
+        });
+      }
     }
   }
   return violations;
@@ -408,7 +445,7 @@ function auditStaleAuthorityLinks(db) {
 export function auditMoonpetOwnershipBoundariesDb(db) {
   return [
     ...auditStaleAuthorityLinks(db),
-    ...normalizeOwnershipClassificationViolations(),
+    ...normalizeOwnershipClassificationViolations(db),
   ];
 }
 

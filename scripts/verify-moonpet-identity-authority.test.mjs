@@ -363,6 +363,8 @@ try {
     'live ownership classification must not drift account-owned and pet-owned table boundaries');
   assert.ok(!ownershipViolations.some((row) => row.reason === 'pet_owned_table_missing_classification' || row.reason === 'account_owned_table_missing_classification'),
     'live ownership classification must cover every owned table boundary');
+  assert.ok(!ownershipViolations.some((row) => row.reason === 'ownership_classification_missing' || row.reason === 'ownership_classification_ambiguous'),
+    'live ownership classification must resolve every telegram_pet table to exactly one ownership class');
 } finally {
   staleAuthorityDb.close();
 }
@@ -379,6 +381,19 @@ try {
     'ownership audit fails when a pet-owned table is removed from live ownership classification');
 } finally {
   identityClassificationRow.write_tables = originalWriteTables;
+}
+
+const missingClassificationDb = new DatabaseSync(':memory:');
+try {
+  missingClassificationDb.exec(`
+    CREATE TABLE telegram_pet_new_feature_state (id TEXT PRIMARY KEY);
+  `);
+  const missingClassificationViolations = auditMoonpetOwnershipBoundariesDb(missingClassificationDb);
+  assert.ok(missingClassificationViolations.some((row) =>
+    row.reason === 'ownership_classification_missing' && row.row_key === 'telegram_pet_new_feature_state'),
+  'ownership audit fails when a new telegram_pet table has no declared ownership classification');
+} finally {
+  missingClassificationDb.close();
 }
 
 const cliResult = spawnSync(process.execPath, ['scripts/verify-moonpet-identity-authority.mjs', '--sqlite'], {
