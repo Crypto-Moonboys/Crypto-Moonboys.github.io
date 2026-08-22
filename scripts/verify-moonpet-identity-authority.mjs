@@ -256,7 +256,19 @@ function hasColumns(db, table, columns) {
 
 function normalizeOwnershipClassificationViolations() {
   const violations = [];
+  const classifiedPetOwnedTables = new Set();
+  const classifiedAccountOwnedTables = new Set();
   for (const row of MOONPET_LIVE_SYSTEM_OWNERSHIP_CLASSIFICATION) {
+    if (row.authority_owner === 'pet' || row.authority_owner === 'mixed') {
+      for (const table of row.write_tables) {
+        if (PET_OWNED_TABLES.has(table)) classifiedPetOwnedTables.add(table);
+      }
+    }
+    if (row.authority_owner === 'account' || row.authority_owner === 'mixed') {
+      for (const table of row.write_tables) {
+        if (ACCOUNT_OWNED_TABLES.has(table)) classifiedAccountOwnedTables.add(table);
+      }
+    }
     if (row.authority_owner === 'account') {
       const petWrites = row.write_tables.filter((table) => PET_OWNED_TABLES.has(table));
       if (petWrites.length) {
@@ -278,6 +290,24 @@ function normalizeOwnershipClassificationViolations() {
           offending_tables: accountWrites,
         });
       }
+    }
+  }
+  for (const table of PET_OWNED_TABLES) {
+    if (!classifiedPetOwnedTables.has(table)) {
+      violations.push({
+        table_name: 'moonpet_live_system_ownership_classification',
+        row_key: table,
+        reason: 'pet_owned_table_missing_classification',
+      });
+    }
+  }
+  for (const table of ACCOUNT_OWNED_TABLES) {
+    if (!classifiedAccountOwnedTables.has(table)) {
+      violations.push({
+        table_name: 'moonpet_live_system_ownership_classification',
+        row_key: table,
+        reason: 'account_owned_table_missing_classification',
+      });
     }
   }
   return violations;

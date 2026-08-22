@@ -11,6 +11,7 @@ import {
   auditRuntimeIdentityQueries,
   IDENTITY_AUTHORITY_TABLES,
 } from './verify-moonpet-identity-authority.mjs';
+import { MOONPET_LIVE_SYSTEM_OWNERSHIP_CLASSIFICATION } from '../workers/moonboys-api/pets/live-system-ownership-classification.js';
 import { getMoonpetIdentitySummary } from '../workers/moonboys-api/pets/moonpet-identity.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -360,8 +361,24 @@ try {
     'ownership audit reports invalid pet ownership references in pet-owned progression ledgers');
   assert.ok(!ownershipViolations.some((row) => row.reason === 'account_system_writes_pet_owned_table' || row.reason === 'pet_system_writes_account_owned_table'),
     'live ownership classification must not drift account-owned and pet-owned table boundaries');
+  assert.ok(!ownershipViolations.some((row) => row.reason === 'pet_owned_table_missing_classification' || row.reason === 'account_owned_table_missing_classification'),
+    'live ownership classification must cover every owned table boundary');
 } finally {
   staleAuthorityDb.close();
+}
+
+const identityClassificationRow = MOONPET_LIVE_SYSTEM_OWNERSHIP_CLASSIFICATION
+  .find((row) => row.system_key === 'achievements_identity_memories_personality');
+assert.ok(identityClassificationRow, 'identity ownership classification row must exist');
+const originalWriteTables = [...identityClassificationRow.write_tables];
+try {
+  identityClassificationRow.write_tables = identityClassificationRow.write_tables
+    .filter((table) => table !== 'telegram_pet_memories');
+  const coverageViolations = auditMoonpetOwnershipBoundariesDb(new DatabaseSync(':memory:'));
+  assert.ok(coverageViolations.some((row) => row.reason === 'pet_owned_table_missing_classification' && row.row_key === 'telegram_pet_memories'),
+    'ownership audit fails when a pet-owned table is removed from live ownership classification');
+} finally {
+  identityClassificationRow.write_tables = originalWriteTables;
 }
 
 const cliResult = spawnSync(process.execPath, ['scripts/verify-moonpet-identity-authority.mjs', '--sqlite'], {
