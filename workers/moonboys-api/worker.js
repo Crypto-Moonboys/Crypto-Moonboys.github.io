@@ -8816,7 +8816,6 @@ const PET_MINI_APP_FUTURE_SYSTEM_STATUS = Object.freeze({
 
 function buildPetMiniAppFutureSystemState(combatEligibility = {}) {
   const completedSeasonPet = combatEligibility.has_completed_season_pet === true;
-  const combatUnlocked = combatEligibility.combat_unlocked === true;
   const arenaUnlocked = combatEligibility.arena_unlocked === true;
   const kaijuUnlocked = combatEligibility.kaiju_unlocked === true;
   const postSeasonLockedDetail = 'Requires completed Season pet. Locked until you complete a Season pet.';
@@ -8830,23 +8829,17 @@ function buildPetMiniAppFutureSystemState(combatEligibility = {}) {
         : reason === 'arena_level_locked'
           ? `Requires a hatched active Moonpet at Level ${PET_ARENA_MIN_LEVEL}.`
           : 'Requires current beta combat authority.';
-  const arenaLockedDetail = betaCombatLockedDetail(combatEligibility.arena_reason || combatEligibility.reason);
-  const kaijuLockedDetail = betaCombatLockedDetail(combatEligibility.kaiju_reason || combatEligibility.reason);
-  const combatLockedDetail = combatEligibility.reason === 'moon_egg_must_hatch'
-    ? 'Requires a hatched active Moonpet.'
-    : combatEligibility.reason === 'pet_not_adopted'
-      ? 'Requires an adopted active Moonpet.'
-      : combatEligibility.reason === 'moonpet_lifecycle_required'
-        ? 'Requires synced active Moonpet lifecycle authority before combat unlocks.'
-        : 'Requires current beta combat authority.';
+  const combatLockedDetail = betaCombatLockedDetail(combatEligibility.reason);
+  const arenaLockedDetail = combatEligibility.arena_reason
+    ? betaCombatLockedDetail(combatEligibility.arena_reason)
+    : combatLockedDetail;
+  const kaijuLockedDetail = combatEligibility.kaiju_reason
+    ? betaCombatLockedDetail(combatEligibility.kaiju_reason)
+    : combatLockedDetail;
   const futureStatus = completedSeasonPet
     ? PET_MINI_APP_FUTURE_SYSTEM_STATUS.COMING_SOON
     : PET_MINI_APP_FUTURE_SYSTEM_STATUS.LOCKED;
   const futureDetail = completedSeasonPet ? comingSoonDetail : postSeasonLockedDetail;
-  const combatStatus = combatUnlocked
-    ? PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE
-    : PET_MINI_APP_FUTURE_SYSTEM_STATUS.LOCKED;
-  const combatDetail = combatUnlocked ? 'Available from Explore.' : combatLockedDetail;
   const arenaStatus = arenaUnlocked
     ? PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE
     : PET_MINI_APP_FUTURE_SYSTEM_STATUS.LOCKED;
@@ -15217,7 +15210,6 @@ async function getPetEvolutionGuidance(db, telegramId, pet, identity) {
 }
 
 function getPetGuidanceFeatures(level, combatEligibility = {}) {
-  const combatUnlocked = combatEligibility.combat_unlocked === true;
   const arenaUnlocked = combatEligibility.arena_unlocked === true;
   const kaijuUnlocked = combatEligibility.kaiju_unlocked === true;
   const combatLockDetail = combatEligibility.reason === 'combat_unlocked'
