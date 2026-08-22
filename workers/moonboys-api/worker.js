@@ -55,6 +55,7 @@ import {
 import { PET_CRAFTING_MATERIALS, getActivePetSetBonuses } from './pets/economy-phase-3.js';
 import { PET_ELITE_JOBS, canStartPetEliteJob } from './pets/content-phase-4.js';
 import { PET_JOB_LORE, buildPetRegionDirectory } from './pets/game-content.js';
+import { PET_VISIBLE_LEVEL_CURVE, getPetVisibleLevel, getPetVisibleLevelSql, getPetXpToNextVisibleLevel } from './pets/progression-phase-2.js';
 import {
   applyPetFactionBonus, buildPetLiveSystemsState, processPetCosmeticUnlock, processPetCraftRecipe, processPetDistrictMission,
   processPetEquipmentUpgrade, processPetEventChain, processPetSeasonalBoss,
@@ -2232,7 +2233,7 @@ async function reservePetRepeatRewardEvent(db, details) {
 }
 
 function getPetLevel(petXp) {
-  return Math.max(1, Math.floor((Number(petXp) || 0) / 100) + 1);
+  return getPetVisibleLevel(petXp);
 }
 
 function getPetEquippedItem(pet, slot) {
@@ -5206,7 +5207,7 @@ async function awardPetKaijuPlayerResult(db, telegramId, match, outcome, rewards
     db.prepare(`
       UPDATE telegram_pet_profiles
       SET stage = CASE WHEN pet_xp >= 1800 THEN 'legendary companion' WHEN pet_xp >= 900 THEN 'moon guardian' WHEN pet_xp >= 360 THEN 'street scout' WHEN pet_xp >= 120 THEN 'runner' WHEN pet_xp >= 25 THEN 'hatchling' ELSE 'egg' END,
-          level = CAST(pet_xp / 100 AS INTEGER) + 1,
+          level = ${getPetVisibleLevelSql('pet_xp')},
           health = MIN(100, MAX(0, ROUND(((100 - hunger) + happiness + cleanliness + energy) / 4.0)))
       WHERE telegram_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'accepted' AND metadata = ?)
     `).bind(telegramId, reservation.reservation_id, metadata),
@@ -15017,6 +15018,7 @@ function formatPetStatus(pet, identity = null, activity = null, reaction = undef
   const favourite = String(identity?.memories?.favourite_activity || '').trim();
   const needsCare = p.health <= 45 || p.hunger >= 75 || p.cleanliness <= 35 || p.happiness <= 35 || p.energy <= 25;
   const identityLines = [];
+  const visibleLevel = getPetLevel(p.pet_xp);
   if (reaction !== null) identityLines.push(`<i>“${escapeHtml(reaction === undefined ? buildMoonpetReaction('status', identity || {}, { pet: p }) : reaction)}”</i>`);
   if (traits.length) identityLines.push(`<b>Personality:</b> ${traits.map((trait) => escapeHtml(trait.name)).join(' · ')}`);
   if (favourite) identityLines.push(`<b>Favourite:</b> ${escapeHtml(favourite)}`);
@@ -15025,7 +15027,7 @@ function formatPetStatus(pet, identity = null, activity = null, reaction = undef
     `🌕 <b>${escapeHtml(p.pet_name || 'Moonpet')}</b>`,
     '',
     `<b>${escapeHtml(stage)}</b>`,
-    `Level ${p.level} | XP ${p.pet_xp} | ${100 - (p.pet_xp % 100)} XP to next level`,
+    `Level ${visibleLevel} | XP ${p.pet_xp} | ${getPetXpToNextVisibleLevel(p.pet_xp)} XP to next level`,
     ...identityLines,
     '',
     formatPetStat('❤️ Health', p.health),
@@ -15108,11 +15110,16 @@ function formatPetDetails(pet, missions = null, activity = null, identity = null
   if (p.happiness <= 35) warnings.push('🎮 Low happiness: play soon.');
   if (p.energy <= 25) warnings.push('😴 Low energy: sleep before adventure.');
   const stage = p.stage || 'Moon Egg';
+  const visibleLevel = getPetLevel(p.pet_xp);
+  const xpToNextVisibleLevel = getPetXpToNextVisibleLevel(p.pet_xp);
+  const levelProgressLine = visibleLevel >= PET_VISIBLE_LEVEL_CURVE.max_level || xpToNextVisibleLevel === 0
+    ? `📈 Level ${formatPetDisplayNumber(PET_VISIBLE_LEVEL_CURVE.max_level)} cap reached`
+    : `📈 ${formatPetDisplayNumber(xpToNextVisibleLevel)} XP to Level ${formatPetDisplayNumber(visibleLevel + 1)}`;
   return [
     `📋 <b>${escapeHtml(p.pet_name)} Details</b>`,
     `${getPetStageIcon(stage)} <b>${escapeHtml(stage)}</b>`,
-    `⭐ Level ${formatPetDisplayNumber(p.level)} · ✨ ${formatPetDisplayNumber(p.pet_xp)} XP`,
-    `📈 ${formatPetDisplayNumber(100 - (p.pet_xp % 100))} XP to Level ${formatPetDisplayNumber(p.level + 1)}`,
+    `⭐ Level ${formatPetDisplayNumber(visibleLevel)} · ✨ ${formatPetDisplayNumber(p.pet_xp)} XP`,
+    levelProgressLine,
     activity ? `⏱️ <b>Current activity:</b> ${formatPetActivityLine(activity)}` : '',
     '',
     '💰 <b>Wallet</b>',
@@ -15309,7 +15316,8 @@ async function runPetCrystalExpedition(db, telegramId, now = new Date(), request
   if (!state.expedition_attempts_left) return { accepted: false, reason: 'expedition_daily_limit', state };
   if (Number(state.pet.energy || 0) < state.expedition.energy) return { accepted: false, reason: 'pet_tired', state };
   const attempt = state.expedition_attempts + 1;
-  const resolved = resolvePetExpeditionReward(state.day_key, telegramId, attempt, state.pet.level);
+  const level = getPetLevel(state.pet.pet_xp);
+  const resolved = resolvePetExpeditionReward(state.day_key, telegramId, attempt, level);
   const settlementKey = String(requestKey || `${state.day_key}:${attempt}`).slice(0, 120);
   const awarded = await awardPetReward(db, {
     telegram_id: telegramId, source: 'pet_expedition', idempotency_key: settlementKey,

@@ -89,7 +89,7 @@ function installSeasonCompletionMarkerTable(db) {
   )`);
 }
 
-function seedUser(db, telegramId, name = telegramId, petXp = 1500) {
+function seedUser(db, telegramId, name = telegramId, petXp = 3240) {
   db.database.prepare('INSERT OR IGNORE INTO telegram_users (telegram_id, first_name, xp, level) VALUES (?, ?, 0, 1)')
     .run(telegramId, name);
   db.database.prepare(`INSERT OR IGNORE INTO telegram_pet_profiles

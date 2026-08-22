@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { DatabaseSync } from 'node:sqlite';
 import {
   PET_SEASON_COMPLETION_CONFIG, awardPetGrowthMark, awardPetWeeklyCrest,
-  evaluatePetSeasonCompletion, getPetSeasonWeek, isPetLegendary, reconcileEvolutionGrowthMarks,
+  buildPetLifecycleProgress, evaluatePetSeasonCompletion, getPetSeasonWeek, isPetLegendary, reconcileEvolutionGrowthMarks,
 } from '../workers/moonboys-api/pets/season-completion.js';
 import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 
@@ -24,7 +24,7 @@ CREATE TABLE telegram_pet_instances (pet_id TEXT PRIMARY KEY, telegram_id TEXT, 
   FOREIGN KEY(telegram_id) REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE);
 CREATE TABLE telegram_pet_active_slots (telegram_id TEXT PRIMARY KEY, pet_id TEXT, season_key TEXT);
 CREATE TABLE telegram_pet_evolutions_by_pet (pet_id TEXT, telegram_id TEXT, evolution_id TEXT, stage INTEGER, unlock_event_key TEXT, unlocked_at TEXT, PRIMARY KEY(pet_id,evolution_id));
-CREATE TABLE telegram_pet_boss_victories (telegram_id TEXT, boss_id TEXT, victories INTEGER, PRIMARY KEY(telegram_id,boss_id));
+CREATE TABLE telegram_pet_boss_victories (pet_id TEXT, telegram_id TEXT, season_key TEXT, boss_id TEXT, victories INTEGER, PRIMARY KEY(pet_id,boss_id));
 CREATE TABLE telegram_pet_material_balances (telegram_id TEXT, material_key TEXT, quantity INTEGER, PRIMARY KEY(telegram_id,material_key));
 CREATE TABLE telegram_pet_inventory (telegram_id TEXT, asset_type TEXT, asset_key TEXT, quantity INTEGER, PRIMARY KEY(telegram_id,asset_type,asset_key));
 CREATE TABLE telegram_pet_relics (telegram_id TEXT, relic_id TEXT);
@@ -96,6 +96,27 @@ assert.equal((await awardPetGrowthMark(db, {
   milestone: 'boss',
   evidence_key: 'boss:tuple-mismatch',
 })).accepted, false, 'growth marks require the season slot + instance ownership tuple');
+
+sqlite.prepare(`INSERT INTO telegram_pet_season_slots VALUES ('stale-level-pet','production-owner','pet-s2026-001',3,'active','free')`).run();
+sqlite.prepare(`INSERT INTO telegram_pet_instances VALUES ('stale-level-pet','production-owner','pet-s2026-001',3,51,5000,'active')`).run();
+sqlite.prepare(`INSERT INTO telegram_pet_evolutions_by_pet VALUES ('stale-level-pet','production-owner','moon_guardian',4,'fixture:guardian','2026-01-01')`).run();
+const staleLevelLifecycle = await buildPetLifecycleProgress(db, 'stale-level-pet', 'pet-s2026-001', new Date('2026-03-31T12:00:00Z'));
+assert.equal(staleLevelLifecycle.requirements.pet_level.current, 12,
+  'lifecycle progress must derive visible level from XP instead of stale stored level');
+assert.equal(staleLevelLifecycle.requirements.pet_level.required, 50);
+assert.equal(staleLevelLifecycle.requirements.pet_level.complete, false,
+  'stale stored Level 51 cannot satisfy Legendary evolution level requirements at 5,000 XP');
+assert.equal(staleLevelLifecycle.evolution_ready, false,
+  'stale stored levels cannot prematurely unlock evolution readiness');
+
+sqlite.prepare(`INSERT INTO telegram_pet_season_slots VALUES ('missing-counter-pet','production-owner','pet-s2026-001',4,'active','free')`).run();
+sqlite.prepare(`INSERT INTO telegram_pet_instances VALUES ('missing-counter-pet','production-owner','pet-s2026-001',4,1,0,'active')`).run();
+sqlite.prepare(`INSERT INTO telegram_pet_evolutions_by_pet VALUES ('missing-counter-pet','production-owner','street_moonpet',1,'fixture:street','2026-01-01')`).run();
+const migratedCounterLifecycle = await buildPetLifecycleProgress(db, 'missing-counter-pet', 'pet-s2026-001', new Date('2026-03-31T12:00:00Z'));
+assert.equal(migratedCounterLifecycle.requirements.pet_level.current, 5,
+  'missing-counter migrated pets retain only the intended current-evolution level fallback');
+assert.equal(migratedCounterLifecycle.requirements.pet_level.complete, false,
+  'missing-counter fallback does not promote migrated pets to the next evolution requirement');
 
 let state = await evaluatePetSeasonCompletion(db, 'pet-a', 's1', new Date('2026-02-01'), { telegram_id: 'owner' });
 assert.equal(state.legendary, true);

@@ -91,6 +91,8 @@ const {
   buildPetProgressMenuReplyMarkup,
   normalizePetActivityType,
   computePetActivityRewards,
+  getPetEconomyState,
+  runPetCrystalExpedition,
   formatPetActivityLine,
   buildPetMediaUrl,
   buildPetRunChoiceReplyMarkup,
@@ -424,6 +426,9 @@ const arenaStatusCopy = formatPetStatus({ ...baseArenaPet, pet_name: 'Arena Pet'
 assert.ok(!arenaStatusCopy.includes('Armor:') && !arenaStatusCopy.includes('Wallet'), '/pet status copy must keep gear and wallet details out of the default viewport');
 const arenaDetailsCopy = formatPetDetails({ ...baseArenaPet, pet_name: 'Arena Pet', species: 'neon_raccoon', stage: 'teen', hunger: 20, moon_gold: 0, moon_crystals: 0, style_tokens: 0, streak_days: 1, equipped_armor: 'moon_helmet', equipped_weapon: 'laser_claws', equipped_charm: 'shield_charm' });
 assert.ok(arenaDetailsCopy.includes('🛡️ <b>Armor</b> — Moon Helmet') && arenaDetailsCopy.includes('🥊 <b>Weapon</b> — Laser Claws') && arenaDetailsCopy.includes('🧿 <b>Charm</b> — Shield Charm'), '/pet details copy must present equipped battle gear with icons and player-facing names');
+const maxLevelDetailsCopy = formatPetDetails({ ...baseArenaPet, pet_name: 'Max Pet', pet_xp: 392040, level: 100 });
+assert.ok(maxLevelDetailsCopy.includes('📈 Level 100 cap reached'), '/pet details must show max-level copy at the visible level cap');
+assert.ok(!maxLevelDetailsCopy.includes('Level 101'), '/pet details must not imply Level 101 exists at the visible level cap');
 
 const polishedDetailsCopy = formatPetDetails({
   ...baseArenaPet,
@@ -457,7 +462,7 @@ const polishedDetailsCopy = formatPetDetails({
 }, null, { current_stage: { name: 'Moon Egg' } });
 for (const copy of [
   '🥚 <b>Moon Egg</b>',
-  '⭐ Level 43 · ✨ 4,206 XP',
+  '⭐ Level 11 · ✨ 4,206 XP',
   '🪙 925 Moon Gold',
   '💎 6 Moon Crystals',
   '🎨 23 Style',
@@ -1583,12 +1588,12 @@ for (const [mode, slot, expected] of [
 assert.deepEqual(scalePetRewards({ pet_xp: 21, moon_gold: 9, style_tokens: 1, happiness: 5 }, 0.5), { pet_xp: 10, moon_gold: 4, style_tokens: 0, happiness: 2 }, 'half rewards must floor every progression/currency reward');
 assert.deepEqual(scalePetRewards({ pet_xp: 21, moon_gold: 9, style_tokens: 1, happiness: 5 }, 0), { pet_xp: 0, moon_gold: 0, style_tokens: 0, happiness: 0 }, 'zero-tier repeat play must award no progression or currency');
 
-assert.equal(getPetHighLevelGearXpMultiplier({ pet_xp: 3400 }), 1, 'level 35 gear XP stays at 100%');
-assert.equal(getPetHighLevelGearXpMultiplier({ pet_xp: 3500 }), 0.6, 'level 36 gear XP tapers to 60%');
-assert.equal(getPetHighLevelGearXpMultiplier({ pet_xp: 4900 }), 0.6, 'level 50 gear XP stays at 60%');
-assert.equal(getPetHighLevelGearXpMultiplier({ pet_xp: 5000 }), 0.35, 'level 51 gear XP tapers to 35%');
+assert.equal(getPetHighLevelGearXpMultiplier({ pet_xp: 46240 }), 1, 'level 35 gear XP stays at 100%');
+assert.equal(getPetHighLevelGearXpMultiplier({ pet_xp: 49000 }), 0.6, 'level 36 gear XP tapers to 60%');
+assert.equal(getPetHighLevelGearXpMultiplier({ pet_xp: 96040 }), 0.6, 'level 50 gear XP stays at 60%');
+assert.equal(getPetHighLevelGearXpMultiplier({ pet_xp: 100000 }), 0.35, 'level 51 gear XP tapers to 35%');
 const highLevelGearRewards = { pet_xp: 6, moon_gold: 0, moon_crystals: 0, style_tokens: 0 };
-applyPetItemActionBonuses({ pet_xp: 3500, equipped_outfit: 'moon_armor' }, 'feed', { hunger: -28, energy: 4 }, highLevelGearRewards);
+applyPetItemActionBonuses({ pet_xp: 49000, equipped_outfit: 'moon_armor' }, 'feed', { hunger: -28, energy: 4 }, highLevelGearRewards);
 assert.equal(highLevelGearRewards.pet_xp, 9, 'only the +5 gear bonus is tapered at level 36; base action XP remains 6');
 assert.equal(highLevelGearRewards.moon_gold, 1, 'gear currency utility must not be tapered');
 
@@ -2311,6 +2316,31 @@ assert.equal(insufficientPurchaseDb.database.prepare("SELECT moon_gold FROM tele
   'insufficient shop purchase must not debit the account wallet');
 assert.equal(insufficientPurchaseDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id = 'purchase-insufficient' AND event_key = 'callback:buy:insufficient' AND status = 'accepted'").get().count, 0,
   'insufficient shop purchase must not create an accepted receipt');
+
+const staleExpeditionDb = seedRepeatRewardPlayer('expedition-stale-level', 20);
+staleExpeditionDb.database.prepare(`UPDATE telegram_pet_profiles
+  SET pet_xp=5000, level=51, energy=20
+  WHERE telegram_id='expedition-stale-level'`).run();
+staleExpeditionDb.database.prepare(`UPDATE telegram_pet_instances
+  SET pet_xp=5000, level=51, energy=20
+  WHERE telegram_id='expedition-stale-level'`).run();
+const staleExpeditionNow = new Date('2026-08-19T12:00:00Z');
+const staleExpeditionState = await getPetEconomyState(staleExpeditionDb, 'expedition-stale-level', null, staleExpeditionNow);
+assert.equal(staleExpeditionState.expedition.key, 'crystal_caves',
+  'Crystal Expedition selection must use XP-derived visible level for stale stored-level pets');
+assert.equal(staleExpeditionState.expedition.energy, 18);
+const staleExpeditionResult = await runPetCrystalExpedition(staleExpeditionDb, 'expedition-stale-level', staleExpeditionNow, 'stale-level-expedition');
+assert.equal(staleExpeditionResult.accepted, true);
+assert.equal(staleExpeditionResult.expedition.key, 'crystal_caves',
+  'Crystal Expedition settlement must use the same XP-derived tier as selection');
+assert.equal(staleExpeditionDb.database.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id='expedition-stale-level'").get().energy, 2,
+  'Crystal Expedition settlement must charge the selected XP-derived tier energy cost');
+const staleExpeditionClaim = staleExpeditionDb.database.prepare(`SELECT metadata FROM telegram_pet_reward_claims
+  WHERE telegram_id='expedition-stale-level' AND source='pet_expedition'`).get();
+assert.equal(JSON.parse(staleExpeditionClaim.metadata).context.expedition_key, 'crystal_caves',
+  'Crystal Expedition reward claim reason must match the XP-derived reward tier');
+assert.equal(JSON.parse(staleExpeditionClaim.metadata).context.energy_cost, 18,
+  'Crystal Expedition claim metadata must record the selected XP-derived tier cost');
 
 const recoveryFreezePurchaseDb = seedRepeatRewardPlayer('purchase-recovery-freeze', 70);
 recoveryFreezePurchaseDb.database.prepare("UPDATE telegram_pet_profiles SET moon_gold = 100 WHERE telegram_id = 'purchase-recovery-freeze'").run();
@@ -3229,7 +3259,7 @@ assert.equal(switchItemDb.database.prepare("SELECT pet_xp FROM telegram_pet_inst
   'active pet switching must not redirect item-use rewards to the new active pet');
 
 const legacyBossDb = seedRepeatRewardPlayer('legacy-boss-gate', 100, new Date().toISOString(), { seedAuthority: false });
-legacyBossDb.database.prepare(`UPDATE telegram_pet_profiles SET pet_xp=5000, level=51, stage='street_moonpet'
+legacyBossDb.database.prepare(`UPDATE telegram_pet_profiles SET pet_xp=100000, level=51, stage='street_moonpet'
   WHERE telegram_id='legacy-boss-gate'`).run();
 for (const [evolutionId, stage] of [['moon_egg', 0], ['street_moonpet', 1]]) {
   legacyBossDb.database.prepare(`INSERT INTO telegram_pet_evolutions

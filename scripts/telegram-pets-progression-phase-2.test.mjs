@@ -5,11 +5,16 @@ import {
   PET_PROGRESSION_TRACKS,
   PET_RUN_REGIONS,
   PET_TRAITS,
+  PET_VISIBLE_LEVEL_CURVE,
   canEnterPetRunRegion,
   clampPetTrackAward,
   getPetJobRank,
   getPetLevelUnlocks,
   getPetTrackLevel,
+  getPetVisibleLevel,
+  getPetVisibleLevelSql,
+  getPetXpRequiredForVisibleLevel,
+  getPetXpToNextVisibleLevel,
   getPetTraitProgress,
   getUnlockedPetTraits,
   normalizePetProgressionTrack,
@@ -34,6 +39,22 @@ assert.equal(clampPetTrackAward('unknown', 40, 0), 0, 'unknown tracks cannot awa
 assert.equal(getPetTrackLevel(0), 1);
 assert.ok(getPetTrackLevel(8000) > getPetTrackLevel(800));
 assert.ok(getPetTrackLevel(99999999) <= 100);
+
+assert.deepEqual(PET_VISIBLE_LEVEL_CURVE, {
+  max_level: 100,
+  xp_base: 40,
+  formula: 'level = 1 + floor(sqrt(pet_xp / xp_base))',
+});
+assert.equal(getPetVisibleLevel(0), 1);
+assert.equal(getPetVisibleLevel(40), 2);
+assert.equal(getPetVisibleLevel(3240), 10, 'Level 10 remains reachable early enough for Arena');
+assert.equal(getPetVisibleLevel(33640), 30, 'Level 30 requires sustained beta play');
+assert.equal(getPetVisibleLevel(96040), 50, 'Level 50 is a late-season target under the daily cap');
+assert.equal(getPetVisibleLevel(999999999), 100);
+assert.equal(getPetXpRequiredForVisibleLevel(10), 3240);
+assert.equal(getPetXpToNextVisibleLevel(3239), 1);
+assert.equal(getPetXpToNextVisibleLevel(96040), getPetXpRequiredForVisibleLevel(51) - 96040);
+assert.match(getPetVisibleLevelSql('p.pet_xp'), /CASE WHEN p\.pet_xp >= 392040 THEN 100/);
 
 assert.ok(PET_LEVEL_MILESTONES.length >= 10);
 assert.deepEqual(getPetLevelUnlocks(1), []);

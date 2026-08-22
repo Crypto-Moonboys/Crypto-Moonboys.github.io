@@ -315,7 +315,7 @@ assert.deepEqual(
   'active pet reads must remain safe when the profile wallet projection is missing',
 );
 
-db.prepare(`UPDATE telegram_pet_instances SET pet_name='Instance Nova', pet_xp=5100, level=52,
+db.prepare(`UPDATE telegram_pet_instances SET pet_name='Instance Nova', pet_xp=104040, level=52,
   moon_gold=901, energy=88, last_decay_at=?, source_profile_updated_at='2026-08-16 02:59:59',
   updated_at='2026-08-16 03:00:00' WHERE telegram_id='state-player'`).run(new Date().toISOString());
 db.prepare(`UPDATE telegram_pet_profiles SET pet_name='Stale Profile', pet_xp=1, level=1,
@@ -323,12 +323,12 @@ db.prepare(`UPDATE telegram_pet_profiles SET pet_name='Stale Profile', pet_xp=1,
 const runtimePet = await getPetProfile(d1, 'state-player');
 assert.deepEqual(
   { pet_name: runtimePet.pet_name, pet_xp: runtimePet.pet_xp, level: runtimePet.level, moon_gold: runtimePet.moon_gold, energy: runtimePet.energy },
-  { pet_name: 'Instance Nova', pet_xp: 5100, level: 52, moon_gold: 2, energy: 88 },
+  { pet_name: 'Instance Nova', pet_xp: 104040, level: 52, moon_gold: 2, energy: 88 },
   'gameplay reads must use the active starter pet instance while showing the account wallet from the profile authority',
 );
 assert.deepEqual(
   { ...db.prepare(`SELECT pet_name, pet_xp, level, moon_gold, energy FROM telegram_pet_profiles WHERE telegram_id='state-player'`).get() },
-  { pet_name: 'Instance Nova', pet_xp: 5100, level: 52, moon_gold: 2, energy: 88 },
+  { pet_name: 'Instance Nova', pet_xp: 104040, level: 52, moon_gold: 2, energy: 88 },
   'instance reads must mirror pet-owned legacy profile payload fields without overwriting the account wallet',
 );
 

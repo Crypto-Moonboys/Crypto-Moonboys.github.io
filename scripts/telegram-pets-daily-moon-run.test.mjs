@@ -357,7 +357,7 @@ freshExtractionDb.database.prepare("UPDATE telegram_pet_instances SET pet_xp=0, 
 const storedPetOutcome = await __dailyMoonRunTestHooks.resolveAuthoritativeDailyRoomOutcome(freshExtractionDb,
   { ...freshExtractionRun.daily_run, telegram_id: 'fresh-extraction-player', seed: 7 },
   { room: 1, content_id: 'authority-room', room_type: 'choice_event' }, 'safe');
-assert.deepEqual(storedPetOutcome.player_state, { level: 10, health: 99, energy: 98, happiness: 97, cleanliness: 96 },
+assert.deepEqual(storedPetOutcome.player_state, { level: 5, health: 99, energy: 98, happiness: 97, cleanliness: 96 },
   'Daily outcome authority must use the stored run pet rather than stale profile or active-pet state');
 
 const freshExtraction = await extractDailyMoonRun(freshExtractionDb, {
@@ -416,6 +416,29 @@ assert.equal(forcedVictoryRegression.result.room.outcome.authority, 'daily_moon_
 assert.equal(forcedVictoryRegression.db.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_run_analytics
   WHERE telegram_id=? AND event_type='boss_fought'`).get(forcedVictoryRegression.telegramId).count, 0,
   'a client-forced outcome cannot create boss authority');
+
+const staleLevelDailyDb = new D1();
+const staleLevelDailyTelegramId = 'daily-stale-level-player';
+seedPlayer(staleLevelDailyDb, staleLevelDailyTelegramId);
+staleLevelDailyDb.database.prepare(`UPDATE telegram_pet_instances
+  SET pet_xp=5000, level=51, health=100, energy=100, happiness=100, cleanliness=100
+  WHERE pet_id=?`).run(`pet-${staleLevelDailyTelegramId}`);
+const staleLevelDailyNow = new Date(Date.UTC(2026, 7, 19, 12));
+const staleLevelDailyRun = await createDailyMoonRun(staleLevelDailyDb, { telegram_id: staleLevelDailyTelegramId, now: staleLevelDailyNow });
+const staleLevelPendingRoom = staleLevelDailyDb.database.prepare(`SELECT generated_data FROM telegram_pet_run_rooms
+  WHERE telegram_id=? AND run_id=? AND room_number=1`).get(staleLevelDailyTelegramId, staleLevelDailyRun.daily_run.run_id);
+const staleLevelRoom = JSON.parse(staleLevelPendingRoom.generated_data);
+const staleLevelDailyResult = await processDailyMoonRunStep(staleLevelDailyDb, {
+  telegram_id: staleLevelDailyTelegramId,
+  run_id: staleLevelDailyRun.daily_run.run_id,
+  choice_key: staleLevelRoom.choices[0].choice_id,
+  expected_step_index: 0,
+  now: staleLevelDailyNow,
+});
+assert.equal(staleLevelDailyResult.room.outcome.player_state.level, 12,
+  'Daily Moon Run outcome authority must derive level from pet_xp instead of stale stored level');
+assert.notEqual(staleLevelDailyResult.room.outcome.player_state.level, 51,
+  'Daily Moon Run success chance inputs cannot retain old persisted levels');
 
 insertCareEvent(db, 'daily-player', 'care-one', '2026-08-11');
 const [careA, careB] = await Promise.all([

@@ -16,8 +16,18 @@ const {
   processPetMiniAppAction,
   processPetAction,
   getPetSeasonInfo,
+  getPetWeeklyBoss,
   recordPetRunBankedEvent,
 } = __petMediaTestHooks;
+
+function getPetWeekKey(now = new Date()) {
+  const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const day = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  const week = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+  return `${date.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
+}
 
 class Statement {
   constructor(d1, sql, args = []) { this.d1 = d1; this.db = d1.database; this.sql = sql; this.args = args; }
@@ -886,8 +896,15 @@ const bossMemoryPetA = seedPlayer(bossMemorySwitchDb, bossMemorySwitchTelegramId
 const bossMemoryPetB = 'pet-weekly-boss-memory-switch-b';
 seedAdditionalPet(bossMemorySwitchDb, bossMemorySwitchTelegramId, bossMemoryPetB, 2, bossMemorySwitchSeasonKey);
 bossMemorySwitchDb.database.prepare(`UPDATE telegram_pet_profiles
-  SET pet_xp=60000, level=600, energy=100, health=100, happiness=100, cleanliness=100
+  SET pet_xp=392040, level=100, energy=100, health=100, happiness=100, cleanliness=100
   WHERE telegram_id=?`).run(bossMemorySwitchTelegramId);
+{
+  const weekKey = getPetWeekKey(new Date());
+  const boss = getPetWeeklyBoss(weekKey);
+  bossMemorySwitchDb.database.prepare(`INSERT INTO telegram_pet_weekly_boss_progress
+    (telegram_id, week_key, boss_id, damage, attempts)
+    VALUES (?, ?, ?, ?, 1)`).run(bossMemorySwitchTelegramId, weekKey, boss.boss_id, Math.max(0, boss.hp - 120));
+}
 bossMemorySwitchDb.beforeWeeklyBossEventInsert = () => {
   switchActivePet(bossMemorySwitchDb, bossMemorySwitchTelegramId, bossMemoryPetB, bossMemorySwitchSeasonKey);
 };
@@ -906,7 +923,7 @@ const bossMissingAuthorityDb = createDb();
 const bossMissingAuthorityTelegramId = 'weekly-boss-missing-authority';
 const bossMissingAuthorityPet = seedPlayer(bossMissingAuthorityDb, bossMissingAuthorityTelegramId, getPetSeasonInfo(new Date()).key);
 bossMissingAuthorityDb.database.prepare(`UPDATE telegram_pet_profiles
-  SET pet_xp=60000, level=600, energy=100, health=100, happiness=100, cleanliness=100
+  SET pet_xp=392040, level=100, energy=100, health=100, happiness=100, cleanliness=100
   WHERE telegram_id=?`).run(bossMissingAuthorityTelegramId);
 bossMissingAuthorityDb.database.prepare(`DELETE FROM telegram_pet_active_slots WHERE telegram_id=?`).run(bossMissingAuthorityTelegramId);
 const bossMissingAuthority = await processPetWeeklyBoss(bossMissingAuthorityDb, bossMissingAuthorityTelegramId, 'strike', 'weekly-boss-missing-authority');

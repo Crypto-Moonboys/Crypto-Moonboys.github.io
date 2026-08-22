@@ -17,6 +17,7 @@ import {
   startPetRogueliteRun,
 } from './roguelite-foundation.js';
 import { recordMoonpetMemory } from './moonpet-identity.js';
+import { getPetVisibleLevel } from './progression-phase-2.js';
 import { getMoonpetSeasonKey } from './season-authority.js';
 import { awardPetGrowthMark } from './season-completion.js';
 
@@ -178,7 +179,7 @@ async function resolveAuthoritativeDailyRoomOutcome(db, run, room, choiceId) {
   const baseChance = ({ choice_event: 9000, loot: 9500, battle: 8200, elite: 7600, boss: 7000 })[roomType] || 8500;
   const stateAverage = ['health', 'energy', 'happiness', 'cleanliness']
     .reduce((total, key) => total + Math.max(0, Math.min(100, Number(pet[key]) || 0)), 0) / 4;
-  const authoritativeLevel = Math.max(1, positiveInteger(pet.level, 100), Math.floor(positiveInteger(pet.pet_xp) / 100) + 1);
+  const authoritativeLevel = getPetVisibleLevel(pet.pet_xp);
   const playerAdjustment = Math.round((stateAverage - 50) * 25) + Math.min(1000, authoritativeLevel * 20);
   const modifierAdjustment = (Number(effects.event_outcome_pct) || 0) * 100
     + (Number(effects.damage_dealt_pct) || 0) * 15

@@ -129,7 +129,7 @@ function setActivePetSlot(db, telegramId, petId) {
 function seedPlayer(telegramId = 'identity-player', seedCalendar = true) {
   const db = new D1();
   db.database.prepare('INSERT INTO telegram_users (telegram_id, xp, level) VALUES (?, 0, 1)').run(telegramId);
-  db.database.prepare('INSERT INTO telegram_pet_profiles (telegram_id, pet_xp, level) VALUES (?, 1900, 20)').run(telegramId);
+  db.database.prepare('INSERT INTO telegram_pet_profiles (telegram_id, pet_xp, level) VALUES (?, 14440, 20)').run(telegramId);
   setActivePetSlot(db, telegramId, seedPetSlot(db, telegramId, 1, 'free', seedCalendar));
   return db;
 }
@@ -182,7 +182,7 @@ assert.equal(stage5Db.database.prepare(`SELECT stage FROM telegram_pet_evolution
   'stage 4 remains available for Moon Guardian after legacy promotion');
 
 const freshDb = seedPlayer('fresh-progression', false);
-freshDb.database.prepare(`UPDATE telegram_pet_profiles SET pet_xp=400,level=5 WHERE telegram_id='fresh-progression'`).run();
+freshDb.database.prepare(`UPDATE telegram_pet_profiles SET pet_xp=640,level=5 WHERE telegram_id='fresh-progression'`).run();
 freshDb.database.prepare(`UPDATE telegram_pet_season_slots SET created_at='2026-01-01T00:00:00Z' WHERE telegram_id='fresh-progression'`).run();
 freshDb.database.prepare(`INSERT INTO telegram_pet_material_balances (telegram_id,material_key,quantity) VALUES ('fresh-progression','scrap_metal',5)`).run();
 assert.equal((await evolveMoonpet(freshDb, { telegram_id: 'fresh-progression', evolution_id: 'moon_egg', event_key: 'fresh:egg' })).accepted, true);
@@ -382,7 +382,7 @@ assert.equal(duplicateCyber.duplicate, true, 'duplicate evolution cannot happen'
 assert.equal(evolutionDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_evolutions_by_pet WHERE evolution_id='cyber_moonpet'").get().count, 1);
 assert.equal(evolutionDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_identity_analytics WHERE event_type='evolution_unlock'").get().count, 3);
 
-evolutionDb.database.prepare("UPDATE telegram_pet_profiles SET pet_xp=5000,level=50 WHERE telegram_id='identity-player'").run();
+evolutionDb.database.prepare("UPDATE telegram_pet_profiles SET pet_xp=96040,level=50 WHERE telegram_id='identity-player'").run();
 evolutionDb.database.prepare("UPDATE telegram_pet_boss_victories SET victories=15 WHERE pet_id=? AND telegram_id='identity-player' AND boss_id='alley_king'").run(identityPetId);
 evolutionDb.database.prepare("UPDATE telegram_pet_material_balances SET quantity=CASE material_key WHEN 'scrap_metal' THEN 40 ELSE 15 END WHERE telegram_id='identity-player'").run();
 for (let index = 3; index <= 10; index += 1) evolutionDb.database.prepare(
@@ -455,7 +455,7 @@ const unavailableValidation = await evaluateMoonpetEvolutionRequirements({
   },
 }, { telegram_id: 'identity-player', evolution_id: 'legendary_moon_guardian' });
 assert.equal(unavailableValidation.reason, 'evolution_authority_unavailable', 'requirement query errors report unavailable authority');
-const legendaryGuidance = await workerHooks.getPetEvolutionGuidance(evolutionDb, 'identity-player', { pet_xp: 5000 }, { current_stage: { stage: 4 } });
+const legendaryGuidance = await workerHooks.getPetEvolutionGuidance(evolutionDb, 'identity-player', { pet_xp: 96040 }, { current_stage: { stage: 4 } });
 assert.equal(legendaryGuidance.ready, legendaryAuthority.ready, 'UI guidance uses the same authoritative validation as evolveMoonpet');
 const legendary = await evolveMoonpet(evolutionDb, {
   telegram_id: 'identity-player', evolution_id: 'legendary_moon_guardian', event_key: 'legendary:stage-5',
@@ -672,11 +672,11 @@ function seedProducerAuthorityPlayer(telegramId) {
   const firstPet = `pet:${telegramId}:${TEST_SEASON_KEY}:1`;
   const secondPet = seedPetSlot(db, telegramId, 2, 'arcade_xp', false);
   db.database.prepare(`UPDATE telegram_pet_profiles
-    SET pet_xp=5200, level=52, energy=100, hunger=0, happiness=90, cleanliness=90, health=100,
+    SET pet_xp=104040, level=52, energy=100, hunger=0, happiness=90, cleanliness=90, health=100,
       moon_gold=1000, moon_crystals=100, style_tokens=100
     WHERE telegram_id=?`).run(telegramId);
   db.database.prepare(`UPDATE telegram_pet_instances
-    SET pet_xp=5200, level=52, energy=100, hunger=0, happiness=90, cleanliness=90, health=100
+    SET pet_xp=104040, level=52, energy=100, hunger=0, happiness=90, cleanliness=90, health=100
     WHERE pet_id=?`).run(firstPet);
   db.database.prepare(`UPDATE telegram_pet_instances
     SET pet_xp=10, level=1, energy=70, hunger=0, happiness=70, cleanliness=70, health=75

@@ -30,6 +30,15 @@ export const PET_JOB_RANKS = Object.freeze([
   'legendary_contractor',
 ]);
 
+// Visible Moonpet level is paced for a 90-day beta season. The curve keeps
+// Level 10 reachable for active beta players while preventing the daily Pet XP
+// cap from trivializing Level 30/50/100 in the opening weeks.
+export const PET_VISIBLE_LEVEL_CURVE = Object.freeze({
+  max_level: 100,
+  xp_base: 40,
+  formula: 'level = 1 + floor(sqrt(pet_xp / xp_base))',
+});
+
 export const PET_RUN_REGIONS = Object.freeze({
   moon_alley: Object.freeze({ min_level: 1, mastery_required: 0, focus: ['care', 'adventure'] }),
   neon_rooftops: Object.freeze({ min_level: 10, mastery_required: 100, focus: ['adventure', 'training'] }),
@@ -68,6 +77,32 @@ export function clampPetTrackAward(track, amount, awardedToday = 0) {
 export function getPetTrackLevel(xp) {
   const value = Math.max(0, Math.floor(Number(xp) || 0));
   return Math.min(100, 1 + Math.floor(Math.sqrt(value / 80)));
+}
+
+export function getPetXpRequiredForVisibleLevel(level) {
+  const target = Math.max(1, Math.min(PET_VISIBLE_LEVEL_CURVE.max_level, Math.floor(Number(level) || 1)));
+  return PET_VISIBLE_LEVEL_CURVE.xp_base * ((target - 1) ** 2);
+}
+
+export function getPetVisibleLevel(petXp) {
+  const value = Math.max(0, Math.floor(Number(petXp) || 0));
+  return Math.min(PET_VISIBLE_LEVEL_CURVE.max_level, 1 + Math.floor(Math.sqrt(value / PET_VISIBLE_LEVEL_CURVE.xp_base)));
+}
+
+export function getPetXpToNextVisibleLevel(petXp) {
+  const value = Math.max(0, Math.floor(Number(petXp) || 0));
+  const level = getPetVisibleLevel(value);
+  if (level >= PET_VISIBLE_LEVEL_CURVE.max_level) return 0;
+  return Math.max(0, getPetXpRequiredForVisibleLevel(level + 1) - value);
+}
+
+export function getPetVisibleLevelSql(petXpExpression = 'pet_xp') {
+  const xp = String(petXpExpression || 'pet_xp');
+  const clauses = [];
+  for (let level = PET_VISIBLE_LEVEL_CURVE.max_level; level >= 2; level -= 1) {
+    clauses.push(`WHEN ${xp} >= ${getPetXpRequiredForVisibleLevel(level)} THEN ${level}`);
+  }
+  return `(CASE ${clauses.join(' ')} ELSE 1 END)`;
 }
 
 export function getPetLevelUnlocks(level) {
