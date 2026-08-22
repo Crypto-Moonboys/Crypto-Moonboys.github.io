@@ -461,6 +461,12 @@ const defaultCliResult = spawnSync(process.execPath, ['scripts/verify-moonpet-id
 });
 assert.equal(defaultCliResult.status, 0, 'default CLI audit fixture must execute complete ownership audit surface');
 assert.match(defaultCliResult.stdout, /STATUS: PASS/);
+assert.match(defaultCliResult.stdout, /telegram_pet_specialist_progression:\s*\d+/);
+assert.match(defaultCliResult.stdout, /telegram_pet_daily_journey_objectives:\s*\d+/);
+assert.match(defaultCliResult.stdout, /telegram_pet_daily_runs:\s*\d+/);
+assert.match(defaultCliResult.stdout, /telegram_pet_live_progression_state:\s*\d+/);
+assert.match(defaultCliResult.stdout, /audited tables:\s*\d+/);
+assert.match(defaultCliResult.stdout, /violations:\s*0/);
 
 const cliResult = spawnSync(process.execPath, ['scripts/verify-moonpet-identity-authority.mjs', '--sqlite'], {
   cwd: repoRoot,
@@ -590,6 +596,8 @@ try {
       ('', 'owner', 'season-a'),
       ('pet:missing-season-null', 'owner', NULL),
       ('pet:missing-season-empty', 'owner', '');
+    INSERT INTO telegram_pet_system_events (pet_id, telegram_id, season_key, system_key) VALUES
+      ('pet:orphan-district', 'owner', 'season-a', 'district');
   `);
 } finally {
   badAuthorityDb.close();
@@ -605,6 +613,8 @@ const badAuthorityCli = spawnSync(
 try {
   assert.notEqual(badAuthorityCli.status, 0, 'bad ownership authority rows must force STATUS: FAIL');
   assert.match(badAuthorityCli.stdout, /STATUS: FAIL/);
+  assert.match(`${badAuthorityCli.stderr}\n${badAuthorityCli.stdout}`, /"table_name":\s*"telegram_pet_specialist_progression"[\s\S]*"reason":\s*"pet_id_missing"/);
+  assert.match(`${badAuthorityCli.stderr}\n${badAuthorityCli.stdout}`, /"table_name":\s*"telegram_pet_system_events"[\s\S]*"reason":\s*"invalid_pet_authority_reference"/);
   assert.match(`${badAuthorityCli.stderr}\n${badAuthorityCli.stdout}`, /"reason":\s*"pet_id_missing"/);
   assert.match(`${badAuthorityCli.stderr}\n${badAuthorityCli.stdout}`, /"reason":\s*"season_key_missing"/);
 } finally {

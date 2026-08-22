@@ -609,6 +609,17 @@ function assertOwnershipAuditSurfaceTables(db) {
   }
 }
 
+function ownershipAuditTableNames() {
+  return [...new Set(OWNERSHIP_AUDIT_TUPLE_TABLE_SPECS.map(({ table }) => table))];
+}
+
+function ownershipAuditTableCounts(db) {
+  return Object.fromEntries(ownershipAuditTableNames().map((table) => [
+    table,
+    Number(db.prepare(`SELECT COUNT(*) AS count FROM ${table}`).get().count || 0),
+  ]));
+}
+
 function assertArenaAuthorityIntegration() {
   const worker = readRepoFile('workers/moonboys-api/worker.js');
   const queueInsert = /INSERT INTO telegram_pet_arena_queue\s+\(id,chat_id,telegram_id,pet_id,season_key,/i.test(worker);
@@ -644,6 +655,7 @@ export async function runMoonpetIdentityAuthorityAudit({ sqlitePath = null } = {
     return {
       checkedRows: 0,
       tableCounts: Object.fromEntries(IDENTITY_AUTHORITY_TABLES.map((table) => [table, 0])),
+      ownershipTableCounts: Object.fromEntries(ownershipAuditTableNames().map((table) => [table, 0])),
       violations: runtimeViolations,
     };
   }
@@ -663,10 +675,14 @@ export async function runMoonpetIdentityAuthorityAudit({ sqlitePath = null } = {
       return {
         checkedRows: 0,
         tableCounts: Object.fromEntries(IDENTITY_AUTHORITY_TABLES.map((table) => [table, 0])),
+        ownershipTableCounts: ownershipAuditTableCounts(db),
         violations: foreignKeyViolations.map((row) => ({ ...row, reason: 'foreign_key_violation' })),
       };
     }
-    return auditIdentityAuthorityDb(db);
+    return {
+      ...auditIdentityAuthorityDb(db),
+      ownershipTableCounts: ownershipAuditTableCounts(db),
+    };
   } finally {
     db.close();
   }
@@ -695,6 +711,14 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   for (const table of IDENTITY_AUTHORITY_TABLES) {
     console.log(`${table}: ${Number(result.tableCounts?.[table] || 0)}`);
   }
+  console.log('');
+  for (const table of ownershipAuditTableNames()) {
+    console.log(`${table}: ${Number(result.ownershipTableCounts?.[table] || 0)}`);
+  }
+  console.log('');
+  const auditedTableCount = IDENTITY_AUTHORITY_TABLES.length + ownershipAuditTableNames().length;
+  console.log(`audited tables: ${auditedTableCount}`);
+  console.log(`violations: ${result.violations.length}`);
   console.log('');
   console.log(`Invalid authority rows: ${result.violations.length}`);
   console.log('');
