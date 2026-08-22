@@ -1667,6 +1667,8 @@ assert.match(client, /EGG SIGNAL STRENGTHENED/);
 assert.match(client, /HATCH COMPLETE/);
 assert.match(client, /EVOLUTION COMPLETE/);
 assert.match(client, /HIDDEN MORPH REVEALED/);
+assert.match(client, /identity\.boss_victories/, 'CORE memory archive must render boss history from the selected-pet identity payload');
+assert.match(client, /BOSS \/\/ '\s*\+\s*words\(boss\.boss_id\)\s*\+\s*' x'/, 'boss history display must use selected-pet boss victory rows');
 assert.match(client, /after\.progress \+ '\/' \+ after\.target/);
 assert.match(client, /after\.speciesName/);
 assert.match(client, /after\.rareName/);

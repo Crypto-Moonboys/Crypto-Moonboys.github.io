@@ -10,9 +10,38 @@ import {
   auditRuntimeIdentityQueries,
   IDENTITY_AUTHORITY_TABLES,
 } from './verify-moonpet-identity-authority.mjs';
+import { getMoonpetIdentitySummary } from '../workers/moonboys-api/pets/moonpet-identity.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '..');
+
+class SqliteD1Statement {
+  constructor(database, sql, bindings = []) { this.database = database; this.sql = sql; this.bindings = bindings; }
+  bind(...bindings) { return new SqliteD1Statement(this.database, this.sql, bindings); }
+  async first() { return this.database.prepare(this.sql).get(...this.bindings) || null; }
+  async all() { return { results: this.database.prepare(this.sql).all(...this.bindings) }; }
+  async run() {
+    const result = this.database.prepare(this.sql).run(...this.bindings);
+    return { meta: { changes: result.changes } };
+  }
+}
+
+class SqliteD1 {
+  constructor(database) { this.database = database; }
+  prepare(sql) { return new SqliteD1Statement(this.database, sql); }
+  async batch(statements) {
+    this.database.exec('BEGIN IMMEDIATE');
+    try {
+      const results = [];
+      for (const statement of statements) results.push(await statement.run());
+      this.database.exec('COMMIT');
+      return results;
+    } catch (error) {
+      this.database.exec('ROLLBACK');
+      throw error;
+    }
+  }
+}
 
 function createVerifierDb(viewSql) {
   const db = new DatabaseSync(':memory:');
@@ -29,6 +58,164 @@ function createVerifierDb(viewSql) {
   `);
   return db;
 }
+
+async function assertSelectedPetIdentityScoping() {
+  const db = new DatabaseSync(':memory:');
+  try {
+    db.exec(`
+      CREATE TABLE telegram_pet_active_slots (
+        telegram_id TEXT PRIMARY KEY,
+        pet_id TEXT NOT NULL,
+        season_key TEXT NOT NULL
+      );
+      CREATE TABLE telegram_pet_season_slots (
+        pet_id TEXT PRIMARY KEY,
+        telegram_id TEXT NOT NULL,
+        season_key TEXT NOT NULL,
+        slot_number INTEGER NOT NULL,
+        acquisition_type TEXT NOT NULL DEFAULT 'free',
+        status TEXT NOT NULL DEFAULT 'active',
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE (pet_id, telegram_id, season_key),
+        UNIQUE (pet_id, telegram_id, season_key, slot_number)
+      );
+      CREATE TABLE telegram_pet_instances (
+        pet_id TEXT PRIMARY KEY,
+        telegram_id TEXT NOT NULL,
+        season_key TEXT NOT NULL,
+        slot_number INTEGER NOT NULL,
+        status TEXT NOT NULL DEFAULT 'active',
+        UNIQUE (pet_id, telegram_id, season_key, slot_number)
+      );
+      CREATE TABLE telegram_pet_evolutions (
+        telegram_id TEXT NOT NULL,
+        evolution_id TEXT NOT NULL,
+        stage INTEGER NOT NULL,
+        unlocked_at TEXT
+      );
+      CREATE TABLE telegram_pet_evolutions_by_pet (
+        pet_id TEXT NOT NULL,
+        telegram_id TEXT NOT NULL,
+        evolution_id TEXT NOT NULL,
+        stage INTEGER NOT NULL,
+        unlocked_at TEXT,
+        PRIMARY KEY (pet_id, evolution_id)
+      );
+      CREATE TABLE telegram_pet_personality_traits (
+        pet_id TEXT NOT NULL,
+        telegram_id TEXT NOT NULL,
+        season_key TEXT NOT NULL,
+        trait_id TEXT NOT NULL,
+        progress INTEGER DEFAULT 0,
+        unlocked_at TEXT,
+        updated_at TEXT,
+        PRIMARY KEY (pet_id, trait_id)
+      );
+      CREATE TABLE telegram_pet_memories (
+        pet_id TEXT PRIMARY KEY,
+        telegram_id TEXT NOT NULL,
+        season_key TEXT NOT NULL,
+        first_adoption_at TEXT,
+        first_run_at TEXT,
+        first_extraction_at TEXT,
+        first_boss_victory_at TEXT,
+        first_boss_id TEXT,
+        biggest_reward_amount INTEGER DEFAULT 0,
+        biggest_reward_currency TEXT,
+        favourite_activity TEXT,
+        total_runs INTEGER DEFAULT 0,
+        total_bosses_defeated INTEGER DEFAULT 0,
+        milestones TEXT DEFAULT '[]',
+        combat_actions INTEGER DEFAULT 0,
+        exploration_actions INTEGER DEFAULT 0,
+        care_actions INTEGER DEFAULT 0,
+        event_actions INTEGER DEFAULT 0,
+        adventure_actions INTEGER DEFAULT 0
+      );
+      CREATE TABLE telegram_pet_boss_victories (
+        pet_id TEXT NOT NULL,
+        telegram_id TEXT NOT NULL,
+        season_key TEXT NOT NULL,
+        boss_id TEXT NOT NULL,
+        victories INTEGER DEFAULT 0,
+        updated_at TEXT,
+        PRIMARY KEY (pet_id, boss_id)
+      );
+      INSERT INTO telegram_pet_season_slots (pet_id, telegram_id, season_key, slot_number, acquisition_type, status) VALUES
+        ('pet:owner:season-a:1', 'owner', 'season-a', 1, 'free', 'active'),
+        ('pet:owner:season-a:2', 'owner', 'season-a', 2, 'arcade_xp', 'active'),
+        ('pet:owner:season-old:1', 'owner', 'season-old', 1, 'free', 'archived');
+      INSERT INTO telegram_pet_instances (pet_id, telegram_id, season_key, slot_number, status) VALUES
+        ('pet:owner:season-a:1', 'owner', 'season-a', 1, 'active'),
+        ('pet:owner:season-a:2', 'owner', 'season-a', 2, 'active'),
+        ('pet:owner:season-old:1', 'owner', 'season-old', 1, 'archived');
+      INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key)
+        VALUES ('owner', 'pet:owner:season-a:1', 'season-a');
+      INSERT INTO telegram_pet_evolutions (telegram_id, evolution_id, stage, unlocked_at)
+        VALUES ('owner', 'legendary_guardian', 5, '2026-08-01T00:00:00Z');
+      INSERT INTO telegram_pet_evolutions_by_pet (pet_id, telegram_id, evolution_id, stage, unlocked_at) VALUES
+        ('pet:owner:season-a:1', 'owner', 'street_moonpet', 1, '2026-08-02T00:00:00Z'),
+        ('pet:owner:season-a:2', 'owner', 'moon_egg', 0, '2026-08-03T00:00:00Z'),
+        ('pet:owner:season-old:1', 'owner', 'cyber_moonpet', 2, '2026-07-01T00:00:00Z');
+      INSERT INTO telegram_pet_personality_traits
+        (pet_id, telegram_id, season_key, trait_id, progress, unlocked_at) VALUES
+        ('pet:owner:season-a:1', 'owner', 'season-a', 'street_fighter', 20, '2026-08-02T01:00:00Z'),
+        ('pet:owner:season-a:2', 'owner', 'season-a', 'curious', 12, '2026-08-03T01:00:00Z'),
+        ('pet:owner:season-old:1', 'owner', 'season-old', 'explorer', 16, '2026-07-01T01:00:00Z');
+      INSERT INTO telegram_pet_memories
+        (pet_id, telegram_id, season_key, first_boss_id, favourite_activity, total_runs, total_bosses_defeated, milestones, combat_actions, exploration_actions, care_actions, event_actions, adventure_actions) VALUES
+        ('pet:owner:season-a:1', 'owner', 'season-a', 'alley_king', 'Combat', 7, 1, '["starter_memory"]', 4, 0, 1, 0, 2),
+        ('pet:owner:season-a:2', 'owner', 'season-a', NULL, 'Care', 1, 0, '["paid_memory"]', 0, 0, 6, 1, 0),
+        ('pet:owner:season-old:1', 'owner', 'season-old', 'old_boss', 'Exploration', 13, 2, '["archived_memory"]', 1, 8, 0, 0, 4);
+      INSERT INTO telegram_pet_boss_victories
+        (pet_id, telegram_id, season_key, boss_id, victories) VALUES
+        ('pet:owner:season-a:1', 'owner', 'season-a', 'alley_king', 3),
+        ('pet:owner:season-a:2', 'owner', 'season-a', 'cache_wraith', 1),
+        ('pet:owner:season-old:1', 'owner', 'season-old', 'old_boss', 5);
+    `);
+    const d1 = new SqliteD1(db);
+    const starter = await getMoonpetIdentitySummary(d1, 'owner');
+    assert.equal(starter.scope.pet_id, 'pet:owner:season-a:1');
+    assert.equal(starter.current_stage.evolution_id, 'street_moonpet');
+    assert.deepEqual(starter.personalities.map((trait) => trait.trait_id), ['street_fighter']);
+    assert.equal(starter.memories.first_boss_id, 'alley_king');
+    assert.equal(starter.memories.favourite_activity, 'Combat');
+    assert.deepEqual(starter.boss_victories.map((boss) => boss.boss_id), ['alley_king']);
+
+    db.prepare(`UPDATE telegram_pet_active_slots SET pet_id='pet:owner:season-a:2', season_key='season-a' WHERE telegram_id='owner'`).run();
+    const paid = await getMoonpetIdentitySummary(d1, 'owner');
+    assert.equal(paid.scope.pet_id, 'pet:owner:season-a:2');
+    assert.equal(paid.current_stage.evolution_id, 'moon_egg');
+    assert.deepEqual(paid.personalities.map((trait) => trait.trait_id), ['curious']);
+    assert.equal(paid.memories.first_boss_id, null);
+    assert.equal(paid.memories.favourite_activity, 'Care');
+    assert.deepEqual(paid.boss_victories.map((boss) => boss.boss_id), ['cache_wraith']);
+    assert.notEqual(paid.current_stage.evolution_id, 'legendary_guardian', 'active paid pet must not fall back to owner-scoped evolution unlocks');
+    assert.equal(paid.memories.total_runs, 1, 'active paid pet must not inherit starter memories');
+
+    const archived = await getMoonpetIdentitySummary(d1, 'owner', {
+      pet_id: 'pet:owner:season-old:1',
+      season_key: 'season-old',
+      include_archived: true,
+    });
+    assert.equal(archived.scope.status, 'archived');
+    assert.equal(archived.current_stage.evolution_id, 'cyber_moonpet');
+    assert.deepEqual(archived.personalities.map((trait) => trait.trait_id), ['explorer']);
+    assert.equal(archived.memories.first_boss_id, 'old_boss');
+    assert.equal(archived.memories.milestones[0], 'archived_memory');
+    assert.deepEqual(archived.boss_victories.map((boss) => boss.boss_id), ['old_boss']);
+
+    const archivedWithoutReadFlag = await getMoonpetIdentitySummary(d1, 'owner', {
+      pet_id: 'pet:owner:season-old:1',
+      season_key: 'season-old',
+    });
+    assert.equal(archivedWithoutReadFlag.scope, null, 'archived pets require an explicit read-only archived scope');
+  } finally {
+    db.close();
+  }
+}
+
+await assertSelectedPetIdentityScoping();
 
 const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'moonpet-authority-test-'));
 try {
