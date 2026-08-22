@@ -185,16 +185,16 @@ assert.deepEqual(
 const defeatedBossCooldowns = buildPetMiniAppCooldownSummary({
   now: cooldownNow,
   guidance: {
-    weekly_boss: { defeated: true, attempt_used: true, cooldown: null },
+    weekly_boss: { defeated: true, attempt_used: true, cooldown: normalizePetCooldownWindow('2026-08-23T00:00:00.000Z', cooldownNow) },
   },
   liveSystems: {
-    seasonal_boss: { defeated_at: '2026-08-22T12:00:00.000Z', attempted_today: true, cooldown: null },
+    seasonal_boss: { defeated_at: '2026-08-22T12:00:00.000Z', attempted_today: true, cooldown: normalizePetCooldownWindow('2026-08-23T00:00:00.000Z', cooldownNow) },
   },
 });
 assert.equal(defeatedBossCooldowns.entries.some((entry) => entry.key === 'weekly_boss_attempt'), false,
-  'weekly boss defeated state must not emit a daily-attempt cooldown');
+  'weekly boss defeated state must not emit a daily-attempt cooldown even when stale cooldown metadata exists');
 assert.equal(defeatedBossCooldowns.entries.some((entry) => entry.key === 'seasonal_boss_attempt'), false,
-  'seasonal boss defeated state must not emit a daily-attempt cooldown');
+  'seasonal boss defeated state must not emit a daily-attempt cooldown even when stale cooldown metadata exists');
 for (const entry of simultaneousCooldowns.entries) {
   assert.equal(entry.server_time, '2026-08-22T12:00:00.000Z',
     `${entry.key} cooldown entry must carry server_time for clock-drift-safe ticking`);

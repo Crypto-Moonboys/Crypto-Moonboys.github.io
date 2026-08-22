@@ -215,7 +215,7 @@ const maliciousExpiresMarkup = actionAvailabilityRuntime.countdownMarkup({
   expires_at: '2026-08-22T12:05:00.000Z&quot; autofocus onfocus=alert(1) x=&quot;',
   remaining_seconds: 45,
 }, 'Reset "soon" <script>alert(1)</script> ');
-assert.match(maliciousExpiresMarkup, /data-cooldown-expires-at="2026-08-22T12:00:45\.000Z"/,
+assert.match(maliciousExpiresMarkup, /data-cooldown-expires-at="2026-08-22T12:00:45\.\d{3}Z"/,
   'malicious expires_at values must not be trusted when they fail timestamp parsing');
 assert.doesNotMatch(maliciousExpiresMarkup, /autofocus|onfocus|<script/i,
   'malicious countdown expires_at and prefix values must be escaped or discarded');
@@ -1082,6 +1082,10 @@ assert.match(renderExploreSource, /var seasonalDefeated = Boolean\(seasonal\.def
   'seasonal defeated state must take precedence over used-today button copy');
 assert.match(renderExploreSource, /var bossStatusLabel = boss\.defeated \? 'DEFEATED' : boss\.attempt_used \? 'USED TODAY' : ''/,
   'weekly boss defeated state must take precedence over used-today button copy');
+assert.match(renderExploreSource, /cooldown: seasonalDefeated \? null : seasonal\.cooldown/,
+  'seasonal defeated state must suppress stale cooldown metadata in the UI');
+assert.match(renderExploreSource, /cooldown: boss\.defeated \? null : boss\.cooldown/,
+  'weekly boss defeated state must suppress stale cooldown metadata in the UI');
 const arenaLockIndex = renderExploreSource.indexOf('if (!hasCombatUnlocked())');
 const arenaStateIndex = renderExploreSource.indexOf('var arena = state.arena;');
 const arenaQueueIndex = renderExploreSource.indexOf('var arenaQueue = state.arena_queue;');

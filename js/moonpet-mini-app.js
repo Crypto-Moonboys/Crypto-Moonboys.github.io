@@ -1153,9 +1153,9 @@
     var activity = snapshot && snapshot.guidance && snapshot.guidance.activity;
     if (activity && activity.cooldown) entries.push(activity.cooldown);
     var weeklyBoss = snapshot && snapshot.guidance && snapshot.guidance.weekly_boss;
-    if (weeklyBoss && weeklyBoss.cooldown) entries.push(weeklyBoss.cooldown);
+    if (weeklyBoss && !weeklyBoss.defeated && weeklyBoss.cooldown) entries.push(weeklyBoss.cooldown);
     var live = snapshot && snapshot.live_systems || {};
-    if (live.seasonal_boss && live.seasonal_boss.cooldown) entries.push(live.seasonal_boss.cooldown);
+    if (live.seasonal_boss && !live.seasonal_boss.defeated_at && live.seasonal_boss.cooldown) entries.push(live.seasonal_boss.cooldown);
     (snapshot && snapshot.regions || []).forEach(function (region) { if (region && region.cooldown) entries.push(region.cooldown); });
     (live.chains || []).forEach(function (chain) { if (chain && chain.cooldown) entries.push(chain.cooldown); });
     return entries;
@@ -1485,13 +1485,13 @@
     var seasonalDefeated = Boolean(seasonal.defeated_at);
     var seasonalButtonLabel = seasonalDefeated ? 'SEASONAL BOSS DEFEATED' : seasonal.attempted_today ? 'ATTACK USED TODAY' : 'ATTACK SEASONAL BOSS // 18 ENERGY';
     var seasonalStatusLabel = seasonalDefeated ? 'DEFEATED' : seasonal.attempted_today ? 'USED TODAY' : '';
-    var seasonalBody = '<div class="line">' + escapeHtml(words(seasonal.title || 'offline')) + ' // ' + number(seasonal.damage) + '/' + number(seasonal.hp) + ' DAMAGE</div><div class="line muted">WEAKNESS ' + escapeHtml(words(seasonal.weakness)) + ' // REWARD ' + escapeHtml(words(seasonal.reward)) + '</div><div class="button-grid one">' + button(seasonalButtonLabel, 'seasonal_boss', {}, { disabled: !seasonal.available, statusLabel: seasonalStatusLabel, cooldown: seasonal.cooldown }) + '</div>';
+    var seasonalBody = '<div class="line">' + escapeHtml(words(seasonal.title || 'offline')) + ' // ' + number(seasonal.damage) + '/' + number(seasonal.hp) + ' DAMAGE</div><div class="line muted">WEAKNESS ' + escapeHtml(words(seasonal.weakness)) + ' // REWARD ' + escapeHtml(words(seasonal.reward)) + '</div><div class="button-grid one">' + button(seasonalButtonLabel, 'seasonal_boss', {}, { disabled: !seasonal.available, statusLabel: seasonalStatusLabel, cooldown: seasonalDefeated ? null : seasonal.cooldown }) + '</div>';
     var bossReward = valueText(boss.reward);
     var bossStatusLabel = boss.defeated ? 'DEFEATED' : boss.attempt_used ? 'USED TODAY' : '';
     var bossBody = '<div class="line">' + (boss.defeated ? 'TARGET DEFEATED.' : boss.attempt_used ? 'DAILY ATTEMPT USED.' : 'SELECT AN ATTACK ROUTINE.') + '</div>' +
       '<div class="line muted">HP ' + number(boss.remaining_hp) + '/' + number(boss.hp) + ' // DAMAGE ' + number(boss.damage) + ' // ATTEMPTS ' + number(boss.attempts) + '/' + number(boss.max_attempts || 7) + '</div>' +
       '<div class="line muted">WEAKNESS ' + escapeHtml(words(boss.weakness || 'unknown')) + ' // REWARD ' + escapeHtml(bossReward) + '</div>' +
-      '<div class="button-grid three">' + button('STRIKE', 'weekly_boss', { move: 'strike' }, { disabled: !boss.available, statusLabel: bossStatusLabel, cooldown: boss.cooldown }) + button('OUTSMART', 'weekly_boss', { move: 'outsmart' }, { disabled: !boss.available, statusLabel: bossStatusLabel, cooldown: boss.cooldown }) + button('ENDURE', 'weekly_boss', { move: 'endure' }, { disabled: !boss.available, statusLabel: bossStatusLabel, cooldown: boss.cooldown }) + '</div>';
+      '<div class="button-grid three">' + button('STRIKE', 'weekly_boss', { move: 'strike' }, { disabled: !boss.available, statusLabel: bossStatusLabel, cooldown: boss.defeated ? null : boss.cooldown }) + button('OUTSMART', 'weekly_boss', { move: 'outsmart' }, { disabled: !boss.available, statusLabel: bossStatusLabel, cooldown: boss.defeated ? null : boss.cooldown }) + button('ENDURE', 'weekly_boss', { move: 'endure' }, { disabled: !boss.available, statusLabel: bossStatusLabel, cooldown: boss.defeated ? null : boss.cooldown }) + '</div>';
     return panel('DISTRICT NETWORK', '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + regions, 'districts') + panel('MOON RUN', '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + runBody, 'moon-run') +
       panel(adventure ? adventure.title : 'PET ADVENTURE', '<div class="line">' + escapeHtml(adventure ? adventure.intro : 'NO ADVENTURE SIGNAL.') + '</div><div class="button-grid three">' + adventureButtons + '</div>', 'adventure') +
       panel(encounter ? encounter.title : 'STREET EVENT', '<div class="line">' + escapeHtml(encounter ? encounter.intro : 'NO EVENT SIGNAL.') + '</div><div class="button-grid three">' + eventButtons + '</div>', 'street-event') +

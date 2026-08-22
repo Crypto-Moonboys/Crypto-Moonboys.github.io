@@ -8938,14 +8938,14 @@ function buildPetMiniAppCooldownSummary({ journeySummary = null, guidance = null
   addPetCooldownEntry(entries, 'daily_journey_reset', 'Daily Journey reset', journeySummary?.daily?.cooldown, 'daily');
   addPetCooldownEntry(entries, 'weekly_journey_reset', 'Weekly Journey reset', journeySummary?.weekly?.cooldown, 'weekly');
   addPetCooldownEntry(entries, 'timed_activity_claim', 'Timed activity claim', guidance?.activity?.cooldown, 'action');
-  addPetCooldownEntry(entries, 'weekly_boss_attempt', 'Weekly Boss daily attempt', guidance?.weekly_boss?.cooldown, 'daily');
+  addPetCooldownEntry(entries, 'weekly_boss_attempt', 'Weekly Boss daily attempt', guidance?.weekly_boss?.defeated ? null : guidance?.weekly_boss?.cooldown, 'daily');
   for (const region of liveSystems?.regions || []) {
     addPetCooldownEntry(entries, `district:${region.key}`, `${region.title || region.key} district reset`, region.cooldown, 'daily');
   }
   for (const chain of liveSystems?.chains || []) {
     addPetCooldownEntry(entries, `story:${chain.key}`, `${chain.title || chain.key} story reset`, chain.cooldown, 'daily');
   }
-  addPetCooldownEntry(entries, 'seasonal_boss_attempt', 'Seasonal Raid daily attempt', liveSystems?.seasonal_boss?.cooldown, 'daily');
+  addPetCooldownEntry(entries, 'seasonal_boss_attempt', 'Seasonal Raid daily attempt', liveSystems?.seasonal_boss?.defeated_at ? null : liveSystems?.seasonal_boss?.cooldown, 'daily');
   addPetCooldownEntry(entries, 'season_end', 'Moonpet season ends', normalizePetCooldownWindow(seasonSlots?.season?.end_at, now), 'seasonal');
   entries.sort((left, right) => Date.parse(left.expires_at) - Date.parse(right.expires_at) || left.key.localeCompare(right.key));
   return {
