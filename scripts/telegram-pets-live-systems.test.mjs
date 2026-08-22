@@ -36,6 +36,8 @@ const worker = normalizeSourceNewlines(fs.readFileSync(new URL('workers/moonboys
 const client = normalizeSourceNewlines(fs.readFileSync(new URL('js/moonpet-mini-app.js', root), 'utf8'));
 const schema = normalizeSourceNewlines(fs.readFileSync(new URL('workers/moonboys-api/schema.sql', root), 'utf8'));
 const migration = normalizeSourceNewlines(fs.readFileSync(new URL('workers/moonboys-api/migrations/052_telegram_pet_live_systems.sql', root), 'utf8'));
+const liveSystemsSource = normalizeSourceNewlines(fs.readFileSync(new URL('workers/moonboys-api/pets/live-systems.js', root), 'utf8'));
+const rewardSource = normalizeSourceNewlines(fs.readFileSync(new URL('workers/moonboys-api/pets/roguelite-foundation.js', root), 'utf8'));
 const workerSource = normalizeSourceWhitespace(worker);
 const clientSource = normalizeSourceWhitespace(client);
 
@@ -93,8 +95,14 @@ assert.match(workerSource, /processPetEquipmentUpgrade\(db, telegramId, body\.it
 assert.match(workerSource, /if \(!petRaw\) return \{ accepted: false, reason: 'pet_not_adopted' \}; const faction = await db\.prepare\('SELECT faction FROM blocktopia_progression/, 'event chains must reject users without a pet before inserting a system event');
 assert.match(workerSource, /destination: 'economy'/, 'recommendations must provide explicit destinations');
 assert.match(clientSource, /disabled: !item\.affordable \|\| item\.unlocked && !item\.repeatable/, 'Style Lab must disable unaffordable purchases');
-assert.match(normalizeSourceWhitespace(fs.readFileSync(new URL('workers/moonboys-api/pets/live-systems.js', root), 'utf8')), /ensurePetAccountWalletReadyForMutation[\s\S]*wallet_reconciliation_recovery_pending/,
+assert.match(normalizeSourceWhitespace(liveSystemsSource), /ensurePetAccountWalletReadyForMutation[\s\S]*wallet_reconciliation_recovery_pending/,
   'live-system account-wallet sinks must use the shared reconcile-first guard and return the structured pending reason');
+assert.match(normalizeSourceWhitespace(liveSystemsSource), /const authority = await resolveLivePetAuthority\(db, telegramId, pet\); if \(!authority\) return \{ accepted: false, reason: 'source_pet_authority_required' \}; const liveProgression = await getPetLiveProgressionState\(db, telegramId, pet, runtime, authority\);/,
+  'district missions must reuse the already-resolved pet authority tuple for progression state');
+assert.match(normalizeSourceWhitespace(rewardSource), /if \(\(petId && !petSeasonKey\) \|\| \(!petId && petSeasonKey\)\) throw new Error\('invalid_pet_reward_context'\)/,
+  'seasonal boss reward authorization must fail closed for partial pet authority tuples');
+assert.match(normalizeSourceWhitespace(rewardSource), /pet_id = '' AND telegram_id = \? AND pet_season_key = '' AND season_key = \? AND boss_key = \?/,
+  'seasonal boss legacy authorization fallback must be limited to the empty pet tuple');
 for (const table of ['telegram_pet_system_events', 'telegram_pet_live_progression_state', 'telegram_pet_event_chain_progress', 'telegram_pet_seasonal_boss_progress', 'telegram_pet_cosmetic_unlocks']) {
   assert.ok(schema.includes(`CREATE TABLE IF NOT EXISTS ${table}`));
 }
@@ -510,6 +518,61 @@ assert.equal((await processPetSeasonalBoss(d1, 'serialized-boss', { ...serialize
   'missing serialized season authority must fail closed before boss settlement');
 assert.equal((await processPetSeasonalBoss(d1, 'serialized-boss', { ...serializedBossPet, season_key: 'pet-s2099-999' }, reward)).reason, 'source_pet_authority_required',
   'invalid serialized season authority must fail closed before boss settlement');
+
+seedPlayer('boss-authority');
+const bossPetA = livePet('boss-authority');
+const bossPetB = { ...livePet('boss-authority'), pet_id: 'pet:boss-authority:pet-s2026-003:2', slot_number: 2 };
+runtimeDb.prepare(`INSERT INTO telegram_pet_season_slots
+  (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status)
+  VALUES (?, 'boss-authority', 'pet-s2026-003', 2, 'free', 'boss-authority-fixture', 0, 'active')`).run(bossPetB.pet_id);
+runtimeDb.prepare(`INSERT INTO telegram_pet_instances
+  (pet_id, telegram_id, season_key, slot_number, pet_xp, level, energy, source_profile_updated_at, status)
+  VALUES (?, 'boss-authority', 'pet-s2026-003', 2, 0, 1, 100, 'boss-authority-fixture', 'active')`).run(bossPetB.pet_id);
+runtimeDb.prepare('INSERT INTO telegram_pet_seasonal_boss_progress (pet_id, telegram_id, pet_season_key, season_key, boss_key, damage, defeated_at) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)')
+  .run(bossPetA.pet_id, 'boss-authority', bossPetA.season_key, boss.season_instance, boss.key, boss.hp);
+const petBClaim = await awardPetReward(d1, {
+  telegram_id: 'boss-authority',
+  pet_id: bossPetB.pet_id,
+  season_key: bossPetB.season_key,
+  source: 'pet_seasonal_boss',
+  idempotency_key: `pet-b-claim:${boss.season_instance}`,
+  event_key: `pet-b-claim:${boss.season_instance}`,
+  rewards: { pet_xp: 1 },
+  context: { pet_id: bossPetB.pet_id, pet_season_key: bossPetB.season_key, season_key: boss.season_instance, boss_key: boss.key },
+});
+assert.equal(petBClaim.reason, 'reward_not_authorized', 'Pet B cannot claim Pet A seasonal boss defeat');
+const missingAuthorityClaim = await awardPetReward(d1, {
+  telegram_id: 'boss-authority',
+  source: 'pet_seasonal_boss',
+  idempotency_key: `missing-pet-claim:${boss.season_instance}`,
+  event_key: `missing-pet-claim:${boss.season_instance}`,
+  rewards: { pet_xp: 1 },
+  context: { season_key: boss.season_instance, boss_key: boss.key },
+});
+assert.equal(missingAuthorityClaim.reason, 'reward_not_authorized',
+  'modern seasonal boss rows cannot be claimed through missing pet authority');
+await assert.rejects(() => awardPetReward(d1, {
+  telegram_id: 'boss-authority',
+  pet_id: bossPetA.pet_id,
+  season_key: bossPetA.season_key,
+  source: 'pet_seasonal_boss',
+  idempotency_key: `partial-pet-claim:${boss.season_instance}`,
+  rewards: { pet_xp: 1 },
+  context: { pet_id: bossPetA.pet_id, season_key: boss.season_instance, boss_key: boss.key },
+}), /invalid_pet_reward_context/, 'partial seasonal boss pet authority must fail closed');
+
+seedPlayer('legacy-boss-authority');
+runtimeDb.prepare("INSERT INTO telegram_pet_seasonal_boss_progress (pet_id, telegram_id, pet_season_key, season_key, boss_key, damage, defeated_at) VALUES ('', ?, '', ?, ?, ?, CURRENT_TIMESTAMP)")
+  .run('legacy-boss-authority', boss.season_instance, boss.key, boss.hp);
+const legacyBossClaim = await awardPetReward(d1, {
+  telegram_id: 'legacy-boss-authority',
+  source: 'pet_seasonal_boss',
+  idempotency_key: `legacy-boss:${boss.season_instance}`,
+  event_key: `legacy-boss:${boss.season_instance}`,
+  rewards: { pet_xp: 1 },
+  context: { season_key: boss.season_instance, boss_key: boss.key },
+});
+assert.equal(legacyBossClaim.accepted, true, 'legacy empty-tuple seasonal boss authorization remains compatible');
 
 seedPlayer('boss-1');
 runtimeDb.prepare('INSERT INTO telegram_pet_seasonal_boss_progress (pet_id, telegram_id, pet_season_key, season_key, boss_key, damage) VALUES (?, ?, ?, ?, ?, ?)')

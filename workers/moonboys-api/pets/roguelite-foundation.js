@@ -150,6 +150,7 @@ function getRewardAuthorization(source, telegramId, context = {}) {
     const petId = String(context.pet_id || '').trim();
     const bossKey = String(context.boss_key || '').trim();
     if (!seasonKey || !bossKey) throw new Error('invalid_pet_reward_context');
+    if ((petId && !petSeasonKey) || (!petId && petSeasonKey)) throw new Error('invalid_pet_reward_context');
     if (petId && petSeasonKey) {
       return {
         sql: 'AND EXISTS (SELECT 1 FROM telegram_pet_seasonal_boss_progress WHERE pet_id = ? AND telegram_id = ? AND pet_season_key = ? AND season_key = ? AND boss_key = ? AND defeated_at IS NOT NULL)',
@@ -157,7 +158,7 @@ function getRewardAuthorization(source, telegramId, context = {}) {
       };
     }
     return {
-      sql: 'AND EXISTS (SELECT 1 FROM telegram_pet_seasonal_boss_progress WHERE telegram_id = ? AND season_key = ? AND boss_key = ? AND defeated_at IS NOT NULL)',
+      sql: "AND EXISTS (SELECT 1 FROM telegram_pet_seasonal_boss_progress WHERE pet_id = '' AND telegram_id = ? AND pet_season_key = '' AND season_key = ? AND boss_key = ? AND defeated_at IS NOT NULL)",
       args: [telegramId, seasonKey, bossKey],
     };
   }

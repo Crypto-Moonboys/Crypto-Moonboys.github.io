@@ -328,7 +328,7 @@ async function releaseSettlement(db, reservationId, token) {
 export async function processPetDistrictMission(db, telegramId, regionKey, pet, runtime, awardReward, factionKey, approachKey) {
   const authority = await resolveLivePetAuthority(db, telegramId, pet);
   if (!authority) return { accepted: false, reason: 'source_pet_authority_required' };
-  const liveProgression = await getPetLiveProgressionState(db, telegramId, pet, runtime);
+  const liveProgression = await getPetLiveProgressionState(db, telegramId, pet, runtime, authority);
   const visibleLevel = getRuntimePetLevel(pet);
   const directory = buildPetRegionDirectory(visibleLevel, parse(liveProgression?.region_mastery_json, {}));
   const region = directory.find((entry) => entry.key === String(regionKey || ''));
