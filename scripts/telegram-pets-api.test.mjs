@@ -182,6 +182,19 @@ assert.deepEqual(
   ['seasonal_boss_attempt', 'district:alley', 'timed_activity_claim', 'story:signal'],
   'cooldown summary must preserve independent action timers in expiry order',
 );
+const defeatedBossCooldowns = buildPetMiniAppCooldownSummary({
+  now: cooldownNow,
+  guidance: {
+    weekly_boss: { defeated: true, attempt_used: true, cooldown: null },
+  },
+  liveSystems: {
+    seasonal_boss: { defeated_at: '2026-08-22T12:00:00.000Z', attempted_today: true, cooldown: null },
+  },
+});
+assert.equal(defeatedBossCooldowns.entries.some((entry) => entry.key === 'weekly_boss_attempt'), false,
+  'weekly boss defeated state must not emit a daily-attempt cooldown');
+assert.equal(defeatedBossCooldowns.entries.some((entry) => entry.key === 'seasonal_boss_attempt'), false,
+  'seasonal boss defeated state must not emit a daily-attempt cooldown');
 for (const entry of simultaneousCooldowns.entries) {
   assert.equal(entry.server_time, '2026-08-22T12:00:00.000Z',
     `${entry.key} cooldown entry must carry server_time for clock-drift-safe ticking`);
@@ -194,13 +207,16 @@ assert.match(worker, /daily: \{ utc_day: dayKey, day_reset_at, cooldown: dailyCo
   'daily journey summary must expose the complete cooldown contract at top level');
 assert.match(worker, /weekly: \{ qualification_week: week, week_reset_at, cooldown: weeklyCooldown, expires_at: weeklyCooldown\?\.expires_at[^}]*remaining_seconds: weeklyCooldown\?\.remaining_seconds[^}]*server_time: weeklyCooldown\?\.server_time/s,
   'weekly journey summary must expose the complete cooldown contract at top level');
+assert.match(worker, /const weeklyBossDefeated = Boolean\(weeklyProgress\?\.defeated_at\);[\s\S]*const weeklyAttemptCooldown = weeklyAttempt && !weeklyBossDefeated \? normalizePetCooldownWindow/,
+  'weekly boss daily cooldown must only attach when the daily attempt is consumed and the boss is not defeated');
 for (const snippet of [
   'server_time: dailyUsed ? dailyCooldown?.server_time : null',
   'server_time: chain.used_today ? dailyCooldown?.server_time : null',
-  'server_time: bossUsedToday ? dailyCooldown?.server_time : null',
+  'const bossCooldown = bossUsedToday && !bossDefeated ? dailyCooldown : null',
+  'server_time: bossCooldown?.server_time || null',
 ]) {
   assert.ok(liveSystemsSource.includes(snippet),
-    'region, story, and seasonal locks must expose server_time beside expires_at and remaining_seconds');
+    'region, story, and seasonal locks must expose server_time and defeated boss cooldown precedence');
 }
 
 assert.ok(worker.includes('TELEGRAM_PETS_BOT_SECRET'), 'pet-only bot secret must be used');

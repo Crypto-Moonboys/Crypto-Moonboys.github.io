@@ -152,6 +152,8 @@ export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gea
   };
   const faction = normalizeFaction(factionRow?.faction);
   const bossUsedToday = usedToday.has(`seasonal_boss:${boss.key}`);
+  const bossDefeated = Boolean(bossRow.defeated_at);
+  const bossCooldown = bossUsedToday && !bossDefeated ? dailyCooldown : null;
   return {
     regions: buildPetRegionDirectory(pet.level, mastery).map((region) => {
       const dailyUsed = usedToday.has(`district:${region.key}`);
@@ -159,7 +161,7 @@ export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gea
     return { ...region, completed: completed.includes(region.key), energy_cost: 10, mastery_gain: 25, mission, used_today: dailyUsed, available: region.playable && !dailyUsed, cooldown: dailyUsed ? dailyCooldown : null, expires_at: dailyUsed ? dailyCooldown?.expires_at : null, remaining_seconds: dailyUsed ? dailyCooldown?.remaining_seconds || 0 : 0, server_time: dailyUsed ? dailyCooldown?.server_time : null };
     }),
     chains: chainState.map((chain) => ({ ...chain, cooldown: chain.used_today ? dailyCooldown : null, expires_at: chain.used_today ? dailyCooldown?.expires_at : null, remaining_seconds: chain.used_today ? dailyCooldown?.remaining_seconds || 0 : 0, server_time: chain.used_today ? dailyCooldown?.server_time : null })),
-    seasonal_boss: { ...boss, damage: integer(bossRow.damage), defeated_at: bossRow.defeated_at || null, reward_claimed_at: bossRow.reward_claimed_at || null, attempted_today: bossUsedToday, available: integer(pet.level) >= boss.min_level && !bossRow.defeated_at && !bossUsedToday, cooldown: bossUsedToday ? dailyCooldown : null, expires_at: bossUsedToday ? dailyCooldown?.expires_at : null, remaining_seconds: bossUsedToday ? dailyCooldown?.remaining_seconds || 0 : 0, server_time: bossUsedToday ? dailyCooldown?.server_time : null },
+    seasonal_boss: { ...boss, damage: integer(bossRow.damage), defeated_at: bossRow.defeated_at || null, reward_claimed_at: bossRow.reward_claimed_at || null, attempted_today: bossUsedToday, available: integer(pet.level) >= boss.min_level && !bossDefeated && !bossUsedToday, cooldown: bossCooldown, expires_at: bossCooldown?.expires_at || null, remaining_seconds: bossCooldown?.remaining_seconds || 0, server_time: bossCooldown?.server_time || null },
     upgrades: upgradeRows,
     cosmetics: cosmeticState,
     crafting,

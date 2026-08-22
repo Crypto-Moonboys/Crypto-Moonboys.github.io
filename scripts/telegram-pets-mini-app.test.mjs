@@ -251,6 +251,11 @@ assert.match(seasonalUsedToday, /USED TODAY/,
   'seasonal attack used-today state must show used-today status');
 assert.doesNotMatch(seasonalUsedToday, /LOCKED/,
   'seasonal attack used-today state must not render locked copy');
+const defeatedBossButton = actionAvailabilityRuntime.button('STRIKE', 'weekly_boss', { move: 'strike' }, { disabled: true, statusLabel: 'DEFEATED', cooldown: null });
+assert.match(defeatedBossButton, /DEFEATED/,
+  'defeated boss buttons must render defeated status copy');
+assert.doesNotMatch(defeatedBossButton, /Available in|data-cooldown-expires-at/,
+  'defeated bosses must not render false availability cooldown timers');
 
 const cooldownRefreshSource = extractTestExport(client, 'cooldownRefresh');
 assert.ok(cooldownRefreshSource, 'cooldown refresh helper must be extractable for debounce coverage');
@@ -1073,8 +1078,10 @@ assert.match(client, /function combatLockedButtonOptions\(entryDetail\)[\s\S]*di
 const renderExploreSource = client.slice(client.indexOf('  function renderExplore()'), client.indexOf('  function renderWork()', client.indexOf('  function renderExplore()')));
 assert.match(renderExploreSource, /button\('ACCEPT ANY RANK'[\s\S]*statusLabel: arenaQueue\.accept_any_rank \? 'CURRENT' : ''/,
   'ACCEPT ANY RANK current queue state must use an explicit CURRENT status label');
-assert.match(renderExploreSource, /button\(seasonal\.attempted_today \? 'ATTACK USED TODAY'[\s\S]*statusLabel: seasonal\.attempted_today \? 'USED TODAY' : ''/,
-  'seasonal attack used-today button must use an explicit USED TODAY status label');
+assert.match(renderExploreSource, /var seasonalDefeated = Boolean\(seasonal\.defeated_at\);[\s\S]*seasonalDefeated \? 'SEASONAL BOSS DEFEATED'[\s\S]*seasonalDefeated \? 'DEFEATED'/,
+  'seasonal defeated state must take precedence over used-today button copy');
+assert.match(renderExploreSource, /var bossStatusLabel = boss\.defeated \? 'DEFEATED' : boss\.attempt_used \? 'USED TODAY' : ''/,
+  'weekly boss defeated state must take precedence over used-today button copy');
 const arenaLockIndex = renderExploreSource.indexOf('if (!hasCombatUnlocked())');
 const arenaStateIndex = renderExploreSource.indexOf('var arena = state.arena;');
 const arenaQueueIndex = renderExploreSource.indexOf('var arenaQueue = state.arena_queue;');

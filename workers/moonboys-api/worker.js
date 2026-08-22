@@ -15279,8 +15279,9 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null) {
   const elapsedSeconds = activity ? Math.max(0, Math.floor((now.getTime() - (parseSqliteTs(activity.started_at) ?? now.getTime())) / 1000)) : 0;
   const activityReadyAt = activity ? new Date((parseSqliteTs(activity.started_at) ?? now.getTime()) + PET_ACTIVITY_MIN_SECONDS * 1000).toISOString() : null;
   const activityCooldown = activity ? normalizePetCooldownWindow(activityReadyAt, now) : null;
-  const weeklyAttemptCooldown = weeklyAttempt ? normalizePetCooldownWindow(getNextPetUtcDayResetAt(now), now) : null;
   const boss = getPetWeeklyBoss(weekKey);
+  const weeklyBossDefeated = Boolean(weeklyProgress?.defeated_at);
+  const weeklyAttemptCooldown = weeklyAttempt && !weeklyBossDefeated ? normalizePetCooldownWindow(getNextPetUtcDayResetAt(now), now) : null;
   return {
     pet,
     day_key: dayKey,
@@ -15316,12 +15317,12 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null) {
       max_attempts: 7,
       weakness: boss.weakness,
       reward: boss.reward,
-      available: level >= 5 && !weeklyProgress?.defeated_at && !weeklyAttempt && Number(pet.energy || 0) >= 12,
+      available: level >= 5 && !weeklyBossDefeated && !weeklyAttempt && Number(pet.energy || 0) >= 12,
       attempt_used: Boolean(weeklyAttempt),
       cooldown: weeklyAttemptCooldown,
       expires_at: weeklyAttemptCooldown?.expires_at || null,
       remaining_seconds: weeklyAttemptCooldown?.remaining_seconds || 0,
-      defeated: Boolean(weeklyProgress?.defeated_at),
+      defeated: weeklyBossDefeated,
     },
     features: getPetGuidanceFeatures(level, combatEligibility),
     jobs: Object.values(PET_JOBS).map((job) => ({
