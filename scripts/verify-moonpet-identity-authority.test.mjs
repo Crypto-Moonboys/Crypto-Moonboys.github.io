@@ -410,8 +410,12 @@ try {
       ('pet-row-null-season', 'pet:seasonal', 'owner', NULL, 'seasonal_boss');
   `);
   const systemEventViolations = auditMoonpetOwnershipBoundariesDb(systemEventsOwnershipDb);
-  assert.ok(systemEventViolations.some((row) => row.table_name === 'telegram_pet_system_events' && row.reason === 'pet_id_missing'),
-    'ownership audit flags missing pet_id for pet-owned system event rows');
+  assert.ok(systemEventViolations.some((row) =>
+    row.table_name === 'telegram_pet_system_events'
+      && row.reason === 'invalid_pet_authority_reference'
+      && row.pet_id === ''
+      && row.season_key === 'season-a'),
+  'ownership audit flags empty pet_id as an invalid authority reference for pet-owned system event rows');
   assert.ok(systemEventViolations.some((row) =>
     row.table_name === 'telegram_pet_system_events'
       && row.reason === 'season_key_missing'
@@ -467,6 +471,9 @@ assert.match(defaultCliResult.stdout, /telegram_pet_daily_runs:\s*\d+/);
 assert.match(defaultCliResult.stdout, /telegram_pet_live_progression_state:\s*\d+/);
 assert.match(defaultCliResult.stdout, /audited tables:\s*\d+/);
 assert.match(defaultCliResult.stdout, /violations:\s*0/);
+assert.match(defaultCliResult.stdout, /AUDIT TABLES CHECKED:\s*\d+/);
+assert.match(defaultCliResult.stdout, /OWNERSHIP CHECKS RUN:\s*\d+/);
+assert.match(defaultCliResult.stdout, /VIOLATIONS:\s*0/);
 
 const cliResult = spawnSync(process.execPath, ['scripts/verify-moonpet-identity-authority.mjs', '--sqlite'], {
   cwd: repoRoot,
@@ -597,7 +604,10 @@ try {
       ('pet:missing-season-null', 'owner', NULL),
       ('pet:missing-season-empty', 'owner', '');
     INSERT INTO telegram_pet_system_events (pet_id, telegram_id, season_key, system_key) VALUES
+      ('', 'owner', 'season-a', 'district'),
       ('pet:orphan-district', 'owner', 'season-a', 'district');
+    INSERT INTO telegram_pet_event_chain_progress (pet_id, telegram_id, season_key) VALUES
+      ('pet:event-chain-missing-season', 'owner', NULL);
   `);
 } finally {
   badAuthorityDb.close();
@@ -615,6 +625,7 @@ try {
   assert.match(badAuthorityCli.stdout, /STATUS: FAIL/);
   assert.match(`${badAuthorityCli.stderr}\n${badAuthorityCli.stdout}`, /"table_name":\s*"telegram_pet_specialist_progression"[\s\S]*"reason":\s*"pet_id_missing"/);
   assert.match(`${badAuthorityCli.stderr}\n${badAuthorityCli.stdout}`, /"table_name":\s*"telegram_pet_system_events"[\s\S]*"reason":\s*"invalid_pet_authority_reference"/);
+  assert.match(`${badAuthorityCli.stderr}\n${badAuthorityCli.stdout}`, /"table_name":\s*"telegram_pet_event_chain_progress"[\s\S]*"reason":\s*"season_key_missing"/);
   assert.match(`${badAuthorityCli.stderr}\n${badAuthorityCli.stdout}`, /"reason":\s*"pet_id_missing"/);
   assert.match(`${badAuthorityCli.stderr}\n${badAuthorityCli.stdout}`, /"reason":\s*"season_key_missing"/);
 } finally {

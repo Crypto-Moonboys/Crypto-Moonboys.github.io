@@ -434,6 +434,14 @@ function auditStaleAuthorityLinks(db) {
       if (row.pet_id == null || row.pet_id === '') reason = 'pet_id_missing';
       else if (row.season_key == null || row.season_key === '') reason = 'season_key_missing';
       else if (row.telegram_id == null || row.telegram_id === '') reason = 'telegram_id_missing';
+      if (
+        table === 'telegram_pet_system_events'
+        && (row.pet_id == null || row.pet_id === '')
+        && row.season_key != null
+        && row.season_key !== ''
+      ) {
+        reason = 'invalid_pet_authority_reference';
+      }
       violations.push({
         table_name: table,
         pet_id: row.pet_id,
@@ -717,8 +725,12 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   }
   console.log('');
   const auditedTableCount = IDENTITY_AUTHORITY_TABLES.length + ownershipAuditTableNames().length;
+  const ownershipChecksRun = ownershipAuditTableNames().length;
   console.log(`audited tables: ${auditedTableCount}`);
   console.log(`violations: ${result.violations.length}`);
+  console.log(`AUDIT TABLES CHECKED: ${auditedTableCount}`);
+  console.log(`OWNERSHIP CHECKS RUN: ${ownershipChecksRun}`);
+  console.log(`VIOLATIONS: ${result.violations.length}`);
   console.log('');
   console.log(`Invalid authority rows: ${result.violations.length}`);
   console.log('');
