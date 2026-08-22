@@ -144,10 +144,12 @@ async function assertSelectedPetIdentityScoping() {
       INSERT INTO telegram_pet_season_slots (pet_id, telegram_id, season_key, slot_number, acquisition_type, status) VALUES
         ('pet:owner:season-a:1', 'owner', 'season-a', 1, 'free', 'active'),
         ('pet:owner:season-a:2', 'owner', 'season-a', 2, 'arcade_xp', 'active'),
+        ('pet:owner:season-a:3', 'owner', 'season-a', 3, 'arcade_xp', 'active'),
         ('pet:owner:season-old:1', 'owner', 'season-old', 1, 'free', 'archived');
       INSERT INTO telegram_pet_instances (pet_id, telegram_id, season_key, slot_number, status) VALUES
         ('pet:owner:season-a:1', 'owner', 'season-a', 1, 'active'),
         ('pet:owner:season-a:2', 'owner', 'season-a', 2, 'active'),
+        ('pet:owner:season-a:3', 'owner', 'season-a', 3, 'active'),
         ('pet:owner:season-old:1', 'owner', 'season-old', 1, 'archived');
       INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key)
         VALUES ('owner', 'pet:owner:season-a:1', 'season-a');
@@ -194,6 +196,14 @@ async function assertSelectedPetIdentityScoping() {
     assert.notEqual(paid.current_stage.evolution_id, 'legendary_guardian', 'active paid pet must not fall back to owner-scoped evolution unlocks');
     assert.notEqual(paid.current_stage.stage, 5, 'pet_id alone must not let a corrupt evolution owner row leak final-form state');
     assert.equal(paid.memories.total_runs, 1, 'active paid pet must not inherit starter memories');
+
+    db.prepare(`UPDATE telegram_pet_active_slots SET pet_id='pet:owner:season-a:3', season_key='season-a' WHERE telegram_id='owner'`).run();
+    const paidWithoutPetEvolution = await getMoonpetIdentitySummary(d1, 'owner');
+    assert.equal(paidWithoutPetEvolution.scope.pet_id, 'pet:owner:season-a:3');
+    assert.equal(paidWithoutPetEvolution.current_stage.evolution_id, 'moon_egg',
+      'stale account-wide evolution compatibility rows cannot leak into a selected paid pet with no pet-specific evolution row');
+    assert.notEqual(paidWithoutPetEvolution.current_stage.stage, 5,
+      'selected pet display must ignore stale legacy evolution stage when the selected pet has no by-pet evolution row');
 
     const archived = await getMoonpetIdentitySummary(d1, 'owner', {
       pet_id: 'pet:owner:season-old:1',
