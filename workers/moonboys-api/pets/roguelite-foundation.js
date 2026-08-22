@@ -138,18 +138,29 @@ function getRewardAuthorization(source, telegramId, context = {}) {
   const roomId = String(context.room_id || '').trim();
   if (source === 'pet_district' || source === 'pet_event_chain') {
     const systemEventId = String(context.system_event_id || '').trim();
-    if (!systemEventId) throw new Error('invalid_pet_reward_context');
+    const petId = String(context.pet_id || '').trim();
+    const petSeasonKey = String(context.pet_season_key || '').trim();
+    if (!systemEventId || !petId || !petSeasonKey) throw new Error('invalid_pet_reward_context');
     return {
-      sql: "AND EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id = ? AND telegram_id = ? AND status IN ('settling','completed'))",
-      args: [systemEventId, telegramId],
+      sql: "AND EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id = ? AND telegram_id = ? AND pet_id = ? AND season_key = ? AND status IN ('settling','completed'))",
+      args: [systemEventId, telegramId, petId, petSeasonKey],
     };
   }
   if (source === 'pet_seasonal_boss') {
     const seasonKey = String(context.season_key || '').trim();
+    const petSeasonKey = String(context.pet_season_key || '').trim();
+    const petId = String(context.pet_id || '').trim();
     const bossKey = String(context.boss_key || '').trim();
     if (!seasonKey || !bossKey) throw new Error('invalid_pet_reward_context');
+    if ((petId && !petSeasonKey) || (!petId && petSeasonKey)) throw new Error('invalid_pet_reward_context');
+    if (petId && petSeasonKey) {
+      return {
+        sql: 'AND EXISTS (SELECT 1 FROM telegram_pet_seasonal_boss_progress WHERE pet_id = ? AND telegram_id = ? AND pet_season_key = ? AND season_key = ? AND boss_key = ? AND defeated_at IS NOT NULL)',
+        args: [petId, telegramId, petSeasonKey, seasonKey, bossKey],
+      };
+    }
     return {
-      sql: 'AND EXISTS (SELECT 1 FROM telegram_pet_seasonal_boss_progress WHERE telegram_id = ? AND season_key = ? AND boss_key = ? AND defeated_at IS NOT NULL)',
+      sql: "AND EXISTS (SELECT 1 FROM telegram_pet_seasonal_boss_progress WHERE pet_id = '' AND telegram_id = ? AND pet_season_key = '' AND season_key = ? AND boss_key = ? AND defeated_at IS NOT NULL)",
       args: [telegramId, seasonKey, bossKey],
     };
   }
@@ -234,7 +245,7 @@ export async function awardPetReward(db, request = {}) {
   // dedicated account wallet table exists.
   const petAuthority = Boolean(petId);
   const petOwnerGuard = petAuthority
-    ? 'AND EXISTS (SELECT 1 FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ?)'
+    ? 'AND EXISTS (SELECT 1 FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ? AND season_key = ?)'
     : '';
   const petEventScope = petAuthority ? 'AND pet_id = ?' : 'AND pet_id IS NULL';
   const metadata = safeJson({ finalization_id: finalizationId, source, idempotency_key: idempotencyKey, requested: rewards, currency_costs: currencyCosts, profile_deltas: profileDeltas, context: request.context || {} });
@@ -248,7 +259,7 @@ export async function awardPetReward(db, request = {}) {
       ${petOwnerGuard} ${authorization.sql} ${reservationGuard}`)
       .bind(claimId, petId || null, telegramId, source, idempotencyKey, dayKey, safeJson(rewards), metadata, telegramId,
         currencyCosts.moon_gold, currencyCosts.moon_crystals, currencyCosts.style_tokens,
-        ...(petAuthority ? [petId, telegramId] : []),
+        ...(petAuthority ? [petId, telegramId, seasonKey] : []),
         ...authorization.args, ...(reservationId ? [reservationId, telegramId] : [])),
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_events
       (id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)

@@ -6608,6 +6608,7 @@ function serializePet(pet, identity = null) {
   return {
     pet_id: decayed.pet_id || null,
     telegram_id: decayed.telegram_id,
+    season_key: decayed.season_key || null,
     pet_name: decayed.pet_name,
     species: decayed.species,
     stage: currentEvolution?.name || null,
@@ -9408,7 +9409,7 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
     const petRaw = await getPetProfile(db, telegramId);
     if (!petRaw) return { accepted: false, reason: 'pet_not_adopted' };
     const faction = await db.prepare('SELECT faction FROM blocktopia_progression WHERE telegram_id=?').bind(telegramId).first().catch(() => null);
-    const result = await processPetEventChain(db, telegramId, body.chain_key, (args) => awardPetReward(db, args), faction?.faction, body.choice_key);
+    const result = await processPetEventChain(db, telegramId, body.chain_key, (args) => awardPetReward(db, args), faction?.faction, body.choice_key, petRaw);
     if (result.accepted && !result.duplicate) await applyPetRuntimeCommandAward(db, telegramId, `runtime:mini:${eventKey}`, 'explore', activePetRewardAuthority(petRaw));
     return result;
   }

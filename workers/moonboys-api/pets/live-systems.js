@@ -60,6 +60,42 @@ function getRuntimePetLevel(pet = {}) {
     : integer(pet?.level);
 }
 
+function livePetAuthority(telegramId, pet = {}) {
+  const owner = String(telegramId || '').trim();
+  const petId = String(pet?.pet_id || '').trim();
+  const seasonKey = String(pet?.season_key || '').trim();
+  return owner && petId && seasonKey ? { telegram_id: owner, pet_id: petId, season_key: seasonKey } : null;
+}
+
+async function resolveLivePetAuthority(db, telegramId, pet = {}) {
+  const authority = livePetAuthority(telegramId, pet);
+  if (!authority) return null;
+  const row = await db.prepare('SELECT 1 AS ok FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=? AND season_key=? LIMIT 1')
+    .bind(authority.pet_id, authority.telegram_id, authority.season_key).first().catch(() => null);
+  return row ? authority : null;
+}
+
+async function getPetLiveProgressionState(db, telegramId, pet, runtime = {}, resolvedAuthority = null) {
+  const authority = resolvedAuthority || await resolveLivePetAuthority(db, telegramId, pet);
+  if (!authority) return runtime || {};
+  await db.prepare(`INSERT OR IGNORE INTO telegram_pet_live_progression_state
+    (pet_id, telegram_id, season_key, region_mastery_json, completed_regions_json, prestige_count)
+    SELECT ?, ?, ?, '{}', '[]', 0
+    WHERE EXISTS (SELECT 1 FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=? AND season_key=?)`)
+    .bind(
+      authority.pet_id,
+      authority.telegram_id,
+      authority.season_key,
+      authority.pet_id,
+      authority.telegram_id,
+      authority.season_key,
+    ).run().catch(() => null);
+  const row = await db.prepare(`SELECT * FROM telegram_pet_live_progression_state
+    WHERE pet_id=? AND telegram_id=? AND season_key=?`)
+    .bind(authority.pet_id, authority.telegram_id, authority.season_key).first().catch(() => null);
+  return row || { region_mastery_json: '{}', completed_regions_json: '[]', prestige_count: 0 };
+}
+
 function getDistrictMission(telegramId, pet, region, today = dayKey()) {
   const content = PET_REGION_CONTENT[region.key];
   const mastery = integer(region.mastery_xp);
@@ -96,22 +132,28 @@ function getEventChainScene(chain, stepIndex) {
 }
 
 export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gear = [], materials = [], now = new Date()) {
+  const authority = await resolveLivePetAuthority(db, telegramId, pet);
+  const liveProgression = await getPetLiveProgressionState(db, telegramId, pet, runtime, authority);
   const visibleLevel = getRuntimePetLevel(pet);
-  const mastery = parse(runtime?.region_mastery_json, {});
-  const completed = parse(runtime?.completed_regions_json, []);
+  const mastery = parse(liveProgression?.region_mastery_json, {});
+  const completed = parse(liveProgression?.completed_regions_json, []);
   const today = dayKey(now);
   const dailyResetAt = nextUtcDayResetAt(now);
   const dailyCooldown = cooldownWindow(dailyResetAt, now);
   const [chains, bossProgress, cosmetics, factionRow, dailyEvents] = await Promise.all([
-    db.prepare('SELECT chain_key, step_index, completed_cycles FROM telegram_pet_event_chain_progress WHERE telegram_id = ?').bind(telegramId).all().catch(() => ({ results: [] })),
-    db.prepare('SELECT season_key, boss_key, damage, defeated_at, reward_claimed_at FROM telegram_pet_seasonal_boss_progress WHERE telegram_id = ?').bind(telegramId).all().catch(() => ({ results: [] })),
+    authority
+      ? db.prepare('SELECT chain_key, step_index, completed_cycles FROM telegram_pet_event_chain_progress WHERE pet_id=? AND telegram_id=? AND season_key=?').bind(authority.pet_id, telegramId, authority.season_key).all().catch(() => ({ results: [] }))
+      : db.prepare("SELECT chain_key, step_index, completed_cycles FROM telegram_pet_event_chain_progress WHERE pet_id='' AND telegram_id = ? AND season_key=''").bind(telegramId).all().catch(() => ({ results: [] })),
+    authority
+      ? db.prepare('SELECT season_key, boss_key, damage, defeated_at, reward_claimed_at FROM telegram_pet_seasonal_boss_progress WHERE pet_id=? AND telegram_id=? AND pet_season_key=?').bind(authority.pet_id, telegramId, authority.season_key).all().catch(() => ({ results: [] }))
+      : db.prepare("SELECT season_key, boss_key, damage, defeated_at, reward_claimed_at FROM telegram_pet_seasonal_boss_progress WHERE pet_id='' AND telegram_id = ? AND pet_season_key=''").bind(telegramId).all().catch(() => ({ results: [] })),
     db.prepare('SELECT cosmetic_key, quantity, unlocked_at FROM telegram_pet_cosmetic_unlocks WHERE telegram_id = ?').bind(telegramId).all().catch(() => ({ results: [] })),
     db.prepare('SELECT faction FROM blocktopia_progression WHERE telegram_id = ?').bind(telegramId).first().catch(() => null),
     db.prepare(`SELECT system_key, action_key, period_key, status FROM telegram_pet_system_events
-      WHERE telegram_id=? AND status IN ('settling','completed')
+      WHERE pet_id=? AND telegram_id=? AND season_key=? AND status IN ('settling','completed')
         AND ((system_key IN ('district','event_chain') AND period_key=?)
           OR (system_key='seasonal_boss' AND period_key LIKE ?))`)
-      .bind(telegramId, today, `%:${today}`).all().catch(() => ({ results: [] })),
+      .bind(authority?.pet_id || '', telegramId, authority?.season_key || '', today, `%:${today}`).all().catch(() => ({ results: [] })),
   ]);
   const usedToday = new Set((dailyEvents.results || []).map((row) => `${row.system_key}:${row.action_key}`));
   const chainRows = new Map((chains.results || []).map((row) => [row.chain_key, row]));
@@ -154,7 +196,7 @@ export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gea
     requirements: PET_PRESTIGE_REQUIREMENTS,
     mastered_items: masteredItems,
     completed_regions: completed.length,
-    count: integer(runtime?.prestige_count),
+    count: integer(liveProgression?.prestige_count),
     ready: visibleLevel >= PET_PRESTIGE_REQUIREMENTS.min_level && masteredItems >= 3 && completed.length >= 4
       && integer(pet.moon_gold) >= 5000 && integer(pet.moon_crystals) >= 50,
   };
@@ -216,31 +258,55 @@ export async function processPetCraftRecipe(db, telegramId, recipeKey, requestKe
   return { accepted: true, reason: 'crafting_complete', recipe: { key: recipe.key, title: recipe.title, output: recipe.output }, cost: recipe.cost, rewards: { items: { [recipe.output.item_key]: recipe.output.quantity } } };
 }
 
-async function reserveSystemEvent(db, telegramId, system, action, period, payload = {}) {
+async function reserveSystemEvent(db, telegramId, system, action, period, payload = {}, authority = null) {
   const id = crypto.randomUUID();
+  const petId = authority?.pet_id || '';
+  const seasonKey = authority?.season_key || '';
   const result = await db.prepare(`INSERT OR IGNORE INTO telegram_pet_system_events
-    (id, telegram_id, system_key, action_key, period_key, payload_json) VALUES (?, ?, ?, ?, ?, ?)`)
-    .bind(id, telegramId, system, action, period, JSON.stringify(payload)).run();
+    (id, pet_id, telegram_id, season_key, system_key, action_key, period_key, payload_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+    .bind(id, petId, telegramId, seasonKey, system, action, period, JSON.stringify({ ...payload, pet_id: petId || null, season_key: seasonKey || null })).run();
   if (Number(result?.meta?.changes || 0) > 0) return { id, fresh: true };
   const existing = await db.prepare(`SELECT id, status, payload_json FROM telegram_pet_system_events
-    WHERE telegram_id = ? AND system_key = ? AND action_key = ? AND period_key = ?`)
-    .bind(telegramId, system, action, period).first();
+    WHERE pet_id = ? AND telegram_id = ? AND season_key = ? AND system_key = ? AND action_key = ? AND period_key = ?`)
+    .bind(petId, telegramId, seasonKey, system, action, period).first();
   return { ...existing, fresh: false };
 }
 
-async function getCompletedRequest(db, telegramId, system, action, requestKey) {
+async function getCompletedRequest(db, telegramId, system, action, requestKey, authority = null) {
   if (!requestKey) return null;
   return db.prepare(`SELECT id, status, payload_json FROM telegram_pet_system_events
-    WHERE telegram_id=? AND system_key=? AND action_key=? AND period_key=? AND status='completed'`)
-    .bind(telegramId, system, action, String(requestKey)).first().catch(() => null);
+    WHERE pet_id=? AND telegram_id=? AND season_key=? AND system_key=? AND action_key=? AND period_key=? AND status='completed'`)
+    .bind(authority?.pet_id || '', telegramId, authority?.season_key || '', system, action, String(requestKey)).first().catch(() => null);
 }
 
-async function claimEnergySettlement(db, reservation, telegramId, energyCost) {
-  if (reservation.status === 'completed') return 'completed';
+async function claimEnergySettlement(db, reservation, telegramId, energyCost, authority = null) {
+  if (reservation.status === 'completed') return { state: 'completed', token: null };
   const token = crypto.randomUUID();
   const priorPayload = parse(reservation.payload_json, {});
   const alreadyCharged = priorPayload.energy_charged === true || priorPayload.energy_charged === 1;
-  const results = await db.batch([
+  const results = await db.batch(authority ? [
+    db.prepare(`UPDATE telegram_pet_system_events
+      SET status='settling', payload_json=json_set(COALESCE(payload_json, '{}'), '$.claim_token', ?, '$.energy_charged', 1,
+        '$.energy_charge_token', CASE WHEN COALESCE(json_extract(payload_json, '$.energy_charged'), 0)=1 THEN COALESCE(json_extract(payload_json, '$.energy_charge_token'), '') ELSE ? END),
+        updated_at=CURRENT_TIMESTAMP
+      WHERE id=? AND pet_id=? AND telegram_id=? AND season_key=?
+        AND (status IN ('pending','rejected') OR (status='settling' AND updated_at < datetime('now','-2 minutes')))
+        AND (COALESCE(json_extract(payload_json, '$.energy_charged'), 0)=1
+          OR EXISTS (SELECT 1 FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=? AND season_key=? AND energy>=?))`)
+      .bind(token, token, reservation.id, authority.pet_id, telegramId, authority.season_key, authority.pet_id, telegramId, authority.season_key, energyCost),
+    db.prepare(`UPDATE telegram_pet_instances SET energy=energy-?, updated_at=CURRENT_TIMESTAMP
+      WHERE pet_id=? AND telegram_id=? AND season_key=? AND energy>=?
+        AND EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling'
+          AND json_extract(payload_json, '$.claim_token')=? AND json_extract(payload_json, '$.energy_charge_token')=?)`)
+      .bind(energyCost, authority.pet_id, telegramId, authority.season_key, energyCost, reservation.id, token, token),
+    db.prepare(`UPDATE telegram_pet_profiles SET energy=(
+        SELECT energy FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=? AND season_key=?
+      ), updated_at=CURRENT_TIMESTAMP
+      WHERE telegram_id=? AND EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling'
+        AND json_extract(payload_json, '$.claim_token')=?)
+        AND EXISTS (SELECT 1 FROM telegram_pet_active_slots WHERE telegram_id=? AND pet_id=? AND season_key=?)`)
+      .bind(authority.pet_id, telegramId, authority.season_key, telegramId, reservation.id, token, telegramId, authority.pet_id, authority.season_key),
+  ] : [
     db.prepare(`UPDATE telegram_pet_system_events
       SET status='settling', payload_json=json_set(COALESCE(payload_json, '{}'), '$.claim_token', ?, '$.energy_charged', 1,
         '$.energy_charge_token', CASE WHEN COALESCE(json_extract(payload_json, '$.energy_charged'), 0)=1 THEN COALESCE(json_extract(payload_json, '$.energy_charge_token'), '') ELSE ? END),
@@ -280,8 +346,11 @@ async function releaseSettlement(db, reservationId, token) {
 }
 
 export async function processPetDistrictMission(db, telegramId, regionKey, pet, runtime, awardReward, factionKey, approachKey) {
+  const authority = await resolveLivePetAuthority(db, telegramId, pet);
+  if (!authority) return { accepted: false, reason: 'source_pet_authority_required' };
+  const liveProgression = await getPetLiveProgressionState(db, telegramId, pet, runtime, authority);
   const visibleLevel = getRuntimePetLevel(pet);
-  const directory = buildPetRegionDirectory(visibleLevel, parse(runtime?.region_mastery_json, {}));
+  const directory = buildPetRegionDirectory(visibleLevel, parse(liveProgression?.region_mastery_json, {}));
   const region = directory.find((entry) => entry.key === String(regionKey || ''));
   if (!region) return { accepted: false, reason: 'district_invalid' };
   if (!region.playable) return { accepted: false, reason: 'district_locked', region };
@@ -290,12 +359,12 @@ export async function processPetDistrictMission(db, telegramId, regionKey, pet, 
   const explicitApproach = String(approachKey || '');
   const choice = mission.choices.find((entry) => entry.key === explicitApproach) || (!explicitApproach ? mission.choices.find((entry) => entry.key === 'tactical') : null);
   if (!choice) return { accepted: false, reason: 'district_approach_invalid', mission };
-  const reservation = await reserveSystemEvent(db, telegramId, 'district', region.key, dayKey(), { region_key: region.key, mission_key: mission.key, approach_key: choice.key });
+  const reservation = await reserveSystemEvent(db, telegramId, 'district', region.key, dayKey(), { region_key: region.key, mission_key: mission.key, approach_key: choice.key }, authority);
   if (reservation.status === 'completed') return { accepted: true, duplicate: true, reason: 'district_completed_today', region };
-  const claim = await claimEnergySettlement(db, reservation, telegramId, 10);
+  const claim = await claimEnergySettlement(db, reservation, telegramId, 10, authority);
   if (claim.state !== 'settling') return { accepted: false, reason: claim.state === 'busy' ? 'district_busy' : 'pet_tired' };
   const content = PET_REGION_CONTENT[region.key];
-  const mastery = parse(runtime?.region_mastery_json, {});
+  const mastery = parse(liveProgression?.region_mastery_json, {});
   const currentMastery = integer(mastery[region.key]);
   const succeeded = !explicitApproach || stableLiveSystemRoll(telegramId, region.key, dayKey(), mission.key, choice.key) % 100 >= choice.risk_percent;
   const nextCheckpoint = (Math.floor(currentMastery / 100) + 1) * 100;
@@ -311,40 +380,42 @@ export async function processPetDistrictMission(db, telegramId, regionKey, pet, 
   const resultCopy = bossVictory ? `${mission.opponent.name} falls. Your crew owns the next district tier.` : succeeded ? `${mission.title} cleared via ${choice.label}. The district remembers the play.` : `${choice.label} breaks under pressure. You save the route and keep partial mastery.`;
   let awarded;
   try { awarded = await awardReward({
-    telegram_id: telegramId, source: 'pet_district', idempotency_key: `district:${reservation.id}`, event_key: `district:${reservation.id}`,
+    telegram_id: telegramId, pet_id: authority.pet_id, season_key: authority.season_key, source: 'pet_district', idempotency_key: `district:${reservation.id}`, event_key: `district:${reservation.id}`,
     event_type: 'district_mission', reason: `${region.key}:${mission.key}:${choice.key}:${succeeded ? 'clear' : 'setback'}`, rewards: adjusted.rewards,
-    touch_streak: true, context: { system_event_id: reservation.id, region_key: region.key, mission_key: mission.key, approach_key: choice.key, succeeded, boss: bossVictory ? content.boss : null, faction_bonus: adjusted.bonus },
+    touch_streak: true, context: { system_event_id: reservation.id, pet_id: authority.pet_id, pet_season_key: authority.season_key, region_key: region.key, mission_key: mission.key, approach_key: choice.key, succeeded, boss: bossVictory ? content.boss : null, faction_bonus: adjusted.bonus },
   }); } catch (error) { await releaseSettlement(db, reservation.id, claim.token); throw error; }
   if (!awarded.accepted) { await releaseSettlement(db, reservation.id, claim.token); return awarded; }
   const completionPayload = JSON.stringify({ region_key: region.key, mission_key: mission.key, approach_key: choice.key, succeeded, mastery: nextMastery, mastery_gain: masteryGain, boss: bossVictory, result_copy: resultCopy });
   const results = await db.batch([
-    db.prepare(`UPDATE telegram_pet_progression_state SET
+    db.prepare(`UPDATE telegram_pet_live_progression_state SET
       region_mastery_json=json_set(COALESCE(region_mastery_json, '{}'), '$.' || ?, COALESCE(json_extract(region_mastery_json, '$.' || ?), 0) + ?),
       completed_regions_json=CASE
         WHEN COALESCE(json_extract(region_mastery_json, '$.' || ?), 0) + ? >= 100
           AND NOT EXISTS (SELECT 1 FROM json_each(COALESCE(completed_regions_json, '[]')) WHERE value=?)
         THEN json_insert(COALESCE(completed_regions_json, '[]'), '$[#]', ?)
         ELSE COALESCE(completed_regions_json, '[]') END,
-      adventure_xp=adventure_xp+?, updated_at=CURRENT_TIMESTAMP
-      WHERE telegram_id=? AND EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling' AND json_extract(payload_json, '$.claim_token')=?)`)
-      .bind(region.key, region.key, masteryGain, region.key, masteryGain, region.key, region.key, masteryGain, telegramId, reservation.id, claim.token),
+      updated_at=CURRENT_TIMESTAMP
+      WHERE pet_id=? AND telegram_id=? AND season_key=? AND EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling' AND json_extract(payload_json, '$.claim_token')=?)`)
+      .bind(region.key, region.key, masteryGain, region.key, masteryGain, region.key, region.key, authority.pet_id, telegramId, authority.season_key, reservation.id, claim.token),
     db.prepare("UPDATE telegram_pet_system_events SET status='completed', payload_json=?, updated_at=CURRENT_TIMESTAMP WHERE id=? AND status='settling' AND json_extract(payload_json, '$.claim_token')=?").bind(completionPayload, reservation.id, claim.token),
   ]);
   if (Number(results?.[1]?.meta?.changes || 0) < 1) return { accepted: false, reason: 'district_busy' };
   return { ...awarded, reason: bossVictory ? 'district_boss_defeated' : succeeded ? 'district_mission_complete' : 'district_mission_setback', region: { ...region, mastery_xp: nextMastery }, mission: { key: mission.key, title: mission.title, boss: mission.boss }, choice: { key: choice.key, label: choice.label }, outcome: { success: succeeded, copy: resultCopy, risk_percent: choice.risk_percent, mastery_gain: masteryGain }, result_copy: resultCopy, boss: bossVictory ? content.boss : null, faction_bonus: adjusted.bonus };
 }
 
-export async function processPetEventChain(db, telegramId, chainKey, awardReward, factionKey, choiceKey) {
+export async function processPetEventChain(db, telegramId, chainKey, awardReward, factionKey, choiceKey, pet = {}) {
+  const authority = await resolveLivePetAuthority(db, telegramId, pet);
+  if (!authority) return { accepted: false, reason: 'source_pet_authority_required' };
   const chain = PET_EVENT_CHAINS[String(chainKey || '')];
   if (!chain) return { accepted: false, reason: 'event_chain_invalid' };
-  const row = await db.prepare('SELECT step_index, completed_cycles FROM telegram_pet_event_chain_progress WHERE telegram_id=? AND chain_key=?').bind(telegramId, chainKey).first();
+  const row = await db.prepare('SELECT step_index, completed_cycles FROM telegram_pet_event_chain_progress WHERE pet_id=? AND telegram_id=? AND season_key=? AND chain_key=?').bind(authority.pet_id, telegramId, authority.season_key, chainKey).first();
   const stepIndex = integer(row?.step_index);
   const scene = getEventChainScene(chain, stepIndex);
   const explicitChoice = String(choiceKey || '');
   const authoredChoices = chain.step_content?.[scene.key]?.choices || [];
   const selectedChoice = authoredChoices.find((choice) => choice.key === explicitChoice) || (!explicitChoice ? authoredChoices[0] : null);
   if (!selectedChoice) return { accepted: false, reason: 'event_chain_choice_invalid', scene };
-  const reservation = await reserveSystemEvent(db, telegramId, 'event_chain', chainKey, dayKey(), { step_index: stepIndex, step: scene.key, choice_key: selectedChoice.key });
+  const reservation = await reserveSystemEvent(db, telegramId, 'event_chain', chainKey, dayKey(), { step_index: stepIndex, step: scene.key, choice_key: selectedChoice.key }, authority);
   if (reservation.status === 'completed') return { accepted: true, duplicate: true, reason: 'event_chain_step_used_today' };
   const claim = await claimNoCostSettlement(db, reservation);
   if (claim.state !== 'settling') return { accepted: false, reason: 'event_chain_busy' };
@@ -353,17 +424,17 @@ export async function processPetEventChain(db, telegramId, chainKey, awardReward
   for (const [key, amount] of Object.entries(selectedChoice.reward_bonus || {})) baseRewards[key] = integer(baseRewards[key]) + integer(amount);
   const reward = applyPetFactionBonus(baseRewards, factionKey, 'events');
   let awarded;
-  try { awarded = await awardReward({ telegram_id: telegramId, source: 'pet_event_chain', idempotency_key: `chain:${reservation.id}`, event_key: `chain:${reservation.id}`, event_type: 'event_chain', reason: `${chainKey}:${scene.key}:${selectedChoice.key}`, rewards: reward.rewards, touch_streak: true, context: { system_event_id: reservation.id, chain_key: chainKey, step: scene.key, choice_key: selectedChoice.key, final, faction_bonus: reward.bonus } }); }
+  try { awarded = await awardReward({ telegram_id: telegramId, pet_id: authority.pet_id, season_key: authority.season_key, source: 'pet_event_chain', idempotency_key: `chain:${reservation.id}`, event_key: `chain:${reservation.id}`, event_type: 'event_chain', reason: `${chainKey}:${scene.key}:${selectedChoice.key}`, rewards: reward.rewards, touch_streak: true, context: { system_event_id: reservation.id, pet_id: authority.pet_id, pet_season_key: authority.season_key, chain_key: chainKey, step: scene.key, choice_key: selectedChoice.key, final, faction_bonus: reward.bonus } }); }
   catch (error) { await releaseSettlement(db, reservation.id, claim.token); throw error; }
   if (!awarded.accepted) { await releaseSettlement(db, reservation.id, claim.token); return awarded; }
   const resultCopy = selectedChoice.result_copy || `${selectedChoice.label} advances ${chain.title || words(chainKey)}.`;
   const completionPayload = JSON.stringify({ chain_key: chainKey, step: scene.key, choice_key: selectedChoice.key, final, result_copy: resultCopy });
   const results = await db.batch([
-    db.prepare(`INSERT INTO telegram_pet_event_chain_progress (telegram_id, chain_key, step_index, completed_cycles)
-      SELECT ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling' AND json_extract(payload_json, '$.claim_token')=?)
-      ON CONFLICT(telegram_id, chain_key) DO UPDATE SET step_index=excluded.step_index, completed_cycles=excluded.completed_cycles, updated_at=CURRENT_TIMESTAMP
+    db.prepare(`INSERT INTO telegram_pet_event_chain_progress (pet_id, telegram_id, season_key, chain_key, step_index, completed_cycles)
+      SELECT ?, ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling' AND json_extract(payload_json, '$.claim_token')=?)
+      ON CONFLICT(pet_id, telegram_id, season_key, chain_key) DO UPDATE SET step_index=excluded.step_index, completed_cycles=excluded.completed_cycles, updated_at=CURRENT_TIMESTAMP
       WHERE EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling' AND json_extract(payload_json, '$.claim_token')=?)`)
-      .bind(telegramId, chainKey, final ? 0 : stepIndex + 1, integer(row?.completed_cycles) + (final ? 1 : 0), reservation.id, claim.token, reservation.id, claim.token),
+      .bind(authority.pet_id, telegramId, authority.season_key, chainKey, final ? 0 : stepIndex + 1, integer(row?.completed_cycles) + (final ? 1 : 0), reservation.id, claim.token, reservation.id, claim.token),
     db.prepare("UPDATE telegram_pet_system_events SET status='completed', payload_json=?, updated_at=CURRENT_TIMESTAMP WHERE id=? AND status='settling' AND json_extract(payload_json, '$.claim_token')=?").bind(completionPayload, reservation.id, claim.token),
   ]);
   if (Number(results?.[1]?.meta?.changes || 0) < 1) return { accepted: false, reason: 'event_chain_busy' };
@@ -371,13 +442,15 @@ export async function processPetEventChain(db, telegramId, chainKey, awardReward
 }
 
 export async function processPetSeasonalBoss(db, telegramId, pet, awardReward) {
+  const authority = await resolveLivePetAuthority(db, telegramId, pet);
+  if (!authority) return { accepted: false, reason: 'source_pet_authority_required' };
   const boss = getActiveSeasonalBoss();
   const visibleLevel = getRuntimePetLevel(pet);
   if (visibleLevel < boss.min_level) return { accepted: false, reason: 'seasonal_boss_locked', required_level: boss.min_level };
-  const existing = await db.prepare('SELECT damage, defeated_at, reward_claimed_at FROM telegram_pet_seasonal_boss_progress WHERE telegram_id=? AND season_key=? AND boss_key=?').bind(telegramId, boss.season_instance, boss.key).first();
+  const existing = await db.prepare('SELECT damage, defeated_at, reward_claimed_at FROM telegram_pet_seasonal_boss_progress WHERE pet_id=? AND telegram_id=? AND pet_season_key=? AND season_key=? AND boss_key=?').bind(authority.pet_id, telegramId, authority.season_key, boss.season_instance, boss.key).first();
   const settleReward = async () => {
-    const reward = await awardReward({ telegram_id: telegramId, source: 'pet_seasonal_boss', idempotency_key: `seasonal:${boss.season_instance}:${telegramId}`, event_key: `seasonal:${boss.season_instance}:${telegramId}`, event_type: 'seasonal_boss', reason: boss.key, rewards: { pet_xp: 150, moon_gold: 250, moon_crystals: 8, materials: { [boss.reward]: 8, mastery_token: 1 } }, touch_streak: true, context: { boss_key: boss.key, season_key: boss.season_instance } });
-    if (reward.accepted) await db.prepare(`UPDATE telegram_pet_seasonal_boss_progress SET reward_claimed_at=COALESCE(reward_claimed_at, CURRENT_TIMESTAMP), updated_at=CURRENT_TIMESTAMP WHERE telegram_id=? AND season_key=? AND boss_key=? AND defeated_at IS NOT NULL`).bind(telegramId, boss.season_instance, boss.key).run();
+    const reward = await awardReward({ telegram_id: telegramId, pet_id: authority.pet_id, season_key: authority.season_key, source: 'pet_seasonal_boss', idempotency_key: `seasonal:${boss.season_instance}:${telegramId}:${authority.pet_id}`, event_key: `seasonal:${boss.season_instance}:${telegramId}:${authority.pet_id}`, event_type: 'seasonal_boss', reason: boss.key, rewards: { pet_xp: 150, moon_gold: 250, moon_crystals: 8, materials: { [boss.reward]: 8, mastery_token: 1 } }, touch_streak: true, context: { pet_id: authority.pet_id, season_key: boss.season_instance, boss_key: boss.key, pet_season_key: authority.season_key } });
+    if (reward.accepted) await db.prepare(`UPDATE telegram_pet_seasonal_boss_progress SET reward_claimed_at=COALESCE(reward_claimed_at, CURRENT_TIMESTAMP), updated_at=CURRENT_TIMESTAMP WHERE pet_id=? AND telegram_id=? AND pet_season_key=? AND season_key=? AND boss_key=? AND defeated_at IS NOT NULL`).bind(authority.pet_id, telegramId, authority.season_key, boss.season_instance, boss.key).run();
     return reward;
   };
   if (existing?.defeated_at) {
@@ -386,19 +459,19 @@ export async function processPetSeasonalBoss(db, telegramId, pet, awardReward) {
     return { ...recovered, accepted: Boolean(recovered.accepted), duplicate: true, reason: 'seasonal_boss_reward_recovered', boss, progress: { damage: boss.hp, hp: boss.hp, defeated: true } };
   }
   if (integer(pet.energy) < 18) return { accepted: false, reason: 'pet_tired' };
-  const reservation = await reserveSystemEvent(db, telegramId, 'seasonal_boss', boss.key, `${boss.season_instance}:${dayKey()}`, {});
+  const reservation = await reserveSystemEvent(db, telegramId, 'seasonal_boss', boss.key, `${boss.season_instance}:${dayKey()}`, {}, authority);
   if (reservation.status === 'completed') return { accepted: true, duplicate: true, reason: 'seasonal_boss_attempt_used' };
-  const claim = await claimEnergySettlement(db, reservation, telegramId, 18);
+  const claim = await claimEnergySettlement(db, reservation, telegramId, 18, authority);
   if (claim.state !== 'settling') return { accepted: false, reason: claim.state === 'busy' ? 'seasonal_boss_busy' : 'pet_tired' };
   const damage = 35 + visibleLevel * 2;
   const total = Math.min(boss.hp, integer(existing?.damage) + damage);
   const defeated = total >= boss.hp;
   const settlement = await db.batch([
-    db.prepare(`INSERT INTO telegram_pet_seasonal_boss_progress (telegram_id, season_key, boss_key, damage, defeated_at)
-      SELECT ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling' AND json_extract(payload_json, '$.claim_token')=?)
-      ON CONFLICT(telegram_id, season_key, boss_key) DO UPDATE SET damage=excluded.damage, defeated_at=COALESCE(telegram_pet_seasonal_boss_progress.defeated_at, excluded.defeated_at), updated_at=CURRENT_TIMESTAMP
+    db.prepare(`INSERT INTO telegram_pet_seasonal_boss_progress (pet_id, telegram_id, pet_season_key, season_key, boss_key, damage, defeated_at)
+      SELECT ?, ?, ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling' AND json_extract(payload_json, '$.claim_token')=?)
+      ON CONFLICT(pet_id, telegram_id, pet_season_key, season_key, boss_key) DO UPDATE SET damage=excluded.damage, defeated_at=COALESCE(telegram_pet_seasonal_boss_progress.defeated_at, excluded.defeated_at), updated_at=CURRENT_TIMESTAMP
       WHERE EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling' AND json_extract(payload_json, '$.claim_token')=?)`)
-      .bind(telegramId, boss.season_instance, boss.key, total, defeated ? new Date().toISOString() : null, reservation.id, claim.token, reservation.id, claim.token),
+      .bind(authority.pet_id, telegramId, authority.season_key, boss.season_instance, boss.key, total, defeated ? new Date().toISOString() : null, reservation.id, claim.token, reservation.id, claim.token),
     db.prepare("UPDATE telegram_pet_system_events SET status='completed', payload_json=?, updated_at=CURRENT_TIMESTAMP WHERE id=? AND status='settling' AND json_extract(payload_json, '$.claim_token')=?").bind(JSON.stringify({ damage, total, defeated }), reservation.id, claim.token),
   ]);
   if (Number(settlement?.[1]?.meta?.changes || 0) < 1) return { accepted: false, reason: 'seasonal_boss_busy' };
@@ -492,21 +565,26 @@ export async function processPetCosmeticUnlock(db, telegramId, cosmeticKey, requ
   return { accepted: true, reason: 'cosmetic_unlocked', cosmetic: { key: cosmeticKey, quantity: integer(settled?.quantity) }, cost: sink.cost };
 }
 
-export async function processPetPrestige(db, telegramId, liveState, requestKey) {
-  const replay = await getCompletedRequest(db, telegramId, 'prestige', 'ascend', requestKey);
+export async function processPetPrestige(db, telegramId, liveState, requestKey, pet = null) {
+  const authority = await resolveLivePetAuthority(db, telegramId, pet || liveState?.authority || {});
+  if (!authority) return { accepted: false, reason: 'source_pet_authority_required' };
+  const replay = await getCompletedRequest(db, telegramId, 'prestige', 'ascend', requestKey, authority);
   if (replay) return { accepted: true, duplicate: true, reason: 'prestige_already_applied', prestige: parse(replay.payload_json, {}) };
   if (!liveState?.prestige?.ready) return { accepted: false, reason: 'prestige_requirements_missing', prestige: liveState?.prestige };
   const target = integer(liveState.prestige.count) + 1;
-  const reservation = await reserveSystemEvent(db, telegramId, 'prestige', 'ascend', String(requestKey || `rank:${target}`), { target });
+  const reservation = await reserveSystemEvent(db, telegramId, 'prestige', 'ascend', String(requestKey || `rank:${target}`), { target }, authority);
   if (reservation.status === 'completed') return { accepted: true, duplicate: true, reason: 'prestige_already_applied', prestige_count: target };
   const results = await db.batch([
     db.prepare(`UPDATE telegram_pet_system_events SET status='settling', updated_at=CURRENT_TIMESTAMP WHERE id=? AND status IN ('pending','rejected')
       AND EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id=? AND ${getPetVisibleLevelSql('pet_xp')}>=100 AND moon_gold>=5000 AND moon_crystals>=50)
-      AND EXISTS (SELECT 1 FROM telegram_pet_progression_state WHERE telegram_id=? AND prestige_count=? AND json_array_length(completed_regions_json)>=4)
+      AND EXISTS (SELECT 1 FROM telegram_pet_live_progression_state WHERE pet_id=? AND telegram_id=? AND season_key=? AND prestige_count=? AND json_array_length(completed_regions_json)>=4)
       AND (SELECT COUNT(*) FROM telegram_pet_equipment_progression WHERE telegram_id=? AND mastery_tier>=5)>=3`)
-      .bind(reservation.id, telegramId, telegramId, target - 1, telegramId),
+      .bind(reservation.id, telegramId, authority.pet_id, telegramId, authority.season_key, target - 1, telegramId),
     db.prepare("UPDATE telegram_pet_profiles SET moon_gold=moon_gold-5000, moon_crystals=moon_crystals-50, updated_at=CURRENT_TIMESTAMP WHERE telegram_id=? AND EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling')").bind(telegramId, reservation.id),
-    db.prepare("UPDATE telegram_pet_progression_state SET prestige_count=prestige_count+1, updated_at=CURRENT_TIMESTAMP WHERE telegram_id=? AND prestige_count=? AND EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling')").bind(telegramId, target - 1, reservation.id),
+    db.prepare(`UPDATE telegram_pet_live_progression_state SET prestige_count=prestige_count+1, updated_at=CURRENT_TIMESTAMP
+      WHERE pet_id=? AND telegram_id=? AND season_key=? AND prestige_count=?
+        AND EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling')`)
+      .bind(authority.pet_id, telegramId, authority.season_key, target - 1, reservation.id),
     db.prepare(`INSERT INTO telegram_pet_material_balances (telegram_id, material_key, quantity)
       SELECT ?, 'mastery_token', 3 WHERE EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling')
       ON CONFLICT(telegram_id, material_key) DO UPDATE SET quantity=MIN(9999, quantity+3), updated_at=CURRENT_TIMESTAMP`).bind(telegramId, reservation.id),

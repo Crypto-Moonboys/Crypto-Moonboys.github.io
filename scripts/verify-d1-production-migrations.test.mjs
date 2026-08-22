@@ -29,6 +29,7 @@ assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/070_moonpet_p
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/071_moonpet_arena_pet_authority\.sql/, 'migration 071 changes must trigger production migration verification');
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/072_moonpet_identity_authority_verification\.sql/, 'migration 072 changes must trigger production migration verification');
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/073_moonpet_per_pet_specialist_progression\.sql/, 'migration 073 changes must trigger production migration verification');
+assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/074_moonpet_live_system_ownership_classification\.sql/, 'migration 074 changes must trigger production migration verification');
 assert.match(pullRequestPaths, /scripts\/verify-d1-identity-authority-audit\.mjs/, 'identity authority audit parser changes must trigger production migration verification');
 assert.match(
   remoteQueryStep,
@@ -80,6 +81,7 @@ assert.match(remoteQueryStep, /070_moonpet_pet_identity_achievement_authority\.s
 assert.match(remoteQueryStep, /071_moonpet_arena_pet_authority\.sql/, 'the workflow_dispatch D1 query must request migration 071 from production');
 assert.match(remoteQueryStep, /072_moonpet_identity_authority_verification\.sql/, 'the workflow_dispatch D1 query must request migration 072 from production');
 assert.match(remoteQueryStep, /073_moonpet_per_pet_specialist_progression\.sql/, 'the workflow_dispatch D1 query must request migration 073 from production');
+assert.match(remoteQueryStep, /074_moonpet_live_system_ownership_classification\.sql/, 'the workflow_dispatch D1 query must request migration 074 from production');
 assert.match(remoteIdentityAuditStep, /SELECT COUNT\(\*\) AS invalid_identity_authority_rows FROM moonpet_invalid_identity_authority_rows/,
   'workflow_dispatch must query the production identity authority verification view');
 assert.match(remoteIdentityAuditStep, /verify-d1-identity-authority-audit\.mjs/,
@@ -119,6 +121,10 @@ assert.ok(
   'migration 073 must be detected by the production migration verification script',
 );
 assert.ok(
+  REQUIRED_D1_MIGRATIONS.includes('074_moonpet_live_system_ownership_classification.sql'),
+  'migration 074 must be detected by the production migration verification script',
+);
+assert.ok(
   request.required_migrations.includes('069_moonpet_breeding_authority.sql'),
   'migration 069 must be included in the checked-in D1 evidence request',
 );
@@ -137,6 +143,10 @@ assert.ok(
 assert.ok(
   request.required_migrations.includes('073_moonpet_per_pet_specialist_progression.sql'),
   'migration 073 must be included in the checked-in D1 evidence request',
+);
+assert.ok(
+  request.required_migrations.includes('074_moonpet_live_system_ownership_classification.sql'),
+  'migration 074 must be included in the checked-in D1 evidence request',
 );
 assert.deepEqual(
   [...request.required_migrations].sort(),
@@ -435,6 +445,16 @@ assert.throws(
   'deployment verification must reject an evidence request that omits migration 073',
 );
 
+const withoutMoonpetLiveSystemOwnershipClassification = {
+  ...request,
+  required_migrations: request.required_migrations.filter((name) => name !== '074_moonpet_live_system_ownership_classification.sql'),
+};
+assert.throws(
+  () => validateRequest(withoutMoonpetLiveSystemOwnershipClassification),
+  /missing required migrations: 074_moonpet_live_system_ownership_classification\.sql/,
+  'deployment verification must reject an evidence request that omits migration 074',
+);
+
 const verifiedRows = REQUIRED_D1_MIGRATIONS.map((name) => ({ name }));
 assert.equal(
   verifyD1MigrationPayload([{ success: true, results: verifiedRows }], request, '2026-08-10T00:00:00.000Z').status,
@@ -645,6 +665,15 @@ assert.throws(
   }], request),
   /missing migrations: 073_moonpet_per_pet_specialist_progression\.sql/,
   'deployment verification must fail when production D1 has not applied migration 073',
+);
+
+assert.throws(
+  () => verifyD1MigrationPayload([{
+    success: true,
+    results: verifiedRows.filter(({ name }) => name !== '074_moonpet_live_system_ownership_classification.sql'),
+  }], request),
+  /missing migrations: 074_moonpet_live_system_ownership_classification\.sql/,
+  'deployment verification must fail when production D1 has not applied migration 074',
 );
 
 console.log('verify-d1-production-migrations.test.mjs passed');
