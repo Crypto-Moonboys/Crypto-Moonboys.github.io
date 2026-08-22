@@ -8817,31 +8817,50 @@ const PET_MINI_APP_FUTURE_SYSTEM_STATUS = Object.freeze({
 function buildPetMiniAppFutureSystemState(combatEligibility = {}) {
   const completedSeasonPet = combatEligibility.has_completed_season_pet === true;
   const combatUnlocked = combatEligibility.combat_unlocked === true;
-  const lockedDetail = 'Requires completed Season pet. Locked until you complete a Season pet.';
+  const arenaUnlocked = combatEligibility.arena_unlocked === true;
+  const kaijuUnlocked = combatEligibility.kaiju_unlocked === true;
+  const postSeasonLockedDetail = 'Requires completed Season pet. Locked until you complete a Season pet.';
   const comingSoonDetail = 'Future expansion content. Not available yet.';
+  const betaCombatLockedDetail = (reason) => reason === 'moon_egg_must_hatch'
+    ? 'Requires a hatched active Moonpet.'
+    : reason === 'pet_not_adopted'
+      ? 'Requires an adopted active Moonpet.'
+      : reason === 'moonpet_lifecycle_required'
+        ? 'Requires synced active Moonpet lifecycle authority before combat unlocks.'
+        : reason === 'arena_level_locked'
+          ? `Requires a hatched active Moonpet at Level ${PET_ARENA_MIN_LEVEL}.`
+          : 'Requires current beta combat authority.';
+  const arenaLockedDetail = betaCombatLockedDetail(combatEligibility.arena_reason || combatEligibility.reason);
+  const kaijuLockedDetail = betaCombatLockedDetail(combatEligibility.kaiju_reason || combatEligibility.reason);
   const combatLockedDetail = combatEligibility.reason === 'moon_egg_must_hatch'
-    ? 'Requires a completed Season pet and a hatched active Moonpet.'
+    ? 'Requires a hatched active Moonpet.'
     : combatEligibility.reason === 'pet_not_adopted'
-      ? 'Requires a completed Season pet and an active adult Moonpet.'
+      ? 'Requires an adopted active Moonpet.'
       : combatEligibility.reason === 'moonpet_lifecycle_required'
         ? 'Requires synced active Moonpet lifecycle authority before combat unlocks.'
-        : lockedDetail;
+        : 'Requires current beta combat authority.';
   const futureStatus = completedSeasonPet
     ? PET_MINI_APP_FUTURE_SYSTEM_STATUS.COMING_SOON
     : PET_MINI_APP_FUTURE_SYSTEM_STATUS.LOCKED;
-  const futureDetail = completedSeasonPet ? comingSoonDetail : lockedDetail;
+  const futureDetail = completedSeasonPet ? comingSoonDetail : postSeasonLockedDetail;
   const combatStatus = combatUnlocked
     ? PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE
     : PET_MINI_APP_FUTURE_SYSTEM_STATUS.LOCKED;
   const combatDetail = combatUnlocked ? 'Available from Explore.' : combatLockedDetail;
+  const arenaStatus = arenaUnlocked
+    ? PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE
+    : PET_MINI_APP_FUTURE_SYSTEM_STATUS.LOCKED;
+  const kaijuStatus = kaijuUnlocked
+    ? PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE
+    : PET_MINI_APP_FUTURE_SYSTEM_STATUS.LOCKED;
   return [
     { key: 'breeding', title: 'Breeding', status: futureStatus, detail: futureDetail },
     { key: 'traits', title: 'Traits', status: futureStatus, detail: futureDetail },
     { key: 'sanctuary', title: 'Sanctuary', status: futureStatus, detail: futureDetail },
     { key: 'lineage', title: 'Lineage', status: futureStatus, detail: futureDetail },
     { key: 'fusion', title: 'Fusion', status: futureStatus, detail: futureDetail },
-    { key: 'arena', title: 'Arena', status: combatStatus, detail: combatDetail },
-    { key: 'kaiju', title: 'Kaiju', status: combatStatus, detail: combatDetail },
+    { key: 'arena', title: 'Arena', status: arenaStatus, detail: arenaUnlocked ? `Available from Level ${PET_ARENA_MIN_LEVEL}.` : arenaLockedDetail },
+    { key: 'kaiju', title: 'Kaiju', status: kaijuStatus, detail: kaijuUnlocked ? 'Available from Explore.' : kaijuLockedDetail },
     { key: 'prestige', title: 'Prestige', status: PET_MINI_APP_FUTURE_SYSTEM_STATUS.COMING_SOON, detail: comingSoonDetail },
   ];
 }
@@ -8861,7 +8880,11 @@ function buildPetMiniAppCapabilities(combatEligibility = {}, weeklyJourneySummar
   const systemByKey = Object.fromEntries(futureSystems.map((system) => [system.key, {
     state: system.status,
     unlocked: system.status === PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE,
-    reason: system.status === PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE ? 'available' : system.status === PET_MINI_APP_FUTURE_SYSTEM_STATUS.COMING_SOON ? 'feature_not_available' : (combatEligibility.reason || 'completed_season_pet_required'),
+    reason: system.status === PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE ? 'available' : system.status === PET_MINI_APP_FUTURE_SYSTEM_STATUS.COMING_SOON ? 'feature_not_available' : (
+      system.key === 'arena' ? (combatEligibility.arena_reason || combatEligibility.reason || 'current_combat_requirements_unmet')
+        : system.key === 'kaiju' ? (combatEligibility.kaiju_reason || combatEligibility.reason || 'current_combat_requirements_unmet')
+          : 'completed_season_pet_required'
+    ),
     active: system.status === PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE,
     message: system.detail,
   }]));
@@ -8912,12 +8935,14 @@ function buildPetMiniAppCapabilities(combatEligibility = {}, weeklyJourneySummar
         : PET_MINI_APP_FUTURE_SYSTEM_STATUS.LOCKED,
       unlocked: combatEligibility.combat_unlocked === true,
       active: combatEligibility.combat_unlocked === true,
-      reason: combatEligibility.reason || 'completed_season_pet_required',
+      reason: combatEligibility.reason || 'current_combat_requirements_unmet',
       requirements: {
         completed_season_pet: combatEligibility.has_completed_season_pet === true,
         active_pet_exists: combatEligibility.active_pet_exists === true,
         active_pet_lifecycle_known: combatEligibility.active_pet_lifecycle_known === true,
         active_pet_hatched: combatEligibility.active_pet_combat_eligible === true,
+        active_pet_level: miniAppProgressInteger(combatEligibility.active_pet_level, 0),
+        arena_level_met: combatEligibility.arena_level_met === true,
       },
     },
     breeding: systemByKey.breeding,
@@ -8984,7 +9009,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       inventory: [],
       missions: [],
       season_slots: null,
-      capabilities: buildPetMiniAppCapabilities({ has_completed_season_pet: false, combat_unlocked: false, reason: 'completed_season_pet_required' }),
+      capabilities: buildPetMiniAppCapabilities({ has_completed_season_pet: false, combat_unlocked: false, arena_unlocked: false, kaiju_unlocked: false, reason: 'pet_not_adopted' }),
     };
   }
 
@@ -9219,21 +9244,32 @@ async function hasCompletedPetMiniAppSeasonPet(db, telegramId) {
 
 async function getPetMiniAppCombatEligibility(db, telegramId, lifecycle = null) {
   const hasCompletedSeasonPet = await hasCompletedPetMiniAppSeasonPet(db, telegramId);
-  const activePet = await db.prepare('SELECT 1 AS adopted FROM telegram_pet_profiles WHERE telegram_id=? LIMIT 1')
+  const activePet = await db.prepare('SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id=? LIMIT 1')
     .bind(String(telegramId)).first().catch(() => null);
   const activeLifecycle = lifecycle || await getMoonpetLifecycle(db, telegramId).catch(() => null);
-  const activePetExists = Boolean(activePet?.adopted);
+  const activePetExists = Boolean(activePet);
+  const activePetLevel = activePetExists ? getPetLevel(activePet.pet_xp) : 0;
   const activePetCombatEligible = Boolean(activePetExists && activeLifecycle && activeLifecycle.phase !== 'egg');
+  const arenaLevelMet = activePetLevel >= PET_ARENA_MIN_LEVEL;
+  const currentCombatUnlocked = Boolean(activePetCombatEligible);
+  const arenaUnlocked = Boolean(currentCombatUnlocked && arenaLevelMet);
+  const kaijuUnlocked = Boolean(currentCombatUnlocked);
+  const baseReason = !activePetExists ? 'pet_not_adopted'
+    : !activeLifecycle ? 'moonpet_lifecycle_required'
+      : !activePetCombatEligible ? 'moon_egg_must_hatch' : 'combat_unlocked';
   return {
     has_completed_season_pet: hasCompletedSeasonPet,
     active_pet_exists: activePetExists,
     active_pet_lifecycle_known: Boolean(activeLifecycle),
     active_pet_combat_eligible: activePetCombatEligible,
-    combat_unlocked: Boolean(hasCompletedSeasonPet && activePetCombatEligible),
-    reason: !hasCompletedSeasonPet ? 'completed_season_pet_required'
-      : !activePetExists ? 'pet_not_adopted'
-        : !activeLifecycle ? 'moonpet_lifecycle_required'
-        : !activePetCombatEligible ? 'moon_egg_must_hatch' : 'combat_unlocked',
+    active_pet_level: activePetLevel,
+    arena_level_met: arenaLevelMet,
+    combat_unlocked: currentCombatUnlocked,
+    arena_unlocked: arenaUnlocked,
+    kaiju_unlocked: kaijuUnlocked,
+    reason: baseReason,
+    arena_reason: arenaUnlocked ? 'combat_unlocked' : (baseReason === 'combat_unlocked' ? 'arena_level_locked' : baseReason),
+    kaiju_reason: kaijuUnlocked ? 'combat_unlocked' : baseReason,
   };
 }
 
@@ -9256,10 +9292,20 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   }
   if (PET_MINI_APP_FUTURE_COMBAT_ACTIONS.has(action)) {
     const combatEligibility = await getPetMiniAppCombatEligibility(db, telegramId, lifecycle);
-    if (!combatEligibility.combat_unlocked) {
+    const actionUnlocked = action.startsWith('arena_')
+      ? combatEligibility.arena_unlocked === true
+      : action.startsWith('kaiju_')
+        ? combatEligibility.kaiju_unlocked === true
+        : combatEligibility.combat_unlocked === true;
+    if (!actionUnlocked) {
+      const reason = action.startsWith('arena_')
+        ? (combatEligibility.arena_reason || combatEligibility.reason)
+        : action.startsWith('kaiju_')
+          ? (combatEligibility.kaiju_reason || combatEligibility.reason)
+          : combatEligibility.reason;
       return {
         accepted: false,
-        reason: combatEligibility.reason,
+        reason,
         capabilities_version: 1,
         capabilities: buildPetMiniAppCapabilities(combatEligibility),
       };
@@ -15172,22 +15218,30 @@ async function getPetEvolutionGuidance(db, telegramId, pet, identity) {
 
 function getPetGuidanceFeatures(level, combatEligibility = {}) {
   const combatUnlocked = combatEligibility.combat_unlocked === true;
+  const arenaUnlocked = combatEligibility.arena_unlocked === true;
+  const kaijuUnlocked = combatEligibility.kaiju_unlocked === true;
   const combatLockDetail = combatEligibility.reason === 'combat_unlocked'
     ? ''
     : combatEligibility.reason === 'moon_egg_must_hatch'
-      ? 'Requires a completed Season pet and a hatched active Moonpet.'
+      ? 'Requires a hatched active Moonpet.'
       : combatEligibility.reason === 'moonpet_lifecycle_required'
         ? 'Requires a synced active Moonpet lifecycle before combat unlocks.'
-        : 'Requires completed Season pet. Locked until you complete a Season pet.';
+        : 'Requires an adopted active Moonpet.';
+  const arenaLockDetail = combatEligibility.arena_reason === 'arena_level_locked'
+    ? `Requires Level ${PET_ARENA_MIN_LEVEL}.`
+    : combatLockDetail;
+  const kaijuLockDetail = combatEligibility.kaiju_reason === 'combat_unlocked'
+    ? ''
+    : combatLockDetail;
   return [
     { key: 'care_console', title: 'Care Console', available: level >= 1, detail: 'Feed, play, clean, sleep and train from the Pet screen.', callback_data: 'pet:details' },
     { key: 'daily_missions', title: 'Daily Missions', available: level >= 1, detail: 'Seven tracked goals reset at 00:00 UTC.', callback_data: 'pet:missions' },
     { key: 'timed_activities', title: 'Timed Activities', available: level >= 1, detail: 'Sleep, train, work or explore while rewards build over time.', callback_data: 'pet:activity' },
     { key: 'moon_runs', title: 'Moon Runs', available: level >= 1, detail: 'Choose routes, risk unbanked rewards and extract before defeat.', callback_data: 'pet:run' },
     { key: 'street_events', title: 'Street Events', available: level >= 1, detail: 'Server-selected encounters change with your choices.', callback_data: 'pet:event' },
-    { key: 'kaiju_cards', title: 'Kaiju Code Cards', available: level >= 1 && combatUnlocked, detail: combatUnlocked ? 'Battle a CRT rival or match with another player.' : combatLockDetail, callback_data: 'pet:kaiju' },
+    { key: 'kaiju_cards', title: 'Kaiju Code Cards', available: level >= 1 && kaijuUnlocked, detail: kaijuUnlocked ? 'Battle a CRT rival or match with another player.' : kaijuLockDetail, callback_data: 'pet:kaiju' },
     { key: 'weekly_boss', title: 'Weekly Boss', available: level >= 5, detail: 'One personal boss attack is available per UTC day.', callback_data: 'pet:boss' },
-    { key: 'pet_arena', title: 'Pet Arena', available: level >= PET_ARENA_MIN_LEVEL && combatUnlocked, detail: combatUnlocked ? `Arena battles are available from Level ${PET_ARENA_MIN_LEVEL}.` : combatLockDetail, callback_data: 'pet:arena' },
+    { key: 'pet_arena', title: 'Pet Arena', available: level >= PET_ARENA_MIN_LEVEL && arenaUnlocked, detail: arenaUnlocked ? `Arena battles are available from Level ${PET_ARENA_MIN_LEVEL}.` : arenaLockDetail, callback_data: 'pet:arena' },
     { key: 'moon_economy', title: 'Moon Economy', available: level >= 1, detail: 'Daily bounties, Crystal Expeditions and rotating Moon Market offers are now available.', callback_data: 'pet:economy' },
     { key: 'equipment_upgrades', title: 'Equipment Upgrades', available: level >= 15, detail: 'Owned equipment can now be upgraded through ten levels.', callback_data: 'pet:gear' },
     { key: 'prestige', title: 'Prestige', available: false, detail: 'Future expansion content. Not available yet.', callback_data: 'pet:progress' },

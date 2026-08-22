@@ -101,7 +101,7 @@ assert.doesNotMatch(capabilityCombatHelperSource, /season_slots|sanctuary|hasSlo
 let capabilityHelperState = {};
 const capabilityRuntime = new Function(
   'state',
-  capabilityCombatHelperSource + '; return { combatCapability, hasCombatUnlocked, combatLockCopy };',
+  capabilityCombatHelperSource + '; return { combatCapability, hasCombatUnlocked, systemCapability, hasSystemUnlocked, combatLockCopy };',
 )(capabilityHelperState);
 assert.equal(capabilityRuntime.hasCombatUnlocked(), false, 'missing capability payload must lock combat');
 assert.equal(capabilityRuntime.combatCapability(capabilityHelperState).reason, 'capability_unavailable', 'missing capability payload must surface capability_unavailable');
@@ -112,15 +112,25 @@ assert.equal(new Function('state', capabilityCombatHelperSource + '; return comb
 capabilityHelperState = { capabilities: { combat: { state: 'LOCKED', unlocked: false, reason: 'moon_egg_must_hatch', requirements: { completed_season_pet: true } } } };
 assert.equal(new Function('state', capabilityCombatHelperSource + '; return hasCombatUnlocked();')(capabilityHelperState), false,
   'locked capability payload must lock combat even when completion is present');
-capabilityHelperState = { capabilities: { combat: { state: 'AVAILABLE', unlocked: true, reason: 'combat_unlocked', requirements: { completed_season_pet: true, active_pet_exists: true, active_pet_lifecycle_known: true, active_pet_hatched: true } } } };
+capabilityHelperState = { capabilities: { combat: { state: 'AVAILABLE', unlocked: true, reason: 'combat_unlocked', requirements: { completed_season_pet: true, active_pet_exists: true, active_pet_lifecycle_known: true, active_pet_hatched: true, active_pet_level: 10, arena_level_met: true } } } };
 assert.equal(new Function('state', capabilityCombatHelperSource + '; return combatCapability(state).reason;')(capabilityHelperState), 'capability_unavailable',
   'available combat capability payload without active state must fail closed');
-capabilityHelperState = { capabilities: { combat: { state: 'AVAILABLE', unlocked: true, active: true, reason: 'combat_unlocked', requirements: { completed_season_pet: true, active_pet_exists: true, active_pet_lifecycle_known: true, active_pet_hatched: true } } } };
+capabilityHelperState = { capabilities: { combat: { state: 'AVAILABLE', unlocked: true, active: true, reason: 'combat_unlocked', requirements: { completed_season_pet: true, active_pet_exists: true, active_pet_lifecycle_known: true, active_pet_hatched: true, active_pet_level: 10, arena_level_met: true } } } };
 assert.equal(new Function('state', capabilityCombatHelperSource + '; return combatCapability(state).reason;')(capabilityHelperState), 'capability_unavailable',
   'available combat capability payload without contract version must fail closed');
-capabilityHelperState = { capabilities_version: 1, capabilities: { combat: { state: 'AVAILABLE', unlocked: true, active: true, reason: 'combat_unlocked', requirements: { completed_season_pet: true, active_pet_exists: true, active_pet_lifecycle_known: true, active_pet_hatched: true } } } };
+capabilityHelperState = { capabilities_version: 1, capabilities: { combat: { state: 'AVAILABLE', unlocked: true, active: true, reason: 'combat_unlocked', requirements: { completed_season_pet: false, active_pet_exists: true, active_pet_lifecycle_known: true, active_pet_hatched: true, active_pet_level: 10, arena_level_met: true } } } };
 assert.equal(new Function('state', capabilityCombatHelperSource + '; return hasCombatUnlocked();')(capabilityHelperState), true,
   'available capability payload must unlock combat');
+capabilityHelperState.capabilities.systems = {
+  arena: { state: 'LOCKED', unlocked: false, active: false, reason: 'arena_level_locked' },
+  kaiju: { state: 'AVAILABLE', unlocked: true, active: true, reason: 'available' },
+};
+assert.equal(new Function('state', capabilityCombatHelperSource + '; return hasSystemUnlocked("arena");')(capabilityHelperState), false,
+  'Arena system capability must stay locked when Arena level is unmet');
+assert.equal(new Function('state', capabilityCombatHelperSource + '; return hasSystemUnlocked("kaiju");')(capabilityHelperState), true,
+  'Kaiju system capability may unlock independently from Arena level');
+assert.match(new Function('state', capabilityCombatHelperSource + '; return combatLockCopy(systemCapability(state, "arena").reason).title;')(capabilityHelperState), /ARENA LOCKED UNTIL LEVEL 10/,
+  'Arena system lock copy must expose the level gate');
 
 const actionAvailabilitySource = extractTestExport(client, 'actionAvailability');
 const countdownComponentSource = extractTestExport(client, 'countdownComponent');
@@ -1145,8 +1155,8 @@ assert.match(client, /WEEKLY CREST ALREADY SETTLED|DUPLICATE WEEKLY CREST BLOCKE
 assert.doesNotMatch(client, /Growth Mark[^'\n]*(?:claim|claimable)|Weekly Crest[^'\n]*(?:claim|claimable)/i,
   'Journey reward copy must avoid claim language when no claim action exists');
 assert.doesNotMatch(client, /Gameplay integration not active yet\./, 'Weekly Journey must no longer use inactive integration copy');
-assert.match(client, /LOCKED UNTIL YOU COMPLETE A SEASON PET/, 'future systems must read as locked during early Season 1');
-assert.match(client, /function combatLockCopy\(\)[\s\S]*combatCapability\(state\)\.reason[\s\S]*moon_egg_must_hatch[\s\S]*COMBAT LOCKED UNTIL YOUR ACTIVE MOONPET HATCHES/, 'Arena and Kaiju locked panels must render worker combat authority reasons instead of only completed-season copy');
+assert.match(client, /Trait expansion remains locked until completed Season pets/, 'post-season trait copy must stay completed-season gated');
+assert.match(client, /function combatLockCopy\(reasonOverride\)[\s\S]*reasonOverride \|\| combatCapability\(state\)\.reason[\s\S]*moon_egg_must_hatch[\s\S]*COMBAT LOCKED UNTIL YOUR ACTIVE MOONPET HATCHES/, 'Arena and Kaiju locked panels must render worker combat authority reasons instead of only completed-season copy');
 assert.match(client, /function combatLockedButtonOptions\(entryDetail\)[\s\S]*disabled: true[\s\S]*futureExpansion: true[\s\S]*eggRequired: entryDetail\.indexOf\('HATCHED'\) >= 0[\s\S]*activePetRequired: entryDetail\.indexOf\('ACTIVE'\) >= 0[\s\S]*authoritySyncing: entryDetail\.indexOf\('SYNC'\) >= 0/,
   'Arena and Kaiju locked buttons must share the same future-expansion availability options');
 const renderExploreSource = client.slice(client.indexOf('  function renderExplore()'), client.indexOf('  function renderWork()', client.indexOf('  function renderExplore()')));
@@ -1160,13 +1170,13 @@ assert.match(renderExploreSource, /cooldown: seasonalDefeated \? null : seasonal
   'seasonal defeated state must suppress stale cooldown metadata in the UI');
 assert.match(renderExploreSource, /cooldown: boss\.defeated \? null : boss\.cooldown/,
   'weekly boss defeated state must suppress stale cooldown metadata in the UI');
-const arenaLockIndex = renderExploreSource.indexOf('if (!hasCombatUnlocked())');
+const arenaLockIndex = renderExploreSource.indexOf("if (!hasSystemUnlocked('arena'))");
 const arenaStateIndex = renderExploreSource.indexOf('var arena = state.arena;');
 const arenaQueueIndex = renderExploreSource.indexOf('var arenaQueue = state.arena_queue;');
 const arenaResultIndex = renderExploreSource.indexOf('var arenaResult = state.arena_result;');
 assert.ok(arenaStateIndex !== -1 && arenaQueueIndex !== -1 && arenaResultIndex !== -1 && arenaLockIndex !== -1, 'Arena lock and stale-state cleanup inputs must be explicit');
-assert.match(renderExploreSource, /if \(!hasCombatUnlocked\(\)\) \{[\s\S]*var arenaEntryOptions = combatLockedButtonOptions\(arenaLock\.entryDetail\)[\s\S]*button\('FORFEIT MATCH', 'arena_forfeit'[\s\S]*button\('CANCEL QUEUE', 'arena_queue_cancel'[\s\S]*arena_matchmake'[\s\S]*arenaEntryOptions[\s\S]*arena_start'[\s\S]*arenaEntryOptions[\s\S]*\} else \{[\s\S]*if \(arena\)[\s\S]*\} else if \(arenaQueue\)[\s\S]*arenaResult/, 'Arena queue, match, result, and entry controls must be behind combat-unlocked gating while stale cleanup remains available');
-const kaijuLockIndex = renderExploreSource.indexOf('if (!hasCombatUnlocked())', arenaLockIndex + 1);
+assert.match(renderExploreSource, /if \(!hasSystemUnlocked\('arena'\)\) \{[\s\S]*var arenaLock = combatLockCopy\(systemCapability\(state, 'arena'\)\.reason\)[\s\S]*var arenaEntryOptions = combatLockedButtonOptions\(arenaLock\.entryDetail\)[\s\S]*button\('FORFEIT MATCH', 'arena_forfeit'[\s\S]*button\('CANCEL QUEUE', 'arena_queue_cancel'[\s\S]*arena_matchmake'[\s\S]*arenaEntryOptions[\s\S]*arena_start'[\s\S]*arenaEntryOptions[\s\S]*\} else \{[\s\S]*if \(arena\)[\s\S]*\} else if \(arenaQueue\)[\s\S]*arenaResult/, 'Arena queue, match, result, and entry controls must be behind Arena capability gating while stale cleanup remains available');
+const kaijuLockIndex = renderExploreSource.indexOf("if (!hasSystemUnlocked('kaiju'))", arenaLockIndex + 1);
 const kaijuStateIndex = renderExploreSource.indexOf('var kaiju = state.kaiju || {};');
 const kaijuMatchIndex = renderExploreSource.indexOf('var kaijuMatch = kaiju.match;');
 const kaijuQueueIndex = renderExploreSource.indexOf('var kaijuQueue = kaiju.queue;');
@@ -1177,15 +1187,15 @@ assert.match(renderExploreSource, /kaijuSoloCleanup[\s\S]*button\('CANCEL MATCH'
   'locked Kaiju UI must show Cancel Match for solo stale cleanup');
 assert.match(renderExploreSource, /kaijuMatch && !kaijuSoloCleanup[\s\S]*MULTIPLAYER MATCH CLEANUP USES NORMAL EXPIRY \/ FORFEIT RESOLUTION/,
   'locked Kaiju UI must explain multiplayer cleanup instead of showing blind cancellation');
-assert.match(renderExploreSource, /var kaijuEntryOptions = combatLockedButtonOptions\(kaijuLock\.entryDetail\)[\s\S]*button\('CANCEL QUEUE', 'kaiju_queue_cancel'[\s\S]*kaiju_matchmake'[\s\S]*kaijuEntryOptions[\s\S]*kaiju_start'[\s\S]*kaijuEntryOptions[\s\S]*\} else \{[\s\S]*kaijuBody = kaijuMatch[\s\S]*: kaijuQueue[\s\S]*kaiju\.result/,
-  'Kaiju queue, match, result, and entry controls must be behind combat-unlocked gating while stale solo cleanup remains available');
-assert.match(client, /Requires a completed adult Moonpet\. This is future expansion content and is not available during early Season 1\./, 'future-system lock copy must remain explicit');
+assert.match(renderExploreSource, /if \(!hasSystemUnlocked\('kaiju'\)\) \{[\s\S]*var kaijuLock = combatLockCopy\(systemCapability\(state, 'kaiju'\)\.reason\)[\s\S]*var kaijuEntryOptions = combatLockedButtonOptions\(kaijuLock\.entryDetail\)[\s\S]*button\('CANCEL QUEUE', 'kaiju_queue_cancel'[\s\S]*kaiju_matchmake'[\s\S]*kaijuEntryOptions[\s\S]*kaiju_start'[\s\S]*kaijuEntryOptions[\s\S]*\} else \{[\s\S]*kaijuBody = kaijuMatch[\s\S]*: kaijuQueue[\s\S]*kaiju\.result/,
+  'Kaiju queue, match, result, and entry controls must be behind Kaiju capability gating while stale solo cleanup remains available');
+assert.match(client, /Requires current beta combat authority\./, 'current combat lock copy must remain explicit');
 assert.match(client, /var capabilitySystems = state\.capabilities_version === 1 && state\.capabilities && state\.capabilities\.systems[\s\S]*: \{\}/, 'future-system directory must consume the versioned worker systems capability map');
 assert.match(client, /Object\.keys\(futureSystemTitles\)\.map[\s\S]*var system = capabilitySystems\[key\] \|\| \{\}[\s\S]*status: \['LOCKED', 'COMING_SOON', 'AVAILABLE'\]\.includes\(status\) \? status : 'LOCKED'/, 'future-system directory must fail closed from the systems capability map');
 assert.match(client, /var status = String\(system\.status \|\| 'LOCKED'\)\.toUpperCase\(\)[\s\S]*status === 'AVAILABLE'[\s\S]*status === 'COMING_SOON'/, 'future-system directory must render LOCKED, COMING_SOON, and AVAILABLE states from authority payloads');
 assert.match(client, /var label = status === 'COMING_SOON' \? 'PLANNED EXPANSION' : status/,
   'future-system directory must avoid public coming-soon copy while preserving internal capability state');
-assert.match(client, /function futureSystemPanelCopy\(system\)[\s\S]*COMING_SOON[\s\S]*FUTURE EXPANSION CONTENT\.[\s\S]*AVAILABLE[\s\S]*LOCKED UNTIL YOU COMPLETE A SEASON PET\./, 'future-system panels must render from the shared LOCKED/COMING_SOON/AVAILABLE model');
+assert.match(client, /function futureSystemPanelCopy\(system\)[\s\S]*COMING_SOON[\s\S]*FUTURE EXPANSION CONTENT\.[\s\S]*AVAILABLE[\s\S]*LOCKED\./, 'future-system panels must render from the shared LOCKED/COMING_SOON/AVAILABLE model');
 assert.match(client, /var sanctuarySystem = futureSystemByKey\('sanctuary'\)[\s\S]*var sanctuaryPanel = futureSystemPanelCopy\(sanctuarySystem\)/, 'Sanctuary panel must consume shared future-system status only');
 assert.match(client, /panel\('PRESTIGE', futureSystemPanelCopy\(futureSystemByKey\('prestige', 'COMING_SOON'\)\)/, 'Prestige panel must consume shared future-system state');
 assert.match(client, /var featureRows = \(guidance\.features \|\| \[\]\)\.map[\s\S]*var available = feature\.available === true/, 'Mini App feature directory must render worker-authoritative availability without duplicating combat logic');
@@ -1208,7 +1218,7 @@ assert.match(worker, /path === '\/telegram-pets\/app\/sanctuary'[\s\S]*const com
 assert.doesNotMatch(worker, /path === '\/telegram-pets\/app\/sanctuary'[\s\S]*buildPetMiniAppCapabilities\(\{ has_completed_season_pet: false, combat_unlocked: false, reason: 'feature_not_available' \}\)/,
   'Mini App Sanctuary endpoint must not fabricate missing completed-season authority for unavailable responses');
 assert.doesNotMatch(worker, /listSanctuaryPetsPrivate/, 'Mini App server must not expose private Sanctuary gameplay rows while Sanctuary is future content');
-assert.match(worker, /async function getPetMiniAppCombatEligibility/, 'Mini App worker must centralize completed-season combat eligibility');
+assert.match(worker, /async function getPetMiniAppCombatEligibility/, 'Mini App worker must centralize current beta combat eligibility');
 assert.match(worker, /function buildPetMiniAppFutureSystemState\(combatEligibility = \{\}\)/, 'Mini App worker must centralize future-system display state');
 assert.match(worker, /const systems = \{[\s\S]*\.\.\.systemByKey[\s\S]*weekly_journey: weeklyJourneyCapability[\s\S]*\}/, 'Mini App capability contract must expose all future systems through one systems map');
 for (const key of ['breeding', 'traits', 'sanctuary', 'lineage', 'fusion', 'arena', 'kaiju', 'prestige']) {
@@ -1222,8 +1232,8 @@ assert.match(worker, /PET_MINI_APP_FUTURE_SYSTEM_STATUS[\s\S]*LOCKED[\s\S]*COMIN
 assert.match(worker, /active_pet_lifecycle_known: Boolean\(activeLifecycle\)/, 'combat eligibility must expose missing lifecycle data');
 assert.match(worker, /!activeLifecycle \? 'moonpet_lifecycle_required'/, 'missing lifecycle data must fail closed for combat');
 assert.match(worker, /features: getPetGuidanceFeatures\(level, combatEligibility\)/, 'guidance feature availability must consume shared combat authority');
-assert.match(worker, /kaiju_cards'[\s\S]*available: level >= 1 && combatUnlocked/, 'Kaiju guidance feature must require shared combat unlock');
-assert.match(worker, /pet_arena'[\s\S]*available: level >= PET_ARENA_MIN_LEVEL && combatUnlocked/, 'Arena guidance feature must require shared combat unlock');
+assert.match(worker, /kaiju_cards'[\s\S]*available: level >= 1 && kaijuUnlocked/, 'Kaiju guidance feature must require current Kaiju unlock');
+assert.match(worker, /pet_arena'[\s\S]*available: level >= PET_ARENA_MIN_LEVEL && arenaUnlocked/, 'Arena guidance feature must require current Arena unlock');
 assert.match(worker, /key: 'prestige'[\s\S]*available: false[\s\S]*Future expansion content\. Not available yet\./, 'Prestige guidance feature must remain permanently unavailable in this PR');
 assert.doesNotMatch(worker, /const liveNext = liveSystems\.prestige\.ready/, 'Mini App recommendations must not suggest Prestige while the feature is unavailable');
 assert.doesNotMatch(worker, /action: 'prestige', destination: 'profile'/, 'Mini App recommendations must not expose Prestige actions');
@@ -1252,18 +1262,18 @@ assert.match(worker, /weeklyReceipt\?\.reason === 'weekly_journey_crest_duplicat
 const miniAppActionSource = worker.slice(worker.indexOf('async function processPetMiniAppAction'), worker.indexOf('function serializePetMiniAppActionResult'));
 const futureCombatGateIndex = miniAppActionSource.indexOf('PET_MINI_APP_FUTURE_COMBAT_ACTIONS.has(action)');
 assert.ok(futureCombatGateIndex !== -1, 'Mini App action handler must gate future combat actions server-side');
-assert.match(worker, /SELECT 1 AS completed\s+FROM telegram_pet_season_completions\s+WHERE telegram_id=\?\s+LIMIT 1/, 'server-side completed-season gate must accept any completion row for the user');
-assert.doesNotMatch(worker, /hasCompletedPetMiniAppSeasonPet[\s\S]{0,500}season_key=\?/, 'server-side completed-season gate must not restrict eligibility to the current season');
+assert.match(worker, /SELECT 1 AS completed\s+FROM telegram_pet_season_completions\s+WHERE telegram_id=\?\s+LIMIT 1/, 'server-side completed-season authority must accept any completion row for the user');
+assert.doesNotMatch(worker, /hasCompletedPetMiniAppSeasonPet[\s\S]{0,500}season_key=\?/, 'server-side completed-season authority must not restrict eligibility to the current season');
 const futureCombatGateSource = worker.slice(worker.indexOf('const PET_MINI_APP_FUTURE_COMBAT_ACTIONS'), worker.indexOf('const PET_MINI_APP_COMBAT_CLEANUP_ACTIONS'));
 for (const action of ['arena_start', 'arena_matchmake', 'arena_ready', 'arena_move', 'kaiju_start', 'kaiju_matchmake', 'kaiju_card']) {
   assert.ok(worker.includes(`'${action}'`), `future combat action gate must name ${action}`);
   assert.ok(futureCombatGateIndex < miniAppActionSource.indexOf(`action === '${action}'`), `${action} must be locked before dispatch`);
 }
 for (const cleanupAction of ['arena_queue_cancel', 'arena_forfeit', 'kaiju_queue_cancel', 'kaiju_match_cancel']) {
-  assert.doesNotMatch(futureCombatGateSource, new RegExp(`'${cleanupAction}'`), `${cleanupAction} must remain outside the completed-season entry gate`);
+  assert.doesNotMatch(futureCombatGateSource, new RegExp(`'${cleanupAction}'`), `${cleanupAction} must remain outside the combat entry gate`);
 }
 assert.match(miniAppActionSource, /getPetMiniAppCombatEligibility\(db, telegramId, lifecycle\)/, 'server-side future combat lock must use shared combat eligibility authority');
-assert.match(miniAppActionSource, /reason: combatEligibility\.reason/, 'server-side future combat lock must return the shared eligibility reason');
+assert.match(miniAppActionSource, /const reason = action\.startsWith\('arena_'\)[\s\S]*combatEligibility\.arena_reason[\s\S]*combatEligibility\.kaiju_reason/, 'server-side combat lock must return per-system eligibility reasons');
 const prestigeGateIndex = miniAppActionSource.indexOf("if (action === 'prestige')");
 assert.ok(prestigeGateIndex !== -1, 'Mini App prestige action must have an explicit feature lock');
 assert.match(miniAppActionSource, /if \(action === 'prestige'\) return \{ accepted: false, reason: 'feature_not_available' \}/, 'locked Prestige must remain unavailable before mutation authority runs');
@@ -1317,7 +1327,7 @@ assert.match(html, /id="utility-layer"/);
 assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260820-action-guidance-polish/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
-assert.match(client, /function guideMarkup\(\)[\s\S]*var combatGuideCopy = hasCombatUnlocked\(\)[\s\S]*Arena and Kaiju are available for completed Season players with a hatched active Moonpet[\s\S]*Arena and Kaiju remain locked future panels with stale-state cleanup only/,
+assert.match(client, /function guideMarkup\(\)[\s\S]*var combatGuideCopy = hasCombatUnlocked\(\)[\s\S]*Kaiju is available for hatched active Moonpets; Arena opens at level 10[\s\S]*Arena and Kaiju stay locked until you adopt and hatch an active Moonpet/,
   'the in-app guide must describe Arena/Kaiju according to shared combat capability');
 assert.match(client, /data-utility="leaderboard">LEADERBOARD/);
 assert.match(client, /data-utility="sync">REFRESH/);
@@ -1732,9 +1742,10 @@ assert.match(client, /function updateCombatPresentation\(snapshot\)/);
 assert.doesNotMatch(client, /function snapshotHasCompletedSeasonPet\(snapshot\)/, 'client must not keep a duplicate completed-season snapshot helper');
 const snapshotCombatHelperSource = client.slice(client.indexOf('function snapshotHasCombatUnlocked'), client.indexOf('function updateCombatPresentation'));
 assert.match(snapshotCombatHelperSource, /combatCapability\(snapshot\)[\s\S]*combat\.state === 'AVAILABLE' && combat\.unlocked === true/, 'combat snapshot helper must consume the shared fail-closed capability accessor');
+assert.match(snapshotCombatHelperSource, /function snapshotHasSystemUnlocked\(snapshot, key\)[\s\S]*hasSystemUnlocked\(key, snapshot\)/, 'combat presentation must support per-system capability gates');
 assert.match(client, /snapshot === combatSnapshot && activeScreen === combatScreen/);
 assert.match(client, /var arena = snapshot\.arena/);
-assert.match(client, /arena && snapshotHasCombatUnlocked\(snapshot\) && arena\.status !== 'completed'/, 'Arena combat presentation must respect combat eligibility gating');
+assert.match(client, /arena && snapshotHasSystemUnlocked\(snapshot, 'arena'\) && arena\.status !== 'completed'/, 'Arena combat presentation must respect Arena capability gating');
 assert.match(client, /COMBAT_PRESENTATION_FRAME\.mode = 'arena'/);
 assert.match(client, /arena\.player_hp/);
 assert.match(client, /arena\.opponent_hp/);
@@ -1742,7 +1753,7 @@ assert.match(client, /arena\.player_special/);
 assert.match(client, /arena\.opponent_special/);
 assert.match(client, /'ROUND ' \+ Number\(arena\.current_round \|\| 1\) \+ '\/' \+ Number\(arena\.max_rounds \|\| 5\) \+ ' LIVE'/);
 assert.match(client, /var kaiju = snapshot\.kaiju && snapshot\.kaiju\.match/);
-assert.match(client, /kaiju && snapshotHasCombatUnlocked\(snapshot\) && kaiju\.status !== 'completed'/, 'Kaiju combat presentation must respect combat eligibility gating');
+assert.match(client, /kaiju && snapshotHasSystemUnlocked\(snapshot, 'kaiju'\) && kaiju\.status !== 'completed'/, 'Kaiju combat presentation must respect Kaiju capability gating');
 assert.match(client, /COMBAT_PRESENTATION_FRAME\.mode = 'kaiju'/);
 assert.match(client, /kaiju\.own_card_locked/);
 assert.match(client, /kaiju\.opponent_card_locked/);
@@ -1793,14 +1804,20 @@ assert.equal(runtimeCombatFrame.active, false, 'early Season 1 users must not se
 assert.doesNotThrow(() => combatRuntime.update({
   adopted: true,
   capabilities_version: 1,
-  capabilities: { combat: { state: 'AVAILABLE', unlocked: true, active: true, requirements: { completed_season_pet: true, active_pet_exists: true, active_pet_lifecycle_known: true, active_pet_hatched: true } } },
+  capabilities: {
+    combat: { state: 'AVAILABLE', unlocked: true, active: true, requirements: { completed_season_pet: false, active_pet_exists: true, active_pet_lifecycle_known: true, active_pet_hatched: true, active_pet_level: 10, arena_level_met: true } },
+    systems: { arena: { state: 'AVAILABLE', unlocked: true, active: true }, kaiju: { state: 'AVAILABLE', unlocked: true, active: true } },
+  },
   arena: { status: 'active', player_hp: 74, opponent_hp: 38 },
 }), 'Phase 5 combat director must recognize worker combat authority');
 assert.equal(runtimeCombatFrame.mode, 'arena', 'worker combat authority must satisfy Arena combat presentation gating');
 assert.doesNotThrow(() => combatRuntime.update({
   adopted: true,
   capabilities_version: 1,
-  capabilities: { combat: { state: 'AVAILABLE', unlocked: true, active: true, requirements: { completed_season_pet: true, active_pet_exists: true, active_pet_lifecycle_known: true, active_pet_hatched: true } } },
+  capabilities: {
+    combat: { state: 'AVAILABLE', unlocked: true, active: true, requirements: { completed_season_pet: false, active_pet_exists: true, active_pet_lifecycle_known: true, active_pet_hatched: true, active_pet_level: 10, arena_level_met: true } },
+    systems: { arena: { state: 'AVAILABLE', unlocked: true, active: true }, kaiju: { state: 'AVAILABLE', unlocked: true, active: true } },
+  },
   arena: {
     status: 'active', mode: 'multiplayer', current_round: 3, max_rounds: 5,
     player_hp: 74, opponent_hp: 38, player_special: 2, opponent_special: 1,
@@ -1819,7 +1836,10 @@ assert.equal(runtimeCombatFrame.rivalColor, '#61f5ff');
 assert.doesNotThrow(() => combatRuntime.update({
   adopted: true,
   capabilities_version: 1,
-  capabilities: { combat: { state: 'AVAILABLE', unlocked: true, active: true, requirements: { completed_season_pet: true, active_pet_exists: true, active_pet_lifecycle_known: true, active_pet_hatched: true } } },
+  capabilities: {
+    combat: { state: 'AVAILABLE', unlocked: true, active: true, requirements: { completed_season_pet: false, active_pet_exists: true, active_pet_lifecycle_known: true, active_pet_hatched: true, active_pet_level: 1, arena_level_met: false } },
+    systems: { arena: { state: 'LOCKED', unlocked: false, active: false, reason: 'arena_level_locked' }, kaiju: { state: 'AVAILABLE', unlocked: true, active: true } },
+  },
   kaiju: { match: { status: 'selecting', mode: 'solo', own_card_locked: true, opponent_card_locked: false, own_card_key: 'neon-claw' } },
 }), 'Phase 5 Kaiju director must execute from live card-lock state');
 assert.equal(runtimeCombatFrame.mode, 'kaiju');
