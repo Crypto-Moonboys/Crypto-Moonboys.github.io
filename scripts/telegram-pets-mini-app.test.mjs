@@ -1155,7 +1155,7 @@ assert.match(client, /WEEKLY CREST ALREADY SETTLED|DUPLICATE WEEKLY CREST BLOCKE
 assert.doesNotMatch(client, /Growth Mark[^'\n]*(?:claim|claimable)|Weekly Crest[^'\n]*(?:claim|claimable)/i,
   'Journey reward copy must avoid claim language when no claim action exists');
 assert.doesNotMatch(client, /Gameplay integration not active yet\./, 'Weekly Journey must no longer use inactive integration copy');
-assert.match(client, /Personality traits unlock through play/, 'traits-still-forming fallback must use current-beta-safe copy');
+assert.match(client, /Personality develops through play/, 'traits-still-forming fallback must use current-beta-safe copy');
 assert.match(client, /function combatLockCopy\(reasonOverride\)[\s\S]*reasonOverride \|\| combatCapability\(state\)\.reason[\s\S]*moon_egg_must_hatch[\s\S]*COMBAT LOCKED UNTIL YOUR ACTIVE MOONPET HATCHES/, 'Arena and Kaiju locked panels must render worker combat authority reasons instead of only completed-season copy');
 assert.match(client, /function combatLockedButtonOptions\(entryDetail\)[\s\S]*disabled: true[\s\S]*futureExpansion: true[\s\S]*eggRequired: entryDetail\.indexOf\('HATCHED'\) >= 0[\s\S]*activePetRequired: entryDetail\.indexOf\('ACTIVE'\) >= 0[\s\S]*authoritySyncing: entryDetail\.indexOf\('SYNC'\) >= 0/,
   'Arena and Kaiju locked buttons must share the same future-expansion availability options');
