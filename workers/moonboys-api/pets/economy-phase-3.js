@@ -7,13 +7,13 @@ function deepFreeze(value) {
 export const PET_CRAFTING_MATERIALS = deepFreeze({
   scrap_metal: { label: 'Scrap Metal', sources: ['job', 'run_fight', 'arena_complete'], max_stack: 9999 },
   moon_fabric: { label: 'Moon Fabric', sources: ['street_artist', 'event', 'run_loot'], max_stack: 9999 },
-  crystal_shard: { label: 'Crystal Shard', sources: ['explore', 'run_extract', 'daily_chest'], max_stack: 9999 },
+  crystal_shard: { label: 'Crystal Shard', sources: ['explore', 'run_extract', 'expedition'], max_stack: 9999 },
   battery_cell: { label: 'Battery Cell', sources: ['timed_work', 'run_loot', 'arena_complete'], max_stack: 9999 },
   spray_core: { label: 'Spray Core', sources: ['street_artist', 'event', 'run_boss'], max_stack: 9999 },
   kaiju_fragment: { label: 'Kaiju Fragment', sources: ['kaiju_win', 'run_boss'], max_stack: 9999 },
   arena_token: { label: 'Arena Token', sources: ['arena_win', 'arena_draw', 'arena_daily'], max_stack: 9999 },
   evolution_fragment: { label: 'Evolution Fragment', sources: ['run_boss', 'weekly_boss'], max_stack: 9999 },
-  mastery_token: { label: 'Mastery Token', sources: ['prestige_challenge', 'season_guardian'], max_stack: 9999 },
+  mastery_token: { label: 'Mastery Token', sources: ['seasonal_boss'], max_stack: 9999 },
 });
 
 export const PET_CRAFTING_RECIPES = deepFreeze({

@@ -16,14 +16,20 @@ import {
   normalizePetMaterial,
   resolvePetRareDrop,
 } from '../workers/moonboys-api/pets/economy-phase-3.js';
+import {
+  PET_ECONOMY_REACHABILITY_CLASSIFICATIONS,
+  buildPetEconomyReachabilityAudit,
+} from '../workers/moonboys-api/pets/economy-reachability-audit.js';
 
 assert.ok(Object.keys(PET_CRAFTING_MATERIALS).length >= 7, 'phase 3 must define a useful material economy');
 for (const [key, material] of Object.entries(PET_CRAFTING_MATERIALS)) {
   assert.ok(material.label, `${key} must have a label`);
-  assert.ok(material.sources.length >= 2, `${key} must have multiple sources`);
+  assert.ok(material.sources.length >= 1, `${key} must have at least one current beta source or explicit audit classification`);
   assert.ok(material.max_stack > 0, `${key} must have a positive stack cap`);
   assert.ok(Object.isFrozen(material) && Object.isFrozen(material.sources), `${key} material rules must be deeply frozen`);
 }
+assert.equal(PET_CRAFTING_MATERIALS.crystal_shard.sources.includes('daily_chest'), false, 'material source labels must not claim daily chest drops that do not exist');
+assert.equal(PET_CRAFTING_MATERIALS.mastery_token.sources.includes('prestige_challenge'), false, 'disabled prestige cannot be advertised as a current beta material source');
 assert.equal(normalizePetMaterial('CRYSTAL_SHARD'), 'crystal_shard');
 for (const inheritedKey of ['constructor', '__proto__', 'toString']) {
   assert.equal(normalizePetMaterial(inheritedKey), null, `${inheritedKey} must not be accepted as a material`);
@@ -90,5 +96,35 @@ assert.equal(canPetPrestige({ level: 100, mastered_items: 3, completed_regions: 
 assert.equal(canPetPrestige({ level: 99, mastered_items: 10, completed_regions: 6, moon_gold: 99999, moon_crystals: 999 }), false);
 assert.equal(canPetPrestige({ level: 100, mastered_items: 2, completed_regions: 6, moon_gold: 99999, moon_crystals: 999 }), false);
 assert.equal(canPetPrestige({ level: 100, mastered_items: 3, completed_regions: 4, moon_gold: 4999, moon_crystals: 50 }), false);
+
+const audit = buildPetEconomyReachabilityAudit();
+assert.equal(audit.invalid_material_references.length, 0, 'audit must reject stale or invalid material keys');
+for (const currency of ['moon_gold', 'moon_crystals', 'style_tokens']) {
+  const surface = audit.surfaces.find((entry) => entry.kind === 'currency' && entry.key === currency);
+  assert.equal(surface?.classification, PET_ECONOMY_REACHABILITY_CLASSIFICATIONS.LIVE_REACHABLE, `${currency} must remain a live reachable account wallet currency`);
+  assert.equal(surface.account_owned, true, `${currency} must remain account-owned`);
+  assert.ok(surface.sinks.length > 0, `${currency} must have current beta sinks`);
+}
+for (const [key, material] of Object.entries(PET_CRAFTING_MATERIALS)) {
+  const surface = audit.surfaces.find((entry) => entry.kind === 'material' && entry.key === key);
+  assert.ok(surface, `${key} must appear in the machine-readable economy audit`);
+  assert.deepEqual(surface.sources.slice(0, material.sources.length), material.sources, `${key} audit sources must start with the canonical material definition`);
+  assert.equal(surface.account_owned, true, `${key} must remain account-owned`);
+  if (surface.sinks.length === 0) {
+    assert.equal(surface.safe_accumulation_only, true, `${key} needs either a sink or explicit safe accumulation-only classification`);
+    assert.equal(surface.classification, PET_ECONOMY_REACHABILITY_CLASSIFICATIONS.REACHABLE_NOT_SPENDABLE);
+  } else {
+    assert.equal(surface.classification, PET_ECONOMY_REACHABILITY_CLASSIFICATIONS.LIVE_REACHABLE);
+  }
+}
+assert.equal(audit.surfaces.find((entry) => entry.kind === 'material' && entry.key === 'kaiju_fragment').safe_accumulation_only, true,
+  'Kaiju Fragments are currently reachable but intentionally accumulation-only');
+for (const item of audit.canonical_items) {
+  assert.equal(item.classification, PET_ECONOMY_REACHABILITY_CLASSIFICATIONS.LIVE_REACHABLE, `${item.key} must have a current beta source`);
+  assert.equal(item.account_owned, true, `${item.key} inventory must remain account-owned`);
+}
+for (const recipe of audit.surfaces.filter((entry) => entry.kind === 'recipe')) {
+  assert.equal(recipe.classification, PET_ECONOMY_REACHABILITY_CLASSIFICATIONS.LIVE_REACHABLE, `${recipe.key} recipe inputs must be obtainable`);
+}
 
 console.log('telegram-pets-economy-phase-3.test.mjs passed');
