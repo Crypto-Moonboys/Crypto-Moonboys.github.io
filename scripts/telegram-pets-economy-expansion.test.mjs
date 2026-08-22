@@ -12,6 +12,8 @@ import {
   getPetMarketOffers,
   resolvePetExpeditionReward,
 } from '../workers/moonboys-api/pets/economy-expansion.js';
+import { PET_CRAFTING_MATERIALS, normalizePetMaterial } from '../workers/moonboys-api/pets/economy-phase-3.js';
+import { PET_ECONOMY_REACHABILITY_CLASSIFICATIONS, buildPetEconomyReachabilityAudit } from '../workers/moonboys-api/pets/economy-reachability-audit.js';
 import { choosePetNextAction } from '../workers/moonboys-api/pets/player-guidance.js';
 import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 
@@ -27,15 +29,38 @@ assert.notDeepEqual(firstBoard.map(({ key }) => key), getPetDailyBounties('2026-
 assert.equal(new Set(firstBoard.map(({ key }) => key)).size, 4);
 assert.deepEqual(getPetDailyBounties('2026-08-12', 1), getPetDailyBounties('2026-08-12', 99), 'level-ups cannot replace the fixed daily bounty board');
 assert.ok(PET_DAILY_BOUNTIES.every(({ min_level = 1 }) => min_level <= 1), 'every bounty in the fixed board pool must be available to starters');
+const currentBetaEventTypes = new Set([
+  'feed', 'play', 'clean', 'sleep', 'train', 'work', 'random_event', 'activity_claim',
+  'run_complete', 'run_extract', 'adventure', 'daily_chest', 'kaiju_battle',
+  'use_item', 'use_item_reward',
+]);
+for (const bounty of PET_DAILY_BOUNTIES) {
+  assert.ok(bounty.event_types.every((eventType) => currentBetaEventTypes.has(eventType)), `${bounty.key} bounty must reference current beta actions only`);
+}
 
 const starterMarket = getPetMarketOffers('2026-08-12', 1);
 assert.equal(getPetMarketOffers('2026-08-12', 43).length, 4);
 assert.deepEqual(getPetMarketOffers('2026-08-12', 43), getPetMarketOffers('2026-08-12', 43));
 assert.deepEqual(starterMarket, getPetMarketOffers('2026-08-12', 99), 'level-ups cannot replace the fixed daily market stock');
+const canonicalMarketItems = new Set(['moon_snack', 'clean_wipe', 'energy_drink', 'adventure_map', 'lucky_charm', 'style_patch']);
+const canonicalCurrencies = new Set(['moon_gold', 'moon_crystals', 'style_tokens']);
+for (const offer of PET_MARKET_OFFERS) {
+  assert.ok(Object.keys(offer.cost).length > 0, `${offer.key} must have a purchase cost`);
+  assert.ok(Object.keys(offer.cost).every((key) => canonicalCurrencies.has(key)), `${offer.key} must charge account-owned wallet currencies only`);
+  for (const material of Object.keys(offer.reward.materials || {})) assert.ok(normalizePetMaterial(material), `${offer.key} must not reward invalid material ${material}`);
+  for (const item of Object.keys(offer.reward.items || {})) assert.ok(canonicalMarketItems.has(item), `${offer.key} must not reward invalid item ${item}`);
+}
 
 const expedition = resolvePetExpeditionReward('2026-08-12', 'player-1', 1, 43);
 assert.equal(expedition.expedition.key, 'guardian_rift');
 assert.deepEqual(expedition, resolvePetExpeditionReward('2026-08-12', 'player-1', 1, 43), 'server settlement must be replay-safe');
+for (const tier of PET_EXPEDITION_TIERS) {
+  assert.ok(tier.energy > 0, `${tier.key} expedition must charge Energy`);
+  assert.ok(tier.rewards.length >= 3, `${tier.key} expedition needs deterministic reward variety`);
+  for (const reward of tier.rewards) {
+    for (const material of Object.keys(reward.materials || {})) assert.ok(PET_CRAFTING_MATERIALS[material], `${tier.key} expedition must not create invalid material ${material}`);
+  }
+}
 
 const actions = buildPetEconomyGuidanceActions({
   pet: { energy: 90 },
@@ -62,8 +87,21 @@ assert.match(rewardFoundation, /source = 'pet_expedition'[\s\S]*status IN \('pen
 assert.match(rewardFoundation, /telegram_pet_profiles WHERE telegram_id = \? AND energy >= \?/, 'the full expedition Energy cost must be reserved atomically');
 
 const worker = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
-for (const command of ['peteconomy', 'petbounties', 'petexpedition', 'petmarket']) assert.match(worker, new RegExp(`case '${command}'`));
+for (const command of ['peteconomy', 'petbounties', 'petexpedition', 'petmarket']) assert.match(worker, new RegExp(`case ['"]${command}['"]`));
 assert.match(worker, /economy_actions: economy\?\.guidance_actions \|\| \[\]/, 'all economy additions must flow through Coach');
+assert.match(worker, /action === ['"]bounty_claim['"]/, 'Mini App bounty claim action must reach the server');
+assert.match(worker, /action === ['"]expedition['"]/, 'Mini App expedition action must reach the server');
+assert.match(worker, /action === ['"]market_buy['"]/, 'Mini App market purchase action must reach the server');
+assert.match(worker, /rewards:\s*\{\s*moon_gold:\s*40,\s*style_tokens:\s*2\s*\}/, 'daily chest runtime settlement must award gold and style only');
+assert.doesNotMatch(worker, /daily_chest[\s\S]{0,800}moon_crystals:\s*[1-9]/, 'daily chest runtime settlement must not award Moon Crystals');
+const audit = buildPetEconomyReachabilityAudit();
+for (const kind of ['market_offer', 'daily_bounty', 'crystal_expedition']) {
+  for (const surface of audit.surfaces.filter((entry) => entry.kind === kind)) {
+    assert.equal(surface.classification, PET_ECONOMY_REACHABILITY_CLASSIFICATIONS.LIVE_REACHABLE, `${surface.key} ${kind} must be live and reachable`);
+  }
+}
+assert.equal(audit.surfaces.find((entry) => entry.kind === 'currency' && entry.key === 'moon_crystals').sources.includes('daily_chest'), false,
+  'audit currency metadata must not claim Daily Chest creates Moon Crystals');
 
 class D1Adapter {
   constructor(database) { this.database = database; }
