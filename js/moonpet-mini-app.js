@@ -163,7 +163,7 @@
     var expires = Date.parse(source.expires_at || source.cooldown_until || source.available_at || source.retry_at || '');
     if (Number.isFinite(expires)) return new Date(expires).toISOString();
     var remaining = cooldownRemainingSeconds(source, nowMs);
-    return remaining > 0 ? new Date(nowMs + remaining * 1000).toISOString() : '';
+    return remaining > 0 ? new Date(Math.floor(nowMs / 1000) * 1000 + remaining * 1000).toISOString() : '';
   }
 
   function formatCountdownSeconds(seconds) {

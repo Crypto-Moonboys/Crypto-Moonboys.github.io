@@ -182,6 +182,19 @@ eliteSqlite.prepare(`INSERT INTO telegram_pet_evolutions
 eliteSqlite.prepare(`INSERT INTO telegram_pet_progression_state
   (telegram_id, training_xp, arena_xp)
   VALUES ('elite-gate-player', 999, 1999)`).run();
+eliteSqlite.prepare(`INSERT INTO telegram_pet_season_state (telegram_id, season_key)
+  VALUES ('elite-gate-player', 'pet-s2026-003')`).run();
+eliteSqlite.prepare(`INSERT INTO telegram_pet_season_slots
+  (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent)
+  VALUES ('pet:elite-gate-player:pet-s2026-003:1', 'elite-gate-player', 'pet-s2026-003', 1, 'free', 'test:elite-slot', 0)`).run();
+eliteSqlite.prepare(`INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key)
+  VALUES ('elite-gate-player', 'pet:elite-gate-player:pet-s2026-003:1', 'pet-s2026-003')`).run();
+eliteSqlite.prepare(`INSERT INTO telegram_pet_instances
+  (pet_id, telegram_id, season_key, slot_number, pet_xp, level, source_profile_updated_at)
+  VALUES ('pet:elite-gate-player:pet-s2026-003:1', 'elite-gate-player', 'pet-s2026-003', 1, 4500, 46, CURRENT_TIMESTAMP)`).run();
+eliteSqlite.prepare(`INSERT INTO telegram_pet_specialist_progression
+  (pet_id, telegram_id, season_key, training_xp, arena_xp)
+  VALUES ('pet:elite-gate-player:pet-s2026-003:1', 'elite-gate-player', 'pet-s2026-003', 999, 1999)`).run();
 const eliteDb = new D1DatabaseAdapter(eliteSqlite);
 const vaultLocked = await hooks.processPetJob(eliteDb, 'elite-gate-player', 'vault_security', { event_key: 'test:vault-locked' });
 assert.equal(vaultLocked.reason, 'specialist_job_locked');

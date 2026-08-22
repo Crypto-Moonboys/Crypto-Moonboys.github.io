@@ -58,6 +58,17 @@ assert.equal((await verifyPetMiniAppChallenge(challenge.slice(0, -1) + (challeng
 assert.equal((await verifyPetMiniAppChallenge(challenge, token, { type: 'event', telegram_id: '123456789' }, { now_ms: (nowSeconds + 901) * 1000 })).reason, 'mini_app_challenge_expired');
 
 const worker = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
+const miniAppStateSource = worker.slice(worker.indexOf('async function buildPetMiniAppState'), worker.indexOf('async function processPetMiniAppAction'));
+assert.match(
+  miniAppStateSource,
+  /getOrCreatePetRuntimeState\(db, telegramId, getPetDayKey\(now\), activePetRewardAuthority\(petRaw\)\)/,
+  'Mini App progress must load specialist tracks and aptitudes for the selected active pet',
+);
+assert.match(
+  miniAppStateSource,
+  /progress: runtime/,
+  'Mini App progress payload must expose the selected pet specialist state',
+);
 const html = fs.readFileSync(new URL('../moonpet-game.html', import.meta.url), 'utf8');
 const client = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
 assert.match(client, /var lifecycleRequirement = journeyLifecycle\.next_evolution \?/, 'final-form lifecycle copy must branch on whether a next evolution exists');

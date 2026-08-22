@@ -2,6 +2,10 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { DatabaseSync } from 'node:sqlite';
 import { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
+import {
+  applyPetRuntimeAward,
+  getOrCreatePetRuntimeState,
+} from '../workers/moonboys-api/pets/runtime-phase-5a.js';
 
 class SqliteD1Statement {
   constructor(database, sql, bindings = []) { this.database = database; this.sql = sql; this.bindings = bindings; }
@@ -9,6 +13,11 @@ class SqliteD1Statement {
   async first() { return this.database.prepare(this.sql).get(...this.bindings) || null; }
   async all() { return { results: this.database.prepare(this.sql).all(...this.bindings) }; }
   async run() {
+    if (/\bRETURNING\b/i.test(this.sql)) {
+      const results = this.database.prepare(this.sql).all(...this.bindings);
+      const changes = this.database.prepare('SELECT changes() AS changes').get().changes;
+      return { results, meta: { changes } };
+    }
     const result = this.database.prepare(this.sql).run(...this.bindings);
     return { meta: { changes: result.changes } };
   }
@@ -35,6 +44,8 @@ const migration055 = await readFile(new URL('../workers/moonboys-api/migrations/
 const migration056 = await readFile(new URL('../workers/moonboys-api/migrations/056_telegram_pet_instance_state.sql', import.meta.url), 'utf8');
 const migration053 = await readFile(new URL('../workers/moonboys-api/migrations/053_telegram_pet_species_lifecycle.sql', import.meta.url), 'utf8');
 const migration057 = await readFile(new URL('../workers/moonboys-api/migrations/057_telegram_pet_lifecycle_pet_id.sql', import.meta.url), 'utf8');
+const migration039 = await readFile(new URL('../workers/moonboys-api/migrations/039_telegram_pet_runtime_progression.sql', import.meta.url), 'utf8');
+const migration073 = await readFile(new URL('../workers/moonboys-api/migrations/073_moonpet_per_pet_specialist_progression.sql', import.meta.url), 'utf8');
 const worker = await readFile(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
 const rogueliteFoundation = await readFile(new URL('../workers/moonboys-api/pets/roguelite-foundation.js', import.meta.url), 'utf8');
 const walletReconciliation = await readFile(new URL('../workers/moonboys-api/pets/wallet-reconciliation.js', import.meta.url), 'utf8');
@@ -634,6 +645,96 @@ assert.deepEqual(
   'work started by the previous-season pet must not leak onto the new-season starter',
 );
 
+const legacySpecialistDb = new DatabaseSync(':memory:');
+legacySpecialistDb.exec(`
+  PRAGMA foreign_keys = ON;
+  CREATE TABLE telegram_pet_profiles (
+    telegram_id TEXT PRIMARY KEY,
+    pet_name TEXT NOT NULL DEFAULT 'Moonpet', species TEXT NOT NULL DEFAULT '',
+    stage TEXT NOT NULL DEFAULT 'egg', pet_xp INTEGER NOT NULL DEFAULT 0,
+    level INTEGER NOT NULL DEFAULT 1, hunger INTEGER NOT NULL DEFAULT 25,
+    happiness INTEGER NOT NULL DEFAULT 70, cleanliness INTEGER NOT NULL DEFAULT 70,
+    energy INTEGER NOT NULL DEFAULT 70, health INTEGER NOT NULL DEFAULT 75,
+    streak_days INTEGER NOT NULL DEFAULT 0, moon_gold INTEGER NOT NULL DEFAULT 0,
+    moon_crystals INTEGER NOT NULL DEFAULT 0, style_tokens INTEGER NOT NULL DEFAULT 0,
+    equipped_food TEXT, equipped_toy TEXT, equipped_outfit TEXT,
+    equipped_armor TEXT, equipped_weapon TEXT, equipped_charm TEXT,
+    last_active_day TEXT, last_decay_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE TABLE telegram_pet_season_state (
+    telegram_id TEXT NOT NULL, season_key TEXT NOT NULL,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (telegram_id, season_key)
+  );
+`);
+legacySpecialistDb.prepare(`INSERT INTO telegram_pet_profiles (telegram_id, pet_name)
+  VALUES ('legacy-specialist-owner', 'Legacy Pet')`).run();
+legacySpecialistDb.prepare(`INSERT INTO telegram_pet_season_state (telegram_id, season_key)
+  VALUES ('legacy-specialist-owner', '2026-q3')`).run();
+legacySpecialistDb.exec(migration055);
+legacySpecialistDb.exec(migration056);
+legacySpecialistDb.exec(migration039);
+legacySpecialistDb.prepare(`INSERT INTO telegram_pet_season_slots
+  (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent)
+  VALUES ('pet:legacy-specialist-owner:2026-q3:2', 'legacy-specialist-owner', '2026-q3', 2, 'arcade_xp', 'legacy-active-slot-2', 500)`).run();
+legacySpecialistDb.prepare(`INSERT INTO telegram_pet_instances
+  (pet_id, telegram_id, season_key, slot_number, pet_name, source_profile_updated_at)
+  VALUES ('pet:legacy-specialist-owner:2026-q3:2', 'legacy-specialist-owner', '2026-q3', 2, 'Legacy Pet B', CURRENT_TIMESTAMP)`).run();
+legacySpecialistDb.prepare(`UPDATE telegram_pet_active_slots
+  SET pet_id='pet:legacy-specialist-owner:2026-q3:2', season_key='2026-q3'
+  WHERE telegram_id='legacy-specialist-owner'`).run();
+legacySpecialistDb.prepare(`UPDATE telegram_pet_progression_state
+  SET care_xp=8, bond_xp=5, daily_key='2026-08-22', care_daily=8, bond_daily=5, traits_json='{"loyal":4}'
+  WHERE telegram_id='legacy-specialist-owner'`).run();
+legacySpecialistDb.prepare(`INSERT INTO telegram_pet_runtime_events
+  (id, telegram_id, event_key, action, payload_json, created_at)
+  VALUES ('legacy-runtime-feed-1', 'legacy-specialist-owner', 'legacy:feed:1', 'feed', '{"action":"feed"}', '2026-08-22T08:00:00Z')`).run();
+legacySpecialistDb.exec(migration073);
+const legacySpecialistD1 = new SqliteD1(legacySpecialistDb);
+const legacySlot1Pet = { pet_id: 'pet:legacy-specialist-owner:2026-q3:1', season_key: '2026-q3' };
+const legacyPet = { pet_id: 'pet:legacy-specialist-owner:2026-q3:2', season_key: '2026-q3' };
+assert.equal(legacySpecialistDb.prepare(`SELECT care_xp FROM telegram_pet_specialist_progression
+  WHERE pet_id=? AND telegram_id='legacy-specialist-owner' AND season_key='2026-q3'`)
+  .get(legacyPet.pet_id).care_xp, 8,
+  'migration 073 must backfill legacy specialist progression onto the selected active slot-2 pet');
+assert.equal(legacySpecialistDb.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_specialist_progression
+  WHERE pet_id=? AND telegram_id='legacy-specialist-owner' AND season_key='2026-q3'`)
+  .get(legacySlot1Pet.pet_id).count, 0,
+  'migration 073 must not backfill legacy specialist progression onto inactive slot 1');
+assert.equal(legacySpecialistDb.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_specialist_events
+  WHERE pet_id=? AND telegram_id='legacy-specialist-owner' AND season_key='2026-q3' AND event_key='legacy:feed:1'`)
+  .get(legacyPet.pet_id).count, 1,
+  'migration 073 must backfill legacy runtime idempotency evidence onto the selected active slot-2 pet');
+assert.equal(legacySpecialistDb.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_specialist_events
+  WHERE pet_id=? AND telegram_id='legacy-specialist-owner' AND season_key='2026-q3' AND event_key='legacy:feed:1'`)
+  .get(legacySlot1Pet.pet_id).count, 0,
+  'migration 073 must not backfill legacy runtime idempotency evidence onto inactive slot 1');
+const legacyReplay = await applyPetRuntimeAward(legacySpecialistD1, 'legacy-specialist-owner', 'legacy:feed:1', 'feed', {
+  ...legacyPet,
+  day_key: '2026-08-22',
+  trait_amount: 4,
+});
+assert.equal(legacyReplay.duplicate, true, 'a pre-migration runtime event key must not be replayable after migration 073');
+let legacyState = await getOrCreatePetRuntimeState(legacySpecialistD1, 'legacy-specialist-owner', '2026-08-22', legacyPet);
+assert.equal(legacyState.care_xp, 8, 'duplicate legacy replay must not add specialist XP');
+assert.equal(legacyState.bond_xp, 5, 'duplicate legacy replay must not add secondary specialist XP');
+assert.equal(JSON.parse(legacyState.traits_json).loyal, 4, 'duplicate legacy replay must not add aptitude progress');
+const legacySlot1State = await getOrCreatePetRuntimeState(legacySpecialistD1, 'legacy-specialist-owner', '2026-08-22', legacySlot1Pet);
+assert.equal(legacySlot1State.care_xp, 0, 'inactive slot 1 must not receive legacy specialist XP');
+assert.deepEqual(JSON.parse(legacySlot1State.traits_json), {}, 'inactive slot 1 must not receive legacy aptitude progress');
+const legacyNewAward = await applyPetRuntimeAward(legacySpecialistD1, 'legacy-specialist-owner', 'legacy:feed:2', 'feed', {
+  ...legacyPet,
+  day_key: '2026-08-22',
+  trait_amount: 4,
+});
+assert.equal(legacyNewAward.duplicate, false, 'a genuinely new pet-scoped runtime event key must still credit once');
+legacyState = await getOrCreatePetRuntimeState(legacySpecialistD1, 'legacy-specialist-owner', '2026-08-22', legacyPet);
+assert.equal(legacyState.care_xp, 16, 'new runtime event should add one Care award after the legacy duplicate is blocked');
+assert.equal(legacyState.bond_xp, 10, 'new runtime event should add one Bond award after the legacy duplicate is blocked');
+assert.equal(JSON.parse(legacyState.traits_json).loyal, 8, 'new runtime event should add one aptitude award after the legacy duplicate is blocked');
+
 const runRolloverPet = seedPendingRolloverPlayer('rollover-run');
 db.prepare(`INSERT INTO telegram_pet_runs (run_id, telegram_id, status) VALUES ('run-rollover-active', 'rollover-run', 'active')`).run();
 assert.equal(await preparePetMiniAppState(d1, 'rollover-run', rolloverNow), true, 'run-gated rollover preparation must return successfully while deferring activation');
@@ -659,5 +760,82 @@ assert.equal(db.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE tele
 db.prepare(`UPDATE telegram_pet_kaiju_matches SET status='completed' WHERE match_id='kaiju-rollover-active'`).run();
 assert.equal(await preparePetMiniAppState(d1, 'rollover-kaiju', rolloverNow), true, 'clearing the kaiju match must allow rollover on the next bootstrap');
 assert.equal(db.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='rollover-kaiju'`).get().pet_id, `pet:rollover-kaiju:${rolloverSeasonKey}:1`, 'after kaiju clearance the current-season starter must become active');
+
+const specialistDb = new DatabaseSync(':memory:');
+specialistDb.exec(`
+  PRAGMA foreign_keys = ON;
+  CREATE TABLE telegram_pet_profiles (
+    telegram_id TEXT PRIMARY KEY,
+    pet_name TEXT NOT NULL DEFAULT 'Moonpet', species TEXT NOT NULL DEFAULT '',
+    stage TEXT NOT NULL DEFAULT 'egg', pet_xp INTEGER NOT NULL DEFAULT 0,
+    level INTEGER NOT NULL DEFAULT 1, hunger INTEGER NOT NULL DEFAULT 25,
+    happiness INTEGER NOT NULL DEFAULT 70, cleanliness INTEGER NOT NULL DEFAULT 70,
+    energy INTEGER NOT NULL DEFAULT 70, health INTEGER NOT NULL DEFAULT 75,
+    streak_days INTEGER NOT NULL DEFAULT 0, moon_gold INTEGER NOT NULL DEFAULT 0,
+    moon_crystals INTEGER NOT NULL DEFAULT 0, style_tokens INTEGER NOT NULL DEFAULT 0,
+    equipped_food TEXT, equipped_toy TEXT, equipped_outfit TEXT,
+    equipped_armor TEXT, equipped_weapon TEXT, equipped_charm TEXT,
+    last_active_day TEXT, last_decay_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE TABLE telegram_pet_season_state (
+    telegram_id TEXT NOT NULL, season_key TEXT NOT NULL,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (telegram_id, season_key)
+  );
+`);
+specialistDb.prepare(`INSERT INTO telegram_pet_profiles (telegram_id, pet_name, moon_gold)
+  VALUES ('specialist-owner', 'Pet A', 123)`).run();
+specialistDb.prepare(`INSERT INTO telegram_pet_season_state (telegram_id, season_key)
+  VALUES ('specialist-owner', '2026-q3')`).run();
+specialistDb.exec(migration055);
+specialistDb.exec(migration056);
+specialistDb.exec(migration039);
+specialistDb.exec(migration073);
+specialistDb.prepare(`INSERT INTO telegram_pet_season_slots
+  (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent)
+  VALUES ('pet:specialist-owner:2026-q3:2', 'specialist-owner', '2026-q3', 2, 'arcade_xp', 'paid-specialist-slot', 500)`).run();
+specialistDb.prepare(`INSERT INTO telegram_pet_instances
+  (pet_id, telegram_id, season_key, slot_number, pet_name, source_profile_updated_at)
+  VALUES ('pet:specialist-owner:2026-q3:2', 'specialist-owner', '2026-q3', 2, 'Pet B', CURRENT_TIMESTAMP)`).run();
+specialistDb.prepare(`INSERT INTO telegram_pet_material_balances (telegram_id, material_key, quantity)
+  VALUES ('specialist-owner', 'crystal_shard', 4)`).run();
+const specialistD1 = new SqliteD1(specialistDb);
+const petA = { pet_id: 'pet:specialist-owner:2026-q3:1', season_key: '2026-q3' };
+const petB = { pet_id: 'pet:specialist-owner:2026-q3:2', season_key: '2026-q3' };
+await applyPetRuntimeAward(specialistD1, 'specialist-owner', 'per-pet:care:a:1', 'feed', { ...petA, day_key: '2026-08-22', trait_amount: 4 });
+await applyPetRuntimeAward(specialistD1, 'specialist-owner', 'per-pet:care:a:2', 'feed', { ...petA, day_key: '2026-08-22', trait_amount: 4 });
+let petAState = await getOrCreatePetRuntimeState(specialistD1, 'specialist-owner', '2026-08-22', petA);
+let petBState = await getOrCreatePetRuntimeState(specialistD1, 'specialist-owner', '2026-08-22', petB);
+assert.equal(petAState.care_xp, 16, 'Pet A earns its own Care specialist XP');
+assert.equal(JSON.parse(petAState.traits_json).loyal, 8, 'Pet A earns its own learned aptitude progress');
+assert.equal(petAState.care_daily, 16, 'Pet A daily specialist counter records Pet A awards');
+assert.equal(petBState.care_xp, 0, 'switching to Pet B must not inherit Pet A specialist XP');
+assert.deepEqual(JSON.parse(petBState.traits_json), {}, 'switching to Pet B must not inherit Pet A learned aptitudes');
+await applyPetRuntimeAward(specialistD1, 'specialist-owner', 'per-pet:care:b:1', 'feed', { ...petB, day_key: '2026-08-22', trait_amount: 2 });
+await applyPetRuntimeAward(specialistD1, 'specialist-owner', 'per-pet:run:b:1', 'run_extract', { ...petB, day_key: '2026-08-22', drop_roll: 0, material_amount: 2 });
+petBState = await getOrCreatePetRuntimeState(specialistD1, 'specialist-owner', '2026-08-22', petB);
+petAState = await getOrCreatePetRuntimeState(specialistD1, 'specialist-owner', '2026-08-22', petA);
+assert.equal(petBState.care_xp, 8, 'Pet B can earn Care specialist XP independently');
+assert.equal(petBState.adventure_xp, 24, 'Pet B earns its own Adventure specialist XP from run extraction');
+assert.equal(petBState.care_daily, 8, 'Pet B daily specialist counter is separate from Pet A');
+assert.equal(petAState.care_xp, 16, 'switching back to Pet A restores Pet A specialist XP');
+assert.equal(JSON.parse(petAState.traits_json).loyal, 8, 'switching back to Pet A restores Pet A aptitudes');
+assert.equal(specialistDb.prepare(`SELECT quantity FROM telegram_pet_material_balances
+  WHERE telegram_id='specialist-owner' AND material_key='crystal_shard'`).get().quantity, 6,
+  'materials remain shared account-owned balances while specialist progress is pet-owned');
+assert.equal(specialistDb.prepare(`SELECT moon_gold FROM telegram_pet_profiles
+  WHERE telegram_id='specialist-owner'`).get().moon_gold, 123,
+  'account wallet balances remain account-owned during specialist awards');
+assert.equal(specialistDb.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_specialist_events
+  WHERE pet_id='pet:specialist-owner:2026-q3:1'`).get().count, 2,
+  'specialist unlock evidence is recorded under Pet A');
+assert.equal(specialistDb.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_specialist_events
+  WHERE pet_id='pet:specialist-owner:2026-q3:2'`).get().count, 2,
+  'specialist unlock evidence is recorded under Pet B');
+assert.equal(specialistDb.prepare(`SELECT care_xp FROM telegram_pet_progression_state
+  WHERE telegram_id='specialist-owner'`).get().care_xp, 0,
+  'legacy owner specialist mirrors must not receive pet-scoped awards');
 
 console.log('telegram-pets-per-pet-state.test.mjs passed');

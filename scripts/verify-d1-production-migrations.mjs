@@ -39,6 +39,7 @@ export const REQUIRED_D1_MIGRATIONS = Object.freeze([
   '070_moonpet_pet_identity_achievement_authority.sql',
   '071_moonpet_arena_pet_authority.sql',
   '072_moonpet_identity_authority_verification.sql',
+  '073_moonpet_per_pet_specialist_progression.sql',
 ]);
 
 function readJson(filePath, label) {

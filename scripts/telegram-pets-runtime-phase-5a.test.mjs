@@ -11,6 +11,7 @@ import {
 } from '../workers/moonboys-api/pets/runtime-phase-5a.js';
 
 const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/039_telegram_pet_runtime_progression.sql', import.meta.url), 'utf8');
+const specialistMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/073_moonpet_per_pet_specialist_progression.sql', import.meta.url), 'utf8');
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 const runtimeSource = fs.readFileSync(new URL('../workers/moonboys-api/pets/runtime-phase-5a.js', import.meta.url), 'utf8');
 
@@ -66,10 +67,17 @@ for (const sql of [migration, schema]) {
   assert.ok(sql.includes('REFERENCES telegram_pet_profiles(telegram_id) ON DELETE CASCADE'), 'runtime state must cascade with pet deletion');
 }
 assert.ok(migration.includes('INSERT OR IGNORE INTO telegram_pet_progression_state'), 'existing pet profiles must be seeded safely');
+for (const sql of [specialistMigration, schema]) {
+  for (const table of ['telegram_pet_specialist_progression', 'telegram_pet_specialist_events']) {
+    assert.ok(sql.includes(`CREATE TABLE IF NOT EXISTS ${table}`), `${table} must exist in specialist migration and canonical schema`);
+  }
+  assert.ok(sql.includes('PRIMARY KEY (pet_id, telegram_id, season_key)'), 'specialist progression must be keyed by pet ownership tuple');
+  assert.ok(sql.includes('UNIQUE (pet_id, telegram_id, season_key, event_key)'), 'specialist event evidence must be idempotent per pet');
+}
 
 assert.match(runtimeSource, /await db\.batch\(statements\)/, 'event claim and reward writes must use one D1 transaction');
-assert.match(runtimeSource, /WHERE telegram_id = \? AND EXISTS \(SELECT 1 FROM telegram_pet_runtime_events WHERE id = \?\) RETURNING \*/, 'the complete state mutation must require the newly inserted claim');
-assert.match(runtimeSource, /bindings\.push\(telegramId, claimId\)/, 'state update bindings must include the owner and claim gate');
+assert.match(runtimeSource, /WHERE pet_id = \? AND telegram_id = \? AND season_key = \? AND EXISTS \(SELECT 1 FROM \$\{eventTable\} WHERE id = \?\) RETURNING \*/, 'the pet-scoped state mutation must require the complete owner tuple and newly inserted claim');
+assert.match(runtimeSource, /bindings\.push\(authority\.pet_id, telegramId, authority\.season_key, claimId\)/, 'state update bindings must include the pet authority tuple and claim gate');
 assert.match(runtimeSource, /quantity_awarded: credited/, 'material messaging must report the persisted balance delta');
 assert.doesNotMatch(runtimeSource, /SELECT quantity[\s\S]*?nextQuantity[\s\S]*?DO UPDATE SET quantity = excluded\.quantity/, 'material writes must not use a stale read-modify-write balance');
 assert.match(runtimeSource, /MIN\(\?, telegram_pet_material_balances\.quantity \+ excluded\.quantity\)/, 'material increments must be atomic and capped');
