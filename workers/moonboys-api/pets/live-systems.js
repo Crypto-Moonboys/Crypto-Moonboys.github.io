@@ -280,7 +280,7 @@ async function getCompletedRequest(db, telegramId, system, action, requestKey, a
 }
 
 async function claimEnergySettlement(db, reservation, telegramId, energyCost, authority = null) {
-  if (reservation.status === 'completed') return 'completed';
+  if (reservation.status === 'completed') return { state: 'completed', token: null };
   const token = crypto.randomUUID();
   const priorPayload = parse(reservation.payload_json, {});
   const alreadyCharged = priorPayload.energy_charged === true || priorPayload.energy_charged === 1;

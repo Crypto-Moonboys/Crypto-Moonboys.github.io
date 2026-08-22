@@ -103,6 +103,8 @@ assert.match(normalizeSourceWhitespace(liveSystemsSource), /INSERT OR IGNORE INT
   'live progression lazy creation must initialize empty rows instead of copying legacy account progress');
 assert.match(normalizeSourceWhitespace(liveSystemsSource), /UPDATE telegram_pet_instances SET energy=energy-\?/,
   'pet action Energy settlement must debit the authoritative pet instance');
+assert.match(normalizeSourceWhitespace(liveSystemsSource), /if \(reservation\.status === 'completed'\) return \{ state: 'completed', token: null \};/,
+  'Energy settlement completed reservations must keep the structured object return contract');
 assert.match(normalizeSourceWhitespace(liveSystemsSource), /UPDATE telegram_pet_live_progression_state SET prestige_count=prestige_count\+1/,
   'prestige settlement must write the live progression authority table');
 assert.match(normalizeSourceWhitespace(rewardSource), /if \(\(petId && !petSeasonKey\) \|\| \(!petId && petSeasonKey\)\) throw new Error\('invalid_pet_reward_context'\)/,
