@@ -41,6 +41,7 @@ const wikiIndex = readJson('js/wiki-index.json');
 const entityGraph = readJson('js/entity-graph.json');
 const graphData = readJson('js/graph-data.json');
 const liteGraph = readJson('js/entity-graph-lite.json');
+const graphGeneratorSource = fs.readFileSync(path.join(ROOT, 'scripts/generate-graph-data.js'), 'utf8');
 
 assert.ok(Array.isArray(wikiIndex), 'wiki-index.json must be an array');
 assert.ok(graphData && Array.isArray(graphData.nodes) && Array.isArray(graphData.edges), 'graph-data.json must contain nodes and edges arrays');
@@ -93,12 +94,14 @@ const liteGeneratedAt = Date.parse(liteGraph.generated_at);
 assert.ok(Number.isFinite(fullGeneratedAt), 'graph-data.json has an invalid generated_at value');
 assert.ok(Number.isFinite(liteGeneratedAt), 'entity-graph-lite.json has an invalid generated_at value');
 assert.equal(liteGraph.generated_at, graphData.generated_at, 'Mobile graph must be derived from the same full-graph generation');
+assert.ok(Date.now() - fullGeneratedAt >= 0, 'Graph generated_at must not be in the future');
+assert.match(graphGeneratorSource, /existingGeneratedAt <= now/,
+  'graph generation must not preserve a future existing generated_at timestamp');
 
 if (process.env.GRAPH_MAX_AGE_HOURS) {
   const maxAgeHours = Number(process.env.GRAPH_MAX_AGE_HOURS);
   assert.ok(Number.isFinite(maxAgeHours) && maxAgeHours > 0, 'GRAPH_MAX_AGE_HOURS must be a positive number');
   const ageMs = Date.now() - fullGeneratedAt;
-  assert.ok(ageMs >= -5 * 60 * 1000, 'Graph generated_at is unexpectedly in the future');
   assert.ok(ageMs <= maxAgeHours * 60 * 60 * 1000, `Graph data is stale by more than ${maxAgeHours} hours`);
 }
 

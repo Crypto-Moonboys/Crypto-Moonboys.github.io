@@ -22,7 +22,7 @@ import {
 } from '../workers/moonboys-api/pets/wallet-reconciliation.js';
 
 const root = new URL('../', import.meta.url);
-const { serializePet } = __petMediaTestHooks;
+const { mirrorActivePetInstanceToProfile, serializePet } = __petMediaTestHooks;
 function normalizeSourceNewlines(source) {
   return source.replace(/\r\n?/g, '\n');
 }
@@ -99,6 +99,12 @@ assert.match(normalizeSourceWhitespace(liveSystemsSource), /ensurePetAccountWall
   'live-system account-wallet sinks must use the shared reconcile-first guard and return the structured pending reason');
 assert.match(normalizeSourceWhitespace(liveSystemsSource), /const authority = await resolveLivePetAuthority\(db, telegramId, pet\); if \(!authority\) return \{ accepted: false, reason: 'source_pet_authority_required' \}; const liveProgression = await getPetLiveProgressionState\(db, telegramId, pet, runtime, authority\);/,
   'district missions must reuse the already-resolved pet authority tuple for progression state');
+assert.match(normalizeSourceWhitespace(liveSystemsSource), /INSERT OR IGNORE INTO telegram_pet_live_progression_state[\s\S]*SELECT \?, \?, \?, '\{\}', '\[\]', 0/,
+  'live progression lazy creation must initialize empty rows instead of copying legacy account progress');
+assert.match(normalizeSourceWhitespace(liveSystemsSource), /UPDATE telegram_pet_instances SET energy=energy-\?/,
+  'pet action Energy settlement must debit the authoritative pet instance');
+assert.match(normalizeSourceWhitespace(liveSystemsSource), /UPDATE telegram_pet_live_progression_state SET prestige_count=prestige_count\+1/,
+  'prestige settlement must write the live progression authority table');
 assert.match(normalizeSourceWhitespace(rewardSource), /if \(\(petId && !petSeasonKey\) \|\| \(!petId && petSeasonKey\)\) throw new Error\('invalid_pet_reward_context'\)/,
   'seasonal boss reward authorization must fail closed for partial pet authority tuples');
 assert.match(normalizeSourceWhitespace(rewardSource), /pet_id = '' AND telegram_id = \? AND pet_season_key = '' AND season_key = \? AND boss_key = \?/,
@@ -174,6 +180,23 @@ function seedPlayer(id, overrides = {}) {
   return { pet_id: petId, season_key: seasonKey };
 }
 
+function seedLiveProgression(id, overrides = {}) {
+  const seasonKey = overrides.season_key || 'pet-s2026-003';
+  const petId = overrides.pet_id || `pet:${id}:${seasonKey}:${overrides.slot_number || 1}`;
+  runtimeDb.prepare(`INSERT OR REPLACE INTO telegram_pet_live_progression_state
+    (pet_id, telegram_id, season_key, region_mastery_json, completed_regions_json, prestige_count)
+    VALUES (?, ?, ?, ?, ?, ?)`)
+    .run(
+      petId,
+      id,
+      seasonKey,
+      JSON.stringify(overrides.region_mastery_json || {}),
+      JSON.stringify(overrides.completed_regions_json || []),
+      overrides.prestige_count || 0,
+    );
+  return { pet_id: petId, season_key: seasonKey };
+}
+
 function livePet(id, overrides = {}) {
   return {
     pet_id: overrides.pet_id || `pet:${id}:${overrides.season_key || 'pet-s2026-003'}:${overrides.slot_number || 1}`,
@@ -223,6 +246,9 @@ function seedUnprovableHistoricalWalletClaim(id) {
   `).run(`legacy-wallet-event:${id}`, `legacy-pet:${id}`, id, `legacy-wallet:${id}`, metadata);
 }
 seedPlayer('live-1');
+seedLiveProgression('live-1', {
+  completed_regions_json: ['moon_alley', 'neon_rooftops', 'rugpull_mines', 'blockchain_sewers'],
+});
 seedMaterials('live-1');
 for (let index = 0; index < 3; index += 1) runtimeDb.prepare('INSERT INTO telegram_pet_equipment_progression (telegram_id, item_key, slot, mastery_tier) VALUES (?, ?, ?, 5)').run('live-1', `mastered_${index}`, `slot_${index}`);
 runtimeDb.prepare("INSERT INTO telegram_pet_equipment_progression (telegram_id, item_key, slot) VALUES ('live-1', 'hoverboard', 'toy')").run();
@@ -254,6 +280,9 @@ assert.equal(wrongSeasonDistrict.reason, 'source_pet_authority_required',
   'invalid serialized season authority must fail closed before district settlement');
 assert.equal(runtimeDb.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id='serialized-authority'").get().energy, 90,
   'invalid serialized authority must not spend Energy after the valid district action');
+assert.equal(runtimeDb.prepare("SELECT energy FROM telegram_pet_instances WHERE pet_id=? AND telegram_id='serialized-authority' AND season_key=?")
+  .get(serializedActivePet.pet_id, serializedActivePet.season_key).energy, 90,
+  'serialized district Energy must debit the authoritative pet instance');
 
 const runtimeState = runtimeDb.prepare("SELECT * FROM telegram_pet_progression_state WHERE telegram_id='live-1'").get();
 const district = await processPetDistrictMission(d1, 'live-1', 'moon_alley', livePet('live-1'), runtimeState, reward, 'nomad-bears');
@@ -261,9 +290,16 @@ assert.equal(district.accepted, true);
 assert.equal(district.choice.key, 'tactical', 'cached clients must retain the balanced guaranteed path');
 assert.equal(district.outcome.success, true);
 assert.equal(runtimeDb.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id='live-1'").get().energy, 90);
+assert.equal(runtimeDb.prepare("SELECT energy FROM telegram_pet_instances WHERE pet_id=? AND telegram_id='live-1' AND season_key=?").get(livePet('live-1').pet_id, livePet('live-1').season_key).energy, 90,
+  'district Energy must be charged on the authoritative pet instance');
 const districtReplay = await processPetDistrictMission(d1, 'live-1', 'moon_alley', livePet('live-1', { energy: 90 }), runtimeDb.prepare("SELECT * FROM telegram_pet_progression_state WHERE telegram_id='live-1'").get(), reward, 'nomad-bears');
 assert.equal(districtReplay.duplicate, true);
 assert.equal(runtimeDb.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id='live-1'").get().energy, 90);
+runtimeDb.prepare("UPDATE telegram_pet_profiles SET energy=100 WHERE telegram_id='live-1'").run();
+const livePetOneInstance = runtimeDb.prepare("SELECT * FROM telegram_pet_instances WHERE pet_id=? AND telegram_id='live-1' AND season_key=?").get(livePet('live-1').pet_id, livePet('live-1').season_key);
+await mirrorActivePetInstanceToProfile(d1, livePetOneInstance);
+assert.equal(runtimeDb.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id='live-1'").get().energy, 90,
+  'profile compatibility reload must mirror the instance Energy instead of refunding it');
 
 const usedState = await buildPetLiveSystemsState(d1, 'live-1', livePet('live-1'), runtimeDb.prepare("SELECT * FROM telegram_pet_progression_state WHERE telegram_id='live-1'").get(), [], []);
 assert.equal(usedState.regions.find((region) => region.key === 'moon_alley').used_today, true, 'completed daily districts must be disabled in refreshed state');
@@ -295,7 +331,7 @@ assert.equal(JSON.parse(runtimeDb.prepare("SELECT region_mastery_json FROM teleg
 assert.equal(runtimeDb.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id='lease-race'").get().energy, 90, 'one district reservation may charge Energy only once');
 
 seedPlayer('district-interleave');
-runtimeDb.prepare("UPDATE telegram_pet_progression_state SET region_mastery_json=? WHERE telegram_id='district-interleave'").run(JSON.stringify({ moon_alley: 100 }));
+seedLiveProgression('district-interleave', { region_mastery_json: { moon_alley: 100 }, completed_regions_json: ['moon_alley'] });
 const interleaveRuntime = runtimeDb.prepare("SELECT * FROM telegram_pet_progression_state WHERE telegram_id='district-interleave'").get();
 let nestedDistrict = null;
 let triggerNestedDistrict = true;
@@ -349,6 +385,33 @@ assert.equal(runtimeDb.prepare("SELECT COUNT(*) AS count FROM telegram_pet_live_
   'Pet A owns district mastery progress');
 assert.equal(runtimeDb.prepare("SELECT COUNT(*) AS count FROM telegram_pet_live_progression_state WHERE pet_id=?").get(switchPetB.pet_id).count, 0,
   'Pet B in another season does not inherit Pet A live progression state');
+
+seedPlayer('live-migration');
+const migratedPetA = livePet('live-migration');
+const migratedPetB = { ...livePet('live-migration', { season_key: 'pet-s2026-004', slot_number: 1 }), pet_id: 'pet:live-migration:pet-s2026-004:1' };
+seedLiveProgression('live-migration', {
+  region_mastery_json: { moon_alley: 100 },
+  completed_regions_json: ['moon_alley'],
+  prestige_count: 2,
+});
+runtimeDb.prepare(`INSERT INTO telegram_pet_season_slots
+  (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status)
+  VALUES (?, 'live-migration', ?, 1, 'free', 'migration-fixture', 0, 'active')`).run(migratedPetB.pet_id, migratedPetB.season_key);
+runtimeDb.prepare(`INSERT INTO telegram_pet_instances
+  (pet_id, telegram_id, season_key, slot_number, pet_xp, level, energy, source_profile_updated_at, status)
+  VALUES (?, 'live-migration', ?, 1, 0, 1, 100, 'migration-fixture', 'active')`).run(migratedPetB.pet_id, migratedPetB.season_key);
+runtimeDb.prepare("UPDATE telegram_pet_active_slots SET pet_id=?, season_key=? WHERE telegram_id='live-migration'").run(migratedPetB.pet_id, migratedPetB.season_key);
+const migrationRuntime = runtimeDb.prepare("SELECT * FROM telegram_pet_progression_state WHERE telegram_id='live-migration'").get();
+const petBState = await buildPetLiveSystemsState(d1, 'live-migration', migratedPetB, migrationRuntime, [], []);
+assert.equal(petBState.regions.find((region) => region.key === 'moon_alley').mastery_xp, 0,
+  'new pet live progression must start empty instead of lazily inheriting legacy mastery');
+assert.equal(petBState.prestige.count, 0,
+  'new pet live progression must start with zero prestige');
+const petAState = await buildPetLiveSystemsState(d1, 'live-migration', migratedPetA, migrationRuntime, [], []);
+assert.equal(petAState.regions.find((region) => region.key === 'moon_alley').mastery_xp, 100,
+  'migration-designated pet must retain migrated mastery');
+assert.equal(petAState.prestige.count, 2,
+  'migration-designated pet must retain migrated prestige');
 
 seedPlayer('chain-recovery');
 let chainFailure = true;
@@ -454,22 +517,28 @@ assert.equal((await processPetCosmeticUnlock(d1, 'live-1', 'rename_badge', 'requ
 assert.equal(runtimeDb.prepare("SELECT COUNT(*) AS count FROM telegram_pet_cosmetic_unlocks WHERE telegram_id='live-1' AND cosmetic_key='rename_badge'").get().count, renameBefore, 'stale cosmetic affordability must not grant an unlock');
 
 const liveState = { prestige: { ready: true, count: 0 } };
-const prestige = await processPetPrestige(d1, 'live-1', liveState, 'request-prestige-1');
+const prestige = await processPetPrestige(d1, 'live-1', liveState, 'request-prestige-1', livePet('live-1'));
 assert.equal(prestige.accepted, true);
-assert.equal((await processPetPrestige(d1, 'live-1', { prestige: { ready: false, count: 1 } }, 'request-prestige-1')).duplicate, true);
-assert.equal(runtimeDb.prepare("SELECT prestige_count FROM telegram_pet_progression_state WHERE telegram_id='live-1'").get().prestige_count, 1);
+assert.equal((await processPetPrestige(d1, 'live-1', { prestige: { ready: false, count: 1 } }, 'request-prestige-1', livePet('live-1'))).duplicate, true);
+assert.equal(runtimeDb.prepare("SELECT prestige_count FROM telegram_pet_live_progression_state WHERE pet_id=? AND telegram_id='live-1' AND season_key=?").get(livePet('live-1').pet_id, livePet('live-1').season_key).prestige_count, 1);
+assert.equal(runtimeDb.prepare("SELECT prestige_count FROM telegram_pet_progression_state WHERE telegram_id='live-1'").get().prestige_count, 0,
+  'legacy progression table must not own current prestige writes');
 
 seedPlayer('prestige-race');
+seedLiveProgression('prestige-race', {
+  completed_regions_json: ['moon_alley', 'neon_rooftops', 'rugpull_mines', 'blockchain_sewers'],
+});
 for (let index = 0; index < 3; index += 1) runtimeDb.prepare('INSERT INTO telegram_pet_equipment_progression (telegram_id, item_key, slot, mastery_tier) VALUES (?, ?, ?, 5)').run('prestige-race', `race_mastered_${index}`, `slot_${index}`);
 d1.afterReservation = () => { d1.afterReservation = null; runtimeDb.prepare("UPDATE telegram_pet_profiles SET moon_gold=0 WHERE telegram_id='prestige-race'").run(); };
-assert.equal((await processPetPrestige(d1, 'prestige-race', { prestige: { ready: true, count: 0 } }, 'request-prestige-race')).accepted, false);
-assert.equal(runtimeDb.prepare("SELECT prestige_count FROM telegram_pet_progression_state WHERE telegram_id='prestige-race'").get().prestige_count, 0, 'stale prestige affordability must not grant rank');
+assert.equal((await processPetPrestige(d1, 'prestige-race', { prestige: { ready: true, count: 0 } }, 'request-prestige-race', livePet('prestige-race'))).accepted, false);
+assert.equal(runtimeDb.prepare("SELECT prestige_count FROM telegram_pet_live_progression_state WHERE pet_id=? AND telegram_id='prestige-race' AND season_key=?").get(livePet('prestige-race').pet_id, livePet('prestige-race').season_key).prestige_count, 0, 'stale prestige affordability must not grant rank');
 assert.equal(runtimeDb.prepare("SELECT COUNT(*) AS count FROM telegram_pet_material_balances WHERE telegram_id='prestige-race' AND material_key='mastery_token'").get().count, 0);
 
 seedPlayer('energy-retry', { energy: 0 });
 const tiredRuntime = runtimeDb.prepare("SELECT * FROM telegram_pet_progression_state WHERE telegram_id='energy-retry'").get();
 assert.equal((await processPetDistrictMission(d1, 'energy-retry', 'moon_alley', livePet('energy-retry'), tiredRuntime, reward, null)).reason, 'pet_tired');
 runtimeDb.prepare("UPDATE telegram_pet_profiles SET energy=100 WHERE telegram_id='energy-retry'").run();
+runtimeDb.prepare("UPDATE telegram_pet_instances SET energy=100 WHERE pet_id=? AND telegram_id='energy-retry' AND season_key=?").run(livePet('energy-retry').pet_id, livePet('energy-retry').season_key);
 assert.equal((await processPetDistrictMission(d1, 'energy-retry', 'moon_alley', livePet('energy-retry'), tiredRuntime, reward, null)).accepted, true, 'rejected Energy reservations must be safely retryable');
 
 seedPlayer('invalid-district-choice');
@@ -488,8 +557,7 @@ let checkpointSetback = null;
 for (let index = 0; index < 64 && !checkpointSetback; index += 1) {
   const telegramId = `checkpoint-setback-${index}`;
   seedPlayer(telegramId);
-  runtimeDb.prepare('UPDATE telegram_pet_progression_state SET region_mastery_json=?, completed_regions_json=? WHERE telegram_id=?')
-    .run(JSON.stringify({ moon_alley: 90 }), '[]', telegramId);
+  seedLiveProgression(telegramId, { region_mastery_json: { moon_alley: 90 } });
   const checkpointRuntime = runtimeDb.prepare('SELECT * FROM telegram_pet_progression_state WHERE telegram_id=?').get(telegramId);
   const checkpointState = await buildPetLiveSystemsState(d1, telegramId, livePet(telegramId), checkpointRuntime, [], []);
   assert.equal(checkpointState.regions.find((region) => region.key === 'moon_alley').mission.boss, true, 'a possible 100-mastery crossing must present the district boss');

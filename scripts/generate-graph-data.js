@@ -64,7 +64,8 @@ function preserveGeneratedAtIfStable(nodes, edges) {
       existingStable === nextStable &&
       typeof existing.generated_at === 'string' &&
       existing.generated_at.trim() &&
-      Number.isFinite(existingGeneratedAt)
+      Number.isFinite(existingGeneratedAt) &&
+      existingGeneratedAt <= now
     ) {
       return existing.generated_at;
     }
