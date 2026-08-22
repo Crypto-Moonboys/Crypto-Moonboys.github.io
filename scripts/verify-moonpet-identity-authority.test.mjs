@@ -350,11 +350,14 @@ try {
     INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key) VALUES ('owner', 'pet:missing', 'season-a');
     INSERT INTO telegram_pet_specialist_progression (pet_id, telegram_id, season_key) VALUES
       ('pet:missing', 'owner', 'season-a'),
+      ('', 'owner', 'season-a'),
       ('pet:no-season', 'owner', '');
   `);
   const ownershipViolations = auditMoonpetOwnershipBoundariesDb(staleAuthorityDb);
   assert.ok(ownershipViolations.some((row) => row.reason === 'stale_active_slot_authority_link'),
     'ownership audit reports stale active-slot authority links');
+  assert.ok(ownershipViolations.some((row) => row.table_name === 'telegram_pet_specialist_progression' && row.reason === 'pet_id_missing'),
+    'ownership audit reports missing pet_id in pet-owned progression ledgers');
   assert.ok(ownershipViolations.some((row) => row.table_name === 'telegram_pet_specialist_progression' && row.reason === 'season_key_missing'),
     'ownership audit reports missing season_key in pet-owned progression ledgers');
   assert.ok(ownershipViolations.some((row) => row.table_name === 'telegram_pet_specialist_progression' && row.reason === 'invalid_pet_authority_reference'),
@@ -367,6 +370,31 @@ try {
     'live ownership classification must resolve every telegram_pet table to exactly one ownership class');
 } finally {
   staleAuthorityDb.close();
+}
+
+const systemEventsOwnershipDb = new DatabaseSync(':memory:');
+try {
+  systemEventsOwnershipDb.exec(`
+    CREATE TABLE telegram_pet_season_slots (pet_id TEXT, telegram_id TEXT, season_key TEXT, slot_number INTEGER);
+    CREATE TABLE telegram_pet_instances (pet_id TEXT, telegram_id TEXT, season_key TEXT, slot_number INTEGER);
+    CREATE TABLE telegram_pet_system_events (
+      id TEXT PRIMARY KEY,
+      pet_id TEXT,
+      telegram_id TEXT,
+      season_key TEXT,
+      system_key TEXT
+    );
+    INSERT INTO telegram_pet_system_events (id, pet_id, telegram_id, season_key, system_key) VALUES
+      ('account-row', '', 'owner', '', 'kaiju'),
+      ('pet-row-missing-pet', '', 'owner', 'season-a', 'district');
+  `);
+  const systemEventViolations = auditMoonpetOwnershipBoundariesDb(systemEventsOwnershipDb);
+  assert.ok(systemEventViolations.some((row) => row.table_name === 'telegram_pet_system_events' && row.reason === 'pet_id_missing'),
+    'ownership audit flags missing pet_id for pet-owned system event rows');
+  assert.ok(!systemEventViolations.some((row) => row.table_name === 'telegram_pet_system_events' && row.row_key === ':owner:' && row.reason === 'pet_id_missing'),
+    'ownership audit does not treat account-owned system event rows as pet-owned corruption');
+} finally {
+  systemEventsOwnershipDb.close();
 }
 
 const identityClassificationRow = MOONPET_LIVE_SYSTEM_OWNERSHIP_CLASSIFICATION
@@ -395,6 +423,13 @@ try {
 } finally {
   missingClassificationDb.close();
 }
+
+const defaultCliResult = spawnSync(process.execPath, ['scripts/verify-moonpet-identity-authority.mjs'], {
+  cwd: repoRoot,
+  encoding: 'utf8',
+});
+assert.equal(defaultCliResult.status, 0, 'default CLI audit fixture must execute complete ownership audit surface');
+assert.match(defaultCliResult.stdout, /STATUS: PASS/);
 
 const cliResult = spawnSync(process.execPath, ['scripts/verify-moonpet-identity-authority.mjs', '--sqlite'], {
   cwd: repoRoot,

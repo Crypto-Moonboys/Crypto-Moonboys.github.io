@@ -46,6 +46,28 @@ const ACCOUNT_OWNED_TABLES = new Set([
   'telegram_pet_equipment_progression',
   'telegram_pet_equipment_events',
 ]);
+const OWNERSHIP_AUDIT_TUPLE_TABLE_SPECS = [
+  { table: 'telegram_pet_specialist_progression', seasonColumn: 'season_key' },
+  { table: 'telegram_pet_specialist_events', seasonColumn: 'season_key' },
+  { table: 'telegram_pet_daily_journey_objectives', seasonColumn: 'season_key' },
+  { table: 'telegram_pet_daily_journey_receipts', seasonColumn: 'season_key' },
+  { table: 'telegram_pet_growth_marks', seasonColumn: 'season_key' },
+  { table: 'telegram_pet_weekly_journey_objectives', seasonColumn: 'season_key' },
+  { table: 'telegram_pet_weekly_journey_receipts', seasonColumn: 'season_key' },
+  { table: 'telegram_pet_weekly_crests', seasonColumn: 'season_key' },
+  { table: 'telegram_pet_daily_runs', seasonColumn: 'season_key' },
+  { table: 'telegram_pet_runs', seasonColumn: 'season_key' },
+  { table: 'telegram_pet_run_analytics', seasonColumn: 'season_key' },
+  { table: 'telegram_pet_live_progression_state', seasonColumn: 'season_key' },
+  {
+    table: 'telegram_pet_system_events',
+    seasonColumn: 'season_key',
+    petOwnedRowFilter: "t.system_key IN ('district', 'event_chain', 'seasonal_boss')",
+  },
+  { table: 'telegram_pet_event_chain_progress', seasonColumn: 'season_key' },
+  { table: 'telegram_pet_weekly_boss_progress', seasonColumn: 'season_key' },
+  { table: 'telegram_pet_seasonal_boss_progress', seasonColumn: 'pet_season_key' },
+];
 
 function readRepoFile(relativePath) {
   return fs.readFileSync(path.join(repoRoot, relativePath), 'utf8');
@@ -379,25 +401,7 @@ function auditStaleAuthorityLinks(db) {
       });
     }
   }
-  const tupleTableSpecs = [
-    ['telegram_pet_specialist_progression', 'season_key'],
-    ['telegram_pet_specialist_events', 'season_key'],
-    ['telegram_pet_daily_journey_objectives', 'season_key'],
-    ['telegram_pet_daily_journey_receipts', 'season_key'],
-    ['telegram_pet_growth_marks', 'season_key'],
-    ['telegram_pet_weekly_journey_objectives', 'season_key'],
-    ['telegram_pet_weekly_journey_receipts', 'season_key'],
-    ['telegram_pet_weekly_crests', 'season_key'],
-    ['telegram_pet_daily_runs', 'season_key'],
-    ['telegram_pet_runs', 'season_key'],
-    ['telegram_pet_run_analytics', 'season_key'],
-    ['telegram_pet_live_progression_state', 'season_key'],
-    ['telegram_pet_system_events', 'season_key'],
-    ['telegram_pet_event_chain_progress', 'season_key'],
-    ['telegram_pet_weekly_boss_progress', 'season_key'],
-    ['telegram_pet_seasonal_boss_progress', 'pet_season_key'],
-  ];
-  for (const [table, seasonColumn] of tupleTableSpecs) {
+  for (const { table, seasonColumn, petOwnedRowFilter = '1=1' } of OWNERSHIP_AUDIT_TUPLE_TABLE_SPECS) {
     if (!hasTable(db, table)) continue;
     if (!hasColumns(db, table, ['pet_id', 'telegram_id', seasonColumn])) continue;
     const invalidRows = db.prepare(`
@@ -411,10 +415,11 @@ function auditStaleAuthorityLinks(db) {
         ON i.pet_id = t.pet_id
        AND i.telegram_id = t.telegram_id
        AND i.season_key = t.${seasonColumn}
-      WHERE t.pet_id IS NOT NULL
-        AND t.pet_id <> ''
+      WHERE (${petOwnedRowFilter})
         AND (
-          t.telegram_id IS NULL
+          t.pet_id IS NULL
+          OR t.pet_id = ''
+          OR t.telegram_id IS NULL
           OR t.telegram_id = ''
           OR t.${seasonColumn} IS NULL
           OR t.${seasonColumn} = ''
@@ -516,6 +521,22 @@ function createProductionSchemaBeforeAuthorityChain() {
     CREATE TABLE telegram_pet_identity_events (event_id TEXT PRIMARY KEY, telegram_id TEXT NOT NULL, event_key TEXT NOT NULL, event_kind TEXT NOT NULL, payload TEXT DEFAULT '{}', day_key TEXT DEFAULT '2026-08-01', progress_delta INTEGER DEFAULT 0, created_at TEXT, applied_at TEXT, UNIQUE(telegram_id,event_key,event_kind));
     CREATE TABLE telegram_pet_identity_analytics (analytics_id TEXT PRIMARY KEY, telegram_id TEXT NOT NULL, event_type TEXT NOT NULL, evolution_id TEXT, trait_id TEXT, milestone_id TEXT, duration_seconds INTEGER, event_data TEXT DEFAULT '{}', created_at TEXT);
     CREATE TABLE telegram_pet_achievements (telegram_id TEXT NOT NULL, achievement_id TEXT NOT NULL, progress INTEGER DEFAULT 0, target INTEGER, unlocked_at TEXT, updated_at TEXT, PRIMARY KEY(telegram_id,achievement_id));
+    CREATE TABLE telegram_pet_specialist_progression (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_specialist_events (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_daily_journey_objectives (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_daily_journey_receipts (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_growth_marks (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_weekly_journey_objectives (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_weekly_journey_receipts (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_weekly_crests (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_daily_runs (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_runs (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_run_analytics (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_live_progression_state (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_system_events (pet_id TEXT, telegram_id TEXT, season_key TEXT, system_key TEXT);
+    CREATE TABLE telegram_pet_event_chain_progress (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_weekly_boss_progress (pet_id TEXT, telegram_id TEXT, season_key TEXT);
+    CREATE TABLE telegram_pet_seasonal_boss_progress (pet_id TEXT, telegram_id TEXT, pet_season_key TEXT);
   `;
 }
 
@@ -581,6 +602,13 @@ function assertRequiredTablesAndIndexes(db) {
   if (!view) throw new Error('missing identity authority verification view');
 }
 
+function assertOwnershipAuditSurfaceTables(db) {
+  for (const { table } of OWNERSHIP_AUDIT_TUPLE_TABLE_SPECS) {
+    const row = db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?").get(table);
+    if (!row) throw new Error(`missing ownership audit table: ${table}`);
+  }
+}
+
 function assertArenaAuthorityIntegration() {
   const worker = readRepoFile('workers/moonboys-api/worker.js');
   const queueInsert = /INSERT INTO telegram_pet_arena_queue\s+\(id,chat_id,telegram_id,pet_id,season_key,/i.test(worker);
@@ -627,6 +655,7 @@ export async function runMoonpetIdentityAuthorityAudit({ sqlitePath = null } = {
     if (!sqlitePath) {
       applyMigrationChain(db);
       seedValidIdentityRows(db);
+      assertOwnershipAuditSurfaceTables(db);
     }
     assertRequiredTablesAndIndexes(db);
     const foreignKeyViolations = db.prepare('PRAGMA foreign_key_check').all();
