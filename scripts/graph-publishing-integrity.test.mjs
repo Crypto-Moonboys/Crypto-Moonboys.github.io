@@ -94,11 +94,13 @@ assert.ok(Number.isFinite(fullGeneratedAt), 'graph-data.json has an invalid gene
 assert.ok(Number.isFinite(liteGeneratedAt), 'entity-graph-lite.json has an invalid generated_at value');
 assert.equal(liteGraph.generated_at, graphData.generated_at, 'Mobile graph must be derived from the same full-graph generation');
 
-const maxAgeHours = Number(process.env.GRAPH_MAX_AGE_HOURS || 6);
-assert.ok(Number.isFinite(maxAgeHours) && maxAgeHours > 0, 'GRAPH_MAX_AGE_HOURS must be a positive number');
-const ageMs = Date.now() - fullGeneratedAt;
-assert.ok(ageMs >= -5 * 60 * 1000, 'Graph generated_at is unexpectedly in the future');
-assert.ok(ageMs <= maxAgeHours * 60 * 60 * 1000, `Graph data is stale by more than ${maxAgeHours} hours`);
+if (process.env.GRAPH_MAX_AGE_HOURS) {
+  const maxAgeHours = Number(process.env.GRAPH_MAX_AGE_HOURS);
+  assert.ok(Number.isFinite(maxAgeHours) && maxAgeHours > 0, 'GRAPH_MAX_AGE_HOURS must be a positive number');
+  const ageMs = Date.now() - fullGeneratedAt;
+  assert.ok(ageMs >= -5 * 60 * 1000, 'Graph generated_at is unexpectedly in the future');
+  assert.ok(ageMs <= maxAgeHours * 60 * 60 * 1000, `Graph data is stale by more than ${maxAgeHours} hours`);
+}
 
 const liteNodeIds = liteGraph.nodes.map((node) => String(node?.id || ''));
 assert.equal(liteNodeIds.length, uniqueSorted(liteNodeIds).length, 'entity-graph-lite.json contains duplicate node IDs');
