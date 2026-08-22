@@ -676,6 +676,15 @@ legacySpecialistDb.prepare(`INSERT INTO telegram_pet_season_state (telegram_id, 
 legacySpecialistDb.exec(migration055);
 legacySpecialistDb.exec(migration056);
 legacySpecialistDb.exec(migration039);
+legacySpecialistDb.prepare(`INSERT INTO telegram_pet_season_slots
+  (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent)
+  VALUES ('pet:legacy-specialist-owner:2026-q3:2', 'legacy-specialist-owner', '2026-q3', 2, 'arcade_xp', 'legacy-active-slot-2', 500)`).run();
+legacySpecialistDb.prepare(`INSERT INTO telegram_pet_instances
+  (pet_id, telegram_id, season_key, slot_number, pet_name, source_profile_updated_at)
+  VALUES ('pet:legacy-specialist-owner:2026-q3:2', 'legacy-specialist-owner', '2026-q3', 2, 'Legacy Pet B', CURRENT_TIMESTAMP)`).run();
+legacySpecialistDb.prepare(`UPDATE telegram_pet_active_slots
+  SET pet_id='pet:legacy-specialist-owner:2026-q3:2', season_key='2026-q3'
+  WHERE telegram_id='legacy-specialist-owner'`).run();
 legacySpecialistDb.prepare(`UPDATE telegram_pet_progression_state
   SET care_xp=8, bond_xp=5, daily_key='2026-08-22', care_daily=8, bond_daily=5, traits_json='{"loyal":4}'
   WHERE telegram_id='legacy-specialist-owner'`).run();
@@ -684,11 +693,24 @@ legacySpecialistDb.prepare(`INSERT INTO telegram_pet_runtime_events
   VALUES ('legacy-runtime-feed-1', 'legacy-specialist-owner', 'legacy:feed:1', 'feed', '{"action":"feed"}', '2026-08-22T08:00:00Z')`).run();
 legacySpecialistDb.exec(migration073);
 const legacySpecialistD1 = new SqliteD1(legacySpecialistDb);
-const legacyPet = { pet_id: 'pet:legacy-specialist-owner:2026-q3:1', season_key: '2026-q3' };
+const legacySlot1Pet = { pet_id: 'pet:legacy-specialist-owner:2026-q3:1', season_key: '2026-q3' };
+const legacyPet = { pet_id: 'pet:legacy-specialist-owner:2026-q3:2', season_key: '2026-q3' };
+assert.equal(legacySpecialistDb.prepare(`SELECT care_xp FROM telegram_pet_specialist_progression
+  WHERE pet_id=? AND telegram_id='legacy-specialist-owner' AND season_key='2026-q3'`)
+  .get(legacyPet.pet_id).care_xp, 8,
+  'migration 073 must backfill legacy specialist progression onto the selected active slot-2 pet');
+assert.equal(legacySpecialistDb.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_specialist_progression
+  WHERE pet_id=? AND telegram_id='legacy-specialist-owner' AND season_key='2026-q3'`)
+  .get(legacySlot1Pet.pet_id).count, 0,
+  'migration 073 must not backfill legacy specialist progression onto inactive slot 1');
 assert.equal(legacySpecialistDb.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_specialist_events
   WHERE pet_id=? AND telegram_id='legacy-specialist-owner' AND season_key='2026-q3' AND event_key='legacy:feed:1'`)
   .get(legacyPet.pet_id).count, 1,
-  'migration 073 must backfill legacy runtime idempotency evidence onto the proven starter pet');
+  'migration 073 must backfill legacy runtime idempotency evidence onto the selected active slot-2 pet');
+assert.equal(legacySpecialistDb.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_specialist_events
+  WHERE pet_id=? AND telegram_id='legacy-specialist-owner' AND season_key='2026-q3' AND event_key='legacy:feed:1'`)
+  .get(legacySlot1Pet.pet_id).count, 0,
+  'migration 073 must not backfill legacy runtime idempotency evidence onto inactive slot 1');
 const legacyReplay = await applyPetRuntimeAward(legacySpecialistD1, 'legacy-specialist-owner', 'legacy:feed:1', 'feed', {
   ...legacyPet,
   day_key: '2026-08-22',
@@ -699,6 +721,9 @@ let legacyState = await getOrCreatePetRuntimeState(legacySpecialistD1, 'legacy-s
 assert.equal(legacyState.care_xp, 8, 'duplicate legacy replay must not add specialist XP');
 assert.equal(legacyState.bond_xp, 5, 'duplicate legacy replay must not add secondary specialist XP');
 assert.equal(JSON.parse(legacyState.traits_json).loyal, 4, 'duplicate legacy replay must not add aptitude progress');
+const legacySlot1State = await getOrCreatePetRuntimeState(legacySpecialistD1, 'legacy-specialist-owner', '2026-08-22', legacySlot1Pet);
+assert.equal(legacySlot1State.care_xp, 0, 'inactive slot 1 must not receive legacy specialist XP');
+assert.deepEqual(JSON.parse(legacySlot1State.traits_json), {}, 'inactive slot 1 must not receive legacy aptitude progress');
 const legacyNewAward = await applyPetRuntimeAward(legacySpecialistD1, 'legacy-specialist-owner', 'legacy:feed:2', 'feed', {
   ...legacyPet,
   day_key: '2026-08-22',

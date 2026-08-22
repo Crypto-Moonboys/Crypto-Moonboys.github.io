@@ -60,8 +60,12 @@ SELECT
   p.daily_key, p.care_daily, p.training_daily, p.adventure_daily, p.arena_daily, p.job_daily, p.bond_daily,
   p.traits_json, p.created_at, p.updated_at
 FROM telegram_pet_instances i
-JOIN telegram_pet_progression_state p ON p.telegram_id = i.telegram_id
-WHERE i.slot_number = 1 AND i.status = 'active';
+JOIN telegram_pet_active_slots a
+  ON a.pet_id = i.pet_id
+  AND a.telegram_id = i.telegram_id
+  AND a.season_key = i.season_key
+JOIN telegram_pet_progression_state p ON p.telegram_id = a.telegram_id
+WHERE i.status = 'active';
 
 INSERT OR IGNORE INTO telegram_pet_specialist_events (
   id, pet_id, telegram_id, season_key, event_key, action, payload_json, created_at
@@ -76,9 +80,11 @@ SELECT
   e.payload_json,
   e.created_at
 FROM telegram_pet_runtime_events e
+JOIN telegram_pet_active_slots a ON a.telegram_id = e.telegram_id
 JOIN telegram_pet_instances i
-  ON i.telegram_id = e.telegram_id
-  AND i.slot_number = 1
+  ON i.pet_id = a.pet_id
+  AND i.telegram_id = a.telegram_id
+  AND i.season_key = a.season_key
   AND i.status = 'active'
 JOIN telegram_pet_specialist_progression s
   ON s.pet_id = i.pet_id
