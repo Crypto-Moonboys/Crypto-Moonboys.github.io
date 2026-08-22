@@ -5888,8 +5888,9 @@ async function claimPetActivitySession(db, telegramId, options = {}) {
     if (startedAtMs == null) return { accepted: false, reason: 'activity_timestamp_invalid', session };
     const elapsedSeconds = Math.floor((now.getTime() - startedAtMs) / 1000);
     if (elapsedSeconds < PET_ACTIVITY_MIN_SECONDS) {
-      const cooldown = buildPetCooldownFromSeconds(PET_ACTIVITY_MIN_SECONDS - elapsedSeconds, now);
-      return attachPetCooldown({ accepted: false, reason: 'activity_too_short', retry_after_seconds: PET_ACTIVITY_MIN_SECONDS - elapsedSeconds, cooldown, session }, cooldown);
+      const unlockAt = new Date(startedAtMs + PET_ACTIVITY_MIN_SECONDS * 1000).toISOString();
+      const cooldown = normalizePetCooldownWindow(unlockAt, now);
+      return attachPetCooldown({ accepted: false, reason: 'activity_too_short', retry_after_seconds: cooldown?.remaining_seconds || 0, cooldown, session }, cooldown);
     }
     eventKey = buildStablePetEventKey(['pet_activity_claim', telegramId, session.id]);
     computed = computePetActivityRewards(session.activity_type, elapsedSeconds);
@@ -9450,7 +9451,7 @@ function serializePetMiniAppActionResult(result = {}, identity = null, telegramI
     duplicate: Boolean(result.duplicate),
     reason: String(result.reason || (result.accepted ? 'accepted' : 'rejected')),
   };
-  for (const key of ['pet_xp_awarded', 'xp_awarded', 'damage', 'action', 'attempt', 'retry_after_seconds', 'remaining_seconds', 'gold_delta', 'crystal_delta', 'won']) {
+  for (const key of ['pet_xp_awarded', 'xp_awarded', 'damage', 'action', 'attempt', 'retry_after_seconds', 'remaining_seconds', 'server_time', 'gold_delta', 'crystal_delta', 'won']) {
     if (result[key] !== undefined) output[key] = result[key];
   }
   for (const key of ['rewards', 'applied', 'job', 'item', 'recipe', 'encounter', 'choice', 'result_copy', 'reaction', 'boss', 'progress', 'tier', 'expedition', 'offer', 'bounty', 'queue', 'run', 'room', 'session', 'computed', 'resolved', 'match', 'reward_results', 'region', 'chain_key', 'step', 'final', 'cosmetic', 'cost', 'faction_bonus', 'prestige_count', 'acknowledged', 'lifecycle', 'species', 'rare_morph', 'care_type', 'season_slots', 'capabilities_version', 'capabilities', 'cooldown', 'expires_at']) {

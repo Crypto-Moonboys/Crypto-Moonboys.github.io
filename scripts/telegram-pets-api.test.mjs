@@ -158,6 +158,23 @@ assert.deepEqual(
   { expires_at: '2026-08-22T12:01:30.000Z', remaining_seconds: 90, server_time: '2026-08-22T12:00:00.000Z' },
   'relative action cooldowns must resolve to a server-authoritative expiry timestamp',
 );
+const serializedCooldownAction = serializePetMiniAppActionResult({
+  accepted: false,
+  reason: 'cooldown',
+  cooldown: normalizePetCooldownWindow('2026-08-22T12:02:00.000Z', cooldownNow),
+  expires_at: '2026-08-22T12:02:00.000Z',
+  remaining_seconds: 120,
+  server_time: '2026-08-22T12:00:00.000Z',
+});
+assert.deepEqual(serializedCooldownAction.cooldown, {
+  expires_at: '2026-08-22T12:02:00.000Z',
+  remaining_seconds: 120,
+  server_time: '2026-08-22T12:00:00.000Z',
+}, 'rejected action cooldown metadata must reach the Mini App result payload');
+assert.equal(serializedCooldownAction.expires_at, '2026-08-22T12:02:00.000Z',
+  'rejected action expires_at must not be dropped from the Mini App result payload');
+assert.equal(serializedCooldownAction.server_time, '2026-08-22T12:00:00.000Z',
+  'rejected action server_time must not be dropped from the Mini App result payload');
 const simultaneousCooldowns = buildPetMiniAppCooldownSummary({
   now: cooldownNow,
   journeySummary: {
@@ -209,6 +226,8 @@ assert.match(worker, /weekly: \{ qualification_week: week, week_reset_at, cooldo
   'weekly journey summary must expose the complete cooldown contract at top level');
 assert.match(worker, /const weeklyBossDefeated = Boolean\(weeklyProgress\?\.defeated_at\);[\s\S]*const weeklyAttemptCooldown = weeklyAttempt && !weeklyBossDefeated \? normalizePetCooldownWindow/,
   'weekly boss daily cooldown must only attach when the daily attempt is consumed and the boss is not defeated');
+assert.match(worker, /const unlockAt = new Date\(startedAtMs \+ PET_ACTIVITY_MIN_SECONDS \* 1000\)\.toISOString\(\);[\s\S]*const cooldown = normalizePetCooldownWindow\(unlockAt, now\)/,
+  'pet activity cooldown expiry must be built from started_at plus PET_ACTIVITY_MIN_SECONDS');
 for (const snippet of [
   'server_time: dailyUsed ? dailyCooldown?.server_time : null',
   'server_time: chain.used_today ? dailyCooldown?.server_time : null',

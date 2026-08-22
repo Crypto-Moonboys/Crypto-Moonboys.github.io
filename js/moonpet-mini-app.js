@@ -144,14 +144,13 @@
 
   function cooldownRemainingSeconds(source, nowMs) {
     source = source || {};
-    nowMs = Number.isFinite(Number(nowMs)) ? Number(nowMs) : serverNowMs();
-    var explicit = Number(source.remaining_seconds);
-    if (Number.isFinite(explicit) && explicit > 0 && !source.expires_at && !source.cooldown_until && !source.available_at && !source.retry_at) {
-      return Math.ceil(explicit);
-    }
+    var sourceNowMs = Date.parse(source.server_time || '');
+    nowMs = Number.isFinite(Number(nowMs)) ? Number(nowMs) : Number.isFinite(sourceNowMs) ? sourceNowMs : serverNowMs();
     var expiresAt = Date.parse(source.expires_at || source.cooldown_until || source.available_at || source.retry_at || '');
     if (Number.isFinite(expiresAt)) return Math.max(0, Math.ceil((expiresAt - nowMs) / 1000));
-    var retry = Number(source.retry_after_seconds != null ? source.retry_after_seconds : source.seconds);
+    var explicit = Number(source.remaining_seconds);
+    if (Number.isFinite(explicit) && explicit > 0) return Math.ceil(explicit);
+    var retry = Number(source.retry_after_seconds != null ? source.retry_after_seconds : source.cooldown_seconds != null ? source.cooldown_seconds : source.seconds);
     if (Number.isFinite(retry) && retry > 0) return Math.ceil(retry);
     var ms = Number(source.cooldown_ms_remaining != null ? source.cooldown_ms_remaining : source.ms_remaining);
     return Number.isFinite(ms) && ms > 0 ? Math.ceil(ms / 1000) : 0;
@@ -159,11 +158,11 @@
 
   function cooldownExpiresAt(source, nowMs) {
     source = source || {};
-    nowMs = Number.isFinite(Number(nowMs)) ? Number(nowMs) : serverNowMs();
+    var sourceNowMs = Date.parse(source.server_time || '');
+    nowMs = Number.isFinite(Number(nowMs)) ? Number(nowMs) : Number.isFinite(sourceNowMs) ? sourceNowMs : serverNowMs();
     var expires = Date.parse(source.expires_at || source.cooldown_until || source.available_at || source.retry_at || '');
     if (Number.isFinite(expires)) return new Date(expires).toISOString();
-    var remaining = Number(source.remaining_seconds || source.retry_after_seconds || source.cooldown_seconds || 0);
-    remaining = Number.isFinite(remaining) && remaining > 0 ? Math.ceil(remaining) : cooldownRemainingSeconds({}, nowMs);
+    var remaining = cooldownRemainingSeconds(source, nowMs);
     return remaining > 0 ? new Date(nowMs + remaining * 1000).toISOString() : '';
   }
 
@@ -1165,16 +1164,18 @@
     var nowMs = serverNowMs();
     var soonest = collectCooldownEntries(snapshot).reduce(function (best, entry) {
       var expires = Date.parse(entry && entry.expires_at || '');
-      if (!Number.isFinite(expires) || expires <= nowMs) return best;
+      if (!Number.isFinite(expires)) return best;
+      if (expires <= nowMs) return 250;
       return Math.min(best, expires - nowMs);
     }, Infinity);
     return Number.isFinite(soonest) ? Math.max(250, soonest + 250) : 0;
   }
 
-  function scheduleCooldownRefresh() {
+  function scheduleCooldownRefresh(delayOverrideMs) {
     window.clearTimeout(cooldownRefreshTimer);
     cooldownRefreshTimer = 0;
-    var delay = nextCooldownDelayMs(state);
+    var override = Number(delayOverrideMs);
+    var delay = Number.isFinite(override) && override > 0 ? Math.ceil(override) : nextCooldownDelayMs(state);
     if (!delay) return;
     cooldownRefreshTimer = window.setTimeout(function () {
       cooldownRefreshTimer = 0;
@@ -1183,9 +1184,16 @@
   }
 
   async function refreshExpiredCooldownState() {
-    if (busy || noticesBusy || !state || !state.adopted || cooldownRefreshInFlight) return;
+    if (!state || !state.adopted) return;
+    if (busy || noticesBusy || cooldownRefreshInFlight) {
+      scheduleCooldownRefresh(1000);
+      return;
+    }
     var refreshKey = state && state.cooldowns && state.cooldowns.next_expires_at || collectCooldownEntries(state).map(function (entry) { return entry && entry.expires_at || ''; }).sort()[0] || '';
-    if (refreshKey && refreshKey === lastCooldownRefreshKey) return;
+    if (refreshKey && refreshKey === lastCooldownRefreshKey) {
+      scheduleCooldownRefresh(1000);
+      return;
+    }
     cooldownRefreshInFlight = true;
     if (refreshKey) lastCooldownRefreshKey = refreshKey;
     try {
@@ -1213,6 +1221,37 @@
     });
   }
   // TEST-EXPORT: cooldownRefresh:end
+
+  // TEST-EXPORT: actionCooldownMerge:start
+  function mergeActionResultCooldown(nextState, result, action) {
+    if (!nextState || !result) return nextState;
+    var source = result.cooldown || result;
+    var expiresAt = cooldownExpiresAt(source);
+    if (!expiresAt) return nextState;
+    var remaining = cooldownRemainingSeconds({ expires_at: expiresAt });
+    if (remaining <= 0) return nextState;
+    var output = Object.assign({}, nextState);
+    var cooldowns = Object.assign({}, output.cooldowns || {});
+    var entries = Array.isArray(cooldowns.entries) ? cooldowns.entries.slice() : [];
+    var key = 'action:' + String(action || result.action || result.reason || 'cooldown');
+    var entry = {
+      key: key,
+      label: words(action || result.action || result.reason || 'Action') + ' cooldown',
+      kind: 'action',
+      expires_at: expiresAt,
+      remaining_seconds: remaining,
+      server_time: result.server_time || source.server_time || output.server_time || cooldowns.server_time || null,
+    };
+    entries = entries.filter(function (item) { return item && item.key !== key; });
+    entries.push(entry);
+    entries.sort(function (left, right) { return Date.parse(left.expires_at) - Date.parse(right.expires_at) || String(left.key).localeCompare(String(right.key)); });
+    cooldowns.entries = entries;
+    cooldowns.next_expires_at = entries[0] && entries[0].expires_at || cooldowns.next_expires_at || null;
+    cooldowns.server_time = cooldowns.server_time || output.server_time || entry.server_time || null;
+    output.cooldowns = cooldowns;
+    return output;
+  }
+  // TEST-EXPORT: actionCooldownMerge:end
 
   function seasonSnapshotElapsed() {
     return seasonSnapshotReceivedAt > 0 ? Math.max(0, performance.now() - seasonSnapshotReceivedAt) : 0;
@@ -2158,7 +2197,8 @@
       var stateBeforeAction = state;
       var requestGeneration = beginStateRequest();
       var data = await post('/telegram-pets/app/action', Object.assign({ action: action, request_id: crypto.randomUUID() }, payload || {}));
-      if (!setStateSnapshot(data.state, requestGeneration)) return;
+      var responseState = mergeActionResultCooldown(data.state, data.result, action);
+      if (!setStateSnapshot(responseState, requestGeneration)) return;
       var nextState = state;
       var plannedCeremony = planLifecycleCeremony(stateBeforeAction, nextState, action, data.result);
       var message = resultMessage(data.result, stateBeforeAction, nextState);

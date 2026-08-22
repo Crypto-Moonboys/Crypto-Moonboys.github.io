@@ -205,6 +205,10 @@ assert.equal(actionAvailabilityRuntime.countdownText({ expires_at: '2026-08-22T1
   'clock drift correction must make live countdown labels server-authoritative');
 assert.match(actionAvailabilityRuntime.countdownMarkup({ expires_at: '2026-08-22T12:05:00.000Z' }, 'Reset in '), /data-cooldown-expires-at="2026-08-22T12:05:00\.000Z"/,
   'countdown markup must carry expiry metadata for live DOM ticking');
+assert.match(actionAvailabilityRuntime.countdownMarkup({ seconds: 90 }, 'Available in '), /data-cooldown-expires-at="2026-08-22T12:01:30\.\d{3}Z"/,
+  'legacy seconds-only timers must normalize to expires_at so DOM ticking continues after initial render');
+assert.match(actionAvailabilityRuntime.countdownMarkup({ cooldown_ms_remaining: 90000 }, 'Available in '), /data-cooldown-expires-at="2026-08-22T12:01:30\.\d{3}Z"/,
+  'legacy millisecond timers must normalize to expires_at so DOM ticking continues after initial render');
 assert.match(actionAvailabilityRuntime.countdownMarkup({ remaining_seconds: 30 }, 'Ready <img src=x onerror=alert(1)> '), /data-cooldown-expires-at="2026-08-22T12:00:30\.000Z"/,
   'remaining_seconds-only timers must be normalized to expires_at for DOM ticking');
 assert.match(actionAvailabilityRuntime.countdownMarkup({ remaining_seconds: 30 }, 'Ready <img src=x onerror=alert(1)> '), /Ready &lt;img src=x onerror=alert\(1\)&gt; 30s/,
@@ -259,6 +263,24 @@ assert.doesNotMatch(defeatedBossButton, /Available in|data-cooldown-expires-at/,
 
 const cooldownRefreshSource = extractTestExport(client, 'cooldownRefresh');
 assert.ok(cooldownRefreshSource, 'cooldown refresh helper must be extractable for debounce coverage');
+const actionCooldownMergeSource = extractTestExport(client, 'actionCooldownMerge');
+assert.ok(actionCooldownMergeSource, 'action cooldown merge helper must be extractable for action-result cooldown coverage');
+const actionCooldownMergeRuntime = new Function(
+  countdownComponentSource + `
+var serverClockOffsetMs = Date.parse('2026-08-22T12:00:00.000Z') - Date.now();
+function words(value) { return String(value || '').replaceAll('_', ' ').replace(/\\b\\w/g, function (letter) { return letter.toUpperCase(); }); }
+${actionCooldownMergeSource}
+return { mergeActionResultCooldown: mergeActionResultCooldown };`,
+)();
+const mergedActionCooldownState = actionCooldownMergeRuntime.mergeActionResultCooldown(
+  { server_time: '2026-08-22T12:00:00.000Z', cooldowns: { entries: [] } },
+  { accepted: false, reason: 'cooldown', cooldown: { retry_after_seconds: 90, server_time: '2026-08-22T12:00:00.000Z' } },
+  'work',
+);
+assert.equal(mergedActionCooldownState.cooldowns.entries[0].key, 'action:work',
+  'rejected action cooldown must be merged into Mini App state cooldowns');
+assert.match(mergedActionCooldownState.cooldowns.entries[0].expires_at, /^2026-08-22T12:01:30\.\d{3}Z$/,
+  'rejected action cooldown must normalize retry_after_seconds to expires_at for ticking');
 const cooldownRefreshRuntime = new Function(
   countdownComponentSource + `
 var state = null;
@@ -291,6 +313,8 @@ async function post() {
 ${cooldownRefreshSource}
 return {
   setState: function (next) { state = next; },
+  setBusy: function (next) { busy = next; },
+  setNoticesBusy: function (next) { noticesBusy = next; },
   scheduleCooldownRefresh: scheduleCooldownRefresh,
   refreshExpiredCooldownState: refreshExpiredCooldownState,
   nextCooldownDelayMs: nextCooldownDelayMs,
@@ -318,6 +342,26 @@ assert.equal(cooldownRefreshRuntime.stats().postCalls, 1,
   'concurrent expiry refresh attempts must collapse to one state refresh');
 assert.equal(cooldownRefreshRuntime.stats().renderCalls, 1,
   'one expiry refresh should render exactly once');
+cooldownRefreshRuntime.setState({
+  adopted: true,
+  cooldowns: { next_expires_at: '2026-08-22T12:00:10.000Z', entries: [
+    { expires_at: '2026-08-22T12:00:10.000Z', remaining_seconds: 0 },
+  ] },
+});
+await cooldownRefreshRuntime.refreshExpiredCooldownState();
+assert.ok(cooldownRefreshRuntime.stats().scheduled.some((entry) => entry.delay === 1000),
+  'same-key expired refreshes must retry later instead of being silently dropped');
+cooldownRefreshRuntime.setState({
+  adopted: true,
+  cooldowns: { next_expires_at: '2026-08-22T11:59:59.000Z', entries: [
+    { expires_at: '2026-08-22T11:59:59.000Z', remaining_seconds: 0 },
+  ] },
+});
+cooldownRefreshRuntime.setBusy(true);
+cooldownRefreshRuntime.refreshExpiredCooldownState();
+assert.ok(cooldownRefreshRuntime.stats().scheduled.some((entry) => entry.delay === 1000),
+  'busy cooldown expiry refreshes must retry later instead of being dropped');
+cooldownRefreshRuntime.setBusy(false);
 
 const dailyJourneyMarkupSource = extractTestExport(client, 'dailyJourneyMarkup');
 assert.ok(dailyJourneyMarkupSource, 'Daily Journey markup helper must be extractable for runtime coverage');
