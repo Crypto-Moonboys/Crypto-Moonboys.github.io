@@ -87,17 +87,21 @@ assert.match(rewardFoundation, /source = 'pet_expedition'[\s\S]*status IN \('pen
 assert.match(rewardFoundation, /telegram_pet_profiles WHERE telegram_id = \? AND energy >= \?/, 'the full expedition Energy cost must be reserved atomically');
 
 const worker = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
-for (const command of ['peteconomy', 'petbounties', 'petexpedition', 'petmarket']) assert.match(worker, new RegExp(`case '${command}'`));
+for (const command of ['peteconomy', 'petbounties', 'petexpedition', 'petmarket']) assert.match(worker, new RegExp(`case ['"]${command}['"]`));
 assert.match(worker, /economy_actions: economy\?\.guidance_actions \|\| \[\]/, 'all economy additions must flow through Coach');
-assert.match(worker, /action === 'bounty_claim'/, 'Mini App bounty claim action must reach the server');
-assert.match(worker, /action === 'expedition'/, 'Mini App expedition action must reach the server');
-assert.match(worker, /action === 'market_buy'/, 'Mini App market purchase action must reach the server');
+assert.match(worker, /action === ['"]bounty_claim['"]/, 'Mini App bounty claim action must reach the server');
+assert.match(worker, /action === ['"]expedition['"]/, 'Mini App expedition action must reach the server');
+assert.match(worker, /action === ['"]market_buy['"]/, 'Mini App market purchase action must reach the server');
+assert.match(worker, /rewards:\s*\{\s*moon_gold:\s*40,\s*style_tokens:\s*2\s*\}/, 'daily chest runtime settlement must award gold and style only');
+assert.doesNotMatch(worker, /daily_chest[\s\S]{0,800}moon_crystals:\s*[1-9]/, 'daily chest runtime settlement must not award Moon Crystals');
 const audit = buildPetEconomyReachabilityAudit();
 for (const kind of ['market_offer', 'daily_bounty', 'crystal_expedition']) {
   for (const surface of audit.surfaces.filter((entry) => entry.kind === kind)) {
     assert.equal(surface.classification, PET_ECONOMY_REACHABILITY_CLASSIFICATIONS.LIVE_REACHABLE, `${surface.key} ${kind} must be live and reachable`);
   }
 }
+assert.equal(audit.surfaces.find((entry) => entry.kind === 'currency' && entry.key === 'moon_crystals').sources.includes('daily_chest'), false,
+  'audit currency metadata must not claim Daily Chest creates Moon Crystals');
 
 class D1Adapter {
   constructor(database) { this.database = database; }
