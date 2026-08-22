@@ -593,6 +593,7 @@ export async function getMoonpetIdentitySummary(db, telegramIdRaw, request = {})
   const telegramId = String(telegramIdRaw || '').trim();
   const explicitScopeRequested = Boolean(String(request.pet_id || '').trim() || String(request.season_key || '').trim());
   const scope = await readMoonpetIdentityScope(db, telegramId, request);
+  if (explicitScopeRequested && !scope) return null;
   const evolution = scope?.pet_id
     ? await db.prepare(`SELECT e.evolution_id, e.stage, e.unlocked_at
         FROM telegram_pet_evolutions_by_pet e

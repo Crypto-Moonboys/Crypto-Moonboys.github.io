@@ -156,7 +156,8 @@ async function assertSelectedPetIdentityScoping() {
       INSERT INTO telegram_pet_evolutions_by_pet (pet_id, telegram_id, evolution_id, stage, unlocked_at) VALUES
         ('pet:owner:season-a:1', 'owner', 'street_moonpet', 1, '2026-08-02T00:00:00Z'),
         ('pet:owner:season-a:2', 'owner', 'moon_egg', 0, '2026-08-03T00:00:00Z'),
-        ('pet:owner:season-old:1', 'owner', 'cyber_moonpet', 2, '2026-07-01T00:00:00Z');
+        ('pet:owner:season-old:1', 'owner', 'cyber_moonpet', 2, '2026-07-01T00:00:00Z'),
+        ('pet:owner:season-a:2', 'intruder', 'legendary_guardian', 5, '2026-08-04T00:00:00Z');
       INSERT INTO telegram_pet_personality_traits
         (pet_id, telegram_id, season_key, trait_id, progress, unlocked_at) VALUES
         ('pet:owner:season-a:1', 'owner', 'season-a', 'street_fighter', 20, '2026-08-02T01:00:00Z'),
@@ -191,6 +192,7 @@ async function assertSelectedPetIdentityScoping() {
     assert.equal(paid.memories.favourite_activity, 'Care');
     assert.deepEqual(paid.boss_victories.map((boss) => boss.boss_id), ['cache_wraith']);
     assert.notEqual(paid.current_stage.evolution_id, 'legendary_guardian', 'active paid pet must not fall back to owner-scoped evolution unlocks');
+    assert.notEqual(paid.current_stage.stage, 5, 'pet_id alone must not let a corrupt evolution owner row leak final-form state');
     assert.equal(paid.memories.total_runs, 1, 'active paid pet must not inherit starter memories');
 
     const archived = await getMoonpetIdentitySummary(d1, 'owner', {
@@ -205,11 +207,20 @@ async function assertSelectedPetIdentityScoping() {
     assert.equal(archived.memories.milestones[0], 'archived_memory');
     assert.deepEqual(archived.boss_victories.map((boss) => boss.boss_id), ['old_boss']);
 
+    assert.equal(await getMoonpetIdentitySummary(d1, 'owner', {
+      pet_id: 'pet:owner:season-old:1',
+    }), null, 'pet_id alone is insufficient identity authority and must not fall back to the active pet');
+    assert.equal(await getMoonpetIdentitySummary(d1, 'owner', {
+      pet_id: 'pet:owner:season-old:1',
+      season_key: 'season-a',
+      include_archived: true,
+    }), null, 'wrong season tuple cannot leak archived pet evolution or identity state');
+
     const archivedWithoutReadFlag = await getMoonpetIdentitySummary(d1, 'owner', {
       pet_id: 'pet:owner:season-old:1',
       season_key: 'season-old',
     });
-    assert.equal(archivedWithoutReadFlag.scope, null, 'archived pets require an explicit read-only archived scope');
+    assert.equal(archivedWithoutReadFlag, null, 'archived pets require an explicit read-only archived scope');
   } finally {
     db.close();
   }

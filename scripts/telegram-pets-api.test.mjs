@@ -69,6 +69,7 @@ const {
   serializePetMiniAppArenaBattle,
   serializePetMiniAppActionResult,
   serializePetMiniAppKaijuMatch,
+  buildMoonpetIdentityAuthorityAudit,
   PET_SEASON_EXTRA_SLOT_COSTS,
   buildPetSeasonSlotSummary,
   processPetMiniAppAction,
@@ -1849,15 +1850,31 @@ function identityAuditCounts(db) {
 const identityAuditDb = new SqliteD1();
 const identityAuditPet = seedIdentityAuditPet(identityAuditDb, '9001001', 1);
 const otherAuditPet = seedIdentityAuditPet(identityAuditDb, '9002002', 1);
+const archivedIdentityAuditPet = 'pet:9001001:pet-s2026-002:2';
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_season_slots
+  (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status)
+  VALUES (?, '9001001', 'pet-s2026-002', 2, 'free', 'archived-fixture', 0, 'archived')`).run(archivedIdentityAuditPet);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_instances
+  (pet_id, telegram_id, season_key, slot_number, pet_name, pet_xp, level, energy, hunger, happiness, cleanliness, health, source_profile_updated_at, status)
+  VALUES (?, '9001001', 'pet-s2026-002', 2, 'Archived Audit Pet', 240, 3, 70, 5, 75, 75, 95, 'fixture', 'archived')`).run(archivedIdentityAuditPet);
 identityAuditDb.database.prepare(`INSERT INTO telegram_pet_memories
   (pet_id, telegram_id, season_key, first_run_at, total_bosses_defeated, milestones)
   VALUES (?, '9001001', 'pet-s2026-003', '2026-08-21T00:00:00Z', 1, '["first_run"]')`).run(identityAuditPet);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_memories
+  (pet_id, telegram_id, season_key, first_run_at, first_boss_id, favourite_activity, total_bosses_defeated, milestones)
+  VALUES (?, '9001001', 'pet-s2026-002', '2026-07-21T00:00:00Z', 'archive_boss', 'Exploration', 2, '["archived_first_run"]')`).run(archivedIdentityAuditPet);
 identityAuditDb.database.prepare(`INSERT INTO telegram_pet_personality_traits
   (pet_id, telegram_id, season_key, trait_id, progress)
   VALUES (?, '9001001', 'pet-s2026-003', 'curious', 2)`).run(identityAuditPet);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_personality_traits
+  (pet_id, telegram_id, season_key, trait_id, progress)
+  VALUES (?, '9001001', 'pet-s2026-002', 'explorer', 16)`).run(archivedIdentityAuditPet);
 identityAuditDb.database.prepare(`INSERT INTO telegram_pet_boss_victories
   (pet_id, telegram_id, season_key, boss_id, victories)
   VALUES (?, '9001001', 'pet-s2026-003', 'alley_king', 1)`).run(identityAuditPet);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_boss_victories
+  (pet_id, telegram_id, season_key, boss_id, victories)
+  VALUES (?, '9001001', 'pet-s2026-002', 'archive_boss', 2)`).run(archivedIdentityAuditPet);
 identityAuditDb.database.prepare(`INSERT INTO telegram_pet_identity_events
   (event_id, pet_id, telegram_id, season_key, event_key, event_kind)
   VALUES ('identity-audit-event', ?, '9001001', 'pet-s2026-003', 'identity:audit:event', 'memory')`).run(identityAuditPet);
@@ -1867,11 +1884,26 @@ identityAuditDb.database.prepare(`INSERT INTO telegram_pet_identity_analytics
 identityAuditDb.database.prepare(`INSERT INTO telegram_pet_achievements
   (pet_id, telegram_id, season_key, achievement_id, progress, target)
   VALUES (?, '9001001', 'pet-s2026-003', 'boss_breaker', 1, 5)`).run(identityAuditPet);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_achievements
+  (pet_id, telegram_id, season_key, achievement_id, progress, target)
+  VALUES (?, '9001001', 'pet-s2026-002', 'memory_keeper', 2, 5)`).run(archivedIdentityAuditPet);
 
 const identityAuditEnv = { DB: identityAuditDb, TELEGRAM_BOT_TOKEN: '123456:test-token' };
 const identityAuditAuth = JSON.stringify(buildSignedTelegramAuth('9001001'));
 const identityAuditAuthorization = { Authorization: `Bearer ${identityAuditAuth}` };
 const identityAuditBefore = identityAuditCounts(identityAuditDb);
+const activeIdentityAuditResponse = await moonboysApiWorker.fetch(new Request(
+  'https://moonboys.test/api/telegram/pets/identity/audit',
+  { headers: identityAuditAuthorization },
+), identityAuditEnv);
+assert.equal(activeIdentityAuditResponse.status, 200, 'identity audit endpoint defaults to active Pet A');
+const activeIdentityAuditPayload = await activeIdentityAuditResponse.json();
+assert.equal(activeIdentityAuditPayload.pet_id, identityAuditPet, 'active identity audit must use active Pet A');
+assert.deepEqual(activeIdentityAuditPayload.personality_traits.map((row) => row.trait_id), ['curious'],
+  'active Pet A audit must not include archived Pet B personality');
+assert.deepEqual(activeIdentityAuditPayload.boss_victories.map((row) => row.boss_id), ['alley_king'],
+  'active Pet A audit must not include archived Pet B boss history');
+
 const identityAuditResponse = await moonboysApiWorker.fetch(new Request(
   `https://moonboys.test/api/telegram/pets/identity/audit?pet_id=${encodeURIComponent(identityAuditPet)}&season_key=pet-s2026-003`,
   { headers: identityAuditAuthorization },
@@ -1894,6 +1926,29 @@ assert.deepEqual(identityAuditPayload.identity_analytics.map((row) => row.analyt
 assert.equal(identityAuditPayload.invalid_authority_rows.length, 0, 'identity audit endpoint reports zero invalid rows for owned fixture');
 assert.deepEqual(identityAuditCounts(identityAuditDb), identityAuditBefore,
   'identity audit GET must not mutate memories, personality, achievements, boss victories, or identity events');
+
+const archivedIdentityAuditResponse = await moonboysApiWorker.fetch(new Request(
+  `https://moonboys.test/api/telegram/pets/identity/audit?pet_id=${encodeURIComponent(archivedIdentityAuditPet)}&season_key=pet-s2026-002`,
+  { headers: identityAuditAuthorization },
+), identityAuditEnv);
+assert.equal(archivedIdentityAuditResponse.status, 200, 'identity audit endpoint supports archived Pet B while Pet A remains active');
+const archivedIdentityAuditPayload = await archivedIdentityAuditResponse.json();
+assert.equal(archivedIdentityAuditPayload.pet_id, archivedIdentityAuditPet, 'archived Pet B audit must return the explicit archived pet');
+assert.deepEqual(archivedIdentityAuditPayload.personality_traits.map((row) => row.trait_id), ['explorer'],
+  'archived Pet B audit must not include active Pet A personality');
+assert.deepEqual(archivedIdentityAuditPayload.achievements.map((row) => row.achievement_id), ['memory_keeper'],
+  'archived Pet B audit must not include active Pet A achievements');
+assert.deepEqual(archivedIdentityAuditPayload.boss_victories.map((row) => row.boss_id), ['archive_boss'],
+  'archived Pet B audit must not include active Pet A boss history');
+assert.equal(archivedIdentityAuditPayload.memories_count, 1, 'archived Pet B audit must read archived pet memories by full tuple');
+
+const petIdOnlyAudit = await buildMoonpetIdentityAuthorityAudit(identityAuditDb, '9001001', { pet_id: archivedIdentityAuditPet });
+assert.equal(petIdOnlyAudit, null, 'API audit helper must reject pet_id without season_key instead of falling back to active Pet A');
+const wrongSeasonAudit = await buildMoonpetIdentityAuthorityAudit(identityAuditDb, '9001001', {
+  pet_id: archivedIdentityAuditPet,
+  season_key: 'pet-s2026-003',
+});
+assert.equal(wrongSeasonAudit, null, 'API audit helper must reject a wrong season tuple instead of leaking archived Pet B');
 
 const urlCredentialAuditResponse = await moonboysApiWorker.fetch(new Request(
   `https://moonboys.test/api/telegram/pets/identity/audit?telegram_auth=${encodeURIComponent(identityAuditAuth)}&pet_id=${encodeURIComponent(identityAuditPet)}&season_key=pet-s2026-003`,
