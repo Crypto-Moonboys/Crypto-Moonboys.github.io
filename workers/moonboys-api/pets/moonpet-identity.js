@@ -1,4 +1,5 @@
 import evolutions from './content/evolutions.json' with { type: 'json' };
+import { getPetVisibleLevelSql } from './progression-phase-2.js';
 import { reconcileLegacyPetInventory } from './inventory-cutover.js';
 
 const ID_PATTERN = /^[a-z0-9][a-z0-9_-]*$/;
@@ -429,7 +430,7 @@ export async function recordMoonpetBiggestReward(db, request = {}) {
 
 function evolutionRequirementSql(definition, telegramId, petId, seasonKey) {
   const requirements = definition.requirements;
-  const clauses = [`EXISTS (SELECT 1 FROM telegram_pet_profiles p WHERE p.telegram_id = ? AND (CAST(p.pet_xp / 100 AS INTEGER) + 1) >= ?)`];
+  const clauses = [`EXISTS (SELECT 1 FROM telegram_pet_profiles p WHERE p.telegram_id = ? AND ${getPetVisibleLevelSql('p.pet_xp')} >= ?)`];
   const args = [telegramId, requirements.pet_level];
   if (definition.stage > 0) {
     const previous = evolutions[definition.stage - 1];

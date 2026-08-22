@@ -86,7 +86,7 @@ const defeatedBossDb = {
       bind() { return this; },
       async first() {
         if (query.includes('FROM telegram_pet_profiles')) return {
-          telegram_id: 'boss-winner', pet_xp: 500, hunger: 0, happiness: 100,
+          telegram_id: 'boss-winner', pet_xp: 640, hunger: 0, happiness: 100,
           cleanliness: 100, energy: 80, health: 100, last_decay_at: new Date().toISOString(),
         };
         if (query.includes('FROM telegram_pet_weekly_boss_progress')) return {
@@ -175,7 +175,7 @@ const fullSchema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql',
 const eliteSqlite = new DatabaseSync(':memory:');
 eliteSqlite.exec(fullSchema);
 eliteSqlite.prepare("INSERT INTO telegram_users (telegram_id, xp, level) VALUES ('elite-gate-player', 0, 1)").run();
-eliteSqlite.prepare("INSERT INTO telegram_pet_profiles (telegram_id, pet_xp, level) VALUES ('elite-gate-player', 4500, 46)").run();
+eliteSqlite.prepare("INSERT INTO telegram_pet_profiles (telegram_id, pet_xp, level) VALUES ('elite-gate-player', 81000, 46)").run();
 eliteSqlite.prepare(`INSERT INTO telegram_pet_evolutions
   (telegram_id, evolution_id, stage, unlock_event_key, materials_consumed)
   VALUES ('elite-gate-player', 'elite_moonpet', 3, 'test:elite-stage', 1)`).run();
@@ -191,7 +191,7 @@ eliteSqlite.prepare(`INSERT INTO telegram_pet_active_slots (telegram_id, pet_id,
   VALUES ('elite-gate-player', 'pet:elite-gate-player:pet-s2026-003:1', 'pet-s2026-003')`).run();
 eliteSqlite.prepare(`INSERT INTO telegram_pet_instances
   (pet_id, telegram_id, season_key, slot_number, pet_xp, level, source_profile_updated_at)
-  VALUES ('pet:elite-gate-player:pet-s2026-003:1', 'elite-gate-player', 'pet-s2026-003', 1, 4500, 46, CURRENT_TIMESTAMP)`).run();
+  VALUES ('pet:elite-gate-player:pet-s2026-003:1', 'elite-gate-player', 'pet-s2026-003', 1, 81000, 46, CURRENT_TIMESTAMP)`).run();
 eliteSqlite.prepare(`INSERT INTO telegram_pet_specialist_progression
   (pet_id, telegram_id, season_key, training_xp, arena_xp)
   VALUES ('pet:elite-gate-player:pet-s2026-003:1', 'elite-gate-player', 'pet-s2026-003', 999, 1999)`).run();

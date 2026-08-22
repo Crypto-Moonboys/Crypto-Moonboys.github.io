@@ -38,6 +38,8 @@ const DAILY_ROGUELITE_ITEM_CAP = 10;
 const MAX_ROGUELITE_MOON_GOLD_PER_CLAIM = 100;
 const MAX_ROGUELITE_MOON_CRYSTALS_PER_CLAIM = 5;
 const MAX_ROGUELITE_STYLE_TOKENS_PER_CLAIM = 5;
+import { getPetVisibleLevelSql } from './progression-phase-2.js';
+
 const MAX_CURRENCY = 999999;
 
 export const PET_RUN_STATUSES = Object.freeze(['active', 'completed', 'failed', 'abandoned', 'extracted']);
@@ -274,7 +276,7 @@ export async function awardPetReward(db, request = {}) {
         streak_days = CASE WHEN ? = 0 THEN streak_days WHEN last_active_day > ? THEN streak_days WHEN last_active_day = ? THEN MAX(1, streak_days) WHEN last_active_day = ? THEN streak_days + 1 ELSE 1 END,
         last_active_day = CASE WHEN ? = 0 THEN last_active_day WHEN last_active_day > ? THEN last_active_day ELSE ? END,
         last_decay_at = CASE WHEN ? = 0 THEN last_decay_at ELSE ? END,
-        level = CAST((pet_xp + COALESCE((SELECT pet_xp_awarded FROM telegram_pet_events WHERE id = ? AND metadata = ? AND status = 'accepted'), 0)) / 100 AS INTEGER) + 1,
+        level = level,
         ${petAuthority ? `source_profile_updated_at = '${PET_INSTANCE_AUTHORITY_VERSION}',` : ''}
         updated_at = CURRENT_TIMESTAMP
       WHERE ${petAuthority ? 'pet_id = ? AND telegram_id = ?' : `telegram_id = ? AND ${accountWalletRecoveryResolvedSql('telegram_pet_profiles.telegram_id')}`}
@@ -283,7 +285,7 @@ export async function awardPetReward(db, request = {}) {
         ...(petAuthority ? [] : [MAX_CURRENCY, rewards.moon_gold, currencyCosts.moon_gold, MAX_CURRENCY, rewards.moon_crystals, currencyCosts.moon_crystals, MAX_CURRENCY, rewards.style_tokens, currencyCosts.style_tokens]),
         profileDeltas.health, profileDeltas.hunger, profileDeltas.cleanliness, profileDeltas.energy, profileDeltas.happiness,
         touchStreak, dayKey, dayKey, previousDayKey, touchStreak, dayKey, dayKey, touchStreak, now.toISOString(),
-        eventId, metadata, ...(petAuthority ? [petId, telegramId] : [telegramId]), eventId, metadata),
+        ...(petAuthority ? [petId, telegramId] : [telegramId]), eventId, metadata),
     petAuthority
       ? db.prepare(`UPDATE telegram_pet_profiles SET
           moon_gold = MIN(?, MAX(0, moon_gold + ? - ?)),
@@ -299,6 +301,7 @@ export async function awardPetReward(db, request = {}) {
     db.prepare(`UPDATE ${petAuthority ? 'telegram_pet_instances' : 'telegram_pet_profiles'} SET
         stage = CASE WHEN pet_xp >= 1800 THEN 'legendary companion' WHEN pet_xp >= 900 THEN 'moon guardian'
           WHEN pet_xp >= 360 THEN 'street scout' WHEN pet_xp >= 120 THEN 'runner' WHEN pet_xp >= 25 THEN 'hatchling' ELSE 'egg' END,
+        level = ${getPetVisibleLevelSql('pet_xp')},
         health = CASE WHEN ? <> 0 THEN health
           ELSE MIN(100, MAX(0, ROUND(((100 - hunger) + happiness + cleanliness + energy) / 4.0))) END
       WHERE ${petAuthority ? 'pet_id = ? AND telegram_id = ?' : 'telegram_id = ?'} AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND metadata = ? AND status = 'accepted')`)

@@ -1,6 +1,7 @@
 import { PET_DISTRICT_APPROACHES, PET_DISTRICT_COMPLICATIONS, PET_DISTRICT_ENCOUNTERS, PET_EVENT_CHAINS, PET_FACTION_BONUSES, PET_REGION_CONTENT, PET_SEASONAL_BOSSES } from './content-phase-4.js';
 import { PET_COSMETIC_SINKS, PET_CRAFTING_RECIPES, PET_EQUIPMENT_SETS, PET_PRESTIGE_REQUIREMENTS, getPetCraftingRecipe, getPetEquipmentUpgradeCost } from './economy-phase-3.js';
 import { buildPetRegionDirectory } from './game-content.js';
+import { getPetVisibleLevel, getPetVisibleLevelSql } from './progression-phase-2.js';
 import { normalizeFaction } from '../shared/faction-canon.js';
 import {
   ensurePetAccountWalletReadyForMutation,
@@ -53,6 +54,12 @@ function words(value) {
   return String(value || '').replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
+function getRuntimePetLevel(pet = {}) {
+  return pet && Object.prototype.hasOwnProperty.call(pet, 'pet_xp')
+    ? getPetVisibleLevel(pet.pet_xp)
+    : integer(pet?.level);
+}
+
 function getDistrictMission(telegramId, pet, region, today = dayKey()) {
   const content = PET_REGION_CONTENT[region.key];
   const mastery = integer(region.mastery_xp);
@@ -74,7 +81,7 @@ function getDistrictMission(telegramId, pet, region, today = dayKey()) {
     threat: Math.min(5, integer(authored.threat) + integer(complication.threat_delta)),
     complication: { key: complication.key, label: complication.label },
   } : authored;
-  const relief = Math.min(12, Math.floor(integer(pet?.level) / 10)) + Math.min(8, Math.floor(mastery / 25));
+  const relief = Math.min(12, Math.floor(getRuntimePetLevel(pet) / 10)) + Math.min(8, Math.floor(mastery / 25));
   const choices = Object.entries(PET_DISTRICT_APPROACHES).map(([key, approach]) => {
     const riskPercent = Math.round(clamp(12 + integer(encounter.threat) * 7 - relief + approach.risk_delta, 8, 70));
     return { key, label: approach.label, detail: approach.detail, risk_percent: riskPercent, success_percent: 100 - riskPercent, mastery_success: approach.mastery_success, mastery_setback: approach.mastery_setback, reward_multiplier: approach.reward_multiplier };
@@ -89,6 +96,7 @@ function getEventChainScene(chain, stepIndex) {
 }
 
 export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gear = [], materials = [], now = new Date()) {
+  const visibleLevel = getRuntimePetLevel(pet);
   const mastery = parse(runtime?.region_mastery_json, {});
   const completed = parse(runtime?.completed_regions_json, []);
   const today = dayKey(now);
@@ -119,7 +127,7 @@ export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gea
   const upgradeRows = (gear || []).map((item) => {
     const target = integer(item.item_level) + 1;
     const cost = getPetEquipmentUpgradeCost(target);
-    const levelUnlocked = integer(pet.level) >= 15;
+    const levelUnlocked = visibleLevel >= 15;
     const affordable = levelUnlocked && cost && Object.entries(cost).every(([key, amount]) => integer(key === 'moon_gold' ? pet.moon_gold : materialMap[key]) >= amount);
     return { ...item, target_level: target, cost, maxed: !cost, unlocked: levelUnlocked, required_level: 15, affordable: Boolean(affordable) };
   });
@@ -130,8 +138,8 @@ export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gea
     affordable: Object.entries(sink.cost).every(([costKey, amount]) => integer(economyWallet[costKey]) >= amount),
   }));
   const crafting = Object.entries(PET_CRAFTING_RECIPES).map(([key, recipe]) => ({
-    key, ...recipe, unlocked: integer(pet.level) >= recipe.min_level,
-    affordable: integer(pet.level) >= recipe.min_level && Object.entries(recipe.cost).every(([costKey, amount]) => integer(materialMap[costKey]) >= amount),
+    key, ...recipe, unlocked: visibleLevel >= recipe.min_level,
+    affordable: visibleLevel >= recipe.min_level && Object.entries(recipe.cost).every(([costKey, amount]) => integer(materialMap[costKey]) >= amount),
   }));
   const equippedGear = new Set(['food', 'toy', 'outfit', 'armor', 'weapon', 'charm'].map((slot) => pet?.[`equipped_${slot}`]).filter(Boolean));
   const ownedGear = new Set([...(gear || []).map((item) => item.item_key), ...equippedGear]);
@@ -147,7 +155,7 @@ export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gea
     mastered_items: masteredItems,
     completed_regions: completed.length,
     count: integer(runtime?.prestige_count),
-    ready: integer(pet.level) >= PET_PRESTIGE_REQUIREMENTS.min_level && masteredItems >= 3 && completed.length >= 4
+    ready: visibleLevel >= PET_PRESTIGE_REQUIREMENTS.min_level && masteredItems >= 3 && completed.length >= 4
       && integer(pet.moon_gold) >= 5000 && integer(pet.moon_crystals) >= 50,
   };
   const faction = normalizeFaction(factionRow?.faction);
@@ -155,13 +163,13 @@ export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gea
   const bossDefeated = Boolean(bossRow.defeated_at);
   const bossCooldown = bossUsedToday && !bossDefeated ? dailyCooldown : null;
   return {
-    regions: buildPetRegionDirectory(pet.level, mastery).map((region) => {
+    regions: buildPetRegionDirectory(visibleLevel, mastery).map((region) => {
       const dailyUsed = usedToday.has(`district:${region.key}`);
       const mission = getDistrictMission(telegramId, pet, region, today);
     return { ...region, completed: completed.includes(region.key), energy_cost: 10, mastery_gain: 25, mission, used_today: dailyUsed, available: region.playable && !dailyUsed, cooldown: dailyUsed ? dailyCooldown : null, expires_at: dailyUsed ? dailyCooldown?.expires_at : null, remaining_seconds: dailyUsed ? dailyCooldown?.remaining_seconds || 0 : 0, server_time: dailyUsed ? dailyCooldown?.server_time : null };
     }),
     chains: chainState.map((chain) => ({ ...chain, cooldown: chain.used_today ? dailyCooldown : null, expires_at: chain.used_today ? dailyCooldown?.expires_at : null, remaining_seconds: chain.used_today ? dailyCooldown?.remaining_seconds || 0 : 0, server_time: chain.used_today ? dailyCooldown?.server_time : null })),
-    seasonal_boss: { ...boss, damage: integer(bossRow.damage), defeated_at: bossRow.defeated_at || null, reward_claimed_at: bossRow.reward_claimed_at || null, attempted_today: bossUsedToday, available: integer(pet.level) >= boss.min_level && !bossDefeated && !bossUsedToday, cooldown: bossCooldown, expires_at: bossCooldown?.expires_at || null, remaining_seconds: bossCooldown?.remaining_seconds || 0, server_time: bossCooldown?.server_time || null },
+    seasonal_boss: { ...boss, damage: integer(bossRow.damage), defeated_at: bossRow.defeated_at || null, reward_claimed_at: bossRow.reward_claimed_at || null, attempted_today: bossUsedToday, available: visibleLevel >= boss.min_level && !bossDefeated && !bossUsedToday, cooldown: bossCooldown, expires_at: bossCooldown?.expires_at || null, remaining_seconds: bossCooldown?.remaining_seconds || 0, server_time: bossCooldown?.server_time || null },
     upgrades: upgradeRows,
     cosmetics: cosmeticState,
     crafting,
@@ -176,9 +184,9 @@ export async function processPetCraftRecipe(db, telegramId, recipeKey, requestKe
   if (!recipe) return { accepted: false, reason: 'crafting_recipe_invalid' };
   const replay = await getCompletedRequest(db, telegramId, 'crafting', recipe.key, requestKey);
   if (replay) return { accepted: true, duplicate: true, reason: 'crafting_already_completed', recipe: parse(replay.payload_json, {}) };
-  const pet = await db.prepare('SELECT level FROM telegram_pet_profiles WHERE telegram_id=?').bind(telegramId).first();
+  const pet = await db.prepare('SELECT pet_xp, level FROM telegram_pet_profiles WHERE telegram_id=?').bind(telegramId).first();
   if (!pet) return { accepted: false, reason: 'pet_not_adopted' };
-  if (integer(pet.level) < recipe.min_level) return { accepted: false, reason: 'crafting_locked', required_level: recipe.min_level };
+  if (getRuntimePetLevel(pet) < recipe.min_level) return { accepted: false, reason: 'crafting_locked', required_level: recipe.min_level };
   const balances = await db.prepare('SELECT material_key, quantity FROM telegram_pet_material_balances WHERE telegram_id=?').bind(telegramId).all();
   const wallet = Object.fromEntries((balances.results || []).map((row) => [row.material_key, integer(row.quantity)]));
   if (!Object.entries(recipe.cost).every(([key, amount]) => integer(wallet[key]) >= amount)) return { accepted: false, reason: 'crafting_materials_missing', cost: recipe.cost };
@@ -272,7 +280,8 @@ async function releaseSettlement(db, reservationId, token) {
 }
 
 export async function processPetDistrictMission(db, telegramId, regionKey, pet, runtime, awardReward, factionKey, approachKey) {
-  const directory = buildPetRegionDirectory(pet.level, parse(runtime?.region_mastery_json, {}));
+  const visibleLevel = getRuntimePetLevel(pet);
+  const directory = buildPetRegionDirectory(visibleLevel, parse(runtime?.region_mastery_json, {}));
   const region = directory.find((entry) => entry.key === String(regionKey || ''));
   if (!region) return { accepted: false, reason: 'district_invalid' };
   if (!region.playable) return { accepted: false, reason: 'district_locked', region };
@@ -363,7 +372,8 @@ export async function processPetEventChain(db, telegramId, chainKey, awardReward
 
 export async function processPetSeasonalBoss(db, telegramId, pet, awardReward) {
   const boss = getActiveSeasonalBoss();
-  if (integer(pet.level) < boss.min_level) return { accepted: false, reason: 'seasonal_boss_locked', required_level: boss.min_level };
+  const visibleLevel = getRuntimePetLevel(pet);
+  if (visibleLevel < boss.min_level) return { accepted: false, reason: 'seasonal_boss_locked', required_level: boss.min_level };
   const existing = await db.prepare('SELECT damage, defeated_at, reward_claimed_at FROM telegram_pet_seasonal_boss_progress WHERE telegram_id=? AND season_key=? AND boss_key=?').bind(telegramId, boss.season_instance, boss.key).first();
   const settleReward = async () => {
     const reward = await awardReward({ telegram_id: telegramId, source: 'pet_seasonal_boss', idempotency_key: `seasonal:${boss.season_instance}:${telegramId}`, event_key: `seasonal:${boss.season_instance}:${telegramId}`, event_type: 'seasonal_boss', reason: boss.key, rewards: { pet_xp: 150, moon_gold: 250, moon_crystals: 8, materials: { [boss.reward]: 8, mastery_token: 1 } }, touch_streak: true, context: { boss_key: boss.key, season_key: boss.season_instance } });
@@ -380,7 +390,7 @@ export async function processPetSeasonalBoss(db, telegramId, pet, awardReward) {
   if (reservation.status === 'completed') return { accepted: true, duplicate: true, reason: 'seasonal_boss_attempt_used' };
   const claim = await claimEnergySettlement(db, reservation, telegramId, 18);
   if (claim.state !== 'settling') return { accepted: false, reason: claim.state === 'busy' ? 'seasonal_boss_busy' : 'pet_tired' };
-  const damage = 35 + integer(pet.level) * 2;
+  const damage = 35 + visibleLevel * 2;
   const total = Math.min(boss.hp, integer(existing?.damage) + damage);
   const defeated = total >= boss.hp;
   const settlement = await db.batch([
@@ -406,7 +416,7 @@ export async function processPetEquipmentUpgrade(db, telegramId, itemKey, reques
   const cost = getPetEquipmentUpgradeCost(target);
   if (!cost) return { accepted: false, reason: 'equipment_max_level' };
   const pet = await db.prepare('SELECT pet_xp, moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').bind(telegramId).first();
-  if (1 + Math.floor(integer(pet?.pet_xp) / 100) < 15) return { accepted: false, reason: 'equipment_upgrades_locked' };
+  if (getPetVisibleLevel(pet?.pet_xp) < 15) return { accepted: false, reason: 'equipment_upgrades_locked' };
   if (integer(cost.moon_gold) > 0 && !(await ensurePetAccountWalletReadyForMutation(db, telegramId))) {
     return { accepted: false, reason: 'wallet_reconciliation_recovery_pending', cost };
   }
@@ -491,7 +501,7 @@ export async function processPetPrestige(db, telegramId, liveState, requestKey) 
   if (reservation.status === 'completed') return { accepted: true, duplicate: true, reason: 'prestige_already_applied', prestige_count: target };
   const results = await db.batch([
     db.prepare(`UPDATE telegram_pet_system_events SET status='settling', updated_at=CURRENT_TIMESTAMP WHERE id=? AND status IN ('pending','rejected')
-      AND EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id=? AND level>=100 AND moon_gold>=5000 AND moon_crystals>=50)
+      AND EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id=? AND ${getPetVisibleLevelSql('pet_xp')}>=100 AND moon_gold>=5000 AND moon_crystals>=50)
       AND EXISTS (SELECT 1 FROM telegram_pet_progression_state WHERE telegram_id=? AND prestige_count=? AND json_array_length(completed_regions_json)>=4)
       AND (SELECT COUNT(*) FROM telegram_pet_equipment_progression WHERE telegram_id=? AND mastery_tier>=5)>=3`)
       .bind(reservation.id, telegramId, telegramId, target - 1, telegramId),

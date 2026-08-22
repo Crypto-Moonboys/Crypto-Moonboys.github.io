@@ -106,11 +106,11 @@ async function setActivePetLifecyclePhase(db, telegramId, phase) {
 
 const db = new D1();
 installSeasonCompletionMarkerTable(db);
-seedPlayer(db, 'arena-one', 'Alley Cat', 1500);
-seedPlayer(db, 'arena-two', 'Cyber Cat', 1520);
+seedPlayer(db, 'arena-one', 'Alley Cat', 3240);
+seedPlayer(db, 'arena-two', 'Cyber Cat', 3240);
 seedPlayer(db, 'kaiju-one', 'Kaiju Cat', 1400);
 seedPlayer(db, 'kaiju-two', 'Sticker Cat', 1450);
-seedPlayer(db, 'arena-queued', 'Queue Cat', 1450);
+seedPlayer(db, 'arena-queued', 'Queue Cat', 3240);
 seedPlayer(db, 'kaiju-queued', 'Queue Kaiju', 1450);
 for (const telegramId of ['arena-one', 'arena-two', 'kaiju-one', 'kaiju-two', 'arena-queued', 'kaiju-queued']) {
   markSeasonComplete(db, telegramId);
@@ -125,7 +125,7 @@ const act = (telegramId, action, payload = {}) => processPetMiniAppAction(db, te
 
 const lockedCombatDb = new D1();
 installSeasonCompletionMarkerTable(lockedCombatDb);
-seedPlayer(lockedCombatDb, 'future-locked', 'Locked Cat', 1500);
+seedPlayer(lockedCombatDb, 'future-locked', 'Locked Cat', 3240);
 for (const action of ['arena_start', 'arena_matchmake', 'kaiju_start', 'kaiju_matchmake', 'kaiju_card']) {
   const result = await processPetMiniAppAction(lockedCombatDb, 'future-locked', { id: 'future-locked' }, {
     action,
@@ -186,7 +186,7 @@ assert.equal(lockedCombatDb.database.prepare("SELECT COUNT(*) AS count FROM tele
 
 const completedCombatDb = new D1();
 installSeasonCompletionMarkerTable(completedCombatDb);
-seedPlayer(completedCombatDb, 'future-complete', 'Complete Cat', 1500);
+seedPlayer(completedCombatDb, 'future-complete', 'Complete Cat', 3240);
 markSeasonComplete(completedCombatDb, 'future-complete');
 await setActivePetLifecyclePhase(completedCombatDb, 'future-complete', 'adult');
 const completedPrestigeResult = await processPetMiniAppAction(completedCombatDb, 'future-complete', { id: 'future-complete' }, {
@@ -221,9 +221,9 @@ assert.notEqual((await processPetMiniAppAction(completedCombatDb, 'future-comple
 
 const combatAuthorityDb = new D1();
 installSeasonCompletionMarkerTable(combatAuthorityDb);
-seedPlayer(combatAuthorityDb, 'combat-egg', 'Egg Cat', 1500);
-seedPlayer(combatAuthorityDb, 'combat-adult', 'Adult Cat', 1500);
-seedPlayer(combatAuthorityDb, 'combat-new', 'New Cat', 1500);
+seedPlayer(combatAuthorityDb, 'combat-egg', 'Egg Cat', 3240);
+seedPlayer(combatAuthorityDb, 'combat-adult', 'Adult Cat', 3240);
+seedPlayer(combatAuthorityDb, 'combat-new', 'New Cat', 3240);
 markSeasonComplete(combatAuthorityDb, 'combat-egg');
 markSeasonComplete(combatAuthorityDb, 'combat-adult');
 markSeasonComplete(combatAuthorityDb, 'combat-missing-lifecycle');
@@ -341,7 +341,7 @@ const combatNewAction = await processPetMiniAppAction(combatAuthorityDb, 'combat
 assert.notEqual(combatNewAction.reason, 'completed_season_pet_required', 'API combat gate must not require completed-season authority for current Kaiju');
 assert.equal((await getPetMiniAppCombatEligibility(combatAuthorityDb, 'combat-adult')).combat_unlocked, true,
   'shared combat eligibility helper must unlock eligible active pets');
-seedPlayer(combatAuthorityDb, 'combat-missing-lifecycle', 'Missing Lifecycle Cat', 1500);
+seedPlayer(combatAuthorityDb, 'combat-missing-lifecycle', 'Missing Lifecycle Cat', 3240);
 const combatMissingLifecycleEligibility = await getPetMiniAppCombatEligibility(combatAuthorityDb, 'combat-missing-lifecycle');
 assert.equal(combatMissingLifecycleEligibility.has_completed_season_pet, true, 'combat authority must preserve completed-season state with missing lifecycle data');
 assert.equal(combatMissingLifecycleEligibility.active_pet_lifecycle_known, false, 'combat authority must expose missing lifecycle data');
@@ -388,7 +388,7 @@ assert.equal(availableFutureSystems.find((system) => system.key === 'prestige')?
 
 const transitionDb = new D1();
 installSeasonCompletionMarkerTable(transitionDb);
-seedPlayer(transitionDb, 'combat-transition', 'Transition Cat', 1500);
+seedPlayer(transitionDb, 'combat-transition', 'Transition Cat', 3240);
 await setActivePetLifecyclePhase(transitionDb, 'combat-transition', 'adult');
 const transitionBeforeEligibility = await getPetMiniAppCombatEligibility(transitionDb, 'combat-transition');
 const transitionBeforeCapabilities = buildPetMiniAppCapabilities(transitionBeforeEligibility);
@@ -418,7 +418,7 @@ assert.notEqual(transitionAfterAction.reason, 'completed_season_pet_required',
 
 const priorSeasonCombatDb = new D1();
 installSeasonCompletionMarkerTable(priorSeasonCombatDb);
-seedPlayer(priorSeasonCombatDb, 'prior-complete', 'Prior Cat', 1500);
+seedPlayer(priorSeasonCombatDb, 'prior-complete', 'Prior Cat', 3240);
 markSeasonComplete(priorSeasonCombatDb, 'prior-complete', 'pet-s2025-013');
 await setActivePetLifecyclePhase(priorSeasonCombatDb, 'prior-complete', 'adult');
 for (const action of ['arena_start', 'arena_matchmake', 'kaiju_start', 'kaiju_matchmake']) {
