@@ -15,7 +15,7 @@ function cooldownWindow(expiresAtRaw, now = new Date()) {
   const expiresMs = Date.parse(String(expiresAtRaw || ''));
   const nowMs = now instanceof Date ? now.getTime() : Date.parse(now);
   if (!Number.isFinite(expiresMs) || !Number.isFinite(nowMs)) return null;
-  return { expires_at: new Date(expiresMs).toISOString(), remaining_seconds: Math.max(0, Math.ceil((expiresMs - nowMs) / 1000)) };
+  return { expires_at: new Date(expiresMs).toISOString(), remaining_seconds: Math.max(0, Math.ceil((expiresMs - nowMs) / 1000)), server_time: new Date(nowMs).toISOString() };
 }
 
 export function getActiveSeasonalBoss(now = new Date()) {
@@ -156,10 +156,10 @@ export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gea
     regions: buildPetRegionDirectory(pet.level, mastery).map((region) => {
       const dailyUsed = usedToday.has(`district:${region.key}`);
       const mission = getDistrictMission(telegramId, pet, region, today);
-    return { ...region, completed: completed.includes(region.key), energy_cost: 10, mastery_gain: 25, mission, used_today: dailyUsed, available: region.playable && !dailyUsed, cooldown: dailyUsed ? dailyCooldown : null, expires_at: dailyUsed ? dailyCooldown?.expires_at : null, remaining_seconds: dailyUsed ? dailyCooldown?.remaining_seconds || 0 : 0 };
+    return { ...region, completed: completed.includes(region.key), energy_cost: 10, mastery_gain: 25, mission, used_today: dailyUsed, available: region.playable && !dailyUsed, cooldown: dailyUsed ? dailyCooldown : null, expires_at: dailyUsed ? dailyCooldown?.expires_at : null, remaining_seconds: dailyUsed ? dailyCooldown?.remaining_seconds || 0 : 0, server_time: dailyUsed ? dailyCooldown?.server_time : null };
     }),
-    chains: chainState.map((chain) => ({ ...chain, cooldown: chain.used_today ? dailyCooldown : null, expires_at: chain.used_today ? dailyCooldown?.expires_at : null, remaining_seconds: chain.used_today ? dailyCooldown?.remaining_seconds || 0 : 0 })),
-    seasonal_boss: { ...boss, damage: integer(bossRow.damage), defeated_at: bossRow.defeated_at || null, reward_claimed_at: bossRow.reward_claimed_at || null, attempted_today: bossUsedToday, available: integer(pet.level) >= boss.min_level && !bossRow.defeated_at && !bossUsedToday, cooldown: bossUsedToday ? dailyCooldown : null, expires_at: bossUsedToday ? dailyCooldown?.expires_at : null, remaining_seconds: bossUsedToday ? dailyCooldown?.remaining_seconds || 0 : 0 },
+    chains: chainState.map((chain) => ({ ...chain, cooldown: chain.used_today ? dailyCooldown : null, expires_at: chain.used_today ? dailyCooldown?.expires_at : null, remaining_seconds: chain.used_today ? dailyCooldown?.remaining_seconds || 0 : 0, server_time: chain.used_today ? dailyCooldown?.server_time : null })),
+    seasonal_boss: { ...boss, damage: integer(bossRow.damage), defeated_at: bossRow.defeated_at || null, reward_claimed_at: bossRow.reward_claimed_at || null, attempted_today: bossUsedToday, available: integer(pet.level) >= boss.min_level && !bossRow.defeated_at && !bossUsedToday, cooldown: bossUsedToday ? dailyCooldown : null, expires_at: bossUsedToday ? dailyCooldown?.expires_at : null, remaining_seconds: bossUsedToday ? dailyCooldown?.remaining_seconds || 0 : 0, server_time: bossUsedToday ? dailyCooldown?.server_time : null },
     upgrades: upgradeRows,
     cosmetics: cosmeticState,
     crafting,

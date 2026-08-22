@@ -8581,6 +8581,7 @@ function normalizePetCooldownWindow(expiresAtRaw, now = new Date()) {
   return {
     expires_at: new Date(expiresMs).toISOString(),
     remaining_seconds: Math.max(0, Math.ceil((expiresMs - nowMs) / 1000)),
+    server_time: new Date(nowMs).toISOString(),
   };
 }
 
@@ -8608,6 +8609,7 @@ function attachPetCooldown(target, cooldown) {
   if (!target || !cooldown || cooldown.remaining_seconds <= 0) return target;
   target.expires_at = cooldown.expires_at;
   target.remaining_seconds = cooldown.remaining_seconds;
+  target.server_time = cooldown.server_time;
   return target;
 }
 
@@ -8694,8 +8696,8 @@ async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = 
   const weeklyCooldown = normalizePetCooldownWindow(week_reset_at, now);
   if (!petId || !seasonKey) {
     return {
-      daily: { utc_day: dayKey, day_reset_at, cooldown: dailyCooldown, completed_objectives: 0, required_objectives: DAILY_JOURNEY_REQUIRED_OBJECTIVES, growth_mark_awarded: false, duplicate_blocked: false, reason: 'active_pet_required' },
-      weekly: { qualification_week: week, week_reset_at, cooldown: weeklyCooldown, completed_objectives: 0, required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES, objectives: [], weekly_crest_awarded: false, duplicate_blocked: false, reason: 'active_pet_required', authority_available: false },
+      daily: { utc_day: dayKey, day_reset_at, cooldown: dailyCooldown, expires_at: dailyCooldown?.expires_at || null, remaining_seconds: dailyCooldown?.remaining_seconds || 0, server_time: dailyCooldown?.server_time || now.toISOString(), completed_objectives: 0, required_objectives: DAILY_JOURNEY_REQUIRED_OBJECTIVES, growth_mark_awarded: false, duplicate_blocked: false, reason: 'active_pet_required' },
+      weekly: { qualification_week: week, week_reset_at, cooldown: weeklyCooldown, expires_at: weeklyCooldown?.expires_at || null, remaining_seconds: weeklyCooldown?.remaining_seconds || 0, server_time: weeklyCooldown?.server_time || now.toISOString(), completed_objectives: 0, required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES, objectives: [], weekly_crest_awarded: false, duplicate_blocked: false, reason: 'active_pet_required', authority_available: false },
     };
   }
   const [dailyObjectives, dailyReceipt, dailyAcceptedReceipt] = await Promise.all([
@@ -8741,6 +8743,9 @@ async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = 
         pet_id: petId, season_key: seasonKey, utc_day: dayKey,
         day_reset_at,
         cooldown: dailyCooldown,
+        expires_at: dailyCooldown?.expires_at || null,
+        remaining_seconds: dailyCooldown?.remaining_seconds || 0,
+        server_time: dailyCooldown?.server_time || now.toISOString(),
         completed_objectives: dailyCompleted, required_objectives: DAILY_JOURNEY_REQUIRED_OBJECTIVES,
         growth_mark_awarded: Boolean(dailyAcceptedReceipt?.growth_mark_id),
         duplicate_blocked: dailyReceipt?.reason === 'daily_journey_growth_mark_duplicate',
@@ -8749,6 +8754,9 @@ async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = 
       weekly: {
         pet_id: null, season_key: seasonKey, qualification_week: week, week_reset_at,
         cooldown: weeklyCooldown,
+        expires_at: weeklyCooldown?.expires_at || null,
+        remaining_seconds: weeklyCooldown?.remaining_seconds || 0,
+        server_time: weeklyCooldown?.server_time || now.toISOString(),
         completed_objectives: 0, required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES,
         objectives: [],
         weekly_crest_awarded: false,
@@ -8764,6 +8772,9 @@ async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = 
       pet_id: petId, season_key: seasonKey, utc_day: dayKey,
       day_reset_at,
       cooldown: dailyCooldown,
+      expires_at: dailyCooldown?.expires_at || null,
+      remaining_seconds: dailyCooldown?.remaining_seconds || 0,
+      server_time: dailyCooldown?.server_time || now.toISOString(),
       completed_objectives: dailyCompleted, required_objectives: DAILY_JOURNEY_REQUIRED_OBJECTIVES,
       growth_mark_awarded: Boolean(dailyAcceptedReceipt?.growth_mark_id),
       duplicate_blocked: dailyReceipt?.reason === 'daily_journey_growth_mark_duplicate',
@@ -8772,6 +8783,9 @@ async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = 
     weekly: {
       pet_id: petId, season_key: seasonKey, qualification_week: week, week_reset_at,
       cooldown: weeklyCooldown,
+      expires_at: weeklyCooldown?.expires_at || null,
+      remaining_seconds: weeklyCooldown?.remaining_seconds || 0,
+      server_time: weeklyCooldown?.server_time || now.toISOString(),
       completed_objectives: weeklyCompleted, required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES,
       objectives: weeklyObjectiveList || [],
       weekly_crest_awarded: Boolean(weeklyAcceptedReceipt?.crest_id),
@@ -8915,6 +8929,7 @@ function addPetCooldownEntry(entries, key, label, cooldown, kind = 'action') {
     kind,
     expires_at: cooldown.expires_at,
     remaining_seconds: Math.max(0, Math.ceil(Number(cooldown.remaining_seconds) || 0)),
+    server_time: cooldown.server_time || null,
   });
 }
 

@@ -5,6 +5,7 @@ import { DatabaseSync } from 'node:sqlite';
 import moonboysApiWorker, { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
 
 const worker = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
+const liveSystemsSource = fs.readFileSync(new URL('../workers/moonboys-api/pets/live-systems.js', import.meta.url), 'utf8');
 const walletReconciliation = fs.readFileSync(new URL('../workers/moonboys-api/pets/wallet-reconciliation.js', import.meta.url), 'utf8');
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/030_telegram_pets.sql', import.meta.url), 'utf8');
@@ -144,8 +145,8 @@ function assertOrder(block, earlier, later, message) {
 const cooldownNow = new Date('2026-08-22T12:00:00.000Z');
 assert.deepEqual(
   normalizePetCooldownWindow('2026-08-22T12:05:00.000Z', cooldownNow),
-  { expires_at: '2026-08-22T12:05:00.000Z', remaining_seconds: 300 },
-  'authoritative cooldown windows must expose expires_at and remaining_seconds',
+  { expires_at: '2026-08-22T12:05:00.000Z', remaining_seconds: 300, server_time: '2026-08-22T12:00:00.000Z' },
+  'authoritative cooldown windows must expose expires_at, remaining_seconds, and server_time',
 );
 assert.equal(
   normalizePetCooldownWindow('2026-08-22T11:59:59.000Z', cooldownNow).remaining_seconds,
@@ -154,7 +155,7 @@ assert.equal(
 );
 assert.deepEqual(
   buildPetCooldownFromSeconds(90, cooldownNow),
-  { expires_at: '2026-08-22T12:01:30.000Z', remaining_seconds: 90 },
+  { expires_at: '2026-08-22T12:01:30.000Z', remaining_seconds: 90, server_time: '2026-08-22T12:00:00.000Z' },
   'relative action cooldowns must resolve to a server-authoritative expiry timestamp',
 );
 const simultaneousCooldowns = buildPetMiniAppCooldownSummary({
@@ -181,6 +182,26 @@ assert.deepEqual(
   ['seasonal_boss_attempt', 'district:alley', 'timed_activity_claim', 'story:signal'],
   'cooldown summary must preserve independent action timers in expiry order',
 );
+for (const entry of simultaneousCooldowns.entries) {
+  assert.equal(entry.server_time, '2026-08-22T12:00:00.000Z',
+    `${entry.key} cooldown entry must carry server_time for clock-drift-safe ticking`);
+  assert.match(entry.expires_at, /^\d{4}-\d{2}-\d{2}T/,
+    `${entry.key} cooldown entry must carry expires_at`);
+  assert.equal(typeof entry.remaining_seconds, 'number',
+    `${entry.key} cooldown entry must carry remaining_seconds`);
+}
+assert.match(worker, /daily: \{ utc_day: dayKey, day_reset_at, cooldown: dailyCooldown, expires_at: dailyCooldown\?\.expires_at[^}]*remaining_seconds: dailyCooldown\?\.remaining_seconds[^}]*server_time: dailyCooldown\?\.server_time/s,
+  'daily journey summary must expose the complete cooldown contract at top level');
+assert.match(worker, /weekly: \{ qualification_week: week, week_reset_at, cooldown: weeklyCooldown, expires_at: weeklyCooldown\?\.expires_at[^}]*remaining_seconds: weeklyCooldown\?\.remaining_seconds[^}]*server_time: weeklyCooldown\?\.server_time/s,
+  'weekly journey summary must expose the complete cooldown contract at top level');
+for (const snippet of [
+  'server_time: dailyUsed ? dailyCooldown?.server_time : null',
+  'server_time: chain.used_today ? dailyCooldown?.server_time : null',
+  'server_time: bossUsedToday ? dailyCooldown?.server_time : null',
+]) {
+  assert.ok(liveSystemsSource.includes(snippet),
+    'region, story, and seasonal locks must expose server_time beside expires_at and remaining_seconds');
+}
 
 assert.ok(worker.includes('TELEGRAM_PETS_BOT_SECRET'), 'pet-only bot secret must be used');
 assert.ok(worker.includes('X-Pets-Bot-Secret'), 'pet-only header must be used');

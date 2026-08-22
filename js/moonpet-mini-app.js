@@ -15,6 +15,8 @@
   var stateRequestGate = createStateRequestGate();
   var serverClockOffsetMs = 0;
   var cooldownRefreshTimer = 0;
+  var cooldownRefreshInFlight = false;
+  var lastCooldownRefreshKey = '';
   var SCREEN_ORDER = ['home', 'missions', 'explore', 'work', 'economy', 'profile'];
   var requestedScreen = launchParameter('screen');
   var requestedFocus = launchParameter('focus');
@@ -142,6 +144,7 @@
 
   function cooldownRemainingSeconds(source, nowMs) {
     source = source || {};
+    nowMs = Number.isFinite(Number(nowMs)) ? Number(nowMs) : serverNowMs();
     var explicit = Number(source.remaining_seconds);
     if (Number.isFinite(explicit) && explicit > 0 && !source.expires_at && !source.cooldown_until && !source.available_at && !source.retry_at) {
       return Math.ceil(explicit);
@@ -152,6 +155,16 @@
     if (Number.isFinite(retry) && retry > 0) return Math.ceil(retry);
     var ms = Number(source.cooldown_ms_remaining != null ? source.cooldown_ms_remaining : source.ms_remaining);
     return Number.isFinite(ms) && ms > 0 ? Math.ceil(ms / 1000) : 0;
+  }
+
+  function cooldownExpiresAt(source, nowMs) {
+    source = source || {};
+    nowMs = Number.isFinite(Number(nowMs)) ? Number(nowMs) : serverNowMs();
+    var expires = Date.parse(source.expires_at || source.cooldown_until || source.available_at || source.retry_at || '');
+    if (Number.isFinite(expires)) return new Date(expires).toISOString();
+    var remaining = Number(source.remaining_seconds || source.retry_after_seconds || source.cooldown_seconds || 0);
+    remaining = Number.isFinite(remaining) && remaining > 0 ? Math.ceil(remaining) : cooldownRemainingSeconds({}, nowMs);
+    return remaining > 0 ? new Date(nowMs + remaining * 1000).toISOString() : '';
   }
 
   function formatCountdownSeconds(seconds) {
@@ -175,11 +188,11 @@
 
   function countdownMarkup(source, prefix) {
     source = source || {};
-    var expiresAt = source.expires_at || source.cooldown_until || source.available_at || source.retry_at || '';
-    var remaining = cooldownRemainingSeconds(source, serverNowMs());
+    var nowMs = serverNowMs();
+    var expiresAt = cooldownExpiresAt(source, nowMs);
+    var remaining = cooldownRemainingSeconds(expiresAt ? { expires_at: expiresAt } : source, nowMs);
     if (remaining <= 0) return 'Ready now';
-    var data = expiresAt ? ' data-cooldown-expires-at="' + escapeHtml(expiresAt) + '"' : ' data-cooldown-seconds="' + number(remaining) + '"';
-    return '<span class="cooldown-countdown"' + data + ' data-cooldown-prefix="' + escapeHtml(prefix || 'Available in ') + '">' + escapeHtml((prefix || 'Available in ') + formatCountdownSeconds(remaining)) + '</span>';
+    return '<span class="cooldown-countdown" data-cooldown-expires-at="' + escapeHtml(expiresAt) + '" data-cooldown-prefix="' + escapeHtml(prefix || 'Available in ') + '">' + escapeHtml((prefix || 'Available in ') + formatCountdownSeconds(remaining)) + '</span>';
   }
   // TEST-EXPORT: countdownComponent:end
 
@@ -1128,6 +1141,7 @@
     return true;
   }
 
+  // TEST-EXPORT: cooldownRefresh:start
   function collectCooldownEntries(snapshot) {
     var entries = [];
     if (Array.isArray(snapshot && snapshot.cooldowns && snapshot.cooldowns.entries)) {
@@ -1169,7 +1183,11 @@
   }
 
   async function refreshExpiredCooldownState() {
-    if (busy || noticesBusy || !state || !state.adopted) return;
+    if (busy || noticesBusy || !state || !state.adopted || cooldownRefreshInFlight) return;
+    var refreshKey = state && state.cooldowns && state.cooldowns.next_expires_at || collectCooldownEntries(state).map(function (entry) { return entry && entry.expires_at || ''; }).sort()[0] || '';
+    if (refreshKey && refreshKey === lastCooldownRefreshKey) return;
+    cooldownRefreshInFlight = true;
+    if (refreshKey) lastCooldownRefreshKey = refreshKey;
     try {
       var requestGeneration = beginStateRequest();
       var data = await post('/telegram-pets/app/state');
@@ -1180,7 +1198,10 @@
       tell('COOLDOWN EXPIRED. STATE REFRESHED.');
       await showPendingNotices();
     } catch (_) {
+      if (refreshKey && refreshKey === lastCooldownRefreshKey) lastCooldownRefreshKey = '';
       scheduleCooldownRefresh();
+    } finally {
+      cooldownRefreshInFlight = false;
     }
   }
 
@@ -1191,6 +1212,7 @@
       node.textContent = text;
     });
   }
+  // TEST-EXPORT: cooldownRefresh:end
 
   function seasonSnapshotElapsed() {
     return seasonSnapshotReceivedAt > 0 ? Math.max(0, performance.now() - seasonSnapshotReceivedAt) : 0;

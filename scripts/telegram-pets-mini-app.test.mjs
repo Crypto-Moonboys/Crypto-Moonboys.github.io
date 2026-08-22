@@ -118,7 +118,11 @@ assert.ok(actionAvailabilitySource, 'action availability helper must be extracta
 const actionAvailabilityRuntime = new Function(
   'option',
   `function number(value) { return Number(value || 0).toLocaleString('en-US'); }
-function escapeHtml(value) { return String(value == null ? '' : value); }
+function escapeHtml(value) {
+  return String(value == null ? '' : value).replace(/[&<>"']/g, function (char) {
+    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char];
+  });
+}
 var serverClockOffsetMs = 0;
 ${countdownComponentSource}
 ${actionAvailabilitySource}
@@ -130,7 +134,7 @@ function button(label, action, payload, options) {
     : '';
   return '<button class="terminal-button' + (options && options.danger ? ' danger' : '') + '" type="button" data-action="' + escapeHtml(action) + '" data-payload="' + escapeHtml(JSON.stringify(payload || {})) + '"' + (disabled ? ' disabled' : '') + '>' + escapeHtml(label) + detail + '</button>';
 }
-return { cooldownDisplay, availabilityLabel, availabilityDetail, shouldShowAvailability, cooldownMetadata, activityClaimButtonOptions, button, cooldownRemainingSeconds, formatCountdownSeconds, countdownText, countdownMarkup, setOffset: function (value) { serverClockOffsetMs = value; } };`,
+return { cooldownDisplay, availabilityLabel, availabilityDetail, shouldShowAvailability, cooldownMetadata, activityClaimButtonOptions, button, cooldownRemainingSeconds, cooldownExpiresAt, formatCountdownSeconds, countdownText, countdownMarkup, setOffset: function (value) { serverClockOffsetMs = value; } };`,
 )({});
 assert.equal(actionAvailabilityRuntime.availabilityDetail({ detail: 'CARE ACTION' }), 'Ready now // CARE ACTION',
   'available action buttons must not show locked copy');
@@ -201,6 +205,20 @@ assert.equal(actionAvailabilityRuntime.countdownText({ expires_at: '2026-08-22T1
   'clock drift correction must make live countdown labels server-authoritative');
 assert.match(actionAvailabilityRuntime.countdownMarkup({ expires_at: '2026-08-22T12:05:00.000Z' }, 'Reset in '), /data-cooldown-expires-at="2026-08-22T12:05:00\.000Z"/,
   'countdown markup must carry expiry metadata for live DOM ticking');
+assert.match(actionAvailabilityRuntime.countdownMarkup({ remaining_seconds: 30 }, 'Ready <img src=x onerror=alert(1)> '), /data-cooldown-expires-at="2026-08-22T12:00:30\.000Z"/,
+  'remaining_seconds-only timers must be normalized to expires_at for DOM ticking');
+assert.match(actionAvailabilityRuntime.countdownMarkup({ remaining_seconds: 30 }, 'Ready <img src=x onerror=alert(1)> '), /Ready &lt;img src=x onerror=alert\(1\)&gt; 30s/,
+  'countdown prefix must be HTML-encoded before entering markup');
+assert.doesNotMatch(actionAvailabilityRuntime.countdownMarkup({ remaining_seconds: 30 }, 'Ready <img src=x onerror=alert(1)> '), /<img/i,
+  'countdown prefix must be escaped before entering markup');
+const maliciousExpiresMarkup = actionAvailabilityRuntime.countdownMarkup({
+  expires_at: '2026-08-22T12:05:00.000Z&quot; autofocus onfocus=alert(1) x=&quot;',
+  remaining_seconds: 45,
+}, 'Reset "soon" <script>alert(1)</script> ');
+assert.match(maliciousExpiresMarkup, /data-cooldown-expires-at="2026-08-22T12:00:45\.000Z"/,
+  'malicious expires_at values must not be trusted when they fail timestamp parsing');
+assert.doesNotMatch(maliciousExpiresMarkup, /autofocus|onfocus|<script/i,
+  'malicious countdown expires_at and prefix values must be escaped or discarded');
 const simultaneousCooldownButton = actionAvailabilityRuntime.button('ATTACK USED TODAY', 'seasonal_boss', {}, {
   disabled: true,
   statusLabel: 'USED TODAY',
@@ -233,6 +251,68 @@ assert.match(seasonalUsedToday, /USED TODAY/,
   'seasonal attack used-today state must show used-today status');
 assert.doesNotMatch(seasonalUsedToday, /LOCKED/,
   'seasonal attack used-today state must not render locked copy');
+
+const cooldownRefreshSource = extractTestExport(client, 'cooldownRefresh');
+assert.ok(cooldownRefreshSource, 'cooldown refresh helper must be extractable for debounce coverage');
+const cooldownRefreshRuntime = new Function(
+  countdownComponentSource + `
+var state = null;
+var cooldownRefreshTimer = 0;
+var cooldownRefreshInFlight = false;
+var lastCooldownRefreshKey = '';
+var serverClockOffsetMs = Date.parse('2026-08-22T12:00:00.000Z') - Date.now();
+var busy = false;
+var noticesBusy = false;
+var generation = 0;
+var postCalls = 0;
+var renderCalls = 0;
+var scheduled = [];
+var cleared = [];
+var screen = { scrollTop: 0 };
+var window = {
+  clearTimeout: function (id) { if (id) cleared.push(id); },
+  setTimeout: function (fn, delay) { scheduled.push({ fn: fn, delay: delay }); return scheduled.length; },
+};
+function beginStateRequest() { generation += 1; return generation; }
+function setStateSnapshot(nextState) { state = nextState; return true; }
+function render() { renderCalls += 1; }
+function tell() {}
+async function showPendingNotices() {}
+async function post() {
+  postCalls += 1;
+  await new Promise(function (resolve) { setTimeout(resolve, 5); });
+  return { state: { adopted: true, cooldowns: { next_expires_at: '2026-08-22T12:10:00.000Z', entries: [{ expires_at: '2026-08-22T12:10:00.000Z', remaining_seconds: 600 }] } } };
+}
+${cooldownRefreshSource}
+return {
+  setState: function (next) { state = next; },
+  scheduleCooldownRefresh: scheduleCooldownRefresh,
+  refreshExpiredCooldownState: refreshExpiredCooldownState,
+  nextCooldownDelayMs: nextCooldownDelayMs,
+  stats: function () { return { postCalls: postCalls, renderCalls: renderCalls, scheduled: scheduled.slice(), cleared: cleared.slice() }; },
+};`,
+)();
+cooldownRefreshRuntime.setState({
+  adopted: true,
+  cooldowns: { next_expires_at: '2026-08-22T12:00:10.000Z', entries: [
+    { expires_at: '2026-08-22T12:00:10.000Z', remaining_seconds: 10 },
+    { expires_at: '2026-08-22T12:00:10.000Z', remaining_seconds: 10 },
+  ] },
+});
+cooldownRefreshRuntime.scheduleCooldownRefresh();
+cooldownRefreshRuntime.scheduleCooldownRefresh();
+assert.equal(cooldownRefreshRuntime.stats().scheduled.length, 2,
+  'scheduling may replace a pending expiry timer');
+assert.equal(cooldownRefreshRuntime.stats().cleared.length, 1,
+  'cooldown expiry refresh must debounce by clearing the previous timer');
+await Promise.all([
+  cooldownRefreshRuntime.refreshExpiredCooldownState(),
+  cooldownRefreshRuntime.refreshExpiredCooldownState(),
+]);
+assert.equal(cooldownRefreshRuntime.stats().postCalls, 1,
+  'concurrent expiry refresh attempts must collapse to one state refresh');
+assert.equal(cooldownRefreshRuntime.stats().renderCalls, 1,
+  'one expiry refresh should render exactly once');
 
 const dailyJourneyMarkupSource = extractTestExport(client, 'dailyJourneyMarkup');
 assert.ok(dailyJourneyMarkupSource, 'Daily Journey markup helper must be extractable for runtime coverage');
