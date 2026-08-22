@@ -655,8 +655,8 @@ export async function runMoonpetIdentityAuthorityAudit({ sqlitePath = null } = {
     if (!sqlitePath) {
       applyMigrationChain(db);
       seedValidIdentityRows(db);
-      assertOwnershipAuditSurfaceTables(db);
     }
+    assertOwnershipAuditSurfaceTables(db);
     assertRequiredTablesAndIndexes(db);
     const foreignKeyViolations = db.prepare('PRAGMA foreign_key_check').all();
     if (foreignKeyViolations.length) {
