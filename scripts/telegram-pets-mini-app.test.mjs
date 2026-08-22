@@ -1155,7 +1155,7 @@ assert.match(client, /WEEKLY CREST ALREADY SETTLED|DUPLICATE WEEKLY CREST BLOCKE
 assert.doesNotMatch(client, /Growth Mark[^'\n]*(?:claim|claimable)|Weekly Crest[^'\n]*(?:claim|claimable)/i,
   'Journey reward copy must avoid claim language when no claim action exists');
 assert.doesNotMatch(client, /Gameplay integration not active yet\./, 'Weekly Journey must no longer use inactive integration copy');
-assert.match(client, /Trait expansion remains locked until completed Season pets/, 'post-season trait copy must stay completed-season gated');
+assert.match(client, /Personality traits unlock through play/, 'traits-still-forming fallback must use current-beta-safe copy');
 assert.match(client, /function combatLockCopy\(reasonOverride\)[\s\S]*reasonOverride \|\| combatCapability\(state\)\.reason[\s\S]*moon_egg_must_hatch[\s\S]*COMBAT LOCKED UNTIL YOUR ACTIVE MOONPET HATCHES/, 'Arena and Kaiju locked panels must render worker combat authority reasons instead of only completed-season copy');
 assert.match(client, /function combatLockedButtonOptions\(entryDetail\)[\s\S]*disabled: true[\s\S]*futureExpansion: true[\s\S]*eggRequired: entryDetail\.indexOf\('HATCHED'\) >= 0[\s\S]*activePetRequired: entryDetail\.indexOf\('ACTIVE'\) >= 0[\s\S]*authoritySyncing: entryDetail\.indexOf\('SYNC'\) >= 0/,
   'Arena and Kaiju locked buttons must share the same future-expansion availability options');
@@ -1191,13 +1191,13 @@ assert.match(renderExploreSource, /if \(!hasSystemUnlocked\('kaiju'\)\) \{[\s\S]
   'Kaiju queue, match, result, and entry controls must be behind Kaiju capability gating while stale solo cleanup remains available');
 assert.match(client, /Requires current beta combat authority\./, 'current combat lock copy must remain explicit');
 assert.match(client, /var capabilitySystems = state\.capabilities_version === 1 && state\.capabilities && state\.capabilities\.systems[\s\S]*: \{\}/, 'future-system directory must consume the versioned worker systems capability map');
-assert.match(client, /Object\.keys\(futureSystemTitles\)\.map[\s\S]*var system = capabilitySystems\[key\] \|\| \{\}[\s\S]*status: \['LOCKED', 'COMING_SOON', 'AVAILABLE'\]\.includes\(status\) \? status : 'LOCKED'/, 'future-system directory must fail closed from the systems capability map');
-assert.match(client, /var status = String\(system\.status \|\| 'LOCKED'\)\.toUpperCase\(\)[\s\S]*status === 'AVAILABLE'[\s\S]*status === 'COMING_SOON'/, 'future-system directory must render LOCKED, COMING_SOON, and AVAILABLE states from authority payloads');
-assert.match(client, /var label = status === 'COMING_SOON' \? 'PLANNED EXPANSION' : status/,
-  'future-system directory must avoid public coming-soon copy while preserving internal capability state');
+assert.match(client, /Object\.keys\(futureSystemTitles\)\.map[\s\S]*var system = capabilitySystems\[key\] \|\| \{\}[\s\S]*status: \['LOCKED', 'COMING_SOON', 'AVAILABLE'\]\.includes\(status\) \? status : 'COMING_SOON'/, 'future-system directory must fail closed to COMING_SOON from the systems capability map');
+assert.match(client, /futureSystemRows[\s\S]*\.filter\(function[^)]*\)[\s\S]*key !== 'sanctuary'[\s\S]*key !== 'prestige'/, 'roadmap rows must exclude sanctuary and prestige which have dedicated future-season panels');
+assert.match(client, /futureSystemRows[\s\S]*\[ROADMAP\][\s\S]*system\.title \|\| system\.key \|\| 'Future System'/,
+  'future-system roadmap rows must uniformly label all items as ROADMAP');
 assert.match(client, /function futureSystemPanelCopy\(system\)[\s\S]*COMING_SOON[\s\S]*FUTURE EXPANSION CONTENT\.[\s\S]*AVAILABLE[\s\S]*LOCKED\./, 'future-system panels must render from the shared LOCKED/COMING_SOON/AVAILABLE model');
 assert.match(client, /var sanctuarySystem = futureSystemByKey\('sanctuary'\)[\s\S]*var sanctuaryPanel = futureSystemPanelCopy\(sanctuarySystem\)/, 'Sanctuary panel must consume shared future-system status only');
-assert.match(client, /panel\('PRESTIGE', futureSystemPanelCopy\(futureSystemByKey\('prestige', 'COMING_SOON'\)\)/, 'Prestige panel must consume shared future-system state');
+assert.match(client, /panel\('PRESTIGE \/\/ FUTURE SEASON', futureSystemPanelCopy\(futureSystemByKey\('prestige', 'COMING_SOON'\)\)/, 'Prestige panel must be labelled as future season content');
 assert.match(client, /var featureRows = \(guidance\.features \|\| \[\]\)\.map[\s\S]*var available = feature\.available === true/, 'Mini App feature directory must render worker-authoritative availability without duplicating combat logic');
 assert.doesNotMatch(client, /futureLocked = \/kaiju\|arena\|prestige/, 'Mini App feature directory must not re-derive future-system lock state in the frontend');
 assert.doesNotMatch(client, /state\.player_capabilities|state\.has_completed_season_pet|state\.combat_unlocked|state\.combat_eligibility|state\.future_systems/, 'Mini App client must consume the single worker capabilities object');
