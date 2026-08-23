@@ -1,0 +1,18 @@
+{
+  "title": "NBG London Graffiti Run",
+  "level": 1,
+  "features": {
+    "camera_smoothing": true,
+    "pixel_scaling": true,
+    "mobile_support": true,
+    "xp_counter": true,
+    "leaderboard_ready": true
+  },
+  "gameplay_loop": [
+    "run",
+    "jump",
+    "collect_xp",
+    "avoid_enemies",
+    "reach_finish"
+  ]
+}
