@@ -91,6 +91,9 @@ function extractTestExport(source, name) {
   if (end === -1) return null;
   return source.slice(bodyStart + 1, end);
 }
+function extractFunctionSource(source, name) {
+  return source.match(new RegExp(`function ${name}\\(\\)\\s*\\{[\\s\\S]*?\\n  \\}`))?.[0] || '';
+}
 
 const capabilityCombatHelperSource = extractTestExport(client, 'capabilityCombatHelper');
 assert.ok(capabilityCombatHelperSource, 'capability combat helper must be extractable for runtime coverage');
@@ -1327,8 +1330,37 @@ assert.match(html, /id="utility-layer"/);
 assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260820-action-guidance-polish/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
-assert.match(client, /function guideMarkup\(\)[\s\S]*var combatGuideCopy = hasCombatUnlocked\(\)[\s\S]*Kaiju is available for hatched active Moonpets; Arena opens at level 10[\s\S]*Arena and Kaiju stay locked until you adopt and hatch an active Moonpet/,
-  'the in-app guide must describe Arena/Kaiju according to shared combat capability');
+const guideMarkupSource = extractFunctionSource(client, 'guideMarkup');
+assert.ok(guideMarkupSource, 'guideMarkup helper must be extractable');
+const renderGuideMarkup = new Function('hasCombatUnlocked', `${guideMarkupSource}; return guideMarkup();`);
+const unlockedGuideMarkup = renderGuideMarkup(() => true);
+const lockedGuideMarkup = renderGuideMarkup(() => false);
+assert.match(unlockedGuideMarkup, /Arena and Kaiju are part of the current build\. Arena still needs a level 10 active Moonpet\./,
+  'the in-app guide must describe unlocked Arena/Kaiju copy according to shared combat capability');
+assert.match(lockedGuideMarkup, /Arena and Kaiju are current-build systems\. Kaiju requires a hatched active Moonpet, and Arena requires a hatched active Moonpet plus level 10\./,
+  'the in-app guide must describe locked Arena/Kaiju copy according to shared combat capability');
+for (const [label, pattern] of [
+  ['Pet', /PET|Pet/],
+  ['Care', /care/i],
+  ['Daily Journey', /Daily Journey/],
+  ['Weekly Journey', /Weekly Journey/],
+  ['Jobs', /jobs/i],
+  ['Runs', /Moon Run|RUN/i],
+  ['Equipment', /equipment/i],
+  ['Arena', /Arena/],
+  ['Kaiju', /Kaiju/],
+  ['Progression', /evolution and season rewards|progression/i],
+]) {
+  assert.match(lockedGuideMarkup, pattern, `guideMarkup must include current-build vocabulary for ${label}`);
+}
+const roadmapStepBody = lockedGuideMarkup.match(/<strong>6 \/\/ IDENTITY AND ROADMAP<\/strong>([\s\S]*?)<\/div>/)?.[1] || '';
+assert.ok(roadmapStepBody, 'guideMarkup must include the identity and roadmap step');
+assert.match(roadmapStepBody, /remain coming soon/, 'future systems must be marked as coming soon');
+const guideOutsideRoadmap = lockedGuideMarkup.replace(roadmapStepBody, '');
+for (const futureSystem of ['Advanced Traits', 'Breeding', 'Lineage', 'Fusion', 'Sanctuary', 'Prestige']) {
+  assert.ok(roadmapStepBody.includes(futureSystem), `guide roadmap step must list ${futureSystem}`);
+  assert.ok(!guideOutsideRoadmap.includes(futureSystem), `guideMarkup must only mention ${futureSystem} in the coming-soon roadmap step`);
+}
 assert.match(client, /data-utility="leaderboard">LEADERBOARD/);
 assert.match(client, /data-utility="sync">REFRESH/);
 assert.match(client, /data-utility="audio" aria-pressed=/);

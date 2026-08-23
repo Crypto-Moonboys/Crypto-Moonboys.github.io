@@ -51,6 +51,9 @@ const FORBIDDEN_COPY = [
   { label: 'earn-money', pattern: /\bearn\s+money\b/i },
   { label: 'claim-reward', pattern: /\bclaim\s+rewards?\b/i },
 ];
+const RULE_PATH_ALLOWLIST = {
+  'coming-soon': new Set(['how-to-play-crypto-moonboy-pets.html']),
+};
 
 function walk(absPath, files = []) {
   if (!fs.existsSync(absPath)) return files;
@@ -100,9 +103,12 @@ for (const file of files) {
   const raw = fs.readFileSync(file, 'utf8');
   const content = stripComments(raw, ext);
   for (const rule of FORBIDDEN_COPY) {
+    const rel = path.relative(ROOT, file);
+    const allowlist = RULE_PATH_ALLOWLIST[rule.label];
+    if (allowlist && allowlist.has(rel)) continue;
     const match = rule.pattern.exec(content);
     if (match) {
-      failures.push(`${path.relative(ROOT, file)}:${lineForIndex(content, match.index)} ${rule.label}: "${match[0]}"`);
+      failures.push(`${rel}:${lineForIndex(content, match.index)} ${rule.label}: "${match[0]}"`);
     }
   }
 }
