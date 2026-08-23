@@ -1,0 +1,35 @@
+{
+  "project": "NBG London Graffiti Run",
+  "format": "PNG transparency",
+  "style": "modern upscaled SNES pixel art",
+  "assets": {
+    "player": [
+      "game/assets/player/nbg-runner-sheet.png"
+    ],
+    "world": [
+      "game/assets/world/london-sky.png",
+      "game/assets/world/london-moon.png",
+      "game/assets/world/london-skyline.png",
+      "game/assets/world/graffiti-wall.png",
+      "game/assets/world/street-tiles.png",
+      "game/assets/world/foreground.png"
+    ],
+    "objects": [
+      "game/assets/objects/xp-coins.png",
+      "game/assets/objects/checkpoint.png",
+      "game/assets/objects/finish-flag.png",
+      "game/assets/objects/platforms.png",
+      "game/assets/objects/pipes.png"
+    ],
+    "enemies": [
+      "game/assets/enemies/london-rat.png",
+      "game/assets/enemies/pigeon.png",
+      "game/assets/enemies/graffiti-bot.png"
+    ],
+    "ui": [
+      "game/assets/ui/title-screen.png",
+      "game/assets/ui/hud.png",
+      "game/assets/ui/mobile-controls.png"
+    ]
+  }
+}
