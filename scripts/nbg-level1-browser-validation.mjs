@@ -1,8 +1,67 @@
 import { strict as assert } from 'node:assert';
+import fs from 'node:fs';
+import http from 'node:http';
+import path from 'node:path';
 import { chromium } from 'playwright';
 
-const url = process.env.NBG_LEVEL1_URL || 'http://127.0.0.1:4175/game/demo-launch.html';
-const fallbackChromium = 'C:\\Users\\GOD\\AppData\\Local\\ms-playwright\\chromium-1217\\chrome-win64\\chrome.exe';
+const shouldServe = process.argv.includes('--serve');
+const port = Number(process.env.NBG_LEVEL1_PORT || 4175);
+const host = process.env.NBG_LEVEL1_HOST || '127.0.0.1';
+const url = process.env.NBG_LEVEL1_URL || `http://${host}:${port}/game/demo-launch.html`;
+const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE;
+let server;
+
+const mimeTypes = new Map([
+  ['.css', 'text/css; charset=utf-8'],
+  ['.html', 'text/html; charset=utf-8'],
+  ['.js', 'text/javascript; charset=utf-8'],
+  ['.json', 'application/json; charset=utf-8'],
+  ['.png', 'image/png'],
+  ['.svg', 'image/svg+xml; charset=utf-8']
+]);
+
+function serveStaticFile(request, response) {
+  const requestUrl = new URL(request.url, `http://${host}:${port}`);
+  const decodedPath = decodeURIComponent(requestUrl.pathname);
+  const relativePath = decodedPath === '/' ? 'index.html' : decodedPath.replace(/^\/+/, '');
+  const root = process.cwd();
+  const fullPath = path.resolve(root, relativePath);
+
+  if (!fullPath.startsWith(root)) {
+    response.writeHead(403);
+    response.end('Forbidden');
+    return;
+  }
+
+  fs.readFile(fullPath, (error, data) => {
+    if (error) {
+      response.writeHead(404);
+      response.end('Not found');
+      return;
+    }
+
+    response.writeHead(200, {
+      'content-type': mimeTypes.get(path.extname(fullPath).toLowerCase()) || 'application/octet-stream'
+    });
+    response.end(data);
+  });
+}
+
+async function startServer() {
+  if (!shouldServe) return;
+  server = http.createServer(serveStaticFile);
+  await new Promise((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(port, host, resolve);
+  });
+}
+
+async function stopServer() {
+  if (!server) return;
+  await new Promise((resolve, reject) => {
+    server.close((error) => error ? reject(error) : resolve());
+  });
+}
 
 function averagePixelEnergy(buffer) {
   let total = 0;
@@ -13,15 +72,11 @@ function averagePixelEnergy(buffer) {
 }
 
 let browser;
+
 try {
-  browser = await chromium.launch();
-} catch (error) {
-  try {
-    browser = await chromium.launch({ executablePath: fallbackChromium });
-  } catch {
-    throw error;
-  }
-}
+await startServer();
+const launchOptions = executablePath ? { executablePath } : {};
+browser = await chromium.launch(launchOptions);
 const page = await browser.newPage({ viewport: { width: 960, height: 540 } });
 const errors = [];
 
@@ -44,13 +99,23 @@ let state = await page.evaluate(() => ({
   health: window.NBGLevel1State.player.health,
   coinCount: window.NBGLevel1State.coins.length,
   enemyCount: window.NBGLevel1State.enemies.length,
-  xp: window.NBGLevel1State.xp
+  xp: window.NBGLevel1State.xp,
+  assetStatus: window.NBGLevel1State.assetStatus,
+  requiredAssets: window.NBGLevel1State.requiredAssets
 }));
 
 assert.equal(state.running, true, 'game loop must be running after START');
 assert.equal(state.coinCount, 12, 'Level 1 must spawn 12 XP coins');
 assert.equal(state.enemyCount, 3, 'Level 1 must spawn 3 enemies');
 assert.equal(state.health, 3, 'player must spawn with health');
+assert.deepEqual(
+  Object.keys(state.assetStatus).sort(),
+  state.requiredAssets.slice().sort(),
+  'runtime must report every required asset'
+);
+for (const [key, asset] of Object.entries(state.assetStatus)) {
+  assert.equal(asset.loaded, true, `required asset must load successfully: ${key} (${asset.src})`);
+}
 
 const beforeMoveX = state.x;
 await page.keyboard.down('ArrowRight');
@@ -61,6 +126,26 @@ state = await page.evaluate(() => ({
   y: window.NBGLevel1State.player.y
 }));
 assert.ok(state.x > beforeMoveX + 8, 'player must move right');
+
+const beforeTouchMoveX = state.x;
+await page.locator('[data-control="right"]').dispatchEvent('pointerdown', {
+  pointerId: 1,
+  pointerType: 'touch',
+  isPrimary: true,
+  bubbles: true
+});
+await page.waitForTimeout(360);
+await page.locator('[data-control="right"]').dispatchEvent('pointerup', {
+  pointerId: 1,
+  pointerType: 'touch',
+  isPrimary: true,
+  bubbles: true
+});
+state = await page.evaluate(() => ({
+  x: window.NBGLevel1State.player.x,
+  y: window.NBGLevel1State.player.y
+}));
+assert.ok(state.x > beforeTouchMoveX + 5, 'touch right control must move player');
 
 const beforeJumpY = state.y;
 await page.keyboard.down('Space');
@@ -129,6 +214,11 @@ const pixelEnergy = await page.evaluate(() => {
 assert.ok(pixelEnergy > 20, 'canvas must render nonblank pixels');
 
 assert.deepEqual(errors, [], 'browser console must not report runtime errors');
-await browser.close();
 
 console.log('[PASS] NBG London Graffiti Run Level 1 browser validation');
+} finally {
+  if (browser) {
+    await browser.close().catch(() => {});
+  }
+  await stopServer();
+}

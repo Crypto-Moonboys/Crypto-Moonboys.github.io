@@ -14,6 +14,7 @@
     pigeon: 'assets/enemies/pigeon.svg',
     bot: 'assets/enemies/graffiti-bot.svg'
   };
+  var REQUIRED_ASSETS = Object.keys(ASSETS);
 
   var WIDTH = 480;
   var HEIGHT = 270;
@@ -41,8 +42,8 @@
   function loadImage(src) {
     return new Promise(function (resolve) {
       var image = new Image();
-      image.onload = function () { resolve(image); };
-      image.onerror = function () { resolve(null); };
+      image.onload = function () { resolve({ image: image, src: src }); };
+      image.onerror = function () { resolve({ image: null, src: src }); };
       image.src = src;
     });
   }
@@ -52,7 +53,9 @@
     ctx.imageSmoothingEnabled = false;
 
     var keys = {};
+    var touch = { left: false, right: false, jump: false, spray: false };
     var images = {};
+    var assetStatus = {};
     var running = false;
     var complete = false;
     var lastTime = 0;
@@ -127,10 +130,10 @@
     }
 
     function handleInput() {
-      var left = keys.ArrowLeft || keys.KeyA;
-      var right = keys.ArrowRight || keys.KeyD;
-      var jump = keys.Space || keys.ArrowUp || keys.KeyW;
-      var spray = keys.KeyS || keys.KeyX;
+      var left = keys.ArrowLeft || keys.KeyA || touch.left;
+      var right = keys.ArrowRight || keys.KeyD || touch.right;
+      var jump = keys.Space || keys.ArrowUp || keys.KeyW || touch.jump;
+      var spray = keys.KeyS || keys.KeyX || touch.spray;
 
       if (left) {
         player.vx -= RUN_ACCEL;
@@ -304,6 +307,17 @@
       }
     }
 
+    function assertRequiredAssetsLoaded() {
+      var missing = REQUIRED_ASSETS.filter(function (key) {
+        return !images[key];
+      });
+      if (missing.length) {
+        throw new Error('NBG Level 1 missing required assets: ' + missing.map(function (key) {
+          return key + ' (' + ASSETS[key] + ')';
+        }).join(', '));
+      }
+    }
+
     function drawWorld() {
       drawImageLayer(images.sky, 0.08, 0, HEIGHT, '#171730');
       drawImageLayer(images.skyline, 0.22, 46, 102, '#18203a');
@@ -446,17 +460,24 @@
         get xp() { return xp; },
         get complete() { return complete; },
         get running() { return running; },
-        get cameraX() { return cameraX; }
+        get cameraX() { return cameraX; },
+        get assetStatus() { return assetStatus; },
+        get requiredAssets() { return REQUIRED_ASSETS.slice(); }
       };
     }
 
     function start() {
       if (running) return Promise.resolve(window.NBGLevel1State);
       return Promise.all(Object.keys(ASSETS).map(function (key) {
-        return loadImage(ASSETS[key]).then(function (image) {
-          images[key] = image;
+        return loadImage(ASSETS[key]).then(function (result) {
+          images[key] = result.image;
+          assetStatus[key] = {
+            src: result.src,
+            loaded: !!result.image
+          };
         });
       })).then(function () {
+        assertRequiredAssetsLoaded();
         exposeTestState();
         running = true;
         complete = false;
@@ -472,7 +493,12 @@
 
     return {
       start: start,
-      getState: function () { return window.NBGLevel1State; }
+      getState: function () { return window.NBGLevel1State; },
+      setTouchControl: function (control, active) {
+        if (Object.prototype.hasOwnProperty.call(touch, control)) {
+          touch[control] = active;
+        }
+      }
     };
   }
 
@@ -491,10 +517,44 @@
     var runtime = createRuntime(canvas, hud);
     window.NBGLevel1Runtime = runtime;
 
+    function setLaunchError(error) {
+      hud.state.textContent = 'ASSET ERROR';
+      window.NBGLevel1StartupError = error && error.message ? error.message : String(error);
+      window.dispatchEvent(new CustomEvent('nbg-level-start-failed', {
+        detail: { message: window.NBGLevel1StartupError }
+      }));
+      throw error;
+    }
+
     start.addEventListener('click', function () {
       title.hidden = true;
       stage.classList.add('is-active');
-      runtime.start();
+      runtime.start().catch(setLaunchError);
+    });
+
+    Array.prototype.forEach.call(document.querySelectorAll('[data-control]'), function (button) {
+      var control = button.getAttribute('data-control');
+      function setActive(active) {
+        runtime.setTouchControl(control, active);
+        button.classList.toggle('is-pressed', active);
+      }
+      button.addEventListener('pointerdown', function (event) {
+        event.preventDefault();
+        if (button.setPointerCapture) {
+          try {
+            button.setPointerCapture(event.pointerId);
+          } catch {
+            // Synthetic validation events and some mobile browsers can omit capture-capable pointer ids.
+          }
+        }
+        setActive(true);
+      });
+      button.addEventListener('pointerup', function (event) {
+        event.preventDefault();
+        setActive(false);
+      });
+      button.addEventListener('pointercancel', function () { setActive(false); });
+      button.addEventListener('pointerleave', function () { setActive(false); });
     });
   });
 })();
