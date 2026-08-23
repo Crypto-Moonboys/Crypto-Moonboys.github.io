@@ -1,28 +1,48 @@
 {
-  "game": "NBG London Graffiti",
+  "game": "NBG London Graffiti Run",
+  "level": "London Level 1",
+  "runtime": "/game/demo-launch.html",
   "player": {
-    "sprite": "nbg_runner_sprite_sheet.png",
+    "spriteSheet": "player/nbg-runner-sprite-sheet.svg",
+    "frameWidth": 32,
+    "frameHeight": 32,
     "animations": {
       "idle": 4,
-      "run": 6,
-      "jump": 2,
+      "run": 4,
+      "jump": 4,
       "spray": 4,
-      "hurt": 2
+      "hit": 4
     },
-    "hitbox": {"width": 24, "height": 40}
+    "hitbox": { "width": 24, "height": 34 }
   },
   "world": {
     "tileSize": 16,
+    "width": 2200,
     "layers": [
-      "sky",
-      "moon_clouds",
-      "london_skyline",
-      "landmarks",
-      "graffiti_wall",
-      "foreground"
+      "world/london-sky-layer.svg",
+      "world/london-skyline-layer.svg",
+      "world/graffiti-wall-layer.svg",
+      "world/street-tiles.svg"
     ]
   },
-  "collectibles": {
-    "xp_coin": 10
+  "objects": {
+    "xpCoin": "objects/xp-coin.svg",
+    "checkpoint": "objects/checkpoint.svg",
+    "finishFlag": "objects/finish-flag.svg"
+  },
+  "enemies": {
+    "londonRat": "enemies/london-rat.svg",
+    "pigeon": "enemies/pigeon.svg",
+    "graffitiBot": "enemies/graffiti-bot.svg"
+  },
+  "acceptance": {
+    "startButton": true,
+    "playerMovement": true,
+    "jumping": true,
+    "xpCoins": 12,
+    "enemies": 3,
+    "checkpoint": true,
+    "finish": true,
+    "leaderboardReadyReward": true
   }
 }

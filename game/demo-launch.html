@@ -1,18 +1,33 @@
 <!doctype html>
-<html>
-<head><title>NBG London Graffiti Run</title></head>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NBG London Graffiti Run</title>
+  <link rel="stylesheet" href="game.css">
+</head>
 <body>
-<div id="title-screen">NBG LONDON GRAFFITI RUN<button id="start">START</button></div>
-<canvas id="game" width="320" height="180"></canvas>
-<script src="demo-script-loader.js"></script>
-<script src="level1/level1-browser-test-launcher.js"></script>
-<script src="level1/level1-preflight-browser-bridge.js"></script>
-<script src="level1/level1-launch-gate.js"></script>
-<script src="demo-launch-gate-bridge.js"></script>
-<script src="demo-runtime-bridge.js"></script>
-<script src="demo-level1-boot.js"></script>
-<script src="demo-launch-integration.js"></script>
-<script src="title-screen.js"></script>
-<script src="boot.js"></script>
+  <main class="nbg-shell" aria-label="NBG London Graffiti Run Level 1">
+    <section id="title-screen" class="title-screen">
+      <div class="title-copy">
+        <p class="kicker">NO BALL GAMES PRESENTS</p>
+        <h1>NBG LONDON GRAFFITI RUN</h1>
+        <p class="tagline">Run, tag, collect XP, and clear the London wall before the bots box you in.</p>
+      </div>
+      <button id="start" class="start-button" type="button">START</button>
+    </section>
+
+    <section id="game-stage" class="game-stage" aria-label="Playable Level 1">
+      <canvas id="game" width="480" height="270" aria-label="NBG London Graffiti Run canvas"></canvas>
+      <div class="hud-strip" aria-hidden="false">
+        <span id="hud-xp">XP 0</span>
+        <span id="hud-coins">COINS 0/12</span>
+        <span id="hud-health">HEALTH 3</span>
+        <span id="hud-state">READY</span>
+      </div>
+    </section>
+  </main>
+
+  <script src="nbg-level1.js"></script>
 </body>
 </html>
