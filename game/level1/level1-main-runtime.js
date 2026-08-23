@@ -1,12 +1,10 @@
 // NBG London Graffiti Run - Level 1 Main Runtime
 // Connects the complete Level 1 controller stack.
 
-import Level1Controller from './level1-controller.js';
-
-export default class Level1MainRuntime {
+class Level1MainRuntime {
   constructor(config = {}) {
     this.config = config;
-    this.controller = new Level1Controller(config);
+    this.controller = new window.Level1Controller(config);
     this.running = false;
   }
 
@@ -25,3 +23,5 @@ export default class Level1MainRuntime {
     this.controller.stop();
   }
 }
+
+window.Level1MainRuntime = Level1MainRuntime;
