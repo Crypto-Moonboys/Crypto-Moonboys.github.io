@@ -1,4 +1,6 @@
-// Phase 2 asset test configuration
+// NBG London Graffiti Run
+// Phase 2 browser asset test configuration
+
 window.NBGPhase2AssetConfig = {
   requiredAssets: [
     'nbg-runner',
