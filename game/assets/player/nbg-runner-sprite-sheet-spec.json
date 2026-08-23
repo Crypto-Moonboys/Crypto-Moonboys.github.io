@@ -1,0 +1,23 @@
+{
+  "name": "NBG Runner Sprite Sheet",
+  "style": "SNES inspired modern pixel art",
+  "scale": "upscaled pixel graphics",
+  "spriteSize": {
+    "width": 32,
+    "height": 48
+  },
+  "animations": {
+    "idle": 4,
+    "run": 6,
+    "jump": 2,
+    "spray": 4,
+    "hit": 2
+  },
+  "actions": [
+    "move",
+    "jump",
+    "collect_xp",
+    "spray_tag"
+  ],
+  "transparentBackground": true
+}
