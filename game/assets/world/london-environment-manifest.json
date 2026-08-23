@@ -1,0 +1,14 @@
+{
+  "level": "London Graffiti Run",
+  "style": "SNES upscale pixel art",
+  "layers": [
+    {"name":"sky","file":"sky.png"},
+    {"name":"moon","file":"moon.png"},
+    {"name":"london_skyline","file":"london-skyline.png"},
+    {"name":"graffiti_wall","file":"graffiti-wall.png"},
+    {"name":"street_tiles","file":"street-tiles.png"},
+    {"name":"foreground","file":"foreground.png"}
+  ],
+  "objects": ["pipes","platforms","checkpoints"],
+  "tileSize":16
+}
