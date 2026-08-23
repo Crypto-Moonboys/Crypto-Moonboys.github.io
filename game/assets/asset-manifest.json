@@ -3,7 +3,7 @@
   "level": "London Level 1",
   "runtime": "/game/demo-launch.html",
   "player": {
-    "spriteSheet": "player/nbg-runner-sprite-sheet.svg",
+    "spriteSheet": "art-production/dude-got-game.png",
     "frameWidth": 32,
     "frameHeight": 48,
     "anchor": { "x": 16, "y": 33 },
@@ -25,12 +25,7 @@
   "world": {
     "tileSize": 16,
     "width": 2200,
-    "layerNames": [
-      "sky",
-      "london-skyline",
-      "graffiti-wall",
-      "street"
-    ],
+    "layerNames": ["sky", "london-skyline", "graffiti-wall", "street"],
     "layers": [
       "world/london-sky-layer.svg",
       "world/london-skyline-layer.svg",
