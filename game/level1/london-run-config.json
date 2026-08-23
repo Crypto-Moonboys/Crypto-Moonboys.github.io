@@ -1,0 +1,18 @@
+{
+  "level": "London Graffiti Run",
+  "theme": "night_city",
+  "viewport": "320x180",
+  "layers": [
+    "sky",
+    "moon",
+    "london_skyline",
+    "graffiti_wall",
+    "street",
+    "foreground"
+  ],
+  "entities": {
+    "player": "nbg_runner",
+    "collectible": "xp_coin",
+    "enemy": "street_rat"
+  }
+}
