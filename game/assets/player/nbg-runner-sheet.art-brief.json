@@ -1,0 +1,21 @@
+{
+  "asset": "nbg-runner-sheet.png",
+  "status": "ready-for-art-production",
+  "style": "modern upscaled SNES pixel art",
+  "base_size": "32x48",
+  "animations": {
+    "idle": 4,
+    "run": 6,
+    "jump": 2,
+    "spray": 4,
+    "hit": 2
+  },
+  "requirements": [
+    "transparent PNG sprite sheet",
+    "consistent pixel scale",
+    "clear silhouette",
+    "London graffiti streetwear theme",
+    "game-ready frame alignment"
+  ],
+  "import_target": "/game/assets/player/nbg-runner-sheet.png"
+}
