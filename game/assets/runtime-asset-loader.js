@@ -1,9 +1,12 @@
 // NBG Game runtime asset loader
-// Loads sprite manifest entries for Level 1 London Graffiti Run.
+// Loads registered assets for Level 1 London Graffiti Run.
+
+import { NBGAssetRegistry } from './asset-registry.js';
 
 export class RuntimeAssetLoader {
-  constructor() {
+  constructor(registry = NBGAssetRegistry) {
     this.assets = {};
+    this.registry = registry;
   }
 
   async loadManifest(path = './assets/sprite-manifest.json') {
@@ -12,12 +15,26 @@ export class RuntimeAssetLoader {
     return this.manifest;
   }
 
+  async loadRegistryAssets() {
+    const entries = Object.entries(this.registry);
+
+    await Promise.all(
+      entries.map(([name, src]) => this.loadImage(name, src))
+    );
+
+    return this.assets;
+  }
+
   loadImage(name, src) {
     return new Promise((resolve) => {
       const image = new Image();
       image.onload = () => {
         this.assets[name] = image;
         resolve(image);
+      };
+      image.onerror = () => {
+        console.warn(`Missing asset: ${src}`);
+        resolve(null);
       };
       image.src = src;
     });
