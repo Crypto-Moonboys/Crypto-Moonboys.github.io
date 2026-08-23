@@ -1,0 +1,17 @@
+/* NBG Game demo overlay */
+#nbg-game-start {
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  pointer-events:none;
+}
+
+#nbg-game-start button {
+  pointer-events:auto;
+  font-family:monospace;
+  font-size:24px;
+  padding:14px 30px;
+  cursor:pointer;
+}
