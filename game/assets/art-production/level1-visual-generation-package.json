@@ -1,0 +1,36 @@
+{
+  "name": "NBG London Graffiti Run Level 1 Visual Generation Package",
+  "status": "ready-for-art-production",
+  "style": "modern upscaled SNES pixel art",
+  "viewport": "320x180",
+  "layers": {
+    "background": [
+      "london-sky.png",
+      "london-moon.png",
+      "london-skyline.png"
+    ],
+    "environment": [
+      "graffiti-wall.png",
+      "street-tiles.png",
+      "foreground.png"
+    ],
+    "gameplay": [
+      "nbg-runner-sheet.png",
+      "xp-coins.png",
+      "london-rat.png",
+      "pigeon.png",
+      "graffiti-bot.png"
+    ],
+    "ui": [
+      "title-screen.png",
+      "hud.png",
+      "leaderboard.png",
+      "mobile-controls.png"
+    ]
+  },
+  "export": {
+    "format": "PNG",
+    "transparency": true,
+    "pixel_scale": "3x"
+  }
+}
