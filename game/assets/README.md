@@ -16,3 +16,11 @@ Target format:
 - 16x16 terrain tiles
 - SNES / 16-bit style
 - 320x180 game viewport
+
+Production import status:
+
+- London parallax layers: ready for import
+- NBG Runner sprite sheets: ready for import
+- XP coin animation: ready for import
+- Graffiti tiles: ready for import
+- HUD graphics: ready for import
