@@ -1,11 +1,12 @@
 // Level 1 London Graffiti scene
-// Connects world entities and player to the render pipeline.
+// Connects world entities, player and sprite renderer to the render pipeline.
 
 class LondonGraffitiScene {
-  constructor(loader, renderer, player = null) {
+  constructor(loader, renderer, player = null, playerRenderer = null) {
     this.loader = loader;
     this.renderer = renderer;
     this.player = player;
+    this.playerRenderer = playerRenderer;
     this.entities = [];
   }
 
@@ -22,6 +23,11 @@ class LondonGraffitiScene {
   render(context, assets) {
     if (this.renderer && this.renderer.render) {
       this.renderer.render(context, this.entities, assets);
+    }
+
+    if (this.playerRenderer && this.player) {
+      this.playerRenderer.draw(context, this.player);
+      return;
     }
 
     this.player?.render?.(context, assets);
