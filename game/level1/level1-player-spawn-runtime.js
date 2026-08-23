@@ -7,6 +7,7 @@
       const player = {
         x: options.x ?? 40,
         y: options.y ?? 120,
+        sprite: 'nbg-runner',
         frameX: 0,
         frameY: 0,
         frameWidth: 32,
