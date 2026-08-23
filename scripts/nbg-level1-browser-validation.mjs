@@ -106,7 +106,8 @@ let state = await page.evaluate(() => ({
   enemyCount: window.NBGLevel1State.enemies.length,
   xp: window.NBGLevel1State.xp,
   assetStatus: window.NBGLevel1State.assetStatus,
-  requiredAssets: window.NBGLevel1State.requiredAssets
+  requiredAssets: window.NBGLevel1State.requiredAssets,
+  playerAnimations: window.NBGLevel1State.playerAnimations
 }));
 
 assert.equal(state.running, true, 'game loop must be running after START');
@@ -121,6 +122,11 @@ assert.deepEqual(
 for (const [key, asset] of Object.entries(state.assetStatus)) {
   assert.equal(asset.loaded, true, `required asset must load successfully: ${key} (${asset.src})`);
 }
+assert.deepEqual(
+  Object.fromEntries(Object.entries(state.playerAnimations.animations).map(([name, animation]) => [name, animation.frames])),
+  { idle: 4, run: 6, jump: 1, fall: 1, spray: 4, hurt: 2, win: 2 },
+  'player animation manifest must expose the canonical frame counts'
+);
 
 const beforeMoveX = state.x;
 await page.keyboard.down('ArrowRight');
@@ -197,6 +203,20 @@ assert.equal(state.anim, 'jump', 'player must switch to jump animation');
 
 await page.evaluate(() => {
   const player = window.NBGLevel1State.player;
+  player.grounded = true;
+  player.vy = 0;
+  player.invuln = 0;
+});
+await page.keyboard.down('KeyS');
+await page.waitForTimeout(80);
+await page.keyboard.up('KeyS');
+state = await page.evaluate(() => ({
+  anim: window.NBGLevel1State.player.anim
+}));
+assert.equal(state.anim, 'spray', 'spray input must switch to spray animation');
+
+await page.evaluate(() => {
+  const player = window.NBGLevel1State.player;
   const coin = window.NBGLevel1State.coins.find((entry) => !entry.taken);
   player.x = coin.x - 4;
   player.y = coin.y - 14;
@@ -222,7 +242,7 @@ state = await page.evaluate(() => ({
   anim: window.NBGLevel1State.player.anim
 }));
 assert.ok(state.health < 3, 'enemy collision must damage player');
-assert.equal(state.anim, 'hit', 'enemy collision must switch to hit animation');
+assert.equal(state.anim, 'hurt', 'enemy collision must switch to hurt animation');
 
 await page.evaluate(() => {
   const player = window.NBGLevel1State.player;

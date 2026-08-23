@@ -7,11 +7,13 @@
     "height": 48
   },
   "animations": {
-    "idle": 4,
-    "run": 6,
-    "jump": 2,
-    "spray": 4,
-    "hit": 2
+    "idle": { "row": 0, "frames": 4 },
+    "run": { "row": 1, "frames": 6 },
+    "jump": { "row": 2, "frames": 1 },
+    "fall": { "row": 3, "frames": 1 },
+    "spray": { "row": 4, "frames": 4 },
+    "hurt": { "row": 5, "frames": 2 },
+    "win": { "row": 6, "frames": 2 }
   },
   "actions": [
     "move",

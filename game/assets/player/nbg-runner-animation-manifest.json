@@ -1,22 +1,30 @@
 {
   "character": "NBG Runner",
-  "spriteSheet": "nbg-runner.png",
+  "spriteSheet": "player/nbg-runner-sprite-sheet.svg",
   "frameSize": {
     "width": 32,
     "height": 48
   },
   "animations": {
-    "idle": {"frames": 4, "speed": 8},
-    "run": {"frames": 6, "speed": 10},
-    "jump": {"frames": 2, "speed": 6},
-    "spray": {"frames": 4, "speed": 8},
-    "hit": {"frames": 2, "speed": 4}
+    "idle": { "row": 0, "frames": 4, "frameMs": 145 },
+    "run": { "row": 1, "frames": 6, "frameMs": 88 },
+    "jump": { "row": 2, "frames": 1, "frameMs": 145 },
+    "fall": { "row": 3, "frames": 1, "frameMs": 145 },
+    "spray": { "row": 4, "frames": 4, "frameMs": 110 },
+    "hurt": { "row": 5, "frames": 2, "frameMs": 120 },
+    "win": { "row": 6, "frames": 2, "frameMs": 145 }
+  },
+  "aliases": {
+    "tag": "spray",
+    "celebrate": "win"
   },
   "states": {
-    "idle": "player_idle",
-    "moving": "player_run",
-    "airborne": "player_jump",
-    "tagging": "player_spray",
-    "damaged": "player_hit"
+    "idle": "idle",
+    "moving": "run",
+    "airborne": "jump",
+    "falling": "fall",
+    "tagging": "spray",
+    "damaged": "hurt",
+    "complete": "win"
   }
 }

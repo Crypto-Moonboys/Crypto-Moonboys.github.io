@@ -6,7 +6,7 @@
   "packages": {
     "player": {
       "asset": "nbg-runner-sheet.png",
-      "animations": ["idle", "run", "jump", "spray", "hit"]
+      "animations": ["idle", "run", "jump", "fall", "spray", "hurt", "win"]
     },
     "world": {
       "layers": ["sky", "moon", "london-skyline", "graffiti-wall", "street", "foreground"]

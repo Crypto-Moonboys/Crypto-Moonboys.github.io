@@ -13,10 +13,10 @@ const Level1PlayerAnimationRuntime = {
   update() {
     if (!this.player || !this.animationController) return;
 
-    if (this.player.hit) {
-      this.animationController.setState('hit');
+    if (this.player.hurt || this.player.hit) {
+      this.animationController.setState('hurt');
     } else if (!this.player.grounded) {
-      this.animationController.setState('jump');
+      this.animationController.setState(this.player.velocityY > 0 ? 'fall' : 'jump');
     } else if (this.player.velocityX !== 0) {
       this.animationController.setState('run');
     } else {

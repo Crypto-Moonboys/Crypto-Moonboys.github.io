@@ -13,11 +13,7 @@ const LevelRenderPlayerBridge = {
   render(ctx, player, camera) {
     if (!this.initialized || !this.playerRenderer) return;
 
-    this.playerRenderer.render(
-      ctx,
-      player,
-      camera
-    );
+    this.playerRenderer.render(ctx, player, camera);
   }
 };
 

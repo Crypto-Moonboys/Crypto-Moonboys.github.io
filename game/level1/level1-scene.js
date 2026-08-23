@@ -26,7 +26,7 @@ class LondonGraffitiScene {
     }
 
     if (this.playerRenderer && this.player) {
-      this.playerRenderer.draw(context, this.player);
+      this.playerRenderer.render(context, this.player);
       return;
     }
 

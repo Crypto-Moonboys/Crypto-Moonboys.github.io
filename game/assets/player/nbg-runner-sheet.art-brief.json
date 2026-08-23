@@ -6,9 +6,11 @@
   "animations": {
     "idle": 4,
     "run": 6,
-    "jump": 2,
+    "jump": 1,
+    "fall": 1,
     "spray": 4,
-    "hit": 2
+    "hurt": 2,
+    "win": 2
   },
   "requirements": [
     "transparent PNG sprite sheet",

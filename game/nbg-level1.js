@@ -1,20 +1,7 @@
 (function () {
   'use strict';
 
-  var ASSETS = {
-    player: 'assets/player/nbg-runner-sprite-sheet.svg',
-    coin: 'assets/objects/xp-coin.svg',
-    checkpoint: 'assets/objects/checkpoint.svg',
-    finish: 'assets/objects/finish-flag.svg',
-    sky: 'assets/world/london-sky-layer.svg',
-    skyline: 'assets/world/london-skyline-layer.svg',
-    wall: 'assets/world/graffiti-wall-layer.svg',
-    street: 'assets/world/street-tiles.svg',
-    rat: 'assets/enemies/london-rat.svg',
-    pigeon: 'assets/enemies/pigeon.svg',
-    bot: 'assets/enemies/graffiti-bot.svg'
-  };
-  var REQUIRED_ASSETS = Object.keys(ASSETS);
+  var ASSET_MANIFEST_PATH = 'assets/asset-manifest.json';
 
   var WIDTH = 480;
   var HEIGHT = 270;
@@ -27,11 +14,6 @@
   var MAX_SPEED = 4.2;
   var JUMP_VELOCITY = -11.4;
   var INVULN_TIME = 1050;
-  var FRAME_W = 32;
-  var FRAME_H = 32;
-
-  var stateNames = ['idle', 'run', 'jump', 'spray', 'hit'];
-
   function rectsOverlap(a, b) {
     return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
   }
@@ -49,12 +31,68 @@
     });
   }
 
+  function loadJson(src) {
+    return fetch(src).then(function (response) {
+      if (!response.ok) throw new Error('Unable to load asset manifest: ' + src);
+      return response.json();
+    });
+  }
+
+  function assetPath(path) {
+    return 'assets/' + path;
+  }
+
+  function buildAssetMap(manifest) {
+    return {
+      player: assetPath(manifest.player.spriteSheet),
+      coin: assetPath(manifest.objects.xpCoin),
+      checkpoint: assetPath(manifest.objects.checkpoint),
+      finish: assetPath(manifest.objects.finishFlag),
+      sky: assetPath(manifest.world.layers[0]),
+      skyline: assetPath(manifest.world.layers[1]),
+      wall: assetPath(manifest.world.layers[2]),
+      street: assetPath(manifest.world.layers[3]),
+      rat: assetPath(manifest.enemies.londonRat),
+      pigeon: assetPath(manifest.enemies.pigeon),
+      bot: assetPath(manifest.enemies.graffitiBot)
+    };
+  }
+
+  function normalizePlayerAnimations(playerManifest) {
+    var frameWidth = playerManifest.frameWidth || 32;
+    var frameHeight = playerManifest.frameHeight || 48;
+    var animations = {};
+
+    Object.keys(playerManifest.animations || {}).forEach(function (name) {
+      var animation = playerManifest.animations[name];
+      animations[name] = typeof animation === 'number'
+        ? { row: Object.keys(animations).length, frames: animation, frameMs: 145, frameWidth: frameWidth, frameHeight: frameHeight }
+        : {
+          row: animation.row || 0,
+          frames: animation.frames || 1,
+          frameMs: animation.frameMs || 145,
+          frameWidth: animation.frameWidth || frameWidth,
+          frameHeight: animation.frameHeight || frameHeight
+        };
+    });
+
+    return {
+      frameWidth: frameWidth,
+      frameHeight: frameHeight,
+      animations: animations,
+      aliases: playerManifest.aliases || {}
+    };
+  }
+
   function createRuntime(canvas, hud) {
     var ctx = canvas.getContext('2d');
     ctx.imageSmoothingEnabled = false;
 
     var keys = {};
     var touch = { left: false, right: false, jump: false, spray: false };
+    var assets = {};
+    var requiredAssets = [];
+    var playerAnimationContract = null;
     var images = {};
     var assetStatus = {};
     var running = false;
@@ -80,6 +118,25 @@
       health: 3,
       invuln: 0
     };
+
+    function resolveAnimationName(name) {
+      if (!playerAnimationContract) return name || 'idle';
+      return playerAnimationContract.aliases[name] || name || 'idle';
+    }
+
+    function getAnimation(name) {
+      if (!playerAnimationContract) return null;
+      return playerAnimationContract.animations[resolveAnimationName(name)] || playerAnimationContract.animations.idle || null;
+    }
+
+    function setPlayerAnimation(name) {
+      var next = resolveAnimationName(name);
+      if (player.anim !== next) {
+        player.anim = next;
+        player.frame = 0;
+        player.frameTime = 0;
+      }
+    }
 
     var platforms = [
       { x: 360, y: 178, w: 150, h: 16 },
@@ -119,7 +176,7 @@
       player.vx = 0;
       player.vy = 0;
       player.invuln = INVULN_TIME;
-      player.anim = 'hit';
+      setPlayerAnimation('hurt');
       sprayTimer = 0;
     }
 
@@ -205,21 +262,24 @@
       }
 
       if (sprayTimer > 0) {
-        player.anim = 'spray';
+        setPlayerAnimation('spray');
       } else if (player.invuln > 0) {
-        player.anim = 'hit';
+        setPlayerAnimation('hurt');
       } else if (!player.grounded) {
-        player.anim = 'jump';
+        setPlayerAnimation(player.vy > 0 ? 'fall' : 'jump');
       } else if (Math.abs(player.vx) > 0.42) {
-        player.anim = 'run';
+        setPlayerAnimation('run');
       } else {
-        player.anim = 'idle';
+        setPlayerAnimation('idle');
       }
 
+      var animation = getAnimation(player.anim);
+      var frameCount = animation ? animation.frames : 1;
+      var frameMs = animation ? animation.frameMs : 145;
       player.frameTime += dt;
-      if (player.frameTime > (player.anim === 'run' ? 88 : 145)) {
-        player.frame = (player.frame + 1) % 4;
-        player.frameTime = 0;
+      while (frameCount > 1 && player.frameTime > frameMs) {
+        player.frame = (player.frame + 1) % frameCount;
+        player.frameTime -= frameMs;
       }
     }
 
@@ -257,7 +317,7 @@
           player.vx = enemy.x > player.x ? -5.5 : 5.5;
           player.vy = -6.2;
           player.invuln = INVULN_TIME;
-          player.anim = 'hit';
+          setPlayerAnimation('hurt');
           window.dispatchEvent(new CustomEvent('nbg-player-hit', { detail: { health: player.health, enemy: enemy.type } }));
           if (player.health <= 0) {
             player.health = 3;
@@ -279,6 +339,7 @@
       if (!complete && rectsOverlap(player, finish)) {
         complete = true;
         running = false;
+        setPlayerAnimation('win');
         if (!finishBonusAwarded) {
           finishBonusAwarded = true;
           xp += 500 + coins.filter(function (coin) { return coin.taken; }).length * 25;
@@ -321,12 +382,12 @@
     }
 
     function assertRequiredAssetsLoaded() {
-      var missing = REQUIRED_ASSETS.filter(function (key) {
+      var missing = requiredAssets.filter(function (key) {
         return !images[key];
       });
       if (missing.length) {
         throw new Error('NBG Level 1 missing required assets: ' + missing.map(function (key) {
-          return key + ' (' + ASSETS[key] + ')';
+          return key + ' (' + assets[key] + ')';
         }).join(', '));
       }
     }
@@ -401,8 +462,12 @@
     }
 
     function drawPlayer() {
-      var row = Math.max(0, stateNames.indexOf(player.anim));
-      var col = player.frame % 4;
+      var animation = getAnimation(player.anim);
+      var frameWidth = animation ? animation.frameWidth : 32;
+      var frameHeight = animation ? animation.frameHeight : 48;
+      var row = animation ? animation.row : 0;
+      var frameCount = animation ? animation.frames : 1;
+      var col = frameCount > 0 ? player.frame % frameCount : 0;
       var x = Math.round(player.x - cameraX);
       var y = Math.round(player.y);
       var flash = player.invuln > 0 && Math.floor(player.invuln / 90) % 2 === 0;
@@ -416,11 +481,11 @@
 
       ctx.save();
       if (player.facing < 0) {
-        ctx.translate(x + player.w + 4, y - 2);
+        ctx.translate(x + player.w + 4, y - 14);
         ctx.scale(-1, 1);
-        ctx.drawImage(images.player, col * FRAME_W, row * FRAME_H, FRAME_W, FRAME_H, 0, 0, 32, 40);
+        ctx.drawImage(images.player, col * frameWidth, row * frameHeight, frameWidth, frameHeight, 0, 0, 32, 48);
       } else {
-        ctx.drawImage(images.player, col * FRAME_W, row * FRAME_H, FRAME_W, FRAME_H, x - 4, y - 2, 32, 40);
+        ctx.drawImage(images.player, col * frameWidth, row * frameHeight, frameWidth, frameHeight, x - 4, y - 14, 32, 48);
       }
       ctx.restore();
     }
@@ -476,21 +541,27 @@
         get cameraX() { return cameraX; },
         get checkpoint() { return checkpoint; },
         get assetStatus() { return assetStatus; },
-        get requiredAssets() { return REQUIRED_ASSETS.slice(); }
+        get requiredAssets() { return requiredAssets.slice(); },
+        get playerAnimations() { return playerAnimationContract; }
       };
     }
 
     function start() {
       if (running) return Promise.resolve(window.NBGLevel1State);
-      return Promise.all(Object.keys(ASSETS).map(function (key) {
-        return loadImage(ASSETS[key]).then(function (result) {
-          images[key] = result.image;
-          assetStatus[key] = {
-            src: result.src,
-            loaded: !!result.image
-          };
-        });
-      })).then(function () {
+      return loadJson(ASSET_MANIFEST_PATH).then(function (manifest) {
+        playerAnimationContract = normalizePlayerAnimations(manifest.player);
+        assets = buildAssetMap(manifest);
+        requiredAssets = Object.keys(assets);
+        return Promise.all(requiredAssets.map(function (key) {
+          return loadImage(assets[key]).then(function (result) {
+            images[key] = result.image;
+            assetStatus[key] = {
+              src: result.src,
+              loaded: !!result.image
+            };
+          });
+        }));
+      }).then(function () {
         assertRequiredAssetsLoaded();
         exposeTestState();
         running = true;
