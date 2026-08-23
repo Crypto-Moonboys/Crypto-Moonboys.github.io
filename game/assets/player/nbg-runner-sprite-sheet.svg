@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="160" viewBox="0 0 128 160" shape-rendering="crispEdges">
+  <defs>
+    <style>
+      .skin{fill:#d88b4a}.coat{fill:#ff315f}.dark{fill:#181820}.shoe{fill:#111}.cap{fill:#59d8ff}.bag{fill:#ffd447}.spray{fill:#7cff82}.hit{fill:#fff}
+    </style>
+    <g id="runner-idle">
+      <rect class="cap" x="10" y="2" width="12" height="5"/><rect class="dark" x="8" y="7" width="16" height="10"/><rect class="skin" x="12" y="11" width="9" height="7"/>
+      <rect class="coat" x="9" y="18" width="15" height="9"/><rect class="bag" x="20" y="18" width="5" height="8"/>
+      <rect class="dark" x="10" y="27" width="6" height="4"/><rect class="dark" x="18" y="27" width="5" height="4"/><rect class="shoe" x="8" y="31" width="9" height="2"/><rect class="shoe" x="18" y="31" width="8" height="2"/>
+    </g>
+    <g id="runner-run-a">
+      <rect class="cap" x="11" y="2" width="12" height="5"/><rect class="dark" x="9" y="7" width="15" height="10"/><rect class="skin" x="13" y="11" width="8" height="7"/>
+      <rect class="coat" x="10" y="18" width="14" height="9"/><rect class="bag" x="21" y="18" width="5" height="8"/>
+      <rect class="dark" x="8" y="27" width="7" height="4"/><rect class="dark" x="19" y="26" width="5" height="5"/><rect class="shoe" x="5" y="31" width="10" height="2"/><rect class="shoe" x="20" y="31" width="8" height="2"/>
+    </g>
+    <g id="runner-run-b">
+      <rect class="cap" x="9" y="2" width="12" height="5"/><rect class="dark" x="8" y="7" width="15" height="10"/><rect class="skin" x="12" y="11" width="8" height="7"/>
+      <rect class="coat" x="8" y="18" width="15" height="9"/><rect class="bag" x="20" y="18" width="5" height="8"/>
+      <rect class="dark" x="11" y="27" width="5" height="5"/><rect class="dark" x="17" y="27" width="8" height="4"/><rect class="shoe" x="10" y="31" width="8" height="2"/><rect class="shoe" x="17" y="31" width="11" height="2"/>
+    </g>
+    <g id="runner-jump">
+      <rect class="cap" x="10" y="0" width="12" height="5"/><rect class="dark" x="8" y="5" width="16" height="10"/><rect class="skin" x="12" y="9" width="9" height="7"/>
+      <rect class="coat" x="9" y="16" width="15" height="9"/><rect class="bag" x="20" y="15" width="5" height="8"/>
+      <rect class="dark" x="8" y="25" width="7" height="5"/><rect class="dark" x="18" y="24" width="5" height="6"/><rect class="shoe" x="5" y="29" width="9" height="2"/><rect class="shoe" x="18" y="29" width="9" height="2"/>
+    </g>
+    <g id="runner-spray">
+      <rect class="cap" x="10" y="2" width="12" height="5"/><rect class="dark" x="8" y="7" width="16" height="10"/><rect class="skin" x="12" y="11" width="9" height="7"/>
+      <rect class="coat" x="9" y="18" width="15" height="9"/><rect class="bag" x="20" y="18" width="5" height="8"/><rect class="skin" x="24" y="19" width="5" height="3"/><rect class="spray" x="29" y="18" width="3" height="4"/>
+      <rect class="dark" x="10" y="27" width="6" height="4"/><rect class="dark" x="18" y="27" width="5" height="4"/><rect class="shoe" x="8" y="31" width="9" height="2"/><rect class="shoe" x="18" y="31" width="8" height="2"/>
+    </g>
+    <g id="runner-hit">
+      <rect class="hit" x="6" y="1" width="20" height="29"/><rect class="coat" x="9" y="18" width="15" height="9"/><rect class="dark" x="8" y="7" width="16" height="10"/>
+      <rect class="skin" x="12" y="11" width="9" height="7"/><rect class="shoe" x="6" y="31" width="20" height="2"/>
+    </g>
+  </defs>
+  <rect width="128" height="160" fill="none"/>
+  <use href="#runner-idle" x="0" y="0"/><use href="#runner-idle" x="32" y="0"/><use href="#runner-idle" x="64" y="0"/><use href="#runner-idle" x="96" y="0"/>
+  <use href="#runner-run-a" x="0" y="32"/><use href="#runner-run-b" x="32" y="32"/><use href="#runner-run-a" x="64" y="32"/><use href="#runner-run-b" x="96" y="32"/>
+  <use href="#runner-jump" x="0" y="64"/><use href="#runner-jump" x="32" y="64"/><use href="#runner-jump" x="64" y="64"/><use href="#runner-jump" x="96" y="64"/>
+  <use href="#runner-spray" x="0" y="96"/><use href="#runner-spray" x="32" y="96"/><use href="#runner-spray" x="64" y="96"/><use href="#runner-spray" x="96" y="96"/>
+  <use href="#runner-hit" x="0" y="128"/><use href="#runner-hit" x="32" y="128"/><use href="#runner-hit" x="64" y="128"/><use href="#runner-hit" x="96" y="128"/>
+</svg>

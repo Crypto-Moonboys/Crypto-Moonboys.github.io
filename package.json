@@ -28,6 +28,7 @@
     "invaders:ship:hydrate": "node scripts/hydrate-invaders-player-ship.mjs",
     "test:invaders-ship": "npm run invaders:ship:hydrate && node scripts/invaders-player-ship-asset.test.mjs",
     "test:wiki-structure": "node wiki/validators/wiki-structure-check.js",
+    "test:nbg-level1": "node scripts/nbg-level1-browser-validation.mjs --serve",
     "avatar:assets": "node scripts/build-avatar-assets.mjs",
     "test:avatar-builder": "node scripts/avatar-builder-assets.test.mjs && node scripts/avatar-builder-browser.test.mjs"
   },
