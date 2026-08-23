@@ -583,7 +583,7 @@
   function guideMarkup() {
     var combatGuideCopy = hasCombatUnlocked()
       ? 'Arena and Kaiju are part of the current build. Arena still needs a level 10 active Moonpet.'
-      : 'Arena and Kaiju are current-build systems, but live access stays locked until you complete a Season pet and hatch an active Moonpet.';
+      : 'Arena and Kaiju are current-build systems. Kaiju requires a hatched active Moonpet, and Arena requires a hatched active Moonpet plus level 10.';
     return '<div class="guide-step"><strong>1 // WAKE THE EGG</strong>Initialise your Moon Egg, then use at least three kinds of incubation care. Your care pattern shapes the hatch.</div>' +
       '<div class="guide-step"><strong>2 // PLAY THE CURRENT BUILD</strong>PET handles care, TASKS tracks Daily Journey and Weekly Journey, WORK covers jobs and timers, and RUN handles bosses plus Moon Run.</div>' +
       '<div class="guide-step"><strong>3 // KEEP NEEDS STABLE</strong>Feed, play, clean and rest. Training, care and daily routines build Pet XP, specialist XP, personality, aptitudes and equipment mastery.</div>' +
