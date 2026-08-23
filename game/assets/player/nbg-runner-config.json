@@ -1,0 +1,17 @@
+{
+  "name": "NBG Runner",
+  "style": "SNES inspired 16-bit upscale",
+  "spriteSize": "32x48",
+  "animations": {
+    "idle": {"frames": 4, "speed": 8},
+    "run": {"frames": 6, "speed": 10},
+    "jump": {"frames": 2, "speed": 8},
+    "spray": {"frames": 4, "speed": 8},
+    "hit": {"frames": 2, "speed": 6}
+  },
+  "actions": {
+    "collectXP": true,
+    "sprayTag": true,
+    "jump": true
+  }
+}
