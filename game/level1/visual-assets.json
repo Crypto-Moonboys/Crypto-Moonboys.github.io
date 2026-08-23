@@ -1,0 +1,13 @@
+{
+  "level": "London Graffiti Run",
+  "style": "SNES upscale pixel art",
+  "layers": [
+    {"name":"sky","depth":0.1,"asset":"london_sky.png"},
+    {"name":"moon","depth":0.2,"asset":"moon.png"},
+    {"name":"city","depth":0.4,"asset":"london_skyline.png"},
+    {"name":"graffiti_wall","depth":0.7,"asset":"graffiti_wall.png"},
+    {"name":"street","depth":1,"asset":"street_tiles.png"}
+  ],
+  "player":"nbg_runner_sheet.png",
+  "collectible":"xp_coin_sheet.png"
+}
