@@ -1,0 +1,28 @@
+{
+  "game": "NBG London Graffiti",
+  "player": {
+    "sprite": "nbg_runner_sprite_sheet.png",
+    "animations": {
+      "idle": 4,
+      "run": 6,
+      "jump": 2,
+      "spray": 4,
+      "hurt": 2
+    },
+    "hitbox": {"width": 24, "height": 40}
+  },
+  "world": {
+    "tileSize": 16,
+    "layers": [
+      "sky",
+      "moon_clouds",
+      "london_skyline",
+      "landmarks",
+      "graffiti_wall",
+      "foreground"
+    ]
+  },
+  "collectibles": {
+    "xp_coin": 10
+  }
+}
