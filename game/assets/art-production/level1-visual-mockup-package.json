@@ -1,0 +1,21 @@
+{
+  "name": "NBG London Graffiti Run Level 1 Visual Mockup",
+  "purpose": "first approved visual composition pass before final PNG export",
+  "viewport": "320x180",
+  "style": "modern upscaled SNES pixel art",
+  "scenes": [
+    {
+      "name": "start",
+      "layers": ["london-sky", "london-moon", "london-skyline", "graffiti-wall", "nbg-runner"]
+    },
+    {
+      "name": "action",
+      "layers": ["street-tiles", "nbg-runner", "xp-coins", "london-rat"]
+    },
+    {
+      "name": "finish",
+      "layers": ["london-skyline", "finish-flag", "checkpoint", "nbg-runner"]
+    }
+  ],
+  "status": "ready-for-art-approval"
+}
