@@ -1,0 +1,40 @@
+{
+  "package": "Level 1 Objects and Enemies Art Production",
+  "style": "modern upscaled SNES pixel art",
+  "export": "transparent PNG sprite sheets",
+  "objects": {
+    "xp-coins": {
+      "file": "xp-coins.png",
+      "animation": "spin",
+      "frames": 4
+    },
+    "checkpoint": {
+      "file": "checkpoint.png"
+    },
+    "finish-flag": {
+      "file": "finish-flag.png"
+    },
+    "platforms": {
+      "file": "platforms.png",
+      "tileSize": "16x16"
+    },
+    "pipes": {
+      "file": "pipes.png"
+    }
+  },
+  "enemies": {
+    "london-rat": {
+      "file": "london-rat.png",
+      "animations": ["idle", "walk", "hit"]
+    },
+    "pigeon": {
+      "file": "pigeon.png",
+      "animations": ["idle", "fly", "hit"]
+    },
+    "graffiti-bot": {
+      "file": "graffiti-bot.png",
+      "animations": ["idle", "attack", "hit"]
+    }
+  },
+  "targetPath": "/game/assets/"
+}
