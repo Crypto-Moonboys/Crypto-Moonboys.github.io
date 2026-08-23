@@ -1,6 +1,6 @@
 {
   "character": "NBG Runner",
-  "spriteSheet": "player/nbg-runner-sprite-sheet.svg",
+  "spriteSheet": "art-production/dude-got-game.png",
   "frameSize": {
     "width": 32,
     "height": 48
