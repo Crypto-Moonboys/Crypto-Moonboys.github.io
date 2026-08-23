@@ -1,0 +1,42 @@
+{
+  "asset": "London Level 1 Environment Art Production Sheet",
+  "style": "modern upscaled SNES pixel art",
+  "viewport": "320x180",
+  "layers": [
+    {
+      "name": "sky",
+      "file": "london-sky.png",
+      "purpose": "night background"
+    },
+    {
+      "name": "moon",
+      "file": "london-moon.png",
+      "purpose": "parallax moon layer"
+    },
+    {
+      "name": "skyline",
+      "file": "london-skyline.png",
+      "purpose": "London landmarks silhouette"
+    },
+    {
+      "name": "graffiti-wall",
+      "file": "graffiti-wall.png",
+      "purpose": "playable background wall"
+    },
+    {
+      "name": "street",
+      "file": "street-tiles.png",
+      "purpose": "16x16 collision tiles"
+    },
+    {
+      "name": "foreground",
+      "file": "foreground.png",
+      "purpose": "depth layer"
+    }
+  ],
+  "export": {
+    "format": "PNG",
+    "transparency": true,
+    "tileSize": "16x16"
+  }
+}
