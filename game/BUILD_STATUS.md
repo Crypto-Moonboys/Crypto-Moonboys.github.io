@@ -14,10 +14,10 @@ Architecture expansion is paused. Development moves to integration, asset produc
 - HUD framework
 - asset manifests
 
-## Pending integration work
+## Not yet complete
 
 - Complete tile/ground collision integration
-- Verify demo launch dependency chain
+- Verified browser launch dependency chain
 - Import approved PNG artwork
 - Connect real sprites
 - Run browser test
@@ -25,6 +25,17 @@ Architecture expansion is paused. Development moves to integration, asset produc
 - Add enemy behaviour polish
 - Add leaderboard backend
 - Polish gameplay
+
+## Next implementation order
+
+1. Fix runtime launch dependencies
+2. Complete tile/ground collision integration
+3. Import approved PNG artwork
+4. Connect real sprites
+5. Run browser test
+6. Fix runtime errors
+7. Add missing gameplay systems
+8. Polish gameplay
 
 ## Rule
 
