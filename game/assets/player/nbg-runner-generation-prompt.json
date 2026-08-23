@@ -1,0 +1,20 @@
+{
+  "asset": "nbg-runner-sheet.png",
+  "style": "modern upscaled SNES pixel art",
+  "theme": "London graffiti street runner",
+  "canvas": "sprite sheet",
+  "base_sprite_size": "32x48",
+  "animations": {
+    "idle": 4,
+    "run": 6,
+    "jump": 2,
+    "spray": 4,
+    "hit": 2
+  },
+  "requirements": [
+    "transparent PNG",
+    "consistent pixel scale",
+    "readable silhouette at game resolution",
+    "compatible with browser sprite renderer"
+  ]
+}
