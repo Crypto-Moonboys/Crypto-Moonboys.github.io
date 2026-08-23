@@ -1,7 +1,7 @@
 // NBG London Graffiti Run runtime connector
 // Connects boot, level, renderer, player, camera and HUD.
 
-export class GameRuntime {
+class GameRuntime {
   constructor(systems) {
     this.systems = systems;
     this.running = false;
@@ -29,3 +29,5 @@ export class GameRuntime {
     requestAnimationFrame((t) => this.loop(t));
   }
 }
+
+window.GameRuntime = GameRuntime;
