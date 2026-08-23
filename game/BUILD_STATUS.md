@@ -2,7 +2,7 @@
 
 ## Current decision
 
-Architecture expansion is paused. Development moves to integration and asset production.
+Architecture expansion is paused. Development moves to integration, asset production, and runtime validation.
 
 ## Completed
 
@@ -10,19 +10,26 @@ Architecture expansion is paused. Development moves to integration and asset pro
 - player pipeline
 - world pipeline
 - entity pipeline
-- collision framework
+- entity-collision scaffolding (not full tile collision)
 - HUD framework
-- launch flow
 - asset manifests
 
-## Next implementation order
+## Pending integration work
 
-1. Import approved PNG artwork
-2. Connect real sprites
-3. Run browser test
-4. Fix runtime errors
-5. Polish gameplay
+- Complete tile/ground collision integration
+- Verify demo launch dependency chain
+- Import approved PNG artwork
+- Connect real sprites
+- Run browser test
+- Fix runtime errors
+- Add enemy behaviour polish
+- Add leaderboard backend
+- Polish gameplay
 
 ## Rule
 
 Do not add new bridge layers unless a real runtime error requires one.
+
+## Authority
+
+This document is the current build priority list. Update other game documentation if implementation order changes.
