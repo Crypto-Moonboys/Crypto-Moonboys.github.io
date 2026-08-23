@@ -1,0 +1,24 @@
+{
+  "pack": "NBG Runner London Visual Pack",
+  "level": 1,
+  "style": "modern upscaled SNES pixel art",
+  "resolution": "320x180 viewport",
+  "player": {
+    "sprite_size": "32x48",
+    "animations": ["idle_4_frames", "run_6_frames", "jump_2_frames", "spray_4_frames", "hit_2_frames"]
+  },
+  "environment": {
+    "layers": [
+      "night_sky",
+      "moon",
+      "london_skyline",
+      "graffiti_wall",
+      "street_tiles",
+      "foreground"
+    ]
+  },
+  "collectibles": ["xp_coin_animation"],
+  "enemies": ["london_rat", "pigeon", "graffiti_bot"],
+  "objects": ["platforms", "pipes", "checkpoint", "finish_flag"],
+  "export": "transparent PNG sprite sheets and layered backgrounds"
+}
