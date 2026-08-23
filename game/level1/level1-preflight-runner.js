@@ -27,6 +27,7 @@ const Level1PreflightRunner = {
     this.check('entities', systems.entities);
     this.check('collision', systems.collision);
     this.check('hud', systems.hud);
+    this.check('assets', systems.assets);
 
     return {
       ready: this.checks.every(item => item.status),

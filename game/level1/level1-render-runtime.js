@@ -6,16 +6,28 @@ class Level1RenderRuntime {
     this.scene = scene;
     this.renderer = renderer;
     this.assets = assets;
+    this.composer = null;
     this.running = false;
   }
 
-  init() {
+  init(composer = null) {
+    this.composer = composer;
     this.running = true;
+
+    if (this.composer && this.scene) {
+      if (this.composer.addLayer && this.scene.renderLayers) {
+        this.scene.renderLayers.forEach(layer => {
+          this.composer.addLayer(layer);
+        });
+      }
+    }
+
     return this;
   }
 
   update(delta) {
     if (!this.running) return;
+
     if (this.scene && this.scene.update) {
       this.scene.update(delta);
     }
@@ -23,6 +35,12 @@ class Level1RenderRuntime {
 
   render(context) {
     if (!this.running) return;
+
+    if (this.composer && this.composer.render) {
+      this.composer.render(this.scene, this.assets, context);
+      return;
+    }
+
     if (this.renderer && this.renderer.render) {
       this.renderer.render(context, this.scene, this.assets);
     }
