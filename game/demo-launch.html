@@ -9,11 +9,14 @@
 <script src="level1/level1-preflight-browser-bridge.js"></script>
 <script src="level1/level1-launch-gate.js"></script>
 <script src="assets/asset-validation.js"></script>
-<script src="assets/phase2-asset-test-config.json"></script>
 <script src="phase2-browser-runtime-test.js"></script>
 <script src="phase2-browser-test-launch-bridge.js"></script>
 <script src="demo-launch-gate-bridge.js"></script>
 <script src="demo-runtime-bridge.js"></script>
+<script type="module">
+  import { Level1LaunchRuntime } from './level1/level1-launch-runtime.js';
+  window.Level1LaunchRuntime = new Level1LaunchRuntime();
+</script>
 <script src="demo-level1-boot.js"></script>
 <script src="demo-launch-integration.js"></script>
 <script src="title-screen.js"></script>
