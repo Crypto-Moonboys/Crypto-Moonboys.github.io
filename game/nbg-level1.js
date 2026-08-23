@@ -20,6 +20,7 @@
   var HEIGHT = 270;
   var WORLD_WIDTH = 2200;
   var FLOOR_Y = 214;
+  var TARGET_FRAME_MS = 1000 / 60;
   var GRAVITY = 0.52;
   var FRICTION = 0.78;
   var RUN_ACCEL = 0.74;
@@ -129,22 +130,32 @@
       }
     }
 
-    function handleInput() {
+    function clearInput() {
+      keys = {};
+      Object.keys(touch).forEach(function (control) {
+        touch[control] = false;
+      });
+      Array.prototype.forEach.call(document.querySelectorAll('[data-control]'), function (button) {
+        button.classList.remove('is-pressed');
+      });
+    }
+
+    function handleInput(step) {
       var left = keys.ArrowLeft || keys.KeyA || touch.left;
       var right = keys.ArrowRight || keys.KeyD || touch.right;
       var jump = keys.Space || keys.ArrowUp || keys.KeyW || touch.jump;
       var spray = keys.KeyS || keys.KeyX || touch.spray;
 
       if (left) {
-        player.vx -= RUN_ACCEL;
+        player.vx -= RUN_ACCEL * step;
         player.facing = -1;
       }
       if (right) {
-        player.vx += RUN_ACCEL;
+        player.vx += RUN_ACCEL * step;
         player.facing = 1;
       }
       if (!left && !right) {
-        player.vx *= FRICTION;
+        player.vx *= Math.pow(FRICTION, step);
       }
       player.vx = clamp(player.vx, -MAX_SPEED, MAX_SPEED);
 
@@ -175,16 +186,17 @@
     }
 
     function updatePlayer(dt) {
-      handleInput();
+      var step = dt / TARGET_FRAME_MS;
+      handleInput(step);
       if (sprayTimer > 0) sprayTimer -= dt;
       if (player.invuln > 0) player.invuln -= dt;
 
-      player.x += player.vx;
+      player.x += player.vx * step;
       player.x = clamp(player.x, 12, WORLD_WIDTH - player.w - 12);
 
       var previousY = player.y;
-      player.vy += GRAVITY;
-      player.y += player.vy;
+      player.vy += GRAVITY * step;
+      player.y += player.vy * step;
       resolveVerticalCollision(previousY);
 
       if (player.y > HEIGHT + 80) {
@@ -225,10 +237,11 @@
       }
     }
 
-    function updateEnemies(time) {
+    function updateEnemies(time, dt) {
+      var step = dt / TARGET_FRAME_MS;
       for (var i = 0; i < enemies.length; i += 1) {
         var enemy = enemies[i];
-        enemy.x += enemy.vx;
+        enemy.x += enemy.vx * step;
         if (enemy.x < enemy.min || enemy.x > enemy.max) enemy.vx *= -1;
         if (enemy.type === 'pigeon') enemy.bob = Math.sin(time / 180) * 9;
 
@@ -443,13 +456,13 @@
       if (running) {
         updatePlayer(dt);
         updateCoins(time);
-        updateEnemies(time);
+        updateEnemies(time, dt);
         updateLevel();
         updateCamera();
       }
       updateHud();
       render(time);
-      if (running || complete) requestAnimationFrame(tick);
+      if (running) requestAnimationFrame(tick);
     }
 
     function exposeTestState() {
@@ -461,6 +474,7 @@
         get complete() { return complete; },
         get running() { return running; },
         get cameraX() { return cameraX; },
+        get checkpoint() { return checkpoint; },
         get assetStatus() { return assetStatus; },
         get requiredAssets() { return REQUIRED_ASSETS.slice(); }
       };
@@ -490,6 +504,7 @@
 
     window.addEventListener('keydown', function (e) { onKey(e, true); });
     window.addEventListener('keyup', function (e) { onKey(e, false); });
+    window.addEventListener('blur', clearInput);
 
     return {
       start: start,

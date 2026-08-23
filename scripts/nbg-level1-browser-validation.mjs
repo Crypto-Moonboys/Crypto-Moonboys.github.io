@@ -26,8 +26,13 @@ function serveStaticFile(request, response) {
   const relativePath = decodedPath === '/' ? 'index.html' : decodedPath.replace(/^\/+/, '');
   const root = process.cwd();
   const fullPath = path.resolve(root, relativePath);
+  const relativeFromRoot = path.relative(root, fullPath);
 
-  if (!fullPath.startsWith(root)) {
+  if (
+    relativeFromRoot === '..' ||
+    relativeFromRoot.startsWith('..' + path.sep) ||
+    path.isAbsolute(relativeFromRoot)
+  ) {
     response.writeHead(403);
     response.end('Forbidden');
     return;
@@ -146,6 +151,37 @@ state = await page.evaluate(() => ({
   y: window.NBGLevel1State.player.y
 }));
 assert.ok(state.x > beforeTouchMoveX + 5, 'touch right control must move player');
+
+await page.evaluate(() => {
+  const player = window.NBGLevel1State.player;
+  player.invuln = 0;
+  player.x = 1242;
+  player.y = 166;
+});
+await page.waitForTimeout(140);
+state = await page.evaluate(() => ({
+  checkpointActive: window.NBGLevel1State.checkpoint.active,
+  xp: window.NBGLevel1State.xp
+}));
+assert.equal(state.checkpointActive, true, 'checkpoint must activate when player reaches it');
+assert.ok(state.xp >= 250, 'checkpoint must award XP');
+
+await page.evaluate(() => {
+  const player = window.NBGLevel1State.player;
+  player.y = 380;
+});
+await page.waitForTimeout(120);
+state = await page.evaluate(() => ({
+  x: window.NBGLevel1State.player.x,
+  y: window.NBGLevel1State.player.y,
+  health: window.NBGLevel1State.player.health
+}));
+assert.ok(Math.abs(state.x - 1240) < 2, 'checkpoint respawn must restore player x to checkpoint');
+assert.ok(state.y < 190, 'checkpoint respawn must restore player to playable height');
+assert.equal(state.health, 2, 'checkpoint respawn fall damage must reduce health once');
+await page.evaluate(() => {
+  window.NBGLevel1State.player.invuln = 0;
+});
 
 const beforeJumpY = state.y;
 await page.keyboard.down('Space');
