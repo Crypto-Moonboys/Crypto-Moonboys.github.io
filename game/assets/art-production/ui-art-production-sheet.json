@@ -1,0 +1,27 @@
+{
+  "package": "NBG London Graffiti Run UI Art Production",
+  "style": "modern upscaled SNES pixel art",
+  "assets": {
+    "title_screen": {
+      "file": "title-screen.png",
+      "elements": ["NBG logo", "London graffiti background", "START button"]
+    },
+    "hud": {
+      "file": "hud.png",
+      "elements": ["XP counter", "coin counter", "level indicator"]
+    },
+    "leaderboard": {
+      "file": "leaderboard.png",
+      "elements": ["rank panel", "score display", "player entry"]
+    },
+    "mobile_controls": {
+      "file": "mobile-controls.png",
+      "elements": ["left", "right", "jump", "spray"]
+    }
+  },
+  "export": {
+    "format": "PNG",
+    "transparent": true,
+    "target_folder": "/game/assets/ui/"
+  }
+}
