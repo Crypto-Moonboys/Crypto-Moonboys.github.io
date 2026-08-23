@@ -1,0 +1,16 @@
+{
+  "name": "NBG London Graffiti Run Asset Test",
+  "phase": 2,
+  "purpose": "Runtime verification for imported game assets",
+  "requiredAssets": [
+    "nbg-runner",
+    "london-sky",
+    "london-skyline",
+    "graffiti-wall",
+    "street-tiles",
+    "xp-coins",
+    "london-rat"
+  ],
+  "blocking": true,
+  "nextStep": "browser-runtime-test"
+}
