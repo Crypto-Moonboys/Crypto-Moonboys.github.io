@@ -1,42 +1,55 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import vm from 'node:vm';
 
 const client = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
 
-// Extract the futureSystemTitles definition block using TEST-EXPORT markers.
-const startMarker = '// TEST-EXPORT: futureSystemTitles:start';
-const endMarker = '// TEST-EXPORT: futureSystemTitles:end';
-const blockStart = client.indexOf(startMarker);
-assert.ok(blockStart !== -1, 'futureSystemTitles TEST-EXPORT block must be present');
-const blockEnd = client.indexOf(endMarker, blockStart);
-const futureSystemTitlesBlock = client.slice(blockStart, blockEnd);
+function extractTestExport(source, name) {
+  const startMarker = `// TEST-EXPORT: ${name}:start`;
+  const endMarker = `// TEST-EXPORT: ${name}:end`;
+  const start = source.indexOf(startMarker);
+  if (start === -1) return null;
+  const bodyStart = source.indexOf('\n', start + startMarker.length);
+  if (bodyStart === -1) return null;
+  const end = source.indexOf(endMarker, bodyStart + 1);
+  if (end === -1) return null;
+  return source.slice(bodyStart + 1, end);
+}
+
+const futureSystemTitlesBlock = extractTestExport(client, 'futureSystemTitles');
+assert.ok(futureSystemTitlesBlock, 'futureSystemTitles TEST-EXPORT block must be present and closed');
+const futureSystemTitlesMatch = futureSystemTitlesBlock.match(/var futureSystemTitles = ({[\s\S]*?});/);
+assert.ok(futureSystemTitlesMatch, 'futureSystemTitles TEST-EXPORT block must contain the futureSystemTitles object');
+const futureSystemTitles = vm.runInNewContext(`(${futureSystemTitlesMatch[1]})`);
 
 // Allowed future roadmap systems — not yet playable, expected in roadmap panel.
 const ROADMAP_ALLOWED = ['breeding', 'lineage', 'fusion', 'traits'];
-for (const key of ROADMAP_ALLOWED) {
-  assert.match(
-    futureSystemTitlesBlock,
-    new RegExp('\\b' + key + ':'),
-    `"${key}" must be present in futureSystemTitles (it is a future roadmap system)`,
-  );
-}
-
-// Playable systems — must never appear in futureSystemTitles.
 const ROADMAP_BLOCKED = ['arena', 'kaiju', 'weekly_journey', 'daily_journey', 'equipment'];
+assert.deepEqual(
+  Object.keys(futureSystemTitles).sort(),
+  ['breeding', 'fusion', 'lineage', 'prestige', 'sanctuary', 'traits'],
+  'futureSystemTitles must stay limited to roadmap systems plus the dedicated future-season panels',
+);
 for (const key of ROADMAP_BLOCKED) {
-  assert.doesNotMatch(
-    futureSystemTitlesBlock,
-    new RegExp('\\b' + key + ':'),
+  assert.ok(
+    !(key in futureSystemTitles),
     `"${key}" must NOT be in futureSystemTitles — it is an active playable system and must not appear in the roadmap panel`,
   );
 }
 
-// The rendered roadmap rows must also filter sanctuary and prestige so they
-// never appear as plain roadmap entries (each has its own dedicated panel).
-assert.match(
-  client,
-  /var futureSystemRows = futureSystems\.filter[\s\S]*?sanctuary[\s\S]*?prestige/,
-  'futureSystemRows filter must exclude sanctuary and prestige from the roadmap panel',
+const futureSystemRowsFilterMatch = client.match(
+  /var futureSystemRows = futureSystems\.filter\(function \(system\) {\s*return ([^;]+);\s*}\)\.map/,
+);
+assert.ok(futureSystemRowsFilterMatch, 'futureSystemRows must keep an explicit roadmap filter predicate');
+const roadmapFilter = new Function('system', `return ${futureSystemRowsFilterMatch[1]};`);
+assert.equal(roadmapFilter({ key: 'sanctuary' }), false, 'roadmap filter must exclude sanctuary from roadmap rows');
+assert.equal(roadmapFilter({ key: 'prestige' }), false, 'roadmap filter must exclude prestige from roadmap rows');
+
+const roadmapKeys = Object.keys(futureSystemTitles).filter((key) => roadmapFilter({ key })).sort();
+assert.deepEqual(
+  roadmapKeys,
+  [...ROADMAP_ALLOWED].sort(),
+  'roadmap rows must resolve to exactly the allowed future systems and no playable systems',
 );
 
 // Terminology: "Personality" copy must not mix in the word "traits" in a way
@@ -51,5 +64,13 @@ assert.match(
   /Personality develops through play/,
   'fallback copy must say "Personality develops through play"',
 );
+
+for (const heading of [
+  "panel('ROADMAP // FUTURE SEASONS'",
+  "panel('PRESTIGE // FUTURE SEASON'",
+  "panel('MOONPET SANCTUARY // FUTURE SEASON'",
+]) {
+  assert.ok(client.includes(heading), `${heading} must remain the exact future roadmap heading`);
+}
 
 console.log('moonpet-roadmap-regression.test.mjs passed');
