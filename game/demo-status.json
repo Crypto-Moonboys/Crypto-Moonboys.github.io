@@ -1,0 +1,6 @@
+{
+  "name":"NBG London Graffiti Run Demo",
+  "status":"prototype-launch",
+  "level":"London Level 1",
+  "features":["start screen","hud","xp","player","camera","mobile-ready"]
+}
