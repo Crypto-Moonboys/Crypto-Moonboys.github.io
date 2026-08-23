@@ -1,0 +1,21 @@
+{
+  "asset": "nbg-runner",
+  "type": "sprite_sheet",
+  "style": "modern_upscaled_snes_pixel_art",
+  "base_size": "32x48",
+  "export": "transparent_png",
+  "animations": {
+    "idle": {"frames": 4},
+    "run": {"frames": 6},
+    "jump": {"frames": 2},
+    "spray": {"frames": 4},
+    "hit": {"frames": 2}
+  },
+  "game_actions": [
+    "move",
+    "jump",
+    "collect_xp",
+    "spray_tag"
+  ],
+  "target_file": "game/assets/player/nbg-runner-sheet.png"
+}
