@@ -1,0 +1,13 @@
+{
+  "name": "NBG London Graffiti Run Demo",
+  "version": "0.1.0",
+  "level": "London Level 1",
+  "systems": [
+    "player",
+    "camera",
+    "xp",
+    "hud",
+    "mobile-controls"
+  ],
+  "status": "first playable prototype"
+}
