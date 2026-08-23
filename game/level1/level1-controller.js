@@ -1,5 +1,5 @@
 // Level 1 master controller
-// Connects player, world, entities, collision, gameplay state and HUD
+// Connects player, world, entities, collision, gameplay state, HUD and animation
 
 export class Level1Controller {
   constructor(modules = {}) {
@@ -9,6 +9,7 @@ export class Level1Controller {
     this.collision = modules.collision;
     this.gameplay = modules.gameplay;
     this.hud = modules.hud;
+    this.animation = modules.animation;
     this.running = false;
   }
 
@@ -16,12 +17,14 @@ export class Level1Controller {
     this.running = true;
     this.gameplay?.init();
     this.hud?.init();
+    this.animation?.init(this.player);
   }
 
   update(delta) {
     if (!this.running) return;
 
     this.player?.update(delta);
+    this.animation?.update(this.player);
     this.entities?.update(delta);
     this.collision?.update(delta);
     this.gameplay?.update(delta);
