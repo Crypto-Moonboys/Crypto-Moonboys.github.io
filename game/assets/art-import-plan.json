@@ -1,0 +1,17 @@
+{
+  "project": "NBG London Graffiti Run",
+  "phase": "visual asset import",
+  "style": "SNES gameplay with modern pixel art upscale",
+  "assets": {
+    "player": {
+      "sprite": "player/nbg-runner-sheet.png",
+      "animations": ["idle", "run", "jump", "spray", "hit"]
+    },
+    "world": {
+      "layers": ["sky", "moon", "london_skyline", "graffiti_wall", "street", "foreground"],
+      "tiles": "tiles/london-graffiti-tiles.png"
+    },
+    "objects": ["xp-coins", "checkpoints", "finish-flag"],
+    "enemies": ["rat", "pigeon"]
+  }
+}
