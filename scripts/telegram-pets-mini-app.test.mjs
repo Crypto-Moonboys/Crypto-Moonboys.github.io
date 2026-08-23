@@ -1327,7 +1327,7 @@ assert.match(html, /id="utility-layer"/);
 assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260820-action-guidance-polish/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
-assert.match(client, /function guideMarkup\(\)[\s\S]*var combatGuideCopy = hasCombatUnlocked\(\)[\s\S]*Kaiju is available for hatched active Moonpets; Arena opens at level 10[\s\S]*Arena and Kaiju stay locked until you adopt and hatch an active Moonpet/,
+assert.match(client, /function guideMarkup\(\)[\s\S]*var combatGuideCopy = hasCombatUnlocked\(\)[\s\S]*Arena and Kaiju are part of the current build\. Arena still needs a level 10 active Moonpet\.[\s\S]*Arena and Kaiju are current-build systems, but live access stays locked until you complete a Season pet and hatch an active Moonpet\./,
   'the in-app guide must describe Arena/Kaiju according to shared combat capability');
 assert.match(client, /data-utility="leaderboard">LEADERBOARD/);
 assert.match(client, /data-utility="sync">REFRESH/);
