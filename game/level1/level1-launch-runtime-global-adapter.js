@@ -3,19 +3,27 @@
 // Exposes the runtime for classic script loading.
 
 (function () {
-  if (!window.Level1LaunchRuntime) {
-    window.Level1LaunchRuntime = {
-      running: false,
-      async start(config = {}) {
-        this.running = true;
-        return {
-          level: config.level || 'London Graffiti Run',
-          status: 'running'
-        };
-      },
-      stop() {
-        this.running = false;
-      }
-    };
+  const runtime = window.Level1LaunchRuntime;
+
+  if (runtime && typeof runtime.start === 'function') {
+    window.NBGLevel1RuntimeReady = true;
+    return;
   }
+
+  window.Level1LaunchRuntime = {
+    running: false,
+    async start(config = {}) {
+      this.running = true;
+      window.NBGLevel1RuntimeReady = true;
+
+      return {
+        level: config.level || 'London Graffiti Run',
+        status: 'running'
+      };
+    },
+    stop() {
+      this.running = false;
+      window.NBGLevel1RuntimeReady = false;
+    }
+  };
 })();
