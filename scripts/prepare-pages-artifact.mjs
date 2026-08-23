@@ -61,6 +61,7 @@ const PUBLIC_DIRECTORIES = [
   'css',
   'data',
   'docs',
+  'game',
   'games',
   'img',
   'js',
@@ -90,10 +91,32 @@ async function exists(filePath) {
   }
 }
 
+function shouldCopyIntoArtifact(sourcePath) {
+  const relativeSourcePath = path.relative(repoRoot, sourcePath);
+  if (relativeSourcePath.startsWith('..') || path.isAbsolute(relativeSourcePath)) {
+    return false;
+  }
+
+  const pathSegments = relativeSourcePath.split(path.sep);
+  if (pathSegments.includes('test') || pathSegments.includes('tests')) {
+    return false;
+  }
+
+  const lowerName = path.basename(sourcePath).toLowerCase();
+  if (lowerName.includes('.test.') || lowerName.includes('.spec.')) {
+    return false;
+  }
+
+  return true;
+}
+
 async function copyIfExists(source, target) {
   if (!(await exists(source))) return false;
   await mkdir(path.dirname(target), { recursive: true });
-  await cp(source, target, { recursive: true });
+  await cp(source, target, {
+    recursive: true,
+    filter: shouldCopyIntoArtifact,
+  });
   return true;
 }
 
