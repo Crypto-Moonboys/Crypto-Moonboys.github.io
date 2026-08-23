@@ -1,0 +1,15 @@
+{
+  "level": "London Graffiti Street",
+  "tileSize": 16,
+  "collision": [
+    {"x":0,"y":10,"w":40,"h":1,"type":"ground"},
+    {"x":8,"y":7,"w":4,"h":1,"type":"platform"},
+    {"x":18,"y":6,"w":5,"h":1,"type":"platform"},
+    {"x":30,"y":8,"w":6,"h":1,"type":"platform"}
+  ],
+  "entities": [
+    {"type":"rat","x":22,"y":9},
+    {"type":"checkpoint","x":35,"y":7},
+    {"type":"finish","x":40,"y":9}
+  ]
+}
