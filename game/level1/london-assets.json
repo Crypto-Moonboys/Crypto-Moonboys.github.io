@@ -1,0 +1,17 @@
+{
+  "level": "London Graffiti Run",
+  "theme": "SNES upscale",
+  "layers": [
+    "sky",
+    "clouds",
+    "london_skyline",
+    "graffiti_wall",
+    "foreground"
+  ],
+  "sprites": {
+    "player": "nbg_runner_sprite_sheet.png",
+    "coins": "coin_sheet.png",
+    "enemies": "london_graffiti_enemy_sprite_sheet.png"
+  },
+  "tileSize": 16
+}
