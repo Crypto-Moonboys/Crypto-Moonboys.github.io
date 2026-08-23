@@ -1,0 +1,20 @@
+{
+  "name": "NBG London Graffiti Run Integration Test",
+  "stage": "first-full-runtime-test",
+  "flow": [
+    "title-screen",
+    "start-button",
+    "demo-launch",
+    "level1-runtime",
+    "render-pipeline",
+    "player-controller",
+    "xp-system"
+  ],
+  "checks": {
+    "canvasLoads": true,
+    "levelInitialises": true,
+    "playerSpawns": true,
+    "xpUpdates": true,
+    "finishEvent": true
+  }
+}
