@@ -1,0 +1,42 @@
+{
+  "asset": "london-environment-pack",
+  "target_style": "modern upscaled SNES pixel art",
+  "viewport": "320x180",
+  "layers": [
+    {
+      "name": "sky",
+      "file": "london-sky.png",
+      "purpose": "night gradient background"
+    },
+    {
+      "name": "moon",
+      "file": "london-moon.png",
+      "purpose": "parallax moon layer"
+    },
+    {
+      "name": "skyline",
+      "file": "london-skyline.png",
+      "purpose": "London silhouette with landmarks"
+    },
+    {
+      "name": "graffiti_wall",
+      "file": "graffiti-wall.png",
+      "purpose": "street graffiti gameplay layer"
+    },
+    {
+      "name": "street_tiles",
+      "file": "street-tiles.png",
+      "purpose": "16x16 tile collision surface"
+    },
+    {
+      "name": "foreground",
+      "file": "foreground.png",
+      "purpose": "near camera details"
+    }
+  ],
+  "export": {
+    "format": "png",
+    "transparent_layers": true,
+    "pixel_scale": "3x"
+  }
+}
