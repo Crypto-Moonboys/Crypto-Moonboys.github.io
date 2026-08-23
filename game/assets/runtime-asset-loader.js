@@ -2,11 +2,15 @@
 // Loads registered assets for Level 1 London Graffiti Run.
 
 import { NBGAssetRegistry } from './asset-registry.js';
+import { NBGRunnerAssetBinding } from './player/nbg-runner-asset-binding.js';
 
 export class RuntimeAssetLoader {
   constructor(registry = NBGAssetRegistry) {
     this.assets = {};
-    this.registry = registry;
+    this.registry = {
+      ...registry,
+      'nbg-runner': NBGRunnerAssetBinding.src
+    };
   }
 
   async loadManifest(path = './assets/sprite-manifest.json') {
