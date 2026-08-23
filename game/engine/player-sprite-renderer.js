@@ -1,12 +1,12 @@
 // NBG Runner sprite renderer
-// Draws the current animation frame selected by player animation runtime.
-// Uses animation controller output for sprite frame selection.
+// Browser runtime sprite renderer for NBG Runner.
 
-export class PlayerSpriteRenderer {
+class PlayerSpriteRenderer {
   constructor(assetLoader, animationController = null) {
     this.assetLoader = assetLoader;
     this.animationController = animationController;
     this.spriteKey = 'nbg-runner';
+    this.ready = false;
   }
 
   init() {
@@ -16,14 +16,14 @@ export class PlayerSpriteRenderer {
   draw(ctx, player) {
     if (!this.ready || !player) return;
 
-    const sprite = this.assetLoader.get(this.spriteKey);
+    const sprite = this.assetLoader?.get(this.spriteKey);
 
-    if (!sprite || !sprite.complete || sprite.naturalWidth === 0) {
+    if (!sprite || !sprite.complete) {
       ctx.fillRect(player.x, player.y, 16, 24);
       return;
     }
 
-    const animation = this.animationController?.getCurrentAnimation();
+    const animation = this.animationController?.getCurrentAnimation?.();
     const frame = this.animationController?.getFrame?.() || 0;
 
     const frameWidth = animation?.frameWidth || player.frameWidth || 32;
@@ -43,3 +43,5 @@ export class PlayerSpriteRenderer {
     );
   }
 }
+
+window.PlayerSpriteRenderer = PlayerSpriteRenderer;
