@@ -1,0 +1,12 @@
+{
+  "package": "NBG London Graffiti Run UI",
+  "status": "awaiting-art-import",
+  "assets": {
+    "title_screen": "title-screen.png",
+    "hud": "hud.png",
+    "leaderboard": "leaderboard.png",
+    "mobile_controls": "mobile-controls.png"
+  },
+  "style": "modern upscaled SNES pixel art",
+  "format": "transparent PNG"
+}
