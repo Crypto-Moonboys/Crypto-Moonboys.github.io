@@ -1,0 +1,26 @@
+{
+  "name": "NBG London Graffiti Run Level 1 Final Scene Shot List",
+  "purpose": "Defines the first visual mockup pass before final PNG production",
+  "shots": [
+    {
+      "id": "shot_01_start",
+      "description": "NBG Runner starting in a London graffiti street at night",
+      "layers": ["sky", "moon", "skyline", "graffiti-wall", "street", "foreground"]
+    },
+    {
+      "id": "shot_02_action",
+      "description": "NBG Runner collecting XP coins while avoiding enemies",
+      "elements": ["nbg-runner", "xp-coins", "london-rat"]
+    },
+    {
+      "id": "shot_03_finish",
+      "description": "Rooftop finish area with checkpoint and London landmark backdrop",
+      "elements": ["finish-flag", "checkpoint", "london-skyline"]
+    }
+  ],
+  "export": {
+    "viewport": "320x180",
+    "style": "modern upscaled SNES pixel art",
+    "format": "PNG"
+  }
+}
