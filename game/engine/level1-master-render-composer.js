@@ -24,4 +24,4 @@ class Level1MasterRenderComposer {
   }
 }
 
-export default Level1MasterRenderComposer;
+window.Level1MasterRenderComposer = Level1MasterRenderComposer;
