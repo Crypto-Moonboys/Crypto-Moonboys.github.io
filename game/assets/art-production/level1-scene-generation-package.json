@@ -1,0 +1,22 @@
+{
+  "name": "NBG London Graffiti Run Level 1 Scene Generation Package",
+  "viewport": "320x180",
+  "style": "modern upscaled SNES pixel art",
+  "scene": "London graffiti street run",
+  "layers": [
+    "london-sky",
+    "london-moon",
+    "london-skyline",
+    "graffiti-wall",
+    "street-tiles",
+    "foreground"
+  ],
+  "entities": [
+    "nbg-runner",
+    "xp-coins",
+    "london-rat",
+    "pigeon",
+    "graffiti-bot"
+  ],
+  "goal": "Create first complete Level 1 visual mockup"
+}
