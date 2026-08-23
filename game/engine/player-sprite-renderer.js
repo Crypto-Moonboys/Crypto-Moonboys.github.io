@@ -22,12 +22,17 @@ export class PlayerSpriteRenderer {
       return;
     }
 
+    const frameWidth = player.frameWidth || 32;
+    const frameHeight = player.frameHeight || 48;
+    const frameX = (player.frameX || 0) * frameWidth;
+    const frameY = (player.frameY || 0) * frameHeight;
+
     ctx.drawImage(
       sprite,
-      player.frameX || 0,
-      player.frameY || 0,
-      player.frameWidth || 32,
-      player.frameHeight || 48,
+      frameX,
+      frameY,
+      frameWidth,
+      frameHeight,
       player.x,
       player.y,
       32,
