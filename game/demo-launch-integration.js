@@ -18,7 +18,7 @@
   window.startNBGGame = startNBGGame;
 
   document.addEventListener('DOMContentLoaded', function () {
-    const button = document.getElementById('start-game');
+    const button = document.getElementById('start');
     if (button) {
       button.addEventListener('click', startNBGGame);
     }
