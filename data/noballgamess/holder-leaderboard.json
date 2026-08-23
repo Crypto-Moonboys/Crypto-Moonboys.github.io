@@ -1,6 +1,6 @@
 {
   "collection": "noballgamess",
-  "generated_at": "2026-08-22T04:00:21.512Z",
+  "generated_at": "2026-08-23T04:05:08.735Z",
   "ranking_formula": {
     "source_of_truth": "AtomicAssets",
     "atomichub_usage": "reference_links_only",
@@ -37,7 +37,7 @@
     },
     {
       "owner": "pepperstake",
-      "live_assets": 1122
+      "live_assets": 1123
     },
     {
       "owner": "q4oia.wam",
@@ -768,10 +768,6 @@
       "live_assets": 3
     },
     {
-      "owner": "d1uqy.wam",
-      "live_assets": 2
-    },
-    {
       "owner": "5qtbm.wam",
       "live_assets": 2
     },
@@ -1338,6 +1334,10 @@
     {
       "owner": "hjxb4.wam",
       "live_assets": 2
+    },
+    {
+      "owner": "d1uqy.wam",
+      "live_assets": 1
     },
     {
       "owner": "qooei.wam",
