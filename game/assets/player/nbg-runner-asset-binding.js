@@ -1,20 +1,11 @@
 // NBG Runner real asset binding
-// Connects the first player artwork asset to the runtime loader.
+// Generated mirror entry point. Player sprite authority lives in asset-manifest.json.
 
-(function () {
-  window.NBGPlayerAsset = {
-    key: 'nbg-runner',
-    source: './assets/player/nbg-runner-sheet.svg',
-    frames: {
-      width: 32,
-      height: 48
-    },
-    animations: {
-      idle: 4,
-      run: 6,
-      jump: 2,
-      spray: 4,
-      hit: 2
-    }
-  };
-})();
+export const NBGRunnerAssetBinding = {
+  key: 'nbg-runner',
+  manifest: './assets/asset-manifest.json'
+};
+
+if (typeof window !== 'undefined') {
+  window.NBGPlayerAsset = NBGRunnerAssetBinding;
+}

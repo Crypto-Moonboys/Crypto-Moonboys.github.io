@@ -5,19 +5,32 @@
   "player": {
     "spriteSheet": "player/nbg-runner-sprite-sheet.svg",
     "frameWidth": 32,
-    "frameHeight": 32,
+    "frameHeight": 48,
+    "anchor": { "x": 16, "y": 33 },
     "animations": {
-      "idle": 4,
-      "run": 4,
-      "jump": 4,
-      "spray": 4,
-      "hit": 4
+      "idle": { "row": 0, "frames": 4, "frameMs": 145 },
+      "run": { "row": 1, "frames": 6, "frameMs": 88 },
+      "jump": { "row": 2, "frames": 1, "frameMs": 145 },
+      "fall": { "row": 3, "frames": 1, "frameMs": 145 },
+      "spray": { "row": 4, "frames": 4, "frameMs": 110 },
+      "hurt": { "row": 5, "frames": 2, "frameMs": 120 },
+      "win": { "row": 6, "frames": 2, "frameMs": 145 }
+    },
+    "aliases": {
+      "tag": "spray",
+      "celebrate": "win"
     },
     "hitbox": { "width": 24, "height": 34 }
   },
   "world": {
     "tileSize": 16,
     "width": 2200,
+    "layerNames": [
+      "sky",
+      "london-skyline",
+      "graffiti-wall",
+      "street"
+    ],
     "layers": [
       "world/london-sky-layer.svg",
       "world/london-skyline-layer.svg",

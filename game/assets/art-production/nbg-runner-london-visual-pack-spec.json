@@ -5,7 +5,7 @@
   "resolution": "320x180 viewport",
   "player": {
     "sprite_size": "32x48",
-    "animations": ["idle_4_frames", "run_6_frames", "jump_2_frames", "spray_4_frames", "hit_2_frames"]
+    "animations": ["idle_4_frames", "run_6_frames", "jump_1_frame", "fall_1_frame", "spray_4_frames", "hurt_2_frames", "win_2_frames"]
   },
   "environment": {
     "layers": [

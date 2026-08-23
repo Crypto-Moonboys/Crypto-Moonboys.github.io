@@ -7,8 +7,10 @@ Required:
 - idle frames
 - run frames
 - jump frames
+- fall frames
 - spray frames
-- hit frames
+- hurt frames
+- win frames
 
 Style:
 - SNES inspired

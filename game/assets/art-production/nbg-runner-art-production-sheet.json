@@ -7,9 +7,11 @@
   "animations": {
     "idle": {"frames": 4},
     "run": {"frames": 6},
-    "jump": {"frames": 2},
+    "jump": {"frames": 1},
+    "fall": {"frames": 1},
     "spray": {"frames": 4},
-    "hit": {"frames": 2}
+    "hurt": {"frames": 2},
+    "win": {"frames": 2}
   },
   "game_actions": [
     "move",

@@ -10,13 +10,18 @@ const Level1PlayerAnimationRuntime = {
     this.animationController = animationController;
   },
 
+  bind(player, animationController = this.animationController || (typeof window !== 'undefined' ? window.NBGAnimationController : null)) {
+    this.init(player, animationController);
+    return !!this.player && !!this.animationController;
+  },
+
   update() {
     if (!this.player || !this.animationController) return;
 
-    if (this.player.hit) {
-      this.animationController.setState('hit');
+    if (this.player.hurt || this.player.hit) {
+      this.animationController.setState('hurt');
     } else if (!this.player.grounded) {
-      this.animationController.setState('jump');
+      this.animationController.setState(this.player.velocityY > 0 ? 'fall' : 'jump');
     } else if (this.player.velocityX !== 0) {
       this.animationController.setState('run');
     } else {
@@ -24,3 +29,7 @@ const Level1PlayerAnimationRuntime = {
     }
   }
 };
+
+if (typeof window !== 'undefined') {
+  window.Level1PlayerAnimationRuntime = Level1PlayerAnimationRuntime;
+}

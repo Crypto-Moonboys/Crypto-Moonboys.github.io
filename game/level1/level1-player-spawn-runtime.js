@@ -12,11 +12,14 @@
         frameY: 0,
         frameWidth: 32,
         frameHeight: 48,
+        grounded: true,
+        velocityX: 0,
+        velocityY: 0,
         animation: 'idle'
       };
 
       if (window.Level1PlayerAnimationRuntime) {
-        window.Level1PlayerAnimationRuntime.bind(player);
+        window.Level1PlayerAnimationRuntime.bind(player, options.animationController || window.NBGAnimationController);
       }
 
       return player;

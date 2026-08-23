@@ -41,7 +41,7 @@ class Level1Controller {
   }
 
   render(context) {
-    this.playerRenderer?.draw(context, this.player);
+    this.playerRenderer?.render(context, this.player);
   }
 
   stop() {
