@@ -95,15 +95,25 @@ function runtimeAnimationContract(playerManifest) {
 
 const canonicalFrameCounts = { idle: 4, run: 6, jump: 1, fall: 1, spray: 4, hurt: 2, win: 2 };
 const assetManifest = readJson('game/assets/asset-manifest.json');
-const spriteManifest = readJson('game/assets/sprite-manifest.json');
 const playerAnimationManifest = readJson('game/assets/player/nbg-runner-animation-manifest.json');
 const canonicalPlayerAnimations = assetManifest.player.animations;
 const canonicalRuntimeAnimations = runtimeAnimationContract(assetManifest.player);
+
+assert.equal(
+  fs.existsSync(path.resolve(process.cwd(), 'game/assets/sprite-manifest.json')),
+  false,
+  'sprite-manifest.json must not exist as a second animation authority'
+);
 
 assert.deepEqual(
   animationFrameCounts(canonicalPlayerAnimations),
   canonicalFrameCounts,
   'asset-manifest.json must define the canonical player frame counts'
+);
+assert.deepEqual(
+  assetManifest.world.layerNames,
+  ['sky', 'london-skyline', 'graffiti-wall', 'street'],
+  'asset-manifest.json must define the canonical render layer names'
 );
 assert.deepEqual(
   playerAnimationManifest.animations,
@@ -130,24 +140,13 @@ assert.deepEqual(
   assetManifest.player.aliases,
   'player animation manifest aliases must mirror asset-manifest.json'
 );
-assert.deepEqual(
-  spriteManifest.sprites.player,
-  {
-    name: 'NBG Runner',
-    sheet: assetManifest.player.spriteSheet,
-    frameWidth: assetManifest.player.frameWidth,
-    frameHeight: assetManifest.player.frameHeight,
-    anchor: assetManifest.player.anchor,
-    animations: assetManifest.player.animations,
-    aliases: assetManifest.player.aliases
-  },
-  'sprite-manifest player entry must mirror asset-manifest.json'
-);
-
 const runtimeSource = fs.readFileSync(path.resolve(process.cwd(), 'game/nbg-level1.js'), 'utf8');
 const playerRendererSource = fs.readFileSync(path.resolve(process.cwd(), 'game/engine/player-sprite-renderer.js'), 'utf8');
 const playerControllerSource = fs.readFileSync(path.resolve(process.cwd(), 'game/engine/player-animation-controller.js'), 'utf8');
 const playerBindingSource = fs.readFileSync(path.resolve(process.cwd(), 'game/assets/player/nbg-runner-asset-binding.js'), 'utf8');
+const runtimeAssetLoaderSource = fs.readFileSync(path.resolve(process.cwd(), 'game/assets/runtime-asset-loader.js'), 'utf8');
+const level1RenderBridgeSource = fs.readFileSync(path.resolve(process.cwd(), 'game/engine/level1-render-bridge.js'), 'utf8');
+const levelRenderPipelineSource = fs.readFileSync(path.resolve(process.cwd(), 'game/engine/level-render-pipeline.js'), 'utf8');
 const playerAnimationRuntimeSource = fs.readFileSync(path.resolve(process.cwd(), 'game/level1/level1-player-animation-runtime.js'), 'utf8');
 const playerSpawnRuntimeSource = fs.readFileSync(path.resolve(process.cwd(), 'game/level1/level1-player-spawn-runtime.js'), 'utf8');
 assert.equal(
@@ -172,6 +171,21 @@ assert.equal(
   false,
   'canonical runtime must use manifest anchor metadata instead of magic vertical offsets'
 );
+assert.equal(
+  [runtimeSource, runtimeAssetLoaderSource, level1RenderBridgeSource, levelRenderPipelineSource].some(source => source.includes('sprite-manifest')),
+  false,
+  'runtime loaders and render bridges must use asset-manifest.json instead of sprite-manifest.json'
+);
+assert.equal(
+  runtimeAssetLoaderSource.includes('manifest.world.layerNames'),
+  true,
+  'runtime asset loader must register world layers from asset-manifest.json layerNames'
+);
+assert.equal(
+  levelRenderPipelineSource.includes('manifest?.world?.layerNames'),
+  true,
+  'render pipeline layer names must come from asset-manifest.json'
+);
 
 const animationControllerContext = { window: {} };
 vm.runInNewContext(playerControllerSource, animationControllerContext);
@@ -188,12 +202,31 @@ assert.equal(
 
 const level1AnimationContext = { window: {} };
 vm.runInNewContext(playerAnimationRuntimeSource, level1AnimationContext);
+level1AnimationContext.window.NBGAnimationController = {
+  state: null,
+  setState(state) {
+    this.state = state;
+  }
+};
 vm.runInNewContext(playerSpawnRuntimeSource, level1AnimationContext);
 const spawnedPlayer = level1AnimationContext.window.Level1PlayerSpawnRuntime.create({ x: 12, y: 34 });
 assert.equal(
   level1AnimationContext.window.Level1PlayerAnimationRuntime.player,
   spawnedPlayer,
   'Level1PlayerSpawnRuntime must connect spawned players through Level1PlayerAnimationRuntime.bind'
+);
+assert.equal(
+  level1AnimationContext.window.Level1PlayerAnimationRuntime.animationController,
+  level1AnimationContext.window.NBGAnimationController,
+  'Level1PlayerAnimationRuntime.bind must connect the real NBGAnimationController'
+);
+spawnedPlayer.grounded = false;
+spawnedPlayer.velocityY = 3;
+level1AnimationContext.window.Level1PlayerAnimationRuntime.update();
+assert.equal(
+  level1AnimationContext.window.NBGAnimationController.state,
+  'fall',
+  'Level1PlayerAnimationRuntime.update must drive NBGAnimationController from spawned player state'
 );
 
 let browser;

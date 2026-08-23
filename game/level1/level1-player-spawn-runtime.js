@@ -19,7 +19,7 @@
       };
 
       if (window.Level1PlayerAnimationRuntime) {
-        window.Level1PlayerAnimationRuntime.bind(player);
+        window.Level1PlayerAnimationRuntime.bind(player, options.animationController || window.NBGAnimationController);
       }
 
       return player;

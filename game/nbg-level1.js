@@ -148,7 +148,7 @@
       if (frameCount <= 1) return true;
 
       player.frameTime += dt;
-      while (player.frameTime > frameMs) {
+      while (player.frameTime >= frameMs) {
         if (!loop && player.frame >= frameCount - 1) {
           player.frameTime = 0;
           return true;

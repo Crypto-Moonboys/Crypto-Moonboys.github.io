@@ -19,16 +19,17 @@ export class RuntimeAssetLoader {
 
   createRegistryFromManifest(manifest) {
     if (!manifest?.player) return {};
+    const layerNames = manifest.world.layerNames || ['sky', 'london-skyline', 'graffiti-wall', 'street'];
+    const worldEntries = Object.fromEntries(
+      layerNames.map((name, index) => [name, `./assets/${manifest.world.layers[index]}`])
+    );
 
     return {
       'nbg-runner': `./assets/${manifest.player.spriteSheet}`,
       coin: `./assets/${manifest.objects.xpCoin}`,
       checkpoint: `./assets/${manifest.objects.checkpoint}`,
       finish: `./assets/${manifest.objects.finishFlag}`,
-      sky: `./assets/${manifest.world.layers[0]}`,
-      skyline: `./assets/${manifest.world.layers[1]}`,
-      wall: `./assets/${manifest.world.layers[2]}`,
-      street: `./assets/${manifest.world.layers[3]}`,
+      ...worldEntries,
       rat: `./assets/${manifest.enemies.londonRat}`,
       pigeon: `./assets/${manifest.enemies.pigeon}`,
       bot: `./assets/${manifest.enemies.graffitiBot}`

@@ -12,14 +12,8 @@ export class LevelRenderPipeline {
   async loadScene(manifest) {
     await this.assetLoader.loadManifest(manifest);
 
-    this.layers = [
-      'sky',
-      'moon',
-      'london-skyline',
-      'graffiti-wall',
-      'street',
-      'foreground'
-    ];
+    this.layers = (this.assetLoader.manifest?.world?.layerNames || [])
+      .filter(layer => Object.prototype.hasOwnProperty.call(this.assetLoader.registry || {}, layer));
 
     return true;
   }

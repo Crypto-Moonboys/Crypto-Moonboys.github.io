@@ -10,9 +10,9 @@ const Level1PlayerAnimationRuntime = {
     this.animationController = animationController;
   },
 
-  bind(player, animationController = this.animationController) {
+  bind(player, animationController = this.animationController || (typeof window !== 'undefined' ? window.NBGAnimationController : null)) {
     this.init(player, animationController);
-    return player;
+    return !!this.player && !!this.animationController;
   },
 
   update() {

@@ -10,7 +10,7 @@ export class Level1RenderBridge {
   }
 
   async init() {
-    await this.assets.loadManifest('assets/sprite-manifest.json');
+    await this.assets.loadManifest('assets/asset-manifest.json');
     this.renderer.attachAssets(this.assets);
     this.runtime.attachRenderer(this.renderer);
     this.ready = true;
