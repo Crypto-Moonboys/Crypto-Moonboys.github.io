@@ -1,0 +1,27 @@
+{
+  "level": "London Graffiti",
+  "version": 1,
+  "theme": "night_city",
+  "viewport": {
+    "width": 320,
+    "height": 180
+  },
+  "player": {
+    "start": {"x":32,"y":120},
+    "sprite":"nbg_runner"
+  },
+  "xp": {
+    "coinValue":10,
+    "leaderboardOnly":true
+  },
+  "objects": [
+    {"type":"coin","x":80,"y":90},
+    {"type":"coin","x":120,"y":70},
+    {"type":"pipe","x":180,"y":120},
+    {"type":"checkpoint","x":240,"y":100},
+    {"type":"finish","x":300,"y":100}
+  ],
+  "enemies": [
+    {"type":"rat","x":150,"y":130}
+  ]
+}
