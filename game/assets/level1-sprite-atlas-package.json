@@ -1,0 +1,17 @@
+{
+  "name": "NBG London Level 1 Sprite Atlas",
+  "version": "0.1.0",
+  "style": "modern_upscaled_snes_pixel_art",
+  "atlas": {
+    "player": "player/nbg-runner-sheet.png",
+    "world": "world/london-environment-sheet.png",
+    "objects": "objects/level1-objects-sheet.png",
+    "enemies": "enemies/london-enemies-sheet.png",
+    "ui": "ui/game-ui-sheet.png"
+  },
+  "render": {
+    "tileSize": 16,
+    "viewport": "320x180",
+    "scale": 3
+  }
+}
