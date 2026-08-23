@@ -7,12 +7,18 @@ const leaderboard = fs.readFileSync(new URL('../crypto-moonboy-pets-leaderboard.
 const community = fs.readFileSync(new URL('../community.html', import.meta.url), 'utf8');
 const games = fs.readFileSync(new URL('../games/index.html', import.meta.url), 'utf8');
 const petSurfaceScript = fs.readFileSync(new URL('../js/crypto-moonboy-pets.js', import.meta.url), 'utf8');
+const miniAppScript = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
 const index = JSON.parse(fs.readFileSync(new URL('../js/wiki-index.json', import.meta.url), 'utf8'));
 
 assert.ok(wikiPage.includes('Crypto Moonboy Pets'), 'wiki page must name Crypto Moonboy Pets');
 assert.ok(wikiPage.includes('/how-to-play-crypto-moonboy-pets.html'), 'wiki page must link How To Play page');
 assert.ok(wikiPage.includes('/crypto-moonboy-pets-leaderboard.html'), 'wiki page must link pet leaderboard');
 assert.ok(wikiPage.includes('Community XP'), 'wiki page must explain Community XP sync');
+assert.ok(wikiPage.includes('Coming Soon Roadmap'), 'wiki page must highlight roadmap systems');
+for (const futureSystem of ['Advanced Traits', 'Breeding', 'Lineage', 'Fusion', 'Sanctuary', 'Prestige']) {
+  assert.ok(wikiPage.includes(futureSystem), `wiki page must list future system ${futureSystem}`);
+}
+assert.ok(wikiPage.includes('issue #1256'), 'wiki page must link the detailed roadmap issue');
 
 for (const command of ['/adopt', '/feed', '/train', '/petrun', '/petextract', '/petadventure', '/petbag', '/petuse moon_snack', '/petwork courier', '/petdaily', '/petevent', '/petnotify on', '/petarena', '/petstart train', '/petactivity', '/petclaim', '/petcancel']) {
   assert.ok(howTo.includes(command), `How To Play must explain ${command}`);
@@ -24,10 +30,16 @@ assert.ok(howTo.includes('Food, Toy and Outfit'), 'How To Play must define care 
 assert.ok(howTo.includes('Armor, Weapon and Charm'), 'How To Play must define battle slots');
 assert.ok(howTo.includes('Changing one does not reset the other'), 'How To Play must state loadouts are independent');
 assert.ok(howTo.includes('Empty battle slots display') && howTo.includes('<strong>none</strong>'), 'How To Play must explain empty battle slots');
-assert.ok(howTo.includes('Pet Arena unlocks when your active Moonpet has hatched and reaches level 10'), 'docs mention Pet Arena hatch and level unlock');
+assert.ok(howTo.includes('completed Season pet') && howTo.includes('level 10 active Moonpet'), 'docs mention the current Arena unlock gates');
 assert.ok(howTo.includes('Pet Arena equipment') || howTo.includes('Gear Shop'), 'docs explain the Arena equipment shop');
 assert.ok(howTo.includes('Pet XP'), 'How To Play must explain pet XP');
 assert.ok(howTo.includes('Community XP'), 'How To Play must explain Community XP');
+assert.ok(howTo.includes('Current Build In Moonpet OS'), 'How To Play must show the current build section');
+assert.ok(howTo.includes('Coming Soon Roadmap'), 'How To Play must show the roadmap section');
+assert.ok(howTo.includes('Pet, Care, Daily Journey, Weekly Journey, Jobs, Runs, Equipment, Arena, Kaiju and Progression'), 'How To Play must name the current gameplay priorities');
+for (const futureSystem of ['Advanced Traits', 'Breeding', 'Lineage', 'Fusion', 'Sanctuary', 'Prestige']) {
+  assert.ok(howTo.includes(futureSystem), `How To Play must keep ${futureSystem} in the coming-soon list`);
+}
 assert.ok(howTo.includes('lucky_charm') && howTo.includes('consumed when it boosts a run'), 'How To Play must explain lucky_charm run consumption');
 assert.ok(howTo.includes('game-only rewards') && howTo.includes('game currencies'), 'How To Play must keep rewards framed as game progression');
 assert.ok(!howTo.toLowerCase().includes('financial'), 'How To Play must avoid financial wording');
@@ -71,6 +83,8 @@ assert.ok(petSurfaceScript.includes("formatLoadoutValue(pet.equipped_armor, 'non
 assert.ok(petSurfaceScript.includes("formatLoadoutValue(pet.equipped_weapon, 'none')"), 'empty weapon slot must render as none');
 assert.ok(!petSurfaceScript.includes("formatLoadoutValue(pet.equipped_armor, 'starter')"), 'empty armor slot must not invent starter gear');
 assert.ok(!petSurfaceScript.includes("formatLoadoutValue(pet.equipped_weapon, 'starter')"), 'empty weapon slot must not invent starter gear');
+assert.ok(miniAppScript.includes('Daily Journey and Weekly Journey'), 'Mini App guide must mention current Journey systems');
+assert.ok(miniAppScript.includes('Advanced Traits, Breeding, Lineage, Fusion, Sanctuary and Prestige remain coming soon'), 'Mini App guide must keep roadmap systems marked as coming soon');
 
 const entry = index.find((item) => item.url === '/wiki/crypto-moonboy-pets.html');
 assert.ok(entry, 'Crypto Moonboy Pets must be present in js/wiki-index.json');

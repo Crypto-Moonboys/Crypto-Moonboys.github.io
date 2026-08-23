@@ -582,14 +582,14 @@
 
   function guideMarkup() {
     var combatGuideCopy = hasCombatUnlocked()
-      ? 'Kaiju is available for hatched active Moonpets; Arena opens at level 10.'
-      : 'Arena and Kaiju stay locked until you adopt and hatch an active Moonpet.';
+      ? 'Arena and Kaiju are part of the current build. Arena still needs a level 10 active Moonpet.'
+      : 'Arena and Kaiju are current-build systems, but live access stays locked until you complete a Season pet and hatch an active Moonpet.';
     return '<div class="guide-step"><strong>1 // WAKE THE EGG</strong>Initialise your Moon Egg, then use at least three kinds of incubation care. Your care pattern shapes the hatch.</div>' +
-      '<div class="guide-step"><strong>2 // KEEP NEEDS STABLE</strong>Feed, play, clean and rest. Training, care and daily routines build Pet XP, specialist XP, traits and equipment mastery.</div>' +
-      '<div class="guide-step"><strong>3 // FOLLOW THE ROUTE</strong>The PET screen recommends the best next move. TASKS contains daily missions and achievements.</div>' +
-      '<div class="guide-step"><strong>4 // EXPLORE THE CITY</strong>Districts show an objective, opponent and three risk routes; Stories offer two authored choices. ' + combatGuideCopy + ' Moon Run reaches 100 rooms—extract to bank unbanked rewards.</div>' +
-      '<div class="guide-step"><strong>5 // BUILD YOUR LOADOUT</strong>WORK runs timed activities and jobs. GEAR contains equipment, materials, bounties, market offers, inventory and upgrades.</div>' +
-      '<div class="guide-step"><strong>6 // EVOLVE YOUR IDENTITY</strong>CORE tracks personality, memories, evolution, season rewards and hidden rare-morph signals.</div>' +
+      '<div class="guide-step"><strong>2 // PLAY THE CURRENT BUILD</strong>PET handles care, TASKS tracks Daily Journey and Weekly Journey, WORK covers jobs and timers, and RUN handles bosses plus Moon Run.</div>' +
+      '<div class="guide-step"><strong>3 // KEEP NEEDS STABLE</strong>Feed, play, clean and rest. Training, care and daily routines build Pet XP, specialist XP, personality, aptitudes and equipment mastery.</div>' +
+      '<div class="guide-step"><strong>4 // FOLLOW THE ROUTE</strong>The PET screen recommends the best next move. Daily Journey, Weekly Journey, missions and achievements are current gameplay priorities.</div>' +
+      '<div class="guide-step"><strong>5 // BUILD YOUR LOADOUT</strong>GEAR contains equipment, materials, bounties, market offers, inventory and upgrades. ' + combatGuideCopy + ' Moon Run reaches 100 rooms—extract to bank unbanked rewards.</div>' +
+      '<div class="guide-step"><strong>6 // IDENTITY AND ROADMAP</strong>CORE tracks personality, aptitudes, memories, evolution and season rewards. Advanced Traits, Breeding, Lineage, Fusion, Sanctuary and Prestige remain coming soon.</div>' +
       '<div class="guide-step"><strong>CURRENCIES</strong>Pet XP raises level. Moon Gold buys common upgrades. Gems unlock premium routes. Style unlocks cosmetics. Energy powers demanding actions.</div>' +
       '<div class="button-grid one"><button type="button" class="terminal-button" data-open-full-guide>OPEN COMPLETE WEBSITE GUIDE</button></div>';
   }
