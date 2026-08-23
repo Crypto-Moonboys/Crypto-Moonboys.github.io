@@ -3,6 +3,12 @@
 
 window.NBGDemo = window.NBGDemo || {};
 
+window.NBGLevel1Boot = {
+  start() {
+    return NBGDemo.startLevel1();
+  }
+};
+
 NBGDemo.startLevel1 = function () {
   if (window.Level1LaunchRuntime) {
     return window.Level1LaunchRuntime.start();
