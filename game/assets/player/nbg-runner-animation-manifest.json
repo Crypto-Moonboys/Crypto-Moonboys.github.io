@@ -1,0 +1,22 @@
+{
+  "character": "NBG Runner",
+  "spriteSheet": "nbg-runner.png",
+  "frameSize": {
+    "width": 32,
+    "height": 48
+  },
+  "animations": {
+    "idle": {"frames": 4, "speed": 8},
+    "run": {"frames": 6, "speed": 10},
+    "jump": {"frames": 2, "speed": 6},
+    "spray": {"frames": 4, "speed": 8},
+    "hit": {"frames": 2, "speed": 4}
+  },
+  "states": {
+    "idle": "player_idle",
+    "moving": "player_run",
+    "airborne": "player_jump",
+    "tagging": "player_spray",
+    "damaged": "player_hit"
+  }
+}
