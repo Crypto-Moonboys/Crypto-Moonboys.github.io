@@ -1,0 +1,21 @@
+{
+  "level": "london-level-1",
+  "title": "NBG London Graffiti Run",
+  "viewport": "320x180",
+  "style": "modern-upscaled-snes-pixel-art",
+  "layers": [
+    "sky",
+    "moon",
+    "london-skyline",
+    "graffiti-wall",
+    "street",
+    "foreground"
+  ],
+  "entities": {
+    "player": "nbg-runner",
+    "collectibles": ["xp-coin"],
+    "enemies": ["rat", "pigeon", "graffiti-bot"],
+    "objects": ["platform", "pipe", "checkpoint", "finish-flag"]
+  },
+  "renderer": "level1-master-render-composer"
+}
