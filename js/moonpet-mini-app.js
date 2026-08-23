@@ -539,7 +539,7 @@
   var SECTION_JUMPS = {
     explore: [['districts', 'DISTRICTS'], ['moon-run', 'RUN'], ['weekly-boss', 'BOSS'], ['story-chains', 'STORIES'], ['seasonal-boss', 'RAID'], ['arena', 'ARENA'], ['kaiju', 'KAIJU']],
     economy: [['equipment', 'GEAR'], ['materials', 'MATERIALS'], ['bounties', 'BOUNTIES'], ['expedition', 'EXPEDITION'], ['market', 'MARKET'], ['shop', 'SHOP'], ['inventory', 'BAG'], ['trade', 'TRADE']],
-    profile: [['rare-morph', 'RARE'], ['memories', 'MEMORY'], ['callsign', 'NAME'], ['evolution', 'EVOLVE'], ['prestige', 'PRESTIGE'], ['season', 'SEASON'], ['leaderboard', 'RANKS']],
+    profile: [['rare-morph', 'RARE'], ['memories', 'MEMORY'], ['callsign', 'NAME'], ['evolution', 'EVOLVE'], ['season', 'SEASON'], ['leaderboard', 'RANKS']],
   };
 
   function utilityRail() {
@@ -1338,7 +1338,7 @@
     var growth = progression.growth_marks || {};
     var crests = progression.weekly_crests || {};
     var completion = progression.season_complete
-      ? '<div class="line complete"><strong>SEASON COMPLETE</strong> // SANCTUARY ELIGIBLE</div>'
+      ? '<div class="line complete"><strong>SEASON COMPLETE</strong></div>'
       : progression.legendary ? '<div class="line complete"><strong>LEGENDARY</strong> // SEASON JOURNEY STILL INCOMPLETE</div>'
         : '<div class="line muted"><strong>ROAD TO LEGENDARY</strong></div>';
     var variant = pet.variant ? '<div><span>VARIANT</span><strong>' + escapeHtml(words(pet.variant)) + '</strong></div>' : '';
@@ -1369,7 +1369,7 @@
     var journeyCrests = journey.weekly_crests || {};
     var nextEvolution = journeyLifecycle.next_evolution || {};
     var levelRequirement = journeyLifecycle.requirements && journeyLifecycle.requirements.pet_level || {};
-    var journeyStatus = journey.season_complete ? 'SEASON COMPLETE // SANCTUARY ELIGIBLE'
+    var journeyStatus = journey.season_complete ? 'SEASON COMPLETE'
       : journey.legendary ? 'LEGENDARY // SEASON JOURNEY STILL INCOMPLETE' : 'ROAD TO LEGENDARY';
     var lifecycleRequirement = journeyLifecycle.next_evolution ? 'LEVEL // ' + number(levelRequirement.current) + '/' + number(levelRequirement.required) + ' // EVOLUTION READY ' + (journeyLifecycle.evolution_ready ? 'YES' : 'NO // ' + words(journeyLifecycle.authority_reason || 'requirements not met')) : 'FINAL FORM REACHED';
     var journeyPanel = journey.pet_id ? '<div class="progression-split"><div><strong>LIFECYCLE // STAGE ' + number(journeyLifecycle.current_stage) + '/' + number(journeyLifecycle.total_stages) + '</strong><span>NEXT // ' + escapeHtml(nextEvolution.name || 'FINAL FORM REACHED') + '</span><span>' + lifecycleRequirement + '</span></div><div><strong>SEASON JOURNEY // WEEK ' + number(summary.current_season_week) + '</strong><span>GROWTH MARKS // ' + number(journeyGrowth.earned) + '/' + number(journeyGrowth.required) + '</span><span>WEEKLY CRESTS // ' + number(journeyCrests.earned) + '/' + number(journeyCrests.required) + '</span><span>' + journeyStatus + '</span></div></div>' : '<div class="line muted"><strong>PROGRESSION UNAVAILABLE</strong></div>';
@@ -1726,36 +1726,34 @@
       'CARE / EVENT / ADVENTURE / COMBAT // ' + number(memory.care_actions) + ' / ' + number(memory.event_actions) + ' / ' + number(memory.adventure_actions) + ' / ' + number(memory.combat_actions),
     ].filter(Boolean).map(function (line) { return '<div class="line">' + escapeHtml(line) + '</div>'; }).join('');
     var milestones = (memory.milestones || []).map(function (milestone) { return '<div class="line complete">◆ ' + escapeHtml(words(milestone)) + '</div>'; }).join('');
+    // TEST-EXPORT: futureSystemTitles:start
     var futureSystemTitles = {
       breeding: 'Breeding',
-      traits: 'Traits',
+      traits: 'Advanced Traits',
       sanctuary: 'Sanctuary',
       lineage: 'Lineage',
       fusion: 'Fusion',
-      arena: 'Arena',
-      kaiju: 'Kaiju',
       prestige: 'Prestige',
-      weekly_journey: 'Weekly Journey',
     };
+    // TEST-EXPORT: futureSystemTitles:end
     var capabilitySystems = state.capabilities_version === 1 && state.capabilities && state.capabilities.systems && typeof state.capabilities.systems === 'object'
       ? state.capabilities.systems
       : {};
     var futureSystems = Object.keys(futureSystemTitles).map(function (key) {
       var system = capabilitySystems[key] || {};
-      var status = String(system.state || 'LOCKED').toUpperCase();
-      var message = system.message || (status === 'COMING_SOON' ? 'Future expansion content. Not available yet.' : 'Current beta requirements not met.');
+      var status = String(system.state || 'COMING_SOON').toUpperCase();
+      var message = system.message || 'Future expansion content. Not available yet.';
       return {
         key: key,
         title: futureSystemTitles[key],
-        status: ['LOCKED', 'COMING_SOON', 'AVAILABLE'].includes(status) ? status : 'LOCKED',
+        status: ['LOCKED', 'COMING_SOON', 'AVAILABLE'].includes(status) ? status : 'COMING_SOON',
         detail: message,
       };
     });
-    var futureSystemRows = futureSystems.map(function (system) {
-      var status = String(system.status || 'LOCKED').toUpperCase();
-      var online = status === 'AVAILABLE';
-      var label = status === 'COMING_SOON' ? 'PLANNED EXPANSION' : status;
-      return '<div class="line ' + (online ? 'complete' : 'locked') + '">[' + escapeHtml(label) + '] ' + escapeHtml(system.title || system.key || 'Future System') + '</div><div class="line muted">' + escapeHtml(system.detail || '') + '</div>';
+    var futureSystemRows = futureSystems.filter(function (system) {
+      return system.key !== 'sanctuary' && system.key !== 'prestige';
+    }).map(function (system) {
+      return '<div class="line locked">[ROADMAP] ' + escapeHtml(system.title || system.key || 'Future System') + '</div><div class="line muted">' + escapeHtml(system.detail || '') + '</div>';
     }).join('');
     function futureSystemByKey(key, fallbackStatus) {
       return futureSystems.find(function (system) { return system.key === key; }) || {
@@ -1782,13 +1780,13 @@
     var innate = (lifecycle.innate_traits || []).map(function (trait) { return '<div class="line complete">◆ ' + escapeHtml(words(trait)) + '</div>'; }).join('');
     var rarePanel = '<div class="line ' + (rare.ready ? 'complete' : 'muted') + '">HIDDEN SIGNAL // ' + escapeHtml(words(rare.signal || 'dormant')) + ' // ' + number(rare.progress) + '%</div>' + (rare.name ? '<div class="line complete">REVEALED // ' + escapeHtml(rare.name) + '</div>' : '<div class="line muted">The route remains hidden until your evolution, traits and memories align.</div>') + (rare.ready ? '<div class="button-grid one">' + button('ANSWER RARE SIGNAL', 'rare_morph') + '</div>' : '');
     return activePetSummary() +
-      panel('IDENTITY CORE', '<div class="line complete">' + escapeHtml(lifecycle.species_name || identity.current_stage && identity.current_stage.name || words(state.pet.stage)) + ' // ' + escapeHtml(words(lifecycle.phase || 'companion')) + '</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT</div>' + innate + '<div class="line muted">LEARNED PERSONALITY</div>' + (traits || '<div class="line muted">TRAITS STILL FORMING. Trait expansion remains locked until completed Season pets.</div>')) + panel('HIDDEN MORPH SIGNAL', rarePanel, 'rare-morph') +
-      panel('LEARNED APTITUDES', aptitudeRows) +
+      panel('IDENTITY CORE', '<div class="line complete">' + escapeHtml(lifecycle.species_name || identity.current_stage && identity.current_stage.name || words(state.pet.stage)) + ' // ' + escapeHtml(words(lifecycle.phase || 'companion')) + '</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT</div>' + innate + '<div class="line muted">PERSONALITY</div>' + (traits || '<div class="line muted">TRAITS STILL FORMING. Personality develops through play.</div>')) + panel('HIDDEN MORPH SIGNAL', rarePanel, 'rare-morph') +
+      panel('APTITUDES', aptitudeRows) +
       panel('MEMORY ARCHIVE', memoryRows + (milestones || '<div class="line muted">NO MILESTONES RECORDED YET.</div>'), 'memories') +
       panel('CALLSIGN', '<label class="line" for="pet-name-input">MOONPET NAME</label><input id="pet-name-input" class="terminal-input" maxlength="32" value="' + escapeHtml(state.pet.pet_name || '') + '"><div class="button-grid one">' + button('WRITE NEW CALLSIGN', 'rename') + '</div>', 'callsign') +
       panel('EVOLUTION', evoHtml, 'evolution') + panel('FACTION PERK', '<div class="line complete">' + escapeHtml(words(faction.key || 'unaligned')) + '</div><div class="line muted">' + escapeHtml(faction.bonus ? words(faction.bonus.system) + ' // ' + costText(faction.bonus.effect) : 'JOIN A FACTION TO ACTIVATE A GAMEPLAY BONUS') + '</div>', 'faction') +
-      panel('PRESTIGE', futureSystemPanelCopy(futureSystemByKey('prestige', 'COMING_SOON')), 'prestige') +
-      panel('MOONPET SANCTUARY', sanctuaryPanel, 'sanctuary') + panel('SPECIALIST TRACKS', tracks, 'tracks') + panel('LOCKED FUTURE SYSTEMS', futureSystemRows, 'future-systems') + panel('UNLOCK DIRECTORY', featureRows, 'features') + panel('ALERT CONTROL', notificationPanel, 'alerts') + panel('SEASON // ' + (season.key || ''), '<div class="line">' + number(season.xp) + ' SEASON XP</div>' + tiers, 'season') + panel('TOP MOONPETS', (leaders || '<div class="line muted">NO RANKS LOADED.</div>') + '<div class="button-grid one"><button type="button" class="terminal-button" data-utility="leaderboard">OPEN FULL LEADERBOARD</button></div>', 'leaderboard');
+      panel('PRESTIGE // FUTURE SEASON', futureSystemPanelCopy(futureSystemByKey('prestige', 'COMING_SOON')), 'prestige') +
+      panel('MOONPET SANCTUARY // FUTURE SEASON', sanctuaryPanel, 'sanctuary') + panel('SPECIALIST TRACKS', tracks, 'tracks') + panel('ROADMAP // FUTURE SEASONS', futureSystemRows, 'future-systems') + panel('UNLOCK DIRECTORY', featureRows, 'features') + panel('ALERT CONTROL', notificationPanel, 'alerts') + panel('SEASON // ' + (season.key || ''), '<div class="line">' + number(season.xp) + ' SEASON XP</div>' + tiers, 'season') + panel('TOP MOONPETS', (leaders || '<div class="line muted">NO RANKS LOADED.</div>') + '<div class="button-grid one"><button type="button" class="terminal-button" data-utility="leaderboard">OPEN FULL LEADERBOARD</button></div>', 'leaderboard');
   }
 
   var screens = { home: renderHome, missions: renderMissions, explore: renderExplore, work: renderWork, economy: renderEconomy, profile: renderProfile };

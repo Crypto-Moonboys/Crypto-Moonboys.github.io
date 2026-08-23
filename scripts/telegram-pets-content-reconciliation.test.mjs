@@ -32,7 +32,7 @@ for (const job of ['vault_security', 'kaiju_recovery']) {
   assert.match(worker, new RegExp(`${job}: \\{`), `${job} must be wired into the live job authority`);
 }
 assert.match(miniApp, /arena_forfeit/, 'server-supported Arena forfeit must have a Mini App control');
-for (const panel of ['DISTRICT NETWORK', 'CRAFTING MATERIALS', 'RELIC VAULT', 'LEARNED APTITUDES']) assert.ok(miniApp.includes(panel), `${panel} must be player-facing`);
+for (const panel of ['DISTRICT NETWORK', 'CRAFTING MATERIALS', 'RELIC VAULT', 'APTITUDES']) assert.ok(miniApp.includes(panel), `${panel} must be player-facing`);
 assert.match(worker, /growth_stage: getPetGrowthStage/, 'XP maturity must be exposed separately from earned evolution identity');
 assert.match(worker, /stage: currentEvolution\?\.name \|\| null/, 'public evolution stage must come from stored identity, never XP thresholds');
 assert.doesNotMatch(worker, /stage: 'Street Moonpet', min_xp/, 'formal evolution names cannot be assigned from XP alone');
