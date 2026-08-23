@@ -1,0 +1,23 @@
+{
+  "game": "NBG London Graffiti Run",
+  "version": "level-1",
+  "sprites": {
+    "player": {
+      "name": "NBG Runner",
+      "sheet": "player/nbg_runner_sprite_sheet.png",
+      "animations": ["idle", "run", "jump", "spray", "hit"]
+    },
+    "coins": {
+      "sheet": "objects/xp_coin_sheet.png",
+      "value": 10
+    },
+    "enemies": {
+      "rat": "enemies/london_rat.png",
+      "pigeon": "enemies/london_pigeon.png"
+    }
+  },
+  "world": {
+    "background": "backgrounds/london_parallax_layers.png",
+    "tiles": "tiles/london_graffiti_tileset.png"
+  }
+}
