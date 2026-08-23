@@ -10,6 +10,11 @@ const Level1PlayerAnimationRuntime = {
     this.animationController = animationController;
   },
 
+  bind(player, animationController = this.animationController) {
+    this.init(player, animationController);
+    return player;
+  },
+
   update() {
     if (!this.player || !this.animationController) return;
 
@@ -24,3 +29,7 @@ const Level1PlayerAnimationRuntime = {
     }
   }
 };
+
+if (typeof window !== 'undefined') {
+  window.Level1PlayerAnimationRuntime = Level1PlayerAnimationRuntime;
+}

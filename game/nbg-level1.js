@@ -59,8 +59,9 @@
   }
 
   function normalizePlayerAnimations(playerManifest) {
-    var frameWidth = playerManifest.frameWidth || 32;
-    var frameHeight = playerManifest.frameHeight || 48;
+    var frameWidth = playerManifest.frameWidth ?? 32;
+    var frameHeight = playerManifest.frameHeight ?? 48;
+    var anchor = playerManifest.anchor || { x: 0, y: frameHeight };
     var animations = {};
 
     Object.keys(playerManifest.animations || {}).forEach(function (name) {
@@ -68,17 +69,18 @@
       animations[name] = typeof animation === 'number'
         ? { row: Object.keys(animations).length, frames: animation, frameMs: 145, frameWidth: frameWidth, frameHeight: frameHeight }
         : {
-          row: animation.row || 0,
-          frames: animation.frames || 1,
-          frameMs: animation.frameMs || 145,
-          frameWidth: animation.frameWidth || frameWidth,
-          frameHeight: animation.frameHeight || frameHeight
+          row: animation.row ?? 0,
+          frames: animation.frames ?? 1,
+          frameMs: animation.frameMs ?? 145,
+          frameWidth: animation.frameWidth ?? frameWidth,
+          frameHeight: animation.frameHeight ?? frameHeight
         };
     });
 
     return {
       frameWidth: frameWidth,
       frameHeight: frameHeight,
+      anchor: anchor,
       animations: animations,
       aliases: playerManifest.aliases || {}
     };
@@ -96,6 +98,7 @@
     var images = {};
     var assetStatus = {};
     var running = false;
+    var completionAnimationActive = false;
     var complete = false;
     var lastTime = 0;
     var cameraX = 0;
@@ -136,6 +139,26 @@
         player.frame = 0;
         player.frameTime = 0;
       }
+    }
+
+    function advancePlayerAnimation(dt, loop) {
+      var animation = getAnimation(player.anim);
+      var frameCount = animation ? animation.frames : 1;
+      var frameMs = animation ? animation.frameMs : 145;
+      if (frameCount <= 1) return true;
+
+      player.frameTime += dt;
+      while (player.frameTime > frameMs) {
+        if (!loop && player.frame >= frameCount - 1) {
+          player.frameTime = 0;
+          return true;
+        }
+
+        player.frame = loop ? (player.frame + 1) % frameCount : Math.min(player.frame + 1, frameCount - 1);
+        player.frameTime -= frameMs;
+      }
+
+      return !loop && player.frame >= frameCount - 1;
     }
 
     var platforms = [
@@ -273,14 +296,7 @@
         setPlayerAnimation('idle');
       }
 
-      var animation = getAnimation(player.anim);
-      var frameCount = animation ? animation.frames : 1;
-      var frameMs = animation ? animation.frameMs : 145;
-      player.frameTime += dt;
-      while (frameCount > 1 && player.frameTime > frameMs) {
-        player.frame = (player.frame + 1) % frameCount;
-        player.frameTime -= frameMs;
-      }
+      advancePlayerAnimation(dt, true);
     }
 
     function updateCoins(time) {
@@ -339,6 +355,7 @@
       if (!complete && rectsOverlap(player, finish)) {
         complete = true;
         running = false;
+        completionAnimationActive = true;
         setPlayerAnimation('win');
         if (!finishBonusAwarded) {
           finishBonusAwarded = true;
@@ -470,6 +487,11 @@
       var col = frameCount > 0 ? player.frame % frameCount : 0;
       var x = Math.round(player.x - cameraX);
       var y = Math.round(player.y);
+      var anchor = playerAnimationContract ? playerAnimationContract.anchor : { x: 0, y: frameHeight };
+      var drawWidth = frameWidth;
+      var drawHeight = frameHeight;
+      var drawX = x + (player.w / 2) - anchor.x;
+      var drawY = y + player.h - anchor.y;
       var flash = player.invuln > 0 && Math.floor(player.invuln / 90) % 2 === 0;
       if (flash) return;
 
@@ -481,11 +503,11 @@
 
       ctx.save();
       if (player.facing < 0) {
-        ctx.translate(x + player.w + 4, y - 14);
+        ctx.translate(drawX + drawWidth, drawY);
         ctx.scale(-1, 1);
-        ctx.drawImage(images.player, col * frameWidth, row * frameHeight, frameWidth, frameHeight, 0, 0, 32, 48);
+        ctx.drawImage(images.player, col * frameWidth, row * frameHeight, frameWidth, frameHeight, 0, 0, drawWidth, drawHeight);
       } else {
-        ctx.drawImage(images.player, col * frameWidth, row * frameHeight, frameWidth, frameHeight, x - 4, y - 14, 32, 48);
+        ctx.drawImage(images.player, col * frameWidth, row * frameHeight, frameWidth, frameHeight, drawX, drawY, drawWidth, drawHeight);
       }
       ctx.restore();
     }
@@ -524,10 +546,12 @@
         updateEnemies(time, dt);
         updateLevel();
         updateCamera();
+      } else if (completionAnimationActive) {
+        completionAnimationActive = !advancePlayerAnimation(dt, false);
       }
       updateHud();
       render(time);
-      if (running) requestAnimationFrame(tick);
+      if (running || completionAnimationActive) requestAnimationFrame(tick);
     }
 
     function exposeTestState() {
@@ -538,6 +562,7 @@
         get xp() { return xp; },
         get complete() { return complete; },
         get running() { return running; },
+        get completionAnimationActive() { return completionAnimationActive; },
         get cameraX() { return cameraX; },
         get checkpoint() { return checkpoint; },
         get assetStatus() { return assetStatus; },

@@ -12,6 +12,9 @@
         frameY: 0,
         frameWidth: 32,
         frameHeight: 48,
+        grounded: true,
+        velocityX: 0,
+        velocityY: 0,
         animation: 'idle'
       };
 

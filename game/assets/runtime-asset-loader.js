@@ -7,16 +7,32 @@ import { NBGRunnerAssetBinding } from './player/nbg-runner-asset-binding.js';
 export class RuntimeAssetLoader {
   constructor(registry = NBGAssetRegistry) {
     this.assets = {};
-    this.registry = {
-      ...registry,
-      'nbg-runner': NBGRunnerAssetBinding.src
-    };
+    this.registry = registry || {};
   }
 
-  async loadManifest(path = './assets/sprite-manifest.json') {
+  async loadManifest(path = NBGRunnerAssetBinding.manifest) {
     const response = await fetch(path);
     this.manifest = await response.json();
+    this.registry = this.createRegistryFromManifest(this.manifest);
     return this.manifest;
+  }
+
+  createRegistryFromManifest(manifest) {
+    if (!manifest?.player) return {};
+
+    return {
+      'nbg-runner': `./assets/${manifest.player.spriteSheet}`,
+      coin: `./assets/${manifest.objects.xpCoin}`,
+      checkpoint: `./assets/${manifest.objects.checkpoint}`,
+      finish: `./assets/${manifest.objects.finishFlag}`,
+      sky: `./assets/${manifest.world.layers[0]}`,
+      skyline: `./assets/${manifest.world.layers[1]}`,
+      wall: `./assets/${manifest.world.layers[2]}`,
+      street: `./assets/${manifest.world.layers[3]}`,
+      rat: `./assets/${manifest.enemies.londonRat}`,
+      pigeon: `./assets/${manifest.enemies.pigeon}`,
+      bot: `./assets/${manifest.enemies.graffitiBot}`
+    };
   }
 
   async loadRegistryAssets() {
@@ -31,6 +47,11 @@ export class RuntimeAssetLoader {
 
   loadImage(name, src) {
     return new Promise((resolve) => {
+      if (typeof src !== 'string') {
+        resolve(null);
+        return;
+      }
+
       const image = new Image();
       image.onload = () => {
         this.assets[name] = image;

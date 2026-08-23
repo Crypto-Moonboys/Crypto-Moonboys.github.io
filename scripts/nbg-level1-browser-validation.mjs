@@ -2,6 +2,7 @@ import { strict as assert } from 'node:assert';
 import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
+import vm from 'node:vm';
 import { chromium } from 'playwright';
 
 const shouldServe = process.argv.includes('--serve');
@@ -94,6 +95,7 @@ function runtimeAnimationContract(playerManifest) {
 
 const canonicalFrameCounts = { idle: 4, run: 6, jump: 1, fall: 1, spray: 4, hurt: 2, win: 2 };
 const assetManifest = readJson('game/assets/asset-manifest.json');
+const spriteManifest = readJson('game/assets/sprite-manifest.json');
 const playerAnimationManifest = readJson('game/assets/player/nbg-runner-animation-manifest.json');
 const canonicalPlayerAnimations = assetManifest.player.animations;
 const canonicalRuntimeAnimations = runtimeAnimationContract(assetManifest.player);
@@ -108,14 +110,46 @@ assert.deepEqual(
   canonicalPlayerAnimations,
   'player animation manifest must mirror asset-manifest.json player animations'
 );
+assert.equal(
+  playerAnimationManifest.spriteSheet,
+  assetManifest.player.spriteSheet,
+  'player animation manifest spriteSheet must mirror asset-manifest.json'
+);
+assert.deepEqual(
+  playerAnimationManifest.frameSize,
+  { width: assetManifest.player.frameWidth, height: assetManifest.player.frameHeight },
+  'player animation manifest frame size must mirror asset-manifest.json'
+);
+assert.deepEqual(
+  playerAnimationManifest.anchor,
+  assetManifest.player.anchor,
+  'player animation manifest anchor must mirror asset-manifest.json'
+);
 assert.deepEqual(
   playerAnimationManifest.aliases,
   assetManifest.player.aliases,
   'player animation manifest aliases must mirror asset-manifest.json'
 );
+assert.deepEqual(
+  spriteManifest.sprites.player,
+  {
+    name: 'NBG Runner',
+    sheet: assetManifest.player.spriteSheet,
+    frameWidth: assetManifest.player.frameWidth,
+    frameHeight: assetManifest.player.frameHeight,
+    anchor: assetManifest.player.anchor,
+    animations: assetManifest.player.animations,
+    aliases: assetManifest.player.aliases
+  },
+  'sprite-manifest player entry must mirror asset-manifest.json'
+);
 
 const runtimeSource = fs.readFileSync(path.resolve(process.cwd(), 'game/nbg-level1.js'), 'utf8');
 const playerRendererSource = fs.readFileSync(path.resolve(process.cwd(), 'game/engine/player-sprite-renderer.js'), 'utf8');
+const playerControllerSource = fs.readFileSync(path.resolve(process.cwd(), 'game/engine/player-animation-controller.js'), 'utf8');
+const playerBindingSource = fs.readFileSync(path.resolve(process.cwd(), 'game/assets/player/nbg-runner-asset-binding.js'), 'utf8');
+const playerAnimationRuntimeSource = fs.readFileSync(path.resolve(process.cwd(), 'game/level1/level1-player-animation-runtime.js'), 'utf8');
+const playerSpawnRuntimeSource = fs.readFileSync(path.resolve(process.cwd(), 'game/level1/level1-player-spawn-runtime.js'), 'utf8');
 assert.equal(
   runtimeSource.includes('assets/player/nbg-runner-sprite-sheet.svg'),
   false,
@@ -125,6 +159,41 @@ assert.equal(
   /nbg-runner-sprite-sheet\.(svg|png)/.test(playerRendererSource),
   false,
   'player renderer must not hardcode the player sprite file extension'
+);
+for (const forbiddenBindingToken of ['src:', 'frameWidth:', 'frameHeight:', 'animations:']) {
+  assert.equal(
+    playerBindingSource.includes(forbiddenBindingToken),
+    false,
+    `player asset binding must not define independent ${forbiddenBindingToken} authority`
+  );
+}
+assert.equal(
+  /y\s*-\s*14/.test(runtimeSource),
+  false,
+  'canonical runtime must use manifest anchor metadata instead of magic vertical offsets'
+);
+
+const animationControllerContext = { window: {} };
+vm.runInNewContext(playerControllerSource, animationControllerContext);
+animationControllerContext.window.NBGAnimationController.init(assetManifest);
+animationControllerContext.window.NBGAnimationController.setState('run');
+for (let i = 0; i < 6; i += 1) {
+  animationControllerContext.window.NBGAnimationController.update(0.016);
+}
+assert.equal(
+  animationControllerContext.window.NBGAnimationController.getFrame(),
+  1,
+  'animation controller must advance when callers pass seconds deltas'
+);
+
+const level1AnimationContext = { window: {} };
+vm.runInNewContext(playerAnimationRuntimeSource, level1AnimationContext);
+vm.runInNewContext(playerSpawnRuntimeSource, level1AnimationContext);
+const spawnedPlayer = level1AnimationContext.window.Level1PlayerSpawnRuntime.create({ x: 12, y: 34 });
+assert.equal(
+  level1AnimationContext.window.Level1PlayerAnimationRuntime.player,
+  spawnedPlayer,
+  'Level1PlayerSpawnRuntime must connect spawned players through Level1PlayerAnimationRuntime.bind'
 );
 
 let browser;
@@ -177,6 +246,11 @@ assert.deepEqual(
   state.playerAnimations.animations,
   canonicalRuntimeAnimations,
   'browser runtime must expose the normalized player animations from asset-manifest.json'
+);
+assert.deepEqual(
+  state.playerAnimations.anchor,
+  assetManifest.player.anchor,
+  'browser runtime must expose the player sprite anchor from asset-manifest.json'
 );
 assert.deepEqual(
   animationFrameCounts(state.playerAnimations.animations),
@@ -330,16 +404,20 @@ await page.waitForTimeout(180);
 state = await page.evaluate(() => ({
   complete: window.NBGLevel1State.complete,
   running: window.NBGLevel1State.running,
+  completionAnimationActive: window.NBGLevel1State.completionAnimationActive,
   xp: window.NBGLevel1State.xp,
   hud: document.getElementById('hud-state').textContent,
   anim: window.NBGLevel1State.player.anim,
+  frame: window.NBGLevel1State.player.frame,
   winFrames: window.NBGLevel1State.playerAnimations.animations.win.frames
 }));
 assert.equal(state.complete, true, 'finish flag must complete the level');
 assert.equal(state.running, false, 'game loop update state must stop after completion');
+assert.equal(state.completionAnimationActive, false, 'win animation loop must stop after the final win frame renders');
 assert.ok(state.xp >= 600, 'finish must award leaderboard-ready XP');
 assert.equal(state.hud, 'LEVEL COMPLETE', 'HUD must report completion');
 assert.equal(state.anim, 'win', 'finish flag must switch to win animation');
+assert.equal(state.frame, 1, 'win animation must advance to its final frame before rendering stops');
 assert.equal(state.winFrames, 2, 'win animation must use two frames');
 
 const pixelEnergy = await page.evaluate(() => {

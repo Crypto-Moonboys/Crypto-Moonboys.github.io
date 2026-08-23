@@ -27,10 +27,10 @@ class PlayerSpriteRenderer {
     }
 
     const animation = this.animationController?.getCurrentAnimation?.();
-    const frame = this.animationController?.getFrame?.() || player.frameX || 0;
-    const frameWidth = animation?.frameWidth || this.animationController?.frameWidth || player.frameWidth || 32;
-    const frameHeight = animation?.frameHeight || this.animationController?.frameHeight || player.frameHeight || 48;
-    const row = animation?.row || player.frameY || 0;
+    const frame = this.animationController?.getFrame?.() ?? player.frameX ?? 0;
+    const frameWidth = animation?.frameWidth ?? this.animationController?.frameWidth ?? player.frameWidth ?? 32;
+    const frameHeight = animation?.frameHeight ?? this.animationController?.frameHeight ?? player.frameHeight ?? 48;
+    const row = animation?.row ?? player.frameY ?? 0;
 
     ctx.save();
     if ((player.facing || 1) < 0) {

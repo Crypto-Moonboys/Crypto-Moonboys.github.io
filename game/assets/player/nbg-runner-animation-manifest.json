@@ -5,6 +5,7 @@
     "width": 32,
     "height": 48
   },
+  "anchor": { "x": 16, "y": 33 },
   "animations": {
     "idle": { "row": 0, "frames": 4, "frameMs": 145 },
     "run": { "row": 1, "frames": 6, "frameMs": 88 },
