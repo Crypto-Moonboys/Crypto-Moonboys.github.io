@@ -1,0 +1,37 @@
+{
+  "asset": "London Level 1 Environment Generation Package",
+  "style": "modern upscaled SNES pixel art",
+  "viewport": "320x180",
+  "layers": [
+    {
+      "name": "sky",
+      "file": "london-sky.png",
+      "description": "night sky atmosphere"
+    },
+    {
+      "name": "moon",
+      "file": "london-moon.png",
+      "description": "parallax moon layer"
+    },
+    {
+      "name": "skyline",
+      "file": "london-skyline.png",
+      "description": "London skyline silhouette"
+    },
+    {
+      "name": "graffiti_wall",
+      "file": "graffiti-wall.png",
+      "description": "street graffiti gameplay layer"
+    },
+    {
+      "name": "street_tiles",
+      "file": "street-tiles.png",
+      "description": "16x16 collision tiles"
+    },
+    {
+      "name": "foreground",
+      "file": "foreground.png",
+      "description": "close camera details"
+    }
+  ]
+}
