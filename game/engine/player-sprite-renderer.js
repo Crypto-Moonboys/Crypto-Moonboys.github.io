@@ -1,10 +1,11 @@
 // NBG Runner sprite renderer
 // Draws the current animation frame selected by player animation runtime.
-// Uses the runtime asset registry key: nbg-runner.
+// Uses animation controller output for sprite frame selection.
 
 export class PlayerSpriteRenderer {
-  constructor(assetLoader) {
+  constructor(assetLoader, animationController = null) {
     this.assetLoader = assetLoader;
+    this.animationController = animationController;
     this.spriteKey = 'nbg-runner';
   }
 
@@ -22,15 +23,17 @@ export class PlayerSpriteRenderer {
       return;
     }
 
-    const frameWidth = player.frameWidth || 32;
-    const frameHeight = player.frameHeight || 48;
-    const frameX = (player.frameX || 0) * frameWidth;
-    const frameY = (player.frameY || 0) * frameHeight;
+    const animation = this.animationController?.getCurrentAnimation();
+    const frame = this.animationController?.getFrame?.() || 0;
+
+    const frameWidth = animation?.frameWidth || player.frameWidth || 32;
+    const frameHeight = animation?.frameHeight || player.frameHeight || 48;
+    const row = animation?.row || player.frameY || 0;
 
     ctx.drawImage(
       sprite,
-      frameX,
-      frameY,
+      frame * frameWidth,
+      row * frameHeight,
       frameWidth,
       frameHeight,
       player.x,
