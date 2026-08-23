@@ -13,6 +13,15 @@ class Level1RenderRuntime {
   init(composer = null) {
     this.composer = composer;
     this.running = true;
+
+    if (this.composer && this.scene) {
+      if (this.composer.addLayer && this.scene.renderLayers) {
+        this.scene.renderLayers.forEach(layer => {
+          this.composer.addLayer(layer);
+        });
+      }
+    }
+
     return this;
   }
 
