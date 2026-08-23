@@ -1,0 +1,24 @@
+{
+  "project": "NBG London Graffiti Run",
+  "phase": "actual_asset_import",
+  "status": {
+    "player": "ready_for_art",
+    "world": "ready_for_art",
+    "objects": "ready_for_art",
+    "enemies": "ready_for_art",
+    "ui": "ready_for_art"
+  },
+  "import_order": [
+    "nbg-runner-sheet.png",
+    "london-sky.png",
+    "london-moon.png",
+    "london-skyline.png",
+    "graffiti-wall.png",
+    "street-tiles.png",
+    "foreground.png",
+    "xp-coins.png",
+    "enemies.png",
+    "ui.png"
+  ],
+  "target": "/game/assets/"
+}
