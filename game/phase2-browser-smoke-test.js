@@ -11,10 +11,20 @@
         canvas: !!document.getElementById('game')
       };
 
-      return {
+      const report = {
         ready: Object.values(checks).every(Boolean),
         checks
       };
+
+      window.dispatchEvent(new CustomEvent('nbg-phase2-smoke-report', {
+        detail: report
+      }));
+
+      return report;
     }
   };
+
+  window.addEventListener('load', function () {
+    window.NBGPhase2SmokeTest.run();
+  });
 })();
