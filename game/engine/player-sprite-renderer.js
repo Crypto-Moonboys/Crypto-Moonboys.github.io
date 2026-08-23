@@ -18,7 +18,7 @@ export class PlayerSpriteRenderer {
 
     const sprite = this.assetLoader.get(this.spriteKey);
 
-    if (!sprite) {
+    if (!sprite || !sprite.complete || sprite.naturalWidth === 0) {
       ctx.fillRect(player.x, player.y, 16, 24);
       return;
     }
