@@ -1,0 +1,16 @@
+{
+  "level": "london-level-1",
+  "objects": {
+    "xp_coins": "xp-coins.png",
+    "checkpoint": "checkpoint.png",
+    "finish_flag": "finish-flag.png",
+    "platforms": "platforms.png",
+    "pipes": "pipes.png"
+  },
+  "enemies": {
+    "london_rat": "london-rat.png",
+    "pigeon": "pigeon.png",
+    "graffiti_bot": "graffiti-bot.png"
+  },
+  "status": "awaiting-art-import"
+}
