@@ -1,17 +1,15 @@
 // Level 1 London Graffiti scene
-// Browser-compatible scene runtime.
+// Connects world entities to the render pipeline.
 
 class LondonGraffitiScene {
   constructor(loader, renderer) {
     this.loader = loader;
     this.renderer = renderer;
     this.entities = [];
-    this.loaded = false;
   }
 
   async load() {
     this.entities = await this.loader.load('level1-london.json');
-    this.loaded = true;
     return this;
   }
 
@@ -20,7 +18,12 @@ class LondonGraffitiScene {
   }
 
   render(context, assets) {
-    this.renderer?.render?.(context, this.entities, assets);
+    if (this.renderer && this.renderer.render) {
+      this.renderer.render(context, this.entities, assets);
+      return;
+    }
+
+    this.entities.forEach(entity => entity.render?.(context, assets));
   }
 }
 
