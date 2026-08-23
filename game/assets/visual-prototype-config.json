@@ -1,0 +1,30 @@
+{
+  "name": "NBG London Graffiti Run Visual Prototype",
+  "style": "modern_upscaled_snes_pixel_art",
+  "viewport": "320x180",
+  "layers": [
+    "sky",
+    "moon",
+    "london_skyline",
+    "graffiti_wall",
+    "street_tiles",
+    "foreground"
+  ],
+  "characters": [
+    "nbg_runner"
+  ],
+  "collectibles": [
+    "xp_coin"
+  ],
+  "enemies": [
+    "rat",
+    "pigeon",
+    "graffiti_bot"
+  ],
+  "objects": [
+    "platforms",
+    "pipes",
+    "checkpoint",
+    "finish_flag"
+  ]
+}
