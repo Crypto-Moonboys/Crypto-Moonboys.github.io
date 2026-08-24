@@ -27,11 +27,8 @@ class PlayerSpriteRenderer {
     }
 
     const frame = this.animationController?.getFrame?.() ?? player.frameX ?? 0;
-    const frameHeight = animation?.frameHeight || sprite.naturalHeight || player.frameHeight || 48;
-    const naturalWidth = sprite.naturalWidth || sprite.width || frameHeight;
-    const frameWidth = animation?.frameWidth || (
-      naturalWidth % frameHeight === 0 ? frameHeight : naturalWidth
-    ) || player.frameWidth || 32;
+    const frameWidth = animation?.frameWidth || player.frameWidth || 32;
+    const frameHeight = animation?.frameHeight || player.frameHeight || 48;
 
     ctx.save();
     if ((player.facing || 1) < 0) {

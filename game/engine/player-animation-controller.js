@@ -17,8 +17,7 @@ window.NBGAnimationController = {
       const animation = animations[key] || {};
       normalized[key] = {
         ...animation,
-        key,
-        frames: Array.isArray(animation.frames) ? animation.frames : null
+        key
       };
       return normalized;
     }, {});
@@ -65,21 +64,13 @@ window.NBGAnimationController = {
     if (!animation) return;
 
     animation.image = image;
-    if (image && !animation.frameWidth && !animation.frameHeight) {
-      const frameHeight = image.naturalHeight || image.height || 1;
-      const naturalWidth = image.naturalWidth || image.width || frameHeight;
-      const frameWidth = naturalWidth % frameHeight === 0 ? frameHeight : naturalWidth;
-      animation.frameWidth = frameWidth;
-      animation.frameHeight = frameHeight;
-      animation.frameCount = Math.max(1, Math.floor(naturalWidth / frameWidth));
-    }
   },
 
   getFrameCount(animation = this.getCurrentAnimation()) {
     if (!animation) return 1;
     if (Array.isArray(animation.frames)) return Math.max(1, animation.frames.length);
-    if (Number.isFinite(animation.frameCount)) return Math.max(1, animation.frameCount);
     if (Number.isFinite(animation.frames)) return Math.max(1, animation.frames);
+    if (Number.isFinite(animation.frameCount)) return Math.max(1, animation.frameCount);
     return 1;
   },
 

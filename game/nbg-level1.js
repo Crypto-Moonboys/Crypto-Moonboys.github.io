@@ -65,22 +65,12 @@
   }
 
   function getAnimationFrameSize(animation) {
-    var image = animation && animation.image;
-    if (!image) return { width: 1, height: 1, count: 1 };
-
-    var naturalWidth = image.naturalWidth || image.width || 1;
-    var naturalHeight = image.naturalHeight || image.height || 1;
-    var frameHeight = animation.frameHeight || (animation.frameSize && animation.frameSize.height) || naturalHeight;
-    var frameWidth = animation.frameWidth || (animation.frameSize && animation.frameSize.width);
-
-    if (!frameWidth) {
-      frameWidth = naturalWidth % frameHeight === 0 ? frameHeight : naturalWidth;
-    }
+    if (!animation) return { width: 1, height: 1, count: 1 };
 
     return {
-      width: frameWidth,
-      height: frameHeight,
-      count: Math.max(1, Math.floor(naturalWidth / frameWidth))
+      width: animation.frameWidth || 32,
+      height: animation.frameHeight || 48,
+      count: Math.max(1, animation.frames || animation.frameCount || 1)
     };
   }
 
@@ -604,6 +594,10 @@
           var src = resolveAssetPath(animation.spriteSheet || '');
           return loadImage(src).then(function (result) {
             playerAnimations[key] = {
+              frameWidth: animation.frameWidth,
+              frameHeight: animation.frameHeight,
+              frames: animation.frames,
+              frameMs: animation.frameMs,
               spriteSheet: animation.spriteSheet,
               image: result.image
             };

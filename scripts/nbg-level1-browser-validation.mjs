@@ -81,14 +81,14 @@ function readJson(relativePath) {
   return JSON.parse(fs.readFileSync(path.resolve(process.cwd(), relativePath), 'utf8'));
 }
 
-const expectedAnimationSheets = {
-  idle: 'player/animations/idle.png',
-  run: 'player/animations/run.png',
-  jump: 'player/animations/jump.png',
-  fall: 'player/animations/fall.png',
-  spray: 'player/animations/spray.png',
-  hurt: 'player/animations/hurt.png',
-  victory: 'player/animations/victory.png'
+const expectedAnimations = {
+  idle: { spriteSheet: 'player/animations/idle.png', frameWidth: 32, frameHeight: 48, frames: 4, frameMs: 145 },
+  run: { spriteSheet: 'player/animations/run.png', frameWidth: 32, frameHeight: 48, frames: 6, frameMs: 88 },
+  jump: { spriteSheet: 'player/animations/jump.png', frameWidth: 32, frameHeight: 48, frames: 1, frameMs: 145 },
+  fall: { spriteSheet: 'player/animations/fall.png', frameWidth: 32, frameHeight: 48, frames: 1, frameMs: 145 },
+  spray: { spriteSheet: 'player/animations/spray.png', frameWidth: 32, frameHeight: 48, frames: 4, frameMs: 110 },
+  hurt: { spriteSheet: 'player/animations/hurt.png', frameWidth: 32, frameHeight: 48, frames: 2, frameMs: 120 },
+  victory: { spriteSheet: 'player/animations/victory.png', frameWidth: 32, frameHeight: 48, frames: 2, frameMs: 145 }
 };
 const assetManifest = readJson('game/assets/asset-manifest.json');
 const playerAnimationManifest = readJson('game/assets/player/nbg-runner-animation-manifest.json');
@@ -105,13 +105,18 @@ assert.deepEqual(
   'asset-manifest.json must define the canonical render layer names'
 );
 assert.deepEqual(
-  Object.fromEntries(Object.entries(playerAnimationManifest.animations).map(([key, animation]) => [key, animation.spriteSheet])),
-  expectedAnimationSheets,
-  'player animation manifest must define one AutoSprite sheet per animation'
+  playerAnimationManifest.animations,
+  expectedAnimations,
+  'player animation manifest must define explicit AutoSprite sheet metadata per animation'
 );
 assert.equal('spriteSheet' in playerAnimationManifest, false, 'player animation manifest must not define a single atlas spriteSheet');
 assert.equal('frameSize' in playerAnimationManifest, false, 'player animation manifest must not define global atlas frameSize');
 assert.equal('anchor' in playerAnimationManifest, false, 'player animation manifest must not define atlas anchor metadata');
+assert.equal('spriteSheet' in assetManifest.player, false, 'asset-manifest.json must not require the old player atlas spriteSheet');
+for (const animation of Object.values(expectedAnimations)) {
+  const assetPath = path.resolve(process.cwd(), 'game/assets', animation.spriteSheet);
+  assert.equal(fs.existsSync(assetPath), true, `AutoSprite animation PNG must exist: ${animation.spriteSheet}`);
+}
 const runtimeSource = fs.readFileSync(path.resolve(process.cwd(), 'game/nbg-level1.js'), 'utf8');
 const playerRendererSource = fs.readFileSync(path.resolve(process.cwd(), 'game/engine/player-sprite-renderer.js'), 'utf8');
 const playerControllerSource = fs.readFileSync(path.resolve(process.cwd(), 'game/engine/player-animation-controller.js'), 'utf8');
@@ -125,6 +130,16 @@ assert.equal(
   runtimeSource.includes('assets/player/nbg-runner-sprite-sheet.svg'),
   false,
   'canonical runtime must not load the old player atlas sprite sheet'
+);
+assert.equal(
+  [runtimeSource, playerRendererSource, playerControllerSource].some(source => /naturalWidth\s*%\s*frameHeight/.test(source)),
+  false,
+  'player runtime must not infer non-square AutoSprite frame dimensions from image naturalWidth modulo frameHeight'
+);
+assert.equal(
+  /frames:\s*Array\.isArray\(animation\.frames\)\s*\?\s*animation\.frames\s*:\s*null/.test(playerControllerSource),
+  false,
+  'animation controller must preserve numeric animation frame counts'
 );
 assert.equal(
   /nbg-runner-sprite-sheet\.(svg|png)/.test(playerRendererSource),
@@ -258,11 +273,20 @@ for (const [key, asset] of Object.entries(state.assetStatus)) {
   assert.equal(asset.loaded, true, `required asset must load successfully: ${key} (${asset.src})`);
 }
 assert.deepEqual(
-  Object.fromEntries(Object.entries(state.playerAnimations).map(([key, animation]) => [key, animation.spriteSheet])),
-  expectedAnimationSheets,
-  'browser runtime must expose the AutoSprite animation sheets from the player manifest'
+  Object.fromEntries(Object.entries(state.playerAnimations).map(([key, animation]) => [
+    key,
+    {
+      spriteSheet: animation.spriteSheet,
+      frameWidth: animation.frameWidth,
+      frameHeight: animation.frameHeight,
+      frames: animation.frames,
+      frameMs: animation.frameMs
+    }
+  ])),
+  expectedAnimations,
+  'browser runtime must expose the AutoSprite animation metadata from the player manifest'
 );
-for (const key of Object.keys(expectedAnimationSheets)) {
+for (const key of Object.keys(expectedAnimations)) {
   assert.equal(state.assetStatus[`player.${key}`]?.loaded, true, `browser runtime must load player ${key} animation sheet`);
 }
 
