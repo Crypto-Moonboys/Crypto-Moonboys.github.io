@@ -34,11 +34,13 @@ class PlayerSpriteRenderer {
     const sourceFrameHeight = animation?.sourceFrameHeight || animation?.frameHeight || player.sourceFrameHeight || player.frameHeight || 48;
     const renderWidth = animation?.renderWidth || player.renderWidth || player.frameWidth || 40;
     const renderHeight = animation?.renderHeight || player.renderHeight || player.frameHeight || 48;
+    const renderOffsetY = animation?.renderOffsetY ?? player.renderOffsetY ?? 0;
     const columns = animation?.columns || Math.max(1, Math.floor((sprite.naturalWidth || sourceFrameWidth) / sourceFrameWidth));
     const sourceX = (frame % columns) * sourceFrameWidth;
     const sourceY = Math.floor(frame / columns) * sourceFrameHeight;
     const frameDrawX = drawX - Math.round((renderWidth - (player.w || renderWidth)) / 2);
-    const frameDrawY = drawY - Math.max(0, renderHeight - (player.h || renderHeight));
+    const visualFootY = Math.round(player.y + (player.h || renderHeight) - (camera.y || 0));
+    const frameDrawY = Math.round(visualFootY - renderHeight + renderOffsetY);
 
     ctx.save();
     if ((player.facing || 1) < 0) {

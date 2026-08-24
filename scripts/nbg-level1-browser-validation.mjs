@@ -8,7 +8,8 @@ import { chromium } from 'playwright';
 const shouldServe = process.argv.includes('--serve');
 const port = Number(process.env.NBG_LEVEL1_PORT || 4175);
 const host = process.env.NBG_LEVEL1_HOST || '127.0.0.1';
-const url = process.env.NBG_LEVEL1_URL || `http://${host}:${port}/game/demo-launch.html`;
+const url = process.env.NBG_LEVEL1_URL || `http://${host}:${port}/games/nbg-london/`;
+const legacyUrl = `http://${host}:${port}/game/demo-launch.html`;
 const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE;
 let server;
 
@@ -39,7 +40,9 @@ function serveStaticFile(request, response) {
     return;
   }
 
-  fs.readFile(fullPath, (error, data) => {
+  fs.stat(fullPath, (statError, stats) => {
+    const filePath = !statError && stats.isDirectory() ? path.join(fullPath, 'index.html') : fullPath;
+    fs.readFile(filePath, (error, data) => {
     if (error) {
       response.writeHead(404);
       response.end('Not found');
@@ -47,9 +50,10 @@ function serveStaticFile(request, response) {
     }
 
     response.writeHead(200, {
-      'content-type': mimeTypes.get(path.extname(fullPath).toLowerCase()) || 'application/octet-stream'
+      'content-type': mimeTypes.get(path.extname(filePath).toLowerCase()) || 'application/octet-stream'
     });
     response.end(data);
+  });
   });
 }
 
@@ -82,13 +86,13 @@ function readJson(relativePath) {
 }
 
 const expectedAnimations = {
-  idle: { spriteSheet: 'player/animations/idle.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 48, renderHeight: 58, frames: 4, columns: 3, frameMs: 145 },
-  run: { spriteSheet: 'player/animations/run.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 48, renderHeight: 58, frames: 6, columns: 3, frameMs: 88 },
-  jump: { spriteSheet: 'player/animations/jump.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 48, renderHeight: 58, frames: 1, columns: 3, frameMs: 145 },
-  fall: { spriteSheet: 'player/animations/fall.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 48, renderHeight: 58, frames: 1, columns: 3, frameMs: 145 },
-  spray: { spriteSheet: 'player/animations/spray.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 48, renderHeight: 58, frames: 4, columns: 3, frameMs: 110 },
-  hurt: { spriteSheet: 'player/animations/hurt.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 48, renderHeight: 58, frames: 2, columns: 3, frameMs: 120 },
-  victory: { spriteSheet: 'player/animations/victory.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 48, renderHeight: 58, frames: 2, columns: 3, frameMs: 145 }
+  idle: { spriteSheet: 'player/animations/idle.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 48, renderHeight: 58, renderOffsetY: 4, frames: 4, columns: 3, frameMs: 145 },
+  run: { spriteSheet: 'player/animations/run.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 48, renderHeight: 58, renderOffsetY: 8, frames: 6, columns: 3, frameMs: 88 },
+  jump: { spriteSheet: 'player/animations/jump.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 48, renderHeight: 58, renderOffsetY: 12, frames: 1, columns: 3, frameMs: 145 },
+  fall: { spriteSheet: 'player/animations/fall.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 48, renderHeight: 58, renderOffsetY: 10, frames: 1, columns: 3, frameMs: 145 },
+  spray: { spriteSheet: 'player/animations/spray.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 48, renderHeight: 58, renderOffsetY: 1, frames: 4, columns: 3, frameMs: 110 },
+  hurt: { spriteSheet: 'player/animations/hurt.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 48, renderHeight: 58, renderOffsetY: 1, frames: 2, columns: 3, frameMs: 120 },
+  victory: { spriteSheet: 'player/animations/victory.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 48, renderHeight: 58, renderOffsetY: 5, frames: 2, columns: 3, frameMs: 145 }
 };
 const assetManifest = readJson('game/assets/asset-manifest.json');
 const playerAnimationManifest = readJson('game/assets/player/nbg-runner-animation-manifest.json');
@@ -159,6 +163,11 @@ assert.equal(
   runtimeSource.includes('renderWidth') && runtimeSource.includes('renderHeight'),
   true,
   'standalone Level 1 runtime must draw using render size metadata'
+);
+assert.equal(
+  runtimeSource.includes('renderOffsetY') && playerRendererSource.includes('renderOffsetY'),
+  true,
+  'player renderers must align sprite feet from manifest renderOffsetY metadata'
 );
 assert.equal(
   runtimeSource.includes("document.getElementById('startBtn') || document.getElementById('start')"),
@@ -337,16 +346,27 @@ const launchOptions = executablePath ? { executablePath } : {};
 browser = await chromium.launch(launchOptions);
 const page = await browser.newPage({ viewport: { width: 960, height: 540 } });
 const errors = [];
+const failedRequests = [];
 
 page.on('pageerror', (error) => errors.push(error.message));
 page.on('console', (message) => {
+  if (message.text() === 'Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED') return;
   if (message.type() === 'error') errors.push(message.text());
 });
+page.on('requestfailed', (request) => {
+  if (request.url().startsWith('https://fonts.googleapis.com/')) return;
+  failedRequests.push(`${request.url()} ${request.failure()?.errorText || 'failed'}`);
+});
+
+await page.goto(legacyUrl, { waitUntil: 'networkidle' });
+await page.waitForURL('**/games/nbg-london/', { timeout: 3000 });
+assert.equal(new URL(page.url()).pathname, '/games/nbg-london/', 'legacy demo launch URL must redirect to fullscreen arcade route');
 
 await page.goto(url, { waitUntil: 'networkidle' });
-await assert.doesNotReject(() => page.waitForSelector('#start', { state: 'visible', timeout: 3000 }), 'START button must be visible');
+const startSelector = '#startBtn, #start';
+await assert.doesNotReject(() => page.waitForSelector(startSelector, { state: 'visible', timeout: 3000 }), 'START button must be visible');
 
-await page.click('#start');
+await page.click(startSelector);
 await page.waitForFunction(() => window.NBGLevel1State?.running === true, null, { timeout: 5000 });
 await page.waitForTimeout(450);
 
@@ -384,6 +404,7 @@ assert.deepEqual(
       sourceFrameHeight: animation.sourceFrameHeight,
       renderWidth: animation.renderWidth,
       renderHeight: animation.renderHeight,
+      renderOffsetY: animation.renderOffsetY,
       frames: animation.frames,
       columns: animation.columns,
       frameMs: animation.frameMs
@@ -560,6 +581,7 @@ const pixelEnergy = await page.evaluate(() => {
 assert.ok(pixelEnergy > 20, 'canvas must render nonblank pixels');
 
 assert.deepEqual(errors, [], 'browser console must not report runtime errors');
+assert.deepEqual(failedRequests, [], 'browser must not report non-font request failures');
 
 console.log('[PASS] NBG London Graffiti Run Level 1 browser validation');
 } finally {

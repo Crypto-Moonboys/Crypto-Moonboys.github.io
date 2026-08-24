@@ -5,43 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>NBG London Graffiti Run</title>
   <link rel="canonical" href="/games/nbg-london/">
+  <meta http-equiv="refresh" content="0; url=/games/nbg-london/">
   <link rel="icon" type="image/png" href="/favicon.png">
-  <link rel="stylesheet" href="game.css">
+  <script>
+    window.location.replace('/games/nbg-london/');
+  </script>
 </head>
 <body>
-  <main class="nbg-shell" aria-label="NBG London Graffiti Run Level 1">
-    <p><a href="/games/nbg-london/">Open the fullscreen arcade route</a></p>
-    <section id="title-screen" class="title-screen">
-      <div class="title-copy">
-        <p class="kicker">NO BALL GAMES PRESENTS</p>
-        <h1>NBG LONDON GRAFFITI RUN</h1>
-        <p class="tagline">Run, tag, collect XP, and clear the London wall before the bots box you in.</p>
-      </div>
-      <button id="start" class="start-button" type="button">START</button>
-    </section>
-
-    <section id="game-stage" class="nbg-game-stage" aria-label="Playable Level 1">
-      <canvas id="game" width="480" height="270" aria-label="NBG London Graffiti Run canvas"></canvas>
-      <div class="hud-strip" aria-hidden="false">
-        <span id="hud-xp">XP 0</span>
-        <span id="hud-coins">COINS 0/12</span>
-        <span id="hud-health">HEALTH 3</span>
-        <span id="hud-state">READY</span>
-      </div>
-      <div class="touch-controls" role="group" aria-label="Touch controls">
-        <div class="touch-controls__move">
-          <button class="touch-button" type="button" data-control="left" aria-label="Move left">&lt;</button>
-          <button class="touch-button" type="button" data-control="right" aria-label="Move right">&gt;</button>
-        </div>
-        <div class="touch-controls__action">
-          <button class="touch-button touch-button--small" type="button" data-control="spray" aria-label="Spray">S</button>
-          <button class="touch-button" type="button" data-control="jump" aria-label="Jump">JUMP</button>
-        </div>
-      </div>
-    </section>
+  <main>
+    <p><a href="/games/nbg-london/">Open NBG London Graffiti Run fullscreen</a></p>
   </main>
-
-  <script src="nbg-level1.js"></script>
-  <script data-cfasync="false" src="/js/site-shell.js"></script>
 </body>
 </html>
