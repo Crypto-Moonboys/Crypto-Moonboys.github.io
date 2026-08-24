@@ -4,7 +4,7 @@
 
 window.NBGAssetRegistry = {
   player: {
-    spriteSheet: "assets/player/nbg-runner-sheet.png"
+    manifest: "assets/player/nbg-runner-animation-manifest.json"
   },
   world: {
     sky: "assets/world/london-sky.png",

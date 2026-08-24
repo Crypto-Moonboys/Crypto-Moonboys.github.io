@@ -1,8 +1,7 @@
 (function () {
   'use strict';
 
-  var ASSET_MANIFEST_PATH = 'assets/asset-manifest.json';
-
+  var ASSET_MANIFEST = 'assets/asset-manifest.json';
   var WIDTH = 480;
   var HEIGHT = 270;
   var WORLD_WIDTH = 2200;
@@ -33,56 +32,55 @@
 
   function loadJson(src) {
     return fetch(src).then(function (response) {
-      if (!response.ok) throw new Error('Unable to load asset manifest: ' + src);
+      if (!response.ok) throw new Error('Unable to load JSON asset: ' + src);
       return response.json();
     });
   }
 
-  function assetPath(path) {
-    return 'assets/' + path;
+  function resolveAssetPath(assetPath) {
+    if (!assetPath) return assetPath;
+    if (/^(?:https?:)?\/\//.test(assetPath) || assetPath.charAt(0) === '/') return assetPath;
+    return assetPath.indexOf('assets/') === 0 ? assetPath : 'assets/' + assetPath;
   }
 
-  function buildAssetMap(manifest) {
-    return {
-      player: assetPath(manifest.player.spriteSheet),
-      coin: assetPath(manifest.objects.xpCoin),
-      checkpoint: assetPath(manifest.objects.checkpoint),
-      finish: assetPath(manifest.objects.finishFlag),
-      sky: assetPath(manifest.world.layers[0]),
-      skyline: assetPath(manifest.world.layers[1]),
-      wall: assetPath(manifest.world.layers[2]),
-      street: assetPath(manifest.world.layers[3]),
-      rat: assetPath(manifest.enemies.londonRat),
-      pigeon: assetPath(manifest.enemies.pigeon),
-      bot: assetPath(manifest.enemies.graffitiBot)
+  function buildRuntimeAssetMap(manifest) {
+    var layerKeyMap = {
+      sky: 'sky',
+      'london-skyline': 'skyline',
+      'graffiti-wall': 'wall',
+      street: 'street'
     };
-  }
+    var assets = {};
+    var layerNames = (manifest.world && manifest.world.layerNames) || [];
+    var layers = (manifest.world && manifest.world.layers) || [];
 
-  function normalizePlayerAnimations(playerManifest) {
-    var frameWidth = playerManifest.frameWidth ?? 32;
-    var frameHeight = playerManifest.frameHeight ?? 48;
-    var anchor = playerManifest.anchor || { x: 0, y: frameHeight };
-    var animations = {};
-
-    Object.keys(playerManifest.animations || {}).forEach(function (name) {
-      var animation = playerManifest.animations[name];
-      animations[name] = typeof animation === 'number'
-        ? { row: Object.keys(animations).length, frames: animation, frameMs: 145, frameWidth: frameWidth, frameHeight: frameHeight }
-        : {
-          row: animation.row ?? 0,
-          frames: animation.frames ?? 1,
-          frameMs: animation.frameMs ?? 145,
-          frameWidth: animation.frameWidth ?? frameWidth,
-          frameHeight: animation.frameHeight ?? frameHeight
-        };
+    layerNames.forEach(function (name, index) {
+      var key = layerKeyMap[name] || name;
+      if (layers[index]) assets[key] = resolveAssetPath(layers[index]);
     });
 
+    if (manifest.objects) {
+      if (manifest.objects.xpCoin) assets.coin = resolveAssetPath(manifest.objects.xpCoin);
+      if (manifest.objects.checkpoint) assets.checkpoint = resolveAssetPath(manifest.objects.checkpoint);
+      if (manifest.objects.finishFlag) assets.finish = resolveAssetPath(manifest.objects.finishFlag);
+    }
+
+    if (manifest.enemies) {
+      if (manifest.enemies.londonRat) assets.rat = resolveAssetPath(manifest.enemies.londonRat);
+      if (manifest.enemies.pigeon) assets.pigeon = resolveAssetPath(manifest.enemies.pigeon);
+      if (manifest.enemies.graffitiBot) assets.bot = resolveAssetPath(manifest.enemies.graffitiBot);
+    }
+
+    return assets;
+  }
+
+  function getAnimationFrameSize(animation) {
+    if (!animation) return { width: 1, height: 1, count: 1 };
+
     return {
-      frameWidth: frameWidth,
-      frameHeight: frameHeight,
-      anchor: anchor,
-      animations: animations,
-      aliases: playerManifest.aliases || {}
+      width: animation.frameWidth || 32,
+      height: animation.frameHeight || 48,
+      count: Math.max(1, animation.frames || animation.frameCount || 1)
     };
   }
 
@@ -92,11 +90,10 @@
 
     var keys = {};
     var touch = { left: false, right: false, jump: false, spray: false };
-    var assets = {};
-    var requiredAssets = [];
-    var playerAnimationContract = null;
     var images = {};
+    var playerAnimations = {};
     var assetStatus = {};
+    var requiredAssets = [];
     var running = false;
     var completionAnimationActive = false;
     var complete = false;
@@ -123,13 +120,16 @@
     };
 
     function resolveAnimationName(name) {
-      if (!playerAnimationContract) return name || 'idle';
-      return playerAnimationContract.aliases[name] || name || 'idle';
+      var stateMap = {
+        hit: 'hurt',
+        tag: 'spray',
+        celebrate: 'victory'
+      };
+      return stateMap[name] || name || 'idle';
     }
 
     function getAnimation(name) {
-      if (!playerAnimationContract) return null;
-      return playerAnimationContract.animations[resolveAnimationName(name)] || playerAnimationContract.animations.idle || null;
+      return playerAnimations[resolveAnimationName(name)] || playerAnimations.idle || null;
     }
 
     function setPlayerAnimation(name) {
@@ -143,7 +143,7 @@
 
     function advancePlayerAnimation(dt, loop) {
       var animation = getAnimation(player.anim);
-      var frameCount = animation ? animation.frames : 1;
+      var frameCount = getAnimationFrameSize(animation).count;
       var frameMs = animation ? animation.frameMs : 145;
       if (frameCount <= 1) return true;
 
@@ -356,7 +356,7 @@
         complete = true;
         running = false;
         completionAnimationActive = true;
-        setPlayerAnimation('win');
+        setPlayerAnimation('victory');
         if (!finishBonusAwarded) {
           finishBonusAwarded = true;
           xp += 500 + coins.filter(function (coin) { return coin.taken; }).length * 25;
@@ -400,11 +400,11 @@
 
     function assertRequiredAssetsLoaded() {
       var missing = requiredAssets.filter(function (key) {
-        return !images[key];
+        return !assetStatus[key] || !assetStatus[key].loaded;
       });
       if (missing.length) {
         throw new Error('NBG Level 1 missing required assets: ' + missing.map(function (key) {
-          return key + ' (' + assets[key] + ')';
+          return key + ' (' + (assetStatus[key] ? assetStatus[key].src : 'unregistered') + ')';
         }).join(', '));
       }
     }
@@ -480,22 +480,18 @@
 
     function drawPlayer() {
       var animation = getAnimation(player.anim);
-      var frameWidth = animation ? animation.frameWidth : 32;
-      var frameHeight = animation ? animation.frameHeight : 48;
-      var row = animation ? animation.row : 0;
-      var frameCount = animation ? animation.frames : 1;
-      var col = frameCount > 0 ? player.frame % frameCount : 0;
+      var frameSize = getAnimationFrameSize(animation);
+      var col = player.frame % frameSize.count;
       var x = Math.round(player.x - cameraX);
       var y = Math.round(player.y);
-      var anchor = playerAnimationContract ? playerAnimationContract.anchor : { x: 0, y: frameHeight };
-      var drawWidth = frameWidth;
-      var drawHeight = frameHeight;
-      var drawX = x + (player.w / 2) - anchor.x;
-      var drawY = y + player.h - anchor.y;
+      var drawWidth = frameSize.width;
+      var drawHeight = frameSize.height;
+      var drawX = x - Math.round((drawWidth - player.w) / 2);
+      var drawY = y - Math.max(0, drawHeight - player.h);
       var flash = player.invuln > 0 && Math.floor(player.invuln / 90) % 2 === 0;
       if (flash) return;
 
-      if (!images.player) {
+      if (!animation || !animation.image) {
         ctx.fillStyle = '#ff315f';
         ctx.fillRect(x, y, player.w, player.h);
         return;
@@ -505,9 +501,9 @@
       if (player.facing < 0) {
         ctx.translate(drawX + drawWidth, drawY);
         ctx.scale(-1, 1);
-        ctx.drawImage(images.player, col * frameWidth, row * frameHeight, frameWidth, frameHeight, 0, 0, drawWidth, drawHeight);
+        ctx.drawImage(animation.image, col * frameSize.width, 0, frameSize.width, frameSize.height, 0, 0, drawWidth, drawHeight);
       } else {
-        ctx.drawImage(images.player, col * frameWidth, row * frameHeight, frameWidth, frameHeight, drawX, drawY, drawWidth, drawHeight);
+        ctx.drawImage(animation.image, col * frameSize.width, 0, frameSize.width, frameSize.height, drawX, drawY, drawWidth, drawHeight);
       }
       ctx.restore();
     }
@@ -567,25 +563,56 @@
         get checkpoint() { return checkpoint; },
         get assetStatus() { return assetStatus; },
         get requiredAssets() { return requiredAssets.slice(); },
-        get playerAnimations() { return playerAnimationContract; }
+        get playerAnimations() { return playerAnimations; }
       };
     }
 
     function start() {
       if (running) return Promise.resolve(window.NBGLevel1State);
-      return loadJson(ASSET_MANIFEST_PATH).then(function (manifest) {
-        playerAnimationContract = normalizePlayerAnimations(manifest.player);
-        assets = buildAssetMap(manifest);
-        requiredAssets = Object.keys(assets);
-        return Promise.all(requiredAssets.map(function (key) {
-          return loadImage(assets[key]).then(function (result) {
+      return loadJson(ASSET_MANIFEST).then(function (assetManifest) {
+        var assets = buildRuntimeAssetMap(assetManifest);
+        var playerManifestPath = resolveAssetPath(assetManifest.player && assetManifest.player.animationManifest);
+        if (!playerManifestPath) throw new Error('Missing player animation manifest path');
+
+        return loadJson(playerManifestPath).then(function (manifest) {
+          return {
+            assets: assets,
+            manifest: manifest
+          };
+        });
+      }).then(function (runtimeAssets) {
+        var animations = runtimeAssets.manifest.animations || {};
+        var animationKeys = Object.keys(animations);
+        requiredAssets = Object.keys(runtimeAssets.assets).concat(animationKeys.map(function (key) {
+          return 'player.' + key;
+        }));
+
+        return Promise.all(Object.keys(runtimeAssets.assets).map(function (key) {
+          return loadImage(runtimeAssets.assets[key]).then(function (result) {
             images[key] = result.image;
             assetStatus[key] = {
               src: result.src,
               loaded: !!result.image
             };
           });
-        }));
+        }).concat(animationKeys.map(function (key) {
+          var animation = animations[key] || {};
+          var src = resolveAssetPath(animation.spriteSheet || '');
+          return loadImage(src).then(function (result) {
+            playerAnimations[key] = {
+              frameWidth: animation.frameWidth,
+              frameHeight: animation.frameHeight,
+              frames: animation.frames,
+              frameMs: animation.frameMs,
+              spriteSheet: animation.spriteSheet,
+              image: result.image
+            };
+            assetStatus['player.' + key] = {
+              src: result.src,
+              loaded: !!result.image
+            };
+          });
+        })));
       }).then(function () {
         assertRequiredAssetsLoaded();
         exposeTestState();

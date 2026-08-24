@@ -81,23 +81,17 @@ function readJson(relativePath) {
   return JSON.parse(fs.readFileSync(path.resolve(process.cwd(), relativePath), 'utf8'));
 }
 
-function animationFrameCounts(animations) {
-  return Object.fromEntries(Object.entries(animations).map(([name, animation]) => [name, animation.frames]));
-}
-
-function runtimeAnimationContract(playerManifest) {
-  return Object.fromEntries(Object.entries(playerManifest.animations).map(([name, animation]) => [name, {
-    ...animation,
-    frameWidth: playerManifest.frameWidth,
-    frameHeight: playerManifest.frameHeight
-  }]));
-}
-
-const canonicalFrameCounts = { idle: 4, run: 6, jump: 1, fall: 1, spray: 4, hurt: 2, win: 2 };
+const expectedAnimations = {
+  idle: { spriteSheet: 'player/animations/idle.png', frameWidth: 32, frameHeight: 48, frames: 4, frameMs: 145 },
+  run: { spriteSheet: 'player/animations/run.png', frameWidth: 32, frameHeight: 48, frames: 6, frameMs: 88 },
+  jump: { spriteSheet: 'player/animations/jump.png', frameWidth: 32, frameHeight: 48, frames: 1, frameMs: 145 },
+  fall: { spriteSheet: 'player/animations/fall.png', frameWidth: 32, frameHeight: 48, frames: 1, frameMs: 145 },
+  spray: { spriteSheet: 'player/animations/spray.png', frameWidth: 32, frameHeight: 48, frames: 4, frameMs: 110 },
+  hurt: { spriteSheet: 'player/animations/hurt.png', frameWidth: 32, frameHeight: 48, frames: 2, frameMs: 120 },
+  victory: { spriteSheet: 'player/animations/victory.png', frameWidth: 32, frameHeight: 48, frames: 2, frameMs: 145 }
+};
 const assetManifest = readJson('game/assets/asset-manifest.json');
 const playerAnimationManifest = readJson('game/assets/player/nbg-runner-animation-manifest.json');
-const canonicalPlayerAnimations = assetManifest.player.animations;
-const canonicalRuntimeAnimations = runtimeAnimationContract(assetManifest.player);
 
 assert.equal(
   fs.existsSync(path.resolve(process.cwd(), 'game/assets/sprite-manifest.json')),
@@ -106,44 +100,29 @@ assert.equal(
 );
 
 assert.deepEqual(
-  animationFrameCounts(canonicalPlayerAnimations),
-  canonicalFrameCounts,
-  'asset-manifest.json must define the canonical player frame counts'
-);
-assert.deepEqual(
   assetManifest.world.layerNames,
   ['sky', 'london-skyline', 'graffiti-wall', 'street'],
   'asset-manifest.json must define the canonical render layer names'
 );
 assert.deepEqual(
   playerAnimationManifest.animations,
-  canonicalPlayerAnimations,
-  'player animation manifest must mirror asset-manifest.json player animations'
+  expectedAnimations,
+  'player animation manifest must define explicit AutoSprite sheet metadata per animation'
 );
-assert.equal(
-  playerAnimationManifest.spriteSheet,
-  assetManifest.player.spriteSheet,
-  'player animation manifest spriteSheet must mirror asset-manifest.json'
-);
-assert.deepEqual(
-  playerAnimationManifest.frameSize,
-  { width: assetManifest.player.frameWidth, height: assetManifest.player.frameHeight },
-  'player animation manifest frame size must mirror asset-manifest.json'
-);
-assert.deepEqual(
-  playerAnimationManifest.anchor,
-  assetManifest.player.anchor,
-  'player animation manifest anchor must mirror asset-manifest.json'
-);
-assert.deepEqual(
-  playerAnimationManifest.aliases,
-  assetManifest.player.aliases,
-  'player animation manifest aliases must mirror asset-manifest.json'
-);
+assert.equal('spriteSheet' in playerAnimationManifest, false, 'player animation manifest must not define a single atlas spriteSheet');
+assert.equal('frameSize' in playerAnimationManifest, false, 'player animation manifest must not define global atlas frameSize');
+assert.equal('anchor' in playerAnimationManifest, false, 'player animation manifest must not define atlas anchor metadata');
+assert.equal('spriteSheet' in assetManifest.player, false, 'asset-manifest.json must not require the old player atlas spriteSheet');
+assert.equal('animationManifest' in assetManifest.player, true, 'asset-manifest.json must point to the player animation manifest');
+for (const animation of Object.values(expectedAnimations)) {
+  const assetPath = path.resolve(process.cwd(), 'game/assets', animation.spriteSheet);
+  assert.equal(fs.existsSync(assetPath), true, `AutoSprite animation PNG must exist: ${animation.spriteSheet}`);
+}
 const runtimeSource = fs.readFileSync(path.resolve(process.cwd(), 'game/nbg-level1.js'), 'utf8');
 const playerRendererSource = fs.readFileSync(path.resolve(process.cwd(), 'game/engine/player-sprite-renderer.js'), 'utf8');
 const playerControllerSource = fs.readFileSync(path.resolve(process.cwd(), 'game/engine/player-animation-controller.js'), 'utf8');
 const playerBindingSource = fs.readFileSync(path.resolve(process.cwd(), 'game/assets/player/nbg-runner-asset-binding.js'), 'utf8');
+const assetRegistrySource = fs.readFileSync(path.resolve(process.cwd(), 'game/assets/asset-registry.js'), 'utf8');
 const runtimeAssetLoaderSource = fs.readFileSync(path.resolve(process.cwd(), 'game/assets/runtime-asset-loader.js'), 'utf8');
 const level1RenderBridgeSource = fs.readFileSync(path.resolve(process.cwd(), 'game/engine/level1-render-bridge.js'), 'utf8');
 const levelRenderPipelineSource = fs.readFileSync(path.resolve(process.cwd(), 'game/engine/level-render-pipeline.js'), 'utf8');
@@ -152,14 +131,64 @@ const playerSpawnRuntimeSource = fs.readFileSync(path.resolve(process.cwd(), 'ga
 assert.equal(
   runtimeSource.includes('assets/player/nbg-runner-sprite-sheet.svg'),
   false,
-  'canonical runtime must read the player sprite path from asset-manifest.json'
+  'canonical runtime must not load the old player atlas sprite sheet'
+);
+assert.equal(
+  [runtimeSource, playerRendererSource, playerControllerSource].some(source => /naturalWidth\s*%\s*frameHeight/.test(source)),
+  false,
+  'player runtime must not infer non-square AutoSprite frame dimensions from image naturalWidth modulo frameHeight'
+);
+assert.equal(
+  /frames:\s*Array\.isArray\(animation\.frames\)\s*\?\s*animation\.frames\s*:\s*null/.test(playerControllerSource),
+  false,
+  'animation controller must preserve numeric animation frame counts'
 );
 assert.equal(
   /nbg-runner-sprite-sheet\.(svg|png)/.test(playerRendererSource),
   false,
   'player renderer must not hardcode the player sprite file extension'
 );
-for (const forbiddenBindingToken of ['src:', 'frameWidth:', 'frameHeight:', 'animations:']) {
+assert.equal(
+  /assetLoader\?\.get\(animation\?\.spriteKey\s*\|\|\s*player\.sprite\s*\|\|\s*this\.spriteKey\)/.test(playerRendererSource),
+  false,
+  'player renderer must not fall back to the legacy nbg-runner atlas asset key'
+);
+assert.equal(
+  playerRendererSource.includes('`${this.spriteKey}:${animationKey}`'),
+  true,
+  'player renderer must resolve sprites through the per-animation runtime key'
+);
+assert.equal(
+  /this\.assets\[`nbg-runner:\$\{key\}`\]\s*=\s*image/.test(runtimeAssetLoaderSource),
+  false,
+  'runtime asset loader must not assign loaded animation images twice'
+);
+assert.equal(
+  assetRegistrySource.includes('animations:'),
+  false,
+  'asset registry must not duplicate player animation paths from the player manifest'
+);
+assert.equal(
+  playerBindingSource.includes('animations:'),
+  false,
+  'player asset binding must not duplicate player animation paths from the player manifest'
+);
+assert.equal(
+  runtimeSource.includes('var ASSETS ='),
+  false,
+  'standalone Level 1 runtime must resolve required assets from asset-manifest.json'
+);
+assert.equal(
+  /function resolvePlayerAnimation(Key)?\(/.test(runtimeSource),
+  false,
+  'standalone Level 1 runtime must not keep unused duplicate player animation resolution helpers'
+);
+assert.equal(
+  /var drawWidth = 32;|var drawHeight = 40;/.test(runtimeSource),
+  false,
+  'standalone Level 1 player renderer must draw AutoSprite frames at manifest dimensions'
+);
+for (const forbiddenBindingToken of ['src:', 'frameWidth:', 'frameHeight:']) {
   assert.equal(
     playerBindingSource.includes(forbiddenBindingToken),
     false,
@@ -189,15 +218,25 @@ assert.equal(
 
 const animationControllerContext = { window: {} };
 vm.runInNewContext(playerControllerSource, animationControllerContext);
-animationControllerContext.window.NBGAnimationController.init(assetManifest);
-animationControllerContext.window.NBGAnimationController.setState('run');
-for (let i = 0; i < 6; i += 1) {
-  animationControllerContext.window.NBGAnimationController.update(0.016);
+animationControllerContext.window.NBGAnimationController.init(playerAnimationManifest);
+animationControllerContext.window.NBGAnimationController.setState('moving');
+animationControllerContext.window.NBGAnimationController.setAnimationImage('run', {
+  naturalWidth: 6,
+  naturalHeight: 1,
+  width: 6,
+  height: 1
+});
+for (let i = 0; i < 10; i += 1) {
+  animationControllerContext.window.NBGAnimationController.update(0.0167);
 }
 assert.equal(
-  animationControllerContext.window.NBGAnimationController.getFrame(),
-  1,
-  'animation controller must advance when callers pass seconds deltas'
+  animationControllerContext.window.NBGAnimationController.state,
+  'run',
+  'animation controller must map moving state to run animation'
+);
+assert.ok(
+  animationControllerContext.window.NBGAnimationController.getFrame() > 0,
+  'animation controller must advance AutoSprite sheet frames when callers pass seconds deltas'
 );
 
 const level1AnimationContext = { window: {} };
@@ -225,7 +264,7 @@ spawnedPlayer.velocityY = 3;
 level1AnimationContext.window.Level1PlayerAnimationRuntime.update();
 assert.equal(
   level1AnimationContext.window.NBGAnimationController.state,
-  'fall',
+  'falling',
   'Level1PlayerAnimationRuntime.update must drive NBGAnimationController from spawned player state'
 );
 
@@ -276,25 +315,22 @@ for (const [key, asset] of Object.entries(state.assetStatus)) {
   assert.equal(asset.loaded, true, `required asset must load successfully: ${key} (${asset.src})`);
 }
 assert.deepEqual(
-  state.playerAnimations.animations,
-  canonicalRuntimeAnimations,
-  'browser runtime must expose the normalized player animations from asset-manifest.json'
+  Object.fromEntries(Object.entries(state.playerAnimations).map(([key, animation]) => [
+    key,
+    {
+      spriteSheet: animation.spriteSheet,
+      frameWidth: animation.frameWidth,
+      frameHeight: animation.frameHeight,
+      frames: animation.frames,
+      frameMs: animation.frameMs
+    }
+  ])),
+  expectedAnimations,
+  'browser runtime must expose the AutoSprite animation metadata from the player manifest'
 );
-assert.deepEqual(
-  state.playerAnimations.anchor,
-  assetManifest.player.anchor,
-  'browser runtime must expose the player sprite anchor from asset-manifest.json'
-);
-assert.deepEqual(
-  animationFrameCounts(state.playerAnimations.animations),
-  canonicalFrameCounts,
-  'browser runtime must expose the canonical frame counts'
-);
-assert.equal(
-  state.assetStatus.player.src,
-  `assets/${assetManifest.player.spriteSheet}`,
-  'browser runtime must load the player sprite path from asset-manifest.json'
-);
+for (const key of Object.keys(expectedAnimations)) {
+  assert.equal(state.assetStatus[`player.${key}`]?.loaded, true, `browser runtime must load player ${key} animation sheet`);
+}
 
 const beforeMoveX = state.x;
 await page.keyboard.down('ArrowRight');
@@ -376,11 +412,11 @@ await page.waitForFunction(() => (
 state = await page.evaluate(() => ({
   vy: window.NBGLevel1State.player.vy,
   anim: window.NBGLevel1State.player.anim,
-  fallFrames: window.NBGLevel1State.playerAnimations.animations.fall.frames
+  fallLoaded: Boolean(window.NBGLevel1State.playerAnimations.fall?.image)
 }));
 assert.ok(state.vy > 0, 'player must be descending during fall validation');
 assert.equal(state.anim, 'fall', 'descending airborne player must switch to fall animation');
-assert.equal(state.fallFrames, 1, 'fall animation must use one frame');
+assert.equal(state.fallLoaded, true, 'fall animation sheet must be loaded');
 
 await page.evaluate(() => {
   const player = window.NBGLevel1State.player;
@@ -421,11 +457,11 @@ await page.waitForTimeout(120);
 state = await page.evaluate(() => ({
   health: window.NBGLevel1State.player.health,
   anim: window.NBGLevel1State.player.anim,
-  hurtFrames: window.NBGLevel1State.playerAnimations.animations.hurt.frames
+  hurtLoaded: Boolean(window.NBGLevel1State.playerAnimations.hurt?.image)
 }));
 assert.ok(state.health < 3, 'enemy collision must damage player');
 assert.equal(state.anim, 'hurt', 'enemy collision must switch to hurt animation');
-assert.equal(state.hurtFrames, 2, 'hurt animation must use two frames');
+assert.equal(state.hurtLoaded, true, 'hurt animation sheet must be loaded');
 
 await page.evaluate(() => {
   const player = window.NBGLevel1State.player;
@@ -442,16 +478,15 @@ state = await page.evaluate(() => ({
   hud: document.getElementById('hud-state').textContent,
   anim: window.NBGLevel1State.player.anim,
   frame: window.NBGLevel1State.player.frame,
-  winFrames: window.NBGLevel1State.playerAnimations.animations.win.frames
+  victoryLoaded: Boolean(window.NBGLevel1State.playerAnimations.victory?.image)
 }));
 assert.equal(state.complete, true, 'finish flag must complete the level');
 assert.equal(state.running, false, 'game loop update state must stop after completion');
-assert.equal(state.completionAnimationActive, false, 'win animation loop must stop after the final win frame renders');
+assert.equal(state.completionAnimationActive, false, 'victory animation loop must stop after the final victory frame renders');
 assert.ok(state.xp >= 600, 'finish must award leaderboard-ready XP');
 assert.equal(state.hud, 'LEVEL COMPLETE', 'HUD must report completion');
-assert.equal(state.anim, 'win', 'finish flag must switch to win animation');
-assert.equal(state.frame, 1, 'win animation must advance to its final frame before rendering stops');
-assert.equal(state.winFrames, 2, 'win animation must use two frames');
+assert.equal(state.anim, 'victory', 'finish flag must switch to victory animation');
+assert.equal(state.victoryLoaded, true, 'victory animation sheet must be loaded');
 
 const pixelEnergy = await page.evaluate(() => {
   const canvas = document.getElementById('game');

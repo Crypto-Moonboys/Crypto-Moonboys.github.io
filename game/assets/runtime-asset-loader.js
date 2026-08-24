@@ -8,9 +8,10 @@ export class RuntimeAssetLoader {
   constructor(registry = NBGAssetRegistry) {
     this.assets = {};
     this.registry = registry || {};
+    this.playerBinding = NBGRunnerAssetBinding;
   }
 
-  async loadManifest(path = NBGRunnerAssetBinding.manifest) {
+  async loadManifest(path = './assets/asset-manifest.json') {
     const response = await fetch(path);
     this.manifest = await response.json();
     this.registry = this.createRegistryFromManifest(this.manifest);
@@ -18,14 +19,13 @@ export class RuntimeAssetLoader {
   }
 
   createRegistryFromManifest(manifest) {
-    if (!manifest?.player) return {};
+    if (!manifest?.world) return {};
     const layerNames = manifest.world.layerNames || ['sky', 'london-skyline', 'graffiti-wall', 'street'];
     const worldEntries = Object.fromEntries(
       layerNames.map((name, index) => [name, `./assets/${manifest.world.layers[index]}`])
     );
 
     return {
-      'nbg-runner': `./assets/${manifest.player.spriteSheet}`,
       coin: `./assets/${manifest.objects.xpCoin}`,
       checkpoint: `./assets/${manifest.objects.checkpoint}`,
       finish: `./assets/${manifest.objects.finishFlag}`,
@@ -37,13 +37,29 @@ export class RuntimeAssetLoader {
   }
 
   async loadRegistryAssets() {
-    const entries = Object.entries(this.registry);
+    const entries = Object.entries(this.registry).filter(([, src]) => typeof src === 'string');
 
     await Promise.all(
       entries.map(([name, src]) => this.loadImage(name, src))
     );
 
     return this.assets;
+  }
+
+  async loadPlayerAnimations(path = this.playerBinding.manifest) {
+    const response = await fetch(path);
+    const manifest = await response.json();
+    const animations = manifest.animations || {};
+
+    await Promise.all(
+      Object.entries(animations).map(async ([key, animation]) => {
+        const src = this.resolveAssetPath(animation.spriteSheet);
+        await this.loadImage(`nbg-runner:${key}`, src);
+      })
+    );
+
+    this.playerManifest = manifest;
+    return manifest;
   }
 
   loadImage(name, src) {
@@ -64,6 +80,11 @@ export class RuntimeAssetLoader {
       };
       image.src = src;
     });
+  }
+
+  resolveAssetPath(src) {
+    if (!src || src.startsWith('./') || src.startsWith('/') || /^(?:https?:)?\/\//.test(src)) return src;
+    return src.startsWith('assets/') ? `./${src}` : `./assets/${src}`;
   }
 
   get(name) {
