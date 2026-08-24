@@ -98,6 +98,15 @@ assert.ok(Date.now() - fullGeneratedAt >= 0, 'Graph generated_at must not be in 
 assert.match(graphGeneratorSource, /existingGeneratedAt <= now/,
   'graph generation must not preserve a future existing generated_at timestamp');
 
+const fullVerifiedAt = Date.parse(graphData.verified_at);
+const liteVerifiedAt = Date.parse(liteGraph.verified_at);
+assert.ok(Number.isFinite(fullVerifiedAt), 'graph-data.json has an invalid or missing verified_at value');
+assert.ok(Number.isFinite(liteVerifiedAt), 'entity-graph-lite.json has an invalid or missing verified_at value');
+assert.equal(liteGraph.verified_at, graphData.verified_at, 'Mobile graph verified_at must match the full graph');
+assert.ok(Date.now() - fullVerifiedAt >= 0, 'Graph verified_at must not be in the future');
+assert.match(graphGeneratorSource, /preserveTimestampsIfStable/,
+  'graph generation must preserve both timestamps when content is stable');
+
 if (process.env.GRAPH_MAX_AGE_HOURS) {
   const maxAgeHours = Number(process.env.GRAPH_MAX_AGE_HOURS);
   assert.ok(Number.isFinite(maxAgeHours) && maxAgeHours > 0, 'GRAPH_MAX_AGE_HOURS must be a positive number');
