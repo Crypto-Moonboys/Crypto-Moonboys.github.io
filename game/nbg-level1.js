@@ -212,6 +212,9 @@
       { type: 'pigeon', x: 1010, y: 128, w: 28, h: 22, vx: 1.35, min: 940, max: 1128, bob: 0 },
       { type: 'bot', x: 1455, y: FLOOR_Y - 38, w: 30, h: 38, vx: 0.85, min: 1390, max: 1550 }
     ];
+    var initialEnemies = enemies.map(function (enemy) {
+      return Object.assign({}, enemy);
+    });
 
     var checkpoint = { x: 1240, y: FLOOR_Y - 48, w: 30, h: 48, active: false };
     var finish = { x: 2050, y: FLOOR_Y - 62, w: 38, h: 62 };
@@ -575,7 +578,7 @@
       ctx.fillStyle = '#ffffff';
       ctx.font = '800 13px Courier New';
       ctx.fillText('LEADERBOARD XP READY: ' + xp, 130, 138);
-      ctx.fillText('REFRESH TO RUN AGAIN', 154, 160);
+      ctx.fillText('PRESS RESET TO RUN AGAIN', 136, 160);
     }
 
     function render(time) {
@@ -639,6 +642,53 @@
       updateCamera();
       updateHud();
       render(performance.now());
+      return window.NBGLevel1State;
+    }
+
+    function resetRun() {
+      running = false;
+      waitingForFirstInput = true;
+      completionAnimationActive = false;
+      complete = false;
+      lastTime = 0;
+      cameraX = 0;
+      checkpointX = 72;
+      finishBonusAwarded = false;
+      sprayTimer = 0;
+      xp = 0;
+      pendingInitialInput = null;
+      initialInputReplay = null;
+      clearInput();
+
+      player.x = 64;
+      player.w = 24;
+      player.h = 34;
+      player.y = FLOOR_Y - player.h;
+      player.vx = 0;
+      player.vy = 0;
+      player.facing = 1;
+      player.grounded = true;
+      player.health = 3;
+      player.invuln = 0;
+      setPlayerAnimation('idle');
+      player.frame = 0;
+      player.frameTime = 0;
+
+      coins.forEach(function (coin) {
+        coin.taken = false;
+        coin.float = 0;
+      });
+      enemies.forEach(function (enemy, index) {
+        Object.assign(enemy, initialEnemies[index]);
+      });
+      checkpoint.active = false;
+      gameVisible = true;
+      updateCamera();
+      updateHud();
+      render(typeof performance !== 'undefined' && performance.now ? performance.now() : 0);
+      window.dispatchEvent(new CustomEvent('nbg-level-reset', {
+        detail: { level: 'london-level-1' }
+      }));
       return window.NBGLevel1State;
     }
 
@@ -719,6 +769,14 @@
     return {
       init: init,
       start: beginGameplay,
+      reset: function () {
+        if (!assetsLoaded) return init().then(resetRun);
+        return Promise.resolve(resetRun());
+      },
+      restart: function () {
+        if (!assetsLoaded) return init().then(resetRun);
+        return Promise.resolve(resetRun());
+      },
       getState: function () { return window.NBGLevel1State; },
       setTouchControl: function (control, active) {
         if (Object.prototype.hasOwnProperty.call(touch, control)) {
@@ -764,6 +822,17 @@
         runtime.start().catch(setLaunchError);
       });
     }
+
+    function resetRuntimeFromShell() {
+      if (stage) stage.classList.add('is-active');
+      Promise.resolve(runtime.reset()).catch(setLaunchError);
+    }
+
+    window.addEventListener('moonboys:game-reset', resetRuntimeFromShell);
+    window.addEventListener('arcade:play-again', function (event) {
+      event.preventDefault();
+      resetRuntimeFromShell();
+    });
 
     Array.prototype.forEach.call(document.querySelectorAll('[data-control]'), function (button) {
       var control = button.getAttribute('data-control');

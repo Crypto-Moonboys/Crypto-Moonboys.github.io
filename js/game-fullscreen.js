@@ -125,6 +125,7 @@
   var btnStart = makeCtrlBtn('overlay-btn-start', 'Start game',        '▶', 'Start');
   var btnPause = makeCtrlBtn('overlay-btn-pause', 'Pause/Resume',      '⏸', 'Pause');
   var btnReset = makeCtrlBtn('overlay-btn-reset', 'Reset game',        '↺', 'Reset');
+  btnReset.setAttribute('data-fullscreen-action', 'reset');
   var btnMute  = makeCtrlBtn('overlay-btn-mute',  'Mute/Unmute',       '🔊', 'Mute');
   var btnExit  = makeCtrlBtn('overlay-btn-exit',  'Exit fullscreen',   '✕', 'Exit');
   var fullscreenPrompt = document.createElement('div');
@@ -1582,14 +1583,18 @@
     var gameResetBtn = document.getElementById('resetBtn');
     if (gameResetBtn) {
       gameResetBtn.click();
-      // After reset, game is no longer paused.
-      _gameStarted = false;
-      _isPaused = false;
-      syncPauseBtn();
-      document.dispatchEvent(new CustomEvent('arcade-run-reset', {
-        detail: { resetAt: Date.now() }
-      }));
     }
+    // After reset, game is no longer paused.
+    _gameStarted = false;
+    _isPaused = false;
+    syncPauseBtn();
+    var resetDetail = { resetAt: Date.now(), source: 'fullscreen-shell' };
+    window.dispatchEvent(new CustomEvent('moonboys:game-reset', {
+      detail: resetDetail
+    }));
+    document.dispatchEvent(new CustomEvent('arcade-run-reset', {
+      detail: resetDetail
+    }));
   });
 
   btnMute.addEventListener('click', function () {
