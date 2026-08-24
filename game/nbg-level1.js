@@ -8,6 +8,7 @@
   var WORLD_WIDTH = 2200;
   var FLOOR_Y = 214;
   var TARGET_FRAME_MS = 1000 / 60;
+  var WAITING_HUD_TEXT = 'MOVE TO START';
   var GRAVITY = 0.52;
   var FRICTION = 0.78;
   var RUN_ACCEL = 0.74;
@@ -116,6 +117,8 @@
     var waitingForFirstInput = false;
     var running = false;
     var initPromise = null;
+    var pendingInitialInput = null;
+    var initialInputReplay = null;
     var completionAnimationActive = false;
     var complete = false;
     var lastTime = 0;
@@ -230,11 +233,27 @@
       return startInputCodes.indexOf(code) >= 0;
     }
 
+    function getControlForCode(code) {
+      if (code === 'ArrowLeft' || code === 'KeyA') return 'left';
+      if (code === 'ArrowRight' || code === 'KeyD') return 'right';
+      if (code === 'ArrowUp' || code === 'Space' || code === 'KeyW') return 'jump';
+      if (code === 'KeyS' || code === 'KeyX') return 'spray';
+      return '';
+    }
+
+    function queueInitialInput(control) {
+      if (assetsLoaded || running || !control) return;
+      pendingInitialInput = { control: control };
+    }
+
     function onKey(e, down) {
       keys[e.code] = down;
       if (isStartInputCode(e.code)) {
         e.preventDefault();
-        if (down) beginGameplay();
+        if (down) {
+          queueInitialInput(getControlForCode(e.code));
+          beginGameplay();
+        }
       }
     }
 
@@ -249,10 +268,11 @@
     }
 
     function handleInput(step) {
-      var left = keys.ArrowLeft || keys.KeyA || touch.left;
-      var right = keys.ArrowRight || keys.KeyD || touch.right;
-      var jump = keys.Space || keys.ArrowUp || keys.KeyW || touch.jump;
-      var spray = keys.KeyS || keys.KeyX || touch.spray;
+      var replay = initialInputReplay;
+      var left = keys.ArrowLeft || keys.KeyA || touch.left || (replay && replay.control === 'left');
+      var right = keys.ArrowRight || keys.KeyD || touch.right || (replay && replay.control === 'right');
+      var jump = keys.Space || keys.ArrowUp || keys.KeyW || touch.jump || (replay && replay.control === 'jump');
+      var spray = keys.KeyS || keys.KeyX || touch.spray || (replay && replay.control === 'spray');
 
       if (left) {
         player.vx -= RUN_ACCEL * step;
@@ -274,6 +294,10 @@
 
       if (spray && sprayTimer <= 0) {
         sprayTimer = 230;
+      }
+
+      if (!replay || step > 0) {
+        initialInputReplay = null;
       }
     }
 
@@ -409,7 +433,7 @@
       hud.xp.textContent = 'XP ' + xp;
       hud.coins.textContent = 'COINS ' + collected + '/' + coins.length;
       hud.health.textContent = 'HEALTH ' + player.health;
-      hud.state.textContent = complete ? 'LEVEL COMPLETE' : running ? (checkpoint.active ? 'CHECKPOINT' : 'RUNNING') : 'PRESS ANY KEY';
+      hud.state.textContent = complete ? 'LEVEL COMPLETE' : running ? (checkpoint.active ? 'CHECKPOINT' : 'RUNNING') : WAITING_HUD_TEXT;
     }
 
     function drawImageLayer(image, parallax, y, h, fallbackColor) {
@@ -593,6 +617,7 @@
         get assetsLoaded() { return assetsLoaded; },
         get gameVisible() { return gameVisible; },
         get waitingForFirstInput() { return waitingForFirstInput; },
+        get pendingInitialInput() { return pendingInitialInput; },
         get running() { return running; },
         get completionAnimationActive() { return completionAnimationActive; },
         get cameraX() { return cameraX; },
@@ -676,6 +701,8 @@
       if (running) return Promise.resolve(window.NBGLevel1State);
       if (!assetsLoaded) return init().then(beginGameplay);
       if (complete) return Promise.resolve(window.NBGLevel1State);
+      initialInputReplay = pendingInitialInput;
+      pendingInitialInput = null;
       waitingForFirstInput = false;
       running = true;
       lastTime = 0;
@@ -696,7 +723,10 @@
       setTouchControl: function (control, active) {
         if (Object.prototype.hasOwnProperty.call(touch, control)) {
           touch[control] = active;
-          if (active) beginGameplay();
+          if (active) {
+            queueInitialInput(control);
+            beginGameplay();
+          }
         }
       }
     };
