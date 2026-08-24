@@ -169,6 +169,11 @@ assert.equal(
   'asset registry must not duplicate player animation paths from the player manifest'
 );
 assert.equal(
+  playerBindingSource.includes('animations:'),
+  false,
+  'player asset binding must not duplicate player animation paths from the player manifest'
+);
+assert.equal(
   runtimeSource.includes('var ASSETS ='),
   false,
   'standalone Level 1 runtime must resolve required assets from asset-manifest.json'
