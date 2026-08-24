@@ -8,6 +8,7 @@
   var WORLD_WIDTH = 2200;
   var FLOOR_Y = 214;
   var TARGET_FRAME_MS = 1000 / 60;
+  var WAITING_HUD_TEXT = 'MOVE TO START';
   var GRAVITY = 0.52;
   var FRICTION = 0.78;
   var RUN_ACCEL = 0.74;
@@ -82,6 +83,7 @@
         sourceHeight: 1,
         renderWidth: 1,
         renderHeight: 1,
+        renderOffsetY: 0,
         count: 1,
         columns: 1
       };
@@ -94,6 +96,7 @@
       sourceHeight: sourceHeight,
       renderWidth: animation.renderWidth || animation.frameWidth || 40,
       renderHeight: animation.renderHeight || animation.frameHeight || 48,
+      renderOffsetY: typeof animation.renderOffsetY === 'number' ? animation.renderOffsetY : 0,
       count: Math.max(1, animation.frames || animation.frameCount || 1),
       columns: animation.columns || Math.max(1, Math.floor(((animation.image && animation.image.naturalWidth) || sourceWidth) / sourceWidth))
     };
@@ -109,14 +112,16 @@
     var playerAnimations = {};
     var assetStatus = {};
     var requiredAssets = [];
-    var initialized = false;
-    var loadingPromise = null;
+    var assetsLoaded = false;
+    var gameVisible = false;
+    var waitingForFirstInput = false;
     var running = false;
-    var waitingForFirstInput = true;
+    var initPromise = null;
+    var pendingInitialInput = null;
+    var initialInputReplay = null;
     var completionAnimationActive = false;
     var complete = false;
     var lastTime = 0;
-    var tickScheduled = false;
     var cameraX = 0;
     var checkpointX = 72;
     var finishBonusAwarded = false;
@@ -215,27 +220,6 @@
     var finish = { x: 2050, y: FLOOR_Y - 62, w: 38, h: 62 };
     var xp = 0;
 
-    function scheduleTick() {
-      if (tickScheduled) return;
-      tickScheduled = true;
-      requestAnimationFrame(tick);
-    }
-
-    function beginRunFromFirstInput(source) {
-      if (!initialized || running || complete || !waitingForFirstInput) return;
-      waitingForFirstInput = false;
-      running = true;
-      lastTime = 0;
-      window.dispatchEvent(new CustomEvent('nbg-level-started', {
-        detail: { level: 'london-level-1', source: source || 'input' }
-      }));
-      scheduleTick();
-    }
-
-    function isValidStartCode(code) {
-      return ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'Space', 'KeyA', 'KeyD', 'KeyW', 'KeyS', 'KeyX'].indexOf(code) >= 0;
-    }
-
     function resetToCheckpoint() {
       player.x = checkpointX;
       player.y = FLOOR_Y - player.h;
@@ -246,13 +230,33 @@
       sprayTimer = 0;
     }
 
+    var startInputCodes = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'Space', 'KeyA', 'KeyD', 'KeyW', 'KeyS', 'KeyX'];
+
+    function isStartInputCode(code) {
+      return startInputCodes.indexOf(code) >= 0;
+    }
+
+    function getControlForCode(code) {
+      if (code === 'ArrowLeft' || code === 'KeyA') return 'left';
+      if (code === 'ArrowRight' || code === 'KeyD') return 'right';
+      if (code === 'ArrowUp' || code === 'Space' || code === 'KeyW') return 'jump';
+      if (code === 'KeyS' || code === 'KeyX') return 'spray';
+      return '';
+    }
+
+    function queueInitialInput(control) {
+      if (assetsLoaded || running || !control) return;
+      pendingInitialInput = { control: control };
+    }
+
     function onKey(e, down) {
       keys[e.code] = down;
-      if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'Space', 'KeyA', 'KeyD', 'KeyW', 'KeyS', 'KeyX'].indexOf(e.code) >= 0) {
+      if (isStartInputCode(e.code)) {
         e.preventDefault();
-      }
-      if (down && isValidStartCode(e.code)) {
-        beginRunFromFirstInput('keyboard');
+        if (down) {
+          queueInitialInput(getControlForCode(e.code));
+          beginGameplay();
+        }
       }
     }
 
@@ -267,10 +271,11 @@
     }
 
     function handleInput(step) {
-      var left = keys.ArrowLeft || keys.KeyA || touch.left;
-      var right = keys.ArrowRight || keys.KeyD || touch.right;
-      var jump = keys.Space || keys.ArrowUp || keys.KeyW || touch.jump;
-      var spray = keys.KeyS || keys.KeyX || touch.spray;
+      var replay = initialInputReplay;
+      var left = keys.ArrowLeft || keys.KeyA || touch.left || (replay && replay.control === 'left');
+      var right = keys.ArrowRight || keys.KeyD || touch.right || (replay && replay.control === 'right');
+      var jump = keys.Space || keys.ArrowUp || keys.KeyW || touch.jump || (replay && replay.control === 'jump');
+      var spray = keys.KeyS || keys.KeyX || touch.spray || (replay && replay.control === 'spray');
 
       if (left) {
         player.vx -= RUN_ACCEL * step;
@@ -292,6 +297,10 @@
 
       if (spray && sprayTimer <= 0) {
         sprayTimer = 230;
+      }
+
+      if (!replay || step > 0) {
+        initialInputReplay = null;
       }
     }
 
@@ -427,7 +436,7 @@
       hud.xp.textContent = 'XP ' + xp;
       hud.coins.textContent = 'COINS ' + collected + '/' + coins.length;
       hud.health.textContent = 'HEALTH ' + player.health;
-      hud.state.textContent = complete ? 'LEVEL COMPLETE' : waitingForFirstInput ? 'MOVE TO START' : checkpoint.active ? 'CHECKPOINT' : 'RUNNING';
+      hud.state.textContent = complete ? 'LEVEL COMPLETE' : running ? (checkpoint.active ? 'CHECKPOINT' : 'RUNNING') : WAITING_HUD_TEXT;
     }
 
     function drawImageLayer(image, parallax, y, h, fallbackColor) {
@@ -535,7 +544,8 @@
       var drawWidth = frameMeta.renderWidth;
       var drawHeight = frameMeta.renderHeight;
       var drawX = x - Math.round((drawWidth - player.w) / 2);
-      var drawY = y - Math.max(0, drawHeight - player.h);
+      var visualFootY = y + player.h;
+      var drawY = Math.round(visualFootY - drawHeight + frameMeta.renderOffsetY);
       var sourceX = col * frameMeta.sourceWidth;
       var sourceY = row * frameMeta.sourceHeight;
       var flash = player.invuln > 0 && Math.floor(player.invuln / 90) % 2 === 0;
@@ -582,7 +592,6 @@
     }
 
     function tick(time) {
-      tickScheduled = false;
       if (!lastTime) lastTime = time;
       var dt = Math.min(33, time - lastTime);
       lastTime = time;
@@ -598,7 +607,7 @@
       }
       updateHud();
       render(time);
-      if (running || completionAnimationActive) scheduleTick();
+      if (running || completionAnimationActive) requestAnimationFrame(tick);
     }
 
     function exposeTestState() {
@@ -608,8 +617,11 @@
         get enemies() { return enemies; },
         get xp() { return xp; },
         get complete() { return complete; },
-        get running() { return running; },
+        get assetsLoaded() { return assetsLoaded; },
+        get gameVisible() { return gameVisible; },
         get waitingForFirstInput() { return waitingForFirstInput; },
+        get pendingInitialInput() { return pendingInitialInput; },
+        get running() { return running; },
         get completionAnimationActive() { return completionAnimationActive; },
         get cameraX() { return cameraX; },
         get checkpoint() { return checkpoint; },
@@ -617,6 +629,20 @@
         get requiredAssets() { return requiredAssets.slice(); },
         get playerAnimations() { return playerAnimations; }
       };
+    }
+
+    function finishInit() {
+      assertRequiredAssetsLoaded();
+      assetsLoaded = true;
+      gameVisible = true;
+      waitingForFirstInput = true;
+      running = false;
+      complete = false;
+      lastTime = 0;
+      updateCamera();
+      updateHud();
+      render(performance.now());
+      return window.NBGLevel1State;
     }
 
     function resetRun() {
@@ -630,6 +656,8 @@
       finishBonusAwarded = false;
       sprayTimer = 0;
       xp = 0;
+      pendingInitialInput = null;
+      initialInputReplay = null;
       clearInput();
 
       player.x = 64;
@@ -652,7 +680,8 @@
         Object.assign(enemy, initialEnemies[index]);
       });
       checkpoint.active = false;
-      exposeTestState();
+      gameVisible = true;
+      updateCamera();
       updateHud();
       render(typeof performance !== 'undefined' && performance.now ? performance.now() : 0);
       window.dispatchEvent(new CustomEvent('nbg-level-reset', {
@@ -661,11 +690,10 @@
       return window.NBGLevel1State;
     }
 
-    function start() {
-      if (running) return Promise.resolve(window.NBGLevel1State);
-      if (initialized) return Promise.resolve(resetRun());
-      if (loadingPromise) return loadingPromise;
-      loadingPromise = loadJson(ASSET_MANIFEST).then(function (assetManifest) {
+    function init() {
+      exposeTestState();
+      if (initPromise) return initPromise;
+      initPromise = loadJson(ASSET_MANIFEST).then(function (assetManifest) {
         var assets = buildRuntimeAssetMap(assetManifest);
         var playerManifestPath = resolveAssetPath(assetManifest.player && assetManifest.player.animationManifest);
         if (!playerManifestPath) throw new Error('Missing player animation manifest path');
@@ -700,6 +728,7 @@
               sourceFrameHeight: animation.sourceFrameHeight,
               renderWidth: animation.renderWidth,
               renderHeight: animation.renderHeight,
+              renderOffsetY: animation.renderOffsetY,
               frames: animation.frames,
               columns: animation.columns,
               frameMs: animation.frameMs,
@@ -712,17 +741,23 @@
             };
           });
         })));
-      }).then(function () {
-        assertRequiredAssetsLoaded();
-        initialized = true;
-        exposeTestState();
-        resetRun();
-        window.dispatchEvent(new CustomEvent('nbg-level-ready', { detail: { level: 'london-level-1' } }));
-        return window.NBGLevel1State;
-      }).finally(function () {
-        loadingPromise = null;
-      });
-      return loadingPromise;
+      }).then(finishInit);
+      return initPromise;
+    }
+
+    function beginGameplay() {
+      if (running) return Promise.resolve(window.NBGLevel1State);
+      if (!assetsLoaded) return init().then(beginGameplay);
+      if (complete) return Promise.resolve(window.NBGLevel1State);
+      initialInputReplay = pendingInitialInput;
+      pendingInitialInput = null;
+      waitingForFirstInput = false;
+      running = true;
+      lastTime = 0;
+      updateHud();
+      window.dispatchEvent(new CustomEvent('nbg-level-started', { detail: { level: 'london-level-1' } }));
+      requestAnimationFrame(tick);
+      return Promise.resolve(window.NBGLevel1State);
     }
 
     window.addEventListener('keydown', function (e) { onKey(e, true); });
@@ -730,18 +765,24 @@
     window.addEventListener('blur', clearInput);
 
     return {
-      start: start,
+      init: init,
+      start: beginGameplay,
       reset: function () {
-        return initialized ? resetRun() : start();
+        if (!assetsLoaded) return init().then(resetRun);
+        return Promise.resolve(resetRun());
       },
       restart: function () {
-        return initialized ? resetRun() : start();
+        if (!assetsLoaded) return init().then(resetRun);
+        return Promise.resolve(resetRun());
       },
       getState: function () { return window.NBGLevel1State; },
       setTouchControl: function (control, active) {
         if (Object.prototype.hasOwnProperty.call(touch, control)) {
           touch[control] = active;
-          if (active) beginRunFromFirstInput('touch');
+          if (active) {
+            queueInitialInput(control);
+            beginGameplay();
+          }
         }
       }
     };
@@ -749,7 +790,6 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     var canvas = document.getElementById('game');
-    var title = document.getElementById('title-screen');
     var stage = document.getElementById('game-stage');
     var start = document.getElementById('startBtn') || document.getElementById('start');
     var hud = {
@@ -771,15 +811,18 @@
       throw error;
     }
 
-    start.addEventListener('click', function () {
-      title.hidden = true;
-      stage.classList.add('is-active');
-      runtime.start().catch(setLaunchError);
-    });
+    if (stage) stage.classList.add('is-active');
+    runtime.init().catch(setLaunchError);
+
+    if (start) {
+      start.addEventListener('click', function () {
+        if (stage) stage.classList.add('is-active');
+        runtime.start().catch(setLaunchError);
+      });
+    }
 
     function resetRuntimeFromShell() {
-      title.hidden = true;
-      stage.classList.add('is-active');
+      if (stage) stage.classList.add('is-active');
       Promise.resolve(runtime.reset()).catch(setLaunchError);
     }
 

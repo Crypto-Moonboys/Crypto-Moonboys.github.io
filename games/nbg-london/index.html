@@ -30,10 +30,6 @@
       padding: 0;
     }
 
-    .game-card .title-screen {
-      min-height: min(62vh, 560px);
-    }
-
     .game-card .nbg-game-stage {
       max-height: calc(100vh - 220px);
       min-height: 300px;
@@ -66,16 +62,9 @@
   <div class="page-title-line" aria-hidden="true"></div>
   <div class="game-card">
     <div class="nbg-shell" role="region" aria-label="NBG London Graffiti Run Level 1">
-      <section id="title-screen" class="title-screen">
-        <div class="title-copy">
-          <p class="kicker">NO BALL GAMES PRESENTS</p>
-          <h1>NBG LONDON GRAFFITI RUN</h1>
-          <p class="tagline">Run, tag, collect XP, and clear the London wall before the bots box you in.</p>
-        </div>
-        <button id="startBtn" class="start-button" type="button" data-overlay-fullscreen-only="true">START</button>
-      </section>
+      <button id="startBtn" type="button" hidden data-overlay-fullscreen-only="true" data-overlay-hide-start="true" aria-hidden="true">Open fullscreen</button>
 
-      <section id="game-stage" class="nbg-game-stage" aria-label="Playable Level 1">
+      <section id="game-stage" class="nbg-game-stage is-active" aria-label="Playable Level 1">
         <canvas id="game" width="480" height="270" aria-label="NBG London Graffiti Run canvas"></canvas>
         <div class="hud-strip" aria-hidden="false">
           <span id="hud-xp">XP 0</span>
