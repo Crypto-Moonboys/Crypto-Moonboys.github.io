@@ -1,0 +1,26 @@
+{
+  "project": "NBG London Graffiti Run",
+  "purpose": "Connect generated production assets to the arcade runtime without changing game logic unnecessarily.",
+  "rules": [
+    "Replace placeholder assets through mapped manifests.",
+    "Preserve existing animation names and collision assumptions.",
+    "Validate generated dimensions before runtime use.",
+    "Do not overwrite approved assets without a reviewed replacement."
+  ],
+  "integration_order": [
+    "player",
+    "core collectibles",
+    "platform tiles",
+    "enemy assets",
+    "background layers",
+    "effects",
+    "ui polish"
+  ],
+  "checks": [
+    "asset path exists",
+    "png validity",
+    "transparency preserved",
+    "frame dimensions match manifest",
+    "animation rows match runtime expectations"
+  ]
+}
