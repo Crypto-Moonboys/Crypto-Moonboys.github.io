@@ -50,9 +50,11 @@ function readJson(file) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
 }
 
-function preserveGeneratedAtIfStable(nodes, edges) {
+function preserveTimestampsIfStable(nodes, edges) {
   const now = Date.now();
-  if (!fs.existsSync(OUTPUT_PATH)) return new Date(now).toISOString();
+  const fresh = new Date(now).toISOString();
+
+  if (!fs.existsSync(OUTPUT_PATH)) return { generated_at: fresh, verified_at: fresh };
 
   try {
     const existing = readJson(OUTPUT_PATH);
@@ -67,13 +69,18 @@ function preserveGeneratedAtIfStable(nodes, edges) {
       Number.isFinite(existingGeneratedAt) &&
       existingGeneratedAt <= now
     ) {
-      return existing.generated_at;
+      return {
+        generated_at: existing.generated_at,
+        verified_at: typeof existing.verified_at === 'string' && existing.verified_at.trim()
+          ? existing.verified_at
+          : fresh,
+      };
     }
   } catch (err) {
-    // Ignore parse errors and use a fresh timestamp.
+    // Ignore parse errors and use fresh timestamps.
   }
 
-  return new Date(now).toISOString();
+  return { generated_at: fresh, verified_at: fresh };
 }
 
 function main() {
@@ -142,9 +149,10 @@ function main() {
     compareStrings(a.source, b.source) || b.score - a.score || compareStrings(a.target, b.target)
   );
 
+  const { generated_at, verified_at } = preserveTimestampsIfStable(nodes, edges);
   const output = {
-    generated_at: preserveGeneratedAtIfStable(nodes, edges),
-    verified_at: new Date().toISOString(),
+    generated_at,
+    verified_at,
     nodes,
     edges,
   };

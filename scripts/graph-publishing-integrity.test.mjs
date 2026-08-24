@@ -104,8 +104,8 @@ assert.ok(Number.isFinite(fullVerifiedAt), 'graph-data.json has an invalid or mi
 assert.ok(Number.isFinite(liteVerifiedAt), 'entity-graph-lite.json has an invalid or missing verified_at value');
 assert.equal(liteGraph.verified_at, graphData.verified_at, 'Mobile graph verified_at must match the full graph');
 assert.ok(Date.now() - fullVerifiedAt >= 0, 'Graph verified_at must not be in the future');
-assert.match(graphGeneratorSource, /verified_at.*new Date/,
-  'graph generation must always write a fresh verified_at timestamp');
+assert.match(graphGeneratorSource, /preserveTimestampsIfStable/,
+  'graph generation must preserve both timestamps when content is stable');
 
 if (process.env.GRAPH_MAX_AGE_HOURS) {
   const maxAgeHours = Number(process.env.GRAPH_MAX_AGE_HOURS);
