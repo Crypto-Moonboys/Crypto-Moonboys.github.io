@@ -82,6 +82,7 @@
         sourceHeight: 1,
         renderWidth: 1,
         renderHeight: 1,
+        renderOffsetY: 0,
         count: 1,
         columns: 1
       };
@@ -94,6 +95,7 @@
       sourceHeight: sourceHeight,
       renderWidth: animation.renderWidth || animation.frameWidth || 40,
       renderHeight: animation.renderHeight || animation.frameHeight || 48,
+      renderOffsetY: typeof animation.renderOffsetY === 'number' ? animation.renderOffsetY : 0,
       count: Math.max(1, animation.frames || animation.frameCount || 1),
       columns: animation.columns || Math.max(1, Math.floor(((animation.image && animation.image.naturalWidth) || sourceWidth) / sourceWidth))
     };
@@ -515,7 +517,8 @@
       var drawWidth = frameMeta.renderWidth;
       var drawHeight = frameMeta.renderHeight;
       var drawX = x - Math.round((drawWidth - player.w) / 2);
-      var drawY = y - Math.max(0, drawHeight - player.h);
+      var visualFootY = y + player.h;
+      var drawY = Math.round(visualFootY - drawHeight + frameMeta.renderOffsetY);
       var sourceX = col * frameMeta.sourceWidth;
       var sourceY = row * frameMeta.sourceHeight;
       var flash = player.invuln > 0 && Math.floor(player.invuln / 90) % 2 === 0;
@@ -652,6 +655,7 @@
               sourceFrameHeight: animation.sourceFrameHeight,
               renderWidth: animation.renderWidth,
               renderHeight: animation.renderHeight,
+              renderOffsetY: animation.renderOffsetY,
               frames: animation.frames,
               columns: animation.columns,
               frameMs: animation.frameMs,
