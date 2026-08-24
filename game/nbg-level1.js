@@ -109,10 +109,14 @@
     var playerAnimations = {};
     var assetStatus = {};
     var requiredAssets = [];
+    var initialized = false;
+    var loadingPromise = null;
     var running = false;
+    var waitingForFirstInput = true;
     var completionAnimationActive = false;
     var complete = false;
     var lastTime = 0;
+    var tickScheduled = false;
     var cameraX = 0;
     var checkpointX = 72;
     var finishBonusAwarded = false;
@@ -203,10 +207,34 @@
       { type: 'pigeon', x: 1010, y: 128, w: 28, h: 22, vx: 1.35, min: 940, max: 1128, bob: 0 },
       { type: 'bot', x: 1455, y: FLOOR_Y - 38, w: 30, h: 38, vx: 0.85, min: 1390, max: 1550 }
     ];
+    var initialEnemies = enemies.map(function (enemy) {
+      return Object.assign({}, enemy);
+    });
 
     var checkpoint = { x: 1240, y: FLOOR_Y - 48, w: 30, h: 48, active: false };
     var finish = { x: 2050, y: FLOOR_Y - 62, w: 38, h: 62 };
     var xp = 0;
+
+    function scheduleTick() {
+      if (tickScheduled) return;
+      tickScheduled = true;
+      requestAnimationFrame(tick);
+    }
+
+    function beginRunFromFirstInput(source) {
+      if (!initialized || running || complete || !waitingForFirstInput) return;
+      waitingForFirstInput = false;
+      running = true;
+      lastTime = 0;
+      window.dispatchEvent(new CustomEvent('nbg-level-started', {
+        detail: { level: 'london-level-1', source: source || 'input' }
+      }));
+      scheduleTick();
+    }
+
+    function isValidStartCode(code) {
+      return ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'Space', 'KeyA', 'KeyD', 'KeyW', 'KeyS', 'KeyX'].indexOf(code) >= 0;
+    }
 
     function resetToCheckpoint() {
       player.x = checkpointX;
@@ -222,6 +250,9 @@
       keys[e.code] = down;
       if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'Space', 'KeyA', 'KeyD', 'KeyW', 'KeyS', 'KeyX'].indexOf(e.code) >= 0) {
         e.preventDefault();
+      }
+      if (down && isValidStartCode(e.code)) {
+        beginRunFromFirstInput('keyboard');
       }
     }
 
@@ -396,7 +427,7 @@
       hud.xp.textContent = 'XP ' + xp;
       hud.coins.textContent = 'COINS ' + collected + '/' + coins.length;
       hud.health.textContent = 'HEALTH ' + player.health;
-      hud.state.textContent = complete ? 'LEVEL COMPLETE' : checkpoint.active ? 'CHECKPOINT' : 'RUNNING';
+      hud.state.textContent = complete ? 'LEVEL COMPLETE' : waitingForFirstInput ? 'MOVE TO START' : checkpoint.active ? 'CHECKPOINT' : 'RUNNING';
     }
 
     function drawImageLayer(image, parallax, y, h, fallbackColor) {
@@ -537,7 +568,7 @@
       ctx.fillStyle = '#ffffff';
       ctx.font = '800 13px Courier New';
       ctx.fillText('LEADERBOARD XP READY: ' + xp, 130, 138);
-      ctx.fillText('REFRESH TO RUN AGAIN', 154, 160);
+      ctx.fillText('PRESS RESET TO RUN AGAIN', 136, 160);
     }
 
     function render(time) {
@@ -551,6 +582,7 @@
     }
 
     function tick(time) {
+      tickScheduled = false;
       if (!lastTime) lastTime = time;
       var dt = Math.min(33, time - lastTime);
       lastTime = time;
@@ -566,7 +598,7 @@
       }
       updateHud();
       render(time);
-      if (running || completionAnimationActive) requestAnimationFrame(tick);
+      if (running || completionAnimationActive) scheduleTick();
     }
 
     function exposeTestState() {
@@ -577,6 +609,7 @@
         get xp() { return xp; },
         get complete() { return complete; },
         get running() { return running; },
+        get waitingForFirstInput() { return waitingForFirstInput; },
         get completionAnimationActive() { return completionAnimationActive; },
         get cameraX() { return cameraX; },
         get checkpoint() { return checkpoint; },
@@ -586,9 +619,53 @@
       };
     }
 
+    function resetRun() {
+      running = false;
+      waitingForFirstInput = true;
+      completionAnimationActive = false;
+      complete = false;
+      lastTime = 0;
+      cameraX = 0;
+      checkpointX = 72;
+      finishBonusAwarded = false;
+      sprayTimer = 0;
+      xp = 0;
+      clearInput();
+
+      player.x = 64;
+      player.y = FLOOR_Y - player.h;
+      player.w = 24;
+      player.h = 34;
+      player.vx = 0;
+      player.vy = 0;
+      player.facing = 1;
+      player.grounded = true;
+      player.health = 3;
+      player.invuln = 0;
+      setPlayerAnimation('idle');
+
+      coins.forEach(function (coin) {
+        coin.taken = false;
+        coin.float = 0;
+      });
+      enemies.forEach(function (enemy, index) {
+        Object.assign(enemy, initialEnemies[index]);
+      });
+      checkpoint.active = false;
+      exposeTestState();
+      updateHud();
+      render(typeof performance !== 'undefined' && performance.now ? performance.now() : 0);
+      window.dispatchEvent(new CustomEvent('nbg-level-reset', {
+        detail: { level: 'london-level-1' }
+      }));
+      return window.NBGLevel1State;
+    }
+
     function start() {
       if (running) return Promise.resolve(window.NBGLevel1State);
-      return loadJson(ASSET_MANIFEST).then(function (assetManifest) {
+      if (initialized) return Promise.resolve(resetRun());
+      if (loadingPromise) return loadingPromise;
+      loadingPromise = loadJson(ASSET_MANIFEST).then(function (assetManifest) {
         var assets = buildRuntimeAssetMap(assetManifest);
         var playerManifestPath = resolveAssetPath(assetManifest.player && assetManifest.player.animationManifest);
         if (!playerManifestPath) throw new Error('Missing player animation manifest path');
@@ -637,14 +714,15 @@
         })));
       }).then(function () {
         assertRequiredAssetsLoaded();
+        initialized = true;
         exposeTestState();
-        running = true;
-        complete = false;
-        lastTime = 0;
-        window.dispatchEvent(new CustomEvent('nbg-level-started', { detail: { level: 'london-level-1' } }));
-        requestAnimationFrame(tick);
+        resetRun();
+        window.dispatchEvent(new CustomEvent('nbg-level-ready', { detail: { level: 'london-level-1' } }));
         return window.NBGLevel1State;
+      }).finally(function () {
+        loadingPromise = null;
       });
+      return loadingPromise;
     }
 
     window.addEventListener('keydown', function (e) { onKey(e, true); });
@@ -653,10 +731,17 @@
 
     return {
       start: start,
+      reset: function () {
+        return initialized ? resetRun() : start();
+      },
+      restart: function () {
+        return initialized ? resetRun() : start();
+      },
       getState: function () { return window.NBGLevel1State; },
       setTouchControl: function (control, active) {
         if (Object.prototype.hasOwnProperty.call(touch, control)) {
           touch[control] = active;
+          if (active) beginRunFromFirstInput('touch');
         }
       }
     };
@@ -690,6 +775,18 @@
       title.hidden = true;
       stage.classList.add('is-active');
       runtime.start().catch(setLaunchError);
+    });
+
+    function resetRuntimeFromShell() {
+      title.hidden = true;
+      stage.classList.add('is-active');
+      Promise.resolve(runtime.reset()).catch(setLaunchError);
+    }
+
+    window.addEventListener('moonboys:game-reset', resetRuntimeFromShell);
+    window.addEventListener('arcade:play-again', function (event) {
+      event.preventDefault();
+      resetRuntimeFromShell();
     });
 
     Array.prototype.forEach.call(document.querySelectorAll('[data-control]'), function (button) {

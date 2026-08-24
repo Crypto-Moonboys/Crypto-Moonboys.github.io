@@ -8,7 +8,7 @@ import { chromium } from 'playwright';
 const shouldServe = process.argv.includes('--serve');
 const port = Number(process.env.NBG_LEVEL1_PORT || 4175);
 const host = process.env.NBG_LEVEL1_HOST || '127.0.0.1';
-const url = process.env.NBG_LEVEL1_URL || `http://${host}:${port}/game/demo-launch.html`;
+const url = process.env.NBG_LEVEL1_URL || `http://${host}:${port}/games/nbg-london/index.html`;
 const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE;
 let server;
 
@@ -124,6 +124,7 @@ for (const animation of Object.values(expectedAnimations)) {
   assert.notEqual(animation.renderHeight, animation.sourceFrameHeight, `render height must be separate from source frame height: ${animation.spriteSheet}`);
 }
 const runtimeSource = fs.readFileSync(path.resolve(process.cwd(), 'game/nbg-level1.js'), 'utf8');
+const fullscreenShellSource = fs.readFileSync(path.resolve(process.cwd(), 'js/game-fullscreen.js'), 'utf8');
 const arcadeRouteSource = fs.readFileSync(path.resolve(process.cwd(), 'games/nbg-london/index.html'), 'utf8');
 const arcadeIndexSource = fs.readFileSync(path.resolve(process.cwd(), 'games/index.html'), 'utf8');
 const playerRendererSource = fs.readFileSync(path.resolve(process.cwd(), 'game/engine/player-sprite-renderer.js'), 'utf8');
@@ -164,6 +165,22 @@ assert.equal(
   runtimeSource.includes("document.getElementById('startBtn') || document.getElementById('start')"),
   true,
   'standalone Level 1 runtime must support both arcade and legacy start buttons'
+);
+assert.equal(
+  runtimeSource.includes('window.NBGLevel1Runtime = runtime') &&
+    runtimeSource.includes("window.addEventListener('moonboys:game-reset', resetRuntimeFromShell)") &&
+    runtimeSource.includes('reset: function ()') &&
+    runtimeSource.includes('restart: function ()') &&
+    runtimeSource.includes('MOVE TO START'),
+  true,
+  'standalone Level 1 runtime must expose and handle an in-page reset contract'
+);
+assert.equal(
+  fullscreenShellSource.includes("btnReset.setAttribute('data-fullscreen-action', 'reset')") &&
+    fullscreenShellSource.includes("new CustomEvent('moonboys:game-reset'") &&
+    fullscreenShellSource.includes("new CustomEvent('arcade-run-reset'"),
+  true,
+  'shared fullscreen shell reset button must expose a stable selector and dispatch reset events'
 );
 assert.equal(
   arcadeRouteSource.includes('/css/game-fullscreen.css') &&
@@ -338,32 +355,47 @@ browser = await chromium.launch(launchOptions);
 const page = await browser.newPage({ viewport: { width: 960, height: 540 } });
 const errors = [];
 
+await page.route('https://fonts.googleapis.com/**', (route) => route.fulfill({
+  status: 200,
+  contentType: 'text/css; charset=utf-8',
+  body: ''
+}));
+
 page.on('pageerror', (error) => errors.push(error.message));
 page.on('console', (message) => {
   if (message.type() === 'error') errors.push(message.text());
 });
 
 await page.goto(url, { waitUntil: 'networkidle' });
-await assert.doesNotReject(() => page.waitForSelector('#start', { state: 'visible', timeout: 3000 }), 'START button must be visible');
+const startSelector = await page.locator('#startBtn').count() ? '#startBtn' : '#start';
+await assert.doesNotReject(() => page.waitForSelector(startSelector, { state: 'visible', timeout: 3000 }), 'START button must be visible');
 
-await page.click('#start');
-await page.waitForFunction(() => window.NBGLevel1State?.running === true, null, { timeout: 5000 });
+await page.click(startSelector);
+if (await page.locator('#overlay-btn-start').count()) {
+  await page.waitForSelector('#overlay-btn-start', { state: 'visible', timeout: 3000 });
+  await page.click('#overlay-btn-start');
+}
+await page.waitForFunction(() => Boolean(window.NBGLevel1State), null, { timeout: 5000 });
 await page.waitForTimeout(450);
 
 let state = await page.evaluate(() => ({
   running: window.NBGLevel1State.running,
+  waitingForFirstInput: window.NBGLevel1State.waitingForFirstInput,
   x: window.NBGLevel1State.player.x,
   y: window.NBGLevel1State.player.y,
   health: window.NBGLevel1State.player.health,
   coinCount: window.NBGLevel1State.coins.length,
   enemyCount: window.NBGLevel1State.enemies.length,
   xp: window.NBGLevel1State.xp,
+  hud: document.getElementById('hud-state').textContent,
   assetStatus: window.NBGLevel1State.assetStatus,
   requiredAssets: window.NBGLevel1State.requiredAssets,
   playerAnimations: window.NBGLevel1State.playerAnimations
 }));
 
-assert.equal(state.running, true, 'game loop must be running after START');
+assert.equal(state.running, false, 'fresh run must wait for first valid input after START');
+assert.equal(state.waitingForFirstInput, true, 'fresh run must expose first-input wait state');
+assert.equal(state.hud, 'MOVE TO START', 'HUD must prompt for first movement/action input');
 assert.equal(state.coinCount, 12, 'Level 1 must spawn 12 XP coins');
 assert.equal(state.enemyCount, 3, 'Level 1 must spawn 3 enemies');
 assert.equal(state.health, 3, 'player must spawn with health');
@@ -401,9 +433,11 @@ await page.keyboard.down('ArrowRight');
 await page.waitForTimeout(550);
 await page.keyboard.up('ArrowRight');
 state = await page.evaluate(() => ({
+  running: window.NBGLevel1State.running,
   x: window.NBGLevel1State.player.x,
   y: window.NBGLevel1State.player.y
 }));
+assert.equal(state.running, true, 'first valid keyboard input must start the fresh run');
 assert.ok(state.x > beforeMoveX + 8, 'player must move right');
 
 const beforeTouchMoveX = state.x;
@@ -551,6 +585,63 @@ assert.ok(state.xp >= 600, 'finish must award leaderboard-ready XP');
 assert.equal(state.hud, 'LEVEL COMPLETE', 'HUD must report completion');
 assert.equal(state.anim, 'victory', 'finish flag must switch to victory animation');
 assert.equal(state.victoryLoaded, true, 'victory animation sheet must be loaded');
+
+const resetSelector = '[data-fullscreen-action="reset"]';
+assert.equal(await page.locator(resetSelector).count(), 1, 'fullscreen reset control must have a stable selector');
+await page.click(resetSelector);
+await page.waitForFunction(() => window.NBGLevel1State?.complete === false && window.NBGLevel1State?.running === false, null, { timeout: 3000 });
+await page.waitForTimeout(120);
+state = await page.evaluate(() => ({
+  complete: window.NBGLevel1State.complete,
+  running: window.NBGLevel1State.running,
+  waitingForFirstInput: window.NBGLevel1State.waitingForFirstInput,
+  x: window.NBGLevel1State.player.x,
+  y: window.NBGLevel1State.player.y,
+  health: window.NBGLevel1State.player.health,
+  invuln: window.NBGLevel1State.player.invuln,
+  anim: window.NBGLevel1State.player.anim,
+  frame: window.NBGLevel1State.player.frame,
+  frameTime: window.NBGLevel1State.player.frameTime,
+  vx: window.NBGLevel1State.player.vx,
+  vy: window.NBGLevel1State.player.vy,
+  xp: window.NBGLevel1State.xp,
+  taken: window.NBGLevel1State.coins.filter((coin) => coin.taken).length,
+  checkpointActive: window.NBGLevel1State.checkpoint.active,
+  hud: document.getElementById('hud-state').textContent,
+  titleHidden: document.getElementById('title-screen').hidden,
+  stageActive: document.getElementById('game-stage').classList.contains('is-active')
+}));
+assert.equal(state.complete, false, 'fullscreen reset must clear completion state');
+assert.equal(state.running, false, 'fullscreen reset must return to the first-input wait state');
+assert.equal(state.waitingForFirstInput, true, 'fullscreen reset must restore first-input contract');
+assert.equal(state.hud, 'MOVE TO START', 'fullscreen reset HUD must prompt MOVE TO START');
+assert.equal(state.x, 64, 'fullscreen reset must restore player x to Level 1 start');
+assert.equal(state.y, 180, 'fullscreen reset must restore player y to Level 1 start');
+assert.equal(state.health, 3, 'fullscreen reset must restore player health');
+assert.equal(state.invuln, 0, 'fullscreen reset must clear player invulnerability');
+assert.equal(state.anim, 'idle', 'fullscreen reset must restore idle animation');
+assert.equal(state.frame, 0, 'fullscreen reset must reset animation frame');
+assert.equal(state.frameTime, 0, 'fullscreen reset must reset animation frame timer');
+assert.equal(state.vx, 0, 'fullscreen reset must clear horizontal velocity');
+assert.equal(state.vy, 0, 'fullscreen reset must clear vertical velocity');
+assert.equal(state.xp, 0, 'fullscreen reset must clear XP');
+assert.equal(state.taken, 0, 'fullscreen reset must restore every coin to untaken');
+assert.equal(state.checkpointActive, false, 'fullscreen reset must clear checkpoint state');
+assert.equal(state.titleHidden, true, 'fullscreen reset must not return to title screen');
+assert.equal(state.stageActive, true, 'fullscreen reset must keep canvas and HUD visible');
+
+const resetStartX = state.x;
+await page.keyboard.down('KeyD');
+await page.waitForTimeout(260);
+await page.keyboard.up('KeyD');
+state = await page.evaluate(() => ({
+  running: window.NBGLevel1State.running,
+  x: window.NBGLevel1State.player.x,
+  hud: document.getElementById('hud-state').textContent
+}));
+assert.equal(state.running, true, 'first valid keyboard input after fullscreen reset must start the game');
+assert.ok(state.x > resetStartX, 'fresh run after fullscreen reset must move from the start position');
+assert.equal(state.hud, 'RUNNING', 'HUD must return to RUNNING after first reset input starts play');
 
 const pixelEnergy = await page.evaluate(() => {
   const canvas = document.getElementById('game');
