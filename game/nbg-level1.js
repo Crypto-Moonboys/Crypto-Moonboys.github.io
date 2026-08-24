@@ -1,19 +1,7 @@
 (function () {
   'use strict';
 
-  var ASSETS = {
-    coin: 'assets/objects/xp-coin.svg',
-    checkpoint: 'assets/objects/checkpoint.svg',
-    finish: 'assets/objects/finish-flag.svg',
-    sky: 'assets/world/london-sky-layer.svg',
-    skyline: 'assets/world/london-skyline-layer.svg',
-    wall: 'assets/world/graffiti-wall-layer.svg',
-    street: 'assets/world/street-tiles.svg',
-    rat: 'assets/enemies/london-rat.svg',
-    pigeon: 'assets/enemies/pigeon.svg',
-    bot: 'assets/enemies/graffiti-bot.svg'
-  };
-  var PLAYER_ANIMATION_MANIFEST = 'assets/player/nbg-runner-animation-manifest.json';
+  var ASSET_MANIFEST = 'assets/asset-manifest.json';
   var PLAYER_STATE_TO_ANIMATION = {
     idle: 'idle',
     moving: 'run',
@@ -60,8 +48,40 @@
   }
 
   function resolveAssetPath(assetPath) {
+    if (!assetPath) return assetPath;
     if (/^(?:https?:)?\/\//.test(assetPath) || assetPath.charAt(0) === '/') return assetPath;
     return assetPath.indexOf('assets/') === 0 ? assetPath : 'assets/' + assetPath;
+  }
+
+  function buildRuntimeAssetMap(manifest) {
+    var layerKeyMap = {
+      sky: 'sky',
+      'london-skyline': 'skyline',
+      'graffiti-wall': 'wall',
+      street: 'street'
+    };
+    var assets = {};
+    var layerNames = (manifest.world && manifest.world.layerNames) || [];
+    var layers = (manifest.world && manifest.world.layers) || [];
+
+    layerNames.forEach(function (name, index) {
+      var key = layerKeyMap[name] || name;
+      if (layers[index]) assets[key] = resolveAssetPath(layers[index]);
+    });
+
+    if (manifest.objects) {
+      if (manifest.objects.xpCoin) assets.coin = resolveAssetPath(manifest.objects.xpCoin);
+      if (manifest.objects.checkpoint) assets.checkpoint = resolveAssetPath(manifest.objects.checkpoint);
+      if (manifest.objects.finishFlag) assets.finish = resolveAssetPath(manifest.objects.finishFlag);
+    }
+
+    if (manifest.enemies) {
+      if (manifest.enemies.londonRat) assets.rat = resolveAssetPath(manifest.enemies.londonRat);
+      if (manifest.enemies.pigeon) assets.pigeon = resolveAssetPath(manifest.enemies.pigeon);
+      if (manifest.enemies.graffitiBot) assets.bot = resolveAssetPath(manifest.enemies.graffitiBot);
+    }
+
+    return assets;
   }
 
   function getAnimationFrameSize(animation) {
@@ -83,7 +103,7 @@
     var images = {};
     var playerAnimations = {};
     var assetStatus = {};
-    var requiredAssets = Object.keys(ASSETS);
+    var requiredAssets = [];
     var running = false;
     var completionAnimationActive = false;
     var complete = false;
@@ -574,15 +594,26 @@
 
     function start() {
       if (running) return Promise.resolve(window.NBGLevel1State);
-      return loadJson(PLAYER_ANIMATION_MANIFEST).then(function (manifest) {
-        var animations = manifest.animations || {};
+      return loadJson(ASSET_MANIFEST).then(function (assetManifest) {
+        var assets = buildRuntimeAssetMap(assetManifest);
+        var playerManifestPath = resolveAssetPath(assetManifest.player && assetManifest.player.animationManifest);
+        if (!playerManifestPath) throw new Error('Missing player animation manifest path');
+
+        return loadJson(playerManifestPath).then(function (manifest) {
+          return {
+            assets: assets,
+            manifest: manifest
+          };
+        });
+      }).then(function (runtimeAssets) {
+        var animations = runtimeAssets.manifest.animations || {};
         var animationKeys = Object.keys(animations);
-        requiredAssets = Object.keys(ASSETS).concat(animationKeys.map(function (key) {
+        requiredAssets = Object.keys(runtimeAssets.assets).concat(animationKeys.map(function (key) {
           return 'player.' + key;
         }));
 
-        return Promise.all(Object.keys(ASSETS).map(function (key) {
-          return loadImage(ASSETS[key]).then(function (result) {
+        return Promise.all(Object.keys(runtimeAssets.assets).map(function (key) {
+          return loadImage(runtimeAssets.assets[key]).then(function (result) {
             images[key] = result.image;
             assetStatus[key] = {
               src: result.src,

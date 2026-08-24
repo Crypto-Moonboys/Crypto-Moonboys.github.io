@@ -54,8 +54,7 @@ export class RuntimeAssetLoader {
     await Promise.all(
       Object.entries(animations).map(async ([key, animation]) => {
         const src = this.resolveAssetPath(animation.spriteSheet);
-        const image = await this.loadImage(`nbg-runner:${key}`, src);
-        this.assets[`nbg-runner:${key}`] = image;
+        await this.loadImage(`nbg-runner:${key}`, src);
       })
     );
 

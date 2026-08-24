@@ -56,7 +56,7 @@ window.NBGAnimationController = {
       victory: 'victory'
     };
 
-    return stateMap[state] || state;
+    return stateMap[state] || this.aliases[state] || state;
   },
 
   setAnimationImage(state, image) {

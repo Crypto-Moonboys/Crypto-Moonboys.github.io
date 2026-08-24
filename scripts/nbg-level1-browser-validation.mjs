@@ -113,6 +113,7 @@ assert.equal('spriteSheet' in playerAnimationManifest, false, 'player animation 
 assert.equal('frameSize' in playerAnimationManifest, false, 'player animation manifest must not define global atlas frameSize');
 assert.equal('anchor' in playerAnimationManifest, false, 'player animation manifest must not define atlas anchor metadata');
 assert.equal('spriteSheet' in assetManifest.player, false, 'asset-manifest.json must not require the old player atlas spriteSheet');
+assert.equal('animationManifest' in assetManifest.player, true, 'asset-manifest.json must point to the player animation manifest');
 for (const animation of Object.values(expectedAnimations)) {
   const assetPath = path.resolve(process.cwd(), 'game/assets', animation.spriteSheet);
   assert.equal(fs.existsSync(assetPath), true, `AutoSprite animation PNG must exist: ${animation.spriteSheet}`);
@@ -121,6 +122,7 @@ const runtimeSource = fs.readFileSync(path.resolve(process.cwd(), 'game/nbg-leve
 const playerRendererSource = fs.readFileSync(path.resolve(process.cwd(), 'game/engine/player-sprite-renderer.js'), 'utf8');
 const playerControllerSource = fs.readFileSync(path.resolve(process.cwd(), 'game/engine/player-animation-controller.js'), 'utf8');
 const playerBindingSource = fs.readFileSync(path.resolve(process.cwd(), 'game/assets/player/nbg-runner-asset-binding.js'), 'utf8');
+const assetRegistrySource = fs.readFileSync(path.resolve(process.cwd(), 'game/assets/asset-registry.js'), 'utf8');
 const runtimeAssetLoaderSource = fs.readFileSync(path.resolve(process.cwd(), 'game/assets/runtime-asset-loader.js'), 'utf8');
 const level1RenderBridgeSource = fs.readFileSync(path.resolve(process.cwd(), 'game/engine/level1-render-bridge.js'), 'utf8');
 const levelRenderPipelineSource = fs.readFileSync(path.resolve(process.cwd(), 'game/engine/level-render-pipeline.js'), 'utf8');
@@ -145,6 +147,31 @@ assert.equal(
   /nbg-runner-sprite-sheet\.(svg|png)/.test(playerRendererSource),
   false,
   'player renderer must not hardcode the player sprite file extension'
+);
+assert.equal(
+  /assetLoader\?\.get\(animation\?\.spriteKey\s*\|\|\s*player\.sprite\s*\|\|\s*this\.spriteKey\)/.test(playerRendererSource),
+  false,
+  'player renderer must not fall back to the legacy nbg-runner atlas asset key'
+);
+assert.equal(
+  playerRendererSource.includes('`${this.spriteKey}:${animationKey}`'),
+  true,
+  'player renderer must resolve sprites through the per-animation runtime key'
+);
+assert.equal(
+  /this\.assets\[`nbg-runner:\$\{key\}`\]\s*=\s*image/.test(runtimeAssetLoaderSource),
+  false,
+  'runtime asset loader must not assign loaded animation images twice'
+);
+assert.equal(
+  assetRegistrySource.includes('animations:'),
+  false,
+  'asset registry must not duplicate player animation paths from the player manifest'
+);
+assert.equal(
+  runtimeSource.includes('var ASSETS ='),
+  false,
+  'standalone Level 1 runtime must resolve required assets from asset-manifest.json'
 );
 for (const forbiddenBindingToken of ['src:', 'frameWidth:', 'frameHeight:']) {
   assert.equal(

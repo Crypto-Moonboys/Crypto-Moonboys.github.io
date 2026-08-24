@@ -17,7 +17,10 @@ class PlayerSpriteRenderer {
     if (!this.ready || !player) return;
 
     const animation = this.animationController?.getCurrentAnimation?.();
-    const sprite = animation?.image || this.assetLoader?.get(animation?.spriteKey || player.sprite || this.spriteKey);
+    const animationKey = animation?.key || this.animationController?.state || null;
+    const sprite = animationKey
+      ? this.assetLoader?.get(`${this.spriteKey}:${animationKey}`) || animation?.image
+      : null;
     const drawX = Math.round(player.x - (camera.x || 0));
     const drawY = Math.round(player.y - (camera.y || 0));
 
