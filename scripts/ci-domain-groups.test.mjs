@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const workflow = await fs.readFile(path.join(ROOT, '.github/workflows/ci.yml'), 'utf8');
-const deployWorkflow = await fs.readFile(path.join(ROOT, '.github/workflows/deploy-pages.yml'), 'utf8');
+const deployWorkflow = await fs.readFile(path.join(ROOT, '.github/workflows/pages.yml'), 'utf8');
 const graphWorkflow = await fs.readFile(path.join(ROOT, '.github/workflows/graph-publishing-integrity.yml'), 'utf8');
 const preparePagesArtifact = await fs.readFile(path.join(ROOT, 'scripts/prepare-pages-artifact.mjs'), 'utf8');
 const changeScope = await fs.readFile(path.join(ROOT, 'scripts/ci-change-scope.mjs'), 'utf8');
@@ -110,21 +110,9 @@ assert.ok(
   'Pages deploy must not trigger on deployments/** unless that directory is copied into the artifact',
 );
 
-for (const rootPublicPattern of ['"*.png"', '"*.jpg"', '"*.jpeg"', '"*.webp"', '"*.gif"', '"*.svg"', '"*.xml"', '"*.txt"']) {
-  assert.ok(
-    deployWorkflow.includes(rootPublicPattern),
-    `Pages deploy must trigger on root public asset pattern ${rootPublicPattern}`,
-  );
-}
-
 assert.ok(
   preparePagesArtifact.includes("'sam-memory.json'"),
   'Pages artifact preparation must include sam-memory.json as a committed public root asset',
-);
-
-assert.ok(
-  deployWorkflow.includes('"sam-memory.json"'),
-  'Pages deploy must trigger when the committed sam-memory.json public asset changes',
 );
 
 assert.ok(

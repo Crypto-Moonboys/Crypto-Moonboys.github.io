@@ -7,7 +7,7 @@
  * Data sources (all via GitHub REST API v3):
  *   - Latest main commit SHA     → GET /repos/{owner}/{repo}/git/ref/heads/main
  *   - Pages deployment SHA       → GET /repos/{owner}/{repo}/deployments?environment=github-pages&per_page=1
- *   - Pages workflow run status  → GET /repos/{owner}/{repo}/actions/workflows/deploy-pages.yml/runs?branch=main&per_page=1
+ *   - Pages workflow run status  → GET /repos/{owner}/{repo}/actions/workflows/pages.yml/runs?branch=main&per_page=1
  *   - Pages site info / URL      → GET /repos/{owner}/{repo}/pages
  *
  * Verdicts (printed and determines exit code):
@@ -36,7 +36,7 @@ import { execSync } from 'node:child_process';
 const REPO          = process.env.GITHUB_REPOSITORY || 'Crypto-Moonboys/Crypto-Moonboys.github.io';
 const TOKEN         = process.env.GITHUB_TOKEN;
 const WARN_ONLY     = process.env.PAGES_DEPLOY_STATUS_WARN_ONLY === '1';
-const PAGES_WORKFLOW = 'deploy-pages.yml';
+const PAGES_WORKFLOW = 'pages.yml';
 
 // ── GitHub API helper ─────────────────────────────────────────────────────────
 function ghGet(apiPath) {

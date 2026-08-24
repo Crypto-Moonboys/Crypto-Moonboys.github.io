@@ -519,7 +519,7 @@ async function verifyBtqmAssets() {
     try {
       const { status } = await headRequest(assetUrl);
       if (status === 200) pass(`BTQM ${label} asset resolves (HTTP 200): ${path}`);
-      else if (status === 404) fail(`BTQM ${label} asset 404: ${path}`, { url: assetUrl, suggested: 'Hydration step not run in Pages deploy, or asset not in manifest — check deploy-pages.yml and hydrate-btqm-generated-assets.mjs' });
+      else if (status === 404) fail(`BTQM ${label} asset 404: ${path}`, { url: assetUrl, suggested: 'Hydration step not run in Pages deploy, or asset not in manifest — check pages.yml and hydrate-btqm-generated-assets.mjs' });
       else fail(`BTQM ${label} asset HTTP ${status}: ${path}`, { url: assetUrl, suggested: 'Unexpected status from CDN — check Cloudflare cache/routing' });
     } catch (err) {
       if (isLocalTlsInspectionError(err)) { warn(`BTQM ${label} direct HEAD skipped: ${err.message}`, { url: assetUrl, suggested: 'Local Node TLS trust rejected the certificate chain; browser-backed page checks still validate deployed runtime assets.' }); continue; }

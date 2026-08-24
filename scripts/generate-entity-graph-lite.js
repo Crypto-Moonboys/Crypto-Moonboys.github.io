@@ -72,6 +72,7 @@ function main() {
 
   const lite = {
     generated_at: data.generated_at,
+    verified_at: data.verified_at,
     lite: true,
     nodes: topNodes,
     edges: liteEdges,

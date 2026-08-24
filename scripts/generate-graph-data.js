@@ -144,6 +144,7 @@ function main() {
 
   const output = {
     generated_at: preserveGeneratedAtIfStable(nodes, edges),
+    verified_at: new Date().toISOString(),
     nodes,
     edges,
   };
