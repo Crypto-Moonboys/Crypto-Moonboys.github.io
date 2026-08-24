@@ -2,16 +2,6 @@
   'use strict';
 
   var ASSET_MANIFEST = 'assets/asset-manifest.json';
-  var PLAYER_STATE_TO_ANIMATION = {
-    idle: 'idle',
-    moving: 'run',
-    airborne: 'jump',
-    falling: 'fall',
-    tagging: 'spray',
-    damaged: 'hurt',
-    complete: 'victory'
-  };
-
   var WIDTH = 480;
   var HEIGHT = 270;
   var WORLD_WIDTH = 2200;
@@ -419,21 +409,6 @@
       }
     }
 
-    function resolvePlayerAnimationKey(anim) {
-      if (complete) return PLAYER_STATE_TO_ANIMATION.complete;
-      if (anim === 'spray') return PLAYER_STATE_TO_ANIMATION.tagging;
-      if (anim === 'hit') return PLAYER_STATE_TO_ANIMATION.damaged;
-      if (anim === 'run') return PLAYER_STATE_TO_ANIMATION.moving;
-      if (anim === 'jump') {
-        return player.vy > 0 ? PLAYER_STATE_TO_ANIMATION.falling : PLAYER_STATE_TO_ANIMATION.airborne;
-      }
-      return PLAYER_STATE_TO_ANIMATION.idle;
-    }
-
-    function resolvePlayerAnimation(anim) {
-      return playerAnimations[resolvePlayerAnimationKey(anim)] || null;
-    }
-
     function drawWorld() {
       drawImageLayer(images.sky, 0.08, 0, HEIGHT, '#171730');
       drawImageLayer(images.skyline, 0.22, 46, 102, '#18203a');
@@ -509,10 +484,10 @@
       var col = player.frame % frameSize.count;
       var x = Math.round(player.x - cameraX);
       var y = Math.round(player.y);
-      var drawWidth = 32;
-      var drawHeight = 40;
-      var drawX = x - 4;
-      var drawY = y - 2;
+      var drawWidth = frameSize.width;
+      var drawHeight = frameSize.height;
+      var drawX = x - Math.round((drawWidth - player.w) / 2);
+      var drawY = y - Math.max(0, drawHeight - player.h);
       var flash = player.invuln > 0 && Math.floor(player.invuln / 90) % 2 === 0;
       if (flash) return;
 

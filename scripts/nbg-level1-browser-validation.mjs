@@ -173,6 +173,16 @@ assert.equal(
   false,
   'standalone Level 1 runtime must resolve required assets from asset-manifest.json'
 );
+assert.equal(
+  /function resolvePlayerAnimation(Key)?\(/.test(runtimeSource),
+  false,
+  'standalone Level 1 runtime must not keep unused duplicate player animation resolution helpers'
+);
+assert.equal(
+  /var drawWidth = 32;|var drawHeight = 40;/.test(runtimeSource),
+  false,
+  'standalone Level 1 player renderer must draw AutoSprite frames at manifest dimensions'
+);
 for (const forbiddenBindingToken of ['src:', 'frameWidth:', 'frameHeight:']) {
   assert.equal(
     playerBindingSource.includes(forbiddenBindingToken),
