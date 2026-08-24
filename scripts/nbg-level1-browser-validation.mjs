@@ -82,13 +82,13 @@ function readJson(relativePath) {
 }
 
 const expectedAnimations = {
-  idle: { spriteSheet: 'player/animations/idle.png', frameWidth: 32, frameHeight: 48, frames: 4, frameMs: 145 },
-  run: { spriteSheet: 'player/animations/run.png', frameWidth: 32, frameHeight: 48, frames: 6, frameMs: 88 },
-  jump: { spriteSheet: 'player/animations/jump.png', frameWidth: 32, frameHeight: 48, frames: 1, frameMs: 145 },
-  fall: { spriteSheet: 'player/animations/fall.png', frameWidth: 32, frameHeight: 48, frames: 1, frameMs: 145 },
-  spray: { spriteSheet: 'player/animations/spray.png', frameWidth: 32, frameHeight: 48, frames: 4, frameMs: 110 },
-  hurt: { spriteSheet: 'player/animations/hurt.png', frameWidth: 32, frameHeight: 48, frames: 2, frameMs: 120 },
-  victory: { spriteSheet: 'player/animations/victory.png', frameWidth: 32, frameHeight: 48, frames: 2, frameMs: 145 }
+  idle: { spriteSheet: 'player/animations/idle.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 40, renderHeight: 48, frames: 4, columns: 3, frameMs: 145 },
+  run: { spriteSheet: 'player/animations/run.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 40, renderHeight: 48, frames: 6, columns: 3, frameMs: 88 },
+  jump: { spriteSheet: 'player/animations/jump.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 40, renderHeight: 48, frames: 1, columns: 3, frameMs: 145 },
+  fall: { spriteSheet: 'player/animations/fall.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 40, renderHeight: 48, frames: 1, columns: 3, frameMs: 145 },
+  spray: { spriteSheet: 'player/animations/spray.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 40, renderHeight: 48, frames: 4, columns: 3, frameMs: 110 },
+  hurt: { spriteSheet: 'player/animations/hurt.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 40, renderHeight: 48, frames: 2, columns: 3, frameMs: 120 },
+  victory: { spriteSheet: 'player/animations/victory.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 40, renderHeight: 48, frames: 2, columns: 3, frameMs: 145 }
 };
 const assetManifest = readJson('game/assets/asset-manifest.json');
 const playerAnimationManifest = readJson('game/assets/player/nbg-runner-animation-manifest.json');
@@ -117,6 +117,11 @@ assert.equal('animationManifest' in assetManifest.player, true, 'asset-manifest.
 for (const animation of Object.values(expectedAnimations)) {
   const assetPath = path.resolve(process.cwd(), 'game/assets', animation.spriteSheet);
   assert.equal(fs.existsSync(assetPath), true, `AutoSprite animation PNG must exist: ${animation.spriteSheet}`);
+  const pngHeader = fs.readFileSync(assetPath).subarray(16, 24);
+  assert.equal(pngHeader.readUInt32BE(0), 384, `AutoSprite animation PNG width must remain committed grid export width: ${animation.spriteSheet}`);
+  assert.equal(pngHeader.readUInt32BE(4), 256, `AutoSprite animation PNG height must remain committed grid export height: ${animation.spriteSheet}`);
+  assert.notEqual(animation.renderWidth, animation.sourceFrameWidth, `render width must be separate from source frame width: ${animation.spriteSheet}`);
+  assert.notEqual(animation.renderHeight, animation.sourceFrameHeight, `render height must be separate from source frame height: ${animation.spriteSheet}`);
 }
 const runtimeSource = fs.readFileSync(path.resolve(process.cwd(), 'game/nbg-level1.js'), 'utf8');
 const playerRendererSource = fs.readFileSync(path.resolve(process.cwd(), 'game/engine/player-sprite-renderer.js'), 'utf8');
@@ -137,6 +142,32 @@ assert.equal(
   [runtimeSource, playerRendererSource, playerControllerSource].some(source => /naturalWidth\s*%\s*frameHeight/.test(source)),
   false,
   'player runtime must not infer non-square AutoSprite frame dimensions from image naturalWidth modulo frameHeight'
+);
+assert.equal(
+  [runtimeSource, playerRendererSource, playerControllerSource].some(source => /naturalWidth\s*%\s*sourceFrameHeight/.test(source)),
+  false,
+  'player runtime must not infer square AutoSprite frame dimensions from image naturalWidth modulo sourceFrameHeight'
+);
+assert.equal(
+  runtimeSource.includes('sourceFrameWidth') && runtimeSource.includes('sourceFrameHeight'),
+  true,
+  'standalone Level 1 runtime must crop from source frame metadata'
+);
+assert.equal(
+  runtimeSource.includes('renderWidth') && runtimeSource.includes('renderHeight'),
+  true,
+  'standalone Level 1 runtime must draw using render size metadata'
+);
+assert.equal(
+  runtimeSource.includes('Math.floor(frame / frameMeta.columns)') && playerRendererSource.includes('Math.floor(frame / columns)'),
+  true,
+  'player renderers must support grid sheet row coordinates'
+);
+assert.equal(
+  runtimeSource.includes('sourceX, sourceY, frameMeta.sourceWidth, frameMeta.sourceHeight') &&
+    /sourceX,\s*sourceY,\s*sourceFrameWidth,\s*sourceFrameHeight/.test(playerRendererSource),
+  true,
+  'player renderers must pass grid source rectangles to drawImage'
 );
 assert.equal(
   /frames:\s*Array\.isArray\(animation\.frames\)\s*\?\s*animation\.frames\s*:\s*null/.test(playerControllerSource),
@@ -184,9 +215,9 @@ assert.equal(
   'standalone Level 1 runtime must not keep unused duplicate player animation resolution helpers'
 );
 assert.equal(
-  /var drawWidth = 32;|var drawHeight = 40;/.test(runtimeSource),
+  /var drawWidth = 32;|var drawWidth = 40;|var drawHeight = 40;|var drawWidth = frameMeta\.sourceWidth|var drawHeight = frameMeta\.sourceHeight/.test(runtimeSource),
   false,
-  'standalone Level 1 player renderer must draw AutoSprite frames at manifest dimensions'
+  'standalone Level 1 player renderer must not draw AutoSprite source frames as the in-game size'
 );
 for (const forbiddenBindingToken of ['src:', 'frameWidth:', 'frameHeight:']) {
   assert.equal(
@@ -319,9 +350,12 @@ assert.deepEqual(
     key,
     {
       spriteSheet: animation.spriteSheet,
-      frameWidth: animation.frameWidth,
-      frameHeight: animation.frameHeight,
+      sourceFrameWidth: animation.sourceFrameWidth,
+      sourceFrameHeight: animation.sourceFrameHeight,
+      renderWidth: animation.renderWidth,
+      renderHeight: animation.renderHeight,
       frames: animation.frames,
+      columns: animation.columns,
       frameMs: animation.frameMs
     }
   ])),

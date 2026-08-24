@@ -74,13 +74,27 @@
     return assets;
   }
 
-  function getAnimationFrameSize(animation) {
-    if (!animation) return { width: 1, height: 1, count: 1 };
+  function getAnimationFrameMetadata(animation) {
+    if (!animation) {
+      return {
+        sourceWidth: 1,
+        sourceHeight: 1,
+        renderWidth: 1,
+        renderHeight: 1,
+        count: 1,
+        columns: 1
+      };
+    }
 
+    var sourceWidth = animation.sourceFrameWidth || animation.frameWidth || 32;
+    var sourceHeight = animation.sourceFrameHeight || animation.frameHeight || 48;
     return {
-      width: animation.frameWidth || 32,
-      height: animation.frameHeight || 48,
-      count: Math.max(1, animation.frames || animation.frameCount || 1)
+      sourceWidth: sourceWidth,
+      sourceHeight: sourceHeight,
+      renderWidth: animation.renderWidth || animation.frameWidth || 40,
+      renderHeight: animation.renderHeight || animation.frameHeight || 48,
+      count: Math.max(1, animation.frames || animation.frameCount || 1),
+      columns: animation.columns || Math.max(1, Math.floor(((animation.image && animation.image.naturalWidth) || sourceWidth) / sourceWidth))
     };
   }
 
@@ -143,7 +157,7 @@
 
     function advancePlayerAnimation(dt, loop) {
       var animation = getAnimation(player.anim);
-      var frameCount = getAnimationFrameSize(animation).count;
+      var frameCount = getAnimationFrameMetadata(animation).count;
       var frameMs = animation ? animation.frameMs : 145;
       if (frameCount <= 1) return true;
 
@@ -480,14 +494,18 @@
 
     function drawPlayer() {
       var animation = getAnimation(player.anim);
-      var frameSize = getAnimationFrameSize(animation);
-      var col = player.frame % frameSize.count;
+      var frameMeta = getAnimationFrameMetadata(animation);
+      var frame = player.frame % frameMeta.count;
+      var col = frame % frameMeta.columns;
+      var row = Math.floor(frame / frameMeta.columns);
       var x = Math.round(player.x - cameraX);
       var y = Math.round(player.y);
-      var drawWidth = frameSize.width;
-      var drawHeight = frameSize.height;
+      var drawWidth = frameMeta.renderWidth;
+      var drawHeight = frameMeta.renderHeight;
       var drawX = x - Math.round((drawWidth - player.w) / 2);
       var drawY = y - Math.max(0, drawHeight - player.h);
+      var sourceX = col * frameMeta.sourceWidth;
+      var sourceY = row * frameMeta.sourceHeight;
       var flash = player.invuln > 0 && Math.floor(player.invuln / 90) % 2 === 0;
       if (flash) return;
 
@@ -501,9 +519,9 @@
       if (player.facing < 0) {
         ctx.translate(drawX + drawWidth, drawY);
         ctx.scale(-1, 1);
-        ctx.drawImage(animation.image, col * frameSize.width, 0, frameSize.width, frameSize.height, 0, 0, drawWidth, drawHeight);
+        ctx.drawImage(animation.image, sourceX, sourceY, frameMeta.sourceWidth, frameMeta.sourceHeight, 0, 0, drawWidth, drawHeight);
       } else {
-        ctx.drawImage(animation.image, col * frameSize.width, 0, frameSize.width, frameSize.height, drawX, drawY, drawWidth, drawHeight);
+        ctx.drawImage(animation.image, sourceX, sourceY, frameMeta.sourceWidth, frameMeta.sourceHeight, drawX, drawY, drawWidth, drawHeight);
       }
       ctx.restore();
     }
@@ -600,9 +618,12 @@
           var src = resolveAssetPath(animation.spriteSheet || '');
           return loadImage(src).then(function (result) {
             playerAnimations[key] = {
-              frameWidth: animation.frameWidth,
-              frameHeight: animation.frameHeight,
+              sourceFrameWidth: animation.sourceFrameWidth,
+              sourceFrameHeight: animation.sourceFrameHeight,
+              renderWidth: animation.renderWidth,
+              renderHeight: animation.renderHeight,
               frames: animation.frames,
+              columns: animation.columns,
               frameMs: animation.frameMs,
               spriteSheet: animation.spriteSheet,
               image: result.image

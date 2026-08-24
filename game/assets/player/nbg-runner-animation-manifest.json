@@ -3,51 +3,72 @@
   "animations": {
     "idle": {
       "spriteSheet": "player/animations/idle.png",
-      "frameWidth": 32,
-      "frameHeight": 48,
+      "sourceFrameWidth": 128,
+      "sourceFrameHeight": 128,
+      "renderWidth": 40,
+      "renderHeight": 48,
       "frames": 4,
+      "columns": 3,
       "frameMs": 145
     },
     "run": {
       "spriteSheet": "player/animations/run.png",
-      "frameWidth": 32,
-      "frameHeight": 48,
+      "sourceFrameWidth": 128,
+      "sourceFrameHeight": 128,
+      "renderWidth": 40,
+      "renderHeight": 48,
       "frames": 6,
+      "columns": 3,
       "frameMs": 88
     },
     "jump": {
       "spriteSheet": "player/animations/jump.png",
-      "frameWidth": 32,
-      "frameHeight": 48,
+      "sourceFrameWidth": 128,
+      "sourceFrameHeight": 128,
+      "renderWidth": 40,
+      "renderHeight": 48,
       "frames": 1,
+      "columns": 3,
       "frameMs": 145
     },
     "fall": {
       "spriteSheet": "player/animations/fall.png",
-      "frameWidth": 32,
-      "frameHeight": 48,
+      "sourceFrameWidth": 128,
+      "sourceFrameHeight": 128,
+      "renderWidth": 40,
+      "renderHeight": 48,
       "frames": 1,
+      "columns": 3,
       "frameMs": 145
     },
     "spray": {
       "spriteSheet": "player/animations/spray.png",
-      "frameWidth": 32,
-      "frameHeight": 48,
+      "sourceFrameWidth": 128,
+      "sourceFrameHeight": 128,
+      "renderWidth": 40,
+      "renderHeight": 48,
       "frames": 4,
+      "columns": 3,
       "frameMs": 110
     },
     "hurt": {
       "spriteSheet": "player/animations/hurt.png",
-      "frameWidth": 32,
-      "frameHeight": 48,
+      "sourceFrameWidth": 128,
+      "sourceFrameHeight": 128,
+      "renderWidth": 40,
+      "renderHeight": 48,
       "frames": 2,
+      "columns": 3,
       "frameMs": 120
     },
     "victory": {
       "spriteSheet": "player/animations/victory.png",
-      "frameWidth": 32,
-      "frameHeight": 48,
+      "sourceFrameWidth": 128,
+      "sourceFrameHeight": 128,
+      "renderWidth": 40,
+      "renderHeight": 48,
       "frames": 2,
+      "columns": 3,
       "frameMs": 145
     }
   }
