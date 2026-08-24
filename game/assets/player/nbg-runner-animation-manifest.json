@@ -1,31 +1,26 @@
 {
   "character": "NBG Runner",
-  "spriteSheet": "art-production/dude-got-game.png",
-  "frameSize": {
-    "width": 32,
-    "height": 48
-  },
-  "anchor": { "x": 16, "y": 33 },
   "animations": {
-    "idle": { "row": 0, "frames": 4, "frameMs": 145 },
-    "run": { "row": 1, "frames": 6, "frameMs": 88 },
-    "jump": { "row": 2, "frames": 1, "frameMs": 145 },
-    "fall": { "row": 3, "frames": 1, "frameMs": 145 },
-    "spray": { "row": 4, "frames": 4, "frameMs": 110 },
-    "hurt": { "row": 5, "frames": 2, "frameMs": 120 },
-    "win": { "row": 6, "frames": 2, "frameMs": 145 }
-  },
-  "aliases": {
-    "tag": "spray",
-    "celebrate": "win"
-  },
-  "states": {
-    "idle": "idle",
-    "moving": "run",
-    "airborne": "jump",
-    "falling": "fall",
-    "tagging": "spray",
-    "damaged": "hurt",
-    "complete": "win"
+    "idle": {
+      "spriteSheet": "player/animations/idle.png"
+    },
+    "run": {
+      "spriteSheet": "player/animations/run.png"
+    },
+    "jump": {
+      "spriteSheet": "player/animations/jump.png"
+    },
+    "fall": {
+      "spriteSheet": "player/animations/fall.png"
+    },
+    "spray": {
+      "spriteSheet": "player/animations/spray.png"
+    },
+    "hurt": {
+      "spriteSheet": "player/animations/hurt.png"
+    },
+    "victory": {
+      "spriteSheet": "player/animations/victory.png"
+    }
   }
 }

@@ -11,17 +11,17 @@ class PlayerControllerAnimationBridge {
     if (!this.player || !this.animations) return;
 
     if (this.player.isHit || this.player.hurt) {
-      this.animations.setState('hurt');
+      this.animations.setState('damaged');
       return;
     }
 
     if (!this.player.grounded) {
-      this.animations.setState(this.player.velocityY > 0 ? 'fall' : 'jump');
+      this.animations.setState(this.player.velocityY > 0 ? 'falling' : 'airborne');
       return;
     }
 
     if (this.player.velocityX !== 0) {
-      this.animations.setState('run');
+      this.animations.setState('moving');
       return;
     }
 

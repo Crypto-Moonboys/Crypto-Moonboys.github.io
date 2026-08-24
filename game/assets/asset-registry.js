@@ -4,7 +4,16 @@
 
 window.NBGAssetRegistry = {
   player: {
-    spriteSheet: "assets/player/nbg-runner-sheet.png"
+    manifest: "assets/player/nbg-runner-animation-manifest.json",
+    animations: {
+      idle: "assets/player/animations/idle.png",
+      run: "assets/player/animations/run.png",
+      jump: "assets/player/animations/jump.png",
+      fall: "assets/player/animations/fall.png",
+      spray: "assets/player/animations/spray.png",
+      hurt: "assets/player/animations/hurt.png",
+      victory: "assets/player/animations/victory.png"
+    }
   },
   world: {
     sky: "assets/world/london-sky.png",

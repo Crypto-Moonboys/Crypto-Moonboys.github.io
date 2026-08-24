@@ -12,10 +12,17 @@ window.NBGAnimationController = {
 
   init(manifest) {
     const playerManifest = manifest?.player || manifest?.sprites?.player || manifest || {};
-    this.animations = playerManifest.animations || {};
+    const animations = playerManifest.animations || {};
+    this.animations = Object.keys(animations).reduce((normalized, key) => {
+      const animation = animations[key] || {};
+      normalized[key] = {
+        ...animation,
+        key,
+        frames: Array.isArray(animation.frames) ? animation.frames : null
+      };
+      return normalized;
+    }, {});
     this.aliases = playerManifest.aliases || {};
-    this.frameWidth = playerManifest.frameWidth ?? playerManifest.frameSize?.width ?? 32;
-    this.frameHeight = playerManifest.frameHeight ?? playerManifest.frameSize?.height ?? 48;
     this.state = 'idle';
     this.frame = 0;
     this.elapsed = 0;
@@ -23,11 +30,57 @@ window.NBGAnimationController = {
 
   setState(state) {
     const nextState = this.resolveState(state);
-    if (this.animations[nextState] && this.state !== nextState) {
+    if (this.animations[nextState]) {
+      if (this.state !== nextState) {
+        this.frame = 0;
+        this.elapsed = 0;
+      }
       this.state = nextState;
-      this.frame = 0;
-      this.elapsed = 0;
     }
+  },
+
+  resolveState(state) {
+    const stateMap = {
+      idle: 'idle',
+      moving: 'run',
+      run: 'run',
+      airborne: 'jump',
+      jump: 'jump',
+      falling: 'fall',
+      fall: 'fall',
+      tagging: 'spray',
+      spray: 'spray',
+      damaged: 'hurt',
+      hit: 'hurt',
+      hurt: 'hurt',
+      complete: 'victory',
+      victory: 'victory'
+    };
+
+    return stateMap[state] || state;
+  },
+
+  setAnimationImage(state, image) {
+    const animation = this.animations[state];
+    if (!animation) return;
+
+    animation.image = image;
+    if (image && !animation.frameWidth && !animation.frameHeight) {
+      const frameHeight = image.naturalHeight || image.height || 1;
+      const naturalWidth = image.naturalWidth || image.width || frameHeight;
+      const frameWidth = naturalWidth % frameHeight === 0 ? frameHeight : naturalWidth;
+      animation.frameWidth = frameWidth;
+      animation.frameHeight = frameHeight;
+      animation.frameCount = Math.max(1, Math.floor(naturalWidth / frameWidth));
+    }
+  },
+
+  getFrameCount(animation = this.getCurrentAnimation()) {
+    if (!animation) return 1;
+    if (Array.isArray(animation.frames)) return Math.max(1, animation.frames.length);
+    if (Number.isFinite(animation.frameCount)) return Math.max(1, animation.frameCount);
+    if (Number.isFinite(animation.frames)) return Math.max(1, animation.frames);
+    return 1;
   },
 
   update(delta = 16.67) {
@@ -47,41 +100,16 @@ window.NBGAnimationController = {
 
   getFrame() {
     const animation = this.getCurrentAnimation();
-    const frameCount = this.getFrameCount(animation);
-    if (!animation || !frameCount) return 0;
-    return this.frame % frameCount;
+    if (!animation) return 0;
+    if (Array.isArray(animation.frames)) return animation.frames[this.frame] || 0;
+    return this.frame % this.getFrameCount(animation);
   },
 
   getCurrentAnimation() {
     return this.animations[this.state] || null;
   },
 
-  getFrameCount(animation) {
-    if (!animation) return 0;
-    if (Array.isArray(animation.frames)) return animation.frames.length;
-    return animation.frames ?? 1;
-  },
-
-  resolveState(state) {
-    return this.aliases[state] || state || 'idle';
-  },
-
   toMilliseconds(delta) {
     return delta < 10 ? delta * 1000 : delta;
-  },
-
-  getFrameRect() {
-    const animation = this.getCurrentAnimation();
-    const frame = this.getFrame();
-    const frameWidth = animation?.frameWidth ?? this.frameWidth;
-    const frameHeight = animation?.frameHeight ?? this.frameHeight;
-    const row = animation?.row ?? 0;
-
-    return {
-      x: frame * frameWidth,
-      y: row * frameHeight,
-      width: frameWidth,
-      height: frameHeight
-    };
   }
 };

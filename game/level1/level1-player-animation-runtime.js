@@ -19,11 +19,11 @@ const Level1PlayerAnimationRuntime = {
     if (!this.player || !this.animationController) return;
 
     if (this.player.hurt || this.player.hit) {
-      this.animationController.setState('hurt');
+      this.animationController.setState('damaged');
     } else if (!this.player.grounded) {
-      this.animationController.setState(this.player.velocityY > 0 ? 'fall' : 'jump');
+      this.animationController.setState(this.player.velocityY > 0 ? 'falling' : 'airborne');
     } else if (this.player.velocityX !== 0) {
-      this.animationController.setState('run');
+      this.animationController.setState('moving');
     } else {
       this.animationController.setState('idle');
     }
