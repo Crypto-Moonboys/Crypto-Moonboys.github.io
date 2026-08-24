@@ -215,7 +215,7 @@ assert.equal(
   'standalone Level 1 runtime must not keep unused duplicate player animation resolution helpers'
 );
 assert.equal(
-  /var drawWidth = 32;|var drawHeight = 40;|var drawWidth = frameMeta\.sourceWidth|var drawHeight = frameMeta\.sourceHeight/.test(runtimeSource),
+  /var drawWidth = 32;|var drawWidth = 40;|var drawHeight = 40;|var drawWidth = frameMeta\.sourceWidth|var drawHeight = frameMeta\.sourceHeight/.test(runtimeSource),
   false,
   'standalone Level 1 player renderer must not draw AutoSprite source frames as the in-game size'
 );
