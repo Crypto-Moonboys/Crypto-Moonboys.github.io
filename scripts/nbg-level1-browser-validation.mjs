@@ -82,13 +82,13 @@ function readJson(relativePath) {
 }
 
 const expectedAnimations = {
-  idle: { spriteSheet: 'player/animations/idle.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 40, renderHeight: 48, frames: 4, columns: 3, frameMs: 145 },
-  run: { spriteSheet: 'player/animations/run.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 40, renderHeight: 48, frames: 6, columns: 3, frameMs: 88 },
-  jump: { spriteSheet: 'player/animations/jump.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 40, renderHeight: 48, frames: 1, columns: 3, frameMs: 145 },
-  fall: { spriteSheet: 'player/animations/fall.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 40, renderHeight: 48, frames: 1, columns: 3, frameMs: 145 },
-  spray: { spriteSheet: 'player/animations/spray.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 40, renderHeight: 48, frames: 4, columns: 3, frameMs: 110 },
-  hurt: { spriteSheet: 'player/animations/hurt.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 40, renderHeight: 48, frames: 2, columns: 3, frameMs: 120 },
-  victory: { spriteSheet: 'player/animations/victory.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 40, renderHeight: 48, frames: 2, columns: 3, frameMs: 145 }
+  idle: { spriteSheet: 'player/animations/idle.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 48, renderHeight: 58, frames: 4, columns: 3, frameMs: 145 },
+  run: { spriteSheet: 'player/animations/run.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 48, renderHeight: 58, frames: 6, columns: 3, frameMs: 88 },
+  jump: { spriteSheet: 'player/animations/jump.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 48, renderHeight: 58, frames: 1, columns: 3, frameMs: 145 },
+  fall: { spriteSheet: 'player/animations/fall.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 48, renderHeight: 58, frames: 1, columns: 3, frameMs: 145 },
+  spray: { spriteSheet: 'player/animations/spray.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 48, renderHeight: 58, frames: 4, columns: 3, frameMs: 110 },
+  hurt: { spriteSheet: 'player/animations/hurt.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 48, renderHeight: 58, frames: 2, columns: 3, frameMs: 120 },
+  victory: { spriteSheet: 'player/animations/victory.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 48, renderHeight: 58, frames: 2, columns: 3, frameMs: 145 }
 };
 const assetManifest = readJson('game/assets/asset-manifest.json');
 const playerAnimationManifest = readJson('game/assets/player/nbg-runner-animation-manifest.json');
@@ -124,6 +124,8 @@ for (const animation of Object.values(expectedAnimations)) {
   assert.notEqual(animation.renderHeight, animation.sourceFrameHeight, `render height must be separate from source frame height: ${animation.spriteSheet}`);
 }
 const runtimeSource = fs.readFileSync(path.resolve(process.cwd(), 'game/nbg-level1.js'), 'utf8');
+const arcadeRouteSource = fs.readFileSync(path.resolve(process.cwd(), 'games/nbg-london/index.html'), 'utf8');
+const arcadeIndexSource = fs.readFileSync(path.resolve(process.cwd(), 'games/index.html'), 'utf8');
 const playerRendererSource = fs.readFileSync(path.resolve(process.cwd(), 'game/engine/player-sprite-renderer.js'), 'utf8');
 const playerControllerSource = fs.readFileSync(path.resolve(process.cwd(), 'game/engine/player-animation-controller.js'), 'utf8');
 const playerBindingSource = fs.readFileSync(path.resolve(process.cwd(), 'game/assets/player/nbg-runner-asset-binding.js'), 'utf8');
@@ -157,6 +159,34 @@ assert.equal(
   runtimeSource.includes('renderWidth') && runtimeSource.includes('renderHeight'),
   true,
   'standalone Level 1 runtime must draw using render size metadata'
+);
+assert.equal(
+  runtimeSource.includes("document.getElementById('startBtn') || document.getElementById('start')"),
+  true,
+  'standalone Level 1 runtime must support both arcade and legacy start buttons'
+);
+assert.equal(
+  arcadeRouteSource.includes('/css/game-fullscreen.css') &&
+    arcadeRouteSource.includes('class="game-card"') &&
+    arcadeRouteSource.includes('/js/game-fullscreen.js') &&
+    arcadeRouteSource.includes('id="startBtn"') &&
+    arcadeRouteSource.includes('data-overlay-fullscreen-only="true"') &&
+    arcadeRouteSource.includes('class="nbg-game-stage"') &&
+    !arcadeRouteSource.includes('class="game-stage"'),
+  true,
+  'NBG arcade route must use the shared fullscreen shell contract'
+);
+assert.equal(
+  arcadeRouteSource.includes('role="region" aria-label="NBG London Graffiti Run Level 1"') &&
+    arcadeRouteSource.includes('class="touch-controls" role="group" aria-label="Touch controls"'),
+  true,
+  'NBG arcade route must expose generic div labels through explicit ARIA roles'
+);
+assert.equal(
+  arcadeIndexSource.includes('href="/games/nbg-london/"') &&
+    arcadeIndexSource.includes('NBG London Graffiti Run'),
+  true,
+  'Arcade catalog must link to the NBG London fullscreen route'
 );
 assert.equal(
   runtimeSource.includes('Math.floor(frame / frameMeta.columns)') && playerRendererSource.includes('Math.floor(frame / columns)'),

@@ -1,7 +1,8 @@
 (function () {
   'use strict';
 
-  var ASSET_MANIFEST = 'assets/asset-manifest.json';
+  var ASSET_ROOT = '/game/assets/';
+  var ASSET_MANIFEST = ASSET_ROOT + 'asset-manifest.json';
   var WIDTH = 480;
   var HEIGHT = 270;
   var WORLD_WIDTH = 2200;
@@ -40,7 +41,7 @@
   function resolveAssetPath(assetPath) {
     if (!assetPath) return assetPath;
     if (/^(?:https?:)?\/\//.test(assetPath) || assetPath.charAt(0) === '/') return assetPath;
-    return assetPath.indexOf('assets/') === 0 ? assetPath : 'assets/' + assetPath;
+    return assetPath.indexOf('assets/') === 0 ? '/game/' + assetPath : ASSET_ROOT + assetPath;
   }
 
   function buildRuntimeAssetMap(manifest) {
@@ -665,7 +666,7 @@
     var canvas = document.getElementById('game');
     var title = document.getElementById('title-screen');
     var stage = document.getElementById('game-stage');
-    var start = document.getElementById('start');
+    var start = document.getElementById('startBtn') || document.getElementById('start');
     var hud = {
       xp: document.getElementById('hud-xp'),
       coins: document.getElementById('hud-coins'),

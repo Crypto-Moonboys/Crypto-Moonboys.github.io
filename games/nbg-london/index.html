@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NBG London Graffiti Run | Crypto Moonboys Arcade</title>
+  <meta name="description" content="Run, tag, collect XP and clear the London wall in NBG London Graffiti Run.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="/css/wiki.css">
+  <link rel="stylesheet" href="/css/game-fullscreen.css">
+  <link rel="stylesheet" href="/game/game.css">
+  <style>
+    body.page-standalone-tool {
+      display: block;
+      place-items: initial;
+    }
+
+    .game-card {
+      position: relative;
+      background: rgba(255,255,255,.03);
+      border: 1px solid var(--color-border,#333);
+      border-radius: 16px;
+      padding: 18px;
+    }
+
+    .game-card .nbg-shell {
+      width: 100%;
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0;
+    }
+
+    .game-card .title-screen {
+      min-height: min(62vh, 560px);
+    }
+
+    .game-card .nbg-game-stage {
+      max-height: calc(100vh - 220px);
+      min-height: 300px;
+    }
+
+    #game-overlay .game-card .nbg-game-stage {
+      max-height: none;
+      min-height: 0;
+    }
+  </style>
+  <link rel="icon" type="image/png" href="/favicon.png">
+</head>
+<body class="page-standalone-tool">
+<header id="site-header" role="banner">
+  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys home">
+    <img src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png" alt="" aria-hidden="true">
+    <span><span class="logo-text">Crypto Moonboys</span><span class="logo-sub">Moonboys Arcade · Play. Score. Progress.</span></span>
+  </a>
+  <div id="header-search" role="search">
+    <input type="search" id="search-input" placeholder="Search the wiki..." aria-label="Search" autocomplete="off">
+    <button id="search-btn" aria-label="Search">Search</button>
+    <div id="search-results" role="listbox"></div>
+  </div>
+  <nav class="header-nav" aria-label="Main navigation"><a href="/index.html">Home</a></nav>
+</header>
+<div id="layout"><div id="main-wrapper">
+<main id="content" role="main">
+  <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep">&gt;</span><a href="/games/">Arcade</a><span class="sep">&gt;</span><span aria-current="page">NBG London</span></nav>
+  <div class="category-header"><span class="cat-big-icon" aria-hidden="true">NBG</span><div><h1 class="page-title">NBG London Graffiti Run</h1><p style="color:var(--color-text-muted)">Run, tag, collect XP, and clear the London wall before the bots box you in.</p></div></div>
+  <div class="page-title-line" aria-hidden="true"></div>
+  <div class="game-card">
+    <div class="nbg-shell" role="region" aria-label="NBG London Graffiti Run Level 1">
+      <section id="title-screen" class="title-screen">
+        <div class="title-copy">
+          <p class="kicker">NO BALL GAMES PRESENTS</p>
+          <h1>NBG LONDON GRAFFITI RUN</h1>
+          <p class="tagline">Run, tag, collect XP, and clear the London wall before the bots box you in.</p>
+        </div>
+        <button id="startBtn" class="start-button" type="button" data-overlay-fullscreen-only="true">START</button>
+      </section>
+
+      <section id="game-stage" class="nbg-game-stage" aria-label="Playable Level 1">
+        <canvas id="game" width="480" height="270" aria-label="NBG London Graffiti Run canvas"></canvas>
+        <div class="hud-strip" aria-hidden="false">
+          <span id="hud-xp">XP 0</span>
+          <span id="hud-coins">COINS 0/12</span>
+          <span id="hud-health">HEALTH 3</span>
+          <span id="hud-state">READY</span>
+        </div>
+        <div class="touch-controls" role="group" aria-label="Touch controls">
+          <div class="touch-controls__move">
+            <button class="touch-button" type="button" data-control="left" aria-label="Move left">&lt;</button>
+            <button class="touch-button" type="button" data-control="right" aria-label="Move right">&gt;</button>
+          </div>
+          <div class="touch-controls__action">
+            <button class="touch-button touch-button--small" type="button" data-control="spray" aria-label="Spray">S</button>
+            <button class="touch-button" type="button" data-control="jump" aria-label="Jump">JUMP</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+<footer id="site-footer"><div class="footer-bottom"><p>Crypto Moonboys GK Wiki</p></div></footer>
+</div></div>
+<button id="back-to-top" aria-label="Back to top">Up</button>
+<script data-cfasync="false" src="/js/wiki.js"></script><script src="/js/identity-gate.js"></script><script src="/js/scroll-shell.js"></script><script src="/js/game-fullscreen.js"></script><script src="/js/api-config.js"></script><script src="/js/components/ui-status-copy.js"></script><script src="/js/arcade/core/global-event-bus.js"></script><script src="/js/core/moonboys-state.js"></script><script src="/js/faction-alignment.js"></script><script src="/js/components/connection-status-panel.js"></script><script src="/js/components/global-player-header.js"></script><script src="/js/components/live-activity-summary.js"></script>
+<script src="/game/nbg-level1.js"></script>
+</body>
+</html>
