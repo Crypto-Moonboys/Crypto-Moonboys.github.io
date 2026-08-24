@@ -9,7 +9,7 @@ const shouldServe = process.argv.includes('--serve');
 const port = Number(process.env.NBG_LEVEL1_PORT || 4175);
 const host = process.env.NBG_LEVEL1_HOST || '127.0.0.1';
 const url = process.env.NBG_LEVEL1_URL || `http://${host}:${port}/games/nbg-london/`;
-const legacyUrl = `http://${host}:${port}/game/demo-launch.html`;
+const legacyUrl = new URL('/game/demo-launch.html', url).toString();
 const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE;
 let server;
 
@@ -354,8 +354,12 @@ page.on('console', (message) => {
   if (message.type() === 'error') errors.push(message.text());
 });
 page.on('requestfailed', (request) => {
-  if (request.url().startsWith('https://fonts.googleapis.com/')) return;
-  failedRequests.push(`${request.url()} ${request.failure()?.errorText || 'failed'}`);
+  const failedUrl = request.url();
+  if (
+    failedUrl.startsWith('https://fonts.googleapis.com/') ||
+    failedUrl.startsWith('https://fonts.gstatic.com/')
+  ) return;
+  failedRequests.push(`${failedUrl} ${request.failure()?.errorText || 'failed'}`);
 });
 
 await page.goto(legacyUrl, { waitUntil: 'networkidle' });

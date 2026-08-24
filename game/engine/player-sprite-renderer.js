@@ -39,7 +39,7 @@ class PlayerSpriteRenderer {
     const sourceX = (frame % columns) * sourceFrameWidth;
     const sourceY = Math.floor(frame / columns) * sourceFrameHeight;
     const frameDrawX = drawX - Math.round((renderWidth - (player.w || renderWidth)) / 2);
-    const visualFootY = Math.round(player.y + (player.h || renderHeight) - (camera.y || 0));
+    const visualFootY = drawY + (player.h || renderHeight);
     const frameDrawY = Math.round(visualFootY - renderHeight + renderOffsetY);
 
     ctx.save();
