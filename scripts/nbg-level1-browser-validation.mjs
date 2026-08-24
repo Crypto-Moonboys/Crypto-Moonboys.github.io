@@ -12,6 +12,7 @@ const url = process.env.NBG_LEVEL1_URL || `http://${host}:${port}/games/nbg-lond
 const legacyUrl = new URL('/game/demo-launch.html', url).toString();
 const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE;
 let server;
+const waitingHudText = 'MOVE TO START';
 
 const mimeTypes = new Map([
   ['.css', 'text/css; charset=utf-8'],
@@ -25,7 +26,9 @@ const mimeTypes = new Map([
 function serveStaticFile(request, response) {
   const requestUrl = new URL(request.url, `http://${host}:${port}`);
   const decodedPath = decodeURIComponent(requestUrl.pathname);
-  const relativePath = decodedPath === '/' ? 'index.html' : decodedPath.replace(/^\/+/, '');
+  const relativePath = decodedPath === '/'
+    ? 'index.html'
+    : decodedPath.replace(/^\/+/, '').replace(/\/$/, '/index.html');
   const root = process.cwd();
   const fullPath = path.resolve(root, relativePath);
   const relativeFromRoot = path.relative(root, fullPath);
@@ -85,6 +88,18 @@ function readJson(relativePath) {
   return JSON.parse(fs.readFileSync(path.resolve(process.cwd(), relativePath), 'utf8'));
 }
 
+async function openWithDelayedNbgInit(browser, targetUrl, pageOptions = { viewport: { width: 960, height: 540 } }) {
+  const delayedPage = await browser.newPage(pageOptions);
+  await delayedPage.route('**/game/assets/asset-manifest.json', async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 650));
+    await route.continue();
+  });
+  await delayedPage.goto(targetUrl, { waitUntil: 'domcontentloaded' });
+  await delayedPage.waitForSelector('#game', { state: 'visible', timeout: 5000 });
+  await delayedPage.waitForFunction(() => window.NBGLevel1State && window.NBGLevel1State.assetsLoaded === false, null, { timeout: 5000 });
+  return delayedPage;
+}
+
 const expectedAnimations = {
   idle: { spriteSheet: 'player/animations/idle.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 48, renderHeight: 58, renderOffsetY: 4, frames: 4, columns: 3, frameMs: 145 },
   run: { spriteSheet: 'player/animations/run.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 48, renderHeight: 58, renderOffsetY: 8, frames: 6, columns: 3, frameMs: 88 },
@@ -139,6 +154,7 @@ const level1RenderBridgeSource = fs.readFileSync(path.resolve(process.cwd(), 'ga
 const levelRenderPipelineSource = fs.readFileSync(path.resolve(process.cwd(), 'game/engine/level-render-pipeline.js'), 'utf8');
 const playerAnimationRuntimeSource = fs.readFileSync(path.resolve(process.cwd(), 'game/level1/level1-player-animation-runtime.js'), 'utf8');
 const playerSpawnRuntimeSource = fs.readFileSync(path.resolve(process.cwd(), 'game/level1/level1-player-spawn-runtime.js'), 'utf8');
+const demoLaunchSource = fs.readFileSync(path.resolve(process.cwd(), 'game/demo-launch.html'), 'utf8');
 assert.equal(
   runtimeSource.includes('assets/player/nbg-runner-sprite-sheet.svg'),
   false,
@@ -180,10 +196,13 @@ assert.equal(
     arcadeRouteSource.includes('/js/game-fullscreen.js') &&
     arcadeRouteSource.includes('id="startBtn"') &&
     arcadeRouteSource.includes('data-overlay-fullscreen-only="true"') &&
-    arcadeRouteSource.includes('class="nbg-game-stage"') &&
+    arcadeRouteSource.includes('data-overlay-hide-start="true"') &&
+    /class="[^"]*\bnbg-game-stage\b[^"]*"/.test(arcadeRouteSource) &&
+    arcadeRouteSource.includes('is-active') &&
+    !arcadeRouteSource.includes('id="title-screen"') &&
     !arcadeRouteSource.includes('class="game-stage"'),
   true,
-  'NBG arcade route must use the shared fullscreen shell contract'
+  'NBG arcade route must use the shared fullscreen shell contract without a title gate'
 );
 assert.equal(
   arcadeRouteSource.includes('role="region" aria-label="NBG London Graffiti Run Level 1"') &&
@@ -285,6 +304,12 @@ assert.equal(
   true,
   'render pipeline layer names must come from asset-manifest.json'
 );
+assert.equal(
+  demoLaunchSource.includes("window.location.replace('/games/nbg-london/')") &&
+    demoLaunchSource.includes('url=/games/nbg-london/'),
+  true,
+  'legacy demo launcher must redirect to the fullscreen NBG London route'
+);
 
 const animationControllerContext = { window: {} };
 vm.runInNewContext(playerControllerSource, animationControllerContext);
@@ -367,10 +392,119 @@ await page.waitForURL('**/games/nbg-london/', { timeout: 3000 });
 assert.equal(new URL(page.url()).pathname, '/games/nbg-london/', 'legacy demo launch URL must redirect to fullscreen arcade route');
 
 await page.goto(url, { waitUntil: 'networkidle' });
-const startSelector = '#startBtn, #start';
-await assert.doesNotReject(() => page.waitForSelector(startSelector, { state: 'visible', timeout: 3000 }), 'START button must be visible');
+await page.waitForSelector('#game', { state: 'visible', timeout: 5000 });
+await page.waitForSelector('#hud-state', { state: 'visible', timeout: 5000 });
+await page.waitForFunction(() => window.NBGLevel1State?.assetsLoaded === true, null, { timeout: 5000 });
 
-await page.click(startSelector);
+let startVisibility = await page.evaluate(() => ({
+  route: window.location.pathname,
+  titleScreenCount: document.querySelectorAll('#title-screen').length,
+  visibleStartButtons: Array.from(document.querySelectorAll('#start, #startBtn, #overlay-btn-start')).filter((element) => {
+    const style = window.getComputedStyle(element);
+    const rect = element.getBoundingClientRect();
+    return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+  }).map((element) => element.id),
+  canvasVisible: Boolean(document.querySelector('#game')?.offsetParent || document.querySelector('#game')?.getClientRects().length),
+  hudVisible: Boolean(document.querySelector('#hud-state')?.offsetParent || document.querySelector('#hud-state')?.getClientRects().length),
+  hudState: document.getElementById('hud-state')?.textContent,
+  state: {
+    assetsLoaded: window.NBGLevel1State.assetsLoaded,
+    gameVisible: window.NBGLevel1State.gameVisible,
+    waitingForFirstInput: window.NBGLevel1State.waitingForFirstInput,
+    running: window.NBGLevel1State.running
+  }
+}));
+assert.equal(startVisibility.route, '/games/nbg-london/', 'validation must exercise the fullscreen NBG London route');
+assert.equal(startVisibility.titleScreenCount, 0, 'fullscreen route must not render the NBG title screen');
+assert.deepEqual(startVisibility.visibleStartButtons, [], 'fullscreen route must not show a START button');
+assert.equal(startVisibility.canvasVisible, true, 'canvas must be visible immediately');
+assert.equal(startVisibility.hudVisible, true, 'HUD must be visible immediately');
+assert.equal(startVisibility.hudState, waitingHudText, 'HUD must show an accurate pre-input ready state');
+assert.deepEqual(
+  startVisibility.state,
+  { assetsLoaded: true, gameVisible: true, waitingForFirstInput: true, running: false },
+  'game must be visible and waiting, not running, before first input'
+);
+
+const preInitMovePage = await openWithDelayedNbgInit(browser, url);
+await preInitMovePage.keyboard.down('ArrowRight');
+await preInitMovePage.keyboard.up('ArrowRight');
+await preInitMovePage.waitForFunction(() => window.NBGLevel1State?.running === true, null, { timeout: 5000 });
+await preInitMovePage.waitForTimeout(240);
+let preInitState = await preInitMovePage.evaluate(() => ({
+  x: window.NBGLevel1State.player.x,
+  pendingInitialInput: window.NBGLevel1State.pendingInitialInput
+}));
+assert.ok(preInitState.x > 64.2, 'pre-init ArrowRight must be replayed instead of ignored');
+assert.equal(preInitState.pendingInitialInput, null, 'pre-init movement replay must clear pending input');
+await preInitMovePage.close();
+
+const preInitTouchPage = await openWithDelayedNbgInit(browser, url, { viewport: { width: 390, height: 700 }, isMobile: true, hasTouch: true });
+await preInitTouchPage.waitForSelector('[data-control="right"]', { state: 'visible', timeout: 5000 });
+await preInitTouchPage.locator('[data-control="right"]').dispatchEvent('pointerdown', {
+  pointerId: 1,
+  pointerType: 'touch',
+  isPrimary: true,
+  bubbles: true
+});
+await preInitTouchPage.locator('[data-control="right"]').dispatchEvent('pointerup', {
+  pointerId: 1,
+  pointerType: 'touch',
+  isPrimary: true,
+  bubbles: true
+});
+await preInitTouchPage.waitForFunction(() => window.NBGLevel1State?.running === true, null, { timeout: 5000 });
+await preInitTouchPage.waitForTimeout(240);
+preInitState = await preInitTouchPage.evaluate(() => ({
+  x: window.NBGLevel1State.player.x
+}));
+assert.ok(preInitState.x > 64.2, 'pre-init touch right must be replayed instead of ignored');
+await preInitTouchPage.close();
+
+const preInitJumpPage = await openWithDelayedNbgInit(browser, url);
+await preInitJumpPage.keyboard.down('Space');
+await preInitJumpPage.keyboard.up('Space');
+await preInitJumpPage.waitForFunction(() => window.NBGLevel1State?.running === true, null, { timeout: 5000 });
+await preInitJumpPage.waitForTimeout(100);
+preInitState = await preInitJumpPage.evaluate(() => ({
+  y: window.NBGLevel1State.player.y,
+  anim: window.NBGLevel1State.player.anim
+}));
+assert.ok(preInitState.y < 180, 'pre-init jump input must be replayed once gameplay starts');
+assert.ok(['jump', 'fall'].includes(preInitState.anim), 'pre-init jump replay must enter an airborne animation');
+await preInitJumpPage.close();
+
+const preInitSprayPage = await openWithDelayedNbgInit(browser, url);
+await preInitSprayPage.keyboard.down('KeyS');
+await preInitSprayPage.keyboard.up('KeyS');
+await preInitSprayPage.waitForFunction(() => window.NBGLevel1State?.running === true, null, { timeout: 5000 });
+await preInitSprayPage.waitForTimeout(60);
+preInitState = await preInitSprayPage.evaluate(() => ({
+  anim: window.NBGLevel1State.player.anim
+}));
+assert.equal(preInitState.anim, 'spray', 'pre-init spray input must be replayed once gameplay starts');
+await preInitSprayPage.close();
+
+const touchStartPage = await browser.newPage({ viewport: { width: 390, height: 700 }, isMobile: true, hasTouch: true });
+await touchStartPage.goto(url, { waitUntil: 'networkidle' });
+await touchStartPage.waitForSelector('[data-control="right"]', { state: 'visible', timeout: 5000 });
+await touchStartPage.waitForFunction(() => window.NBGLevel1State?.assetsLoaded === true && window.NBGLevel1State.running === false, null, { timeout: 5000 });
+await touchStartPage.locator('[data-control="right"]').dispatchEvent('pointerdown', {
+  pointerId: 1,
+  pointerType: 'touch',
+  isPrimary: true,
+  bubbles: true
+});
+await touchStartPage.waitForFunction(() => window.NBGLevel1State?.running === true, null, { timeout: 5000 });
+await touchStartPage.locator('[data-control="right"]').dispatchEvent('pointerup', {
+  pointerId: 1,
+  pointerType: 'touch',
+  isPrimary: true,
+  bubbles: true
+});
+await touchStartPage.close();
+
+await page.keyboard.down('ArrowRight');
 await page.waitForFunction(() => window.NBGLevel1State?.running === true, null, { timeout: 5000 });
 await page.waitForTimeout(450);
 
@@ -387,7 +521,7 @@ let state = await page.evaluate(() => ({
   playerAnimations: window.NBGLevel1State.playerAnimations
 }));
 
-assert.equal(state.running, true, 'game loop must be running after START');
+assert.equal(state.running, true, 'ArrowRight must start the game loop');
 assert.equal(state.coinCount, 12, 'Level 1 must spawn 12 XP coins');
 assert.equal(state.enemyCount, 3, 'Level 1 must spawn 3 enemies');
 assert.equal(state.health, 3, 'player must spawn with health');
@@ -422,7 +556,6 @@ for (const key of Object.keys(expectedAnimations)) {
 }
 
 const beforeMoveX = state.x;
-await page.keyboard.down('ArrowRight');
 await page.waitForTimeout(550);
 await page.keyboard.up('ArrowRight');
 state = await page.evaluate(() => ({
