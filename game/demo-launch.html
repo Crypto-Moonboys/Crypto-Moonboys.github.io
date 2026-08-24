@@ -4,11 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>NBG London Graffiti Run</title>
+  <link rel="canonical" href="/games/nbg-london/">
   <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="stylesheet" href="game.css">
 </head>
 <body>
   <main class="nbg-shell" aria-label="NBG London Graffiti Run Level 1">
+    <p><a href="/games/nbg-london/">Open the fullscreen arcade route</a></p>
     <section id="title-screen" class="title-screen">
       <div class="title-copy">
         <p class="kicker">NO BALL GAMES PRESENTS</p>
@@ -18,7 +20,7 @@
       <button id="start" class="start-button" type="button">START</button>
     </section>
 
-    <section id="game-stage" class="game-stage" aria-label="Playable Level 1">
+    <section id="game-stage" class="nbg-game-stage" aria-label="Playable Level 1">
       <canvas id="game" width="480" height="270" aria-label="NBG London Graffiti Run canvas"></canvas>
       <div class="hud-strip" aria-hidden="false">
         <span id="hud-xp">XP 0</span>
@@ -26,7 +28,7 @@
         <span id="hud-health">HEALTH 3</span>
         <span id="hud-state">READY</span>
       </div>
-      <div class="touch-controls" aria-label="Touch controls">
+      <div class="touch-controls" role="group" aria-label="Touch controls">
         <div class="touch-controls__move">
           <button class="touch-button" type="button" data-control="left" aria-label="Move left">&lt;</button>
           <button class="touch-button" type="button" data-control="right" aria-label="Move right">&gt;</button>
