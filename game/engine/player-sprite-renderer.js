@@ -30,28 +30,35 @@ class PlayerSpriteRenderer {
     }
 
     const frame = this.animationController?.getFrame?.() ?? player.frameX ?? 0;
-    const frameWidth = animation?.frameWidth || player.frameWidth || 32;
-    const frameHeight = animation?.frameHeight || player.frameHeight || 48;
+    const sourceFrameWidth = animation?.sourceFrameWidth || animation?.frameWidth || player.sourceFrameWidth || player.frameWidth || 32;
+    const sourceFrameHeight = animation?.sourceFrameHeight || animation?.frameHeight || player.sourceFrameHeight || player.frameHeight || 48;
+    const renderWidth = animation?.renderWidth || player.renderWidth || player.frameWidth || 40;
+    const renderHeight = animation?.renderHeight || player.renderHeight || player.frameHeight || 48;
+    const columns = animation?.columns || Math.max(1, Math.floor((sprite.naturalWidth || sourceFrameWidth) / sourceFrameWidth));
+    const sourceX = (frame % columns) * sourceFrameWidth;
+    const sourceY = Math.floor(frame / columns) * sourceFrameHeight;
+    const frameDrawX = drawX - Math.round((renderWidth - (player.w || renderWidth)) / 2);
+    const frameDrawY = drawY - Math.max(0, renderHeight - (player.h || renderHeight));
 
     ctx.save();
     if ((player.facing || 1) < 0) {
-      ctx.translate(drawX + frameWidth, drawY);
+      ctx.translate(frameDrawX + renderWidth, frameDrawY);
       ctx.scale(-1, 1);
-      ctx.drawImage(sprite, frame * frameWidth, 0, frameWidth, frameHeight, 0, 0, frameWidth, frameHeight);
+      ctx.drawImage(sprite, sourceX, sourceY, sourceFrameWidth, sourceFrameHeight, 0, 0, renderWidth, renderHeight);
       ctx.restore();
       return;
     }
 
     ctx.drawImage(
       sprite,
-      frame * frameWidth,
-      0,
-      frameWidth,
-      frameHeight,
-      drawX,
-      drawY,
-      frameWidth,
-      frameHeight
+      sourceX,
+      sourceY,
+      sourceFrameWidth,
+      sourceFrameHeight,
+      frameDrawX,
+      frameDrawY,
+      renderWidth,
+      renderHeight
     );
     ctx.restore();
   }
