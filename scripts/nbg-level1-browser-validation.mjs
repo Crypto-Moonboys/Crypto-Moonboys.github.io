@@ -738,6 +738,8 @@ state = await page.evaluate(() => ({
   waitingForFirstInput: window.NBGLevel1State.waitingForFirstInput,
   x: window.NBGLevel1State.player.x,
   y: window.NBGLevel1State.player.y,
+  w: window.NBGLevel1State.player.w,
+  h: window.NBGLevel1State.player.h,
   health: window.NBGLevel1State.player.health,
   invuln: window.NBGLevel1State.player.invuln,
   anim: window.NBGLevel1State.player.anim,
@@ -758,7 +760,9 @@ assert.equal(state.running, false, 'fullscreen reset must return to the first-in
 assert.equal(state.waitingForFirstInput, true, 'fullscreen reset must restore first-input contract');
 assert.equal(state.hud, waitingHudText, 'fullscreen reset HUD must prompt MOVE TO START');
 assert.equal(state.x, 64, 'fullscreen reset must restore player x to Level 1 start');
-assert.equal(state.y, 180, 'fullscreen reset must restore player y to Level 1 start');
+assert.equal(state.w, 24, 'fullscreen reset must restore player width');
+assert.equal(state.h, 34, 'fullscreen reset must restore player height');
+assert.equal(state.y, 214 - state.h, 'fullscreen reset must compute player y from floor minus current player height');
 assert.equal(state.health, 3, 'fullscreen reset must restore player health');
 assert.equal(state.invuln, 0, 'fullscreen reset must clear player invulnerability');
 assert.equal(state.anim, 'idle', 'fullscreen reset must restore idle animation');

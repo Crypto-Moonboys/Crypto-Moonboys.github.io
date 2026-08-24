@@ -661,9 +661,9 @@
       clearInput();
 
       player.x = 64;
-      player.y = FLOOR_Y - player.h;
       player.w = 24;
       player.h = 34;
+      player.y = FLOOR_Y - player.h;
       player.vx = 0;
       player.vy = 0;
       player.facing = 1;
@@ -671,6 +671,8 @@
       player.health = 3;
       player.invuln = 0;
       setPlayerAnimation('idle');
+      player.frame = 0;
+      player.frameTime = 0;
 
       coins.forEach(function (coin) {
         coin.taken = false;
