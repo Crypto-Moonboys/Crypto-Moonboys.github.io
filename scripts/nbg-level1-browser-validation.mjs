@@ -8,7 +8,7 @@ import { chromium } from 'playwright';
 const shouldServe = process.argv.includes('--serve');
 const port = Number(process.env.NBG_LEVEL1_PORT || 4175);
 const host = process.env.NBG_LEVEL1_HOST || '127.0.0.1';
-const url = process.env.NBG_LEVEL1_URL || `http://${host}:${port}/game/demo-launch.html`;
+const url = process.env.NBG_LEVEL1_URL || `http://${host}:${port}/games/nbg-london/`;
 const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE;
 let server;
 
@@ -24,7 +24,9 @@ const mimeTypes = new Map([
 function serveStaticFile(request, response) {
   const requestUrl = new URL(request.url, `http://${host}:${port}`);
   const decodedPath = decodeURIComponent(requestUrl.pathname);
-  const relativePath = decodedPath === '/' ? 'index.html' : decodedPath.replace(/^\/+/, '');
+  const relativePath = decodedPath === '/'
+    ? 'index.html'
+    : decodedPath.replace(/^\/+/, '').replace(/\/$/, '/index.html');
   const root = process.cwd();
   const fullPath = path.resolve(root, relativePath);
   const relativeFromRoot = path.relative(root, fullPath);
@@ -135,6 +137,7 @@ const level1RenderBridgeSource = fs.readFileSync(path.resolve(process.cwd(), 'ga
 const levelRenderPipelineSource = fs.readFileSync(path.resolve(process.cwd(), 'game/engine/level-render-pipeline.js'), 'utf8');
 const playerAnimationRuntimeSource = fs.readFileSync(path.resolve(process.cwd(), 'game/level1/level1-player-animation-runtime.js'), 'utf8');
 const playerSpawnRuntimeSource = fs.readFileSync(path.resolve(process.cwd(), 'game/level1/level1-player-spawn-runtime.js'), 'utf8');
+const demoLaunchSource = fs.readFileSync(path.resolve(process.cwd(), 'game/demo-launch.html'), 'utf8');
 assert.equal(
   runtimeSource.includes('assets/player/nbg-runner-sprite-sheet.svg'),
   false,
@@ -171,10 +174,13 @@ assert.equal(
     arcadeRouteSource.includes('/js/game-fullscreen.js') &&
     arcadeRouteSource.includes('id="startBtn"') &&
     arcadeRouteSource.includes('data-overlay-fullscreen-only="true"') &&
-    arcadeRouteSource.includes('class="nbg-game-stage"') &&
+    arcadeRouteSource.includes('data-overlay-hide-start="true"') &&
+    /class="[^"]*\bnbg-game-stage\b[^"]*"/.test(arcadeRouteSource) &&
+    arcadeRouteSource.includes('is-active') &&
+    !arcadeRouteSource.includes('id="title-screen"') &&
     !arcadeRouteSource.includes('class="game-stage"'),
   true,
-  'NBG arcade route must use the shared fullscreen shell contract'
+  'NBG arcade route must use the shared fullscreen shell contract without a title gate'
 );
 assert.equal(
   arcadeRouteSource.includes('role="region" aria-label="NBG London Graffiti Run Level 1"') &&
@@ -276,6 +282,12 @@ assert.equal(
   true,
   'render pipeline layer names must come from asset-manifest.json'
 );
+assert.equal(
+  demoLaunchSource.includes("window.location.replace('/games/nbg-london/')") &&
+    demoLaunchSource.includes('url=/games/nbg-london/'),
+  true,
+  'legacy demo launcher must redirect to the fullscreen NBG London route'
+);
 
 const animationControllerContext = { window: {} };
 vm.runInNewContext(playerControllerSource, animationControllerContext);
@@ -340,13 +352,66 @@ const errors = [];
 
 page.on('pageerror', (error) => errors.push(error.message));
 page.on('console', (message) => {
-  if (message.type() === 'error') errors.push(message.text());
+  if (message.type() === 'error' && !message.text().includes('net::ERR_NETWORK_ACCESS_DENIED')) {
+    errors.push(message.text());
+  }
 });
 
 await page.goto(url, { waitUntil: 'networkidle' });
-await assert.doesNotReject(() => page.waitForSelector('#start', { state: 'visible', timeout: 3000 }), 'START button must be visible');
+await page.waitForSelector('#game', { state: 'visible', timeout: 5000 });
+await page.waitForSelector('#hud-state', { state: 'visible', timeout: 5000 });
+await page.waitForFunction(() => window.NBGLevel1State?.assetsLoaded === true, null, { timeout: 5000 });
 
-await page.click('#start');
+let startVisibility = await page.evaluate(() => ({
+  route: window.location.pathname,
+  titleScreenCount: document.querySelectorAll('#title-screen').length,
+  visibleStartButtons: Array.from(document.querySelectorAll('#start, #startBtn, #overlay-btn-start')).filter((element) => {
+    const style = window.getComputedStyle(element);
+    const rect = element.getBoundingClientRect();
+    return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+  }).map((element) => element.id),
+  canvasVisible: Boolean(document.querySelector('#game')?.offsetParent || document.querySelector('#game')?.getClientRects().length),
+  hudVisible: Boolean(document.querySelector('#hud-state')?.offsetParent || document.querySelector('#hud-state')?.getClientRects().length),
+  hudState: document.getElementById('hud-state')?.textContent,
+  state: {
+    assetsLoaded: window.NBGLevel1State.assetsLoaded,
+    gameVisible: window.NBGLevel1State.gameVisible,
+    waitingForFirstInput: window.NBGLevel1State.waitingForFirstInput,
+    running: window.NBGLevel1State.running
+  }
+}));
+assert.equal(startVisibility.route, '/games/nbg-london/', 'validation must exercise the fullscreen NBG London route');
+assert.equal(startVisibility.titleScreenCount, 0, 'fullscreen route must not render the NBG title screen');
+assert.deepEqual(startVisibility.visibleStartButtons, [], 'fullscreen route must not show a START button');
+assert.equal(startVisibility.canvasVisible, true, 'canvas must be visible immediately');
+assert.equal(startVisibility.hudVisible, true, 'HUD must be visible immediately');
+assert.equal(startVisibility.hudState, 'PRESS ANY KEY', 'HUD must show a pre-input ready state');
+assert.deepEqual(
+  startVisibility.state,
+  { assetsLoaded: true, gameVisible: true, waitingForFirstInput: true, running: false },
+  'game must be visible and waiting, not running, before first input'
+);
+
+const touchStartPage = await browser.newPage({ viewport: { width: 390, height: 700 }, isMobile: true, hasTouch: true });
+await touchStartPage.goto(url, { waitUntil: 'networkidle' });
+await touchStartPage.waitForSelector('[data-control="right"]', { state: 'visible', timeout: 5000 });
+await touchStartPage.waitForFunction(() => window.NBGLevel1State?.assetsLoaded === true && window.NBGLevel1State.running === false, null, { timeout: 5000 });
+await touchStartPage.locator('[data-control="right"]').dispatchEvent('pointerdown', {
+  pointerId: 1,
+  pointerType: 'touch',
+  isPrimary: true,
+  bubbles: true
+});
+await touchStartPage.waitForFunction(() => window.NBGLevel1State?.running === true, null, { timeout: 5000 });
+await touchStartPage.locator('[data-control="right"]').dispatchEvent('pointerup', {
+  pointerId: 1,
+  pointerType: 'touch',
+  isPrimary: true,
+  bubbles: true
+});
+await touchStartPage.close();
+
+await page.keyboard.down('ArrowRight');
 await page.waitForFunction(() => window.NBGLevel1State?.running === true, null, { timeout: 5000 });
 await page.waitForTimeout(450);
 
@@ -363,7 +428,7 @@ let state = await page.evaluate(() => ({
   playerAnimations: window.NBGLevel1State.playerAnimations
 }));
 
-assert.equal(state.running, true, 'game loop must be running after START');
+assert.equal(state.running, true, 'ArrowRight must start the game loop');
 assert.equal(state.coinCount, 12, 'Level 1 must spawn 12 XP coins');
 assert.equal(state.enemyCount, 3, 'Level 1 must spawn 3 enemies');
 assert.equal(state.health, 3, 'player must spawn with health');
@@ -397,7 +462,6 @@ for (const key of Object.keys(expectedAnimations)) {
 }
 
 const beforeMoveX = state.x;
-await page.keyboard.down('ArrowRight');
 await page.waitForTimeout(550);
 await page.keyboard.up('ArrowRight');
 state = await page.evaluate(() => ({

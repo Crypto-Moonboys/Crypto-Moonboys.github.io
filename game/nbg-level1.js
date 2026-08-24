@@ -109,7 +109,11 @@
     var playerAnimations = {};
     var assetStatus = {};
     var requiredAssets = [];
+    var assetsLoaded = false;
+    var gameVisible = false;
+    var waitingForFirstInput = false;
     var running = false;
+    var initPromise = null;
     var completionAnimationActive = false;
     var complete = false;
     var lastTime = 0;
@@ -218,10 +222,17 @@
       sprayTimer = 0;
     }
 
+    var startInputCodes = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'Space', 'KeyA', 'KeyD', 'KeyW', 'KeyS', 'KeyX'];
+
+    function isStartInputCode(code) {
+      return startInputCodes.indexOf(code) >= 0;
+    }
+
     function onKey(e, down) {
       keys[e.code] = down;
-      if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'Space', 'KeyA', 'KeyD', 'KeyW', 'KeyS', 'KeyX'].indexOf(e.code) >= 0) {
+      if (isStartInputCode(e.code)) {
         e.preventDefault();
+        if (down) beginGameplay();
       }
     }
 
@@ -396,7 +407,7 @@
       hud.xp.textContent = 'XP ' + xp;
       hud.coins.textContent = 'COINS ' + collected + '/' + coins.length;
       hud.health.textContent = 'HEALTH ' + player.health;
-      hud.state.textContent = complete ? 'LEVEL COMPLETE' : checkpoint.active ? 'CHECKPOINT' : 'RUNNING';
+      hud.state.textContent = complete ? 'LEVEL COMPLETE' : running ? (checkpoint.active ? 'CHECKPOINT' : 'RUNNING') : 'PRESS ANY KEY';
     }
 
     function drawImageLayer(image, parallax, y, h, fallbackColor) {
@@ -576,6 +587,9 @@
         get enemies() { return enemies; },
         get xp() { return xp; },
         get complete() { return complete; },
+        get assetsLoaded() { return assetsLoaded; },
+        get gameVisible() { return gameVisible; },
+        get waitingForFirstInput() { return waitingForFirstInput; },
         get running() { return running; },
         get completionAnimationActive() { return completionAnimationActive; },
         get cameraX() { return cameraX; },
@@ -586,9 +600,24 @@
       };
     }
 
-    function start() {
-      if (running) return Promise.resolve(window.NBGLevel1State);
-      return loadJson(ASSET_MANIFEST).then(function (assetManifest) {
+    function finishInit() {
+      assertRequiredAssetsLoaded();
+      assetsLoaded = true;
+      gameVisible = true;
+      waitingForFirstInput = true;
+      running = false;
+      complete = false;
+      lastTime = 0;
+      updateCamera();
+      updateHud();
+      render(performance.now());
+      return window.NBGLevel1State;
+    }
+
+    function init() {
+      exposeTestState();
+      if (initPromise) return initPromise;
+      initPromise = loadJson(ASSET_MANIFEST).then(function (assetManifest) {
         var assets = buildRuntimeAssetMap(assetManifest);
         var playerManifestPath = resolveAssetPath(assetManifest.player && assetManifest.player.animationManifest);
         if (!playerManifestPath) throw new Error('Missing player animation manifest path');
@@ -635,16 +664,21 @@
             };
           });
         })));
-      }).then(function () {
-        assertRequiredAssetsLoaded();
-        exposeTestState();
-        running = true;
-        complete = false;
-        lastTime = 0;
-        window.dispatchEvent(new CustomEvent('nbg-level-started', { detail: { level: 'london-level-1' } }));
-        requestAnimationFrame(tick);
-        return window.NBGLevel1State;
-      });
+      }).then(finishInit);
+      return initPromise;
+    }
+
+    function beginGameplay() {
+      if (running) return Promise.resolve(window.NBGLevel1State);
+      if (!assetsLoaded) return init().then(beginGameplay);
+      if (complete) return Promise.resolve(window.NBGLevel1State);
+      waitingForFirstInput = false;
+      running = true;
+      lastTime = 0;
+      updateHud();
+      window.dispatchEvent(new CustomEvent('nbg-level-started', { detail: { level: 'london-level-1' } }));
+      requestAnimationFrame(tick);
+      return Promise.resolve(window.NBGLevel1State);
     }
 
     window.addEventListener('keydown', function (e) { onKey(e, true); });
@@ -652,11 +686,13 @@
     window.addEventListener('blur', clearInput);
 
     return {
-      start: start,
+      init: init,
+      start: beginGameplay,
       getState: function () { return window.NBGLevel1State; },
       setTouchControl: function (control, active) {
         if (Object.prototype.hasOwnProperty.call(touch, control)) {
           touch[control] = active;
+          if (active) beginGameplay();
         }
       }
     };
@@ -664,7 +700,6 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     var canvas = document.getElementById('game');
-    var title = document.getElementById('title-screen');
     var stage = document.getElementById('game-stage');
     var start = document.getElementById('startBtn') || document.getElementById('start');
     var hud = {
@@ -686,11 +721,15 @@
       throw error;
     }
 
-    start.addEventListener('click', function () {
-      title.hidden = true;
-      stage.classList.add('is-active');
-      runtime.start().catch(setLaunchError);
-    });
+    if (stage) stage.classList.add('is-active');
+    runtime.init().catch(setLaunchError);
+
+    if (start) {
+      start.addEventListener('click', function () {
+        if (stage) stage.classList.add('is-active');
+        runtime.start().catch(setLaunchError);
+      });
+    }
 
     Array.prototype.forEach.call(document.querySelectorAll('[data-control]'), function (button) {
       var control = button.getAttribute('data-control');
