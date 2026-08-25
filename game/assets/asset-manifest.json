@@ -11,7 +11,7 @@
     "width": 2200,
     "layerNames": ["sky", "london-skyline", "graffiti-wall", "street"],
     "layers": [
-      "world/london-sky-layer.svg",
+      "world/clouds.jpg",
       "world/london-skyline-layer.svg",
       "world/graffiti-wall-layer.svg",
       "world/street-tiles.svg"
