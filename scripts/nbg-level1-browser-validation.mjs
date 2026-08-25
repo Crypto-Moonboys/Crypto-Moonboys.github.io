@@ -767,7 +767,15 @@ await page.evaluate(() => {
   player.x = 2052;
   player.y = 178;
 });
-await page.waitForTimeout(920);
+await page.waitForFunction(
+  () =>
+    window.NBGLevel1State?.complete === true &&
+    window.NBGLevel1State?.completionAnimationActive === false,
+  null,
+  {
+    timeout: expectedAnimations.victory.frames * expectedAnimations.victory.frameMs + 1000
+  }
+);
 state = await page.evaluate(() => ({
   complete: window.NBGLevel1State.complete,
   running: window.NBGLevel1State.running,
