@@ -12,7 +12,7 @@
     "layerNames": ["sky", "london-skyline", "graffiti-wall", "street"],
     "layers": [
       "world/clouds.jpg",
-      "world/london-skyline-layer.svg",
+      "world/LONDON BACKGROUND.png",
       "world/graffiti-wall-layer.svg",
       "world/street-tiles.svg"
     ]
