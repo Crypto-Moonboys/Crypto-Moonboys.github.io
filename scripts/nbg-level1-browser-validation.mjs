@@ -101,13 +101,13 @@ async function openWithDelayedNbgInit(browser, targetUrl, pageOptions = { viewpo
 }
 
 const expectedAnimations = {
-  idle: { spriteSheet: 'player/animations/idle.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 6, frames: 4, columns: 3, frameMs: 145 },
+  idle: { spriteSheet: 'player/animations/idle.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 6, frames: 6, columns: 3, frameMs: 145 },
   run: { spriteSheet: 'player/animations/run.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 12, frames: 6, columns: 3, frameMs: 88 },
-  jump: { spriteSheet: 'player/animations/jump.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 18, frames: 1, columns: 3, frameMs: 145 },
-  fall: { spriteSheet: 'player/animations/fall.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 15, frames: 1, columns: 3, frameMs: 145 },
-  spray: { spriteSheet: 'player/animations/spray.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 1, frames: 4, columns: 3, frameMs: 110 },
-  hurt: { spriteSheet: 'player/animations/hurt.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 1, frames: 2, columns: 3, frameMs: 120 },
-  victory: { spriteSheet: 'player/animations/victory.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 8, frames: 2, columns: 3, frameMs: 145 }
+  jump: { spriteSheet: 'player/animations/jump.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 18, frames: 6, columns: 3, frameMs: 145 },
+  fall: { spriteSheet: 'player/animations/fall.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 15, frames: 6, columns: 3, frameMs: 145 },
+  spray: { spriteSheet: 'player/animations/spray.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 1, frames: 6, columns: 3, frameMs: 110 },
+  hurt: { spriteSheet: 'player/animations/hurt.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 1, frames: 6, columns: 3, frameMs: 120 },
+  victory: { spriteSheet: 'player/animations/victory.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 8, frames: 6, columns: 3, frameMs: 145 }
 };
 const expectedPlayerAssetUrls = Object.fromEntries(Object.entries(expectedAnimations).map(([key, animation]) => [
   `player.${key}`,
@@ -767,7 +767,7 @@ await page.evaluate(() => {
   player.x = 2052;
   player.y = 178;
 });
-await page.waitForTimeout(180);
+await page.waitForTimeout(920);
 state = await page.evaluate(() => ({
   complete: window.NBGLevel1State.complete,
   running: window.NBGLevel1State.running,

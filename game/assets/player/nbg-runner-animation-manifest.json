@@ -8,7 +8,7 @@
       "renderWidth": 72,
       "renderHeight": 86,
       "renderOffsetY": 6,
-      "frames": 4,
+      "frames": 6,
       "columns": 3,
       "frameMs": 145
     },
@@ -30,7 +30,7 @@
       "renderWidth": 72,
       "renderHeight": 86,
       "renderOffsetY": 18,
-      "frames": 1,
+      "frames": 6,
       "columns": 3,
       "frameMs": 145
     },
@@ -41,7 +41,7 @@
       "renderWidth": 72,
       "renderHeight": 86,
       "renderOffsetY": 15,
-      "frames": 1,
+      "frames": 6,
       "columns": 3,
       "frameMs": 145
     },
@@ -52,7 +52,7 @@
       "renderWidth": 72,
       "renderHeight": 86,
       "renderOffsetY": 1,
-      "frames": 4,
+      "frames": 6,
       "columns": 3,
       "frameMs": 110
     },
@@ -63,7 +63,7 @@
       "renderWidth": 72,
       "renderHeight": 86,
       "renderOffsetY": 1,
-      "frames": 2,
+      "frames": 6,
       "columns": 3,
       "frameMs": 120
     },
@@ -74,7 +74,7 @@
       "renderWidth": 72,
       "renderHeight": 86,
       "renderOffsetY": 8,
-      "frames": 2,
+      "frames": 6,
       "columns": 3,
       "frameMs": 145
     }
