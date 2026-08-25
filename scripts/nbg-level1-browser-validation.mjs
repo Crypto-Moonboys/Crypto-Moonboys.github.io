@@ -607,6 +607,39 @@ state = await page.evaluate(() => ({
 }));
 assert.ok(state.x > beforeMoveX + 8, 'player must move right');
 
+await page.keyboard.down('ArrowLeft');
+await page.waitForTimeout(1600);
+await page.keyboard.up('ArrowLeft');
+await page.keyboard.down('KeyS');
+await page.waitForTimeout(80);
+await page.keyboard.up('KeyS');
+await page.waitForTimeout(80);
+state = await page.evaluate(() => {
+  const player = window.NBGLevel1State.player;
+  const animation = window.NBGLevel1State.playerAnimations[player.anim];
+  const visualMarginX = Math.max(0, Math.round((animation.renderWidth - player.w) / 2));
+  return {
+    x: player.x,
+    y: player.y,
+    w: player.w,
+    h: player.h,
+    facing: player.facing,
+    anim: player.anim,
+    cameraX: window.NBGLevel1State.cameraX,
+    renderWidth: animation.renderWidth,
+    visualMarginX,
+    visualDrawX: Math.round(player.x - window.NBGLevel1State.cameraX) - visualMarginX
+  };
+});
+assert.equal(state.w, 24, 'left-boundary visual clamp must not change player hitbox width');
+assert.equal(state.h, 34, 'left-boundary visual clamp must not change player hitbox height');
+assert.equal(state.renderWidth, 72, 'left-boundary visual clamp must preserve enlarged runner render width');
+assert.equal(state.visualMarginX, 24, 'left-boundary visual clamp must account for the enlarged runner visual margin');
+assert.equal(state.facing, -1, 'left-boundary regression must validate facing-left frames');
+assert.equal(state.anim, 'spray', 'left-boundary regression must validate spray animation frames');
+assert.ok(state.x >= 12 + state.visualMarginX, 'player world clamp must include the runner visual margin');
+assert.ok(state.visualDrawX >= 0, 'runner visual sprite must not be clipped at the left canvas edge');
+
 const beforeTouchMoveX = state.x;
 await page.locator('[data-control="right"]').dispatchEvent('pointerdown', {
   pointerId: 1,

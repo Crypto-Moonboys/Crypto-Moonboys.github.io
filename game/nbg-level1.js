@@ -320,6 +320,12 @@
       }
     }
 
+    function getPlayerVisualMarginX() {
+      var animation = getAnimation(player.anim);
+      var frameMeta = getAnimationFrameMetadata(animation);
+      return Math.max(0, Math.round((frameMeta.renderWidth - player.w) / 2));
+    }
+
     function updatePlayer(dt) {
       var step = dt / TARGET_FRAME_MS;
       handleInput(step);
@@ -327,7 +333,8 @@
       if (player.invuln > 0) player.invuln -= dt;
 
       player.x += player.vx * step;
-      player.x = clamp(player.x, 12, WORLD_WIDTH - player.w - 12);
+      var visualMarginX = getPlayerVisualMarginX();
+      player.x = clamp(player.x, 12 + visualMarginX, WORLD_WIDTH - player.w - 12 - visualMarginX);
 
       var previousY = player.y;
       player.vy += GRAVITY * step;
