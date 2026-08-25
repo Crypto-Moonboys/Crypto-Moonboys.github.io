@@ -101,14 +101,18 @@ async function openWithDelayedNbgInit(browser, targetUrl, pageOptions = { viewpo
 }
 
 const expectedAnimations = {
-  idle: { spriteSheet: 'player/animations/idle.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 48, renderHeight: 58, renderOffsetY: 4, frames: 4, columns: 3, frameMs: 145 },
-  run: { spriteSheet: 'player/animations/run.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 48, renderHeight: 58, renderOffsetY: 8, frames: 6, columns: 3, frameMs: 88 },
-  jump: { spriteSheet: 'player/animations/jump.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 48, renderHeight: 58, renderOffsetY: 12, frames: 1, columns: 3, frameMs: 145 },
-  fall: { spriteSheet: 'player/animations/fall.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 48, renderHeight: 58, renderOffsetY: 10, frames: 1, columns: 3, frameMs: 145 },
-  spray: { spriteSheet: 'player/animations/spray.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 48, renderHeight: 58, renderOffsetY: 1, frames: 4, columns: 3, frameMs: 110 },
-  hurt: { spriteSheet: 'player/animations/hurt.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 48, renderHeight: 58, renderOffsetY: 1, frames: 2, columns: 3, frameMs: 120 },
-  victory: { spriteSheet: 'player/animations/victory.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 48, renderHeight: 58, renderOffsetY: 5, frames: 2, columns: 3, frameMs: 145 }
+  idle: { spriteSheet: 'player/animations/idle.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 6, frames: 4, columns: 3, frameMs: 145 },
+  run: { spriteSheet: 'player/animations/run.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 12, frames: 6, columns: 3, frameMs: 88 },
+  jump: { spriteSheet: 'player/animations/jump.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 18, frames: 1, columns: 3, frameMs: 145 },
+  fall: { spriteSheet: 'player/animations/fall.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 15, frames: 1, columns: 3, frameMs: 145 },
+  spray: { spriteSheet: 'player/animations/spray.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 1, frames: 4, columns: 3, frameMs: 110 },
+  hurt: { spriteSheet: 'player/animations/hurt.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 1, frames: 2, columns: 3, frameMs: 120 },
+  victory: { spriteSheet: 'player/animations/victory.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 8, frames: 2, columns: 3, frameMs: 145 }
 };
+const expectedPlayerAssetUrls = Object.fromEntries(Object.entries(expectedAnimations).map(([key, animation]) => [
+  `player.${key}`,
+  `/game/assets/${animation.spriteSheet}`
+]));
 const assetManifest = readJson('game/assets/asset-manifest.json');
 const playerAnimationManifest = readJson('game/assets/player/nbg-runner-animation-manifest.json');
 
@@ -535,7 +539,22 @@ let state = await page.evaluate(() => ({
   xp: window.NBGLevel1State.xp,
   assetStatus: window.NBGLevel1State.assetStatus,
   requiredAssets: window.NBGLevel1State.requiredAssets,
-  playerAnimations: window.NBGLevel1State.playerAnimations
+  playerAnimations: Object.fromEntries(Object.entries(window.NBGLevel1State.playerAnimations).map(([key, animation]) => [
+    key,
+    {
+      spriteSheet: animation.spriteSheet,
+      sourceFrameWidth: animation.sourceFrameWidth,
+      sourceFrameHeight: animation.sourceFrameHeight,
+      renderWidth: animation.renderWidth,
+      renderHeight: animation.renderHeight,
+      renderOffsetY: animation.renderOffsetY,
+      frames: animation.frames,
+      columns: animation.columns,
+      frameMs: animation.frameMs,
+      naturalWidth: animation.image?.naturalWidth,
+      naturalHeight: animation.image?.naturalHeight
+    }
+  ]))
 }));
 
 assert.equal(state.running, true, 'ArrowRight must start the game loop');
@@ -570,6 +589,13 @@ assert.deepEqual(
 );
 for (const key of Object.keys(expectedAnimations)) {
   assert.equal(state.assetStatus[`player.${key}`]?.loaded, true, `browser runtime must load player ${key} animation sheet`);
+  assert.equal(
+    new URL(state.assetStatus[`player.${key}`].src, url).pathname,
+    expectedPlayerAssetUrls[`player.${key}`],
+    `browser runtime must load exact final-quality player ${key} sheet path`
+  );
+  assert.equal(state.playerAnimations[key].naturalWidth, 384, `browser runtime must load 384px-wide player ${key} sheet`);
+  assert.equal(state.playerAnimations[key].naturalHeight, 256, `browser runtime must load 256px-tall player ${key} sheet`);
 }
 
 const beforeMoveX = state.x;
@@ -580,6 +606,39 @@ state = await page.evaluate(() => ({
   y: window.NBGLevel1State.player.y
 }));
 assert.ok(state.x > beforeMoveX + 8, 'player must move right');
+
+await page.keyboard.down('ArrowLeft');
+await page.waitForTimeout(1600);
+await page.keyboard.up('ArrowLeft');
+await page.keyboard.down('KeyS');
+await page.waitForTimeout(80);
+await page.keyboard.up('KeyS');
+await page.waitForTimeout(80);
+state = await page.evaluate(() => {
+  const player = window.NBGLevel1State.player;
+  const animation = window.NBGLevel1State.playerAnimations[player.anim];
+  const visualMarginX = Math.max(0, Math.round((animation.renderWidth - player.w) / 2));
+  return {
+    x: player.x,
+    y: player.y,
+    w: player.w,
+    h: player.h,
+    facing: player.facing,
+    anim: player.anim,
+    cameraX: window.NBGLevel1State.cameraX,
+    renderWidth: animation.renderWidth,
+    visualMarginX,
+    visualDrawX: Math.round(player.x - window.NBGLevel1State.cameraX) - visualMarginX
+  };
+});
+assert.equal(state.w, 24, 'left-boundary visual clamp must not change player hitbox width');
+assert.equal(state.h, 34, 'left-boundary visual clamp must not change player hitbox height');
+assert.equal(state.renderWidth, 72, 'left-boundary visual clamp must preserve enlarged runner render width');
+assert.equal(state.visualMarginX, 24, 'left-boundary visual clamp must account for the enlarged runner visual margin');
+assert.equal(state.facing, -1, 'left-boundary regression must validate facing-left frames');
+assert.equal(state.anim, 'spray', 'left-boundary regression must validate spray animation frames');
+assert.ok(state.x >= 12 + state.visualMarginX, 'player world clamp must include the runner visual margin');
+assert.ok(state.visualDrawX >= 0, 'runner visual sprite must not be clipped at the left canvas edge');
 
 const beforeTouchMoveX = state.x;
 await page.locator('[data-control="right"]').dispatchEvent('pointerdown', {
