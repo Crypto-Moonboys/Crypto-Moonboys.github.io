@@ -183,14 +183,16 @@ async function assertDownloadDisclaimer(page, label, shouldWrap = false) {
 }
 
 async function assertHomepageLayout(page, label, mode) {
-  const [builder, intro, categories, preview, selected] = await Promise.all([
+  const [cta, builder, mission, categories, preview, selected] = await Promise.all([
+    page.locator('.homepage-build-cta').boundingBox(),
     page.locator('.homepage-avatar-builder').boundingBox(),
-    page.locator('.hero-intro').boundingBox(),
+    page.locator('.hero-intro:not(.homepage-build-cta)').boundingBox(),
     page.locator('.category-panel').boundingBox(),
     page.locator('.preview-panel').boundingBox(),
     page.locator('.selection-panel').boundingBox(),
   ]);
-  assert(builder.y < intro.y, `${label}: builder must appear before the mission section`);
+  assert(cta.y < builder.y, `${label}: homepage CTA must appear before the builder`);
+  assert(builder.y < mission.y, `${label}: builder must appear before the remaining mission section`);
   assert(Math.abs(preview.width - preview.height) < 1, `${label}: homepage avatar must remain square`);
   if (mode === 'desktop') {
     assert(categories.x + categories.width <= preview.x, `${label}: category controls must be left of the avatar`);
@@ -277,9 +279,20 @@ async function assertHiddenVerticalScroller(page, selector, label) {
 
 try {
   const homepageDesktop = await openAt({ width: 1440, height: 900 }, homepageUrl);
-  const missionHeading = await homepageDesktop.locator('.hero-intro h1').textContent();
-  assert.equal(missionHeading, 'Now you have something worth shouting about.We make sure people remember it.', 'Homepage mission heading must remain unchanged');
-  assert(await homepageDesktop.locator('.homepage-avatar-builder').evaluate((builder) => Boolean(builder.compareDocumentPosition(document.querySelector('.hero-intro')) & Node.DOCUMENT_POSITION_FOLLOWING)), 'Builder must precede .hero-intro in the homepage DOM');
+  const ctaHeading = (await homepageDesktop.locator('.homepage-build-cta h1').textContent()).replace(/\s+/g, ' ').trim();
+  assert.equal(ctaHeading, '🤘 JOIN US AND TAKEOVER THE WORLD. 👀 BUILD A MOONBOY OR GIRL.💥💥💥🚀', 'Homepage build CTA heading must remain unchanged');
+  assert.equal(await homepageDesktop.locator('.hero-intro:not(.homepage-build-cta) h1').count(), 0, 'Moved CTA heading must not remain inside the mission section');
+  const homepageOrderIsCorrect = await homepageDesktop.evaluate(() => {
+    const cta = document.querySelector('.homepage-build-cta');
+    const builder = document.querySelector('.homepage-avatar-builder');
+    const mission = document.querySelector('.hero-intro:not(.homepage-build-cta)');
+    return Boolean(
+      cta && builder && mission &&
+      (cta.compareDocumentPosition(builder) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+      (builder.compareDocumentPosition(mission) & Node.DOCUMENT_POSITION_FOLLOWING)
+    );
+  });
+  assert(homepageOrderIsCorrect, 'Homepage DOM order must be CTA -> builder -> remaining mission content');
   const homepageScroll = await homepageDesktop.evaluate(() => ({
     bodyOverflowY: getComputedStyle(document.body).overflowY,
     pageOverflowY: getComputedStyle(document.documentElement).overflowY,
