@@ -58,7 +58,6 @@
     section.className = 'hero-intro homepage-build-cta';
     section.setAttribute('aria-label', 'Build a Moonboy or Girl');
     cta.dataset.homepageCtaMoved = 'true';
-    cta.querySelectorAll('h1 br').forEach(function (br) { br.replaceWith(' '); });
     section.appendChild(cta);
     builder.insertAdjacentElement('beforebegin', section);
   }
