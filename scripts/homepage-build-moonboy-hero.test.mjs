@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const homepagePath = path.join(ROOT, 'index.html');
+const homeWidgetsPath = path.join(ROOT, 'js', 'home-widgets.js');
 const heroImages = [
   {
     sectionLabel: 'Crypto Moonboys Bad Days 1',
@@ -46,6 +47,7 @@ function check(condition, message) {
 }
 
 const html = fs.readFileSync(homepagePath, 'utf8');
+const homeWidgets = fs.readFileSync(homeWidgetsPath, 'utf8');
 
 const heroPositions = heroImages.map(({ sectionLabel, publicPath }) => ({
   sectionLabel,
@@ -86,16 +88,25 @@ check(
 );
 check(
   lastHeroEnd !== -1 && builderStart > lastHeroEnd && introStart > builderStart,
-  'Avatar builder sits after the Bad Days hero run and before the mission section'
+  'Static homepage source keeps the builder after the Bad Days hero run and before the source mission section'
 );
 check(
-  introMarkup.includes('Now you have something worth shouting about.<br><span>We make sure people remember it.</span>'),
-  'Mission heading remains unchanged'
+  introMarkup.includes('🤘 JOIN US AND TAKEOVER THE WORLD. 👀<br><span>BUILD A MOONBOY OR GIRL.💥💥💥🚀</span>'),
+  'Homepage source contains the approved build CTA heading'
 );
 check(
-  /<h1\b[^>]*>[\s\S]*?<\/h1>/i.test(introMarkup) &&
-    /<p\b[^>]*>[\s\S]*?<\/p>/i.test(introMarkup),
-  'Mission heading and supporting copy remain beneath the new hero image'
+  introMarkup.includes('Some of us live for the future and some of us wonder. 🐸'),
+  'Homepage source contains the approved build CTA supporting line'
+);
+check(
+  homeWidgets.includes("section.className = 'hero-intro homepage-build-cta'") &&
+    homeWidgets.includes("builder.insertAdjacentElement('beforebegin', section)") &&
+    homeWidgets.includes('moveBuildCtaAboveBuilder();'),
+  'Homepage runtime moves the CTA into its own section immediately before the builder'
+);
+check(
+  /<p\b[^>]*>✊ Crypto Moonboys helps you build a memorable Moonboy identity,[\s\S]*?<\/p>/i.test(introMarkup),
+  'Remaining mission supporting copy stays in the source mission section'
 );
 check(
   /\.build-moonboy-hero\s*\{[^}]*width\s*:\s*100%/is.test(html),
