@@ -21,10 +21,10 @@
   "status": "degraded",
   "stale": false,
   "stale_after_hours": 30,
-  "checked_at": "2026-08-25T04:04:06.718Z",
-  "last_successful_check": "2026-08-25T04:04:06.718Z",
-  "last_successful_update": "2026-08-25T04:04:06.201Z",
-  "source_updated_at": "2026-08-25T04:04:06.201Z",
+  "checked_at": "2026-08-26T04:06:59.264Z",
+  "last_successful_check": "2026-08-26T04:06:59.264Z",
+  "last_successful_update": "2026-08-26T04:06:59.018Z",
+  "source_updated_at": "2026-08-26T04:06:59.018Z",
   "source_age_minutes": 0,
   "last_error": "Rarity reconciliation incomplete: 1 mismatched template(s); live minus issued = 3 | Display analytics unavailable: top_users",
   "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live asset scan is unavailable",
@@ -37,7 +37,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-08-25T04:03:59.834Z"
+      "checked_at": "2026-08-26T04:06:54.396Z"
     },
     "num_assets": {
       "ok": true,
@@ -46,7 +46,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-08-25T04:04:01.352Z"
+      "checked_at": "2026-08-26T04:06:55.094Z"
     },
     "marketcap": {
       "ok": true,
@@ -55,7 +55,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-08-25T04:04:03.144Z"
+      "checked_at": "2026-08-26T04:06:56.593Z"
     },
     "top_users": {
       "ok": false,
@@ -64,7 +64,7 @@
       "error": "https://wax-api.hivebp.io/v3/top-users/30/gkniftyheads failed: HTTP 500",
       "used_previous": true,
       "attempts": 2,
-      "checked_at": "2026-08-25T04:04:03.326Z"
+      "checked_at": "2026-08-26T04:06:56.743Z"
     },
     "top_templates": {
       "ok": true,
@@ -73,7 +73,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-08-25T04:04:04.003Z"
+      "checked_at": "2026-08-26T04:06:57.388Z"
     },
     "volume": {
       "ok": true,
@@ -82,7 +82,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-08-25T04:04:05.323Z"
+      "checked_at": "2026-08-26T04:06:58.204Z"
     },
     "sales_volume_graph": {
       "ok": true,
@@ -91,7 +91,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-08-25T04:04:05.507Z"
+      "checked_at": "2026-08-26T04:06:58.346Z"
     }
   },
   "notes": [
