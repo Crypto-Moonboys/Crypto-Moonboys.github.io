@@ -5,6 +5,7 @@ const PAGE_SIZE = 24;
 const ICONS_URL = '/img/avatar-builder/category-icons.svg';
 const host = document.querySelector('.avatar-builder-host');
 const isHomepage = host?.dataset.builderContext === 'homepage';
+const HOMEPAGE_INTRO_IMAGE = isHomepage ? (host?.dataset.introImage ?? null) : null;
 
 if (!host) throw new Error('Avatar builder host was not found.');
 
@@ -27,6 +28,7 @@ host.innerHTML = `
       <div class="avatar-frame" id="avatar-frame" aria-busy="true">
         <div class="avatar-stack" id="avatar-stack">
           <canvas class="animated-background-canvas" id="animated-background-canvas" width="1000" height="1000" hidden aria-hidden="true"></canvas>
+          ${isHomepage ? `<img class="homepage-builder-intro" src="${HOMEPAGE_INTRO_IMAGE}" alt="Crypto Moonboys build your own Moonboy preview" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:20;pointer-events:none;" loading="eager" decoding="async">` : ''}
         </div>
         <div class="preview-fallback" id="preview-fallback" hidden>One or more layers could not load.</div>
       </div>
@@ -65,6 +67,7 @@ const elements = {
   categoryTabs: host.querySelector('#category-tabs'),
   clearAll: host.querySelector('#clear-all'),
   downloadPng: host.querySelector('#download-png'),
+  homepageIntro: host.querySelector('.homepage-builder-intro'),
   liveRegion: host.querySelector('#live-region'),
   pagination: host.querySelector('#pagination'),
   previewFallback: host.querySelector('#preview-fallback'),
@@ -83,6 +86,13 @@ function icon(categoryId, className = '') {
 function announce(message) {
   elements.liveRegion.textContent = '';
   window.requestAnimationFrame(() => { elements.liveRegion.textContent = message; });
+}
+
+function dismissHomepageIntro() {
+  if (!elements.homepageIntro) return;
+  elements.homepageIntro.remove();
+  elements.homepageIntro = null;
+  elements.downloadPng.disabled = false;
 }
 
 function loadExportImage(trait) {
@@ -346,6 +356,7 @@ elements.categoryTabs.addEventListener('click', (event) => {
 elements.traitGrid.addEventListener('click', (event) => {
   const button = event.target.closest('[data-trait]');
   if (!button || button.classList.contains('is-error')) return;
+  dismissHomepageIntro();
   const trait = state.traitsById.get(button.dataset.trait);
   state.selected[trait.category] = trait.id;
   renderTray();
@@ -365,18 +376,21 @@ elements.pagination.addEventListener('click', (event) => {
 elements.selectedList.addEventListener('click', (event) => {
   const button = event.target.closest('[data-remove]');
   if (!button || button.disabled) return;
+  dismissHomepageIntro();
   state.selected[button.dataset.remove] = null;
   renderAll();
   announce(`${button.dataset.remove} cleared.`);
 });
 
 elements.randomize.addEventListener('click', () => {
+  dismissHomepageIntro();
   state.selected = randomStack(state.manifest);
   renderAll();
   announce('A complete random avatar stack is ready.');
 });
 
 elements.clearAll.addEventListener('click', () => {
+  dismissHomepageIntro();
   state.selected = clearOptionalStack(state.manifest, state.selected);
   renderAll();
   announce('Optional layers cleared. Required background and body remain.');
@@ -391,10 +405,11 @@ async function initialize() {
     state.manifest = await response.json();
     ({ traitsById: state.traitsById, traitsByCategory: state.traitsByCategory } = indexManifest(state.manifest));
     state.activeCategory = state.manifest.categoryOrder[0];
-    state.selected = defaultStack(state.manifest);
+    const initialStack = defaultStack(state.manifest);
+    state.selected = isHomepage ? clearOptionalStack(state.manifest, initialStack) : initialStack;
     lastWorkingBackgroundId = state.selected.background;
     renderAll();
-    elements.downloadPng.disabled = false;
+    elements.downloadPng.disabled = isHomepage;
   } catch (error) {
     elements.trayStatus.hidden = false;
     elements.trayStatus.textContent = 'The avatar builder could not load. Please refresh and try again.';
