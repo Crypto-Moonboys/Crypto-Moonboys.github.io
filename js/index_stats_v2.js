@@ -64,19 +64,7 @@
       .catch(() => null);
   }
 
-  function replaceHomepageIntroVideo() {
-    const introVideo = document.querySelector('.home-video iframe');
-    if (!introVideo) return;
-
-    introVideo.src = 'https://rumble.com/embed/v7dbew8/';
-    introVideo.title = 'GraffPUNKS Log Out';
-    introVideo.removeAttribute('referrerpolicy');
-    introVideo.setAttribute('allowfullscreen', '');
-  }
-
   document.addEventListener('DOMContentLoaded', function () {
-    replaceHomepageIntroVideo();
-
     loadSiteStats()
       .then(stats => {
         if (!stats) return;
