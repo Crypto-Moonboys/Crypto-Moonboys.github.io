@@ -34,6 +34,10 @@ body.page-standalone-tool { overflow: hidden; }
     linear-gradient(135deg, #040608, #081219 60%, #05080b);
 }
 
+.homepage-avatar-builder .builder-shell {
+  background: #000;
+}
+
 .avatar-builder-host .control-panel {
   min-width: 0;
   max-height: var(--canvas-size);
