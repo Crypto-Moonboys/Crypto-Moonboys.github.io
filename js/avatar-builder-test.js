@@ -3,9 +3,9 @@ import { isAnimatedBackground, loadAnimatedBackground } from './avatar-backgroun
 
 const PAGE_SIZE = 24;
 const ICONS_URL = '/img/avatar-builder/category-icons.svg';
-const HOMEPAGE_INTRO_IMAGE = '/img/CRYPTO-MOONBOYS-OG-TRAITS/crypto-moonboy-20260826-060637.jpg';
 const host = document.querySelector('.avatar-builder-host');
 const isHomepage = host?.dataset.builderContext === 'homepage';
+const HOMEPAGE_INTRO_IMAGE = isHomepage ? (host?.dataset.introImage ?? null) : null;
 
 if (!host) throw new Error('Avatar builder host was not found.');
 
