@@ -2,7 +2,7 @@
   "collection": "noballgamess",
   "provider": "NFTHive / HiveBP WAX API",
   "api_base": "https://wax-api.hivebp.io",
-  "generated_at": "2026-08-27T14:19:08.907Z",
+  "generated_at": "2026-08-28T15:29:15.630Z",
   "analytics_status": "degraded",
   "status": "degraded",
   "display_only": true,
@@ -26,7 +26,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-08-27T14:19:03.945Z"
+      "checked_at": "2026-08-28T15:29:11.343Z"
     },
     "num_assets": {
       "ok": true,
@@ -35,7 +35,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-08-27T14:19:04.094Z"
+      "checked_at": "2026-08-28T15:29:11.516Z"
     },
     "marketcap": {
       "ok": true,
@@ -44,7 +44,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-08-27T14:19:06.708Z"
+      "checked_at": "2026-08-28T15:29:13.436Z"
     },
     "top_users": {
       "ok": false,
@@ -53,7 +53,7 @@
       "error": "https://wax-api.hivebp.io/v3/top-users/30/noballgamess failed: HTTP 500",
       "used_previous": true,
       "attempts": 2,
-      "checked_at": "2026-08-27T14:19:06.845Z"
+      "checked_at": "2026-08-28T15:29:13.607Z"
     },
     "top_templates": {
       "ok": true,
@@ -62,7 +62,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-08-27T14:19:07.490Z"
+      "checked_at": "2026-08-28T15:29:14.274Z"
     },
     "volume": {
       "ok": true,
@@ -71,7 +71,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-08-27T14:19:08.610Z"
+      "checked_at": "2026-08-28T15:29:15.207Z"
     },
     "sales_volume_graph": {
       "ok": true,
@@ -80,20 +80,20 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-08-27T14:19:08.755Z"
+      "checked_at": "2026-08-28T15:29:15.378Z"
     }
   },
   "data": {
     "collection_stats": {
       "numUsers": 704,
-      "usdMarketCap": 129460.97545813103,
-      "waxMarketCap": 475195.89460417867,
+      "usdMarketCap": 129460.97545813162,
+      "waxMarketCap": 475195.894604178,
       "numAssets": 12020
     },
     "num_assets": {
       "numberOfAssets": 12020,
-      "estimatedWaxValue": 475195.8946041785,
-      "estimatedUsdValue": 129460.97545813103
+      "estimatedWaxValue": 475195.89460417844,
+      "estimatedUsdValue": 129460.97545813164
     },
     "marketcap": {
       "waxMarketCap": 270663.73012020707,
@@ -234,6 +234,38 @@
           "Facebook ": "https://www.facebook.com/Artist.Charlie.Buster/",
           "Instagram ": "https://www.instagram.com/iamcharliebuster/?hl=en",
           "Twitter ": "https://twitter.com/nftbuster",
+          "description ": "The Price Rise Structure for “CB x GK - OG” & “DLP V1” in the “noballgamess” Collection by Charlie Buster is based on the Fibonacci Sequence(FS) and the Golden Ratio(GR).   When a NFT reaches its next Milestone in the (FS) the Floor Price will rise by the (GR)x1.61 and rounded to its nearest round number, Official Stats from “Sale History” on Atomic Hub and the amount of NFTs sold from Each Templated NFT.  NFT’s Sold - Price Rise x1.61  1 to 377 - (150 WAX) 377 to 610 - (250 WAX) 610 to 987 - (420 WAX) 987 to 1,597 - (700 WAX) 1,597 to 2,584 - (1,150+ WAX) (FS) Mint Numbers in All CB Collection’s are UltraRARES. (#1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765,10946,17711.)  Super Rare Easter Egg Mint Number’s - (#13,69,88,161,420,666.) All Of These Numbered NFT’s can be Swapped at Any Time for 3 Random Master Mints. DM For More Info...  *THE ARK OF THE COVENANT MINT* - aka The Golden Ratio Mint #1618.  This Mind Meltingly Rare As F**K Mint and can be swapped for for 21 Random Collector’s Mints.  Price rise Only based on the First 1 to 100 Collector’s Mint NFT’s, Price’s will also rise for the remaining Burn Mints due to a controlled amount of Airdrop’s and Weekly Blend’s Available Every Friday At 4:20pm GMT, Once all 5 Stages are Completed the NFT will now go into Price Discovery and The Sky is the Limit...  https://wax.atomichub.io/market?collection_name=noballgamess&schema_name=airdropsbycb",
+          "id": "377",
+          "img": "QmbyKmzRo7TDMKYrtjRz198seK9s92gmBsW7uEZJ7PFga1",
+          "name": "\"Dropping Bomb's\" By SARAH PU51FLY x Charlie Buster",
+          "rarity ": "Collaboration's With SARAH PU51FLY",
+          "variations ": "Original Artwork",
+          "template_id": 412225,
+          "schema": "whysoserious"
+        },
+        "total": 18,
+        "collection": {
+          "name": "noballgamess",
+          "displayName": "Charlie Buster - ‘’NO BALL GAMES’’",
+          "image": "QmQcJCZXDVgNreCp63TUrCjmGun5eAAqFAWMHj76cbysw9"
+        },
+        "stats": {
+          "days": "30",
+          "waxVolume": 9634.79248482,
+          "usdVolume": 1069.3008372788702,
+          "waxFloor": 377,
+          "change": 0,
+          "buyers": 25,
+          "sellers": 31,
+          "sales": 60,
+          "rank": 6
+        }
+      },
+      {
+        "template": {
+          "Facebook ": "https://www.facebook.com/Artist.Charlie.Buster/",
+          "Instagram ": "https://www.instagram.com/iamcharliebuster/?hl=en",
+          "Twitter ": "https://twitter.com/nftbuster",
           "description ": "The Price Rise Structure for “CB x GK - OG” & “DLP V1” in the “noballgamess” Collection by Charlie Buster is based on the Fibonacci Sequence(FS) and the Golden Ratio(GR).     When a NFT reaches its next Milestone in the (FS) the Floor Price will rise by the (GR)x1.61 and rounded to its nearest round number, Official Stats from “Sale History” on Atomic Hub and the amount of NFTs sold from Each Templated NFT.    NFT’s Sold - Price Rise x1.61  1 to 377 - (150 WAX)  377 to 610 - (250 WAX)  610 to 987 - (420 WAX)  987 to 1,597 - (700 WAX)  1,597 to 2,584 - (1,150+ WAX)    (FS) Mint Numbers in All CB Collection’s are UltraRARES.  (#1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765,10946,17711.)    Super Rare Easter Egg Mint Number’s - (#13,69,88,161,420,666.) All Of These Numbered NFT’s can be Swapped at Any Time for 3 Random Master Mints. DM For More Info...     *THE ARK OF THE COVENANT MINT* - aka The Golden Ratio Mint #1618.  This Mind Meltingly Rare As F**K Mint and can be swapped for for 21 Random Collector’s Mints.    Price rise Only based on the First 1 to 100 Collector’s Mint NFT’s, Price’s will also rise for the remaining Burn Mints due to a controlled amount of Airdrop’s and Weekly Blend’s Available Every Friday At 4:20pm GMT, Once all 5 Stages are Completed the NFT will now go into Price Discovery and The Sky is the Limit...    https://wax.atomichub.io/market?collection_name=noballgamess&schema_name=airdropsbycb",
           "id": "2500",
           "img": "QmbHi46Xkpi6NWiGLUL544DXte4Z5PQtvCLJcGw7Aa32ew",
@@ -259,38 +291,6 @@
           "sellers": 267,
           "sales": 798,
           "rank": 7
-        }
-      },
-      {
-        "template": {
-          "Facebook ": "https://www.facebook.com/Artist.Charlie.Buster/",
-          "Instagram ": "https://www.instagram.com/iamcharliebuster/?hl=en",
-          "Twitter ": "https://twitter.com/nftbuster",
-          "description ": "The Price Rise Structure for “CB x GK - OG” & “DLP V1” in the “noballgamess” Collection by Charlie Buster is based on the Fibonacci Sequence(FS) and the Golden Ratio(GR).   When a NFT reaches its next Milestone in the (FS) the Floor Price will rise by the (GR)x1.61 and rounded to its nearest round number, Official Stats from “Sale History” on Atomic Hub and the amount of NFTs sold from Each Templated NFT.  NFT’s Sold - Price Rise x1.61  1 to 377 - (150 WAX) 377 to 610 - (250 WAX) 610 to 987 - (420 WAX) 987 to 1,597 - (700 WAX) 1,597 to 2,584 - (1,150+ WAX) (FS) Mint Numbers in All CB Collection’s are UltraRARES. (#1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765,10946,17711.)  Super Rare Easter Egg Mint Number’s - (#13,69,88,161,420,666.) All Of These Numbered NFT’s can be Swapped at Any Time for 3 Random Master Mints. DM For More Info...  *THE ARK OF THE COVENANT MINT* - aka The Golden Ratio Mint #1618.  This Mind Meltingly Rare As F**K Mint and can be swapped for for 21 Random Collector’s Mints.  Price rise Only based on the First 1 to 100 Collector’s Mint NFT’s, Price’s will also rise for the remaining Burn Mints due to a controlled amount of Airdrop’s and Weekly Blend’s Available Every Friday At 4:20pm GMT, Once all 5 Stages are Completed the NFT will now go into Price Discovery and The Sky is the Limit...  https://wax.atomichub.io/market?collection_name=noballgamess&schema_name=airdropsbycb",
-          "id": "377",
-          "img": "QmbyKmzRo7TDMKYrtjRz198seK9s92gmBsW7uEZJ7PFga1",
-          "name": "\"Dropping Bomb's\" By SARAH PU51FLY x Charlie Buster",
-          "rarity ": "Collaboration's With SARAH PU51FLY",
-          "variations ": "Original Artwork",
-          "template_id": 412225,
-          "schema": "whysoserious"
-        },
-        "total": 18,
-        "collection": {
-          "name": "noballgamess",
-          "displayName": "Charlie Buster - ‘’NO BALL GAMES’’",
-          "image": "QmQcJCZXDVgNreCp63TUrCjmGun5eAAqFAWMHj76cbysw9"
-        },
-        "stats": {
-          "days": "30",
-          "waxVolume": 8505.29248482,
-          "usdVolume": 1063.99218727887,
-          "waxFloor": 375.5,
-          "change": 0,
-          "buyers": 25,
-          "sellers": 30,
-          "sales": 57,
-          "rank": 6
         }
       },
       {
@@ -411,13 +411,13 @@
         },
         "stats": {
           "days": "30",
-          "waxVolume": 6092.925107499999,
-          "usdVolume": 569.35999931775,
+          "waxVolume": 6469.925107499999,
+          "usdVolume": 571.1318993177499,
           "waxFloor": 377,
           "change": 0,
           "buyers": 16,
           "sellers": 21,
-          "sales": 33,
+          "sales": 34,
           "rank": 12
         }
       },
@@ -490,6 +490,38 @@
           "Facebook ": "https://www.facebook.com/Artist.Charlie.Buster/",
           "Instagram ": "https://www.instagram.com/iamcharliebuster/?hl=en",
           "Twitter ": "https://twitter.com/nftbuster",
+          "description ": "The Price Rise Structure for \"Beauty and the Beast\" in the “noballgamess” Collection by Charlie Buster is based on the Fibonacci Sequence(FS) and the Golden Ratio(GR).   When a NFT reaches its next Milestone in the (FS) the Floor Price of the “Master Mints” will rise by the (GR)x1.61 and rounded to its nearest round number, Official Stats from “Sale History” on Atomic Hub and the amount sold from Each Templated NFT.  NFT’s Sold - Price Rise x1.61 (NFT’s Sold Not Mint number) 1 to 21 - (750 WAX)  21 to 34 - (1,234 WAX) 34 to 55 - (2,023 WAX) 55 to 89 - (3,333 WAX) 89 to 144+ - (5,666+ WAX)   (FS) Mint Numbers in All CB Collection’s are UltraRARES. (#1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765,10946,17711.) Super Rare Easter Egg Mint Number’s - (#13,69,88,161,420,666.) All Of These Numbered NFT’s can be Swapped at Any Time for 3 Random Master Mints that will also double lfgk rewards(This doubles all previous multipliers. DM For More Info...  To Make Sure these Milestones are Accomplished We have Withheld the Bulk of the Available Maximum Mint to Keep Supply Extremely Low, Example the Max Mint Available is #377 and with the first (55) held as the Master Mint’s on This NFT.  More information about the project Here: https://graffitikings.co.uk/charlie-buster-nfts/",
+          "id": "233",
+          "img": "QmW1ZDcz645QzZEhNQ6TeEnibsTeXEKz3B4sE6hZEUG8Y2",
+          "name": "\"Beauty and the Beast\"",
+          "rarity ": "Beauty and Destruction ",
+          "variation ": "Original Artwork",
+          "template_id": 445272,
+          "schema": "airdropsbycb"
+        },
+        "total": 18,
+        "collection": {
+          "name": "noballgamess",
+          "displayName": "Charlie Buster - ‘’NO BALL GAMES’’",
+          "image": "QmQcJCZXDVgNreCp63TUrCjmGun5eAAqFAWMHj76cbysw9"
+        },
+        "stats": {
+          "days": "30",
+          "waxVolume": 4411.3724999999995,
+          "usdVolume": 325.34185805,
+          "waxFloor": 610,
+          "change": 0,
+          "buyers": 11,
+          "sellers": 16,
+          "sales": 25,
+          "rank": 13
+        }
+      },
+      {
+        "template": {
+          "Facebook ": "https://www.facebook.com/Artist.Charlie.Buster/",
+          "Instagram ": "https://www.instagram.com/iamcharliebuster/?hl=en",
+          "Twitter ": "https://twitter.com/nftbuster",
           "description ": "The Price Rise Structure for ‘’OPEN YOUR EYES” in the “noballgamess” Collection by Charlie Buster is based on the Fibonacci Sequence(FS) and the Golden Ratio(GR).  When a NFT reaches its next Milestone in the (FS) the Floor Price of the “Master Mints” will rise by the (GR)x1.61 and rounded to its nearest round number, Official Stats from “Sale History” on Atomic Hub and the amount sold from Each Templated NFT.  NFT’s Sold - Price Rise x1.61 (NFT’s Sold Not Mint number) 1 to 8 - (850 WAX) 8 to 13 - (1,420 WAX) 13 to 21 - (2,300 WAX) 21 to 34 - (3,720 WAX) 34 to 55 - (6,000+ WAX)  (FS) Mint Numbers in All CB Collection’s are UltraRARES. (#1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765,10946,17711.) Super Rare Easter Egg Mint Number’s - (#13,69,88,161,420,666.) All Of These Numbered NFT’s can be Swapped at Any Time for 3 Random Master Mints that will also double lfgk rewards(This doubles all previous multipliers. DM For More Info...  To Make Sure these Milestones are Accomplished We have Withheld the Bulk of the Available Maximum Mint to Keep Supply Extremely Low, Example the Max Mint Available is #89 and with the first (55) held as the Master Mint’s on This NFT.  More information about the project Here: https://graffitikings.co.uk/charlie-buster-nfts/",
           "id": "89",
           "img": "QmcYtZbSwxbQBr7wSiuLt4ENCgBbyzUeHsNqzM1Cz1JoYZ",
@@ -547,38 +579,6 @@
           "sellers": 2,
           "sales": 2,
           "rank": 3
-        }
-      },
-      {
-        "template": {
-          "Facebook ": "https://www.facebook.com/Artist.Charlie.Buster/",
-          "Instagram ": "https://www.instagram.com/iamcharliebuster/?hl=en",
-          "Twitter ": "https://twitter.com/nftbuster",
-          "description ": "The Price Rise Structure for \"Beauty and the Beast\" in the “noballgamess” Collection by Charlie Buster is based on the Fibonacci Sequence(FS) and the Golden Ratio(GR).   When a NFT reaches its next Milestone in the (FS) the Floor Price of the “Master Mints” will rise by the (GR)x1.61 and rounded to its nearest round number, Official Stats from “Sale History” on Atomic Hub and the amount sold from Each Templated NFT.  NFT’s Sold - Price Rise x1.61 (NFT’s Sold Not Mint number) 1 to 21 - (750 WAX)  21 to 34 - (1,234 WAX) 34 to 55 - (2,023 WAX) 55 to 89 - (3,333 WAX) 89 to 144+ - (5,666+ WAX)   (FS) Mint Numbers in All CB Collection’s are UltraRARES. (#1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765,10946,17711.) Super Rare Easter Egg Mint Number’s - (#13,69,88,161,420,666.) All Of These Numbered NFT’s can be Swapped at Any Time for 3 Random Master Mints that will also double lfgk rewards(This doubles all previous multipliers. DM For More Info...  To Make Sure these Milestones are Accomplished We have Withheld the Bulk of the Available Maximum Mint to Keep Supply Extremely Low, Example the Max Mint Available is #377 and with the first (55) held as the Master Mint’s on This NFT.  More information about the project Here: https://graffitikings.co.uk/charlie-buster-nfts/",
-          "id": "233",
-          "img": "QmW1ZDcz645QzZEhNQ6TeEnibsTeXEKz3B4sE6hZEUG8Y2",
-          "name": "\"Beauty and the Beast\"",
-          "rarity ": "Beauty and Destruction ",
-          "variation ": "Original Artwork",
-          "template_id": 445272,
-          "schema": "airdropsbycb"
-        },
-        "total": 18,
-        "collection": {
-          "name": "noballgamess",
-          "displayName": "Charlie Buster - ‘’NO BALL GAMES’’",
-          "image": "QmQcJCZXDVgNreCp63TUrCjmGun5eAAqFAWMHj76cbysw9"
-        },
-        "stats": {
-          "days": "30",
-          "waxVolume": 3191.3725,
-          "usdVolume": 319.60785805,
-          "waxFloor": 610,
-          "change": 0,
-          "buyers": 11,
-          "sellers": 16,
-          "sales": 23,
-          "rank": 13
         }
       },
       {
@@ -679,16 +679,10 @@
       }
     ],
     "volume": {
-      "waxVolume": 10034.107,
-      "usdVolume": 47.1603029
+      "waxVolume": 8410.457999999999,
+      "usdVolume": 39.5291526
     },
     "sales_volume_graph": [
-      {
-        "waxVolume": 4350.149,
-        "sales": 10,
-        "usdVolume": 20.445700300000006,
-        "date": "2026-07-29"
-      },
       {
         "waxVolume": 0,
         "sales": 0,
@@ -862,6 +856,12 @@
         "sales": 0,
         "usdVolume": 0,
         "date": "2026-08-27"
+      },
+      {
+        "waxVolume": 2726.5,
+        "sales": 6,
+        "usdVolume": 12.814549999999999,
+        "date": "2026-08-28"
       }
     ]
   },
