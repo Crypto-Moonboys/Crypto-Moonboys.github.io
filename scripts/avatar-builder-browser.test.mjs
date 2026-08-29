@@ -280,7 +280,7 @@ async function assertHiddenVerticalScroller(page, selector, label) {
 try {
   const homepageDesktop = await openAt({ width: 1440, height: 900 }, homepageUrl);
   const ctaHeading = (await homepageDesktop.locator('.homepage-build-cta h1').textContent()).replace(/\s+/g, ' ').trim();
-  assert.equal(ctaHeading, '🤘 JOIN US AND TAKEOVER THE WORLD. 👀BUILD A MOONBOY OR GIRL.💥💥💥🚀', 'Homepage build CTA heading must remain unchanged');
+  assert.equal(ctaHeading, '🤘 JOIN US AND TAKEOVER THE WORLD 👀BUILD A HODL WARRIOR 💥💥💥🚀', 'Homepage build CTA heading must use the approved HODL Warrior wording');
   assert.equal(await homepageDesktop.locator('.hero-intro:not(.homepage-build-cta) h1').count(), 0, 'Moved CTA heading must not remain inside the mission section');
   const homepageOrderIsCorrect = await homepageDesktop.evaluate(() => {
     const cta = document.querySelector('.homepage-build-cta');

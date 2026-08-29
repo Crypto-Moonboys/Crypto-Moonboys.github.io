@@ -10346,7 +10346,7 @@
         "title": "noballgamess nft collection"
       }
     ],
-    "rank_score": 260,
+    "rank_score": 261,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 1,
@@ -10355,7 +10355,7 @@
       "category": "core",
       "category_priority": 10,
       "has_description": true,
-      "article_word_count": 1307,
+      "article_word_count": 1311,
       "keyword_bag_size": 16,
       "heading_count": 14,
       "list_count": 0,
@@ -10370,11 +10370,11 @@
       "canonical_points": 20,
       "description_points": 10,
       "category_points": 50,
-      "word_count_points": 65,
+      "word_count_points": 66,
       "keyword_bag_points": 16,
       "content_quality_points": 85,
       "authority_points": 14,
-      "final_rank_score": 260,
+      "final_rank_score": 261,
       "authority_graph_points": 1
     },
     "search_index": {
