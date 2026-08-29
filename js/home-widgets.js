@@ -56,7 +56,7 @@
 
     var section = document.createElement('section');
     section.className = 'hero-intro homepage-build-cta';
-    section.setAttribute('aria-label', 'Build a Moonboy or Girl');
+    section.setAttribute('aria-label', 'Build a HODL Warrior');
     cta.dataset.homepageCtaMoved = 'true';
     section.appendChild(cta);
     builder.insertAdjacentElement('beforebegin', section);
