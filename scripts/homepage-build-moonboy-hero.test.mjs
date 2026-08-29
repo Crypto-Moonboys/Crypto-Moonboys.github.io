@@ -39,6 +39,7 @@ const forbiddenBuilderCopy = [
   'Build a Crypto Moonboy',
   'Build a Moonboy',
   'BUILD A MOONBOY',
+  'Build a Moonboy or Girl',
   'Create a new Crypto Moonboy identity',
   'Create a Crypto Moonboy',
   'Create a Moonboy',
@@ -126,8 +127,18 @@ check(
   'Homepage avatar builder uses the approved HODL Warrior aria label'
 );
 check(
-  forbiddenBuilderCopy.every((phrase) => !html.includes(phrase)),
-  'Homepage source has no forbidden Moonboy/Crypto Moonboy builder CTA wording'
+  homeWidgets.includes("section.setAttribute('aria-label', 'Build a HODL Warrior')"),
+  'Runtime home-widgets.js CTA section uses the approved HODL Warrior aria label'
+);
+const forbiddenInHtml = forbiddenBuilderCopy.filter((phrase) => html.includes(phrase));
+check(
+  forbiddenInHtml.length === 0,
+  `Homepage source has no forbidden Moonboy/Crypto Moonboy builder CTA wording${forbiddenInHtml.length ? ` — found: ${forbiddenInHtml.map((p) => JSON.stringify(p)).join(', ')}` : ''}`
+);
+const forbiddenInWidgets = forbiddenBuilderCopy.filter((phrase) => homeWidgets.includes(phrase));
+check(
+  forbiddenInWidgets.length === 0,
+  `Runtime home-widgets.js has no forbidden Moonboy/Crypto Moonboy builder CTA wording${forbiddenInWidgets.length ? ` — found: ${forbiddenInWidgets.map((p) => JSON.stringify(p)).join(', ')}` : ''}`
 );
 check(
   /\.build-moonboy-hero\s*\{[^}]*width\s*:\s*100%/is.test(html),
