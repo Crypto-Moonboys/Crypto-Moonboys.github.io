@@ -35,6 +35,19 @@ const heroImages = [
   },
 ];
 
+const forbiddenBuilderCopy = [
+  'Build a Crypto Moonboy',
+  'Build a Moonboy',
+  'BUILD A MOONBOY',
+  'Create a new Crypto Moonboy identity',
+  'Create a Crypto Moonboy',
+  'Create a Moonboy',
+  'Create a Crypyo Moonboy',
+  'Create a Crypyo Moonboy identity',
+  'Build an original Crypto Moonboy GK character',
+  'memorable Moonboy identity',
+];
+
 let failures = 0;
 
 function check(condition, message) {
@@ -91,11 +104,11 @@ check(
   'Static homepage source keeps the builder after the Bad Days hero run and before the source mission section'
 );
 check(
-  introMarkup.includes('🤘 JOIN US AND TAKEOVER THE WORLD. 👀<br><span>BUILD A MOONBOY OR GIRL.💥💥💥🚀</span>'),
-  'Homepage source contains the approved build CTA heading'
+  introMarkup.includes('🤘 JOIN US AND TAKEOVER THE WORLD 👀<br><span>BUILD A HODL WARRIOR 💥💥💥🚀</span>'),
+  'Homepage source contains the approved HODL Warrior build CTA heading'
 );
 check(
-  introMarkup.includes('Some of us live for the future and some of us wonder. 🐸'),
+  introMarkup.includes('Some of us live for the future 💥💥💥🚀 and some of us wonder 🦄'),
   'Homepage source contains the approved build CTA supporting line'
 );
 check(
@@ -105,8 +118,16 @@ check(
   'Homepage runtime moves the CTA into its own section immediately before the builder'
 );
 check(
-  /<p\b[^>]*>✊ Crypto Moonboys helps you build a memorable Moonboy identity,[\s\S]*?<\/p>/i.test(introMarkup),
-  'Remaining mission supporting copy stays in the source mission section'
+  /<p\b[^>]*>✊ Crypto Moonboys helps you build a memorable HODL Warrior identity,[\s\S]*?<\/p>/i.test(introMarkup),
+  'Remaining mission supporting copy uses HODL Warrior identity language'
+);
+check(
+  html.includes('aria-label="Build a HODL Warrior"'),
+  'Homepage avatar builder uses the approved HODL Warrior aria label'
+);
+check(
+  forbiddenBuilderCopy.every((phrase) => !html.includes(phrase)),
+  'Homepage source has no forbidden Moonboy/Crypto Moonboy builder CTA wording'
 );
 check(
   /\.build-moonboy-hero\s*\{[^}]*width\s*:\s*100%/is.test(html),
