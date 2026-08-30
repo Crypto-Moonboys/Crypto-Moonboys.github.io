@@ -5786,6 +5786,23 @@
         "wiki"
       ]
     },
+    "swap_nefty": {
+      "alias_candidates": [
+        "swap nefty"
+      ],
+      "aliases": [],
+      "canonical_title": "swap.nefty",
+      "canonical_url": "/wiki/swap-nefty.html",
+      "category": "tokens",
+      "source_urls": [
+        "/wiki/swap-nefty.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "swap",
+        "nefty"
+      ]
+    },
     "tacoswap": {
       "alias_candidates": [],
       "aliases": [
@@ -6845,5 +6862,5 @@
       ]
     }
   },
-  "updated_at": "2026-08-23T03:06:44Z"
+  "updated_at": "2026-08-30T06:10:21Z"
 }

@@ -102,7 +102,7 @@
         "title": "crypto moonboys"
       }
     ],
-    "rank_score": 969,
+    "rank_score": 971,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 2,
@@ -129,9 +129,9 @@
       "word_count_points": 111,
       "keyword_bag_points": 20,
       "content_quality_points": 94,
-      "authority_points": 674,
-      "final_rank_score": 969,
-      "authority_graph_points": 649
+      "authority_points": 676,
+      "final_rank_score": 971,
+      "authority_graph_points": 651
     },
     "search_index": {
       "normalized_title": "crypto moonboys the original graffiti kings web3 universe",
@@ -169,11 +169,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 322,
+      "inbound_count": 323,
       "outbound_count": 20,
       "existing_outbound_count": 10,
       "suggested_outbound_count": 10,
-      "authority": 649
+      "authority": 651
     },
     "brand": null
   },
@@ -6447,6 +6447,94 @@
     "brand": null
   },
   {
+    "title": "WAX Blockchain",
+    "desc": "Crypto Moonboys wiki guide to the WAX blockchain, including WAXP, resources, NFT infrastructure, games, wallets and creator use cases.",
+    "url": "/wiki/wax-blockchain.html",
+    "tags": [
+      "wax",
+      "blockchain",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "wax blockchain crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 290,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 1377,
+      "keyword_bag_size": 19,
+      "heading_count": 13,
+      "list_count": 2,
+      "internal_link_count": 13,
+      "paragraph_count": 19,
+      "section_count": 10,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 73,
+      "authority_score": 23
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 69,
+      "keyword_bag_points": 19,
+      "content_quality_points": 81,
+      "authority_points": 56,
+      "final_rank_score": 290,
+      "authority_graph_points": 33
+    },
+    "search_index": {
+      "normalized_title": "wax blockchain crypto moonboys wiki",
+      "tokens": [
+        "wax",
+        "blockchain",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "wax",
+        "blockchain",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "the",
+        "including",
+        "waxp",
+        "resources",
+        "nft",
+        "infrastructure",
+        "games",
+        "wallets",
+        "and",
+        "creator",
+        "use",
+        "cases"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 13,
+      "outbound_count": 34,
+      "existing_outbound_count": 13,
+      "suggested_outbound_count": 21,
+      "authority": 32.5
+    },
+    "brand": null
+  },
+  {
     "title": "The SHARD MOTHERS of MANHATTAN",
     "desc": "The SHARD MOTHERS of MANHATTAN stand as the fierce, enigmatic protectors of Block Topia’s most sacred relics, guarding shards believed to contain fragments of t",
     "url": "/wiki/the-shard-mothers-of-manhattan.html",
@@ -6632,94 +6720,6 @@
       "existing_outbound_count": 11,
       "suggested_outbound_count": 14,
       "authority": 13.5
-    },
-    "brand": null
-  },
-  {
-    "title": "WAX Blockchain",
-    "desc": "Crypto Moonboys wiki guide to the WAX blockchain, including WAXP, resources, NFT infrastructure, games, wallets and creator use cases.",
-    "url": "/wiki/wax-blockchain.html",
-    "tags": [
-      "wax",
-      "blockchain",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "wax blockchain crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 288,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1377,
-      "keyword_bag_size": 19,
-      "heading_count": 13,
-      "list_count": 2,
-      "internal_link_count": 13,
-      "paragraph_count": 19,
-      "section_count": 10,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 73,
-      "authority_score": 23
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 69,
-      "keyword_bag_points": 19,
-      "content_quality_points": 81,
-      "authority_points": 54,
-      "final_rank_score": 288,
-      "authority_graph_points": 31
-    },
-    "search_index": {
-      "normalized_title": "wax blockchain crypto moonboys wiki",
-      "tokens": [
-        "wax",
-        "blockchain",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "wax",
-        "blockchain",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "the",
-        "including",
-        "waxp",
-        "resources",
-        "nft",
-        "infrastructure",
-        "games",
-        "wallets",
-        "and",
-        "creator",
-        "use",
-        "cases"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 12,
-      "outbound_count": 34,
-      "existing_outbound_count": 13,
-      "suggested_outbound_count": 21,
-      "authority": 30.5
     },
     "brand": null
   },
@@ -10700,6 +10700,98 @@
     "brand": null
   },
   {
+    "title": "WAX DEXs & DeFi",
+    "desc": "Crypto Moonboys wiki guide to WAX DEXs and DeFi tools including Alcor Exchange, TacoSwap, liquidity pools, swaps and token-market risk.",
+    "url": "/wiki/wax-dexs-defi.html",
+    "tags": [
+      "wax",
+      "dexs",
+      "defi",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "wax dexs defi"
+      }
+    ],
+    "rank_score": 259,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 900,
+      "keyword_bag_size": 20,
+      "heading_count": 12,
+      "list_count": 2,
+      "internal_link_count": 21,
+      "paragraph_count": 13,
+      "section_count": 9,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 65,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 45,
+      "keyword_bag_points": 20,
+      "content_quality_points": 74,
+      "authority_points": 55,
+      "final_rank_score": 259,
+      "authority_graph_points": 31
+    },
+    "search_index": {
+      "normalized_title": "wax dexs and defi crypto moonboys wiki",
+      "tokens": [
+        "wax",
+        "dexs",
+        "and",
+        "defi",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "wax",
+        "dexs",
+        "and",
+        "defi",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "tools",
+        "including",
+        "alcor",
+        "exchange",
+        "tacoswap",
+        "liquidity",
+        "pools",
+        "swaps",
+        "token",
+        "market",
+        "risk"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 11,
+      "outbound_count": 36,
+      "existing_outbound_count": 17,
+      "suggested_outbound_count": 19,
+      "authority": 30.5
+    },
+    "brand": null
+  },
+  {
     "title": "Elder Codex-7",
     "desc": "Elder Codex-7 looms as an ancient knowledge keeper within the boundless archives of Block Topia, a revered and enigmatic entity whose very existence is tied to",
     "url": "/wiki/elder-codex-7.html",
@@ -11069,98 +11161,6 @@
       "existing_outbound_count": 13,
       "suggested_outbound_count": 12,
       "authority": 8.5
-    },
-    "brand": null
-  },
-  {
-    "title": "WAX DEXs & DeFi",
-    "desc": "Crypto Moonboys wiki guide to WAX DEXs and DeFi tools including Alcor Exchange, TacoSwap, liquidity pools, swaps and token-market risk.",
-    "url": "/wiki/wax-dexs-defi.html",
-    "tags": [
-      "wax",
-      "dexs",
-      "defi",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "wax dexs defi"
-      }
-    ],
-    "rank_score": 257,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 6,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 900,
-      "keyword_bag_size": 20,
-      "heading_count": 12,
-      "list_count": 2,
-      "internal_link_count": 21,
-      "paragraph_count": 13,
-      "section_count": 9,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 65,
-      "authority_score": 24
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 45,
-      "keyword_bag_points": 20,
-      "content_quality_points": 74,
-      "authority_points": 53,
-      "final_rank_score": 257,
-      "authority_graph_points": 29
-    },
-    "search_index": {
-      "normalized_title": "wax dexs and defi crypto moonboys wiki",
-      "tokens": [
-        "wax",
-        "dexs",
-        "and",
-        "defi",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "wax",
-        "dexs",
-        "and",
-        "defi",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "tools",
-        "including",
-        "alcor",
-        "exchange",
-        "tacoswap",
-        "liquidity",
-        "pools",
-        "swaps",
-        "token",
-        "market",
-        "risk"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 10,
-      "outbound_count": 36,
-      "existing_outbound_count": 17,
-      "suggested_outbound_count": 19,
-      "authority": 28.5
     },
     "brand": null
   },
@@ -14755,6 +14755,174 @@
     "brand": null
   },
   {
+    "title": "NeftyBlocks",
+    "desc": "Crypto Moonboys wiki guide to NeftyBlocks, a WAX NFT marketplace, drop platform and creator toolkit for digital collectibles.",
+    "url": "/wiki/neftyblocks.html",
+    "tags": [
+      "neftyblocks",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "neftyblocks crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 240,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 997,
+      "keyword_bag_size": 18,
+      "heading_count": 13,
+      "list_count": 2,
+      "internal_link_count": 9,
+      "paragraph_count": 14,
+      "section_count": 10,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 65,
+      "authority_score": 20
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 50,
+      "keyword_bag_points": 18,
+      "content_quality_points": 72,
+      "authority_points": 35,
+      "final_rank_score": 240,
+      "authority_graph_points": 15
+    },
+    "search_index": {
+      "normalized_title": "neftyblocks crypto moonboys wiki",
+      "tokens": [
+        "neftyblocks",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "neftyblocks",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "a",
+        "wax",
+        "nft",
+        "marketplace",
+        "drop",
+        "platform",
+        "and",
+        "creator",
+        "toolkit",
+        "for",
+        "digital",
+        "collectibles"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 5,
+      "outbound_count": 16,
+      "existing_outbound_count": 9,
+      "suggested_outbound_count": 7,
+      "authority": 14.5
+    },
+    "brand": null
+  },
+  {
+    "title": "WAX NFT Marketplaces",
+    "desc": "Crypto Moonboys wiki guide to WAX NFT marketplaces and collector sites including AtomicHub, NeftyBlocks, NFTHive and AtomicAssets.",
+    "url": "/wiki/wax-nft-marketplaces.html",
+    "tags": [
+      "wax",
+      "nft",
+      "marketplaces",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [],
+    "rank_score": 240,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 908,
+      "keyword_bag_size": 16,
+      "heading_count": 12,
+      "list_count": 2,
+      "internal_link_count": 18,
+      "paragraph_count": 13,
+      "section_count": 9,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 65,
+      "authority_score": 24
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 45,
+      "keyword_bag_points": 16,
+      "content_quality_points": 71,
+      "authority_points": 43,
+      "final_rank_score": 240,
+      "authority_graph_points": 19
+    },
+    "search_index": {
+      "normalized_title": "wax nft marketplaces crypto moonboys wiki",
+      "tokens": [
+        "wax",
+        "nft",
+        "marketplaces",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "wax",
+        "nft",
+        "marketplaces",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "and",
+        "collector",
+        "sites",
+        "including",
+        "atomichub",
+        "neftyblocks",
+        "nfthive",
+        "atomicassets"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 6,
+      "outbound_count": 18,
+      "existing_outbound_count": 13,
+      "suggested_outbound_count": 5,
+      "authority": 18.5
+    },
+    "brand": null
+  },
+  {
     "title": "👉 BITCOIN KiD TV HEADS 100 ⚡️⚡️⚡️",
     "desc": "👉 BITCOIN KiD TV HEADS 100 ⚡️⚡️⚡️ is an NFT in the gkniftyheads WAX AtomicAssets collection.",
     "url": "/wiki/gkniftyheads-bitcoin-kid-tv-heads-100-776074.html",
@@ -15404,174 +15572,6 @@
       "canonical_slug": "graffpunks-collection",
       "parent_concept": "graffpunks"
     }
-  },
-  {
-    "title": "NeftyBlocks",
-    "desc": "Crypto Moonboys wiki guide to NeftyBlocks, a WAX NFT marketplace, drop platform and creator toolkit for digital collectibles.",
-    "url": "/wiki/neftyblocks.html",
-    "tags": [
-      "neftyblocks",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "neftyblocks crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 238,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 4,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 997,
-      "keyword_bag_size": 18,
-      "heading_count": 13,
-      "list_count": 2,
-      "internal_link_count": 9,
-      "paragraph_count": 14,
-      "section_count": 10,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 65,
-      "authority_score": 20
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 50,
-      "keyword_bag_points": 18,
-      "content_quality_points": 72,
-      "authority_points": 33,
-      "final_rank_score": 238,
-      "authority_graph_points": 13
-    },
-    "search_index": {
-      "normalized_title": "neftyblocks crypto moonboys wiki",
-      "tokens": [
-        "neftyblocks",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "neftyblocks",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "a",
-        "wax",
-        "nft",
-        "marketplace",
-        "drop",
-        "platform",
-        "and",
-        "creator",
-        "toolkit",
-        "for",
-        "digital",
-        "collectibles"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 4,
-      "outbound_count": 16,
-      "existing_outbound_count": 9,
-      "suggested_outbound_count": 7,
-      "authority": 12.5
-    },
-    "brand": null
-  },
-  {
-    "title": "WAX NFT Marketplaces",
-    "desc": "Crypto Moonboys wiki guide to WAX NFT marketplaces and collector sites including AtomicHub, NeftyBlocks, NFTHive and AtomicAssets.",
-    "url": "/wiki/wax-nft-marketplaces.html",
-    "tags": [
-      "wax",
-      "nft",
-      "marketplaces",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 238,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 6,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 908,
-      "keyword_bag_size": 16,
-      "heading_count": 12,
-      "list_count": 2,
-      "internal_link_count": 18,
-      "paragraph_count": 13,
-      "section_count": 9,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 65,
-      "authority_score": 24
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 45,
-      "keyword_bag_points": 16,
-      "content_quality_points": 71,
-      "authority_points": 41,
-      "final_rank_score": 238,
-      "authority_graph_points": 17
-    },
-    "search_index": {
-      "normalized_title": "wax nft marketplaces crypto moonboys wiki",
-      "tokens": [
-        "wax",
-        "nft",
-        "marketplaces",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "wax",
-        "nft",
-        "marketplaces",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "and",
-        "collector",
-        "sites",
-        "including",
-        "atomichub",
-        "neftyblocks",
-        "nfthive",
-        "atomicassets"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 5,
-      "outbound_count": 18,
-      "existing_outbound_count": 13,
-      "suggested_outbound_count": 5,
-      "authority": 16.5
-    },
-    "brand": null
   },
   {
     "title": "👉 MR CHEO PURPLE PAINS ⚡️⚡️⚡️",
@@ -19249,9 +19249,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 15,
+      "outbound_count": 16,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 4,
+      "suggested_outbound_count": 5,
       "authority": 9.5
     },
     "brand": null
@@ -27574,6 +27574,87 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 7,
       "authority": 14
+    },
+    "brand": null
+  },
+  {
+    "title": "swap.nefty",
+    "desc": "Live Crypto Moonboys wiki tracker for WAX blockchain token pairs on the swap.nefty contract, refreshed every 24 hours from WAX RPC data.",
+    "url": "/wiki/swap-nefty.html",
+    "tags": [],
+    "category": "tokens",
+    "aliases": [],
+    "rank_score": 181,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 0,
+      "mention_count": 0,
+      "category": "tokens",
+      "category_priority": 6,
+      "has_description": true,
+      "article_word_count": 539,
+      "keyword_bag_size": 22,
+      "heading_count": 9,
+      "list_count": 3,
+      "internal_link_count": 5,
+      "paragraph_count": 6,
+      "section_count": 6,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 55,
+      "authority_score": 14
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 30,
+      "word_count_points": 27,
+      "keyword_bag_points": 22,
+      "content_quality_points": 55,
+      "authority_points": 17,
+      "final_rank_score": 181,
+      "authority_graph_points": 3
+    },
+    "search_index": {
+      "normalized_title": "swap nefty crypto moonboys wiki",
+      "tokens": [
+        "swap",
+        "nefty",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "swap",
+        "nefty",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "live",
+        "tracker",
+        "for",
+        "wax",
+        "blockchain",
+        "token",
+        "pairs",
+        "on",
+        "the",
+        "contract",
+        "refreshed",
+        "every",
+        "24",
+        "hours",
+        "from",
+        "rpc",
+        "data"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 30,
+      "existing_outbound_count": 5,
+      "suggested_outbound_count": 25,
+      "authority": 2.5
     },
     "brand": null
   },

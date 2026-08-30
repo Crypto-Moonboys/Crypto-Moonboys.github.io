@@ -8883,6 +8883,42 @@
       "/wiki/triple-fork-event.html"
     ]
   },
+  "/wiki/swap-nefty.html": {
+    "existing_links": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/neftyblocks.html",
+      "/wiki/wax-blockchain.html",
+      "/wiki/wax-dexs-defi.html",
+      "/wiki/wax-nft-marketplaces.html"
+    ],
+    "suggested_links": [
+      "/wiki/alcor-exchange.html",
+      "/wiki/atomicassets.html",
+      "/wiki/atomichub.html",
+      "/wiki/blockchain.html",
+      "/wiki/fgl-token.html",
+      "/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html",
+      "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
+      "/wiki/gkniftyheads-blockchain-belle-783392.html",
+      "/wiki/gkniftyheads-blockchain-bombshell-783407.html",
+      "/wiki/gkniftyheads-blockchain-furie-infinite-776007.html",
+      "/wiki/gkniftyheads-blockchain-furie-infinite-776055.html",
+      "/wiki/gkniftyheads-blockchain-furie-infinite-776057.html",
+      "/wiki/gkniftyheads-matteo-token-tactician-romano-783462.html",
+      "/wiki/gkniftyheads-token-temptress-783401.html",
+      "/wiki/gkniftyheads-token-tycooness-783405.html",
+      "/wiki/gkniftyheads-waxp-femme-fatale-the-token-temptress-783414.html",
+      "/wiki/nbg-token.html",
+      "/wiki/nbg.html",
+      "/wiki/nbgx-token.html",
+      "/wiki/nfthive.html",
+      "/wiki/noballgamess-nft-collection.html",
+      "/wiki/pmsl-token.html",
+      "/wiki/punk-token.html",
+      "/wiki/tacoswap.html",
+      "/wiki/the-blockchain-furies.html"
+    ]
+  },
   "/wiki/tacoswap.html": {
     "existing_links": [
       "/wiki/alcor-exchange.html",
@@ -10031,6 +10067,7 @@
     "suggested_links": [
       "/wiki/atomicassets.html",
       "/wiki/gkniftyheads.html",
+      "/wiki/swap-nefty.html",
       "/wiki/wax-blockchain.html",
       "/wiki/web3.html"
     ]

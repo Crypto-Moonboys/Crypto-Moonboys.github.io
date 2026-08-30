@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-08-29T22:16:13.898Z",
-  "verified_at": "2026-08-29T22:16:13.898Z",
+  "generated_at": "2026-08-30T06:10:22.125Z",
+  "verified_at": "2026-08-30T06:10:22.125Z",
   "lite": true,
   "nodes": [
     {
@@ -16,7 +16,7 @@
       "title": "Crypto Moonboys — The Original Graffiti Kings Web3 Universe",
       "url": "/wiki/crypto-moonboys.html",
       "category": "characters",
-      "rank_score": 969,
+      "rank_score": 971,
       "authority_score": 25
     },
     {
@@ -556,6 +556,14 @@
       "authority_score": 21
     },
     {
+      "id": "/wiki/wax-blockchain.html",
+      "title": "WAX Blockchain",
+      "url": "/wiki/wax-blockchain.html",
+      "category": "factions",
+      "rank_score": 290,
+      "authority_score": 23
+    },
+    {
       "id": "/wiki/the-shard-mothers-of-manhattan.html",
       "title": "The SHARD MOTHERS of MANHATTAN",
       "url": "/wiki/the-shard-mothers-of-manhattan.html",
@@ -568,14 +576,6 @@
       "title": "Alien Worlds / TLM",
       "url": "/wiki/alien-worlds-tlm.html",
       "category": "characters",
-      "rank_score": 288,
-      "authority_score": 23
-    },
-    {
-      "id": "/wiki/wax-blockchain.html",
-      "title": "WAX Blockchain",
-      "url": "/wiki/wax-blockchain.html",
-      "category": "factions",
       "rank_score": 288,
       "authority_score": 23
     },
