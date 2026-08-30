@@ -1397,7 +1397,7 @@
   },
   "/wiki/crypto-moonboys.html": {
     "outbound_count": 20,
-    "inbound_count": 322,
+    "inbound_count": 323,
     "existing_outbound": [
       "/wiki/block-topia.html",
       "/wiki/gkniftyheads-binary-blitzer-784277.html",
@@ -1696,6 +1696,7 @@
       "/wiki/stikfamwars.html",
       "/wiki/storm-struggle.html",
       "/wiki/street-kingdoms.html",
+      "/wiki/swap-nefty.html",
       "/wiki/tacoswap.html",
       "/wiki/tagzcoin.html",
       "/wiki/the-allcity-bulls.html",
@@ -11848,7 +11849,7 @@
   },
   "/wiki/neftyblocks.html": {
     "outbound_count": 16,
-    "inbound_count": 4,
+    "inbound_count": 5,
     "existing_outbound": [
       "/wiki/crypto-moonboys.html",
       "/wiki/games4punks-telegram.html",
@@ -11872,6 +11873,7 @@
     "inbound_from": [
       "/wiki/alcor-exchange.html",
       "/wiki/nfthive.html",
+      "/wiki/swap-nefty.html",
       "/wiki/wax-dexs-defi.html",
       "/wiki/wax-nft-marketplaces.html"
     ]
@@ -13419,6 +13421,45 @@
     ],
     "inbound_from": []
   },
+  "/wiki/swap-nefty.html": {
+    "outbound_count": 30,
+    "inbound_count": 0,
+    "existing_outbound": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/neftyblocks.html",
+      "/wiki/wax-blockchain.html",
+      "/wiki/wax-dexs-defi.html",
+      "/wiki/wax-nft-marketplaces.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/alcor-exchange.html",
+      "/wiki/atomicassets.html",
+      "/wiki/atomichub.html",
+      "/wiki/blockchain.html",
+      "/wiki/fgl-token.html",
+      "/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html",
+      "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
+      "/wiki/gkniftyheads-blockchain-belle-783392.html",
+      "/wiki/gkniftyheads-blockchain-bombshell-783407.html",
+      "/wiki/gkniftyheads-blockchain-furie-infinite-776007.html",
+      "/wiki/gkniftyheads-blockchain-furie-infinite-776055.html",
+      "/wiki/gkniftyheads-blockchain-furie-infinite-776057.html",
+      "/wiki/gkniftyheads-matteo-token-tactician-romano-783462.html",
+      "/wiki/gkniftyheads-token-temptress-783401.html",
+      "/wiki/gkniftyheads-token-tycooness-783405.html",
+      "/wiki/gkniftyheads-waxp-femme-fatale-the-token-temptress-783414.html",
+      "/wiki/nbg-token.html",
+      "/wiki/nbg.html",
+      "/wiki/nbgx-token.html",
+      "/wiki/nfthive.html",
+      "/wiki/noballgamess-nft-collection.html",
+      "/wiki/pmsl-token.html",
+      "/wiki/punk-token.html",
+      "/wiki/tacoswap.html",
+      "/wiki/the-blockchain-furies.html"
+    ],
+    "inbound_from": []
+  },
   "/wiki/tacoswap.html": {
     "outbound_count": 34,
     "inbound_count": 3,
@@ -14828,7 +14869,7 @@
   },
   "/wiki/wax-blockchain.html": {
     "outbound_count": 34,
-    "inbound_count": 12,
+    "inbound_count": 13,
     "existing_outbound": [
       "/wiki/alien-worlds-tlm.html",
       "/wiki/blockchain.html",
@@ -14875,6 +14916,7 @@
       "/wiki/pixel-journey.html",
       "/wiki/punk-token.html",
       "/wiki/staking.html",
+      "/wiki/swap-nefty.html",
       "/wiki/wax-dexs-defi.html",
       "/wiki/wax-nft-marketplaces.html",
       "/wiki/wax-pepe.html",
@@ -14884,7 +14926,7 @@
   },
   "/wiki/wax-dexs-defi.html": {
     "outbound_count": 36,
-    "inbound_count": 10,
+    "inbound_count": 11,
     "existing_outbound": [
       "/wiki/alcor-exchange.html",
       "/wiki/alien-worlds-tlm.html",
@@ -14931,6 +14973,7 @@
       "/wiki/jonny-laurence-nelson-tag-records.html",
       "/wiki/pixel-journey.html",
       "/wiki/spraycode-writcode-mechanics.html",
+      "/wiki/swap-nefty.html",
       "/wiki/the-cleanupcentr.html",
       "/wiki/wax-blockchain.html",
       "/wiki/wax-nft-marketplaces.html",
@@ -14940,7 +14983,7 @@
   },
   "/wiki/wax-nft-marketplaces.html": {
     "outbound_count": 18,
-    "inbound_count": 5,
+    "inbound_count": 6,
     "existing_outbound": [
       "/wiki/atomicassets.html",
       "/wiki/atomichub.html",
@@ -14965,6 +15008,7 @@
     ],
     "inbound_from": [
       "/wiki/playable-nft-murals.html",
+      "/wiki/swap-nefty.html",
       "/wiki/the-cleanupcentr.html",
       "/wiki/wax-blockchain.html",
       "/wiki/wax-dexs-defi.html",
@@ -15019,7 +15063,7 @@
     ]
   },
   "/wiki/waxp-exchange.html": {
-    "outbound_count": 15,
+    "outbound_count": 16,
     "inbound_count": 2,
     "existing_outbound": [
       "/wiki/alcor-exchange.html",
@@ -15037,6 +15081,7 @@
     "suggested_outbound": [
       "/wiki/atomicassets.html",
       "/wiki/gkniftyheads.html",
+      "/wiki/swap-nefty.html",
       "/wiki/wax-blockchain.html",
       "/wiki/web3.html"
     ],

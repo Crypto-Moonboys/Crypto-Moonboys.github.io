@@ -5871,6 +5871,24 @@
     "brand": null
   },
   {
+    "entity_id": "swap_nefty",
+    "canonical_title": "swap.nefty",
+    "canonical_url": "/wiki/swap-nefty.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "swap",
+      "nefty"
+    ],
+    "source_urls": [
+      "/wiki/swap-nefty.html"
+    ],
+    "brand": null,
+    "alias_candidates": [
+      "swap nefty"
+    ]
+  },
+  {
     "entity_id": "tacoswap",
     "canonical_title": "TacoSwap",
     "canonical_url": "/wiki/tacoswap.html",

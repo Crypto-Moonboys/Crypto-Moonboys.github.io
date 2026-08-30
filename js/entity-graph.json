@@ -596,6 +596,43 @@
         }
       },
       {
+        "target_url": "/wiki/neftyblocks.html",
+        "score": 67,
+        "base_score": 61,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:7",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 70,
+        "score_breakdown": {
+          "base_score": 61,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 70
+        }
+      },
+      {
         "target_url": "/wiki/stikfamwars.html",
         "score": 68,
         "base_score": 49,
@@ -672,42 +709,6 @@
       },
       {
         "target_url": "/wiki/block-node-defenders.html",
-        "score": 66,
-        "base_score": 61,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:7",
-          "rank_score_boost:2",
-          "content_depth_boost:3"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 3,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 69,
-        "score_breakdown": {
-          "base_score": 61,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 3,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 69
-        }
-      },
-      {
-        "target_url": "/wiki/bone-idol-ink.html",
         "score": 66,
         "base_score": 61,
         "reasons": [
@@ -1668,6 +1669,42 @@
         }
       },
       {
+        "target_url": "/wiki/swap-nefty.html",
+        "score": 45,
+        "base_score": 43,
+        "reasons": [
+          "same_category:tokens",
+          "link_overlap:1",
+          "rank_score_boost:1",
+          "content_depth_boost:1"
+        ],
+        "rank_score_boost": 1,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 1,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 47,
+        "score_breakdown": {
+          "base_score": 43,
+          "rank_score_boost": 1,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 1,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 47
+        }
+      },
+      {
         "target_url": "/wiki/bitcoin-btc.html",
         "score": 40,
         "base_score": 40,
@@ -2172,43 +2209,6 @@
           "authority_score_boost": 5,
           "graph_centrality_boost": 8,
           "content_depth_boost": 2,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 0,
-          "decay_penalty": 0,
-          "recency_balance": 0,
-          "final_score": 21
-        }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads-louie-hay-you-guys-lupo-783389.html",
-        "score": 21,
-        "base_score": 3,
-        "reasons": [
-          "link_overlap:1",
-          "rank_score_boost:3",
-          "authority_score_boost:6",
-          "graph_centrality_boost:8",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 6,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 0,
-        "decay_penalty": 0,
-        "recency_balance": 0,
-        "final_score": 21,
-        "score_breakdown": {
-          "base_score": 3,
-          "rank_score_boost": 3,
-          "authority_score_boost": 6,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 1,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -2408,6 +2408,42 @@
         }
       },
       {
+        "target_url": "/wiki/swap-nefty.html",
+        "score": 45,
+        "base_score": 43,
+        "reasons": [
+          "same_category:tokens",
+          "link_overlap:1",
+          "rank_score_boost:1",
+          "content_depth_boost:1"
+        ],
+        "rank_score_boost": 1,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 1,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 47,
+        "score_breakdown": {
+          "base_score": 43,
+          "rank_score_boost": 1,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 1,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 47
+        }
+      },
+      {
         "target_url": "/wiki/bitcoin-btc.html",
         "score": 40,
         "base_score": 40,
@@ -2912,43 +2948,6 @@
           "authority_score_boost": 5,
           "graph_centrality_boost": 8,
           "content_depth_boost": 2,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 0,
-          "decay_penalty": 0,
-          "recency_balance": 0,
-          "final_score": 21
-        }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads-louie-hay-you-guys-lupo-783389.html",
-        "score": 21,
-        "base_score": 3,
-        "reasons": [
-          "link_overlap:1",
-          "rank_score_boost:3",
-          "authority_score_boost:6",
-          "graph_centrality_boost:8",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 6,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 0,
-        "decay_penalty": 0,
-        "recency_balance": 0,
-        "final_score": 21,
-        "score_breakdown": {
-          "base_score": 3,
-          "rank_score_boost": 3,
-          "authority_score_boost": 6,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 1,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -3515,6 +3514,43 @@
         }
       },
       {
+        "target_url": "/wiki/neftyblocks.html",
+        "score": 70,
+        "base_score": 64,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:8",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 73,
+        "score_breakdown": {
+          "base_score": 64,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 73
+        }
+      },
+      {
         "target_url": "/wiki/tokenomics.html",
         "score": 70,
         "base_score": 64,
@@ -3625,42 +3661,6 @@
       },
       {
         "target_url": "/wiki/delicious-again-pete.html",
-        "score": 69,
-        "base_score": 64,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:8",
-          "rank_score_boost:2",
-          "content_depth_boost:3"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 3,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 72,
-        "score_breakdown": {
-          "base_score": 64,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 3,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 72
-        }
-      },
-      {
-        "target_url": "/wiki/dream-sovereign.html",
         "score": 69,
         "base_score": 64,
         "reasons": [
@@ -6124,6 +6124,42 @@
         }
       },
       {
+        "target_url": "/wiki/swap-nefty.html",
+        "score": 45,
+        "base_score": 43,
+        "reasons": [
+          "same_category:tokens",
+          "link_overlap:1",
+          "rank_score_boost:1",
+          "content_depth_boost:1"
+        ],
+        "rank_score_boost": 1,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 1,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 47,
+        "score_breakdown": {
+          "base_score": 43,
+          "rank_score_boost": 1,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 1,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 47
+        }
+      },
+      {
         "target_url": "/wiki/bitcoin-btc.html",
         "score": 40,
         "base_score": 40,
@@ -6631,43 +6667,6 @@
           "decay_penalty": 0,
           "recency_balance": 0,
           "final_score": 24
-        }
-      },
-      {
-        "target_url": "/wiki/games4punks-telegram.html",
-        "score": 23,
-        "base_score": 3,
-        "reasons": [
-          "link_overlap:1",
-          "rank_score_boost:5",
-          "authority_score_boost:4",
-          "graph_centrality_boost:5",
-          "content_depth_boost:6"
-        ],
-        "rank_score_boost": 5,
-        "authority_score_boost": 4,
-        "graph_centrality_boost": 5,
-        "content_depth_boost": 6,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 0,
-        "decay_penalty": 0,
-        "recency_balance": 0,
-        "final_score": 23,
-        "score_breakdown": {
-          "base_score": 3,
-          "rank_score_boost": 5,
-          "authority_score_boost": 4,
-          "graph_centrality_boost": 5,
-          "content_depth_boost": 6,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 0,
-          "decay_penalty": 0,
-          "recency_balance": 0,
-          "final_score": 23
         }
       }
     ]
@@ -8645,6 +8644,43 @@
         }
       },
       {
+        "target_url": "/wiki/neftyblocks.html",
+        "score": 70,
+        "base_score": 64,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:8",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 73,
+        "score_breakdown": {
+          "base_score": 64,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 73
+        }
+      },
+      {
         "target_url": "/wiki/tokenomics.html",
         "score": 70,
         "base_score": 64,
@@ -8827,42 +8863,6 @@
       },
       {
         "target_url": "/wiki/forkborn-collective.html",
-        "score": 69,
-        "base_score": 64,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:8",
-          "rank_score_boost:2",
-          "content_depth_boost:3"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 3,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 72,
-        "score_breakdown": {
-          "base_score": 64,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 3,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 72
-        }
-      },
-      {
-        "target_url": "/wiki/gk.html",
         "score": 69,
         "base_score": 64,
         "reasons": [
@@ -9859,6 +9859,43 @@
         }
       },
       {
+        "target_url": "/wiki/neftyblocks.html",
+        "score": 73,
+        "base_score": 67,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:9",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 76,
+        "score_breakdown": {
+          "base_score": 67,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 76
+        }
+      },
+      {
         "target_url": "/wiki/tokenomics.html",
         "score": 73,
         "base_score": 67,
@@ -10320,43 +10357,6 @@
           "rank_score_boost": 2,
           "authority_score_boost": 0,
           "graph_centrality_boost": 0,
-          "content_depth_boost": 2,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 74
-        }
-      },
-      {
-        "target_url": "/wiki/ethereum.html",
-        "score": 71,
-        "base_score": 64,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:8",
-          "rank_score_boost:3",
-          "graph_centrality_boost:2",
-          "content_depth_boost:2"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 2,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 74,
-        "score_breakdown": {
-          "base_score": 64,
-          "rank_score_boost": 3,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 2,
           "content_depth_boost": 2,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
@@ -11309,6 +11309,42 @@
         }
       },
       {
+        "target_url": "/wiki/swap-nefty.html",
+        "score": 45,
+        "base_score": 43,
+        "reasons": [
+          "same_category:tokens",
+          "link_overlap:1",
+          "rank_score_boost:1",
+          "content_depth_boost:1"
+        ],
+        "rank_score_boost": 1,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 1,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 47,
+        "score_breakdown": {
+          "base_score": 43,
+          "rank_score_boost": 1,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 1,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 47
+        }
+      },
+      {
         "target_url": "/wiki/bitcoin-btc.html",
         "score": 40,
         "base_score": 40,
@@ -11813,43 +11849,6 @@
           "authority_score_boost": 5,
           "graph_centrality_boost": 8,
           "content_depth_boost": 2,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 0,
-          "decay_penalty": 0,
-          "recency_balance": 0,
-          "final_score": 21
-        }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads-louie-hay-you-guys-lupo-783389.html",
-        "score": 21,
-        "base_score": 3,
-        "reasons": [
-          "link_overlap:1",
-          "rank_score_boost:3",
-          "authority_score_boost:6",
-          "graph_centrality_boost:8",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 6,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 0,
-        "decay_penalty": 0,
-        "recency_balance": 0,
-        "final_score": 21,
-        "score_breakdown": {
-          "base_score": 3,
-          "rank_score_boost": 3,
-          "authority_score_boost": 6,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 1,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -13572,6 +13571,41 @@
         }
       },
       {
+        "target_url": "/wiki/swap-nefty.html",
+        "score": 42,
+        "base_score": 40,
+        "reasons": [
+          "same_category:tokens",
+          "rank_score_boost:1",
+          "content_depth_boost:1"
+        ],
+        "rank_score_boost": 1,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 1,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 44,
+        "score_breakdown": {
+          "base_score": 40,
+          "rank_score_boost": 1,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 1,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 44
+        }
+      },
+      {
         "target_url": "/wiki/bitcoin-kids.html",
         "score": 26,
         "base_score": 8,
@@ -14046,41 +14080,6 @@
           "decay_penalty": 0,
           "recency_balance": 0,
           "final_score": 13
-        }
-      },
-      {
-        "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
-        "score": 12,
-        "base_score": 8,
-        "reasons": [
-          "shared_tag:bitcoin",
-          "rank_score_boost:2",
-          "content_depth_boost:2"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 2,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 0,
-        "decay_penalty": 0,
-        "recency_balance": 0,
-        "final_score": 12,
-        "score_breakdown": {
-          "base_score": 8,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 2,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 0,
-          "decay_penalty": 0,
-          "recency_balance": 0,
-          "final_score": 12
         }
       }
     ]
@@ -16608,6 +16607,42 @@
         }
       },
       {
+        "target_url": "/wiki/swap-nefty.html",
+        "score": 45,
+        "base_score": 43,
+        "reasons": [
+          "same_category:tokens",
+          "link_overlap:1",
+          "rank_score_boost:1",
+          "content_depth_boost:1"
+        ],
+        "rank_score_boost": 1,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 1,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 47,
+        "score_breakdown": {
+          "base_score": 43,
+          "rank_score_boost": 1,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 1,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 47
+        }
+      },
+      {
         "target_url": "/wiki/crypto-moonboys.html",
         "score": 44,
         "base_score": 9,
@@ -17048,43 +17083,6 @@
           "decay_penalty": 0,
           "recency_balance": 1,
           "final_score": 29
-        }
-      },
-      {
-        "target_url": "/wiki/stikfamwars.html",
-        "score": 28,
-        "base_score": 9,
-        "reasons": [
-          "link_overlap:3",
-          "rank_score_boost:3",
-          "authority_score_boost:5",
-          "graph_centrality_boost:8",
-          "content_depth_boost:3"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 5,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 3,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 0,
-        "decay_penalty": 0,
-        "recency_balance": 0,
-        "final_score": 28,
-        "score_breakdown": {
-          "base_score": 9,
-          "rank_score_boost": 3,
-          "authority_score_boost": 5,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 3,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 0,
-          "decay_penalty": 0,
-          "recency_balance": 0,
-          "final_score": 28
         }
       }
     ]
@@ -21061,6 +21059,43 @@
         }
       },
       {
+        "target_url": "/wiki/neftyblocks.html",
+        "score": 73,
+        "base_score": 67,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:9",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 76,
+        "score_breakdown": {
+          "base_score": 67,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 76
+        }
+      },
+      {
         "target_url": "/wiki/tokenomics.html",
         "score": 73,
         "base_score": 67,
@@ -21494,43 +21529,6 @@
           "decay_penalty": 0,
           "recency_balance": 3,
           "final_score": 75
-        }
-      },
-      {
-        "target_url": "/wiki/ethereum.html",
-        "score": 71,
-        "base_score": 64,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:8",
-          "rank_score_boost:3",
-          "graph_centrality_boost:2",
-          "content_depth_boost:2"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 2,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 74,
-        "score_breakdown": {
-          "base_score": 64,
-          "rank_score_boost": 3,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 2,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 74
         }
       }
     ]
@@ -23200,6 +23198,42 @@
         }
       },
       {
+        "target_url": "/wiki/swap-nefty.html",
+        "score": 45,
+        "base_score": 43,
+        "reasons": [
+          "same_category:tokens",
+          "link_overlap:1",
+          "rank_score_boost:1",
+          "content_depth_boost:1"
+        ],
+        "rank_score_boost": 1,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 1,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 47,
+        "score_breakdown": {
+          "base_score": 43,
+          "rank_score_boost": 1,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 1,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 47
+        }
+      },
+      {
         "target_url": "/wiki/crypto-moonboys.html",
         "score": 44,
         "base_score": 9,
@@ -23712,43 +23746,6 @@
           "decay_penalty": 0,
           "recency_balance": 0,
           "final_score": 26
-        }
-      },
-      {
-        "target_url": "/wiki/punk-token.html",
-        "score": 24,
-        "base_score": 9,
-        "reasons": [
-          "link_overlap:3",
-          "rank_score_boost:3",
-          "authority_score_boost:4",
-          "graph_centrality_boost:5",
-          "content_depth_boost:3"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 4,
-        "graph_centrality_boost": 5,
-        "content_depth_boost": 3,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 0,
-        "decay_penalty": 0,
-        "recency_balance": 0,
-        "final_score": 24,
-        "score_breakdown": {
-          "base_score": 9,
-          "rank_score_boost": 3,
-          "authority_score_boost": 4,
-          "graph_centrality_boost": 5,
-          "content_depth_boost": 3,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 0,
-          "decay_penalty": 0,
-          "recency_balance": 0,
-          "final_score": 24
         }
       }
     ]
@@ -29231,6 +29228,43 @@
         }
       },
       {
+        "target_url": "/wiki/neftyblocks.html",
+        "score": 73,
+        "base_score": 67,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:9",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 76,
+        "score_breakdown": {
+          "base_score": 67,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 76
+        }
+      },
+      {
         "target_url": "/wiki/tokenomics.html",
         "score": 73,
         "base_score": 67,
@@ -29656,43 +29690,6 @@
           "rank_score_boost": 2,
           "authority_score_boost": 0,
           "graph_centrality_boost": 0,
-          "content_depth_boost": 2,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 74
-        }
-      },
-      {
-        "target_url": "/wiki/ethereum.html",
-        "score": 71,
-        "base_score": 64,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:8",
-          "rank_score_boost:3",
-          "graph_centrality_boost:2",
-          "content_depth_boost:2"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 2,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 74,
-        "score_breakdown": {
-          "base_score": 64,
-          "rank_score_boost": 3,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 2,
           "content_depth_boost": 2,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
@@ -32415,6 +32412,43 @@
         }
       },
       {
+        "target_url": "/wiki/neftyblocks.html",
+        "score": 73,
+        "base_score": 67,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:9",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 76,
+        "score_breakdown": {
+          "base_score": 67,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 76
+        }
+      },
+      {
         "target_url": "/wiki/delicious-again-pete.html",
         "score": 72,
         "base_score": 67,
@@ -32597,42 +32631,6 @@
       },
       {
         "target_url": "/wiki/seeding-rights.html",
-        "score": 72,
-        "base_score": 67,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:9",
-          "rank_score_boost:2",
-          "content_depth_boost:3"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 3,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 75,
-        "score_breakdown": {
-          "base_score": 67,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 3,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 75
-        }
-      },
-      {
-        "target_url": "/wiki/spirit-borns.html",
         "score": 72,
         "base_score": 67,
         "reasons": [
@@ -32923,6 +32921,43 @@
           "authority_score_boost": 1,
           "graph_centrality_boost": 2,
           "content_depth_boost": 1,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 76
+        }
+      },
+      {
+        "target_url": "/wiki/neftyblocks.html",
+        "score": 73,
+        "base_score": 67,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:9",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 76,
+        "score_breakdown": {
+          "base_score": 67,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -33366,42 +33401,6 @@
           "decay_penalty": 0,
           "recency_balance": 3,
           "final_score": 75
-        }
-      },
-      {
-        "target_url": "/wiki/canvas-clash.html",
-        "score": 71,
-        "base_score": 67,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:9",
-          "rank_score_boost:2",
-          "content_depth_boost:2"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 2,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 74,
-        "score_breakdown": {
-          "base_score": 67,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 2,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 74
         }
       }
     ]
@@ -37328,6 +37327,43 @@
         }
       },
       {
+        "target_url": "/wiki/neftyblocks.html",
+        "score": 70,
+        "base_score": 64,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:8",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 73,
+        "score_breakdown": {
+          "base_score": 64,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 73
+        }
+      },
+      {
         "target_url": "/wiki/tokenomics.html",
         "score": 70,
         "base_score": 64,
@@ -37799,42 +37835,6 @@
           "decay_penalty": 0,
           "recency_balance": 3,
           "final_score": 72
-        }
-      },
-      {
-        "target_url": "/wiki/canvas-clash.html",
-        "score": 68,
-        "base_score": 64,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:8",
-          "rank_score_boost:2",
-          "content_depth_boost:2"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 2,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 71,
-        "score_breakdown": {
-          "base_score": 64,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 2,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 71
         }
       }
     ]
@@ -160822,6 +160822,43 @@
         }
       },
       {
+        "target_url": "/wiki/neftyblocks.html",
+        "score": 70,
+        "base_score": 64,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:8",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 73,
+        "score_breakdown": {
+          "base_score": 64,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 73
+        }
+      },
+      {
         "target_url": "/wiki/tokenomics.html",
         "score": 70,
         "base_score": 64,
@@ -161108,44 +161145,6 @@
           "freshness_boost": 3,
           "decay_penalty": 0,
           "recency_balance": 3,
-          "final_score": 72
-        }
-      },
-      {
-        "target_url": "/wiki/midevilpunks.html",
-        "score": 70,
-        "base_score": 49,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:3",
-          "rank_score_boost:4",
-          "authority_score_boost:6",
-          "graph_centrality_boost:8",
-          "content_depth_boost:3"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 6,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 3,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 72,
-        "score_breakdown": {
-          "base_score": 49,
-          "rank_score_boost": 4,
-          "authority_score_boost": 6,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 3,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
           "final_score": 72
         }
       }
@@ -166651,6 +166650,43 @@
         }
       },
       {
+        "target_url": "/wiki/neftyblocks.html",
+        "score": 73,
+        "base_score": 67,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:9",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 76,
+        "score_breakdown": {
+          "base_score": 67,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 76
+        }
+      },
+      {
         "target_url": "/wiki/tokenomics.html",
         "score": 73,
         "base_score": 67,
@@ -167084,42 +167120,6 @@
           "decay_penalty": 0,
           "recency_balance": 3,
           "final_score": 75
-        }
-      },
-      {
-        "target_url": "/wiki/canvas-clash.html",
-        "score": 71,
-        "base_score": 67,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:9",
-          "rank_score_boost:2",
-          "content_depth_boost:2"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 2,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 74,
-        "score_breakdown": {
-          "base_score": 67,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 2,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 74
         }
       }
     ]
@@ -172822,6 +172822,43 @@
         }
       },
       {
+        "target_url": "/wiki/neftyblocks.html",
+        "score": 73,
+        "base_score": 67,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:9",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 76,
+        "score_breakdown": {
+          "base_score": 67,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 76
+        }
+      },
+      {
         "target_url": "/wiki/delicious-again-pete.html",
         "score": 72,
         "base_score": 67,
@@ -172967,42 +173004,6 @@
       },
       {
         "target_url": "/wiki/seeding-rights.html",
-        "score": 72,
-        "base_score": 67,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:9",
-          "rank_score_boost:2",
-          "content_depth_boost:3"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 3,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 75,
-        "score_breakdown": {
-          "base_score": 67,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 3,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 75
-        }
-      },
-      {
-        "target_url": "/wiki/spirit-borns.html",
         "score": 72,
         "base_score": 67,
         "reasons": [
@@ -175761,6 +175762,43 @@
         }
       },
       {
+        "target_url": "/wiki/neftyblocks.html",
+        "score": 73,
+        "base_score": 67,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:9",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 76,
+        "score_breakdown": {
+          "base_score": 67,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 76
+        }
+      },
+      {
         "target_url": "/wiki/delicious-again-pete.html",
         "score": 72,
         "base_score": 67,
@@ -175944,42 +175982,6 @@
       },
       {
         "target_url": "/wiki/seeding-rights.html",
-        "score": 72,
-        "base_score": 67,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:9",
-          "rank_score_boost:2",
-          "content_depth_boost:3"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 3,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 75,
-        "score_breakdown": {
-          "base_score": 67,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 3,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 75
-        }
-      },
-      {
-        "target_url": "/wiki/spirit-borns.html",
         "score": 72,
         "base_score": 67,
         "reasons": [
@@ -179315,6 +179317,43 @@
         }
       },
       {
+        "target_url": "/wiki/neftyblocks.html",
+        "score": 73,
+        "base_score": 67,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:9",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 76,
+        "score_breakdown": {
+          "base_score": 67,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 76
+        }
+      },
+      {
         "target_url": "/wiki/tokenomics.html",
         "score": 73,
         "base_score": 67,
@@ -179680,42 +179719,6 @@
       },
       {
         "target_url": "/wiki/spirit-borns.html",
-        "score": 72,
-        "base_score": 67,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:9",
-          "rank_score_boost:2",
-          "content_depth_boost:3"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 3,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 75,
-        "score_breakdown": {
-          "base_score": 67,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 3,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 75
-        }
-      },
-      {
-        "target_url": "/wiki/street-kingdoms.html",
         "score": 72,
         "base_score": 67,
         "reasons": [
@@ -180974,6 +180977,43 @@
         }
       },
       {
+        "target_url": "/wiki/neftyblocks.html",
+        "score": 73,
+        "base_score": 67,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:9",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 76,
+        "score_breakdown": {
+          "base_score": 67,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 76
+        }
+      },
+      {
         "target_url": "/wiki/delicious-again-pete.html",
         "score": 72,
         "base_score": 67,
@@ -181155,42 +181195,6 @@
       },
       {
         "target_url": "/wiki/spirit-borns.html",
-        "score": 72,
-        "base_score": 67,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:9",
-          "rank_score_boost:2",
-          "content_depth_boost:3"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 3,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 75,
-        "score_breakdown": {
-          "base_score": 67,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 3,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 75
-        }
-      },
-      {
-        "target_url": "/wiki/street-kingdoms.html",
         "score": 72,
         "base_score": 67,
         "reasons": [
@@ -181639,6 +181643,43 @@
         }
       },
       {
+        "target_url": "/wiki/neftyblocks.html",
+        "score": 70,
+        "base_score": 64,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:8",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 73,
+        "score_breakdown": {
+          "base_score": 64,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 73
+        }
+      },
+      {
         "target_url": "/wiki/tokenomics.html",
         "score": 70,
         "base_score": 64,
@@ -181925,44 +181966,6 @@
           "freshness_boost": 3,
           "decay_penalty": 0,
           "recency_balance": 3,
-          "final_score": 72
-        }
-      },
-      {
-        "target_url": "/wiki/midevilpunks.html",
-        "score": 70,
-        "base_score": 49,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:3",
-          "rank_score_boost:4",
-          "authority_score_boost:6",
-          "graph_centrality_boost:8",
-          "content_depth_boost:3"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 6,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 3,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 72,
-        "score_breakdown": {
-          "base_score": 49,
-          "rank_score_boost": 4,
-          "authority_score_boost": 6,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 3,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
           "final_score": 72
         }
       }
@@ -182452,6 +182455,43 @@
         }
       },
       {
+        "target_url": "/wiki/neftyblocks.html",
+        "score": 70,
+        "base_score": 64,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:8",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 73,
+        "score_breakdown": {
+          "base_score": 64,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 73
+        }
+      },
+      {
         "target_url": "/wiki/tokenomics.html",
         "score": 70,
         "base_score": 64,
@@ -182634,42 +182674,6 @@
       },
       {
         "target_url": "/wiki/forkborn-collective.html",
-        "score": 69,
-        "base_score": 64,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:8",
-          "rank_score_boost:2",
-          "content_depth_boost:3"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 3,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 72,
-        "score_breakdown": {
-          "base_score": 64,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 3,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 72
-        }
-      },
-      {
-        "target_url": "/wiki/gk.html",
         "score": 69,
         "base_score": 64,
         "reasons": [
@@ -184833,6 +184837,43 @@
         }
       },
       {
+        "target_url": "/wiki/neftyblocks.html",
+        "score": 70,
+        "base_score": 64,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:8",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 73,
+        "score_breakdown": {
+          "base_score": 64,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 73
+        }
+      },
+      {
         "target_url": "/wiki/block-node-defenders.html",
         "score": 69,
         "base_score": 64,
@@ -184870,42 +184911,6 @@
       },
       {
         "target_url": "/wiki/bone-idol-ink.html",
-        "score": 69,
-        "base_score": 64,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:8",
-          "rank_score_boost:2",
-          "content_depth_boost:3"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 3,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 72,
-        "score_breakdown": {
-          "base_score": 64,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 3,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 72
-        }
-      },
-      {
-        "target_url": "/wiki/delicious-again-pete.html",
         "score": 69,
         "base_score": 64,
         "reasons": [
@@ -186927,6 +186932,43 @@
         }
       },
       {
+        "target_url": "/wiki/neftyblocks.html",
+        "score": 70,
+        "base_score": 64,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:8",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 73,
+        "score_breakdown": {
+          "base_score": 64,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 73
+        }
+      },
+      {
         "target_url": "/wiki/tokenomics.html",
         "score": 70,
         "base_score": 64,
@@ -187073,42 +187115,6 @@
       },
       {
         "target_url": "/wiki/dream-sovereign.html",
-        "score": 69,
-        "base_score": 64,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:8",
-          "rank_score_boost:2",
-          "content_depth_boost:3"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 3,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 72,
-        "score_breakdown": {
-          "base_score": 64,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 3,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 72
-        }
-      },
-      {
-        "target_url": "/wiki/forkborn-collective.html",
         "score": 69,
         "base_score": 64,
         "reasons": [
@@ -189604,6 +189610,43 @@
         }
       },
       {
+        "target_url": "/wiki/neftyblocks.html",
+        "score": 70,
+        "base_score": 64,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:8",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 73,
+        "score_breakdown": {
+          "base_score": 64,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 73
+        }
+      },
+      {
         "target_url": "/wiki/tokenomics.html",
         "score": 70,
         "base_score": 64,
@@ -190075,42 +190118,6 @@
           "decay_penalty": 0,
           "recency_balance": 3,
           "final_score": 72
-        }
-      },
-      {
-        "target_url": "/wiki/canvas-clash.html",
-        "score": 68,
-        "base_score": 64,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:8",
-          "rank_score_boost:2",
-          "content_depth_boost:2"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 2,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 71,
-        "score_breakdown": {
-          "base_score": 64,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 2,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 71
         }
       }
     ]
@@ -194311,6 +194318,43 @@
         }
       },
       {
+        "target_url": "/wiki/neftyblocks.html",
+        "score": 73,
+        "base_score": 67,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:9",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 76,
+        "score_breakdown": {
+          "base_score": 67,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 76
+        }
+      },
+      {
         "target_url": "/wiki/delicious-again-pete.html",
         "score": 72,
         "base_score": 67,
@@ -194494,42 +194538,6 @@
       },
       {
         "target_url": "/wiki/seeding-rights.html",
-        "score": 72,
-        "base_score": 67,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:9",
-          "rank_score_boost:2",
-          "content_depth_boost:3"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 3,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 75,
-        "score_breakdown": {
-          "base_score": 67,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 3,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 75
-        }
-      },
-      {
-        "target_url": "/wiki/spirit-borns.html",
         "score": 72,
         "base_score": 67,
         "reasons": [
@@ -195570,6 +195578,43 @@
         }
       },
       {
+        "target_url": "/wiki/neftyblocks.html",
+        "score": 73,
+        "base_score": 67,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:9",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 76,
+        "score_breakdown": {
+          "base_score": 67,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 76
+        }
+      },
+      {
         "target_url": "/wiki/tokenomics.html",
         "score": 73,
         "base_score": 67,
@@ -196003,42 +196048,6 @@
           "decay_penalty": 0,
           "recency_balance": 3,
           "final_score": 75
-        }
-      },
-      {
-        "target_url": "/wiki/canvas-clash.html",
-        "score": 71,
-        "base_score": 67,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:9",
-          "rank_score_boost:2",
-          "content_depth_boost:2"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 2,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 74,
-        "score_breakdown": {
-          "base_score": 67,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 2,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 74
         }
       }
     ]
@@ -200714,6 +200723,43 @@
         }
       },
       {
+        "target_url": "/wiki/neftyblocks.html",
+        "score": 73,
+        "base_score": 67,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:9",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 76,
+        "score_breakdown": {
+          "base_score": 67,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 76
+        }
+      },
+      {
         "target_url": "/wiki/tokenomics.html",
         "score": 73,
         "base_score": 67,
@@ -201175,43 +201221,6 @@
           "rank_score_boost": 2,
           "authority_score_boost": 0,
           "graph_centrality_boost": 0,
-          "content_depth_boost": 2,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 74
-        }
-      },
-      {
-        "target_url": "/wiki/ethereum.html",
-        "score": 71,
-        "base_score": 64,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:8",
-          "rank_score_boost:3",
-          "graph_centrality_boost:2",
-          "content_depth_boost:2"
-        ],
-        "rank_score_boost": 3,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 2,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 74,
-        "score_breakdown": {
-          "base_score": 64,
-          "rank_score_boost": 3,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 2,
           "content_depth_boost": 2,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
@@ -202551,6 +202560,43 @@
         }
       },
       {
+        "target_url": "/wiki/neftyblocks.html",
+        "score": 73,
+        "base_score": 67,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:9",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 76,
+        "score_breakdown": {
+          "base_score": 67,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 76
+        }
+      },
+      {
         "target_url": "/wiki/block-node-defenders.html",
         "score": 72,
         "base_score": 67,
@@ -202624,42 +202670,6 @@
       },
       {
         "target_url": "/wiki/dream-sovereign.html",
-        "score": 72,
-        "base_score": 67,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:9",
-          "rank_score_boost:2",
-          "content_depth_boost:3"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 3,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 75,
-        "score_breakdown": {
-          "base_score": 67,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 3,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 75
-        }
-      },
-      {
-        "target_url": "/wiki/seeding-rights.html",
         "score": 72,
         "base_score": 67,
         "reasons": [
@@ -203285,6 +203295,43 @@
         }
       },
       {
+        "target_url": "/wiki/neftyblocks.html",
+        "score": 73,
+        "base_score": 67,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:9",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 76,
+        "score_breakdown": {
+          "base_score": 67,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 76
+        }
+      },
+      {
         "target_url": "/wiki/tokenomics.html",
         "score": 73,
         "base_score": 67,
@@ -203359,42 +203406,6 @@
       },
       {
         "target_url": "/wiki/bone-idol-ink.html",
-        "score": 72,
-        "base_score": 67,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:9",
-          "rank_score_boost:2",
-          "content_depth_boost:3"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 3,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 75,
-        "score_breakdown": {
-          "base_score": 67,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 3,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 75
-        }
-      },
-      {
-        "target_url": "/wiki/dream-sovereign.html",
         "score": 72,
         "base_score": 67,
         "reasons": [
@@ -206839,6 +206850,43 @@
         }
       },
       {
+        "target_url": "/wiki/neftyblocks.html",
+        "score": 70,
+        "base_score": 64,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:8",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 73,
+        "score_breakdown": {
+          "base_score": 64,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 73
+        }
+      },
+      {
         "target_url": "/wiki/tokenomics.html",
         "score": 70,
         "base_score": 64,
@@ -207125,44 +207173,6 @@
           "freshness_boost": 3,
           "decay_penalty": 0,
           "recency_balance": 3,
-          "final_score": 72
-        }
-      },
-      {
-        "target_url": "/wiki/midevilpunks.html",
-        "score": 70,
-        "base_score": 49,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:3",
-          "rank_score_boost:4",
-          "authority_score_boost:6",
-          "graph_centrality_boost:8",
-          "content_depth_boost:3"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 6,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 3,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 72,
-        "score_breakdown": {
-          "base_score": 49,
-          "rank_score_boost": 4,
-          "authority_score_boost": 6,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 3,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
           "final_score": 72
         }
       }
@@ -207908,6 +207918,743 @@
       }
     ]
   },
+  "/wiki/swap-nefty.html": {
+    "related_pages": [
+      {
+        "target_url": "/wiki/bitcoin.html",
+        "score": 51,
+        "base_score": 43,
+        "reasons": [
+          "same_category:tokens",
+          "link_overlap:1",
+          "rank_score_boost:3",
+          "authority_score_boost:1",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 1,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 53,
+        "score_breakdown": {
+          "base_score": 43,
+          "rank_score_boost": 3,
+          "authority_score_boost": 1,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 53
+        }
+      },
+      {
+        "target_url": "/wiki/crypto-moonboy-pets.html",
+        "score": 50,
+        "base_score": 43,
+        "reasons": [
+          "same_category:tokens",
+          "link_overlap:1",
+          "rank_score_boost:3",
+          "content_depth_boost:4"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 4,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 52,
+        "score_breakdown": {
+          "base_score": 43,
+          "rank_score_boost": 3,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 4,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 52
+        }
+      },
+      {
+        "target_url": "/wiki/altcoins.html",
+        "score": 48,
+        "base_score": 43,
+        "reasons": [
+          "same_category:tokens",
+          "link_overlap:1",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:1"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 1,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 50,
+        "score_breakdown": {
+          "base_score": 43,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 1,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 50
+        }
+      },
+      {
+        "target_url": "/wiki/589-xrpl.html",
+        "score": 45,
+        "base_score": 43,
+        "reasons": [
+          "same_category:tokens",
+          "link_overlap:1",
+          "rank_score_boost:1",
+          "content_depth_boost:1"
+        ],
+        "rank_score_boost": 1,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 1,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 47,
+        "score_breakdown": {
+          "base_score": 43,
+          "rank_score_boost": 1,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 1,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 47
+        }
+      },
+      {
+        "target_url": "/wiki/666-xrpl.html",
+        "score": 45,
+        "base_score": 43,
+        "reasons": [
+          "same_category:tokens",
+          "link_overlap:1",
+          "rank_score_boost:1",
+          "content_depth_boost:1"
+        ],
+        "rank_score_boost": 1,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 1,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 47,
+        "score_breakdown": {
+          "base_score": 43,
+          "rank_score_boost": 1,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 1,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 47
+        }
+      },
+      {
+        "target_url": "/wiki/bear-xrpl.html",
+        "score": 45,
+        "base_score": 43,
+        "reasons": [
+          "same_category:tokens",
+          "link_overlap:1",
+          "rank_score_boost:1",
+          "content_depth_boost:1"
+        ],
+        "rank_score_boost": 1,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 1,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 47,
+        "score_breakdown": {
+          "base_score": 43,
+          "rank_score_boost": 1,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 1,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 47
+        }
+      },
+      {
+        "target_url": "/wiki/bitcoin-btc.html",
+        "score": 40,
+        "base_score": 40,
+        "reasons": [
+          "same_category:tokens"
+        ],
+        "rank_score_boost": 0,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 0,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 42,
+        "score_breakdown": {
+          "base_score": 40,
+          "rank_score_boost": 0,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 0,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 42
+        }
+      },
+      {
+        "target_url": "/wiki/gkniftyheads-nft-collection.html",
+        "score": 41,
+        "base_score": 3,
+        "reasons": [
+          "link_overlap:1",
+          "rank_score_boost:10",
+          "authority_score_boost:15",
+          "graph_centrality_boost:8",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 10,
+        "authority_score_boost": 15,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 41,
+        "score_breakdown": {
+          "base_score": 3,
+          "rank_score_boost": 10,
+          "authority_score_boost": 15,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 41
+        }
+      },
+      {
+        "target_url": "/wiki/crypto-moonboys.html",
+        "score": 38,
+        "base_score": 3,
+        "reasons": [
+          "link_overlap:1",
+          "rank_score_boost:9",
+          "authority_score_boost:15",
+          "graph_centrality_boost:8",
+          "content_depth_boost:3"
+        ],
+        "rank_score_boost": 9,
+        "authority_score_boost": 15,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 3,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 38,
+        "score_breakdown": {
+          "base_score": 3,
+          "rank_score_boost": 9,
+          "authority_score_boost": 15,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 3,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 38
+        }
+      },
+      {
+        "target_url": "/wiki/graffpunks.html",
+        "score": 36,
+        "base_score": 3,
+        "reasons": [
+          "link_overlap:1",
+          "rank_score_boost:7",
+          "authority_score_boost:15",
+          "graph_centrality_boost:8",
+          "content_depth_boost:3"
+        ],
+        "rank_score_boost": 7,
+        "authority_score_boost": 15,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 3,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 36,
+        "score_breakdown": {
+          "base_score": 3,
+          "rank_score_boost": 7,
+          "authority_score_boost": 15,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 3,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 36
+        }
+      },
+      {
+        "target_url": "/wiki/gkniftyheads.html",
+        "score": 35,
+        "base_score": 3,
+        "reasons": [
+          "link_overlap:1",
+          "rank_score_boost:6",
+          "authority_score_boost:15",
+          "graph_centrality_boost:8",
+          "content_depth_boost:3"
+        ],
+        "rank_score_boost": 6,
+        "authority_score_boost": 15,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 3,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 35,
+        "score_breakdown": {
+          "base_score": 3,
+          "rank_score_boost": 6,
+          "authority_score_boost": 15,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 3,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 35
+        }
+      },
+      {
+        "target_url": "/wiki/pmsl.html",
+        "score": 31,
+        "base_score": 3,
+        "reasons": [
+          "link_overlap:1",
+          "rank_score_boost:7",
+          "authority_score_boost:6",
+          "graph_centrality_boost:8",
+          "content_depth_boost:7"
+        ],
+        "rank_score_boost": 7,
+        "authority_score_boost": 6,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 7,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 31,
+        "score_breakdown": {
+          "base_score": 3,
+          "rank_score_boost": 7,
+          "authority_score_boost": 6,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 7,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 31
+        }
+      },
+      {
+        "target_url": "/wiki/hodl-wars.html",
+        "score": 26,
+        "base_score": 3,
+        "reasons": [
+          "link_overlap:1",
+          "rank_score_boost:4",
+          "authority_score_boost:8",
+          "graph_centrality_boost:8",
+          "content_depth_boost:3"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 8,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 3,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 26,
+        "score_breakdown": {
+          "base_score": 3,
+          "rank_score_boost": 4,
+          "authority_score_boost": 8,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 3,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 26
+        }
+      },
+      {
+        "target_url": "/wiki/null-the-prophet.html",
+        "score": 26,
+        "base_score": 3,
+        "reasons": [
+          "link_overlap:1",
+          "rank_score_boost:4",
+          "authority_score_boost:8",
+          "graph_centrality_boost:8",
+          "content_depth_boost:3"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 8,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 3,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 26,
+        "score_breakdown": {
+          "base_score": 3,
+          "rank_score_boost": 4,
+          "authority_score_boost": 8,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 3,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 26
+        }
+      },
+      {
+        "target_url": "/wiki/hard-fork-games.html",
+        "score": 25,
+        "base_score": 3,
+        "reasons": [
+          "link_overlap:1",
+          "rank_score_boost:4",
+          "authority_score_boost:7",
+          "graph_centrality_boost:8",
+          "content_depth_boost:3"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 7,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 3,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 25,
+        "score_breakdown": {
+          "base_score": 3,
+          "rank_score_boost": 4,
+          "authority_score_boost": 7,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 3,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 25
+        }
+      },
+      {
+        "target_url": "/wiki/midevilpunks.html",
+        "score": 24,
+        "base_score": 3,
+        "reasons": [
+          "link_overlap:1",
+          "rank_score_boost:4",
+          "authority_score_boost:6",
+          "graph_centrality_boost:8",
+          "content_depth_boost:3"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 6,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 3,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 24,
+        "score_breakdown": {
+          "base_score": 3,
+          "rank_score_boost": 4,
+          "authority_score_boost": 6,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 3,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 24
+        }
+      },
+      {
+        "target_url": "/wiki/games4punks-telegram.html",
+        "score": 23,
+        "base_score": 3,
+        "reasons": [
+          "link_overlap:1",
+          "rank_score_boost:5",
+          "authority_score_boost:4",
+          "graph_centrality_boost:5",
+          "content_depth_boost:6"
+        ],
+        "rank_score_boost": 5,
+        "authority_score_boost": 4,
+        "graph_centrality_boost": 5,
+        "content_depth_boost": 6,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 23,
+        "score_breakdown": {
+          "base_score": 3,
+          "rank_score_boost": 5,
+          "authority_score_boost": 4,
+          "graph_centrality_boost": 5,
+          "content_depth_boost": 6,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 23
+        }
+      },
+      {
+        "target_url": "/wiki/rave-relics.html",
+        "score": 22,
+        "base_score": 3,
+        "reasons": [
+          "link_overlap:1",
+          "rank_score_boost:3",
+          "authority_score_boost:5",
+          "graph_centrality_boost:8",
+          "content_depth_boost:3"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 5,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 3,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 22,
+        "score_breakdown": {
+          "base_score": 3,
+          "rank_score_boost": 3,
+          "authority_score_boost": 5,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 3,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 22
+        }
+      },
+      {
+        "target_url": "/wiki/stikfamwars.html",
+        "score": 22,
+        "base_score": 3,
+        "reasons": [
+          "link_overlap:1",
+          "rank_score_boost:3",
+          "authority_score_boost:5",
+          "graph_centrality_boost:8",
+          "content_depth_boost:3"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 5,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 3,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 22,
+        "score_breakdown": {
+          "base_score": 3,
+          "rank_score_boost": 3,
+          "authority_score_boost": 5,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 3,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 22
+        }
+      },
+      {
+        "target_url": "/wiki/bitcoin-kids.html",
+        "score": 21,
+        "base_score": 3,
+        "reasons": [
+          "link_overlap:1",
+          "rank_score_boost:3",
+          "authority_score_boost:5",
+          "graph_centrality_boost:8",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 3,
+        "authority_score_boost": 5,
+        "graph_centrality_boost": 8,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 21,
+        "score_breakdown": {
+          "base_score": 3,
+          "rank_score_boost": 3,
+          "authority_score_boost": 5,
+          "graph_centrality_boost": 8,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 21
+        }
+      }
+    ]
+  },
   "/wiki/tacoswap.html": {
     "related_pages": [
       {
@@ -208162,6 +208909,43 @@
           "authority_score_boost": 1,
           "graph_centrality_boost": 2,
           "content_depth_boost": 1,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 76
+        }
+      },
+      {
+        "target_url": "/wiki/neftyblocks.html",
+        "score": 73,
+        "base_score": 67,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:9",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 76,
+        "score_breakdown": {
+          "base_score": 67,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -208605,42 +209389,6 @@
           "decay_penalty": 0,
           "recency_balance": 3,
           "final_score": 75
-        }
-      },
-      {
-        "target_url": "/wiki/canvas-clash.html",
-        "score": 71,
-        "base_score": 67,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:9",
-          "rank_score_boost:2",
-          "content_depth_boost:2"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 2,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 74,
-        "score_breakdown": {
-          "base_score": 67,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 2,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 74
         }
       }
     ]
@@ -208909,6 +209657,43 @@
         }
       },
       {
+        "target_url": "/wiki/neftyblocks.html",
+        "score": 73,
+        "base_score": 67,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:9",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 76,
+        "score_breakdown": {
+          "base_score": 67,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 76
+        }
+      },
+      {
         "target_url": "/wiki/tokenomics.html",
         "score": 73,
         "base_score": 67,
@@ -209342,42 +210127,6 @@
           "decay_penalty": 0,
           "recency_balance": 3,
           "final_score": 75
-        }
-      },
-      {
-        "target_url": "/wiki/canvas-clash.html",
-        "score": 71,
-        "base_score": 67,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:9",
-          "rank_score_boost:2",
-          "content_depth_boost:2"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 2,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 74,
-        "score_breakdown": {
-          "base_score": 67,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 2,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 74
         }
       }
     ]
@@ -232623,6 +233372,43 @@
         }
       },
       {
+        "target_url": "/wiki/neftyblocks.html",
+        "score": 73,
+        "base_score": 67,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:9",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 76,
+        "score_breakdown": {
+          "base_score": 67,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 76
+        }
+      },
+      {
         "target_url": "/wiki/delicious-again-pete.html",
         "score": 72,
         "base_score": 67,
@@ -232768,42 +233554,6 @@
       },
       {
         "target_url": "/wiki/seeding-rights.html",
-        "score": 72,
-        "base_score": 67,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:9",
-          "rank_score_boost:2",
-          "content_depth_boost:3"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 3,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 75,
-        "score_breakdown": {
-          "base_score": 67,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 3,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 75
-        }
-      },
-      {
-        "target_url": "/wiki/spirit-borns.html",
         "score": 72,
         "base_score": 67,
         "reasons": [
@@ -240885,6 +241635,43 @@
         }
       },
       {
+        "target_url": "/wiki/neftyblocks.html",
+        "score": 73,
+        "base_score": 67,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:9",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 76,
+        "score_breakdown": {
+          "base_score": 67,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 76
+        }
+      },
+      {
         "target_url": "/wiki/block-node-defenders.html",
         "score": 72,
         "base_score": 67,
@@ -241057,42 +241844,6 @@
           "authority_score_boost": 0,
           "graph_centrality_boost": 2,
           "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 75
-        }
-      },
-      {
-        "target_url": "/wiki/seeding-rights.html",
-        "score": 72,
-        "base_score": 67,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:9",
-          "rank_score_boost:2",
-          "content_depth_boost:3"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 3,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 75,
-        "score_breakdown": {
-          "base_score": 67,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 3,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -242138,6 +242889,43 @@
         }
       },
       {
+        "target_url": "/wiki/neftyblocks.html",
+        "score": 73,
+        "base_score": 67,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:9",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 76,
+        "score_breakdown": {
+          "base_score": 67,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 76
+        }
+      },
+      {
         "target_url": "/wiki/tokenomics.html",
         "score": 73,
         "base_score": 67,
@@ -242503,42 +243291,6 @@
       },
       {
         "target_url": "/wiki/spirit-borns.html",
-        "score": 72,
-        "base_score": 67,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:9",
-          "rank_score_boost:2",
-          "content_depth_boost:3"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 3,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 75,
-        "score_breakdown": {
-          "base_score": 67,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 3,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 75
-        }
-      },
-      {
-        "target_url": "/wiki/street-kingdoms.html",
         "score": 72,
         "base_score": 67,
         "reasons": [
@@ -243730,6 +244482,43 @@
         }
       },
       {
+        "target_url": "/wiki/neftyblocks.html",
+        "score": 70,
+        "base_score": 64,
+        "reasons": [
+          "same_category:factions",
+          "link_overlap:8",
+          "rank_score_boost:2",
+          "graph_centrality_boost:2",
+          "content_depth_boost:2"
+        ],
+        "rank_score_boost": 2,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 2,
+        "content_depth_boost": 2,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 73,
+        "score_breakdown": {
+          "base_score": 64,
+          "rank_score_boost": 2,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 2,
+          "content_depth_boost": 2,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 73
+        }
+      },
+      {
         "target_url": "/wiki/tokenomics.html",
         "score": 70,
         "base_score": 64,
@@ -244016,44 +244805,6 @@
           "freshness_boost": 3,
           "decay_penalty": 0,
           "recency_balance": 3,
-          "final_score": 72
-        }
-      },
-      {
-        "target_url": "/wiki/midevilpunks.html",
-        "score": 70,
-        "base_score": 49,
-        "reasons": [
-          "same_category:factions",
-          "link_overlap:3",
-          "rank_score_boost:4",
-          "authority_score_boost:6",
-          "graph_centrality_boost:8",
-          "content_depth_boost:3"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 6,
-        "graph_centrality_boost": 8,
-        "content_depth_boost": 3,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 72,
-        "score_breakdown": {
-          "base_score": 49,
-          "rank_score_boost": 4,
-          "authority_score_boost": 6,
-          "graph_centrality_boost": 8,
-          "content_depth_boost": 3,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
           "final_score": 72
         }
       }

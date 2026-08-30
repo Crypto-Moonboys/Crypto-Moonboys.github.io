@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-08-29T22:16:13.898Z",
-  "verified_at": "2026-08-29T22:16:13.898Z",
+  "generated_at": "2026-08-30T06:55:58.221Z",
+  "verified_at": "2026-08-30T06:55:58.221Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -343,7 +343,7 @@
       "title": "Crypto Moonboys — The Original Graffiti Kings Web3 Universe",
       "url": "/wiki/crypto-moonboys.html",
       "category": "characters",
-      "rank_score": 969,
+      "rank_score": 971,
       "authority_score": 25
     },
     {
@@ -1975,7 +1975,7 @@
       "title": "NeftyBlocks",
       "url": "/wiki/neftyblocks.html",
       "category": "factions",
-      "rank_score": 238,
+      "rank_score": 240,
       "authority_score": 20
     },
     {
@@ -2291,6 +2291,14 @@
       "authority_score": 21
     },
     {
+      "id": "/wiki/swap-nefty.html",
+      "title": "swap.nefty",
+      "url": "/wiki/swap-nefty.html",
+      "category": "tokens",
+      "rank_score": 183,
+      "authority_score": 14
+    },
+    {
       "id": "/wiki/tacoswap.html",
       "title": "TacoSwap",
       "url": "/wiki/tacoswap.html",
@@ -2599,7 +2607,7 @@
       "title": "WAX Blockchain",
       "url": "/wiki/wax-blockchain.html",
       "category": "factions",
-      "rank_score": 288,
+      "rank_score": 290,
       "authority_score": 23
     },
     {
@@ -2607,7 +2615,7 @@
       "title": "WAX DEXs & DeFi",
       "url": "/wiki/wax-dexs-defi.html",
       "category": "factions",
-      "rank_score": 257,
+      "rank_score": 259,
       "authority_score": 24
     },
     {
@@ -2615,7 +2623,7 @@
       "title": "WAX NFT Marketplaces",
       "url": "/wiki/wax-nft-marketplaces.html",
       "category": "factions",
-      "rank_score": 238,
+      "rank_score": 240,
       "authority_score": 24
     },
     {
@@ -10945,6 +10953,36 @@
       "target": "/wiki/lfgk.html",
       "score": 80,
       "weight": 0.8
+    },
+    {
+      "source": "/wiki/swap-nefty.html",
+      "target": "/wiki/bitcoin.html",
+      "score": 53,
+      "weight": 0.53
+    },
+    {
+      "source": "/wiki/swap-nefty.html",
+      "target": "/wiki/crypto-moonboy-pets.html",
+      "score": 52,
+      "weight": 0.52
+    },
+    {
+      "source": "/wiki/swap-nefty.html",
+      "target": "/wiki/altcoins.html",
+      "score": 50,
+      "weight": 0.5
+    },
+    {
+      "source": "/wiki/swap-nefty.html",
+      "target": "/wiki/589-xrpl.html",
+      "score": 47,
+      "weight": 0.47
+    },
+    {
+      "source": "/wiki/swap-nefty.html",
+      "target": "/wiki/666-xrpl.html",
+      "score": 47,
+      "weight": 0.47
     },
     {
       "source": "/wiki/tacoswap.html",
