@@ -26964,6 +26964,90 @@
     "brand": null
   },
   {
+    "title": "swap.nefty",
+    "desc": "Live Crypto Moonboys wiki tracker for WAX blockchain token pairs on the swap.nefty contract, refreshed every 24 hours from WAX RPC data.",
+    "url": "/wiki/swap-nefty.html",
+    "tags": [
+      "swap",
+      "nefty"
+    ],
+    "category": "tokens",
+    "aliases": [],
+    "rank_score": 183,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 2,
+      "mention_count": 0,
+      "category": "tokens",
+      "category_priority": 6,
+      "has_description": true,
+      "article_word_count": 539,
+      "keyword_bag_size": 22,
+      "heading_count": 9,
+      "list_count": 3,
+      "internal_link_count": 5,
+      "paragraph_count": 6,
+      "section_count": 6,
+      "lore_paragraph_count": 1,
+      "content_quality_score": 55,
+      "authority_score": 14
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 30,
+      "word_count_points": 27,
+      "keyword_bag_points": 22,
+      "content_quality_points": 57,
+      "authority_points": 17,
+      "final_rank_score": 183,
+      "authority_graph_points": 3
+    },
+    "search_index": {
+      "normalized_title": "swap nefty crypto moonboys wiki",
+      "tokens": [
+        "swap",
+        "nefty",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "swap",
+        "nefty",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "live",
+        "tracker",
+        "for",
+        "wax",
+        "blockchain",
+        "token",
+        "pairs",
+        "on",
+        "the",
+        "contract",
+        "refreshed",
+        "every",
+        "24",
+        "hours",
+        "from",
+        "rpc",
+        "data"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 30,
+      "existing_outbound_count": 5,
+      "suggested_outbound_count": 25,
+      "authority": 2.5
+    },
+    "brand": null
+  },
+  {
     "title": "🍒 DeFi Dame 💋",
     "desc": "🍒 DeFi Dame 💋 is an NFT in the gkniftyheads WAX AtomicAssets collection.",
     "url": "/wiki/gkniftyheads-defi-dame-788015.html",
@@ -27574,87 +27658,6 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 7,
       "authority": 14
-    },
-    "brand": null
-  },
-  {
-    "title": "swap.nefty",
-    "desc": "Live Crypto Moonboys wiki tracker for WAX blockchain token pairs on the swap.nefty contract, refreshed every 24 hours from WAX RPC data.",
-    "url": "/wiki/swap-nefty.html",
-    "tags": [],
-    "category": "tokens",
-    "aliases": [],
-    "rank_score": 181,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
-      "mention_count": 0,
-      "category": "tokens",
-      "category_priority": 6,
-      "has_description": true,
-      "article_word_count": 539,
-      "keyword_bag_size": 22,
-      "heading_count": 9,
-      "list_count": 3,
-      "internal_link_count": 5,
-      "paragraph_count": 6,
-      "section_count": 6,
-      "lore_paragraph_count": 1,
-      "content_quality_score": 55,
-      "authority_score": 14
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 30,
-      "word_count_points": 27,
-      "keyword_bag_points": 22,
-      "content_quality_points": 55,
-      "authority_points": 17,
-      "final_rank_score": 181,
-      "authority_graph_points": 3
-    },
-    "search_index": {
-      "normalized_title": "swap nefty crypto moonboys wiki",
-      "tokens": [
-        "swap",
-        "nefty",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "swap",
-        "nefty",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "live",
-        "tracker",
-        "for",
-        "wax",
-        "blockchain",
-        "token",
-        "pairs",
-        "on",
-        "the",
-        "contract",
-        "refreshed",
-        "every",
-        "24",
-        "hours",
-        "from",
-        "rpc",
-        "data"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 30,
-      "existing_outbound_count": 5,
-      "suggested_outbound_count": 25,
-      "authority": 2.5
     },
     "brand": null
   },
