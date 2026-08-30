@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Live Crypto Moonboys wiki tracker for WAX blockchain token pairs on the swap.nefty contract, refreshed every 24 hours from WAX RPC data.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="swap.nefty — WAX Token Pair Tracker">
+  <meta property="og:description" content="Displays token pairs, contracts, quantities and pool values discovered from the WAX swap.nefty contract.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://cryptomoonboys.com/wiki/swap-nefty.html">
+  <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <title>swap.nefty — Crypto Moonboys Wiki</title>
+  <link rel="stylesheet" href="/css/wiki.css">
+  <link rel="stylesheet" href="/css/battle-layer.css">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <style>
+    :root{--swap-bg:#0f151b;--swap-card:#151c24;--swap-line:rgba(255,255,255,.12);--swap-muted:#96a0a8;--swap-accent:#00ffc3;--swap-warn:#ffd000;}
+    .wiki-section{margin:1.8em 0}.lead-paragraph,.wiki-content p{line-height:1.72}.article-toc{border:1px solid var(--swap-line);padding:1rem;margin:1.4rem 0;background:rgba(0,0,0,.22)}.article-toc ol{margin:.5rem 0 0;padding-left:1.4rem}.quick-facts{display:grid;gap:.75rem;margin:1rem 0}.fact-row{border-left:3px solid rgba(0,255,195,.7);padding:.7rem .85rem;background:rgba(255,255,255,.045)}.fact-row strong{display:block;margin-bottom:.25rem}.callout-note{border:1px solid rgba(0,255,195,.35);background:rgba(0,255,195,.08);padding:1rem;margin:1.1rem 0}.source-ref-list{padding-left:1.35rem}.source-ref-list li{margin-bottom:.5rem;word-break:break-word}.swap-dashboard{border:1px solid var(--swap-line);background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));padding:1rem;margin:1.2rem 0}.swap-toolbar{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;justify-content:space-between;margin-bottom:1rem}.swap-status{color:var(--swap-muted);font-size:.95rem}.swap-actions{display:flex;gap:.5rem;flex-wrap:wrap}.swap-button{border:1px solid rgba(0,255,195,.45);background:rgba(0,255,195,.08);color:inherit;padding:.58rem .75rem;border-radius:.35rem;cursor:pointer}.swap-button:hover,.swap-button:focus{background:rgba(0,255,195,.16)}.swap-summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:.75rem;margin:1rem 0}.swap-stat{border:1px solid var(--swap-line);background:rgba(0,0,0,.18);padding:.85rem}.swap-stat strong{display:block;font-size:1.45rem;color:var(--swap-accent)}.swap-filter{width:100%;box-sizing:border-box;border:1px solid var(--swap-line);background:#0a0f14;color:inherit;padding:.75rem;margin:.7rem 0 1rem}.swap-table-wrap{overflow-x:auto;border:1px solid var(--swap-line)}.swap-table{width:100%;border-collapse:collapse;min-width:920px}.swap-table th,.swap-table td{border-bottom:1px solid var(--swap-line);padding:.75rem;text-align:left;vertical-align:top}.swap-table th{background:rgba(255,255,255,.06);font-size:.82rem;text-transform:uppercase;letter-spacing:.06em;color:#d6dde3}.swap-table tr:hover td{background:rgba(255,255,255,.035)}.pair-name{font-weight:800;color:#fff}.token-line{display:block}.token-symbol{font-weight:800}.token-contract,.mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--swap-muted);font-size:.88rem}.amount{white-space:nowrap}.empty-state{padding:1rem;border:1px dashed var(--swap-line);color:var(--swap-muted)}.risk-list li{margin-bottom:.45rem}.small-print{font-size:.9rem;color:var(--swap-muted)}
+  </style>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"swap.nefty","description":"Live WAX token pair tracker for the swap.nefty contract.","url":"https://cryptomoonboys.com/wiki/swap-nefty.html","dateModified":"2026-08-30","author":{"@type":"Organization","name":"Crypto Moonboys"},"publisher":{"@type":"Organization","name":"Crypto Moonboys","logo":{"@type":"ImageObject","url":"https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"}}}</script>
+</head>
+<body class="page-wiki page-standard-shell">
+<main id="content" role="main">
+  <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><a href="/categories/cryptocurrencies.html">Cryptocurrencies</a><span class="sep">›</span><span aria-current="page">swap.nefty</span></nav>
+  <h1 class="page-title">💱 swap.nefty</h1><div class="page-title-line" aria-hidden="true"></div>
+  <div class="article-meta"><span class="article-badge">✅ Live WAX RPC</span><span class="article-badge">⏱ 24h cache</span><span class="meta-item">📅 Last updated: August 2026</span></div>
+  <article class="wiki-content" data-entity-slug="swap-nefty">
+    <p class="lead-paragraph"><strong>swap.nefty</strong> is the WAX smart contract account used here as a live source for Nefty swap token-pair data. This page reads the WAX chain through public RPC endpoints, discovers the contract ABI, loads the most likely pool/pair table, and displays the two token sides, contracts, token quantities and any value fields exposed by the row data.</p>
+    <p class="lead-paragraph">The list is cached in the visitor browser for 24 hours. After the cache expires, the page pulls fresh chain data again. This keeps the public website lightweight while still showing current WAX pair data without needing a server-side database.</p>
+
+    <div class="article-toc"><strong>Contents</strong><ol><li><a href="#live-pairs">Live pair list</a></li><li><a href="#quick-facts">Quick facts</a></li><li><a href="#how-it-works">How it works</a></li><li><a href="#risks">Risks</a></li><li><a href="#sources">Sources</a></li></ol></div>
+
+    <section class="wiki-section" id="live-pairs">
+      <h2>Live token pairs</h2>
+      <div class="swap-dashboard" data-swap-nefty-root>
+        <div class="swap-toolbar">
+          <div>
+            <strong>Contract:</strong> <span class="mono">swap.nefty</span><br>
+            <span class="swap-status" data-swap-status>Waiting for WAX RPC data…</span>
+          </div>
+          <div class="swap-actions">
+            <button class="swap-button" type="button" data-refresh-pairs>Refresh now</button>
+            <a class="swap-button" href="https://waxblock.io/account/swap.nefty#tokens" target="_blank" rel="noopener noreferrer">Open WaxBlock</a>
+          </div>
+        </div>
+        <div class="swap-summary-grid" aria-label="swap.nefty data summary">
+          <div class="swap-stat"><span>Pairs loaded</span><strong data-pair-count>0</strong></div>
+          <div class="swap-stat"><span>Table used</span><strong data-table-used>—</strong></div>
+          <div class="swap-stat"><span>RPC endpoint</span><strong data-rpc-used>—</strong></div>
+          <div class="swap-stat"><span>Cache age</span><strong data-cache-age>—</strong></div>
+        </div>
+        <label for="swapPairFilter"><strong>Filter pairs</strong></label>
+        <input id="swapPairFilter" class="swap-filter" type="search" placeholder="Search WAXCASH, WUFFI, contract, pair id…" data-pair-filter>
+        <div class="swap-table-wrap">
+          <table class="swap-table">
+            <thead><tr><th>#</th><th>Pair</th><th>Token A</th><th>Token B</th><th>Fee / status</th><th>Value fields</th><th>Raw id</th></tr></thead>
+            <tbody data-pair-body><tr><td colspan="7" class="empty-state">Loading pair table from WAX…</td></tr></tbody>
+          </table>
+        </div>
+        <p class="small-print">The parser supports common WAX swap row shapes including <span class="mono">tokenA/tokenB</span>, <span class="mono">token_a/token_b</span>, <span class="mono">pool1/pool2</span>, and asset strings such as <span class="mono">123.4567 WAX</span>. If the contract ABI changes, the raw row id and fallback fields still display instead of silently hiding the row.</p>
+      </div>
+    </section>
+
+    <section class="wiki-section" id="quick-facts"><h2>Quick facts</h2><div class="quick-facts"><div class="fact-row"><strong>Contract account</strong><span class="mono">swap.nefty</span></div><div class="fact-row"><strong>Chain</strong>WAX mainnet.</div><div class="fact-row"><strong>Update model</strong>Client-side 24-hour cache, with manual refresh button.</div><div class="fact-row"><strong>Displayed fields</strong>Pair symbols, token contracts, token quantities, fee/status fields and available value fields.</div></div></section>
+
+    <section class="wiki-section" id="how-it-works"><h2>How it works</h2><p>The page calls WAX RPC <span class="mono">get_info</span> to confirm a live endpoint, calls <span class="mono">get_abi</span> for <span class="mono">swap.nefty</span>, then chooses the first ABI table that looks like a pool or pair table. It then loads rows through <span class="mono">get_table_rows</span> using <span class="mono">code: swap.nefty</span> and <span class="mono">scope: swap.nefty</span>.</p><p>The main display intentionally stays read-only. It does not sign transactions, connect wallets or recommend trades. It only surfaces contract table data in a cleaner wiki format.</p><div class="callout-note"><strong>Plain English:</strong> this is a WAX pair viewer, not a swap button and not financial advice.</div></section>
+
+    <section class="wiki-section" id="risks"><h2>Risks</h2><ul class="risk-list"><li>RPC endpoints can rate-limit, go stale, or temporarily fail.</li><li>Contract ABIs and table names can change; the parser is defensive but cannot guarantee every future row shape.</li><li>Token symbols can be spoofed on WAX. Always check the token contract, not only the symbol.</li><li>Thin liquidity can make displayed quantities misleading for real trading depth.</li></ul></section>
+
+    <section class="wiki-section" id="sources"><h2>Sources</h2><ol class="source-ref-list"><li id="source-1"><a href="https://waxblock.io/account/swap.nefty#tokens" target="_blank" rel="noopener noreferrer">WaxBlock — swap.nefty account tokens</a></li><li id="source-2"><a href="https://wax.eosusa.io/v1/chain/get_info" target="_blank" rel="noopener noreferrer">EOS USA WAX RPC — get_info</a></li><li id="source-3"><a href="https://docs.wax.io/build/api-reference/rpc_api" target="_blank" rel="noopener noreferrer">WAX Docs — RPC API reference</a></li></ol></section>
+  </article>
+
+  <div class="category-tags"><span class="cat-label">Categories:</span><a href="/categories/cryptocurrencies.html">Cryptocurrencies</a></div>
+  <div class="wiki-comments" data-page-id="swap-nefty"></div>
+</main>
+
+<script>
+(function(){
+  'use strict';
+  var CONTRACT='swap.nefty';
+  var CACHE_KEY='cmb.swap.nefty.pairs.v1';
+  var CACHE_MS=24*60*60*1000;
+  var LIMIT=1000;
+  var ENDPOINTS=['https://wax.eosusa.io','https://wax.greymass.com','https://wax.api.eosnation.io','https://api.wax.alohaeos.com'];
+  var TABLE_PRIORITY=['pools','pairs','markets','tokenpairs','swapmarkets','liquidity','tokens'];
+  var root=document.querySelector('[data-swap-nefty-root]');
+  if(!root){return;}
+  var els={status:root.querySelector('[data-swap-status]'),count:root.querySelector('[data-pair-count]'),table:root.querySelector('[data-table-used]'),rpc:root.querySelector('[data-rpc-used]'),age:root.querySelector('[data-cache-age]'),body:root.querySelector('[data-pair-body]'),filter:root.querySelector('[data-pair-filter]'),refresh:root.querySelector('[data-refresh-pairs]')};
+  var state={rows:[],meta:null};
+
+  function setStatus(msg){els.status.textContent=msg;}
+  function post(endpoint,path,body){return fetch(endpoint+path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}).then(function(r){if(!r.ok){throw new Error(endpoint+' '+path+' HTTP '+r.status);}return r.json();});}
+  function readCache(){try{var hit=JSON.parse(localStorage.getItem(CACHE_KEY)||'null');if(hit&&hit.savedAt&&Date.now()-hit.savedAt<CACHE_MS&&Array.isArray(hit.rows)){return hit;}}catch(e){}return null;}
+  function writeCache(payload){try{localStorage.setItem(CACHE_KEY,JSON.stringify(payload));}catch(e){}}
+  function clearCache(){try{localStorage.removeItem(CACHE_KEY);}catch(e){}}
+  function formatAge(savedAt){if(!savedAt){return '—';}var mins=Math.max(0,Math.round((Date.now()-savedAt)/60000));if(mins<60){return mins+'m';}var hours=Math.round(mins/60);return hours+'h';}
+  function escapeHtml(value){return String(value==null?'':value).replace(/[&<>'"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c];});}
+  function parseAsset(value){
+    if(!value){return null;}
+    if(typeof value==='string'){
+      var match=value.trim().match(/^(-?[0-9]+(?:\.[0-9]+)?)\s+([A-Z0-9.$-]{1,16})$/i);
+      if(match){return {quantity:match[1],symbol:match[2].toUpperCase(),contract:''};}
+    }
+    if(typeof value==='object'){
+      if(value.quantity){var parsed=parseAsset(value.quantity);if(parsed){parsed.contract=value.contract||value.token_contract||value.account||'';return parsed;}}
+      if(value.amount&&value.symbol){return {quantity:String(value.amount),symbol:String(value.symbol).toUpperCase(),contract:value.contract||''};}
+      if(value.sym&&value.contract){var parts=String(value.sym).split(',');return {quantity:'',symbol:(parts[1]||value.sym).toUpperCase(),contract:value.contract};}
+    }
+    return null;
+  }
+  function pickToken(row,names){for(var i=0;i<names.length;i++){var token=parseAsset(row[names[i]]);if(token){return token;}}return null;}
+  function findAssetsDeep(row){var found=[];Object.keys(row||{}).forEach(function(key){var token=parseAsset(row[key]);if(token){found.push(token);}});return found;}
+  function tokenLabel(token){if(!token){return '<span class="token-line">Unknown</span>';}return '<span class="token-line"><span class="token-symbol">'+escapeHtml(token.symbol||'—')+'</span> <span class="amount">'+escapeHtml(token.quantity||'')+'</span></span><span class="token-contract">'+escapeHtml(token.contract||'contract unknown')+'</span>';}
+  function rowToPair(row,index){
+    var tokenA=pickToken(row,['tokenA','token_a','token0','token_0','base_token','base','pool1','reserve0','reserveA','assetA','asset_a','quantityA','quantity_a']);
+    var tokenB=pickToken(row,['tokenB','token_b','token1','token_1','quote_token','quote','pool2','reserve1','reserveB','assetB','asset_b','quantityB','quantity_b']);
+    if(!tokenA||!tokenB){var deep=findAssetsDeep(row);tokenA=tokenA||deep[0];tokenB=tokenB||deep[1];}
+    var id=row.id||row.pool_id||row.pair_id||row.market_id||row.key||index+1;
+    var fee=row.fee||row.fee_rate||row.fee_bps||row.swap_fee||row.protocol_fee||'';
+    var active=row.active!=null?row.active:(row.enabled!=null?row.enabled:(row.status||''));
+    var valueKeys=['value','usd_value','value_usd','liquidity_usd','total_value','total_liquidity','liquidity','supply'];
+    var values=valueKeys.filter(function(k){return row[k]!=null&&row[k]!=='';}).map(function(k){return '<span class="token-line"><span class="mono">'+escapeHtml(k)+'</span>: '+escapeHtml(row[k])+'</span>';}).join('')||'<span class="token-contract">No value field exposed</span>';
+    var pairName=(tokenA&&tokenA.symbol?tokenA.symbol:'TOKEN A')+'-'+(tokenB&&tokenB.symbol?tokenB.symbol:'TOKEN B');
+    return {id:id,pairName:pairName,tokenA:tokenA,tokenB:tokenB,fee:fee,active:active,values:values,raw:row,search:JSON.stringify(row).toLowerCase()+' '+pairName.toLowerCase()};
+  }
+  function renderRows(rows,meta){
+    state.rows=rows.map(rowToPair);state.meta=meta||{};
+    var filtered=applyFilter();
+    els.count.textContent=String(state.rows.length);
+    els.table.textContent=state.meta.table||'—';
+    els.rpc.textContent=(state.meta.endpoint||'—').replace(/^https?:\/\//,'');
+    els.age.textContent=formatAge(state.meta.savedAt);
+    renderTable(filtered);
+  }
+  function applyFilter(){var q=(els.filter.value||'').trim().toLowerCase();return !q?state.rows:state.rows.filter(function(row){return row.search.indexOf(q)!==-1;});}
+  function renderTable(rows){
+    if(!rows.length){els.body.innerHTML='<tr><td colspan="7" class="empty-state">No matching pairs found.</td></tr>';return;}
+    els.body.innerHTML=rows.map(function(row,idx){return '<tr><td>'+(idx+1)+'</td><td><span class="pair-name">'+escapeHtml(row.pairName)+'</span></td><td>'+tokenLabel(row.tokenA)+'</td><td>'+tokenLabel(row.tokenB)+'</td><td><span class="token-line">Fee: '+escapeHtml(row.fee||'—')+'</span><span class="token-contract">Status: '+escapeHtml(row.active||'—')+'</span></td><td>'+row.values+'</td><td><span class="mono">'+escapeHtml(row.id)+'</span></td></tr>';}).join('');
+  }
+  function chooseTables(abi){
+    var names=((abi&&abi.abi&&abi.abi.tables)||[]).map(function(t){return t.name;});
+    var preferred=TABLE_PRIORITY.filter(function(name){return names.indexOf(name)!==-1;});
+    var fuzzy=names.filter(function(name){return /pool|pair|market|liquid|token/i.test(name)&&preferred.indexOf(name)===-1;});
+    return preferred.concat(fuzzy).concat(names.filter(function(name){return preferred.indexOf(name)===-1&&fuzzy.indexOf(name)===-1;})).slice(0,8);
+  }
+  function loadFresh(){
+    setStatus('Pulling fresh WAX RPC data…');
+    return ENDPOINTS.reduce(function(chain,endpoint){
+      return chain.catch(function(){
+        return post(endpoint,'/v1/chain/get_info',{}).then(function(info){
+          return post(endpoint,'/v1/chain/get_abi',{account_name:CONTRACT}).then(function(abi){
+            var tables=chooseTables(abi);
+            if(!tables.length){throw new Error('No ABI tables found for '+CONTRACT);}
+            var attempts=tables.map(function(table){
+              return function(){return post(endpoint,'/v1/chain/get_table_rows',{json:true,code:CONTRACT,scope:CONTRACT,table:table,limit:LIMIT,reverse:false,show_payer:false}).then(function(data){
+                if(!data.rows||!data.rows.length){throw new Error('No rows in '+table);}
+                return {rows:data.rows,meta:{endpoint:endpoint,table:table,headBlock:info.head_block_num,headTime:info.head_block_time,savedAt:Date.now(),more:data.more||false}};
+              });};
+            });
+            return attempts.reduce(function(prev,fn){return prev.catch(fn);},Promise.reject(new Error('No table attempted')));
+          });
+        });
+      });
+    },Promise.reject(new Error('Start'))).then(function(payload){
+      writeCache(payload);renderRows(payload.rows,payload.meta);setStatus('Live data loaded. Head block '+(payload.meta.headBlock||'unknown')+', saved '+new Date(payload.meta.savedAt).toLocaleString()+'.');
+    }).catch(function(err){
+      var stale=null;try{stale=JSON.parse(localStorage.getItem(CACHE_KEY)||'null');}catch(e){}
+      if(stale&&Array.isArray(stale.rows)){renderRows(stale.rows,stale.meta);setStatus('RPC refresh failed, showing stale cached data: '+err.message);return;}
+      els.body.innerHTML='<tr><td colspan="7" class="empty-state">Could not load swap.nefty rows from the configured WAX RPC endpoints. Try Refresh now, or check WaxBlock directly.</td></tr>';
+      setStatus('RPC refresh failed: '+err.message);
+    });
+  }
+  els.filter.addEventListener('input',function(){renderTable(applyFilter());});
+  els.refresh.addEventListener('click',function(){clearCache();loadFresh();});
+  var cached=readCache();
+  if(cached){renderRows(cached.rows,cached.meta);setStatus('Using 24-hour cached data. Click Refresh now to force a live pull.');}
+  else{loadFresh();}
+})();
+</script>
+</body>
+</html>
