@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-30T09:19:43.768Z",
+  "generated_at": "2026-08-31T09:52:50.198Z",
   "feeds": {
     "gkniftyheads_rarity": {
       "feed_id": "gkniftyheads_rarity",
@@ -24,10 +24,10 @@
       "status": "degraded",
       "stale": false,
       "stale_after_hours": 30,
-      "checked_at": "2026-08-30T09:19:38.052Z",
-      "last_successful_check": "2026-08-30T09:19:38.052Z",
-      "last_successful_update": "2026-08-30T09:19:37.698Z",
-      "source_updated_at": "2026-08-30T09:19:37.698Z",
+      "checked_at": "2026-08-31T09:52:45.793Z",
+      "last_successful_check": "2026-08-31T09:52:45.793Z",
+      "last_successful_update": "2026-08-31T09:52:45.364Z",
+      "source_updated_at": "2026-08-31T09:52:45.364Z",
       "source_age_minutes": 0,
       "last_error": "Rarity reconciliation incomplete: 1 mismatched template(s); live minus issued = 3 | Display analytics unavailable: top_users",
       "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live asset scan is unavailable",
@@ -40,7 +40,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-08-30T09:19:31.116Z"
+          "checked_at": "2026-08-31T09:52:37.877Z"
         },
         "num_assets": {
           "ok": true,
@@ -49,7 +49,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-08-30T09:19:32.779Z"
+          "checked_at": "2026-08-31T09:52:39.113Z"
         },
         "marketcap": {
           "ok": true,
@@ -58,7 +58,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-08-30T09:19:34.651Z"
+          "checked_at": "2026-08-31T09:52:42.514Z"
         },
         "top_users": {
           "ok": false,
@@ -67,7 +67,7 @@
           "error": "https://wax-api.hivebp.io/v3/top-users/30/gkniftyheads failed: HTTP 500",
           "used_previous": true,
           "attempts": 2,
-          "checked_at": "2026-08-30T09:19:34.862Z"
+          "checked_at": "2026-08-31T09:52:42.707Z"
         },
         "top_templates": {
           "ok": true,
@@ -76,7 +76,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-08-30T09:19:35.571Z"
+          "checked_at": "2026-08-31T09:52:43.359Z"
         },
         "volume": {
           "ok": true,
@@ -85,7 +85,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-08-30T09:19:36.812Z"
+          "checked_at": "2026-08-31T09:52:44.465Z"
         },
         "sales_volume_graph": {
           "ok": true,
@@ -94,7 +94,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-08-30T09:19:37.022Z"
+          "checked_at": "2026-08-31T09:52:44.678Z"
         }
       },
       "notes": [
@@ -138,10 +138,10 @@
       "status": "ok",
       "stale": false,
       "stale_after_hours": 30,
-      "checked_at": "2026-08-30T09:19:43.767Z",
-      "last_successful_check": "2026-08-30T09:19:43.767Z",
-      "last_successful_update": "2026-08-30T09:19:43.767Z",
-      "source_updated_at": "2026-08-30T09:19:43.767Z",
+      "checked_at": "2026-08-31T09:52:50.197Z",
+      "last_successful_check": "2026-08-31T09:52:50.197Z",
+      "last_successful_update": "2026-08-31T09:52:50.197Z",
+      "source_updated_at": "2026-08-31T09:52:50.197Z",
       "source_age_minutes": 0,
       "last_error": null,
       "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live AtomicAssets counts are unavailable",
