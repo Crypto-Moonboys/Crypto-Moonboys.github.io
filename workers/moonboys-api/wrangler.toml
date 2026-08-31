@@ -15,6 +15,9 @@ TELEGRAM_BOT_USERNAME = "WIKICOMSBOT"
 ANTI_CHEAT_WORKER_URL = "https://moonboys-anti-cheat.sercullen.workers.dev"
 LEADERBOARD_API_URL = "https://moonboys-leaderboard.sercullen.workers.dev"
 PET_MINI_APP_ENABLED = "true"
+DEAD_RUN_ENABLED = "true"
+DEAD_RUN_RANKED_ENABLED = "true"
+DEAD_RUN_DAILY_RANKED_LIMIT = "5"
 
 [observability]
 enabled = true
