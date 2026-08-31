@@ -253,7 +253,7 @@ console.log('Dead Run API/core contract: PASS');
 {
   assert.match(
     routeSource,
-    /\(stillRanked && !rejected\)[\s\S]{0,80}applyHordeContribution/,
+    /stillRanked && !rejected[\s\S]{0,150}applyHordeContribution/,
     'applyHordeContribution must be guarded by stillRanked && !rejected',
   );
 }
@@ -375,7 +375,7 @@ console.log('Dead Run API/core contract: PASS');
   // Use the call-site patterns (not function definitions) for ordering.
   const settlingIdx = routeSource.lastIndexOf("SET status = 'settling'");
   const playerBatchIdx = routeSource.lastIndexOf('player_stats_applied = 1');
-  const creditIdx = routeSource.lastIndexOf('const credited = await creditArcadeXp');
+  const creditIdx = routeSource.lastIndexOf('await creditArcadeXp');
   const hordeIdx = routeSource.lastIndexOf('await applyHordeContribution');
   const finishedIdx = routeSource.lastIndexOf("SET status = 'finished'");
   assert.ok(settlingIdx < playerBatchIdx, 'player aggregate must come after active→settling transition');
@@ -412,3 +412,177 @@ console.log('Dead Run API/core contract: PASS');
 }
 
 console.log('Dead Run P1 regression checks: PASS');
+
+// ---------------------------------------------------------------------------
+// DOM contract: every ID used in app.js must be present in index.html.
+// ---------------------------------------------------------------------------
+{
+  const htmlSource = fs.readFileSync(
+    new URL('../games/dead-run/index.html', import.meta.url),
+    'utf8',
+  );
+  const appSource = fs.readFileSync(
+    new URL('../games/dead-run/app.js', import.meta.url),
+    'utf8',
+  );
+  const requiredIds = [
+    'timeText', 'timeLabel', 'distanceText', 'nearestText', 'ammoText',
+    'chargeFill', 'shoveBtn', 'banner', 'startPanel', 'gameOverPanel',
+    'gameOverTitle', 'finalStats', 'xpResult', 'slowCount', 'gpsStatus',
+    'profileBox', 'hordeStrip', 'riskBadge', 'safetyAck', 'resumeBtn',
+    'leaderboardPanel', 'leaderboardList',
+    'startBtn', 'demoBtn', 'againBtn', 'leaderboardBtn', 'closeLeaderboardBtn',
+    'centerBtn', 'slowBtn', 'gameLeaderboardBtn',
+  ];
+  for (const id of requiredIds) {
+    assert.ok(
+      htmlSource.includes(`id="${id}"`),
+      `index.html must contain id="${id}" (used by app.js)`,
+    );
+    assert.ok(
+      appSource.includes(`'${id}'`) || appSource.includes(`"${id}"`),
+      `app.js must reference id "${id}"`,
+    );
+  }
+  // Tabs must use data-metric to match app.js dataset.metric reads.
+  assert.ok(
+    htmlSource.includes('data-metric="score"'),
+    'leaderboard tabs must use data-metric attribute to match app.js dataset.metric',
+  );
+  assert.ok(
+    !htmlSource.includes('data-board='),
+    'index.html must not contain stale data-board attributes',
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Action atomicity: action-first INSERT...SELECT must precede the CAS UPDATE.
+// ---------------------------------------------------------------------------
+{
+  const insertSelectIdx = routeSource.indexOf('INSERT INTO dead_run_actions');
+  const casUpdateIdx = routeSource.lastIndexOf(
+    'UPDATE dead_run_sessions\n    SET ammo = ?, slow_inventory',
+  );
+  assert.ok(insertSelectIdx > -1, 'handleAction must use INSERT...SELECT for action-first protocol');
+  assert.ok(casUpdateIdx > -1, 'handleAction must retain CAS UPDATE for session state mutation');
+  assert.ok(
+    insertSelectIdx < casUpdateIdx,
+    'action record INSERT must precede the session state CAS UPDATE (action-first protocol)',
+  );
+  // Verify the INSERT uses SELECT...FROM dead_run_sessions to gate on CAS conditions.
+  assert.match(
+    routeSource,
+    /INSERT INTO dead_run_actions[\s\S]{0,300}SELECT[\s\S]{0,300}FROM dead_run_sessions[\s\S]{0,300}AND ammo = \?/,
+    'action INSERT must be conditional on CAS preconditions via SELECT FROM dead_run_sessions',
+  );
+  // Verify rejected-CAS path marks the claimed action record as rejected.
+  assert.match(
+    routeSource,
+    /UPDATE dead_run_actions SET accepted = 0[\s\S]{0,60}action_conflict/,
+    'a CAS failure after action claim must update the action record to rejected',
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Settlement holes: arcade_xp_applied and horde_applied flags must be set
+// inside a db.batch() together with the side-effect writes they guard.
+// ---------------------------------------------------------------------------
+{
+  // Verify both new flags exist in the session schema.
+  assert.match(
+    routeSource,
+    /arcade_xp_applied/,
+    'dead-run.js must reference arcade_xp_applied settlement flag',
+  );
+  assert.match(
+    routeSource,
+    /horde_applied/,
+    'dead-run.js must reference horde_applied settlement flag',
+  );
+
+  // creditArcadeXp: arcade_xp_applied flag must be set inside a db.batch() call.
+  const creditFnStart = routeSource.indexOf('async function creditArcadeXp(');
+  const creditFnEnd = routeSource.indexOf('\nasync function', creditFnStart + 1);
+  const creditFn = routeSource.slice(creditFnStart, creditFnEnd > -1 ? creditFnEnd : undefined);
+  assert.match(
+    creditFn,
+    /db\.batch\(/,
+    'creditArcadeXp must use db.batch() for atomic writes',
+  );
+  assert.match(
+    creditFn,
+    /SET arcade_xp_applied = 1/,
+    'creditArcadeXp batch must set arcade_xp_applied = 1 inside the same batch',
+  );
+
+  // applyHordeContribution: horde_applied flag must be set inside a db.batch() call.
+  const hordeFnStart = routeSource.indexOf('async function applyHordeContribution(');
+  const hordeFnEnd = routeSource.indexOf('\nasync function', hordeFnStart + 1);
+  const hordeFn = routeSource.slice(hordeFnStart, hordeFnEnd > -1 ? hordeFnEnd : undefined);
+  assert.match(
+    hordeFn,
+    /db\.batch\(/,
+    'applyHordeContribution must use db.batch() for atomic writes',
+  );
+  assert.match(
+    hordeFn,
+    /SET horde_applied = 1/,
+    'applyHordeContribution batch must set horde_applied = 1 inside the same batch',
+  );
+
+  // handleFinish recovery must gate each step on its flag.
+  assert.match(
+    routeSource,
+    /session\.arcade_xp_applied[\s\S]{0,60}creditArcadeXp/,
+    'handleFinish must gate creditArcadeXp on arcade_xp_applied flag',
+  );
+  assert.match(
+    routeSource,
+    /session\.horde_applied[\s\S]{0,100}applyHordeContribution/,
+    'handleFinish must gate applyHordeContribution on horde_applied flag',
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Scheduled cleanup TTL: settling sessions must use the full ACTIVE_SESSION_TTL_MS
+// window, not a shorter 30-minute cutoff.
+// ---------------------------------------------------------------------------
+{
+  // The settlingCutoff must reference ACTIVE_SESSION_TTL_MS, not a literal minute count.
+  assert.match(
+    routeSource,
+    /settlingCutoff[\s\S]{0,80}ACTIVE_SESSION_TTL_MS/,
+    'settling cleanup cutoff must be based on ACTIVE_SESSION_TTL_MS, not a shorter literal TTL',
+  );
+  // Confirm the old 30-minute literal is gone.
+  assert.ok(
+    !routeSource.includes('30 * 60 * 1000'),
+    'settling cleanup must not use the old 30-minute hard-coded TTL',
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Migration schema: new settlement flags must be present in both 075 and schema.sql.
+// ---------------------------------------------------------------------------
+{
+  const migration075 = fs.readFileSync(
+    new URL('../workers/moonboys-api/migrations/075_dead_run_gps_survival.sql', import.meta.url),
+    'utf8',
+  );
+  const schemaSql = fs.readFileSync(
+    new URL('../workers/moonboys-api/schema.sql', import.meta.url),
+    'utf8',
+  );
+  for (const flag of ['arcade_xp_applied', 'horde_applied']) {
+    assert.ok(
+      migration075.includes(flag),
+      `migration 075 must define the ${flag} column`,
+    );
+    assert.ok(
+      schemaSql.includes(flag),
+      `schema.sql must include the ${flag} column`,
+    );
+  }
+}
+
+console.log('Dead Run P1 regression checks (round 2): PASS');

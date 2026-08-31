@@ -339,8 +339,10 @@ async function handleProfile(request, env, body) {
 
 export async function cleanupExpiredSessions(db, nowMs) {
   const activeCutoff = new Date(nowMs - ACTIVE_SESSION_TTL_MS).toISOString();
-  // Stale settling sessions: stuck > 30 min — scrub coordinates and mark abandoned.
-  const settlingCutoff = new Date(nowMs - 30 * 60 * 1000).toISOString();
+  // Stale settling sessions: stuck beyond the full active-session TTL window.
+  // Using the same TTL as active sessions preserves the recovery window; a session legitimately
+  // in multi-step settlement can take many retries and must not be abandoned prematurely.
+  const settlingCutoff = new Date(nowMs - ACTIVE_SESSION_TTL_MS).toISOString();
   await db.batch([
     db.prepare(`
       UPDATE dead_run_sessions
@@ -704,6 +706,66 @@ async function handleAction(request, env, body) {
     shove_count: update.shove_count ?? (Number(session.shove_count) || 0),
     current_wave: update.current_wave ?? (Number(session.current_wave) || 0),
   };
+  const response = {
+    action,
+    target_id: targetId || null,
+    state: {
+      ammo: next.ammo,
+      slow_inventory: next.slow_inventory,
+      slow_until_ms: next.slow_until_ms,
+      charge_m: next.charge_m,
+      charge_ratio: Math.min(1, next.charge_m / DEAD_RUN_CHARGE_METERS),
+      kills: next.kills,
+      crates: next.crates,
+      shove_count: next.shove_count,
+      current_wave: next.current_wave,
+    },
+  };
+
+  // Action-first protocol: insert the idempotency record atomically with the CAS preconditions
+  // before mutating session state. The INSERT...SELECT only inserts a row when the CAS conditions
+  // on dead_run_sessions are still satisfied, so the action record can only be claimed once.
+  // This prevents the crash window where state is mutated but no idempotency record exists.
+  const actionClaim = await env.DB.prepare(`
+    INSERT INTO dead_run_actions
+      (session_id, action_id, telegram_id, action_type, target_id, accepted, reason, response_json, created_at)
+    SELECT ?, ?, ?, ?, ?, 1, NULL, ?, ?
+    FROM dead_run_sessions
+    WHERE session_id = ? AND telegram_id = ? AND status = 'active'
+      AND ammo = ? AND kills = ? AND slow_inventory = ? AND shove_count = ?
+    ON CONFLICT(session_id, action_id) DO NOTHING
+  `).bind(
+    session.session_id,
+    String(actionId),
+    identity.telegramId,
+    action,
+    targetId || null,
+    JSON.stringify(response),
+    new Date(nowMs).toISOString(),
+    session.session_id,
+    identity.telegramId,
+    Number(session.ammo) || 0,
+    Number(session.kills) || 0,
+    Number(session.slow_inventory) || 0,
+    Number(session.shove_count) || 0,
+  ).run();
+
+  if (Math.max(0, Number(actionClaim?.meta?.changes) || 0) < 1) {
+    // Either the CAS preconditions were not met (concurrent action beat us) or this is a duplicate
+    // action_id. Differentiate by checking for an existing record.
+    const existing = await actionAlreadyProcessed(env.DB, session.session_id, String(actionId));
+    if (existing) {
+      let existingResp = {};
+      try { existingResp = JSON.parse(existing.response_json || '{}'); } catch {}
+      return json(request, { ok: Number(existing.accepted) === 1, replayed: true, ...existingResp },
+        Number(existing.accepted) === 1 ? 200 : 409);
+    }
+    return errorJson(request, 'dead_run_action_conflict', 409);
+  }
+
+  // Action record claimed. Apply the session state mutation (CAS).
+  // If the CAS fails here (another request changed state between our INSERT and this UPDATE),
+  // mark the record as rejected so replays return the correct outcome.
   const cas = await env.DB.prepare(`
     UPDATE dead_run_sessions
     SET ammo = ?, slow_inventory = ?, slow_until_ms = ?, charge_m = ?, kills = ?,
@@ -726,32 +788,15 @@ async function handleAction(request, env, body) {
     Number(session.slow_inventory) || 0,
     Number(session.shove_count) || 0,
   ).run();
+
   if (Math.max(0, Number(cas?.meta?.changes) || 0) < 1) {
-    const concurrent = await actionAlreadyProcessed(env.DB, session.session_id, actionId);
-    if (concurrent) {
-      let concurrentResponse = {};
-      try { concurrentResponse = JSON.parse(concurrent.response_json || '{}'); } catch {}
-      return json(request, { ok: Number(concurrent.accepted) === 1, replayed: true, ...concurrentResponse },
-        Number(concurrent.accepted) === 1 ? 200 : 409);
-    }
+    await env.DB.prepare(`
+      UPDATE dead_run_actions SET accepted = 0, reason = 'action_conflict'
+      WHERE session_id = ? AND action_id = ?
+    `).bind(session.session_id, String(actionId)).run();
     return errorJson(request, 'dead_run_action_conflict', 409);
   }
-  const response = {
-    action,
-    target_id: targetId || null,
-    state: {
-      ammo: next.ammo,
-      slow_inventory: next.slow_inventory,
-      slow_until_ms: next.slow_until_ms,
-      charge_m: next.charge_m,
-      charge_ratio: Math.min(1, next.charge_m / DEAD_RUN_CHARGE_METERS),
-      kills: next.kills,
-      crates: next.crates,
-      shove_count: next.shove_count,
-      current_wave: next.current_wave,
-    },
-  };
-  await recordAction(env.DB, session, actionId, action, targetId, true, null, response, nowMs);
+
   return json(request, { ok: true, ...response });
 }
 
@@ -764,23 +809,24 @@ function previousUtcDay(key) {
 async function creditArcadeXp(db, telegramId, session, score, xpAwarded, eventMultiplier) {
   if (xpAwarded <= 0) return 0;
   const eventId = `dead_run:${session.session_id}`;
-  const insert = await db.prepare(`
-    INSERT OR IGNORE INTO arcade_progression_events
-      (id, telegram_id, client_run_id, game, raw_score, local_meta_points, normalized_points, xp_awarded, status, reason, processed_at)
-    VALUES (?, ?, ?, 'dead-run', ?, 0, ?, ?, 'accepted', ?, CURRENT_TIMESTAMP)
-  `).bind(
-    eventId,
-    telegramId,
-    session.session_id,
-    score,
-    score,
-    xpAwarded,
-    eventMultiplier > 1 ? 'verified_gps_horde_event' : 'verified_gps_run',
-  ).run();
-  const inserted = Math.max(0, Number(insert?.meta?.changes) || 0) > 0;
-  if (!inserted) return 0;
   const key = dayKey();
+  // All writes in one atomic batch: event row, progression state, wallet, activity log, and the
+  // arcade_xp_applied flag on the session. D1 rolls back the entire batch on any error, so a
+  // crash mid-batch leaves arcade_xp_applied = 0 and the retry re-runs safely.
   await db.batch([
+    db.prepare(`
+      INSERT OR IGNORE INTO arcade_progression_events
+        (id, telegram_id, client_run_id, game, raw_score, local_meta_points, normalized_points, xp_awarded, status, reason, processed_at)
+      VALUES (?, ?, ?, 'dead-run', ?, 0, ?, ?, 'accepted', ?, CURRENT_TIMESTAMP)
+    `).bind(
+      eventId,
+      telegramId,
+      session.session_id,
+      score,
+      score,
+      xpAwarded,
+      eventMultiplier > 1 ? 'verified_gps_horde_event' : 'verified_gps_run',
+    ),
     db.prepare(`
       INSERT INTO arcade_progression_state
         (telegram_id, arcade_xp_total, arcade_daily_xp, arcade_daily_key, arcade_restriction_level, restricted_until, updated_at)
@@ -808,32 +854,45 @@ async function creditArcadeXp(db, telegramId, session, score, xpAwarded, eventMu
       INSERT INTO telegram_activity_log (telegram_id, action, metadata, created_at)
       VALUES (?, 'dead_run_finish', ?, CURRENT_TIMESTAMP)
     `).bind(telegramId, JSON.stringify({ session_id: session.session_id, score, xp_awarded: xpAwarded })),
+    db.prepare(`
+      UPDATE dead_run_sessions SET arcade_xp_applied = 1 WHERE session_id = ?
+    `).bind(session.session_id),
   ]);
   return xpAwarded;
 }
 
 async function applyHordeContribution(db, session, kills) {
   if (!session.event_id || kills <= 0) return null;
-  const insert = await db.prepare(`
-    INSERT OR IGNORE INTO dead_run_horde_contributions
-      (event_id, session_id, telegram_id, kills, distance_m, created_at)
-    VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-  `).bind(
-    session.event_id,
-    session.session_id,
-    session.telegram_id,
-    kills,
-    Math.max(0, Number(session.verified_distance_m) || 0),
-  ).run();
-  if (Math.max(0, Number(insert?.meta?.changes) || 0) < 1) return null;
-  await db.prepare(`
-    UPDATE dead_run_horde_events
-    SET kills_total = kills_total + ?,
-        participants = participants + 1,
-        status = CASE WHEN kills_total + ? >= target_kills THEN 'cleared' ELSE status END,
-        updated_at = CURRENT_TIMESTAMP
-    WHERE event_id = ?
-  `).bind(kills, kills, session.event_id).run();
+  // All writes in one atomic batch: contribution row, horde event totals, and the horde_applied
+  // flag on the session. D1 rolls back on any error, keeping the flag at 0 for safe retry.
+  await db.batch([
+    db.prepare(`
+      INSERT OR IGNORE INTO dead_run_horde_contributions
+        (event_id, session_id, telegram_id, kills, distance_m, created_at)
+      VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+    `).bind(
+      session.event_id,
+      session.session_id,
+      session.telegram_id,
+      kills,
+      Math.max(0, Number(session.verified_distance_m) || 0),
+    ),
+    db.prepare(`
+      UPDATE dead_run_horde_events
+      SET kills_total = kills_total + ?,
+          participants = participants + 1,
+          status = CASE WHEN kills_total + ? >= target_kills THEN 'cleared' ELSE status END,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE event_id = ?
+        AND EXISTS (
+          SELECT 1 FROM dead_run_horde_contributions
+          WHERE event_id = ? AND session_id = ?
+        )
+    `).bind(kills, kills, session.event_id, session.event_id, session.session_id),
+    db.prepare(`
+      UPDATE dead_run_sessions SET horde_applied = 1 WHERE session_id = ?
+    `).bind(session.session_id),
+  ]);
   return db.prepare(`SELECT * FROM dead_run_horde_events WHERE event_id = ? LIMIT 1`).bind(session.event_id).first();
 }
 
@@ -998,11 +1057,13 @@ async function handleFinish(request, env, body) {
     ]);
   }
 
-  // Step 2: Arcade XP — INSERT OR IGNORE, idempotent on retry.
-  const credited = await creditArcadeXp(env.DB, identity.telegramId, session, score, xpAwarded, eventMultiplier);
-  // Step 3: Horde contribution — INSERT OR IGNORE, idempotent on retry.
-  // Only ranked non-rejected runs may contribute to public horde totals.
-  const hordeAfter = (stillRanked && !rejected)
+  // Step 2: Arcade XP — gated by arcade_xp_applied flag; entire batch is atomic via D1.
+  if (!Number(session.arcade_xp_applied)) {
+    await creditArcadeXp(env.DB, identity.telegramId, session, score, xpAwarded, eventMultiplier);
+  }
+  // Step 3: Horde contribution — gated by horde_applied flag; batch is atomic via D1.
+  // Only ranked non-rejected runs during an active event may contribute to public horde totals.
+  const hordeAfter = (!Number(session.horde_applied) && stillRanked && !rejected)
     ? await applyHordeContribution(env.DB, session, kills)
     : null;
 
@@ -1022,7 +1083,7 @@ async function handleFinish(request, env, body) {
     ok: true,
     result: {
       score,
-      xp_awarded: credited || xpAwarded,
+      xp_awarded: xpAwarded,
       survival_seconds: survivalSeconds,
       verified_distance_m: Math.round(verifiedDistance * 10) / 10,
       kills,

@@ -46,6 +46,7 @@
     <div class="left-controls">
       <button id="centerBtn" class="round-btn" aria-label="Center map on player">◎</button>
       <button id="slowBtn" class="round-btn violet" aria-label="Use slow-time pickup">⌛<small id="slowCount">0</small></button>
+      <button id="gameLeaderboardBtn" class="round-btn" aria-label="Open leaderboard">🏆</button>
     </div>
 
     <button id="shoveBtn" class="shove-btn" disabled><span>SHOVE HORDE</span><small>300m VERIFIED CHARGE</small></button>
@@ -57,10 +58,13 @@
       <h1>DEAD RUN</h1>
       <p class="tagline">Real GPS zombie survival for Telegram.</p>
       <div id="profileBox" class="profile-box">Loading player profile…</div>
+      <div id="hordeStrip" class="profile-box">Loading horde…</div>
+      <div id="gpsStatus" class="gps-status"></div>
       <div class="rules">
         <strong>Safety rule:</strong> stay on legal pedestrian routes. The route line is only an advisory game corridor. Ignore any waypoint that would take you near roads, rail, water, private property or unsafe terrain.
       </div>
       <label class="ack"><input id="safetyAck" type="checkbox" /> I will only play in a safe pedestrian area.</label>
+      <button id="resumeBtn" class="secondary-btn hidden">RESUME ACTIVE RUN</button>
       <button id="startBtn" class="primary-btn" disabled>START REAL GPS RUN</button>
       <button id="demoBtn" class="secondary-btn">DEMO MODE</button>
       <div class="mini-grid">
@@ -71,8 +75,9 @@
     </section>
 
     <section id="gameOverPanel" class="start-panel hidden">
-      <h2>RUN ENDED</h2>
-      <div id="resultBox" class="profile-box">Settling…</div>
+      <h2 id="gameOverTitle">RUN ENDED</h2>
+      <div id="finalStats" class="profile-box">Settling…</div>
+      <div id="xpResult"></div>
       <button id="againBtn" class="primary-btn">RUN AGAIN</button>
       <button id="leaderboardBtn" class="secondary-btn">LEADERBOARDS</button>
     </section>
@@ -80,9 +85,9 @@
     <section id="leaderboardPanel" class="start-panel hidden">
       <h2>GLOBAL SURVIVORS</h2>
       <div class="tab-row">
-        <button data-board="score" class="tab active">Score</button>
-        <button data-board="survival">Survival</button>
-        <button data-board="distance">Distance</button>
+        <button data-metric="score" class="tab active">Score</button>
+        <button data-metric="survival">Survival</button>
+        <button data-metric="distance">Distance</button>
       </div>
       <div id="leaderboardList" class="leaderboard-list">Loading…</div>
       <button id="closeLeaderboardBtn" class="secondary-btn">BACK</button>

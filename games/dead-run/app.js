@@ -21,8 +21,8 @@
     time: $('timeText'), timeLabel: $('timeLabel'), distance: $('distanceText'), nearest: $('nearestText'), ammo: $('ammoText'),
     chargeFill: $('chargeFill'), shove: $('shoveBtn'), banner: $('banner'), start: $('startPanel'), gameOver: $('gameOverPanel'),
     gameOverTitle: $('gameOverTitle'), finalStats: $('finalStats'), xpResult: $('xpResult'), slowCount: $('slowCount'), gpsStatus: $('gpsStatus'),
-    account: $('accountStrip'), horde: $('hordeStrip'), risk: $('riskBadge'), safety: $('safetyCheck'), resume: $('resumeBtn'),
-    leaderboard: $('leaderboardPanel'), leaderboardRows: $('leaderboardRows')
+    account: $('profileBox'), horde: $('hordeStrip'), risk: $('riskBadge'), safety: $('safetyAck'), resume: $('resumeBtn'),
+    leaderboard: $('leaderboardPanel'), leaderboardRows: $('leaderboardList')
   };
 
   let map;
@@ -829,7 +829,7 @@
   $('startBtn').addEventListener('click', startRealRun);
   $('resumeBtn').addEventListener('click', resumeRealRun);
   $('demoBtn').addEventListener('click', startDemo);
-  $('restartBtn').addEventListener('click', () => {
+  $('againBtn').addEventListener('click', () => {
     ui.gameOver.classList.add('hidden');
     ui.start.classList.remove('hidden');
     loadProfile();
