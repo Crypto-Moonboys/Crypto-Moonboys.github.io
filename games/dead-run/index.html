@@ -7,6 +7,7 @@
   <meta name="robots" content="index,follow" />
   <title>DEAD RUN — Real GPS Zombie Survival</title>
   <meta name="description" content="A Telegram Mini App survival game where zombies chase your real GPS position." />
+  <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="preconnect" href="https://unpkg.com" />
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
   <link rel="stylesheet" href="styles.css" />
@@ -38,48 +39,48 @@
     <section id="startPanel" class="start-panel">
       <div class="logo-mark">☣</div>
       <h1>DEAD RUN</h1>
-      <p>60 seconds. Then the horde comes for your real GPS position.</p>
-      <div id="accountStrip" class="account-strip">Connect through Telegram to load your runner profile.</div>
-      <div id="hordeStrip" class="horde-strip">Global horde loading…</div>
-      <div class="rules">
-        <span>☠ Stop moving, then tap zombies to shoot — server-authorised ammo</span>
-        <span>▮ Start with 3 bullets; GPS crates reload you</span>
-        <span>⌛ Hourglasses slow the active horde for 15 seconds</span>
-        <span>⚡ Verified movement charges a 120m horde shove</span>
-        <span>🏃 Five ranked runs per UTC day; extra runs are practice</span>
+      <p>Real-world GPS zombie survival. Move outside to build distance, survive the horde, and bank verified Arcade XP when production flags are enabled.</p>
+      <div class="mode-grid">
+        <div><strong>RUN</strong><span>GPS distance drives survival</span></div>
+        <div><strong>SHOOT</strong><span>Tap zombies while standing still</span></div>
+        <div><strong>HORDE</strong><span>Global 6-hour async kill target</span></div>
       </div>
-      <label class="safety-check"><input id="safetyCheck" type="checkbox" /> <span>I am on foot in a legal, safe pedestrian area and will ignore any waypoint that is unsafe.</span></label>
-      <p class="safety">Do not play while driving or cycling. Do not enter roads, railway lines, water, construction sites, restricted property or unsafe areas. Stop before shooting, slowing time or shoving the horde; the server rejects manual combat controls while you are moving.</p>
-      <button id="startBtn" class="primary-btn">START REAL GPS RUN</button>
-      <button id="resumeBtn" class="secondary-btn hidden">RESUME ACTIVE RUN</button>
-      <button id="leaderboardBtn" class="secondary-btn">GLOBAL LEADERBOARD</button>
-      <button id="demoBtn" class="secondary-btn">DEMO MODE — NO XP</button>
-      <div id="gpsStatus" class="gps-status">Real runs require Telegram Mini App authentication and location permission.</div>
+      <label class="safety-check">
+        <input id="safetyAck" type="checkbox" />
+        <span>I will stay on legal pedestrian routes, ignore unsafe waypoints, and stop before using combat controls.</span>
+      </label>
+      <div class="start-actions">
+        <button id="startBtn" class="primary">START RUN</button>
+        <button id="demoBtn" class="secondary">DEMO MODE</button>
+      </div>
+      <small id="authHint">Telegram Mini App login required for ranked runs.</small>
     </section>
 
-    <section id="gameOverPanel" class="start-panel hidden">
-      <div class="logo-mark danger">☠</div>
-      <h1 id="gameOverTitle">RUN ENDED</h1>
-      <p id="finalStats"></p>
-      <div id="xpResult" class="account-strip"></div>
-      <button id="restartBtn" class="primary-btn">RUN AGAIN</button>
-      <button id="gameLeaderboardBtn" class="secondary-btn">VIEW LEADERBOARD</button>
+    <section id="finishPanel" class="finish-panel hidden">
+      <h2 id="finishTitle">RUN COMPLETE</h2>
+      <div class="result-grid">
+        <div><strong id="resultScore">0</strong><span>SCORE</span></div>
+        <div><strong id="resultXp">0</strong><span>ARCADE XP</span></div>
+        <div><strong id="resultKills">0</strong><span>KILLS</span></div>
+        <div><strong id="resultRisk">clean</strong><span>GPS RISK</span></div>
+      </div>
+      <p id="finishCopy"></p>
+      <button id="againBtn" class="primary">RUN AGAIN</button>
     </section>
 
-    <section id="leaderboardPanel" class="start-panel leaderboard-panel hidden" aria-modal="true" role="dialog">
-      <button id="closeLeaderboardBtn" class="close-btn" aria-label="Close leaderboard">×</button>
-      <h2>DEAD RUN LEADERBOARD</h2>
-      <div class="leaderboard-tabs">
-        <button data-metric="score" class="tab active">SCORE</button>
-        <button data-metric="survival" class="tab">SURVIVAL</button>
-        <button data-metric="distance" class="tab">DISTANCE</button>
-      </div>
-      <div id="leaderboardRows" class="leaderboard-rows">Loading…</div>
+    <section class="bottom-panel">
+      <nav class="tabs" aria-label="Dead Run panels">
+        <button data-tab="leaderboard" class="active">LEADERBOARD</button>
+        <button data-tab="horde">GLOBAL HORDE</button>
+        <button data-tab="profile">PROFILE</button>
+      </nav>
+      <div id="panelContent" class="panel-content"></div>
     </section>
   </div>
 
-  <script src="https://telegram.org/js/telegram-web-app.js?59"></script>
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-  <script src="app.js"></script>
+  <script src="/js/api-config.js"></script>
+  <script src="/js/telegram-auth.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
