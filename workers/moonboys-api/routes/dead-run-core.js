@@ -243,21 +243,18 @@ export function processTelemetryBatch(session, samples, nowMs = Date.now()) {
       maxSpeed = Math.max(maxSpeed, speed);
       if (elapsedSeconds < 0.55) {
         ignored += 1;
-        previous = { ...current, speed_mps: speed };
         continue;
       }
       if (segment > 75 || speed > DEAD_RUN_HARD_SPEED_MPS) {
         suspiciousDelta += 2;
         ignored += 1;
         flags.push('impossible_speed');
-        previous = { ...current, speed_mps: speed };
         continue;
       }
       if (speed > DEAD_RUN_MAX_ACCEPTED_SPEED_MPS) {
         suspiciousDelta += 1;
         ignored += 1;
         flags.push('speed_spike');
-        previous = { ...current, speed_mps: speed };
         continue;
       }
       const previousSpeed = Math.max(0, Number(previous.speed_mps) || 0);

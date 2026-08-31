@@ -5,6 +5,22 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
   <meta name="theme-color" content="#05070a" />
   <meta name="robots" content="index,follow" />
+  <!-- Content-Security-Policy: tightened for Telegram Mini App context.
+       tile.openstreetmap.org is listed under img-src for map tiles.
+       unpkg.com is listed for the MapLibre script/style until they are self-hosted.
+       Before production launch, replace unpkg.com with a self-hosted or integrity-verified copy. -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'none';
+    script-src 'self' https://unpkg.com https://telegram.org;
+    style-src 'self' https://unpkg.com 'unsafe-inline';
+    img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org;
+    connect-src 'self' https://api.cryptomoonboys.com https://cryptomoonboys.com https://www.cryptomoonboys.com;
+    worker-src blob:;
+    font-src 'self';
+    frame-src 'none';
+    object-src 'none';
+    base-uri 'none'
+  " />
   <title>DEAD RUN — Real GPS Zombie Survival</title>
   <meta name="description" content="A Telegram Mini App survival game where zombies chase your real GPS position." />
   <link rel="icon" type="image/png" href="/favicon.png">

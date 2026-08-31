@@ -151,7 +151,6 @@
       zoom: 16.5,
       pitch: 0,
       bearing: 0,
-      attributionControl: false,
       style: {
         version: 8,
         sources: {
@@ -404,29 +403,36 @@
     updateHud();
   }
 
+  let _telemetryInFlight = Promise.resolve();
+
   async function flushTelemetry(force = false) {
     if (demoMode || (!gameActive && !force) || !session?.session_id || telemetryQueue.length === 0) return;
     if (!force && telemetryQueue.length < 2) return;
-    const samples = telemetryQueue.splice(0, 20);
-    try {
-      const data = await apiPost('/api/dead-run/session/telemetry', { session_id: session.session_id, samples });
-      serverState = {
-        ...serverState,
-        verified_distance_m: data.verified_distance_m ?? serverState.verified_distance_m,
-        charge_m: data.charge_m ?? serverState.charge_m,
-        charge_ratio: data.charge_ratio ?? serverState.charge_ratio,
-        suspicious_points: data.suspicious_points ?? serverState.suspicious_points,
-        risk: data.risk ?? serverState.risk,
-      };
-      if (!data.ranked && session.ranked) {
-        session.ranked = false;
-        setBanner('RUN MOVED TO PRACTICE — GPS CHECK', 2400);
+    // Serialize flushes so batches always reach the server in sequence order.
+    _telemetryInFlight = _telemetryInFlight.then(async () => {
+      if (demoMode || (!gameActive && !force) || !session?.session_id || telemetryQueue.length === 0) return;
+      const samples = telemetryQueue.splice(0, 20);
+      try {
+        const data = await apiPost('/api/dead-run/session/telemetry', { session_id: session.session_id, samples });
+        serverState = {
+          ...serverState,
+          verified_distance_m: data.verified_distance_m ?? serverState.verified_distance_m,
+          charge_m: data.charge_m ?? serverState.charge_m,
+          charge_ratio: data.charge_ratio ?? serverState.charge_ratio,
+          suspicious_points: data.suspicious_points ?? serverState.suspicious_points,
+          risk: data.risk ?? serverState.risk,
+        };
+        if (!data.ranked && session.ranked) {
+          session.ranked = false;
+          setBanner('RUN MOVED TO PRACTICE — GPS CHECK', 2400);
+        }
+        updateHud();
+      } catch (error) {
+        telemetryQueue = samples.concat(telemetryQueue).slice(-24);
+        if (force) setBanner(`GPS SYNC: ${error.message}`, 2200);
       }
-      updateHud();
-    } catch (error) {
-      telemetryQueue = samples.concat(telemetryQueue).slice(-24);
-      if (force) setBanner(`GPS SYNC: ${error.message}`, 2200);
-    }
+    });
+    return _telemetryInFlight;
   }
 
   async function sendAction(action, targetId = '') {

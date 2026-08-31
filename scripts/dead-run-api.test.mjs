@@ -98,3 +98,226 @@ assert.match(routeSource, /arcade_xp_wallets/, 'ranked settlement must credit sp
 assert.match(routeSource, /start_lat = NULL[\s\S]*last_lng = NULL/, 'finished/abandoned sessions must clear precise stored GPS coordinates');
 
 console.log('Dead Run API/core contract: PASS');
+
+// ---------------------------------------------------------------------------
+// Anti-spoof: rejected samples (impossible_speed / speed_spike) must NOT
+// advance the persisted session position. A subsequent valid sample must be
+// evaluated against the last ACCEPTED coordinate, not the rejected one.
+// ---------------------------------------------------------------------------
+{
+  const base = movePoint(origin, 0, 10);
+  const teleportPos = movePoint(origin, 90, DEAD_RUN_HARD_SPEED_MPS * 10 + 200);
+  const validAfterTeleport = movePoint(base, 0, 5); // close to base, not teleport
+
+  const batchWithTeleport = processTelemetryBatch(
+    { last_lat: origin.lat, last_lng: origin.lng, last_sample_at_ms: now - 10000, last_client_seq: 0, last_speed_mps: 0 },
+    [
+      // First sample: accepted (moves ~10m from origin)
+      { seq: 1, timestamp_ms: now - 8000, lat: base.lat, lng: base.lng, accuracy_m: 5 },
+      // Second sample: teleport (impossible speed) — must be REJECTED and must NOT update previous
+      { seq: 2, timestamp_ms: now - 6000, lat: teleportPos.lat, lng: teleportPos.lng, accuracy_m: 5 },
+      // Third sample: valid from base position — must be accepted if previous stayed at base
+      { seq: 3, timestamp_ms: now - 4000, lat: validAfterTeleport.lat, lng: validAfterTeleport.lng, accuracy_m: 5 },
+    ],
+    now,
+  );
+
+  assert.ok(batchWithTeleport.flags.includes('impossible_speed'), 'teleport sample must be flagged impossible_speed');
+  // last accepted position must be near validAfterTeleport, not the teleport location
+  assert.ok(batchWithTeleport.last, 'at least one sample should be accepted');
+  const lastPos = { lat: batchWithTeleport.last.lat, lng: batchWithTeleport.last.lng };
+  const distFromTeleport = distanceMeters(lastPos, teleportPos);
+  assert.ok(
+    distFromTeleport > 50,
+    `last accepted position must not be the rejected teleport (got ${distFromTeleport.toFixed(1)} m from teleport, expected > 50 m)`,
+  );
+  assert.equal(batchWithTeleport.accepted, 2, 'the non-teleport samples must both be accepted (seq 1 and seq 3)');
+}
+
+// ---------------------------------------------------------------------------
+// Speed-spike samples must also not advance the accepted position.
+// ---------------------------------------------------------------------------
+{
+  const p1 = movePoint(origin, 0, 5);
+  // This position would give ~8 m/s over 1.5 s — above MAX_ACCEPTED_SPEED (7.5) but below HARD_SPEED
+  const spikePos = movePoint(p1, 0, 12);
+  const p2 = movePoint(p1, 0, 4); // valid continuation from p1
+
+  const batchWithSpike = processTelemetryBatch(
+    { last_lat: origin.lat, last_lng: origin.lng, last_sample_at_ms: now - 9000, last_client_seq: 0, last_speed_mps: 0 },
+    [
+      { seq: 1, timestamp_ms: now - 7000, lat: p1.lat, lng: p1.lng, accuracy_m: 6 },
+      { seq: 2, timestamp_ms: now - 5500, lat: spikePos.lat, lng: spikePos.lng, accuracy_m: 6 },
+      { seq: 3, timestamp_ms: now - 3500, lat: p2.lat, lng: p2.lng, accuracy_m: 6 },
+    ],
+    now,
+  );
+
+  if (batchWithSpike.flags.includes('speed_spike')) {
+    // If spike was flagged, last position must not be spikePos
+    const lastPos = { lat: batchWithSpike.last.lat, lng: batchWithSpike.last.lng };
+    assert.ok(
+      distanceMeters(lastPos, spikePos) > 2,
+      'last accepted position must not be a rejected speed_spike sample',
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Survival authority: source code must bound survival at last telemetry time.
+// ---------------------------------------------------------------------------
+{
+  assert.match(
+    routeSource,
+    /TELEMETRY_GRACE_SECONDS/,
+    'handleFinish must define a telemetry grace bound for survival',
+  );
+  assert.match(
+    routeSource,
+    /last_sample_at_ms/,
+    'survival must reference the last accepted telemetry timestamp',
+  );
+  assert.match(
+    routeSource,
+    /telemetryBoundSeconds/,
+    'survival must be explicitly bounded by telemetry timestamp',
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Settlement idempotency: source must handle settling status for recovery.
+// ---------------------------------------------------------------------------
+{
+  assert.match(
+    routeSource,
+    /session\.status !== 'settling'/,
+    'handleFinish must guard against non-settling status before recovery path',
+  );
+  assert.match(
+    routeSource,
+    /status = 'finished'[\s\S]{0,300}status = 'settling'/,
+    'settling→finished transition must be a conditional UPDATE guarding on settling status',
+  );
+  assert.match(
+    routeSource,
+    /justTransitioned/,
+    'player aggregate update must be guarded by the transition result',
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Action concurrency: session state UPDATE must include expected values (CAS).
+// ---------------------------------------------------------------------------
+{
+  assert.match(
+    routeSource,
+    /AND ammo = \? AND kills = \?/,
+    'handleAction state update must include expected ammo and kills as CAS conditions',
+  );
+  assert.match(
+    routeSource,
+    /dead_run_action_conflict/,
+    'handleAction must return action_conflict when CAS update finds concurrent mutation',
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Action timing: shot cooldown must use ms-precision ISO timestamps.
+// ---------------------------------------------------------------------------
+{
+  assert.match(
+    routeSource,
+    /new Date\(serverMs\)\.toISOString\(\)/,
+    'recordAction must store ms-precision ISO timestamps for shoot cooldown',
+  );
+  assert.match(
+    routeSource,
+    /Date\.parse\(row\.iso_ts\)/,
+    'latestShootAt must parse the stored ISO timestamp for ms precision',
+  );
+  assert.doesNotMatch(
+    routeSource,
+    /strftime\('%s', created_at\)/,
+    'latestShootAt must not use strftime second-precision extraction',
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Horde contribution: only ranked non-rejected runs may contribute.
+// ---------------------------------------------------------------------------
+{
+  assert.match(
+    routeSource,
+    /\(stillRanked && !rejected\)[\s\S]{0,80}applyHordeContribution/,
+    'applyHordeContribution must be guarded by stillRanked && !rejected',
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Privacy retention: global cleanup must cover both active and settling sessions.
+// ---------------------------------------------------------------------------
+{
+  assert.match(
+    routeSource,
+    /cleanupExpiredSessions/,
+    'must export a global cleanupExpiredSessions function',
+  );
+  assert.match(
+    routeSource,
+    /status = 'settling'[\s\S]{0,200}updated_at < \?/,
+    'global cleanup must scrub coordinates from stale settling sessions',
+  );
+  assert.match(
+    routeSource,
+    /Math\.random\(\) < 0\.01/,
+    'global cleanup must be triggered stochastically on every request',
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Client telemetry: flushTelemetry must be serialized.
+// ---------------------------------------------------------------------------
+{
+  const appSource = fs.readFileSync(new URL('../games/dead-run/app.js', import.meta.url), 'utf8');
+  assert.match(
+    appSource,
+    /_telemetryInFlight/,
+    'client must serialize telemetry flushes to prevent out-of-order batches',
+  );
+  assert.match(
+    appSource,
+    /_telemetryInFlight\.then/,
+    'each flush must chain on the in-flight promise for ordering',
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Map attribution: attributionControl must not be disabled.
+// ---------------------------------------------------------------------------
+{
+  const appSource = fs.readFileSync(new URL('../games/dead-run/app.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(
+    appSource,
+    /attributionControl:\s*false/,
+    'maplibre attributionControl must not be suppressed',
+  );
+}
+
+// ---------------------------------------------------------------------------
+// CSP: index.html must include a Content-Security-Policy meta tag.
+// ---------------------------------------------------------------------------
+{
+  const htmlSource = fs.readFileSync(new URL('../games/dead-run/index.html', import.meta.url), 'utf8');
+  assert.match(
+    htmlSource,
+    /Content-Security-Policy/,
+    'dead-run index.html must include a CSP meta tag',
+  );
+  assert.match(
+    htmlSource,
+    /default-src 'none'/,
+    "CSP must start from 'none' default",
+  );
+}
+
+console.log('Dead Run extended contract: PASS');
