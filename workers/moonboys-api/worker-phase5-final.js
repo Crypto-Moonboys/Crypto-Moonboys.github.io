@@ -1,4 +1,5 @@
 import baseWorker from './worker.js';
+import { handleDeadRunRequest } from './routes/dead-run.js';
 import { applyPetRuntimeAward } from './pets/runtime-phase-5a.js';
 
 const PROGRESSION_API_ACTIONS = Object.freeze({
@@ -240,6 +241,9 @@ async function repairTelegramRunRuntimeAward(env, update) {
 
 export default {
   async fetch(request, env, ctx) {
+    const deadRunResponse = await handleDeadRunRequest(request, env, ctx);
+    if (deadRunResponse) return deadRunResponse;
+
     const url = new URL(request.url);
     const isPetAction = url.pathname === '/telegram-pets/action' && request.method === 'POST';
     const isTelegramWebhook = url.pathname === '/telegram/webhook' && request.method === 'POST';
