@@ -1927,6 +1927,7 @@ CREATE TABLE IF NOT EXISTS dead_run_sessions (
   score INTEGER NOT NULL DEFAULT 0 CHECK (score >= 0),
   xp_awarded INTEGER NOT NULL DEFAULT 0 CHECK (xp_awarded >= 0),
   finish_reason TEXT,
+  player_stats_applied INTEGER NOT NULL DEFAULT 0 CHECK (player_stats_applied IN (0,1)),
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (telegram_id) REFERENCES telegram_users(telegram_id) ON DELETE CASCADE,

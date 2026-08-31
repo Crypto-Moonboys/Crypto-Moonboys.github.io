@@ -200,8 +200,13 @@ console.log('Dead Run API/core contract: PASS');
   );
   assert.match(
     routeSource,
+    /player_stats_applied/,
+    'player aggregate update must be guarded by an idempotency flag, not the transition result',
+  );
+  assert.doesNotMatch(
+    routeSource,
     /justTransitioned/,
-    'player aggregate update must be guarded by the transition result',
+    'justTransitioned guard must be replaced by player_stats_applied for crash-safe idempotency',
   );
 }
 
@@ -320,4 +325,90 @@ console.log('Dead Run API/core contract: PASS');
   );
 }
 
-console.log('Dead Run extended contract: PASS');
+// ---------------------------------------------------------------------------
+// Combat authority: shoot range must use last accepted telemetry timestamp,
+// not wall-clock time. Offline waiting must not collapse zombie distances.
+// ---------------------------------------------------------------------------
+{
+  assert.match(
+    routeSource,
+    /STALE_TELEMETRY_SHOOT_MS/,
+    'handleAction must define a stale-telemetry threshold for shoot rejection',
+  );
+  assert.match(
+    routeSource,
+    /telemetry_required/,
+    'handleAction must reject shoot when no telemetry has been accepted',
+  );
+  assert.match(
+    routeSource,
+    /telemetry_stale/,
+    'handleAction must reject shoot when last accepted telemetry is too old',
+  );
+  assert.match(
+    routeSource,
+    /last_sample_at_ms[\s\S]{0,300}headStartEndMs/,
+    'zombie movement must be derived from last_sample_at_ms, not nowMs',
+  );
+  assert.doesNotMatch(
+    routeSource,
+    /elapsedSinceStart[\s\S]{0,60}Date\.now/,
+    'zombie range must not use wall-clock elapsed time for movement calculation',
+  );
+  assert.match(
+    routeSource,
+    /SHOVE_PUSHBACK_M/,
+    'shove pushback must be included in zombie estimated distance',
+  );
+  // Verify that a session with no telemetry has combat blocked at the source level.
+  // (last_sample_at_ms = 0 → telemetry_required must be hit before any distance check)
+  assert.ok(
+    routeSource.indexOf('telemetry_required') < routeSource.indexOf('estimatedDistance'),
+    'telemetry_required check must precede any distance calculation in handleAction',
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Settlement order: finished must be the LAST step in the settling path.
+// ---------------------------------------------------------------------------
+{
+  // Use the call-site patterns (not function definitions) for ordering.
+  const settlingIdx = routeSource.lastIndexOf("SET status = 'settling'");
+  const playerBatchIdx = routeSource.lastIndexOf('player_stats_applied = 1');
+  const creditIdx = routeSource.lastIndexOf('const credited = await creditArcadeXp');
+  const hordeIdx = routeSource.lastIndexOf('await applyHordeContribution');
+  const finishedIdx = routeSource.lastIndexOf("SET status = 'finished'");
+  assert.ok(settlingIdx < playerBatchIdx, 'player aggregate must come after active→settling transition');
+  assert.ok(playerBatchIdx < creditIdx, 'creditArcadeXp must come after player aggregate batch');
+  assert.ok(creditIdx < hordeIdx, 'applyHordeContribution must come after creditArcadeXp');
+  assert.ok(hordeIdx < finishedIdx, 'settling→finished transition must be the last settlement step');
+}
+
+// ---------------------------------------------------------------------------
+// Scheduled cleanup: worker-phase5-final.js must invoke cleanupExpiredSessions
+// in the scheduled handler so GPS coordinates are scrubbed by cron, not only by
+// probabilistic request traffic.
+// ---------------------------------------------------------------------------
+{
+  const phase5Source = fs.readFileSync(
+    new URL('../workers/moonboys-api/worker-phase5-final.js', import.meta.url),
+    'utf8',
+  );
+  assert.match(
+    phase5Source,
+    /cleanupExpiredSessions/,
+    'worker-phase5-final must import and call cleanupExpiredSessions',
+  );
+  assert.match(
+    phase5Source,
+    /async scheduled[\s\S]{0,300}cleanupExpiredSessions/,
+    'cleanupExpiredSessions must be called inside the scheduled handler',
+  );
+  assert.match(
+    phase5Source,
+    /ctx\.waitUntil[\s\S]{0,80}cleanupExpiredSessions/,
+    'scheduled cleanup must use ctx.waitUntil so it does not block the cron response',
+  );
+}
+
+console.log('Dead Run P1 regression checks: PASS');

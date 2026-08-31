@@ -22,6 +22,8 @@ import {
 const DEAD_RUN_ROUTE_PREFIX = '/api/dead-run';
 const ACTIVE_SESSION_TTL_MS = 2 * 60 * 60 * 1000;
 const SHOOT_COOLDOWN_MS = 180;
+const STALE_TELEMETRY_SHOOT_MS = 120_000;
+const SHOVE_PUSHBACK_M = 40;
 const SUSPICIOUS_UNRANKED_THRESHOLD = 6;
 const SUSPICIOUS_REJECT_THRESHOLD = 14;
 const DEAD_RUN_RATE_WINDOW_MS = 60_000;
@@ -335,7 +337,7 @@ async function handleProfile(request, env, body) {
   });
 }
 
-async function cleanupExpiredSessions(db, nowMs) {
+export async function cleanupExpiredSessions(db, nowMs) {
   const activeCutoff = new Date(nowMs - ACTIVE_SESSION_TTL_MS).toISOString();
   // Stale settling sessions: stuck > 30 min — scrub coordinates and mark abandoned.
   const settlingCutoff = new Date(nowMs - 30 * 60 * 1000).toISOString();
@@ -623,36 +625,60 @@ async function handleAction(request, env, body) {
     const zombie = zombieById(combatPlan, targetId);
     const ammo = Math.max(0, Number(session.ammo) || 0);
     const currentWave = Math.max(0, Number(session.current_wave) || 0);
-    const elapsedSinceStart = (nowMs - Date.parse(session.started_at)) / 1000;
-    const hordeElapsed = elapsedSinceStart - DEAD_RUN_HEAD_START_SECONDS;
+    const lastSampleMs = Number(session.last_sample_at_ms) || 0;
     if (!zombie) reason = 'zombie_unknown';
-    else if (hordeElapsed < 0) reason = 'head_start_active';
-    else if (zombie.wave !== currentWave) reason = 'zombie_wave_not_active';
-    else if (ammo < 1) reason = 'ammo_empty';
+    else if (lastSampleMs <= 0) reason = 'telemetry_required';
+    else if (nowMs - lastSampleMs > STALE_TELEMETRY_SHOOT_MS) reason = 'telemetry_stale';
     else {
-      const existing = await env.DB.prepare(`
-        SELECT 1 AS hit FROM dead_run_actions
-        WHERE session_id = ? AND action_type = 'shoot' AND target_id = ? AND accepted = 1 LIMIT 1
-      `).bind(session.session_id, targetId).first();
-      if (existing) reason = 'zombie_already_killed';
+      const startMs = Date.parse(session.started_at);
+      const headStartEndMs = startMs + DEAD_RUN_HEAD_START_SECONDS * 1000;
+      if (lastSampleMs < headStartEndMs) reason = 'head_start_active';
+      else if (zombie.wave !== currentWave) reason = 'zombie_wave_not_active';
+      else if (ammo < 1) reason = 'ammo_empty';
       else {
-        const lastShotAt = await latestShootAt(env.DB, session.session_id);
-        if (lastShotAt && nowMs - lastShotAt < SHOOT_COOLDOWN_MS) reason = 'shoot_rate_limited';
+        const existing = await env.DB.prepare(`
+          SELECT 1 AS hit FROM dead_run_actions
+          WHERE session_id = ? AND action_type = 'shoot' AND target_id = ? AND accepted = 1 LIMIT 1
+        `).bind(session.session_id, targetId).first();
+        if (existing) reason = 'zombie_already_killed';
         else {
-          const lastSpeed = Math.max(0, Number(session.last_speed_mps) || 0);
-          if (lastSpeed > 1.8) reason = 'stop_to_interact';
+          const lastShotAt = await latestShootAt(env.DB, session.session_id);
+          if (lastShotAt && nowMs - lastShotAt < SHOOT_COOLDOWN_MS) reason = 'shoot_rate_limited';
           else {
-            const baseDistance = distanceMeters(playerPos, zombie);
-            const estimatedDistance = Math.max(0, baseDistance - zombie.speed_mps * Math.max(0, hordeElapsed));
-            if (estimatedDistance > DEAD_RUN_SHOOT_RANGE_M) reason = 'zombie_out_of_range';
+            const lastSpeed = Math.max(0, Number(session.last_speed_mps) || 0);
+            if (lastSpeed > 1.8) reason = 'stop_to_interact';
             else {
-              accepted = true;
-              update.ammo = ammo - 1;
-              update.kills = Math.max(0, Number(session.kills) || 0) + 1;
-              const killedInWave = await acceptedKillCountForWave(env.DB, session.session_id, currentWave);
-              const waveSize = combatPlan.waves[currentWave]?.zombies.length || 0;
-              if (waveSize > 0 && killedInWave + 1 >= waveSize && currentWave + 1 < combatPlan.waves.length) {
-                update.current_wave = currentWave + 1;
+              // Compute zombie's estimated distance at the last accepted telemetry timestamp,
+              // not wall-clock time, so offline waiting cannot collapse distances to range.
+              // Account for slow effect (halves zombie speed during the effect window) and
+              // shove pushback (each accepted shove adds SHOVE_PUSHBACK_M to the effective
+              // distance, making further combat harder without new accepted movement).
+              const hordeActiveMs = Math.max(0, lastSampleMs - headStartEndMs);
+              const slowUntilMs = Math.max(0, Number(session.slow_until_ms) || 0);
+              const shoveCount = Math.max(0, Number(session.shove_count) || 0);
+              // Slow effect: the 15-second window ending at slow_until_ms, intersected
+              // with the horde-active epoch up to last accepted telemetry.
+              const slowWindowStart = Math.max(headStartEndMs, slowUntilMs - 15_000);
+              const slowWindowEnd = Math.min(lastSampleMs, slowUntilMs);
+              const slowSeconds = slowWindowEnd > slowWindowStart
+                ? Math.max(0, (slowWindowEnd - slowWindowStart) / 1000)
+                : 0;
+              const normalSeconds = Math.max(0, hordeActiveMs / 1000 - slowSeconds);
+              const effectiveMovement = zombie.speed_mps * normalSeconds
+                + zombie.speed_mps * 0.5 * slowSeconds;
+              const shovePushback = shoveCount * SHOVE_PUSHBACK_M;
+              const baseDistance = distanceMeters(playerPos, zombie);
+              const estimatedDistance = Math.max(0, baseDistance - effectiveMovement + shovePushback);
+              if (estimatedDistance > DEAD_RUN_SHOOT_RANGE_M) reason = 'zombie_out_of_range';
+              else {
+                accepted = true;
+                update.ammo = ammo - 1;
+                update.kills = Math.max(0, Number(session.kills) || 0) + 1;
+                const killedInWave = await acceptedKillCountForWave(env.DB, session.session_id, currentWave);
+                const waveSize = combatPlan.waves[currentWave]?.zombies.length || 0;
+                if (waveSize > 0 && killedInWave + 1 >= waveSize && currentWave + 1 < combatPlan.waves.length) {
+                  update.current_wave = currentWave + 1;
+                }
               }
             }
           }
@@ -904,9 +930,9 @@ async function handleFinish(request, env, body) {
 
   if (session.status !== 'settling') return errorJson(request, 'dead_run_session_not_finishable', 409);
 
-  // Recovery path: session is 'settling'. All settlement values are read from the stored row so
-  // retrying this endpoint is safe. The settling→finished transition is the idempotency gate for
-  // the player aggregate update: only the request that owns the transition runs the player write.
+  // Recovery path: session is 'settling'. All values are read from the stored row so
+  // retrying is safe. Side effects are applied in order below; the settling→finished
+  // transition is the LAST step so a crash before it leaves the session retryable.
   const survivalSeconds = Math.max(0, Number(session.survival_seconds) || 0);
   const score = Math.max(0, Number(session.score) || 0);
   const xpAwarded = Math.max(0, Number(session.xp_awarded) || 0);
@@ -924,19 +950,10 @@ async function handleFinish(request, env, body) {
   const eventActive = horde && nowMs <= Date.parse(horde.ends_at);
   const eventMultiplier = eventActive ? 1.1 : 1;
 
-  // Atomic transition: settling → finished + coordinate scrub.
-  // Returns 1 change when this request owns the transition; returns 0 if a concurrent retry
-  // already completed it. Player aggregates are updated only by the owning request.
-  const transition = await env.DB.prepare(`
-    UPDATE dead_run_sessions
-    SET status = 'finished',
-        start_lat = NULL, start_lng = NULL, last_lat = NULL, last_lng = NULL,
-        updated_at = CURRENT_TIMESTAMP
-    WHERE session_id = ? AND telegram_id = ? AND status = 'settling'
-  `).bind(session.session_id, identity.telegramId).run();
-  const justTransitioned = Math.max(0, Number(transition?.meta?.changes) || 0) > 0;
-
-  if (justTransitioned) {
+  // Step 1: Player aggregate — idempotent via player_stats_applied flag.
+  // db.batch() is atomic: either both the player UPDATE and the flag UPDATE commit, or neither
+  // does. On retry when player_stats_applied = 1, this step is a no-op.
+  if (!Number(session.player_stats_applied)) {
     const playerBefore = await getPlayer(env.DB, identity.telegramId);
     const previousDay = previousUtcDay(key);
     const previousLastDay = String(playerBefore?.last_run_day || '');
@@ -946,43 +963,59 @@ async function handleFinish(request, env, body) {
         ? Math.max(1, Number(playerBefore?.current_streak) || 0) + 1
         : 1;
     const bestStreak = Math.max(streak, Number(playerBefore?.best_streak) || 0);
-    await env.DB.prepare(`
-      UPDATE dead_run_players
-      SET xp_total = xp_total + ?,
-          runs_total = runs_total + 1,
-          ranked_runs_total = ranked_runs_total + ?,
-          best_survival_seconds = MAX(best_survival_seconds, ?),
-          best_distance_m = MAX(best_distance_m, ?),
-          best_score = MAX(best_score, ?),
-          kills_total = kills_total + ?,
-          crates_total = crates_total + ?,
-          horde_events_total = horde_events_total + ?,
-          current_streak = ?, best_streak = ?, last_run_day = ?,
-          updated_at = CURRENT_TIMESTAMP
-      WHERE telegram_id = ?
-    `).bind(
-      xpAwarded,
-      stillRanked && !rejected ? 1 : 0,
-      survivalSeconds,
-      Math.round(verifiedDistance),
-      score,
-      kills,
-      crates,
-      eventActive ? 1 : 0,
-      streak,
-      bestStreak,
-      key,
-      identity.telegramId,
-    ).run();
+    await env.DB.batch([
+      env.DB.prepare(`
+        UPDATE dead_run_players
+        SET xp_total = xp_total + ?,
+            runs_total = runs_total + 1,
+            ranked_runs_total = ranked_runs_total + ?,
+            best_survival_seconds = MAX(best_survival_seconds, ?),
+            best_distance_m = MAX(best_distance_m, ?),
+            best_score = MAX(best_score, ?),
+            kills_total = kills_total + ?,
+            crates_total = crates_total + ?,
+            horde_events_total = horde_events_total + ?,
+            current_streak = ?, best_streak = ?, last_run_day = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE telegram_id = ?
+      `).bind(
+        xpAwarded,
+        stillRanked && !rejected ? 1 : 0,
+        survivalSeconds,
+        Math.round(verifiedDistance),
+        score,
+        kills,
+        crates,
+        eventActive ? 1 : 0,
+        streak,
+        bestStreak,
+        key,
+        identity.telegramId,
+      ),
+      env.DB.prepare(`
+        UPDATE dead_run_sessions SET player_stats_applied = 1 WHERE session_id = ?
+      `).bind(session.session_id),
+    ]);
   }
 
-  // creditArcadeXp and applyHordeContribution both use INSERT OR IGNORE so they are safe to
-  // call on retry — the second call is a no-op.
+  // Step 2: Arcade XP — INSERT OR IGNORE, idempotent on retry.
   const credited = await creditArcadeXp(env.DB, identity.telegramId, session, score, xpAwarded, eventMultiplier);
-  // Only ranked non-rejected runs may contribute to global horde totals.
+  // Step 3: Horde contribution — INSERT OR IGNORE, idempotent on retry.
+  // Only ranked non-rejected runs may contribute to public horde totals.
   const hordeAfter = (stillRanked && !rejected)
     ? await applyHordeContribution(env.DB, session, kills)
     : null;
+
+  // Step 4 (final): settling → finished + coordinate scrub.
+  // This is the last step so any crash before it leaves the session in 'settling'
+  // and the next retry safely re-runs the idempotent steps above.
+  await env.DB.prepare(`
+    UPDATE dead_run_sessions
+    SET status = 'finished',
+        start_lat = NULL, start_lng = NULL, last_lat = NULL, last_lng = NULL,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE session_id = ? AND telegram_id = ? AND status = 'settling'
+  `).bind(session.session_id, identity.telegramId).run();
 
   const player = await getPlayer(env.DB, identity.telegramId);
   return json(request, {
