@@ -28,7 +28,7 @@
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body>
+<body class="page-standalone-tool">
   <div id="app">
     <div id="map" aria-label="Dead Run game map"></div>
 
@@ -55,48 +55,50 @@
     <section id="startPanel" class="start-panel">
       <div class="logo-mark">☣</div>
       <h1>DEAD RUN</h1>
-      <p>Real-world GPS zombie survival. Move outside to build distance, survive the horde, and bank verified Arcade XP when production flags are enabled.</p>
-      <div class="mode-grid">
-        <div><strong>RUN</strong><span>GPS distance drives survival</span></div>
-        <div><strong>SHOOT</strong><span>Tap zombies while standing still</span></div>
-        <div><strong>HORDE</strong><span>Global 6-hour async kill target</span></div>
+      <p class="tagline">Real GPS zombie survival for Telegram.</p>
+      <div id="profileBox" class="profile-box">Loading player profile…</div>
+      <div class="rules">
+        <strong>Safety rule:</strong> stay on legal pedestrian routes. The route line is only an advisory game corridor. Ignore any waypoint that would take you near roads, rail, water, private property or unsafe terrain.
       </div>
-      <label class="safety-check">
-        <input id="safetyAck" type="checkbox" />
-        <span>I will stay on legal pedestrian routes, ignore unsafe waypoints, and stop before using combat controls.</span>
-      </label>
-      <div class="start-actions">
-        <button id="startBtn" class="primary">START RUN</button>
-        <button id="demoBtn" class="secondary">DEMO MODE</button>
+      <label class="ack"><input id="safetyAck" type="checkbox" /> I will only play in a safe pedestrian area.</label>
+      <button id="startBtn" class="primary-btn" disabled>START REAL GPS RUN</button>
+      <button id="demoBtn" class="secondary-btn">DEMO MODE</button>
+      <div class="mini-grid">
+        <div><strong>60s</strong><span>head start</span></div>
+        <div><strong>3</strong><span>bullets</span></div>
+        <div><strong>5</strong><span>ranked runs/day</span></div>
       </div>
-      <small id="authHint">Telegram Mini App login required for ranked runs.</small>
     </section>
 
-    <section id="finishPanel" class="finish-panel hidden">
-      <h2 id="finishTitle">RUN COMPLETE</h2>
-      <div class="result-grid">
-        <div><strong id="resultScore">0</strong><span>SCORE</span></div>
-        <div><strong id="resultXp">0</strong><span>ARCADE XP</span></div>
-        <div><strong id="resultKills">0</strong><span>KILLS</span></div>
-        <div><strong id="resultRisk">clean</strong><span>GPS RISK</span></div>
-      </div>
-      <p id="finishCopy"></p>
-      <button id="againBtn" class="primary">RUN AGAIN</button>
+    <section id="gameOverPanel" class="start-panel hidden">
+      <h2>RUN ENDED</h2>
+      <div id="resultBox" class="profile-box">Settling…</div>
+      <button id="againBtn" class="primary-btn">RUN AGAIN</button>
+      <button id="leaderboardBtn" class="secondary-btn">LEADERBOARDS</button>
     </section>
 
-    <section class="bottom-panel">
-      <nav class="tabs" aria-label="Dead Run panels">
-        <button data-tab="leaderboard" class="active">LEADERBOARD</button>
-        <button data-tab="horde">GLOBAL HORDE</button>
-        <button data-tab="profile">PROFILE</button>
-      </nav>
-      <div id="panelContent" class="panel-content"></div>
+    <section id="leaderboardPanel" class="start-panel hidden">
+      <h2>GLOBAL SURVIVORS</h2>
+      <div class="tab-row">
+        <button data-board="score" class="tab active">Score</button>
+        <button data-board="survival">Survival</button>
+        <button data-board="distance">Distance</button>
+      </div>
+      <div id="leaderboardList" class="leaderboard-list">Loading…</div>
+      <button id="closeLeaderboardBtn" class="secondary-btn">BACK</button>
     </section>
+
+    <footer class="hud hud-bottom">
+      <div><span>HORDE</span><strong id="waveText">WAVE 1</strong></div>
+      <div><span>KILLS</span><strong id="killsText">0</strong></div>
+      <div><span>MODE</span><strong id="modeText">—</strong></div>
+      <div><span>EVENT</span><strong id="hordeText">SYNC</strong></div>
+    </footer>
   </div>
 
+  <script src="https://telegram.org/js/telegram-web-app.js?59"></script>
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
   <script src="/js/api-config.js"></script>
-  <script src="/js/telegram-auth.js"></script>
-  <script type="module" src="app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
