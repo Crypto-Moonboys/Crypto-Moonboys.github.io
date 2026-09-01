@@ -42,6 +42,7 @@ const GROUPS = {
     ['node', 'scripts/market-indexer-removal-guard.test.mjs'],
     ['node', 'scripts/cors-origins.test.mjs'],
     ['node', 'scripts/worker-rate-limit.test.mjs'],
+    ['node', 'scripts/dead-run-api.test.mjs'],
     ['node', 'scripts/leaderboard-hmac-test.mjs'],
     ['node', 'scripts/leaderboard-worker-identity-filter.test.mjs'],
     ['node', 'scripts/leaderboard-worker-p1-regression.test.mjs'],
