@@ -389,5 +389,74 @@
   }
   });
 
+  function preserveTelegramGamesHubInitData() {
+    if (typeof document === 'undefined' || wikiPathname !== '/games/') return;
+    var STORAGE_KEY = 'moonboys:telegram:initData';
+    var tgHashData = '';
+    try {
+      tgHashData = new URLSearchParams(String(window.location.hash || '').replace(/^#/, '')).get('tgWebAppData') || '';
+    } catch (_) {
+      tgHashData = '';
+    }
+
+    function telegramInitData() {
+      var sdkData = '';
+      try { sdkData = String(window.Telegram?.WebApp?.initData || ''); } catch (_) { sdkData = ''; }
+      var storedData = '';
+      try { storedData = String(window.sessionStorage?.getItem(STORAGE_KEY) || ''); } catch (_) { storedData = ''; }
+      return sdkData || tgHashData || storedData;
+    }
+
+    function appendTelegramInitData(href, initData) {
+      if (!initData || !href) return href;
+      try {
+        var url = new URL(href, window.location.href);
+        if (url.origin !== window.location.origin) return href;
+        if (!/^\/games\/(dead-run|nbg-london|block-topia|meme-swarm-3008|chain-maze|forkfield|bullrun-brick-smash|block-topia-dropzone|block-topia-quest-maze|snake-run|kaiju-sticker-battle)\//.test(url.pathname)) {
+          return href;
+        }
+        var params = new URLSearchParams(String(url.hash || '').replace(/^#/, ''));
+        if (!params.get('tgWebAppData')) params.set('tgWebAppData', initData);
+        url.hash = params.toString();
+        return url.pathname + url.search + url.hash;
+      } catch (_) {
+        return href;
+      }
+    }
+
+    function hydrateTelegramGameLinks() {
+      var initData = telegramInitData();
+      if (!initData) return;
+      try { window.sessionStorage?.setItem(STORAGE_KEY, initData); } catch (_) {}
+      document.querySelectorAll('a[href^="/games/"]').forEach(function (link) {
+        link.href = appendTelegramInitData(link.getAttribute('href') || '', initData);
+      });
+    }
+
+    function bindTelegramGameClicks() {
+      document.addEventListener('click', function (event) {
+        var link = event.target?.closest?.('a[href^="/games/"]');
+        if (!link) return;
+        var initData = telegramInitData();
+        if (!initData) return;
+        var nextHref = appendTelegramInitData(link.getAttribute('href') || link.href, initData);
+        if (nextHref) link.setAttribute('href', nextHref);
+      }, true);
+    }
+
+    bindTelegramGameClicks();
+    hydrateTelegramGameLinks();
+    loadScriptOnce('https://telegram.org/js/telegram-web-app.js', 'data-telegram-web-app-sdk')
+      .then(function () {
+        try {
+          window.Telegram?.WebApp?.ready?.();
+          window.Telegram?.WebApp?.expand?.();
+        } catch (_) {}
+        hydrateTelegramGameLinks();
+      })
+      .catch(function () { hydrateTelegramGameLinks(); });
+  }
+
+  preserveTelegramGamesHubInitData();
   window.MOONBOYS_API = api;
 }());

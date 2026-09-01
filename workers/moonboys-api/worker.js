@@ -13350,6 +13350,8 @@ export default {
 // ── Telegram bot command handler ──────────────────────────────────────────────
 
 const SITE_URL = 'https://cryptomoonboys.com';
+const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/`;
+const TELEGRAM_GAMES_MENU_TEXT = 'Games';
 const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260814-moonpet-aaa-pass`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
@@ -14868,15 +14870,14 @@ function petMiniAppFocusForCallback(data) {
   return '';
 }
 
-async function setPetMiniAppMenuButton(botToken, telegramId) {
+async function setDefaultTelegramGamesMenuButton(botToken, telegramId) {
   if (!botToken || !telegramId) return;
-  const url = MOONPET_MINI_APP_URL;
   await fetch(`https://api.telegram.org/bot${botToken}/setChatMenuButton`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       chat_id: telegramId,
-      menu_button: { type: 'web_app', text: 'Moonpet OS', web_app: { url } },
+      menu_button: { type: 'web_app', text: TELEGRAM_GAMES_MENU_TEXT, web_app: { url: TELEGRAM_GAMES_MENU_URL } },
     }),
   }).catch(() => null);
 }
@@ -14895,7 +14896,7 @@ async function cmdPetMiniAppLauncher(botToken, chatId, telegramId, chatType = 'p
   const screen = normalizePetMiniAppDestination(destination);
   const normalizedFocus = PET_MINI_APP_FOCUSES.has(String(focus || '')) ? String(focus) : '';
   const url = petMiniAppLaunchUrl(screen, normalizedFocus);
-  if (String(chatType) === 'private') await setPetMiniAppMenuButton(botToken, telegramId);
+  if (String(chatType) === 'private') await setDefaultTelegramGamesMenuButton(botToken, telegramId);
   const launchButton = String(chatType) === 'private'
     ? { text: 'OPEN MOONPET OS', web_app: { url } }
     : { text: 'OPEN MOONPET OS', url: `https://t.me/WIKICOMSBOT?start=moonpet_${screen}${normalizedFocus ? `_${normalizedFocus}` : ''}` };
