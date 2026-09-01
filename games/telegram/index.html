@@ -6,7 +6,6 @@
   <meta name="robots" content="noindex,nofollow">
   <title>Crypto Moonboys Games</title>
   <link rel="icon" type="image/png" href="/favicon.png">
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root { color-scheme: dark; --bg:#05070a; --panel:#10151f; --line:#263142; --text:#f6f8ff; --muted:#a9b4c4; --gold:#ffd15c; --green:#32ff62; --red:#ff365b; --cyan:#48f6ff; }
     * { box-sizing:border-box; }
@@ -37,7 +36,7 @@
     <div class="kicker">Telegram Mini App Launcher</div>
     <h1>Choose<br><span>Your Game</span></h1>
     <p class="lead">Lightweight mobile launcher for Crypto Moonboys Telegram games. Pets stays live. Dead Run launches from here with Telegram auth preserved.</p>
-    <div id="status" class="status">Opening inside Telegram…</div>
+    <div id="status" class="status">Opening launcher…</div>
     <nav class="grid" aria-label="Crypto Moonboys games">
       <a class="card pet" data-mini-link href="/moonpet-game.html?v=20260814-moonpet-aaa-pass"><div class="icon">🐾</div><div><div class="title">Moonpet OS</div><p class="desc">Pet care, journeys, jobs, runs, equipment and progression.</p><div class="meta">Telegram Pet Game</div></div></a>
       <a class="card dead" data-mini-link href="/games/dead-run/"><div class="icon">☣</div><div><div class="title">Dead Run</div><p class="desc">Real GPS zombie survival with pickups, horde pressure and ranked runs.</p><div class="meta">GPS Survival</div></div></a>
@@ -50,15 +49,11 @@
   <script>
     (function () {
       'use strict';
-      var tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-      try { tg && tg.ready && tg.ready(); tg && tg.expand && tg.expand(); tg && tg.setHeaderColor && tg.setHeaderColor('#05070a'); tg && tg.setBackgroundColor && tg.setBackgroundColor('#05070a'); } catch (_) {}
-
       function readLaunchData() {
-        var direct = tg && tg.initData ? String(tg.initData) : '';
         var hash = new URLSearchParams(String(location.hash || '').replace(/^#/, '')).get('tgWebAppData') || '';
         var stored = '';
         try { stored = sessionStorage.getItem('moonboys_tg_web_app_data') || ''; } catch (_) {}
-        var value = direct || hash || stored || '';
+        var value = hash || stored || '';
         if (value) {
           try { sessionStorage.setItem('moonboys_tg_web_app_data', value); } catch (_) {}
         }
@@ -84,7 +79,7 @@
       });
 
       var status = document.getElementById('status');
-      if (status) status.textContent = initData ? 'Telegram launch verified. Choose a game.' : 'No Telegram launch data detected. Open from the bot Games button for saved/ranked play.';
+      if (status) status.textContent = initData ? 'Telegram launch data found. Choose a game.' : 'Launcher loaded. Open from the bot Games button for saved/ranked play.';
     }());
   </script>
 </body>
