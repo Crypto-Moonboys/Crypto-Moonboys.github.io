@@ -24,8 +24,18 @@
   <title>DEAD RUN — Real GPS Zombie Survival</title>
   <meta name="description" content="A Telegram Mini App survival game where zombies chase your real GPS position." />
   <link rel="icon" type="image/png" href="/favicon.png">
+  <!-- MapLibre GL JS/CSS loaded from unpkg with pinned version and SRI integrity hashes.
+       Hashes were computed from the npm-registry dist files for maplibre-gl@4.7.1:
+         JS  (sha384): sha384-SYKAG6cglRMN0RVvhNeBY0r3FYKNOJtznwA0v7B5Vp9tr31xAHsZC0DqkQ/pZDmj
+         CSS (sha384): sha384-MinO0mNliZ3vwppuPOUnGa+iq619pfMhLVUXfC4LHwSCvF9H+6P/KO4Q7qBOYV5V
+       Before production launch, replace unpkg with a self-hosted or CDN-mirrored copy so
+       the game continues to work if unpkg is unavailable.  Attribution for OSM tile data
+       must remain visible regardless of the tile provider. -->
   <link rel="preconnect" href="https://unpkg.com" />
-  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+  <link rel="stylesheet"
+        href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"
+        integrity="sha384-MinO0mNliZ3vwppuPOUnGa+iq619pfMhLVUXfC4LHwSCvF9H+6P/KO4Q7qBOYV5V"
+        crossorigin="anonymous" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body class="page-standalone-tool">
@@ -102,7 +112,9 @@
   </div>
 
   <script src="https://telegram.org/js/telegram-web-app.js?59"></script>
-  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"
+          integrity="sha384-SYKAG6cglRMN0RVvhNeBY0r3FYKNOJtznwA0v7B5Vp9tr31xAHsZC0DqkQ/pZDmj"
+          crossorigin="anonymous"></script>
   <script src="/js/api-config.js"></script>
   <script src="app.js"></script>
 </body>

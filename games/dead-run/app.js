@@ -144,6 +144,14 @@
     return movePoint(origin, Math.random() * 360, minM + Math.random() * (maxM - minM));
   }
 
+  // Tile URL is configurable via window.MOONBOYS_API.DEAD_RUN_TILE_URL so production
+  // can point to a licensed tile provider without editing this file.
+  // Attribution text is derived from the same config so it stays accurate for any provider.
+  // The OSM public tile server is suitable for development/demo only; it must be replaced
+  // with a licensed provider (e.g. Protomaps, MapTiler, Stadia) before public launch.
+  const TILE_URL = (window.MOONBOYS_API?.DEAD_RUN_TILE_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png');
+  const TILE_ATTRIBUTION = (window.MOONBOYS_API?.DEAD_RUN_TILE_ATTRIBUTION || '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors');
+
   function makeMap() {
     map = new maplibregl.Map({
       container: 'map',
@@ -156,9 +164,9 @@
         sources: {
           osm: {
             type: 'raster',
-            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+            tiles: [TILE_URL],
             tileSize: 256,
-            attribution: '© OpenStreetMap contributors'
+            attribution: TILE_ATTRIBUTION
           }
         },
         layers: [{ id: 'osm', type: 'raster', source: 'osm', paint: { 'raster-saturation': -1, 'raster-contrast': 0.28, 'raster-brightness-max': 0.6 } }]

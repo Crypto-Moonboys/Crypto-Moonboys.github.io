@@ -136,22 +136,49 @@ assert.match(routeSource, /const hordeActiveMs = hordeActivePlayMs\(session, las
 assert.doesNotMatch(routeSource, /const hordeActiveMs = Math\.max\(0, lastSampleMs - headStartEndMs\)/,
   'one fresh heartbeat must not make hordeActiveMs cover the whole idle interval');
 
-// Action atomicity: accepted action claim and state mutation must share one batch.
+// Action atomicity: sequential INSERT-first protocol — claim record before mutating state.
 {
   const handleActionStart = routeSource.indexOf('async function handleAction(');
   const handleActionEnd = routeSource.indexOf('\nfunction previousUtcDay', handleActionStart);
   const handleActionSource = routeSource.slice(handleActionStart, handleActionEnd);
-  assert.match(handleActionSource, /env\.DB\.batch\(\[[\s\S]*INSERT INTO dead_run_actions[\s\S]*UPDATE dead_run_sessions/,
-    'handleAction must batch the accepted action claim and session state mutation together');
-  assert.match(handleActionSource, /UPDATE dead_run_sessions\s+SET ammo = \?, slow_inventory = \?, slow_until_ms = \?, charge_m = \?, kills = \?/,
-    'handleAction must retain a session-state CAS update');
-  assert.match(handleActionSource, /AND ammo = \? AND kills = \? AND slow_inventory = \? AND shove_count = \?/,
-    'handleAction state update must include expected ammo/kills/inventory/shove CAS values');
-  assert.match(handleActionSource, /EXISTS \([\s\S]*FROM dead_run_actions[\s\S]*action_id = \? AND accepted = 1/,
-    'session mutation must depend on the accepted action claim inside the same batch');
-  assert.match(handleActionSource, /UPDATE dead_run_actions SET accepted = 0, reason = 'action_conflict'/,
-    'conflicted accepted-action claims must be flipped to rejected before replay');
-  assert.match(handleActionSource, /dead_run_action_conflict/, 'handleAction must return an action conflict on CAS failure');
+
+  // INSERT must appear before UPDATE in the source — action-first ordering.
+  const insertIdx = handleActionSource.indexOf('INSERT INTO dead_run_actions');
+  const updateIdx = handleActionSource.indexOf('UPDATE dead_run_sessions\n    SET ammo = ?, slow_inventory');
+  assert.ok(insertIdx > -1, 'handleAction must INSERT the action record as the first step');
+  assert.ok(updateIdx > -1, 'handleAction must UPDATE session state as the second step');
+  assert.ok(insertIdx < updateIdx, 'action record INSERT must precede the session CAS UPDATE (action-first protocol)');
+
+  // The INSERT must use INSERT...SELECT gated on full CAS conditions (no batch needed).
+  assert.match(handleActionSource,
+    /INSERT INTO dead_run_actions[\s\S]{0,400}SELECT[\s\S]{0,400}FROM dead_run_sessions[\s\S]{0,100}AND ammo = \?/,
+    'action INSERT must be conditional on session CAS preconditions via SELECT FROM dead_run_sessions');
+
+  // The INSERT must NOT be inside a db.batch() together with the UPDATE (removes the loser-
+  // corrupts-winner race where the batch loser's UPDATE still sees the winner's accepted row).
+  assert.ok(
+    !handleActionSource.slice(0, updateIdx).includes('env.DB.batch('),
+    'handleAction INSERT and UPDATE must be sequential (not batched) to prevent duplicate-race corruption',
+  );
+
+  // CAS must cover ammo, kills, slow_inventory, shove_count, crates and current_wave.
+  assert.match(handleActionSource,
+    /AND ammo = \? AND kills = \? AND slow_inventory = \? AND shove_count = \?/,
+    'handleAction state update must include ammo/kills/inventory/shove CAS values');
+  assert.match(handleActionSource,
+    /AND crates = \? AND current_wave = \?/,
+    'handleAction state update must CAS on crates and current_wave');
+
+  // On CAS failure we must only mark OUR OWN claimed row (scoped by telegram_id).
+  assert.match(handleActionSource,
+    /UPDATE dead_run_actions SET accepted = 0, reason = 'action_conflict'[\s\S]{0,80}AND telegram_id = \?/,
+    'conflicted action records must be rejected only for the owning telegram_id');
+
+  // Duplicate race: when INSERT changes=0, we must look up existing record and NOT write to it.
+  assert.match(handleActionSource,
+    /claimed[\s\S]{0,600}actionAlreadyProcessed/,
+    'when INSERT is skipped (claimed=false), existing record must be looked up for replay');
+  assert.match(handleActionSource, /dead_run_action_conflict/, 'handleAction must return conflict error code');
 }
 
 // Settlement retries: aggregate effects must be idempotent under concurrent retries.
@@ -221,6 +248,19 @@ assert.match(appSource, /_telemetryInFlight\.then/, 'telemetry flushes must chai
 assert.doesNotMatch(appSource, /attributionControl:\s*false/, 'MapLibre attribution must not be suppressed');
 assert.match(htmlSource, /Content-Security-Policy/, 'dead-run index.html must include a CSP meta tag');
 assert.match(htmlSource, /default-src 'none'/, "CSP must start from 'none'");
+
+// Supply-chain hardening: MapLibre from unpkg must have SRI integrity attributes.
+assert.match(htmlSource, /maplibre-gl\.js[\s\S]{0,200}integrity="sha384-/,
+  'MapLibre JS script tag must include an SRI sha384 integrity attribute');
+assert.match(htmlSource, /maplibre-gl\.css[\s\S]{0,200}integrity="sha384-/,
+  'MapLibre CSS link tag must include an SRI sha384 integrity attribute');
+assert.match(htmlSource, /crossorigin="anonymous"/, 'SRI-protected resources must set crossorigin=anonymous');
+
+// Tile URL must be configurable and not hardcoded as an opaque string.
+assert.match(appSource, /MOONBOYS_API[\s\S]{0,60}DEAD_RUN_TILE_URL/,
+  'tile URL must be read from window.MOONBOYS_API.DEAD_RUN_TILE_URL so production can override it');
+assert.match(appSource, /TILE_ATTRIBUTION/,
+  'tile attribution must derive from a configurable constant so it stays accurate for any provider');
 
 // Migration/schema authority.
 for (const flag of ['player_stats_applied', 'arcade_xp_applied', 'horde_applied']) {

@@ -730,71 +730,45 @@ async function handleAction(request, env, body) {
     },
   };
 
-  let actionClaim;
-  let cas;
-  try {
-    [actionClaim, cas] = await env.DB.batch([
-      env.DB.prepare(`
-        INSERT INTO dead_run_actions
-          (session_id, action_id, telegram_id, action_type, target_id, accepted, reason, response_json, created_at)
-        SELECT ?, ?, ?, ?, ?, 1, NULL, ?, ?
-        FROM dead_run_sessions
-        WHERE session_id = ? AND telegram_id = ? AND status = 'active'
-          AND ammo = ? AND kills = ? AND slow_inventory = ? AND shove_count = ?
-        ON CONFLICT(session_id, action_id) DO NOTHING
-      `).bind(
-        session.session_id,
-        String(actionId),
-        identity.telegramId,
-        action,
-        targetId || null,
-        JSON.stringify(response),
-        new Date(nowMs).toISOString(),
-        session.session_id,
-        identity.telegramId,
-        Number(session.ammo) || 0,
-        Number(session.kills) || 0,
-        Number(session.slow_inventory) || 0,
-        Number(session.shove_count) || 0,
-      ),
-      env.DB.prepare(`
-        UPDATE dead_run_sessions
-        SET ammo = ?, slow_inventory = ?, slow_until_ms = ?, charge_m = ?, kills = ?,
-            crates = ?, shove_count = ?, current_wave = ?, updated_at = CURRENT_TIMESTAMP
-        WHERE session_id = ? AND telegram_id = ? AND status = 'active'
-          AND ammo = ? AND kills = ? AND slow_inventory = ? AND shove_count = ?
-          AND EXISTS (
-            SELECT 1 FROM dead_run_actions
-            WHERE session_id = ? AND action_id = ? AND accepted = 1
-          )
-      `).bind(
-        next.ammo,
-        next.slow_inventory,
-        next.slow_until_ms,
-        next.charge_m,
-        next.kills,
-        next.crates,
-        next.shove_count,
-        next.current_wave,
-        session.session_id,
-        identity.telegramId,
-        Number(session.ammo) || 0,
-        Number(session.kills) || 0,
-        Number(session.slow_inventory) || 0,
-        Number(session.shove_count) || 0,
-        session.session_id,
-        String(actionId),
-      ),
-    ]);
-  } catch (error) {
-    return errorJson(request, 'dead_run_action_conflict', 409);
-  }
+  // Action-first sequential protocol.
+  //
+  // Step 1: Claim the idempotency record before mutating state.
+  // The INSERT ... SELECT only inserts a row when the CAS preconditions on the session
+  // are still satisfied, so the same action_id can only be claimed once for a given
+  // session state.  ON CONFLICT DO NOTHING silently skips duplicate action_ids.
+  const actionClaim = await env.DB.prepare(`
+    INSERT INTO dead_run_actions
+      (session_id, action_id, telegram_id, action_type, target_id, accepted, reason, response_json, created_at)
+    SELECT ?, ?, ?, ?, ?, 1, NULL, ?, ?
+    FROM dead_run_sessions
+    WHERE session_id = ? AND telegram_id = ? AND status = 'active'
+      AND ammo = ? AND kills = ? AND slow_inventory = ? AND shove_count = ?
+      AND crates = ? AND current_wave = ?
+    ON CONFLICT(session_id, action_id) DO NOTHING
+  `).bind(
+    session.session_id,
+    String(actionId),
+    identity.telegramId,
+    action,
+    targetId || null,
+    JSON.stringify(response),
+    new Date(nowMs).toISOString(),
+    session.session_id,
+    identity.telegramId,
+    Number(session.ammo) || 0,
+    Number(session.kills) || 0,
+    Number(session.slow_inventory) || 0,
+    Number(session.shove_count) || 0,
+    Number(session.crates) || 0,
+    Number(session.current_wave) || 0,
+  ).run();
 
-  if (Math.max(0, Number(actionClaim?.meta?.changes) || 0) < 1 || Math.max(0, Number(cas?.meta?.changes) || 0) < 1) {
-    await env.DB.prepare(`
-      UPDATE dead_run_actions SET accepted = 0, reason = 'action_conflict'
-      WHERE session_id = ? AND action_id = ?
-    `).bind(session.session_id, String(actionId)).run();
+  const claimed = Math.max(0, Number(actionClaim?.meta?.changes) || 0) > 0;
+
+  if (!claimed) {
+    // INSERT was skipped.  This is either a duplicate action_id (idempotent replay) or
+    // the CAS conditions were not met (a concurrent distinct action already mutated the
+    // session state we observed).  The two cases are differentiated by looking up the row.
     const existing = await actionAlreadyProcessed(env.DB, session.session_id, String(actionId));
     if (existing) {
       let existingResp = {};
@@ -802,6 +776,49 @@ async function handleAction(request, env, body) {
       return json(request, { ok: Number(existing.accepted) === 1, replayed: true, ...existingResp },
         Number(existing.accepted) === 1 ? 200 : 409);
     }
+    // No record and INSERT failed = concurrent distinct action beat us to the state.
+    return errorJson(request, 'dead_run_action_conflict', 409);
+  }
+
+  // Step 2: We own the claim. Apply the session state mutation with full CAS conditions.
+  // All fields that action handlers may read are included so concurrent distinct actions
+  // that changed any of them produce a clean conflict rather than a silent lost update.
+  // charge_m and slow_until_ms are intentionally excluded: they change continuously via
+  // GPS telemetry and adding them would create false conflicts for unrelated actions.
+  const cas = await env.DB.prepare(`
+    UPDATE dead_run_sessions
+    SET ammo = ?, slow_inventory = ?, slow_until_ms = ?, charge_m = ?, kills = ?,
+        crates = ?, shove_count = ?, current_wave = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE session_id = ? AND telegram_id = ? AND status = 'active'
+      AND ammo = ? AND kills = ? AND slow_inventory = ? AND shove_count = ?
+      AND crates = ? AND current_wave = ?
+  `).bind(
+    next.ammo,
+    next.slow_inventory,
+    next.slow_until_ms,
+    next.charge_m,
+    next.kills,
+    next.crates,
+    next.shove_count,
+    next.current_wave,
+    session.session_id,
+    identity.telegramId,
+    Number(session.ammo) || 0,
+    Number(session.kills) || 0,
+    Number(session.slow_inventory) || 0,
+    Number(session.shove_count) || 0,
+    Number(session.crates) || 0,
+    Number(session.current_wave) || 0,
+  ).run();
+
+  if (Math.max(0, Number(cas?.meta?.changes) || 0) < 1) {
+    // CAS failed: a concurrent distinct action mutated state after our INSERT but before
+    // this UPDATE.  We own the claimed record, so we mark it rejected and return conflict.
+    // We scope the UPDATE to our own telegram_id to ensure we never touch another owner's row.
+    await env.DB.prepare(`
+      UPDATE dead_run_actions SET accepted = 0, reason = 'action_conflict'
+      WHERE session_id = ? AND action_id = ? AND telegram_id = ?
+    `).bind(session.session_id, String(actionId), identity.telegramId).run();
     return errorJson(request, 'dead_run_action_conflict', 409);
   }
 
