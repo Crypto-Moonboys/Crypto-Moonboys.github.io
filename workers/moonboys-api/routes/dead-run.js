@@ -21,6 +21,9 @@ import {
 
 const DEAD_RUN_ROUTE_PREFIX = '/api/dead-run';
 const ACTIVE_SESSION_TTL_MS = 2 * 60 * 60 * 1000;
+const TELEGRAM_INIT_DATA_MAX_AGE_SECONDS = Math.ceil(ACTIVE_SESSION_TTL_MS / 1000) + 900;
+const TELEMETRY_GRACE_SECONDS = 60;
+const ACTIVE_PLAY_MIN_SPEED_MPS = 1.25;
 const SHOOT_COOLDOWN_MS = 180;
 const STALE_TELEMETRY_SHOOT_MS = 120_000;
 const SHOVE_PUSHBACK_M = 40;
@@ -129,7 +132,7 @@ function positionFromBody(body) {
 async function verifyIdentity(request, env, body) {
   if (!env?.TELEGRAM_BOT_TOKEN) return { ok: false, status: 503, reason: 'dead_run_telegram_not_configured' };
   const initData = String(body?.init_data || body?.telegram_init_data || '').trim();
-  const verified = await verifyTelegramMiniAppInitData(initData, env.TELEGRAM_BOT_TOKEN, { max_age_seconds: 3600 });
+  const verified = await verifyTelegramMiniAppInitData(initData, env.TELEGRAM_BOT_TOKEN, { max_age_seconds: TELEGRAM_INIT_DATA_MAX_AGE_SECONDS });
   if (!verified.ok) return { ok: false, status: 401, reason: verified.reason || 'dead_run_auth_rejected' };
   return { ok: true, ...verified };
 }
@@ -259,6 +262,19 @@ function riskLabel(points) {
   return 'clean';
 }
 
+function activePlaySeconds(session, lastSampleMs = Number(session?.last_sample_at_ms) || 0) {
+  const startMs = Date.parse(session?.started_at || '');
+  if (!Number.isFinite(startMs) || lastSampleMs <= startMs) return TELEMETRY_GRACE_SECONDS;
+  const telemetryBoundSeconds = Math.max(0, Math.floor((lastSampleMs - startMs) / 1000));
+  const movementBoundSeconds = Math.floor((Math.max(0, Number(session?.verified_distance_m) || 0) / ACTIVE_PLAY_MIN_SPEED_MPS)) + TELEMETRY_GRACE_SECONDS;
+  return Math.max(0, Math.min(DEAD_RUN_MAX_SESSION_SECONDS, telemetryBoundSeconds, movementBoundSeconds));
+}
+
+function hordeActivePlayMs(session, lastSampleMs, headStartEndMs) {
+  const activeSeconds = activePlaySeconds(session, lastSampleMs);
+  return Math.max(0, Math.min(lastSampleMs - headStartEndMs, (activeSeconds - DEAD_RUN_HEAD_START_SECONDS) * 1000));
+}
+
 async function listConsumedTargets(db, sessionId) {
   const rows = await db.prepare(`
     SELECT action_type, target_id
@@ -339,9 +355,6 @@ async function handleProfile(request, env, body) {
 
 export async function cleanupExpiredSessions(db, nowMs) {
   const activeCutoff = new Date(nowMs - ACTIVE_SESSION_TTL_MS).toISOString();
-  // Stale settling sessions: stuck beyond the full active-session TTL window.
-  // Using the same TTL as active sessions preserves the recovery window; a session legitimately
-  // in multi-step settlement can take many retries and must not be abandoned prematurely.
   const settlingCutoff = new Date(nowMs - ACTIVE_SESSION_TTL_MS).toISOString();
   await db.batch([
     db.prepare(`
@@ -650,16 +663,11 @@ async function handleAction(request, env, body) {
             const lastSpeed = Math.max(0, Number(session.last_speed_mps) || 0);
             if (lastSpeed > 1.8) reason = 'stop_to_interact';
             else {
-              // Compute zombie's estimated distance at the last accepted telemetry timestamp,
-              // not wall-clock time, so offline waiting cannot collapse distances to range.
-              // Account for slow effect (halves zombie speed during the effect window) and
-              // shove pushback (each accepted shove adds SHOVE_PUSHBACK_M to the effective
-              // distance, making further combat harder without new accepted movement).
-              const hordeActiveMs = Math.max(0, lastSampleMs - headStartEndMs);
+              // Compute zombie movement from authoritative active play time derived from
+              // accepted telemetry and verified movement, not wall-clock waiting time.
+              const hordeActiveMs = hordeActivePlayMs(session, lastSampleMs, headStartEndMs);
               const slowUntilMs = Math.max(0, Number(session.slow_until_ms) || 0);
               const shoveCount = Math.max(0, Number(session.shove_count) || 0);
-              // Slow effect: the 15-second window ending at slow_until_ms, intersected
-              // with the horde-active epoch up to last accepted telemetry.
               const slowWindowStart = Math.max(headStartEndMs, slowUntilMs - 15_000);
               const slowWindowEnd = Math.min(lastSampleMs, slowUntilMs);
               const slowSeconds = slowWindowEnd > slowWindowStart
@@ -722,37 +730,71 @@ async function handleAction(request, env, body) {
     },
   };
 
-  // Action-first protocol: insert the idempotency record atomically with the CAS preconditions
-  // before mutating session state. The INSERT...SELECT only inserts a row when the CAS conditions
-  // on dead_run_sessions are still satisfied, so the action record can only be claimed once.
-  // This prevents the crash window where state is mutated but no idempotency record exists.
-  const actionClaim = await env.DB.prepare(`
-    INSERT INTO dead_run_actions
-      (session_id, action_id, telegram_id, action_type, target_id, accepted, reason, response_json, created_at)
-    SELECT ?, ?, ?, ?, ?, 1, NULL, ?, ?
-    FROM dead_run_sessions
-    WHERE session_id = ? AND telegram_id = ? AND status = 'active'
-      AND ammo = ? AND kills = ? AND slow_inventory = ? AND shove_count = ?
-    ON CONFLICT(session_id, action_id) DO NOTHING
-  `).bind(
-    session.session_id,
-    String(actionId),
-    identity.telegramId,
-    action,
-    targetId || null,
-    JSON.stringify(response),
-    new Date(nowMs).toISOString(),
-    session.session_id,
-    identity.telegramId,
-    Number(session.ammo) || 0,
-    Number(session.kills) || 0,
-    Number(session.slow_inventory) || 0,
-    Number(session.shove_count) || 0,
-  ).run();
+  let actionClaim;
+  let cas;
+  try {
+    [actionClaim, cas] = await env.DB.batch([
+      env.DB.prepare(`
+        INSERT INTO dead_run_actions
+          (session_id, action_id, telegram_id, action_type, target_id, accepted, reason, response_json, created_at)
+        SELECT ?, ?, ?, ?, ?, 1, NULL, ?, ?
+        FROM dead_run_sessions
+        WHERE session_id = ? AND telegram_id = ? AND status = 'active'
+          AND ammo = ? AND kills = ? AND slow_inventory = ? AND shove_count = ?
+        ON CONFLICT(session_id, action_id) DO NOTHING
+      `).bind(
+        session.session_id,
+        String(actionId),
+        identity.telegramId,
+        action,
+        targetId || null,
+        JSON.stringify(response),
+        new Date(nowMs).toISOString(),
+        session.session_id,
+        identity.telegramId,
+        Number(session.ammo) || 0,
+        Number(session.kills) || 0,
+        Number(session.slow_inventory) || 0,
+        Number(session.shove_count) || 0,
+      ),
+      env.DB.prepare(`
+        UPDATE dead_run_sessions
+        SET ammo = ?, slow_inventory = ?, slow_until_ms = ?, charge_m = ?, kills = ?,
+            crates = ?, shove_count = ?, current_wave = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE session_id = ? AND telegram_id = ? AND status = 'active'
+          AND ammo = ? AND kills = ? AND slow_inventory = ? AND shove_count = ?
+          AND EXISTS (
+            SELECT 1 FROM dead_run_actions
+            WHERE session_id = ? AND action_id = ? AND accepted = 1
+          )
+      `).bind(
+        next.ammo,
+        next.slow_inventory,
+        next.slow_until_ms,
+        next.charge_m,
+        next.kills,
+        next.crates,
+        next.shove_count,
+        next.current_wave,
+        session.session_id,
+        identity.telegramId,
+        Number(session.ammo) || 0,
+        Number(session.kills) || 0,
+        Number(session.slow_inventory) || 0,
+        Number(session.shove_count) || 0,
+        session.session_id,
+        String(actionId),
+      ),
+    ]);
+  } catch (error) {
+    return errorJson(request, 'dead_run_action_conflict', 409);
+  }
 
-  if (Math.max(0, Number(actionClaim?.meta?.changes) || 0) < 1) {
-    // Either the CAS preconditions were not met (concurrent action beat us) or this is a duplicate
-    // action_id. Differentiate by checking for an existing record.
+  if (Math.max(0, Number(actionClaim?.meta?.changes) || 0) < 1 || Math.max(0, Number(cas?.meta?.changes) || 0) < 1) {
+    await env.DB.prepare(`
+      UPDATE dead_run_actions SET accepted = 0, reason = 'action_conflict'
+      WHERE session_id = ? AND action_id = ?
+    `).bind(session.session_id, String(actionId)).run();
     const existing = await actionAlreadyProcessed(env.DB, session.session_id, String(actionId));
     if (existing) {
       let existingResp = {};
@@ -760,40 +802,6 @@ async function handleAction(request, env, body) {
       return json(request, { ok: Number(existing.accepted) === 1, replayed: true, ...existingResp },
         Number(existing.accepted) === 1 ? 200 : 409);
     }
-    return errorJson(request, 'dead_run_action_conflict', 409);
-  }
-
-  // Action record claimed. Apply the session state mutation (CAS).
-  // If the CAS fails here (another request changed state between our INSERT and this UPDATE),
-  // mark the record as rejected so replays return the correct outcome.
-  const cas = await env.DB.prepare(`
-    UPDATE dead_run_sessions
-    SET ammo = ?, slow_inventory = ?, slow_until_ms = ?, charge_m = ?, kills = ?,
-        crates = ?, shove_count = ?, current_wave = ?, updated_at = CURRENT_TIMESTAMP
-    WHERE session_id = ? AND telegram_id = ? AND status = 'active'
-      AND ammo = ? AND kills = ? AND slow_inventory = ? AND shove_count = ?
-  `).bind(
-    next.ammo,
-    next.slow_inventory,
-    next.slow_until_ms,
-    next.charge_m,
-    next.kills,
-    next.crates,
-    next.shove_count,
-    next.current_wave,
-    session.session_id,
-    identity.telegramId,
-    Number(session.ammo) || 0,
-    Number(session.kills) || 0,
-    Number(session.slow_inventory) || 0,
-    Number(session.shove_count) || 0,
-  ).run();
-
-  if (Math.max(0, Number(cas?.meta?.changes) || 0) < 1) {
-    await env.DB.prepare(`
-      UPDATE dead_run_actions SET accepted = 0, reason = 'action_conflict'
-      WHERE session_id = ? AND action_id = ?
-    `).bind(session.session_id, String(actionId)).run();
     return errorJson(request, 'dead_run_action_conflict', 409);
   }
 
@@ -807,13 +815,46 @@ function previousUtcDay(key) {
 }
 
 async function creditArcadeXp(db, telegramId, session, score, xpAwarded, eventMultiplier) {
-  if (xpAwarded <= 0) return 0;
+  if (xpAwarded <= 0) {
+    await db.prepare(`
+      UPDATE dead_run_sessions SET arcade_xp_applied = 1
+      WHERE session_id = ? AND arcade_xp_applied = 0
+    `).bind(session.session_id).run();
+    return 0;
+  }
   const eventId = `dead_run:${session.session_id}`;
   const key = dayKey();
-  // All writes in one atomic batch: event row, progression state, wallet, activity log, and the
-  // arcade_xp_applied flag on the session. D1 rolls back the entire batch on any error, so a
-  // crash mid-batch leaves arcade_xp_applied = 0 and the retry re-runs safely.
   await db.batch([
+    db.prepare(`
+      INSERT INTO arcade_progression_state
+        (telegram_id, arcade_xp_total, arcade_daily_xp, arcade_daily_key, arcade_restriction_level, restricted_until, updated_at)
+      SELECT ?, ?, ?, ?, 0, NULL, CURRENT_TIMESTAMP
+      WHERE NOT EXISTS (SELECT 1 FROM arcade_progression_events WHERE id = ?)
+      ON CONFLICT(telegram_id) DO UPDATE SET
+        arcade_xp_total = arcade_progression_state.arcade_xp_total + excluded.arcade_xp_total,
+        arcade_daily_xp = CASE
+          WHEN arcade_progression_state.arcade_daily_key = excluded.arcade_daily_key
+            THEN arcade_progression_state.arcade_daily_xp + excluded.arcade_daily_xp
+          ELSE excluded.arcade_daily_xp
+        END,
+        arcade_daily_key = excluded.arcade_daily_key,
+        updated_at = CURRENT_TIMESTAMP
+    `).bind(telegramId, xpAwarded, xpAwarded, key, eventId),
+    db.prepare(`
+      INSERT INTO arcade_xp_wallets
+        (telegram_id, arcade_xp_earned, arcade_xp_spendable, arcade_xp_spent, updated_at)
+      SELECT ?, ?, ?, 0, CURRENT_TIMESTAMP
+      WHERE NOT EXISTS (SELECT 1 FROM arcade_progression_events WHERE id = ?)
+      ON CONFLICT(telegram_id) DO UPDATE SET
+        arcade_xp_earned = arcade_xp_wallets.arcade_xp_earned + excluded.arcade_xp_earned,
+        arcade_xp_spendable = arcade_xp_wallets.arcade_xp_spendable + excluded.arcade_xp_spendable,
+        updated_at = CURRENT_TIMESTAMP
+    `).bind(telegramId, xpAwarded, xpAwarded, eventId),
+    db.prepare(`
+      INSERT INTO telegram_activity_log (telegram_id, action, metadata, created_at)
+      SELECT ?, 'dead_run_finish', ?, CURRENT_TIMESTAMP
+      WHERE NOT EXISTS (SELECT 1 FROM arcade_progression_events WHERE id = ?)
+    `).bind(telegramId, JSON.stringify({ session_id: session.session_id, score, xp_awarded: xpAwarded }), eventId),
     db.prepare(`
       INSERT OR IGNORE INTO arcade_progression_events
         (id, telegram_id, client_run_id, game, raw_score, local_meta_points, normalized_points, xp_awarded, status, reason, processed_at)
@@ -828,34 +869,8 @@ async function creditArcadeXp(db, telegramId, session, score, xpAwarded, eventMu
       eventMultiplier > 1 ? 'verified_gps_horde_event' : 'verified_gps_run',
     ),
     db.prepare(`
-      INSERT INTO arcade_progression_state
-        (telegram_id, arcade_xp_total, arcade_daily_xp, arcade_daily_key, arcade_restriction_level, restricted_until, updated_at)
-      VALUES (?, ?, ?, ?, 0, NULL, CURRENT_TIMESTAMP)
-      ON CONFLICT(telegram_id) DO UPDATE SET
-        arcade_xp_total = arcade_progression_state.arcade_xp_total + excluded.arcade_xp_total,
-        arcade_daily_xp = CASE
-          WHEN arcade_progression_state.arcade_daily_key = excluded.arcade_daily_key
-            THEN arcade_progression_state.arcade_daily_xp + excluded.arcade_daily_xp
-          ELSE excluded.arcade_daily_xp
-        END,
-        arcade_daily_key = excluded.arcade_daily_key,
-        updated_at = CURRENT_TIMESTAMP
-    `).bind(telegramId, xpAwarded, xpAwarded, key),
-    db.prepare(`
-      INSERT INTO arcade_xp_wallets
-        (telegram_id, arcade_xp_earned, arcade_xp_spendable, arcade_xp_spent, updated_at)
-      VALUES (?, ?, ?, 0, CURRENT_TIMESTAMP)
-      ON CONFLICT(telegram_id) DO UPDATE SET
-        arcade_xp_earned = arcade_xp_wallets.arcade_xp_earned + excluded.arcade_xp_earned,
-        arcade_xp_spendable = arcade_xp_wallets.arcade_xp_spendable + excluded.arcade_xp_spendable,
-        updated_at = CURRENT_TIMESTAMP
-    `).bind(telegramId, xpAwarded, xpAwarded),
-    db.prepare(`
-      INSERT INTO telegram_activity_log (telegram_id, action, metadata, created_at)
-      VALUES (?, 'dead_run_finish', ?, CURRENT_TIMESTAMP)
-    `).bind(telegramId, JSON.stringify({ session_id: session.session_id, score, xp_awarded: xpAwarded })),
-    db.prepare(`
-      UPDATE dead_run_sessions SET arcade_xp_applied = 1 WHERE session_id = ?
+      UPDATE dead_run_sessions SET arcade_xp_applied = 1
+      WHERE session_id = ? AND arcade_xp_applied = 0
     `).bind(session.session_id),
   ]);
   return xpAwarded;
@@ -863,9 +878,19 @@ async function creditArcadeXp(db, telegramId, session, score, xpAwarded, eventMu
 
 async function applyHordeContribution(db, session, kills) {
   if (!session.event_id || kills <= 0) return null;
-  // All writes in one atomic batch: contribution row, horde event totals, and the horde_applied
-  // flag on the session. D1 rolls back on any error, keeping the flag at 0 for safe retry.
   await db.batch([
+    db.prepare(`
+      UPDATE dead_run_horde_events
+      SET kills_total = kills_total + ?,
+          participants = participants + 1,
+          status = CASE WHEN kills_total + ? >= target_kills THEN 'cleared' ELSE status END,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE event_id = ?
+        AND NOT EXISTS (
+          SELECT 1 FROM dead_run_horde_contributions
+          WHERE event_id = ? AND session_id = ?
+        )
+    `).bind(kills, kills, session.event_id, session.event_id, session.session_id),
     db.prepare(`
       INSERT OR IGNORE INTO dead_run_horde_contributions
         (event_id, session_id, telegram_id, kills, distance_m, created_at)
@@ -878,25 +903,12 @@ async function applyHordeContribution(db, session, kills) {
       Math.max(0, Number(session.verified_distance_m) || 0),
     ),
     db.prepare(`
-      UPDATE dead_run_horde_events
-      SET kills_total = kills_total + ?,
-          participants = participants + 1,
-          status = CASE WHEN kills_total + ? >= target_kills THEN 'cleared' ELSE status END,
-          updated_at = CURRENT_TIMESTAMP
-      WHERE event_id = ?
-        AND EXISTS (
-          SELECT 1 FROM dead_run_horde_contributions
-          WHERE event_id = ? AND session_id = ?
-        )
-    `).bind(kills, kills, session.event_id, session.event_id, session.session_id),
-    db.prepare(`
-      UPDATE dead_run_sessions SET horde_applied = 1 WHERE session_id = ?
+      UPDATE dead_run_sessions SET horde_applied = 1
+      WHERE session_id = ? AND horde_applied = 0
     `).bind(session.session_id),
   ]);
   return db.prepare(`SELECT * FROM dead_run_horde_events WHERE event_id = ? LIMIT 1`).bind(session.event_id).first();
 }
-
-const TELEMETRY_GRACE_SECONDS = 60;
 
 async function handleFinish(request, env, body) {
   const identity = await verifyIdentity(request, env, body);
@@ -930,11 +942,7 @@ async function handleFinish(request, env, body) {
     const startMs = Date.parse(session.started_at);
     const lastSampleMs = Number(session.last_sample_at_ms) || 0;
     const elapsed = Math.max(0, Math.floor((nowMs - startMs) / 1000));
-    // Cap survival at the time of the last accepted telemetry sample plus a grace window so
-    // a client cannot earn ranked survival time by going offline after the minimum movement.
-    const telemetryBoundSeconds = lastSampleMs > startMs
-      ? Math.floor((lastSampleMs - startMs) / 1000) + TELEMETRY_GRACE_SECONDS
-      : TELEMETRY_GRACE_SECONDS;
+    const telemetryBoundSeconds = activePlaySeconds(session, lastSampleMs);
     const survivalSeconds = Math.max(0, Math.min(
       DEAD_RUN_MAX_SESSION_SECONDS,
       elapsed - DEAD_RUN_HEAD_START_SECONDS,
@@ -983,15 +991,11 @@ async function handleFinish(request, env, body) {
       identity.telegramId,
     ).run();
     if (Math.max(0, Number(claim?.meta?.changes) || 0) < 1) return errorJson(request, 'dead_run_finish_race', 409);
-    // Re-read so recovery path uses the authoritative stored values.
     session = await env.DB.prepare(`SELECT * FROM dead_run_sessions WHERE session_id = ? LIMIT 1`).bind(session.session_id).first() || session;
   }
 
   if (session.status !== 'settling') return errorJson(request, 'dead_run_session_not_finishable', 409);
 
-  // Recovery path: session is 'settling'. All values are read from the stored row so
-  // retrying is safe. Side effects are applied in order below; the settling→finished
-  // transition is the LAST step so a crash before it leaves the session retryable.
   const survivalSeconds = Math.max(0, Number(session.survival_seconds) || 0);
   const score = Math.max(0, Number(session.score) || 0);
   const xpAwarded = Math.max(0, Number(session.xp_awarded) || 0);
@@ -1009,9 +1013,6 @@ async function handleFinish(request, env, body) {
   const eventActive = horde && nowMs <= Date.parse(horde.ends_at);
   const eventMultiplier = eventActive ? 1.1 : 1;
 
-  // Step 1: Player aggregate — idempotent via player_stats_applied flag.
-  // db.batch() is atomic: either both the player UPDATE and the flag UPDATE commit, or neither
-  // does. On retry when player_stats_applied = 1, this step is a no-op.
   if (!Number(session.player_stats_applied)) {
     const playerBefore = await getPlayer(env.DB, identity.telegramId);
     const previousDay = previousUtcDay(key);
@@ -1037,6 +1038,10 @@ async function handleFinish(request, env, body) {
             current_streak = ?, best_streak = ?, last_run_day = ?,
             updated_at = CURRENT_TIMESTAMP
         WHERE telegram_id = ?
+          AND EXISTS (
+            SELECT 1 FROM dead_run_sessions
+            WHERE session_id = ? AND telegram_id = ? AND player_stats_applied = 0
+          )
       `).bind(
         xpAwarded,
         stillRanked && !rejected ? 1 : 0,
@@ -1045,31 +1050,34 @@ async function handleFinish(request, env, body) {
         score,
         kills,
         crates,
-        eventActive ? 1 : 0,
+        eventActive && stillRanked && !rejected && kills > 0 ? 1 : 0,
         streak,
         bestStreak,
         key,
         identity.telegramId,
+        session.session_id,
+        identity.telegramId,
       ),
       env.DB.prepare(`
-        UPDATE dead_run_sessions SET player_stats_applied = 1 WHERE session_id = ?
-      `).bind(session.session_id),
+        UPDATE dead_run_sessions SET player_stats_applied = 1
+        WHERE session_id = ? AND telegram_id = ? AND player_stats_applied = 0
+      `).bind(session.session_id, identity.telegramId),
     ]);
   }
 
-  // Step 2: Arcade XP — gated by arcade_xp_applied flag; entire batch is atomic via D1.
   if (!Number(session.arcade_xp_applied)) {
     await creditArcadeXp(env.DB, identity.telegramId, session, score, xpAwarded, eventMultiplier);
   }
-  // Step 3: Horde contribution — gated by horde_applied flag; batch is atomic via D1.
-  // Only ranked non-rejected runs during an active event may contribute to public horde totals.
-  const hordeAfter = (!Number(session.horde_applied) && stillRanked && !rejected)
+  const hordeAfter = (!Number(session.horde_applied) && stillRanked && !rejected && eventActive)
     ? await applyHordeContribution(env.DB, session, kills)
     : null;
+  if ((!Number(session.horde_applied) && (!stillRanked || rejected || !eventActive || kills <= 0))) {
+    await env.DB.prepare(`
+      UPDATE dead_run_sessions SET horde_applied = 1
+      WHERE session_id = ? AND horde_applied = 0
+    `).bind(session.session_id).run();
+  }
 
-  // Step 4 (final): settling → finished + coordinate scrub.
-  // This is the last step so any crash before it leaves the session in 'settling'
-  // and the next retry safely re-runs the idempotent steps above.
   await env.DB.prepare(`
     UPDATE dead_run_sessions
     SET status = 'finished',
@@ -1176,8 +1184,6 @@ export async function handleDeadRunRequest(request, env) {
   if (rateLimited) return rateLimited;
   if (!env?.DB) return errorJson(request, 'dead_run_database_not_configured', 503);
 
-  // Run global coordinate/expiry cleanup on ~1% of requests so precise GPS data is
-  // scrubbed for users who never return, regardless of which Telegram ID started the session.
   if (Math.random() < 0.01) {
     cleanupExpiredSessions(env.DB, Date.now()).catch(() => {});
   }
