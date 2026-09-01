@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Telegram Smoke Test</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root { color-scheme: dark; }
+    html, body { margin:0; min-height:100%; background:#05070a; color:#f6f8ff; font-family:Arial, Helvetica, sans-serif; }
+    body { display:grid; place-items:center; padding:24px; }
+    main { width:min(520px,100%); border:1px solid #263142; border-radius:18px; padding:20px; background:#10151f; }
+    h1 { margin:0 0 10px; font-size:28px; line-height:1.05; }
+    p { margin:8px 0; color:#a9b4c4; line-height:1.4; }
+    code { color:#ffd15c; word-break:break-word; }
+    .ok { color:#32ff62; font-weight:800; }
+  </style>
+  <script>
+    try {
+      if (window.Telegram && window.Telegram.WebApp) {
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+      }
+    } catch (_) {}
+  </script>
+</head>
+<body>
+  <main>
+    <h1>Telegram Smoke Test</h1>
+    <p class="ok">Static page loaded.</p>
+    <p>This page contains no game logic, no site shell, no routing, no GPS, no storage dependency and no external assets except Telegram's own SDK.</p>
+    <p id="env">Checking Telegram environment…</p>
+    <p><code>/games/telegram-smoke/?v=20260901-smoke</code></p>
+  </main>
+  <script>
+    (function () {
+      var env = document.getElementById('env');
+      var hasTg = !!(window.Telegram && window.Telegram.WebApp);
+      var initLen = 0;
+      try { initLen = hasTg && window.Telegram.WebApp.initData ? window.Telegram.WebApp.initData.length : 0; } catch (_) {}
+      env.textContent = hasTg ? 'Telegram SDK detected. initData length: ' + initLen : 'Telegram SDK not detected. Browser preview mode.';
+    }());
+  </script>
+</body>
+</html>
