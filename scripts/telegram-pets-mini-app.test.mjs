@@ -1293,9 +1293,19 @@ assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method ==
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
 assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260814-moonpet-aaa-pass`/);
+assert.match(worker, /const TELEGRAM_GAMES_MENU_URL = `\$\{SITE_URL\}\/games\/`/);
+assert.match(worker, /const TELEGRAM_GAMES_MENU_TEXT = 'Games'/);
 assert.match(worker, /function petMiniAppLaunchUrl/);
 assert.match(worker, /const url = petMiniAppLaunchUrl\(screen, normalizedFocus\)/);
 assert.match(worker, /setChatMenuButton/);
+const menuButtonSource = worker.slice(worker.indexOf('async function setDefaultTelegramGamesMenuButton'), worker.indexOf('function petMiniAppLaunchUrl'));
+assert.match(menuButtonSource, /menu_button: \{ type: 'web_app', text: TELEGRAM_GAMES_MENU_TEXT, web_app: \{ url: TELEGRAM_GAMES_MENU_URL \} \}/,
+  'default Telegram chat menu must open the shared Games hub');
+assert.doesNotMatch(menuButtonSource, /Moonpet OS|MOONPET_MINI_APP_URL/,
+  'default Telegram chat menu must not be overwritten back to Moonpet OS');
+const petLauncherSource = worker.slice(worker.indexOf('async function cmdPetMiniAppLauncher'), worker.indexOf('// ── GK command implementations'));
+assert.match(petLauncherSource, /setDefaultTelegramGamesMenuButton\(botToken, telegramId\)/,
+  'Moonpet-specific launches must keep the global Telegram menu on Games');
 assert.match(worker, /Chat gameplay controls are retired/);
 assert.equal(resolvePetCallbackRoute('pet:feed', true), 'mini_app', 'enabled callbacks must open only the Mini App launcher');
 assert.equal(resolvePetCallbackRoute('pet:feed', false), 'legacy', 'disabled callbacks must reach legacy gameplay routing');
