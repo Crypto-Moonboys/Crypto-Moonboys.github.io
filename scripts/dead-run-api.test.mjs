@@ -144,7 +144,8 @@ assert.doesNotMatch(routeSource, /const hordeActiveMs = Math\.max\(0, lastSample
 
   // INSERT must appear before UPDATE in the source — action-first ordering.
   const insertIdx = handleActionSource.indexOf('INSERT INTO dead_run_actions');
-  const updateIdx = handleActionSource.indexOf('UPDATE dead_run_sessions\n    SET ammo = ?, slow_inventory');
+  const updateMatch = /UPDATE dead_run_sessions\s+SET ammo = \?, slow_inventory/.exec(handleActionSource);
+  const updateIdx = updateMatch?.index ?? -1;
   assert.ok(insertIdx > -1, 'handleAction must INSERT the action record as the first step');
   assert.ok(updateIdx > -1, 'handleAction must UPDATE session state as the second step');
   assert.ok(insertIdx < updateIdx, 'action record INSERT must precede the session CAS UPDATE (action-first protocol)');
