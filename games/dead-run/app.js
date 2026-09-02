@@ -190,8 +190,11 @@
   }
 
   function activateMapFallback(reason) {
+    if (mapFallbackActive && mapLoadFailed) return;
+    clearTimeout(mapBootTimer);
+    const wasFallbackActive = mapFallbackActive;
     showFallbackLayer(reason, true);
-    migrateLiveMarkersToFallback();
+    if (!wasFallbackActive) migrateLiveMarkersToFallback();
   }
 
   function markLiveMapReady() {
@@ -306,7 +309,7 @@
       map.on('error', (event) => {
         mapTileErrors += 1;
         console.warn('[dead-run] map tile/style error', event?.error?.message || event?.error || 'unknown map error');
-        if (!mapLoaded || mapTileErrors >= MAX_TILE_ERRORS_BEFORE_FALLBACK) activateMapFallback('tile/style load errors');
+        if (mapTileErrors >= MAX_TILE_ERRORS_BEFORE_FALLBACK) activateMapFallback('tile/style load errors');
       });
     } catch (error) {
       console.warn('[dead-run] MapLibre init failed', error);

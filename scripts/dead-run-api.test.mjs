@@ -290,6 +290,10 @@ assert.match(appSource, /MAP_BOOT_TIMEOUT_MS/, 'map boot must have a timeout fal
 assert.match(appSource, /activateMapFallback\('MapLibre library unavailable'\)/,
   'client must activate fallback when MapLibre fails to load');
 assert.match(appSource, /MAX_TILE_ERRORS_BEFORE_FALLBACK/, 'client must activate fallback after tile/style load failures');
+assert.match(appSource, /if \(mapTileErrors >= MAX_TILE_ERRORS_BEFORE_FALLBACK\) activateMapFallback\('tile\/style load errors'\)/,
+  'pre-load tile errors must only activate fallback after the configured tile-error threshold');
+assert.doesNotMatch(appSource, /!mapLoaded \|\| mapTileErrors >= MAX_TILE_ERRORS_BEFORE_FALLBACK/,
+  'a single pre-load tile error must not bypass the configured tile-error threshold');
 assert.match(appSource, /let mapLoadFailed = false/, 'client must separate live-map failure from loading/readiness state');
 assert.match(appSource, /function showFallbackLayer\([\s\S]*permanent = false[\s\S]*if \(permanent\)[\s\S]*mapLoadFailed = true/,
   'temporary fallback marker rendering must not permanently mark MapLibre as failed');
@@ -313,6 +317,8 @@ assert.match(cssSource, /\.fallback-route-line\s*\{[\s\S]*pointer-events:\s*none
   'fallback route overlay must not intercept marker taps');
 assert.match(appSource, /function activateMapFallback\([\s\S]*migrateLiveMarkersToFallback\(\)/,
   'permanent fallback activation must migrate existing live MapLibre markers');
+assert.match(appSource, /function activateMapFallback\([\s\S]*if \(mapFallbackActive && mapLoadFailed\) return[\s\S]*clearTimeout\(mapBootTimer\)[\s\S]*const wasFallbackActive = mapFallbackActive[\s\S]*if \(!wasFallbackActive\) migrateLiveMarkersToFallback\(\)/,
+  'permanent fallback activation must clear boot timeout and migrate markers only once');
 assert.match(appSource, /function rebuildMapVisuals\([\s\S]*playerMarker\?\.remove\(\)[\s\S]*clearRouteVisuals\(\)[\s\S]*clearPickupVisuals\(\)[\s\S]*clearZombieVisuals\(\)[\s\S]*initPlayerMarker\(\)[\s\S]*renderRouteLine\(\)[\s\S]*renderPickupVisuals\(\)[\s\S]*renderZombieVisuals\(\)/,
   'renderer migration must recreate player, waypoints, pickups, and zombies through the active adapter');
 assert.match(appSource, /function renderZombieVisuals\([\s\S]*addEventListener\('pointerdown'[\s\S]*shootZombie\(zombie\)[\s\S]*addMapMarker/,
