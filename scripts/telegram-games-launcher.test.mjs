@@ -75,7 +75,7 @@ for (const [label, href] of [
 
 assert.match(html, /window\.Telegram\s*&&\s*window\.Telegram\.WebApp/, 'Games launcher must read Telegram.WebApp safely');
 assert.ok(
-  html.includes('/games/telegram/?v=20260902-games-shell-v2'),
+  html.includes('/games/telegram/?v=20260902-games-shell-v3'),
   'Games launcher must include cache-busting deployment guidance',
 );
 
