@@ -29,9 +29,11 @@
   let mapLoaded = false;
   let liveMapUsable = false;
   let mapFallbackActive = false;
+  let mapLoadFailed = false;
   let mapBootTimer = 0;
   let mapTileErrors = 0;
   let fallbackRouteLine = null;
+  let fallbackRoutePolyline = null;
   const fallbackLayer = $('fallbackMapLayer');
   let playerMarker;
   let routeWaypointMarkers = [];
@@ -176,21 +178,29 @@
     try { tg?.onEvent?.('viewportChanged', setViewportHeight); } catch (_) {}
   }
 
-  function activateMapFallback(reason) {
-    liveMapUsable = false;
+  function showFallbackLayer(reason, permanent = false) {
+    if (permanent) {
+      mapLoadFailed = true;
+      liveMapUsable = false;
+    }
     if (mapFallbackActive) return;
     mapFallbackActive = true;
     $('map')?.classList.add('map-fallback-active');
     if (reason) console.info('[dead-run] map fallback active:', reason);
-    initPlayerMarker();
-    renderRouteLine();
+  }
+
+  function activateMapFallback(reason) {
+    showFallbackLayer(reason, true);
+    migrateLiveMarkersToFallback();
   }
 
   function markLiveMapReady() {
+    if (mapLoadFailed) return;
     liveMapUsable = true;
     mapFallbackActive = false;
     clearTimeout(mapBootTimer);
     $('map')?.classList.remove('map-fallback-active');
+    rebuildMapVisuals();
   }
 
   function projectToFallback(point) {
@@ -199,7 +209,8 @@
     const width = Math.max(1, rect?.width || window.innerWidth || 360);
     const height = Math.max(1, rect?.height || window.innerHeight || 640);
     const latScale = 110540;
-    const lngScale = 111320 * Math.cos(toRad(player.lat || DEFAULT_POS.lat));
+    const originLat = Number.isFinite(player.lat) ? player.lat : DEFAULT_POS.lat;
+    const lngScale = 111320 * Math.cos(toRad(originLat));
     const dx = (Number(point.lng) - Number(player.lng)) * lngScale;
     const dy = (Number(player.lat) - Number(point.lat)) * latScale;
     const pxPerMeter = Math.max(0.36, Math.min(1.05, Math.min(width, height) / 650));
@@ -219,7 +230,7 @@
       el.style.left = `${point.x}px`;
       el.style.top = `${point.y}px`;
     });
-    if (fallbackRouteLine) renderRouteLine();
+    refreshFallbackRouteLine();
   }
 
   function fallbackMarker(el, position) {
@@ -246,7 +257,7 @@
     if (liveMapUsable && window.maplibregl && map) {
       return new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat(position).addTo(map);
     }
-    activateMapFallback('live map unavailable for marker rendering');
+    showFallbackLayer(null, false);
     return fallbackMarker(el, position);
   }
 
@@ -289,13 +300,7 @@
       map.touchZoomRotate.disableRotation();
       map.on('load', () => {
         mapLoaded = true;
-        if (mapFallbackActive) {
-          clearTimeout(mapBootTimer);
-          return;
-        }
         markLiveMapReady();
-        initPlayerMarker();
-        renderRouteLine();
         setViewportHeight();
       });
       map.on('error', (event) => {
@@ -328,8 +333,26 @@
     routeWaypointMarkers = [];
     fallbackRouteLine?.remove();
     fallbackRouteLine = null;
-    if (liveMapUsable && map.getLayer('dead-run-route')) map.removeLayer('dead-run-route');
-    if (liveMapUsable && map.getSource('dead-run-route')) map.removeSource('dead-run-route');
+    fallbackRoutePolyline = null;
+    if (mapLoaded && map?.getLayer?.('dead-run-route')) map.removeLayer('dead-run-route');
+    if (mapLoaded && map?.getSource?.('dead-run-route')) map.removeSource('dead-run-route');
+  }
+
+  function routeCoords() {
+    if (!routePlan?.waypoints?.length) return [];
+    return [[player.lng, player.lat], ...routePlan.waypoints.map((point) => [point.lng, point.lat])];
+  }
+
+  function fallbackRoutePoints(coords = routeCoords()) {
+    return coords.map(([lng, lat]) => {
+      const point = projectToFallback({ lat, lng });
+      return `${point.x},${point.y}`;
+    }).join(' ');
+  }
+
+  function refreshFallbackRouteLine() {
+    if (!fallbackRoutePolyline) return;
+    fallbackRoutePolyline.setAttribute('points', fallbackRoutePoints());
   }
 
   function renderFallbackRouteLine(coords) {
@@ -342,19 +365,17 @@
     polyline.setAttribute('stroke-width', '3');
     polyline.setAttribute('stroke-dasharray', '8 8');
     polyline.setAttribute('stroke-linecap', 'round');
-    polyline.setAttribute('points', coords.map(([lng, lat]) => {
-      const point = projectToFallback({ lat, lng });
-      return `${point.x},${point.y}`;
-    }).join(' '));
+    polyline.setAttribute('points', fallbackRoutePoints(coords));
     svg.appendChild(polyline);
     fallbackLayer.appendChild(svg);
     fallbackRouteLine = svg;
+    fallbackRoutePolyline = polyline;
   }
 
   function renderRouteLine() {
     if ((!liveMapUsable && !mapFallbackActive) || !routePlan?.waypoints?.length) return;
     clearRouteVisuals();
-    const coords = [[player.lng, player.lat], ...routePlan.waypoints.map((point) => [point.lng, point.lat])];
+    const coords = routeCoords();
     if (liveMapUsable) {
       map.addSource('dead-run-route', { type: 'geojson', data: { type: 'Feature', geometry: { type: 'LineString', coordinates: coords } } });
       map.addLayer({ id: 'dead-run-route', type: 'line', source: 'dead-run-route', paint: { 'line-color': '#37f3ff', 'line-opacity': 0.35, 'line-width': 3, 'line-dasharray': [2, 2] } });
@@ -368,11 +389,62 @@
     });
   }
 
-  function clearWorld() {
-    zombieMarkers.forEach((marker) => marker.remove());
-    zombieMarkers = [];
+  function clearPickupVisuals() {
     pickupMarkers.forEach((marker) => marker.remove());
     pickupMarkers = [];
+  }
+
+  function renderPickupVisuals() {
+    clearPickupVisuals();
+    pickups.forEach((pickup) => {
+      if (!pickup.active) return;
+      const el = markerElement(`pickup-marker ${pickup.type}`, pickup.type === 'ammo' ? '▣' : '⌛');
+      pickup.marker = addMapMarker(el, [pickup.lng, pickup.lat]);
+      pickupMarkers.push(pickup.marker);
+    });
+  }
+
+  function clearZombieVisuals() {
+    zombieMarkers.forEach((marker) => marker.remove());
+    zombieMarkers = [];
+  }
+
+  function renderZombieVisuals() {
+    clearZombieVisuals();
+    zombies.forEach((zombie) => {
+      if (!zombie.alive) return;
+      const el = markerElement('zombie-marker', '☠');
+      zombie.el = el;
+      el.addEventListener('pointerdown', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        shootZombie(zombie);
+      });
+      zombie.marker = addMapMarker(el, [zombie.pos.lng, zombie.pos.lat]);
+      zombieMarkers.push(zombie.marker);
+    });
+  }
+
+  function rebuildMapVisuals() {
+    playerMarker?.remove();
+    playerMarker = null;
+    clearRouteVisuals();
+    clearPickupVisuals();
+    clearZombieVisuals();
+    initPlayerMarker();
+    renderRouteLine();
+    renderPickupVisuals();
+    renderZombieVisuals();
+    refreshFallbackVisuals();
+  }
+
+  function migrateLiveMarkersToFallback() {
+    rebuildMapVisuals();
+  }
+
+  function clearWorld() {
+    clearZombieVisuals();
+    clearPickupVisuals();
     clearRouteVisuals();
     zombies = [];
     pickups = [];
@@ -385,17 +457,11 @@
     pickupMarkers = [];
     const collected = new Set(serverState?.collected_targets || []);
     pickups = (routePlan?.pickups || []).map((pickup) => ({ ...pickup, active: !collected.has(pickup.id), marker: null }));
-    pickups.forEach((pickup) => {
-      if (!pickup.active) return;
-      const el = markerElement(`pickup-marker ${pickup.type}`, pickup.type === 'ammo' ? '▣' : '⌛');
-      pickup.marker = addMapMarker(el, [pickup.lng, pickup.lat]);
-      pickupMarkers.push(pickup.marker);
-    });
+    renderPickupVisuals();
   }
 
   function activateWave(waveIndex) {
-    zombieMarkers.forEach((marker) => marker.remove());
-    zombieMarkers = [];
+    clearZombieVisuals();
     const killed = new Set(serverState?.killed_targets || []);
     const wave = combatPlan?.waves?.[waveIndex];
     if (!wave) {
@@ -410,18 +476,7 @@
       marker: null,
       el: null,
     }));
-    zombies.forEach((zombie) => {
-      if (!zombie.alive) return;
-      const el = markerElement('zombie-marker', '☠');
-      zombie.el = el;
-      el.addEventListener('pointerdown', (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        shootZombie(zombie);
-      });
-      zombie.marker = addMapMarker(el, [zombie.pos.lng, zombie.pos.lat]);
-      zombieMarkers.push(zombie.marker);
-    });
+    renderZombieVisuals();
   }
 
   function applySessionPayload(payload) {
@@ -741,6 +796,7 @@
       demoCharge = Math.min(CHARGE_METERS * 2, demoCharge + distanceMeters(player, demoStep));
       player = demoStep;
       playerMarker?.setLngLat([player.lng, player.lat]);
+      if (mapFallbackActive) refreshFallbackVisuals();
       checkPickups();
     }
 
@@ -803,16 +859,9 @@
   function spawnDemoWave() {
     const wave = combatPlan?.waves?.[demoWaveIndex % combatPlan.waves.length];
     demoWaveIndex += 1;
-    zombieMarkers.forEach((marker) => marker.remove());
-    zombieMarkers = [];
+    clearZombieVisuals();
     zombies = (wave?.zombies || []).map((source) => ({ ...source, pos: randomPointAround(player, 220, 420), alive: true, marker: null, el: null }));
-    zombies.forEach((zombie) => {
-      const el = markerElement('zombie-marker', '☠');
-      zombie.el = el;
-      el.addEventListener('pointerdown', (event) => { event.preventDefault(); event.stopPropagation(); shootZombie(zombie); });
-      zombie.marker = addMapMarker(el, [zombie.pos.lng, zombie.pos.lat]);
-      zombieMarkers.push(zombie.marker);
-    });
+    renderZombieVisuals();
   }
 
   async function startRealRun() {

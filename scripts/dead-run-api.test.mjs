@@ -290,12 +290,43 @@ assert.match(appSource, /MAP_BOOT_TIMEOUT_MS/, 'map boot must have a timeout fal
 assert.match(appSource, /activateMapFallback\('MapLibre library unavailable'\)/,
   'client must activate fallback when MapLibre fails to load');
 assert.match(appSource, /MAX_TILE_ERRORS_BEFORE_FALLBACK/, 'client must activate fallback after tile/style load failures');
+assert.match(appSource, /let mapLoadFailed = false/, 'client must separate live-map failure from loading/readiness state');
+assert.match(appSource, /function showFallbackLayer\([\s\S]*permanent = false[\s\S]*if \(permanent\)[\s\S]*mapLoadFailed = true/,
+  'temporary fallback marker rendering must not permanently mark MapLibre as failed');
+assert.match(appSource, /function addMapMarker\([\s\S]*showFallbackLayer\(null, false\)[\s\S]*fallbackMarker/,
+  'marker requests before MapLibre load must use temporary fallback visuals without forcing permanent fallback');
+assert.match(appSource, /function markLiveMapReady\([\s\S]*if \(mapLoadFailed\) return[\s\S]*rebuildMapVisuals\(\)/,
+  'live MapLibre load must rebuild early fallback markers unless the live map truly failed');
 assert.match(appSource, /viewportStableHeight/, 'client must read Telegram viewport height when available');
 assert.match(appSource, /visualViewport/, 'client must read browser visualViewport when available');
 assert.match(appSource, /--dead-run-vh/, 'client must publish a stable map viewport CSS variable');
 assert.match(appSource, /function addMapMarker\([\s\S]*maplibregl\.Marker[\s\S]*fallbackMarker/,
   'game markers must render through a live/fallback map adapter');
 assert.match(appSource, /function renderFallbackRouteLine/, 'fallback renderer must draw a route line for demo/preview play');
+assert.match(appSource, /Number\.isFinite\(player\.lat\) \? player\.lat : DEFAULT_POS\.lat/,
+  'fallback projection must preserve valid latitude 0 instead of using a falsy fallback');
+assert.doesNotMatch(appSource, /player\.lat \|\| DEFAULT_POS\.lat/,
+  'fallback projection must not treat latitude 0 as missing');
+assert.match(cssSource, /\.map-fallback-active \.fallback-map-layer\s*\{[\s\S]*pointer-events:\s*auto/,
+  'active fallback layer must allow pointer interactions for marker handlers');
+assert.match(cssSource, /\.fallback-route-line\s*\{[\s\S]*pointer-events:\s*none/,
+  'fallback route overlay must not intercept marker taps');
+assert.match(appSource, /function activateMapFallback\([\s\S]*migrateLiveMarkersToFallback\(\)/,
+  'permanent fallback activation must migrate existing live MapLibre markers');
+assert.match(appSource, /function rebuildMapVisuals\([\s\S]*playerMarker\?\.remove\(\)[\s\S]*clearRouteVisuals\(\)[\s\S]*clearPickupVisuals\(\)[\s\S]*clearZombieVisuals\(\)[\s\S]*initPlayerMarker\(\)[\s\S]*renderRouteLine\(\)[\s\S]*renderPickupVisuals\(\)[\s\S]*renderZombieVisuals\(\)/,
+  'renderer migration must recreate player, waypoints, pickups, and zombies through the active adapter');
+assert.match(appSource, /function renderZombieVisuals\([\s\S]*addEventListener\('pointerdown'[\s\S]*shootZombie\(zombie\)[\s\S]*addMapMarker/,
+  'zombie marker migration must preserve pointer handlers');
+assert.match(appSource, /function refreshFallbackVisuals\([\s\S]*refreshFallbackRouteLine\(\)/,
+  'fallback refresh must reproject existing markers and route line without recursively rebuilding the world');
+const refreshFallbackSource = appSource.slice(
+  appSource.indexOf('function refreshFallbackVisuals()'),
+  appSource.indexOf('\n  function fallbackMarker', appSource.indexOf('function refreshFallbackVisuals()')),
+);
+assert.doesNotMatch(refreshFallbackSource, /renderRouteLine\(\)/,
+  'fallback refresh must not call renderRouteLine recursively');
+assert.match(appSource, /player = demoStep;[\s\S]{0,120}if \(mapFallbackActive\) refreshFallbackVisuals\(\)/,
+  'fallback visuals must refresh when the demo player moves');
 const bootSource = appSource.slice(appSource.lastIndexOf("document.querySelectorAll('.tab')"));
 assert.ok(bootSource.indexOf('makeMap();') < bootSource.indexOf('loadProfile();'),
   'visible map/background must initialize before profile/auth loading');
