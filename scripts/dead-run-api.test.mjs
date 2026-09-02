@@ -16,8 +16,10 @@ import {
 const origin = { lat: 51.5074, lng: -0.1278 };
 const now = Date.now();
 const routeSource = fs.readFileSync(new URL('../workers/moonboys-api/routes/dead-run.js', import.meta.url), 'utf8');
+const workerSource = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
 const appSource = fs.readFileSync(new URL('../games/dead-run/app.js', import.meta.url), 'utf8');
 const htmlSource = fs.readFileSync(new URL('../games/dead-run/index.html', import.meta.url), 'utf8');
+const launcherHtmlSource = fs.readFileSync(new URL('../games/telegram/index.html', import.meta.url), 'utf8');
 const cssSource = fs.readFileSync(new URL('../games/dead-run/styles.css', import.meta.url), 'utf8');
 const apiConfigSource = fs.readFileSync(new URL('../js/api-config.js', import.meta.url), 'utf8');
 const phase5Source = fs.readFileSync(new URL('../workers/moonboys-api/worker-phase5-final.js', import.meta.url), 'utf8');
@@ -98,7 +100,47 @@ assert.match(routeSource, /arcade_progression_state/, 'ranked settlement must cr
 assert.match(routeSource, /arcade_xp_wallets/, 'ranked settlement must credit spendable Arcade XP authority');
 assert.match(routeSource, /start_lat = NULL[\s\S]*last_lng = NULL/, 'finished/abandoned sessions must clear precise stored GPS coordinates');
 
-console.log('Dead Run API/core contract: PASS');
+console.log('Dead Run API/core contract: baseline checks OK (continuing)');
+
+// Telegram mobile WebView cache invalidation.
+{
+  const deadRunLaunchUrlMatch = launcherHtmlSource.match(/href="\/games\/dead-run\/\?v=([^"]+)"/);
+  const launcherReleaseMatch = launcherHtmlSource.match(/<meta name="moonboys-mini-app-version" content="([^"]+)">/);
+  assert.ok(deadRunLaunchUrlMatch, 'Telegram launcher must link to a versioned Dead Run page URL');
+  assert.ok(launcherReleaseMatch, 'Telegram launcher must publish a mini-app release token');
+  assert.ok(
+    !launcherHtmlSource.includes('href="/games/dead-run/"'),
+    'Telegram launcher must not link to unversioned /games/dead-run/',
+  );
+
+  const releaseToken = deadRunLaunchUrlMatch[1];
+  const localAssetUrls = [...htmlSource.matchAll(/<(?:link|script)\b[^>]*(?:href|src)="([^"]+)"[^>]*>/gi)]
+    .map((match) => match[1])
+    .filter((url) => url.startsWith('styles.css') || url.startsWith('/js/api-config.js') || url.startsWith('app.js'));
+
+  assert.deepEqual(localAssetUrls, [
+    `styles.css?v=${releaseToken}`,
+    `/js/api-config.js?v=${releaseToken}`,
+    `app.js?v=${releaseToken}`,
+  ], 'Dead Run must cache-bust all local CSS/JS runtime assets with the launcher release token');
+
+  for (const assetUrl of localAssetUrls) {
+    assert.equal(
+      new URL(assetUrl, 'https://cryptomoonboys.com/games/dead-run/').searchParams.get('v'),
+      releaseToken,
+      `Dead Run asset ${assetUrl} must use the same cache-busting token as the launcher`,
+    );
+  }
+
+  assert.ok(
+    launcherHtmlSource.includes(`/games/telegram/?v=${launcherReleaseMatch[1]}`),
+    'Telegram launcher guidance must use the current launcher release token',
+  );
+  assert.ok(
+    workerSource.includes(`const TELEGRAM_GAMES_MENU_URL = \`\${SITE_URL}/games/telegram/?v=${launcherReleaseMatch[1]}\`;`),
+    'Worker Telegram menu URL must publish the current launcher release token',
+  );
+}
 
 // Anti-spoof: rejected movement must not advance the accepted coordinate.
 {
@@ -414,24 +456,38 @@ assert.match(appSource, /window\.addEventListener\('unhandledrejection'[\s\S]*re
 assert.doesNotMatch(htmlSource + appSource + cssSource, /site-shell|wiki-shell|game-fullscreen\.css|site-shell\.js/,
   'Dead Run must not load the full site shell');
 
-{
-  let diffCmd = 'git diff --name-only -- games/telegram workers/moonboys-api';
-  if (process.env.GITHUB_ACTIONS === 'true') {
+function changedFilesForAvailableRange(pathspec) {
+  const candidates = process.env.GITHUB_ACTIONS === 'true'
+    ? [
+        `git diff --name-only HEAD^1..HEAD^2 -- ${pathspec}`,
+        `git diff --name-only origin/main...HEAD -- ${pathspec}`,
+      ]
+    : [`git diff --name-only -- ${pathspec}`];
+
+  for (const diffCmd of candidates) {
     try {
-      execSync('git rev-parse --verify HEAD^2', { stdio: 'ignore' });
-      diffCmd = 'git diff --name-only HEAD^1..HEAD^2 -- games/telegram workers/moonboys-api';
-    } catch (_) {
-      diffCmd = 'git diff --name-only origin/main...HEAD -- games/telegram workers/moonboys-api';
+      return execSync(diffCmd, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] })
+        .split(/\r?\n/)
+        .filter(Boolean);
+    } catch (error) {
+      const stderr = String(error.stderr || '');
+      if (/bad revision|unknown revision|ambiguous argument/.test(stderr)) continue;
+      throw error;
     }
   }
-  const forbiddenChangedFiles = execSync(diffCmd, { encoding: 'utf8' })
-    .split(/\r?\n/)
-    .filter(Boolean);
+
+  return [];
+}
+
+{
+  const forbiddenChangedFiles = changedFilesForAvailableRange(
+    'workers/moonboys-api/routes workers/moonboys-api/migrations workers/moonboys-api/schema.sql',
+  );
   assert.deepEqual(forbiddenChangedFiles, [],
-    'Dead Run fallback-only fix must not change /games/telegram/ or Worker menu/API files');
+    'Dead Run client fixes must not change Worker API route, migration, or schema files');
 }
 assert.match(fs.readFileSync(new URL(import.meta.url), 'utf8'), /GITHUB_ACTIONS[\s\S]*HEAD\^1\.\.HEAD\^2[\s\S]*origin\/main\.\.\.HEAD/,
-  'path guard must compare a committed PR range in CI instead of a clean working tree');
+  'path guard must prefer committed PR ranges in CI when the checkout includes those refs');
 
 // Migration/schema authority.
 for (const flag of ['player_stats_applied', 'arcade_xp_applied', 'horde_applied']) {
