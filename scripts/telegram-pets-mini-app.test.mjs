@@ -1293,7 +1293,7 @@ assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method ==
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
 assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260814-moonpet-aaa-pass`/);
-assert.match(worker, /const TELEGRAM_GAMES_MENU_URL = `\$\{SITE_URL\}\/games\/telegram\/\?v=20260902-games-shell-v2`/);
+assert.match(worker, /const TELEGRAM_GAMES_MENU_URL = `\$\{SITE_URL\}\/games\/telegram\/\?v=20260902-games-shell-v3`/);
 assert.match(worker, /const TELEGRAM_GAMES_MENU_TEXT = 'Games'/);
 assert.match(worker, /function petMiniAppLaunchUrl/);
 assert.match(worker, /const url = petMiniAppLaunchUrl\(screen, normalizedFocus\)/);
@@ -1308,6 +1308,15 @@ assert.doesNotMatch(menuButtonSource, /`\$\{SITE_URL\}\/games\/`/,
 const petLauncherSource = worker.slice(worker.indexOf('async function cmdPetMiniAppLauncher'), worker.indexOf('// ── GK command implementations'));
 assert.match(petLauncherSource, /setDefaultTelegramGamesMenuButton\(botToken, telegramId\)/,
   'Moonpet-specific launches must keep the global Telegram menu on Games');
+const commandDispatchSource = worker.slice(worker.indexOf('const cmdBase  = rawCmd'), worker.indexOf('switch (cmdBase)'));
+const rolloutRefreshIndex = commandDispatchSource.indexOf("if (String(chatType) === 'private' && telegramId)");
+assert.ok(rolloutRefreshIndex !== -1, 'private Telegram commands must refresh the default Games menu before dispatch');
+assert.match(commandDispatchSource, /await setDefaultTelegramGamesMenuButton\(tok, telegramId\);/,
+  'private Telegram command menu refresh must use the shared Games menu helper');
+assert.ok(
+  rolloutRefreshIndex < commandDispatchSource.indexOf("if (env.PET_MINI_APP_ENABLED === 'true'"),
+  'private Telegram command menu refresh must not depend on Moonpet-specific launcher commands',
+);
 assert.match(worker, /Chat gameplay controls are retired/);
 assert.equal(resolvePetCallbackRoute('pet:feed', true), 'mini_app', 'enabled callbacks must open only the Mini App launcher');
 assert.equal(resolvePetCallbackRoute('pet:feed', false), 'legacy', 'disabled callbacks must reach legacy gameplay routing');

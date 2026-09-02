@@ -13350,7 +13350,7 @@ export default {
 // ── Telegram bot command handler ──────────────────────────────────────────────
 
 const SITE_URL = 'https://cryptomoonboys.com';
-const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260902-games-shell-v2`;
+const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260902-games-shell-v3`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
 const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260814-moonpet-aaa-pass`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
@@ -14649,6 +14649,10 @@ async function handleTelegramUpdate(update, env) {
   const cmdBase  = rawCmd.split('@')[0].toLowerCase(); // strip @botname suffix
   const argStr   = spaceIdx === -1 ? '' : text.slice(spaceIdx + 1).trim();
   const stableEventKey = buildTelegramMessagePetEventKey(msg, telegramId, cmdBase, argStr);
+
+  if (String(chatType) === 'private' && telegramId) {
+    await setDefaultTelegramGamesMenuButton(tok, telegramId);
+  }
 
   if (env.PET_MINI_APP_ENABLED === 'true' && (isPetMiniAppCommand(cmdBase) || (cmdBase === 'start' && isPetMiniAppStartArgument(argStr)))) {
     await cmdPetMiniAppLauncher(tok, chatId, telegramId, chatType, petMiniAppDestinationForCommand(cmdBase, argStr), petMiniAppFocusForCommand(cmdBase, argStr));

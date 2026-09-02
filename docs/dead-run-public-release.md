@@ -10,7 +10,7 @@ This release deliberately treats the browser as untrusted. The client renders th
 
 - Mini App: `/games/dead-run/`
 - Production Telegram Games launcher: `/games/telegram/`
-- Production bot/menu Mini App URL: `https://cryptomoonboys.com/games/telegram/?v=20260902-games-shell-v2`
+- Production bot/menu Mini App URL: `https://cryptomoonboys.com/games/telegram/?v=20260902-games-shell-v3`
 - API base: the existing Moonboys API Worker
 - API prefix: `/api/dead-run`
 - Storage: production `wikicoms` D1 database
@@ -114,8 +114,8 @@ A later realtime mode can layer live rooms on top without changing ranked run ow
 6. Publish `/games/dead-run/` and `/games/telegram/` via GitHub Pages.
 7. Set both Telegram production launch surfaces to the shared Games launcher, not the direct Dead Run page:
    - Bot menu button text: `Games`
-   - Bot/menu Mini App URL: `https://cryptomoonboys.com/games/telegram/?v=20260902-games-shell-v2`
-   - BotFather main Mini App/Open button URL: `https://cryptomoonboys.com/games/telegram/?v=20260902-games-shell-v2`
+   - Bot/menu Mini App URL: `https://cryptomoonboys.com/games/telegram/?v=20260902-games-shell-v3`
+   - BotFather main Mini App/Open button URL: `https://cryptomoonboys.com/games/telegram/?v=20260902-games-shell-v3`
 8. Run a real-device mobile smoke test: open the Games launcher from Telegram, then launch Dead Run from the launcher with location permission, then verify settlement and leaderboard results.
 
 ## Non-secret Worker flags
