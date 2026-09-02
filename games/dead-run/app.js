@@ -190,11 +190,10 @@
   }
 
   function activateMapFallback(reason) {
-    if (mapFallbackActive && mapLoadFailed) return;
+    if (mapLoadFailed) return;
     clearTimeout(mapBootTimer);
-    const wasFallbackActive = mapFallbackActive;
     showFallbackLayer(reason, true);
-    if (!wasFallbackActive) migrateLiveMarkersToFallback();
+    migrateLiveMarkersToFallback();
   }
 
   function markLiveMapReady() {

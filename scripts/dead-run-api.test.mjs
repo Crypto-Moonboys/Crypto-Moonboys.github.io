@@ -317,8 +317,12 @@ assert.match(cssSource, /\.fallback-route-line\s*\{[\s\S]*pointer-events:\s*none
   'fallback route overlay must not intercept marker taps');
 assert.match(appSource, /function activateMapFallback\([\s\S]*migrateLiveMarkersToFallback\(\)/,
   'permanent fallback activation must migrate existing live MapLibre markers');
-assert.match(appSource, /function activateMapFallback\([\s\S]*if \(mapFallbackActive && mapLoadFailed\) return[\s\S]*clearTimeout\(mapBootTimer\)[\s\S]*const wasFallbackActive = mapFallbackActive[\s\S]*if \(!wasFallbackActive\) migrateLiveMarkersToFallback\(\)/,
-  'permanent fallback activation must clear boot timeout and migrate markers only once');
+assert.match(appSource, /function activateMapFallback\([\s\S]*if \(mapLoadFailed\) return[\s\S]*clearTimeout\(mapBootTimer\)[\s\S]*showFallbackLayer\(reason, true\)[\s\S]*migrateLiveMarkersToFallback\(\)/,
+  'permanent fallback activation must clear boot timeout, promote fallback, and migrate markers unless fallback was already permanent');
+assert.doesNotMatch(appSource, /function activateMapFallback\([\s\S]*if \(mapFallbackActive && mapLoadFailed\) return/,
+  'temporary fallback visibility must not be treated as completed permanent fallback migration');
+assert.doesNotMatch(appSource, /const wasFallbackActive = mapFallbackActive[\s\S]*if \(!wasFallbackActive\) migrateLiveMarkersToFallback\(\)/,
+  'temporary fallback promotion must still rebuild player, route, pickup, and zombie visuals');
 assert.match(appSource, /function rebuildMapVisuals\([\s\S]*playerMarker\?\.remove\(\)[\s\S]*clearRouteVisuals\(\)[\s\S]*clearPickupVisuals\(\)[\s\S]*clearZombieVisuals\(\)[\s\S]*initPlayerMarker\(\)[\s\S]*renderRouteLine\(\)[\s\S]*renderPickupVisuals\(\)[\s\S]*renderZombieVisuals\(\)/,
   'renderer migration must recreate player, waypoints, pickups, and zombies through the active adapter');
 assert.match(appSource, /function renderZombieVisuals\([\s\S]*addEventListener\('pointerdown'[\s\S]*shootZombie\(zombie\)[\s\S]*addMapMarker/,
