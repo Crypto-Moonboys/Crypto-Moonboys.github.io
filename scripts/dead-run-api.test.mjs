@@ -252,28 +252,32 @@ assert.doesNotMatch(appSource, /attributionControl:\s*false/, 'MapLibre attribut
 assert.match(htmlSource, /Content-Security-Policy/, 'dead-run index.html must include a CSP meta tag');
 assert.match(htmlSource, /default-src 'none'/, "CSP must start from 'none'");
 assert.match(htmlSource, /script-src[^"]*https:\/\/unpkg\.com[^"]*https:\/\/telegram\.org/,
-  'CSP script-src must allow MapLibre CDN and Telegram SDK');
+  'CSP script-src must allow lazy MapLibre CDN and Telegram SDK');
 assert.match(htmlSource, /style-src[^"]*https:\/\/unpkg\.com/,
-  'CSP style-src must allow MapLibre CSS CDN');
-assert.match(htmlSource, /img-src[^"]*https:\/\/\*\.basemaps\.cartocdn\.com/,
-  'CSP img-src must allow CARTO basemap tile images');
-assert.match(htmlSource, /connect-src[^"]*https:\/\/\*\.basemaps\.cartocdn\.com/,
-  'CSP connect-src must allow CARTO tile fetches used by MapLibre');
+  'CSP style-src must allow lazy MapLibre CSS CDN');
+assert.doesNotMatch(htmlSource, /https:\/\/\*\.basemaps\.cartocdn\.com/,
+  'Dead Run CSP must not allow the removed CARTO basemap default');
 
-// Supply-chain hardening: MapLibre from unpkg must have SRI integrity attributes.
-assert.match(htmlSource, /maplibre-gl\.js[\s\S]{0,200}integrity="sha384-/,
-  'MapLibre JS script tag must include an SRI sha384 integrity attribute');
-assert.match(htmlSource, /maplibre-gl\.css[\s\S]{0,200}integrity="sha384-/,
-  'MapLibre CSS link tag must include an SRI sha384 integrity attribute');
-assert.match(htmlSource, /crossorigin="anonymous"/, 'SRI-protected resources must set crossorigin=anonymous');
+// Supply-chain hardening: lazy MapLibre assets must keep SRI attributes.
+assert.doesNotMatch(htmlSource, /maplibre-gl\.(?:js|css)/,
+  'MapLibre must not be loaded by the initial Dead Run HTML');
+assert.match(appSource, /MAPLIBRE_JS_INTEGRITY\s*=\s*'sha384-/,
+  'lazy MapLibre JS loader must include an SRI sha384 integrity constant');
+assert.match(appSource, /MAPLIBRE_CSS_INTEGRITY\s*=\s*'sha384-/,
+  'lazy MapLibre CSS loader must include an SRI sha384 integrity constant');
+assert.match(appSource, /el\.crossOrigin = 'anonymous'/, 'SRI-protected lazy resources must set crossOrigin=anonymous');
 
 // Tile URL must be configurable and not hardcoded as an opaque string.
 assert.match(appSource, /MOONBOYS_API[\s\S]{0,60}DEAD_RUN_TILE_URL/,
   'tile URL must be read from window.MOONBOYS_API.DEAD_RUN_TILE_URL so production can override it');
 assert.match(appSource, /TILE_ATTRIBUTION/,
   'tile attribution must derive from a configurable constant so it stays accurate for any provider');
-assert.match(apiConfigSource, /DEAD_RUN_TILE_URL:\s*'https:\/\/a\.basemaps\.cartocdn\.com\/dark_all\/\{z\}\/\{x\}\/\{y\}\.png'/,
-  'production Dead Run tile URL must remain the configured CARTO dark_all tiles');
+assert.match(apiConfigSource, /DEAD_RUN_LIVE_MAP_ENABLED:\s*false/,
+  'production Dead Run live map kill switch must default to false');
+assert.match(apiConfigSource, /DEAD_RUN_TILE_URL:\s*null/,
+  'production Dead Run must not ship an active default live tile URL');
+assert.doesNotMatch(apiConfigSource, /basemaps\.cartocdn\.com\/dark_all/,
+  'current CARTO API-key-needed tile URL must not be the default active tile URL');
 
 // Dead Run map rendering must be resilient in Telegram and desktop browsers.
 assert.ok(htmlSource.includes('id="map"'), 'Dead Run must keep a dedicated map container');
@@ -284,8 +288,28 @@ assert.match(cssSource, /min-height:\s*100dvh/, 'map sizing must include a 100dv
 assert.match(cssSource, /#map\s*\{[\s\S]*z-index:\s*1/, 'map layer must have an explicit z-index below HUD');
 assert.match(cssSource, /\.fallback-map-layer\s*\{[\s\S]*repeating-linear-gradient[\s\S]*linear-gradient/,
   'fallback map layer must render a visible grid/radar background without live tiles');
-assert.match(cssSource, /\.map-fallback-active[\s\S]*\.fallback-map-layer/,
+const fallbackLayerBaseSource = cssSource.slice(
+  cssSource.indexOf('.fallback-map-layer {'),
+  cssSource.indexOf('\n}', cssSource.indexOf('.fallback-map-layer {')) + 2,
+);
+assert.match(fallbackLayerBaseSource, /opacity:\s*0/,
+  'base fallback map layer must be visually hidden until fallback mode is active');
+assert.match(fallbackLayerBaseSource, /pointer-events:\s*none/,
+  'base fallback map layer must be inert until fallback mode is active');
+const fallbackLayerActiveSource = cssSource.slice(
+  cssSource.indexOf('#map.map-fallback-active .fallback-map-layer'),
+  cssSource.indexOf('\n}', cssSource.indexOf('#map.map-fallback-active .fallback-map-layer')) + 2,
+);
+assert.match(fallbackLayerActiveSource, /#map\.map-fallback-active \.fallback-map-layer,\s*[\r\n]+\.map-fallback-active \.fallback-map-layer/,
   'fallback class must visibly promote the fallback map layer');
+assert.match(fallbackLayerActiveSource, /opacity:\s*1/,
+  'fallback-active selector must show the fallback map layer');
+assert.match(fallbackLayerActiveSource, /pointer-events:\s*auto/,
+  'fallback-active selector must allow fallback marker interactions');
+assert.match(htmlSource, /id="map" class="map-fallback-active"/,
+  'Dead Run must render the fallback map class before JavaScript runs');
+assert.match(appSource, /function bootFallbackMap\([\s\S]*bindViewportSizing\(\)[\s\S]*showFallbackLayer\('fallback-first boot', false\)[\s\S]*initPlayerMarker\(\)/,
+  'fallback renderer must boot before any optional MapLibre work');
 assert.match(appSource, /MAP_BOOT_TIMEOUT_MS/, 'map boot must have a timeout fallback');
 assert.match(appSource, /activateMapFallback\('MapLibre library unavailable'\)/,
   'client must activate fallback when MapLibre fails to load');
@@ -306,6 +330,8 @@ assert.match(appSource, /visualViewport/, 'client must read browser visualViewpo
 assert.match(appSource, /--dead-run-vh/, 'client must publish a stable map viewport CSS variable');
 assert.match(appSource, /function addMapMarker\([\s\S]*maplibregl\.Marker[\s\S]*fallbackMarker/,
   'game markers must render through a live/fallback map adapter');
+assert.match(appSource, /function addMapMarker\([\s\S]*try[\s\S]*new maplibregl\.Marker[\s\S]*catch \(error\)[\s\S]*activateMapFallback\('MapLibre marker exception'\)/,
+  'live marker failures must fall back without uncaught exceptions');
 assert.match(appSource, /function renderFallbackRouteLine/, 'fallback renderer must draw a route line for demo/preview play');
 assert.match(appSource, /Number\.isFinite\(player\.lat\) \? player\.lat : DEFAULT_POS\.lat/,
   'fallback projection must preserve valid latitude 0 instead of using a falsy fallback');
@@ -315,6 +341,8 @@ assert.match(cssSource, /\.map-fallback-active \.fallback-map-layer\s*\{[\s\S]*p
   'active fallback layer must allow pointer interactions for marker handlers');
 assert.match(cssSource, /\.fallback-route-line\s*\{[\s\S]*pointer-events:\s*none/,
   'fallback route overlay must not intercept marker taps');
+assert.match(appSource, /function renderPickupVisuals\([\s\S]*addEventListener\('pointerdown'[\s\S]*collectPickup\(pickup\)[\s\S]*addMapMarker/,
+  'fallback pickup markers must stay pointer-interactive');
 assert.match(appSource, /function activateMapFallback\([\s\S]*migrateLiveMarkersToFallback\(\)/,
   'permanent fallback activation must migrate existing live MapLibre markers');
 assert.match(appSource, /function activateMapFallback\([\s\S]*if \(mapLoadFailed\) return[\s\S]*clearTimeout\(mapBootTimer\)[\s\S]*showFallbackLayer\(reason, true\)[\s\S]*migrateLiveMarkersToFallback\(\)/,
@@ -338,10 +366,20 @@ assert.doesNotMatch(refreshFallbackSource, /renderRouteLine\(\)/,
 assert.match(appSource, /player = demoStep;[\s\S]{0,120}if \(mapFallbackActive\) refreshFallbackVisuals\(\)/,
   'fallback visuals must refresh when the demo player moves');
 const bootSource = appSource.slice(appSource.lastIndexOf("document.querySelectorAll('.tab')"));
-assert.ok(bootSource.indexOf('makeMap();') < bootSource.indexOf('loadProfile();'),
-  'visible map/background must initialize before profile/auth loading');
-assert.ok(bootSource.indexOf('makeMap();') > -1 && bootSource.indexOf('getInitialGpsFix();') === -1,
+assert.ok(bootSource.indexOf('bootFallbackMap();') < bootSource.indexOf('loadProfile();'),
+  'visible fallback map/background must initialize before profile/auth loading');
+assert.ok(bootSource.indexOf('bootFallbackMap();') > -1 && bootSource.indexOf('getInitialGpsFix();') === -1,
   'startup must not request GPS before rendering the map/background');
+assert.match(bootSource, /if \(DEAD_RUN_LIVE_MAP_ENABLED\)[\s\S]*makeMap\(\)[\s\S]*requestIdleCallback/,
+  'MapLibre initialization must be gated and delayed behind the live map kill switch');
+assert.match(appSource, /const DEAD_RUN_LIVE_MAP_ENABLED =\s*[\r\n]+\s*window\.MOONBOYS_API\?\.DEAD_RUN_LIVE_MAP_ENABLED === true &&\s*[\r\n]+\s*!!TILE_URL &&\s*[\r\n]+\s*!!TILE_ATTRIBUTION;/,
+  'live map enablement must require the kill switch, tile URL, and tile attribution');
+assert.match(appSource, /async function makeMap\(\)[\s\S]*if \(!DEAD_RUN_LIVE_MAP_ENABLED\) return[\s\S]*try[\s\S]*new maplibregl\.Map/,
+  'MapLibre constructors must be guarded by the live map flag and try/catch');
+assert.match(appSource, /async function ensureMapLibreLoaded\(\)[\s\S]*if \(window\.maplibregl\?\.Map\) return true[\s\S]*activateMapFallback\('MapLibre library unavailable'\)[\s\S]*return false/,
+  'missing window.maplibregl must leave fallback mode without throwing');
+assert.match(appSource, /syncStartControls[\s\S]*ui\.safety\.addEventListener\('change', syncStartControls\)/,
+  'start controls must be usable after the safety acknowledgement without waiting for MapLibre');
 assert.match(appSource, /GPS required for ranked real mode/,
   'GPS denial must explain ranked real mode while leaving preview rendering available');
 assert.doesNotMatch(htmlSource + appSource + cssSource, /site-shell|wiki-shell|game-fullscreen\.css|site-shell\.js/,

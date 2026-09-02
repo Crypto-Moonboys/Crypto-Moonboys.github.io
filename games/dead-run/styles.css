@@ -54,7 +54,7 @@ body { overscroll-behavior: none; touch-action: manipulation; }
   inset: 0;
   z-index: 0;
   overflow: hidden;
-  opacity: 0.78;
+  opacity: 0;
   pointer-events: none;
   background:
     radial-gradient(circle at 50% 52%, rgba(55,243,255,.16), transparent 0 22%, rgba(55,243,255,.05) 23% 24%, transparent 25% 100%),
@@ -64,6 +64,7 @@ body { overscroll-behavior: none; touch-action: manipulation; }
     linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
   background-size: auto, auto, auto, 44px 44px, 44px 44px;
 }
+#map.map-fallback-active .fallback-map-layer,
 .map-fallback-active .fallback-map-layer {
   z-index: 2;
   opacity: 1;
@@ -103,6 +104,7 @@ body { overscroll-behavior: none; touch-action: manipulation; }
 }
 .maplibregl-canvas { outline: none; }
 .maplibregl-ctrl-attrib { font-size: 10px; }
+.map-fallback-active .maplibregl-ctrl-attrib { display: none; }
 .maplibregl-ctrl-bottom-left { display: none; }
 
 .hud {

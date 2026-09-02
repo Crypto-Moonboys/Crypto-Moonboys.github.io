@@ -155,10 +155,18 @@
   // Tile URL is configurable via window.MOONBOYS_API.DEAD_RUN_TILE_URL so production
   // can point to a licensed tile provider without editing this file.
   // Attribution text is derived from the same config so it stays accurate for any provider.
-  // The OSM public tile server is suitable for development/demo only; it must be replaced
-  // with a licensed provider (e.g. Protomaps, MapTiler, Stadia) before public launch.
-  const TILE_URL = (window.MOONBOYS_API?.DEAD_RUN_TILE_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png');
-  const TILE_ATTRIBUTION = (window.MOONBOYS_API?.DEAD_RUN_TILE_ATTRIBUTION || '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors');
+  // Live maps are off by default so Telegram never depends on a CDN or tile
+  // provider before the fallback game shell is interactive.
+  const TILE_URL = String(window.MOONBOYS_API?.DEAD_RUN_TILE_URL || '').trim();
+  const TILE_ATTRIBUTION = String(window.MOONBOYS_API?.DEAD_RUN_TILE_ATTRIBUTION || '').trim();
+  const DEAD_RUN_LIVE_MAP_ENABLED =
+    window.MOONBOYS_API?.DEAD_RUN_LIVE_MAP_ENABLED === true &&
+    !!TILE_URL &&
+    !!TILE_ATTRIBUTION;
+  const MAPLIBRE_JS_URL = 'https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js';
+  const MAPLIBRE_CSS_URL = 'https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css';
+  const MAPLIBRE_JS_INTEGRITY = 'sha384-SYKAG6cglRMN0RVvhNeBY0r3FYKNOJtznwA0v7B5Vp9tr31xAHsZC0DqkQ/pZDmj';
+  const MAPLIBRE_CSS_INTEGRITY = 'sha384-MinO0mNliZ3vwppuPOUnGa+iq619pfMhLVUXfC4LHwSCvF9H+6P/KO4Q7qBOYV5V';
   const MAP_BOOT_TIMEOUT_MS = 2400;
   const MAX_TILE_ERRORS_BEFORE_FALLBACK = 3;
 
@@ -187,6 +195,13 @@
     mapFallbackActive = true;
     $('map')?.classList.add('map-fallback-active');
     if (reason) console.info('[dead-run] map fallback active:', reason);
+  }
+
+  function bootFallbackMap() {
+    bindViewportSizing();
+    showFallbackLayer('fallback-first boot', false);
+    initPlayerMarker();
+    refreshFallbackVisuals();
   }
 
   function activateMapFallback(reason) {
@@ -257,7 +272,21 @@
 
   function addMapMarker(el, position) {
     if (liveMapUsable && window.maplibregl && map) {
-      return new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat(position).addTo(map);
+      try {
+        const liveMarker = new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat(position).addTo(map);
+        return {
+          element: el,
+          remove() {
+            try { liveMarker.remove(); } catch (_) {}
+          },
+          setLngLat(lngLat) {
+            try { liveMarker.setLngLat(lngLat); } catch (error) { activateMapFallback('MapLibre marker move exception'); }
+            return this;
+          },
+        };
+      } catch (error) {
+        activateMapFallback('MapLibre marker exception');
+      }
     }
     showFallbackLayer(null, false);
     return fallbackMarker(el, position);
@@ -265,20 +294,67 @@
 
   function moveMapTo(position, options = {}) {
     if (liveMapUsable && map) {
-      if (options.animate) map.easeTo({ center: position, zoom: options.zoom, duration: options.duration || 320 });
-      else map.jumpTo({ center: position, zoom: options.zoom || 17 });
+      try {
+        if (options.animate) map.easeTo({ center: position, zoom: options.zoom, duration: options.duration || 320 });
+        else map.jumpTo({ center: position, zoom: options.zoom || 17 });
+      } catch (error) {
+        activateMapFallback('MapLibre viewport exception');
+      }
     }
     refreshFallbackVisuals();
   }
 
-  function makeMap() {
-    bindViewportSizing();
-    mapBootTimer = setTimeout(() => activateMapFallback('MapLibre boot timeout'), MAP_BOOT_TIMEOUT_MS);
+  function loadMapLibreAsset(tagName, url, integrity, marker) {
+    return new Promise((resolve, reject) => {
+      const existing = document.querySelector(`[${marker}]`);
+      if (existing) {
+        if (existing.dataset.loaded === 'true') resolve();
+        else existing.addEventListener('load', resolve, { once: true });
+        return;
+      }
+      const el = document.createElement(tagName);
+      el.setAttribute(marker, 'true');
+      el.crossOrigin = 'anonymous';
+      el.integrity = integrity;
+      if (tagName === 'link') {
+        el.rel = 'stylesheet';
+        el.href = url;
+        document.head.appendChild(el);
+      } else {
+        el.src = url;
+        el.async = true;
+        document.body.appendChild(el);
+      }
+      el.addEventListener('load', () => {
+        el.dataset.loaded = 'true';
+        resolve();
+      }, { once: true });
+      el.addEventListener('error', () => reject(new Error(`${url} failed to load`)), { once: true });
+    });
+  }
+
+  async function ensureMapLibreLoaded() {
+    if (window.maplibregl?.Map) return true;
+    try {
+      await loadMapLibreAsset('link', MAPLIBRE_CSS_URL, MAPLIBRE_CSS_INTEGRITY, 'data-dead-run-maplibre-css');
+      await loadMapLibreAsset('script', MAPLIBRE_JS_URL, MAPLIBRE_JS_INTEGRITY, 'data-dead-run-maplibre-js');
+    } catch (error) {
+      activateMapFallback('MapLibre asset unavailable');
+      return false;
+    }
     if (!window.maplibregl?.Map) {
       activateMapFallback('MapLibre library unavailable');
-      return;
+      return false;
     }
+    return true;
+  }
+
+  async function makeMap() {
+    if (!DEAD_RUN_LIVE_MAP_ENABLED) return;
+    if (!document.body?.contains?.($('map'))) return;
+    mapBootTimer = setTimeout(() => activateMapFallback('MapLibre boot timeout'), MAP_BOOT_TIMEOUT_MS);
     try {
+      if (!(await ensureMapLibreLoaded())) return;
       map = new maplibregl.Map({
         container: 'map',
         center: [player.lng, player.lat],
@@ -298,18 +374,22 @@
           layers: [{ id: 'osm', type: 'raster', source: 'osm', paint: { 'raster-saturation': -1, 'raster-contrast': 0.28, 'raster-brightness-max': 0.6 } }]
         }
       });
-      map.dragRotate.disable();
-      map.touchZoomRotate.disableRotation();
-      map.on('load', () => {
-        mapLoaded = true;
-        markLiveMapReady();
-        setViewportHeight();
-      });
-      map.on('error', (event) => {
-        mapTileErrors += 1;
-        console.warn('[dead-run] map tile/style error', event?.error?.message || event?.error || 'unknown map error');
-        if (mapTileErrors >= MAX_TILE_ERRORS_BEFORE_FALLBACK) activateMapFallback('tile/style load errors');
-      });
+      try { map.dragRotate.disable(); } catch (_) {}
+      try { map.touchZoomRotate.disableRotation(); } catch (_) {}
+      try {
+        map.on('load', () => {
+          mapLoaded = true;
+          markLiveMapReady();
+          setViewportHeight();
+        });
+        map.on('error', (event) => {
+          mapTileErrors += 1;
+          console.warn('[dead-run] map tile/style error', event?.error?.message || event?.error || 'unknown map error');
+          if (mapTileErrors >= MAX_TILE_ERRORS_BEFORE_FALLBACK) activateMapFallback('tile/style load errors');
+        });
+      } catch (error) {
+        activateMapFallback('MapLibre event binding exception');
+      }
     } catch (error) {
       console.warn('[dead-run] MapLibre init failed', error);
       activateMapFallback('MapLibre init exception');
@@ -336,8 +416,12 @@
     fallbackRouteLine?.remove();
     fallbackRouteLine = null;
     fallbackRoutePolyline = null;
-    if (mapLoaded && map?.getLayer?.('dead-run-route')) map.removeLayer('dead-run-route');
-    if (mapLoaded && map?.getSource?.('dead-run-route')) map.removeSource('dead-run-route');
+    try {
+      if (mapLoaded && map?.getLayer?.('dead-run-route')) map.removeLayer('dead-run-route');
+      if (mapLoaded && map?.getSource?.('dead-run-route')) map.removeSource('dead-run-route');
+    } catch (error) {
+      activateMapFallback('MapLibre route clear exception');
+    }
   }
 
   function routeCoords() {
@@ -378,10 +462,18 @@
     if ((!liveMapUsable && !mapFallbackActive) || !routePlan?.waypoints?.length) return;
     clearRouteVisuals();
     const coords = routeCoords();
+    let fallbackRouteRendered = false;
     if (liveMapUsable) {
-      map.addSource('dead-run-route', { type: 'geojson', data: { type: 'Feature', geometry: { type: 'LineString', coordinates: coords } } });
-      map.addLayer({ id: 'dead-run-route', type: 'line', source: 'dead-run-route', paint: { 'line-color': '#37f3ff', 'line-opacity': 0.35, 'line-width': 3, 'line-dasharray': [2, 2] } });
-    } else {
+      try {
+        map.addSource('dead-run-route', { type: 'geojson', data: { type: 'Feature', geometry: { type: 'LineString', coordinates: coords } } });
+        map.addLayer({ id: 'dead-run-route', type: 'line', source: 'dead-run-route', paint: { 'line-color': '#37f3ff', 'line-opacity': 0.35, 'line-width': 3, 'line-dasharray': [2, 2] } });
+      } catch (error) {
+        activateMapFallback('MapLibre route render exception');
+        renderFallbackRouteLine(coords);
+        fallbackRouteRendered = true;
+      }
+    }
+    if (!liveMapUsable && !fallbackRouteRendered) {
       renderFallbackRouteLine(coords);
     }
     routePlan.waypoints.forEach((point) => {
@@ -401,6 +493,11 @@
     pickups.forEach((pickup) => {
       if (!pickup.active) return;
       const el = markerElement(`pickup-marker ${pickup.type}`, pickup.type === 'ammo' ? '▣' : '⌛');
+      el.addEventListener('pointerdown', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        collectPickup(pickup);
+      });
       pickup.marker = addMapMarker(el, [pickup.lng, pickup.lat]);
       pickupMarkers.push(pickup.marker);
     });
@@ -1053,6 +1150,8 @@
   $('gameLeaderboardBtn').addEventListener('click', () => showLeaderboard());
   $('closeLeaderboardBtn').addEventListener('click', () => ui.leaderboard.classList.add('hidden'));
   document.querySelectorAll('.tab').forEach((button) => button.addEventListener('click', () => showLeaderboard(button.dataset.metric)));
+  const syncStartControls = () => { $('startBtn').disabled = !ui.safety.checked; };
+  ui.safety.addEventListener('change', syncStartControls);
 
   document.addEventListener('visibilitychange', async () => {
     if (document.visibilityState === 'visible' && gameActive) await requestWakeLock();
@@ -1061,7 +1160,19 @@
     if (!demoMode && gameActive) flushTelemetry(true);
   });
 
-  makeMap();
+  bootFallbackMap();
   updateHud();
+  syncStartControls();
   loadProfile();
+  if (DEAD_RUN_LIVE_MAP_ENABLED) {
+    const scheduleLiveMapBoot = () => {
+      try { makeMap(); } catch (error) { activateMapFallback('MapLibre delayed boot exception'); }
+    };
+    try {
+      if ('requestIdleCallback' in window) window.requestIdleCallback(scheduleLiveMapBoot, { timeout: 1800 });
+      else setTimeout(scheduleLiveMapBoot, 900);
+    } catch (error) {
+      setTimeout(scheduleLiveMapBoot, 900);
+    }
+  }
 })();

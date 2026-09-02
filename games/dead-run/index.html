@@ -6,15 +6,14 @@
   <meta name="theme-color" content="#05070a" />
   <meta name="robots" content="index,follow" />
   <!-- Content-Security-Policy: tightened for Telegram Mini App context.
-       Carto/OSM tile origins are listed under img-src for map tiles.
-       unpkg.com is listed for the MapLibre script/style until they are self-hosted.
-       Before production launch, replace unpkg.com with a self-hosted or integrity-verified copy. -->
+       MapLibre is not part of initial boot. If live maps are explicitly enabled,
+       the app lazy-loads the pinned MapLibre assets after fallback gameplay is interactive. -->
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'none';
     script-src 'self' https://unpkg.com https://telegram.org;
     style-src 'self' https://unpkg.com 'unsafe-inline';
-    img-src 'self' data: blob: https://*.basemaps.cartocdn.com https://tile.openstreetmap.org https://*.tile.openstreetmap.org;
-    connect-src 'self' https://api.cryptomoonboys.com https://cryptomoonboys.com https://www.cryptomoonboys.com https://*.basemaps.cartocdn.com https://tile.openstreetmap.org https://*.tile.openstreetmap.org;
+    img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org;
+    connect-src 'self' https://api.cryptomoonboys.com https://cryptomoonboys.com https://www.cryptomoonboys.com https://tile.openstreetmap.org https://*.tile.openstreetmap.org;
     worker-src blob:;
     font-src 'self';
     frame-src 'none';
@@ -24,24 +23,11 @@
   <title>DEAD RUN — Real GPS Zombie Survival</title>
   <meta name="description" content="A Telegram Mini App survival game where zombies chase your real GPS position." />
   <link rel="icon" type="image/png" href="/favicon.png">
-  <!-- MapLibre GL JS/CSS loaded from unpkg with pinned version and SRI integrity hashes.
-       Hashes were computed from the npm-registry dist files for maplibre-gl@4.7.1:
-         JS  (sha384): sha384-SYKAG6cglRMN0RVvhNeBY0r3FYKNOJtznwA0v7B5Vp9tr31xAHsZC0DqkQ/pZDmj
-         CSS (sha384): sha384-MinO0mNliZ3vwppuPOUnGa+iq619pfMhLVUXfC4LHwSCvF9H+6P/KO4Q7qBOYV5V
-       Before production launch, replace unpkg with a self-hosted or CDN-mirrored copy so
-       the game continues to work if unpkg is unavailable.  Attribution for map tile data
-       must remain visible regardless of the tile provider. -->
-  <link rel="preconnect" href="https://unpkg.com" />
-  <link rel="preconnect" href="https://a.basemaps.cartocdn.com" />
-  <link rel="stylesheet"
-        href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"
-        integrity="sha384-MinO0mNliZ3vwppuPOUnGa+iq619pfMhLVUXfC4LHwSCvF9H+6P/KO4Q7qBOYV5V"
-        crossorigin="anonymous" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body class="page-standalone-tool">
   <div id="app">
-    <div id="map" aria-label="Dead Run game map">
+    <div id="map" class="map-fallback-active" aria-label="Dead Run game map">
       <div id="fallbackMapLayer" class="fallback-map-layer" aria-hidden="true"></div>
     </div>
 
@@ -115,9 +101,6 @@
   </div>
 
   <script src="https://telegram.org/js/telegram-web-app.js?59"></script>
-  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"
-          integrity="sha384-SYKAG6cglRMN0RVvhNeBY0r3FYKNOJtznwA0v7B5Vp9tr31xAHsZC0DqkQ/pZDmj"
-          crossorigin="anonymous"></script>
   <script src="/js/api-config.js"></script>
   <script src="app.js"></script>
 </body>
