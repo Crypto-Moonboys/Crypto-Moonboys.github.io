@@ -14650,6 +14650,10 @@ async function handleTelegramUpdate(update, env) {
   const argStr   = spaceIdx === -1 ? '' : text.slice(spaceIdx + 1).trim();
   const stableEventKey = buildTelegramMessagePetEventKey(msg, telegramId, cmdBase, argStr);
 
+  if (String(chatType) === 'private' && telegramId) {
+    await setDefaultTelegramGamesMenuButton(tok, telegramId);
+  }
+
   if (env.PET_MINI_APP_ENABLED === 'true' && (isPetMiniAppCommand(cmdBase) || (cmdBase === 'start' && isPetMiniAppStartArgument(argStr)))) {
     await cmdPetMiniAppLauncher(tok, chatId, telegramId, chatType, petMiniAppDestinationForCommand(cmdBase, argStr), petMiniAppFocusForCommand(cmdBase, argStr));
     return;
