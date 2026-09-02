@@ -42,7 +42,11 @@ assert.deepEqual(externalScripts, ['https://telegram.org/js/telegram-web-app.js'
 
 assert.ok(!/<link\b[^>]*rel=["']stylesheet["']/i.test(html), 'Games launcher must not load external CSS files');
 assert.ok(!/<script\b[^>]*type=["']module["']/i.test(html), 'Games launcher must not use module scripts');
-assert.ok(!/<img\b|rel=["']icon["']/i.test(html), 'Games launcher must not load images');
+assert.ok(
+  /<link\b(?=[^>]*\brel=["']icon["'])(?=[^>]*\bhref=["']\/favicon\.png["'])(?=[^>]*\btype=["']image\/png["'])[^>]*>/i.test(html),
+  'Games launcher must include the standardized PNG favicon tag',
+);
+assert.ok(!/<img\b/i.test(html), 'Games launcher must not load inline image elements');
 assert.ok(!/localStorage/i.test(html), 'Games launcher must not depend on localStorage');
 assert.ok(!/src=["'][^"']*(?:arcade|site-shell|wiki)[^"']*bundle[^"']*["']/i.test(html), 'Games launcher must not load full arcade/site bundles');
 assert.ok(!/location\.(?:assign|replace)|window\.location\s*=/.test(html), 'Games launcher must not auto-redirect on load');
