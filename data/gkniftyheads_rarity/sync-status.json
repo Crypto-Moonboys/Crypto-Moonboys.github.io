@@ -21,82 +21,82 @@
   "status": "degraded",
   "stale": false,
   "stale_after_hours": 30,
-  "checked_at": "2026-09-01T08:45:08.204Z",
-  "last_successful_check": "2026-09-01T08:45:08.203Z",
-  "last_successful_update": "2026-09-01T08:45:07.854Z",
-  "source_updated_at": "2026-09-01T08:45:07.854Z",
+  "checked_at": "2026-09-02T07:59:05.733Z",
+  "last_successful_check": "2026-09-02T07:59:05.733Z",
+  "last_successful_update": "2026-09-02T07:59:05.434Z",
+  "source_updated_at": "2026-09-02T07:59:05.434Z",
   "source_age_minutes": 0,
-  "last_error": "Rarity reconciliation incomplete: 1 mismatched template(s); live minus issued = 3 | Display analytics unavailable: top_users",
+  "last_error": "Rarity reconciliation incomplete: 1 mismatched template(s); live minus issued = 3 | Display analytics unavailable: collection_stats, num_assets, marketcap, top_users, top_templates, volume, sales_volume_graph",
   "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live asset scan is unavailable",
   "analytics_status": "degraded",
   "endpoint_status": {
     "collection_stats": {
-      "ok": true,
-      "stale": false,
+      "ok": false,
+      "stale": true,
       "source_url": "https://wax-api.hivebp.io/v3/collection-stats/gkniftyheads",
-      "error": null,
-      "used_previous": false,
-      "attempts": 1,
-      "checked_at": "2026-09-01T08:45:03.342Z"
+      "error": "https://wax-api.hivebp.io/v3/collection-stats/gkniftyheads failed: HTTP 503",
+      "used_previous": true,
+      "attempts": 2,
+      "checked_at": "2026-09-02T07:58:59.345Z"
     },
     "num_assets": {
-      "ok": true,
-      "stale": false,
+      "ok": false,
+      "stale": true,
       "source_url": "https://wax-api.hivebp.io/v3/num-assets/gkniftyheads",
-      "error": null,
-      "used_previous": false,
-      "attempts": 1,
-      "checked_at": "2026-09-01T08:45:04.121Z"
+      "error": "https://wax-api.hivebp.io/v3/num-assets/gkniftyheads failed: HTTP 503",
+      "used_previous": true,
+      "attempts": 2,
+      "checked_at": "2026-09-02T07:59:01.027Z"
     },
     "marketcap": {
-      "ok": true,
-      "stale": false,
+      "ok": false,
+      "stale": true,
       "source_url": "https://wax-api.hivebp.io/v3/marketcap/gkniftyheads",
-      "error": null,
-      "used_previous": false,
-      "attempts": 1,
-      "checked_at": "2026-09-01T08:45:05.447Z"
+      "error": "https://wax-api.hivebp.io/v3/marketcap/gkniftyheads failed: HTTP 503",
+      "used_previous": true,
+      "attempts": 2,
+      "checked_at": "2026-09-02T07:59:02.295Z"
     },
     "top_users": {
       "ok": false,
       "stale": true,
       "source_url": "https://wax-api.hivebp.io/v3/top-users/30/gkniftyheads",
-      "error": "https://wax-api.hivebp.io/v3/top-users/30/gkniftyheads failed: HTTP 500",
+      "error": "https://wax-api.hivebp.io/v3/top-users/30/gkniftyheads failed: HTTP 503",
       "used_previous": true,
       "attempts": 2,
-      "checked_at": "2026-09-01T08:45:05.596Z"
+      "checked_at": "2026-09-02T07:59:02.834Z"
     },
     "top_templates": {
-      "ok": true,
-      "stale": false,
+      "ok": false,
+      "stale": true,
       "source_url": "https://wax-api.hivebp.io/v3/top-templates/30/gkniftyheads",
-      "error": null,
-      "used_previous": false,
-      "attempts": 1,
-      "checked_at": "2026-09-01T08:45:06.237Z"
+      "error": "https://wax-api.hivebp.io/v3/top-templates/30/gkniftyheads failed: HTTP 503",
+      "used_previous": true,
+      "attempts": 2,
+      "checked_at": "2026-09-02T07:59:03.372Z"
     },
     "volume": {
-      "ok": true,
-      "stale": false,
+      "ok": false,
+      "stale": true,
       "source_url": "https://wax-api.hivebp.io/v3/volume/30/gkniftyheads",
-      "error": null,
-      "used_previous": false,
-      "attempts": 1,
-      "checked_at": "2026-09-01T08:45:07.039Z"
+      "error": "https://wax-api.hivebp.io/v3/volume/30/gkniftyheads failed: HTTP 503",
+      "used_previous": true,
+      "attempts": 2,
+      "checked_at": "2026-09-02T07:59:03.914Z"
     },
     "sales_volume_graph": {
-      "ok": true,
-      "stale": false,
+      "ok": false,
+      "stale": true,
       "source_url": "https://wax-api.hivebp.io/v3/sales-volume-graph/30/gkniftyheads",
-      "error": null,
-      "used_previous": false,
-      "attempts": 1,
-      "checked_at": "2026-09-01T08:45:07.182Z"
+      "error": "https://wax-api.hivebp.io/v3/sales-volume-graph/30/gkniftyheads failed: HTTP 503",
+      "used_previous": true,
+      "attempts": 2,
+      "checked_at": "2026-09-02T07:59:04.451Z"
     }
   },
   "notes": [
     "Generated local rarity render: 27 ranked, 97 utility/open mint, 19 unissued.",
-    "Staged cache refresh: 143/143 metadata ok; 143/143 live supply counts ok; 23004 asset-state records across 143 templates.",
+    "Staged cache refresh: 143/143 metadata ok; 143/143 live supply counts ok; 23005 asset-state records across 143 templates.",
     "Rarity reconciliation degraded: 1 mismatched template(s) (782888); live minus issued = 3; fresh live counts = yes.",
     "HiveBP display analytics: degraded; not used for rarity scoring.",
     "AtomicAssets collection stats sanity check available; asset-state cache remains the source for surviving mint ranks and holder/asset leaderboards.",

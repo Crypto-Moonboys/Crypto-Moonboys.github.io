@@ -1,6 +1,6 @@
 {
   "collection": "noballgamess",
-  "generated_at": "2026-09-01T08:45:02.664Z",
+  "generated_at": "2026-09-02T07:58:58.667Z",
   "source_urls": {
     "latest_created_assets": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&sort=created&order=desc&limit=1000",
     "recently_updated_live_assets": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&burned=false&sort=updated&order=desc&limit=1000",
@@ -155757,5 +155757,141 @@
       "assets_seen": 8
     }
   ],
-  "errors": []
+  "errors": [
+    {
+      "source_key": "latest_created_assets",
+      "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&sort=created&order=desc&limit=1000",
+      "error": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&sort=created&order=desc&limit=1000&page=1 failed: HTTP 502"
+    },
+    {
+      "source_key": "recently_updated_live_assets",
+      "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&burned=false&sort=updated&order=desc&limit=1000",
+      "error": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&burned=false&sort=updated&order=desc&limit=1000&page=12 failed: HTTP 502"
+    },
+    {
+      "source_key": "recently_updated_burned_assets",
+      "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&burned=true&sort=updated&order=desc&limit=1000",
+      "error": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&burned=true&sort=updated&order=desc&limit=1000&page=1 failed: HTTP 502"
+    },
+    {
+      "template_id": 412225,
+      "source_key": "template_assets_backfill:412225",
+      "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=412225&limit=1000&order=asc&sort=template_mint",
+      "error": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=412225&limit=1000&order=asc&sort=template_mint&page=1 failed: HTTP 502"
+    },
+    {
+      "template_id": 412229,
+      "source_key": "template_assets_backfill:412229",
+      "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=412229&limit=1000&order=asc&sort=template_mint",
+      "error": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=412229&limit=1000&order=asc&sort=template_mint&page=1 failed: HTTP 502"
+    },
+    {
+      "template_id": 417407,
+      "source_key": "template_assets_backfill:417407",
+      "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=417407&limit=1000&order=asc&sort=template_mint",
+      "error": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=417407&limit=1000&order=asc&sort=template_mint&page=1 failed: HTTP 502"
+    },
+    {
+      "template_id": 431133,
+      "source_key": "template_assets_backfill:431133",
+      "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=431133&limit=1000&order=asc&sort=template_mint",
+      "error": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=431133&limit=1000&order=asc&sort=template_mint&page=1 failed: HTTP 502"
+    },
+    {
+      "template_id": 435457,
+      "source_key": "template_assets_backfill:435457",
+      "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=435457&limit=1000&order=asc&sort=template_mint",
+      "error": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=435457&limit=1000&order=asc&sort=template_mint&page=1 failed: HTTP 502"
+    },
+    {
+      "template_id": 438902,
+      "source_key": "template_assets_backfill:438902",
+      "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=438902&limit=1000&order=asc&sort=template_mint",
+      "error": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=438902&limit=1000&order=asc&sort=template_mint&page=1 failed: HTTP 502"
+    },
+    {
+      "template_id": 438904,
+      "source_key": "template_assets_backfill:438904",
+      "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=438904&limit=1000&order=asc&sort=template_mint",
+      "error": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=438904&limit=1000&order=asc&sort=template_mint&page=1 failed: HTTP 502"
+    },
+    {
+      "template_id": 441676,
+      "source_key": "template_assets_backfill:441676",
+      "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=441676&limit=1000&order=asc&sort=template_mint",
+      "error": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=441676&limit=1000&order=asc&sort=template_mint&page=1 failed: HTTP 502"
+    },
+    {
+      "template_id": 441677,
+      "source_key": "template_assets_backfill:441677",
+      "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=441677&limit=1000&order=asc&sort=template_mint",
+      "error": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=441677&limit=1000&order=asc&sort=template_mint&page=1 failed: HTTP 502"
+    },
+    {
+      "template_id": 445272,
+      "source_key": "template_assets_backfill:445272",
+      "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=445272&limit=1000&order=asc&sort=template_mint",
+      "error": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=445272&limit=1000&order=asc&sort=template_mint&page=1 failed: HTTP 502"
+    },
+    {
+      "template_id": 449935,
+      "source_key": "template_assets_backfill:449935",
+      "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=449935&limit=1000&order=asc&sort=template_mint",
+      "error": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=449935&limit=1000&order=asc&sort=template_mint&page=1 failed: HTTP 502"
+    },
+    {
+      "template_id": 453934,
+      "source_key": "template_assets_backfill:453934",
+      "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=453934&limit=1000&order=asc&sort=template_mint",
+      "error": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=453934&limit=1000&order=asc&sort=template_mint&page=1 failed: HTTP 502"
+    },
+    {
+      "template_id": 458168,
+      "source_key": "template_assets_backfill:458168",
+      "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=458168&limit=1000&order=asc&sort=template_mint",
+      "error": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=458168&limit=1000&order=asc&sort=template_mint&page=1 failed: HTTP 502"
+    },
+    {
+      "template_id": 474614,
+      "source_key": "template_assets_backfill:474614",
+      "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=474614&limit=1000&order=asc&sort=template_mint",
+      "error": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=474614&limit=1000&order=asc&sort=template_mint&page=1 failed: HTTP 502"
+    },
+    {
+      "template_id": 597818,
+      "source_key": "template_assets_backfill:597818",
+      "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=597818&limit=1000&order=asc&sort=template_mint",
+      "error": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=597818&limit=1000&order=asc&sort=template_mint&page=1 failed: HTTP 502"
+    },
+    {
+      "template_id": 401767,
+      "source_key": "template_assets_backfill:401767",
+      "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=401767&limit=1000&order=asc&sort=template_mint",
+      "error": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=401767&limit=1000&order=asc&sort=template_mint&page=1 failed: HTTP 502"
+    },
+    {
+      "template_id": 401779,
+      "source_key": "template_assets_backfill:401779",
+      "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=401779&limit=1000&order=asc&sort=template_mint",
+      "error": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=401779&limit=1000&order=asc&sort=template_mint&page=1 failed: HTTP 502"
+    },
+    {
+      "template_id": 401786,
+      "source_key": "template_assets_backfill:401786",
+      "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=401786&limit=1000&order=asc&sort=template_mint",
+      "error": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=401786&limit=1000&order=asc&sort=template_mint&page=1 failed: HTTP 502"
+    },
+    {
+      "template_id": 401809,
+      "source_key": "template_assets_backfill:401809",
+      "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=401809&limit=1000&order=asc&sort=template_mint",
+      "error": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=401809&limit=1000&order=asc&sort=template_mint&page=1 failed: HTTP 502"
+    },
+    {
+      "template_id": 401910,
+      "source_key": "template_assets_backfill:401910",
+      "source_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=401910&limit=1000&order=asc&sort=template_mint",
+      "error": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=noballgamess&template_id=401910&limit=1000&order=asc&sort=template_mint&page=1 failed: HTTP 502"
+    }
+  ]
 }
