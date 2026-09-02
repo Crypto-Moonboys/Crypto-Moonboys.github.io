@@ -317,10 +317,18 @@ assert.match(appSource, /const pxPerMeter = basePxPerMeter \* fallbackPxPerMeter
   'fallback projection must apply fallback zoom without relying on MapLibre');
 assert.match(appSource, /function zoomFallbackMap\(delta\)[\s\S]*setFallbackZoom\(fallbackPxPerMeterScale \* \(delta > 0 \? 1\.22 : 0\.82\)\)/,
   'fallback zoom controls must change fallback projection scale');
-assert.match(appSource, /\$\('zoomInBtn'\)\.addEventListener\('click'[\s\S]*zoomFallbackMap\(1\)/,
-  'zoom-in button must be wired to fallback zoom');
-assert.match(appSource, /\$\('zoomOutBtn'\)\.addEventListener\('click'[\s\S]*zoomFallbackMap\(-1\)/,
-  'zoom-out button must be wired to fallback zoom');
+assert.match(appSource, /function setFallbackZoom\(nextScale\)[\s\S]*if \(liveMapUsable && map\) return[\s\S]*showFallbackLayer\(null, false\)[\s\S]*refreshFallbackVisuals\(\)/,
+  'fallback zoom must not force the fallback overlay while live MapLibre is active');
+assert.match(appSource, /function zoomActiveMap\(delta\)[\s\S]*liveMapUsable && map[\s\S]*map\.getZoom\?\.\(\)[\s\S]*map\.easeTo\?\.\(\{ zoom: nextZoom, duration: 180 \}\)[\s\S]*zoomFallbackMap\(delta\)/,
+  'zoom buttons must use an active-renderer-aware zoom path');
+assert.match(appSource, /\$\('zoomInBtn'\)\.addEventListener\('click'[\s\S]*zoomActiveMap\(1\)/,
+  'zoom-in button must be wired to active-renderer-aware zoom');
+assert.match(appSource, /\$\('zoomOutBtn'\)\.addEventListener\('click'[\s\S]*zoomActiveMap\(-1\)/,
+  'zoom-out button must be wired to active-renderer-aware zoom');
+assert.doesNotMatch(appSource, /\$\('zoomInBtn'\)\.addEventListener\('click'[\s\S]{0,120}zoomFallbackMap\(1\)/,
+  'zoom-in button must not call fallback-only zoom directly');
+assert.doesNotMatch(appSource, /\$\('zoomOutBtn'\)\.addEventListener\('click'[\s\S]{0,120}zoomFallbackMap\(-1\)/,
+  'zoom-out button must not call fallback-only zoom directly');
 assert.match(appSource, /MAP_BOOT_TIMEOUT_MS/, 'map boot must have a timeout fallback');
 assert.match(appSource, /activateMapFallback\('MapLibre library unavailable'\)/,
   'client must activate fallback when MapLibre fails to load');
@@ -397,18 +405,33 @@ assert.match(appSource, /GPS required for ranked real mode/,
   'GPS denial must explain ranked real mode while leaving preview rendering available');
 assert.match(appSource, /function safeBoot\(handler\)[\s\S]*reportSafeRuntimeError\(error, 'boot'\)/,
   'boot failures must be caught and converted to fallback runtime state');
+assert.match(appSource, /typeof result\?\.catch === 'function'/,
+  'safeHandler must only call catch when catch is a function');
+assert.match(appSource, /function reportSafeRuntimeError\([\s\S]*activateMapFallback\(`safe \$\{context\}`\)[\s\S]*initPlayerMarker\(\)[\s\S]*refreshFallbackVisuals\(\)/,
+  'runtime error fallback promotion must migrate/rebuild live markers before refreshing fallback visuals');
 assert.match(appSource, /window\.addEventListener\('unhandledrejection'[\s\S]*reportSafeRuntimeError/,
   'unhandled async startup errors must preserve the fallback map instead of killing the WebView');
 assert.doesNotMatch(htmlSource + appSource + cssSource, /site-shell|wiki-shell|game-fullscreen\.css|site-shell\.js/,
   'Dead Run must not load the full site shell');
 
 {
-  const forbiddenChangedFiles = execSync('git diff --name-only -- games/telegram workers/moonboys-api', { encoding: 'utf8' })
+  let diffCmd = 'git diff --name-only -- games/telegram workers/moonboys-api';
+  if (process.env.GITHUB_ACTIONS === 'true') {
+    try {
+      execSync('git rev-parse --verify HEAD^2', { stdio: 'ignore' });
+      diffCmd = 'git diff --name-only HEAD^1..HEAD^2 -- games/telegram workers/moonboys-api';
+    } catch (_) {
+      diffCmd = 'git diff --name-only origin/main...HEAD -- games/telegram workers/moonboys-api';
+    }
+  }
+  const forbiddenChangedFiles = execSync(diffCmd, { encoding: 'utf8' })
     .split(/\r?\n/)
     .filter(Boolean);
   assert.deepEqual(forbiddenChangedFiles, [],
     'Dead Run fallback-only fix must not change /games/telegram/ or Worker menu/API files');
 }
+assert.match(fs.readFileSync(new URL(import.meta.url), 'utf8'), /GITHUB_ACTIONS[\s\S]*HEAD\^1\.\.HEAD\^2[\s\S]*origin\/main\.\.\.HEAD/,
+  'path guard must compare a committed PR range in CI instead of a clean working tree');
 
 // Migration/schema authority.
 for (const flag of ['player_stats_applied', 'arcade_xp_applied', 'horde_applied']) {

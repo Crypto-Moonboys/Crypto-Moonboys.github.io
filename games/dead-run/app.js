@@ -201,7 +201,8 @@
   function reportSafeRuntimeError(error, context = 'runtime') {
     console.warn(`[dead-run] safe ${context}`, error);
     try {
-      showFallbackLayer(`safe ${context}`, true);
+      if (mapLoadFailed) showFallbackLayer(`safe ${context}`, true);
+      else activateMapFallback(`safe ${context}`);
       initPlayerMarker();
       refreshFallbackVisuals();
       if (ui.gpsStatus) ui.gpsStatus.textContent = 'Fallback map is active. Some live features may need a reload.';
@@ -213,7 +214,9 @@
     return (...args) => {
       try {
         const result = handler(...args);
-        if (result?.catch) result.catch((error) => reportSafeRuntimeError(error, context));
+        if (typeof result?.catch === 'function') {
+          result.catch((error) => reportSafeRuntimeError(error, context));
+        }
         return result;
       } catch (error) {
         reportSafeRuntimeError(error, context);
@@ -273,12 +276,22 @@
 
   function setFallbackZoom(nextScale) {
     fallbackPxPerMeterScale = Math.max(0.55, Math.min(2.8, nextScale));
+    if (liveMapUsable && map) return;
     showFallbackLayer(null, false);
     refreshFallbackVisuals();
   }
 
   function zoomFallbackMap(delta) {
     setFallbackZoom(fallbackPxPerMeterScale * (delta > 0 ? 1.22 : 0.82));
+  }
+
+  function zoomActiveMap(delta) {
+    if (liveMapUsable && map) {
+      const nextZoom = Math.max(14, Math.min(19, (map.getZoom?.() || 17) + delta));
+      map.easeTo?.({ zoom: nextZoom, duration: 180 });
+      return;
+    }
+    zoomFallbackMap(delta);
   }
 
   function refreshFallbackVisuals() {
@@ -1192,9 +1205,9 @@
       ui.start.classList.remove('hidden');
       loadProfile();
     }, 'run again'));
-    $('zoomInBtn').addEventListener('click', safeHandler(() => zoomFallbackMap(1), 'fallback zoom in'));
+    $('zoomInBtn').addEventListener('click', safeHandler(() => zoomActiveMap(1), 'fallback zoom in'));
     $('centerBtn').addEventListener('click', safeHandler(() => moveMapTo([player.lng, player.lat], { animate: true, zoom: 17, duration: 450 }), 'center map'));
-    $('zoomOutBtn').addEventListener('click', safeHandler(() => zoomFallbackMap(-1), 'fallback zoom out'));
+    $('zoomOutBtn').addEventListener('click', safeHandler(() => zoomActiveMap(-1), 'fallback zoom out'));
     $('slowBtn').addEventListener('click', safeHandler(useSlow, 'slow time'));
     ui.shove.addEventListener('click', safeHandler(shoveHorde, 'shove horde'));
     $('leaderboardBtn').addEventListener('click', safeHandler(() => showLeaderboard(), 'leaderboard'));
