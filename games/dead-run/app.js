@@ -1065,7 +1065,6 @@
     serverState = null;
     gameActive = true;
     session = { head_start_seconds: 60, started_at: new Date().toISOString(), ranked: false };
-    startTimeMs = Date.now();
     hordeStarted = false;
     demoDistance = 0; demoAmmo = 3; demoCharge = 0; demoSlow = 0; demoKills = 0; demoCrates = 0; demoShoves = 0; demoWaveIndex = 0;
     ui.gpsStatus.textContent = 'Getting your location for demo map...';
@@ -1073,11 +1072,12 @@
       const fix = await getInitialGpsFix();
       player = { lat: fix.lat, lng: fix.lng };
       ui.gpsStatus.textContent = `Demo map locked to your location, accuracy about ${Math.round(fix.accuracy_m)}m.`;
-      startGpsWatch();
     } catch (error) {
       player = { ...DEFAULT_POS };
-      ui.gpsStatus.textContent = `Demo map needs location for local play: ${error.message}. Showing London fallback.`;
+      ui.gpsStatus.textContent = `Demo map needs location for local play: ${error?.message || 'Location unavailable'}. Showing London fallback.`;
     }
+    session.started_at = new Date().toISOString();
+    startTimeMs = Date.now();
     ui.start.classList.add('hidden');
     ui.gameOver.classList.add('hidden');
     ui.risk.classList.add('hidden');

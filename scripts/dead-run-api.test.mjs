@@ -441,8 +441,13 @@ assert.match(appSource, /syncStartControls[\s\S]*ui\.safety\.addEventListener\('
   'start controls must be usable after the safety acknowledgement without waiting for MapLibre');
 assert.match(appSource, /GPS required for ranked real mode/,
   'GPS denial must explain ranked real mode while leaving preview rendering available');
-assert.match(appSource, /async function startDemo\(\)[\s\S]*getInitialGpsFix\(\)[\s\S]*player = \{ lat: fix\.lat, lng: fix\.lng \}[\s\S]*startGpsWatch\(\)[\s\S]*Showing London fallback/,
+assert.match(appSource, /async function startDemo\(\)[\s\S]*getInitialGpsFix\(\)[\s\S]*player = \{ lat: fix\.lat, lng: fix\.lng \}[\s\S]*Showing London fallback/,
   'demo mode must try to use the player GPS location for the live map before falling back');
+const startDemoSource = appSource.slice(appSource.indexOf('async function startDemo()'), appSource.indexOf('async function finishRun'));
+assert.doesNotMatch(startDemoSource, /startGpsWatch\(\)/,
+  'demo mode must not run the live GPS watch alongside synthetic demo movement');
+assert.ok(startDemoSource.indexOf('startTimeMs = Date.now();') > startDemoSource.indexOf('getInitialGpsFix();'),
+  'demo mode must not start the 60s clock until location lookup has finished');
 assert.match(appSource, /function safeBoot\(handler\)[\s\S]*reportSafeRuntimeError\(error, 'boot'\)/,
   'boot failures must be caught and converted to fallback runtime state');
 assert.match(appSource, /typeof result\?\.catch === 'function'/,
