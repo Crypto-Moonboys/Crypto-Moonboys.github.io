@@ -13350,7 +13350,7 @@ export default {
 // ── Telegram bot command handler ──────────────────────────────────────────────
 
 const SITE_URL = 'https://cryptomoonboys.com';
-const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260902-games-shell-v3`;
+const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260902-games-shell-v4`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
 const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260814-moonpet-aaa-pass`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;

@@ -2,6 +2,13 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
 const html = fs.readFileSync(new URL('../games/telegram/index.html', import.meta.url), 'utf8');
+const deadRunHtml = fs.readFileSync(new URL('../games/dead-run/index.html', import.meta.url), 'utf8');
+const workerSource = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
+const deadRunRelease = html.match(/href="\/games\/dead-run\/\?v=([^"]+)"/)?.[1];
+const launcherRelease = html.match(/<meta name="moonboys-mini-app-version" content="([^"]+)">/)?.[1];
+
+assert.ok(deadRunRelease, 'Games launcher must link Dead Run with a cache-busting release token');
+assert.ok(launcherRelease, 'Games launcher must publish a mini-app release token');
 
 const forbiddenScripts = [
   '/js/site-shell.js',
@@ -64,7 +71,7 @@ assert.ok(!/dead-run[^"']*(?:bootstrap|runtime|logic)\.js/i.test(html), 'Games l
 
 for (const [label, href] of [
   ['Moonpet OS', '/moonpet-game.html'],
-  ['Dead Run', '/games/dead-run/'],
+  ['Dead Run', `/games/dead-run/?v=${deadRunRelease}`],
   ['Battle Chamber', '/community.html'],
   ['NBG London Runner', '/games/nbg-london/'],
   ['Full Arcade', '/games/'],
@@ -73,10 +80,38 @@ for (const [label, href] of [
   assert.ok(html.includes(`href="${href}`), `Games launcher must link ${label} to ${href}`);
 }
 
+assert.ok(
+  !html.includes('href="/games/dead-run/"'),
+  'Games launcher must not link Dead Run without a release version',
+);
+
+const deadRunAssetUrls = [...deadRunHtml.matchAll(/<(?:link|script)\b[^>]*(?:href|src)="([^"]+)"[^>]*>/gi)]
+  .map((match) => match[1])
+  .filter((url) => url.startsWith('styles.css') || url.startsWith('/js/api-config.js') || url.startsWith('app.js'));
+
+assert.deepEqual(
+  deadRunAssetUrls,
+  [
+    `styles.css?v=${deadRunRelease}`,
+    `/js/api-config.js?v=${deadRunRelease}`,
+    `app.js?v=${deadRunRelease}`,
+  ],
+  'Dead Run must load local CSS/JS assets with the same release token as the launcher',
+);
+
+for (const url of deadRunAssetUrls) {
+  const version = new URL(url, 'https://cryptomoonboys.com/games/dead-run/').searchParams.get('v');
+  assert.equal(version, deadRunRelease, `Dead Run asset ${url} must match the launcher release token`);
+}
+
 assert.match(html, /window\.Telegram\s*&&\s*window\.Telegram\.WebApp/, 'Games launcher must read Telegram.WebApp safely');
 assert.ok(
-  html.includes('/games/telegram/?v=20260902-games-shell-v3'),
+  html.includes(`/games/telegram/?v=${launcherRelease}`),
   'Games launcher must include cache-busting deployment guidance',
+);
+assert.ok(
+  workerSource.includes(`const TELEGRAM_GAMES_MENU_URL = \`\${SITE_URL}/games/telegram/?v=${launcherRelease}\`;`),
+  'Worker Telegram menu URL must publish the same launcher release token shown by the launcher',
 );
 
 console.log('telegram-games-launcher.test.mjs passed');
