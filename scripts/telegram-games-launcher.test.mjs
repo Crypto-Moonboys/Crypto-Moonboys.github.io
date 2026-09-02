@@ -53,8 +53,10 @@ assert.ok(!/URLSearchParams/i.test(html), 'Games launcher must not parse or rewr
 assert.ok(!/location\.hash/i.test(html), 'Games launcher must not read location.hash');
 assert.ok(!/tgWebAppData/i.test(html), 'Games launcher must not parse tgWebAppData');
 assert.ok(!/data-mini-link/i.test(html), 'Games launcher must not require data-mini-link attributes');
-assert.ok(!/querySelectorAll\('\[data-mini-link\]'\)/.test(html), 'Games launcher must not mutate launcher link hrefs');
-assert.ok(!/\.href\s*=/.test(html), 'Games launcher must not rewrite link hrefs');
+assert.ok(
+  !/(?:\.href\s*=|setAttribute\(\s*["']href["']\s*,)/.test(html),
+  'Games launcher must not rewrite link hrefs',
+);
 assert.ok(!/src=["'][^"']*(?:arcade|site-shell|wiki)[^"']*bundle[^"']*["']/i.test(html), 'Games launcher must not load full arcade/site bundles');
 assert.ok(!/location\.(?:assign|replace)|window\.location\s*=/.test(html), 'Games launcher must not auto-redirect on load');
 assert.ok(!/geolocation|getCurrentPosition|watchPosition/i.test(html), 'Games launcher must not request GPS/location');
