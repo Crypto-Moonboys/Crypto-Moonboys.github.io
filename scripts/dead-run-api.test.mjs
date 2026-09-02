@@ -288,8 +288,24 @@ assert.match(cssSource, /min-height:\s*100dvh/, 'map sizing must include a 100dv
 assert.match(cssSource, /#map\s*\{[\s\S]*z-index:\s*1/, 'map layer must have an explicit z-index below HUD');
 assert.match(cssSource, /\.fallback-map-layer\s*\{[\s\S]*repeating-linear-gradient[\s\S]*linear-gradient/,
   'fallback map layer must render a visible grid/radar background without live tiles');
-assert.match(cssSource, /\.map-fallback-active[\s\S]*\.fallback-map-layer/,
+const fallbackLayerBaseSource = cssSource.slice(
+  cssSource.indexOf('.fallback-map-layer {'),
+  cssSource.indexOf('\n}', cssSource.indexOf('.fallback-map-layer {')) + 2,
+);
+assert.match(fallbackLayerBaseSource, /opacity:\s*0/,
+  'base fallback map layer must be visually hidden until fallback mode is active');
+assert.match(fallbackLayerBaseSource, /pointer-events:\s*none/,
+  'base fallback map layer must be inert until fallback mode is active');
+const fallbackLayerActiveSource = cssSource.slice(
+  cssSource.indexOf('#map.map-fallback-active .fallback-map-layer'),
+  cssSource.indexOf('\n}', cssSource.indexOf('#map.map-fallback-active .fallback-map-layer')) + 2,
+);
+assert.match(fallbackLayerActiveSource, /#map\.map-fallback-active \.fallback-map-layer,\s*[\r\n]+\.map-fallback-active \.fallback-map-layer/,
   'fallback class must visibly promote the fallback map layer');
+assert.match(fallbackLayerActiveSource, /opacity:\s*1/,
+  'fallback-active selector must show the fallback map layer');
+assert.match(fallbackLayerActiveSource, /pointer-events:\s*auto/,
+  'fallback-active selector must allow fallback marker interactions');
 assert.match(htmlSource, /id="map" class="map-fallback-active"/,
   'Dead Run must render the fallback map class before JavaScript runs');
 assert.match(appSource, /function bootFallbackMap\([\s\S]*bindViewportSizing\(\)[\s\S]*showFallbackLayer\('fallback-first boot', false\)[\s\S]*initPlayerMarker\(\)/,
@@ -356,6 +372,8 @@ assert.ok(bootSource.indexOf('bootFallbackMap();') > -1 && bootSource.indexOf('g
   'startup must not request GPS before rendering the map/background');
 assert.match(bootSource, /if \(DEAD_RUN_LIVE_MAP_ENABLED\)[\s\S]*makeMap\(\)[\s\S]*requestIdleCallback/,
   'MapLibre initialization must be gated and delayed behind the live map kill switch');
+assert.match(appSource, /const DEAD_RUN_LIVE_MAP_ENABLED =\s*[\r\n]+\s*window\.MOONBOYS_API\?\.DEAD_RUN_LIVE_MAP_ENABLED === true &&\s*[\r\n]+\s*!!TILE_URL &&\s*[\r\n]+\s*!!TILE_ATTRIBUTION;/,
+  'live map enablement must require the kill switch, tile URL, and tile attribution');
 assert.match(appSource, /async function makeMap\(\)[\s\S]*if \(!DEAD_RUN_LIVE_MAP_ENABLED\) return[\s\S]*try[\s\S]*new maplibregl\.Map/,
   'MapLibre constructors must be guarded by the live map flag and try/catch');
 assert.match(appSource, /async function ensureMapLibreLoaded\(\)[\s\S]*if \(window\.maplibregl\?\.Map\) return true[\s\S]*activateMapFallback\('MapLibre library unavailable'\)[\s\S]*return false/,

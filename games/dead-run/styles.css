@@ -52,10 +52,10 @@ body { overscroll-behavior: none; touch-action: manipulation; }
 .fallback-map-layer {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: 0;
   overflow: hidden;
-  opacity: 1;
-  pointer-events: auto;
+  opacity: 0;
+  pointer-events: none;
   background:
     radial-gradient(circle at 50% 52%, rgba(55,243,255,.16), transparent 0 22%, rgba(55,243,255,.05) 23% 24%, transparent 25% 100%),
     repeating-linear-gradient(33deg, transparent 0 30px, rgba(55,243,255,.1) 31px 33px, transparent 34px 74px),
@@ -64,6 +64,7 @@ body { overscroll-behavior: none; touch-action: manipulation; }
     linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
   background-size: auto, auto, auto, 44px 44px, 44px 44px;
 }
+#map.map-fallback-active .fallback-map-layer,
 .map-fallback-active .fallback-map-layer {
   z-index: 2;
   opacity: 1;

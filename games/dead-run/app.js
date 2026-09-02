@@ -159,7 +159,10 @@
   // provider before the fallback game shell is interactive.
   const TILE_URL = String(window.MOONBOYS_API?.DEAD_RUN_TILE_URL || '').trim();
   const TILE_ATTRIBUTION = String(window.MOONBOYS_API?.DEAD_RUN_TILE_ATTRIBUTION || '').trim();
-  const DEAD_RUN_LIVE_MAP_ENABLED = window.MOONBOYS_API?.DEAD_RUN_LIVE_MAP_ENABLED === true && !!TILE_URL;
+  const DEAD_RUN_LIVE_MAP_ENABLED =
+    window.MOONBOYS_API?.DEAD_RUN_LIVE_MAP_ENABLED === true &&
+    !!TILE_URL &&
+    !!TILE_ATTRIBUTION;
   const MAPLIBRE_JS_URL = 'https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js';
   const MAPLIBRE_CSS_URL = 'https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css';
   const MAPLIBRE_JS_INTEGRITY = 'sha384-SYKAG6cglRMN0RVvhNeBY0r3FYKNOJtznwA0v7B5Vp9tr31xAHsZC0DqkQ/pZDmj';
