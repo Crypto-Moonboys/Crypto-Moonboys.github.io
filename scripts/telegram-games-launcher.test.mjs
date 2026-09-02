@@ -10,7 +10,7 @@ const launcherRelease = html.match(/<meta name="moonboys-mini-app-version" conte
 const inlineLauncherScript = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].at(-1)?.[1];
 
 assert.ok(deadRunRelease, 'Games launcher must link Dead Run with a cache-busting release token');
-assert.equal(launcherRelease, '20260902-games-shell-v5', 'Games launcher must publish the v5 mini-app release token');
+assert.equal(launcherRelease, '20260902-games-shell-v6', 'Games launcher must publish the v6 mini-app release token');
 assert.ok(inlineLauncherScript, 'Games launcher must include a body-end inline launcher controller');
 
 const forbiddenScripts = [
@@ -166,7 +166,7 @@ class FakeElement {
   }
 }
 
-function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search = '?v=20260902-games-shell-v5&startapp=arcade' } = {}) {
+function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search = '?v=20260902-games-shell-v6&startapp=arcade' } = {}) {
   const calls = [];
   const timers = [];
   const viewportHandlers = [];
@@ -295,7 +295,7 @@ function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search
   const leakedQueryInitData = 'query_id=legacy-query&user=%7B%22id%22%3A789%7D';
   const harness = runLauncher({
     initData: '',
-    search: `?v=20260902-games-shell-v5&tgWebAppData=${encodeURIComponent(leakedQueryInitData)}&startapp=arcade`,
+    search: `?v=20260902-games-shell-v6&tgWebAppData=${encodeURIComponent(leakedQueryInitData)}&startapp=arcade`,
   });
   harness.viewportHandlers[0]({ isStateStable: true });
   harness.links[2].dispatch('click');
