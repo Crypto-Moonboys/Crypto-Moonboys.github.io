@@ -14,7 +14,7 @@
     script-src 'self' https://unpkg.com https://telegram.org;
     style-src 'self' https://unpkg.com 'unsafe-inline';
     img-src 'self' data: blob: https://*.basemaps.cartocdn.com https://tile.openstreetmap.org https://*.tile.openstreetmap.org;
-    connect-src 'self' https://api.cryptomoonboys.com https://cryptomoonboys.com https://www.cryptomoonboys.com;
+    connect-src 'self' https://api.cryptomoonboys.com https://cryptomoonboys.com https://www.cryptomoonboys.com https://*.basemaps.cartocdn.com https://tile.openstreetmap.org https://*.tile.openstreetmap.org;
     worker-src blob:;
     font-src 'self';
     frame-src 'none';
@@ -41,7 +41,9 @@
 </head>
 <body class="page-standalone-tool">
   <div id="app">
-    <div id="map" aria-label="Dead Run game map"></div>
+    <div id="map" aria-label="Dead Run game map">
+      <div id="fallbackMapLayer" class="fallback-map-layer" aria-hidden="true"></div>
+    </div>
 
     <header class="hud hud-top">
       <div class="stat"><strong id="timeText">01:00</strong><span id="timeLabel">HEAD START</span></div>
