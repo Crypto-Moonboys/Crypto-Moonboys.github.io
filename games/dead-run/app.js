@@ -253,6 +253,7 @@
     mapFallbackActive = false;
     clearTimeout(mapBootTimer);
     $('map')?.classList.remove('map-fallback-active');
+    moveMapTo([player.lng, player.lat], { zoom: 17 });
     rebuildMapVisuals();
   }
 
@@ -283,15 +284,6 @@
 
   function zoomFallbackMap(delta) {
     setFallbackZoom(fallbackPxPerMeterScale * (delta > 0 ? 1.22 : 0.82));
-  }
-
-  function zoomActiveMap(delta) {
-    if (liveMapUsable && map) {
-      const nextZoom = Math.max(14, Math.min(19, (map.getZoom?.() || 17) + delta));
-      map.easeTo?.({ zoom: nextZoom, duration: 180 });
-      return;
-    }
-    zoomFallbackMap(delta);
   }
 
   function refreshFallbackVisuals() {
@@ -1076,7 +1068,16 @@
     startTimeMs = Date.now();
     hordeStarted = false;
     demoDistance = 0; demoAmmo = 3; demoCharge = 0; demoSlow = 0; demoKills = 0; demoCrates = 0; demoShoves = 0; demoWaveIndex = 0;
-    player = { ...DEFAULT_POS };
+    ui.gpsStatus.textContent = 'Getting your location for demo map...';
+    try {
+      const fix = await getInitialGpsFix();
+      player = { lat: fix.lat, lng: fix.lng };
+      ui.gpsStatus.textContent = `Demo map locked to your location, accuracy about ${Math.round(fix.accuracy_m)}m.`;
+      startGpsWatch();
+    } catch (error) {
+      player = { ...DEFAULT_POS };
+      ui.gpsStatus.textContent = `Demo map needs location for local play: ${error.message}. Showing London fallback.`;
+    }
     ui.start.classList.add('hidden');
     ui.gameOver.classList.add('hidden');
     ui.risk.classList.add('hidden');
@@ -1205,9 +1206,7 @@
       ui.start.classList.remove('hidden');
       loadProfile();
     }, 'run again'));
-    $('zoomInBtn').addEventListener('click', safeHandler(() => zoomActiveMap(1), 'fallback zoom in'));
     $('centerBtn').addEventListener('click', safeHandler(() => moveMapTo([player.lng, player.lat], { animate: true, zoom: 17, duration: 450 }), 'center map'));
-    $('zoomOutBtn').addEventListener('click', safeHandler(() => zoomActiveMap(-1), 'fallback zoom out'));
     $('slowBtn').addEventListener('click', safeHandler(useSlow, 'slow time'));
     ui.shove.addEventListener('click', safeHandler(shoveHorde, 'shove horde'));
     $('leaderboardBtn').addEventListener('click', safeHandler(() => showLeaderboard(), 'leaderboard'));

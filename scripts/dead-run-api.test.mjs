@@ -282,7 +282,7 @@ for (const id of [
   'banner', 'startPanel', 'gameOverPanel', 'gameOverTitle', 'finalStats', 'xpResult', 'slowCount',
   'gpsStatus', 'profileBox', 'hordeStrip', 'riskBadge', 'safetyAck', 'resumeBtn', 'leaderboardPanel',
   'leaderboardList', 'startBtn', 'demoBtn', 'againBtn', 'leaderboardBtn', 'closeLeaderboardBtn',
-  'centerBtn', 'zoomInBtn', 'zoomOutBtn', 'slowBtn', 'gameLeaderboardBtn',
+  'centerBtn', 'slowBtn', 'gameLeaderboardBtn',
 ]) {
   assert.ok(htmlSource.includes(`id="${id}"`), `index.html must contain id="${id}"`);
   assert.ok(appSource.includes(`'${id}'`) || appSource.includes(`"${id}"`), `app.js must reference id "${id}"`);
@@ -315,10 +315,12 @@ assert.match(appSource, /MOONBOYS_API[\s\S]{0,60}DEAD_RUN_TILE_URL/,
   'tile URL must be read from window.MOONBOYS_API.DEAD_RUN_TILE_URL so production can override it');
 assert.match(appSource, /TILE_ATTRIBUTION/,
   'tile attribution must derive from a configurable constant so it stays accurate for any provider');
-assert.match(apiConfigSource, /DEAD_RUN_LIVE_MAP_ENABLED:\s*false/,
-  'production Dead Run live map kill switch must default to false');
-assert.match(apiConfigSource, /DEAD_RUN_TILE_URL:\s*null/,
-  'production Dead Run must not ship an active default live tile URL');
+assert.match(apiConfigSource, /DEAD_RUN_LIVE_MAP_ENABLED:\s*true/,
+  'production Dead Run demo must enable the real live map');
+assert.match(apiConfigSource, /DEAD_RUN_TILE_URL:\s*'https:\/\/tile\.openstreetmap\.org\/\{z\}\/\{x\}\/\{y\}\.png'/,
+  'production Dead Run demo must ship an active OpenStreetMap tile URL');
+assert.match(apiConfigSource, /DEAD_RUN_TILE_ATTRIBUTION:\s*'© OpenStreetMap contributors'/,
+  'production Dead Run demo must include OpenStreetMap attribution');
 assert.doesNotMatch(apiConfigSource, /basemaps\.cartocdn\.com\/dark_all/,
   'current CARTO API-key-needed tile URL must not be the default active tile URL');
 
@@ -357,20 +359,12 @@ assert.match(appSource, /let fallbackPxPerMeterScale = 1/,
   'fallback map must keep an independent zoom scale for the non-MapLibre renderer');
 assert.match(appSource, /const pxPerMeter = basePxPerMeter \* fallbackPxPerMeterScale/,
   'fallback projection must apply fallback zoom without relying on MapLibre');
-assert.match(appSource, /function zoomFallbackMap\(delta\)[\s\S]*setFallbackZoom\(fallbackPxPerMeterScale \* \(delta > 0 \? 1\.22 : 0\.82\)\)/,
-  'fallback zoom controls must change fallback projection scale');
+assert.doesNotMatch(htmlSource, /id="zoom(?:In|Out)Btn"/,
+  'Dead Run must not render custom zoom buttons; users zoom the live map with native scroll or gestures');
 assert.match(appSource, /function setFallbackZoom\(nextScale\)[\s\S]*if \(liveMapUsable && map\) return[\s\S]*showFallbackLayer\(null, false\)[\s\S]*refreshFallbackVisuals\(\)/,
   'fallback zoom must not force the fallback overlay while live MapLibre is active');
-assert.match(appSource, /function zoomActiveMap\(delta\)[\s\S]*liveMapUsable && map[\s\S]*map\.getZoom\?\.\(\)[\s\S]*map\.easeTo\?\.\(\{ zoom: nextZoom, duration: 180 \}\)[\s\S]*zoomFallbackMap\(delta\)/,
-  'zoom buttons must use an active-renderer-aware zoom path');
-assert.match(appSource, /\$\('zoomInBtn'\)\.addEventListener\('click'[\s\S]*zoomActiveMap\(1\)/,
-  'zoom-in button must be wired to active-renderer-aware zoom');
-assert.match(appSource, /\$\('zoomOutBtn'\)\.addEventListener\('click'[\s\S]*zoomActiveMap\(-1\)/,
-  'zoom-out button must be wired to active-renderer-aware zoom');
-assert.doesNotMatch(appSource, /\$\('zoomInBtn'\)\.addEventListener\('click'[\s\S]{0,120}zoomFallbackMap\(1\)/,
-  'zoom-in button must not call fallback-only zoom directly');
-assert.doesNotMatch(appSource, /\$\('zoomOutBtn'\)\.addEventListener\('click'[\s\S]{0,120}zoomFallbackMap\(-1\)/,
-  'zoom-out button must not call fallback-only zoom directly');
+assert.doesNotMatch(appSource, /zoomActiveMap|\$\('zoomInBtn'\)|\$\('zoomOutBtn'\)/,
+  'Dead Run must not wire custom zoom controls after removing the buttons');
 assert.match(appSource, /MAP_BOOT_TIMEOUT_MS/, 'map boot must have a timeout fallback');
 assert.match(appSource, /activateMapFallback\('MapLibre library unavailable'\)/,
   'client must activate fallback when MapLibre fails to load');
@@ -386,6 +380,8 @@ assert.match(appSource, /function addMapMarker\([\s\S]*showFallbackLayer\(null, 
   'marker requests before MapLibre load must use temporary fallback visuals without forcing permanent fallback');
 assert.match(appSource, /function markLiveMapReady\([\s\S]*if \(mapLoadFailed\) return[\s\S]*rebuildMapVisuals\(\)/,
   'live MapLibre load must rebuild early fallback markers unless the live map truly failed');
+assert.match(appSource, /function markLiveMapReady\([\s\S]*moveMapTo\(\[player\.lng, player\.lat\], \{ zoom: 17 \}\)[\s\S]*rebuildMapVisuals\(\)/,
+  'live MapLibre load must recenter on the latest GPS/demo player position');
 assert.match(appSource, /viewportStableHeight/, 'client must read Telegram viewport height when available');
 assert.match(appSource, /visualViewport/, 'client must read browser visualViewport when available');
 assert.match(appSource, /--dead-run-vh/, 'client must publish a stable map viewport CSS variable');
@@ -432,7 +428,7 @@ assert.ok(bootSource.indexOf('bootFallbackMap();') < bootSource.indexOf('loadPro
 assert.ok(bootSource.indexOf('bootFallbackMap();') > -1 && bootSource.indexOf('getInitialGpsFix();') === -1,
   'startup must not request GPS before rendering the map/background');
 assert.match(bootSource, /if \(DEAD_RUN_LIVE_MAP_ENABLED\)[\s\S]*makeMap\(\)[\s\S]*requestIdleCallback/,
-  'MapLibre initialization must be gated and delayed behind the live map kill switch');
+  'MapLibre initialization must be gated and delayed until the fallback shell is interactive');
 assert.match(appSource, /async function ensureMapLibreLoaded\(\)[\s\S]*if \(!DEAD_RUN_LIVE_MAP_ENABLED\) return false/,
   'lazy MapLibre loading must be unreachable when the live map kill switch is off');
 assert.match(appSource, /const DEAD_RUN_LIVE_MAP_ENABLED =\s*[\r\n]+\s*window\.MOONBOYS_API\?\.DEAD_RUN_LIVE_MAP_ENABLED === true &&\s*[\r\n]+\s*!!TILE_URL &&\s*[\r\n]+\s*!!TILE_ATTRIBUTION;/,
@@ -445,6 +441,8 @@ assert.match(appSource, /syncStartControls[\s\S]*ui\.safety\.addEventListener\('
   'start controls must be usable after the safety acknowledgement without waiting for MapLibre');
 assert.match(appSource, /GPS required for ranked real mode/,
   'GPS denial must explain ranked real mode while leaving preview rendering available');
+assert.match(appSource, /async function startDemo\(\)[\s\S]*getInitialGpsFix\(\)[\s\S]*player = \{ lat: fix\.lat, lng: fix\.lng \}[\s\S]*startGpsWatch\(\)[\s\S]*Showing London fallback/,
+  'demo mode must try to use the player GPS location for the live map before falling back');
 assert.match(appSource, /function safeBoot\(handler\)[\s\S]*reportSafeRuntimeError\(error, 'boot'\)/,
   'boot failures must be caught and converted to fallback runtime state');
 assert.match(appSource, /typeof result\?\.catch === 'function'/,
