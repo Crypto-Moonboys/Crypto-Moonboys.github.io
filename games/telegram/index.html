@@ -35,63 +35,15 @@
   <main>
     <h1>Crypto Moonboys Games</h1>
     <p class="ok">Launcher loaded.</p>
-    <p id="env">Checking Telegram environment...</p>
+    <p>Static Telegram launcher.</p>
     <nav aria-label="Crypto Moonboys games">
-      <a data-mini-link href="/moonpet-game.html?v=20260814-moonpet-aaa-pass">Moonpet OS</a>
-      <a data-mini-link href="/games/dead-run/">Dead Run</a>
-      <a data-mini-link href="/community.html">Battle Chamber</a>
-      <a data-mini-link href="/games/nbg-london/">NBG London Runner</a>
-      <a data-mini-link href="/games/">Full Arcade</a>
+      <a href="/moonpet-game.html?v=20260814-moonpet-aaa-pass">Moonpet OS</a>
+      <a href="/games/dead-run/">Dead Run</a>
+      <a href="/community.html">Battle Chamber</a>
+      <a href="/games/nbg-london/">NBG London Runner</a>
+      <a href="/games/">Full Arcade</a>
     </nav>
     <p><code>/games/telegram/?v=20260902-games-shell-v2</code></p>
   </main>
-  <script>
-    (function () {
-      var env = document.getElementById('env');
-      var hasTg = !!(window.Telegram && window.Telegram.WebApp);
-      var initData = '';
-      var hashData = '';
-      var storedData = '';
-      var STORAGE_KEY = 'moonboys_tg_web_app_data';
-
-      try {
-        initData = hasTg && window.Telegram.WebApp.initData ? window.Telegram.WebApp.initData : '';
-      } catch (_) {}
-
-      try {
-        hashData = new URLSearchParams(String(location.hash || '').replace(/^#/, '')).get('tgWebAppData') || '';
-      } catch (_) {}
-
-      try {
-        storedData = sessionStorage.getItem(STORAGE_KEY) || '';
-      } catch (_) {}
-
-      var tgWebAppData = initData || hashData || storedData || '';
-      if (tgWebAppData) {
-        try { sessionStorage.setItem('moonboys_tg_web_app_data', tgWebAppData); } catch (_) {}
-      }
-
-      function appendTelegramData(href) {
-        var url;
-        try {
-          url = new URL(href, location.origin);
-        } catch (_) {
-          return href;
-        }
-        if (url.origin !== location.origin || !tgWebAppData) return href;
-        var hash = new URLSearchParams(String(url.hash || '').replace(/^#/, ''));
-        hash.set('tgWebAppData', tgWebAppData);
-        return url.pathname + url.search + '#' + hash.toString();
-      }
-
-      document.querySelectorAll('[data-mini-link]').forEach(function (link) {
-        link.href = appendTelegramData(link.getAttribute('href'));
-      });
-
-      var initLen = 0;
-      try { initLen = tgWebAppData ? tgWebAppData.length : 0; } catch (_) {}
-      env.textContent = hasTg ? 'Telegram SDK detected. initData length: ' + initLen : 'Telegram SDK not detected. Browser preview mode.';
-    }());
-  </script>
 </body>
 </html>

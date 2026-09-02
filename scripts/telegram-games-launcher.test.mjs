@@ -48,6 +48,15 @@ assert.ok(
 );
 assert.ok(!/<img\b/i.test(html), 'Games launcher must not load inline image elements');
 assert.ok(!/localStorage/i.test(html), 'Games launcher must not depend on localStorage');
+assert.ok(!/sessionStorage/i.test(html), 'Games launcher must not depend on sessionStorage');
+assert.ok(!/URLSearchParams/i.test(html), 'Games launcher must not parse or rewrite URL parameters');
+assert.ok(!/location\.hash/i.test(html), 'Games launcher must not read location.hash');
+assert.ok(!/tgWebAppData/i.test(html), 'Games launcher must not parse tgWebAppData');
+assert.ok(!/data-mini-link/i.test(html), 'Games launcher must not require data-mini-link attributes');
+assert.ok(
+  !/(?:\.href\s*=|setAttribute\(\s*["']href["']\s*,)/.test(html),
+  'Games launcher must not rewrite link hrefs',
+);
 assert.ok(!/src=["'][^"']*(?:arcade|site-shell|wiki)[^"']*bundle[^"']*["']/i.test(html), 'Games launcher must not load full arcade/site bundles');
 assert.ok(!/location\.(?:assign|replace)|window\.location\s*=/.test(html), 'Games launcher must not auto-redirect on load');
 assert.ok(!/geolocation|getCurrentPosition|watchPosition/i.test(html), 'Games launcher must not request GPS/location');
@@ -65,17 +74,6 @@ for (const [label, href] of [
 }
 
 assert.match(html, /window\.Telegram\s*&&\s*window\.Telegram\.WebApp/, 'Games launcher must read Telegram.WebApp safely');
-assert.match(html, /window\.Telegram\.WebApp\.initData/, 'Games launcher must read initData from Telegram.WebApp.initData');
-assert.match(html, /location\.hash[\s\S]*tgWebAppData/, 'Games launcher must read tgWebAppData from the URL hash');
-assert.match(html, /try\s*\{\s*sessionStorage\.setItem\('moonboys_tg_web_app_data',\s*tgWebAppData\);\s*\}\s*catch\s*\(_\)\s*\{\}/, 'Games launcher must persist tgWebAppData into sessionStorage inside try/catch');
-assert.match(html, /url\.origin\s*!==\s*location\.origin/, 'Games launcher must only mutate same-origin links');
-assert.match(html, /hash\.set\('tgWebAppData',\s*tgWebAppData\)/, 'Games launcher must append tgWebAppData into internal link hashes');
-assert.match(html, /querySelectorAll\('\[data-mini-link\]'\)/, 'Games launcher must apply Telegram data preservation to card links');
-
-assert.ok(
-  html.includes('Telegram SDK detected. initData length: '),
-  'Games launcher must include the temporary Telegram SDK diagnostic line',
-);
 assert.ok(
   html.includes('/games/telegram/?v=20260902-games-shell-v2'),
   'Games launcher must include cache-busting deployment guidance',
