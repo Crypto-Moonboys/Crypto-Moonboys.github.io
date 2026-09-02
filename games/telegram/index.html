@@ -50,6 +50,8 @@
       var hasTg = !!(window.Telegram && window.Telegram.WebApp);
       var initData = '';
       var hashData = '';
+      var storedData = '';
+      var STORAGE_KEY = 'moonboys_tg_web_app_data';
 
       try {
         initData = hasTg && window.Telegram.WebApp.initData ? window.Telegram.WebApp.initData : '';
@@ -59,9 +61,13 @@
         hashData = new URLSearchParams(String(location.hash || '').replace(/^#/, '')).get('tgWebAppData') || '';
       } catch (_) {}
 
-      var tgWebAppData = initData || hashData || '';
+      try {
+        storedData = sessionStorage.getItem(STORAGE_KEY) || '';
+      } catch (_) {}
+
+      var tgWebAppData = initData || hashData || storedData || '';
       if (tgWebAppData) {
-        try { sessionStorage.setItem('moonboys_tg_web_app_data', tgWebAppData); } catch (_) {}
+        try { sessionStorage.setItem(STORAGE_KEY, tgWebAppData); } catch (_) {}
       }
 
       function appendTelegramData(href) {
@@ -82,7 +88,7 @@
       });
 
       var initLen = 0;
-      try { initLen = initData ? initData.length : 0; } catch (_) {}
+      try { initLen = tgWebAppData ? tgWebAppData.length : 0; } catch (_) {}
       env.textContent = hasTg ? 'Telegram SDK detected. initData length: ' + initLen : 'Telegram SDK not detected. Browser preview mode.';
     }());
   </script>
