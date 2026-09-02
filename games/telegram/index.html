@@ -6,16 +6,8 @@
   <meta name="robots" content="noindex,nofollow">
   <title>Crypto Moonboys Games</title>
   <link rel="icon" type="image/png" href="/favicon.png">
-  <meta name="moonboys-mini-app-version" content="20260902-games-shell-v4">
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script>
-    try {
-      if (window.Telegram && window.Telegram.WebApp) {
-        window.Telegram.WebApp.ready();
-        window.Telegram.WebApp.expand();
-      }
-    } catch (_) {}
-  </script>
+  <meta name="moonboys-mini-app-version" content="20260902-games-shell-v5">
+  <script data-cfasync="false" src="https://telegram.org/js/telegram-web-app.js?63"></script>
   <style>
     :root { color-scheme: dark; }
     * { box-sizing: border-box; }
@@ -27,23 +19,175 @@
     nav { display:grid; gap:12px; margin-top:18px; }
     a { display:block; border:1px solid #263142; border-radius:14px; padding:16px; background:#151d2a; color:#f6f8ff; font-size:19px; font-weight:800; line-height:1.2; text-decoration:none; -webkit-tap-highlight-color:transparent; }
     a:active { background:#1c2635; }
+    body.is-initializing nav a,
+    body.is-navigating nav a { opacity:.58; pointer-events:none; }
+    body.is-navigating nav a.is-launching { opacity:1; }
     code { color:#ffd15c; word-break:break-word; }
     .ok { color:#32ff62; font-weight:800; }
   </style>
 </head>
-<body class="page-standalone-tool">
-  <main>
+<body class="page-standalone-tool is-initializing" aria-busy="true">
+  <main id="launcherRoot" aria-busy="true">
     <h1>Crypto Moonboys Games</h1>
-    <p class="ok">Launcher loaded.</p>
+    <p class="ok" id="launchStatus" role="status" aria-live="polite">Preparing games...</p>
     <p>Static Telegram launcher.</p>
     <nav aria-label="Crypto Moonboys games">
-      <a href="/moonpet-game.html?v=20260814-moonpet-aaa-pass">Moonpet OS</a>
-      <a href="/games/dead-run/?v=20260902-dead-run-v4">Dead Run</a>
-      <a href="/community.html">Battle Chamber</a>
-      <a href="/games/nbg-london/">NBG London Runner</a>
-      <a href="/games/">Full Arcade</a>
+      <a href="/moonpet-game.html?v=20260814-moonpet-aaa-pass" aria-disabled="true" tabindex="-1">Moonpet OS</a>
+      <a href="/games/dead-run/?v=20260902-dead-run-v4" aria-disabled="true" tabindex="-1">Dead Run</a>
+      <a href="/community.html?v=20260902-games-shell-v5" aria-disabled="true" tabindex="-1">Battle Chamber</a>
+      <a href="/games/nbg-london/?v=20260902-games-shell-v5" aria-disabled="true" tabindex="-1">NBG London Runner</a>
+      <a href="/games/?v=20260902-games-shell-v5" aria-disabled="true" tabindex="-1">Full Arcade</a>
     </nav>
-    <p><code>/games/telegram/?v=20260902-games-shell-v4</code></p>
+    <p><code>/games/telegram/?v=20260902-games-shell-v5</code></p>
   </main>
+  <script>
+    (function () {
+      var FALLBACK_READY_MS = 1200;
+      var INIT_DATA_STORAGE_KEY = 'moonboys.telegram.initData';
+      var root = document.getElementById('launcherRoot');
+      var status = document.getElementById('launchStatus');
+      var links = Array.prototype.slice.call(document.querySelectorAll('nav a[href]'));
+      var telegramApp = window.Telegram && window.Telegram.WebApp;
+      var viewportStable = false;
+      var navigationEnabled = false;
+      var navigationStarted = false;
+      var fallbackTimer = null;
+      var cachedInitData = readTelegramInitData();
+
+      function setBusy(isBusy) {
+        document.body.classList.toggle('is-initializing', isBusy);
+        document.body.setAttribute('aria-busy', isBusy ? 'true' : 'false');
+        if (root) root.setAttribute('aria-busy', isBusy ? 'true' : 'false');
+      }
+
+      function setStatus(copy) {
+        if (status) status.textContent = copy;
+      }
+
+      function setLinksEnabled(enabled) {
+        links.forEach(function (link) {
+          if (enabled) {
+            link.removeAttribute('aria-disabled');
+            link.removeAttribute('tabindex');
+          } else {
+            link.setAttribute('aria-disabled', 'true');
+            link.setAttribute('tabindex', '-1');
+          }
+        });
+      }
+
+      function enableNavigation() {
+        if (navigationEnabled) return;
+        viewportStable = true;
+        navigationEnabled = true;
+        if (fallbackTimer !== null) {
+          window.clearTimeout(fallbackTimer);
+          fallbackTimer = null;
+        }
+        setBusy(false);
+        setLinksEnabled(true);
+        setStatus('Launcher loaded.');
+      }
+
+      function readHashInitData() {
+        var rawHash = window.location.hash ? window.location.hash.slice(1) : '';
+        if (!rawHash) return '';
+        try {
+          var params = new URLSearchParams(rawHash);
+          return params.get('tgWebAppData') || '';
+        } catch (_) {
+          return '';
+        }
+      }
+
+      function readTelegramInitData() {
+        var initData = '';
+        try {
+          initData = telegramApp && telegramApp.initData ? String(telegramApp.initData) : '';
+        } catch (_) {
+          initData = '';
+        }
+        if (!initData) initData = readHashInitData();
+        if (initData) {
+          try {
+            window.sessionStorage.setItem(INIT_DATA_STORAGE_KEY, initData);
+          } catch (_) {}
+        } else {
+          try {
+            initData = window.sessionStorage.getItem(INIT_DATA_STORAGE_KEY) || '';
+          } catch (_) {
+            initData = '';
+          }
+        }
+        return initData;
+      }
+
+      function appendLauncherQuery(destination) {
+        var currentParams = new URLSearchParams(window.location.search);
+        currentParams.forEach(function (value, key) {
+          if (key === 'tgWebAppData') return;
+          if (!destination.searchParams.has(key)) destination.searchParams.append(key, value);
+        });
+      }
+
+      function buildDestination(link) {
+        var currentOrigin = new URL(window.location.origin);
+        var destination = new URL(link.getAttribute('href'), currentOrigin.href);
+        if (destination.host !== currentOrigin.host) destination = new URL('/', currentOrigin.href);
+        destination.protocol = 'https:';
+        destination.searchParams.delete('tgWebAppData');
+        appendLauncherQuery(destination);
+        if (cachedInitData) {
+          destination.hash = 'tgWebAppData=' + encodeURIComponent(cachedInitData);
+        }
+        return destination.href;
+      }
+
+      function handleLaunch(event) {
+        var link = event.currentTarget;
+        event.preventDefault();
+        if (!navigationEnabled || !viewportStable || navigationStarted) return;
+        navigationStarted = true;
+        document.body.classList.add('is-navigating');
+        setLinksEnabled(false);
+        link.classList.add('is-launching');
+        setStatus('Opening game...');
+        window.location.assign(buildDestination(link));
+      }
+
+      function onViewportChanged(event) {
+        if (event && event.isStateStable === true) enableNavigation();
+      }
+
+      window.addEventListener('pageshow', function () {
+        navigationStarted = false;
+        document.body.classList.remove('is-navigating');
+        links.forEach(function (link) { link.classList.remove('is-launching'); });
+        if (viewportStable) {
+          navigationEnabled = false;
+          enableNavigation();
+        }
+      });
+
+      links.forEach(function (link) {
+        link.addEventListener('click', handleLaunch);
+      });
+      setLinksEnabled(false);
+      setBusy(true);
+      setStatus('Preparing games...');
+
+      try {
+        if (telegramApp) telegramApp.onEvent('viewportChanged', onViewportChanged);
+      } catch (_) {}
+      try {
+        if (telegramApp) telegramApp.ready();
+      } catch (_) {}
+      try {
+        if (telegramApp) telegramApp.expand();
+      } catch (_) {}
+
+      fallbackTimer = window.setTimeout(enableNavigation, FALLBACK_READY_MS);
+    }());
+  </script>
 </body>
 </html>
