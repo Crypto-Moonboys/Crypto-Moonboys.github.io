@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import {
   DEAD_RUN_HARD_SPEED_MPS,
@@ -239,7 +240,7 @@ for (const id of [
   'banner', 'startPanel', 'gameOverPanel', 'gameOverTitle', 'finalStats', 'xpResult', 'slowCount',
   'gpsStatus', 'profileBox', 'hordeStrip', 'riskBadge', 'safetyAck', 'resumeBtn', 'leaderboardPanel',
   'leaderboardList', 'startBtn', 'demoBtn', 'againBtn', 'leaderboardBtn', 'closeLeaderboardBtn',
-  'centerBtn', 'slowBtn', 'gameLeaderboardBtn',
+  'centerBtn', 'zoomInBtn', 'zoomOutBtn', 'slowBtn', 'gameLeaderboardBtn',
 ]) {
   assert.ok(htmlSource.includes(`id="${id}"`), `index.html must contain id="${id}"`);
   assert.ok(appSource.includes(`'${id}'`) || appSource.includes(`"${id}"`), `app.js must reference id "${id}"`);
@@ -310,6 +311,24 @@ assert.match(htmlSource, /id="map" class="map-fallback-active"/,
   'Dead Run must render the fallback map class before JavaScript runs');
 assert.match(appSource, /function bootFallbackMap\([\s\S]*bindViewportSizing\(\)[\s\S]*showFallbackLayer\('fallback-first boot', false\)[\s\S]*initPlayerMarker\(\)/,
   'fallback renderer must boot before any optional MapLibre work');
+assert.match(appSource, /let fallbackPxPerMeterScale = 1/,
+  'fallback map must keep an independent zoom scale for the non-MapLibre renderer');
+assert.match(appSource, /const pxPerMeter = basePxPerMeter \* fallbackPxPerMeterScale/,
+  'fallback projection must apply fallback zoom without relying on MapLibre');
+assert.match(appSource, /function zoomFallbackMap\(delta\)[\s\S]*setFallbackZoom\(fallbackPxPerMeterScale \* \(delta > 0 \? 1\.22 : 0\.82\)\)/,
+  'fallback zoom controls must change fallback projection scale');
+assert.match(appSource, /function setFallbackZoom\(nextScale\)[\s\S]*if \(liveMapUsable && map\) return[\s\S]*showFallbackLayer\(null, false\)[\s\S]*refreshFallbackVisuals\(\)/,
+  'fallback zoom must not force the fallback overlay while live MapLibre is active');
+assert.match(appSource, /function zoomActiveMap\(delta\)[\s\S]*liveMapUsable && map[\s\S]*map\.getZoom\?\.\(\)[\s\S]*map\.easeTo\?\.\(\{ zoom: nextZoom, duration: 180 \}\)[\s\S]*zoomFallbackMap\(delta\)/,
+  'zoom buttons must use an active-renderer-aware zoom path');
+assert.match(appSource, /\$\('zoomInBtn'\)\.addEventListener\('click'[\s\S]*zoomActiveMap\(1\)/,
+  'zoom-in button must be wired to active-renderer-aware zoom');
+assert.match(appSource, /\$\('zoomOutBtn'\)\.addEventListener\('click'[\s\S]*zoomActiveMap\(-1\)/,
+  'zoom-out button must be wired to active-renderer-aware zoom');
+assert.doesNotMatch(appSource, /\$\('zoomInBtn'\)\.addEventListener\('click'[\s\S]{0,120}zoomFallbackMap\(1\)/,
+  'zoom-in button must not call fallback-only zoom directly');
+assert.doesNotMatch(appSource, /\$\('zoomOutBtn'\)\.addEventListener\('click'[\s\S]{0,120}zoomFallbackMap\(-1\)/,
+  'zoom-out button must not call fallback-only zoom directly');
 assert.match(appSource, /MAP_BOOT_TIMEOUT_MS/, 'map boot must have a timeout fallback');
 assert.match(appSource, /activateMapFallback\('MapLibre library unavailable'\)/,
   'client must activate fallback when MapLibre fails to load');
@@ -372,6 +391,8 @@ assert.ok(bootSource.indexOf('bootFallbackMap();') > -1 && bootSource.indexOf('g
   'startup must not request GPS before rendering the map/background');
 assert.match(bootSource, /if \(DEAD_RUN_LIVE_MAP_ENABLED\)[\s\S]*makeMap\(\)[\s\S]*requestIdleCallback/,
   'MapLibre initialization must be gated and delayed behind the live map kill switch');
+assert.match(appSource, /async function ensureMapLibreLoaded\(\)[\s\S]*if \(!DEAD_RUN_LIVE_MAP_ENABLED\) return false/,
+  'lazy MapLibre loading must be unreachable when the live map kill switch is off');
 assert.match(appSource, /const DEAD_RUN_LIVE_MAP_ENABLED =\s*[\r\n]+\s*window\.MOONBOYS_API\?\.DEAD_RUN_LIVE_MAP_ENABLED === true &&\s*[\r\n]+\s*!!TILE_URL &&\s*[\r\n]+\s*!!TILE_ATTRIBUTION;/,
   'live map enablement must require the kill switch, tile URL, and tile attribution');
 assert.match(appSource, /async function makeMap\(\)[\s\S]*if \(!DEAD_RUN_LIVE_MAP_ENABLED\) return[\s\S]*try[\s\S]*new maplibregl\.Map/,
@@ -382,8 +403,35 @@ assert.match(appSource, /syncStartControls[\s\S]*ui\.safety\.addEventListener\('
   'start controls must be usable after the safety acknowledgement without waiting for MapLibre');
 assert.match(appSource, /GPS required for ranked real mode/,
   'GPS denial must explain ranked real mode while leaving preview rendering available');
+assert.match(appSource, /function safeBoot\(handler\)[\s\S]*reportSafeRuntimeError\(error, 'boot'\)/,
+  'boot failures must be caught and converted to fallback runtime state');
+assert.match(appSource, /typeof result\?\.catch === 'function'/,
+  'safeHandler must only call catch when catch is a function');
+assert.match(appSource, /function reportSafeRuntimeError\([\s\S]*activateMapFallback\(`safe \$\{context\}`\)[\s\S]*initPlayerMarker\(\)[\s\S]*refreshFallbackVisuals\(\)/,
+  'runtime error fallback promotion must migrate/rebuild live markers before refreshing fallback visuals');
+assert.match(appSource, /window\.addEventListener\('unhandledrejection'[\s\S]*reportSafeRuntimeError/,
+  'unhandled async startup errors must preserve the fallback map instead of killing the WebView');
 assert.doesNotMatch(htmlSource + appSource + cssSource, /site-shell|wiki-shell|game-fullscreen\.css|site-shell\.js/,
   'Dead Run must not load the full site shell');
+
+{
+  let diffCmd = 'git diff --name-only -- games/telegram workers/moonboys-api';
+  if (process.env.GITHUB_ACTIONS === 'true') {
+    try {
+      execSync('git rev-parse --verify HEAD^2', { stdio: 'ignore' });
+      diffCmd = 'git diff --name-only HEAD^1..HEAD^2 -- games/telegram workers/moonboys-api';
+    } catch (_) {
+      diffCmd = 'git diff --name-only origin/main...HEAD -- games/telegram workers/moonboys-api';
+    }
+  }
+  const forbiddenChangedFiles = execSync(diffCmd, { encoding: 'utf8' })
+    .split(/\r?\n/)
+    .filter(Boolean);
+  assert.deepEqual(forbiddenChangedFiles, [],
+    'Dead Run fallback-only fix must not change /games/telegram/ or Worker menu/API files');
+}
+assert.match(fs.readFileSync(new URL(import.meta.url), 'utf8'), /GITHUB_ACTIONS[\s\S]*HEAD\^1\.\.HEAD\^2[\s\S]*origin\/main\.\.\.HEAD/,
+  'path guard must compare a committed PR range in CI instead of a clean working tree');
 
 // Migration/schema authority.
 for (const flag of ['player_stats_applied', 'arcade_xp_applied', 'horde_applied']) {

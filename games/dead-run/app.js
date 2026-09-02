@@ -34,6 +34,7 @@
   let mapTileErrors = 0;
   let fallbackRouteLine = null;
   let fallbackRoutePolyline = null;
+  let fallbackPxPerMeterScale = 1;
   const fallbackLayer = $('fallbackMapLayer');
   let playerMarker;
   let routeWaypointMarkers = [];
@@ -197,6 +198,41 @@
     if (reason) console.info('[dead-run] map fallback active:', reason);
   }
 
+  function reportSafeRuntimeError(error, context = 'runtime') {
+    console.warn(`[dead-run] safe ${context}`, error);
+    try {
+      if (mapLoadFailed) showFallbackLayer(`safe ${context}`, true);
+      else activateMapFallback(`safe ${context}`);
+      initPlayerMarker();
+      refreshFallbackVisuals();
+      if (ui.gpsStatus) ui.gpsStatus.textContent = 'Fallback map is active. Some live features may need a reload.';
+      if (ui.banner) setBanner('FALLBACK MAP ACTIVE', 1800);
+    } catch (_) {}
+  }
+
+  function safeHandler(handler, context) {
+    return (...args) => {
+      try {
+        const result = handler(...args);
+        if (typeof result?.catch === 'function') {
+          result.catch((error) => reportSafeRuntimeError(error, context));
+        }
+        return result;
+      } catch (error) {
+        reportSafeRuntimeError(error, context);
+        return undefined;
+      }
+    };
+  }
+
+  function safeBoot(handler) {
+    try {
+      handler();
+    } catch (error) {
+      reportSafeRuntimeError(error, 'boot');
+    }
+  }
+
   function bootFallbackMap() {
     bindViewportSizing();
     showFallbackLayer('fallback-first boot', false);
@@ -230,11 +266,32 @@
     const lngScale = 111320 * Math.cos(toRad(originLat));
     const dx = (Number(point.lng) - Number(player.lng)) * lngScale;
     const dy = (Number(player.lat) - Number(point.lat)) * latScale;
-    const pxPerMeter = Math.max(0.36, Math.min(1.05, Math.min(width, height) / 650));
+    const basePxPerMeter = Math.max(0.36, Math.min(1.05, Math.min(width, height) / 650));
+    const pxPerMeter = basePxPerMeter * fallbackPxPerMeterScale;
     return {
       x: Math.max(20, Math.min(width - 20, width / 2 + dx * pxPerMeter)),
       y: Math.max(20, Math.min(height - 20, height / 2 + dy * pxPerMeter)),
     };
+  }
+
+  function setFallbackZoom(nextScale) {
+    fallbackPxPerMeterScale = Math.max(0.55, Math.min(2.8, nextScale));
+    if (liveMapUsable && map) return;
+    showFallbackLayer(null, false);
+    refreshFallbackVisuals();
+  }
+
+  function zoomFallbackMap(delta) {
+    setFallbackZoom(fallbackPxPerMeterScale * (delta > 0 ? 1.22 : 0.82));
+  }
+
+  function zoomActiveMap(delta) {
+    if (liveMapUsable && map) {
+      const nextZoom = Math.max(14, Math.min(19, (map.getZoom?.() || 17) + delta));
+      map.easeTo?.({ zoom: nextZoom, duration: 180 });
+      return;
+    }
+    zoomFallbackMap(delta);
   }
 
   function refreshFallbackVisuals() {
@@ -334,6 +391,7 @@
   }
 
   async function ensureMapLibreLoaded() {
+    if (!DEAD_RUN_LIVE_MAP_ENABLED) return false;
     if (window.maplibregl?.Map) return true;
     try {
       await loadMapLibreAsset('link', MAPLIBRE_CSS_URL, MAPLIBRE_CSS_INTEGRITY, 'data-dead-run-maplibre-css');
@@ -1135,44 +1193,53 @@
     } catch (error) { ui.leaderboardRows.textContent = `Leaderboard unavailable: ${error.message}`; }
   }
 
-  $('startBtn').addEventListener('click', startRealRun);
-  $('resumeBtn').addEventListener('click', resumeRealRun);
-  $('demoBtn').addEventListener('click', startDemo);
-  $('againBtn').addEventListener('click', () => {
-    ui.gameOver.classList.add('hidden');
-    ui.start.classList.remove('hidden');
+  function bootApp() {
+    window.addEventListener('error', (event) => reportSafeRuntimeError(event.error || event.message, 'window error'));
+    window.addEventListener('unhandledrejection', (event) => reportSafeRuntimeError(event.reason, 'promise rejection'));
+
+    $('startBtn').addEventListener('click', safeHandler(startRealRun, 'start real run'));
+    $('resumeBtn').addEventListener('click', safeHandler(resumeRealRun, 'resume real run'));
+    $('demoBtn').addEventListener('click', safeHandler(startDemo, 'demo start'));
+    $('againBtn').addEventListener('click', safeHandler(() => {
+      ui.gameOver.classList.add('hidden');
+      ui.start.classList.remove('hidden');
+      loadProfile();
+    }, 'run again'));
+    $('zoomInBtn').addEventListener('click', safeHandler(() => zoomActiveMap(1), 'fallback zoom in'));
+    $('centerBtn').addEventListener('click', safeHandler(() => moveMapTo([player.lng, player.lat], { animate: true, zoom: 17, duration: 450 }), 'center map'));
+    $('zoomOutBtn').addEventListener('click', safeHandler(() => zoomActiveMap(-1), 'fallback zoom out'));
+    $('slowBtn').addEventListener('click', safeHandler(useSlow, 'slow time'));
+    ui.shove.addEventListener('click', safeHandler(shoveHorde, 'shove horde'));
+    $('leaderboardBtn').addEventListener('click', safeHandler(() => showLeaderboard(), 'leaderboard'));
+    $('gameLeaderboardBtn').addEventListener('click', safeHandler(() => showLeaderboard(), 'game leaderboard'));
+    $('closeLeaderboardBtn').addEventListener('click', safeHandler(() => ui.leaderboard.classList.add('hidden'), 'close leaderboard'));
+    document.querySelectorAll('.tab').forEach((button) => button.addEventListener('click', safeHandler(() => showLeaderboard(button.dataset.metric), 'leaderboard tab')));
+    const syncStartControls = () => { $('startBtn').disabled = !ui.safety.checked; };
+    ui.safety.addEventListener('change', syncStartControls);
+
+    document.addEventListener('visibilitychange', safeHandler(async () => {
+      if (document.visibilityState === 'visible' && gameActive) await requestWakeLock();
+    }, 'visibility'));
+    window.addEventListener('pagehide', safeHandler(() => {
+      if (!demoMode && gameActive) flushTelemetry(true);
+    }, 'pagehide'));
+
+    bootFallbackMap();
+    updateHud();
+    syncStartControls();
     loadProfile();
-  });
-  $('centerBtn').addEventListener('click', () => moveMapTo([player.lng, player.lat], { animate: true, zoom: 17, duration: 450 }));
-  $('slowBtn').addEventListener('click', useSlow);
-  ui.shove.addEventListener('click', shoveHorde);
-  $('leaderboardBtn').addEventListener('click', () => showLeaderboard());
-  $('gameLeaderboardBtn').addEventListener('click', () => showLeaderboard());
-  $('closeLeaderboardBtn').addEventListener('click', () => ui.leaderboard.classList.add('hidden'));
-  document.querySelectorAll('.tab').forEach((button) => button.addEventListener('click', () => showLeaderboard(button.dataset.metric)));
-  const syncStartControls = () => { $('startBtn').disabled = !ui.safety.checked; };
-  ui.safety.addEventListener('change', syncStartControls);
-
-  document.addEventListener('visibilitychange', async () => {
-    if (document.visibilityState === 'visible' && gameActive) await requestWakeLock();
-  });
-  window.addEventListener('pagehide', () => {
-    if (!demoMode && gameActive) flushTelemetry(true);
-  });
-
-  bootFallbackMap();
-  updateHud();
-  syncStartControls();
-  loadProfile();
-  if (DEAD_RUN_LIVE_MAP_ENABLED) {
-    const scheduleLiveMapBoot = () => {
-      try { makeMap(); } catch (error) { activateMapFallback('MapLibre delayed boot exception'); }
-    };
-    try {
-      if ('requestIdleCallback' in window) window.requestIdleCallback(scheduleLiveMapBoot, { timeout: 1800 });
-      else setTimeout(scheduleLiveMapBoot, 900);
-    } catch (error) {
-      setTimeout(scheduleLiveMapBoot, 900);
+    if (DEAD_RUN_LIVE_MAP_ENABLED) {
+      const scheduleLiveMapBoot = () => {
+        try { makeMap(); } catch (error) { activateMapFallback('MapLibre delayed boot exception'); }
+      };
+      try {
+        if ('requestIdleCallback' in window) window.requestIdleCallback(scheduleLiveMapBoot, { timeout: 1800 });
+        else setTimeout(scheduleLiveMapBoot, 900);
+      } catch (error) {
+        setTimeout(scheduleLiveMapBoot, 900);
+      }
     }
   }
+
+  safeBoot(bootApp);
 })();
