@@ -67,7 +67,7 @@
 
       var tgWebAppData = initData || hashData || storedData || '';
       if (tgWebAppData) {
-        try { sessionStorage.setItem(STORAGE_KEY, tgWebAppData); } catch (_) {}
+        try { sessionStorage.setItem('moonboys_tg_web_app_data', tgWebAppData); } catch (_) {}
       }
 
       function appendTelegramData(href) {
