@@ -17,6 +17,8 @@ const now = Date.now();
 const routeSource = fs.readFileSync(new URL('../workers/moonboys-api/routes/dead-run.js', import.meta.url), 'utf8');
 const appSource = fs.readFileSync(new URL('../games/dead-run/app.js', import.meta.url), 'utf8');
 const htmlSource = fs.readFileSync(new URL('../games/dead-run/index.html', import.meta.url), 'utf8');
+const cssSource = fs.readFileSync(new URL('../games/dead-run/styles.css', import.meta.url), 'utf8');
+const apiConfigSource = fs.readFileSync(new URL('../js/api-config.js', import.meta.url), 'utf8');
 const phase5Source = fs.readFileSync(new URL('../workers/moonboys-api/worker-phase5-final.js', import.meta.url), 'utf8');
 const migration075 = fs.readFileSync(new URL('../workers/moonboys-api/migrations/075_dead_run_gps_survival.sql', import.meta.url), 'utf8');
 const schemaSql = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
@@ -249,6 +251,14 @@ assert.match(appSource, /_telemetryInFlight\.then/, 'telemetry flushes must chai
 assert.doesNotMatch(appSource, /attributionControl:\s*false/, 'MapLibre attribution must not be suppressed');
 assert.match(htmlSource, /Content-Security-Policy/, 'dead-run index.html must include a CSP meta tag');
 assert.match(htmlSource, /default-src 'none'/, "CSP must start from 'none'");
+assert.match(htmlSource, /script-src[^"]*https:\/\/unpkg\.com[^"]*https:\/\/telegram\.org/,
+  'CSP script-src must allow MapLibre CDN and Telegram SDK');
+assert.match(htmlSource, /style-src[^"]*https:\/\/unpkg\.com/,
+  'CSP style-src must allow MapLibre CSS CDN');
+assert.match(htmlSource, /img-src[^"]*https:\/\/\*\.basemaps\.cartocdn\.com/,
+  'CSP img-src must allow CARTO basemap tile images');
+assert.match(htmlSource, /connect-src[^"]*https:\/\/\*\.basemaps\.cartocdn\.com/,
+  'CSP connect-src must allow CARTO tile fetches used by MapLibre');
 
 // Supply-chain hardening: MapLibre from unpkg must have SRI integrity attributes.
 assert.match(htmlSource, /maplibre-gl\.js[\s\S]{0,200}integrity="sha384-/,
@@ -262,6 +272,80 @@ assert.match(appSource, /MOONBOYS_API[\s\S]{0,60}DEAD_RUN_TILE_URL/,
   'tile URL must be read from window.MOONBOYS_API.DEAD_RUN_TILE_URL so production can override it');
 assert.match(appSource, /TILE_ATTRIBUTION/,
   'tile attribution must derive from a configurable constant so it stays accurate for any provider');
+assert.match(apiConfigSource, /DEAD_RUN_TILE_URL:\s*'https:\/\/a\.basemaps\.cartocdn\.com\/dark_all\/\{z\}\/\{x\}\/\{y\}\.png'/,
+  'production Dead Run tile URL must remain the configured CARTO dark_all tiles');
+
+// Dead Run map rendering must be resilient in Telegram and desktop browsers.
+assert.ok(htmlSource.includes('id="map"'), 'Dead Run must keep a dedicated map container');
+assert.ok(htmlSource.includes('id="fallbackMapLayer"'), 'Dead Run must include a static fallback map layer');
+assert.match(cssSource, /#map\s*\{[\s\S]*position:\s*fixed[\s\S]*inset:\s*0[\s\S]*width:\s*100vw[\s\S]*height:\s*var\(--dead-run-vh,\s*100vh\)/,
+  'map container must have explicit full-viewport sizing');
+assert.match(cssSource, /min-height:\s*100dvh/, 'map sizing must include a 100dvh mobile viewport path');
+assert.match(cssSource, /#map\s*\{[\s\S]*z-index:\s*1/, 'map layer must have an explicit z-index below HUD');
+assert.match(cssSource, /\.fallback-map-layer\s*\{[\s\S]*repeating-linear-gradient[\s\S]*linear-gradient/,
+  'fallback map layer must render a visible grid/radar background without live tiles');
+assert.match(cssSource, /\.map-fallback-active[\s\S]*\.fallback-map-layer/,
+  'fallback class must visibly promote the fallback map layer');
+assert.match(appSource, /MAP_BOOT_TIMEOUT_MS/, 'map boot must have a timeout fallback');
+assert.match(appSource, /activateMapFallback\('MapLibre library unavailable'\)/,
+  'client must activate fallback when MapLibre fails to load');
+assert.match(appSource, /MAX_TILE_ERRORS_BEFORE_FALLBACK/, 'client must activate fallback after tile/style load failures');
+assert.match(appSource, /if \(mapTileErrors >= MAX_TILE_ERRORS_BEFORE_FALLBACK\) activateMapFallback\('tile\/style load errors'\)/,
+  'pre-load tile errors must only activate fallback after the configured tile-error threshold');
+assert.doesNotMatch(appSource, /!mapLoaded \|\| mapTileErrors >= MAX_TILE_ERRORS_BEFORE_FALLBACK/,
+  'a single pre-load tile error must not bypass the configured tile-error threshold');
+assert.match(appSource, /let mapLoadFailed = false/, 'client must separate live-map failure from loading/readiness state');
+assert.match(appSource, /function showFallbackLayer\([\s\S]*permanent = false[\s\S]*if \(permanent\)[\s\S]*mapLoadFailed = true/,
+  'temporary fallback marker rendering must not permanently mark MapLibre as failed');
+assert.match(appSource, /function addMapMarker\([\s\S]*showFallbackLayer\(null, false\)[\s\S]*fallbackMarker/,
+  'marker requests before MapLibre load must use temporary fallback visuals without forcing permanent fallback');
+assert.match(appSource, /function markLiveMapReady\([\s\S]*if \(mapLoadFailed\) return[\s\S]*rebuildMapVisuals\(\)/,
+  'live MapLibre load must rebuild early fallback markers unless the live map truly failed');
+assert.match(appSource, /viewportStableHeight/, 'client must read Telegram viewport height when available');
+assert.match(appSource, /visualViewport/, 'client must read browser visualViewport when available');
+assert.match(appSource, /--dead-run-vh/, 'client must publish a stable map viewport CSS variable');
+assert.match(appSource, /function addMapMarker\([\s\S]*maplibregl\.Marker[\s\S]*fallbackMarker/,
+  'game markers must render through a live/fallback map adapter');
+assert.match(appSource, /function renderFallbackRouteLine/, 'fallback renderer must draw a route line for demo/preview play');
+assert.match(appSource, /Number\.isFinite\(player\.lat\) \? player\.lat : DEFAULT_POS\.lat/,
+  'fallback projection must preserve valid latitude 0 instead of using a falsy fallback');
+assert.doesNotMatch(appSource, /player\.lat \|\| DEFAULT_POS\.lat/,
+  'fallback projection must not treat latitude 0 as missing');
+assert.match(cssSource, /\.map-fallback-active \.fallback-map-layer\s*\{[\s\S]*pointer-events:\s*auto/,
+  'active fallback layer must allow pointer interactions for marker handlers');
+assert.match(cssSource, /\.fallback-route-line\s*\{[\s\S]*pointer-events:\s*none/,
+  'fallback route overlay must not intercept marker taps');
+assert.match(appSource, /function activateMapFallback\([\s\S]*migrateLiveMarkersToFallback\(\)/,
+  'permanent fallback activation must migrate existing live MapLibre markers');
+assert.match(appSource, /function activateMapFallback\([\s\S]*if \(mapLoadFailed\) return[\s\S]*clearTimeout\(mapBootTimer\)[\s\S]*showFallbackLayer\(reason, true\)[\s\S]*migrateLiveMarkersToFallback\(\)/,
+  'permanent fallback activation must clear boot timeout, promote fallback, and migrate markers unless fallback was already permanent');
+assert.doesNotMatch(appSource, /function activateMapFallback\([\s\S]*if \(mapFallbackActive && mapLoadFailed\) return/,
+  'temporary fallback visibility must not be treated as completed permanent fallback migration');
+assert.doesNotMatch(appSource, /const wasFallbackActive = mapFallbackActive[\s\S]*if \(!wasFallbackActive\) migrateLiveMarkersToFallback\(\)/,
+  'temporary fallback promotion must still rebuild player, route, pickup, and zombie visuals');
+assert.match(appSource, /function rebuildMapVisuals\([\s\S]*playerMarker\?\.remove\(\)[\s\S]*clearRouteVisuals\(\)[\s\S]*clearPickupVisuals\(\)[\s\S]*clearZombieVisuals\(\)[\s\S]*initPlayerMarker\(\)[\s\S]*renderRouteLine\(\)[\s\S]*renderPickupVisuals\(\)[\s\S]*renderZombieVisuals\(\)/,
+  'renderer migration must recreate player, waypoints, pickups, and zombies through the active adapter');
+assert.match(appSource, /function renderZombieVisuals\([\s\S]*addEventListener\('pointerdown'[\s\S]*shootZombie\(zombie\)[\s\S]*addMapMarker/,
+  'zombie marker migration must preserve pointer handlers');
+assert.match(appSource, /function refreshFallbackVisuals\([\s\S]*refreshFallbackRouteLine\(\)/,
+  'fallback refresh must reproject existing markers and route line without recursively rebuilding the world');
+const refreshFallbackSource = appSource.slice(
+  appSource.indexOf('function refreshFallbackVisuals()'),
+  appSource.indexOf('\n  function fallbackMarker', appSource.indexOf('function refreshFallbackVisuals()')),
+);
+assert.doesNotMatch(refreshFallbackSource, /renderRouteLine\(\)/,
+  'fallback refresh must not call renderRouteLine recursively');
+assert.match(appSource, /player = demoStep;[\s\S]{0,120}if \(mapFallbackActive\) refreshFallbackVisuals\(\)/,
+  'fallback visuals must refresh when the demo player moves');
+const bootSource = appSource.slice(appSource.lastIndexOf("document.querySelectorAll('.tab')"));
+assert.ok(bootSource.indexOf('makeMap();') < bootSource.indexOf('loadProfile();'),
+  'visible map/background must initialize before profile/auth loading');
+assert.ok(bootSource.indexOf('makeMap();') > -1 && bootSource.indexOf('getInitialGpsFix();') === -1,
+  'startup must not request GPS before rendering the map/background');
+assert.match(appSource, /GPS required for ranked real mode/,
+  'GPS denial must explain ranked real mode while leaving preview rendering available');
+assert.doesNotMatch(htmlSource + appSource + cssSource, /site-shell|wiki-shell|game-fullscreen\.css|site-shell\.js/,
+  'Dead Run must not load the full site shell');
 
 // Migration/schema authority.
 for (const flag of ['player_stats_applied', 'arcade_xp_applied', 'horde_applied']) {

@@ -27,6 +27,14 @@
 
   let map;
   let mapLoaded = false;
+  let liveMapUsable = false;
+  let mapFallbackActive = false;
+  let mapLoadFailed = false;
+  let mapBootTimer = 0;
+  let mapTileErrors = 0;
+  let fallbackRouteLine = null;
+  let fallbackRoutePolyline = null;
+  const fallbackLayer = $('fallbackMapLayer');
   let playerMarker;
   let routeWaypointMarkers = [];
   let pickupMarkers = [];
@@ -151,41 +159,168 @@
   // with a licensed provider (e.g. Protomaps, MapTiler, Stadia) before public launch.
   const TILE_URL = (window.MOONBOYS_API?.DEAD_RUN_TILE_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png');
   const TILE_ATTRIBUTION = (window.MOONBOYS_API?.DEAD_RUN_TILE_ATTRIBUTION || '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors');
+  const MAP_BOOT_TIMEOUT_MS = 2400;
+  const MAX_TILE_ERRORS_BEFORE_FALLBACK = 3;
+
+  function setViewportHeight() {
+    const tgHeight = Number(tg?.viewportStableHeight || tg?.viewportHeight || 0);
+    const visualHeight = Number(window.visualViewport?.height || 0);
+    const height = Math.round(tgHeight || visualHeight || window.innerHeight || document.documentElement.clientHeight || 0);
+    if (height > 240) document.documentElement.style.setProperty('--dead-run-vh', `${height}px`);
+    try { map?.resize?.(); } catch (_) {}
+    refreshFallbackVisuals();
+  }
+
+  function bindViewportSizing() {
+    setViewportHeight();
+    window.addEventListener('resize', setViewportHeight, { passive: true });
+    window.visualViewport?.addEventListener?.('resize', setViewportHeight, { passive: true });
+    try { tg?.onEvent?.('viewportChanged', setViewportHeight); } catch (_) {}
+  }
+
+  function showFallbackLayer(reason, permanent = false) {
+    if (permanent) {
+      mapLoadFailed = true;
+      liveMapUsable = false;
+    }
+    if (mapFallbackActive) return;
+    mapFallbackActive = true;
+    $('map')?.classList.add('map-fallback-active');
+    if (reason) console.info('[dead-run] map fallback active:', reason);
+  }
+
+  function activateMapFallback(reason) {
+    if (mapLoadFailed) return;
+    clearTimeout(mapBootTimer);
+    showFallbackLayer(reason, true);
+    migrateLiveMarkersToFallback();
+  }
+
+  function markLiveMapReady() {
+    if (mapLoadFailed) return;
+    liveMapUsable = true;
+    mapFallbackActive = false;
+    clearTimeout(mapBootTimer);
+    $('map')?.classList.remove('map-fallback-active');
+    rebuildMapVisuals();
+  }
+
+  function projectToFallback(point) {
+    const host = $('map');
+    const rect = host?.getBoundingClientRect?.();
+    const width = Math.max(1, rect?.width || window.innerWidth || 360);
+    const height = Math.max(1, rect?.height || window.innerHeight || 640);
+    const latScale = 110540;
+    const originLat = Number.isFinite(player.lat) ? player.lat : DEFAULT_POS.lat;
+    const lngScale = 111320 * Math.cos(toRad(originLat));
+    const dx = (Number(point.lng) - Number(player.lng)) * lngScale;
+    const dy = (Number(player.lat) - Number(point.lat)) * latScale;
+    const pxPerMeter = Math.max(0.36, Math.min(1.05, Math.min(width, height) / 650));
+    return {
+      x: Math.max(20, Math.min(width - 20, width / 2 + dx * pxPerMeter)),
+      y: Math.max(20, Math.min(height - 20, height / 2 + dy * pxPerMeter)),
+    };
+  }
+
+  function refreshFallbackVisuals() {
+    if (!fallbackLayer) return;
+    fallbackLayer.querySelectorAll('.fallback-game-marker').forEach((el) => {
+      const lat = Number(el.dataset.lat);
+      const lng = Number(el.dataset.lng);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+      const point = projectToFallback({ lat, lng });
+      el.style.left = `${point.x}px`;
+      el.style.top = `${point.y}px`;
+    });
+    refreshFallbackRouteLine();
+  }
+
+  function fallbackMarker(el, position) {
+    el.classList.add('fallback-game-marker');
+    fallbackLayer?.appendChild(el);
+    const marker = {
+      element: el,
+      remove() { el.remove(); },
+      setLngLat(lngLat) {
+        const lng = Array.isArray(lngLat) ? lngLat[0] : lngLat?.lng;
+        const lat = Array.isArray(lngLat) ? lngLat[1] : lngLat?.lat;
+        el.dataset.lat = String(lat);
+        el.dataset.lng = String(lng);
+        const point = projectToFallback({ lat, lng });
+        el.style.left = `${point.x}px`;
+        el.style.top = `${point.y}px`;
+        return marker;
+      },
+    };
+    return marker.setLngLat(position);
+  }
+
+  function addMapMarker(el, position) {
+    if (liveMapUsable && window.maplibregl && map) {
+      return new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat(position).addTo(map);
+    }
+    showFallbackLayer(null, false);
+    return fallbackMarker(el, position);
+  }
+
+  function moveMapTo(position, options = {}) {
+    if (liveMapUsable && map) {
+      if (options.animate) map.easeTo({ center: position, zoom: options.zoom, duration: options.duration || 320 });
+      else map.jumpTo({ center: position, zoom: options.zoom || 17 });
+    }
+    refreshFallbackVisuals();
+  }
 
   function makeMap() {
-    map = new maplibregl.Map({
-      container: 'map',
-      center: [player.lng, player.lat],
-      zoom: 16.5,
-      pitch: 0,
-      bearing: 0,
-      style: {
-        version: 8,
-        sources: {
-          osm: {
-            type: 'raster',
-            tiles: [TILE_URL],
-            tileSize: 256,
-            attribution: TILE_ATTRIBUTION
-          }
-        },
-        layers: [{ id: 'osm', type: 'raster', source: 'osm', paint: { 'raster-saturation': -1, 'raster-contrast': 0.28, 'raster-brightness-max': 0.6 } }]
-      }
-    });
-    map.dragRotate.disable();
-    map.touchZoomRotate.disableRotation();
-    map.on('load', () => {
-      mapLoaded = true;
-      initPlayerMarker();
-      renderRouteLine();
-    });
+    bindViewportSizing();
+    mapBootTimer = setTimeout(() => activateMapFallback('MapLibre boot timeout'), MAP_BOOT_TIMEOUT_MS);
+    if (!window.maplibregl?.Map) {
+      activateMapFallback('MapLibre library unavailable');
+      return;
+    }
+    try {
+      map = new maplibregl.Map({
+        container: 'map',
+        center: [player.lng, player.lat],
+        zoom: 16.5,
+        pitch: 0,
+        bearing: 0,
+        style: {
+          version: 8,
+          sources: {
+            osm: {
+              type: 'raster',
+              tiles: [TILE_URL],
+              tileSize: 256,
+              attribution: TILE_ATTRIBUTION
+            }
+          },
+          layers: [{ id: 'osm', type: 'raster', source: 'osm', paint: { 'raster-saturation': -1, 'raster-contrast': 0.28, 'raster-brightness-max': 0.6 } }]
+        }
+      });
+      map.dragRotate.disable();
+      map.touchZoomRotate.disableRotation();
+      map.on('load', () => {
+        mapLoaded = true;
+        markLiveMapReady();
+        setViewportHeight();
+      });
+      map.on('error', (event) => {
+        mapTileErrors += 1;
+        console.warn('[dead-run] map tile/style error', event?.error?.message || event?.error || 'unknown map error');
+        if (mapTileErrors >= MAX_TILE_ERRORS_BEFORE_FALLBACK) activateMapFallback('tile/style load errors');
+      });
+    } catch (error) {
+      console.warn('[dead-run] MapLibre init failed', error);
+      activateMapFallback('MapLibre init exception');
+    }
   }
 
   function initPlayerMarker() {
-    if (playerMarker || !mapLoaded) return;
+    if (playerMarker || (!liveMapUsable && !mapFallbackActive)) return;
     const el = document.createElement('div');
     el.className = 'player-marker';
-    playerMarker = new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat([player.lng, player.lat]).addTo(map);
+    playerMarker = addMapMarker(el, [player.lng, player.lat]);
   }
 
   function markerElement(className, text) {
@@ -198,28 +333,120 @@
   function clearRouteVisuals() {
     routeWaypointMarkers.forEach((marker) => marker.remove());
     routeWaypointMarkers = [];
-    if (mapLoaded && map.getLayer('dead-run-route')) map.removeLayer('dead-run-route');
-    if (mapLoaded && map.getSource('dead-run-route')) map.removeSource('dead-run-route');
+    fallbackRouteLine?.remove();
+    fallbackRouteLine = null;
+    fallbackRoutePolyline = null;
+    if (mapLoaded && map?.getLayer?.('dead-run-route')) map.removeLayer('dead-run-route');
+    if (mapLoaded && map?.getSource?.('dead-run-route')) map.removeSource('dead-run-route');
+  }
+
+  function routeCoords() {
+    if (!routePlan?.waypoints?.length) return [];
+    return [[player.lng, player.lat], ...routePlan.waypoints.map((point) => [point.lng, point.lat])];
+  }
+
+  function fallbackRoutePoints(coords = routeCoords()) {
+    return coords.map(([lng, lat]) => {
+      const point = projectToFallback({ lat, lng });
+      return `${point.x},${point.y}`;
+    }).join(' ');
+  }
+
+  function refreshFallbackRouteLine() {
+    if (!fallbackRoutePolyline) return;
+    fallbackRoutePolyline.setAttribute('points', fallbackRoutePoints());
+  }
+
+  function renderFallbackRouteLine(coords) {
+    if (!fallbackLayer) return;
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+    svg.classList.add('fallback-route-line');
+    polyline.setAttribute('fill', 'none');
+    polyline.setAttribute('stroke', 'rgba(55,243,255,.62)');
+    polyline.setAttribute('stroke-width', '3');
+    polyline.setAttribute('stroke-dasharray', '8 8');
+    polyline.setAttribute('stroke-linecap', 'round');
+    polyline.setAttribute('points', fallbackRoutePoints(coords));
+    svg.appendChild(polyline);
+    fallbackLayer.appendChild(svg);
+    fallbackRouteLine = svg;
+    fallbackRoutePolyline = polyline;
   }
 
   function renderRouteLine() {
-    if (!mapLoaded || !routePlan?.waypoints?.length) return;
+    if ((!liveMapUsable && !mapFallbackActive) || !routePlan?.waypoints?.length) return;
     clearRouteVisuals();
-    const coords = [[player.lng, player.lat], ...routePlan.waypoints.map((point) => [point.lng, point.lat])];
-    map.addSource('dead-run-route', { type: 'geojson', data: { type: 'Feature', geometry: { type: 'LineString', coordinates: coords } } });
-    map.addLayer({ id: 'dead-run-route', type: 'line', source: 'dead-run-route', paint: { 'line-color': '#37f3ff', 'line-opacity': 0.35, 'line-width': 3, 'line-dasharray': [2, 2] } });
+    const coords = routeCoords();
+    if (liveMapUsable) {
+      map.addSource('dead-run-route', { type: 'geojson', data: { type: 'Feature', geometry: { type: 'LineString', coordinates: coords } } });
+      map.addLayer({ id: 'dead-run-route', type: 'line', source: 'dead-run-route', paint: { 'line-color': '#37f3ff', 'line-opacity': 0.35, 'line-width': 3, 'line-dasharray': [2, 2] } });
+    } else {
+      renderFallbackRouteLine(coords);
+    }
     routePlan.waypoints.forEach((point) => {
       const el = document.createElement('div');
       el.className = 'route-waypoint';
-      routeWaypointMarkers.push(new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat([point.lng, point.lat]).addTo(map));
+      routeWaypointMarkers.push(addMapMarker(el, [point.lng, point.lat]));
     });
   }
 
-  function clearWorld() {
-    zombieMarkers.forEach((marker) => marker.remove());
-    zombieMarkers = [];
+  function clearPickupVisuals() {
     pickupMarkers.forEach((marker) => marker.remove());
     pickupMarkers = [];
+  }
+
+  function renderPickupVisuals() {
+    clearPickupVisuals();
+    pickups.forEach((pickup) => {
+      if (!pickup.active) return;
+      const el = markerElement(`pickup-marker ${pickup.type}`, pickup.type === 'ammo' ? '▣' : '⌛');
+      pickup.marker = addMapMarker(el, [pickup.lng, pickup.lat]);
+      pickupMarkers.push(pickup.marker);
+    });
+  }
+
+  function clearZombieVisuals() {
+    zombieMarkers.forEach((marker) => marker.remove());
+    zombieMarkers = [];
+  }
+
+  function renderZombieVisuals() {
+    clearZombieVisuals();
+    zombies.forEach((zombie) => {
+      if (!zombie.alive) return;
+      const el = markerElement('zombie-marker', '☠');
+      zombie.el = el;
+      el.addEventListener('pointerdown', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        shootZombie(zombie);
+      });
+      zombie.marker = addMapMarker(el, [zombie.pos.lng, zombie.pos.lat]);
+      zombieMarkers.push(zombie.marker);
+    });
+  }
+
+  function rebuildMapVisuals() {
+    playerMarker?.remove();
+    playerMarker = null;
+    clearRouteVisuals();
+    clearPickupVisuals();
+    clearZombieVisuals();
+    initPlayerMarker();
+    renderRouteLine();
+    renderPickupVisuals();
+    renderZombieVisuals();
+    refreshFallbackVisuals();
+  }
+
+  function migrateLiveMarkersToFallback() {
+    rebuildMapVisuals();
+  }
+
+  function clearWorld() {
+    clearZombieVisuals();
+    clearPickupVisuals();
     clearRouteVisuals();
     zombies = [];
     pickups = [];
@@ -232,17 +459,11 @@
     pickupMarkers = [];
     const collected = new Set(serverState?.collected_targets || []);
     pickups = (routePlan?.pickups || []).map((pickup) => ({ ...pickup, active: !collected.has(pickup.id), marker: null }));
-    pickups.forEach((pickup) => {
-      if (!pickup.active) return;
-      const el = markerElement(`pickup-marker ${pickup.type}`, pickup.type === 'ammo' ? '▣' : '⌛');
-      pickup.marker = new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat([pickup.lng, pickup.lat]).addTo(map);
-      pickupMarkers.push(pickup.marker);
-    });
+    renderPickupVisuals();
   }
 
   function activateWave(waveIndex) {
-    zombieMarkers.forEach((marker) => marker.remove());
-    zombieMarkers = [];
+    clearZombieVisuals();
     const killed = new Set(serverState?.killed_targets || []);
     const wave = combatPlan?.waves?.[waveIndex];
     if (!wave) {
@@ -257,18 +478,7 @@
       marker: null,
       el: null,
     }));
-    zombies.forEach((zombie) => {
-      if (!zombie.alive) return;
-      const el = markerElement('zombie-marker', '☠');
-      zombie.el = el;
-      el.addEventListener('pointerdown', (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        shootZombie(zombie);
-      });
-      zombie.marker = new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat([zombie.pos.lng, zombie.pos.lat]).addTo(map);
-      zombieMarkers.push(zombie.marker);
-    });
+    renderZombieVisuals();
   }
 
   function applySessionPayload(payload) {
@@ -399,7 +609,7 @@
     player = { lat: fix.lat, lng: fix.lng };
     initPlayerMarker();
     playerMarker?.setLngLat([player.lng, player.lat]);
-    if (gameActive) map.easeTo({ center: [player.lng, player.lat], duration: 320 });
+    if (gameActive) moveMapTo([player.lng, player.lat], { animate: true, duration: 320 });
     if (!demoMode && gameActive) {
       telemetryQueue.push({
         seq: gpsSeq++, timestamp_ms: fix.timestamp_ms, lat: fix.lat, lng: fix.lng,
@@ -588,6 +798,7 @@
       demoCharge = Math.min(CHARGE_METERS * 2, demoCharge + distanceMeters(player, demoStep));
       player = demoStep;
       playerMarker?.setLngLat([player.lng, player.lat]);
+      if (mapFallbackActive) refreshFallbackVisuals();
       checkPickups();
     }
 
@@ -650,16 +861,9 @@
   function spawnDemoWave() {
     const wave = combatPlan?.waves?.[demoWaveIndex % combatPlan.waves.length];
     demoWaveIndex += 1;
-    zombieMarkers.forEach((marker) => marker.remove());
-    zombieMarkers = [];
+    clearZombieVisuals();
     zombies = (wave?.zombies || []).map((source) => ({ ...source, pos: randomPointAround(player, 220, 420), alive: true, marker: null, el: null }));
-    zombies.forEach((zombie) => {
-      const el = markerElement('zombie-marker', '☠');
-      zombie.el = el;
-      el.addEventListener('pointerdown', (event) => { event.preventDefault(); event.stopPropagation(); shootZombie(zombie); });
-      zombie.marker = new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat([zombie.pos.lng, zombie.pos.lat]).addTo(map);
-      zombieMarkers.push(zombie.marker);
-    });
+    renderZombieVisuals();
   }
 
   async function startRealRun() {
@@ -671,7 +875,7 @@
       const fix = await getInitialGpsFix();
       player = { lat: fix.lat, lng: fix.lng };
       playerMarker?.setLngLat([player.lng, player.lat]);
-      map.jumpTo({ center: [player.lng, player.lat], zoom: 17 });
+      moveMapTo([player.lng, player.lat], { zoom: 17 });
       const data = await apiPost('/api/dead-run/session/start', {
         position: fix,
         heading_deg: fix.heading_deg,
@@ -684,7 +888,7 @@
       startGpsWatch();
       setBanner(data.session.ranked ? 'RANKED GPS RUN LIVE' : 'PRACTICE RUN — DAILY LIMIT USED', 2200);
     } catch (error) {
-      ui.gpsStatus.textContent = `Start failed: ${error.message}`;
+      ui.gpsStatus.textContent = `GPS required for ranked real mode: ${error.message}. Demo mode still works without location.`;
       ui.start.classList.remove('hidden');
       gameActive = false;
     } finally {
@@ -723,7 +927,7 @@
     ui.risk.classList.add('hidden');
     initPlayerMarker();
     playerMarker?.setLngLat([player.lng, player.lat]);
-    map.jumpTo({ center: [player.lng, player.lat], zoom: 17 });
+    moveMapTo([player.lng, player.lat], { zoom: 17 });
     buildDemoWorld();
     updateHud();
     await requestWakeLock();
@@ -842,7 +1046,7 @@
     ui.start.classList.remove('hidden');
     loadProfile();
   });
-  $('centerBtn').addEventListener('click', () => map?.easeTo({ center: [player.lng, player.lat], zoom: 17, duration: 450 }));
+  $('centerBtn').addEventListener('click', () => moveMapTo([player.lng, player.lat], { animate: true, zoom: 17, duration: 450 }));
   $('slowBtn').addEventListener('click', useSlow);
   ui.shove.addEventListener('click', shoveHorde);
   $('leaderboardBtn').addEventListener('click', () => showLeaderboard());
