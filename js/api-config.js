@@ -325,8 +325,9 @@
   SYNC_GATE_URL: 'https://cryptomoonboys.com/gkniftyheads-incubator.html',
 
   /* ── Dead Run Map Tiles ──────────────────────────────────── */
-  DEAD_RUN_TILE_URL: 'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-  DEAD_RUN_TILE_ATTRIBUTION: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+  DEAD_RUN_LIVE_MAP_ENABLED: false,
+  DEAD_RUN_TILE_URL: null,
+  DEAD_RUN_TILE_ATTRIBUTION: '',
 
   /* ── CoinGecko Public API ────────────────────────────────── */
   COINGECKO_BASE: 'https://api.coingecko.com/api/v3',

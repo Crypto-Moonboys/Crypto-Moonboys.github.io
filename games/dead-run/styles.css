@@ -52,10 +52,10 @@ body { overscroll-behavior: none; touch-action: manipulation; }
 .fallback-map-layer {
   position: absolute;
   inset: 0;
-  z-index: 0;
+  z-index: 2;
   overflow: hidden;
-  opacity: 0.78;
-  pointer-events: none;
+  opacity: 1;
+  pointer-events: auto;
   background:
     radial-gradient(circle at 50% 52%, rgba(55,243,255,.16), transparent 0 22%, rgba(55,243,255,.05) 23% 24%, transparent 25% 100%),
     repeating-linear-gradient(33deg, transparent 0 30px, rgba(55,243,255,.1) 31px 33px, transparent 34px 74px),
@@ -103,6 +103,7 @@ body { overscroll-behavior: none; touch-action: manipulation; }
 }
 .maplibregl-canvas { outline: none; }
 .maplibregl-ctrl-attrib { font-size: 10px; }
+.map-fallback-active .maplibregl-ctrl-attrib { display: none; }
 .maplibregl-ctrl-bottom-left { display: none; }
 
 .hud {
