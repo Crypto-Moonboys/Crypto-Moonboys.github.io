@@ -1104,8 +1104,8 @@ body.overlay-open #faction-hud {
   }
 
   #game-overlay.overlay-runner-game .game-stage {
-    padding-left: 0;
-    padding-right: 0;
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
   }
 
   #game-overlay.overlay-runner-game .game-card .nbg-game-stage {
@@ -1159,6 +1159,12 @@ body.overlay-open #faction-hud {
 
   #game-overlay.overlay-runner-game .game-card .nbg-game-stage::after {
     display: none !important;
+  }
+
+  @supports not (height: 1dvh) {
+    #game-overlay.overlay-runner-game .game-card .nbg-game-stage {
+      width: min(calc(100% - (var(--runner-side-rail-width) * 2)), calc((100vh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) * 16 / 9));
+    }
   }
 }
 
