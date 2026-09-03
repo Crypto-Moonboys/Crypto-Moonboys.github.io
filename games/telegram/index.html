@@ -6,39 +6,341 @@
   <meta name="robots" content="noindex,nofollow">
   <title>Crypto Moonboys Games</title>
   <link rel="icon" type="image/png" href="/favicon.png">
-  <meta name="moonboys-mini-app-version" content="20260902-games-shell-v6">
+  <meta name="moonboys-mini-app-version" content="20260903-games-shell-v7">
   <script data-cfasync="false" src="https://telegram.org/js/telegram-web-app.js?63"></script>
   <style>
-    :root { color-scheme: dark; }
+    :root {
+      color-scheme: dark;
+      --cabinet: #07101c;
+      --cabinet-edge: #172842;
+      --screen: #030812;
+      --cyan: #22d7ff;
+      --pink: #ff3fd9;
+      --green: #32ff62;
+      --gold: #ffd15c;
+      --red: #ff413d;
+      --purple: #a14cff;
+      --orange: #ff9b22;
+    }
     * { box-sizing: border-box; }
-    html, body { margin:0; min-height:100%; background:#05070a; color:#f6f8ff; font-family:Arial, Helvetica, sans-serif; }
-    body { display:grid; place-items:center; padding:24px; }
-    main { width:min(520px,100%); border:1px solid #263142; border-radius:18px; padding:20px; background:#10151f; }
-    h1 { margin:0 0 10px; font-size:30px; line-height:1.05; }
-    p { margin:8px 0; color:#a9b4c4; line-height:1.4; }
-    nav { display:grid; gap:12px; margin-top:18px; }
-    a { display:block; border:1px solid #263142; border-radius:14px; padding:16px; background:#151d2a; color:#f6f8ff; font-size:19px; font-weight:800; line-height:1.2; text-decoration:none; -webkit-tap-highlight-color:transparent; }
-    a:active { background:#1c2635; }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(34, 215, 255, .18), transparent 32rem),
+        radial-gradient(circle at 15% 24%, rgba(255, 63, 217, .16), transparent 20rem),
+        linear-gradient(180deg, #010307 0%, #05070a 55%, #010204 100%);
+      color: #f6f8ff;
+      font-family: Impact, Haettenschweiler, "Arial Black", Arial, Helvetica, sans-serif;
+      overflow-x: hidden;
+    }
+    body {
+      display: grid;
+      min-height: 100dvh;
+      place-items: center;
+      padding: max(12px, env(safe-area-inset-top)) 12px max(14px, env(safe-area-inset-bottom));
+    }
+    body::before {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      content: "";
+      background:
+        repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 4px),
+        linear-gradient(90deg, transparent, rgba(34,215,255,.045), transparent);
+      mix-blend-mode: screen;
+      opacity: .38;
+    }
+    main {
+      position: relative;
+      width: min(520px, 100%);
+      min-height: min(760px, calc(100dvh - 28px));
+      border: 2px solid #26466f;
+      border-radius: 24px 24px 18px 18px;
+      padding: 22px 16px 18px;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.09), transparent 18%),
+        radial-gradient(circle at 50% 0%, rgba(34, 215, 255, .13), transparent 18rem),
+        linear-gradient(180deg, #101b2c 0%, var(--cabinet) 54%, #040910 100%);
+      box-shadow:
+        0 0 0 4px rgba(0,0,0,.55),
+        inset 0 0 0 2px rgba(255,255,255,.045),
+        inset 0 -22px 46px rgba(0,0,0,.48),
+        0 0 28px rgba(34, 215, 255, .2);
+      overflow: hidden;
+    }
+    main::before,
+    main::after {
+      position: absolute;
+      top: 13px;
+      width: 64px;
+      height: 10px;
+      border-radius: 999px;
+      content: "";
+      filter: blur(.2px);
+    }
+    main::before {
+      left: 18px;
+      background: var(--cyan);
+      box-shadow: 0 0 18px var(--cyan), 0 0 38px var(--cyan);
+    }
+    main::after {
+      right: 18px;
+      background: var(--pink);
+      box-shadow: 0 0 18px var(--pink), 0 0 38px var(--pink);
+    }
+    .marquee {
+      position: relative;
+      z-index: 1;
+      margin: 14px 0 16px;
+      padding: 18px 12px 15px;
+      border: 2px solid #18365d;
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(34,215,255,.18), transparent 70%),
+        linear-gradient(180deg, #071327 0%, #020610 100%);
+      box-shadow:
+        inset 0 0 0 2px rgba(255,255,255,.035),
+        inset 0 0 32px rgba(34,215,255,.12),
+        0 0 20px rgba(34,215,255,.15);
+      text-align: center;
+    }
+    .kicker {
+      display: block;
+      margin-bottom: 2px;
+      color: var(--cyan);
+      font-family: "Courier New", monospace;
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      text-shadow: 0 0 8px rgba(34,215,255,.85);
+    }
+    h1 {
+      margin: 0;
+      color: var(--gold);
+      font-size: clamp(36px, 11vw, 62px);
+      line-height: .82;
+      text-transform: uppercase;
+      text-shadow:
+        0 2px 0 #9a4d00,
+        0 5px 0 #4c2500,
+        0 0 16px rgba(255, 209, 92, .55);
+    }
+    h1 span {
+      display: block;
+      margin-top: 6px;
+      color: #ff65df;
+      font-family: "Trebuchet MS", Arial, sans-serif;
+      font-size: .48em;
+      font-style: italic;
+      letter-spacing: 1px;
+      text-shadow: 0 0 12px rgba(255, 63, 217, .9), 0 2px 0 #67145a;
+    }
+    p { margin: 8px 0; color: #c8d6ec; line-height: 1.4; }
+    .status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 0 0 14px;
+      border: 2px solid #0d6f2c;
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: linear-gradient(180deg, rgba(50,255,98,.16), rgba(4,38,16,.82));
+      box-shadow: inset 0 0 16px rgba(50,255,98,.18), 0 0 14px rgba(50,255,98,.1);
+    }
+    .status-bar::before {
+      flex: 0 0 auto;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      content: "";
+      background: var(--green);
+      box-shadow: inset 0 -4px 0 rgba(0,0,0,.28), 0 0 12px var(--green);
+    }
+    .status-lamps {
+      display: flex;
+      flex: 0 0 auto;
+      gap: 6px;
+    }
+    .status-lamps i {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 10px var(--green);
+    }
+    .screen-copy {
+      margin: 0 0 14px;
+      color: #8fd3ff;
+      font-family: "Courier New", monospace;
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    nav { display: grid; gap: 12px; margin-top: 14px; }
+    a {
+      --accent: var(--cyan);
+      --accent-glow: rgba(34, 215, 255, .42);
+      --accent-border: #22d7ff;
+      position: relative;
+      display: grid;
+      grid-template-columns: 64px 1fr 26px;
+      align-items: center;
+      gap: 12px;
+      min-height: 78px;
+      border: 2px solid var(--accent-border);
+      border-radius: 15px;
+      padding: 10px 12px;
+      background:
+        linear-gradient(90deg, var(--accent-glow), transparent 38%),
+        linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.2)),
+        #081326;
+      color: #f6f8ff;
+      font-size: clamp(19px, 5.5vw, 28px);
+      font-weight: 900;
+      line-height: 1;
+      text-decoration: none;
+      text-shadow: 0 2px 0 #020305, 0 0 10px rgba(255,255,255,.22);
+      box-shadow:
+        inset 0 0 0 2px rgba(255,255,255,.035),
+        inset 0 -13px 0 rgba(0,0,0,.22),
+        0 0 18px var(--accent-glow);
+      -webkit-tap-highlight-color: transparent;
+      transform: translateZ(0);
+    }
+    a::before {
+      display: grid;
+      place-items: center;
+      width: 56px;
+      height: 56px;
+      border: 2px solid var(--accent-border);
+      border-radius: 12px;
+      content: attr(data-icon);
+      background:
+        radial-gradient(circle at 34% 28%, rgba(255,255,255,.22), transparent 34%),
+        linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.28)),
+        #050a12;
+      color: var(--accent);
+      font-family: "Courier New", monospace;
+      font-size: 16px;
+      font-weight: 900;
+      box-shadow: inset 0 -8px 0 rgba(0,0,0,.32), 0 0 12px var(--accent-glow);
+    }
+    a::after {
+      justify-self: end;
+      content: ">";
+      color: var(--accent);
+      font-family: "Courier New", monospace;
+      font-size: 38px;
+      line-height: 1;
+      text-shadow: 0 0 10px var(--accent);
+    }
+    a[data-tone="red"] { --accent: var(--red); --accent-border: #ff413d; --accent-glow: rgba(255,65,61,.42); }
+    a[data-tone="purple"] { --accent: var(--purple); --accent-border: #a14cff; --accent-glow: rgba(161,76,255,.42); }
+    a[data-tone="green"] { --accent: var(--green); --accent-border: #32ff62; --accent-glow: rgba(50,255,98,.42); }
+    a[data-tone="orange"] { --accent: var(--orange); --accent-border: #ff9b22; --accent-glow: rgba(255,155,34,.42); }
+    a:active {
+      transform: translateY(2px);
+      box-shadow:
+        inset 0 0 0 2px rgba(255,255,255,.025),
+        inset 0 9px 18px rgba(0,0,0,.28),
+        0 0 10px var(--accent-glow);
+    }
     body.is-initializing nav a,
     body.is-navigating nav a { opacity:.58; pointer-events:none; }
     body.is-navigating nav a.is-launching { opacity:1; }
-    code { color:#ffd15c; word-break:break-word; }
-    .ok { color:#32ff62; font-weight:800; }
+    .version {
+      margin: 14px 0 0;
+      border: 1px solid #263f62;
+      border-radius: 10px;
+      padding: 9px 10px;
+      background: #03070d;
+      box-shadow: inset 0 0 16px rgba(255,209,92,.08);
+    }
+    code {
+      color: var(--gold);
+      font-family: "Courier New", monospace;
+      font-size: 12px;
+      font-weight: 900;
+      word-break: break-word;
+      text-shadow: 0 0 8px rgba(255,209,92,.42);
+    }
+    .ok { color: var(--green); font-family: "Courier New", monospace; font-weight: 900; text-shadow: 0 0 8px rgba(50,255,98,.7); }
+    .control-deck {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: end;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(143, 211, 255, .18);
+    }
+    .coin-slot {
+      border: 2px solid #263f62;
+      border-radius: 12px;
+      padding: 10px;
+      background: linear-gradient(180deg, #0d1726, #04070c);
+      color: var(--gold);
+      font-family: "Courier New", monospace;
+      font-size: 12px;
+      font-weight: 900;
+      text-align: center;
+      text-shadow: 0 0 8px rgba(255,209,92,.4);
+    }
+    .buttons {
+      display: flex;
+      align-items: end;
+      gap: 10px;
+    }
+    .stick {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 28%, #ffb0ad, var(--red) 34%, #5e0505 78%);
+      box-shadow: 0 9px 0 #09111c, 0 0 14px rgba(255,65,61,.42);
+    }
+    .button-light {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 28%, #fff6bf, var(--gold) 38%, #8a4a00 80%);
+      box-shadow: 0 6px 0 #09111c, 0 0 12px rgba(255,209,92,.34);
+    }
+    @media (max-width: 420px) {
+      body { padding-left: 8px; padding-right: 8px; }
+      main { min-height: calc(100dvh - 18px); padding: 20px 10px 12px; border-radius: 20px 20px 15px 15px; }
+      .marquee { margin-top: 12px; padding: 15px 9px 13px; }
+      a { grid-template-columns: 56px 1fr 22px; min-height: 70px; gap: 9px; padding: 9px; }
+      a::before { width: 50px; height: 50px; font-size: 14px; }
+      a::after { font-size: 32px; }
+      .control-deck { grid-template-columns: 1fr auto; gap: 10px; }
+      .coin-slot { padding: 8px 6px; font-size: 11px; }
+      .stick { width: 36px; height: 36px; }
+      .button-light { width: 24px; height: 24px; }
+    }
   </style>
 </head>
 <body class="page-standalone-tool is-initializing" aria-busy="true">
   <main id="launcherRoot" aria-busy="true">
-    <h1>Crypto Moonboys Games</h1>
-    <p class="ok" id="launchStatus" role="status" aria-live="polite">Preparing games...</p>
-    <p>Static Telegram launcher.</p>
+    <section class="marquee" aria-label="Crypto Moonboys arcade">
+      <span class="kicker">28 BIT ARCADE</span>
+      <h1>Crypto Moonboys <span>Games</span></h1>
+    </section>
+    <p class="status-bar"><span class="ok" id="launchStatus" role="status" aria-live="polite">Preparing games...</span><span class="status-lamps" aria-hidden="true"><i></i><i></i><i></i></span></p>
+    <p class="screen-copy">Select game cartridge</p>
     <nav aria-label="Crypto Moonboys games">
-      <a href="/moonpet-game.html?v=20260814-moonpet-aaa-pass" aria-disabled="true" tabindex="-1">Moonpet OS</a>
-      <a href="/games/dead-run/?v=20260902-dead-run-v5" aria-disabled="true" tabindex="-1">Dead Run</a>
-      <a href="/community.html?v=20260902-games-shell-v6" aria-disabled="true" tabindex="-1">Battle Chamber</a>
-      <a href="/games/nbg-london/?v=20260902-games-shell-v6" aria-disabled="true" tabindex="-1">NBG London Runner</a>
-      <a href="/games/?v=20260902-games-shell-v6" aria-disabled="true" tabindex="-1">Full Arcade</a>
+      <a href="/moonpet-game.html?v=20260814-moonpet-aaa-pass" data-icon="PET" aria-disabled="true" tabindex="-1">Moonpet OS</a>
+      <a href="/games/dead-run/?v=20260902-dead-run-v5" data-icon="RUN" data-tone="red" aria-disabled="true" tabindex="-1">Dead Run</a>
+      <a href="/community.html?v=20260903-games-shell-v7" data-icon="PVP" data-tone="purple" aria-disabled="true" tabindex="-1">Battle Chamber</a>
+      <a href="/games/nbg-london/?v=20260903-games-shell-v7" data-icon="LDN" data-tone="green" aria-disabled="true" tabindex="-1">NBG London Runner</a>
+      <a href="/games/?v=20260903-games-shell-v7" data-icon="1UP" data-tone="orange" aria-disabled="true" tabindex="-1">Full Arcade</a>
     </nav>
-    <p><code>/games/telegram/?v=20260902-games-shell-v6</code></p>
+    <p class="version"><code>/games/telegram/?v=20260903-games-shell-v7</code></p>
+    <div class="control-deck" aria-hidden="true">
+      <div class="coin-slot">INSERT COIN<br>MOON MODE</div>
+      <div class="buttons"><span class="stick"></span><span class="button-light"></span></div>
+    </div>
   </main>
   <script>
     (function () {
