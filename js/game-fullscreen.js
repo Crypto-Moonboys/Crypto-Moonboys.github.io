@@ -78,12 +78,18 @@
       controls: ['↑↓←→ / WASD — Move', 'SPACE / Bomb button — Place bomb', 'ESC — Return to title', 'Touch: D-pad + Bomb button in fullscreen'],
       tips: ['Defeat boss to unlock exit', 'Daily quests reset at UTC midnight', 'Clear all 6 zones = 2× score bonus']
     },
+    game: {
+      label: 'NBG London Runner', color: '#7cff82', touchScheme: 'runner',
+      controls: ['← → / A D — Run', 'Space / ↑ / W — Jump', 'S / X — Spray tag'],
+      tips: ['Rotate phone to landscape for the full street view', 'Collect coins before the finish', 'Spray walls for run flow']
+    },
 
   };
 
   function detectMeta() {
     var ids = Object.keys(GAME_META);
     for (var i = 0; i < ids.length; i++) {
+      if (ids[i] === 'game' && !/\/games\/nbg-london\//.test(window.location.pathname)) continue;
       if (document.getElementById(ids[i])) return GAME_META[ids[i]];
     }
     return { label: '🎮 Game', color: '#fff', touchScheme: null, controls: [], tips: [] };
@@ -671,9 +677,17 @@
 
   /* ── Touch helpers ───────────────────────────────────────────────── */
 
-  function dispatchKey(type, key) {
+  function getEventCode(key, code) {
+    if (code) return code;
+    if (key === ' ') return 'Space';
+    if (/^Arrow/.test(key)) return key;
+    if (/^[a-z]$/i.test(key)) return 'Key' + key.toUpperCase();
+    return key;
+  }
+
+  function dispatchKey(type, key, code) {
     document.dispatchEvent(
-      new KeyboardEvent(type, { key: key, bubbles: true, cancelable: true })
+      new KeyboardEvent(type, { key: key, code: getEventCode(key, code), bubbles: true, cancelable: true })
     );
   }
 
@@ -686,32 +700,32 @@
   }
 
   // Hold-to-move: fires keydown on press, keyup on release.
-  function bindHold(btn, key) {
+  function bindHold(btn, key, code) {
     btn.addEventListener('touchstart', function (e) {
       e.preventDefault();
-      dispatchKey('keydown', key);
+      dispatchKey('keydown', key, code);
     }, { passive: false });
     btn.addEventListener('touchend', function (e) {
       e.preventDefault();
-      dispatchKey('keyup', key);
+      dispatchKey('keyup', key, code);
     }, { passive: false });
-    btn.addEventListener('touchcancel', function () { dispatchKey('keyup', key); });
+    btn.addEventListener('touchcancel', function () { dispatchKey('keyup', key, code); });
     // Mouse fallback for non-touch testing
-    btn.addEventListener('mousedown',  function () { dispatchKey('keydown', key); });
-    btn.addEventListener('mouseup',    function () { dispatchKey('keyup',   key); });
-    btn.addEventListener('mouseleave', function () { dispatchKey('keyup',   key); });
+    btn.addEventListener('mousedown',  function () { dispatchKey('keydown', key, code); });
+    btn.addEventListener('mouseup',    function () { dispatchKey('keyup',   key, code); });
+    btn.addEventListener('mouseleave', function () { dispatchKey('keyup',   key, code); });
   }
 
   // Tap: fires a brief keydown+keyup pulse.
-  function bindTap(btn, key) {
+  function bindTap(btn, key, code) {
     btn.addEventListener('touchstart', function (e) {
       e.preventDefault();
-      dispatchKey('keydown', key);
-      setTimeout(function () { dispatchKey('keyup', key); }, KEY_PULSE_MS);
+      dispatchKey('keydown', key, code);
+      setTimeout(function () { dispatchKey('keyup', key, code); }, KEY_PULSE_MS);
     }, { passive: false });
     btn.addEventListener('click', function () {
-      dispatchKey('keydown', key);
-      setTimeout(function () { dispatchKey('keyup', key); }, KEY_PULSE_MS);
+      dispatchKey('keydown', key, code);
+      setTimeout(function () { dispatchKey('keyup', key, code); }, KEY_PULSE_MS);
     });
   }
 
@@ -811,6 +825,27 @@
     return wrap;
   }
 
+  function buildRunner() {
+    var wrap = el('div', 'touch-runner');
+    var move = el('div', 'touch-runner-row');
+    var actions = el('div', 'touch-runner-row');
+    var left = makeTouchBtn('←', 'touch-btn--wide', 'Run left');
+    var right = makeTouchBtn('→', 'touch-btn--wide', 'Run right');
+    var spray = makeTouchBtn('S', 'touch-btn--fire', 'Spray');
+    var jump = makeTouchBtn('JUMP', 'touch-btn--wide', 'Jump');
+    bindHold(left, 'ArrowLeft');
+    bindHold(right, 'ArrowRight');
+    bindHold(jump, ' ', 'Space');
+    bindHold(spray, 's', 'KeyS');
+    move.appendChild(left);
+    move.appendChild(right);
+    actions.appendChild(spray);
+    actions.appendChild(jump);
+    wrap.appendChild(move);
+    wrap.appendChild(actions);
+    return wrap;
+  }
+
   function buildTouchPad(meta) {
     touchPad.innerHTML = '';
     var hasTouchControls = !!(meta && meta.touchScheme);
@@ -822,7 +857,8 @@
       'lr-launch': buildLrLaunch,
       'lr-fire':   buildLrFire,
       'asteroid':  buildAsteroid,
-      'tetris':    buildTetris
+      'tetris':    buildTetris,
+      'runner':    buildRunner
     };
     var fn = builders[meta.touchScheme];
     if (fn) touchPad.appendChild(fn());
@@ -1237,6 +1273,10 @@
     }
     overlay.requestFullscreen()
       .then(function () {
+        if (/\/games\/nbg-london\//.test(window.location.pathname) &&
+            screen.orientation && typeof screen.orientation.lock === 'function') {
+          screen.orientation.lock('landscape').catch(function () {});
+        }
         updateFullscreenPrompt();
       })
       .catch(function () {

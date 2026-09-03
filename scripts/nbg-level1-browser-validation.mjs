@@ -147,7 +147,9 @@ for (const animation of Object.values(expectedAnimations)) {
   assert.notEqual(animation.renderHeight, animation.sourceFrameHeight, `render height must be separate from source frame height: ${animation.spriteSheet}`);
 }
 const runtimeSource = fs.readFileSync(path.resolve(process.cwd(), 'game/nbg-level1.js'), 'utf8');
+const gameCssSource = fs.readFileSync(path.resolve(process.cwd(), 'game/game.css'), 'utf8');
 const fullscreenShellSource = fs.readFileSync(path.resolve(process.cwd(), 'js/game-fullscreen.js'), 'utf8');
+const fullscreenCssSource = fs.readFileSync(path.resolve(process.cwd(), 'css/game-fullscreen.css'), 'utf8');
 const arcadeRouteSource = fs.readFileSync(path.resolve(process.cwd(), 'games/nbg-london/index.html'), 'utf8');
 const arcadeIndexSource = fs.readFileSync(path.resolve(process.cwd(), 'games/index.html'), 'utf8');
 const playerRendererSource = fs.readFileSync(path.resolve(process.cwd(), 'game/engine/player-sprite-renderer.js'), 'utf8');
@@ -230,6 +232,36 @@ assert.equal(
     arcadeRouteSource.includes('class="touch-controls" role="group" aria-label="Touch controls"'),
   true,
   'NBG arcade route must expose generic div labels through explicit ARIA roles'
+);
+assert.equal(
+  fullscreenShellSource.includes("touchScheme: 'runner'") &&
+    fullscreenShellSource.includes("function buildRunner()") &&
+    fullscreenShellSource.includes("screen.orientation.lock('landscape')") &&
+    fullscreenShellSource.includes("ids[i] === 'game' && !/\\/games\\/nbg-london\\//.test(window.location.pathname)"),
+  true,
+  'fullscreen shell must give NBG London runner its own touch controls and landscape lock attempt without stealing generic #game canvases'
+);
+assert.equal(
+  /\.nbg-game-stage\s*\{[^}]*position:\s*relative;/.test(gameCssSource) &&
+    /\.nbg-game-stage\.is-active\s*\{[\s\S]*display:\s*grid;[\s\S]*grid-template-rows:\s*minmax\(0,\s*1fr\);/.test(gameCssSource) &&
+    /@media\s*\(hover:\s*none\),\s*\(pointer:\s*coarse\),\s*\(max-width:\s*760px\)\s*\{[\s\S]*\.nbg-game-stage\.is-active\s*\{[\s\S]*grid-template-rows:\s*minmax\(0,\s*1fr\)\s+auto;/.test(gameCssSource) &&
+    /\.touch-controls\s*\{[^}]*grid-row:\s*2;[^}]*\}/.test(gameCssSource) &&
+    !/\.touch-controls\s*\{[^}]*position:\s*absolute/.test(gameCssSource),
+  true,
+  'NBG mobile controls must live in a reserved grid row instead of overlaying the game canvas'
+);
+assert.equal(
+  fullscreenCssSource.includes('#game-overlay .game-card .touch-controls') &&
+    fullscreenCssSource.includes('display: none !important') &&
+    fullscreenCssSource.includes('#game-overlay .touch-runner') &&
+    fullscreenCssSource.includes('#game-overlay .touch-runner-row'),
+  true,
+  'fullscreen overlay must hide in-page NBG touch controls and use the shared runner touch pad'
+);
+assert.equal(
+  gameCssSource.includes('ROTATE PHONE FOR FULL RUNNER VIEW'),
+  true,
+  'NBG route must show a clear portrait rotation prompt for phone users'
 );
 assert.equal(
   arcadeIndexSource.includes('href="/games/nbg-london/"') &&

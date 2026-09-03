@@ -523,6 +523,18 @@ body.overlay-open #faction-hud {
   display: none;
 }
 
+#game-overlay .game-card .touch-controls {
+  display: none !important;
+}
+
+#game-overlay .game-card .nbg-game-stage {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  width: 100%;
+  max-height: none;
+  min-height: 0;
+}
+
 #game-overlay .game-card .hud .stat--projected-xp .subtle {
   font-size: 0.62rem;
   margin-top: 4px;
@@ -694,7 +706,8 @@ body.overlay-open #faction-hud {
 /* Touch layout wrappers */
 #game-overlay .touch-lr,
 #game-overlay .touch-asteroid,
-#game-overlay .touch-tetris {
+#game-overlay .touch-tetris,
+#game-overlay .touch-runner {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -705,13 +718,19 @@ body.overlay-open #faction-hud {
 
 #game-overlay .touch-lr-row,
 #game-overlay .touch-asteroid-row,
-#game-overlay .touch-tetris-row {
+#game-overlay .touch-tetris-row,
+#game-overlay .touch-runner-row {
   display: flex;
   flex-direction: row;
   gap: 6px;
   align-items: center;
   flex-wrap: nowrap;
   flex-shrink: 0;
+}
+
+#game-overlay .touch-runner {
+  justify-content: center;
+  gap: 14px;
 }
 
 /* ===== GAME-OVER MODAL ===== */
