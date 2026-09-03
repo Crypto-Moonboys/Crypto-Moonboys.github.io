@@ -78,12 +78,18 @@
       controls: ['↑↓←→ / WASD — Move', 'SPACE / Bomb button — Place bomb', 'ESC — Return to title', 'Touch: D-pad + Bomb button in fullscreen'],
       tips: ['Defeat boss to unlock exit', 'Daily quests reset at UTC midnight', 'Clear all 6 zones = 2× score bonus']
     },
+    game: {
+      label: 'NBG London Runner', color: '#7cff82', touchScheme: 'runner',
+      controls: ['← → / A D — Run', 'Space / ↑ / W — Jump', 'S / X — Spray tag'],
+      tips: ['Rotate phone to landscape for the full street view', 'Collect coins before the finish', 'Spray walls for run flow']
+    },
 
   };
 
   function detectMeta() {
     var ids = Object.keys(GAME_META);
     for (var i = 0; i < ids.length; i++) {
+      if (ids[i] === 'game' && !/\/games\/nbg-london\//.test(window.location.pathname)) continue;
       if (document.getElementById(ids[i])) return GAME_META[ids[i]];
     }
     return { label: '🎮 Game', color: '#fff', touchScheme: null, controls: [], tips: [] };
@@ -811,6 +817,27 @@
     return wrap;
   }
 
+  function buildRunner() {
+    var wrap = el('div', 'touch-runner');
+    var move = el('div', 'touch-runner-row');
+    var actions = el('div', 'touch-runner-row');
+    var left = makeTouchBtn('←', 'touch-btn--wide', 'Run left');
+    var right = makeTouchBtn('→', 'touch-btn--wide', 'Run right');
+    var spray = makeTouchBtn('S', 'touch-btn--fire', 'Spray');
+    var jump = makeTouchBtn('JUMP', 'touch-btn--wide', 'Jump');
+    bindHold(left, 'ArrowLeft');
+    bindHold(right, 'ArrowRight');
+    bindHold(jump, ' ');
+    bindHold(spray, 'KeyS');
+    move.appendChild(left);
+    move.appendChild(right);
+    actions.appendChild(spray);
+    actions.appendChild(jump);
+    wrap.appendChild(move);
+    wrap.appendChild(actions);
+    return wrap;
+  }
+
   function buildTouchPad(meta) {
     touchPad.innerHTML = '';
     var hasTouchControls = !!(meta && meta.touchScheme);
@@ -822,7 +849,8 @@
       'lr-launch': buildLrLaunch,
       'lr-fire':   buildLrFire,
       'asteroid':  buildAsteroid,
-      'tetris':    buildTetris
+      'tetris':    buildTetris,
+      'runner':    buildRunner
     };
     var fn = builders[meta.touchScheme];
     if (fn) touchPad.appendChild(fn());
@@ -1237,6 +1265,10 @@
     }
     overlay.requestFullscreen()
       .then(function () {
+        if (/\/games\/nbg-london\//.test(window.location.pathname) &&
+            screen.orientation && typeof screen.orientation.lock === 'function') {
+          screen.orientation.lock('landscape').catch(function () {});
+        }
         updateFullscreenPrompt();
       })
       .catch(function () {
