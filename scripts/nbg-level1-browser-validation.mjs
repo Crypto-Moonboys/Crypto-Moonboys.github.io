@@ -259,7 +259,10 @@ assert.equal(
     /@media\s*\(orientation:\s*landscape\)\s*and\s*\(pointer:\s*coarse\),\s*\(orientation:\s*landscape\)\s*and\s*\(max-height:\s*500px\)\s*and\s*\(max-width:\s*900px\)\s*\{[\s\S]*#game-overlay\.overlay-runner-game \.game-card \.nbg-game-stage::after\s*\{[\s\S]*display:\s*none !important;/.test(fullscreenCssSource) &&
     /#game-overlay\.overlay-runner-game\.overlay-has-touch\s*\{[\s\S]*--overlay-touch-height:\s*0px;/.test(fullscreenCssSource) &&
     fullscreenCssSource.includes('--runner-side-rail-width: clamp(64px, 12vw, 156px)') &&
+    fullscreenCssSource.includes('padding-left: env(safe-area-inset-left, 0px)') &&
+    fullscreenCssSource.includes('padding-right: env(safe-area-inset-right, 0px)') &&
     fullscreenCssSource.includes('width: min(calc(100% - (var(--runner-side-rail-width) * 2)), calc((100dvh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) * 16 / 9))') &&
+    fullscreenCssSource.includes('width: min(calc(100% - (var(--runner-side-rail-width) * 2)), calc((100vh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) * 16 / 9))') &&
     /#game-overlay\.overlay-runner-game \.touch-runner-row\s*\{[\s\S]*top:\s*75%;/.test(fullscreenCssSource) &&
     /#game-overlay\.overlay-runner-game \.touch-runner-row\s*\{[\s\S]*width:\s*var\(--runner-side-rail-width\);[\s\S]*flex-direction:\s*column;/.test(fullscreenCssSource) &&
     fullscreenCssSource.includes('#game-overlay.overlay-runner-game .touch-runner-row:first-child') &&
