@@ -850,6 +850,7 @@
     touchPad.innerHTML = '';
     var hasTouchControls = !!(meta && meta.touchScheme);
     overlay.classList.toggle('overlay-has-touch', hasTouchControls);
+    overlay.classList.toggle('overlay-runner-game', !!(meta && meta.touchScheme === 'runner'));
     if (!hasTouchControls) return;
     var builders = {
       'dpad':      buildDpad,
