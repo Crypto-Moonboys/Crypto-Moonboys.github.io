@@ -5,7 +5,7 @@
   var ASSET_MANIFEST = ASSET_ROOT + 'asset-manifest.json';
   var WIDTH = 480;
   var HEIGHT = 270;
-  var WORLD_WIDTH = 2200;
+  var WORLD_WIDTH = 22000;
   var FLOOR_Y = 214;
   var TARGET_FRAME_MS = 1000 / 60;
   var WAITING_HUD_TEXT = 'MOVE TO START';
@@ -217,7 +217,7 @@
     });
 
     var checkpoint = { x: 1240, y: FLOOR_Y - 48, w: 30, h: 48, active: false };
-    var finish = { x: 2050, y: FLOOR_Y - 62, w: 38, h: 62 };
+    var finish = { x: WORLD_WIDTH - 150, y: FLOOR_Y - 62, w: 38, h: 62 };
     var xp = 0;
 
     function resetToCheckpoint() {
@@ -453,7 +453,9 @@
         ctx.fillRect(0, y, WIDTH, h);
         return;
       }
-      var tileW = WIDTH;
+      var naturalWidth = image.naturalWidth || WIDTH;
+      var naturalHeight = image.naturalHeight || h;
+      var tileW = Math.max(WIDTH, Math.round(naturalWidth * (h / naturalHeight)));
       var start = Math.floor(offset % tileW) - tileW;
       for (var x = start; x < WIDTH + tileW; x += tileW) {
         ctx.drawImage(image, x, y, tileW, h);
@@ -473,7 +475,7 @@
 
     function drawWorld() {
       drawImageLayer(images.sky, 0.08, 0, HEIGHT, '#171730');
-      drawImageLayer(images.skyline, 0.22, 46, 102, '#18203a');
+      drawImageLayer(images.skyline, 0.22, 40, 160, '#18203a');
       drawImageLayer(images.wall, 0.58, 116, 88, '#2d2033');
       drawImageLayer(images.street, 1, FLOOR_Y, 56, '#303238');
 
@@ -632,6 +634,8 @@
         get completionAnimationActive() { return completionAnimationActive; },
         get cameraX() { return cameraX; },
         get checkpoint() { return checkpoint; },
+        get finish() { return finish; },
+        get worldWidth() { return WORLD_WIDTH; },
         get assetStatus() { return assetStatus; },
         get requiredAssets() { return requiredAssets.slice(); },
         get playerAnimations() { return playerAnimations; }
