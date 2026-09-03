@@ -10,7 +10,7 @@ const launcherRelease = html.match(/<meta name="moonboys-mini-app-version" conte
 const inlineLauncherScript = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].at(-1)?.[1];
 
 assert.ok(deadRunRelease, 'Games launcher must link Dead Run with a cache-busting release token');
-assert.equal(launcherRelease, '20260903-games-shell-v7', 'Games launcher must publish the v7 arcade shell release token');
+assert.equal(launcherRelease, '20260903-games-shell-v8', 'Games launcher must publish the v8 arcade shell release token');
 assert.ok(inlineLauncherScript, 'Games launcher must include a body-end inline launcher controller');
 
 const forbiddenScripts = [
