@@ -119,7 +119,8 @@ body {
 }
 
 .nbg-game-stage.is-active {
-  display: block;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
 }
 
 canvas {
@@ -154,14 +155,13 @@ canvas {
 }
 
 .touch-controls {
-  position: absolute;
-  right: 10px;
-  bottom: 10px;
-  left: 10px;
+  grid-row: 2;
   display: none;
   justify-content: space-between;
   gap: 12px;
-  pointer-events: none;
+  padding: 10px;
+  background: #0b0f18;
+  border-top: 3px solid #000;
 }
 
 .touch-controls__move,
@@ -194,8 +194,40 @@ canvas {
 }
 
 @media (hover: none), (pointer: coarse), (max-width: 760px) {
+  .nbg-game-stage.is-active {
+    aspect-ratio: auto;
+    min-height: min(100dvh, 620px);
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+
+  .nbg-game-stage::after {
+    position: absolute;
+    top: 44px;
+    left: 50%;
+    z-index: 4;
+    display: none;
+    width: min(88%, 360px);
+    padding: 8px 10px;
+    transform: translateX(-50%);
+    border: 3px solid #000;
+    background: rgba(255, 212, 71, 0.94);
+    box-shadow: 4px 4px 0 #000;
+    color: #15110a;
+    content: "ROTATE PHONE FOR FULL RUNNER VIEW";
+    font: 900 11px/1.25 "Courier New", monospace;
+    letter-spacing: 0;
+    text-align: center;
+    pointer-events: none;
+  }
+
   .touch-controls {
     display: flex;
+  }
+}
+
+@media (hover: none) and (orientation: portrait), (pointer: coarse) and (orientation: portrait) {
+  .nbg-game-stage::after {
+    display: block;
   }
 }
 
@@ -211,5 +243,25 @@ canvas {
   .hud-strip span {
     font-size: 10px;
     padding: 5px 6px;
+  }
+
+  .touch-controls {
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .touch-controls__move,
+  .touch-controls__action {
+    gap: 6px;
+  }
+
+  .touch-button {
+    width: 58px;
+    height: 46px;
+    font-size: 13px;
+  }
+
+  .touch-button--small {
+    width: 46px;
   }
 }
