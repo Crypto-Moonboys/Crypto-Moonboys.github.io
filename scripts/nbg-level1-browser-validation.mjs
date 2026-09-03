@@ -256,12 +256,18 @@ assert.equal(
     fullscreenCssSource.includes('display: none !important') &&
     fullscreenCssSource.includes('#game-overlay.overlay-runner-game .game-card .nbg-game-stage') &&
     fullscreenCssSource.includes('#game-overlay.overlay-runner-game .game-card .nbg-game-stage::after') &&
-    /@media\s*\(orientation:\s*landscape\)\s*\{[\s\S]*#game-overlay\.overlay-runner-game \.game-card \.nbg-game-stage::after\s*\{[\s\S]*display:\s*none !important;/.test(fullscreenCssSource) &&
+    /@media\s*\(orientation:\s*landscape\)\s*and\s*\(pointer:\s*coarse\),\s*\(orientation:\s*landscape\)\s*and\s*\(max-height:\s*500px\)\s*and\s*\(max-width:\s*900px\)\s*\{[\s\S]*#game-overlay\.overlay-runner-game \.game-card \.nbg-game-stage::after\s*\{[\s\S]*display:\s*none !important;/.test(fullscreenCssSource) &&
+    /#game-overlay\.overlay-runner-game\.overlay-has-touch\s*\{[\s\S]*--overlay-touch-height:\s*0px;/.test(fullscreenCssSource) &&
+    /#game-overlay\.overlay-runner-game \.touch-runner-row\s*\{[\s\S]*top:\s*75%;/.test(fullscreenCssSource) &&
+    fullscreenCssSource.includes('#game-overlay.overlay-runner-game .touch-runner-row:first-child') &&
+    fullscreenCssSource.includes('#game-overlay.overlay-runner-game .touch-runner-row:last-child') &&
+    fullscreenCssSource.indexOf('NBG Runner touch/mobile landscape side rails override generic touch breakpoints') >
+      fullscreenCssSource.lastIndexOf('@media (pointer: coarse)') &&
     fullscreenCssSource.includes('width: min(100%, calc((100dvh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) * 16 / 9))') &&
     fullscreenCssSource.includes('#game-overlay .touch-runner') &&
     fullscreenCssSource.includes('#game-overlay .touch-runner-row'),
   true,
-  'fullscreen overlay must hide in-page NBG touch controls, center a 16:9 runner stage, preserve the portrait rotation prompt, and use the shared runner touch pad'
+  'fullscreen overlay must hide in-page NBG touch controls, center a 16:9 runner stage, preserve the portrait rotation prompt, and place landscape runner touch controls on the side at 75%'
 );
 assert.equal(
   gameCssSource.includes('ROTATE PHONE FOR FULL RUNNER VIEW'),

@@ -561,12 +561,6 @@ body.overlay-open #faction-hud {
   max-height: none !important;
 }
 
-@media (orientation: landscape) {
-  #game-overlay.overlay-runner-game .game-card .nbg-game-stage::after {
-    display: none !important;
-  }
-}
-
 @supports not (height: 1dvh) {
   #game-overlay.overlay-runner-game .game-card .nbg-game-stage {
     width: min(100%, calc((100vh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) * 16 / 9));
@@ -1098,6 +1092,57 @@ body.overlay-open #faction-hud {
     --overlay-touch-height: 68px;
   }
   #overlay-panel-status {
+    display: none !important;
+  }
+}
+
+/* NBG Runner touch/mobile landscape side rails override generic touch breakpoints. */
+@media (orientation: landscape) and (pointer: coarse), (orientation: landscape) and (max-height: 500px) and (max-width: 900px) {
+  #game-overlay.overlay-runner-game.overlay-has-touch {
+    --overlay-touch-height: 0px;
+  }
+
+  #game-overlay.overlay-runner-game.overlay-has-touch .overlay-touch-pad {
+    position: absolute;
+    inset: var(--overlay-toolbar-height) 0 0;
+    z-index: 9008;
+    display: block;
+    min-height: 0;
+    max-height: none;
+    padding: 0;
+    overflow: visible;
+    pointer-events: none;
+    background: transparent;
+    border: 0;
+  }
+
+  #game-overlay.overlay-runner-game .touch-runner {
+    position: absolute;
+    inset: 0;
+    display: block;
+    pointer-events: none;
+  }
+
+  #game-overlay.overlay-runner-game .touch-runner-row {
+    position: absolute;
+    top: 75%;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  #game-overlay.overlay-runner-game .touch-runner-row:first-child {
+    left: max(10px, env(safe-area-inset-left, 0px));
+  }
+
+  #game-overlay.overlay-runner-game .touch-runner-row:last-child {
+    right: max(10px, env(safe-area-inset-right, 0px));
+  }
+
+  #game-overlay.overlay-runner-game .touch-runner .touch-btn {
+    pointer-events: auto;
+  }
+
+  #game-overlay.overlay-runner-game .game-card .nbg-game-stage::after {
     display: none !important;
   }
 }
