@@ -1100,6 +1100,16 @@ body.overlay-open #faction-hud {
 @media (orientation: landscape) and (pointer: coarse), (orientation: landscape) and (max-height: 500px) and (max-width: 900px) {
   #game-overlay.overlay-runner-game.overlay-has-touch {
     --overlay-touch-height: 0px;
+    --runner-side-rail-width: clamp(64px, 12vw, 156px);
+  }
+
+  #game-overlay.overlay-runner-game .game-stage {
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+
+  #game-overlay.overlay-runner-game .game-card .nbg-game-stage {
+    width: min(calc(100% - (var(--runner-side-rail-width) * 2)), calc((100dvh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) * 16 / 9));
   }
 
   #game-overlay.overlay-runner-game.overlay-has-touch .overlay-touch-pad {
@@ -1125,17 +1135,22 @@ body.overlay-open #faction-hud {
 
   #game-overlay.overlay-runner-game .touch-runner-row {
     position: absolute;
+    width: var(--runner-side-rail-width);
     top: 75%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
     transform: translateY(-50%);
     pointer-events: none;
   }
 
   #game-overlay.overlay-runner-game .touch-runner-row:first-child {
-    left: max(10px, env(safe-area-inset-left, 0px));
+    left: env(safe-area-inset-left, 0px);
   }
 
   #game-overlay.overlay-runner-game .touch-runner-row:last-child {
-    right: max(10px, env(safe-area-inset-right, 0px));
+    right: env(safe-area-inset-right, 0px);
   }
 
   #game-overlay.overlay-runner-game .touch-runner .touch-btn {
@@ -1144,6 +1159,12 @@ body.overlay-open #faction-hud {
 
   #game-overlay.overlay-runner-game .game-card .nbg-game-stage::after {
     display: none !important;
+  }
+
+  @supports not (height: 1dvh) {
+    #game-overlay.overlay-runner-game .game-card .nbg-game-stage {
+      width: min(calc(100% - (var(--runner-side-rail-width) * 2)), calc((100vh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) * 16 / 9));
+    }
   }
 }
 
