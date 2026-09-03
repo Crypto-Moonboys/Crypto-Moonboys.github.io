@@ -1136,7 +1136,7 @@ body.overlay-open #faction-hud {
   #game-overlay.overlay-runner-game .touch-runner-row {
     position: absolute;
     width: var(--runner-side-rail-width);
-    top: 75%;
+    top: 25%;
     display: flex;
     flex-direction: column;
     align-items: center;
