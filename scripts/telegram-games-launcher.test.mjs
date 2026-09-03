@@ -10,7 +10,7 @@ const launcherRelease = html.match(/<meta name="moonboys-mini-app-version" conte
 const inlineLauncherScript = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].at(-1)?.[1];
 
 assert.ok(deadRunRelease, 'Games launcher must link Dead Run with a cache-busting release token');
-assert.equal(launcherRelease, '20260902-games-shell-v6', 'Games launcher must publish the v6 mini-app release token');
+assert.equal(launcherRelease, '20260903-games-shell-v7', 'Games launcher must publish the v7 arcade shell release token');
 assert.ok(inlineLauncherScript, 'Games launcher must include a body-end inline launcher controller');
 
 const forbiddenScripts = [
@@ -45,6 +45,8 @@ assert.ok(
 assert.ok(html.includes('class="page-standalone-tool is-initializing"'), 'Games launcher must start in an initializing state');
 assert.ok(html.includes('aria-busy="true"'), 'Games launcher must expose initial busy state');
 assert.ok(html.includes('Preparing games...'), 'Games launcher must show initialization copy');
+assert.ok(html.includes('28 BIT ARCADE'), 'Games launcher must show the arcade shell marquee');
+assert.ok(html.includes('Select game cartridge'), 'Games launcher must show arcade game-selection copy');
 assert.match(html, /body\.is-initializing nav a[\s\S]*pointer-events:none/, 'Launcher links must disable pointer events while initializing');
 assert.match(html, /FALLBACK_READY_MS\s*=\s*1200/, 'Games launcher must include a 1200ms viewport fallback');
 assert.match(html, /window\.location\.assign\(buildDestination\(link\)\)/, 'Games launcher must navigate once through window.location.assign()');
