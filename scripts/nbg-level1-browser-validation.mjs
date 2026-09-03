@@ -214,7 +214,7 @@ assert.equal(
   'shared fullscreen shell reset button must expose a stable selector and dispatch reset events'
 );
 assert.equal(
-  arcadeRouteSource.includes('/css/game-fullscreen.css') &&
+  arcadeRouteSource.includes('/css/game-fullscreen.css?v=20260903-runner-upper-buttons') &&
     arcadeRouteSource.includes('class="game-card"') &&
     arcadeRouteSource.includes('/js/game-fullscreen.js') &&
     arcadeRouteSource.includes('id="startBtn"') &&
