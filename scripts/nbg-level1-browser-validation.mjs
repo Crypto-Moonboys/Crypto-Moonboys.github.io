@@ -256,11 +256,12 @@ assert.equal(
     fullscreenCssSource.includes('display: none !important') &&
     fullscreenCssSource.includes('#game-overlay.overlay-runner-game .game-card .nbg-game-stage') &&
     fullscreenCssSource.includes('#game-overlay.overlay-runner-game .game-card .nbg-game-stage::after') &&
+    /@media\s*\(orientation:\s*landscape\)\s*\{[\s\S]*#game-overlay\.overlay-runner-game \.game-card \.nbg-game-stage::after\s*\{[\s\S]*display:\s*none !important;/.test(fullscreenCssSource) &&
     fullscreenCssSource.includes('width: min(100%, calc((100dvh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) * 16 / 9))') &&
     fullscreenCssSource.includes('#game-overlay .touch-runner') &&
     fullscreenCssSource.includes('#game-overlay .touch-runner-row'),
   true,
-  'fullscreen overlay must hide in-page NBG touch controls, center a 16:9 runner stage, and use the shared runner touch pad'
+  'fullscreen overlay must hide in-page NBG touch controls, center a 16:9 runner stage, preserve the portrait rotation prompt, and use the shared runner touch pad'
 );
 assert.equal(
   gameCssSource.includes('ROTATE PHONE FOR FULL RUNNER VIEW'),

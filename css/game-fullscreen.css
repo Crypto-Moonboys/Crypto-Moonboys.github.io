@@ -555,14 +555,16 @@ body.overlay-open #faction-hud {
   aspect-ratio: 16 / 9;
 }
 
-#game-overlay.overlay-runner-game .game-card .nbg-game-stage::after {
-  display: none !important;
-}
-
 #game-overlay.overlay-runner-game canvas#game {
   width: 100% !important;
   height: 100% !important;
   max-height: none !important;
+}
+
+@media (orientation: landscape) {
+  #game-overlay.overlay-runner-game .game-card .nbg-game-stage::after {
+    display: none !important;
+  }
 }
 
 @supports not (height: 1dvh) {
