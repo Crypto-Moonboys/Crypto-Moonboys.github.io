@@ -263,7 +263,7 @@ assert.equal(
     fullscreenCssSource.includes('padding-right: env(safe-area-inset-right, 0px)') &&
     fullscreenCssSource.includes('width: min(calc(100% - (var(--runner-side-rail-width) * 2)), calc((100dvh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) * 16 / 9))') &&
     fullscreenCssSource.includes('width: min(calc(100% - (var(--runner-side-rail-width) * 2)), calc((100vh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) * 16 / 9))') &&
-    /#game-overlay\.overlay-runner-game \.touch-runner-row\s*\{[\s\S]*top:\s*75%;/.test(fullscreenCssSource) &&
+    /#game-overlay\.overlay-runner-game \.touch-runner-row\s*\{[\s\S]*top:\s*25%;/.test(fullscreenCssSource) &&
     /#game-overlay\.overlay-runner-game \.touch-runner-row\s*\{[\s\S]*width:\s*var\(--runner-side-rail-width\);[\s\S]*flex-direction:\s*column;/.test(fullscreenCssSource) &&
     fullscreenCssSource.includes('#game-overlay.overlay-runner-game .touch-runner-row:first-child') &&
     fullscreenCssSource.includes('#game-overlay.overlay-runner-game .touch-runner-row:last-child') &&
@@ -273,7 +273,7 @@ assert.equal(
     fullscreenCssSource.includes('#game-overlay .touch-runner') &&
     fullscreenCssSource.includes('#game-overlay .touch-runner-row'),
   true,
-  'fullscreen overlay must hide in-page NBG touch controls, center a 16:9 runner stage, preserve the portrait rotation prompt, and place landscape runner touch controls on the side at 75%'
+  'fullscreen overlay must hide in-page NBG touch controls, center a 16:9 runner stage, preserve the portrait rotation prompt, and place landscape runner touch controls in upper side rails'
 );
 assert.equal(
   gameCssSource.includes('ROTATE PHONE FOR FULL RUNNER VIEW'),
