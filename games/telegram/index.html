@@ -6,7 +6,7 @@
   <meta name="robots" content="noindex,nofollow">
   <title>Crypto Moonboys Games</title>
   <link rel="icon" type="image/png" href="/favicon.png">
-  <meta name="moonboys-mini-app-version" content="20260903-games-shell-v7">
+  <meta name="moonboys-mini-app-version" content="20260903-games-shell-v8">
   <script data-cfasync="false" src="https://telegram.org/js/telegram-web-app.js?63"></script>
   <style>
     :root {
@@ -21,6 +21,7 @@
       --red: #ff413d;
       --purple: #a14cff;
       --orange: #ff9b22;
+      --pixel-font: "Courier New", "Lucida Console", monospace;
     }
     * { box-sizing: border-box; }
     html, body {
@@ -31,8 +32,9 @@
         radial-gradient(circle at 15% 24%, rgba(255, 63, 217, .16), transparent 20rem),
         linear-gradient(180deg, #010307 0%, #05070a 55%, #010204 100%);
       color: #f6f8ff;
-      font-family: Impact, Haettenschweiler, "Arial Black", Arial, Helvetica, sans-serif;
+      font-family: var(--pixel-font);
       overflow-x: hidden;
+      image-rendering: pixelated;
     }
     body {
       display: grid;
@@ -56,7 +58,7 @@
       width: min(520px, 100%);
       min-height: min(760px, calc(100dvh - 28px));
       border: 2px solid #26466f;
-      border-radius: 24px 24px 18px 18px;
+      border-radius: 6px;
       padding: 22px 16px 18px;
       background:
         linear-gradient(145deg, rgba(255,255,255,.09), transparent 18%),
@@ -74,10 +76,8 @@
       position: absolute;
       top: 13px;
       width: 64px;
-      height: 10px;
-      border-radius: 999px;
+      height: 8px;
       content: "";
-      filter: blur(.2px);
     }
     main::before {
       left: 18px;
@@ -95,46 +95,47 @@
       margin: 14px 0 16px;
       padding: 18px 12px 15px;
       border: 2px solid #18365d;
-      border-radius: 18px;
+      border-radius: 4px;
       background:
         radial-gradient(circle at 50% 0%, rgba(34,215,255,.18), transparent 70%),
         linear-gradient(180deg, #071327 0%, #020610 100%);
       box-shadow:
         inset 0 0 0 2px rgba(255,255,255,.035),
         inset 0 0 32px rgba(34,215,255,.12),
-        0 0 20px rgba(34,215,255,.15);
+        6px 6px 0 rgba(0,0,0,.42);
       text-align: center;
     }
     .kicker {
       display: block;
       margin-bottom: 2px;
       color: var(--cyan);
-      font-family: "Courier New", monospace;
-      font-size: 13px;
+      font-family: var(--pixel-font);
+      font-size: 12px;
       font-weight: 900;
       letter-spacing: 3px;
-      text-shadow: 0 0 8px rgba(34,215,255,.85);
+      text-shadow: 2px 2px 0 #001b2a;
     }
     h1 {
       margin: 0;
       color: var(--gold);
-      font-size: clamp(36px, 11vw, 62px);
-      line-height: .82;
+      font-family: var(--pixel-font);
+      font-size: clamp(25px, 8.4vw, 42px);
+      line-height: .92;
+      letter-spacing: 1px;
       text-transform: uppercase;
       text-shadow:
-        0 2px 0 #9a4d00,
-        0 5px 0 #4c2500,
-        0 0 16px rgba(255, 209, 92, .55);
+        3px 0 0 #9a4d00,
+        0 3px 0 #9a4d00,
+        3px 3px 0 #4c2500;
     }
     h1 span {
       display: block;
       margin-top: 6px;
       color: #ff65df;
-      font-family: "Trebuchet MS", Arial, sans-serif;
-      font-size: .48em;
-      font-style: italic;
+      font-family: var(--pixel-font);
+      font-size: .62em;
       letter-spacing: 1px;
-      text-shadow: 0 0 12px rgba(255, 63, 217, .9), 0 2px 0 #67145a;
+      text-shadow: 2px 2px 0 #67145a;
     }
     p { margin: 8px 0; color: #c8d6ec; line-height: 1.4; }
     .status-bar {
@@ -144,19 +145,18 @@
       gap: 10px;
       margin: 0 0 14px;
       border: 2px solid #0d6f2c;
-      border-radius: 12px;
-      padding: 10px 12px;
-      background: linear-gradient(180deg, rgba(50,255,98,.16), rgba(4,38,16,.82));
-      box-shadow: inset 0 0 16px rgba(50,255,98,.18), 0 0 14px rgba(50,255,98,.1);
+      border-radius: 3px;
+      padding: 9px 11px;
+      background: #041f0d;
+      box-shadow: inset 0 0 0 2px rgba(50,255,98,.08), 4px 4px 0 rgba(0,0,0,.36);
     }
     .status-bar::before {
       flex: 0 0 auto;
       width: 18px;
       height: 18px;
-      border-radius: 50%;
       content: "";
       background: var(--green);
-      box-shadow: inset 0 -4px 0 rgba(0,0,0,.28), 0 0 12px var(--green);
+      box-shadow: 3px 3px 0 #001c08;
     }
     .status-lamps {
       display: flex;
@@ -166,46 +166,47 @@
     .status-lamps i {
       width: 10px;
       height: 10px;
-      border-radius: 50%;
       background: var(--green);
-      box-shadow: 0 0 10px var(--green);
+      box-shadow: 2px 2px 0 #001c08;
     }
     .screen-copy {
       margin: 0 0 14px;
       color: #8fd3ff;
-      font-family: "Courier New", monospace;
+      font-family: var(--pixel-font);
       font-size: 13px;
       font-weight: 800;
       text-transform: uppercase;
     }
-    nav { display: grid; gap: 12px; margin-top: 14px; }
+    nav { display: grid; gap: 10px; margin-top: 12px; }
     a {
       --accent: var(--cyan);
       --accent-glow: rgba(34, 215, 255, .42);
       --accent-border: #22d7ff;
       position: relative;
       display: grid;
-      grid-template-columns: 64px 1fr 26px;
+      grid-template-columns: 58px 1fr 24px;
       align-items: center;
-      gap: 12px;
-      min-height: 78px;
+      gap: 11px;
+      min-height: 68px;
       border: 2px solid var(--accent-border);
-      border-radius: 15px;
-      padding: 10px 12px;
+      border-radius: 3px;
+      padding: 8px 10px;
       background:
-        linear-gradient(90deg, var(--accent-glow), transparent 38%),
-        linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.2)),
+        linear-gradient(90deg, var(--accent-glow), transparent 32%),
+        linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.18)),
         #081326;
       color: #f6f8ff;
-      font-size: clamp(19px, 5.5vw, 28px);
+      font-family: var(--pixel-font);
+      font-size: clamp(15px, 4.3vw, 21px);
       font-weight: 900;
       line-height: 1;
+      letter-spacing: -1px;
       text-decoration: none;
-      text-shadow: 0 2px 0 #020305, 0 0 10px rgba(255,255,255,.22);
+      text-shadow: 2px 2px 0 #020305;
       box-shadow:
-        inset 0 0 0 2px rgba(255,255,255,.035),
-        inset 0 -13px 0 rgba(0,0,0,.22),
-        0 0 18px var(--accent-glow);
+        inset 0 0 0 2px rgba(255,255,255,.025),
+        inset 0 -8px 0 rgba(0,0,0,.24),
+        5px 5px 0 rgba(0,0,0,.48);
       -webkit-tap-highlight-color: transparent;
       transform: translateZ(0);
     }
@@ -213,28 +214,28 @@
       display: grid;
       place-items: center;
       width: 56px;
-      height: 56px;
+      height: 48px;
       border: 2px solid var(--accent-border);
-      border-radius: 12px;
+      border-radius: 2px;
       content: attr(data-icon);
       background:
-        radial-gradient(circle at 34% 28%, rgba(255,255,255,.22), transparent 34%),
-        linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.28)),
+        linear-gradient(135deg, rgba(255,255,255,.16), transparent 28%),
+        linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.28)),
         #050a12;
       color: var(--accent);
-      font-family: "Courier New", monospace;
-      font-size: 16px;
+      font-family: var(--pixel-font);
+      font-size: 14px;
       font-weight: 900;
-      box-shadow: inset 0 -8px 0 rgba(0,0,0,.32), 0 0 12px var(--accent-glow);
+      box-shadow: inset 0 -7px 0 rgba(0,0,0,.32), 3px 3px 0 rgba(0,0,0,.5);
     }
     a::after {
       justify-self: end;
       content: ">";
       color: var(--accent);
-      font-family: "Courier New", monospace;
-      font-size: 38px;
+      font-family: var(--pixel-font);
+      font-size: 31px;
       line-height: 1;
-      text-shadow: 0 0 10px var(--accent);
+      text-shadow: 2px 2px 0 #020305;
     }
     a[data-tone="red"] { --accent: var(--red); --accent-border: #ff413d; --accent-glow: rgba(255,65,61,.42); }
     a[data-tone="purple"] { --accent: var(--purple); --accent-border: #a14cff; --accent-glow: rgba(161,76,255,.42); }
@@ -245,7 +246,7 @@
       box-shadow:
         inset 0 0 0 2px rgba(255,255,255,.025),
         inset 0 9px 18px rgba(0,0,0,.28),
-        0 0 10px var(--accent-glow);
+        2px 2px 0 rgba(0,0,0,.48);
     }
     body.is-initializing nav a,
     body.is-navigating nav a { opacity:.58; pointer-events:none; }
@@ -253,20 +254,20 @@
     .version {
       margin: 14px 0 0;
       border: 1px solid #263f62;
-      border-radius: 10px;
+      border-radius: 3px;
       padding: 9px 10px;
       background: #03070d;
       box-shadow: inset 0 0 16px rgba(255,209,92,.08);
     }
     code {
       color: var(--gold);
-      font-family: "Courier New", monospace;
+      font-family: var(--pixel-font);
       font-size: 12px;
       font-weight: 900;
       word-break: break-word;
       text-shadow: 0 0 8px rgba(255,209,92,.42);
     }
-    .ok { color: var(--green); font-family: "Courier New", monospace; font-weight: 900; text-shadow: 0 0 8px rgba(50,255,98,.7); }
+    .ok { color: var(--green); font-family: var(--pixel-font); font-weight: 900; text-shadow: 2px 2px 0 #001c08; }
     .control-deck {
       display: grid;
       grid-template-columns: 1fr auto;
@@ -278,15 +279,15 @@
     }
     .coin-slot {
       border: 2px solid #263f62;
-      border-radius: 12px;
+      border-radius: 3px;
       padding: 10px;
       background: linear-gradient(180deg, #0d1726, #04070c);
       color: var(--gold);
-      font-family: "Courier New", monospace;
+      font-family: var(--pixel-font);
       font-size: 12px;
       font-weight: 900;
       text-align: center;
-      text-shadow: 0 0 8px rgba(255,209,92,.4);
+      text-shadow: 2px 2px 0 #301c00;
     }
     .buttons {
       display: flex;
@@ -296,28 +297,28 @@
     .stick {
       width: 42px;
       height: 42px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 35% 28%, #ffb0ad, var(--red) 34%, #5e0505 78%);
-      box-shadow: 0 9px 0 #09111c, 0 0 14px rgba(255,65,61,.42);
+      border: 2px solid #ff807d;
+      background: var(--red);
+      box-shadow: 0 7px 0 #09111c, 4px 4px 0 rgba(0,0,0,.45);
     }
     .button-light {
       width: 28px;
       height: 28px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 35% 28%, #fff6bf, var(--gold) 38%, #8a4a00 80%);
-      box-shadow: 0 6px 0 #09111c, 0 0 12px rgba(255,209,92,.34);
+      border: 2px solid #ffe8a0;
+      background: var(--gold);
+      box-shadow: 0 5px 0 #09111c, 3px 3px 0 rgba(0,0,0,.45);
     }
     @media (max-width: 420px) {
       body { padding-left: 8px; padding-right: 8px; }
-      main { min-height: calc(100dvh - 18px); padding: 20px 10px 12px; border-radius: 20px 20px 15px 15px; }
+      main { min-height: calc(100dvh - 18px); padding: 20px 10px 12px; border-radius: 5px; }
       .marquee { margin-top: 12px; padding: 15px 9px 13px; }
-      a { grid-template-columns: 56px 1fr 22px; min-height: 70px; gap: 9px; padding: 9px; }
-      a::before { width: 50px; height: 50px; font-size: 14px; }
-      a::after { font-size: 32px; }
+      a { grid-template-columns: 50px 1fr 20px; min-height: 62px; gap: 8px; padding: 8px; }
+      a::before { width: 46px; height: 42px; font-size: 12px; }
+      a::after { font-size: 28px; }
       .control-deck { grid-template-columns: 1fr auto; gap: 10px; }
       .coin-slot { padding: 8px 6px; font-size: 11px; }
-      .stick { width: 36px; height: 36px; }
-      .button-light { width: 24px; height: 24px; }
+      .stick { width: 34px; height: 34px; }
+      .button-light { width: 23px; height: 23px; }
     }
   </style>
 </head>
@@ -332,11 +333,11 @@
     <nav aria-label="Crypto Moonboys games">
       <a href="/moonpet-game.html?v=20260814-moonpet-aaa-pass" data-icon="PET" aria-disabled="true" tabindex="-1">Moonpet OS</a>
       <a href="/games/dead-run/?v=20260902-dead-run-v5" data-icon="RUN" data-tone="red" aria-disabled="true" tabindex="-1">Dead Run</a>
-      <a href="/community.html?v=20260903-games-shell-v7" data-icon="PVP" data-tone="purple" aria-disabled="true" tabindex="-1">Battle Chamber</a>
-      <a href="/games/nbg-london/?v=20260903-games-shell-v7" data-icon="LDN" data-tone="green" aria-disabled="true" tabindex="-1">NBG London Runner</a>
-      <a href="/games/?v=20260903-games-shell-v7" data-icon="1UP" data-tone="orange" aria-disabled="true" tabindex="-1">Full Arcade</a>
+      <a href="/community.html?v=20260903-games-shell-v8" data-icon="PVP" data-tone="purple" aria-disabled="true" tabindex="-1">Battle Chamber</a>
+      <a href="/games/nbg-london/?v=20260903-games-shell-v8" data-icon="LDN" data-tone="green" aria-disabled="true" tabindex="-1">NBG London Runner</a>
+      <a href="/games/?v=20260903-games-shell-v8" data-icon="1UP" data-tone="orange" aria-disabled="true" tabindex="-1">Full Arcade</a>
     </nav>
-    <p class="version"><code>/games/telegram/?v=20260903-games-shell-v7</code></p>
+    <p class="version"><code>/games/telegram/?v=20260903-games-shell-v8</code></p>
     <div class="control-deck" aria-hidden="true">
       <div class="coin-slot">INSERT COIN<br>MOON MODE</div>
       <div class="buttons"><span class="stick"></span><span class="button-light"></span></div>
