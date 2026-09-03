@@ -677,9 +677,17 @@
 
   /* ── Touch helpers ───────────────────────────────────────────────── */
 
-  function dispatchKey(type, key) {
+  function getEventCode(key, code) {
+    if (code) return code;
+    if (key === ' ') return 'Space';
+    if (/^Arrow/.test(key)) return key;
+    if (/^[a-z]$/i.test(key)) return 'Key' + key.toUpperCase();
+    return key;
+  }
+
+  function dispatchKey(type, key, code) {
     document.dispatchEvent(
-      new KeyboardEvent(type, { key: key, bubbles: true, cancelable: true })
+      new KeyboardEvent(type, { key: key, code: getEventCode(key, code), bubbles: true, cancelable: true })
     );
   }
 
@@ -692,32 +700,32 @@
   }
 
   // Hold-to-move: fires keydown on press, keyup on release.
-  function bindHold(btn, key) {
+  function bindHold(btn, key, code) {
     btn.addEventListener('touchstart', function (e) {
       e.preventDefault();
-      dispatchKey('keydown', key);
+      dispatchKey('keydown', key, code);
     }, { passive: false });
     btn.addEventListener('touchend', function (e) {
       e.preventDefault();
-      dispatchKey('keyup', key);
+      dispatchKey('keyup', key, code);
     }, { passive: false });
-    btn.addEventListener('touchcancel', function () { dispatchKey('keyup', key); });
+    btn.addEventListener('touchcancel', function () { dispatchKey('keyup', key, code); });
     // Mouse fallback for non-touch testing
-    btn.addEventListener('mousedown',  function () { dispatchKey('keydown', key); });
-    btn.addEventListener('mouseup',    function () { dispatchKey('keyup',   key); });
-    btn.addEventListener('mouseleave', function () { dispatchKey('keyup',   key); });
+    btn.addEventListener('mousedown',  function () { dispatchKey('keydown', key, code); });
+    btn.addEventListener('mouseup',    function () { dispatchKey('keyup',   key, code); });
+    btn.addEventListener('mouseleave', function () { dispatchKey('keyup',   key, code); });
   }
 
   // Tap: fires a brief keydown+keyup pulse.
-  function bindTap(btn, key) {
+  function bindTap(btn, key, code) {
     btn.addEventListener('touchstart', function (e) {
       e.preventDefault();
-      dispatchKey('keydown', key);
-      setTimeout(function () { dispatchKey('keyup', key); }, KEY_PULSE_MS);
+      dispatchKey('keydown', key, code);
+      setTimeout(function () { dispatchKey('keyup', key, code); }, KEY_PULSE_MS);
     }, { passive: false });
     btn.addEventListener('click', function () {
-      dispatchKey('keydown', key);
-      setTimeout(function () { dispatchKey('keyup', key); }, KEY_PULSE_MS);
+      dispatchKey('keydown', key, code);
+      setTimeout(function () { dispatchKey('keyup', key, code); }, KEY_PULSE_MS);
     });
   }
 
@@ -827,8 +835,8 @@
     var jump = makeTouchBtn('JUMP', 'touch-btn--wide', 'Jump');
     bindHold(left, 'ArrowLeft');
     bindHold(right, 'ArrowRight');
-    bindHold(jump, ' ');
-    bindHold(spray, 'KeyS');
+    bindHold(jump, ' ', 'Space');
+    bindHold(spray, 's', 'KeyS');
     move.appendChild(left);
     move.appendChild(right);
     actions.appendChild(spray);

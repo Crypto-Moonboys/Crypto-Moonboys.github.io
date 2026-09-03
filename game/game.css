@@ -114,6 +114,7 @@ body {
 
 .nbg-game-stage {
   display: none;
+  position: relative;
   aspect-ratio: 16 / 9;
   overflow: hidden;
 }

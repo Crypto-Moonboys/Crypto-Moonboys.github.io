@@ -242,10 +242,11 @@ assert.equal(
   'fullscreen shell must give NBG London runner its own touch controls and landscape lock attempt without stealing generic #game canvases'
 );
 assert.equal(
-  /\\.nbg-game-stage\\.is-active\\s*\\{[\\s\\S]*display:\\s*grid;[\\s\\S]*grid-template-rows:\\s*minmax\\(0,\\s*1fr\\);/.test(gameCssSource) &&
-    /@media\\s*\\(hover:\\s*none\\),\\s*\\(pointer:\\s*coarse\\),\\s*\\(max-width:\\s*760px\\)\\s*\\{[\\s\\S]*\\.nbg-game-stage\\.is-active\\s*\\{[\\s\\S]*grid-template-rows:\\s*minmax\\(0,\\s*1fr\\)\\s+auto;/.test(gameCssSource) &&
-    /\\.touch-controls\\s*\\{[^}]*grid-row:\\s*2;[^}]*\\}/.test(gameCssSource) &&
-    !/\\.touch-controls\\s*\\{[^}]*position:\\s*absolute/.test(gameCssSource),
+  /\.nbg-game-stage\s*\{[^}]*position:\s*relative;/.test(gameCssSource) &&
+    /\.nbg-game-stage\.is-active\s*\{[\s\S]*display:\s*grid;[\s\S]*grid-template-rows:\s*minmax\(0,\s*1fr\);/.test(gameCssSource) &&
+    /@media\s*\(hover:\s*none\),\s*\(pointer:\s*coarse\),\s*\(max-width:\s*760px\)\s*\{[\s\S]*\.nbg-game-stage\.is-active\s*\{[\s\S]*grid-template-rows:\s*minmax\(0,\s*1fr\)\s+auto;/.test(gameCssSource) &&
+    /\.touch-controls\s*\{[^}]*grid-row:\s*2;[^}]*\}/.test(gameCssSource) &&
+    !/\.touch-controls\s*\{[^}]*position:\s*absolute/.test(gameCssSource),
   true,
   'NBG mobile controls must live in a reserved grid row instead of overlaying the game canvas'
 );
