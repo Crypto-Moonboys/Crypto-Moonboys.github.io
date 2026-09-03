@@ -8,11 +8,11 @@
   },
   "world": {
     "tileSize": 16,
-    "width": 2200,
+    "width": 22000,
     "layerNames": ["sky", "london-skyline", "graffiti-wall", "street"],
     "layers": [
       "world/clouds.jpg",
-      "world/LONDON BACKGROUND.png",
+      "world/london-skyline-stitched.svg",
       "world/wall.png",
       "world/street-tiles.svg"
     ]
