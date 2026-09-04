@@ -7,7 +7,7 @@
       "sourceFrameHeight": 128,
       "renderWidth": 72,
       "renderHeight": 86,
-      "renderOffsetY": 6,
+      "renderOffsetY": 11,
       "frames": 6,
       "columns": 3,
       "frameMs": 145
@@ -18,7 +18,7 @@
       "sourceFrameHeight": 128,
       "renderWidth": 72,
       "renderHeight": 86,
-      "renderOffsetY": 12,
+      "renderOffsetY": 17,
       "frames": 6,
       "columns": 3,
       "frameMs": 88
@@ -29,7 +29,7 @@
       "sourceFrameHeight": 128,
       "renderWidth": 72,
       "renderHeight": 86,
-      "renderOffsetY": 18,
+      "renderOffsetY": 23,
       "frames": 6,
       "columns": 3,
       "frameMs": 145
@@ -40,7 +40,7 @@
       "sourceFrameHeight": 128,
       "renderWidth": 72,
       "renderHeight": 86,
-      "renderOffsetY": 15,
+      "renderOffsetY": 20,
       "frames": 6,
       "columns": 3,
       "frameMs": 145
@@ -51,7 +51,7 @@
       "sourceFrameHeight": 128,
       "renderWidth": 72,
       "renderHeight": 86,
-      "renderOffsetY": 1,
+      "renderOffsetY": 6,
       "frames": 6,
       "columns": 3,
       "frameMs": 110
@@ -62,7 +62,7 @@
       "sourceFrameHeight": 128,
       "renderWidth": 72,
       "renderHeight": 86,
-      "renderOffsetY": 1,
+      "renderOffsetY": 6,
       "frames": 6,
       "columns": 3,
       "frameMs": 120
@@ -73,7 +73,7 @@
       "sourceFrameHeight": 128,
       "renderWidth": 72,
       "renderHeight": 86,
-      "renderOffsetY": 8,
+      "renderOffsetY": 13,
       "frames": 6,
       "columns": 3,
       "frameMs": 145
