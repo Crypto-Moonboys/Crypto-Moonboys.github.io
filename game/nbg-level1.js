@@ -24,6 +24,9 @@
   var PLAYER_VISUAL_FOOT_Y = STREET_Y + 10;
   var PLAYER_VISUAL_OFFSET_Y = PLAYER_VISUAL_FOOT_Y - FLOOR_Y;
   var FOREGROUND_VISUAL_OFFSET_Y = PLAYER_VISUAL_OFFSET_Y;
+  var CAMERA_JUMP_FOLLOW = 0.35;
+  var CAMERA_JUMP_MAX_Y = 18;
+  var CAMERA_JUMP_EASE = 0.16;
   function rectsOverlap(a, b) {
     return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
   }
@@ -138,6 +141,7 @@
     var complete = false;
     var lastTime = 0;
     var cameraX = 0;
+    var cameraY = 0;
     var checkpointX = 72;
     var finishBonusAwarded = false;
     var sprayTimer = 0;
@@ -453,6 +457,13 @@
       cameraX = clamp(player.x - WIDTH * 0.42, 0, WORLD_WIDTH - WIDTH);
     }
 
+    function updateCameraY() {
+      var groundedY = FLOOR_Y - player.h;
+      var jumpLift = Math.max(0, groundedY - player.y);
+      var targetCameraY = Math.min(CAMERA_JUMP_MAX_Y, jumpLift * CAMERA_JUMP_FOLLOW);
+      cameraY += (targetCameraY - cameraY) * CAMERA_JUMP_EASE;
+    }
+
     function updateHud() {
       var collected = coins.filter(function (coin) { return coin.taken; }).length;
       hud.xp.textContent = 'XP ' + xp;
@@ -653,11 +664,14 @@
 
     function render(time) {
       ctx.clearRect(0, 0, WIDTH, HEIGHT);
+      ctx.save();
+      ctx.translate(0, Math.round(cameraY));
       drawWorld();
       drawCoins(time);
       drawObjects();
       drawEnemies();
       drawPlayer();
+      ctx.restore();
       drawOverlay();
     }
 
@@ -672,6 +686,7 @@
         updateEnemies(time, dt);
         updateLevel();
         updateCamera();
+        updateCameraY();
       } else if (completionAnimationActive) {
         completionAnimationActive = !advancePlayerAnimation(dt, false);
       }
@@ -694,6 +709,7 @@
         get running() { return running; },
         get completionAnimationActive() { return completionAnimationActive; },
         get cameraX() { return cameraX; },
+        get cameraY() { return cameraY; },
         get checkpoint() { return checkpoint; },
         get finish() { return finish; },
         get worldWidth() { return WORLD_WIDTH; },
@@ -712,6 +728,8 @@
       complete = false;
       lastTime = 0;
       updateCamera();
+      updateCameraY();
+      cameraY = 0;
       updateHud();
       render(performance.now());
       return window.NBGLevel1State;
@@ -724,6 +742,7 @@
       complete = false;
       lastTime = 0;
       cameraX = 0;
+      cameraY = 0;
       checkpointX = 72;
       finishBonusAwarded = false;
       sprayTimer = 0;
@@ -756,6 +775,7 @@
       checkpoint.active = false;
       gameVisible = true;
       updateCamera();
+      updateCameraY();
       updateHud();
       render(typeof performance !== 'undefined' && performance.now ? performance.now() : 0);
       window.dispatchEvent(new CustomEvent('nbg-level-reset', {

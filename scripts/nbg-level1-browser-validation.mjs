@@ -78,9 +78,17 @@ async function startServer() {
 
 async function stopServer() {
   if (!server) return;
-  await new Promise((resolve, reject) => {
+  const closePromise = new Promise((resolve, reject) => {
     server.close((error) => error ? reject(error) : resolve());
   });
+  if (typeof server.closeIdleConnections === 'function') server.closeIdleConnections();
+  if (typeof server.closeAllConnections === 'function') server.closeAllConnections();
+  if (typeof server.unref === 'function') server.unref();
+  await Promise.race([
+    closePromise,
+    new Promise((resolve) => setTimeout(resolve, 1000))
+  ]);
+  server = null;
 }
 
 function averagePixelEnergy(buffer) {
@@ -126,13 +134,13 @@ async function holdRunnerRight(page, durationMs = 0) {
 }
 
 const expectedAnimations = {
-  idle: { spriteSheet: 'player/animations/idle.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 6, frames: 6, columns: 3, frameMs: 145 },
-  run: { spriteSheet: 'player/animations/run.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 12, frames: 6, columns: 3, frameMs: 88 },
-  jump: { spriteSheet: 'player/animations/jump.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 18, frames: 6, columns: 3, frameMs: 145 },
-  fall: { spriteSheet: 'player/animations/fall.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 15, frames: 6, columns: 3, frameMs: 145 },
-  spray: { spriteSheet: 'player/animations/spray.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 1, frames: 6, columns: 3, frameMs: 110 },
-  hurt: { spriteSheet: 'player/animations/hurt.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 1, frames: 6, columns: 3, frameMs: 120 },
-  victory: { spriteSheet: 'player/animations/victory.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 8, frames: 6, columns: 3, frameMs: 145 }
+  idle: { spriteSheet: 'player/animations/idle.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 11, frames: 6, columns: 3, frameMs: 145 },
+  run: { spriteSheet: 'player/animations/run.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 17, frames: 6, columns: 3, frameMs: 88 },
+  jump: { spriteSheet: 'player/animations/jump.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 23, frames: 6, columns: 3, frameMs: 145 },
+  fall: { spriteSheet: 'player/animations/fall.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 20, frames: 6, columns: 3, frameMs: 145 },
+  spray: { spriteSheet: 'player/animations/spray.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 6, frames: 6, columns: 3, frameMs: 110 },
+  hurt: { spriteSheet: 'player/animations/hurt.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 6, frames: 6, columns: 3, frameMs: 120 },
+  victory: { spriteSheet: 'player/animations/victory.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 13, frames: 6, columns: 3, frameMs: 145 }
 };
 const expectedPlayerAssetUrls = Object.fromEntries(Object.entries(expectedAnimations).map(([key, animation]) => [
   `player.${key}`,
@@ -253,6 +261,40 @@ assert.equal(
   'standalone Level 1 runtime must define a shared foreground visual offset alias from the player visual offset'
 );
 assert.equal(
+  runtimeSource.includes('var CAMERA_JUMP_FOLLOW = 0.35') &&
+    runtimeSource.includes('var CAMERA_JUMP_MAX_Y = 18') &&
+    runtimeSource.includes('var CAMERA_JUMP_EASE = 0.16') &&
+    runtimeSource.includes('var cameraY = 0') &&
+    runtimeSource.includes('function updateCameraY()') &&
+    runtimeSource.includes('var groundedY = FLOOR_Y - player.h') &&
+    runtimeSource.includes('var jumpLift = Math.max(0, groundedY - player.y)') &&
+    runtimeSource.includes('var targetCameraY = Math.min(CAMERA_JUMP_MAX_Y, jumpLift * CAMERA_JUMP_FOLLOW)') &&
+    runtimeSource.includes('cameraY += (targetCameraY - cameraY) * CAMERA_JUMP_EASE') &&
+    runtimeSource.includes('get cameraY() { return cameraY; }'),
+  true,
+  'standalone Level 1 runtime must expose a render-only eased vertical jump camera'
+);
+assert.equal(
+  /function render\(time\)\s*\{\s*ctx\.clearRect\(0, 0, WIDTH, HEIGHT\);\s*ctx\.save\(\);\s*ctx\.translate\(0, Math\.round\(cameraY\)\);\s*drawWorld\(\);\s*drawCoins\(time\);\s*drawObjects\(\);\s*drawEnemies\(\);\s*drawPlayer\(\);\s*ctx\.restore\(\);\s*drawOverlay\(\);/.test(runtimeSource),
+  true,
+  'standalone Level 1 render must wrap gameplay drawing in a positive rounded cameraY transform while leaving the overlay unshifted'
+);
+assert.equal(
+  /updateCamera\(\);\s*updateCameraY\(\);/.test(runtimeSource),
+  true,
+  'standalone Level 1 tick/init/reset paths must update vertical camera after horizontal camera'
+);
+assert.equal(
+  /function finishInit\(\)\s*\{[\s\S]*updateCamera\(\);\s*updateCameraY\(\);\s*cameraY = 0;[\s\S]*render\(performance\.now\(\)\);/.test(runtimeSource),
+  true,
+  'finishInit must reset cameraY before the initial render'
+);
+assert.equal(
+  /function resetRun\(\)\s*\{[\s\S]*cameraX = 0;\s*cameraY = 0;[\s\S]*updateCamera\(\);\s*updateCameraY\(\);[\s\S]*render\(typeof performance !== 'undefined' && performance\.now \? performance\.now\(\) : 0\);/.test(runtimeSource),
+  true,
+  'resetRun must reset cameraY to zero before rendering the reset state'
+);
+assert.equal(
   runtimeSource.includes('var platformY = p.y + FOREGROUND_VISUAL_OFFSET_Y') &&
     runtimeSource.includes('ctx.fillRect(Math.round(p.x - cameraX), platformY, p.w, p.h)') &&
     runtimeSource.includes('ctx.fillRect(Math.round(p.x - cameraX), platformY, p.w, 3)') &&
@@ -278,9 +320,14 @@ assert.equal(
     runtimeSource.includes("{ type: 'pigeon', x: 1010, y: 128, w: 28, h: 22, vx: 1.35, min: 940, max: 1128, bob: 0 }") &&
     runtimeSource.includes("{ type: 'bot', x: 1455, y: FLOOR_Y - 38, w: 30, h: 38, vx: 0.85, min: 1390, max: 1550 }") &&
     runtimeSource.includes('var checkpoint = { x: 1240, y: FLOOR_Y - 48, w: 30, h: 48, active: false }') &&
-    runtimeSource.includes('var finish = { x: WORLD_WIDTH - 150, y: FLOOR_Y - 62, w: 38, h: 62 }'),
+    runtimeSource.includes('var finish = { x: WORLD_WIDTH - 150, y: FLOOR_Y - 62, w: 38, h: 62 }') &&
+    runtimeSource.includes('var SKYLINE_Y = 40') &&
+    runtimeSource.includes('ctx.drawImage(images.street, 0, sourceY, naturalWidth, sourceH, x, STREET_Y, tileW, STREET_BAND_HEIGHT)') &&
+    runtimeSource.includes('drawImageLayer(images.wall, 0.58, 154, 88,') &&
+    runtimeSource.includes('SKYLINE_Y,') &&
+    !/FLOOR_Y\s*[+\-]=|STREET_Y\s*[+\-]=|SKYLINE_Y\s*[+\-]=/.test(runtimeSource),
   true,
-  'standalone Level 1 physics constants and raw foreground object y-values must remain unchanged'
+  'standalone Level 1 physics constants, wall draw position, skyline draw Y, road draw Y, and raw foreground object y-values must remain unchanged'
 );
 assert.equal(
   runtimeSource.includes('renderOffsetY') && playerRendererSource.includes('renderOffsetY'),
@@ -580,6 +627,7 @@ let startVisibility = await page.evaluate(() => ({
   canvasVisible: Boolean(document.querySelector('#game')?.offsetParent || document.querySelector('#game')?.getClientRects().length),
   hudVisible: Boolean(document.querySelector('#hud-state')?.offsetParent || document.querySelector('#hud-state')?.getClientRects().length),
   hudState: document.getElementById('hud-state')?.textContent,
+  cameraY: window.NBGLevel1State.cameraY,
   state: {
     assetsLoaded: window.NBGLevel1State.assetsLoaded,
     gameVisible: window.NBGLevel1State.gameVisible,
@@ -598,6 +646,8 @@ assert.deepEqual(
   { assetsLoaded: true, gameVisible: true, waitingForFirstInput: true, running: false },
   'game must be visible and waiting, not running, before first input'
 );
+assert.equal(typeof startVisibility.cameraY, 'number', 'cameraY must exist in the browser test state');
+assert.equal(startVisibility.cameraY, 0, 'cameraY must start clean after finishInit');
 
 const preInitMovePage = await openWithDelayedNbgInit(browser, url);
 await preInitMovePage.keyboard.down('ArrowRight');
@@ -664,6 +714,7 @@ let state = await page.evaluate(() => ({
   health: window.NBGLevel1State.player.health,
   coinCount: window.NBGLevel1State.coins.length,
   enemyCount: window.NBGLevel1State.enemies.length,
+  cameraY: window.NBGLevel1State.cameraY,
   xp: window.NBGLevel1State.xp,
   assetStatus: window.NBGLevel1State.assetStatus,
   requiredAssets: window.NBGLevel1State.requiredAssets,
@@ -689,6 +740,7 @@ assert.equal(state.running, true, 'ArrowRight must start the game loop');
 assert.equal(state.coinCount, 12, 'Level 1 must spawn 12 XP coins');
 assert.equal(state.enemyCount, 3, 'Level 1 must spawn 3 enemies');
 assert.equal(state.health, 3, 'player must spawn with health');
+assert.equal(typeof state.cameraY, 'number', 'cameraY must remain exposed after gameplay starts');
 assert.deepEqual(
   Object.keys(state.assetStatus).sort(),
   state.requiredAssets.slice().sort(),
@@ -823,10 +875,13 @@ await page.keyboard.up('Space');
 await page.waitForTimeout(220);
 state = await page.evaluate(() => ({
   y: window.NBGLevel1State.player.y,
-  anim: window.NBGLevel1State.player.anim
+  anim: window.NBGLevel1State.player.anim,
+  cameraY: window.NBGLevel1State.cameraY
 }));
 assert.ok(state.y < beforeJumpY, 'player must jump upward');
 assert.equal(state.anim, 'jump', 'player must switch to jump animation');
+assert.ok(state.cameraY > 0, 'cameraY must rise smoothly after the player jumps');
+assert.ok(state.cameraY <= 18, 'cameraY must stay capped by CAMERA_JUMP_MAX_Y');
 
 await page.waitForFunction(() => (
   window.NBGLevel1State.player.vy > 0 &&
@@ -835,10 +890,12 @@ await page.waitForFunction(() => (
 state = await page.evaluate(() => ({
   vy: window.NBGLevel1State.player.vy,
   anim: window.NBGLevel1State.player.anim,
+  cameraY: window.NBGLevel1State.cameraY,
   fallLoaded: Boolean(window.NBGLevel1State.playerAnimations.fall?.image)
 }));
 assert.ok(state.vy > 0, 'player must be descending during fall validation');
 assert.equal(state.anim, 'fall', 'descending airborne player must switch to fall animation');
+assert.ok(state.cameraY > 0, 'cameraY must continue to follow while the player is falling');
 assert.equal(state.fallLoaded, true, 'fall animation sheet must be loaded');
 
 await page.evaluate(() => {
@@ -944,6 +1001,7 @@ state = await page.evaluate(() => ({
   taken: window.NBGLevel1State.coins.filter((coin) => coin.taken).length,
   checkpointActive: window.NBGLevel1State.checkpoint.active,
   pendingInitialInput: window.NBGLevel1State.pendingInitialInput,
+  cameraY: window.NBGLevel1State.cameraY,
   hud: document.getElementById('hud-state').textContent,
   titleScreenCount: document.querySelectorAll('#title-screen').length,
   stageActive: document.getElementById('game-stage').classList.contains('is-active')
@@ -967,6 +1025,7 @@ assert.equal(state.xp, 0, 'fullscreen reset must clear XP');
 assert.equal(state.taken, 0, 'fullscreen reset must restore every coin to untaken');
 assert.equal(state.checkpointActive, false, 'fullscreen reset must clear checkpoint state');
 assert.equal(state.pendingInitialInput, null, 'fullscreen reset must clear queued first input state');
+assert.equal(state.cameraY, 0, 'fullscreen reset must reset cameraY to zero');
 assert.equal(state.titleScreenCount, 0, 'fullscreen reset must not return to title screen');
 assert.equal(state.stageActive, true, 'fullscreen reset must keep canvas and HUD visible');
 
@@ -1001,3 +1060,5 @@ console.log('[PASS] NBG London Graffiti Run Level 1 browser validation');
   }
   await stopServer();
 }
+
+process.exit(0);
