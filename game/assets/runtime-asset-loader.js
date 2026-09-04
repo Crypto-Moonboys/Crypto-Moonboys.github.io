@@ -22,7 +22,13 @@ export class RuntimeAssetLoader {
     if (!manifest?.world) return {};
     const layerNames = manifest.world.layerNames || ['sky', 'london-skyline', 'graffiti-wall', 'street'];
     const worldEntries = Object.fromEntries(
-      layerNames.map((name, index) => [name, `./assets/${manifest.world.layers[index]}`])
+      layerNames.flatMap((name, index) => {
+        const layer = manifest.world.layers[index];
+        if (Array.isArray(layer)) {
+          return layer.map((entry, layerIndex) => [`${name}:${layerIndex + 1}`, `./assets/${entry}`]);
+        }
+        return [[name, `./assets/${layer}`]];
+      })
     );
 
     return {

@@ -10,7 +10,14 @@ const port = Number(process.env.NBG_LEVEL1_PORT || 4175);
 const host = process.env.NBG_LEVEL1_HOST || '127.0.0.1';
 const url = process.env.NBG_LEVEL1_URL || `http://${host}:${port}/games/nbg-london/`;
 const legacyUrl = new URL('/game/demo-launch.html', url).toString();
-const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE;
+const browserExecutableCandidates = [
+  process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE,
+  'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+  'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+  'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
+  'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe'
+].filter(Boolean);
+const executablePath = browserExecutableCandidates.find((candidate) => fs.existsSync(candidate));
 let server;
 const waitingHudText = 'MOVE TO START';
 
@@ -100,6 +107,24 @@ async function openWithDelayedNbgInit(browser, targetUrl, pageOptions = { viewpo
   return delayedPage;
 }
 
+async function holdRunnerRight(page, durationMs = 0) {
+  const rightControl = page.locator('[data-control="right"]').first();
+  await rightControl.waitFor({ state: 'attached', timeout: 5000 });
+  await rightControl.dispatchEvent('pointerdown', {
+    pointerId: 1,
+    pointerType: 'touch',
+    isPrimary: true,
+    bubbles: true
+  });
+  if (durationMs > 0) await page.waitForTimeout(durationMs);
+  await rightControl.dispatchEvent('pointerup', {
+    pointerId: 1,
+    pointerType: 'touch',
+    isPrimary: true,
+    bubbles: true
+  });
+}
+
 const expectedAnimations = {
   idle: { spriteSheet: 'player/animations/idle.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 6, frames: 6, columns: 3, frameMs: 145 },
   run: { spriteSheet: 'player/animations/run.png', sourceFrameWidth: 128, sourceFrameHeight: 128, renderWidth: 72, renderHeight: 86, renderOffsetY: 12, frames: 6, columns: 3, frameMs: 88 },
@@ -115,6 +140,11 @@ const expectedPlayerAssetUrls = Object.fromEntries(Object.entries(expectedAnimat
 ]));
 const assetManifest = readJson('game/assets/asset-manifest.json');
 const playerAnimationManifest = readJson('game/assets/player/nbg-runner-animation-manifest.json');
+const expectedSkylineLayers = [
+  'world/LONDON BACKGROUND1.png',
+  'world/LONDON BACKGROUND2.png',
+  'world/LONDON BACKGROUND3.png'
+];
 
 assert.equal(
   fs.existsSync(path.resolve(process.cwd(), 'game/assets/sprite-manifest.json')),
@@ -127,6 +157,23 @@ assert.deepEqual(
   ['sky', 'london-skyline', 'graffiti-wall', 'street'],
   'asset-manifest.json must define the canonical render layer names'
 );
+assert.deepEqual(
+  assetManifest.world.layers[1],
+  expectedSkylineLayers,
+  'asset-manifest.json must reference the three direct skyline PNG panels'
+);
+assert.equal(
+  JSON.stringify(assetManifest).includes('london-skyline-stitched.svg'),
+  false,
+  'asset-manifest.json must not depend on the stitched skyline SVG wrapper'
+);
+for (const skylineLayer of expectedSkylineLayers) {
+  const assetPath = path.resolve(process.cwd(), 'game/assets', skylineLayer);
+  assert.equal(fs.existsSync(assetPath), true, `skyline PNG panel must exist: ${skylineLayer}`);
+  const pngHeader = fs.readFileSync(assetPath).subarray(16, 24);
+  assert.equal(pngHeader.readUInt32BE(0), 480, `skyline PNG panel width must remain 480px: ${skylineLayer}`);
+  assert.equal(pngHeader.readUInt32BE(4), 160, `skyline PNG panel height must remain 160px: ${skylineLayer}`);
+}
 assert.deepEqual(
   playerAnimationManifest.animations,
   expectedAnimations,
@@ -510,19 +557,7 @@ assert.equal(preInitState.pendingInitialInput, null, 'pre-init movement replay m
 await preInitMovePage.close();
 
 const preInitTouchPage = await openWithDelayedNbgInit(browser, url, { viewport: { width: 390, height: 700 }, isMobile: true, hasTouch: true });
-await preInitTouchPage.waitForSelector('[data-control="right"]', { state: 'visible', timeout: 5000 });
-await preInitTouchPage.locator('[data-control="right"]').dispatchEvent('pointerdown', {
-  pointerId: 1,
-  pointerType: 'touch',
-  isPrimary: true,
-  bubbles: true
-});
-await preInitTouchPage.locator('[data-control="right"]').dispatchEvent('pointerup', {
-  pointerId: 1,
-  pointerType: 'touch',
-  isPrimary: true,
-  bubbles: true
-});
+await holdRunnerRight(preInitTouchPage);
 await preInitTouchPage.waitForFunction(() => window.NBGLevel1State?.running === true, null, { timeout: 5000 });
 await preInitTouchPage.waitForTimeout(240);
 preInitState = await preInitTouchPage.evaluate(() => ({
@@ -557,21 +592,9 @@ await preInitSprayPage.close();
 
 const touchStartPage = await browser.newPage({ viewport: { width: 390, height: 700 }, isMobile: true, hasTouch: true });
 await touchStartPage.goto(url, { waitUntil: 'networkidle' });
-await touchStartPage.waitForSelector('[data-control="right"]', { state: 'visible', timeout: 5000 });
 await touchStartPage.waitForFunction(() => window.NBGLevel1State?.assetsLoaded === true && window.NBGLevel1State.running === false, null, { timeout: 5000 });
-await touchStartPage.locator('[data-control="right"]').dispatchEvent('pointerdown', {
-  pointerId: 1,
-  pointerType: 'touch',
-  isPrimary: true,
-  bubbles: true
-});
+await holdRunnerRight(touchStartPage);
 await touchStartPage.waitForFunction(() => window.NBGLevel1State?.running === true, null, { timeout: 5000 });
-await touchStartPage.locator('[data-control="right"]').dispatchEvent('pointerup', {
-  pointerId: 1,
-  pointerType: 'touch',
-  isPrimary: true,
-  bubbles: true
-});
 await touchStartPage.close();
 
 await page.keyboard.down('ArrowRight');
@@ -617,6 +640,15 @@ assert.deepEqual(
 );
 for (const [key, asset] of Object.entries(state.assetStatus)) {
   assert.equal(asset.loaded, true, `required asset must load successfully: ${key} (${asset.src})`);
+}
+for (let index = 0; index < expectedSkylineLayers.length; index += 1) {
+  const key = `skyline${index + 1}`;
+  assert.equal(state.assetStatus[key]?.loaded, true, `browser runtime must load skyline PNG panel ${index + 1}`);
+  assert.equal(
+    decodeURIComponent(new URL(state.assetStatus[key].src, url).pathname),
+    `/game/assets/${expectedSkylineLayers[index]}`,
+    `browser runtime must load exact skyline PNG panel path ${index + 1}`
+  );
 }
 assert.deepEqual(
   Object.fromEntries(Object.entries(state.playerAnimations).map(([key, animation]) => [
@@ -690,19 +722,7 @@ assert.ok(state.x >= 12 + state.visualMarginX, 'player world clamp must include 
 assert.ok(state.visualDrawX >= 0, 'runner visual sprite must not be clipped at the left canvas edge');
 
 const beforeTouchMoveX = state.x;
-await page.locator('[data-control="right"]').dispatchEvent('pointerdown', {
-  pointerId: 1,
-  pointerType: 'touch',
-  isPrimary: true,
-  bubbles: true
-});
-await page.waitForTimeout(360);
-await page.locator('[data-control="right"]').dispatchEvent('pointerup', {
-  pointerId: 1,
-  pointerType: 'touch',
-  isPrimary: true,
-  bubbles: true
-});
+await holdRunnerRight(page, 360);
 state = await page.evaluate(() => ({
   x: window.NBGLevel1State.player.x,
   y: window.NBGLevel1State.player.y
@@ -813,8 +833,9 @@ assert.equal(state.hurtLoaded, true, 'hurt animation sheet must be loaded');
 await page.evaluate(() => {
   const player = window.NBGLevel1State.player;
   player.invuln = 0;
-  player.x = 2052;
-  player.y = 178;
+  const finish = window.NBGLevel1State.finish;
+  player.x = finish.x + 2;
+  player.y = finish.y + 2;
 });
 await page.waitForFunction(
   () =>

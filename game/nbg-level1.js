@@ -15,6 +15,10 @@
   var MAX_SPEED = 4.2;
   var JUMP_VELOCITY = -11.4;
   var INVULN_TIME = 1050;
+  var SKYLINE_PARALLAX = 0.22;
+  var SKYLINE_Y = 40;
+  var SKYLINE_WIDTH = 480;
+  var SKYLINE_HEIGHT = 160;
   function rectsOverlap(a, b) {
     return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
   }
@@ -58,7 +62,13 @@
 
     layerNames.forEach(function (name, index) {
       var key = layerKeyMap[name] || name;
-      if (layers[index]) assets[key] = resolveAssetPath(layers[index]);
+      if (Array.isArray(layers[index]) && key === 'skyline') {
+        layers[index].forEach(function (layer, layerIndex) {
+          assets['skyline' + (layerIndex + 1)] = resolveAssetPath(layer);
+        });
+      } else if (layers[index]) {
+        assets[key] = resolveAssetPath(layers[index]);
+      }
     });
 
     if (manifest.objects) {
@@ -462,6 +472,30 @@
       }
     }
 
+    function drawSkylineLayer() {
+      var skylineImages = [images.skyline1, images.skyline2, images.skyline3];
+      if (skylineImages.some(function (image) { return !image; })) {
+        ctx.fillStyle = '#18203a';
+        ctx.fillRect(0, SKYLINE_Y, WIDTH, SKYLINE_HEIGHT);
+        return;
+      }
+
+      var sequenceWidth = SKYLINE_WIDTH * skylineImages.length;
+      var offset = -cameraX * SKYLINE_PARALLAX;
+      var start = Math.floor(offset % sequenceWidth) - sequenceWidth;
+      for (var x = start; x < WIDTH + sequenceWidth; x += sequenceWidth) {
+        for (var i = 0; i < skylineImages.length; i += 1) {
+          ctx.drawImage(
+            skylineImages[i],
+            Math.round(x + i * SKYLINE_WIDTH),
+            SKYLINE_Y,
+            SKYLINE_WIDTH,
+            SKYLINE_HEIGHT
+          );
+        }
+      }
+    }
+
     function assertRequiredAssetsLoaded() {
       var missing = requiredAssets.filter(function (key) {
         return !assetStatus[key] || !assetStatus[key].loaded;
@@ -475,7 +509,7 @@
 
     function drawWorld() {
       drawImageLayer(images.sky, 0.08, 0, HEIGHT, '#171730');
-      drawImageLayer(images.skyline, 0.22, 40, 160, '#18203a');
+      drawSkylineLayer();
       drawImageLayer(images.wall, 0.58, 116, 88, '#2d2033');
       drawImageLayer(images.street, 1, FLOOR_Y, 56, '#303238');
 
