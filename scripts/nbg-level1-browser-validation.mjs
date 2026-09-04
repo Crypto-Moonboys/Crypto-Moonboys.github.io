@@ -245,7 +245,7 @@ assert.equal(
     runtimeSource.includes('var visualFootY = y + player.h + PLAYER_VISUAL_OFFSET_Y') &&
     !runtimeSource.includes('drawImageLayer(images.street'),
   true,
-  'standalone Level 1 runtime must crop the lower street half at the bottom and lower only the player visual feet'
+  'standalone Level 1 runtime must crop the lower street half at the bottom and apply render-only visual offsets'
 );
 assert.equal(
   runtimeSource.includes('var FOREGROUND_VISUAL_OFFSET_Y = PLAYER_VISUAL_OFFSET_Y'),
