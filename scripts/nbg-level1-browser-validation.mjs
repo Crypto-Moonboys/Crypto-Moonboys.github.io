@@ -417,9 +417,17 @@ assert.equal(
   'runtime asset loader must register world layers from asset-manifest.json layerNames'
 );
 assert.equal(
-  levelRenderPipelineSource.includes('manifest?.world?.layerNames'),
+  runtimeAssetLoaderSource.includes('worldEntries[name] = sources') &&
+    runtimeAssetLoaderSource.includes('worldEntries[`${name}:${layerIndex + 1}`] = src'),
   true,
-  'render pipeline layer names must come from asset-manifest.json'
+  'runtime asset loader must retain canonical array-backed world layers plus numbered panel entries'
+);
+assert.equal(
+  levelRenderPipelineSource.includes('manifest?.world?.layerNames') &&
+    levelRenderPipelineSource.includes('Array.isArray(entry)') &&
+    levelRenderPipelineSource.includes('`${layer}:${index + 1}`'),
+  true,
+  'render pipeline layer names must come from asset-manifest.json and expand array-backed layer panels'
 );
 assert.equal(
   demoLaunchSource.includes("window.location.replace('/games/nbg-london/')") &&
