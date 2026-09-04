@@ -21,7 +21,7 @@
   var SKYLINE_HEIGHT = 160;
   var STREET_BAND_HEIGHT = 28;
   var STREET_Y = HEIGHT - STREET_BAND_HEIGHT;
-  var PLAYER_VISUAL_FOOT_Y = STREET_Y + 5;
+  var PLAYER_VISUAL_FOOT_Y = STREET_Y + 10;
   var PLAYER_VISUAL_OFFSET_Y = PLAYER_VISUAL_FOOT_Y - FLOOR_Y;
   function rectsOverlap(a, b) {
     return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;

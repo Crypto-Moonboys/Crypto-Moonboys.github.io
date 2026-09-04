@@ -237,7 +237,7 @@ assert.equal(
 assert.equal(
   runtimeSource.includes('var STREET_BAND_HEIGHT = 28') &&
     runtimeSource.includes('var STREET_Y = HEIGHT - STREET_BAND_HEIGHT') &&
-    runtimeSource.includes('var PLAYER_VISUAL_FOOT_Y = STREET_Y + 5') &&
+    runtimeSource.includes('var PLAYER_VISUAL_FOOT_Y = STREET_Y + 10') &&
     runtimeSource.includes('function drawStreetLayer()') &&
     runtimeSource.includes('var sourceY = Math.floor(naturalHeight / 2)') &&
     runtimeSource.includes('ctx.drawImage(images.street, 0, sourceY, naturalWidth, sourceH, x, STREET_Y, tileW, STREET_BAND_HEIGHT)') &&
