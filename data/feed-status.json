@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-03T08:09:09.087Z",
+  "generated_at": "2026-09-04T08:04:44.562Z",
   "feeds": {
     "gkniftyheads_rarity": {
       "feed_id": "gkniftyheads_rarity",
@@ -24,10 +24,10 @@
       "status": "degraded",
       "stale": false,
       "stale_after_hours": 30,
-      "checked_at": "2026-09-03T08:09:04.811Z",
-      "last_successful_check": "2026-09-03T08:09:04.811Z",
-      "last_successful_update": "2026-09-03T08:09:04.459Z",
-      "source_updated_at": "2026-09-03T08:09:04.459Z",
+      "checked_at": "2026-09-04T08:04:40.314Z",
+      "last_successful_check": "2026-09-04T08:04:40.314Z",
+      "last_successful_update": "2026-09-04T08:04:39.972Z",
+      "source_updated_at": "2026-09-04T08:04:39.972Z",
       "source_age_minutes": 0,
       "last_error": "Rarity reconciliation incomplete: 1 mismatched template(s); live minus issued = 3 | Display analytics unavailable: collection_stats, num_assets, marketcap, top_users, top_templates, volume, sales_volume_graph",
       "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live asset scan is unavailable",
@@ -40,7 +40,7 @@
           "error": "https://wax-api.hivebp.io/v3/collection-stats/gkniftyheads failed: HTTP 503",
           "used_previous": true,
           "attempts": 2,
-          "checked_at": "2026-09-03T08:08:59.385Z"
+          "checked_at": "2026-09-04T08:04:35.302Z"
         },
         "num_assets": {
           "ok": false,
@@ -49,7 +49,7 @@
           "error": "https://wax-api.hivebp.io/v3/num-assets/gkniftyheads failed: HTTP 503",
           "used_previous": true,
           "attempts": 2,
-          "checked_at": "2026-09-03T08:09:00.516Z"
+          "checked_at": "2026-09-04T08:04:35.979Z"
         },
         "marketcap": {
           "ok": false,
@@ -58,7 +58,7 @@
           "error": "https://wax-api.hivebp.io/v3/marketcap/gkniftyheads failed: HTTP 503",
           "used_previous": true,
           "attempts": 2,
-          "checked_at": "2026-09-03T08:09:01.507Z"
+          "checked_at": "2026-09-04T08:04:36.993Z"
         },
         "top_users": {
           "ok": false,
@@ -67,7 +67,7 @@
           "error": "https://wax-api.hivebp.io/v3/top-users/30/gkniftyheads failed: HTTP 503",
           "used_previous": true,
           "attempts": 2,
-          "checked_at": "2026-09-03T08:09:02.011Z"
+          "checked_at": "2026-09-04T08:04:37.505Z"
         },
         "top_templates": {
           "ok": false,
@@ -76,7 +76,7 @@
           "error": "https://wax-api.hivebp.io/v3/top-templates/30/gkniftyheads failed: HTTP 503",
           "used_previous": true,
           "attempts": 2,
-          "checked_at": "2026-09-03T08:09:02.517Z"
+          "checked_at": "2026-09-04T08:04:38.019Z"
         },
         "volume": {
           "ok": false,
@@ -85,7 +85,7 @@
           "error": "https://wax-api.hivebp.io/v3/volume/30/gkniftyheads failed: HTTP 503",
           "used_previous": true,
           "attempts": 2,
-          "checked_at": "2026-09-03T08:09:03.025Z"
+          "checked_at": "2026-09-04T08:04:38.534Z"
         },
         "sales_volume_graph": {
           "ok": false,
@@ -94,7 +94,7 @@
           "error": "https://wax-api.hivebp.io/v3/sales-volume-graph/30/gkniftyheads failed: HTTP 503",
           "used_previous": true,
           "attempts": 2,
-          "checked_at": "2026-09-03T08:09:03.530Z"
+          "checked_at": "2026-09-04T08:04:39.048Z"
         }
       },
       "notes": [
@@ -138,10 +138,10 @@
       "status": "ok",
       "stale": false,
       "stale_after_hours": 30,
-      "checked_at": "2026-09-03T08:09:09.087Z",
-      "last_successful_check": "2026-09-03T08:09:09.087Z",
-      "last_successful_update": "2026-09-03T08:09:09.087Z",
-      "source_updated_at": "2026-09-03T08:09:09.087Z",
+      "checked_at": "2026-09-04T08:04:44.561Z",
+      "last_successful_check": "2026-09-04T08:04:44.561Z",
+      "last_successful_update": "2026-09-04T08:04:44.561Z",
+      "source_updated_at": "2026-09-04T08:04:44.561Z",
       "source_age_minutes": 0,
       "last_error": null,
       "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live AtomicAssets counts are unavailable",
