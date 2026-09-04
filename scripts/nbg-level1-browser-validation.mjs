@@ -261,9 +261,9 @@ assert.equal(
   'standalone Level 1 runtime must define a shared foreground visual offset alias from the player visual offset'
 );
 assert.equal(
-  runtimeSource.includes('var CAMERA_JUMP_FOLLOW = 0.35') &&
-    runtimeSource.includes('var CAMERA_JUMP_MAX_Y = 18') &&
-    runtimeSource.includes('var CAMERA_JUMP_EASE = 0.16') &&
+  runtimeSource.includes('var CAMERA_JUMP_FOLLOW = 0.95') &&
+    runtimeSource.includes('var CAMERA_JUMP_MAX_Y = 42') &&
+    runtimeSource.includes('var CAMERA_JUMP_EASE = 0.28') &&
     runtimeSource.includes('var cameraY = 0') &&
     runtimeSource.includes('function updateCameraY()') &&
     runtimeSource.includes('var groundedY = FLOOR_Y - player.h') &&
@@ -881,7 +881,7 @@ state = await page.evaluate(() => ({
 assert.ok(state.y < beforeJumpY, 'player must jump upward');
 assert.equal(state.anim, 'jump', 'player must switch to jump animation');
 assert.ok(state.cameraY > 0, 'cameraY must rise smoothly after the player jumps');
-assert.ok(state.cameraY <= 18, 'cameraY must stay capped by CAMERA_JUMP_MAX_Y');
+assert.ok(state.cameraY <= 42, 'cameraY must stay capped by CAMERA_JUMP_MAX_Y');
 
 await page.waitForFunction(() => (
   window.NBGLevel1State.player.vy > 0 &&

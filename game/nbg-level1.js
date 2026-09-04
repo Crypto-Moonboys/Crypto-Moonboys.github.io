@@ -24,9 +24,9 @@
   var PLAYER_VISUAL_FOOT_Y = STREET_Y + 10;
   var PLAYER_VISUAL_OFFSET_Y = PLAYER_VISUAL_FOOT_Y - FLOOR_Y;
   var FOREGROUND_VISUAL_OFFSET_Y = PLAYER_VISUAL_OFFSET_Y;
-  var CAMERA_JUMP_FOLLOW = 0.35;
-  var CAMERA_JUMP_MAX_Y = 18;
-  var CAMERA_JUMP_EASE = 0.16;
+  var CAMERA_JUMP_FOLLOW = 0.95;
+  var CAMERA_JUMP_MAX_Y = 42;
+  var CAMERA_JUMP_EASE = 0.28;
   function rectsOverlap(a, b) {
     return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
   }
