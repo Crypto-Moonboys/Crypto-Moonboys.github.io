@@ -511,7 +511,8 @@
       drawImageLayer(images.sky, 0.08, 0, HEIGHT, '#171730');
       drawSkylineLayer();
       drawImageLayer(images.wall, 0.58, 116, 88, '#2d2033');
-      drawImageLayer(images.street, 1, FLOOR_Y, 56, '#303238');
+      var streetBandHeight = 28;
+      drawImageLayer(images.street, 1, FLOOR_Y, streetBandHeight, '#303238');
 
       ctx.fillStyle = '#2b2932';
       for (var i = 0; i < platforms.length; i += 1) {
