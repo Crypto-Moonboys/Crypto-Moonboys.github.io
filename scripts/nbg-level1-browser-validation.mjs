@@ -238,6 +238,7 @@ assert.equal(
   runtimeSource.includes('var STREET_BAND_HEIGHT = 28') &&
     runtimeSource.includes('var STREET_Y = HEIGHT - STREET_BAND_HEIGHT') &&
     runtimeSource.includes('var PLAYER_VISUAL_FOOT_Y = STREET_Y + 10') &&
+    runtimeSource.includes('var PLAYER_VISUAL_OFFSET_Y = PLAYER_VISUAL_FOOT_Y - FLOOR_Y') &&
     runtimeSource.includes('function drawStreetLayer()') &&
     runtimeSource.includes('var sourceY = Math.floor(naturalHeight / 2)') &&
     runtimeSource.includes('ctx.drawImage(images.street, 0, sourceY, naturalWidth, sourceH, x, STREET_Y, tileW, STREET_BAND_HEIGHT)') &&
@@ -245,6 +246,41 @@ assert.equal(
     !runtimeSource.includes('drawImageLayer(images.street'),
   true,
   'standalone Level 1 runtime must crop the lower street half at the bottom and lower only the player visual feet'
+);
+assert.equal(
+  runtimeSource.includes('var FOREGROUND_VISUAL_OFFSET_Y = PLAYER_VISUAL_OFFSET_Y'),
+  true,
+  'standalone Level 1 runtime must define a shared foreground visual offset alias from the player visual offset'
+);
+assert.equal(
+  runtimeSource.includes('var platformY = p.y + FOREGROUND_VISUAL_OFFSET_Y') &&
+    runtimeSource.includes('ctx.fillRect(Math.round(p.x - cameraX), platformY, p.w, p.h)') &&
+    runtimeSource.includes('ctx.fillRect(Math.round(p.x - cameraX), platformY, p.w, 3)') &&
+    runtimeSource.includes('var y = Math.round(coin.y + (coin.float || 0) + FOREGROUND_VISUAL_OFFSET_Y - 8)') &&
+    runtimeSource.includes('ctx.fillRect(x - 2, y + 16 + Math.sin(time / 120) * 1, 20, 2)') &&
+    runtimeSource.includes('var y = Math.round(enemy.y + (enemy.bob || 0) + FOREGROUND_VISUAL_OFFSET_Y)') &&
+    runtimeSource.includes('var checkpointY = checkpoint.y + FOREGROUND_VISUAL_OFFSET_Y') &&
+    runtimeSource.includes('ctx.drawImage(images.checkpoint, checkX, checkpointY, checkpoint.w, checkpoint.h)') &&
+    runtimeSource.includes('ctx.fillRect(checkX + 12, checkpointY + 8, 10, 8)') &&
+    runtimeSource.includes('ctx.drawImage(images.finish, Math.round(finish.x - cameraX), finish.y + FOREGROUND_VISUAL_OFFSET_Y, finish.w, finish.h)'),
+  true,
+  'standalone Level 1 foreground gameplay visuals must draw through FOREGROUND_VISUAL_OFFSET_Y'
+);
+assert.equal(
+  runtimeSource.includes('var WORLD_WIDTH = 22000') &&
+    runtimeSource.includes('var FLOOR_Y = 214') &&
+    runtimeSource.includes('y: FLOOR_Y - 38') &&
+    runtimeSource.includes('{ x: 360, y: 178, w: 150, h: 16 }') &&
+    runtimeSource.includes('{ x: 720, y: 154, w: 132, h: 16 }') &&
+    runtimeSource.includes('{ x: 155, y: 176, r: 8, xp: 100, taken: false }') &&
+    runtimeSource.includes('{ x: 760, y: 116, r: 8, xp: 150, taken: false }') &&
+    runtimeSource.includes("{ type: 'rat', x: 600, y: FLOOR_Y - 20, w: 28, h: 18, vx: 1.1, min: 540, max: 690 }") &&
+    runtimeSource.includes("{ type: 'pigeon', x: 1010, y: 128, w: 28, h: 22, vx: 1.35, min: 940, max: 1128, bob: 0 }") &&
+    runtimeSource.includes("{ type: 'bot', x: 1455, y: FLOOR_Y - 38, w: 30, h: 38, vx: 0.85, min: 1390, max: 1550 }") &&
+    runtimeSource.includes('var checkpoint = { x: 1240, y: FLOOR_Y - 48, w: 30, h: 48, active: false }') &&
+    runtimeSource.includes('var finish = { x: WORLD_WIDTH - 150, y: FLOOR_Y - 62, w: 38, h: 62 }'),
+  true,
+  'standalone Level 1 physics constants and raw foreground object y-values must remain unchanged'
 );
 assert.equal(
   runtimeSource.includes('renderOffsetY') && playerRendererSource.includes('renderOffsetY'),
