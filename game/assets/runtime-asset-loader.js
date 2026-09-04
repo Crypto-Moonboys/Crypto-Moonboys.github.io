@@ -21,9 +21,19 @@ export class RuntimeAssetLoader {
   createRegistryFromManifest(manifest) {
     if (!manifest?.world) return {};
     const layerNames = manifest.world.layerNames || ['sky', 'london-skyline', 'graffiti-wall', 'street'];
-    const worldEntries = Object.fromEntries(
-      layerNames.map((name, index) => [name, `./assets/${manifest.world.layers[index]}`])
-    );
+    const worldEntries = {};
+    layerNames.forEach((name, index) => {
+      const layer = manifest.world.layers[index];
+      if (Array.isArray(layer)) {
+        const sources = layer.map((entry) => `./assets/${entry}`);
+        worldEntries[name] = sources;
+        sources.forEach((src, layerIndex) => {
+          worldEntries[`${name}:${layerIndex + 1}`] = src;
+        });
+        return;
+      }
+      worldEntries[name] = `./assets/${layer}`;
+    });
 
     return {
       coin: `./assets/${manifest.objects.xpCoin}`,

@@ -12,8 +12,13 @@ export class LevelRenderPipeline {
   async loadScene(manifest) {
     await this.assetLoader.loadManifest(manifest);
 
-    this.layers = (this.assetLoader.manifest?.world?.layerNames || [])
-      .filter(layer => Object.prototype.hasOwnProperty.call(this.assetLoader.registry || {}, layer));
+    const registry = this.assetLoader.registry || {};
+    this.layers = (this.assetLoader.manifest?.world?.layerNames || []).flatMap((layer) => {
+      if (!Object.prototype.hasOwnProperty.call(registry, layer)) return [];
+      const entry = registry[layer];
+      if (!Array.isArray(entry)) return [layer];
+      return entry.map((_, index) => `${layer}:${index + 1}`);
+    });
 
     return true;
   }
