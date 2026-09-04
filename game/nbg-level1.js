@@ -535,7 +535,7 @@
     function drawWorld() {
       drawImageLayer(images.sky, 0.08, 0, HEIGHT, '#171730');
       drawSkylineLayer();
-      drawImageLayer(images.wall, 0.58, 116, 88, '#2d2033');
+      drawImageLayer(images.wall, 0.58, 154, 88, '#2d2033');
       drawStreetLayer();
 
       ctx.fillStyle = '#2b2932';
