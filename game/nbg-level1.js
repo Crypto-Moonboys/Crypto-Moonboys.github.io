@@ -23,6 +23,7 @@
   var STREET_Y = HEIGHT - STREET_BAND_HEIGHT;
   var PLAYER_VISUAL_FOOT_Y = STREET_Y + 10;
   var PLAYER_VISUAL_OFFSET_Y = PLAYER_VISUAL_FOOT_Y - FLOOR_Y;
+  var FOREGROUND_VISUAL_OFFSET_Y = PLAYER_VISUAL_OFFSET_Y;
   function rectsOverlap(a, b) {
     return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
   }
@@ -540,9 +541,10 @@
       ctx.fillStyle = '#2b2932';
       for (var i = 0; i < platforms.length; i += 1) {
         var p = platforms[i];
-        ctx.fillRect(Math.round(p.x - cameraX), p.y, p.w, p.h);
+        var platformY = p.y + FOREGROUND_VISUAL_OFFSET_Y;
+        ctx.fillRect(Math.round(p.x - cameraX), platformY, p.w, p.h);
         ctx.fillStyle = '#59d8ff';
-        ctx.fillRect(Math.round(p.x - cameraX), p.y, p.w, 3);
+        ctx.fillRect(Math.round(p.x - cameraX), platformY, p.w, 3);
         ctx.fillStyle = '#2b2932';
       }
     }
@@ -552,7 +554,7 @@
         var coin = coins[i];
         if (coin.taken) continue;
         var x = Math.round(coin.x - cameraX - 8);
-        var y = Math.round(coin.y + (coin.float || 0) - 8);
+        var y = Math.round(coin.y + (coin.float || 0) + FOREGROUND_VISUAL_OFFSET_Y - 8);
         if (images.coin) {
           ctx.drawImage(images.coin, x, y, 16, 16);
         } else {
@@ -569,7 +571,7 @@
         var enemy = enemies[i];
         var image = images[enemy.type];
         var x = Math.round(enemy.x - cameraX);
-        var y = Math.round(enemy.y + (enemy.bob || 0));
+        var y = Math.round(enemy.y + (enemy.bob || 0) + FOREGROUND_VISUAL_OFFSET_Y);
         if (image) {
           ctx.save();
           if (enemy.vx < 0) {
@@ -589,14 +591,15 @@
 
     function drawObjects() {
       var checkX = Math.round(checkpoint.x - cameraX);
-      if (images.checkpoint) ctx.drawImage(images.checkpoint, checkX, checkpoint.y, checkpoint.w, checkpoint.h);
+      var checkpointY = checkpoint.y + FOREGROUND_VISUAL_OFFSET_Y;
+      if (images.checkpoint) ctx.drawImage(images.checkpoint, checkX, checkpointY, checkpoint.w, checkpoint.h);
       if (checkpoint.active) {
         ctx.fillStyle = '#7cff82';
-        ctx.fillRect(checkX + 12, checkpoint.y + 8, 10, 8);
+        ctx.fillRect(checkX + 12, checkpointY + 8, 10, 8);
       }
 
       if (images.finish) {
-        ctx.drawImage(images.finish, Math.round(finish.x - cameraX), finish.y, finish.w, finish.h);
+        ctx.drawImage(images.finish, Math.round(finish.x - cameraX), finish.y + FOREGROUND_VISUAL_OFFSET_Y, finish.w, finish.h);
       }
     }
 
