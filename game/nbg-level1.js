@@ -19,6 +19,10 @@
   var SKYLINE_Y = 40;
   var SKYLINE_WIDTH = 480;
   var SKYLINE_HEIGHT = 160;
+  var STREET_BAND_HEIGHT = 28;
+  var STREET_Y = HEIGHT - STREET_BAND_HEIGHT;
+  var PLAYER_VISUAL_FOOT_Y = STREET_Y + 5;
+  var PLAYER_VISUAL_OFFSET_Y = PLAYER_VISUAL_FOOT_Y - FLOOR_Y;
   function rectsOverlap(a, b) {
     return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
   }
@@ -472,6 +476,26 @@
       }
     }
 
+    function drawStreetLayer() {
+      if (!images.street) {
+        ctx.fillStyle = '#303238';
+        ctx.fillRect(0, STREET_Y, WIDTH, STREET_BAND_HEIGHT);
+        return;
+      }
+
+      var naturalWidth = images.street.naturalWidth || WIDTH;
+      var naturalHeight = images.street.naturalHeight || STREET_BAND_HEIGHT * 2;
+      var sourceY = Math.floor(naturalHeight / 2);
+      var sourceH = naturalHeight - sourceY;
+      var tileW = Math.max(WIDTH, Math.round(naturalWidth * (STREET_BAND_HEIGHT / sourceH)));
+      var offset = -cameraX;
+      var start = Math.floor(offset % tileW) - tileW;
+
+      for (var x = start; x < WIDTH + tileW; x += tileW) {
+        ctx.drawImage(images.street, 0, sourceY, naturalWidth, sourceH, x, STREET_Y, tileW, STREET_BAND_HEIGHT);
+      }
+    }
+
     function drawSkylineLayer() {
       var skylineImages = [images.skyline1, images.skyline2, images.skyline3];
       if (skylineImages.some(function (image) { return !image; })) {
@@ -511,8 +535,7 @@
       drawImageLayer(images.sky, 0.08, 0, HEIGHT, '#171730');
       drawSkylineLayer();
       drawImageLayer(images.wall, 0.58, 116, 88, '#2d2033');
-      var streetBandHeight = 28;
-      drawImageLayer(images.street, 1, FLOOR_Y, streetBandHeight, '#303238');
+      drawStreetLayer();
 
       ctx.fillStyle = '#2b2932';
       for (var i = 0; i < platforms.length; i += 1) {
@@ -588,7 +611,7 @@
       var drawWidth = frameMeta.renderWidth;
       var drawHeight = frameMeta.renderHeight;
       var drawX = x - Math.round((drawWidth - player.w) / 2);
-      var visualFootY = y + player.h;
+      var visualFootY = y + player.h + PLAYER_VISUAL_OFFSET_Y;
       var drawY = Math.round(visualFootY - drawHeight + frameMeta.renderOffsetY);
       var sourceX = col * frameMeta.sourceWidth;
       var sourceY = row * frameMeta.sourceHeight;

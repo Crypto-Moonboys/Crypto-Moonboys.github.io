@@ -235,6 +235,18 @@ assert.equal(
   'standalone Level 1 runtime must draw using render size metadata'
 );
 assert.equal(
+  runtimeSource.includes('var STREET_BAND_HEIGHT = 28') &&
+    runtimeSource.includes('var STREET_Y = HEIGHT - STREET_BAND_HEIGHT') &&
+    runtimeSource.includes('var PLAYER_VISUAL_FOOT_Y = STREET_Y + 5') &&
+    runtimeSource.includes('function drawStreetLayer()') &&
+    runtimeSource.includes('var sourceY = Math.floor(naturalHeight / 2)') &&
+    runtimeSource.includes('ctx.drawImage(images.street, 0, sourceY, naturalWidth, sourceH, x, STREET_Y, tileW, STREET_BAND_HEIGHT)') &&
+    runtimeSource.includes('var visualFootY = y + player.h + PLAYER_VISUAL_OFFSET_Y') &&
+    !runtimeSource.includes('drawImageLayer(images.street'),
+  true,
+  'standalone Level 1 runtime must crop the lower street half at the bottom and lower only the player visual feet'
+);
+assert.equal(
   runtimeSource.includes('renderOffsetY') && playerRendererSource.includes('renderOffsetY'),
   true,
   'player renderers must align sprite feet from manifest renderOffsetY metadata'
