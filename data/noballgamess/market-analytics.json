@@ -2,7 +2,7 @@
   "collection": "noballgamess",
   "provider": "NFTHive / HiveBP WAX API",
   "api_base": "https://wax-api.hivebp.io",
-  "generated_at": "2026-09-05T07:44:57.917Z",
+  "generated_at": "2026-09-06T07:59:33.523Z",
   "analytics_status": "degraded",
   "status": "degraded",
   "display_only": true,
@@ -26,7 +26,7 @@
       "error": "https://wax-api.hivebp.io/v3/collection-stats/noballgamess failed: HTTP 503",
       "used_previous": true,
       "attempts": 2,
-      "checked_at": "2026-09-05T07:44:54.382Z"
+      "checked_at": "2026-09-06T07:59:28.849Z"
     },
     "num_assets": {
       "ok": false,
@@ -35,7 +35,7 @@
       "error": "https://wax-api.hivebp.io/v3/num-assets/noballgamess failed: HTTP 503",
       "used_previous": true,
       "attempts": 2,
-      "checked_at": "2026-09-05T07:44:54.885Z"
+      "checked_at": "2026-09-06T07:59:29.530Z"
     },
     "marketcap": {
       "ok": false,
@@ -44,7 +44,7 @@
       "error": "https://wax-api.hivebp.io/v3/marketcap/noballgamess failed: HTTP 503",
       "used_previous": true,
       "attempts": 2,
-      "checked_at": "2026-09-05T07:44:55.390Z"
+      "checked_at": "2026-09-06T07:59:30.194Z"
     },
     "top_users": {
       "ok": false,
@@ -53,7 +53,7 @@
       "error": "https://wax-api.hivebp.io/v3/top-users/30/noballgamess failed: HTTP 503",
       "used_previous": true,
       "attempts": 2,
-      "checked_at": "2026-09-05T07:44:55.896Z"
+      "checked_at": "2026-09-06T07:59:30.860Z"
     },
     "top_templates": {
       "ok": false,
@@ -62,7 +62,7 @@
       "error": "https://wax-api.hivebp.io/v3/top-templates/30/noballgamess failed: HTTP 503",
       "used_previous": true,
       "attempts": 2,
-      "checked_at": "2026-09-05T07:44:56.401Z"
+      "checked_at": "2026-09-06T07:59:31.525Z"
     },
     "volume": {
       "ok": false,
@@ -71,7 +71,7 @@
       "error": "https://wax-api.hivebp.io/v3/volume/30/noballgamess failed: HTTP 503",
       "used_previous": true,
       "attempts": 2,
-      "checked_at": "2026-09-05T07:44:56.904Z"
+      "checked_at": "2026-09-06T07:59:32.190Z"
     },
     "sales_volume_graph": {
       "ok": false,
@@ -80,7 +80,7 @@
       "error": "https://wax-api.hivebp.io/v3/sales-volume-graph/30/noballgamess failed: HTTP 503",
       "used_previous": true,
       "attempts": 2,
-      "checked_at": "2026-09-05T07:44:57.411Z"
+      "checked_at": "2026-09-06T07:59:32.856Z"
     }
   },
   "data": {
@@ -866,7 +866,7 @@
     ]
   },
   "previous_preserved": true,
-  "previous_generated_at": "2026-09-04T08:04:43.925Z",
+  "previous_generated_at": "2026-09-05T07:44:57.917Z",
   "error_summary": [
     "collection_stats: https://wax-api.hivebp.io/v3/collection-stats/noballgamess failed: HTTP 503",
     "num_assets: https://wax-api.hivebp.io/v3/num-assets/noballgamess failed: HTTP 503",
