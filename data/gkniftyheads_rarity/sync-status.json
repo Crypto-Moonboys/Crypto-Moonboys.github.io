@@ -21,10 +21,10 @@
   "status": "degraded",
   "stale": false,
   "stale_after_hours": 30,
-  "checked_at": "2026-09-09T08:14:17.076Z",
-  "last_successful_check": "2026-09-09T08:14:17.076Z",
-  "last_successful_update": "2026-09-09T08:14:16.538Z",
-  "source_updated_at": "2026-09-09T08:14:16.538Z",
+  "checked_at": "2026-09-10T08:13:54.216Z",
+  "last_successful_check": "2026-09-10T08:13:54.216Z",
+  "last_successful_update": "2026-09-10T08:13:53.869Z",
+  "source_updated_at": "2026-09-10T08:13:53.869Z",
   "source_age_minutes": 0,
   "last_error": "Rarity reconciliation incomplete: 1 mismatched template(s); live minus issued = 3 | Display analytics unavailable: top_users",
   "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live asset scan is unavailable",
@@ -37,7 +37,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-09-09T08:14:12.076Z"
+      "checked_at": "2026-09-10T08:13:48.581Z"
     },
     "num_assets": {
       "ok": true,
@@ -46,7 +46,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-09-09T08:14:12.360Z"
+      "checked_at": "2026-09-10T08:13:49.694Z"
     },
     "marketcap": {
       "ok": true,
@@ -55,7 +55,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-09-09T08:14:14.252Z"
+      "checked_at": "2026-09-10T08:13:51.011Z"
     },
     "top_users": {
       "ok": false,
@@ -64,7 +64,7 @@
       "error": "https://wax-api.hivebp.io/v3/top-users/30/gkniftyheads failed: HTTP 500",
       "used_previous": true,
       "attempts": 2,
-      "checked_at": "2026-09-09T08:14:14.470Z"
+      "checked_at": "2026-09-10T08:13:51.238Z"
     },
     "top_templates": {
       "ok": true,
@@ -73,7 +73,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-09-09T08:14:15.192Z"
+      "checked_at": "2026-09-10T08:13:51.954Z"
     },
     "volume": {
       "ok": true,
@@ -82,7 +82,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-09-09T08:14:15.645Z"
+      "checked_at": "2026-09-10T08:13:53.183Z"
     },
     "sales_volume_graph": {
       "ok": true,
@@ -91,7 +91,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-09-09T08:14:15.850Z"
+      "checked_at": "2026-09-10T08:13:53.423Z"
     }
   },
   "notes": [
@@ -99,7 +99,7 @@
     "Staged cache refresh: 143/143 metadata ok; 143/143 live supply counts ok; 23006 asset-state records across 143 templates.",
     "Rarity reconciliation degraded: 1 mismatched template(s) (782888); live minus issued = 3; fresh live counts = yes.",
     "HiveBP display analytics: degraded; not used for rarity scoring.",
-    "AtomicAssets collection stats sanity check unavailable: https://wax.api.atomicassets.io/atomicassets/v1/collections/gkniftyheads/stats failed: HTTP 429.",
+    "AtomicAssets collection stats sanity check available; asset-state cache remains the source for surviving mint ranks and holder/asset leaderboards.",
     "Live asset supply comes from AtomicAssets current asset counts when cached; issued-supply fallback remains explicit where counts are unavailable.",
     "Historic burn baseline is pending until confirmed burn events are captured. No burn-baseline-active claim is permitted before then.",
     "AtomicAssets latest-created, updated-live, and updated-burned asset endpoints update asset-state cache sidecar data; current rarity maths still uses per-template live count verification.",
