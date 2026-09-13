@@ -21,10 +21,10 @@
   "status": "degraded",
   "stale": false,
   "stale_after_hours": 30,
-  "checked_at": "2026-09-12T08:00:11.356Z",
-  "last_successful_check": "2026-09-12T08:00:11.355Z",
-  "last_successful_update": "2026-09-12T08:00:10.872Z",
-  "source_updated_at": "2026-09-12T08:00:10.872Z",
+  "checked_at": "2026-09-13T08:24:23.591Z",
+  "last_successful_check": "2026-09-13T08:24:23.591Z",
+  "last_successful_update": "2026-09-13T08:24:23.201Z",
+  "source_updated_at": "2026-09-13T08:24:23.201Z",
   "source_age_minutes": 0,
   "last_error": "Rarity reconciliation incomplete: 1 mismatched template(s); live minus issued = 3 | Display analytics unavailable: top_users",
   "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live asset scan is unavailable",
@@ -37,7 +37,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-09-12T08:00:04.167Z"
+      "checked_at": "2026-09-13T08:24:16.967Z"
     },
     "num_assets": {
       "ok": true,
@@ -46,7 +46,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-09-12T08:00:05.763Z"
+      "checked_at": "2026-09-13T08:24:17.974Z"
     },
     "marketcap": {
       "ok": true,
@@ -55,7 +55,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-09-12T08:00:08.156Z"
+      "checked_at": "2026-09-13T08:24:20.301Z"
     },
     "top_users": {
       "ok": false,
@@ -64,7 +64,7 @@
       "error": "https://wax-api.hivebp.io/v3/top-users/30/gkniftyheads failed: HTTP 500",
       "used_previous": true,
       "attempts": 2,
-      "checked_at": "2026-09-12T08:00:08.376Z"
+      "checked_at": "2026-09-13T08:24:20.519Z"
     },
     "top_templates": {
       "ok": true,
@@ -73,7 +73,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-09-12T08:00:09.078Z"
+      "checked_at": "2026-09-13T08:24:21.238Z"
     },
     "volume": {
       "ok": true,
@@ -82,7 +82,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-09-12T08:00:10.229Z"
+      "checked_at": "2026-09-13T08:24:22.515Z"
     },
     "sales_volume_graph": {
       "ok": true,
@@ -91,12 +91,12 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-09-12T08:00:10.450Z"
+      "checked_at": "2026-09-13T08:24:22.736Z"
     }
   },
   "notes": [
     "Generated local rarity render: 27 ranked, 97 utility/open mint, 19 unissued.",
-    "Staged cache refresh: 143/143 metadata ok; 143/143 live supply counts ok; 23006 asset-state records across 143 templates.",
+    "Staged cache refresh: 143/143 metadata ok; 143/143 live supply counts ok; 23007 asset-state records across 143 templates.",
     "Rarity reconciliation degraded: 1 mismatched template(s) (782888); live minus issued = 3; fresh live counts = yes.",
     "HiveBP display analytics: degraded; not used for rarity scoring.",
     "AtomicAssets collection stats sanity check available; asset-state cache remains the source for surviving mint ranks and holder/asset leaderboards.",

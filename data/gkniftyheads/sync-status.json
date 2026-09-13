@@ -1,15 +1,15 @@
 {
   "collection": "gkniftyheads",
-  "generated_at": "2026-09-12T08:00:10.872Z",
+  "generated_at": "2026-09-13T08:24:23.201Z",
   "source": "local website pages",
   "live_data_status": "atomicassets live asset count",
   "wax_get_info": {
     "used_for": "future scan checkpoint metadata only",
     "endpoint": "https://wax.eosusa.io/v1/chain/get_info",
-    "head_block_num": 455426291,
-    "head_block_time": "2026-09-12T08:00:11.500",
+    "head_block_num": 455601995,
+    "head_block_time": "2026-09-13T08:24:23.500",
     "chain_id": "1064487b3cd1a897ce03ae5b6a865651747e2e152090f99c1d19d44e01aea5a4",
-    "checked_at": "2026-09-12T08:00:11.352Z"
+    "checked_at": "2026-09-13T08:24:23.586Z"
   },
   "burn_tracking_status": "baseline pending; no confirmed historic burn events claimed",
   "supply_counting": "atomicassets_current_assets_by_template",
@@ -19,8 +19,8 @@
     "ok_templates": 142,
     "mismatch_templates": 1,
     "burned_assets_tracked": 0,
-    "surviving_mint_ranks_tracked": 23006,
-    "last_asset_delta_scan": "2026-09-12T07:59:06.100Z"
+    "surviving_mint_ranks_tracked": 23007,
+    "last_asset_delta_scan": "2026-09-13T08:23:22.081Z"
   },
   "reconciliation": {
     "status": "degraded",
@@ -33,6 +33,6 @@
     "mismatch_template_ids": [
       782888
     ],
-    "checked_at": "2026-09-12T08:00:11.352Z"
+    "checked_at": "2026-09-13T08:24:23.587Z"
   }
 }
