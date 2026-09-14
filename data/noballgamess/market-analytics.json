@@ -2,7 +2,7 @@
   "collection": "noballgamess",
   "provider": "NFTHive / HiveBP WAX API",
   "api_base": "https://wax-api.hivebp.io",
-  "generated_at": "2026-09-13T08:24:28.800Z",
+  "generated_at": "2026-09-14T09:03:04.247Z",
   "analytics_status": "degraded",
   "status": "degraded",
   "display_only": true,
@@ -26,7 +26,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-09-13T08:24:23.628Z"
+      "checked_at": "2026-09-14T09:03:00.475Z"
     },
     "num_assets": {
       "ok": true,
@@ -35,7 +35,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-09-13T08:24:23.847Z"
+      "checked_at": "2026-09-14T09:03:00.609Z"
     },
     "marketcap": {
       "ok": true,
@@ -44,7 +44,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-09-13T08:24:26.254Z"
+      "checked_at": "2026-09-14T09:03:02.802Z"
     },
     "top_users": {
       "ok": false,
@@ -53,7 +53,7 @@
       "error": "https://wax-api.hivebp.io/v3/top-users/30/noballgamess failed: HTTP 500",
       "used_previous": true,
       "attempts": 2,
-      "checked_at": "2026-09-13T08:24:26.474Z"
+      "checked_at": "2026-09-14T09:03:02.952Z"
     },
     "top_templates": {
       "ok": true,
@@ -62,7 +62,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-09-13T08:24:27.190Z"
+      "checked_at": "2026-09-14T09:03:03.582Z"
     },
     "volume": {
       "ok": true,
@@ -71,7 +71,7 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-09-13T08:24:28.331Z"
+      "checked_at": "2026-09-14T09:03:03.863Z"
     },
     "sales_volume_graph": {
       "ok": true,
@@ -80,20 +80,20 @@
       "error": null,
       "used_previous": false,
       "attempts": 1,
-      "checked_at": "2026-09-13T08:24:28.549Z"
+      "checked_at": "2026-09-14T09:03:04.018Z"
     }
   },
   "data": {
     "collection_stats": {
       "numUsers": 704,
-      "usdMarketCap": 129460.97545813068,
-      "waxMarketCap": 475195.8946041812,
+      "usdMarketCap": 129460.97545813091,
+      "waxMarketCap": 475195.89460417954,
       "numAssets": 12020
     },
     "num_assets": {
       "numberOfAssets": 12020,
-      "estimatedWaxValue": 475195.8946041804,
-      "estimatedUsdValue": 129460.97545813074
+      "estimatedWaxValue": 475195.8946041791,
+      "estimatedUsdValue": 129460.97545813094
     },
     "marketcap": {
       "waxMarketCap": 270663.73012020707,
@@ -684,12 +684,6 @@
     },
     "sales_volume_graph": [
       {
-        "waxVolume": 219.97899999999998,
-        "sales": 5,
-        "usdVolume": 1.0339013,
-        "date": "2026-08-15"
-      },
-      {
         "waxVolume": 0,
         "sales": 0,
         "usdVolume": 0,
@@ -862,6 +856,12 @@
         "sales": 0,
         "usdVolume": 0,
         "date": "2026-09-13"
+      },
+      {
+        "waxVolume": 0,
+        "sales": 0,
+        "usdVolume": 0,
+        "date": "2026-09-14"
       }
     ]
   },
