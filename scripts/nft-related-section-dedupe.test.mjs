@@ -183,8 +183,9 @@ assert.ok(
   battleLayer.includes("pageType === 'nft_collection'") &&
     battleLayer.includes("pageType === 'nft_template'") &&
     battleLayer.includes("buildCollectionEngagementHTML(pageId, engagement)") &&
-    battleLayer.includes("buildTemplateMediaShell() + buildMissionHTML(pageId, engagement)"),
-  'NFT collection pages use the art/about/missions engagement layout while template pages keep art plus Daily Missions'
+    battleLayer.includes("buildTemplateEngagementHTML(pageId, engagement)") &&
+    battleLayer.includes("buildTemplateAboutHTML()"),
+  'NFT collection and template pages use the art/about/missions engagement layout'
 );
 assert.ok(battleCss.includes('.wiki-engagement-module .battle-deck.battle-engagement-deck'), 'final compact engagement rules live in battle-layer.css');
 assert.ok(

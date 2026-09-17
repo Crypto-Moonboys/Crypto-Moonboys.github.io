@@ -15,7 +15,7 @@ These four public pages are the only canonical OG templates. The former duplicat
 
 - Use `body.page-wiki.page-standard-shell` and load the same shared CSS/JS shell assets as the matching canonical template.
 - Keep the top `header.wiki-hero` as the first article card. It inherits the SWARMSY-style full-width glowing title treatment from `css/wiki.css`.
-- Keep `js/battle-layer.js` loaded where shown by the canonical template. It owns the engagement deck. NFT collection and NFT template pages must render media/art on the left and one Daily Missions card on the right with Battle Heat embedded inside that card.
+- Keep `js/battle-layer.js` loaded where shown by the canonical template. It owns the engagement deck. NFT collection and NFT template pages must render media/art on the left, an about/context card in the middle, and one Daily Missions card on the right with Battle Heat embedded inside that card.
 - Keep citation voting and comments at the bottom of the page after article/related-path content.
 - Put large NFT stats, rarity details and template attributes behind the shared `og-collapsible-data` disclosure behaviour. Do not dump every large data table open by default.
 - Preserve card padding and spacing by using the classes and hierarchy shown by the matching canonical `/og-templates/` page instead of raw unstyled blocks.
