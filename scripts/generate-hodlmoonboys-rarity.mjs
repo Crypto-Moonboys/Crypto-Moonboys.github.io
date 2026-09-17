@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
@@ -19,6 +20,18 @@ const THUMB_MANIFEST = path.join(THUMB_DIR, 'manifest.json');
 const ATOMIC_BASE = 'https://wax.api.atomicassets.io/atomicassets/v1';
 const NOW = () => new Date().toISOString();
 const THUMB_WIDTH = 265;
+const SNAPSHOT_OUTPUT_FILES = [
+  `data/${COLLECTION}/collection.json`,
+  `data/${COLLECTION}/template-metadata-cache.json`,
+  `data/${COLLECTION}/live-template-supply.json`,
+  `data/${COLLECTION}/template-rarity.json`,
+  `data/${COLLECTION}/template-stats.json`,
+  `data/${COLLECTION}/trait-exposure.json`,
+  `data/${COLLECTION}/sync-status.json`,
+  `data/${COLLECTION}/template-rarity.csv`,
+  `data/${COLLECTION}/trait-exposure.csv`,
+  `wiki/${COLLECTION}-nft-collection.html`,
+];
 
 const SCORING_CONTRACT = {
   source_of_truth: 'AtomicAssets',
@@ -75,6 +88,18 @@ function readJson(filePath, fallback) {
   } catch {
     return fallback;
   }
+}
+
+function readCommittedText(root, relativePath) {
+  return execFileSync('git', ['show', `HEAD:${relativePath}`], {
+    cwd: root,
+    encoding: 'utf8',
+    maxBuffer: 16 * 1024 * 1024,
+  });
+}
+
+function readCommittedJson(root, relativePath) {
+  return JSON.parse(readCommittedText(root, relativePath));
 }
 
 function csvEscape(value) {
@@ -1135,10 +1160,13 @@ function hydrateSnapshotRow(row) {
 }
 
 function loadExistingSnapshot(root = ROOT) {
-  const collection = readJson(path.join(root, 'data', COLLECTION, 'collection.json'), {});
-  const templateRarity = readJson(path.join(root, 'data', COLLECTION, 'template-rarity.json'), null);
-  const templateStats = readJson(path.join(root, 'data', COLLECTION, 'template-stats.json'), null);
-  const rawSyncStatus = readJson(path.join(root, 'data', COLLECTION, 'sync-status.json'), null);
+  const committedOutputs = Object.fromEntries(
+    SNAPSHOT_OUTPUT_FILES.map((relativePath) => [relativePath, readCommittedText(root, relativePath)]),
+  );
+  const collection = readCommittedJson(root, `data/${COLLECTION}/collection.json`);
+  const templateRarity = readCommittedJson(root, `data/${COLLECTION}/template-rarity.json`);
+  const templateStats = readCommittedJson(root, `data/${COLLECTION}/template-stats.json`);
+  const rawSyncStatus = readCommittedJson(root, `data/${COLLECTION}/sync-status.json`);
   if (!templateRarity || !templateStats || !rawSyncStatus) {
     throw new Error('Committed Hodl Moonboys rarity snapshot is unavailable.');
   }
@@ -1146,6 +1174,7 @@ function loadExistingSnapshot(root = ROOT) {
   const utility = (templateRarity.utility_open_mint_templates || []).map(hydrateSnapshotRow);
   const unissued = (templateRarity.unissued_templates || []).map(hydrateSnapshotRow);
   return {
+    committedOutputs,
     collection,
     templateRarity,
     templateStats,
@@ -1196,11 +1225,9 @@ async function main() {
   } catch (error) {
     try {
       const snapshot = loadExistingSnapshot();
-      writeJson(path.join(DATA_DIR, 'collection.json'), snapshot.collection);
-      writeJson(path.join(DATA_DIR, 'template-rarity.json'), snapshot.templateRarity);
-      writeJson(path.join(DATA_DIR, 'template-stats.json'), snapshot.templateStats);
-      writeJson(path.join(DATA_DIR, 'sync-status.json'), snapshot.rawSyncStatus);
-      writeText(PAGE_PATH, renderPage(snapshot.collection, snapshot.data, snapshot.stats, snapshot.syncStatus));
+      for (const relativePath of SNAPSHOT_OUTPUT_FILES) {
+        writeText(path.join(ROOT, relativePath), snapshot.committedOutputs[relativePath]);
+      }
       console.warn(`${COLLECTION}: network refresh failed, rebuilt page from committed snapshot (${errorMessage(error)})`);
       return;
     } catch (snapshotError) {

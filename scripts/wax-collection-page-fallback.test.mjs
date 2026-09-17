@@ -59,27 +59,39 @@ assert.match(hodlHtml, /src="\/js\/engagement\.js"/, 'Hodl Moonboys collection p
 assert.match(hodlHtml, /src="\/js\/comments\.js"/, 'Hodl Moonboys collection page should load comments.js');
 
 const { main: rebuildHodlPage } = await import(`file://${path.join(ROOT, 'scripts', 'generate-hodlmoonboys-rarity.mjs').replace(/\\/g, '/')}`);
-const hodlPagePath = path.join(ROOT, 'wiki', 'hodlmoonboys-nft-collection.html');
-const hodlSyncPath = path.join(ROOT, 'data', 'hodlmoonboys', 'sync-status.json');
-const originalHodlPage = read('wiki/hodlmoonboys-nft-collection.html');
-const originalHodlSync = read('data/hodlmoonboys/sync-status.json');
+const hodlSnapshotFiles = [
+  'wiki/hodlmoonboys-nft-collection.html',
+  'data/hodlmoonboys/collection.json',
+  'data/hodlmoonboys/template-metadata-cache.json',
+  'data/hodlmoonboys/live-template-supply.json',
+  'data/hodlmoonboys/template-rarity.json',
+  'data/hodlmoonboys/template-stats.json',
+  'data/hodlmoonboys/trait-exposure.json',
+  'data/hodlmoonboys/sync-status.json',
+  'data/hodlmoonboys/template-rarity.csv',
+  'data/hodlmoonboys/trait-exposure.csv',
+];
+const originalHodlSnapshot = Object.fromEntries(hodlSnapshotFiles.map((relativePath) => [relativePath, read(relativePath)]));
 const originalFetch = globalThis.fetch;
 
 try {
-  writeFileSync(hodlPagePath, '<!DOCTYPE html><html><body>stale hodl page</body></html>\n', 'utf8');
-  writeFileSync(hodlSyncPath, JSON.stringify(JSON.parse(originalHodlSync)), 'utf8');
+  for (const relativePath of hodlSnapshotFiles) {
+    writeFileSync(path.join(ROOT, relativePath), `broken ${path.basename(relativePath)}\n`, 'utf8');
+  }
   globalThis.fetch = async () => { throw new TypeError('forced fetch failure'); };
   await rebuildHodlPage();
 
   const rebuiltHodlPage = read('wiki/hodlmoonboys-nft-collection.html');
-  const rebuiltHodlSync = read('data/hodlmoonboys/sync-status.json');
   assert.match(rebuiltHodlPage, /src="\/js\/site-shell\.js"/, 'Hodl fallback rebuild should restore site-shell.js');
   assert.match(rebuiltHodlPage, /<div class="wiki-comments" data-page-id="hodlmoonboys-nft-collection"><\/div>/, 'Hodl fallback rebuild should restore the comments mount');
-  assert.equal(rebuiltHodlSync, originalHodlSync, 'Hodl fallback rebuild should rewrite the canonical sync-status snapshot output');
+  for (const relativePath of hodlSnapshotFiles) {
+    assert.equal(read(relativePath), originalHodlSnapshot[relativePath], `Hodl fallback rebuild should restore ${relativePath}`);
+  }
 } finally {
   globalThis.fetch = originalFetch;
-  writeFileSync(hodlPagePath, originalHodlPage, 'utf8');
-  writeFileSync(hodlSyncPath, originalHodlSync, 'utf8');
+  for (const relativePath of hodlSnapshotFiles) {
+    writeFileSync(path.join(ROOT, relativePath), originalHodlSnapshot[relativePath], 'utf8');
+  }
 }
 
 const registry = JSON.parse(feedRegistry);
