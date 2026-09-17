@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-17T11:56:40.493Z",
-  "verified_at": "2026-09-17T11:56:40.493Z",
+  "generated_at": "2026-09-17T14:36:13.603Z",
+  "verified_at": "2026-09-17T14:36:13.603Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -1828,11 +1828,11 @@
     },
     {
       "id": "/wiki/hodlmoonboys-nft-collection.html",
-      "title": "Hodl Moonboys NFT Collection Tracker | Crypto Moonboys Wiki",
+      "title": "Hodl Moonboys NFT Collection",
       "url": "/wiki/hodlmoonboys-nft-collection.html",
       "category": "misc",
-      "rank_score": 760,
-      "authority_score": 16
+      "rank_score": 1686,
+      "authority_score": 20
     },
     {
       "id": "/wiki/ian-harrison.html",
@@ -9971,6 +9971,12 @@
       "target": "/wiki/gkniftyheads-nft-collection.html",
       "score": 57,
       "weight": 0.57
+    },
+    {
+      "source": "/wiki/noballgamess-nft-collection.html",
+      "target": "/wiki/hodlmoonboys-nft-collection.html",
+      "score": 42,
+      "weight": 0.42
     },
     {
       "source": "/wiki/noballgamess-nft-collection.html",
