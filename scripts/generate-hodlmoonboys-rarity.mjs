@@ -52,8 +52,12 @@ const VARIATION_TRAIT_KEYS = ['variation', 'Variation', 'variant', 'Variant', 'e
 function writeFileAtomically(filePath, value) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   const tempPath = `${filePath}.${process.pid}.${Date.now()}.${Math.random().toString(16).slice(2)}.tmp`;
-  fs.writeFileSync(tempPath, value, 'utf8');
-  fs.renameSync(tempPath, filePath);
+  try {
+    fs.writeFileSync(tempPath, value, 'utf8');
+    fs.renameSync(tempPath, filePath);
+  } finally {
+    if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+  }
 }
 
 function writeJson(filePath, value) {
