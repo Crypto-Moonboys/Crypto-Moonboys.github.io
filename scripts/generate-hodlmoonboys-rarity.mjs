@@ -283,7 +283,7 @@ async function loadSharp() {
   }
 }
 
-async function fetchArrayBuffer(url, timeoutMs = 5000) {
+async function fetchArrayBuffer(url, timeoutMs = 20000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(new Error(`Timed out fetching ${url}`)), timeoutMs);
   try {
@@ -330,7 +330,8 @@ async function ensureLocalThumbs(templates) {
   const manifest = readJson(THUMB_MANIFEST, {});
   if (process.env.HODL_SKIP_THUMB_FETCH !== '1') {
     const sharp = await loadSharp();
-    await mapLimit(templates, 24, (template) => ensureLocalThumb(template, sharp, manifest));
+    const concurrency = Math.max(1, num(process.env.HODL_THUMB_CONCURRENCY, 6));
+    await mapLimit(templates, concurrency, (template) => ensureLocalThumb(template, sharp, manifest));
   }
   for (const template of templates) {
     const fileName = `${template.template_id}.webp`;
@@ -345,18 +346,14 @@ async function ensureLocalThumbs(templates) {
   }
   fs.mkdirSync(THUMB_DIR, { recursive: true });
   writeJson(THUMB_MANIFEST, Object.fromEntries(Object.entries(manifest).sort(([a], [b]) => Number(a) - Number(b))));
-  const fallbackByTitle = new Map();
   for (const template of templates) {
     const thumb = manifest[template.template_id];
-    const key = titleKey(template.title);
-    if (thumb?.url && key && !fallbackByTitle.has(key)) fallbackByTitle.set(key, thumb);
-  }
-  const collectionFallback = Object.values(manifest).find((thumb) => thumb?.url);
-  for (const template of templates) {
-    const thumb = manifest[template.template_id] || fallbackByTitle.get(titleKey(template.title)) || collectionFallback;
     if (thumb?.url) {
       template.thumbnail_url = thumb.url;
       template.image_url = thumb.url;
+    } else {
+      template.thumbnail_url = null;
+      template.image_url = null;
     }
   }
   return manifest;
