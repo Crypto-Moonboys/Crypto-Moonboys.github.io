@@ -1191,7 +1191,6 @@ async function main() {
   try {
     collection = (await fetchJson(`${ATOMIC_BASE}/collections/${COLLECTION}`)).data || {};
     templates = await fetchTemplates();
-    await ensureLocalThumbs(templates);
     supplies = await mapLimit(templates, 3, fetchLiveSupply);
   } catch (error) {
     try {
@@ -1207,6 +1206,7 @@ async function main() {
       throw new Error(`${COLLECTION}: live refresh failed (${errorMessage(error)}) and committed snapshot rebuild failed (${errorMessage(snapshotError)})`);
     }
   }
+  await ensureLocalThumbs(templates);
   const data = buildRanking(templates, supplies);
   const stats = {
     collection: COLLECTION,
