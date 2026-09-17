@@ -50,8 +50,9 @@ const RARITY_TRAIT_KEYS = ['rarity', 'Rarity', 'tier', 'Tier', 'type', 'Type', '
 const VARIATION_TRAIT_KEYS = ['variation', 'Variation', 'variant', 'Variant', 'edition', 'Edition', 'background', 'Background', 'artist', 'Artist'];
 
 function writeFileAtomically(filePath, value) {
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  const tempPath = `${filePath}.${process.pid}.${Date.now()}.${Math.random().toString(16).slice(2)}.tmp`;
+  const directory = path.dirname(filePath);
+  const tempPath = path.join(directory, `${path.basename(filePath)}.${process.pid}.${Date.now()}.${Math.random().toString(16).slice(2)}.tmp`);
+  fs.mkdirSync(directory, { recursive: true });
   try {
     fs.writeFileSync(tempPath, value, 'utf8');
     fs.renameSync(tempPath, filePath);
