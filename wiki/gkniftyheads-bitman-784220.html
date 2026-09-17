@@ -421,6 +421,7 @@
     return document.querySelector('template[data-battle-media="nft"]');
   }
   function injectBattleMedia() {
+    if (document.querySelector('.battle-engagement-deck--nft-template')) return;
     var tpl = battleMediaTemplate();
     if (!tpl) return;
     var deck = document.querySelector('.battle-deck');
