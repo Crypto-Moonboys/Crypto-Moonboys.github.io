@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-17T18:34:32.126Z",
-  "verified_at": "2026-09-17T18:34:32.126Z",
+  "generated_at": "2026-09-17T14:36:13.603Z",
+  "verified_at": "2026-09-17T14:36:13.603Z",
   "lite": true,
   "nodes": [
     {
@@ -106,14 +106,6 @@
       "category": "characters",
       "rank_score": 457,
       "authority_score": 17
-    },
-    {
-      "id": "/wiki/gkniftyheads-bitman-784220.html",
-      "title": "⚡️⚡️⚡️ Bitman 🦇 — Free-Roaming GKniftyHEAD Hero | Crypto Moonboys Wiki",
-      "url": "/wiki/gkniftyheads-bitman-784220.html",
-      "category": "nfts-digital-art",
-      "rank_score": 450,
-      "authority_score": 26
     },
     {
       "id": "/wiki/hard-fork-games.html",
@@ -602,6 +594,14 @@
       "category": "factions",
       "rank_score": 286,
       "authority_score": 21
+    },
+    {
+      "id": "/wiki/the-salvagers.html",
+      "title": "The SALVAGERS",
+      "url": "/wiki/the-salvagers.html",
+      "category": "factions",
+      "rank_score": 286,
+      "authority_score": 21
     }
   ],
   "edges": [
@@ -609,12 +609,6 @@
       "source": "/wiki/nbgx-token.html",
       "target": "/wiki/nbg-token.html",
       "score": 116,
-      "weight": 1
-    },
-    {
-      "source": "/wiki/gkniftyheads-bitman-784220.html",
-      "target": "/wiki/gkniftyheads-nft-collection.html",
-      "score": 111,
       "weight": 1
     },
     {
@@ -882,6 +876,12 @@
       "weight": 0.81
     },
     {
+      "source": "/wiki/the-rugpull-miners.html",
+      "target": "/wiki/the-salvagers.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
       "source": "/wiki/alien-worlds-tlm.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 80,
@@ -1018,6 +1018,12 @@
       "target": "/wiki/crypto-moonboy-pets.html",
       "score": 55,
       "weight": 0.55
+    },
+    {
+      "source": "/wiki/hodlmoonboys-nft-collection.html",
+      "target": "/wiki/gkniftyheads-nft-collection.html",
+      "score": 54,
+      "weight": 0.54
     }
   ]
 }

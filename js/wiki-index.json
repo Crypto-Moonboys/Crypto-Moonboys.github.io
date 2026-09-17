@@ -1216,104 +1216,6 @@
     "brand": null
   },
   {
-    "title": "⚡️⚡️⚡️ Bitman 🦇 — Free-Roaming GKniftyHEAD Hero | Crypto Moonboys Wiki",
-    "desc": "Bitman is the free-roaming Bitcoin Batboy and Blockchain Bat of the Crypto Moonboys universe, a non-aligned GKniftyHEAD hero of Year 3008.",
-    "url": "/wiki/gkniftyheads-bitman-784220.html",
-    "tags": [
-      "bitman",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "nfts-digital-art",
-    "aliases": [
-      {
-        "title": "gkniftyheads bitman 784220"
-      },
-      {
-        "title": "bitman crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 450,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 4,
-      "mention_count": 0,
-      "category": "nfts-digital-art",
-      "category_priority": 4,
-      "has_description": true,
-      "article_word_count": 4493,
-      "keyword_bag_size": 24,
-      "heading_count": 29,
-      "list_count": 7,
-      "internal_link_count": 12,
-      "paragraph_count": 65,
-      "section_count": 19,
-      "lore_paragraph_count": 62,
-      "content_quality_score": 107,
-      "authority_score": 26
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 20,
-      "word_count_points": 225,
-      "keyword_bag_points": 24,
-      "content_quality_points": 117,
-      "authority_points": 34,
-      "final_rank_score": 450,
-      "authority_graph_points": 8
-    },
-    "search_index": {
-      "normalized_title": "bitman free roaming gkniftyhead hero crypto moonboys wiki",
-      "tokens": [
-        "bitman",
-        "free",
-        "roaming",
-        "gkniftyhead",
-        "hero",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "bitman",
-        "free",
-        "roaming",
-        "gkniftyhead",
-        "hero",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "is",
-        "the",
-        "bitcoin",
-        "batboy",
-        "and",
-        "blockchain",
-        "bat",
-        "of",
-        "universe",
-        "a",
-        "non",
-        "aligned",
-        "year",
-        "3008",
-        "gkniftyheads",
-        "784220"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 1,
-      "outbound_count": 54,
-      "existing_outbound_count": 12,
-      "suggested_outbound_count": 42,
-      "authority": 8
-    },
-    "brand": null
-  },
-  {
     "title": "Hard Fork Games",
     "desc": "Hard Fork Games are the Year 3008 trials that divide paths, factions and futures across Block Topia and the Street Kingdoms.",
     "url": "/wiki/hard-fork-games.html",
@@ -1489,9 +1391,9 @@
     },
     "link_score": {
       "inbound_count": 61,
-      "outbound_count": 20,
+      "outbound_count": 19,
       "existing_outbound_count": 8,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 11,
       "authority": 126
     },
     "brand": {
@@ -11808,9 +11710,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 18,
+      "outbound_count": 17,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 9,
+      "suggested_outbound_count": 8,
       "authority": 6.5
     },
     "brand": {
@@ -18626,9 +18528,9 @@
     },
     "link_score": {
       "inbound_count": 8,
-      "outbound_count": 28,
+      "outbound_count": 27,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 16,
+      "suggested_outbound_count": 15,
       "authority": 22
     },
     "brand": null
@@ -29743,6 +29645,90 @@
     "brand": null
   },
   {
+    "title": "⚡️⚡️⚡️ Bitman 🦇",
+    "desc": "⚡️⚡️⚡️ Bitman 🦇 is an NFT in the gkniftyheads WAX AtomicAssets collection.",
+    "url": "/wiki/gkniftyheads-bitman-784220.html",
+    "tags": [
+      "bitman",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "nfts-digital-art",
+    "aliases": [
+      {
+        "title": "gkniftyheads bitman 784220"
+      },
+      {
+        "title": "bitman crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 173,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "nfts-digital-art",
+      "category_priority": 4,
+      "has_description": true,
+      "article_word_count": 537,
+      "keyword_bag_size": 14,
+      "heading_count": 12,
+      "list_count": 1,
+      "internal_link_count": 12,
+      "paragraph_count": 6,
+      "section_count": 6,
+      "lore_paragraph_count": 3,
+      "content_quality_score": 48,
+      "authority_score": 16
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 20,
+      "word_count_points": 27,
+      "keyword_bag_points": 14,
+      "content_quality_points": 58,
+      "authority_points": 24,
+      "final_rank_score": 173,
+      "authority_graph_points": 8
+    },
+    "search_index": {
+      "normalized_title": "bitman crypto moonboys wiki",
+      "tokens": [
+        "bitman",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "bitman",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "is",
+        "an",
+        "nft",
+        "in",
+        "the",
+        "gkniftyheads",
+        "wax",
+        "atomicassets",
+        "collection",
+        "784220"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 1,
+      "outbound_count": 22,
+      "existing_outbound_count": 12,
+      "suggested_outbound_count": 10,
+      "authority": 8
+    },
+    "brand": null
+  },
+  {
     "title": "DEKO",
     "desc": "DEKO is an NFT in the gkniftyheads WAX AtomicAssets collection.",
     "url": "/wiki/gkniftyheads-deko-904071.html",
@@ -30129,83 +30115,6 @@
     "brand": null
   },
   {
-    "title": "NFT Template Page OG Template",
-    "desc": "Public Crypto Moonboys OG template guide for individual WAX NFT template and item pages.",
-    "url": "/og-templates/nft-template-page.html",
-    "tags": [],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 118,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 99,
-      "keyword_bag_size": 15,
-      "heading_count": 3,
-      "list_count": 1,
-      "internal_link_count": 0,
-      "paragraph_count": 2,
-      "section_count": 2,
-      "lore_paragraph_count": 0,
-      "content_quality_score": 29,
-      "authority_score": 4
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 5,
-      "keyword_bag_points": 15,
-      "content_quality_points": 29,
-      "authority_points": 4,
-      "final_rank_score": 118,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "nft template page og template crypto moonboys wiki",
-      "tokens": [
-        "nft",
-        "template",
-        "page",
-        "og",
-        "template",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "nft",
-        "template",
-        "page",
-        "og",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "public",
-        "guide",
-        "for",
-        "individual",
-        "wax",
-        "and",
-        "item",
-        "pages"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 0,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 0,
-      "authority": 0
-    },
-    "brand": null
-  },
-  {
     "title": "Crypto Token OG Template",
     "desc": "Public Crypto Moonboys OG template guide for crypto token pages with approved live feed data.",
     "url": "/og-templates/crypto-token-page.html",
@@ -30270,6 +30179,83 @@
         "live",
         "feed",
         "data"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
+    },
+    "brand": null
+  },
+  {
+    "title": "NFT Template Page OG Template",
+    "desc": "Public Crypto Moonboys OG template guide for individual WAX NFT template and item pages.",
+    "url": "/og-templates/nft-template-page.html",
+    "tags": [],
+    "category": "factions",
+    "aliases": [],
+    "rank_score": 117,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 0,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 86,
+      "keyword_bag_size": 15,
+      "heading_count": 3,
+      "list_count": 1,
+      "internal_link_count": 0,
+      "paragraph_count": 2,
+      "section_count": 2,
+      "lore_paragraph_count": 0,
+      "content_quality_score": 29,
+      "authority_score": 4
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 4,
+      "keyword_bag_points": 15,
+      "content_quality_points": 29,
+      "authority_points": 4,
+      "final_rank_score": 117,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "nft template page og template crypto moonboys wiki",
+      "tokens": [
+        "nft",
+        "template",
+        "page",
+        "og",
+        "template",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "nft",
+        "template",
+        "page",
+        "og",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "public",
+        "guide",
+        "for",
+        "individual",
+        "wax",
+        "and",
+        "item",
+        "pages"
       ]
     },
     "link_score": {

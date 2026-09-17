@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-17T18:34:32.126Z",
-  "verified_at": "2026-09-17T18:34:32.126Z",
+  "generated_at": "2026-09-17T14:36:13.603Z",
+  "verified_at": "2026-09-17T14:36:13.603Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -63,7 +63,7 @@
       "title": "NFT Template Page OG Template",
       "url": "/og-templates/nft-template-page.html",
       "category": "factions",
-      "rank_score": 118,
+      "rank_score": 117,
       "authority_score": 4
     },
     {
@@ -716,11 +716,11 @@
     },
     {
       "id": "/wiki/gkniftyheads-bitman-784220.html",
-      "title": "⚡️⚡️⚡️ Bitman 🦇 — Free-Roaming GKniftyHEAD Hero | Crypto Moonboys Wiki",
+      "title": "⚡️⚡️⚡️ Bitman 🦇",
       "url": "/wiki/gkniftyheads-bitman-784220.html",
       "category": "nfts-digital-art",
-      "rank_score": 450,
-      "authority_score": 26
+      "rank_score": 173,
+      "authority_score": 16
     },
     {
       "id": "/wiki/gkniftyheads-bitman-784229.html",
@@ -7526,7 +7526,7 @@
     },
     {
       "source": "/wiki/gkniftyheads-robin-ronin-rampage-783747.html",
-      "target": "/wiki/gkniftyheads-bitman-784220.html",
+      "target": "/wiki/gkniftyheads-zenith-zephyr-zealot-783759.html",
       "score": 75,
       "weight": 0.75
     },
@@ -7568,12 +7568,6 @@
     },
     {
       "source": "/wiki/gkniftyheads-sarah-p2fly-784350.html",
-      "target": "/wiki/gkniftyheads-bitman-784220.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/gkniftyheads-sarah-p2fly-784350.html",
       "target": "/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html",
       "score": 76,
       "weight": 0.76
@@ -7587,6 +7581,12 @@
     {
       "source": "/wiki/gkniftyheads-sarah-p2fly-784350.html",
       "target": "/wiki/gkniftyheads-alessandro-satoshi-samurai-ferrari-783442.html",
+      "score": 75,
+      "weight": 0.75
+    },
+    {
+      "source": "/wiki/gkniftyheads-sarah-p2fly-784350.html",
+      "target": "/wiki/gkniftyheads-sarah-pfly-784349.html",
       "score": 75,
       "weight": 0.75
     },
@@ -7640,15 +7640,15 @@
     },
     {
       "source": "/wiki/gkniftyheads-satoshi-knight-784264.html",
-      "target": "/wiki/gkniftyheads-bitman-784220.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/gkniftyheads-satoshi-knight-784264.html",
       "target": "/wiki/gkniftyheads-antonio-ether-emperor-costa-783448.html",
       "score": 74,
       "weight": 0.74
+    },
+    {
+      "source": "/wiki/gkniftyheads-satoshi-knight-784264.html",
+      "target": "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
+      "score": 73,
+      "weight": 0.73
     },
     {
       "source": "/wiki/gkniftyheads-scribe-serpent-783260.html",
