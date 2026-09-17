@@ -3,6 +3,7 @@
 
   var COLLECTIONS = {
     'gkniftyheads-nft-collection': 'gkniftyheads',
+    'hodlmoonboys-nft-collection': 'hodlmoonboys',
     'noballgamess-nft-collection': 'noballgamess',
   };
 
@@ -17,6 +18,7 @@
     var path = String(window.location && window.location.pathname || '');
     if (COLLECTIONS[slug]) return COLLECTIONS[slug];
     if (/gkniftyheads-nft-collection\.html$/i.test(path)) return 'gkniftyheads';
+    if (/hodlmoonboys-nft-collection\.html$/i.test(path)) return 'hodlmoonboys';
     if (/noballgamess-nft-collection\.html$/i.test(path)) return 'noballgamess';
     return '';
   }
@@ -50,7 +52,7 @@
   }
 
   function hasStaticTracker() {
-    return !!document.querySelector('[data-gkniftyheads-rarity="true"], [data-noballgamess-rarity="true"]');
+    return !!document.querySelector('[data-gkniftyheads-rarity="true"], [data-hodlmoonboys-rarity="true"], [data-noballgamess-rarity="true"]');
   }
 
   function shouldRenderFullBridgeData(collection) {

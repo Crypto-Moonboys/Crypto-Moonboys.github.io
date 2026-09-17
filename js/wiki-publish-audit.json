@@ -1,8 +1,8 @@
 {
-  "_generated": "2026-08-30T06:05:42.371Z",
+  "_generated": "2026-09-17T11:52:29.971Z",
   "summary": {
-    "total": 332,
-    "approved": 332,
+    "total": 333,
+    "approved": 333,
     "blocked": 0,
     "needs_review": 0,
     "blocked_synthetic_slug": 0,
@@ -1570,6 +1570,13 @@
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1526
+    },
+    {
+      "slug": "hodlmoonboys-nft-collection",
+      "file": "hodlmoonboys-nft-collection.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Approved as mechanical NFT collection page metadata.",
+      "word_count": 12566
     },
     {
       "slug": "ian-harrison",

@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-08-30T06:55:58.221Z",
-  "verified_at": "2026-09-01T16:06:44.185Z",
+  "generated_at": "2026-09-17T11:56:40.493Z",
+  "verified_at": "2026-09-17T11:56:40.493Z",
   "lite": true,
   "nodes": [
     {
@@ -8,7 +8,7 @@
       "title": "GKniftyHEADS NFT Collection",
       "url": "/wiki/gkniftyheads-nft-collection.html",
       "category": "nfts-digital-art",
-      "rank_score": 1214,
+      "rank_score": 1216,
       "authority_score": 28
     },
     {
@@ -18,6 +18,14 @@
       "category": "characters",
       "rank_score": 971,
       "authority_score": 25
+    },
+    {
+      "id": "/wiki/hodlmoonboys-nft-collection.html",
+      "title": "Hodl Moonboys NFT Collection Tracker | Crypto Moonboys Wiki",
+      "url": "/wiki/hodlmoonboys-nft-collection.html",
+      "category": "misc",
+      "rank_score": 760,
+      "authority_score": 16
     },
     {
       "id": "/wiki/graffpunks.html",
@@ -594,14 +602,6 @@
       "category": "factions",
       "rank_score": 286,
       "authority_score": 21
-    },
-    {
-      "id": "/wiki/wuffi.html",
-      "title": "WUFFI / $WUF",
-      "url": "/wiki/wuffi.html",
-      "category": "factions",
-      "rank_score": 285,
-      "authority_score": 23
     }
   ],
   "edges": [
@@ -942,12 +942,6 @@
       "weight": 0.78
     },
     {
-      "source": "/wiki/wuffi.html",
-      "target": "/wiki/sneakar.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
       "source": "/wiki/alien-worlds-tlm.html",
       "target": "/wiki/gang-signs.html",
       "score": 77,
@@ -1026,10 +1020,10 @@
       "weight": 0.55
     },
     {
-      "source": "/wiki/bitcoin.html",
+      "source": "/wiki/hodlmoonboys-nft-collection.html",
       "target": "/wiki/gkniftyheads-nft-collection.html",
-      "score": 53,
-      "weight": 0.53
+      "score": 54,
+      "weight": 0.54
     }
   ]
 }

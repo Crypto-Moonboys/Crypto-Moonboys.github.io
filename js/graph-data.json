@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-08-30T06:55:58.221Z",
-  "verified_at": "2026-09-01T16:06:44.185Z",
+  "generated_at": "2026-09-17T11:56:40.493Z",
+  "verified_at": "2026-09-17T11:56:40.493Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -1311,7 +1311,7 @@
       "title": "GKniftyHEADS NFT Collection",
       "url": "/wiki/gkniftyheads-nft-collection.html",
       "category": "nfts-digital-art",
-      "rank_score": 1214,
+      "rank_score": 1216,
       "authority_score": 28
     },
     {
@@ -1827,6 +1827,14 @@
       "authority_score": 21
     },
     {
+      "id": "/wiki/hodlmoonboys-nft-collection.html",
+      "title": "Hodl Moonboys NFT Collection Tracker | Crypto Moonboys Wiki",
+      "url": "/wiki/hodlmoonboys-nft-collection.html",
+      "category": "misc",
+      "rank_score": 760,
+      "authority_score": 16
+    },
+    {
       "id": "/wiki/ian-harrison.html",
       "title": "Ian Harrison",
       "url": "/wiki/ian-harrison.html",
@@ -2023,7 +2031,7 @@
       "title": "NoBallGames NFT Collection Tracker | Crypto Moonboys Wiki",
       "url": "/wiki/noballgamess-nft-collection.html",
       "category": "core",
-      "rank_score": 261,
+      "rank_score": 263,
       "authority_score": 13
     },
     {
@@ -9231,6 +9239,12 @@
       "target": "/wiki/bitcoin-kids.html",
       "score": 78,
       "weight": 0.78
+    },
+    {
+      "source": "/wiki/hodlmoonboys-nft-collection.html",
+      "target": "/wiki/gkniftyheads-nft-collection.html",
+      "score": 54,
+      "weight": 0.54
     },
     {
       "source": "/wiki/ian-harrison.html",

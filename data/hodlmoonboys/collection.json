@@ -1,0 +1,41 @@
+{
+  "contract": "atomicassets",
+  "collection_name": "hodlmoonboys",
+  "name": "GRAFFITI KINGS N QUEENS, Crypto Moonboys n girls & GKniftyHEADS ",
+  "img": "QmZ2hZmVXnRHX7K735Pccz3ABRfzfWhdM2YAmfzEXe7Wjv",
+  "author": "graffitiking",
+  "allow_notify": true,
+  "authorized_accounts": [
+    "graffitiking",
+    "atomicdropsx",
+    "atomicpacksx",
+    "neftyblocksd",
+    "blenderizerx",
+    "shop.cait",
+    "neftyblocksp",
+    "blend.nefty",
+    "blendingbros",
+    "csbpunks.gm",
+    "pnkofgraf.gm",
+    "gpmedia.gm",
+    "up.nefty",
+    "gkniftyheads",
+    "yoitscharlie",
+    "rtlsq.wam"
+  ],
+  "notify_accounts": [],
+  "market_fee": 0.15,
+  "data": {
+    "img": "QmZ2hZmVXnRHX7K735Pccz3ABRfzfWhdM2YAmfzEXe7Wjv",
+    "url": "https://t.me/gkniftyheads",
+    "name": "GRAFFITI KINGS N QUEENS, Crypto Moonboys n girls & GKniftyHEADS ",
+    "images": "{\"banner_1920x500\":\"QmS2vM4Fx3RZT4cWoXpN4qBiMcrGZkE7g25EGjoV6MXu7B\",\"logo_512x512\":\"QmZ2hZmVXnRHX7K735Pccz3ABRfzfWhdM2YAmfzEXe7Wjv\"}",
+    "socials": "{\"twitter\":\"https://twitter.com/HODLWARRIORS\",\"medium\":\"\",\"facebook\":\"\",\"github\":\"\",\"discord\":\"\",\"youtube\":\"\",\"telegram\":\"https://t.me/gkniftyheads\"}",
+    "description": "🎯 Welcome to the World of Crypto ArT\n\nCreated by some of the world's most legendary Graffiti Kings, Queens, GraffPUNKS, Crypto Moon Boys & Girls, & Bitcoin Pepe enthusiasts 🐸\n\n#WAXHASAPOSSE ⚡⚡⚡\n\n⚡ Powered by the MIGHTY #GKniftyHEADS ⚡\n\n🛡 Protected by the House of #RackinSATS ⚡⚡⚡\n\n✌️ THE CRYPTO MOONBOYS Spheres of Influence Saga IS HERE! ✌️\n\nDive into collectible NFT ArT, with groundbreaking GKniftyHEADS phygital merch, innovative GK crypto toys, immersive Web3 gaming experiences and Metaverse worlds 🤖🤳🐸⚡⚡⚡\n\nWE THE NEW 24 ONLINE PARTY PEOPLE EXPERIENCE ⚡⚡⚡\n\n🎯 Join the #GraffPUNKS Play2Earn IncubatorHUB on Telegram...\n\n🤳 Grind, Win, and Earn Big!\n\n📅 More Details in Telegram channel ⭐\n\n🖤 #GraffPUNKS - UP AND GETTIN’ UP! ⚡⚡⚡",
+    "creator_info": "{\"country\":\"GB\",\"address\":\"\",\"city\":\"\",\"zip\":\"\",\"company\":\"\",\"name\":\"\",\"registration_number\":\"\"}"
+  },
+  "created_at_time": "1619227839500",
+  "created_at_block": "115573877",
+  "new_author_name": null,
+  "new_author_date": null
+}

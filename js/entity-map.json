@@ -4668,6 +4668,29 @@
     "brand": null
   },
   {
+    "entity_id": "hodlmoonboys_nft_collection",
+    "canonical_title": "Hodl Moonboys NFT Collection Tracker | Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/hodlmoonboys-nft-collection.html",
+    "category": "misc",
+    "aliases": [],
+    "tags": [
+      "hodl",
+      "moonboys",
+      "nft",
+      "collection",
+      "tracker",
+      "crypto",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/hodlmoonboys-nft-collection.html"
+    ],
+    "brand": null,
+    "alias_candidates": [
+      "hodlmoonboys nft collection"
+    ]
+  },
+  {
     "entity_id": "ian_harrison",
     "canonical_title": "Ian Harrison",
     "canonical_url": "/wiki/ian-harrison.html",

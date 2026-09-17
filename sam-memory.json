@@ -4614,6 +4614,28 @@
         "wiki"
       ]
     },
+    "hodlmoonboys_nft_collection": {
+      "alias_candidates": [
+        "hodlmoonboys nft collection"
+      ],
+      "aliases": [],
+      "canonical_title": "Hodl Moonboys NFT Collection Tracker | Crypto Moonboys Wiki",
+      "canonical_url": "/wiki/hodlmoonboys-nft-collection.html",
+      "category": "misc",
+      "source_urls": [
+        "/wiki/hodlmoonboys-nft-collection.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "hodl",
+        "moonboys",
+        "nft",
+        "collection",
+        "tracker",
+        "crypto",
+        "wiki"
+      ]
+    },
     "ian_harrison": {
       "alias_candidates": [],
       "aliases": [
@@ -6862,5 +6884,5 @@
       ]
     }
   },
-  "updated_at": "2026-08-30T06:10:21Z"
+  "updated_at": "2026-09-17T11:56:40Z"
 }
