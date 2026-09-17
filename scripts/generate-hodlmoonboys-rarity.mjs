@@ -1130,42 +1130,45 @@ function hydrateSnapshotRow(row) {
 
 function loadExistingSnapshot(root = ROOT) {
   const collection = readJson(path.join(root, 'data', COLLECTION, 'collection.json'), {});
-  const rarity = readJson(path.join(root, 'data', COLLECTION, 'template-rarity.json'), null);
-  const stats = readJson(path.join(root, 'data', COLLECTION, 'template-stats.json'), null);
-  const syncStatus = readJson(path.join(root, 'data', COLLECTION, 'sync-status.json'), null);
-  if (!rarity || !stats || !syncStatus) {
+  const templateRarity = readJson(path.join(root, 'data', COLLECTION, 'template-rarity.json'), null);
+  const templateStats = readJson(path.join(root, 'data', COLLECTION, 'template-stats.json'), null);
+  const rawSyncStatus = readJson(path.join(root, 'data', COLLECTION, 'sync-status.json'), null);
+  if (!templateRarity || !templateStats || !rawSyncStatus) {
     throw new Error('Committed Hodl Moonboys rarity snapshot is unavailable.');
   }
-  const ranked = (rarity.ranked_templates || []).map(hydrateSnapshotRow);
-  const utility = (rarity.utility_open_mint_templates || []).map(hydrateSnapshotRow);
-  const unissued = (rarity.unissued_templates || []).map(hydrateSnapshotRow);
+  const ranked = (templateRarity.ranked_templates || []).map(hydrateSnapshotRow);
+  const utility = (templateRarity.utility_open_mint_templates || []).map(hydrateSnapshotRow);
+  const unissued = (templateRarity.unissued_templates || []).map(hydrateSnapshotRow);
   return {
     collection,
+    templateRarity,
+    templateStats,
+    rawSyncStatus,
     data: {
       ranked,
       utility,
       unissued,
       allRows: [...ranked, ...utility, ...unissued],
-      rarityExposure: rarity.rarity_traits || [],
-      variationExposure: rarity.variation_traits || [],
+      rarityExposure: templateRarity.rarity_traits || [],
+      variationExposure: templateRarity.variation_traits || [],
     },
     stats: {
       collection: COLLECTION,
-      generated_at: stats.generated_at || rarity.generated_at || NOW(),
-      total_templates: num(stats.total_templates),
-      ranked_templates: num(stats.ranked_templates),
-      utility_open_mint_templates: num(stats.utility_open_mint_templates),
-      unissued_templates: num(stats.unissued_templates),
-      live_assets_counted: num(stats.live_assets_counted),
-      live_supply_counts_ok: num(stats.live_supply_counts_ok),
+      generated_at: templateStats.generated_at || templateRarity.generated_at || NOW(),
+      total_templates: num(templateStats.total_templates),
+      ranked_templates: num(templateStats.ranked_templates),
+      utility_open_mint_templates: num(templateStats.utility_open_mint_templates),
+      unissued_templates: num(templateStats.unissued_templates),
+      live_assets_counted: num(templateStats.live_assets_counted),
+      live_supply_counts_ok: num(templateStats.live_supply_counts_ok),
     },
     syncStatus: {
       collection: COLLECTION,
       feed_id: FEED_ID,
-      generated_at: syncStatus.generated_at || rarity.generated_at || NOW(),
-      status: syncStatus.status || 'degraded',
-      live_data_status: syncStatus.live_data_status || rarity.live_data_status || 'issued-supply fallback',
-      notes: Array.isArray(syncStatus.notes) ? syncStatus.notes : [],
+      generated_at: rawSyncStatus.generated_at || templateRarity.generated_at || NOW(),
+      status: rawSyncStatus.status || 'degraded',
+      live_data_status: rawSyncStatus.live_data_status || templateRarity.live_data_status || 'issued-supply fallback',
+      notes: Array.isArray(rawSyncStatus.notes) ? rawSyncStatus.notes : [],
     },
   };
 }
@@ -1182,6 +1185,10 @@ async function main() {
     supplies = await mapLimit(templates, 3, fetchLiveSupply);
   } catch (error) {
     const snapshot = loadExistingSnapshot();
+    writeJson(path.join(DATA_DIR, 'collection.json'), snapshot.collection);
+    writeJson(path.join(DATA_DIR, 'template-rarity.json'), snapshot.templateRarity);
+    writeJson(path.join(DATA_DIR, 'template-stats.json'), snapshot.templateStats);
+    writeJson(path.join(DATA_DIR, 'sync-status.json'), snapshot.rawSyncStatus);
     writeText(PAGE_PATH, renderPage(snapshot.collection, snapshot.data, snapshot.stats, snapshot.syncStatus));
     console.warn(`${COLLECTION}: network refresh failed, rebuilt page from committed snapshot (${error instanceof Error ? error.message : error})`);
     return;
