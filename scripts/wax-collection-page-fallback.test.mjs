@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -57,6 +57,30 @@ for (const html of [gkniftyHtml, hodlHtml, noballHtml]) {
 assert.match(hodlHtml, /<div class="wiki-comments" data-page-id="hodlmoonboys-nft-collection"><\/div>/, 'Hodl Moonboys collection page should expose the live comments mount');
 assert.match(hodlHtml, /src="\/js\/engagement\.js"/, 'Hodl Moonboys collection page should load engagement.js');
 assert.match(hodlHtml, /src="\/js\/comments\.js"/, 'Hodl Moonboys collection page should load comments.js');
+
+const { main: rebuildHodlPage } = await import(`file://${path.join(ROOT, 'scripts', 'generate-hodlmoonboys-rarity.mjs').replace(/\\/g, '/')}`);
+const hodlPagePath = path.join(ROOT, 'wiki', 'hodlmoonboys-nft-collection.html');
+const hodlSyncPath = path.join(ROOT, 'data', 'hodlmoonboys', 'sync-status.json');
+const originalHodlPage = read('wiki/hodlmoonboys-nft-collection.html');
+const originalHodlSync = read('data/hodlmoonboys/sync-status.json');
+const originalFetch = globalThis.fetch;
+
+try {
+  writeFileSync(hodlPagePath, '<!DOCTYPE html><html><body>stale hodl page</body></html>\n', 'utf8');
+  writeFileSync(hodlSyncPath, JSON.stringify(JSON.parse(originalHodlSync)), 'utf8');
+  globalThis.fetch = async () => { throw new TypeError('forced fetch failure'); };
+  await rebuildHodlPage();
+
+  const rebuiltHodlPage = read('wiki/hodlmoonboys-nft-collection.html');
+  const rebuiltHodlSync = read('data/hodlmoonboys/sync-status.json');
+  assert.match(rebuiltHodlPage, /src="\/js\/site-shell\.js"/, 'Hodl fallback rebuild should restore site-shell.js');
+  assert.match(rebuiltHodlPage, /<div class="wiki-comments" data-page-id="hodlmoonboys-nft-collection"><\/div>/, 'Hodl fallback rebuild should restore the comments mount');
+  assert.equal(rebuiltHodlSync, originalHodlSync, 'Hodl fallback rebuild should rewrite the canonical sync-status snapshot output');
+} finally {
+  globalThis.fetch = originalFetch;
+  writeFileSync(hodlPagePath, originalHodlPage, 'utf8');
+  writeFileSync(hodlSyncPath, originalHodlSync, 'utf8');
+}
 
 const registry = JSON.parse(feedRegistry);
 for (const feedId of ['gkniftyheads_rarity', 'noballgamess_rarity']) {
