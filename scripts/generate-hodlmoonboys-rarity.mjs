@@ -1133,73 +1133,137 @@ function compactRankedRow(row) {
   });
 }
 
-async function main() {
-  const generatedAt = NOW();
-  const collection = (await fetchJson(`${ATOMIC_BASE}/collections/${COLLECTION}`)).data || {};
-  const templates = await fetchTemplates();
-  await ensureLocalThumbs(templates);
-  const supplies = await mapLimit(templates, 3, fetchLiveSupply);
-  const data = buildRanking(templates, supplies);
-  const stats = {
-    collection: COLLECTION,
-    generated_at: generatedAt,
-    total_templates: data.allRows.length,
-    ranked_templates: data.ranked.length,
-    utility_open_mint_templates: data.utility.length,
-    unissued_templates: data.unissued.length,
-    live_assets_counted: supplies.reduce((sum, row) => sum + num(row.live_supply), 0),
-    live_supply_counts_ok: supplies.filter((row) => row.live_supply_status === 'ok').length,
+function hydrateSnapshotRow(row) {
+  const templateId = num(row?.template_id);
+  return {
+    ...row,
+    template_id: templateId,
+    title: row?.title || `${COLLECTION_TITLE} Template ${templateId}`,
+    issued_supply: num(row?.issued_supply),
+    max_supply: num(row?.max_supply),
+    live_supply: num(row?.live_supply),
+    pre_baseline_missing_or_burned: row?.pre_baseline_missing_or_burned ?? row?.missing_or_burned_count ?? null,
+    missing_or_burned_count: row?.missing_or_burned_count ?? row?.pre_baseline_missing_or_burned ?? null,
+    atomicassets_url: atomicTemplateUrl(templateId),
+    atomichub_url: atomichubUrl(templateId),
   };
-  const syncStatus = {
-    collection: COLLECTION,
-    feed_id: FEED_ID,
-    generated_at: generatedAt,
-    status: data.allRows.length && stats.live_supply_counts_ok ? 'ok' : 'degraded',
-    live_data_status: stats.live_supply_counts_ok ? 'atomicassets live asset count' : 'issued-supply fallback',
-    notes: [
-      'AtomicAssets is the source of truth.',
-      'No price, floor, sales, listing, or AtomicHub listing counts are used for rarity math.',
-      'Pre-baseline missing/burned is a current live supply delta, not confirmed historic burn tracking.',
-    ],
-  };
-  const templateRarity = {
-    collection: COLLECTION,
-    collection_name: collection.name || COLLECTION_TITLE,
-    generated_at: generatedAt,
-    live_data_status: syncStatus.live_data_status,
-    ranking_formula: SCORING_CONTRACT,
-    price_used: false,
-    market_data_used: false,
-    ranked_templates: data.ranked.map(compactRankedRow),
-    utility_open_mint_templates: data.utility.map(compactRankedRow),
-    unissued_templates: data.unissued.map(compactRankedRow),
-  };
-  const traitExposure = {
-    collection: COLLECTION,
-    generated_at: generatedAt,
-    ranking_formula: SCORING_CONTRACT,
-    rarity_traits: data.rarityExposure,
-    variation_traits: data.variationExposure,
-    schemas: Object.values(data.allRows.reduce((memo, row) => {
-      const key = row.schema_name || 'unknown';
-      memo[key] ||= { schema_name: key, templates: 0, live_supply: 0 };
-      memo[key].templates += 1;
-      memo[key].live_supply += row.live_supply || 0;
-      return memo;
-    }, {})),
-  };
+}
 
-  writeJson(path.join(DATA_DIR, 'collection.json'), collection);
-  writeJson(path.join(DATA_DIR, 'template-metadata-cache.json'), { collection: COLLECTION, generated_at: generatedAt, templates: templates.map(compactTemplate) });
-  writeJson(path.join(DATA_DIR, 'live-template-supply.json'), { collection: COLLECTION, generated_at: generatedAt, supplies });
-  writeJson(path.join(DATA_DIR, 'template-rarity.json'), templateRarity);
-  writeJson(path.join(DATA_DIR, 'template-stats.json'), { ...stats, ranking_formula: SCORING_CONTRACT });
-  writeJson(path.join(DATA_DIR, 'trait-exposure.json'), traitExposure);
-  writeJson(path.join(DATA_DIR, 'sync-status.json'), syncStatus);
-  writeCsv(path.join(DATA_DIR, 'template-rarity.csv'), data.ranked, ['rank', 'template_id', 'title', 'rarity_band', 'issued_supply', 'live_supply', 'max_supply', 'final_score']);
-  writeCsv(path.join(DATA_DIR, 'trait-exposure.csv'), traitExposure.schemas, ['schema_name', 'templates', 'live_supply']);
-  writeText(PAGE_PATH, renderPage(collection, data, stats, syncStatus));
-  console.log(`${COLLECTION}: ${stats.total_templates} templates, ${stats.ranked_templates} ranked, ${stats.utility_open_mint_templates} utility/open mint, ${stats.unissued_templates} unissued`);
+function loadExistingSnapshot(root = ROOT) {
+  const collection = readJson(path.join(root, 'data', COLLECTION, 'collection.json'), {});
+  const rarity = readJson(path.join(root, 'data', COLLECTION, 'template-rarity.json'), null);
+  const stats = readJson(path.join(root, 'data', COLLECTION, 'template-stats.json'), null);
+  const syncStatus = readJson(path.join(root, 'data', COLLECTION, 'sync-status.json'), null);
+  if (!rarity || !stats || !syncStatus) {
+    throw new Error('Committed Hodl Moonboys rarity snapshot is unavailable.');
+  }
+  const ranked = (rarity.ranked_templates || []).map(hydrateSnapshotRow);
+  const utility = (rarity.utility_open_mint_templates || []).map(hydrateSnapshotRow);
+  const unissued = (rarity.unissued_templates || []).map(hydrateSnapshotRow);
+  return {
+    collection,
+    data: {
+      ranked,
+      utility,
+      unissued,
+      allRows: [...ranked, ...utility, ...unissued],
+      rarityExposure: rarity.rarity_traits || [],
+      variationExposure: rarity.variation_traits || [],
+    },
+    stats: {
+      collection: COLLECTION,
+      generated_at: stats.generated_at || rarity.generated_at || NOW(),
+      total_templates: num(stats.total_templates),
+      ranked_templates: num(stats.ranked_templates),
+      utility_open_mint_templates: num(stats.utility_open_mint_templates),
+      unissued_templates: num(stats.unissued_templates),
+      live_assets_counted: num(stats.live_assets_counted),
+      live_supply_counts_ok: num(stats.live_supply_counts_ok),
+    },
+    syncStatus: {
+      collection: COLLECTION,
+      feed_id: FEED_ID,
+      generated_at: syncStatus.generated_at || rarity.generated_at || NOW(),
+      status: syncStatus.status || 'degraded',
+      live_data_status: syncStatus.live_data_status || rarity.live_data_status || 'issued-supply fallback',
+      notes: Array.isArray(syncStatus.notes) ? syncStatus.notes : [],
+    },
+  };
+}
+
+async function main() {
+  try {
+    const generatedAt = NOW();
+    const collection = (await fetchJson(`${ATOMIC_BASE}/collections/${COLLECTION}`)).data || {};
+    const templates = await fetchTemplates();
+    await ensureLocalThumbs(templates);
+    const supplies = await mapLimit(templates, 3, fetchLiveSupply);
+    const data = buildRanking(templates, supplies);
+    const stats = {
+      collection: COLLECTION,
+      generated_at: generatedAt,
+      total_templates: data.allRows.length,
+      ranked_templates: data.ranked.length,
+      utility_open_mint_templates: data.utility.length,
+      unissued_templates: data.unissued.length,
+      live_assets_counted: supplies.reduce((sum, row) => sum + num(row.live_supply), 0),
+      live_supply_counts_ok: supplies.filter((row) => row.live_supply_status === 'ok').length,
+    };
+    const syncStatus = {
+      collection: COLLECTION,
+      feed_id: FEED_ID,
+      generated_at: generatedAt,
+      status: data.allRows.length && stats.live_supply_counts_ok ? 'ok' : 'degraded',
+      live_data_status: stats.live_supply_counts_ok ? 'atomicassets live asset count' : 'issued-supply fallback',
+      notes: [
+        'AtomicAssets is the source of truth.',
+        'No price, floor, sales, listing, or AtomicHub listing counts are used for rarity math.',
+        'Pre-baseline missing/burned is a current live supply delta, not confirmed historic burn tracking.',
+      ],
+    };
+    const templateRarity = {
+      collection: COLLECTION,
+      collection_name: collection.name || COLLECTION_TITLE,
+      generated_at: generatedAt,
+      live_data_status: syncStatus.live_data_status,
+      ranking_formula: SCORING_CONTRACT,
+      price_used: false,
+      market_data_used: false,
+      ranked_templates: data.ranked.map(compactRankedRow),
+      utility_open_mint_templates: data.utility.map(compactRankedRow),
+      unissued_templates: data.unissued.map(compactRankedRow),
+    };
+    const traitExposure = {
+      collection: COLLECTION,
+      generated_at: generatedAt,
+      ranking_formula: SCORING_CONTRACT,
+      rarity_traits: data.rarityExposure,
+      variation_traits: data.variationExposure,
+      schemas: Object.values(data.allRows.reduce((memo, row) => {
+        const key = row.schema_name || 'unknown';
+        memo[key] ||= { schema_name: key, templates: 0, live_supply: 0 };
+        memo[key].templates += 1;
+        memo[key].live_supply += row.live_supply || 0;
+        return memo;
+      }, {})),
+    };
+
+    writeJson(path.join(DATA_DIR, 'collection.json'), collection);
+    writeJson(path.join(DATA_DIR, 'template-metadata-cache.json'), { collection: COLLECTION, generated_at: generatedAt, templates: templates.map(compactTemplate) });
+    writeJson(path.join(DATA_DIR, 'live-template-supply.json'), { collection: COLLECTION, generated_at: generatedAt, supplies });
+    writeJson(path.join(DATA_DIR, 'template-rarity.json'), templateRarity);
+    writeJson(path.join(DATA_DIR, 'template-stats.json'), { ...stats, ranking_formula: SCORING_CONTRACT });
+    writeJson(path.join(DATA_DIR, 'trait-exposure.json'), traitExposure);
+    writeJson(path.join(DATA_DIR, 'sync-status.json'), syncStatus);
+    writeCsv(path.join(DATA_DIR, 'template-rarity.csv'), data.ranked, ['rank', 'template_id', 'title', 'rarity_band', 'issued_supply', 'live_supply', 'max_supply', 'final_score']);
+    writeCsv(path.join(DATA_DIR, 'trait-exposure.csv'), traitExposure.schemas, ['schema_name', 'templates', 'live_supply']);
+    writeText(PAGE_PATH, renderPage(collection, data, stats, syncStatus));
+    console.log(`${COLLECTION}: ${stats.total_templates} templates, ${stats.ranked_templates} ranked, ${stats.utility_open_mint_templates} utility/open mint, ${stats.unissued_templates} unissued`);
+  } catch (error) {
+    const snapshot = loadExistingSnapshot();
+    writeText(PAGE_PATH, renderPage(snapshot.collection, snapshot.data, snapshot.stats, snapshot.syncStatus));
+    console.warn(`${COLLECTION}: network refresh failed, rebuilt page from committed snapshot (${error instanceof Error ? error.message : error})`);
+  }
 }
 
 export { buildRanking, fetchTemplates, main };
