@@ -183496,6 +183496,44 @@
         }
       },
       {
+        "target_url": "/wiki/hodlmoonboys-nft-collection.html",
+        "score": 41,
+        "base_score": 27,
+        "reasons": [
+          "shared_tag:nft",
+          "shared_tag:collection",
+          "shared_tag:tracker",
+          "link_overlap:1",
+          "rank_score_boost:10",
+          "content_depth_boost:4"
+        ],
+        "rank_score_boost": 10,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 4,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 1,
+        "decay_penalty": 0,
+        "recency_balance": 1,
+        "final_score": 42,
+        "score_breakdown": {
+          "base_score": 27,
+          "rank_score_boost": 10,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 4,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 1,
+          "decay_penalty": 0,
+          "recency_balance": 1,
+          "final_score": 42
+        }
+      },
+      {
         "target_url": "/wiki/crypto-moonboys.html",
         "score": 41,
         "base_score": 6,
@@ -183603,44 +183641,6 @@
           "freshness_boost": 0,
           "decay_penalty": 0,
           "recency_balance": 0,
-          "final_score": 36
-        }
-      },
-      {
-        "target_url": "/wiki/hodlmoonboys-nft-collection.html",
-        "score": 35,
-        "base_score": 27,
-        "reasons": [
-          "shared_tag:nft",
-          "shared_tag:collection",
-          "shared_tag:tracker",
-          "link_overlap:1",
-          "rank_score_boost:7",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 7,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 1,
-        "decay_penalty": 0,
-        "recency_balance": 1,
-        "final_score": 36,
-        "score_breakdown": {
-          "base_score": 27,
-          "rank_score_boost": 7,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 1,
-          "decay_penalty": 0,
-          "recency_balance": 1,
           "final_score": 36
         }
       },

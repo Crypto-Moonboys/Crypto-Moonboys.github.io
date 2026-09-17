@@ -4615,11 +4615,11 @@
       ]
     },
     "hodlmoonboys_nft_collection": {
-      "alias_candidates": [
+      "alias_candidates": [],
+      "aliases": [
         "hodlmoonboys nft collection"
       ],
-      "aliases": [],
-      "canonical_title": "Hodl Moonboys NFT Collection Tracker | Crypto Moonboys Wiki",
+      "canonical_title": "Hodl Moonboys NFT Collection",
       "canonical_url": "/wiki/hodlmoonboys-nft-collection.html",
       "category": "misc",
       "source_urls": [
@@ -6884,5 +6884,5 @@
       ]
     }
   },
-  "updated_at": "2026-09-17T11:56:40Z"
+  "updated_at": "2026-09-17T14:36:13Z"
 }

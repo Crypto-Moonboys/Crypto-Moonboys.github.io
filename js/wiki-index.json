@@ -1,5 +1,98 @@
 [
   {
+    "title": "Hodl Moonboys NFT Collection",
+    "desc": "Hodl Moonboys NFT collection hub with rarity ranking, WAX NFT links, collection actions, schema summary, and source references.",
+    "url": "/wiki/hodlmoonboys-nft-collection.html",
+    "tags": [
+      "hodl",
+      "moonboys",
+      "nft",
+      "collection",
+      "tracker",
+      "crypto",
+      "wiki"
+    ],
+    "category": "misc",
+    "aliases": [
+      {
+        "title": "hodlmoonboys nft collection"
+      }
+    ],
+    "rank_score": 1686,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 7,
+      "mention_count": 0,
+      "category": "misc",
+      "category_priority": 3,
+      "has_description": true,
+      "article_word_count": 29976,
+      "keyword_bag_size": 20,
+      "heading_count": 13,
+      "list_count": 0,
+      "internal_link_count": 3,
+      "paragraph_count": 21,
+      "section_count": 22,
+      "lore_paragraph_count": 6,
+      "content_quality_score": 91,
+      "authority_score": 20
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 15,
+      "word_count_points": 1499,
+      "keyword_bag_points": 20,
+      "content_quality_points": 101,
+      "authority_points": 21,
+      "final_rank_score": 1686,
+      "authority_graph_points": 1
+    },
+    "search_index": {
+      "normalized_title": "hodl moonboys nft collection crypto moonboys wiki",
+      "tokens": [
+        "hodl",
+        "moonboys",
+        "nft",
+        "collection",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "hodl",
+        "moonboys",
+        "nft",
+        "collection",
+        "crypto",
+        "wiki",
+        "hub",
+        "with",
+        "rarity",
+        "ranking",
+        "wax",
+        "links",
+        "actions",
+        "schema",
+        "summary",
+        "and",
+        "source",
+        "references",
+        "tracker",
+        "hodlmoonboys"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 13,
+      "existing_outbound_count": 2,
+      "suggested_outbound_count": 11,
+      "authority": 1
+    },
+    "brand": null
+  },
+  {
     "title": "GKniftyHEADS NFT Collection",
     "desc": "GKniftyHEADS NFT collection hub with rarity ranking, WAX NFT links, collection actions, schema summary, and source references.",
     "url": "/wiki/gkniftyheads-nft-collection.html",
@@ -174,82 +267,6 @@
       "existing_outbound_count": 10,
       "suggested_outbound_count": 10,
       "authority": 651
-    },
-    "brand": null
-  },
-  {
-    "title": "Hodl Moonboys NFT Collection Tracker | Crypto Moonboys Wiki",
-    "desc": "Hodl Moonboys AtomicAssets NFT rarity, live supply, and weighted rank tracker.",
-    "url": "/wiki/hodlmoonboys-nft-collection.html",
-    "tags": [],
-    "category": "misc",
-    "aliases": [],
-    "rank_score": 760,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
-      "mention_count": 0,
-      "category": "misc",
-      "category_priority": 3,
-      "has_description": true,
-      "article_word_count": 12368,
-      "keyword_bag_size": 14,
-      "heading_count": 8,
-      "list_count": 0,
-      "internal_link_count": 2,
-      "paragraph_count": 7,
-      "section_count": 7,
-      "lore_paragraph_count": 0,
-      "content_quality_score": 66,
-      "authority_score": 16
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 15,
-      "word_count_points": 618,
-      "keyword_bag_points": 14,
-      "content_quality_points": 66,
-      "authority_points": 17,
-      "final_rank_score": 760,
-      "authority_graph_points": 1
-    },
-    "search_index": {
-      "normalized_title": "hodl moonboys nft collection tracker crypto moonboys wiki",
-      "tokens": [
-        "hodl",
-        "moonboys",
-        "nft",
-        "collection",
-        "tracker",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "hodl",
-        "moonboys",
-        "nft",
-        "collection",
-        "tracker",
-        "crypto",
-        "wiki",
-        "atomicassets",
-        "rarity",
-        "live",
-        "supply",
-        "and",
-        "weighted",
-        "rank"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 14,
-      "existing_outbound_count": 2,
-      "suggested_outbound_count": 12,
-      "authority": 1
     },
     "brand": null
   },
@@ -27116,9 +27133,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 31,
+      "outbound_count": 30,
       "existing_outbound_count": 5,
-      "suggested_outbound_count": 26,
+      "suggested_outbound_count": 25,
       "authority": 2.5
     },
     "brand": null

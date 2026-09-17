@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
@@ -19,6 +20,18 @@ const THUMB_MANIFEST = path.join(THUMB_DIR, 'manifest.json');
 const ATOMIC_BASE = 'https://wax.api.atomicassets.io/atomicassets/v1';
 const NOW = () => new Date().toISOString();
 const THUMB_WIDTH = 265;
+const SNAPSHOT_OUTPUT_FILES = [
+  `data/${COLLECTION}/collection.json`,
+  `data/${COLLECTION}/template-metadata-cache.json`,
+  `data/${COLLECTION}/live-template-supply.json`,
+  `data/${COLLECTION}/template-rarity.json`,
+  `data/${COLLECTION}/template-stats.json`,
+  `data/${COLLECTION}/trait-exposure.json`,
+  `data/${COLLECTION}/sync-status.json`,
+  `data/${COLLECTION}/template-rarity.csv`,
+  `data/${COLLECTION}/trait-exposure.csv`,
+  `wiki/${COLLECTION}-nft-collection.html`,
+];
 
 const SCORING_CONTRACT = {
   source_of_truth: 'AtomicAssets',
@@ -49,14 +62,24 @@ const SCORING_CONTRACT = {
 const RARITY_TRAIT_KEYS = ['rarity', 'Rarity', 'tier', 'Tier', 'type', 'Type', 'category', 'Category'];
 const VARIATION_TRAIT_KEYS = ['variation', 'Variation', 'variant', 'Variant', 'edition', 'Edition', 'background', 'Background', 'artist', 'Artist'];
 
+function writeFileAtomically(filePath, value) {
+  const directory = path.dirname(filePath);
+  const tempPath = path.join(directory, `${path.basename(filePath)}.${process.pid}.${Date.now()}.${Math.random().toString(16).slice(2)}.tmp`);
+  fs.mkdirSync(directory, { recursive: true });
+  try {
+    fs.writeFileSync(tempPath, value, 'utf8');
+    fs.renameSync(tempPath, filePath);
+  } finally {
+    if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+  }
+}
+
 function writeJson(filePath, value) {
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
+  writeFileAtomically(filePath, `${JSON.stringify(value, null, 2)}\n`);
 }
 
 function writeText(filePath, value) {
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, value, 'utf8');
+  writeFileAtomically(filePath, value);
 }
 
 function readJson(filePath, fallback) {
@@ -65,6 +88,18 @@ function readJson(filePath, fallback) {
   } catch {
     return fallback;
   }
+}
+
+function readCommittedText(root, relativePath) {
+  return execFileSync('git', ['show', `HEAD:${relativePath}`], {
+    cwd: root,
+    encoding: 'utf8',
+    maxBuffer: 16 * 1024 * 1024,
+  });
+}
+
+function readCommittedJson(root, relativePath) {
+  return JSON.parse(readCommittedText(root, relativePath));
 }
 
 function csvEscape(value) {
@@ -1042,17 +1077,20 @@ function renderPage(collection, data, stats, syncStatus) {
           </section>
         </section>
 <!-- HODLMOONBOYS_RARITY_RANKING:END -->
-        <!-- RELATED_WIKI_PATHS:BEGIN -->
-        <section class="wiki-section related-wiki-paths" data-related-wiki-paths="true">
-          <h2>Related Wiki Paths</h2>
-          <div class="wiki-rabbit-grid">
-            <a class="wiki-rabbit-card" href="/wiki/gkniftyheads-nft-collection.html"><span class="wiki-rabbit-card-title">GKniftyHEADS Tracker</span><span class="wiki-rabbit-card-desc">Existing weighted rarity tracker.</span></a>
-            <a class="wiki-rabbit-card" href="/wiki/noballgamess-nft-collection.html"><span class="wiki-rabbit-card-title">NoBallGames Tracker</span><span class="wiki-rabbit-card-desc">Second collection tracker pattern.</span></a>
-            <a class="wiki-rabbit-card" href="/categories/wax-nfts.html"><span class="wiki-rabbit-card-title">WAX NFTs</span><span class="wiki-rabbit-card-desc">WAX NFT category.</span></a>
-          </div>
-        </section>
-        <!-- RELATED_WIKI_PATHS:END -->
       </article>
+<!-- RELATED_WIKI_PATHS:BEGIN -->
+      <section class="wiki-section related-wiki-paths" data-related-wiki-paths="true">
+        <h2>Related Wiki Paths</h2>
+        <div class="wiki-rabbit-grid">
+          <a class="wiki-rabbit-card" href="/wiki/gkniftyheads-nft-collection.html"><span class="wiki-rabbit-card-title">GKniftyHEADS Tracker</span><span class="wiki-rabbit-card-desc">Existing weighted rarity tracker.</span></a>
+          <a class="wiki-rabbit-card" href="/wiki/noballgamess-nft-collection.html"><span class="wiki-rabbit-card-title">NoBallGames Tracker</span><span class="wiki-rabbit-card-desc">Second collection tracker pattern.</span></a>
+          <a class="wiki-rabbit-card" href="/categories/wax-nfts.html"><span class="wiki-rabbit-card-title">WAX NFTs</span><span class="wiki-rabbit-card-desc">WAX NFT category.</span></a>
+        </div>
+      </section>
+<!-- RELATED_WIKI_PATHS:END -->
+      <section class="wiki-section gk-community-intelligence-panel" aria-label="Collector notes">
+        <div class="wiki-comments" data-page-id="hodlmoonboys-nft-collection"></div>
+      </section>
 <!-- SAM:END:article -->
 </main>
 ${bottomScripts()}
@@ -1104,12 +1142,99 @@ function compactRankedRow(row) {
   });
 }
 
+function hydrateSnapshotRow(row) {
+  const rawTemplateId = row?.template_id;
+  const templateId = num(rawTemplateId, null);
+  return {
+    ...row,
+    template_id: templateId ?? rawTemplateId ?? null,
+    title: row?.title || `${COLLECTION_TITLE} Template ${templateId ?? rawTemplateId ?? 'unknown'}`,
+    issued_supply: num(row?.issued_supply),
+    max_supply: num(row?.max_supply),
+    live_supply: num(row?.live_supply),
+    pre_baseline_missing_or_burned: row?.pre_baseline_missing_or_burned ?? row?.missing_or_burned_count ?? null,
+    missing_or_burned_count: row?.missing_or_burned_count ?? row?.pre_baseline_missing_or_burned ?? null,
+    atomicassets_url: templateId == null ? null : atomicTemplateUrl(templateId),
+    atomichub_url: templateId == null ? atomichubUrl() : atomichubUrl(templateId),
+  };
+}
+
+function loadExistingSnapshot(root = ROOT) {
+  const committedOutputs = Object.fromEntries(
+    SNAPSHOT_OUTPUT_FILES.map((relativePath) => [relativePath, readCommittedText(root, relativePath)]),
+  );
+  const collection = readCommittedJson(root, `data/${COLLECTION}/collection.json`);
+  const templateRarity = readCommittedJson(root, `data/${COLLECTION}/template-rarity.json`);
+  const templateStats = readCommittedJson(root, `data/${COLLECTION}/template-stats.json`);
+  const rawSyncStatus = readCommittedJson(root, `data/${COLLECTION}/sync-status.json`);
+  if (!templateRarity || !templateStats || !rawSyncStatus) {
+    throw new Error('Committed Hodl Moonboys rarity snapshot is unavailable.');
+  }
+  const ranked = (templateRarity.ranked_templates || []).map(hydrateSnapshotRow);
+  const utility = (templateRarity.utility_open_mint_templates || []).map(hydrateSnapshotRow);
+  const unissued = (templateRarity.unissued_templates || []).map(hydrateSnapshotRow);
+  return {
+    committedOutputs,
+    collection,
+    templateRarity,
+    templateStats,
+    rawSyncStatus,
+    data: {
+      ranked,
+      utility,
+      unissued,
+      allRows: [...ranked, ...utility, ...unissued],
+      rarityExposure: templateRarity.rarity_traits || [],
+      variationExposure: templateRarity.variation_traits || [],
+    },
+    stats: {
+      collection: COLLECTION,
+      generated_at: templateStats.generated_at || templateRarity.generated_at || NOW(),
+      total_templates: num(templateStats.total_templates),
+      ranked_templates: num(templateStats.ranked_templates),
+      utility_open_mint_templates: num(templateStats.utility_open_mint_templates),
+      unissued_templates: num(templateStats.unissued_templates),
+      live_assets_counted: num(templateStats.live_assets_counted),
+      live_supply_counts_ok: num(templateStats.live_supply_counts_ok),
+    },
+    syncStatus: {
+      ...rawSyncStatus,
+      collection: rawSyncStatus.collection || COLLECTION,
+      feed_id: rawSyncStatus.feed_id || FEED_ID,
+      generated_at: rawSyncStatus.generated_at || templateRarity.generated_at || NOW(),
+      status: rawSyncStatus.status || 'degraded',
+      live_data_status: rawSyncStatus.live_data_status || templateRarity.live_data_status || 'issued-supply fallback',
+      notes: Array.isArray(rawSyncStatus.notes) ? rawSyncStatus.notes : [],
+    },
+  };
+}
+
+function errorMessage(error) {
+  return error instanceof Error ? error.message : String(error);
+}
+
 async function main() {
   const generatedAt = NOW();
-  const collection = (await fetchJson(`${ATOMIC_BASE}/collections/${COLLECTION}`)).data || {};
-  const templates = await fetchTemplates();
+  let collection;
+  let templates;
+  let supplies;
+  try {
+    collection = (await fetchJson(`${ATOMIC_BASE}/collections/${COLLECTION}`)).data || {};
+    templates = await fetchTemplates();
+    supplies = await mapLimit(templates, 3, fetchLiveSupply);
+  } catch (error) {
+    try {
+      const snapshot = loadExistingSnapshot();
+      for (const relativePath of SNAPSHOT_OUTPUT_FILES) {
+        writeText(path.join(ROOT, relativePath), snapshot.committedOutputs[relativePath]);
+      }
+      console.warn(`${COLLECTION}: network refresh failed, rebuilt page from committed snapshot (${errorMessage(error)})`);
+      return;
+    } catch (snapshotError) {
+      throw new Error(`${COLLECTION}: live refresh failed (${errorMessage(error)}) and committed snapshot rebuild failed (${errorMessage(snapshotError)})`);
+    }
+  }
   await ensureLocalThumbs(templates);
-  const supplies = await mapLimit(templates, 3, fetchLiveSupply);
   const data = buildRanking(templates, supplies);
   const stats = {
     collection: COLLECTION,
