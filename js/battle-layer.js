@@ -364,7 +364,36 @@
   }
 
   function buildTemplateMediaShell() {
-    return buildBattleMediaShell('Page Art');
+    return buildBattleMediaShell('NFT Art');
+  }
+
+  function buildTemplateAboutHTML() {
+    var article = document.querySelector('article.wiki-content');
+    var title = article && article.querySelector('h1')
+      ? article.querySelector('h1').textContent.trim()
+      : 'NFT Profile';
+    var lede = article && article.querySelector('.lede')
+      ? article.querySelector('.lede').textContent.trim()
+      : 'Collector-facing lore, NFT record, and canon context for this Crypto Moonboys avatar.';
+    var details = [];
+    if (article && article.dataset) {
+      if (article.dataset.collection) details.push('Collection: ' + article.dataset.collection);
+      if (article.dataset.templateId) details.push('Template ID: ' + article.dataset.templateId);
+    }
+    return '<article class="battle-shell nft-template-about-card" aria-labelledby="nft-template-about-title">' +
+      '<div class="battle-shell-inner">' +
+        '<p class="nft-template-about-kicker">About This NFT</p>' +
+        '<h3 id="nft-template-about-title" class="nft-template-about-title">' + esc(title) + '</h3>' +
+        '<p class="nft-template-about-copy">' + esc(lede) + '</p>' +
+        (details.length ? '<div class="profile-chip-row">' + details.map(function (item) {
+          return '<span class="profile-chip">' + esc(item) + '</span>';
+        }).join('') + '</div>' : '') +
+      '</div>' +
+    '</article>';
+  }
+
+  function buildTemplateEngagementHTML(pageId, engagement) {
+    return buildTemplateMediaShell() + buildTemplateAboutHTML() + buildMissionHTML(pageId, engagement);
   }
 
   function buildBattleMediaHTML(pageId) {
@@ -499,7 +528,7 @@
     deck.innerHTML = isCollection
       ? buildCollectionEngagementHTML(pageId, engagement)
       : isNftTemplate
-        ? buildTemplateMediaShell() + buildMissionHTML(pageId, engagement)
+        ? buildTemplateEngagementHTML(pageId, engagement)
       : buildBattleMeterHTML(engagement, pageId) + buildMissionHTML(pageId);
     module.appendChild(deck);
     if (isCollection || isNftTemplate) injectTemplateMedia(deck);
