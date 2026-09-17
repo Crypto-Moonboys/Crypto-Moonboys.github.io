@@ -1357,3 +1357,65 @@ body.page-gkniftyheads-collection .wiki-engagement-module,
     grid-template-columns: 1fr;
   }
 }
+
+
+/* NFT template command deck: image left, about middle, missions right */
+.battle-engagement-deck--nft-template {
+  grid-template-columns: minmax(250px, 0.9fr) minmax(320px, 1.35fr) minmax(300px, 0.95fr);
+  align-items: stretch;
+}
+
+.battle-engagement-deck--nft-template .battle-shell--media .battle-shell-inner,
+.battle-engagement-deck--nft-template .nft-template-about-card .battle-shell-inner,
+.battle-engagement-deck--nft-template .battle-shell--missions .battle-shell-inner {
+  height: 100%;
+}
+
+.battle-engagement-deck--nft-template .battle-page-media {
+  margin-top: 14px;
+}
+
+.battle-engagement-deck--nft-template .battle-page-media img,
+.battle-engagement-deck--nft-template .nft-template-media-card img {
+  width: 100%;
+  max-height: min(58vh, 560px);
+  object-fit: contain;
+  border-radius: 14px;
+  border: 1px solid rgba(86, 220, 255, 0.36);
+  background: rgba(5, 10, 18, 0.72);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.32);
+}
+
+.nft-template-about-kicker {
+  margin: 0 0 28px;
+  color: var(--color-text-muted, #91a8b9);
+  font-family: var(--font-display, sans-serif);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.nft-template-about-title {
+  margin: 0 0 22px;
+  color: var(--color-text-link, #56dcff);
+  font-family: var(--font-display, sans-serif);
+  font-size: clamp(1.1rem, 1.8vw, 1.75rem);
+  line-height: 1.25;
+  text-align: center;
+}
+
+.nft-template-about-copy {
+  max-width: 58ch;
+  margin: 0 auto 22px;
+  color: var(--color-text, #e7f6ff);
+  font-size: clamp(1rem, 1.2vw, 1.18rem);
+  line-height: 1.72;
+  text-align: center;
+}
+
+@media (max-width: 1020px) {
+  .battle-engagement-deck--nft-template {
+    grid-template-columns: 1fr;
+  }
+}
