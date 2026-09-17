@@ -49,14 +49,19 @@ const SCORING_CONTRACT = {
 const RARITY_TRAIT_KEYS = ['rarity', 'Rarity', 'tier', 'Tier', 'type', 'Type', 'category', 'Category'];
 const VARIATION_TRAIT_KEYS = ['variation', 'Variation', 'variant', 'Variant', 'edition', 'Edition', 'background', 'Background', 'artist', 'Artist'];
 
-function writeJson(filePath, value) {
+function writeFileAtomically(filePath, value) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
+  const tempPath = `${filePath}.tmp`;
+  fs.writeFileSync(tempPath, value, 'utf8');
+  fs.renameSync(tempPath, filePath);
+}
+
+function writeJson(filePath, value) {
+  writeFileAtomically(filePath, `${JSON.stringify(value, null, 2)}\n`);
 }
 
 function writeText(filePath, value) {
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, value, 'utf8');
+  writeFileAtomically(filePath, value);
 }
 
 function readJson(filePath, fallback) {
@@ -1042,17 +1047,41 @@ function renderPage(collection, data, stats, syncStatus) {
           </section>
         </section>
 <!-- HODLMOONBOYS_RARITY_RANKING:END -->
-        <!-- RELATED_WIKI_PATHS:BEGIN -->
-        <section class="wiki-section related-wiki-paths" data-related-wiki-paths="true">
-          <h2>Related Wiki Paths</h2>
-          <div class="wiki-rabbit-grid">
-            <a class="wiki-rabbit-card" href="/wiki/gkniftyheads-nft-collection.html"><span class="wiki-rabbit-card-title">GKniftyHEADS Tracker</span><span class="wiki-rabbit-card-desc">Existing weighted rarity tracker.</span></a>
-            <a class="wiki-rabbit-card" href="/wiki/noballgamess-nft-collection.html"><span class="wiki-rabbit-card-title">NoBallGames Tracker</span><span class="wiki-rabbit-card-desc">Second collection tracker pattern.</span></a>
-            <a class="wiki-rabbit-card" href="/categories/wax-nfts.html"><span class="wiki-rabbit-card-title">WAX NFTs</span><span class="wiki-rabbit-card-desc">WAX NFT category.</span></a>
-          </div>
-        </section>
-        <!-- RELATED_WIKI_PATHS:END -->
       </article>
+<!-- RELATED_WIKI_PATHS:BEGIN -->
+      <section class="wiki-section related-wiki-paths" data-related-wiki-paths="true" aria-labelledby="related-wiki-paths-title">
+        <div class="gk-section-heading">
+          <p class="gk-command-kicker">Canonical connections</p>
+          <h2 id="related-wiki-paths-title">Wiki Relationship Map</h2>
+        </div>
+        <p class="lore-paragraph">Hodl Moonboys sits inside the Crypto Moonboys universe first, then expands into WAX NFT collector paths, adjacent collection tracking, and connected canon.</p>
+        <div class="gk-related-card-grid" role="list">
+          <a class="gk-related-card gk-related-card--primary" href="/wiki/crypto-moonboys.html" role="listitem">
+            <span>Origin</span>
+            <strong>Crypto Moonboys Origin</strong>
+            <em>The main universe hub and parent relationship for this collection.</em>
+          </a>
+          <a class="gk-related-card" href="/wiki/gkniftyheads-nft-collection.html" role="listitem">
+            <span>Tracker Pattern</span>
+            <strong>GKniftyHEADS NFT Collection</strong>
+            <em>The existing collection page shell this tracker now mirrors for collector flow and community hooks.</em>
+          </a>
+          <a class="gk-related-card" href="/categories/wax-nfts.html" role="listitem">
+            <span>Ecosystem</span>
+            <strong>WAX NFTs</strong>
+            <em>The broader WAX NFT index for adjacent collection discovery.</em>
+          </a>
+          <a class="gk-related-card" href="/wiki/hodl-wars.html" role="listitem">
+            <span>Canon</span>
+            <strong>Connected Lore</strong>
+            <em>HODL WARS and the surrounding story paths linked to the collection timeline.</em>
+          </a>
+        </div>
+      </section>
+<!-- RELATED_WIKI_PATHS:END -->
+      <section class="wiki-section gk-community-intelligence-panel" aria-label="Collector notes">
+        <div class="wiki-comments" data-page-id="hodlmoonboys-nft-collection"></div>
+      </section>
 <!-- SAM:END:article -->
 </main>
 ${bottomScripts()}

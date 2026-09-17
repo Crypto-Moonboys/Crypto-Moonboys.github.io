@@ -14,6 +14,7 @@ const apiClient = read('js/wax-api-client.js');
 const renderer = read('js/wax-collection-renderer.js');
 const imageNormalizer = read('js/wax-image-normalizer.js');
 const gkniftyHtml = read('wiki/gkniftyheads-nft-collection.html');
+const hodlHtml = read('wiki/hodlmoonboys-nft-collection.html');
 const noballHtml = read('wiki/noballgamess-nft-collection.html');
 const feedRegistry = read('data/feed-registry.json');
 const worker = read('workers/moonboys-api/worker.js');
@@ -43,7 +44,7 @@ assert.match(apiClient, /collection === 'noballgamess'[\s\S]*template-stats\.jso
 assert.match(apiClient, /holder-leaderboard\.json/, 'NoBallGames fallback should include holder leaderboard');
 assert.match(apiClient, /asset-rarity-leaderboard\.json/, 'NoBallGames fallback should include asset rarity leaderboard');
 
-for (const html of [gkniftyHtml, noballHtml]) {
+for (const html of [gkniftyHtml, hodlHtml, noballHtml]) {
   const apiConfigIndex = html.indexOf('src="/js/api-config.js"');
   const waxClientIndex = html.indexOf('src="/js/wax-api-client.js"');
   const waxRendererIndex = html.indexOf('src="/js/wax-collection-renderer.js"');
@@ -52,6 +53,10 @@ for (const html of [gkniftyHtml, noballHtml]) {
   assert.ok(waxRendererIndex !== -1, 'collection page should load WAX collection renderer');
   assert.ok(apiConfigIndex < waxClientIndex && waxClientIndex < waxRendererIndex, 'collection page should load WAX scripts after api-config in dependency order');
 }
+
+assert.match(hodlHtml, /<div class="wiki-comments" data-page-id="hodlmoonboys-nft-collection"><\/div>/, 'Hodl Moonboys collection page should expose the live comments mount');
+assert.match(hodlHtml, /src="\/js\/engagement\.js"/, 'Hodl Moonboys collection page should load engagement.js');
+assert.match(hodlHtml, /src="\/js\/comments\.js"/, 'Hodl Moonboys collection page should load comments.js');
 
 const registry = JSON.parse(feedRegistry);
 for (const feedId of ['gkniftyheads_rarity', 'noballgamess_rarity']) {
