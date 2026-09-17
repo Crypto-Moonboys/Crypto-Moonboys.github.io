@@ -1169,8 +1169,9 @@ function loadExistingSnapshot(root = ROOT) {
       live_supply_counts_ok: num(templateStats.live_supply_counts_ok),
     },
     syncStatus: {
-      collection: COLLECTION,
-      feed_id: FEED_ID,
+      ...rawSyncStatus,
+      collection: rawSyncStatus.collection || COLLECTION,
+      feed_id: rawSyncStatus.feed_id || FEED_ID,
       generated_at: rawSyncStatus.generated_at || templateRarity.generated_at || NOW(),
       status: rawSyncStatus.status || 'degraded',
       live_data_status: rawSyncStatus.live_data_status || templateRarity.live_data_status || 'issued-supply fallback',
