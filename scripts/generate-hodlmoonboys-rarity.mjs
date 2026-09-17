@@ -1118,18 +1118,19 @@ function compactRankedRow(row) {
 }
 
 function hydrateSnapshotRow(row) {
-  const templateId = num(row?.template_id);
+  const rawTemplateId = row?.template_id;
+  const templateId = num(rawTemplateId, null);
   return {
     ...row,
-    template_id: templateId,
-    title: row?.title || `${COLLECTION_TITLE} Template ${templateId}`,
+    template_id: templateId ?? rawTemplateId ?? null,
+    title: row?.title || `${COLLECTION_TITLE} Template ${templateId ?? rawTemplateId ?? 'unknown'}`,
     issued_supply: num(row?.issued_supply),
     max_supply: num(row?.max_supply),
     live_supply: num(row?.live_supply),
     pre_baseline_missing_or_burned: row?.pre_baseline_missing_or_burned ?? row?.missing_or_burned_count ?? null,
     missing_or_burned_count: row?.missing_or_burned_count ?? row?.pre_baseline_missing_or_burned ?? null,
-    atomicassets_url: atomicTemplateUrl(templateId),
-    atomichub_url: atomichubUrl(templateId),
+    atomicassets_url: templateId == null ? null : atomicTemplateUrl(templateId),
+    atomichub_url: templateId == null ? atomichubUrl() : atomichubUrl(templateId),
   };
 }
 
