@@ -45198,6 +45198,42 @@
         }
       },
       {
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 69,
+        "base_score": 58,
+        "reasons": [
+          "same_category:nfts-digital-art",
+          "link_overlap:6",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 71,
+        "score_breakdown": {
+          "base_score": 58,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 71
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads-waxp-banshee-783409.html",
         "score": 68,
         "base_score": 64,
@@ -45307,44 +45343,6 @@
           "decay_penalty": 0,
           "recency_balance": 2,
           "final_score": 70
-        }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads-alessandro-anonymity-advocate-amato-783445.html",
-        "score": 66,
-        "base_score": 55,
-        "reasons": [
-          "same_category:nfts-digital-art",
-          "link_overlap:5",
-          "rank_score_boost:2",
-          "authority_score_boost:3",
-          "graph_centrality_boost:5",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 3,
-        "graph_centrality_boost": 5,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 68,
-        "score_breakdown": {
-          "base_score": 55,
-          "rank_score_boost": 2,
-          "authority_score_boost": 3,
-          "graph_centrality_boost": 5,
-          "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 68
         }
       }
     ]
@@ -48233,6 +48231,42 @@
         }
       },
       {
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 69,
+        "base_score": 58,
+        "reasons": [
+          "same_category:nfts-digital-art",
+          "link_overlap:6",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 71,
+        "score_breakdown": {
+          "base_score": 58,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 71
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads-virtual-valkyrie-783403.html",
         "score": 68,
         "base_score": 64,
@@ -48341,43 +48375,6 @@
           "decay_penalty": 0,
           "recency_balance": 3,
           "final_score": 71
-        }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads-token-temptress-783401.html",
-        "score": 65,
-        "base_score": 61,
-        "reasons": [
-          "same_category:nfts-digital-art",
-          "link_overlap:7",
-          "rank_score_boost:1",
-          "graph_centrality_boost:2",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 1,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 68,
-        "score_breakdown": {
-          "base_score": 61,
-          "rank_score_boost": 1,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 68
         }
       }
     ]
@@ -49029,6 +49026,42 @@
         }
       },
       {
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 66,
+        "base_score": 55,
+        "reasons": [
+          "same_category:nfts-digital-art",
+          "link_overlap:5",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 68,
+        "score_breakdown": {
+          "base_score": 55,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 68
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads-decentralized-duchess-783399.html",
         "score": 65,
         "base_score": 61,
@@ -49067,43 +49100,6 @@
       },
       {
         "target_url": "/wiki/gkniftyheads-virtual-valkyrie-783403.html",
-        "score": 65,
-        "base_score": 61,
-        "reasons": [
-          "same_category:nfts-digital-art",
-          "link_overlap:7",
-          "rank_score_boost:1",
-          "graph_centrality_boost:2",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 1,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 68,
-        "score_breakdown": {
-          "base_score": 61,
-          "rank_score_boost": 1,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 68
-        }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads-waxp-banshee-783409.html",
         "score": 65,
         "base_score": 61,
         "reasons": [
@@ -50624,40 +50620,38 @@
         }
       },
       {
-        "target_url": "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
-        "score": 65,
-        "base_score": 60,
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 66,
+        "base_score": 55,
         "reasons": [
           "same_category:nfts-digital-art",
-          "shared_tag:bitcoin",
-          "link_overlap:4",
-          "rank_score_boost:2",
-          "graph_centrality_boost:2",
-          "content_depth_boost:1"
+          "link_overlap:5",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
         ],
-        "rank_score_boost": 2,
+        "rank_score_boost": 4,
         "authority_score_boost": 0,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 1,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
-        "freshness_boost": 3,
+        "freshness_boost": 2,
         "decay_penalty": 0,
-        "recency_balance": 3,
+        "recency_balance": 2,
         "final_score": 68,
         "score_breakdown": {
-          "base_score": 60,
-          "rank_score_boost": 2,
+          "base_score": 55,
+          "rank_score_boost": 4,
           "authority_score_boost": 0,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 1,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
-          "freshness_boost": 3,
+          "freshness_boost": 2,
           "decay_penalty": 0,
-          "recency_balance": 3,
+          "recency_balance": 2,
           "final_score": 68
         }
       }
@@ -60238,6 +60232,43 @@
         }
       },
       {
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 71,
+        "base_score": 60,
+        "reasons": [
+          "same_category:nfts-digital-art",
+          "shared_tag:bitman",
+          "link_overlap:4",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 74,
+        "score_breakdown": {
+          "base_score": 60,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 74
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads-sarah-pfly-784349.html",
         "score": 70,
         "base_score": 64,
@@ -60683,43 +60714,6 @@
           "freshness_boost": 2,
           "decay_penalty": 0,
           "recency_balance": 2,
-          "final_score": 65
-        }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
-        "score": 62,
-        "base_score": 60,
-        "reasons": [
-          "same_category:nfts-digital-art",
-          "shared_tag:bitman",
-          "link_overlap:4",
-          "rank_score_boost:1",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 1,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 65,
-        "score_breakdown": {
-          "base_score": 60,
-          "rank_score_boost": 1,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
           "final_score": 65
         }
       }
@@ -66317,6 +66311,42 @@
         }
       },
       {
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 69,
+        "base_score": 58,
+        "reasons": [
+          "same_category:nfts-digital-art",
+          "link_overlap:6",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 71,
+        "score_breakdown": {
+          "base_score": 58,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 71
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads-daring-doodle-783300.html",
         "score": 68,
         "base_score": 64,
@@ -66774,44 +66804,6 @@
           "freshness_boost": 3,
           "decay_penalty": 0,
           "recency_balance": 3,
-          "final_score": 69
-        }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads-matteo-cryptocurrency-connoisseur-de-angelis-783457.html",
-        "score": 67,
-        "base_score": 55,
-        "reasons": [
-          "same_category:nfts-digital-art",
-          "link_overlap:5",
-          "rank_score_boost:2",
-          "authority_score_boost:4",
-          "graph_centrality_boost:5",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 4,
-        "graph_centrality_boost": 5,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 69,
-        "score_breakdown": {
-          "base_score": 55,
-          "rank_score_boost": 2,
-          "authority_score_boost": 4,
-          "graph_centrality_boost": 5,
-          "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
           "final_score": 69
         }
       }
@@ -67085,6 +67077,42 @@
         }
       },
       {
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 69,
+        "base_score": 58,
+        "reasons": [
+          "same_category:nfts-digital-art",
+          "link_overlap:6",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 71,
+        "score_breakdown": {
+          "base_score": 58,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 71
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads-daring-doodle-783300.html",
         "score": 68,
         "base_score": 64,
@@ -67544,44 +67572,6 @@
           "recency_balance": 3,
           "final_score": 69
         }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads-matteo-cryptocurrency-connoisseur-de-angelis-783457.html",
-        "score": 67,
-        "base_score": 55,
-        "reasons": [
-          "same_category:nfts-digital-art",
-          "link_overlap:5",
-          "rank_score_boost:2",
-          "authority_score_boost:4",
-          "graph_centrality_boost:5",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 4,
-        "graph_centrality_boost": 5,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 69,
-        "score_breakdown": {
-          "base_score": 55,
-          "rank_score_boost": 2,
-          "authority_score_boost": 4,
-          "graph_centrality_boost": 5,
-          "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 69
-        }
       }
     ]
   },
@@ -67806,6 +67796,42 @@
           "authority_score_boost": 3,
           "graph_centrality_boost": 5,
           "content_depth_boost": 1,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 71
+        }
+      },
+      {
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 69,
+        "base_score": 58,
+        "reasons": [
+          "same_category:nfts-digital-art",
+          "link_overlap:6",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 71,
+        "score_breakdown": {
+          "base_score": 58,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -68299,43 +68325,6 @@
           "decay_penalty": 0,
           "recency_balance": 2,
           "final_score": 66
-        }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads-giulia-satoshi-sorceress-espositooo-783463.html",
-        "score": 63,
-        "base_score": 58,
-        "reasons": [
-          "same_category:nfts-digital-art",
-          "link_overlap:6",
-          "rank_score_boost:2",
-          "graph_centrality_boost:2",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 65,
-        "score_breakdown": {
-          "base_score": 58,
-          "rank_score_boost": 2,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 65
         }
       }
     ]
@@ -69798,39 +69787,38 @@
         }
       },
       {
-        "target_url": "/wiki/gkniftyheads-token-tycooness-783405.html",
-        "score": 68,
-        "base_score": 64,
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 69,
+        "base_score": 58,
         "reasons": [
           "same_category:nfts-digital-art",
-          "link_overlap:8",
-          "rank_score_boost:1",
-          "graph_centrality_boost:2",
-          "content_depth_boost:1"
+          "link_overlap:6",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
         ],
-        "rank_score_boost": 1,
+        "rank_score_boost": 4,
         "authority_score_boost": 0,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 1,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
-        "freshness_boost": 3,
+        "freshness_boost": 2,
         "decay_penalty": 0,
-        "recency_balance": 3,
+        "recency_balance": 2,
         "final_score": 71,
         "score_breakdown": {
-          "base_score": 64,
-          "rank_score_boost": 1,
+          "base_score": 58,
+          "rank_score_boost": 4,
           "authority_score_boost": 0,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 1,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
-          "freshness_boost": 3,
+          "freshness_boost": 2,
           "decay_penalty": 0,
-          "recency_balance": 3,
+          "recency_balance": 2,
           "final_score": 71
         }
       }
@@ -70545,39 +70533,38 @@
         }
       },
       {
-        "target_url": "/wiki/gkniftyheads-token-tycooness-783405.html",
-        "score": 68,
-        "base_score": 64,
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 69,
+        "base_score": 58,
         "reasons": [
           "same_category:nfts-digital-art",
-          "link_overlap:8",
-          "rank_score_boost:1",
-          "graph_centrality_boost:2",
-          "content_depth_boost:1"
+          "link_overlap:6",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
         ],
-        "rank_score_boost": 1,
+        "rank_score_boost": 4,
         "authority_score_boost": 0,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 1,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
-        "freshness_boost": 3,
+        "freshness_boost": 2,
         "decay_penalty": 0,
-        "recency_balance": 3,
+        "recency_balance": 2,
         "final_score": 71,
         "score_breakdown": {
-          "base_score": 64,
-          "rank_score_boost": 1,
+          "base_score": 58,
+          "rank_score_boost": 4,
           "authority_score_boost": 0,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 1,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
-          "freshness_boost": 3,
+          "freshness_boost": 2,
           "decay_penalty": 0,
-          "recency_balance": 3,
+          "recency_balance": 2,
           "final_score": 71
         }
       }
@@ -71294,39 +71281,38 @@
         }
       },
       {
-        "target_url": "/wiki/gkniftyheads-token-tycooness-783405.html",
-        "score": 68,
-        "base_score": 64,
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 69,
+        "base_score": 58,
         "reasons": [
           "same_category:nfts-digital-art",
-          "link_overlap:8",
-          "rank_score_boost:1",
-          "graph_centrality_boost:2",
-          "content_depth_boost:1"
+          "link_overlap:6",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
         ],
-        "rank_score_boost": 1,
+        "rank_score_boost": 4,
         "authority_score_boost": 0,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 1,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
-        "freshness_boost": 3,
+        "freshness_boost": 2,
         "decay_penalty": 0,
-        "recency_balance": 3,
+        "recency_balance": 2,
         "final_score": 71,
         "score_breakdown": {
-          "base_score": 64,
-          "rank_score_boost": 1,
+          "base_score": 58,
+          "rank_score_boost": 4,
           "authority_score_boost": 0,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 1,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
-          "freshness_boost": 3,
+          "freshness_boost": 2,
           "decay_penalty": 0,
-          "recency_balance": 3,
+          "recency_balance": 2,
           "final_score": 71
         }
       }
@@ -72538,6 +72524,42 @@
         }
       },
       {
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 66,
+        "base_score": 55,
+        "reasons": [
+          "same_category:nfts-digital-art",
+          "link_overlap:5",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 68,
+        "score_breakdown": {
+          "base_score": 55,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 68
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads-matteo-cryptocurrency-connoisseur-de-angelis-783457.html",
         "score": 64,
         "base_score": 52,
@@ -72767,44 +72789,6 @@
       },
       {
         "target_url": "/wiki/gkniftyheads-mr-cheo-boom-head-776121.html",
-        "score": 62,
-        "base_score": 52,
-        "reasons": [
-          "same_category:nfts-digital-art",
-          "link_overlap:4",
-          "rank_score_boost:2",
-          "authority_score_boost:2",
-          "graph_centrality_boost:5",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 2,
-        "graph_centrality_boost": 5,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 64,
-        "score_breakdown": {
-          "base_score": 52,
-          "rank_score_boost": 2,
-          "authority_score_boost": 2,
-          "graph_centrality_boost": 5,
-          "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 64
-        }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads-mr-cheo-lap-head-776114.html",
         "score": 62,
         "base_score": 52,
         "reasons": [
@@ -73183,6 +73167,42 @@
         }
       },
       {
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 69,
+        "base_score": 58,
+        "reasons": [
+          "same_category:nfts-digital-art",
+          "link_overlap:6",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 71,
+        "score_breakdown": {
+          "base_score": 58,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 71
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html",
         "score": 67,
         "base_score": 55,
@@ -73526,44 +73546,6 @@
       },
       {
         "target_url": "/wiki/gkniftyheads-mr-cheo-boom-head-776121.html",
-        "score": 62,
-        "base_score": 52,
-        "reasons": [
-          "same_category:nfts-digital-art",
-          "link_overlap:4",
-          "rank_score_boost:2",
-          "authority_score_boost:2",
-          "graph_centrality_boost:5",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 2,
-        "graph_centrality_boost": 5,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 64,
-        "score_breakdown": {
-          "base_score": 52,
-          "rank_score_boost": 2,
-          "authority_score_boost": 2,
-          "graph_centrality_boost": 5,
-          "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 64
-        }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads-mr-cheo-lap-head-776114.html",
         "score": 62,
         "base_score": 52,
         "reasons": [
@@ -73941,6 +73923,42 @@
         }
       },
       {
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 69,
+        "base_score": 58,
+        "reasons": [
+          "same_category:nfts-digital-art",
+          "link_overlap:6",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 71,
+        "score_breakdown": {
+          "base_score": 58,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 71
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html",
         "score": 67,
         "base_score": 55,
@@ -74284,44 +74302,6 @@
       },
       {
         "target_url": "/wiki/gkniftyheads-mr-cheo-boom-head-776121.html",
-        "score": 62,
-        "base_score": 52,
-        "reasons": [
-          "same_category:nfts-digital-art",
-          "link_overlap:4",
-          "rank_score_boost:2",
-          "authority_score_boost:2",
-          "graph_centrality_boost:5",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 2,
-        "graph_centrality_boost": 5,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 64,
-        "score_breakdown": {
-          "base_score": 52,
-          "rank_score_boost": 2,
-          "authority_score_boost": 2,
-          "graph_centrality_boost": 5,
-          "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 64
-        }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads-mr-cheo-lap-head-776114.html",
         "score": 62,
         "base_score": 52,
         "reasons": [
@@ -74926,6 +74906,42 @@
         }
       },
       {
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 69,
+        "base_score": 58,
+        "reasons": [
+          "same_category:nfts-digital-art",
+          "link_overlap:6",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 71,
+        "score_breakdown": {
+          "base_score": 58,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 71
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads-chroma-kid-783237.html",
         "score": 68,
         "base_score": 64,
@@ -75038,43 +75054,6 @@
       },
       {
         "target_url": "/wiki/gkniftyheads-giovanni-cryptocartel-ricci-783451.html",
-        "score": 68,
-        "base_score": 64,
-        "reasons": [
-          "same_category:nfts-digital-art",
-          "link_overlap:8",
-          "rank_score_boost:1",
-          "graph_centrality_boost:2",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 1,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 71,
-        "score_breakdown": {
-          "base_score": 64,
-          "rank_score_boost": 1,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 71
-        }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads-inked-fury-783258.html",
         "score": 68,
         "base_score": 64,
         "reasons": [
@@ -75827,21 +75806,19 @@
         }
       },
       {
-        "target_url": "/wiki/gkniftyheads-neon-nova-knightmare-784413.html",
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
         "score": 63,
-        "base_score": 58,
+        "base_score": 52,
         "reasons": [
           "same_category:nfts-digital-art",
-          "link_overlap:6",
-          "rank_score_boost:1",
-          "authority_score_boost:1",
-          "graph_centrality_boost:2",
-          "content_depth_boost:1"
+          "link_overlap:4",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
         ],
-        "rank_score_boost": 1,
-        "authority_score_boost": 1,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 1,
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
@@ -75850,11 +75827,11 @@
         "recency_balance": 2,
         "final_score": 65,
         "score_breakdown": {
-          "base_score": 58,
-          "rank_score_boost": 1,
-          "authority_score_boost": 1,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 1,
+          "base_score": 52,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -77341,39 +77318,38 @@
         }
       },
       {
-        "target_url": "/wiki/gkniftyheads-token-tycooness-783405.html",
-        "score": 68,
-        "base_score": 64,
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 69,
+        "base_score": 58,
         "reasons": [
           "same_category:nfts-digital-art",
-          "link_overlap:8",
-          "rank_score_boost:1",
-          "graph_centrality_boost:2",
-          "content_depth_boost:1"
+          "link_overlap:6",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
         ],
-        "rank_score_boost": 1,
+        "rank_score_boost": 4,
         "authority_score_boost": 0,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 1,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
-        "freshness_boost": 3,
+        "freshness_boost": 2,
         "decay_penalty": 0,
-        "recency_balance": 3,
+        "recency_balance": 2,
         "final_score": 71,
         "score_breakdown": {
-          "base_score": 64,
-          "rank_score_boost": 1,
+          "base_score": 58,
+          "rank_score_boost": 4,
           "authority_score_boost": 0,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 1,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
-          "freshness_boost": 3,
+          "freshness_boost": 2,
           "decay_penalty": 0,
-          "recency_balance": 3,
+          "recency_balance": 2,
           "final_score": 71
         }
       }
@@ -78091,39 +78067,38 @@
         }
       },
       {
-        "target_url": "/wiki/gkniftyheads-virtual-valkyrie-783403.html",
-        "score": 68,
-        "base_score": 64,
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 69,
+        "base_score": 58,
         "reasons": [
           "same_category:nfts-digital-art",
-          "link_overlap:8",
-          "rank_score_boost:1",
-          "graph_centrality_boost:2",
-          "content_depth_boost:1"
+          "link_overlap:6",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
         ],
-        "rank_score_boost": 1,
+        "rank_score_boost": 4,
         "authority_score_boost": 0,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 1,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
-        "freshness_boost": 3,
+        "freshness_boost": 2,
         "decay_penalty": 0,
-        "recency_balance": 3,
+        "recency_balance": 2,
         "final_score": 71,
         "score_breakdown": {
-          "base_score": 64,
-          "rank_score_boost": 1,
+          "base_score": 58,
+          "rank_score_boost": 4,
           "authority_score_boost": 0,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 1,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
-          "freshness_boost": 3,
+          "freshness_boost": 2,
           "decay_penalty": 0,
-          "recency_balance": 3,
+          "recency_balance": 2,
           "final_score": 71
         }
       }
@@ -78841,39 +78816,38 @@
         }
       },
       {
-        "target_url": "/wiki/gkniftyheads-virtual-valkyrie-783403.html",
-        "score": 68,
-        "base_score": 64,
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 69,
+        "base_score": 58,
         "reasons": [
           "same_category:nfts-digital-art",
-          "link_overlap:8",
-          "rank_score_boost:1",
-          "graph_centrality_boost:2",
-          "content_depth_boost:1"
+          "link_overlap:6",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
         ],
-        "rank_score_boost": 1,
+        "rank_score_boost": 4,
         "authority_score_boost": 0,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 1,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
-        "freshness_boost": 3,
+        "freshness_boost": 2,
         "decay_penalty": 0,
-        "recency_balance": 3,
+        "recency_balance": 2,
         "final_score": 71,
         "score_breakdown": {
-          "base_score": 64,
-          "rank_score_boost": 1,
+          "base_score": 58,
+          "rank_score_boost": 4,
           "authority_score_boost": 0,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 1,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
-          "freshness_boost": 3,
+          "freshness_boost": 2,
           "decay_penalty": 0,
-          "recency_balance": 3,
+          "recency_balance": 2,
           "final_score": 71
         }
       }
@@ -80346,39 +80320,38 @@
         }
       },
       {
-        "target_url": "/wiki/gkniftyheads-token-tycooness-783405.html",
-        "score": 68,
-        "base_score": 64,
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 69,
+        "base_score": 58,
         "reasons": [
           "same_category:nfts-digital-art",
-          "link_overlap:8",
-          "rank_score_boost:1",
-          "graph_centrality_boost:2",
-          "content_depth_boost:1"
+          "link_overlap:6",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
         ],
-        "rank_score_boost": 1,
+        "rank_score_boost": 4,
         "authority_score_boost": 0,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 1,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
-        "freshness_boost": 3,
+        "freshness_boost": 2,
         "decay_penalty": 0,
-        "recency_balance": 3,
+        "recency_balance": 2,
         "final_score": 71,
         "score_breakdown": {
-          "base_score": 64,
-          "rank_score_boost": 1,
+          "base_score": 58,
+          "rank_score_boost": 4,
           "authority_score_boost": 0,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 1,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
-          "freshness_boost": 3,
+          "freshness_boost": 2,
           "decay_penalty": 0,
-          "recency_balance": 3,
+          "recency_balance": 2,
           "final_score": 71
         }
       }
@@ -81060,44 +81033,43 @@
         }
       },
       {
-        "target_url": "/wiki/gkniftyheads-token-tycooness-783405.html",
-        "score": 68,
-        "base_score": 64,
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 69,
+        "base_score": 58,
         "reasons": [
           "same_category:nfts-digital-art",
-          "link_overlap:8",
-          "rank_score_boost:1",
-          "graph_centrality_boost:2",
-          "content_depth_boost:1"
+          "link_overlap:6",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
         ],
-        "rank_score_boost": 1,
+        "rank_score_boost": 4,
         "authority_score_boost": 0,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 1,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
-        "freshness_boost": 3,
+        "freshness_boost": 2,
         "decay_penalty": 0,
-        "recency_balance": 3,
+        "recency_balance": 2,
         "final_score": 71,
         "score_breakdown": {
-          "base_score": 64,
-          "rank_score_boost": 1,
+          "base_score": 58,
+          "rank_score_boost": 4,
           "authority_score_boost": 0,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 1,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
-          "freshness_boost": 3,
+          "freshness_boost": 2,
           "decay_penalty": 0,
-          "recency_balance": 3,
+          "recency_balance": 2,
           "final_score": 71
         }
       },
       {
-        "target_url": "/wiki/gkniftyheads-virtual-valkyrie-783403.html",
+        "target_url": "/wiki/gkniftyheads-token-tycooness-783405.html",
         "score": 68,
         "base_score": 64,
         "reasons": [
@@ -82293,6 +82265,42 @@
         }
       },
       {
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 66,
+        "base_score": 55,
+        "reasons": [
+          "same_category:nfts-digital-art",
+          "link_overlap:5",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 68,
+        "score_breakdown": {
+          "base_score": 55,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 68
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads-neon-nova-knightmare-784413.html",
         "score": 65,
         "base_score": 60,
@@ -82560,44 +82568,6 @@
       },
       {
         "target_url": "/wiki/gkniftyheads-altcoin-avenger-783406.html",
-        "score": 62,
-        "base_score": 52,
-        "reasons": [
-          "same_category:nfts-digital-art",
-          "link_overlap:4",
-          "rank_score_boost:2",
-          "authority_score_boost:2",
-          "graph_centrality_boost:5",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 2,
-        "graph_centrality_boost": 5,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 64,
-        "score_breakdown": {
-          "base_score": 52,
-          "rank_score_boost": 2,
-          "authority_score_boost": 2,
-          "graph_centrality_boost": 5,
-          "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 64
-        }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads-antonio-ether-emperor-costa-783448.html",
         "score": 62,
         "base_score": 52,
         "reasons": [
@@ -86373,41 +86343,39 @@
         }
       },
       {
-        "target_url": "/wiki/gkniftyheads-altcoin-avenger-783406.html",
-        "score": 62,
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 63,
         "base_score": 52,
         "reasons": [
           "same_category:nfts-digital-art",
           "link_overlap:4",
-          "rank_score_boost:2",
-          "authority_score_boost:2",
-          "graph_centrality_boost:5",
-          "content_depth_boost:1"
+          "rank_score_boost:4",
+          "content_depth_boost:7"
         ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 2,
-        "graph_centrality_boost": 5,
-        "content_depth_boost": 1,
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
         "freshness_boost": 2,
         "decay_penalty": 0,
         "recency_balance": 2,
-        "final_score": 64,
+        "final_score": 65,
         "score_breakdown": {
           "base_score": 52,
-          "rank_score_boost": 2,
-          "authority_score_boost": 2,
-          "graph_centrality_boost": 5,
-          "content_depth_boost": 1,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
           "freshness_boost": 2,
           "decay_penalty": 0,
           "recency_balance": 2,
-          "final_score": 64
+          "final_score": 65
         }
       }
     ]
@@ -103024,6 +102992,42 @@
         }
       },
       {
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 72,
+        "base_score": 61,
+        "reasons": [
+          "same_category:nfts-digital-art",
+          "link_overlap:7",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 75,
+        "score_breakdown": {
+          "base_score": 61,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 75
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads-davide-altcoin-alchemist-marino-783454.html",
         "score": 72,
         "base_score": 66,
@@ -103142,45 +103146,6 @@
       },
       {
         "target_url": "/wiki/gkniftyheads-johnny-the-jetstream-jankovic-783384.html",
-        "score": 69,
-        "base_score": 63,
-        "reasons": [
-          "same_category:nfts-digital-art",
-          "shared_tag:quot",
-          "link_overlap:5",
-          "rank_score_boost:2",
-          "authority_score_boost:1",
-          "graph_centrality_boost:2",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 1,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 72,
-        "score_breakdown": {
-          "base_score": 63,
-          "rank_score_boost": 2,
-          "authority_score_boost": 1,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 72
-        }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads-lotus-luminary-charlie-buster-lancer-783470.html",
         "score": 69,
         "base_score": 63,
         "reasons": [
@@ -114865,41 +114830,39 @@
         }
       },
       {
-        "target_url": "/wiki/gkniftyheads-altcoin-avenger-783406.html",
-        "score": 62,
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 63,
         "base_score": 52,
         "reasons": [
           "same_category:nfts-digital-art",
           "link_overlap:4",
-          "rank_score_boost:2",
-          "authority_score_boost:2",
-          "graph_centrality_boost:5",
-          "content_depth_boost:1"
+          "rank_score_boost:4",
+          "content_depth_boost:7"
         ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 2,
-        "graph_centrality_boost": 5,
-        "content_depth_boost": 1,
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
         "freshness_boost": 2,
         "decay_penalty": 0,
         "recency_balance": 2,
-        "final_score": 64,
+        "final_score": 65,
         "score_breakdown": {
           "base_score": 52,
-          "rank_score_boost": 2,
-          "authority_score_boost": 2,
-          "graph_centrality_boost": 5,
-          "content_depth_boost": 1,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
           "freshness_boost": 2,
           "decay_penalty": 0,
           "recency_balance": 2,
-          "final_score": 64
+          "final_score": 65
         }
       }
     ]
@@ -115401,6 +115364,42 @@
         }
       },
       {
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 63,
+        "base_score": 52,
+        "reasons": [
+          "same_category:nfts-digital-art",
+          "link_overlap:4",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 65,
+        "score_breakdown": {
+          "base_score": 52,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 65
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads-altcoin-avenger-783406.html",
         "score": 62,
         "base_score": 52,
@@ -115591,44 +115590,6 @@
       },
       {
         "target_url": "/wiki/gkniftyheads-blockchain-belle-783392.html",
-        "score": 62,
-        "base_score": 52,
-        "reasons": [
-          "same_category:nfts-digital-art",
-          "link_overlap:4",
-          "rank_score_boost:2",
-          "authority_score_boost:2",
-          "graph_centrality_boost:5",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 2,
-        "graph_centrality_boost": 5,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 64,
-        "score_breakdown": {
-          "base_score": 52,
-          "rank_score_boost": 2,
-          "authority_score_boost": 2,
-          "graph_centrality_boost": 5,
-          "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 64
-        }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads-mr-cheo-boom-head-776121.html",
         "score": 62,
         "base_score": 52,
         "reasons": [
@@ -115889,6 +115850,42 @@
           "authority_score_boost": 3,
           "graph_centrality_boost": 5,
           "content_depth_boost": 1,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 84
+        }
+      },
+      {
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 81,
+        "base_score": 70,
+        "reasons": [
+          "same_category:nfts-digital-art",
+          "link_overlap:10",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 84,
+        "score_breakdown": {
+          "base_score": 70,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -116355,44 +116352,6 @@
       },
       {
         "target_url": "/wiki/gkniftyheads-bitcoin-kid-infinite-776059.html",
-        "score": 76,
-        "base_score": 70,
-        "reasons": [
-          "same_category:nfts-digital-art",
-          "link_overlap:10",
-          "rank_score_boost:2",
-          "authority_score_boost:1",
-          "graph_centrality_boost:2",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 1,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 79,
-        "score_breakdown": {
-          "base_score": 70,
-          "rank_score_boost": 2,
-          "authority_score_boost": 1,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 79
-        }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads-bitcoin-kid-royale-776145.html",
         "score": 76,
         "base_score": 70,
         "reasons": [
@@ -117847,6 +117806,42 @@
         }
       },
       {
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 63,
+        "base_score": 52,
+        "reasons": [
+          "same_category:nfts-digital-art",
+          "link_overlap:4",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 65,
+        "score_breakdown": {
+          "base_score": 52,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 65
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads-altcoin-avenger-783406.html",
         "score": 62,
         "base_score": 52,
@@ -117912,43 +117907,6 @@
           "rank_score_boost": 2,
           "authority_score_boost": 2,
           "graph_centrality_boost": 5,
-          "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 64
-        }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads-binary-blitzer-784277.html",
-        "score": 62,
-        "base_score": 58,
-        "reasons": [
-          "same_category:nfts-digital-art",
-          "link_overlap:6",
-          "rank_score_boost:1",
-          "graph_centrality_boost:2",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 1,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 64,
-        "score_breakdown": {
-          "base_score": 58,
-          "rank_score_boost": 1,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 2,
           "content_depth_boost": 1,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
@@ -118565,6 +118523,42 @@
         }
       },
       {
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 69,
+        "base_score": 58,
+        "reasons": [
+          "same_category:nfts-digital-art",
+          "link_overlap:6",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 71,
+        "score_breakdown": {
+          "base_score": 58,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 71
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads-fume-fury-783298.html",
         "score": 68,
         "base_score": 64,
@@ -118640,43 +118634,6 @@
       },
       {
         "target_url": "/wiki/gkniftyheads-inked-fury-783258.html",
-        "score": 68,
-        "base_score": 64,
-        "reasons": [
-          "same_category:nfts-digital-art",
-          "link_overlap:8",
-          "rank_score_boost:1",
-          "graph_centrality_boost:2",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 1,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 71,
-        "score_breakdown": {
-          "base_score": 64,
-          "rank_score_boost": 1,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 71
-        }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads-marco-coin-conqueror-moretti-783464.html",
         "score": 68,
         "base_score": 64,
         "reasons": [
@@ -120067,6 +120024,42 @@
         }
       },
       {
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 69,
+        "base_score": 58,
+        "reasons": [
+          "same_category:nfts-digital-art",
+          "link_overlap:6",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 71,
+        "score_breakdown": {
+          "base_score": 58,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 71
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads-daring-doodle-783300.html",
         "score": 68,
         "base_score": 64,
@@ -120142,43 +120135,6 @@
       },
       {
         "target_url": "/wiki/gkniftyheads-marco-coin-conqueror-moretti-783464.html",
-        "score": 68,
-        "base_score": 64,
-        "reasons": [
-          "same_category:nfts-digital-art",
-          "link_overlap:8",
-          "rank_score_boost:1",
-          "graph_centrality_boost:2",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 1,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 71,
-        "score_breakdown": {
-          "base_score": 64,
-          "rank_score_boost": 1,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 71
-        }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads-scribe-serpent-783260.html",
         "score": 68,
         "base_score": 64,
         "reasons": [
@@ -121139,6 +121095,42 @@
         }
       },
       {
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 72,
+        "base_score": 61,
+        "reasons": [
+          "same_category:nfts-digital-art",
+          "link_overlap:7",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 75,
+        "score_breakdown": {
+          "base_score": 61,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 75
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads-zenith-zephyr-zealot-783759.html",
         "score": 72,
         "base_score": 70,
@@ -121511,42 +121503,6 @@
           "decay_penalty": 0,
           "recency_balance": 2,
           "final_score": 69
-        }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
-        "score": 63,
-        "base_score": 61,
-        "reasons": [
-          "same_category:nfts-digital-art",
-          "link_overlap:7",
-          "rank_score_boost:1",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 1,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 66,
-        "score_breakdown": {
-          "base_score": 61,
-          "rank_score_boost": 1,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 66
         }
       },
       {
@@ -122551,6 +122507,42 @@
         }
       },
       {
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 78,
+        "base_score": 67,
+        "reasons": [
+          "same_category:nfts-digital-art",
+          "link_overlap:9",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 81,
+        "score_breakdown": {
+          "base_score": 67,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 81
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html",
         "score": 73,
         "base_score": 61,
@@ -122740,42 +122732,6 @@
           "decay_penalty": 0,
           "recency_balance": 3,
           "final_score": 74
-        }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
-        "score": 69,
-        "base_score": 67,
-        "reasons": [
-          "same_category:nfts-digital-art",
-          "link_overlap:9",
-          "rank_score_boost:1",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 1,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 72,
-        "score_breakdown": {
-          "base_score": 67,
-          "rank_score_boost": 1,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 72
         }
       },
       {
@@ -124144,6 +124100,42 @@
         }
       },
       {
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 72,
+        "base_score": 61,
+        "reasons": [
+          "same_category:nfts-digital-art",
+          "link_overlap:7",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 3,
+        "decay_penalty": 0,
+        "recency_balance": 3,
+        "final_score": 75,
+        "score_breakdown": {
+          "base_score": 61,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 3,
+          "decay_penalty": 0,
+          "recency_balance": 3,
+          "final_score": 75
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads-antonio-ether-emperor-costa-783448.html",
         "score": 71,
         "base_score": 61,
@@ -124555,42 +124547,6 @@
           "decay_penalty": 0,
           "recency_balance": 3,
           "final_score": 68
-        }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
-        "score": 63,
-        "base_score": 61,
-        "reasons": [
-          "same_category:nfts-digital-art",
-          "link_overlap:7",
-          "rank_score_boost:1",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 1,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 3,
-        "decay_penalty": 0,
-        "recency_balance": 3,
-        "final_score": 66,
-        "score_breakdown": {
-          "base_score": 61,
-          "rank_score_boost": 1,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 3,
-          "decay_penalty": 0,
-          "recency_balance": 3,
-          "final_score": 66
         }
       },
       {
@@ -126058,6 +126014,42 @@
         }
       },
       {
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 69,
+        "base_score": 58,
+        "reasons": [
+          "same_category:nfts-digital-art",
+          "link_overlap:6",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 71,
+        "score_breakdown": {
+          "base_score": 58,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 71
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads-fume-fury-783298.html",
         "score": 68,
         "base_score": 64,
@@ -126240,44 +126232,6 @@
           "decay_penalty": 0,
           "recency_balance": 3,
           "final_score": 71
-        }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads-bit-brawler-the-byte-battler-783415.html",
-        "score": 68,
-        "base_score": 58,
-        "reasons": [
-          "same_category:nfts-digital-art",
-          "link_overlap:6",
-          "rank_score_boost:2",
-          "authority_score_boost:2",
-          "graph_centrality_boost:5",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 2,
-        "graph_centrality_boost": 5,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 70,
-        "score_breakdown": {
-          "base_score": 58,
-          "rank_score_boost": 2,
-          "authority_score_boost": 2,
-          "graph_centrality_boost": 5,
-          "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 70
         }
       }
     ]
@@ -133603,6 +133557,42 @@
         }
       },
       {
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 66,
+        "base_score": 55,
+        "reasons": [
+          "same_category:nfts-digital-art",
+          "link_overlap:5",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 68,
+        "score_breakdown": {
+          "base_score": 55,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 68
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads-antonio-ether-emperor-costa-783448.html",
         "score": 65,
         "base_score": 55,
@@ -133827,44 +133817,6 @@
           "decay_penalty": 0,
           "recency_balance": 3,
           "final_score": 65
-        }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads-altcoin-avenger-783406.html",
-        "score": 62,
-        "base_score": 52,
-        "reasons": [
-          "same_category:nfts-digital-art",
-          "link_overlap:4",
-          "rank_score_boost:2",
-          "authority_score_boost:2",
-          "graph_centrality_boost:5",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 2,
-        "graph_centrality_boost": 5,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 64,
-        "score_breakdown": {
-          "base_score": 52,
-          "rank_score_boost": 2,
-          "authority_score_boost": 2,
-          "graph_centrality_boost": 5,
-          "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 64
         }
       }
     ]
@@ -140682,39 +140634,38 @@
         }
       },
       {
-        "target_url": "/wiki/gkniftyheads-token-tycooness-783405.html",
-        "score": 68,
-        "base_score": 64,
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 69,
+        "base_score": 58,
         "reasons": [
           "same_category:nfts-digital-art",
-          "link_overlap:8",
-          "rank_score_boost:1",
-          "graph_centrality_boost:2",
-          "content_depth_boost:1"
+          "link_overlap:6",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
         ],
-        "rank_score_boost": 1,
+        "rank_score_boost": 4,
         "authority_score_boost": 0,
-        "graph_centrality_boost": 2,
-        "content_depth_boost": 1,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
-        "freshness_boost": 3,
+        "freshness_boost": 2,
         "decay_penalty": 0,
-        "recency_balance": 3,
+        "recency_balance": 2,
         "final_score": 71,
         "score_breakdown": {
-          "base_score": 64,
-          "rank_score_boost": 1,
+          "base_score": 58,
+          "rank_score_boost": 4,
           "authority_score_boost": 0,
-          "graph_centrality_boost": 2,
-          "content_depth_boost": 1,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
-          "freshness_boost": 3,
+          "freshness_boost": 2,
           "decay_penalty": 0,
-          "recency_balance": 3,
+          "recency_balance": 2,
           "final_score": 71
         }
       }
@@ -146604,6 +146555,42 @@
         }
       },
       {
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 63,
+        "base_score": 52,
+        "reasons": [
+          "same_category:nfts-digital-art",
+          "link_overlap:4",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 65,
+        "score_breakdown": {
+          "base_score": 52,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 65
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads-altcoin-avenger-783406.html",
         "score": 62,
         "base_score": 52,
@@ -146719,44 +146706,6 @@
       },
       {
         "target_url": "/wiki/gkniftyheads-bit-brawler-the-byte-battler-783415.html",
-        "score": 62,
-        "base_score": 52,
-        "reasons": [
-          "same_category:nfts-digital-art",
-          "link_overlap:4",
-          "rank_score_boost:2",
-          "authority_score_boost:2",
-          "graph_centrality_boost:5",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 2,
-        "graph_centrality_boost": 5,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 64,
-        "score_breakdown": {
-          "base_score": 52,
-          "rank_score_boost": 2,
-          "authority_score_boost": 2,
-          "graph_centrality_boost": 5,
-          "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 64
-        }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads-blockchain-belle-783392.html",
         "score": 62,
         "base_score": 52,
         "reasons": [
@@ -147458,6 +147407,42 @@
         }
       },
       {
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 63,
+        "base_score": 52,
+        "reasons": [
+          "same_category:nfts-digital-art",
+          "link_overlap:4",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 65,
+        "score_breakdown": {
+          "base_score": 52,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 65
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads-altcoin-avenger-783406.html",
         "score": 62,
         "base_score": 52,
@@ -147497,44 +147482,6 @@
       },
       {
         "target_url": "/wiki/gkniftyheads-antonio-ether-emperor-costa-783448.html",
-        "score": 62,
-        "base_score": 52,
-        "reasons": [
-          "same_category:nfts-digital-art",
-          "link_overlap:4",
-          "rank_score_boost:2",
-          "authority_score_boost:2",
-          "graph_centrality_boost:5",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 2,
-        "graph_centrality_boost": 5,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 64,
-        "score_breakdown": {
-          "base_score": 52,
-          "rank_score_boost": 2,
-          "authority_score_boost": 2,
-          "graph_centrality_boost": 5,
-          "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 64
-        }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads-bit-boss-783395.html",
         "score": 62,
         "base_score": 52,
         "reasons": [
@@ -148236,6 +148183,42 @@
         }
       },
       {
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 63,
+        "base_score": 52,
+        "reasons": [
+          "same_category:nfts-digital-art",
+          "link_overlap:4",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 65,
+        "score_breakdown": {
+          "base_score": 52,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 65
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads-altcoin-avenger-783406.html",
         "score": 62,
         "base_score": 52,
@@ -148275,44 +148258,6 @@
       },
       {
         "target_url": "/wiki/gkniftyheads-antonio-ether-emperor-costa-783448.html",
-        "score": 62,
-        "base_score": 52,
-        "reasons": [
-          "same_category:nfts-digital-art",
-          "link_overlap:4",
-          "rank_score_boost:2",
-          "authority_score_boost:2",
-          "graph_centrality_boost:5",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 2,
-        "graph_centrality_boost": 5,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 64,
-        "score_breakdown": {
-          "base_score": 52,
-          "rank_score_boost": 2,
-          "authority_score_boost": 2,
-          "graph_centrality_boost": 5,
-          "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 64
-        }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads-bit-boss-783395.html",
         "score": 62,
         "base_score": 52,
         "reasons": [
@@ -149014,6 +148959,42 @@
         }
       },
       {
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 63,
+        "base_score": 52,
+        "reasons": [
+          "same_category:nfts-digital-art",
+          "link_overlap:4",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 65,
+        "score_breakdown": {
+          "base_score": 52,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 65
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads-altcoin-avenger-783406.html",
         "score": 62,
         "base_score": 52,
@@ -149053,44 +149034,6 @@
       },
       {
         "target_url": "/wiki/gkniftyheads-antonio-ether-emperor-costa-783448.html",
-        "score": 62,
-        "base_score": 52,
-        "reasons": [
-          "same_category:nfts-digital-art",
-          "link_overlap:4",
-          "rank_score_boost:2",
-          "authority_score_boost:2",
-          "graph_centrality_boost:5",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 2,
-        "graph_centrality_boost": 5,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 64,
-        "score_breakdown": {
-          "base_score": 52,
-          "rank_score_boost": 2,
-          "authority_score_boost": 2,
-          "graph_centrality_boost": 5,
-          "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 64
-        }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads-bit-boss-783395.html",
         "score": 62,
         "base_score": 52,
         "reasons": [
@@ -151800,6 +151743,42 @@
         }
       },
       {
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 66,
+        "base_score": 55,
+        "reasons": [
+          "same_category:nfts-digital-art",
+          "link_overlap:5",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 68,
+        "score_breakdown": {
+          "base_score": 55,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 68
+        }
+      },
+      {
         "target_url": "/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html",
         "score": 64,
         "base_score": 52,
@@ -152143,44 +152122,6 @@
       },
       {
         "target_url": "/wiki/gkniftyheads-blockchain-belle-783392.html",
-        "score": 62,
-        "base_score": 52,
-        "reasons": [
-          "same_category:nfts-digital-art",
-          "link_overlap:4",
-          "rank_score_boost:2",
-          "authority_score_boost:2",
-          "graph_centrality_boost:5",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 2,
-        "graph_centrality_boost": 5,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 64,
-        "score_breakdown": {
-          "base_score": 52,
-          "rank_score_boost": 2,
-          "authority_score_boost": 2,
-          "graph_centrality_boost": 5,
-          "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 64
-        }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads-mr-cheo-boom-head-776121.html",
         "score": 62,
         "base_score": 52,
         "reasons": [
@@ -165502,6 +165443,41 @@
         }
       },
       {
+        "target_url": "/wiki/gkniftyheads-bitman-784220.html",
+        "score": 14,
+        "base_score": 3,
+        "reasons": [
+          "link_overlap:1",
+          "rank_score_boost:4",
+          "content_depth_boost:7"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 7,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 0,
+        "decay_penalty": 0,
+        "recency_balance": 0,
+        "final_score": 14,
+        "score_breakdown": {
+          "base_score": 3,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 7,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 0,
+          "decay_penalty": 0,
+          "recency_balance": 0,
+          "final_score": 14
+        }
+      },
+      {
         "target_url": "/wiki/atomichub-graffpunks-collection.html",
         "score": 13,
         "base_score": 11,
@@ -165576,43 +165552,6 @@
       },
       {
         "target_url": "/wiki/gkniftyheads-antonio-ether-emperor-costa-783448.html",
-        "score": 13,
-        "base_score": 3,
-        "reasons": [
-          "link_overlap:1",
-          "rank_score_boost:2",
-          "authority_score_boost:2",
-          "graph_centrality_boost:5",
-          "content_depth_boost:1"
-        ],
-        "rank_score_boost": 2,
-        "authority_score_boost": 2,
-        "graph_centrality_boost": 5,
-        "content_depth_boost": 1,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 0,
-        "decay_penalty": 0,
-        "recency_balance": 0,
-        "final_score": 13,
-        "score_breakdown": {
-          "base_score": 3,
-          "rank_score_boost": 2,
-          "authority_score_boost": 2,
-          "graph_centrality_boost": 5,
-          "content_depth_boost": 1,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 0,
-          "decay_penalty": 0,
-          "recency_balance": 0,
-          "final_score": 13
-        }
-      },
-      {
-        "target_url": "/wiki/gkniftyheads-bit-boss-783395.html",
         "score": 13,
         "base_score": 3,
         "reasons": [
