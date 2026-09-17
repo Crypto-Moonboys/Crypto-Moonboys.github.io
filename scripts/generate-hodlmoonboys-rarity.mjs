@@ -1177,6 +1177,10 @@ function loadExistingSnapshot(root = ROOT) {
   };
 }
 
+function errorMessage(error) {
+  return error instanceof Error ? error.message : String(error);
+}
+
 async function main() {
   const generatedAt = NOW();
   let collection;
@@ -1188,14 +1192,18 @@ async function main() {
     await ensureLocalThumbs(templates);
     supplies = await mapLimit(templates, 3, fetchLiveSupply);
   } catch (error) {
-    const snapshot = loadExistingSnapshot();
-    writeJson(path.join(DATA_DIR, 'collection.json'), snapshot.collection);
-    writeJson(path.join(DATA_DIR, 'template-rarity.json'), snapshot.templateRarity);
-    writeJson(path.join(DATA_DIR, 'template-stats.json'), snapshot.templateStats);
-    writeJson(path.join(DATA_DIR, 'sync-status.json'), snapshot.rawSyncStatus);
-    writeText(PAGE_PATH, renderPage(snapshot.collection, snapshot.data, snapshot.stats, snapshot.syncStatus));
-    console.warn(`${COLLECTION}: network refresh failed, rebuilt page from committed snapshot (${error instanceof Error ? error.message : error})`);
-    return;
+    try {
+      const snapshot = loadExistingSnapshot();
+      writeJson(path.join(DATA_DIR, 'collection.json'), snapshot.collection);
+      writeJson(path.join(DATA_DIR, 'template-rarity.json'), snapshot.templateRarity);
+      writeJson(path.join(DATA_DIR, 'template-stats.json'), snapshot.templateStats);
+      writeJson(path.join(DATA_DIR, 'sync-status.json'), snapshot.rawSyncStatus);
+      writeText(PAGE_PATH, renderPage(snapshot.collection, snapshot.data, snapshot.stats, snapshot.syncStatus));
+      console.warn(`${COLLECTION}: network refresh failed, rebuilt page from committed snapshot (${errorMessage(error)})`);
+      return;
+    } catch (snapshotError) {
+      throw new Error(`${COLLECTION}: live refresh failed (${errorMessage(error)}) and committed snapshot rebuild failed (${errorMessage(snapshotError)})`);
+    }
   }
   const data = buildRanking(templates, supplies);
   const stats = {
