@@ -1,6 +1,6 @@
 {
   "collection": "hodlmoonboys",
-  "generated_at": "2026-09-17T12:02:36.407Z",
+  "generated_at": "2026-09-17T12:44:37.145Z",
   "templates": [
     {
       "template_id": 111124,
@@ -8,7 +8,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmaRwajdVbaJfmgmgR1PdHFS1DGV3kSNDnrZobNY3PTqZP"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 111126,
@@ -16,7 +16,7 @@
       "issued_supply": 200,
       "max_supply": 200,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmdQGYjTf1J2ZT1iCJNfm5q5y9HKVBY9KxWG5goiN1KvxB"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 111141,
@@ -24,7 +24,7 @@
       "issued_supply": 202,
       "max_supply": 500,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmcQmbDPNaE45DTu46FFM7dJwKzMT7g7U4PzRZ7ahKFe9v"
+      "image_url": "/img/hodlmoonboys/thumbs/111141.webp"
     },
     {
       "template_id": 111413,
@@ -32,7 +32,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmdyTZpMzACTQPahyBZ5E4Yy3YcYQVfQTUvEd884NCChcu"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 111417,
@@ -40,7 +40,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmcu6G6Z5nzxtGM4WgZvdFzhuCPbLeyP7umyxQ4p7v5vrt"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 111429,
@@ -48,7 +48,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmYB7Fbn3YEpevakWSiypGSvPQUDxGPiV5Ug8b32c6pZrx"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 111433,
@@ -56,7 +56,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmPnrc7QTUSMpNpuaDfMmqCUttrRgsRW3NKNBrdsbG3fdU"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 111434,
@@ -64,7 +64,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmNeJpHmYcZSh5JMcz2pZU9nLFYEZ9S1MtGJpUfosCZ6bJ"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 111435,
@@ -72,7 +72,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmNSanNaC3W7FcSKmYb3uvnfA4AC68jeAWmrfjvuib2RrE"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 111436,
@@ -80,7 +80,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmdLFkWsXi45MW2c2TjP1SB1WCuvP4EE6urFcoEetTdmLG"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 111437,
@@ -88,7 +88,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmRRZHYNqrhf7GHsTKjkfhmReeXbk7oHDwGBiFrivkTs5j"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 111438,
@@ -96,7 +96,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmRJt4pgeDxYFrV9KBgXX7B3P8id6y3JDrYNrYA77PzeYh"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 111440,
@@ -104,7 +104,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmfUnfjneR7B1xosJ8rgz8ce2srY3osj8rwqrFuenNmigX"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 111447,
@@ -112,7 +112,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmdoLpbsWZsLApsPDjTEoqmvWRfgEgQ6qFY7aYJpJboSq8"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 111448,
@@ -120,7 +120,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmawnecXH3tbubfATqPZ6JQMdyW5NgyfZVEASy2dv7ngUo"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 111449,
@@ -128,7 +128,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmdpDj2CbCwQQTj5XYdgTr5sA8yE7AkMXucdiNbq8oxjWF"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 111450,
@@ -136,7 +136,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmfGQFfBke4rDZHcPLRV75SUg8bgSnhFnAF2gbNvVMWoUu"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 111451,
@@ -144,7 +144,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmNX89KvGKuLnEfsLaMrT8P6RtRDkjTfnZiQvoXrnw9vYp"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 111452,
@@ -152,7 +152,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmeQXytEQ4cKGKBBmkVYQrPaMMQM6TvqfVq6wMoXEp5EuX"
+      "image_url": "/img/hodlmoonboys/thumbs/111452.webp"
     },
     {
       "template_id": 111454,
@@ -160,7 +160,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmP8yrh4vmTEuUAkhPvBGmtJf12FjBc2ikeXBRaFgayYDE"
+      "image_url": "/img/hodlmoonboys/thumbs/111454.webp"
     },
     {
       "template_id": 111455,
@@ -168,7 +168,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmfTPKy5iTjB7pmqZ5baTPKNnjBckxF7eLZHveiqjZheu1"
+      "image_url": "/img/hodlmoonboys/thumbs/111455.webp"
     },
     {
       "template_id": 111456,
@@ -176,7 +176,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmfGx6EZGVPcL1z1bDN7GHwMq6H9VYayNFRSmWSTaqiCpu"
+      "image_url": "/img/hodlmoonboys/thumbs/111456.webp"
     },
     {
       "template_id": 111457,
@@ -184,7 +184,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmTbmGxoqxXRFHuq8KCuJMLeoVfKENs5FqdNC8kYuyZEVQ"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 111458,
@@ -192,7 +192,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmXxFdsiKzkFqSc5RanfZoTr6rh7hdPpvFs8owYHyJm8Du"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 111460,
@@ -200,7 +200,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmQ9a5CHr8pQNoZHqpAV1egQBDt7wD3TabqZjamvTJfL2A"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 111461,
@@ -208,7 +208,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmRRZHYNqrhf7GHsTKjkfhmReeXbk7oHDwGBiFrivkTs5j"
+      "image_url": "/img/hodlmoonboys/thumbs/111461.webp"
     },
     {
       "template_id": 111474,
@@ -216,7 +216,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmdfw3n7HQ3kCDZpBico8iPx9FvbHZE9xyJ8kMkC9TJUSx"
+      "image_url": "/img/hodlmoonboys/thumbs/111474.webp"
     },
     {
       "template_id": 111480,
@@ -224,7 +224,7 @@
       "issued_supply": 500,
       "max_supply": 500,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmdGDVd87v4X4qwVkdCTBVLnd3cojhmHZ7DNWD3iKgPoCa"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 111923,
@@ -232,7 +232,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmRcYTriTMofgygPdR2B3criyU9ncccbtJcfSRfR53GbTV"
+      "image_url": "/img/hodlmoonboys/thumbs/111923.webp"
     },
     {
       "template_id": 111924,
@@ -240,7 +240,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmeWBGNWAPed4nxGkHEn61fAQufyxih9mfxNEGVA6j14yZ"
+      "image_url": "/img/hodlmoonboys/thumbs/111924.webp"
     },
     {
       "template_id": 111925,
@@ -248,7 +248,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmeWBGNWAPed4nxGkHEn61fAQufyxih9mfxNEGVA6j14yZ"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 111926,
@@ -256,7 +256,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmUBuKPybEJTmcoA486NqmH2VqvpbQDc1EaWJxCGY39mVf"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 111929,
@@ -264,7 +264,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmemATD2KMgfv9CeJ8jjFVTDYwTHxr2VU5fLHr2uvr6A5T"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 111967,
@@ -272,7 +272,7 @@
       "issued_supply": 500,
       "max_supply": 500,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmYp36NRDRGr1CiguyszbjvuvwoW95hwBgFqLKgcq3NMtg"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 112041,
@@ -280,7 +280,7 @@
       "issued_supply": 500,
       "max_supply": 500,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmeWJX1a4EZscANXoUraUgMHVpYSitkHAxsvCb8KqR5izo"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 112042,
@@ -288,7 +288,7 @@
       "issued_supply": 0,
       "max_supply": 500,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmXw9Q7VGipuGaQK5P21RdWmtpexti7ELLRvVc6r81tVv3"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 112043,
@@ -296,7 +296,7 @@
       "issued_supply": 500,
       "max_supply": 500,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmXw9Q7VGipuGaQK5P21RdWmtpexti7ELLRvVc6r81tVv3"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 112044,
@@ -304,7 +304,7 @@
       "issued_supply": 0,
       "max_supply": 500,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmQDeaHoxVzWNPzPjmdodmGdH49frL1o4oBD5Ytyipqh2P"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 112045,
@@ -312,7 +312,7 @@
       "issued_supply": 500,
       "max_supply": 500,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmQDeaHoxVzWNPzPjmdodmGdH49frL1o4oBD5Ytyipqh2P"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 112047,
@@ -320,7 +320,7 @@
       "issued_supply": 0,
       "max_supply": 500,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmXHKXNHET14qu2SskU4avJ2Wc9JFdxKDGcSDA6HBbET78"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 112048,
@@ -328,7 +328,7 @@
       "issued_supply": 500,
       "max_supply": 500,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmXHKXNHET14qu2SskU4avJ2Wc9JFdxKDGcSDA6HBbET78"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 112316,
@@ -336,7 +336,7 @@
       "issued_supply": 10,
       "max_supply": 10,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmeCrbRBDqxqJEpganq4h5nhgq4wkW1EC9tWC5EXBiJ2gA"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 112484,
@@ -344,7 +344,7 @@
       "issued_supply": 500,
       "max_supply": 500,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmUuGCyZFdyxmtyuvGEVzFgHSMjf6rxHZjYn2av2K7Lw3A"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 113075,
@@ -352,7 +352,7 @@
       "issued_supply": 250,
       "max_supply": 250,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmcNd63dqkfyw5fRacuqgKxt4sdZjYkfegBpurRgAiGRVh"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 113081,
@@ -360,7 +360,7 @@
       "issued_supply": 250,
       "max_supply": 250,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmfSi39tqU9Ffo6q2uMWqYVfB2jX7VW6kjMEmQS4Ec4TSJ"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 113085,
@@ -368,7 +368,7 @@
       "issued_supply": 250,
       "max_supply": 250,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSYjeLYmJCebnujY89sitCPs5kULvt5ze2YWQqNrFZpPB"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 113087,
@@ -376,7 +376,7 @@
       "issued_supply": 250,
       "max_supply": 250,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmTZtBxasBKrwKk6qTmptRQ44Vw429ujBnDrkRdWoTi69o"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 113090,
@@ -384,7 +384,7 @@
       "issued_supply": 250,
       "max_supply": 250,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmP81JqTnJzpQ64rnnS9LYiQ5coTVq6Pew6Povm13k3hxu"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 113092,
@@ -392,7 +392,7 @@
       "issued_supply": 250,
       "max_supply": 250,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmTT8zKdLwL1R8oEhpSzTSi5WBsiCMyVfoD3GkFSG5cVi6"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 113989,
@@ -400,7 +400,7 @@
       "issued_supply": 100,
       "max_supply": 100,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmbqChX8AwTXim41qJE3nCGwarRbwLszLFrbNVjQVuYSZ4"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 114171,
@@ -408,7 +408,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmUZvFWoGsV9M6Y6x9Pep93qegERizBp7gzU6jcN7DEqqx"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 114177,
@@ -416,7 +416,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmX9SvMmCVJj96JMAGGgPSqtSRFgb7nu7CCoGuzrUx3MeK"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 114179,
@@ -424,7 +424,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmNdZNnKFMzoN2Q5D8Af6exeNPabp5tbejbqdAe6FzKp6q"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 114181,
@@ -432,7 +432,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmQAMKe34NdpifwiCh89GgTMY3WPUCeoJ8iu3YUKaSFHMX"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 114184,
@@ -440,7 +440,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qme9eHz7rMJefzLt8e295rJ7D3jAkMM3anHgh6xcptcFsX"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 114191,
@@ -448,7 +448,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmfJspivtBXPUno7QAK9WeS7fnURFnXkDk1cxnD23g2zYb"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 114193,
@@ -456,7 +456,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmRVRjpRRFjEdbyFZT7nmF72r3ERVi1n9aDeTV3NKdCFin"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 114194,
@@ -464,7 +464,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmUwpKoogo9hjXUppzx9gCKXyckmgEeWr4iNxWxNR56kbU"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 114197,
@@ -472,7 +472,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZiNZbQwTp6z5NdmCf2JPcbE6UJiX9dzQYSEDB1qr6Thy"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 114198,
@@ -480,7 +480,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmPtU4gCfT7SP7Rxwr6SenEQK7WVS1heUajHAyiWWcJL6K"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 114287,
@@ -488,7 +488,7 @@
       "issued_supply": 100,
       "max_supply": 100,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qme7pTGS8xLig68rADNyF6S1e9FtXrSuVTCMM7cgQ4rV9z"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 114290,
@@ -496,7 +496,7 @@
       "issued_supply": 100,
       "max_supply": 100,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZUTXAQkKjKTVVSHhmniDhY6jRxPQr6Ndp8wK3U27fBzx"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 114291,
@@ -504,7 +504,7 @@
       "issued_supply": 100,
       "max_supply": 100,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmdm8814E9MX9fsximwoRb16LUHv93YorJGGpq4WgJXo9L"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 114292,
@@ -512,7 +512,7 @@
       "issued_supply": 100,
       "max_supply": 100,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmaBB8ZG6GkcJeuwMwAHs5KrTffQ5RF8ih5aBS4qXiEK6U"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 114293,
@@ -520,7 +520,7 @@
       "issued_supply": 100,
       "max_supply": 100,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmTro9QbTBzxLrJ3mpvHKBN2f4542gb7wneBQtMEeYxjKr"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 114294,
@@ -528,7 +528,7 @@
       "issued_supply": 100,
       "max_supply": 100,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmcdgHpz21yHoX61U1ERYyNKP3EXtAV4GUigPMhkjet8My"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 114295,
@@ -536,7 +536,7 @@
       "issued_supply": 100,
       "max_supply": 100,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmWzSy412JWgpQhy7yBMBukdhGZumrHkfZySV8iT8nHtju"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 114296,
@@ -544,7 +544,7 @@
       "issued_supply": 100,
       "max_supply": 100,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmcq6UVyHeo3Z6jTSawUMWbm2HsFLwhUX7b2aag9S4Njct"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 114297,
@@ -552,7 +552,7 @@
       "issued_supply": 100,
       "max_supply": 100,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmYV9ahDbdKpu9HJmkbCBR6mLKiHiYae7WPbtwX8Ufq8xd"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 114298,
@@ -560,7 +560,7 @@
       "issued_supply": 100,
       "max_supply": 100,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmcoXywJBiMhPbbHoeKMPe9oeutvtdL2irdtGS5RfKALD9"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 115954,
@@ -568,7 +568,7 @@
       "issued_supply": 3,
       "max_supply": 3,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZBCDhWiuy1essTFfPkcrY9dnSfjWmn8DCNBwyHZfcLn5"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 116041,
@@ -576,7 +576,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qma8H14M6KAHmFCZd7Tw5rqZB34mSBZdQ1NBSmbRk9jkYc"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 116042,
@@ -584,7 +584,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmTsTceDimeiMYuEuCiUNrwqagXhvvUnWKxqXSQXwKhhBk"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 116043,
@@ -592,7 +592,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmNzoHSkuUXq7VJC4YtUBkURV3LdRNuuGn6wPc41Y53BMK"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 116045,
@@ -600,7 +600,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmVgn2GjzHcx39JLcMQrf43n6uQ3xKkP2pt2Gvu8W8TTzo"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 116046,
@@ -608,7 +608,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmc3DCtk9pgmSgRZB9xLMokXqtN8BMvD6Hb91AYzfHn9kw"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 116047,
@@ -616,7 +616,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmYRE9GdXkpJmo88s3SiuRrF59WgR5xZuFX7GTGpnwCiqx"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 116049,
@@ -624,7 +624,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qma8CKTJfkerQ9AUaYvhn7PuX8QmmCurAeEaegkzGu3ZYQ"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 116050,
@@ -632,7 +632,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmP6vTiDbS4U3fCLpNNrjZj2Uer9xwkfHL1GoHxicX412U"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 116052,
@@ -640,7 +640,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmQP7UNxiwmCGjtpdhfP9d48h38GoEQM27GZgNvXVcUN5J"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 116053,
@@ -648,7 +648,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmUh6o4xMXCuiq5EwbZG19FfGCZHvLaJnC88uq5C5HD5MU"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 116055,
@@ -656,7 +656,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qma2sYng1ALEciJ5X2np5HqtyNfgE5DvtwLSLB4K3aXGbE"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 116057,
@@ -664,7 +664,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmagJ1fo8GG1EroTSwD8SAQgjpbRWsSi7cF4dCCuKVw8Ay"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 116058,
@@ -672,7 +672,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmV64hk4MWR1e3RdNjBo5tFc1GnZihqrXAtkWg1J4TdMKp"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 116059,
@@ -680,7 +680,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmX9Mb741tdU1Xg4CK5Uq1AND5vimDJbrmYXtgPXLvLZCD"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 116060,
@@ -688,7 +688,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmUTP4PoLrY35guLp69CJ6TRGuP6Bo8iJ5YrqYFk1iLzwG"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 116062,
@@ -696,7 +696,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmXaXAbjho4UiKc74pznijn3j7H3CLwzDzAYq4QxFJb3Fs"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117164,
@@ -704,7 +704,7 @@
       "issued_supply": 3,
       "max_supply": 3,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmd4DypmiHgZywVUY2mRQTrguacsbYKNsoWy6oWtgyGvTF"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117804,
@@ -712,7 +712,7 @@
       "issued_supply": 3000,
       "max_supply": 0,
       "schema_name": "packs",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmX4a7irD1vFsa5qMP13NV91nSu7ctRiVckmcCuJ41C6qU"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117805,
@@ -720,7 +720,7 @@
       "issued_supply": 1250,
       "max_supply": 0,
       "schema_name": "packs",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmdXfAxTZtwgV7rBTesSNZpcw8xENQcSXK2bhMngupf9Du"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117806,
@@ -728,7 +728,7 @@
       "issued_supply": 538,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZMKpv31Dd9CcDhsy4ZKZAdeDUtPaGERAEvtbUiQnrAmW"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117807,
@@ -736,7 +736,7 @@
       "issued_supply": 192,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmPvrFvim8FVJkpHpBJT8P2yd4yx5e8PYLEu3npA1jSfk2"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117808,
@@ -744,7 +744,7 @@
       "issued_supply": 157,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmTyFkXvejW83mk8tgRkucBuMFnrEryVKLMA7xfLJFuw5i"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117810,
@@ -752,7 +752,7 @@
       "issued_supply": 84,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmUvxdYNE9mLg728LG8AtbARWjRyLRQommX9iXRwhaZDzd"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117811,
@@ -760,7 +760,7 @@
       "issued_supply": 121,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmQUSyr2MGkTtXPf474Qe1YhR8ARiE8fEs3fBfxKPUxu88"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117812,
@@ -768,7 +768,7 @@
       "issued_supply": 63,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmX1wFu6YjxHgwMsN3cpvBBT4BjT2rUaD7soBwLFDdF3ED"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117813,
@@ -776,7 +776,7 @@
       "issued_supply": 64,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmdeHu2H2hstMvrNkaa1HjuyGkQFZwEX6aPyo2tGFnN9zZ"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117814,
@@ -784,7 +784,7 @@
       "issued_supply": 51,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmb2ViusgEcwVSCbUGvUGXLfqzFrKjqREyz9qwwGXdUB5E"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117815,
@@ -792,7 +792,7 @@
       "issued_supply": 32,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qme5dbvsF7mPqEbmpycVb4grhSUW2Ksc9cWRh9pRUQbFFx"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117816,
@@ -800,7 +800,7 @@
       "issued_supply": 8,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmXgrWGXUNxdQnvP3AfDRdBbGEoti73VEeEUkA84u45R2M"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117817,
@@ -808,7 +808,7 @@
       "issued_supply": 501,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmauP6ck8yeWVXWq784Q5DSg7HZVB2tFRZECYEVtEWGfhn"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117818,
@@ -816,7 +816,7 @@
       "issued_supply": 185,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmTxZYoWWoPMjyVizfrGbmcsSYjUKa1dfJz9irPa9tMwj1"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117819,
@@ -824,7 +824,7 @@
       "issued_supply": 181,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmauDmstWfj9Cj3V8NVauSgmpqhcoNTAUGPxvZzMB979sA"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117820,
@@ -832,7 +832,7 @@
       "issued_supply": 78,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmay7XNELyoZ2VihDKnFK9sn5JmRY8G3bkvL3cRExm2yE2"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117821,
@@ -840,7 +840,7 @@
       "issued_supply": 112,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmfBfj68pR12pLZoqL4XebyQRS2zvQr4fe3YkXcPT1Xk4M"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117822,
@@ -848,7 +848,7 @@
       "issued_supply": 85,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmbSpJUTyRvobSwPh8Ab3zRZRgigAihZKHbgeD2bTyQU8i"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117823,
@@ -856,7 +856,7 @@
       "issued_supply": 58,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmNYWBCaV2N2VYjKcCn6QMa1QTWrds8KJYT9Tomgo5WNE3"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117824,
@@ -864,7 +864,7 @@
       "issued_supply": 51,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmWxbbjnHv2tA3Erj2BigY5doj7pPSStLG81opm1qt5xxz"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117825,
@@ -872,7 +872,7 @@
       "issued_supply": 29,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmQATjvzpAzAX67GtsWmUHFDqoMM6MidkeYUU4SjvSPAQt"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117826,
@@ -880,7 +880,7 @@
       "issued_supply": 13,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmRZdCrX1V6Q75jxLbkQZCrUG4rjKUGp5xuG9hPg6RUreg"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117827,
@@ -888,7 +888,7 @@
       "issued_supply": 554,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmYet5UgutPDN34rVVjiAY5voipiERXq43FMYnDx5nYGs1"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117828,
@@ -896,7 +896,7 @@
       "issued_supply": 196,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZnqdDbHKHr3g4rFihVwGoKXtrFegPhZqU9aTHfu1cA4c"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117829,
@@ -904,7 +904,7 @@
       "issued_supply": 203,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmUyoFPVq9ntZrMfp5XpVVPmkkiLkK7VvANiZ8jVTNdgPa"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117830,
@@ -912,7 +912,7 @@
       "issued_supply": 71,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmS63r8LuMtL6zd2UqgVU6S1CxdE8guvFtmooR4CvrUhVe"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117831,
@@ -920,7 +920,7 @@
       "issued_supply": 110,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmUrQGKX2csGsiKfxhBnV1xRVdEK8g814UVXgHJoMi5oVw"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117832,
@@ -928,7 +928,7 @@
       "issued_supply": 106,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZJkYBy5bM1v3rYVwxqYHLvqK4LGnGTdVMecqNR6Tiobt"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117833,
@@ -936,7 +936,7 @@
       "issued_supply": 73,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZqoaRsAmTB2Moe8Acx3NaPWw3goC9NWsDeP1ikiP9BKW"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117834,
@@ -944,7 +944,7 @@
       "issued_supply": 36,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmT8Zj4yjtn6wZKWPZsoaz9aHNQxU5VLmYevtzR4ti3XrM"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117835,
@@ -952,7 +952,7 @@
       "issued_supply": 19,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSeiqwdwQ1mupXSzn23N6Y8Qf14S79LotamfzhFBh3g2U"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117836,
@@ -960,7 +960,7 @@
       "issued_supply": 7,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmcESGK1fDWmFYxTYMmhmuaqz8u97sjZVP2KT1wZGg4zjU"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117837,
@@ -968,7 +968,7 @@
       "issued_supply": 513,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmd9p9FBUCiy49UxzZ7CwwW9pofX644LCpVfSgiXSFHep4"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117838,
@@ -976,7 +976,7 @@
       "issued_supply": 210,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSYLnQ4mYZNQx17NvzFmhogQ9Ku41koS1w9ALGipakSa6"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117839,
@@ -984,7 +984,7 @@
       "issued_supply": 166,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmNs4oiSRpAYPoBauZ387i9auFhhiBKPaE5yqAYJhSfW5n"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117840,
@@ -992,7 +992,7 @@
       "issued_supply": 74,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmabhJQGNRLSdVirjK3VngrErYZgH4wSpMPyabGdm28WbY"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117841,
@@ -1000,7 +1000,7 @@
       "issued_supply": 124,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmT8cwLu3Dx6Fx6iZ2G4q7zRdof3hzmf18TkaGZAm5xgyS"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117842,
@@ -1008,7 +1008,7 @@
       "issued_supply": 86,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmcXLM3f7n2eaH1oXwkN39VMZbSBxKt5WXD8czG5hQyMne"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117843,
@@ -1016,7 +1016,7 @@
       "issued_supply": 62,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZbLy1y1QrxfkUu9yhpkyxLjtTvTNZPWhU1mf6GRZy4YQ"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117844,
@@ -1024,7 +1024,7 @@
       "issued_supply": 41,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSuKCQc2HSfrTYtjCM7KtYPkuXUyYKrW1YY8riLHS4ais"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117846,
@@ -1032,7 +1032,7 @@
       "issued_supply": 30,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmToyY8QEv9dKM79aVj8xPzGes2c8ocdL3rj1i4gqJ3R7S"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117847,
@@ -1040,7 +1040,7 @@
       "issued_supply": 8,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmfELBJoFhHVzAmUfYiFRy7eCJ9UpHwETtaCmCzTv7fTvd"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117848,
@@ -1048,7 +1048,7 @@
       "issued_supply": 524,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZfsugbXcXexi4pusxDnBvh3gHFykeLXXNffjZVd9SLib"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117849,
@@ -1056,7 +1056,7 @@
       "issued_supply": 218,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmYAPPUtS5kvjvKtbpe9L117ETnEfERFhbsMMrUPSD4yL5"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117850,
@@ -1064,7 +1064,7 @@
       "issued_supply": 148,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmeEWHUucw9W6EfmTPGAfb22iaqToXrUGEqSaFeyn4LUFs"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117851,
@@ -1072,7 +1072,7 @@
       "issued_supply": 74,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmP41CSyFaULUuwoBA7nA2SZRfMTqHhBj9SWFtCJxMdYto"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117852,
@@ -1080,7 +1080,7 @@
       "issued_supply": 85,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmPfLx3cDoe6F8nFZp2x3vUKhEZTcqqKMsDx4ejTpXkHJ4"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117853,
@@ -1088,7 +1088,7 @@
       "issued_supply": 89,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmQ68Nin72RARMaVjbRnAwUMKTZuZmSSX9LJe4CATp6zCQ"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117854,
@@ -1096,7 +1096,7 @@
       "issued_supply": 78,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmRRerK9QTJ6Uu2pB2G8esz2ktARyTtTH36SNrDUhZWroB"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117855,
@@ -1104,7 +1104,7 @@
       "issued_supply": 41,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSR3jy3i89HMfMv7YJf2ZS59T6uxo4n5RBKEwaabiJwQn"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117856,
@@ -1112,7 +1112,7 @@
       "issued_supply": 34,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSErsTX1V61tM5334sNn5V7T5VJTGSTu56rW9FaoULoRT"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117857,
@@ -1120,7 +1120,7 @@
       "issued_supply": 4,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSMJiefRKX7XtbBKk5sJozaV4XTjKcVUDzYCZxoEZfpCN"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117858,
@@ -1128,7 +1128,7 @@
       "issued_supply": 536,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZQwdowL3hbWuLXpApk8JUSSmgaUYY979s5Y5Kf1tj2Sm"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117859,
@@ -1136,7 +1136,7 @@
       "issued_supply": 190,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmX9oTqkABma3FA6bxTnXqn3HrpPyyyvyWwLFFwYw3uRPf"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117860,
@@ -1144,7 +1144,7 @@
       "issued_supply": 171,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmPbhEyBwc4XCj9pFKbwaUn88RkoMt7jm1Q2Z1BiBoxP81"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117861,
@@ -1152,7 +1152,7 @@
       "issued_supply": 78,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmWzwSzGxdHrzrUy1xd8FtthdW3MTLoC3qdQNa11ydz7SV"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117862,
@@ -1160,7 +1160,7 @@
       "issued_supply": 116,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmbAMTuxsXfGWVmwJ9vyZfTrLoxNCffiAkFm3Bom4PQDzm"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117863,
@@ -1168,7 +1168,7 @@
       "issued_supply": 84,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmU5FVxN23c9Nd4BnXymkyNK5zgvJyqXddx85QBDM8mCuj"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117864,
@@ -1176,7 +1176,7 @@
       "issued_supply": 52,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmd2xJtTFKwkdRuuWqh7XRF1j4th6WoqMzHmjtbvLLAFjJ"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117865,
@@ -1184,7 +1184,7 @@
       "issued_supply": 45,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmfCveQLuUQmiQe4qaRMCjsqbD1GhbyAK8GA1qH6EkgEoN"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117866,
@@ -1192,7 +1192,7 @@
       "issued_supply": 30,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZPd4tZTskskwtNUP8c3wMw8hkJoZVbqiEKTxQHt2Uvfa"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117867,
@@ -1200,7 +1200,7 @@
       "issued_supply": 2,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmdFa7YvZpXh2UoNSbX8KwTwGXEivT7H18fodysnLSw1Sy"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117868,
@@ -1208,7 +1208,7 @@
       "issued_supply": 521,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmUAGNiQQdJfrpFKZ8oBuXiYiNijsjzVTknQVTELuD4ydk"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117869,
@@ -1216,7 +1216,7 @@
       "issued_supply": 182,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmfTsYS9tMbD6XhL4aHGLEWvEhmTTtrqbGWHoTmUVBEJB1"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117870,
@@ -1224,7 +1224,7 @@
       "issued_supply": 162,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmW8f43aRAVb7F3x9i16DuUmtjTACXuMDoN71BS9YDWcZq"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117871,
@@ -1232,7 +1232,7 @@
       "issued_supply": 62,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmewEGMyRvGTfv2VTJGF8ou3NUPB6MRCDXuGtiMhp6w2MA"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117872,
@@ -1240,7 +1240,7 @@
       "issued_supply": 123,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmW1xdxTPhK38s84xuLMMkpcfp8croevRVoZ8PHg5rYzav"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117873,
@@ -1248,7 +1248,7 @@
       "issued_supply": 90,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmPabqHtYVwph2sZqZogD8TyJCAtemTUgGnJdanqkHCF5r"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117874,
@@ -1256,7 +1256,7 @@
       "issued_supply": 71,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmVqswd5aB4oniqYbnERMnC5hoTpBqhfhSVLqpnjsps6jM"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117875,
@@ -1264,7 +1264,7 @@
       "issued_supply": 41,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmRBinJ8Z4VQBjEMBvVzdW7qYfJG1so7pshWHbUwNWnyq2"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117876,
@@ -1272,7 +1272,7 @@
       "issued_supply": 29,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmTq28s52mzbmvjVVgipBDmPcT84x9464EvkuK5q9LkZFQ"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117877,
@@ -1280,7 +1280,7 @@
       "issued_supply": 4,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmacx99SUFeHK5m4wuKXJqouNrvysBKuxVN2Ag44R8fBtV"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117878,
@@ -1288,7 +1288,7 @@
       "issued_supply": 475,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmciXpv7TT9SmYrc4iTqqMkRR7t2NSq2kwekzuCRU53H8a"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117879,
@@ -1296,7 +1296,7 @@
       "issued_supply": 192,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmPvSPd2FrQhZPvffoi8Um3EjfK3KJ21reWJjANNhwJXUW"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117880,
@@ -1304,7 +1304,7 @@
       "issued_supply": 151,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmaeVyAx6ckuhBF3T6nwPi3rnrSZbisW4nfiJ8BAfGjExe"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117881,
@@ -1312,7 +1312,7 @@
       "issued_supply": 75,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmPQQfRjc2hwxMLuytepZbZLgZLDpxHh4YsFD8f9FWv4yZ"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117882,
@@ -1320,7 +1320,7 @@
       "issued_supply": 111,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmQuYjZj9cq8gSiJeGaGBpMuU1jJUm3dQgi9CcFjatWBZ8"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117883,
@@ -1328,7 +1328,7 @@
       "issued_supply": 78,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmWnqaCKhPFoukhXQuBcc8jA2kkgLk8hzgRYK79QVFb7tJ"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117884,
@@ -1336,7 +1336,7 @@
       "issued_supply": 86,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmT3ybraaN25R7o3JgvmqHb1yPCHy2PVdn6PM8rM5A1rVo"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117885,
@@ -1344,7 +1344,7 @@
       "issued_supply": 40,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmaXYAvV7yoM5QntdWqjhicNvxHyti44knAsNUMocu4mjU"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117886,
@@ -1352,7 +1352,7 @@
       "issued_supply": 31,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmWaNWgpSzqCRsvrjof54FvcsShxckgbKqsvCHWnzN9ZBm"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117887,
@@ -1360,7 +1360,7 @@
       "issued_supply": 6,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmVNzLYBLgJx3f6Kadi2u58nCWCjNZnSAUra11fxFRPqFf"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117888,
@@ -1368,7 +1368,7 @@
       "issued_supply": 537,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmf6yFUqK754KTRCXFiQu3Vej3m5HSd6QwZuk1xQ6jPvL9"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117889,
@@ -1376,7 +1376,7 @@
       "issued_supply": 199,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmToR3ZoRQhjnHVBYRTsMtx8QZzsbxPTrHJpw2n5o6F2kH"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117890,
@@ -1384,7 +1384,7 @@
       "issued_supply": 163,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmVmtfyVkBFyBHfBHcpBeQmwFhSr74MMK4GJSW3T8zTK8T"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117891,
@@ -1392,7 +1392,7 @@
       "issued_supply": 74,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmVRYZ7V5DLqHHFEtyp4pg9m2NaEHmhi7VCphkGoKqPqNr"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117892,
@@ -1400,7 +1400,7 @@
       "issued_supply": 101,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmRVDd8LPoi7ruaqf5TSJWZCEoTPAeGgbTZQHnGshTbsNm"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117893,
@@ -1408,7 +1408,7 @@
       "issued_supply": 95,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmezF41i3ya5AaQ7f3u8L9ftXi2eyby47KmKetJWttNA2Z"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117894,
@@ -1416,7 +1416,7 @@
       "issued_supply": 67,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmXh9TYiH7QMXo3RpNibkGceJ5ZpTbS6yaVYTSQb27myrz"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117895,
@@ -1424,7 +1424,7 @@
       "issued_supply": 42,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmR9bdRLKkjLzTd3tMq1otkouYY9mDvr7dBgDLUMbKbTKm"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117896,
@@ -1432,7 +1432,7 @@
       "issued_supply": 32,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmaS2SCnchzkztRSHCdxQ1q3ki73EYR1BTmbQbQ8VGM1Ts"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117897,
@@ -1440,7 +1440,7 @@
       "issued_supply": 6,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmX655kL1gSVQz4hJyPVXCiJJuebe9EA3z42FZKhQjeQHv"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117898,
@@ -1448,7 +1448,7 @@
       "issued_supply": 485,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmWVVRZ9NFaXZSvjRUfstsDuY69oauixe79yy1ZXRXMjHL"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117899,
@@ -1456,7 +1456,7 @@
       "issued_supply": 197,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmauw7wpVHChaZeuCJdsMXAbMR35ciev1G1U9WzP14nHBd"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117901,
@@ -1464,7 +1464,7 @@
       "issued_supply": 187,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmW2kj3dfasEvFXY2Kz8hUQMQ71FKzcFLHwTX5t3Bo918c"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117902,
@@ -1472,7 +1472,7 @@
       "issued_supply": 79,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmPCKbPgdY3yfL9Ta4j2z6jwkiBx1m9ZCN5CZDcu2WvpSb"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117903,
@@ -1480,7 +1480,7 @@
       "issued_supply": 89,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZX6EZQXqYqUQB39CaY9SEFjkFMSEQyVcnRyaxGrsHH9j"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117904,
@@ -1488,7 +1488,7 @@
       "issued_supply": 79,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmeQRo75yMsVii5PnXxg3XaDYDK9Frfx4Peg794rvLz2Zn"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117905,
@@ -1496,7 +1496,7 @@
       "issued_supply": 66,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmUUHrwayvpwzEDJMYEXmdFxZyZSeptM1EMA38Jv4v9AYA"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117906,
@@ -1504,7 +1504,7 @@
       "issued_supply": 48,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmbcHeFcznnyED1XmrZtMTuUtjt4jTsJKLRQdRan1YiaMx"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117907,
@@ -1512,7 +1512,7 @@
       "issued_supply": 29,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmYATyKKVRaGMnRUFuqLFsHv5yR3TdzNvmGzKcnpRUhqHj"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117908,
@@ -1520,7 +1520,7 @@
       "issued_supply": 9,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qma72GYFbw7DVDHFFKFw6h17KNRNzAK3hC5jMWZsFguzyh"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117909,
@@ -1528,7 +1528,7 @@
       "issued_supply": 505,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmQuF2GGXd578WYdpQkgE8cbr3jSbshK9SmvXmfuPgqd1K"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117910,
@@ -1536,7 +1536,7 @@
       "issued_supply": 191,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmTB8Fn7b9gMAVvA7i6Zsj9YWjGn8MdHobucWBQV42HwFK"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117911,
@@ -1544,7 +1544,7 @@
       "issued_supply": 178,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmayMK9c87TdUctjuEigHussrbVEJPjGwopq9ewoRqViZx"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117912,
@@ -1552,7 +1552,7 @@
       "issued_supply": 70,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmcQ17AunKfCnw1JsarH7SE5z8q1ZRp5RAUzRZG4Pxn18V"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117913,
@@ -1560,7 +1560,7 @@
       "issued_supply": 131,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmbPofpEQHEnM1byt347ZercyE3AHzGNfSi1xmfJHsSFuP"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117914,
@@ -1568,7 +1568,7 @@
       "issued_supply": 84,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmToGyPZ8ZwZuiRfToti31Kh5BT7w3CT1EhujATabuJ4WD"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117915,
@@ -1576,7 +1576,7 @@
       "issued_supply": 69,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmU8Yek1f3cbJDHY9tHnmwMo183SoacpUcMJhrVKU7c7nQ"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117916,
@@ -1584,7 +1584,7 @@
       "issued_supply": 42,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmWvGAErCtcLBdGQZPs9yiDWVXdwgPLZqAraw6rTefxxCN"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117917,
@@ -1592,7 +1592,7 @@
       "issued_supply": 33,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmaeN5KBMBoPASWLMfKBNFytx1PdSc5Eg2H1UaXygpEVjz"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117918,
@@ -1600,7 +1600,7 @@
       "issued_supply": 7,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmX5iA3xTj6sZwNxo8RGTtb1fzd8qGzVA9n4v6aFdNdgeY"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117919,
@@ -1608,7 +1608,7 @@
       "issued_supply": 525,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmfGnFdjLwM8i8CusirUd2zNQNfZk9L5XCLTS9YeE6cfde"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117920,
@@ -1616,7 +1616,7 @@
       "issued_supply": 183,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmaxYPBAMBABRWay5Afb5Dn8v3jnSSiiZu59kvNuzvrQ8Z"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117921,
@@ -1624,7 +1624,7 @@
       "issued_supply": 182,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSvZCWM3Lx4mZSQFqVej7hBpF3csb6NZBWF45Aj1zbypP"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117922,
@@ -1632,7 +1632,7 @@
       "issued_supply": 67,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmNdZDoB58babNQ49FZ5LQdLfr44kRMsgcv8cgz8ezbew5"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117923,
@@ -1640,7 +1640,7 @@
       "issued_supply": 121,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmeEr357RhoQ5SQyx7h9VdjaDV8qaRLMkoqgiX9VZuF4wf"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117924,
@@ -1648,7 +1648,7 @@
       "issued_supply": 75,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmd7gFJWv52uLudni4HTxBP82Qitpq1vWWcdv6HD9WZFFU"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117925,
@@ -1656,7 +1656,7 @@
       "issued_supply": 67,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qme57PeUDunCxMvWadoHPcvas1jqqYe7ZyMekJCJPF1G2U"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117926,
@@ -1664,7 +1664,7 @@
       "issued_supply": 46,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSG2vUZyw8G2yTPirxiBZtRnfTjvRLQchSSm1PrxXKQL7"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117927,
@@ -1672,7 +1672,7 @@
       "issued_supply": 24,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmVUJDN8LEs1hX8eJWXz7hRnG2X92fdz52neMnC79A3Z7T"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117928,
@@ -1680,7 +1680,7 @@
       "issued_supply": 5,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmXjeZWDgUA8YW3JpzjKeay4e4fm4DYEJpxpH4qYy8g6fc"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117929,
@@ -1688,7 +1688,7 @@
       "issued_supply": 531,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmRj5SSjgSio8fWFKS32dYMoKs93QVVXFoJMxVa7dV4zo3"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117930,
@@ -1696,7 +1696,7 @@
       "issued_supply": 180,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmYGs9HiL7UYRtfikDFrQcdn5UEGHTavq1y7VPrXf76jnN"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117931,
@@ -1704,7 +1704,7 @@
       "issued_supply": 157,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmYiZ3LCzRyv86MTWvTg4UN85k7tWKuhSNVVJZbnqduX5V"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117932,
@@ -1712,7 +1712,7 @@
       "issued_supply": 87,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmWXL9EA7qJJyvDp899BYeQh8QHVL3N4PWDqtDUxztkHZi"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117933,
@@ -1720,7 +1720,7 @@
       "issued_supply": 111,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmaNFbCLvzXmtgXy7Gj2wWCrJEZ4hMo3TnDLM76F1sqkCG"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117934,
@@ -1728,7 +1728,7 @@
       "issued_supply": 102,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSvXqtVTPn3LfpG3ucgcLk8NJujREnGrjQZKjo6KfxrAR"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117935,
@@ -1736,7 +1736,7 @@
       "issued_supply": 72,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmQTEyJ3iLG5ZEiKnAyuN2BgjCPef3nFJRKMn7AtQdsfAn"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117936,
@@ -1744,7 +1744,7 @@
       "issued_supply": 50,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmQJMnwhuT98xkxgkme3eGuPyBJqxhkZ96T8oFuMKzEE4A"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117937,
@@ -1752,7 +1752,7 @@
       "issued_supply": 31,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmV59DvUoMocBmhF5BRevvgBUTwGxrs3r2UpS7oCjZfzbG"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117938,
@@ -1760,7 +1760,7 @@
       "issued_supply": 6,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmdbwcXmLcsf3HjbjMzBoWFMygUNeHjLYVGdecQeAncw5s"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117939,
@@ -1768,7 +1768,7 @@
       "issued_supply": 519,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmarojrQB5uTRpKbVsz2tYqLcaPMfueTEA3nYuKb848kGF"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117940,
@@ -1776,7 +1776,7 @@
       "issued_supply": 182,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmTSsNMkXDyJeafTcFqBWVFwvkdAFoJF5u38tsC6JKBoGC"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117941,
@@ -1784,7 +1784,7 @@
       "issued_supply": 165,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSQZyiUToPppFNLyKSmhmwQ579SRWm6RuZuSemB9ayApE"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117942,
@@ -1792,7 +1792,7 @@
       "issued_supply": 61,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmUY4ByWqhoKjefR3XXCMHKedRRR7mK5D6eTBbfXRi4twX"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117943,
@@ -1800,7 +1800,7 @@
       "issued_supply": 107,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmNZxTQNcRAfTxNBTs3KotwnUxxwC4RUY6MffZbqDPXaAh"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117944,
@@ -1808,7 +1808,7 @@
       "issued_supply": 83,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmawYQnfnjiH7omYTnsmN985JPqxAobCS17p6BhAGEjwV6"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117945,
@@ -1816,7 +1816,7 @@
       "issued_supply": 65,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmYD2cWpA6TeLLisr7UqDu4aadM2x6VWmBXFfVF8GSUhBs"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117946,
@@ -1824,7 +1824,7 @@
       "issued_supply": 37,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmRDYYAMhbSQ39armPvSKu872mVuCrSJeGLcWX8NGS8s7b"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117947,
@@ -1832,7 +1832,7 @@
       "issued_supply": 35,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmfR7aa5UgUQRSukBUVp9UtueHvJdeJnLHPcPpS2w3y3xf"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117948,
@@ -1840,7 +1840,7 @@
       "issued_supply": 4,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmfTc5VzSA8EqNB9UNejqj3gBs3ohcsyqcW1mEqXxM9tJC"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117949,
@@ -1848,7 +1848,7 @@
       "issued_supply": 504,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmap2MmoCYURr2CXvxTBbGu41Hurb9Xr8nfYVCksso5yDT"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117950,
@@ -1856,7 +1856,7 @@
       "issued_supply": 197,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmbCc6z1fMq5j5CJ3P477fvuqFvwPc4T4eHsxSm3as81tr"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117951,
@@ -1864,7 +1864,7 @@
       "issued_supply": 183,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmTWUKdGrU2rwU9eFkGV5vzH2wneJE8pSN3jkVosBdcVMT"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117952,
@@ -1872,7 +1872,7 @@
       "issued_supply": 62,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZakp5JSdwMFrW4cRAaTyEruBKWARyaPBgYPdMJXNu8Qa"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117953,
@@ -1880,7 +1880,7 @@
       "issued_supply": 123,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZe4o8TiuA6sHFFpMkw5UHoRtXA7t3BtrZsNfo5G2ueBw"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117954,
@@ -1888,7 +1888,7 @@
       "issued_supply": 84,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmPQvui1YatXQqN3PbPqDwqA6shSegRjYBMKWH7jZEs6Ft"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117955,
@@ -1896,7 +1896,7 @@
       "issued_supply": 52,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmUdezp2hu6xLYjtwMqBToJ4bHAGD8d5ixx7JM2wT22F6w"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117956,
@@ -1904,7 +1904,7 @@
       "issued_supply": 44,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmQP2L4AWRnfZyw1XDbE8CB8XhpNZCy6eGRCh68zU6C9mZ"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117957,
@@ -1912,7 +1912,7 @@
       "issued_supply": 30,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmTgTQnwJgWT6ywRG47eo6QghewB9pWh3zT1VWmtU5wcKV"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117958,
@@ -1920,7 +1920,7 @@
       "issued_supply": 5,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmUUYVPxJAMjHLVGW2GHH1fxCQRpX4QK6j3MNhvGp39Nnx"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117959,
@@ -1928,7 +1928,7 @@
       "issued_supply": 503,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmUv8Jt5dfrzWW4yvKiVpzU5dKcq4QGr7WMM6pGHQ1cUHG"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117960,
@@ -1936,7 +1936,7 @@
       "issued_supply": 192,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmUR41kLJeF6ceEQuSWjQP9wJ5BRaNDVU9NYhnfsUW1qgF"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117961,
@@ -1944,7 +1944,7 @@
       "issued_supply": 173,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSpuD4oCPVRcpZ5visuqPXY8aaFN2eRHJpmgjN4rCQgqi"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117962,
@@ -1952,7 +1952,7 @@
       "issued_supply": 64,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmRfC4sWoZJMirZsTmUTNMoVVDWXQxR4MAeKdQSfS4eWLM"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117963,
@@ -1960,7 +1960,7 @@
       "issued_supply": 127,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmTdSddLigTFrQUPPowkXTgk8RGr6iG9h8UcpELhoccVhf"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117964,
@@ -1968,7 +1968,7 @@
       "issued_supply": 92,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmT56VYzKs6XdZa1dfYEsz1wANg1m8shvpBenSskuCh5KS"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117965,
@@ -1976,7 +1976,7 @@
       "issued_supply": 70,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmVPCneLqrQzRtfzVejSgYMStUP8fLnqXHPkh45fV9uTMD"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117966,
@@ -1984,7 +1984,7 @@
       "issued_supply": 47,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmcn7gM1NsSNLWVNhdLYm31aMsgU2tCmhkgACGGXccuaFG"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117967,
@@ -1992,7 +1992,7 @@
       "issued_supply": 27,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmb9oX3utEQy5rW8KPB4uJMpqvaL7M7XqpHrkzy9V2ByvE"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117968,
@@ -2000,7 +2000,7 @@
       "issued_supply": 2,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmYYdTeQ4QeMoLdpjyqnMdCwUE3M11TysXxBevM46H2xx2"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117969,
@@ -2008,7 +2008,7 @@
       "issued_supply": 516,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmb1Sr3KneCgL5BXjRnrVQf7G6nMKdYdYy1gbECrctkH3A"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117970,
@@ -2016,7 +2016,7 @@
       "issued_supply": 198,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSSgf2niDJVhwfRjH3V4GaQ1CmXHrs5VP1fRrqA8qWY2r"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117971,
@@ -2024,7 +2024,7 @@
       "issued_supply": 184,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmNN57zkrS2oxMViahhcCSBCdcgVHrwhHP6uMFTwY9oitH"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117972,
@@ -2032,7 +2032,7 @@
       "issued_supply": 61,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmPnXgNeuRzvSsRr5FNiWx1AVbk7cyyY4hWu5LEeC56fUA"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117973,
@@ -2040,7 +2040,7 @@
       "issued_supply": 133,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmchuiTNB6jkL38RrGUdYi5pXNtJbXXLCky6oJejuCEky4"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117974,
@@ -2048,7 +2048,7 @@
       "issued_supply": 85,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmdPbbparynGsqkCs6PffTvru5mkaSwvu3CREjCDmyggBf"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117975,
@@ -2056,7 +2056,7 @@
       "issued_supply": 54,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmY3sp5bnJdLKN4bRgD4GsuwLPrTXRfudYuACCw5Dx2zoX"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117976,
@@ -2064,7 +2064,7 @@
       "issued_supply": 41,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmYcD3cBLthZMcvgry7m36yniP2hDDFwch2o3pKs8y42Yi"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117977,
@@ -2072,7 +2072,7 @@
       "issued_supply": 29,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmfFmmE31sGoy1XicXd9285FFPrBWFXpH1kYrfYLZsvTvN"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117978,
@@ -2080,7 +2080,7 @@
       "issued_supply": 5,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmQdDvPpT7s2A1r7YTpFrJdGUbXKi2q7YuZaGoQ8i7XSyw"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117979,
@@ -2088,7 +2088,7 @@
       "issued_supply": 500,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSRyPB49oo6ZC1E1hMRiEFUxX3asEEvYkxmDhBMAAwTDR"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117980,
@@ -2096,7 +2096,7 @@
       "issued_supply": 170,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmU4Ju23LmfD8dxG9TmQgXfY8fvHUFGGU6sbGruYoVueqF"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117981,
@@ -2104,7 +2104,7 @@
       "issued_supply": 189,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmWHtNbX5yNY8i2zAYTnfU89Lmn3zrBcPq9KAZihAcahzS"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117982,
@@ -2112,7 +2112,7 @@
       "issued_supply": 58,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmStzNRyWhsQovUWA3m2gzujXnfStS2kELGZ8rx5fTmGz3"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117983,
@@ -2120,7 +2120,7 @@
       "issued_supply": 99,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmYPnYRmwPBg3BeFEBVP1WqMoVHNABA5td1kbou8DMpVpu"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117984,
@@ -2128,7 +2128,7 @@
       "issued_supply": 88,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZxVWRp9MD958fUPWSEMjsnJtkdVhuCVyxgUin4xqzzJC"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117985,
@@ -2136,7 +2136,7 @@
       "issued_supply": 67,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmVZgAstWu2FebvQnZDcDfpg1r4hShmD1Rj1Z61jknCeah"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117986,
@@ -2144,7 +2144,7 @@
       "issued_supply": 27,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSJU2X3bs4oJR2VokG9ttdCnq7PcTykLkRLxuzRkiAsA9"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117987,
@@ -2152,7 +2152,7 @@
       "issued_supply": 32,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZ57zCDkVpnKgakPFiEiDjA1rZ9EXifeKARkyKyenUW6C"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117988,
@@ -2160,7 +2160,7 @@
       "issued_supply": 7,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmWrTtR6k5ARbj9UwAPVBPrHmuW7nnpfDo6UcVjLGDTAg9"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117989,
@@ -2168,7 +2168,7 @@
       "issued_supply": 554,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmeVZyRWJy425479ZEKVw7FoBcWQpqXmv6ei7PgK5ewZ4x"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117990,
@@ -2176,7 +2176,7 @@
       "issued_supply": 191,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmakSjM56NQwL6PiFVt8MDKfiSALhhJrKrtVLgLb6QjJDA"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117991,
@@ -2184,7 +2184,7 @@
       "issued_supply": 156,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmdzNufQLyzYg5rzqACY6NMK82S3buabzvDJRJhvsPBXvv"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117992,
@@ -2192,7 +2192,7 @@
       "issued_supply": 68,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmdSA6afazKku2R6VxkgBtYpDdrna8WfWFUjQdaRMPvNeU"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117993,
@@ -2200,7 +2200,7 @@
       "issued_supply": 125,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmT76AE5H6JFdrbc9RfV8YLdyJbMovQwAFbG8k3mZkdmrr"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117994,
@@ -2208,7 +2208,7 @@
       "issued_supply": 81,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmPvs7YWe9xg6ESwv1sxCTg2h9WmUf8uDYimuoRT3RQaLJ"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117995,
@@ -2216,7 +2216,7 @@
       "issued_supply": 82,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmeDHsrRDJ2RE5VUfTSdwV4ScWACfx8Eup9pEUZFFnKGBV"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117996,
@@ -2224,7 +2224,7 @@
       "issued_supply": 47,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmP54oGnfLqGvmyFiax621nh9jy9sZ684ra3zwJCgvEx3P"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117997,
@@ -2232,7 +2232,7 @@
       "issued_supply": 23,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmPpRegEupKsqbENUCB1wJEWPGDZgX2zUmh1dQGpYbW2f5"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117998,
@@ -2240,7 +2240,7 @@
       "issued_supply": 8,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmXzdmhvi2FXdCcov1Msm2szoT1e3UrRofZaL2B1e9439B"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 117999,
@@ -2248,7 +2248,7 @@
       "issued_supply": 539,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmY3ZN2bJmPnvQMqkw4AsEXRJwf54Azdg5hQkkzTek7n8Y"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118000,
@@ -2256,7 +2256,7 @@
       "issued_supply": 176,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmRCPrSoaQC7uRd9aNCfo2AVzEPrucYdosGkt1esbow6oz"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118001,
@@ -2264,7 +2264,7 @@
       "issued_supply": 155,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmbBBk6GmHUzuscwvCWchroaiFXmBV47xnJVKWpuG1aELJ"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118002,
@@ -2272,7 +2272,7 @@
       "issued_supply": 66,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmXTeX9SqTb5kG4vLDVo7bM5u6pwV1EKfPLryQ79YW4vTw"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118003,
@@ -2280,7 +2280,7 @@
       "issued_supply": 96,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmUHKoVhuS7rcTnTGUwD9szwMPqZJ9a2K6xyTPs8KY9bnx"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118004,
@@ -2288,7 +2288,7 @@
       "issued_supply": 83,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmQbgomUbEvHLCnj3ZKSMtdca8SAyytgyADWSp3BdnFnGv"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118005,
@@ -2296,7 +2296,7 @@
       "issued_supply": 60,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmcYTYsHWLDrX23F7WdwbKtnDDt9dtgH779u4ESjyFZd28"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118006,
@@ -2304,7 +2304,7 @@
       "issued_supply": 42,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmfArKZUCaBQ8qwnHQv4HDgQPqyUq947HRjjrwsMadRYrG"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118007,
@@ -2312,7 +2312,7 @@
       "issued_supply": 23,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmfJ3SdjDMRw48R9Di63e9a8e3dxpkiNHDHFZKNti94WEq"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118008,
@@ -2320,7 +2320,7 @@
       "issued_supply": 6,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmcZfcNxvnrwyHLiEuduSWRRk8DoR62WjLNSn9iFHULtbj"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118009,
@@ -2328,7 +2328,7 @@
       "issued_supply": 514,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmcb3qiNPUMdiJ8yCnVrootdvnUEJaTtBeVHUxNqduUhGm"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118010,
@@ -2336,7 +2336,7 @@
       "issued_supply": 203,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmYKX3BKQin3z4Cgngrp1mGB5BKBzRhws9qJBhBLDqXwfY"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118011,
@@ -2344,7 +2344,7 @@
       "issued_supply": 162,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmNXTL2hsU1JE2Vh2ZLDhndYHBFBzUCn7JVRscUALB4NFJ"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118012,
@@ -2352,7 +2352,7 @@
       "issued_supply": 62,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmRCMFF65DxQjTtxDs5fMyB9GME3SKmVFVrue4Fyu8oKAn"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118013,
@@ -2360,7 +2360,7 @@
       "issued_supply": 127,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmPyTUsrVMZf6QvAuPW25bXFniDMgTGVcVJsVbdrd3n4JJ"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118015,
@@ -2368,7 +2368,7 @@
       "issued_supply": 94,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmcCiGFLJ3jMApYEDgkZMjkJn84Y8CJRL4AUwbiqDAcTCB"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118016,
@@ -2376,7 +2376,7 @@
       "issued_supply": 71,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmaDroAv37enh8BDtHWvZwKXjKtizP3TNMUii9C3uHz6Xf"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118017,
@@ -2384,7 +2384,7 @@
       "issued_supply": 54,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmfPPAUyzaU5SJgDE79pfbUmk7i57fw4NFUbfsx2osFFTz"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118018,
@@ -2392,7 +2392,7 @@
       "issued_supply": 22,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmesks4msbcxkpGPx7XFwvttpMHn9b5Um68PC2XUVxXPam"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118019,
@@ -2400,7 +2400,7 @@
       "issued_supply": 9,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmdp7M64RS7Hz78cxVBHEbWvM8c1bRt69KDf6fVAAqEU9F"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118020,
@@ -2408,7 +2408,7 @@
       "issued_supply": 483,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmaztBVUDEjzKC1fcSZqmSrZpQGGWohx4HvHA4YUTSAKSv"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118021,
@@ -2416,7 +2416,7 @@
       "issued_supply": 196,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmfUp5qns9tT82yKSBW4CdBsA3HyX2LJ4dmE7BWerHK7W8"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118023,
@@ -2424,7 +2424,7 @@
       "issued_supply": 174,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmdXEZXZ3kaBnp8uCJgUxKeFxcHuDTN3iRfAdApDcMRYCd"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118024,
@@ -2432,7 +2432,7 @@
       "issued_supply": 71,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmRipZ3xChQAQ99CpiHMP41xzhganmbbbMopBmsxoVSYyS"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118025,
@@ -2440,7 +2440,7 @@
       "issued_supply": 102,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmUNW26UANNUVRE5EN2ibYcmDGoNun6Vv5RiJN4aps4GGf"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118026,
@@ -2448,7 +2448,7 @@
       "issued_supply": 102,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmb346nvrP7y38DpTaoggtCQp3CWv7yKTWUayRdA6FWdNp"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118027,
@@ -2456,7 +2456,7 @@
       "issued_supply": 70,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSZqyWmVtALVfyrp8GSnGv8GwrBEWUwmdGfBkZNumi6fE"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118028,
@@ -2464,7 +2464,7 @@
       "issued_supply": 48,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmUTRqkcD9EuuXtBsbJYKLMCyoocL2WuVPVNmmRXkA3HLM"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118029,
@@ -2472,7 +2472,7 @@
       "issued_supply": 21,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmVWZbgTBvTcSGtneGDGWpdQvx7VdhEYiYCr1ynWCD3pEj"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118030,
@@ -2480,7 +2480,7 @@
       "issued_supply": 9,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmaiRJCi1GWwyJeQguLABa7gGUwECzmdW8G4dTdTJ87D1h"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118031,
@@ -2488,7 +2488,7 @@
       "issued_supply": 55,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZbKisrLR9MUKtTt16AhgdrtVdwR4yFzKiQd2GzMbpCSJ"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118032,
@@ -2496,7 +2496,7 @@
       "issued_supply": 68,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmeDVHi9SKG4satxL6d8UNFK8ZySmWawG8oHtdT86R6jGe"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118033,
@@ -2504,7 +2504,7 @@
       "issued_supply": 59,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmbtoWB5gSDSzMRJqXoW5G8egCTTXj3SuWNWiTJoFc4RVu"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118034,
@@ -2512,7 +2512,7 @@
       "issued_supply": 52,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmTBwe84YHePisMMsJ8yJpw7TteimpS2jkcC2i4kBxnPR2"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118035,
@@ -2520,7 +2520,7 @@
       "issued_supply": 70,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZ4sc2cacd5mSnfveUynas2rZsDUqkYwxwNbMJec2JT28"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118036,
@@ -2528,7 +2528,7 @@
       "issued_supply": 69,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmRVrMNCCS6z5VQMxB99rDz6z34VENo2PQTibNRwHmJ2ja"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118037,
@@ -2536,7 +2536,7 @@
       "issued_supply": 63,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmfA8PPaiQECKsNUTVhR8jG6V2MkWsTvND5YpPhVRJi1V5"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118039,
@@ -2544,7 +2544,7 @@
       "issued_supply": 84,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmXiNFdgCnTZpYWb1pL1HWZbKyCqQzzWRkP9CXqh5sc3ta"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118041,
@@ -2552,7 +2552,7 @@
       "issued_supply": 60,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qme2TX2rNSHvYQqAWgGdpvuGKEp4KRTnYwewvtdt48G6fU"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118042,
@@ -2560,7 +2560,7 @@
       "issued_supply": 82,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmamR9NdXqp2Fkr755xjfXoDxW2nrHYAtcXquEJ2MCCovF"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118043,
@@ -2568,7 +2568,7 @@
       "issued_supply": 71,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmQB5z9eKNPWp41csmp3nP7QDXK3gavwLgBqapmkd5rYWN"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118044,
@@ -2576,7 +2576,7 @@
       "issued_supply": 53,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmS9WT9UwNyQc7JPbTPV3tqpJmoQeyg6WGa2CuPm1ypqpX"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118045,
@@ -2584,7 +2584,7 @@
       "issued_supply": 72,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSCSgJjCAk5SE6mnqCR4QzbXy2kRizWzCjjubJK4J4tXr"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118046,
@@ -2592,7 +2592,7 @@
       "issued_supply": 65,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmbrz7fxVUtTM5Q11yPYno72cyu25iVdqA9LZzwMKgFm9d"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118048,
@@ -2600,7 +2600,7 @@
       "issued_supply": 86,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmeCLsnoYa6sS59TE6QSeJbNj1Ti9Rj8dsdxvdvnLVkQzT"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118049,
@@ -2608,7 +2608,7 @@
       "issued_supply": 76,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmV46AM8TK5TnsLSCyAk5CpewemWX2h1H1BrNNGE5WZzJm"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118050,
@@ -2616,7 +2616,7 @@
       "issued_supply": 69,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmU3PBdCuyVjerS6ZQpiAiDSmKjLtjhrcLBJMzSbRLabjc"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118051,
@@ -2624,7 +2624,7 @@
       "issued_supply": 532,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmNNT13XHXFse82MAsigW5xcmEuuQ1wwK7XbgxBtkrhNED"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118052,
@@ -2632,7 +2632,7 @@
       "issued_supply": 189,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmXbmAKi8juSDKovZawW5ySUzaLVfx4q4wNH6QGoWtv9gA"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118053,
@@ -2640,7 +2640,7 @@
       "issued_supply": 188,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmY9p8zAGPJPN1nenACgdZuQzbu6oXLbFYmbVN8FHwm2q5"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118054,
@@ -2648,7 +2648,7 @@
       "issued_supply": 65,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmPYGjkQBjntgkgc4tQhL69k8uwWvKJbtGBNsfGLBNS2p7"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118055,
@@ -2656,7 +2656,7 @@
       "issued_supply": 110,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmYn9cyEMY2ZcsDVRyjXxHfLF9Useg7jekcDGfqQojrUsF"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118056,
@@ -2664,7 +2664,7 @@
       "issued_supply": 80,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmdEjYMmDJMD1aobNHNTCKNAHQwbyAx93p1HUWRvsU2CwP"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118057,
@@ -2672,7 +2672,7 @@
       "issued_supply": 49,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmUrQNQQ8pHugqs19TFGCjWWfWL7gm4Zbq7ar3wcywnrp5"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118058,
@@ -2680,7 +2680,7 @@
       "issued_supply": 44,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qma5WjisKRAhQgjt9TD9gGLkj8FePMAeXcrvzKLuVx5gPQ"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118059,
@@ -2688,7 +2688,7 @@
       "issued_supply": 26,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZmf85uxYjXYKvb8FiMT9objnSh8CLQG84jxYTSbEZaTR"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118060,
@@ -2696,7 +2696,7 @@
       "issued_supply": 7,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmVkyP2gx4moUWSt7WvRouCGkxPUmpCbm8hxCujcUMzBQ8"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118061,
@@ -2704,7 +2704,7 @@
       "issued_supply": 62,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmUe5NAD1CPR6rWKVAhbmgNc7NXttbWh5MXUPDgTRGkuD5"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118062,
@@ -2712,7 +2712,7 @@
       "issued_supply": 2,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmaFoHPshMmXCKuJi7eUEBP1w88zfGofgFoSYfrVyg37wa"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118063,
@@ -2720,7 +2720,7 @@
       "issued_supply": 471,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmQPBZ7UQkKobkkEv9nMAsz4Q7cZRrgzi8zqMQxfwGqCVi"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118064,
@@ -2728,7 +2728,7 @@
       "issued_supply": 538,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmPe1vwgbrcdEDEfot1pfwwhxRKA3GLiPGq6FmnN7WLdcT"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118065,
@@ -2736,7 +2736,7 @@
       "issued_supply": 85,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmXAS6jfNkxgd1Mm6Zt96RBydTF1V55EhDqv75jAGfKqHN"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118066,
@@ -2744,7 +2744,7 @@
       "issued_supply": 65,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmPExTJ8D5XB2QYGdvyRg7rnDznuWZB9kbMCPdsoPo9tSz"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118067,
@@ -2752,7 +2752,7 @@
       "issued_supply": 80,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmawqZwoTymT539DAkJdptvWsZYCoRVpwFnixcX8HyxNVg"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118068,
@@ -2760,7 +2760,7 @@
       "issued_supply": 64,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmQtUMHA3pH1sMbzeq4kfSJ6pufVYTdpo8WNa36S4ymWU7"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118069,
@@ -2768,7 +2768,7 @@
       "issued_supply": 86,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmaojtuL9ZkG5gQowWQucSRZHfcfrTqic6FD6JiFVai4Yu"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118070,
@@ -2776,7 +2776,7 @@
       "issued_supply": 66,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmaV8mRPxbqt9YhTtCi692kqe68Q2CvhK5QZvT9PvabdTK"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118071,
@@ -2784,7 +2784,7 @@
       "issued_supply": 83,
       "max_supply": 0,
       "schema_name": "series1",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmbUda4p2qgUhiySm735cEEDwaGe33xgGWm36pgYKEqYk6"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118124,
@@ -2792,7 +2792,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmXfdqKs4frxB6LF37sDWpyH3PMYaDuZyiHsuACHppLBk1"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118174,
@@ -2800,7 +2800,7 @@
       "issued_supply": 100,
       "max_supply": 100,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmf9KgsBJtL2o9wj3sjx7An8AJ1xRX1CoL6RjnqawhZqph"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118176,
@@ -2808,7 +2808,7 @@
       "issued_supply": 100,
       "max_supply": 100,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmYMytqbXdT8qNqHgm6V3r2ehGTtSKsR3L8r9hTQ2iZSDc"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118177,
@@ -2816,7 +2816,7 @@
       "issued_supply": 100,
       "max_supply": 100,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmbLmVSJdXdur3KTC39AePDP7wRRboE1mQz6peUhJbD6fc"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118178,
@@ -2824,7 +2824,7 @@
       "issued_supply": 100,
       "max_supply": 100,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmeS5EumvZCLrdqTTHuosXdSoMmMLmVDev6Dc3XCu6NRHJ"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118179,
@@ -2832,7 +2832,7 @@
       "issued_supply": 100,
       "max_supply": 100,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmV4To4X7CwGFk42uspHQYffaDqRonhGvqM1bExNN5LuHm"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118182,
@@ -2840,7 +2840,7 @@
       "issued_supply": 100,
       "max_supply": 100,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmWsF3brXQNdCeqxebfSAibBYCFzBdRGT5Xtpkyqic9kLN"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118183,
@@ -2848,7 +2848,7 @@
       "issued_supply": 100,
       "max_supply": 100,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmNxynuuGTAKxyVKeBLV4EJTFp3x69UY63gcYzK17naACE"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118184,
@@ -2856,7 +2856,7 @@
       "issued_supply": 100,
       "max_supply": 100,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZR81BfQr9Wq3ZetEVbEtGnWGXR1g3oATNtFh5wb9XhUw"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 118429,
@@ -2864,7 +2864,7 @@
       "issued_supply": 0,
       "max_supply": 0,
       "schema_name": "packs",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmayuiTFYiUNPeF7wDjqC7s8T3jkDodcaqPuN1ob6Noz5e"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 125190,
@@ -2872,7 +2872,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSGfcGcefMTNCqikM7JTnoyj6pG4rPQ884bAmWJahsxqk"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 125191,
@@ -2880,7 +2880,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmRsKp5yf68iLypndtVjv42HfW9uAo39XdWom2ZWm3mSp8"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 125222,
@@ -2888,7 +2888,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmRQJYymapoycqHiCcSZrHm4egKZJTc1V4NSnPnc2AT3Xf"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 125974,
@@ -2896,7 +2896,7 @@
       "issued_supply": 100,
       "max_supply": 100,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmUXYmfg8L3f5yNAqGkVXesqGGQ5AQhdihfjzHN1Z5vSHf"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 146181,
@@ -2904,7 +2904,7 @@
       "issued_supply": 10,
       "max_supply": 10,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSEgHbLiE3pDuXntyhNjpJn56TdPS211dgTHK5Etb7hnK"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 146304,
@@ -2912,7 +2912,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZ6ZSpUmXanaWwxie35sEDqgYLW7ufGEfGgkrqM4jgpFm"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 147313,
@@ -2920,7 +2920,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmS4pQKjAbKA3tAiqFC6UPssNsXPd1skppHogRYcRvPt5d"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 147317,
@@ -2928,7 +2928,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmUWu8gzr6eZvk43exHfWxwHViiNUP7yrqbyeGdWmZFazr"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 147318,
@@ -2936,7 +2936,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmTSqwa3QCVd2GDg2e9UMqJK5K2Bvefeir4FbkFnTdjJgS"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 149351,
@@ -2944,7 +2944,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmX2iThawpG4mdF8QT9ZB2rmtUDWSLEMH8pquVvwDNJ8MF"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 149352,
@@ -2952,7 +2952,7 @@
       "issued_supply": 10,
       "max_supply": 10,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmYajg7no9dAcx3P1rPxxyZLAYUCBKuu9xdj3wCTFTqoX9"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 149359,
@@ -2960,7 +2960,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmPZ4FDj4M23y42tyheoajmbaxh5BqueHnRLZ8suPvYqMN"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 150126,
@@ -2968,7 +2968,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmbpi16bBiBcioSUbNmNyyHsx9wc8et8LZdv9xKu1mb5LK"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 150133,
@@ -2976,7 +2976,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZ6ZSpUmXanaWwxie35sEDqgYLW7ufGEfGgkrqM4jgpFm"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 150136,
@@ -2984,7 +2984,7 @@
       "issued_supply": 10,
       "max_supply": 10,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZ6ZSpUmXanaWwxie35sEDqgYLW7ufGEfGgkrqM4jgpFm"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 150141,
@@ -2992,7 +2992,7 @@
       "issued_supply": 10,
       "max_supply": 10,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSEgHbLiE3pDuXntyhNjpJn56TdPS211dgTHK5Etb7hnK"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 150561,
@@ -3000,7 +3000,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmXS1ToQAoGygkSgjuhjBMR2sj9UypY7vJoebn3CTtiQ49"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 150562,
@@ -3008,7 +3008,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSb8RUjsCVK5r8dLhKgdE7kNMnPTnyeerMbAMgEUykdmD"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 150563,
@@ -3016,7 +3016,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmWDBAB18jpLMDUVUTqzvbxraTFLqq3ux2dyoL6d4h9Tva"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 150565,
@@ -3024,7 +3024,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qma9WiWsuKiPWVP5efHXrFUyCsRMMcFSKhZGdJoxMYcSHn"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 150566,
@@ -3032,7 +3032,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmX95WTjYWxE4SGrmyfLiQXsnuoCwVuMXteopVm7h9C5gx"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 150568,
@@ -3040,7 +3040,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmQodqwAEMYhBBCLBQWd3er32sqRBMgk2EDrQ5kUBkpCWy"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 150569,
@@ -3048,7 +3048,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmcquMxr78tVNGTwchzoUj8SyqeRDtkHWaKjRyHv9MUTYy"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 150570,
@@ -3056,7 +3056,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmf15kDApQu43UBckxGyRptewVWoNmG9KtErk54dwVZDbS"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 150572,
@@ -3064,7 +3064,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmUGAdTaeGZZV7mJXyurFdkyULHQfY47xtQ51pPsRPoEyr"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 150574,
@@ -3072,7 +3072,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmQJCafpUwF2nSTaBriEuWVXayrVZjrMf1V9nRWwFMs8N5"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 150575,
@@ -3080,7 +3080,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmYr4oy9NznTEh1jCCMTtMKFmZbtXpHGQke7c7FqZDypfz"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 150576,
@@ -3088,7 +3088,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmcniNXBmBbch1WCRUvQoh41UPyrAn2ZQMdWcAUArZ1QNz"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 150579,
@@ -3096,7 +3096,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmNeH8xrvY6TEoPdJzYw2ffoWyouXTKqKxPebNKZrbC85e"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 150866,
@@ -3104,7 +3104,7 @@
       "issued_supply": 0,
       "max_supply": 100,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmPMmBuXU1U8iaaXivN1XDjRidEpbwLiaNaqD8TJxVRQpw"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 150960,
@@ -3112,7 +3112,7 @@
       "issued_supply": 10,
       "max_supply": 10,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmPLF6J5roFcLPyoULm3oj3bz62Etkm12PMQSaUdqcy2pU"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 150961,
@@ -3120,7 +3120,7 @@
       "issued_supply": 10,
       "max_supply": 10,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmQkCfVjouWUunc9zaTGYZJD9SB4wG6z7y4597y1KDMR1X"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 150964,
@@ -3128,7 +3128,7 @@
       "issued_supply": 10,
       "max_supply": 10,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmPoBj1YpGcw7GvNqayaVuNVXYW3qB3kVU27yuzYwwj8Ec"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 150965,
@@ -3136,7 +3136,7 @@
       "issued_supply": 10,
       "max_supply": 10,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmcUiqPtQFm7ckpXdaFeTsFSYsd9YdJbjVQ8W3NKpVboDV"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 150966,
@@ -3144,7 +3144,7 @@
       "issued_supply": 10,
       "max_supply": 10,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qme9v5MqYdvda294gEMZ8RKfxRPrE1zLkLjqzcaet575r8"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 150971,
@@ -3152,7 +3152,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZAw8H8NGjdkkKBcZbcxMjP7e8z7eSBBr4YYkmyC3gN1F"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 151130,
@@ -3160,7 +3160,7 @@
       "issued_supply": 500,
       "max_supply": 500,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmPMmBuXU1U8iaaXivN1XDjRidEpbwLiaNaqD8TJxVRQpw"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 152791,
@@ -3168,7 +3168,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmdD1rF1caAx57LSWbARutE1iYcTkfoyVFptRsGvPYDWtz"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 153292,
@@ -3176,7 +3176,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmdD1rF1caAx57LSWbARutE1iYcTkfoyVFptRsGvPYDWtz"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 153652,
@@ -3184,7 +3184,7 @@
       "issued_supply": 6,
       "max_supply": 6,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmb4dJuZX8fdSAKY53GwrmrK2Lz8N7WwYGTCC2k6szNskz"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 153662,
@@ -3192,7 +3192,7 @@
       "issued_supply": 3,
       "max_supply": 3,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmYgtuLoFD8kiceeGxD11utX9avVDmhKQoeWmT8mVdg7ks"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 153667,
@@ -3200,7 +3200,7 @@
       "issued_supply": 2,
       "max_supply": 2,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmYe75SeLxhHEdA7QT3d7PduBosCiFdUqvqLwZTSnsCBgp"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 153677,
@@ -3208,7 +3208,7 @@
       "issued_supply": 2,
       "max_supply": 2,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmXmTvECfjG3zZ5a1vARu5TXYdh1nAQJW5FYuWZs9hkMhr"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 153678,
@@ -3216,7 +3216,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmUnKHzASheKdfNA73WicbjEnBaE6hLxFGyVyR8gJTpN5U"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 153679,
@@ -3224,7 +3224,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSMypgwrLiXdcuiS2dLqa1JBsF7dSEV9n4dSZUxSqy1pr"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 153681,
@@ -3232,7 +3232,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmapacgvcNhKNWz6xaQ5Xy6hPoADJDX5fehD6VoYKbQYYP"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 153682,
@@ -3240,7 +3240,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmVw9ZMZ7LPyRcnRe8Bnc1bmr2YDeQkNsGTXDVtbdRj8fY"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 153683,
@@ -3248,7 +3248,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmX2YdZAHfbTJsUyFaqRKXdoek3TadAepumMr7vXGdmH9s"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 153684,
@@ -3256,7 +3256,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmUR7weNxvkS8tLp2bFo8HmWFEk82hu2JtbEXYg9J9xNpd"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 153686,
@@ -3264,7 +3264,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmew36LBzpv3fi515osj4A9Yc1HtQ3E9BmwaVM7dxyn6Fg"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 153688,
@@ -3272,7 +3272,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmWwe1sZGP3e9jg78tvhKSdP4dcQ3GHMg4fBXFbGLPWZhA"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 153689,
@@ -3280,7 +3280,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmbVp7XMHsViJurPhuJEVVh4W9xE3kLhqWbzQ4ak5mPVBx"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 153690,
@@ -3288,7 +3288,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmRvJ4zg6UfrNfCTFqC3eCF4BCcNLpi4y8v3tMJuxRB4dv"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 153692,
@@ -3296,7 +3296,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmNgx93X3KTivAVUsRswGJ5WEKdPmMzcJ6rBHwoP6qBAnV"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 153694,
@@ -3304,7 +3304,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmYe3DEhNFDeMuujjWmJfVaZZ5xWQnPhh9Tg3NpfGMGefw"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 153696,
@@ -3312,7 +3312,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmRvoeTLDPgSjaLkkUcZtvuzUvLqEYBfBoR8oSYcuCC74W"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 153697,
@@ -3320,7 +3320,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmcMEav8Fg3winZ1ECgRFH6TU4qvbhZkQYKjoesSMaVMqn"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 153699,
@@ -3328,7 +3328,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmazMaNRLDFDbsR48nnmgwFJT8dZbv7qybxPWpL2a2dev5"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 153701,
@@ -3336,7 +3336,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZKaT2cMnX6xozMpngdrow6BPbJMAScMM3AvCpjJ6cSdi"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 153703,
@@ -3344,7 +3344,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmNRKFqagR57ZoNZ22zpidLTcQimWSK6ptgBShciro9Tiy"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 153727,
@@ -3352,7 +3352,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSMypgwrLiXdcuiS2dLqa1JBsF7dSEV9n4dSZUxSqy1pr"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 153749,
@@ -3360,7 +3360,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSC3Xhxtj7psdLpAonExUa7i2ayC833CgT5Bh66vuEe4A"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 153785,
@@ -3368,7 +3368,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmY3zppxB8zRE4AzUYYvaxPhp1NXYGF3HUTTfieJGx7ihx"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 154790,
@@ -3376,7 +3376,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZpmuivxkuLBU8TRrCViLSLUBA7tor6DJb5EmM3zZErqS"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 154807,
@@ -3384,7 +3384,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmRcEVcFFuZDz9cwzJuHvAX12fQCrANjWc765LNmFt6kT1"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 154811,
@@ -3392,7 +3392,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmaFdYLPNGWmjHVE8CemfBqNaroPh2cetL61TkGjES5NU4"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 154814,
@@ -3400,7 +3400,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmauehhmV3iPkFnJunbsRqDnLB7XmyWrCeWYSwNHsYchaq"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 154818,
@@ -3408,7 +3408,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmennGSkbr5zDueJYUdCYK9jtmfhTYF138iHKFUgtVqQ9N"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 154952,
@@ -3416,7 +3416,7 @@
       "issued_supply": 9,
       "max_supply": 500,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmP4zC8gTdua6qGRsdVc7FMaGQU9gZ2PLMZ5o3pJNptzhs"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 154974,
@@ -3424,7 +3424,7 @@
       "issued_supply": 52,
       "max_supply": 200,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmYtrbWyPCts1u6yb5JuqLZRrE9AyaukgoEArRy8vG95fD"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 155408,
@@ -3432,7 +3432,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmbiYoQyKF8XL79kuvnTFPPV4Taq3XEpqudozC8Hxz1F3w"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 155644,
@@ -3440,7 +3440,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSMypgwrLiXdcuiS2dLqa1JBsF7dSEV9n4dSZUxSqy1pr"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 155645,
@@ -3448,7 +3448,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmb4dJuZX8fdSAKY53GwrmrK2Lz8N7WwYGTCC2k6szNskz"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 155647,
@@ -3456,7 +3456,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmb4dJuZX8fdSAKY53GwrmrK2Lz8N7WwYGTCC2k6szNskz"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 155649,
@@ -3464,7 +3464,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmXmTvECfjG3zZ5a1vARu5TXYdh1nAQJW5FYuWZs9hkMhr"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 155650,
@@ -3472,7 +3472,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmXmTvECfjG3zZ5a1vARu5TXYdh1nAQJW5FYuWZs9hkMhr"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 155753,
@@ -3480,7 +3480,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmYgtuLoFD8kiceeGxD11utX9avVDmhKQoeWmT8mVdg7ks"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 156755,
@@ -3488,7 +3488,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmb4dJuZX8fdSAKY53GwrmrK2Lz8N7WwYGTCC2k6szNskz"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 158311,
@@ -3496,7 +3496,7 @@
       "issued_supply": 7,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmS6wMwYnYaGTJBqxQpSeNeuaAN881T8youqxkmtyoGUxr"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 158312,
@@ -3504,7 +3504,7 @@
       "issued_supply": 6,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmWKXF8xLnj84nZ7QwxCghaHsQ3X4v6jiWCjVFrPuXKQ9h"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 158313,
@@ -3512,7 +3512,7 @@
       "issued_supply": 6,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmTrqGDQCwV9PKcRKUVbJSVCECsXfzGuFsobYaa1v85rkG"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 158314,
@@ -3520,7 +3520,7 @@
       "issued_supply": 7,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmTLrxyZAQZJ87ad8MfboY8xsQF4UgyiXrppZ2PAmqVPpY"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 158315,
@@ -3528,7 +3528,7 @@
       "issued_supply": 6,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmbWuvF1cEJiD4UL6TPpusB85FSizRaqbizohq7V57UacH"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 158318,
@@ -3536,7 +3536,7 @@
       "issued_supply": 10,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmfYXXxLxjekeqQwDCN1719w2QgqYbU3bJCKjKccL2q2Bz"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 158326,
@@ -3544,7 +3544,7 @@
       "issued_supply": 21,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmcX5uYgkbkGiRbZwYmw3ZKznzybfDWxRaf2HNY9J4jPvy"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 158329,
@@ -3552,7 +3552,7 @@
       "issued_supply": 9,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmeY2R2BouLfHAknjaaJ4RQRbEuTu4E1eYmBDQRNEUxPX6"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 158334,
@@ -3560,7 +3560,7 @@
       "issued_supply": 9,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmNezKDVK42LwozwD3DVxWW7uw8XgcJyzWDVr2qj4c36dn"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 158341,
@@ -3568,7 +3568,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmemaFmrKT31tTPkLFaqMY5zLi5RPmNXZj8peUesushi4v"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 158342,
@@ -3576,7 +3576,7 @@
       "issued_supply": 6,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmXRMVx6hamcoWGTM4Jv4RR2SDwHC8x84iQgPmwb1Q9Mo8"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 158345,
@@ -3584,7 +3584,7 @@
       "issued_supply": 6,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmeyKNYdWiR5YiHitF4cXWjeM61vdUJMJ2feJNtEQ29es1"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 158347,
@@ -3592,7 +3592,7 @@
       "issued_supply": 9,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmcLniFmH7sDKNhRgvBqw8MfGkc8zbQNavszL8RAiSuKDy"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 158351,
@@ -3600,7 +3600,7 @@
       "issued_supply": 21,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmYqCH6k6zA9YRvGczZoX55NLPt4FkUZTJiCPbezwspsko"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 160982,
@@ -3608,7 +3608,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmdcjLfcchw2wnE1nciL4Nkzk4QY9KqvkME43FGJZXAmqs"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 161131,
@@ -3616,7 +3616,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmUnKHzASheKdfNA73WicbjEnBaE6hLxFGyVyR8gJTpN5U"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 161802,
@@ -3624,7 +3624,7 @@
       "issued_supply": 0,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmTgJ65oR3iSz892GZSgMh2tvHr8ABPttThUkoEaPtJy45"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 161806,
@@ -3632,7 +3632,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmTgJ65oR3iSz892GZSgMh2tvHr8ABPttThUkoEaPtJy45"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 161883,
@@ -3640,7 +3640,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZLNv46AYmGAHcA1gU3Qyz7eFKdNNUxbxobGqNbZ8wRzo"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 161909,
@@ -3648,7 +3648,7 @@
       "issued_supply": 250,
       "max_supply": 250,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmfG3ocZGfni2cMWdaShwToPTvWANtVekFJMXViMGY5Akh"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 161920,
@@ -3656,7 +3656,7 @@
       "issued_supply": 250,
       "max_supply": 250,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSidaXtoGvWPZtRwaSdG8L1Z6LCZDRsB76HkBLRb9wMeZ"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 161921,
@@ -3664,7 +3664,7 @@
       "issued_supply": 250,
       "max_supply": 250,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmWd27musynK84G2syPUKTvtxSRrHbNVWWx9xvVJWVqLzc"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 165268,
@@ -3672,7 +3672,7 @@
       "issued_supply": 30,
       "max_supply": 30,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZFp9Kpr3iCNKDY5Fg8racdmxFn4GDFoRczRiMp8rWNA3"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 165637,
@@ -3680,7 +3680,7 @@
       "issued_supply": 30,
       "max_supply": 30,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmNoqH25AHeTM9jXQmxS47gRakGNN2UFQbKbJNVZ6Mi3pf"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 171724,
@@ -3688,7 +3688,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmYr4oy9NznTEh1jCCMTtMKFmZbtXpHGQke7c7FqZDypfz"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 171730,
@@ -3696,7 +3696,7 @@
       "issued_supply": 150,
       "max_supply": 150,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmeR7mBabo2Zw86u38g2sfznx9b8Lawhf3R4ZHi28f7fZq"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 172112,
@@ -3704,7 +3704,7 @@
       "issued_supply": 30,
       "max_supply": 30,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmXBCqNM2w681nbi4EJGwLBJ2VfDgZ8Csu8fZcb1LQQzL6"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 172582,
@@ -3712,7 +3712,7 @@
       "issued_supply": 150,
       "max_supply": 150,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmXawpW1EXov8r46jddW2X6BnJ7pyJebPdR5vcZ5qiXiPn"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 173426,
@@ -3720,7 +3720,7 @@
       "issued_supply": 10,
       "max_supply": 10,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmTEDkNPSkvJpBxcorz5m29GXihiDKo9uxf6XGtkxvXzdY"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 173430,
@@ -3728,7 +3728,7 @@
       "issued_supply": 6,
       "max_supply": 10,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmRaMNLnwZJni8WTTPCRbAsDuwJR3CSfEvdCidKwXJtDzj"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 173456,
@@ -3736,7 +3736,7 @@
       "issued_supply": 10,
       "max_supply": 10,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmfC61NQH2L5PxNrwMtDWQpwmtofka5Gp8LNK8JcUPVtEc"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 173457,
@@ -3744,7 +3744,7 @@
       "issued_supply": 30,
       "max_supply": 30,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmddPVb76hRZx2D6sAjF7SmAgtX68bz5FPiXesu5WiFbgV"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 173486,
@@ -3752,7 +3752,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmPJZ3tqzgLEz2mtj8xQHjNicn8MH7BqsDCPopBoE5q17k"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 173531,
@@ -3760,7 +3760,7 @@
       "issued_supply": 10,
       "max_supply": 10,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmauuxB4b2HvhGcNo7Gv9pRoExssfE7phxoXBN455v7nmS"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 174506,
@@ -3768,7 +3768,7 @@
       "issued_supply": 7,
       "max_supply": 10,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmVKJuWFxPjxpM9iKmU8QYJ91vYCnmMeA5RdXBqhKni7sw"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 175173,
@@ -3776,7 +3776,7 @@
       "issued_supply": 10,
       "max_supply": 10,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmT3SMR42fUHue9A3TJAyRxYUWPvZQ5YQTDzE3q95yJWTP"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 179866,
@@ -3784,7 +3784,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmVsvWf2HzYAR8XdhjdWuFh23rFPZgDwq9GUHDgPtiRiGC"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 179869,
@@ -3792,7 +3792,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmScMsW3eGyacpDw6xfUZRUPyEp6yDMAckuELLH4GneZJg"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 179871,
@@ -3800,7 +3800,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSPJRS9oNjjzQ4ebrxzC42RCkVRyxaj758tUXSc9zw8Ln"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 179916,
@@ -3808,7 +3808,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmbTVbhqc9xnoypNUzfs9hT1SoQqw35aovnYxjUbuxjCWq"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 179917,
@@ -3816,7 +3816,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmevii3T3K7x48MuwXuL4nDn4iuZ8VEd4mS4R944ixzUma"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 179918,
@@ -3824,7 +3824,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmPfJ81N2UxFDoR3Fb1c81ezNXVXEg2TSfzLgv6uxnVE15"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 179952,
@@ -3832,7 +3832,7 @@
       "issued_supply": 5,
       "max_supply": 0,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmdHU7J5C2EXeD63dPjBo8H41H2NNtAm5noEFieazkBp7T"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 182032,
@@ -3840,7 +3840,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmVpFmiDtFmbb146Y8T1ZmS3dXjN1hNZGjgtiNeZPKEkJJ"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 195807,
@@ -3848,7 +3848,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmQ26wPjXzF6zKMSybCwTT4jverPtD1C7uuWFhfewm5AsU"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 195808,
@@ -3856,7 +3856,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmW3LAZWBd9rVLJ4e8wzk6FmRaUgvmN7kNvNVHioPEFrVs"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 195809,
@@ -3864,7 +3864,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmNfuLCodqax6SBC18MH2UbARKUrqwA9uG8edqGa3qagx7"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 195811,
@@ -3872,7 +3872,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmVb3kbrG9jhwvyC4mKgVV52VbAsQyfC9Dtuan6XKEdeD5"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 195813,
@@ -3880,7 +3880,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmc96X9NLsNHqReE2WcB5yyt3MU6T3zLWrSPfAVyrtBgyx"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 195814,
@@ -3888,7 +3888,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmRrR7mTNMrfb3fHPVnGtPXCrbapFCdr5LmXQdbWN7jPfL"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 195816,
@@ -3896,7 +3896,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmPVHu9tnjRR7vvzAJmFQKdrttxHUb2WqG4PvseWTuH4Pd"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 195820,
@@ -3904,7 +3904,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmYEmpFkzKPPwxCdmtqf3GCbaBiHY1CTDj6wYtoqJBR3xr"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 195822,
@@ -3912,7 +3912,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmRkgNTdJdCmNF8ZHp9tv2vkzDLjeDGdByyiJWcLSPN3Tn"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 195823,
@@ -3920,7 +3920,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmV6VYbHcAfpszePXRtNeupkunGzWKzNgG6sP7ZjsRcZog"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 195841,
@@ -3928,7 +3928,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmYUYuYqWhTPayQaTRCGhSNACFaDR9hVtj7N3ty32Rjb1D"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 195842,
@@ -3936,7 +3936,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmRPiia5Cpx3XBWSiAbct4GBhToeDUooYGBf7t1QVHMnfN"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 195844,
@@ -3944,7 +3944,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZQwemHT1jW4cZaq7AUPS8bDsiRwnnFgUndbVA4DijwzE"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 195845,
@@ -3952,7 +3952,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmWQydQ2mBAmHSx3ZVdKjfXMw5KtraR9tVh4Q8sAzm33nW"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 195846,
@@ -3960,7 +3960,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmbcBDZwQ3UhSrMPHoFX5XWMD1UJac3rBAoNF33dseWrHg"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 195848,
@@ -3968,7 +3968,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmRKJ86veyeDhCWzkr2HYt5W7EZScBwX52yvDDYdUXJp6n"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 195849,
@@ -3976,7 +3976,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmTQ1wLH7G1DPfVCZN1DtLsQZ4SFWu3UrWJYqcVo6iyxQj"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 195850,
@@ -3984,7 +3984,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmcSTTcQQrok7RhuQ4r1ywJ69Cq8SsQje5WbQ39kmmxLxS"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 195851,
@@ -3992,7 +3992,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSnbXsUR4PKpcUzYvwutoa9g6MXevR75DhUePH58tg8DU"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 195852,
@@ -4000,7 +4000,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSnbXsUR4PKpcUzYvwutoa9g6MXevR75DhUePH58tg8DU"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 195853,
@@ -4008,7 +4008,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qme61sRnWUkhm7NBBmPdmoY5T9dwvnjpUqbD3cnUFAQgFK"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 195875,
@@ -4016,7 +4016,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmfYVdvLJNYCsJZSQfZ9FfE9exzNCz2ztupEa5atrfEf1e"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 195876,
@@ -4024,7 +4024,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZv4ufWVq5XNFtrENhi6SqwwPdJw4p7rFpHnYitjXDGfq"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 195877,
@@ -4032,7 +4032,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmedKP8gydU8duBSfqPu9tw9qYWwgoDVj1RQiHGFtt9DMg"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 195878,
@@ -4040,7 +4040,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmb9qjFQGBpSWYrPszX5RVAKdEcphHnx7ZjNC3q3ABVST5"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 195879,
@@ -4048,7 +4048,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmUn6iNWJAUmFdaqAKrQhpaWVW3yfHeiVnqRnBgLro8WMe"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 195880,
@@ -4056,7 +4056,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZXYZSLJuQ2y8K1ZwrYhhM4Gbhe9CBY9QpbnVPoQZbUyU"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 195881,
@@ -4064,7 +4064,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmcDhPGqfWzvNxhaiS9d4d6dWY1dsQoNotm6mfi5S2P1sV"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 195882,
@@ -4072,7 +4072,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmXvGovfwMsSUwQy2UUDYCZB1XrQvRaUEkziabR5TKuThx"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 195883,
@@ -4080,7 +4080,7 @@
       "issued_supply": 0,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmWLEMmP4DvXa2XLP73PgGSQnrBrE3y43m6E9eA3tWhwN9"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 195884,
@@ -4088,7 +4088,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmeViBiV2QrBzU3rhEJ4e1v2iKbj2e3E89qRyx3Cvi2Dvj"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 196112,
@@ -4096,7 +4096,7 @@
       "issued_supply": 30,
       "max_supply": 30,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmPEJK5b59q7pcfEXVReuMdwqNUnhez7BdKjAwcyyFa9gB"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 196143,
@@ -4104,7 +4104,7 @@
       "issued_supply": 30,
       "max_supply": 30,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmUh5Dv2SYnN2vzZk2qhRxe4owqvXbbWqkHzYcTWs49DXW"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 196196,
@@ -4112,7 +4112,7 @@
       "issued_supply": 30,
       "max_supply": 30,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmbT5HcfotctAU5BV4eUcWZN1ccUDdc1tgzBRQBP9qgn2u"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 196201,
@@ -4120,7 +4120,7 @@
       "issued_supply": 30,
       "max_supply": 30,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmXUhHJvNNHbKyHbaJUZcfqyCAN7qMMewj72YpXFEEDPX9"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 196207,
@@ -4128,7 +4128,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmRVNN8DK9NAxUp2SjHsKU4XaEpit4kFmxbmHBGLWF4Hvt"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 196214,
@@ -4136,7 +4136,7 @@
       "issued_supply": 30,
       "max_supply": 30,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmekiwN6wZ433XVJzS5FR6pc9Q617dGHcw58AYepdRDyvJ"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 196216,
@@ -4144,7 +4144,7 @@
       "issued_supply": 30,
       "max_supply": 30,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmNY9pu1iDu3jZS1XuscRh3mPzbJnJ26gZmdqxvHuARnJz"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 196217,
@@ -4152,7 +4152,7 @@
       "issued_supply": 30,
       "max_supply": 30,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSpyS3ZBqYRoEsyhjSNDXhRLYBYrNskmxREXJPBZJfbwU"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 196222,
@@ -4160,7 +4160,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmbiXZULEfhv1wH2HzCukxQ7f4UgLKyV8i7j5j6sRuVttb"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 197551,
@@ -4168,7 +4168,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmcSc2gd6Pj8DSL4v8zXovwz1aPwx4rzAPQse8jG935mgR"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 197605,
@@ -4176,7 +4176,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmTMjUPW2PrUe54LYMeLorMkBBEqwUirQDJgU3T3aaZZUF"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 200310,
@@ -4184,7 +4184,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmaK86oLTsD6ivrLnWsSqJSDowqRgUNBFep8NzeXG8ez2i"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 206714,
@@ -4192,7 +4192,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmYSjj9XCQZDpSuYj3nQk3PLopDaKYvftXGnc5zAfb42fM"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 206716,
@@ -4200,7 +4200,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmbqFSQLgi4SHjfrzNmCaDUxi2rpPD83GbrLarccZWbe9H"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 206720,
@@ -4208,7 +4208,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmaf2EB6dtgr42bPW69gMb6Wh7o8r9dyYATE3c2CXsyFmN"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 208120,
@@ -4216,7 +4216,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmNssBSXSxqCzLrePAzEGuArEG2A9EqBRyUrqkctgCbNbS"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 208202,
@@ -4224,7 +4224,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmNrSf7FdVR97cKrd2wJBEPwuZMxYSoftdF4mpQDQmVrUE"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 210764,
@@ -4232,7 +4232,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmWPYHuZGhCbMZHJsJktADBN5tEWxLBpwSpk47XAF5ADFb"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 218581,
@@ -4240,7 +4240,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmQodqwAEMYhBBCLBQWd3er32sqRBMgk2EDrQ5kUBkpCWy"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 231657,
@@ -4248,7 +4248,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmW8vgGAVdg4HSD2kmMXBuPLDoRFs3hHsaUgXMBAE748Kn"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 231667,
@@ -4256,7 +4256,7 @@
       "issued_supply": 30,
       "max_supply": 30,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmX8y8simpmSk2uXbr4xtMW1PHNKARdTfFLn8jihUCC4FS"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 235923,
@@ -4264,7 +4264,7 @@
       "issued_supply": 50,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmUtT317b7Nct1QT8DfETKHCoR2ArxcBbgPHRtUe5UhKBt"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 241723,
@@ -4272,7 +4272,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZvReZ4J2VZBQ34wdYEBNFzYK52PuXuQwPHFB1njT8Lav"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 243486,
@@ -4280,7 +4280,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmQ1UPYxTxTF64Pgi3MRGpMGdArWxBrghN6WTQQdH25P6X"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 246329,
@@ -4288,7 +4288,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmbLyX9hmp8E9YCSzcH8KZPJH974dM2Vm6zVeXU7DiB1SL"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 247215,
@@ -4296,7 +4296,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmaV3hHPq2wib61sEivKnRSELJFVSVWm12s4zY1SJYSTWR"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 248023,
@@ -4304,7 +4304,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZkxd6QhGZPCbsnK41v5tgGz5EsYFZkgz4GX3Z9TqFNZH"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 248955,
@@ -4312,7 +4312,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZTwwri5xjLSoGsL4N1RocMiqdz8FD3DuWErRaGVhTWYb"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 249887,
@@ -4320,7 +4320,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmRDESVFkH51bPQN8UwEYqFPszBGCk8nPun9A29VEvSftW"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 255182,
@@ -4328,7 +4328,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmf8isqZkgQ6ugYcVPvuq6P7yTGWic5B6natdVkSfvuHRE"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 259746,
@@ -4336,7 +4336,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmPhe5p8CeDFRD1kJrDNrVbWXZKS4MwNV5C1ssBBDxSroD"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 285941,
@@ -4344,7 +4344,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmYvpSi5tXKgbnME9FuQjHJ4E7F8axr5SnEwuaL85PTHny"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 286001,
@@ -4352,7 +4352,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmaehPEiLeYfzcoHPmQMDQDas994WSyW2emoWVJUUTRZmw"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 286004,
@@ -4360,7 +4360,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmXsJfWXRemXoTjsrmYuvawxvFvQnW21LBYjEYCW2sLzMb"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 286347,
@@ -4368,7 +4368,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmaeiSXy81fHv8D9MqSE77MnyHt2Cy6qjKvVfr3Fs9gDxS"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 287268,
@@ -4376,7 +4376,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZuComtMdMue4NDe4fA1LxVUV7vt69sgt1HdsBGRDS87C"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 288955,
@@ -4384,7 +4384,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmbbECpfTMjUhJJ8nBDa6wbGqtkvJ2Sx2oroJmjVLo4dWX"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 289614,
@@ -4392,7 +4392,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSLQvxb28Mi32yvvi41ChTNP9hMTsvSPFdnm4RB17N3LL"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 289977,
@@ -4400,7 +4400,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmbHa9zUsr8k6LD4PR5DXvKxo4EtevCCR18i6Mufd6KFR4"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 290112,
@@ -4408,7 +4408,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmY1C1ut6qYStGPv2L3ycnQiVsfuVynu2iVtb7UUumxtsj"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 290118,
@@ -4416,7 +4416,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmY1C1ut6qYStGPv2L3ycnQiVsfuVynu2iVtb7UUumxtsj"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 290120,
@@ -4424,7 +4424,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmYnM3qNvdHiYjEKXrvdV9zGqDtHHti4fC6ZUVSAM2Uafy"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 290123,
@@ -4432,7 +4432,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmbyd2ng7MgMd1xA2L9en2srTpFkJ78deJ59YkuQhiYWBp"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 290126,
@@ -4440,7 +4440,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSDQ77G1NGDWgvUNQ3hVSbfhW6tAB4KkWTWYehfdqq2t9"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 290128,
@@ -4448,7 +4448,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmNbyebXX8TBzEq4SiaZQtCsSKPKS9AQ5LX8LPVf4dtePm"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 290130,
@@ -4456,7 +4456,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmYo392mKYueQEfa5fwNuHdG3obSoeX95aLC6oVaSDGsZE"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 290131,
@@ -4464,7 +4464,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmTjHxKtY7vBnmjWrmseaf8e1CVZr8yQU4LAfyHaMUA4Mr"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 290132,
@@ -4472,7 +4472,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmVfRxpTmJatZ1tLEx7SAgLpnbNYBU4Ppz8bqYn5Z2c6Ae"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 290134,
@@ -4480,7 +4480,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZTeZftHQz89aXuScQ8M9XiRXPCdbvRWVVTsczc6Xweqm"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 290135,
@@ -4488,7 +4488,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmNQN698zapNypvBd7YLQ9Q61Yjaa3N9A19ALKwKom7vk9"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 290145,
@@ -4496,7 +4496,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmf4q7HngxWFwhnRrLh8qUMk3U9LgDncrePrLBL8FNTBZn"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 290148,
@@ -4504,7 +4504,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmNfGZrqfC65AnfPEtAt7seRCdFTq5jqy1b18JcLJwh4Az"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 290150,
@@ -4512,7 +4512,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmc5WovpNUnu5Lv6Wtk3eRHqDYiTn37NuefMfUyY7SRxGQ"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 290151,
@@ -4520,7 +4520,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmUvUtMMEt69fL6sRxBhUe97Mqfj97KZ3PQcGy5LKDXdyg"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 290153,
@@ -4528,7 +4528,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZhzX3pqsvSowkP8Nx6LxqLFCVxXgmRS94pc2Z3hNDb9p"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 290154,
@@ -4536,7 +4536,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmTM35LEwvVs9s8wkAL3hjMhfNepi6mdQQrvSSwNhmcg3w"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 290156,
@@ -4544,7 +4544,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmVbRS1ffQev5zR2zwcQat58tf9xfGU4Am2ohiLpcEQt1t"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 290159,
@@ -4552,7 +4552,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmdEKoUc6HMD4FK6G9utA3zpaJcMoLnPFjTTJNhjvW3WAx"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 290160,
@@ -4560,7 +4560,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmUQzX7NrZUFHNqS17tpzKJEno8WLANbkjySd2YrxXYmr5"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 290162,
@@ -4568,7 +4568,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmT1df2EiKLwrgGP9QYBNBihJFtFUeLkKNoCUwb2WvZS1e"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 290164,
@@ -4576,7 +4576,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmVow5HxXkiinKoMBhdRB2r5HMtnmy7tDLG6QaUHoMK5pc"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 290165,
@@ -4584,7 +4584,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmbGWG47b4BucgyjQ13HAhjDDVkxT9xbZ7Twdj65X3PAGR"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 290166,
@@ -4592,7 +4592,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmbu38FzYor7VtqK6pdn8AkpAwgiG3Q319oPtopJ2kki5u"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 290167,
@@ -4600,7 +4600,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmcHQe5mFPpoL9QnbY5JbgKtFVhi4n5ZyHHKjNtq8xLdQa"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 290168,
@@ -4608,7 +4608,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmTv3WCDxopXJbEWUkNY4MVJ2PWzJ9Jh1F6whNWz11ntZT"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 290169,
@@ -4616,7 +4616,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmTxbi66BuHQjrqzvfi9oWTgPLEyHT9zscK21aKotcsERd"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 290170,
@@ -4624,7 +4624,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmbF6VNpReuVfkupTx1ijxQQwtULHyKfyEDu9LxxtPpiGF"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 290172,
@@ -4632,7 +4632,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmSXT3KC8wisNpcQcg5pcNYG412Bn5zK4jAgxg3g7fy75B"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 290173,
@@ -4640,7 +4640,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmWjGYo51JVb2pYquqqL2B7wyHEbgEV5oU6Tm86QS2oGJ1"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 290174,
@@ -4648,7 +4648,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZTDNF1uDf6JvZ5tPywSYi7MR5EY7E7GgQKfis1ay3cc2"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 290175,
@@ -4656,7 +4656,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmQzouarCXh3o6VofK1RKSTBRksvKeu3xpkEVcncfXmVGV"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 331658,
@@ -4664,7 +4664,7 @@
       "issued_supply": 25,
       "max_supply": 25,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmNazg6oiuQRFcbTDbVxFA4szxT7bGm8i2Tayj84B9yfjo"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 339801,
@@ -4672,7 +4672,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmVMngxD7s27pR6HaDsvKg7qpZAwfwccZqtM4jJ6wUEMmC"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 342147,
@@ -4680,7 +4680,7 @@
       "issued_supply": 30,
       "max_supply": 30,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmPdX1WvTX9qTnUqHRgesCZBLewXThc6TNAaZg1XdTFNm1"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 342149,
@@ -4688,7 +4688,7 @@
       "issued_supply": 30,
       "max_supply": 30,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmcDRXmctMqmxevH1sJjnDgiBNr5fb36VNUHyM3ToYue8t"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 342155,
@@ -4696,7 +4696,7 @@
       "issued_supply": 30,
       "max_supply": 30,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmcXEL3GDXu4eRDiyeUj979y2pPVFF63yZKCZhDgSoMSNN"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 361809,
@@ -4704,7 +4704,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/Qmc1UKb8CQrNgrLMi9j7CYgsvGbBHziEqWSZfJ5scL8Ea9"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 390232,
@@ -4712,7 +4712,7 @@
       "issued_supply": 150,
       "max_supply": 150,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmRMEWsZHQhgRXX92egr5RgcCS4AXXTJbvWLVXkVYBgyHp"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 390233,
@@ -4720,7 +4720,7 @@
       "issued_supply": 30,
       "max_supply": 30,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmddoXJXkDD7KKGYSceKuCCtQN8R5SqyjnKtnHWVh7QweH"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 390961,
@@ -4728,7 +4728,7 @@
       "issued_supply": 0,
       "max_supply": 50,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmagZTyFw5Fc2k2SEpf9Yz274AnsXHuAUhAgJ9YhuTeT71"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 456618,
@@ -4736,7 +4736,7 @@
       "issued_supply": 1,
       "max_supply": 1,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/QmZKTNRMVxWfWb3m2WZBcyMjJmCuMfKBj5XhLcsiiNPR2S"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     },
     {
       "template_id": 594904,
@@ -4744,7 +4744,7 @@
       "issued_supply": 10,
       "max_supply": 10,
       "schema_name": "hodlmoonboys",
-      "image_url": "https://ipfs.hivebp.io/ipfs/bafybeie7yoe2ws6ndpkb6bhi6rdl3zz655yrbtm2bpzwcy2c4xr3wn5cze"
+      "image_url": "/img/hodlmoonboys/thumbs/111126.webp"
     }
   ]
 }

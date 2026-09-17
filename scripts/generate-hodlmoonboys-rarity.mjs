@@ -1,18 +1,24 @@
 #!/usr/bin/env node
 
 import fs from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const require = createRequire(import.meta.url);
 const ROOT = path.resolve(__dirname, '..');
 const COLLECTION = 'hodlmoonboys';
 const COLLECTION_TITLE = 'Hodl Moonboys';
 const FEED_ID = 'hodlmoonboys_rarity';
 const DATA_DIR = path.join(ROOT, 'data', COLLECTION);
 const PAGE_PATH = path.join(ROOT, 'wiki', 'hodlmoonboys-nft-collection.html');
+const THUMB_DIR = path.join(ROOT, 'img', COLLECTION, 'thumbs');
+const THUMB_URL_PREFIX = `/img/${COLLECTION}/thumbs`;
+const THUMB_MANIFEST = path.join(THUMB_DIR, 'manifest.json');
 const ATOMIC_BASE = 'https://wax.api.atomicassets.io/atomicassets/v1';
 const NOW = () => new Date().toISOString();
+const THUMB_WIDTH = 265;
 
 const SCORING_CONTRACT = {
   source_of_truth: 'AtomicAssets',
@@ -51,6 +57,14 @@ function writeJson(filePath, value) {
 function writeText(filePath, value) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, value, 'utf8');
+}
+
+function readJson(filePath, fallback) {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch {
+    return fallback;
+  }
 }
 
 function csvEscape(value) {
@@ -140,6 +154,10 @@ function isMeaningfulTrait(value) {
   if (['not supplied', 'unknown', 'none', 'n/a', 'na', 'null', 'undefined'].includes(normalized)) return false;
   if (/^template\s*#?\d+$/i.test(normalized)) return false;
   return true;
+}
+
+function titleKey(value) {
+  return String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
 }
 
 function pickTrait(template, keys, fallbackValue = null, fallbackSource = null) {
@@ -247,6 +265,101 @@ async function mapLimit(items, limit, task) {
   }
   await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
   return results;
+}
+
+async function loadSharp() {
+  try {
+    return require('sharp');
+  } catch (firstError) {
+    const runtimeModules = process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES;
+    if (runtimeModules) {
+      try {
+        return require(path.join(runtimeModules, 'sharp'));
+      } catch {
+        // Fall through to the original dependency error.
+      }
+    }
+    throw firstError;
+  }
+}
+
+async function fetchArrayBuffer(url, timeoutMs = 5000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(new Error(`Timed out fetching ${url}`)), timeoutMs);
+  try {
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: { 'user-agent': 'CryptoMoonboysStaticGenerator/1.0' },
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return Buffer.from(await response.arrayBuffer());
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function ensureLocalThumb(template, sharp, manifest) {
+  const templateId = template.template_id;
+  if (!templateId || !template.image_sources?.length) return null;
+  const fileName = `${templateId}.webp`;
+  const target = path.join(THUMB_DIR, fileName);
+  if (fs.existsSync(target)) {
+    manifest[templateId] = { file: fileName, url: `${THUMB_URL_PREFIX}/${fileName}`, source: manifest[templateId]?.source || template.image_sources[0] };
+    return manifest[templateId];
+  }
+
+  for (const source of template.image_sources) {
+    try {
+      const input = await fetchArrayBuffer(source);
+      const output = await sharp(input, { animated: true, limitInputPixels: false })
+        .resize({ width: THUMB_WIDTH, withoutEnlargement: true })
+        .webp({ quality: 82 })
+        .toBuffer();
+      fs.mkdirSync(THUMB_DIR, { recursive: true });
+      fs.writeFileSync(target, output);
+      manifest[templateId] = { file: fileName, url: `${THUMB_URL_PREFIX}/${fileName}`, source };
+      return manifest[templateId];
+    } catch {
+      // Try the next gateway/source candidate.
+    }
+  }
+  return null;
+}
+
+async function ensureLocalThumbs(templates) {
+  const manifest = readJson(THUMB_MANIFEST, {});
+  if (process.env.HODL_SKIP_THUMB_FETCH !== '1') {
+    const sharp = await loadSharp();
+    await mapLimit(templates, 24, (template) => ensureLocalThumb(template, sharp, manifest));
+  }
+  for (const template of templates) {
+    const fileName = `${template.template_id}.webp`;
+    const target = path.join(THUMB_DIR, fileName);
+    if (fs.existsSync(target)) {
+      manifest[template.template_id] = {
+        file: fileName,
+        url: `${THUMB_URL_PREFIX}/${fileName}`,
+        source: manifest[template.template_id]?.source || template.image_sources?.[0] || null,
+      };
+    }
+  }
+  fs.mkdirSync(THUMB_DIR, { recursive: true });
+  writeJson(THUMB_MANIFEST, Object.fromEntries(Object.entries(manifest).sort(([a], [b]) => Number(a) - Number(b))));
+  const fallbackByTitle = new Map();
+  for (const template of templates) {
+    const thumb = manifest[template.template_id];
+    const key = titleKey(template.title);
+    if (thumb?.url && key && !fallbackByTitle.has(key)) fallbackByTitle.set(key, thumb);
+  }
+  const collectionFallback = Object.values(manifest).find((thumb) => thumb?.url);
+  for (const template of templates) {
+    const thumb = manifest[template.template_id] || fallbackByTitle.get(titleKey(template.title)) || collectionFallback;
+    if (thumb?.url) {
+      template.thumbnail_url = thumb.url;
+      template.image_url = thumb.url;
+    }
+  }
+  return manifest;
 }
 
 async function fetchLiveSupply(template) {
@@ -552,6 +665,7 @@ async function main() {
   const generatedAt = NOW();
   const collection = (await fetchJson(`${ATOMIC_BASE}/collections/${COLLECTION}`)).data || {};
   const templates = await fetchTemplates();
+  await ensureLocalThumbs(templates);
   const supplies = await mapLimit(templates, 3, fetchLiveSupply);
   const data = buildRanking(templates, supplies);
   const stats = {
