@@ -498,90 +498,550 @@ function renderRows(rows, ranked = false) {
   </tr>`).join('\n');
 }
 
-function renderStats(stats) {
-  return `<div class="wiki-rabbit-grid">
-            <div class="wiki-rabbit-card"><span class="wiki-rabbit-card-title">${esc(stats.total_templates)}</span><span class="wiki-rabbit-card-desc">AtomicAssets-confirmed NFT templates</span></div>
-            <div class="wiki-rabbit-card"><span class="wiki-rabbit-card-title">${esc(stats.ranked_templates)}</span><span class="wiki-rabbit-card-desc">ranked fixed-supply NFTs</span></div>
-            <div class="wiki-rabbit-card"><span class="wiki-rabbit-card-title">${esc(stats.utility_open_mint_templates)}</span><span class="wiki-rabbit-card-desc">utility/open mint NFTs</span></div>
-            <div class="wiki-rabbit-card"><span class="wiki-rabbit-card-title">${esc(stats.unissued_templates)}</span><span class="wiki-rabbit-card-desc">unissued NFTs</span></div>
-            <div class="wiki-rabbit-card"><span class="wiki-rabbit-card-title">${esc(stats.live_assets_counted)}</span><span class="wiki-rabbit-card-desc">live assets counted</span></div>
+function bandClass(value = '') {
+  return String(value || 'ranked').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'ranked';
+}
+
+function rarityFilterTokens(row) {
+  return [
+    'ranked',
+    bandClass(row.rarity_band),
+    row.live_supply === 1 ? 'one-of-one' : '',
+    row.missing_or_burned_count > 0 ? 'missing-burned' : '',
+  ].filter(Boolean).join(' ');
+}
+
+function rowLinks(row) {
+  return `<div class="gk-command-links">
+      <a href="${esc(row.atomicassets_url)}" target="_blank" rel="noopener noreferrer">AtomicAssets</a>
+      <a href="${esc(row.atomichub_url)}" target="_blank" rel="noopener noreferrer">AtomicHub</a>
+    </div>`;
+}
+
+function deckMetric(label, value) {
+  return `<span class="gk-command-metric"><strong>${esc(value)}</strong><small>${esc(label)}</small></span>`;
+}
+
+function showcaseKeyTrait(label, value) {
+  return `<div class="gk-showcase-key-trait">
+          <span>${esc(label)}</span>
+          <strong>${esc(value || 'Not supplied')}</strong>
+        </div>`;
+}
+
+function commandNote(title, copy) {
+  return `<div class="gk-command-note">
+      <strong>${esc(title)}</strong>
+      <span>${esc(copy)}</span>
+    </div>`;
+}
+
+function statCard(label, value) {
+  return `<div class="wiki-stat"><strong>${esc(value)}</strong><span>${esc(label)}</span></div>`;
+}
+
+function cardImage(row, { linkClass, imageClass, placeholderClass }) {
+  if (row.image_url) {
+    return `<a class="${linkClass}" href="${esc(row.atomichub_url)}" target="_blank" rel="noopener noreferrer"><img class="${imageClass}" src="${esc(row.image_url)}" alt="${esc(row.title)}" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>`;
+  }
+  return `<div class="${placeholderClass}" aria-label="Image unavailable">Image unavailable</div>`;
+}
+
+function featuredCard(row) {
+  if (!row) return '';
+  return `<article class="gk-command-featured-card gk-showcase-card" data-rarity-filter="${rarityFilterTokens(row)}">
+      <div class="gk-command-featured-media">${cardImage(row, { linkClass: 'gk-command-featured-image-link', imageClass: 'gk-command-featured-image', placeholderClass: 'gk-command-featured-image-placeholder' })}</div>
+      <div class="gk-command-featured-copy">
+        <div class="gk-command-eyebrow">Rank #${esc(row.rank)} NFT</div>
+        <h3>${esc(row.title)}</h3>
+        <div class="gk-command-badges">
+          <span class="gk-command-badge gk-command-badge--rank">Rank #${esc(row.rank)}</span>
+          <span class="gk-command-badge gk-command-badge--${bandClass(row.rarity_band)}">${esc(row.rarity_band)}</span>
+        </div>
+        <div class="gk-command-featured-metrics">
+          ${deckMetric('Final score', Number(row.final_score || 0).toFixed(2))}
+          ${deckMetric('Supply', `${row.live_supply}/${row.issued_supply}`)}
+        </div>
+        ${showcaseKeyTrait('Key trait', row.rarity_trait)}
+        ${rowLinks(row)}
+      </div>
+    </article>`;
+}
+
+function topRankedCard(row) {
+  return `<article class="gk-top-ranked-card" data-rarity-filter="${rarityFilterTokens(row)}">
+      <div class="gk-top-ranked-rank">#${esc(row.rank)}</div>
+      ${cardImage(row, { linkClass: 'gk-top-ranked-thumb-link', imageClass: 'gk-top-ranked-thumb', placeholderClass: 'gk-top-ranked-thumb-placeholder' })}
+      <div class="gk-top-ranked-copy">
+        <a class="gk-top-ranked-title" href="${esc(row.atomichub_url)}" target="_blank" rel="noopener noreferrer">${esc(row.title)}</a>
+        <div class="gk-top-ranked-meta">
+          <span class="gk-command-badge gk-command-badge--mini gk-command-badge--${bandClass(row.rarity_band)}">${esc(row.rarity_band)}</span>
+          <span>${esc(row.live_supply)}/${esc(row.issued_supply)} live/issued</span>
+          <span>${Number(row.final_score || 0).toFixed(2)} score</span>
+        </div>
+        ${rowLinks(row)}
+      </div>
+    </article>`;
+}
+
+function auditTemplateCard(row) {
+  return `<article class="gk-audit-card" data-rarity-filter="${rarityFilterTokens(row)}">
+      ${cardImage(row, { linkClass: 'gk-audit-card-image-link', imageClass: 'gk-audit-card-image', placeholderClass: 'gk-audit-card-image-placeholder' })}
+      <div class="gk-audit-card-copy">
+        <div class="gk-audit-card-rank">Rank #${esc(row.rank)}</div>
+        <a class="gk-audit-card-title" href="${esc(row.atomichub_url)}" target="_blank" rel="noopener noreferrer">${esc(row.title)}</a>
+        <div class="gk-audit-card-metrics">
+          ${deckMetric('Score', Number(row.final_score || 0).toFixed(2))}
+          ${deckMetric('Supply', `${row.live_supply}/${row.issued_supply}`)}
+        </div>
+        ${showcaseKeyTrait('Key trait', row.rarity_trait)}
+        ${rowLinks(row)}
+      </div>
+    </article>`;
+}
+
+const AUDIT_BANDS = ['Legendary', 'Ultra Rare', 'Rare', 'Uncommon', 'Common'];
+
+function groupedAuditCards(rows) {
+  if (!rows.length) return '<p class="lore-paragraph">No ranked limited NFTs are available.</p>';
+  const groups = AUDIT_BANDS
+    .map((band) => [band, rows.filter((row) => row.rarity_band === band)])
+    .filter(([, bandRows]) => bandRows.length);
+  return `<div class="gk-audit-card-groups" aria-label="Grouped rarity audit cards">
+      ${groups.map(([band, bandRows]) => `<section class="gk-audit-card-group gk-audit-card-group--${bandClass(band)}">
+        <div class="gk-audit-card-group-heading">
+          <h4>${esc(band)}</h4>
+          <span>${bandRows.length} shown</span>
+        </div>
+        <div class="gk-audit-card-grid">
+          ${bandRows.map(auditTemplateCard).join('\n          ')}
+        </div>
+      </section>`).join('\n      ')}
+    </div>`;
+}
+
+function showcaseHeader(kicker, title, copy) {
+  return `<div class="gk-showcase-header">
+      <div>
+        <p class="gk-command-kicker">${esc(kicker)}</p>
+        <h3>${esc(title)}</h3>
+      </div>
+      <p>${esc(copy)}</p>
+    </div>`;
+}
+
+function secondaryRankedPanel({ title, countLabel, cards, ariaLabel }) {
+  return `<section class="gk-secondary-ranked-section" aria-label="${esc(ariaLabel)}">
+            <div class="gk-top-ranked-heading">
+              <h3>${esc(title)}</h3>
+              <span>${esc(countLabel)}</span>
+            </div>
+            <div class="gk-top-ranked-list gk-top-ranked-list--cards">
+              ${cards}
+            </div>
+          </section>`;
+}
+
+function advancedTable(summary, tableMarkup) {
+  return `<details class="gk-advanced-table-details">
+      <summary>${esc(summary)}</summary>
+      ${tableMarkup}
+    </details>`;
+}
+
+function rankingTable(rows) {
+  return `<div class="wiki-table-wrap gk-rarity-table-wrap">
+            <table class="wiki-table gk-rarity-table">
+              <thead>
+                <tr>
+                  <th>NFT</th><th>NFT Page ID</th><th>Live Supply</th><th>Issued Supply</th><th>Pre-baseline Missing/Burned</th><th>Rarity Trait</th><th>Rarity Exposure</th><th>Variation Trait</th><th>Variation Exposure</th><th>Final Score</th><th>Links</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows.map((row) => `<tr data-rarity-filter="${rarityFilterTokens(row)}">
+    <td class="gk-rarity-nft-cell">${renderTemplateCell(row, true)}</td>
+    <td>${esc(row.template_id)}</td>
+    <td>${esc(row.live_supply)}</td>
+    <td>${esc(row.issued_supply)}</td>
+    <td>${row.pre_baseline_missing_or_burned == null ? 'Not counted' : esc(row.pre_baseline_missing_or_burned)}</td>
+    <td>${esc(row.rarity_trait || 'Not supplied')}</td>
+    <td>${esc(row.rarity_live_exposure ?? '')}</td>
+    <td>${esc(row.variation_trait || 'Not supplied')}</td>
+    <td>${esc(row.variation_live_exposure ?? '')}</td>
+    <td>${esc(row.final_score ?? '')}</td>
+    <td>${rowLinks(row)}</td>
+  </tr>`).join('\n                ')}
+              </tbody>
+            </table>
           </div>`;
 }
 
-function renderTopCards(rows) {
-  return rows.slice(0, 12).map((row) => `<article class="wiki-rabbit-card wax-template-card">
-      ${row.image_url ? `<img class="nft-thumb" src="${esc(row.image_url)}" alt="${esc(row.title)} NFT artwork" loading="lazy" decoding="async" referrerpolicy="no-referrer">` : ''}
-      <span class="wiki-rabbit-card-title">#${esc(row.rank)} ${esc(row.title)}</span>
-      <span class="wiki-rabbit-card-desc">${esc(row.rarity_band)} · ${esc(row.live_supply)}/${esc(row.issued_supply)} live/issued · ${esc(row.final_score)} score</span>
-      <a href="${esc(row.atomichub_url)}" target="_blank" rel="noopener noreferrer">AtomicHub</a>
-    </article>`).join('\n');
+function utilityBucket(row) {
+  const text = `${row.title || ''} ${row.rarity_trait || ''} ${row.variation_trait || ''}`.toLowerCase();
+  if (/coupon|redeem|blend|burn/.test(text)) return 'Utility / Coupons';
+  if (/open|infinite|uncapped|max supply is zero/.test(text) || row.max_supply === 0) return 'Open Mint / Infinite Supply';
+  return 'Collection Utility';
+}
+
+function sideReason(row) {
+  if (row.issued_supply <= 0) return 'Zero issued supply; not circulating.';
+  if (row.max_supply === 0) return 'Max supply is zero/open mint; not comparable to fixed supply NFTs.';
+  return 'Utility, pack, coupon, blend, pass, or non-standard collection object.';
+}
+
+function sideAuditCard(row, status) {
+  return `<article class="gk-audit-card gk-audit-card--side" data-rarity-filter="${status === 'Unissued' ? 'unissued' : 'utility-open-mint'}">
+      ${cardImage(row, { linkClass: 'gk-audit-card-image-link', imageClass: 'gk-audit-card-image', placeholderClass: 'gk-audit-card-image-placeholder' })}
+      <div class="gk-audit-card-copy">
+        <div class="gk-audit-card-rank">${esc(status)}</div>
+        <a class="gk-audit-card-title" href="${esc(row.atomichub_url)}" target="_blank" rel="noopener noreferrer">${esc(row.title)}</a>
+        <div class="gk-audit-card-metrics">
+          ${deckMetric('Issued', row.issued_supply)}
+          ${deckMetric('Max', row.max_supply)}
+        </div>
+        ${showcaseKeyTrait('Why listed here', sideReason(row))}
+        ${rowLinks(row)}
+      </div>
+    </article>`;
+}
+
+function groupedSideCards(rows, { status, getGroup }) {
+  if (!rows.length) return '<p class="lore-paragraph">No NFTs currently match this section.</p>';
+  const groups = [...new Set(rows.map(getGroup))];
+  return `<div class="gk-audit-card-groups gk-side-card-groups">
+      ${groups.map((group) => {
+        const groupRows = rows.filter((row) => getGroup(row) === group);
+        return `<section class="gk-audit-card-group">
+        <div class="gk-audit-card-group-heading">
+          <h4>${esc(group)}</h4>
+          <span>${groupRows.length} NFTs</span>
+        </div>
+        <div class="gk-audit-card-grid">
+          ${groupRows.map((row) => sideAuditCard(row, status)).join('\n          ')}
+        </div>
+      </section>`;
+      }).join('\n      ')}
+    </div>`;
+}
+
+function sideTable(rows) {
+  return `<div class="wiki-table-wrap">
+                <table class="wiki-table gk-rarity-side-table">
+                  <thead><tr><th>NFT</th><th>NFT Page ID</th><th>Issued</th><th>Max</th><th>Rarity Trait</th><th>Variation Trait</th><th>Reason</th><th>Links</th></tr></thead>
+                  <tbody>${rows.map((row) => `<tr data-rarity-filter="${row.issued_supply <= 0 ? 'unissued' : 'utility-open-mint'}">
+    <td class="gk-rarity-nft-cell">${renderTemplateCell(row)}</td>
+    <td>${esc(row.template_id)}</td>
+    <td>${esc(row.issued_supply)}</td>
+    <td>${esc(row.max_supply)}</td>
+    <td>${esc(row.rarity_trait || 'Not supplied')}</td>
+    <td>${esc(row.variation_trait || 'Not supplied')}</td>
+    <td>${esc(sideReason(row))}</td>
+    <td>${rowLinks(row)}</td>
+  </tr>`).join('\n                ')}</tbody>
+                </table>
+              </div>`;
+}
+
+function collectionImageTemplate(collection) {
+  const src = ipfsSources(collection?.img || '')[0];
+  const fallbacks = ipfsSources(collection?.img || '').slice(1);
+  if (!src) return '';
+  return `<template class="nft-battle-media-template" data-battle-media="nft" data-page-id="hodlmoonboys-nft-collection">
+          <figure class="battle-page-media nft-collection-media-card">
+            <img class="wiki-hero-image nft-collection-image" src="${esc(src)}" alt="hodlmoonboys collection image" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-fallback-srcs='${esc(JSON.stringify(fallbacks))}'>
+          </figure>
+        </template>`;
+}
+
+function bottomScripts() {
+  return `<!-- so placeholder nodes are never injected into the boot sequence.    -->
+<!-- 1. Core config -->
+<script data-cfasync="false" src="/js/api-config.js"></script>
+<script data-cfasync="false" src="/js/wax-image-normalizer.js"></script>
+<script data-cfasync="false" src="/js/wax-api-client.js"></script>
+<script data-cfasync="false" src="/js/wax-collection-renderer.js"></script>
+<!-- 2. Event bus -->
+<script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
+<!-- 3. Identity -->
+<script data-cfasync="false" src="/js/identity-gate.js"></script>
+<!-- 4. State -->
+<script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
+<!-- 5. Daily loop singleton -->
+<script data-cfasync="false" src="/js/core/daily-loop-state.js"></script>
+<!-- 6. Shell + shared components -->
+<script data-cfasync="false" src="/js/site-shell.js"></script>
+<script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
+<script data-cfasync="false" src="/js/components/global-player-header.js"></script>
+<script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
+<!-- 7. Page-specific scripts -->
+
+<script type="application/json" class="nft-search-terms" data-search-boost="nft">["hodlmoonboys", "NFTs", "WAX NFTs", "593", "48675"]</script>
+<script data-cfasync="false" src="/js/faction-alignment.js"></script>
+<script data-cfasync="false" src="/js/wiki.js"></script>
+<script data-cfasync="false" src="/js/bible-loader.js"></script>
+<script data-cfasync="false" src="/js/engagement.js"></script>
+<script data-cfasync="false" src="/js/comments.js"></script>
+<script data-cfasync="false" src="/js/battle-layer.js"></script>
+<script data-cfasync="false" src="/js/gkniftyheads-rarity.js"></script>
+<script data-cfasync="false" src="/js/site-feed-status.js"></script>
+<script data-cfasync="false">
+(function () {
+  function parseFallbacks(img) {
+    try { return JSON.parse(img.getAttribute('data-fallback-srcs') || '[]'); } catch (err) { return []; }
+  }
+  function armImageFallback(img) {
+    if (!img || img.dataset.nftFallbackArmed === '1') return;
+    img.dataset.nftFallbackArmed = '1';
+    img.addEventListener('error', function () {
+      var fallbacks = parseFallbacks(img);
+      var next = fallbacks.shift();
+      if (!next) return;
+      img.setAttribute('data-fallback-srcs', JSON.stringify(fallbacks));
+      img.src = next;
+    });
+  }
+  function armAllFallbacks(root) {
+    (root || document).querySelectorAll('img[data-fallback-srcs]').forEach(armImageFallback);
+  }
+  function battleMediaTemplate() {
+    return document.querySelector('template[data-battle-media="nft"]');
+  }
+  function injectBattleMedia() {
+    var tpl = battleMediaTemplate();
+    if (!tpl) return;
+    var deck = document.querySelector('.battle-deck');
+    if (!deck || deck.querySelector('.battle-page-media')) return;
+    var cards = deck.querySelectorAll('.battle-shell-inner');
+    if (!cards.length) return;
+    var battleCard = cards[0];
+    var clone = tpl.content ? tpl.content.cloneNode(true) : null;
+    if (!clone) return;
+    battleCard.appendChild(clone);
+    armAllFallbacks(battleCard);
+  }
+  document.addEventListener('DOMContentLoaded', function () {
+    armAllFallbacks(document);
+    injectBattleMedia();
+    var observer = new MutationObserver(function () {
+      armAllFallbacks(document);
+      injectBattleMedia();
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    window.setTimeout(injectBattleMedia, 500);
+    window.setTimeout(injectBattleMedia, 1500);
+  });
+}());
+</script>`;
 }
 
 function renderPage(collection, data, stats, syncStatus) {
-  return `<!doctype html>
+  const templateHeroCards = data.ranked.slice(0, 3);
+  const secondaryTopRanked = data.ranked.slice(3, 9);
+  const filters = [
+    ['all-ranked', 'All Ranked'],
+    ['legendary', 'Legendary'],
+    ['ultra-rare', 'Ultra Rare'],
+    ['rare', 'Rare'],
+    ['uncommon', 'Uncommon'],
+    ['common', 'Common'],
+    ['one-of-one', '1/1'],
+    ['missing-burned', 'Missing/Burned'],
+    ['utility-open-mint', 'Utility / Open Mint'],
+    ['unissued', 'Unissued'],
+  ];
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${COLLECTION_TITLE} NFT Collection Tracker | Crypto Moonboys Wiki</title>
-  <meta name="description" content="${COLLECTION_TITLE} AtomicAssets NFT rarity, live supply, and weighted rank tracker.">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="${COLLECTION_TITLE} NFT collection hub with rarity ranking, WAX NFT links, collection actions, schema summary, and source references.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="${COLLECTION_TITLE} NFT Collection - Crypto Moonboys Wiki">
+  <meta property="og:description" content="${COLLECTION_TITLE} NFT collection hub with rarity ranking, WAX NFT links, collection actions, schema summary, and source references.">
+  <meta property="og:type" content="article">
   <link rel="canonical" href="https://cryptomoonboys.com/wiki/hodlmoonboys-nft-collection.html">
-  <link rel="icon" href="/favicon.png" type="image/png">
+  <meta property="og:url" content="https://cryptomoonboys.com/wiki/hodlmoonboys-nft-collection.html">
+  <meta property="og:image" content="https://cryptomoonboys.com/img/logo.svg">
+  <title>${COLLECTION_TITLE} NFT Collection - Crypto Moonboys Wiki</title>
   <link rel="stylesheet" href="/css/wiki.css">
+  <link rel="stylesheet" href="/css/battle-layer.css">
+<link rel="icon" href="/favicon.png" type="image/png">
+  <style>
+    .wiki-content img { max-width: 100%; height: auto; }
+    .nft-search-terms { display: none !important; }
+    template.nft-battle-media-template { display: none !important; }
+    .battle-page-media img { display: block; width: 100%; max-height: min(70vh, 760px); object-fit: contain; border-radius: 14px; }
+  </style>
 </head>
-<body class="page-wiki page-standard-shell" data-entity-hash="nft-hodlmoonboys-nft-collection">
-  <div id="layout">
-    <main id="content" class="wiki-page" role="main">
-      <article class="wiki-article" data-entity-slug="hodlmoonboys-nft-collection" data-page-type="nft_collection">
-        <header class="wiki-hero">
-          <nav class="breadcrumb" aria-label="Breadcrumb">
-            <a href="/index.html">Home</a>
-            <span class="sep" aria-hidden="true">&rarr;</span>
-            <a href="/categories/nfts.html">NFTs</a>
-            <span class="sep" aria-hidden="true">&rarr;</span>
-            <span aria-current="page">${COLLECTION_TITLE} NFT Collection</span>
-          </nav>
-          <p class="wiki-kicker">AtomicAssets Collection Tracker / WAX NFT Rarity</p>
-          <h1>${COLLECTION_TITLE} NFT Collection</h1>
-          <p class="wiki-lede">${esc(collection.name || COLLECTION_TITLE)} rarity, current live supply checks, and weighted NFT template ranking for the WAX collection <strong>${COLLECTION}</strong>.</p>
-          <p class="wiki-feed-status" data-feed-status-id="${FEED_ID}">${COLLECTION_TITLE} rarity snapshot active - AtomicAssets source of truth - ${esc(syncStatus.status)}</p>
-          <p><a class="wiki-button" href="${atomichubUrl()}" target="_blank" rel="noopener noreferrer">View Collection on AtomicHub</a> <a class="wiki-button" href="${ATOMIC_BASE}/templates?collection_name=${COLLECTION}" target="_blank" rel="noopener noreferrer">AtomicAssets NFT API</a></p>
+<body class="page-wiki page-standard-shell page-gkniftyheads-collection page-hodlmoonboys-collection" data-entity-hash="nft-hodlmoonboys-nft-collection">
+<main id="content" role="main">
+<!-- SAM:BEGIN:article -->
+      <article class="wiki-content nft-collection-article" data-entity-slug="hodlmoonboys-nft-collection" data-page-type="nft_collection" data-homepage-feature="true" data-timeline-feature="true">
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+          <a href="/index.html">Home</a>
+          <span class="sep" aria-hidden="true">&rarr;</span>
+          <a href="/categories/nfts.html">NFTs</a>
+          <span class="sep" aria-hidden="true">&rarr;</span>
+          <span aria-current="page">${COLLECTION_TITLE} NFT Collection</span>
+        </nav>
+        <header class="page-hero wiki-living-hero gk-collection-hero">
+          <div class="howto-hero-copy gk-collection-hero-copy">
+            <span class="howto-kicker gk-collection-kicker">WAX NFT Collection / Crypto Moonboys Universe / Hodl Moonboys Canon</span>
+            <p class="howto-lead">
+              ${esc(collection.name || COLLECTION_TITLE)} is the WAX AtomicAssets collection layer for Hodl Moonboys, bringing NFT rarity context, live supply checks, collection actions, and source-backed wiki navigation into one collector-facing command page.
+            </p>
+            <div class="howto-route gk-collection-route">
+              COLLECTION HUB / COLLECTOR FLOW &rarr; ATOMICHUB COLLECTION VIEW &rarr; NFT RARITY &rarr; EXACT NFT GLOBAL RARITY &rarr; CRYPTO MOONBOYS CANON
+            </div>
+            <div class="howto-hero-actions gk-collection-actions" role="group" aria-label="${COLLECTION_TITLE} collection actions">
+              <a class="howto-btn" href="${atomichubUrl()}" target="_blank" rel="noopener noreferrer">View AtomicHub</a>
+              <a class="howto-btn howto-btn-secondary" href="${ATOMIC_BASE}/templates?collection_name=${COLLECTION}" target="_blank" rel="noopener noreferrer">AtomicAssets NFT API</a>
+              <a class="howto-btn howto-btn-secondary" href="/wiki/gkniftyheads-nft-collection.html">GKniftyHEADS Tracker</a>
+            </div>
+          </div>
+          <div class="howto-hero-title-wrap gk-collection-title-wrap">
+            <h1 class="howto-glitch-title howto-pulse swarmsy-title">Hodl Moonboys<br><span>NFT Collection</span></h1>
+          </div>
+<div class="category-tags nft-category-tags" aria-label="NFT categories"><a href="/categories/nfts.html">NFTs</a> <a href="/categories/wax-nfts.html">WAX NFTs</a> <a href="/categories/nfts-digital-art.html">NFTs &amp; Digital Art</a>
+      </div>
+<script type="application/json" class="nft-search-terms" data-search-boost="nft">["hodlmoonboys", "NFTs", "WAX NFTs", "${stats.total_templates}", "${stats.live_assets_counted}"]</script>
         </header>
-        <section class="wiki-section" data-hodlmoonboys-rarity="true">
-          <h2>Collection Summary</h2>
-          ${renderStats(stats)}
+        <div class="article-meta gk-collection-meta-anchor" hidden></div>
+
+        ${collectionImageTemplate(collection)}
+
+<!-- HODLMOONBOYS_RARITY_RANKING:BEGIN -->
+        <section class="wiki-section gk-rarity-ranking" data-gkniftyheads-rarity="true" data-hodlmoonboys-rarity="true">
+          <div class="gk-command-header">
+            <div>
+              <p class="gk-command-kicker">${COLLECTION_TITLE} Rarity Tracker / NFT Rarity Ranking</p>
+              <h2 id="hodlmoonboys-rarity-ranking">${COLLECTION_TITLE} Rarity Command Deck</h2>
+            </div>
+            <span class="feed-status-badge" data-feed-status-id="${FEED_ID}" hidden aria-hidden="true"></span>
+          </div>
+          <div class="gk-section-card-grid gk-rarity-overview-cards" aria-label="Rarity overview">
+            <div class="gk-info-card">
+              <span>NFT rarity</span>
+              <p>Collector-facing ranking for ${COLLECTION_TITLE} AtomicAssets NFTs. Separate NFT page IDs may share the same artwork or name.</p>
+            </div>
+            <div class="gk-info-card">
+              <span>Live supply first</span>
+              <p>Ranked by current AtomicAssets live supply when counted, with issued-supply fallback only when live asset counting fails.</p>
+            </div>
+            <div class="gk-info-card">
+              <span>Market neutral</span>
+              <p>Price, listings, trading volume, and marketplace floor data are not used. Utility/open-mint NFTs stay outside the main leaderboard.</p>
+            </div>
+          </div>
+          <div class="wiki-stat-grid gk-rarity-stats gk-command-stat-strip" data-rarity-stat-grid="true">
+            ${statCard('NFT pages scanned', stats.total_templates)}
+            ${statCard('Ranked limited NFT pages', stats.ranked_templates)}
+            ${statCard('Utility / open mint NFT pages', stats.utility_open_mint_templates)}
+            ${statCard('Unissued NFT pages', stats.unissued_templates)}
+            ${statCard('Live assets counted', stats.live_assets_counted)}
+            ${statCard('Last updated', stats.generated_at)}
+          </div>
+
+          <section class="gk-command-deck gk-showcase-section gk-template-rarity-showcase" aria-label="NFT Rarity top three cards">
+            ${showcaseHeader('NFT Rarity', 'NFT Rarity: Top 3', `The highest ranked ${COLLECTION_TITLE} NFTs are surfaced first as collector cards, with audit tables kept below for source verification.`)}
+            <div class="gk-showcase-grid">
+              ${templateHeroCards.map(featuredCard).join('\n              ')}
+            </div>
+            <div class="gk-command-support" aria-label="Collection rarity guide">
+              ${commandNote('NFT rarity', 'The top cards highlight scarce AtomicAssets NFTs first. Full scoring components remain in the audit table below.')}
+              ${commandNote('Market neutral', 'Price, listings, sales volume, and floor data are excluded from rarity scoring.')}
+            </div>
+            <div class="gk-rarity-filters" aria-label="Rarity filters">
+              ${filters.map(([filter, label]) => `<button type="button" data-gk-rarity-filter="${filter}">${esc(label)}</button>`).join('\n              ')}
+            </div>
+          </section>
+
+          ${secondaryRankedPanel({
+            title: 'Top Ranked NFTs',
+            countLabel: `${secondaryTopRanked.length} more shown`,
+            ariaLabel: 'Secondary Top Ranked NFTs',
+            cards: secondaryTopRanked.map(topRankedCard).join('\n              '),
+          })}
+
+          <details class="wiki-section gk-rarity-audit" data-rarity-audit>
+            <summary>Full Rarity Audit</summary>
+            <p class="lore-paragraph">Collector-card audit grouped by rarity band first. The raw score table remains below for verification and source tracing.</p>
+            ${groupedAuditCards(data.ranked)}
+            ${advancedTable('Advanced raw rarity table', rankingTable(data.ranked))}
+          </details>
+
+          <section class="wiki-section gk-rarity-method">
+            <h3>How rarity works</h3>
+            <div class="gk-section-card-grid gk-rarity-method-cards" aria-label="Rarity methodology notes">
+              <div class="gk-info-card">
+                <span>NFT formula</span>
+                <p>NFT scores use 50% live supply scarcity, 25% rarity trait exposure, 20% variation exposure, and 5% pre-baseline missing/burned delta when available.</p>
+              </div>
+              <div class="gk-info-card">
+                <span>Thin metadata</span>
+                <p>If meaningful rarity or variation metadata is missing, generic, repeated, or not supplied, that trait weight moves to live supply scarcity instead of inventing fake trait value.</p>
+              </div>
+              <div class="gk-info-card">
+                <span>Market excluded</span>
+                <p>Price, floor, listings, volume, sales, and market cap are excluded from the rarity score.</p>
+              </div>
+              <div class="gk-info-card">
+                <span>Methodology</span>
+                <p><a href="/docs/nft-rarity-methodology.md">Read the full methodology</a> for the score model and audit assumptions.</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="wiki-section gk-asset-version-ranking">
+            <p class="gk-command-kicker">Global Rarity / Exact NFT Ranking</p>
+            <h3>Best Exact NFT Versions</h3>
+            <section class="gk-command-deck gk-global-rarity-deck gk-showcase-section gk-global-rarity-showcase" aria-label="Exact NFT Global Rarity top three cards">
+              ${showcaseHeader('Exact NFT / Global Rarity', 'Exact NFT Global Rarity: Top 3', 'Exact live-asset ranking is pending for this collection; template rarity is live above.')}
+              <div class="gk-showcase-grid">
+                <p class="lore-paragraph">Pending asset-state sync.</p>
+              </div>
+              <div class="gk-command-support" aria-label="Global rarity guide">
+                ${commandNote('Exact NFT rarity', 'Ranks exact live NFTs as individual assets after asset-state sync is available.')}
+                ${commandNote('Source rule', 'AtomicAssets remains the source of truth; marketplace data is not used for ranking.')}
+              </div>
+            </section>
+          </section>
+
+          <section class="wiki-section gk-rarity-utility">
+            <details>
+              <summary>Utility / Open Mint / Infinite Supply</summary>
+              <p class="lore-paragraph">These NFTs are useful collection objects, but they are excluded from the limited-NFT rarity leaderboard because their supply behavior or purpose is not comparable to scarce art/card NFTs.</p>
+              ${groupedSideCards(data.utility, { status: 'Utility / Open Mint', getGroup: utilityBucket })}
+              ${advancedTable('Advanced raw utility table', sideTable(data.utility))}
+            </details>
+          </section>
+
+          <section class="wiki-section gk-rarity-unissued">
+            <details>
+              <summary>Unissued / Not Circulating</summary>
+              <p class="lore-paragraph">These NFTs have zero issued supply and are not ranked as rare circulating NFTs.</p>
+              ${groupedSideCards(data.unissued, { status: 'Unissued', getGroup: () => 'Not Circulating' })}
+              ${advancedTable('Advanced raw unissued table', sideTable(data.unissued))}
+            </details>
+          </section>
+
+          <details class="developer-details gk-rarity-developer-details">
+            <summary>Developer tracker details</summary>
+            <section class="wiki-section gk-rarity-status">
+              <h3>Last Scan Status</h3>
+              <p class="lore-paragraph"><strong>Live data status:</strong> ${esc(syncStatus.live_data_status)}. <strong>Burn tracking:</strong> pre-baseline missing/burned is a current live supply delta, not confirmed historic burn tracking.</p>
+            </section>
+            <section class="wiki-section gk-rarity-source-note">
+              <h3>Source Links / Methodology Note</h3>
+              <p class="lore-paragraph">Source data comes from AtomicAssets live templates and asset counts. AtomicAssets and AtomicHub links remain on every row. Price is never used in this rarity score.</p>
+            </section>
+          </details>
+
+          <section class="wiki-section gk-rarity-raw-fallback" data-rarity-fallback hidden>
+            <p class="notice notice-warning">Live rarity data unavailable. Showing raw NFT list only. This is not the final rarity ranking.</p>
+          </section>
         </section>
-        <section class="wiki-section">
-          <h2>Rarity Method</h2>
-          <p>This tracker uses the same broad adaptive weighted rarity framework as the existing collection trackers. AtomicAssets is the source of truth; AtomicHub links are reference links only.</p>
-          <p>The base formula is live surviving supply scarcity 50%, rarity trait/name exposure scarcity 25%, variation trait/name/metadata exposure scarcity 20%, and missing/burned supply bonus 5%. If meaningful rarity or variation metadata is missing, generic, repeated, or not supplied, that trait weight moves to live supply scarcity instead of inventing fake trait value.</p>
-          <p>Price, floor, sales, volume, market cap, and marketplace listing counts are not scoring inputs.</p>
-        </section>
-        <section class="wiki-section">
-          <h2>Top Ranked NFTs</h2>
-          <div class="wiki-rabbit-grid">${renderTopCards(data.ranked)}</div>
-        </section>
-        <section class="wiki-section">
-          <h2>NFT Rarity Ranking</h2>
-          <table class="wiki-table">
-            <thead><tr><th>NFT</th><th>NFT Page ID</th><th>Issued Supply</th><th>Live Supply</th><th>Pre-baseline Missing/Burned</th><th>Rarity Trait</th><th>Rarity Scored</th><th>Variation Trait</th><th>Variation Scored</th><th>Weights Used</th><th>Final Score</th><th>Live Count Status</th></tr></thead>
-            <tbody>${renderRows(data.ranked, true)}</tbody>
-          </table>
-        </section>
-        <section class="wiki-section">
-          <h2>Utility / Open Mint</h2>
-          <table class="wiki-table">
-            <thead><tr><th>NFT</th><th>NFT Page ID</th><th>Issued Supply</th><th>Live Supply</th><th>Pre-baseline Missing/Burned</th><th>Rarity Trait</th><th>Rarity Scored</th><th>Variation Trait</th><th>Variation Scored</th><th>Weights Used</th><th>Final Score</th><th>Live Count Status</th></tr></thead>
-            <tbody>${renderRows(data.utility)}</tbody>
-          </table>
-        </section>
-        <section class="wiki-section">
-          <h2>Unissued</h2>
-          <table class="wiki-table">
-            <thead><tr><th>NFT</th><th>NFT Page ID</th><th>Issued Supply</th><th>Live Supply</th><th>Pre-baseline Missing/Burned</th><th>Rarity Trait</th><th>Rarity Scored</th><th>Variation Trait</th><th>Variation Scored</th><th>Weights Used</th><th>Final Score</th><th>Live Count Status</th></tr></thead>
-            <tbody>${renderRows(data.unissued)}</tbody>
-          </table>
-        </section>
+<!-- HODLMOONBOYS_RARITY_RANKING:END -->
         <!-- RELATED_WIKI_PATHS:BEGIN -->
         <section class="wiki-section related-wiki-paths" data-related-wiki-paths="true">
           <h2>Related Wiki Paths</h2>
@@ -593,23 +1053,9 @@ function renderPage(collection, data, stats, syncStatus) {
         </section>
         <!-- RELATED_WIKI_PATHS:END -->
       </article>
-    </main>
-  </div>
-  <script data-cfasync="false" src="/js/api-config.js"></script>
-  <script data-cfasync="false" src="/js/wax-image-normalizer.js"></script>
-  <script data-cfasync="false" src="/js/wax-api-client.js"></script>
-  <script data-cfasync="false" src="/js/wax-collection-renderer.js"></script>
-  <script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
-  <script data-cfasync="false" src="/js/identity-gate.js"></script>
-  <script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
-  <script data-cfasync="false" src="/js/core/daily-loop-state.js"></script>
-  <script data-cfasync="false" src="/js/site-shell.js"></script>
-  <script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
-  <script data-cfasync="false" src="/js/components/global-player-header.js"></script>
-  <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
-  <script data-cfasync="false" src="/js/wiki.js"></script>
-  <script data-cfasync="false" src="/js/bible-loader.js"></script>
-  <script data-cfasync="false" src="/js/site-feed-status.js"></script>
+<!-- SAM:END:article -->
+</main>
+${bottomScripts()}
 </body>
 </html>
 `;
