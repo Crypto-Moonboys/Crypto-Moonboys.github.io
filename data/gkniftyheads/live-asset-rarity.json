@@ -1,6 +1,6 @@
 {
   "collection": "gkniftyheads",
-  "generated_at": "2026-09-17T08:44:57.583Z",
+  "generated_at": "2026-09-18T08:21:21.603Z",
   "status": "atomicassets live asset count",
   "asset_ranking_formula": {
     "source_of_truth": "AtomicAssets",
@@ -1096,7 +1096,8 @@
         "https://ipfs.io/ipfs/bafybeiewutfd74l4ix7cn6nyijriq5nfkojihk7uqucnzhmhup52jhssgy",
         "https://gateway.pinata.cloud/ipfs/bafybeiewutfd74l4ix7cn6nyijriq5nfkojihk7uqucnzhmhup52jhssgy",
         "https://nftstorage.link/ipfs/bafybeiewutfd74l4ix7cn6nyijriq5nfkojihk7uqucnzhmhup52jhssgy",
-        "https://dweb.link/ipfs/bafybeiewutfd74l4ix7cn6nyijriq5nfkojihk7uqucnzhmhup52jhssgy"
+        "https://dweb.link/ipfs/bafybeiewutfd74l4ix7cn6nyijriq5nfkojihk7uqucnzhmhup52jhssgy",
+        "/img/gkniftyheads/thumbs/784220.webp"
       ],
       "thumbnail_url": "/img/gkniftyheads/thumbs/784220.webp",
       "immutable_data_image_fields": {

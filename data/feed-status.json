@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-17T08:45:04.564Z",
+  "generated_at": "2026-09-18T08:21:27.327Z",
   "feeds": {
     "gkniftyheads_rarity": {
       "feed_id": "gkniftyheads_rarity",
@@ -24,10 +24,10 @@
       "status": "degraded",
       "stale": false,
       "stale_after_hours": 30,
-      "checked_at": "2026-09-17T08:44:58.638Z",
-      "last_successful_check": "2026-09-17T08:44:58.638Z",
-      "last_successful_update": "2026-09-17T08:44:57.583Z",
-      "source_updated_at": "2026-09-17T08:44:57.583Z",
+      "checked_at": "2026-09-18T08:21:21.988Z",
+      "last_successful_check": "2026-09-18T08:21:21.988Z",
+      "last_successful_update": "2026-09-18T08:21:21.603Z",
+      "source_updated_at": "2026-09-18T08:21:21.603Z",
       "source_age_minutes": 0,
       "last_error": "Rarity reconciliation incomplete: 1 mismatched template(s); live minus issued = 3 | Display analytics unavailable: top_users",
       "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live asset scan is unavailable",
@@ -40,7 +40,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-09-17T08:44:50.997Z"
+          "checked_at": "2026-09-18T08:21:17.588Z"
         },
         "num_assets": {
           "ok": true,
@@ -49,7 +49,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-09-17T08:44:52.171Z"
+          "checked_at": "2026-09-18T08:21:17.884Z"
         },
         "marketcap": {
           "ok": true,
@@ -58,7 +58,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-09-17T08:44:54.728Z"
+          "checked_at": "2026-09-18T08:21:19.502Z"
         },
         "top_users": {
           "ok": false,
@@ -67,7 +67,7 @@
           "error": "https://wax-api.hivebp.io/v3/top-users/30/gkniftyheads failed: HTTP 500",
           "used_previous": true,
           "attempts": 2,
-          "checked_at": "2026-09-17T08:44:54.951Z"
+          "checked_at": "2026-09-18T08:21:19.637Z"
         },
         "top_templates": {
           "ok": true,
@@ -76,7 +76,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-09-17T08:44:55.669Z"
+          "checked_at": "2026-09-18T08:21:20.268Z"
         },
         "volume": {
           "ok": true,
@@ -85,7 +85,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-09-17T08:44:56.895Z"
+          "checked_at": "2026-09-18T08:21:20.819Z"
         },
         "sales_volume_graph": {
           "ok": true,
@@ -94,7 +94,7 @@
           "error": null,
           "used_previous": false,
           "attempts": 1,
-          "checked_at": "2026-09-17T08:44:57.117Z"
+          "checked_at": "2026-09-18T08:21:20.956Z"
         }
       },
       "notes": [
@@ -138,10 +138,10 @@
       "status": "ok",
       "stale": false,
       "stale_after_hours": 30,
-      "checked_at": "2026-09-17T08:45:04.563Z",
-      "last_successful_check": "2026-09-17T08:45:04.563Z",
-      "last_successful_update": "2026-09-17T08:45:04.563Z",
-      "source_updated_at": "2026-09-17T08:45:04.563Z",
+      "checked_at": "2026-09-18T08:21:27.323Z",
+      "last_successful_check": "2026-09-18T08:21:27.323Z",
+      "last_successful_update": "2026-09-18T08:21:27.323Z",
+      "source_updated_at": "2026-09-18T08:21:27.323Z",
       "source_age_minutes": 0,
       "last_error": null,
       "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live AtomicAssets counts are unavailable",
@@ -153,6 +153,40 @@
         "HiveBP display analytics: degraded; not used for rarity scoring.",
         "AtomicAssets collection stats sanity check available; asset-state cache remains the source for surviving mint ranks and holder/asset leaderboards.",
         "AtomicAssets is the source of truth; AtomicHub links are references only."
+      ]
+    },
+    "hodlmoonboys_rarity": {
+      "feed_id": "hodlmoonboys_rarity",
+      "feed_mode": "scheduled_snapshot_primary",
+      "page_paths": [
+        "/wiki/hodlmoonboys-nft-collection.html"
+      ],
+      "output_files": [
+        "data/hodlmoonboys/collection.json",
+        "data/hodlmoonboys/template-metadata-cache.json",
+        "data/hodlmoonboys/live-template-supply.json",
+        "data/hodlmoonboys/template-rarity.json",
+        "data/hodlmoonboys/template-stats.json",
+        "data/hodlmoonboys/trait-exposure.json",
+        "data/hodlmoonboys/sync-status.json",
+        "data/hodlmoonboys/template-rarity.csv",
+        "data/hodlmoonboys/trait-exposure.csv",
+        "wiki/hodlmoonboys-nft-collection.html"
+      ],
+      "status": "error",
+      "stale": true,
+      "stale_after_hours": 30,
+      "checked_at": "2026-09-18T08:21:27.327Z",
+      "last_successful_check": null,
+      "last_successful_update": null,
+      "source_updated_at": null,
+      "source_age_minutes": null,
+      "last_error": "Cannot read properties of undefined (reading 'map')",
+      "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live AtomicAssets counts are unavailable",
+      "analytics_status": null,
+      "endpoint_status": {},
+      "notes": [
+        "Updater threw before completing; previous feed output files were preserved."
       ]
     }
   }
