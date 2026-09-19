@@ -1,0 +1,12 @@
+{
+  "collection": "hodlmoonboys",
+  "feed_id": "hodlmoonboys_rarity",
+  "generated_at": "2026-09-17T13:27:46.591Z",
+  "status": "ok",
+  "live_data_status": "atomicassets live asset count",
+  "notes": [
+    "AtomicAssets is the source of truth.",
+    "No price, floor, sales, listing, or AtomicHub listing counts are used for rarity math.",
+    "Pre-baseline missing/burned is a current live supply delta, not confirmed historic burn tracking."
+  ]
+}

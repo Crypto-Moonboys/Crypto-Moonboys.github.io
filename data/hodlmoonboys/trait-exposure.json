@@ -1,0 +1,165 @@
+{
+  "collection": "hodlmoonboys",
+  "generated_at": "2026-09-17T13:27:46.591Z",
+  "ranking_formula": {
+    "source_of_truth": "AtomicAssets",
+    "atomichub_usage": "reference_links_only",
+    "price_used": false,
+    "market_data_used": false,
+    "adaptive_weighting": true,
+    "base_score_weights": {
+      "live_supply_scarcity": 50,
+      "rarity_trait_or_name_exposure_scarcity": 25,
+      "variation_trait_or_metadata_exposure_scarcity": 20,
+      "missing_burned_supply_bonus": 5
+    },
+    "thin_metadata_rule": "Trait weights are reassigned to live supply scarcity when rarity or variation metadata is missing, generic, repeated, or not meaningful.",
+    "burn_missing_rule": "Burns increase rarity through lower live supply and a small missing/burned supply bonus when supported by tracker data.",
+    "disallowed_score_inputs": [
+      "price",
+      "floor_price",
+      "sales",
+      "last_sale",
+      "listing_count",
+      "market_cap",
+      "volume",
+      "AtomicHub listing counts"
+    ]
+  },
+  "rarity_traits": [
+    {
+      "trait": "$TAK£",
+      "template_count": 1,
+      "exposure_supply": 1
+    },
+    {
+      "trait": "1",
+      "template_count": 1,
+      "exposure_supply": 1
+    },
+    {
+      "trait": "1 PIECE OF ROCKING HORSE $HIT",
+      "template_count": 1,
+      "exposure_supply": 1
+    },
+    {
+      "trait": "DEAD",
+      "template_count": 1,
+      "exposure_supply": 1
+    },
+    {
+      "trait": "TOKER",
+      "template_count": 1,
+      "exposure_supply": 1
+    },
+    {
+      "trait": "RARE 2 DA BONE",
+      "template_count": 1,
+      "exposure_supply": 10
+    },
+    {
+      "trait": "30",
+      "template_count": 1,
+      "exposure_supply": 30
+    },
+    {
+      "trait": "MOONGIRLS",
+      "template_count": 2,
+      "exposure_supply": 30
+    },
+    {
+      "trait": "rebel",
+      "template_count": 1,
+      "exposure_supply": 50
+    },
+    {
+      "trait": "300",
+      "template_count": 2,
+      "exposure_supply": 51
+    },
+    {
+      "trait": "10",
+      "template_count": 66,
+      "exposure_supply": 90
+    },
+    {
+      "trait": "ROCKING HORSE $HIT",
+      "template_count": 75,
+      "exposure_supply": 352
+    },
+    {
+      "trait": "3",
+      "template_count": 7,
+      "exposure_supply": 662
+    },
+    {
+      "trait": "NOT ENOUGH",
+      "template_count": 5,
+      "exposure_supply": 810
+    },
+    {
+      "trait": "200",
+      "template_count": 33,
+      "exposure_supply": 814
+    },
+    {
+      "trait": "50",
+      "template_count": 19,
+      "exposure_supply": 950
+    },
+    {
+      "trait": "250",
+      "template_count": 6,
+      "exposure_supply": 1500
+    },
+    {
+      "trait": "100",
+      "template_count": 26,
+      "exposure_supply": 2042
+    },
+    {
+      "trait": "500",
+      "template_count": 31,
+      "exposure_supply": 4437
+    }
+  ],
+  "variation_traits": [
+    {
+      "trait": "FCUKING EPIC",
+      "template_count": 7,
+      "exposure_supply": 7
+    },
+    {
+      "trait": "HODL WARRIOR P2E",
+      "template_count": 1,
+      "exposure_supply": 10
+    },
+    {
+      "trait": "BASE",
+      "template_count": 1,
+      "exposure_supply": 50
+    },
+    {
+      "trait": "$HODL",
+      "template_count": 271,
+      "exposure_supply": 11766
+    }
+  ],
+  "schemas": [
+    {
+      "schema_name": "hodlmoonboys",
+      "templates": 332,
+      "live_supply": 11885
+    },
+    {
+      "schema_name": "packs",
+      "templates": 3,
+      "live_supply": 4250
+    },
+    {
+      "schema_name": "series1",
+      "templates": 258,
+      "live_supply": 32540
+    }
+  ]
+}

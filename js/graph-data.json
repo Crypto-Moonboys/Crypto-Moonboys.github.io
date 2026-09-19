@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-08-30T06:55:58.221Z",
-  "verified_at": "2026-09-01T16:06:44.185Z",
+  "generated_at": "2026-09-17T18:34:32.126Z",
+  "verified_at": "2026-09-17T18:34:32.126Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -63,7 +63,7 @@
       "title": "NFT Template Page OG Template",
       "url": "/og-templates/nft-template-page.html",
       "category": "factions",
-      "rank_score": 117,
+      "rank_score": 118,
       "authority_score": 4
     },
     {
@@ -716,11 +716,11 @@
     },
     {
       "id": "/wiki/gkniftyheads-bitman-784220.html",
-      "title": "⚡️⚡️⚡️ Bitman 🦇",
+      "title": "⚡️⚡️⚡️ Bitman 🦇 — Free-Roaming GKniftyHEAD Hero | Crypto Moonboys Wiki",
       "url": "/wiki/gkniftyheads-bitman-784220.html",
       "category": "nfts-digital-art",
-      "rank_score": 173,
-      "authority_score": 16
+      "rank_score": 450,
+      "authority_score": 26
     },
     {
       "id": "/wiki/gkniftyheads-bitman-784229.html",
@@ -1311,7 +1311,7 @@
       "title": "GKniftyHEADS NFT Collection",
       "url": "/wiki/gkniftyheads-nft-collection.html",
       "category": "nfts-digital-art",
-      "rank_score": 1214,
+      "rank_score": 1216,
       "authority_score": 28
     },
     {
@@ -1827,6 +1827,14 @@
       "authority_score": 21
     },
     {
+      "id": "/wiki/hodlmoonboys-nft-collection.html",
+      "title": "Hodl Moonboys NFT Collection",
+      "url": "/wiki/hodlmoonboys-nft-collection.html",
+      "category": "misc",
+      "rank_score": 1686,
+      "authority_score": 20
+    },
+    {
       "id": "/wiki/ian-harrison.html",
       "title": "Ian Harrison",
       "url": "/wiki/ian-harrison.html",
@@ -2023,7 +2031,7 @@
       "title": "NoBallGames NFT Collection Tracker | Crypto Moonboys Wiki",
       "url": "/wiki/noballgamess-nft-collection.html",
       "category": "core",
-      "rank_score": 261,
+      "rank_score": 263,
       "authority_score": 13
     },
     {
@@ -7518,7 +7526,7 @@
     },
     {
       "source": "/wiki/gkniftyheads-robin-ronin-rampage-783747.html",
-      "target": "/wiki/gkniftyheads-zenith-zephyr-zealot-783759.html",
+      "target": "/wiki/gkniftyheads-bitman-784220.html",
       "score": 75,
       "weight": 0.75
     },
@@ -7560,6 +7568,12 @@
     },
     {
       "source": "/wiki/gkniftyheads-sarah-p2fly-784350.html",
+      "target": "/wiki/gkniftyheads-bitman-784220.html",
+      "score": 81,
+      "weight": 0.81
+    },
+    {
+      "source": "/wiki/gkniftyheads-sarah-p2fly-784350.html",
       "target": "/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html",
       "score": 76,
       "weight": 0.76
@@ -7573,12 +7587,6 @@
     {
       "source": "/wiki/gkniftyheads-sarah-p2fly-784350.html",
       "target": "/wiki/gkniftyheads-alessandro-satoshi-samurai-ferrari-783442.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/gkniftyheads-sarah-p2fly-784350.html",
-      "target": "/wiki/gkniftyheads-sarah-pfly-784349.html",
       "score": 75,
       "weight": 0.75
     },
@@ -7632,15 +7640,15 @@
     },
     {
       "source": "/wiki/gkniftyheads-satoshi-knight-784264.html",
-      "target": "/wiki/gkniftyheads-antonio-ether-emperor-costa-783448.html",
-      "score": 74,
-      "weight": 0.74
+      "target": "/wiki/gkniftyheads-bitman-784220.html",
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/gkniftyheads-satoshi-knight-784264.html",
-      "target": "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
-      "score": 73,
-      "weight": 0.73
+      "target": "/wiki/gkniftyheads-antonio-ether-emperor-costa-783448.html",
+      "score": 74,
+      "weight": 0.74
     },
     {
       "source": "/wiki/gkniftyheads-scribe-serpent-783260.html",
@@ -9233,6 +9241,12 @@
       "weight": 0.78
     },
     {
+      "source": "/wiki/hodlmoonboys-nft-collection.html",
+      "target": "/wiki/gkniftyheads-nft-collection.html",
+      "score": 54,
+      "weight": 0.54
+    },
+    {
       "source": "/wiki/ian-harrison.html",
       "target": "/wiki/graffpunks.html",
       "score": 90,
@@ -9957,6 +9971,12 @@
       "target": "/wiki/gkniftyheads-nft-collection.html",
       "score": 57,
       "weight": 0.57
+    },
+    {
+      "source": "/wiki/noballgamess-nft-collection.html",
+      "target": "/wiki/hodlmoonboys-nft-collection.html",
+      "score": 42,
+      "weight": 0.42
     },
     {
       "source": "/wiki/noballgamess-nft-collection.html",

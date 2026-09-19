@@ -101,6 +101,39 @@
       "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live AtomicAssets counts are unavailable",
       "last_successful_update": null,
       "last_error": null
+    },
+    {
+      "feed_id": "hodlmoonboys_rarity",
+      "feed_mode": "scheduled_snapshot_primary",
+      "page_paths": [
+        "/wiki/hodlmoonboys-nft-collection.html"
+      ],
+      "source_type": "atomicassets_collection_tracker",
+      "source_urls": {
+        "collection": "https://wax.api.atomicassets.io/atomicassets/v1/collections/hodlmoonboys",
+        "templates": "https://wax.api.atomicassets.io/atomicassets/v1/templates?collection_name=hodlmoonboys",
+        "template": "https://wax.api.atomicassets.io/atomicassets/v1/templates/hodlmoonboys/{template_id}",
+        "live_count": "https://wax.api.atomicassets.io/atomicassets/v1/assets/_count?collection_name=hodlmoonboys&template_id={template_id}"
+      },
+      "output_files": [
+        "data/hodlmoonboys/collection.json",
+        "data/hodlmoonboys/template-metadata-cache.json",
+        "data/hodlmoonboys/live-template-supply.json",
+        "data/hodlmoonboys/template-rarity.json",
+        "data/hodlmoonboys/template-stats.json",
+        "data/hodlmoonboys/trait-exposure.json",
+        "data/hodlmoonboys/sync-status.json",
+        "data/hodlmoonboys/template-rarity.csv",
+        "data/hodlmoonboys/trait-exposure.csv",
+        "wiki/hodlmoonboys-nft-collection.html"
+      ],
+      "updater": "scripts/generate-hodlmoonboys-rarity.mjs",
+      "update_frequency": "24h",
+      "enabled": true,
+      "stale_after_hours": 30,
+      "fallback_behavior": "preserve previous JSON and use issued-supply fallback when live AtomicAssets counts are unavailable",
+      "last_successful_update": null,
+      "last_error": null
     }
   ]
 }

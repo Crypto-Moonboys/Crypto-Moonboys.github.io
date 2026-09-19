@@ -102,9 +102,10 @@ check(
 );
 
 check(
-  battleLayer.includes('buildTemplateMediaShell() + buildMissionHTML(pageId, engagement)') &&
+  battleLayer.includes('buildTemplateEngagementHTML(pageId, engagement)') &&
+    battleLayer.includes('buildTemplateAboutHTML()') &&
     battleLayer.includes('battle-engagement-deck--nft-template'),
-  'NFT template pages render art beside Daily Missions with embedded Battle Heat',
+  'NFT template pages render art, About This NFT, and Daily Missions with embedded Battle Heat',
 );
 
 check(
