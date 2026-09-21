@@ -51,6 +51,7 @@ const ROOT_PUBLIC_EXTENSIONS = new Set([
 ]);
 
 const PUBLIC_DIRECTORIES = [
+  'SWARMSY-Ai',
   'about',
   'api',
   'art',
