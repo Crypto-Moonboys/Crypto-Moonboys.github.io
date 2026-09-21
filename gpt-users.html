@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Copy-ready SPARKY prompts for ChatGPT users who want the SWARMSY creator workflow without installing AnythingLLM.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="SPARKY For ChatGPT Users | Crypto Moonboys">
+  <meta property="og:description" content="Use ChatGPT as a street-level creator helper with copy-ready prompts for identity, mascot, message, proof, content and daily action.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://cryptomoonboys.com/gpt-users.html">
+  <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
+  <link rel="canonical" href="https://cryptomoonboys.com/gpt-users.html">
+  <title>SPARKY For ChatGPT Users | Crypto Moonboys</title>
+  <link rel="stylesheet" href="/css/wiki.css">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <style>
+    .gpt-user-page {
+      --sparky-gold: #ffd400;
+      --sparky-ink: #050505;
+      --sparky-panel: rgba(255, 255, 255, 0.05);
+      --sparky-border: rgba(255, 212, 0, 0.28);
+    }
+
+    .gpt-user-page .swarmsy-hero {
+      background:
+        radial-gradient(circle at 20% 20%, rgba(255, 212, 0, 0.18), transparent 30%),
+        radial-gradient(circle at 80% 0%, rgba(255, 255, 255, 0.08), transparent 26%),
+        linear-gradient(135deg, #050505 0%, #141414 58%, #080808 100%);
+      border-color: var(--sparky-border);
+    }
+
+    .gpt-steps {
+      counter-reset: gpt-step;
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      margin-top: 24px;
+    }
+
+    .gpt-step {
+      background: var(--sparky-panel);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 18px;
+      position: relative;
+    }
+
+    .gpt-step::before {
+      counter-increment: gpt-step;
+      content: counter(gpt-step);
+      display: grid;
+      place-items: center;
+      width: 32px;
+      height: 32px;
+      margin-bottom: 12px;
+      border-radius: 50%;
+      background: var(--sparky-gold);
+      color: var(--sparky-ink);
+      font-weight: 900;
+    }
+
+    .gpt-prompt-grid {
+      display: grid;
+      gap: 18px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      margin-top: 24px;
+    }
+
+    .gpt-prompt-card {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .gpt-prompt-card h3 {
+      margin-bottom: 0;
+    }
+
+    .gpt-prompt-card pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow: auto;
+      max-height: 420px;
+      margin: 0;
+      padding: 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.45);
+      color: #f5f5f5;
+      font-size: 0.92rem;
+      line-height: 1.55;
+    }
+
+    .gpt-copy-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .gpt-copy {
+      appearance: none;
+      border: 1px solid var(--sparky-border);
+      border-radius: 999px;
+      background: rgba(255, 212, 0, 0.1);
+      color: var(--sparky-gold);
+      cursor: pointer;
+      font-weight: 800;
+      padding: 10px 16px;
+    }
+
+    .gpt-copy:focus,
+    .gpt-copy:hover {
+      background: var(--sparky-gold);
+      color: var(--sparky-ink);
+    }
+
+    .gpt-warning {
+      border-left: 4px solid var(--sparky-gold);
+      padding: 14px 16px;
+      background: rgba(255, 212, 0, 0.08);
+      color: var(--color-text-muted);
+    }
+  </style>
+</head>
+<body class="page-swarmsy page-standard-shell">
+<main id="content" role="main">
+  <div class="swarmsy-page gpt-user-page">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Home</a>
+      <span aria-hidden="true">/</span>
+      <a href="/swarmsy.html">SWARMSY</a>
+      <span aria-hidden="true">/</span>
+      <span>GPT Users</span>
+    </nav>
+
+    <section class="swarmsy-hero" aria-labelledby="gpt-users-title">
+      <div class="swarmsy-hero-inner">
+        <div class="swarmsy-kicker">SPARKY FOR CHATGPT USERS</div>
+        <h1 id="gpt-users-title" class="swarmsy-title">COPY<br><span>THE PROMPTS.</span><br>BUILD THE PROOF.</h1>
+        <p class="swarmsy-lead">
+          This is the simple ChatGPT version of the SPARKY workflow. You do not need to install SWARMSY or AnythingLLM. Copy the prompts below into ChatGPT, create a Project if you can, and let SPARKY help you build identity, message, mascot, lawful local proof, digital proof and next action.
+        </p>
+        <p class="swarmsy-lead">
+          SPARKY is built from underground creator logic: be an artist, build a memorable mascot or mark, get the message seen locally and online, document the proof, grow the following and keep moving.
+        </p>
+        <div class="swarmsy-pill-row" aria-label="SPARKY principles">
+          <span class="swarmsy-pill">Message</span>
+          <span class="swarmsy-pill">Mascot or mark</span>
+          <span class="swarmsy-pill">Lawful local proof</span>
+          <span class="swarmsy-pill">Digital echo</span>
+          <span class="swarmsy-pill">Next action</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="swarmsy-section">
+      <h2>How To Use This In ChatGPT</h2>
+      <div class="gpt-steps">
+        <article class="gpt-step">
+          <h3>Create The Space</h3>
+          <p>Use a ChatGPT Project if available. Name it something like SPARKY Creator Build, then paste the Master SPARKY Instructions into the project instructions or first chat.</p>
+        </article>
+        <article class="gpt-step">
+          <h3>Add Your Proof</h3>
+          <p>Upload logos, PFPs, sketches, product photos, notes, screenshots or links as project files. SPARKY should separate rough ideas from approved decisions.</p>
+        </article>
+        <article class="gpt-step">
+          <h3>Pick A Lane</h3>
+          <p>Use one starter prompt: PFP/avatar, brand/art/product, no idea, image/poster/logo, daily plan or proof log.</p>
+        </article>
+        <article class="gpt-step">
+          <h3>Keep It Moving</h3>
+          <p>Use ChatGPT Tasks if you have them for daily and weekly check-ins. If not, paste the task prompts manually when you sit down to build.</p>
+        </article>
+      </div>
+      <p class="gpt-warning">
+        Keep real-world activations legal, permissioned and safe. Use AI spoof concepts, mockups and shock advertising as creative drafts unless they are clearly labelled and approved for public use.
+      </p>
+    </section>
+
+    <section class="swarmsy-section" aria-labelledby="prompt-library-title">
+      <h2 id="prompt-library-title">Copy-Ready Prompt Library</h2>
+      <p>Click Copy, paste into ChatGPT, then answer SPARKY with whatever details you already have. These prompts are meant to reduce thinking friction for beginners.</p>
+
+      <div class="gpt-prompt-grid">
+        <article class="swarmsy-card gpt-prompt-card">
+          <div class="gpt-copy-row">
+            <h3>Master SPARKY Instructions</h3>
+            <button class="gpt-copy" type="button" data-copy-target="prompt-master">Copy</button>
+          </div>
+          <pre id="prompt-master"><code>You are SPARKY, a graffiti-king style creator operator for a street-level creator build.
+
+You are not a generic chatbot. You help the user turn rough ideas into identity, message, mascot or mark, lawful local proof, digital proof, website or archive notes, content, community and next action.
+
+Core mission:
+- Make it easy for beginners to become full-time creators one small proof step at a time.
+- Think like underground street art, guerrilla branding, mascot culture, character worlds, music scenes, local proof and online reach.
+- Help the user build something that can be seen, documented, repeated and grown.
+
+Rules:
+- Do not invent PFP traits, links, rarity, backstory, proof or results.
+- Ask for missing details before building character or PFP work.
+- Keep real-world activation lawful, permissioned, safe and non-harmful.
+- Separate draft ideas from approved decisions.
+- Label AI concepts, spoof campaigns and mockups clearly when they are not real.
+- Prefer simple action over long theory.
+- Always end with a clear next move.
+
+Default workflow:
+1. Identify the lane: PFP/avatar, artist/music, brand/product, local business, website, bot/automation or normal question.
+2. Find the message: what people should remember.
+3. Find the mascot, mark, phrase, product image or character that carries the message.
+4. Pick one lawful local proof surface and one digital proof surface.
+5. Create the smallest useful asset today.
+6. Save the proof, decision or next action.
+7. Give the user one practical move to do next.</code></pre>
+        </article>
+
+        <article class="swarmsy-card gpt-prompt-card">
+          <div class="gpt-copy-row">
+            <h3>Start Here</h3>
+            <button class="gpt-copy" type="button" data-copy-target="prompt-start">Copy</button>
+          </div>
+          <pre id="prompt-start"><code>I am starting from zero. Help me choose one lane: PFP/avatar, artist/music, brand/product, local business, website, bot/automation or normal question. Ask only the details you need, then give me one strong first move.</code></pre>
+        </article>
+
+        <article class="swarmsy-card gpt-prompt-card">
+          <div class="gpt-copy-row">
+            <h3>PFP / Moonboy Builder</h3>
+            <button class="gpt-copy" type="button" data-copy-target="prompt-pfp">Copy</button>
+          </div>
+          <pre id="prompt-pfp"><code>I have a PFP, Moonboy or avatar to build. Ask me for the character details first before inventing anything: name, faction/community, visual description, image/link, local audience and goal.
+
+Then build:
+- Known details
+- Unknown details
+- Proposed lore expansion
+- 3 identity routes
+- Bio seed
+- Icon/stencil idea
+- Merch/poster surfaces
+- Lawful local campaign
+- Digital proof loop
+- First 3 actions</code></pre>
+        </article>
+
+        <article class="swarmsy-card gpt-prompt-card">
+          <div class="gpt-copy-row">
+            <h3>Brand / Art / Product Builder</h3>
+            <button class="gpt-copy" type="button" data-copy-target="prompt-brand">Copy</button>
+          </div>
+          <pre id="prompt-brand"><code>I have a brand, product, art, music, service or local business. Ask me for: what it is, first audience/location, message, mascot/mark/current visual, current assets and traction wanted.
+
+Then build:
+- Street-level identity route
+- Mascot/mark/stencil idea
+- Lawful local activation
+- Digital proof loop
+- Website/archive note
+- First 3 actions</code></pre>
+        </article>
+
+        <article class="swarmsy-card gpt-prompt-card">
+          <div class="gpt-copy-row">
+            <h3>No-Idea Direction</h3>
+            <button class="gpt-copy" type="button" data-copy-target="prompt-no-idea">Copy</button>
+          </div>
+          <pre id="prompt-no-idea"><code>I have no idea. Invent 3 bold local-first directions I could start today.
+
+For each direction give:
+- Who it is for
+- Message
+- Mascot or mark
+- Lawful local proof
+- Digital echo
+- First 3 actions
+
+Pick the best one and tell me exactly what to do first.</code></pre>
+        </article>
+
+        <article class="swarmsy-card gpt-prompt-card">
+          <div class="gpt-copy-row">
+            <h3>Image / Poster / Logo Prompt</h3>
+            <button class="gpt-copy" type="button" data-copy-target="prompt-image">Copy</button>
+          </div>
+          <pre id="prompt-image"><code>Create an external AI image prompt for [subject].
+
+Include:
+- A short message to the image AI explaining the project scope
+- A clear visual prompt
+- Style
+- Composition
+- Colours
+- Must include
+- Must avoid
+- Output needed
+- 3 stronger variations
+
+If ChatGPT image generation is available, tell me to use it here. Otherwise make the prompt ready for GPT, Grok, Midjourney, Ideogram, Leonardo, Firefly or Stable Diffusion.</code></pre>
+        </article>
+
+        <article class="swarmsy-card gpt-prompt-card">
+          <div class="gpt-copy-row">
+            <h3>Daily Empire Plan</h3>
+            <button class="gpt-copy" type="button" data-copy-target="prompt-daily">Copy</button>
+          </div>
+          <pre id="prompt-daily"><code>Plan today's local empire build.
+
+Make one Street-To-Digital Proof Card with:
+- Project type
+- Message
+- Mascot/mark
+- Lawful local proof surface
+- Digital proof surface
+- Proof capture
+- First task
+- Next 3 moves
+
+Keep it realistic for today.</code></pre>
+        </article>
+
+        <article class="swarmsy-card gpt-prompt-card">
+          <div class="gpt-copy-row">
+            <h3>7-Day Beginner Build Path</h3>
+            <button class="gpt-copy" type="button" data-copy-target="prompt-seven-day">Copy</button>
+          </div>
+          <pre id="prompt-seven-day"><code>Turn my rough idea into a 7-day beginner build path.
+
+Each day must create one proof asset:
+- Identity
+- Message
+- Mascot/mark
+- Visual prompt
+- Local proof mockup
+- Digital post/page
+- Weekly review
+
+Keep tasks small enough for a beginner.</code></pre>
+        </article>
+
+        <article class="swarmsy-card gpt-prompt-card">
+          <div class="gpt-copy-row">
+            <h3>ChatGPT Task: Daily Check-In</h3>
+            <button class="gpt-copy" type="button" data-copy-target="prompt-task-daily">Copy</button>
+          </div>
+          <pre id="prompt-task-daily"><code>Every day, ask me for today's project lane, then help me complete one Street-To-Digital Proof Card. Track what was done, what proof exists and the next action.</code></pre>
+        </article>
+
+        <article class="swarmsy-card gpt-prompt-card">
+          <div class="gpt-copy-row">
+            <h3>ChatGPT Task: Weekly Review</h3>
+            <button class="gpt-copy" type="button" data-copy-target="prompt-task-weekly">Copy</button>
+          </div>
+          <pre id="prompt-task-weekly"><code>Every week, review my proof notes and decide what to repeat, improve, publish, archive or stop. Give me the next 7-day build path.</code></pre>
+        </article>
+
+        <article class="swarmsy-card gpt-prompt-card">
+          <div class="gpt-copy-row">
+            <h3>Proof Log Prompt</h3>
+            <button class="gpt-copy" type="button" data-copy-target="prompt-proof">Copy</button>
+          </div>
+          <pre id="prompt-proof"><code>Help me create a proof log.
+
+Separate:
+- Rough idea
+- Draft
+- Approved decision
+- Made asset
+- Posted asset
+- Real-world proof
+- Digital proof
+- Result
+- Next action
+
+Do not turn plans into claims.</code></pre>
+        </article>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script>
+  document.querySelectorAll('[data-copy-target]').forEach(function (button) {
+    button.addEventListener('click', async function () {
+      var target = document.getElementById(button.getAttribute('data-copy-target'));
+      if (!target) return;
+      var originalText = button.textContent;
+      try {
+        await navigator.clipboard.writeText(target.textContent.trim());
+        button.textContent = 'Copied';
+      } catch (error) {
+        button.textContent = 'Select text';
+      }
+      window.setTimeout(function () {
+        button.textContent = originalText;
+      }, 1600);
+    });
+  });
+</script>
+<script data-cfasync="false" src="/js/api-config.js"></script>
+<script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
+<script data-cfasync="false" src="/js/identity-gate.js"></script>
+<script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
+<script data-cfasync="false" src="/js/core/daily-loop-state.js"></script>
+<script data-cfasync="false" src="/js/site-shell.js"></script>
+<script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
+<script data-cfasync="false" src="/js/components/global-player-header.js"></script>
+<script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
+<script data-cfasync="false" src="/js/faction-alignment.js"></script>
+<script data-cfasync="false" src="/js/wiki.js"></script>
+</body>
+</html>
