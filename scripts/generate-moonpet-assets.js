@@ -17,6 +17,7 @@ const API_BASE_URL = "https://www.autosprite.io/api/v1";
 const DEFAULT_SPRITESHEET_ANIMATIONS = ["idle", "walk", "run", "attack"];
 const AUTOSPRITE_PROMPT_LIMIT = 600;
 const AUTOSPRITE_PROMPT_TARGET = 450;
+const DUPLICATE_CHARACTER_CODE = "DUPLICATE_CHARACTER";
 
 const OUTPUT_FOLDERS = [
   "output/moonpets/base",
@@ -171,6 +172,21 @@ function buildCompressedPrompt(skin) {
   return compressed || prompt.slice(0, AUTOSPRITE_PROMPT_TARGET).replace(/\s+\S*$/, "").trim();
 }
 
+function autospriteName(displayName, styleVersion) {
+  const cleanName = compactWhitespace(displayName);
+  const cleanVersion = compactWhitespace(styleVersion);
+  if (!cleanVersion) return cleanName;
+  return cleanName.toLowerCase().endsWith(cleanVersion.toLowerCase())
+    ? cleanName
+    : `${cleanName} ${cleanVersion}`;
+}
+
+function nextStyleVersionName(currentName) {
+  const match = compactWhitespace(currentName).match(/^(.*?)(\d+)$/);
+  if (!match) return `${currentName} V2`;
+  return `${match[1]}${Number(match[2]) + 1}`;
+}
+
 function validateCharacterPrompt(character) {
   if (character.prompt.length > AUTOSPRITE_PROMPT_LIMIT) {
     throw new Error(
@@ -191,9 +207,11 @@ function buildCharacterPlan(traits, options) {
   const skins = traits.skins.filter((skin) => options.phase === "dry-run" || skin.phase === options.phase);
   const characters = skins.map((skin) => {
     const prompt = buildCompressedPrompt(skin);
+    const characterName = autospriteName(skin.name, traits.style_version);
     return {
       id: slug(skin.id),
       name: skin.name,
+      autospriteName: characterName,
       phase: skin.phase,
       skin: skin.id,
       prompt,
@@ -220,9 +238,11 @@ function buildResumeJobPlan(jobManifest, traits, options) {
   return limitedJobs.map((job) => {
     const skin = skinsById.get(job.skin) || {};
     const prompt = buildCompressedPrompt({ ...skin, name: job.name || job.localId || job.jobId });
+    const characterName = job.autospriteName || autospriteName(job.name || job.localId || job.jobId, traits.style_version);
     return {
       id: slug(job.localId || job.skin || job.name || job.jobId),
       name: job.name || job.localId || job.jobId,
+      autospriteName: characterName,
       phase: "test",
       skin: job.skin || job.localId,
       prompt,
@@ -248,7 +268,7 @@ function validateCharacterPrompts(characters) {
 function buildCreateCharacterBody(character) {
   validateCharacterPrompt(character);
   return {
-    name: character.name,
+    name: character.autospriteName,
     prompt: character.prompt
   };
 }
@@ -324,6 +344,17 @@ function formatAutoSpriteError(details) {
   if (details.message) parts.push(`message=${details.message}`);
   if (details.details) parts.push(`details=${details.details}`);
   return parts.join(" | ");
+}
+
+function isDuplicateCharacterError(error) {
+  const details = error && error.autoSprite;
+  return Boolean(details && details.status === 409 && details.code === DUPLICATE_CHARACTER_CODE);
+}
+
+function duplicateCharacterMessage(character, error) {
+  const suggestedName = nextStyleVersionName(character.autospriteName);
+  const baseMessage = error.autoSprite ? formatAutoSpriteError(error.autoSprite) : error.message;
+  return `${baseMessage}. AutoSprite character name already exists: "${character.autospriteName}". Try next version name: "${suggestedName}".`;
 }
 
 class AutoSpriteHttpError extends Error {
@@ -504,6 +535,9 @@ async function withRetries(label, maxRetries, baseDelayMs, operation) {
       return await operation(attempt);
     } catch (error) {
       lastError = error;
+      if (isDuplicateCharacterError(error)) {
+        throw error;
+      }
       if (attempt > maxRetries) break;
       const delay = baseDelayMs * 2 ** (attempt - 1);
       console.warn(`${label} failed on attempt ${attempt}: ${error.message}; retrying after ${delay}ms.`);
@@ -652,6 +686,7 @@ async function run() {
     characters: characters.map((character) => ({
       id: character.id,
       name: character.name,
+      autospriteName: character.autospriteName,
       phase: character.phase,
       prompt: character.prompt,
       promptLength: character.promptLength,
@@ -670,7 +705,7 @@ async function run() {
         console.log(`[debug-payload] ${character.id} create-character ${JSON.stringify(buildCreateCharacterBody(character))}`);
         console.log(`[debug-payload] ${character.id} create-spritesheets ${JSON.stringify(buildCreateSpritesheetBody(character))}`);
       }
-      console.log(`[dry-run] ${character.id}: promptLength=${character.promptLength}, request animations ${spriteSheetAnimationKinds.join(", ")}`);
+      console.log(`[dry-run] local_id=${character.id}, autospriteName="${character.autospriteName}", promptLength=${character.promptLength}, request animations ${spriteSheetAnimationKinds.join(", ")}`);
     }
     await writeJson(MANIFEST_PATH, planManifest);
     console.log(`Manifest written to ${path.relative(REPO_ROOT, MANIFEST_PATH).replace(/\\/g, "/")}`);
@@ -684,6 +719,7 @@ async function run() {
         ? {
             localId: character.id,
             name: character.name,
+            autospriteName: character.autospriteName,
             skin: character.skin,
             characterId: character.characterId,
             response: null
@@ -713,6 +749,7 @@ async function run() {
         characterRecord = {
           localId: character.id,
           name: character.name,
+          autospriteName: character.autospriteName,
           skin: character.skin,
           characterId: extractId(createCharacterResponse, ["character id"]),
           response: createCharacterResponse
@@ -729,6 +766,7 @@ async function run() {
         ? {
             localId: character.id,
             name: character.name,
+            autospriteName: character.autospriteName,
             skin: character.skin,
             characterId: character.characterId,
             jobId: character.jobId,
@@ -760,6 +798,7 @@ async function run() {
         jobRecord = {
           localId: character.id,
           name: character.name,
+          autospriteName: character.autospriteName,
           skin: character.skin,
           characterId: characterRecord.characterId,
           jobId: extractId(createSpritesheetResponse, ["job id"]),
@@ -855,6 +894,7 @@ async function run() {
         spritesheetManifest.spriteSheets.push({
           localId: character.id,
           name: character.name,
+          autospriteName: character.autospriteName,
           skin: character.skin,
           characterId: characterRecord.characterId,
           jobId: jobRecord.jobId,
@@ -874,7 +914,9 @@ async function run() {
       await sleep(rateLimitMs);
     } catch (error) {
       const autoSpriteError = error.autoSprite || null;
-      const errorSummary = autoSpriteError ? formatAutoSpriteError(autoSpriteError) : error.message;
+      const errorSummary = isDuplicateCharacterError(error)
+        ? duplicateCharacterMessage(character, error)
+        : autoSpriteError ? formatAutoSpriteError(autoSpriteError) : error.message;
       console.error(`[${character.id}] failed: ${errorSummary}`);
       planManifest.characters = planManifest.characters.map((entry) =>
         entry.id === character.id ? { ...entry, status: "failed", error: errorSummary } : entry
@@ -885,6 +927,7 @@ async function run() {
           character: {
             id: character.id,
             name: character.name,
+            autospriteName: character.autospriteName,
             skin: character.skin
           },
           status: autoSpriteError.status,
@@ -893,7 +936,8 @@ async function run() {
           message: autoSpriteError.message,
           details: autoSpriteError.details,
           responseBody: autoSpriteError.bodyText,
-          parsedResponseBody: autoSpriteError.parsedBody
+          parsedResponseBody: autoSpriteError.parsedBody,
+          suggestedName: isDuplicateCharacterError(error) ? nextStyleVersionName(character.autospriteName) : null
         });
         await writeErrorManifest(errors);
       }

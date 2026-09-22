@@ -27,6 +27,8 @@ Failed job polling responses are also saved under `output/manifests/autosprite/p
 
 AutoSprite character prompts must be 600 characters or less. The generator builds compressed API prompts targeted under 450 characters and validates every prompt locally before any request is sent. Longer local art direction and trait descriptions stay in repo manifests only; they are not sent in the AutoSprite character creation body.
 
+AutoSprite character names are versioned with `style_version` from `data/moonpet-traits.json`, currently `28Bit V1`, while local IDs such as `default_white_moonpet` stay unchanged. If AutoSprite returns `409 DUPLICATE_CHARACTER`, the script does not retry the same name; it writes the conflict response to `output/manifests/autosprite-errors.generated.json` and suggests the next version name, such as `28Bit V2`.
+
 ## Initial Batch
 
 The first approved batch is intentionally small: 3 reusable AutoSprite characters.
