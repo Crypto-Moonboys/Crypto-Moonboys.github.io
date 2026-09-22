@@ -196,6 +196,9 @@ function validateCharacterPrompt(character) {
 }
 
 function getSpriteSheetAnimations(traits) {
+  if (Array.isArray(traits.autosprite_test_animations) && traits.autosprite_test_animations.length > 0) {
+    return traits.autosprite_test_animations.map((animation) => ({ kind: animation.kind || animation }));
+  }
   if (Array.isArray(traits.autospriteAnimations) && traits.autospriteAnimations.length > 0) {
     return traits.autospriteAnimations.map((animation) => ({ kind: animation.kind || animation }));
   }
@@ -204,6 +207,9 @@ function getSpriteSheetAnimations(traits) {
 
 function buildCharacterPlan(traits, options) {
   const animations = getSpriteSheetAnimations(traits);
+  const spritesheetSettings = traits.spritesheetGeneration && traits.spritesheetGeneration.test
+    ? traits.spritesheetGeneration.test
+    : { videoTier: "turbo", frameCount: 25, frameSize: 256, removeBg: "ultra" };
   const skins = traits.skins.filter((skin) => options.phase === "dry-run" || skin.phase === options.phase);
   const characters = skins.map((skin) => {
     const prompt = buildCompressedPrompt(skin);
@@ -218,6 +224,7 @@ function buildCharacterPlan(traits, options) {
       localDescription: skin.description,
       promptLength: prompt.length,
       animations,
+      spritesheetSettings,
       gameActionMapping: traits.gameActionMapping
     };
   });
@@ -234,6 +241,9 @@ function buildResumeJobPlan(jobManifest, traits, options) {
   const jobs = Array.isArray(jobManifest.jobs) ? jobManifest.jobs : [];
   const limitedJobs = options.limit ? jobs.slice(0, options.limit) : jobs;
   const skinsById = new Map((traits.skins || []).map((skin) => [skin.id, skin]));
+  const spritesheetSettings = traits.spritesheetGeneration && traits.spritesheetGeneration.test
+    ? traits.spritesheetGeneration.test
+    : { videoTier: "turbo", frameCount: 25, frameSize: 256, removeBg: "ultra" };
 
   return limitedJobs.map((job) => {
     const skin = skinsById.get(job.skin) || {};
@@ -251,9 +261,12 @@ function buildResumeJobPlan(jobManifest, traits, options) {
       animations: (job.animations || getSpriteSheetAnimations(traits)).map((animation) =>
         typeof animation === "string" ? { kind: animation } : animation
       ),
+      spritesheetSettings,
       gameActionMapping: traits.gameActionMapping,
       characterId: job.characterId,
       jobId: job.jobId,
+      workflowKind: job.kind,
+      videoId: job.videoId,
       resumeJobOnly: true
     };
   });
@@ -275,7 +288,8 @@ function buildCreateCharacterBody(character) {
 
 function buildCreateSpritesheetBody(character) {
   return {
-    animations: character.animations
+    animations: character.animations,
+    ...character.spritesheetSettings
   };
 }
 
@@ -392,6 +406,41 @@ function extractId(responseJson, labels) {
   throw new Error(`AutoSprite response did not include a ${labels.join(" or ")}.`);
 }
 
+function extractWorkflows(responseJson) {
+  const workflows =
+    responseJson && Array.isArray(responseJson.workflows) ? responseJson.workflows :
+    responseJson && responseJson.data && Array.isArray(responseJson.data.workflows) ? responseJson.data.workflows :
+    responseJson && responseJson.result && Array.isArray(responseJson.result.workflows) ? responseJson.result.workflows :
+    [];
+
+  return workflows
+    .filter((workflow) => workflow && workflow.jobId)
+    .map((workflow) => ({
+      jobId: String(workflow.jobId),
+      kind: workflow.kind || "unknown",
+      videoId: workflow.videoId || null
+    }));
+}
+
+function extractSpritesheetsList(responseJson) {
+  const spritesheets =
+    responseJson && Array.isArray(responseJson.spritesheets) ? responseJson.spritesheets :
+    responseJson && responseJson.data && Array.isArray(responseJson.data.spritesheets) ? responseJson.data.spritesheets :
+    responseJson && responseJson.result && Array.isArray(responseJson.result.spritesheets) ? responseJson.result.spritesheets :
+    [];
+
+  return spritesheets.filter(Boolean);
+}
+
+function findSucceededSpritesheetId(responseJson, kind) {
+  const spritesheets = extractSpritesheetsList(responseJson);
+  const match = spritesheets.find((sheet) => {
+    const status = String(sheet.status || "").toLowerCase();
+    return (!kind || sheet.kind === kind) && (status === "succeeded" || status === "success" || status === "complete" || status === "completed");
+  });
+  return match && (match.id || match.spriteSheetId || match.spritesheetId);
+}
+
 function collectSpriteSheetIds(value, ids = new Set(), allowDirectId = false) {
   if (!value) return ids;
   if (typeof value === "string" || typeof value === "number") {
@@ -434,6 +483,8 @@ function pickUrl(record, names) {
 
 function extractDownloadTargets(spriteSheetRecord) {
   const pngUrl = pickUrl(spriteSheetRecord, [
+    "sheetUrl",
+    "sheet_url",
     "png_url",
     "pngUrl",
     "image_url",
@@ -443,6 +494,8 @@ function extractDownloadTargets(spriteSheetRecord) {
     "url"
   ]);
   const atlasUrl = pickUrl(spriteSheetRecord, [
+    "atlasUrl",
+    "atlas_url",
     "atlas_url",
     "atlasUrl",
     "json_url",
@@ -568,10 +621,13 @@ async function pollJob({ jobId, apiKey, options, rawResponses, character }) {
   let pollCount = 0;
   const endpoint = `${API_BASE_URL}/jobs/${encodeURIComponent(jobId)}`;
   const pollErrors = [];
+  let lastJobListAt = 0;
+  let lastSpritesheetListAt = 0;
 
   while (Date.now() - started < options.pollTimeoutMs) {
     pollCount += 1;
     await sleep(pollDelayMs(pollCount));
+    const elapsed = Date.now() - started;
 
     try {
       const job = await requestAutoSprite({
@@ -612,6 +668,89 @@ async function pollJob({ jobId, apiKey, options, rawResponses, character }) {
           endpoint,
           error: error.message
         };
+      }
+    }
+
+    if (character.characterId && Date.now() - lastJobListAt >= 60000) {
+      lastJobListAt = Date.now();
+      try {
+        const jobsList = await requestAutoSprite({
+          method: "GET",
+          urlPath: `/jobs?characterId=${encodeURIComponent(character.characterId)}&limit=10`,
+          apiKey,
+          options,
+          rawResponses,
+          step: `list-jobs-${pollCount}`,
+          character
+        });
+        const jobs = Array.isArray(jobsList.jobs) ? jobsList.jobs : [];
+        const listedJob = jobs.find((job) => job && String(job.jobId || job.id) === String(jobId));
+        const listedStatus = listedJob && String(listedJob.status || "").toLowerCase();
+        if (listedStatus) {
+          console.log(`[${character.id}] listed job ${jobId} status=${listedStatus}`);
+        }
+        if (listedStatus === "succeeded" || listedStatus === "success" || listedStatus === "completed" || listedStatus === "complete") {
+          const spritesheetsList = await requestAutoSprite({
+            method: "GET",
+            urlPath: `/characters/${encodeURIComponent(character.characterId)}/spritesheets`,
+            apiKey,
+            options,
+            rawResponses,
+            step: `list-character-spritesheets-after-job-list-${pollCount}`,
+            character
+          });
+          const spriteSheetId = findSucceededSpritesheetId(spritesheetsList, character.workflowKind);
+          if (spriteSheetId) {
+            return {
+              status: "succeeded",
+              job: { ...listedJob, spritesheetIds: [spriteSheetId], fallback: "jobs_list_then_character_spritesheets" },
+              pollErrors,
+              endpoint
+            };
+          }
+        }
+        if (listedStatus === "failed" || listedStatus === "error" || listedStatus === "cancelled" || listedStatus === "canceled") {
+          return {
+            status: "job_failed",
+            job: listedJob,
+            pollErrors,
+            endpoint,
+            error: listedJob.error || `AutoSprite job ${jobId} ended with status=${listedStatus}.`
+          };
+        }
+      } catch (error) {
+        const pollErrorPath = await savePollError({ character, jobId, endpoint: `${API_BASE_URL}/jobs?characterId=${encodeURIComponent(character.characterId)}&limit=10`, attempt: pollCount, error });
+        pollErrors.push(pollErrorPath);
+        console.warn(`[${character.id}] job-list fallback error for job ${jobId}: ${error.message}`);
+      }
+    }
+
+    if (character.characterId && elapsed >= 120000 && Date.now() - lastSpritesheetListAt >= 60000) {
+      lastSpritesheetListAt = Date.now();
+      try {
+        const spritesheetsList = await requestAutoSprite({
+          method: "GET",
+          urlPath: `/characters/${encodeURIComponent(character.characterId)}/spritesheets`,
+          apiKey,
+          options,
+          rawResponses,
+          step: `list-character-spritesheets-${pollCount}`,
+          character
+        });
+        const spriteSheetId = findSucceededSpritesheetId(spritesheetsList, character.workflowKind);
+        if (spriteSheetId) {
+          console.log(`[${character.id}] spritesheet fallback found ${spriteSheetId} for ${character.workflowKind || "unknown"}`);
+          return {
+            status: "succeeded",
+            job: { jobId, characterId: character.characterId, status: "succeeded", spritesheetIds: [spriteSheetId], fallback: "character_spritesheets" },
+            pollErrors,
+            endpoint
+          };
+        }
+      } catch (error) {
+        const pollErrorPath = await savePollError({ character, jobId, endpoint: `${API_BASE_URL}/characters/${encodeURIComponent(character.characterId)}/spritesheets`, attempt: pollCount, error });
+        pollErrors.push(pollErrorPath);
+        console.warn(`[${character.id}] spritesheet-list fallback error for job ${jobId}: ${error.message}`);
       }
     }
   }
@@ -762,24 +901,25 @@ async function run() {
         console.log(`[${character.id}] resume characterId=${characterRecord.characterId}`);
       }
 
-      let jobRecord = options.resumeJobs && character.jobId
-        ? {
-            localId: character.id,
-            name: character.name,
-            autospriteName: character.autospriteName,
-            skin: character.skin,
-            characterId: character.characterId,
-            jobId: character.jobId,
-            animations: spriteSheetAnimationKinds,
-            response: null
-          }
-        : null;
+      let jobRecords = [];
+      if (options.resumeJobs && character.jobId) {
+        jobRecords = [{
+          localId: character.id,
+          name: character.name,
+          autospriteName: character.autospriteName,
+          skin: character.skin,
+          characterId: character.characterId,
+          jobId: character.jobId,
+          kind: character.workflowKind || (character.animations[0] && character.animations[0].kind) || "unknown",
+          videoId: character.videoId || null,
+          animations: character.animations,
+          response: null
+        }];
+      } else if (options.resume) {
+        jobRecords = jobManifest.jobs.filter((entry) => entry.localId === character.id && entry.jobId);
+      }
 
-      jobRecord = jobRecord || (options.resume
-        ? jobManifest.jobs.find((entry) => entry.localId === character.id && entry.jobId)
-        : null);
-
-      if (!jobRecord) {
+      if (jobRecords.length === 0) {
         const createSpritesheetResponse = await withRetries(
           `AutoSprite create spritesheets ${character.id}`,
           maxRetries,
@@ -795,70 +935,104 @@ async function run() {
             character
           })
         );
-        jobRecord = {
+        const workflows = extractWorkflows(createSpritesheetResponse);
+        if (workflows.length === 0) {
+          throw new Error(`AutoSprite spritesheet response for ${character.id} did not include workflows[].`);
+        }
+        jobRecords = workflows.map((workflow) => ({
           localId: character.id,
           name: character.name,
           autospriteName: character.autospriteName,
           skin: character.skin,
           characterId: characterRecord.characterId,
-          jobId: extractId(createSpritesheetResponse, ["job id"]),
+          jobId: workflow.jobId,
+          kind: workflow.kind,
+          videoId: workflow.videoId,
           animations: spriteSheetAnimationKinds,
           response: createSpritesheetResponse
-        };
+        }));
         jobManifest.jobs = jobManifest.jobs.filter((entry) => entry.localId !== character.id);
-        jobManifest.jobs.push(jobRecord);
+        jobManifest.jobs.push(...jobRecords);
         jobManifest.generatedAt = new Date().toISOString();
         await writeJson(JOB_MANIFEST_PATH, jobManifest);
       } else {
-        console.log(`[${character.id}] resume jobId=${jobRecord.jobId}`);
+        console.log(`[${character.id}] resume jobIds=${jobRecords.map((job) => job.jobId).join(", ")}`);
       }
 
-      const pollResult = await pollJob({
-        jobId: jobRecord.jobId,
-        apiKey,
-        options,
-        rawResponses,
-        character
-      });
+      const allSpriteSheetIds = [];
+      const failedWorkflowPolls = [];
 
-      if (pollResult.status !== "succeeded") {
+      for (const jobRecord of jobRecords) {
+        const pollCharacter = {
+          ...character,
+          characterId: characterRecord.characterId,
+          workflowKind: jobRecord.kind
+        };
+        const pollResult = await pollJob({
+          jobId: jobRecord.jobId,
+          apiKey,
+          options,
+          rawResponses,
+          character: pollCharacter
+        });
+
+        if (pollResult.status !== "succeeded") {
+          failedWorkflowPolls.push({ jobRecord, pollResult });
+          errors.push({
+            generatedAt: new Date().toISOString(),
+            character: {
+              id: character.id,
+              name: character.name,
+              skin: character.skin
+            },
+            status: pollResult.status,
+            jobId: jobRecord.jobId,
+            kind: jobRecord.kind,
+            endpoint: pollResult.endpoint,
+            pollErrors: pollResult.pollErrors,
+            message: pollResult.error
+          });
+          await writeErrorManifest(errors);
+          continue;
+        }
+
+        const spriteSheetIds = extractSpriteSheetIds(pollResult.job);
+        if (spriteSheetIds.length === 0) {
+          failedWorkflowPolls.push({
+            jobRecord,
+            pollResult: {
+              ...pollResult,
+              status: "job_poll_failed",
+              error: `AutoSprite job ${jobRecord.jobId} succeeded but no sprite sheet IDs were found.`
+            }
+          });
+          continue;
+        }
+        allSpriteSheetIds.push(...spriteSheetIds.map((spriteSheetId) => ({ spriteSheetId, jobRecord })));
+      }
+
+      if (failedWorkflowPolls.length > 0) {
         planManifest.characters = planManifest.characters.map((entry) =>
           entry.id === character.id
             ? {
                 ...entry,
-                status: pollResult.status,
+                status: "job_poll_failed",
                 characterId: characterRecord.characterId,
-                jobId: jobRecord.jobId,
-                pollEndpoint: pollResult.endpoint,
-                pollErrors: pollResult.pollErrors,
-                error: pollResult.error
+                workflows: jobRecords,
+                pollFailures: failedWorkflowPolls.map(({ jobRecord, pollResult }) => ({
+                  jobId: jobRecord.jobId,
+                  kind: jobRecord.kind,
+                  pollEndpoint: pollResult.endpoint,
+                  pollErrors: pollResult.pollErrors,
+                  error: pollResult.error
+                }))
               }
             : entry
         );
-        errors.push({
-          generatedAt: new Date().toISOString(),
-          character: {
-            id: character.id,
-            name: character.name,
-            skin: character.skin
-          },
-          status: pollResult.status,
-          jobId: jobRecord.jobId,
-          endpoint: pollResult.endpoint,
-          pollErrors: pollResult.pollErrors,
-          message: pollResult.error
-        });
         await writeJson(MANIFEST_PATH, { ...planManifest, rawResponses });
-        await writeErrorManifest(errors);
-        continue;
       }
 
-      const spriteSheetIds = extractSpriteSheetIds(pollResult.job);
-      if (spriteSheetIds.length === 0) {
-        throw new Error(`AutoSprite job ${jobRecord.jobId} succeeded but no sprite sheet IDs were found.`);
-      }
-
-      for (const spriteSheetId of spriteSheetIds) {
+      for (const { spriteSheetId, jobRecord } of allSpriteSheetIds) {
         const spriteSheetRecord = await withRetries(
           `AutoSprite fetch spritesheet ${spriteSheetId}`,
           maxRetries,
@@ -898,6 +1072,7 @@ async function run() {
           skin: character.skin,
           characterId: characterRecord.characterId,
           jobId: jobRecord.jobId,
+          kind: jobRecord.kind,
           spriteSheetId,
           downloads,
           record: spriteSheetRecord
@@ -906,7 +1081,7 @@ async function run() {
 
       planManifest.characters = planManifest.characters.map((entry) =>
         entry.id === character.id
-          ? { ...entry, status: "generated", characterId: characterRecord.characterId, jobId: jobRecord.jobId, spriteSheetIds }
+          ? { ...entry, status: allSpriteSheetIds.length > 0 && failedWorkflowPolls.length === 0 ? "generated" : entry.status, characterId: characterRecord.characterId, workflows: jobRecords, spriteSheetIds: allSpriteSheetIds.map((entry) => entry.spriteSheetId) }
           : entry
       );
       await writeJson(SPRITESHEET_MANIFEST_PATH, spritesheetManifest);

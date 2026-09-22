@@ -16,11 +16,12 @@ AutoSprite is a character and spritesheet pipeline, not a one-shot PNG generator
 
 1. `POST /api/v1/characters` with `{ "name": "...", "prompt": "..." }`.
 2. Save the returned character ID.
-3. `POST /api/v1/characters/{CHARACTER_ID}/spritesheets` with supported animation kinds.
-4. Save the returned job ID.
-5. Poll `GET /api/v1/jobs/{JOB_ID}` until `status` is `succeeded` or the poll timeout is reached.
-6. Read the returned sprite sheet IDs.
-7. Fetch each sprite sheet record and download PNG/atlas URLs into `output/moonpets/spritesheets/`.
+3. `POST /api/v1/characters/{CHARACTER_ID}/spritesheets` with the documented spritesheet payload.
+4. Save every returned `workflows[]` entry. Each animation has its own `{ jobId, kind, videoId }`.
+5. Poll each workflow `jobId` with `GET /api/v1/jobs/{JOB_ID}` until `status` is `succeeded` or the poll timeout is reached.
+6. Also poll fallback endpoints: `GET /api/v1/jobs?characterId={CHARACTER_ID}&limit=10` every 60 seconds and `GET /api/v1/characters/{CHARACTER_ID}/spritesheets` after 2 minutes.
+7. Read returned or listed sprite sheet IDs.
+8. Fetch each sprite sheet record and download `sheetUrl` and `atlasUrl` into `output/moonpets/spritesheets/`.
 
 Every raw AutoSprite API response is saved under `output/manifests/autosprite/`.
 Failed job polling responses are also saved under `output/manifests/autosprite/poll-errors/` with the job ID and exact endpoint used. HTTP 500 responses from the jobs endpoint are treated as transient until the 10-minute polling timeout is reached.
@@ -31,7 +32,7 @@ AutoSprite character names are versioned with `style_version` from `data/moonpet
 
 ## Initial Batch
 
-The first approved batch is intentionally small: 3 reusable AutoSprite characters.
+The first approved batch is intentionally small: 3 reusable AutoSprite characters. The first test animation is `idle` only via `autosprite_test_animations`; do not request `walk`, `run`, or `attack` until idle works end to end.
 
 Skins:
 
@@ -39,9 +40,12 @@ Skins:
 - `starcap_moonbot`
 - `street_graff_moonbot`
 
-Requested AutoSprite animations:
+First requested AutoSprite animation:
 
 - `idle`
+
+Later AutoSprite animations:
+
 - `walk`
 - `run`
 - `attack`

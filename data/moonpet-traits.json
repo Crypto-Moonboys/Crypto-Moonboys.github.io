@@ -86,6 +86,22 @@
       "kind": "attack"
     }
   ],
+  "autosprite_test_animations": [
+    "idle"
+  ],
+  "spritesheetGeneration": {
+    "test": {
+      "videoTier": "turbo",
+      "frameCount": 25,
+      "frameSize": 256,
+      "removeBg": "ultra"
+    },
+    "highQualityLater": {
+      "videoTier": "pro",
+      "frameSize": 512,
+      "firstFrameQuality": "pro"
+    }
+  },
   "gameActionMapping": {
     "eat": "idle with food prop later",
     "play": "run/walk variation later",

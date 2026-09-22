@@ -49,6 +49,7 @@ jobs:
 
       - name: Generate Moonpet test batch
         if: ${{ inputs.phase == 'test' }}
+        timeout-minutes: 20
         run: node scripts/generate-moonpet-assets.js --phase=test --execute ${LIMIT:+--limit "$LIMIT"}
         env:
           LIMIT: ${{ inputs.limit }}
