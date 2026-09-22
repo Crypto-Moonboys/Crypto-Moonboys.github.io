@@ -12,6 +12,7 @@ const SPRITESHEET_MANIFEST_PATH = path.join(REPO_ROOT, "output", "manifests", "m
 const ERROR_MANIFEST_PATH = path.join(REPO_ROOT, "output", "manifests", "autosprite-errors.generated.json");
 const RAW_RESPONSE_DIR = path.join(REPO_ROOT, "output", "manifests", "autosprite");
 const POLL_ERROR_DIR = path.join(RAW_RESPONSE_DIR, "poll-errors");
+const EXISTING_CHARACTER_PATH = path.join(RAW_RESPONSE_DIR, "existing-character-moonbot-pet.json");
 const SPRITESHEET_OUTPUT_DIR = path.join(REPO_ROOT, "output", "moonpets", "spritesheets");
 const API_BASE_URL = "https://www.autosprite.io/api/v1";
 const DEFAULT_SPRITESHEET_ANIMATIONS = ["idle", "walk", "run", "attack"];
@@ -213,11 +214,15 @@ function buildCharacterPlan(traits, options) {
   const skins = traits.skins.filter((skin) => options.phase === "dry-run" || skin.phase === options.phase);
   const characters = skins.map((skin) => {
     const prompt = buildCompressedPrompt(skin);
-    const characterName = autospriteName(skin.name, traits.style_version);
+    const usesExistingCharacter = Boolean(traits.use_existing_autosprite_character && skin.id === "default_white_moonpet");
+    const characterName = usesExistingCharacter
+      ? traits.existing_autosprite_character_name
+      : autospriteName(skin.name, traits.style_version);
     return {
       id: slug(skin.id),
       name: skin.name,
       autospriteName: characterName,
+      usesExistingAutoSpriteCharacter: usesExistingCharacter,
       phase: skin.phase,
       skin: skin.id,
       prompt,
@@ -422,6 +427,21 @@ function extractWorkflows(responseJson) {
     }));
 }
 
+function extractCharactersList(responseJson) {
+  const characters =
+    responseJson && Array.isArray(responseJson.characters) ? responseJson.characters :
+    responseJson && responseJson.data && Array.isArray(responseJson.data.characters) ? responseJson.data.characters :
+    responseJson && responseJson.result && Array.isArray(responseJson.result.characters) ? responseJson.result.characters :
+    responseJson && Array.isArray(responseJson.data) ? responseJson.data :
+    [];
+
+  return characters.filter(Boolean);
+}
+
+function isDefaultBaseCharacter(character) {
+  return character.id === "default_white_moonpet";
+}
+
 function extractSpritesheetsList(responseJson) {
   const spritesheets =
     responseJson && Array.isArray(responseJson.spritesheets) ? responseJson.spritesheets :
@@ -550,6 +570,51 @@ async function savePollError({ character, jobId, endpoint, attempt, error }) {
     parsedResponseBody: autoSpriteError.parsedBody || null
   });
   return path.relative(REPO_ROOT, filePath).replace(/\\/g, "/");
+}
+
+async function resolveExistingAutoSpriteCharacter({ traits, character, apiKey, options, rawResponses }) {
+  if (!traits.use_existing_autosprite_character || !isDefaultBaseCharacter(character)) {
+    return null;
+  }
+
+  const expectedName = traits.existing_autosprite_character_name;
+  if (!expectedName) {
+    throw new Error("use_existing_autosprite_character is true, but existing_autosprite_character_name is missing.");
+  }
+
+  const charactersResponse = await requestAutoSprite({
+    method: "GET",
+    urlPath: "/characters?limit=50",
+    apiKey,
+    options,
+    rawResponses,
+    step: "list-existing-characters",
+    character
+  });
+  const existingCharacters = extractCharactersList(charactersResponse);
+  const matched = existingCharacters.find((entry) => entry && entry.name === expectedName);
+
+  if (!matched || !matched.id) {
+    throw new Error(`Existing AutoSprite character "${expectedName}" was not found. Check the AutoSprite character name exactly; no replacement character was created.`);
+  }
+
+  await writeJson(EXISTING_CHARACTER_PATH, {
+    matchedAt: new Date().toISOString(),
+    requestedName: expectedName,
+    localId: character.id,
+    character: matched,
+    listResponse: charactersResponse
+  });
+
+  return {
+    localId: character.id,
+    name: character.name,
+    autospriteName: matched.name,
+    skin: character.skin,
+    characterId: String(matched.id),
+    response: matched,
+    source: "existing_autosprite_character"
+  };
 }
 
 async function requestAutoSprite({ method, urlPath, body, apiKey, options, rawResponses, step, character }) {
@@ -818,6 +883,8 @@ async function run() {
     dryRun: options.dryRun,
     resume: options.resume,
     resumeJobs: options.resumeJobs,
+    useExistingAutoSpriteCharacter: traits.use_existing_autosprite_character,
+    existingAutoSpriteCharacterName: traits.existing_autosprite_character_name,
     workflow: "characters -> spritesheets job -> poll job -> fetch spritesheet records -> download png/atlas",
     animations: spriteSheetAnimationKinds,
     plannedCharacters: characters.length,
@@ -841,7 +908,11 @@ async function run() {
   if (options.dryRun) {
     for (const character of characters) {
       if (options.debugPayload) {
-        console.log(`[debug-payload] ${character.id} create-character ${JSON.stringify(buildCreateCharacterBody(character))}`);
+        if (character.usesExistingAutoSpriteCharacter) {
+          console.log(`[debug-payload] ${character.id} list-existing-characters {"limit":50,"matchName":"${character.autospriteName}"}`);
+        } else {
+          console.log(`[debug-payload] ${character.id} create-character ${JSON.stringify(buildCreateCharacterBody(character))}`);
+        }
         console.log(`[debug-payload] ${character.id} create-spritesheets ${JSON.stringify(buildCreateSpritesheetBody(character))}`);
       }
       console.log(`[dry-run] local_id=${character.id}, autospriteName="${character.autospriteName}", promptLength=${character.promptLength}, request animations ${spriteSheetAnimationKinds.join(", ")}`);
@@ -854,7 +925,15 @@ async function run() {
   for (const [index, character] of characters.entries()) {
     console.log(`[${index + 1}/${characters.length}] character ${character.id}`);
     try {
-      let characterRecord = options.resumeJobs && character.characterId
+      let characterRecord = await resolveExistingAutoSpriteCharacter({
+        traits,
+        character,
+        apiKey,
+        options,
+        rawResponses
+      });
+
+      characterRecord = characterRecord || (options.resumeJobs && character.characterId
         ? {
             localId: character.id,
             name: character.name,
@@ -863,7 +942,7 @@ async function run() {
             characterId: character.characterId,
             response: null
           }
-        : null;
+        : null);
 
       characterRecord = characterRecord || (options.resume
         ? characterManifest.characters.find((entry) => entry.localId === character.id && entry.characterId)
@@ -899,6 +978,12 @@ async function run() {
         await writeJson(CHARACTER_MANIFEST_PATH, characterManifest);
       } else {
         console.log(`[${character.id}] resume characterId=${characterRecord.characterId}`);
+        if (characterRecord.source === "existing_autosprite_character") {
+          characterManifest.characters = characterManifest.characters.filter((entry) => entry.localId !== character.id);
+          characterManifest.characters.push(characterRecord);
+          characterManifest.generatedAt = new Date().toISOString();
+          await writeJson(CHARACTER_MANIFEST_PATH, characterManifest);
+        }
       }
 
       let jobRecords = [];
@@ -1113,6 +1198,19 @@ async function run() {
           responseBody: autoSpriteError.bodyText,
           parsedResponseBody: autoSpriteError.parsedBody,
           suggestedName: isDuplicateCharacterError(error) ? nextStyleVersionName(character.autospriteName) : null
+        });
+        await writeErrorManifest(errors);
+      } else {
+        errors.push({
+          generatedAt: new Date().toISOString(),
+          character: {
+            id: character.id,
+            name: character.name,
+            autospriteName: character.autospriteName,
+            skin: character.skin
+          },
+          status: "local_error",
+          message: error.message
         });
         await writeErrorManifest(errors);
       }

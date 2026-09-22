@@ -3,6 +3,8 @@
   "pipeline": "Moonpet Art Factory",
   "version": "0.1.0",
   "style_version": "28Bit V1",
+  "use_existing_autosprite_character": true,
+  "existing_autosprite_character_name": "MOONBOT PET",
   "api": {
     "provider": "AutoSprite",
     "endpoint": "https://www.autosprite.io/api/v1/characters"

@@ -30,6 +30,8 @@ AutoSprite character prompts must be 600 characters or less. The generator build
 
 AutoSprite character names are versioned with `style_version` from `data/moonpet-traits.json`, currently `28Bit V1`, while local IDs such as `default_white_moonpet` stay unchanged. If AutoSprite returns `409 DUPLICATE_CHARACTER`, the script does not retry the same name; it writes the conflict response to `output/manifests/autosprite-errors.generated.json` and suggests the next version name, such as `28Bit V2`.
 
+For the current base test, `use_existing_autosprite_character` is enabled. The generator lists `GET /api/v1/characters?limit=50`, finds the exact character name `MOONBOT PET`, saves the matched record to `output/manifests/autosprite/existing-character-moonbot-pet.json`, and uses that character ID instead of calling `POST /characters`. If `MOONBOT PET` is not found, the run fails clearly and does not create a replacement.
+
 ## Initial Batch
 
 The first approved batch is intentionally small: 3 reusable AutoSprite characters. The first test animation is `idle` only via `autosprite_test_animations`; do not request `walk`, `run`, or `attack` until idle works end to end.
