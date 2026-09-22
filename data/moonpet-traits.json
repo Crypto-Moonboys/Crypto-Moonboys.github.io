@@ -71,6 +71,27 @@
       "prompt": "training stance, determined cute cyber pet posture, no weapons, no environment"
     }
   ],
+  "autospriteAnimations": [
+    {
+      "kind": "idle"
+    },
+    {
+      "kind": "walk"
+    },
+    {
+      "kind": "run"
+    },
+    {
+      "kind": "attack"
+    }
+  ],
+  "gameActionMapping": {
+    "eat": "idle with food prop later",
+    "play": "run/walk variation later",
+    "sleep": "separate static asset later",
+    "clean": "separate static asset later",
+    "train": "attack"
+  },
   "skins": [
     {
       "id": "default_white_moonpet",
@@ -102,9 +123,11 @@
     "frames"
   ],
   "safety": {
-    "batchLimit": 18,
+    "batchLimit": 3,
     "notes": [
-      "The initial phase intentionally combines 3 skins with 6 actions for 18 assets only.",
+      "The initial AutoSprite phase intentionally creates 3 reusable Moonpet characters only.",
+      "Request only AutoSprite-supported animations for now: idle, walk, run, attack.",
+      "Map game-only actions such as eat, play, sleep, clean, and train later after the spritesheet test is approved.",
       "Do not generate broad trait combinations until a human approves the test batch.",
       "Never commit real API keys or generated secrets."
     ]

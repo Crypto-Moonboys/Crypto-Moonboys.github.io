@@ -63,5 +63,5 @@ jobs:
           name: moonpet-art-factory-${{ inputs.phase }}
           path: |
             output/moonpets/
-            output/manifests/moonpet-assets.generated.json
+            output/manifests/
           if-no-files-found: warn

@@ -5,7 +5,7 @@ const path = require("node:path");
 const sharp = require("sharp");
 
 const REPO_ROOT = path.resolve(__dirname, "..");
-const MANIFEST_PATH = path.join(REPO_ROOT, "output", "manifests", "moonpet-assets.generated.json");
+const MANIFEST_PATH = path.join(REPO_ROOT, "output", "manifests", "moonpet-spritesheets.generated.json");
 const OUT_PATH = path.join(REPO_ROOT, "output", "moonpets", "moonpet-contact-sheet.png");
 
 function escapeXml(value) {
@@ -26,18 +26,30 @@ async function exists(filePath) {
 }
 
 async function run() {
+  if (!(await exists(MANIFEST_PATH))) {
+    console.log("No Moonpet spritesheet manifest found for a contact sheet.");
+    return;
+  }
+
   const manifest = JSON.parse(await fs.readFile(MANIFEST_PATH, "utf8"));
   const generatedAssets = [];
 
-  for (const asset of manifest.assets || []) {
-    const imagePath = path.join(REPO_ROOT, asset.image);
-    if (asset.status === "generated" && await exists(imagePath)) {
-      generatedAssets.push({ ...asset, imagePath });
+  for (const spriteSheet of manifest.spriteSheets || []) {
+    for (const download of spriteSheet.downloads || []) {
+      if (download.kind !== "png") continue;
+      const imagePath = path.join(REPO_ROOT, download.path);
+      if (await exists(imagePath)) {
+        generatedAssets.push({
+          ...spriteSheet,
+          imagePath,
+          label: path.basename(download.path)
+        });
+      }
     }
   }
 
   if (generatedAssets.length === 0) {
-    console.log("No generated Moonpet PNG assets found for a contact sheet.");
+    console.log("No downloaded Moonpet spritesheet PNG assets found for a contact sheet.");
     return;
   }
 
@@ -65,7 +77,7 @@ async function run() {
       <svg width="${thumb}" height="${label}" xmlns="http://www.w3.org/2000/svg">
         <rect width="100%" height="100%" fill="#111827"/>
         <text x="10" y="19" font-family="Arial, sans-serif" font-size="13" fill="#f8fafc">${escapeXml(asset.skin)}</text>
-        <text x="10" y="38" font-family="Arial, sans-serif" font-size="12" fill="#93c5fd">${escapeXml(asset.action)}</text>
+        <text x="10" y="38" font-family="Arial, sans-serif" font-size="12" fill="#93c5fd">${escapeXml(asset.spriteSheetId || asset.label)}</text>
       </svg>
     `);
 

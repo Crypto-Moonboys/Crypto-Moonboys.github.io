@@ -10,9 +10,23 @@ Every prompt asks for:
 
 > single full-body game asset, transparent background, centered, consistent front view, glossy cute cyber pet mascot, large rounded head, small rounded body, chunky feet, clean silhouette, no text, no environment.
 
+## AutoSprite Workflow
+
+AutoSprite is a character and spritesheet pipeline, not a one-shot PNG generator. The generator follows this sequence:
+
+1. `POST /api/v1/characters` with `{ "name": "...", "prompt": "..." }`.
+2. Save the returned character ID.
+3. `POST /api/v1/characters/{CHARACTER_ID}/spritesheets` with supported animation kinds.
+4. Save the returned job ID.
+5. Poll `GET /api/v1/jobs/{JOB_ID}` until `status` is `succeeded` or the poll timeout is reached.
+6. Read the returned sprite sheet IDs.
+7. Fetch each sprite sheet record and download PNG/atlas URLs into `output/moonpets/spritesheets/`.
+
+Every raw AutoSprite API response is saved under `output/manifests/autosprite/`.
+
 ## Initial Batch
 
-The first approved batch is intentionally small: 3 skins x 6 actions = 18 assets.
+The first approved batch is intentionally small: 3 reusable AutoSprite characters.
 
 Skins:
 
@@ -20,22 +34,28 @@ Skins:
 - `starcap_moonbot`
 - `street_graff_moonbot`
 
-Actions:
+Requested AutoSprite animations:
 
 - `idle`
-- `eat`
-- `play`
-- `sleep`
-- `clean`
-- `train`
+- `walk`
+- `run`
+- `attack`
+
+Game action mapping comes later:
+
+- `eat` = `idle` with a food prop later.
+- `play` = `run`/`walk` variation later.
+- `sleep` = separate static asset later.
+- `clean` = separate static asset later.
+- `train` = `attack`.
 
 Do not expand beyond this batch until the test outputs have been reviewed.
 
 ## Files
 
 - `data/moonpet-traits.json` defines the visual direction, skins, actions, limits, and output folders.
-- `scripts/generate-moonpet-assets.js` creates the generation plan, calls AutoSprite when explicitly enabled, saves PNGs and response JSON, and writes `output/manifests/moonpet-assets.generated.json`.
-- `scripts/build-moonpet-contact-sheet.js` builds `output/moonpets/moonpet-contact-sheet.png` from generated PNG assets.
+- `scripts/generate-moonpet-assets.js` creates characters, requests spritesheet jobs, polls jobs, fetches sprite sheet records, downloads PNG/atlas files, and writes manifests.
+- `scripts/build-moonpet-contact-sheet.js` builds `output/moonpets/moonpet-contact-sheet.png` from downloaded spritesheet PNG assets where available.
 - `.github/workflows/moonpet-art-factory.yml` runs manually with `workflow_dispatch`.
 - `.env.example` documents the required local variable without committing a real key.
 
@@ -53,13 +73,26 @@ Real generation requires `AUTOSPRITE_API_KEY` and is locked to the initial `test
 AUTOSPRITE_API_KEY=replace_me node scripts/generate-moonpet-assets.js --phase=test --execute
 ```
 
-The script uses resume mode by default. If the PNG and `.autosprite.json` response already exist for a job, that job is skipped.
+The script uses resume mode by default. Existing character IDs and job IDs in the generated manifests are reused where possible.
 
 Optional flags:
 
-- `--limit <n>` caps the current plan.
-- `--rate-limit-ms <n>` overrides the delay between API calls.
-- `--no-resume` regenerates even when local files exist.
+- `--limit <n>` caps the character count. Use `--limit 1` for a single-character smoke run.
+- `--rate-limit-ms <n>` overrides the delay between character pipelines.
+- `--poll-interval-ms <n>` overrides the delay between job status checks.
+- `--poll-timeout-ms <n>` overrides the max time to wait for one spritesheet job.
+- `--no-resume` creates fresh characters/jobs instead of reusing saved IDs.
+- `--debug-payload` prints sanitized AutoSprite request bodies only. It never prints request headers or `AUTOSPRITE_API_KEY`.
+
+Failed AutoSprite HTTP responses are summarized in the logs and saved to `output/manifests/autosprite-errors.generated.json`.
+
+Generated manifests:
+
+- `output/manifests/moonpet-assets.generated.json`
+- `output/manifests/autosprite-characters.generated.json`
+- `output/manifests/autosprite-jobs.generated.json`
+- `output/manifests/moonpet-spritesheets.generated.json`
+- `output/manifests/autosprite-errors.generated.json`
 
 Build a contact sheet after a real generation run:
 
@@ -69,7 +102,7 @@ node scripts/build-moonpet-contact-sheet.js
 
 ## GitHub Actions
 
-The manual workflow defaults to `phase=dry-run`, so it will only build prompts and a manifest. To generate the 18 real assets, manually run the workflow with `phase=test`. The workflow reads `AUTOSPRITE_API_KEY` from GitHub Actions secrets and never prints it.
+The manual workflow defaults to `phase=dry-run`, so it will only build prompts and a manifest. To create the 3 real AutoSprite characters and request their spritesheets, manually run the workflow with `phase=test`. The workflow reads `AUTOSPRITE_API_KEY` from GitHub Actions secrets and never prints it.
 
 ## Safety Rules
 
@@ -77,4 +110,4 @@ The manual workflow defaults to `phase=dry-run`, so it will only build prompts a
 - Do not commit `.env`.
 - Keep generated assets out of the live game until reviewed.
 - Keep size, framing, proportions, and silhouette consistent before promoting anything into game runtime paths.
-- Keep the first run to 18 assets only.
+- Keep the first run to 3 characters only.
