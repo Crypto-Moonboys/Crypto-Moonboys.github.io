@@ -23,6 +23,7 @@ AutoSprite is a character and spritesheet pipeline, not a one-shot PNG generator
 7. Fetch each sprite sheet record and download PNG/atlas URLs into `output/moonpets/spritesheets/`.
 
 Every raw AutoSprite API response is saved under `output/manifests/autosprite/`.
+Failed job polling responses are also saved under `output/manifests/autosprite/poll-errors/` with the job ID and exact endpoint used. HTTP 500 responses from the jobs endpoint are treated as transient until the 10-minute polling timeout is reached.
 
 AutoSprite character prompts must be 600 characters or less. The generator builds compressed API prompts targeted under 450 characters and validates every prompt locally before any request is sent. Longer local art direction and trait descriptions stay in repo manifests only; they are not sent in the AutoSprite character creation body.
 
@@ -81,9 +82,10 @@ Optional flags:
 
 - `--limit <n>` caps the character count. Use `--limit 1` for a single-character smoke run.
 - `--rate-limit-ms <n>` overrides the delay between character pipelines.
-- `--poll-interval-ms <n>` overrides the delay between job status checks.
+- `--poll-interval-ms <n>` is legacy; job polling now waits 5s, 10s, 15s, then every 20s.
 - `--poll-timeout-ms <n>` overrides the max time to wait for one spritesheet job.
 - `--no-resume` creates fresh characters/jobs instead of reusing saved IDs.
+- `--resume-jobs` reads `output/manifests/autosprite-jobs.generated.json` and polls existing job IDs again without creating new characters or jobs.
 - `--debug-payload` prints sanitized AutoSprite request bodies only. It never prints request headers or `AUTOSPRITE_API_KEY`.
 
 Failed AutoSprite HTTP responses are summarized in the logs and saved to `output/manifests/autosprite-errors.generated.json`.

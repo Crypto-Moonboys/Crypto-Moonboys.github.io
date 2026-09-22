@@ -11,6 +11,7 @@ const JOB_MANIFEST_PATH = path.join(REPO_ROOT, "output", "manifests", "autosprit
 const SPRITESHEET_MANIFEST_PATH = path.join(REPO_ROOT, "output", "manifests", "moonpet-spritesheets.generated.json");
 const ERROR_MANIFEST_PATH = path.join(REPO_ROOT, "output", "manifests", "autosprite-errors.generated.json");
 const RAW_RESPONSE_DIR = path.join(REPO_ROOT, "output", "manifests", "autosprite");
+const POLL_ERROR_DIR = path.join(RAW_RESPONSE_DIR, "poll-errors");
 const SPRITESHEET_OUTPUT_DIR = path.join(REPO_ROOT, "output", "moonpets", "spritesheets");
 const API_BASE_URL = "https://www.autosprite.io/api/v1";
 const DEFAULT_SPRITESHEET_ANIMATIONS = ["idle", "walk", "run", "attack"];
@@ -27,7 +28,8 @@ const OUTPUT_FOLDERS = [
   "output/moonpets/frames",
   "output/moonpets/spritesheets",
   "output/manifests",
-  "output/manifests/autosprite"
+  "output/manifests/autosprite",
+  "output/manifests/autosprite/poll-errors"
 ];
 
 function parseArgs(argv) {
@@ -41,7 +43,8 @@ function parseArgs(argv) {
     pollIntervalMs: 5000,
     pollTimeoutMs: 10 * 60 * 1000,
     traitsPath: TRAITS_PATH,
-    debugPayload: false
+    debugPayload: false,
+    resumeJobs: false
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -64,6 +67,12 @@ function parseArgs(argv) {
     else if (arg.startsWith("--poll-timeout-ms=")) options.pollTimeoutMs = Number(arg.slice("--poll-timeout-ms=".length));
     else if (arg === "--traits") options.traitsPath = path.resolve(argv[++index]);
     else if (arg === "--debug-payload") options.debugPayload = true;
+    else if (arg === "--resume-jobs") {
+      options.resumeJobs = true;
+      options.execute = true;
+      options.dryRun = false;
+      if (options.phase === "dry-run") options.phase = "test";
+    }
     else if (arg === "--help" || arg === "-h") {
       printHelp();
       process.exit(0);
@@ -98,10 +107,11 @@ Options:
   --resume / --no-resume Reuse saved character/job IDs where possible. Resume is on by default.
   --limit <n>            Cap character count. Use --limit 1 for a single-character smoke run.
   --rate-limit-ms <n>    Delay between character pipelines.
-  --poll-interval-ms <n> Delay between job polling requests. Default 5000.
+  --poll-interval-ms <n> Legacy option; polling now uses 5s, 10s, 15s, then 20s.
   --poll-timeout-ms <n>  Max time to poll one spritesheet job. Default 600000.
   --traits <path>        Alternate moonpet trait JSON path.
   --debug-payload        Print sanitized AutoSprite request bodies, never headers.
+  --resume-jobs          Poll existing job IDs from output/manifests/autosprite-jobs.generated.json.
 `);
 }
 
@@ -200,6 +210,33 @@ function buildCharacterPlan(traits, options) {
   }
 
   return limited;
+}
+
+function buildResumeJobPlan(jobManifest, traits, options) {
+  const jobs = Array.isArray(jobManifest.jobs) ? jobManifest.jobs : [];
+  const limitedJobs = options.limit ? jobs.slice(0, options.limit) : jobs;
+  const skinsById = new Map((traits.skins || []).map((skin) => [skin.id, skin]));
+
+  return limitedJobs.map((job) => {
+    const skin = skinsById.get(job.skin) || {};
+    const prompt = buildCompressedPrompt({ ...skin, name: job.name || job.localId || job.jobId });
+    return {
+      id: slug(job.localId || job.skin || job.name || job.jobId),
+      name: job.name || job.localId || job.jobId,
+      phase: "test",
+      skin: job.skin || job.localId,
+      prompt,
+      localDescription: skin.description || "Resumed AutoSprite spritesheet job.",
+      promptLength: prompt.length,
+      animations: (job.animations || getSpriteSheetAnimations(traits)).map((animation) =>
+        typeof animation === "string" ? { kind: animation } : animation
+      ),
+      gameActionMapping: traits.gameActionMapping,
+      characterId: job.characterId,
+      jobId: job.jobId,
+      resumeJobOnly: true
+    };
+  });
 }
 
 function validateCharacterPrompts(characters) {
@@ -406,6 +443,31 @@ async function saveRawResponse(rawResponses, step, character, responseBody) {
   rawResponses.push(path.relative(REPO_ROOT, filePath).replace(/\\/g, "/"));
 }
 
+async function savePollError({ character, jobId, endpoint, attempt, error }) {
+  const fileName = `${String(attempt).padStart(3, "0")}-${slug(character.id)}-${slug(jobId)}.json`;
+  const filePath = path.join(POLL_ERROR_DIR, fileName);
+  const autoSpriteError = error.autoSprite || {};
+  await writeJson(filePath, {
+    capturedAt: new Date().toISOString(),
+    character: {
+      id: character.id,
+      name: character.name,
+      skin: character.skin
+    },
+    jobId,
+    endpoint,
+    attempt,
+    status: autoSpriteError.status || null,
+    statusText: autoSpriteError.statusText || null,
+    code: autoSpriteError.code || null,
+    message: autoSpriteError.message || error.message,
+    details: autoSpriteError.details || null,
+    responseBody: autoSpriteError.bodyText || null,
+    parsedResponseBody: autoSpriteError.parsedBody || null
+  });
+  return path.relative(REPO_ROOT, filePath).replace(/\\/g, "/");
+}
+
 async function requestAutoSprite({ method, urlPath, body, apiKey, options, rawResponses, step, character }) {
   if (options.debugPayload && body) {
     console.log(`[debug-payload] ${character.id} ${step} ${JSON.stringify(body)}`);
@@ -426,7 +488,10 @@ async function requestAutoSprite({ method, urlPath, body, apiKey, options, rawRe
   await saveRawResponse(rawResponses, step, character, responseBody);
 
   if (!response.ok) {
-    throw new AutoSpriteHttpError(buildAutoSpriteErrorDetails(response, text, parsedBody));
+    const details = buildAutoSpriteErrorDetails(response, text, parsedBody);
+    details.method = method;
+    details.endpoint = `${API_BASE_URL}${urlPath}`;
+    throw new AutoSpriteHttpError(details);
   }
 
   return responseBody;
@@ -457,17 +522,25 @@ async function downloadFile(url, filePath) {
   await fs.writeFile(filePath, Buffer.from(await response.arrayBuffer()));
 }
 
-async function pollJob({ jobId, apiKey, options, rawResponses, character, maxRetries, retryBaseDelayMs }) {
+function pollDelayMs(pollCount) {
+  if (pollCount === 1) return 5000;
+  if (pollCount === 2) return 10000;
+  if (pollCount === 3) return 15000;
+  return 20000;
+}
+
+async function pollJob({ jobId, apiKey, options, rawResponses, character }) {
   const started = Date.now();
   let pollCount = 0;
+  const endpoint = `${API_BASE_URL}/jobs/${encodeURIComponent(jobId)}`;
+  const pollErrors = [];
 
   while (Date.now() - started < options.pollTimeoutMs) {
     pollCount += 1;
-    const job = await withRetries(
-      `AutoSprite poll ${jobId}`,
-      maxRetries,
-      retryBaseDelayMs,
-      () => requestAutoSprite({
+    await sleep(pollDelayMs(pollCount));
+
+    try {
+      const job = await requestAutoSprite({
         method: "GET",
         urlPath: `/jobs/${encodeURIComponent(jobId)}`,
         apiKey,
@@ -475,23 +548,46 @@ async function pollJob({ jobId, apiKey, options, rawResponses, character, maxRet
         rawResponses,
         step: `poll-job-${pollCount}`,
         character
-      })
-    );
+      });
 
-    const status = String(job.status || (job.job && job.job.status) || (job.data && job.data.status) || "").toLowerCase();
-    console.log(`[${character.id}] job ${jobId} status=${status || "unknown"}`);
+      const status = String(job.status || (job.job && job.job.status) || (job.data && job.data.status) || "").toLowerCase();
+      console.log(`[${character.id}] job ${jobId} status=${status || "unknown"}`);
 
-    if (status === "succeeded" || status === "success" || status === "completed" || status === "complete") {
-      return job;
+      if (status === "succeeded" || status === "success" || status === "completed" || status === "complete") {
+        return { status: "succeeded", job, pollErrors, endpoint };
+      }
+      if (status === "failed" || status === "error" || status === "cancelled" || status === "canceled") {
+        return {
+          status: "job_failed",
+          job,
+          pollErrors,
+          endpoint,
+          error: `AutoSprite job ${jobId} ended with status=${status}.`
+        };
+      }
+    } catch (error) {
+      const autoSpriteError = error.autoSprite || null;
+      const pollErrorPath = await savePollError({ character, jobId, endpoint, attempt: pollCount, error });
+      pollErrors.push(pollErrorPath);
+      console.warn(`[${character.id}] poll error for job ${jobId}: ${error.message}`);
+
+      if (!autoSpriteError || autoSpriteError.status < 500) {
+        return {
+          status: "job_poll_failed",
+          pollErrors,
+          endpoint,
+          error: error.message
+        };
+      }
     }
-    if (status === "failed" || status === "error" || status === "cancelled" || status === "canceled") {
-      throw new Error(`AutoSprite job ${jobId} ended with status=${status}.`);
-    }
-
-    await sleep(options.pollIntervalMs);
   }
 
-  throw new Error(`Timed out polling AutoSprite job ${jobId} after ${options.pollTimeoutMs}ms.`);
+  return {
+    status: "job_poll_failed",
+    pollErrors,
+    endpoint,
+    error: `Timed out polling AutoSprite job ${jobId} after ${options.pollTimeoutMs}ms.`
+  };
 }
 
 async function writeErrorManifest(errors) {
@@ -509,11 +605,9 @@ async function run() {
   const rateLimitMs = options.rateLimitMs ?? traits.generation.rateLimitMs;
   const maxRetries = traits.generation.maxRetries;
   const retryBaseDelayMs = traits.generation.retryBaseDelayMs;
-  const characters = buildCharacterPlan(traits, options);
   const apiKey = process.env.AUTOSPRITE_API_KEY;
 
   await ensureFolders();
-  validateCharacterPrompts(characters);
 
   if (!options.dryRun && !apiKey) {
     throw new Error("AUTOSPRITE_API_KEY is required for real generation.");
@@ -531,6 +625,14 @@ async function run() {
     provider: "AutoSprite",
     jobs: []
   });
+  const characters = options.resumeJobs
+    ? buildResumeJobPlan(jobManifest, traits, options)
+    : buildCharacterPlan(traits, options);
+  validateCharacterPrompts(characters);
+
+  if (options.resumeJobs && characters.length === 0) {
+    throw new Error("No saved AutoSprite jobs found in output/manifests/autosprite-jobs.generated.json.");
+  }
   const spritesheetManifest = {
     generatedAt: new Date().toISOString(),
     provider: "AutoSprite",
@@ -542,6 +644,7 @@ async function run() {
     phase: options.phase,
     dryRun: options.dryRun,
     resume: options.resume,
+    resumeJobs: options.resumeJobs,
     workflow: "characters -> spritesheets job -> poll job -> fetch spritesheet records -> download png/atlas",
     animations: spriteSheetAnimationKinds,
     plannedCharacters: characters.length,
@@ -577,9 +680,19 @@ async function run() {
   for (const [index, character] of characters.entries()) {
     console.log(`[${index + 1}/${characters.length}] character ${character.id}`);
     try {
-      let characterRecord = options.resume
-        ? characterManifest.characters.find((entry) => entry.localId === character.id && entry.characterId)
+      let characterRecord = options.resumeJobs && character.characterId
+        ? {
+            localId: character.id,
+            name: character.name,
+            skin: character.skin,
+            characterId: character.characterId,
+            response: null
+          }
         : null;
+
+      characterRecord = characterRecord || (options.resume
+        ? characterManifest.characters.find((entry) => entry.localId === character.id && entry.characterId)
+        : null);
 
       if (!characterRecord) {
         const createCharacterResponse = await withRetries(
@@ -612,9 +725,21 @@ async function run() {
         console.log(`[${character.id}] resume characterId=${characterRecord.characterId}`);
       }
 
-      let jobRecord = options.resume
-        ? jobManifest.jobs.find((entry) => entry.localId === character.id && entry.jobId)
+      let jobRecord = options.resumeJobs && character.jobId
+        ? {
+            localId: character.id,
+            name: character.name,
+            skin: character.skin,
+            characterId: character.characterId,
+            jobId: character.jobId,
+            animations: spriteSheetAnimationKinds,
+            response: null
+          }
         : null;
+
+      jobRecord = jobRecord || (options.resume
+        ? jobManifest.jobs.find((entry) => entry.localId === character.id && entry.jobId)
+        : null);
 
       if (!jobRecord) {
         const createSpritesheetResponse = await withRetries(
@@ -649,17 +774,47 @@ async function run() {
         console.log(`[${character.id}] resume jobId=${jobRecord.jobId}`);
       }
 
-      const completedJob = await pollJob({
+      const pollResult = await pollJob({
         jobId: jobRecord.jobId,
         apiKey,
         options,
         rawResponses,
-        character,
-        maxRetries,
-        retryBaseDelayMs
+        character
       });
 
-      const spriteSheetIds = extractSpriteSheetIds(completedJob);
+      if (pollResult.status !== "succeeded") {
+        planManifest.characters = planManifest.characters.map((entry) =>
+          entry.id === character.id
+            ? {
+                ...entry,
+                status: pollResult.status,
+                characterId: characterRecord.characterId,
+                jobId: jobRecord.jobId,
+                pollEndpoint: pollResult.endpoint,
+                pollErrors: pollResult.pollErrors,
+                error: pollResult.error
+              }
+            : entry
+        );
+        errors.push({
+          generatedAt: new Date().toISOString(),
+          character: {
+            id: character.id,
+            name: character.name,
+            skin: character.skin
+          },
+          status: pollResult.status,
+          jobId: jobRecord.jobId,
+          endpoint: pollResult.endpoint,
+          pollErrors: pollResult.pollErrors,
+          message: pollResult.error
+        });
+        await writeJson(MANIFEST_PATH, { ...planManifest, rawResponses });
+        await writeErrorManifest(errors);
+        continue;
+      }
+
+      const spriteSheetIds = extractSpriteSheetIds(pollResult.job);
       if (spriteSheetIds.length === 0) {
         throw new Error(`AutoSprite job ${jobRecord.jobId} succeeded but no sprite sheet IDs were found.`);
       }

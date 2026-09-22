@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       phase:
-        description: "Generation phase. Use dry-run by default; choose test for the 18 asset AutoSprite batch."
+        description: "Generation phase. Use dry-run by default; choose test for the 3 character AutoSprite batch."
         required: true
         default: "dry-run"
         type: choice
@@ -58,6 +58,7 @@ jobs:
         run: node scripts/build-moonpet-contact-sheet.js
 
       - name: Upload Moonpet output
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: moonpet-art-factory-${{ inputs.phase }}
