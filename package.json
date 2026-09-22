@@ -30,7 +30,10 @@
     "test:wiki-structure": "node wiki/validators/wiki-structure-check.js",
     "test:nbg-level1": "node scripts/nbg-level1-browser-validation.mjs --serve",
     "avatar:assets": "node scripts/build-avatar-assets.mjs",
-    "test:avatar-builder": "node scripts/avatar-builder-assets.test.mjs && node scripts/avatar-builder-browser.test.mjs"
+    "test:avatar-builder": "node scripts/avatar-builder-assets.test.mjs && node scripts/avatar-builder-browser.test.mjs",
+    "moonpet:assets:dry": "node scripts/generate-moonpet-assets.js --dry-run",
+    "moonpet:assets:test": "node scripts/generate-moonpet-assets.js --phase=test --execute",
+    "moonpet:contact-sheet": "node scripts/build-moonpet-contact-sheet.js"
   },
   "keywords": [],
   "author": "",

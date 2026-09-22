@@ -1,0 +1,67 @@
+name: Moonpet Art Factory
+
+on:
+  workflow_dispatch:
+    inputs:
+      phase:
+        description: "Generation phase. Use dry-run by default; choose test for the 18 asset AutoSprite batch."
+        required: true
+        default: "dry-run"
+        type: choice
+        options:
+          - dry-run
+          - test
+      limit:
+        description: "Optional max asset count. Leave blank for the full approved test batch."
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  moonpet-art-factory:
+    runs-on: ubuntu-latest
+    env:
+      AUTOSPRITE_API_KEY: ${{ secrets.AUTOSPRITE_API_KEY }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Syntax check Moonpet scripts
+        run: |
+          node --check scripts/generate-moonpet-assets.js
+          node --check scripts/build-moonpet-contact-sheet.js
+
+      - name: Dry-run Moonpet plan
+        run: node scripts/generate-moonpet-assets.js --dry-run ${LIMIT:+--limit "$LIMIT"}
+        env:
+          LIMIT: ${{ inputs.limit }}
+
+      - name: Generate Moonpet test batch
+        if: ${{ inputs.phase == 'test' }}
+        run: node scripts/generate-moonpet-assets.js --phase=test --execute ${LIMIT:+--limit "$LIMIT"}
+        env:
+          LIMIT: ${{ inputs.limit }}
+
+      - name: Build Moonpet contact sheet
+        if: ${{ inputs.phase == 'test' }}
+        run: node scripts/build-moonpet-contact-sheet.js
+
+      - name: Upload Moonpet output
+        uses: actions/upload-artifact@v4
+        with:
+          name: moonpet-art-factory-${{ inputs.phase }}
+          path: |
+            output/moonpets/
+            output/manifests/moonpet-assets.generated.json
+          if-no-files-found: warn

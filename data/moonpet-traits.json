@@ -1,0 +1,112 @@
+{
+  "project": "Crypto Moonboys Pets",
+  "pipeline": "Moonpet Art Factory",
+  "version": "0.1.0",
+  "api": {
+    "provider": "AutoSprite",
+    "endpoint": "https://www.autosprite.io/api/v1/characters"
+  },
+  "generation": {
+    "defaultPhase": "dry-run",
+    "activePhase": "test",
+    "imageFormat": "png",
+    "transparentBackground": true,
+    "canvas": {
+      "width": 1024,
+      "height": 1024,
+      "framing": "centered full body with consistent front view and generous transparent padding"
+    },
+    "rateLimitMs": 2500,
+    "maxRetries": 3,
+    "retryBaseDelayMs": 2000
+  },
+  "promptStyle": [
+    "single full-body game asset",
+    "transparent background",
+    "centered",
+    "consistent front view",
+    "glossy cute cyber pet mascot",
+    "large rounded head",
+    "small rounded body",
+    "chunky feet",
+    "clean silhouette",
+    "no text",
+    "no environment"
+  ],
+  "baseCharacter": {
+    "id": "blank_moonpet_body",
+    "name": "Blank Moonpet Body",
+    "folder": "base",
+    "description": "Glossy white blank Moonpet body with a big rounded head, small rounded body, rounded arms, chunky feet, and no face by default."
+  },
+  "actions": [
+    {
+      "id": "idle",
+      "name": "Idle",
+      "prompt": "standing calmly in a neutral idle pose"
+    },
+    {
+      "id": "eat",
+      "name": "Eat",
+      "prompt": "cute eating pose with simple game-readability body language, no separate food text or environment"
+    },
+    {
+      "id": "play",
+      "name": "Play",
+      "prompt": "playful energetic pose with lifted rounded arms, collectible pet game expression through pose only"
+    },
+    {
+      "id": "sleep",
+      "name": "Sleep",
+      "prompt": "sleepy curled standing-snooze pose, calm and soft, no letters or sleep text"
+    },
+    {
+      "id": "clean",
+      "name": "Clean",
+      "prompt": "fresh cleaned pose with polished glossy shine and tidy silhouette, no props with readable text"
+    },
+    {
+      "id": "train",
+      "name": "Train",
+      "prompt": "training stance, determined cute cyber pet posture, no weapons, no environment"
+    }
+  ],
+  "skins": [
+    {
+      "id": "default_white_moonpet",
+      "name": "Default White Moonpet",
+      "folder": "skins",
+      "phase": "test",
+      "description": "Glossy white blank Moonpet body, no face by default, clean toy-like base silhouette."
+    },
+    {
+      "id": "starcap_moonbot",
+      "name": "Starcap Moonbot",
+      "folder": "skins",
+      "phase": "test",
+      "description": "Glossy white Moonpet styled as a cute cyber bot with subtle chrome seams, neon accents, and a small star-cap streetwear detail."
+    },
+    {
+      "id": "street_graff_moonbot",
+      "name": "Street Graff Moonbot",
+      "folder": "skins",
+      "phase": "test",
+      "description": "Glossy white Moonpet styled as a cute graffiti streetwear bot with controlled neon paint marks, sticker-like accents, and clean collectible-game readability."
+    }
+  ],
+  "futureTraitFolders": [
+    "faces",
+    "headwear",
+    "accessories",
+    "elements",
+    "frames"
+  ],
+  "safety": {
+    "batchLimit": 18,
+    "notes": [
+      "The initial phase intentionally combines 3 skins with 6 actions for 18 assets only.",
+      "Do not generate broad trait combinations until a human approves the test batch.",
+      "Never commit real API keys or generated secrets."
+    ]
+  }
+}
