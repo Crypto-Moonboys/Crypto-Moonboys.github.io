@@ -98,6 +98,7 @@
       "name": "Default White Moonpet",
       "folder": "skins",
       "phase": "test",
+      "autospritePrompt": "Glossy white Moonpet bot mascot, big rounded head, small rounded body, chunky feet, black glass visor with pink LED face, cute cyber toy style, clean full-body front view, transparent background, no text, no scenery.",
       "description": "Glossy white blank Moonpet body, no face by default, clean toy-like base silhouette."
     },
     {
@@ -105,6 +106,7 @@
       "name": "Starcap Moonbot",
       "folder": "skins",
       "phase": "test",
+      "autospritePrompt": "White Moonpet bot mascot wearing a star cap, side headphones, black visor with pink LED face, paint-splashed jacket, spray can pouch, chunky sneakers, cute glossy cyber graffiti style, full-body front view, transparent background, no text.",
       "description": "Glossy white Moonpet styled as a cute cyber bot with subtle chrome seams, neon accents, and a small star-cap streetwear detail."
     },
     {
@@ -112,6 +114,7 @@
       "name": "Street Graff Moonbot",
       "folder": "skins",
       "phase": "test",
+      "autospritePrompt": "Moonpet bot mascot in graffiti streetwear, black visor with pink LED face, hoodie, paint splashes, spray cans, chunky sneakers, cute glossy cyber street-art style, clean full-body front view, transparent background, no text.",
       "description": "Glossy white Moonpet styled as a cute graffiti streetwear bot with controlled neon paint marks, sticker-like accents, and clean collectible-game readability."
     }
   ],

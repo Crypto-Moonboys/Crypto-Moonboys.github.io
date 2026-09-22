@@ -14,6 +14,8 @@ const RAW_RESPONSE_DIR = path.join(REPO_ROOT, "output", "manifests", "autosprite
 const SPRITESHEET_OUTPUT_DIR = path.join(REPO_ROOT, "output", "moonpets", "spritesheets");
 const API_BASE_URL = "https://www.autosprite.io/api/v1";
 const DEFAULT_SPRITESHEET_ANIMATIONS = ["idle", "walk", "run", "attack"];
+const AUTOSPRITE_PROMPT_LIMIT = 600;
+const AUTOSPRITE_PROMPT_TARGET = 450;
 
 const OUTPUT_FOLDERS = [
   "output/moonpets/base",
@@ -139,16 +141,32 @@ function slug(value) {
     .replace(/^_+|_+$/g, "");
 }
 
-function buildCharacterPrompt(traits, skin) {
-  const requiredStyle = traits.promptStyle.join(", ");
-  return [
-    `${requiredStyle}.`,
-    traits.baseCharacter.description,
-    skin.description,
-    "Create a consistent reusable AutoSprite character for spritesheet animation generation.",
-    "Keep the same body proportions, silhouette, scale, and framing as the Crypto Moonboys Pets Moonpet asset set.",
-    "Cute collectible pet game asset direction: cyber bot, graffiti, streetwear, neon, glossy toy finish."
-  ].join(" ");
+function compactWhitespace(value) {
+  return String(value || "").replace(/\s+/g, " ").trim();
+}
+
+function buildCompressedPrompt(skin) {
+  const fallback = `${skin.name} Moonpet bot mascot, cute glossy cyber toy style, clean full-body front view, transparent background, no text.`;
+  const prompt = compactWhitespace(skin.autospritePrompt || fallback);
+  if (prompt.length <= AUTOSPRITE_PROMPT_TARGET) return prompt;
+
+  const sentences = prompt.split(/(?<=[.!?])\s+/);
+  let compressed = "";
+  for (const sentence of sentences) {
+    const next = compactWhitespace(`${compressed} ${sentence}`);
+    if (next.length > AUTOSPRITE_PROMPT_TARGET) break;
+    compressed = next;
+  }
+
+  return compressed || prompt.slice(0, AUTOSPRITE_PROMPT_TARGET).replace(/\s+\S*$/, "").trim();
+}
+
+function validateCharacterPrompt(character) {
+  if (character.prompt.length > AUTOSPRITE_PROMPT_LIMIT) {
+    throw new Error(
+      `AutoSprite prompt too long for ${character.name}: ${character.prompt.length} characters. Limit is ${AUTOSPRITE_PROMPT_LIMIT}.`
+    );
+  }
 }
 
 function getSpriteSheetAnimations(traits) {
@@ -161,15 +179,20 @@ function getSpriteSheetAnimations(traits) {
 function buildCharacterPlan(traits, options) {
   const animations = getSpriteSheetAnimations(traits);
   const skins = traits.skins.filter((skin) => options.phase === "dry-run" || skin.phase === options.phase);
-  const characters = skins.map((skin) => ({
-    id: slug(skin.id),
-    name: skin.name,
-    phase: skin.phase,
-    skin: skin.id,
-    prompt: buildCharacterPrompt(traits, skin),
-    animations,
-    gameActionMapping: traits.gameActionMapping
-  }));
+  const characters = skins.map((skin) => {
+    const prompt = buildCompressedPrompt(skin);
+    return {
+      id: slug(skin.id),
+      name: skin.name,
+      phase: skin.phase,
+      skin: skin.id,
+      prompt,
+      localDescription: skin.description,
+      promptLength: prompt.length,
+      animations,
+      gameActionMapping: traits.gameActionMapping
+    };
+  });
 
   const limited = options.limit ? characters.slice(0, options.limit) : characters;
   if (limited.length > 3) {
@@ -179,7 +202,14 @@ function buildCharacterPlan(traits, options) {
   return limited;
 }
 
+function validateCharacterPrompts(characters) {
+  for (const character of characters) {
+    validateCharacterPrompt(character);
+  }
+}
+
 function buildCreateCharacterBody(character) {
+  validateCharacterPrompt(character);
   return {
     name: character.name,
     prompt: character.prompt
@@ -483,6 +513,7 @@ async function run() {
   const apiKey = process.env.AUTOSPRITE_API_KEY;
 
   await ensureFolders();
+  validateCharacterPrompts(characters);
 
   if (!options.dryRun && !apiKey) {
     throw new Error("AUTOSPRITE_API_KEY is required for real generation.");
@@ -520,6 +551,8 @@ async function run() {
       name: character.name,
       phase: character.phase,
       prompt: character.prompt,
+      promptLength: character.promptLength,
+      localDescription: character.localDescription,
       animations: character.animations,
       status: options.dryRun ? "dry_run" : "planned"
     })),
@@ -534,7 +567,7 @@ async function run() {
         console.log(`[debug-payload] ${character.id} create-character ${JSON.stringify(buildCreateCharacterBody(character))}`);
         console.log(`[debug-payload] ${character.id} create-spritesheets ${JSON.stringify(buildCreateSpritesheetBody(character))}`);
       }
-      console.log(`[dry-run] ${character.id}: create character, request animations ${spriteSheetAnimationKinds.join(", ")}`);
+      console.log(`[dry-run] ${character.id}: promptLength=${character.promptLength}, request animations ${spriteSheetAnimationKinds.join(", ")}`);
     }
     await writeJson(MANIFEST_PATH, planManifest);
     console.log(`Manifest written to ${path.relative(REPO_ROOT, MANIFEST_PATH).replace(/\\/g, "/")}`);

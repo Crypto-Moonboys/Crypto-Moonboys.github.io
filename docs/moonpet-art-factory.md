@@ -24,6 +24,8 @@ AutoSprite is a character and spritesheet pipeline, not a one-shot PNG generator
 
 Every raw AutoSprite API response is saved under `output/manifests/autosprite/`.
 
+AutoSprite character prompts must be 600 characters or less. The generator builds compressed API prompts targeted under 450 characters and validates every prompt locally before any request is sent. Longer local art direction and trait descriptions stay in repo manifests only; they are not sent in the AutoSprite character creation body.
+
 ## Initial Batch
 
 The first approved batch is intentionally small: 3 reusable AutoSprite characters.
