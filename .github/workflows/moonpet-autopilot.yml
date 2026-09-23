@@ -33,6 +33,7 @@ jobs:
           node --check js/moonpet-runtime-preview.js
           node --check js/moonpet-animation-sandbox.js
           node --check js/moonpet-mini-app.js
+          node --check scripts/moonpet-custom-animation-queue-check.js
 
       - name: Generate Moonpet autopilot report
         id: report
@@ -54,6 +55,12 @@ jobs:
         continue-on-error: true
         run: npm run moonpet:autopilot
 
+      - name: Run Moonpet custom animation queue check
+        id: custom_queue
+        if: always()
+        continue-on-error: true
+        run: npm run moonpet:custom-queue:check
+
       - name: Fail on validation errors
         if: always()
         run: |
@@ -67,5 +74,9 @@ jobs:
           fi
           if [ "${{ steps.autopilot.outcome }}" != "success" ]; then
             echo "Moonpet autopilot check failed."
+            exit 1
+          fi
+          if [ "${{ steps.custom_queue.outcome }}" != "success" ]; then
+            echo "Moonpet custom animation queue check failed."
             exit 1
           fi

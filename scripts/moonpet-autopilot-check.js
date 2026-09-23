@@ -3,6 +3,7 @@
 const fs = require("fs");
 const path = require("path");
 const { execFileSync } = require("child_process");
+const { validateQueue } = require("./moonpet-custom-animation-queue-check");
 
 const repoRoot = path.resolve(__dirname, "..");
 
@@ -14,6 +15,17 @@ const REQUIRED_APPROVED = [
 
 const PUBLIC_ASSET_DIR = "img/moonpets/moonbot-pet-visor-v1";
 const REGISTRY_PATH = "data/moonpet-approved-assets.json";
+const CUSTOM_QUEUE_PATH = "data/moonpet-custom-animation-queue.json";
+const REQUIRED_CUSTOM_STATES = [
+  "custom_sleep",
+  "custom_eat",
+  "custom_play",
+  "custom_clean",
+  "custom_wave",
+  "custom_sit",
+  "custom_happy",
+  "custom_sad"
+];
 
 const REQUIRED_PUBLIC_RUNTIME_FILES = [
   "moonpet-game.html",
@@ -126,6 +138,48 @@ function findPotentialApiKeys() {
 
 function registryAssetKey(asset) {
   return `${asset.character_name || ""}::${asset.animation_kind || ""}`;
+}
+
+function readCustomQueueStatus() {
+  try {
+    const queue = readJson(CUSTOM_QUEUE_PATH);
+    const validation = validateQueue(queue);
+    const errors = validation
+      .filter((result) => result.status === "fail")
+      .map((result) => result.message);
+    const items = Array.isArray(queue.items) ? queue.items : [];
+    const plannedStates = REQUIRED_CUSTOM_STATES.map((id) => {
+      const item = items.find((entry) => entry.id === id);
+      return {
+        id,
+        role: item && item.role || null,
+        status: item && item.status || "missing",
+        approved: Boolean(item && item.approved),
+        source_character_name: item && item.source_character_name || null,
+        promotion_target: item && item.promotion_target || null
+      };
+    });
+    return {
+      status: errors.length ? "fail" : "pass",
+      plannedStates,
+      errors,
+      validation
+    };
+  } catch (error) {
+    return {
+      status: "fail",
+      plannedStates: REQUIRED_CUSTOM_STATES.map((id) => ({
+        id,
+        role: null,
+        status: "missing",
+        approved: false,
+        source_character_name: null,
+        promotion_target: null
+      })),
+      errors: [`Could not read ${CUSTOM_QUEUE_PATH}: ${error.message}`],
+      validation: []
+    };
+  }
 }
 
 function runMoonpetAutopilotChecks() {
@@ -249,10 +303,24 @@ function runMoonpetAutopilotChecks() {
     { findings: apiKeyFindings }
   ));
 
+  const customQueue = readCustomQueueStatus();
+  checks.push(makeCheck(
+    "custom_animation_queue_valid",
+    "Custom animation queue is valid and unapproved",
+    customQueue.status === "pass",
+    customQueue.status === "pass"
+      ? `${customQueue.plannedStates.length} planned custom states`
+      : customQueue.errors.join(" | "),
+    { validation: customQueue.validation }
+  ));
+
   const overallStatus = checks.every((check) => check.status === "pass") ? "pass" : "fail";
   return {
     timestamp: new Date().toISOString(),
     overall_status: overallStatus,
+    custom_queue_status: customQueue.status,
+    planned_custom_states: customQueue.plannedStates,
+    custom_queue_errors: customQueue.errors,
     checks,
     approved_assets: approvedAssets,
     rejected_assets: rejectedAssets,

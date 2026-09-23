@@ -21,6 +21,8 @@ The autopilot checks:
 - The live approved sprite feature flag defaults off.
 - The public runtime does not require `output/` generated folders.
 - No real AutoSprite API key appears in repo files.
+- The custom animation queue is valid.
+- Planned custom states remain planned and unapproved.
 
 ## What It Does Not Do
 
@@ -60,6 +62,9 @@ The report includes:
 
 - `timestamp`
 - `overall_status`
+- `custom_queue_status`
+- `planned_custom_states`
+- `custom_queue_errors`
 - `checks`
 - `approved_assets`
 - `rejected_assets`
@@ -74,7 +79,7 @@ Each check has:
 - `status`
 - `detail`
 
-If `overall_status` is `pass`, the approved Moonbot public runtime files are present and the guarded live integration is still default-off. If it is `fail`, fix the failed checks before using `?approvedSprites=1` for live-game visual testing.
+If `overall_status` is `pass`, the approved Moonbot public runtime files are present, the guarded live integration is still default-off, and the custom animation queue is valid. If it is `fail`, fix the failed checks before using `?approvedSprites=1` for live-game visual testing or before starting custom animation generation.
 
 ## GitHub Actions
 
@@ -86,6 +91,7 @@ If `overall_status` is `pass`, the approved Moonbot public runtime files are pre
 - Runs syntax checks for Moonpet preview and live integration JavaScript.
 - Generates and uploads the autopilot report.
 - Runs the autopilot check.
+- Runs `npm run moonpet:custom-queue:check`.
 
 The workflow does not call AutoSprite and does not generate new art.
 
@@ -102,6 +108,8 @@ It tracks planned custom states such as sleep, eat, play, clean, wave, sit, happ
 ```bash
 npm run moonpet:custom-queue:check
 ```
+
+Autopilot now includes this queue as a monitoring check. It fails if the queue JSON is invalid, a planned item uses rejected `attack`, roles are duplicated, prompts or promotion targets are missing, or any planned item is accidentally approved.
 
 The custom queue does not generate assets automatically yet. It is a planning and validation layer only, keeping custom animation work separate from the approved base idle/walk/run system.
 
