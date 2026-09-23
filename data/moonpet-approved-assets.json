@@ -48,6 +48,7 @@
       "local_id": "moonbot_pet_visor_v1",
       "character_name": "MOONBOT PET VISOR V1",
       "animation_kind": "attack",
+      "role": "rejected_side_scroller_output",
       "source": "autosprite_builtin",
       "rejected": true,
       "reason": "Built-in AutoSprite attack produces side-facing output and does not match the approved isometric Moonbot base set.",

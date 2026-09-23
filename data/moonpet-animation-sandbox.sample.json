@@ -1,0 +1,101 @@
+{
+  "generated_at": "2026-09-23T00:00:00.000Z",
+  "provider": "AutoSprite",
+  "source": "sample",
+  "registry_path": "data/moonpet-approved-assets.json",
+  "spritesheet_manifest_path": "output/manifests/moonpet-spritesheets.generated.json",
+  "rules": {
+    "approved_assets_require_force_approved": true,
+    "rejected_assets_must_not_be_promoted": true,
+    "attack_rejected_for_moonbot_isometric_pack": true,
+    "live_game_runtime_untouched": true
+  },
+  "approved_built_in_movement_pack": [
+    "iso_idle_down",
+    "iso_walk_down",
+    "iso_run_down"
+  ],
+  "assets": [
+    {
+      "character_name": "MOONBOT PET VISOR V1",
+      "source_character_name": "MOONBOT PET VISOR V1",
+      "animation_kind": "iso_idle_down",
+      "role": "base_idle",
+      "approved": true,
+      "rejected": false,
+      "rejection_reason": null,
+      "sheet_path": null,
+      "atlas_path": null,
+      "frame_count": 25,
+      "frame_size": 256,
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "created_at": null,
+      "autosprite_job_id": null,
+      "autosprite_spritesheet_id": null,
+      "sample_only": true
+    },
+    {
+      "character_name": "MOONBOT PET VISOR V1",
+      "source_character_name": "MOONBOT PET VISOR V1",
+      "animation_kind": "iso_walk_down",
+      "role": "base_walk",
+      "approved": true,
+      "rejected": false,
+      "rejection_reason": null,
+      "sheet_path": null,
+      "atlas_path": null,
+      "frame_count": 25,
+      "frame_size": 256,
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "created_at": null,
+      "autosprite_job_id": null,
+      "autosprite_spritesheet_id": null,
+      "sample_only": true
+    },
+    {
+      "character_name": "MOONBOT PET VISOR V1",
+      "source_character_name": "MOONBOT PET VISOR V1",
+      "animation_kind": "iso_run_down",
+      "role": "base_run",
+      "approved": true,
+      "rejected": false,
+      "rejection_reason": null,
+      "sheet_path": null,
+      "atlas_path": null,
+      "frame_count": 25,
+      "frame_size": 256,
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "created_at": null,
+      "autosprite_job_id": null,
+      "autosprite_spritesheet_id": null,
+      "sample_only": true
+    },
+    {
+      "character_name": "MOONBOT PET VISOR V1",
+      "source_character_name": "MOONBOT PET VISOR V1",
+      "animation_kind": "attack",
+      "role": "rejected_side_scroller_output",
+      "approved": false,
+      "rejected": true,
+      "rejection_reason": "Built-in AutoSprite attack produces side-facing output and does not match the approved isometric Moonbot base set.",
+      "sheet_path": null,
+      "atlas_path": null,
+      "frame_count": null,
+      "frame_size": null,
+      "sheet_size": null,
+      "created_at": null,
+      "autosprite_job_id": null,
+      "autosprite_spritesheet_id": null,
+      "sample_only": true
+    }
+  ]
+}

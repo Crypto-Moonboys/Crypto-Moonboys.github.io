@@ -104,6 +104,7 @@ Do not expand beyond this batch until the test outputs have been reviewed.
 - `data/moonpet-traits.json` defines the visual direction, skins, actions, limits, and output folders.
 - `scripts/generate-moonpet-assets.js` creates characters, requests spritesheet jobs, polls jobs, fetches sprite sheet records, downloads PNG/atlas files, and writes manifests.
 - `scripts/build-moonpet-contact-sheet.js` builds `output/moonpets/moonpet-contact-sheet.png` from downloaded spritesheet PNG assets where available.
+- `moonpet-animation-sandbox.html` previews approved, rejected, and pending spritesheets without touching the live game runtime.
 - `.github/workflows/moonpet-art-factory.yml` runs manually with `workflow_dispatch`.
 - `.env.example` documents the required local variable without committing a real key.
 
@@ -147,6 +148,7 @@ Failed AutoSprite HTTP responses are summarized in the logs and saved to `output
 Generated manifests:
 
 - `output/manifests/moonpet-assets.generated.json`
+- `output/manifests/moonpet-animation-sandbox.generated.json`
 - `output/manifests/autosprite-characters.generated.json`
 - `output/manifests/autosprite-jobs.generated.json`
 - `output/manifests/moonpet-spritesheets.generated.json`

@@ -17,7 +17,7 @@ const POLL_ERROR_DIR = path.join(RAW_RESPONSE_DIR, "poll-errors");
 const EXISTING_CHARACTER_PATH = path.join(RAW_RESPONSE_DIR, "existing-character-moonbot-pet.json");
 const SPRITESHEET_OUTPUT_DIR = path.join(REPO_ROOT, "output", "moonpets", "spritesheets");
 const API_BASE_URL = "https://www.autosprite.io/api/v1";
-const DEFAULT_SPRITESHEET_ANIMATIONS = ["idle", "walk", "run", "attack"];
+const DEFAULT_SPRITESHEET_ANIMATIONS = ["iso_idle_down"];
 const AUTOSPRITE_PROMPT_LIMIT = 600;
 const AUTOSPRITE_PROMPT_TARGET = 450;
 const DUPLICATE_CHARACTER_CODE = "DUPLICATE_CHARACTER";
@@ -97,7 +97,7 @@ function parseArgs(argv) {
   }
 
   if (options.execute && options.phase !== "test") {
-    throw new Error("Real AutoSprite generation is locked to --phase=test for the initial 3 character batch.");
+    throw new Error("Real AutoSprite generation is locked to --phase=test for the Moonbot base asset workflow.");
   }
 
   if (!Number.isFinite(options.limit) || options.limit <= 0) options.limit = null;
@@ -116,7 +116,7 @@ Usage:
   node scripts/generate-moonpet-assets.js --phase=test --execute
 
 Options:
-  --dry-run              Build the 3-character spritesheet plan without calling AutoSprite. Default.
+  --dry-run              Build the Moonbot base spritesheet plan without calling AutoSprite. Default.
   --execute              Call AutoSprite. Only allowed with --phase=test.
   --phase <name>         Phase to generate. Initial real phase is "test".
   --resume / --no-resume Reuse saved character/job IDs where possible. Resume is on by default.
@@ -672,6 +672,22 @@ function getManifestSheetPaths(downloads) {
   };
 }
 
+function findRejectedAssetForName(characterName, animationKind, rejectedAssets) {
+  return rejectedAssets.find((asset) =>
+    asset.rejected === true &&
+    asset.character_name === characterName &&
+    asset.animation_kind === animationKind
+  ) || null;
+}
+
+function findApprovedAssetForName(characterName, animationKind, approvedAssets) {
+  return approvedAssets.find((asset) =>
+    asset.approved === true &&
+    asset.character_name === characterName &&
+    asset.animation_kind === animationKind
+  ) || null;
+}
+
 function buildSpriteSheetManifestEntry({ character, characterRecord, jobRecord, spriteSheetId, downloads, spriteSheetRecord, approvedAsset }) {
   const paths = getManifestSheetPaths(downloads);
   const frameCount = character.spritesheetSettings.frameCount || (approvedAsset && approvedAsset.frame_count) || null;
@@ -701,6 +717,115 @@ function buildSpriteSheetManifestEntry({ character, characterRecord, jobRecord, 
     created_at: new Date().toISOString(),
     downloads,
     record: spriteSheetRecord
+  };
+}
+
+function sandboxAssetKey(characterName, animationKind) {
+  return `${characterName}::${animationKind}`;
+}
+
+function normalizeSandboxAsset(asset) {
+  return {
+    character_name: asset.character_name || asset.autospriteName || asset.name || null,
+    source_character_name: asset.source_character_name || asset.character_name || asset.autospriteName || asset.name || null,
+    animation_kind: asset.animation_kind || asset.kind || null,
+    role: asset.role || null,
+    approved: asset.approved === true,
+    rejected: asset.rejected === true,
+    rejection_reason: asset.rejection_reason || asset.reason || null,
+    sheet_path: asset.sheet_path || null,
+    atlas_path: asset.atlas_path || null,
+    frame_count: asset.frame_count || asset.frameCount || null,
+    frame_size: asset.frame_size || asset.frameSize || null,
+    sheet_size: asset.sheet_size || asset.sheetSize || null,
+    created_at: asset.created_at || asset.createdAt || null,
+    autosprite_job_id: asset.autosprite_job_id || asset.jobId || null,
+    autosprite_spritesheet_id: asset.autosprite_spritesheet_id || asset.spriteSheetId || null
+  };
+}
+
+function buildSandboxManifest({ traits, options, approvedAssets, rejectedAssets, spritesheetManifest }) {
+  const generatedAt = new Date().toISOString();
+  const assetsByKey = new Map();
+  const putAsset = (asset) => {
+    const normalized = normalizeSandboxAsset(asset);
+    if (!normalized.character_name || !normalized.animation_kind) return;
+    const key = sandboxAssetKey(normalized.character_name, normalized.animation_kind);
+    assetsByKey.set(key, { ...(assetsByKey.get(key) || {}), ...normalized });
+  };
+
+  for (const asset of approvedAssets) {
+    putAsset({
+      ...asset,
+      role: asset.role || null,
+      approved: true,
+      rejected: false,
+      rejection_reason: null,
+      frame_count: asset.frame_count,
+      frame_size: asset.frame_size,
+      sheet_size: asset.sheet_size
+    });
+  }
+
+  for (const asset of rejectedAssets) {
+    putAsset({
+      ...asset,
+      role: asset.role || "rejected_side_scroller_output",
+      approved: false,
+      rejected: true,
+      rejection_reason: asset.reason || "Rejected by Moonpet approved asset registry."
+    });
+  }
+
+  const spriteSheets = Array.isArray(spritesheetManifest.spriteSheets) ? spritesheetManifest.spriteSheets : [];
+  for (const spriteSheet of spriteSheets) {
+    const characterName = spriteSheet.character_name || spriteSheet.autospriteName || spriteSheet.name;
+    const animationKind = spriteSheet.animation_kind || spriteSheet.kind;
+    const approved = findApprovedAssetForName(characterName, animationKind, approvedAssets);
+    const rejected = findRejectedAssetForName(characterName, animationKind, rejectedAssets);
+    putAsset({
+      ...spriteSheet,
+      character_name: characterName,
+      source_character_name: spriteSheet.source_character_name || characterName,
+      animation_kind: animationKind,
+      role: approved ? approved.role : spriteSheet.role,
+      approved: Boolean(approved),
+      rejected: Boolean(rejected),
+      rejection_reason: rejected ? rejected.reason : null,
+      sheet_path: spriteSheet.sheet_path,
+      atlas_path: spriteSheet.atlas_path,
+      frame_count: spriteSheet.frame_count,
+      frame_size: spriteSheet.frame_size,
+      sheet_size: spriteSheet.sheet_size,
+      created_at: spriteSheet.created_at,
+      autosprite_job_id: spriteSheet.autosprite_job_id,
+      autosprite_spritesheet_id: spriteSheet.autosprite_spritesheet_id
+    });
+  }
+
+  return {
+    generated_at: generatedAt,
+    provider: "AutoSprite",
+    source: "scripts/generate-moonpet-assets.js",
+    registry_path: "data/moonpet-approved-assets.json",
+    spritesheet_manifest_path: "output/manifests/moonpet-spritesheets.generated.json",
+    rules: {
+      approved_assets_require_force_approved: true,
+      rejected_assets_must_not_be_promoted: true,
+      attack_rejected_for_moonbot_isometric_pack: true,
+      live_game_runtime_untouched: true
+    },
+    current_request: {
+      phase: options.phase,
+      dry_run: options.dryRun,
+      animation: options.animationKind || null,
+      force_approved: options.forceApproved
+    },
+    approved_built_in_movement_pack: (traits.autospriteAnimations || []).map((animation) => animation.kind || animation),
+    custom_pet_state_animations: traits.custom_pet_state_animations || [],
+    assets: Array.from(assetsByKey.values()).sort((a, b) =>
+      `${a.character_name}:${a.animation_kind}`.localeCompare(`${b.character_name}:${b.animation_kind}`)
+    )
   };
 }
 
@@ -1136,7 +1261,15 @@ async function run() {
       console.log(`[dry-run] local_id=${character.id}, autospriteName="${character.autospriteName}", promptLength=${character.promptLength}, request animations ${spriteSheetAnimationKinds.join(", ")}${approvalStatus}`);
     }
     await writeJson(MANIFEST_PATH, planManifest);
+    await writeJson(options.sandboxManifestPath, buildSandboxManifest({
+      traits,
+      options,
+      approvedAssets,
+      rejectedAssets,
+      spritesheetManifest
+    }));
     console.log(`Manifest written to ${path.relative(REPO_ROOT, MANIFEST_PATH).replace(/\\/g, "/")}`);
+    console.log(`Sandbox manifest written to ${path.relative(REPO_ROOT, options.sandboxManifestPath).replace(/\\/g, "/")}`);
     return;
   }
 
@@ -1169,6 +1302,13 @@ async function run() {
             : entry
         );
         await writeJson(MANIFEST_PATH, { ...planManifest, rawResponses });
+        await writeJson(options.sandboxManifestPath, buildSandboxManifest({
+          traits,
+          options,
+          approvedAssets,
+          rejectedAssets,
+          spritesheetManifest
+        }));
         continue;
       }
 
@@ -1434,6 +1574,13 @@ async function run() {
       );
       await writeJson(SPRITESHEET_MANIFEST_PATH, spritesheetManifest);
       await writeJson(MANIFEST_PATH, { ...planManifest, rawResponses });
+      await writeJson(options.sandboxManifestPath, buildSandboxManifest({
+        traits,
+        options,
+        approvedAssets,
+        rejectedAssets,
+        spritesheetManifest
+      }));
       await sleep(rateLimitMs);
     } catch (error) {
       const autoSpriteError = error.autoSprite || null;
@@ -1484,12 +1631,20 @@ async function run() {
   await writeJson(JOB_MANIFEST_PATH, jobManifest);
   await writeJson(SPRITESHEET_MANIFEST_PATH, spritesheetManifest);
   await writeJson(MANIFEST_PATH, { ...planManifest, rawResponses });
+  await writeJson(options.sandboxManifestPath, buildSandboxManifest({
+    traits,
+    options,
+    approvedAssets,
+    rejectedAssets,
+    spritesheetManifest
+  }));
   await writeErrorManifest(errors);
 
   console.log(`Manifest written to ${path.relative(REPO_ROOT, MANIFEST_PATH).replace(/\\/g, "/")}`);
   console.log(`Character IDs written to ${path.relative(REPO_ROOT, CHARACTER_MANIFEST_PATH).replace(/\\/g, "/")}`);
   console.log(`Job IDs written to ${path.relative(REPO_ROOT, JOB_MANIFEST_PATH).replace(/\\/g, "/")}`);
   console.log(`Spritesheet metadata written to ${path.relative(REPO_ROOT, SPRITESHEET_MANIFEST_PATH).replace(/\\/g, "/")}`);
+  console.log(`Sandbox manifest written to ${path.relative(REPO_ROOT, options.sandboxManifestPath).replace(/\\/g, "/")}`);
   if (errors.length > 0) {
     console.log(`AutoSprite error manifest written to ${path.relative(REPO_ROOT, ERROR_MANIFEST_PATH).replace(/\\/g, "/")}`);
     process.exitCode = 1;
