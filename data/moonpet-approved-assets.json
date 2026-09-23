@@ -13,6 +13,20 @@
         "h": 1280
       },
       "notes": "First approved Moonbot visor base idle. Do not overwrite automatically."
+    },
+    {
+      "local_id": "moonbot_pet_visor_v1",
+      "character_name": "MOONBOT PET VISOR V1",
+      "animation_kind": "iso_run_down",
+      "role": "base_run",
+      "approved": true,
+      "frame_count": 25,
+      "frame_size": 256,
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "notes": "Approved Moonbot visor run-down animation. Do not overwrite automatically."
     }
   ]
 }
