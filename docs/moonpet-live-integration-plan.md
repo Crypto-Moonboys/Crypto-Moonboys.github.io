@@ -86,6 +86,8 @@ Default production behaviour remains unchanged unless the flag is explicitly ena
 
 Before enabling the flag anywhere:
 
+- Run `npm run moonpet:autopilot` and confirm it passes.
+- Run `npm run moonpet:autopilot:report` if a JSON artifact is needed.
 - Open the live game with the feature flag off and verify the current game behaves unchanged.
 - Open the live game with `?approvedSprites=1` in a controlled local or staged run.
 - Verify idle animation renders from `iso_idle_down`.
@@ -140,6 +142,7 @@ Verify the feature-flagged live path locally and in a controlled staging pass.
 The live path should:
 
 - Keep the flag off by default.
+- Use [Moonpet Autopilot](moonpet-autopilot.md) as the first preflight check.
 - Use `?approvedSprites=1` for explicit testing.
 - Draw approved idle, walk, and run sprites only when `renderApprovedMoonpet(...)` returns `true`.
 - Keep procedural drawing as the fallback for every failed or disabled case.

@@ -1,0 +1,71 @@
+name: Moonpet Autopilot
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "24 6 * * *"
+
+jobs:
+  moonpet-autopilot:
+    name: Moonpet Autopilot Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Syntax checks
+        id: syntax
+        continue-on-error: true
+        run: |
+          node --check js/moonpet-approved-asset-loader.js
+          node --check js/moonpet-approved-sprite-renderer.js
+          node --check js/moonpet-runtime-preview.js
+          node --check js/moonpet-animation-sandbox.js
+          node --check js/moonpet-mini-app.js
+
+      - name: Generate Moonpet autopilot report
+        id: report
+        if: always()
+        continue-on-error: true
+        run: npm run moonpet:autopilot:report
+
+      - name: Upload Moonpet autopilot report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: moonpet-autopilot-report
+          path: output/manifests/moonpet-autopilot-report.json
+          if-no-files-found: warn
+
+      - name: Run Moonpet autopilot check
+        id: autopilot
+        if: always()
+        continue-on-error: true
+        run: npm run moonpet:autopilot
+
+      - name: Fail on validation errors
+        if: always()
+        run: |
+          if [ "${{ steps.syntax.outcome }}" != "success" ]; then
+            echo "Syntax checks failed."
+            exit 1
+          fi
+          if [ "${{ steps.report.outcome }}" != "success" ]; then
+            echo "Moonpet autopilot report failed."
+            exit 1
+          fi
+          if [ "${{ steps.autopilot.outcome }}" != "success" ]; then
+            echo "Moonpet autopilot check failed."
+            exit 1
+          fi
