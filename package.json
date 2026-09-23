@@ -41,7 +41,8 @@
     "moonpet:sandbox": "node scripts/generate-moonpet-assets.js --dry-run",
     "moonpet:runtime-preview": "node --check js/moonpet-runtime-preview.js",
     "moonpet:autopilot": "node scripts/moonpet-autopilot-check.js",
-    "moonpet:autopilot:report": "node scripts/moonpet-autopilot-report.js"
+    "moonpet:autopilot:report": "node scripts/moonpet-autopilot-report.js",
+    "moonpet:custom-queue:check": "node scripts/moonpet-custom-animation-queue-check.js"
   },
   "keywords": [],
   "author": "",

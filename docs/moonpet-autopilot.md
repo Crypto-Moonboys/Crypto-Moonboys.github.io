@@ -2,6 +2,8 @@
 
 Moonpet Autopilot is a repo-controlled verification pass for the approved Moonbot sprite pipeline. It checks the public runtime inputs, writes a pass/fail report, and keeps asset generation separate from validation.
 
+Current checkpoint: the base Moonbot system is passing when `npm run moonpet:autopilot` reports `PASS`.
+
 ## What It Checks
 
 The autopilot checks:
@@ -86,6 +88,22 @@ If `overall_status` is `pass`, the approved Moonbot public runtime files are pre
 - Runs the autopilot check.
 
 The workflow does not call AutoSprite and does not generate new art.
+
+## Next Layer: Custom Animation Queue
+
+The next automation layer is the custom pet-state queue:
+
+```text
+data/moonpet-custom-animation-queue.json
+```
+
+It tracks planned custom states such as sleep, eat, play, clean, wave, sit, happy, and sad. The queue is validated with:
+
+```bash
+npm run moonpet:custom-queue:check
+```
+
+The custom queue does not generate assets automatically yet. It is a planning and validation layer only, keeping custom animation work separate from the approved base idle/walk/run system.
 
 ## Why This Reduces Manual Work
 
