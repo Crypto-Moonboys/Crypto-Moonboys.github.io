@@ -25,7 +25,19 @@ The sandbox reads:
 - `output/manifests/moonpet-spritesheets.generated.json` as a generated-output fallback.
 - `data/moonpet-animation-sandbox.sample.json` when no generated output exists.
 
-The page displays each animation as a loop, reads atlas JSON frame data when an atlas is available, and falls back to the approved 25-frame, 256px, 1280x1280 grid format when atlas files are missing.
+The page displays each animation as a loop, reads atlas JSON frame data when an atlas is available, and falls back to the approved 25-frame, 256px, 1280x1280 grid format when atlas files are missing. Approved registry `sheet_path` and `atlas_path` values are tried first.
+
+## Promote Approved Assets
+
+Generated assets in `output/` are temporary workflow artifacts. Approved assets must be promoted into public static paths before the sandbox and runtime preview can display them on the site:
+
+```bash
+node scripts/promote-moonpet-approved-assets.js
+```
+
+The promotion script reads `output/manifests/moonpet-animation-sandbox.generated.json`, copies only approved sheet/atlas pairs into `img/moonpets/moonbot-pet-visor-v1/`, renames them by animation kind, and updates `data/moonpet-approved-assets.json`.
+
+Rejected assets are never promoted, pending assets are never promoted, and the script fails clearly if a source sheet or atlas is missing. Existing promoted files are not overwritten unless the script is run with `--force` after explicit approval.
 
 ## Dry Run
 
@@ -79,7 +91,8 @@ Rules:
 
 - Approved assets must not be overwritten unless `--force-approved` is passed.
 - Rejected assets must not be promoted.
-- Generated PNGs and atlas files stay in `output/` for review; do not auto-commit them yet.
+- Generated PNGs and atlas files stay in `output/` for review until approved; do not auto-commit raw output folders.
+- Promoted approved files live under `img/moonpets/` and are the static files used by public previews.
 - Live game runtime files must remain untouched until a separate integration step.
 
 ## Moving Toward Game Integration

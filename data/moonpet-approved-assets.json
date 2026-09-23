@@ -12,6 +12,10 @@
         "w": 1280,
         "h": 1280
       },
+      "sheet_path": "/img/moonpets/moonbot-pet-visor-v1/iso_idle_down.png",
+      "atlas_path": "/img/moonpets/moonbot-pet-visor-v1/iso_idle_down.json",
+      "promoted": false,
+      "promoted_at": null,
       "notes": "First approved Moonbot visor base idle. Do not overwrite automatically."
     },
     {
@@ -26,6 +30,10 @@
         "w": 1280,
         "h": 1280
       },
+      "sheet_path": "/img/moonpets/moonbot-pet-visor-v1/iso_walk_down.png",
+      "atlas_path": "/img/moonpets/moonbot-pet-visor-v1/iso_walk_down.json",
+      "promoted": false,
+      "promoted_at": null,
       "notes": "Approved Moonbot visor walk-down animation. Do not overwrite automatically."
     },
     {
@@ -40,6 +48,10 @@
         "w": 1280,
         "h": 1280
       },
+      "sheet_path": "/img/moonpets/moonbot-pet-visor-v1/iso_run_down.png",
+      "atlas_path": "/img/moonpets/moonbot-pet-visor-v1/iso_run_down.json",
+      "promoted": false,
+      "promoted_at": null,
       "notes": "Approved Moonbot visor run-down animation. Do not overwrite automatically."
     }
   ],

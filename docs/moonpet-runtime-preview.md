@@ -16,7 +16,7 @@ The preview loads:
 2. `output/manifests/moonpet-animation-sandbox.generated.json`, when present
 3. `data/moonpet-animation-sandbox.sample.json`, when generated output is missing
 
-Only approved records are selectable in the runtime controls. Built-in `attack` is rejected in the registry and is not used by the preview.
+Only approved records are selectable in the runtime controls. Built-in `attack` is rejected in the registry and is not used by the preview. Approved registry `sheet_path` and `atlas_path` values are tried first, so promoted static assets under `img/moonpets/` take priority over temporary generated output.
 
 ## Approved Base Animations
 
@@ -41,6 +41,31 @@ Open:
 ```
 
 No API key is required. The page does not generate AutoSprite assets.
+
+## Promoted Assets
+
+Generated files in `output/` are temporary artifacts. After review, promote approved assets:
+
+```bash
+node scripts/promote-moonpet-approved-assets.js
+```
+
+The script copies approved sheet/atlas files into:
+
+```text
+img/moonpets/moonbot-pet-visor-v1/
+```
+
+and updates `data/moonpet-approved-assets.json` with public paths such as:
+
+```text
+/img/moonpets/moonbot-pet-visor-v1/iso_idle_down.png
+/img/moonpets/moonbot-pet-visor-v1/iso_idle_down.json
+```
+
+The runtime preview uses those promoted files on the public static site. If the registry has approved metadata but the promoted file is missing, the page shows `approved metadata found but sprite file missing.`
+
+Existing promoted files are protected. Use `node scripts/promote-moonpet-approved-assets.js --force` only after explicitly approving an overwrite.
 
 ## Preview Controls
 

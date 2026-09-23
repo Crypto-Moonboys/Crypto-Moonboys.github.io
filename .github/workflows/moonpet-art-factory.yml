@@ -11,6 +11,8 @@ on:
         options:
           - dry-run
           - test
+          - promote-approved
+          - build-approved-pack
       limit:
         description: "Optional max character count. Leave blank for the existing Moonbot base character."
         required: false
@@ -19,9 +21,14 @@ on:
         description: "Optional single AutoSprite animation kind, such as iso_walk_down or iso_run_down. Do not use attack for Moonbot."
         required: false
         default: ""
+      auto_commit_promoted_assets:
+        description: "Commit promoted public Moonbot assets and approved registry after build-approved-pack."
+        required: true
+        default: false
+        type: boolean
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   moonpet-art-factory:
@@ -45,7 +52,9 @@ jobs:
         run: |
           node --check scripts/generate-moonpet-assets.js
           node --check scripts/build-moonpet-contact-sheet.js
+          node --check scripts/promote-moonpet-approved-assets.js
           node --check js/moonpet-animation-sandbox.js
+          node --check js/moonpet-runtime-preview.js
 
       - name: Dry-run Moonpet plan
         run: node scripts/generate-moonpet-assets.js --dry-run ${LIMIT:+--limit "$LIMIT"} ${ANIMATION:+--animation "$ANIMATION"}
@@ -61,9 +70,35 @@ jobs:
           LIMIT: ${{ inputs.limit }}
           ANIMATION: ${{ inputs.animation }}
 
+      - name: Build approved Moonbot base pack
+        if: ${{ inputs.phase == 'build-approved-pack' }}
+        timeout-minutes: 60
+        run: |
+          node scripts/generate-moonpet-assets.js --phase=test --execute --limit 1 --animation iso_idle_down --force-approved --no-resume
+          node scripts/generate-moonpet-assets.js --phase=test --execute --limit 1 --animation iso_walk_down --force-approved --no-resume
+          node scripts/generate-moonpet-assets.js --phase=test --execute --limit 1 --animation iso_run_down --force-approved --no-resume
+          node scripts/promote-moonpet-approved-assets.js
+
       - name: Build Moonpet contact sheet
-        if: ${{ inputs.phase == 'test' }}
+        if: ${{ inputs.phase == 'test' || inputs.phase == 'build-approved-pack' }}
         run: node scripts/build-moonpet-contact-sheet.js
+
+      - name: Promote approved Moonpet assets
+        if: ${{ inputs.phase == 'promote-approved' }}
+        run: node scripts/promote-moonpet-approved-assets.js
+
+      - name: Commit promoted Moonpet assets
+        if: ${{ inputs.phase == 'build-approved-pack' && inputs.auto_commit_promoted_assets }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add img/moonpets/moonbot-pet-visor-v1/ data/moonpet-approved-assets.json
+          if git diff --cached --quiet; then
+            echo "No promoted Moonpet asset changes to commit."
+          else
+            git commit -m "feat: promote approved Moonbot spritesheets"
+            git push origin HEAD:${GITHUB_REF_NAME}
+          fi
 
       - name: Upload Moonpet output
         if: always()
@@ -73,4 +108,6 @@ jobs:
           path: |
             output/moonpets/
             output/manifests/
+            img/moonpets/
+            data/moonpet-approved-assets.json
           if-no-files-found: warn

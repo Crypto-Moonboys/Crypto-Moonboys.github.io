@@ -1,0 +1,142 @@
+{
+  "project": "Crypto Moonboys Pets",
+  "system": "Moonpet Visual Trait System",
+  "version": "0.1.0",
+  "source": "final Crypto Moonboys Pets asset sheet",
+  "status": "staged_pipeline_data",
+  "base_character": {
+    "id": "moonbot_pet_visor_v1",
+    "name": "MOONBOT PET VISOR V1",
+    "description": "Approved Moonbot base character with glossy white Moonpet body, black visor, pink LED face language, chunky feet, and isometric down-view runtime direction.",
+    "approved_base_animations": [
+      "iso_idle_down",
+      "iso_walk_down",
+      "iso_run_down"
+    ],
+    "rejected_animations": [
+      {
+        "animation_kind": "attack",
+        "reason": "Built-in AutoSprite attack produces side-facing output and does not match the approved isometric Moonbot base pack."
+      }
+    ]
+  },
+  "face_visor_expressions": [
+    "default",
+    "happy",
+    "excited",
+    "sad",
+    "angry",
+    "sleepy",
+    "love",
+    "surprised",
+    "cool",
+    "wink",
+    "dead_x_x",
+    "glitch"
+  ],
+  "animation_states": [
+    "idle",
+    "walk",
+    "run",
+    "jump",
+    "play",
+    "eat",
+    "sleep",
+    "clean",
+    "dance",
+    "train",
+    "sit",
+    "hurt"
+  ],
+  "outfits_bodies": [
+    "default",
+    "street_graff",
+    "cyber",
+    "astro",
+    "hoodie",
+    "punk",
+    "gold",
+    "zombie",
+    "samurai",
+    "ape",
+    "robot",
+    "bee"
+  ],
+  "hats_headwear": [
+    "snapback",
+    "bucket",
+    "beanie",
+    "hood",
+    "astro_helmet",
+    "crown",
+    "horns",
+    "mohawk",
+    "bandana",
+    "headphones",
+    "goggles",
+    "none"
+  ],
+  "eye_visor_styles": [
+    "default",
+    "pixel",
+    "heart",
+    "star",
+    "cross",
+    "angry",
+    "happy",
+    "wave",
+    "glitch",
+    "skull",
+    "cyber",
+    "rainbow"
+  ],
+  "accessories": [
+    "spray_can",
+    "skateboard",
+    "backpack",
+    "sling_bag",
+    "chain",
+    "tag",
+    "camera",
+    "boombox",
+    "pet_drone",
+    "wings",
+    "cape",
+    "none"
+  ],
+  "traits_elements": [
+    "fire",
+    "water",
+    "earth",
+    "air",
+    "electric",
+    "shadow",
+    "light",
+    "crystal",
+    "neon",
+    "galaxy",
+    "toxic",
+    "ice"
+  ],
+  "rarity_frames": [
+    "common",
+    "uncommon",
+    "rare",
+    "epic",
+    "legendary"
+  ],
+  "environment_sets": [
+    {
+      "id": "cyber_rooftop_neon",
+      "name": "Cyber Rooftop Neon",
+      "description": "Preview/test environment inspired by the final art sheet environment example. Used for sandbox and runtime preview only."
+    }
+  ],
+  "generation_rules": {
+    "do_not_use_builtin_attack_for_moonbot": true,
+    "generate_custom_pet_states_in_isometric_direction": true,
+    "promote_only_approved_assets": true,
+    "never_promote_rejected_or_pending_assets": true,
+    "live_game_integration_requires_separate_approval": true
+  }
+}

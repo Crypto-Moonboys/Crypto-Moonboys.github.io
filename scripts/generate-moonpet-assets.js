@@ -326,7 +326,9 @@ function normalizeApprovedAsset(asset) {
     frameSize: asset.frame_size || asset.frameSize || null,
     frame_size: asset.frame_size || asset.frameSize || null,
     sheetSize: asset.sheet_size || asset.sheetSize || null,
-    sheet_size: asset.sheet_size || asset.sheetSize || null
+    sheet_size: asset.sheet_size || asset.sheetSize || null,
+    sheet_path: asset.sheet_path || null,
+    atlas_path: asset.atlas_path || null
   };
 }
 
@@ -374,7 +376,7 @@ function assertNoRejectedAnimations(characters, rejectedAssets) {
   }
 }
 
-function applyApprovedLocks(characters, approvedManifest) {
+function applyApprovedLocks(characters, approvedManifest, options = {}) {
   const approvedAssets = getApprovedAssets(approvedManifest);
   if (approvedAssets.length === 0) return characters;
 
@@ -384,7 +386,7 @@ function applyApprovedLocks(characters, approvedManifest) {
     const approvedRequested = requestedKinds
       .map((kind) => findApprovedAssetFor(character, kind, approvedAssets))
       .filter(Boolean);
-    const allRequestedApproved = requestedKinds.length > 0 && approvedRequested.length === requestedKinds.length;
+    const allRequestedApproved = !options.forceApproved && requestedKinds.length > 0 && approvedRequested.length === requestedKinds.length;
 
     return {
       ...character,
@@ -735,6 +737,8 @@ function normalizeSandboxAsset(asset) {
     rejection_reason: asset.rejection_reason || asset.reason || null,
     sheet_path: asset.sheet_path || null,
     atlas_path: asset.atlas_path || null,
+    source_sheet_path: asset.source_sheet_path || null,
+    source_atlas_path: asset.source_atlas_path || null,
     frame_count: asset.frame_count || asset.frameCount || null,
     frame_size: asset.frame_size || asset.frameSize || null,
     sheet_size: asset.sheet_size || asset.sheetSize || null,
@@ -761,6 +765,8 @@ function buildSandboxManifest({ traits, options, approvedAssets, rejectedAssets,
       approved: true,
       rejected: false,
       rejection_reason: null,
+      sheet_path: asset.sheet_path || null,
+      atlas_path: asset.atlas_path || null,
       frame_count: asset.frame_count,
       frame_size: asset.frame_size,
       sheet_size: asset.sheet_size
@@ -792,8 +798,10 @@ function buildSandboxManifest({ traits, options, approvedAssets, rejectedAssets,
       approved: Boolean(approved),
       rejected: Boolean(rejected),
       rejection_reason: rejected ? rejected.reason : null,
-      sheet_path: spriteSheet.sheet_path,
-      atlas_path: spriteSheet.atlas_path,
+      sheet_path: (approved && approved.sheet_path) || spriteSheet.sheet_path,
+      atlas_path: (approved && approved.atlas_path) || spriteSheet.atlas_path,
+      source_sheet_path: spriteSheet.sheet_path || null,
+      source_atlas_path: spriteSheet.atlas_path || null,
       frame_count: spriteSheet.frame_count,
       frame_size: spriteSheet.frame_size,
       sheet_size: spriteSheet.sheet_size,
@@ -1172,18 +1180,19 @@ async function run() {
   const rejectedAssets = getRejectedAssets(approvedManifest);
   const characters = applyApprovedLocks(options.resumeJobs
     ? buildResumeJobPlan(jobManifest, traits, options)
-    : buildCharacterPlan(traits, options), approvedManifest);
+    : buildCharacterPlan(traits, options), approvedManifest, options);
   validateCharacterPrompts(characters);
   assertNoRejectedAnimations(characters, rejectedAssets);
 
   if (options.resumeJobs && characters.length === 0) {
     throw new Error("No saved AutoSprite jobs found in output/manifests/autosprite-jobs.generated.json.");
   }
-  const spritesheetManifest = {
+  const spritesheetManifest = await readJsonIfExists(SPRITESHEET_MANIFEST_PATH, {
     generatedAt: new Date().toISOString(),
     provider: "AutoSprite",
     spriteSheets: []
-  };
+  });
+  spritesheetManifest.generatedAt = new Date().toISOString();
   const planManifest = {
     generatedAt: new Date().toISOString(),
     provider: "AutoSprite",
@@ -1207,6 +1216,8 @@ async function run() {
       frame_count: asset.frame_count,
       frame_size: asset.frame_size,
       sheet_size: asset.sheet_size || null,
+      sheet_path: asset.sheet_path || null,
+      atlas_path: asset.atlas_path || null,
       notes: asset.notes || null
     })),
     rejectedAssets,
@@ -1388,7 +1399,10 @@ async function run() {
           response: null
         }];
       } else if (options.resume) {
-        jobRecords = jobManifest.jobs.filter((entry) => entry.localId === character.id && entry.jobId);
+        const requestedKinds = new Set(character.animations.map((animation) => animation.kind));
+        jobRecords = jobManifest.jobs.filter((entry) =>
+          entry.localId === character.id && entry.jobId && requestedKinds.has(entry.kind)
+        );
       }
 
       if (jobRecords.length === 0) {
@@ -1423,7 +1437,8 @@ async function run() {
           animations: spriteSheetAnimationKinds,
           response: createSpritesheetResponse
         }));
-        jobManifest.jobs = jobManifest.jobs.filter((entry) => entry.localId !== character.id);
+        const newJobKeys = new Set(jobRecords.map((entry) => `${entry.localId}::${entry.kind}`));
+        jobManifest.jobs = jobManifest.jobs.filter((entry) => !newJobKeys.has(`${entry.localId}::${entry.kind}`));
         jobManifest.jobs.push(...jobRecords);
         jobManifest.generatedAt = new Date().toISOString();
         await writeJson(JOB_MANIFEST_PATH, jobManifest);
@@ -1549,7 +1564,7 @@ async function run() {
           });
         }
 
-        spritesheetManifest.spriteSheets.push(buildSpriteSheetManifestEntry({
+        const manifestEntry = buildSpriteSheetManifestEntry({
           character,
           characterRecord,
           jobRecord,
@@ -1557,14 +1572,24 @@ async function run() {
           downloads,
           spriteSheetRecord,
           approvedAsset: findApprovedAssetFor(character, jobRecord.kind, approvedAssets)
-        }));
+        });
+        spritesheetManifest.spriteSheets = (spritesheetManifest.spriteSheets || []).filter((entry) =>
+          !(
+            (entry.character_name || entry.autospriteName) === manifestEntry.character_name &&
+            (entry.animation_kind || entry.kind) === manifestEntry.animation_kind
+          )
+        );
+        spritesheetManifest.spriteSheets.push(manifestEntry);
       }
 
       planManifest.characters = planManifest.characters.map((entry) =>
         entry.id === character.id
           ? {
               ...entry,
-              ...(spritesheetManifest.spriteSheets.find((spriteSheet) => spriteSheet.localId === character.id) || {}),
+              ...(spritesheetManifest.spriteSheets.find((spriteSheet) =>
+                spriteSheet.localId === character.id &&
+                (spriteSheet.animation_kind || spriteSheet.kind) === (character.animations[0] && character.animations[0].kind)
+              ) || {}),
               status: allSpriteSheetIds.length > 0 && failedWorkflowPolls.length === 0 ? "generated" : entry.status,
               characterId: characterRecord.characterId,
               workflows: jobRecords,

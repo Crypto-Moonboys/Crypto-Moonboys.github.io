@@ -69,8 +69,8 @@
       approved: Boolean(approved || asset.approved),
       rejected: Boolean(rejected || asset.rejected),
       rejection_reason: (rejected && rejected.reason) || asset.rejection_reason || null,
-      sheet_path: asset.sheet_path || null,
-      atlas_path: asset.atlas_path || null,
+      sheet_path: (approved && approved.sheet_path) || asset.sheet_path || null,
+      atlas_path: (approved && approved.atlas_path) || asset.atlas_path || null,
       frame_count: Number(asset.frame_count || asset.frameCount || (approved && approved.frame_count) || 0) || null,
       frame_size: Number(asset.frame_size || asset.frameSize || (approved && approved.frame_size) || 0) || null,
       sheet_size: normalizeSize(asset.sheet_size || asset.sheetSize || (approved && approved.sheet_size)),
@@ -195,8 +195,12 @@
     state.currentImage = await loadImage(asset.sheet_path);
     missingMessage.textContent = asset.sheet_path
       ? ""
-      : `Approved ${kind} metadata found, but no local spritesheet file is available. Showing a runtime placeholder.`;
+      : "approved metadata found but sprite file missing.";
     updateDebug(asset, kind);
+
+    if (asset.sheet_path && !state.currentImage) {
+      missingMessage.textContent = "approved metadata found but sprite file missing.";
+    }
   }
 
   function updateDebug(asset, kind) {

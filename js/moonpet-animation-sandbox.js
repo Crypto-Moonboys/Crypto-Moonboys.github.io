@@ -68,8 +68,8 @@
       approved: Boolean(approved || asset.approved),
       rejected: Boolean(rejected || asset.rejected),
       rejection_reason: (rejected && rejected.reason) || asset.rejection_reason || asset.reason || null,
-      sheet_path: asset.sheet_path || null,
-      atlas_path: asset.atlas_path || null,
+      sheet_path: (approved && approved.sheet_path) || asset.sheet_path || null,
+      atlas_path: (approved && approved.atlas_path) || asset.atlas_path || null,
       frame_count: Number(asset.frame_count || asset.frameCount || 0) || null,
       frame_size: Number(asset.frame_size || asset.frameSize || 0) || null,
       sheet_size: normalizeSize(asset.sheet_size || asset.sheetSize),
@@ -272,7 +272,7 @@
     card.dataset.status = status;
     title.textContent = asset.animation_kind;
     badge.textContent = statusLabel(status);
-    note.textContent = asset.rejection_reason || (asset.sheet_path ? "Using generated spritesheet output." : "No local sheet found; showing sandbox placeholder.");
+    note.textContent = asset.rejection_reason || (asset.sheet_path ? "Using promoted/static spritesheet output." : "approved metadata found but sprite file missing.");
 
     const sheetSize = asset.sheet_size ? `${asset.sheet_size.w}x${asset.sheet_size.h}` : "unknown";
     addMeta(meta, "character", asset.character_name);
@@ -289,6 +289,9 @@
     const player = startPlayer({ canvas, image, frames, asset });
 
     button.textContent = player.playing ? "Pause" : "Play";
+    if (asset.sheet_path && !image) {
+      note.textContent = "approved metadata found but sprite file missing.";
+    }
     button.addEventListener("click", () => {
       player.playing = !player.playing;
       button.textContent = player.playing ? "Pause" : "Play";
