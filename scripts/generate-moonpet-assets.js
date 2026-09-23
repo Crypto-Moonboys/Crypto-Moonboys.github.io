@@ -615,12 +615,19 @@ function extractSpriteSheetIds(jobJson) {
 }
 
 function pickUrl(record, names) {
+  const match = pickUrlWithField(record, names);
+  return match ? match.url : null;
+}
+
+function pickUrlWithField(record, names, prefix = "") {
   for (const name of names) {
-    if (record && typeof record[name] === "string") return record[name];
+    if (record && typeof record[name] === "string") {
+      return { url: record[name], fieldName: prefix ? `${prefix}.${name}` : name };
+    }
   }
   for (const container of ["data", "result", "spriteSheet", "spritesheet", "sprite_sheet"]) {
     if (record && record[container]) {
-      const nested = pickUrl(record[container], names);
+      const nested = pickUrlWithField(record[container], names, prefix ? `${prefix}.${container}` : container);
       if (nested) return nested;
     }
   }
@@ -628,32 +635,41 @@ function pickUrl(record, names) {
 }
 
 function extractDownloadTargets(spriteSheetRecord) {
-  const pngUrl = pickUrl(spriteSheetRecord, [
+  const pngMatch = pickUrlWithField(spriteSheetRecord, [
     "sheetUrl",
     "sheet_url",
-    "png_url",
     "pngUrl",
+    "png_url",
     "image_url",
     "imageUrl",
     "spritesheet_url",
     "spriteSheetUrl",
     "url"
   ]);
-  const atlasUrl = pickUrl(spriteSheetRecord, [
+  const atlasMatch = pickUrlWithField(spriteSheetRecord, [
     "atlasUrl",
     "atlas_url",
-    "atlas_url",
-    "atlasUrl",
-    "json_url",
     "jsonUrl",
+    "json_url",
     "metadata_url",
     "metadataUrl"
   ]);
 
   return [
-    pngUrl && { kind: "png", url: pngUrl, extension: "png" },
-    atlasUrl && { kind: "atlas", url: atlasUrl, extension: atlasUrl.toLowerCase().includes(".json") ? "json" : "atlas" }
+    pngMatch && { kind: "png", url: pngMatch.url, fieldName: pngMatch.fieldName, extension: "png" },
+    atlasMatch && { kind: "atlas", url: atlasMatch.url, fieldName: atlasMatch.fieldName, extension: "json" }
   ].filter(Boolean);
+}
+
+function promotedPathFor(kind, extension) {
+  return `/img/moonpets/moonbot-pet-visor-v1/${kind}.${extension}`;
+}
+
+function stableGeneratedFilePath(character, animationKind, extension) {
+  const localId = character.approvedOutputs && character.approvedOutputs[0] && character.approvedOutputs[0].local_id
+    ? character.approvedOutputs[0].local_id
+    : slug(character.autospriteName || character.id);
+  return path.join(SPRITESHEET_OUTPUT_DIR, `${localId}__${animationKind}.${extension}`);
 }
 
 function computeSheetSize(frameCount, frameSize) {
@@ -713,8 +729,8 @@ function buildSpriteSheetManifestEntry({ character, characterRecord, jobRecord, 
     autosprite_spritesheet_id: spriteSheetId,
     approved: approvedAsset ? approvedAsset.approved === true : false,
     role: approvedAsset ? approvedAsset.role || null : null,
-    sheet_path: generatedSheetPath,
-    atlas_path: generatedAtlasPath,
+    sheet_path: approvedAsset && approvedAsset.sheet_path ? approvedAsset.sheet_path : promotedPathFor(jobRecord.kind, "png"),
+    atlas_path: approvedAsset && approvedAsset.atlas_path ? approvedAsset.atlas_path : promotedPathFor(jobRecord.kind, "json"),
     generated_sheet_path: generatedSheetPath,
     generated_atlas_path: generatedAtlasPath,
     sheet_path_source: generatedSheetPath,
@@ -1552,9 +1568,33 @@ async function run() {
         );
 
         const downloads = [];
-        for (const target of extractDownloadTargets(spriteSheetRecord)) {
-          const fileName = `${character.id}-${slug(spriteSheetId)}.${target.extension}`;
-          const filePath = path.join(SPRITESHEET_OUTPUT_DIR, character.id, fileName);
+        const downloadTargets = extractDownloadTargets(spriteSheetRecord);
+        const sheetTarget = downloadTargets.find((target) => target.kind === "png");
+        const atlasTarget = downloadTargets.find((target) => target.kind === "atlas");
+        console.log(`[${character.id}] completed spritesheet id=${spriteSheetId} kind=${jobRecord.kind}`);
+        console.log(`[${character.id}] sheet URL field=${sheetTarget ? sheetTarget.fieldName : "missing"}`);
+        console.log(`[${character.id}] atlas URL field=${atlasTarget ? atlasTarget.fieldName : "missing"}`);
+        if (!sheetTarget || !atlasTarget) {
+          const rawPath = path.join(RAW_RESPONSE_DIR, `${slug(character.id)}-${slug(jobRecord.kind)}-${slug(spriteSheetId)}-missing-download-urls.json`);
+          await writeJson(rawPath, {
+            capturedAt: new Date().toISOString(),
+            character: {
+              id: character.id,
+              name: character.name,
+              autospriteName: character.autospriteName
+            },
+            spriteSheetId,
+            animationKind: jobRecord.kind,
+            missing: {
+              sheet: !sheetTarget,
+              atlas: !atlasTarget
+            },
+            record: spriteSheetRecord
+          });
+          throw new Error(`AutoSprite spritesheet ${spriteSheetId} for ${jobRecord.kind} did not include both sheet and atlas download URLs. Raw record saved to ${path.relative(REPO_ROOT, rawPath).replace(/\\/g, "/")}.`);
+        }
+        for (const target of [sheetTarget, atlasTarget]) {
+          const filePath = stableGeneratedFilePath(character, jobRecord.kind, target.extension);
           const approvedAsset = findApprovedAssetFor(character, jobRecord.kind, approvedAssets);
           if (approvedAsset && !options.forceApproved) {
             console.log(`[${character.id}] approved output exists; skipping overwrite for ${character.autospriteName} ${jobRecord.kind} ${target.kind}`);
@@ -1576,8 +1616,10 @@ async function run() {
           downloads.push({
             kind: target.kind,
             url: target.url,
+            fieldName: target.fieldName,
             path: path.relative(REPO_ROOT, filePath).replace(/\\/g, "/")
           });
+          console.log(`[${character.id}] saved local ${target.kind === "png" ? "PNG" : "atlas"} path=${path.relative(REPO_ROOT, filePath).replace(/\\/g, "/")}`);
         }
 
         const manifestEntry = buildSpriteSheetManifestEntry({

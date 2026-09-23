@@ -47,21 +47,21 @@ async function main() {
     ]
   });
 
-  await writeJson(sandboxPath, {
-    assets: [
+  await writeJson(sandboxPath, { assets: [] });
+
+  await writeJson(spritesheetPath, {
+    spriteSheets: [
       {
         character_name: "MOONBOT PET VISOR V1",
         animation_kind: "iso_idle_down",
         role: "base_idle",
         approved: true,
         rejected: false,
-        generated_sheet_path: "output/moonpets/spritesheets/fixture/fixture-sheet.png",
-        generated_atlas_path: "output/moonpets/spritesheets/fixture/fixture-atlas.json"
+        sheet_path_source: "output/moonpets/spritesheets/fixture/fixture-sheet.png",
+        atlas_path_source: "output/moonpets/spritesheets/fixture/fixture-atlas.json"
       }
     ]
   });
-
-  await writeJson(spritesheetPath, { spriteSheets: [] });
 
   const result = spawnSync(process.execPath, [
     path.join(REPO_ROOT, "scripts", "promote-moonpet-approved-assets.js"),
