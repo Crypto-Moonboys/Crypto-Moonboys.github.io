@@ -21,8 +21,26 @@
   const statusFilter = document.getElementById("status-filter");
   const toggleAll = document.getElementById("toggle-all");
 
-  async function fetchJson(path) {
-    const response = await fetch(path, { cache: "no-store" });
+  function cacheToken(asset) {
+    return (asset && asset.promoted_at) || window.MOONPET_COMMIT_HASH || "dev";
+  }
+
+  function cacheBustedUrl(path, asset) {
+    if (!path) return null;
+    if (!asset || !asset.promoted) return path;
+    const separator = path.includes("?") ? "&" : "?";
+    return `${path}${separator}v=${encodeURIComponent(cacheToken(asset))}`;
+  }
+
+  async function fetchJson(path, options = {}) {
+    const url = options.cacheBust ? cacheBustedUrl(path, options.asset) : path;
+    if (options.logLabel) {
+      console.info(`[Moonpet sandbox] fetching ${options.logLabel}`, {
+        path,
+        url
+      });
+    }
+    const response = await fetch(url, { cache: "no-store" });
     if (!response.ok) throw new Error(`${path} returned HTTP ${response.status}`);
     return response.json();
   }
@@ -70,6 +88,8 @@
       rejection_reason: (rejected && rejected.reason) || asset.rejection_reason || asset.reason || null,
       sheet_path: (approved && approved.sheet_path) || asset.sheet_path || null,
       atlas_path: (approved && approved.atlas_path) || asset.atlas_path || null,
+      promoted: Boolean((approved && approved.promoted) || asset.promoted),
+      promoted_at: (approved && approved.promoted_at) || asset.promoted_at || null,
       frame_count: Number(asset.frame_count || asset.frameCount || 0) || null,
       frame_size: Number(asset.frame_size || asset.frameSize || 0) || null,
       sheet_size: normalizeSize(asset.sheet_size || asset.sheetSize),
@@ -137,13 +157,15 @@
     }
   }
 
-  async function loadImage(path) {
-    if (!path) return null;
+  async function loadImage(path, asset) {
+    if (!path) return { image: null, error: "missing sheet_path", url: null };
+    const url = cacheBustedUrl(path, asset);
+    console.info("[Moonpet sandbox] fetching sheet", { path, url });
     return new Promise((resolve) => {
       const image = new Image();
-      image.onload = () => resolve(image);
-      image.onerror = () => resolve(null);
-      image.src = path;
+      image.onload = () => resolve({ image, error: null, url });
+      image.onerror = () => resolve({ image: null, error: `${path} failed to load`, url });
+      image.src = url;
     });
   }
 
@@ -184,13 +206,23 @@
   }
 
   async function getFrames(asset) {
-    if (!asset.atlas_path) return inferredGridFrames(asset);
+    if (!asset.atlas_path) {
+      if (asset.promoted) return { frames: [], error: "missing atlas_path for promoted asset" };
+      return { frames: inferredGridFrames(asset), error: null };
+    }
     try {
-      const atlas = await fetchJson(asset.atlas_path);
+      const atlas = await fetchJson(asset.atlas_path, {
+        asset,
+        cacheBust: true,
+        logLabel: "atlas"
+      });
       const frames = framesFromAtlas(atlas, asset.frame_size || 256);
-      return frames.length ? frames : inferredGridFrames(asset);
-    } catch {
-      return inferredGridFrames(asset);
+      if (frames.length) return { frames, error: null };
+      if (asset.promoted) return { frames: [], error: `${asset.atlas_path} did not contain renderable frames` };
+      return { frames: inferredGridFrames(asset), error: null };
+    } catch (error) {
+      if (asset.promoted) return { frames: [], error: error.message };
+      return { frames: inferredGridFrames(asset), error: null };
     }
   }
 
@@ -232,7 +264,27 @@
     ctx.fillText("sheet pending", size / 2, 164);
   }
 
-  function startPlayer({ canvas, image, frames, asset }) {
+  function drawError(ctx, asset, message) {
+    const size = asset.frame_size || 256;
+    ctx.clearRect(0, 0, size, size);
+    ctx.fillStyle = "#1a1014";
+    ctx.fillRect(0, 0, size, size);
+    ctx.strokeStyle = "#ff6370";
+    ctx.lineWidth = 4;
+    ctx.strokeRect(14, 14, size - 28, size - 28);
+    ctx.fillStyle = "#f3f7fb";
+    ctx.font = "bold 16px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText("render unavailable", size / 2, 104);
+    ctx.fillStyle = "#ffb3ba";
+    ctx.font = "12px system-ui";
+    const clipped = message.length > 32 ? `${message.slice(0, 29)}...` : message;
+    ctx.fillText(clipped, size / 2, 134);
+    ctx.fillStyle = "#9aa8b8";
+    ctx.fillText(asset.animation_kind, size / 2, 160);
+  }
+
+  function startPlayer({ canvas, image, frames, asset, onRenderError }) {
     const ctx = canvas.getContext("2d");
     const player = {
       asset,
@@ -240,16 +292,31 @@
       frameIndex: 0,
       playing: !asset.rejected,
       lastTick: 0,
+      renderError: null,
       draw(time) {
+        if (this.renderError) {
+          drawError(ctx, asset, this.renderError);
+          return;
+        }
+        if (asset.promoted && (!image || !frames.length)) {
+          drawError(ctx, asset, image ? "atlas frames missing" : "promoted sprite file missing");
+          return;
+        }
         const frameMs = 1000 / state.speed;
-        if (this.playing && !state.pausedAll && time - this.lastTick >= frameMs) {
+        if (this.playing && !state.pausedAll && frames.length && time - this.lastTick >= frameMs) {
           this.frameIndex = (this.frameIndex + 1) % frames.length;
           this.lastTick = time;
         }
         const frame = frames[this.frameIndex] || frames[0];
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         if (image && frame) {
-          ctx.drawImage(image, frame.x, frame.y, frame.w, frame.h, 0, 0, canvas.width, canvas.height);
+          try {
+            ctx.drawImage(image, frame.x, frame.y, frame.w, frame.h, 0, 0, canvas.width, canvas.height);
+          } catch (error) {
+            this.renderError = error.message;
+            if (onRenderError) onRenderError(error);
+            drawError(ctx, asset, error.message);
+          }
         } else {
           drawPlaceholder(ctx, asset, this.frameIndex);
         }
@@ -284,12 +351,24 @@
     addMeta(meta, "atlas", asset.atlas_path);
     addMeta(meta, "job", asset.autosprite_job_id);
 
-    const image = await loadImage(asset.sheet_path);
-    const frames = await getFrames(asset);
-    const player = startPlayer({ canvas, image, frames, asset });
+    const imageResult = await loadImage(asset.sheet_path, asset);
+    const frameResult = await getFrames(asset);
+    const player = startPlayer({
+      canvas,
+      image: imageResult.image,
+      frames: frameResult.frames,
+      asset,
+      onRenderError: (error) => {
+        note.textContent = `render error: ${error.message}`;
+      }
+    });
 
     button.textContent = player.playing ? "Pause" : "Play";
-    if (asset.sheet_path && !image) {
+    if (asset.promoted && asset.sheet_path && imageResult.error) {
+      note.textContent = `missing promoted sprite file: ${imageResult.error}`;
+    } else if (asset.promoted && asset.atlas_path && frameResult.error) {
+      note.textContent = `atlas load error: ${frameResult.error}`;
+    } else if (asset.sheet_path && !imageResult.image) {
       note.textContent = "approved metadata found but sprite file missing.";
     }
     button.addEventListener("click", () => {

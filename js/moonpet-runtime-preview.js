@@ -20,7 +20,9 @@
     lastFrameAt: 0,
     frameRate: 12,
     time: 0,
-    source: []
+    source: [],
+    renderError: null,
+    loadError: null
   };
 
   const canvas = document.getElementById("runtime-canvas");
@@ -29,8 +31,26 @@
   const sourceLine = document.getElementById("data-source");
   const buttons = Array.from(document.querySelectorAll("[data-animation]"));
 
-  async function fetchJson(path) {
-    const response = await fetch(path, { cache: "no-store" });
+  function cacheToken(asset) {
+    return (asset && asset.promoted_at) || window.MOONPET_COMMIT_HASH || "dev";
+  }
+
+  function cacheBustedUrl(path, asset) {
+    if (!path) return null;
+    if (!asset || !asset.promoted) return path;
+    const separator = path.includes("?") ? "&" : "?";
+    return `${path}${separator}v=${encodeURIComponent(cacheToken(asset))}`;
+  }
+
+  async function fetchJson(path, options = {}) {
+    const url = options.cacheBust ? cacheBustedUrl(path, options.asset) : path;
+    if (options.logLabel) {
+      console.info(`[Moonpet runtime preview] fetching ${options.logLabel}`, {
+        path,
+        url
+      });
+    }
+    const response = await fetch(url, { cache: "no-store" });
     if (!response.ok) throw new Error(`${path} returned HTTP ${response.status}`);
     return response.json();
   }
@@ -71,6 +91,8 @@
       rejection_reason: (rejected && rejected.reason) || asset.rejection_reason || null,
       sheet_path: (approved && approved.sheet_path) || asset.sheet_path || null,
       atlas_path: (approved && approved.atlas_path) || asset.atlas_path || null,
+      promoted: Boolean((approved && approved.promoted) || asset.promoted),
+      promoted_at: (approved && approved.promoted_at) || asset.promoted_at || null,
       frame_count: Number(asset.frame_count || asset.frameCount || (approved && approved.frame_count) || 0) || null,
       frame_size: Number(asset.frame_size || asset.frameSize || (approved && approved.frame_size) || 0) || null,
       sheet_size: normalizeSize(asset.sheet_size || asset.sheetSize || (approved && approved.sheet_size)),
@@ -146,25 +168,35 @@
     }));
   }
 
-  async function loadImage(path) {
-    if (!path) return null;
+  async function loadImage(path, asset) {
+    if (!path) return { image: null, error: "missing sheet_path", url: null };
+    const url = cacheBustedUrl(path, asset);
+    console.info("[Moonpet runtime preview] fetching sheet", { path, url });
     return new Promise((resolve) => {
       const image = new Image();
-      image.onload = () => resolve(image);
-      image.onerror = () => resolve(null);
-      image.src = path;
+      image.onload = () => resolve({ image, error: null, url });
+      image.onerror = () => resolve({ image: null, error: `${path} failed to load`, url });
+      image.src = url;
     });
   }
 
   async function loadFrames(asset) {
     if (asset.atlas_path) {
       try {
-        const atlas = await fetchJson(asset.atlas_path);
+        const atlas = await fetchJson(asset.atlas_path, {
+          asset,
+          cacheBust: true,
+          logLabel: "atlas"
+        });
         const frames = framesFromAtlas(atlas, asset.frame_size || 256);
-        if (frames.length) return frames;
-      } catch {}
+        if (frames.length) return { frames, error: null };
+        if (asset.promoted) return { frames: [], error: `${asset.atlas_path} did not contain renderable frames` };
+      } catch (error) {
+        if (asset.promoted) return { frames: [], error: error.message };
+      }
     }
-    return inferredFrames(asset);
+    if (asset.promoted) return { frames: [], error: "missing atlas_path for promoted asset" };
+    return { frames: inferredFrames(asset), error: null };
   }
 
   function assetFor(kind) {
@@ -180,6 +212,8 @@
     state.frameIndex = 0;
     state.currentImage = null;
     state.currentFrames = [];
+    state.renderError = null;
+    state.loadError = null;
 
     buttons.forEach((button) => {
       button.classList.toggle("is-active", button.dataset.animation === kind);
@@ -191,14 +225,20 @@
       return;
     }
 
-    state.currentFrames = await loadFrames(asset);
-    state.currentImage = await loadImage(asset.sheet_path);
-    missingMessage.textContent = asset.sheet_path
-      ? ""
-      : "approved metadata found but sprite file missing.";
+    const frameResult = await loadFrames(asset);
+    const imageResult = await loadImage(asset.sheet_path, asset);
+    state.currentFrames = frameResult.frames;
+    state.currentImage = imageResult.image;
+    missingMessage.textContent = "";
     updateDebug(asset, kind);
 
-    if (asset.sheet_path && !state.currentImage) {
+    if (asset.promoted && asset.sheet_path && imageResult.error) {
+      state.loadError = `missing promoted sprite file: ${imageResult.error}`;
+      missingMessage.textContent = state.loadError;
+    } else if (asset.promoted && asset.atlas_path && frameResult.error) {
+      state.loadError = `atlas load error: ${frameResult.error}`;
+      missingMessage.textContent = state.loadError;
+    } else if (!asset.sheet_path) {
       missingMessage.textContent = "approved metadata found but sprite file missing.";
     }
   }
@@ -297,6 +337,27 @@
     ctx.restore();
   }
 
+  function drawRenderError(asset, x, y, size, message) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = "rgba(26, 16, 20, 0.92)";
+    ctx.fillRect(-size / 2, -size / 2, size, size);
+    ctx.strokeStyle = "#ff6370";
+    ctx.lineWidth = 4;
+    ctx.strokeRect(-size / 2 + 14, -size / 2 + 14, size - 28, size - 28);
+    ctx.fillStyle = "#f3f7fb";
+    ctx.font = "bold 18px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText("render unavailable", 0, -18);
+    ctx.fillStyle = "#ffb3ba";
+    ctx.font = "13px system-ui";
+    const clipped = message.length > 36 ? `${message.slice(0, 33)}...` : message;
+    ctx.fillText(clipped, 0, 12);
+    ctx.fillStyle = "#9aa8b8";
+    ctx.fillText(asset ? asset.animation_kind : "missing asset", 0, 40);
+    ctx.restore();
+  }
+
   function drawMoonbot() {
     const asset = assetFor(state.currentKind);
     const frame = state.currentFrames[state.frameIndex] || state.currentFrames[0];
@@ -307,8 +368,16 @@
     ctx.save();
     ctx.shadowColor = "rgba(93, 225, 255, 0.48)";
     ctx.shadowBlur = 24;
-    if (state.currentImage && frame) {
-      ctx.drawImage(state.currentImage, frame.x, frame.y, frame.w, frame.h, x - size / 2, y - size / 2, size, size);
+    if (state.renderError || (asset && asset.promoted && (!state.currentImage || !frame))) {
+      drawRenderError(asset, x, y, size, state.renderError || state.loadError || "promoted asset could not render");
+    } else if (state.currentImage && frame) {
+      try {
+        ctx.drawImage(state.currentImage, frame.x, frame.y, frame.w, frame.h, x - size / 2, y - size / 2, size, size);
+      } catch (error) {
+        state.renderError = error.message;
+        missingMessage.textContent = `render error: ${error.message}`;
+        drawRenderError(asset, x, y, size, error.message);
+      }
     } else {
       drawPlaceholder(asset, x, y + 44, size);
     }
