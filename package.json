@@ -36,6 +36,7 @@
     "moonpet:build-approved-pack": "node scripts/generate-moonpet-assets.js --phase=test --execute --limit 1 --animation iso_idle_down --force-approved --no-resume && node scripts/generate-moonpet-assets.js --phase=test --execute --limit 1 --animation iso_walk_down --force-approved --no-resume && node scripts/generate-moonpet-assets.js --phase=test --execute --limit 1 --animation iso_run_down --force-approved --no-resume && node scripts/promote-moonpet-approved-assets.js",
     "moonpet:contact-sheet": "node scripts/build-moonpet-contact-sheet.js",
     "moonpet:promote": "node scripts/promote-moonpet-approved-assets.js",
+    "moonpet:promote:test": "node scripts/promote-moonpet-approved-assets.test.js",
     "moonpet:sandbox": "node scripts/generate-moonpet-assets.js --dry-run",
     "moonpet:runtime-preview": "node --check js/moonpet-runtime-preview.js"
   },

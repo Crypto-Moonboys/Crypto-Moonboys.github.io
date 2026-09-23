@@ -65,6 +65,8 @@ The promotion script copies only approved sheet/atlas pairs, renames them by `an
 
 Existing promoted files are protected. Use `node scripts/promote-moonpet-approved-assets.js --force` only after explicitly approving an overwrite.
 
+Promotion source paths come from generated manifests, not from the approved registry. The generator writes `generated_sheet_path`, `generated_atlas_path`, `sheet_path_source`, and `atlas_path_source` for downloaded files under `output/moonpets/spritesheets/`. The promotion script checks both `output/manifests/moonpet-animation-sandbox.generated.json` and `output/manifests/moonpet-spritesheets.generated.json`, matching records by `character_name` and `animation_kind`.
+
 GitHub Actions also has a `build-approved-pack` phase. It generates `iso_idle_down`, `iso_walk_down`, and `iso_run_down` from the existing `MOONBOT PET VISOR V1` AutoSprite character, promotes the approved results in the same run, and uploads `output/manifests/`, `output/moonpets/`, `img/moonpets/`, and `data/moonpet-approved-assets.json`.
 
 The `auto_commit_promoted_assets` input defaults to `false`. With the default, the workflow only uploads artifacts. When set to `true`, the workflow commits only `img/moonpets/moonbot-pet-visor-v1/` and `data/moonpet-approved-assets.json` with the message `feat: promote approved Moonbot spritesheets`. It does not commit `output/`, API responses, temporary manifests, API keys, or rejected assets.
@@ -118,6 +120,7 @@ Do not expand beyond this batch until the test outputs have been reviewed.
 - `data/moonpet-traits.json` defines the visual direction, skins, actions, limits, and output folders.
 - `scripts/generate-moonpet-assets.js` creates characters, requests spritesheet jobs, polls jobs, fetches sprite sheet records, downloads PNG/atlas files, and writes manifests.
 - `scripts/promote-moonpet-approved-assets.js` promotes approved generated sheet/atlas files into `img/moonpets/`.
+- `scripts/promote-moonpet-approved-assets.test.js` validates manifest-to-promotion path resolution with a local fixture.
 - `scripts/build-moonpet-contact-sheet.js` builds `output/moonpets/moonpet-contact-sheet.png` from downloaded spritesheet PNG assets where available.
 - `moonpet-animation-sandbox.html` previews approved, rejected, and pending spritesheets without touching the live game runtime.
 - `.github/workflows/moonpet-art-factory.yml` runs manually with `workflow_dispatch`.

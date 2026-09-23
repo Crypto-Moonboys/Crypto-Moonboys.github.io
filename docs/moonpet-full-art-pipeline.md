@@ -62,11 +62,14 @@ The promotion script:
 
 - reads `data/moonpet-approved-assets.json`
 - reads `output/manifests/moonpet-animation-sandbox.generated.json`
+- reads `output/manifests/moonpet-spritesheets.generated.json`
 - copies only approved PNG/atlas pairs into `img/moonpets/moonbot-pet-visor-v1/`
 - renames them by animation kind
 - updates `sheet_path`, `atlas_path`, `promoted`, and `promoted_at`
 - refuses rejected and pending assets
 - refuses overwrites unless `--force` is used after explicit approval
+
+The approved registry stores public destination paths. Temporary generated source paths are resolved from generated manifest fields such as `generated_sheet_path`, `generated_atlas_path`, `sheet_path_source`, and `atlas_path_source`.
 
 ## One-Click Approved Pack Build
 

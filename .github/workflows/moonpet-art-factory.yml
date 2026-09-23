@@ -53,8 +53,10 @@ jobs:
           node --check scripts/generate-moonpet-assets.js
           node --check scripts/build-moonpet-contact-sheet.js
           node --check scripts/promote-moonpet-approved-assets.js
+          node --check scripts/promote-moonpet-approved-assets.test.js
           node --check js/moonpet-animation-sandbox.js
           node --check js/moonpet-runtime-preview.js
+          node scripts/promote-moonpet-approved-assets.test.js
 
       - name: Dry-run Moonpet plan
         run: node scripts/generate-moonpet-assets.js --dry-run ${LIMIT:+--limit "$LIMIT"} ${ANIMATION:+--animation "$ANIMATION"}
