@@ -9,6 +9,7 @@ const MANIFEST_PATH = path.join(REPO_ROOT, "output", "manifests", "moonpet-asset
 const CHARACTER_MANIFEST_PATH = path.join(REPO_ROOT, "output", "manifests", "autosprite-characters.generated.json");
 const JOB_MANIFEST_PATH = path.join(REPO_ROOT, "output", "manifests", "autosprite-jobs.generated.json");
 const SPRITESHEET_MANIFEST_PATH = path.join(REPO_ROOT, "output", "manifests", "moonpet-spritesheets.generated.json");
+const SANDBOX_MANIFEST_PATH = path.join(REPO_ROOT, "output", "manifests", "moonpet-animation-sandbox.generated.json");
 const APPROVED_ASSETS_PATH = path.join(REPO_ROOT, "data", "moonpet-approved-assets.json");
 const ERROR_MANIFEST_PATH = path.join(REPO_ROOT, "output", "manifests", "autosprite-errors.generated.json");
 const RAW_RESPONSE_DIR = path.join(REPO_ROOT, "output", "manifests", "autosprite");
@@ -49,7 +50,8 @@ function parseArgs(argv) {
     debugPayload: false,
     resumeJobs: false,
     animationKind: null,
-    forceApproved: false
+    forceApproved: false,
+    sandboxManifestPath: SANDBOX_MANIFEST_PATH
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -75,6 +77,11 @@ function parseArgs(argv) {
     else if (arg.startsWith("--animation=")) options.animationKind = arg.slice("--animation=".length);
     else if (arg === "--debug-payload") options.debugPayload = true;
     else if (arg === "--force-approved") options.forceApproved = true;
+    else if (arg === "--sandbox-manifest") {
+      const next = argv[index + 1];
+      options.sandboxManifestPath = next && !next.startsWith("--") ? path.resolve(argv[++index]) : SANDBOX_MANIFEST_PATH;
+    }
+    else if (arg.startsWith("--sandbox-manifest=")) options.sandboxManifestPath = path.resolve(arg.slice("--sandbox-manifest=".length));
     else if (arg === "--resume-jobs") {
       options.resumeJobs = true;
       options.execute = true;
@@ -121,6 +128,8 @@ Options:
   --animation <kind>     Override autosprite_test_animations for this run. One animation only.
   --debug-payload        Print sanitized AutoSprite request bodies, never headers.
   --force-approved       Allow overwriting an approved output. Default protects approved files.
+  --sandbox-manifest [path]
+                         Write the animation sandbox manifest. Default output/manifests/moonpet-animation-sandbox.generated.json.
   --resume-jobs          Poll existing job IDs from output/manifests/autosprite-jobs.generated.json.
 `);
 }
@@ -326,12 +335,43 @@ function getApprovedAssets(approvedManifest) {
   return assets.map(normalizeApprovedAsset).filter((asset) => asset && asset.approved === true);
 }
 
+function getRejectedAssets(approvedManifest) {
+  const rejected = Array.isArray(approvedManifest.rejected) ? approvedManifest.rejected : [];
+  return rejected.map((asset) => ({
+    ...asset,
+    character_name: asset.character_name || asset.characterName || null,
+    animation_kind: asset.animation_kind || asset.kind || null,
+    rejected: asset.rejected === true
+  })).filter((asset) => asset.rejected === true);
+}
+
 function findApprovedAssetFor(character, animationKind, approvedAssets) {
   return approvedAssets.find((asset) =>
     asset.approved === true &&
     asset.character_name === character.autospriteName &&
     asset.animation_kind === animationKind
   ) || null;
+}
+
+function findRejectedAssetFor(character, animationKind, rejectedAssets) {
+  return rejectedAssets.find((asset) =>
+    asset.rejected === true &&
+    asset.character_name === character.autospriteName &&
+    asset.animation_kind === animationKind
+  ) || null;
+}
+
+function assertNoRejectedAnimations(characters, rejectedAssets) {
+  for (const character of characters) {
+    for (const animation of character.animations) {
+      const rejected = findRejectedAssetFor(character, animation.kind, rejectedAssets);
+      if (rejected) {
+        throw new Error(
+          `Animation ${animation.kind} is rejected for ${character.autospriteName}: ${rejected.reason || "rejected by Moonpet approved asset registry"}.`
+        );
+      }
+    }
+  }
 }
 
 function applyApprovedLocks(characters, approvedManifest) {
@@ -1004,10 +1044,12 @@ async function run() {
     assets: []
   });
   const approvedAssets = getApprovedAssets(approvedManifest);
+  const rejectedAssets = getRejectedAssets(approvedManifest);
   const characters = applyApprovedLocks(options.resumeJobs
     ? buildResumeJobPlan(jobManifest, traits, options)
     : buildCharacterPlan(traits, options), approvedManifest);
   validateCharacterPrompts(characters);
+  assertNoRejectedAnimations(characters, rejectedAssets);
 
   if (options.resumeJobs && characters.length === 0) {
     throw new Error("No saved AutoSprite jobs found in output/manifests/autosprite-jobs.generated.json.");
@@ -1042,6 +1084,10 @@ async function run() {
       sheet_size: asset.sheet_size || null,
       notes: asset.notes || null
     })),
+    rejectedAssets,
+    rejectedAutoSpriteAnimations: traits.rejected_autosprite_animations || [],
+    approvedBuiltInMovementPack: (traits.autospriteAnimations || []).map((animation) => animation.kind || animation),
+    customPetStateAnimations: traits.custom_pet_state_animations || [],
     plannedCharacters: characters.length,
     gameActionMapping: traits.gameActionMapping,
     characters: characters.map((character) => ({

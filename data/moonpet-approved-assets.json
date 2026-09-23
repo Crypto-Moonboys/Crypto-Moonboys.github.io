@@ -17,6 +17,20 @@
     {
       "local_id": "moonbot_pet_visor_v1",
       "character_name": "MOONBOT PET VISOR V1",
+      "animation_kind": "iso_walk_down",
+      "role": "base_walk",
+      "approved": true,
+      "frame_count": 25,
+      "frame_size": 256,
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "notes": "Approved Moonbot visor walk-down animation. Do not overwrite automatically."
+    },
+    {
+      "local_id": "moonbot_pet_visor_v1",
+      "character_name": "MOONBOT PET VISOR V1",
       "animation_kind": "iso_run_down",
       "role": "base_run",
       "approved": true,
@@ -27,6 +41,17 @@
         "h": 1280
       },
       "notes": "Approved Moonbot visor run-down animation. Do not overwrite automatically."
+    }
+  ],
+  "rejected": [
+    {
+      "local_id": "moonbot_pet_visor_v1",
+      "character_name": "MOONBOT PET VISOR V1",
+      "animation_kind": "attack",
+      "source": "autosprite_builtin",
+      "rejected": true,
+      "reason": "Built-in AutoSprite attack produces side-facing output and does not match the approved isometric Moonbot base set.",
+      "replacement_plan": "Use custom isometric pet-state animations instead of combat attack."
     }
   ]
 }

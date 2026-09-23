@@ -16,7 +16,7 @@ on:
         required: false
         default: ""
       animation:
-        description: "Optional single AutoSprite animation kind, such as iso_walk_down, iso_run_down, or attack."
+        description: "Optional single AutoSprite animation kind, such as iso_walk_down or iso_run_down. Do not use attack for Moonbot."
         required: false
         default: ""
 

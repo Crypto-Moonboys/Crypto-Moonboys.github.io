@@ -76,25 +76,94 @@
   ],
   "autospriteAnimations": [
     {
-      "kind": "idle"
+      "kind": "iso_idle_down"
     },
     {
-      "kind": "walk"
+      "kind": "iso_walk_down"
     },
     {
-      "kind": "run"
-    },
-    {
-      "kind": "attack"
+      "kind": "iso_run_down"
     }
   ],
   "autosprite_test_animations": [
     "iso_walk_down"
   ],
   "autosprite_next_test_animation_queue": [
-    "iso_walk_down",
-    "iso_run_down",
-    "attack"
+    "custom_sleep"
+  ],
+  "rejected_autosprite_animations": [
+    {
+      "character_name": "MOONBOT PET VISOR V1",
+      "animation_kind": "attack",
+      "source": "autosprite_builtin",
+      "reason": "Side-facing output; rejected for the approved isometric Moonbot base pack."
+    }
+  ],
+  "custom_pet_state_animations": [
+    {
+      "id": "sleep",
+      "animation_kind": "custom_sleep",
+      "role": "pet_sleep",
+      "status": "planned",
+      "generation_mode": "custom_isometric_pet_state",
+      "prompt_brief": "Moonbot visor sleeping peacefully in isometric down view, cute pet-state animation, no combat."
+    },
+    {
+      "id": "eat",
+      "animation_kind": "custom_eat",
+      "role": "pet_eat",
+      "status": "planned",
+      "generation_mode": "custom_isometric_pet_state",
+      "prompt_brief": "Moonbot visor eating in isometric down view, cute pet-state animation, no readable text."
+    },
+    {
+      "id": "play",
+      "animation_kind": "custom_play",
+      "role": "pet_play",
+      "status": "planned",
+      "generation_mode": "custom_isometric_pet_state",
+      "prompt_brief": "Moonbot visor playing in isometric down view, cheerful collectible pet animation."
+    },
+    {
+      "id": "clean",
+      "animation_kind": "custom_clean",
+      "role": "pet_clean",
+      "status": "planned",
+      "generation_mode": "custom_isometric_pet_state",
+      "prompt_brief": "Moonbot visor being cleaned or sparkling clean in isometric down view, cute pet-state animation."
+    },
+    {
+      "id": "wave",
+      "animation_kind": "custom_wave",
+      "role": "pet_wave",
+      "status": "planned",
+      "generation_mode": "custom_isometric_pet_state",
+      "prompt_brief": "Moonbot visor waving hello in isometric down view, friendly pet-state animation."
+    },
+    {
+      "id": "sit",
+      "animation_kind": "custom_sit",
+      "role": "pet_sit",
+      "status": "planned",
+      "generation_mode": "custom_isometric_pet_state",
+      "prompt_brief": "Moonbot visor sitting calmly in isometric down view, cute pet-state animation."
+    },
+    {
+      "id": "happy",
+      "animation_kind": "custom_happy",
+      "role": "pet_happy",
+      "status": "planned",
+      "generation_mode": "custom_isometric_pet_state",
+      "prompt_brief": "Moonbot visor happy celebration in isometric down view, cute pet-state animation."
+    },
+    {
+      "id": "sad",
+      "animation_kind": "custom_sad",
+      "role": "pet_sad",
+      "status": "planned",
+      "generation_mode": "custom_isometric_pet_state",
+      "prompt_brief": "Moonbot visor sad gentle pet expression in isometric down view, cute pet-state animation."
+    }
   ],
   "animation_view": "isometric",
   "spritesheetGeneration": {
@@ -111,11 +180,11 @@
     }
   },
   "gameActionMapping": {
-    "eat": "idle with food prop later",
-    "play": "run/walk variation later",
-    "sleep": "separate static asset later",
-    "clean": "separate static asset later",
-    "train": "attack"
+    "eat": "custom_eat planned",
+    "play": "custom_play planned",
+    "sleep": "custom_sleep planned",
+    "clean": "custom_clean planned",
+    "train": "custom pet-state animation later; do not use built-in attack"
   },
   "skins": [
     {
@@ -155,8 +224,9 @@
     "notes": [
       "The initial AutoSprite phase intentionally creates 3 reusable Moonpet characters only.",
       "Request one AutoSprite animation per run for the approved base workflow.",
-      "Generate the next base animations in order: iso_walk_down, iso_run_down, then attack.",
-      "Map game-only actions such as eat, play, sleep, clean, and train later after the spritesheet test is approved.",
+      "Approved built-in movement pack is iso_idle_down, iso_walk_down, and iso_run_down only.",
+      "Do not use built-in attack for Moonbot; it is rejected because it produces side-facing output.",
+      "Custom pet-state animations are planned but must not be generated until explicitly requested.",
       "Do not generate broad trait combinations until a human approves the test batch.",
       "Never commit real API keys or generated secrets."
     ]
