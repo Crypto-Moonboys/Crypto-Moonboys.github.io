@@ -13,6 +13,8 @@ const SANDBOX_MANIFEST_PATH = path.join(REPO_ROOT, "output", "manifests", "moonp
 const APPROVED_ASSETS_PATH = path.join(REPO_ROOT, "data", "moonpet-approved-assets.json");
 const ERROR_MANIFEST_PATH = path.join(REPO_ROOT, "output", "manifests", "autosprite-errors.generated.json");
 const RAW_RESPONSE_DIR = path.join(REPO_ROOT, "output", "manifests", "autosprite");
+const RAW_JOB_DIR = path.join(RAW_RESPONSE_DIR, "jobs");
+const RAW_SPRITESHEET_DIR = path.join(RAW_RESPONSE_DIR, "spritesheets");
 const POLL_ERROR_DIR = path.join(RAW_RESPONSE_DIR, "poll-errors");
 const EXISTING_CHARACTER_PATH = path.join(RAW_RESPONSE_DIR, "existing-character-moonbot-pet.json");
 const SPRITESHEET_OUTPUT_DIR = path.join(REPO_ROOT, "output", "moonpets", "spritesheets");
@@ -33,6 +35,8 @@ const OUTPUT_FOLDERS = [
   "output/moonpets/spritesheets",
   "output/manifests",
   "output/manifests/autosprite",
+  "output/manifests/autosprite/jobs",
+  "output/manifests/autosprite/spritesheets",
   "output/manifests/autosprite/poll-errors"
 ];
 
@@ -587,74 +591,97 @@ function findSucceededSpritesheetId(responseJson, kind) {
   return match && (match.id || match.spriteSheetId || match.spritesheetId);
 }
 
-function collectSpriteSheetIds(value, ids = new Set(), allowDirectId = false) {
-  if (!value) return ids;
-  if (typeof value === "string" || typeof value === "number") {
-    ids.add(String(value));
-    return ids;
-  }
-  if (Array.isArray(value)) {
-    for (const item of value) collectSpriteSheetIds(item, ids, true);
-    return ids;
-  }
-  if (typeof value === "object") {
-    const direct = value.id || value.sprite_sheet_id || value.spritesheet_id || value.spriteSheetId;
-    if (allowDirectId && direct) ids.add(String(direct));
-    for (const key of ["sprite_sheet_ids", "spritesheet_ids", "spriteSheetIds", "sprite_sheets", "spritesheets", "spriteSheets"]) {
-      if (value[key]) collectSpriteSheetIds(value[key], ids, true);
+function valueImpliesSpritesheet(value) {
+  return /sprite[_-]?sheet|spritesheet/i.test(String(value || ""));
+}
+
+function findSpritesheetIds(rawObject) {
+  const ids = new Set();
+  const visit = (value, context = "", implied = false) => {
+    if (value === null || value === undefined) return;
+    if (Array.isArray(value)) {
+      value.forEach((item, index) => visit(item, `${context}[${index}]`, implied || valueImpliesSpritesheet(context)));
+      return;
     }
-    for (const key of ["data", "result", "output", "job"]) {
-      if (value[key]) collectSpriteSheetIds(value[key], ids, false);
+    if (typeof value !== "object") return;
+
+    const objectImpliesSpritesheet = implied ||
+      valueImpliesSpritesheet(context) ||
+      /(^|[.\]])outputs?($|[.\[])/i.test(context) ||
+      valueImpliesSpritesheet(value.type) ||
+      valueImpliesSpritesheet(value.name) ||
+      valueImpliesSpritesheet(value.kind);
+
+    for (const [key, child] of Object.entries(value)) {
+      const childContext = context ? `${context}.${key}` : key;
+      if (["spritesheetId", "spritesheet_id", "spriteSheetId", "sprite_sheet_id"].includes(key) && child) {
+        ids.add(String(child));
+        continue;
+      }
+      if (["spritesheetIds", "spritesheet_ids", "spriteSheetIds", "sprite_sheet_ids"].includes(key)) {
+        if (Array.isArray(child)) {
+          child.forEach((item) => {
+            if (typeof item === "string" || typeof item === "number") ids.add(String(item));
+            else visit(item, childContext, true);
+          });
+        } else if (child) {
+          ids.add(String(child));
+        }
+        continue;
+      }
+      if (key === "id" && objectImpliesSpritesheet && child) {
+        ids.add(String(child));
+        continue;
+      }
+      visit(child, childContext, objectImpliesSpritesheet || valueImpliesSpritesheet(key));
     }
-  }
-  return ids;
+  };
+  visit(rawObject);
+  return Array.from(ids);
 }
 
 function extractSpriteSheetIds(jobJson) {
-  return Array.from(collectSpriteSheetIds(jobJson, new Set(), false));
+  return findSpritesheetIds(jobJson);
 }
 
-function pickUrl(record, names) {
-  const match = pickUrlWithField(record, names);
-  return match ? match.url : null;
+function isUrl(value) {
+  return /^https?:\/\//i.test(String(value || ""));
 }
 
-function pickUrlWithField(record, names, prefix = "") {
-  for (const name of names) {
-    if (record && typeof record[name] === "string") {
-      return { url: record[name], fieldName: prefix ? `${prefix}.${name}` : name };
-    }
+function urlLooksLike(value, extension) {
+  const clean = String(value || "").split("?")[0].toLowerCase();
+  return clean.endsWith(extension);
+}
+
+function collectUrlCandidates(value, candidates = [], context = "") {
+  if (value === null || value === undefined) return candidates;
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => collectUrlCandidates(item, candidates, `${context}[${index}]`));
+    return candidates;
   }
-  for (const container of ["data", "result", "spriteSheet", "spritesheet", "sprite_sheet"]) {
-    if (record && record[container]) {
-      const nested = pickUrlWithField(record[container], names, prefix ? `${prefix}.${container}` : container);
-      if (nested) return nested;
+  if (typeof value !== "object") return candidates;
+
+  for (const [key, child] of Object.entries(value)) {
+    const childContext = context ? `${context}.${key}` : key;
+    if (typeof child === "string" && isUrl(child)) {
+      const lowerKey = key.toLowerCase();
+      const candidate = { url: child, fieldName: childContext };
+      if (["sheeturl", "sheet_url", "pngurl", "png_url", "imageurl", "image_url"].includes(lowerKey) || (lowerKey === "url" && urlLooksLike(child, ".png"))) {
+        candidates.push({ ...candidate, kind: "png", extension: "png" });
+      }
+      if (["atlasurl", "atlas_url", "jsonurl", "json_url", "metadataurl", "metadata_url"].includes(lowerKey) || (lowerKey === "url" && urlLooksLike(child, ".json"))) {
+        candidates.push({ ...candidate, kind: "atlas", extension: "json" });
+      }
     }
+    collectUrlCandidates(child, candidates, childContext);
   }
-  return null;
+  return candidates;
 }
 
 function extractDownloadTargets(spriteSheetRecord) {
-  const pngMatch = pickUrlWithField(spriteSheetRecord, [
-    "sheetUrl",
-    "sheet_url",
-    "pngUrl",
-    "png_url",
-    "image_url",
-    "imageUrl",
-    "spritesheet_url",
-    "spriteSheetUrl",
-    "url"
-  ]);
-  const atlasMatch = pickUrlWithField(spriteSheetRecord, [
-    "atlasUrl",
-    "atlas_url",
-    "jsonUrl",
-    "json_url",
-    "metadata_url",
-    "metadataUrl"
-  ]);
-
+  const candidates = collectUrlCandidates(spriteSheetRecord);
+  const pngMatch = candidates.find((candidate) => candidate.kind === "png");
+  const atlasMatch = candidates.find((candidate) => candidate.kind === "atlas");
   return [
     pngMatch && { kind: "png", url: pngMatch.url, fieldName: pngMatch.fieldName, extension: "png" },
     atlasMatch && { kind: "atlas", url: atlasMatch.url, fieldName: atlasMatch.fieldName, extension: "json" }
@@ -886,6 +913,48 @@ async function saveRawResponse(rawResponses, step, character, responseBody) {
   rawResponses.push(path.relative(REPO_ROOT, filePath).replace(/\\/g, "/"));
 }
 
+async function saveSucceededJobResponse(jobId, responseBody) {
+  const filePath = path.join(RAW_JOB_DIR, `${slug(jobId)}-succeeded.json`);
+  await writeJson(filePath, {
+    capturedAt: new Date().toISOString(),
+    jobId,
+    response: responseBody
+  });
+  return path.relative(REPO_ROOT, filePath).replace(/\\/g, "/");
+}
+
+async function saveSpriteSheetResponse(spriteSheetId, responseBody) {
+  const filePath = path.join(RAW_SPRITESHEET_DIR, `${slug(spriteSheetId)}.json`);
+  await writeJson(filePath, {
+    capturedAt: new Date().toISOString(),
+    spriteSheetId,
+    response: responseBody
+  });
+  return path.relative(REPO_ROOT, filePath).replace(/\\/g, "/");
+}
+
+function collectObjects(value, objects = []) {
+  if (!value) return objects;
+  if (Array.isArray(value)) {
+    value.forEach((item) => collectObjects(item, objects));
+    return objects;
+  }
+  if (typeof value === "object") {
+    objects.push(value);
+    Object.values(value).forEach((item) => collectObjects(item, objects));
+  }
+  return objects;
+}
+
+function candidateSpriteSheetRecords(value, kind) {
+  return collectObjects(value)
+    .filter((record) => {
+      const recordKind = record.kind || record.animation_kind || record.animationKind;
+      const kindMatches = !kind || !recordKind || recordKind === kind;
+      return kindMatches && extractDownloadTargets(record).length > 0;
+    });
+}
+
 async function savePollError({ character, jobId, endpoint, attempt, error }) {
   const fileName = `${String(attempt).padStart(3, "0")}-${slug(character.id)}-${slug(jobId)}.json`;
   const filePath = path.join(POLL_ERROR_DIR, fileName);
@@ -1011,6 +1080,15 @@ async function downloadFile(url, filePath) {
   }
   await fs.mkdir(path.dirname(filePath), { recursive: true });
   await fs.writeFile(filePath, Buffer.from(await response.arrayBuffer()));
+}
+
+async function assertDownloadedAsset(filePath, kind) {
+  const stats = await fs.stat(filePath);
+  const minBytes = kind === "png" ? 10 * 1024 : 100;
+  if (stats.size <= minBytes) {
+    throw new Error(`Downloaded ${kind} is too small at ${path.relative(REPO_ROOT, filePath).replace(/\\/g, "/")} (${stats.size} bytes, expected > ${minBytes}).`);
+  }
+  return stats.size;
 }
 
 function pollDelayMs(pollCount) {
@@ -1479,6 +1557,7 @@ async function run() {
       }
 
       const allSpriteSheetIds = [];
+      const directSpriteSheetRecords = [];
       const failedWorkflowPolls = [];
 
       for (const jobRecord of jobRecords) {
@@ -1515,14 +1594,30 @@ async function run() {
           continue;
         }
 
-        const spriteSheetIds = extractSpriteSheetIds(pollResult.job);
-        if (spriteSheetIds.length === 0) {
+        const succeededJobPath = await saveSucceededJobResponse(jobRecord.jobId, pollResult.job);
+        console.log(`[${character.id}] saved succeeded job response=${succeededJobPath}`);
+        let spriteSheetIds = extractSpriteSheetIds(pollResult.job);
+        directSpriteSheetRecords.push(...candidateSpriteSheetRecords(pollResult.job, jobRecord.kind).map((record) => ({ spriteSheetId: record.id || record.spriteSheetId || record.spritesheetId || `${jobRecord.jobId}-${jobRecord.kind}`, jobRecord, spriteSheetRecord: record, source: "job_response" })));
+        if (spriteSheetIds.length === 0 && characterRecord.characterId) {
+          const spritesheetsList = await requestAutoSprite({
+            method: "GET",
+            urlPath: `/characters/${encodeURIComponent(characterRecord.characterId)}/spritesheets`,
+            apiKey,
+            options,
+            rawResponses,
+            step: `list-character-spritesheets-after-succeeded-${jobRecord.kind}`,
+            character
+          });
+          spriteSheetIds = extractSpriteSheetIds(spritesheetsList);
+          directSpriteSheetRecords.push(...candidateSpriteSheetRecords(spritesheetsList, jobRecord.kind).map((record) => ({ spriteSheetId: record.id || record.spriteSheetId || record.spritesheetId || `${jobRecord.jobId}-${jobRecord.kind}`, jobRecord, spriteSheetRecord: record, source: "character_spritesheets" })));
+        }
+        if (spriteSheetIds.length === 0 && directSpriteSheetRecords.length === 0) {
           failedWorkflowPolls.push({
             jobRecord,
             pollResult: {
               ...pollResult,
               status: "job_poll_failed",
-              error: `AutoSprite job ${jobRecord.jobId} succeeded but no sprite sheet IDs were found.`
+              error: `AutoSprite job ${jobRecord.jobId} succeeded but no sprite sheet IDs or direct sheet/atlas URLs were found.`
             }
           });
           continue;
@@ -1551,8 +1646,13 @@ async function run() {
         await writeJson(MANIFEST_PATH, { ...planManifest, rawResponses });
       }
 
-      for (const { spriteSheetId, jobRecord } of allSpriteSheetIds) {
-        const spriteSheetRecord = await withRetries(
+      const spriteSheetWork = [
+        ...directSpriteSheetRecords,
+        ...allSpriteSheetIds.map(({ spriteSheetId, jobRecord }) => ({ spriteSheetId, jobRecord, spriteSheetRecord: null, source: "spritesheet_id" }))
+      ];
+
+      for (const { spriteSheetId, jobRecord, spriteSheetRecord: directRecord, source } of spriteSheetWork) {
+        const spriteSheetRecord = directRecord || await withRetries(
           `AutoSprite fetch spritesheet ${spriteSheetId}`,
           maxRetries,
           retryBaseDelayMs,
@@ -1566,6 +1666,8 @@ async function run() {
             character
           })
         );
+        const rawSpriteSheetPath = await saveSpriteSheetResponse(spriteSheetId, spriteSheetRecord);
+        console.log(`[${character.id}] saved spritesheet record=${rawSpriteSheetPath} source=${source}`);
 
         const downloads = [];
         const downloadTargets = extractDownloadTargets(spriteSheetRecord);
@@ -1575,6 +1677,7 @@ async function run() {
         console.log(`[${character.id}] sheet URL field=${sheetTarget ? sheetTarget.fieldName : "missing"}`);
         console.log(`[${character.id}] atlas URL field=${atlasTarget ? atlasTarget.fieldName : "missing"}`);
         if (!sheetTarget || !atlasTarget) {
+          const candidateUrls = collectUrlCandidates(spriteSheetRecord);
           const rawPath = path.join(RAW_RESPONSE_DIR, `${slug(character.id)}-${slug(jobRecord.kind)}-${slug(spriteSheetId)}-missing-download-urls.json`);
           await writeJson(rawPath, {
             capturedAt: new Date().toISOString(),
@@ -1589,9 +1692,11 @@ async function run() {
               sheet: !sheetTarget,
               atlas: !atlasTarget
             },
+            spritesheetRecordKeys: spriteSheetRecord && typeof spriteSheetRecord === "object" ? Object.keys(spriteSheetRecord) : [],
+            candidateUrls,
             record: spriteSheetRecord
           });
-          throw new Error(`AutoSprite spritesheet ${spriteSheetId} for ${jobRecord.kind} did not include both sheet and atlas download URLs. Raw record saved to ${path.relative(REPO_ROOT, rawPath).replace(/\\/g, "/")}.`);
+          throw new Error(`AutoSprite spritesheet ${spriteSheetId} for ${jobRecord.kind} did not include both sheet and atlas download URLs. jobId=${jobRecord.jobId}; spritesheetIds=${allSpriteSheetIds.map((entry) => entry.spriteSheetId).join(",") || "none"}; keys=${spriteSheetRecord && typeof spriteSheetRecord === "object" ? Object.keys(spriteSheetRecord).join(",") : "none"}; candidateUrls=${candidateUrls.map((entry) => `${entry.kind}:${entry.fieldName}`).join(",") || "none"}; raw record saved to ${path.relative(REPO_ROOT, rawPath).replace(/\\/g, "/")}.`);
         }
         for (const target of [sheetTarget, atlasTarget]) {
           const filePath = stableGeneratedFilePath(character, jobRecord.kind, target.extension);
@@ -1613,11 +1718,13 @@ async function run() {
             retryBaseDelayMs,
             () => downloadFile(target.url, filePath)
           );
+          const bytes = await assertDownloadedAsset(filePath, target.kind);
           downloads.push({
             kind: target.kind,
             url: target.url,
             fieldName: target.fieldName,
-            path: path.relative(REPO_ROOT, filePath).replace(/\\/g, "/")
+            path: path.relative(REPO_ROOT, filePath).replace(/\\/g, "/"),
+            bytes
           });
           console.log(`[${character.id}] saved local ${target.kind === "png" ? "PNG" : "atlas"} path=${path.relative(REPO_ROOT, filePath).replace(/\\/g, "/")}`);
         }
@@ -1734,7 +1841,15 @@ async function run() {
   }
 }
 
-run().catch((error) => {
-  console.error(error.message);
-  process.exitCode = 1;
-});
+if (require.main === module) {
+  run().catch((error) => {
+    console.error(error.message);
+    process.exitCode = 1;
+  });
+}
+
+module.exports = {
+  findSpritesheetIds,
+  extractDownloadTargets,
+  collectUrlCandidates
+};

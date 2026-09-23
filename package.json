@@ -37,6 +37,7 @@
     "moonpet:contact-sheet": "node scripts/build-moonpet-contact-sheet.js",
     "moonpet:promote": "node scripts/promote-moonpet-approved-assets.js",
     "moonpet:promote:test": "node scripts/promote-moonpet-approved-assets.test.js",
+    "moonpet:extract:test": "node scripts/generate-moonpet-assets-extraction.test.js",
     "moonpet:sandbox": "node scripts/generate-moonpet-assets.js --dry-run",
     "moonpet:runtime-preview": "node --check js/moonpet-runtime-preview.js"
   },
