@@ -708,6 +708,50 @@ function computeSheetSize(frameCount, frameSize) {
   return { w: columns * size, h: rows * size };
 }
 
+function buildLocalAtlas({ frameCount, frameSize, sheetSize, durationS = 2.042 }) {
+  const count = Number(frameCount) || 25;
+  const size = Number(frameSize) || 256;
+  const resolvedSheetSize = sheetSize || computeSheetSize(count, size) || { w: 1280, h: 1280 };
+  const columns = Math.max(1, Math.floor(resolvedSheetSize.w / size) || Math.ceil(Math.sqrt(count)));
+  const rows = Math.ceil(count / columns);
+  const frames = {};
+
+  for (let index = 0; index < count; index += 1) {
+    frames[String(index)] = {
+      x: (index % columns) * size,
+      y: Math.floor(index / columns) * size,
+      w: size,
+      h: size,
+      duration: 1
+    };
+  }
+
+  return {
+    frames,
+    meta: {
+      size: {
+        w: resolvedSheetSize.w || columns * size,
+        h: resolvedSheetSize.h || rows * size
+      },
+      frame_size: {
+        w: size,
+        h: size
+      },
+      duration_s: durationS,
+      atlas_source: "generated_local"
+    }
+  };
+}
+
+async function writeLocalAtlas(filePath, { character, approvedAsset }) {
+  const frameCount = character.spritesheetSettings.frameCount || (approvedAsset && approvedAsset.frame_count) || 25;
+  const frameSize = character.spritesheetSettings.frameSize || (approvedAsset && approvedAsset.frame_size) || 256;
+  const sheetSize = (approvedAsset && approvedAsset.sheet_size) || computeSheetSize(frameCount, frameSize);
+  const atlas = buildLocalAtlas({ frameCount, frameSize, sheetSize });
+  await writeJson(filePath, atlas);
+  return atlas;
+}
+
 function getManifestSheetPaths(downloads) {
   const sheet = downloads.find((download) => download.kind === "png" || download.kind === "sheet");
   const atlas = downloads.find((download) => download.kind === "atlas");
@@ -1676,7 +1720,7 @@ async function run() {
         console.log(`[${character.id}] completed spritesheet id=${spriteSheetId} kind=${jobRecord.kind}`);
         console.log(`[${character.id}] sheet URL field=${sheetTarget ? sheetTarget.fieldName : "missing"}`);
         console.log(`[${character.id}] atlas URL field=${atlasTarget ? atlasTarget.fieldName : "missing"}`);
-        if (!sheetTarget || !atlasTarget) {
+        if (!sheetTarget) {
           const candidateUrls = collectUrlCandidates(spriteSheetRecord);
           const rawPath = path.join(RAW_RESPONSE_DIR, `${slug(character.id)}-${slug(jobRecord.kind)}-${slug(spriteSheetId)}-missing-download-urls.json`);
           await writeJson(rawPath, {
@@ -1696,9 +1740,9 @@ async function run() {
             candidateUrls,
             record: spriteSheetRecord
           });
-          throw new Error(`AutoSprite spritesheet ${spriteSheetId} for ${jobRecord.kind} did not include both sheet and atlas download URLs. jobId=${jobRecord.jobId}; spritesheetIds=${allSpriteSheetIds.map((entry) => entry.spriteSheetId).join(",") || "none"}; keys=${spriteSheetRecord && typeof spriteSheetRecord === "object" ? Object.keys(spriteSheetRecord).join(",") : "none"}; candidateUrls=${candidateUrls.map((entry) => `${entry.kind}:${entry.fieldName}`).join(",") || "none"}; raw record saved to ${path.relative(REPO_ROOT, rawPath).replace(/\\/g, "/")}.`);
+          throw new Error(`AutoSprite spritesheet ${spriteSheetId} for ${jobRecord.kind} did not include a sheet PNG download URL. jobId=${jobRecord.jobId}; spritesheetIds=${allSpriteSheetIds.map((entry) => entry.spriteSheetId).join(",") || "none"}; keys=${spriteSheetRecord && typeof spriteSheetRecord === "object" ? Object.keys(spriteSheetRecord).join(",") : "none"}; candidateUrls=${candidateUrls.map((entry) => `${entry.kind}:${entry.fieldName}`).join(",") || "none"}; raw record saved to ${path.relative(REPO_ROOT, rawPath).replace(/\\/g, "/")}.`);
         }
-        for (const target of [sheetTarget, atlasTarget]) {
+        for (const target of [sheetTarget, atlasTarget].filter(Boolean)) {
           const filePath = stableGeneratedFilePath(character, jobRecord.kind, target.extension);
           const approvedAsset = findApprovedAssetFor(character, jobRecord.kind, approvedAssets);
           if (approvedAsset && !options.forceApproved) {
@@ -1727,6 +1771,22 @@ async function run() {
             bytes
           });
           console.log(`[${character.id}] saved local ${target.kind === "png" ? "PNG" : "atlas"} path=${path.relative(REPO_ROOT, filePath).replace(/\\/g, "/")}`);
+        }
+        if (!atlasTarget) {
+          const approvedAsset = findApprovedAssetFor(character, jobRecord.kind, approvedAssets);
+          const atlasPath = stableGeneratedFilePath(character, jobRecord.kind, "json");
+          await writeLocalAtlas(atlasPath, { character, approvedAsset });
+          const bytes = await assertDownloadedAsset(atlasPath, "atlas");
+          downloads.push({
+            kind: "atlas",
+            url: null,
+            fieldName: "generated_local",
+            path: path.relative(REPO_ROOT, atlasPath).replace(/\\/g, "/"),
+            bytes,
+            generatedLocal: true
+          });
+          console.log(`[${character.id}] Atlas URL missing; generated local atlas for ${jobRecord.kind}`);
+          console.log(`[${character.id}] saved local atlas path=${path.relative(REPO_ROOT, atlasPath).replace(/\\/g, "/")}`);
         }
 
         const manifestEntry = buildSpriteSheetManifestEntry({
@@ -1851,5 +1911,6 @@ if (require.main === module) {
 module.exports = {
   findSpritesheetIds,
   extractDownloadTargets,
-  collectUrlCandidates
+  collectUrlCandidates,
+  buildLocalAtlas
 };

@@ -4,6 +4,7 @@ const fs = require("node:fs/promises");
 const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
+const { buildLocalAtlas } = require("./generate-moonpet-assets.js");
 
 const REPO_ROOT = path.resolve(__dirname, "..");
 
@@ -19,7 +20,11 @@ async function main() {
   const atlasPath = path.join(generatedDir, "fixture-atlas.json");
   await fs.mkdir(generatedDir, { recursive: true });
   await fs.writeFile(sheetPath, "fixture-png");
-  await fs.writeFile(atlasPath, JSON.stringify({ frames: [] }));
+  await fs.writeFile(atlasPath, JSON.stringify(buildLocalAtlas({
+    frameCount: 25,
+    frameSize: 256,
+    sheetSize: { w: 1280, h: 1280 }
+  }), null, 2));
 
   const registryPath = path.join(tempRoot, "moonpet-approved-assets.json");
   const sandboxPath = path.join(tempRoot, "moonpet-animation-sandbox.generated.json");
