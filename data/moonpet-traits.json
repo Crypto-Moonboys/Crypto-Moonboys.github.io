@@ -89,7 +89,12 @@
     }
   ],
   "autosprite_test_animations": [
-    "iso_idle_down"
+    "iso_walk_down"
+  ],
+  "autosprite_next_test_animation_queue": [
+    "iso_walk_down",
+    "iso_run_down",
+    "attack"
   ],
   "animation_view": "isometric",
   "spritesheetGeneration": {
@@ -149,7 +154,8 @@
     "batchLimit": 3,
     "notes": [
       "The initial AutoSprite phase intentionally creates 3 reusable Moonpet characters only.",
-      "Request only AutoSprite-supported animations for now: idle, walk, run, attack.",
+      "Request one AutoSprite animation per run for the approved base workflow.",
+      "Generate the next base animations in order: iso_walk_down, iso_run_down, then attack.",
       "Map game-only actions such as eat, play, sleep, clean, and train later after the spritesheet test is approved.",
       "Do not generate broad trait combinations until a human approves the test batch.",
       "Never commit real API keys or generated secrets."
