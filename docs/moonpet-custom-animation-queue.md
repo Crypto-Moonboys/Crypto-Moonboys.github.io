@@ -96,3 +96,5 @@ The custom queue does not:
 - Enable approved sprites by default.
 
 The next step, when explicitly requested, is to generate one custom animation at a time and review it through the sandbox before approval.
+
+The first enabled generation lane is documented in [Moonpet Custom Animation Generation](moonpet-custom-animation-generation.md).

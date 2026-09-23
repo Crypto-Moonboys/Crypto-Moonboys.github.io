@@ -14,7 +14,7 @@
   "items": [
     {
       "id": "custom_sleep",
-      "role": "pet_sleep",
+      "role": "custom_sleep",
       "display_name": "Moonbot Sleep",
       "source_character_name": "MOONBOT PET VISOR V1",
       "status": "planned",

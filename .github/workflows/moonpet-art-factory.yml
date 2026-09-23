@@ -13,6 +13,7 @@ on:
           - test
           - promote-approved
           - build-approved-pack
+          - generate-custom-animation
       limit:
         description: "Optional max character count. Leave blank for the existing Moonbot base character."
         required: false
@@ -21,6 +22,10 @@ on:
         description: "Optional single AutoSprite animation kind, such as iso_walk_down or iso_run_down. Do not use attack for Moonbot."
         required: false
         default: ""
+      custom_animation_id:
+        description: "Custom animation queue id. For now only custom_sleep is enabled."
+        required: false
+        default: "custom_sleep"
       auto_commit_promoted_assets:
         description: "Commit promoted public Moonbot assets and approved registry after build-approved-pack."
         required: true
@@ -55,10 +60,14 @@ jobs:
           node --check scripts/build-moonpet-contact-sheet.js
           node --check scripts/promote-moonpet-approved-assets.js
           node --check scripts/promote-moonpet-approved-assets.test.js
+          node --check scripts/generate-moonpet-custom-animation.js
+          node --check scripts/generate-moonpet-custom-animation.test.js
+          node --check scripts/promote-moonpet-custom-animation.js
           node --check js/moonpet-animation-sandbox.js
           node --check js/moonpet-runtime-preview.js
           node scripts/generate-moonpet-assets-extraction.test.js
           node scripts/promote-moonpet-approved-assets.test.js
+          node scripts/generate-moonpet-custom-animation.test.js
 
       - name: Dry-run Moonpet plan
         run: node scripts/generate-moonpet-assets.js --dry-run ${LIMIT:+--limit "$LIMIT"} ${ANIMATION:+--animation "$ANIMATION"}
@@ -91,6 +100,15 @@ jobs:
         if: ${{ inputs.phase == 'promote-approved' }}
         run: node scripts/promote-moonpet-approved-assets.js
 
+      - name: Generate custom Moonpet animation
+        if: ${{ inputs.phase == 'generate-custom-animation' }}
+        timeout-minutes: 30
+        run: |
+          npm run moonpet:custom-queue:check
+          node scripts/generate-moonpet-custom-animation.js --id "$CUSTOM_ANIMATION_ID" --execute
+        env:
+          CUSTOM_ANIMATION_ID: ${{ inputs.custom_animation_id }}
+
       - name: Commit promoted Moonpet assets
         if: ${{ inputs.phase == 'build-approved-pack' && inputs.auto_commit_promoted_assets }}
         run: |
@@ -114,4 +132,5 @@ jobs:
             output/manifests/
             img/moonpets/
             data/moonpet-approved-assets.json
+            data/moonpet-custom-animation-queue.json
           if-no-files-found: warn
