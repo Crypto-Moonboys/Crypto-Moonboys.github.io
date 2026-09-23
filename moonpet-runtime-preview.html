@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Moonpet Runtime Preview</title>
+    <link rel="stylesheet" href="css/moonpet-runtime-preview.css">
+    <script src="js/moonpet-runtime-preview.js" defer></script>
+  </head>
+  <body>
+    <main class="runtime-shell">
+      <header class="runtime-header">
+        <div>
+          <p class="eyebrow">Preview-only Moonpet runtime</p>
+          <h1>Moonbot Runtime Preview</h1>
+        </div>
+        <p id="data-source" class="source-line">Loading approved assets...</p>
+      </header>
+
+      <section class="runtime-layout">
+        <div class="scene-panel" aria-label="Cyber rooftop runtime preview">
+          <canvas id="runtime-canvas" width="960" height="540"></canvas>
+          <p id="missing-message" class="missing-message" role="status"></p>
+        </div>
+
+        <aside class="control-panel" aria-label="Moonbot runtime controls">
+          <div class="button-row">
+            <button type="button" data-animation="iso_idle_down">Idle</button>
+            <button type="button" data-animation="iso_walk_down">Walk</button>
+            <button type="button" data-animation="iso_run_down">Run</button>
+          </div>
+
+          <dl class="debug-list">
+            <dt>animation_kind</dt>
+            <dd id="debug-animation">none</dd>
+            <dt>role</dt>
+            <dd id="debug-role">none</dd>
+            <dt>approved</dt>
+            <dd id="debug-approved">false</dd>
+            <dt>frame count</dt>
+            <dd id="debug-frame-count">none</dd>
+            <dt>frame size</dt>
+            <dd id="debug-frame-size">none</dd>
+            <dt>sheet path</dt>
+            <dd id="debug-sheet-path">none</dd>
+            <dt>atlas path</dt>
+            <dd id="debug-atlas-path">none</dd>
+          </dl>
+
+          <p class="runtime-note">
+            This page is isolated from the live Moonpet game. Built-in attack is rejected and unavailable here.
+          </p>
+        </aside>
+      </section>
+    </main>
+  </body>
+</html>
