@@ -34,7 +34,7 @@ For the current base test, `use_existing_autosprite_character` is enabled. The g
 
 ## Initial Batch
 
-The first approved batch is intentionally small: 3 reusable AutoSprite characters. The first test animation is `idle` only via `autosprite_test_animations`; do not request `walk`, `run`, or `attack` until idle works end to end.
+The first approved batch is intentionally small: 3 reusable AutoSprite characters. The first test animation uses the documented isometric kind `iso_idle_down` via `autosprite_test_animations`; this avoids the side-scroller `idle` mode while keeping the test to one animation.
 
 Skins:
 
@@ -44,7 +44,7 @@ Skins:
 
 First requested AutoSprite animation:
 
-- `idle`
+- `iso_idle_down`
 
 Later AutoSprite animations:
 

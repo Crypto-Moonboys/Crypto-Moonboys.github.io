@@ -89,8 +89,9 @@
     }
   ],
   "autosprite_test_animations": [
-    "idle"
+    "iso_idle_down"
   ],
+  "animation_view": "isometric",
   "spritesheetGeneration": {
     "test": {
       "videoTier": "turbo",
