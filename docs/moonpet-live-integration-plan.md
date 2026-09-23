@@ -1,6 +1,6 @@
 # Moonpet Live Integration Plan
 
-This plan describes how to bring the approved Moonbot spritesheets into the live Moonpet game without replacing the current game runtime yet.
+This plan describes how to bring the approved Moonbot spritesheets into the live Moonpet game without replacing the current game runtime.
 
 ## 1. Current Pipeline Summary
 
@@ -11,7 +11,7 @@ The Moonpet Art Factory now has a working controlled asset pipeline:
 - Approved promoted assets are copied into `img/moonpets/moonbot-pet-visor-v1/`.
 - `data/moonpet-approved-assets.json` is the approval registry and public asset source of truth.
 - `moonpet-runtime-preview.html` proves the approved spritesheets can animate in a game-like scene.
-- The live Moonpet game has not been changed.
+- The live Moonpet game now has a feature-flagged adapter path that defaults off and falls back to the existing procedural renderer.
 
 Generated `output/` assets are temporary build artifacts. Approved game-ready files must be promoted into `img/moonpets/` before any runtime integration uses them.
 
@@ -42,11 +42,12 @@ Combat-style built-in animations should not be promoted into the Moonbot base pa
 
 ## 4. Integration Strategy
 
-Live integration should happen behind a feature flag.
+Live integration happens behind a feature flag.
 
 Required approach:
 
-- Add a Moonpet approved asset loader for `data/moonpet-approved-assets.json`.
+- Add a Moonpet approved asset loader for `data/moonpet-approved-assets.json`. Done in `js/moonpet-approved-asset-loader.js`.
+- Add a renderer adapter. Done in `js/moonpet-approved-sprite-renderer.js`.
 - Keep the feature flag off by default.
 - Preserve the existing canvas game and procedural Moonpet renderer.
 - Load approved sprites only when the flag is explicitly enabled.
@@ -57,10 +58,16 @@ Required approach:
 Recommended feature flag shape:
 
 ```js
-const MOONPET_APPROVED_SPRITES_ENABLED = false;
+window.MOONPET_USE_APPROVED_SPRITES = false;
 ```
 
-The flag can later be wired to a query parameter, local development toggle, or staged rollout mechanism, but the initial default must remain off.
+Testing override:
+
+```text
+?approvedSprites=1
+```
+
+Default production behaviour remains unchanged unless the flag is explicitly enabled.
 
 ## 5. Risk Checklist
 
@@ -73,19 +80,23 @@ The flag can later be wired to a query parameter, local development toggle, or s
 - Confirm sprite loading is static-site compatible.
 - Confirm atlas parsing handles the current 25-frame, 256px, 1280x1280 format.
 - Confirm cache behavior does not trap stale sprites after promotion.
+- Confirm the live game does not load approved sprite adapter scripts when the flag is off.
 
 ## 6. Test Checklist
 
 Before enabling the flag anywhere:
 
 - Open the live game with the feature flag off and verify the current game behaves unchanged.
-- Open the live game with the feature flag on in a controlled preview branch or local run.
+- Open the live game with `?approvedSprites=1` in a controlled local or staged run.
 - Verify idle animation renders from `iso_idle_down`.
 - Verify walking state can map to `iso_walk_down`.
 - Verify faster movement can map to `iso_run_down`.
 - Verify missing PNG or JSON files fall back to the procedural renderer.
 - Verify rejected `attack` is never selected.
 - Verify no console errors appear during normal startup.
+- Verify console logs show `approved sprite mode disabled` when the flag is off.
+- Verify console logs show `approved sprite mode enabled` when `?approvedSprites=1` is present.
+- Verify console logs show `approved sprite fallback used` when adapter loading or rendering fails.
 - Verify mobile viewport still renders correctly.
 - Verify save/state logic is unaffected.
 
@@ -93,40 +104,44 @@ Before enabling the flag anywhere:
 
 Rollback must be simple:
 
-- Turn the feature flag off.
+- Remove `?approvedSprites=1` or set `window.MOONPET_USE_APPROVED_SPRITES = false`.
 - The game should immediately use the existing procedural renderer.
-- If needed, revert only the sprite adapter and loader wiring.
+- If needed, revert only the guarded adapter wiring in `js/moonpet-mini-app.js`.
+- The dynamic loader means `moonpet-game.html` does not need a script rollback for this integration.
 - Keep promoted assets and registry data in place; they are inert while the flag is off.
 - Do not delete approved art assets during rollback unless the registry itself is proven corrupt.
 
 ## 8. Files That May Be Touched Later
 
-Only in a controlled follow-up:
+Touched for the current guarded integration:
 
 - `js/moonpet-approved-asset-loader.js`
 - `js/moonpet-mini-app.js`
+- `js/moonpet-approved-sprite-renderer.js`
+
+Only in a future controlled follow-up:
+
 - `css/moonpet-mini-app.css`, only if needed for layout or debug presentation
 
 The first implementation should prefer adding a separate loader/adapter file and making the smallest possible guarded connection to the live game.
 
 ## 9. Files That Must Not Be Touched Yet
 
-Do not touch in this planning task:
+Do not touch unless a later integration specifically requires it:
 
 - `moonpet-game.html`
 
-The live HTML entry point should remain unchanged until the adapter has been proven preview-only.
+The current integration dynamically loads adapter scripts from `js/moonpet-mini-app.js` only when the flag is enabled, so the live HTML entry point remains unchanged.
 
 ## 10. Next Implementation Step
 
-Add a feature-flagged sprite renderer adapter, preview-only first.
+Verify the feature-flagged live path locally and in a controlled staging pass.
 
-The adapter should:
+The live path should:
 
-- Read approved promoted assets from `data/moonpet-approved-assets.json`.
-- Filter to `approved: true`, `promoted: true`, and non-rejected records.
-- Load PNG and atlas data for idle, walk, and run.
-- Expose a small renderer interface that can draw a selected animation frame onto an existing canvas context.
-- Return a clear failure state so the live game can keep using the procedural renderer.
+- Keep the flag off by default.
+- Use `?approvedSprites=1` for explicit testing.
+- Draw approved idle, walk, and run sprites only when `renderApprovedMoonpet(...)` returns `true`.
+- Keep procedural drawing as the fallback for every failed or disabled case.
 
-Only after that adapter works in isolation should `js/moonpet-mini-app.js` be touched in a controlled follow-up.
+Only after this guarded path is verified should any broader live art replacement be considered.

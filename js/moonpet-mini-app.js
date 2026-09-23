@@ -9,6 +9,11 @@
   var state = null;
   var renderedPetId = null;
   var renderedPetName = '';
+  var approvedSpriteModeEnabled = moonpetApprovedSpritesRequested();
+  var approvedSpriteRendererReady = false;
+  var approvedSpriteRendererState = null;
+  var approvedSpriteFallbackLogged = false;
+  window.MOONPET_USE_APPROVED_SPRITES = approvedSpriteModeEnabled;
   var seasonSnapshotReceivedAt = 0;
   var lastSeasonServerRefreshAt = 0;
   var seasonRefreshBusy = false;
@@ -106,6 +111,59 @@
       if (value) return String(value);
     }
     return '';
+  }
+
+  function moonpetApprovedSpritesRequested() {
+    if (window.MOONPET_USE_APPROVED_SPRITES === true) return true;
+    return launchParameter('approvedSprites') === '1';
+  }
+
+  function loadApprovedSpriteScript(src) {
+    return new Promise(function (resolve, reject) {
+      var existing = document.querySelector('script[src="' + src + '"]');
+      if (existing) {
+        if (existing.dataset.loaded === 'true') resolve();
+        else existing.addEventListener('load', resolve, { once: true });
+        existing.addEventListener('error', function () { reject(new Error(src + ' failed to load')); }, { once: true });
+        return;
+      }
+      var script = document.createElement('script');
+      script.src = src;
+      script.async = false;
+      script.dataset.approvedSpriteAdapter = 'true';
+      script.onload = function () {
+        script.dataset.loaded = 'true';
+        resolve();
+      };
+      script.onerror = function () {
+        reject(new Error(src + ' failed to load'));
+      };
+      document.head.appendChild(script);
+    });
+  }
+
+  async function initApprovedSpriteMode() {
+    if (!approvedSpriteModeEnabled) {
+      console.info('[Moonpet] approved sprite mode disabled');
+      return false;
+    }
+    console.info('[Moonpet] approved sprite mode enabled');
+    try {
+      await loadApprovedSpriteScript('/js/moonpet-approved-asset-loader.js?v=20260923-approved-sprites');
+      await loadApprovedSpriteScript('/js/moonpet-approved-sprite-renderer.js?v=20260923-approved-sprites');
+      if (!window.MoonpetApprovedSpriteRenderer) throw new Error('MoonpetApprovedSpriteRenderer unavailable');
+      approvedSpriteRendererState = await window.MoonpetApprovedSpriteRenderer.initApprovedMoonpetSpriteRenderer();
+      approvedSpriteRendererReady = Boolean(approvedSpriteRendererState && approvedSpriteRendererState.ready);
+      if (!approvedSpriteRendererReady) {
+        console.info('[Moonpet] approved sprite fallback used', approvedSpriteRendererState);
+      }
+      return approvedSpriteRendererReady;
+    } catch (error) {
+      approvedSpriteRendererReady = false;
+      approvedSpriteRendererState = { reason: error.message, errors: [error.message] };
+      console.info('[Moonpet] approved sprite fallback used', approvedSpriteRendererState);
+      return false;
+    }
   }
 
   function refreshTelegramContext() {
@@ -3070,6 +3128,24 @@
     if (active) drawPixelText('SIGNAL!', 160, eggY - 58, '#f4ff65', 'center');
   }
 
+  function approvedSpriteRoleForMode(active) {
+    if (!active) return 'base_idle';
+    if (animationMode === 'travel') return 'base_run';
+    if (animationMode === 'blocked' || animationMode === 'sleep') return 'base_idle';
+    return 'base_walk';
+  }
+
+  function drawApprovedMoonpetSprite(time, role, x, y, scale) {
+    if (!approvedSpriteModeEnabled || !approvedSpriteRendererReady || !window.MoonpetApprovedSpriteRenderer) return false;
+    var drew = window.MoonpetApprovedSpriteRenderer.renderApprovedMoonpet(ctx, role, x, y, scale, time);
+    if (!drew && !approvedSpriteFallbackLogged) {
+      approvedSpriteFallbackLogged = true;
+      approvedSpriteRendererState = window.MoonpetApprovedSpriteRenderer.getApprovedMoonpetSpriteRendererState();
+      console.info('[Moonpet] approved sprite fallback used', approvedSpriteRendererState);
+    }
+    return drew;
+  }
+
   function drawPet(time, presence, combat) {
     var pet = state && state.pet;
     var lifecycle = state && state.lifecycle || {};
@@ -3097,6 +3173,17 @@
     var faceX = petFaceOffset(speciesId);
     var x = 160 + pose.x + (combat && combat.active ? -62 : 0);
     var y = 150 + pose.y + growth.offsetY;
+    if (drawApprovedMoonpetSprite(renderTime, approvedSpriteRoleForMode(active), x, y - 8, scale * 0.52)) {
+      if (!active && mood !== 'curious' && !lifecycleCeremonyActive(time)) drawPixelText(mood.toUpperCase(), x, y - 78 * scale, mood === 'hurt' ? '#ff6d6d' : palette.accent, 'center');
+      if ((!combat || !combat.active) && !lifecycleCeremonyActive(time)) {
+        if (rareName) drawPixelText(rareName.toUpperCase(), x, 70, palette.accent, 'center');
+        else if (lifecycle.species_name) drawPixelText(lifecycle.species_name.toUpperCase(), x, 78, palette.accent, 'center');
+      }
+      drawCompanionHabitEffects(time, x, y, presence, palette.accent, active);
+      drawActionEffects(time, x, y, active);
+      if (active && animationLabel && !lifecycleCeremonyActive(time)) drawPixelText('[' + animationLabel + ']', 160, 211, animationMode === 'blocked' ? '#ff6d6d' : '#f4ff65', 'center');
+      return;
+    }
     ctx.save();
     ctx.translate(x, y);
     ctx.scale(growth.scaleX * pose.squashX * combatScale * ceremonyScale, growth.scaleY * pose.squashY * combatScale * ceremonyScale);
@@ -3650,6 +3737,7 @@
       }
       clock.textContent = now.toISOString().slice(11, 19) + ' UTC';
     }, 1000);
+    await initApprovedSpriteMode();
     requestAnimationFrame(frame);
     await typeBoot(['MOONPET BIOS 0.9', 'CHECKING TELEGRAM SIGNATURE...', 'CONNECTING TO D1 MEMORY CORE...'], { speed: 10, hold: 180 });
     await restoreBrowserAuth();
