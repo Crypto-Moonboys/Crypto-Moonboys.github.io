@@ -30,11 +30,26 @@ AutoSprite character prompts must be 600 characters or less. The generator build
 
 AutoSprite character names are versioned with `style_version` from `data/moonpet-traits.json`, currently `28Bit V1`, while local IDs such as `default_white_moonpet` stay unchanged. If AutoSprite returns `409 DUPLICATE_CHARACTER`, the script does not retry the same name; it writes the conflict response to `output/manifests/autosprite-errors.generated.json` and suggests the next version name, such as `28Bit V2`.
 
-For the current base test, `use_existing_autosprite_character` is enabled. The generator lists `GET /api/v1/characters?limit=50`, finds the exact character name `MOONBOT PET`, saves the matched record to `output/manifests/autosprite/existing-character-moonbot-pet.json`, and uses that character ID instead of calling `POST /characters`. If `MOONBOT PET` is not found, the run fails clearly and does not create a replacement.
+For the current base workflow, `use_existing_autosprite_character` is enabled. The generator lists `GET /api/v1/characters?limit=50`, finds the exact character name `MOONBOT PET VISOR V1`, saves the matched record to `output/manifests/autosprite/existing-character-moonbot-pet.json`, and uses that character ID instead of calling `POST /characters`. If `MOONBOT PET VISOR V1` is not found, the run fails clearly and does not create a replacement.
+
+## Approved Assets
+
+Approved Moonpet outputs are tracked in `data/moonpet-approved-assets.json`. This registry is the source of truth for outputs that must not be overwritten automatically.
+
+The first approved baseline is:
+
+- `character_name`: `MOONBOT PET VISOR V1`
+- `animation_kind`: `iso_idle_down`
+- `role`: `base_idle`
+- `frame_count`: `25`
+- `frame_size`: `256`
+- `sheet_size`: `1280x1280`
+
+Before downloading a sheet or atlas, the generator checks the registry for the same `character_name` and `animation_kind`. If an approved output exists, the default behavior is to skip the write and log `approved output exists; skipping overwrite`. Use `--force-approved` only when intentionally replacing an approved asset after review.
 
 ## Initial Batch
 
-The first approved batch is intentionally small: 3 reusable AutoSprite characters. The first test animation uses the documented isometric kind `iso_idle_down` via `autosprite_test_animations`; this avoids the side-scroller `idle` mode while keeping the test to one animation.
+The base animation workflow is intentionally small and advances one animation at a time. The approved first animation uses the documented isometric kind `iso_idle_down`; this avoids the side-scroller `idle` mode while keeping the test to one animation.
 
 Skins:
 
@@ -42,14 +57,14 @@ Skins:
 - `starcap_moonbot`
 - `street_graff_moonbot`
 
-First requested AutoSprite animation:
+Approved AutoSprite animation:
 
 - `iso_idle_down`
 
-Later AutoSprite animations:
+Next AutoSprite generation order:
 
-- `walk`
-- `run`
+- `iso_walk_down`
+- `iso_run_down`
 - `attack`
 
 Game action mapping comes later:
@@ -89,12 +104,22 @@ The script uses resume mode by default. Existing character IDs and job IDs in th
 Optional flags:
 
 - `--limit <n>` caps the character count. Use `--limit 1` for a single-character smoke run.
+- `--animation <kind>` overrides `autosprite_test_animations` for one run. Use this to generate exactly one next animation.
 - `--rate-limit-ms <n>` overrides the delay between character pipelines.
 - `--poll-interval-ms <n>` is legacy; job polling now waits 5s, 10s, 15s, then every 20s.
 - `--poll-timeout-ms <n>` overrides the max time to wait for one spritesheet job.
 - `--no-resume` creates fresh characters/jobs instead of reusing saved IDs.
 - `--resume-jobs` reads `output/manifests/autosprite-jobs.generated.json` and polls existing job IDs again without creating new characters or jobs.
 - `--debug-payload` prints sanitized AutoSprite request bodies only. It never prints request headers or `AUTOSPRITE_API_KEY`.
+- `--force-approved` allows an approved registry entry to be overwritten. Default behavior protects approved outputs.
+
+Next animation examples:
+
+```bash
+AUTOSPRITE_API_KEY=replace_me node scripts/generate-moonpet-assets.js --phase=test --execute --limit 1 --animation iso_walk_down
+AUTOSPRITE_API_KEY=replace_me node scripts/generate-moonpet-assets.js --phase=test --execute --limit 1 --animation iso_run_down
+AUTOSPRITE_API_KEY=replace_me node scripts/generate-moonpet-assets.js --phase=test --execute --limit 1 --animation attack
+```
 
 Failed AutoSprite HTTP responses are summarized in the logs and saved to `output/manifests/autosprite-errors.generated.json`.
 
@@ -114,7 +139,7 @@ node scripts/build-moonpet-contact-sheet.js
 
 ## GitHub Actions
 
-The manual workflow defaults to `phase=dry-run`, so it will only build prompts and a manifest. To create the 3 real AutoSprite characters and request their spritesheets, manually run the workflow with `phase=test`. The workflow reads `AUTOSPRITE_API_KEY` from GitHub Actions secrets and never prints it.
+The manual workflow defaults to `phase=dry-run`, so it will only build prompts and a manifest. To request a real spritesheet, manually run the workflow with `phase=test`, `limit=1`, and optionally `animation=iso_walk_down`, `animation=iso_run_down`, or `animation=attack`. The workflow reads `AUTOSPRITE_API_KEY` from GitHub Actions secrets and never prints it.
 
 ## Safety Rules
 

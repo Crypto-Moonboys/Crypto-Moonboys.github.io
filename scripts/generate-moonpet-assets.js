@@ -9,6 +9,7 @@ const MANIFEST_PATH = path.join(REPO_ROOT, "output", "manifests", "moonpet-asset
 const CHARACTER_MANIFEST_PATH = path.join(REPO_ROOT, "output", "manifests", "autosprite-characters.generated.json");
 const JOB_MANIFEST_PATH = path.join(REPO_ROOT, "output", "manifests", "autosprite-jobs.generated.json");
 const SPRITESHEET_MANIFEST_PATH = path.join(REPO_ROOT, "output", "manifests", "moonpet-spritesheets.generated.json");
+const APPROVED_ASSETS_PATH = path.join(REPO_ROOT, "data", "moonpet-approved-assets.json");
 const ERROR_MANIFEST_PATH = path.join(REPO_ROOT, "output", "manifests", "autosprite-errors.generated.json");
 const RAW_RESPONSE_DIR = path.join(REPO_ROOT, "output", "manifests", "autosprite");
 const POLL_ERROR_DIR = path.join(RAW_RESPONSE_DIR, "poll-errors");
@@ -46,7 +47,9 @@ function parseArgs(argv) {
     pollTimeoutMs: 10 * 60 * 1000,
     traitsPath: TRAITS_PATH,
     debugPayload: false,
-    resumeJobs: false
+    resumeJobs: false,
+    animationKind: null,
+    forceApproved: false
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -68,7 +71,10 @@ function parseArgs(argv) {
     else if (arg === "--poll-timeout-ms") options.pollTimeoutMs = Number(argv[++index]);
     else if (arg.startsWith("--poll-timeout-ms=")) options.pollTimeoutMs = Number(arg.slice("--poll-timeout-ms=".length));
     else if (arg === "--traits") options.traitsPath = path.resolve(argv[++index]);
+    else if (arg === "--animation") options.animationKind = argv[++index] || null;
+    else if (arg.startsWith("--animation=")) options.animationKind = arg.slice("--animation=".length);
     else if (arg === "--debug-payload") options.debugPayload = true;
+    else if (arg === "--force-approved") options.forceApproved = true;
     else if (arg === "--resume-jobs") {
       options.resumeJobs = true;
       options.execute = true;
@@ -112,7 +118,9 @@ Options:
   --poll-interval-ms <n> Legacy option; polling now uses 5s, 10s, 15s, then 20s.
   --poll-timeout-ms <n>  Max time to poll one spritesheet job. Default 600000.
   --traits <path>        Alternate moonpet trait JSON path.
+  --animation <kind>     Override autosprite_test_animations for this run. One animation only.
   --debug-payload        Print sanitized AutoSprite request bodies, never headers.
+  --force-approved       Allow overwriting an approved output. Default protects approved files.
   --resume-jobs          Poll existing job IDs from output/manifests/autosprite-jobs.generated.json.
 `);
 }
@@ -196,7 +204,10 @@ function validateCharacterPrompt(character) {
   }
 }
 
-function getSpriteSheetAnimations(traits) {
+function getSpriteSheetAnimations(traits, options = {}) {
+  if (options.animationKind) {
+    return [{ kind: options.animationKind }];
+  }
   if (Array.isArray(traits.autosprite_test_animations) && traits.autosprite_test_animations.length > 0) {
     return traits.autosprite_test_animations.map((animation) => ({ kind: animation.kind || animation }));
   }
@@ -207,11 +218,17 @@ function getSpriteSheetAnimations(traits) {
 }
 
 function buildCharacterPlan(traits, options) {
-  const animations = getSpriteSheetAnimations(traits);
+  const animations = getSpriteSheetAnimations(traits, options);
+  if (animations.length !== 1) {
+    throw new Error("Moonpet base tests must request exactly one animation per run. Use --animation KIND to override.");
+  }
   const spritesheetSettings = traits.spritesheetGeneration && traits.spritesheetGeneration.test
     ? traits.spritesheetGeneration.test
     : { videoTier: "turbo", frameCount: 25, frameSize: 256, removeBg: "ultra" };
-  const skins = traits.skins.filter((skin) => options.phase === "dry-run" || skin.phase === options.phase);
+  const phaseSkins = traits.skins.filter((skin) => options.phase === "dry-run" || skin.phase === options.phase);
+  const skins = traits.use_existing_autosprite_character
+    ? phaseSkins.filter((skin) => skin.id === "default_white_moonpet")
+    : phaseSkins;
   const characters = skins.map((skin) => {
     const prompt = buildCompressedPrompt(skin);
     const usesExistingCharacter = Boolean(traits.use_existing_autosprite_character && skin.id === "default_white_moonpet");
@@ -263,7 +280,7 @@ function buildResumeJobPlan(jobManifest, traits, options) {
       prompt,
       localDescription: skin.description || "Resumed AutoSprite spritesheet job.",
       promptLength: prompt.length,
-      animations: (job.animations || getSpriteSheetAnimations(traits)).map((animation) =>
+      animations: (options.animationKind ? [{ kind: options.animationKind }] : job.animations || getSpriteSheetAnimations(traits, options)).map((animation) =>
         typeof animation === "string" ? { kind: animation } : animation
       ),
       spritesheetSettings,
@@ -273,6 +290,73 @@ function buildResumeJobPlan(jobManifest, traits, options) {
       workflowKind: job.kind,
       videoId: job.videoId,
       resumeJobOnly: true
+    };
+  });
+}
+
+function approvedAssetKey(localId, kind, role) {
+  return `${localId}::${kind}::${role}`;
+}
+
+function normalizeApprovedAsset(asset) {
+  const animationKind = asset.animation_kind || asset.kind || null;
+  const localId = asset.local_id || asset.localId || null;
+  return {
+    ...asset,
+    localId,
+    local_id: localId,
+    characterName: asset.character_name || asset.characterName || asset.autospriteName || null,
+    character_name: asset.character_name || asset.characterName || asset.autospriteName || null,
+    sourceCharacterName: asset.source_character_name || asset.sourceCharacterName || asset.character_name || asset.characterName || asset.autospriteName || null,
+    source_character_name: asset.source_character_name || asset.sourceCharacterName || asset.character_name || asset.characterName || asset.autospriteName || null,
+    animationKind,
+    animation_kind: animationKind,
+    kind: animationKind,
+    frameCount: asset.frame_count || asset.frameCount || null,
+    frame_count: asset.frame_count || asset.frameCount || null,
+    frameSize: asset.frame_size || asset.frameSize || null,
+    frame_size: asset.frame_size || asset.frameSize || null,
+    sheetSize: asset.sheet_size || asset.sheetSize || null,
+    sheet_size: asset.sheet_size || asset.sheetSize || null
+  };
+}
+
+function getApprovedAssets(approvedManifest) {
+  const assets = Array.isArray(approvedManifest.assets) ? approvedManifest.assets : [];
+  return assets.map(normalizeApprovedAsset).filter((asset) => asset && asset.approved === true);
+}
+
+function findApprovedAssetFor(character, animationKind, approvedAssets) {
+  return approvedAssets.find((asset) =>
+    asset.approved === true &&
+    asset.character_name === character.autospriteName &&
+    asset.animation_kind === animationKind
+  ) || null;
+}
+
+function applyApprovedLocks(characters, approvedManifest) {
+  const approvedAssets = getApprovedAssets(approvedManifest);
+  if (approvedAssets.length === 0) return characters;
+
+  return characters.map((character) => {
+    const requestedKinds = character.animations.map((animation) => animation.kind);
+    const approvedOutputs = approvedAssets.filter((asset) => asset.character_name === character.autospriteName);
+    const approvedRequested = requestedKinds
+      .map((kind) => findApprovedAssetFor(character, kind, approvedAssets))
+      .filter(Boolean);
+    const allRequestedApproved = requestedKinds.length > 0 && approvedRequested.length === requestedKinds.length;
+
+    return {
+      ...character,
+      approvedOutputs,
+      approved: allRequestedApproved,
+      role: allRequestedApproved ? approvedRequested[0].role : character.role,
+      approvedKind: allRequestedApproved ? approvedRequested[0].animation_kind : null,
+      approvedManifestKey: allRequestedApproved
+        ? approvedAssetKey(approvedRequested[0].local_id, approvedRequested[0].animation_kind, approvedRequested[0].role)
+        : null,
+      skipGeneration: allRequestedApproved,
+      skipReason: allRequestedApproved ? "approved_output_locked" : null
     };
   });
 }
@@ -528,6 +612,56 @@ function extractDownloadTargets(spriteSheetRecord) {
     pngUrl && { kind: "png", url: pngUrl, extension: "png" },
     atlasUrl && { kind: "atlas", url: atlasUrl, extension: atlasUrl.toLowerCase().includes(".json") ? "json" : "atlas" }
   ].filter(Boolean);
+}
+
+function computeSheetSize(frameCount, frameSize) {
+  const count = Number(frameCount);
+  const size = Number(frameSize);
+  if (!Number.isFinite(count) || count <= 0 || !Number.isFinite(size) || size <= 0) return null;
+  const columns = Math.ceil(Math.sqrt(count));
+  const rows = Math.ceil(count / columns);
+  return { w: columns * size, h: rows * size };
+}
+
+function getManifestSheetPaths(downloads) {
+  const sheet = downloads.find((download) => download.kind === "png" || download.kind === "sheet");
+  const atlas = downloads.find((download) => download.kind === "atlas");
+  return {
+    sheet_path: sheet ? sheet.path : null,
+    atlas_path: atlas ? atlas.path : null
+  };
+}
+
+function buildSpriteSheetManifestEntry({ character, characterRecord, jobRecord, spriteSheetId, downloads, spriteSheetRecord, approvedAsset }) {
+  const paths = getManifestSheetPaths(downloads);
+  const frameCount = character.spritesheetSettings.frameCount || (approvedAsset && approvedAsset.frame_count) || null;
+  const frameSize = character.spritesheetSettings.frameSize || (approvedAsset && approvedAsset.frame_size) || null;
+  return {
+    localId: character.id,
+    local_id: approvedAsset ? approvedAsset.local_id : character.id,
+    name: character.name,
+    character_name: character.autospriteName,
+    source_character_name: characterRecord.autospriteName || character.autospriteName,
+    autospriteName: character.autospriteName,
+    skin: character.skin,
+    characterId: characterRecord.characterId,
+    jobId: jobRecord.jobId,
+    autosprite_job_id: jobRecord.jobId,
+    kind: jobRecord.kind,
+    animation_kind: jobRecord.kind,
+    spriteSheetId,
+    autosprite_spritesheet_id: spriteSheetId,
+    approved: approvedAsset ? approvedAsset.approved === true : false,
+    role: approvedAsset ? approvedAsset.role || null : null,
+    sheet_path: paths.sheet_path,
+    atlas_path: paths.atlas_path,
+    frame_count: frameCount,
+    frame_size: frameSize,
+    sheet_size: approvedAsset && approvedAsset.sheet_size ? approvedAsset.sheet_size : computeSheetSize(frameCount, frameSize),
+    created_at: new Date().toISOString(),
+    downloads,
+    record: spriteSheetRecord
+  };
 }
 
 async function saveRawResponse(rawResponses, step, character, responseBody) {
@@ -839,7 +973,10 @@ async function writeErrorManifest(errors) {
 async function run() {
   const options = parseArgs(process.argv.slice(2));
   const traits = JSON.parse(await fs.readFile(options.traitsPath, "utf8"));
-  const spriteSheetAnimationKinds = getSpriteSheetAnimations(traits).map((animation) => animation.kind);
+  const spriteSheetAnimationKinds = getSpriteSheetAnimations(traits, options).map((animation) => animation.kind);
+  if (spriteSheetAnimationKinds.length !== 1) {
+    throw new Error("Moonpet base generation is limited to one animation per run.");
+  }
   const rateLimitMs = options.rateLimitMs ?? traits.generation.rateLimitMs;
   const maxRetries = traits.generation.maxRetries;
   const retryBaseDelayMs = traits.generation.retryBaseDelayMs;
@@ -863,9 +1000,13 @@ async function run() {
     provider: "AutoSprite",
     jobs: []
   });
-  const characters = options.resumeJobs
+  const approvedManifest = await readJsonIfExists(APPROVED_ASSETS_PATH, {
+    assets: []
+  });
+  const approvedAssets = getApprovedAssets(approvedManifest);
+  const characters = applyApprovedLocks(options.resumeJobs
     ? buildResumeJobPlan(jobManifest, traits, options)
-    : buildCharacterPlan(traits, options);
+    : buildCharacterPlan(traits, options), approvedManifest);
   validateCharacterPrompts(characters);
 
   if (options.resumeJobs && characters.length === 0) {
@@ -883,10 +1024,24 @@ async function run() {
     dryRun: options.dryRun,
     resume: options.resume,
     resumeJobs: options.resumeJobs,
+    animationOverride: options.animationKind,
+    forceApproved: options.forceApproved,
     useExistingAutoSpriteCharacter: traits.use_existing_autosprite_character,
     existingAutoSpriteCharacterName: traits.existing_autosprite_character_name,
     workflow: "characters -> spritesheets job -> poll job -> fetch spritesheet records -> download png/atlas",
     animations: spriteSheetAnimationKinds,
+    approvedAssets: approvedAssets.map((asset) => ({
+      local_id: asset.local_id,
+      character_name: asset.character_name,
+      source_character_name: asset.source_character_name,
+      animation_kind: asset.animation_kind,
+      role: asset.role || null,
+      approved: asset.approved === true,
+      frame_count: asset.frame_count,
+      frame_size: asset.frame_size,
+      sheet_size: asset.sheet_size || null,
+      notes: asset.notes || null
+    })),
     plannedCharacters: characters.length,
     gameActionMapping: traits.gameActionMapping,
     characters: characters.map((character) => ({
@@ -898,6 +1053,22 @@ async function run() {
       promptLength: character.promptLength,
       localDescription: character.localDescription,
       animations: character.animations,
+      character_name: character.autospriteName,
+      source_character_name: character.autospriteName,
+      animation_kind: character.animations[0] ? character.animations[0].kind : null,
+      approved: character.approved === true,
+      role: character.role || null,
+      sheet_path: null,
+      atlas_path: null,
+      frame_count: character.spritesheetSettings.frameCount || null,
+      frame_size: character.spritesheetSettings.frameSize || null,
+      sheet_size: computeSheetSize(character.spritesheetSettings.frameCount, character.spritesheetSettings.frameSize),
+      created_at: null,
+      autosprite_job_id: null,
+      autosprite_spritesheet_id: null,
+      approvedOutputs: character.approvedOutputs || [],
+      skipGeneration: character.skipGeneration === true,
+      skipReason: character.skipReason || null,
       status: options.dryRun ? "dry_run" : "planned"
     })),
     rawResponses
@@ -915,7 +1086,8 @@ async function run() {
         }
         console.log(`[debug-payload] ${character.id} create-spritesheets ${JSON.stringify(buildCreateSpritesheetBody(character))}`);
       }
-      console.log(`[dry-run] local_id=${character.id}, autospriteName="${character.autospriteName}", promptLength=${character.promptLength}, request animations ${spriteSheetAnimationKinds.join(", ")}`);
+      const approvalStatus = character.approved ? `, approved=true, role=${character.role}, skipGeneration=${character.skipGeneration}` : "";
+      console.log(`[dry-run] local_id=${character.id}, autospriteName="${character.autospriteName}", promptLength=${character.promptLength}, request animations ${spriteSheetAnimationKinds.join(", ")}${approvalStatus}`);
     }
     await writeJson(MANIFEST_PATH, planManifest);
     console.log(`Manifest written to ${path.relative(REPO_ROOT, MANIFEST_PATH).replace(/\\/g, "/")}`);
@@ -925,6 +1097,35 @@ async function run() {
   for (const [index, character] of characters.entries()) {
     console.log(`[${index + 1}/${characters.length}] character ${character.id}`);
     try {
+      if (character.skipGeneration) {
+        console.log(`[${character.id}] skip ${character.skipReason}`);
+        planManifest.characters = planManifest.characters.map((entry) =>
+          entry.id === character.id
+            ? {
+                ...entry,
+                status: "approved_locked",
+                approved: true,
+                role: character.role,
+                character_name: character.autospriteName,
+                source_character_name: character.autospriteName,
+                animation_kind: character.approvedKind,
+                sheet_path: null,
+                atlas_path: null,
+                frame_count: character.approvedOutputs && character.approvedOutputs[0] ? character.approvedOutputs[0].frame_count : null,
+                frame_size: character.approvedOutputs && character.approvedOutputs[0] ? character.approvedOutputs[0].frame_size : null,
+                sheet_size: character.approvedOutputs && character.approvedOutputs[0] ? character.approvedOutputs[0].sheet_size : null,
+                created_at: new Date().toISOString(),
+                autosprite_job_id: null,
+                autosprite_spritesheet_id: null,
+                skipGeneration: true,
+                skipReason: character.skipReason
+              }
+            : entry
+        );
+        await writeJson(MANIFEST_PATH, { ...planManifest, rawResponses });
+        continue;
+      }
+
       let characterRecord = await resolveExistingAutoSpriteCharacter({
         traits,
         character,
@@ -1137,6 +1338,18 @@ async function run() {
         for (const target of extractDownloadTargets(spriteSheetRecord)) {
           const fileName = `${character.id}-${slug(spriteSheetId)}.${target.extension}`;
           const filePath = path.join(SPRITESHEET_OUTPUT_DIR, character.id, fileName);
+          const approvedAsset = findApprovedAssetFor(character, jobRecord.kind, approvedAssets);
+          if (approvedAsset && !options.forceApproved) {
+            console.log(`[${character.id}] approved output exists; skipping overwrite for ${character.autospriteName} ${jobRecord.kind} ${target.kind}`);
+            downloads.push({
+              kind: target.kind,
+              url: target.url,
+              path: path.relative(REPO_ROOT, filePath).replace(/\\/g, "/"),
+              skipped: true,
+              skipReason: "approved_output_exists"
+            });
+            continue;
+          }
           await withRetries(
             `Download ${target.kind} ${spriteSheetId}`,
             maxRetries,
@@ -1150,23 +1363,27 @@ async function run() {
           });
         }
 
-        spritesheetManifest.spriteSheets.push({
-          localId: character.id,
-          name: character.name,
-          autospriteName: character.autospriteName,
-          skin: character.skin,
-          characterId: characterRecord.characterId,
-          jobId: jobRecord.jobId,
-          kind: jobRecord.kind,
+        spritesheetManifest.spriteSheets.push(buildSpriteSheetManifestEntry({
+          character,
+          characterRecord,
+          jobRecord,
           spriteSheetId,
           downloads,
-          record: spriteSheetRecord
-        });
+          spriteSheetRecord,
+          approvedAsset: findApprovedAssetFor(character, jobRecord.kind, approvedAssets)
+        }));
       }
 
       planManifest.characters = planManifest.characters.map((entry) =>
         entry.id === character.id
-          ? { ...entry, status: allSpriteSheetIds.length > 0 && failedWorkflowPolls.length === 0 ? "generated" : entry.status, characterId: characterRecord.characterId, workflows: jobRecords, spriteSheetIds: allSpriteSheetIds.map((entry) => entry.spriteSheetId) }
+          ? {
+              ...entry,
+              ...(spritesheetManifest.spriteSheets.find((spriteSheet) => spriteSheet.localId === character.id) || {}),
+              status: allSpriteSheetIds.length > 0 && failedWorkflowPolls.length === 0 ? "generated" : entry.status,
+              characterId: characterRecord.characterId,
+              workflows: jobRecords,
+              spriteSheetIds: allSpriteSheetIds.map((entry) => entry.spriteSheetId)
+            }
           : entry
       );
       await writeJson(SPRITESHEET_MANIFEST_PATH, spritesheetManifest);

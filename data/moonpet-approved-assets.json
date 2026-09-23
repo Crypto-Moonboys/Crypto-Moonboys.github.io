@@ -1,0 +1,18 @@
+{
+  "assets": [
+    {
+      "local_id": "moonbot_pet_visor_v1",
+      "character_name": "MOONBOT PET VISOR V1",
+      "animation_kind": "iso_idle_down",
+      "role": "base_idle",
+      "approved": true,
+      "frame_count": 25,
+      "frame_size": 256,
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "notes": "First approved Moonbot visor base idle. Do not overwrite automatically."
+    }
+  ]
+}

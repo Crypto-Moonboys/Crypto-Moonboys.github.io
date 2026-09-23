@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       phase:
-        description: "Generation phase. Use dry-run by default; choose test for the 3 character AutoSprite batch."
+        description: "Generation phase. Use dry-run by default; choose test for the existing Moonbot base animation."
         required: true
         default: "dry-run"
         type: choice
@@ -12,7 +12,11 @@ on:
           - dry-run
           - test
       limit:
-        description: "Optional max asset count. Leave blank for the full approved test batch."
+        description: "Optional max character count. Leave blank for the existing Moonbot base character."
+        required: false
+        default: ""
+      animation:
+        description: "Optional single AutoSprite animation kind, such as iso_walk_down, iso_run_down, or attack."
         required: false
         default: ""
 
@@ -43,16 +47,18 @@ jobs:
           node --check scripts/build-moonpet-contact-sheet.js
 
       - name: Dry-run Moonpet plan
-        run: node scripts/generate-moonpet-assets.js --dry-run ${LIMIT:+--limit "$LIMIT"}
+        run: node scripts/generate-moonpet-assets.js --dry-run ${LIMIT:+--limit "$LIMIT"} ${ANIMATION:+--animation "$ANIMATION"}
         env:
           LIMIT: ${{ inputs.limit }}
+          ANIMATION: ${{ inputs.animation }}
 
       - name: Generate Moonpet test batch
         if: ${{ inputs.phase == 'test' }}
         timeout-minutes: 20
-        run: node scripts/generate-moonpet-assets.js --phase=test --execute ${LIMIT:+--limit "$LIMIT"}
+        run: node scripts/generate-moonpet-assets.js --phase=test --execute ${LIMIT:+--limit "$LIMIT"} ${ANIMATION:+--animation "$ANIMATION"}
         env:
           LIMIT: ${{ inputs.limit }}
+          ANIMATION: ${{ inputs.animation }}
 
       - name: Build Moonpet contact sheet
         if: ${{ inputs.phase == 'test' }}
