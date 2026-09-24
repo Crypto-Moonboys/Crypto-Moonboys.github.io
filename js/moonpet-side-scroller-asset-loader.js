@@ -1,7 +1,7 @@
 (() => {
   const DEFAULT_REGISTRY_PATH = "data/moonpet-side-scroller-approved-assets.json";
   const DEFAULT_WEARABLE_TRAITS_PATH = "data/moonpet-wearable-traits.json";
-  const CACHE_VERSION = "20260924-side-sprites-runtime-v13";
+  const CACHE_VERSION = "20260924-side-sprites-runtime-v14";
   const PRIORITY_ROLES = new Set(["side_idle", "side_walk", "side_run"]);
 
   function cacheToken(asset) {

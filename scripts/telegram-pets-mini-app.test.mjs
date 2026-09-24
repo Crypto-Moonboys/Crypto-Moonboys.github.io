@@ -1353,7 +1353,7 @@ assert.match(worker, /counts\.district_mission/);
 assert.match(client, /DAILY MISSION BUFFER \/\/ /);
 assert.match(client, /meter\('DAILY CLEAR', missionPercent\)/);
 assert.match(html, /id="utility-layer"/);
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260924-side-sprites-runtime-v13/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260924-side-sprites-runtime-v14/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractFunctionSource(client, 'guideMarkup');
@@ -1447,7 +1447,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260924-side-sprites-runtime-v13/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260924-side-sprites-runtime-v14/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -1858,13 +1858,36 @@ assert.deepEqual(wearableTraits.loadout_slots, ['head', 'face', 'chest', 'back',
 const productionCap = wearableTraits.traits.find((trait) => trait.id === 'neon_borough_cap');
 assert.ok(productionCap, 'wearable config must include the fitted Neon Borough Cap');
 assert.equal(productionCap.status, 'production_beta', 'fitted cap must be promoted as a production beta trait');
-assert.deepEqual(productionCap.supported_roles, ['side_front_point', 'side_front_wave', 'side_idle', 'side_walk', 'side_run'], 'first fitted cap proof must stay scoped to its five reviewed roles');
+const promotedRuntimeRoles = sideScrollerRegistry.assets
+  .filter((asset) => asset.approved === true && asset.promoted === true)
+  .map((asset) => asset.role);
+assert.equal(promotedRuntimeRoles.length, 24, 'runtime registry must retain all 24 promoted Moonbot roles');
+assert.deepEqual(new Set(productionCap.supported_roles), new Set(promotedRuntimeRoles), 'production cap must cover every promoted runtime role');
+assert.deepEqual(productionCap.blocked_roles, [], 'production cap must have no temporarily blocked promoted roles');
+assert.deepEqual(productionCap.visual.opposite_assets, {
+  front: 'front',
+  side_right: 'side_left',
+  side_left: 'side_right',
+  back: 'back'
+}, 'production cap must preserve badge orientation with explicit opposite-facing assets');
+assert.deepEqual(
+  new Set(productionCap.visual.pose_fits.side_turn.frame_assets),
+  new Set(['side_right', 'back', 'side_left', 'front']),
+  'turn animation must use fitted cap artwork for every visible head orientation'
+);
 for (const role of productionCap.supported_roles) {
   const fit = productionCap.visual.pose_fits[role];
   assert.ok(fit, `${role} must have an explicit fitted bitmap transform`);
+  assert.equal(fit.frame_assets.length, 25, `${role} must select a fitted cap view for all 25 frames`);
+  assert.equal(fit.frame_width_factors.length, 25, `${role} must scale the fitted cap for all 25 frames`);
+  assert.equal(fit.frame_rotations.length, 25, `${role} must rotate the fitted cap for all 25 frames`);
   assert.equal(fit.frame_centers_x.length, 25, `${role} must track the head centre for all 25 frames`);
   assert.equal(fit.frame_head_widths.length, 25, `${role} must track the fitted cap width for all 25 frames`);
   assert.equal(fit.frame_head_tops.length, 25, `${role} must track the head top for all 25 frames`);
+  assert.ok(fit.frame_assets.every((assetKey) => productionCap.visual.assets[assetKey]), `${role} must use an installed fitted cap asset on every frame`);
+  for (const track of [fit.frame_width_factors, fit.frame_rotations, fit.frame_centers_x, fit.frame_head_widths, fit.frame_head_tops]) {
+    assert.ok(track.every(Number.isFinite), `${role} must use finite values throughout every frame track`);
+  }
 }
 for (const assetPath of Object.values(productionCap.visual.assets)) {
   assert.ok(fs.existsSync(new URL(`../${assetPath.replace(/^\//, '')}`, import.meta.url)), `production wearable asset must exist: ${assetPath}`);
@@ -1877,7 +1900,9 @@ assert.match(sideScrollerLoader, /DEFAULT_WEARABLE_TRAITS_PATH = "data\/moonpet-
 assert.match(sideScrollerLoader, /loadWearableTraitConfig/, 'side-scroller loader must load wearable trait config without blocking sprite loading');
 assert.match(sideScrollerRenderer, /function drawWearableTraits\(ctx, role, frame, drawX, drawY, width, height, options, phase = "front"\)/, 'side-scroller renderer must include wearable overlay rendering');
 assert.match(sideScrollerRenderer, /function drawWearableVisual\(ctx, radius, trait\)/, 'wearable renderer must dispatch category proof visuals');
-assert.match(sideScrollerRenderer, /function drawBitmapWearable\(ctx, role, frame, drawX, drawY, width, height, trait\)/, 'wearable renderer must support fitted bitmap overlays');
+assert.match(sideScrollerRenderer, /function drawBitmapWearable\(ctx, role, frame, drawX, drawY, width, height, trait, options\)/, 'wearable renderer must support fitted bitmap overlays');
+assert.match(sideScrollerRenderer, /visual\.opposite_assets\[fittedAssetKey\]/, 'wearable renderer must choose a dedicated opposite-facing asset when gameplay mirrors');
+assert.match(sideScrollerRenderer, /if \(cancelSceneMirror\) ctx\.scale\(-1, 1\)/, 'wearable renderer must counter-mirror asymmetric bitmap artwork');
 assert.match(sideScrollerLoader, /visual\.type === "runtime_bitmap"/, 'side-scroller loader must preload production wearable bitmap assets');
 assert.match(sideScrollerRenderer, /debug_trait_sets/, 'wearable renderer must support opt-in debug selectors');
 assert.match(sideScrollerRenderer, /wearableTraitDebug/, 'wearable debug selectors must remain available');
@@ -2152,7 +2177,7 @@ assert.match(worker, /Math\.floor\(stepIndex \/ PET_RUN_BOSS_INTERVAL\) \+ 1/);
 assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Number\(activeRun\.depth \|\| 0\) \+ 1/);
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
-assert.match(html, /20260924-side-sprites-runtime-v13/);
+assert.match(html, /20260924-side-sprites-runtime-v14/);
 assert.match(worker, /20260814-moonpet-aaa-pass/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');
