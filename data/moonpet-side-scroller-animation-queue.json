@@ -75,9 +75,9 @@
       "id": "side_idle",
       "role": "side_idle",
       "source_character_name": "MOONBOT PET VISOR V1",
-      "status": "planned",
+      "status": "promoted",
       "approved": false,
-      "promoted": false,
+      "promoted": true,
       "animation_kind": "idle",
       "custom_required": false,
       "trigger": "default_state",
@@ -105,9 +105,9 @@
       "id": "side_walk",
       "role": "side_walk",
       "source_character_name": "MOONBOT PET VISOR V1",
-      "status": "planned",
+      "status": "promoted",
       "approved": false,
-      "promoted": false,
+      "promoted": true,
       "animation_kind": "walk",
       "custom_required": false,
       "trigger": "scripted_movement",
@@ -133,9 +133,9 @@
       "id": "side_run",
       "role": "side_run",
       "source_character_name": "MOONBOT PET VISOR V1",
-      "status": "planned",
+      "status": "promoted",
       "approved": false,
-      "promoted": false,
+      "promoted": true,
       "animation_kind": "run",
       "custom_required": false,
       "trigger": "scripted_movement",
@@ -191,9 +191,9 @@
       "id": "side_eat",
       "role": "side_eat",
       "source_character_name": "MOONBOT PET VISOR V1",
-      "status": "planned",
+      "status": "promoted",
       "approved": false,
-      "promoted": false,
+      "promoted": true,
       "animation_kind": "custom",
       "custom_required": true,
       "trigger": "eat_button",
@@ -228,9 +228,9 @@
       "id": "side_sleep",
       "role": "side_sleep",
       "source_character_name": "MOONBOT PET VISOR V1",
-      "status": "rejected_pending_regeneration",
+      "status": "promoted",
       "approved": false,
-      "promoted": false,
+      "promoted": true,
       "animation_kind": "custom",
       "custom_required": true,
       "trigger": "sleep_button",
@@ -253,16 +253,15 @@
       "promotion_target": {
         "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_sleep.png",
         "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_sleep.json"
-      },
-      "rejection_reason": "Previous generation stood idle and lacked bed/pillow/ZZZ sleep readability."
+      }
     },
     {
       "id": "side_play",
       "role": "side_play",
       "source_character_name": "MOONBOT PET VISOR V1",
-      "status": "rejected_pending_regeneration",
+      "status": "promoted",
       "approved": false,
-      "promoted": false,
+      "promoted": true,
       "animation_kind": "custom",
       "custom_required": true,
       "trigger": "play_button",
@@ -285,16 +284,15 @@
       "promotion_target": {
         "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_play.png",
         "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_play.json"
-      },
-      "rejection_reason": "Previous generation lacked an obvious toy or ball prop."
+      }
     },
     {
       "id": "side_clean",
       "role": "side_clean",
       "source_character_name": "MOONBOT PET VISOR V1",
-      "status": "planned",
+      "status": "promoted",
       "approved": false,
-      "promoted": false,
+      "promoted": true,
       "animation_kind": "custom",
       "custom_required": true,
       "trigger": "clean_button",
@@ -324,9 +322,9 @@
       "id": "side_train",
       "role": "side_train",
       "source_character_name": "MOONBOT PET VISOR V1",
-      "status": "planned",
+      "status": "promoted",
       "approved": false,
-      "promoted": false,
+      "promoted": true,
       "animation_kind": "custom",
       "custom_required": true,
       "trigger": "train_button",
@@ -354,9 +352,9 @@
       "id": "side_hurt",
       "role": "side_hurt",
       "source_character_name": "MOONBOT PET VISOR V1",
-      "status": "rejected_pending_regeneration",
+      "status": "promoted",
       "approved": false,
-      "promoted": false,
+      "promoted": true,
       "animation_kind": "custom",
       "custom_required": true,
       "trigger": "scripted_feedback",
@@ -378,16 +376,15 @@
       "promotion_target": {
         "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_hurt.png",
         "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_hurt.json"
-      },
-      "rejection_reason": "Previous generation looked neutral and lacked dizzy/stunned feedback."
+      }
     },
     {
       "id": "side_work",
       "role": "side_work",
       "source_character_name": "MOONBOT PET VISOR V1",
-      "status": "planned",
+      "status": "promoted",
       "approved": false,
-      "promoted": false,
+      "promoted": true,
       "animation_kind": "custom",
       "custom_required": true,
       "trigger": "work_button",
@@ -417,9 +414,9 @@
       "id": "side_equip",
       "role": "side_equip",
       "source_character_name": "MOONBOT PET VISOR V1",
-      "status": "planned",
+      "status": "promoted",
       "approved": false,
-      "promoted": false,
+      "promoted": true,
       "animation_kind": "custom",
       "custom_required": true,
       "trigger": "equipment_action",
@@ -448,9 +445,9 @@
       "id": "side_evolve",
       "role": "side_evolve",
       "source_character_name": "MOONBOT PET VISOR V1",
-      "status": "planned",
+      "status": "promoted",
       "approved": false,
-      "promoted": false,
+      "promoted": true,
       "animation_kind": "custom",
       "custom_required": true,
       "trigger": "lifecycle_action",
@@ -479,9 +476,9 @@
       "id": "side_trade",
       "role": "side_trade",
       "source_character_name": "MOONBOT PET VISOR V1",
-      "status": "planned",
+      "status": "promoted",
       "approved": false,
-      "promoted": false,
+      "promoted": true,
       "animation_kind": "custom",
       "custom_required": true,
       "trigger": "trade_action",
@@ -510,7 +507,7 @@
       "id": "side_celebrate",
       "role": "side_celebrate",
       "source_character_name": "MOONBOT PET VISOR V1",
-      "status": "planned",
+      "status": "rejected_pending_regeneration",
       "approved": false,
       "promoted": false,
       "animation_kind": "custom",
@@ -522,7 +519,7 @@
         "confetti",
         "reward_sparkles"
       ],
-      "prompt": "Side-view Moonbot celebration with happy bounce, confetti, reward sparkles, black visor with pink LED happy eyes, white glossy robot companion, chibi cyber mascot, rounded bot body, mitten hands, chunky robot feet, transparent background, no text, no scenery.",
+      "prompt": "Side-view Moonbot doing a BIG happy celebration jump with both mitten hands raised, visible confetti burst, reward sparkles, pink LED happy eyes, clear victory pose, white glossy robot companion, chibi cyber mascot, rounded bot body, chunky robot feet, transparent background, no text, no scenery.",
       "negative_prompt": "No tail, no ears, no snout, no animal body, no fur, no paws, no whiskers, no claws.",
       "output_expectations": {
         "frame_count": 25,
@@ -535,13 +532,14 @@
       "promotion_target": {
         "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_celebrate.png",
         "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_celebrate.json"
-      }
+      },
+      "rejection_reason": "Generated side_celebrate was visually rejected because it was too close to idle and lacked clear confetti, reward sparkles, or celebratory motion."
     },
     {
       "id": "side_interact",
       "role": "side_interact",
       "source_character_name": "MOONBOT PET VISOR V1",
-      "status": "planned",
+      "status": "rejected_pending_regeneration",
       "approved": false,
       "promoted": false,
       "animation_kind": "custom",
@@ -552,7 +550,7 @@
       "props": [
         "hello_wave"
       ],
-      "prompt": "Side-view Moonbot friendly interact wave, small hello gesture, curious black visor with pink LED eyes, white glossy robot companion, chibi cyber mascot, rounded bot body, mitten hands, chunky robot feet, transparent background, no text, no scenery.",
+      "prompt": "Side-view Moonbot friendly interaction animation with a clear waving mitten hand, small floating hello sparkles, curious pink LED eyes, readable greeting gesture, white glossy robot companion, chibi cyber mascot, rounded bot body, chunky robot feet, transparent background, no text, no scenery.",
       "negative_prompt": "No tail, no ears, no snout, no animal body, no fur, no paws, no whiskers, no claws.",
       "output_expectations": {
         "frame_count": 25,
@@ -565,13 +563,14 @@
       "promotion_target": {
         "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_interact.png",
         "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_interact.json"
-      }
+      },
+      "rejection_reason": "Generated side_interact was visually rejected because it was too close to idle and lacked a clear hello/tap/interaction cue."
     },
     {
       "id": "side_battle",
       "role": "side_battle",
       "source_character_name": "MOONBOT PET VISOR V1",
-      "status": "planned",
+      "status": "rejected_pending_regeneration",
       "approved": false,
       "promoted": false,
       "animation_kind": "custom",
@@ -582,7 +581,7 @@
       "props": [
         "shield_sparks"
       ],
-      "prompt": "Side-view Moonbot defensive battle-ready stance with shield sparks, no weapon attack, no gore, white glossy robot companion, chibi cyber mascot, rounded bot body, mitten hands, chunky robot feet, black visor with focused pink LED eyes, transparent background, no text, no scenery.",
+      "prompt": "Side-view Moonbot non-gore defensive battle feedback stance with visible neon shield bubble in front, braced feet, focused pink LED eyes, small shield sparks, no weapon, no attack pose, white glossy robot companion, chibi cyber mascot, rounded bot body, mitten hands, chunky robot feet, transparent background, no text, no scenery.",
       "negative_prompt": "No tail, no ears, no snout, no animal body, no fur, no paws, no whiskers, no claws.",
       "output_expectations": {
         "frame_count": 25,
@@ -595,7 +594,8 @@
       "promotion_target": {
         "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_battle.png",
         "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_battle.json"
-      }
+      },
+      "rejection_reason": "Generated side_battle was visually rejected because it was effectively idle and lacked defensive shield or battle-feedback readability."
     }
   ]
 }

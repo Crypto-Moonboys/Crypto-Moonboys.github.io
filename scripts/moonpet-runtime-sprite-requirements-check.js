@@ -97,15 +97,17 @@ function validateRequirements(requirements) {
   }
 
   const rejected = assets.filter((asset) => asset.visual_status === "visual_rejected");
-  for (const expectedRejected of ["side_sleep", "side_play", "side_hurt"]) {
+  for (const expectedRejected of ["side_celebrate", "side_interact", "side_battle"]) {
     results.push(rejected.some((asset) => asset.id === expectedRejected)
       ? pass(`${expectedRejected} remains visually rejected pending regeneration`)
       : fail(`${expectedRejected} must be visually rejected until regenerated`));
   }
 
-  results.push(generated.installed_in_live_game === false
-    ? pass("Generated side-scroller artifacts are not falsely marked installed in live game")
-    : fail("Generated side-scroller artifacts must not be marked installed until live runtime integration is complete"));
+  results.push(generated.installed_in_live_game === true &&
+    generated.install_mode === "feature_flagged" &&
+    generated.feature_flag === "?sideSprites=1"
+    ? pass("Side-scroller artifacts are installed only behind the ?sideSprites=1 feature flag")
+    : fail("Side-scroller artifacts must be marked installed behind the ?sideSprites=1 feature flag"));
 
   return results;
 }
