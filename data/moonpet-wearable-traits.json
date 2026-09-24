@@ -1,9 +1,27 @@
 {
   "schema_version": 1,
   "system_id": "moonbot_wearable_trait_propagation_v1",
-  "runtime_status": "foundation_sample_only",
+  "runtime_status": "debug_proof_set_only",
   "master_reference_role": "side_front_point",
-  "sample_trait_id": "sample_neon_badge",
+  "sample_trait_id": "sample_chest_badge",
+  "debug_trait_sets": {
+    "sample": ["sample_chest_badge"],
+    "head": ["sample_lunar_cap"],
+    "face": ["sample_visor_glasses"],
+    "chest": ["sample_chest_badge"],
+    "back": ["sample_micro_jetpack"],
+    "hand": ["sample_wrench_prop"],
+    "prop": ["sample_wrench_prop"],
+    "aura": ["sample_electric_aura"],
+    "all": [
+      "sample_electric_aura",
+      "sample_micro_jetpack",
+      "sample_chest_badge",
+      "sample_visor_glasses",
+      "sample_lunar_cap",
+      "sample_wrench_prop"
+    ]
+  },
   "trait_categories": [
     "hats",
     "glasses",
@@ -177,10 +195,12 @@
   },
   "traits": [
     {
-      "id": "sample_neon_badge",
-      "name": "Sample Neon Badge",
-      "category": "badges",
-      "layer": "badge",
+      "id": "sample_lunar_cap",
+      "name": "Sample Lunar Cap",
+      "category": "hats",
+      "layer": "hat",
+      "anchor_key": "hat",
+      "z_index": 70,
       "status": "sample_runtime_proof",
       "mirror_safe": true,
       "master_role": "side_front_point",
@@ -191,6 +211,64 @@
         "side_walk",
         "side_run"
       ],
+      "blocked_roles": [],
+      "pose_adaptation_notes": "Master cap is designed on side_front_point, then resized onto the top/head anchor. Side roles use a simplified profile cap silhouette so the same cap identity survives the turn.",
+      "visual": {
+        "type": "runtime_vector_cap",
+        "fill": "#3fe7ff",
+        "accent": "#ff4fc8",
+        "outline": "#061025",
+        "glow": "rgba(63, 231, 255, 0.45)"
+      },
+      "notes": "Head-item proof sample for hats, crowns, halo-like headwear, and helmet placement."
+    },
+    {
+      "id": "sample_visor_glasses",
+      "name": "Sample Visor Glasses",
+      "category": "glasses",
+      "layer": "glasses",
+      "anchor_key": "glasses",
+      "z_index": 60,
+      "status": "sample_runtime_proof",
+      "mirror_safe": true,
+      "master_role": "side_front_point",
+      "supported_roles": [
+        "side_front_point",
+        "side_front_wave",
+        "side_idle",
+        "side_walk",
+        "side_run"
+      ],
+      "blocked_roles": [],
+      "pose_adaptation_notes": "Master visor accent is centered on side_front_point. Side poses compress the bridge and keep the bright lens strip aligned to the visible eye/visor band.",
+      "visual": {
+        "type": "runtime_vector_glasses",
+        "fill": "#10162f",
+        "accent": "#8affff",
+        "outline": "#061025",
+        "glow": "rgba(138, 255, 255, 0.55)"
+      },
+      "notes": "Face-item proof sample for glasses, visor accents, and compact masks."
+    },
+    {
+      "id": "sample_chest_badge",
+      "name": "Sample Chest Badge",
+      "category": "badges",
+      "layer": "badge",
+      "anchor_key": "badge",
+      "z_index": 45,
+      "status": "sample_runtime_proof",
+      "mirror_safe": true,
+      "master_role": "side_front_point",
+      "supported_roles": [
+        "side_front_point",
+        "side_front_wave",
+        "side_idle",
+        "side_walk",
+        "side_run"
+      ],
+      "blocked_roles": [],
+      "pose_adaptation_notes": "Master badge is placed on the side_front_point chest. Side poses scale it down and keep it on the visible torso plate without inventing a new logo.",
       "visual": {
         "type": "runtime_vector_badge",
         "shape": "circle",
@@ -199,7 +277,97 @@
         "outline": "#061025",
         "glow": "rgba(49, 223, 255, 0.65)"
       },
-      "notes": "Tiny runtime-safe sample proving one badge design can propagate from side_front_point to front, idle, walk, and run roles."
+      "notes": "Chest-item proof sample for logo badges, hoodie marks, pins, and chain medallions."
+    },
+    {
+      "id": "sample_micro_jetpack",
+      "name": "Sample Micro Jetpack",
+      "category": "backpacks",
+      "layer": "backpack",
+      "anchor_key": "backpack",
+      "z_index": 20,
+      "status": "sample_runtime_proof",
+      "mirror_safe": false,
+      "master_role": "side_front_point",
+      "supported_roles": [
+        "side_front_point",
+        "side_front_wave",
+        "side_idle",
+        "side_walk",
+        "side_run"
+      ],
+      "blocked_roles": [],
+      "blocked_conditions": [
+        "Mirrored side roles are blocked until left/right backpack or jetpack anchors are authored."
+      ],
+      "pose_adaptation_notes": "Master back item peeks from the far side of side_front_point. Side roles place the same jetpack on the rear torso anchor; mirrored draws are skipped unless a trait is explicitly mirror-safe.",
+      "visual": {
+        "type": "runtime_vector_jetpack",
+        "fill": "#4d5bff",
+        "accent": "#ffd447",
+        "outline": "#061025",
+        "glow": "rgba(255, 212, 71, 0.45)"
+      },
+      "notes": "Back-item proof sample for backpacks, wings, and small jetpacks."
+    },
+    {
+      "id": "sample_wrench_prop",
+      "name": "Sample Wrench Prop",
+      "category": "hand_items",
+      "layer": "hand_item",
+      "anchor_key": "hand_item",
+      "z_index": 85,
+      "status": "sample_runtime_proof",
+      "mirror_safe": false,
+      "master_role": "side_front_point",
+      "supported_roles": [
+        "side_front_point",
+        "side_front_wave",
+        "side_idle",
+        "side_walk",
+        "side_run"
+      ],
+      "blocked_roles": [],
+      "blocked_conditions": [
+        "Mirrored side roles are blocked until left/right hand anchors are authored."
+      ],
+      "pose_adaptation_notes": "Master wrench is aligned to the pointing hand on side_front_point. Wave/side roles simplify the hand contact point while preserving the same prop silhouette and colors.",
+      "visual": {
+        "type": "runtime_vector_wrench",
+        "fill": "#d7f2ff",
+        "accent": "#ff4fc8",
+        "outline": "#061025",
+        "glow": "rgba(255, 79, 200, 0.35)"
+      },
+      "notes": "Hand/prop proof sample for spray cans, tools, snacks, and controllers."
+    },
+    {
+      "id": "sample_electric_aura",
+      "name": "Sample Electric Aura",
+      "category": "auras",
+      "layer": "aura_back",
+      "anchor_key": "aura",
+      "z_index": 5,
+      "status": "sample_runtime_proof",
+      "mirror_safe": true,
+      "master_role": "side_front_point",
+      "supported_roles": [
+        "side_front_point",
+        "side_front_wave",
+        "side_idle",
+        "side_walk",
+        "side_run"
+      ],
+      "blocked_roles": [],
+      "pose_adaptation_notes": "Master aura surrounds side_front_point. Runtime scales the same outline around front and side poses and draws it behind the sprite as an effect layer.",
+      "visual": {
+        "type": "runtime_vector_aura",
+        "fill": "rgba(63, 231, 255, 0.16)",
+        "accent": "#ffd447",
+        "outline": "rgba(138, 255, 255, 0.78)",
+        "glow": "rgba(63, 231, 255, 0.7)"
+      },
+      "notes": "Aura/effect proof sample for glow, sparks, and electric-outline traits."
     }
   ]
 }

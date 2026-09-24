@@ -136,6 +136,10 @@
 
   function traitListFromOptions(options) {
     if (Array.isArray(options.wearableTraits)) return options.wearableTraits.filter(Boolean);
+    if (typeof options.wearableTraitDebug === "string" && state.traitConfig && state.traitConfig.debug_trait_sets) {
+      const selected = state.traitConfig.debug_trait_sets[options.wearableTraitDebug];
+      if (Array.isArray(selected)) return selected.filter(Boolean);
+    }
     if (options.wearableTraitDebug && state.traitConfig && state.traitConfig.sample_trait_id) {
       return [state.traitConfig.sample_trait_id];
     }
@@ -150,7 +154,17 @@
   function anchorForTrait(role, trait) {
     const roleMap = state.traitConfig && state.traitConfig.supported_role_map || {};
     const anchors = roleMap[role] && roleMap[role].anchors || {};
-    return anchors[trait.layer] || anchors[trait.category] || null;
+    return anchors[trait.anchor_key] || anchors[trait.layer] || anchors[trait.category] || null;
+  }
+
+  function layerIndex(trait) {
+    const order = state.traitConfig && Array.isArray(state.traitConfig.layer_order) ? state.traitConfig.layer_order : [];
+    const index = order.indexOf(trait.layer);
+    return index >= 0 ? index : order.length + Number(trait.z_index || 0);
+  }
+
+  function wearablePhase(trait) {
+    return trait.layer === "aura_back" || trait.layer === "backpack" ? "behind" : "front";
   }
 
   function drawRoundBadge(ctx, radius, visual) {
@@ -180,13 +194,164 @@
     ctx.restore();
   }
 
-  function drawWearableTraits(ctx, role, frame, drawX, drawY, width, height, options) {
+  function drawCap(ctx, radius, visual) {
+    const fill = visual && visual.fill || "#3fe7ff";
+    const accent = visual && visual.accent || "#ff4fc8";
+    const outline = visual && visual.outline || "#061025";
+    ctx.save();
+    ctx.shadowColor = visual && visual.glow || "rgba(63, 231, 255, 0.45)";
+    ctx.shadowBlur = radius;
+    ctx.fillStyle = fill;
+    ctx.strokeStyle = outline;
+    ctx.lineWidth = Math.max(2, radius * 0.16);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, radius * 1.15, radius * 0.55, 0, Math.PI, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = accent;
+    ctx.beginPath();
+    ctx.ellipse(radius * 0.58, radius * 0.08, radius * 0.62, radius * 0.2, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawGlasses(ctx, radius, visual) {
+    const fill = visual && visual.fill || "#10162f";
+    const accent = visual && visual.accent || "#8affff";
+    const outline = visual && visual.outline || "#061025";
+    ctx.save();
+    ctx.shadowColor = visual && visual.glow || "rgba(138, 255, 255, 0.55)";
+    ctx.shadowBlur = radius * 0.9;
+    ctx.fillStyle = fill;
+    ctx.strokeStyle = outline;
+    ctx.lineWidth = Math.max(2, radius * 0.14);
+    for (const side of [-1, 1]) {
+      ctx.beginPath();
+      ctx.roundRect(side * radius * 0.42 - radius * 0.34, -radius * 0.22, radius * 0.68, radius * 0.44, radius * 0.12);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = accent;
+      ctx.fillRect(side * radius * 0.42 - radius * 0.24, -radius * 0.05, radius * 0.48, radius * 0.08);
+      ctx.fillStyle = fill;
+    }
+    ctx.beginPath();
+    ctx.moveTo(-radius * 0.1, 0);
+    ctx.lineTo(radius * 0.1, 0);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawJetpack(ctx, radius, visual) {
+    const fill = visual && visual.fill || "#4d5bff";
+    const accent = visual && visual.accent || "#ffd447";
+    const outline = visual && visual.outline || "#061025";
+    ctx.save();
+    ctx.shadowColor = visual && visual.glow || "rgba(255, 212, 71, 0.45)";
+    ctx.shadowBlur = radius;
+    ctx.fillStyle = fill;
+    ctx.strokeStyle = outline;
+    ctx.lineWidth = Math.max(2, radius * 0.14);
+    ctx.beginPath();
+    ctx.roundRect(-radius * 0.42, -radius * 0.68, radius * 0.84, radius * 1.22, radius * 0.18);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = accent;
+    ctx.fillRect(-radius * 0.22, radius * 0.5, radius * 0.16, radius * 0.38);
+    ctx.fillRect(radius * 0.06, radius * 0.5, radius * 0.16, radius * 0.38);
+    ctx.restore();
+  }
+
+  function drawWrench(ctx, radius, visual) {
+    const fill = visual && visual.fill || "#d7f2ff";
+    const accent = visual && visual.accent || "#ff4fc8";
+    const outline = visual && visual.outline || "#061025";
+    ctx.save();
+    ctx.strokeStyle = outline;
+    ctx.lineCap = "round";
+    ctx.lineWidth = Math.max(5, radius * 0.26);
+    ctx.beginPath();
+    ctx.moveTo(-radius * 0.45, radius * 0.48);
+    ctx.lineTo(radius * 0.36, -radius * 0.34);
+    ctx.stroke();
+    ctx.strokeStyle = fill;
+    ctx.lineWidth = Math.max(3, radius * 0.14);
+    ctx.beginPath();
+    ctx.moveTo(-radius * 0.45, radius * 0.48);
+    ctx.lineTo(radius * 0.36, -radius * 0.34);
+    ctx.stroke();
+    ctx.fillStyle = accent;
+    ctx.strokeStyle = outline;
+    ctx.lineWidth = Math.max(2, radius * 0.12);
+    ctx.beginPath();
+    ctx.arc(radius * 0.46, -radius * 0.44, radius * 0.28, Math.PI * 0.15, Math.PI * 1.55);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawAura(ctx, radius, visual) {
+    const fill = visual && visual.fill || "rgba(63, 231, 255, 0.16)";
+    const accent = visual && visual.accent || "#ffd447";
+    const outline = visual && visual.outline || "rgba(138, 255, 255, 0.78)";
+    ctx.save();
+    ctx.shadowColor = visual && visual.glow || "rgba(63, 231, 255, 0.7)";
+    ctx.shadowBlur = radius * 0.9;
+    ctx.fillStyle = fill;
+    ctx.strokeStyle = outline;
+    ctx.lineWidth = Math.max(2, radius * 0.08);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, radius * 1.65, radius * 2.15, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = Math.max(1, radius * 0.05);
+    ctx.beginPath();
+    ctx.moveTo(-radius * 0.9, -radius * 0.8);
+    ctx.lineTo(-radius * 0.55, -radius * 0.35);
+    ctx.lineTo(-radius * 0.78, -radius * 0.32);
+    ctx.moveTo(radius * 0.85, radius * 0.65);
+    ctx.lineTo(radius * 0.48, radius * 0.28);
+    ctx.lineTo(radius * 0.72, radius * 0.23);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawWearableVisual(ctx, radius, trait) {
+    const visual = trait.visual || {};
+    switch (visual.type) {
+      case "runtime_vector_cap":
+        drawCap(ctx, radius, visual);
+        return;
+      case "runtime_vector_glasses":
+        drawGlasses(ctx, radius, visual);
+        return;
+      case "runtime_vector_jetpack":
+        drawJetpack(ctx, radius, visual);
+        return;
+      case "runtime_vector_wrench":
+        drawWrench(ctx, radius, visual);
+        return;
+      case "runtime_vector_aura":
+        drawAura(ctx, radius, visual);
+        return;
+      default:
+        drawRoundBadge(ctx, radius, visual);
+    }
+  }
+
+  function drawWearableTraits(ctx, role, frame, drawX, drawY, width, height, options, phase = "front") {
     if (!state.traitConfig) return [];
+    const traits = traitListFromOptions(options)
+      .map(traitById)
+      .filter((trait) => trait && wearablePhase(trait) === phase)
+      .sort((a, b) => layerIndex(a) - layerIndex(b));
     const rendered = [];
-    for (const traitId of traitListFromOptions(options)) {
-      const trait = traitById(traitId);
-      if (!trait) continue;
+    for (const trait of traits) {
       if (Array.isArray(trait.supported_roles) && !trait.supported_roles.includes(role)) continue;
+      if (Array.isArray(trait.blocked_roles) && trait.blocked_roles.includes(role)) continue;
       const anchor = anchorForTrait(role, trait);
       if (!anchor) continue;
       if (options.facing === -1 && anchor.mirror_safe === false && trait.mirror_safe !== true) continue;
@@ -196,7 +361,7 @@
       ctx.save();
       ctx.translate(centerX, centerY);
       ctx.rotate((Number(anchor.rotation) || 0) * Math.PI / 180);
-      drawRoundBadge(ctx, radius, trait.visual || {});
+      drawWearableVisual(ctx, radius, trait);
       ctx.restore();
       rendered.push(trait.id);
     }
@@ -242,6 +407,7 @@
         x = 0;
         drawX = x - width / 2;
       }
+      const behindTraits = drawWearableTraits(ctx, role, frame, drawX, drawY, width, height, options, "behind");
       ctx.drawImage(
         asset.image,
         frame.x,
@@ -253,7 +419,8 @@
         width,
         height
       );
-      const renderedTraits = drawWearableTraits(ctx, role, frame, drawX, drawY, width, height, options);
+      const frontTraits = drawWearableTraits(ctx, role, frame, drawX, drawY, width, height, options, "front");
+      const renderedTraits = [...behindTraits, ...frontTraits];
       ctx.restore();
       state.reason = `rendered ${role}`;
       state.lastRender = { animationMode, role, drew: true, reason: state.reason, wearableTraits: renderedTraits };

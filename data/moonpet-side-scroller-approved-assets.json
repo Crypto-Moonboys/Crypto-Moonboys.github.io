@@ -10,7 +10,16 @@
     "enabled": true,
     "config_path": "/data/moonpet-wearable-traits.json",
     "runtime_mode": "sample_debug_only",
-    "sample_query": "?wearableTraitDebug=sample"
+    "sample_query": "?wearableTraitDebug=sample",
+    "debug_queries": [
+      "?wearableTraitDebug=head",
+      "?wearableTraitDebug=face",
+      "?wearableTraitDebug=chest",
+      "?wearableTraitDebug=back",
+      "?wearableTraitDebug=hand",
+      "?wearableTraitDebug=aura",
+      "?wearableTraitDebug=all"
+    ]
   },
   "assets": [
     {

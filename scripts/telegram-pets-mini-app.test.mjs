@@ -1446,7 +1446,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260924-side-sprites-runtime-v10/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260924-side-sprites-runtime-v11/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -1814,23 +1814,48 @@ assert.match(client, /idleSpecialNextAt = now \+ 9000 \+ Math\.floor\(idleSpecia
 assert.match(client, /function idleSpecialRoll\(time, salt\)/, 'idle personality variants must use local deterministic pseudo-random rolls');
 assert.match(client, /role: roleOverride/, 'renderer options must support one idle role override at a time');
 assert.equal(sideScrollerRegistry.wearable_traits.config_path, '/data/moonpet-wearable-traits.json', 'side-scroller registry must point at the wearable trait config');
+assert.deepEqual(sideScrollerRegistry.wearable_traits.debug_queries, [
+  '?wearableTraitDebug=head',
+  '?wearableTraitDebug=face',
+  '?wearableTraitDebug=chest',
+  '?wearableTraitDebug=back',
+  '?wearableTraitDebug=hand',
+  '?wearableTraitDebug=aura',
+  '?wearableTraitDebug=all'
+]);
 assert.equal(wearableTraits.master_reference_role, 'side_front_point', 'wearable traits must use side_front_point as the master mannequin');
 for (const category of ['hats', 'glasses', 'masks', 'chains', 'hoodies', 'backpacks', 'badges', 'hand_items', 'shoes_feet_items', 'auras', 'props']) {
   assert.ok(wearableTraits.trait_categories.includes(category), `wearable trait schema must include ${category}`);
 }
+for (const selector of ['head', 'face', 'chest', 'back', 'hand', 'aura', 'all']) {
+  assert.ok(Array.isArray(wearableTraits.debug_trait_sets[selector]), `wearable trait debug set must include ${selector}`);
+}
 for (const role of ['side_front_point', 'side_front_wave', 'side_idle', 'side_walk', 'side_run']) {
   assert.ok(wearableTraits.supported_role_map[role], `wearable trait role map must support ${role}`);
   assert.ok(wearableTraits.supported_role_map[role].anchors.badge, `${role} must define a badge anchor for the sample propagation proof`);
+  assert.ok(wearableTraits.supported_role_map[role].anchors.hat, `${role} must define a head anchor for the sample propagation proof`);
+  assert.ok(wearableTraits.supported_role_map[role].anchors.glasses, `${role} must define a face anchor for the sample propagation proof`);
+  assert.ok(wearableTraits.supported_role_map[role].anchors.backpack, `${role} must define a back anchor for the sample propagation proof`);
+  assert.ok(wearableTraits.supported_role_map[role].anchors.hand_item, `${role} must define a hand anchor for the sample propagation proof`);
+  assert.ok(wearableTraits.supported_role_map[role].anchors.aura, `${role} must define an aura anchor for the sample propagation proof`);
 }
-const sampleWearable = wearableTraits.traits.find((trait) => trait.id === 'sample_neon_badge');
-assert.ok(sampleWearable, 'wearable trait config must include the sample neon badge');
-assert.deepEqual(sampleWearable.supported_roles, ['side_front_point', 'side_front_wave', 'side_idle', 'side_walk', 'side_run']);
+for (const traitId of ['sample_lunar_cap', 'sample_visor_glasses', 'sample_chest_badge', 'sample_micro_jetpack', 'sample_wrench_prop', 'sample_electric_aura']) {
+  const sampleWearable = wearableTraits.traits.find((trait) => trait.id === traitId);
+  assert.ok(sampleWearable, `wearable trait config must include ${traitId}`);
+  assert.deepEqual(sampleWearable.supported_roles, ['side_front_point', 'side_front_wave', 'side_idle', 'side_walk', 'side_run']);
+  assert.ok(Array.isArray(sampleWearable.blocked_roles), `${traitId} must document blocked roles, even when empty`);
+  assert.ok(sampleWearable.pose_adaptation_notes, `${traitId} must document pose adaptation notes`);
+  assert.equal(typeof sampleWearable.z_index, 'number', `${traitId} must define z-index/layer order metadata`);
+}
 assert.equal(wearableTraits.mirror_safe_rules.default, 'mirror_with_pose', 'wearable trait config must define mirror-safe defaults');
 assert.match(sideScrollerLoader, /DEFAULT_WEARABLE_TRAITS_PATH = "data\/moonpet-wearable-traits\.json"/, 'side-scroller loader must know the wearable trait config path');
 assert.match(sideScrollerLoader, /loadWearableTraitConfig/, 'side-scroller loader must load wearable trait config without blocking sprite loading');
-assert.match(sideScrollerRenderer, /function drawWearableTraits\(ctx, role, frame, drawX, drawY, width, height, options\)/, 'side-scroller renderer must include wearable overlay rendering');
+assert.match(sideScrollerRenderer, /function drawWearableTraits\(ctx, role, frame, drawX, drawY, width, height, options, phase = "front"\)/, 'side-scroller renderer must include wearable overlay rendering');
+assert.match(sideScrollerRenderer, /function drawWearableVisual\(ctx, radius, trait\)/, 'wearable renderer must dispatch category proof visuals');
+assert.match(sideScrollerRenderer, /debug_trait_sets/, 'wearable renderer must support opt-in debug selectors');
 assert.match(sideScrollerRenderer, /wearableTraitDebug/, 'wearable sample rendering must stay opt-in');
 assert.match(client, /function wearableTraitDebugRequested\(\)/, 'Mini App must gate wearable sample rendering behind a debug query');
+assert.match(client, /'head', 'face', 'chest', 'back', 'hand', 'prop', 'aura', 'all'/, 'Mini App must pass wearable debug selectors through without enabling wearables by default');
 assert.match(client, /wearables=/, 'side sprite debug must report rendered wearable traits');
 assert.match(sideScrollerRenderer, /function roleForAnimationMode\(animationMode, active, options = \{\}\)/);
 assert.match(sideScrollerRenderer, /state\.roleMap\[mode\]/, 'side-scroller renderer must resolve roles from runtime_role_map');
@@ -2100,7 +2125,7 @@ assert.match(worker, /Math\.floor\(stepIndex \/ PET_RUN_BOSS_INTERVAL\) \+ 1/);
 assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Number\(activeRun\.depth \|\| 0\) \+ 1/);
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
-assert.match(html, /20260924-side-sprites-runtime-v10/);
+assert.match(html, /20260924-side-sprites-runtime-v11/);
 assert.match(worker, /20260814-moonpet-aaa-pass/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');

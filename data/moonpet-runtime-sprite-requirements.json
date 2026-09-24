@@ -520,7 +520,16 @@
     "wearable_trait_propagation": {
       "config_path": "/data/moonpet-wearable-traits.json",
       "runtime_mode": "sample_debug_only",
-      "sample_trait": "sample_neon_badge",
+      "sample_trait": "sample_chest_badge",
+      "debug_selectors": [
+        "head",
+        "face",
+        "chest",
+        "back",
+        "hand",
+        "aura",
+        "all"
+      ],
       "master_reference_role": "side_front_point",
       "proof_roles": [
         "side_front_point",
