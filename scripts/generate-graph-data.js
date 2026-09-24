@@ -71,9 +71,7 @@ function preserveTimestampsIfStable(nodes, edges) {
     ) {
       return {
         generated_at: existing.generated_at,
-        verified_at: typeof existing.verified_at === 'string' && existing.verified_at.trim()
-          ? existing.verified_at
-          : fresh,
+        verified_at: fresh,
       };
     }
   } catch (err) {
