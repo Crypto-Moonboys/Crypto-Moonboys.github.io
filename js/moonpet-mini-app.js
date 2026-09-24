@@ -212,8 +212,8 @@
     console.info('[Moonpet] side-scroller sprite mode enabled');
     updateSideSpriteDebug({ reason: 'loading side-scroller scripts' });
     try {
-      await loadApprovedSpriteScript('/js/moonpet-side-scroller-asset-loader.js?v=20260924-side-sprites-runtime-v2');
-      await loadApprovedSpriteScript('/js/moonpet-side-scroller-sprite-renderer.js?v=20260924-side-sprites-runtime-v2');
+      await loadApprovedSpriteScript('/js/moonpet-side-scroller-asset-loader.js?v=20260924-side-sprites-runtime-v4');
+      await loadApprovedSpriteScript('/js/moonpet-side-scroller-sprite-renderer.js?v=20260924-side-sprites-runtime-v4');
       if (!window.MoonpetSideScrollerSpriteRenderer) throw new Error('MoonpetSideScrollerSpriteRenderer unavailable');
       sideScrollerSpriteRendererState = await window.MoonpetSideScrollerSpriteRenderer.initMoonpetSideScrollerRenderer();
       sideScrollerSpriteRendererReady = Boolean(sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.ready);
