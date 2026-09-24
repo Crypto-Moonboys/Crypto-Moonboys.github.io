@@ -4,6 +4,8 @@ Moonpet Autopilot is a repo-controlled verification pass for the approved Moonbo
 
 Current checkpoint: the base Moonbot system is passing when `npm run moonpet:autopilot` reports `PASS`.
 
+Production art direction checkpoint: the next Moonpet gameplay art pipeline is side-scroller first. The existing isometric/down-facing assets remain archived/reference-only, while the new side-scroller queue is validated separately from the current live game checks.
+
 ## What It Checks
 
 The autopilot checks:
@@ -122,6 +124,38 @@ The custom queue does not generate assets automatically. It is a planning and va
 The custom generation operator is documented in [Moonpet Custom Animation Autopilot](moonpet-custom-animation-autopilot.md). That operator can run one queued item, write a mechanical review report, and optionally promote a passing asset to `promoted_pending_approval`; it still does not set `approved: true`.
 
 The current Moonpet runtime is down-facing only. Other directional sleep sheets, including northeast, northwest, left, right, up, southeast, and southwest, are reserved for future 8-direction/isometric expansion and are not part of the current approved runtime loader.
+
+## Next Production Direction: Side-Scroller
+
+The new production art source is documented in:
+
+```text
+docs/moonpet-side-scroller-sprite-bible.md
+docs/moonpet-side-scroller-migration-plan.md
+data/moonpet-side-scroller-art-system.json
+data/moonpet-side-scroller-animation-queue.json
+```
+
+The older approved isometric/down-facing assets are not deleted and remain useful as v1 reference/experiment assets:
+
+- `iso_idle_down`
+- `iso_walk_down`
+- `iso_run_down`
+- `custom_sleep`
+
+They should not be expanded for current gameplay. New gameplay animation planning should use the side-scroller queue and the production rule:
+
+```text
+Build side. Test side. Ship side.
+```
+
+Run the side-scroller queue validator with:
+
+```bash
+npm run moonpet:side-queue:check
+```
+
+This check is separate from the current live-game autopilot. It does not call AutoSprite, does not generate assets, and does not approve or promote side-scroller art. It only validates that the planned side-scroller queue is complete, unapproved by default, uses stable public target paths, and avoids isometric/down-facing animation naming.
 
 ## Why This Reduces Manual Work
 

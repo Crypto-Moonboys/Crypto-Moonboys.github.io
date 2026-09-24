@@ -1,0 +1,125 @@
+{
+  "version": "0.1.0",
+  "source": "Crypto Moonboys Pets - Side-Scroller Sprite Bible V1.0",
+  "status": "production_direction",
+  "base_character": {
+    "name": "MOONBOT PET VISOR V1",
+    "runtime_view": "2d_side_scroller",
+    "primary_views": ["side_left", "side_right"],
+    "reference_views": ["front", "back"],
+    "description": "Glossy white Moonbot pet with large rounded helmet/head, small rounded body, rounded arms, chunky feet, black glass visor, and pink LED eyes.",
+    "must_preserve": [
+      "large rounded head",
+      "small body",
+      "chunky feet",
+      "glossy white body",
+      "black visor",
+      "pink LED eyes",
+      "clean side-view silhouette"
+    ]
+  },
+  "production_rules": [
+    "Current runtime direction is 2D side-scroller.",
+    "All gameplay animations must be side-view compatible.",
+    "Use left/right sprite logic and mirroring where practical.",
+    "Do not expand the isometric/down-facing pipeline for current gameplay.",
+    "Old isometric assets remain archived reference only.",
+    "Generate, review, promote, then integrate.",
+    "Character sprite sheets should use transparent backgrounds where possible.",
+    "Keep frame count, frame size, sheet size, ground line, and silhouette consistent."
+  ],
+  "animation_states": [
+    { "id": "side_idle", "label": "Idle", "description": "Calm side-view idle with subtle breathing or bounce." },
+    { "id": "side_walk", "label": "Walk", "description": "Readable side-view walk cycle." },
+    { "id": "side_run", "label": "Run", "description": "Fast side-view run with clear stride and motion." },
+    { "id": "side_jump", "label": "Jump", "description": "Side-view jump with simple squash/stretch and clean landing." },
+    { "id": "side_eat", "label": "Eat", "description": "Side-view snack or food interaction." },
+    { "id": "side_sleep", "label": "Sleep", "description": "Side-view sleeping pose with gentle breathing." },
+    { "id": "side_play", "label": "Play", "description": "Side-view toy or ball interaction." },
+    { "id": "side_clean", "label": "Clean", "description": "Side-view bubbles or cleaning motion." },
+    { "id": "side_train", "label": "Train", "description": "Side-view non-combat exercise motion." },
+    { "id": "side_hurt", "label": "Hurt", "description": "Side-view dizzy or stunned state." }
+  ],
+  "face_visor_expressions": [
+    "default",
+    "happy",
+    "excited",
+    "sad",
+    "angry",
+    "sleepy",
+    "love",
+    "surprised",
+    "cool",
+    "wink",
+    "glitch"
+  ],
+  "outfits_bodies": [
+    "default",
+    "street_graff",
+    "cyber",
+    "astro",
+    "hoodie",
+    "punk",
+    "gold",
+    "zombie",
+    "samurai",
+    "ape",
+    "robot",
+    "bee"
+  ],
+  "hats_headwear": [
+    "snapback",
+    "bucket",
+    "beanie",
+    "hood",
+    "astro_helmet",
+    "crown",
+    "horns",
+    "mohawk",
+    "bandana",
+    "headphones",
+    "goggles",
+    "none"
+  ],
+  "accessories": [
+    "spray_can",
+    "skateboard",
+    "backpack",
+    "sling_bag",
+    "chain",
+    "tag",
+    "camera",
+    "boombox",
+    "pet_drone",
+    "wings",
+    "cape",
+    "none"
+  ],
+  "traits_elements": [
+    "fire",
+    "water",
+    "earth",
+    "air",
+    "electric",
+    "shadow",
+    "light",
+    "crystal",
+    "neon",
+    "galaxy",
+    "toxic",
+    "ice"
+  ],
+  "rarity_frames": [
+    { "id": "common", "color": "white" },
+    { "id": "uncommon", "color": "green" },
+    { "id": "rare", "color": "blue" },
+    { "id": "epic", "color": "magenta" },
+    { "id": "legendary", "color": "gold" }
+  ],
+  "environments": [
+    { "id": "rooftop_platform", "use": "idle", "description": "Neon rooftop platform at night." },
+    { "id": "safe_house", "use": "sleep", "description": "Cozy side-view safe house or pet room." },
+    { "id": "city_streets", "use": "play", "description": "Neon city street play area." },
+    { "id": "food_stop", "use": "eat", "description": "Small ramen or snack stop for food interactions." }
+  ]
+}
