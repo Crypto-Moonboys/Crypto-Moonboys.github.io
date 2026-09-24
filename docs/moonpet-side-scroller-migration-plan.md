@@ -1,6 +1,8 @@
 # Moonpet Side-Scroller Migration Plan
 
-The Moonpet production art direction is moving to a 2D side-scroller virtual-companion format. The attached `Crypto Moonboys Pets - Side-Scroller Sprite Bible V1.0` is now the production source of truth for gameplay animation.
+The Moonpet production art direction is moving to a 2D side-scroller virtual-companion format. The attached `Moonbot Side-Scroller Update - Sprite Bible V2` is now the production source of truth for gameplay animation.
+
+The older broad brand/trait sheet and the first side-scroller bible remain useful references, but V2 sets the current gameplay readability target: bigger Moonbot, more horizontal movement, stronger props, mobile-first staging, and bigger action comedy.
 
 ## Terminology And Animal-Drift Guard
 
@@ -37,6 +39,20 @@ Build side. Test side. Ship side.
 
 All current gameplay animation planning should assume clean side-view sprites, autonomous Moonbot movement inside a bounded stage, left/right visual logic, and mirrored movement where practical.
 
+## V2 Production Focus
+
+The V2 art direction pushes Moonbot larger and more readable on mobile/Telegram. The character should use roughly one third of the mobile stage height when active, with oversized readable props and strong neon contrast.
+
+Production staging should include:
+
+- Bigger Moonbot scale on screen.
+- More stage travel during action flows.
+- Neon rooftop and city-stage backgrounds with horizontal exploration.
+- Prop-heavy interactions for food, toys, cleaning, rest/music, and training.
+- Bold props such as burgers, hotdogs, pizza, drinks, toys, beds, dumbbells, boomboxes, and cleaning tools.
+- Occasional funny chaos moments such as food drones, giant food events, flying props, and oversized burgers.
+- Mobile-first readability over dense detail.
+
 ## Autonomous Pet, Not Player-Controlled Platformer
 
 Side-scroller describes the visual format, not the control model. Moonpet remains an autonomous virtual pet.
@@ -58,6 +74,14 @@ Examples:
 - Clean button: Moonbot moves to a cleaning area, plays bubbles/polish animation, then returns to idle.
 - Sleep button: Moonbot walks to a sleep spot, lies down, and sleeps.
 - Train button: Moonbot walks to a training spot and performs a non-combat train animation.
+
+Prop-chaos examples:
+
+- A food drone teases Moonbot with a burger, then drops it near the food spot.
+- A burger grows oversized for a few seconds.
+- A giant burger briefly swallows Moonbot as a comedy beat, then resets and returns Moonbot to normal.
+- Toys bounce through the lane during play, while Moonbot reacts autonomously.
+- Cleaning props throw bubbles across the scene, then clear.
 
 Side-scroller means side-view camera, side-view sprites, side-view environment, a left/right movement lane, and consistent side-view animation generation. It does not mean player-controlled platforming.
 
@@ -81,6 +105,8 @@ New gameplay sprites should be side-scroller first:
 - Keep autonomous left/right sprite logic compatible with mirroring.
 - Keep every animation on a stable ground line.
 - Use the black visor, pink LED eyes, glossy white robot body, mitten hands, chunky robot feet, and soft shaded chibi cyber mascot style.
+- Prioritize big silhouettes and mobile readability.
+- Let props drive actions, staging, and comedy beats.
 - Generate, review, promote, and then integrate.
 
 ## Staged Migration

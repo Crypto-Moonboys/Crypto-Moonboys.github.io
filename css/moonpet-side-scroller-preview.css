@@ -28,7 +28,7 @@ body {
 }
 
 .preview-shell {
-  width: min(1320px, calc(100% - 32px));
+  width: min(1400px, calc(100% - 24px));
   margin: 0 auto;
   padding: 24px 0 36px;
 }
@@ -79,13 +79,14 @@ h1 {
 
 .stage-panel {
   overflow: hidden;
+  min-height: 540px;
 }
 
 #moonbot-stage {
   display: block;
   width: 100%;
   height: auto;
-  min-height: 420px;
+  min-height: 540px;
 }
 
 .controls-panel {
@@ -156,5 +157,29 @@ button.is-active {
 
   .model-note {
     text-align: left;
+  }
+
+  .stage-panel,
+  #moonbot-stage {
+    min-height: 520px;
+  }
+}
+
+@media (max-width: 560px) {
+  .preview-shell {
+    width: min(100% - 16px, 520px);
+    padding-top: 14px;
+  }
+
+  h1 {
+    font-size: 34px;
+  }
+
+  .action-buttons {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  button {
+    min-height: 48px;
   }
 }

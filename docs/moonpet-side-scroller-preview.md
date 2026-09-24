@@ -10,17 +10,18 @@ moonpet-side-scroller-preview.html
 
 ## Purpose
 
-This page proves the new production model:
+This page proves the new production model from `Moonbot Side-Scroller Update - Sprite Bible V2`:
 
 - Moonpet is the game/system name.
 - Moonbot is the art subject.
 - Gameplay remains autonomous and button-driven.
 - Side-scroller means side-view camera, side-view sprites, side-view environment, and a bounded left/right movement lane.
 - Side-scroller does not mean player-controlled platforming.
+- Moonbot should be large, mobile-readable, and staged with bold props.
 
 ## What The Preview Shows
 
-The preview uses a procedural placeholder Moonbot because side-scroller sprites have not been generated yet. It shows a neon rooftop stage with action buttons:
+The preview uses a procedural placeholder Moonbot because side-scroller sprites have not been generated yet. It intentionally makes Moonbot much larger than the first preview pass and lets it travel across more of the rooftop stage. It shows a neon rooftop stage with action buttons:
 
 - Idle
 - Eat
@@ -32,11 +33,13 @@ The preview uses a procedural placeholder Moonbot because side-scroller sprites 
 Each button starts a scripted flow:
 
 - Idle: Moonbot idles near the centre.
-- Eat: Moonbot walks to the food spot, eats, then returns to idle.
-- Play: Moonbot runs or bounces toward the toy, plays, then returns to idle.
-- Clean: Moonbot walks to the cleaning spot, plays bubbles/polish animation, then returns to idle.
+- Eat: Moonbot detects food, walks across the stage, meets food drones, triggers a giant burger gag, eats, reacts, then returns to idle.
+- Play: Moonbot runs or bounces toward the toy, plays with moving props, then returns to idle.
+- Clean: Moonbot walks to the cleaning spot, plays bubbles/polish animation with sponge/soap props, then returns to idle.
 - Sleep: Moonbot walks to the bed spot and sleeps.
 - Train: Moonbot walks to the training spot, performs a non-combat train animation, then returns to idle.
+
+The prop planning shown here includes burgers, hotdogs, pizza, donuts, soda, beach balls, bubbles, dumbbells, beds, sponge/soap, food drones, and a giant food event. These are preview-only procedural props, not generated assets.
 
 ## Control Model
 

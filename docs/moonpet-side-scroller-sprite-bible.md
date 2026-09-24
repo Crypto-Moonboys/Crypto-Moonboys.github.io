@@ -1,6 +1,6 @@
 # Moonpet Side-Scroller Sprite Bible
 
-This document converts the attached `Crypto Moonboys Pets - Side-Scroller Sprite Bible V1.0` artwork into production rules for Moonpet gameplay assets.
+This document converts the attached `Moonbot Side-Scroller Update - Sprite Bible V2` artwork into production rules for Moonpet gameplay assets. V2 supersedes the earlier side-scroller bible for gameplay readability and action staging.
 
 ## Terminology And Animal-Drift Guard
 
@@ -44,6 +44,20 @@ The base Moonbot is a glossy white robot companion with a large rounded helmet/h
 
 The body should feel like a cute collectible chibi cyber mascot: simple, readable, high contrast, game ready, and expressive without becoming realistic, animal-like, or overly detailed.
 
+## V2 Scale And Readability
+
+Moonbot should be much larger on screen than the earlier preview pass. On mobile/Telegram, Moonbot should usually read at about 35-45% of the visible stage height during action moments.
+
+V2 staging rules:
+
+- Bigger character first.
+- Larger action props.
+- More left/right travel across the stage.
+- More readable silhouettes.
+- Bolder neon rooftop environment.
+- Strong foreground props that explain the selected action.
+- Comedic prop chaos when it supports the action.
+
 ## Production Rules
 
 - Current runtime direction is 2D side-scroller.
@@ -55,6 +69,8 @@ The body should feel like a cute collectible chibi cyber mascot: simple, readabl
 - Old isometric sheets are reference only.
 - Generate, review, promote, then integrate.
 - Keep every sheet consistent in size, frame count, framing, ground line, and silhouette.
+- Keep Moonbot large enough for Telegram/mobile readability.
+- Keep action props bold, memorable, and readable at small screen sizes.
 
 ## Autonomous Pet, Not Player-Controlled Platformer
 
@@ -69,6 +85,8 @@ Expected action flow:
 - Clean: Moonbot moves to a cleaning spot, plays bubble/polish animation, and returns to idle.
 - Sleep: Moonbot walks to a sleep spot, lies down, and sleeps.
 - Train: Moonbot walks to a training spot and performs a non-combat train animation.
+
+The action is button-triggered, but the scene should feel active. Moonbot can travel between spots, props can move, drones can enter, food can grow, toys can bounce, and effects can pop. The user still never directly drives movement.
 
 Side-scroller means side-view camera, side-view sprites, side-view environments, and a simple left/right movement lane. It does not mean platformer controls, user-controlled jumping, collision gameplay, manual movement, or combat.
 
@@ -104,6 +122,30 @@ The first side-scroller queue covers:
 - Clean: bubbles or cleaning motion, no background.
 - Train: non-combat exercise motion such as small dumbbells.
 - Hurt: dizzy or stunned side-view Moonbot state.
+
+## Prop / Food System
+
+Props are central to V2 action readability and comedy. Planned prop families:
+
+- Food: burger, hotdog, pizza, donut, fries, soda, snack bowl.
+- Toys: beach ball, toy car, rubber duck, float ring.
+- Cleaning: bubbles, sponge, soap, cleaning bot.
+- Training: dumbbell, punch bag.
+- Rest/music: bed, pillow, boombox, arcade.
+- Chaos: food drones, giant food event, flying props, prop mutations.
+
+Props should be separate gameplay/staging elements, not baked into every base Moonbot sprite. Character sheets should stay transparent where possible.
+
+## Chaos / Special Interactions
+
+V2 allows funny prop surprises:
+
+- Food drones follow, tease, and interact.
+- Giant food event: burger grows huge, briefly swallows Moonbot, then resets.
+- Prop mutations: burger, pizza, hotdog, drink, and disco/party variants.
+- Hover mode, food costume, float mode, party mode, and beam-up are future transformation references.
+
+These are action-flow staging ideas, not combat mechanics.
 
 The old `attack` direction remains rejected for the previous isometric pack and is not part of this side-scroller base plan.
 
@@ -203,6 +245,9 @@ Environment examples are gameplay background direction only:
 - Safe house for sleep.
 - City streets for play.
 - Food stop for eat.
+- Training area for train.
+- Chill/recharge spot for sleep or idle.
+- Continuing city path for future exploration.
 
 Backgrounds should remain separate from character sprite sheets. Character sheets should stay transparent where possible.
 

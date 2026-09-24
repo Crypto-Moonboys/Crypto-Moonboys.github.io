@@ -1,7 +1,21 @@
 {
   "version": "0.1.0",
-  "source": "Crypto Moonboys Pets - Side-Scroller Sprite Bible V1.0",
+  "source": "Moonbot Side-Scroller Update - Sprite Bible V2",
   "status": "production_direction",
+  "production_focus": {
+    "summary": "Bigger Moonbot, more movement, mobile-first readability, prop-heavy action flows, and funny side-scroller chaos without player-controlled platforming.",
+    "moonbot_scale": "large_mobile_readable",
+    "target_mobile_stage_height_ratio": "35-45%",
+    "stage_usage": "Moonbot should travel across the bounded side-view lane during action flows.",
+    "visual_priorities": [
+      "larger Moonbot on screen",
+      "bold readable props",
+      "neon rooftop side-view stage",
+      "strong silhouette",
+      "mobile/Telegram readability",
+      "autonomous action comedy"
+    ]
+  },
   "base_character": {
     "name": "MOONBOT PET VISOR V1",
     "runtime_view": "2d_side_scroller",
@@ -58,7 +72,9 @@
     "Old isometric assets remain archived reference only.",
     "Generate, review, promote, then integrate.",
     "Character sprite sheets should use transparent backgrounds where possible.",
-    "Keep frame count, frame size, sheet size, ground line, and silhouette consistent."
+    "Keep frame count, frame size, sheet size, ground line, and silhouette consistent.",
+    "Make Moonbot large enough for mobile/Telegram readability.",
+    "Use props to drive action staging, comedy, and clear care/action feedback."
   ],
   "gameplay_model": {
     "title": "Autonomous Pet, Not Player-Controlled Platformer",
@@ -104,6 +120,83 @@
     { "id": "side_train", "label": "Train", "description": "Side-view non-combat exercise motion." },
     { "id": "side_hurt", "label": "Hurt", "description": "Side-view dizzy or stunned state." }
   ],
+  "prop_system": {
+    "food": [
+      "burger",
+      "hotdog",
+      "pizza",
+      "donut",
+      "fries",
+      "soda",
+      "snack_bowl"
+    ],
+    "toys": [
+      "beach_ball",
+      "toy_car",
+      "rubber_duck",
+      "float_ring"
+    ],
+    "cleaning": [
+      "bubbles",
+      "sponge",
+      "soap",
+      "cleaning_bot"
+    ],
+    "training": [
+      "dumbbell",
+      "punch_bag"
+    ],
+    "rest_music": [
+      "bed",
+      "pillow",
+      "boombox",
+      "arcade"
+    ],
+    "chaos_special_interactions": [
+      "food_drones",
+      "giant_food_event",
+      "flying_props",
+      "burger_grows_huge",
+      "burger_briefly_eats_moonbot_then_resets",
+      "prop_mutations",
+      "hover_mode",
+      "float_mode",
+      "party_mode",
+      "beam_up"
+    ]
+  },
+  "action_flow_staging": {
+    "side_eat": [
+      "detect food",
+      "walk to food spot",
+      "interact with snack or oversized food prop",
+      "happy reaction",
+      "return to idle"
+    ],
+    "side_play": [
+      "run or bounce toward toy",
+      "play with beach ball or toy prop",
+      "toy may bounce or fly",
+      "return to idle"
+    ],
+    "side_clean": [
+      "walk to clean spot",
+      "bubbles and sponge or soap motion",
+      "polish shine reaction",
+      "return to idle"
+    ],
+    "side_sleep": [
+      "walk to bed",
+      "lie down",
+      "sleep loop"
+    ],
+    "side_train": [
+      "walk to training prop",
+      "perform non-combat exercise",
+      "short success reaction",
+      "return to idle"
+    ]
+  },
   "face_visor_expressions": [
     "default",
     "happy",
@@ -185,5 +278,9 @@
     { "id": "safe_house", "use": "sleep", "description": "Cozy side-view safe house or Moonbot room." },
     { "id": "city_streets", "use": "play", "description": "Neon city street play area." },
     { "id": "food_stop", "use": "eat", "description": "Small ramen or snack stop for food interactions." }
+    ,
+    { "id": "training_area", "use": "train", "description": "Neon rooftop training area with dumbbell or punch bag props." },
+    { "id": "chill_recharge", "use": "sleep", "description": "Side-view rest spot with bed, pillow, and music props." },
+    { "id": "city_continues", "use": "future", "description": "Horizontal neon city lane for future autonomous exploration." }
   ]
 }
