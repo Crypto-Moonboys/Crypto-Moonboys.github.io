@@ -17,6 +17,8 @@ function makeQueueItem(overrides = {}) {
     approved: false,
     custom_required: true,
     animation_kind: "iso_custom_eat_down",
+    animation_name: "Moonbot Eat Down",
+    raw_prompt: true,
     prompt: "Create a down-facing isometric custom eat animation for MOONBOT PET VISOR V1, transparent background, no text.",
     output_expectations: {
       frame_count: 25,
@@ -39,7 +41,9 @@ assert.deepEqual(buildSpritesheetPayload(item), {
   animations: [
     {
       kind: "custom",
-      prompt: item.prompt
+      prompt: item.prompt,
+      name: "Moonbot Eat Down",
+      rawPrompt: true
     }
   ],
   videoTier: "turbo",
@@ -47,6 +51,7 @@ assert.deepEqual(buildSpritesheetPayload(item), {
   frameSize: 256,
   removeBg: "ultra"
 });
+assert.equal(validateQueueItem(makeQueueItem({ status: "rejected_pending_regeneration" }), "custom_eat").status, "rejected_pending_regeneration");
 
 assert.throws(() => validateQueueItem(null, "custom_wave"), /Unknown custom animation id/);
 assert.throws(() => validateQueueItem(makeQueueItem({ id: "custom_wave" }), "custom_wave"), /not enabled yet/);

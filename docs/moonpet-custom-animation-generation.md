@@ -70,21 +70,24 @@ Expected output format:
 - `frame_size`: 256
 - `sheet_size`: 1280x1280
 
-`custom_eat` must remain planned and unapproved until a generated or manually imported sheet is reviewed:
+`custom_eat` is currently unapproved and waiting for a stricter regeneration attempt:
 
-- `status: planned`
+- `status: rejected_pending_regeneration`
 - `approved: false`
 - `promoted: false`
 - `role: custom_eat`
 - `animation_kind: iso_custom_eat_down`
 - `custom_required: true`
 - `source_character_name: MOONBOT PET VISOR V1`
+- `regeneration_allowed: true`
 
 Prompt direction:
 
 ```text
-Create a down-facing isometric custom eat animation for MOONBOT PET VISOR V1. Keep the exact Moonbot body, white glossy helmet, black visor, pink LED eyes, proportions, and approved sprite style. The pet should eat or receive food in a cute readable way while remaining down-facing/isometric. No side-scroller view, no attack pose, no extra background, no text.
+Create a DOWN-FACING isometric custom eat animation for MOONBOT PET VISOR V1. Keep the character facing toward the viewer/down direction like iso_idle_down, iso_walk_down, and iso_run_down. Do not rotate into side view. Do not show profile view. The Moonbot should hold/eat a small snack or receive food while staying front/down-facing. Preserve black visor, pink LED eyes, glossy white helmet/body, same proportions, same approved Moonbot sprite style. No side-scroller, no attack pose, no background, no text.
 ```
+
+The latest API-generated `custom_eat` was structurally valid but visually rejected because it came out side-facing. Mechanical pass does not equal visual approval.
 
 Promotion targets for `custom_eat`:
 
@@ -112,9 +115,10 @@ AUTOSPRITE_API_KEY=replace_me node scripts/generate-moonpet-custom-animation.js 
 The custom generation script:
 
 - Reads the custom queue.
-- Validates that `custom_eat` is planned, unapproved, unpromoted, and custom-required.
+- Validates that `custom_eat` is planned or `rejected_pending_regeneration`, unapproved, unpromoted, and custom-required.
 - Finds the existing AutoSprite character `MOONBOT PET VISOR V1`.
 - Sends one custom animation request using `kind: custom` and the queue prompt.
+- Uses `rawPrompt: true` for `custom_eat` regeneration so the stricter down-facing prompt is not softened by AutoSprite's default custom-animation template.
 - Downloads the generated PNG into `output/moonpets/custom/`.
 - Downloads the atlas JSON when available.
 - Generates a local atlas JSON when AutoSprite only returns a PNG.
@@ -146,7 +150,7 @@ It updates the queue item to `status: promoted_pending_approval`, sets `promoted
 
 It does not set `approved: true`.
 
-Approval remains a later manual review step after sandbox/runtime inspection. Promotion alone must not set `approved: true`.
+Approval remains a later manual review step after sandbox/runtime inspection. Promotion alone must not set `approved: true`. Rejected `custom_eat` evidence cannot be promoted; regeneration must produce a new report first.
 
 ## GitHub Actions
 
@@ -174,7 +178,9 @@ The custom generation request uses:
   "animations": [
     {
       "kind": "custom",
-      "prompt": "..."
+      "name": "Moonbot Eat Down",
+      "prompt": "...",
+      "rawPrompt": true
     }
   ],
   "videoTier": "turbo",
@@ -184,4 +190,4 @@ The custom generation request uses:
 }
 ```
 
-AutoSprite's API docs describe custom animations as `kind: "custom"` with a required prompt. If that API response changes, the script must fail clearly rather than fake a successful generation.
+AutoSprite's API docs describe custom animations as `kind: "custom"` with a required prompt. They also document `rawPrompt` for custom animations when the built-in template direction conflicts with the prompt direction. If the API keeps producing side-facing `custom_eat`, manual AutoSprite website generation becomes the fallback path, like `custom_sleep`.

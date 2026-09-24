@@ -16,6 +16,7 @@ const MANIFEST_PATH = path.join(REPO_ROOT, "output", "manifests", "moonpet-custo
 const RAW_DIR = path.join(REPO_ROOT, "output", "manifests", "autosprite", "custom");
 const API_BASE_URL = "https://www.autosprite.io/api/v1";
 const ALLOWED_IDS = new Set(["custom_eat"]);
+const GENERATABLE_STATUSES = new Set(["planned", "rejected_pending_regeneration"]);
 const PROMPT_LIMIT = 600;
 
 function parseArgs(argv) {
@@ -85,7 +86,9 @@ function validateQueueItem(item, id) {
   if (!item) throw new Error(`Unknown custom animation id: ${id}`);
   if (!ALLOWED_IDS.has(id)) throw new Error(`Custom animation id ${id} is not enabled yet. Only custom_eat is enabled for generation.`);
   if (item.id !== id) throw new Error(`Queue item id mismatch: expected ${id}, found ${item.id}`);
-  if (item.status !== "planned") throw new Error(`${id} must have status=planned before generation.`);
+  if (!GENERATABLE_STATUSES.has(item.status)) {
+    throw new Error(`${id} must have status=planned or rejected_pending_regeneration before generation.`);
+  }
   if (item.approved !== false) throw new Error(`${id} must have approved=false before generation.`);
   if (item.promoted === true) throw new Error(`${id} must have promoted=false before generation.`);
   if (item.custom_required !== true) throw new Error(`${id} must have custom_required=true.`);
@@ -97,13 +100,14 @@ function validateQueueItem(item, id) {
 }
 
 function buildSpritesheetPayload(item) {
+  const animation = {
+    kind: "custom",
+    prompt: item.prompt
+  };
+  if (item.animation_name || item.display_name) animation.name = item.animation_name || item.display_name;
+  if (item.raw_prompt === true) animation.rawPrompt = true;
   return {
-    animations: [
-      {
-        kind: "custom",
-        prompt: item.prompt
-      }
-    ],
+    animations: [animation],
     videoTier: "turbo",
     frameCount: item.output_expectations.frame_count,
     frameSize: item.output_expectations.frame_size,

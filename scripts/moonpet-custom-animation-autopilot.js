@@ -11,8 +11,9 @@ const REPO_ROOT = path.resolve(__dirname, "..");
 const QUEUE_PATH = path.join(REPO_ROOT, "data", "moonpet-custom-animation-queue.json");
 const GENERATED_MANIFEST_PATH = path.join(REPO_ROOT, "output", "manifests", "moonpet-custom-animation.generated.json");
 const REVIEW_REPORT_PATH = path.join(REPO_ROOT, "output", "manifests", "moonpet-custom-animation-review.generated.json");
+const REVIEW_ARCHIVE_DIR = path.join(REPO_ROOT, "output", "manifests", "moonpet-custom-animation-reviews");
 const ALLOWED_IDS = new Set(["custom_eat"]);
-const REVIEWABLE_STATUSES = new Set(["planned", "generated_pending_review"]);
+const REVIEWABLE_STATUSES = new Set(["planned", "generated_pending_review", "rejected_pending_regeneration"]);
 const FRAME_COUNT = 25;
 const FRAME_SIZE = 256;
 const SHEET_SIZE = { w: 1280, h: 1280 };
@@ -46,6 +47,26 @@ async function readJson(filePath) {
 async function writeJson(filePath, data) {
   await fs.mkdir(path.dirname(filePath), { recursive: true });
   await fs.writeFile(filePath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
+}
+
+function safeTimestamp(value = new Date().toISOString()) {
+  return String(value).replace(/[:.]/g, "-");
+}
+
+async function writeReviewReport(report) {
+  if (await pathExists(REVIEW_REPORT_PATH)) {
+    try {
+      const previous = await readJson(REVIEW_REPORT_PATH);
+      const previousId = previous.custom_animation_id || "custom-animation";
+      const previousCreatedAt = previous.created_at || previous.generated_at || new Date().toISOString();
+      const archivePath = path.join(REVIEW_ARCHIVE_DIR, `${previousId}-${safeTimestamp(previousCreatedAt)}.json`);
+      await writeJson(archivePath, previous);
+      report.previous_report_archived_path = relative(archivePath);
+    } catch (error) {
+      report.previous_report_archive_error = error.message;
+    }
+  }
+  await writeJson(REVIEW_REPORT_PATH, report);
 }
 
 function relative(filePath) {
@@ -267,13 +288,13 @@ function validateItem(item, id) {
   if (!item) return checks;
   checks.push(REVIEWABLE_STATUSES.has(item.status)
     ? pass("queue_status_reviewable", "Queue status is reviewable", item.status)
-    : fail("queue_status_reviewable", "Queue status must be planned or generated_pending_review", item.status));
+    : fail("queue_status_reviewable", "Queue status must be planned, generated_pending_review, or rejected_pending_regeneration", item.status));
   checks.push(item.approved === false
     ? pass("not_already_approved", "Item is not already approved", "approved=false")
     : fail("not_already_approved", "Approved items cannot be regenerated/reviewed here", "approved=true"));
   checks.push(item.rejected !== true
-    ? pass("not_rejected", "Item is not rejected", "rejected=false")
-    : fail("not_rejected", "Rejected item cannot be generated or promoted", "rejected=true"));
+    ? pass("not_rejected", "Item is not terminally rejected", "rejected=false")
+    : fail("not_rejected", "Terminally rejected item cannot be generated or promoted", "rejected=true"));
   checks.push(item.rejected !== true && id !== "attack" && item.animation_kind !== "attack" && item.role !== "attack"
     ? pass("no_rejected_state_promotion", "No rejected state is being promoted", id)
     : fail("no_rejected_state_promotion", "Rejected states must not be promoted", id));
@@ -298,7 +319,7 @@ async function runCustomAnimationAutopilot(options) {
   let promoted = false;
   let promotionError = "";
 
-  if (!setupFailed.length && options.execute && item.status === "planned") {
+  if (!setupFailed.length && options.execute && ["planned", "rejected_pending_regeneration"].includes(item.status)) {
     try {
       const entry = await generateCustomAnimation({
         id: options.id,
@@ -364,6 +385,12 @@ async function runCustomAnimationAutopilot(options) {
     prompt: item && item.prompt || null,
     generation_status: generationStatus,
     review_status: reviewStatus,
+    queue_status: item && item.status || null,
+    visual_rejected: Boolean(item && item.visual_rejected),
+    rejected_pending_regeneration: item && item.status === "rejected_pending_regeneration",
+    rejection_reason: item && item.rejection_reason || null,
+    previous_artifact_url: item && item.previous_artifact_url || null,
+    regeneration_allowed: Boolean(item && item.regeneration_allowed === true && item.status === "rejected_pending_regeneration" && item.approved === false),
     reason: failed.length ? failed.map((check) => check.detail || check.label).join("; ") : review && review.reason || "Manual review required.",
     checks: allChecks,
     output_png_path: review && review.output_png_path || null,
@@ -377,7 +404,7 @@ async function runCustomAnimationAutopilot(options) {
       ? ["Open the sandbox/runtime preview for visual approval.", "Promote only with explicit auto_promote_if_passed=true or a separate promotion step.", "Do not set approved=true until explicit human approval."]
       : ["Do not promote or approve until failed checks are resolved.", "Inspect output/manifests/ and output/moonpets/custom/ artifacts."]
   };
-  await writeJson(REVIEW_REPORT_PATH, report);
+  await writeReviewReport(report);
   return report;
 }
 
@@ -401,7 +428,7 @@ if (require.main === module) {
       checks: [fail("autopilot_exception", "Autopilot completed without exception", error.message)],
       recommendations: ["Inspect the exception and rerun after fixing the queue or generator."]
     };
-    await writeJson(REVIEW_REPORT_PATH, report);
+    await writeReviewReport(report);
     console.error(error.message);
     process.exitCode = 1;
   });

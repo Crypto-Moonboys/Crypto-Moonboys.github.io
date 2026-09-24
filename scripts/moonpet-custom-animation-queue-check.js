@@ -92,10 +92,10 @@ function validateQueue(queue) {
         ? pass(`${label} promoted files exist`)
         : fail(`${label} promoted PNG/atlas files must exist`));
     } else if (item.id === "custom_eat") {
-      const allowedEatStatuses = new Set(["planned", "generated_pending_review", "promoted_pending_approval"]);
+      const allowedEatStatuses = new Set(["planned", "generated_pending_review", "promoted_pending_approval", "rejected_pending_regeneration"]);
       results.push(allowedEatStatuses.has(item.status)
         ? pass(`${label} status is ${item.status}`)
-        : fail(`${label} status must be planned, generated_pending_review, or promoted_pending_approval`));
+        : fail(`${label} status must be planned, generated_pending_review, promoted_pending_approval, or rejected_pending_regeneration`));
       results.push(item.approved === false
         ? pass(`${label} is not accidentally approved`)
         : fail(`${label} must have approved=false`));
@@ -106,6 +106,20 @@ function validateQueue(queue) {
         : item.promoted === true
           ? fail(`${label} must not be promoted before promotion review`)
           : pass(`${label} is not promoted`));
+      if (item.status === "rejected_pending_regeneration") {
+        results.push(item.visual_rejected === true
+          ? pass(`${label} records visual rejection`)
+          : fail(`${label} must set visual_rejected=true when rejected_pending_regeneration`));
+        results.push(typeof item.rejection_reason === "string" && item.rejection_reason.includes("side-facing")
+          ? pass(`${label} records side-facing rejection reason`)
+          : fail(`${label} must record side-facing rejection reason`));
+        results.push(item.regeneration_allowed === true
+          ? pass(`${label} allows regeneration`)
+          : fail(`${label} must set regeneration_allowed=true`));
+        results.push(Array.isArray(item.attempts) && item.attempts.some((attempt) => attempt.status === "visual_rejected")
+          ? pass(`${label} keeps rejected attempt evidence`)
+          : fail(`${label} must keep a visual_rejected attempt record`));
+      }
       results.push(item.role === "custom_eat"
         ? pass(`${label} role is custom_eat`)
         : fail(`${label} role must be custom_eat`));

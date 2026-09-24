@@ -26,9 +26,9 @@ Then it validates one requested item:
 
 - The id is enabled.
 - The queue item exists.
-- The status is `planned` or `generated_pending_review`.
+- The status is `planned`, `generated_pending_review`, or `rejected_pending_regeneration`.
 - `approved` is still `false`.
-- The item is not rejected.
+- The item is not terminally rejected.
 - The item is not `attack`.
 - The output targets are stable public paths.
 
@@ -68,6 +68,10 @@ The review checks are mechanical, not artistic judgment:
 
 Passing these checks means the asset is technically reviewable. It does not mean the artwork is approved.
 
+The latest `custom_eat` generation passed the mechanical checks but failed visual review because it was side-facing instead of down-facing/isometric. The queue now keeps that run as rejected evidence and leaves `custom_eat` in `rejected_pending_regeneration`.
+
+Regeneration is allowed from `rejected_pending_regeneration` with a stricter down-facing prompt. Rejected evidence must not be promoted. If the API keeps producing side-facing output, use manual AutoSprite website generation as the fallback, matching the accepted `custom_sleep` path.
+
 ## Report
 
 The operator writes:
@@ -83,6 +87,10 @@ The report includes:
 - `prompt`
 - `generation_status`
 - `review_status`
+- `visual_rejected`
+- `rejected_pending_regeneration`
+- `previous_artifact_url`
+- `regeneration_allowed`
 - `reason`
 - `checks`
 - `output_png_path`
@@ -112,13 +120,15 @@ Execute generation for `custom_eat` explicitly:
 AUTOSPRITE_API_KEY=replace_me node scripts/moonpet-custom-animation-autopilot.js --id custom_eat --execute
 ```
 
+This is also the regeneration command when `custom_eat` is in `rejected_pending_regeneration`.
+
 Promote only if mechanical checks pass:
 
 ```bash
 AUTOSPRITE_API_KEY=replace_me node scripts/moonpet-custom-animation-autopilot.js --id custom_eat --execute --promote-if-passed
 ```
 
-Promotion moves the queue state to `promoted_pending_approval`. It does not set `approved: true`.
+Promotion moves the queue state to `promoted_pending_approval`. It does not set `approved: true`. The promoter refuses `rejected_pending_regeneration`, so the side-facing rejected `custom_eat` cannot be promoted by accident.
 
 ## GitHub Actions
 

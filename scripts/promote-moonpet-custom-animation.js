@@ -55,6 +55,9 @@ async function promoteCustomAnimation(options) {
   const item = (queue.items || []).find((entry) => entry.id === options.id);
   if (!item) throw new Error(`Queue item not found: ${options.id}`);
   if (item.approved === true) throw new Error(`${options.id} is already approved. This promoter must not approve assets.`);
+  if (item.rejected === true || item.visual_rejected === true || item.status === "rejected_pending_regeneration") {
+    throw new Error(`${options.id} is rejected pending regeneration and must not be promoted.`);
+  }
 
   const record = generatedRecordFor(manifest, options.id);
   if (!record) throw new Error(`Generated custom animation record not found for ${options.id}.`);
