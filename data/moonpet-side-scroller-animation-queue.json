@@ -519,8 +519,8 @@
         "confetti",
         "reward_sparkles"
       ],
-      "prompt": "Moonbot side-view CELEBRATION animation, big mobile-readable silhouette. White glossy robot companion, chibi cyber mascot, rounded bot body, black visor with pink LED happy eyes, mitten robot hands raised high, chunky robot feet, happy bounce, confetti burst, sparkles, victory glow. No antenna. Transparent background, no text.",
-      "negative_prompt": "No tail, no ears, no antenna, no snout, no animal body, no fur, no paws, no whiskers, no claws, no profile-only idle pose.",
+      "prompt": "Moonbot side-view CELEBRATION animation, obvious jumping party pose. White glossy robot companion, chibi cyber mascot, rounded bot body, black visor with pink LED happy crescent eyes, both mitten robot hands clearly raised above head, chunky robot feet bouncing off ground, big confetti burst, star sparkles, victory glow. Transparent background, no text.",
+      "negative_prompt": "No tail, no ears, no antenna, no snout, no animal body, no fur, no paws, no whiskers, no claws, no idle pose, no shy pose, no hands-down pose.",
       "output_expectations": {
         "frame_count": 25,
         "frame_size": 256,
@@ -533,8 +533,8 @@
         "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_celebrate.png",
         "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_celebrate.json"
       },
-      "rejection_reason": "Previous reruns were too close to idle or introduced antenna/ear-like drift. Regenerate with raised arms, confetti, sparkles, and clear celebration silhouette.",
-      "latest_rejected_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35974615995"
+      "rejection_reason": "Previous reruns were too close to idle or introduced antenna/ear-like drift. Latest strict rerun was mechanically valid but still read as shy/happy idle with tiny confetti, not a clear celebration. Regenerate with both hands above head, jumping pose, large confetti, sparkles, and clear celebration silhouette.",
+      "latest_rejected_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35976437383"
     },
     {
       "id": "side_interact",
