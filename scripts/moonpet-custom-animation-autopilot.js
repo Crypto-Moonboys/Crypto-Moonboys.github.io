@@ -177,6 +177,12 @@ async function reviewOutput({ item, record }) {
 
   const sheetExists = await pathExists(sheetPath);
   const atlasExists = await pathExists(atlasPath);
+  checks.push(sheetExists
+    ? pass("generated_sheet_path_exists", "Generated sheet path exists", sheetRelative)
+    : fail("generated_sheet_path_exists", "Generated sheet path missing", sheetRelative));
+  checks.push(atlasExists
+    ? pass("generated_atlas_path_exists", "Generated atlas path exists", atlasRelative)
+    : fail("generated_atlas_path_exists", "Generated atlas path missing", atlasRelative));
   checks.push(sheetExists ? pass("png_exists", "PNG file exists", sheetRelative) : fail("png_exists", "PNG file missing", sheetRelative));
   checks.push(atlasExists ? pass("atlas_exists", "Atlas file exists", atlasRelative) : fail("atlas_exists", "Atlas file missing", atlasRelative));
 
@@ -268,6 +274,9 @@ function validateItem(item, id) {
   checks.push(item.rejected !== true
     ? pass("not_rejected", "Item is not rejected", "rejected=false")
     : fail("not_rejected", "Rejected item cannot be generated or promoted", "rejected=true"));
+  checks.push(item.rejected !== true && id !== "attack" && item.animation_kind !== "attack" && item.role !== "attack"
+    ? pass("no_rejected_state_promotion", "No rejected state is being promoted", id)
+    : fail("no_rejected_state_promotion", "Rejected states must not be promoted", id));
   checks.push(item.id !== "attack" && item.animation_kind !== "attack" && item.role !== "attack"
     ? pass("queue_not_attack", "Queue item is not attack", item.id)
     : fail("queue_not_attack", "Rejected attack cannot be used", item.id));
@@ -349,7 +358,7 @@ async function runCustomAnimationAutopilot(options) {
     ? "fail"
     : review && review.review_status || "manual_review_required";
   const report = {
-    generated_at: new Date().toISOString(),
+    created_at: new Date().toISOString(),
     custom_animation_id: options.id,
     source_character_name: item && item.source_character_name || null,
     prompt: item && item.prompt || null,
@@ -384,7 +393,7 @@ async function main() {
 if (require.main === module) {
   main().catch(async (error) => {
     const report = {
-      generated_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
       custom_animation_id: parseArgs(process.argv.slice(2)).id,
       generation_status: "failed",
       review_status: "fail",

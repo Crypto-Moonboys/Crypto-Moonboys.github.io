@@ -193,6 +193,8 @@ The manual workflow defaults to `phase=dry-run`, so it will only build prompts a
 
 Use `phase=build-approved-pack` for the one-click approved Moonbot base build. Use `auto_commit_promoted_assets=false` to review uploaded artifacts first, or `auto_commit_promoted_assets=true` to commit only the promoted public assets and approved registry.
 
+Use `phase=generate-custom-animation` for the one-item custom operator. The current enabled id is `custom_eat`. Safe defaults keep `execute_custom_generation=false`, `auto_review_custom_animation=true`, and `auto_promote_if_passed=false`. Enable `execute_custom_generation=true` only when you want the workflow to call AutoSprite for the selected custom queue item. Mechanical review writes `output/manifests/moonpet-custom-animation-review.generated.json`; final approval still requires a separate explicit approval step.
+
 ## Safety Rules
 
 - Do not hardcode or log API keys.
