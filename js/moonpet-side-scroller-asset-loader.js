@@ -1,8 +1,10 @@
 (() => {
   const DEFAULT_REGISTRY_PATH = "data/moonpet-side-scroller-approved-assets.json";
+  const CACHE_VERSION = "20260924-side-sprites-runtime-v2";
+  const PRIORITY_ROLES = new Set(["side_idle", "side_walk", "side_run"]);
 
   function cacheToken(asset) {
-    return asset && asset.promoted_at || window.MOONPET_COMMIT_HASH || "dev";
+    return asset && (asset.promoted_at || asset.updated_at || asset.version) || window.MOONPET_COMMIT_HASH || CACHE_VERSION;
   }
 
   function cacheBustedUrl(path, asset) {
@@ -55,6 +57,46 @@
     });
   }
 
+  async function loadAsset(asset, errors) {
+    if (!asset.role || !asset.sheet_path || !asset.atlas_path) {
+      errors.push(`Side asset ${asset.id || "unknown"} is missing role/sheet/atlas path`);
+      return null;
+    }
+    try {
+      const atlas = await fetchJson(asset.atlas_path, asset);
+      const frames = framesFromAtlas(atlas, asset.frame_size || 256);
+      if (!frames.length) {
+        errors.push(`Side asset ${asset.role} atlas did not contain frames`);
+        return null;
+      }
+      const imageResult = await loadImage(asset.sheet_path, asset);
+      if (imageResult.error) {
+        errors.push(`Side asset ${asset.role} sheet failed: ${imageResult.error}`);
+        return null;
+      }
+      return {
+        role: asset.role,
+        asset: {
+          ...asset,
+          frames,
+          image: imageResult.image,
+          sheet_url: imageResult.url
+        }
+      };
+    } catch (error) {
+      errors.push(`Side asset ${asset.role || asset.id} failed to load: ${error.message}`);
+      return null;
+    }
+  }
+
+  async function loadAssetGroup(assets, errors, assetsByRole) {
+    const loaded = await Promise.all(assets.map((asset) => loadAsset(asset, errors)));
+    for (const entry of loaded) {
+      if (entry && entry.role) assetsByRole[entry.role] = entry.asset;
+    }
+    return loaded.filter(Boolean).length;
+  }
+
   async function loadMoonpetSideScrollerAssets(options = {}) {
     const registryPath = options.registryPath || DEFAULT_REGISTRY_PATH;
     const errors = [];
@@ -64,34 +106,17 @@
     const approvedAssets = (registry.assets || []).filter((asset) =>
       asset.approved === true && asset.promoted === true && !asset.rejected
     );
+    const priorityAssets = approvedAssets.filter((asset) => PRIORITY_ROLES.has(asset.role));
+    const secondaryAssets = approvedAssets.filter((asset) => !PRIORITY_ROLES.has(asset.role));
 
-    for (const asset of approvedAssets) {
-      if (!asset.role || !asset.sheet_path || !asset.atlas_path) {
-        errors.push(`Side asset ${asset.id || "unknown"} is missing role/sheet/atlas path`);
-        continue;
-      }
-      try {
-        const atlas = await fetchJson(asset.atlas_path, asset);
-        const frames = framesFromAtlas(atlas, asset.frame_size || 256);
-        if (!frames.length) {
-          errors.push(`Side asset ${asset.role} atlas did not contain frames`);
-          continue;
-        }
-        const imageResult = await loadImage(asset.sheet_path, asset);
-        if (imageResult.error) {
-          errors.push(`Side asset ${asset.role} sheet failed: ${imageResult.error}`);
-          continue;
-        }
-        assetsByRole[asset.role] = {
-          ...asset,
-          frames,
-          image: imageResult.image,
-          sheet_url: imageResult.url
-        };
-      } catch (error) {
-        errors.push(`Side asset ${asset.role || asset.id} failed to load: ${error.message}`);
-      }
-    }
+    await loadAssetGroup(priorityAssets.length ? priorityAssets : approvedAssets.slice(0, 1), errors, assetsByRole);
+    const preload = loadAssetGroup(secondaryAssets, errors, assetsByRole).then((count) => {
+      console.info("[Moonpet side-scroller loader] background assets loaded", {
+        count,
+        roles: Object.keys(assetsByRole)
+      });
+      return { count, assetsByRole, errors };
+    });
 
     return {
       ready: Boolean(Object.keys(assetsByRole).length),
@@ -99,7 +124,10 @@
       assetsByRole,
       roleMap,
       rejected: registry.rejected || [],
-      errors
+      errors,
+      loadedRoles: Object.keys(assetsByRole),
+      pendingRoles: secondaryAssets.map((asset) => asset.role),
+      preload
     };
   }
 

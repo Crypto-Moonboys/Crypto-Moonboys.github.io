@@ -132,6 +132,29 @@
     return true;
   }
 
+  function sideSpriteDebugRequested() {
+    return launchParameter('sideSpriteDebug') === '1' || launchParameter('spriteDebug') === '1' || launchParameter('diag') === '1';
+  }
+
+  function updateSideSpriteDebug(status) {
+    if (!sideSpriteDebugRequested()) return;
+    var marker = document.getElementById('moonpet-side-sprite-debug');
+    if (!marker) {
+      marker = document.createElement('div');
+      marker.id = 'moonpet-side-sprite-debug';
+      marker.setAttribute('role', 'status');
+      marker.style.cssText = 'position:fixed;left:8px;right:8px;bottom:8px;z-index:9999;padding:7px 9px;border:1px solid #61f5ff;background:rgba(1,4,8,.86);color:#d8f9ff;font:11px/1.35 monospace;pointer-events:none;text-align:left;box-shadow:0 0 16px rgba(97,245,255,.35)';
+      document.body.appendChild(marker);
+    }
+    var stateInfo = sideScrollerSpriteRendererState || {};
+    marker.textContent = 'sideSprites=' + (sideScrollerSpriteModeEnabled ? 'requested' : 'off') +
+      ' | loader=' + (window.MoonpetSideScrollerAssetLoader ? 'loaded' : 'missing') +
+      ' | renderer=' + (sideScrollerSpriteRendererReady ? 'ready' : 'not-ready') +
+      ' | role=' + (status && status.role || stateInfo.lastRender && stateInfo.lastRender.role || 'n/a') +
+      ' | fallback=' + ((status && status.fallback) || stateInfo.fallback ? 'yes' : 'no') +
+      ' | reason=' + (status && status.reason || stateInfo.reason || 'pending');
+  }
+
   function loadApprovedSpriteScript(src) {
     return new Promise(function (resolve, reject) {
       var existing = document.querySelector('script[src="' + src + '"]');
@@ -183,23 +206,35 @@
   async function initSideScrollerSpriteMode() {
     if (!sideScrollerSpriteModeEnabled) {
       console.info('[Moonpet] side-scroller sprite mode disabled');
+      updateSideSpriteDebug({ fallback: true, reason: 'side-scroller sprite mode disabled' });
       return false;
     }
     console.info('[Moonpet] side-scroller sprite mode enabled');
+    updateSideSpriteDebug({ reason: 'loading side-scroller scripts' });
     try {
-      await loadApprovedSpriteScript('/js/moonpet-side-scroller-asset-loader.js?v=20260924-side-sprites');
-      await loadApprovedSpriteScript('/js/moonpet-side-scroller-sprite-renderer.js?v=20260924-side-sprites');
+      await loadApprovedSpriteScript('/js/moonpet-side-scroller-asset-loader.js?v=20260924-side-sprites-runtime-v2');
+      await loadApprovedSpriteScript('/js/moonpet-side-scroller-sprite-renderer.js?v=20260924-side-sprites-runtime-v2');
       if (!window.MoonpetSideScrollerSpriteRenderer) throw new Error('MoonpetSideScrollerSpriteRenderer unavailable');
       sideScrollerSpriteRendererState = await window.MoonpetSideScrollerSpriteRenderer.initMoonpetSideScrollerRenderer();
       sideScrollerSpriteRendererReady = Boolean(sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.ready);
+      console.info('[Moonpet] side-scroller sprite status', {
+        ready: sideScrollerSpriteRendererReady,
+        loadedRoles: sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.loadedRoles || [],
+        pendingRoles: sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.pendingRoles || []
+      });
       if (!sideScrollerSpriteRendererReady) {
         console.info('[Moonpet] side-scroller sprite fallback used', sideScrollerSpriteRendererState);
       }
+      updateSideSpriteDebug({
+        fallback: !sideScrollerSpriteRendererReady,
+        reason: sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.reason
+      });
       return sideScrollerSpriteRendererReady;
     } catch (error) {
       sideScrollerSpriteRendererReady = false;
       sideScrollerSpriteRendererState = { reason: error.message, errors: [error.message] };
       console.info('[Moonpet] side-scroller sprite fallback used', sideScrollerSpriteRendererState);
+      updateSideSpriteDebug({ fallback: true, reason: error.message });
       return false;
     }
   }
@@ -3190,9 +3225,14 @@
       active: active,
       facing: 1
     });
+    sideScrollerSpriteRendererState = window.MoonpetSideScrollerSpriteRenderer.getMoonpetSideScrollerRendererState();
+    updateSideSpriteDebug({
+      role: sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.lastRender && sideScrollerSpriteRendererState.lastRender.role,
+      fallback: !drew,
+      reason: sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.reason
+    });
     if (!drew && !sideScrollerSpriteFallbackLogged) {
       sideScrollerSpriteFallbackLogged = true;
-      sideScrollerSpriteRendererState = window.MoonpetSideScrollerSpriteRenderer.getMoonpetSideScrollerRendererState();
       console.info('[Moonpet] side-scroller sprite fallback used', sideScrollerSpriteRendererState);
     }
     return drew;

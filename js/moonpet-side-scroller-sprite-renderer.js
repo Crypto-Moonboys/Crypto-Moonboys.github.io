@@ -11,7 +11,10 @@
     reason: "not initialized",
     errors: [],
     assetsByRole: {},
-    roleMap: {}
+    roleMap: {},
+    loadedRoles: [],
+    pendingRoles: [],
+    lastRender: null
   };
 
   function flagEnabled() {
@@ -26,6 +29,9 @@
     state.reason = reason;
     state.errors = errors;
     state.assetsByRole = {};
+    state.loadedRoles = [];
+    state.pendingRoles = [];
+    state.lastRender = null;
     return getMoonpetSideScrollerRendererState();
   }
 
@@ -47,7 +53,16 @@
         state.errors = result.errors || [];
         state.assetsByRole = result.assetsByRole || {};
         state.roleMap = result.roleMap || {};
+        state.loadedRoles = Object.keys(state.assetsByRole);
+        state.pendingRoles = result.pendingRoles || [];
         state.loading = null;
+        if (result.preload && typeof result.preload.then === "function") {
+          result.preload.then(() => {
+            state.loadedRoles = Object.keys(state.assetsByRole);
+            state.pendingRoles = state.pendingRoles.filter((role) => !state.assetsByRole[role]);
+            if (state.ready) state.reason = "side-scroller sprites ready";
+          });
+        }
         return getMoonpetSideScrollerRendererState();
       })
       .catch((error) => {
@@ -67,7 +82,10 @@
       reason: state.reason,
       errors: [...state.errors],
       assetsByRole: state.assetsByRole,
-      roleMap: state.roleMap
+      roleMap: state.roleMap,
+      loadedRoles: [...state.loadedRoles],
+      pendingRoles: [...state.pendingRoles],
+      lastRender: state.lastRender
     };
   }
 
@@ -88,22 +106,26 @@
   function renderSideScrollerMoonbot(ctx, animationMode, x, y, scale = 1, time, options = {}) {
     if (!flagEnabled()) {
       state.reason = `${FEATURE_FLAG} is false`;
+      state.lastRender = { animationMode, role: null, drew: false, reason: state.reason };
       return false;
     }
     if (!state.ready) {
       state.reason = state.reason || "side-scroller sprites are not ready";
+      state.lastRender = { animationMode, role: null, drew: false, reason: state.reason };
       return false;
     }
 
     const role = options.role || roleForAnimationMode(animationMode, options.active !== false);
     if (!role) {
       state.reason = `no approved side-scroller role for ${animationMode}`;
+      state.lastRender = { animationMode, role: null, drew: false, reason: state.reason };
       return false;
     }
     const asset = state.assetsByRole[role];
     const frame = asset && frameForTime(asset, time);
     if (!asset || !asset.image || !frame) {
       state.reason = `side-scroller sprite asset unavailable for ${role}`;
+      state.lastRender = { animationMode, role, drew: false, reason: state.reason };
       return false;
     }
 
@@ -129,10 +151,13 @@
         height
       );
       ctx.restore();
+      state.reason = `rendered ${role}`;
+      state.lastRender = { animationMode, role, drew: true, reason: state.reason };
       return true;
     } catch (error) {
       state.reason = `side-scroller sprite render failed: ${error.message}`;
       state.errors = [state.reason, ...state.errors];
+      state.lastRender = { animationMode, role, drew: false, reason: state.reason };
       return false;
     }
   }
