@@ -1,10 +1,33 @@
 # Moonpet Side-Scroller Migration Plan
 
-The Moonpet production art direction is moving to a 2D side-scroller pet format. The attached `Crypto Moonboys Pets - Side-Scroller Sprite Bible V1.0` is now the production source of truth for gameplay animation.
+The Moonpet production art direction is moving to a 2D side-scroller virtual-companion format. The attached `Crypto Moonboys Pets - Side-Scroller Sprite Bible V1.0` is now the production source of truth for gameplay animation.
+
+## Terminology And Animal-Drift Guard
+
+Moonpet is the game and system name. Moonbot is the character and art subject.
+
+Future sprite/art generation prompts should describe the character as:
+
+- Moonbot
+- white glossy robot companion
+- chibi cyber mascot
+- black visor
+- pink LED eyes
+- rounded bot body
+- mitten hands
+- chunky robot feet
+
+Do not describe the generated character as a pet body, animal, creature, puppy, cat, or anything with tails, ears, paws, snouts, fur, whiskers, or claws.
+
+Where negative prompt fields are supported, use:
+
+```text
+No tail, no ears, no snout, no animal body, no fur, no paws, no whiskers, no claws.
+```
 
 ## Why Side-Scroller
 
-AutoSprite supports side-scroller animation more reliably than the custom isometric/down-facing pet-state experiments. The isometric base tests produced useful reference material, but custom states such as eat drifted into side/profile output anyway. Rather than fighting the toolchain, the game should now use the direction AutoSprite can generate consistently.
+AutoSprite supports side-scroller animation more reliably than the custom isometric/down-facing care-state experiments. The isometric base tests produced useful reference material, but custom states such as eat drifted into side/profile output anyway. Rather than fighting the toolchain, the game should now use the direction AutoSprite can generate consistently.
 
 The production rule is:
 
@@ -12,7 +35,7 @@ The production rule is:
 Build side. Test side. Ship side.
 ```
 
-All current gameplay animation planning should assume clean side-view sprites, autonomous pet movement inside a bounded stage, left/right visual logic, and mirrored movement where practical.
+All current gameplay animation planning should assume clean side-view sprites, autonomous Moonbot movement inside a bounded stage, left/right visual logic, and mirrored movement where practical.
 
 ## Autonomous Pet, Not Player-Controlled Platformer
 
@@ -23,18 +46,18 @@ Users do not directly move the pet with left/right/jump controls. There should b
 The correct interaction model is:
 
 - The user presses care/action buttons.
-- The pet performs the selected action animation.
-- The pet may move left/right automatically inside the stage during that action.
-- The pet may walk, run, jump, play, eat, sleep, clean, or train inside the viewport as scripted autonomous behavior.
-- After the action completes, the pet returns to idle.
+- Moonbot performs the selected action animation.
+- Moonbot may move left/right automatically inside the stage during that action.
+- Moonbot may walk, run, jump, play, eat, sleep, clean, or train inside the viewport as scripted autonomous behavior.
+- After the action completes, Moonbot returns to idle.
 
 Examples:
 
-- Eat button: pet walks to snack or bowl, eats, then returns to idle.
-- Play button: pet runs or bounces toward a toy, plays, then returns to idle.
-- Clean button: pet moves to a cleaning area, plays bubbles/polish animation, then returns to idle.
-- Sleep button: pet walks to a sleep spot, lies down, and sleeps.
-- Train button: pet walks to a training spot and performs a non-combat train animation.
+- Eat button: Moonbot walks to snack or bowl, eats, then returns to idle.
+- Play button: Moonbot runs or bounces toward a toy, plays, then returns to idle.
+- Clean button: Moonbot moves to a cleaning area, plays bubbles/polish animation, then returns to idle.
+- Sleep button: Moonbot walks to a sleep spot, lies down, and sleeps.
+- Train button: Moonbot walks to a training spot and performs a non-combat train animation.
 
 Side-scroller means side-view camera, side-view sprites, side-view environment, a left/right movement lane, and consistent side-view animation generation. It does not mean player-controlled platforming.
 
@@ -57,7 +80,7 @@ New gameplay sprites should be side-scroller first:
 - Use front/back references only for trait consistency, not runtime animation.
 - Keep autonomous left/right sprite logic compatible with mirroring.
 - Keep every animation on a stable ground line.
-- Use the black visor, pink LED eyes, glossy white body, chunky feet, and soft shaded cyber-pet style.
+- Use the black visor, pink LED eyes, glossy white robot body, mitten hands, chunky robot feet, and soft shaded chibi cyber mascot style.
 - Generate, review, promote, and then integrate.
 
 ## Staged Migration

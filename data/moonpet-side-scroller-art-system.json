@@ -7,16 +7,46 @@
     "runtime_view": "2d_side_scroller",
     "primary_views": ["side_left", "side_right"],
     "reference_views": ["front", "back"],
-    "description": "Glossy white Moonbot pet with large rounded helmet/head, small rounded body, rounded arms, chunky feet, black glass visor, and pink LED eyes.",
+    "description": "Glossy white Moonbot robot companion with large rounded helmet/head, small rounded bot body, mitten hands, chunky robot feet, black glass visor, and pink LED eyes.",
     "must_preserve": [
       "large rounded head",
-      "small body",
-      "chunky feet",
+      "small rounded bot body",
+      "mitten hands",
+      "chunky robot feet",
       "glossy white body",
       "black visor",
       "pink LED eyes",
       "clean side-view silhouette"
     ]
+  },
+  "terminology_rules": {
+    "game_system_name": "Moonpet",
+    "character_art_subject": "Moonbot",
+    "prompt_subject_terms": [
+      "Moonbot",
+      "white glossy robot companion",
+      "chibi cyber mascot",
+      "black visor",
+      "pink LED eyes",
+      "rounded bot body",
+      "mitten hands",
+      "chunky robot feet"
+    ],
+    "avoid_in_generation_prompts": [
+      "pet body",
+      "animal",
+      "creature",
+      "puppy",
+      "cat",
+      "tail",
+      "ears",
+      "paws",
+      "snout",
+      "fur",
+      "whiskers",
+      "claws"
+    ],
+    "negative_prompt": "No tail, no ears, no snout, no animal body, no fur, no paws, no whiskers, no claws."
   },
   "production_rules": [
     "Current runtime direction is 2D side-scroller.",
@@ -39,13 +69,13 @@
     "combat_loop": false,
     "autonomous_movement": true,
     "bounded_stage_movement": true,
-    "description": "The pet remains an autonomous virtual pet in a side-view room or rooftop stage. User care/action buttons trigger scripted pet behaviours; the pet may walk, run, jump, eat, sleep, play, clean, or train inside the viewport and then return to idle.",
+    "description": "Moonpet remains an autonomous virtual pet game in a side-view room or rooftop stage. User care/action buttons trigger scripted Moonbot behaviours; Moonbot may walk, run, jump, eat, sleep, play, clean, or train inside the viewport and then return to idle.",
     "action_flow_examples": [
-      "Eat button: pet walks to snack or bowl, eats, returns to idle.",
-      "Play button: pet runs or bounces toward a toy, plays, returns to idle.",
-      "Clean button: pet moves to a cleaning spot, plays bubbles or polish animation, returns to idle.",
-      "Sleep button: pet walks to a sleep spot, lies down, sleeps.",
-      "Train button: pet walks to a training spot and performs a non-combat train animation."
+      "Eat button: Moonbot walks to snack or bowl, eats, returns to idle.",
+      "Play button: Moonbot runs or bounces toward a toy, plays, returns to idle.",
+      "Clean button: Moonbot moves to a cleaning spot, plays bubbles or polish animation, returns to idle.",
+      "Sleep button: Moonbot walks to a sleep spot, lies down, sleeps.",
+      "Train button: Moonbot walks to a training spot and performs a non-combat train animation."
     ],
     "side_scroller_means": [
       "side-view camera",
@@ -152,7 +182,7 @@
   ],
   "environments": [
     { "id": "rooftop_platform", "use": "idle", "description": "Neon rooftop platform at night." },
-    { "id": "safe_house", "use": "sleep", "description": "Cozy side-view safe house or pet room." },
+    { "id": "safe_house", "use": "sleep", "description": "Cozy side-view safe house or Moonbot room." },
     { "id": "city_streets", "use": "play", "description": "Neon city street play area." },
     { "id": "food_stop", "use": "eat", "description": "Small ramen or snack stop for food interactions." }
   ]

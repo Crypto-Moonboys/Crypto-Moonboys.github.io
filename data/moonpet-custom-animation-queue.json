@@ -29,7 +29,8 @@
         "w": 1280,
         "h": 1280
       },
-      "prompt": "MOONBOT PET VISOR V1 sleeping peacefully in isometric down view, cute cyber pet-state animation, soft breathing motion, consistent approved Moonbot proportions, transparent background, no text, no scenery.",
+      "prompt": "Moonbot sleeping peacefully in isometric down view, white glossy robot companion, chibi cyber mascot, black visor, pink LED eyes, rounded bot body, mitten hands, chunky robot feet, soft breathing motion, transparent background, no text, no scenery.",
+      "negative_prompt": "No tail, no ears, no snout, no animal body, no fur, no paws, no whiskers, no claws.",
       "custom_required": true,
       "notes": "Approved manual AutoSprite website sleep sheet. Previous API-generated custom_sleep attempt rejected/not used.",
       "output_expectations": {
@@ -60,7 +61,8 @@
       "animation_kind": "iso_custom_eat_down",
       "animation_name": "Moonbot Eat Down",
       "raw_prompt": true,
-      "prompt": "Create a DOWN-FACING isometric custom eat animation for MOONBOT PET VISOR V1. Keep the character facing toward the viewer/down direction like iso_idle_down, iso_walk_down, and iso_run_down. Do not rotate into side view. Do not show profile view. The Moonbot should hold/eat a small snack or receive food while staying front/down-facing. Preserve black visor, pink LED eyes, glossy white helmet/body, same proportions, same approved Moonbot sprite style. No side-scroller, no attack pose, no background, no text.",
+      "prompt": "Create a DOWN-FACING isometric custom eat animation for Moonbot. Keep the white glossy robot companion facing toward the viewer/down direction like iso_idle_down, iso_walk_down, and iso_run_down. Do not rotate into side view. Do not show profile view. Moonbot should hold/eat a small snack while staying front/down-facing. Preserve black visor, pink LED eyes, rounded bot body, mitten hands, chunky robot feet, same approved sprite style. No side-scroller, no attack pose, no background, no text.",
+      "negative_prompt": "No tail, no ears, no snout, no animal body, no fur, no paws, no whiskers, no claws.",
       "custom_required": true,
       "notes": "Previous generated custom_eat was structurally valid but side-facing. Regenerate with stricter down-facing raw prompt; do not approve automatically.",
       "attempts": [
@@ -106,9 +108,10 @@
       "source_character_name": "MOONBOT PET VISOR V1",
       "status": "planned",
       "approved": false,
-      "prompt": "MOONBOT PET VISOR V1 playing cheerfully in isometric down view, cute cyber pet-state animation, bouncy friendly motion, consistent approved Moonbot proportions, transparent background, no text, no scenery.",
+      "prompt": "Moonbot playing cheerfully in isometric down view, white glossy robot companion, chibi cyber mascot, black visor, pink LED eyes, rounded bot body, mitten hands, chunky robot feet, bouncy friendly motion, transparent background, no text, no scenery.",
       "custom_required": true,
-      "notes": "Custom play state; keep it pet-like and non-combat.",
+      "negative_prompt": "No tail, no ears, no snout, no animal body, no fur, no paws, no whiskers, no claws.",
+      "notes": "Custom play state; keep it robot-companion styled and non-combat.",
       "output_expectations": {
         "frame_count": 25,
         "frame_size": 256,
@@ -129,8 +132,9 @@
       "source_character_name": "MOONBOT PET VISOR V1",
       "status": "planned",
       "approved": false,
-      "prompt": "MOONBOT PET VISOR V1 sparkling clean in isometric down view, cute cyber pet-state animation, gentle shine and tidy motion, consistent approved Moonbot proportions, transparent background, no text, no scenery.",
+      "prompt": "Moonbot sparkling clean in isometric down view, white glossy robot companion, chibi cyber mascot, black visor, pink LED eyes, rounded bot body, mitten hands, chunky robot feet, gentle shine and tidy motion, transparent background, no text, no scenery.",
       "custom_required": true,
+      "negative_prompt": "No tail, no ears, no snout, no animal body, no fur, no paws, no whiskers, no claws.",
       "notes": "Custom clean state for care actions; use sparkle/shine, not environmental props.",
       "output_expectations": {
         "frame_count": 25,
@@ -152,8 +156,9 @@
       "source_character_name": "MOONBOT PET VISOR V1",
       "status": "planned",
       "approved": false,
-      "prompt": "MOONBOT PET VISOR V1 waving hello in isometric down view, cute cyber pet-state animation, friendly arm wave, consistent approved Moonbot proportions, transparent background, no text, no scenery.",
+      "prompt": "Moonbot waving hello in isometric down view, white glossy robot companion, chibi cyber mascot, black visor, pink LED eyes, rounded bot body, mitten hands, chunky robot feet, friendly arm wave, transparent background, no text, no scenery.",
       "custom_required": true,
+      "negative_prompt": "No tail, no ears, no snout, no animal body, no fur, no paws, no whiskers, no claws.",
       "notes": "Custom greeting state for hello and companion presence.",
       "output_expectations": {
         "frame_count": 25,
@@ -175,8 +180,9 @@
       "source_character_name": "MOONBOT PET VISOR V1",
       "status": "planned",
       "approved": false,
-      "prompt": "MOONBOT PET VISOR V1 sitting calmly in isometric down view, cute cyber pet-state animation, relaxed companion posture, consistent approved Moonbot proportions, transparent background, no text, no scenery.",
+      "prompt": "Moonbot sitting calmly in isometric down view, white glossy robot companion, chibi cyber mascot, black visor, pink LED eyes, rounded bot body, mitten hands, chunky robot feet, relaxed companion posture, transparent background, no text, no scenery.",
       "custom_required": true,
+      "negative_prompt": "No tail, no ears, no snout, no animal body, no fur, no paws, no whiskers, no claws.",
       "notes": "Custom calm idle variant for future companion behavior.",
       "output_expectations": {
         "frame_count": 25,
@@ -198,8 +204,9 @@
       "source_character_name": "MOONBOT PET VISOR V1",
       "status": "planned",
       "approved": false,
-      "prompt": "MOONBOT PET VISOR V1 celebrating happily in isometric down view, cute cyber pet-state animation, joyful bounce, consistent approved Moonbot proportions, transparent background, no text, no scenery.",
+      "prompt": "Moonbot celebrating happily in isometric down view, white glossy robot companion, chibi cyber mascot, black visor, pink LED eyes, rounded bot body, mitten hands, chunky robot feet, joyful bounce, transparent background, no text, no scenery.",
       "custom_required": true,
+      "negative_prompt": "No tail, no ears, no snout, no animal body, no fur, no paws, no whiskers, no claws.",
       "notes": "Custom happy state for positive feedback; keep non-combat.",
       "output_expectations": {
         "frame_count": 25,
@@ -221,8 +228,9 @@
       "source_character_name": "MOONBOT PET VISOR V1",
       "status": "planned",
       "approved": false,
-      "prompt": "MOONBOT PET VISOR V1 looking gently sad in isometric down view, cute cyber pet-state animation, subtle droop and soft motion, consistent approved Moonbot proportions, transparent background, no text, no scenery.",
+      "prompt": "Moonbot looking gently sad in isometric down view, white glossy robot companion, chibi cyber mascot, black visor, pink LED eyes, rounded bot body, mitten hands, chunky robot feet, subtle droop and soft motion, transparent background, no text, no scenery.",
       "custom_required": true,
+      "negative_prompt": "No tail, no ears, no snout, no animal body, no fur, no paws, no whiskers, no claws.",
       "notes": "Custom sad state for low mood feedback; keep gentle and readable.",
       "output_expectations": {
         "frame_count": 25,

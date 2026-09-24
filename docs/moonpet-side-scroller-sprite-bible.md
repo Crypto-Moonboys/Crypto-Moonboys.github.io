@@ -2,11 +2,47 @@
 
 This document converts the attached `Crypto Moonboys Pets - Side-Scroller Sprite Bible V1.0` artwork into production rules for Moonpet gameplay assets.
 
+## Terminology And Animal-Drift Guard
+
+Moonpet is the game and system name. Moonbot is the character and art subject.
+
+Future sprite/art generation prompts should use:
+
+- Moonbot
+- white glossy robot companion
+- chibi cyber mascot
+- black visor
+- pink LED eyes
+- rounded bot body
+- mitten hands
+- chunky robot feet
+
+Avoid prompt language that can pull the output toward animal traits:
+
+- pet body
+- animal
+- creature
+- puppy
+- cat
+- tail
+- ears
+- paws
+- snout
+- fur
+- whiskers
+- claws
+
+Where supported, include negative prompt language:
+
+```text
+No tail, no ears, no snout, no animal body, no fur, no paws, no whiskers, no claws.
+```
+
 ## Base Character
 
-The base Moonbot is a glossy white cyber pet with a large rounded helmet/head, small soft body, rounded arms, chunky feet, and a black glass visor with pink LED eyes. The primary gameplay silhouette is side-view. Side-left and side-right are production poses; front and back are reference poses only.
+The base Moonbot is a glossy white robot companion with a large rounded helmet/head, small rounded bot body, mitten hands, chunky robot feet, and a black glass visor with pink LED eyes. The primary gameplay silhouette is side-view. Side-left and side-right are production poses; front and back are reference poses only.
 
-The body should feel like a cute collectible pet mascot: simple, readable, high contrast, game ready, and expressive without becoming realistic or overly detailed.
+The body should feel like a cute collectible chibi cyber mascot: simple, readable, high contrast, game ready, and expressive without becoming realistic, animal-like, or overly detailed.
 
 ## Production Rules
 
@@ -24,15 +60,15 @@ The body should feel like a cute collectible pet mascot: simple, readable, high 
 
 The side-scroller sprite bible defines visual presentation, not direct player movement.
 
-Moonpet is still an autonomous virtual pet. The user presses a care/action button, then the pet chooses or follows a scripted behavior inside the side-view stage. The pet can move left or right within a bounded room or rooftop, but the user does not steer it like a platform character.
+Moonpet is still an autonomous virtual pet game. The user presses a care/action button, then Moonbot chooses or follows a scripted behavior inside the side-view stage. Moonbot can move left or right within a bounded room or rooftop, but the user does not steer it like a platform character.
 
 Expected action flow:
 
-- Eat: walk to a snack or bowl, eat, return to idle.
-- Play: run or bounce toward a toy, play, return to idle.
-- Clean: move to cleaning spot, play bubble/polish animation, return to idle.
-- Sleep: walk to sleep spot, lie down, sleep.
-- Train: walk to training spot, perform non-combat train animation.
+- Eat: Moonbot walks to a snack or bowl, eats, and returns to idle.
+- Play: Moonbot runs or bounces toward a toy, plays, and returns to idle.
+- Clean: Moonbot moves to a cleaning spot, plays bubble/polish animation, and returns to idle.
+- Sleep: Moonbot walks to a sleep spot, lies down, and sleeps.
+- Train: Moonbot walks to a training spot and performs a non-combat train animation.
 
 Side-scroller means side-view camera, side-view sprites, side-view environments, and a simple left/right movement lane. It does not mean platformer controls, user-controlled jumping, collision gameplay, manual movement, or combat.
 
@@ -67,7 +103,7 @@ The first side-scroller queue covers:
 - Play: toy/ball interaction while staying on the side-view ground line.
 - Clean: bubbles or cleaning motion, no background.
 - Train: non-combat exercise motion such as small dumbbells.
-- Hurt: dizzy or stunned side-view pet state.
+- Hurt: dizzy or stunned side-view Moonbot state.
 
 The old `attack` direction remains rejected for the previous isometric pack and is not part of this side-scroller base plan.
 
