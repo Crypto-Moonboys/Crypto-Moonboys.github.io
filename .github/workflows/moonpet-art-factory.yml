@@ -14,6 +14,7 @@ on:
           - promote-approved
           - build-approved-pack
           - generate-custom-animation
+          - generate-side-scroller
       limit:
         description: "Optional max character count. Leave blank for the existing Moonbot base character."
         required: false
@@ -51,6 +52,15 @@ on:
         required: true
         default: false
         type: boolean
+      side_animation_id:
+        description: "Side-scroller animation queue id. For now only side_idle is enabled."
+        required: false
+        default: "side_idle"
+      execute_side_generation:
+        description: "Actually call AutoSprite for the selected side-scroller animation."
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -84,6 +94,8 @@ jobs:
           node --check scripts/generate-moonpet-custom-animation.test.js
           node --check scripts/promote-moonpet-custom-animation.js
           node --check scripts/moonpet-custom-animation-autopilot.js
+          node --check scripts/generate-moonpet-side-scroller-animation.js
+          node --check scripts/moonpet-side-scroller-queue-check.js
           node --check js/moonpet-animation-sandbox.js
           node --check js/moonpet-runtime-preview.js
           node scripts/generate-moonpet-assets-extraction.test.js
@@ -147,6 +159,26 @@ jobs:
           AUTO_REVIEW_CUSTOM_ANIMATION: ${{ inputs.auto_review_custom_animation && 'true' || 'false' }}
           AUTO_PROMOTE_IF_PASSED: ${{ inputs.auto_promote_if_passed && 'true' || 'false' }}
 
+      - name: Generate side-scroller Moonbot animation
+        if: ${{ inputs.phase == 'generate-side-scroller' }}
+        timeout-minutes: 30
+        run: |
+          if [ "$SIDE_ANIMATION_ID" != "side_idle" ]; then
+            echo "Only side_idle is enabled for the side-scroller generation foundation."
+            exit 1
+          fi
+          npm run moonpet:side-queue:check
+          ARGS=(--id "$SIDE_ANIMATION_ID")
+          if [ "$EXECUTE_SIDE_GENERATION" = "true" ]; then
+            ARGS+=(--execute)
+          else
+            ARGS+=(--dry-run)
+          fi
+          node scripts/generate-moonpet-side-scroller-animation.js "${ARGS[@]}"
+        env:
+          SIDE_ANIMATION_ID: ${{ inputs.side_animation_id }}
+          EXECUTE_SIDE_GENERATION: ${{ inputs.execute_side_generation && 'true' || 'false' }}
+
       - name: Commit promoted Moonpet assets
         if: ${{ inputs.phase == 'build-approved-pack' && inputs.auto_commit_promoted_assets }}
         run: |
@@ -185,4 +217,5 @@ jobs:
             img/moonpets/
             data/moonpet-approved-assets.json
             data/moonpet-custom-animation-queue.json
+            data/moonpet-side-scroller-animation-queue.json
           if-no-files-found: warn

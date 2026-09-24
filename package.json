@@ -48,7 +48,9 @@
     "moonpet:custom:promote": "node scripts/promote-moonpet-custom-animation.js --id custom_eat",
     "moonpet:custom:autopilot": "node scripts/moonpet-custom-animation-autopilot.js --id custom_eat",
     "moonpet:custom:review": "node scripts/moonpet-custom-animation-autopilot.js --id custom_eat --review",
-    "moonpet:side-queue:check": "node scripts/moonpet-side-scroller-queue-check.js"
+    "moonpet:side-queue:check": "node scripts/moonpet-side-scroller-queue-check.js",
+    "moonpet:side:dry": "node scripts/generate-moonpet-side-scroller-animation.js --id side_idle --dry-run",
+    "moonpet:side:generate": "node scripts/generate-moonpet-side-scroller-animation.js --id side_idle --execute"
   },
   "keywords": [],
   "author": "",

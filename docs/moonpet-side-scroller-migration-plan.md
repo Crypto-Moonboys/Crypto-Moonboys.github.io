@@ -121,11 +121,38 @@ New gameplay sprites should be side-scroller first:
 8. Add a preview-only side-scroller runtime page or extend the sandbox.
 9. Integrate into the live game behind a new feature flag only after preview validation.
 
+## Side Idle Generation Foundation
+
+The first side-scroller generation target is `side_idle` only. It uses the existing AutoSprite character `MOONBOT PET VISOR V1`, requests the built-in `idle` animation kind, and writes temporary review artifacts to:
+
+```text
+output/moonpets/side-scroller/side_idle.png
+output/moonpets/side-scroller/side_idle.json
+output/manifests/moonpet-side-scroller.generated.json
+```
+
+Dry-run locally without calling AutoSprite:
+
+```bash
+npm run moonpet:side:dry
+```
+
+Manual GitHub Actions generation uses:
+
+```text
+phase: generate-side-scroller
+side_animation_id: side_idle
+execute_side_generation: true
+```
+
+Keep `execute_side_generation` false for validation-only runs. The side-scroller generator does not approve or promote output automatically.
+
 ## Testing Before Live Integration
 
 Before any live-game change:
 
 - Run `npm run moonpet:side-queue:check`.
+- Run `npm run moonpet:side:dry`.
 - Confirm the queue contains only side-scroller states.
 - Confirm no side-scroller asset is approved or promoted by default.
 - Preview promoted side assets in a sandbox or runtime preview page.
