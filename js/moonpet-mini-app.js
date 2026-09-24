@@ -139,6 +139,11 @@
     return launchParameter('sideSpriteDebug') === '1' || launchParameter('spriteDebug') === '1' || launchParameter('diag') === '1';
   }
 
+  function wearableTraitDebugRequested() {
+    var value = launchParameter('wearableTraitDebug');
+    return value === '1' || value === 'true' || value === 'sample';
+  }
+
   function updateSideSpriteDebug(status) {
     if (!sideSpriteDebugRequested()) return;
     var marker = document.getElementById('moonpet-side-sprite-debug');
@@ -154,6 +159,7 @@
       ' | loader=' + (window.MoonpetSideScrollerAssetLoader ? 'loaded' : 'missing') +
       ' | renderer=' + (sideScrollerSpriteRendererReady ? 'ready' : 'not-ready') +
       ' | role=' + (status && status.role || stateInfo.lastRender && stateInfo.lastRender.role || 'n/a') +
+      ' | wearables=' + (status && status.wearables || stateInfo.lastRender && stateInfo.lastRender.wearableTraits && stateInfo.lastRender.wearableTraits.join(',') || 'none') +
       ' | fallback=' + ((status && status.fallback) || stateInfo.fallback ? 'yes' : 'no') +
       ' | reason=' + (status && status.reason || stateInfo.reason || 'pending');
   }
@@ -215,8 +221,8 @@
     console.info('[Moonpet] side-scroller sprite mode enabled');
     updateSideSpriteDebug({ reason: 'loading side-scroller scripts' });
     try {
-      await loadApprovedSpriteScript('/js/moonpet-side-scroller-asset-loader.js?v=20260924-side-sprites-runtime-v9');
-      await loadApprovedSpriteScript('/js/moonpet-side-scroller-sprite-renderer.js?v=20260924-side-sprites-runtime-v9');
+      await loadApprovedSpriteScript('/js/moonpet-side-scroller-asset-loader.js?v=20260924-side-sprites-runtime-v10');
+      await loadApprovedSpriteScript('/js/moonpet-side-scroller-sprite-renderer.js?v=20260924-side-sprites-runtime-v10');
       if (!window.MoonpetSideScrollerSpriteRenderer) throw new Error('MoonpetSideScrollerSpriteRenderer unavailable');
       sideScrollerSpriteRendererState = await window.MoonpetSideScrollerSpriteRenderer.initMoonpetSideScrollerRenderer();
       sideScrollerSpriteRendererReady = Boolean(sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.ready);
@@ -3273,11 +3279,13 @@
       active: active,
       facing: mirroredAction ? -1 : 1,
       variantSeed: active ? actionSequence : Math.floor(time / 1000),
-      role: roleOverride
+      role: roleOverride,
+      wearableTraitDebug: wearableTraitDebugRequested()
     });
     sideScrollerSpriteRendererState = window.MoonpetSideScrollerSpriteRenderer.getMoonpetSideScrollerRendererState();
     updateSideSpriteDebug({
       role: sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.lastRender && sideScrollerSpriteRendererState.lastRender.role,
+      wearables: sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.lastRender && sideScrollerSpriteRendererState.lastRender.wearableTraits && sideScrollerSpriteRendererState.lastRender.wearableTraits.join(','),
       fallback: !drew,
       reason: sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.reason
     });

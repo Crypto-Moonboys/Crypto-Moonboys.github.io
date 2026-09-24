@@ -73,6 +73,8 @@ const html = fs.readFileSync(new URL('../moonpet-game.html', import.meta.url), '
 const client = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
 const sideScrollerRegistry = JSON.parse(fs.readFileSync(new URL('../data/moonpet-side-scroller-approved-assets.json', import.meta.url), 'utf8'));
 const sideScrollerRenderer = fs.readFileSync(new URL('../js/moonpet-side-scroller-sprite-renderer.js', import.meta.url), 'utf8');
+const sideScrollerLoader = fs.readFileSync(new URL('../js/moonpet-side-scroller-asset-loader.js', import.meta.url), 'utf8');
+const wearableTraits = JSON.parse(fs.readFileSync(new URL('../data/moonpet-wearable-traits.json', import.meta.url), 'utf8'));
 assert.match(client, /var lifecycleRequirement = journeyLifecycle\.next_evolution \?/, 'final-form lifecycle copy must branch on whether a next evolution exists');
 assert.doesNotMatch(client, /next_evolution[^\n]+LEVEL \/\/ 0\/0/, 'final-form lifecycle must never render a synthetic 0/0 requirement');
 assert.match(client, /if \(!pet\.progression\)[^\n]+PROGRESSION UNAVAILABLE/, 'missing roster progression must render an explicit unavailable state');
@@ -1444,7 +1446,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260924-side-sprites-runtime-v9/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260924-side-sprites-runtime-v10/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -1811,6 +1813,25 @@ assert.match(client, /function idleSpecialRoleForFrame\(time, mode, active\)/, '
 assert.match(client, /idleSpecialNextAt = now \+ 9000 \+ Math\.floor\(idleSpecialRoll\(now, 23\) \* 11000\)/, 'idle personality variants must use cooldown spacing instead of cycling constantly');
 assert.match(client, /function idleSpecialRoll\(time, salt\)/, 'idle personality variants must use local deterministic pseudo-random rolls');
 assert.match(client, /role: roleOverride/, 'renderer options must support one idle role override at a time');
+assert.equal(sideScrollerRegistry.wearable_traits.config_path, '/data/moonpet-wearable-traits.json', 'side-scroller registry must point at the wearable trait config');
+assert.equal(wearableTraits.master_reference_role, 'side_front_point', 'wearable traits must use side_front_point as the master mannequin');
+for (const category of ['hats', 'glasses', 'masks', 'chains', 'hoodies', 'backpacks', 'badges', 'hand_items', 'shoes_feet_items', 'auras', 'props']) {
+  assert.ok(wearableTraits.trait_categories.includes(category), `wearable trait schema must include ${category}`);
+}
+for (const role of ['side_front_point', 'side_front_wave', 'side_idle', 'side_walk', 'side_run']) {
+  assert.ok(wearableTraits.supported_role_map[role], `wearable trait role map must support ${role}`);
+  assert.ok(wearableTraits.supported_role_map[role].anchors.badge, `${role} must define a badge anchor for the sample propagation proof`);
+}
+const sampleWearable = wearableTraits.traits.find((trait) => trait.id === 'sample_neon_badge');
+assert.ok(sampleWearable, 'wearable trait config must include the sample neon badge');
+assert.deepEqual(sampleWearable.supported_roles, ['side_front_point', 'side_front_wave', 'side_idle', 'side_walk', 'side_run']);
+assert.equal(wearableTraits.mirror_safe_rules.default, 'mirror_with_pose', 'wearable trait config must define mirror-safe defaults');
+assert.match(sideScrollerLoader, /DEFAULT_WEARABLE_TRAITS_PATH = "data\/moonpet-wearable-traits\.json"/, 'side-scroller loader must know the wearable trait config path');
+assert.match(sideScrollerLoader, /loadWearableTraitConfig/, 'side-scroller loader must load wearable trait config without blocking sprite loading');
+assert.match(sideScrollerRenderer, /function drawWearableTraits\(ctx, role, frame, drawX, drawY, width, height, options\)/, 'side-scroller renderer must include wearable overlay rendering');
+assert.match(sideScrollerRenderer, /wearableTraitDebug/, 'wearable sample rendering must stay opt-in');
+assert.match(client, /function wearableTraitDebugRequested\(\)/, 'Mini App must gate wearable sample rendering behind a debug query');
+assert.match(client, /wearables=/, 'side sprite debug must report rendered wearable traits');
 assert.match(sideScrollerRenderer, /function roleForAnimationMode\(animationMode, active, options = \{\}\)/);
 assert.match(sideScrollerRenderer, /state\.roleMap\[mode\]/, 'side-scroller renderer must resolve roles from runtime_role_map');
 assert.match(sideScrollerRenderer, /variant_cadence/, 'side-scroller variants must support cadence control');
@@ -2079,7 +2100,7 @@ assert.match(worker, /Math\.floor\(stepIndex \/ PET_RUN_BOSS_INTERVAL\) \+ 1/);
 assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Number\(activeRun\.depth \|\| 0\) \+ 1/);
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
-assert.match(html, /20260924-side-sprites-runtime-v9/);
+assert.match(html, /20260924-side-sprites-runtime-v10/);
 assert.match(worker, /20260814-moonpet-aaa-pass/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');

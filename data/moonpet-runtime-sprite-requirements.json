@@ -516,6 +516,20 @@
       "side_front_wave": 2,
       "side_front_victory": 1,
       "side_front_dance": 1
+    },
+    "wearable_trait_propagation": {
+      "config_path": "/data/moonpet-wearable-traits.json",
+      "runtime_mode": "sample_debug_only",
+      "sample_trait": "sample_neon_badge",
+      "master_reference_role": "side_front_point",
+      "proof_roles": [
+        "side_front_point",
+        "side_front_wave",
+        "side_idle",
+        "side_walk",
+        "side_run"
+      ],
+      "rollback_policy": "?sideSprites=0 disables the side-scroller renderer and therefore disables wearable overlays with it."
     }
   }
 }

@@ -1,0 +1,205 @@
+{
+  "schema_version": 1,
+  "system_id": "moonbot_wearable_trait_propagation_v1",
+  "runtime_status": "foundation_sample_only",
+  "master_reference_role": "side_front_point",
+  "sample_trait_id": "sample_neon_badge",
+  "trait_categories": [
+    "hats",
+    "glasses",
+    "masks",
+    "chains",
+    "hoodies",
+    "backpacks",
+    "badges",
+    "hand_items",
+    "shoes_feet_items",
+    "auras",
+    "props"
+  ],
+  "layer_order": [
+    "aura_back",
+    "backpack",
+    "hoodie_body",
+    "chain",
+    "badge",
+    "mask",
+    "glasses",
+    "hat",
+    "hand_item",
+    "shoes_feet_item",
+    "prop_front",
+    "aura_front"
+  ],
+  "mirror_safe_rules": {
+    "default": "mirror_with_pose",
+    "symmetric_categories": [
+      "hats",
+      "glasses",
+      "masks",
+      "chains",
+      "hoodies",
+      "badges",
+      "shoes_feet_items",
+      "auras"
+    ],
+    "directional_categories": [
+      "backpacks",
+      "hand_items",
+      "props"
+    ],
+    "rule": "Mirror-safe traits may follow the sprite mirror transform. Directional traits must define left/right hand or side-specific anchors before they can render on mirrored roles."
+  },
+  "pose_adaptation_policy": {
+    "master_mannequin": "Design every trait first on side_front_point.",
+    "propagation_rule": "Adapt the same item to each active runtime sheet; do not create pose-specific clothing designs.",
+    "adaptation_steps": [
+      "Keep the same visual item identity, colors, materials, and silhouette language.",
+      "Resize and reposition the item to the destination pose anchor.",
+      "Adjust rotation for body angle, facing direction, and limb position.",
+      "Use simplified placement for quick or rare poses when necessary.",
+      "Require stronger consistency on common/core poses than rare personality poses."
+    ],
+    "quality_floor": {
+      "core_roles": [
+        "side_front_point",
+        "side_front_wave",
+        "side_idle",
+        "side_walk",
+        "side_run"
+      ],
+      "rare_roles": [
+        "side_front_victory",
+        "side_front_dance"
+      ],
+      "small_pose_policy": "If a rare pose reads smaller, try runtime scale normalization first. If quality suffers, keep it rare-only and regenerate later only if consistency breaks."
+    }
+  },
+  "anchor_schema": {
+    "coordinate_space": "normalized_frame",
+    "origin": "top_left",
+    "fields": {
+      "x": "0..1 center x inside the current sprite frame",
+      "y": "0..1 center y inside the current sprite frame",
+      "scale": "relative scale multiplier for the trait artwork on this role",
+      "rotation": "degrees clockwise from the master trait orientation",
+      "quality": "core, adapted, or simplified",
+      "mirror_safe": "whether the placement may use the sprite mirror transform"
+    }
+  },
+  "supported_role_map": {
+    "side_front_point": {
+      "pose_type": "front",
+      "support": "master",
+      "trait_reference": true,
+      "mirroring": "not_required",
+      "anchors": {
+        "badge": { "x": 0.505, "y": 0.515, "scale": 1.0, "rotation": 0, "quality": "core", "mirror_safe": true },
+        "chain": { "x": 0.505, "y": 0.455, "scale": 1.0, "rotation": 0, "quality": "core", "mirror_safe": true },
+        "hat": { "x": 0.505, "y": 0.205, "scale": 1.0, "rotation": 0, "quality": "core", "mirror_safe": true },
+        "glasses": { "x": 0.505, "y": 0.337, "scale": 1.0, "rotation": 0, "quality": "core", "mirror_safe": true },
+        "mask": { "x": 0.505, "y": 0.356, "scale": 1.0, "rotation": 0, "quality": "core", "mirror_safe": true },
+        "hand_item": { "x": 0.292, "y": 0.452, "scale": 1.0, "rotation": -18, "quality": "core", "mirror_safe": false },
+        "shoes_feet_item": { "x": 0.505, "y": 0.795, "scale": 1.0, "rotation": 0, "quality": "core", "mirror_safe": true },
+        "backpack": { "x": 0.67, "y": 0.5, "scale": 0.82, "rotation": 0, "quality": "adapted", "mirror_safe": false },
+        "aura": { "x": 0.505, "y": 0.515, "scale": 1.0, "rotation": 0, "quality": "core", "mirror_safe": true },
+        "prop": { "x": 0.76, "y": 0.57, "scale": 0.9, "rotation": 0, "quality": "adapted", "mirror_safe": false }
+      }
+    },
+    "side_front_wave": {
+      "pose_type": "front",
+      "support": "common",
+      "mirroring": "not_required",
+      "anchors": {
+        "badge": { "x": 0.508, "y": 0.545, "scale": 0.96, "rotation": 0, "quality": "core", "mirror_safe": true },
+        "chain": { "x": 0.508, "y": 0.485, "scale": 0.96, "rotation": 0, "quality": "core", "mirror_safe": true },
+        "hat": { "x": 0.508, "y": 0.235, "scale": 0.95, "rotation": 0, "quality": "core", "mirror_safe": true },
+        "glasses": { "x": 0.508, "y": 0.366, "scale": 0.95, "rotation": 0, "quality": "core", "mirror_safe": true },
+        "mask": { "x": 0.508, "y": 0.385, "scale": 0.95, "rotation": 0, "quality": "core", "mirror_safe": true },
+        "hand_item": { "x": 0.305, "y": 0.407, "scale": 0.82, "rotation": -28, "quality": "adapted", "mirror_safe": false },
+        "shoes_feet_item": { "x": 0.508, "y": 0.815, "scale": 0.94, "rotation": 0, "quality": "core", "mirror_safe": true },
+        "backpack": { "x": 0.675, "y": 0.535, "scale": 0.76, "rotation": 0, "quality": "adapted", "mirror_safe": false },
+        "aura": { "x": 0.508, "y": 0.545, "scale": 0.98, "rotation": 0, "quality": "core", "mirror_safe": true },
+        "prop": { "x": 0.76, "y": 0.595, "scale": 0.82, "rotation": 0, "quality": "adapted", "mirror_safe": false }
+      }
+    },
+    "side_idle": {
+      "pose_type": "side",
+      "support": "core",
+      "mirroring": "mirror_with_pose",
+      "anchors": {
+        "badge": { "x": 0.53, "y": 0.55, "scale": 0.78, "rotation": 0, "quality": "adapted", "mirror_safe": true },
+        "chain": { "x": 0.53, "y": 0.5, "scale": 0.72, "rotation": 0, "quality": "adapted", "mirror_safe": true },
+        "hat": { "x": 0.53, "y": 0.245, "scale": 0.78, "rotation": 0, "quality": "adapted", "mirror_safe": true },
+        "glasses": { "x": 0.57, "y": 0.365, "scale": 0.72, "rotation": 0, "quality": "adapted", "mirror_safe": true },
+        "mask": { "x": 0.57, "y": 0.385, "scale": 0.72, "rotation": 0, "quality": "adapted", "mirror_safe": true },
+        "hand_item": { "x": 0.68, "y": 0.55, "scale": 0.72, "rotation": 8, "quality": "adapted", "mirror_safe": false },
+        "shoes_feet_item": { "x": 0.53, "y": 0.82, "scale": 0.72, "rotation": 0, "quality": "adapted", "mirror_safe": true },
+        "backpack": { "x": 0.34, "y": 0.52, "scale": 0.62, "rotation": 0, "quality": "adapted", "mirror_safe": false },
+        "aura": { "x": 0.53, "y": 0.55, "scale": 0.86, "rotation": 0, "quality": "adapted", "mirror_safe": true },
+        "prop": { "x": 0.76, "y": 0.62, "scale": 0.7, "rotation": 0, "quality": "adapted", "mirror_safe": false }
+      }
+    },
+    "side_walk": {
+      "pose_type": "side",
+      "support": "core",
+      "mirroring": "mirror_with_pose",
+      "anchors": {
+        "badge": { "x": 0.535, "y": 0.552, "scale": 0.76, "rotation": 0, "quality": "adapted", "mirror_safe": true },
+        "chain": { "x": 0.535, "y": 0.502, "scale": 0.7, "rotation": 0, "quality": "adapted", "mirror_safe": true },
+        "hat": { "x": 0.535, "y": 0.24, "scale": 0.78, "rotation": 0, "quality": "adapted", "mirror_safe": true },
+        "glasses": { "x": 0.575, "y": 0.36, "scale": 0.72, "rotation": 0, "quality": "adapted", "mirror_safe": true },
+        "mask": { "x": 0.575, "y": 0.38, "scale": 0.72, "rotation": 0, "quality": "adapted", "mirror_safe": true },
+        "hand_item": { "x": 0.69, "y": 0.562, "scale": 0.68, "rotation": 8, "quality": "adapted", "mirror_safe": false },
+        "shoes_feet_item": { "x": 0.535, "y": 0.825, "scale": 0.72, "rotation": 0, "quality": "adapted", "mirror_safe": true },
+        "backpack": { "x": 0.335, "y": 0.522, "scale": 0.62, "rotation": 0, "quality": "adapted", "mirror_safe": false },
+        "aura": { "x": 0.535, "y": 0.555, "scale": 0.86, "rotation": 0, "quality": "adapted", "mirror_safe": true },
+        "prop": { "x": 0.77, "y": 0.63, "scale": 0.68, "rotation": 0, "quality": "adapted", "mirror_safe": false }
+      }
+    },
+    "side_run": {
+      "pose_type": "side",
+      "support": "core",
+      "mirroring": "mirror_with_pose",
+      "anchors": {
+        "badge": { "x": 0.54, "y": 0.548, "scale": 0.74, "rotation": -3, "quality": "adapted", "mirror_safe": true },
+        "chain": { "x": 0.54, "y": 0.498, "scale": 0.68, "rotation": -3, "quality": "adapted", "mirror_safe": true },
+        "hat": { "x": 0.54, "y": 0.238, "scale": 0.76, "rotation": -3, "quality": "adapted", "mirror_safe": true },
+        "glasses": { "x": 0.585, "y": 0.358, "scale": 0.7, "rotation": -3, "quality": "adapted", "mirror_safe": true },
+        "mask": { "x": 0.585, "y": 0.378, "scale": 0.7, "rotation": -3, "quality": "adapted", "mirror_safe": true },
+        "hand_item": { "x": 0.7, "y": 0.562, "scale": 0.64, "rotation": 14, "quality": "adapted", "mirror_safe": false },
+        "shoes_feet_item": { "x": 0.54, "y": 0.823, "scale": 0.7, "rotation": 0, "quality": "adapted", "mirror_safe": true },
+        "backpack": { "x": 0.325, "y": 0.522, "scale": 0.6, "rotation": -4, "quality": "adapted", "mirror_safe": false },
+        "aura": { "x": 0.54, "y": 0.552, "scale": 0.84, "rotation": 0, "quality": "adapted", "mirror_safe": true },
+        "prop": { "x": 0.78, "y": 0.635, "scale": 0.64, "rotation": 0, "quality": "adapted", "mirror_safe": false }
+      }
+    }
+  },
+  "traits": [
+    {
+      "id": "sample_neon_badge",
+      "name": "Sample Neon Badge",
+      "category": "badges",
+      "layer": "badge",
+      "status": "sample_runtime_proof",
+      "mirror_safe": true,
+      "master_role": "side_front_point",
+      "supported_roles": [
+        "side_front_point",
+        "side_front_wave",
+        "side_idle",
+        "side_walk",
+        "side_run"
+      ],
+      "visual": {
+        "type": "runtime_vector_badge",
+        "shape": "circle",
+        "fill": "#31dfff",
+        "accent": "#ff4fc8",
+        "outline": "#061025",
+        "glow": "rgba(49, 223, 255, 0.65)"
+      },
+      "notes": "Tiny runtime-safe sample proving one badge design can propagate from side_front_point to front, idle, walk, and run roles."
+    }
+  ]
+}

@@ -6,6 +6,12 @@
   "default_enabled": true,
   "feature_flag": "MOONPET_USE_SIDE_SCROLLER_SPRITES",
   "url_override": "?sideSprites=0 disables production side-scroller sprites; ?sideSprites=1 explicitly enables them",
+  "wearable_traits": {
+    "enabled": true,
+    "config_path": "/data/moonpet-wearable-traits.json",
+    "runtime_mode": "sample_debug_only",
+    "sample_query": "?wearableTraitDebug=sample"
+  },
   "assets": [
     {
       "id": "side_idle",
