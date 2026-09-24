@@ -161,9 +161,9 @@
       "id": "side_jump",
       "role": "side_jump",
       "source_character_name": "MOONBOT PET VISOR V1",
-      "status": "planned",
+      "status": "promoted",
       "approved": false,
-      "promoted": false,
+      "promoted": true,
       "animation_kind": "jump",
       "custom_required": false,
       "trigger": "scripted_action",
@@ -185,7 +185,12 @@
       "promotion_target": {
         "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_jump.png",
         "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_jump.json"
-      }
+      },
+      "visual_status": "approved",
+      "promoted_at": "2026-09-24T11:38:53.853Z",
+      "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_jump.png",
+      "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_jump.json",
+      "updated_at": "2026-09-24T11:38:53.853Z"
     },
     {
       "id": "side_eat",
@@ -614,9 +619,9 @@
     },
     {
       "source_character_name": "MOONBOT PET VISOR V1",
-      "status": "planned",
+      "status": "promoted",
       "approved": false,
-      "promoted": false,
+      "promoted": true,
       "custom_required": true,
       "negative_prompt": "No tail, no ears, no snout, no animal body, no fur, no paws, no whiskers, no claws.",
       "output_expectations": {
@@ -641,11 +646,16 @@
       "promotion_target": {
         "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_turn.png",
         "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_turn.json"
-      }
+      },
+      "visual_status": "approved",
+      "promoted_at": "2026-09-24T11:38:53.853Z",
+      "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_turn.png",
+      "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_turn.json",
+      "updated_at": "2026-09-24T11:38:53.853Z"
     },
     {
       "source_character_name": "MOONBOT PET VISOR V1",
-      "status": "planned",
+      "status": "rejected_pending_regeneration",
       "approved": false,
       "promoted": false,
       "custom_required": true,
@@ -672,13 +682,26 @@
       "promotion_target": {
         "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_wave.png",
         "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_wave.json"
-      }
+      },
+      "visual_status": "rejected",
+      "rejection_reason": "Generated front wave attempts stayed side-facing and too static; keep out of runtime until a stronger/manual source exists.",
+      "attempts": [
+        {
+          "workflow_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35992987648",
+          "result": "visual_rejected_side_facing_static"
+        },
+        {
+          "workflow_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35994126607",
+          "result": "visual_rejected_side_facing_static"
+        }
+      ],
+      "updated_at": "2026-09-24T11:41:06.488Z"
     },
     {
       "source_character_name": "MOONBOT PET VISOR V1",
-      "status": "planned",
+      "status": "promoted",
       "approved": false,
-      "promoted": false,
+      "promoted": true,
       "custom_required": true,
       "negative_prompt": "No tail, no ears, no snout, no animal body, no fur, no paws, no whiskers, no claws.",
       "output_expectations": {
@@ -704,13 +727,18 @@
       "promotion_target": {
         "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_victory.png",
         "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_victory.json"
-      }
+      },
+      "visual_status": "approved",
+      "promoted_at": "2026-09-24T11:41:06.488Z",
+      "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_victory.png",
+      "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_victory.json",
+      "updated_at": "2026-09-24T11:41:06.488Z"
     },
     {
       "source_character_name": "MOONBOT PET VISOR V1",
-      "status": "planned",
+      "status": "promoted",
       "approved": false,
-      "promoted": false,
+      "promoted": true,
       "custom_required": true,
       "negative_prompt": "No tail, no ears, no snout, no animal body, no fur, no paws, no whiskers, no claws.",
       "output_expectations": {
@@ -736,13 +764,18 @@
       "promotion_target": {
         "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_eat_chaos.png",
         "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_eat_chaos.json"
-      }
+      },
+      "visual_status": "approved",
+      "promoted_at": "2026-09-24T11:38:53.853Z",
+      "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_eat_chaos.png",
+      "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_eat_chaos.json",
+      "updated_at": "2026-09-24T11:38:53.853Z"
     },
     {
       "source_character_name": "MOONBOT PET VISOR V1",
-      "status": "planned",
+      "status": "promoted",
       "approved": false,
-      "promoted": false,
+      "promoted": true,
       "custom_required": true,
       "negative_prompt": "No tail, no ears, no snout, no animal body, no fur, no paws, no whiskers, no claws.",
       "output_expectations": {
@@ -768,7 +801,12 @@
       "promotion_target": {
         "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_play_ball.png",
         "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_play_ball.json"
-      }
+      },
+      "visual_status": "approved",
+      "promoted_at": "2026-09-24T11:38:53.853Z",
+      "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_play_ball.png",
+      "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_play_ball.json",
+      "updated_at": "2026-09-24T11:38:53.853Z"
     }
   ]
 }

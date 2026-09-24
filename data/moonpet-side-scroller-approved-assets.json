@@ -278,21 +278,139 @@
         "h": 1280
       },
       "notes": "Approved regenerated side-view non-gore defensive battle stance with shield pulse from run 35976436399."
+    },
+    {
+      "id": "side_jump",
+      "role": "side_jump",
+      "animation_kind": "jump",
+      "approved": true,
+      "promoted": true,
+      "visual_status": "approved",
+      "promoted_at": "2026-09-24T11:38:53.853Z",
+      "workflow_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35992987648",
+      "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_jump.png",
+      "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_jump.json",
+      "frame_count": 25,
+      "frame_size": 256,
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "notes": "Approved side-view jump and landing insert from run 35992987648."
+    },
+    {
+      "id": "side_turn",
+      "role": "side_turn",
+      "animation_kind": "custom",
+      "approved": true,
+      "promoted": true,
+      "visual_status": "approved",
+      "promoted_at": "2026-09-24T11:38:53.853Z",
+      "workflow_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35992987648",
+      "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_turn.png",
+      "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_turn.json",
+      "frame_count": 25,
+      "frame_size": 256,
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "notes": "Approved Moonbot turn insert with left/back/front/right frames from run 35992987648."
+    },
+    {
+      "id": "side_eat_chaos",
+      "role": "side_eat_chaos",
+      "animation_kind": "custom",
+      "approved": true,
+      "promoted": true,
+      "visual_status": "approved",
+      "promoted_at": "2026-09-24T11:38:53.853Z",
+      "workflow_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35992987648",
+      "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_eat_chaos.png",
+      "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_eat_chaos.json",
+      "frame_count": 25,
+      "frame_size": 256,
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "notes": "Approved eat variant with oversized burger and food drone from run 35992987648."
+    },
+    {
+      "id": "side_play_ball",
+      "role": "side_play_ball",
+      "animation_kind": "custom",
+      "approved": true,
+      "promoted": true,
+      "visual_status": "approved",
+      "promoted_at": "2026-09-24T11:38:53.853Z",
+      "workflow_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35992987648",
+      "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_play_ball.png",
+      "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_play_ball.json",
+      "frame_count": 25,
+      "frame_size": 256,
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "notes": "Approved play variant with oversized beach ball from run 35992987648."
+    },
+    {
+      "id": "side_front_victory",
+      "role": "side_front_victory",
+      "animation_kind": "custom",
+      "approved": true,
+      "promoted": true,
+      "visual_status": "approved",
+      "promoted_at": "2026-09-24T11:41:06.488Z",
+      "workflow_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35994134348",
+      "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_victory.png",
+      "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_victory.json",
+      "frame_count": 25,
+      "frame_size": 256,
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "notes": "Approved front/three-quarter victory reward insert with happy visor and raised arms from run 35994134348."
     }
   ],
-  "rejected": [],
+  "rejected": [
+    {
+      "id": "side_front_wave",
+      "role": "side_front_wave",
+      "visual_status": "rejected",
+      "rejected": true,
+      "rejection_reason": "Generated front wave attempts stayed side-facing and too static; keep out of runtime until a stronger/manual source exists.",
+      "workflow_run_urls": [
+        "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35992987648",
+        "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35994126607"
+      ],
+      "rejected_at": "2026-09-24T11:41:06.488Z"
+    }
+  ],
   "runtime_role_map": {
     "idle": {
       "role": "side_idle",
-      "fallback": "procedural_if_missing"
+      "fallback": "procedural_if_missing",
+      "variants": [
+        "side_turn"
+      ]
     },
     "feed": {
       "role": "side_eat",
-      "fallback": "procedural_if_missing"
+      "fallback": "procedural_if_missing",
+      "variants": [
+        "side_eat_chaos"
+      ]
     },
     "play": {
       "role": "side_play",
-      "fallback": "procedural_if_missing"
+      "fallback": "procedural_if_missing",
+      "variants": [
+        "side_play_ball",
+        "side_jump"
+      ]
     },
     "clean": {
       "role": "side_clean",
@@ -308,7 +426,11 @@
     },
     "travel": {
       "role": "side_run",
-      "fallback": "procedural_if_missing"
+      "fallback": "procedural_if_missing",
+      "variants": [
+        "side_jump",
+        "side_turn"
+      ]
     },
     "work": {
       "role": "side_work",
@@ -328,11 +450,17 @@
     },
     "celebrate": {
       "role": "side_celebrate",
-      "fallback": "procedural_if_missing"
+      "fallback": "procedural_if_missing",
+      "variants": [
+        "side_front_victory"
+      ]
     },
     "interact": {
       "role": "side_interact",
-      "fallback": "procedural_if_missing"
+      "fallback": "procedural_if_missing",
+      "variants": [
+        "side_turn"
+      ]
     },
     "blocked": {
       "role": "side_hurt",

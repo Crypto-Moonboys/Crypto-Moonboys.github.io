@@ -211,6 +211,16 @@ Current approved promoted runtime roles:
 - `side_interact`
 - `side_battle`
 
+Approved runtime variants are also promoted for richer repeated actions:
+
+- `side_jump`
+- `side_turn`
+- `side_eat_chaos`
+- `side_play_ball`
+- `side_front_victory`
+
+`side_front_wave` is rejected pending regeneration because generated attempts stayed side-facing/static instead of producing a clear front-facing wave.
+
 The live runtime still keeps the procedural canvas renderer as an emergency fallback if a promoted sprite fails to load or render. The rollback switch is:
 
 ```text
@@ -223,4 +233,4 @@ Explicit enable remains supported for staging links:
 ?sideSprites=1
 ```
 
-`side_jump` remains queued but is not required by the current autonomous button-driven runtime.
+Jump and turn inserts are now optional approved runtime variants, not player-controlled platformer moves.

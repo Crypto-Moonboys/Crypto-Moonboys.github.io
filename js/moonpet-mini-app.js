@@ -3221,9 +3221,11 @@
 
   function drawSideScrollerMoonpetSprite(time, mode, active, x, y, scale) {
     if (!sideScrollerSpriteModeEnabled || !sideScrollerSpriteRendererReady || !window.MoonpetSideScrollerSpriteRenderer) return false;
+    var mirroredAction = active && ['travel', 'play', 'feed', 'interact', 'celebrate'].indexOf(mode) >= 0 && actionSequence % 2 === 0;
     var drew = window.MoonpetSideScrollerSpriteRenderer.renderSideScrollerMoonbot(ctx, mode, x, y, scale, time, {
       active: active,
-      facing: 1
+      facing: mirroredAction ? -1 : 1,
+      variantSeed: actionSequence
     });
     sideScrollerSpriteRendererState = window.MoonpetSideScrollerSpriteRenderer.getMoonpetSideScrollerRendererState();
     updateSideSpriteDebug({

@@ -97,10 +97,27 @@
     return frames[Math.floor(timestamp / frameMs) % frames.length];
   }
 
-  function roleForAnimationMode(animationMode, active) {
+  function availableRole(role) {
+    return role && state.assetsByRole[role] ? role : null;
+  }
+
+  function variantIndex(options, count) {
+    if (!count) return -1;
+    const seed = Number(options && options.variantSeed || 0);
+    const offset = Number(options && options.variantOffset || 0);
+    return Math.abs(Math.floor(seed + offset)) % count;
+  }
+
+  function roleForAnimationMode(animationMode, active, options = {}) {
     const mode = active ? animationMode : "idle";
     const mapping = state.roleMap[mode] || state.roleMap.idle || {};
-    return mapping.role || null;
+    const primaryRole = availableRole(options.role || mapping.role) || mapping.role || null;
+    const variants = Array.isArray(mapping.variants) ? mapping.variants.filter(availableRole) : [];
+    if (active && variants.length && options.preferPrimary !== true) {
+      const candidates = primaryRole ? [primaryRole, ...variants] : variants;
+      return candidates[variantIndex(options, candidates.length)] || primaryRole || null;
+    }
+    return primaryRole || variants[0] || null;
   }
 
   function renderSideScrollerMoonbot(ctx, animationMode, x, y, scale = 1, time, options = {}) {
@@ -115,7 +132,7 @@
       return false;
     }
 
-    const role = options.role || roleForAnimationMode(animationMode, options.active !== false);
+    const role = roleForAnimationMode(animationMode, options.active !== false, options);
     if (!role) {
       state.reason = `no approved side-scroller role for ${animationMode}`;
       state.lastRender = { animationMode, role: null, drew: false, reason: state.reason };
