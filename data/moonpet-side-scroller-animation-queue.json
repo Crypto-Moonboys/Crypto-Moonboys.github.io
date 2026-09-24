@@ -2,6 +2,11 @@
   "version": "0.1.0",
   "source_character_name": "MOONBOT PET VISOR V1",
   "runtime_view": "2d_side_scroller",
+  "gameplay_model": "autonomous_virtual_pet",
+  "input_model": "button_driven_care_actions",
+  "direct_player_movement": false,
+  "keyboard_platformer_controls": false,
+  "notes_control_model": "Side-scroller is the visual format only. User action buttons trigger autonomous pet behaviours; do not add Mario-style movement controls.",
   "status": "planned",
   "notes": "Side-scroller production queue only. Do not generate, promote, or approve assets automatically.",
   "output_expectations": {
@@ -20,6 +25,8 @@
       "promoted": false,
       "animation_kind": "idle",
       "custom_required": false,
+      "trigger": "default_state",
+      "autonomous_behavior": "Pet idles in place or makes small side-view breathing/bounce motions until a care/action button is selected.",
       "prompt": "Side-view Moonbot pet idle animation, glossy white body, black visor with pink LED eyes, chunky feet, clean side-scroller game sprite, transparent background, no text, no scenery.",
       "output_expectations": { "frame_count": 25, "frame_size": 256, "sheet_size": { "w": 1280, "h": 1280 } },
       "promotion_target": {
@@ -36,6 +43,8 @@
       "promoted": false,
       "animation_kind": "walk",
       "custom_required": false,
+      "trigger": "scripted_movement",
+      "autonomous_behavior": "Pet walks left or right inside the bounded stage as part of a selected action flow.",
       "prompt": "Side-view Moonbot pet walk cycle, glossy white body, black visor with pink LED eyes, chunky feet, readable side-scroller stride, transparent background, no text, no scenery.",
       "output_expectations": { "frame_count": 25, "frame_size": 256, "sheet_size": { "w": 1280, "h": 1280 } },
       "promotion_target": {
@@ -52,6 +61,8 @@
       "promoted": false,
       "animation_kind": "run",
       "custom_required": false,
+      "trigger": "scripted_movement",
+      "autonomous_behavior": "Pet runs automatically toward a toy, target spot, or return position during an action flow.",
       "prompt": "Side-view Moonbot pet run cycle, glossy white body, black visor with pink LED eyes, chunky feet, fast readable side-scroller motion, transparent background, no text, no scenery.",
       "output_expectations": { "frame_count": 25, "frame_size": 256, "sheet_size": { "w": 1280, "h": 1280 } },
       "promotion_target": {
@@ -68,6 +79,8 @@
       "promoted": false,
       "animation_kind": "jump",
       "custom_required": false,
+      "trigger": "scripted_action",
+      "autonomous_behavior": "Pet performs a scripted hop during play or excitement; the user does not control jumping directly.",
       "prompt": "Side-view Moonbot pet jump animation, glossy white body, black visor with pink LED eyes, chunky feet, clean hop and landing, transparent background, no text, no scenery.",
       "output_expectations": { "frame_count": 25, "frame_size": 256, "sheet_size": { "w": 1280, "h": 1280 } },
       "promotion_target": {
@@ -84,6 +97,8 @@
       "promoted": false,
       "animation_kind": "custom",
       "custom_required": true,
+      "trigger": "eat_button",
+      "autonomous_behavior": "Pet walks to a snack or bowl, eats in side-view, then returns to idle.",
       "prompt": "Side-view Moonbot pet eating a small snack, glossy white body, black visor with pink LED eyes, cute readable food interaction, side-scroller game sprite, transparent background, no text, no scenery.",
       "output_expectations": { "frame_count": 25, "frame_size": 256, "sheet_size": { "w": 1280, "h": 1280 } },
       "promotion_target": {
@@ -100,6 +115,8 @@
       "promoted": false,
       "animation_kind": "custom",
       "custom_required": true,
+      "trigger": "sleep_button",
+      "autonomous_behavior": "Pet walks to a sleep spot, lies down, sleeps, and remains in an autonomous sleep loop.",
       "prompt": "Side-view Moonbot pet sleeping peacefully, glossy white body, black visor with sleepy pink LED expression, gentle breathing, side-scroller game sprite, transparent background, no text, no scenery.",
       "output_expectations": { "frame_count": 25, "frame_size": 256, "sheet_size": { "w": 1280, "h": 1280 } },
       "promotion_target": {
@@ -116,6 +133,8 @@
       "promoted": false,
       "animation_kind": "custom",
       "custom_required": true,
+      "trigger": "play_button",
+      "autonomous_behavior": "Pet runs or bounces toward a toy, plays in side-view, then returns to idle.",
       "prompt": "Side-view Moonbot pet playing with a small ball, glossy white body, black visor with pink LED eyes, cute side-scroller pet motion, transparent background, no text, no scenery.",
       "output_expectations": { "frame_count": 25, "frame_size": 256, "sheet_size": { "w": 1280, "h": 1280 } },
       "promotion_target": {
@@ -132,6 +151,8 @@
       "promoted": false,
       "animation_kind": "custom",
       "custom_required": true,
+      "trigger": "clean_button",
+      "autonomous_behavior": "Pet moves to a cleaning spot, plays bubbles or polish animation, then returns to idle.",
       "prompt": "Side-view Moonbot pet clean animation with small bubbles, glossy white body, black visor with pink LED eyes, cute care-state motion, transparent background, no text, no scenery.",
       "output_expectations": { "frame_count": 25, "frame_size": 256, "sheet_size": { "w": 1280, "h": 1280 } },
       "promotion_target": {
@@ -148,6 +169,8 @@
       "promoted": false,
       "animation_kind": "custom",
       "custom_required": true,
+      "trigger": "train_button",
+      "autonomous_behavior": "Pet walks to a training spot and performs a non-combat exercise animation, then returns to idle.",
       "prompt": "Side-view Moonbot pet training with small dumbbells, glossy white body, black visor with pink LED eyes, non-combat exercise motion, transparent background, no text, no scenery.",
       "output_expectations": { "frame_count": 25, "frame_size": 256, "sheet_size": { "w": 1280, "h": 1280 } },
       "promotion_target": {
@@ -164,6 +187,8 @@
       "promoted": false,
       "animation_kind": "custom",
       "custom_required": true,
+      "trigger": "scripted_feedback",
+      "autonomous_behavior": "Pet plays a non-combat hurt or dizzy feedback animation, then returns to idle when appropriate.",
       "prompt": "Side-view Moonbot pet hurt or dizzy state, glossy white body, black visor with pink LED eyes, cute non-violent stunned motion, transparent background, no text, no scenery.",
       "output_expectations": { "frame_count": 25, "frame_size": 256, "sheet_size": { "w": 1280, "h": 1280 } },
       "promotion_target": {

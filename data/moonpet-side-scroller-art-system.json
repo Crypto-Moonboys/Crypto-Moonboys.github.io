@@ -21,13 +21,47 @@
   "production_rules": [
     "Current runtime direction is 2D side-scroller.",
     "All gameplay animations must be side-view compatible.",
-    "Use left/right sprite logic and mirroring where practical.",
+    "Use autonomous left/right sprite logic and mirroring where practical.",
+    "User input is care/action buttons, not direct movement controls.",
+    "Do not add keyboard platformer controls, collision gameplay, manual jumping, or combat control loops.",
     "Do not expand the isometric/down-facing pipeline for current gameplay.",
     "Old isometric assets remain archived reference only.",
     "Generate, review, promote, then integrate.",
     "Character sprite sheets should use transparent backgrounds where possible.",
     "Keep frame count, frame size, sheet size, ground line, and silhouette consistent."
   ],
+  "gameplay_model": {
+    "title": "Autonomous Pet, Not Player-Controlled Platformer",
+    "input_model": "button_driven_care_actions",
+    "direct_player_movement": false,
+    "keyboard_platformer_controls": false,
+    "collision_platforming": false,
+    "combat_loop": false,
+    "autonomous_movement": true,
+    "bounded_stage_movement": true,
+    "description": "The pet remains an autonomous virtual pet in a side-view room or rooftop stage. User care/action buttons trigger scripted pet behaviours; the pet may walk, run, jump, eat, sleep, play, clean, or train inside the viewport and then return to idle.",
+    "action_flow_examples": [
+      "Eat button: pet walks to snack or bowl, eats, returns to idle.",
+      "Play button: pet runs or bounces toward a toy, plays, returns to idle.",
+      "Clean button: pet moves to a cleaning spot, plays bubbles or polish animation, returns to idle.",
+      "Sleep button: pet walks to a sleep spot, lies down, sleeps.",
+      "Train button: pet walks to a training spot and performs a non-combat train animation."
+    ],
+    "side_scroller_means": [
+      "side-view camera",
+      "side-view sprites",
+      "side-view environment",
+      "left/right movement lane",
+      "consistent side-view animation generation"
+    ],
+    "side_scroller_does_not_mean": [
+      "platformer controls",
+      "user-controlled jumping",
+      "collision gameplay",
+      "manual movement",
+      "combat game"
+    ]
+  },
   "animation_states": [
     { "id": "side_idle", "label": "Idle", "description": "Calm side-view idle with subtle breathing or bounce." },
     { "id": "side_walk", "label": "Walk", "description": "Readable side-view walk cycle." },

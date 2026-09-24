@@ -12,7 +12,31 @@ The production rule is:
 Build side. Test side. Ship side.
 ```
 
-All current gameplay animation planning should assume clean side-view sprites, left/right gameplay logic, and mirrored movement where practical.
+All current gameplay animation planning should assume clean side-view sprites, autonomous pet movement inside a bounded stage, left/right visual logic, and mirrored movement where practical.
+
+## Autonomous Pet, Not Player-Controlled Platformer
+
+Side-scroller describes the visual format, not the control model. Moonpet remains an autonomous virtual pet.
+
+Users do not directly move the pet with left/right/jump controls. There should be no Mario-style keyboard movement, collision-platforming gameplay, manual jumping, or combat loop.
+
+The correct interaction model is:
+
+- The user presses care/action buttons.
+- The pet performs the selected action animation.
+- The pet may move left/right automatically inside the stage during that action.
+- The pet may walk, run, jump, play, eat, sleep, clean, or train inside the viewport as scripted autonomous behavior.
+- After the action completes, the pet returns to idle.
+
+Examples:
+
+- Eat button: pet walks to snack or bowl, eats, then returns to idle.
+- Play button: pet runs or bounces toward a toy, plays, then returns to idle.
+- Clean button: pet moves to a cleaning area, plays bubbles/polish animation, then returns to idle.
+- Sleep button: pet walks to a sleep spot, lies down, and sleeps.
+- Train button: pet walks to a training spot and performs a non-combat train animation.
+
+Side-scroller means side-view camera, side-view sprites, side-view environment, a left/right movement lane, and consistent side-view animation generation. It does not mean player-controlled platforming.
 
 ## Existing Isometric Assets
 
@@ -31,7 +55,7 @@ New gameplay sprites should be side-scroller first:
 
 - Use side-left and side-right Moonbot proportions as the gameplay baseline.
 - Use front/back references only for trait consistency, not runtime animation.
-- Keep left/right sprite logic compatible with mirroring.
+- Keep autonomous left/right sprite logic compatible with mirroring.
 - Keep every animation on a stable ground line.
 - Use the black visor, pink LED eyes, glossy white body, chunky feet, and soft shaded cyber-pet style.
 - Generate, review, promote, and then integrate.
@@ -57,6 +81,8 @@ Before any live-game change:
 - Confirm no side-scroller asset is approved or promoted by default.
 - Preview promoted side assets in a sandbox or runtime preview page.
 - Verify side idle, walk, run, jump, eat, sleep, play, clean, train, and hurt frame timing.
+- Verify action-button flows, not player movement controls.
+- Confirm no keyboard/platformer control path was introduced.
 - Confirm the existing live game still runs with its current renderer.
 
 Live integration is a later controlled task. Do not modify `moonpet-game.html`, `js/moonpet-mini-app.js`, or `css/moonpet-mini-app.css` for this foundation step.

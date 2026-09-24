@@ -12,11 +12,29 @@ The body should feel like a cute collectible pet mascot: simple, readable, high 
 
 - Current runtime direction is 2D side-scroller.
 - All gameplay animations must be side-view compatible.
-- Use left/right sprite logic; mirror where appropriate.
+- Use autonomous left/right sprite logic; mirror where appropriate.
+- User input is care/action buttons, not manual movement controls.
+- Do not add keyboard platformer controls, collision gameplay, manual jumping, or combat control loops.
 - Do not build new down-facing/isometric gameplay assets for the current runtime.
 - Old isometric sheets are reference only.
 - Generate, review, promote, then integrate.
 - Keep every sheet consistent in size, frame count, framing, ground line, and silhouette.
+
+## Autonomous Pet, Not Player-Controlled Platformer
+
+The side-scroller sprite bible defines visual presentation, not direct player movement.
+
+Moonpet is still an autonomous virtual pet. The user presses a care/action button, then the pet chooses or follows a scripted behavior inside the side-view stage. The pet can move left or right within a bounded room or rooftop, but the user does not steer it like a platform character.
+
+Expected action flow:
+
+- Eat: walk to a snack or bowl, eat, return to idle.
+- Play: run or bounce toward a toy, play, return to idle.
+- Clean: move to cleaning spot, play bubble/polish animation, return to idle.
+- Sleep: walk to sleep spot, lie down, sleep.
+- Train: walk to training spot, perform non-combat train animation.
+
+Side-scroller means side-view camera, side-view sprites, side-view environments, and a simple left/right movement lane. It does not mean platformer controls, user-controlled jumping, collision gameplay, manual movement, or combat.
 
 ## Face / Visor Expressions
 
@@ -163,3 +181,4 @@ Across all sprites:
 - Keep the Moonbot centered and full-body inside each frame.
 - Avoid text, scenery, and embedded UI inside character sprite sheets.
 - Keep side-left/right gameplay compatible; mirror right-facing sprites when feasible.
+- Keep movement autonomous and button-driven; never require player-controlled left/right/jump input.
