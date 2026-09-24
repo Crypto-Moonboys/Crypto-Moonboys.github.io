@@ -714,7 +714,7 @@
       "promoted_at": "2026-09-24T12:35:00.000Z",
       "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_wave.png",
       "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_wave.json",
-      "notes": "Approved/promoted from local image generation using the accepted Moonbot front-victory style after AutoSprite attempts remained side-facing."
+      "notes": "Greeting and occasional idle special. Traits must be adapted from side_front_point, not redesigned per pose."
     },
     {
       "source_character_name": "MOONBOT PET VISOR V1",
@@ -752,7 +752,7 @@
       "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_victory.png",
       "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_victory.json",
       "updated_at": "2026-09-24T00:00:00.000Z",
-      "notes": "Replaced with front-facing single-pose victory idle variant sheet; remains celebrate reward variant."
+      "notes": "Rare celebrate/personality beat. Traits adapt from side_front_point; simplified placement acceptable if needed."
     },
     {
       "source_character_name": "MOONBOT PET VISOR V1",
@@ -861,7 +861,7 @@
       "promoted_at": "2026-09-24T00:00:00.000Z",
       "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_point.png",
       "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_point.json",
-      "notes": "Approved/promoted local imagegen front-facing idle personality variant."
+      "notes": "Master trait/reference mannequin for front-facing clothing/accessory/trait design; main front-facing idle personality pose."
     },
     {
       "source_character_name": "MOONBOT PET VISOR V1",
@@ -896,7 +896,24 @@
       "promoted_at": "2026-09-24T00:00:00.000Z",
       "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_dance.png",
       "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_dance.json",
-      "notes": "Approved/promoted local imagegen front-facing idle personality variant."
+      "notes": "Rare fun idle personality beat. Traits adapt from side_front_point; simplified placement acceptable if needed."
     }
-  ]
+  ],
+  "front_trait_policy": {
+    "master_reference_role": "side_front_point",
+    "active_front_roles": [
+      "side_front_point",
+      "side_front_wave",
+      "side_front_victory",
+      "side_front_dance"
+    ],
+    "design_rules": [
+      "Design every future clothing, accessory, and trait first on side_front_point as the master trait mannequin.",
+      "Adapt the same item to every active runtime sheet; do not create separate clothing designs per pose.",
+      "Resize and reposition the same item to match pose scale, body angle, facing direction, and limb position.",
+      "Quick or rare poses such as side_front_victory and side_front_dance may use simplified placement if needed.",
+      "Common/core poses, especially side_front_point and side_front_wave, require stronger consistency.",
+      "If side_front_victory or side_front_dance read smaller in runtime, try role-level scale normalization first; if quality suffers, keep them rare-only and regenerate only if consistency breaks."
+    ]
+  }
 }

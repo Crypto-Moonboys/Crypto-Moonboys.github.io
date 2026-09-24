@@ -493,6 +493,29 @@
       "side_front_dance"
     ],
     "rejected_pending_regeneration": [],
-    "variant_runtime_notes": "Runtime supports controlled variants: side_jump, side_turn, side_eat_chaos, side_play_ball, side_front_wave, side_front_point, side_front_victory, and side_front_dance. Higher-level greetings route to side_front_wave; celebrate may use side_front_victory; idle can rarely choose one front-facing personality pose with cooldown while side_idle remains default."
+    "variant_runtime_notes": "Runtime supports controlled variants: side_jump, side_turn, side_eat_chaos, side_play_ball, side_front_wave, side_front_point, side_front_victory, and side_front_dance. side_idle remains default. side_front_point is the main front-facing idle personality/master trait mannequin. Higher-level greetings route to side_front_wave; celebrate may use side_front_victory; idle can rarely choose one front-facing personality pose with cooldown, weighted point > wave > victory/dance.",
+    "front_trait_policy": {
+      "master_reference_role": "side_front_point",
+      "active_front_roles": [
+        "side_front_point",
+        "side_front_wave",
+        "side_front_victory",
+        "side_front_dance"
+      ],
+      "design_rules": [
+        "Design every future clothing, accessory, and trait first on side_front_point as the master trait mannequin.",
+        "Adapt the same item to every active runtime sheet; do not create separate clothing designs per pose.",
+        "Resize and reposition the same item to match pose scale, body angle, facing direction, and limb position.",
+        "Quick or rare poses such as side_front_victory and side_front_dance may use simplified placement if needed.",
+        "Common/core poses, especially side_front_point and side_front_wave, require stronger consistency.",
+        "If side_front_victory or side_front_dance read smaller in runtime, try role-level scale normalization first; if quality suffers, keep them rare-only and regenerate only if consistency breaks."
+      ]
+    },
+    "front_idle_weights": {
+      "side_front_point": 4,
+      "side_front_wave": 2,
+      "side_front_victory": 1,
+      "side_front_dance": 1
+    }
   }
 }

@@ -215,8 +215,8 @@
     console.info('[Moonpet] side-scroller sprite mode enabled');
     updateSideSpriteDebug({ reason: 'loading side-scroller scripts' });
     try {
-      await loadApprovedSpriteScript('/js/moonpet-side-scroller-asset-loader.js?v=20260924-side-sprites-runtime-v8');
-      await loadApprovedSpriteScript('/js/moonpet-side-scroller-sprite-renderer.js?v=20260924-side-sprites-runtime-v8');
+      await loadApprovedSpriteScript('/js/moonpet-side-scroller-asset-loader.js?v=20260924-side-sprites-runtime-v9');
+      await loadApprovedSpriteScript('/js/moonpet-side-scroller-sprite-renderer.js?v=20260924-side-sprites-runtime-v9');
       if (!window.MoonpetSideScrollerSpriteRenderer) throw new Error('MoonpetSideScrollerSpriteRenderer unavailable');
       sideScrollerSpriteRendererState = await window.MoonpetSideScrollerSpriteRenderer.initMoonpetSideScrollerRenderer();
       sideScrollerSpriteRendererReady = Boolean(sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.ready);
@@ -3235,7 +3235,12 @@
   }
 
   function idleSpecialRoleForFrame(time, mode, active) {
-    var idleRoles = ['side_front_wave', 'side_front_point', 'side_front_victory', 'side_front_dance'];
+    var idleRoles = [
+      'side_front_point', 'side_front_point', 'side_front_point', 'side_front_point',
+      'side_front_wave', 'side_front_wave',
+      'side_front_victory',
+      'side_front_dance'
+    ];
     var now = Number(time) || performance.now();
     if (active || mode !== 'idle' || reducedMotion) return '';
     if (idleSpecialRole && now < idleSpecialUntil) return idleSpecialRole;

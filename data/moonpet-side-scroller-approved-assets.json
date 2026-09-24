@@ -372,7 +372,7 @@
         "w": 1280,
         "h": 1280
       },
-      "notes": "Replaced with front-facing single-pose victory idle variant sheet for occasional idle personality and celebrate variation."
+      "notes": "Approved front-facing single-pose victory sheet. Rare celebrate/personality beat; adapt traits from side_front_point and simplify placement if needed."
     },
     {
       "id": "side_front_wave",
@@ -391,7 +391,7 @@
         "w": 1280,
         "h": 1280
       },
-      "notes": "Approved front/near-front greeting wave sheet generated locally from approved Moonbot front-victory style after AutoSprite custom wave attempts stayed side-facing."
+      "notes": "Approved front/near-front greeting wave sheet. Use for Say Hello/greet and occasional idle; adapt traits from side_front_point instead of designing pose-specific clothing."
     },
     {
       "id": "side_front_point",
@@ -410,7 +410,7 @@
         "w": 1280,
         "h": 1280
       },
-      "notes": "Approved front-facing pointing idle personality variant generated for rare idle beats."
+      "notes": "Approved front-facing pointing idle personality variant. Master trait/reference mannequin: design clothes/accessories/traits here first, then adapt the same item to active runtime sheets."
     },
     {
       "id": "side_front_dance",
@@ -429,7 +429,7 @@
         "w": 1280,
         "h": 1280
       },
-      "notes": "Approved front-facing dance idle personality variant generated for rare idle beats."
+      "notes": "Approved front-facing dance idle personality variant. Rare fun idle beat; adapt traits from side_front_point and simplify placement if needed."
     }
   ],
   "rejected": [],
@@ -443,7 +443,15 @@
         "side_front_point",
         "side_front_victory",
         "side_front_dance"
-      ]
+      ],
+      "trait_reference_role": "side_front_point",
+      "variant_weights": {
+        "side_front_point": 4,
+        "side_front_wave": 2,
+        "side_front_victory": 1,
+        "side_front_dance": 1
+      },
+      "variant_policy": "side_idle remains default; front idle specials are cooldown-gated and weighted with side_front_point as the main front-facing personality/mannequin pose, wave as greeting/occasional idle, victory and dance as rare-only personality beats."
     },
     "feed": {
       "role": "side_eat",
@@ -523,5 +531,22 @@
       "role": "side_front_wave",
       "fallback": "procedural_if_missing"
     }
+  },
+  "front_trait_policy": {
+    "master_reference_role": "side_front_point",
+    "active_front_roles": [
+      "side_front_point",
+      "side_front_wave",
+      "side_front_victory",
+      "side_front_dance"
+    ],
+    "design_rules": [
+      "Design every future clothing, accessory, and trait first on side_front_point as the master trait mannequin.",
+      "Adapt the same item to every active runtime sheet; do not create separate clothing designs per pose.",
+      "Resize and reposition the same item to match pose scale, body angle, facing direction, and limb position.",
+      "Quick or rare poses such as side_front_victory and side_front_dance may use simplified placement if needed.",
+      "Common/core poses, especially side_front_point and side_front_wave, require stronger consistency.",
+      "If side_front_victory or side_front_dance read smaller in runtime, try role-level scale normalization first; if quality suffers, keep them rare-only and regenerate only if consistency breaks."
+    ]
   }
 }
