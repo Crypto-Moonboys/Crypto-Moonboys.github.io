@@ -1,7 +1,7 @@
 (() => {
   const DEFAULT_REGISTRY_PATH = "data/moonpet-side-scroller-approved-assets.json";
   const DEFAULT_WEARABLE_TRAITS_PATH = "data/moonpet-wearable-traits.json";
-  const CACHE_VERSION = "20260924-side-sprites-runtime-v12";
+  const CACHE_VERSION = "20260924-side-sprites-runtime-v13";
   const PRIORITY_ROLES = new Set(["side_idle", "side_walk", "side_run"]);
 
   function cacheToken(asset) {
@@ -29,7 +29,8 @@
       y: Number(source.y || 0),
       w: Number(source.w || source.width || fallbackSize),
       h: Number(source.h || source.height || fallbackSize),
-      label: frame.filename || frame.name || String(index)
+      label: frame.filename || frame.name || String(index),
+      index
     };
   }
 
@@ -101,7 +102,20 @@
   async function loadWearableTraitConfig(registry, errors) {
     const configPath = registry && registry.wearable_traits && registry.wearable_traits.config_path || DEFAULT_WEARABLE_TRAITS_PATH;
     try {
-      return await fetchJson(configPath, { version: CACHE_VERSION });
+      const config = await fetchJson(configPath, { version: CACHE_VERSION });
+      const imageCache = {};
+      const bitmapTraits = (config.traits || []).filter((trait) => trait && trait.visual && trait.visual.type === "runtime_bitmap");
+      await Promise.all(bitmapTraits.flatMap((trait) => Object.entries(trait.visual.assets || {}).map(async ([key, path]) => {
+        if (!imageCache[path]) imageCache[path] = loadImage(path, { version: CACHE_VERSION });
+        const result = await imageCache[path];
+        if (result.error) {
+          errors.push(`Wearable ${trait.id} asset ${key} skipped: ${result.error}`);
+          return;
+        }
+        trait.visual.images = trait.visual.images || {};
+        trait.visual.images[key] = result.image;
+      })));
+      return config;
     } catch (error) {
       errors.push(`Wearable trait config skipped: ${error.message}`);
       return null;

@@ -1,22 +1,22 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "system_id": "moonbot_wearable_trait_propagation_v1",
   "runtime_status": "live_beta_default",
   "master_reference_role": "side_front_point",
   "sample_trait_id": "sample_chest_badge",
   "loadout_slots": ["head", "face", "chest", "back", "hand", "aura"],
-  "storage_key": "moonpet-wearable-loadout-v1",
+  "storage_key": "moonpet-wearable-loadout-v2",
   "default_loadout": {
-    "head": "sample_lunar_cap",
+    "head": "neon_borough_cap",
     "face": "",
-    "chest": "sample_chest_badge",
+    "chest": "",
     "back": "",
     "hand": "",
-    "aura": "sample_electric_aura"
+    "aura": ""
   },
   "debug_trait_sets": {
     "sample": ["sample_chest_badge"],
-    "head": ["sample_lunar_cap"],
+    "head": ["neon_borough_cap"],
     "face": ["sample_visor_glasses"],
     "chest": ["sample_chest_badge"],
     "back": ["sample_micro_jetpack"],
@@ -225,6 +225,109 @@
     }
   },
   "traits": [
+    {
+      "id": "neon_borough_cap",
+      "name": "Neon Borough Cap",
+      "category": "hats",
+      "layer": "hat",
+      "anchor_key": "hat",
+      "z_index": 70,
+      "status": "production_beta",
+      "mirror_safe": true,
+      "master_role": "side_front_point",
+      "supported_roles": [
+        "side_front_point",
+        "side_front_wave",
+        "side_idle",
+        "side_walk",
+        "side_run"
+      ],
+      "blocked_roles": [
+        "side_front_victory",
+        "side_front_dance",
+        "side_jump",
+        "side_turn",
+        "side_eat",
+        "side_eat_chaos",
+        "side_play",
+        "side_play_ball",
+        "side_clean",
+        "side_sleep",
+        "side_train",
+        "side_work",
+        "side_equip",
+        "side_evolve",
+        "side_trade",
+        "side_celebrate",
+        "side_interact",
+        "side_hurt",
+        "side_battle"
+      ],
+      "pose_adaptation_notes": "Designed and approved on the actual side_front_point Moonbot. A fitted front overlay is shared with side_front_wave; a separately fitted right-profile extraction is used for side_idle, side_walk, and side_run. Every supported role tracks the measured head centre and top for all 25 frames.",
+      "visual": {
+        "type": "runtime_bitmap",
+        "assets": {
+          "front": "/img/moonpets/wearables/neon-borough-cap/front.png",
+          "side_right": "/img/moonpets/wearables/neon-borough-cap/side-right.png"
+        },
+        "pose_fits": {
+          "side_front_point": {
+            "asset": "front",
+            "width_factor": 1.35,
+            "height_ratio": 0.44,
+            "center_ratio": 0.5,
+            "brim_offset": 0.164,
+            "frame_centers_x": [0.648, 0.547, 0.479, 0.42, 0.35, 0.656, 0.602, 0.521, 0.428, 0.361, 0.65, 0.596, 0.49, 0.408, 0.365, 0.656, 0.607, 0.508, 0.414, 0.355, 0.654, 0.572, 0.496, 0.43, 0.355],
+            "frame_head_widths": [0.484, 0.477, 0.48, 0.48, 0.48, 0.391, 0.391, 0.402, 0.387, 0.363, 0.488, 0.434, 0.426, 0.418, 0.418, 0.492, 0.488, 0.492, 0.484, 0.484, 0.512, 0.504, 0.523, 0.523, 0.516],
+            "frame_head_tops": [0.105, 0.105, 0.102, 0.109, 0.102, 0, 0, 0, 0, 0, 0.043, 0, 0, 0, 0, 0.039, 0.027, 0.02, 0.039, 0.047, 0, 0, 0, 0, 0]
+          },
+          "side_front_wave": {
+            "asset": "front",
+            "width_factor": 1.35,
+            "height_ratio": 0.44,
+            "center_ratio": 0.5,
+            "brim_offset": 0.164,
+            "frame_centers_x": [0.541, 0.529, 0.51, 0.479, 0.479, 0.563, 0.549, 0.529, 0.51, 0.447, 0.59, 0.547, 0.541, 0.547, 0.512, 0.568, 0.551, 0.516, 0.512, 0.467, 0.551, 0.535, 0.525, 0.504, 0.475],
+            "frame_head_widths": [0.473, 0.465, 0.457, 0.473, 0.465, 0.469, 0.465, 0.465, 0.465, 0.465, 0.477, 0.477, 0.473, 0.477, 0.469, 0.52, 0.516, 0.523, 0.523, 0.512, 0.547, 0.539, 0.543, 0.547, 0.543],
+            "frame_head_tops": [0.164, 0.164, 0.168, 0.16, 0.168, 0.098, 0.09, 0.102, 0.102, 0.09, 0.016, 0.02, 0.012, 0.02, 0.02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+          },
+          "side_idle": {
+            "asset": "side_right",
+            "width_factor": 1.45,
+            "height_ratio": 0.496,
+            "center_ratio": 0.42,
+            "top_mode": "head_overlap",
+            "top_overlap": 0.2,
+            "frame_centers_x": [0.453, 0.453, 0.455, 0.455, 0.459, 0.465, 0.469, 0.473, 0.473, 0.473, 0.473, 0.471, 0.469, 0.465, 0.461, 0.457, 0.455, 0.453, 0.455, 0.455, 0.455, 0.461, 0.465, 0.469, 0.473],
+            "frame_head_widths": [0.344, 0.344, 0.348, 0.348, 0.348, 0.352, 0.352, 0.352, 0.352, 0.352, 0.352, 0.355, 0.352, 0.352, 0.352, 0.352, 0.348, 0.352, 0.348, 0.348, 0.348, 0.352, 0.352, 0.352, 0.352],
+            "frame_head_tops": [0.18, 0.18, 0.18, 0.184, 0.184, 0.188, 0.188, 0.188, 0.188, 0.188, 0.184, 0.184, 0.184, 0.18, 0.18, 0.18, 0.18, 0.18, 0.18, 0.18, 0.184, 0.184, 0.188, 0.188, 0.188]
+          },
+          "side_walk": {
+            "asset": "side_right",
+            "width_factor": 1.45,
+            "height_ratio": 0.496,
+            "center_ratio": 0.42,
+            "top_mode": "head_overlap",
+            "top_overlap": 0.2,
+            "frame_centers_x": [0.492, 0.492, 0.49, 0.486, 0.49, 0.494, 0.49, 0.488, 0.486, 0.494, 0.494, 0.492, 0.49, 0.488, 0.49, 0.494, 0.494, 0.486, 0.488, 0.492, 0.494, 0.49, 0.488, 0.486, 0.49],
+            "frame_head_widths": [0.383, 0.383, 0.379, 0.379, 0.379, 0.379, 0.379, 0.383, 0.379, 0.379, 0.379, 0.383, 0.379, 0.375, 0.379, 0.379, 0.379, 0.379, 0.375, 0.383, 0.379, 0.379, 0.375, 0.379, 0.379],
+            "frame_head_tops": [0.152, 0.152, 0.156, 0.168, 0.172, 0.156, 0.148, 0.156, 0.164, 0.164, 0.156, 0.148, 0.152, 0.168, 0.168, 0.156, 0.148, 0.16, 0.168, 0.168, 0.156, 0.148, 0.156, 0.168, 0.172]
+          },
+          "side_run": {
+            "asset": "side_right",
+            "width_factor": 1.45,
+            "height_ratio": 0.496,
+            "center_ratio": 0.42,
+            "top_mode": "head_overlap",
+            "top_overlap": 0.2,
+            "frame_centers_x": [0.533, 0.535, 0.527, 0.512, 0.518, 0.531, 0.52, 0.516, 0.533, 0.523, 0.512, 0.521, 0.535, 0.52, 0.516, 0.533, 0.531, 0.508, 0.523, 0.531, 0.523, 0.52, 0.535, 0.527, 0.512],
+            "frame_head_widths": [0.355, 0.352, 0.352, 0.352, 0.355, 0.352, 0.352, 0.352, 0.355, 0.352, 0.352, 0.355, 0.352, 0.352, 0.352, 0.355, 0.352, 0.352, 0.352, 0.352, 0.352, 0.352, 0.352, 0.352, 0.352],
+            "frame_head_tops": [0.164, 0.152, 0.16, 0.195, 0.184, 0.152, 0.18, 0.199, 0.164, 0.164, 0.199, 0.176, 0.148, 0.18, 0.199, 0.164, 0.148, 0.195, 0.172, 0.152, 0.172, 0.191, 0.156, 0.156, 0.195]
+          }
+        }
+      },
+      "notes": "First production wearable proof. Source identity was fitted on the actual approved Moonbot before transparent overlay extraction; standalone concept renders are not runtime assets."
+    },
     {
       "id": "sample_lunar_cap",
       "name": "Sample Lunar Cap",

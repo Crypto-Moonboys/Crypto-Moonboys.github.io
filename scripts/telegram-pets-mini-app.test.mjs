@@ -1353,7 +1353,7 @@ assert.match(worker, /counts\.district_mission/);
 assert.match(client, /DAILY MISSION BUFFER \/\/ /);
 assert.match(client, /meter\('DAILY CLEAR', missionPercent\)/);
 assert.match(html, /id="utility-layer"/);
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260924-side-sprites-runtime-v12/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260924-side-sprites-runtime-v13/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractFunctionSource(client, 'guideMarkup');
@@ -1447,7 +1447,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260924-side-sprites-runtime-v12/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260924-side-sprites-runtime-v13/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -1855,14 +1855,30 @@ for (const traitId of ['sample_lunar_cap', 'sample_visor_glasses', 'sample_chest
 }
 assert.equal(wearableTraits.mirror_safe_rules.default, 'mirror_with_pose', 'wearable trait config must define mirror-safe defaults');
 assert.deepEqual(wearableTraits.loadout_slots, ['head', 'face', 'chest', 'back', 'hand', 'aura'], 'wearable config must define every live beta equip slot');
-assert.deepEqual(Object.values(wearableTraits.default_loadout).filter(Boolean), ['sample_lunar_cap', 'sample_chest_badge', 'sample_electric_aura'], 'normal beta gameplay must start with a readable default outfit');
-assert.match(client, /WEARABLE_LOADOUT_STORAGE_KEY = 'moonpet-wearable-loadout-v1'/, 'wearable loadout must use local runtime persistence');
+const productionCap = wearableTraits.traits.find((trait) => trait.id === 'neon_borough_cap');
+assert.ok(productionCap, 'wearable config must include the fitted Neon Borough Cap');
+assert.equal(productionCap.status, 'production_beta', 'fitted cap must be promoted as a production beta trait');
+assert.deepEqual(productionCap.supported_roles, ['side_front_point', 'side_front_wave', 'side_idle', 'side_walk', 'side_run'], 'first fitted cap proof must stay scoped to its five reviewed roles');
+for (const role of productionCap.supported_roles) {
+  const fit = productionCap.visual.pose_fits[role];
+  assert.ok(fit, `${role} must have an explicit fitted bitmap transform`);
+  assert.equal(fit.frame_centers_x.length, 25, `${role} must track the head centre for all 25 frames`);
+  assert.equal(fit.frame_head_widths.length, 25, `${role} must track the fitted cap width for all 25 frames`);
+  assert.equal(fit.frame_head_tops.length, 25, `${role} must track the head top for all 25 frames`);
+}
+for (const assetPath of Object.values(productionCap.visual.assets)) {
+  assert.ok(fs.existsSync(new URL(`../${assetPath.replace(/^\//, '')}`, import.meta.url)), `production wearable asset must exist: ${assetPath}`);
+}
+assert.deepEqual(Object.values(wearableTraits.default_loadout).filter(Boolean), ['neon_borough_cap'], 'normal beta gameplay must start with the fitted production cap only');
+assert.match(client, /WEARABLE_LOADOUT_STORAGE_KEY = 'moonpet-wearable-loadout-v2'/, 'wearable loadout must use versioned local runtime persistence');
 assert.match(client, /wearableTraits: equippedWearableTraits\(\)/, 'normal rendering must pass equipped traits without a debug flag');
 assert.match(client, /data-utility="wearables"/, 'beta UI must expose the wearable equip panel');
 assert.match(sideScrollerLoader, /DEFAULT_WEARABLE_TRAITS_PATH = "data\/moonpet-wearable-traits\.json"/, 'side-scroller loader must know the wearable trait config path');
 assert.match(sideScrollerLoader, /loadWearableTraitConfig/, 'side-scroller loader must load wearable trait config without blocking sprite loading');
 assert.match(sideScrollerRenderer, /function drawWearableTraits\(ctx, role, frame, drawX, drawY, width, height, options, phase = "front"\)/, 'side-scroller renderer must include wearable overlay rendering');
 assert.match(sideScrollerRenderer, /function drawWearableVisual\(ctx, radius, trait\)/, 'wearable renderer must dispatch category proof visuals');
+assert.match(sideScrollerRenderer, /function drawBitmapWearable\(ctx, role, frame, drawX, drawY, width, height, trait\)/, 'wearable renderer must support fitted bitmap overlays');
+assert.match(sideScrollerLoader, /visual\.type === "runtime_bitmap"/, 'side-scroller loader must preload production wearable bitmap assets');
 assert.match(sideScrollerRenderer, /debug_trait_sets/, 'wearable renderer must support opt-in debug selectors');
 assert.match(sideScrollerRenderer, /wearableTraitDebug/, 'wearable debug selectors must remain available');
 assert.match(client, /function wearableTraitDebugRequested\(\)/, 'Mini App must retain wearable debug query support');
@@ -2136,7 +2152,7 @@ assert.match(worker, /Math\.floor\(stepIndex \/ PET_RUN_BOSS_INTERVAL\) \+ 1/);
 assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Number\(activeRun\.depth \|\| 0\) \+ 1/);
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
-assert.match(html, /20260924-side-sprites-runtime-v12/);
+assert.match(html, /20260924-side-sprites-runtime-v13/);
 assert.match(worker, /20260814-moonpet-aaa-pass/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');

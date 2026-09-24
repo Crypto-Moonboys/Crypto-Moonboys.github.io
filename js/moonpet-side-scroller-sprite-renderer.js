@@ -356,6 +356,28 @@
     }
   }
 
+  function drawBitmapWearable(ctx, role, frame, drawX, drawY, width, height, trait) {
+    const visual = trait.visual || {};
+    const fit = visual.pose_fits && visual.pose_fits[role];
+    const image = fit && visual.images && visual.images[fit.asset];
+    if (!fit || !image) return false;
+    const frameIndex = Number(frame.index || 0) % Math.max(1, (fit.frame_centers_x || []).length);
+    const centerX = Number((fit.frame_centers_x || [])[frameIndex]);
+    const headTop = Number((fit.frame_head_tops || [])[frameIndex]);
+    if (!Number.isFinite(centerX) || !Number.isFinite(headTop)) return false;
+    const headWidth = Number((fit.frame_head_widths || [])[frameIndex]);
+    const targetWidth = Number.isFinite(headWidth)
+      ? width * headWidth * Number(fit.width_factor || 1)
+      : width * Number(fit.width || 0);
+    const targetHeight = targetWidth * Number(fit.height_ratio || 1);
+    const left = drawX + width * centerX - targetWidth * Number(fit.center_ratio == null ? 0.5 : fit.center_ratio);
+    const top = fit.top_mode === "head_overlap"
+      ? drawY + height * headTop - targetHeight * Number(fit.top_overlap || 0)
+      : drawY + height * (headTop + Number(fit.brim_offset || 0)) - targetHeight;
+    ctx.drawImage(image, left, top, targetWidth, targetHeight);
+    return true;
+  }
+
   function drawWearableTraits(ctx, role, frame, drawX, drawY, width, height, options, phase = "front") {
     if (!state.traitConfig) return [];
     const traits = traitListFromOptions(options)
@@ -366,6 +388,10 @@
     for (const trait of traits) {
       if (Array.isArray(trait.supported_roles) && !trait.supported_roles.includes(role)) continue;
       if (Array.isArray(trait.blocked_roles) && trait.blocked_roles.includes(role)) continue;
+      if (trait.visual && trait.visual.type === "runtime_bitmap") {
+        if (drawBitmapWearable(ctx, role, frame, drawX, drawY, width, height, trait)) rendered.push(trait.id);
+        continue;
+      }
       const anchor = anchorForTrait(role, trait);
       if (!anchor) continue;
       if (options.facing === -1 && anchor.mirror_safe === false && trait.mirror_safe !== true) continue;

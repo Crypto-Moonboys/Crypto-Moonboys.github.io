@@ -112,10 +112,10 @@
   var utilityReturnFocus = null;
   var activeUtility = '';
   var utilityRequestGeneration = 0;
-  var WEARABLE_LOADOUT_STORAGE_KEY = 'moonpet-wearable-loadout-v1';
+  var WEARABLE_LOADOUT_STORAGE_KEY = 'moonpet-wearable-loadout-v2';
   var WEARABLE_SLOT_ORDER = ['head', 'face', 'chest', 'back', 'hand', 'aura'];
   var WEARABLE_SLOT_TRAITS = {
-    head: 'sample_lunar_cap',
+    head: 'neon_borough_cap',
     face: 'sample_visor_glasses',
     chest: 'sample_chest_badge',
     back: 'sample_micro_jetpack',
@@ -123,12 +123,12 @@
     aura: 'sample_electric_aura'
   };
   var WEARABLE_BETA_DEFAULT_LOADOUT = {
-    head: 'sample_lunar_cap',
+    head: 'neon_borough_cap',
     face: '',
-    chest: 'sample_chest_badge',
+    chest: '',
     back: '',
     hand: '',
-    aura: 'sample_electric_aura'
+    aura: ''
   };
   var wearableLoadout = readWearableLoadout();
 
@@ -282,8 +282,8 @@
     console.info('[Moonpet] side-scroller sprite mode enabled');
     updateSideSpriteDebug({ reason: 'loading side-scroller scripts' });
     try {
-      await loadApprovedSpriteScript('/js/moonpet-side-scroller-asset-loader.js?v=20260924-side-sprites-runtime-v12');
-      await loadApprovedSpriteScript('/js/moonpet-side-scroller-sprite-renderer.js?v=20260924-side-sprites-runtime-v12');
+      await loadApprovedSpriteScript('/js/moonpet-side-scroller-asset-loader.js?v=20260924-side-sprites-runtime-v13');
+      await loadApprovedSpriteScript('/js/moonpet-side-scroller-sprite-renderer.js?v=20260924-side-sprites-runtime-v13');
       if (!window.MoonpetSideScrollerSpriteRenderer) throw new Error('MoonpetSideScrollerSpriteRenderer unavailable');
       sideScrollerSpriteRendererState = await window.MoonpetSideScrollerSpriteRenderer.initMoonpetSideScrollerRenderer();
       sideScrollerSpriteRendererReady = Boolean(sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.ready);

@@ -13,12 +13,12 @@
     "default_enabled": true,
     "loadout_slots": ["head", "face", "chest", "back", "hand", "aura"],
     "default_loadout": {
-      "head": "sample_lunar_cap",
+      "head": "neon_borough_cap",
       "face": "",
-      "chest": "sample_chest_badge",
+      "chest": "",
       "back": "",
       "hand": "",
-      "aura": "sample_electric_aura"
+      "aura": ""
     },
     "sample_query": "?wearableTraitDebug=sample",
     "debug_queries": [
