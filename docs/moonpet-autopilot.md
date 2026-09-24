@@ -24,6 +24,7 @@ The autopilot checks:
 - The custom animation queue is valid.
 - `custom_sleep` may be approved/promoted as the down-facing manual sheet only.
 - `custom_eat` is the current planned, unapproved, unpromoted custom target.
+- The latest custom animation review report is non-blocking unless it indicates a corrupt generated asset or rejected-state promotion risk.
 - Remaining custom states remain planned and unapproved.
 
 ## What It Does Not Do
@@ -33,6 +34,7 @@ Autopilot does not:
 - Call AutoSprite.
 - Generate spritesheets.
 - Promote generated assets.
+- Approve custom animation art.
 - Change live game behaviour.
 - Enable approved sprites by default.
 - Remove or replace the procedural renderer.
@@ -67,6 +69,8 @@ The report includes:
 - `custom_queue_status`
 - `planned_custom_states`
 - `custom_queue_errors`
+- `latest_custom_animation_review`
+- `latest_custom_animation_review_status`
 - `checks`
 - `approved_assets`
 - `rejected_assets`
@@ -114,6 +118,8 @@ npm run moonpet:custom-queue:check
 Autopilot now includes this queue as a monitoring check. It fails if the queue JSON is invalid, a planned item uses rejected `attack`, roles are duplicated, prompts or promotion targets are missing, or any planned item is accidentally approved.
 
 The custom queue does not generate assets automatically. It is a planning and validation layer, now allowing the manually approved down-facing `custom_sleep` while keeping `custom_eat` as the current planned/unapproved generation target and the remaining custom states separate from the approved base idle/walk/run system.
+
+The custom generation operator is documented in [Moonpet Custom Animation Autopilot](moonpet-custom-animation-autopilot.md). That operator can run one queued item, write a mechanical review report, and optionally promote a passing asset to `promoted_pending_approval`; it still does not set `approved: true`.
 
 The current Moonpet runtime is down-facing only. Other directional sleep sheets, including northeast, northwest, left, right, up, southeast, and southwest, are reserved for future 8-direction/isometric expansion and are not part of the current approved runtime loader.
 

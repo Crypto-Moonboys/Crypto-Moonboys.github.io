@@ -120,6 +120,8 @@ The custom generation script:
 - Generates a local atlas JSON when AutoSprite only returns a PNG.
 - Writes `output/manifests/moonpet-custom-animation.generated.json` with `status: generated_pending_review`.
 
+The safer operator wrapper is documented in [Moonpet Custom Animation Autopilot](moonpet-custom-animation-autopilot.md). Prefer that wrapper for GitHub Actions because it generates one queued item, runs mechanical checks, and writes a review report.
+
 ## Promotion
 
 Promotion is explicit and separate:

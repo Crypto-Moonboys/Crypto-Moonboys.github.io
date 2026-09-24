@@ -107,6 +107,7 @@ The custom queue does not:
 
 `custom_eat` is the next target only. It must stay `planned`, `approved: false`, and `promoted: false` until a generated or manually imported down-facing sheet is reviewed. If promoted later, it should move to `promoted_pending_approval`, not directly to approved.
 
-The next step, when explicitly requested, is to generate or import `custom_eat` and review it through the sandbox before approval.
+The next step, when explicitly requested, is to run the one-item operator for `custom_eat`, then review the output through the sandbox before approval.
 
 The first enabled generation lane is documented in [Moonpet Custom Animation Generation](moonpet-custom-animation-generation.md).
+The automated operator is documented in [Moonpet Custom Animation Autopilot](moonpet-custom-animation-autopilot.md).

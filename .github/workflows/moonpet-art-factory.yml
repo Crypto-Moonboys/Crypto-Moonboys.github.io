@@ -26,6 +26,21 @@ on:
         description: "Custom animation queue id. For now only custom_eat is enabled."
         required: false
         default: "custom_eat"
+      execute_custom_generation:
+        description: "Actually call AutoSprite for the selected custom animation."
+        required: true
+        default: false
+        type: boolean
+      auto_review_custom_animation:
+        description: "Run mechanical review checks and write the custom animation review report."
+        required: true
+        default: true
+        type: boolean
+      auto_promote_if_passed:
+        description: "Promote custom animation to public pending-approval paths only if mechanical review passes."
+        required: true
+        default: false
+        type: boolean
       auto_commit_promoted_assets:
         description: "Commit promoted public Moonbot assets and approved registry after build-approved-pack."
         required: true
@@ -63,6 +78,7 @@ jobs:
           node --check scripts/generate-moonpet-custom-animation.js
           node --check scripts/generate-moonpet-custom-animation.test.js
           node --check scripts/promote-moonpet-custom-animation.js
+          node --check scripts/moonpet-custom-animation-autopilot.js
           node --check js/moonpet-animation-sandbox.js
           node --check js/moonpet-runtime-preview.js
           node scripts/generate-moonpet-assets-extraction.test.js
@@ -109,9 +125,22 @@ jobs:
             exit 1
           fi
           npm run moonpet:custom-queue:check
-          node scripts/generate-moonpet-custom-animation.js --id "$CUSTOM_ANIMATION_ID" --execute
+          ARGS=(--id "$CUSTOM_ANIMATION_ID")
+          if [ "$EXECUTE_CUSTOM_GENERATION" = "true" ]; then
+            ARGS+=(--execute)
+          fi
+          if [ "$AUTO_REVIEW_CUSTOM_ANIMATION" != "true" ]; then
+            ARGS+=(--no-review)
+          fi
+          if [ "$AUTO_PROMOTE_IF_PASSED" = "true" ]; then
+            ARGS+=(--promote-if-passed)
+          fi
+          node scripts/moonpet-custom-animation-autopilot.js "${ARGS[@]}"
         env:
           CUSTOM_ANIMATION_ID: ${{ inputs.custom_animation_id }}
+          EXECUTE_CUSTOM_GENERATION: ${{ inputs.execute_custom_generation }}
+          AUTO_REVIEW_CUSTOM_ANIMATION: ${{ inputs.auto_review_custom_animation }}
+          AUTO_PROMOTE_IF_PASSED: ${{ inputs.auto_promote_if_passed }}
 
       - name: Commit promoted Moonpet assets
         if: ${{ inputs.phase == 'build-approved-pack' && inputs.auto_commit_promoted_assets }}

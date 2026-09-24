@@ -16,6 +16,7 @@ const REQUIRED_APPROVED = [
 const PUBLIC_ASSET_DIR = "img/moonpets/moonbot-pet-visor-v1";
 const REGISTRY_PATH = "data/moonpet-approved-assets.json";
 const CUSTOM_QUEUE_PATH = "data/moonpet-custom-animation-queue.json";
+const CUSTOM_REVIEW_REPORT_PATH = "output/manifests/moonpet-custom-animation-review.generated.json";
 const REQUIRED_CUSTOM_STATES = [
   "custom_sleep",
   "custom_eat",
@@ -182,6 +183,44 @@ function readCustomQueueStatus() {
   }
 }
 
+function readCustomReviewStatus() {
+  if (!exists(CUSTOM_REVIEW_REPORT_PATH)) {
+    return {
+      present: false,
+      status: "not_available",
+      report: null,
+      blocking: false,
+      detail: "No custom animation review report found."
+    };
+  }
+  try {
+    const report = readJson(CUSTOM_REVIEW_REPORT_PATH);
+    const failedCheckIds = Array.isArray(report.checks)
+      ? report.checks.filter((check) => check.status === "fail").map((check) => check.id)
+      : [];
+    const generatedAssetFailed = report.review_status === "fail" &&
+      report.generation_status !== "not_run" &&
+      !failedCheckIds.every((id) => ["png_exists", "atlas_exists", "record_matches_id"].includes(id));
+    const rejectedPromotionRisk = failedCheckIds.some((id) =>
+      ["not_attack", "queue_not_attack", "not_rejected"].includes(id));
+    return {
+      present: true,
+      status: report.review_status || "unknown",
+      report,
+      blocking: Boolean(generatedAssetFailed || rejectedPromotionRisk),
+      detail: `${report.custom_animation_id || "unknown"} review_status=${report.review_status || "unknown"} generation_status=${report.generation_status || "unknown"}`
+    };
+  } catch (error) {
+    return {
+      present: true,
+      status: "fail",
+      report: null,
+      blocking: true,
+      detail: `Could not read ${CUSTOM_REVIEW_REPORT_PATH}: ${error.message}`
+    };
+  }
+}
+
 function runMoonpetAutopilotChecks() {
   const checks = [];
   let registry = null;
@@ -304,6 +343,7 @@ function runMoonpetAutopilotChecks() {
   ));
 
   const customQueue = readCustomQueueStatus();
+  const customReview = readCustomReviewStatus();
   checks.push(makeCheck(
     "custom_animation_queue_valid",
     "Custom animation queue is valid",
@@ -314,6 +354,14 @@ function runMoonpetAutopilotChecks() {
     { validation: customQueue.validation }
   ));
 
+  checks.push(makeCheck(
+    "custom_animation_review_status",
+    "Latest custom animation review is non-blocking",
+    !customReview.blocking,
+    customReview.detail,
+    { custom_animation_review_status: customReview.status }
+  ));
+
   const overallStatus = checks.every((check) => check.status === "pass") ? "pass" : "fail";
   return {
     timestamp: new Date().toISOString(),
@@ -321,6 +369,8 @@ function runMoonpetAutopilotChecks() {
     custom_queue_status: customQueue.status,
     planned_custom_states: customQueue.plannedStates,
     custom_queue_errors: customQueue.errors,
+    latest_custom_animation_review: customReview.report,
+    latest_custom_animation_review_status: customReview.status,
     checks,
     approved_assets: approvedAssets,
     rejected_assets: rejectedAssets,

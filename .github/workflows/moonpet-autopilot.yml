@@ -34,6 +34,7 @@ jobs:
           node --check js/moonpet-animation-sandbox.js
           node --check js/moonpet-mini-app.js
           node --check scripts/moonpet-custom-animation-queue-check.js
+          node --check scripts/moonpet-custom-animation-autopilot.js
 
       - name: Generate Moonpet autopilot report
         id: report
@@ -46,7 +47,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: moonpet-autopilot-report
-          path: output/manifests/moonpet-autopilot-report.json
+          path: |
+            output/manifests/moonpet-autopilot-report.json
+            output/manifests/moonpet-custom-animation-review.generated.json
           if-no-files-found: warn
 
       - name: Run Moonpet autopilot check
