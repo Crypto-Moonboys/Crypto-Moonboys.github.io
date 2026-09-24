@@ -46,6 +46,11 @@ on:
         required: true
         default: false
         type: boolean
+      auto_commit_custom_promoted_assets:
+        description: "Commit custom Moonbot eat assets after generate-custom-animation promotes them pending approval."
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -129,7 +134,7 @@ jobs:
           if [ "$EXECUTE_CUSTOM_GENERATION" = "true" ]; then
             ARGS+=(--execute)
           fi
-          if [ "$AUTO_REVIEW_CUSTOM_ANIMATION" != "true" ]; then
+          if [ "$AUTO_REVIEW_CUSTOM_ANIMATION" != "true" ] && [ "$EXECUTE_CUSTOM_GENERATION" != "true" ]; then
             ARGS+=(--no-review)
           fi
           if [ "$AUTO_PROMOTE_IF_PASSED" = "true" ]; then
@@ -138,9 +143,9 @@ jobs:
           node scripts/moonpet-custom-animation-autopilot.js "${ARGS[@]}"
         env:
           CUSTOM_ANIMATION_ID: ${{ inputs.custom_animation_id }}
-          EXECUTE_CUSTOM_GENERATION: ${{ inputs.execute_custom_generation }}
-          AUTO_REVIEW_CUSTOM_ANIMATION: ${{ inputs.auto_review_custom_animation }}
-          AUTO_PROMOTE_IF_PASSED: ${{ inputs.auto_promote_if_passed }}
+          EXECUTE_CUSTOM_GENERATION: ${{ inputs.execute_custom_generation && 'true' || 'false' }}
+          AUTO_REVIEW_CUSTOM_ANIMATION: ${{ inputs.auto_review_custom_animation && 'true' || 'false' }}
+          AUTO_PROMOTE_IF_PASSED: ${{ inputs.auto_promote_if_passed && 'true' || 'false' }}
 
       - name: Commit promoted Moonpet assets
         if: ${{ inputs.phase == 'build-approved-pack' && inputs.auto_commit_promoted_assets }}
@@ -152,6 +157,20 @@ jobs:
             echo "No promoted Moonpet asset changes to commit."
           else
             git commit -m "feat: promote approved Moonbot spritesheets"
+            git push origin HEAD:${GITHUB_REF_NAME}
+          fi
+
+      - name: Commit promoted custom Moonpet animation
+        if: ${{ inputs.phase == 'generate-custom-animation' && inputs.auto_commit_custom_promoted_assets }}
+        run: |
+          node -e "const q=require('./data/moonpet-custom-animation-queue.json'); const item=q.items.find((entry)=>entry.id==='custom_eat'); if (!item || item.status !== 'promoted_pending_approval' || item.promoted !== true || item.approved !== false) { console.error('custom_eat was not promoted pending approval; refusing to commit.'); process.exit(1); }"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add img/moonpets/moonbot-pet-visor-v1/custom_eat.png img/moonpets/moonbot-pet-visor-v1/custom_eat.json data/moonpet-custom-animation-queue.json
+          if git diff --cached --quiet; then
+            echo "No promoted custom Moonpet asset changes to commit."
+          else
+            git commit -m "feat: promote custom Moonbot eat animation for review"
             git push origin HEAD:${GITHUB_REF_NAME}
           fi
 

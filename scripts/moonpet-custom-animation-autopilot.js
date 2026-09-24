@@ -318,6 +318,7 @@ async function runCustomAnimationAutopilot(options) {
   let review = null;
   let promoted = false;
   let promotionError = "";
+  const shouldReview = options.review || options.execute || options.promoteIfPassed;
 
   if (!setupFailed.length && options.execute && ["planned", "rejected_pending_regeneration"].includes(item.status)) {
     try {
@@ -340,7 +341,7 @@ async function runCustomAnimationAutopilot(options) {
     generationStatus = record.status || "generated_pending_review";
   }
 
-  if (!setupFailed.length && options.review) {
+  if (!setupFailed.length && shouldReview) {
     if (record || fsSync.existsSync(path.join(REPO_ROOT, "output", "moonpets", "custom", `${options.id}.png`))) {
       review = await reviewOutput({ item, record });
     } else {
@@ -398,7 +399,9 @@ async function runCustomAnimationAutopilot(options) {
     frame_count: review && review.frame_count || item && item.output_expectations && item.output_expectations.frame_count || null,
     frame_size: review && review.frame_size || item && item.output_expectations && item.output_expectations.frame_size || null,
     sheet_size: review && review.sheet_size || item && item.output_expectations && item.output_expectations.sheet_size || null,
+    visual_review_required: true,
     promoted,
+    approved: false,
     auto_promote_if_passed: options.promoteIfPassed,
     recommendations: reviewStatus === "pass"
       ? ["Open the sandbox/runtime preview for visual approval.", "Promote only with explicit auto_promote_if_passed=true or a separate promotion step.", "Do not set approved=true until explicit human approval."]

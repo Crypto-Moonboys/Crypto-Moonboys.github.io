@@ -193,7 +193,11 @@ The manual workflow defaults to `phase=dry-run`, so it will only build prompts a
 
 Use `phase=build-approved-pack` for the one-click approved Moonbot base build. Use `auto_commit_promoted_assets=false` to review uploaded artifacts first, or `auto_commit_promoted_assets=true` to commit only the promoted public assets and approved registry.
 
-Use `phase=generate-custom-animation` for the one-item custom operator. The current enabled id is `custom_eat`. Safe defaults keep `execute_custom_generation=false`, `auto_review_custom_animation=true`, and `auto_promote_if_passed=false`. Enable `execute_custom_generation=true` only when you want the workflow to call AutoSprite for the selected custom queue item. Mechanical review writes `output/manifests/moonpet-custom-animation-review.generated.json`; final approval still requires a separate explicit approval step.
+Use `phase=generate-custom-animation` for the one-item custom operator. The current enabled id is `custom_eat`. Safe defaults keep `execute_custom_generation=false`, `auto_review_custom_animation=true`, `auto_promote_if_passed=false`, and `auto_commit_custom_promoted_assets=false`. Enable `execute_custom_generation=true` only when you want the workflow to call AutoSprite for the selected custom queue item. Mechanical review always runs after executed generation and writes `output/manifests/moonpet-custom-animation-review.generated.json`; final approval still requires a separate explicit approval step.
+
+If `auto_promote_if_passed=true`, a mechanically passing `custom_eat` is copied from `output/moonpets/custom/` into `img/moonpets/moonbot-pet-visor-v1/` as `custom_eat.png/json` and the queue becomes `promoted_pending_approval` with `approved=false` and `visual_review_required=true`.
+
+If `auto_commit_custom_promoted_assets=true`, the workflow commits only `img/moonpets/moonbot-pet-visor-v1/custom_eat.png`, `img/moonpets/moonbot-pet-visor-v1/custom_eat.json`, and `data/moonpet-custom-animation-queue.json` with `feat: promote custom Moonbot eat animation for review`. It does not commit `output/`.
 
 ## Safety Rules
 

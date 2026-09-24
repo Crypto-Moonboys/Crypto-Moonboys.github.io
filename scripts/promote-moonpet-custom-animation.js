@@ -42,8 +42,9 @@ function repoPath(relativePath) {
 }
 
 function generatedRecordFor(manifest, id) {
-  return (manifest.customAnimations || []).find((entry) =>
-    entry.id === id && ["generated_pending_review", "generated"].includes(entry.status)) || null;
+  return (manifest.customAnimations || [])
+    .filter((entry) => entry.id === id && ["generated_pending_review", "generated"].includes(entry.status))
+    .at(-1) || null;
 }
 
 async function promoteCustomAnimation(options) {
@@ -55,12 +56,13 @@ async function promoteCustomAnimation(options) {
   const item = (queue.items || []).find((entry) => entry.id === options.id);
   if (!item) throw new Error(`Queue item not found: ${options.id}`);
   if (item.approved === true) throw new Error(`${options.id} is already approved. This promoter must not approve assets.`);
-  if (item.rejected === true || item.visual_rejected === true || item.status === "rejected_pending_regeneration") {
-    throw new Error(`${options.id} is rejected pending regeneration and must not be promoted.`);
-  }
 
   const record = generatedRecordFor(manifest, options.id);
   if (!record) throw new Error(`Generated custom animation record not found for ${options.id}.`);
+  if (item.rejected === true) throw new Error(`${options.id} is terminally rejected and must not be promoted.`);
+  if (record.id !== options.id || record.animation_kind === "attack" || record.role === "attack") {
+    throw new Error(`${options.id} generated record is not safe to promote.`);
+  }
 
   const sourceSheet = repoPath(record.generated_sheet_path || record.source_sheet_path);
   const sourceAtlas = repoPath(record.generated_atlas_path || record.source_atlas_path);
@@ -83,6 +85,10 @@ async function promoteCustomAnimation(options) {
   item.sheet_path = `/img/moonpets/moonbot-pet-visor-v1/${options.id}.png`;
   item.atlas_path = `/img/moonpets/moonbot-pet-visor-v1/${options.id}.json`;
   item.approved = false;
+  item.visual_review_required = true;
+  item.visual_rejected = false;
+  item.rejected_pending_regeneration = false;
+  delete item.rejection_reason;
   await writeJson(QUEUE_PATH, queue);
   console.log(`Promoted ${options.id}; approval still required separately.`);
 }

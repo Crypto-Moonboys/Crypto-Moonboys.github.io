@@ -162,12 +162,33 @@ Current enabled input:
 custom_animation_id=custom_eat
 ```
 
+For the real selected-animation loop, use:
+
+```text
+phase=generate-custom-animation
+custom_animation_id=custom_eat
+execute_custom_generation=true
+auto_review_custom_animation=true
+auto_promote_if_passed=false
+auto_commit_custom_promoted_assets=false
+```
+
 Do not use this phase to replace the approved manual `custom_sleep` asset. The workflow:
 
 - Runs the custom queue check.
-- Generates `custom_eat`.
+- Generates only `custom_eat` when `execute_custom_generation=true`.
+- Always runs mechanical review after executed generation.
 - Uploads `output/` artifacts.
-- Does not auto-commit generated or promoted custom assets.
+- Does not auto-promote or auto-commit unless the explicit promotion and commit inputs are enabled.
+
+When `auto_promote_if_passed=true`, a mechanically passing `custom_eat` is copied to public pending-approval paths and the queue is updated to:
+
+- `status: promoted_pending_approval`
+- `promoted: true`
+- `approved: false`
+- `visual_review_required: true`
+
+When `auto_commit_custom_promoted_assets=true`, the workflow commits only the promoted `custom_eat.png`, `custom_eat.json`, and `data/moonpet-custom-animation-queue.json`. It never commits `output/`.
 
 ## AutoSprite Custom Animation Payload
 

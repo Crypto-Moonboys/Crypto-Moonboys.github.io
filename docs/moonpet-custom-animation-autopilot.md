@@ -150,6 +150,47 @@ Safe defaults are:
 
 With defaults, the workflow does not call AutoSprite. With execution enabled, it generates only the selected queue item and uploads `output/manifests/` and `output/moonpets/` artifacts.
 
+For a real `custom_eat` regeneration and mechanical review run, use:
+
+```text
+phase=generate-custom-animation
+custom_animation_id=custom_eat
+execute_custom_generation=true
+auto_review_custom_animation=true
+auto_promote_if_passed=false
+auto_commit_custom_promoted_assets=false
+```
+
+To promote a mechanically passing result to public pending-approval paths in the same run, set:
+
+```text
+auto_promote_if_passed=true
+```
+
+That copies:
+
+```text
+output/moonpets/custom/custom_eat.png
+output/moonpets/custom/custom_eat.json
+```
+
+to:
+
+```text
+img/moonpets/moonbot-pet-visor-v1/custom_eat.png
+img/moonpets/moonbot-pet-visor-v1/custom_eat.json
+```
+
+and updates the queue to `status: promoted_pending_approval`, `promoted: true`, `approved: false`, and `visual_review_required: true`.
+
+To commit only the promoted custom review asset and queue update, also set:
+
+```text
+auto_commit_custom_promoted_assets=true
+```
+
+This commits only `img/moonpets/moonbot-pet-visor-v1/custom_eat.png`, `img/moonpets/moonbot-pet-visor-v1/custom_eat.json`, and `data/moonpet-custom-animation-queue.json` with the message `feat: promote custom Moonbot eat animation for review`. It never commits `output/`.
+
 ## Approval Policy
 
 Automated checks can recommend review readiness. They do not approve art by default.
