@@ -124,8 +124,12 @@
   }
 
   function moonpetSideScrollerSpritesRequested() {
+    var override = launchParameter('sideSprites');
+    if (override === '0' || override === 'false') return false;
+    if (override === '1' || override === 'true') return true;
+    if (window.MOONPET_USE_SIDE_SCROLLER_SPRITES === false) return false;
     if (window.MOONPET_USE_SIDE_SCROLLER_SPRITES === true) return true;
-    return launchParameter('sideSprites') === '1';
+    return true;
   }
 
   function loadApprovedSpriteScript(src) {

@@ -1,7 +1,7 @@
 {
   "version": "0.1.0",
-  "status": "side_scroller_installed_behind_flag_pending_celebrate_interact_battle_regeneration",
-  "last_audited_at": "2026-09-24T08:18:09.593Z",
+  "status": "side_scroller_installed_behind_flag_all_current_modes_approved",
+  "last_audited_at": "2026-09-24T08:50:37.929Z",
   "source_of_truth": {
     "game_system_name": "Moonpet",
     "character_art_subject": "Moonbot",
@@ -51,9 +51,9 @@
     "left_right_strategy": "Generate right-facing side-view sheets and mirror safely for left-facing autonomous travel/action staging.",
     "side_scroller_sprite_flag": {
       "flag": "MOONPET_USE_SIDE_SCROLLER_SPRITES",
-      "url_override": "?sideSprites=1",
-      "default_enabled": false,
-      "current_asset_set": "approved promoted side-scroller assets with procedural fallback for rejected/missing states"
+      "url_override": "?sideSprites=0 disables production side-scroller sprites; ?sideSprites=1 explicitly enables them",
+      "default_enabled": true,
+      "current_asset_set": "approved promoted side-scroller assets for all current action modes with procedural emergency fallback if loading fails"
     }
   },
   "current_action_mapping": [
@@ -65,8 +65,8 @@
       ],
       "requires_sprite": true,
       "required_side_asset": "side_idle",
-      "coverage": "generated_candidate_visual_pass",
-      "fallback_allowed_until_install": true
+      "coverage": "approved_promoted_side_sprite",
+      "fallback_allowed_until_install": false
     },
     {
       "animation_mode": "feed",
@@ -76,8 +76,8 @@
       ],
       "requires_sprite": true,
       "required_side_asset": "side_eat",
-      "coverage": "generated_candidate_visual_pass",
-      "fallback_allowed_until_install": true,
+      "coverage": "approved_promoted_side_sprite",
+      "fallback_allowed_until_install": false,
       "notes": "Generated side_eat has a readable snack prop. Future upgrade should add bigger V2 food chaos props."
     },
     {
@@ -89,7 +89,7 @@
       "requires_sprite": true,
       "required_side_asset": "side_play",
       "coverage": "approved_promoted_side_sprite",
-      "fallback_allowed_until_install": true,
+      "fallback_allowed_until_install": false,
       "regeneration_required": false,
       "notes": "Regenerated side_play is approved/promoted with a readable beach ball prop."
     },
@@ -100,8 +100,8 @@
       ],
       "requires_sprite": true,
       "required_side_asset": "side_clean",
-      "coverage": "generated_candidate_visual_pass",
-      "fallback_allowed_until_install": true,
+      "coverage": "approved_promoted_side_sprite",
+      "fallback_allowed_until_install": false,
       "notes": "Generated side_clean has readable bubbles."
     },
     {
@@ -115,7 +115,7 @@
       "requires_sprite": true,
       "required_side_asset": "side_sleep",
       "coverage": "approved_promoted_side_sprite",
-      "fallback_allowed_until_install": true,
+      "fallback_allowed_until_install": false,
       "regeneration_required": false,
       "notes": "Regenerated side_sleep is approved/promoted with bed, pillow, reclined pose, and ZZZ."
     },
@@ -127,8 +127,8 @@
       ],
       "requires_sprite": true,
       "required_side_asset": "side_train",
-      "coverage": "generated_candidate_visual_pass",
-      "fallback_allowed_until_install": true,
+      "coverage": "approved_promoted_side_sprite",
+      "fallback_allowed_until_install": false,
       "notes": "Generated side_train has readable dumbbells and stays non-combat."
     },
     {
@@ -143,8 +143,8 @@
       ],
       "requires_sprite": true,
       "required_side_asset": "side_run",
-      "coverage": "generated_candidate_visual_pass",
-      "fallback_allowed_until_install": true
+      "coverage": "approved_promoted_side_sprite",
+      "fallback_allowed_until_install": false
     },
     {
       "animation_mode": "work",
@@ -157,7 +157,7 @@
       "requires_sprite": true,
       "required_side_asset": "side_work",
       "coverage": "approved_promoted_side_sprite",
-      "fallback_allowed_until_install": true,
+      "fallback_allowed_until_install": false,
       "regeneration_required": false,
       "notes": "Dedicated side_work is approved/promoted with wrench/tool console."
     },
@@ -173,7 +173,7 @@
       "requires_sprite": true,
       "required_side_asset": "side_equip",
       "coverage": "approved_promoted_side_sprite",
-      "fallback_allowed_until_install": true,
+      "fallback_allowed_until_install": false,
       "regeneration_required": false,
       "notes": "Dedicated side_equip is approved/promoted with gear handoff."
     },
@@ -188,7 +188,7 @@
       "requires_sprite": true,
       "required_side_asset": "side_evolve",
       "coverage": "approved_promoted_side_sprite",
-      "fallback_allowed_until_install": true,
+      "fallback_allowed_until_install": false,
       "regeneration_required": false,
       "notes": "Dedicated side_evolve is approved/promoted with upgrade glow."
     },
@@ -200,7 +200,7 @@
       "requires_sprite": true,
       "required_side_asset": "side_trade",
       "coverage": "approved_promoted_side_sprite",
-      "fallback_allowed_until_install": true,
+      "fallback_allowed_until_install": false,
       "regeneration_required": false,
       "notes": "Dedicated side_trade is approved/promoted with token handoff."
     },
@@ -216,11 +216,11 @@
         "achievement"
       ],
       "requires_sprite": true,
-      "required_side_asset": "side_idle",
-      "coverage": "intentional_mapped_side_sprite_plus_existing_celebrate_effect_pending_regeneration",
-      "fallback_allowed_until_install": true,
-      "regeneration_required": true,
-      "notes": "Dedicated side_celebrate generation was too idle-like and is being regenerated; live runtime remains covered by side_idle plus existing reward effects."
+      "required_side_asset": "side_celebrate",
+      "coverage": "approved_promoted_side_sprite",
+      "fallback_allowed_until_install": false,
+      "regeneration_required": false,
+      "notes": "Dedicated side_celebrate is approved/promoted with trophy, happy visor, jump pose, and confetti."
     },
     {
       "animation_mode": "interact",
@@ -231,11 +231,11 @@
         "default action fallback"
       ],
       "requires_sprite": true,
-      "required_side_asset": "side_idle",
-      "coverage": "intentional_mapped_side_sprite_plus_existing_interact_effect_pending_regeneration",
-      "fallback_allowed_until_install": true,
-      "regeneration_required": true,
-      "notes": "Dedicated side_interact generation was too generic and is being regenerated; live runtime remains covered by side_idle plus existing interaction effects."
+      "required_side_asset": "side_interact",
+      "coverage": "approved_promoted_side_sprite",
+      "fallback_allowed_until_install": false,
+      "regeneration_required": false,
+      "notes": "Dedicated side_interact is approved/promoted with a clear hand gesture and hologram prop."
     },
     {
       "animation_mode": "blocked",
@@ -245,7 +245,7 @@
       "requires_sprite": true,
       "required_side_asset": "side_hurt",
       "coverage": "approved_promoted_side_sprite",
-      "fallback_allowed_until_install": true,
+      "fallback_allowed_until_install": false,
       "regeneration_required": false,
       "notes": "Regenerated side_hurt is approved/promoted for blocked/hurt feedback."
     },
@@ -260,11 +260,11 @@
         "district"
       ],
       "requires_sprite": true,
-      "required_side_asset": "side_hurt",
-      "coverage": "intentional_mapped_side_hurt_defensive_feedback_pending_regeneration",
-      "fallback_allowed_until_install": true,
-      "regeneration_required": true,
-      "notes": "Dedicated side_battle generation was idle-like and is being regenerated; live runtime remains covered by side_hurt plus existing battle feedback."
+      "required_side_asset": "side_battle",
+      "coverage": "approved_promoted_side_sprite",
+      "fallback_allowed_until_install": false,
+      "regeneration_required": false,
+      "notes": "Dedicated side_battle is approved/promoted as non-gore defensive battle feedback with shield pulse."
     }
   ],
   "generated_side_scroller_artifacts": {
@@ -409,40 +409,43 @@
       {
         "id": "side_celebrate",
         "mechanical_status": "pass",
-        "visual_status": "visual_rejected",
-        "recommended_next_step": "keep_runtime_fallback_or_regenerate_later",
-        "workflow_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35974615995",
-        "rejection_reason": "Rerun still failed visual review: no clear confetti/reward motion and introduced antenna/ear-like drift, so it remains rejected."
+        "visual_status": "approved",
+        "recommended_next_step": "promoted_public_runtime_asset",
+        "workflow_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35977214799",
+        "public_png_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_celebrate.png",
+        "public_atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_celebrate.json",
+        "notes": "Approved regenerated side-view celebrate with trophy, happy visor, jump pose, and confetti from run 35977214799."
       },
       {
         "id": "side_interact",
         "mechanical_status": "pass",
-        "visual_status": "visual_rejected",
-        "recommended_next_step": "keep_runtime_fallback_or_regenerate_later",
-        "workflow_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35974617342",
-        "rejection_reason": "Rerun still failed visual review: too close to idle/reach and lacks a clear hello/tap interaction cue."
+        "visual_status": "approved",
+        "recommended_next_step": "promoted_public_runtime_asset",
+        "workflow_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35976436221",
+        "public_png_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_interact.png",
+        "public_atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_interact.json",
+        "notes": "Approved regenerated side-view interact with clear hand gesture and blue hologram prop from run 35976436221."
       },
       {
         "id": "side_battle",
         "mechanical_status": "pass",
-        "visual_status": "visual_rejected",
-        "recommended_next_step": "keep_runtime_fallback_or_regenerate_later",
-        "workflow_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35974615696",
-        "rejection_reason": "Rerun still failed visual review: too close to idle and lacks clear shield or defensive battle feedback."
+        "visual_status": "approved",
+        "recommended_next_step": "promoted_public_runtime_asset",
+        "workflow_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35976436399",
+        "public_png_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_battle.png",
+        "public_atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_battle.json",
+        "notes": "Approved regenerated side-view non-gore defensive battle stance with shield pulse from run 35976436399."
       }
     ],
-    "install_mode": "feature_flagged",
-    "feature_flag": "?sideSprites=1"
+    "install_mode": "production_default_with_url_rollback",
+    "feature_flag": "default enabled; ?sideSprites=0 rollback"
   },
   "install_policy": {
-    "do_not_enable_side_scroller_sprites_by_default_until": [
-      "manual decision to make side-scroller default in production",
-      "feature-flagged Telegram/mobile smoke testing remains clean"
-    ],
-    "temporary_fallback_renderer": "procedural_canvas",
+    "do_not_enable_side_scroller_sprites_by_default_until": [],
+    "temporary_fallback_renderer": "procedural_canvas_emergency_only",
     "side_sprite_public_base_path": "/img/moonpets/moonbot-pet-visor-v1-side/",
     "generated_output_is_not_public_runtime": true,
-    "side_scroller_feature_flag": "?sideSprites=1",
+    "side_scroller_feature_flag": "default enabled; ?sideSprites=0 rollback",
     "promoted_public_assets": [
       "side_idle",
       "side_walk",
@@ -456,12 +459,11 @@
       "side_work",
       "side_equip",
       "side_evolve",
-      "side_trade"
-    ],
-    "rejected_pending_regeneration": [
+      "side_trade",
       "side_celebrate",
       "side_interact",
       "side_battle"
-    ]
+    ],
+    "rejected_pending_regeneration": []
   }
 }

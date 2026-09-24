@@ -507,9 +507,9 @@
       "id": "side_celebrate",
       "role": "side_celebrate",
       "source_character_name": "MOONBOT PET VISOR V1",
-      "status": "rejected_pending_regeneration",
+      "status": "promoted",
       "approved": false,
-      "promoted": false,
+      "promoted": true,
       "animation_kind": "custom",
       "custom_required": true,
       "trigger": "reward_action",
@@ -533,16 +533,20 @@
         "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_celebrate.png",
         "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_celebrate.json"
       },
-      "rejection_reason": "Previous reruns were too close to idle or introduced antenna/ear-like drift. Latest strict reruns were mechanically valid but still read as happy idle with tiny party accents, not a clear celebration. Regenerate with overhead trophy or party popper, airborne jump, large confetti cloud, sparkles, and clear victory silhouette.",
-      "latest_rejected_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35976883550"
+      "promoted_at": "2026-09-24T08:51:17.912Z",
+      "visual_review_required": false,
+      "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_celebrate.png",
+      "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_celebrate.json",
+      "latest_approved_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35977214799",
+      "notes": "Approved regenerated side-view celebrate with trophy, happy visor, jump pose, and confetti from run 35977214799."
     },
     {
       "id": "side_interact",
       "role": "side_interact",
       "source_character_name": "MOONBOT PET VISOR V1",
-      "status": "rejected_pending_regeneration",
+      "status": "promoted",
       "approved": false,
-      "promoted": false,
+      "promoted": true,
       "animation_kind": "custom",
       "custom_required": true,
       "trigger": "general_interaction",
@@ -565,16 +569,20 @@
         "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_interact.png",
         "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_interact.json"
       },
-      "rejection_reason": "Previous reruns were too close to idle. Regenerate with a clear hand wave/tap and visible hologram prop interaction.",
-      "latest_rejected_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35974617342"
+      "promoted_at": "2026-09-24T08:51:17.912Z",
+      "visual_review_required": false,
+      "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_interact.png",
+      "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_interact.json",
+      "latest_approved_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35976436221",
+      "notes": "Approved regenerated side-view interact with clear hand gesture and blue hologram prop from run 35976436221."
     },
     {
       "id": "side_battle",
       "role": "side_battle",
       "source_character_name": "MOONBOT PET VISOR V1",
-      "status": "rejected_pending_regeneration",
+      "status": "promoted",
       "approved": false,
-      "promoted": false,
+      "promoted": true,
       "animation_kind": "custom",
       "custom_required": true,
       "trigger": "battle_feedback",
@@ -597,8 +605,12 @@
         "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_battle.png",
         "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_battle.json"
       },
-      "rejection_reason": "Previous reruns were too close to idle. Regenerate with a visible shield bubble, braced stance, sparks, and impact flash.",
-      "latest_rejected_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35974615696"
+      "promoted_at": "2026-09-24T08:51:17.912Z",
+      "visual_review_required": false,
+      "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_battle.png",
+      "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_battle.json",
+      "latest_approved_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35976436399",
+      "notes": "Approved regenerated side-view non-gore defensive battle stance with shield pulse from run 35976436399."
     }
   ]
 }

@@ -52,6 +52,11 @@ function validateRequirements(requirements) {
   const mappings = Array.isArray(requirements.current_action_mapping) ? requirements.current_action_mapping : [];
   const generated = requirements.generated_side_scroller_artifacts || {};
   const assets = Array.isArray(generated.assets) ? generated.assets : [];
+  const promotedAssetIds = new Set(
+    assets
+      .filter((asset) => asset.visual_status === "approved" && asset.recommended_next_step === "promoted_public_runtime_asset")
+      .map((asset) => asset.id)
+  );
 
   results.push(requirements.source_of_truth &&
     requirements.source_of_truth.character_art_subject === "Moonbot"
@@ -89,25 +94,29 @@ function validateRequirements(requirements) {
     results.push(typeof entry.coverage === "string" && entry.coverage.length > 0
       ? pass(`${mode} has a coverage decision`)
       : fail(`${mode} must include a coverage decision`));
-    results.push(
-      entry.coverage !== "generated_candidate_visual_pass" || entry.required_side_asset
-        ? pass(`${mode} has a side asset mapping or non-asset strategy`)
-        : fail(`${mode} candidate visual pass is missing required_side_asset`)
-    );
+    results.push(entry.required_side_asset
+      ? pass(`${mode} has a side asset mapping`)
+      : fail(`${mode} must map to an approved side asset`));
+    results.push(entry.coverage === "approved_promoted_side_sprite"
+      ? pass(`${mode} uses approved promoted sprite art`)
+      : fail(`${mode} must use approved promoted sprite art, not fallback coverage`));
+    results.push(promotedAssetIds.has(entry.required_side_asset)
+      ? pass(`${mode} required side asset is promoted: ${entry.required_side_asset}`)
+      : fail(`${mode} required side asset is not promoted: ${entry.required_side_asset}`));
   }
 
   const rejected = assets.filter((asset) => asset.visual_status === "visual_rejected");
-  for (const expectedRejected of ["side_celebrate", "side_interact", "side_battle"]) {
-    results.push(rejected.some((asset) => asset.id === expectedRejected)
-      ? pass(`${expectedRejected} remains visually rejected pending regeneration`)
-      : fail(`${expectedRejected} must be visually rejected until regenerated`));
-  }
+  results.push(rejected.length === 0
+    ? pass("No runtime-required side-scroller assets remain visually rejected")
+    : fail(`Rejected side-scroller assets remain: ${rejected.map((asset) => asset.id).join(", ")}`));
 
   results.push(generated.installed_in_live_game === true &&
-    generated.install_mode === "feature_flagged" &&
-    generated.feature_flag === "?sideSprites=1"
-    ? pass("Side-scroller artifacts are installed only behind the ?sideSprites=1 feature flag")
-    : fail("Side-scroller artifacts must be marked installed behind the ?sideSprites=1 feature flag"));
+    generated.install_mode === "production_default_with_url_rollback" &&
+    requirements.live_runtime_state &&
+    requirements.live_runtime_state.side_scroller_sprite_flag &&
+    requirements.live_runtime_state.side_scroller_sprite_flag.default_enabled === true
+    ? pass("Side-scroller artifacts are installed as production default with ?sideSprites=0 rollback")
+    : fail("Side-scroller artifacts must be marked production default with URL rollback"));
 
   return results;
 }

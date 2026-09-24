@@ -148,3 +148,39 @@ The live path should:
 - Keep procedural drawing as the fallback for every failed or disabled case.
 
 Only after this guarded path is verified should any broader live art replacement be considered.
+
+## 11. Side-Scroller Production Default
+
+Update September 24, 2026: the V2 Moonbot side-scroller runtime path has moved beyond flag-only preview. All current live action modes now map to approved promoted side-scroller sprite roles:
+
+- idle -> `side_idle`
+- feed -> `side_eat`
+- play -> `side_play`
+- clean -> `side_clean`
+- sleep -> `side_sleep`
+- train -> `side_train`
+- travel -> `side_run`
+- work -> `side_work`
+- equip -> `side_equip`
+- evolve -> `side_evolve`
+- trade -> `side_trade`
+- celebrate -> `side_celebrate`
+- interact -> `side_interact`
+- blocked -> `side_hurt`
+- battle -> `side_battle`
+
+Production default is now side-scroller sprites enabled. The procedural renderer remains as emergency fallback if sprite loading or rendering fails.
+
+Rollback:
+
+```text
+?sideSprites=0
+```
+
+Staging/explicit enable still works:
+
+```text
+?sideSprites=1
+```
+
+This rollout does not change Telegram auth, API calls, workers, missions, XP, economy, leaderboard, or blockchain logic.

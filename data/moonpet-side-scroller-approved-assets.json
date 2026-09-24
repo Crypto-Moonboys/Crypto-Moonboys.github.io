@@ -3,9 +3,9 @@
   "character_name": "MOONBOT PET VISOR V1",
   "public_base_path": "/img/moonpets/moonbot-pet-visor-v1-side/",
   "runtime_view": "2d_side_scroller",
-  "default_enabled": false,
+  "default_enabled": true,
   "feature_flag": "MOONPET_USE_SIDE_SCROLLER_SPRITES",
-  "url_override": "?sideSprites=1",
+  "url_override": "?sideSprites=0 disables production side-scroller sprites; ?sideSprites=1 explicitly enables them",
   "assets": [
     {
       "id": "side_idle",
@@ -227,37 +227,60 @@
         "h": 1280
       },
       "notes": "Approved side-view trade handoff with token package from run 35973665472."
-    }
-  ],
-  "rejected": [
+    },
     {
       "id": "side_celebrate",
       "role": "side_celebrate",
-      "rejected": true,
-      "visual_status": "visual_rejected",
-      "rejection_reason": "Rerun still failed visual review: no clear confetti/reward motion and introduced antenna/ear-like drift, so it remains rejected.",
-      "workflow_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35974615995",
-      "next_step": "keep_runtime_fallback_or_regenerate_later"
+      "animation_kind": "custom",
+      "approved": true,
+      "promoted": true,
+      "visual_status": "approved",
+      "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_celebrate.png",
+      "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_celebrate.json",
+      "frame_count": 25,
+      "frame_size": 256,
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "notes": "Approved regenerated side-view celebrate with trophy, happy visor, jump pose, and confetti from run 35977214799."
     },
     {
       "id": "side_interact",
       "role": "side_interact",
-      "rejected": true,
-      "visual_status": "visual_rejected",
-      "rejection_reason": "Rerun still failed visual review: too close to idle/reach and lacks a clear hello/tap interaction cue.",
-      "workflow_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35974617342",
-      "next_step": "keep_runtime_fallback_or_regenerate_later"
+      "animation_kind": "custom",
+      "approved": true,
+      "promoted": true,
+      "visual_status": "approved",
+      "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_interact.png",
+      "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_interact.json",
+      "frame_count": 25,
+      "frame_size": 256,
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "notes": "Approved regenerated side-view interact with clear hand gesture and blue hologram prop from run 35976436221."
     },
     {
       "id": "side_battle",
       "role": "side_battle",
-      "rejected": true,
-      "visual_status": "visual_rejected",
-      "rejection_reason": "Rerun still failed visual review: too close to idle and lacks clear shield or defensive battle feedback.",
-      "workflow_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35974615696",
-      "next_step": "keep_runtime_fallback_or_regenerate_later"
+      "animation_kind": "custom",
+      "approved": true,
+      "promoted": true,
+      "visual_status": "approved",
+      "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_battle.png",
+      "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_battle.json",
+      "frame_count": 25,
+      "frame_size": 256,
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "notes": "Approved regenerated side-view non-gore defensive battle stance with shield pulse from run 35976436399."
     }
   ],
+  "rejected": [],
   "runtime_role_map": {
     "idle": {
       "role": "side_idle",
@@ -304,20 +327,20 @@
       "fallback": "procedural_if_missing"
     },
     "celebrate": {
-      "role": "side_idle",
-      "fallback": "intentional_idle_plus_existing_celebrate_effect_until_side_celebrate_regenerated"
+      "role": "side_celebrate",
+      "fallback": "procedural_if_missing"
     },
     "interact": {
-      "role": "side_idle",
-      "fallback": "intentional_idle_plus_existing_interact_effect_until_side_interact_regenerated"
+      "role": "side_interact",
+      "fallback": "procedural_if_missing"
     },
     "blocked": {
       "role": "side_hurt",
       "fallback": "procedural_if_missing"
     },
     "battle": {
-      "role": "side_hurt",
-      "fallback": "intentional_hurt_defensive_feedback_until_side_battle_regenerated"
+      "role": "side_battle",
+      "fallback": "procedural_if_missing"
     }
   }
 }

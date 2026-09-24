@@ -187,3 +187,40 @@ Before any live-game change:
 - Confirm the existing live game still runs with its current renderer.
 
 Live integration is a later controlled task. Do not modify `moonpet-game.html`, `js/moonpet-mini-app.js`, or `css/moonpet-mini-app.css` for this foundation step.
+
+## Production Rollout Status
+
+As of September 24, 2026, the side-scroller runtime path is installed in the live Moonpet game as the production default.
+
+Current approved promoted runtime roles:
+
+- `side_idle`
+- `side_walk`
+- `side_run`
+- `side_eat`
+- `side_sleep`
+- `side_play`
+- `side_clean`
+- `side_train`
+- `side_hurt`
+- `side_work`
+- `side_equip`
+- `side_evolve`
+- `side_trade`
+- `side_celebrate`
+- `side_interact`
+- `side_battle`
+
+The live runtime still keeps the procedural canvas renderer as an emergency fallback if a promoted sprite fails to load or render. The rollback switch is:
+
+```text
+?sideSprites=0
+```
+
+Explicit enable remains supported for staging links:
+
+```text
+?sideSprites=1
+```
+
+`side_jump` remains queued but is not required by the current autonomous button-driven runtime.
