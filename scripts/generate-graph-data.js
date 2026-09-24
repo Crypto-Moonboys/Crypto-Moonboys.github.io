@@ -42,6 +42,9 @@ const OUTPUT_PATH       = path.join(ROOT, 'js', 'graph-data.json');
 const TOP_EDGES_PER_NODE = 5;
 // Minimum relationship score to include an edge
 const MIN_EDGE_SCORE = 40;
+// Keep stable graph verification deterministic in CI while refreshing before
+// the live freshness guard's 24-hour limit.
+const VERIFIED_AT_REFRESH_AFTER_MS = 20 * 60 * 60 * 1000;
 function compareStrings(a, b) {
   return a < b ? -1 : a > b ? 1 : 0;
 }
@@ -61,6 +64,11 @@ function preserveTimestampsIfStable(nodes, edges) {
     const existingStable = JSON.stringify({ nodes: existing.nodes, edges: existing.edges });
     const nextStable = JSON.stringify({ nodes, edges });
     const existingGeneratedAt = Date.parse(existing.generated_at);
+    const existingVerifiedAt = Date.parse(existing.verified_at);
+    const shouldRefreshVerifiedAt =
+      !Number.isFinite(existingVerifiedAt) ||
+      existingVerifiedAt > now ||
+      now - existingVerifiedAt > VERIFIED_AT_REFRESH_AFTER_MS;
 
     if (
       existingStable === nextStable &&
@@ -71,7 +79,7 @@ function preserveTimestampsIfStable(nodes, edges) {
     ) {
       return {
         generated_at: existing.generated_at,
-        verified_at: fresh,
+        verified_at: shouldRefreshVerifiedAt ? fresh : existing.verified_at,
       };
     }
   } catch (err) {
