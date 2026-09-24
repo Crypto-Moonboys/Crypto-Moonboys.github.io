@@ -671,13 +671,14 @@
       "id": "side_front_wave",
       "display_name": "Moonbot Front Wave",
       "animation_kind": "custom",
+      "negative_prompt": "No side-facing profile, no running pose, no walking pose, no animal ears, no tail, no ears, no snout, no animal body, no fur, no paws, no whiskers, no claws.",
       "trigger": "interaction_variant",
       "autonomous_behavior": "Moonbot briefly faces front and waves hello as a friendly interaction outcome.",
       "stage_direction": "Front-facing wave insert for interact, idle surprise, or greeting moments.",
       "props": [
         "hello_sparkles"
       ],
-      "prompt": "Create a FRONT-FACING Moonbot wave insert, facing the viewer like a character select pose, not side-view. White glossy robot companion, chibi cyber mascot, rounded bot body, black visor with pink LED eyes, one mitten robot hand raised and waving clearly, chunky robot feet planted, friendly mobile-readable hello pose, transparent background, no text, no scenery.",
+      "prompt": "Moonbot front-facing 2D sprite sheet, white glossy chibi robot mascot, black visor with pink LED eyes, body facing camera, one mitten hand raised waving hello, friendly greeting animation, slight bounce, clear front-view silhouette, chunky robot feet, no animal features, no side profile, no walking pose.",
       "role": "side_front_wave",
       "promotion_target": {
         "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_wave.png",

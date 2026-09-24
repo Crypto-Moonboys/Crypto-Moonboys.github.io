@@ -244,10 +244,16 @@ function validateItem(item, id) {
   return checks;
 }
 
+function autospritePromptForItem(item) {
+  return `${String(item.prompt || "")} ${String(item.negative_prompt || "")}`
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function buildSpritesheetPayload(item) {
   const animation = { kind: item.animation_kind };
   if (item.custom_required === true || item.animation_kind === "custom") {
-    animation.prompt = item.prompt;
+    animation.prompt = autospritePromptForItem(item);
     animation.name = item.display_name || item.id;
   }
   return {
