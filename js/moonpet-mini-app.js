@@ -212,8 +212,8 @@
     console.info('[Moonpet] side-scroller sprite mode enabled');
     updateSideSpriteDebug({ reason: 'loading side-scroller scripts' });
     try {
-      await loadApprovedSpriteScript('/js/moonpet-side-scroller-asset-loader.js?v=20260924-side-sprites-runtime-v6');
-      await loadApprovedSpriteScript('/js/moonpet-side-scroller-sprite-renderer.js?v=20260924-side-sprites-runtime-v6');
+      await loadApprovedSpriteScript('/js/moonpet-side-scroller-asset-loader.js?v=20260924-side-sprites-runtime-v7');
+      await loadApprovedSpriteScript('/js/moonpet-side-scroller-sprite-renderer.js?v=20260924-side-sprites-runtime-v7');
       if (!window.MoonpetSideScrollerSpriteRenderer) throw new Error('MoonpetSideScrollerSpriteRenderer unavailable');
       sideScrollerSpriteRendererState = await window.MoonpetSideScrollerSpriteRenderer.initMoonpetSideScrollerRenderer();
       sideScrollerSpriteRendererReady = Boolean(sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.ready);
@@ -2322,8 +2322,9 @@
     if (/incubate/.test(key)) return String(payload && payload.care_type || '') === 'music' ? 'play' : String(payload && payload.care_type || '') === 'rest' ? 'sleep' : 'interact';
     if (/sleep|rest/.test(key)) return 'sleep';
     if (/train/.test(key)) return 'train';
-    if (/boss|arena|kaiju|fight|attack|district/.test(key)) return 'battle';
-    if (/run|adventure|expedition|random_event|event_chain/.test(key)) return 'travel';
+    if (/boss|arena|kaiju|fight|attack/.test(key)) return 'battle';
+    if (/random_event|event_chain/.test(key)) return 'interact';
+    if (/run|adventure|expedition|district/.test(key)) return 'travel';
     if (/job|activity|work/.test(key)) return 'work';
     if (/buy|market|equipment|cosmetic|gear/.test(key)) return 'equip';
     if (/evolve|prestige/.test(key)) return 'evolve';

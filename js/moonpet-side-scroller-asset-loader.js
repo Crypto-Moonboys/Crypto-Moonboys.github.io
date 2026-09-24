@@ -1,6 +1,6 @@
 (() => {
   const DEFAULT_REGISTRY_PATH = "data/moonpet-side-scroller-approved-assets.json";
-  const CACHE_VERSION = "20260924-side-sprites-runtime-v6";
+  const CACHE_VERSION = "20260924-side-sprites-runtime-v7";
   const PRIORITY_ROLES = new Set(["side_idle", "side_walk", "side_run"]);
 
   function cacheToken(asset) {

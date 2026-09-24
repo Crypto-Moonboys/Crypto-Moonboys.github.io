@@ -108,14 +108,24 @@
     return Math.abs(Math.floor(seed + offset)) % count;
   }
 
+  function variantCadence(mapping) {
+    const cadence = Number(mapping && mapping.variant_cadence);
+    return Number.isFinite(cadence) && cadence >= 2 ? Math.floor(cadence) : 4;
+  }
+
   function roleForAnimationMode(animationMode, active, options = {}) {
     const mode = active ? animationMode : "idle";
     const mapping = state.roleMap[mode] || state.roleMap.idle || {};
     const primaryRole = availableRole(options.role || mapping.role) || mapping.role || null;
     const variants = Array.isArray(mapping.variants) ? mapping.variants.filter(availableRole) : [];
     if (active && variants.length && options.preferPrimary !== true) {
-      const candidates = primaryRole ? [primaryRole, ...variants] : variants;
-      return candidates[variantIndex(options, candidates.length)] || primaryRole || null;
+      if (!primaryRole) return variants[variantIndex(options, variants.length)] || null;
+      const seed = Math.abs(Math.floor(Number(options && options.variantSeed || 0)));
+      const cadence = variantCadence(mapping);
+      if (seed > 0 && seed % cadence === 0) {
+        const variantSeed = Math.floor(seed / cadence) + Number(options && options.variantOffset || 0);
+        return variants[Math.abs(variantSeed) % variants.length] || primaryRole;
+      }
     }
     return primaryRole || variants[0] || null;
   }

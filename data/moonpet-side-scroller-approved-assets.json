@@ -406,6 +406,7 @@
     "feed": {
       "role": "side_eat",
       "fallback": "procedural_if_missing",
+      "variant_cadence": 4,
       "variants": [
         "side_eat_chaos"
       ]
@@ -413,6 +414,7 @@
     "play": {
       "role": "side_play",
       "fallback": "procedural_if_missing",
+      "variant_cadence": 4,
       "variants": [
         "side_play_ball",
         "side_jump"
@@ -433,6 +435,7 @@
     "travel": {
       "role": "side_run",
       "fallback": "procedural_if_missing",
+      "variant_cadence": 5,
       "variants": [
         "side_jump",
         "side_turn"
@@ -457,16 +460,14 @@
     "celebrate": {
       "role": "side_celebrate",
       "fallback": "procedural_if_missing",
+      "variant_cadence": 4,
       "variants": [
         "side_front_victory"
       ]
     },
     "interact": {
       "role": "side_interact",
-      "fallback": "procedural_if_missing",
-      "variants": [
-        "side_turn"
-      ]
+      "fallback": "procedural_if_missing"
     },
     "blocked": {
       "role": "side_hurt",
