@@ -212,8 +212,8 @@
     console.info('[Moonpet] side-scroller sprite mode enabled');
     updateSideSpriteDebug({ reason: 'loading side-scroller scripts' });
     try {
-      await loadApprovedSpriteScript('/js/moonpet-side-scroller-asset-loader.js?v=20260924-side-sprites-runtime-v4');
-      await loadApprovedSpriteScript('/js/moonpet-side-scroller-sprite-renderer.js?v=20260924-side-sprites-runtime-v4');
+      await loadApprovedSpriteScript('/js/moonpet-side-scroller-asset-loader.js?v=20260924-side-sprites-runtime-v5');
+      await loadApprovedSpriteScript('/js/moonpet-side-scroller-sprite-renderer.js?v=20260924-side-sprites-runtime-v5');
       if (!window.MoonpetSideScrollerSpriteRenderer) throw new Error('MoonpetSideScrollerSpriteRenderer unavailable');
       sideScrollerSpriteRendererState = await window.MoonpetSideScrollerSpriteRenderer.initMoonpetSideScrollerRenderer();
       sideScrollerSpriteRendererReady = Boolean(sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.ready);
@@ -2312,6 +2312,7 @@
   function actionAnimationFamily(action, payload) {
     var key = String(action || '').toLowerCase();
     if (key === 'activity_start') key = String(payload && payload.activity_type || '').toLowerCase();
+    if (key === 'greet') return payload && payload.variant === 'front_wave' ? 'greet' : 'interact';
     if (key === 'activity_claim') return 'celebrate';
     if (key === 'activity_cancel') return 'interact';
     if (/feed|use_item/.test(key)) return 'feed';
@@ -2333,7 +2334,7 @@
 
   var CAMERA_IMPACT_STRENGTH = {
     feed: 1, play: 2, clean: 1, sleep: 0, train: 3, battle: 6, travel: 2,
-    work: 2, equip: 2, evolve: 5, trade: 2, celebrate: 4, interact: 1, blocked: 4,
+    work: 2, equip: 2, evolve: 5, trade: 2, celebrate: 4, interact: 1, greet: 1, blocked: 4,
   };
 
   function animateAction(action, accepted, duration, payload) {
@@ -2466,6 +2467,12 @@
     return temperamentCompanionHabit(lifecycle && lifecycle.temperament) === 'swagger' ? 'WHAT IS THE MOVE?' : 'GOOD TO SEE YOU';
   }
 
+  function companionGreetingVariant(pet) {
+    var level = Number(pet && pet.level || 1);
+    if (level < 3) return 'basic';
+    return companionTapSequence % 3 === 0 ? 'front_wave' : 'basic';
+  }
+
   function greetCompanion() {
     var now = performance.now();
     if (busy || !state || !state.adopted || feedbackUntil > now || animationUntil > now || COMBAT_PRESENTATION_FRAME.active || lifecycleCeremonyActive(now)) return;
@@ -2473,7 +2480,8 @@
     companionGreeting = compactFeedback(companionGreetingCopy(state.pet, state.lifecycle || {}), 24);
     companionGreetingUntil = now + 2600;
     window.clearTimeout(companionGreetingTimer);
-    animateAction('interact', true, 1400, { source: 'pet_tap', sequence: companionTapSequence });
+    var greetingVariant = companionGreetingVariant(state.pet);
+    animateAction('greet', true, greetingVariant === 'front_wave' ? 2200 : 1400, { source: 'pet_tap', sequence: companionTapSequence, variant: greetingVariant });
     animationLabel = 'HELLO';
     haptic('light');
     if (reducedMotion) {
@@ -2863,6 +2871,9 @@
     } else if (animationMode === 'trade' || animationMode === 'celebrate') {
       for (i = 0; i < 8; i += 1) { var coinY = y - ((phase * 4 + i * 17) % 76); drawPixelRect(x - 55 + i * 16, coinY, 5, 5, i % 3 ? '#f4ff65' : '#61f5ff'); }
       drawPixelText(animationMode === 'trade' ? 'DEAL!' : 'REWARD!', x, y - 68, '#f4ff65', 'center');
+    } else if (animationMode === 'greet') {
+      for (i = 0; i < 5; i += 1) { drawPixelRect(x + 36 + i * 5, y - 58 - i % 2 * 5, 3, 3, i % 2 ? '#f6a7ff' : '#a9ff9a'); }
+      drawPixelText('HELLO!', x + 48, y - 44, '#a9ff9a', 'center');
     } else if (animationMode === 'blocked') {
       drawPixelRect(x - 50, y - 58, 100, 3, '#ff6d6d'); drawPixelRect(x - 50, y - 58, 3, 20, '#ff6d6d');
       drawPixelText('NOT READY', x, y - 45, '#ff6d6d', 'center');
@@ -3479,7 +3490,7 @@
   var WORLD_REACTION_COLORS = {
     feed: '#ffb84d', play: '#f6a7ff', clean: '#b3ffff', sleep: '#8091c9', train: '#f4ff65',
     battle: '#ff4f64', travel: '#61f5ff', work: '#ffcf68', equip: '#61f5ff', evolve: '#f6a7ff',
-    trade: '#f4ff65', celebrate: '#a9ff55', interact: '#a9ff9a', blocked: '#ff4f64',
+    trade: '#f4ff65', celebrate: '#a9ff55', interact: '#a9ff9a', greet: '#a9ff9a', blocked: '#ff4f64',
   };
 
   function worldScene() {

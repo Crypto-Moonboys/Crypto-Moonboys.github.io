@@ -467,11 +467,10 @@
       "side_turn",
       "side_eat_chaos",
       "side_play_ball",
-      "side_front_victory"
-    ],
-    "rejected_pending_regeneration": [
+      "side_front_victory",
       "side_front_wave"
     ],
-    "variant_runtime_notes": "Runtime supports approved variants: side_jump, side_turn, side_eat_chaos, side_play_ball, and side_front_victory. side_front_wave remains rejected because two generated attempts stayed side-facing/static."
+    "rejected_pending_regeneration": [],
+    "variant_runtime_notes": "Runtime supports approved variants: side_jump, side_turn, side_eat_chaos, side_play_ball, side_front_victory, and side_front_wave. Higher-level greetings can occasionally use side_front_wave; lower-level greetings stay on basic interact."
   }
 }

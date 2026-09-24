@@ -373,22 +373,28 @@
         "h": 1280
       },
       "notes": "Approved front/three-quarter victory reward insert with happy visor and raised arms from run 35994134348."
-    }
-  ],
-  "rejected": [
+    },
     {
       "id": "side_front_wave",
       "role": "side_front_wave",
-      "visual_status": "rejected",
-      "rejected": true,
-      "rejection_reason": "Generated front wave attempts stayed side-facing and too static; keep out of runtime until a stronger/manual source exists.",
-      "workflow_run_urls": [
-        "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35992987648",
-        "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35994126607"
-      ],
-      "rejected_at": "2026-09-24T11:41:06.488Z"
+      "animation_kind": "custom",
+      "approved": true,
+      "promoted": true,
+      "visual_status": "approved",
+      "promoted_at": "2026-09-24T12:35:00.000Z",
+      "workflow_run_url": "local-imagegen-derived-from-approved-front-victory-after-autosprite-rejects",
+      "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_wave.png",
+      "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_wave.json",
+      "frame_count": 25,
+      "frame_size": 256,
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "notes": "Approved front/near-front greeting wave sheet generated locally from approved Moonbot front-victory style after AutoSprite custom wave attempts stayed side-facing."
     }
   ],
+  "rejected": [],
   "runtime_role_map": {
     "idle": {
       "role": "side_idle",
@@ -468,6 +474,10 @@
     },
     "battle": {
       "role": "side_battle",
+      "fallback": "procedural_if_missing"
+    },
+    "greet": {
+      "role": "side_front_wave",
       "fallback": "procedural_if_missing"
     }
   }

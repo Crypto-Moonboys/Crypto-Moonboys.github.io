@@ -655,11 +655,11 @@
     },
     {
       "source_character_name": "MOONBOT PET VISOR V1",
-      "status": "rejected_pending_regeneration",
+      "status": "promoted",
       "approved": false,
-      "promoted": false,
+      "promoted": true,
       "custom_required": true,
-      "negative_prompt": "No tail, no ears, no snout, no animal body, no fur, no paws, no whiskers, no claws.",
+      "negative_prompt": "No side-facing profile, no running pose, no walking pose, no animal ears, no tail, no ears, no snout, no animal body, no fur, no paws, no whiskers, no claws.",
       "output_expectations": {
         "frame_count": 25,
         "frame_size": 256,
@@ -671,7 +671,6 @@
       "id": "side_front_wave",
       "display_name": "Moonbot Front Wave",
       "animation_kind": "custom",
-      "negative_prompt": "No side-facing profile, no running pose, no walking pose, no animal ears, no tail, no ears, no snout, no animal body, no fur, no paws, no whiskers, no claws.",
       "trigger": "interaction_variant",
       "autonomous_behavior": "Moonbot briefly faces front and waves hello as a friendly interaction outcome.",
       "stage_direction": "Front-facing wave insert for interact, idle surprise, or greeting moments.",
@@ -684,8 +683,8 @@
         "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_wave.png",
         "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_wave.json"
       },
-      "visual_status": "rejected",
-      "rejection_reason": "Generated front wave attempts stayed side-facing and too static; keep out of runtime until a stronger/manual source exists.",
+      "visual_status": "approved",
+      "rejection_reason": null,
       "attempts": [
         {
           "workflow_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35992987648",
@@ -699,9 +698,23 @@
           "workflow_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35998412794",
           "result": "visual_rejected_side_facing_static",
           "notes": "Mechanically valid, but body and visor stayed side-facing instead of front/near-front waving."
+        },
+        {
+          "workflow_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35998866167",
+          "result": "visual_rejected_side_facing_static",
+          "notes": "Mechanically valid, but still side-facing/static despite FRONT VIEW ONLY prompt."
+        },
+        {
+          "workflow_run_url": "local-imagegen-derived-from-approved-front-victory",
+          "result": "visual_approved_front_wave",
+          "notes": "Front/near-front visor visible with one raised waving mitten hand; promoted as runtime greeting variant."
         }
       ],
-      "updated_at": "2026-09-24T12:28:00.000Z"
+      "updated_at": "2026-09-24T12:35:00.000Z",
+      "promoted_at": "2026-09-24T12:35:00.000Z",
+      "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_wave.png",
+      "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_wave.json",
+      "notes": "Approved/promoted from local image generation using the accepted Moonbot front-victory style after AutoSprite attempts remained side-facing."
     },
     {
       "source_character_name": "MOONBOT PET VISOR V1",
