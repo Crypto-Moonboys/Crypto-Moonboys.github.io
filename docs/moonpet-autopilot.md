@@ -22,7 +22,7 @@ The autopilot checks:
 - The public runtime does not require `output/` generated folders.
 - No real AutoSprite API key appears in repo files.
 - The custom animation queue is valid.
-- `custom_sleep` may be approved/promoted.
+- `custom_sleep` may be approved/promoted as the down-facing manual sheet only.
 - Remaining custom states remain planned and unapproved.
 
 ## What It Does Not Do
@@ -112,7 +112,9 @@ npm run moonpet:custom-queue:check
 
 Autopilot now includes this queue as a monitoring check. It fails if the queue JSON is invalid, a planned item uses rejected `attack`, roles are duplicated, prompts or promotion targets are missing, or any planned item is accidentally approved.
 
-The custom queue does not generate assets automatically. It is a planning and validation layer, now allowing the manually approved `custom_sleep` while keeping the remaining custom states separate from the approved base idle/walk/run system.
+The custom queue does not generate assets automatically. It is a planning and validation layer, now allowing the manually approved down-facing `custom_sleep` while keeping the remaining custom states separate from the approved base idle/walk/run system.
+
+The current Moonpet runtime is down-facing only. Other directional sleep sheets, including northeast, northwest, left, right, up, southeast, and southwest, are reserved for future 8-direction/isometric expansion and are not part of the current approved runtime loader.
 
 ## Why This Reduces Manual Work
 

@@ -6,7 +6,7 @@ The first custom state is:
 
 - `custom_sleep`
 
-`custom_sleep` is now approved from a manually downloaded AutoSprite website sheet. No other custom states should be generated yet.
+`custom_sleep` is now approved from the manually downloaded down-facing AutoSprite website sheet. No other custom states should be generated yet.
 
 ## Current Safety Rules
 
@@ -50,6 +50,16 @@ MOONBOT PET VISOR V1-iso_custom_sleep_down-v1.json
 
 The previous API-generated `custom_sleep` attempt is rejected/not used.
 
+The current Moonpet runtime is down-facing only. Other sleep directions are reserved for future 8-direction/isometric expansion and must not be added to the approved runtime loader yet:
+
+- northeast
+- northwest
+- left
+- right
+- up
+- southeast
+- southwest
+
 Expected output format:
 
 - `frame_count`: 25
@@ -71,18 +81,18 @@ Dry run remains available for future testing, but it should not be used to repla
 npm run moonpet:custom:dry
 ```
 
-## Generate One Custom Animation
+## Generate One Future Custom Animation
 
-Real generation requires explicit execution. Do not run this for `custom_sleep` now that the manual sheet is approved:
+Real generation requires explicit execution. Do not run this for `custom_sleep` now that the manual down-facing sheet is approved. Use this flow only for a future remaining state after the queue enables it, or for an explicitly approved replacement review:
 
 ```bash
-AUTOSPRITE_API_KEY=replace_me node scripts/generate-moonpet-custom-animation.js --id custom_sleep --execute
+AUTOSPRITE_API_KEY=replace_me node scripts/generate-moonpet-custom-animation.js --id <future_custom_id> --execute
 ```
 
-The script:
+The custom generation script:
 
 - Reads the custom queue.
-- Validates that `custom_sleep` is planned, unapproved, and custom-required.
+- Validates that the requested future item is planned, unapproved, and custom-required.
 - Finds the existing AutoSprite character `MOONBOT PET VISOR V1`.
 - Sends one custom animation request using `kind: custom` and the queue prompt.
 - Downloads the generated PNG into `output/moonpets/custom/`.
@@ -114,19 +124,19 @@ It updates the queue item to `status: promoted`, sets `promoted: true`, and reco
 
 It does not set `approved: true`.
 
-Approval remains a later manual review step after sandbox/runtime inspection for any future custom state.
+Approval remains a later manual review step after sandbox/runtime inspection for any future custom state. The already approved manual `custom_sleep` asset should stay on the stable public paths unless a replacement is explicitly approved.
 
 ## GitHub Actions
 
-The Moonpet Art Factory workflow has a `generate-custom-animation` phase.
+The Moonpet Art Factory workflow has a `generate-custom-animation` phase for future explicit generation tests.
 
-For now, the only allowed input is:
+The previous enabled test input was:
 
 ```text
 custom_animation_id=custom_sleep
 ```
 
-The workflow:
+Do not use this phase to replace the approved manual `custom_sleep` asset unless a follow-up task explicitly asks for a replacement review. Future workflow use should switch to a remaining planned state before generation. The workflow:
 
 - Runs the custom queue check.
 - Generates `custom_sleep`.

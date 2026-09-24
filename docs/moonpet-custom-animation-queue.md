@@ -26,7 +26,7 @@ The queue lives at:
 data/moonpet-custom-animation-queue.json
 ```
 
-Planned custom states:
+Custom states:
 
 - `custom_sleep` - approved/promoted from manual AutoSprite website download
 - `custom_eat`
@@ -36,6 +36,13 @@ Planned custom states:
 - `custom_sit`
 - `custom_happy`
 - `custom_sad`
+
+`custom_sleep` is approved only for the current down-facing runtime direction:
+
+- `/img/moonpets/moonbot-pet-visor-v1/custom_sleep.png`
+- `/img/moonpets/moonbot-pet-visor-v1/custom_sleep.json`
+
+The current Moonpet runtime is down-facing only. Other sleep directions are reserved for future 8-direction/isometric expansion and are documentation-only for now: northeast, northwest, left, right, up, southeast, and southwest.
 
 Each item includes:
 
@@ -96,7 +103,7 @@ The custom queue does not:
 - Change live game files.
 - Enable approved sprites by default.
 
-`custom_sleep` can appear in sandbox/runtime preview surfaces, but it is not wired into the live game yet.
+`custom_sleep` can appear in sandbox/runtime preview surfaces as the approved down-facing sleep animation, but it is not wired into the live game yet. Extra directional sleep sheets must not be added to the approved runtime loader until the runtime supports 8-direction/isometric animation selection.
 
 The next step, when explicitly requested, is to generate one remaining custom animation at a time and review it through the sandbox before approval.
 

@@ -86,6 +86,13 @@ Planned custom pet-state animation names:
 - `custom_happy`
 - `custom_sad`
 
+`custom_sleep` is currently approved from the manually downloaded down-facing AutoSprite website sheet and promoted to:
+
+- `/img/moonpets/moonbot-pet-visor-v1/custom_sleep.png`
+- `/img/moonpets/moonbot-pet-visor-v1/custom_sleep.json`
+
+The current Moonpet runtime is down-facing only. Other sleep directions are reserved for future 8-direction/isometric expansion only: northeast, northwest, left, right, up, southeast, and southwest. Do not add those directional sheets to the approved runtime loader yet.
+
 ## Initial Batch
 
 The base animation workflow is intentionally small and advances one animation at a time. The approved first animation uses the documented isometric kind `iso_idle_down`; this avoids the side-scroller `idle` mode while keeping the test to one animation.
@@ -109,7 +116,7 @@ Game action mapping comes later:
 
 - `eat` = planned `custom_eat`.
 - `play` = planned `custom_play`.
-- `sleep` = planned `custom_sleep`.
+- `sleep` = approved down-facing `custom_sleep`.
 - `clean` = planned `custom_clean`.
 - `train` = custom pet-state animation later; do not use built-in `attack`.
 

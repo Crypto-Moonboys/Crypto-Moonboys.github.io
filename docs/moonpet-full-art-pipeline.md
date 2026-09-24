@@ -33,18 +33,18 @@ The final art sheet categories are captured in `data/moonpet-trait-system.json`:
 
 This file is staged pipeline data. It does not drive the live game yet.
 
-## Generating New Custom Pet-State Animations
+## Custom Pet-State Animations
 
 Combat animations are not the path for Moonbot pet states. New pet-state work should use custom isometric states such as sleep, eat, play, clean, wave, sit, happy, and sad.
 
-Generation stays one animation at a time:
+`custom_sleep` is already approved from the manually downloaded down-facing AutoSprite website sheet:
 
-```bash
-npm run moonpet:assets:dry
-node scripts/generate-moonpet-assets.js --phase=test --execute --limit 1 --animation custom_sleep
-```
+- `img/moonpets/moonbot-pet-visor-v1/custom_sleep.png`
+- `img/moonpets/moonbot-pet-visor-v1/custom_sleep.json`
 
-Custom states must be reviewed in the sandbox before approval and promotion.
+The current Moonpet runtime is down-facing only. Other directional sleep sheets are reserved for future 8-direction/isometric expansion: northeast, northwest, left, right, up, southeast, and southwest.
+
+Future custom states must be generated one animation at a time, reviewed in the sandbox, and promoted only after approval. Do not replace the approved manual `custom_sleep` sheet without explicit review.
 
 ## Generating Traits
 
