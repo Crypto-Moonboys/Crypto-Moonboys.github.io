@@ -9,7 +9,17 @@
   "wearable_traits": {
     "enabled": true,
     "config_path": "/data/moonpet-wearable-traits.json",
-    "runtime_mode": "sample_debug_only",
+    "runtime_mode": "live_beta_loadout",
+    "default_enabled": true,
+    "loadout_slots": ["head", "face", "chest", "back", "hand", "aura"],
+    "default_loadout": {
+      "head": "sample_lunar_cap",
+      "face": "",
+      "chest": "sample_chest_badge",
+      "back": "",
+      "hand": "",
+      "aura": "sample_electric_aura"
+    },
     "sample_query": "?wearableTraitDebug=sample",
     "debug_queries": [
       "?wearableTraitDebug=head",
@@ -523,12 +533,8 @@
       "fallback": "procedural_if_missing"
     },
     "celebrate": {
-      "role": "side_celebrate",
-      "fallback": "procedural_if_missing",
-      "variant_cadence": 4,
-      "variants": [
-        "side_front_victory"
-      ]
+      "role": "side_front_victory",
+      "fallback": "side_celebrate_then_procedural"
     },
     "interact": {
       "role": "side_interact",

@@ -135,13 +135,16 @@
   }
 
   function traitListFromOptions(options) {
-    if (Array.isArray(options.wearableTraits)) return options.wearableTraits.filter(Boolean);
     if (typeof options.wearableTraitDebug === "string" && state.traitConfig && state.traitConfig.debug_trait_sets) {
       const selected = state.traitConfig.debug_trait_sets[options.wearableTraitDebug];
       if (Array.isArray(selected)) return selected.filter(Boolean);
     }
     if (options.wearableTraitDebug && state.traitConfig && state.traitConfig.sample_trait_id) {
       return [state.traitConfig.sample_trait_id];
+    }
+    if (Array.isArray(options.wearableTraits)) return options.wearableTraits.filter(Boolean);
+    if (state.traitConfig && state.traitConfig.default_loadout) {
+      return Object.values(state.traitConfig.default_loadout).filter(Boolean);
     }
     return [];
   }
@@ -153,8 +156,19 @@
 
   function anchorForTrait(role, trait) {
     const roleMap = state.traitConfig && state.traitConfig.supported_role_map || {};
-    const anchors = roleMap[role] && roleMap[role].anchors || {};
-    return anchors[trait.anchor_key] || anchors[trait.layer] || anchors[trait.category] || null;
+    const fallbackMap = state.traitConfig && state.traitConfig.role_anchor_fallbacks || {};
+    const adaptation = fallbackMap[role] || {};
+    const sourceRole = roleMap[role] ? role : adaptation.source_role;
+    const anchors = roleMap[sourceRole] && roleMap[sourceRole].anchors || {};
+    const source = anchors[trait.anchor_key] || anchors[trait.layer] || anchors[trait.category] || null;
+    if (!source) return null;
+    return Object.assign({}, source, {
+      x: Number(source.x || 0.5) + Number(adaptation.offset_x || 0),
+      y: Number(source.y || 0.5) + Number(adaptation.offset_y || 0),
+      scale: Number(source.scale || 1) * Number(adaptation.scale || 1),
+      rotation: Number(source.rotation || 0) + Number(adaptation.rotation || 0),
+      quality: adaptation.quality || source.quality
+    });
   }
 
   function layerIndex(trait) {

@@ -40,6 +40,8 @@
   var idleSpecialRole = '';
   var idleSpecialUntil = 0;
   var idleSpecialNextAt = 0;
+  var idleSpecialBag = [];
+  var idleSpecialCounts = {};
   var reducedMotionAnimationTimer = 0;
   var actionResultHoldMs = 3600;
   var actionStartedAt = 0;
@@ -110,6 +112,25 @@
   var utilityReturnFocus = null;
   var activeUtility = '';
   var utilityRequestGeneration = 0;
+  var WEARABLE_LOADOUT_STORAGE_KEY = 'moonpet-wearable-loadout-v1';
+  var WEARABLE_SLOT_ORDER = ['head', 'face', 'chest', 'back', 'hand', 'aura'];
+  var WEARABLE_SLOT_TRAITS = {
+    head: 'sample_lunar_cap',
+    face: 'sample_visor_glasses',
+    chest: 'sample_chest_badge',
+    back: 'sample_micro_jetpack',
+    hand: 'sample_wrench_prop',
+    aura: 'sample_electric_aura'
+  };
+  var WEARABLE_BETA_DEFAULT_LOADOUT = {
+    head: 'sample_lunar_cap',
+    face: '',
+    chest: 'sample_chest_badge',
+    back: '',
+    hand: '',
+    aura: 'sample_electric_aura'
+  };
+  var wearableLoadout = readWearableLoadout();
 
   function launchParameter(name) {
     var locations = [String(window.location.hash || '').replace(/^#/, ''), String(window.location.search || '').replace(/^\?/, '')];
@@ -144,6 +165,44 @@
     if (value === '1' || value === 'true') return 'sample';
     if (['sample', 'head', 'face', 'chest', 'back', 'hand', 'prop', 'aura', 'all'].indexOf(value) >= 0) return value;
     return false;
+  }
+
+  function normalizeWearableLoadout(value) {
+    var source = value && typeof value === 'object' ? value : {};
+    return WEARABLE_SLOT_ORDER.reduce(function (loadout, slot) {
+      loadout[slot] = source[slot] === WEARABLE_SLOT_TRAITS[slot] ? source[slot] : '';
+      return loadout;
+    }, {});
+  }
+
+  function readWearableLoadout() {
+    try {
+      var saved = window.localStorage.getItem(WEARABLE_LOADOUT_STORAGE_KEY);
+      if (saved) return normalizeWearableLoadout(JSON.parse(saved));
+    } catch (_) {}
+    return normalizeWearableLoadout(WEARABLE_BETA_DEFAULT_LOADOUT);
+  }
+
+  function persistWearableLoadout() {
+    try { window.localStorage.setItem(WEARABLE_LOADOUT_STORAGE_KEY, JSON.stringify(wearableLoadout)); } catch (_) {}
+  }
+
+  function equippedWearableTraits() {
+    return WEARABLE_SLOT_ORDER.map(function (slot) { return wearableLoadout[slot]; }).filter(Boolean);
+  }
+
+  function setWearableSlot(slot, traitId) {
+    if (WEARABLE_SLOT_ORDER.indexOf(slot) < 0) return false;
+    wearableLoadout[slot] = traitId === WEARABLE_SLOT_TRAITS[slot] ? traitId : '';
+    persistWearableLoadout();
+    drawWorld(performance.now());
+    return true;
+  }
+
+  function resetWearableLoadout() {
+    wearableLoadout = normalizeWearableLoadout(WEARABLE_BETA_DEFAULT_LOADOUT);
+    persistWearableLoadout();
+    drawWorld(performance.now());
   }
 
   function updateSideSpriteDebug(status) {
@@ -223,8 +282,8 @@
     console.info('[Moonpet] side-scroller sprite mode enabled');
     updateSideSpriteDebug({ reason: 'loading side-scroller scripts' });
     try {
-      await loadApprovedSpriteScript('/js/moonpet-side-scroller-asset-loader.js?v=20260924-side-sprites-runtime-v11');
-      await loadApprovedSpriteScript('/js/moonpet-side-scroller-sprite-renderer.js?v=20260924-side-sprites-runtime-v11');
+      await loadApprovedSpriteScript('/js/moonpet-side-scroller-asset-loader.js?v=20260924-side-sprites-runtime-v12');
+      await loadApprovedSpriteScript('/js/moonpet-side-scroller-sprite-renderer.js?v=20260924-side-sprites-runtime-v12');
       if (!window.MoonpetSideScrollerSpriteRenderer) throw new Error('MoonpetSideScrollerSpriteRenderer unavailable');
       sideScrollerSpriteRendererState = await window.MoonpetSideScrollerSpriteRenderer.initMoonpetSideScrollerRenderer();
       sideScrollerSpriteRendererReady = Boolean(sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.ready);
@@ -688,6 +747,7 @@
     return '<nav class="utility-rail" aria-label="Game utilities">' +
       '<button type="button" class="utility-button" data-utility="guide">HOW TO PLAY</button>' +
       '<button type="button" class="utility-button" data-utility="leaderboard">LEADERBOARD</button>' +
+      '<button type="button" class="utility-button" data-utility="wearables">WEARABLES</button>' +
       '<button type="button" class="utility-button" data-utility="audio" aria-pressed="' + (audioEnabled ? 'true' : 'false') + '">AUDIO ' + (audioEnabled ? 'ON' : 'OFF') + '</button>' +
       '<button type="button" class="utility-button" data-utility="radio" aria-pressed="' + (radioRequestedOn ? 'true' : 'false') + '">RADIO ' + (radioRequestedOn ? 'ON' : 'OFF') + '</button>' +
       '<button type="button" class="utility-button" data-utility="sync">REFRESH</button>' +
@@ -736,6 +796,23 @@
       '<div class="button-grid one"><button type="button" class="terminal-button" data-open-full-guide>OPEN COMPLETE WEBSITE GUIDE</button></div>';
   }
 
+  function wearableLoadoutMarkup() {
+    var rows = WEARABLE_SLOT_ORDER.map(function (slot) {
+      var traitId = WEARABLE_SLOT_TRAITS[slot];
+      var equipped = wearableLoadout[slot] === traitId;
+      return '<div class="wearable-slot-row">' +
+        '<label for="wearable-slot-' + slot + '"><strong>' + escapeHtml(words(slot)) + '</strong></label>' +
+        '<select id="wearable-slot-' + slot + '" data-wearable-slot="' + slot + '">' +
+        '<option value="">NONE</option>' +
+        '<option value="' + traitId + '"' + (equipped ? ' selected' : '') + '>' + escapeHtml(words(traitId.replace(/^sample_/, ''))) + '</option>' +
+        '</select>' +
+        '<button type="button" class="terminal-button" data-wearable-clear="' + slot + '"' + (equipped ? '' : ' disabled') + '>CLEAR</button>' +
+        '</div>';
+    }).join('');
+    return '<div class="line muted">BETA OUTFIT // SAVED ON THIS DEVICE</div>' + rows +
+      '<div class="button-grid one"><button type="button" class="terminal-button" data-wearable-reset>RESET BETA OUTFIT</button></div>';
+  }
+
   function leaderboardRowsMarkup(entries, self, period) {
     var rows = (entries || []).map(function (entry) {
       var form = entry.phase === 'rare' ? entry.rare_morph_name : entry.species_name || (entry.phase === 'egg' ? 'Moon Egg' : entry.stage);
@@ -774,6 +851,9 @@
     if (kind === 'guide') {
       utilityTitle.textContent = 'HOW TO PLAY MOONPET OS';
       utilityContent.innerHTML = guideMarkup();
+    } else if (kind === 'wearables') {
+      utilityTitle.textContent = 'MOONBOT WEARABLES';
+      utilityContent.innerHTML = wearableLoadoutMarkup();
     } else {
       loadLeaderboard('seasonal');
     }
@@ -2323,7 +2403,7 @@
   function actionAnimationFamily(action, payload) {
     var key = String(action || '').toLowerCase();
     if (key === 'activity_start') key = String(payload && payload.activity_type || '').toLowerCase();
-    if (key === 'greet') return payload && payload.variant === 'front_wave' ? 'greet' : 'interact';
+    if (key === 'greet') return 'greet';
     if (key === 'activity_claim') return 'celebrate';
     if (key === 'activity_cancel') return 'interact';
     if (/feed|use_item/.test(key)) return 'feed';
@@ -2424,7 +2504,7 @@
   screen.addEventListener('click', function (event) {
     var utility = event.target.closest('[data-utility]');
     if (utility) {
-      if (utility.dataset.utility === 'guide' || utility.dataset.utility === 'leaderboard') openUtility(utility.dataset.utility);
+      if (utility.dataset.utility === 'guide' || utility.dataset.utility === 'leaderboard' || utility.dataset.utility === 'wearables') openUtility(utility.dataset.utility);
       else if (utility.dataset.utility === 'audio') toggleAudio();
       else if (utility.dataset.utility === 'radio') toggleRadio();
       else if (utility.dataset.utility === 'sync') syncState();
@@ -2480,9 +2560,7 @@
   }
 
   function companionGreetingVariant(pet) {
-    var level = Number(pet && pet.level || 1);
-    if (level < 3) return 'basic';
-    return companionTapSequence % 3 === 0 ? 'front_wave' : 'basic';
+    return pet ? 'front_wave' : 'basic';
   }
 
   function greetCompanion() {
@@ -2526,9 +2604,27 @@
       closeUtility();
       return;
     }
+    var clearWearable = event.target.closest('[data-wearable-clear]');
+    if (clearWearable) {
+      setWearableSlot(clearWearable.dataset.wearableClear, '');
+      utilityContent.innerHTML = wearableLoadoutMarkup();
+      return;
+    }
+    if (event.target.closest('[data-wearable-reset]')) {
+      resetWearableLoadout();
+      utilityContent.innerHTML = wearableLoadoutMarkup();
+      return;
+    }
     var period = event.target.closest('[data-leaderboard-period]');
     if (period) { loadLeaderboard(period.dataset.leaderboardPeriod); return; }
     if (event.target.closest('[data-open-full-guide]')) openExternalGuide();
+  });
+
+  utilityLayer.addEventListener('change', function (event) {
+    var selector = event.target.closest('[data-wearable-slot]');
+    if (!selector) return;
+    setWearableSlot(selector.dataset.wearableSlot, selector.value);
+    utilityContent.innerHTML = wearableLoadoutMarkup();
   });
 
   document.addEventListener('keydown', function (event) {
@@ -3243,27 +3339,42 @@
   }
 
   function idleSpecialRoleForFrame(time, mode, active) {
-    var idleRoles = [
+    var now = Number(time) || performance.now();
+    if (active || mode !== 'idle') {
+      idleSpecialRole = '';
+      idleSpecialUntil = 0;
+      idleSpecialNextAt = Math.max(idleSpecialNextAt, now + 6000);
+      return '';
+    }
+    if (idleSpecialRole && now < idleSpecialUntil) return idleSpecialRole;
+    if (idleSpecialRole) {
+      idleSpecialRole = '';
+      idleSpecialUntil = 0;
+      idleSpecialNextAt = now + 6500 + Math.floor(idleSpecialRoll(now, 11) * 4500);
+    }
+    if (!idleSpecialNextAt) idleSpecialNextAt = now + 2800 + Math.floor(idleSpecialRoll(now, 17) * 2200);
+    if (now < idleSpecialNextAt) return '';
+    if (!idleSpecialBag.length) refillIdleSpecialBag(now);
+    idleSpecialRole = idleSpecialBag.pop() || 'side_front_point';
+    idleSpecialCounts[idleSpecialRole] = Number(idleSpecialCounts[idleSpecialRole] || 0) + 1;
+    idleSpecialUntil = now + 2200 + Math.floor(idleSpecialRoll(now, 41) * 900);
+    return idleSpecialRole;
+  }
+
+  function refillIdleSpecialBag(time) {
+    var roles = [
       'side_front_point', 'side_front_point', 'side_front_point', 'side_front_point',
       'side_front_wave', 'side_front_wave',
       'side_front_victory',
       'side_front_dance'
     ];
-    var now = Number(time) || performance.now();
-    if (active || mode !== 'idle' || reducedMotion) return '';
-    if (idleSpecialRole && now < idleSpecialUntil) return idleSpecialRole;
-    if (idleSpecialRole) {
-      idleSpecialRole = '';
-      idleSpecialUntil = 0;
-      idleSpecialNextAt = now + 9000 + Math.floor(idleSpecialRoll(now, 11) * 9000);
+    for (var index = roles.length - 1; index > 0; index -= 1) {
+      var swapIndex = Math.floor(idleSpecialRoll(time, 53 + index) * (index + 1));
+      var swapRole = roles[index];
+      roles[index] = roles[swapIndex];
+      roles[swapIndex] = swapRole;
     }
-    if (!idleSpecialNextAt) idleSpecialNextAt = now + 4500 + Math.floor(idleSpecialRoll(now, 17) * 6500);
-    if (now < idleSpecialNextAt) return '';
-    idleSpecialNextAt = now + 9000 + Math.floor(idleSpecialRoll(now, 23) * 11000);
-    if (idleSpecialRoll(now, 31) > 0.38) return '';
-    idleSpecialRole = idleRoles[Math.floor(idleSpecialRoll(now, 37) * idleRoles.length)] || '';
-    idleSpecialUntil = now + 1700 + Math.floor(idleSpecialRoll(now, 41) * 900);
-    return idleSpecialRole;
+    idleSpecialBag = roles;
   }
 
   function idleSpecialRoll(time, salt) {
@@ -3282,6 +3393,7 @@
       facing: mirroredAction ? -1 : 1,
       variantSeed: active ? actionSequence : Math.floor(time / 1000),
       role: roleOverride,
+      wearableTraits: equippedWearableTraits(),
       wearableTraitDebug: wearableTraitDebugRequested()
     });
     sideScrollerSpriteRendererState = window.MoonpetSideScrollerSpriteRenderer.getMoonpetSideScrollerRendererState();
@@ -3959,6 +4071,14 @@
     if (performanceSent) return;
     performanceFrames = 0; performanceSlowFrames = 0; performanceStartedAt = 0; performanceLastFrameAt = 0;
   });
+
+  window.MoonpetBetaAppearance = {
+    getLoadout: function () { return Object.assign({}, wearableLoadout); },
+    getEquippedTraits: function () { return equippedWearableTraits().slice(); },
+    getIdleSpecialState: function () {
+      return { role: idleSpecialRole, nextAt: idleSpecialNextAt, until: idleSpecialUntil, counts: Object.assign({}, idleSpecialCounts) };
+    }
+  };
 
   start();
 }());

@@ -163,7 +163,7 @@ button { font: inherit; }
 /* Moonpet navigation and discoverability utilities */
 .utility-rail {
   position: sticky; top: -10px; z-index: 24; display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px;
+  grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px;
   margin: -10px -10px 10px; padding: 7px 10px;
   border-bottom: 1px solid var(--line); background: rgba(2,9,5,.97);
   box-shadow: 0 3px 0 var(--shadow);
@@ -209,9 +209,22 @@ button { font: inherit; }
 .leader-row.is-current { border-color: var(--hot); box-shadow: inset 3px 0 0 var(--hot); }
 .leader-row strong { color: var(--hot); }
 .connection-fault { padding: 12px; border: 2px solid #963e3e; color: var(--danger); }
+.wearable-slot-row {
+  display: grid; grid-template-columns: minmax(62px, .65fr) minmax(0, 1.5fr) minmax(64px, .55fr);
+  align-items: center; gap: 6px; margin-bottom: 7px; padding: 7px;
+  border: 1px solid var(--line); background: rgba(7,23,12,.65);
+}
+.wearable-slot-row label { color: var(--hot); font-size: 10px; text-transform: uppercase; }
+.wearable-slot-row select {
+  width: 100%; min-width: 0; min-height: 34px; padding: 5px;
+  border: 1px solid var(--line); background: #020905; color: var(--ink);
+  font: 700 10px "Courier New", monospace; text-transform: uppercase;
+}
+.wearable-slot-row .terminal-button { min-height: 34px; padding: 5px; }
 
 @media (min-width: 560px) {
   .utility-rail { top: -14px; margin: -14px -14px 12px; padding-inline: 14px; }
+  .utility-rail { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   .utility-dialog { width: min(100%, 620px); margin-inline: auto; }
 }
 

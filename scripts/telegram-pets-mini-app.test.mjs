@@ -1353,7 +1353,7 @@ assert.match(worker, /counts\.district_mission/);
 assert.match(client, /DAILY MISSION BUFFER \/\/ /);
 assert.match(client, /meter\('DAILY CLEAR', missionPercent\)/);
 assert.match(html, /id="utility-layer"/);
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260820-action-guidance-polish/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260924-side-sprites-runtime-v12/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractFunctionSource(client, 'guideMarkup');
@@ -1410,7 +1410,8 @@ assert.match(client, /function playAudioCue\(kind\)/);
 assert.match(client, /window\.AudioContext \|\| window\.webkitAudioContext/);
 assert.match(client, /moonpet-audio/);
 assert.match(client, /else if \(utility\.dataset\.utility === 'audio'\) toggleAudio\(\)/);
-assert.match(css, /grid-template-columns: repeat\(5, minmax\(0, 1fr\)\)/);
+assert.match(css, /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/, 'mobile utility controls must wrap into readable rows');
+assert.match(css, /grid-template-columns: repeat\(6, minmax\(0, 1fr\)\)/, 'wide utility controls must fit the live wearable entry');
 assert.match(client, /RETRY CONNECTION/);
 assert.match(client, /OPEN MOONPET OS IN TELEGRAM/);
 assert.match(client, /https:\/\/t\.me\/WIKICOMSBOT\?start=moonpet/);
@@ -1446,7 +1447,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260924-side-sprites-runtime-v11/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260924-side-sprites-runtime-v12/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -1781,9 +1782,9 @@ assert.match(client, /feedbackUntil > time/);
 assert.match(client, /function companionGreetingCopy\(pet, lifecycle\)/);
 assert.match(client, /function greetCompanion\(\)/);
 assert.match(client, /function companionGreetingVariant\(pet\)/);
-assert.match(client, /if \(level < 3\) return 'basic'/);
-assert.match(client, /return companionTapSequence % 3 === 0 \? 'front_wave' : 'basic'/);
+assert.match(client, /return pet \? 'front_wave' : 'basic'/, 'every live companion greeting must use the front wave when a pet exists');
 assert.equal(sideScrollerRegistry.runtime_role_map.greet.role, 'side_front_wave', 'higher-level greetings must route to the front wave role');
+assert.equal(sideScrollerRegistry.runtime_role_map.celebrate.role, 'side_front_victory', 'celebrate must route directly to the front victory role');
 assert.ok(
   sideScrollerRegistry.assets.some((asset) => asset.role === 'side_front_wave' && asset.approved === true && asset.promoted === true),
   'front wave sheet must remain approved/promoted so it can load with runtime side roles',
@@ -1810,10 +1811,13 @@ assert.equal(sideScrollerRegistry.runtime_role_map.interact.variants, undefined,
 assert.ok(sideScrollerRegistry.runtime_role_map.feed.variant_cadence >= 4, 'food chaos must be an occasional variant, not the default feed outcome');
 assert.ok(sideScrollerRegistry.runtime_role_map.travel.variant_cadence >= 5, 'travel turn/jump inserts must be rarer than normal run travel');
 assert.match(client, /function idleSpecialRoleForFrame\(time, mode, active\)/, 'Mini App must gate rare front-facing idle personality variants');
-assert.match(client, /idleSpecialNextAt = now \+ 9000 \+ Math\.floor\(idleSpecialRoll\(now, 23\) \* 11000\)/, 'idle personality variants must use cooldown spacing instead of cycling constantly');
+assert.match(client, /idleSpecialNextAt = now \+ 6500 \+ Math\.floor\(idleSpecialRoll\(now, 11\) \* 4500\)/, 'idle personality variants must return to base idle for a cooldown between specials');
+assert.match(client, /function refillIdleSpecialBag\(time\)/, 'weighted idle specials must be shuffled rather than cycling in a fixed sequence');
 assert.match(client, /function idleSpecialRoll\(time, salt\)/, 'idle personality variants must use local deterministic pseudo-random rolls');
 assert.match(client, /role: roleOverride/, 'renderer options must support one idle role override at a time');
 assert.equal(sideScrollerRegistry.wearable_traits.config_path, '/data/moonpet-wearable-traits.json', 'side-scroller registry must point at the wearable trait config');
+assert.equal(sideScrollerRegistry.wearable_traits.runtime_mode, 'live_beta_loadout', 'wearable traits must be live in normal beta gameplay');
+assert.equal(sideScrollerRegistry.wearable_traits.default_enabled, true, 'wearable rendering must be enabled by default');
 assert.deepEqual(sideScrollerRegistry.wearable_traits.debug_queries, [
   '?wearableTraitDebug=head',
   '?wearableTraitDebug=face',
@@ -1842,20 +1846,27 @@ for (const role of ['side_front_point', 'side_front_wave', 'side_idle', 'side_wa
 for (const traitId of ['sample_lunar_cap', 'sample_visor_glasses', 'sample_chest_badge', 'sample_micro_jetpack', 'sample_wrench_prop', 'sample_electric_aura']) {
   const sampleWearable = wearableTraits.traits.find((trait) => trait.id === traitId);
   assert.ok(sampleWearable, `wearable trait config must include ${traitId}`);
-  assert.deepEqual(sampleWearable.supported_roles, ['side_front_point', 'side_front_wave', 'side_idle', 'side_walk', 'side_run']);
+  for (const role of ['side_front_point', 'side_front_wave', 'side_front_victory', 'side_front_dance', 'side_idle', 'side_walk', 'side_run', 'side_jump', 'side_turn', 'side_eat', 'side_play', 'side_train', 'side_clean', 'side_sleep', 'side_work', 'side_equip', 'side_evolve', 'side_trade', 'side_celebrate', 'side_interact', 'side_hurt', 'side_battle']) {
+    assert.ok(sampleWearable.supported_roles.includes(role), `${traitId} must propagate to ${role}`);
+  }
   assert.ok(Array.isArray(sampleWearable.blocked_roles), `${traitId} must document blocked roles, even when empty`);
   assert.ok(sampleWearable.pose_adaptation_notes, `${traitId} must document pose adaptation notes`);
   assert.equal(typeof sampleWearable.z_index, 'number', `${traitId} must define z-index/layer order metadata`);
 }
 assert.equal(wearableTraits.mirror_safe_rules.default, 'mirror_with_pose', 'wearable trait config must define mirror-safe defaults');
+assert.deepEqual(wearableTraits.loadout_slots, ['head', 'face', 'chest', 'back', 'hand', 'aura'], 'wearable config must define every live beta equip slot');
+assert.deepEqual(Object.values(wearableTraits.default_loadout).filter(Boolean), ['sample_lunar_cap', 'sample_chest_badge', 'sample_electric_aura'], 'normal beta gameplay must start with a readable default outfit');
+assert.match(client, /WEARABLE_LOADOUT_STORAGE_KEY = 'moonpet-wearable-loadout-v1'/, 'wearable loadout must use local runtime persistence');
+assert.match(client, /wearableTraits: equippedWearableTraits\(\)/, 'normal rendering must pass equipped traits without a debug flag');
+assert.match(client, /data-utility="wearables"/, 'beta UI must expose the wearable equip panel');
 assert.match(sideScrollerLoader, /DEFAULT_WEARABLE_TRAITS_PATH = "data\/moonpet-wearable-traits\.json"/, 'side-scroller loader must know the wearable trait config path');
 assert.match(sideScrollerLoader, /loadWearableTraitConfig/, 'side-scroller loader must load wearable trait config without blocking sprite loading');
 assert.match(sideScrollerRenderer, /function drawWearableTraits\(ctx, role, frame, drawX, drawY, width, height, options, phase = "front"\)/, 'side-scroller renderer must include wearable overlay rendering');
 assert.match(sideScrollerRenderer, /function drawWearableVisual\(ctx, radius, trait\)/, 'wearable renderer must dispatch category proof visuals');
 assert.match(sideScrollerRenderer, /debug_trait_sets/, 'wearable renderer must support opt-in debug selectors');
-assert.match(sideScrollerRenderer, /wearableTraitDebug/, 'wearable sample rendering must stay opt-in');
-assert.match(client, /function wearableTraitDebugRequested\(\)/, 'Mini App must gate wearable sample rendering behind a debug query');
-assert.match(client, /'head', 'face', 'chest', 'back', 'hand', 'prop', 'aura', 'all'/, 'Mini App must pass wearable debug selectors through without enabling wearables by default');
+assert.match(sideScrollerRenderer, /wearableTraitDebug/, 'wearable debug selectors must remain available');
+assert.match(client, /function wearableTraitDebugRequested\(\)/, 'Mini App must retain wearable debug query support');
+assert.match(client, /'head', 'face', 'chest', 'back', 'hand', 'prop', 'aura', 'all'/, 'Mini App must pass every wearable debug selector through');
 assert.match(client, /wearables=/, 'side sprite debug must report rendered wearable traits');
 assert.match(sideScrollerRenderer, /function roleForAnimationMode\(animationMode, active, options = \{\}\)/);
 assert.match(sideScrollerRenderer, /state\.roleMap\[mode\]/, 'side-scroller renderer must resolve roles from runtime_role_map');
@@ -2125,7 +2136,7 @@ assert.match(worker, /Math\.floor\(stepIndex \/ PET_RUN_BOSS_INTERVAL\) \+ 1/);
 assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Number\(activeRun\.depth \|\| 0\) \+ 1/);
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
-assert.match(html, /20260924-side-sprites-runtime-v11/);
+assert.match(html, /20260924-side-sprites-runtime-v12/);
 assert.match(worker, /20260814-moonpet-aaa-pass/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');
