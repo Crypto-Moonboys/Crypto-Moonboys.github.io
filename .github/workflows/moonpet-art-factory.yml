@@ -54,7 +54,7 @@ on:
         default: false
         type: boolean
       side_animation_id:
-        description: "Side-scroller animation queue id. For now only side_idle is enabled."
+        description: "Side-scroller animation queue id, e.g. side_jump, side_turn, side_front_wave, or another queue id."
         required: false
         default: "side_idle"
       execute_side_generation:

@@ -611,6 +611,164 @@
       "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_battle.json",
       "latest_approved_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35976436399",
       "notes": "Approved regenerated side-view non-gore defensive battle stance with shield pulse from run 35976436399."
+    },
+    {
+      "source_character_name": "MOONBOT PET VISOR V1",
+      "status": "planned",
+      "approved": false,
+      "promoted": false,
+      "custom_required": true,
+      "negative_prompt": "No tail, no ears, no snout, no animal body, no fur, no paws, no whiskers, no claws.",
+      "output_expectations": {
+        "frame_count": 25,
+        "frame_size": 256,
+        "sheet_size": {
+          "w": 1280,
+          "h": 1280
+        }
+      },
+      "id": "side_turn",
+      "display_name": "Moonbot Side Turn",
+      "animation_kind": "custom",
+      "trigger": "scripted_transition",
+      "autonomous_behavior": "Moonbot turns between left and right during autonomous action staging.",
+      "stage_direction": "Short readable turn-around bridge so the same action can face either side without popping.",
+      "props": [
+        "turn_spark"
+      ],
+      "prompt": "Side-view Moonbot turn-around animation, white glossy robot companion, chibi cyber mascot, rounded bot body, black visor with pink LED eyes, mitten robot hands, chunky robot feet, clear body rotation from left-facing to right-facing, small neon turn spark, transparent background, no text, no scenery.",
+      "role": "side_turn",
+      "promotion_target": {
+        "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_turn.png",
+        "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_turn.json"
+      }
+    },
+    {
+      "source_character_name": "MOONBOT PET VISOR V1",
+      "status": "planned",
+      "approved": false,
+      "promoted": false,
+      "custom_required": true,
+      "negative_prompt": "No tail, no ears, no snout, no animal body, no fur, no paws, no whiskers, no claws.",
+      "output_expectations": {
+        "frame_count": 25,
+        "frame_size": 256,
+        "sheet_size": {
+          "w": 1280,
+          "h": 1280
+        }
+      },
+      "id": "side_front_wave",
+      "display_name": "Moonbot Front Wave",
+      "animation_kind": "custom",
+      "trigger": "interaction_variant",
+      "autonomous_behavior": "Moonbot briefly faces front and waves hello as a friendly interaction outcome.",
+      "stage_direction": "Front-facing wave insert for interact, idle surprise, or greeting moments.",
+      "props": [
+        "hello_sparkles"
+      ],
+      "prompt": "Front-facing Moonbot wave animation, white glossy robot companion, chibi cyber mascot, rounded bot body, black visor with pink LED eyes, one mitten robot hand waving clearly, chunky robot feet planted, friendly mobile-readable hello pose, transparent background, no text, no scenery.",
+      "role": "side_front_wave",
+      "promotion_target": {
+        "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_wave.png",
+        "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_wave.json"
+      }
+    },
+    {
+      "source_character_name": "MOONBOT PET VISOR V1",
+      "status": "planned",
+      "approved": false,
+      "promoted": false,
+      "custom_required": true,
+      "negative_prompt": "No tail, no ears, no snout, no animal body, no fur, no paws, no whiskers, no claws.",
+      "output_expectations": {
+        "frame_count": 25,
+        "frame_size": 256,
+        "sheet_size": {
+          "w": 1280,
+          "h": 1280
+        }
+      },
+      "id": "side_front_victory",
+      "display_name": "Moonbot Front Victory",
+      "animation_kind": "custom",
+      "trigger": "reward_variant",
+      "autonomous_behavior": "Moonbot briefly faces front for a victory pose after rewards or celebration.",
+      "stage_direction": "Front-facing victory insert for reward claims and jackpot-style celebrations.",
+      "props": [
+        "confetti",
+        "star_sparkles"
+      ],
+      "prompt": "Front-facing Moonbot victory animation, white glossy robot companion, chibi cyber mascot, rounded bot body, black visor with happy pink LED eyes, both mitten robot hands raised, chunky robot feet, confetti and star sparkles, big mobile-readable pose, transparent background, no text, no scenery.",
+      "role": "side_front_victory",
+      "promotion_target": {
+        "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_victory.png",
+        "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_victory.json"
+      }
+    },
+    {
+      "source_character_name": "MOONBOT PET VISOR V1",
+      "status": "planned",
+      "approved": false,
+      "promoted": false,
+      "custom_required": true,
+      "negative_prompt": "No tail, no ears, no snout, no animal body, no fur, no paws, no whiskers, no claws.",
+      "output_expectations": {
+        "frame_count": 25,
+        "frame_size": 256,
+        "sheet_size": {
+          "w": 1280,
+          "h": 1280
+        }
+      },
+      "id": "side_eat_chaos",
+      "display_name": "Moonbot Eat Chaos",
+      "animation_kind": "custom",
+      "trigger": "eat_variant",
+      "autonomous_behavior": "Moonbot performs a wilder snack action outcome for repeated Eat button variety.",
+      "stage_direction": "Oversized burger or food drone comedy moment, readable side-view eating performance, then reset handled by runtime.",
+      "props": [
+        "giant_burger",
+        "food_drone"
+      ],
+      "prompt": "Side-view Moonbot food chaos animation, white glossy robot companion, chibi cyber mascot, rounded bot body, black visor with pink LED eyes, mitten robot hands reaching for oversized burger with tiny food drone, chunky robot feet, funny readable eat reaction, transparent background, no text, no scenery.",
+      "role": "side_eat_chaos",
+      "promotion_target": {
+        "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_eat_chaos.png",
+        "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_eat_chaos.json"
+      }
+    },
+    {
+      "source_character_name": "MOONBOT PET VISOR V1",
+      "status": "planned",
+      "approved": false,
+      "promoted": false,
+      "custom_required": true,
+      "negative_prompt": "No tail, no ears, no snout, no animal body, no fur, no paws, no whiskers, no claws.",
+      "output_expectations": {
+        "frame_count": 25,
+        "frame_size": 256,
+        "sheet_size": {
+          "w": 1280,
+          "h": 1280
+        }
+      },
+      "id": "side_play_ball",
+      "display_name": "Moonbot Play Ball Variant",
+      "animation_kind": "custom",
+      "trigger": "play_variant",
+      "autonomous_behavior": "Moonbot performs a bigger ball-play outcome for repeated Play button variety.",
+      "stage_direction": "Run, bounce, or kick oversized beach ball in side-view without becoming platformer control.",
+      "props": [
+        "beach_ball",
+        "motion_sparks"
+      ],
+      "prompt": "Side-view Moonbot beach ball play animation, white glossy robot companion, chibi cyber mascot, rounded bot body, black visor with pink LED eyes, mitten robot hands, chunky robot feet, oversized bouncing beach ball, playful dash or bounce pose, transparent background, no text, no scenery.",
+      "role": "side_play_ball",
+      "promotion_target": {
+        "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_play_ball.png",
+        "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_play_ball.json"
+      }
     }
   ]
 }

@@ -20,6 +20,7 @@ const SIDE_SEQUENCE = [
   "side_idle",
   "side_walk",
   "side_run",
+  "side_jump",
   "side_eat",
   "side_sleep",
   "side_play",
@@ -32,7 +33,12 @@ const SIDE_SEQUENCE = [
   "side_trade",
   "side_celebrate",
   "side_interact",
-  "side_battle"
+  "side_battle",
+  "side_turn",
+  "side_front_wave",
+  "side_front_victory",
+  "side_eat_chaos",
+  "side_play_ball"
 ];
 const ALLOWED_IDS = new Set(SIDE_SEQUENCE);
 const FRAME_COUNT = 25;
