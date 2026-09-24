@@ -667,7 +667,7 @@
       "props": [
         "hello_sparkles"
       ],
-      "prompt": "Front-facing Moonbot wave animation, white glossy robot companion, chibi cyber mascot, rounded bot body, black visor with pink LED eyes, one mitten robot hand waving clearly, chunky robot feet planted, friendly mobile-readable hello pose, transparent background, no text, no scenery.",
+      "prompt": "Create a FRONT-FACING Moonbot wave insert, facing the viewer like a character select pose, not side-view. White glossy robot companion, chibi cyber mascot, rounded bot body, black visor with pink LED eyes, one mitten robot hand raised and waving clearly, chunky robot feet planted, friendly mobile-readable hello pose, transparent background, no text, no scenery.",
       "role": "side_front_wave",
       "promotion_target": {
         "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_wave.png",
@@ -699,7 +699,7 @@
         "confetti",
         "star_sparkles"
       ],
-      "prompt": "Front-facing Moonbot victory animation, white glossy robot companion, chibi cyber mascot, rounded bot body, black visor with happy pink LED eyes, both mitten robot hands raised, chunky robot feet, confetti and star sparkles, big mobile-readable pose, transparent background, no text, no scenery.",
+      "prompt": "Create a FRONT-FACING Moonbot victory insert, facing the viewer like a reward screen pose, not side-view. White glossy robot companion, chibi cyber mascot, rounded bot body, black visor with happy pink LED eyes, both mitten robot hands raised, chunky robot feet planted, confetti and star sparkles, big mobile-readable pose, transparent background, no text, no scenery.",
       "role": "side_front_victory",
       "promotion_target": {
         "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_victory.png",
