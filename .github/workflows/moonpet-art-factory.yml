@@ -15,6 +15,7 @@ on:
           - build-approved-pack
           - generate-custom-animation
           - generate-side-scroller
+          - side-scroller-autopilot
       limit:
         description: "Optional max character count. Leave blank for the existing Moonbot base character."
         required: false
@@ -61,6 +62,30 @@ on:
         required: true
         default: false
         type: boolean
+      side_autopilot:
+        description: "Run the side-scroller overnight autopilot sequence."
+        required: true
+        default: false
+        type: boolean
+      side_autopilot_limit:
+        description: "Number of side-scroller animations to attempt in autopilot order."
+        required: false
+        default: "9"
+      auto_continue_on_pass:
+        description: "Continue to the next side-scroller animation when the current one passes."
+        required: true
+        default: true
+        type: boolean
+      auto_promote_side_scroller_assets:
+        description: "Copy mechanically passing side-scroller outputs into public img/moonpets paths."
+        required: true
+        default: false
+        type: boolean
+      auto_commit_side_outputs:
+        description: "Commit promoted side-scroller public assets and queue updates."
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -95,6 +120,7 @@ jobs:
           node --check scripts/promote-moonpet-custom-animation.js
           node --check scripts/moonpet-custom-animation-autopilot.js
           node --check scripts/generate-moonpet-side-scroller-animation.js
+          node --check scripts/moonpet-side-scroller-autopilot.js
           node --check scripts/moonpet-side-scroller-queue-check.js
           node --check js/moonpet-animation-sandbox.js
           node --check js/moonpet-runtime-preview.js
@@ -179,6 +205,33 @@ jobs:
           SIDE_ANIMATION_ID: ${{ inputs.side_animation_id }}
           EXECUTE_SIDE_GENERATION: ${{ inputs.execute_side_generation && 'true' || 'false' }}
 
+      - name: Run side-scroller Moonbot autopilot
+        if: ${{ inputs.phase == 'side-scroller-autopilot' }}
+        timeout-minutes: 240
+        run: |
+          if [ "$SIDE_AUTOPILOT" != "true" ]; then
+            echo "side_autopilot must be true to run the overnight autopilot sequence."
+            exit 1
+          fi
+          npm run moonpet:side-queue:check
+          ARGS=(--autopilot --limit "$SIDE_AUTOPILOT_LIMIT")
+          if [ "$EXECUTE_SIDE_GENERATION" = "true" ]; then
+            ARGS+=(--execute)
+          fi
+          if [ "$AUTO_CONTINUE_ON_PASS" != "true" ]; then
+            ARGS+=(--no-auto-continue-on-pass)
+          fi
+          if [ "$AUTO_PROMOTE_SIDE_SCROLLER_ASSETS" = "true" ]; then
+            ARGS+=(--promote)
+          fi
+          node scripts/moonpet-side-scroller-autopilot.js "${ARGS[@]}"
+        env:
+          SIDE_AUTOPILOT: ${{ inputs.side_autopilot && 'true' || 'false' }}
+          SIDE_AUTOPILOT_LIMIT: ${{ inputs.side_autopilot_limit }}
+          EXECUTE_SIDE_GENERATION: ${{ inputs.execute_side_generation && 'true' || 'false' }}
+          AUTO_CONTINUE_ON_PASS: ${{ inputs.auto_continue_on_pass && 'true' || 'false' }}
+          AUTO_PROMOTE_SIDE_SCROLLER_ASSETS: ${{ inputs.auto_promote_side_scroller_assets && 'true' || 'false' }}
+
       - name: Commit promoted Moonpet assets
         if: ${{ inputs.phase == 'build-approved-pack' && inputs.auto_commit_promoted_assets }}
         run: |
@@ -205,6 +258,26 @@ jobs:
             git commit -m "feat: promote custom Moonbot eat animation for review"
             git push origin HEAD:${GITHUB_REF_NAME}
           fi
+
+      - name: Commit promoted side-scroller Moonpet assets
+        if: ${{ inputs.phase == 'side-scroller-autopilot' && inputs.auto_commit_side_outputs }}
+        run: |
+          if [ "${AUTO_PROMOTE_SIDE_SCROLLER_ASSETS}" != "true" ]; then
+            echo "auto_commit_side_outputs requires auto_promote_side_scroller_assets=true."
+            exit 1
+          fi
+          node -e "const fs=require('fs'); const report=JSON.parse(fs.readFileSync('output/manifests/moonpet-side-scroller-autopilot.generated.json','utf8')); if (report.overall_status !== 'pass') { console.error('Side-scroller autopilot did not pass; refusing to commit.'); process.exit(1); } if (!report.steps.some((step)=>step.promoted)) { console.error('No promoted side-scroller outputs found; refusing to commit.'); process.exit(1); }"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add img/moonpets/moonbot-pet-visor-v1-side/ data/moonpet-side-scroller-animation-queue.json
+          if git diff --cached --quiet; then
+            echo "No promoted side-scroller asset changes to commit."
+          else
+            git commit -m "feat: promote Moonbot side-scroller sprites for review"
+            git push origin HEAD:${GITHUB_REF_NAME}
+          fi
+        env:
+          AUTO_PROMOTE_SIDE_SCROLLER_ASSETS: ${{ inputs.auto_promote_side_scroller_assets && 'true' || 'false' }}
 
       - name: Upload Moonpet output
         if: always()

@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 const fs = require("node:fs/promises");
-const fsSync = require("node:fs");
 const path = require("node:path");
 const sharp = require("sharp");
 const {
@@ -17,11 +16,23 @@ const OUTPUT_DIR = path.join(REPO_ROOT, "output", "moonpets", "side-scroller");
 const MANIFEST_PATH = path.join(REPO_ROOT, "output", "manifests", "moonpet-side-scroller.generated.json");
 const RAW_DIR = path.join(REPO_ROOT, "output", "manifests", "autosprite", "side-scroller");
 const API_BASE_URL = "https://www.autosprite.io/api/v1";
-const ALLOWED_IDS = new Set(["side_idle"]);
+const SIDE_SEQUENCE = [
+  "side_idle",
+  "side_walk",
+  "side_run",
+  "side_eat",
+  "side_sleep",
+  "side_play",
+  "side_clean",
+  "side_train",
+  "side_hurt"
+];
+const ALLOWED_IDS = new Set(SIDE_SEQUENCE);
 const FRAME_COUNT = 25;
 const FRAME_SIZE = 256;
 const SHEET_SIZE = { w: 1280, h: 1280 };
 const PROMPT_LIMIT = 600;
+const NEGATIVE_PROMPT = "No tail, no ears, no snout, no animal body, no fur, no paws, no whiskers, no claws.";
 
 function parseArgs(argv) {
   const options = {
@@ -60,7 +71,6 @@ function parseArgs(argv) {
   if (!Number.isFinite(options.pollTimeoutMs) || options.pollTimeoutMs <= 0) {
     options.pollTimeoutMs = 10 * 60 * 1000;
   }
-
   return options;
 }
 
@@ -72,9 +82,9 @@ Usage:
   node scripts/generate-moonpet-side-scroller-animation.js --id side_idle --execute
 
 Options:
-  --id <id>              Side-scroller queue id. Only side_idle is enabled.
+  --id <id>              Side-scroller queue id. Known ids: ${SIDE_SEQUENCE.join(", ")}.
   --dry-run             Validate and write a dry-run manifest without calling AutoSprite. Default.
-  --execute             Call AutoSprite for side_idle.
+  --execute             Call AutoSprite for the selected side-scroller animation.
   --review / --no-review
                          Run mechanical checks after generation. Review is on by default.
   --poll-timeout-ms <n> Max time to poll the AutoSprite job. Default 600000.
@@ -127,11 +137,15 @@ function findQueueItem(queue, id) {
   return (queue.items || []).find((item) => item.id === id) || null;
 }
 
+function hasForbiddenDirection(value) {
+  return /(^iso_|_down$|_down_|down_facing|isometric)/i.test(String(value || ""));
+}
+
 function validateItem(item, id) {
   const checks = [];
   checks.push(ALLOWED_IDS.has(id)
     ? pass("id_enabled", "Side-scroller animation id is enabled", id)
-    : fail("id_enabled", "Only side_idle is enabled for side-scroller generation", id));
+    : fail("id_enabled", "Unknown side-scroller animation id", id));
   checks.push(Boolean(item)
     ? pass("queue_item_exists", "Queue item exists", id)
     : fail("queue_item_exists", "Queue item missing", id));
@@ -142,9 +156,17 @@ function validateItem(item, id) {
   const combinedPrompt = `${prompt} ${negativePrompt}`.replace(/\s+/g, " ").trim();
   const target = item.promotion_target || {};
 
-  checks.push(item.status === "planned"
-    ? pass("status_planned", "Queue item status is planned", item.status)
-    : fail("status_planned", "Side-scroller generation starts from planned status", item.status));
+  checks.push([
+    "planned",
+    "pending",
+    "generated_pending_review",
+    "generated_pending_visual_review",
+    "rejected_pending_regeneration",
+    "mechanically_passed",
+    "skipped"
+  ].includes(item.status)
+    ? pass("status_generatable", "Queue item status can be generated", item.status)
+    : fail("status_generatable", "Queue item must be planned, pending, generated_pending_review, generated_pending_visual_review, rejected_pending_regeneration, mechanically_passed, or skipped", item.status));
   checks.push(item.approved === false
     ? pass("not_approved", "Queue item is not approved", "approved=false")
     : fail("not_approved", "Do not generate already-approved side-scroller assets here", "approved=true"));
@@ -154,19 +176,22 @@ function validateItem(item, id) {
   checks.push(item.source_character_name === "MOONBOT PET VISOR V1"
     ? pass("source_character", "Uses existing Moonbot source character", item.source_character_name)
     : fail("source_character", "Expected source character MOONBOT PET VISOR V1", item.source_character_name));
-  checks.push(item.id === "side_idle" && item.role === "side_idle"
-    ? pass("side_idle_only", "Selected item is side_idle", `${item.id}/${item.role}`)
-    : fail("side_idle_only", "This foundation only allows side_idle", `${item.id}/${item.role}`));
-  checks.push(item.animation_kind === "idle"
-    ? pass("animation_kind_idle", "AutoSprite animation kind is idle", item.animation_kind)
-    : fail("animation_kind_idle", "side_idle must use AutoSprite idle kind", item.animation_kind));
-  checks.push(item.custom_required === false
-    ? pass("not_custom", "side_idle uses built-in animation generation", "custom_required=false")
-    : fail("not_custom", "side_idle should not use custom generation yet", String(item.custom_required)));
+  checks.push(item.id === id && item.role === id && String(id).startsWith("side_")
+    ? pass("side_id_role", "Selected item uses side_ id and role", `${item.id}/${item.role}`)
+    : fail("side_id_role", "Selected item must use matching side_ id and role", `${item.id}/${item.role}`));
+  checks.push(!hasForbiddenDirection(item.id) && !hasForbiddenDirection(item.role) && !hasForbiddenDirection(item.animation_kind)
+    ? pass("no_isometric_direction", "Item avoids isometric/down-facing naming", `${item.id}/${item.animation_kind}`)
+    : fail("no_isometric_direction", "Item must not use isometric/down-facing naming", `${item.id}/${item.animation_kind}`));
+  checks.push(item.id !== "attack" && item.role !== "attack" && item.animation_kind !== "attack"
+    ? pass("not_attack", "Item does not use attack", item.animation_kind)
+    : fail("not_attack", "Rejected attack must not be used", item.animation_kind));
+  checks.push(typeof item.animation_kind === "string" && item.animation_kind.length > 0
+    ? pass("animation_kind", "Animation kind is present", item.animation_kind)
+    : fail("animation_kind", "Animation kind is required", String(item.animation_kind)));
   checks.push(prompt.includes("Moonbot") && !/\bpet\b/i.test(prompt)
     ? pass("moonbot_terms", "Prompt uses Moonbot terminology and avoids pet", prompt)
     : fail("moonbot_terms", "Prompt must use Moonbot terminology and avoid pet", prompt));
-  checks.push(negativePrompt === "No tail, no ears, no snout, no animal body, no fur, no paws, no whiskers, no claws."
+  checks.push(negativePrompt === NEGATIVE_PROMPT
     ? pass("negative_prompt", "Negative prompt is present", negativePrompt)
     : fail("negative_prompt", "Negative prompt must block animal drift", negativePrompt));
   checks.push(combinedPrompt.length <= PROMPT_LIMIT
@@ -184,17 +209,22 @@ function validateItem(item, id) {
     item.output_expectations.sheet_size.h === SHEET_SIZE.h
     ? pass("sheet_size", "Expected sheet size is 1280x1280", "1280x1280")
     : fail("sheet_size", "Expected sheet size must be 1280x1280", JSON.stringify(item.output_expectations && item.output_expectations.sheet_size)));
-  checks.push(target.sheet_path === "/img/moonpets/moonbot-pet-visor-v1-side/side_idle.png" &&
-    target.atlas_path === "/img/moonpets/moonbot-pet-visor-v1-side/side_idle.json"
+  checks.push(target.sheet_path === `/img/moonpets/moonbot-pet-visor-v1-side/${id}.png` &&
+    target.atlas_path === `/img/moonpets/moonbot-pet-visor-v1-side/${id}.json`
     ? pass("promotion_targets", "Public target paths are stable", `${target.sheet_path} / ${target.atlas_path}`)
-    : fail("promotion_targets", "Public target paths must target side_idle.png/json", `${target.sheet_path || "missing"} / ${target.atlas_path || "missing"}`));
+    : fail("promotion_targets", `Public target paths must target ${id}.png/json`, `${target.sheet_path || "missing"} / ${target.atlas_path || "missing"}`));
 
   return checks;
 }
 
 function buildSpritesheetPayload(item) {
+  const animation = { kind: item.animation_kind };
+  if (item.custom_required === true || item.animation_kind === "custom") {
+    animation.prompt = item.prompt;
+    animation.name = item.display_name || item.id;
+  }
   return {
-    animations: [{ kind: item.animation_kind }],
+    animations: [animation],
     videoTier: "turbo",
     frameCount: item.output_expectations.frame_count,
     frameSize: item.output_expectations.frame_size,
@@ -306,11 +336,11 @@ async function fetchSpritesheetRecord({ apiKey, spritesheetId }) {
   });
 }
 
-async function resolveSpritesheetRecord({ apiKey, job, createResponse }) {
+async function resolveSpritesheetRecord({ apiKey, job, createResponse, item }) {
   const direct = candidateSpritesheetRecords(job)[0] || candidateSpritesheetRecords(createResponse)[0];
   if (direct) return { id: direct.id || direct.spriteSheetId || direct.spritesheetId || "embedded", record: direct };
   const ids = [...new Set([...findSpritesheetIds(job), ...findSpritesheetIds(createResponse)])];
-  if (!ids.length) throw new Error("No spritesheet id found in AutoSprite side_idle job response.");
+  if (!ids.length) throw new Error(`No spritesheet id found in AutoSprite ${item.id} job response.`);
   const record = await fetchSpritesheetRecord({ apiKey, spritesheetId: ids[0] });
   return { id: ids[0], record };
 }
@@ -341,7 +371,7 @@ async function saveDownloads({ item, spritesheetId, spritesheetRecord }) {
       candidate_urls: collectUrlCandidates(spritesheetRecord),
       record: spritesheetRecord
     });
-    throw new Error(`AutoSprite side_idle did not include a PNG sheet URL. Raw record saved to ${relative(rawPath)}.`);
+    throw new Error(`AutoSprite ${item.id} did not include a PNG sheet URL. Raw record saved to ${relative(rawPath)}.`);
   }
 
   const sheetPath = path.join(OUTPUT_DIR, `${item.id}.png`);
@@ -510,10 +540,11 @@ async function generateSideScrollerAnimation(options) {
       generation_status: "not_run",
       review_status: "fail",
       checks: setupChecks,
+      reason: setupFailed.map((check) => check.detail || check.label).join("; "),
       created_at: new Date().toISOString()
     };
     await writeManifest(entry);
-    throw new Error(setupFailed.map((check) => check.detail || check.label).join("; "));
+    throw new Error(entry.reason);
   }
 
   const payload = buildSpritesheetPayload(item);
@@ -523,7 +554,8 @@ async function generateSideScrollerAnimation(options) {
       role: item.role,
       source_character_name: item.source_character_name,
       generation_status: "dry_run",
-      review_status: "not_run",
+      review_status: "pass",
+      dry_run_status: "pass",
       approved: false,
       promoted: false,
       visual_review_required: true,
@@ -533,6 +565,9 @@ async function generateSideScrollerAnimation(options) {
       output_png_path: relative(path.join(OUTPUT_DIR, `${item.id}.png`)),
       output_atlas_path: relative(path.join(OUTPUT_DIR, `${item.id}.json`)),
       public_target: item.promotion_target,
+      frame_count: item.output_expectations.frame_count,
+      frame_size: item.output_expectations.frame_size,
+      sheet_size: item.output_expectations.sheet_size,
       checks: setupChecks,
       created_at: new Date().toISOString()
     };
@@ -567,12 +602,12 @@ async function generateSideScrollerAnimation(options) {
     rawName: `${item.id}-create-spritesheet.json`
   });
   const workflows = workflowsFromCreateResponse(createResponse);
-  if (workflows.length !== 1) throw new Error(`Expected exactly one side_idle workflow, received ${workflows.length}.`);
+  if (workflows.length !== 1) throw new Error(`Expected exactly one ${item.id} workflow, received ${workflows.length}.`);
   const jobId = workflows[0].jobId || workflows[0].job_id;
-  if (!jobId) throw new Error("AutoSprite side_idle workflow did not include jobId.");
+  if (!jobId) throw new Error(`AutoSprite ${item.id} workflow did not include jobId.`);
 
   const job = await pollJob({ apiKey, jobId, timeoutMs: options.pollTimeoutMs });
-  const { id: spritesheetId, record: spritesheetRecord } = await resolveSpritesheetRecord({ apiKey, job, createResponse });
+  const { id: spritesheetId, record: spritesheetRecord } = await resolveSpritesheetRecord({ apiKey, job, createResponse, item });
   const paths = await saveDownloads({ item, spritesheetId, spritesheetRecord });
   const entry = {
     id: item.id,
@@ -600,12 +635,16 @@ async function generateSideScrollerAnimation(options) {
   if (options.review) {
     const review = await reviewGeneratedOutput(item, entry);
     entry.review_status = review.review_status;
+    entry.status = review.review_status === "pass" ? "mechanically_passed" : "rejected_pending_regeneration";
     entry.checks = [...setupChecks, ...review.checks];
     entry.output_png_path = review.output_png_path;
     entry.output_atlas_path = review.output_atlas_path;
+    entry.frame_count = review.frame_count || entry.frame_count;
+    entry.frame_size = review.frame_size || entry.frame_size;
     entry.sheet_size = review.sheet_size || entry.sheet_size;
     entry.image_stats = review.image_stats;
   } else {
+    entry.status = "generated_pending_review";
     entry.checks = setupChecks;
   }
 
@@ -634,5 +673,6 @@ module.exports = {
   buildSpritesheetPayload,
   generateSideScrollerAnimation,
   reviewGeneratedOutput,
-  normalizeAtlasFrames
+  normalizeAtlasFrames,
+  SIDE_SEQUENCE
 };

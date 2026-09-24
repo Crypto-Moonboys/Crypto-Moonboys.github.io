@@ -19,6 +19,16 @@ const expectedIds = [
 ];
 const publicBasePath = "/img/moonpets/moonbot-pet-visor-v1-side/";
 const forbiddenAnimationPattern = /(^iso_|_down$|_down_|down_facing|isometric)/i;
+const allowedStatuses = new Set([
+  "planned",
+  "pending",
+  "generated_pending_review",
+  "generated_pending_visual_review",
+  "rejected_pending_regeneration",
+  "mechanically_passed",
+  "promoted",
+  "skipped"
+]);
 
 function pass(message) {
   return { status: "pass", message };
@@ -91,15 +101,15 @@ function validateQueue(queue) {
     results.push(item.source_character_name === "MOONBOT PET VISOR V1"
       ? pass(`${label} uses approved source character`)
       : fail(`${label} has wrong source_character_name`));
-    results.push(item.status === "planned"
-      ? pass(`${label} status is planned`)
-      : fail(`${label} status must be planned`));
+    results.push(allowedStatuses.has(item.status)
+      ? pass(`${label} status is valid (${item.status})`)
+      : fail(`${label} status must be one of ${Array.from(allowedStatuses).join(", ")}`));
     results.push(item.approved === false
-      ? pass(`${label} is not approved by default`)
-      : fail(`${label} must not be approved by default`));
-    results.push(item.promoted === false
-      ? pass(`${label} is not promoted by default`)
-      : fail(`${label} must not be promoted by default`));
+      ? pass(`${label} is not approved automatically`)
+      : fail(`${label} must not be approved automatically`));
+    results.push(item.promoted === false || item.status === "promoted"
+      ? pass(`${label} promotion state is consistent`)
+      : fail(`${label} may only have promoted=true when status=promoted`));
     results.push(typeof item.prompt === "string" && item.prompt.trim().length > 30
       ? pass(`${label} has prompt`)
       : fail(`${label} must have a prompt`));

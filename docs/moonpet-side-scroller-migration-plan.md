@@ -147,12 +147,37 @@ execute_side_generation: true
 
 Keep `execute_side_generation` false for validation-only runs. The side-scroller generator does not approve or promote output automatically.
 
+## Overnight Autopilot
+
+The side-scroller autopilot can run the planned production sequence while still stopping safely on the first failed gate:
+
+```text
+side_idle -> side_walk -> side_run -> side_eat -> side_sleep -> side_play -> side_clean -> side_train -> side_hurt
+```
+
+For each animation it confirms the queue item exists, performs a dry-run validation, optionally calls AutoSprite when `execute_side_generation=true`, runs mechanical review, writes `output/manifests/moonpet-side-scroller-autopilot.generated.json`, and continues only when the current animation passes. Mechanical review is not final visual approval.
+
+Generated review artifacts stay temporary unless promotion is explicitly enabled:
+
+```text
+auto_promote_side_scroller_assets: false
+```
+
+When promotion is enabled, passing assets are copied to `/img/moonpets/moonbot-pet-visor-v1-side/` for later preview/review. Live game integration is still a separate future task.
+
+Local validation-only run:
+
+```bash
+npm run moonpet:side:autopilot:dry
+```
+
 ## Testing Before Live Integration
 
 Before any live-game change:
 
 - Run `npm run moonpet:side-queue:check`.
 - Run `npm run moonpet:side:dry`.
+- Run `npm run moonpet:side:autopilot:dry`.
 - Confirm the queue contains only side-scroller states.
 - Confirm no side-scroller asset is approved or promoted by default.
 - Preview promoted side assets in a sandbox or runtime preview page.
