@@ -46,6 +46,8 @@ The current Moonpet runtime is down-facing only. Other directional sleep sheets 
 
 Future custom states must be generated one animation at a time, reviewed in the sandbox, and promoted only after approval. Do not replace the approved manual `custom_sleep` sheet without explicit review.
 
+The current next target is `custom_eat` only. It should remain planned, unapproved, and unpromoted until a down-facing generated or manually imported sheet is reviewed.
+
 ## Generating Traits
 
 Trait generation should be driven by `data/moonpet-trait-system.json` and added in controlled batches. Start with one category and one small batch at a time. Do not generate broad combinations until base movement, framing, and visual consistency have been proven.

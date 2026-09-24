@@ -91,6 +91,32 @@ function validateQueue(queue) {
         publicPathExists(item.atlas_path, 100)
         ? pass(`${label} promoted files exist`)
         : fail(`${label} promoted PNG/atlas files must exist`));
+    } else if (item.id === "custom_eat") {
+      const allowedEatStatuses = new Set(["planned", "generated_pending_review", "promoted_pending_approval"]);
+      results.push(allowedEatStatuses.has(item.status)
+        ? pass(`${label} status is ${item.status}`)
+        : fail(`${label} status must be planned, generated_pending_review, or promoted_pending_approval`));
+      results.push(item.approved === false
+        ? pass(`${label} is not accidentally approved`)
+        : fail(`${label} must have approved=false`));
+      results.push(item.status === "promoted_pending_approval"
+        ? item.promoted === true
+          ? pass(`${label} is promoted pending approval`)
+          : fail(`${label} must have promoted=true when promoted_pending_approval`)
+        : item.promoted === true
+          ? fail(`${label} must not be promoted before promotion review`)
+          : pass(`${label} is not promoted`));
+      results.push(item.role === "custom_eat"
+        ? pass(`${label} role is custom_eat`)
+        : fail(`${label} role must be custom_eat`));
+      results.push(item.animation_kind === "iso_custom_eat_down" || item.animation_kind === "custom_eat_down"
+        ? pass(`${label} animation_kind is down-facing custom eat`)
+        : fail(`${label} animation_kind must be iso_custom_eat_down or custom_eat_down`));
+      results.push(item.promotion_target &&
+        item.promotion_target.sheet_path === "/img/moonpets/moonbot-pet-visor-v1/custom_eat.png" &&
+        item.promotion_target.atlas_path === "/img/moonpets/moonbot-pet-visor-v1/custom_eat.json"
+        ? pass(`${label} has custom_eat promotion targets`)
+        : fail(`${label} must target custom_eat.png/json`));
     } else {
       results.push(item.status === "planned"
         ? pass(`${label} status is planned`)
@@ -98,6 +124,9 @@ function validateQueue(queue) {
       results.push(item.approved === false
         ? pass(`${label} is not accidentally approved`)
         : fail(`${label} must have approved=false`));
+      results.push(item.promoted === true
+        ? fail(`${label} must not be promoted before approval review`)
+        : pass(`${label} is not promoted`));
     }
     results.push(typeof item.prompt === "string" && item.prompt.trim().length > 20
       ? pass(`${label} has prompt`)

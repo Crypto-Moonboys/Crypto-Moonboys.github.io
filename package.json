@@ -43,9 +43,9 @@
     "moonpet:autopilot": "node scripts/moonpet-autopilot-check.js",
     "moonpet:autopilot:report": "node scripts/moonpet-autopilot-report.js",
     "moonpet:custom-queue:check": "node scripts/moonpet-custom-animation-queue-check.js",
-    "moonpet:custom:dry": "node scripts/generate-moonpet-custom-animation.js --id custom_sleep --dry-run",
+    "moonpet:custom:dry": "node scripts/generate-moonpet-custom-animation.js --id custom_eat --dry-run",
     "moonpet:custom:test": "node scripts/generate-moonpet-custom-animation.test.js",
-    "moonpet:custom:promote": "node scripts/promote-moonpet-custom-animation.js --id custom_sleep"
+    "moonpet:custom:promote": "node scripts/promote-moonpet-custom-animation.js --id custom_eat"
   },
   "keywords": [],
   "author": "",

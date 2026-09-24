@@ -7,7 +7,7 @@ const REPO_ROOT = path.resolve(__dirname, "..");
 const QUEUE_PATH = path.join(REPO_ROOT, "data", "moonpet-custom-animation-queue.json");
 const MANIFEST_PATH = path.join(REPO_ROOT, "output", "manifests", "moonpet-custom-animation.generated.json");
 const PUBLIC_DIR = path.join(REPO_ROOT, "img", "moonpets", "moonbot-pet-visor-v1");
-const ALLOWED_IDS = new Set(["custom_sleep"]);
+const ALLOWED_IDS = new Set(["custom_eat"]);
 
 function parseArgs(argv) {
   const options = { id: "", force: false };
@@ -42,12 +42,13 @@ function repoPath(relativePath) {
 }
 
 function generatedRecordFor(manifest, id) {
-  return (manifest.customAnimations || []).find((entry) => entry.id === id && entry.status === "generated") || null;
+  return (manifest.customAnimations || []).find((entry) =>
+    entry.id === id && ["generated_pending_review", "generated"].includes(entry.status)) || null;
 }
 
 async function promoteCustomAnimation(options) {
-  if (!options.id) throw new Error("--id is required. For now use --id custom_sleep.");
-  if (!ALLOWED_IDS.has(options.id)) throw new Error(`Only custom_sleep can be promoted by this script right now.`);
+  if (!options.id) throw new Error("--id is required. For now use --id custom_eat.");
+  if (!ALLOWED_IDS.has(options.id)) throw new Error(`Only custom_eat can be promoted by this script right now.`);
 
   const queue = await readJson(QUEUE_PATH);
   const manifest = await readJson(MANIFEST_PATH);
@@ -73,7 +74,7 @@ async function promoteCustomAnimation(options) {
   await fs.copyFile(sourceSheet, targetSheet);
   await fs.copyFile(sourceAtlas, targetAtlas);
 
-  item.status = "promoted";
+  item.status = "promoted_pending_approval";
   item.promoted = true;
   item.promoted_at = new Date().toISOString();
   item.sheet_path = `/img/moonpets/moonbot-pet-visor-v1/${options.id}.png`;

@@ -29,7 +29,7 @@ data/moonpet-custom-animation-queue.json
 Custom states:
 
 - `custom_sleep` - approved/promoted from manual AutoSprite website download
-- `custom_eat`
+- `custom_eat` - current planned generation/review target
 - `custom_play`
 - `custom_clean`
 - `custom_wave`
@@ -105,6 +105,8 @@ The custom queue does not:
 
 `custom_sleep` can appear in sandbox/runtime preview surfaces as the approved down-facing sleep animation, but it is not wired into the live game yet. Extra directional sleep sheets must not be added to the approved runtime loader until the runtime supports 8-direction/isometric animation selection.
 
-The next step, when explicitly requested, is to generate one remaining custom animation at a time and review it through the sandbox before approval.
+`custom_eat` is the next target only. It must stay `planned`, `approved: false`, and `promoted: false` until a generated or manually imported down-facing sheet is reviewed. If promoted later, it should move to `promoted_pending_approval`, not directly to approved.
+
+The next step, when explicitly requested, is to generate or import `custom_eat` and review it through the sandbox before approval.
 
 The first enabled generation lane is documented in [Moonpet Custom Animation Generation](moonpet-custom-animation-generation.md).

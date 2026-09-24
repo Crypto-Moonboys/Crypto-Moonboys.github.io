@@ -78,7 +78,7 @@ Combat `attack` is not part of the Moonbot base pack. The next animation work sh
 Planned custom pet-state animation names:
 
 - `custom_sleep`
-- `custom_eat`
+- `custom_eat` (current planned target)
 - `custom_play`
 - `custom_clean`
 - `custom_wave`
@@ -92,6 +92,8 @@ Planned custom pet-state animation names:
 - `/img/moonpets/moonbot-pet-visor-v1/custom_sleep.json`
 
 The current Moonpet runtime is down-facing only. Other sleep directions are reserved for future 8-direction/isometric expansion only: northeast, northwest, left, right, up, southeast, and southwest. Do not add those directional sheets to the approved runtime loader yet.
+
+`custom_eat` is the next down-facing-only target. It must remain planned, unapproved, and unpromoted until a generated or manually imported sheet is reviewed.
 
 ## Initial Batch
 

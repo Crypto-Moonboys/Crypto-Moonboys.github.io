@@ -15,7 +15,7 @@ const OUTPUT_DIR = path.join(REPO_ROOT, "output", "moonpets", "custom");
 const MANIFEST_PATH = path.join(REPO_ROOT, "output", "manifests", "moonpet-custom-animation.generated.json");
 const RAW_DIR = path.join(REPO_ROOT, "output", "manifests", "autosprite", "custom");
 const API_BASE_URL = "https://www.autosprite.io/api/v1";
-const ALLOWED_IDS = new Set(["custom_sleep"]);
+const ALLOWED_IDS = new Set(["custom_eat"]);
 const PROMPT_LIMIT = 600;
 
 function parseArgs(argv) {
@@ -83,10 +83,11 @@ function validatePromotionTarget(item) {
 
 function validateQueueItem(item, id) {
   if (!item) throw new Error(`Unknown custom animation id: ${id}`);
-  if (!ALLOWED_IDS.has(id)) throw new Error(`Custom animation id ${id} is not enabled yet. Only custom_sleep is allowed.`);
+  if (!ALLOWED_IDS.has(id)) throw new Error(`Custom animation id ${id} is not enabled yet. Only custom_eat is enabled for generation.`);
   if (item.id !== id) throw new Error(`Queue item id mismatch: expected ${id}, found ${item.id}`);
   if (item.status !== "planned") throw new Error(`${id} must have status=planned before generation.`);
   if (item.approved !== false) throw new Error(`${id} must have approved=false before generation.`);
+  if (item.promoted === true) throw new Error(`${id} must have promoted=false before generation.`);
   if (item.custom_required !== true) throw new Error(`${id} must have custom_required=true.`);
   if (item.source_character_name !== "MOONBOT PET VISOR V1") throw new Error(`${id} must use source character MOONBOT PET VISOR V1.`);
   if (!item.prompt || item.prompt.length > PROMPT_LIMIT) throw new Error(`${id} prompt is required and must be ${PROMPT_LIMIT} characters or less.`);
@@ -178,7 +179,7 @@ async function pollJob({ apiKey, jobId, timeoutMs }) {
         rawName: `job-${slug(jobId)}-poll-${pollCount}.json`
       });
       const status = String(job.status || job.job && job.job.status || job.data && job.data.status || "").toLowerCase();
-      console.log(`[custom_sleep] job ${jobId} status=${status || "unknown"}`);
+      console.log(`[custom-animation] job ${jobId} status=${status || "unknown"}`);
       if (["succeeded", "success", "completed", "complete"].includes(status)) {
         await writeJson(path.join(RAW_DIR, `job-${slug(jobId)}-succeeded.json`), job);
         return job;
@@ -187,7 +188,7 @@ async function pollJob({ apiKey, jobId, timeoutMs }) {
         throw new Error(`AutoSprite job ${jobId} ended with status=${status}.`);
       }
     } catch (error) {
-      console.warn(`[custom_sleep] poll warning for ${jobId}: ${error.message}`);
+      console.warn(`[custom-animation] poll warning for ${jobId}: ${error.message}`);
     }
   }
   throw new Error(`AutoSprite job ${jobId} did not succeed before timeout.`);
@@ -305,7 +306,7 @@ async function writeManifest(entry) {
 }
 
 async function generateCustomAnimation(options) {
-  if (!options.id) throw new Error("--id is required. For now use --id custom_sleep.");
+  if (!options.id) throw new Error("--id is required. For now use --id custom_eat.");
   const queue = await readJson(options.queuePath);
   const item = validateQueueItem(findQueueItem(queue, options.id), options.id);
   const payload = buildSpritesheetPayload(item);
@@ -354,10 +355,10 @@ async function generateCustomAnimation(options) {
     id: item.id,
     role: item.role,
     source_character_name: item.source_character_name,
-    status: "generated",
+    status: "generated_pending_review",
     approved: false,
     promoted: false,
-    animation_kind: "custom",
+    animation_kind: item.animation_kind || "custom",
     custom_required: true,
     prompt: item.prompt,
     frame_count: item.output_expectations.frame_count,

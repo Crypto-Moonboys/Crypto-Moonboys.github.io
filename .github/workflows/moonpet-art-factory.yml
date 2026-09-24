@@ -23,9 +23,9 @@ on:
         required: false
         default: ""
       custom_animation_id:
-        description: "Custom animation queue id. For now only custom_sleep is enabled."
+        description: "Custom animation queue id. For now only custom_eat is enabled."
         required: false
-        default: "custom_sleep"
+        default: "custom_eat"
       auto_commit_promoted_assets:
         description: "Commit promoted public Moonbot assets and approved registry after build-approved-pack."
         required: true
@@ -104,6 +104,10 @@ jobs:
         if: ${{ inputs.phase == 'generate-custom-animation' }}
         timeout-minutes: 30
         run: |
+          if [ "$CUSTOM_ANIMATION_ID" != "custom_eat" ]; then
+            echo "Only custom_eat is enabled for this generation phase."
+            exit 1
+          fi
           npm run moonpet:custom-queue:check
           node scripts/generate-moonpet-custom-animation.js --id "$CUSTOM_ANIMATION_ID" --execute
         env:
