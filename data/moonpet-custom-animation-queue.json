@@ -25,14 +25,20 @@
       "atlas_path": "/img/moonpets/moonbot-pet-visor-v1/custom_sleep.json",
       "frame_count": 25,
       "frame_size": 256,
-      "sheet_size": { "w": 1280, "h": 1280 },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
       "prompt": "MOONBOT PET VISOR V1 sleeping peacefully in isometric down view, cute cyber pet-state animation, soft breathing motion, consistent approved Moonbot proportions, transparent background, no text, no scenery.",
       "custom_required": true,
       "notes": "Approved manual AutoSprite website sleep sheet. Previous API-generated custom_sleep attempt rejected/not used.",
       "output_expectations": {
         "frame_count": 25,
         "frame_size": 256,
-        "sheet_size": { "w": 1280, "h": 1280 }
+        "sheet_size": {
+          "w": 1280,
+          "h": 1280
+        }
       },
       "promotion_target": {
         "sheet_path": "/img/moonpets/moonbot-pet-visor-v1/custom_sleep.png",
@@ -44,13 +50,12 @@
       "role": "custom_eat",
       "display_name": "Moonbot Eat",
       "source_character_name": "MOONBOT PET VISOR V1",
-      "status": "rejected_pending_regeneration",
+      "status": "promoted_pending_approval",
       "approved": false,
-      "promoted": false,
-      "visual_rejected": true,
-      "rejected_pending_regeneration": true,
+      "promoted": true,
+      "visual_rejected": false,
+      "rejected_pending_regeneration": false,
       "regeneration_allowed": true,
-      "rejection_reason": "Generated custom_eat was structurally valid but visually rejected because it was side-facing, not down-facing/isometric.",
       "previous_artifact_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35940932619",
       "animation_kind": "iso_custom_eat_down",
       "animation_name": "Moonbot Eat Down",
@@ -73,16 +78,26 @@
       ],
       "frame_count": 25,
       "frame_size": 256,
-      "sheet_size": { "w": 1280, "h": 1280 },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
       "output_expectations": {
         "frame_count": 25,
         "frame_size": 256,
-        "sheet_size": { "w": 1280, "h": 1280 }
+        "sheet_size": {
+          "w": 1280,
+          "h": 1280
+        }
       },
       "promotion_target": {
         "sheet_path": "/img/moonpets/moonbot-pet-visor-v1/custom_eat.png",
         "atlas_path": "/img/moonpets/moonbot-pet-visor-v1/custom_eat.json"
-      }
+      },
+      "promoted_at": "2026-09-24T03:59:08.998Z",
+      "sheet_path": "/img/moonpets/moonbot-pet-visor-v1/custom_eat.png",
+      "atlas_path": "/img/moonpets/moonbot-pet-visor-v1/custom_eat.json",
+      "visual_review_required": true
     },
     {
       "id": "custom_play",
@@ -97,7 +112,10 @@
       "output_expectations": {
         "frame_count": 25,
         "frame_size": 256,
-        "sheet_size": { "w": 1280, "h": 1280 }
+        "sheet_size": {
+          "w": 1280,
+          "h": 1280
+        }
       },
       "promotion_target": {
         "sheet_path": "/img/moonpets/moonbot-pet-visor-v1/custom_play.png",
@@ -117,7 +135,10 @@
       "output_expectations": {
         "frame_count": 25,
         "frame_size": 256,
-        "sheet_size": { "w": 1280, "h": 1280 }
+        "sheet_size": {
+          "w": 1280,
+          "h": 1280
+        }
       },
       "promotion_target": {
         "sheet_path": "/img/moonpets/moonbot-pet-visor-v1/custom_clean.png",
@@ -137,7 +158,10 @@
       "output_expectations": {
         "frame_count": 25,
         "frame_size": 256,
-        "sheet_size": { "w": 1280, "h": 1280 }
+        "sheet_size": {
+          "w": 1280,
+          "h": 1280
+        }
       },
       "promotion_target": {
         "sheet_path": "/img/moonpets/moonbot-pet-visor-v1/custom_wave.png",
@@ -157,7 +181,10 @@
       "output_expectations": {
         "frame_count": 25,
         "frame_size": 256,
-        "sheet_size": { "w": 1280, "h": 1280 }
+        "sheet_size": {
+          "w": 1280,
+          "h": 1280
+        }
       },
       "promotion_target": {
         "sheet_path": "/img/moonpets/moonbot-pet-visor-v1/custom_sit.png",
@@ -177,7 +204,10 @@
       "output_expectations": {
         "frame_count": 25,
         "frame_size": 256,
-        "sheet_size": { "w": 1280, "h": 1280 }
+        "sheet_size": {
+          "w": 1280,
+          "h": 1280
+        }
       },
       "promotion_target": {
         "sheet_path": "/img/moonpets/moonbot-pet-visor-v1/custom_happy.png",
@@ -197,7 +227,10 @@
       "output_expectations": {
         "frame_count": 25,
         "frame_size": 256,
-        "sheet_size": { "w": 1280, "h": 1280 }
+        "sheet_size": {
+          "w": 1280,
+          "h": 1280
+        }
       },
       "promotion_target": {
         "sheet_path": "/img/moonpets/moonbot-pet-visor-v1/custom_sad.png",
