@@ -148,6 +148,20 @@ function hasForbiddenDirection(value) {
   return /(^iso_|_down$|_down_|down_facing|isometric)/i.test(String(value || ""));
 }
 
+function hasRequiredNegativePromptTerms(value) {
+  const normalized = String(value || "").toLowerCase();
+  return [
+    "no tail",
+    "no ears",
+    "no snout",
+    "no animal body",
+    "no fur",
+    "no paws",
+    "no whiskers",
+    "no claws"
+  ].every((term) => normalized.includes(term));
+}
+
 function validateItem(item, id) {
   const checks = [];
   checks.push(ALLOWED_IDS.has(id)
@@ -198,8 +212,8 @@ function validateItem(item, id) {
   checks.push(prompt.includes("Moonbot") && !/\bpet\b/i.test(prompt)
     ? pass("moonbot_terms", "Prompt uses Moonbot terminology and avoids pet", prompt)
     : fail("moonbot_terms", "Prompt must use Moonbot terminology and avoid pet", prompt));
-  checks.push(negativePrompt === NEGATIVE_PROMPT
-    ? pass("negative_prompt", "Negative prompt is present", negativePrompt)
+  checks.push(hasRequiredNegativePromptTerms(negativePrompt)
+    ? pass("negative_prompt", "Negative prompt blocks animal drift", negativePrompt)
     : fail("negative_prompt", "Negative prompt must block animal drift", negativePrompt));
   checks.push(combinedPrompt.length <= PROMPT_LIMIT
     ? pass("prompt_length", "Prompt and negative prompt are under 600 characters", `${combinedPrompt.length}`)
