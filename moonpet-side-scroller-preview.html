@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Moonpet Side-Scroller Preview</title>
+    <link rel="stylesheet" href="css/moonpet-side-scroller-preview.css">
+    <script src="js/moonpet-side-scroller-preview.js" defer></script>
+  </head>
+  <body>
+    <main class="preview-shell">
+      <header class="preview-header">
+        <div>
+          <p class="eyebrow">Preview-only Moonpet action flow</p>
+          <h1>Moonbot Side-Scroller Stage</h1>
+        </div>
+        <p class="model-note">Side-scroller means visual format, not user-controlled platformer.</p>
+      </header>
+
+      <section class="preview-layout" aria-label="Moonbot side-scroller action-flow preview">
+        <div class="stage-panel">
+          <canvas id="moonbot-stage" width="960" height="540" aria-label="Neon rooftop stage with autonomous Moonbot"></canvas>
+        </div>
+
+        <aside class="controls-panel" aria-label="Moonbot action controls">
+          <div class="action-buttons" id="action-buttons">
+            <button type="button" data-action="idle" class="is-active">Idle</button>
+            <button type="button" data-action="eat">Eat</button>
+            <button type="button" data-action="play">Play</button>
+            <button type="button" data-action="clean">Clean</button>
+            <button type="button" data-action="sleep">Sleep</button>
+            <button type="button" data-action="train">Train</button>
+          </div>
+
+          <dl class="debug-list">
+            <dt>mode</dt>
+            <dd id="debug-mode">idle</dd>
+            <dt>phase</dt>
+            <dd id="debug-phase">idle</dd>
+            <dt>position</dt>
+            <dd id="debug-position">center</dd>
+            <dt>control model</dt>
+            <dd>buttons only</dd>
+          </dl>
+
+          <p class="safety-note">
+            No keyboard movement, no player-controlled jumping, no collision platforming, and no combat loop. Buttons trigger autonomous Moonbot action flows.
+          </p>
+        </aside>
+      </section>
+    </main>
+  </body>
+</html>
