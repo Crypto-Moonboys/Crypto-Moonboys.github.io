@@ -1,6 +1,6 @@
 (() => {
   const FEATURE_FLAG = "MOONPET_USE_APPROVED_SPRITES";
-  const SUPPORTED_ROLES = ["base_idle", "base_walk", "base_run"];
+  const SUPPORTED_ROLES = ["base_idle", "base_walk", "base_run", "custom_sleep"];
   const FRAME_RATE = 12;
 
   const state = {

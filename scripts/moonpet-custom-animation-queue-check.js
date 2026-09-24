@@ -15,6 +15,7 @@ const expectedIds = [
   "custom_happy",
   "custom_sad"
 ];
+const allowedApprovedIds = new Set(["custom_sleep"]);
 
 function fail(message) {
   return { status: "fail", message };
@@ -34,6 +35,16 @@ function isPublicMoonbotTarget(value) {
     !value.includes("..");
 }
 
+function publicPathExists(value, minBytes) {
+  if (!isPublicMoonbotTarget(value)) return false;
+  const filePath = path.join(repoRoot, value.replace(/^\/+/, ""));
+  try {
+    return fs.statSync(filePath).size > minBytes;
+  } catch {
+    return false;
+  }
+}
+
 function validateQueue(queue) {
   const results = [];
   const items = Array.isArray(queue.items) ? queue.items : [];
@@ -41,7 +52,7 @@ function validateQueue(queue) {
   const ids = new Set(items.map((item) => item.id));
 
   results.push(items.length === expectedIds.length
-    ? pass(`Queue contains ${items.length} planned custom animations`)
+    ? pass(`Queue contains ${items.length} custom animations`)
     : fail(`Expected ${expectedIds.length} queue items, found ${items.length}`));
 
   for (const id of expectedIds) {
@@ -62,12 +73,32 @@ function validateQueue(queue) {
       results.push(fail(`${label} is missing role`));
     }
 
-    results.push(item.status === "planned"
-      ? pass(`${label} status is planned`)
-      : fail(`${label} status must be planned`));
-    results.push(item.approved === false
-      ? pass(`${label} is not accidentally approved`)
-      : fail(`${label} must have approved=false`));
+    if (allowedApprovedIds.has(item.id)) {
+      results.push(item.status === "approved"
+        ? pass(`${label} status is approved`)
+        : fail(`${label} status must be approved`));
+      results.push(item.approved === true && item.promoted === true
+        ? pass(`${label} is approved and promoted`)
+        : fail(`${label} must have approved=true and promoted=true`));
+      results.push(item.animation_kind === "iso_custom_sleep_down"
+        ? pass(`${label} animation_kind is iso_custom_sleep_down`)
+        : fail(`${label} animation_kind must be iso_custom_sleep_down`));
+      results.push(item.sheet_path === "/img/moonpets/moonbot-pet-visor-v1/custom_sleep.png" &&
+        item.atlas_path === "/img/moonpets/moonbot-pet-visor-v1/custom_sleep.json"
+        ? pass(`${label} has approved public paths`)
+        : fail(`${label} must define approved public sheet_path and atlas_path`));
+      results.push(publicPathExists(item.sheet_path, 10 * 1024) &&
+        publicPathExists(item.atlas_path, 100)
+        ? pass(`${label} promoted files exist`)
+        : fail(`${label} promoted PNG/atlas files must exist`));
+    } else {
+      results.push(item.status === "planned"
+        ? pass(`${label} status is planned`)
+        : fail(`${label} status must be planned`));
+      results.push(item.approved === false
+        ? pass(`${label} is not accidentally approved`)
+        : fail(`${label} must have approved=false`));
+    }
     results.push(typeof item.prompt === "string" && item.prompt.trim().length > 20
       ? pass(`${label} has prompt`)
       : fail(`${label} is missing prompt`));

@@ -1,10 +1,12 @@
 (() => {
   const DEFAULT_REGISTRY_PATH = "data/moonpet-approved-assets.json";
+  const DEFAULT_CUSTOM_QUEUE_PATH = "data/moonpet-custom-animation-queue.json";
   const SUPPORTED_ROLES = ["base_idle", "base_walk", "base_run"];
   const ROLE_TO_ANIMATION = {
     base_idle: "iso_idle_down",
     base_walk: "iso_walk_down",
-    base_run: "iso_run_down"
+    base_run: "iso_run_down",
+    custom_sleep: "iso_custom_sleep_down"
   };
 
   function cacheToken(asset) {
@@ -87,9 +89,36 @@
     );
   }
 
-  function approvedAssetForRole(registry, role, rejectedSet) {
+  function customQueueAssets(queue) {
+    return (queue.items || [])
+      .filter((item) => item.approved === true && item.promoted === true)
+      .map((item) => ({
+        character_name: item.source_character_name,
+        source_character_name: item.source_character_name,
+        animation_kind: item.animation_kind || item.id,
+        role: item.role,
+        approved: true,
+        promoted: true,
+        promoted_at: item.promoted_at || null,
+        sheet_path: item.sheet_path || item.promotion_target && item.promotion_target.sheet_path || null,
+        atlas_path: item.atlas_path || item.promotion_target && item.promotion_target.atlas_path || null,
+        frame_count: item.frame_count || item.output_expectations && item.output_expectations.frame_count,
+        frame_size: item.frame_size || item.output_expectations && item.output_expectations.frame_size,
+        sheet_size: normalizeSize(item.sheet_size || item.output_expectations && item.output_expectations.sheet_size)
+      }));
+  }
+
+  async function loadCustomQueueAssets(path) {
+    try {
+      return customQueueAssets(await fetchJson(path));
+    } catch {
+      return [];
+    }
+  }
+
+  function approvedAssetForRole(assets, role, rejectedSet) {
     const animationKind = ROLE_TO_ANIMATION[role];
-    return (registry.assets || []).find((asset) => {
+    return (assets || []).find((asset) => {
       const key = `${asset.character_name}::${asset.animation_kind}`;
       return (
         asset.role === role &&
@@ -104,10 +133,12 @@
 
   async function loadApprovedMoonpetAssets(options = {}) {
     const registryPath = options.registryPath || DEFAULT_REGISTRY_PATH;
+    const customQueuePath = options.customQueuePath || DEFAULT_CUSTOM_QUEUE_PATH;
     const roles = options.roles || SUPPORTED_ROLES;
     const errors = [];
     const assetsByRole = {};
     const registry = await fetchJson(registryPath);
+    const approvedAssets = [...(registry.assets || []), ...(await loadCustomQueueAssets(customQueuePath))];
     const rejectedSet = rejectedAnimationSet(registry);
 
     for (const role of roles) {
@@ -117,7 +148,7 @@
         continue;
       }
 
-      const approved = approvedAssetForRole(registry, role, rejectedSet);
+      const approved = approvedAssetForRole(approvedAssets, role, rejectedSet);
       if (!approved) {
         errors.push(`Missing approved promoted asset for ${role}`);
         continue;
@@ -161,6 +192,7 @@
     return {
       ready: roles.every((role) => Boolean(assetsByRole[role])),
       registryPath,
+      customQueuePath,
       roles,
       assetsByRole,
       errors

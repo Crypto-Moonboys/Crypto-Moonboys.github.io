@@ -306,10 +306,10 @@ function runMoonpetAutopilotChecks() {
   const customQueue = readCustomQueueStatus();
   checks.push(makeCheck(
     "custom_animation_queue_valid",
-    "Custom animation queue is valid and unapproved",
+    "Custom animation queue is valid",
     customQueue.status === "pass",
     customQueue.status === "pass"
-      ? `${customQueue.plannedStates.length} planned custom states`
+      ? `${customQueue.plannedStates.length} custom states tracked`
       : customQueue.errors.join(" | "),
     { validation: customQueue.validation }
   ));

@@ -2,7 +2,8 @@
   const ANIMATION_TO_ROLE = {
     iso_idle_down: "base_idle",
     iso_walk_down: "base_walk",
-    iso_run_down: "base_run"
+    iso_run_down: "base_run",
+    iso_custom_sleep_down: "custom_sleep"
   };
 
   const state = {
@@ -182,7 +183,9 @@
       return;
     }
 
-    state.rendererState = await renderer.initApprovedMoonpetSpriteRenderer();
+    state.rendererState = await renderer.initApprovedMoonpetSpriteRenderer({
+      roles: ["base_idle", "base_walk", "base_run", "custom_sleep"]
+    });
     sourceLine.textContent = `Renderer: ${state.rendererState.reason}`;
     if (state.rendererState.errors.length) {
       sourceLine.textContent += ` | ${state.rendererState.errors.join(" | ")}`;

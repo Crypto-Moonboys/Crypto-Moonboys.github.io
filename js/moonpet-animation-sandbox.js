@@ -1,6 +1,7 @@
 (() => {
   const PATHS = {
     registry: "data/moonpet-approved-assets.json",
+    customQueue: "data/moonpet-custom-animation-queue.json",
     sandboxManifest: "output/manifests/moonpet-animation-sandbox.generated.json",
     spritesheetManifest: "output/manifests/moonpet-spritesheets.generated.json",
     sample: "data/moonpet-animation-sandbox.sample.json"
@@ -111,6 +112,25 @@
     ];
   }
 
+  function fromCustomQueue(queue) {
+    return (queue.items || []).map((item) => normalizeSandboxAsset({
+      character_name: item.source_character_name,
+      source_character_name: item.source_character_name,
+      animation_kind: item.animation_kind || item.id,
+      role: item.role,
+      approved: item.approved === true,
+      promoted: item.promoted === true,
+      promoted_at: item.promoted_at || null,
+      rejected: false,
+      sheet_path: item.sheet_path || item.promotion_target && item.promotion_target.sheet_path || null,
+      atlas_path: item.atlas_path || item.promotion_target && item.promotion_target.atlas_path || null,
+      frame_count: item.frame_count || item.output_expectations && item.output_expectations.frame_count,
+      frame_size: item.frame_size || item.output_expectations && item.output_expectations.frame_size,
+      sheet_size: item.sheet_size || item.output_expectations && item.output_expectations.sheet_size,
+      created_at: item.promoted_at || null
+    }, { assets: [], rejected: [] }));
+  }
+
   async function loadData() {
     const registry = await fetchJson(PATHS.registry);
     const sources = [`registry:${PATHS.registry}`];
@@ -133,6 +153,12 @@
       const spritesheets = await fetchJson(PATHS.spritesheetManifest);
       sources.push(`spritesheets:${PATHS.spritesheetManifest}`);
       for (const asset of fromSpritesheetManifest(spritesheets, registry)) putAsset(asset);
+    } catch {}
+
+    try {
+      const customQueue = await fetchJson(PATHS.customQueue);
+      sources.push(`customQueue:${PATHS.customQueue}`);
+      for (const asset of fromCustomQueue(customQueue)) putAsset(asset);
     } catch {}
 
     if (assetMap.size > 0) {

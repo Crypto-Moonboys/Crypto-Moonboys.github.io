@@ -22,7 +22,8 @@ The autopilot checks:
 - The public runtime does not require `output/` generated folders.
 - No real AutoSprite API key appears in repo files.
 - The custom animation queue is valid.
-- Planned custom states remain planned and unapproved.
+- `custom_sleep` may be approved/promoted.
+- Remaining custom states remain planned and unapproved.
 
 ## What It Does Not Do
 
@@ -79,7 +80,7 @@ Each check has:
 - `status`
 - `detail`
 
-If `overall_status` is `pass`, the approved Moonbot public runtime files are present, the guarded live integration is still default-off, and the custom animation queue is valid. If it is `fail`, fix the failed checks before using `?approvedSprites=1` for live-game visual testing or before starting custom animation generation.
+If `overall_status` is `pass`, the approved Moonbot public runtime files are present, the guarded live integration is still default-off, the custom sleep asset is valid when present, and the custom animation queue is valid. If it is `fail`, fix the failed checks before using `?approvedSprites=1` for live-game visual testing or before starting custom animation generation.
 
 ## GitHub Actions
 
@@ -111,7 +112,7 @@ npm run moonpet:custom-queue:check
 
 Autopilot now includes this queue as a monitoring check. It fails if the queue JSON is invalid, a planned item uses rejected `attack`, roles are duplicated, prompts or promotion targets are missing, or any planned item is accidentally approved.
 
-The custom queue does not generate assets automatically yet. It is a planning and validation layer only, keeping custom animation work separate from the approved base idle/walk/run system.
+The custom queue does not generate assets automatically. It is a planning and validation layer, now allowing the manually approved `custom_sleep` while keeping the remaining custom states separate from the approved base idle/walk/run system.
 
 ## Why This Reduces Manual Work
 

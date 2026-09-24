@@ -2,17 +2,17 @@
 
 This document covers the first custom pet-state generation lane for Moonbot.
 
-The first enabled custom state is:
+The first custom state is:
 
 - `custom_sleep`
 
-No other custom states should be generated yet.
+`custom_sleep` is now approved from a manually downloaded AutoSprite website sheet. No other custom states should be generated yet.
 
 ## Current Safety Rules
 
 - Do not generate all eight planned custom states.
 - Do not use rejected `attack`.
-- Do not approve `custom_sleep` automatically.
+- Do not approve future custom states automatically.
 - Do not change the live game.
 - Do not enable approved sprites by default.
 - Do not call AutoSprite during normal checks.
@@ -25,12 +25,30 @@ The queue item lives in:
 data/moonpet-custom-animation-queue.json
 ```
 
-`custom_sleep` must remain:
+`custom_sleep` is now:
 
-- `status: planned` before generation
-- `approved: false`
+- `status: approved`
+- `approved: true`
+- `promoted: true`
+- `animation_kind: iso_custom_sleep_down`
 - `custom_required: true`
 - `source_character_name: MOONBOT PET VISOR V1`
+
+The approved files are:
+
+```text
+img/moonpets/moonbot-pet-visor-v1/custom_sleep.png
+img/moonpets/moonbot-pet-visor-v1/custom_sleep.json
+```
+
+Source filenames:
+
+```text
+MOONBOT PET VISOR V1-iso_custom_sleep_down-v1.png
+MOONBOT PET VISOR V1-iso_custom_sleep_down-v1.json
+```
+
+The previous API-generated `custom_sleep` attempt is rejected/not used.
 
 Expected output format:
 
@@ -47,7 +65,7 @@ Promotion targets:
 
 ## Dry Run
 
-Dry run validates the queue item and writes a generated manifest entry without calling AutoSprite:
+Dry run remains available for future testing, but it should not be used to replace the approved manual sleep sheet without explicit review:
 
 ```bash
 npm run moonpet:custom:dry
@@ -55,7 +73,7 @@ npm run moonpet:custom:dry
 
 ## Generate One Custom Animation
 
-Real generation requires explicit execution:
+Real generation requires explicit execution. Do not run this for `custom_sleep` now that the manual sheet is approved:
 
 ```bash
 AUTOSPRITE_API_KEY=replace_me node scripts/generate-moonpet-custom-animation.js --id custom_sleep --execute
@@ -96,7 +114,7 @@ It updates the queue item to `status: promoted`, sets `promoted: true`, and reco
 
 It does not set `approved: true`.
 
-Approval remains a later manual review step after sandbox/runtime inspection.
+Approval remains a later manual review step after sandbox/runtime inspection for any future custom state.
 
 ## GitHub Actions
 

@@ -28,7 +28,7 @@ data/moonpet-custom-animation-queue.json
 
 Planned custom states:
 
-- `custom_sleep`
+- `custom_sleep` - approved/promoted from manual AutoSprite website download
 - `custom_eat`
 - `custom_play`
 - `custom_clean`
@@ -81,7 +81,8 @@ The checker validates:
 - Roles are unique.
 - Prompts exist.
 - Promotion targets are defined.
-- Planned items are not accidentally approved.
+- `custom_sleep` is allowed to be approved/promoted.
+- The remaining custom states are not accidentally approved.
 - Output expectations match the approved baseline format.
 
 ## What This Does Not Do
@@ -95,6 +96,8 @@ The custom queue does not:
 - Change live game files.
 - Enable approved sprites by default.
 
-The next step, when explicitly requested, is to generate one custom animation at a time and review it through the sandbox before approval.
+`custom_sleep` can appear in sandbox/runtime preview surfaces, but it is not wired into the live game yet.
+
+The next step, when explicitly requested, is to generate one remaining custom animation at a time and review it through the sandbox before approval.
 
 The first enabled generation lane is documented in [Moonpet Custom Animation Generation](moonpet-custom-animation-generation.md).
