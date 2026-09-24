@@ -533,7 +533,8 @@
         "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_celebrate.png",
         "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_celebrate.json"
       },
-      "rejection_reason": "Generated side_celebrate was visually rejected because it was too close to idle and lacked clear confetti, reward sparkles, or celebratory motion."
+      "rejection_reason": "Rerun still failed visual review: no clear confetti/reward motion and introduced antenna/ear-like drift, so it remains rejected.",
+      "latest_rejected_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35974615995"
     },
     {
       "id": "side_interact",
@@ -564,7 +565,8 @@
         "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_interact.png",
         "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_interact.json"
       },
-      "rejection_reason": "Generated side_interact was visually rejected because it was too close to idle and lacked a clear hello/tap/interaction cue."
+      "rejection_reason": "Rerun still failed visual review: too close to idle/reach and lacks a clear hello/tap interaction cue.",
+      "latest_rejected_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35974617342"
     },
     {
       "id": "side_battle",
@@ -595,7 +597,8 @@
         "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_battle.png",
         "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_battle.json"
       },
-      "rejection_reason": "Generated side_battle was visually rejected because it was effectively idle and lacked defensive shield or battle-feedback readability."
+      "rejection_reason": "Rerun still failed visual review: too close to idle and lacks clear shield or defensive battle feedback.",
+      "latest_rejected_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35974615696"
     }
   ]
 }

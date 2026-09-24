@@ -235,24 +235,27 @@
       "role": "side_celebrate",
       "rejected": true,
       "visual_status": "visual_rejected",
-      "rejection_reason": "Generated output was too close to idle and lacked clear celebration/confetti/reward motion.",
-      "next_step": "regenerate"
+      "rejection_reason": "Rerun still failed visual review: no clear confetti/reward motion and introduced antenna/ear-like drift, so it remains rejected.",
+      "workflow_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35974615995",
+      "next_step": "keep_runtime_fallback_or_regenerate_later"
     },
     {
       "id": "side_interact",
       "role": "side_interact",
       "rejected": true,
       "visual_status": "visual_rejected",
-      "rejection_reason": "Generated output was too close to idle and lacked a clear hello/tap/interact cue.",
-      "next_step": "regenerate"
+      "rejection_reason": "Rerun still failed visual review: too close to idle/reach and lacks a clear hello/tap interaction cue.",
+      "workflow_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35974617342",
+      "next_step": "keep_runtime_fallback_or_regenerate_later"
     },
     {
       "id": "side_battle",
       "role": "side_battle",
       "rejected": true,
       "visual_status": "visual_rejected",
-      "rejection_reason": "Generated output was effectively idle and lacked defensive shield/stunned battle feedback.",
-      "next_step": "regenerate"
+      "rejection_reason": "Rerun still failed visual review: too close to idle and lacks clear shield or defensive battle feedback.",
+      "workflow_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35974615696",
+      "next_step": "keep_runtime_fallback_or_regenerate_later"
     }
   ],
   "runtime_role_map": {
