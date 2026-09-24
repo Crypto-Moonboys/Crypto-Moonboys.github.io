@@ -678,7 +678,7 @@
       "props": [
         "hello_sparkles"
       ],
-      "prompt": "Moonbot front-facing 2D sprite sheet, white glossy chibi robot mascot, black visor with pink LED eyes, body facing camera, one mitten hand raised waving hello, friendly greeting animation, slight bounce, clear front-view silhouette, chunky robot feet, no animal features, no side profile, no walking pose.",
+      "prompt": "FRONT VIEW ONLY Moonbot emote sprite sheet. Camera-facing white glossy chibi robot mascot, black visor fully visible with pink LED eyes, torso facing viewer, one mitten robot hand raised beside visor waving hello, other arm down, slight happy bounce, chunky robot feet, mobile-readable silhouette. Not side-view, not profile, not walking.",
       "role": "side_front_wave",
       "promotion_target": {
         "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_wave.png",
@@ -694,9 +694,14 @@
         {
           "workflow_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35994126607",
           "result": "visual_rejected_side_facing_static"
+        },
+        {
+          "workflow_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35998412794",
+          "result": "visual_rejected_side_facing_static",
+          "notes": "Mechanically valid, but body and visor stayed side-facing instead of front/near-front waving."
         }
       ],
-      "updated_at": "2026-09-24T11:41:06.488Z"
+      "updated_at": "2026-09-24T12:28:00.000Z"
     },
     {
       "source_character_name": "MOONBOT PET VISOR V1",
