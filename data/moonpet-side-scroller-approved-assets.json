@@ -362,8 +362,8 @@
       "approved": true,
       "promoted": true,
       "visual_status": "approved",
-      "promoted_at": "2026-09-24T11:41:06.488Z",
-      "workflow_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35994134348",
+      "promoted_at": "2026-09-24T00:00:00.000Z",
+      "workflow_run_url": "local-imagegen-front-idle-variant",
       "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_victory.png",
       "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_victory.json",
       "frame_count": 25,
@@ -372,7 +372,7 @@
         "w": 1280,
         "h": 1280
       },
-      "notes": "Approved front/three-quarter victory reward insert with happy visor and raised arms from run 35994134348."
+      "notes": "Replaced with front-facing single-pose victory idle variant sheet for occasional idle personality and celebrate variation."
     },
     {
       "id": "side_front_wave",
@@ -392,6 +392,44 @@
         "h": 1280
       },
       "notes": "Approved front/near-front greeting wave sheet generated locally from approved Moonbot front-victory style after AutoSprite custom wave attempts stayed side-facing."
+    },
+    {
+      "id": "side_front_point",
+      "role": "side_front_point",
+      "animation_kind": "custom",
+      "approved": true,
+      "promoted": true,
+      "visual_status": "approved",
+      "promoted_at": "2026-09-24T00:00:00.000Z",
+      "workflow_run_url": "local-imagegen-front-idle-variant",
+      "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_point.png",
+      "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_point.json",
+      "frame_count": 25,
+      "frame_size": 256,
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "notes": "Approved front-facing pointing idle personality variant generated for rare idle beats."
+    },
+    {
+      "id": "side_front_dance",
+      "role": "side_front_dance",
+      "animation_kind": "custom",
+      "approved": true,
+      "promoted": true,
+      "visual_status": "approved",
+      "promoted_at": "2026-09-24T00:00:00.000Z",
+      "workflow_run_url": "local-imagegen-front-idle-variant",
+      "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_dance.png",
+      "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_dance.json",
+      "frame_count": 25,
+      "frame_size": 256,
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "notes": "Approved front-facing dance idle personality variant generated for rare idle beats."
     }
   ],
   "rejected": [],
@@ -399,8 +437,12 @@
     "idle": {
       "role": "side_idle",
       "fallback": "procedural_if_missing",
+      "variant_cadence": 7,
       "variants": [
-        "side_turn"
+        "side_front_wave",
+        "side_front_point",
+        "side_front_victory",
+        "side_front_dance"
       ]
     },
     "feed": {

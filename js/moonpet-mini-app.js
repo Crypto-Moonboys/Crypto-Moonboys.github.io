@@ -37,6 +37,9 @@
   var animationUntil = 0;
   var animationLabel = '';
   var actionSequence = 0;
+  var idleSpecialRole = '';
+  var idleSpecialUntil = 0;
+  var idleSpecialNextAt = 0;
   var reducedMotionAnimationTimer = 0;
   var actionResultHoldMs = 3600;
   var actionStartedAt = 0;
@@ -212,8 +215,8 @@
     console.info('[Moonpet] side-scroller sprite mode enabled');
     updateSideSpriteDebug({ reason: 'loading side-scroller scripts' });
     try {
-      await loadApprovedSpriteScript('/js/moonpet-side-scroller-asset-loader.js?v=20260924-side-sprites-runtime-v7');
-      await loadApprovedSpriteScript('/js/moonpet-side-scroller-sprite-renderer.js?v=20260924-side-sprites-runtime-v7');
+      await loadApprovedSpriteScript('/js/moonpet-side-scroller-asset-loader.js?v=20260924-side-sprites-runtime-v8');
+      await loadApprovedSpriteScript('/js/moonpet-side-scroller-sprite-renderer.js?v=20260924-side-sprites-runtime-v8');
       if (!window.MoonpetSideScrollerSpriteRenderer) throw new Error('MoonpetSideScrollerSpriteRenderer unavailable');
       sideScrollerSpriteRendererState = await window.MoonpetSideScrollerSpriteRenderer.initMoonpetSideScrollerRenderer();
       sideScrollerSpriteRendererReady = Boolean(sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.ready);
@@ -3231,13 +3234,41 @@
     return drew;
   }
 
+  function idleSpecialRoleForFrame(time, mode, active) {
+    var idleRoles = ['side_front_wave', 'side_front_point', 'side_front_victory', 'side_front_dance'];
+    var now = Number(time) || performance.now();
+    if (active || mode !== 'idle' || reducedMotion) return '';
+    if (idleSpecialRole && now < idleSpecialUntil) return idleSpecialRole;
+    if (idleSpecialRole) {
+      idleSpecialRole = '';
+      idleSpecialUntil = 0;
+      idleSpecialNextAt = now + 9000 + Math.floor(idleSpecialRoll(now, 11) * 9000);
+    }
+    if (!idleSpecialNextAt) idleSpecialNextAt = now + 4500 + Math.floor(idleSpecialRoll(now, 17) * 6500);
+    if (now < idleSpecialNextAt) return '';
+    idleSpecialNextAt = now + 9000 + Math.floor(idleSpecialRoll(now, 23) * 11000);
+    if (idleSpecialRoll(now, 31) > 0.38) return '';
+    idleSpecialRole = idleRoles[Math.floor(idleSpecialRoll(now, 37) * idleRoles.length)] || '';
+    idleSpecialUntil = now + 1700 + Math.floor(idleSpecialRoll(now, 41) * 900);
+    return idleSpecialRole;
+  }
+
+  function idleSpecialRoll(time, salt) {
+    var bucket = Math.floor((Number(time) || 0) / 1000);
+    var seed = (bucket + 1) * 1103515245 + (companionSeedValue || 97) * 2654435761 + salt * 374761393;
+    var value = Math.sin(seed) * 10000;
+    return value - Math.floor(value);
+  }
+
   function drawSideScrollerMoonpetSprite(time, mode, active, x, y, scale) {
     if (!sideScrollerSpriteModeEnabled || !sideScrollerSpriteRendererReady || !window.MoonpetSideScrollerSpriteRenderer) return false;
     var mirroredAction = active && ['travel', 'play', 'feed', 'interact', 'celebrate'].indexOf(mode) >= 0 && actionSequence % 2 === 0;
+    var roleOverride = idleSpecialRoleForFrame(time, mode, active);
     var drew = window.MoonpetSideScrollerSpriteRenderer.renderSideScrollerMoonbot(ctx, mode, x, y, scale, time, {
       active: active,
       facing: mirroredAction ? -1 : 1,
-      variantSeed: actionSequence
+      variantSeed: active ? actionSequence : Math.floor(time / 1000),
+      role: roleOverride
     });
     sideScrollerSpriteRendererState = window.MoonpetSideScrollerSpriteRenderer.getMoonpetSideScrollerRendererState();
     updateSideSpriteDebug({

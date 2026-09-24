@@ -435,6 +435,26 @@
         "public_png_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_battle.png",
         "public_atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_battle.json",
         "notes": "Approved regenerated side-view non-gore defensive battle stance with shield pulse from run 35976436399."
+      },
+      {
+        "id": "side_front_point",
+        "mechanical_status": "pass",
+        "visual_status": "approved",
+        "recommended_next_step": "promoted_public_runtime_asset",
+        "workflow_run_url": "local-imagegen-front-idle-variant",
+        "public_png_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_point.png",
+        "public_atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_point.json",
+        "notes": "Approved/promoted front-facing idle personality variant."
+      },
+      {
+        "id": "side_front_dance",
+        "mechanical_status": "pass",
+        "visual_status": "approved",
+        "recommended_next_step": "promoted_public_runtime_asset",
+        "workflow_run_url": "local-imagegen-front-idle-variant",
+        "public_png_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_dance.png",
+        "public_atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_dance.json",
+        "notes": "Approved/promoted front-facing idle personality variant."
       }
     ],
     "install_mode": "production_default_with_url_rollback",
@@ -468,9 +488,11 @@
       "side_eat_chaos",
       "side_play_ball",
       "side_front_victory",
-      "side_front_wave"
+      "side_front_wave",
+      "side_front_point",
+      "side_front_dance"
     ],
     "rejected_pending_regeneration": [],
-    "variant_runtime_notes": "Runtime supports approved variants: side_jump, side_turn, side_eat_chaos, side_play_ball, side_front_victory, and side_front_wave. Higher-level greetings can occasionally use side_front_wave; lower-level greetings stay on basic interact."
+    "variant_runtime_notes": "Runtime supports controlled variants: side_jump, side_turn, side_eat_chaos, side_play_ball, side_front_wave, side_front_point, side_front_victory, and side_front_dance. Higher-level greetings route to side_front_wave; celebrate may use side_front_victory; idle can rarely choose one front-facing personality pose with cooldown while side_idle remains default."
   }
 }

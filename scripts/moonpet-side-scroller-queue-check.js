@@ -26,6 +26,8 @@ const expectedIds = [
   "side_turn",
   "side_front_wave",
   "side_front_victory",
+  "side_front_point",
+  "side_front_dance",
   "side_eat_chaos",
   "side_play_ball"
 ];

@@ -1444,7 +1444,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260924-side-sprites-runtime-v7/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260924-side-sprites-runtime-v8/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -1786,10 +1786,26 @@ assert.ok(
   sideScrollerRegistry.assets.some((asset) => asset.role === 'side_front_wave' && asset.approved === true && asset.promoted === true),
   'front wave sheet must remain approved/promoted so it can load with runtime side roles',
 );
+for (const role of ['side_front_wave', 'side_front_point', 'side_front_victory', 'side_front_dance']) {
+  assert.ok(
+    sideScrollerRegistry.assets.some((asset) => asset.role === role && asset.approved === true && asset.promoted === true),
+    `${role} must be approved/promoted for front-facing idle personality`,
+  );
+  assert.ok(
+    sideScrollerRegistry.runtime_role_map.idle.variants.includes(role),
+    `${role} must be included in the idle personality variant pool`,
+  );
+}
+assert.equal(sideScrollerRegistry.runtime_role_map.idle.role, 'side_idle', 'normal side idle must remain the default idle role');
+assert.ok(sideScrollerRegistry.runtime_role_map.idle.variant_cadence >= 7, 'front-facing idle personality variants must be rare');
 assert.equal(sideScrollerRegistry.runtime_role_map.interact.role, 'side_interact', 'interact moments must stay on the readable interaction gesture');
 assert.equal(sideScrollerRegistry.runtime_role_map.interact.variants, undefined, 'interact moments must not vary into turn-around sprites');
 assert.ok(sideScrollerRegistry.runtime_role_map.feed.variant_cadence >= 4, 'food chaos must be an occasional variant, not the default feed outcome');
 assert.ok(sideScrollerRegistry.runtime_role_map.travel.variant_cadence >= 5, 'travel turn/jump inserts must be rarer than normal run travel');
+assert.match(client, /function idleSpecialRoleForFrame\(time, mode, active\)/, 'Mini App must gate rare front-facing idle personality variants');
+assert.match(client, /idleSpecialNextAt = now \+ 9000 \+ Math\.floor\(idleSpecialRoll\(now, 23\) \* 11000\)/, 'idle personality variants must use cooldown spacing instead of cycling constantly');
+assert.match(client, /function idleSpecialRoll\(time, salt\)/, 'idle personality variants must use local deterministic pseudo-random rolls');
+assert.match(client, /role: roleOverride/, 'renderer options must support one idle role override at a time');
 assert.match(sideScrollerRenderer, /function roleForAnimationMode\(animationMode, active, options = \{\}\)/);
 assert.match(sideScrollerRenderer, /state\.roleMap\[mode\]/, 'side-scroller renderer must resolve roles from runtime_role_map');
 assert.match(sideScrollerRenderer, /variant_cadence/, 'side-scroller variants must support cadence control');
@@ -2058,7 +2074,7 @@ assert.match(worker, /Math\.floor\(stepIndex \/ PET_RUN_BOSS_INTERVAL\) \+ 1/);
 assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Number\(activeRun\.depth \|\| 0\) \+ 1/);
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
-assert.match(html, /20260924-side-sprites-runtime-v7/);
+assert.match(html, /20260924-side-sprites-runtime-v8/);
 assert.match(worker, /20260814-moonpet-aaa-pass/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');

@@ -748,10 +748,11 @@
         "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_victory.json"
       },
       "visual_status": "approved",
-      "promoted_at": "2026-09-24T11:41:06.488Z",
+      "promoted_at": "2026-09-24T00:00:00.000Z",
       "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_victory.png",
       "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_victory.json",
-      "updated_at": "2026-09-24T11:41:06.488Z"
+      "updated_at": "2026-09-24T00:00:00.000Z",
+      "notes": "Replaced with front-facing single-pose victory idle variant sheet; remains celebrate reward variant."
     },
     {
       "source_character_name": "MOONBOT PET VISOR V1",
@@ -826,6 +827,76 @@
       "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_play_ball.png",
       "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_play_ball.json",
       "updated_at": "2026-09-24T11:38:53.853Z"
+    },
+    {
+      "source_character_name": "MOONBOT PET VISOR V1",
+      "status": "promoted",
+      "approved": false,
+      "promoted": true,
+      "custom_required": true,
+      "negative_prompt": "No side-facing profile, no running pose, no walking pose, no tail, no ears, no snout, no animal body, no fur, no paws, no whiskers, no claws.",
+      "output_expectations": {
+        "frame_count": 25,
+        "frame_size": 256,
+        "sheet_size": {
+          "w": 1280,
+          "h": 1280
+        }
+      },
+      "id": "side_front_point",
+      "display_name": "Moonbot Front Point",
+      "animation_kind": "custom",
+      "trigger": "idle_personality_variant",
+      "autonomous_behavior": "Moonbot briefly faces front and points as a friendly idle personality beat.",
+      "stage_direction": "Front-facing point insert for idle surprise moments.",
+      "props": [],
+      "prompt": "FRONT VIEW ONLY Moonbot pointing idle sprite sheet. Camera-facing white glossy chibi robot mascot, black visor fully visible with pink LED eyes, torso facing viewer, one mitten robot hand pointing outward/upward, other arm relaxed, slight happy bounce, chunky robot feet, mobile-readable silhouette. Not side-view, not profile, not walking.",
+      "role": "side_front_point",
+      "promotion_target": {
+        "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_point.png",
+        "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_point.json"
+      },
+      "visual_status": "approved",
+      "updated_at": "2026-09-24T00:00:00.000Z",
+      "promoted_at": "2026-09-24T00:00:00.000Z",
+      "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_point.png",
+      "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_point.json",
+      "notes": "Approved/promoted local imagegen front-facing idle personality variant."
+    },
+    {
+      "source_character_name": "MOONBOT PET VISOR V1",
+      "status": "promoted",
+      "approved": false,
+      "promoted": true,
+      "custom_required": true,
+      "negative_prompt": "No side-facing profile, no running pose, no walking pose, no tail, no ears, no snout, no animal body, no fur, no paws, no whiskers, no claws.",
+      "output_expectations": {
+        "frame_count": 25,
+        "frame_size": 256,
+        "sheet_size": {
+          "w": 1280,
+          "h": 1280
+        }
+      },
+      "id": "side_front_dance",
+      "display_name": "Moonbot Front Dance",
+      "animation_kind": "custom",
+      "trigger": "idle_personality_variant",
+      "autonomous_behavior": "Moonbot briefly faces front and dances as a playful idle personality beat.",
+      "stage_direction": "Front-facing dance insert for idle surprise moments.",
+      "props": [],
+      "prompt": "FRONT VIEW ONLY Moonbot dance idle sprite sheet. Camera-facing white glossy chibi robot mascot, black visor fully visible with pink LED eyes, torso facing viewer, playful arms-out dance pose, tiny bounce, chunky robot feet, mobile-readable silhouette. Not side-view, not profile, not walking.",
+      "role": "side_front_dance",
+      "promotion_target": {
+        "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_dance.png",
+        "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_dance.json"
+      },
+      "visual_status": "approved",
+      "updated_at": "2026-09-24T00:00:00.000Z",
+      "promoted_at": "2026-09-24T00:00:00.000Z",
+      "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_dance.png",
+      "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_front_dance.json",
+      "notes": "Approved/promoted local imagegen front-facing idle personality variant."
     }
   ]
 }
