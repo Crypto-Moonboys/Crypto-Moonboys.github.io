@@ -33,8 +33,11 @@ jobs:
           node --check js/moonpet-runtime-preview.js
           node --check js/moonpet-animation-sandbox.js
           node --check js/moonpet-mini-app.js
+          node --check js/moonpet-side-scroller-asset-loader.js
+          node --check js/moonpet-side-scroller-sprite-renderer.js
           node --check scripts/moonpet-custom-animation-queue-check.js
           node --check scripts/moonpet-custom-animation-autopilot.js
+          node --check scripts/moonpet-runtime-sprite-requirements-check.js
 
       - name: Generate Moonpet autopilot report
         id: report
@@ -64,6 +67,12 @@ jobs:
         continue-on-error: true
         run: npm run moonpet:custom-queue:check
 
+      - name: Run Moonpet runtime sprite requirements check
+        id: runtime_sprites
+        if: always()
+        continue-on-error: true
+        run: npm run moonpet:runtime-sprites:check
+
       - name: Fail on validation errors
         if: always()
         run: |
@@ -81,5 +90,9 @@ jobs:
           fi
           if [ "${{ steps.custom_queue.outcome }}" != "success" ]; then
             echo "Moonpet custom animation queue check failed."
+            exit 1
+          fi
+          if [ "${{ steps.runtime_sprites.outcome }}" != "success" ]; then
+            echo "Moonpet runtime sprite requirements check failed."
             exit 1
           fi

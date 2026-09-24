@@ -4,6 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const { execFileSync } = require("child_process");
 const { validateQueue } = require("./moonpet-custom-animation-queue-check");
+const { validateRequirements } = require("./moonpet-runtime-sprite-requirements-check");
 
 const repoRoot = path.resolve(__dirname, "..");
 
@@ -15,7 +16,9 @@ const REQUIRED_APPROVED = [
 
 const PUBLIC_ASSET_DIR = "img/moonpets/moonbot-pet-visor-v1";
 const REGISTRY_PATH = "data/moonpet-approved-assets.json";
+const SIDE_SCROLLER_REGISTRY_PATH = "data/moonpet-side-scroller-approved-assets.json";
 const CUSTOM_QUEUE_PATH = "data/moonpet-custom-animation-queue.json";
+const RUNTIME_SPRITE_REQUIREMENTS_PATH = "data/moonpet-runtime-sprite-requirements.json";
 const CUSTOM_REVIEW_REPORT_PATH = "output/manifests/moonpet-custom-animation-review.generated.json";
 const REQUIRED_CUSTOM_STATES = [
   "custom_sleep",
@@ -33,7 +36,11 @@ const REQUIRED_PUBLIC_RUNTIME_FILES = [
   "js/moonpet-mini-app.js",
   "js/moonpet-approved-asset-loader.js",
   "js/moonpet-approved-sprite-renderer.js",
+  "js/moonpet-side-scroller-asset-loader.js",
+  "js/moonpet-side-scroller-sprite-renderer.js",
   "data/moonpet-approved-assets.json",
+  "data/moonpet-side-scroller-approved-assets.json",
+  "data/moonpet-runtime-sprite-requirements.json",
   "css/moonpet-mini-app.css",
   `${PUBLIC_ASSET_DIR}/iso_idle_down.png`,
   `${PUBLIC_ASSET_DIR}/iso_idle_down.json`,
@@ -221,6 +228,52 @@ function readCustomReviewStatus() {
   }
 }
 
+function readRuntimeSpriteRequirementsStatus() {
+  try {
+    const requirements = readJson(RUNTIME_SPRITE_REQUIREMENTS_PATH);
+    const validation = validateRequirements(requirements);
+    const errors = validation
+      .filter((result) => result.status === "fail")
+      .map((result) => result.message);
+    const mappings = Array.isArray(requirements.current_action_mapping)
+      ? requirements.current_action_mapping
+      : [];
+    const generatedAssets = requirements.generated_side_scroller_artifacts &&
+      Array.isArray(requirements.generated_side_scroller_artifacts.assets)
+      ? requirements.generated_side_scroller_artifacts.assets
+      : [];
+    return {
+      status: errors.length ? "fail" : "pass",
+      requirements,
+      validation,
+      errors,
+      action_modes: mappings.map((entry) => ({
+        animation_mode: entry.animation_mode,
+        required_side_asset: entry.required_side_asset || null,
+        coverage: entry.coverage || null,
+        fallback_allowed_until_install: Boolean(entry.fallback_allowed_until_install),
+        regeneration_required: Boolean(entry.regeneration_required)
+      })),
+      visual_rejected_side_assets: generatedAssets
+        .filter((asset) => asset.visual_status === "visual_rejected")
+        .map((asset) => ({
+          id: asset.id,
+          reason: asset.rejection_reason || null,
+          recommended_next_step: asset.recommended_next_step || null
+        }))
+    };
+  } catch (error) {
+    return {
+      status: "fail",
+      requirements: null,
+      validation: [],
+      errors: [`Could not read ${RUNTIME_SPRITE_REQUIREMENTS_PATH}: ${error.message}`],
+      action_modes: [],
+      visual_rejected_side_assets: []
+    };
+  }
+}
+
 function runMoonpetAutopilotChecks() {
   const checks = [];
   let registry = null;
@@ -293,11 +346,48 @@ function runMoonpetAutopilotChecks() {
     attackRejected ? attackRejected.reason || attackRejected.role : "attack rejection missing"
   ));
 
+  let sideRegistry = null;
+  let sideRegistryError = null;
+  if (exists(SIDE_SCROLLER_REGISTRY_PATH)) {
+    try {
+      sideRegistry = readJson(SIDE_SCROLLER_REGISTRY_PATH);
+    } catch (error) {
+      sideRegistryError = error.message;
+    }
+  }
+  checks.push(makeCheck(
+    "side_scroller_registry_parses",
+    "Side-scroller approved registry exists and parses",
+    Boolean(sideRegistry) && !sideRegistryError,
+    sideRegistryError || SIDE_SCROLLER_REGISTRY_PATH
+  ));
+  const sideAssets = sideRegistry && Array.isArray(sideRegistry.assets) ? sideRegistry.assets : [];
+  for (const asset of sideAssets) {
+    if (!asset.approved || !asset.promoted) continue;
+    const sheetPath = String(asset.sheet_path || "").replace(/^\/+/, "");
+    const atlasPath = String(asset.atlas_path || "").replace(/^\/+/, "");
+    checks.push(makeCheck(
+      `side_sheet_${asset.id}`,
+      `Promoted side sheet exists for ${asset.id}`,
+      Boolean(sheetPath) && exists(sheetPath) && fileSize(sheetPath) > 10240,
+      `${sheetPath || "missing"} (${fileSize(sheetPath)} bytes)`
+    ));
+    checks.push(makeCheck(
+      `side_atlas_${asset.id}`,
+      `Promoted side atlas exists for ${asset.id}`,
+      Boolean(atlasPath) && exists(atlasPath) && fileSize(atlasPath) > 100,
+      `${atlasPath || "missing"} (${fileSize(atlasPath)} bytes)`
+    ));
+  }
+
   const requiredFiles = [
     ["sandbox_page_exists", "Sandbox page exists", "moonpet-animation-sandbox.html"],
     ["runtime_preview_exists", "Runtime preview page exists", "moonpet-runtime-preview.html"],
     ["approved_asset_loader_exists", "Approved asset loader exists", "js/moonpet-approved-asset-loader.js"],
     ["approved_sprite_renderer_exists", "Approved sprite renderer exists", "js/moonpet-approved-sprite-renderer.js"],
+    ["side_scroller_asset_loader_exists", "Side-scroller asset loader exists", "js/moonpet-side-scroller-asset-loader.js"],
+    ["side_scroller_sprite_renderer_exists", "Side-scroller sprite renderer exists", "js/moonpet-side-scroller-sprite-renderer.js"],
+    ["side_scroller_registry_exists", "Side-scroller approved registry exists", SIDE_SCROLLER_REGISTRY_PATH],
     ["live_game_exists", "Live game page exists", "moonpet-game.html"]
   ];
   for (const [id, label, file] of requiredFiles) {
@@ -344,6 +434,7 @@ function runMoonpetAutopilotChecks() {
 
   const customQueue = readCustomQueueStatus();
   const customReview = readCustomReviewStatus();
+  const runtimeSpriteRequirements = readRuntimeSpriteRequirementsStatus();
   checks.push(makeCheck(
     "custom_animation_queue_valid",
     "Custom animation queue is valid",
@@ -361,6 +452,15 @@ function runMoonpetAutopilotChecks() {
     customReview.detail,
     { custom_animation_review_status: customReview.status }
   ));
+  checks.push(makeCheck(
+    "runtime_sprite_requirements_valid",
+    "Runtime sprite requirements map is valid",
+    runtimeSpriteRequirements.status === "pass",
+    runtimeSpriteRequirements.status === "pass"
+      ? `${runtimeSpriteRequirements.action_modes.length} live animation modes mapped`
+      : runtimeSpriteRequirements.errors.join(" | "),
+    { validation: runtimeSpriteRequirements.validation }
+  ));
 
   const overallStatus = checks.every((check) => check.status === "pass") ? "pass" : "fail";
   return {
@@ -371,11 +471,15 @@ function runMoonpetAutopilotChecks() {
     custom_queue_errors: customQueue.errors,
     latest_custom_animation_review: customReview.report,
     latest_custom_animation_review_status: customReview.status,
+    runtime_sprite_requirements_status: runtimeSpriteRequirements.status,
+    runtime_sprite_action_modes: runtimeSpriteRequirements.action_modes,
+    runtime_sprite_errors: runtimeSpriteRequirements.errors,
+    visual_rejected_side_assets: runtimeSpriteRequirements.visual_rejected_side_assets,
     checks,
     approved_assets: approvedAssets,
     rejected_assets: rejectedAssets,
     next_recommended_action: overallStatus === "pass"
-      ? "Run the live game with ?approvedSprites=1 in a controlled browser session and verify visual fallback behaviour."
+      ? "Regenerate rejected side-scroller action sheets and resolve missing runtime action-mode art before enabling side-scroller sprites in the live game."
       : "Fix failed Moonpet autopilot checks before testing or promoting live sprite changes.",
     files_required_for_public_runtime: REQUIRED_PUBLIC_RUNTIME_FILES,
     files_not_required_for_public_runtime: NOT_REQUIRED_FOR_PUBLIC_RUNTIME

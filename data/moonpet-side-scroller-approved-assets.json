@@ -1,0 +1,138 @@
+{
+  "version": "0.1.0",
+  "character_name": "MOONBOT PET VISOR V1",
+  "public_base_path": "/img/moonpets/moonbot-pet-visor-v1-side/",
+  "runtime_view": "2d_side_scroller",
+  "default_enabled": false,
+  "feature_flag": "MOONPET_USE_SIDE_SCROLLER_SPRITES",
+  "url_override": "?sideSprites=1",
+  "assets": [
+    {
+      "id": "side_idle",
+      "role": "side_idle",
+      "animation_kind": "idle",
+      "approved": true,
+      "promoted": true,
+      "visual_status": "approved",
+      "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_idle.png",
+      "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_idle.json",
+      "frame_count": 25,
+      "frame_size": 256,
+      "sheet_size": { "w": 1280, "h": 1280 },
+      "notes": "Visually accepted side-view idle from run 35967240742."
+    },
+    {
+      "id": "side_walk",
+      "role": "side_walk",
+      "animation_kind": "walk",
+      "approved": true,
+      "promoted": true,
+      "visual_status": "approved",
+      "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_walk.png",
+      "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_walk.json",
+      "frame_count": 25,
+      "frame_size": 256,
+      "sheet_size": { "w": 1280, "h": 1280 },
+      "notes": "Visually accepted side-view walk from run 35967240742."
+    },
+    {
+      "id": "side_run",
+      "role": "side_run",
+      "animation_kind": "run",
+      "approved": true,
+      "promoted": true,
+      "visual_status": "approved",
+      "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_run.png",
+      "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_run.json",
+      "frame_count": 25,
+      "frame_size": 256,
+      "sheet_size": { "w": 1280, "h": 1280 },
+      "notes": "Visually accepted side-view run from run 35967240742."
+    },
+    {
+      "id": "side_eat",
+      "role": "side_eat",
+      "animation_kind": "custom",
+      "approved": true,
+      "promoted": true,
+      "visual_status": "approved",
+      "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_eat.png",
+      "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_eat.json",
+      "frame_count": 25,
+      "frame_size": 256,
+      "sheet_size": { "w": 1280, "h": 1280 },
+      "notes": "Visually accepted side-view eat with small snack prop. Future V2 food chaos can improve this later."
+    },
+    {
+      "id": "side_clean",
+      "role": "side_clean",
+      "animation_kind": "custom",
+      "approved": true,
+      "promoted": true,
+      "visual_status": "approved",
+      "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_clean.png",
+      "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_clean.json",
+      "frame_count": 25,
+      "frame_size": 256,
+      "sheet_size": { "w": 1280, "h": 1280 },
+      "notes": "Visually accepted side-view clean with bubbles from run 35967240742."
+    },
+    {
+      "id": "side_train",
+      "role": "side_train",
+      "animation_kind": "custom",
+      "approved": true,
+      "promoted": true,
+      "visual_status": "approved",
+      "sheet_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_train.png",
+      "atlas_path": "/img/moonpets/moonbot-pet-visor-v1-side/side_train.json",
+      "frame_count": 25,
+      "frame_size": 256,
+      "sheet_size": { "w": 1280, "h": 1280 },
+      "notes": "Visually accepted side-view non-combat training with dumbbells from run 35967240742."
+    }
+  ],
+  "rejected": [
+    {
+      "id": "side_sleep",
+      "role": "side_sleep",
+      "rejected": true,
+      "visual_status": "visual_rejected",
+      "rejection_reason": "Generated output was standing/idle-like and did not show bed, pillow, ZZZ, or a clear sleep pose.",
+      "next_step": "regenerate"
+    },
+    {
+      "id": "side_play",
+      "role": "side_play",
+      "rejected": true,
+      "visual_status": "visual_rejected",
+      "rejection_reason": "Generated output did not show an obvious toy, ball, or play prop.",
+      "next_step": "regenerate"
+    },
+    {
+      "id": "side_hurt",
+      "role": "side_hurt",
+      "rejected": true,
+      "visual_status": "visual_rejected",
+      "rejection_reason": "Generated output looked neutral/idle-like and did not show cartoon hurt, stunned, dizzy, sparks, or stars.",
+      "next_step": "regenerate"
+    }
+  ],
+  "runtime_role_map": {
+    "idle": { "role": "side_idle", "fallback": "procedural_if_missing" },
+    "feed": { "role": "side_eat", "fallback": "procedural_if_missing" },
+    "play": { "role": null, "fallback": "procedural_required_until_side_play_regenerated" },
+    "clean": { "role": "side_clean", "fallback": "procedural_if_missing" },
+    "sleep": { "role": null, "fallback": "procedural_required_until_side_sleep_regenerated" },
+    "train": { "role": "side_train", "fallback": "procedural_if_missing" },
+    "travel": { "role": "side_run", "fallback": "procedural_if_missing" },
+    "work": { "role": "side_train", "fallback": "intentional_mapped_training_work_motion" },
+    "equip": { "role": "side_idle", "fallback": "intentional_idle_plus_existing_equip_effect" },
+    "evolve": { "role": "side_idle", "fallback": "intentional_idle_plus_existing_evolve_effect" },
+    "trade": { "role": "side_idle", "fallback": "intentional_idle_plus_existing_trade_effect" },
+    "celebrate": { "role": "side_idle", "fallback": "intentional_idle_plus_existing_celebrate_effect" },
+    "interact": { "role": "side_idle", "fallback": "intentional_idle_plus_existing_interact_effect" },
+    "blocked": { "role": null, "fallback": "procedural_required_until_side_hurt_regenerated" },
+    "battle": { "role": "side_train", "fallback": "intentional_noncombat_defensive_motion_plus_existing_battle_effect" }
+  }
+}

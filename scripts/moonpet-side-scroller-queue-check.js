@@ -15,7 +15,14 @@ const expectedIds = [
   "side_play",
   "side_clean",
   "side_train",
-  "side_hurt"
+  "side_hurt",
+  "side_work",
+  "side_equip",
+  "side_evolve",
+  "side_trade",
+  "side_celebrate",
+  "side_interact",
+  "side_battle"
 ];
 const publicBasePath = "/img/moonpets/moonbot-pet-visor-v1-side/";
 const forbiddenAnimationPattern = /(^iso_|_down$|_down_|down_facing|isometric)/i;

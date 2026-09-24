@@ -1,0 +1,381 @@
+{
+  "version": "0.1.0",
+  "status": "partial_side_scroller_installed_pending_regeneration",
+  "last_audited_at": "2026-09-24T00:00:00.000Z",
+  "source_of_truth": {
+    "game_system_name": "Moonpet",
+    "character_art_subject": "Moonbot",
+    "visual_direction": "V2 side-scroller Moonbot production art",
+    "runtime_model": "autonomous button-driven virtual pet actions",
+    "not_platformer": true,
+    "no_direct_keyboard_movement": true
+  },
+  "audited_files": [
+    "moonpet-game.html",
+    "js/moonpet-mini-app.js",
+    "css/moonpet-mini-app.css",
+    "js/moonpet-approved-asset-loader.js",
+    "js/moonpet-approved-sprite-renderer.js",
+    "data/moonpet-side-scroller-animation-queue.json"
+  ],
+  "live_runtime_state": {
+    "page": "moonpet-game.html",
+    "canvas": {
+      "selector": "#moonpet-canvas",
+      "logical_size": {
+        "w": 640,
+        "h": 440
+      },
+      "mobile_shell": "css/moonpet-mini-app.css constrains the Telegram mini-app to a 720px max-width, 100dvh layout."
+    },
+    "current_renderer": "procedural_canvas",
+    "existing_sprite_flag": {
+      "flag": "MOONPET_USE_APPROVED_SPRITES",
+      "url_override": "?approvedSprites=1",
+      "default_enabled": false,
+      "current_asset_set": "legacy approved isometric/down-facing assets only"
+    },
+    "screens": [
+      "home",
+      "missions",
+      "explore",
+      "work",
+      "economy",
+      "profile"
+    ],
+    "direct_player_movement": false,
+    "keyboard_platformer_controls": false,
+    "jump_required_by_current_runtime": false,
+    "up_down_directional_sprites_required": false,
+    "left_right_directional_sprites_required": true,
+    "left_right_strategy": "Generate right-facing side-view sheets and mirror safely for left-facing autonomous travel/action staging.",
+    "side_scroller_sprite_flag": {
+      "flag": "MOONPET_USE_SIDE_SCROLLER_SPRITES",
+      "url_override": "?sideSprites=1",
+      "default_enabled": false,
+      "current_asset_set": "approved promoted side-scroller assets with procedural fallback for rejected/missing states"
+    }
+  },
+  "current_action_mapping": [
+    {
+      "animation_mode": "idle",
+      "runtime_sources": [
+        "default canvas state",
+        "inactive approvedSpriteRoleForMode"
+      ],
+      "requires_sprite": true,
+      "required_side_asset": "side_idle",
+      "coverage": "generated_candidate_visual_pass",
+      "fallback_allowed_until_install": true
+    },
+    {
+      "animation_mode": "feed",
+      "runtime_sources": [
+        "feed",
+        "use_item"
+      ],
+      "requires_sprite": true,
+      "required_side_asset": "side_eat",
+      "coverage": "generated_candidate_visual_pass",
+      "fallback_allowed_until_install": true,
+      "notes": "Generated side_eat has a readable snack prop. Future upgrade should add bigger V2 food chaos props."
+    },
+    {
+      "animation_mode": "play",
+      "runtime_sources": [
+        "play",
+        "incubate care_type=music"
+      ],
+      "requires_sprite": true,
+      "required_side_asset": "side_play",
+      "coverage": "generated_visual_rejected",
+      "fallback_allowed_until_install": true,
+      "regeneration_required": true,
+      "rejection_reason": "Generated side_play mechanically passed but does not show an obvious toy/ball/play prop."
+    },
+    {
+      "animation_mode": "clean",
+      "runtime_sources": [
+        "clean"
+      ],
+      "requires_sprite": true,
+      "required_side_asset": "side_clean",
+      "coverage": "generated_candidate_visual_pass",
+      "fallback_allowed_until_install": true,
+      "notes": "Generated side_clean has readable bubbles."
+    },
+    {
+      "animation_mode": "sleep",
+      "runtime_sources": [
+        "sleep",
+        "rest",
+        "activity_start activity_type=sleep",
+        "incubate care_type=rest"
+      ],
+      "requires_sprite": true,
+      "required_side_asset": "side_sleep",
+      "coverage": "generated_visual_rejected",
+      "fallback_allowed_until_install": true,
+      "regeneration_required": true,
+      "rejection_reason": "Generated side_sleep mechanically passed but remains standing and does not show bed, pillow, ZZZ, or sleep pose."
+    },
+    {
+      "animation_mode": "train",
+      "runtime_sources": [
+        "train",
+        "activity_start activity_type=train"
+      ],
+      "requires_sprite": true,
+      "required_side_asset": "side_train",
+      "coverage": "generated_candidate_visual_pass",
+      "fallback_allowed_until_install": true,
+      "notes": "Generated side_train has readable dumbbells and stays non-combat."
+    },
+    {
+      "animation_mode": "travel",
+      "runtime_sources": [
+        "run",
+        "adventure",
+        "expedition",
+        "random_event",
+        "event_chain",
+        "activity_start activity_type=explore"
+      ],
+      "requires_sprite": true,
+      "required_side_asset": "side_run",
+      "coverage": "generated_candidate_visual_pass",
+      "fallback_allowed_until_install": true
+    },
+    {
+      "animation_mode": "work",
+      "runtime_sources": [
+        "job",
+        "activity",
+        "work",
+        "activity_start activity_type=work"
+      ],
+      "requires_sprite": true,
+      "required_side_asset": "side_train",
+      "coverage": "intentional_mapped_side_sprite_plus_existing_work_effect",
+      "fallback_allowed_until_install": true,
+      "regeneration_required": true,
+      "notes": "Work temporarily uses approved side_train motion plus current work effect until side_work is generated."
+    },
+    {
+      "animation_mode": "equip",
+      "runtime_sources": [
+        "buy",
+        "market",
+        "equipment",
+        "cosmetic",
+        "gear"
+      ],
+      "requires_sprite": true,
+      "required_side_asset": "side_idle",
+      "coverage": "intentional_mapped_side_sprite_plus_existing_equip_effect",
+      "fallback_allowed_until_install": true,
+      "regeneration_required": true,
+      "notes": "Equip uses approved side_idle plus current gear sparkle/equip effect until side_equip is generated."
+    },
+    {
+      "animation_mode": "evolve",
+      "runtime_sources": [
+        "hatch",
+        "rare_morph",
+        "evolve",
+        "prestige"
+      ],
+      "requires_sprite": true,
+      "required_side_asset": "side_idle",
+      "coverage": "intentional_mapped_side_sprite_plus_existing_evolve_effect",
+      "fallback_allowed_until_install": true,
+      "regeneration_required": true,
+      "notes": "Evolve uses approved side_idle plus current evolution glow effect until side_evolve is generated."
+    },
+    {
+      "animation_mode": "trade",
+      "runtime_sources": [
+        "trade"
+      ],
+      "requires_sprite": true,
+      "required_side_asset": "side_idle",
+      "coverage": "intentional_mapped_side_sprite_plus_existing_trade_effect",
+      "fallback_allowed_until_install": true,
+      "regeneration_required": true,
+      "notes": "Trade uses approved side_idle plus current exchange/reward effect until side_trade is generated."
+    },
+    {
+      "animation_mode": "celebrate",
+      "runtime_sources": [
+        "activity_claim",
+        "claim",
+        "chest",
+        "bounty",
+        "season",
+        "reward",
+        "achievement"
+      ],
+      "requires_sprite": true,
+      "required_side_asset": "side_idle",
+      "coverage": "intentional_mapped_side_sprite_plus_existing_celebrate_effect",
+      "fallback_allowed_until_install": true,
+      "regeneration_required": true,
+      "notes": "Celebrate uses approved side_idle plus current reward/coin effect until side_celebrate is generated."
+    },
+    {
+      "animation_mode": "interact",
+      "runtime_sources": [
+        "activity_cancel",
+        "incubate warm/talk",
+        "canvas tap greeting",
+        "default action fallback"
+      ],
+      "requires_sprite": true,
+      "required_side_asset": "side_idle",
+      "coverage": "intentional_mapped_side_sprite_plus_existing_interact_effect",
+      "fallback_allowed_until_install": true,
+      "regeneration_required": true,
+      "notes": "Interact uses approved side_idle plus current interaction effect until side_interact is generated."
+    },
+    {
+      "animation_mode": "blocked",
+      "runtime_sources": [
+        "accepted=false from runAction"
+      ],
+      "requires_sprite": true,
+      "required_side_asset": "side_hurt",
+      "coverage": "generated_visual_rejected",
+      "fallback_allowed_until_install": true,
+      "regeneration_required": true,
+      "rejection_reason": "Generated side_hurt mechanically passed but looks like neutral idle, not cartoon hurt/stunned/dizzy feedback."
+    },
+    {
+      "animation_mode": "battle",
+      "runtime_sources": [
+        "boss",
+        "arena",
+        "kaiju",
+        "fight",
+        "attack",
+        "district"
+      ],
+      "requires_sprite": true,
+      "required_side_asset": "side_train",
+      "coverage": "intentional_noncombat_side_sprite_plus_existing_battle_effect",
+      "fallback_allowed_until_install": true,
+      "regeneration_required": true,
+      "notes": "Battle UI uses approved non-combat side_train stance plus existing battle effect until side_battle defensive art is generated."
+    }
+  ],
+  "generated_side_scroller_artifacts": {
+    "workflow_run_url": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io/actions/runs/35967240742",
+    "artifact_name": "moonpet-art-factory-side-scroller-autopilot",
+    "local_artifact_dir": ".tmp/moonpet-side-scroller-autopilot-35967240742",
+    "mechanical_status": "pass",
+    "promoted": false,
+    "installed_in_live_game": false,
+    "assets": [
+      {
+        "id": "side_idle",
+        "mechanical_status": "pass",
+        "visual_status": "candidate_visual_pass",
+        "recommended_next_step": "promote_after_batch_coverage_plan",
+        "output_png_path": ".tmp/moonpet-side-scroller-autopilot-35967240742/output/moonpets/side-scroller/side_idle.png",
+        "output_atlas_path": ".tmp/moonpet-side-scroller-autopilot-35967240742/output/moonpets/side-scroller/side_idle.json"
+      },
+      {
+        "id": "side_walk",
+        "mechanical_status": "pass",
+        "visual_status": "candidate_visual_pass",
+        "recommended_next_step": "promote_after_batch_coverage_plan",
+        "output_png_path": ".tmp/moonpet-side-scroller-autopilot-35967240742/output/moonpets/side-scroller/side_walk.png",
+        "output_atlas_path": ".tmp/moonpet-side-scroller-autopilot-35967240742/output/moonpets/side-scroller/side_walk.json"
+      },
+      {
+        "id": "side_run",
+        "mechanical_status": "pass",
+        "visual_status": "candidate_visual_pass",
+        "recommended_next_step": "promote_after_batch_coverage_plan",
+        "output_png_path": ".tmp/moonpet-side-scroller-autopilot-35967240742/output/moonpets/side-scroller/side_run.png",
+        "output_atlas_path": ".tmp/moonpet-side-scroller-autopilot-35967240742/output/moonpets/side-scroller/side_run.json"
+      },
+      {
+        "id": "side_eat",
+        "mechanical_status": "pass",
+        "visual_status": "candidate_visual_pass",
+        "recommended_next_step": "promote_after_batch_coverage_plan",
+        "output_png_path": ".tmp/moonpet-side-scroller-autopilot-35967240742/output/moonpets/side-scroller/side_eat.png",
+        "output_atlas_path": ".tmp/moonpet-side-scroller-autopilot-35967240742/output/moonpets/side-scroller/side_eat.json",
+        "notes": "Snack is visible, though V2 food chaos should be stronger in a later pass."
+      },
+      {
+        "id": "side_sleep",
+        "mechanical_status": "pass",
+        "visual_status": "visual_rejected",
+        "recommended_next_step": "regenerate",
+        "rejection_reason": "Standing/idle-like output; missing bed, pillow, ZZZ, or clear sleep pose.",
+        "output_png_path": ".tmp/moonpet-side-scroller-autopilot-35967240742/output/moonpets/side-scroller/side_sleep.png",
+        "output_atlas_path": ".tmp/moonpet-side-scroller-autopilot-35967240742/output/moonpets/side-scroller/side_sleep.json"
+      },
+      {
+        "id": "side_play",
+        "mechanical_status": "pass",
+        "visual_status": "visual_rejected",
+        "recommended_next_step": "regenerate",
+        "rejection_reason": "Missing obvious toy/ball/play prop.",
+        "output_png_path": ".tmp/moonpet-side-scroller-autopilot-35967240742/output/moonpets/side-scroller/side_play.png",
+        "output_atlas_path": ".tmp/moonpet-side-scroller-autopilot-35967240742/output/moonpets/side-scroller/side_play.json"
+      },
+      {
+        "id": "side_clean",
+        "mechanical_status": "pass",
+        "visual_status": "candidate_visual_pass",
+        "recommended_next_step": "promote_after_batch_coverage_plan",
+        "output_png_path": ".tmp/moonpet-side-scroller-autopilot-35967240742/output/moonpets/side-scroller/side_clean.png",
+        "output_atlas_path": ".tmp/moonpet-side-scroller-autopilot-35967240742/output/moonpets/side-scroller/side_clean.json"
+      },
+      {
+        "id": "side_train",
+        "mechanical_status": "pass",
+        "visual_status": "candidate_visual_pass",
+        "recommended_next_step": "promote_after_batch_coverage_plan",
+        "output_png_path": ".tmp/moonpet-side-scroller-autopilot-35967240742/output/moonpets/side-scroller/side_train.png",
+        "output_atlas_path": ".tmp/moonpet-side-scroller-autopilot-35967240742/output/moonpets/side-scroller/side_train.json"
+      },
+      {
+        "id": "side_hurt",
+        "mechanical_status": "pass",
+        "visual_status": "visual_rejected",
+        "recommended_next_step": "regenerate",
+        "rejection_reason": "Neutral idle-like output; missing cartoon hurt/stunned/dizzy/sparks/stars.",
+        "output_png_path": ".tmp/moonpet-side-scroller-autopilot-35967240742/output/moonpets/side-scroller/side_hurt.png",
+        "output_atlas_path": ".tmp/moonpet-side-scroller-autopilot-35967240742/output/moonpets/side-scroller/side_hurt.json"
+      }
+    ]
+  },
+  "install_policy": {
+    "do_not_enable_side_scroller_sprites_by_default_until": [
+      "all required live animation modes are either approved side sprites or explicitly mapped to intentional procedural fallback",
+      "side_sleep, side_play, and side_hurt are regenerated or replaced",
+      "missing work/equip/evolve/trade/celebrate/interact/battle strategy is resolved",
+      "mobile Telegram smoke test passes"
+    ],
+    "temporary_fallback_renderer": "procedural_canvas",
+    "side_sprite_public_base_path": "/img/moonpets/moonbot-pet-visor-v1-side/",
+    "generated_output_is_not_public_runtime": true,
+    "side_scroller_feature_flag": "?sideSprites=1",
+    "promoted_public_assets": [
+      "side_idle",
+      "side_walk",
+      "side_run",
+      "side_eat",
+      "side_clean",
+      "side_train"
+    ],
+    "rejected_pending_regeneration": [
+      "side_sleep",
+      "side_play",
+      "side_hurt"
+    ]
+  }
+}

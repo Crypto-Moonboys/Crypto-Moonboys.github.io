@@ -73,6 +73,10 @@ The report includes:
 - `custom_queue_errors`
 - `latest_custom_animation_review`
 - `latest_custom_animation_review_status`
+- `runtime_sprite_requirements_status`
+- `runtime_sprite_action_modes`
+- `runtime_sprite_errors`
+- `visual_rejected_side_assets`
 - `checks`
 - `approved_assets`
 - `rejected_assets`
@@ -87,7 +91,7 @@ Each check has:
 - `status`
 - `detail`
 
-If `overall_status` is `pass`, the approved Moonbot public runtime files are present, the guarded live integration is still default-off, the custom sleep asset is valid when present, and the custom animation queue is valid. If it is `fail`, fix the failed checks before using `?approvedSprites=1` for live-game visual testing or before starting custom animation generation.
+If `overall_status` is `pass`, the approved Moonbot public runtime files are present, the guarded live integration is still default-off, the custom sleep asset is valid when present, the custom animation queue is valid, and the current live action modes have an explicit sprite requirement map. A pass does not mean the side-scroller build is live-ready; check `visual_rejected_side_assets` and `runtime_sprite_action_modes` for remaining regeneration/install work. If it is `fail`, fix the failed checks before using `?approvedSprites=1` for live-game visual testing or before starting custom animation generation.
 
 ## GitHub Actions
 
@@ -156,6 +160,21 @@ npm run moonpet:side-queue:check
 ```
 
 This check is separate from the current live-game autopilot. It does not call AutoSprite, does not generate assets, and does not approve or promote side-scroller art. It only validates that the planned side-scroller queue is complete, unapproved by default, uses stable public target paths, and avoids isometric/down-facing animation naming.
+
+The current Telegram runtime requirements are tracked separately in:
+
+```text
+data/moonpet-runtime-sprite-requirements.json
+docs/moonpet-runtime-sprite-audit.md
+```
+
+Run that guard with:
+
+```bash
+npm run moonpet:runtime-sprites:check
+```
+
+That check maps the live mini-app action families before side-scroller sprites are installed. It also records which generated side-scroller sheets visually passed, which were rejected, and which current runtime states still need new art or an intentional procedural fallback.
 
 ## Why This Reduces Manual Work
 

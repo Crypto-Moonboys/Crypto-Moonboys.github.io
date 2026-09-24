@@ -70,7 +70,7 @@ on:
       side_autopilot_limit:
         description: "Number of side-scroller animations to attempt in autopilot order."
         required: false
-        default: "9"
+        default: "16"
       auto_continue_on_pass:
         description: "Continue to the next side-scroller animation when the current one passes."
         required: true
@@ -189,10 +189,6 @@ jobs:
         if: ${{ inputs.phase == 'generate-side-scroller' }}
         timeout-minutes: 30
         run: |
-          if [ "$SIDE_ANIMATION_ID" != "side_idle" ]; then
-            echo "Only side_idle is enabled for the side-scroller generation foundation."
-            exit 1
-          fi
           npm run moonpet:side-queue:check
           ARGS=(--id "$SIDE_ANIMATION_ID")
           if [ "$EXECUTE_SIDE_GENERATION" = "true" ]; then

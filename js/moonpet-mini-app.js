@@ -13,7 +13,12 @@
   var approvedSpriteRendererReady = false;
   var approvedSpriteRendererState = null;
   var approvedSpriteFallbackLogged = false;
+  var sideScrollerSpriteModeEnabled = moonpetSideScrollerSpritesRequested();
+  var sideScrollerSpriteRendererReady = false;
+  var sideScrollerSpriteRendererState = null;
+  var sideScrollerSpriteFallbackLogged = false;
   window.MOONPET_USE_APPROVED_SPRITES = approvedSpriteModeEnabled;
+  window.MOONPET_USE_SIDE_SCROLLER_SPRITES = sideScrollerSpriteModeEnabled;
   var seasonSnapshotReceivedAt = 0;
   var lastSeasonServerRefreshAt = 0;
   var seasonRefreshBusy = false;
@@ -118,6 +123,11 @@
     return launchParameter('approvedSprites') === '1';
   }
 
+  function moonpetSideScrollerSpritesRequested() {
+    if (window.MOONPET_USE_SIDE_SCROLLER_SPRITES === true) return true;
+    return launchParameter('sideSprites') === '1';
+  }
+
   function loadApprovedSpriteScript(src) {
     return new Promise(function (resolve, reject) {
       var existing = document.querySelector('script[src="' + src + '"]');
@@ -162,6 +172,30 @@
       approvedSpriteRendererReady = false;
       approvedSpriteRendererState = { reason: error.message, errors: [error.message] };
       console.info('[Moonpet] approved sprite fallback used', approvedSpriteRendererState);
+      return false;
+    }
+  }
+
+  async function initSideScrollerSpriteMode() {
+    if (!sideScrollerSpriteModeEnabled) {
+      console.info('[Moonpet] side-scroller sprite mode disabled');
+      return false;
+    }
+    console.info('[Moonpet] side-scroller sprite mode enabled');
+    try {
+      await loadApprovedSpriteScript('/js/moonpet-side-scroller-asset-loader.js?v=20260924-side-sprites');
+      await loadApprovedSpriteScript('/js/moonpet-side-scroller-sprite-renderer.js?v=20260924-side-sprites');
+      if (!window.MoonpetSideScrollerSpriteRenderer) throw new Error('MoonpetSideScrollerSpriteRenderer unavailable');
+      sideScrollerSpriteRendererState = await window.MoonpetSideScrollerSpriteRenderer.initMoonpetSideScrollerRenderer();
+      sideScrollerSpriteRendererReady = Boolean(sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.ready);
+      if (!sideScrollerSpriteRendererReady) {
+        console.info('[Moonpet] side-scroller sprite fallback used', sideScrollerSpriteRendererState);
+      }
+      return sideScrollerSpriteRendererReady;
+    } catch (error) {
+      sideScrollerSpriteRendererReady = false;
+      sideScrollerSpriteRendererState = { reason: error.message, errors: [error.message] };
+      console.info('[Moonpet] side-scroller sprite fallback used', sideScrollerSpriteRendererState);
       return false;
     }
   }
@@ -3146,6 +3180,20 @@
     return drew;
   }
 
+  function drawSideScrollerMoonpetSprite(time, mode, active, x, y, scale) {
+    if (!sideScrollerSpriteModeEnabled || !sideScrollerSpriteRendererReady || !window.MoonpetSideScrollerSpriteRenderer) return false;
+    var drew = window.MoonpetSideScrollerSpriteRenderer.renderSideScrollerMoonbot(ctx, mode, x, y, scale, time, {
+      active: active,
+      facing: 1
+    });
+    if (!drew && !sideScrollerSpriteFallbackLogged) {
+      sideScrollerSpriteFallbackLogged = true;
+      sideScrollerSpriteRendererState = window.MoonpetSideScrollerSpriteRenderer.getMoonpetSideScrollerRendererState();
+      console.info('[Moonpet] side-scroller sprite fallback used', sideScrollerSpriteRendererState);
+    }
+    return drew;
+  }
+
   function drawPet(time, presence, combat) {
     var pet = state && state.pet;
     var lifecycle = state && state.lifecycle || {};
@@ -3173,6 +3221,17 @@
     var faceX = petFaceOffset(speciesId);
     var x = 160 + pose.x + (combat && combat.active ? -62 : 0);
     var y = 150 + pose.y + growth.offsetY;
+    if (drawSideScrollerMoonpetSprite(renderTime, animationMode, active, x, y - 2, scale * 0.86)) {
+      if (!active && mood !== 'curious' && !lifecycleCeremonyActive(time)) drawPixelText(mood.toUpperCase(), x, y - 78 * scale, mood === 'hurt' ? '#ff6d6d' : palette.accent, 'center');
+      if ((!combat || !combat.active) && !lifecycleCeremonyActive(time)) {
+        if (rareName) drawPixelText(rareName.toUpperCase(), x, 70, palette.accent, 'center');
+        else if (lifecycle.species_name) drawPixelText(lifecycle.species_name.toUpperCase(), x, 78, palette.accent, 'center');
+      }
+      drawCompanionHabitEffects(time, x, y, presence, palette.accent, active);
+      drawActionEffects(time, x, y, active);
+      if (active && animationLabel && !lifecycleCeremonyActive(time)) drawPixelText('[' + animationLabel + ']', 160, 211, animationMode === 'blocked' ? '#ff6d6d' : '#f4ff65', 'center');
+      return;
+    }
     if (drawApprovedMoonpetSprite(renderTime, approvedSpriteRoleForMode(active), x, y - 8, scale * 0.52)) {
       if (!active && mood !== 'curious' && !lifecycleCeremonyActive(time)) drawPixelText(mood.toUpperCase(), x, y - 78 * scale, mood === 'hurt' ? '#ff6d6d' : palette.accent, 'center');
       if ((!combat || !combat.active) && !lifecycleCeremonyActive(time)) {
@@ -3737,6 +3796,7 @@
       }
       clock.textContent = now.toISOString().slice(11, 19) + ' UTC';
     }, 1000);
+    await initSideScrollerSpriteMode();
     await initApprovedSpriteMode();
     requestAnimationFrame(frame);
     await typeBoot(['MOONPET BIOS 0.9', 'CHECKING TELEGRAM SIGNATURE...', 'CONNECTING TO D1 MEMORY CORE...'], { speed: 10, hold: 180 });

@@ -25,7 +25,14 @@ const SIDE_SEQUENCE = [
   "side_play",
   "side_clean",
   "side_train",
-  "side_hurt"
+  "side_hurt",
+  "side_work",
+  "side_equip",
+  "side_evolve",
+  "side_trade",
+  "side_celebrate",
+  "side_interact",
+  "side_battle"
 ];
 const ALLOWED_IDS = new Set(SIDE_SEQUENCE);
 const FRAME_COUNT = 25;
