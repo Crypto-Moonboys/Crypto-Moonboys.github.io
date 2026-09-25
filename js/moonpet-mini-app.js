@@ -872,6 +872,7 @@
     } catch (_) { window.location.href = url; }
   }
 
+  // TEST-EXPORT: guideMarkup:start
   function guideMarkup() {
     var combatGuideCopy = hasCombatUnlocked()
       ? 'Arena and Kaiju are part of the current build. Arena still needs a level 10 active Moonpet.'
@@ -885,6 +886,7 @@
       '<div class="guide-step"><strong>CURRENCIES</strong>Pet XP raises level. Moon Gold buys common upgrades. Gems unlock premium routes. Style unlocks cosmetics. Energy powers demanding actions.</div>' +
       '<div class="button-grid one"><button type="button" class="terminal-button" data-open-full-guide>OPEN COMPLETE WEBSITE GUIDE</button></div>';
   }
+  // TEST-EXPORT: guideMarkup:end
 
   function wearableLoadoutMarkup() {
     var rows = WEARABLE_SLOT_ORDER.map(function (slot) {
@@ -2104,7 +2106,7 @@
 
   var screens = { home: renderHome, missions: renderMissions, explore: renderExplore, work: renderWork, economy: renderEconomy, profile: renderProfile };
   var navItems = [
-    ['home', '⌂', 'PET'], ['missions', '☷', 'TASKS'], ['explore', '⚔', 'RUN'], ['work', '⚒', 'WORK'], ['economy', '◇', 'GEAR'], ['profile', '★', 'CORE'],
+    ['home', '⌂', 'HOME'], ['missions', '☷', 'MISSIONS'], ['explore', '⚔', 'EXPLORE'], ['work', '⚒', 'WORK'], ['economy', '◇', 'ECONOMY'], ['profile', '★', 'PROFILE'],
   ];
 
   function renderNav() {
@@ -4080,6 +4082,7 @@
     ctx.restore();
   }
 
+  // TEST-EXPORT: drawWorld:start
   function drawWorld(time) {
     var scene = worldScene();
     var renderTime = reducedMotion ? performance.now() : time;
@@ -4107,6 +4110,7 @@
     drawLifecycleCeremony(renderTime, scene);
     drawSceneTransition(renderTime, scene);
   }
+  // TEST-EXPORT: drawWorld:end
 
   function sendPerformanceSample(averageFps, slowFramePct, renderDurationMs) {
     if (performanceSent || !state) return;

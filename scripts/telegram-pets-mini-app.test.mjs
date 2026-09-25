@@ -96,10 +96,6 @@ function extractTestExport(source, name) {
   if (end === -1) return null;
   return source.slice(bodyStart + 1, end);
 }
-function extractFunctionSource(source, name) {
-  return source.match(new RegExp(`function ${name}\\(\\)\\s*\\{[\\s\\S]*?\\n  \\}`))?.[0] || '';
-}
-
 const capabilityCombatHelperSource = extractTestExport(client, 'capabilityCombatHelper');
 assert.ok(capabilityCombatHelperSource, 'capability combat helper must be extractable for runtime coverage');
 assert.match(capabilityCombatHelperSource, /reason: 'capability_unavailable'/, 'missing capability authority must fail closed with an explicit reason');
@@ -1297,7 +1293,7 @@ assert.match(worker, /const \[journeySummary, hydratedKaiju\] = await Promise\.a
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
-assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260814-moonpet-aaa-pass`/);
+assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260925-moonpet-ui-redesign-v2`/);
 assert.match(worker, /const TELEGRAM_GAMES_MENU_URL = `\$\{SITE_URL\}\/games\/telegram\/\?v=20260903-games-shell-v8`/,
   'default Telegram games menu must point at the current shell release');
 assert.match(worker, /const TELEGRAM_GAMES_MENU_TEXT = 'Games'/);
@@ -1354,12 +1350,12 @@ assert.match(worker, /counts\.district_mission/);
 assert.match(client, /DAILY MISSION BUFFER \/\/ /);
 assert.match(client, /meter\('DAILY CLEAR', missionPercent\)/);
 assert.match(html, /id="utility-layer"/);
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260925-botty-front-live-beta-v4/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260925-moonpet-ui-redesign-v1/);
 assert.match(html, /\/js\/moonpet-botty-front-asset-loader\.js\?v=20260925-botty-front-live-beta-v4/);
 assert.match(html, /\/js\/moonpet-botty-front-sprite-renderer\.js\?v=20260925-botty-front-live-beta-v4/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
-const guideMarkupSource = extractFunctionSource(client, 'guideMarkup');
+const guideMarkupSource = extractTestExport(client, 'guideMarkup');
 assert.ok(guideMarkupSource, 'guideMarkup helper must be extractable');
 const renderGuideMarkup = new Function('hasCombatUnlocked', `${guideMarkupSource}; return guideMarkup();`);
 const unlockedGuideMarkup = renderGuideMarkup(() => true);
@@ -1450,7 +1446,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260925-botty-front-live-beta-v4/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260925-moonpet-ui-redesign-v2/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -1532,19 +1528,21 @@ assert.match(worker, /return err\('mini_app_action_failed', 500\)/);
 
 assert.doesNotMatch(html, /<img\b/i);
 const gameSurfaceWithoutRequiredFavicon = html.replace(/<link\s+rel="icon"\s+type="image\/png"\s+href="\/favicon\.png">/i, '');
-assert.doesNotMatch(gameSurfaceWithoutRequiredFavicon + client + css, /\.(?:jpe?g|png|gif|webp|svg)(?:[?#"'])/i);
+const gameSurfaceWithoutApprovedBackground = (gameSurfaceWithoutRequiredFavicon + client + css)
+  .replace(/var WORLD_BACKGROUND_URL = '\/games\/assets\/BITTY%20BACKGROUND\.jpg\?v=20260925-botty-front-live-beta-v4';/i, '');
+assert.doesNotMatch(gameSurfaceWithoutApprovedBackground, /\.(?:jpe?g|png|gif|webp|svg)(?:[?#"'])/i);
 assert.match(html, /moonpet-canvas/);
 assert.match(client, /requestAnimationFrame\(frame\)/);
 assert.match(client, /if \(reducedMotion\) return/);
 assert.match(client, /fillRect/);
-assert.doesNotMatch(client, /new Image\s*\(/);
+assert.doesNotMatch(client.replace(/var worldBackgroundImage = new Image\(\);/, ''), /new Image\s*\(/, 'Mini App must only allocate the approved BITTY background image');
 assert.match(client, /typeBoot/);
 assert.match(client, /actionAnimationFamily/);
 assert.match(client, /key === 'activity_start'.*payload && payload\.activity_type/);
 assert.match(client, /key === 'activity_claim'.*return 'celebrate'/);
 assert.match(client, /key === 'activity_cancel'.*return 'interact'/);
 assert.match(client, /animateAction\(action, true, 8000, payload\)/);
-assert.match(client, /animateAction\(action, Boolean\(data\.result && data\.result\.accepted\), 2800, payload\)/);
+assert.match(client, /var actionAccepted = Boolean\(data\.result && data\.result\.accepted\);[\s\S]*animateAction\(action, actionAccepted, 2800, payload\)/);
 assert.match(client, /var actionResultHoldMs = 3600/);
 assert.match(client, /hold: actionResultHoldMs/);
 assert.match(client, /hold: 2200/);
@@ -1610,7 +1608,7 @@ assert.match(client, /var WORLD_BACKGROUND_URL = '\/games\/assets\/BITTY%20BACKG
 assert.match(client, /var worldBackgroundImage = new Image\(\)/);
 assert.match(client, /function drawWorldBackground\(\)/);
 assert.match(client, /ctx\.drawImage\(worldBackgroundImage, sx, sy, sw, sh, 0, 0, 320, 220\)/);
-const drawWorldSource = extractFunctionSource(client, 'drawWorld');
+const drawWorldSource = extractTestExport(client, 'drawWorld');
 assert.ok(drawWorldSource, 'drawWorld helper must be extractable');
 assert.match(drawWorldSource, /drawWorldBackground\(\)/);
 assert.doesNotMatch(drawWorldSource, /drawWorldSky\(/);
@@ -1663,10 +1661,10 @@ assert.match(css, /\.boot-layer\.is-compact\.is-notice \{[^}]*max-height: none;[
 assert.match(css, /repeating-linear-gradient/);
 assert.match(css, /grid-template-rows: auto minmax\(178px, 32dvh\) auto minmax\(0, 1fr\) auto/);
 assert.match(css, /\.screen \{[^}]*overflow-y: auto/s);
-assert.match(css, /\.dock \{ position: relative/);
+assert.match(css, /\.dock \{[^}]*position: relative/s);
 assert.match(css, /\.boot-layer\.is-compact/);
 assert.match(css, /prefers-reduced-motion/);
-assert.match(css, /\.meter-fill \{ display: block;/);
+assert.match(css, /\.meter-fill \{[^}]*display: block;/s);
 assert.doesNotMatch(html, /maximum-scale|user-scalable/i);
 
 
@@ -1693,14 +1691,14 @@ assert.match(client, /applied && \(applied\.rewardsApplied \|\| applied\.rewards
 assert.match(client, /var reward = resultRewardMap\(result\)/);
 assert.equal([...client.matchAll(/var reward = resultRewardMap\(result\)/g)].length, 2, 'terminal and canvas feedback must share reward normalization');
 assert.match(client, /presentResultFeedback\(data\.result, stateBeforeAction, nextState\)/);
-assert.match(client, /await showPendingNotices\(\);\s*animateAction\(action, Boolean\(data\.result && data\.result\.accepted\), 2800, payload\);\s*if \(!startLifecycleCeremony\(plannedCeremony\)\) presentResultFeedback\(data\.result, stateBeforeAction, nextState\)/s);
+assert.match(client, /await showPendingNotices\(\);\s*var actionAccepted = Boolean\(data\.result && data\.result\.accepted\);[\s\S]*?animateAction\(action, actionAccepted, 2800, payload\);\s*if \(!startLifecycleCeremony\(plannedCeremony\)\) presentResultFeedback\(data\.result, stateBeforeAction, nextState\)/s);
 assert.doesNotMatch(client, /presentResultFeedback\(data\.result(?:, stateBeforeAction, nextState)?\);\s*render\(\);\s*await typeBoot/s, 'feedback timer must not run behind the boot overlay');
 assert.equal([...client.matchAll(/presentResultFeedback\(/g)].length, 2, 'only the helper and real server-result call may present reward feedback');
 assert.match(client, /var feedbackDuration = Math\.max\(5200, actionResultHoldMs \+ 1600\)/);
 assert.match(client, /feedbackUntil = performance\.now\(\) \+ feedbackDuration/);
 assert.match(client, /feedbackRedrawTimer = window\.setTimeout/);
 assert.match(client, /clearResultFeedback\(true\)/);
-assert.match(client, /clearResultFeedback\(false\);\s*animateAction\(action, true, 8000, payload\)/s);
+assert.match(client, /clearResultFeedback\(false\);[\s\S]*?animateAction\(action, true, 8000, payload\)/s);
 assert.match(client, /reaction: compactFeedback\(result\.reaction, 24\)/);
 assert.match(client, /actionStartedAt <= 0/);
 assert.match(client, /function drawCinematicFeedback\(time, scene\)/);
@@ -1953,14 +1951,14 @@ assert.match(sideScrollerRenderer, /function roleForAnimationMode\(animationMode
 assert.match(sideScrollerRenderer, /state\.roleMap\[mode\]/, 'side-scroller renderer must resolve roles from runtime_role_map');
 assert.match(sideScrollerRenderer, /variant_cadence/, 'side-scroller variants must support cadence control');
 assert.match(client, /canvas\.addEventListener\('click'/);
-assert.match(client, /canvasX >= 92 && canvasX <= 228 && canvasY >= 66 && canvasY <= 190/);
+assert.match(client, /canvasX >= 92 && canvasX <= 228 && canvasY >= 72 && canvasY <= 220/);
 assert.match(client, /animateAction\('greet', true, greetingVariant === 'front_wave' \? 2200 : 1400/);
 assert.doesNotMatch(client, /greetCompanion[\s\S]{0,1200}(?:post\(|runAction\()/, 'pet taps must remain cosmetic and server-neutral');
 assert.match(client, /companionGreetingTimer = window\.setTimeout/);
 assert.match(client, /drawPet\(renderTime, presence, combat\)/);
 assert.match(client, /if \(companionGreetingUntil > 0 && companionGreetingUntil <= time\)/);
 assert.match(client, /companionGreeting = '';\s*companionGreetingUntil = 0;/s);
-assert.match(client, /drawUtcAmbience\(scene\);\s*drawCombatHud\(scene, combat\);\s*if \(!combat\.active && !lifecycleCeremonyActive\(renderTime\)\) drawCompanionPresence\(renderTime, scene, presence\)/s);
+assert.match(client, /drawCombatHud\(scene, combat\);\s*if \(!combat\.active && !lifecycleCeremonyActive\(renderTime\)\) drawCompanionPresence\(renderTime, scene, presence\)/s);
 assert.doesNotMatch(client, /Math\.random\(\)[^\n]*(?:presence|habit|greeting)|(?:presence|habit|greeting)[^\n]*Math\.random\(\)/i, 'living companion behavior must be deterministic');
 
 assert.match(client, /var COMBAT_PRESENTATION_FRAME =/);
@@ -2128,7 +2126,7 @@ assert.match(client, /var burst = reducedMotion \? 38/);
 assert.match(client, /lifecycleCeremonyTimer = window\.setTimeout/);
 assert.match(client, /if \(lifecycleCeremony !== activeCeremony\) return/);
 assert.match(client, /drawCinematicFeedback\(renderTime, scene\);\s*drawLifecycleCeremony\(renderTime, scene\);/s);
-assert.match(client, /await typeBoot\(\['EXEC '[\s\S]*?await showPendingNotices\(\);[\s\S]*?if \(!startLifecycleCeremony\(plannedCeremony\)\) presentResultFeedback\(data\.result, stateBeforeAction, nextState\);/);
+assert.match(client, /await typeBoot\(\['EXEC '[\s\S]*?await showPendingNotices\(\);[\s\S]*?var actionAccepted = Boolean\(data\.result && data\.result\.accepted\);[\s\S]*?if \(!startLifecycleCeremony\(plannedCeremony\)\) presentResultFeedback\(data\.result, stateBeforeAction, nextState\);/);
 assert.match(client, /if \(lifecycleCeremonyActive\(\)\) \{\s*tell\('LIFECYCLE REVEAL IN PROGRESS\.'/s);
 assert.match(client, /screen\.addEventListener\('click'[\s\S]*?if \(lifecycleCeremonyActive\(\)\)[\s\S]*?LIFECYCLE REVEAL IN PROGRESS/s);
 assert.match(client, /nav\.addEventListener\('click'[\s\S]*?if \(lifecycleCeremonyActive\(\)\)[\s\S]*?LIFECYCLE REVEAL IN PROGRESS/s);
@@ -2218,7 +2216,7 @@ assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Numbe
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
 assert.match(html, /20260925-botty-front-live-beta-v4/);
-assert.match(worker, /20260814-moonpet-aaa-pass/);
+assert.match(worker, /20260925-moonpet-ui-redesign-v2/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');
 assert.match(client, /renderQuality = reducedMotion/, 'canvas quality must start from device capability');
