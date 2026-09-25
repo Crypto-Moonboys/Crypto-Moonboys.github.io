@@ -289,6 +289,7 @@ jobs:
             echo "No AutoSprite character registry or diagnostic changes to commit."
           else
             git commit -m "chore: persist AutoSprite character registry and diagnostics [skip ci]"
+            git pull --rebase origin ${GITHUB_REF_NAME}
             git push origin HEAD:${GITHUB_REF_NAME}
           fi
 
