@@ -1,6 +1,6 @@
 (() => {
   const DEFAULT_MANIFEST_PATH = "/data/moonpet-botty-front-assets.json";
-  const FALLBACK_CACHE_VERSION = "20260925-botty-front-live-beta-v1";
+  const FALLBACK_CACHE_VERSION = "20260925-botty-front-live-beta-v2";
 
   function cacheToken(asset, manifest) {
     return asset && asset.autosprite && asset.autosprite.spritesheet_id
@@ -98,19 +98,38 @@
     const assetsByRole = {};
     const manifest = await fetchJson(manifestPath, null, { cache_version: FALLBACK_CACHE_VERSION });
     const assets = Array.isArray(manifest.assets) ? manifest.assets : [];
-    const loaded = await Promise.all(assets.map((asset) => loadAsset(asset, manifest, errors)));
-    for (const entry of loaded) {
-      if (entry && entry.role) assetsByRole[entry.role] = entry.asset;
-    }
     const required = Object.values(manifest.runtime_role_map || {}).filter((role, index, list) => list.indexOf(role) === index);
+    const idleRole = manifest.runtime_role_map && manifest.runtime_role_map.idle || "front_idle";
+    const priorityAsset = assets.find((asset) => asset.role === idleRole) || assets[0] || null;
+
+    if (priorityAsset) {
+      const idleEntry = await loadAsset(priorityAsset, manifest, errors);
+      if (idleEntry && idleEntry.role) assetsByRole[idleEntry.role] = idleEntry.asset;
+    }
+
+    const remaining = assets.filter((asset) => !priorityAsset || asset.role !== priorityAsset.role);
+    const pendingRoles = remaining.map((asset) => asset.role);
+    const preload = Promise.all(remaining.map((asset) => loadAsset(asset, manifest, errors))).then((loaded) => {
+      for (const entry of loaded) {
+        if (entry && entry.role) assetsByRole[entry.role] = entry.asset;
+      }
+      return {
+        assetsByRole,
+        loadedRoles: Object.keys(assetsByRole),
+        errors
+      };
+    });
+
     return {
-      ready: required.every((role) => Boolean(assetsByRole[role])),
+      ready: Boolean(assetsByRole[idleRole]),
       manifestPath,
       manifest,
       assetsByRole,
       roleMap: manifest.runtime_role_map || {},
       loadedRoles: Object.keys(assetsByRole),
       requiredRoles: required,
+      pendingRoles,
+      preload,
       errors
     };
   }
