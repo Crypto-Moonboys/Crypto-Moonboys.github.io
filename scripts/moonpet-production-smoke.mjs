@@ -81,7 +81,7 @@ async function assertStatus(label, url) {
 }
 
 async function fetchTextEndpoint(label, url) {
-  const response = await fetchWithTimeout(url, { accept: 'text/html, text/plain;q=0.9,*/*;q=0.8' });
+  const response = await fetchWithTimeout(url, { headers: { Accept: 'text/html, text/plain;q=0.9,*/*;q=0.8' } });
   const body = await response.text();
   if (response.status !== 200) fail(`${label} returned HTTP ${response.status}`);
   return { label, status: response.status, url, body };

@@ -1608,9 +1608,7 @@ assert.match(client, /var WORLD_BACKGROUND_URL = '\/games\/assets\/BITTY%20BACKG
 assert.match(client, /var worldBackgroundImage = new Image\(\)/);
 assert.match(client, /function drawWorldBackground\(\)/);
 assert.match(client, /ctx\.drawImage\(worldBackgroundImage, sx, sy, sw, sh, 0, 0, 320, 220\)/);
-const drawWorldStart = client.indexOf('function drawWorld(');
-const drawWorldEnd = client.indexOf('function sendPerformanceSample(', drawWorldStart);
-const drawWorldSource = drawWorldStart === -1 || drawWorldEnd === -1 ? '' : client.slice(drawWorldStart, drawWorldEnd);
+const drawWorldSource = client.match(/function drawWorld\(time\)\s*\{[\s\S]*?\n  \}/)?.[0] || '';
 assert.ok(drawWorldSource, 'drawWorld helper must be extractable');
 assert.match(drawWorldSource, /drawWorldBackground\(\)/);
 assert.doesNotMatch(drawWorldSource, /drawWorldSky\(/);
