@@ -1,7 +1,8 @@
 (() => {
   const DEFAULT_REGISTRY_PATH = "data/moonpet-side-scroller-approved-assets.json";
   const DEFAULT_WEARABLE_TRAITS_PATH = "data/moonpet-wearable-traits.json";
-  const CACHE_VERSION = "20260924-side-sprites-runtime-v14";
+  const DEFAULT_FRAME_ANCHORS_PATH = "data/moonpet-frame-anchors.json";
+  const CACHE_VERSION = "20260925-moonbot-frame-rig-v16";
   const PRIORITY_ROLES = new Set(["side_idle", "side_walk", "side_run"]);
 
   function cacheToken(asset) {
@@ -122,6 +123,16 @@
     }
   }
 
+  async function loadFrameAnchors(registry, errors) {
+    const configPath = registry && registry.frame_anchors && registry.frame_anchors.config_path || DEFAULT_FRAME_ANCHORS_PATH;
+    try {
+      return await fetchJson(configPath, { version: CACHE_VERSION });
+    } catch (error) {
+      errors.push(`Moonbot frame anchors skipped: ${error.message}`);
+      return null;
+    }
+  }
+
   async function loadMoonpetSideScrollerAssets(options = {}) {
     const registryPath = options.registryPath || DEFAULT_REGISTRY_PATH;
     const errors = [];
@@ -131,7 +142,10 @@
     const approvedAssets = (registry.assets || []).filter((asset) =>
       asset.approved === true && asset.promoted === true && !asset.rejected
     );
-    const traitConfig = await loadWearableTraitConfig(registry, errors);
+    const [traitConfig, frameAnchors] = await Promise.all([
+      loadWearableTraitConfig(registry, errors),
+      loadFrameAnchors(registry, errors)
+    ]);
     const priorityAssets = approvedAssets.filter((asset) => PRIORITY_ROLES.has(asset.role));
     const secondaryAssets = approvedAssets.filter((asset) => !PRIORITY_ROLES.has(asset.role));
 
@@ -150,6 +164,7 @@
       assetsByRole,
       roleMap,
       traitConfig,
+      frameAnchors,
       rejected: registry.rejected || [],
       errors,
       loadedRoles: Object.keys(assetsByRole),

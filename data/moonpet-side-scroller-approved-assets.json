@@ -6,6 +6,12 @@
   "default_enabled": true,
   "feature_flag": "MOONPET_USE_SIDE_SCROLLER_SPRITES",
   "url_override": "?sideSprites=0 disables production side-scroller sprites; ?sideSprites=1 explicitly enables them",
+  "frame_anchors": {
+    "enabled": true,
+    "config_path": "/data/moonpet-frame-anchors.json",
+    "system_id": "moonbot_frame_anchor_rig_v1",
+    "runtime_model": "moonbot_frame_to_body_anchor_to_wearable_local_offset"
+  },
   "wearable_traits": {
     "enabled": true,
     "config_path": "/data/moonpet-wearable-traits.json",
@@ -460,7 +466,7 @@
   "rejected": [],
   "runtime_role_map": {
     "idle": {
-      "role": "side_idle",
+      "role": "side_front_point",
       "fallback": "procedural_if_missing",
       "variant_cadence": 7,
       "variants": [
@@ -476,7 +482,7 @@
         "side_front_victory": 1,
         "side_front_dance": 1
       },
-      "variant_policy": "side_idle remains default; front idle specials are cooldown-gated and weighted with side_front_point as the main front-facing personality/mannequin pose, wave as greeting/occasional idle, victory and dance as rare-only personality beats."
+      "variant_policy": "side_front_point supplies the stabilised primary front idle. Point, wave, dance, and victory are cooldown-gated front personality beats; side_idle is transitional/action-only."
     },
     "feed": {
       "role": "side_eat",

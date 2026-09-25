@@ -13,9 +13,12 @@
     assetsByRole: {},
     roleMap: {},
     traitConfig: null,
+    frameAnchors: null,
     loadedRoles: [],
     pendingRoles: [],
-    lastRender: null
+    lastRender: null,
+    displayRole: null,
+    transition: null
   };
 
   function flagEnabled() {
@@ -31,9 +34,12 @@
     state.errors = errors;
     state.assetsByRole = {};
     state.traitConfig = null;
+    state.frameAnchors = null;
     state.loadedRoles = [];
     state.pendingRoles = [];
     state.lastRender = null;
+    state.displayRole = null;
+    state.transition = null;
     return getMoonpetSideScrollerRendererState();
   }
 
@@ -56,6 +62,7 @@
         state.assetsByRole = result.assetsByRole || {};
         state.roleMap = result.roleMap || {};
         state.traitConfig = result.traitConfig || null;
+        state.frameAnchors = result.frameAnchors || null;
         state.loadedRoles = Object.keys(state.assetsByRole);
         state.pendingRoles = result.pendingRoles || [];
         state.loading = null;
@@ -87,15 +94,17 @@
       assetsByRole: state.assetsByRole,
       roleMap: state.roleMap,
       traitConfig: state.traitConfig,
+      frameAnchorsReady: Boolean(state.frameAnchors),
       loadedRoles: [...state.loadedRoles],
       pendingRoles: [...state.pendingRoles],
       lastRender: state.lastRender
     };
   }
 
-  function frameForTime(asset, time) {
+  function frameForTime(asset, time, frameIndex) {
     const frames = asset.frames || [];
     if (!frames.length) return null;
+    if (Number.isFinite(frameIndex)) return frames[Math.abs(Math.floor(frameIndex)) % frames.length];
     const timestamp = typeof time === "number" ? time : performance.now();
     const frameMs = 1000 / FRAME_RATE;
     return frames[Math.floor(timestamp / frameMs) % frames.length];
@@ -103,6 +112,85 @@
 
   function availableRole(role) {
     return role && state.assetsByRole[role] ? role : null;
+  }
+
+  function rigRole(role) {
+    return state.frameAnchors && state.frameAnchors.roles && state.frameAnchors.roles[role] || null;
+  }
+
+  function rigFrame(role, frameIndex) {
+    const roleRig = rigRole(role);
+    const frames = roleRig && roleRig.frames || [];
+    return frames.length ? frames[Math.abs(Number(frameIndex) || 0) % frames.length] : null;
+  }
+
+  function decodeAnchor(role, frameIndex, anchorName, options = {}) {
+    const frameRig = rigFrame(role, frameIndex);
+    const fields = state.frameAnchors && state.frameAnchors.anchor_fields || [];
+    const packed = frameRig && frameRig.anchors && frameRig.anchors[anchorName];
+    if (!Array.isArray(packed)) return null;
+    const anchor = fields.reduce((value, field, index) => {
+      value[field] = packed[index];
+      return value;
+    }, {});
+    let orientation = frameRig.orientation || "front";
+    if (options.facing === -1) {
+      if (orientation === "side_right") orientation = "side_left";
+      else if (orientation === "side_left") orientation = "side_right";
+      anchor.rotation = -Number(anchor.rotation || 0);
+    }
+    anchor.orientation = orientation;
+    anchor.facing = orientation === "side_left" ? -1 : orientation === "side_right" ? 1 : 0;
+    return anchor;
+  }
+
+  function orientationFamily(role) {
+    const frame = rigFrame(role, 0);
+    return frame && (frame.orientation === "front" || frame.orientation === "rear") ? "front" : "side";
+  }
+
+  function transitionPlan(desiredRole, time, options = {}) {
+    if (!rigRole("side_turn") || options.disableTransitions === true) {
+      state.displayRole = desiredRole;
+      state.transition = null;
+      return { role: desiredRole, frameIndex: null, phase: "steady" };
+    }
+    const now = Number(time) || performance.now();
+    if (!state.displayRole) state.displayRole = desiredRole;
+    const displayedFamily = orientationFamily(state.displayRole);
+    const desiredFamily = orientationFamily(desiredRole);
+    if (!state.transition && displayedFamily !== desiredFamily) {
+      state.transition = {
+        from: state.displayRole,
+        to: desiredRole,
+        start: now,
+        phase: displayedFamily === "front" ? "front_to_side" : "side_to_front"
+      };
+    }
+    if (state.transition) {
+      if (state.transition.to !== desiredRole) {
+        state.transition = {
+          from: state.displayRole,
+          to: desiredRole,
+          start: now,
+          phase: orientationFamily(state.displayRole) === "front" ? "front_to_side" : "side_to_front"
+        };
+      }
+      const progress = Math.min(1, Math.max(0, (now - state.transition.start) / 650));
+      if (progress < 1) {
+        const step = Math.min(7, Math.floor(progress * 8));
+        return {
+          role: "side_turn",
+          frameIndex: state.transition.phase === "front_to_side" ? 17 + step : 24 - step,
+          phase: state.transition.phase
+        };
+      }
+      state.displayRole = state.transition.to;
+      state.transition = null;
+    } else {
+      state.displayRole = desiredRole;
+    }
+    return { role: desiredRole, frameIndex: null, phase: "steady" };
   }
 
   function variantIndex(options, count) {
@@ -232,7 +320,7 @@
     ctx.restore();
   }
 
-  function drawGlasses(ctx, radius, visual) {
+  function drawGlasses(ctx, radius, visual, orientation) {
     const fill = visual && visual.fill || "#10162f";
     const accent = visual && visual.accent || "#8affff";
     const outline = visual && visual.outline || "#061025";
@@ -242,6 +330,16 @@
     ctx.fillStyle = fill;
     ctx.strokeStyle = outline;
     ctx.lineWidth = Math.max(2, radius * 0.14);
+    if (orientation === "side_right" || orientation === "side_left") {
+      ctx.beginPath();
+      ctx.roundRect(-radius * 0.34, -radius * 0.44, radius * 0.68, radius * 0.88, radius * 0.2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = accent;
+      ctx.fillRect(-radius * 0.22, -radius * 0.05, radius * 0.44, radius * 0.1);
+      ctx.restore();
+      return;
+    }
     for (const side of [-1, 1]) {
       ctx.beginPath();
       ctx.roundRect(side * radius * 0.42 - radius * 0.34, -radius * 0.22, radius * 0.68, radius * 0.44, radius * 0.12);
@@ -333,14 +431,14 @@
     ctx.restore();
   }
 
-  function drawWearableVisual(ctx, radius, trait) {
+  function drawWearableVisual(ctx, radius, trait, orientation) {
     const visual = trait.visual || {};
     switch (visual.type) {
       case "runtime_vector_cap":
         drawCap(ctx, radius, visual);
         return;
       case "runtime_vector_glasses":
-        drawGlasses(ctx, radius, visual);
+        drawGlasses(ctx, radius, visual, orientation);
         return;
       case "runtime_vector_jetpack":
         drawJetpack(ctx, radius, visual);
@@ -358,40 +456,44 @@
 
   function drawBitmapWearable(ctx, role, frame, drawX, drawY, width, height, trait, options) {
     const visual = trait.visual || {};
-    const fit = visual.pose_fits && visual.pose_fits[role];
-    const frameIndex = Number(frame.index || 0) % Math.max(1, (fit && fit.frame_centers_x || []).length);
-    const fittedAssetKey = fit && Array.isArray(fit.frame_assets) ? fit.frame_assets[frameIndex] : fit && fit.asset;
-    const cancelSceneMirror = options.facing === -1;
-    const assetKey = cancelSceneMirror && visual.opposite_assets
-      ? visual.opposite_assets[fittedAssetKey] || fittedAssetKey
-      : fittedAssetKey;
-    const image = fit && visual.images && visual.images[assetKey];
-    if (!fit || !image) return false;
-    const geometry = visual.asset_geometry && visual.asset_geometry[assetKey] || fit;
-    const centerX = Number((fit.frame_centers_x || [])[frameIndex]);
-    const headTop = Number((fit.frame_head_tops || [])[frameIndex]);
-    if (!Number.isFinite(centerX) || !Number.isFinite(headTop)) return false;
-    const headWidth = Number((fit.frame_head_widths || [])[frameIndex]);
-    const frameWidthFactor = Number((fit.frame_width_factors || [])[frameIndex]);
-    const targetWidth = Number.isFinite(headWidth)
-      ? width * headWidth * (Number.isFinite(frameWidthFactor) ? frameWidthFactor : Number(fit.width_factor || 1))
-      : width * Number(fit.width || 0);
-    const targetHeight = targetWidth * Number(geometry.height_ratio || fit.height_ratio || 1);
-    const centerRatio = Number(geometry.center_ratio == null ? fit.center_ratio == null ? 0.5 : fit.center_ratio : geometry.center_ratio);
-    const headX = drawX + width * centerX;
-    const headY = geometry.top_mode === "head_overlap"
-      ? drawY + height * headTop
-      : drawY + height * (headTop + Number(fit.brim_offset || geometry.brim_offset || 0));
-    const anchorY = geometry.top_mode === "head_overlap" ? Number(geometry.top_overlap || fit.top_overlap || 0) : 1;
-    const fittedRotation = Number((fit.frame_rotations || [])[frameIndex] || 0);
-    const rotation = cancelSceneMirror ? -fittedRotation : fittedRotation;
-    ctx.save();
-    ctx.translate(headX, headY);
-    if (cancelSceneMirror) ctx.scale(-1, 1);
-    ctx.rotate(rotation * Math.PI / 180);
-    ctx.drawImage(image, -targetWidth * centerRatio, -targetHeight * anchorY, targetWidth, targetHeight);
-    ctx.restore();
-    return true;
+    const anchored = decodeAnchor(role, frame.index, trait.anchor_key, options);
+    if (anchored && visual.orientation_assets) {
+      const orientation = anchored.orientation || "front";
+      const assetKey = visual.orientation_assets[orientation];
+      if (!assetKey || anchored.visible === false) return false;
+      const image = visual.images && visual.images[assetKey];
+      if (!image) return false;
+      const geometry = visual.asset_geometry && visual.asset_geometry[assetKey] || {};
+      const baseAdjustment = visual.local_adjustments && visual.local_adjustments.default || {};
+      const orientationAdjustment = visual.local_adjustments && visual.local_adjustments[orientation] || {};
+      const roleAdjustment = visual.role_adjustments && visual.role_adjustments[role] || {};
+      const scaleMultiplier = Number(baseAdjustment.scale_multiplier || 1)
+        * Number(orientationAdjustment.scale_multiplier || 1)
+        * Number(roleAdjustment.scale_multiplier || 1);
+      const offsetX = Number(baseAdjustment.offset_x || 0) + Number(orientationAdjustment.offset_x || 0) + Number(roleAdjustment.offset_x || 0);
+      const offsetY = Number(baseAdjustment.offset_y || 0) + Number(orientationAdjustment.offset_y || 0) + Number(roleAdjustment.offset_y || 0);
+      const rotation = Number(anchored.rotation || 0)
+        + Number(baseAdjustment.rotation_offset || 0)
+        + Number(orientationAdjustment.rotation_offset || 0)
+        + Number(roleAdjustment.rotation_offset || 0);
+      const targetWidth = width * Number(anchored.scale == null ? 0 : anchored.scale) * scaleMultiplier;
+      const targetHeight = targetWidth * Number(geometry.height_ratio || 1);
+      const centerRatio = Number(geometry.center_ratio == null ? 0.5 : geometry.center_ratio);
+      const anchorY = Number(geometry.anchor_y == null
+        ? geometry.top_mode === "head_overlap" ? geometry.top_overlap || 0 : 0.5
+        : geometry.anchor_y);
+      ctx.save();
+      ctx.translate(
+        drawX + width * (Number(anchored.x == null ? 0.5 : anchored.x) + offsetX),
+        drawY + height * (Number(anchored.y == null ? 0.5 : anchored.y) + offsetY)
+      );
+      if (options.facing === -1) ctx.scale(-1, 1);
+      ctx.rotate(rotation * Math.PI / 180);
+      ctx.drawImage(image, -targetWidth * centerRatio, -targetHeight * anchorY, targetWidth, targetHeight);
+      ctx.restore();
+      return true;
+    }
+    return false;
   }
 
   function drawWearableTraits(ctx, role, frame, drawX, drawY, width, height, options, phase = "front") {
@@ -408,16 +510,22 @@
         if (drawBitmapWearable(ctx, role, frame, drawX, drawY, width, height, trait, options)) rendered.push(trait.id);
         continue;
       }
-      const anchor = anchorForTrait(role, trait);
+      const anchor = trait.use_character_anchor
+        ? decodeAnchor(role, frame.index, trait.anchor_key, options)
+        : anchorForTrait(role, trait);
       if (!anchor) continue;
+      if (anchor.visible === false) continue;
       if (options.facing === -1 && anchor.mirror_safe === false && trait.mirror_safe !== true) continue;
-      const centerX = drawX + width * Number(anchor.x || 0.5);
-      const centerY = drawY + height * Number(anchor.y || 0.5);
-      const radius = Math.max(5, 12 * (Number(anchor.scale) || 1) * (width / Math.max(1, frame.w)));
+      const local = trait.local_adjustment || {};
+      const centerX = drawX + width * (Number(anchor.x == null ? 0.5 : anchor.x) + Number(local.offset_x || 0));
+      const centerY = drawY + height * (Number(anchor.y == null ? 0.5 : anchor.y) + Number(local.offset_y || 0));
+      const radius = trait.use_character_anchor
+        ? Math.max(4, width * Number(anchor.scale == null ? 0.1 : anchor.scale) * Number(local.scale_multiplier || 0.65))
+        : Math.max(5, 12 * (Number(anchor.scale) || 1) * (width / Math.max(1, frame.w)));
       ctx.save();
       ctx.translate(centerX, centerY);
-      ctx.rotate((Number(anchor.rotation) || 0) * Math.PI / 180);
-      drawWearableVisual(ctx, radius, trait);
+      ctx.rotate((Number(anchor.rotation || 0) + Number(local.rotation_offset || 0)) * Math.PI / 180);
+      drawWearableVisual(ctx, radius, trait, anchor.orientation);
       ctx.restore();
       rendered.push(trait.id);
     }
@@ -436,14 +544,16 @@
       return false;
     }
 
-    const role = roleForAnimationMode(animationMode, options.active !== false, options);
-    if (!role) {
+    const desiredRole = roleForAnimationMode(animationMode, options.active !== false, options);
+    if (!desiredRole) {
       state.reason = `no approved side-scroller role for ${animationMode}`;
       state.lastRender = { animationMode, role: null, drew: false, reason: state.reason };
       return false;
     }
+    const plan = transitionPlan(desiredRole, time, options);
+    const role = plan.role;
     const asset = state.assetsByRole[role];
-    const frame = asset && frameForTime(asset, time);
+    const frame = asset && frameForTime(asset, time, plan.frameIndex);
     if (!asset || !asset.image || !frame) {
       state.reason = `side-scroller sprite asset unavailable for ${role}`;
       state.lastRender = { animationMode, role, drew: false, reason: state.reason };
@@ -452,16 +562,25 @@
 
     try {
       const drawScale = Number(scale) || 1;
-      const width = frame.w * drawScale;
-      const height = frame.h * drawScale;
-      let drawX = x - width / 2;
-      const drawY = y - height / 2;
+      const normalization = rigRole(role) && rigRole(role).normalization || {};
+      const normalizationScale = Number(normalization.scale || 1);
+      const baseWidth = frame.w * drawScale;
+      const baseHeight = frame.h * drawScale;
+      const width = baseWidth * normalizationScale;
+      const height = baseHeight * normalizationScale;
+      const frameRig = rigFrame(role, frame.index);
+      const frameRoot = frameRig && frameRig.anchors && frameRig.anchors.root;
+      const rootX = Number(frameRoot && frameRoot[0] != null ? frameRoot[0] : normalization.root_x == null ? 0.5 : normalization.root_x);
+      const rootY = Number(frameRoot && frameRoot[1] != null ? frameRoot[1] : normalization.root_y == null ? 0.88 : normalization.root_y);
+      const canonicalRootY = Number(state.frameAnchors && state.frameAnchors.canonical_geometry && state.frameAnchors.canonical_geometry.root_screen_y || 0.88);
+      let drawX = x - width * rootX;
+      const drawY = y + baseHeight * (canonicalRootY - 0.5) - height * rootY;
       ctx.save();
       if (options.facing === -1) {
         ctx.translate(x, 0);
         ctx.scale(-1, 1);
         x = 0;
-        drawX = x - width / 2;
+        drawX = x - width * rootX;
       }
       const behindTraits = drawWearableTraits(ctx, role, frame, drawX, drawY, width, height, options, "behind");
       ctx.drawImage(
@@ -478,8 +597,17 @@
       const frontTraits = drawWearableTraits(ctx, role, frame, drawX, drawY, width, height, options, "front");
       const renderedTraits = [...behindTraits, ...frontTraits];
       ctx.restore();
-      state.reason = `rendered ${role}`;
-      state.lastRender = { animationMode, role, drew: true, reason: state.reason, wearableTraits: renderedTraits };
+      state.reason = `rendered ${role}${plan.phase === "steady" ? "" : ` (${plan.phase})`}`;
+      state.lastRender = {
+        animationMode,
+        role,
+        desiredRole,
+        transitionPhase: plan.phase,
+        frameAnchors: Boolean(state.frameAnchors),
+        drew: true,
+        reason: state.reason,
+        wearableTraits: renderedTraits
+      };
       return true;
     } catch (error) {
       state.reason = `side-scroller sprite render failed: ${error.message}`;

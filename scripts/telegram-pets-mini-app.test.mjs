@@ -75,6 +75,7 @@ const sideScrollerRegistry = JSON.parse(fs.readFileSync(new URL('../data/moonpet
 const sideScrollerRenderer = fs.readFileSync(new URL('../js/moonpet-side-scroller-sprite-renderer.js', import.meta.url), 'utf8');
 const sideScrollerLoader = fs.readFileSync(new URL('../js/moonpet-side-scroller-asset-loader.js', import.meta.url), 'utf8');
 const wearableTraits = JSON.parse(fs.readFileSync(new URL('../data/moonpet-wearable-traits.json', import.meta.url), 'utf8'));
+const moonpetFrameAnchors = JSON.parse(fs.readFileSync(new URL('../data/moonpet-frame-anchors.json', import.meta.url), 'utf8'));
 assert.match(client, /var lifecycleRequirement = journeyLifecycle\.next_evolution \?/, 'final-form lifecycle copy must branch on whether a next evolution exists');
 assert.doesNotMatch(client, /next_evolution[^\n]+LEVEL \/\/ 0\/0/, 'final-form lifecycle must never render a synthetic 0/0 requirement');
 assert.match(client, /if \(!pet\.progression\)[^\n]+PROGRESSION UNAVAILABLE/, 'missing roster progression must render an explicit unavailable state');
@@ -1353,7 +1354,7 @@ assert.match(worker, /counts\.district_mission/);
 assert.match(client, /DAILY MISSION BUFFER \/\/ /);
 assert.match(client, /meter\('DAILY CLEAR', missionPercent\)/);
 assert.match(html, /id="utility-layer"/);
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260924-side-sprites-runtime-v14/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260925-moonbot-frame-rig-v16/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractFunctionSource(client, 'guideMarkup');
@@ -1447,7 +1448,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260924-side-sprites-runtime-v14/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260925-moonbot-frame-rig-v16/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -1799,20 +1800,20 @@ for (const role of ['side_front_wave', 'side_front_point', 'side_front_victory',
     `${role} must be included in the idle personality variant pool`,
   );
 }
-assert.equal(sideScrollerRegistry.runtime_role_map.idle.role, 'side_idle', 'normal side idle must remain the default idle role');
+assert.equal(sideScrollerRegistry.runtime_role_map.idle.role, 'side_front_point', 'normal idle must primarily face the player');
 assert.ok(sideScrollerRegistry.runtime_role_map.idle.variant_cadence >= 7, 'front-facing idle personality variants must be rare');
 assert.equal(sideScrollerRegistry.runtime_role_map.idle.trait_reference_role, 'side_front_point', 'front-facing traits must use point as the master mannequin pose');
 assert.ok(sideScrollerRegistry.runtime_role_map.idle.variant_weights.side_front_point > sideScrollerRegistry.runtime_role_map.idle.variant_weights.side_front_wave, 'point must be weighted above wave for idle personality');
 assert.ok(sideScrollerRegistry.runtime_role_map.idle.variant_weights.side_front_wave > sideScrollerRegistry.runtime_role_map.idle.variant_weights.side_front_victory, 'wave must remain more common than rare victory idle');
 assert.equal(sideScrollerRegistry.runtime_role_map.idle.variant_weights.side_front_victory, sideScrollerRegistry.runtime_role_map.idle.variant_weights.side_front_dance, 'victory and dance must stay rare peer idle beats');
-assert.match(client, /'side_front_point', 'side_front_point', 'side_front_point', 'side_front_point'/, 'runtime idle selector must weight point as the main front-facing idle pose');
+assert.match(client, /'side_front_victory',[\s\S]*'side_front_dance',[\s\S]*'side_front_wave',[\s\S]*'side_front_point'/, 'front personality flow must resolve point, wave, dance, victory before returning to front idle');
 assert.equal(sideScrollerRegistry.runtime_role_map.interact.role, 'side_interact', 'interact moments must stay on the readable interaction gesture');
 assert.equal(sideScrollerRegistry.runtime_role_map.interact.variants, undefined, 'interact moments must not vary into turn-around sprites');
 assert.ok(sideScrollerRegistry.runtime_role_map.feed.variant_cadence >= 4, 'food chaos must be an occasional variant, not the default feed outcome');
 assert.ok(sideScrollerRegistry.runtime_role_map.travel.variant_cadence >= 5, 'travel turn/jump inserts must be rarer than normal run travel');
 assert.match(client, /function idleSpecialRoleForFrame\(time, mode, active\)/, 'Mini App must gate rare front-facing idle personality variants');
 assert.match(client, /idleSpecialNextAt = now \+ 6500 \+ Math\.floor\(idleSpecialRoll\(now, 11\) \* 4500\)/, 'idle personality variants must return to base idle for a cooldown between specials');
-assert.match(client, /function refillIdleSpecialBag\(time\)/, 'weighted idle specials must be shuffled rather than cycling in a fixed sequence');
+assert.match(client, /function refillIdleSpecialBag\(time\)/, 'front personality flow must retain its cooldown-gated sequence refill');
 assert.match(client, /function idleSpecialRoll\(time, salt\)/, 'idle personality variants must use local deterministic pseudo-random rolls');
 assert.match(client, /role: roleOverride/, 'renderer options must support one idle role override at a time');
 assert.equal(sideScrollerRegistry.wearable_traits.config_path, '/data/moonpet-wearable-traits.json', 'side-scroller registry must point at the wearable trait config');
@@ -1828,6 +1829,8 @@ assert.deepEqual(sideScrollerRegistry.wearable_traits.debug_queries, [
   '?wearableTraitDebug=all'
 ]);
 assert.equal(wearableTraits.master_reference_role, 'side_front_point', 'wearable traits must use side_front_point as the master mannequin');
+assert.equal(wearableTraits.frame_anchor_system.system_id, 'moonbot_frame_anchor_rig_v1', 'wearables must bind to the shared Moonbot frame rig');
+assert.deepEqual(wearableTraits.frame_anchor_system.runtime_chain, ['moonbot_frame', 'body_anchor', 'wearable_local_offset']);
 for (const category of ['hats', 'glasses', 'masks', 'chains', 'hoodies', 'backpacks', 'badges', 'hand_items', 'shoes_feet_items', 'auras', 'props']) {
   assert.ok(wearableTraits.trait_categories.includes(category), `wearable trait schema must include ${category}`);
 }
@@ -1864,31 +1867,36 @@ const promotedRuntimeRoles = sideScrollerRegistry.assets
 assert.equal(promotedRuntimeRoles.length, 24, 'runtime registry must retain all 24 promoted Moonbot roles');
 assert.deepEqual(new Set(productionCap.supported_roles), new Set(promotedRuntimeRoles), 'production cap must cover every promoted runtime role');
 assert.deepEqual(productionCap.blocked_roles, [], 'production cap must have no temporarily blocked promoted roles');
+assert.equal(productionCap.anchor_key, 'head_top', 'production cap must bind to the shared head_top anchor');
+assert.equal(productionCap.use_character_anchor, true, 'production cap must use character-owned frame tracking');
+assert.equal(productionCap.anchor_binding.frame_tracking_owner, 'moonbot', 'cap frame tracking must be owned by Moonbot');
+assert.equal(productionCap.visual.pose_fits, undefined, 'cap must not own an independent per-frame tracking table');
 assert.deepEqual(productionCap.visual.opposite_assets, {
   front: 'front',
   side_right: 'side_left',
   side_left: 'side_right',
   back: 'back'
 }, 'production cap must preserve badge orientation with explicit opposite-facing assets');
-assert.deepEqual(
-  new Set(productionCap.visual.pose_fits.side_turn.frame_assets),
-  new Set(['side_right', 'back', 'side_left', 'front']),
-  'turn animation must use fitted cap artwork for every visible head orientation'
-);
-for (const role of productionCap.supported_roles) {
-  const fit = productionCap.visual.pose_fits[role];
-  assert.ok(fit, `${role} must have an explicit fitted bitmap transform`);
-  assert.equal(fit.frame_assets.length, 25, `${role} must select a fitted cap view for all 25 frames`);
-  assert.equal(fit.frame_width_factors.length, 25, `${role} must scale the fitted cap for all 25 frames`);
-  assert.equal(fit.frame_rotations.length, 25, `${role} must rotate the fitted cap for all 25 frames`);
-  assert.equal(fit.frame_centers_x.length, 25, `${role} must track the head centre for all 25 frames`);
-  assert.equal(fit.frame_head_widths.length, 25, `${role} must track the fitted cap width for all 25 frames`);
-  assert.equal(fit.frame_head_tops.length, 25, `${role} must track the head top for all 25 frames`);
-  assert.ok(fit.frame_assets.every((assetKey) => productionCap.visual.assets[assetKey]), `${role} must use an installed fitted cap asset on every frame`);
-  for (const track of [fit.frame_width_factors, fit.frame_rotations, fit.frame_centers_x, fit.frame_head_widths, fit.frame_head_tops]) {
-    assert.ok(track.every(Number.isFinite), `${role} must use finite values throughout every frame track`);
+assert.equal(moonpetFrameAnchors.system_id, 'moonbot_frame_anchor_rig_v1');
+assert.equal(Object.keys(moonpetFrameAnchors.roles).length, 24, 'frame rig must cover all 24 promoted roles');
+for (const role of promotedRuntimeRoles) {
+  const roleRig = moonpetFrameAnchors.roles[role];
+  assert.ok(roleRig, `${role} must have character-owned frame anchors`);
+  assert.equal(roleRig.frames.length, 25, `${role} must have 25 anchored frames`);
+  assert.ok(Number.isFinite(roleRig.normalization.scale), `${role} must define runtime scale normalization`);
+  for (const frame of roleRig.frames) {
+    assert.ok(['front', 'side_right', 'side_left', 'rear'].includes(frame.orientation), `${role} frame ${frame.index} must define orientation`);
+    for (const anchorName of moonpetFrameAnchors.required_anchors) {
+      const packed = frame.anchors[anchorName];
+      assert.equal(packed.length, moonpetFrameAnchors.anchor_fields.length, `${role} frame ${frame.index} must define ${anchorName}`);
+      assert.ok(packed.slice(0, 4).every(Number.isFinite), `${role} frame ${frame.index} ${anchorName} geometry must be finite`);
+    }
   }
 }
+assert.deepEqual(new Set(moonpetFrameAnchors.roles.side_turn.frames.map((frame) => frame.orientation)), new Set(['front', 'side_right', 'side_left', 'rear']), 'turn frames must cover every orientation');
+const visorProof = wearableTraits.traits.find((trait) => trait.id === 'sample_visor_glasses');
+assert.equal(visorProof.anchor_key, 'visor_center', 'face proof must bind to visor_center');
+assert.equal(visorProof.use_character_anchor, true, 'face proof must inherit character-owned frame tracking');
 for (const assetPath of Object.values(productionCap.visual.assets)) {
   assert.ok(fs.existsSync(new URL(`../${assetPath.replace(/^\//, '')}`, import.meta.url)), `production wearable asset must exist: ${assetPath}`);
 }
@@ -1898,11 +1906,17 @@ assert.match(client, /wearableTraits: equippedWearableTraits\(\)/, 'normal rende
 assert.match(client, /data-utility="wearables"/, 'beta UI must expose the wearable equip panel');
 assert.match(sideScrollerLoader, /DEFAULT_WEARABLE_TRAITS_PATH = "data\/moonpet-wearable-traits\.json"/, 'side-scroller loader must know the wearable trait config path');
 assert.match(sideScrollerLoader, /loadWearableTraitConfig/, 'side-scroller loader must load wearable trait config without blocking sprite loading');
+assert.match(sideScrollerLoader, /loadFrameAnchors/, 'side-scroller loader must load the Moonbot frame anchor registry');
+assert.match(sideScrollerRenderer, /function decodeAnchor\(role, frameIndex, anchorName, options = \{\}\)/, 'renderer must resolve shared character anchors');
+assert.match(sideScrollerRenderer, /frameRig\.anchors\.root/, 'renderer must normalize each sprite from its frame-owned root anchor');
+assert.match(sideScrollerRenderer, /function transitionPlan\(desiredRole, time, options = \{\}\)/, 'renderer must handle front-to-side and side-to-front transitions');
 assert.match(sideScrollerRenderer, /function drawWearableTraits\(ctx, role, frame, drawX, drawY, width, height, options, phase = "front"\)/, 'side-scroller renderer must include wearable overlay rendering');
-assert.match(sideScrollerRenderer, /function drawWearableVisual\(ctx, radius, trait\)/, 'wearable renderer must dispatch category proof visuals');
+assert.match(sideScrollerRenderer, /function drawWearableVisual\(ctx, radius, trait, orientation\)/, 'wearable renderer must dispatch orientation-aware category proof visuals');
 assert.match(sideScrollerRenderer, /function drawBitmapWearable\(ctx, role, frame, drawX, drawY, width, height, trait, options\)/, 'wearable renderer must support fitted bitmap overlays');
-assert.match(sideScrollerRenderer, /visual\.opposite_assets\[fittedAssetKey\]/, 'wearable renderer must choose a dedicated opposite-facing asset when gameplay mirrors');
-assert.match(sideScrollerRenderer, /if \(cancelSceneMirror\) ctx\.scale\(-1, 1\)/, 'wearable renderer must counter-mirror asymmetric bitmap artwork');
+assert.match(sideScrollerRenderer, /visual\.orientation_assets\[orientation\]/, 'wearable renderer must select art from character-frame orientation');
+assert.match(sideScrollerRenderer, /anchored\.y == null \? 0\.5 : anchored\.y/, 'zero-valued wearable anchors must remain valid coordinates');
+assert.match(sideScrollerRenderer, /if \(options\.facing === -1\) ctx\.scale\(-1, 1\)/, 'wearable renderer must counter-mirror asymmetric bitmap artwork');
+assert.doesNotMatch(sideScrollerRenderer, /visual\.pose_fits/, 'renderer must not support wearable-owned frame tracking tables');
 assert.match(sideScrollerLoader, /visual\.type === "runtime_bitmap"/, 'side-scroller loader must preload production wearable bitmap assets');
 assert.match(sideScrollerRenderer, /debug_trait_sets/, 'wearable renderer must support opt-in debug selectors');
 assert.match(sideScrollerRenderer, /wearableTraitDebug/, 'wearable debug selectors must remain available');
@@ -2177,7 +2191,7 @@ assert.match(worker, /Math\.floor\(stepIndex \/ PET_RUN_BOSS_INTERVAL\) \+ 1/);
 assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Number\(activeRun\.depth \|\| 0\) \+ 1/);
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
-assert.match(html, /20260924-side-sprites-runtime-v14/);
+assert.match(html, /20260925-moonbot-frame-rig-v16/);
 assert.match(worker, /20260814-moonpet-aaa-pass/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');

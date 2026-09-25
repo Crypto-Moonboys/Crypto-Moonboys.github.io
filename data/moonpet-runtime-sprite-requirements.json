@@ -64,7 +64,7 @@
         "inactive approvedSpriteRoleForMode"
       ],
       "requires_sprite": true,
-      "required_side_asset": "side_idle",
+      "required_side_asset": "side_front_point",
       "coverage": "approved_promoted_side_sprite",
       "fallback_allowed_until_install": false
     },
@@ -493,7 +493,7 @@
       "side_front_dance"
     ],
     "rejected_pending_regeneration": [],
-    "variant_runtime_notes": "Runtime supports controlled variants: side_jump, side_turn, side_eat_chaos, side_play_ball, side_front_wave, side_front_point, side_front_victory, and side_front_dance. side_idle remains default. side_front_point is the main front-facing idle personality/master trait mannequin. Greetings route to side_front_wave; celebrate routes to side_front_victory; idle periodically chooses one front-facing personality pose with base-idle cooldowns, weighted point > wave > victory/dance.",
+    "variant_runtime_notes": "side_front_point is the normalized primary front-facing idle and master trait mannequin. The cooldown-gated personality flow uses point, wave, dance, and victory without hard-cutting through side_idle. side_idle remains available for side-facing action/transitional use. Greetings route to side_front_wave; celebrate routes to side_front_victory. Movement enters and exits through side_turn before walk, run, jump, or travel roles.",
     "front_trait_policy": {
       "master_reference_role": "side_front_point",
       "active_front_roles": [
@@ -523,12 +523,12 @@
       "default_enabled": true,
       "loadout_slots": ["head", "face", "chest", "back", "hand", "aura"],
       "default_loadout": {
-        "head": "sample_lunar_cap",
+        "head": "neon_borough_cap",
         "face": "",
-        "chest": "sample_chest_badge",
+        "chest": "",
         "back": "",
         "hand": "",
-        "aura": "sample_electric_aura"
+        "aura": ""
       },
       "sample_trait": "sample_chest_badge",
       "debug_selectors": [
@@ -541,6 +541,12 @@
         "all"
       ],
       "master_reference_role": "side_front_point",
+      "frame_anchor_system": {
+        "config_path": "/data/moonpet-frame-anchors.json",
+        "system_id": "moonbot_frame_anchor_rig_v1",
+        "runtime_chain": "moonbot_frame -> body_anchor -> wearable_local_offset",
+        "ownership_rule": "Moonbot animation frames own body tracking. Wearables may supply orientation-specific art plus small local offsets only; they do not own independent per-frame tracking tables."
+      },
       "runtime_roles": [
         "side_front_point",
         "side_front_wave",

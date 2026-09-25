@@ -220,6 +220,8 @@
       ' | loader=' + (window.MoonpetSideScrollerAssetLoader ? 'loaded' : 'missing') +
       ' | renderer=' + (sideScrollerSpriteRendererReady ? 'ready' : 'not-ready') +
       ' | role=' + (status && status.role || stateInfo.lastRender && stateInfo.lastRender.role || 'n/a') +
+      ' | transition=' + (status && status.transition || stateInfo.lastRender && stateInfo.lastRender.transitionPhase || 'n/a') +
+      ' | anchors=' + ((status && status.anchors) || stateInfo.frameAnchorsReady ? 'ready' : 'missing') +
       ' | wearables=' + (status && status.wearables || stateInfo.lastRender && stateInfo.lastRender.wearableTraits && stateInfo.lastRender.wearableTraits.join(',') || 'none') +
       ' | fallback=' + ((status && status.fallback) || stateInfo.fallback ? 'yes' : 'no') +
       ' | reason=' + (status && status.reason || stateInfo.reason || 'pending');
@@ -282,8 +284,8 @@
     console.info('[Moonpet] side-scroller sprite mode enabled');
     updateSideSpriteDebug({ reason: 'loading side-scroller scripts' });
     try {
-      await loadApprovedSpriteScript('/js/moonpet-side-scroller-asset-loader.js?v=20260924-side-sprites-runtime-v14');
-      await loadApprovedSpriteScript('/js/moonpet-side-scroller-sprite-renderer.js?v=20260924-side-sprites-runtime-v14');
+      await loadApprovedSpriteScript('/js/moonpet-side-scroller-asset-loader.js?v=20260925-moonbot-frame-rig-v16');
+      await loadApprovedSpriteScript('/js/moonpet-side-scroller-sprite-renderer.js?v=20260925-moonbot-frame-rig-v16');
       if (!window.MoonpetSideScrollerSpriteRenderer) throw new Error('MoonpetSideScrollerSpriteRenderer unavailable');
       sideScrollerSpriteRendererState = await window.MoonpetSideScrollerSpriteRenderer.initMoonpetSideScrollerRenderer();
       sideScrollerSpriteRendererReady = Boolean(sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.ready);
@@ -3362,19 +3364,12 @@
   }
 
   function refillIdleSpecialBag(time) {
-    var roles = [
-      'side_front_point', 'side_front_point', 'side_front_point', 'side_front_point',
-      'side_front_wave', 'side_front_wave',
+    idleSpecialBag = [
       'side_front_victory',
-      'side_front_dance'
+      'side_front_dance',
+      'side_front_wave',
+      'side_front_point'
     ];
-    for (var index = roles.length - 1; index > 0; index -= 1) {
-      var swapIndex = Math.floor(idleSpecialRoll(time, 53 + index) * (index + 1));
-      var swapRole = roles[index];
-      roles[index] = roles[swapIndex];
-      roles[swapIndex] = swapRole;
-    }
-    idleSpecialBag = roles;
   }
 
   function idleSpecialRoll(time, salt) {
@@ -3399,6 +3394,8 @@
     sideScrollerSpriteRendererState = window.MoonpetSideScrollerSpriteRenderer.getMoonpetSideScrollerRendererState();
     updateSideSpriteDebug({
       role: sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.lastRender && sideScrollerSpriteRendererState.lastRender.role,
+      transition: sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.lastRender && sideScrollerSpriteRendererState.lastRender.transitionPhase,
+      anchors: sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.lastRender && sideScrollerSpriteRendererState.lastRender.frameAnchors,
       wearables: sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.lastRender && sideScrollerSpriteRendererState.lastRender.wearableTraits && sideScrollerSpriteRendererState.lastRender.wearableTraits.join(','),
       fallback: !drew,
       reason: sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.reason
