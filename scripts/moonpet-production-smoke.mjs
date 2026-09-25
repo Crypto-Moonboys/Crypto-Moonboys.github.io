@@ -8,22 +8,22 @@ const TIMEOUT_MS = Number(process.env.MOONPET_PRODUCTION_SMOKE_TIMEOUT_MS || 150
 const SITE_ROOT = 'https://cryptomoonboys.com';
 const gameHtmlSource = fs.readFileSync(new URL('../moonpet-game.html', import.meta.url), 'utf8');
 
-function assetPath(pattern, label) {
+function assetPath(pattern, label, groupIndex = 1) {
   const match = gameHtmlSource.match(pattern);
   if (!match) fail(`could not resolve ${label} from moonpet-game.html`);
-  return match[match.length - 1];
+  return match[groupIndex];
 }
 
-function assetUrl(pattern, label) {
-  return new URL(assetPath(pattern, label), SITE_ROOT).toString();
+function assetUrl(pattern, label, groupIndex) {
+  return new URL(assetPath(pattern, label, groupIndex), SITE_ROOT).toString();
 }
 
 const ENDPOINTS = Object.freeze({
   workerHealth: 'https://moonboys-api.sercullen.workers.dev/health',
   deploymentInfo: 'https://moonboys-api.sercullen.workers.dev/deployment-info',
   gameHtml: `${SITE_ROOT}/moonpet-game.html`,
-  miniAppJs: assetUrl(/<script[^>]+src=(['"])([^'"]*\/js\/moonpet-mini-app\.js[^'"]*)\1/i, 'mini app js'),
-  miniAppCss: assetUrl(/<link[^>]+href=(['"])([^'"]*\/css\/moonpet-mini-app\.css[^'"]*)\1/i, 'mini app css'),
+  miniAppJs: assetUrl(/<script[^>]+src=(['"])([^'"]*\/js\/moonpet-mini-app\.js[^'"]*)\1/i, 'mini app js', 2),
+  miniAppCss: assetUrl(/<link[^>]+href=(['"])([^'"]*\/css\/moonpet-mini-app\.css[^'"]*)\1/i, 'mini app css', 2),
 });
 
 function fail(message) {
