@@ -11,15 +11,15 @@ const gameHtmlSource = fs.readFileSync(new URL('../moonpet-game.html', import.me
 function assetPath(pattern, label) {
   const match = gameHtmlSource.match(pattern);
   if (!match) fail(`could not resolve ${label} from moonpet-game.html`);
-  return match[1];
+  return match[match.length - 1];
 }
 
 const ENDPOINTS = Object.freeze({
   workerHealth: 'https://moonboys-api.sercullen.workers.dev/health',
   deploymentInfo: 'https://moonboys-api.sercullen.workers.dev/deployment-info',
   gameHtml: `${SITE_ROOT}/moonpet-game.html`,
-  miniAppJs: `${SITE_ROOT}${assetPath(/<script[^>]+src="([^"]*\/js\/moonpet-mini-app\.js[^"]*)"/i, 'mini app js')}`,
-  miniAppCss: `${SITE_ROOT}${assetPath(/<link[^>]+href='([^']*\/css\/moonpet-mini-app\.css[^']*)'/i, 'mini app css')}`,
+  miniAppJs: `${SITE_ROOT}${assetPath(/<script[^>]+src=(['"])([^'"]*\/js\/moonpet-mini-app\.js[^'"]*)\1/i, 'mini app js')}`,
+  miniAppCss: `${SITE_ROOT}${assetPath(/<link[^>]+href=(['"])([^'"]*\/css\/moonpet-mini-app\.css[^'"]*)\1/i, 'mini app css')}`,
 });
 
 function fail(message) {
