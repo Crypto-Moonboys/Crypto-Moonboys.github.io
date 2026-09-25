@@ -1354,7 +1354,9 @@ assert.match(worker, /counts\.district_mission/);
 assert.match(client, /DAILY MISSION BUFFER \/\/ /);
 assert.match(client, /meter\('DAILY CLEAR', missionPercent\)/);
 assert.match(html, /id="utility-layer"/);
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260925-moonbot-anchor-category-proof-v17/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260925-botty-front-live-beta-v1/);
+assert.match(html, /\/js\/moonpet-botty-front-asset-loader\.js\?v=20260925-botty-front-live-beta-v1/);
+assert.match(html, /\/js\/moonpet-botty-front-sprite-renderer\.js\?v=20260925-botty-front-live-beta-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractFunctionSource(client, 'guideMarkup');
@@ -1448,7 +1450,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260925-moonbot-anchor-category-proof-v17/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260925-botty-front-live-beta-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -1916,8 +1918,9 @@ for (const assetPath of Object.values(productionCap.visual.assets)) {
 }
 assert.deepEqual(Object.values(wearableTraits.default_loadout).filter(Boolean), ['neon_borough_cap'], 'normal beta gameplay must start with the fitted production cap only');
 assert.match(client, /WEARABLE_LOADOUT_STORAGE_KEY = 'moonpet-wearable-loadout-v2'/, 'wearable loadout must use versioned local runtime persistence');
-assert.match(client, /wearableTraits: equippedWearableTraits\(\)/, 'normal rendering must pass equipped traits without a debug flag');
-assert.match(client, /data-utility="wearables"/, 'beta UI must expose the wearable equip panel');
+assert.match(client, /function equippedWearableTraits\(\) \{\s*return \[\];\s*\}/, 'normal BOTTY rendering must not pass wearable overlays');
+assert.doesNotMatch(client, /data-utility="wearables">WEARABLES/, 'live BOTTY UI must not expose the old wearable equip panel');
+assert.match(client, /BOTTY USES FULL AUTOSPRITE COSTUME PACKS/, 'deep-linked upgrade panel must describe the new costume-pack model');
 assert.match(sideScrollerLoader, /DEFAULT_WEARABLE_TRAITS_PATH = "data\/moonpet-wearable-traits\.json"/, 'side-scroller loader must know the wearable trait config path');
 assert.match(sideScrollerLoader, /loadWearableTraitConfig/, 'side-scroller loader must load wearable trait config without blocking sprite loading');
 assert.match(sideScrollerLoader, /loadFrameAnchors/, 'side-scroller loader must load the Moonbot frame anchor registry');
@@ -2207,7 +2210,7 @@ assert.match(worker, /Math\.floor\(stepIndex \/ PET_RUN_BOSS_INTERVAL\) \+ 1/);
 assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Number\(activeRun\.depth \|\| 0\) \+ 1/);
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
-assert.match(html, /20260925-moonbot-anchor-category-proof-v17/);
+assert.match(html, /20260925-botty-front-live-beta-v1/);
 assert.match(worker, /20260814-moonpet-aaa-pass/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');

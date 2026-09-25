@@ -9,6 +9,10 @@
   var state = null;
   var renderedPetId = null;
   var renderedPetName = '';
+  var bottyFrontSpriteModeEnabled = moonpetBottyFrontSpritesRequested();
+  var bottyFrontSpriteRendererReady = false;
+  var bottyFrontSpriteRendererState = null;
+  var bottyFrontSpriteFallbackLogged = false;
   var approvedSpriteModeEnabled = moonpetApprovedSpritesRequested();
   var approvedSpriteRendererReady = false;
   var approvedSpriteRendererState = null;
@@ -17,6 +21,7 @@
   var sideScrollerSpriteRendererReady = false;
   var sideScrollerSpriteRendererState = null;
   var sideScrollerSpriteFallbackLogged = false;
+  window.MOONPET_USE_BOTTY_FRONT_SPRITES = bottyFrontSpriteModeEnabled;
   window.MOONPET_USE_APPROVED_SPRITES = approvedSpriteModeEnabled;
   window.MOONPET_USE_SIDE_SCROLLER_SPRITES = sideScrollerSpriteModeEnabled;
   var seasonSnapshotReceivedAt = 0;
@@ -147,13 +152,20 @@
     return launchParameter('approvedSprites') === '1';
   }
 
+  function moonpetBottyFrontSpritesRequested() {
+    var override = launchParameter('bottySprites');
+    if (override === '0' || override === 'false') return false;
+    if (window.MOONPET_USE_BOTTY_FRONT_SPRITES === false) return false;
+    return true;
+  }
+
   function moonpetSideScrollerSpritesRequested() {
     var override = launchParameter('sideSprites');
     if (override === '0' || override === 'false') return false;
     if (override === '1' || override === 'true') return true;
     if (window.MOONPET_USE_SIDE_SCROLLER_SPRITES === false) return false;
     if (window.MOONPET_USE_SIDE_SCROLLER_SPRITES === true) return true;
-    return true;
+    return false;
   }
 
   function sideSpriteDebugRequested() {
@@ -188,7 +200,7 @@
   }
 
   function equippedWearableTraits() {
-    return WEARABLE_SLOT_ORDER.map(function (slot) { return wearableLoadout[slot]; }).filter(Boolean);
+    return [];
   }
 
   function setWearableSlot(slot, traitId) {
@@ -271,6 +283,30 @@
       approvedSpriteRendererReady = false;
       approvedSpriteRendererState = { reason: error.message, errors: [error.message] };
       console.info('[Moonpet] approved sprite fallback used', approvedSpriteRendererState);
+      return false;
+    }
+  }
+
+  async function initBottyFrontSpriteMode() {
+    if (!bottyFrontSpriteModeEnabled) {
+      console.info('[Moonpet] BOTTY front sprite mode disabled');
+      return false;
+    }
+    console.info('[Moonpet] BOTTY front sprite mode enabled');
+    try {
+      await loadApprovedSpriteScript('/js/moonpet-botty-front-asset-loader.js?v=20260925-botty-front-live-beta-v1');
+      await loadApprovedSpriteScript('/js/moonpet-botty-front-sprite-renderer.js?v=20260925-botty-front-live-beta-v1');
+      if (!window.MoonpetBottyFrontSpriteRenderer) throw new Error('MoonpetBottyFrontSpriteRenderer unavailable');
+      bottyFrontSpriteRendererState = await window.MoonpetBottyFrontSpriteRenderer.initMoonpetBottyFrontRenderer();
+      bottyFrontSpriteRendererReady = Boolean(bottyFrontSpriteRendererState && bottyFrontSpriteRendererState.ready);
+      if (!bottyFrontSpriteRendererReady) {
+        console.info('[Moonpet] BOTTY front sprite fallback used', bottyFrontSpriteRendererState);
+      }
+      return bottyFrontSpriteRendererReady;
+    } catch (error) {
+      bottyFrontSpriteRendererReady = false;
+      bottyFrontSpriteRendererState = { reason: error.message, errors: [error.message] };
+      console.info('[Moonpet] BOTTY front sprite fallback used', bottyFrontSpriteRendererState);
       return false;
     }
   }
@@ -749,7 +785,6 @@
     return '<nav class="utility-rail" aria-label="Game utilities">' +
       '<button type="button" class="utility-button" data-utility="guide">HOW TO PLAY</button>' +
       '<button type="button" class="utility-button" data-utility="leaderboard">LEADERBOARD</button>' +
-      '<button type="button" class="utility-button" data-utility="wearables">WEARABLES</button>' +
       '<button type="button" class="utility-button" data-utility="audio" aria-pressed="' + (audioEnabled ? 'true' : 'false') + '">AUDIO ' + (audioEnabled ? 'ON' : 'OFF') + '</button>' +
       '<button type="button" class="utility-button" data-utility="radio" aria-pressed="' + (radioRequestedOn ? 'true' : 'false') + '">RADIO ' + (radioRequestedOn ? 'ON' : 'OFF') + '</button>' +
       '<button type="button" class="utility-button" data-utility="sync">REFRESH</button>' +
@@ -854,8 +889,8 @@
       utilityTitle.textContent = 'HOW TO PLAY MOONPET OS';
       utilityContent.innerHTML = guideMarkup();
     } else if (kind === 'wearables') {
-      utilityTitle.textContent = 'MOONBOT WEARABLES';
-      utilityContent.innerHTML = wearableLoadoutMarkup();
+      utilityTitle.textContent = 'BOTTY UPGRADES';
+      utilityContent.innerHTML = '<div class="line">BOTTY USES FULL AUTOSPRITE COSTUME PACKS.</div><div class="line muted">OLD HAT / GLASSES / CHEST / BACK / HAND / AURA OVERLAYS ARE DISABLED IN LIVE BETA.</div>';
     } else {
       loadLeaderboard('seasonal');
     }
@@ -2408,6 +2443,7 @@
     if (key === 'greet') return 'greet';
     if (key === 'activity_claim') return 'celebrate';
     if (key === 'activity_cancel') return 'interact';
+    if (/fail|blocked|denied|lose/.test(key)) return 'blocked';
     if (/feed|use_item/.test(key)) return 'feed';
     if (/play/.test(key)) return 'play';
     if (/clean/.test(key)) return 'clean';
@@ -2417,12 +2453,13 @@
     if (/train/.test(key)) return 'train';
     if (/boss|arena|kaiju|fight|attack/.test(key)) return 'battle';
     if (/random_event|event_chain/.test(key)) return 'interact';
-    if (/run|adventure|expedition|district/.test(key)) return 'travel';
+    if (/run|adventure|expedition|explore|district/.test(key)) return 'travel';
     if (/job|activity|work/.test(key)) return 'work';
     if (/buy|market|equipment|cosmetic|gear/.test(key)) return 'equip';
     if (/evolve|prestige/.test(key)) return 'evolve';
     if (/trade/.test(key)) return 'trade';
-    if (/claim|chest|bounty|season|reward|achievement/.test(key)) return 'celebrate';
+    if (/claim|chest|bounty|season|reward|achievement|win/.test(key)) return 'celebrate';
+    if (/talk|interact/.test(key)) return 'interact';
     return 'interact';
   }
 
@@ -3340,7 +3377,22 @@
     return drew;
   }
 
+  function drawBottyFrontMoonpetSprite(time, mode, active, x, y, scale) {
+    if (!bottyFrontSpriteModeEnabled || !bottyFrontSpriteRendererReady || !window.MoonpetBottyFrontSpriteRenderer) return false;
+    var drew = window.MoonpetBottyFrontSpriteRenderer.renderBottyFrontMoonpet(ctx, mode, x, y, scale, time, {
+      active: active,
+      startedAt: active ? actionStartedAt : 0
+    });
+    bottyFrontSpriteRendererState = window.MoonpetBottyFrontSpriteRenderer.getMoonpetBottyFrontRendererState();
+    if (!drew && !bottyFrontSpriteFallbackLogged) {
+      bottyFrontSpriteFallbackLogged = true;
+      console.info('[Moonpet] BOTTY front sprite fallback used', bottyFrontSpriteRendererState);
+    }
+    return drew;
+  }
+
   function idleSpecialRoleForFrame(time, mode, active) {
+    return '';
     var now = Number(time) || performance.now();
     if (active || mode !== 'idle') {
       idleSpecialRole = '';
@@ -3434,6 +3486,17 @@
     var faceX = petFaceOffset(speciesId);
     var x = 160 + pose.x + (combat && combat.active ? -62 : 0);
     var y = 150 + pose.y + growth.offsetY;
+    if (drawBottyFrontMoonpetSprite(renderTime, animationMode, active, x, y + 14, scale)) {
+      if (!active && mood !== 'curious' && !lifecycleCeremonyActive(time)) drawPixelText(mood.toUpperCase(), x, y - 78 * scale, mood === 'hurt' ? '#ff6d6d' : palette.accent, 'center');
+      if ((!combat || !combat.active) && !lifecycleCeremonyActive(time)) {
+        if (rareName) drawPixelText(rareName.toUpperCase(), x, 70, palette.accent, 'center');
+        else if (lifecycle.species_name) drawPixelText(lifecycle.species_name.toUpperCase(), x, 78, palette.accent, 'center');
+      }
+      drawCompanionHabitEffects(time, x, y, presence, palette.accent, active);
+      drawActionEffects(time, x, y, active);
+      if (active && animationLabel && !lifecycleCeremonyActive(time)) drawPixelText('[' + animationLabel + ']', 160, 211, animationMode === 'blocked' ? '#ff6d6d' : '#f4ff65', 'center');
+      return;
+    }
     if (drawSideScrollerMoonpetSprite(renderTime, animationMode, active, x, y - 2, scale * 0.86)) {
       if (!active && mood !== 'curious' && !lifecycleCeremonyActive(time)) drawPixelText(mood.toUpperCase(), x, y - 78 * scale, mood === 'hurt' ? '#ff6d6d' : palette.accent, 'center');
       if ((!combat || !combat.active) && !lifecycleCeremonyActive(time)) {
@@ -4009,6 +4072,7 @@
       }
       clock.textContent = now.toISOString().slice(11, 19) + ' UTC';
     }, 1000);
+    await initBottyFrontSpriteMode();
     await initSideScrollerSpriteMode();
     await initApprovedSpriteMode();
     requestAnimationFrame(frame);
@@ -4072,6 +4136,9 @@
   window.MoonpetBetaAppearance = {
     getLoadout: function () { return Object.assign({}, wearableLoadout); },
     getEquippedTraits: function () { return equippedWearableTraits().slice(); },
+    getBottyFrontState: function () { return bottyFrontSpriteRendererState; },
+    isBottyFrontReady: function () { return bottyFrontSpriteRendererReady; },
+    isSideScrollerEnabled: function () { return sideScrollerSpriteModeEnabled; },
     getIdleSpecialState: function () {
       return { role: idleSpecialRole, nextAt: idleSpecialNextAt, until: idleSpecialUntil, counts: Object.assign({}, idleSpecialCounts) };
     }
