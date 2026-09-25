@@ -106,6 +106,7 @@ function extractFunctionSource(source, name) {
   let inSingle = false;
   let inDouble = false;
   let inTemplate = false;
+  let templateExpressionDepth = 0;
   let inLineComment = false;
   let inBlockComment = false;
   let escaped = false;
@@ -134,7 +135,36 @@ function extractFunctionSource(source, name) {
       }
       if (inSingle && char === "'") inSingle = false;
       else if (inDouble && char === '"') inDouble = false;
-      else if (inTemplate && char === '`') inTemplate = false;
+      else if (inTemplate) {
+        if (templateExpressionDepth === 0) {
+          if (char === '`') inTemplate = false;
+          else if (char === '$' && next === '{') {
+            templateExpressionDepth = 1;
+            index += 1;
+          }
+        } else {
+          if (char === '/' && next === '/') {
+            inLineComment = true;
+            index += 1;
+            continue;
+          }
+          if (char === '/' && next === '*') {
+            inBlockComment = true;
+            index += 1;
+            continue;
+          }
+          if (char === "'") {
+            inSingle = true;
+            continue;
+          }
+          if (char === '"') {
+            inDouble = true;
+            continue;
+          }
+          if (char === '{') templateExpressionDepth += 1;
+          else if (char === '}') templateExpressionDepth -= 1;
+        }
+      }
       continue;
     }
     if (char === '/' && next === '/') {
