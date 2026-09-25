@@ -1,5 +1,6 @@
 :root {
   color-scheme: dark;
+  accent-color: rgba(255, 255, 255, 0.82);
   --ui-bg: #070707;
   --ui-bg-elevated: #0a0a0a;
   --ui-surface: #111113;
@@ -58,6 +59,7 @@ html, body {
   margin: 0;
   width: 100%;
   height: 100%;
+  background-color: var(--ui-bg);
   background:
     radial-gradient(circle at top, rgba(255,255,255,.035), transparent 32%),
     linear-gradient(180deg, #0a0a0a 0%, var(--ui-bg) 100%);
