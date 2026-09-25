@@ -1,0 +1,11 @@
+{
+  "captured_at": "2026-09-25T16:53:08.289Z",
+  "source": "AutoSprite API",
+  "character_name": "BOTTY",
+  "execute": true,
+  "dry_run": false,
+  "animation": null,
+  "limit": null,
+  "error_message": "AutoSprite POST /characters/cmuh1eo4p000113f3alnoim0v/spritesheets failed HTTP 403: API access requires a paid subscription. Upgrade at https://autosprite.io/pricing",
+  "note": "This file is intentionally non-secret and excludes AUTOSPRITE_API_KEY."
+}
