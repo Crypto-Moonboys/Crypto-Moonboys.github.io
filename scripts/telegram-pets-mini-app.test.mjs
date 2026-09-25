@@ -1533,13 +1533,13 @@ assert.match(worker, /return err\('mini_app_action_failed', 500\)/);
 assert.doesNotMatch(html, /<img\b/i);
 const gameSurfaceWithoutRequiredFavicon = html.replace(/<link\s+rel="icon"\s+type="image\/png"\s+href="\/favicon\.png">/i, '');
 const gameSurfaceWithoutApprovedBackground = (gameSurfaceWithoutRequiredFavicon + client + css)
-  .replace(/var WORLD_BACKGROUND_URL = '\/games\/assets\/BITTY%20BACKGROUND\.jpg';/i, '');
+  .replace(/var WORLD_BACKGROUND_URL = '\/games\/assets\/BITTY%20BACKGROUND\.jpg\?v=20260925-botty-front-live-beta-v4';/i, '');
 assert.doesNotMatch(gameSurfaceWithoutApprovedBackground, /\.(?:jpe?g|png|gif|webp|svg)(?:[?#"'])/i);
 assert.match(html, /moonpet-canvas/);
 assert.match(client, /requestAnimationFrame\(frame\)/);
 assert.match(client, /if \(reducedMotion\) return/);
 assert.match(client, /fillRect/);
-assert.equal((client.match(/new Image\s*\(/g) || []).length, 1, 'Mini App must only allocate the approved BITTY background image');
+assert.doesNotMatch(client.replace(/var worldBackgroundImage = new Image\(\);/, ''), /new Image\s*\(/, 'Mini App must only allocate the approved BITTY background image');
 assert.match(client, /typeBoot/);
 assert.match(client, /actionAnimationFamily/);
 assert.match(client, /key === 'activity_start'.*payload && payload\.activity_type/);
@@ -1608,7 +1608,7 @@ for (const scene of ['home', 'missions', 'explore', 'work', 'economy', 'profile'
 assert.doesNotMatch(client, /Math\.floor\(time \/ 180\) % 36/, 'skyline motion must not snap at a modulo boundary');
 assert.doesNotMatch(client, /drawPixelText\('₿'/, 'crypto moon mark must not depend on a platform font glyph');
 assert.match(client, /interact: '#a9ff9a'/);
-assert.match(client, /var WORLD_BACKGROUND_URL = '\/games\/assets\/BITTY%20BACKGROUND\.jpg'/);
+assert.match(client, /var WORLD_BACKGROUND_URL = '\/games\/assets\/BITTY%20BACKGROUND\.jpg\?v=20260925-botty-front-live-beta-v4'/);
 assert.match(client, /var worldBackgroundImage = new Image\(\)/);
 assert.match(client, /function drawWorldBackground\(\)/);
 assert.match(client, /ctx\.drawImage\(worldBackgroundImage, sx, sy, sw, sh, 0, 0, 320, 220\)/);

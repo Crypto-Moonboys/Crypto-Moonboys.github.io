@@ -120,7 +120,7 @@
   var activeUtility = '';
   var utilityRequestGeneration = 0;
 
-  var WORLD_BACKGROUND_URL = '/games/assets/BITTY%20BACKGROUND.jpg';
+  var WORLD_BACKGROUND_URL = '/games/assets/BITTY%20BACKGROUND.jpg?v=20260925-botty-front-live-beta-v4';
   var worldBackgroundImage = new Image();
   var worldBackgroundReady = false;
   worldBackgroundImage.onload = function () {
