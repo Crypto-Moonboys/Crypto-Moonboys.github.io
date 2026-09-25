@@ -8,6 +8,7 @@ on:
       - ".github/workflows/moonpet-art-factory.yml"
       - "scripts/discover-autosprite-character.js"
       - "scripts/generate-botty-front-animations.js"
+      - "scripts/download-botty-front-animations.js"
   workflow_dispatch:
     inputs:
       phase:
@@ -25,6 +26,7 @@ on:
           - side-scroller-autopilot
           - discover-autosprite-character
           - generate-botty-front-pack
+          - download-botty-front-pack
       autosprite_character_name:
         description: "Exact existing AutoSprite character name for discovery/name-based generation."
         required: false
@@ -118,7 +120,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AUTOSPRITE_API_KEY: ${{ secrets.AUTOSPRITE_API_KEY }}
-      FACTORY_PHASE: ${{ github.event_name == 'workflow_dispatch' && inputs.phase || 'generate-botty-front-pack' }}
+      FACTORY_PHASE: ${{ github.event_name == 'workflow_dispatch' && inputs.phase || 'download-botty-front-pack' }}
       AUTOSPRITE_CHARACTER_NAME: ${{ github.event_name == 'workflow_dispatch' && inputs.autosprite_character_name || 'BOTTY' }}
       AUTO_COMMIT_AUTOSPRITE_CHARACTER_REGISTRY: ${{ github.event_name != 'workflow_dispatch' || inputs.auto_commit_autosprite_character_registry }}
       EXECUTE_BOTTY_FRONT_GENERATION: ${{ github.event_name != 'workflow_dispatch' || inputs.execute_botty_front_generation }}
@@ -153,6 +155,7 @@ jobs:
           node --check scripts/moonpet-side-scroller-queue-check.js
           node --check scripts/discover-autosprite-character.js
           node --check scripts/generate-botty-front-animations.js
+          node --check scripts/download-botty-front-animations.js
           node --check js/moonpet-animation-sandbox.js
           node --check js/moonpet-runtime-preview.js
           node scripts/generate-moonpet-assets-extraction.test.js
@@ -260,7 +263,7 @@ jobs:
           AUTO_PROMOTE_SIDE_SCROLLER_ASSETS: ${{ inputs.auto_promote_side_scroller_assets && 'true' || 'false' }}
 
       - name: Discover AutoSprite character by exact name
-        if: ${{ env.FACTORY_PHASE == 'discover-autosprite-character' || env.FACTORY_PHASE == 'generate-botty-front-pack' }}
+        if: ${{ env.FACTORY_PHASE == 'discover-autosprite-character' || env.FACTORY_PHASE == 'generate-botty-front-pack' || env.FACTORY_PHASE == 'download-botty-front-pack' }}
         timeout-minutes: 10
         run: node scripts/discover-autosprite-character.js --name "$AUTOSPRITE_CHARACTER_NAME" --persist
 
@@ -276,8 +279,13 @@ jobs:
           fi
           node scripts/generate-botty-front-animations.js "${ARGS[@]}"
 
+      - name: Download existing BOTTY front-facing animation pack
+        if: ${{ env.FACTORY_PHASE == 'download-botty-front-pack' }}
+        timeout-minutes: 30
+        run: node scripts/download-botty-front-animations.js --character-name "$AUTOSPRITE_CHARACTER_NAME"
+
       - name: Commit AutoSprite character registry
-        if: ${{ always() && (env.FACTORY_PHASE == 'discover-autosprite-character' || env.FACTORY_PHASE == 'generate-botty-front-pack') && env.AUTO_COMMIT_AUTOSPRITE_CHARACTER_REGISTRY == 'true' }}
+        if: ${{ always() && (env.FACTORY_PHASE == 'discover-autosprite-character' || env.FACTORY_PHASE == 'generate-botty-front-pack' || env.FACTORY_PHASE == 'download-botty-front-pack') && env.AUTO_COMMIT_AUTOSPRITE_CHARACTER_REGISTRY == 'true' }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
