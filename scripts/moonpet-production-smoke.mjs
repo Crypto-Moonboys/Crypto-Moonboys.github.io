@@ -14,12 +14,16 @@ function assetPath(pattern, label) {
   return match[match.length - 1];
 }
 
+function assetUrl(pattern, label) {
+  return new URL(assetPath(pattern, label), SITE_ROOT).toString();
+}
+
 const ENDPOINTS = Object.freeze({
   workerHealth: 'https://moonboys-api.sercullen.workers.dev/health',
   deploymentInfo: 'https://moonboys-api.sercullen.workers.dev/deployment-info',
   gameHtml: `${SITE_ROOT}/moonpet-game.html`,
-  miniAppJs: `${SITE_ROOT}${assetPath(/<script[^>]+src=(['"])([^'"]*\/js\/moonpet-mini-app\.js[^'"]*)\1/i, 'mini app js')}`,
-  miniAppCss: `${SITE_ROOT}${assetPath(/<link[^>]+href=(['"])([^'"]*\/css\/moonpet-mini-app\.css[^'"]*)\1/i, 'mini app css')}`,
+  miniAppJs: assetUrl(/<script[^>]+src=(['"])([^'"]*\/js\/moonpet-mini-app\.js[^'"]*)\1/i, 'mini app js'),
+  miniAppCss: assetUrl(/<link[^>]+href=(['"])([^'"]*\/css\/moonpet-mini-app\.css[^'"]*)\1/i, 'mini app css'),
 });
 
 function fail(message) {
