@@ -62,8 +62,13 @@ async function renderAllRoles(page) {
     const renderer = window.MoonpetBottyFrontSpriteRenderer;
     if (!renderer) throw new Error("BOTTY renderer is unavailable");
     await renderer.initMoonpetBottyFrontRenderer({ cacheBust: "browser-smoke" });
-    const state = renderer.getMoonpetBottyFrontRendererState();
+    let state = renderer.getMoonpetBottyFrontRendererState();
     if (!state.ready) throw new Error(`BOTTY renderer not ready: ${state.reason} ${state.errors.join(" | ")}`);
+    for (let attempt = 0; attempt < 120 && state.loadedRoles.length < 15; attempt += 1) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      state = renderer.getMoonpetBottyFrontRendererState();
+    }
+    if (state.loadedRoles.length < 15) throw new Error(`BOTTY background preload incomplete: ${state.loadedRoles.length}/15`);
     const canvas = document.getElementById("moonpet-canvas");
     const ctx = canvas.getContext("2d");
     const results = [];
