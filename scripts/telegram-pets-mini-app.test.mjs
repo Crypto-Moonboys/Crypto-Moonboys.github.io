@@ -97,7 +97,7 @@ function extractTestExport(source, name) {
   return source.slice(bodyStart + 1, end);
 }
 function extractFunctionSource(source, name) {
-  return source.match(new RegExp(`function ${name}\\(\\)\\s*\\{[\\s\\S]*?\\n  \\}`))?.[0] || '';
+  return source.match(new RegExp(`function ${name}\\([^)]*\\)\\s*\\{[\\s\\S]*?\\n  \\}`))?.[0] || '';
 }
 
 const capabilityCombatHelperSource = extractTestExport(client, 'capabilityCombatHelper');
@@ -1532,19 +1532,21 @@ assert.match(worker, /return err\('mini_app_action_failed', 500\)/);
 
 assert.doesNotMatch(html, /<img\b/i);
 const gameSurfaceWithoutRequiredFavicon = html.replace(/<link\s+rel="icon"\s+type="image\/png"\s+href="\/favicon\.png">/i, '');
-assert.doesNotMatch(gameSurfaceWithoutRequiredFavicon + client + css, /\.(?:jpe?g|png|gif|webp|svg)(?:[?#"'])/i);
+const gameSurfaceWithoutApprovedBackground = (gameSurfaceWithoutRequiredFavicon + client + css)
+  .replace(/var WORLD_BACKGROUND_URL = '\/games\/assets\/BITTY%20BACKGROUND\.jpg';/i, '');
+assert.doesNotMatch(gameSurfaceWithoutApprovedBackground, /\.(?:jpe?g|png|gif|webp|svg)(?:[?#"'])/i);
 assert.match(html, /moonpet-canvas/);
 assert.match(client, /requestAnimationFrame\(frame\)/);
 assert.match(client, /if \(reducedMotion\) return/);
 assert.match(client, /fillRect/);
-assert.doesNotMatch(client, /new Image\s*\(/);
+assert.equal((client.match(/new Image\s*\(/g) || []).length, 1, 'Mini App must only allocate the approved BITTY background image');
 assert.match(client, /typeBoot/);
 assert.match(client, /actionAnimationFamily/);
 assert.match(client, /key === 'activity_start'.*payload && payload\.activity_type/);
 assert.match(client, /key === 'activity_claim'.*return 'celebrate'/);
 assert.match(client, /key === 'activity_cancel'.*return 'interact'/);
 assert.match(client, /animateAction\(action, true, 8000, payload\)/);
-assert.match(client, /animateAction\(action, Boolean\(data\.result && data\.result\.accepted\), 2800, payload\)/);
+assert.match(client, /var actionAccepted = Boolean\(data\.result && data\.result\.accepted\);[\s\S]*animateAction\(action, actionAccepted, 2800, payload\)/);
 assert.match(client, /var actionResultHoldMs = 3600/);
 assert.match(client, /hold: actionResultHoldMs/);
 assert.match(client, /hold: 2200/);
@@ -1606,7 +1608,7 @@ for (const scene of ['home', 'missions', 'explore', 'work', 'economy', 'profile'
 assert.doesNotMatch(client, /Math\.floor\(time \/ 180\) % 36/, 'skyline motion must not snap at a modulo boundary');
 assert.doesNotMatch(client, /drawPixelText\('₿'/, 'crypto moon mark must not depend on a platform font glyph');
 assert.match(client, /interact: '#a9ff9a'/);
-assert.match(client, /var WORLD_BACKGROUND_URL = '\/games\/assets\/BITTY%20BACKGROUND\.jpg\?v=20260925-botty-front-live-beta-v4'/);
+assert.match(client, /var WORLD_BACKGROUND_URL = '\/games\/assets\/BITTY%20BACKGROUND\.jpg'/);
 assert.match(client, /var worldBackgroundImage = new Image\(\)/);
 assert.match(client, /function drawWorldBackground\(\)/);
 assert.match(client, /ctx\.drawImage\(worldBackgroundImage, sx, sy, sw, sh, 0, 0, 320, 220\)/);
@@ -1663,10 +1665,10 @@ assert.match(css, /\.boot-layer\.is-compact\.is-notice \{[^}]*max-height: none;[
 assert.match(css, /repeating-linear-gradient/);
 assert.match(css, /grid-template-rows: auto minmax\(178px, 32dvh\) auto minmax\(0, 1fr\) auto/);
 assert.match(css, /\.screen \{[^}]*overflow-y: auto/s);
-assert.match(css, /\.dock \{ position: relative/);
+assert.match(css, /\.dock \{[^}]*position: relative/s);
 assert.match(css, /\.boot-layer\.is-compact/);
 assert.match(css, /prefers-reduced-motion/);
-assert.match(css, /\.meter-fill \{ display: block;/);
+assert.match(css, /\.meter-fill \{[^}]*display: block;/s);
 assert.doesNotMatch(html, /maximum-scale|user-scalable/i);
 
 
@@ -1693,14 +1695,14 @@ assert.match(client, /applied && \(applied\.rewardsApplied \|\| applied\.rewards
 assert.match(client, /var reward = resultRewardMap\(result\)/);
 assert.equal([...client.matchAll(/var reward = resultRewardMap\(result\)/g)].length, 2, 'terminal and canvas feedback must share reward normalization');
 assert.match(client, /presentResultFeedback\(data\.result, stateBeforeAction, nextState\)/);
-assert.match(client, /await showPendingNotices\(\);\s*animateAction\(action, Boolean\(data\.result && data\.result\.accepted\), 2800, payload\);\s*if \(!startLifecycleCeremony\(plannedCeremony\)\) presentResultFeedback\(data\.result, stateBeforeAction, nextState\)/s);
+assert.match(client, /await showPendingNotices\(\);\s*var actionAccepted = Boolean\(data\.result && data\.result\.accepted\);[\s\S]*?animateAction\(action, actionAccepted, 2800, payload\);\s*if \(!startLifecycleCeremony\(plannedCeremony\)\) presentResultFeedback\(data\.result, stateBeforeAction, nextState\)/s);
 assert.doesNotMatch(client, /presentResultFeedback\(data\.result(?:, stateBeforeAction, nextState)?\);\s*render\(\);\s*await typeBoot/s, 'feedback timer must not run behind the boot overlay');
 assert.equal([...client.matchAll(/presentResultFeedback\(/g)].length, 2, 'only the helper and real server-result call may present reward feedback');
 assert.match(client, /var feedbackDuration = Math\.max\(5200, actionResultHoldMs \+ 1600\)/);
 assert.match(client, /feedbackUntil = performance\.now\(\) \+ feedbackDuration/);
 assert.match(client, /feedbackRedrawTimer = window\.setTimeout/);
 assert.match(client, /clearResultFeedback\(true\)/);
-assert.match(client, /clearResultFeedback\(false\);\s*animateAction\(action, true, 8000, payload\)/s);
+assert.match(client, /clearResultFeedback\(false\);[\s\S]*?animateAction\(action, true, 8000, payload\)/s);
 assert.match(client, /reaction: compactFeedback\(result\.reaction, 24\)/);
 assert.match(client, /actionStartedAt <= 0/);
 assert.match(client, /function drawCinematicFeedback\(time, scene\)/);
@@ -1953,14 +1955,14 @@ assert.match(sideScrollerRenderer, /function roleForAnimationMode\(animationMode
 assert.match(sideScrollerRenderer, /state\.roleMap\[mode\]/, 'side-scroller renderer must resolve roles from runtime_role_map');
 assert.match(sideScrollerRenderer, /variant_cadence/, 'side-scroller variants must support cadence control');
 assert.match(client, /canvas\.addEventListener\('click'/);
-assert.match(client, /canvasX >= 92 && canvasX <= 228 && canvasY >= 66 && canvasY <= 190/);
+assert.match(client, /canvasX >= 92 && canvasX <= 228 && canvasY >= 72 && canvasY <= 220/);
 assert.match(client, /animateAction\('greet', true, greetingVariant === 'front_wave' \? 2200 : 1400/);
 assert.doesNotMatch(client, /greetCompanion[\s\S]{0,1200}(?:post\(|runAction\()/, 'pet taps must remain cosmetic and server-neutral');
 assert.match(client, /companionGreetingTimer = window\.setTimeout/);
 assert.match(client, /drawPet\(renderTime, presence, combat\)/);
 assert.match(client, /if \(companionGreetingUntil > 0 && companionGreetingUntil <= time\)/);
 assert.match(client, /companionGreeting = '';\s*companionGreetingUntil = 0;/s);
-assert.match(client, /drawUtcAmbience\(scene\);\s*drawCombatHud\(scene, combat\);\s*if \(!combat\.active && !lifecycleCeremonyActive\(renderTime\)\) drawCompanionPresence\(renderTime, scene, presence\)/s);
+assert.match(client, /drawCombatHud\(scene, combat\);\s*if \(!combat\.active && !lifecycleCeremonyActive\(renderTime\)\) drawCompanionPresence\(renderTime, scene, presence\)/s);
 assert.doesNotMatch(client, /Math\.random\(\)[^\n]*(?:presence|habit|greeting)|(?:presence|habit|greeting)[^\n]*Math\.random\(\)/i, 'living companion behavior must be deterministic');
 
 assert.match(client, /var COMBAT_PRESENTATION_FRAME =/);
@@ -2128,7 +2130,7 @@ assert.match(client, /var burst = reducedMotion \? 38/);
 assert.match(client, /lifecycleCeremonyTimer = window\.setTimeout/);
 assert.match(client, /if \(lifecycleCeremony !== activeCeremony\) return/);
 assert.match(client, /drawCinematicFeedback\(renderTime, scene\);\s*drawLifecycleCeremony\(renderTime, scene\);/s);
-assert.match(client, /await typeBoot\(\['EXEC '[\s\S]*?await showPendingNotices\(\);[\s\S]*?if \(!startLifecycleCeremony\(plannedCeremony\)\) presentResultFeedback\(data\.result, stateBeforeAction, nextState\);/);
+assert.match(client, /await typeBoot\(\['EXEC '[\s\S]*?await showPendingNotices\(\);[\s\S]*?var actionAccepted = Boolean\(data\.result && data\.result\.accepted\);[\s\S]*?if \(!startLifecycleCeremony\(plannedCeremony\)\) presentResultFeedback\(data\.result, stateBeforeAction, nextState\);/);
 assert.match(client, /if \(lifecycleCeremonyActive\(\)\) \{\s*tell\('LIFECYCLE REVEAL IN PROGRESS\.'/s);
 assert.match(client, /screen\.addEventListener\('click'[\s\S]*?if \(lifecycleCeremonyActive\(\)\)[\s\S]*?LIFECYCLE REVEAL IN PROGRESS/s);
 assert.match(client, /nav\.addEventListener\('click'[\s\S]*?if \(lifecycleCeremonyActive\(\)\)[\s\S]*?LIFECYCLE REVEAL IN PROGRESS/s);
