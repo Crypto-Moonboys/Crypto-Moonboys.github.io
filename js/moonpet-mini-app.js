@@ -294,8 +294,8 @@
     }
     console.info('[Moonpet] BOTTY front sprite mode enabled');
     try {
-      await loadApprovedSpriteScript('/js/moonpet-botty-front-asset-loader.js?v=20260925-botty-front-live-beta-v1');
-      await loadApprovedSpriteScript('/js/moonpet-botty-front-sprite-renderer.js?v=20260925-botty-front-live-beta-v1');
+      await loadApprovedSpriteScript('/js/moonpet-botty-front-asset-loader.js?v=20260925-botty-front-live-beta-v2');
+      await loadApprovedSpriteScript('/js/moonpet-botty-front-sprite-renderer.js?v=20260925-botty-front-live-beta-v2');
       if (!window.MoonpetBottyFrontSpriteRenderer) throw new Error('MoonpetBottyFrontSpriteRenderer unavailable');
       bottyFrontSpriteRendererState = await window.MoonpetBottyFrontSpriteRenderer.initMoonpetBottyFrontRenderer();
       bottyFrontSpriteRendererReady = Boolean(bottyFrontSpriteRendererState && bottyFrontSpriteRendererState.ready);
@@ -4072,11 +4072,18 @@
       }
       clock.textContent = now.toISOString().slice(11, 19) + ' UTC';
     }, 1000);
-    await initBottyFrontSpriteMode();
-    await initSideScrollerSpriteMode();
-    await initApprovedSpriteMode();
+    // Sprite loading must never block the game boot/auth path. Start all renderers in
+    // the background and let drawPet fall back until BOTTY is ready.
+    var spriteStartup = Promise.allSettled([
+      initBottyFrontSpriteMode(),
+      initSideScrollerSpriteMode(),
+      initApprovedSpriteMode()
+    ]);
     requestAnimationFrame(frame);
     await typeBoot(['MOONPET BIOS 0.9', 'CHECKING TELEGRAM SIGNATURE...', 'CONNECTING TO D1 MEMORY CORE...'], { speed: 10, hold: 180 });
+    spriteStartup.then(function () {
+      if (state) drawWorld(performance.now());
+    });
     await restoreBrowserAuth();
     if (!initData && !telegramAuth) {
       tell('OPEN THIS GAME FROM @WIKICOMSBOT.', 'danger');
