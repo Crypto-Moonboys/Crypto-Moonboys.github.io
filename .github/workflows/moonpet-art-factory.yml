@@ -27,6 +27,7 @@ on:
           - discover-autosprite-character
           - generate-botty-front-pack
           - download-botty-front-pack
+          - download-existing-front-pack
       autosprite_character_name:
         description: "Exact existing AutoSprite character name for discovery/name-based generation."
         required: false
@@ -263,7 +264,7 @@ jobs:
           AUTO_PROMOTE_SIDE_SCROLLER_ASSETS: ${{ inputs.auto_promote_side_scroller_assets && 'true' || 'false' }}
 
       - name: Discover AutoSprite character by exact name
-        if: ${{ env.FACTORY_PHASE == 'discover-autosprite-character' || env.FACTORY_PHASE == 'generate-botty-front-pack' }}
+        if: ${{ env.FACTORY_PHASE == 'discover-autosprite-character' || env.FACTORY_PHASE == 'generate-botty-front-pack' || env.FACTORY_PHASE == 'download-botty-front-pack' || env.FACTORY_PHASE == 'download-existing-front-pack' }}
         timeout-minutes: 10
         run: node scripts/discover-autosprite-character.js --name "$AUTOSPRITE_CHARACTER_NAME" --persist
 
@@ -279,13 +280,13 @@ jobs:
           fi
           node scripts/generate-botty-front-animations.js "${ARGS[@]}"
 
-      - name: Download existing BOTTY front-facing animation pack
-        if: ${{ env.FACTORY_PHASE == 'download-botty-front-pack' }}
+      - name: Download existing front-facing animation pack
+        if: ${{ env.FACTORY_PHASE == 'download-botty-front-pack' || env.FACTORY_PHASE == 'download-existing-front-pack' }}
         timeout-minutes: 30
         run: node scripts/download-botty-front-animations.js --character-name "$AUTOSPRITE_CHARACTER_NAME"
 
       - name: Commit AutoSprite character registry
-        if: ${{ always() && (env.FACTORY_PHASE == 'discover-autosprite-character' || env.FACTORY_PHASE == 'generate-botty-front-pack') && env.AUTO_COMMIT_AUTOSPRITE_CHARACTER_REGISTRY == 'true' }}
+        if: ${{ always() && (env.FACTORY_PHASE == 'discover-autosprite-character' || env.FACTORY_PHASE == 'generate-botty-front-pack' || env.FACTORY_PHASE == 'download-botty-front-pack' || env.FACTORY_PHASE == 'download-existing-front-pack') && env.AUTO_COMMIT_AUTOSPRITE_CHARACTER_REGISTRY == 'true' }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

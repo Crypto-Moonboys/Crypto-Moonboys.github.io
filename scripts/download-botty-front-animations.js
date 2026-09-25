@@ -12,10 +12,6 @@ const {
 const REPO_ROOT = path.resolve(__dirname, "..");
 const API_BASE_URL = "https://www.autosprite.io/api/v1";
 const REGISTRY_PATH = path.join(REPO_ROOT, "data", "moonpet-autosprite-characters.json");
-const OUTPUT_DIR = path.join(REPO_ROOT, "output", "moonpets", "botty-front");
-const MANIFEST_PATH = path.join(REPO_ROOT, "output", "manifests", "botty-front-existing-sheets.generated.json");
-const RAW_DIR = path.join(REPO_ROOT, "output", "manifests", "autosprite", "botty-front-existing");
-const CONTACT_SHEET_PATH = path.join(OUTPUT_DIR, "contact-sheet.png");
 const DEFAULT_CHARACTER_NAME = "BOTTY";
 
 const FRONT_ANIMATIONS = [
@@ -73,7 +69,7 @@ function parseArgs(argv) {
 }
 
 function printHelp() {
-  console.log(`Download existing BOTTY front-facing AutoSprite sheets.
+  console.log(`Download an existing character's front-facing AutoSprite sheets.
 
 Usage:
   node scripts/download-botty-front-animations.js --character-name BOTTY --character-id cmuh1eo4p000113f3alnoim0v
@@ -108,6 +104,17 @@ function slug(value) {
     .replace(/^_+|_+$/g, "") || "botty";
 }
 
+function outputPaths(characterName) {
+  const characterSlug = slug(characterName).replace(/_/g, "-");
+  const outputDir = path.join(REPO_ROOT, "output", "moonpets", `${characterSlug}-front`);
+  return {
+    outputDir,
+    manifestPath: path.join(REPO_ROOT, "output", "manifests", `${characterSlug}-front-existing-sheets.generated.json`),
+    rawDir: path.join(REPO_ROOT, "output", "manifests", "autosprite", `${characterSlug}-front-existing`),
+    contactSheetPath: path.join(outputDir, "contact-sheet.png")
+  };
+}
+
 function selectedAnimations(options) {
   let animations = FRONT_ANIMATIONS;
   if (options.animation) {
@@ -126,7 +133,7 @@ async function resolveCharacterId(options) {
   throw new Error(`No AutoSprite character id found for "${options.characterName}".`);
 }
 
-async function requestAutoSprite({ urlPath, apiKey, rawName }) {
+async function requestAutoSprite({ urlPath, apiKey, rawName, rawDir }) {
   const response = await fetch(`${API_BASE_URL}${urlPath}`, {
     headers: {
       "Content-Type": "application/json",
@@ -140,7 +147,7 @@ async function requestAutoSprite({ urlPath, apiKey, rawName }) {
   } catch {
     parsed = { rawText: text };
   }
-  if (rawName) await writeJson(path.join(RAW_DIR, rawName), parsed || { rawText: text });
+  if (rawName) await writeJson(path.join(rawDir, rawName), parsed || { rawText: text });
   if (!response.ok) {
     const message = parsed && (parsed.message || parsed.code || parsed.error && parsed.error.message) || text || response.statusText;
     throw new Error(`AutoSprite GET ${urlPath} failed HTTP ${response.status}: ${message}`);
@@ -168,7 +175,7 @@ function extractList(value) {
   return [];
 }
 
-async function listSpritesheets(apiKey, characterId) {
+async function listSpritesheets(apiKey, characterId, paths) {
   const endpoints = [
     `/characters/${encodeURIComponent(characterId)}/spritesheets?limit=100`,
     `/characters/${encodeURIComponent(characterId)}/spritesheets`,
@@ -183,7 +190,8 @@ async function listSpritesheets(apiKey, characterId) {
       const response = await requestAutoSprite({
         urlPath: endpoints[index],
         apiKey,
-        rawName: `list-${index + 1}.json`
+        rawName: `list-${index + 1}.json`,
+        rawDir: paths.rawDir
       });
       for (const record of extractList(response)) {
         const id = spritesheetId(record) || `${recordsById.size + 1}`;
@@ -194,7 +202,7 @@ async function listSpritesheets(apiKey, characterId) {
     }
   }
 
-  await writeJson(path.join(RAW_DIR, "list-endpoint-summary.json"), {
+  await writeJson(path.join(paths.rawDir, "list-endpoint-summary.json"), {
     character_id: characterId,
     endpoint_count: endpoints.length,
     found_count: recordsById.size,
@@ -202,7 +210,7 @@ async function listSpritesheets(apiKey, characterId) {
   });
 
   if (!recordsById.size) {
-    throw new Error(`No existing AutoSprite spritesheets were listed for ${characterId}. Endpoint errors saved to ${relative(path.join(RAW_DIR, "list-endpoint-summary.json"))}.`);
+    throw new Error(`No existing AutoSprite spritesheets were listed for ${characterId}. Endpoint errors saved to ${relative(path.join(paths.rawDir, "list-endpoint-summary.json"))}.`);
   }
   return Array.from(recordsById.values());
 }
@@ -260,18 +268,19 @@ function recordTimestamp(record) {
   return 0;
 }
 
-async function fetchSpritesheetDetail({ apiKey, record, animationId }) {
+async function fetchSpritesheetDetail({ apiKey, record, animationId, paths }) {
   const id = spritesheetId(record);
   if (!id) return record;
   try {
     const detail = await requestAutoSprite({
       urlPath: `/spritesheets/${encodeURIComponent(id)}`,
       apiKey,
-      rawName: `${animationId}-spritesheet-${slug(id)}.json`
+      rawName: `${animationId}-spritesheet-${slug(id)}.json`,
+      rawDir: paths.rawDir
     });
     return detail || record;
   } catch (error) {
-    await writeJson(path.join(RAW_DIR, `${animationId}-spritesheet-${slug(id)}-detail-error.json`), {
+    await writeJson(path.join(paths.rawDir, `${animationId}-spritesheet-${slug(id)}-detail-error.json`), {
       spritesheet_id: id,
       message: error.message
     });
@@ -327,15 +336,15 @@ async function readAtlasOrNull(filePath) {
   }
 }
 
-async function saveExistingSheet({ apiKey, animationId, record }) {
-  const detail = await fetchSpritesheetDetail({ apiKey, record, animationId });
+async function saveExistingSheet({ apiKey, animationId, record, characterName, paths }) {
+  const detail = await fetchSpritesheetDetail({ apiKey, record, animationId, paths });
   const targets = extractDownloadTargets(detail);
   const png = targets.find((target) => target.kind === "png");
   const atlas = targets.find((target) => target.kind === "atlas");
   const id = spritesheetId(detail) || spritesheetId(record);
 
   if (!png) {
-    await writeJson(path.join(RAW_DIR, `${animationId}-missing-download-urls.json`), {
+    await writeJson(path.join(paths.rawDir, `${animationId}-missing-download-urls.json`), {
       animation_id: animationId,
       spritesheet_id: id,
       candidate_urls: collectUrlCandidates(detail),
@@ -344,8 +353,8 @@ async function saveExistingSheet({ apiKey, animationId, record }) {
     throw new Error(`${animationId} has no downloadable PNG URL in AutoSprite record ${id || "(id unavailable)"}.`);
   }
 
-  const pngPath = path.join(OUTPUT_DIR, `${animationId}.png`);
-  const atlasPath = path.join(OUTPUT_DIR, `${animationId}.json`);
+  const pngPath = path.join(paths.outputDir, `${animationId}.png`);
+  const atlasPath = path.join(paths.outputDir, `${animationId}.json`);
   await downloadFile(png.url, pngPath);
   const pngStats = await fs.stat(pngPath);
   if (pngStats.size <= 10 * 1024) throw new Error(`${relative(pngPath)} is too small (${pngStats.size} bytes).`);
@@ -382,7 +391,7 @@ async function saveExistingSheet({ apiKey, animationId, record }) {
 
   return {
     id: animationId,
-    character_name: DEFAULT_CHARACTER_NAME,
+    character_name: characterName,
     source: "AutoSprite API",
     provenance: "existing AutoSprite spritesheet download; no generation request was made",
     review_status: "downloaded_pending_visual_review",
@@ -422,7 +431,7 @@ function pickRecord(records, animationId) {
   })) };
 }
 
-async function buildContactSheet(entries) {
+async function buildContactSheet(entries, contactSheetPath) {
   const tileW = 240;
   const tileH = 210;
   const labelH = 38;
@@ -443,18 +452,19 @@ async function buildContactSheet(entries) {
     composites.push({ input: label, left, top: top + tileH - labelH });
   }
 
-  await fs.mkdir(path.dirname(CONTACT_SHEET_PATH), { recursive: true });
+  await fs.mkdir(path.dirname(contactSheetPath), { recursive: true });
   await sharp({ create: { width, height, channels: 4, background: { r: 14, g: 16, b: 20, alpha: 1 } } })
     .composite(composites)
     .png()
-    .toFile(CONTACT_SHEET_PATH);
+    .toFile(contactSheetPath);
 }
 
 async function downloadBottyFrontAnimations(options) {
   const apiKey = process.env.AUTOSPRITE_API_KEY;
   if (!apiKey) throw new Error("AUTOSPRITE_API_KEY is required to download AutoSprite outputs.");
+  const paths = outputPaths(options.characterName);
   const characterId = await resolveCharacterId(options);
-  const records = await listSpritesheets(apiKey, characterId);
+  const records = await listSpritesheets(apiKey, characterId, paths);
   const animations = selectedAnimations(options);
   const entries = [];
   const matchCandidates = {};
@@ -462,11 +472,11 @@ async function downloadBottyFrontAnimations(options) {
   for (const animationId of animations) {
     const match = pickRecord(records, animationId);
     matchCandidates[animationId] = match.candidates;
-    entries.push(await saveExistingSheet({ apiKey, animationId, record: match.record }));
+    entries.push(await saveExistingSheet({ apiKey, animationId, record: match.record, characterName: options.characterName, paths }));
     console.log(`Downloaded existing ${animationId} -> ${entries[entries.length - 1].output_png_path}`);
   }
 
-  await buildContactSheet(entries);
+  await buildContactSheet(entries, paths.contactSheetPath);
   const manifest = {
     generated_at: new Date().toISOString(),
     source: "AutoSprite API",
@@ -474,13 +484,13 @@ async function downloadBottyFrontAnimations(options) {
     character_name: options.characterName,
     character_id: characterId,
     required_animations: animations,
-    contact_sheet_path: relative(CONTACT_SHEET_PATH),
+    contact_sheet_path: relative(paths.contactSheetPath),
     animations: entries.map((entry) => ({ ...entry, character_name: options.characterName, character_id: characterId })),
     match_candidates: matchCandidates
   };
-  await writeJson(MANIFEST_PATH, manifest);
-  console.log(`Existing BOTTY front manifest written to ${relative(MANIFEST_PATH)}`);
-  console.log(`Contact sheet written to ${relative(CONTACT_SHEET_PATH)}`);
+  await writeJson(paths.manifestPath, manifest);
+  console.log(`Existing ${options.characterName} front manifest written to ${relative(paths.manifestPath)}`);
+  console.log(`Contact sheet written to ${relative(paths.contactSheetPath)}`);
   return manifest;
 }
 
@@ -498,5 +508,6 @@ if (require.main === module) {
 module.exports = {
   FRONT_ANIMATIONS,
   parseArgs,
+  outputPaths,
   downloadBottyFrontAnimations
 };

@@ -6,14 +6,13 @@ const path = require("node:path");
 const REPO_ROOT = path.resolve(__dirname, "..");
 const API_BASE_URL = "https://www.autosprite.io/api/v1";
 const DEFAULT_NAME = "BOTTY";
-const DEFAULT_OUTPUT = path.join(REPO_ROOT, "output", "manifests", "botty-autosprite-character.json");
 const DEFAULT_REGISTRY = path.join(REPO_ROOT, "data", "moonpet-autosprite-characters.json");
 const RAW_DIR = path.join(REPO_ROOT, "output", "manifests", "autosprite", "character-discovery");
 
 function parseArgs(argv) {
   const options = {
     name: DEFAULT_NAME,
-    output: DEFAULT_OUTPUT,
+    output: "",
     registry: DEFAULT_REGISTRY,
     persist: false,
     limit: 100
@@ -40,6 +39,9 @@ function parseArgs(argv) {
 
   options.name = String(options.name || "").trim();
   if (!options.name) throw new Error("--name is required.");
+  if (!options.output) {
+    options.output = path.join(REPO_ROOT, "output", "manifests", `${slug(options.name)}-autosprite-character.json`);
+  }
   if (!Number.isFinite(options.limit) || options.limit <= 0) options.limit = 100;
   return options;
 }
