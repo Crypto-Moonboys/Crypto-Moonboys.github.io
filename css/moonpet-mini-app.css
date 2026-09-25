@@ -574,11 +574,17 @@ button, input, select, textarea {
 }
 
 .terminal-button:hover,
+.terminal-button:focus-visible,
 .terminal-link-button:hover,
+.terminal-link-button:focus-visible,
 .utility-button:hover,
+.utility-button:focus-visible,
 .jump-button:hover,
+.jump-button:focus-visible,
 .utility-close:hover,
-.period-button:hover {
+.utility-close:focus-visible,
+.period-button:hover,
+.period-button:focus-visible {
   border-color: rgba(255,255,255,.18);
   background: linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.025));
 }
