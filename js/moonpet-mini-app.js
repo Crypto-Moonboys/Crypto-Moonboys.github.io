@@ -50,6 +50,8 @@
   var reducedMotionAnimationTimer = 0;
   var actionResultHoldMs = 3600;
   var actionStartedAt = 0;
+  var sleepLatched = false;
+  var SLEEP_LATCH_STORAGE_KEY = 'moonpet-botty-sleep-latch-v1';
   var cameraImpactUntil = 0;
   var cameraImpactStrength = 0;
   var feedbackUntil = 0;
@@ -117,6 +119,19 @@
   var utilityReturnFocus = null;
   var activeUtility = '';
   var utilityRequestGeneration = 0;
+
+  var WORLD_BACKGROUND_URL = '/games/assets/BITTY%20BACKGROUND.jpg?v=20260925-botty-front-live-beta-v4';
+  var worldBackgroundImage = new Image();
+  var worldBackgroundReady = false;
+  worldBackgroundImage.onload = function () {
+    worldBackgroundReady = true;
+    if (state) drawWorld(performance.now());
+  };
+  worldBackgroundImage.onerror = function () {
+    worldBackgroundReady = false;
+    console.error('[Moonpet] BITTY background failed to load:', WORLD_BACKGROUND_URL);
+  };
+  worldBackgroundImage.src = WORLD_BACKGROUND_URL;
   var WEARABLE_LOADOUT_STORAGE_KEY = 'moonpet-wearable-loadout-v2';
   var WEARABLE_SLOT_ORDER = ['head', 'face', 'chest', 'back', 'hand', 'aura'];
   var WEARABLE_SLOT_TRAITS = {
@@ -136,6 +151,36 @@
     aura: ''
   };
   var wearableLoadout = readWearableLoadout();
+
+  function currentPetSleepKey(snapshot) {
+    var pet = snapshot && snapshot.pet || {};
+    return String(pet.pet_id || pet.id || '');
+  }
+
+  function readSleepLatch(snapshot) {
+    var petKey = currentPetSleepKey(snapshot);
+    if (!petKey) return false;
+    try {
+      var saved = JSON.parse(window.localStorage.getItem(SLEEP_LATCH_STORAGE_KEY) || '{}');
+      return saved && saved[petKey] === true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function setSleepLatch(value) {
+    sleepLatched = Boolean(value);
+    var petKey = currentPetSleepKey(state);
+    if (!petKey) return sleepLatched;
+    try {
+      var saved = JSON.parse(window.localStorage.getItem(SLEEP_LATCH_STORAGE_KEY) || '{}');
+      if (!saved || typeof saved !== 'object' || Array.isArray(saved)) saved = {};
+      if (sleepLatched) saved[petKey] = true;
+      else delete saved[petKey];
+      window.localStorage.setItem(SLEEP_LATCH_STORAGE_KEY, JSON.stringify(saved));
+    } catch (_) {}
+    return sleepLatched;
+  }
 
   function launchParameter(name) {
     var locations = [String(window.location.hash || '').replace(/^#/, ''), String(window.location.search || '').replace(/^\?/, '')];
@@ -302,8 +347,8 @@
     }
     console.info('[Moonpet] BOTTY front sprite mode enabled');
     try {
-      await loadApprovedSpriteScript('/js/moonpet-botty-front-asset-loader.js?v=20260925-botty-front-live-beta-v3');
-      await loadApprovedSpriteScript('/js/moonpet-botty-front-sprite-renderer.js?v=20260925-botty-front-live-beta-v3');
+      await loadApprovedSpriteScript('/js/moonpet-botty-front-asset-loader.js?v=20260925-botty-front-live-beta-v4');
+      await loadApprovedSpriteScript('/js/moonpet-botty-front-sprite-renderer.js?v=20260925-botty-front-live-beta-v4');
       if (!window.MoonpetBottyFrontSpriteRenderer) throw new Error('MoonpetBottyFrontSpriteRenderer unavailable');
       bottyFrontSpriteRendererState = await window.MoonpetBottyFrontSpriteRenderer.initMoonpetBottyFrontRenderer();
       bottyFrontSpriteRendererReady = Boolean(bottyFrontSpriteRendererState && bottyFrontSpriteRendererState.ready);
@@ -1450,6 +1495,7 @@
     var serverTime = Date.parse(nextState.server_time || nextState.cooldowns && nextState.cooldowns.server_time || '');
     if (Number.isFinite(serverTime)) serverClockOffsetMs = serverTime - Date.now();
     state = nextState;
+    sleepLatched = readSleepLatch(state);
     seasonSnapshotReceivedAt = performance.now();
     lastSeasonServerRefreshAt = seasonSnapshotReceivedAt;
     scheduleCooldownRefresh();
@@ -2484,17 +2530,19 @@
     actionStartedAt = performance.now();
     cameraImpactStrength = reducedMotion ? 0 : CAMERA_IMPACT_STRENGTH[animationMode] || 0;
     cameraImpactUntil = actionStartedAt + Math.min(animationDuration, 900);
-    animationUntil = actionStartedAt + animationDuration;
+    animationUntil = sleepLatched && animationMode === 'sleep' ? Number.POSITIVE_INFINITY : actionStartedAt + animationDuration;
     if (reducedMotion) {
       window.clearTimeout(reducedMotionAnimationTimer);
       var sequence = actionSequence;
       drawWorld(performance.now());
-      reducedMotionAnimationTimer = window.setTimeout(function () {
-        if (sequence !== actionSequence) return;
-        animationMode = 'idle';
-        animationLabel = '';
-        drawWorld(performance.now());
-      }, animationDuration);
+      if (!(sleepLatched && animationMode === 'sleep')) {
+        reducedMotionAnimationTimer = window.setTimeout(function () {
+          if (sequence !== actionSequence) return;
+          animationMode = sleepLatched ? 'sleep' : 'idle';
+          animationLabel = '';
+          drawWorld(performance.now());
+        }, animationDuration);
+      }
     }
   }
 
@@ -2509,6 +2557,9 @@
     if (buttonElement) buttonElement.classList.add('is-active');
     haptic('medium');
     clearResultFeedback(false);
+    if (sleepLatched && actionAnimationFamily(action, payload) !== 'sleep') {
+      setSleepLatch(false);
+    }
     animateAction(action, true, 8000, payload);
     tell('TRANSMITTING ' + words(action) + '...');
     try {
@@ -2525,7 +2576,10 @@
       render({ discardCallsignDraft: action === 'rename' && Boolean(data.result && data.result.accepted) });
       await typeBoot(['EXEC ' + action.toUpperCase(), message, 'STATE CACHE REFRESHED'], { speed: 5, hold: actionResultHoldMs });
       await showPendingNotices();
-      animateAction(action, Boolean(data.result && data.result.accepted), 2800, payload);
+      var actionAccepted = Boolean(data.result && data.result.accepted);
+      var actionFamily = actionAnimationFamily(action, payload);
+      if (actionFamily === 'sleep') setSleepLatch(actionAccepted);
+      animateAction(action, actionAccepted, 2800, payload);
       if (!startLifecycleCeremony(plannedCeremony)) presentResultFeedback(data.result, stateBeforeAction, nextState);
     } catch (error) {
       animateAction('blocked', false, 2800);
@@ -2637,7 +2691,7 @@
     if (!bounds.width || !bounds.height) return;
     var canvasX = (event.clientX - bounds.left) * canvas.width / bounds.width;
     var canvasY = (event.clientY - bounds.top) * canvas.height / bounds.height;
-    if (canvasX >= 92 && canvasX <= 228 && canvasY >= 66 && canvasY <= 190) greetCompanion();
+    if (canvasX >= 92 && canvasX <= 228 && canvasY >= 72 && canvasY <= 220) greetCompanion();
   });
 
   canvas.addEventListener('keydown', function (event) {
@@ -3473,7 +3527,7 @@
     var stage = petStage(pet);
     var mood = petMood(pet);
     var renderTime = reducedMotion ? performance.now() : time;
-    var active = animationUntil > renderTime;
+    var active = sleepLatched || animationUntil > renderTime;
     if (lifecycle.phase === 'egg') {
       drawMoonEgg(time, active, lifecycle.incubation);
       drawActionEffects(time, 160, 150, active);
@@ -3492,9 +3546,9 @@
     var palette = petPalette(lifecycle, stage);
     var speciesId = lifecycle.species_id || pet && pet.species || 'neon_raccoon';
     var faceX = petFaceOffset(speciesId);
-    var x = 160 + pose.x + (combat && combat.active ? -62 : 0);
-    var y = 150 + pose.y + growth.offsetY;
-    if (drawBottyFrontMoonpetSprite(renderTime, animationMode, active, x, y + 14, scale)) {
+    var x = 160 + (combat && combat.active ? -62 : 0);
+    var y = 194;
+    if (drawBottyFrontMoonpetSprite(renderTime, animationMode, active, x, y, scale)) {
       if (!active && mood !== 'curious' && !lifecycleCeremonyActive(time)) drawPixelText(mood.toUpperCase(), x, y - 78 * scale, mood === 'hurt' ? '#ff6d6d' : palette.accent, 'center');
       if ((!combat || !combat.active) && !lifecycleCeremonyActive(time)) {
         if (rareName) drawPixelText(rareName.toUpperCase(), x, 70, palette.accent, 'center');
@@ -3503,6 +3557,9 @@
       drawCompanionHabitEffects(time, x, y, presence, palette.accent, active);
       drawActionEffects(time, x, y, active);
       if (active && animationLabel && !lifecycleCeremonyActive(time)) drawPixelText('[' + animationLabel + ']', 160, 211, animationMode === 'blocked' ? '#ff6d6d' : '#f4ff65', 'center');
+      return;
+    }
+    if (bottyFrontSpriteModeEnabled) {
       return;
     }
     if (drawSideScrollerMoonpetSprite(renderTime, animationMode, active, x, y - 2, scale * 0.86)) {
@@ -3997,6 +4054,32 @@
     if (progress < 0.72) drawPixelText('ENTER // ' + scene.label, 160, 111, scene.neon, 'center');
   }
 
+  function drawWorldBackground() {
+    if (!worldBackgroundReady || !worldBackgroundImage.naturalWidth || !worldBackgroundImage.naturalHeight) {
+      drawPixelRect(0, 0, 320, 220, '#010402');
+      return;
+    }
+    var sourceWidth = worldBackgroundImage.naturalWidth;
+    var sourceHeight = worldBackgroundImage.naturalHeight;
+    var sourceRatio = sourceWidth / sourceHeight;
+    var targetRatio = 320 / 220;
+    var sx = 0;
+    var sy = 0;
+    var sw = sourceWidth;
+    var sh = sourceHeight;
+    if (sourceRatio > targetRatio) {
+      sw = sourceHeight * targetRatio;
+      sx = (sourceWidth - sw) / 2;
+    } else if (sourceRatio < targetRatio) {
+      sh = sourceWidth / targetRatio;
+      sy = (sourceHeight - sh) / 2;
+    }
+    ctx.save();
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(worldBackgroundImage, sx, sy, sw, sh, 0, 0, 320, 220);
+    ctx.restore();
+  }
+
   function drawWorld(time) {
     var scene = worldScene();
     var renderTime = reducedMotion ? performance.now() : time;
@@ -4004,20 +4087,19 @@
     var camera = updateCameraFrame(renderTime);
     var presence = updateCompanionPresence(state && state.pet, state && state.lifecycle || {}, renderTime);
     var combat = updateCombatPresentation(state);
-    drawPixelRect(0, 0, 320, 220, scene.sky);
+
+    // The authored BITTY image is now the complete environment. No procedural
+    // sky, skyline, graffiti wall, landmarks, street, foreground or ambience.
+    drawWorldBackground();
+
     ctx.save();
-    ctx.translate(160 + camera.x, 110 + camera.y); ctx.scale(camera.zoom, camera.zoom); ctx.translate(-160, -110);
-    drawWorldSky(worldTime, scene);
-    drawWorldSkyline(worldTime, scene);
-    drawGraffitiWall(scene);
-    drawWorldLandmarks(activeScreen, scene);
-    drawWorldStreet(worldTime, scene);
-    drawWorldReaction(worldTime, scene);
+    ctx.translate(160 + camera.x, 110 + camera.y);
+    ctx.scale(camera.zoom, camera.zoom);
+    ctx.translate(-160, -110);
     drawPet(renderTime, presence, combat);
     drawCombatOpponent(worldTime, scene, combat);
     ctx.restore();
-    drawWorldForeground(scene);
-    drawUtcAmbience(scene);
+
     drawCombatHud(scene, combat);
     if (!combat.active && !lifecycleCeremonyActive(renderTime)) drawCompanionPresence(renderTime, scene, presence);
     drawActionFlash(renderTime, scene);
@@ -4047,7 +4129,10 @@
       if (renderDelta > (renderQuality === 'low' ? 68 : 34)) performanceSlowFrames += 1;
       drawWorld(time);
     }
-    if (animationUntil <= time) { animationMode = 'idle'; animationLabel = ''; }
+    if (animationUntil <= time) {
+      animationMode = sleepLatched ? 'sleep' : 'idle';
+      animationLabel = '';
+    }
     if (companionGreetingUntil > 0 && companionGreetingUntil <= time) {
       companionGreeting = '';
       companionGreetingUntil = 0;
