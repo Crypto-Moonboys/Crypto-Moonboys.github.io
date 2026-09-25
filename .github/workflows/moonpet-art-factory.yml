@@ -277,15 +277,18 @@ jobs:
           node scripts/generate-botty-front-animations.js "${ARGS[@]}"
 
       - name: Commit AutoSprite character registry
-        if: ${{ (env.FACTORY_PHASE == 'discover-autosprite-character' || env.FACTORY_PHASE == 'generate-botty-front-pack') && env.AUTO_COMMIT_AUTOSPRITE_CHARACTER_REGISTRY == 'true' }}
+        if: ${{ always() && (env.FACTORY_PHASE == 'discover-autosprite-character' || env.FACTORY_PHASE == 'generate-botty-front-pack') && env.AUTO_COMMIT_AUTOSPRITE_CHARACTER_REGISTRY == 'true' }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/moonpet-autosprite-characters.json
+          if [ -d data/autosprite-generation-diagnostics ]; then
+            git add data/autosprite-generation-diagnostics/
+          fi
           if git diff --cached --quiet; then
-            echo "No AutoSprite character registry changes to commit."
+            echo "No AutoSprite character registry or diagnostic changes to commit."
           else
-            git commit -m "chore: persist AutoSprite character registry [skip ci]"
+            git commit -m "chore: persist AutoSprite character registry and diagnostics [skip ci]"
             git push origin HEAD:${GITHUB_REF_NAME}
           fi
 
@@ -349,4 +352,5 @@ jobs:
             data/moonpet-custom-animation-queue.json
             data/moonpet-side-scroller-animation-queue.json
             data/moonpet-autosprite-characters.json
+            data/autosprite-generation-diagnostics/
           if-no-files-found: warn

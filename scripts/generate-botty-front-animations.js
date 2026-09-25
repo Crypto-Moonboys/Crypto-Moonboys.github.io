@@ -13,6 +13,8 @@ const {
 const REPO_ROOT = path.resolve(__dirname, "..");
 const API_BASE_URL = "https://www.autosprite.io/api/v1";
 const REGISTRY_PATH = path.join(REPO_ROOT, "data", "moonpet-autosprite-characters.json");
+const DIAGNOSTIC_DIR = path.join(REPO_ROOT, "data", "autosprite-generation-diagnostics");
+const DIAGNOSTIC_PATH = path.join(DIAGNOSTIC_DIR, "botty-front-last-error.json");
 const DISCOVERY_MANIFEST_PATH = path.join(REPO_ROOT, "output", "manifests", "botty-autosprite-character.json");
 const OUTPUT_DIR = path.join(REPO_ROOT, "output", "moonpets", "botty-front");
 const MANIFEST_PATH = path.join(REPO_ROOT, "output", "manifests", "botty-front-animation-sheets.generated.json");
@@ -490,7 +492,23 @@ async function generateBottyFrontAnimations(options) {
 }
 
 async function main() {
-  await generateBottyFrontAnimations(parseArgs(process.argv.slice(2)));
+  const options = parseArgs(process.argv.slice(2));
+  try {
+    await generateBottyFrontAnimations(options);
+  } catch (error) {
+    await writeJson(DIAGNOSTIC_PATH, {
+      captured_at: new Date().toISOString(),
+      source: "AutoSprite API",
+      character_name: options.characterName,
+      execute: options.execute,
+      dry_run: options.dryRun,
+      animation: options.animation || null,
+      limit: options.limit || null,
+      error_message: error.message,
+      note: "This file is intentionally non-secret and excludes AUTOSPRITE_API_KEY."
+    });
+    throw error;
+  }
 }
 
 if (require.main === module) {
