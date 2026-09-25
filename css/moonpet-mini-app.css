@@ -69,7 +69,6 @@ html, body {
 body {
   overflow: hidden;
   font-family: var(--font-ui);
-  text-rendering: optimizeLegibility;
 }
 
 button, input, select, textarea {
@@ -175,7 +174,6 @@ button, input, select, textarea {
   border: 1px solid rgba(255,255,255,.08);
   border-radius: var(--radius-small);
   background: rgba(10, 10, 12, 0.68);
-  backdrop-filter: blur(8px);
   color: var(--ui-text-secondary);
   font-family: var(--font-mono);
   font-size: 10px;
@@ -205,7 +203,6 @@ button, input, select, textarea {
   border-radius: 14px;
   background: rgba(12, 12, 14, 0.88);
   box-shadow: var(--ui-shadow-soft);
-  backdrop-filter: blur(10px);
 }
 
 .boot-layer.is-compact.is-notice {
@@ -658,7 +655,6 @@ button, input, select, textarea {
   padding: 7px 7px calc(7px + var(--safe-bottom));
   border-top: 1px solid var(--ui-border);
   background: rgba(9, 9, 11, 0.94);
-  backdrop-filter: blur(14px);
 }
 
 .dock button {
@@ -737,7 +733,6 @@ button, input, select, textarea {
   padding: 10px 12px;
   border-bottom: 1px solid var(--ui-border);
   background: rgba(10, 10, 12, 0.88);
-  backdrop-filter: blur(14px);
 }
 
 .utility-button,
@@ -793,7 +788,6 @@ button, input, select, textarea {
   padding: max(10px, env(safe-area-inset-top, 0px)) 10px calc(10px + var(--safe-bottom));
   background: rgba(4, 4, 5, 0.9);
   overflow: hidden;
-  backdrop-filter: blur(10px);
 }
 
 .utility-layer[hidden] { display: none; }
