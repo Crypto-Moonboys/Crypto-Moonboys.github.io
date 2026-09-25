@@ -97,7 +97,75 @@ function extractTestExport(source, name) {
   return source.slice(bodyStart + 1, end);
 }
 function extractFunctionSource(source, name) {
-  return source.match(new RegExp(`function ${name}\\([^)]*\\)\\s*\\{[\\s\\S]*?\\n  \\}`))?.[0] || '';
+  const signature = `function ${name}(`;
+  const start = source.indexOf(signature);
+  if (start === -1) return '';
+  const bodyStart = source.indexOf('{', start);
+  if (bodyStart === -1) return '';
+  let depth = 0;
+  let inSingle = false;
+  let inDouble = false;
+  let inTemplate = false;
+  let inLineComment = false;
+  let inBlockComment = false;
+  let escaped = false;
+  for (let index = bodyStart; index < source.length; index += 1) {
+    const char = source[index];
+    const next = source[index + 1];
+    if (inLineComment) {
+      if (char === '\n') inLineComment = false;
+      continue;
+    }
+    if (inBlockComment) {
+      if (char === '*' && next === '/') {
+        inBlockComment = false;
+        index += 1;
+      }
+      continue;
+    }
+    if (inSingle || inDouble || inTemplate) {
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+      if (char === '\\') {
+        escaped = true;
+        continue;
+      }
+      if (inSingle && char === "'") inSingle = false;
+      else if (inDouble && char === '"') inDouble = false;
+      else if (inTemplate && char === '`') inTemplate = false;
+      continue;
+    }
+    if (char === '/' && next === '/') {
+      inLineComment = true;
+      index += 1;
+      continue;
+    }
+    if (char === '/' && next === '*') {
+      inBlockComment = true;
+      index += 1;
+      continue;
+    }
+    if (char === "'") {
+      inSingle = true;
+      continue;
+    }
+    if (char === '"') {
+      inDouble = true;
+      continue;
+    }
+    if (char === '`') {
+      inTemplate = true;
+      continue;
+    }
+    if (char === '{') depth += 1;
+    if (char === '}') {
+      depth -= 1;
+      if (depth === 0) return source.slice(start, index + 1);
+    }
+  }
+  return '';
 }
 
 const capabilityCombatHelperSource = extractTestExport(client, 'capabilityCombatHelper');

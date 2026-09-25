@@ -849,7 +849,7 @@ button, input, select, textarea {
   margin-bottom: 12px;
 }
 
-.period-button { min-width: 0; padding-inline: 4px; }
+.period-button { min-width: 0; min-height: 44px; padding-inline: 4px; }
 
 .leader-row { margin-bottom: 8px; }
 .leader-row.is-current {
