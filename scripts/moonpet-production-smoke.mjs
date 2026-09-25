@@ -9,7 +9,7 @@ const SITE_ROOT = 'https://cryptomoonboys.com';
 const ENDPOINTS = Object.freeze({
   workerHealth: 'https://moonboys-api.sercullen.workers.dev/health',
   deploymentInfo: 'https://moonboys-api.sercullen.workers.dev/deployment-info',
-  gameHtml: `${SITE_ROOT}/moonpet-game.html`,
+  telegramGamesLauncher: `${SITE_ROOT}/games/telegram/`,
 });
 
 function fail(message) {
@@ -93,6 +93,12 @@ function extractAssetUrl(html, pattern, label, groupIndex = 2) {
   return new URL(match[groupIndex], SITE_ROOT).toString();
 }
 
+function extractMoonpetLaunchUrl(html) {
+  const match = html.match(/<a[^>]+href=(['"])([^'"]*\/moonpet-game\.html[^'"]*)\1[^>]*>\s*Moonpet OS\s*<\/a>/i);
+  if (!match) fail('could not resolve Moonpet launch URL from the live Telegram games launcher');
+  return new URL(match[2], SITE_ROOT).toString();
+}
+
 const expectedCommit = resolveExpectedCommit();
 if (!COMMIT_RE.test(expectedCommit)) {
   fail('expected commit is missing or invalid. Pass it as an argument, set MOONPET_EXPECTED_COMMIT, or run from a git checkout.');
@@ -112,11 +118,14 @@ const deploymentInfo = await assertJsonEndpoint('Worker deployment-info', ENDPOI
   }
 });
 
-const gameHtml = await fetchHtmlEndpoint('Moonpet game HTML', ENDPOINTS.gameHtml);
+const launcherHtml = await fetchHtmlEndpoint('Telegram games launcher', ENDPOINTS.telegramGamesLauncher);
+const liveMoonpetLaunchUrl = extractMoonpetLaunchUrl(launcherHtml.body);
+const gameHtml = await fetchHtmlEndpoint('Moonpet game HTML', liveMoonpetLaunchUrl);
 const liveMiniAppJs = extractAssetUrl(gameHtml.body, /<script[^>]+src=(['"])([^'"]*\/js\/moonpet-mini-app\.js[^'"]*)\1/i, 'mini app js');
 const liveMiniAppCss = extractAssetUrl(gameHtml.body, /<link[^>]+href=(['"])([^'"]*\/css\/moonpet-mini-app\.css[^'"]*)\1/i, 'mini app css');
 
 const staticChecks = [];
+staticChecks.push({ label: launcherHtml.label, status: launcherHtml.status, method: 'GET', url: launcherHtml.url });
 staticChecks.push({ label: gameHtml.label, status: gameHtml.status, method: 'GET', url: gameHtml.url });
 staticChecks.push(await assertStatus('Moonpet Mini App JS', liveMiniAppJs));
 staticChecks.push(await assertStatus('Moonpet Mini App CSS', liveMiniAppCss));

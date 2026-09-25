@@ -1293,7 +1293,7 @@ assert.match(worker, /const \[journeySummary, hydratedKaiju\] = await Promise\.a
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
-assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260814-moonpet-aaa-pass`/);
+assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260925-moonpet-ui-redesign-v2`/);
 assert.match(worker, /const TELEGRAM_GAMES_MENU_URL = `\$\{SITE_URL\}\/games\/telegram\/\?v=20260903-games-shell-v8`/,
   'default Telegram games menu must point at the current shell release');
 assert.match(worker, /const TELEGRAM_GAMES_MENU_TEXT = 'Games'/);
@@ -1446,7 +1446,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260925-botty-front-live-beta-v4/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260925-moonpet-ui-redesign-v2/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -2216,7 +2216,7 @@ assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Numbe
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
 assert.match(html, /20260925-botty-front-live-beta-v4/);
-assert.match(worker, /20260814-moonpet-aaa-pass/);
+assert.match(worker, /20260925-moonpet-ui-redesign-v2/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');
 assert.match(client, /renderQuality = reducedMotion/, 'canvas quality must start from device capability');
