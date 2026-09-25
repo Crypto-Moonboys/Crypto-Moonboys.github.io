@@ -6,15 +6,20 @@ const COMMIT_RE = /^[0-9a-f]{40}$/i;
 const TIMEOUT_MS = Number(process.env.MOONPET_PRODUCTION_SMOKE_TIMEOUT_MS || 15000);
 const SITE_ROOT = 'https://cryptomoonboys.com';
 
-const ENDPOINTS = Object.freeze({
-  workerHealth: 'https://moonboys-api.sercullen.workers.dev/health',
-  deploymentInfo: 'https://moonboys-api.sercullen.workers.dev/deployment-info',
-  telegramGamesLauncher: `${SITE_ROOT}/games/telegram/`,
-});
-
 function fail(message) {
   throw new Error(`Moonpet production smoke failed: ${message}`);
 }
+
+function expectedUrl(source, pattern, label, groupIndex = 1) {
+  const match = source.match(pattern);
+  if (!match) fail(`could not resolve expected ${label} from the repository`);
+  return new URL(match[groupIndex], SITE_ROOT).toString();
+}
+
+const ENDPOINTS = Object.freeze({
+  workerHealth: 'https://moonboys-api.sercullen.workers.dev/health',
+  deploymentInfo: 'https://moonboys-api.sercullen.workers.dev/deployment-info',
+});
 
 function resolveExpectedCommit() {
   const supplied = process.argv[2] || process.env.MOONPET_EXPECTED_COMMIT || '';
@@ -24,6 +29,14 @@ function resolveExpectedCommit() {
     return execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim().toLowerCase();
   } catch {
     return '';
+  }
+}
+
+function readFileAtCommit(commit, filePath) {
+  try {
+    return execFileSync('git', ['show', `${commit}:${filePath}`], { encoding: 'utf8' });
+  } catch {
+    return null;
   }
 }
 
@@ -104,6 +117,17 @@ if (!COMMIT_RE.test(expectedCommit)) {
   fail('expected commit is missing or invalid. Pass it as an argument, set MOONPET_EXPECTED_COMMIT, or run from a git checkout.');
 }
 
+const workerSourceAtCommit = readFileAtCommit(expectedCommit, 'workers/moonboys-api/worker.js');
+const gameHtmlSourceAtCommit = readFileAtCommit(expectedCommit, 'moonpet-game.html');
+const EXPECTED = workerSourceAtCommit && gameHtmlSourceAtCommit
+  ? Object.freeze({
+      telegramGamesLauncher: expectedUrl(workerSourceAtCommit, /const\s+TELEGRAM_GAMES_MENU_URL\s*=\s*`\$\{SITE_URL\}([^`]+)`/, 'Telegram games launcher URL'),
+      moonpetLaunchUrl: expectedUrl(workerSourceAtCommit, /const\s+MOONPET_MINI_APP_URL\s*=\s*`\$\{SITE_URL\}([^`]+)`/, 'Moonpet Mini App launch URL'),
+      miniAppJs: expectedUrl(gameHtmlSourceAtCommit, /<script[^>]+src=(['"])([^'"]*\/js\/moonpet-mini-app\.js[^'"]*)\1/i, 'Moonpet Mini App JS URL', 2),
+      miniAppCss: expectedUrl(gameHtmlSourceAtCommit, /<link[^>]+href=(['"])([^'"]*\/css\/moonpet-mini-app\.css[^'"]*)\1/i, 'Moonpet Mini App CSS URL', 2),
+    })
+  : null;
+
 const health = await assertJsonEndpoint('Worker health', ENDPOINTS.workerHealth, (payload) => {
   if (payload?.ok !== true) fail(`Worker health ok was not true: ${JSON.stringify(payload)}`);
 });
@@ -118,11 +142,20 @@ const deploymentInfo = await assertJsonEndpoint('Worker deployment-info', ENDPOI
   }
 });
 
-const launcherHtml = await fetchHtmlEndpoint('Telegram games launcher', ENDPOINTS.telegramGamesLauncher);
+const launcherHtml = await fetchHtmlEndpoint('Telegram games launcher', EXPECTED ? EXPECTED.telegramGamesLauncher : `${SITE_ROOT}/games/telegram/`);
 const liveMoonpetLaunchUrl = extractMoonpetLaunchUrl(launcherHtml.body);
+if (EXPECTED && liveMoonpetLaunchUrl !== EXPECTED.moonpetLaunchUrl) {
+  fail(`live Moonpet launch URL ${liveMoonpetLaunchUrl} did not match expected ${EXPECTED.moonpetLaunchUrl}`);
+}
 const gameHtml = await fetchHtmlEndpoint('Moonpet game HTML', liveMoonpetLaunchUrl);
 const liveMiniAppJs = extractAssetUrl(gameHtml.body, /<script[^>]+src=(['"])([^'"]*\/js\/moonpet-mini-app\.js[^'"]*)\1/i, 'mini app js');
 const liveMiniAppCss = extractAssetUrl(gameHtml.body, /<link[^>]+href=(['"])([^'"]*\/css\/moonpet-mini-app\.css[^'"]*)\1/i, 'mini app css');
+if (EXPECTED && liveMiniAppJs !== EXPECTED.miniAppJs) {
+  fail(`live Moonpet Mini App JS ${liveMiniAppJs} did not match expected ${EXPECTED.miniAppJs}`);
+}
+if (EXPECTED && liveMiniAppCss !== EXPECTED.miniAppCss) {
+  fail(`live Moonpet Mini App CSS ${liveMiniAppCss} did not match expected ${EXPECTED.miniAppCss}`);
+}
 
 const staticChecks = [];
 staticChecks.push({ label: launcherHtml.label, status: launcherHtml.status, method: 'GET', url: launcherHtml.url });
@@ -134,6 +167,7 @@ console.log(JSON.stringify({
   ok: true,
   verified_at: new Date().toISOString(),
   expected_commit: expectedCommit,
+  expectation_mode: EXPECTED ? 'commit-aware' : 'live-only',
   worker: {
     health: { status: health.status, ok: health.payload.ok },
     deployment_info: {
