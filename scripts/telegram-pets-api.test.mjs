@@ -314,6 +314,24 @@ assert.deepEqual(rareLeaderboardEntry, {
   style_tokens: 41,
   streak_days: 9,
 }, 'leaderboard serializer must carry lifecycle identity and all persisted Moonpet currencies');
+const speciesLabelMap = {
+  neon_raccoon: 'F1 EDDY',
+  bubble_ram: 'JALE THE SNAKE',
+  comet_gecko: 'TUBBY',
+  vinyl_crab: 'BOTTY',
+  lantern_fox: 'RED ALERT',
+  sneaker_snail: 'THE TING',
+  alley_drake: 'TATTOO JOHN',
+  moon_ferret: 'TIN BOB',
+};
+for (const [speciesId, speciesName] of Object.entries(speciesLabelMap)) {
+  const serialized = serializePetLeaderboardEntry({
+    lifecycle_phase: 'adult',
+    lifecycle_species_id: speciesId,
+  }, 0);
+  assert.equal(serialized.species_id, speciesId);
+  assert.equal(serialized.species_name, speciesName, `leaderboard serializer must map ${speciesId} to ${speciesName}`);
+}
 const eggLeaderboardEntry = serializePetLeaderboardEntry({
   pet_name: 'Unhatched',
   lifecycle_phase: 'egg',
