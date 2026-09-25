@@ -97,9 +97,10 @@ function extractTestExport(source, name) {
   return source.slice(bodyStart + 1, end);
 }
 function extractFunctionSource(source, name) {
-  const signature = `function ${name}(`;
-  const start = source.indexOf(signature);
-  if (start === -1) return '';
+  const declaration = new RegExp(`(^|\\n)\\s*function ${name}\\(`);
+  const match = declaration.exec(source);
+  if (!match) return '';
+  const start = match.index + match[1].length;
   const bodyStart = source.indexOf('{', start);
   if (bodyStart === -1) return '';
   let depth = 0;
