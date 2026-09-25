@@ -130,6 +130,47 @@ function componentAngle(component) {
   return clamp(angle, -45, 45);
 }
 
+function partCandidates(components, headComponent, headBounds, rootY) {
+  return components
+    .filter((component) => component !== headComponent)
+    .map((component) => ({ component, bounds: componentBounds(component) }))
+    .filter(({ component, bounds }) =>
+      component.area >= 24
+      && bounds.width >= 4
+      && bounds.height >= 4
+      && bounds.width < headBounds.width * 0.7
+      && bounds.height < headBounds.width * 0.85
+      && bounds.centerY > headBounds.top + headBounds.width * 0.28
+      && bounds.centerY < rootY - headBounds.width * 0.08
+    );
+}
+
+function detectedHand(parts, side, fallbackX, fallbackY) {
+  const candidates = parts.filter(({ bounds }) => side === 'left'
+    ? bounds.centerX <= fallbackX + 8
+    : bounds.centerX >= fallbackX - 8
+  );
+  candidates.sort((left, right) => side === 'left'
+    ? left.bounds.centerX - right.bounds.centerX
+    : right.bounds.centerX - left.bounds.centerX
+  );
+  const selected = candidates[0];
+  return selected
+    ? { x: selected.bounds.centerX, y: selected.bounds.centerY, detected: true }
+    : { x: fallbackX, y: fallbackY, detected: false };
+}
+
+function detectedFoot(parts, side, rootX, rootY, headWidth) {
+  const candidates = parts
+    .filter(({ bounds }) => bounds.centerY >= rootY - headWidth * 0.3)
+    .sort((left, right) => left.bounds.centerX - right.bounds.centerX);
+  if (!candidates.length) {
+    return { x: rootX + (side === 'left' ? -1 : 1) * headWidth * 0.15, y: rootY - 4, detected: false };
+  }
+  const selected = side === 'left' ? candidates[0] : candidates[candidates.length - 1];
+  return { x: selected.bounds.centerX, y: Math.min(rootY - 2, selected.bounds.bottom), detected: true };
+}
+
 function analyzeFrame(data, sheetWidth, originX, originY) {
   const brightMask = new Uint8Array(FRAME_SIZE * FRAME_SIZE);
   const brightXs = [];
@@ -164,15 +205,25 @@ function analyzeFrame(data, sheetWidth, originX, originY) {
     bodyXs.push(brightXs[index]);
     bodyYs.push(brightYs[index]);
   }
-  const lowerXs = bodyXs.filter((_, index) => bodyYs[index] > headBounds.bottom - 8);
-  const rootX = lowerXs.length ? percentile(lowerXs, 0.5) : headBounds.centerX;
   const rootY = bodyYs.length ? percentile(bodyYs, 0.997) : 232;
+  const footBandXs = bodyXs.filter((_, index) => bodyYs[index] >= rootY - Math.max(14, headBounds.width * 0.2));
+  const rootX = footBandXs.length ? percentile(footBandXs, 0.5) : headBounds.centerX;
+  const parts = partCandidates(components, head && head.component, headBounds, rootY);
+  const fallbackHandY = Math.min(rootY - headBounds.width * 0.24, headBounds.top + headBounds.width * 1.2);
+  const handLeft = detectedHand(parts, 'left', rootX - headBounds.width * 0.34, fallbackHandY);
+  const handRight = detectedHand(parts, 'right', rootX + headBounds.width * 0.34, fallbackHandY);
+  const footLeft = detectedFoot(parts, 'left', rootX, rootY, headBounds.width);
+  const footRight = detectedFoot(parts, 'right', rootX, rootY, headBounds.width);
   return {
     head: headBounds,
     headAngle: head ? componentAngle(head.component) : 0,
     rootX,
     rootY,
-    bodyHeight: Math.max(80, rootY - headBounds.top)
+    bodyHeight: Math.max(80, rootY - headBounds.top),
+    handLeft,
+    handRight,
+    footLeft,
+    footRight
   };
 }
 
@@ -198,10 +249,11 @@ function anchorsForFrame(frame, orientation) {
   const visorCenterX = front ? head.centerX : head.centerX + facingSign * headWidth * 0.38;
   const visorCenterY = head.top + headWidth * (front ? 0.48 : 0.43);
   const visorWidth = rear ? 0 : headWidth * (front ? 0.7 : 0.24);
-  const handSpread = headWidth * (front ? 0.4 : 0.25);
-  const handY = chestY + headWidth * 0.3;
-  const footSpread = headWidth * (front ? 0.2 : 0.11);
-  const footY = frame.rootY - 4;
+  const handLeft = frame.handLeft || { x: chestX - headWidth * (front ? 0.4 : 0.25), y: chestY + headWidth * 0.3 };
+  const handRight = frame.handRight || { x: chestX + headWidth * (front ? 0.4 : 0.25), y: chestY + headWidth * 0.3 };
+  const footLeft = frame.footLeft || { x: frame.rootX - headWidth * (front ? 0.2 : 0.11), y: frame.rootY - 4 };
+  const footRight = frame.footRight || { x: frame.rootX + headWidth * (front ? 0.2 : 0.11), y: frame.rootY - 4 };
+  const handRotation = (hand) => clamp(Math.atan2(hand.y - chestY, hand.x - chestX) * 180 / Math.PI, -90, 90);
   const bodyScale = frame.bodyHeight;
   return {
     root: anchor(frame.rootX, frame.rootY, bodyScale, 0),
@@ -212,11 +264,63 @@ function anchorsForFrame(frame, orientation) {
     visor_right: anchor(visorCenterX + visorWidth * 0.5, visorCenterY, visorWidth, frame.headAngle, !rear, rear),
     chest_center: anchor(chestX, chestY, headWidth * 0.62, frame.headAngle * 0.2),
     back_center: anchor(chestX - facingSign * headWidth * (front || rear ? 0 : 0.32), chestY, headWidth * 0.58, frame.headAngle * 0.2, true, front),
-    hand_left: anchor(chestX - handSpread, handY, headWidth * 0.2, frame.headAngle * 0.25, true, orientation === 'side_right'),
-    hand_right: anchor(chestX + handSpread, handY, headWidth * 0.2, frame.headAngle * 0.25, true, orientation === 'side_left'),
-    foot_left: anchor(frame.rootX - footSpread, footY, headWidth * 0.25, 0),
-    foot_right: anchor(frame.rootX + footSpread, footY, headWidth * 0.25, 0)
+    hand_left: anchor(handLeft.x, handLeft.y, headWidth * 0.2, handRotation(handLeft), true, orientation === 'side_right'),
+    hand_right: anchor(handRight.x, handRight.y, headWidth * 0.2, handRotation(handRight), true, orientation === 'side_left'),
+    foot_left: anchor(footLeft.x, footLeft.y, headWidth * 0.25, 0),
+    foot_right: anchor(footRight.x, footRight.y, headWidth * 0.25, 0)
   };
+}
+
+function smoothIsolatedExtremitySpikes(frames, key) {
+  for (let index = 1; index < frames.length - 1; index += 1) {
+    const previous = frames[index - 1];
+    const current = frames[index];
+    const next = frames[index + 1];
+    if (!previous[key] || !current[key] || !next[key]) continue;
+    const neighborDistance = Math.hypot(next[key].x - previous[key].x, next[key].y - previous[key].y);
+    const previousDistance = Math.hypot(current[key].x - previous[key].x, current[key].y - previous[key].y);
+    const nextDistance = Math.hypot(current[key].x - next[key].x, current[key].y - next[key].y);
+    if (neighborDistance <= 18 && previousDistance > 36 && nextDistance > 36) {
+      current[key] = {
+        x: (previous[key].x + next[key].x) / 2,
+        y: (previous[key].y + next[key].y) / 2,
+        detected: false
+      };
+    }
+  }
+}
+
+function stabilizeExtremityTrack(frames, key, maxStep) {
+  const source = frames.map((frame) => ({
+    x: frame[key].x - frame.rootX,
+    y: frame[key].y - frame.rootY,
+    detected: frame[key].detected
+  }));
+  const capped = (ordered) => {
+    const result = ordered.map((point) => ({ ...point }));
+    for (let index = 1; index < result.length; index += 1) {
+      const previous = result[index - 1];
+      const current = result[index];
+      const dx = current.x - previous.x;
+      const dy = current.y - previous.y;
+      const distance = Math.hypot(dx, dy);
+      if (distance <= maxStep) continue;
+      const ratio = maxStep / distance;
+      current.x = previous.x + dx * ratio;
+      current.y = previous.y + dy * ratio;
+      current.detected = false;
+    }
+    return result;
+  };
+  const forward = capped(source);
+  const backward = capped(source.slice().reverse()).reverse();
+  for (let index = 0; index < frames.length; index += 1) {
+    frames[index][key] = {
+      x: frames[index].rootX + (forward[index].x + backward[index].x) / 2,
+      y: frames[index].rootY + (forward[index].y + backward[index].y) / 2,
+      detected: forward[index].detected && backward[index].detected
+    };
+  }
 }
 
 async function buildRole(asset) {
@@ -239,8 +343,22 @@ async function buildRole(asset) {
   const medianRootX = median(rawFrames.map((frame) => frame.rootX));
   const medianRootY = median(rawFrames.map((frame) => frame.rootY));
   const medianHeight = median(rawFrames.map((frame) => frame.bodyHeight));
+  const medianHeadRootX = median(rawFrames.map((frame) => frame.head.centerX - frame.rootX));
+  smoothIsolatedExtremitySpikes(rawFrames, 'handLeft');
+  smoothIsolatedExtremitySpikes(rawFrames, 'handRight');
+  smoothIsolatedExtremitySpikes(rawFrames, 'footLeft');
+  smoothIsolatedExtremitySpikes(rawFrames, 'footRight');
+  stabilizeExtremityTrack(rawFrames, 'handLeft', 28);
+  stabilizeExtremityTrack(rawFrames, 'handRight', 28);
+  stabilizeExtremityTrack(rawFrames, 'footLeft', 22);
+  stabilizeExtremityTrack(rawFrames, 'footRight', 22);
   const frames = rawFrames.map((frame, index) => {
-    if (Math.abs(frame.head.centerX - medianCenter) > 22) frame.head.centerX = medianCenter;
+    const headRootX = frame.head.centerX - frame.rootX;
+    if (FRONT_ROLES.has(asset.role) || Math.abs(headRootX - medianHeadRootX) > 18) {
+      frame.head.centerX = frame.rootX + clamp(headRootX, medianHeadRootX - 10, medianHeadRootX + 10);
+    } else if (Math.abs(frame.head.centerX - medianCenter) > 28) {
+      frame.head.centerX = medianCenter;
+    }
     if (frame.head.width < medianWidth * 0.72 || frame.head.width > medianWidth * 1.3) frame.head.width = medianWidth;
     const unstableHeight = frame.bodyHeight < medianHeight * 0.72 || frame.bodyHeight > medianHeight * 1.28;
     if (FRONT_ROLES.has(asset.role) || unstableHeight) {

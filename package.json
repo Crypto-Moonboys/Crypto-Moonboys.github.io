@@ -51,6 +51,7 @@
     "moonpet:side-queue:check": "node scripts/moonpet-side-scroller-queue-check.js",
     "moonpet:runtime-sprites:check": "node scripts/moonpet-runtime-sprite-requirements-check.js",
     "moonpet:frame-anchors:check": "node scripts/moonpet-frame-anchor-check.js",
+    "moonpet:frame-anchors:audit": "node scripts/moonpet-frame-anchor-audit.js",
     "moonpet:side:dry": "node scripts/generate-moonpet-side-scroller-animation.js --id side_idle --dry-run",
     "moonpet:side:generate": "node scripts/generate-moonpet-side-scroller-animation.js --id side_idle --execute",
     "moonpet:side:autopilot": "node scripts/moonpet-side-scroller-autopilot.js --autopilot",

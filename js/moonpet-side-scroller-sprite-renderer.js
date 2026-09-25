@@ -265,8 +265,15 @@
     return index >= 0 ? index : order.length + Number(trait.z_index || 0);
   }
 
-  function wearablePhase(trait) {
-    return trait.layer === "aura_back" || trait.layer === "backpack" ? "behind" : "front";
+  function wearablePhase(trait, role, frameIndex, options = {}) {
+    const policies = state.traitConfig && state.traitConfig.layer_render_policy || {};
+    const policy = policies[trait.layer] || "front";
+    if (policy === "behind") return "behind";
+    if (policy === "anchor_occlusion" && trait.use_character_anchor) {
+      const anchor = decodeAnchor(role, frameIndex, trait.anchor_key, options);
+      return anchor && anchor.occluded ? "behind" : "front";
+    }
+    return "front";
   }
 
   function drawRoundBadge(ctx, radius, visual) {
@@ -500,7 +507,7 @@
     if (!state.traitConfig) return [];
     const traits = traitListFromOptions(options)
       .map(traitById)
-      .filter((trait) => trait && wearablePhase(trait) === phase)
+      .filter((trait) => trait && wearablePhase(trait, role, frame.index, options) === phase)
       .sort((a, b) => layerIndex(a) - layerIndex(b));
     const rendered = [];
     for (const trait of traits) {

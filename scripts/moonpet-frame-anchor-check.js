@@ -83,6 +83,24 @@ const visor = traits.sample_visor_glasses;
 assert(visor?.anchor_key === 'visor_center', 'face proof must bind to visor_center');
 assert(visor?.use_character_anchor === true, 'face proof must use character anchors');
 
+const categoryProofs = {
+  sample_chest_badge: 'chest_center',
+  sample_micro_jetpack: 'back_center',
+  sample_wrench_prop: 'hand_right'
+};
+for (const [traitId, anchorName] of Object.entries(categoryProofs)) {
+  const trait = traits[traitId];
+  assert(trait?.anchor_key === anchorName, `${traitId} must bind to ${anchorName}`);
+  assert(trait?.use_character_anchor === true, `${traitId} must use character anchors`);
+  assert(trait?.visual?.pose_fits === undefined, `${traitId} may not own frame tracking`);
+  assert(promotedRoles.every((role) => trait?.supported_roles?.includes(role)), `${traitId} must support every promoted role`);
+}
+assert(wearables.layer_render_policy?.backpack === 'behind', 'backpack layer must render behind the body');
+assert(wearables.layer_render_policy?.badge === 'front', 'badge layer must render in front of the body');
+assert(wearables.layer_render_policy?.glasses === 'front', 'glasses layer must render in front of the body');
+assert(wearables.layer_render_policy?.hat === 'front', 'hat layer must render in front of the body');
+assert(wearables.layer_render_policy?.hand_item === 'anchor_occlusion', 'hand items must follow anchor occlusion');
+
 if (errors.length) {
   console.error(`Moonbot frame anchor check failed (${errors.length}):`);
   errors.forEach((error) => console.error(`- ${error}`));

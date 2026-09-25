@@ -41,7 +41,7 @@
       "sample_micro_jetpack",
       "sample_chest_badge",
       "sample_visor_glasses",
-      "sample_lunar_cap",
+      "neon_borough_cap",
       "sample_wrench_prop"
     ]
   },
@@ -72,6 +72,20 @@
     "prop_front",
     "aura_front"
   ],
+  "layer_render_policy": {
+    "aura_back": "behind",
+    "backpack": "behind",
+    "hoodie_body": "front",
+    "chain": "front",
+    "badge": "front",
+    "mask": "front",
+    "glasses": "front",
+    "hat": "front",
+    "hand_item": "anchor_occlusion",
+    "shoes_feet_item": "anchor_occlusion",
+    "prop_front": "front",
+    "aura_front": "front"
+  },
   "mirror_safe_rules": {
     "default": "mirror_with_pose",
     "symmetric_categories": [
@@ -493,10 +507,17 @@
       "name": "Sample Chest Badge",
       "category": "badges",
       "layer": "badge",
-      "anchor_key": "badge",
+      "anchor_key": "chest_center",
       "z_index": 45,
       "status": "sample_runtime_proof",
       "mirror_safe": true,
+      "use_character_anchor": true,
+      "local_adjustment": {
+        "offset_x": 0,
+        "offset_y": 0,
+        "scale_multiplier": 0.24,
+        "rotation_offset": 0
+      },
       "master_role": "side_front_point",
       "supported_roles": [
         "side_front_point",
@@ -525,7 +546,7 @@
         "side_battle"
       ],
       "blocked_roles": [],
-      "pose_adaptation_notes": "Master badge is placed on the side_front_point chest. Side poses scale it down and keep it on the visible torso plate without inventing a new logo.",
+      "pose_adaptation_notes": "Shared chest_center tracks the badge through every frame. The trait owns only a small local scale adjustment and no role or frame tracking table.",
       "visual": {
         "type": "runtime_vector_badge",
         "shape": "circle",
@@ -541,10 +562,17 @@
       "name": "Sample Micro Jetpack",
       "category": "backpacks",
       "layer": "backpack",
-      "anchor_key": "backpack",
+      "anchor_key": "back_center",
       "z_index": 20,
       "status": "sample_runtime_proof",
-      "mirror_safe": false,
+      "mirror_safe": true,
+      "use_character_anchor": true,
+      "local_adjustment": {
+        "offset_x": 0,
+        "offset_y": 0,
+        "scale_multiplier": 0.62,
+        "rotation_offset": 0
+      },
       "master_role": "side_front_point",
       "supported_roles": [
         "side_front_point",
@@ -573,10 +601,7 @@
         "side_battle"
       ],
       "blocked_roles": [],
-      "blocked_conditions": [
-        "Mirrored side roles are blocked until left/right backpack or jetpack anchors are authored."
-      ],
-      "pose_adaptation_notes": "Master back item peeks from the far side of side_front_point. Side roles place the same jetpack on the rear torso anchor; mirrored draws are skipped unless a trait is explicitly mirror-safe.",
+      "pose_adaptation_notes": "Shared back_center tracks the rear torso through every frame. This symmetric proof follows scene mirroring and owns no role or frame tracking table.",
       "visual": {
         "type": "runtime_vector_jetpack",
         "fill": "#4d5bff",
@@ -591,10 +616,17 @@
       "name": "Sample Wrench Prop",
       "category": "hand_items",
       "layer": "hand_item",
-      "anchor_key": "hand_item",
+      "anchor_key": "hand_right",
       "z_index": 85,
       "status": "sample_runtime_proof",
-      "mirror_safe": false,
+      "mirror_safe": true,
+      "use_character_anchor": true,
+      "local_adjustment": {
+        "offset_x": 0,
+        "offset_y": 0,
+        "scale_multiplier": 0.72,
+        "rotation_offset": 0
+      },
       "master_role": "side_front_point",
       "supported_roles": [
         "side_front_point",
@@ -623,10 +655,7 @@
         "side_battle"
       ],
       "blocked_roles": [],
-      "blocked_conditions": [
-        "Mirrored side roles are blocked until left/right hand anchors are authored."
-      ],
-      "pose_adaptation_notes": "Master wrench is aligned to the pointing hand on side_front_point. Wave/side roles simplify the hand contact point while preserving the same prop silhouette and colors.",
+      "pose_adaptation_notes": "Shared hand_right tracks the prop through every frame. Character anchor occlusion selects the hand layer phase; the trait owns only a small local scale adjustment.",
       "visual": {
         "type": "runtime_vector_wrench",
         "fill": "#d7f2ff",

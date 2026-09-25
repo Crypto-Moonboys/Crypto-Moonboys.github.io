@@ -2,7 +2,7 @@
   const DEFAULT_REGISTRY_PATH = "data/moonpet-side-scroller-approved-assets.json";
   const DEFAULT_WEARABLE_TRAITS_PATH = "data/moonpet-wearable-traits.json";
   const DEFAULT_FRAME_ANCHORS_PATH = "data/moonpet-frame-anchors.json";
-  const CACHE_VERSION = "20260925-moonbot-frame-rig-v16";
+  const CACHE_VERSION = "20260925-moonbot-anchor-category-proof-v17";
   const PRIORITY_ROLES = new Set(["side_idle", "side_walk", "side_run"]);
 
   function cacheToken(asset) {

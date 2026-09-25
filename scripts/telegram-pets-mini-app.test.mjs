@@ -1354,7 +1354,7 @@ assert.match(worker, /counts\.district_mission/);
 assert.match(client, /DAILY MISSION BUFFER \/\/ /);
 assert.match(client, /meter\('DAILY CLEAR', missionPercent\)/);
 assert.match(html, /id="utility-layer"/);
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260925-moonbot-frame-rig-v16/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260925-moonbot-anchor-category-proof-v17/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractFunctionSource(client, 'guideMarkup');
@@ -1448,7 +1448,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260925-moonbot-frame-rig-v16/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260925-moonbot-anchor-category-proof-v17/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -1837,6 +1837,7 @@ for (const category of ['hats', 'glasses', 'masks', 'chains', 'hoodies', 'backpa
 for (const selector of ['head', 'face', 'chest', 'back', 'hand', 'aura', 'all']) {
   assert.ok(Array.isArray(wearableTraits.debug_trait_sets[selector]), `wearable trait debug set must include ${selector}`);
 }
+assert.ok(wearableTraits.debug_trait_sets.all.includes('neon_borough_cap'), 'combined wearable proof must use the production head attachment');
 for (const role of ['side_front_point', 'side_front_wave', 'side_idle', 'side_walk', 'side_run']) {
   assert.ok(wearableTraits.supported_role_map[role], `wearable trait role map must support ${role}`);
   assert.ok(wearableTraits.supported_role_map[role].anchors.badge, `${role} must define a badge anchor for the sample propagation proof`);
@@ -1897,6 +1898,19 @@ assert.deepEqual(new Set(moonpetFrameAnchors.roles.side_turn.frames.map((frame) 
 const visorProof = wearableTraits.traits.find((trait) => trait.id === 'sample_visor_glasses');
 assert.equal(visorProof.anchor_key, 'visor_center', 'face proof must bind to visor_center');
 assert.equal(visorProof.use_character_anchor, true, 'face proof must inherit character-owned frame tracking');
+for (const [traitId, anchorName] of Object.entries({
+  sample_chest_badge: 'chest_center',
+  sample_micro_jetpack: 'back_center',
+  sample_wrench_prop: 'hand_right'
+})) {
+  const categoryProof = wearableTraits.traits.find((trait) => trait.id === traitId);
+  assert.equal(categoryProof.anchor_key, anchorName, `${traitId} must bind to ${anchorName}`);
+  assert.equal(categoryProof.use_character_anchor, true, `${traitId} must inherit character-owned frame tracking`);
+  assert.equal(categoryProof.visual.pose_fits, undefined, `${traitId} must not own a per-frame tracking table`);
+}
+assert.equal(wearableTraits.layer_render_policy.backpack, 'behind', 'backpacks must render behind the Moonbot');
+assert.equal(wearableTraits.layer_render_policy.badge, 'front', 'chest badges must render in front of the Moonbot');
+assert.equal(wearableTraits.layer_render_policy.hand_item, 'anchor_occlusion', 'hand props must inherit draw phase from hand anchor occlusion');
 for (const assetPath of Object.values(productionCap.visual.assets)) {
   assert.ok(fs.existsSync(new URL(`../${assetPath.replace(/^\//, '')}`, import.meta.url)), `production wearable asset must exist: ${assetPath}`);
 }
@@ -1911,6 +1925,8 @@ assert.match(sideScrollerRenderer, /function decodeAnchor\(role, frameIndex, anc
 assert.match(sideScrollerRenderer, /frameRig\.anchors\.root/, 'renderer must normalize each sprite from its frame-owned root anchor');
 assert.match(sideScrollerRenderer, /function transitionPlan\(desiredRole, time, options = \{\}\)/, 'renderer must handle front-to-side and side-to-front transitions');
 assert.match(sideScrollerRenderer, /function drawWearableTraits\(ctx, role, frame, drawX, drawY, width, height, options, phase = "front"\)/, 'side-scroller renderer must include wearable overlay rendering');
+assert.match(sideScrollerRenderer, /layer_render_policy/, 'wearable layering must come from category metadata');
+assert.match(sideScrollerRenderer, /policy === "anchor_occlusion"/, 'hand and foot attachment layering must follow shared anchor occlusion');
 assert.match(sideScrollerRenderer, /function drawWearableVisual\(ctx, radius, trait, orientation\)/, 'wearable renderer must dispatch orientation-aware category proof visuals');
 assert.match(sideScrollerRenderer, /function drawBitmapWearable\(ctx, role, frame, drawX, drawY, width, height, trait, options\)/, 'wearable renderer must support fitted bitmap overlays');
 assert.match(sideScrollerRenderer, /visual\.orientation_assets\[orientation\]/, 'wearable renderer must select art from character-frame orientation');
@@ -2191,7 +2207,7 @@ assert.match(worker, /Math\.floor\(stepIndex \/ PET_RUN_BOSS_INTERVAL\) \+ 1/);
 assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Number\(activeRun\.depth \|\| 0\) \+ 1/);
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
-assert.match(html, /20260925-moonbot-frame-rig-v16/);
+assert.match(html, /20260925-moonbot-anchor-category-proof-v17/);
 assert.match(worker, /20260814-moonpet-aaa-pass/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');
