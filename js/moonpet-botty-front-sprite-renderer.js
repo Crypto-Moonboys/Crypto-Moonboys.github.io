@@ -14,6 +14,7 @@
     assetsByRole: {},
     roleMap: {},
     loadedRoles: [],
+    pendingRoles: [],
     lastRender: null
   };
 
@@ -31,6 +32,7 @@
     state.assetsByRole = {};
     state.roleMap = {};
     state.loadedRoles = [];
+    state.pendingRoles = [];
     state.lastRender = null;
     return getMoonpetBottyFrontRendererState();
   }
@@ -53,7 +55,17 @@
         state.assetsByRole = result.assetsByRole || {};
         state.roleMap = result.roleMap || {};
         state.loadedRoles = Object.keys(state.assetsByRole);
+        state.pendingRoles = result.pendingRoles || [];
         state.loading = null;
+        if (result.preload && typeof result.preload.then === "function") {
+          result.preload.then(() => {
+            state.loadedRoles = Object.keys(state.assetsByRole);
+            state.pendingRoles = state.pendingRoles.filter((role) => !state.assetsByRole[role]);
+            if (state.ready) state.reason = "BOTTY front sprites ready";
+          }).catch((error) => {
+            state.errors = [error.message, ...state.errors];
+          });
+        }
         return getMoonpetBottyFrontRendererState();
       })
       .catch((error) => {
@@ -76,6 +88,7 @@
       assetsByRole: state.assetsByRole,
       roleMap: state.roleMap,
       loadedRoles: [...state.loadedRoles],
+      pendingRoles: [...state.pendingRoles],
       lastRender: state.lastRender
     };
   }
@@ -111,7 +124,9 @@
     }
 
     const active = options.active !== false;
-    const role = roleForAnimationMode(animationMode, active);
+    const requestedRole = roleForAnimationMode(animationMode, active);
+    const idleRole = state.roleMap.idle || "front_idle";
+    const role = state.assetsByRole[requestedRole] ? requestedRole : idleRole;
     const asset = state.assetsByRole[role];
     const frame = asset && frameForTime(asset, time, options);
     if (!asset || !asset.image || !frame) {
@@ -132,6 +147,7 @@
       state.reason = `rendered ${role}`;
       state.lastRender = {
         animationMode,
+        requestedRole,
         role,
         frameIndex: frame.index,
         frameCount: asset.frames.length,
