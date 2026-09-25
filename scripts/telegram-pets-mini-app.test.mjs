@@ -1354,7 +1354,7 @@ assert.match(worker, /counts\.district_mission/);
 assert.match(client, /DAILY MISSION BUFFER \/\/ /);
 assert.match(client, /meter\('DAILY CLEAR', missionPercent\)/);
 assert.match(html, /id="utility-layer"/);
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260925-botty-front-live-beta-v4/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260925-moonpet-ui-redesign-v1/);
 assert.match(html, /\/js\/moonpet-botty-front-asset-loader\.js\?v=20260925-botty-front-live-beta-v4/);
 assert.match(html, /\/js\/moonpet-botty-front-sprite-renderer\.js\?v=20260925-botty-front-live-beta-v4/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);

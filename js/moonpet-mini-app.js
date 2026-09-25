@@ -2104,7 +2104,7 @@
 
   var screens = { home: renderHome, missions: renderMissions, explore: renderExplore, work: renderWork, economy: renderEconomy, profile: renderProfile };
   var navItems = [
-    ['home', '⌂', 'PET'], ['missions', '☷', 'TASKS'], ['explore', '⚔', 'RUN'], ['work', '⚒', 'WORK'], ['economy', '◇', 'GEAR'], ['profile', '★', 'CORE'],
+    ['home', '⌂', 'HOME'], ['missions', '☷', 'MISSIONS'], ['explore', '⚔', 'EXPLORE'], ['work', '⚒', 'WORK'], ['economy', '◇', 'ECONOMY'], ['profile', '★', 'PROFILE'],
   ];
 
   function renderNav() {
