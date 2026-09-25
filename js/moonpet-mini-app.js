@@ -243,8 +243,16 @@
     return new Promise(function (resolve, reject) {
       var existing = document.querySelector('script[src="' + src + '"]');
       if (existing) {
-        if (existing.dataset.loaded === 'true') resolve();
-        else existing.addEventListener('load', resolve, { once: true });
+        // Static parser-loaded scripts that appear before moonpet-mini-app.js have
+        // already executed. Waiting for a second load event deadlocks forever.
+        if (existing.dataset.approvedSpriteAdapter !== 'true' || existing.dataset.loaded === 'true') {
+          resolve();
+          return;
+        }
+        existing.addEventListener('load', function () {
+          existing.dataset.loaded = 'true';
+          resolve();
+        }, { once: true });
         existing.addEventListener('error', function () { reject(new Error(src + ' failed to load')); }, { once: true });
         return;
       }
@@ -294,8 +302,8 @@
     }
     console.info('[Moonpet] BOTTY front sprite mode enabled');
     try {
-      await loadApprovedSpriteScript('/js/moonpet-botty-front-asset-loader.js?v=20260925-botty-front-live-beta-v2');
-      await loadApprovedSpriteScript('/js/moonpet-botty-front-sprite-renderer.js?v=20260925-botty-front-live-beta-v2');
+      await loadApprovedSpriteScript('/js/moonpet-botty-front-asset-loader.js?v=20260925-botty-front-live-beta-v3');
+      await loadApprovedSpriteScript('/js/moonpet-botty-front-sprite-renderer.js?v=20260925-botty-front-live-beta-v3');
       if (!window.MoonpetBottyFrontSpriteRenderer) throw new Error('MoonpetBottyFrontSpriteRenderer unavailable');
       bottyFrontSpriteRendererState = await window.MoonpetBottyFrontSpriteRenderer.initMoonpetBottyFrontRenderer();
       bottyFrontSpriteRendererReady = Boolean(bottyFrontSpriteRendererState && bottyFrontSpriteRendererState.ready);
