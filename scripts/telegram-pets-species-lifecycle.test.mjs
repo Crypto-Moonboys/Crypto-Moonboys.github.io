@@ -7,6 +7,17 @@ import {
 
 if (!globalThis.crypto) globalThis.crypto = webcrypto;
 
+const SPECIES_LABELS = Object.freeze({
+  neon_raccoon: 'F1 EDDY',
+  bubble_ram: 'JALE THE SNAKE',
+  comet_gecko: 'TUBBY',
+  vinyl_crab: 'BOTTY',
+  lantern_fox: 'RED ALERT',
+  sneaker_snail: 'THE TING',
+  alley_drake: 'TATTOO JOHN',
+  moon_ferret: 'TIN BOB',
+});
+
 assert.equal(incubationAgeDays({ created_at: '2026-08-01 00:00:00' }, '2026-08-08T00:00:00Z'), 7);
 assert.equal(incubationAgeDays({ created_at: '2026-08-01T02:00:00+02:00' }, '2026-08-08T00:00:00Z'), 7,
   'D1 UTC timestamps and equivalent offset timestamps produce identical incubation age');
@@ -102,6 +113,14 @@ assert.ok(Object.hasOwn(MOONPET_SPECIES, hatched.lifecycle.species_id));
 assert.equal(hatched.lifecycle.innate_traits.length, 2);
 assert.ok(hatched.lifecycle.preferences.length >= 1, 'identity must expose stable behaviour preferences');
 assert.equal(db.database.prepare('SELECT species FROM telegram_pet_profiles WHERE telegram_id=?').get('new-player').species, hatched.lifecycle.species_id);
+for (const [speciesId, speciesName] of Object.entries(SPECIES_LABELS)) {
+  db.database.prepare(`UPDATE telegram_pet_lifecycle_by_pet
+    SET phase='young', species_id=?, temperament='bold', innate_traits_json='[]'
+    WHERE telegram_id=?`).run(speciesId, 'new-player');
+  const mapped = await getMoonpetLifecycle(db, 'new-player');
+  assert.equal(mapped.species_id, speciesId);
+  assert.equal(mapped.species_name, speciesName, `public lifecycle serializer must map ${speciesId} to ${speciesName}`);
+}
 db.database.prepare(`UPDATE telegram_pet_lifecycle_by_pet SET phase='adult' WHERE telegram_id='new-player'`).run();
 db.database.prepare(`INSERT OR REPLACE INTO telegram_pet_memories VALUES ('pet:new-player:test:1','new-player','test',100,100,100,100,100,100,100)`).run();
 for (const trait of ['explorer', 'curious', 'street_fighter', 'loyal']) db.database.prepare(

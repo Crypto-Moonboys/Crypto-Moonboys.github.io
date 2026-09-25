@@ -2167,14 +2167,14 @@ const youngState = {
   adopted: true,
   pet: { species: 'neon_raccoon', evolution_stage: 1, stage: 'Street Moonpet' },
   lifecycle: {
-    phase: 'young', species_id: 'neon_raccoon', species_name: 'Neon Raccoon', temperament: 'bold',
+    phase: 'young', species_id: 'neon_raccoon', species_name: 'F1 EDDY', temperament: 'bold',
     appearance: { marking: 'spray_mask' }, innate_traits: ['alley_brave', 'collector'],
     incubation: { progress: 12, target: 12 }, rare: { name: null },
   },
 };
-const hatchCeremony = planCeremonyRuntime(strongerEggState, youngState, 'hatch', { accepted: true, species: 'Neon Raccoon' });
+const hatchCeremony = planCeremonyRuntime(strongerEggState, youngState, 'hatch', { accepted: true, species: 'F1 EDDY' });
 assert.equal(hatchCeremony.kind, 'hatch');
-assert.equal(hatchCeremony.primary, 'Neon Raccoon');
+assert.equal(hatchCeremony.primary, 'F1 EDDY');
 assert.equal(hatchCeremony.secondary, 'Bold TEMPERAMENT');
 assert.match(hatchCeremony.detail, /Spray Mask/);
 assert.match(hatchCeremony.detail, /Alley Brave/);
