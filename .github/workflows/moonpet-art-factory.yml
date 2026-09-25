@@ -263,7 +263,7 @@ jobs:
           AUTO_PROMOTE_SIDE_SCROLLER_ASSETS: ${{ inputs.auto_promote_side_scroller_assets && 'true' || 'false' }}
 
       - name: Discover AutoSprite character by exact name
-        if: ${{ env.FACTORY_PHASE == 'discover-autosprite-character' || env.FACTORY_PHASE == 'generate-botty-front-pack' || env.FACTORY_PHASE == 'download-botty-front-pack' }}
+        if: ${{ env.FACTORY_PHASE == 'discover-autosprite-character' || env.FACTORY_PHASE == 'generate-botty-front-pack' }}
         timeout-minutes: 10
         run: node scripts/discover-autosprite-character.js --name "$AUTOSPRITE_CHARACTER_NAME" --persist
 
@@ -285,7 +285,7 @@ jobs:
         run: node scripts/download-botty-front-animations.js --character-name "$AUTOSPRITE_CHARACTER_NAME"
 
       - name: Commit AutoSprite character registry
-        if: ${{ always() && (env.FACTORY_PHASE == 'discover-autosprite-character' || env.FACTORY_PHASE == 'generate-botty-front-pack' || env.FACTORY_PHASE == 'download-botty-front-pack') && env.AUTO_COMMIT_AUTOSPRITE_CHARACTER_REGISTRY == 'true' }}
+        if: ${{ always() && (env.FACTORY_PHASE == 'discover-autosprite-character' || env.FACTORY_PHASE == 'generate-botty-front-pack') && env.AUTO_COMMIT_AUTOSPRITE_CHARACTER_REGISTRY == 'true' }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
