@@ -1,29 +1,15 @@
 #!/usr/bin/env node
 
 import { execFileSync } from 'node:child_process';
-import fs from 'node:fs';
 
 const COMMIT_RE = /^[0-9a-f]{40}$/i;
 const TIMEOUT_MS = Number(process.env.MOONPET_PRODUCTION_SMOKE_TIMEOUT_MS || 15000);
 const SITE_ROOT = 'https://cryptomoonboys.com';
-const gameHtmlSource = fs.readFileSync(new URL('../moonpet-game.html', import.meta.url), 'utf8');
-
-function assetPath(pattern, label, groupIndex = 1) {
-  const match = gameHtmlSource.match(pattern);
-  if (!match) fail(`could not resolve ${label} from moonpet-game.html`);
-  return match[groupIndex];
-}
-
-function assetUrl(pattern, label, groupIndex) {
-  return new URL(assetPath(pattern, label, groupIndex), SITE_ROOT).toString();
-}
 
 const ENDPOINTS = Object.freeze({
   workerHealth: 'https://moonboys-api.sercullen.workers.dev/health',
   deploymentInfo: 'https://moonboys-api.sercullen.workers.dev/deployment-info',
   gameHtml: `${SITE_ROOT}/moonpet-game.html`,
-  miniAppJs: assetUrl(/<script[^>]+src=(['"])([^'"]*\/js\/moonpet-mini-app\.js[^'"]*)\1/i, 'mini app js', 2),
-  miniAppCss: assetUrl(/<link[^>]+href=(['"])([^'"]*\/css\/moonpet-mini-app\.css[^'"]*)\1/i, 'mini app css', 2),
 });
 
 function fail(message) {
@@ -94,6 +80,19 @@ async function assertStatus(label, url) {
   return { label, status: response.status, method: 'HEAD', url };
 }
 
+async function fetchTextEndpoint(label, url) {
+  const response = await fetchWithTimeout(url, { accept: 'text/html, text/plain;q=0.9,*/*;q=0.8' });
+  const body = await response.text();
+  if (response.status !== 200) fail(`${label} returned HTTP ${response.status}`);
+  return { label, status: response.status, url, body };
+}
+
+function extractAssetUrl(html, pattern, label, groupIndex = 2) {
+  const match = html.match(pattern);
+  if (!match) fail(`could not resolve ${label} from live Moonpet HTML`);
+  return new URL(match[groupIndex], SITE_ROOT).toString();
+}
+
 const expectedCommit = resolveExpectedCommit();
 if (!COMMIT_RE.test(expectedCommit)) {
   fail('expected commit is missing or invalid. Pass it as an argument, set MOONPET_EXPECTED_COMMIT, or run from a git checkout.');
@@ -113,10 +112,14 @@ const deploymentInfo = await assertJsonEndpoint('Worker deployment-info', ENDPOI
   }
 });
 
+const gameHtml = await fetchTextEndpoint('Moonpet game HTML', ENDPOINTS.gameHtml);
+const liveMiniAppJs = extractAssetUrl(gameHtml.body, /<script[^>]+src=(['"])([^'"]*\/js\/moonpet-mini-app\.js[^'"]*)\1/i, 'mini app js');
+const liveMiniAppCss = extractAssetUrl(gameHtml.body, /<link[^>]+href=(['"])([^'"]*\/css\/moonpet-mini-app\.css[^'"]*)\1/i, 'mini app css');
+
 const staticChecks = [];
-staticChecks.push(await assertStatus('Moonpet game HTML', ENDPOINTS.gameHtml));
-staticChecks.push(await assertStatus('Moonpet Mini App JS', ENDPOINTS.miniAppJs));
-staticChecks.push(await assertStatus('Moonpet Mini App CSS', ENDPOINTS.miniAppCss));
+staticChecks.push({ label: gameHtml.label, status: gameHtml.status, method: 'GET', url: gameHtml.url });
+staticChecks.push(await assertStatus('Moonpet Mini App JS', liveMiniAppJs));
+staticChecks.push(await assertStatus('Moonpet Mini App CSS', liveMiniAppCss));
 
 console.log(JSON.stringify({
   ok: true,
