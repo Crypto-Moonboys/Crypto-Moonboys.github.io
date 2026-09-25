@@ -9,7 +9,7 @@ const ENDPOINTS = Object.freeze({
   workerHealth: 'https://moonboys-api.sercullen.workers.dev/health',
   deploymentInfo: 'https://moonboys-api.sercullen.workers.dev/deployment-info',
   gameHtml: 'https://cryptomoonboys.com/moonpet-game.html',
-  miniAppJs: 'https://cryptomoonboys.com/js/moonpet-mini-app.js?v=20260820-weekly-journey-live-polish',
+  miniAppJs: 'https://cryptomoonboys.com/js/moonpet-mini-app.js?v=20260925-botty-front-live-beta-v4',
   miniAppCss: 'https://cryptomoonboys.com/css/moonpet-mini-app.css?v=20260925-moonpet-ui-redesign-v1',
 });
 
