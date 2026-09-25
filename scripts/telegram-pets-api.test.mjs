@@ -304,7 +304,7 @@ assert.deepEqual(rareLeaderboardEntry, {
   stage: 'graffiti_guardian',
   phase: 'rare',
   species_id: 'neon_raccoon',
-  species_name: 'Neon Raccoon',
+  species_name: 'F1 EDDY',
   rare_morph_id: 'graffiti_guardian',
   rare_morph_name: 'Graffiti Guardian',
   level: 19,

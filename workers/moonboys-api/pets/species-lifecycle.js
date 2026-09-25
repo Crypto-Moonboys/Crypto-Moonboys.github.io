@@ -8,14 +8,14 @@ const CARE_TYPES = Object.freeze({
 });
 
 export const MOONPET_SPECIES = Object.freeze({
-  neon_raccoon: { name: 'Neon Raccoon', affinity: ['social', 'bold'] },
-  bubble_ram: { name: 'Bubble Ram', affinity: ['calm', 'social'] },
-  comet_gecko: { name: 'Comet Gecko', affinity: ['warm', 'bold'] },
-  vinyl_crab: { name: 'Vinyl Crab', affinity: ['rhythm', 'calm'] },
-  lantern_fox: { name: 'Lantern Fox', affinity: ['warm', 'social'] },
-  sneaker_snail: { name: 'Sneaker Snail', affinity: ['calm', 'rhythm'] },
-  alley_drake: { name: 'Alley Drake', affinity: ['bold', 'warm'] },
-  moon_ferret: { name: 'Moon Ferret', affinity: ['rhythm', 'social'] },
+  neon_raccoon: { name: 'F1 EDDY', affinity: ['social', 'bold'] },
+  bubble_ram: { name: 'JALE THE SNAKE', affinity: ['calm', 'social'] },
+  comet_gecko: { name: 'TUBBY', affinity: ['warm', 'bold'] },
+  vinyl_crab: { name: 'BOTTY', affinity: ['rhythm', 'calm'] },
+  lantern_fox: { name: 'RED ALERT', affinity: ['warm', 'social'] },
+  sneaker_snail: { name: 'THE TING', affinity: ['calm', 'rhythm'] },
+  alley_drake: { name: 'TATTOO JOHN', affinity: ['bold', 'warm'] },
+  moon_ferret: { name: 'TIN BOB', affinity: ['rhythm', 'social'] },
 });
 
 const SPECIES_IDS = Object.keys(MOONPET_SPECIES);
