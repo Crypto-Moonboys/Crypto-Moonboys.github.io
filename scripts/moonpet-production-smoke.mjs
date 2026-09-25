@@ -1,16 +1,25 @@
 #!/usr/bin/env node
 
 import { execFileSync } from 'node:child_process';
+import fs from 'node:fs';
 
 const COMMIT_RE = /^[0-9a-f]{40}$/i;
 const TIMEOUT_MS = Number(process.env.MOONPET_PRODUCTION_SMOKE_TIMEOUT_MS || 15000);
+const SITE_ROOT = 'https://cryptomoonboys.com';
+const gameHtmlSource = fs.readFileSync(new URL('../moonpet-game.html', import.meta.url), 'utf8');
+
+function assetPath(pattern, label) {
+  const match = gameHtmlSource.match(pattern);
+  if (!match) fail(`could not resolve ${label} from moonpet-game.html`);
+  return match[1];
+}
 
 const ENDPOINTS = Object.freeze({
   workerHealth: 'https://moonboys-api.sercullen.workers.dev/health',
   deploymentInfo: 'https://moonboys-api.sercullen.workers.dev/deployment-info',
-  gameHtml: 'https://cryptomoonboys.com/moonpet-game.html',
-  miniAppJs: 'https://cryptomoonboys.com/js/moonpet-mini-app.js?v=20260925-botty-front-live-beta-v4',
-  miniAppCss: 'https://cryptomoonboys.com/css/moonpet-mini-app.css?v=20260925-moonpet-ui-redesign-v1',
+  gameHtml: `${SITE_ROOT}/moonpet-game.html`,
+  miniAppJs: `${SITE_ROOT}${assetPath(/<script[^>]+src="([^"]*\/js\/moonpet-mini-app\.js[^"]*)"/i, 'mini app js')}`,
+  miniAppCss: `${SITE_ROOT}${assetPath(/<link[^>]+href='([^']*\/css\/moonpet-mini-app\.css[^']*)'/i, 'mini app css')}`,
 });
 
 function fail(message) {
