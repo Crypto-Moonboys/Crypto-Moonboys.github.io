@@ -80,7 +80,7 @@ async function assertStatus(label, url) {
   return { label, status: response.status, method: 'HEAD', url };
 }
 
-async function fetchTextEndpoint(label, url) {
+async function fetchHtmlEndpoint(label, url) {
   const response = await fetchWithTimeout(url, { headers: { Accept: 'text/html, text/plain;q=0.9,*/*;q=0.8' } });
   const body = await response.text();
   if (response.status !== 200) fail(`${label} returned HTTP ${response.status}`);
@@ -112,7 +112,7 @@ const deploymentInfo = await assertJsonEndpoint('Worker deployment-info', ENDPOI
   }
 });
 
-const gameHtml = await fetchTextEndpoint('Moonpet game HTML', ENDPOINTS.gameHtml);
+const gameHtml = await fetchHtmlEndpoint('Moonpet game HTML', ENDPOINTS.gameHtml);
 const liveMiniAppJs = extractAssetUrl(gameHtml.body, /<script[^>]+src=(['"])([^'"]*\/js\/moonpet-mini-app\.js[^'"]*)\1/i, 'mini app js');
 const liveMiniAppCss = extractAssetUrl(gameHtml.body, /<link[^>]+href=(['"])([^'"]*\/css\/moonpet-mini-app\.css[^'"]*)\1/i, 'mini app css');
 

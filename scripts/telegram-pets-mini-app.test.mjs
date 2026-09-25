@@ -96,6 +96,77 @@ function extractTestExport(source, name) {
   if (end === -1) return null;
   return source.slice(bodyStart + 1, end);
 }
+
+function extractBalancedFunction(source, signature) {
+  const start = source.indexOf(signature);
+  if (start === -1) return '';
+  const bodyStart = source.indexOf('{', start);
+  if (bodyStart === -1) return '';
+  let depth = 0;
+  let inSingle = false;
+  let inDouble = false;
+  let inTemplate = false;
+  let inLineComment = false;
+  let inBlockComment = false;
+  let escaped = false;
+  for (let index = bodyStart; index < source.length; index += 1) {
+    const char = source[index];
+    const next = source[index + 1];
+    if (inLineComment) {
+      if (char === '\n') inLineComment = false;
+      continue;
+    }
+    if (inBlockComment) {
+      if (char === '*' && next === '/') {
+        inBlockComment = false;
+        index += 1;
+      }
+      continue;
+    }
+    if (inSingle || inDouble || inTemplate) {
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+      if (char === '\\') {
+        escaped = true;
+        continue;
+      }
+      if (inSingle && char === "'") inSingle = false;
+      else if (inDouble && char === '"') inDouble = false;
+      else if (inTemplate && char === '`') inTemplate = false;
+      continue;
+    }
+    if (char === '/' && next === '/') {
+      inLineComment = true;
+      index += 1;
+      continue;
+    }
+    if (char === '/' && next === '*') {
+      inBlockComment = true;
+      index += 1;
+      continue;
+    }
+    if (char === "'") {
+      inSingle = true;
+      continue;
+    }
+    if (char === '"') {
+      inDouble = true;
+      continue;
+    }
+    if (char === '`') {
+      inTemplate = true;
+      continue;
+    }
+    if (char === '{') depth += 1;
+    if (char === '}') {
+      depth -= 1;
+      if (depth === 0) return source.slice(start, index + 1);
+    }
+  }
+  return '';
+}
 const capabilityCombatHelperSource = extractTestExport(client, 'capabilityCombatHelper');
 assert.ok(capabilityCombatHelperSource, 'capability combat helper must be extractable for runtime coverage');
 assert.match(capabilityCombatHelperSource, /reason: 'capability_unavailable'/, 'missing capability authority must fail closed with an explicit reason');
@@ -1355,7 +1426,7 @@ assert.match(html, /\/js\/moonpet-botty-front-asset-loader\.js\?v=20260925-botty
 assert.match(html, /\/js\/moonpet-botty-front-sprite-renderer\.js\?v=20260925-botty-front-live-beta-v4/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
-const guideMarkupSource = client.match(/function guideMarkup\(\)\s*\{[\s\S]*?\n  \}/)?.[0] || '';
+const guideMarkupSource = extractBalancedFunction(client, 'function guideMarkup() {');
 assert.ok(guideMarkupSource, 'guideMarkup helper must be extractable');
 const renderGuideMarkup = new Function('hasCombatUnlocked', `${guideMarkupSource}; return guideMarkup();`);
 const unlockedGuideMarkup = renderGuideMarkup(() => true);
@@ -1608,7 +1679,7 @@ assert.match(client, /var WORLD_BACKGROUND_URL = '\/games\/assets\/BITTY%20BACKG
 assert.match(client, /var worldBackgroundImage = new Image\(\)/);
 assert.match(client, /function drawWorldBackground\(\)/);
 assert.match(client, /ctx\.drawImage\(worldBackgroundImage, sx, sy, sw, sh, 0, 0, 320, 220\)/);
-const drawWorldSource = client.match(/function drawWorld\(time\)\s*\{[\s\S]*?\n  \}/)?.[0] || '';
+const drawWorldSource = extractBalancedFunction(client, 'function drawWorld(time) {');
 assert.ok(drawWorldSource, 'drawWorld helper must be extractable');
 assert.match(drawWorldSource, /drawWorldBackground\(\)/);
 assert.doesNotMatch(drawWorldSource, /drawWorldSky\(/);
