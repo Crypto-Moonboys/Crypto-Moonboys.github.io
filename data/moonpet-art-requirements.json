@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "summary": {
+    "base_bots_complete": 8,
+    "evolution_master_designs_pending": 32,
+    "rare_morph_backgrounds_pending": 32,
+    "moon_egg_art_sets_pending": 1,
+    "generated_art_in_this_change": 0
+  },
+  "base_bots": [
+    { "bot": "BOTTY", "species_id": "vinyl_crab", "status": "complete" },
+    { "bot": "F1 EDDY", "species_id": "neon_raccoon", "status": "complete" },
+    { "bot": "JAKE THE SNAKE", "species_id": "bubble_ram", "status": "complete" },
+    { "bot": "TUBBY", "species_id": "comet_gecko", "status": "complete" },
+    { "bot": "RED ALERT", "species_id": "lantern_fox", "status": "complete" },
+    { "bot": "THE TING", "species_id": "sneaker_snail", "status": "complete" },
+    { "bot": "TATTOO JOHN", "species_id": "alley_drake", "status": "complete" },
+    { "bot": "TIN BOB", "species_id": "moon_ferret", "status": "complete" }
+  ],
+  "evolution_master_designs": [
+    { "bot": "BOTTY", "stage": "stage_2", "form": "cyber", "status": "pending" }, { "bot": "BOTTY", "stage": "stage_3", "form": "elite", "status": "pending" }, { "bot": "BOTTY", "stage": "stage_4", "form": "guardian", "status": "pending" }, { "bot": "BOTTY", "stage": "stage_5", "form": "legendary_guardian", "status": "pending" },
+    { "bot": "F1 EDDY", "stage": "stage_2", "form": "cyber", "status": "pending" }, { "bot": "F1 EDDY", "stage": "stage_3", "form": "elite", "status": "pending" }, { "bot": "F1 EDDY", "stage": "stage_4", "form": "guardian", "status": "pending" }, { "bot": "F1 EDDY", "stage": "stage_5", "form": "legendary_guardian", "status": "pending" },
+    { "bot": "JAKE THE SNAKE", "stage": "stage_2", "form": "cyber", "status": "pending" }, { "bot": "JAKE THE SNAKE", "stage": "stage_3", "form": "elite", "status": "pending" }, { "bot": "JAKE THE SNAKE", "stage": "stage_4", "form": "guardian", "status": "pending" }, { "bot": "JAKE THE SNAKE", "stage": "stage_5", "form": "legendary_guardian", "status": "pending" },
+    { "bot": "TUBBY", "stage": "stage_2", "form": "cyber", "status": "pending" }, { "bot": "TUBBY", "stage": "stage_3", "form": "elite", "status": "pending" }, { "bot": "TUBBY", "stage": "stage_4", "form": "guardian", "status": "pending" }, { "bot": "TUBBY", "stage": "stage_5", "form": "legendary_guardian", "status": "pending" },
+    { "bot": "RED ALERT", "stage": "stage_2", "form": "cyber", "status": "pending" }, { "bot": "RED ALERT", "stage": "stage_3", "form": "elite", "status": "pending" }, { "bot": "RED ALERT", "stage": "stage_4", "form": "guardian", "status": "pending" }, { "bot": "RED ALERT", "stage": "stage_5", "form": "legendary_guardian", "status": "pending" },
+    { "bot": "THE TING", "stage": "stage_2", "form": "cyber", "status": "pending" }, { "bot": "THE TING", "stage": "stage_3", "form": "elite", "status": "pending" }, { "bot": "THE TING", "stage": "stage_4", "form": "guardian", "status": "pending" }, { "bot": "THE TING", "stage": "stage_5", "form": "legendary_guardian", "status": "pending" },
+    { "bot": "TATTOO JOHN", "stage": "stage_2", "form": "cyber", "status": "pending" }, { "bot": "TATTOO JOHN", "stage": "stage_3", "form": "elite", "status": "pending" }, { "bot": "TATTOO JOHN", "stage": "stage_4", "form": "guardian", "status": "pending" }, { "bot": "TATTOO JOHN", "stage": "stage_5", "form": "legendary_guardian", "status": "pending" },
+    { "bot": "TIN BOB", "stage": "stage_2", "form": "cyber", "status": "pending" }, { "bot": "TIN BOB", "stage": "stage_3", "form": "elite", "status": "pending" }, { "bot": "TIN BOB", "stage": "stage_4", "form": "guardian", "status": "pending" }, { "bot": "TIN BOB", "stage": "stage_5", "form": "legendary_guardian", "status": "pending" }
+  ],
+  "rare_morph_backgrounds": [
+    { "bot": "BOTTY", "rare_morph": "celestial_serpent", "status": "pending" }, { "bot": "BOTTY", "rare_morph": "crown_beast", "status": "pending" }, { "bot": "BOTTY", "rare_morph": "boombox_kaiju", "status": "pending" }, { "bot": "BOTTY", "rare_morph": "graffiti_guardian", "status": "pending" },
+    { "bot": "F1 EDDY", "rare_morph": "celestial_serpent", "status": "pending" }, { "bot": "F1 EDDY", "rare_morph": "crown_beast", "status": "pending" }, { "bot": "F1 EDDY", "rare_morph": "boombox_kaiju", "status": "pending" }, { "bot": "F1 EDDY", "rare_morph": "graffiti_guardian", "status": "pending" },
+    { "bot": "JAKE THE SNAKE", "rare_morph": "celestial_serpent", "status": "pending" }, { "bot": "JAKE THE SNAKE", "rare_morph": "crown_beast", "status": "pending" }, { "bot": "JAKE THE SNAKE", "rare_morph": "boombox_kaiju", "status": "pending" }, { "bot": "JAKE THE SNAKE", "rare_morph": "graffiti_guardian", "status": "pending" },
+    { "bot": "TUBBY", "rare_morph": "celestial_serpent", "status": "pending" }, { "bot": "TUBBY", "rare_morph": "crown_beast", "status": "pending" }, { "bot": "TUBBY", "rare_morph": "boombox_kaiju", "status": "pending" }, { "bot": "TUBBY", "rare_morph": "graffiti_guardian", "status": "pending" },
+    { "bot": "RED ALERT", "rare_morph": "celestial_serpent", "status": "pending" }, { "bot": "RED ALERT", "rare_morph": "crown_beast", "status": "pending" }, { "bot": "RED ALERT", "rare_morph": "boombox_kaiju", "status": "pending" }, { "bot": "RED ALERT", "rare_morph": "graffiti_guardian", "status": "pending" },
+    { "bot": "THE TING", "rare_morph": "celestial_serpent", "status": "pending" }, { "bot": "THE TING", "rare_morph": "crown_beast", "status": "pending" }, { "bot": "THE TING", "rare_morph": "boombox_kaiju", "status": "pending" }, { "bot": "THE TING", "rare_morph": "graffiti_guardian", "status": "pending" },
+    { "bot": "TATTOO JOHN", "rare_morph": "celestial_serpent", "status": "pending" }, { "bot": "TATTOO JOHN", "rare_morph": "crown_beast", "status": "pending" }, { "bot": "TATTOO JOHN", "rare_morph": "boombox_kaiju", "status": "pending" }, { "bot": "TATTOO JOHN", "rare_morph": "graffiti_guardian", "status": "pending" },
+    { "bot": "TIN BOB", "rare_morph": "celestial_serpent", "status": "pending" }, { "bot": "TIN BOB", "rare_morph": "crown_beast", "status": "pending" }, { "bot": "TIN BOB", "rare_morph": "boombox_kaiju", "status": "pending" }, { "bot": "TIN BOB", "rare_morph": "graffiti_guardian", "status": "pending" }
+  ],
+  "moon_egg_art": { "key": "moon_egg", "status": "pending", "current_fallback": "procedural_egg" },
+  "item_art_registry": "/data/moonpet-item-art-registry.json",
+  "item_art_requirements": [
+    { "key": "moon_kibble", "name": "Moon Kibble", "category": "food", "status": "pending" }, { "key": "nebula_snack", "name": "Nebula Snack Pack", "category": "food", "status": "pending" }, { "key": "crystal_bowl", "name": "Crystal Bowl", "category": "food", "status": "pending" },
+    { "key": "moon_snack", "name": "Moon Snack", "category": "consumable", "status": "pending" }, { "key": "energy_drink", "name": "Energy Drink", "category": "consumable", "status": "pending" }, { "key": "clean_wipe", "name": "Clean Wipe", "category": "consumable", "status": "pending" }, { "key": "style_patch", "name": "Style Patch", "category": "consumable", "status": "pending" }, { "key": "adventure_map", "name": "Adventure Map", "category": "prop", "status": "pending" },
+    { "key": "laser_ball", "name": "Laser Ball", "category": "toy", "status": "pending" }, { "key": "hoverboard", "name": "Moon Hoverboard", "category": "toy", "status": "pending" },
+    { "key": "street_hoodie", "name": "Street Hoodie", "category": "equipment", "status": "pending" }, { "key": "moon_armor", "name": "Moon Armor", "category": "armor", "status": "pending" }, { "key": "crown_jacket", "name": "Crown Jacket", "category": "equipment", "status": "pending" }, { "key": "cardboard_armor", "name": "Cardboard Armor", "category": "armor", "status": "pending" }, { "key": "moon_helmet", "name": "Moon Helmet", "category": "armor", "status": "pending" }, { "key": "street_armor", "name": "Street Armor", "category": "armor", "status": "pending" }, { "key": "cyber_armor", "name": "Cyber Armor", "category": "armor", "status": "pending" },
+    { "key": "foam_claws", "name": "Foam Claws", "category": "weapon", "status": "pending" }, { "key": "laser_claws", "name": "Laser Claws", "category": "weapon", "status": "pending" }, { "key": "moon_blaster", "name": "Moon Blaster", "category": "weapon", "status": "pending" }, { "key": "lucky_charm", "name": "Lucky Charm", "category": "charm", "status": "pending" }, { "key": "shield_charm", "name": "Shield Charm", "category": "charm", "status": "pending" },
+    { "key": "scrap_metal", "name": "Scrap Metal", "category": "material", "status": "pending" }, { "key": "moon_fabric", "name": "Moon Fabric", "category": "material", "status": "pending" }, { "key": "crystal_shard", "name": "Crystal Shard", "category": "material", "status": "pending" }, { "key": "battery_cell", "name": "Battery Cell", "category": "material", "status": "pending" }, { "key": "spray_core", "name": "Spray Core", "category": "material", "status": "pending" }, { "key": "kaiju_fragment", "name": "Kaiju Fragment", "category": "material", "status": "pending" }, { "key": "arena_token", "name": "Arena Token", "category": "currency", "status": "pending" }, { "key": "evolution_fragment", "name": "Evolution Fragment", "category": "material", "status": "pending" }, { "key": "mastery_token", "name": "Mastery Token", "category": "currency", "status": "pending" },
+    { "key": "moon_gold", "name": "Moon Gold", "category": "currency", "status": "pending" }, { "key": "moon_crystals", "name": "Moon Crystals", "category": "currency", "status": "pending" }, { "key": "style_tokens", "name": "Style Tokens", "category": "currency", "status": "pending" }
+  ]
+}

@@ -9,7 +9,7 @@ if (!globalThis.crypto) globalThis.crypto = webcrypto;
 
 const SPECIES_LABELS = Object.freeze({
   neon_raccoon: 'F1 EDDY',
-  bubble_ram: 'JALE THE SNAKE',
+  bubble_ram: 'JAKE THE SNAKE',
   comet_gecko: 'TUBBY',
   vinyl_crab: 'BOTTY',
   lantern_fox: 'RED ALERT',

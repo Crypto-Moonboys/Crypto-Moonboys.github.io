@@ -9,6 +9,11 @@ const ROOT = process.cwd();
 const OUTPUT = path.join(ROOT, ".tmp", "moonpet-multi-bot-browser-smoke");
 const MIME = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".json": "application/json", ".png": "image/png", ".jpg": "image/jpeg" };
 const MODES = ["idle", "feed", "play", "clean", "sleep", "train", "travel", "work", "equip", "evolve", "trade", "celebrate", "interact", "blocked", "battle"];
+const BOTS = [
+  ["vinyl_crab", "BOTTY"], ["neon_raccoon", "F1 EDDY"], ["bubble_ram", "JAKE THE SNAKE"],
+  ["comet_gecko", "TUBBY"], ["lantern_fox", "RED ALERT"], ["sneaker_snail", "THE TING"],
+  ["alley_drake", "TATTOO JOHN"], ["moon_ferret", "TIN BOB"]
+];
 const MINI_APP_SOURCE = fsSync.readFileSync(path.join(ROOT, "js", "moonpet-mini-app.js"), "utf8");
 const PRESENTATION_SOURCE = MINI_APP_SOURCE.match(/\/\/ TEST-EXPORT: actionPresentation:start([\s\S]*?)\/\/ TEST-EXPORT: actionPresentation:end/)?.[1];
 assert.ok(PRESENTATION_SOURCE, "shared action presentation source must be extractable");
@@ -89,7 +94,27 @@ try {
   assert.equal(result.botty.resolvedBot, "BOTTY");
   assert.equal(result.staleDrew, false, "character switch must clear stale sprites immediately");
 
-  await waitForPack(page, "TUBBY");
+  for (const [speciesId, botName] of BOTS) {
+    for (let evolutionStage = 1; evolutionStage <= 5; evolutionStage += 1) {
+      const selection = await selectAndWaitForPack(page, { speciesId, speciesName: botName, evolutionStage }, botName);
+      assert.equal(selection.requestedEvolution, `stage_${evolutionStage}`);
+      assert.equal(selection.resolvedEvolution, "stage_1");
+      assert.equal(selection.evolutionFallbackUsed, evolutionStage > 1);
+      const renders = await page.evaluate((modes) => {
+        const renderer = window.MoonpetBotArtRenderer;
+        const canvas = document.getElementById("multi-bot-proof");
+        const context = canvas.getContext("2d");
+        return modes.map((mode, index) => ({
+          mode,
+          drew: renderer.renderMoonpetBot(context, mode, 80, 150, 0.65, 500 + index * 100, { active: true, startedAt: 0 }),
+          lastRender: renderer.getMoonpetBotArtRendererState().lastRender
+        }));
+      }, MODES);
+      assert.ok(renders.every((entry) => entry.drew && entry.lastRender.resolvedBot === botName), `${botName} stage ${evolutionStage} must render every action`);
+    }
+  }
+
+  await selectAndWaitForPack(page, { speciesId: "comet_gecko", speciesName: "TUBBY", evolutionStage: 1 }, "TUBBY");
   const tubby = await page.evaluate((modes) => {
     const renderer = window.MoonpetBotArtRenderer;
     const canvas = document.getElementById("multi-bot-proof");

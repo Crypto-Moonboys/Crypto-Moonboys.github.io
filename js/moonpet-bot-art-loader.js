@@ -71,6 +71,26 @@
     return String(value || "").trim().toUpperCase();
   }
 
+  function evolutionStageKey(identity = {}) {
+    const raw = Number(identity.evolutionStage ?? identity.evolution_stage ?? identity.stage ?? 1);
+    const stage = Number.isFinite(raw) ? Math.max(1, Math.min(5, Math.floor(raw))) : 1;
+    return `stage_${stage}`;
+  }
+
+  function artConfig(botConfig, stageKey) {
+    const stages = botConfig && botConfig.evolution_art || {};
+    const selected = stages[stageKey];
+    const base = stages.stage_1 || (botConfig && botConfig.manifest_path ? {
+      form: "base", status: botConfig.status, manifest_path: botConfig.manifest_path,
+      autosprite_character_id: botConfig.autosprite_character_id
+    } : null);
+    return { selected, base };
+  }
+
+  function packConfig(botConfig, art) {
+    return { ...botConfig, manifest_path: art && art.manifest_path, autosprite_character_id: art && art.autosprite_character_id };
+  }
+
   function resolveBot(registry, identity = {}) {
     const speciesId = String(identity.speciesId || identity.species_id || "").trim();
     const displayName = normalized(identity.displayName || identity.speciesName || identity.species_name || identity.botName);
@@ -81,12 +101,28 @@
     }
     const requestedBot = match ? match[0] : displayName || speciesId || registry.default_bot;
     const requestedConfig = match && match[1];
+    const requestedEvolution = evolutionStageKey(identity);
     const defaultBot = registry.default_bot || "BOTTY";
     const defaultConfig = registry.bots && registry.bots[defaultBot];
-    if (requestedConfig && requestedConfig.status === "complete" && requestedConfig.manifest_path) {
-      return { requestedBot, resolvedBot: match[0], config: requestedConfig, fallbackUsed: false, defaultBot, defaultConfig };
+    const defaultBase = artConfig(defaultConfig, "stage_1").base;
+    if (requestedConfig) {
+      const requestedArt = artConfig(requestedConfig, requestedEvolution);
+      const resolvedArt = requestedArt.selected && requestedArt.selected.status === "complete" && requestedArt.selected.manifest_path
+        ? requestedArt.selected : requestedArt.base;
+      if (resolvedArt && resolvedArt.status === "complete" && resolvedArt.manifest_path) {
+        return {
+          requestedBot, resolvedBot: match[0], config: packConfig(requestedConfig, resolvedArt), fallbackUsed: false,
+          requestedEvolution, resolvedEvolution: resolvedArt === requestedArt.selected ? requestedEvolution : "stage_1",
+          evolutionFallbackUsed: resolvedArt !== requestedArt.selected, baseConfig: packConfig(requestedConfig, requestedArt.base),
+          defaultBot, defaultConfig: packConfig(defaultConfig, defaultBase)
+        };
+      }
     }
-    return { requestedBot, resolvedBot: defaultBot, config: defaultConfig, fallbackUsed: true, defaultBot, defaultConfig };
+    return {
+      requestedBot, resolvedBot: defaultBot, config: packConfig(defaultConfig, defaultBase), fallbackUsed: true,
+      requestedEvolution, resolvedEvolution: "stage_1", evolutionFallbackUsed: requestedEvolution !== "stage_1",
+      baseConfig: packConfig(defaultConfig, defaultBase), defaultBot, defaultConfig: packConfig(defaultConfig, defaultBase)
+    };
   }
 
   function loadPack(botKey, config) {
@@ -123,12 +159,38 @@
     try {
       pack = await loadPack(resolution.resolvedBot, resolution.config);
     } catch (error) {
-      if (resolution.resolvedBot === resolution.defaultBot) throw error;
-      resolution.resolvedBot = resolution.defaultBot;
-      resolution.config = resolution.defaultConfig;
-      resolution.fallbackUsed = true;
-      pack = await loadPack(resolution.defaultBot, resolution.defaultConfig);
-      pack.errors.unshift(`${resolution.requestedBot} pack failed: ${error.message}`);
+      if (!resolution.fallbackUsed && resolution.resolvedEvolution !== "stage_1") {
+        resolution.resolvedEvolution = "stage_1";
+        resolution.evolutionFallbackUsed = true;
+        resolution.config = resolution.baseConfig;
+        try {
+          pack = await loadPack(resolution.resolvedBot, resolution.baseConfig);
+          pack.errors.unshift(`${resolution.requestedBot} ${resolution.requestedEvolution} pack failed: ${error.message}`);
+        } catch (baseError) {
+          resolution.resolvedBot = resolution.defaultBot;
+          resolution.config = resolution.defaultConfig;
+          resolution.fallbackUsed = true;
+          pack = await loadPack(resolution.defaultBot, resolution.defaultConfig);
+          pack.errors.unshift(`${resolution.requestedBot} base pack failed: ${baseError.message}`);
+          pack.errors.unshift(`${resolution.requestedBot} ${resolution.requestedEvolution} pack failed: ${error.message}`);
+        }
+      } else {
+        if (resolution.resolvedBot === resolution.defaultBot) throw error;
+        resolution.resolvedBot = resolution.defaultBot;
+        resolution.resolvedEvolution = "stage_1";
+        resolution.config = resolution.defaultConfig;
+        resolution.fallbackUsed = true;
+        pack = await loadPack(resolution.defaultBot, resolution.defaultConfig);
+        pack.errors.unshift(`${resolution.requestedBot} pack failed: ${error.message}`);
+      }
+    }
+    if (!pack.ready && !resolution.fallbackUsed && resolution.resolvedEvolution !== "stage_1") {
+      const failedEvolution = resolution.resolvedEvolution;
+      resolution.resolvedEvolution = "stage_1";
+      resolution.evolutionFallbackUsed = true;
+      resolution.config = resolution.baseConfig;
+      pack = await loadPack(resolution.resolvedBot, resolution.baseConfig);
+      pack.errors.unshift(`${resolution.requestedBot} ${failedEvolution} idle failed to load`);
     }
     if (!pack.ready && resolution.resolvedBot !== resolution.defaultBot) {
       resolution.resolvedBot = resolution.defaultBot;
@@ -139,5 +201,5 @@
     return { registry, ...resolution, ...pack };
   }
 
-  window.MoonpetBotArtLoader = { loadMoonpetBotArt, resolveBot, framesFromAtlas };
+  window.MoonpetBotArtLoader = { loadMoonpetBotArt, resolveBot, evolutionStageKey, framesFromAtlas };
 })();
