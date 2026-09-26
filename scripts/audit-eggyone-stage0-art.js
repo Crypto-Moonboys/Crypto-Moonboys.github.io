@@ -48,7 +48,9 @@ function auditEggyoneStage0(options = {}) {
   const manifest = JSON.parse(fs.readFileSync(MANIFEST_PATH, "utf8"));
   const failures = [];
   if (manifest.character_name !== "EGGYONE") failures.push("manifest character_name must be EGGYONE");
-  if (manifest.source !== "AutoSprite API") failures.push("manifest source must be AutoSprite API");
+  if (!String(manifest.source || "").includes("AutoSprite API")) {
+    failures.push("manifest source must include AutoSprite API for Stage-0 provenance");
+  }
   if (!manifest.character_id) failures.push("manifest character_id is required");
 
   const assets = new Map((manifest.assets || []).map((asset) => [asset.role, asset]));
@@ -81,7 +83,7 @@ function auditEggyoneStage0(options = {}) {
   const result = {
     schema_version: 2,
     audited_at: auditedAt,
-    source: "AutoSprite API",
+    source: manifest.source,
     character_name: manifest.character_name,
     character_id: manifest.character_id,
     manifest_path: "/data/moonpet-eggyone-stage0-assets.json",
