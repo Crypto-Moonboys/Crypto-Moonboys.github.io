@@ -42,6 +42,7 @@ const ROLE_SHEETS = [
   { role: "egg_breakout", autosprite_name: "EGGSIX", playback_mode: "once_hold_last" },
   { role: "egg_hatch", autosprite_name: "EGGSEVEN", playback_mode: "once" }
 ];
+const ROLE_SHEET_BY_ROLE = new Map(ROLE_SHEETS.map((entry) => [entry.role, entry]));
 
 function parseArgs(argv) {
   const options = { characterName: CHARACTER_NAME, characterId: "", registryPath: REGISTRY_PATH };
@@ -83,6 +84,40 @@ async function readJsonIfExists(filePath, fallback = null) {
     if (error && error.code === "ENOENT") return fallback;
     throw error;
   }
+}
+
+function stage0PlaybackForRole(role) {
+  const mapping = ROLE_SHEET_BY_ROLE.get(role);
+  if (!mapping) throw new Error(`Unknown Stage-0 role contract: ${role}`);
+  if (mapping.playback_mode === "loop") return { loop: true, one_shot: false, playback_mode: "loop" };
+  if (mapping.playback_mode === "once_then_idle") return { loop: false, one_shot: true, playback_mode: "once_then_idle" };
+  if (mapping.playback_mode === "once_hold_last") return { loop: false, one_shot: true, playback_mode: "once_hold_last" };
+  if (mapping.playback_mode === "once") return { loop: false, one_shot: true, playback_mode: "once" };
+  throw new Error(`Unsupported playback mode for ${role}: ${mapping.playback_mode}`);
+}
+
+function toProductionStage0Asset(animation, characterId) {
+  const playback = stage0PlaybackForRole(animation.role);
+  return {
+    role: animation.role,
+    autosprite_animation_name: animation.autosprite_animation_name,
+    png_path: animation.png_path,
+    atlas_path: animation.atlas_path,
+    frame_count: Number(animation.frame_count),
+    frame_dimensions: animation.frame_size || animation.frame_dimensions,
+    sheet_dimensions: animation.sheet_size || animation.sheet_dimensions,
+    fps: 12,
+    loop: playback.loop,
+    one_shot: playback.one_shot,
+    playback_mode: playback.playback_mode,
+    autosprite: {
+      character_id: characterId,
+      spritesheet_id: animation.autosprite_spritesheet_id,
+      animation_name: animation.autosprite_animation_name
+    },
+    provenance: "existing AutoSprite spritesheet; no generation request was made",
+    review_status: "mechanical_validation_passed_pending_visual_review"
+  };
 }
 
 function selectCanonicalStage0Records(records) {
@@ -226,12 +261,11 @@ async function promoteStagingPack(manifest, paths) {
     const atlasPath = path.join(productionDir, `${animation.role}.json`);
     await fs.copyFile(path.join(REPO_ROOT, animation.output_png_path), pngPath);
     await fs.copyFile(path.join(REPO_ROOT, animation.output_atlas_path), atlasPath);
-    productionAnimations.push({
+    productionAnimations.push(toProductionStage0Asset({
       ...animation,
       png_path: `/${relative(pngPath)}`,
-      atlas_path: `/${relative(atlasPath)}`,
-      approval_status: "mechanical_validation_passed_pending_visual_review"
-    });
+      atlas_path: `/${relative(atlasPath)}`
+    }, manifest.character_id));
   }
   const contactSheetPath = path.join(productionDir, "contact-sheet.png");
   await fs.copyFile(paths.contactSheetPath, contactSheetPath);
@@ -248,7 +282,7 @@ async function promoteStagingPack(manifest, paths) {
     source: "AutoSprite API + local approved asset",
     provenance: "seven existing AutoSprite Stage-0 sheets plus approved local user-supplied EGGYONE front_fight sheet",
     downloaded_at: manifest.generated_at,
-    approval_status: "approved_visual_review",
+    approval_status: "mechanical_validation_passed_pending_visual_review",
     contact_sheet_path: `/${relative(contactSheetPath)}`,
     cache_version: existingManifest?.cache_version || "20260926-front-actions-v1",
     runtime_role_map: {
@@ -340,6 +374,8 @@ module.exports = {
   parseArgs,
   exactName,
   outputPaths,
+  stage0PlaybackForRole,
+  toProductionStage0Asset,
   selectCanonicalStage0Records,
   validateAtlasAgainstSheet,
   ensureLocalEggyoneFrontFightAsset,

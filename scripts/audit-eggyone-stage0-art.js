@@ -42,10 +42,9 @@ function parseCliArgs(argv = process.argv.slice(2)) {
   };
 }
 
-function auditEggyoneStage0(options = {}) {
+function auditEggyoneStage0Manifest(manifest, options = {}) {
   const write = options.write === true;
-  const existingAudit = readExistingAudit();
-  const manifest = JSON.parse(fs.readFileSync(MANIFEST_PATH, "utf8"));
+  const existingAudit = options.existingAudit || null;
   const failures = [];
   if (manifest.character_name !== "EGGYONE") failures.push("manifest character_name must be EGGYONE");
   if (!String(manifest.source || "").includes("AutoSprite API")) {
@@ -95,6 +94,14 @@ function auditEggyoneStage0(options = {}) {
     failures,
   };
   if (failures.length) throw new Error(`EGGYONE Stage 0 audit failed:\n- ${failures.join("\n- ")}`);
+  return result;
+}
+
+function auditEggyoneStage0(options = {}) {
+  const write = options.write === true;
+  const existingAudit = readExistingAudit();
+  const manifest = JSON.parse(fs.readFileSync(MANIFEST_PATH, "utf8"));
+  const result = auditEggyoneStage0Manifest(manifest, { write, existingAudit });
   const serialized = `${JSON.stringify(result, null, 2)}\n`;
   if (write) {
     fs.writeFileSync(OUTPUT_PATH, serialized, "utf8");
@@ -110,4 +117,11 @@ if (require.main === module) {
   auditEggyoneStage0(options);
 }
 
-module.exports = { EXPECTED_ROLES, OPTIONAL_FRONT_ACTION_ROLES, auditEggyoneStage0, atlasFrameCount, parseCliArgs };
+module.exports = {
+  EXPECTED_ROLES,
+  OPTIONAL_FRONT_ACTION_ROLES,
+  auditEggyoneStage0Manifest,
+  auditEggyoneStage0,
+  atlasFrameCount,
+  parseCliArgs
+};
