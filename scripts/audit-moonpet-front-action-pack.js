@@ -94,9 +94,18 @@ async function audit(options = {}) {
       }
       const owner = `${character.name} ${role}`;
       const spritesheetId = String(asset.autosprite?.spritesheet_id || "");
-      if (!spritesheetId) failures.push(`${owner}: missing genuine spritesheet ID`);
-      if (spritesheetOwners.has(spritesheetId)) failures.push(`${owner}: spritesheet ID duplicates ${spritesheetOwners.get(spritesheetId)}`);
-      else spritesheetOwners.set(spritesheetId, owner);
+      const isApprovedLocalEggyoneFrontFight =
+        character.name === "EGGYONE"
+        && role === "front_fight"
+        && asset.provenance === "local_user_supplied_exact_committed_png"
+        && asset.autosprite?.source === "local_user_supplied";
+      if (!spritesheetId && !isApprovedLocalEggyoneFrontFight) {
+        failures.push(`${owner}: missing genuine spritesheet ID`);
+      }
+      if (spritesheetId) {
+        if (spritesheetOwners.has(spritesheetId)) failures.push(`${owner}: spritesheet ID duplicates ${spritesheetOwners.get(spritesheetId)}`);
+        else spritesheetOwners.set(spritesheetId, owner);
+      }
       if (asset.autosprite?.character_id !== expectedCharacterId) failures.push(`${owner}: AutoSprite character ID mismatch`);
       if (!String(asset.png_path || "").startsWith(expectedFolder)) failures.push(`${owner}: PNG path uses the wrong character folder`);
       if (!String(asset.atlas_path || "").startsWith(expectedFolder)) failures.push(`${owner}: atlas path uses the wrong character folder`);
