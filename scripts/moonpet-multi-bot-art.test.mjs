@@ -15,23 +15,27 @@ assert.equal(registry.bots.BOTTY.status, "complete");
 assert.deepEqual(registry.bots.BOTTY.canonical_species_ids, ["vinyl_crab"]);
 assert.equal(registry.bots.TUBBY.status, "complete");
 assert.deepEqual(registry.bots.TUBBY.canonical_species_ids, ["comet_gecko"]);
+assert.equal(registry.bots["TIN BOB"].status, "complete");
+assert.deepEqual(registry.bots["TIN BOB"].canonical_species_ids, ["moon_ferret"]);
 for (const [name, config] of Object.entries(registry.bots)) {
-  if (name !== "BOTTY" && name !== "TUBBY") assert.equal(config.fallback, "BOTTY", `${name} fallback`);
+  if (name !== "BOTTY") assert.equal(config.fallback, "BOTTY", `${name} fallback`);
 }
 
-for (const bot of ["botty", "tubby"]) {
-  const manifest = JSON.parse(fs.readFileSync(path.join(root, "data", `moonpet-${bot}-front-assets.json`), "utf8"));
-  assert.equal(manifest.assets.length, 15, `${bot} asset count`);
-  assert.deepEqual(manifest.assets.map((asset) => asset.role), expectedRoles, `${bot} roles`);
+for (const [name, config] of Object.entries(registry.bots).filter(([, entry]) => entry.status === "complete")) {
+  const manifest = JSON.parse(fs.readFileSync(path.join(root, config.manifest_path.replace(/^\//, "")), "utf8"));
+  assert.equal(manifest.character_name, name, `${name} manifest identity`);
+  assert.equal(manifest.character_id, config.autosprite_character_id, `${name} registry provenance`);
+  assert.equal(manifest.assets.length, 15, `${name} asset count`);
+  assert.deepEqual(manifest.assets.map((asset) => asset.role), expectedRoles, `${name} roles`);
   for (const asset of manifest.assets) {
     const png = path.join(root, asset.png_path.replace(/^\//, ""));
     const atlasPath = path.join(root, asset.atlas_path.replace(/^\//, ""));
-    assert.ok(fs.statSync(png).size > 10000, `${bot} ${asset.role} PNG content`);
+    assert.ok(fs.statSync(png).size > 10000, `${name} ${asset.role} PNG content`);
     const atlas = JSON.parse(fs.readFileSync(atlasPath, "utf8"));
     const count = Array.isArray(atlas.frames) ? atlas.frames.length : Object.keys(atlas.frames || {}).length;
-    assert.equal(count, asset.frame_count, `${bot} ${asset.role} authoritative atlas count`);
-    assert.equal(asset.autosprite.character_id, manifest.character_id, `${bot} ${asset.role} provenance`);
-    assert.equal(asset.review_status, "approved_visual_review", `${bot} ${asset.role} review`);
+    assert.equal(count, asset.frame_count, `${name} ${asset.role} authoritative atlas count`);
+    assert.equal(asset.autosprite.character_id, manifest.character_id, `${name} ${asset.role} provenance`);
+    assert.equal(asset.review_status, "approved_visual_review", `${name} ${asset.role} review`);
   }
 }
 
@@ -39,6 +43,11 @@ const tubbyManifest = JSON.parse(fs.readFileSync(path.join(root, "data", "moonpe
 assert.equal(tubbyManifest.character_name, "TUBBY");
 assert.equal(tubbyManifest.character_id, "cmuhj9bx90014mctfalaa2dcj");
 assert.ok(tubbyManifest.assets.every((asset) => asset.frame_count === 25));
+
+const tinBobManifest = JSON.parse(fs.readFileSync(path.join(root, "data", "moonpet-tin-bob-front-assets.json"), "utf8"));
+assert.equal(tinBobManifest.character_name, "TIN BOB");
+assert.equal(tinBobManifest.character_id, "cmuhjady40001f0c9vekfkr24");
+assert.ok(tinBobManifest.assets.every((asset) => asset.frame_count === 25));
 
 const html = fs.readFileSync(path.join(root, "moonpet-game.html"), "utf8");
 assert.match(html, /moonpet-bot-art-loader\.js\?v=20260926-multi-bot-art-v1/);

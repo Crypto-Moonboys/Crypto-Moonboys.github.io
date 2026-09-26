@@ -169,11 +169,14 @@ async function promote(options) {
 
   const autospriteRegistryPath = path.join(REPO_ROOT, "data", "moonpet-autosprite-characters.json");
   const autospriteRegistry = await readJsonIfExists(autospriteRegistryPath, {});
+  const existingCharacter = autospriteRegistry[characterName];
   autospriteRegistry[characterName] = {
     character_id: characterId,
     source: "autosprite",
     active: true,
-    discovered_at: source.generated_at || new Date().toISOString()
+    discovered_at: existingCharacter?.character_id === characterId && existingCharacter.discovered_at
+      ? existingCharacter.discovered_at
+      : source.generated_at || new Date().toISOString()
   };
   await writeJson(autospriteRegistryPath, autospriteRegistry);
   console.log(`Promoted ${characterName}: ${assets.length} approved assets -> img/moonpets/${characterSlug}/`);
