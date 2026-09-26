@@ -2684,6 +2684,105 @@ for (const equippedOutfit of [null, 'street_hoodie', 'moon_armor']) {
   }
 }
 
+for (const [action, expectedField] of [['energy_drink', 'energy'], ['dance', 'happiness'], ['cuddles', 'happiness']]) {
+  const telegramId = `egg-mini-${action}`;
+  const db = seedRepeatRewardPlayer(telegramId, 72, specialActionNow.toISOString());
+  await __petMediaTestHooks.createMoonEggLifecycle(db, telegramId, `fixture:${telegramId}:egg`);
+  db.database.prepare('UPDATE telegram_pet_profiles SET happiness=40, energy=72 WHERE telegram_id=?').run(telegramId);
+  db.database.prepare('UPDATE telegram_pet_instances SET happiness=40, energy=72 WHERE telegram_id=?').run(telegramId);
+  const first = await processPetMiniAppAction(db, telegramId, { id: telegramId }, {
+    action,
+    request_id: `${action}:first`,
+  }, '123456:test-token');
+  assert.equal(first.accepted, true, `${action} must be accepted in egg lifecycle when eligible`);
+  assert.equal(first.pet.pet_xp, 0, `${action} egg acceptance must remain pet-XP neutral`);
+  assert.deepEqual(
+    { moon_gold: first.pet.moon_gold, moon_crystals: first.pet.moon_crystals, style_tokens: first.pet.style_tokens },
+    { moon_gold: 0, moon_crystals: 0, style_tokens: 0 },
+    `${action} egg acceptance must remain wallet-neutral`,
+  );
+  const duplicate = await processPetMiniAppAction(db, telegramId, { id: telegramId }, {
+    action,
+    request_id: `${action}:first`,
+  }, '123456:test-token');
+  assert.equal(duplicate.duplicate, true, `${action} egg duplicate request must resolve idempotently`);
+  assert.equal(duplicate.pet[expectedField], first.pet[expectedField], `${action} duplicate must not apply ${expectedField} twice`);
+}
+
+const eggMiniBlocked = seedRepeatRewardPlayer('egg-mini-blocked', 72, specialActionNow.toISOString());
+await __petMediaTestHooks.createMoonEggLifecycle(eggMiniBlocked, 'egg-mini-blocked', 'fixture:egg-mini-blocked:egg');
+const blockedTrain = await processPetMiniAppAction(eggMiniBlocked, 'egg-mini-blocked', { id: 'egg-mini-blocked' }, {
+  action: 'train',
+  request_id: 'train:blocked',
+}, '123456:test-token');
+assert.equal(blockedTrain.accepted, false, 'combat/training actions must remain blocked while lifecycle phase is egg');
+assert.equal(blockedTrain.reason, 'moon_egg_must_hatch');
+
+const eggMiniCooldown = seedRepeatRewardPlayer('egg-mini-cooldown', 72, specialActionNow.toISOString());
+await __petMediaTestHooks.createMoonEggLifecycle(eggMiniCooldown, 'egg-mini-cooldown', 'fixture:egg-mini-cooldown:egg');
+const firstEggDrink = await processPetMiniAppAction(eggMiniCooldown, 'egg-mini-cooldown', { id: 'egg-mini-cooldown' }, {
+  action: 'energy_drink',
+  request_id: 'energy:first',
+}, '123456:test-token');
+assert.equal(firstEggDrink.accepted, true);
+const cooldownEggDrink = await processPetMiniAppAction(eggMiniCooldown, 'egg-mini-cooldown', { id: 'egg-mini-cooldown' }, {
+  action: 'energy_drink',
+  request_id: 'energy:cooldown',
+}, '123456:test-token');
+assert.equal(cooldownEggDrink.accepted, false);
+assert.equal(cooldownEggDrink.reason, 'cooldown', 'eligible egg special actions must reject for real cooldowns, not hatch gate');
+
+const eggMiniBusy = seedPetActivitySession('egg-mini-busy', { now: specialActionNow, elapsed_seconds: 120 });
+await __petMediaTestHooks.createMoonEggLifecycle(eggMiniBusy.db, 'egg-mini-busy', 'fixture:egg-mini-busy:egg');
+const busyDance = await processPetMiniAppAction(eggMiniBusy.db, 'egg-mini-busy', { id: 'egg-mini-busy' }, {
+  action: 'dance',
+  request_id: 'dance:busy',
+}, '123456:test-token');
+assert.equal(busyDance.accepted, false);
+assert.ok(['pet_busy', 'pet_activity_active'].includes(busyDance.reason),
+  'eligible egg special actions must preserve pending-work rejections');
+
+const eggRouteTelegramId = '9007771';
+const eggRouteDb = seedRepeatRewardPlayer(eggRouteTelegramId, 72, specialActionNow.toISOString());
+await __petMediaTestHooks.createMoonEggLifecycle(eggRouteDb, eggRouteTelegramId, `fixture:${eggRouteTelegramId}:egg`);
+const eggRouteEnv = {
+  DB: eggRouteDb,
+  TELEGRAM_BOT_TOKEN: '123456:test-token',
+  TELEGRAM_PETS_BOT_SECRET: 'pet-secret',
+};
+const routeAccepted = await moonboysApiWorker.fetch(new Request('https://moonboys.test/telegram-pets/action', {
+  method: 'POST',
+  headers: {
+    'content-type': 'application/json',
+    'x-pets-bot-secret': 'pet-secret',
+  },
+  body: JSON.stringify({
+    telegram_id: eggRouteTelegramId,
+    action: 'dance',
+    event_key: `api:${eggRouteTelegramId}:dance:first`,
+  }),
+}), eggRouteEnv);
+assert.equal(routeAccepted.status, 200);
+const routeAcceptedBody = await routeAccepted.json();
+assert.equal(routeAcceptedBody.accepted, true, '/telegram-pets/action must allow egg dance when eligible');
+const routeBlocked = await moonboysApiWorker.fetch(new Request('https://moonboys.test/telegram-pets/action', {
+  method: 'POST',
+  headers: {
+    'content-type': 'application/json',
+    'x-pets-bot-secret': 'pet-secret',
+  },
+  body: JSON.stringify({
+    telegram_id: eggRouteTelegramId,
+    action: 'train',
+    event_key: `api:${eggRouteTelegramId}:train:blocked`,
+  }),
+}), eggRouteEnv);
+assert.ok([200, 409].includes(routeBlocked.status));
+const routeBlockedBody = await routeBlocked.json();
+assert.equal(routeBlockedBody.accepted, false);
+assert.equal(routeBlockedBody.reason, 'moon_egg_must_hatch',
+  '/telegram-pets/action must continue blocking hatch-restricted actions');
+
 const dailyLimitDb = seedRepeatRewardPlayer('special-daily-limit', 80, specialActionNow.toISOString());
 dailyLimitDb.database.prepare("UPDATE telegram_pet_profiles SET happiness=0 WHERE telegram_id='special-daily-limit'").run();
 dailyLimitDb.database.prepare("UPDATE telegram_pet_instances SET happiness=0 WHERE telegram_id='special-daily-limit'").run();

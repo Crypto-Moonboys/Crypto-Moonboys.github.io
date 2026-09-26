@@ -82,6 +82,38 @@ function buildLocalEggyoneFrontFightEntry(characterId, contactPath) {
   };
 }
 
+function contactSheetEntryForLocalEggyoneFrontFight() {
+  return {
+    id: LOCAL_EGGYONE_FRONT_FIGHT.role,
+    output_png_path: String(LOCAL_EGGYONE_FRONT_FIGHT.runtime_png_path || "").replace(/^[/\\]+/, "")
+  };
+}
+
+async function buildContactEntriesForCharacter(character, characterId, entries) {
+  const requiredRoles = rolesForCharacter(character);
+  const contactEntries = [...entries];
+  if (character.name === "EGGYONE") {
+    const manifestPath = repoPath(character.manifest);
+    const manifest = await readJson(manifestPath);
+    const existingFight = (manifest.assets || []).find((asset) => asset.role === LOCAL_EGGYONE_FRONT_FIGHT.role);
+    if (!existingFight) throw new Error("EGGYONE front_fight must exist in manifest before front-action contact-sheet build");
+    await validateLocalEggyoneFrontFightAsset({
+      repoRoot: REPO_ROOT,
+      asset: existingFight,
+      manifestCharacterId: characterId
+    });
+    contactEntries.push(contactSheetEntryForLocalEggyoneFrontFight());
+  }
+  const requiredContactRoles = character.name === "EGGYONE" ? Object.keys(REQUIRED_ROLES) : requiredRoles;
+  const contactRoleSet = new Set(contactEntries.map((entry) => entry.id));
+  for (const role of requiredContactRoles) {
+    if (!contactRoleSet.has(role)) {
+      throw new Error(`${character.name}: contact sheet requires role ${role}`);
+    }
+  }
+  return contactEntries;
+}
+
 function asInstalledAsset(character, characterId, entry) {
   const contract = REQUIRED_ROLES[entry.id];
   const paths = canonicalPaths(character, entry.id);
@@ -189,7 +221,8 @@ async function processCharacter(character, apiKey, globalIds) {
     }));
   }
 
-  await buildContactSheet(entries, paths.contactSheetPath);
+  const contactEntries = await buildContactEntriesForCharacter(character, characterId, entries);
+  await buildContactSheet(contactEntries, paths.contactSheetPath);
   const contactPath = canonicalPaths(character, "front_dance").contact;
   await fs.mkdir(path.dirname(repoPath(contactPath)), { recursive: true });
   await fs.copyFile(paths.contactSheetPath, repoPath(contactPath));
@@ -288,5 +321,7 @@ module.exports = {
   canonicalPaths,
   asInstalledAsset,
   rolesForCharacter,
-  buildLocalEggyoneFrontFightEntry
+  buildLocalEggyoneFrontFightEntry,
+  contactSheetEntryForLocalEggyoneFrontFight,
+  buildContactEntriesForCharacter
 };
