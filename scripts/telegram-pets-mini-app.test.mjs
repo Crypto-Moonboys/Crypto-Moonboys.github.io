@@ -902,57 +902,57 @@ const blockedResultFeedback = actionResultFeedbackRuntime({
   pet: { pet_id: 'pet-a' },
   daily_journey: { pet_id: 'pet-a', season_key: 's1', utc_day: '2026-08-20', completed_objectives: 2, required_objectives: 3 },
 });
-assert.match(blockedResultFeedback.resultMessage, /ACTION BLOCKED - hatch your Moonpet first\./,
+assert.match(blockedResultFeedback.resultMessage, /Action unavailable - hatch your Moonpet first\./,
   'blocked action result must show useful reason copy');
 assert.doesNotMatch(blockedResultFeedback.resultMessage, /Daily Journey|GROWTH MARK|\+99|\+50/,
   'rejected action result must not show journey progress or reward language');
-assert.deepEqual(blockedResultFeedback.actionFeedback.lines, ['ACTION BLOCKED', 'hatch your Moonpet first.'],
+assert.deepEqual(blockedResultFeedback.actionFeedback.lines, ['Not available', 'hatch your Moonpet first.'],
   'blocked canvas feedback must keep reason-only copy');
 const blockedWithoutReason = actionResultFeedbackRuntime({ accepted: false }, {}, {});
-assert.equal(blockedWithoutReason.resultMessage, 'ACTION BLOCKED',
+assert.equal(blockedWithoutReason.resultMessage, 'Action unavailable',
   'rejected action without reason must not render a dangling hyphen');
-assert.deepEqual(blockedWithoutReason.actionFeedback.lines, ['ACTION BLOCKED'],
+assert.deepEqual(blockedWithoutReason.actionFeedback.lines, ['Not available'],
   'rejected action without reason must not add a blank canvas feedback line');
 const duplicateWithoutReason = actionResultFeedbackRuntime({ accepted: false, duplicate: true }, {}, {});
-assert.equal(duplicateWithoutReason.resultMessage, 'ACTION BLOCKED // Duplicate blocked by authority.',
+assert.equal(duplicateWithoutReason.resultMessage, 'Action unavailable - Duplicate blocked by authority.',
   'rejected duplicate without reason must still show duplicate terminal copy');
-assert.deepEqual(duplicateWithoutReason.actionFeedback.lines, ['ACTION BLOCKED', 'DUPLICATE BLOCKED'],
+assert.deepEqual(duplicateWithoutReason.actionFeedback.lines, ['Not available', 'DUPLICATE BLOCKED'],
   'rejected duplicate without reason must still show duplicate canvas copy');
 const acceptedWithoutReason = actionResultFeedbackRuntime({
   accepted: true,
   result_copy: 'Moonpet settled in.',
   rewards: { moon_gold: 25 },
 }, {}, {}).resultMessage;
-assert.match(acceptedWithoutReason, /ACTION ACCEPTED/,
+assert.match(acceptedWithoutReason, /Action complete/,
   'accepted action result must keep accepted copy');
 assert.match(acceptedWithoutReason, /Moonpet settled in\./,
   'accepted action result without reason must keep result copy');
 assert.match(acceptedWithoutReason, /\+25 Moon Gold/,
   'accepted action result without reason must keep reward copy');
-assert.doesNotMatch(acceptedWithoutReason, /ACTION ACCEPTED \/\/\s*\/\//,
+assert.doesNotMatch(acceptedWithoutReason, /Action complete\s*-\s*-\s*/,
   'accepted action result without reason must not render an empty reason separator');
-assert.match(actionResultFeedbackRuntime({ accepted: false, reason: 'cooldown' }, {}, {}).resultMessage, /ACTION BLOCKED - wait for cooldown\./,
+assert.match(actionResultFeedbackRuntime({ accepted: false, reason: 'cooldown' }, {}, {}).resultMessage, /Action unavailable - wait for cooldown\./,
   'cooldown rejection copy must be plain language');
-assert.match(actionResultFeedbackRuntime({ accepted: false, reason: 'insufficient_gold' }, {}, {}).resultMessage, /ACTION BLOCKED - not enough Moon Gold\./,
+assert.match(actionResultFeedbackRuntime({ accepted: false, reason: 'insufficient_gold' }, {}, {}).resultMessage, /Action unavailable - not enough Moon Gold\./,
   'Moon Gold rejection copy must be plain language');
 const petCurrencyBlock = actionResultFeedbackRuntime({ accepted: false, reason: 'not_enough_pet_currency' }, {}, {}).resultMessage;
-assert.match(petCurrencyBlock, /ACTION BLOCKED - not enough required currency\./,
+assert.match(petCurrencyBlock, /Action unavailable - not enough required currency\./,
   'generic pet-currency rejection copy must be currency-neutral');
 assert.doesNotMatch(petCurrencyBlock, /Moon Gold/,
   'generic pet-currency rejection copy must not mention Moon Gold');
-assert.match(actionResultFeedbackRuntime({ accepted: false, reason: 'insufficient_crystals' }, {}, {}).resultMessage, /ACTION BLOCKED - not enough Moon Crystals\./,
+assert.match(actionResultFeedbackRuntime({ accepted: false, reason: 'insufficient_crystals' }, {}, {}).resultMessage, /Action unavailable - not enough Moon Crystals\./,
   'Moon Crystal rejection copy must remain specific');
-assert.match(actionResultFeedbackRuntime({ accepted: false, reason: 'insufficient_style' }, {}, {}).resultMessage, /ACTION BLOCKED - not enough Style Tokens\./,
+assert.match(actionResultFeedbackRuntime({ accepted: false, reason: 'insufficient_style' }, {}, {}).resultMessage, /Action unavailable - not enough Style Tokens\./,
   'Style Token rejection copy must remain specific');
-assert.match(actionResultFeedbackRuntime({ accepted: false, reason: 'weekly_journey_authority_syncing' }, {}, {}).resultMessage, /ACTION BLOCKED - Weekly Journey authority syncing\./,
+assert.match(actionResultFeedbackRuntime({ accepted: false, reason: 'weekly_journey_authority_syncing' }, {}, {}).resultMessage, /Action unavailable - Weekly Journey authority syncing\./,
   'authority-syncing rejection copy must be plain language');
 const unadoptedBlock = actionResultFeedbackRuntime({ accepted: false, reason: 'pet_not_adopted' }, {}, {}).resultMessage;
-assert.match(unadoptedBlock, /ACTION BLOCKED - initialise your Moonpet first\./,
+assert.match(unadoptedBlock, /Action unavailable - initialise your Moonpet first\./,
   'unadopted rejection copy must tell players to initialise first');
 assert.doesNotMatch(unadoptedBlock, /hatch your Moonpet first/,
   'unadopted rejection copy must not tell players to hatch before they have a Moonpet');
 const completedSeasonBlock = actionResultFeedbackRuntime({ accepted: false, reason: 'completed_season_pet_required' }, {}, {}).resultMessage;
-assert.match(completedSeasonBlock, /ACTION BLOCKED - completed Season pet required\./,
+assert.match(completedSeasonBlock, /Action unavailable - completed Season pet required\./,
   'completed-season rejection copy must name the completed pet requirement');
 assert.doesNotMatch(completedSeasonBlock, /active seasonal Moonpet required/,
   'completed-season rejection copy must not be confused with active-pet gating');
@@ -961,7 +961,7 @@ assert.doesNotMatch(completedSeasonBlock, /active seasonal Moonpet required/,
 // Windows checkouts cannot reintroduce indentation/newline-sensitive regexes.
 const TEST_EXPORT_NAMES = [
   'seasonTiming', 'callsignDraft', 'capabilityCombatHelper', 'actionAvailability', 'dailyJourneyMarkup', 'weeklyJourneyMarkup', 'nextGuidance', 'journeyActionProgress', 'actionResultFeedback', 'stateRequestGate', 'phase4PresenceDirector',
-  'combatDirector', 'lifecycleCeremonyStarter', 'lifecycleDirector',
+  'combatDirector', 'lifecycleCeremonyStarter', 'lifecycleDirector', 'actionPresentation',
 ];
 for (const name of TEST_EXPORT_NAMES) {
   for (const newline of ['\n', '\r\n']) {
@@ -1544,8 +1544,6 @@ assert.match(client, /key === 'activity_cancel'.*return 'interact'/);
 assert.match(client, /animateAction\(action, true, 8000, payload\)/);
 assert.match(client, /var actionAccepted = Boolean\(data\.result && data\.result\.accepted\);[\s\S]*animateAction\(action, actionAccepted, 2800, payload\)/);
 assert.match(client, /var actionResultHoldMs = 3600/);
-assert.match(client, /hold: actionResultHoldMs/);
-assert.match(client, /hold: 2200/);
 assert.match(client, /function createPetPalette/);
 assert.match(client, /var PET_APPEARANCE_PALETTES =/);
 assert.match(client, /var PET_SPECIES_PALETTES =/);
@@ -1619,6 +1617,10 @@ assert.doesNotMatch(drawWorldSource, /drawWorldStreet\(/);
 assert.doesNotMatch(drawWorldSource, /drawWorldReaction\(/);
 assert.doesNotMatch(drawWorldSource, /drawWorldForeground\(/);
 assert.doesNotMatch(drawWorldSource, /drawUtcAmbience\(/);
+assert.doesNotMatch(drawWorldSource, /drawActionEffects\(|drawActionFlash\(|drawCinematicFeedback\(|drawCompanionPresence\(|drawCombatOpponent\(|drawSceneTransition\(/,
+  'live world rendering must not invoke legacy overlays or procedural opponents');
+assert.match(drawWorldSource, /else drawActionInfo\(renderTime\)/,
+  'normal action presentation must use the shared right-side information column');
 assert.match(client, /function drawMoonEgg/);
 assert.match(client, /drawMoonEgg\(time, active, lifecycle\.incubation\)/);
 assert.match(client, /var progress = Math\.max\(0, Number\(incubation && incubation\.progress \|\| 0\)\)/);
@@ -1641,7 +1643,14 @@ assert.match(client, /animationMode === 'battle'/);
 assert.match(client, /animationMode === 'celebrate'/);
 assert.match(client, /animationMode === 'evolve'.*pose\.squashX = 1\.08/s);
 assert.match(client, /function petMood/);
-assert.match(client, /drawActionEffects/);
+const actionPresentationSource = extractTestExport(client, 'actionPresentation');
+assert.ok(actionPresentationSource, 'action presentation helper must be extractable');
+assert.match(actionPresentationSource, /var x = 205/);
+assert.match(actionPresentationSource, /Arial, sans-serif/);
+assert.match(actionPresentationSource, /Processing\.\.\./);
+assert.match(actionPresentationSource, /mode === 'sleep' \? 'Sleeping'/);
+assert.doesNotMatch(actionPresentationSource, /drawPixelText|shadowBlur|neon/i,
+  'action information must remain a restrained sans-serif UI treatment');
 assert.match(client, /animationMode === 'battle'/);
 assert.match(client, /animationMode === 'evolve'/);
 assert.match(client, /bootLayer\.classList\.toggle\('is-compact'/);
@@ -1656,7 +1665,7 @@ assert.match(client, /var y = 194/);
 assert.match(client, /reducedMotionAnimationTimer = window\.setTimeout/);
 assert.match(client, /drawWorld\(performance\.now\(\)\)/);
 assert.match(client, /var blink = !reducedMotion && Math\.floor\(renderTime \/ 1800\)/);
-assert.match(client, /hold: 1600, notice: true/);
+assert.match(client, /tell\(visible\[0\]\.title/);
 assert.match(css, /\.boot-layer\.is-compact\.is-notice \{[^}]*max-height: none;[^}]*overflow-y: auto/s);
 assert.match(css, /repeating-linear-gradient/);
 assert.match(css, /grid-template-rows: auto minmax\(178px, 32dvh\) auto minmax\(0, 1fr\) auto/);
@@ -1682,9 +1691,7 @@ for (const family of ['feed', 'play', 'clean', 'sleep', 'train', 'battle', 'trav
 }
 assert.match(client, /var CAMERA_FRAME = \{ x: 0, y: 0, zoom: 1 \}/);
 assert.match(client, /function updateCameraFrame\(time\)/);
-assert.match(client, /if \(reducedMotion \|\| cameraImpactUntil <= time/);
-assert.match(client, /function drawActionFlash\(time, scene\)/);
-assert.match(client, /if \(reducedMotion \|\| actionStartedAt <= 0 \|\| time < actionStartedAt/);
+assert.match(client, /if \(botArtModeEnabled\) return CAMERA_FRAME/);
 assert.match(client, /function actionFeedback\(result, beforeState, afterState\)/);
 assert.match(client, /function resultRewardMap\(result\)/);
 assert.match(client, /applied && \(applied\.rewardsApplied \|\| applied\.rewards_applied\)/);
@@ -1693,7 +1700,7 @@ assert.equal([...client.matchAll(/var reward = resultRewardMap\(result\)/g)].len
 assert.match(client, /presentResultFeedback\(data\.result, stateBeforeAction, nextState\)/);
 assert.match(client, /await showPendingNotices\(\);\s*var actionAccepted = Boolean\(data\.result && data\.result\.accepted\);[\s\S]*?animateAction\(action, actionAccepted, 2800, payload\);\s*if \(!startLifecycleCeremony\(plannedCeremony\)\) presentResultFeedback\(data\.result, stateBeforeAction, nextState\)/s);
 assert.doesNotMatch(client, /presentResultFeedback\(data\.result(?:, stateBeforeAction, nextState)?\);\s*render\(\);\s*await typeBoot/s, 'feedback timer must not run behind the boot overlay');
-assert.equal([...client.matchAll(/presentResultFeedback\(/g)].length, 2, 'only the helper and real server-result call may present reward feedback');
+assert.equal([...client.matchAll(/presentResultFeedback\(/g)].length, 3, 'only the helper plus successful and failed server-result paths may present feedback');
 assert.match(client, /var feedbackDuration = Math\.max\(5200, actionResultHoldMs \+ 1600\)/);
 assert.match(client, /feedbackUntil = performance\.now\(\) \+ feedbackDuration/);
 assert.match(client, /feedbackRedrawTimer = window\.setTimeout/);
@@ -1701,13 +1708,8 @@ assert.match(client, /clearResultFeedback\(true\)/);
 assert.match(client, /clearResultFeedback\(false\);[\s\S]*?animateAction\(action, true, 8000, payload\)/s);
 assert.match(client, /reaction: compactFeedback\(result\.reaction, 24\)/);
 assert.match(client, /actionStartedAt <= 0/);
-assert.match(client, /function drawCinematicFeedback\(time, scene\)/);
-assert.match(client, /drawPixelText\('MOONPET \/\/', 181, 86, scene\.accent, 'left'\)/);
-assert.match(client, /drawPixelText\(feedbackReaction, 181, 98, '#f4ff65', 'left'\)/);
-assert.doesNotMatch(client, /'MOONPET \/\/ ' \+ feedbackReaction/, 'reaction prefix and copy must render on separate fitted lines');
-assert.match(client, /function drawSceneTransition\(time, scene\)/);
-assert.match(client, /if \(reducedMotion \|\| sceneTransitionUntil <= time\) return/);
-assert.match(client, /drawActionFlash\(renderTime, scene\);\s*drawCinematicFeedback\(renderTime, scene\);\s*drawLifecycleCeremony\(renderTime, scene\);\s*drawSceneTransition\(renderTime, scene\)/s);
+assert.match(client, /feedbackActionMode = animationMode/);
+assert.doesNotMatch(drawWorldSource, /drawActionFlash|drawCinematicFeedback|drawSceneTransition/);
 assert.doesNotMatch(client, /Math\.random\(\).*feedback|feedback.*Math\.random\(\)/s, 'Phase 3 feedback must never invent random rewards');
 
 
@@ -1958,7 +1960,7 @@ assert.match(client, /companionGreetingTimer = window\.setTimeout/);
 assert.match(client, /drawPet\(renderTime, presence, combat\)/);
 assert.match(client, /if \(companionGreetingUntil > 0 && companionGreetingUntil <= time\)/);
 assert.match(client, /companionGreeting = '';\s*companionGreetingUntil = 0;/s);
-assert.match(client, /drawCombatHud\(scene, combat\);\s*if \(!combat\.active && !lifecycleCeremonyActive\(renderTime\)\) drawCompanionPresence\(renderTime, scene, presence\)/s);
+assert.match(drawWorldSource, /else if \(combat\.active\) drawCombatHud\(scene, combat\)/);
 assert.doesNotMatch(client, /Math\.random\(\)[^\n]*(?:presence|habit|greeting)|(?:presence|habit|greeting)[^\n]*Math\.random\(\)/i, 'living companion behavior must be deterministic');
 
 assert.match(client, /var COMBAT_PRESENTATION_FRAME =/);
@@ -1988,21 +1990,16 @@ assert.match(client, /kaiju\.opponent_card_locked/);
 assert.match(client, /var run = snapshot\.run/);
 assert.match(client, /COMBAT_PRESENTATION_FRAME\.mode = 'run'/);
 assert.match(client, /run\.current_room != null \? run\.current_room : run\.depth/);
-assert.match(client, /function drawCombatOpponent\(time, scene, combat\)/);
-assert.match(client, /function drawCombatMeter\(x, y, width, value, maximum, color, reverse\)/);
 assert.match(client, /function drawCombatHud\(scene, combat\)/);
-assert.match(client, /combat\.playerSpecial, COMBAT_ARENA_SPECIAL_MAX/);
-assert.match(client, /combat\.opponentSpecial, COMBAT_ARENA_SPECIAL_MAX/);
-assert.match(client, /'CARD \/\/ ' \+ compactFeedback\(words\(combat\.playerCardKey\), 12\)/);
-assert.match(client, /drawPixelRect\(7, 54, 306, 38/);
-assert.match(client, /compactFeedback\(combat\.status, 17\)/);
-assert.match(client, /var y = 160 \+ pulse/);
+assert.match(client, /'You  HP ' \+ Number\(combat\.playerValue\)/);
+assert.match(client, /'Special ' \+ Number\(combat\.playerSpecial\)/);
+assert.match(client, /'Card  ' \+ compactFeedback\(words\(combat\.playerCardKey\), 14\)/);
+assert.match(client, /drawActionInfoPanel\(combat\.title, lines, rivalColor, 1\)/);
 assert.match(client, /if \(!combat \|\| !combat\.active\)/);
-assert.match(client, /var pulse = reducedMotion \? 0 : Math\.round\(Math\.sin\(time \/ 260\) \* 2\)/);
-assert.match(client, /var combatScale = combat && combat\.active \? 0\.78 : 1/);
-assert.match(client, /combat && combat\.active \? -62 : 0/);
+assert.match(client, /var combatScale = 1/);
+assert.match(client, /var x = 124/);
 assert.match(client, /drawCombatHud\(scene, combat\)/);
-assert.match(client, /if \(!combat\.active && !lifecycleCeremonyActive\(renderTime\)\) drawCompanionPresence/);
+assert.doesNotMatch(drawWorldSource, /drawCombatOpponent|drawCompanionPresence/);
 assert.match(client, /COMBAT_PRESENTATION_FRAME\.active \|\| lifecycleCeremonyActive\(now\)\) return;/);
 assert.doesNotMatch(client, /Math\.random\(\)[^\n]*(?:combat|rival)|(?:combat|rival)[^\n]*Math\.random\(\)/i, 'Phase 5 combat presentation must remain deterministic');
 
@@ -2097,10 +2094,10 @@ assert.ok(lifecycleStartSource, 'Phase 6 lifecycle ceremony starter must be extr
 assert.doesNotMatch(lifecycleStartSource, /haptic\('success'\)/, 'accepted lifecycle actions must emit only the runAction success haptic');
 assert.match(client, /function clearLifecycleCeremony\(redraw\)/);
 assert.match(client, /function drawLifecycleCeremony\(time, scene\)/);
-assert.match(client, /EGG SIGNAL STRENGTHENED/);
-assert.match(client, /HATCH COMPLETE/);
-assert.match(client, /EVOLUTION COMPLETE/);
-assert.match(client, /HIDDEN MORPH REVEALED/);
+assert.match(client, /EGG CARE/);
+assert.match(client, /HATCHED/);
+assert.match(client, /EVOLVED/);
+assert.match(client, /RARE FORM/);
 assert.match(client, /var guidance = state\.guidance \|\| \{\};\s*var identity = guidance\.identity \|\| \{\};/, 'CORE profile must read identity from the selected-pet guidance payload');
 assert.match(client, /var achievements = state\.guidance && state\.guidance\.achievements \|\| \[\];/, 'TASK achievements must read the selected-pet guidance achievement payload');
 assert.match(client, /var evolution = guidance\.evolution;/, 'CORE evolution panel must read selected-pet evolution guidance');
@@ -2115,18 +2112,16 @@ assert.match(client, /after\.stage > before\.stage/);
 assert.match(client, /result\.duplicate/);
 assert.match(client, /duration: 7600/);
 assert.match(client, /duration: 8200/);
-assert.match(client, /drawPixelRect\(7, 50, 306, 2, color\)/, 'Phase 6 ceremony copy must remain below the DOM HUD');
-assert.match(client, /if \(!combat\.active && !lifecycleCeremonyActive\(renderTime\)\) drawCompanionPresence/, 'Phase 6 ceremonies must suppress overlapping thought bubbles');
-assert.match(client, /mood !== 'curious' && !lifecycleCeremonyActive\(time\)/, 'Phase 6 ceremonies must suppress overlapping mood labels');
-assert.match(client, /\(!combat \|\| !combat\.active\) && !lifecycleCeremonyActive\(time\)/, 'Phase 6 ceremonies must suppress overlapping identity labels');
-assert.ok([...client.matchAll(/animationLabel && !lifecycleCeremonyActive\(time\)/g)].length >= 2, 'Phase 6 ceremonies must suppress egg and companion action labels');
-assert.match(client, /var ceremonyScale = lifecycleCeremonyActive\(time\)/);
-assert.match(client, /reducedMotion \? 1\.08/);
-assert.match(client, /var burst = reducedMotion \? 38/);
+assert.match(client, /drawActionInfoPanel\(ceremony\.title, lines, color, fade\)/, 'lifecycle copy must use the shared right-side information column');
+assert.doesNotMatch(drawWorldSource, /drawCompanionPresence/, 'lifecycle rendering must not overlap thought bubbles');
+assert.doesNotMatch(client, /animationLabel/, 'legacy canvas action labels must be removed');
+assert.match(client, /var ceremonyScale = 1/);
 assert.match(client, /lifecycleCeremonyTimer = window\.setTimeout/);
 assert.match(client, /if \(lifecycleCeremony !== activeCeremony\) return/);
-assert.match(client, /drawCinematicFeedback\(renderTime, scene\);\s*drawLifecycleCeremony\(renderTime, scene\);/s);
-assert.match(client, /await typeBoot\(\['EXEC '[\s\S]*?await showPendingNotices\(\);[\s\S]*?var actionAccepted = Boolean\(data\.result && data\.result\.accepted\);[\s\S]*?if \(!startLifecycleCeremony\(plannedCeremony\)\) presentResultFeedback\(data\.result, stateBeforeAction, nextState\);/);
+assert.match(drawWorldSource, /if \(lifecycleCeremonyActive\(renderTime\)\) drawLifecycleCeremony\(renderTime, scene\)/);
+assert.match(client, /await showPendingNotices\(\);[\s\S]*?var actionAccepted = Boolean\(data\.result && data\.result\.accepted\);[\s\S]*?if \(!startLifecycleCeremony\(plannedCeremony\)\) presentResultFeedback\(data\.result, stateBeforeAction, nextState\);/);
+assert.doesNotMatch(client, /TRANSMITTING|EXEC |STATE CACHE REFRESHED|FAULT DETECTED/,
+  'normal action flow must not expose debug or engine language');
 assert.match(client, /if \(lifecycleCeremonyActive\(\)\) \{\s*tell\('LIFECYCLE REVEAL IN PROGRESS\.'/s);
 assert.match(client, /screen\.addEventListener\('click'[\s\S]*?if \(lifecycleCeremonyActive\(\)\)[\s\S]*?LIFECYCLE REVEAL IN PROGRESS/s);
 assert.match(client, /nav\.addEventListener\('click'[\s\S]*?if \(lifecycleCeremonyActive\(\)\)[\s\S]*?LIFECYCLE REVEAL IN PROGRESS/s);
@@ -2149,8 +2144,8 @@ const eggState = {
 const dormantState = { adopted: false, pet: null, lifecycle: null };
 const initialEggCeremony = planCeremonyRuntime(dormantState, eggState, 'adopt', { accepted: true });
 assert.equal(initialEggCeremony.kind, 'egg');
-assert.equal(initialEggCeremony.title, 'MOON EGG INITIALISED');
-assert.equal(initialEggCeremony.primary, 'IDENTITY SIGNAL DORMANT');
+assert.equal(initialEggCeremony.title, 'NEW MOON EGG');
+assert.equal(initialEggCeremony.primary, 'Ready for care');
 assert.equal(planCeremonyRuntime(dormantState, eggState, 'adopt', { accepted: true, duplicate: true }), null);
 
 const strongerEggState = {
@@ -2161,7 +2156,7 @@ const strongerEggState = {
 const signalCeremony = planCeremonyRuntime(eggState, strongerEggState, 'incubate', { accepted: true, care_type: 'music' });
 assert.equal(signalCeremony.kind, 'signal');
 assert.equal(signalCeremony.primary, '6/12');
-assert.equal(signalCeremony.secondary, 'Music RESONANCE');
+assert.equal(signalCeremony.secondary, 'Music progress');
 
 const youngState = {
   adopted: true,
@@ -2175,7 +2170,7 @@ const youngState = {
 const hatchCeremony = planCeremonyRuntime(strongerEggState, youngState, 'hatch', { accepted: true, species: 'F1 EDDY' });
 assert.equal(hatchCeremony.kind, 'hatch');
 assert.equal(hatchCeremony.primary, 'F1 EDDY');
-assert.equal(hatchCeremony.secondary, 'Bold TEMPERAMENT');
+assert.equal(hatchCeremony.secondary, 'Bold temperament');
 assert.match(hatchCeremony.detail, /Spray Mask/);
 assert.match(hatchCeremony.detail, /Alley Brave/);
 

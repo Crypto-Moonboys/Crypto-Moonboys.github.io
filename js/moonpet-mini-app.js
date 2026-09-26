@@ -41,7 +41,6 @@
   var typingToken = 0;
   var animationMode = 'idle';
   var animationUntil = 0;
-  var animationLabel = '';
   var actionSequence = 0;
   var idleSpecialRole = '';
   var idleSpecialUntil = 0;
@@ -60,6 +59,7 @@
   var feedbackTone = '';
   var feedbackLines = [];
   var feedbackReaction = '';
+  var feedbackActionMode = '';
   var lifecycleCeremony = null;
   var lifecycleCeremonyStartedAt = 0;
   var lifecycleCeremonyUntil = 0;
@@ -2273,17 +2273,17 @@
   // TEST-EXPORT: journeyActionProgress:end
 
   function resultMessage(result, beforeState, afterState) {
-    if (!result) return 'SYSTEM RESPONSE LOST.';
+    if (!result) return 'Response unavailable.';
     if (!result.accepted) {
-      var blockedParts = ['ACTION BLOCKED'];
+      var blockedParts = ['Action unavailable'];
       var blockedReasonCopy = rejectionMessage(result.reason);
       if (blockedReasonCopy) blockedParts[0] += ' - ' + blockedReasonCopy;
       if (result.duplicate) blockedParts.push('Duplicate blocked by authority.');
-      return blockedParts.join(' // ');
+      return blockedParts.join(' - ');
     }
     var reward = resultRewardMap(result);
     var gains = Object.entries(reward).filter(function (entry) { return Number(entry[1]) > 0 && typeof entry[1] !== 'object'; }).map(function (entry) { return '+' + number(entry[1]) + ' ' + words(entry[0]); });
-    var parts = ['ACTION ACCEPTED'];
+    var parts = ['Action complete'];
     var reasonCopy = rejectionMessage(result.reason);
     if (reasonCopy) parts.push(reasonCopy);
     var terminalResult = result.battle && (result.battle.outcome || result.battle.result) || result.match && (result.match.outcome || result.match.result) || result.resolved && result.resolved.result;
@@ -2342,8 +2342,8 @@
   }
 
   function actionFeedback(result, beforeState, afterState) {
-    if (!result) return { tone: 'danger', lines: ['SYSTEM RESPONSE LOST'], reaction: '' };
-    var lines = [result.accepted ? 'ACTION COMPLETE' : 'ACTION BLOCKED'];
+    if (!result) return { tone: 'danger', lines: ['Response unavailable'], reaction: '' };
+    var lines = [result.accepted ? 'Complete' : 'Not available'];
     if (!result.accepted) {
       var feedbackReasonCopy = rejectionMessage(result.reason);
       if (feedbackReasonCopy) lines.push(compactFeedback(feedbackReasonCopy, 34));
@@ -2377,6 +2377,7 @@
     feedbackTone = '';
     feedbackLines = [];
     feedbackReaction = '';
+    feedbackActionMode = '';
     if (redraw && reducedMotion) drawWorld(performance.now());
   }
 
@@ -2387,6 +2388,7 @@
     feedbackTone = feedback.tone;
     feedbackLines = feedback.lines;
     feedbackReaction = feedback.reaction;
+    feedbackActionMode = animationMode;
     feedbackUntil = performance.now() + feedbackDuration;
     if (reducedMotion) {
       drawWorld(performance.now());
@@ -2424,33 +2426,33 @@
     var after = lifecycleStateSnapshot(afterState);
     var actionKey = String(action || '').toLowerCase();
     if (actionKey === 'adopt' && !before.adopted && after.phase === 'egg') {
-      return { kind: 'egg', title: 'MOON EGG INITIALISED', primary: 'IDENTITY SIGNAL DORMANT', secondary: 'CARE SHAPES WHAT HATCHES', detail: '', duration: 5200 };
+      return { kind: 'egg', title: 'NEW MOON EGG', primary: 'Ready for care', secondary: 'Your choices shape what hatches', detail: '', duration: 5200 };
     }
     if (before.phase === 'egg' && after.phase === 'young' && after.speciesId) {
       return {
-        kind: 'hatch', title: 'HATCH COMPLETE', primary: after.speciesName,
-        secondary: words(after.temperament || 'forming') + ' TEMPERAMENT',
-        detail: [after.marking].concat(after.traits).filter(Boolean).map(words).join(' // '), duration: 7600,
+        kind: 'hatch', title: 'HATCHED', primary: after.speciesName,
+        secondary: words(after.temperament || 'forming') + ' temperament',
+        detail: [after.marking].concat(after.traits).filter(Boolean).map(words).join(' - '), duration: 7600,
       };
     }
     if (before.phase !== 'rare' && after.phase === 'rare' && after.rareName) {
       return {
-        kind: 'rare', title: 'HIDDEN MORPH REVEALED', primary: after.rareName,
-        secondary: after.speciesName ? after.speciesName + ' // RARE SIGNAL LIVE' : 'RARE SIGNAL LIVE',
-        detail: after.traits.map(words).join(' // '), duration: 8200,
+        kind: 'rare', title: 'RARE FORM', primary: after.rareName,
+        secondary: after.speciesName || 'Rare form discovered',
+        detail: after.traits.map(words).join(' - '), duration: 8200,
       };
     }
     if (after.stage > before.stage || before.phase === 'young' && after.phase === 'adult') {
       return {
-        kind: 'evolve', title: 'EVOLUTION COMPLETE', primary: words(after.stageName || after.phase),
-        secondary: after.speciesName || 'MOONPET FORM STABLE',
-        detail: after.traits.map(words).join(' // '), duration: 6800,
+        kind: 'evolve', title: 'EVOLVED', primary: words(after.stageName || after.phase),
+        secondary: after.speciesName || 'New form ready',
+        detail: after.traits.map(words).join(' - '), duration: 6800,
       };
     }
     if (actionKey === 'incubate' && after.phase === 'egg' && after.progress > before.progress) {
       return {
-        kind: 'signal', title: 'EGG SIGNAL STRENGTHENED', primary: after.progress + '/' + after.target,
-        secondary: words(result.care_type || 'care') + ' RESONANCE', detail: '',
+        kind: 'signal', title: 'EGG CARE', primary: after.progress + '/' + after.target,
+        secondary: words(result.care_type || 'care') + ' progress', detail: '',
         progress: after.progress, target: after.target, duration: 4200,
       };
     }
@@ -2510,7 +2512,7 @@
     noticesBusy = true;
     var visible = notices.slice(0, 5);
     haptic('success');
-    await typeBoot(['PROGRESSION MILESTONE DETECTED'].concat(visible.map(function (notice) { return notice.title + (notice.detail ? ' // ' + notice.detail : ''); })), { speed: 6, hold: 1600, notice: true });
+    tell(visible[0].title + (visible[0].detail ? ' - ' + visible[0].detail : ''));
     try {
       var requestGeneration = beginStateRequest();
       var acknowledged = await post('/telegram-pets/app/action', { action: 'guidance_ack', notice_keys: visible.map(function (notice) { return notice.key; }), request_id: crypto.randomUUID() });
@@ -2552,7 +2554,6 @@
 
   function animateAction(action, accepted, duration, payload) {
     animationMode = accepted === false ? 'blocked' : actionAnimationFamily(action, payload);
-    animationLabel = accepted === false ? 'NOT READY' : words(animationMode);
     actionSequence += 1;
     var animationDuration = duration || 2400;
     actionStartedAt = performance.now();
@@ -2567,7 +2568,6 @@
         reducedMotionAnimationTimer = window.setTimeout(function () {
           if (sequence !== actionSequence) return;
           animationMode = sleepLatched ? 'sleep' : 'idle';
-          animationLabel = '';
           drawWorld(performance.now());
         }, animationDuration);
       }
@@ -2589,7 +2589,7 @@
       setSleepLatch(false);
     }
     animateAction(action, true, 8000, payload);
-    tell('TRANSMITTING ' + words(action) + '...');
+    tell(words(action) + ' in progress...');
     try {
       var stateBeforeAction = state;
       var requestGeneration = beginStateRequest();
@@ -2602,7 +2602,6 @@
       tell(message, data.result && data.result.accepted ? '' : 'danger');
       haptic(data.result && data.result.accepted ? 'success' : 'error');
       render({ discardCallsignDraft: action === 'rename' && Boolean(data.result && data.result.accepted) });
-      await typeBoot(['EXEC ' + action.toUpperCase(), message, 'STATE CACHE REFRESHED'], { speed: 5, hold: actionResultHoldMs });
       await showPendingNotices();
       var actionAccepted = Boolean(data.result && data.result.accepted);
       var actionFamily = actionAnimationFamily(action, payload);
@@ -2613,7 +2612,7 @@
       animateAction('blocked', false, 2800);
       tell(error.message || 'CONNECTION FAILED', 'danger');
       haptic('error');
-      await typeBoot(['FAULT DETECTED', error.message || 'CONNECTION FAILED', 'RETRY WHEN LINK IS STABLE'], { speed: 8, hold: 2200 });
+      presentResultFeedback({ accepted: false, reason: error.message || 'connection failed' }, state, state);
     } finally {
       busy = false;
       if (buttonElement) buttonElement.classList.remove('is-active');
@@ -2663,7 +2662,6 @@
       switchScreen(jump.dataset.jump);
       scrollToPanel(jump.dataset.focus);
       haptic('light');
-      typeBoot(['ROUTING COACH RECOMMENDATION', 'MOUNT /' + activeScreen.toUpperCase(), 'REQUIREMENTS DISPLAYED'], { speed: 4, hold: 150 });
       return;
     }
     var target = event.target.closest('[data-action]');
@@ -2701,7 +2699,6 @@
     window.clearTimeout(companionGreetingTimer);
     var greetingVariant = companionGreetingVariant(state.pet);
     animateAction('greet', true, greetingVariant === 'front_wave' ? 2200 : 1400, { source: 'pet_tap', sequence: companionTapSequence, variant: greetingVariant });
-    animationLabel = 'HELLO';
     haptic('light');
     if (reducedMotion) {
       companionGreetingTimer = window.setTimeout(function () {
@@ -2785,7 +2782,6 @@
     switchScreen(target.dataset.screen);
     screen.scrollTop = 0;
     haptic('light');
-    typeBoot(['MOUNT /' + activeScreen.toUpperCase(), 'READING LIVE PLAYER STATE', 'MODULE READY'], { speed: 4, hold: 130 });
     if (activeScreen === 'explore' || activeScreen === 'work') refreshLiveState();
   });
 
@@ -3072,6 +3068,58 @@
     ctx.fillText(String(text), x, y);
     ctx.restore();
   }
+
+  // TEST-EXPORT: actionPresentation:start
+  var ACTION_INFO_COLORS = {
+    feed: '#c9a15a', play: '#73b9c6', clean: '#79bac0', sleep: '#8c91b8', train: '#ba7966',
+    travel: '#7097bd', work: '#b79a62', equip: '#9db3bd', evolve: '#9a82b5', trade: '#78a58a',
+    celebrate: '#c3a85c', interact: '#7faeb5', greet: '#7faeb5', blocked: '#b56c6c', battle: '#b56c6c'
+  };
+
+  function actionInfoTitle(mode) {
+    if (mode === 'greet') return 'INTERACT';
+    return words(mode || 'action').toUpperCase();
+  }
+
+  function drawCanvasText(text, x, y, color, size, weight) {
+    ctx.save();
+    ctx.fillStyle = color || '#d9e0de';
+    ctx.font = String(weight || 400) + ' ' + String(size || 8) + 'px Arial, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText(String(text || ''), x, y);
+    ctx.restore();
+  }
+
+  function drawActionInfoPanel(title, lines, color, opacity) {
+    var x = 205;
+    var y = 74;
+    var width = 105;
+    var safeLines = (lines || []).filter(Boolean).slice(0, 5);
+    ctx.save();
+    ctx.globalAlpha = opacity == null ? 1 : opacity;
+    ctx.fillStyle = 'rgba(3, 8, 7, 0.68)';
+    ctx.fillRect(x - 6, y - 17, width + 6, 25 + safeLines.length * 13);
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y - 8, width, 1);
+    ctx.restore();
+    drawCanvasText(compactFeedback(title, 18), x, y + 4, color, 9, 600);
+    safeLines.forEach(function (line, index) {
+      drawCanvasText(compactFeedback(String(line).replace(/\s*\/\/\s*/g, ' - '), 23), x, y + 20 + index * 13, index === 0 ? '#eef2f1' : '#bec8c5', 8, index === 0 ? 500 : 400);
+    });
+  }
+
+  function drawActionInfo(time) {
+    var feedbackActive = feedbackUntil > time && feedbackLines.length;
+    var actionActive = sleepLatched || animationUntil > time;
+    if (!feedbackActive && !actionActive) return;
+    var mode = feedbackActive && feedbackActionMode ? feedbackActionMode : animationMode;
+    var lines = feedbackActive ? feedbackLines.slice() : [mode === 'sleep' ? 'Sleeping' : 'Processing...'];
+    if (feedbackActive && feedbackReaction && lines.length < 5) lines.push(feedbackReaction);
+    var fade = feedbackActive && !reducedMotion ? Math.min(1, Math.max(0.35, (feedbackUntil - time) / 480)) : 1;
+    drawActionInfoPanel(actionInfoTitle(mode), lines, ACTION_INFO_COLORS[mode] || '#8fa5a0', fade);
+  }
+  // TEST-EXPORT: actionPresentation:end
 
   function drawActionEffects(time, x, y, active) {
     if (!active) return;
@@ -3558,58 +3606,29 @@
     var active = sleepLatched || animationUntil > renderTime;
     if (lifecycle.phase === 'egg') {
       drawMoonEgg(time, active, lifecycle.incubation);
-      drawActionEffects(time, 160, 150, active);
-      if (active && animationLabel && !lifecycleCeremonyActive(time)) drawPixelText('[' + animationLabel + ']', 160, 211, animationMode === 'blocked' ? '#ff6d6d' : '#f4ff65', 'center');
       return;
     }
 
     var pose = petPose(time, active, mood, presence);
-    var rareName = lifecycle.rare && lifecycle.rare.name || '';
     var growth = petGrowthShape(lifecycle.phase, stage);
-    var combatScale = combat && combat.active ? 0.78 : 1;
-    var ceremonyScale = lifecycleCeremonyActive(time)
-      ? reducedMotion ? 1.08 : 1.06 + Math.sin((time - lifecycleCeremonyStartedAt) / 180) * 0.05
-      : 1;
+    var combatScale = 1;
+    var ceremonyScale = 1;
     var scale = Math.max(growth.scaleX, growth.scaleY) * combatScale * ceremonyScale;
     var palette = petPalette(lifecycle, stage);
     var speciesId = lifecycle.species_id || pet && pet.species || 'neon_raccoon';
     var faceX = petFaceOffset(speciesId);
-    var x = 160 + (combat && combat.active ? -62 : 0);
+    var x = 124;
     var y = 194;
     if (drawSelectedBotSprite(renderTime, animationMode, active, x, y, scale)) {
-      if (!active && mood !== 'curious' && !lifecycleCeremonyActive(time)) drawPixelText(mood.toUpperCase(), x, y - 78 * scale, mood === 'hurt' ? '#ff6d6d' : palette.accent, 'center');
-      if ((!combat || !combat.active) && !lifecycleCeremonyActive(time)) {
-        if (rareName) drawPixelText(rareName.toUpperCase(), x, 70, palette.accent, 'center');
-        else if (lifecycle.species_name) drawPixelText(lifecycle.species_name.toUpperCase(), x, 78, palette.accent, 'center');
-      }
-      drawCompanionHabitEffects(time, x, y, presence, palette.accent, active);
-      drawActionEffects(time, x, y, active);
-      if (active && animationLabel && !lifecycleCeremonyActive(time)) drawPixelText('[' + animationLabel + ']', 160, 211, animationMode === 'blocked' ? '#ff6d6d' : '#f4ff65', 'center');
       return;
     }
     if (botArtModeEnabled) {
       return;
     }
     if (drawSideScrollerMoonpetSprite(renderTime, animationMode, active, x, y - 2, scale * 0.86)) {
-      if (!active && mood !== 'curious' && !lifecycleCeremonyActive(time)) drawPixelText(mood.toUpperCase(), x, y - 78 * scale, mood === 'hurt' ? '#ff6d6d' : palette.accent, 'center');
-      if ((!combat || !combat.active) && !lifecycleCeremonyActive(time)) {
-        if (rareName) drawPixelText(rareName.toUpperCase(), x, 70, palette.accent, 'center');
-        else if (lifecycle.species_name) drawPixelText(lifecycle.species_name.toUpperCase(), x, 78, palette.accent, 'center');
-      }
-      drawCompanionHabitEffects(time, x, y, presence, palette.accent, active);
-      drawActionEffects(time, x, y, active);
-      if (active && animationLabel && !lifecycleCeremonyActive(time)) drawPixelText('[' + animationLabel + ']', 160, 211, animationMode === 'blocked' ? '#ff6d6d' : '#f4ff65', 'center');
       return;
     }
     if (drawApprovedMoonpetSprite(renderTime, approvedSpriteRoleForMode(active), x, y - 8, scale * 0.52)) {
-      if (!active && mood !== 'curious' && !lifecycleCeremonyActive(time)) drawPixelText(mood.toUpperCase(), x, y - 78 * scale, mood === 'hurt' ? '#ff6d6d' : palette.accent, 'center');
-      if ((!combat || !combat.active) && !lifecycleCeremonyActive(time)) {
-        if (rareName) drawPixelText(rareName.toUpperCase(), x, 70, palette.accent, 'center');
-        else if (lifecycle.species_name) drawPixelText(lifecycle.species_name.toUpperCase(), x, 78, palette.accent, 'center');
-      }
-      drawCompanionHabitEffects(time, x, y, presence, palette.accent, active);
-      drawActionEffects(time, x, y, active);
-      if (active && animationLabel && !lifecycleCeremonyActive(time)) drawPixelText('[' + animationLabel + ']', 160, 211, animationMode === 'blocked' ? '#ff6d6d' : '#f4ff65', 'center');
       return;
     }
     ctx.save();
@@ -3640,14 +3659,6 @@
     ctx.restore();
     ctx.shadowBlur = 0;
 
-    if (!active && mood !== 'curious' && !lifecycleCeremonyActive(time)) drawPixelText(mood.toUpperCase(), x, y - 78 * scale, mood === 'hurt' ? '#ff6d6d' : palette.accent, 'center');
-    if ((!combat || !combat.active) && !lifecycleCeremonyActive(time)) {
-      if (rareName) drawPixelText(rareName.toUpperCase(), x, 70, palette.accent, 'center');
-      else if (lifecycle.species_name) drawPixelText(lifecycle.species_name.toUpperCase(), x, 78, palette.accent, 'center');
-    }
-    drawCompanionHabitEffects(time, x, y, presence, palette.accent, active);
-    drawActionEffects(time, x, y, active);
-    if (active && animationLabel && !lifecycleCeremonyActive(time)) drawPixelText('[' + animationLabel + ']', 160, 211, animationMode === 'blocked' ? '#ff6d6d' : '#f4ff65', 'center');
   }
 
   var WORLD_SCENES = {
@@ -3776,26 +3787,21 @@
   function drawCombatHud(scene, combat) {
     if (!combat || !combat.active) return;
     var rivalColor = combat.rivalColor || '#ff6d6d';
-    drawPixelRect(7, 54, 306, 38, '#020704');
-    drawPixelRect(7, 54, 306, 2, scene.neon);
-    drawPixelText(combat.title, 16, 65, scene.neon, 'left');
-    drawPixelText(compactFeedback(combat.status, 17), 304, 65, '#d8f9ff', 'right');
+    var lines = [String(combat.status || '').replace(/\s*\/\/\s*/g, ' - ')];
     if (combat.mode === 'arena') {
-      drawCombatMeter(16, 69, 128, combat.playerValue, combat.maxValue, '#a9ff9a', false);
-      drawCombatMeter(176, 69, 128, combat.opponentValue, combat.maxValue, rivalColor, true);
-      drawCombatMeter(16, 78, 64, combat.playerSpecial, COMBAT_ARENA_SPECIAL_MAX, '#61f5ff', false);
-      drawCombatMeter(240, 78, 64, combat.opponentSpecial, COMBAT_ARENA_SPECIAL_MAX, '#61f5ff', true);
-      drawPixelText('HP ' + Number(combat.playerValue) + ' // SP ' + Number(combat.playerSpecial) + '/' + COMBAT_ARENA_SPECIAL_MAX, 16, 90, '#a9ff9a', 'left');
-      drawPixelText('SP ' + Number(combat.opponentSpecial) + '/' + COMBAT_ARENA_SPECIAL_MAX + ' // ' + Number(combat.opponentValue) + ' HP', 304, 90, rivalColor, 'right');
+      lines.push('You  HP ' + Number(combat.playerValue));
+      lines.push(compactFeedback(combat.opponentName, 13) + '  HP ' + Number(combat.opponentValue));
+      lines.push('Special ' + Number(combat.playerSpecial) + '/' + COMBAT_ARENA_SPECIAL_MAX);
     } else if (combat.mode === 'kaiju') {
-      drawPixelText(combat.playerValue ? 'YOU // LOCKED' : 'YOU // SELECT', 16, 80, combat.playerValue ? '#f4ff65' : '#aab5ae', 'left');
-      drawPixelText(combat.opponentValue ? 'RIVAL // LOCKED' : 'RIVAL // WAITING', 304, 80, combat.opponentValue ? rivalColor : '#aab5ae', 'right');
-      if (combat.playerCardKey) drawPixelText('CARD // ' + compactFeedback(words(combat.playerCardKey), 12), 16, 90, '#d8f9ff', 'left');
+      lines.push(combat.playerValue ? 'Your card locked' : 'Select your card');
+      lines.push(combat.opponentValue ? 'Rival card locked' : 'Waiting for rival');
+      if (combat.playerCardKey) lines.push('Card  ' + compactFeedback(words(combat.playerCardKey), 14));
     } else {
-      drawCombatMeter(16, 74, 288, combat.playerValue, combat.maxValue, scene.accent, false);
-      drawPixelText('PROGRESS', 16, 84, scene.accent, 'left');
-      drawPixelText(Number(combat.opponentValue) + ' ROOMS REMAIN', 304, 84, rivalColor, 'right');
+      lines.push('Progress ' + Number(combat.playerValue) + '/' + Number(combat.maxValue));
+      lines.push(Number(combat.opponentValue) + ' rooms remain');
     }
+    if (feedbackUntil > performance.now() && feedbackLines.length) lines = lines.concat(feedbackLines).slice(0, 5);
+    drawActionInfoPanel(combat.title, lines, rivalColor, 1);
   }
 
   var WORLD_BUILDING_HEIGHTS = [32, 51, 39, 66, 44, 58, 35, 70, 48, 61];
@@ -3992,6 +3998,7 @@
 
   function updateCameraFrame(time) {
     CAMERA_FRAME.x = 0; CAMERA_FRAME.y = 0; CAMERA_FRAME.zoom = 1;
+    if (botArtModeEnabled) return CAMERA_FRAME;
     if (reducedMotion || cameraImpactUntil <= time || cameraImpactStrength <= 0) return CAMERA_FRAME;
     var falloff = Math.max(0, Math.min(1, (cameraImpactUntil - time) / 900));
     var impact = cameraImpactStrength * falloff;
@@ -4035,36 +4042,13 @@
       : ceremony.kind === 'hatch' ? '#f4ff65'
         : ceremony.kind === 'evolve' ? '#61f5ff' : scene.accent;
     var fade = reducedMotion ? 1 : Math.min(1, progress * 5, (1 - progress) * 7);
-    var burst = reducedMotion ? 38 : 24 + Math.sin(progress * Math.PI) * 44;
-    ctx.save();
-    ctx.globalAlpha = fade;
-    ctx.fillStyle = 'rgba(1,4,2,.58)';
-    ctx.fillRect(0, 46, 320, 174);
-    drawPixelRect(7, 50, 306, 2, color);
-    drawPixelRect(7, 216, 306, 2, color);
-    drawPixelText(ceremony.title, 160, 63, color, 'center');
-    drawPixelText(compactFeedback(ceremony.primary, 28), 160, 78, '#ffffff', 'center');
-    drawPixelText(compactFeedback(ceremony.secondary, 34), 160, 91, '#d8f9ff', 'center');
-    for (var spark = 0; spark < 18; spark += 1) {
-      var angle = spark * Math.PI * 2 / 18;
-      var sparkX = 160 + Math.cos(angle) * burst;
-      var sparkY = 151 + Math.sin(angle) * burst * 0.62;
-      drawPixelRect(sparkX, sparkY, spark % 3 === 0 ? 4 : 2, 2, spark % 2 ? color : '#ffffff');
-    }
-    drawPixelRect(101, 103, 3, 24, color); drawPixelRect(101, 103, 22, 3, color);
-    drawPixelRect(216, 103, 3, 24, color); drawPixelRect(197, 103, 22, 3, color);
-    drawPixelRect(101, 178, 3, 18, color); drawPixelRect(101, 193, 22, 3, color);
-    drawPixelRect(216, 178, 3, 18, color); drawPixelRect(197, 193, 22, 3, color);
+    var lines = [ceremony.primary, ceremony.secondary];
     if (ceremony.kind === 'signal') {
-      drawCombatMeter(76, 201, 168, ceremony.progress, ceremony.target, color, false);
-      drawPixelText('HATCH SIGNAL ' + Number(ceremony.progress) + '/' + Number(ceremony.target), 160, 198, color, 'center');
+      lines.push('Hatch progress ' + Number(ceremony.progress) + '/' + Number(ceremony.target));
     } else if (ceremony.detail) {
-      drawPixelRect(43, 199, 234, 15, '#020704');
-      drawPixelText(compactFeedback(ceremony.detail, 38), 160, 210, color, 'center');
-    } else {
-      drawPixelText('SERVER IDENTITY CONFIRMED', 160, 210, color, 'center');
+      lines.push(ceremony.detail);
     }
-    ctx.restore();
+    drawActionInfoPanel(ceremony.title, lines, color, fade);
   }
 
   function drawSceneTransition(time, scene) {
@@ -4112,7 +4096,6 @@
   function drawWorld(time) {
     var scene = worldScene();
     var renderTime = reducedMotion ? performance.now() : time;
-    var worldTime = reducedMotion ? 0 : time;
     var camera = updateCameraFrame(renderTime);
     var presence = updateCompanionPresence(state && state.pet, state && state.lifecycle || {}, renderTime);
     var combat = updateCombatPresentation(state);
@@ -4126,15 +4109,11 @@
     ctx.scale(camera.zoom, camera.zoom);
     ctx.translate(-160, -110);
     drawPet(renderTime, presence, combat);
-    drawCombatOpponent(worldTime, scene, combat);
     ctx.restore();
 
-    drawCombatHud(scene, combat);
-    if (!combat.active && !lifecycleCeremonyActive(renderTime)) drawCompanionPresence(renderTime, scene, presence);
-    drawActionFlash(renderTime, scene);
-    drawCinematicFeedback(renderTime, scene);
-    drawLifecycleCeremony(renderTime, scene);
-    drawSceneTransition(renderTime, scene);
+    if (lifecycleCeremonyActive(renderTime)) drawLifecycleCeremony(renderTime, scene);
+    else if (combat.active) drawCombatHud(scene, combat);
+    else drawActionInfo(renderTime);
   }
   // TEST-EXPORT: drawWorld:end
 
@@ -4161,7 +4140,6 @@
     }
     if (animationUntil <= time) {
       animationMode = sleepLatched ? 'sleep' : 'idle';
-      animationLabel = '';
     }
     if (companionGreetingUntil > 0 && companionGreetingUntil <= time) {
       companionGreeting = '';

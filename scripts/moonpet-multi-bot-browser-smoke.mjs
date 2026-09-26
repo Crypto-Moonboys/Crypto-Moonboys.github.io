@@ -9,6 +9,9 @@ const ROOT = process.cwd();
 const OUTPUT = path.join(ROOT, ".tmp", "moonpet-multi-bot-browser-smoke");
 const MIME = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".json": "application/json", ".png": "image/png", ".jpg": "image/jpeg" };
 const MODES = ["idle", "feed", "play", "clean", "sleep", "train", "travel", "work", "equip", "evolve", "trade", "celebrate", "interact", "blocked", "battle"];
+const MINI_APP_SOURCE = fsSync.readFileSync(path.join(ROOT, "js", "moonpet-mini-app.js"), "utf8");
+const PRESENTATION_SOURCE = MINI_APP_SOURCE.match(/\/\/ TEST-EXPORT: actionPresentation:start([\s\S]*?)\/\/ TEST-EXPORT: actionPresentation:end/)?.[1];
+assert.ok(PRESENTATION_SOURCE, "shared action presentation source must be extractable");
 
 function serveStatic() {
   return http.createServer(async (request, response) => {
@@ -250,9 +253,44 @@ try {
   assert.equal(returned.fallbackUsed, false);
 
   await waitForPack(page, "F1 EDDY");
+  const presentation = await page.evaluate(({ modes, source }) => {
+    const proof = document.getElementById("multi-bot-proof");
+    proof.width = 320;
+    proof.height = 220;
+    proof.style.cssText = "position:fixed;inset:0;width:390px;height:268px;z-index:99999;background:#0e1014";
+    const context = proof.getContext("2d");
+    const compactFeedback = (value, limit) => {
+      const text = String(value ?? "").replace(/\s+/g, " ").trim();
+      return text.length > limit ? `${text.slice(0, Math.max(0, limit - 3)).trim()}...` : text;
+    };
+    const words = (value) => String(value || "").replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+    const buildPresentation = new Function(
+      "ctx", "words", "compactFeedback", "feedbackUntil", "feedbackLines", "feedbackActionMode", "animationMode",
+      "sleepLatched", "animationUntil", "reducedMotion", "feedbackReaction",
+      `${source}\nreturn { ACTION_INFO_COLORS, drawActionInfoPanel };`,
+    );
+    const ui = buildPresentation(context, words, compactFeedback, 0, [], "", "idle", false, 0, false, "");
+    const panelChecks = modes.map((mode) => {
+      context.clearRect(0, 0, 320, 220);
+      ui.drawActionInfoPanel(words(mode).toUpperCase(), [mode === "idle" ? "Ready" : "Processing..."], ui.ACTION_INFO_COLORS[mode] || "#8fa5a0", 1);
+      const left = context.getImageData(0, 0, 199, 220).data;
+      const right = context.getImageData(199, 0, 121, 220).data;
+      const leftPixels = left.reduce((count, value, index) => count + (index % 4 === 3 && value > 0 ? 1 : 0), 0);
+      const rightPixels = right.reduce((count, value, index) => count + (index % 4 === 3 && value > 0 ? 1 : 0), 0);
+      return { mode, leftPixels, rightPixels };
+    });
+
+    context.fillStyle = "#0e1014";
+    context.fillRect(0, 0, 320, 220);
+    window.MoonpetBotArtRenderer.renderMoonpetBot(context, "battle", 124, 194, 1, 2200, { active: true, startedAt: 0 });
+    ui.drawActionInfoPanel("BATTLE", ["Processing...", "Round 2 of 5"], ui.ACTION_INFO_COLORS.battle, 1);
+    return panelChecks;
+  }, { modes: MODES, source: PRESENTATION_SOURCE });
+  assert.ok(presentation.every((entry) => entry.leftPixels === 0), "right-side action UI must not draw over the bot zone");
+  assert.ok(presentation.every((entry) => entry.rightPixels > 0), "every action mode must draw status in the right-side column");
   await fs.mkdir(OUTPUT, { recursive: true });
   await page.screenshot({ path: path.join(OUTPUT, "f1-eddy-mobile-390x844.png"), fullPage: false });
-  console.log(JSON.stringify({ botty: "pass", tubbyActions: tubby.renders.length, tinBobActions: tinBob.renders.length, theTingActions: theTing.renders.length, tattooJohnActions: tattooJohn.renders.length, redAlertActions: redAlert.renders.length, jakeTheSnakeActions: jakeTheSnake.renders.length, f1EddyActions: f1Eddy.renders.length, unknownFallback: unknown.resolvedBot, switchBack: returned.resolvedBot, mobile: "390x844" }));
+  console.log(JSON.stringify({ botty: "pass", tubbyActions: tubby.renders.length, tinBobActions: tinBob.renders.length, theTingActions: theTing.renders.length, tattooJohnActions: tattooJohn.renders.length, redAlertActions: redAlert.renders.length, jakeTheSnakeActions: jakeTheSnake.renders.length, f1EddyActions: f1Eddy.renders.length, presentationActions: presentation.length, unknownFallback: unknown.resolvedBot, switchBack: returned.resolvedBot, mobile: "390x844" }));
 } finally {
   await browser.close();
   await new Promise((resolve) => server.close(resolve));
