@@ -3,9 +3,10 @@
   "character_name": "EGGYONE",
   "character_id": "cmui5g9430007v27qp8scqirq",
   "source": "AutoSprite API + local approved asset",
-  "provenance": "seven existing AutoSprite Stage-0 sheets, two existing AutoSprite front actions, plus approved local user-supplied EGGYONE front_fight sheet",
-  "downloaded_at": "2026-09-26T20:13:36.670Z",
+  "provenance": "seven existing AutoSprite Stage-0 sheets plus approved local user-supplied EGGYONE front_fight sheet",
+  "downloaded_at": "2026-09-26T22:19:22.100Z",
   "approval_status": "approved_visual_review",
+  "approved_at": "2026-09-26T09:19:19.626Z",
   "contact_sheet_path": "/img/moonpets/eggyone/contact-sheet.png",
   "cache_version": "20260926-front-actions-v1",
   "runtime_role_map": {
@@ -308,6 +309,5 @@
     "status": "approved",
     "reviewed_at": "2026-09-26T17:35:36.175Z",
     "contact_sheet_path": "/img/moonpets/eggyone/front-actions-contact-sheet.png"
-  },
-  "approved_at": "2026-09-26T09:19:19.626Z"
+  }
 }
