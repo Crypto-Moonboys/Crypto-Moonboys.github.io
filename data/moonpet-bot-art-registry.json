@@ -44,8 +44,15 @@
       "display_names": [
         "F1 EDDY"
       ],
-      "status": "pending",
-      "fallback": "BOTTY"
+      "autosprite_character_id": "cmuhjd3wg0023zoeghrmnxoc7",
+      "manifest_path": "/data/moonpet-f1-eddy-front-assets.json",
+      "asset_root": "/img/moonpets/f1-eddy/",
+      "status": "complete",
+      "fallback": "BOTTY",
+      "display": {
+        "scale": 0.72,
+        "pivot_y": 0.86
+      }
     },
     "RED ALERT": {
       "canonical_species_ids": [

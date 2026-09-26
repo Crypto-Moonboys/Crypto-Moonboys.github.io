@@ -27,6 +27,8 @@ assert.equal(registry.bots["JAKE THE SNAKE"].status, "complete");
 assert.deepEqual(registry.bots["JAKE THE SNAKE"].canonical_species_ids, ["bubble_ram"]);
 assert.ok(registry.bots["JAKE THE SNAKE"].display_names.includes("JACK THE SNAKE"));
 assert.equal(registry.bots["JALE THE SNAKE"], undefined);
+assert.equal(registry.bots["F1 EDDY"].status, "complete");
+assert.deepEqual(registry.bots["F1 EDDY"].canonical_species_ids, ["neon_raccoon"]);
 for (const [name, config] of Object.entries(registry.bots)) {
   if (name !== "BOTTY") assert.equal(config.fallback, "BOTTY", `${name} fallback`);
 }
@@ -78,6 +80,11 @@ const jakeTheSnakeManifest = JSON.parse(fs.readFileSync(path.join(root, "data", 
 assert.equal(jakeTheSnakeManifest.character_name, "JAKE THE SNAKE");
 assert.equal(jakeTheSnakeManifest.character_id, "cmuhjcplv000912alpjmnzyrh");
 assert.ok(jakeTheSnakeManifest.assets.every((asset) => asset.frame_count === 25));
+
+const f1EddyManifest = JSON.parse(fs.readFileSync(path.join(root, "data", "moonpet-f1-eddy-front-assets.json"), "utf8"));
+assert.equal(f1EddyManifest.character_name, "F1 EDDY");
+assert.equal(f1EddyManifest.character_id, "cmuhjd3wg0023zoeghrmnxoc7");
+assert.ok(f1EddyManifest.assets.every((asset) => asset.frame_count === 25));
 
 const html = fs.readFileSync(path.join(root, "moonpet-game.html"), "utf8");
 assert.match(html, /moonpet-bot-art-loader\.js\?v=20260926-multi-bot-art-v1/);

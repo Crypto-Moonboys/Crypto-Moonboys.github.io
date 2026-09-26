@@ -33,6 +33,23 @@ async function waitForPack(page, expectedBot) {
   }, expectedBot, { timeout: 20000 });
 }
 
+async function selectAndWaitForPack(page, identity, expectedBot) {
+  const deadline = Date.now() + 30000;
+  while (Date.now() < deadline) {
+    await page.evaluate((nextIdentity) => window.MoonpetBotArtRenderer.selectMoonpetBot(nextIdentity), identity);
+    try {
+      await page.waitForFunction((bot) => {
+        const state = window.MoonpetBotArtRenderer?.getMoonpetBotArtRendererState();
+        return state?.ready && state.resolvedBot === bot && state.loadedRoles.length === 15;
+      }, expectedBot, { timeout: 3000 });
+      return await page.evaluate(() => window.MoonpetBotArtRenderer.getMoonpetBotArtRendererState());
+    } catch {
+      await page.waitForTimeout(250);
+    }
+  }
+  throw new Error(`Timed out selecting ${expectedBot}`);
+}
+
 const server = serveStatic();
 await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
 const address = server.address();
@@ -181,10 +198,9 @@ try {
   assert.ok(redAlert.renders.every((entry) => entry.drew && entry.resolvedBot === "RED ALERT"));
   assert.ok(redAlert.renders.every((entry) => entry.frameCount === 25));
 
-  const jakeSelection = await page.evaluate(() => window.MoonpetBotArtRenderer.selectMoonpetBot({ speciesId: "bubble_ram", speciesName: "JACK THE SNAKE" }));
+  const jakeSelection = await selectAndWaitForPack(page, { speciesId: "bubble_ram", speciesName: "JACK THE SNAKE" }, "JAKE THE SNAKE");
   assert.equal(jakeSelection.resolvedBot, "JAKE THE SNAKE");
   assert.equal(jakeSelection.fallbackUsed, false);
-  await waitForPack(page, "JAKE THE SNAKE");
   const jakeTheSnake = await page.evaluate((modes) => {
     const renderer = window.MoonpetBotArtRenderer;
     const canvas = document.getElementById("multi-bot-proof");
@@ -204,17 +220,39 @@ try {
   assert.ok(jakeTheSnake.renders.every((entry) => entry.drew && entry.resolvedBot === "JAKE THE SNAKE"));
   assert.ok(jakeTheSnake.renders.every((entry) => entry.frameCount === 25));
 
+  const f1EddySelection = await selectAndWaitForPack(page, { speciesId: "neon_raccoon", speciesName: "F1 EDDY" }, "F1 EDDY");
+  assert.equal(f1EddySelection.resolvedBot, "F1 EDDY");
+  assert.equal(f1EddySelection.fallbackUsed, false);
+  const f1Eddy = await page.evaluate((modes) => {
+    const renderer = window.MoonpetBotArtRenderer;
+    const canvas = document.getElementById("multi-bot-proof");
+    const context = canvas.getContext("2d");
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    const renders = modes.map((mode, index) => {
+      const column = index % 4;
+      const row = Math.floor(index / 4);
+      const drew = renderer.renderMoonpetBot(context, mode, 80 + column * 160, 150 + row * 150, 0.65, 1900, { active: true, startedAt: 0 });
+      return { mode, drew, ...renderer.getMoonpetBotArtRendererState().lastRender };
+    });
+    return { state: renderer.getMoonpetBotArtRendererState(), renders };
+  }, MODES);
+  assert.equal(f1Eddy.state.resolvedBot, "F1 EDDY");
+  assert.equal(f1Eddy.state.fallbackUsed, false);
+  assert.equal(f1Eddy.state.loadedRoles.length, 15);
+  assert.ok(f1Eddy.renders.every((entry) => entry.drew && entry.resolvedBot === "F1 EDDY"));
+  assert.ok(f1Eddy.renders.every((entry) => entry.frameCount === 25));
+
   const unknown = await page.evaluate(() => window.MoonpetBotArtRenderer.selectMoonpetBot({ speciesId: "future_bot", speciesName: "BOT 9" }));
   assert.equal(unknown.resolvedBot, "BOTTY");
   assert.equal(unknown.fallbackUsed, true);
-  const returned = await page.evaluate(() => window.MoonpetBotArtRenderer.selectMoonpetBot({ speciesId: "bubble_ram", speciesName: "JACK THE SNAKE" }));
-  assert.equal(returned.resolvedBot, "JAKE THE SNAKE");
+  const returned = await selectAndWaitForPack(page, { speciesId: "neon_raccoon", speciesName: "F1 EDDY" }, "F1 EDDY");
+  assert.equal(returned.resolvedBot, "F1 EDDY");
   assert.equal(returned.fallbackUsed, false);
 
-  await waitForPack(page, "JAKE THE SNAKE");
+  await waitForPack(page, "F1 EDDY");
   await fs.mkdir(OUTPUT, { recursive: true });
-  await page.screenshot({ path: path.join(OUTPUT, "jake-the-snake-mobile-390x844.png"), fullPage: false });
-  console.log(JSON.stringify({ botty: "pass", tubbyActions: tubby.renders.length, tinBobActions: tinBob.renders.length, theTingActions: theTing.renders.length, tattooJohnActions: tattooJohn.renders.length, redAlertActions: redAlert.renders.length, jakeTheSnakeActions: jakeTheSnake.renders.length, unknownFallback: unknown.resolvedBot, switchBack: returned.resolvedBot, mobile: "390x844" }));
+  await page.screenshot({ path: path.join(OUTPUT, "f1-eddy-mobile-390x844.png"), fullPage: false });
+  console.log(JSON.stringify({ botty: "pass", tubbyActions: tubby.renders.length, tinBobActions: tinBob.renders.length, theTingActions: theTing.renders.length, tattooJohnActions: tattooJohn.renders.length, redAlertActions: redAlert.renders.length, jakeTheSnakeActions: jakeTheSnake.renders.length, f1EddyActions: f1Eddy.renders.length, unknownFallback: unknown.resolvedBot, switchBack: returned.resolvedBot, mobile: "390x844" }));
 } finally {
   await browser.close();
   await new Promise((resolve) => server.close(resolve));
