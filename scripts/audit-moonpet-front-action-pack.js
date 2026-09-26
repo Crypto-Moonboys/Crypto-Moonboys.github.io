@@ -3,7 +3,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const sharp = require("sharp");
-const { CHARACTERS, REQUIRED_ROLES, CACHE_VERSION, rolesForCharacter } = require("./generate-moonpet-front-action-pack");
+const { CHARACTERS, REQUIRED_ROLES, CACHE_VERSION, rolesForCharacter } = require("./download-moonpet-front-action-pack");
 
 const REPO_ROOT = path.resolve(__dirname, "..");
 const CHARACTER_REGISTRY_PATH = path.join(REPO_ROOT, "data", "moonpet-autosprite-characters.json");
@@ -75,9 +75,7 @@ async function audit(options = {}) {
     if (manifest.character_id !== expectedCharacterId) failures.push(`${character.name}: manifest character_id mismatch`);
     if (manifest.runtime_role_map?.dance !== "front_dance") failures.push(`${character.name}: dance runtime role is not front_dance`);
     if (manifest.runtime_role_map?.victory !== "front_victory") failures.push(`${character.name}: victory runtime role is not front_victory`);
-    if (character.name === "EGGYONE") {
-      if (manifest.runtime_role_map?.fight) failures.push("EGGYONE: front_fight must not be registered");
-    } else if (manifest.runtime_role_map?.fight !== "front_fight") failures.push(`${character.name}: fight runtime role is not front_fight`);
+    if (manifest.runtime_role_map?.fight !== "front_fight") failures.push(`${character.name}: fight runtime role is not front_fight`);
 
     const expectedFolder = `/img/moonpets/${character.slug}/`;
     const contactPath = repoPath(manifest.front_action_contact_sheet_path);
@@ -164,13 +162,13 @@ async function audit(options = {}) {
     }
   }
 
-  if (rows.length !== 29) failures.push(`expected 29 audited animations, received ${rows.length}`);
-  if (generationReport.animations?.length !== 29) failures.push("generation report must contain 29 animations");
+  if (rows.length !== 30) failures.push(`expected 30 audited animations, received ${rows.length}`);
+  if (generationReport.animations?.length !== 30) failures.push("generation report must contain 30 animations");
   if (botRegistry.role_map?.dance !== "front_dance" || botRegistry.role_map?.victory !== "front_victory" || botRegistry.role_map?.fight !== "front_fight") {
     failures.push("central bot-art registry is missing front action role mappings");
   }
 
-  const allApproved = rows.length === 29 && rows.every((row) => row.review_status === "approved_visual_review");
+  const allApproved = rows.length === 30 && rows.every((row) => row.review_status === "approved_visual_review");
   if (options.approve && failures.length === 0) {
     botRegistry.front_action_pack.status = "complete";
     botRegistry.front_action_pack.approved_at = new Date().toISOString();

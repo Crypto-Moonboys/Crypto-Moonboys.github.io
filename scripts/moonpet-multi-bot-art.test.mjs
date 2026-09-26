@@ -10,7 +10,7 @@ const expectedRoles = [
   "front_trade", "front_celebrate", "front_interact", "front_blocked", "front_battle"
 ];
 const frontActionRoles = ["front_dance", "front_victory", "front_fight"];
-const frontActionInstalled = Number(registry.front_action_pack?.animation_count || 0) >= 29;
+const frontActionInstalled = Number(registry.front_action_pack?.animation_count || 0) === 30;
 const installedRoles = frontActionInstalled ? [...expectedRoles, ...frontActionRoles] : expectedRoles;
 
 assert.equal(registry.default_bot, "BOTTY");

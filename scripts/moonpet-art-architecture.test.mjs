@@ -21,7 +21,7 @@ const expectedActions = [
   "front_trade", "front_celebrate", "front_interact", "front_blocked", "front_battle"
 ];
 const frontActionRoles = ["front_dance", "front_victory", "front_fight"];
-const frontActionInstalled = Number(botRegistry.front_action_pack?.animation_count || 0) >= 29;
+const frontActionInstalled = Number(botRegistry.front_action_pack?.animation_count || 0) === 30;
 const installedActions = frontActionInstalled ? [...expectedActions, ...frontActionRoles] : expectedActions;
 
 assert.equal(botRegistry.schema_version, 2);
@@ -80,7 +80,7 @@ const eggManifest = readJson("data/moonpet-eggyone-stage0-assets.json");
 assert.equal(eggManifest.character_name, "EGGYONE");
 assert.equal(eggManifest.character_id, "cmui5g9430007v27qp8scqirq");
 assert.equal(eggManifest.approval_status, "approved_visual_review");
-assert.equal(eggManifest.assets.length, frontActionInstalled ? (eggManifest.assets.some((asset) => asset.role === "front_fight") ? 10 : 9) : 7);
+assert.equal(eggManifest.assets.length, frontActionInstalled ? 10 : 7);
 assert.ok(eggManifest.assets.every((asset) => asset.frame_count === 25));
 assert.ok(eggManifest.assets.filter((asset) => !frontActionRoles.includes(asset.role)).every((asset) => asset.review_status === "approved_visual_review"));
 

@@ -12,11 +12,6 @@ const {
   spritesheetId,
   writeJson
 } = require("./download-botty-front-animations");
-const {
-  parseArgs: parseGeneratorArgs,
-  generateBottyFrontAnimations
-} = require("./generate-botty-front-animations");
-
 const REPO_ROOT = path.resolve(__dirname, "..");
 const REGISTRY_PATH = path.join(REPO_ROOT, "data", "moonpet-autosprite-characters.json");
 const BOT_ART_REGISTRY_PATH = path.join(REPO_ROOT, "data", "moonpet-bot-art-registry.json");
@@ -44,21 +39,8 @@ async function readJson(filePath) {
   return JSON.parse(await fs.readFile(filePath, "utf8"));
 }
 
-async function readJsonIfExists(filePath, fallback) {
-  try {
-    return await readJson(filePath);
-  } catch (error) {
-    if (error.code === "ENOENT") return fallback;
-    throw error;
-  }
-}
-
-function parseArgs(argv) {
-  return { downloadOnly: argv.includes("--download-only") };
-}
-
-function rolesForCharacter(character) {
-  return Object.keys(REQUIRED_ROLES).filter((role) => character.name !== "EGGYONE" || role !== "front_fight");
+function rolesForCharacter() {
+  return Object.keys(REQUIRED_ROLES);
 }
 
 function repoPath(relativePath) {
@@ -74,11 +56,7 @@ function canonicalPaths(character, role) {
   };
 }
 
-function findExistingRole(manifest, role) {
-  return (manifest.assets || []).find((asset) => asset.role === role) || null;
-}
-
-function asInstalledAsset(character, characterId, entry, generated) {
+function asInstalledAsset(character, characterId, entry) {
   const contract = REQUIRED_ROLES[entry.id];
   const paths = canonicalPaths(character, entry.id);
   return {
@@ -98,17 +76,15 @@ function asInstalledAsset(character, characterId, entry, generated) {
       status: entry.autosprite_status || "succeeded",
       created_at: entry.autosprite_created_at || null,
       updated_at: entry.autosprite_updated_at || null,
-      provenance: generated
-        ? "new AutoSprite spritesheet generated for the front action pack"
-        : "existing exact AutoSprite spritesheet reused for the front action pack",
+      provenance: "current existing AutoSprite spritesheet downloaded for the front action pack",
       source: "AutoSprite API"
     },
-    provenance: generated ? "newly_generated" : "reused_existing",
+    provenance: "downloaded_existing",
     review_status: "pending_visual_review"
   };
 }
 
-async function installCharacter(character, characterId, entries, generatedRoles) {
+async function installCharacter(character, characterId, entries) {
   const manifestPath = repoPath(character.manifest);
   const manifest = await readJson(manifestPath);
   if (manifest.character_name !== character.name) throw new Error(`${character.name}: manifest character name mismatch`);
@@ -116,21 +92,10 @@ async function installCharacter(character, characterId, entries, generatedRoles)
   manifest.assets = Array.isArray(manifest.assets) ? manifest.assets : [];
   manifest.runtime_role_map = manifest.runtime_role_map || {};
 
-  if (character.name === "EGGYONE") {
-    manifest.assets = manifest.assets.filter((asset) => asset.role !== "front_fight");
-    delete manifest.runtime_role_map.fight;
-    await fs.rm(repoPath(`/img/moonpets/${character.slug}/front_fight.png`), { force: true });
-    await fs.rm(repoPath(`/img/moonpets/${character.slug}/front_fight.json`), { force: true });
-  }
-
   for (const entry of entries) {
-    const existing = findExistingRole(manifest, entry.id);
     const incomingId = String(entry.autosprite_spritesheet_id || "");
     if (!incomingId) throw new Error(`${character.name} ${entry.id}: missing AutoSprite spritesheet ID`);
-    if (existing && String(existing.autosprite?.spritesheet_id || "") !== incomingId) {
-      throw new Error(`${character.name} ${entry.id}: refusing to replace installed spritesheet ${existing.autosprite?.spritesheet_id} with ${incomingId}`);
-    }
-    const installed = asInstalledAsset(character, characterId, entry, generatedRoles.has(entry.id));
+    const installed = asInstalledAsset(character, characterId, entry);
     manifest.assets = manifest.assets.filter((asset) => asset.role !== entry.id);
     manifest.assets.push(installed);
     const paths = canonicalPaths(character, entry.id);
@@ -141,57 +106,36 @@ async function installCharacter(character, characterId, entries, generatedRoles)
 
   manifest.runtime_role_map.dance = "front_dance";
   manifest.runtime_role_map.victory = "front_victory";
-  if (character.name !== "EGGYONE") manifest.runtime_role_map.fight = "front_fight";
+  manifest.runtime_role_map.fight = "front_fight";
   manifest.front_action_contact_sheet_path = canonicalPaths(character, "front_dance").contact;
   manifest.cache_version = CACHE_VERSION;
   await writeJson(manifestPath, manifest);
 }
 
-async function processCharacter(character, apiKey, globalIds, forceRoles = new Set(), downloadOnly = false) {
+async function processCharacter(character, apiKey, globalIds) {
   const paths = outputPaths(character.name);
   const characterId = await resolveCharacterId({ characterName: character.name, characterId: "", registryPath: REGISTRY_PATH });
-  let records = await listSpritesheets(apiKey, characterId, paths);
-  const generatedRoles = new Set();
+  const records = await listSpritesheets(apiKey, characterId, paths);
 
   const requiredRoles = rolesForCharacter(character);
+  const matches = new Map();
   for (const role of requiredRoles) {
-    if (forceRoles.has(role)) {
-      console.log(`[${character.name}] regenerating rejected ${role}`);
-      const options = parseGeneratorArgs([
-        "--character-name", character.name,
-        "--character-id", characterId,
-        "--animation", role,
-        "--poll-timeout-ms", "1200000",
-        "--execute"
-      ]);
-      await generateBottyFrontAnimations(options);
-      generatedRoles.add(role);
-      records = await listSpritesheets(apiKey, characterId, paths);
-      continue;
-    }
     try {
-      pickRecord(records, role);
-      console.log(`[${character.name}] reusing existing ${role}`);
+      const match = pickRecord(records, role);
+      if (match.candidates.length !== 1) {
+        throw new Error(`${character.name} ${role}: expected one current sheet, found ${match.candidates.length}; refusing ambiguous download.`);
+      }
+      matches.set(role, match);
+      console.log(`[${character.name}] downloading current existing ${role}`);
     } catch (error) {
       if (!/No complete existing AutoSprite spritesheet matched/.test(error.message)) throw error;
-      if (downloadOnly) throw new Error(`${character.name} ${role}: existing named AutoSprite sheet is required; generation is disabled.`);
-      console.log(`[${character.name}] generating missing ${role}`);
-      const options = parseGeneratorArgs([
-        "--character-name", character.name,
-        "--character-id", characterId,
-        "--animation", role,
-        "--poll-timeout-ms", "1200000",
-        "--execute"
-      ]);
-      await generateBottyFrontAnimations(options);
-      generatedRoles.add(role);
-      records = await listSpritesheets(apiKey, characterId, paths);
+      throw new Error(`${character.name} ${role}: one current existing named AutoSprite sheet is required; generation is disabled.`);
     }
   }
 
   const entries = [];
   for (const role of requiredRoles) {
-    const match = pickRecord(records, role);
+    const match = matches.get(role);
     const id = String(spritesheetId(match.record) || "");
     if (!id) throw new Error(`${character.name} ${role}: matched record has no spritesheet ID`);
     if (globalIds.has(id)) throw new Error(`${character.name} ${role}: duplicate spritesheet ID ${id} also used by ${globalIds.get(id)}`);
@@ -209,7 +153,7 @@ async function processCharacter(character, apiKey, globalIds, forceRoles = new S
   const contactPath = canonicalPaths(character, "front_dance").contact;
   await fs.mkdir(path.dirname(repoPath(contactPath)), { recursive: true });
   await fs.copyFile(paths.contactSheetPath, repoPath(contactPath));
-  await installCharacter(character, characterId, entries, generatedRoles);
+  await installCharacter(character, characterId, entries);
 
   return entries.map((entry) => ({
     character_name: character.name,
@@ -218,7 +162,7 @@ async function processCharacter(character, apiKey, globalIds, forceRoles = new S
     spritesheet_id: entry.autosprite_spritesheet_id,
     frame_count: entry.frame_count,
     playback_mode: REQUIRED_ROLES[entry.id].playback_mode,
-    source_mode: generatedRoles.has(entry.id) ? "newly_generated" : "reused_existing",
+    source_mode: "downloaded_existing",
     png_path: canonicalPaths(character, entry.id).png,
     atlas_path: canonicalPaths(character, entry.id).atlas,
     contact_sheet_path: contactPath,
@@ -227,7 +171,6 @@ async function processCharacter(character, apiKey, globalIds, forceRoles = new S
 }
 
 async function main() {
-  const options = parseArgs(process.argv.slice(2));
   const apiKey = process.env.AUTOSPRITE_API_KEY;
   if (!apiKey) throw new Error("AUTOSPRITE_API_KEY is required for the front action pack.");
   const registry = await readJson(REGISTRY_PATH);
@@ -240,16 +183,9 @@ async function main() {
   const animations = [];
   const selectedCharacters = CHARACTERS;
   for (const character of selectedCharacters) {
-    animations.push(...await processCharacter(character, apiKey, globalIds, new Set(), options.downloadOnly));
+    animations.push(...await processCharacter(character, apiKey, globalIds));
   }
-
-  const previousReport = await readJsonIfExists(REPORT_PATH, { animations: [] });
-  const selectedNames = new Set(selectedCharacters.map((character) => character.name));
-  const completeAnimations = [
-    ...(previousReport.animations || []).filter((entry) => !selectedNames.has(entry.character_name)),
-    ...animations
-  ];
-  if (completeAnimations.length !== 29) throw new Error(`Front action report must contain 29 existing sheets, received ${completeAnimations.length}.`);
+  if (animations.length !== 30) throw new Error(`Front action report must contain 30 existing sheets, received ${animations.length}.`);
 
   const botRegistry = await readJson(BOT_ART_REGISTRY_PATH);
   botRegistry.role_map.dance = "front_dance";
@@ -260,8 +196,7 @@ async function main() {
     cache_version: CACHE_VERSION,
     required_roles: Object.keys(REQUIRED_ROLES),
     character_count: CHARACTERS.length,
-    animation_count: completeAnimations.length,
-    eggyone_front_fight_required: false,
+    animation_count: animations.length,
     audit_path: "/data/moonpet-front-action-audit.json"
   };
   await writeJson(BOT_ART_REGISTRY_PATH, botRegistry);
@@ -269,13 +204,13 @@ async function main() {
     schema_version: 1,
     generated_at: new Date().toISOString(),
     source: "AutoSprite API",
-    mode: options.downloadOnly ? "download_existing_named_sheets" : "generate_missing_sheets",
+    mode: "download_existing_named_sheets",
     cache_version: CACHE_VERSION,
     characters: CHARACTERS.map((character) => character.name),
     required_roles: Object.keys(REQUIRED_ROLES),
-    animations: completeAnimations
+    animations
   });
-  console.log(`Moonpet front action pack staged: ${completeAnimations.length} verified AutoSprite sheets.`);
+  console.log(`Moonpet front action pack staged: ${animations.length} verified existing AutoSprite sheets.`);
 }
 
 if (require.main === module) {
@@ -285,4 +220,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { CHARACTERS, REQUIRED_ROLES, CACHE_VERSION, canonicalPaths, asInstalledAsset, parseArgs, rolesForCharacter };
+module.exports = { CHARACTERS, REQUIRED_ROLES, CACHE_VERSION, canonicalPaths, asInstalledAsset, rolesForCharacter };
