@@ -20,7 +20,7 @@ import {
 } from './pets/moonpet-identity.js';
 import {
   MOONPET_SPECIES, createMoonEggLifecycle, ensureMoonpetLifecycle, getExistingMoonpetLifecycle, getMoonpetLifecycle, hatchMoonpet, incubateMoonEgg, morphMoonpetRare,
-  syncMoonpetLifecycleStage,
+  MOONPET_IDENTITY_REVEAL_STAGE, resolveMoonpetDisplayName, syncMoonpetLifecycleStage,
 } from './pets/species-lifecycle.js';
 import {
   PET_ROGUELITE_BOSSES, PET_ROGUELITE_ENEMIES, PET_ROGUELITE_REGIONS, PET_ROGUELITE_RELICS, PET_ROGUELITE_ROOMS, PET_RUN_MODIFIERS,
@@ -4426,6 +4426,8 @@ function serializePetSeasonSlot(row, slotNumber, activePetId, arcadeXpAvailable 
   const cost = Number(PET_SEASON_EXTRA_SLOT_COSTS[slotNumber] || 0);
   const unlocked = Boolean(row);
   const lockedByPrevious = !unlocked && slotNumber > 1 && !previousSlotOwned;
+  const evolutionStage = Math.max(0, Number(row?.evolution_stage) || 0);
+  const artIdentityId = row?.lifecycle_species_id || row?.species || null;
   return {
     slot_number: slotNumber,
     pet_id: row?.pet_id || null,
@@ -4442,7 +4444,9 @@ function serializePetSeasonSlot(row, slotNumber, activePetId, arcadeXpAvailable 
     affordable: !unlocked && slotNumber > 1 && !lockedByPrevious && arcadeXpAvailable >= cost,
     pet: unlocked ? {
       name: row?.pet_name || 'Moonpet',
-      species: row?.lifecycle_species_id || row?.species || '',
+      display_name: resolveMoonpetDisplayName({ evolution_stage: evolutionStage, art_identity_id: artIdentityId }),
+      species: evolutionStage >= MOONPET_IDENTITY_REVEAL_STAGE ? artIdentityId : null,
+      art_identity_id: publicMoonpetArtIdentityId(artIdentityId, evolutionStage),
       variant: row?.rare_morph_id || null,
       stage: row?.lifecycle_phase || row?.stage || 'egg',
       level: Math.max(1, Number(row?.level || 1)),
@@ -4506,7 +4510,8 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
           s.source_event_key, s.arcade_xp_spent, s.status, s.created_at, s.updated_at,
           i.pet_name, i.species, i.stage, i.level, i.pet_xp, i.health, i.energy,
           i.hunger, i.happiness, i.cleanliness, i.last_decay_at, l.phase AS lifecycle_phase,
-          l.species_id AS lifecycle_species_id, l.rare_morph_id
+          l.species_id AS lifecycle_species_id, l.rare_morph_id,
+          COALESCE((SELECT MAX(e.stage) FROM telegram_pet_evolutions_by_pet e WHERE e.pet_id=s.pet_id), 0) AS evolution_stage
         FROM telegram_pet_season_slots s
         LEFT JOIN telegram_pet_instances i
           ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id
@@ -6564,14 +6569,21 @@ function serializePetLeaderboardEntry(row, index = 0) {
   const phase = ['egg', 'young', 'adult', 'rare'].includes(String(row?.lifecycle_phase || ''))
     ? String(row.lifecycle_phase)
     : 'egg';
-  const revealed = phase !== 'egg';
-  const speciesId = revealed && MOONPET_SPECIES[row?.lifecycle_species_id] ? String(row.lifecycle_species_id) : null;
+  const evolutionStage = Math.max(0, Number(row?.evolution_stage) || 0);
+  const artIdentityId = MOONPET_SPECIES[row?.lifecycle_species_id] ? String(row.lifecycle_species_id) : null;
+  const revealed = evolutionStage >= 3;
+  const speciesId = revealed ? artIdentityId : null;
+  const publicArtIdentityId = evolutionStage >= MOONPET_IDENTITY_REVEAL_STAGE ? artIdentityId : null;
   const rareMorphId = phase === 'rare' && row?.rare_morph_id ? String(row.rare_morph_id) : null;
   return {
     rank: Math.max(1, Number(row?.rank) || Number(index) + 1),
     pet_name: row?.pet_name || 'Moonpet',
     stage: rareMorphId || row?.stage || 'moon_egg',
     phase,
+    evolution_stage: evolutionStage,
+    identity_revealed: revealed,
+    display_name: resolveMoonpetDisplayName({ evolution_stage: evolutionStage, art_identity_id: artIdentityId }),
+    art_identity_id: publicArtIdentityId,
     species_id: speciesId,
     species_name: speciesId ? MOONPET_SPECIES[speciesId].name : null,
     rare_morph_id: rareMorphId,
@@ -6587,33 +6599,50 @@ function serializePetLeaderboardEntry(row, index = 0) {
 
 async function materializePetLeaderboardRows(db, rows = []) {
   return Promise.all(rows.map(async (row) => {
-    if (row.lifecycle_phase && (row.lifecycle_phase === 'egg' || row.lifecycle_species_id)) return row;
+    if (row.lifecycle_phase && row.evolution_stage != null && (row.lifecycle_phase === 'egg' || row.lifecycle_species_id)) return row;
     await ensurePetStarterSeasonSlot(db, row.telegram_id).catch(() => null);
     await ensureActivePetInstance(db, row.telegram_id).catch(() => null);
-    const lifecycle = await ensureMoonpetLifecycle(db, row.telegram_id).catch(() => null);
+    const lifecycle = await getMoonpetLifecycle(db, row.telegram_id).catch(() => null);
     if (!lifecycle) return row;
     return {
       ...row,
       lifecycle_phase: lifecycle.phase,
-      lifecycle_species_id: lifecycle.species_id,
+      lifecycle_species_id: lifecycle.art_identity_id,
+      evolution_stage: lifecycle.evolution_stage,
       rare_morph_id: lifecycle.rare_morph_id,
     };
   }));
+}
+
+function publicMoonpetArtIdentityId(artIdentityId, evolutionStage = 0) {
+  return Number(evolutionStage) >= MOONPET_IDENTITY_REVEAL_STAGE ? artIdentityId : null;
+}
+
+function publicMoonpetLifecycle(lifecycle) {
+  if (!lifecycle) return null;
+  return {
+    ...lifecycle,
+    art_identity_id: publicMoonpetArtIdentityId(lifecycle.art_identity_id, lifecycle.evolution_stage),
+  };
 }
 
 function serializePet(pet, identity = null) {
   if (!pet) return null;
   const decayed = applyPetDecay({ ...pet });
   const currentEvolution = identity?.current_stage || null;
+  const evolutionStage = currentEvolution ? Math.max(0, Number(currentEvolution.stage) || 0) : 0;
+  const artIdentityId = decayed.species || identity?.lifecycle?.art_identity_id || null;
   return {
     pet_id: decayed.pet_id || null,
     telegram_id: decayed.telegram_id,
     season_key: decayed.season_key || null,
     pet_name: decayed.pet_name,
-    species: decayed.species,
+    display_name: resolveMoonpetDisplayName({ evolution_stage: evolutionStage, art_identity_id: artIdentityId }, identity || {}),
+    species: evolutionStage >= 3 ? decayed.species : null,
+    art_identity_id: publicMoonpetArtIdentityId(artIdentityId, evolutionStage),
     stage: currentEvolution?.name || null,
     evolution_id: currentEvolution?.evolution_id || null,
-    evolution_stage: currentEvolution ? Math.max(0, Number(currentEvolution.stage) || 0) : null,
+    evolution_stage: evolutionStage,
     growth_stage: getPetGrowthStage(decayed.pet_xp),
     pet_xp: Number(decayed.pet_xp || 0),
     level: getPetLevel(decayed.pet_xp),
@@ -9047,7 +9076,21 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
           'moon_egg'
         ) AS stage,
         p.level, p.pet_xp, p.moon_gold, p.moon_crystals, p.style_tokens, p.streak_days,
-        l.phase AS lifecycle_phase, l.species_id AS lifecycle_species_id, l.rare_morph_id
+        l.phase AS lifecycle_phase, l.species_id AS lifecycle_species_id, l.rare_morph_id,
+        COALESCE(
+          (SELECT MAX(pe.stage) FROM telegram_pet_evolutions_by_pet pe
+            WHERE pe.telegram_id=scores.telegram_id
+              AND EXISTS (SELECT 1 FROM telegram_pet_active_slots a WHERE a.telegram_id=scores.telegram_id AND a.pet_id=pe.pet_id)),
+          (SELECT MAX(pe.stage) FROM telegram_pet_evolutions pe WHERE pe.telegram_id=scores.telegram_id),
+          0
+        ) AS evolution_stage,
+        COALESCE(
+          (SELECT MAX(e.stage) FROM telegram_pet_evolutions_by_pet e
+            WHERE e.telegram_id = p.telegram_id
+              AND EXISTS (SELECT 1 FROM telegram_pet_active_slots a WHERE a.telegram_id=p.telegram_id AND a.pet_id=e.pet_id)),
+          (SELECT MAX(e.stage) FROM telegram_pet_evolutions e WHERE e.telegram_id=p.telegram_id),
+          0
+        ) AS evolution_stage
       FROM telegram_pet_profiles p
       LEFT JOIN telegram_pet_lifecycle_by_pet l ON l.telegram_id = p.telegram_id AND l.pet_id = (SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = p.telegram_id)
       ORDER BY p.pet_xp DESC, p.updated_at ASC LIMIT 10`)
@@ -9071,10 +9114,14 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     encounter ? issuePetMiniAppChallenge({ type: 'event', telegram_id: telegramId, encounter_key: encounter.key, event_key: encounter.event_key }, botToken) : null,
     adventure ? issuePetMiniAppChallenge({ type: 'adventure', telegram_id: telegramId, encounter_key: adventure.key, event_key: adventure.event_key }, botToken) : null,
   ]);
+  const serializedLifecycle = publicMoonpetLifecycle(lifecycle);
   const canonicalPet = serializePet(petRaw, guidance?.identity);
+  canonicalPet.display_name = resolveMoonpetDisplayName(serializedLifecycle || lifecycle || {}, guidance?.identity || {});
+  canonicalPet.art_identity_id = serializedLifecycle?.identity_revealed ? serializedLifecycle.art_identity_id : canonicalPet.art_identity_id;
+  canonicalPet.species = serializedLifecycle?.identity_revealed ? serializedLifecycle.species_id : null;
   if (guidance) {
     guidance.pet = canonicalPet;
-    if (guidance.identity) guidance.identity.lifecycle = lifecycle;
+    if (guidance.identity) guidance.identity.lifecycle = serializedLifecycle;
   }
   const liveSystems = await buildPetLiveSystemsState(db, telegramId, canonicalPet, runtime, gear.results || [], materials.results || [], now);
   const guidedNext = guidance ? choosePetNextAction(guidance) : null;
@@ -9135,7 +9182,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
   return {
     adopted: true,
     pet: canonicalPet,
-    lifecycle,
+    lifecycle: serializedLifecycle,
     next,
     guidance,
     notices: guidanceNotices,
@@ -10413,7 +10460,7 @@ export default {
         season,
         entries: leaderboardRows.map((row, index) => ({
           ...serializePetLeaderboardEntry(row, index),
-          display_name: [row.first_name, row.last_name].filter(Boolean).join(' ') || row.username || 'Anonymous',
+          player_display_name: [row.first_name, row.last_name].filter(Boolean).join(' ') || row.username || 'Anonymous',
           username: row.username || null,
           last_active_label: timeAgo(row.updated_at),
         })),
@@ -13352,7 +13399,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260926-retro-space-stage-v2`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260926-stage3-identity-v1`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',
@@ -15030,7 +15077,7 @@ function formatPetStatus(pet, identity = null, activity = null, reaction = undef
   if (favourite) identityLines.push(`<b>Favourite:</b> ${escapeHtml(favourite)}`);
   if (identity?.memories?.first_boss_id) identityLines.push(`<b>Remembers:</b> first defeating ${escapeHtml(String(identity.memories.first_boss_id).replaceAll('_', ' '))}`);
   return [
-    `🌕 <b>${escapeHtml(p.pet_name || 'Moonpet')}</b>`,
+    `🌕 <b>${escapeHtml(p.display_name || 'UNKNOWN')}</b>`,
     '',
     `<b>${escapeHtml(stage)}</b>`,
     `Level ${visibleLevel} | XP ${p.pet_xp} | ${getPetXpToNextVisibleLevel(p.pet_xp)} XP to next level`,
@@ -15122,7 +15169,7 @@ function formatPetDetails(pet, missions = null, activity = null, identity = null
     ? `📈 Level ${formatPetDisplayNumber(PET_VISIBLE_LEVEL_CURVE.max_level)} cap reached`
     : `📈 ${formatPetDisplayNumber(xpToNextVisibleLevel)} XP to Level ${formatPetDisplayNumber(visibleLevel + 1)}`;
   return [
-    `📋 <b>${escapeHtml(p.pet_name)} Details</b>`,
+    `📋 <b>${escapeHtml(p.display_name || 'UNKNOWN')} Details</b>`,
     `${getPetStageIcon(stage)} <b>${escapeHtml(stage)}</b>`,
     `⭐ Level ${formatPetDisplayNumber(visibleLevel)} · ✨ ${formatPetDisplayNumber(p.pet_xp)} XP`,
     levelProgressLine,
@@ -16908,9 +16955,18 @@ async function cmdPetLeaderboard(db, tok, chatId, replyMarkup = null) {
              (SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=s.telegram_id ORDER BY pe.stage DESC LIMIT 1),
              'moon_egg'
            ) AS stage, p.level,
+           COALESCE(
+             (SELECT MAX(pe.stage) FROM telegram_pet_evolutions_by_pet pe
+               WHERE pe.telegram_id=s.telegram_id
+                 AND EXISTS (SELECT 1 FROM telegram_pet_active_slots a WHERE a.telegram_id=s.telegram_id AND a.pet_id=pe.pet_id)),
+             (SELECT MAX(pe.stage) FROM telegram_pet_evolutions pe WHERE pe.telegram_id=s.telegram_id),
+             0
+           ) AS evolution_stage,
+           l.phase AS lifecycle_phase, l.species_id AS lifecycle_species_id, l.rare_morph_id,
            u.username, u.first_name, u.last_name
     FROM telegram_pet_season_state s
     LEFT JOIN telegram_pet_profiles p ON p.telegram_id = s.telegram_id
+    LEFT JOIN telegram_pet_lifecycle_by_pet l ON l.telegram_id=s.telegram_id AND l.pet_id=(SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id=s.telegram_id)
     LEFT JOIN telegram_users u ON u.telegram_id = s.telegram_id
     WHERE s.season_key = ?
     ORDER BY s.season_xp DESC
@@ -16920,9 +16976,10 @@ async function cmdPetLeaderboard(db, tok, chatId, replyMarkup = null) {
     await sendTelegramMessage(tok, chatId, 'No Crypto Moonboy Pets leaderboard entries yet. Use /adopt to start.', replyMarkup ? { reply_markup: replyMarkup } : {});
     return;
   }
-  const lines = rows.results.map((row, index) => (
-    `${index + 1}. ${escapeHtml(displayNameFromRow(row))} — ${escapeHtml(row.pet_name || 'Moonpet')} (${escapeHtml(row.stage || 'egg')}) ${row.season_xp || 0} pet XP`
-  ));
+  const lines = rows.results.map((row, index) => {
+    const entry = serializePetLeaderboardEntry(row, index);
+    return `${index + 1}. ${escapeHtml(displayNameFromRow(row))} — ${escapeHtml(entry.display_name)} (${escapeHtml(row.stage || 'egg')}) ${row.season_xp || 0} pet XP`;
+  });
   await sendTelegramPetReply(tok, chatId, `<b>Crypto Moonboy Pets Leaderboard</b>\n${escapeHtml(season.key)}\n\n${lines.join('\n')}`, replyMarkup ? { reply_markup: replyMarkup } : {}, 'leaderboard');
 }
 

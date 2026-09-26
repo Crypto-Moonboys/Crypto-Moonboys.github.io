@@ -1736,7 +1736,7 @@ body.page-how-to-play .wiki-living-hero {
   background:
     linear-gradient(90deg, rgba(3, 7, 13, 0.96) 0%, rgba(3, 7, 13, 0.88) 28%, rgba(3, 7, 13, 0.42) 57%, rgba(3, 7, 13, 0.10) 100%),
     linear-gradient(180deg, rgba(3, 7, 13, 0.18) 0%, rgba(3, 7, 13, 0.78) 100%),
-    url("/img/pets/crypto-moonboy-pets-how-to-play-hero.jpg") center right / cover no-repeat;
+    url("/img/moonpets/eggyone/contact-sheet.png") center right / cover no-repeat;
   border-color: rgba(86, 220, 255, 0.20);
 }
 
@@ -1851,7 +1851,7 @@ body.page-how-to-play .swarmsy-lead {
     min-height: 680px;
     background:
       linear-gradient(180deg, rgba(3, 7, 13, 0.88) 0%, rgba(3, 7, 13, 0.54) 46%, rgba(3, 7, 13, 0.94) 100%),
-      url("/img/pets/crypto-moonboy-pets-how-to-play-hero.jpg") 62% center / cover no-repeat;
+      url("/img/moonpets/eggyone/contact-sheet.png") 62% center / cover no-repeat;
   }
 
   body.page-how-to-play .wiki-living-hero .swarmsy-hero-inner {

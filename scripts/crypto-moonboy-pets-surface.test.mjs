@@ -8,12 +8,23 @@ const community = fs.readFileSync(new URL('../community.html', import.meta.url),
 const games = fs.readFileSync(new URL('../games/index.html', import.meta.url), 'utf8');
 const petSurfaceScript = fs.readFileSync(new URL('../js/crypto-moonboy-pets.js', import.meta.url), 'utf8');
 const miniAppScript = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
+const miniAppHtml = fs.readFileSync(new URL('../moonpet-game.html', import.meta.url), 'utf8');
+const wikiCss = fs.readFileSync(new URL('../css/wiki.css', import.meta.url), 'utf8');
 const index = JSON.parse(fs.readFileSync(new URL('../js/wiki-index.json', import.meta.url), 'utf8'));
 function sectionByHeading(html, heading) {
   return html.match(new RegExp(`<section class="[^"]+">\\s*<h2>${heading}<\\/h2>[\\s\\S]*?<\\/section>`))?.[0] || '';
 }
 
 assert.ok(wikiPage.includes('Crypto Moonboy Pets'), 'wiki page must name Crypto Moonboy Pets');
+assert.ok(wikiPage.includes('UNKNOWN') && wikiPage.includes('Stage 3'), 'wiki page must document the identity reveal boundary');
+assert.ok(howTo.includes('UNKNOWN') && howTo.includes('Stage 3'), 'How To Play must document the identity reveal boundary');
+assert.doesNotMatch(wikiPage, /\.jpe?g/i, 'Moonpet wiki content and metadata must not render obsolete JPEG pet art');
+assert.doesNotMatch(howTo, /\.jpe?g/i, 'How To Play content and metadata must not render obsolete JPEG pet art');
+assert.doesNotMatch(leaderboard, /\.jpe?g/i, 'Moonpet leaderboard must not render obsolete JPEG pet art');
+assert.doesNotMatch(wikiCss.match(/body\.page-how-to-play[\s\S]*?(?=body\.page-gkniftyheads-collection)/)?.[0] || '', /\.jpe?g/i,
+  'Moonpet guide CSS must not render obsolete JPEG pet art');
+assert.match(miniAppScript, /BITTY BACKGROUND\.jpg/, 'the approved live game environment must remain intact');
+assert.match(miniAppHtml, /moonpet-mini-app\.js/, 'the live Moonpet URL must retain its game runtime');
 assert.ok(wikiPage.includes('/how-to-play-crypto-moonboy-pets.html'), 'wiki page must link How To Play page');
 assert.ok(wikiPage.includes('/crypto-moonboy-pets-leaderboard.html'), 'wiki page must link pet leaderboard');
 assert.ok(wikiPage.includes('Community XP'), 'wiki page must explain Community XP sync');
@@ -55,9 +66,9 @@ assert.ok(howTo.includes('game-only rewards') && howTo.includes('game currencies
 assert.ok(!howTo.toLowerCase().includes('financial'), 'How To Play must avoid financial wording');
 assert.ok(!howTo.toLowerCase().includes('real-world value'), 'How To Play must avoid real-world value wording');
 assert.ok(howTo.includes('pet-card-gallery'), 'How To Play must include a pet card gallery');
-assert.ok(howTo.includes('Crypto Moonboys Pet Feed card'), 'How To Play must preview the feed card');
-assert.ok(howTo.includes('Crypto Moonboys Pet How To Play card'), 'How To Play must preview the how-to-play card');
-assert.match(howTo, /\.pet-card-gallery img\s*\{[\s\S]*aspect-ratio:\s*4 \/ 5;[\s\S]*object-fit:\s*contain;/, 'pet card gallery must show full portrait card art without cropping');
+assert.ok(howTo.includes('Approved EGGYONE Stage-0'), 'How To Play must show approved Stage-0 art');
+assert.ok(howTo.includes('Approved WTFBOI Stage-1'), 'How To Play must show approved Stage-1 art');
+assert.match(howTo, /\.pet-card-gallery img\s*\{[\s\S]*aspect-ratio:\s*1 \/ 1;[\s\S]*object-fit:\s*contain;/, 'pet art gallery must show complete approved contact sheets without cropping');
 assert.doesNotMatch(howTo, /\.pet-card-gallery img\s*\{[\s\S]*object-fit:\s*cover;/, 'pet card gallery must not crop card art');
 assert.ok(!leaderboard.includes('pet-card-gallery'), 'Leaderboard page must not dump the pet card gallery');
 assert.ok(!community.includes('pet-card-gallery'), 'Community page must not dump the pet card gallery');

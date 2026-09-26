@@ -1304,7 +1304,7 @@ assert.match(worker, /const \[journeySummary, hydratedKaiju\] = await Promise\.a
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
-assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260926-retro-space-stage-v2`/);
+assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260926-stage3-identity-v1`/);
 assert.match(worker, /const TELEGRAM_GAMES_MENU_URL = `\$\{SITE_URL\}\/games\/telegram\/\?v=20260903-games-shell-v8`/,
   'default Telegram games menu must point at the current shell release');
 assert.match(worker, /const TELEGRAM_GAMES_MENU_TEXT = 'Games'/);
@@ -1500,7 +1500,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260926-retro-space-stage-v2/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260926-stage3-identity-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -1632,6 +1632,46 @@ assert.equal(botArtEvolutionStage({ lifecycle: { phase: 'young' }, pet: { evolut
   'authored post-Street evolution stages must remain unchanged');
 assert.equal(botArtEvolutionStage({ lifecycle: { phase: 'adult' }, pet: {} }), 1,
   'a hatched pet without numeric evolution data must default to Street Stage 1');
+const displayNameResolverSource = extractTestExport(client, 'resolveMoonpetDisplayName');
+assert.ok(displayNameResolverSource, 'the authoritative display-name resolver must be runtime testable');
+const resolveMoonpetDisplayName = new Function(`${displayNameResolverSource}; return resolveMoonpetDisplayName;`)();
+const canonicalNames = {
+  vinyl_crab: 'BOTTY', neon_raccoon: 'F1 EDDY', bubble_ram: 'JAKE THE SNAKE', comet_gecko: 'TUBBY',
+  lantern_fox: 'RED ALERT', sneaker_snail: 'THE TING', alley_drake: 'TATTOO JOHN', moon_ferret: 'TIN BOB',
+};
+for (const [speciesId, canonicalName] of Object.entries(canonicalNames)) {
+  for (let stage = 0; stage <= 5; stage += 1) {
+    assert.equal(resolveMoonpetDisplayName({ evolution_stage: stage, art_identity_id: speciesId }), stage < 3 ? 'UNKNOWN' : canonicalName,
+      `${canonicalName} must obey the Stage-3 reveal boundary at Stage ${stage}`);
+  }
+}
+assert.equal(resolveMoonpetDisplayName({ evolution_stage: 3, species_name: 'JACK THE SNAKE' }), 'UNKNOWN',
+  'compatibility aliases must never become visible names');
+const botArtIdentitySource = extractTestExport(client, 'botArtIdentity');
+assert.ok(botArtIdentitySource, 'bot art identity resolver must be extractable for runtime coverage');
+const botArtIdentity = new Function(
+  `${botArtEvolutionStageSource}
+  ${displayNameResolverSource}
+  var MOONPET_IDENTITY_REVEAL_STAGE = 3;
+  ${botArtIdentitySource}
+  return botArtIdentity;`
+)();
+assert.deepEqual(botArtIdentity({
+  lifecycle: { phase: 'adult', evolution_stage: 2, art_identity_id: 'neon_raccoon', identity_revealed: false },
+  pet: { art_identity_id: 'neon_raccoon', species: null },
+}), {
+  speciesId: '',
+  speciesName: '',
+  evolutionStage: 1,
+}, 'pre-Stage-3 bot art must stay on shared non-identifying art');
+assert.deepEqual(botArtIdentity({
+  lifecycle: { phase: 'adult', evolution_stage: 3, art_identity_id: 'neon_raccoon', identity_revealed: true },
+  pet: { art_identity_id: 'neon_raccoon', species: 'neon_raccoon' },
+}), {
+  speciesId: 'neon_raccoon',
+  speciesName: 'F1 EDDY',
+  evolutionStage: 3,
+}, 'Stage 3 bot art may resolve the revealed identity pack');
 assert.doesNotMatch(client, /selectWorldBackgroundForState|loadMoonpetBackground|setWorldBackground/,
   'pet state changes must never restore a static canvas background');
 assert.match(client, /backgroundArtState = \{ mode: 'retro_space_loop', loop_ms: 20000, source: 'canvas' \}/,
@@ -1859,9 +1899,9 @@ const lifecycleDirectorSource = extractTestExport(client, 'lifecycleDirector');
 assert.ok(lifecycleDirectorSource, 'Phase 6 lifecycle director must be extractable for runtime smoke coverage');
 assert.doesNotMatch(lifecycleDirectorSource, /identity_seed|rare_route_index|species odds/i, 'Phase 6 must not expose hidden lifecycle authority');
 const planCeremonyRuntime = new Function(
-  'words',
+  'words', 'resolveMoonpetDisplayName',
   lifecycleDirectorSource + '; return planLifecycleCeremony;',
-)(value => String(value || '').replaceAll('_', ' ').replace(/\b\w/g, letter => letter.toUpperCase()));
+)(value => String(value || '').replaceAll('_', ' ').replace(/\b\w/g, letter => letter.toUpperCase()), resolveMoonpetDisplayName);
 
 const eggState = {
   adopted: true,
@@ -1887,41 +1927,51 @@ assert.equal(signalCeremony.primary, '6/12');
 assert.equal(signalCeremony.secondary, 'Music progress');
 
 const youngState = {
-  adopted: true,
-  pet: { species: 'neon_raccoon', evolution_stage: 1, stage: 'Street Moonpet' },
+  adopted: true, guidance: { identity: { current_stage: { stage: 1 } } },
+  pet: { art_identity_id: 'neon_raccoon', evolution_stage: 1, stage: 'Street Moonpet' },
   lifecycle: {
-    phase: 'young', species_id: 'neon_raccoon', species_name: 'F1 EDDY', temperament: 'bold',
+    phase: 'young', evolution_stage: 1, art_identity_id: 'neon_raccoon', species_id: null, species_name: 'UNKNOWN', display_name: 'UNKNOWN', temperament: 'bold',
     appearance: { marking: 'spray_mask' }, innate_traits: ['alley_brave', 'collector'],
     incubation: { progress: 12, target: 12 }, rare: { name: null },
   },
 };
-const hatchCeremony = planCeremonyRuntime(strongerEggState, youngState, 'hatch', { accepted: true, species: 'F1 EDDY' });
+const hatchCeremony = planCeremonyRuntime(strongerEggState, youngState, 'hatch', { accepted: true, species: 'UNKNOWN' });
 assert.equal(hatchCeremony.kind, 'hatch');
-assert.equal(hatchCeremony.title, 'REVEALED');
-assert.equal(hatchCeremony.primary, 'F1 EDDY');
-assert.equal(hatchCeremony.secondary, 'Bold temperament');
+assert.equal(hatchCeremony.title, 'STREET MOONPET');
+assert.equal(hatchCeremony.primary, 'UNKNOWN');
+assert.equal(hatchCeremony.secondary, 'Identity unlocks at Stage 3');
 assert.match(hatchCeremony.detail, /Spray Mask/);
 assert.match(hatchCeremony.detail, /Alley Brave/);
 
 const adultState = {
-  adopted: true,
-  pet: { species: 'neon_raccoon', evolution_stage: 2, stage: 'Cyber Moonpet' },
-  lifecycle: { ...youngState.lifecycle, phase: 'adult' },
+  adopted: true, guidance: { identity: { current_stage: { stage: 2 } } },
+  pet: { art_identity_id: 'neon_raccoon', evolution_stage: 2, stage: 'Cyber Moonpet' },
+  lifecycle: { ...youngState.lifecycle, phase: 'adult', evolution_stage: 2 },
 };
 const evolutionCeremony = planCeremonyRuntime(youngState, adultState, 'evolve', { accepted: true });
 assert.equal(evolutionCeremony.kind, 'evolve');
 assert.equal(evolutionCeremony.primary, 'Cyber Moonpet');
 
-const rareState = {
-  adopted: true,
-  pet: { species: 'neon_raccoon', evolution_stage: 5, stage: 'Legendary Moon Guardian' },
-  lifecycle: { ...adultState.lifecycle, phase: 'rare', rare: { name: 'Subway Phantom' } },
+const eliteState = {
+  adopted: true, guidance: { identity: { current_stage: { stage: 3 } } },
+  pet: { art_identity_id: 'neon_raccoon', evolution_stage: 3, stage: 'Elite Moonpet' },
+  lifecycle: { ...adultState.lifecycle, evolution_stage: 3, identity_revealed: true, species_id: 'neon_raccoon', species_name: 'F1 EDDY', display_name: 'F1 EDDY' },
 };
-const rareCeremony = planCeremonyRuntime(adultState, rareState, 'rare_morph', { accepted: true, rare_morph: 'Subway Phantom' });
+const revealCeremony = planCeremonyRuntime(adultState, eliteState, 'evolve', { accepted: true });
+assert.equal(revealCeremony.title, 'IDENTITY REVEALED');
+assert.equal(revealCeremony.primary, 'F1 EDDY');
+assert.equal(planCeremonyRuntime(eliteState, eliteState, 'refresh', { accepted: true }), null, 'Stage-3 reload must not replay the reveal ceremony');
+
+const rareState = {
+  adopted: true, guidance: { identity: { current_stage: { stage: 5 } } },
+  pet: { art_identity_id: 'neon_raccoon', evolution_stage: 5, stage: 'Legendary Moon Guardian' },
+  lifecycle: { ...eliteState.lifecycle, phase: 'rare', evolution_stage: 5, rare: { name: 'Subway Phantom' } },
+};
+const rareCeremony = planCeremonyRuntime(eliteState, rareState, 'rare_morph', { accepted: true, rare_morph: 'Subway Phantom' });
 assert.equal(rareCeremony.kind, 'rare');
 assert.equal(rareCeremony.primary, 'Subway Phantom');
-assert.equal(planCeremonyRuntime(adultState, rareState, 'rare_morph', { accepted: true, duplicate: true }), null);
-assert.equal(planCeremonyRuntime(adultState, rareState, 'rare_morph', { accepted: false }), null);
+assert.equal(planCeremonyRuntime(eliteState, rareState, 'rare_morph', { accepted: true, duplicate: true }), null);
+assert.equal(planCeremonyRuntime(eliteState, rareState, 'rare_morph', { accepted: false }), null);
 
 assert.match(worker, /const PET_RUN_MAX_DEPTH = 100;/);
 assert.match(worker, /PET_RUN_ELITE_INTERVAL = 5/);
@@ -1940,7 +1990,7 @@ assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Numbe
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
 assert.match(html, /20260926-retro-space-stage-v2/);
-assert.match(worker, /20260926-retro-space-stage-v2/);
+assert.match(worker, /20260926-stage3-identity-v1/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');
 assert.match(client, /renderQuality = reducedMotion/, 'canvas quality must start from device capability');

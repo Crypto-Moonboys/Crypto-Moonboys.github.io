@@ -41,7 +41,7 @@
     return '<div class="tg-profile-card crypto-pets-card">' +
       '<div class="tg-profile-avatar" aria-hidden="true">🐾</div>' +
       '<div class="tg-profile-info">' +
-        '<div class="tg-profile-name">' + escapeHtml(pet.pet_name || 'Moonpet') + '</div>' +
+        '<div class="tg-profile-name">' + escapeHtml(pet.display_name || 'UNKNOWN') + '</div>' +
         '<div class="tg-profile-badges">' +
           '<span class="tg-badge tg-badge-linked">' + escapeHtml(pet.stage || 'egg') + '</span>' +
           '<span class="tg-badge tg-badge-faction">Level ' + escapeHtml(pet.level || 1) + '</span>' +
@@ -77,8 +77,8 @@
       var rows = data.entries.map(function (entry) {
         return '<tr>' +
           '<td>' + escapeHtml(entry.rank) + '</td>' +
-          '<td>' + escapeHtml(entry.display_name || entry.username || 'Moonboy') + '</td>' +
-          '<td>' + escapeHtml(entry.pet_name || 'Moonpet') + '</td>' +
+          '<td>' + escapeHtml(entry.player_display_name || entry.username || 'Moonboy') + '</td>' +
+          '<td>' + escapeHtml(entry.display_name || 'UNKNOWN') + '</td>' +
           '<td>' + escapeHtml(entry.stage || 'egg') + '</td>' +
           '<td>' + escapeHtml(entry.level || 1) + '</td>' +
           '<td>' + escapeHtml(entry.pet_xp || 0) + '</td>' +
@@ -86,7 +86,7 @@
         '</tr>';
       }).join('');
       el.innerHTML = '<table class="guide-table pets-leaderboard-table">' +
-        '<thead><tr><th>Rank</th><th>Player</th><th>Pet</th><th>Stage</th><th>Level</th><th>Pet XP</th><th>Streak</th></tr></thead>' +
+        '<thead><tr><th>Rank</th><th>Player</th><th>Identity</th><th>Stage</th><th>Level</th><th>Pet XP</th><th>Streak</th></tr></thead>' +
         '<tbody>' + rows + '</tbody>' +
       '</table>';
     });

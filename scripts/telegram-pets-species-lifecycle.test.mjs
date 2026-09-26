@@ -3,6 +3,7 @@ import { webcrypto } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
 import {
   MOONPET_SPECIES, createMoonEggLifecycle, getMoonpetLifecycle, hatchMoonpet, incubateMoonEgg, incubationAgeDays, morphMoonpetRare,
+  resolveMoonpetDisplayName,
 } from '../workers/moonboys-api/pets/species-lifecycle.js';
 
 if (!globalThis.crypto) globalThis.crypto = webcrypto;
@@ -109,18 +110,31 @@ const hatched = await hatchMoonpet(db, 'new-player', 'hatch:1');
 assert.equal(hatched.accepted, true);
 assert.equal((await hatchMoonpet(db, 'new-player', 'hatch:1')).duplicate, true, 'hatching must be idempotent');
 assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_events_by_pet WHERE telegram_id=? AND action='hatch' AND applied_at IS NOT NULL").get('new-player').count, 1, 'hatch must have exactly one applied audit event');
-assert.ok(Object.hasOwn(MOONPET_SPECIES, hatched.lifecycle.species_id));
+assert.equal(hatched.lifecycle.species_id, null);
+assert.equal(hatched.lifecycle.species_name, 'UNKNOWN');
+assert.equal(hatched.lifecycle.display_name, 'UNKNOWN');
+assert.ok(Object.hasOwn(MOONPET_SPECIES, hatched.lifecycle.art_identity_id));
 assert.equal(hatched.lifecycle.innate_traits.length, 2);
 assert.ok(hatched.lifecycle.preferences.length >= 1, 'identity must expose stable behaviour preferences');
-assert.equal(db.database.prepare('SELECT species FROM telegram_pet_profiles WHERE telegram_id=?').get('new-player').species, hatched.lifecycle.species_id);
+assert.equal(db.database.prepare('SELECT species FROM telegram_pet_profiles WHERE telegram_id=?').get('new-player').species, hatched.lifecycle.art_identity_id,
+  'the server-owned identity remains assigned even while its display name is masked');
 for (const [speciesId, speciesName] of Object.entries(SPECIES_LABELS)) {
   db.database.prepare(`UPDATE telegram_pet_lifecycle_by_pet
     SET phase='young', species_id=?, temperament='bold', innate_traits_json='[]'
     WHERE telegram_id=?`).run(speciesId, 'new-player');
   const mapped = await getMoonpetLifecycle(db, 'new-player');
-  assert.equal(mapped.species_id, speciesId);
-  assert.equal(mapped.species_name, speciesName, `public lifecycle serializer must map ${speciesId} to ${speciesName}`);
+  assert.equal(mapped.species_id, null);
+  assert.equal(mapped.species_name, 'UNKNOWN', `Stage 0-2 public lifecycle must mask ${speciesName}`);
+  assert.equal(mapped.art_identity_id, speciesId, 'private art selection remains stable without becoming a display label');
+  for (let stage = 0; stage <= 5; stage += 1) {
+    assert.equal(resolveMoonpetDisplayName({ evolution_stage: stage, art_identity_id: speciesId }), stage < 3 ? 'UNKNOWN' : speciesName,
+      `${speciesName} must follow the Stage-3 reveal boundary at stage ${stage}`);
+  }
 }
+db.database.prepare(`INSERT INTO telegram_pet_evolutions_by_pet VALUES ('pet:new-player:test:1','new-player','elite_moonpet',3)`).run();
+const revealedLifecycle = await getMoonpetLifecycle(db, 'new-player');
+assert.equal(revealedLifecycle.species_id, revealedLifecycle.art_identity_id);
+assert.equal(revealedLifecycle.species_name, SPECIES_LABELS[revealedLifecycle.species_id]);
 db.database.prepare(`UPDATE telegram_pet_lifecycle_by_pet
   SET phase='rare', rare_route_index=0, rare_morph_id='celestial_serpent'
   WHERE telegram_id='new-player'`).run();

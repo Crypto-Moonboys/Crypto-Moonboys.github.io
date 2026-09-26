@@ -111,7 +111,8 @@ assert.doesNotMatch(html, /moonpet-botty-front-(?:asset-loader|sprite-renderer)\
 assert.doesNotMatch(html, /moonpet-art-v2\.js/);
 
 const client = fs.readFileSync(path.join(root, "js", "moonpet-mini-app.js"), "utf8");
-assert.match(client, /speciesId: String\(lifecycle\.species_id \|\| pet\.species/);
+assert.match(client, /speciesId: identityRevealed \? String\(lifecycle\.art_identity_id \|\| lifecycle\.species_id \|\| pet\.art_identity_id \|\| pet\.species \|\| ''\) : ''/);
+assert.match(client, /evolutionStage: identityRevealed \? evolutionStage : Math\.min\(evolutionStage, 1\)/);
 assert.match(client, /selectMoonpetBot\(botArtIdentity\(snapshot\)\)/);
 assert.match(client, /drawSelectedBotSprite\(renderTime, animationMode, active/);
 assert.doesNotMatch(client, /drawSideScrollerMoonpetSprite|drawApprovedMoonpetSprite/, "old character render paths must not remain live");
@@ -128,7 +129,7 @@ assert.match(client, /var active = sleepLatched \|\| animationUntil > renderTime
 assert.match(client, /animationUntil = sleepLatched && animationMode === 'sleep' \? Number\.POSITIVE_INFINITY/);
 assert.match(client, /if \(String\(lifecycle\.phase \|\| ''\)\.toLowerCase\(\) === 'egg'\) return 0;/);
 assert.match(client, /return Math\.max\(1, Math\.min\(5, Math\.floor\(evolutionStage\)\)\);/);
-assert.match(client, /evolutionStage: botArtEvolutionStage\(snapshot\)/);
+assert.match(client, /var evolutionStage = botArtEvolutionStage\(snapshot\);/);
 assert.doesNotMatch(client, /lines = lines\.concat\(feedbackLines\)/, "action results must stay off the game canvas");
 
 console.log("Moonpet multi-bot art registry and production packs passed");
