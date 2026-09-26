@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-17T18:34:32.126Z",
-  "verified_at": "2026-09-25T21:04:56.706Z",
+  "generated_at": "2026-09-26T10:06:28.003Z",
+  "verified_at": "2026-09-26T10:06:28.003Z",
   "lite": true,
   "nodes": [
     {
@@ -132,6 +132,14 @@
       "authority_score": 21
     },
     {
+      "id": "/wiki/crypto-moonboy-pets.html",
+      "title": "Crypto Moonboy Pets",
+      "url": "/wiki/crypto-moonboy-pets.html",
+      "category": "tokens",
+      "rank_score": 397,
+      "authority_score": 22
+    },
+    {
       "id": "/wiki/rave-relics.html",
       "title": "Rave Relics",
       "url": "/wiki/rave-relics.html",
@@ -146,14 +154,6 @@
       "category": "factions",
       "rank_score": 391,
       "authority_score": 30
-    },
-    {
-      "id": "/wiki/crypto-moonboy-pets.html",
-      "title": "Crypto Moonboy Pets",
-      "url": "/wiki/crypto-moonboy-pets.html",
-      "category": "tokens",
-      "rank_score": 386,
-      "authority_score": 22
     },
     {
       "id": "/wiki/stikfamwars.html",
