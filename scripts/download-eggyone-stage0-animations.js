@@ -15,7 +15,6 @@ const {
   relative,
   slug
 } = require("./download-botty-front-animations");
-const { buildLocalAtlas } = require("./generate-moonpet-assets");
 const { directNames } = require("./inspect-autosprite-stage0-pack");
 
 const REPO_ROOT = path.resolve(__dirname, "..");
@@ -163,17 +162,10 @@ async function ensureLocalEggyoneFrontFightAsset(productionDir, characterId) {
     throw new Error(`front_fight PNG grid frame count ${frameCount} does not match committed atlas frame count ${existingFrameCount}`);
   }
   if (existingFrameWidth !== existingFrameHeight) throw new Error("front_fight committed atlas frame cells are not square");
-  const atlas = buildLocalAtlas({
-    frameCount,
-    frameSize: existingFrameWidth,
-    sheetSize: { w: width, h: height },
-    durationS: 2.333
-  });
-  validateAtlasAgainstSheet(atlas, {
+  validateAtlasAgainstSheet(existingAtlas, {
     frame_count: frameCount,
     sheet_size: { w: width, h: height }
   });
-  await writeJson(runtimeAtlas, atlas);
   return {
     role: "front_fight",
     png_path: "/img/moonpets/eggyone/front_fight.png",

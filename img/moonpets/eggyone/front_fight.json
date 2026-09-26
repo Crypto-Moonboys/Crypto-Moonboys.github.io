@@ -185,7 +185,7 @@
       "w": 256,
       "h": 256
     },
-    "duration_s": 2.333,
-    "atlas_source": "generated_local"
+    "background_mode": "matanyone2_tensordock",
+    "duration_s": 2.333
   }
 }
