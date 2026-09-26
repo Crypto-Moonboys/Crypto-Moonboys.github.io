@@ -74,6 +74,7 @@ const {
   PET_SEASON_EXTRA_SLOT_COSTS,
   buildPetSeasonSlotSummary,
   processPetMiniAppAction,
+  buildPetMiniAppState,
   normalizePetCooldownWindow,
   buildPetCooldownFromSeconds,
   buildPetMiniAppCooldownSummary,
@@ -461,6 +462,12 @@ assert.equal(hiddenIdentityPet.pet_name, 'UNKNOWN', 'serialized pets must mask s
 assert.equal(hiddenIdentityPet.name, 'UNKNOWN', 'serialized pets must mask generic name before Stage 3');
 assert.equal(hiddenIdentityPet.species, null, 'serialized pets must not expose species before Stage 3');
 assert.equal(hiddenIdentityPet.art_identity_id, null, 'serialized pets must not expose art identity before Stage 3');
+const stageOneInternalArtPet = serializePet({ ...baseArenaPet, species: 'neon_raccoon' }, { current_stage: { stage: 1, name: 'Street Moonpet' } }, { include_art_identity: true });
+assert.equal(stageOneInternalArtPet.art_identity_id, null, 'authenticated Stage-1 pets must not expose the future art identity');
+const stageTwoInternalArtPet = serializePet({ ...baseArenaPet, species: 'neon_raccoon' }, { current_stage: { stage: 2, name: 'Cyber Moonpet' } }, { include_art_identity: true });
+assert.equal(stageTwoInternalArtPet.art_identity_id, 'neon_raccoon', 'authenticated Stage-2 pets may expose the internal art identity needed for sprite selection');
+const preservedCallsignPet = serializePet({ ...baseArenaPet, pet_name: 'Cipher', species: 'neon_raccoon' }, { current_stage: { stage: 2, name: 'Cyber Moonpet' } }, { preserve_pet_name: true });
+assert.equal(preservedCallsignPet.pet_name, 'Cipher', 'authenticated Mini App pet state must preserve the stored callsign separately from the masked identity');
 const revealedIdentityPet = serializePet({ ...baseArenaPet, species: 'neon_raccoon' }, { current_stage: { stage: 3, name: 'Elite Moonpet' } });
 assert.equal(revealedIdentityPet.display_name, 'F1 EDDY', 'serialized pets must reveal the canonical identity at Stage 3');
 assert.equal(revealedIdentityPet.pet_name, 'F1 EDDY', 'Stage 3 pet_name must agree with canonical display_name');
@@ -1951,6 +1958,32 @@ function seedAndSwitchRepeatRewardPet(db, telegramId, slotNumber = 2, energy = 7
   return petId;
 }
 
+async function seedMiniAppIdentityPlayer(telegramId, { petName = 'Cipher', evolutionStage = 1, speciesId = 'neon_raccoon' } = {}) {
+  const db = seedRepeatRewardPlayer(telegramId, 100, '2026-08-15T00:00:00.000Z');
+  const phase = evolutionStage >= 2 ? 'adult' : 'young';
+  const stageLabel = evolutionStage >= 2 ? 'cyber_moonpet' : 'street_moonpet';
+  await __petMediaTestHooks.createMoonEggLifecycle(db, telegramId, `fixture:${telegramId}:egg`);
+  db.database.prepare(`UPDATE telegram_pet_profiles
+    SET pet_name=?, species=?, stage=?, updated_at=CURRENT_TIMESTAMP
+    WHERE telegram_id=?`).run(petName, speciesId, phase, telegramId);
+  db.database.prepare(`UPDATE telegram_pet_instances
+    SET pet_name=?, species=?, stage=?, source_profile_updated_at='fixture', updated_at=CURRENT_TIMESTAMP
+    WHERE telegram_id=?`).run(petName, speciesId, stageLabel, telegramId);
+  db.database.prepare(`UPDATE telegram_pet_lifecycle_by_pet
+    SET phase=?, species_id=?, palette_id='fixture_palette', marking_id='spray_mask', eye_style='signal_glow',
+        temperament='bold', innate_traits_json='["collector"]', incubation_progress=12,
+        incubation_json='{"play":1,"care":1,"music":1}', hatched_at=CURRENT_TIMESTAMP,
+        adult_at=CASE WHEN ? >= 2 THEN CURRENT_TIMESTAMP ELSE adult_at END,
+        updated_at=CURRENT_TIMESTAMP
+    WHERE telegram_id=?`).run(phase, speciesId, evolutionStage, telegramId);
+  for (const [evolutionId, stage] of [['moon_egg', 0], ['street_moonpet', 1], ...(evolutionStage >= 2 ? [['cyber_moonpet', 2]] : [])]) {
+    db.database.prepare(`INSERT INTO telegram_pet_evolutions
+      (telegram_id, evolution_id, stage, unlock_event_key, materials_consumed)
+      VALUES (?, ?, ?, ?, 1)`).run(telegramId, evolutionId, stage, `fixture:${telegramId}:${evolutionId}`);
+  }
+  return db;
+}
+
 function buildSignedTelegramAuth(telegramId, botToken = '123456:test-token') {
   const auth = {
     id: String(telegramId),
@@ -2000,6 +2033,31 @@ function identityAuditCounts(db) {
   }
   return counts;
 }
+
+const stageOneMiniAppDb = await seedMiniAppIdentityPlayer('mini-stage-one', { petName: 'Cipher', evolutionStage: 1 });
+const stageOneMiniAppState = await buildPetMiniAppState(stageOneMiniAppDb, 'mini-stage-one', '123456:test-token');
+assert.equal(stageOneMiniAppState.pet.pet_name, 'Cipher', 'Mini App state must preserve the stored callsign for the rename surface');
+assert.equal(stageOneMiniAppState.pet.display_name, 'UNKNOWN', 'Mini App state must still mask the unrevealed identity text');
+assert.equal(stageOneMiniAppState.pet.art_identity_id, null, 'Mini App state must not expose the internal art identity before Stage 2');
+assert.equal(stageOneMiniAppState.lifecycle.art_identity_id, null, 'Mini App lifecycle must not expose the internal art identity before Stage 2');
+
+const stageTwoMiniAppDb = await seedMiniAppIdentityPlayer('mini-stage-two', { petName: 'Nova', evolutionStage: 2 });
+const stageTwoMiniAppState = await buildPetMiniAppState(stageTwoMiniAppDb, 'mini-stage-two', '123456:test-token');
+assert.equal(stageTwoMiniAppState.pet.pet_name, 'Nova', 'Stage-2 Mini App state must keep the stored callsign');
+assert.equal(stageTwoMiniAppState.pet.display_name, 'UNKNOWN', 'Stage-2 Mini App state must still mask the identity text');
+assert.equal(stageTwoMiniAppState.pet.art_identity_id, 'neon_raccoon', 'Stage-2 Mini App state must expose the internal art identity needed for art routing');
+assert.equal(stageTwoMiniAppState.lifecycle.art_identity_id, 'neon_raccoon', 'Stage-2 lifecycle state must expose the internal art identity needed for art routing');
+
+const activityIdentityDb = await seedMiniAppIdentityPlayer('activity-identity', { petName: 'Activity Cipher', evolutionStage: 2 });
+seedAcceptedDailyPetEvent(activityIdentityDb, 'activity-identity', 'activity-identity:train', 18, 4, '2026-08-15');
+const activityIdentityResponse = await moonboysApiWorker.fetch(
+  new Request('https://example.com/telegram-pets/activity?limit=5'),
+  { DB: activityIdentityDb, TELEGRAM_BOT_TOKEN: '123456:test-token' },
+);
+assert.equal(activityIdentityResponse.status, 200, 'activity route must return successfully for seeded regression coverage');
+const activityIdentityBody = await activityIdentityResponse.json();
+assert.equal(activityIdentityBody.items[0].stage, 'cyber_moonpet', 'activity route must preserve the evolved stage after lifecycle materialization');
+assert.equal(activityIdentityBody.items[0].display_name, 'UNKNOWN', 'activity route must keep the Stage-2 identity text masked');
 
 const identityAuditDb = new SqliteD1();
 const identityAuditPet = seedIdentityAuditPet(identityAuditDb, '9001001', 1);

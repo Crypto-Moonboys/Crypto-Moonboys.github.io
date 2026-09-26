@@ -6637,6 +6637,11 @@ function publicMoonpetArtIdentityId(artIdentityId, evolutionStage = 0) {
   return Number(evolutionStage) >= MOONPET_IDENTITY_REVEAL_STAGE ? artIdentityId : null;
 }
 
+function privateMoonpetArtIdentityId(artIdentityId, evolutionStage = 0, includeArtIdentity = false) {
+  if (includeArtIdentity === true && Number(evolutionStage) >= 2) return artIdentityId;
+  return publicMoonpetArtIdentityId(artIdentityId, evolutionStage);
+}
+
 function publicMoonpetLifecycle(lifecycle, options = {}) {
   if (!lifecycle) return null;
   const evolutionStage = Math.max(0, Number(lifecycle.evolution_stage) || 0);
@@ -6653,7 +6658,7 @@ function publicMoonpetLifecycle(lifecycle, options = {}) {
     identity_revealed: revealed,
     species_id: revealed ? artIdentityId : null,
     species_name: revealed ? displayName : MOONPET_UNKNOWN_NAME,
-    art_identity_id: options.include_art_identity === true ? artIdentityId : publicMoonpetArtIdentityId(artIdentityId, evolutionStage),
+    art_identity_id: privateMoonpetArtIdentityId(artIdentityId, evolutionStage, options.include_art_identity),
   };
 }
 
@@ -6664,15 +6669,18 @@ function serializePet(pet, identity = null, options = {}) {
   const evolutionStage = currentEvolution ? Math.max(0, Number(currentEvolution.stage) || 0) : 0;
   const artIdentityId = decayed.species || identity?.lifecycle?.art_identity_id || null;
   const displayName = resolveMoonpetDisplayName({ evolution_stage: evolutionStage, art_identity_id: artIdentityId }, identity || {});
+  const storedPetName = options.preserve_pet_name === true
+    ? String(decayed.pet_name || '').trim() || displayName
+    : displayName;
   return {
     pet_id: decayed.pet_id || null,
     telegram_id: decayed.telegram_id,
     season_key: decayed.season_key || null,
     name: displayName,
-    pet_name: displayName,
+    pet_name: storedPetName,
     display_name: displayName,
     species: evolutionStage >= 3 ? decayed.species : null,
-    art_identity_id: options.include_art_identity === true ? artIdentityId : publicMoonpetArtIdentityId(artIdentityId, evolutionStage),
+    art_identity_id: privateMoonpetArtIdentityId(artIdentityId, evolutionStage, options.include_art_identity),
     stage: currentEvolution?.name || null,
     evolution_id: currentEvolution?.evolution_id || null,
     evolution_stage: evolutionStage,
@@ -9166,7 +9174,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     adventure ? issuePetMiniAppChallenge({ type: 'adventure', telegram_id: telegramId, encounter_key: adventure.key, event_key: adventure.event_key }, botToken) : null,
   ]);
   const serializedLifecycle = publicMoonpetLifecycle(lifecycle, { include_art_identity: true });
-  const canonicalPet = serializePet(petRaw, guidance?.identity, { include_art_identity: true });
+  const canonicalPet = serializePet(petRaw, guidance?.identity, { include_art_identity: true, preserve_pet_name: true });
   canonicalPet.display_name = resolveMoonpetDisplayName(serializedLifecycle || lifecycle || {}, guidance?.identity || {});
   canonicalPet.art_identity_id = serializedLifecycle?.identity_revealed ? serializedLifecycle.art_identity_id : canonicalPet.art_identity_id;
   canonicalPet.species = serializedLifecycle?.identity_revealed ? serializedLifecycle.species_id : null;
@@ -10371,7 +10379,7 @@ export default {
     if (path === '/telegram-pets/activity' && request.method === 'GET') {
       const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '20', 10), 1), 50);
       const rows = await env.DB.prepare(`
-        SELECT e.event_type, e.xp_awarded, e.pet_xp_awarded, e.reason, e.created_at,
+        SELECT e.telegram_id, e.event_type, e.xp_awarded, e.pet_xp_awarded, e.reason, e.created_at,
                p.pet_name, COALESCE(
                  (SELECT pe.evolution_id FROM telegram_pet_evolutions_by_pet pe
                    WHERE pe.telegram_id = e.telegram_id
