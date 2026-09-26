@@ -28,6 +28,8 @@ const HATCH_PROGRESS = 12;
 const DAILY_INCUBATION_CAP = 8;
 const EARLIEST_HATCH_DAYS = 7;
 const GUARANTEED_HATCH_DAYS = 14;
+export const MOONPET_UNKNOWN_NAME = 'UNKNOWN';
+export const MOONPET_IDENTITY_REVEAL_STAGE = 3;
 
 const RARE_ROUTES = Object.freeze([
   { id: 'celestial_serpent', name: 'Celestial Serpent', traits: ['explorer', 'curious'], counters: { exploration_actions: 30, total_runs: 10 } },
@@ -122,6 +124,25 @@ async function readLifecycle(db, telegramId) {
     LIMIT 1`).bind(telegramId).first().catch(() => null);
 }
 
+async function readEvolutionStage(db, row) {
+  if (!row?.pet_id) return 0;
+  const current = await db.prepare('SELECT MAX(stage) AS stage FROM telegram_pet_evolutions_by_pet WHERE pet_id=? AND telegram_id=?')
+    .bind(row.pet_id, row.telegram_id).first().catch(() => null);
+  if (current?.stage != null) return Math.max(0, Number(current.stage) || 0);
+  const legacy = await db.prepare('SELECT MAX(stage) AS stage FROM telegram_pet_evolutions WHERE telegram_id=?')
+    .bind(row.telegram_id).first().catch(() => null);
+  return Math.max(0, Number(legacy?.stage) || 0);
+}
+
+export function resolveMoonpetDisplayName(lifecycle = {}, identity = {}) {
+  const stage = Math.max(0, Number(
+    lifecycle.evolution_stage ?? identity?.current_stage?.stage ?? identity?.stage ?? 0,
+  ) || 0);
+  if (stage < MOONPET_IDENTITY_REVEAL_STAGE) return MOONPET_UNKNOWN_NAME;
+  const speciesId = cleanId(lifecycle.art_identity_id || lifecycle.species_id || identity.species_id || identity.species);
+  return MOONPET_SPECIES[speciesId]?.name || MOONPET_UNKNOWN_NAME;
+}
+
 export async function createMoonEggLifecycle(db, telegramId, eventKey = '') {
   const id = cleanId(telegramId);
   if (!id) throw new Error('invalid_moonpet_lifecycle_owner');
@@ -201,13 +222,13 @@ export function incubationAgeDays(row, now = new Date()) {
   return Number.isFinite(created) && Number.isFinite(current) ? Math.max(0, Math.floor((current - created) / 86400000)) : 0;
 }
 
-function publicLifecycle(row, rare, now = new Date()) {
+function publicLifecycle(row, rare, now = new Date(), evolutionStage = 0) {
   if (!row) return null;
   const incubation = safeJson(row.incubation_json);
-  const revealed = row.phase !== 'egg';
-  const species = revealed ? MOONPET_SPECIES[row.species_id] : null;
-  const innateTraits = revealed ? safeJson(row.innate_traits_json, []) : [];
-  const preferences = revealed ? [...new Set([
+  const hasIdentity = row.phase !== 'egg' && Boolean(MOONPET_SPECIES[row.species_id]);
+  const revealed = hasIdentity && Number(evolutionStage) >= MOONPET_IDENTITY_REVEAL_STAGE;
+  const innateTraits = hasIdentity ? safeJson(row.innate_traits_json, []) : [];
+  const preferences = hasIdentity ? [...new Set([
     row.temperament === 'rhythmic' ? 'play' : row.temperament === 'bold' ? 'train' : row.temperament === 'calm' ? 'sleep' : row.temperament === 'social' ? 'care' : 'explore',
     innateTraits.includes('snack_scout') ? 'feed' : innateTraits.includes('beat_seeker') ? 'play' : innateTraits.includes('alley_brave') ? 'battle' : innateTraits.includes('collector') ? 'expedition' : innateTraits.includes('night_owl') ? 'adventure' : 'bond',
   ])] : [];
@@ -221,10 +242,14 @@ function publicLifecycle(row, rare, now = new Date()) {
   return {
     version: Number(row.lifecycle_version || 1),
     phase: row.phase,
+    evolution_stage: Math.max(0, Number(evolutionStage) || 0),
+    identity_revealed: revealed,
+    display_name: revealed ? MOONPET_SPECIES[row.species_id].name : MOONPET_UNKNOWN_NAME,
+    art_identity_id: hasIdentity ? row.species_id : null,
     species_id: revealed ? row.species_id : null,
-    species_name: species?.name || null,
-    appearance: revealed ? { palette: row.palette_id, marking: row.marking_id, eyes: row.eye_style } : null,
-    temperament: revealed ? row.temperament : null,
+    species_name: revealed ? MOONPET_SPECIES[row.species_id].name : MOONPET_UNKNOWN_NAME,
+    appearance: hasIdentity ? { palette: row.palette_id, marking: row.marking_id, eyes: row.eye_style } : null,
+    temperament: hasIdentity ? row.temperament : null,
     innate_traits: innateTraits,
     preferences,
     incubation: {
@@ -254,7 +279,8 @@ export async function getExistingMoonpetLifecycle(db, telegramId) {
   const daily = await db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_events_by_pet
     WHERE pet_id=? AND action LIKE 'incubate_%' AND day_key=? AND applied_at IS NOT NULL`).bind(row.pet_id, dayKey).first().catch(() => null);
   row.actions_today = Number(daily?.count || 0);
-  return publicLifecycle(row, await rareProgress(db, id, row));
+  const [rare, evolutionStage] = await Promise.all([rareProgress(db, id, row), readEvolutionStage(db, row)]);
+  return publicLifecycle(row, rare, new Date(), evolutionStage);
 }
 
 export async function getMoonpetLifecycle(db, telegramId) {
@@ -265,7 +291,8 @@ export async function getMoonpetLifecycle(db, telegramId) {
   const daily = await db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_events_by_pet
     WHERE pet_id=? AND action LIKE 'incubate_%' AND day_key=?`).bind(row.pet_id, dayKey).first().catch(() => null);
   row.actions_today = Number(daily?.count || 0);
-  return publicLifecycle(row, await rareProgress(db, id, row));
+  const [rare, evolutionStage] = await Promise.all([rareProgress(db, id, row), readEvolutionStage(db, row)]);
+  return publicLifecycle(row, rare, new Date(), evolutionStage);
 }
 
 export async function incubateMoonEgg(db, telegramId, careType, eventKey, now = new Date()) {
@@ -367,7 +394,7 @@ export async function hatchMoonpet(db, telegramId, eventKey, now = new Date()) {
     && Number(results?.[1]?.meta?.changes || 0) === 1
     && Number(results?.[3]?.meta?.changes || 0) === 1;
   if (!won) return { accepted: false, reason: 'hatch_conflict', lifecycle: await getMoonpetLifecycle(db, id) };
-  return { accepted: true, reason: 'moonpet_hatched', species: MOONPET_SPECIES[identity.species_id].name, lifecycle: await getMoonpetLifecycle(db, id) };
+  return { accepted: true, reason: 'moonpet_hatched', species: MOONPET_UNKNOWN_NAME, lifecycle: await getMoonpetLifecycle(db, id) };
 }
 
 export async function syncMoonpetLifecycleStage(db, telegramId, stage) {
@@ -392,7 +419,7 @@ export async function morphMoonpetRare(db, telegramId, eventKey) {
   if (existing) return { accepted: false, reason: 'rare_morph_conflict', lifecycle: await getMoonpetLifecycle(db, id) };
   if (row.phase === 'rare') return { accepted: false, reason: 'rare_morph_complete', lifecycle: await getMoonpetLifecycle(db, id) };
   const progress = await rareProgress(db, id, row);
-  if (!progress.ready) return { accepted: false, reason: 'rare_signal_not_ready', lifecycle: publicLifecycle(row, progress) };
+  if (!progress.ready) return { accepted: false, reason: 'rare_signal_not_ready', lifecycle: await getMoonpetLifecycle(db, id) };
   const route = RARE_ROUTES[Number(row.rare_route_index || 0)];
   const eventId = crypto.randomUUID();
   const results = await db.batch([

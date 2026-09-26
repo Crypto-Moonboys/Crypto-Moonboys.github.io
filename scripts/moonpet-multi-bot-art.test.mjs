@@ -111,7 +111,7 @@ assert.doesNotMatch(html, /moonpet-botty-front-(?:asset-loader|sprite-renderer)\
 assert.doesNotMatch(html, /moonpet-art-v2\.js/);
 
 const client = fs.readFileSync(path.join(root, "js", "moonpet-mini-app.js"), "utf8");
-assert.match(client, /speciesId: String\(lifecycle\.species_id \|\| pet\.species/);
+assert.match(client, /speciesId: String\(lifecycle\.art_identity_id \|\| lifecycle\.species_id \|\| pet\.art_identity_id \|\| pet\.species/);
 assert.match(client, /selectMoonpetBot\(botArtIdentity\(snapshot\)\)/);
 assert.match(client, /drawSelectedBotSprite\(renderTime, animationMode, active/);
 assert.doesNotMatch(client, /drawSideScrollerMoonpetSprite|drawApprovedMoonpetSprite/, "old character render paths must not remain live");

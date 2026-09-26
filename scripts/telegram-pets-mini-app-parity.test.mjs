@@ -700,7 +700,7 @@ assert.match(workerSource, /serializePetLeaderboardEntry\(entry, index\)/, 'Mini
 assert.match(clientSource, /botArtEvolutionStage[\s\S]*lifecycle\.phase \|\| ''\)\.toLowerCase\(\) === 'egg'\) return 0/, 'renderer must route actual eggs to visual Stage 0');
 assert.doesNotMatch(clientSource, /drawMoonEgg/, 'the live client must not retain procedural egg art');
 assert.match(clientSource, /lifecycle: state && state\.lifecycle \|\| \{\}/, 'the EGGYONE role resolver must receive authoritative incubation progress');
-for (const field of ['species_name', 'rare_morph_name', 'moon_gold', 'moon_crystals', 'style_tokens']) {
+for (const field of ['display_name', 'rare_morph_name', 'moon_gold', 'moon_crystals', 'style_tokens']) {
   assert.ok(clientSource.includes(`entry.${field}`), `Mini App leaderboard must render ${field}`);
 }
 

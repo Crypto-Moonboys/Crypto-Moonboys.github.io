@@ -290,6 +290,7 @@ const rareLeaderboardEntry = serializePetLeaderboardEntry({
   stage: 'cyber',
   lifecycle_phase: 'rare',
   lifecycle_species_id: 'neon_raccoon',
+  evolution_stage: 5,
   rare_morph_id: 'graffiti_guardian',
   level: 19,
   pet_xp: 4242,
@@ -303,6 +304,10 @@ assert.deepEqual(rareLeaderboardEntry, {
   pet_name: 'Cipher',
   stage: 'graffiti_guardian',
   phase: 'rare',
+  evolution_stage: 5,
+  identity_revealed: true,
+  display_name: 'F1 EDDY',
+  art_identity_id: 'neon_raccoon',
   species_id: 'neon_raccoon',
   species_name: 'F1 EDDY',
   rare_morph_id: 'graffiti_guardian',
@@ -328,6 +333,7 @@ for (const [speciesId, speciesName] of Object.entries(speciesLabelMap)) {
   const serialized = serializePetLeaderboardEntry({
     lifecycle_phase: 'adult',
     lifecycle_species_id: speciesId,
+    evolution_stage: 3,
   }, 0);
   assert.equal(serialized.species_id, speciesId);
   assert.equal(serialized.species_name, speciesName, `leaderboard serializer must map ${speciesId} to ${speciesName}`);
@@ -342,7 +348,8 @@ const eggLeaderboardEntry = serializePetLeaderboardEntry({
 }, 0);
 assert.equal(eggLeaderboardEntry.species_id, null, 'leaderboard must not reveal an egg species');
 assert.equal(eggLeaderboardEntry.species_name, null, 'leaderboard must not reveal an egg species name');
-assert.match(worker, /display_name: \[row\.first_name, row\.last_name\][\s\S]*'Anonymous'/, 'public pet leaderboard must never fall back to a Telegram ID');
+assert.equal(eggLeaderboardEntry.display_name, 'UNKNOWN', 'leaderboard identity must use the exact locked placeholder');
+assert.match(worker, /player_display_name: \[row\.first_name, row\.last_name\][\s\S]*'Anonymous'/, 'public pet leaderboard must never fall back to a Telegram ID');
 assert.match(worker, /MOONPET_SPECIES, createMoonEggLifecycle, ensureMoonpetLifecycle,/, 'legacy lifecycle materialization dependency must be imported');
 assert.match(worker, /async function materializePetLeaderboardRows/, 'leaderboards must materialize deterministic identities for legacy rows');
 assert.match(worker, /pet_mini_app_state_failed/, 'Mini App state failures must return a controlled JSON error instead of an uncaught fetch failure');
@@ -2237,7 +2244,7 @@ assert.equal(initialSeasonSlots.slots.length, 3, 'season slot summary must alway
 assert.equal(initialSeasonSlots.slots[0].unlocked, true, 'starter slot must be unlocked for existing pet profiles');
 assert.deepEqual(
   Object.keys(initialSeasonSlots.slots[0].pet).sort(),
-  ['cleanliness', 'energy', 'happiness', 'health', 'hunger', 'level', 'name', 'pet_xp', 'progression', 'species', 'stage', 'variant'].sort(),
+  ['art_identity_id', 'cleanliness', 'display_name', 'energy', 'happiness', 'health', 'hunger', 'level', 'name', 'pet_xp', 'progression', 'species', 'stage', 'variant'].sort(),
   'owned slot summaries must expose only the pet-instance fields required by the roster card',
 );
 assert.equal(initialSeasonSlots.slots[0].pet.level >= 1, true, 'owned slot cards must include a valid level');
