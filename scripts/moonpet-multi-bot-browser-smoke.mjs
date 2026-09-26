@@ -181,6 +181,47 @@ try {
   assert.equal(result.staleDrew, false, "character switch must clear stale sprites immediately");
 
   for (const [speciesId, botName] of BOTS) {
+    await page.evaluate((identity) => window.MoonpetBotArtRenderer.selectMoonpetBot(identity), { speciesId, speciesName: botName, evolutionStage: 0 });
+    await page.waitForFunction(() => {
+      const selected = window.MoonpetBotArtRenderer.getMoonpetBotArtRendererState();
+      return selected.ready && selected.resolvedBot === "EGGYONE" && selected.loadedRoles.length === 7;
+    }, null, { timeout: 20000 });
+    const stageZero = await page.evaluate(() => window.MoonpetBotArtRenderer.getMoonpetBotArtRendererState());
+    assert.equal(stageZero.requestedEvolution, "stage_0", `${botName} must request Stage 0`);
+    assert.equal(stageZero.resolvedEvolution, "stage_0", `${botName} must resolve to Stage 0`);
+    assert.equal(stageZero.fallbackUsed, false, `${botName} Stage 0 must not use fallback art`);
+  }
+
+  const eggyoneRenders = await page.evaluate(async () => {
+    const renderer = window.MoonpetBotArtRenderer;
+    const proof = document.getElementById("multi-bot-proof");
+    const context = proof.getContext("2d");
+    const background = await new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = reject;
+      image.src = "/games/assets/BITTY BACKGROUND.jpg";
+    });
+    const cases = [
+      ["idle", 0], ["idle", 8], ["sleep", 0], ["interact", 0],
+      ["feed", 0], ["idle", 11], ["hatch", 12]
+    ];
+    context.drawImage(background, 0, 0, proof.width, proof.height);
+    return cases.map(([mode, progress], index) => {
+      const drew = renderer.renderMoonpetBot(context, mode, 80 + index % 4 * 160, 150 + Math.floor(index / 4) * 220, 0.65, 1000, {
+        active: true,
+        startedAt: 0,
+        lifecycle: { incubation: { progress, target: 12 } }
+      });
+      return { drew, ...renderer.getMoonpetBotArtRendererState().lastRender };
+    });
+  });
+  assert.deepEqual(eggyoneRenders.map((entry) => entry.role), ["egg_idle", "egg_wobble", "egg_sleep", "egg_react", "egg_care", "egg_breakout", "egg_hatch"]);
+  assert.ok(eggyoneRenders.every((entry) => entry.drew && entry.frameCount === 25 && entry.resolvedBot === "EGGYONE"));
+  assert.ok(eggyoneRenders.every((entry) => Math.abs(entry.sourceAspect - entry.drawAspect) < 1e-9), "EGGYONE frames must preserve aspect ratio");
+  await page.locator("#multi-bot-proof").screenshot({ path: path.join(OUTPUT, "eggyone-stage0-seven-roles.png") });
+
+  for (const [speciesId, botName] of BOTS) {
     for (let evolutionStage = 1; evolutionStage <= 5; evolutionStage += 1) {
       const expectedBot = evolutionStage === 1 && STREET_READY ? STREET_BOT : botName;
       const selection = await selectAndWaitForPack(page, { speciesId, speciesName: botName, evolutionStage }, expectedBot);

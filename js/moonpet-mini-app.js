@@ -34,10 +34,16 @@
   var animationUntil = 0;
   var actionSequence = 0;
   var reducedMotionAnimationTimer = 0;
+  var hatchArtTransitionUntil = 0;
+  var hatchArtTransitionTimer = 0;
+  var hatchStageOnePreloadPromise = null;
   var actionResultHoldMs = 3600;
   var actionStartedAt = 0;
   var sleepLatched = false;
   var SLEEP_LATCH_STORAGE_KEY = 'moonpet-botty-sleep-latch-v1';
+  var stageZeroBackgroundImage = null;
+  var stageZeroBackgroundReady = false;
+  var STAGE_ZERO_BACKGROUND_URL = '/games/assets/BITTY BACKGROUND.jpg';
   var cameraImpactUntil = 0;
   var cameraImpactStrength = 0;
   var lifecycleCeremony = null;
@@ -111,7 +117,12 @@
 
   function currentPetSleepKey(snapshot) {
     var pet = snapshot && snapshot.pet || {};
-    return String(pet.pet_id || pet.id || '');
+    var activeSlot = snapshot && snapshot.season_slots && Array.isArray(snapshot.season_slots.slots)
+      ? snapshot.season_slots.slots.find(function (slot) { return slot && slot.active; }) || {} : {};
+    var lifecycle = snapshot && snapshot.lifecycle || {};
+    var seasonKey = snapshot && snapshot.season && (snapshot.season.key || snapshot.season.season_key)
+      || snapshot && snapshot.season_key || activeSlot.season_key || 'current';
+    return String(pet.pet_id || pet.id || activeSlot.pet_id || (lifecycle.phase === 'egg' ? 'stage0:' + seasonKey : ''));
   }
 
   function readSleepLatch(snapshot) {
@@ -737,7 +748,7 @@
     var combatGuideCopy = hasCombatUnlocked()
       ? 'Arena and Kaiju are part of the current build. Arena still needs a level 10 active Moonpet.'
       : 'Arena and Kaiju are current-build systems. Kaiju requires a hatched active Moonpet, and Arena requires a hatched active Moonpet plus level 10.';
-    return '<div class="guide-step"><strong>1 // WAKE THE EGG</strong>Initialise your Moon Egg, then use at least three kinds of incubation care. Your care pattern shapes the hatch.</div>' +
+    return '<div class="guide-step"><strong>1 // WAKE THE SECRET BOT</strong>Initialise your Secret Bot, then use at least three kinds of care. Your care pattern shapes the reveal.</div>' +
       '<div class="guide-step"><strong>2 // PLAY THE CURRENT BUILD</strong>PET handles care, TASKS tracks Daily Journey and Weekly Journey, WORK covers jobs and timers, and RUN handles bosses plus Moon Run.</div>' +
       '<div class="guide-step"><strong>3 // KEEP NEEDS STABLE</strong>Feed, play, clean and rest. Training, care and daily routines build Pet XP, specialist XP, personality, aptitudes and equipment mastery.</div>' +
       '<div class="guide-step"><strong>4 // FOLLOW THE ROUTE</strong>The PET screen recommends the best next move. Daily Journey, Weekly Journey, missions and achievements are current gameplay priorities.</div>' +
@@ -750,7 +761,7 @@
 
   function leaderboardRowsMarkup(entries, self, period) {
     var rows = (entries || []).map(function (entry) {
-      var form = entry.phase === 'rare' ? entry.rare_morph_name : entry.species_name || (entry.phase === 'egg' ? 'Moon Egg' : entry.stage);
+      var form = entry.phase === 'rare' ? entry.rare_morph_name : entry.species_name || (entry.phase === 'egg' ? 'Secret Bot' : entry.stage);
       var metric = period === 'run_depth' ? number(entry.pet_xp) + ' ROOMS' : number(entry.pet_xp) + ' XP';
       return '<div class="leader-row' + (entry.is_current ? ' is-current' : '') + '"><strong>#' + number(entry.rank) + ' ' + escapeHtml(entry.pet_name || 'MOONPET') + (entry.is_current ? ' // YOU' : '') + '</strong><div class="line">' + escapeHtml(words(form || 'moonpet')) + ' // LVL ' + number(entry.level) + ' // ' + metric + '</div></div>';
     }).join('');
@@ -1184,8 +1195,8 @@
     var progressionLifecycle = progression.lifecycle || {};
     var phase = String(authoritativeLifecycle.phase || progressionLifecycle.phase || '').toLowerCase();
     var evolutionReady = Boolean(authoritativeLifecycle.evolution_ready || progressionLifecycle.evolution_ready);
-    if (!state || !state.adopted || !state.pet) return 'Initialise a Moon Egg to begin.';
-    if (phase === 'egg') return authoritativeLifecycle.incubation && authoritativeLifecycle.incubation.ready ? 'HATCH MOONPET to wake your first companion.' : 'Incubate your Moon Egg until the hatch signal is ready.';
+    if (!state || !state.adopted || !state.pet) return 'Initialise a Secret Bot to begin.';
+    if (phase === 'egg') return authoritativeLifecycle.incubation && authoritativeLifecycle.incubation.ready ? 'REVEAL BOT to wake your first companion.' : 'Care for your Secret Bot until the breakout signal is ready.';
     if (seasonSlots.unavailable) return 'Season slot authority is syncing. Active Moonpet guidance will refresh when server authority is available.';
     if (!slot.pet_id) return 'Pick an active seasonal Moonpet before journey progress starts.';
     if (evolutionReady) return 'Evolve your active Moonpet when you are ready.';
@@ -1214,17 +1225,17 @@
   function homeNextLine(next) {
     var lifecycle = state && state.lifecycle || {};
     var incubation = lifecycle.incubation || {};
-    if (!state || !state.adopted) return 'Initialise a Moon Egg to begin.';
+    if (!state || !state.adopted) return 'Initialise a Secret Bot to begin.';
     if (lifecycle.phase === 'egg') {
-      return incubation.ready ? 'HATCH MOONPET to wake your first companion.' : 'Incubate with care signals until the hatch signal is ready.';
+      return incubation.ready ? 'REVEAL BOT to wake your first companion.' : 'Build care signals until the breakout signal is ready.';
     }
     return next && next.title ? String(next.title) : 'Keep needs stable and follow the recommended route.';
   }
 
   function exploreNextLine() {
     var firstSession = firstSessionPhase();
-    if (firstSession === 'unadopted') return 'Initialise a Moon Egg to begin.';
-    if (firstSession === 'egg') return 'Incubate or HATCH MOONPET before Explore actions open.';
+    if (firstSession === 'unadopted') return 'Initialise a Secret Bot to begin.';
+    if (firstSession === 'egg') return 'Care for or REVEAL BOT before Explore actions open.';
     if (state && state.run) return 'Resolve the visible Moon Run room or extract to bank rewards.';
     var boss = state && state.guidance && state.guidance.weekly_boss || {};
     var weekly = state && state.weekly_journey || {};
@@ -1256,14 +1267,14 @@
       : kaijuQueue ? button('CANCEL QUEUE', 'kaiju_queue_cancel', {}, { danger: true }) : '';
     var copy = phase === 'unadopted'
       ? {
-        district: 'Initialise a Moon Egg before district routes, bosses, Arena, Kaiju, or pet work open.',
+        district: 'Initialise a Secret Bot before district routes, bosses, Arena, Kaiju, or pet work open.',
         run: 'Moon Run opens after you have a hatched active Moonpet.',
         journey: 'Journey progress starts after you have a hatched active Moonpet.',
       }
       : {
-        district: 'Your Moon Egg is still forming. Incubate it before district routes, bosses, Arena, Kaiju, or pet work open.',
-        run: 'Moon Run opens after HATCH MOONPET creates an active companion.',
-        journey: 'Journey progress starts after hatching, when server authority can bind objectives to the active pet.',
+        district: 'Your Secret Bot is still forming. Care for it before district routes, bosses, Arena, Kaiju, or pet work open.',
+        run: 'Moon Run opens after REVEAL BOT creates an active companion.',
+        journey: 'Journey progress starts after the reveal, when server authority can bind objectives to the active pet.',
       };
     var arenaBody = '<div class="line locked">ACTIVE HATCHED MOONPET REQUIRED.</div><div class="line muted">' + escapeHtml(copy.district) + '</div>' +
       (arenaCleanup ? '<div class="line muted">STALE ARENA STATE DETECTED. CLEANUP IS AVAILABLE.</div><div class="button-grid one">' + arenaCleanup + '</div>' : '');
@@ -1284,15 +1295,15 @@
 
   function renderHome() {
     if (!state.adopted) {
-      return panel('DORMANT MOON EGG', '<div class="line">NO COMPANION RECORD FOUND.</div><div class="line muted">NEXT // ' + escapeHtml(homeNextLine()) + '</div><div class="button-grid one">' + button('INITIALISE MOONPET', 'adopt') + '</div>');
+      return panel('DORMANT SECRET BOT', '<div class="line">NO COMPANION RECORD FOUND.</div><div class="line muted">NEXT // ' + escapeHtml(homeNextLine()) + '</div><div class="button-grid one">' + button('INITIALISE MOONPET', 'adopt') + '</div>');
     }
     var pet = state.pet;
     var lifecycle = state.lifecycle || {};
     var incubation = lifecycle.incubation || {};
     if (lifecycle.phase === 'egg') {
       var signals = incubation.signals || {};
-      return '<div class="ticker"><span>MOON EGG // SIGNAL ' + number(incubation.progress) + '/' + number(incubation.target) + ' // IDENTITY FORMING //</span></div>' +
-        panel('INCUBATION CHAMBER', '<div class="line complete">THE EGG REMEMBERS HOW YOU TREAT IT.</div><div class="line muted">NEXT // ' + escapeHtml(homeNextLine()) + '</div><div class="line muted">Use at least three types of care. Your pattern shapes the hatch; no species odds are exposed.</div>' + meter('HATCH SIGNAL', Number(incubation.progress || 0) / Math.max(1, Number(incubation.target || 12)) * 100) + '<div class="line">WARM ' + number(signals.warm) + ' // TALK ' + number(signals.talk) + ' // MUSIC ' + number(signals.music) + ' // REST ' + number(signals.rest) + '</div><div class="button-grid">' + button('WARM EGG', 'incubate', { care_type: 'warm' }) + button('TALK TO EGG', 'incubate', { care_type: 'talk' }) + button('PLAY A BEAT', 'incubate', { care_type: 'music' }) + button('LET IT REST', 'incubate', { care_type: 'rest' }) + '</div><div class="button-grid one">' + button('HATCH MOONPET', 'hatch', {}, { disabled: !incubation.ready, eggRequired: !incubation.ready }) + '</div><div class="line muted">DAILY SIGNALS ' + number(incubation.actions_today) + '/' + number(incubation.daily_cap) + '</div>', 'incubation') +
+      return '<div class="ticker"><span>SECRET BOT // SIGNAL ' + number(incubation.progress) + '/' + number(incubation.target) + ' // IDENTITY FORMING //</span></div>' +
+        panel('SECRET BOT CHAMBER', '<div class="line complete">THE SECRET BOT REMEMBERS HOW YOU TREAT IT.</div><div class="line muted">NEXT // ' + escapeHtml(homeNextLine()) + '</div><div class="line muted">Use at least three types of care. Your pattern shapes the reveal; no species odds are exposed.</div>' + meter('BREAKOUT SIGNAL', Number(incubation.progress || 0) / Math.max(1, Number(incubation.target || 12)) * 100) + '<div class="line">WARM ' + number(signals.warm) + ' // TALK ' + number(signals.talk) + ' // MUSIC ' + number(signals.music) + ' // REST ' + number(signals.rest) + '</div><div class="button-grid">' + button('WARM BOT', 'incubate', { care_type: 'warm' }) + button('TALK TO BOT', 'incubate', { care_type: 'talk' }) + button('PLAY A BEAT', 'incubate', { care_type: 'music' }) + button('LET IT REST', 'incubate', { care_type: 'rest' }) + '</div><div class="button-grid one">' + button('REVEAL BOT', 'hatch', {}, { disabled: !incubation.ready, eggRequired: !incubation.ready }) + '</div><div class="line muted">DAILY SIGNALS ' + number(incubation.actions_today) + '/' + number(incubation.daily_cap) + '</div>', 'incubation') +
         renderSeasonSlots();
     }
     var next = state.next || {};
@@ -1332,15 +1343,17 @@
     return stateRequestGate.begin();
   }
 
-  function setStateSnapshot(nextState, requestGeneration) {
+  function setStateSnapshot(nextState, requestGeneration, options) {
     if (!nextState || !stateRequestGate.isCurrent(requestGeneration)) return false;
     var serverTime = Date.parse(nextState.server_time || nextState.cooldowns && nextState.cooldowns.server_time || '');
     if (Number.isFinite(serverTime)) serverClockOffsetMs = serverTime - Date.now();
     state = nextState;
     sleepLatched = readSleepLatch(state);
-    selectBotArtForState(state).catch(function (error) {
-      console.info('[Moonpet] bot art selection failed', error);
-    });
+    if (!(options && options.deferBotArtSelection) && !hatchArtTransitionActive()) {
+      selectBotArtForState(state).catch(function (error) {
+        console.info('[Moonpet] bot art selection failed', error);
+      });
+    }
     seasonSnapshotReceivedAt = performance.now();
     lastSeasonServerRefreshAt = seasonSnapshotReceivedAt;
     scheduleCooldownRefresh();
@@ -1857,7 +1870,7 @@
     var leaders = (state.leaderboard || []).map(function (entry) {
       var form = entry.phase === 'rare'
         ? entry.rare_morph_name
-        : entry.species_name || (entry.phase === 'egg' ? 'Moon Egg' : entry.stage);
+        : entry.species_name || (entry.phase === 'egg' ? 'Secret Bot' : entry.stage);
       return '<div class="line">#' + number(entry.rank) + ' ' + escapeHtml(entry.pet_name || 'MOONPET') +
         ' // ' + escapeHtml(words(form || 'moonpet')) + ' // LVL ' + number(entry.level) + ' // ' + number(entry.pet_xp) + ' XP</div>' +
         '<div class="line muted">GOLD ' + number(entry.moon_gold) + ' // GEMS ' + number(entry.moon_crystals) +
@@ -2216,11 +2229,11 @@
     var after = lifecycleStateSnapshot(afterState);
     var actionKey = String(action || '').toLowerCase();
     if (actionKey === 'adopt' && !before.adopted && after.phase === 'egg') {
-      return { kind: 'egg', title: 'NEW MOON EGG', primary: 'Ready for care', secondary: 'Your choices shape what hatches', detail: '', duration: 5200 };
+      return { kind: 'egg', title: 'SECRET BOT', primary: 'Ready for care', secondary: 'Your choices shape the reveal', detail: '', duration: 5200 };
     }
     if (before.phase === 'egg' && after.phase === 'young' && after.speciesId) {
       return {
-        kind: 'hatch', title: 'HATCHED', primary: after.speciesName,
+        kind: 'hatch', title: 'REVEALED', primary: after.speciesName,
         secondary: words(after.temperament || 'forming') + ' temperament',
         detail: [after.marking].concat(after.traits).filter(Boolean).map(words).join(' - '), duration: 7600,
       };
@@ -2241,7 +2254,7 @@
     }
     if (actionKey === 'incubate' && after.phase === 'egg' && after.progress > before.progress) {
       return {
-        kind: 'signal', title: 'EGG CARE', primary: after.progress + '/' + after.target,
+        kind: 'signal', title: after.progress / after.target >= 0.9 ? 'BREAKOUT' : 'SECRET BOT CARE', primary: after.progress + '/' + after.target,
         secondary: words(result.care_type || 'care') + ' progress', detail: '',
         progress: after.progress, target: after.target, duration: 4200,
       };
@@ -2320,7 +2333,8 @@
     if (/feed|use_item/.test(key)) return 'feed';
     if (/play/.test(key)) return 'play';
     if (/clean/.test(key)) return 'clean';
-    if (/hatch|rare_morph/.test(key)) return 'evolve';
+    if (/hatch/.test(key)) return 'hatch';
+    if (/rare_morph/.test(key)) return 'evolve';
     if (/incubate/.test(key)) return String(payload && payload.care_type || '') === 'music' ? 'play' : String(payload && payload.care_type || '') === 'rest' ? 'sleep' : 'interact';
     if (/sleep|rest/.test(key)) return 'sleep';
     if (/train/.test(key)) return 'train';
@@ -2363,6 +2377,40 @@
     }
   }
 
+  function hatchArtTransitionActive(time) {
+    return hatchArtTransitionUntil > Number(time == null ? performance.now() : time);
+  }
+
+  function hatchAnimationDuration() {
+    var asset = botArtRendererState && botArtRendererState.assetsByRole && botArtRendererState.assetsByRole.egg_hatch;
+    var frameCount = Math.max(1, Number(asset && asset.frame_count || asset && asset.frames && asset.frames.length || 25));
+    var fps = Math.max(1, Number(asset && asset.fps || 12));
+    return Math.ceil(frameCount / fps * 1000);
+  }
+
+  function startHatchArtTransition(duration, nextSnapshot) {
+    window.clearTimeout(hatchArtTransitionTimer);
+    var transitionDuration = Math.max(1, Number(duration || hatchAnimationDuration()));
+    hatchArtTransitionUntil = performance.now() + transitionDuration;
+    hatchStageOnePreloadPromise = window.MoonpetBotArtLoader
+      ? window.MoonpetBotArtLoader.loadMoonpetBotArt(botArtIdentity(nextSnapshot)).catch(function (error) {
+        console.info('[Moonpet] Stage 1 art preload failed', error);
+      })
+      : Promise.resolve();
+    hatchArtTransitionTimer = window.setTimeout(async function () {
+      hatchArtTransitionUntil = Number.POSITIVE_INFINITY;
+      await hatchStageOnePreloadPromise;
+      hatchArtTransitionUntil = 0;
+      animationUntil = 0;
+      animationMode = sleepLatched ? 'sleep' : 'idle';
+      selectBotArtForState(state).catch(function (error) {
+        console.info('[Moonpet] Stage 1 art selection failed after reveal', error);
+      });
+      if (reducedMotion) drawWorld(performance.now());
+    }, transitionDuration + 20);
+    return transitionDuration;
+  }
+
   async function runAction(action, payload, buttonElement) {
     if (busy) return;
     if (lifecycleCeremonyActive()) {
@@ -2383,7 +2431,16 @@
       var requestGeneration = beginStateRequest();
       var data = await post('/telegram-pets/app/action', Object.assign({ action: action, request_id: crypto.randomUUID() }, payload || {}));
       var responseState = mergeActionResultCooldown(data.state, data.result, action);
-      if (!setStateSnapshot(responseState, requestGeneration)) return;
+      var actionAccepted = Boolean(data.result && data.result.accepted);
+      var beforePhase = String(stateBeforeAction && stateBeforeAction.lifecycle && stateBeforeAction.lifecycle.phase || '');
+      var afterPhase = String(responseState && responseState.lifecycle && responseState.lifecycle.phase || '');
+      var isHatchReveal = actionAccepted && beforePhase === 'egg' && afterPhase !== 'egg' && actionAnimationFamily(action, payload) === 'hatch';
+      var hatchDuration = isHatchReveal ? startHatchArtTransition(hatchAnimationDuration(), responseState) : 0;
+      if (!setStateSnapshot(responseState, requestGeneration, { deferBotArtSelection: isHatchReveal })) return;
+      if (isHatchReveal) {
+        animateAction(action, true, hatchDuration + 250, payload);
+        animationUntil = Number.POSITIVE_INFINITY;
+      }
       var nextState = state;
       var plannedCeremony = planLifecycleCeremony(stateBeforeAction, nextState, action, data.result);
       var message = resultMessage(data.result, stateBeforeAction, nextState);
@@ -2391,10 +2448,9 @@
       haptic(data.result && data.result.accepted ? 'success' : 'error');
       render({ discardCallsignDraft: action === 'rename' && Boolean(data.result && data.result.accepted) });
       await showPendingNotices();
-      var actionAccepted = Boolean(data.result && data.result.accepted);
       var actionFamily = actionAnimationFamily(action, payload);
       if (actionFamily === 'sleep') setSleepLatch(actionAccepted);
-      animateAction(action, actionAccepted, 2800, payload);
+      if (!isHatchReveal) animateAction(action, actionAccepted, 2800, payload);
       startLifecycleCeremony(plannedCeremony);
     } catch (error) {
       animateAction('blocked', false, 2800);
@@ -2785,26 +2841,12 @@
   };
   var DEFAULT_PET_PALETTE = createPetPalette('#a9ff9a', '#4ea85a', '#f4ff65');
 
-  function drawMoonEgg(time, active, incubation) {
-    var progress = Math.max(0, Number(incubation && incubation.progress || 0));
-    var target = Math.max(1, Number(incubation && incubation.target || 12));
-    var crack = Math.min(2, Math.floor(progress / target * 3));
-    var eggY = 150 + (active ? -Math.abs(Math.round(Math.sin(time / 100) * 5)) : Math.round(Math.sin(time / 340) * 2));
-    drawPixelRect(134, eggY - 48, 52, 57, '#061009');
-    drawPixelRect(138, eggY - 44, 44, 49, '#d8f9ff');
-    drawPixelRect(142, eggY - 38, 8, 10, '#61f5ff'); drawPixelRect(174, eggY - 23, 6, 12, '#f6a7ff');
-    drawPixelRect(147, eggY - 18, 7, 6, '#061009'); drawPixelRect(167, eggY - 18, 7, 6, '#061009');
-    drawPixelRect(157, eggY - 9, 8, 3, '#061009');
-    if (crack > 0) { drawPixelRect(158, eggY - 47, 4, 12, '#061009'); drawPixelRect(161, eggY - 38, 8, 4, '#061009'); }
-    if (crack > 1) { drawPixelRect(151, eggY - 34, 11, 4, '#061009'); drawPixelRect(148, eggY - 30, 4, 9, '#061009'); }
-    drawPixelRect(128, eggY + 5, 64, 11, '#6eb8a1'); drawPixelRect(134, eggY + 8, 52, 7, '#d8f9ff');
-  }
-
   function drawSelectedBotSprite(time, mode, active, x, y, scale) {
     if (!botArtModeEnabled || !botArtRendererReady || !window.MoonpetBotArtRenderer) return false;
     var drew = window.MoonpetBotArtRenderer.renderMoonpetBot(ctx, mode, x, y, scale, time, {
       active: active,
-      startedAt: active ? actionStartedAt : 0
+      startedAt: active ? actionStartedAt : 0,
+      lifecycle: state && state.lifecycle || {}
     });
     botArtRendererState = window.MoonpetBotArtRenderer.getMoonpetBotArtRendererState();
     if (!drew && !botArtFallbackLogged) {
@@ -2816,14 +2858,8 @@
 
   function drawPet(time) {
     var pet = state && state.pet;
-    var lifecycle = state && state.lifecycle || {};
     var renderTime = reducedMotion ? performance.now() : time;
     var active = sleepLatched || animationUntil > renderTime;
-    if (lifecycle.phase === 'egg') {
-      drawMoonEgg(time, active, lifecycle.incubation);
-      return;
-    }
-
     var x = BOT_RENDER_CENTER_X;
     var y = BOT_RENDER_BASELINE_Y;
     if (drawSelectedBotSprite(renderTime, animationMode, active, x, y, 1)) return;
@@ -3048,13 +3084,51 @@
     }
   }
 
+  function stageZeroPresentationActive(time) {
+    var phase = String(state && state.lifecycle && state.lifecycle.phase || '');
+    return phase === 'egg' || hatchArtTransitionActive(time);
+  }
+
+  function ensureStageZeroBackground() {
+    if (stageZeroBackgroundImage) return;
+    stageZeroBackgroundImage = new Image();
+    stageZeroBackgroundImage.decoding = 'async';
+    stageZeroBackgroundImage.onload = function () {
+      stageZeroBackgroundReady = true;
+      if (reducedMotion) drawWorld(performance.now());
+    };
+    stageZeroBackgroundImage.onerror = function () {
+      stageZeroBackgroundReady = false;
+      console.info('[Moonpet] Stage 0 background failed to load');
+    };
+    stageZeroBackgroundImage.src = STAGE_ZERO_BACKGROUND_URL;
+  }
+
+  function drawStageZeroBackground() {
+    drawPixelRect(0, 0, 320, 220, '#03040d');
+    ensureStageZeroBackground();
+    if (!stageZeroBackgroundReady) return;
+    var sourceWidth = Math.max(1, stageZeroBackgroundImage.naturalWidth || stageZeroBackgroundImage.width);
+    var sourceHeight = Math.max(1, stageZeroBackgroundImage.naturalHeight || stageZeroBackgroundImage.height);
+    var scale = Math.max(320 / sourceWidth, 220 / sourceHeight);
+    var cropWidth = 320 / scale;
+    var cropHeight = 220 / scale;
+    ctx.drawImage(stageZeroBackgroundImage, (sourceWidth - cropWidth) / 2, (sourceHeight - cropHeight) / 2, cropWidth, cropHeight, 0, 0, 320, 220);
+  }
+
   // TEST-EXPORT: drawWorld:start
   function drawWorld(time) {
     var renderTime = reducedMotion ? performance.now() : time;
     var camera = updateCameraFrame(renderTime);
     updateCombatPresentation(state);
 
-    drawRetroSpaceBackground(renderTime);
+    if (stageZeroPresentationActive(renderTime)) {
+      backgroundArtState = { mode: 'stage0_secret_bot', source: STAGE_ZERO_BACKGROUND_URL };
+      drawStageZeroBackground();
+    } else {
+      backgroundArtState = { mode: 'retro_space_loop', loop_ms: 20000, source: 'canvas' };
+      drawRetroSpaceBackground(renderTime);
+    }
 
     ctx.save();
     ctx.translate(160 + camera.x, 110 + camera.y);
@@ -3157,7 +3231,7 @@
         render();
       }
       if (radioEnabled) setRadioEnabled(true, false);
-      tell(state.adopted ? 'LIVE SAVE LOADED. CHOOSE A ROUTINE.' : 'MOON EGG READY FOR INITIALISATION.');
+      tell(state.adopted ? 'LIVE SAVE LOADED. CHOOSE A ROUTINE.' : 'SECRET BOT READY FOR INITIALISATION.');
       await typeBoot(['SIGNATURE VERIFIED', 'PLAYER SAVE LOADED', 'MOONPET OS READY'], { speed: 8, hold: 320 });
       await showPendingNotices();
       applyRequestedFocus();

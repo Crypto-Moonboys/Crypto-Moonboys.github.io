@@ -78,7 +78,10 @@
     return snapshot();
   }
 
-  function roleForAnimationMode(animationMode, active) {
+  function roleForAnimationMode(animationMode, active, options = {}) {
+    if (state.requestedEvolution === "stage_0" && window.MoonpetBotArtLoader) {
+      return window.MoonpetBotArtLoader.eggRoleForAnimationMode(active === false ? "idle" : animationMode, options.lifecycle || {});
+    }
     if (!active) return state.roleMap.idle || "front_idle";
     return state.roleMap[animationMode] || state.roleMap.interact || state.roleMap.idle || "front_idle";
   }
@@ -96,7 +99,7 @@
 
   function renderMoonpetBot(ctx, animationMode, x, y, scale = 1, time, options = {}) {
     if (!enabled() || !state.ready) return false;
-    const requestedRole = roleForAnimationMode(animationMode, options.active !== false);
+    const requestedRole = roleForAnimationMode(animationMode, options.active !== false, options);
     const idleRole = state.roleMap.idle || "front_idle";
     const role = state.assetsByRole[requestedRole] ? requestedRole : idleRole;
     const asset = state.assetsByRole[role];

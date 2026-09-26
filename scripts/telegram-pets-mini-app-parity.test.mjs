@@ -697,8 +697,9 @@ const workerSource = fs.readFileSync(new URL('../workers/moonboys-api/worker.js'
 const clientSource = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
 assert.match(workerSource, /LEFT JOIN telegram_pet_lifecycle_by_pet l ON l\.telegram_id = p\.telegram_id/, 'Mini App leaderboard must join persisted lifecycle identity');
 assert.match(workerSource, /serializePetLeaderboardEntry\(entry, index\)/, 'Mini App leaderboard must use the canonical privacy-safe serializer');
-assert.match(clientSource, /if \(lifecycle\.phase === 'egg'\) \{/, 'renderer must route actual eggs separately from formal evolution stage');
-assert.match(clientSource, /drawMoonEgg\(time, active, lifecycle\.incubation\)/, 'only the egg lifecycle branch may render the dedicated Moon Egg with real incubation progress');
+assert.match(clientSource, /botArtEvolutionStage[\s\S]*lifecycle\.phase \|\| ''\)\.toLowerCase\(\) === 'egg'\) return 0/, 'renderer must route actual eggs to visual Stage 0');
+assert.doesNotMatch(clientSource, /drawMoonEgg/, 'the live client must not retain procedural egg art');
+assert.match(clientSource, /lifecycle: state && state\.lifecycle \|\| \{\}/, 'the EGGYONE role resolver must receive authoritative incubation progress');
 for (const field of ['species_name', 'rare_morph_name', 'moon_gold', 'moon_crystals', 'style_tokens']) {
   assert.ok(clientSource.includes(`entry.${field}`), `Mini App leaderboard must render ${field}`);
 }

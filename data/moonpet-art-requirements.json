@@ -5,17 +5,20 @@
     "shared_street_stage_packs_complete": 1,
     "evolution_master_designs_pending": 32,
     "rare_morph_backgrounds_pending": 32,
-    "moon_egg_art_sets_pending": 1,
+    "moon_egg_art_sets_pending": 0,
     "generated_art_in_this_change": 0
   },
   "stage_art": {
     "stage_0": {
       "stage": 0,
-      "name": "Moon Egg",
-      "status": "authored_art_required",
+      "name": "Secret Bot",
+      "character_name": "EGGYONE",
+      "autosprite_character_id": "cmui5g9430007v27qp8scqirq",
+      "status": "complete",
       "required_roles": 7,
       "registry_path": "/data/moonpet-egg-art-registry.json",
-      "current_fallback": "TEMPORARY LEGACY EGG FALLBACK"
+      "manifest_path": "/data/moonpet-eggyone-stage0-assets.json",
+      "current_fallback": null
     },
     "stage_1": {
       "stage": 1,
@@ -428,19 +431,22 @@
   ],
   "moon_egg_art": {
     "key": "moon_egg",
-    "status": "authored_art_required",
+    "status": "complete",
+    "character_name": "EGGYONE",
+    "autosprite_character_id": "cmui5g9430007v27qp8scqirq",
     "required_roles": [
       "egg_idle",
       "egg_wobble",
       "egg_sleep",
       "egg_react",
       "egg_care",
-      "egg_crack",
+      "egg_breakout",
       "egg_hatch"
     ],
     "registry_path": "/data/moonpet-egg-art-registry.json",
     "audit_path": "/data/moonpet-egg-art-audit.json",
-    "current_fallback": "TEMPORARY LEGACY EGG FALLBACK"
+    "manifest_path": "/data/moonpet-eggyone-stage0-assets.json",
+    "current_fallback": null
   },
   "item_art_registry": "/data/moonpet-item-art-registry.json",
   "item_art_requirements": [

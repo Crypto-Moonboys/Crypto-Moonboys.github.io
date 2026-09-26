@@ -87,7 +87,7 @@
     const progress = Math.max(0, Number(incubation.progress || 0));
     const target = Math.max(1, Number(incubation.target || 12));
     const ratio = progress / target;
-    if (ratio >= 0.9) return "egg_crack";
+    if (ratio >= 0.9) return "egg_breakout";
     if (ratio >= 0.66) return "egg_wobble";
     return "egg_idle";
   }
@@ -123,7 +123,7 @@
     if (requestedEvolution === "stage_0") {
       const egg = registry.egg_art || {};
       return {
-        requestedBot, resolvedBot: egg.character_name || "MOON EGG", config: egg, fallbackUsed: egg.status !== "complete",
+        requestedBot, resolvedBot: egg.character_name || "EGGYONE", config: egg, fallbackUsed: egg.status !== "complete",
         requestedEvolution, resolvedEvolution: "stage_0", evolutionFallbackUsed: false, artKind: "egg",
         baseConfig: null, defaultBot, defaultConfig: packConfig(defaultConfig, defaultBase)
       };

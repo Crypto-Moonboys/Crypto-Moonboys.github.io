@@ -1,21 +1,19 @@
 {
   "schema_version": 1,
   "stage": 0,
-  "stage_name": "Moon Egg",
-  "status": "authored_art_required",
-  "production_manifest_path": null,
-  "current_fallback": {
-    "type": "procedural_canvas",
-    "status": "temporary",
-    "label": "TEMPORARY LEGACY EGG FALLBACK"
-  },
+  "stage_name": "Secret Bot",
+  "character_name": "EGGYONE",
+  "autosprite_character_id": "cmui5g9430007v27qp8scqirq",
+  "status": "complete",
+  "production_manifest_path": "/data/moonpet-eggyone-stage0-assets.json",
+  "current_fallback": null,
   "required_roles": [
     "egg_idle",
     "egg_wobble",
     "egg_sleep",
     "egg_react",
     "egg_care",
-    "egg_crack",
+    "egg_breakout",
     "egg_hatch"
   ],
   "runtime_role_map": {
@@ -27,18 +25,18 @@
     "greet": "egg_react",
     "sleep": "egg_sleep",
     "wobble": "egg_wobble",
-    "crack": "egg_crack",
+    "breakout": "egg_breakout",
     "hatch": "egg_hatch",
     "evolve": "egg_hatch"
   },
   "progression_policy": {
     "wobble_from_progress_ratio": 0.66,
-    "crack_from_progress_ratio": 0.9,
+    "breakout_from_progress_ratio": 0.9,
     "hatch_is_one_shot": true,
     "unsupported_actions": "remain unavailable through gameplay rules"
   },
   "transition": [
-    "egg_crack",
+    "egg_breakout",
     "egg_hatch",
     "stage_1_shared_street_moonpet"
   ]

@@ -24,11 +24,11 @@ assert.equal(Object.keys(botRegistry.bots).length, 8);
 assert.equal(requirements.summary.base_bots_complete, 8);
 assert.equal(requirements.summary.evolution_master_designs_pending, 32);
 assert.equal(requirements.summary.rare_morph_backgrounds_pending, 32);
-assert.equal(requirements.summary.moon_egg_art_sets_pending, 1);
-assert.equal(botRegistry.egg_art.status, "authored_art_required");
-assert.equal(botRegistry.egg_art.fallback, "TEMPORARY LEGACY EGG FALLBACK");
-assert.deepEqual(eggRegistry.required_roles, ["egg_idle", "egg_wobble", "egg_sleep", "egg_react", "egg_care", "egg_crack", "egg_hatch"]);
-assert.equal(eggRegistry.current_fallback.label, "TEMPORARY LEGACY EGG FALLBACK");
+assert.equal(requirements.summary.moon_egg_art_sets_pending, 0);
+assert.equal(botRegistry.egg_art.status, "complete");
+assert.equal(botRegistry.egg_art.fallback, null);
+assert.deepEqual(eggRegistry.required_roles, ["egg_idle", "egg_wobble", "egg_sleep", "egg_react", "egg_care", "egg_breakout", "egg_hatch"]);
+assert.equal(eggRegistry.current_fallback, null);
 assert.equal(botRegistry.shared_stages.stage_1.character_name, "WTFBOI");
 assert.equal(botRegistry.shared_stages.stage_1.shared_by_all_identities, true);
 
@@ -36,14 +36,21 @@ const loaderContext = { window: {}, fetch() { throw new Error("not used"); }, Im
 vm.runInNewContext(readText("js/moonpet-bot-art-loader.js"), loaderContext);
 const { resolveBot, eggRoleForAnimationMode } = loaderContext.window.MoonpetBotArtLoader;
 
-assert.equal(resolveBot(botRegistry, { speciesId: "vinyl_crab", evolutionStage: 0 }).resolvedBot, "MOON EGG");
+assert.equal(resolveBot(botRegistry, { speciesId: "vinyl_crab", evolutionStage: 0 }).resolvedBot, "EGGYONE");
 assert.equal(resolveBot(botRegistry, { speciesId: "vinyl_crab", evolutionStage: 0 }).resolvedEvolution, "stage_0");
 assert.equal(eggRoleForAnimationMode("idle", { incubation: { progress: 0, target: 12 } }), "egg_idle");
 assert.equal(eggRoleForAnimationMode("idle", { incubation: { progress: 8, target: 12 } }), "egg_wobble");
-assert.equal(eggRoleForAnimationMode("idle", { incubation: { progress: 11, target: 12 } }), "egg_crack");
+assert.equal(eggRoleForAnimationMode("idle", { incubation: { progress: 11, target: 12 } }), "egg_breakout");
 assert.equal(eggRoleForAnimationMode("feed"), "egg_care");
 assert.equal(eggRoleForAnimationMode("sleep"), "egg_sleep");
 assert.equal(eggRoleForAnimationMode("hatch"), "egg_hatch");
+
+const eggManifest = readJson("data/moonpet-eggyone-stage0-assets.json");
+assert.equal(eggManifest.character_name, "EGGYONE");
+assert.equal(eggManifest.character_id, "cmui5g9430007v27qp8scqirq");
+assert.equal(eggManifest.approval_status, "approved_visual_review");
+assert.equal(eggManifest.assets.length, 7);
+assert.ok(eggManifest.assets.every((asset) => asset.frame_count === 25 && asset.review_status === "approved_visual_review"));
 
 const streetReady = botRegistry.shared_stages.stage_1.status === "complete";
 
@@ -51,6 +58,7 @@ for (const [botName, bot] of Object.entries(botRegistry.bots)) {
   const baseManifest = readJson(bot.manifest_path);
   assert.deepEqual(new Set(baseManifest.assets.map((asset) => asset.role)), new Set(expectedActions), `${botName} must retain all 15 actions`);
   const speciesId = bot.canonical_species_ids[0];
+  assert.equal(resolveBot(botRegistry, { speciesId, evolutionStage: 0 }).resolvedBot, "EGGYONE", `${botName} Stage 0 must share EGGYONE`);
   for (let stage = 1; stage <= 5; stage += 1) {
     const resolution = resolveBot(botRegistry, { speciesId, evolutionStage: stage });
     assert.equal(resolution.resolvedBot, stage === 1 && streetReady ? "WTFBOI" : botName, `${botName} stage ${stage} resolution`);

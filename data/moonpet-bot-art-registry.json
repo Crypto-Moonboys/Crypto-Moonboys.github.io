@@ -3,10 +3,20 @@
   "default_bot": "BOTTY",
   "egg_art": {
     "stage": 0,
-    "character_name": "MOON EGG",
-    "status": "authored_art_required",
-    "fallback": "TEMPORARY LEGACY EGG FALLBACK",
-    "manifest_path": null,
+    "character_name": "EGGYONE",
+    "autosprite_character_id": "cmui5g9430007v27qp8scqirq",
+    "status": "complete",
+    "fallback": null,
+    "manifest_path": "/data/moonpet-eggyone-stage0-assets.json",
+    "asset_root": "/img/moonpets/eggyone/",
+    "display": {
+      "scale": 1,
+      "fit_width": 184,
+      "fit_height": 184,
+      "pivot_y": 1
+    },
+    "form": "secret_bot",
+    "shared_by_all_identities": true,
     "registry_path": "/data/moonpet-egg-art-registry.json"
   },
   "shared_stages": {

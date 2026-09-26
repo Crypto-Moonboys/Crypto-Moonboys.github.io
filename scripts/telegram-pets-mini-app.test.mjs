@@ -648,19 +648,19 @@ ${nextGuidanceSource}; return { homeNextLine, profileNextLine, exploreNextLine, 
 assert.equal(nextGuidanceRuntime({
   adopted: false,
   pet: null,
-}).homeNextLine(), 'Initialise a Moon Egg to begin.',
-  'unadopted Home guidance must point to Moon Egg initialisation');
+}).homeNextLine(), 'Initialise a Secret Bot to begin.',
+  'unadopted Home guidance must point to Secret Bot initialisation');
 assert.equal(nextGuidanceRuntime({
   adopted: false,
   pet: null,
-}).profileNextLine(), 'Initialise a Moon Egg to begin.',
+}).profileNextLine(), 'Initialise a Secret Bot to begin.',
   'unadopted Profile guidance must say initialise first instead of missing progression');
 const unadoptedExploreMarkup = nextGuidanceRuntime({
   adopted: false,
   pet: null,
   weekly_journey: { objectives: [] },
 }).firstSessionExploreMarkup();
-assert.match(unadoptedExploreMarkup, /Initialise a Moon Egg before district routes, bosses, Arena, Kaiju, or pet work open/,
+assert.match(unadoptedExploreMarkup, /Initialise a Secret Bot before district routes, bosses, Arena, Kaiju, or pet work open/,
   'unadopted Explore guidance must explain initialisation before active pet work');
 assert.doesNotMatch(unadoptedExploreMarkup, /START MOON RUN|DAILY RUN|Complete Weekly boss attempt|Restore energy|Start a Moon Run/,
   'unadopted Explore guidance must not recommend Moon Run, energy restore, boss, Arena, Kaiju, or active pet work');
@@ -688,26 +688,26 @@ assert.equal(nextGuidanceRuntime({
   season_slots: { slots: [{ pet_id: 'pet-a', active: true }] },
   lifecycle: { phase: 'egg' },
   active_pet_progression: { lifecycle: { evolution_ready: false } },
-}).profileNextLine(), 'Incubate your Moon Egg until the hatch signal is ready.',
+}).profileNextLine(), 'Care for your Secret Bot until the breakout signal is ready.',
   'authoritative state lifecycle phase must keep egg guidance even when progression lifecycle lacks phase');
 assert.equal(nextGuidanceRuntime({
   adopted: true,
   pet: { pet_id: 'pet-a', pet_name: 'Moon Egg' },
   lifecycle: { phase: 'egg', incubation: { ready: false, progress: 4, target: 12 } },
-}).homeNextLine(), 'Incubate with care signals until the hatch signal is ready.',
+}).homeNextLine(), 'Build care signals until the breakout signal is ready.',
   'egg Home guidance must explain incubation signals');
 assert.equal(nextGuidanceRuntime({
   adopted: true,
   pet: { pet_id: 'pet-a', pet_name: 'Moon Egg' },
   lifecycle: { phase: 'egg', incubation: { ready: true, progress: 12, target: 12 } },
-}).homeNextLine(), 'HATCH MOONPET to wake your first companion.',
-  'hatch-ready Home guidance must point directly to HATCH MOONPET');
+}).homeNextLine(), 'REVEAL BOT to wake your first companion.',
+  'hatch-ready Home guidance must point directly to REVEAL BOT');
 assert.equal(nextGuidanceRuntime({
   adopted: true,
   pet: { pet_id: 'pet-a', pet_name: 'Moon Egg' },
   lifecycle: { phase: 'egg', incubation: { ready: true, progress: 12, target: 12 } },
-}).profileNextLine(), 'HATCH MOONPET to wake your first companion.',
-  'hatch-ready Profile NEXT guidance must point directly to HATCH MOONPET');
+}).profileNextLine(), 'REVEAL BOT to wake your first companion.',
+  'hatch-ready Profile NEXT guidance must point directly to REVEAL BOT');
 const eggExploreRuntime = nextGuidanceRuntime({
   adopted: true,
   pet: { pet_id: 'pet-a', energy: 12 },
@@ -715,11 +715,11 @@ const eggExploreRuntime = nextGuidanceRuntime({
   weekly_journey: { objectives: [{ objective_id: 'weekly_boss_attempt', progress: 0, target: 1, completed: false }] },
   guidance: { weekly_boss: { available: true } },
 });
-assert.equal(eggExploreRuntime.exploreNextLine(), 'Incubate or HATCH MOONPET before Explore actions open.',
+assert.equal(eggExploreRuntime.exploreNextLine(), 'Care for or REVEAL BOT before Explore actions open.',
   'egg Explore NEXT guidance must prefer hatch/incubation over combat or Moon Run');
 const eggExploreMarkup = eggExploreRuntime.firstSessionExploreMarkup();
-assert.match(eggExploreMarkup, /Journey progress starts after hatching, when server authority can bind objectives to the active pet/,
-  'egg Explore guidance must explain Journey progress starts after hatching');
+assert.match(eggExploreMarkup, /Journey progress starts after the reveal, when server authority can bind objectives to the active pet/,
+  'Stage 0 Explore guidance must explain Journey progress starts after reveal');
 assert.doesNotMatch(eggExploreMarkup, /START MOON RUN|DAILY RUN|Complete Weekly boss attempt|Restore energy|Start a Moon Run/,
   'egg Explore guidance must not recommend Moon Run, boss, or energy actions');
 assert.doesNotMatch(eggExploreMarkup, /FIND PLAYER BATTLE|ENTER SOLO ARENA|FIND KAIJU PLAYER|START SOLO KAIJU/,
@@ -762,7 +762,7 @@ assert.equal(nextGuidanceRuntime({
   adopted: false,
   pet: null,
   weekly_journey: { objectives: [] },
-}).exploreNextLine(), 'Initialise a Moon Egg to begin.',
+}).exploreNextLine(), 'Initialise a Secret Bot to begin.',
   'unadopted players with no pet must be guided to initialise before energy recovery');
 assert.equal(nextGuidanceRuntime({
   adopted: true,
@@ -1149,7 +1149,7 @@ assert.equal(renderedState.revision, 'action-result', 'the latest action respons
 resolveRefresh({ revision: 'stale-refresh' });
 await staleRefresh;
 assert.equal(renderedState.revision, 'action-result', 'an older background refresh must not overwrite a newer action result');
-assert.match(client, /function setStateSnapshot\(nextState, requestGeneration\)[\s\S]*stateRequestGate\.isCurrent\(requestGeneration\)/, 'all state snapshots must pass the request freshness gate');
+assert.match(client, /function setStateSnapshot\(nextState, requestGeneration, options\)[\s\S]*stateRequestGate\.isCurrent\(requestGeneration\)/, 'all state snapshots must pass the request freshness gate');
 assert.match(client, /function runAction[\s\S]*requestGeneration = beginStateRequest\(\)[\s\S]*post\('\/telegram-pets\/app\/action'/, 'actions must invalidate state requests that began earlier');
 assert.doesNotMatch(client, /tell\('WEEKLY JOURNEY AUTHORITY REFRESHED\.'\)/, 'Weekly Journey refresh copy must not be emitted as a dead toast before result copy');
 assert.doesNotMatch(client, /Weekly Journey authority refreshed/, 'action feedback must describe confirmed journey progress instead of generic refresh state');
@@ -1588,27 +1588,33 @@ assert.match(html, /moonpet-canvas/);
 assert.match(client, /requestAnimationFrame\(frame\)/);
 assert.match(client, /if \(reducedMotion\) return/);
 assert.match(client, /fillRect/);
-assert.equal((client.match(/new Image\s*\(/g) || []).length, 0, 'Mini App must not allocate a background image');
+assert.equal((client.match(/new Image\s*\(/g) || []).length, 1, 'Mini App must allocate only the dedicated Stage 0 background image');
 assert.match(client, /typeBoot/);
 assert.match(client, /actionAnimationFamily/);
 assert.match(client, /key === 'activity_start'.*payload && payload\.activity_type/);
 assert.match(client, /key === 'activity_claim'.*return 'celebrate'/);
 assert.match(client, /key === 'activity_cancel'.*return 'interact'/);
 assert.match(client, /animateAction\(action, true, 8000, payload\)/);
-assert.match(client, /var actionAccepted = Boolean\(data\.result && data\.result\.accepted\);[\s\S]*animateAction\(action, actionAccepted, 2800, payload\)/);
+assert.match(client, /var actionAccepted = Boolean\(data\.result && data\.result\.accepted\);[\s\S]*if \(!isHatchReveal\) animateAction\(action, actionAccepted, 2800, payload\)/);
 assert.match(client, /var actionResultHoldMs = 3600/);
 assert.match(client, /function createPetPalette/);
 assert.match(client, /var PET_APPEARANCE_PALETTES =/);
 assert.match(client, /var PET_SPECIES_PALETTES =/);
 assert.match(client, /var DEFAULT_PET_PALETTE = createPetPalette/);
-const paletteRegistrySource = client.slice(client.indexOf('function createPetPalette'), client.indexOf('function drawMoonEgg'));
+const paletteRegistrySource = client.slice(client.indexOf('function createPetPalette'), client.indexOf('var WORLD_SCENES'));
 const paletteRegistry = Function(`"use strict";${paletteRegistrySource}; return { PET_APPEARANCE_PALETTES, PET_SPECIES_PALETTES, DEFAULT_PET_PALETTE };`)();
 assert.deepEqual(paletteRegistry.PET_APPEARANCE_PALETTES.mint_punch.normal, { body: '#80ffd5', shade: '#36a878', accent: '#f4ff65', outline: '#061009' });
 assert.equal(paletteRegistry.PET_APPEARANCE_PALETTES.mint_punch.legendary.accent, '#f6a7ff');
 assert.deepEqual(paletteRegistry.PET_SPECIES_PALETTES.neon_raccoon.normal, { body: '#80ffd5', shade: '#2c8f70', accent: '#f4ff65', outline: '#061009' });
 assert.deepEqual(paletteRegistry.DEFAULT_PET_PALETTE.normal, { body: '#a9ff9a', shade: '#4ea85a', accent: '#f4ff65', outline: '#061009' });
 assert.doesNotMatch(client, /function petPalette|function petPose/, 'retired procedural palette and pose helpers must stay removed');
-assert.match(client, /function drawMoonEgg/, 'the procedural egg remains until dedicated egg art is approved');
+assert.doesNotMatch(client, /function drawMoonEgg/, 'the retired procedural egg must not remain after EGGYONE approval');
+assert.match(client, /STAGE_ZERO_BACKGROUND_URL = '\/games\/assets\/BITTY BACKGROUND\.jpg'/, 'Stage 0 must use the BITTY background');
+assert.match(client, /startHatchArtTransition\(hatchAnimationDuration\(\), responseState\)/, 'hatch must defer the Stage 1 art handoff for the complete atlas duration');
+assert.match(client, /MoonpetBotArtLoader\.loadMoonpetBotArt\(botArtIdentity\(nextSnapshot\)\)/, 'WTFBOI must preload while the EGGYONE hatch one-shot is visible');
+assert.match(client, /await hatchStageOnePreloadPromise;[\s\S]*selectBotArtForState\(state\)/, 'the renderer must not switch to WTFBOI before its preload completes');
+assert.match(client, /animationUntil = Number\.POSITIVE_INFINITY/, 'the final EGGYONE hatch frame must remain visible until the Stage 1 swap');
+assert.match(client, /lifecycle\.phase === 'egg' \? 'stage0:' \+ seasonKey/, 'Stage 0 sleep must have a stable persistence key before a pet ID exists');
 assert.match(client, /drawSelectedBotSprite\(renderTime, animationMode, active, x, y, 1\)/, 'hatched pets must use the selected AutoSprite pack');
 assert.match(client, /if \(drawSelectedBotSprite\(renderTime, animationMode, active, x, y, 1\)\) return;\s*if \(!botArtFallbackLogged\) \{\s*botArtFallbackLogged = true;\s*console\.info\('\[Moonpet\] bot art unavailable; suppressing retired procedural pet fallback', botArtRendererState\);\s*\}/s,
   'hatched pets must suppress the retired fallback renderer when bot art is unavailable');
@@ -1816,8 +1822,9 @@ assert.doesNotMatch(lifecycleStartSource, /haptic\('success'\)/, 'accepted lifec
 assert.match(client, /function clearLifecycleCeremony\(redraw\)/);
 assert.doesNotMatch(client, /function drawLifecycleCeremony/,
   'lifecycle updates must not render a right-side canvas panel');
-assert.match(client, /EGG CARE/);
-assert.match(client, /HATCHED/);
+assert.match(client, /SECRET BOT CARE/);
+assert.match(client, /BREAKOUT/);
+assert.match(client, /REVEALED/);
 assert.match(client, /EVOLVED/);
 assert.match(client, /RARE FORM/);
 assert.match(client, /var guidance = state\.guidance \|\| \{\};\s*var identity = guidance\.identity \|\| \{\};/, 'CORE profile must read identity from the selected-pet guidance payload');
@@ -1864,7 +1871,7 @@ const eggState = {
 const dormantState = { adopted: false, pet: null, lifecycle: null };
 const initialEggCeremony = planCeremonyRuntime(dormantState, eggState, 'adopt', { accepted: true });
 assert.equal(initialEggCeremony.kind, 'egg');
-assert.equal(initialEggCeremony.title, 'NEW MOON EGG');
+assert.equal(initialEggCeremony.title, 'SECRET BOT');
 assert.equal(initialEggCeremony.primary, 'Ready for care');
 assert.equal(planCeremonyRuntime(dormantState, eggState, 'adopt', { accepted: true, duplicate: true }), null);
 
@@ -1875,6 +1882,7 @@ const strongerEggState = {
 };
 const signalCeremony = planCeremonyRuntime(eggState, strongerEggState, 'incubate', { accepted: true, care_type: 'music' });
 assert.equal(signalCeremony.kind, 'signal');
+assert.equal(signalCeremony.title, 'SECRET BOT CARE');
 assert.equal(signalCeremony.primary, '6/12');
 assert.equal(signalCeremony.secondary, 'Music progress');
 
@@ -1889,6 +1897,7 @@ const youngState = {
 };
 const hatchCeremony = planCeremonyRuntime(strongerEggState, youngState, 'hatch', { accepted: true, species: 'F1 EDDY' });
 assert.equal(hatchCeremony.kind, 'hatch');
+assert.equal(hatchCeremony.title, 'REVEALED');
 assert.equal(hatchCeremony.primary, 'F1 EDDY');
 assert.equal(hatchCeremony.secondary, 'Bold temperament');
 assert.match(hatchCeremony.detail, /Spray Mask/);
