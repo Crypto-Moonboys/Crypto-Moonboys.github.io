@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "audited_at": null,
+  "audited_at": "2026-09-26T06:50:32.303Z",
   "source": "AutoSprite API",
   "exact_character_name": "MOON EGG",
   "required_roles": [
@@ -12,7 +12,7 @@
     "egg_crack",
     "egg_hatch"
   ],
-  "status": "pending_authenticated_audit",
+  "status": "not_found",
   "genuine_authored_pack_available": false,
   "exact_matches": [],
   "egg_named_candidates": [],
