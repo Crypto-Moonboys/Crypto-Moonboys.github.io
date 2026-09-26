@@ -156,38 +156,6 @@
     return true;
   }
 
-  function loadApprovedSpriteScript(src) {
-    return new Promise(function (resolve, reject) {
-      var existing = document.querySelector('script[src="' + src + '"]');
-      if (existing) {
-        // Static parser-loaded scripts that appear before moonpet-mini-app.js have
-        // already executed. Waiting for a second load event deadlocks forever.
-        if (existing.dataset.approvedSpriteAdapter !== 'true' || existing.dataset.loaded === 'true') {
-          resolve();
-          return;
-        }
-        existing.addEventListener('load', function () {
-          existing.dataset.loaded = 'true';
-          resolve();
-        }, { once: true });
-        existing.addEventListener('error', function () { reject(new Error(src + ' failed to load')); }, { once: true });
-        return;
-      }
-      var script = document.createElement('script');
-      script.src = src;
-      script.async = false;
-      script.dataset.approvedSpriteAdapter = 'true';
-      script.onload = function () {
-        script.dataset.loaded = 'true';
-        resolve();
-      };
-      script.onerror = function () {
-        reject(new Error(src + ' failed to load'));
-      };
-      document.head.appendChild(script);
-    });
-  }
-
   // TEST-EXPORT: botArtEvolutionStage:start
   function botArtEvolutionStage(snapshot) {
     var lifecycle = snapshot && snapshot.lifecycle || {};
@@ -232,9 +200,6 @@
     }
     console.info('[Moonpet] multi-bot art mode enabled');
     try {
-      await loadApprovedSpriteScript('/js/moonpet-art-resolver.js?v=20260926-evolution-art-foundation-v1');
-      await loadApprovedSpriteScript('/js/moonpet-bot-art-loader.js?v=20260926-evolution-art-foundation-v1');
-      await loadApprovedSpriteScript('/js/moonpet-bot-art-renderer.js?v=20260926-evolution-art-foundation-v1');
       if (!window.MoonpetBotArtRenderer) throw new Error('MoonpetBotArtRenderer unavailable');
       botArtRendererState = await window.MoonpetBotArtRenderer.initMoonpetBotArtRenderer(botArtIdentity(state));
       botArtRendererReady = Boolean(botArtRendererState && botArtRendererState.ready);
