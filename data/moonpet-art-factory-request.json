@@ -1,6 +1,6 @@
 {
   "phase": "download-existing-front-pack",
-  "autosprite_character_name": "RED ALERT",
-  "requested_at": "2026-09-26T02:08:03Z",
-  "reason": "Install the existing approved RED ALERT front-facing animation pack without generating new art."
+  "autosprite_character_name": "JACK THE SNAKE",
+  "requested_at": "2026-09-26T02:31:00Z",
+  "reason": "Install the existing JACK THE SNAKE front-facing animation pack without generating new art."
 }
