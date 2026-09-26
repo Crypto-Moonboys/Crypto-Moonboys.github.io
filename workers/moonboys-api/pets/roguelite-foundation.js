@@ -605,9 +605,20 @@ export async function createPetRunRoom(db, run) {
 
 export async function persistPetRunRoomOutcome(db, run, room, outcome = {}) {
   const resolved = resolvePetRunRoom(room, outcome);
+  const tacticCount = Number.isSafeInteger(outcome.daily_tactic_count) ? outcome.daily_tactic_count : null;
+  const tacticGuard = tacticCount === null ? '' : ` AND
+    (SELECT COUNT(*) FROM telegram_pet_run_modifiers WHERE run_id=? AND modifier_id IN ('daily_tactic_3','daily_tactic_6'))=?
+    AND EXISTS (SELECT 1 FROM telegram_pet_runs WHERE run_id=? AND telegram_id=? AND current_room=? AND status IN ('active','extractable'))`;
   const result = await db.prepare(`UPDATE telegram_pet_run_rooms SET status = ?, outcome_data = ?, resolved_at = CURRENT_TIMESTAMP
-    WHERE room_id = ? AND run_id = ? AND status = 'pending' RETURNING room_id`).bind(resolved.status, safeJson(resolved.outcome), room.room_id, run.run_id).first();
-  if (!result) return { ...resolved, duplicate: true };
+    WHERE room_id = ? AND run_id = ? AND telegram_id=? AND status = 'pending'${tacticGuard} RETURNING room_id`)
+    .bind(resolved.status, safeJson(resolved.outcome), room.room_id, run.run_id, run.telegram_id,
+      ...(tacticCount === null ? [] : [run.run_id, tacticCount, run.run_id, run.telegram_id, room.room - 1])).first();
+  if (!result) {
+    const persisted = await db.prepare(`SELECT status, outcome_data FROM telegram_pet_run_rooms WHERE room_id=? AND run_id=? AND telegram_id=?`)
+      .bind(room.room_id, run.run_id, run.telegram_id).first();
+    // A losing request must use the winning persisted outcome, never its own roll.
+    return { ...room, status: persisted?.status || 'pending', outcome: JSON.parse(persisted?.outcome_data || '{}'), duplicate: true };
+  }
   await db.prepare(`INSERT OR IGNORE INTO telegram_pet_run_analytics (analytics_id, pet_id, run_id, telegram_id, event_type, event_data)
     VALUES (?, ?, ?, ?, 'room_resolved', ?)`).bind(`${room.room_id}:resolved`, requireRunPetId(run), run.run_id, run.telegram_id, safeJson({ room: room.room, room_type: room.room_type, outcome: resolved.outcome })).run();
   return resolved;

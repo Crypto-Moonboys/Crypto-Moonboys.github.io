@@ -18,10 +18,13 @@ import {
 import {
   __rogueliteFoundationTestHooks,
   awardPetReward,
+  createPetRunRoom,
   generatePetRunRoom,
+  persistPetRunRoomOutcome,
   startPetRogueliteRun,
 } from '../workers/moonboys-api/pets/roguelite-foundation.js';
 import { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
+import { DAILY_RUN_CONDITIONS, DAILY_RUN_RULES_ID, DAILY_RUN_TACTICS, chooseDailyRunTactic, dailyTacticalBoard, previewDailyChoice, readDailyModifiers } from '../workers/moonboys-api/pets/daily-run-tactics.js';
 
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/044_telegram_pet_daily_runs.sql', import.meta.url), 'utf8');
@@ -335,8 +338,8 @@ assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_dai
   'duplicate daily run creation must reserve one official run');
 assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_runs WHERE telegram_id='daily-player'").get().count, 1,
   'daily creation must reuse the existing run engine exactly once');
-assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_run_modifiers WHERE telegram_id='daily-player'").get().count, 1,
-  'the deterministic daily modifier must use the existing run modifier table');
+assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_run_modifiers WHERE telegram_id='daily-player'").get().count, 2,
+  'one condition plus the pinned rules version must use the existing run modifier table');
 assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_run_rooms WHERE telegram_id='daily-player'").get().count, 1,
   'daily creation must materialize its first room through the roguelite room engine');
 assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_identity_events WHERE telegram_id='daily-player' AND event_key='daily:memory:first-run:daily-player'").get().count, 1,
@@ -412,7 +415,7 @@ for (let day = 1; day <= 40 && !forcedVictoryRegression; day += 1) {
 assert.ok(forcedVictoryRegression, 'the deterministic authority fixture must include a server-resolved failure');
 assert.equal(forcedVictoryRegression.result.room.outcome.success, false,
   'client success=true cannot force a Daily Moon Run victory');
-assert.equal(forcedVictoryRegression.result.room.outcome.authority, 'daily_moon_run_server_outcome_v1');
+assert.equal(forcedVictoryRegression.result.room.outcome.authority, 'daily_moon_run_server_outcome_v2');
 assert.equal(forcedVictoryRegression.db.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_run_analytics
   WHERE telegram_id=? AND event_type='boss_fought'`).get(forcedVictoryRegression.telegramId).count, 0,
   'a client-forced outcome cannot create boss authority');
@@ -889,10 +892,14 @@ for (const telegramId of ['engine-player-a', 'engine-player-b']) {
     assert.ok(pending, `daily room ${roomIndex + 1} must be persisted by createPetRunRoom`);
     const room = JSON.parse(pending.generated_data);
     fingerprints.push(`${room.content_id}:${room.enemy_id || room.boss_id || ''}`);
+    const storedRun = engineDb.database.prepare('SELECT * FROM telegram_pet_runs WHERE run_id=?').get(created.daily_run.run_id);
+    const fixtureOutcomes = await Promise.all(room.choices.map((choice) => __dailyMoonRunTestHooks.resolveAuthoritativeDailyRoomOutcome(engineDb, storedRun, room, choice.choice_id)));
+    const winningChoice = room.choices.find((choice, index) => fixtureOutcomes[index].success);
+    assert.ok(winningChoice, `completion fixture needs a server-valid winning choice in room ${roomIndex + 1}`);
     const result = await processDailyMoonRunStep(engineDb, {
       telegram_id: telegramId,
       run_id: created.daily_run.run_id,
-      choice_key: room.choices[0].choice_id,
+      choice_key: winningChoice.choice_id,
       expected_step_index: roomIndex,
       success: true,
       now: engineDay,
@@ -1146,4 +1153,129 @@ assert.equal(simulationDb.database.prepare("SELECT quantity FROM telegram_pet_in
 assert.equal(__rogueliteFoundationTestHooks.DAILY_PET_XP_CAP, 1200);
 assert.equal(__rogueliteFoundationTestHooks.DAILY_COMMUNITY_XP_CAP, 250);
 
-console.log('Telegram Pets Daily Moon Run tests passed (10,000-run economy simulation included).');
+// Meaningful risk/score choices, versioned rules and checkpoint authority.
+const previewPet = { pet_xp: 0, health: 50, energy: 50, happiness: 50, cleanliness: 50 };
+const v2Rows = [{ modifier_id: DAILY_RUN_RULES_ID, effects_json: '{}' }];
+for (const roomType of ['choice_event', 'loot', 'battle', 'elite', 'boss']) {
+  const room = { room_type: roomType };
+  const safe = previewDailyChoice(previewPet, room, 'sneak', v2Rows);
+  const balanced = previewDailyChoice(previewPet, room, 'explore', v2Rows);
+  const bold = previewDailyChoice(previewPet, room, 'fight', v2Rows);
+  assert.ok(safe.success_chance_bps > bold.success_chance_bps);
+  assert.ok(safe.score < balanced.score && balanced.score < bold.score, 'risk must change run score');
+  assert.equal(previewDailyChoice(previewPet, room, 'sneak', []).score, previewDailyChoice(previewPet, room, 'fight', []).score, 'pre-update runs retain scoring');
+  for (const key of Object.keys(DAILY_RUN_TACTICS)) {
+    const rows = [...v2Rows, { modifier_id: 'daily_tactic_3', effects_json: JSON.stringify({ tactic_id: key }) }];
+    const after = previewDailyChoice(previewPet, room, 'explore', rows);
+    assert.notEqual(after.success_chance_bps, balanced.success_chance_bps, 'every tactic changes room odds');
+    assert.notEqual(after.score, balanced.score, 'every tactic changes room score');
+  }
+}
+for (let seed = 1; seed <= 300; seed++) assert.ok(Object.hasOwn(DAILY_RUN_CONDITIONS, __dailyMoonRunTestHooks.dailyModifierId(seed)), 'new runs exclude dormant conditions');
+for (let current_room = 0; current_room < 9; current_room++) {
+  const room = generatePetRunRoom({ run_id: 'approach-audit', current_room, max_room: 10, region: 'moon_alley', seed: 10 });
+  const choices = room.choices.map((choice) => previewDailyChoice(previewPet, room, choice.choice_id, v2Rows));
+  assert.equal(new Set(choices.map((choice) => choice.approach)).size, room.choices.length, `each option in ${room.content_id} needs a distinct approach`);
+  assert.equal(new Set(choices.map((choice) => choice.score)).size, room.choices.length, `each option in ${room.content_id} needs a distinct score`);
+}
+for (const [id, effects] of [['fast_enemies', { enemy_speed_pct: 20 }], ['low_energy', { energy_cost_modifier: 5 }], ['lucky_run', { event_outcome_pct: 15 }]]) {
+  assert.notEqual(previewDailyChoice(previewPet, { room_type: 'battle' }, 'fight', [...v2Rows, { modifier_id: id, effects_json: JSON.stringify(effects) }]).success_chance_bps,
+    previewDailyChoice(previewPet, { room_type: 'battle' }, 'fight', v2Rows).success_chance_bps);
+}
+async function tacticFixture(id) {
+  const adapter = new D1(); seedPlayer(adapter, id);
+  const created = await createDailyMoonRun(adapter, { telegram_id: id, now });
+  const run = adapter.database.prepare('SELECT * FROM telegram_pet_runs WHERE run_id=?').get(created.daily_run.run_id);
+  return { adapter, run };
+}
+const tacticalFixture = await tacticFixture('tactical-player');
+const tacticalDb = tacticalFixture.adapter, tacticalRun = tacticalFixture.run;
+const requestTactic = (key, checkpoint = 3) => ({ run_id: tacticalRun.run_id, checkpoint, tactic_id: key, score: 999999, rewards: { pet_xp: 999999 } });
+assert.equal((await chooseDailyRunTactic(tacticalDb, 'tactical-player', requestTactic('guardian'))).accepted, false, 'cannot draft early');
+tacticalDb.database.prepare('UPDATE telegram_pet_runs SET current_room=3,depth=3 WHERE run_id=?').run(tacticalRun.run_id);
+assert.equal((await chooseDailyRunTactic(tacticalDb, 'intruder', requestTactic('guardian'))).accepted, false);
+assert.equal((await chooseDailyRunTactic(tacticalDb, 'tactical-player', requestTactic('__proto__'))).accepted, false);
+const simultaneousTactics = await Promise.all(['guardian', 'striker', 'scavenger'].map((key) => chooseDailyRunTactic(tacticalDb, 'tactical-player', requestTactic(key))));
+assert.equal(simultaneousTactics.filter((result) => result.accepted).length, 1, 'one immutable choice per checkpoint');
+assert.equal((await chooseDailyRunTactic(tacticalDb, 'tactical-player', requestTactic('guardian'))).accepted, false, 'replay cannot add a second bonus');
+let tacticalRows = await readDailyModifiers(tacticalDb, tacticalRun);
+let tacticalBoard = dailyTacticalBoard({ ...tacticalRun, current_room: 3 }, tacticalRows);
+assert.equal(tacticalBoard.offers.length, 0); assert.equal(tacticalBoard.selected.length, 1);
+assert.equal(tacticalBoard.selected[0].key, 'guardian');
+assert.equal(dailyTacticalBoard({ ...tacticalRun, current_room: 6 }, tacticalRows).offers.length, 3);
+tacticalDb.database.prepare('UPDATE telegram_pet_runs SET current_room=6,depth=6 WHERE run_id=?').run(tacticalRun.run_id);
+assert.equal((await chooseDailyRunTactic(tacticalDb, 'tactical-player', requestTactic('scavenger', 6))).accepted, true);
+tacticalRows = await readDailyModifiers(tacticalDb, tacticalRun);
+assert.equal(dailyTacticalBoard({ ...tacticalRun, current_room: 6 }, tacticalRows).selected.length, 2);
+assert.equal(tacticalDb.database.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(tacticalRun.pet_id).pet_xp, 0);
+assert.equal(tacticalDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_reward_claims').get().count, 0, 'drafting cannot award economy rewards');
+tacticalDb.database.prepare("UPDATE telegram_pet_runs SET status='failed' WHERE run_id=?").run(tacticalRun.run_id);
+assert.equal((await chooseDailyRunTactic(tacticalDb, 'tactical-player', requestTactic('guardian', 6))).accepted, false);
+
+// Old pending runs keep the old condition and rules even when resumed.
+const oldFixture = await tacticFixture('old-tactical-player');
+oldFixture.adapter.database.prepare('DELETE FROM telegram_pet_run_modifiers WHERE run_id=?').run(oldFixture.run.run_id);
+oldFixture.adapter.database.prepare(`INSERT INTO telegram_pet_run_modifiers (run_id,pet_id,telegram_id,modifier_id,effects_json) VALUES (?,?,?,'glass_cannon','{"damage_dealt_pct":40,"damage_taken_pct":40}')`)
+  .run(oldFixture.run.run_id, oldFixture.run.pet_id, oldFixture.run.telegram_id);
+await createDailyMoonRun(oldFixture.adapter, { telegram_id: oldFixture.run.telegram_id, now });
+const oldRows = await readDailyModifiers(oldFixture.adapter, oldFixture.run);
+assert.equal(oldRows.length, 1); assert.equal(oldRows[0].modifier_id, 'glass_cannon');
+assert.equal(dailyTacticalBoard({ ...oldFixture.run, current_room: 3 }, oldRows).offers.length, 0);
+
+// A tactic chosen between outcome calculation and commit invalidates the stale calculation.
+const race = await tacticFixture('tactic-race-player');
+race.adapter.database.prepare('UPDATE telegram_pet_runs SET current_room=3,depth=3 WHERE run_id=?').run(race.run.run_id);
+race.run.current_room = 3; race.run.depth = 3;
+const raceRoom = await createPetRunRoom(race.adapter, race.run);
+const staleOutcome = await __dailyMoonRunTestHooks.resolveAuthoritativeDailyRoomOutcome(race.adapter, race.run, raceRoom, raceRoom.choices[0].choice_id);
+assert.equal((await chooseDailyRunTactic(race.adapter, race.run.telegram_id, { run_id: race.run.run_id, checkpoint: 3, tactic_id: 'striker' })).accepted, true);
+const staleCommit = await persistPetRunRoomOutcome(race.adapter, race.run, raceRoom, staleOutcome);
+assert.equal(staleCommit.status, 'pending', 'no outcome may commit with an outdated build');
+const freshOutcome = await __dailyMoonRunTestHooks.resolveAuthoritativeDailyRoomOutcome(race.adapter, race.run, raceRoom, raceRoom.choices[0].choice_id);
+assert.equal(freshOutcome.daily_tactics[0].key, 'striker');
+const actualPet = race.adapter.database.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=?').get(race.run.pet_id);
+const actualPreview = previewDailyChoice(actualPet, raceRoom, raceRoom.choices[0].choice_id, await readDailyModifiers(race.adapter, race.run));
+assert.equal(freshOutcome.success_chance_bps, actualPreview.success_chance_bps);
+assert.equal(freshOutcome.score, freshOutcome.success ? actualPreview.score : 0, 'preview and resolution share the same formula');
+const freshCommit = await persistPetRunRoomOutcome(race.adapter, race.run, raceRoom, freshOutcome);
+assert.notEqual(freshCommit.status, 'pending');
+
+// Opposing simultaneous outcomes must return the actual winning stored outcome.
+const competing = await tacticFixture('competing-room-player');
+const competingRoom = await createPetRunRoom(competing.adapter, competing.run);
+const competingResults = await Promise.all([
+  persistPetRunRoomOutcome(competing.adapter, competing.run, competingRoom, { success: false, score: 0, daily_tactic_count: 0 }),
+  persistPetRunRoomOutcome(competing.adapter, competing.run, competingRoom, { success: true, score: 999, daily_tactic_count: 0 }),
+]);
+assert.equal(competingResults[0].status, 'failed'); assert.equal(competingResults[1].status, 'failed');
+assert.equal(competingResults[1].outcome.score, 0, 'losing request cannot invent success or inflate score');
+
+// Endless-run previews must use the same source-pet equipment as resolution.
+const previewDb = new D1();
+previewDb.database.exec(fs.readFileSync(new URL('../workers/moonboys-api/migrations/048_telegram_pet_player_expansion.sql', import.meta.url), 'utf8'));
+const previewOwner = 'source-preview-player';
+const previewSeason = getDailySeasonId(new Date().toISOString().slice(0, 10));
+seedPlayer(previewDb, previewOwner, previewSeason);
+seedAdditionalPet(previewDb, previewOwner, 'preview-pet-b', 2, previewSeason);
+for (const petId of [`pet-${previewOwner}`, 'preview-pet-b']) {
+  previewDb.database.prepare(`UPDATE telegram_pet_instances SET stage='young',energy=80,source_profile_updated_at='0001-01-01 00:00:00' WHERE pet_id=?`).run(petId);
+  previewDb.database.prepare(`INSERT INTO telegram_pet_lifecycle_by_pet (pet_id,telegram_id,identity_seed,phase,incubation_json,innate_traits_json) VALUES (?,?,?,'young','{}','[]')`).run(petId, previewOwner, petId);
+}
+previewDb.database.prepare("UPDATE telegram_pet_instances SET equipped_food='crystal_bowl' WHERE pet_id=?").run(`pet-${previewOwner}`);
+const previewStarted = await __petMediaTestHooks.startOrResumePetRun(previewDb, previewOwner);
+assert.equal(previewStarted.accepted, true);
+const sourcePreview = await __petMediaTestHooks.buildPetMiniAppState(previewDb, previewOwner, 'fixture-token');
+assert.ok(sourcePreview.run.choices.some((choice) => choice.advantages.includes('GEAR SHIELD')));
+previewDb.database.prepare('UPDATE telegram_pet_active_slots SET pet_id=? WHERE telegram_id=?').run('preview-pet-b', previewOwner);
+const switchedPreview = await __petMediaTestHooks.buildPetMiniAppState(previewDb, previewOwner, 'fixture-token');
+assert.equal(switchedPreview.pet.pet_id, 'preview-pet-b');
+assert.equal(switchedPreview.run.source_pet.active, false);
+assert.equal(switchedPreview.run.source_pet.pet_id, `pet-${previewOwner}`);
+assert.deepEqual(switchedPreview.run.choices, sourcePreview.run.choices, 'changing active pets must not change the saved run preview');
+previewDb.database.prepare('UPDATE telegram_pet_runs SET pet_id=NULL WHERE run_id=?').run(previewStarted.run.run_id);
+const orphanPreview = await __petMediaTestHooks.buildPetMiniAppState(previewDb, previewOwner, 'fixture-token');
+assert.equal(orphanPreview.adopted, true, 'an old orphaned run must not break the Mini App');
+assert.equal(orphanPreview.run.source_available, false);
+assert.deepEqual(orphanPreview.run.choices, []);
+
+console.log('Telegram Pets Daily Moon Run tests passed (10,000-run economy simulation; versioned tactics, risk/score previews and concurrent outcome authority included).');
