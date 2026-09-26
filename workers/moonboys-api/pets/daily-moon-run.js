@@ -127,6 +127,26 @@ export async function getDailyMoonRunReservation(db, request = {}) {
     WHERE d.telegram_id = ? AND d.run_id = ? LIMIT 1`).bind(telegramId, runId).first().catch(() => null);
 }
 
+// The reservation is account/day scoped. Switching pets must not advertise a
+// second official attempt; historical results remain tied to their source pet.
+export async function getDailyMoonRunSummary(db, request = {}) {
+  const telegramId = String(request.telegram_id || '').trim();
+  const now = request.now instanceof Date ? request.now : new Date(request.now || Date.now());
+  const utcDay = utcDayFromNow(now);
+  const row = await db.prepare(`SELECT d.run_id, d.pet_id, r.status, r.current_room, r.score
+    FROM telegram_pet_daily_runs d JOIN telegram_pet_runs r
+      ON r.run_id=d.run_id AND r.telegram_id=d.telegram_id
+    WHERE d.telegram_id=? AND d.utc_day=? LIMIT 1`).bind(telegramId, utcDay).first();
+  const active = row && ['active', 'extractable'].includes(row.status);
+  const expiresAt = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1)).toISOString();
+  return {
+    utc_day: utcDay, attempted: Boolean(row), available: !row && !request.active_run && request.hatched === true,
+    resumable: Boolean(active), run_id: row?.run_id || null, pet_id: row?.pet_id || null,
+    status: row?.status || 'not_started', depth: positiveInteger(row?.current_room), score: positiveInteger(row?.score),
+    cooldown: row && !active ? { expires_at: expiresAt, remaining_seconds: Math.max(0, Math.ceil((Date.parse(expiresAt) - now.getTime()) / 1000)), server_time: now.toISOString() } : null,
+  };
+}
+
 function parseJsonObject(value) {
   try {
     const parsed = JSON.parse(String(value || '{}'));

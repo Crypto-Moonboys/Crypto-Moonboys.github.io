@@ -7,7 +7,7 @@ import { handleRogueliteDailyRoutes } from './routes/daily-digest.js';
 import { handleWaxBridgeRoute } from './routes/wax/index.js';
 import { applyPetRuntimeAward, buildPetGearSummary, buildPetProgressSummary, getOrCreatePetRuntimeState } from './pets/runtime-phase-5a.js';
 import {
-  createDailyMoonRun, extractDailyMoonRun, getDailyMoonRunReservation, processDailyMoonRunStep,
+  createDailyMoonRun, extractDailyMoonRun, getDailyMoonRunReservation, getDailyMoonRunSummary, processDailyMoonRunStep,
   DAILY_JOURNEY_REQUIRED_OBJECTIVES, PET_DAILY_CHALLENGES, recordDailyCareChallenge, syncDailyMoonRun,
 } from './pets/daily-moon-run.js';
 import {
@@ -8813,13 +8813,19 @@ function countMiniAppCompletedJourneyObjectives(rows = [], definitions = {}) {
   }, 0);
 }
 
-async function countPetMiniAppCompletedDailyJourneyObjectives(db, telegramId, petId, seasonKey, dayKey) {
+async function listPetMiniAppDailyJourneyObjectives(db, telegramId, petId, seasonKey, dayKey) {
   const rows = await db.prepare(`SELECT challenge_id, SUM(progress_value) AS additive_progress, MAX(progress_value) AS max_progress
     FROM telegram_pet_daily_journey_objectives
     WHERE pet_id=? AND telegram_id=? AND season_key=? AND utc_day=? AND status='accepted'
     GROUP BY challenge_id`)
-    .bind(petId, telegramId, seasonKey, dayKey).all().catch(() => ({ results: [] }));
-  return countMiniAppCompletedJourneyObjectives(rows.results || [], PET_DAILY_CHALLENGES);
+    .bind(petId, telegramId, seasonKey, dayKey).all();
+  const byId = new Map((rows.results || []).map((row) => [row.challenge_id, row]));
+  return Object.values(PET_DAILY_CHALLENGES).map((definition) => {
+    const row = byId.get(definition.challenge_id) || {};
+    const target = miniAppProgressInteger(definition.target, 1);
+    const progress = Math.min(target, miniAppProgressInteger(definition.validation_rules?.progress_mode === 'max' ? row.max_progress : row.additive_progress, 0));
+    return { challenge_id: definition.challenge_id, description: definition.description, target, progress, completed: progress >= target };
+  });
 }
 
 async function countPetMiniAppCompletedWeeklyJourneyObjectives(db, telegramId, petId, seasonKey, week) {
@@ -8888,7 +8894,7 @@ async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = 
     };
   }
   const [dailyObjectives, dailyReceipt, dailyAcceptedReceipt] = await Promise.all([
-    countPetMiniAppCompletedDailyJourneyObjectives(db, telegramId, petId, seasonKey, dayKey),
+    listPetMiniAppDailyJourneyObjectives(db, telegramId, petId, seasonKey, dayKey).catch(() => null),
     db.prepare(`SELECT status, reason, growth_mark_id, completed_objectives
       FROM telegram_pet_daily_journey_receipts
       WHERE pet_id=? AND telegram_id=? AND season_key=? AND utc_day=?
@@ -8923,7 +8929,7 @@ async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = 
   } catch {
     weeklyAuthorityAvailable = false;
   }
-  const dailyCompleted = Math.max(Number(dailyObjectives || 0), Number(dailyReceipt?.completed_objectives || 0), Number(dailyAcceptedReceipt?.completed_objectives || 0));
+  const dailyCompleted = Math.max((dailyObjectives || []).filter((objective) => objective.completed).length, Number(dailyReceipt?.completed_objectives || 0), Number(dailyAcceptedReceipt?.completed_objectives || 0));
   if (!weeklyAuthorityAvailable) {
     return {
       daily: {
@@ -8934,6 +8940,7 @@ async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = 
         remaining_seconds: dailyCooldown?.remaining_seconds || 0,
         server_time: dailyCooldown?.server_time || now.toISOString(),
         completed_objectives: dailyCompleted, required_objectives: DAILY_JOURNEY_REQUIRED_OBJECTIVES,
+        objectives: dailyObjectives, authority_available: dailyObjectives !== null,
         growth_mark_awarded: Boolean(dailyAcceptedReceipt?.growth_mark_id),
         duplicate_blocked: dailyReceipt?.reason === 'daily_journey_growth_mark_duplicate',
         reason: dailyReceipt?.reason || (dailyCompleted >= DAILY_JOURNEY_REQUIRED_OBJECTIVES ? 'daily_journey_ready' : 'daily_journey_in_progress'),
@@ -8963,6 +8970,7 @@ async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = 
       remaining_seconds: dailyCooldown?.remaining_seconds || 0,
       server_time: dailyCooldown?.server_time || now.toISOString(),
       completed_objectives: dailyCompleted, required_objectives: DAILY_JOURNEY_REQUIRED_OBJECTIVES,
+      objectives: dailyObjectives, authority_available: dailyObjectives !== null,
       growth_mark_awarded: Boolean(dailyAcceptedReceipt?.growth_mark_id),
       duplicate_blocked: dailyReceipt?.reason === 'daily_journey_growth_mark_duplicate',
       reason: dailyReceipt?.reason || (dailyCompleted >= DAILY_JOURNEY_REQUIRED_OBJECTIVES ? 'daily_journey_ready' : 'daily_journey_in_progress'),
@@ -9358,6 +9366,8 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     ? await persistPetGuidanceNotices(db, telegramId, buildPetGuidanceCandidates(guidance)).catch(() => [])
     : [];
   const activeRun = guidance?.active_run || null;
+  const dailyRunSummary = await getDailyMoonRunSummary(db, { telegram_id: telegramId, now, active_run: activeRun, hatched: Boolean(lifecycle && lifecycle.phase !== 'egg') })
+    .catch(() => ({ available: false, attempted: false, status: 'authority_unavailable' }));
   const dailyReservation = activeRun
     ? await getDailyMoonRunReservation(db, { telegram_id: telegramId, run_id: activeRun.run_id })
     : null;
@@ -9426,6 +9436,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     regions: liveSystems.regions,
     live_systems: liveSystems,
     inventory,
+    daily_run: dailyRunSummary,
     run: activeRun ? {
       ...activeRun,
       daily: Boolean(dailyReservation),
@@ -13638,7 +13649,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260926-front-actions-v1`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260926-play-loop-v1`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',

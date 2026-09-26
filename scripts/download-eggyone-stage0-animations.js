@@ -233,7 +233,8 @@ function preservedFrontActionAssets(existingManifest) {
   for (const role of ["front_dance", "front_victory"]) {
     const asset = byRole.get(role);
     if (!asset) throw new Error(`Missing ${role} in data/moonpet-eggyone-stage0-assets.json; refusing to drop approved front actions during Stage-0 refresh.`);
-    byRole.set(role, { ...asset, review_status: "approved_visual_review" });
+    if (asset.review_status !== 'approved_visual_review') throw new Error(`${role} has no existing visual approval; Stage-0 refresh cannot approve it.`);
+    byRole.set(role, { ...asset });
   }
   return byRole;
 }
@@ -252,24 +253,42 @@ async function rebuildFrontActionContactSheet(assets) {
   return FRONT_ACTION_CONTACT_SHEET;
 }
 
+function preserveUnchangedStage0Review(asset, previous, pngUnchanged, atlasUnchanged) {
+  const fields = ['role', 'autosprite_animation_name', 'png_path', 'atlas_path', 'frame_count', 'frame_dimensions', 'sheet_dimensions', 'fps', 'loop', 'one_shot', 'playback_mode', 'autosprite'];
+  if (previous?.review_status === 'approved_visual_review' && pngUnchanged && atlasUnchanged
+    && fields.every((key) => JSON.stringify(asset[key]) === JSON.stringify(previous[key]))) {
+    return { ...asset, review_status: previous.review_status };
+  }
+  return asset;
+}
+
+async function sameFileBytes(left, right) {
+  try { return (await fs.readFile(left)).equals(await fs.readFile(right)); }
+  catch (error) { if (error.code === 'ENOENT') return false; throw error; }
+}
+
 async function promoteStagingPack(manifest, paths) {
   const productionDir = path.join(REPO_ROOT, "img", "moonpets", "eggyone");
+  const existingManifest = await readJsonIfExists(STAGE0_MANIFEST_PATH, {});
   await fs.mkdir(productionDir, { recursive: true });
   const productionAnimations = [];
   for (const animation of manifest.animations) {
     const pngPath = path.join(productionDir, `${animation.role}.png`);
     const atlasPath = path.join(productionDir, `${animation.role}.json`);
+    const sourcePng = path.join(REPO_ROOT, animation.output_png_path);
+    const sourceAtlas = path.join(REPO_ROOT, animation.output_atlas_path);
+    const [pngUnchanged, atlasUnchanged] = await Promise.all([sameFileBytes(sourcePng, pngPath), sameFileBytes(sourceAtlas, atlasPath)]);
     await fs.copyFile(path.join(REPO_ROOT, animation.output_png_path), pngPath);
     await fs.copyFile(path.join(REPO_ROOT, animation.output_atlas_path), atlasPath);
-    productionAnimations.push(toProductionStage0Asset({
+    const asset = toProductionStage0Asset({
       ...animation,
       png_path: `/${relative(pngPath)}`,
       atlas_path: `/${relative(atlasPath)}`
-    }, manifest.character_id));
+    }, manifest.character_id);
+    productionAnimations.push(preserveUnchangedStage0Review(asset, (existingManifest.assets || []).find((entry) => entry.role === asset.role), pngUnchanged, atlasUnchanged));
   }
   const contactSheetPath = path.join(productionDir, "contact-sheet.png");
   await fs.copyFile(paths.contactSheetPath, contactSheetPath);
-  const existingManifest = await readJsonIfExists(STAGE0_MANIFEST_PATH, {});
   const frontAssets = preservedFrontActionAssets(existingManifest);
   const localFrontFight = await ensureLocalEggyoneFrontFightAsset(productionDir, manifest.character_id);
   frontAssets.set("front_fight", localFrontFight);
@@ -282,7 +301,8 @@ async function promoteStagingPack(manifest, paths) {
     source: "AutoSprite API + local approved asset",
     provenance: "seven existing AutoSprite Stage-0 sheets plus approved local user-supplied EGGYONE front_fight sheet",
     downloaded_at: manifest.generated_at,
-    approval_status: "mechanical_validation_passed_pending_visual_review",
+    approval_status: mergedAssets.every((asset) => asset.review_status === 'approved_visual_review') ? 'approved_visual_review' : 'mechanical_validation_passed_pending_visual_review',
+    ...(mergedAssets.every((asset) => asset.review_status === 'approved_visual_review') && existingManifest.approved_at ? { approved_at: existingManifest.approved_at } : {}),
     contact_sheet_path: `/${relative(contactSheetPath)}`,
     cache_version: existingManifest?.cache_version || "20260926-front-actions-v1",
     runtime_role_map: {
@@ -382,5 +402,6 @@ module.exports = {
   preservedFrontActionAssets,
   rebuildFrontActionContactSheet,
   promoteStagingPack,
+  preserveUnchangedStage0Review,
   downloadEggyoneStage0Animations
 };
