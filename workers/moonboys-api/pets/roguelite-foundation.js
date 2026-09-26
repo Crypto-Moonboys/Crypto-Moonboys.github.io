@@ -46,7 +46,7 @@ export const PET_RUN_STATUSES = Object.freeze(['active', 'completed', 'failed', 
 export const PET_ROOM_TYPES = Object.freeze(['battle', 'choice_event', 'loot', 'elite', 'boss']);
 export const PET_REWARD_SOURCES = Object.freeze([
   'pet_event', 'pet_kaiju', 'pet_job', 'pet_activity', 'pet_adventure', 'pet_arena', 'pet_run_legacy', 'pet_action', 'pet_item_use',
-  'pet_weekly_boss', 'pet_season_reward',
+  'pet_weekly_boss', 'pet_season_reward', 'pet_contract',
   'pet_bounty', 'pet_expedition', 'pet_market',
   'pet_district', 'pet_event_chain', 'pet_seasonal_boss',
   'roguelite_room', 'roguelite_boss', 'roguelite_completion',
@@ -179,6 +179,13 @@ function getRewardAuthorization(source, telegramId, context = {}) {
     if (!runId) throw new Error('invalid_pet_reward_context');
     return { sql: "AND EXISTS (SELECT 1 FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ? AND status IN ('completed', 'extracted'))", args: [runId, telegramId] };
   }
+  if (source === 'pet_contract') {
+    const contractId = String(context.contract_id || '');
+    const petId = String(context.pet_id || '');
+    const seasonKey = String(context.season_key || '');
+    if (!contractId || !petId || !seasonKey) throw new Error('invalid_pet_reward_context');
+    return { sql: `AND EXISTS (SELECT 1 FROM telegram_pet_contracts WHERE contract_id=? AND telegram_id=? AND pet_id=? AND season_key=? AND status='completed' AND reward_xp=20)`, args: [contractId, telegramId, petId, seasonKey] };
+  }
   if (source === 'pet_run_legacy') {
     if (!runId) throw new Error('invalid_pet_reward_context');
     return { sql: "AND EXISTS (SELECT 1 FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ? AND status IN ('active', 'extractable', 'completed', 'extracted'))", args: [runId, telegramId] };
@@ -205,6 +212,10 @@ export async function awardPetReward(db, request = {}) {
   const now = request.now instanceof Date ? request.now : new Date(request.now || Date.now());
   const reservationId = String(request.reservation_id || '').trim();
   let rewards = normalizePetReward(request.rewards);
+  if (source === 'pet_contract') {
+    if (!petId || petId !== request.context?.pet_id || request.season_key !== request.context?.season_key || idempotencyKey !== request.context?.contract_id) throw new Error('invalid_pet_reward_context');
+    rewards = normalizePetReward({ pet_xp: 20 });
+  }
   if (source.startsWith('roguelite_')) rewards = {
     ...rewards,
     moon_gold: Math.min(rewards.moon_gold, MAX_ROGUELITE_MOON_GOLD_PER_CLAIM),

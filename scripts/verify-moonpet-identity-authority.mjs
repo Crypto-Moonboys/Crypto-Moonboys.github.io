@@ -18,6 +18,7 @@ const repoRoot = path.resolve(__dirname, '..');
 const workerRoot = path.join(repoRoot, 'workers', 'moonboys-api');
 const migrationsRoot = path.join(workerRoot, 'migrations');
 const PET_OWNED_TABLES = new Set([
+  'telegram_pet_contracts',
   'telegram_pet_memories',
   'telegram_pet_personality_traits',
   'telegram_pet_boss_victories',
@@ -49,6 +50,7 @@ const ACCOUNT_OWNED_TABLES = new Set([
   'telegram_pet_equipment_events',
 ]);
 const OWNERSHIP_AUDIT_TUPLE_TABLE_SPECS = [
+  { table: 'telegram_pet_contracts', seasonColumn: 'season_key' },
   { table: 'telegram_pet_specialist_progression', seasonColumn: 'season_key' },
   { table: 'telegram_pet_specialist_events', seasonColumn: 'season_key' },
   { table: 'telegram_pet_daily_journey_objectives', seasonColumn: 'season_key' },
@@ -555,6 +557,7 @@ function applyMigrationChain(db) {
   db.exec(readRepoFile('workers/moonboys-api/migrations/070_moonpet_pet_identity_achievement_authority.sql'));
   db.exec(readRepoFile('workers/moonboys-api/migrations/071_moonpet_arena_pet_authority.sql'));
   db.exec(readRepoFile('workers/moonboys-api/migrations/072_moonpet_identity_authority_verification.sql'));
+  db.exec(readRepoFile('workers/moonboys-api/migrations/076_moonpet_continuing_contracts.sql'));
 }
 
 function seedValidIdentityRows(db) {
@@ -725,7 +728,7 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const result = await runMoonpetIdentityAuthorityAudit(parseArgs(process.argv.slice(2)));
   console.log('Moonpet Identity Authority Audit');
   console.log('');
-  console.log('Migration chain: 070 -> 071 -> 072');
+  console.log('Migration chain: 070 -> 071 -> 072 + continuing contracts 076');
   console.log('');
   for (const table of IDENTITY_AUTHORITY_TABLES) {
     console.log(`${table}: ${Number(result.tableCounts?.[table] || 0)}`);

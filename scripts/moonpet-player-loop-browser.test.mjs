@@ -42,6 +42,8 @@ async function seed(id, phase) {
 await seed('browser-egg', 'egg');
 await seed('browser-young', 'young');
 const token = 'local-browser-test-token';
+const realCrypto = globalThis.crypto;
+Object.defineProperty(globalThis, 'crypto', { configurable: true, value: { subtle: realCrypto.subtle, randomUUID: () => realCrypto.randomUUID(), getRandomValues: (values) => { values.fill(0); return values; } } });
 const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg' };
 const server = http.createServer(async (request, response) => {
   try {
@@ -85,6 +87,7 @@ try {
     const url = `http://127.0.0.1:${server.address().port}/moonpet-game.html`;
     await page.goto(url);
     await page.waitForSelector('[data-panel="care"]');
+    assert.ok(await page.locator('#nav button').evaluateAll((buttons) => buttons.length === 6 && buttons.every((b) => b.getBoundingClientRect().right <= innerWidth && b.getBoundingClientRect().left >= 0)), 'all six navigation buttons must fit the viewport');
     for (const action of ['energy_drink', 'dance', 'cuddles']) assert.equal(await page.locator(`[data-panel="care"] [data-action="${action}"]`).count(), 1);
     await page.locator('[data-panel="play-now"] [data-focus="practice"]').click();
     await page.waitForSelector('#practice-build');
@@ -133,15 +136,54 @@ try {
     assert.equal(await page.locator('[data-action="run_step"]').getAttribute('data-payload').then(JSON.parse).then((x) => x.expected_step_index), 0);
     await page.locator('[data-screen="missions"]').click();
     assert.equal(await page.locator('[data-panel="daily-objectives"] [data-jump]').count(), 5);
+    // These are real server-backed contract actions, distinct from local practice.
+    const youngBefore = await hooks.buildPetMiniAppState(db, currentUser, token);
+    await page.locator('#contract-build').selectOption('bruiser');
+    const oldContractSelect = await page.locator('#contract-build').elementHandle();
+    await page.locator('[data-utility="sync"]').click();
+    await page.waitForFunction((node) => !node.isConnected, oldContractSelect);
+    assert.equal(await page.locator('#contract-build').inputValue(), 'bruiser', 'refresh must preserve build selection');
+    const startContract = page.locator('[data-action="contract_start"]').filter({ hasText: 'BRING THE COURIER HOME' });
+    await startContract.click();
+    await page.waitForSelector('[data-action="contract_step"]');
+    const contractId = await page.locator('[data-action="contract_step"]').first().getAttribute('data-payload').then(JSON.parse).then((x) => x.contract_id);
+    for (let turn = 0; turn < 8; turn++) {
+      const candidates = page.locator('[data-action="contract_step"]');
+      const payloads = await candidates.evaluateAll((buttons) => buttons.map((button) => JSON.parse(button.dataset.payload)));
+      const chosen = payloads.find((x) => x.choice === 'cover') || payloads.find((x) => x.choice === 'medkit') || payloads.find((x) => x.choice === 'shield') || payloads.find((x) => x.choice !== 'abandon');
+      assert.ok(chosen, 'active contract must offer a route or upgrade');
+      const response = page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'contract_step');
+      await candidates.nth(payloads.indexOf(chosen)).click();
+      const data = await (await response).json(); assert.equal(data.result.accepted, true);
+      await page.waitForFunction((revision) => {
+        const button = document.querySelector('[data-action="contract_step"]');
+        return !button || JSON.parse(button.dataset.payload).revision !== revision;
+      }, chosen.revision);
+      if (turn === 2) {
+        await page.reload(); await page.waitForSelector('[data-panel="care"]');
+        await page.locator('[data-panel="play-now"] [data-focus="contracts"]').click();
+        assert.equal(await page.locator('[data-action="contract_step"]').first().getAttribute('data-payload').then(JSON.parse).then((x) => x.contract_id), contractId, 'server contract resumes after reload');
+      }
+    }
+    await page.waitForSelector('[data-action="contract_start"]');
+    const youngAfter = await hooks.buildPetMiniAppState(db, currentUser, token);
+    assert.equal(youngAfter.contracts.completed, youngBefore.contracts.completed + 1);
+    assert.ok(youngAfter.contracts.rank_points > youngBefore.contracts.rank_points);
+    assert.equal(youngAfter.pet.moon_gold, youngBefore.pet.moon_gold);
+    assert.equal(youngAfter.pet.energy, youngBefore.pet.energy);
+    assert.equal(youngAfter.pet.pet_xp - youngBefore.pet.pet_xp, 20);
+    assert.ok(await page.locator('[data-panel="contracts"]').evaluate((panel) => panel.getBoundingClientRect().right <= innerWidth), 'contract board fits mobile');
+    if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-contracts-${viewport.width}.png`) });
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
     assert.equal(overflow, false, 'mobile viewport must not overflow horizontally');
     assert.deepEqual(errors, [], 'no runtime errors across all six screens');
     if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-${viewport.width}.png`) });
-    console.log(`Moonpet browser loop passed at ${viewport.width}x${viewport.height}; all six screens; egg actions; practice resume/isolation; daily run copy; zero practice API actions.`);
+    console.log(`Moonpet browser loop passed at ${viewport.width}x${viewport.height}; all six screens; practice isolation; daily run copy; server contract completion/reload/XP/new quests.`);
     await context.close();
   }
 } finally {
   if (browser) await browser.close();
   await new Promise((resolve) => server.close(resolve));
   sqlite.close();
+  Object.defineProperty(globalThis, 'crypto', { configurable: true, value: realCrypto });
 }

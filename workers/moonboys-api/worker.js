@@ -4,6 +4,7 @@ import { getOrCreateBlockTopiaProgression, hasBlockTopiaFactionColumns } from '.
 import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
 import { buildDailyLoopState, handleDailyLoopStateRoute } from './routes/daily-loop-state.js';
 import { handleRogueliteDailyRoutes } from './routes/daily-digest.js';
+import { getContractBoard, processContractAction } from './pets/continuing-contracts.js';
 import { handleWaxBridgeRoute } from './routes/wax/index.js';
 import { applyPetRuntimeAward, buildPetGearSummary, buildPetProgressSummary, getOrCreatePetRuntimeState } from './pets/runtime-phase-5a.js';
 import {
@@ -9366,6 +9367,8 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     ? await persistPetGuidanceNotices(db, telegramId, buildPetGuidanceCandidates(guidance)).catch(() => [])
     : [];
   const activeRun = guidance?.active_run || null;
+  const contracts = await getContractBoard(db, telegramId, petRaw, now)
+    .catch(() => ({ available: false, reason: 'contracts_unavailable' }));
   const dailyRunSummary = await getDailyMoonRunSummary(db, { telegram_id: telegramId, now, active_run: activeRun, hatched: Boolean(lifecycle && lifecycle.phase !== 'egg') })
     .catch(() => ({ available: false, attempted: false, status: 'authority_unavailable' }));
   const dailyReservation = activeRun
@@ -9437,6 +9440,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     live_systems: liveSystems,
     inventory,
     daily_run: dailyRunSummary,
+    contracts,
     run: activeRun ? {
       ...activeRun,
       daily: Boolean(dailyReservation),
@@ -9628,6 +9632,14 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
     });
     return resolved;
   }
+  if (['contract_start', 'contract_step', 'contract_claim'].includes(action)) {
+    const contractPet = await getPetProfile(db, telegramId);
+    try { return await processContractAction(db, telegramId, contractPet, body, awardPetReward); }
+    catch (error) {
+      if (/no such table: telegram_pet_contracts/.test(String(error?.message))) return { accepted: false, reason: 'contracts_unavailable' };
+      throw error;
+    }
+  }
   if (action === 'run_extract') {
     const reservation = await getDailyMoonRunReservation(db, { telegram_id: telegramId, run_id: body.run_id });
     const result = reservation
@@ -9791,7 +9803,7 @@ function serializePetMiniAppActionResult(result = {}, identity = null, telegramI
     duplicate: Boolean(result.duplicate),
     reason: String(result.reason || (result.accepted ? 'accepted' : 'rejected')),
   };
-  for (const key of ['pet_xp_awarded', 'xp_awarded', 'damage', 'action', 'attempt', 'retry_after_seconds', 'remaining_seconds', 'server_time', 'gold_delta', 'crystal_delta', 'daily_limit', 'used_today', 'won']) {
+  for (const key of ['pet_xp_awarded', 'xp_awarded', 'damage', 'action', 'attempt', 'retry_after_seconds', 'remaining_seconds', 'server_time', 'gold_delta', 'crystal_delta', 'daily_limit', 'used_today', 'won', 'reward_pending']) {
     if (result[key] !== undefined) output[key] = result[key];
   }
   for (const key of ['rewards', 'applied', 'job', 'item', 'recipe', 'encounter', 'choice', 'result_copy', 'reaction', 'boss', 'progress', 'tier', 'expedition', 'offer', 'bounty', 'queue', 'run', 'room', 'session', 'pending', 'computed', 'resolved', 'match', 'reward_results', 'region', 'chain_key', 'step', 'final', 'cosmetic', 'cost', 'faction_bonus', 'prestige_count', 'acknowledged', 'rare_morph', 'care_type', 'season_slots', 'capabilities_version', 'capabilities', 'cooldown', 'expires_at']) {
@@ -13649,7 +13661,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260926-play-loop-v1`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260926-contracts-v1`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',

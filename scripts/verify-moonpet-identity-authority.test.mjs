@@ -516,6 +516,7 @@ try {
     CREATE TABLE telegram_pet_event_chain_progress (pet_id TEXT, telegram_id TEXT, season_key TEXT);
     CREATE TABLE telegram_pet_weekly_boss_progress (pet_id TEXT, telegram_id TEXT, season_key TEXT);
     CREATE TABLE telegram_pet_seasonal_boss_progress (pet_id TEXT, telegram_id TEXT, pet_season_key TEXT);
+    CREATE TABLE telegram_pet_contracts (pet_id TEXT, telegram_id TEXT, season_key TEXT);
     CREATE VIEW moonpet_invalid_identity_authority_rows AS
       SELECT 'telegram_pet_memories' AS table_name, NULL AS pet_id, NULL AS telegram_id, NULL AS season_key, NULL AS row_key, 'empty' AS reason WHERE 1 = 0;
   `);
@@ -594,6 +595,7 @@ try {
     CREATE TABLE telegram_pet_event_chain_progress (pet_id TEXT, telegram_id TEXT, season_key TEXT);
     CREATE TABLE telegram_pet_weekly_boss_progress (pet_id TEXT, telegram_id TEXT, season_key TEXT);
     CREATE TABLE telegram_pet_seasonal_boss_progress (pet_id TEXT, telegram_id TEXT, pet_season_key TEXT);
+    CREATE TABLE telegram_pet_contracts (pet_id TEXT, telegram_id TEXT, season_key TEXT);
     CREATE INDEX idx_telegram_pet_identity_events_owner
       ON telegram_pet_identity_events(pet_id, telegram_id, season_key, created_at);
     CREATE INDEX idx_telegram_pet_identity_events_pet_kind_day

@@ -1,5 +1,15 @@
 export const MOONPET_LIVE_SYSTEM_OWNERSHIP_CLASSIFICATION = Object.freeze([
   {
+    system_key: 'continuing_contracts',
+    status: 'live',
+    authority_owner: 'pet',
+    required_authority_keys: ['telegram_id', 'pet_id', 'season_key', 'contract_id', 'revision'],
+    write_tables: ['telegram_pet_contracts', 'telegram_pet_reward_claims', 'telegram_pet_events', 'telegram_pet_instances'],
+    read_tables: ['telegram_pet_active_slots', 'telegram_pet_lifecycle_by_pet', 'telegram_pet_contracts'],
+    risk_notes: 'Three bonus reservations per account/day across all pets; quest rank has no daily cap. Optimistic revisions prevent duplicate moves.',
+    expected_ownership_rule: 'Contract state, rank and Pet XP remain on the participating pet; retries cannot redirect a bonus or create another claim.',
+  },
+  {
     system_key: 'care_actions',
     status: 'live',
     authority_owner: 'mixed',

@@ -482,13 +482,17 @@ function changedFilesForAvailableRange(pathspec) {
   return [];
 }
 
-{
-  const forbiddenChangedFiles = changedFilesForAvailableRange(
-    'workers/moonboys-api/routes workers/moonboys-api/migrations workers/moonboys-api/schema.sql',
-  );
-  assert.deepEqual(forbiddenChangedFiles, [],
-    'Dead Run client fixes must not change Worker API route, migration, or schema files');
+function deadRunClientScopeViolations(changed) {
+  // This is a Dead Run client scope guard, not a ban on every other game's migrations.
+  if (!changed.some((file) => file.startsWith('games/dead-run/'))) return [];
+  return changed.filter((file) => file.startsWith('workers/moonboys-api/routes/')
+    || file.startsWith('workers/moonboys-api/migrations/') || file === 'workers/moonboys-api/schema.sql');
 }
+assert.deepEqual(deadRunClientScopeViolations(['workers/moonboys-api/schema.sql', 'js/moonpet-mini-app.js']), []);
+assert.deepEqual(deadRunClientScopeViolations(['games/dead-run/app.js']), []);
+assert.deepEqual(deadRunClientScopeViolations(['games/dead-run/app.js', 'workers/moonboys-api/schema.sql']), ['workers/moonboys-api/schema.sql']);
+assert.deepEqual(deadRunClientScopeViolations(changedFilesForAvailableRange('.')), [],
+  'Dead Run client fixes must not change Worker API route, migration, or schema files');
 assert.match(fs.readFileSync(new URL(import.meta.url), 'utf8'), /GITHUB_ACTIONS[\s\S]*HEAD\^1\.\.HEAD\^2[\s\S]*origin\/main\.\.\.HEAD/,
   'path guard must prefer committed PR ranges in CI when the checkout includes those refs');
 
