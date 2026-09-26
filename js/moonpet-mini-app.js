@@ -186,6 +186,7 @@
     vinyl_crab: 'BOTTY', neon_raccoon: 'F1 EDDY', bubble_ram: 'JAKE THE SNAKE', comet_gecko: 'TUBBY',
     lantern_fox: 'RED ALERT', sneaker_snail: 'THE TING', alley_drake: 'TATTOO JOHN', moon_ferret: 'TIN BOB'
   });
+  var MOONPET_IDENTITY_REVEAL_STAGE = 3;
 
   function resolveMoonpetDisplayName(lifecycle, identity) {
     lifecycle = lifecycle || {};
@@ -203,15 +204,19 @@
   // TEST-EXPORT: resolveMoonpetDisplayName:end
   window.resolveMoonpetDisplayName = resolveMoonpetDisplayName;
 
+  // TEST-EXPORT: botArtIdentity:start
   function botArtIdentity(snapshot) {
     var lifecycle = snapshot && snapshot.lifecycle || {};
     var pet = snapshot && snapshot.pet || {};
+    var evolutionStage = botArtEvolutionStage(snapshot);
+    var identityRevealed = evolutionStage >= MOONPET_IDENTITY_REVEAL_STAGE;
     return {
-      speciesId: String(lifecycle.art_identity_id || lifecycle.species_id || pet.art_identity_id || pet.species || ''),
-      speciesName: String(lifecycle.identity_revealed ? resolveMoonpetDisplayName(lifecycle, snapshot && snapshot.guidance && snapshot.guidance.identity) : ''),
-      evolutionStage: botArtEvolutionStage(snapshot)
+      speciesId: identityRevealed ? String(lifecycle.art_identity_id || lifecycle.species_id || pet.art_identity_id || pet.species || '') : '',
+      speciesName: identityRevealed ? String(resolveMoonpetDisplayName(lifecycle, snapshot && snapshot.guidance && snapshot.guidance.identity)) : '',
+      evolutionStage: identityRevealed ? evolutionStage : Math.min(evolutionStage, 1)
     };
   }
+  // TEST-EXPORT: botArtIdentity:end
 
   async function selectBotArtForState(snapshot) {
     if (!botArtModeEnabled || !window.MoonpetBotArtRenderer) return false;

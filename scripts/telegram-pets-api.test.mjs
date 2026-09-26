@@ -346,6 +346,7 @@ const eggLeaderboardEntry = serializePetLeaderboardEntry({
   moon_crystals: 2,
   style_tokens: 1,
 }, 0);
+assert.equal(eggLeaderboardEntry.art_identity_id, null, 'leaderboard must not expose an unrevealed art identity');
 assert.equal(eggLeaderboardEntry.species_id, null, 'leaderboard must not reveal an egg species');
 assert.equal(eggLeaderboardEntry.species_name, null, 'leaderboard must not reveal an egg species name');
 assert.equal(eggLeaderboardEntry.display_name, 'UNKNOWN', 'leaderboard identity must use the exact locked placeholder');
@@ -447,6 +448,14 @@ const serializedArenaPet = serializePet({ ...baseArenaPet, equipped_armor: 'moon
 assert.equal(serializedArenaPet.equipped_armor, 'moon_helmet', 'serialized pet state must include equipped arena armor');
 assert.equal(serializedArenaPet.equipped_weapon, 'laser_claws', 'serialized pet state must include equipped arena weapon');
 assert.equal(serializedArenaPet.equipped_charm, 'shield_charm', 'serialized pet state must include equipped arena charm');
+const hiddenIdentityPet = serializePet({ ...baseArenaPet, species: 'neon_raccoon' }, { current_stage: { stage: 2, name: 'Cyber Moonpet' } });
+assert.equal(hiddenIdentityPet.display_name, 'UNKNOWN', 'serialized pets must keep the Stage 0-2 identity placeholder');
+assert.equal(hiddenIdentityPet.species, null, 'serialized pets must not expose species before Stage 3');
+assert.equal(hiddenIdentityPet.art_identity_id, null, 'serialized pets must not expose art identity before Stage 3');
+const revealedIdentityPet = serializePet({ ...baseArenaPet, species: 'neon_raccoon' }, { current_stage: { stage: 3, name: 'Elite Moonpet' } });
+assert.equal(revealedIdentityPet.display_name, 'F1 EDDY', 'serialized pets must reveal the canonical identity at Stage 3');
+assert.equal(revealedIdentityPet.species, 'neon_raccoon', 'serialized pets must expose species at Stage 3');
+assert.equal(revealedIdentityPet.art_identity_id, 'neon_raccoon', 'serialized pets may expose the art identity once revealed');
 const serializedAuthorityPet = serializePet({ ...baseArenaPet, telegram_id: 'serialize-owner', pet_id: 'pet:serialize-owner:pet-s2026-003:1', season_key: 'pet-s2026-003' });
 assert.equal(serializedAuthorityPet.telegram_id, 'serialize-owner', 'serialized pet authority must include telegram_id');
 assert.equal(serializedAuthorityPet.pet_id, 'pet:serialize-owner:pet-s2026-003:1', 'serialized pet authority must include pet_id');
@@ -2247,6 +2256,7 @@ assert.deepEqual(
   ['art_identity_id', 'cleanliness', 'display_name', 'energy', 'happiness', 'health', 'hunger', 'level', 'name', 'pet_xp', 'progression', 'species', 'stage', 'variant'].sort(),
   'owned slot summaries must expose only the pet-instance fields required by the roster card',
 );
+assert.equal(initialSeasonSlots.slots[0].pet.art_identity_id, null, 'slot summaries must not leak hidden art identities before Stage 3');
 assert.equal(initialSeasonSlots.slots[0].pet.level >= 1, true, 'owned slot cards must include a valid level');
 assert.equal(initialSeasonSlots.slots[0].pet.pet_xp >= 0, true, 'owned slot cards must include pet-instance XP');
 assert.equal(typeof initialSeasonSlots.slots[0].pet_id, 'string', 'owned slot summaries must identify the authoritative pet instance');

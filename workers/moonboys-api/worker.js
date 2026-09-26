@@ -20,7 +20,7 @@ import {
 } from './pets/moonpet-identity.js';
 import {
   MOONPET_SPECIES, createMoonEggLifecycle, ensureMoonpetLifecycle, getExistingMoonpetLifecycle, getMoonpetLifecycle, hatchMoonpet, incubateMoonEgg, morphMoonpetRare,
-  resolveMoonpetDisplayName, syncMoonpetLifecycleStage,
+  MOONPET_IDENTITY_REVEAL_STAGE, resolveMoonpetDisplayName, syncMoonpetLifecycleStage,
 } from './pets/species-lifecycle.js';
 import {
   PET_ROGUELITE_BOSSES, PET_ROGUELITE_ENEMIES, PET_ROGUELITE_REGIONS, PET_ROGUELITE_RELICS, PET_ROGUELITE_ROOMS, PET_RUN_MODIFIERS,
@@ -4426,6 +4426,8 @@ function serializePetSeasonSlot(row, slotNumber, activePetId, arcadeXpAvailable 
   const cost = Number(PET_SEASON_EXTRA_SLOT_COSTS[slotNumber] || 0);
   const unlocked = Boolean(row);
   const lockedByPrevious = !unlocked && slotNumber > 1 && !previousSlotOwned;
+  const evolutionStage = Math.max(0, Number(row?.evolution_stage) || 0);
+  const artIdentityId = row?.lifecycle_species_id || row?.species || null;
   return {
     slot_number: slotNumber,
     pet_id: row?.pet_id || null,
@@ -4442,9 +4444,9 @@ function serializePetSeasonSlot(row, slotNumber, activePetId, arcadeXpAvailable 
     affordable: !unlocked && slotNumber > 1 && !lockedByPrevious && arcadeXpAvailable >= cost,
     pet: unlocked ? {
       name: row?.pet_name || 'Moonpet',
-      display_name: resolveMoonpetDisplayName({ evolution_stage: row?.evolution_stage, art_identity_id: row?.lifecycle_species_id || row?.species }),
-      species: Number(row?.evolution_stage || 0) >= 3 ? row?.lifecycle_species_id || row?.species || '' : null,
-      art_identity_id: row?.lifecycle_species_id || row?.species || null,
+      display_name: resolveMoonpetDisplayName({ evolution_stage: evolutionStage, art_identity_id: artIdentityId }),
+      species: evolutionStage >= MOONPET_IDENTITY_REVEAL_STAGE ? artIdentityId : null,
+      art_identity_id: publicMoonpetArtIdentityId(artIdentityId, evolutionStage),
       variant: row?.rare_morph_id || null,
       stage: row?.lifecycle_phase || row?.stage || 'egg',
       level: Math.max(1, Number(row?.level || 1)),
@@ -6571,6 +6573,7 @@ function serializePetLeaderboardEntry(row, index = 0) {
   const artIdentityId = MOONPET_SPECIES[row?.lifecycle_species_id] ? String(row.lifecycle_species_id) : null;
   const revealed = evolutionStage >= 3;
   const speciesId = revealed ? artIdentityId : null;
+  const publicArtIdentityId = evolutionStage >= MOONPET_IDENTITY_REVEAL_STAGE ? artIdentityId : null;
   const rareMorphId = phase === 'rare' && row?.rare_morph_id ? String(row.rare_morph_id) : null;
   return {
     rank: Math.max(1, Number(row?.rank) || Number(index) + 1),
@@ -6580,7 +6583,7 @@ function serializePetLeaderboardEntry(row, index = 0) {
     evolution_stage: evolutionStage,
     identity_revealed: revealed,
     display_name: resolveMoonpetDisplayName({ evolution_stage: evolutionStage, art_identity_id: artIdentityId }),
-    art_identity_id: artIdentityId,
+    art_identity_id: publicArtIdentityId,
     species_id: speciesId,
     species_name: speciesId ? MOONPET_SPECIES[speciesId].name : null,
     rare_morph_id: rareMorphId,
@@ -6611,6 +6614,18 @@ async function materializePetLeaderboardRows(db, rows = []) {
   }));
 }
 
+function publicMoonpetArtIdentityId(artIdentityId, evolutionStage = 0) {
+  return Number(evolutionStage) >= MOONPET_IDENTITY_REVEAL_STAGE ? artIdentityId : null;
+}
+
+function publicMoonpetLifecycle(lifecycle) {
+  if (!lifecycle) return null;
+  return {
+    ...lifecycle,
+    art_identity_id: publicMoonpetArtIdentityId(lifecycle.art_identity_id, lifecycle.evolution_stage),
+  };
+}
+
 function serializePet(pet, identity = null) {
   if (!pet) return null;
   const decayed = applyPetDecay({ ...pet });
@@ -6624,7 +6639,7 @@ function serializePet(pet, identity = null) {
     pet_name: decayed.pet_name,
     display_name: resolveMoonpetDisplayName({ evolution_stage: evolutionStage, art_identity_id: artIdentityId }, identity || {}),
     species: evolutionStage >= 3 ? decayed.species : null,
-    art_identity_id: artIdentityId,
+    art_identity_id: publicMoonpetArtIdentityId(artIdentityId, evolutionStage),
     stage: currentEvolution?.name || null,
     evolution_id: currentEvolution?.evolution_id || null,
     evolution_stage: evolutionStage,
@@ -9099,13 +9114,14 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     encounter ? issuePetMiniAppChallenge({ type: 'event', telegram_id: telegramId, encounter_key: encounter.key, event_key: encounter.event_key }, botToken) : null,
     adventure ? issuePetMiniAppChallenge({ type: 'adventure', telegram_id: telegramId, encounter_key: adventure.key, event_key: adventure.event_key }, botToken) : null,
   ]);
+  const serializedLifecycle = publicMoonpetLifecycle(lifecycle);
   const canonicalPet = serializePet(petRaw, guidance?.identity);
-  canonicalPet.display_name = resolveMoonpetDisplayName(lifecycle || {}, guidance?.identity || {});
-  canonicalPet.art_identity_id = lifecycle?.art_identity_id || canonicalPet.art_identity_id;
-  canonicalPet.species = lifecycle?.identity_revealed ? lifecycle.species_id : null;
+  canonicalPet.display_name = resolveMoonpetDisplayName(serializedLifecycle || lifecycle || {}, guidance?.identity || {});
+  canonicalPet.art_identity_id = serializedLifecycle?.identity_revealed ? serializedLifecycle.art_identity_id : canonicalPet.art_identity_id;
+  canonicalPet.species = serializedLifecycle?.identity_revealed ? serializedLifecycle.species_id : null;
   if (guidance) {
     guidance.pet = canonicalPet;
-    if (guidance.identity) guidance.identity.lifecycle = lifecycle;
+    if (guidance.identity) guidance.identity.lifecycle = serializedLifecycle;
   }
   const liveSystems = await buildPetLiveSystemsState(db, telegramId, canonicalPet, runtime, gear.results || [], materials.results || [], now);
   const guidedNext = guidance ? choosePetNextAction(guidance) : null;
@@ -9166,7 +9182,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
   return {
     adopted: true,
     pet: canonicalPet,
-    lifecycle,
+    lifecycle: serializedLifecycle,
     next,
     guidance,
     notices: guidanceNotices,

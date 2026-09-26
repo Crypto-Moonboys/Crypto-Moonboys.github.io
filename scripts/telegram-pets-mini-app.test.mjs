@@ -1647,6 +1647,31 @@ for (const [speciesId, canonicalName] of Object.entries(canonicalNames)) {
 }
 assert.equal(resolveMoonpetDisplayName({ evolution_stage: 3, species_name: 'JACK THE SNAKE' }), 'UNKNOWN',
   'compatibility aliases must never become visible names');
+const botArtIdentitySource = extractTestExport(client, 'botArtIdentity');
+assert.ok(botArtIdentitySource, 'bot art identity resolver must be extractable for runtime coverage');
+const botArtIdentity = new Function(
+  `${botArtEvolutionStageSource}
+  ${displayNameResolverSource}
+  var MOONPET_IDENTITY_REVEAL_STAGE = 3;
+  ${botArtIdentitySource}
+  return botArtIdentity;`
+)();
+assert.deepEqual(botArtIdentity({
+  lifecycle: { phase: 'adult', evolution_stage: 2, art_identity_id: 'neon_raccoon', identity_revealed: false },
+  pet: { art_identity_id: 'neon_raccoon', species: null },
+}), {
+  speciesId: '',
+  speciesName: '',
+  evolutionStage: 1,
+}, 'pre-Stage-3 bot art must stay on shared non-identifying art');
+assert.deepEqual(botArtIdentity({
+  lifecycle: { phase: 'adult', evolution_stage: 3, art_identity_id: 'neon_raccoon', identity_revealed: true },
+  pet: { art_identity_id: 'neon_raccoon', species: 'neon_raccoon' },
+}), {
+  speciesId: 'neon_raccoon',
+  speciesName: 'F1 EDDY',
+  evolutionStage: 3,
+}, 'Stage 3 bot art may resolve the revealed identity pack');
 assert.doesNotMatch(client, /selectWorldBackgroundForState|loadMoonpetBackground|setWorldBackground/,
   'pet state changes must never restore a static canvas background');
 assert.match(client, /backgroundArtState = \{ mode: 'retro_space_loop', loop_ms: 20000, source: 'canvas' \}/,
