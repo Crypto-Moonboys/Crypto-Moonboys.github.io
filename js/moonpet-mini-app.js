@@ -3244,6 +3244,41 @@
     return drew;
   }
 
+  // TEST-EXPORT: drawEmergencyMoonpetFallback:start
+  function drawEmergencyMoonpetFallback(time, active, lifecycle, pet, presence, x, y) {
+    var stage = petStage(pet);
+    var mood = petMood(pet);
+    var pose = petPose(time, active, mood, presence);
+    var growth = petGrowthShape(lifecycle.phase, stage);
+    var palette = petPalette(lifecycle, stage);
+    var speciesId = lifecycle.species_id || pet && pet.species || 'neon_raccoon';
+    var faceX = petFaceOffset(speciesId);
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(growth.scaleX * pose.squashX, growth.scaleY * pose.squashY);
+    ctx.shadowColor = palette.body;
+    ctx.shadowBlur = active ? 6 : 2;
+    drawSpeciesSilhouette(speciesId, palette, pose);
+    ctx.save();
+    ctx.translate(faceX, 0);
+    drawPetMarking(lifecycle.appearance && lifecycle.appearance.marking, palette, pose.headY);
+    ctx.restore();
+    var blink = !reducedMotion && Math.floor(time / 1800) % 7 === 0 || mood === 'tired' || animationMode === 'sleep' && active;
+    ctx.save();
+    ctx.translate(faceX, 0);
+    drawPetEyes(lifecycle.appearance && lifecycle.appearance.eyes || 'bright', mood, blink, palette.outline, palette.accent, pose.headY);
+    drawPixelRect(-3, -27 + pose.headY, 6, 4, palette.outline);
+    if (mood === 'happy' || active && ['play', 'celebrate', 'feed'].includes(animationMode)) {
+      drawPixelRect(-8, -20 + pose.headY, 6, 3, palette.outline); drawPixelRect(2, -20 + pose.headY, 6, 3, palette.outline);
+    } else if (mood === 'hungry') drawPixelRect(-5, -20 + pose.headY, 10, 5, palette.outline);
+    else { drawPixelRect(-6, -20 + pose.headY, 12, 2, palette.outline); drawPixelRect(-2, -18 + pose.headY, 4, 2, palette.outline); }
+    ctx.restore();
+    ctx.restore();
+    ctx.shadowBlur = 0;
+    return true;
+  }
+  // TEST-EXPORT: drawEmergencyMoonpetFallback:end
+
   function drawPet(time, presence, combat) {
     var pet = state && state.pet;
     var lifecycle = state && state.lifecycle || {};
@@ -3256,7 +3291,8 @@
 
     var x = 124;
     var y = 194;
-    drawSelectedBotSprite(renderTime, animationMode, active, x, y, 1);
+    if (drawSelectedBotSprite(renderTime, animationMode, active, x, y, 1)) return;
+    drawEmergencyMoonpetFallback(renderTime, active, lifecycle, pet, presence, x, y);
   }
 
   var WORLD_SCENES = {

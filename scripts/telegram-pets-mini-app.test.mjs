@@ -134,6 +134,58 @@ assert.equal(new Function('state', capabilityCombatHelperSource + '; return hasS
 assert.match(new Function('state', capabilityCombatHelperSource + '; return combatLockCopy(systemCapability(state, "arena").reason).title;')(capabilityHelperState), /ARENA LOCKED UNTIL LEVEL 10/,
   'Arena system lock copy must expose the level gate');
 
+const drawEmergencyMoonpetFallbackSource = extractTestExport(client, 'drawEmergencyMoonpetFallback');
+assert.ok(drawEmergencyMoonpetFallbackSource, 'emergency Moonpet fallback renderer must be extractable for regression coverage');
+const drawEmergencyMoonpetFallbackRuntime = new Function(
+  `${drawEmergencyMoonpetFallbackSource}
+  var calls = [];
+  var ctx = {
+    shadowColor: '',
+    shadowBlur: 0,
+    save: function () { calls.push(['save']); },
+    restore: function () { calls.push(['restore']); },
+    translate: function (x, y) { calls.push(['translate', x, y]); },
+    scale: function (x, y) { calls.push(['scale', x, y]); },
+  };
+  var reducedMotion = false;
+  var animationMode = 'idle';
+  function petStage() { return 2; }
+  function petMood() { return 'happy'; }
+  function petPose() { return { squashX: 1, squashY: 1, headY: 0 }; }
+  function petGrowthShape() { return { scaleX: 1, scaleY: 1 }; }
+  function petPalette() { return { body: '#80ffd5', accent: '#f4ff65', outline: '#061009' }; }
+  function petFaceOffset() { return 4; }
+  function drawSpeciesSilhouette(speciesId) { calls.push(['species', speciesId]); }
+  function drawPetMarking(marking) { calls.push(['marking', marking || '']); }
+  function drawPetEyes(style, mood, blink) { calls.push(['eyes', style, mood, blink]); }
+  function drawPixelRect(x, y, w, h, color) { calls.push(['rect', x, y, w, h, color]); }
+  return { drawEmergencyMoonpetFallback: drawEmergencyMoonpetFallback, calls: calls };
+`,
+)();
+assert.equal(
+  drawEmergencyMoonpetFallbackRuntime.drawEmergencyMoonpetFallback(
+    1800,
+    false,
+    { phase: 'adult', species_id: 'bubble_ram', appearance: { marking: 'moon_mask', eyes: 'bright' } },
+    { species: 'bubble_ram' },
+    null,
+    124,
+    194,
+  ),
+  true,
+  'the emergency Moonpet fallback must report a rendered pet'
+);
+assert.deepEqual(
+  drawEmergencyMoonpetFallbackRuntime.calls.filter((entry) => entry[0] === 'species'),
+  [['species', 'bubble_ram']],
+  'the emergency Moonpet fallback must render the active species silhouette'
+);
+assert.deepEqual(
+  drawEmergencyMoonpetFallbackRuntime.calls.filter((entry) => entry[0] === 'eyes'),
+  [['eyes', 'bright', 'happy', false]],
+  'the emergency Moonpet fallback must still render the pet face state'
+);
+
 const actionAvailabilitySource = extractTestExport(client, 'actionAvailability');
 const countdownComponentSource = extractTestExport(client, 'countdownComponent');
 assert.ok(countdownComponentSource, 'shared countdown component must be extractable for runtime coverage');
@@ -1554,6 +1606,8 @@ assert.doesNotMatch(petPaletteSource, /var palettes|var species|\[[^\]]*,[^\]]*,
 assert.match(client, /function petPose/);
 assert.match(client, /function drawMoonEgg/, 'the procedural egg remains until dedicated egg art is approved');
 assert.match(client, /drawSelectedBotSprite\(renderTime, animationMode, active, x, y, 1\)/, 'hatched pets must use the selected AutoSprite pack');
+assert.match(client, /if \(drawSelectedBotSprite\(renderTime, animationMode, active, x, y, 1\)\) return;\s*drawEmergencyMoonpetFallback\(renderTime, active, lifecycle, pet, presence, x, y\);/s,
+  'hatched pets must fall back to an emergency renderer when bot art is unavailable');
 assert.doesNotMatch(client, /drawSideScrollerMoonpetSprite|drawApprovedMoonpetSprite/, 'legacy character renderers must not be live');
 assert.doesNotMatch(client, /drawEquipmentLayers|drawCosmeticLayers|wearableTraitDebug|WEARABLE_LOADOUT/, 'character dressing and wearable debug logic must be absent');
 assert.doesNotMatch(css, /wearable-slot-row/, 'wearable controls must be removed from live CSS');
