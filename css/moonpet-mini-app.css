@@ -658,6 +658,8 @@ button, input, select, textarea {
 }
 
 .dock {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   position: relative;
   z-index: 60;
   width: 100%;
@@ -668,6 +670,7 @@ button, input, select, textarea {
 
 .dock button {
   position: relative;
+  min-width: 0;
   flex: 1;
   min-height: 52px;
   padding: 7px 4px 6px;
@@ -1059,7 +1062,12 @@ button, input, select, textarea {
   }
 }
 /* The practice lab remains usable in the narrow Telegram control pane. */
-[data-panel="practice"] select {
+@media (max-width: 420px) {
+  .dock button { font-size: 8px; letter-spacing: .05em; padding-inline: 2px; }
+}
+
+[data-panel="practice"] select,
+[data-panel="contracts"] select {
   display: block;
   width: 100%;
   max-width: 100%;

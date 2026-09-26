@@ -104,6 +104,30 @@ Includes:
 - Extraction
 - Run rewards
 
+### Continuing contracts
+
+Continuing contracts are server-owned six-room quests for hatched active pets.
+They have three goals, three starting builds, route risk/reward choices and
+upgrade drafts after rooms two and four. Each completed contract records rank
+points for its source pet and immediately offers another quest. Rank has no
+daily cap and no effect on Pet XP, currencies, combat, Growth Marks or Weekly
+Crests. Difficulty tiers 2 and 3 open after 5 and 15 completions respectively.
+
+There is no pet energy cost or gameplay cooldown. Contract health, supplies
+and salvage are isolated run resources. Leaving the app preserves the run on
+the server; abandoning or failing a contract gives no points or bonus.
+
+The first three successful contracts per account per UTC day reserve a bonus
+of up to 20 Pet XP each, subject to the existing 1,200 daily Pet XP cap. The
+reservation budget is shared across pets. Delivery retries use the original
+contract and pet and do not create another reward; an undelivered reserved
+bonus may be recovered later. No gold, gems, materials, items, Community XP,
+Daily Journey credit or leaderboard scores are granted. Rank continues after
+the bonus budget is exhausted. Records are pet/season scoped.
+
+Migration 076 is required before the updated Worker is deployed. Without the
+table, the board is unavailable while the rest of the Mini App remains usable.
+
 ### Play Now and practice
 
 Play Now links the current snapshot to available live routes. Navigation does

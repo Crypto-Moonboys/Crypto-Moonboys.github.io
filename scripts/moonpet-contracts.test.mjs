@@ -1,0 +1,162 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import { DatabaseSync } from 'node:sqlite';
+import { advanceContract, createContractState, getContractBoard, processContractAction } from '../workers/moonboys-api/pets/continuing-contracts.js';
+import { awardPetReward } from '../workers/moonboys-api/pets/roguelite-foundation.js';
+import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
+
+const sqlite = new DatabaseSync(':memory:');
+const read = (name) => fs.readFileSync(new URL('../' + name, import.meta.url), 'utf8');
+sqlite.exec(read('workers/moonboys-api/schema.sql'));
+sqlite.exec(read('workers/moonboys-api/migrations/048_telegram_pet_player_expansion.sql'));
+const migration = read('workers/moonboys-api/migrations/076_moonpet_continuing_contracts.sql');
+sqlite.exec(migration); sqlite.exec(migration);
+let beforeStatement = null;
+class Statement {
+  constructor(sql, args = []) { this.sql = sql; this.args = args; }
+  bind(...args) { return new Statement(this.sql, args); }
+  async first() { if (beforeStatement) beforeStatement(this.sql, this.args); return sqlite.prepare(this.sql).get(...this.args) || null; }
+  async all() { return { results: sqlite.prepare(this.sql).all(...this.args) }; }
+  async run() {
+    if (/\bRETURNING\b/i.test(this.sql)) { const results = sqlite.prepare(this.sql).all(...this.args); return { results, meta: { changes: results.length } }; }
+    const r = sqlite.prepare(this.sql).run(...this.args); return { results: [], meta: { changes: Number(r.changes) } };
+  }
+}
+const db = { prepare(sql) { return new Statement(sql); }, async batch(statements) {
+  sqlite.exec('BEGIN IMMEDIATE');
+  try { const results = []; for (const s of statements) results.push(await s.run()); sqlite.exec('COMMIT'); return results; }
+  catch (e) { sqlite.exec('ROLLBACK'); throw e; }
+} };
+async function seed(owner, phase = 'young') {
+  sqlite.prepare('INSERT INTO telegram_users (telegram_id, first_name, xp, level) VALUES (?, ?, 0, 1)').run(owner, owner);
+  sqlite.prepare(`INSERT INTO telegram_pet_profiles (telegram_id,pet_name,pet_xp,level,health,energy,moon_gold) VALUES (?,?,3240,20,90,0,100)`).run(owner, owner);
+  await hooks.ensurePetStarterSeasonSlot(db, owner);
+  const pet = await hooks.ensureActivePetInstance(db, owner);
+  sqlite.prepare(`INSERT INTO telegram_pet_lifecycle_by_pet (pet_id,telegram_id,identity_seed,phase,incubation_json,innate_traits_json) VALUES (?,?,?,?,'{}','[]')`).run(pet.pet_id, owner, owner, phase);
+  sqlite.prepare('UPDATE telegram_pet_instances SET stage=? WHERE pet_id=?').run(phase, pet.pet_id);
+  return { ...pet, stage: phase };
+}
+const now = new Date();
+const a = await seed('contract-a'), b = await seed('contract-b'), egg = await seed('contract-egg', 'egg');
+const act = (pet, request, award = awardPetReward, time = now) => processContractAction(db, pet.telegram_id, pet, { pet_id: pet.pet_id, ...request }, award, time);
+const board = (pet, time = now) => getContractBoard(db, pet.telegram_id, pet, time);
+const start = async (pet, goal = 'escort', time = now) => act(pet, { action: 'contract_start', sequence: (await board(pet, time)).next_sequence, goal, build: 'bruiser', tier: 1 }, awardPetReward, time);
+async function complete(pet, award = awardPetReward, time = now) {
+  let result;
+  for (let step = 0; step < 10; step++) {
+    const run = (await board(pet, time)).run;
+    if (run.status !== 'active') return run;
+    const choice = run.choices.find((x) => x.key === 'medkit') || run.choices.find((x) => x.key === 'shield') || run.choices.find((x) => x.key === 'cover') || run.choices[0];
+    result = await act(pet, { action: 'contract_step', contract_id: run.contract_id, revision: run.revision, choice: choice.key, roll: 0, reward_xp: 999999 }, award, time);
+    assert.equal(result.accepted, true, JSON.stringify(result));
+  }
+  assert.fail('contract did not terminate: ' + JSON.stringify(result));
+}
+
+// Exhaustive state mechanics across goals/builds/tiers and deterministic roll streams.
+let clears = 0, failures = 0, drafts = 0;
+for (const goal of ['scout', 'salvage', 'escort']) for (const build of ['scout', 'bruiser', 'scavenger']) for (const tier of [1, 2, 3]) for (let seed = 0; seed < 40; seed++) {
+  let s = createContractState(goal, build, tier, 'seed-' + seed), status = 'active';
+  for (let turn = 0; status === 'active'; turn++) {
+    assert.ok(turn < 10);
+    const action = s.draft.length ? s.draft[seed % s.draft.length] : ['cover', 'bold', 'search'][(seed + turn) % 3];
+    if (s.draft.length) drafts++;
+    const prior = structuredClone(s), n = advanceContract(s, action, (seed * 13 + turn * 7) % 100);
+    assert.deepEqual(s, prior, 'engine input is immutable');
+    assert.ok(n); s = n.state; status = n.status;
+    assert.ok(s.health >= 0 && s.health <= s.max_health && s.depth <= 6);
+    if (status === 'completed') { clears++; assert.ok(n.rank_points > 0); }
+    if (status === 'failed') { failures++; assert.equal(n.rank_points, 0); }
+  }
+}
+assert.ok(clears && failures && drafts);
+assert.equal(createContractState('__proto__', 'scout', 1, 'x'), null);
+assert.equal(createContractState('escort', 'scout', 4, 'x'), null);
+assert.equal(advanceContract(createContractState('escort', 'scout', 1, 'x'), 'rest', 0), null);
+
+assert.equal((await board(egg)).available, false);
+assert.equal((await act(egg, { action: 'contract_start' })).accepted, false);
+assert.equal((await act(a, { action: 'contract_start', pet_id: b.pet_id })).accepted, false);
+assert.equal((await act(a, { action: 'contract_start', sequence: 1, goal: 'escort', build: 'bruiser', tier: 2 })).accepted, false);
+
+// Deterministic test-only RNG. No HTTP request can supply this server entropy.
+const realCrypto = globalThis.crypto;
+Object.defineProperty(globalThis, 'crypto', { configurable: true, value: { subtle: realCrypto.subtle, randomUUID: () => realCrypto.randomUUID(), getRandomValues: (values) => { values.fill(0); return values; } } });
+try {
+  const starters = await Promise.all([start(a), start(a)]);
+  assert.equal(starters.filter((x) => x.accepted).length, 1, 'parallel starts must create one run');
+  let run = (await board(a)).run;
+  assert.ok(!JSON.stringify(run).includes('seed'), 'hidden state must not leak');
+  const step = { action: 'contract_step', contract_id: run.contract_id, revision: run.revision, choice: 'cover' };
+  const moves = await Promise.all([act(a, step), act(a, step)]);
+  assert.equal(moves.filter((x) => x.accepted).length, 1);
+  assert.equal((await board(a)).run.depth, 1);
+  assert.equal((await act(b, step)).accepted, false, 'another account cannot play a contract');
+  const closed = await complete(a);
+  assert.equal(closed.status, 'completed'); assert.equal(closed.xp_awarded, 20);
+  assert.equal((await act(a, step)).accepted, false, 'closed/stale moves cannot advance');
+  assert.equal((await act(a, { action: 'contract_claim', contract_id: run.contract_id })).pet_xp_awarded, 0);
+
+  // Real dispatcher and central reward guard: input cannot add currency or redirect XP.
+  await assert.rejects(awardPetReward(db, { telegram_id: a.telegram_id, pet_id: b.pet_id, season_key: b.season_key, source: 'pet_contract', idempotency_key: 'forged', context: { contract_id: 'forged', pet_id: a.pet_id, season_key: a.season_key }, rewards: { pet_xp: 9999 } }));
+  const forged = await awardPetReward(db, { telegram_id: a.telegram_id, pet_id: a.pet_id, season_key: a.season_key, source: 'pet_contract', idempotency_key: 'forged', context: { contract_id: 'forged', pet_id: a.pet_id, season_key: a.season_key }, rewards: { pet_xp: 9999, moon_gold: 999999 } });
+  assert.equal(forged.accepted, false);
+
+  // Five contracts: rank continues after the three account/day bonus reservations.
+  for (let i = 0; i < 4; i++) { await start(a); await complete(a); }
+  const capped = await board(a);
+  assert.equal(capped.completed, 5); assert.equal(capped.bonus_remaining, 0); assert.equal(capped.max_tier, 2);
+  assert.equal(capped.run.xp_awarded, 0); assert.ok(capped.rank_points > closed.rank_points);
+  assert.equal(sqlite.prepare("SELECT SUM(pet_xp_awarded) n FROM telegram_pet_events WHERE telegram_id=? AND event_type='contract_complete'").get(a.telegram_id).n, 60);
+  assert.equal(sqlite.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(a.telegram_id).moon_gold, 100);
+  assert.equal(sqlite.prepare('SELECT energy FROM telegram_pet_instances WHERE pet_id=?').get(a.pet_id).energy, 0, 'zero-energy pets may play without affecting vitals');
+  assert.equal(sqlite.prepare('SELECT COUNT(*) n FROM telegram_pet_daily_journey_objectives WHERE telegram_id=?').get(a.telegram_id).n, 0);
+
+  const tomorrow = new Date(now); tomorrow.setUTCDate(now.getUTCDate() + 1);
+  assert.equal((await board(a, tomorrow)).bonus_remaining, 3);
+  await start(a, 'escort', tomorrow);
+  // Delivery outage does not lose the finished contract or reserve a second bonus.
+  const pending = await complete(a, async () => { throw Error('delivery offline'); }, tomorrow);
+  assert.equal(pending.reward_pending, true);
+  const claim = { action: 'contract_claim', contract_id: pending.contract_id };
+  assert.equal((await act(a, claim, awardPetReward, tomorrow)).pet_xp_awarded, 20);
+  assert.equal((await act(a, claim, awardPetReward, tomorrow)).pet_xp_awarded, 0);
+  assert.equal((await board(a, tomorrow)).bonus_remaining, 2);
+  // Crash after award but before the local receipt: recover exact credited XP.
+  sqlite.prepare('UPDATE telegram_pet_contracts SET reward_settled=0,xp_awarded=0 WHERE contract_id=?').run(pending.contract_id);
+  assert.equal((await act(a, claim, awardPetReward, tomorrow)).pet_xp_awarded, 0);
+  assert.equal((await board(a, tomorrow)).run.xp_awarded, 20);
+
+  // Full cap yields zero XP, but quest completion/rank still settles.
+  const capPet = await seed('contract-cap');
+  sqlite.prepare(`INSERT INTO telegram_pet_events (id,pet_id,telegram_id,event_type,event_key,pet_xp_awarded,season_key,day_key,week_key,status,metadata)
+    VALUES ('cap',?,?, 'feed','cap',1200,?,?, 'test','accepted','{}')`).run(capPet.pet_id, capPet.telegram_id, capPet.season_key, now.toISOString().slice(0,10));
+  await start(capPet); const atCap = await complete(capPet); assert.equal(atCap.status, 'completed'); assert.equal(atCap.xp_awarded, 0);
+  assert.equal(atCap.reward_pending, false);
+
+  // Slot switches preserve the original pet record and shared daily bonus budget.
+  const altId = a.pet_id + ':alternate';
+  sqlite.prepare(`INSERT INTO telegram_pet_season_slots (pet_id,telegram_id,season_key,slot_number,acquisition_type,source_event_key,arcade_xp_spent,status) VALUES (?,?,?,2,'arcade_xp','test',0,'active')`).run(altId,a.telegram_id,a.season_key);
+  sqlite.prepare(`INSERT INTO telegram_pet_instances (pet_id,telegram_id,season_key,slot_number,stage,source_profile_updated_at) VALUES (?,?,?,2,'young',CURRENT_TIMESTAMP)`).run(altId,a.telegram_id,a.season_key);
+  sqlite.prepare(`INSERT INTO telegram_pet_lifecycle_by_pet (pet_id,telegram_id,identity_seed,phase,incubation_json,innate_traits_json) VALUES (?,?,'alt','young','{}','[]')`).run(altId,a.telegram_id);
+  const alt = { ...a, pet_id: altId };
+  await start(a);
+  run = (await board(a)).run;
+  beforeStatement = (sql) => { if (sql.startsWith('UPDATE telegram_pet_contracts SET state_json=')) { beforeStatement = null; sqlite.prepare('UPDATE telegram_pet_active_slots SET pet_id=? WHERE telegram_id=?').run(altId,a.telegram_id); } };
+  assert.equal((await act(a, { action: 'contract_step', contract_id: run.contract_id, revision: run.revision, choice: 'cover' })).accepted, false, 'switch during a move must invalidate its write');
+  assert.equal((await board(alt)).completed, 0);
+  assert.equal((await board(alt)).bonus_remaining, 0, 'switching pets cannot reset account bonuses');
+  await start(alt); assert.equal((await complete(alt)).xp_awarded, 0);
+  assert.equal(sqlite.prepare('SELECT revision FROM telegram_pet_contracts WHERE contract_id=?').get(run.contract_id).revision, 0);
+
+  // API dispatch accepts only server-owned state, and pre-migration availability fails closed.
+  const s = await hooks.buildPetMiniAppState(db, b.telegram_id, 'fixture-token');
+  assert.equal(s.contracts.available, true);
+  assert.equal((await hooks.processPetMiniAppAction(db, b.telegram_id, { id:b.telegram_id }, { action:'contract_start',pet_id:b.pet_id,sequence:1,goal:'escort',build:'bruiser',tier:1,state_json:'{}',reward_xp:9999,request_id:realCrypto.randomUUID() }, 'fixture-token')).accepted, true);
+  sqlite.exec('DROP TABLE telegram_pet_contracts');
+  assert.equal((await hooks.buildPetMiniAppState(db, b.telegram_id, 'fixture-token')).contracts.available, false);
+  const blocked = await hooks.processPetMiniAppAction(db, b.telegram_id, { id:b.telegram_id }, { action:'contract_start',pet_id:b.pet_id,sequence:1,goal:'escort',build:'bruiser',tier:1,request_id:realCrypto.randomUUID() }, 'fixture-token');
+  assert.equal(blocked.reason, 'contracts_unavailable');
+  sqlite.exec(migration); sqlite.exec(migration);
+} finally { Object.defineProperty(globalThis, 'crypto', { configurable: true, value: realCrypto }); sqlite.close(); }
+console.log(`Continuing contract tests passed: 1080 simulated runs (${clears} goals met, ${failures} failures, ${drafts} drafts), SQLite authority/concurrency/reward recovery, and actual Mini App dispatch.`);

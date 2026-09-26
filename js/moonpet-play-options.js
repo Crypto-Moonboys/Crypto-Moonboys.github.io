@@ -6,6 +6,7 @@
     var key = [next && next.key, next && next.action, next && next.callback_data].filter(Boolean).join(' ').toLowerCase();
     var routes = [
       [/daily[_-]run|daily_(combat|explorer|extraction|boss)/, 'explore', 'moon-run'],
+      [/contract/, 'missions', 'contracts'],
       [/district/, 'explore', 'districts'],
       [/event.chain|story/, 'explore', 'story-chains'],
       [/seasonal.boss/, 'explore', 'seasonal-boss'],
@@ -37,6 +38,7 @@
     var add = function (key, title, detail, destination) {
       choices.push(Object.assign({ key: key, title: title, detail: detail }, destination || route({ key: key })));
     };
+    if (s.contracts && s.contracts.available) add('contract', s.contracts.run && s.contracts.run.status === 'active' ? 'CONTINUE CONTRACT' : 'CONTINUING CONTRACTS', 'New quests after every finish. Saved rank, three builds and route upgrades. No pet energy cost.');
     add('practice', 'PRACTICE ROGUELITE', 'Unlimited replays. Build choices, room risks and local goals. No rewards or pet costs.');
     if (s.lifecycle && s.lifecycle.phase === 'egg') {
       add('incubate', 'SECRET BOT CARE', 'Care and reveal remain server-controlled. Practice is available while you wait.');
