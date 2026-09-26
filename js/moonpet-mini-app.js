@@ -101,6 +101,10 @@
   var screen = document.getElementById('screen');
   var nav = document.getElementById('nav');
   var output = document.getElementById('terminal-output');
+  var outputText = document.createElement('span');
+  outputText.className = 'terminal-output-text';
+  outputText.textContent = 'READY.';
+  output.replaceChildren(outputText);
   var bootLayer = document.getElementById('boot-layer');
   var bootText = document.getElementById('boot-text');
   var title = document.getElementById('system-title');
@@ -617,12 +621,25 @@
     }).join(' // ');
   }
 
+  function syncStatusScroll() {
+    output.classList.remove('is-scrolling');
+    output.style.removeProperty('--status-scroll-duration');
+    requestAnimationFrame(function () {
+      var availableWidth = Math.max(1, output.clientWidth - 24);
+      if (outputText.scrollWidth <= availableWidth) return;
+      var duration = Math.max(10, Math.min(32, outputText.scrollWidth / 22));
+      output.style.setProperty('--status-scroll-duration', duration.toFixed(2) + 's');
+      output.classList.add('is-scrolling');
+    });
+  }
+
   function tell(message, tone) {
     var nextTone = tone || '';
     var nextMessage = uniqueStatusMessage(message);
-    if (output.dataset.tone === nextTone && output.textContent === nextMessage) return false;
+    if (output.dataset.tone === nextTone && outputText.textContent === nextMessage) return false;
     output.dataset.tone = nextTone;
-    output.textContent = nextMessage;
+    outputText.textContent = nextMessage;
+    syncStatusScroll();
     return true;
   }
   // TEST-EXPORT: statusOutput:end

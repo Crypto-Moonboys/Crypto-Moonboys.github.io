@@ -257,9 +257,26 @@ button, input, select, textarea {
   color: var(--ui-text-secondary);
   font: 600 10px/1.7 var(--font-mono);
   letter-spacing: .08em;
-  text-overflow: ellipsis;
   text-transform: uppercase;
   white-space: nowrap;
+}
+
+.terminal-output-text {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.terminal-output.is-scrolling .terminal-output-text {
+  max-width: none;
+  min-width: max-content;
+  padding-left: 100%;
+  overflow: visible;
+  text-overflow: clip;
+  animation: terminal-status-scroll var(--status-scroll-duration, 18s) linear infinite;
 }
 
 .terminal-output[data-tone="danger"] {
@@ -712,6 +729,7 @@ button, input, select, textarea {
 }
 
 @keyframes blink { 50% { opacity: 0; } }
+@keyframes terminal-status-scroll { to { transform: translateX(-100%); } }
 
 .utility-rail {
   position: sticky;

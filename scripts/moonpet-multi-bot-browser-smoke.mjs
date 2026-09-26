@@ -81,9 +81,12 @@ try {
     const shell = document.getElementById("moonpet-app").getBoundingClientRect();
     const viewport = document.querySelector(".viewport").getBoundingClientRect();
     const output = document.getElementById("terminal-output");
-    output.textContent = "ACTION COMPLETE // +5 PET XP";
+    const outputText = output.querySelector(".terminal-output-text");
+    outputText.textContent = "ACTION COMPLETE // +5 PET XP // GROWTH MARK AWARDED // MOONPET REACTION CONFIRMED";
+    output.classList.add("is-scrolling");
     const outputBox = output.getBoundingClientRect();
     const outputStyle = getComputedStyle(output);
+    const outputTextStyle = getComputedStyle(outputText);
     const screenBox = document.getElementById("screen").getBoundingClientRect();
     const dock = nav.getBoundingClientRect();
     const buttons = Array.from(nav.querySelectorAll("button"), (button) => button.getBoundingClientRect());
@@ -96,6 +99,7 @@ try {
       outputHeight: outputBox.height,
       outputPosition: outputStyle.position,
       outputAnimation: outputStyle.animationName,
+      outputTextAnimation: outputTextStyle.animationName,
       screenTop: screenBox.top,
       dockBottom: dock.bottom,
       buttonBottoms: buttons.map((button) => button.bottom),
@@ -106,7 +110,8 @@ try {
   assert.ok(Math.abs(shellLayout.outputTop - shellLayout.viewportBottom) < 1, "status strip must sit directly below the canvas");
   assert.ok(shellLayout.outputHeight >= 34, "status strip must remain visible");
   assert.equal(shellLayout.outputPosition, "relative", "status strip must occupy a stable grid row");
-  assert.equal(shellLayout.outputAnimation, "none", "status text must not scroll or animate");
+  assert.equal(shellLayout.outputAnimation, "none", "the fixed status bar must not move or animate");
+  assert.equal(shellLayout.outputTextAnimation, "terminal-status-scroll", "overflowing details must scroll inside the fixed strip");
   assert.ok(shellLayout.outputBottom <= shellLayout.screenTop + 1, "status strip must stay above the scrollable controls");
   assert.ok(shellLayout.dockBottom <= 520.5, "bottom dock must not be cropped by Telegram's visible viewport");
   assert.ok(shellLayout.buttonBottoms.every((bottom) => bottom <= 513.5), "every dock button must fit above the dock's bottom padding");

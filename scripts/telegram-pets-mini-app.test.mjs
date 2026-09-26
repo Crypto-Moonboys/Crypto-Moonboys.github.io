@@ -1304,7 +1304,7 @@ assert.match(worker, /const \[journeySummary, hydratedKaiju\] = await Promise\.a
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
-assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260926-fixed-status-strip-v1`/);
+assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260926-scrolling-status-details-v1`/);
 assert.match(worker, /const TELEGRAM_GAMES_MENU_URL = `\$\{SITE_URL\}\/games\/telegram\/\?v=20260903-games-shell-v8`/,
   'default Telegram games menu must point at the current shell release');
 assert.match(worker, /const TELEGRAM_GAMES_MENU_TEXT = 'Games'/);
@@ -1363,24 +1363,47 @@ assert.match(client, /meter\('DAILY CLEAR', missionPercent\)/);
 assert.match(html, /id="utility-layer"/);
 assert.match(css, /grid-template-rows:\s*auto minmax\([^;]+\) auto minmax\(0,\s*1fr\) auto/,
   'the fixed status row must sit between the canvas and scrollable controls');
-assert.match(css, /\.terminal-output \{[\s\S]*min-height:\s*36px[\s\S]*text-overflow:\s*ellipsis/,
+assert.match(css, /\.terminal-output \{[\s\S]*min-height:\s*36px/,
   'routine status updates must remain visibly fixed beneath the canvas');
+assert.match(css, /\.terminal-output\.is-scrolling \.terminal-output-text \{[\s\S]*animation:\s*terminal-status-scroll/,
+  'overflowing status details must scroll inside the fixed bar');
 assert.doesNotMatch(css, /\.terminal-output \{[\s\S]{0,500}clip-path:\s*inset\(50%\)/,
   'the under-canvas update strip must not be visually hidden');
 assert.match(css, /\.terminal-output\[data-tone="danger"\]/, 'danger/error status must use the same fixed strip');
 const statusOutputSource = extractTestExport(client, 'statusOutput');
 assert.ok(statusOutputSource, 'fixed status output must be runtime testable');
-const testStatusOutput = { dataset: { tone: '' }, textContent: '' };
-const statusOutputRuntime = new Function('output', `${statusOutputSource}; return { tell, uniqueStatusMessage };`)(testStatusOutput);
+const testStatusClasses = new Set();
+const testStatusProperties = {};
+const testStatusOutput = {
+  dataset: { tone: '' }, clientWidth: 200,
+  classList: {
+    add: (name) => testStatusClasses.add(name),
+    remove: (name) => testStatusClasses.delete(name),
+  },
+  style: {
+    setProperty: (name, value) => { testStatusProperties[name] = value; },
+    removeProperty: (name) => { delete testStatusProperties[name]; },
+  },
+};
+const testStatusText = { textContent: '', scrollWidth: 150 };
+const statusFrames = [];
+const statusOutputRuntime = new Function('output', 'outputText', 'requestAnimationFrame',
+  `${statusOutputSource}; return { tell, uniqueStatusMessage };`)(testStatusOutput, testStatusText, (callback) => statusFrames.push(callback));
 assert.equal(statusOutputRuntime.uniqueStatusMessage('COMPLETE // +5 XP // +5 XP'), 'COMPLETE // +5 XP',
   'repeated update segments must be removed from the fixed status strip');
 assert.equal(statusOutputRuntime.tell('ACTION COMPLETE // +5 XP // +5 XP'), true);
-assert.equal(testStatusOutput.textContent, 'ACTION COMPLETE // +5 XP');
+assert.equal(testStatusText.textContent, 'ACTION COMPLETE // +5 XP');
+statusFrames.shift()();
+assert.equal(testStatusClasses.has('is-scrolling'), false, 'short updates must remain stationary');
 assert.equal(statusOutputRuntime.tell('ACTION COMPLETE // +5 XP'), false,
   'an unchanged consecutive update must not be announced twice');
+testStatusText.scrollWidth = 520;
 assert.equal(statusOutputRuntime.tell('WAIT FOR COOLDOWN.', 'danger'), true);
+statusFrames.shift()();
 assert.equal(testStatusOutput.dataset.tone, 'danger');
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260926-fixed-status-strip-v1/);
+assert.equal(testStatusClasses.has('is-scrolling'), true, 'overflowing updates must activate the scrolling text track');
+assert.match(testStatusProperties['--status-scroll-duration'], /s$/, 'overflowing updates must receive a readable duration');
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260926-scrolling-status-details-v1/);
 assert.match(html, /\/js\/moonpet-art-resolver\.js\?v=20260926-uniform-bot-fit-v3/);
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20260926-wtfboi-street-v1/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20260926-uniform-bot-fit-v3/);
@@ -1477,7 +1500,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260926-fixed-status-strip-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260926-scrolling-status-details-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -1683,7 +1706,7 @@ assert.match(client, /companionGreeting = '';\s*companionGreetingUntil = 0;/s);
 assert.match(drawWorldSource, /else if \(combat\.active\) drawCombatHud\(scene, combat\)/);
 assert.doesNotMatch(drawWorldSource, /drawActionInfo\(/, 'routine bot activation must not draw popup text over the canvas');
 assert.doesNotMatch(client, /drawPixelText\('SIGNAL!'/, 'egg activation must not draw popup text over the canvas');
-assert.doesNotMatch(css, /animation:\s*ticker/, 'the under-canvas status line must remain static');
+assert.doesNotMatch(css, /\.terminal-output\s*\{[^}]*animation:/s, 'the status bar itself must remain fixed');
 assert.doesNotMatch(client, /Math\.random\(\)[^\n]*(?:presence|habit|greeting)|(?:presence|habit|greeting)[^\n]*Math\.random\(\)/i, 'living companion behavior must be deterministic');
 
 assert.match(client, /var COMBAT_PRESENTATION_FRAME =/);
@@ -1930,7 +1953,7 @@ assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Numbe
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
 assert.match(html, /20260926-uniform-bot-fit-v3/);
-assert.match(worker, /20260926-fixed-status-strip-v1/);
+assert.match(worker, /20260926-scrolling-status-details-v1/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');
 assert.match(client, /renderQuality = reducedMotion/, 'canvas quality must start from device capability');
