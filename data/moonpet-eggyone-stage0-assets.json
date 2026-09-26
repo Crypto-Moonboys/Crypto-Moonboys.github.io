@@ -3,12 +3,11 @@
   "character_name": "EGGYONE",
   "character_id": "cmui5g9430007v27qp8scqirq",
   "source": "AutoSprite API + local approved asset",
-  "provenance": "seven existing AutoSprite Stage-0 sheets, two existing AutoSprite front actions, plus approved local user-supplied EGGYONE front_fight sheet",
-  "downloaded_at": "2026-09-26T09:07:17.078Z",
-  "approved_at": "2026-09-26T09:19:19.626Z",
-  "approval_status": "approved_visual_review",
-  "cache_version": "20260926-front-actions-v1",
+  "provenance": "seven existing AutoSprite Stage-0 sheets plus approved local user-supplied EGGYONE front_fight sheet",
+  "downloaded_at": "2026-09-26T20:13:36.670Z",
+  "approval_status": "mechanical_validation_passed_pending_visual_review",
   "contact_sheet_path": "/img/moonpets/eggyone/contact-sheet.png",
+  "cache_version": "20260926-front-actions-v1",
   "runtime_role_map": {
     "idle": "egg_idle",
     "wobble": "egg_wobble",
@@ -57,7 +56,7 @@
         "animation_name": "EGGONE"
       },
       "provenance": "existing AutoSprite spritesheet; no generation request was made",
-      "review_status": "approved_visual_review"
+      "review_status": "mechanical_validation_passed_pending_visual_review"
     },
     {
       "role": "egg_wobble",
@@ -83,7 +82,7 @@
         "animation_name": "EGGTWO"
       },
       "provenance": "existing AutoSprite spritesheet; no generation request was made",
-      "review_status": "approved_visual_review"
+      "review_status": "mechanical_validation_passed_pending_visual_review"
     },
     {
       "role": "egg_sleep",
@@ -109,7 +108,7 @@
         "animation_name": "EGGTHREE"
       },
       "provenance": "existing AutoSprite spritesheet; no generation request was made",
-      "review_status": "approved_visual_review"
+      "review_status": "mechanical_validation_passed_pending_visual_review"
     },
     {
       "role": "egg_react",
@@ -135,7 +134,7 @@
         "animation_name": "EGGFOUR"
       },
       "provenance": "existing AutoSprite spritesheet; no generation request was made",
-      "review_status": "approved_visual_review"
+      "review_status": "mechanical_validation_passed_pending_visual_review"
     },
     {
       "role": "egg_care",
@@ -161,7 +160,7 @@
         "animation_name": "EGGFIVE"
       },
       "provenance": "existing AutoSprite spritesheet; no generation request was made",
-      "review_status": "approved_visual_review"
+      "review_status": "mechanical_validation_passed_pending_visual_review"
     },
     {
       "role": "egg_breakout",
@@ -187,7 +186,7 @@
         "animation_name": "EGGSIX"
       },
       "provenance": "existing AutoSprite spritesheet; no generation request was made",
-      "review_status": "approved_visual_review"
+      "review_status": "mechanical_validation_passed_pending_visual_review"
     },
     {
       "role": "egg_hatch",
@@ -213,7 +212,7 @@
         "animation_name": "EGGSEVEN"
       },
       "provenance": "existing AutoSprite spritesheet; no generation request was made",
-      "review_status": "approved_visual_review"
+      "review_status": "mechanical_validation_passed_pending_visual_review"
     },
     {
       "role": "front_dance",
