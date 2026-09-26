@@ -1299,7 +1299,7 @@ assert.match(worker, /const \[journeySummary, hydratedKaiju\] = await Promise\.a
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
-assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260925-moonpet-ui-redesign-v2`/);
+assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260926-uniform-bot-fit-v3`/);
 assert.match(worker, /const TELEGRAM_GAMES_MENU_URL = `\$\{SITE_URL\}\/games\/telegram\/\?v=20260903-games-shell-v8`/,
   'default Telegram games menu must point at the current shell release');
 assert.match(worker, /const TELEGRAM_GAMES_MENU_TEXT = 'Games'/);
@@ -1639,7 +1639,10 @@ assert.match(client, /ALL-CITY HEIGHTS/);
 assert.match(client, /drawWorldBackground\(\)/, 'the authored world background must drive environment rendering');
 const drawWorldSource = client.slice(client.indexOf('function drawWorld(time)'), client.indexOf('function frame(time)'));
 assert.match(client, /canvas\.addEventListener\('click'/);
-assert.match(client, /canvasX >= 92 && canvasX <= 228 && canvasY >= 72 && canvasY <= 220/);
+assert.match(client, /function moonpetBotFitBounds\(\)/);
+assert.match(client, /canvasX >= botBounds\.left && canvasX <= botBounds\.right && canvasY >= botBounds\.top && canvasY <= botBounds\.bottom/);
+assert.match(client, /var BOT_RENDER_CENTER_X = 112/);
+assert.match(client, /var BOT_RENDER_BASELINE_Y = 194/);
 assert.match(client, /animateAction\('greet', true, greetingVariant === 'front_wave' \? 2200 : 1400/);
 assert.doesNotMatch(client, /greetCompanion[\s\S]{0,1200}(?:post\(|runAction\()/, 'pet taps must remain cosmetic and server-neutral');
 assert.match(client, /companionGreetingTimer = window\.setTimeout/);
@@ -1682,7 +1685,7 @@ assert.match(client, /'Special ' \+ Number\(combat\.playerSpecial\)/);
 assert.match(client, /'Card  ' \+ compactFeedback\(words\(combat\.playerCardKey\), 14\)/);
 assert.match(client, /drawActionInfoPanel\(combat\.title, lines, rivalColor, 1\)/);
 assert.match(client, /if \(!combat \|\| !combat\.active\)/);
-assert.match(client, /var x = 112/);
+assert.match(client, /var x = BOT_RENDER_CENTER_X/);
 assert.match(client, /drawCombatHud\(scene, combat\)/);
 assert.match(client, /COMBAT_PRESENTATION_FRAME\.active \|\| lifecycleCeremonyActive\(now\)\) return;/);
 assert.doesNotMatch(client, /Math\.random\(\)[^\n]*(?:combat|rival)|(?:combat|rival)[^\n]*Math\.random\(\)/i, 'Phase 5 combat presentation must remain deterministic');
@@ -1893,7 +1896,7 @@ assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Numbe
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
 assert.match(html, /20260926-uniform-bot-fit-v3/);
-assert.match(worker, /20260925-moonpet-ui-redesign-v2/);
+assert.match(worker, /20260926-uniform-bot-fit-v3/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');
 assert.match(client, /renderQuality = reducedMotion/, 'canvas quality must start from device capability');

@@ -103,8 +103,10 @@ assert.match(client, /speciesId: String\(lifecycle\.species_id \|\| pet\.species
 assert.match(client, /selectMoonpetBot\(botArtIdentity\(snapshot\)\)/);
 assert.match(client, /drawSelectedBotSprite\(renderTime, animationMode, active/);
 assert.doesNotMatch(client, /drawSideScrollerMoonpetSprite|drawApprovedMoonpetSprite/, "old character render paths must not remain live");
-assert.match(client, /var x = 112;/, "bots stay inside the left canvas zone");
-assert.match(client, /var y = 194;/, "bots retain the lower stage baseline");
+assert.match(client, /var BOT_RENDER_CENTER_X = 112;/, "bots stay inside the left canvas zone");
+assert.match(client, /var BOT_RENDER_BASELINE_Y = 194;/, "bots retain the lower stage baseline");
+assert.match(client, /var x = BOT_RENDER_CENTER_X;/);
+assert.match(client, /var y = BOT_RENDER_BASELINE_Y;/);
 const rendererSource = fs.readFileSync(path.join(root, "js", "moonpet-bot-art-renderer.js"), "utf8");
 assert.match(rendererSource, /const containScale = Math\.min\(fitWidth \/ frame\.w, fitHeight \/ frame\.h\)/, "renderer must use one contain scale for both axes");
 assert.match(rendererSource, /const width = frame\.w \* drawScale;[\s\S]*const height = frame\.h \* drawScale;/, "renderer must preserve source aspect ratio instead of squashing bots");
