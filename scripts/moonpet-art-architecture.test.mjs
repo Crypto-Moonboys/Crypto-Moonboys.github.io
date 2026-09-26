@@ -63,4 +63,24 @@ assert.ok(Object.values(itemRegistry.items).every((item) => item.art_status === 
 assert.equal(botRegistry.bots["JAKE THE SNAKE"].canonical_species_ids[0], "bubble_ram");
 assert.match(readText("workers/moonboys-api/pets/species-lifecycle.js"), /bubble_ram: \{ name: 'JAKE THE SNAKE'/);
 
+const retiredArtPaths = [
+  "js/moonpet-approved-asset-loader.js",
+  "js/moonpet-approved-sprite-renderer.js",
+  "js/moonpet-side-scroller-asset-loader.js",
+  "js/moonpet-side-scroller-sprite-renderer.js",
+  "data/moonpet-wearable-traits.json",
+  "data/moonpet-frame-anchors.json",
+  "data/moonpet-side-scroller-approved-assets.json",
+  "data/moonpet-side-scroller-animation-queue.json",
+  "moonpet-runtime-preview.html",
+  "moonpet-animation-sandbox.html",
+  "moonpet-side-scroller-preview.html"
+];
+for (const retiredPath of retiredArtPaths) {
+  assert.equal(fs.existsSync(path.join(root, retiredPath)), false, `retired Moonpet art path must stay removed: ${retiredPath}`);
+}
+const miniAppSource = readText("js/moonpet-mini-app.js");
+assert.doesNotMatch(miniAppSource, /drawEmergencyMoonpetFallback|drawSpeciesSilhouette|drawEquipmentLayers|WEARABLE_LOADOUT_STORAGE_KEY/,
+  "retired procedural and wearable renderers must stay removed");
+
 console.log("Moonpet evolution, rare-background, and item-art architecture passed");
