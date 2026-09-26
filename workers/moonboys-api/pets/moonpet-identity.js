@@ -667,7 +667,7 @@ export function formatMoonpetIdentitySummary(summary = {}) {
     memory.favourite_activity ? `- Favourite: ${safeTelegramText(memory.favourite_activity)}` : null,
     Number(memory.biggest_reward_amount || 0) > 0 ? `- Biggest Reward: ${Number(memory.biggest_reward_amount)} ${memory.biggest_reward_currency === 'moon_gold' ? 'Moon Gold' : safeTelegramText(memory.biggest_reward_currency, 40)}` : null,
   ].filter(Boolean);
-  return `Current Stage:\n${safeTelegramText(summary.current_stage?.name || 'Moon Egg')}\n\nPersonality:\n${personalities}\n\nMemories:\n${memoryLines.length ? memoryLines.slice(0, 4).join('\n') : '- Your story is just beginning'}`;
+  return `Current Stage:\n${safeTelegramText(summary.current_stage?.name || 'Secret Bot')}\n\nPersonality:\n${personalities}\n\nMemories:\n${memoryLines.length ? memoryLines.slice(0, 4).join('\n') : '- Your story is just beginning'}`;
 }
 
 export async function getMoonpetIdentityAnalytics(db) {

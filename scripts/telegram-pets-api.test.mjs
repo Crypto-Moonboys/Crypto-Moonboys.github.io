@@ -301,7 +301,8 @@ const rareLeaderboardEntry = serializePetLeaderboardEntry({
 }, 2);
 assert.deepEqual(rareLeaderboardEntry, {
   rank: 3,
-  pet_name: 'Cipher',
+  name: 'F1 EDDY',
+  pet_name: 'F1 EDDY',
   stage: 'graffiti_guardian',
   phase: 'rare',
   evolution_stage: 5,
@@ -348,14 +349,20 @@ const eggLeaderboardEntry = serializePetLeaderboardEntry({
 }, 0);
 assert.equal(eggLeaderboardEntry.art_identity_id, null, 'leaderboard must not expose an unrevealed art identity');
 assert.equal(eggLeaderboardEntry.species_id, null, 'leaderboard must not reveal an egg species');
-assert.equal(eggLeaderboardEntry.species_name, null, 'leaderboard must not reveal an egg species name');
+assert.equal(eggLeaderboardEntry.species_name, 'UNKNOWN', 'leaderboard species name must use the exact locked placeholder');
 assert.equal(eggLeaderboardEntry.display_name, 'UNKNOWN', 'leaderboard identity must use the exact locked placeholder');
+assert.equal(eggLeaderboardEntry.pet_name, 'UNKNOWN', 'stored nicknames must not occupy the hidden identity surface');
+assert.equal(eggLeaderboardEntry.name, 'UNKNOWN', 'generic name fields must not leak a stored nickname');
 assert.match(worker, /player_display_name: \[row\.first_name, row\.last_name\][\s\S]*'Anonymous'/, 'public pet leaderboard must never fall back to a Telegram ID');
 assert.match(worker, /MOONPET_SPECIES, createMoonEggLifecycle, ensureMoonpetLifecycle,/, 'legacy lifecycle materialization dependency must be imported');
 assert.match(worker, /async function materializePetLeaderboardRows/, 'leaderboards must materialize deterministic identities for legacy rows');
 assert.match(worker, /pet_mini_app_state_failed/, 'Mini App state failures must return a controlled JSON error instead of an uncaught fetch failure');
 const miniAppStateBuilder = asyncBlock('buildPetMiniAppState');
-assert.match(miniAppStateBuilder, /SELECT p\.telegram_id, p\.pet_name,/, 'Mini App leaderboard must select the owner ID needed to materialize legacy lifecycle rows');
+assert.match(worker, /const PET_MINI_APP_INITIAL_LEADERBOARD_SQL = `SELECT p\.telegram_id, p\.pet_name,/, 'Mini App leaderboard SQL must select the owner ID needed to materialize legacy lifecycle rows');
+assert.match(miniAppStateBuilder, /db\.prepare\(PET_MINI_APP_INITIAL_LEADERBOARD_SQL\)/, 'Mini App state must execute the tested leaderboard SQL contract');
+assert.match(miniAppStateBuilder, /pet_mini_app_initial_leaderboard_failed[\s\S]*throw error/, 'Mini App state must log and propagate leaderboard programming errors');
+assert.doesNotMatch(miniAppStateBuilder, /PET_MINI_APP_INITIAL_LEADERBOARD_SQL\)\.all\(\)\.catch\(\(\) => \(\{ results: \[\] \}\)\)/,
+  'Mini App leaderboard SQL failures must not be silently converted to an empty ranking');
 assert.match(miniAppStateBuilder, /season_slots: seasonSlots/, 'Mini App state must expose current-season pet slots');
 const miniAppActionProcessor = asyncBlock('processPetMiniAppAction');
 assert.match(miniAppActionProcessor, /action === 'season_slots'/, 'Mini App action handler must expose season slot summary reads');
@@ -450,10 +457,14 @@ assert.equal(serializedArenaPet.equipped_weapon, 'laser_claws', 'serialized pet 
 assert.equal(serializedArenaPet.equipped_charm, 'shield_charm', 'serialized pet state must include equipped arena charm');
 const hiddenIdentityPet = serializePet({ ...baseArenaPet, species: 'neon_raccoon' }, { current_stage: { stage: 2, name: 'Cyber Moonpet' } });
 assert.equal(hiddenIdentityPet.display_name, 'UNKNOWN', 'serialized pets must keep the Stage 0-2 identity placeholder');
+assert.equal(hiddenIdentityPet.pet_name, 'UNKNOWN', 'serialized pets must mask stored pet_name before Stage 3');
+assert.equal(hiddenIdentityPet.name, 'UNKNOWN', 'serialized pets must mask generic name before Stage 3');
 assert.equal(hiddenIdentityPet.species, null, 'serialized pets must not expose species before Stage 3');
 assert.equal(hiddenIdentityPet.art_identity_id, null, 'serialized pets must not expose art identity before Stage 3');
 const revealedIdentityPet = serializePet({ ...baseArenaPet, species: 'neon_raccoon' }, { current_stage: { stage: 3, name: 'Elite Moonpet' } });
 assert.equal(revealedIdentityPet.display_name, 'F1 EDDY', 'serialized pets must reveal the canonical identity at Stage 3');
+assert.equal(revealedIdentityPet.pet_name, 'F1 EDDY', 'Stage 3 pet_name must agree with canonical display_name');
+assert.equal(revealedIdentityPet.name, 'F1 EDDY', 'Stage 3 generic name must agree with canonical display_name');
 assert.equal(revealedIdentityPet.species, 'neon_raccoon', 'serialized pets must expose species at Stage 3');
 assert.equal(revealedIdentityPet.art_identity_id, 'neon_raccoon', 'serialized pets may expose the art identity once revealed');
 const serializedAuthorityPet = serializePet({ ...baseArenaPet, telegram_id: 'serialize-owner', pet_id: 'pet:serialize-owner:pet-s2026-003:1', season_key: 'pet-s2026-003' });
@@ -497,9 +508,9 @@ const polishedDetailsCopy = formatPetDetails({
     { key: 'pet-daily-trade', title: 'Run one Moon Gold trade', completed: false },
     { key: 'pet-daily-adventure', title: 'Run one pet adventure', completed: false },
   ],
-}, null, { current_stage: { name: 'Moon Egg' } });
+}, null, { current_stage: { name: 'Secret Bot' } });
 for (const copy of [
-  '🥚 <b>Moon Egg</b>',
+  '🧬 <b>Secret Bot</b>',
   '⭐ Level 11 · ✨ 4,206 XP',
   '🪙 925 Moon Gold',
   '💎 6 Moon Crystals',
@@ -2253,7 +2264,7 @@ assert.equal(initialSeasonSlots.slots.length, 3, 'season slot summary must alway
 assert.equal(initialSeasonSlots.slots[0].unlocked, true, 'starter slot must be unlocked for existing pet profiles');
 assert.deepEqual(
   Object.keys(initialSeasonSlots.slots[0].pet).sort(),
-  ['art_identity_id', 'cleanliness', 'display_name', 'energy', 'happiness', 'health', 'hunger', 'level', 'name', 'pet_xp', 'progression', 'species', 'stage', 'variant'].sort(),
+  ['art_identity_id', 'cleanliness', 'display_name', 'energy', 'happiness', 'health', 'hunger', 'level', 'name', 'pet_name', 'pet_xp', 'progression', 'species', 'stage', 'variant'].sort(),
   'owned slot summaries must expose only the pet-instance fields required by the roster card',
 );
 assert.equal(initialSeasonSlots.slots[0].pet.art_identity_id, null, 'slot summaries must not leak hidden art identities before Stage 3');

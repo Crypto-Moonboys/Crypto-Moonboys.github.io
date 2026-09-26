@@ -38,7 +38,7 @@ export const PET_SEASON_REWARD_TIERS = deepFreeze([
 ]);
 
 export const PET_EVOLUTION_PERKS = deepFreeze([
-  { stage: 0, title: 'Moon Egg', perk: 'Learns from care and begins forming memories.', weekly_power: 0 },
+  { stage: 0, title: 'Secret Bot', perk: 'Learns from care and begins forming memories.', weekly_power: 0 },
   { stage: 1, title: 'Street Moonpet', perk: 'Unlocks street jobs, street encounters and +3 weekly boss power.', weekly_power: 3 },
   { stage: 2, title: 'Cyber Moonpet', perk: 'Unlocks cyber jobs, signal events and +7 weekly boss power.', weekly_power: 7 },
   { stage: 3, title: 'Elite Moonpet', perk: 'Unlocks elite jobs, high-risk events and +12 weekly boss power.', weekly_power: 12 },

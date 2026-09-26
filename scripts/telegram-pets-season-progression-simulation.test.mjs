@@ -85,7 +85,7 @@ const PROFILE_PATTERNS = Object.freeze({
 
 const stages = evolutions.map(({ stage, name }) => ({ stage, name }));
 assert.deepEqual(stages, [
-  { stage: 0, name: 'Moon Egg' },
+  { stage: 0, name: 'Secret Bot' },
   { stage: 1, name: 'Street Moonpet' },
   { stage: 2, name: 'Cyber Moonpet' },
   { stage: 3, name: 'Elite Moonpet' },

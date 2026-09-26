@@ -1,0 +1,58 @@
+{
+  "schema_version": 2,
+  "audited_at": "2026-09-26T15:26:12.759Z",
+  "source": "AutoSprite API",
+  "character_name": "EGGYONE",
+  "character_id": "cmui5g9430007v27qp8scqirq",
+  "manifest_path": "/data/moonpet-eggyone-stage0-assets.json",
+  "required_frame_count": 25,
+  "required_roles": [
+    "egg_idle",
+    "egg_wobble",
+    "egg_sleep",
+    "egg_react",
+    "egg_care",
+    "egg_breakout",
+    "egg_hatch"
+  ],
+  "playback_contract": {
+    "egg_idle": {
+      "loop": true,
+      "one_shot": false,
+      "playback_mode": "loop"
+    },
+    "egg_wobble": {
+      "loop": true,
+      "one_shot": false,
+      "playback_mode": "loop"
+    },
+    "egg_sleep": {
+      "loop": true,
+      "one_shot": false,
+      "playback_mode": "loop"
+    },
+    "egg_react": {
+      "loop": false,
+      "one_shot": true,
+      "playback_mode": "once_then_idle"
+    },
+    "egg_care": {
+      "loop": false,
+      "one_shot": true,
+      "playback_mode": "once_then_idle"
+    },
+    "egg_breakout": {
+      "loop": false,
+      "one_shot": true,
+      "playback_mode": "once_hold_last"
+    },
+    "egg_hatch": {
+      "loop": false,
+      "one_shot": true,
+      "playback_mode": "once"
+    }
+  },
+  "status": "complete",
+  "genuine_authored_pack_available": true,
+  "failures": []
+}

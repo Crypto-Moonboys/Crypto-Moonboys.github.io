@@ -73,6 +73,7 @@ const GROUPS = {
     ['node', 'scripts/moonpet-roadmap-regression.test.mjs'],
     ['node', 'scripts/moonpet-multi-bot-art.test.mjs'],
     ['node', 'scripts/moonpet-art-architecture.test.mjs'],
+    ['node', 'scripts/moonpet-mini-app-leaderboard-sql.test.mjs'],
     ['node', 'scripts/telegram-pets-mini-app.test.mjs'],
     ['node', 'scripts/telegram-pets-mini-app-parity.test.mjs'],
     ['node', 'scripts/telegram-pets-season-1-production-readiness.test.mjs'],

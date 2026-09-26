@@ -21,10 +21,10 @@ const activities = {
     'For a quiet second, your Moonpet simply enjoys having you nearby.',
   ],
   adopt: [
-    'The Moon Egg gives one brave wobble. Something inside already knows your voice.',
+    'EGGYONE gives one brave wobble. The Secret Bot already knows your signal.',
     'A tiny pulse of moonlight answers your touch; your shared story has started.',
-    'The shell leans toward you as though it has already chosen its person.',
-    'Your new Moonpet cannot speak yet, but the excited tapping says enough.',
+    'The Secret Bot leans toward you as though it has already chosen its person.',
+    'EGGYONE cannot speak yet, but the excited tapping says enough.',
   ],
   feed: [
     'Your Moonpet inspects the food for exactly one second before diving in.',
@@ -300,11 +300,11 @@ const moods = {
 
 const evolutions = {
   moon_egg: [
-    'The Moon Egg wobbles at the sound of {activity}.',
-    'A soft glow moves beneath the shell while {activity} unfolds.',
-    'The shell taps twice, storing another early impression of {activity}.',
-    'Your Moon Egg cannot join in fully yet, but it is definitely paying attention.',
-    'A warm pulse from the shell answers {activity} in its own quiet language.',
+    'EGGYONE wobbles at the sound of {activity}.',
+    'A soft glow moves across the Secret Bot while {activity} unfolds.',
+    'EGGYONE taps twice, storing another early impression of {activity}.',
+    'Your Secret Bot cannot join in fully yet, but it is definitely paying attention.',
+    'A warm pulse from EGGYONE answers {activity} in its own quiet language.',
   ],
   street_moonpet: [
     'Your Street Moonpet brings a little Moon Alley nerve to {activity}.',
@@ -346,7 +346,7 @@ const evolutions = {
 const milestones = {
   first_adoption: [
     'Something about {activity} carries the same warmth as the day you first met.',
-    'Your Moonpet still remembers the first touch against its shell.',
+    'Your Moonpet still remembers the first signal that awakened it.',
     'For a moment, {activity} brings back the beginning of your bond.',
     'The memory of being chosen still shapes how your Moonpet trusts you during {activity}.',
   ],
