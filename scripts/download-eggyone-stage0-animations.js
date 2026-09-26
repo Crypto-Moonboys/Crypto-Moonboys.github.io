@@ -2,6 +2,8 @@
 
 const fs = require("node:fs/promises");
 const path = require("node:path");
+const crypto = require("node:crypto");
+const sharp = require("sharp");
 const {
   resolveCharacterId,
   listSpritesheets,
@@ -13,11 +15,25 @@ const {
   relative,
   slug
 } = require("./download-botty-front-animations");
+const { buildLocalAtlas } = require("./generate-moonpet-assets");
 const { directNames } = require("./inspect-autosprite-stage0-pack");
 
 const REPO_ROOT = path.resolve(__dirname, "..");
 const CHARACTER_NAME = "EGGYONE";
 const REGISTRY_PATH = path.join(REPO_ROOT, "data", "moonpet-autosprite-characters.json");
+const STAGE0_MANIFEST_PATH = path.join(REPO_ROOT, "data", "moonpet-eggyone-stage0-assets.json");
+const FRONT_ACTION_CONTACT_SHEET = "/img/moonpets/eggyone/front-actions-contact-sheet.png";
+const LOCAL_FRONT_FIGHT_SOURCE = {
+  path: "/img/moonpets/eggyone/EGGYONE-front_fight-v1.png",
+  blob_sha: "835af206e932916ef0c4e1c3ca13cbdae18bf2f1",
+  role: "front_fight"
+};
+const FRONT_ACTION_ROLES = ["front_dance", "front_victory", "front_fight"];
+const FRONT_ACTION_PLAYBACK = Object.freeze({
+  front_dance: { loop: true, one_shot: false, playback_mode: "loop" },
+  front_victory: { loop: false, one_shot: true, playback_mode: "once_hold_last" },
+  front_fight: { loop: false, one_shot: true, playback_mode: "once_then_idle" }
+});
 const ROLE_SHEETS = [
   { role: "egg_idle", autosprite_name: "EGGONE", playback_mode: "loop" },
   { role: "egg_wobble", autosprite_name: "EGGTWO", playback_mode: "loop" },
@@ -61,6 +77,143 @@ function exactName(record) {
   return ROLE_SHEETS.find((entry) => names.includes(entry.autosprite_name))?.autosprite_name || "";
 }
 
+async function readJsonIfExists(filePath, fallback = null) {
+  try {
+    return JSON.parse(await fs.readFile(filePath, "utf8"));
+  } catch (error) {
+    if (error && error.code === "ENOENT") return fallback;
+    throw error;
+  }
+}
+
+function selectCanonicalStage0Records(records) {
+  const completed = records.filter(isComplete);
+  const buckets = new Map(ROLE_SHEETS.map((entry) => [entry.autosprite_name, []]));
+  for (const record of completed) {
+    const matchedName = exactName(record);
+    if (!matchedName || !buckets.has(matchedName)) continue;
+    buckets.get(matchedName).push(record);
+  }
+  const selected = new Map();
+  for (const entry of ROLE_SHEETS) {
+    const matches = buckets.get(entry.autosprite_name) || [];
+    if (matches.length === 0) {
+      throw new Error(`Missing exact existing EGGYONE sheet ${entry.autosprite_name}.`);
+    }
+    if (matches.length > 1) {
+      throw new Error(`Multiple completed EGGYONE sheets matched ${entry.autosprite_name}.`);
+    }
+    selected.set(entry.autosprite_name, matches[0]);
+  }
+  return selected;
+}
+
+function atlasFrames(atlas) {
+  if (Array.isArray(atlas?.frames)) return atlas.frames;
+  if (atlas?.frames && typeof atlas.frames === "object") return Object.values(atlas.frames);
+  return [];
+}
+
+function validateAtlasAgainstSheet(atlas, sheet) {
+  const frames = atlasFrames(atlas);
+  if (frames.length !== Number(sheet.frame_count)) throw new Error("front_fight atlas frame count does not match sheet layout");
+  for (const [index, frame] of frames.entries()) {
+    const source = frame?.frame || frame || {};
+    const x = Number(source.x);
+    const y = Number(source.y);
+    const w = Number(source.w || source.width);
+    const h = Number(source.h || source.height);
+    if (![x, y, w, h].every(Number.isFinite) || w <= 0 || h <= 0) {
+      throw new Error(`front_fight atlas frame ${index} is invalid`);
+    }
+    if (x < 0 || y < 0 || x + w > sheet.sheet_size.w || y + h > sheet.sheet_size.h) {
+      throw new Error(`front_fight atlas frame ${index} exceeds PNG bounds`);
+    }
+  }
+}
+
+async function ensureLocalEggyoneFrontFightAsset(productionDir, characterId) {
+  const sourcePath = path.join(REPO_ROOT, LOCAL_FRONT_FIGHT_SOURCE.path.replace(/^[/\\]+/, ""));
+  const runtimePng = path.join(productionDir, "front_fight.png");
+  const runtimeAtlas = path.join(productionDir, "front_fight.json");
+  await fs.copyFile(sourcePath, runtimePng);
+  const sourceBlobSha = await fs.readFile(sourcePath).then((buf) => crypto.createHash("sha1").update(Buffer.concat([Buffer.from(`blob ${buf.length}\0`), buf])).digest("hex"));
+  if (sourceBlobSha !== LOCAL_FRONT_FIGHT_SOURCE.blob_sha) {
+    throw new Error(`front_fight source blob mismatch: expected ${LOCAL_FRONT_FIGHT_SOURCE.blob_sha}, found ${sourceBlobSha}`);
+  }
+  const metadata = await sharp(runtimePng).metadata();
+  const width = Number(metadata.width);
+  const height = Number(metadata.height);
+  const frameCount = 25;
+  const columns = Math.sqrt(frameCount);
+  if (!Number.isInteger(columns) || width % columns !== 0 || height % columns !== 0) {
+    throw new Error(`front_fight PNG layout ${width}x${height} is not compatible with a ${frameCount}-frame square grid`);
+  }
+  const frameWidth = width / columns;
+  const frameHeight = height / columns;
+  if (frameWidth !== frameHeight) throw new Error("front_fight PNG frame cells are not square");
+  const atlas = buildLocalAtlas({
+    frameCount,
+    frameSize: frameWidth,
+    sheetSize: { w: width, h: height },
+    durationS: 2.333
+  });
+  validateAtlasAgainstSheet(atlas, {
+    frame_count: frameCount,
+    sheet_size: { w: width, h: height }
+  });
+  await writeJson(runtimeAtlas, atlas);
+  return {
+    role: "front_fight",
+    png_path: "/img/moonpets/eggyone/front_fight.png",
+    atlas_path: "/img/moonpets/eggyone/front_fight.json",
+    frame_count: frameCount,
+    frame_dimensions: { w: frameWidth, h: frameHeight },
+    sheet_size: { w: width, h: height },
+    fps: 12,
+    loop: FRONT_ACTION_PLAYBACK.front_fight.loop,
+    one_shot: FRONT_ACTION_PLAYBACK.front_fight.one_shot,
+    playback_mode: FRONT_ACTION_PLAYBACK.front_fight.playback_mode,
+    autosprite: {
+      character_id: characterId,
+      spritesheet_id: null,
+      source: "local_user_supplied"
+    },
+    provenance: "local_user_supplied_exact_committed_png",
+    user_supplied: {
+      approved: true,
+      source_png_path: LOCAL_FRONT_FIGHT_SOURCE.path,
+      source_blob_sha: LOCAL_FRONT_FIGHT_SOURCE.blob_sha
+    },
+    review_status: "approved_visual_review"
+  };
+}
+
+function preservedFrontActionAssets(existingManifest) {
+  const assets = Array.isArray(existingManifest?.assets) ? existingManifest.assets : [];
+  const byRole = new Map(assets.filter((asset) => FRONT_ACTION_ROLES.includes(asset?.role)).map((asset) => [asset.role, asset]));
+  for (const role of ["front_dance", "front_victory"]) {
+    const asset = byRole.get(role);
+    if (!asset) throw new Error(`Missing ${role} in data/moonpet-eggyone-stage0-assets.json; refusing to drop approved front actions during Stage-0 refresh.`);
+    byRole.set(role, { ...asset, review_status: "approved_visual_review" });
+  }
+  return byRole;
+}
+
+async function rebuildFrontActionContactSheet(assets) {
+  const entries = FRONT_ACTION_ROLES.map((role) => {
+    const asset = assets.find((entry) => entry.role === role);
+    if (!asset) throw new Error(`Missing ${role} for front-action contact sheet rebuild`);
+    return {
+      id: role,
+      output_png_path: asset.png_path.replace(/^[/\\]+/, "")
+    };
+  });
+  const contactSheetPath = path.join(REPO_ROOT, FRONT_ACTION_CONTACT_SHEET.replace(/^[/\\]+/, ""));
+  await buildContactSheet(entries, contactSheetPath);
+  return FRONT_ACTION_CONTACT_SHEET;
+}
+
 async function promoteStagingPack(manifest, paths) {
   const productionDir = path.join(REPO_ROOT, "img", "moonpets", "eggyone");
   await fs.mkdir(productionDir, { recursive: true });
@@ -79,19 +232,49 @@ async function promoteStagingPack(manifest, paths) {
   }
   const contactSheetPath = path.join(productionDir, "contact-sheet.png");
   await fs.copyFile(paths.contactSheetPath, contactSheetPath);
+  const existingManifest = await readJsonIfExists(STAGE0_MANIFEST_PATH, {});
+  const frontAssets = preservedFrontActionAssets(existingManifest);
+  const localFrontFight = await ensureLocalEggyoneFrontFightAsset(productionDir, manifest.character_id);
+  frontAssets.set("front_fight", localFrontFight);
+  const mergedAssets = [...productionAnimations, ...FRONT_ACTION_ROLES.map((role) => frontAssets.get(role))];
+  const frontActionContactSheetPath = await rebuildFrontActionContactSheet(mergedAssets);
   const productionManifest = {
-    schema_version: 1,
+    schema_version: 2,
     character_name: manifest.character_name,
     character_id: manifest.character_id,
-    source: "AutoSprite API",
-    provenance: "existing AutoSprite sheets; no generation request was made",
+    source: "AutoSprite API + local approved asset",
+    provenance: "seven existing AutoSprite Stage-0 sheets plus approved local user-supplied EGGYONE front_fight sheet",
     downloaded_at: manifest.generated_at,
-    approval_status: "mechanical_validation_passed_pending_visual_review",
+    approval_status: "approved_visual_review",
     contact_sheet_path: `/${relative(contactSheetPath)}`,
-    animations: productionAnimations
+    cache_version: existingManifest?.cache_version || "20260926-front-actions-v1",
+    runtime_role_map: {
+      idle: "egg_idle",
+      wobble: "egg_wobble",
+      sleep: "egg_sleep",
+      feed: "egg_care",
+      clean: "egg_care",
+      play: "egg_care",
+      interact: "egg_react",
+      greet: "egg_react",
+      blocked: "egg_react",
+      breakout: "egg_breakout",
+      hatch: "egg_hatch",
+      evolve: "egg_hatch",
+      dance: "front_dance",
+      victory: "front_victory",
+      fight: "front_fight"
+    },
+    display: existingManifest?.display || { scale: 1, fit_width: 184, fit_height: 184, pivot_y: 1 },
+    assets: mergedAssets,
+    front_action_contact_sheet_path: frontActionContactSheetPath,
+    front_action_visual_review: {
+      status: "approved",
+      reviewed_at: existingManifest?.front_action_visual_review?.reviewed_at || new Date().toISOString(),
+      contact_sheet_path: frontActionContactSheetPath
+    }
   };
-  const productionManifestPath = path.join(REPO_ROOT, "data", "moonpet-eggyone-stage0-assets.json");
-  await writeJson(productionManifestPath, productionManifest);
+  await writeJson(STAGE0_MANIFEST_PATH, productionManifest);
   return productionManifest;
 }
 
@@ -100,21 +283,11 @@ async function downloadEggyoneStage0Animations(options) {
   if (!apiKey) throw new Error("AUTOSPRITE_API_KEY is required to download EGGYONE outputs.");
   const paths = outputPaths();
   const characterId = await resolveCharacterId(options);
-  const records = (await listSpritesheets(apiKey, characterId, paths)).filter(isComplete);
-  if (records.length !== ROLE_SHEETS.length) {
-    throw new Error(`Expected exactly ${ROLE_SHEETS.length} completed EGGYONE sheets, found ${records.length}.`);
-  }
-  const recordsByName = new Map();
-  for (const record of records) {
-    const name = exactName(record);
-    if (!name) throw new Error(`Unrecognized EGGYONE sheet ${spritesheetId(record) || "without id"}: ${directNames(record).join(", ") || "name unavailable"}.`);
-    if (recordsByName.has(name)) throw new Error(`Multiple completed EGGYONE sheets matched ${name}.`);
-    recordsByName.set(name, record);
-  }
+  const records = await listSpritesheets(apiKey, characterId, paths);
+  const recordsByName = selectCanonicalStage0Records(records);
   const animations = [];
   for (const mapping of ROLE_SHEETS) {
     const record = recordsByName.get(mapping.autosprite_name);
-    if (!record) throw new Error(`Missing exact existing EGGYONE sheet ${mapping.autosprite_name}.`);
     const saved = await saveExistingSheet({
       apiKey,
       animationId: mapping.role,
@@ -156,4 +329,19 @@ if (require.main === module) {
   });
 }
 
-module.exports = { ROLE_SHEETS, parseArgs, exactName, outputPaths, downloadEggyoneStage0Animations };
+module.exports = {
+  ROLE_SHEETS,
+  FRONT_ACTION_ROLES,
+  LOCAL_FRONT_FIGHT_SOURCE,
+  FRONT_ACTION_CONTACT_SHEET,
+  parseArgs,
+  exactName,
+  outputPaths,
+  selectCanonicalStage0Records,
+  validateAtlasAgainstSheet,
+  ensureLocalEggyoneFrontFightAsset,
+  preservedFrontActionAssets,
+  rebuildFrontActionContactSheet,
+  promoteStagingPack,
+  downloadEggyoneStage0Animations
+};

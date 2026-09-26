@@ -97,8 +97,10 @@ jobs:
           node --check scripts/audit-eggyone-stage0-art.js
           node --check scripts/inspect-autosprite-stage0-pack.js
           node --check scripts/download-eggyone-stage0-animations.js
+          node --check scripts/eggyone-stage0-refresh-regression.test.mjs
           node scripts/generate-moonpet-assets-extraction.test.js
           node scripts/moonpet-front-action-download.test.mjs
+          node scripts/eggyone-stage0-refresh-regression.test.mjs
           node scripts/audit-eggyone-stage0-art.js --check
           node scripts/moonpet-art-architecture.test.mjs
           node scripts/moonpet-multi-bot-art.test.mjs
@@ -175,7 +177,7 @@ jobs:
           node scripts/moonpet-multi-bot-art.test.mjs
 
       - name: Commit AutoSprite character registry
-        if: ${{ env.AUTO_COMMIT_AUTOSPRITE_CHARACTER_REGISTRY == 'true' && env.FACTORY_PHASE != 'download-existing-front-actions' && (success() || env.FACTORY_PHASE != 'approve-front-actions') }}
+        if: ${{ success() && env.AUTO_COMMIT_AUTOSPRITE_CHARACTER_REGISTRY == 'true' && env.FACTORY_PHASE != 'download-existing-front-actions' }}
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
