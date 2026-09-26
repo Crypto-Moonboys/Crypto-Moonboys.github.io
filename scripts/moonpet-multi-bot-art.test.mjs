@@ -124,6 +124,8 @@ assert.match(rendererSource, /const containScale = Math\.min\(fitWidth \/ frame\
 assert.match(rendererSource, /const width = frame\.w \* drawScale;[\s\S]*const height = frame\.h \* drawScale;/, "renderer must preserve source aspect ratio instead of squashing bots");
 assert.match(client, /var active = sleepLatched \|\| animationUntil > renderTime/);
 assert.match(client, /animationUntil = sleepLatched && animationMode === 'sleep' \? Number\.POSITIVE_INFINITY/);
-assert.match(client, /rawEvolutionStage == null[\s\S]*lifecycle\.phase === 'egg' \? 0 : 1/);
+assert.match(client, /if \(String\(lifecycle\.phase \|\| ''\)\.toLowerCase\(\) === 'egg'\) return 0;/);
+assert.match(client, /return Math\.max\(1, Math\.min\(5, Math\.floor\(evolutionStage\)\)\);/);
+assert.match(client, /evolutionStage: botArtEvolutionStage\(snapshot\)/);
 
 console.log("Moonpet multi-bot art registry and production packs passed");

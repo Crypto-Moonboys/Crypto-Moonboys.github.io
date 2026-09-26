@@ -223,17 +223,27 @@
     });
   }
 
-  function botArtIdentity(snapshot) {
+  // TEST-EXPORT: botArtEvolutionStage:start
+  function botArtEvolutionStage(snapshot) {
     var lifecycle = snapshot && snapshot.lifecycle || {};
     var pet = snapshot && snapshot.pet || {};
+    if (String(lifecycle.phase || '').toLowerCase() === 'egg') return 0;
     var rawEvolutionStage = pet.evolution_stage;
     if (rawEvolutionStage == null) rawEvolutionStage = lifecycle.evolution_stage;
     if (rawEvolutionStage == null) rawEvolutionStage = lifecycle.stage;
-    if (rawEvolutionStage == null) rawEvolutionStage = lifecycle.phase === 'egg' ? 0 : 1;
+    var evolutionStage = Number(rawEvolutionStage);
+    if (!Number.isFinite(evolutionStage)) return 1;
+    return Math.max(1, Math.min(5, Math.floor(evolutionStage)));
+  }
+  // TEST-EXPORT: botArtEvolutionStage:end
+
+  function botArtIdentity(snapshot) {
+    var lifecycle = snapshot && snapshot.lifecycle || {};
+    var pet = snapshot && snapshot.pet || {};
     return {
       speciesId: String(lifecycle.species_id || pet.species || ''),
       speciesName: String(lifecycle.species_name || ''),
-      evolutionStage: Number(rawEvolutionStage)
+      evolutionStage: botArtEvolutionStage(snapshot)
     };
   }
 
