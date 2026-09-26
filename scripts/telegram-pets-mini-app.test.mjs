@@ -87,6 +87,13 @@ assert.doesNotMatch(client, /next_evolution[^\n]+LEVEL \/\/ 0\/0/, 'final-form l
 assert.match(client, /if \(!pet\.progression\)[^\n]+PROGRESSION UNAVAILABLE/, 'missing roster progression must render an explicit unavailable state');
 const apiConfig = fs.readFileSync(new URL('../js/api-config.js', import.meta.url), 'utf8');
 const css = fs.readFileSync(new URL('../css/moonpet-mini-app.css', import.meta.url), 'utf8');
+assert.match(css, /--moonpet-viewport-height:\s*100dvh/, 'Moonpet shell must have a dynamic viewport-height fallback');
+assert.equal((css.match(/grid-template-rows:\s*auto minmax\([^;]+\) minmax\(0,\s*1fr\) auto/g) || []).length, 3,
+  'base, wide and short layouts must each define exactly four flow rows');
+assert.doesNotMatch(css, /grid-template-rows:[^;]+\sauto\s+minmax\(0,\s*1fr\)\s+auto/,
+  'responsive layouts must not reserve a stale row for the absolutely positioned terminal output');
+assert.match(client, /tg\.viewportHeight \|\| tg\.viewportStableHeight/, 'Moonpet shell must use Telegram visible viewport height');
+assert.match(client, /tg\.onEvent\('viewportChanged', syncViewportHeight\)/, 'Moonpet shell must track Telegram viewport changes');
 const guide = fs.readFileSync(new URL('../how-to-play-crypto-moonboy-pets.html', import.meta.url), 'utf8');
 const arcadeRadio = fs.readFileSync(new URL('../js/arcade/core/radio.js', import.meta.url), 'utf8');
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
@@ -1299,7 +1306,7 @@ assert.match(worker, /const \[journeySummary, hydratedKaiju\] = await Promise\.a
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
-assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260926-uniform-bot-fit-v3`/);
+assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260926-bottom-dock-fix-v1`/);
 assert.match(worker, /const TELEGRAM_GAMES_MENU_URL = `\$\{SITE_URL\}\/games\/telegram\/\?v=20260903-games-shell-v8`/,
   'default Telegram games menu must point at the current shell release');
 assert.match(worker, /const TELEGRAM_GAMES_MENU_TEXT = 'Games'/);
@@ -1359,7 +1366,7 @@ assert.match(html, /id="utility-layer"/);
 assert.doesNotMatch(html, /\.terminal-output\{min-height:52px/, 'legacy always-visible update strip override must be removed');
 assert.match(css, /\.terminal-output \{[\s\S]*clip-path: inset\(50%\)/, 'routine status text must stay visually hidden rather than duplicate screen content');
 assert.match(css, /\.terminal-output\[data-tone="danger"\]/, 'danger/error status must remain visible');
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260926-uniform-bot-fit-v3/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260926-bottom-dock-fix-v1/);
 assert.match(html, /\/js\/moonpet-art-resolver\.js\?v=20260926-uniform-bot-fit-v3/);
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20260926-uniform-bot-fit-v3/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20260926-uniform-bot-fit-v3/);
@@ -1456,7 +1463,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260926-uniform-bot-fit-v3/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260926-bottom-dock-fix-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -1896,7 +1903,7 @@ assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Numbe
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
 assert.match(html, /20260926-uniform-bot-fit-v3/);
-assert.match(worker, /20260926-uniform-bot-fit-v3/);
+assert.match(worker, /20260926-bottom-dock-fix-v1/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');
 assert.match(client, /renderQuality = reducedMotion/, 'canvas quality must start from device capability');

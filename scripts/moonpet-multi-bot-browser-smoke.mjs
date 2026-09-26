@@ -69,9 +69,29 @@ const executablePath = chromeCandidates.find((candidate) => fsSync.existsSync(ca
 const browser = await chromium.launch({ headless: true, ...(executablePath ? { executablePath } : {}) });
 try {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
-  await page.route("https://telegram.org/**", (route) => route.fulfill({ contentType: "text/javascript", body: "window.Telegram={WebApp:{initData:'',ready(){},expand(){},setHeaderColor(){},setBackgroundColor(){}}};" }));
+  await page.route("https://telegram.org/**", (route) => route.fulfill({ contentType: "text/javascript", body: "window.Telegram={WebApp:{initData:'',viewportHeight:520,viewportStableHeight:520,ready(){},expand(){},setHeaderColor(){},setBackgroundColor(){},onEvent(){}}};" }));
   await page.goto(`http://127.0.0.1:${address.port}/moonpet-game.html?botArt=1&sideSprites=0`, { waitUntil: "networkidle" });
   await page.waitForFunction(() => Boolean(window.MoonpetBotArtRenderer));
+  await page.waitForFunction(() => getComputedStyle(document.documentElement).getPropertyValue("--moonpet-viewport-height").trim() === "520px");
+
+  const shellLayout = await page.evaluate(() => {
+    const nav = document.getElementById("nav");
+    nav.innerHTML = ["HOME", "MISSIONS", "EXPLORE", "WORK", "ECONOMY", "PROFILE"]
+      .map((label) => `<button type="button"><span>+</span>${label}</button>`).join("");
+    const shell = document.getElementById("moonpet-app").getBoundingClientRect();
+    const dock = nav.getBoundingClientRect();
+    const buttons = Array.from(nav.querySelectorAll("button"), (button) => button.getBoundingClientRect());
+    return {
+      viewportVariable: getComputedStyle(document.documentElement).getPropertyValue("--moonpet-viewport-height").trim(),
+      shellBottom: shell.bottom,
+      dockBottom: dock.bottom,
+      buttonBottoms: buttons.map((button) => button.bottom),
+    };
+  });
+  assert.equal(shellLayout.viewportVariable, "520px", "shell must use Telegram's visible viewport height");
+  assert.ok(shellLayout.shellBottom <= 520.5, "shell must fit inside Telegram's visible viewport");
+  assert.ok(shellLayout.dockBottom <= 520.5, "bottom dock must not be cropped by Telegram's visible viewport");
+  assert.ok(shellLayout.buttonBottoms.every((bottom) => bottom <= 513.5), "every dock button must fit above the dock's bottom padding");
 
   const result = await page.evaluate(async (modes) => {
     const renderer = window.MoonpetBotArtRenderer;

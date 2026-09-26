@@ -300,6 +300,22 @@
     return false;
   }
 
+  function syncViewportHeight() {
+    var telegramHeight = Number(tg && (tg.viewportHeight || tg.viewportStableHeight) || 0);
+    var visualHeight = Number(window.visualViewport && window.visualViewport.height || 0);
+    var height = Math.round(telegramHeight || visualHeight || window.innerHeight || document.documentElement.clientHeight || 0);
+    if (height > 240) document.documentElement.style.setProperty('--moonpet-viewport-height', height + 'px');
+  }
+
+  function bindViewportSizing() {
+    syncViewportHeight();
+    window.addEventListener('resize', syncViewportHeight, { passive: true });
+    if (window.visualViewport && window.visualViewport.addEventListener) {
+      window.visualViewport.addEventListener('resize', syncViewportHeight, { passive: true });
+    }
+    try { if (tg && tg.onEvent) tg.onEvent('viewportChanged', syncViewportHeight); } catch (_) {}
+  }
+
   function escapeHtml(value) {
     return String(value == null ? '' : value).replace(/[&<>"']/g, function (char) {
       return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char];
@@ -3206,8 +3222,10 @@
 
   async function start() {
     await waitForTelegramContext();
+    bindViewportSizing();
     if (tg) {
       try { tg.ready(); tg.expand(); tg.setHeaderColor('#070707'); tg.setBackgroundColor('#070707'); if (tg.disableVerticalSwipes) tg.disableVerticalSwipes(); } catch (_) {}
+      syncViewportHeight();
     }
     setInterval(function () {
       var now = new Date();
