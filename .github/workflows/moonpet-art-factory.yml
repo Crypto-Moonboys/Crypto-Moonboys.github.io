@@ -44,6 +44,10 @@ on:
         required: true
         default: true
         type: boolean
+      front_action_regenerate:
+        description: "Comma-separated CHARACTER:role targets rejected during visual review."
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -57,6 +61,7 @@ jobs:
       AUTOSPRITE_CHARACTER_NAME: ${{ github.event_name == 'workflow_dispatch' && inputs.autosprite_character_name || 'BOTTY' }}
       EXECUTE_FRONT_GENERATION: ${{ github.event_name == 'workflow_dispatch' && inputs.execute_front_generation || false }}
       AUTO_COMMIT_AUTOSPRITE_CHARACTER_REGISTRY: ${{ github.event_name != 'workflow_dispatch' || inputs.auto_commit_autosprite_character_registry }}
+      FRONT_ACTION_REGENERATE: ${{ github.event_name == 'workflow_dispatch' && inputs.front_action_regenerate || '' }}
 
     steps:
       - name: Check out repository
@@ -121,7 +126,11 @@ jobs:
       - name: Generate and install ten-character front action pack
         if: ${{ env.FACTORY_PHASE == 'generate-front-action-pack' && env.EXECUTE_FRONT_GENERATION == 'true' }}
         timeout-minutes: 360
-        run: node scripts/generate-moonpet-front-action-pack.js
+        shell: bash
+        run: |
+          ARGS=()
+          if [ -n "$FRONT_ACTION_REGENERATE" ]; then ARGS+=(--regenerate "$FRONT_ACTION_REGENERATE"); fi
+          node scripts/generate-moonpet-front-action-pack.js "${ARGS[@]}"
 
       - name: Validate ten-character front action pack
         if: ${{ env.FACTORY_PHASE == 'generate-front-action-pack' && env.EXECUTE_FRONT_GENERATION == 'true' }}

@@ -44,6 +44,33 @@ async function readJson(filePath) {
   return JSON.parse(await fs.readFile(filePath, "utf8"));
 }
 
+async function readJsonIfExists(filePath, fallback) {
+  try {
+    return await readJson(filePath);
+  } catch (error) {
+    if (error.code === "ENOENT") return fallback;
+    throw error;
+  }
+}
+
+function parseArgs(argv) {
+  const index = argv.indexOf("--regenerate");
+  const raw = index >= 0 ? String(argv[index + 1] || "").trim() : "";
+  const requested = new Map();
+  if (!raw) return { requested };
+  for (const token of raw.split(",").map((value) => value.trim()).filter(Boolean)) {
+    const separator = token.lastIndexOf(":");
+    if (separator <= 0) throw new Error(`Invalid regeneration target "${token}"; expected CHARACTER:front_role.`);
+    const characterName = token.slice(0, separator).trim().toUpperCase();
+    const role = token.slice(separator + 1).trim();
+    if (!REQUIRED_ROLES[role]) throw new Error(`Invalid regeneration role "${role}".`);
+    if (!CHARACTERS.some((character) => character.name === characterName)) throw new Error(`Unknown regeneration character "${characterName}".`);
+    if (!requested.has(characterName)) requested.set(characterName, new Set());
+    requested.get(characterName).add(role);
+  }
+  return { requested };
+}
+
 function repoPath(relativePath) {
   return path.join(REPO_ROOT, String(relativePath || "").replace(/^[/\\]+/, ""));
 }
@@ -103,7 +130,7 @@ async function installCharacter(character, characterId, entries, generatedRoles)
     const existing = findExistingRole(manifest, entry.id);
     const incomingId = String(entry.autosprite_spritesheet_id || "");
     if (!incomingId) throw new Error(`${character.name} ${entry.id}: missing AutoSprite spritesheet ID`);
-    if (existing && String(existing.autosprite?.spritesheet_id || "") !== incomingId) {
+    if (existing && !generatedRoles.has(entry.id) && String(existing.autosprite?.spritesheet_id || "") !== incomingId) {
       throw new Error(`${character.name} ${entry.id}: refusing to replace installed spritesheet ${existing.autosprite?.spritesheet_id} with ${incomingId}`);
     }
     const installed = asInstalledAsset(character, characterId, entry, generatedRoles.has(entry.id));
@@ -123,13 +150,27 @@ async function installCharacter(character, characterId, entries, generatedRoles)
   await writeJson(manifestPath, manifest);
 }
 
-async function processCharacter(character, apiKey, globalIds) {
+async function processCharacter(character, apiKey, globalIds, forceRoles = new Set()) {
   const paths = outputPaths(character.name);
   const characterId = await resolveCharacterId({ characterName: character.name, characterId: "", registryPath: REGISTRY_PATH });
   let records = await listSpritesheets(apiKey, characterId, paths);
   const generatedRoles = new Set();
 
   for (const role of Object.keys(REQUIRED_ROLES)) {
+    if (forceRoles.has(role)) {
+      console.log(`[${character.name}] regenerating rejected ${role}`);
+      const options = parseGeneratorArgs([
+        "--character-name", character.name,
+        "--character-id", characterId,
+        "--animation", role,
+        "--poll-timeout-ms", "1200000",
+        "--execute"
+      ]);
+      await generateBottyFrontAnimations(options);
+      generatedRoles.add(role);
+      records = await listSpritesheets(apiKey, characterId, paths);
+      continue;
+    }
     try {
       pickRecord(records, role);
       console.log(`[${character.name}] reusing existing ${role}`);
@@ -187,6 +228,7 @@ async function processCharacter(character, apiKey, globalIds) {
 }
 
 async function main() {
+  const options = parseArgs(process.argv.slice(2));
   const apiKey = process.env.AUTOSPRITE_API_KEY;
   if (!apiKey) throw new Error("AUTOSPRITE_API_KEY is required for the front action pack.");
   const registry = await readJson(REGISTRY_PATH);
@@ -197,7 +239,20 @@ async function main() {
 
   const globalIds = new Map();
   const animations = [];
-  for (const character of CHARACTERS) animations.push(...await processCharacter(character, apiKey, globalIds));
+  const selectedCharacters = options.requested.size
+    ? CHARACTERS.filter((character) => options.requested.has(character.name))
+    : CHARACTERS;
+  for (const character of selectedCharacters) {
+    animations.push(...await processCharacter(character, apiKey, globalIds, options.requested.get(character.name)));
+  }
+
+  const previousReport = await readJsonIfExists(REPORT_PATH, { animations: [] });
+  const selectedNames = new Set(selectedCharacters.map((character) => character.name));
+  const completeAnimations = [
+    ...(previousReport.animations || []).filter((entry) => !selectedNames.has(entry.character_name)),
+    ...animations
+  ];
+  if (completeAnimations.length !== 30) throw new Error(`Front action report must contain 30 sheets, received ${completeAnimations.length}.`);
 
   const botRegistry = await readJson(BOT_ART_REGISTRY_PATH);
   botRegistry.role_map.dance = "front_dance";
@@ -208,7 +263,7 @@ async function main() {
     cache_version: CACHE_VERSION,
     required_roles: Object.keys(REQUIRED_ROLES),
     character_count: CHARACTERS.length,
-    animation_count: animations.length,
+    animation_count: completeAnimations.length,
     audit_path: "/data/moonpet-front-action-audit.json"
   };
   await writeJson(BOT_ART_REGISTRY_PATH, botRegistry);
@@ -219,9 +274,9 @@ async function main() {
     cache_version: CACHE_VERSION,
     characters: CHARACTERS.map((character) => character.name),
     required_roles: Object.keys(REQUIRED_ROLES),
-    animations
+    animations: completeAnimations
   });
-  console.log(`Moonpet front action pack staged: ${animations.length} verified AutoSprite sheets.`);
+  console.log(`Moonpet front action pack staged: ${completeAnimations.length} verified AutoSprite sheets.`);
 }
 
 if (require.main === module) {
@@ -231,4 +286,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { CHARACTERS, REQUIRED_ROLES, CACHE_VERSION, canonicalPaths, asInstalledAsset };
+module.exports = { CHARACTERS, REQUIRED_ROLES, CACHE_VERSION, canonicalPaths, asInstalledAsset, parseArgs };

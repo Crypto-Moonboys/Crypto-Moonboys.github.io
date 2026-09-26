@@ -203,7 +203,9 @@ function buildPrompt(characterName, animationId) {
   return [
     `${characterName} existing AutoSprite character, custom ${animationId} animation.`,
     ACTION_PROMPTS[animationId],
-    "Strict front-facing view, symmetrical body facing the viewer, preserve the uploaded character identity exactly.",
+    "Absolute locked straight-on front view in every frame: face, visor, chest, shoulders, hips and feet stay squared toward the viewer.",
+    "Never use side view, profile, three-quarter view, body rotation, camera rotation, or left/right travel. Animate limbs and effects while the torso remains frontal and centered.",
+    "Preserve the uploaded character identity, design, colours, proportions and outfit exactly.",
     "Keep the complete character, feet, head, outfit, props, weapons and effects inside every frame with transparent spacing around movement.",
     "Transparent background, no text, labels, borders, UI, scenery, replacement character, alternate skin or redesign."
   ].join(" ");
