@@ -2644,6 +2644,46 @@ for (const [action, startingHappiness, expectedHappiness] of [['dance', 90, 100]
   );
 }
 
+for (const equippedOutfit of [null, 'street_hoodie', 'moon_armor']) {
+  for (const action of ['energy_drink', 'dance', 'cuddles']) {
+    const telegramId = `special-zero-${action}-${equippedOutfit || 'none'}`;
+    const db = seedRepeatRewardPlayer(telegramId, 80, specialActionNow.toISOString());
+    db.database.prepare('UPDATE telegram_pet_profiles SET happiness=20, energy=20, equipped_outfit=COALESCE(?, equipped_outfit) WHERE telegram_id=?')
+      .run(equippedOutfit, telegramId);
+    db.database.prepare('UPDATE telegram_pet_instances SET happiness=20, energy=20, equipped_outfit=COALESCE(?, equipped_outfit) WHERE telegram_id=?')
+      .run(equippedOutfit, telegramId);
+    const result = await processPetAction(db, telegramId, action, {
+      event_key: `mini:${telegramId}:${action}:first`, source: 'telegram_mini_app', now: specialActionNow,
+    });
+    assert.equal(result.accepted, true, `${action} must accept with ${equippedOutfit || 'no outfit'}`);
+    assert.equal(result.pet.pet_xp, 0, `${action} must persist zero pet XP with ${equippedOutfit || 'no outfit'}`);
+    assert.deepEqual(
+      {
+        moon_gold: result.pet.moon_gold,
+        moon_crystals: result.pet.moon_crystals,
+        style_tokens: result.pet.style_tokens,
+      },
+      { moon_gold: 0, moon_crystals: 0, style_tokens: 0 },
+      `${action} must persist zero currency with ${equippedOutfit || 'no outfit'}`,
+    );
+    const accepted = db.database.prepare(`SELECT xp_awarded, pet_xp_awarded, metadata
+      FROM telegram_pet_events WHERE telegram_id=? AND event_key=? AND status='accepted'`)
+      .get(telegramId, `mini:${telegramId}:${action}:first`);
+    const eventRewards = JSON.parse(String(accepted?.metadata || '{}')).rewards || {};
+    assert.equal(Number(accepted?.xp_awarded || 0), 0, `${action} source event must persist zero Community XP`);
+    assert.equal(Number(accepted?.pet_xp_awarded || 0), 0, `${action} source event must persist zero Pet XP`);
+    assert.deepEqual(
+      {
+        moon_gold: Number(eventRewards.moon_gold || 0),
+        moon_crystals: Number(eventRewards.moon_crystals || 0),
+        style_tokens: Number(eventRewards.style_tokens || 0),
+      },
+      { moon_gold: 0, moon_crystals: 0, style_tokens: 0 },
+      `${action} event metadata rewards must stay wallet-neutral`,
+    );
+  }
+}
+
 const dailyLimitDb = seedRepeatRewardPlayer('special-daily-limit', 80, specialActionNow.toISOString());
 dailyLimitDb.database.prepare("UPDATE telegram_pet_profiles SET happiness=0 WHERE telegram_id='special-daily-limit'").run();
 dailyLimitDb.database.prepare("UPDATE telegram_pet_instances SET happiness=0 WHERE telegram_id='special-daily-limit'").run();
@@ -2670,6 +2710,31 @@ const specialCooldownEntries = await getPetSpecialActionCooldownEntries(dailyLim
   new Date(specialActionNow.getTime() + PET_SPECIAL_ACTION_POLICIES.dance.daily_limit * 301_000));
 assert.equal(specialCooldownEntries.find((entry) => entry.action === 'dance')?.daily_limit, 5,
   'state cooldown authority must advertise the exhausted DANCE daily limit');
+
+const specialConcurrentDb = seedRepeatRewardPlayer('special-concurrent', 80, specialActionNow.toISOString());
+specialConcurrentDb.database.prepare("UPDATE telegram_pet_profiles SET happiness=0 WHERE telegram_id='special-concurrent'").run();
+specialConcurrentDb.database.prepare("UPDATE telegram_pet_instances SET happiness=0 WHERE telegram_id='special-concurrent'").run();
+const concurrentAttempts = await Promise.all(Array.from({ length: 6 }, (_, index) =>
+  processPetAction(specialConcurrentDb, 'special-concurrent', 'dance', {
+    event_key: `mini:special-concurrent:dance:${index}`,
+    source: 'telegram_mini_app',
+    now: specialActionNow,
+  }),
+));
+assert.equal(concurrentAttempts.filter((entry) => entry.accepted).length, 1,
+  'concurrent DANCE requests must accept exactly one reservation');
+assert.ok(concurrentAttempts.filter((entry) => !entry.accepted)
+  .every((entry) => ['cooldown', 'daily_limit'].includes(entry.reason)),
+  'concurrent DANCE losers must receive cooldown/daily-limit rejection reasons');
+assert.equal(specialConcurrentDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
+  WHERE telegram_id='special-concurrent' AND event_type='dance' AND status='accepted'`).get().count, 1,
+  'concurrent DANCE requests must persist one accepted source event');
+assert.equal(specialConcurrentDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
+  WHERE telegram_id='special-concurrent' AND event_type='dance' AND status='pending'`).get().count, 0,
+  'concurrent DANCE requests must not leave pending reservations behind');
+assert.equal(specialConcurrentDb.database.prepare(`SELECT happiness FROM telegram_pet_profiles
+  WHERE telegram_id='special-concurrent'`).get().happiness, 18,
+  'concurrent DANCE requests must apply one stat mutation');
 
 const purchaseRaceDb = seedRepeatRewardPlayer('purchase-race', 70);
 purchaseRaceDb.database.prepare("UPDATE telegram_pet_profiles SET moon_gold = 100 WHERE telegram_id = 'purchase-race'").run();

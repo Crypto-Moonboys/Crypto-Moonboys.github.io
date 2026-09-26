@@ -46,8 +46,13 @@
     return [];
   }
 
+  function isFrontActionRole(role) {
+    return ["front_dance", "front_victory", "front_fight"].includes(String(role || ""));
+  }
+
   async function loadAsset(asset, manifest, errors) {
     if (!asset || !asset.role || !asset.png_path || !asset.atlas_path) return null;
+    if (isFrontActionRole(asset.role) && asset.review_status !== "approved_visual_review") return null;
     try {
       const token = asset.autosprite && asset.autosprite.spritesheet_id || manifest.cache_version;
       const atlas = await fetchJson(asset.atlas_path, token);

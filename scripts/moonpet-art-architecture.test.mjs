@@ -76,6 +76,62 @@ assert.equal(eggRoleForAnimationMode("dance"), "front_dance");
 assert.equal(eggRoleForAnimationMode("victory"), "front_victory");
 assert.equal(eggRoleForAnimationMode("fight"), "front_fight");
 
+const runtimeLoaderContext = {
+  window: {},
+  fetch: async (url) => {
+    const pathOnly = String(url).split("?")[0];
+    if (pathOnly === "/data/moonpet-bot-art-registry.json") {
+      return {
+        ok: true,
+        json: async () => ({
+          default_bot: "TEST",
+          bots: {
+            TEST: {
+              status: "complete",
+              manifest_path: "/data/test-manifest.json",
+              canonical_species_ids: ["test_species"],
+              display_names: ["TEST"],
+              display: {},
+            },
+          },
+        }),
+      };
+    }
+    if (pathOnly === "/data/test-manifest.json") {
+      return {
+        ok: true,
+        json: async () => ({
+          character_name: "TEST",
+          cache_version: "test-cache",
+          runtime_role_map: { idle: "front_idle", dance: "front_dance", victory: "front_victory" },
+          assets: [
+            { role: "front_idle", png_path: "/img/front_idle.png", atlas_path: "/img/front_idle.json", frame_dimensions: { w: 16 }, review_status: "approved_visual_review" },
+            { role: "front_dance", png_path: "/img/front_dance.png", atlas_path: "/img/front_dance.json", frame_dimensions: { w: 16 }, review_status: "pending_visual_review" },
+            { role: "front_victory", png_path: "/img/front_victory.png", atlas_path: "/img/front_victory.json", frame_dimensions: { w: 16 }, review_status: "approved_visual_review" },
+          ],
+        }),
+      };
+    }
+    if (pathOnly.endsWith(".json")) {
+      return { ok: true, json: async () => ({ frames: [{ frame: { x: 0, y: 0, w: 16, h: 16 } }] }) };
+    }
+    return { ok: false, status: 404, json: async () => ({}) };
+  },
+  Image: class {
+    set src(value) {
+      this._src = value;
+      setTimeout(() => this.onload?.(), 0);
+    }
+  },
+  setTimeout,
+};
+vm.runInNewContext(readText("js/moonpet-bot-art-loader.js"), runtimeLoaderContext);
+const runtimePack = await runtimeLoaderContext.window.MoonpetBotArtLoader.loadMoonpetBotArt({ speciesId: "test_species", evolutionStage: 1 });
+await runtimePack.preload;
+assert.ok(runtimePack.assetsByRole.front_idle, "runtime loader must keep approved idle assets");
+assert.ok(runtimePack.assetsByRole.front_victory, "runtime loader must keep approved front-action assets");
+assert.equal(runtimePack.assetsByRole.front_dance, undefined, "runtime loader must not load pending front-action assets");
+
 const eggManifest = readJson("data/moonpet-eggyone-stage0-assets.json");
 assert.equal(eggManifest.character_name, "EGGYONE");
 assert.equal(eggManifest.character_id, "cmui5g9430007v27qp8scqirq");

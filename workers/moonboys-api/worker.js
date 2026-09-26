@@ -177,6 +177,7 @@ const PET_SPECIAL_ACTION_POLICIES = Object.freeze({
   dance: Object.freeze({ cooldown_seconds: 300, daily_limit: 5 }),
   cuddles: Object.freeze({ cooldown_seconds: 300, daily_limit: 5 }),
 });
+const PET_SPECIAL_STAT_ONLY_ACTIONS = new Set(['energy_drink', 'dance', 'cuddles']);
 const PET_CARE_BEHAVIOUR_ACTIONS = new Set(['feed', 'play', 'clean', 'sleep', 'energy_drink', 'dance', 'cuddles']);
 const PET_DAILY_CHALLENGE_ACTIONS = new Set(['feed', 'play', 'clean', 'sleep']);
 const PET_REPEAT_REWARD_RULES = Object.freeze({
@@ -2253,6 +2254,7 @@ function getPetEquippedItem(pet, slot) {
 }
 
 function applyPetItemActionBonuses(pet, action, rule, rewards) {
+  if (PET_SPECIAL_STAT_ONLY_ACTIONS.has(String(action || ''))) return;
   const food = getPetEquippedItem(pet, 'food');
   const toy = getPetEquippedItem(pet, 'toy');
   const outfit = getPetEquippedItem(pet, 'outfit');
@@ -2296,6 +2298,45 @@ function applyPetItemActionBonuses(pet, action, rule, rewards) {
 
   const gearBonusPetXp = Math.max(0, Math.floor(Number(rewards.pet_xp) || 0) - basePetXp);
   rewards.pet_xp = basePetXp + Math.floor(gearBonusPetXp * getPetHighLevelGearXpMultiplier(pet));
+}
+
+async function getPetSpecialActionLimitState(db, telegramId, action, policy, dayKey, now = new Date()) {
+  if (!policy) return null;
+  const row = await db.prepare(`SELECT
+      SUM(CASE WHEN day_key = ? THEN 1 ELSE 0 END) AS used_today,
+      MAX(created_at) AS last_created_at
+    FROM telegram_pet_events
+    WHERE telegram_id = ? AND event_type = ? AND status IN ('pending','accepted')`)
+    .bind(dayKey, telegramId, action)
+    .first().catch(() => null);
+  const usedToday = Math.max(0, Number(row?.used_today || 0));
+  if (usedToday >= policy.daily_limit) {
+    const cooldown = normalizePetCooldownWindow(getNextPetUtcDayResetAt(now), now);
+    return {
+      blocked: true,
+      reason: 'daily_limit',
+      used_today: usedToday,
+      daily_limit: policy.daily_limit,
+      cooldown,
+      retry_after_seconds: cooldown.remaining_seconds,
+      remaining_seconds: cooldown.remaining_seconds,
+      expires_at: cooldown.expires_at,
+    };
+  }
+  const cooldown = buildPetCooldownFromStart(row?.last_created_at, policy.cooldown_seconds, now);
+  if ((cooldown?.remaining_seconds || 0) > 0) {
+    return {
+      blocked: true,
+      reason: 'cooldown',
+      used_today: usedToday,
+      daily_limit: policy.daily_limit,
+      cooldown,
+      retry_after_seconds: cooldown.remaining_seconds,
+      remaining_seconds: cooldown.remaining_seconds,
+      expires_at: cooldown.expires_at,
+    };
+  }
+  return { blocked: false, used_today: usedToday, daily_limit: policy.daily_limit };
 }
 
 function normalizePetShopItemKey(value) {
@@ -6124,17 +6165,6 @@ async function processPetAction(db, telegramId, action, options = {}) {
   if (specialPolicy) {
     const pendingWork = await getPetActiveSlotPendingWork(db, telegramId, now);
     if (pendingWork) return { accepted: false, reason: pendingWork.reason, pending: pendingWork, pet };
-
-    const daily = await db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
-      WHERE telegram_id = ? AND event_type = ? AND day_key = ? AND status = 'accepted'`)
-      .bind(telegramId, normalizedAction, dayKey).first().catch(() => ({ count: 0 }));
-    const usedToday = Math.max(0, Number(daily?.count || 0));
-    if (usedToday >= specialPolicy.daily_limit) {
-      const cooldown = normalizePetCooldownWindow(getNextPetUtcDayResetAt(now), now);
-      return { accepted: false, reason: 'daily_limit', daily_limit: specialPolicy.daily_limit, used_today: usedToday,
-        retry_after_seconds: cooldown.remaining_seconds, remaining_seconds: cooldown.remaining_seconds,
-        expires_at: cooldown.expires_at, cooldown, xp_awarded: 0, pet_xp_awarded: 0, pet };
-    }
   }
 
   const lastAction = await db.prepare(`
@@ -6142,7 +6172,7 @@ async function processPetAction(db, telegramId, action, options = {}) {
     WHERE telegram_id = ? AND event_type = ? AND status = 'accepted'
     ORDER BY created_at DESC LIMIT 1
   `).bind(telegramId, normalizedAction).first().catch(() => null);
-  if (lastAction?.created_at) {
+  if (lastAction?.created_at && !specialPolicy) {
     const elapsedSeconds = (now.getTime() - (parseSqliteTs(lastAction.created_at) ?? now.getTime())) / 1000;
     const cooldownSeconds = specialPolicy?.cooldown_seconds || PETS_ACTION_COOLDOWN_SECONDS;
     if (elapsedSeconds < cooldownSeconds) {
@@ -6174,7 +6204,6 @@ async function processPetAction(db, telegramId, action, options = {}) {
     moon_crystals: clampPetCurrency(rule.crystals),
     style_tokens: clampPetCurrency(rule.style_tokens),
   };
-  const actionHasWalletReward = hasPetAccountWalletDelta(tokenRewards);
   applyPetItemActionBonuses(pet, normalizedAction, rule, {
     get pet_xp() { return petXp; },
     set pet_xp(value) { petXp = value; },
@@ -6183,6 +6212,7 @@ async function processPetAction(db, telegramId, action, options = {}) {
     get style_tokens() { return tokenRewards.style_tokens; },
     set style_tokens(value) { tokenRewards.style_tokens = clampPetCurrency(value); },
   });
+  const actionHasWalletReward = hasPetAccountWalletDelta(tokenRewards);
   let reason = 'accepted';
   if (totals.day.community_xp >= PETS_DAILY_COMMUNITY_XP_CAP) {
     communityXp = 0;
@@ -6219,10 +6249,23 @@ async function processPetAction(db, telegramId, action, options = {}) {
         (id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
       SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'pet_action_pending', ?
       WHERE ${actionHasWalletReward ? accountWalletRecoveryResolvedSql('?') : '1 = 1'}
+        AND (? = 0 OR (
+          (SELECT COUNT(*) FROM telegram_pet_events
+            WHERE telegram_id = ? AND event_type = ? AND day_key = ? AND status IN ('pending','accepted')) < ?
+          AND NOT EXISTS (
+            SELECT 1 FROM telegram_pet_events
+            WHERE telegram_id = ? AND event_type = ? AND status IN ('pending','accepted')
+              AND (? - unixepoch(created_at)) < ?
+          )
+        ))
         AND (? = '' OR EXISTS (SELECT 1 FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ?))
       RETURNING id
     `).bind(eventId, pet.pet_id || null, telegramId, normalizedAction, eventKey, communityXp, petXp, season.key, dayKey, weekKey, metadata,
-      ...(actionHasWalletReward ? [telegramId] : []), pet.pet_id || '', pet.pet_id || '', telegramId),
+      ...(actionHasWalletReward ? [telegramId] : []),
+      specialPolicy ? 1 : 0,
+      telegramId, normalizedAction, dayKey, Number(specialPolicy?.daily_limit || 0),
+      telegramId, normalizedAction, Math.floor(now.getTime() / 1000), Number(specialPolicy?.cooldown_seconds || 0),
+      pet.pet_id || '', pet.pet_id || '', telegramId),
     accountWalletDeltaStatement(db, telegramId, tokenRewards,
       "EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')", [eventId]),
     db.prepare(`UPDATE telegram_pet_profiles SET
@@ -6296,6 +6339,24 @@ async function processPetAction(db, telegramId, action, options = {}) {
       }
       await recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, eventKey, { accepted_event: existingEvent });
       return acceptedDuplicate;
+    }
+    if (specialPolicy) {
+      const limitState = await getPetSpecialActionLimitState(db, telegramId, normalizedAction, specialPolicy, dayKey, now);
+      if (limitState?.blocked) {
+        return {
+          accepted: false,
+          reason: limitState.reason,
+          daily_limit: limitState.daily_limit,
+          used_today: limitState.used_today,
+          retry_after_seconds: limitState.retry_after_seconds,
+          remaining_seconds: limitState.remaining_seconds,
+          expires_at: limitState.expires_at,
+          cooldown: limitState.cooldown,
+          xp_awarded: 0,
+          pet_xp_awarded: 0,
+          pet,
+        };
+      }
     }
     return { accepted: false, reason: 'pet_action_not_persisted', action: normalizedAction, xp_awarded: 0, pet_xp_awarded: 0, pet };
   }
@@ -9082,7 +9143,7 @@ async function getPetSpecialActionCooldownEntries(db, telegramId, now = new Date
   const rows = await db.prepare(`SELECT event_type, MAX(created_at) AS last_created_at,
       SUM(CASE WHEN day_key = ? THEN 1 ELSE 0 END) AS used_today
     FROM telegram_pet_events
-    WHERE telegram_id = ? AND status = 'accepted' AND event_type IN ('energy_drink','dance','cuddles')
+    WHERE telegram_id = ? AND status IN ('pending','accepted') AND event_type IN ('energy_drink','dance','cuddles')
     GROUP BY event_type`).bind(dayKey, String(telegramId)).all().catch(() => ({ results: [] }));
   const entries = [];
   for (const row of rows.results || []) {
@@ -9106,7 +9167,7 @@ async function getPetSpecialActionGuidanceState(db, telegramId, now = new Date()
   const rows = await db.prepare(`SELECT event_type, MAX(created_at) AS last_created_at,
       SUM(CASE WHEN day_key = ? THEN 1 ELSE 0 END) AS used_today
     FROM telegram_pet_events
-    WHERE telegram_id = ? AND status = 'accepted' AND event_type IN ('energy_drink','dance','cuddles')
+    WHERE telegram_id = ? AND status IN ('pending','accepted') AND event_type IN ('energy_drink','dance','cuddles')
     GROUP BY event_type`).bind(dayKey, String(telegramId)).all().catch(() => ({ results: [] }));
   const byAction = new Map((rows.results || []).map((row) => [String(row.event_type || ''), row]));
   const state = {};

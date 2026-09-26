@@ -27,6 +27,7 @@ on:
           - discover-autosprite-character
           - generate-front-pack
           - download-existing-front-actions
+          - approve-front-actions
           - download-existing-front-pack
           - install-existing-street-pack
           - inspect-existing-stage0-pack
@@ -103,7 +104,7 @@ jobs:
           node scripts/moonpet-multi-bot-art.test.mjs
 
       - name: Discover AutoSprite character
-        if: ${{ env.FACTORY_PHASE == 'discover-autosprite-character' || env.FACTORY_PHASE == 'generate-front-pack' || env.FACTORY_PHASE == 'download-existing-front-actions' || env.FACTORY_PHASE == 'download-existing-front-pack' || env.FACTORY_PHASE == 'install-existing-street-pack' || env.FACTORY_PHASE == 'inspect-existing-stage0-pack' || env.FACTORY_PHASE == 'download-existing-stage0-pack' }}
+        if: ${{ env.FACTORY_PHASE == 'discover-autosprite-character' || env.FACTORY_PHASE == 'generate-front-pack' || env.FACTORY_PHASE == 'download-existing-front-actions' || env.FACTORY_PHASE == 'approve-front-actions' || env.FACTORY_PHASE == 'download-existing-front-pack' || env.FACTORY_PHASE == 'install-existing-street-pack' || env.FACTORY_PHASE == 'inspect-existing-stage0-pack' || env.FACTORY_PHASE == 'download-existing-stage0-pack' }}
         timeout-minutes: 10
         run: node scripts/discover-autosprite-character.js --name "$AUTOSPRITE_CHARACTER_NAME" --persist
 
@@ -130,6 +131,14 @@ jobs:
         if: ${{ env.FACTORY_PHASE == 'download-existing-front-actions' }}
         run: |
           node scripts/audit-moonpet-front-action-pack.js --write
+          node scripts/audit-eggyone-stage0-art.js --check
+          node scripts/moonpet-art-architecture.test.mjs
+          node scripts/moonpet-multi-bot-art.test.mjs
+
+      - name: Approve front action sheets for production
+        if: ${{ env.FACTORY_PHASE == 'approve-front-actions' }}
+        run: |
+          node scripts/audit-moonpet-front-action-pack.js --approve-visual-review --write
           node scripts/audit-eggyone-stage0-art.js --check
           node scripts/moonpet-art-architecture.test.mjs
           node scripts/moonpet-multi-bot-art.test.mjs
@@ -166,7 +175,7 @@ jobs:
           node scripts/moonpet-multi-bot-art.test.mjs
 
       - name: Commit AutoSprite character registry
-        if: ${{ env.AUTO_COMMIT_AUTOSPRITE_CHARACTER_REGISTRY == 'true' && (success() || env.FACTORY_PHASE != 'download-existing-front-actions') }}
+        if: ${{ env.AUTO_COMMIT_AUTOSPRITE_CHARACTER_REGISTRY == 'true' && env.FACTORY_PHASE != 'download-existing-front-actions' && (success() || env.FACTORY_PHASE != 'approve-front-actions') }}
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
@@ -177,7 +186,7 @@ jobs:
             git add data/moonpet-bot-art-registry.json data/moonpet-art-requirements.json data/moonpet-eggyone-stage0-audit.json
             git add data/moonpet-wtfboi-front-assets.json img/moonpets/wtfboi/
             COMMIT_MESSAGE="feat: install WTFBOI shared Street-stage art"
-          elif [ "$FACTORY_PHASE" = "download-existing-front-actions" ]; then
+          elif [ "$FACTORY_PHASE" = "approve-front-actions" ]; then
             git add data/moonpet-bot-art-registry.json data/moonpet-front-action-generation.json data/moonpet-front-action-audit.json
             git add data/moonpet-*-front-assets.json data/moonpet-eggyone-stage0-assets.json
             git add img/moonpets/*/front_dance.png img/moonpets/*/front_dance.json
@@ -185,7 +194,7 @@ jobs:
             git add img/moonpets/*/front_fight.png img/moonpets/*/front_fight.json
             git add img/moonpets/*/front-actions-contact-sheet.png
             git add -u img/moonpets/eggyone/front_fight.png img/moonpets/eggyone/front_fight.json
-            COMMIT_MESSAGE="feat: add Moonpet front action sprite pack"
+            COMMIT_MESSAGE="feat: approve Moonpet front action sprite pack"
           elif [ "$FACTORY_PHASE" = "download-existing-stage0-pack" ]; then
             git add data/moonpet-eggyone-stage0-assets.json img/moonpets/eggyone/
             COMMIT_MESSAGE="chore: stage existing EGGYONE art for visual review"
