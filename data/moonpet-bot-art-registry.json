@@ -47,16 +47,6 @@
       "status": "pending",
       "fallback": "BOTTY"
     },
-    "JALE THE SNAKE": {
-      "canonical_species_ids": [
-        "bubble_ram"
-      ],
-      "display_names": [
-        "JALE THE SNAKE"
-      ],
-      "status": "pending",
-      "fallback": "BOTTY"
-    },
     "RED ALERT": {
       "canonical_species_ids": [
         "lantern_fox"
@@ -135,6 +125,25 @@
       "autosprite_character_id": "cmuhj9bx90014mctfalaa2dcj",
       "manifest_path": "/data/moonpet-tubby-front-assets.json",
       "asset_root": "/img/moonpets/tubby/",
+      "status": "complete",
+      "fallback": "BOTTY",
+      "display": {
+        "scale": 0.72,
+        "pivot_y": 0.86
+      }
+    },
+    "JAKE THE SNAKE": {
+      "canonical_species_ids": [
+        "bubble_ram"
+      ],
+      "display_names": [
+        "JAKE THE SNAKE",
+        "JACK THE SNAKE",
+        "JALE THE SNAKE"
+      ],
+      "autosprite_character_id": "cmuhjcplv000912alpjmnzyrh",
+      "manifest_path": "/data/moonpet-jake-the-snake-front-assets.json",
+      "asset_root": "/img/moonpets/jake-the-snake/",
       "status": "complete",
       "fallback": "BOTTY",
       "display": {

@@ -147,7 +147,7 @@ async function promote(options) {
         status: "complete", fallback: "BOTTY", display: { scale: 0.72, pivot_y: 0.86 }
       },
       "F1 EDDY": { canonical_species_ids: ["neon_raccoon"], display_names: ["F1 EDDY"], status: "pending", fallback: "BOTTY" },
-      "JALE THE SNAKE": { canonical_species_ids: ["bubble_ram"], display_names: ["JALE THE SNAKE"], status: "pending", fallback: "BOTTY" },
+      "JAKE THE SNAKE": { canonical_species_ids: ["bubble_ram"], display_names: ["JAKE THE SNAKE", "JACK THE SNAKE", "JALE THE SNAKE"], status: "pending", fallback: "BOTTY" },
       "RED ALERT": { canonical_species_ids: ["lantern_fox"], display_names: ["RED ALERT"], status: "pending", fallback: "BOTTY" },
       "THE TING": { canonical_species_ids: ["sneaker_snail"], display_names: ["THE TING"], status: "pending", fallback: "BOTTY" },
       "TATTOO JOHN": { canonical_species_ids: ["alley_drake"], display_names: ["TATTOO JOHN"], status: "pending", fallback: "BOTTY" },
