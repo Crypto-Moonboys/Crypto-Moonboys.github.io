@@ -28,5 +28,11 @@
     "source": "autosprite",
     "active": true,
     "discovered_at": "2026-09-26T01:49:57.625Z"
+  },
+  "RED ALERT": {
+    "character_id": "cmuhjc0xs0002zoeg1jggctix",
+    "source": "autosprite",
+    "active": true,
+    "discovered_at": "2026-09-26T02:09:11.546Z"
   }
 }
