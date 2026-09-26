@@ -15,6 +15,7 @@ const EXPECTED_ROLES = Object.freeze({
   egg_breakout: { loop: false, one_shot: true, playback_mode: "once_hold_last" },
   egg_hatch: { loop: false, one_shot: true, playback_mode: "once" },
 });
+const OPTIONAL_FRONT_ACTION_ROLES = new Set(["front_dance", "front_victory", "front_fight"]);
 
 function repoPath(assetPath) {
   return path.join(REPO_ROOT, String(assetPath || "").replace(/^[/\\]+/, ""));
@@ -72,7 +73,7 @@ function auditEggyoneStage0(options = {}) {
     }
   }
   for (const role of assets.keys()) {
-    if (!EXPECTED_ROLES[role]) failures.push(`${role}: unexpected Stage 0 role`);
+    if (!EXPECTED_ROLES[role] && !OPTIONAL_FRONT_ACTION_ROLES.has(role)) failures.push(`${role}: unexpected Stage 0 role`);
   }
   const auditedAt = write ? new Date().toISOString() : String(existingAudit && existingAudit.audited_at || "").trim();
   if (!auditedAt) failures.push("tracked audit artifact must include audited_at; run with --write");
@@ -107,4 +108,4 @@ if (require.main === module) {
   auditEggyoneStage0(options);
 }
 
-module.exports = { EXPECTED_ROLES, auditEggyoneStage0, atlasFrameCount, parseCliArgs };
+module.exports = { EXPECTED_ROLES, OPTIONAL_FRONT_ACTION_ROLES, auditEggyoneStage0, atlasFrameCount, parseCliArgs };

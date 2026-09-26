@@ -1,6 +1,6 @@
 (() => {
   const REGISTRY_PATH = "/data/moonpet-bot-art-registry.json";
-  const FALLBACK_CACHE_VERSION = "20260926-stage2-art-mask-v3";
+  const FALLBACK_CACHE_VERSION = "20260926-front-actions-v1";
   const packCache = new Map();
   let registryPromise = null;
 
@@ -79,6 +79,7 @@
 
   function eggRoleForAnimationMode(animationMode, lifecycle = {}) {
     const mode = String(animationMode || "idle").toLowerCase();
+    if (["dance", "victory", "fight"].includes(mode)) return `front_${mode}`;
     if (["hatch", "evolve"].includes(mode)) return "egg_hatch";
     if (mode === "sleep") return "egg_sleep";
     if (["feed", "clean", "play"].includes(mode)) return "egg_care";

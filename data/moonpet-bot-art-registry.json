@@ -60,7 +60,10 @@
     "interact": "front_interact",
     "greet": "front_interact",
     "blocked": "front_blocked",
-    "battle": "front_battle"
+    "battle": "front_battle",
+    "dance": "front_dance",
+    "victory": "front_victory",
+    "fight": "front_fight"
   },
   "bots": {
     "BOTTY": {

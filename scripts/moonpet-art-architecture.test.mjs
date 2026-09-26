@@ -20,6 +20,9 @@ const expectedActions = [
   "front_train", "front_travel", "front_work", "front_equip", "front_evolve",
   "front_trade", "front_celebrate", "front_interact", "front_blocked", "front_battle"
 ];
+const frontActionRoles = ["front_dance", "front_victory", "front_fight"];
+const frontActionInstalled = Number(botRegistry.front_action_pack?.animation_count || 0) === 30;
+const installedActions = frontActionInstalled ? [...expectedActions, ...frontActionRoles] : expectedActions;
 
 assert.equal(botRegistry.schema_version, 2);
 assert.equal(Object.keys(botRegistry.bots).length, 8);
@@ -69,19 +72,23 @@ assert.equal(eggRoleForAnimationMode("idle", { incubation: { progress: 11, targe
 assert.equal(eggRoleForAnimationMode("feed"), "egg_care");
 assert.equal(eggRoleForAnimationMode("sleep"), "egg_sleep");
 assert.equal(eggRoleForAnimationMode("hatch"), "egg_hatch");
+assert.equal(eggRoleForAnimationMode("dance"), "front_dance");
+assert.equal(eggRoleForAnimationMode("victory"), "front_victory");
+assert.equal(eggRoleForAnimationMode("fight"), "front_fight");
 
 const eggManifest = readJson("data/moonpet-eggyone-stage0-assets.json");
 assert.equal(eggManifest.character_name, "EGGYONE");
 assert.equal(eggManifest.character_id, "cmui5g9430007v27qp8scqirq");
 assert.equal(eggManifest.approval_status, "approved_visual_review");
-assert.equal(eggManifest.assets.length, 7);
-assert.ok(eggManifest.assets.every((asset) => asset.frame_count === 25 && asset.review_status === "approved_visual_review"));
+assert.equal(eggManifest.assets.length, frontActionInstalled ? 10 : 7);
+assert.ok(eggManifest.assets.every((asset) => asset.frame_count === 25));
+assert.ok(eggManifest.assets.filter((asset) => !frontActionRoles.includes(asset.role)).every((asset) => asset.review_status === "approved_visual_review"));
 
 const streetReady = botRegistry.shared_stages.stage_1.status === "complete";
 
 for (const [botName, bot] of Object.entries(botRegistry.bots)) {
   const baseManifest = readJson(bot.manifest_path);
-  assert.deepEqual(new Set(baseManifest.assets.map((asset) => asset.role)), new Set(expectedActions), `${botName} must retain all 15 actions`);
+  assert.deepEqual(new Set(baseManifest.assets.map((asset) => asset.role)), new Set(installedActions), `${botName} must retain every installed action`);
   const speciesId = bot.canonical_species_ids[0];
   assert.equal(resolveBot(botRegistry, { speciesId, evolutionStage: 0 }).resolvedBot, "EGGYONE", `${botName} Stage 0 must share EGGYONE`);
   for (let stage = 1; stage <= 5; stage += 1) {
@@ -97,7 +104,7 @@ for (const [botName, bot] of Object.entries(botRegistry.bots)) {
 if (streetReady) {
   const streetManifest = readJson(botRegistry.shared_stages.stage_1.manifest_path);
   assert.equal(streetManifest.character_name, "WTFBOI");
-  assert.equal(streetManifest.assets.length, 15);
+  assert.equal(streetManifest.assets.length, installedActions.length);
 }
 
 const resolverContext = { window: {}, fetch() { throw new Error("not used"); } };
