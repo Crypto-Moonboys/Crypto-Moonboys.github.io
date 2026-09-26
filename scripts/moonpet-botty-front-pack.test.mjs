@@ -70,14 +70,14 @@ for (const role of expectedRoles) {
 }
 
 const html = fs.readFileSync(path.join(root, "moonpet-game.html"), "utf8");
-assert.match(html, /moonpet-botty-front-asset-loader\.js\?v=20260925-botty-front-live-beta-v4/);
-assert.match(html, /moonpet-botty-front-sprite-renderer\.js\?v=20260925-botty-front-live-beta-v4/);
-assert.match(html, /moonpet-mini-app\.js\?v=20260925-moonpet-ui-redesign-v2/);
+assert.match(html, /moonpet-bot-art-loader\.js\?v=20260926-multi-bot-art-v1/);
+assert.match(html, /moonpet-bot-art-renderer\.js\?v=20260926-multi-bot-art-v1/);
+assert.match(html, /moonpet-mini-app\.js\?v=20260926-multi-bot-art-v1/);
 assert.doesNotMatch(html, /moonpet-art-v2\.js/, "live BOTTY page must not load the old procedural overlay renderer");
 
 const miniApp = fs.readFileSync(path.join(root, "js", "moonpet-mini-app.js"), "utf8");
 assert.match(miniApp, /return false;\s*\}/, "side sprites default is disabled through moonpetSideScrollerSpritesRequested");
-assert.match(miniApp, /drawBottyFrontMoonpetSprite\(renderTime, animationMode, active/);
+assert.match(miniApp, /drawSelectedBotSprite\(renderTime, animationMode, active/);
 assert.doesNotMatch(miniApp, /data-utility="wearables">WEARABLES/);
 
 console.log("BOTTY front pack live runtime checks passed");

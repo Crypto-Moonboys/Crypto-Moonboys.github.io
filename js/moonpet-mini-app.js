@@ -9,10 +9,11 @@
   var state = null;
   var renderedPetId = null;
   var renderedPetName = '';
-  var bottyFrontSpriteModeEnabled = moonpetBottyFrontSpritesRequested();
-  var bottyFrontSpriteRendererReady = false;
-  var bottyFrontSpriteRendererState = null;
-  var bottyFrontSpriteFallbackLogged = false;
+  var botArtModeEnabled = moonpetBotArtRequested();
+  var botArtRendererReady = false;
+  var botArtRendererState = null;
+  var botArtFallbackLogged = false;
+  var botArtSelectionGeneration = 0;
   var approvedSpriteModeEnabled = moonpetApprovedSpritesRequested();
   var approvedSpriteRendererReady = false;
   var approvedSpriteRendererState = null;
@@ -21,7 +22,7 @@
   var sideScrollerSpriteRendererReady = false;
   var sideScrollerSpriteRendererState = null;
   var sideScrollerSpriteFallbackLogged = false;
-  window.MOONPET_USE_BOTTY_FRONT_SPRITES = bottyFrontSpriteModeEnabled;
+  window.MOONPET_USE_BOT_ART = botArtModeEnabled;
   window.MOONPET_USE_APPROVED_SPRITES = approvedSpriteModeEnabled;
   window.MOONPET_USE_SIDE_SCROLLER_SPRITES = sideScrollerSpriteModeEnabled;
   var seasonSnapshotReceivedAt = 0;
@@ -197,10 +198,10 @@
     return launchParameter('approvedSprites') === '1';
   }
 
-  function moonpetBottyFrontSpritesRequested() {
-    var override = launchParameter('bottySprites');
+  function moonpetBotArtRequested() {
+    var override = launchParameter('botArt') || launchParameter('bottySprites');
     if (override === '0' || override === 'false') return false;
-    if (window.MOONPET_USE_BOTTY_FRONT_SPRITES === false) return false;
+    if (window.MOONPET_USE_BOT_ART === false) return false;
     return true;
   }
 
@@ -340,26 +341,48 @@
     }
   }
 
-  async function initBottyFrontSpriteMode() {
-    if (!bottyFrontSpriteModeEnabled) {
-      console.info('[Moonpet] BOTTY front sprite mode disabled');
+  function botArtIdentity(snapshot) {
+    var lifecycle = snapshot && snapshot.lifecycle || {};
+    var pet = snapshot && snapshot.pet || {};
+    return {
+      speciesId: String(lifecycle.species_id || pet.species || ''),
+      speciesName: String(lifecycle.species_name || '')
+    };
+  }
+
+  async function selectBotArtForState(snapshot) {
+    if (!botArtModeEnabled || !window.MoonpetBotArtRenderer) return false;
+    var generation = ++botArtSelectionGeneration;
+    botArtRendererReady = false;
+    var selection = await window.MoonpetBotArtRenderer.selectMoonpetBot(botArtIdentity(snapshot));
+    if (generation !== botArtSelectionGeneration) return false;
+    botArtRendererState = selection;
+    botArtRendererReady = Boolean(botArtRendererState && botArtRendererState.ready);
+    botArtFallbackLogged = false;
+    if (state) drawWorld(performance.now());
+    return botArtRendererReady;
+  }
+
+  async function initBotArtMode() {
+    if (!botArtModeEnabled) {
+      console.info('[Moonpet] bot art mode disabled');
       return false;
     }
-    console.info('[Moonpet] BOTTY front sprite mode enabled');
+    console.info('[Moonpet] multi-bot art mode enabled');
     try {
-      await loadApprovedSpriteScript('/js/moonpet-botty-front-asset-loader.js?v=20260925-botty-front-live-beta-v4');
-      await loadApprovedSpriteScript('/js/moonpet-botty-front-sprite-renderer.js?v=20260925-botty-front-live-beta-v4');
-      if (!window.MoonpetBottyFrontSpriteRenderer) throw new Error('MoonpetBottyFrontSpriteRenderer unavailable');
-      bottyFrontSpriteRendererState = await window.MoonpetBottyFrontSpriteRenderer.initMoonpetBottyFrontRenderer();
-      bottyFrontSpriteRendererReady = Boolean(bottyFrontSpriteRendererState && bottyFrontSpriteRendererState.ready);
-      if (!bottyFrontSpriteRendererReady) {
-        console.info('[Moonpet] BOTTY front sprite fallback used', bottyFrontSpriteRendererState);
+      await loadApprovedSpriteScript('/js/moonpet-bot-art-loader.js?v=20260926-multi-bot-art-v1');
+      await loadApprovedSpriteScript('/js/moonpet-bot-art-renderer.js?v=20260926-multi-bot-art-v1');
+      if (!window.MoonpetBotArtRenderer) throw new Error('MoonpetBotArtRenderer unavailable');
+      botArtRendererState = await window.MoonpetBotArtRenderer.initMoonpetBotArtRenderer(botArtIdentity(state));
+      botArtRendererReady = Boolean(botArtRendererState && botArtRendererState.ready);
+      if (!botArtRendererReady) {
+        console.info('[Moonpet] bot art safe loading state used', botArtRendererState);
       }
-      return bottyFrontSpriteRendererReady;
+      return botArtRendererReady;
     } catch (error) {
-      bottyFrontSpriteRendererReady = false;
-      bottyFrontSpriteRendererState = { reason: error.message, errors: [error.message] };
-      console.info('[Moonpet] BOTTY front sprite fallback used', bottyFrontSpriteRendererState);
+      botArtRendererReady = false;
+      botArtRendererState = { reason: error.message, errors: [error.message] };
+      console.info('[Moonpet] bot art safe loading state used', botArtRendererState);
       return false;
     }
   }
@@ -944,8 +967,8 @@
       utilityTitle.textContent = 'HOW TO PLAY MOONPET OS';
       utilityContent.innerHTML = guideMarkup();
     } else if (kind === 'wearables') {
-      utilityTitle.textContent = 'BOTTY UPGRADES';
-      utilityContent.innerHTML = '<div class="line">BOTTY USES FULL AUTOSPRITE COSTUME PACKS.</div><div class="line muted">OLD HAT / GLASSES / CHEST / BACK / HAND / AURA OVERLAYS ARE DISABLED IN LIVE BETA.</div>';
+      utilityTitle.textContent = 'BOT UPGRADES';
+      utilityContent.innerHTML = '<div class="line">BOTS USE FULL AUTOSPRITE COSTUME PACKS.</div><div class="line muted">OLD HAT / GLASSES / CHEST / BACK / HAND / AURA OVERLAYS ARE DISABLED IN LIVE BETA.</div>';
     } else {
       loadLeaderboard('seasonal');
     }
@@ -1498,6 +1521,9 @@
     if (Number.isFinite(serverTime)) serverClockOffsetMs = serverTime - Date.now();
     state = nextState;
     sleepLatched = readSleepLatch(state);
+    selectBotArtForState(state).catch(function (error) {
+      console.info('[Moonpet] bot art selection failed', error);
+    });
     seasonSnapshotReceivedAt = performance.now();
     lastSeasonServerRefreshAt = seasonSnapshotReceivedAt;
     scheduleCooldownRefresh();
@@ -3441,16 +3467,16 @@
     return drew;
   }
 
-  function drawBottyFrontMoonpetSprite(time, mode, active, x, y, scale) {
-    if (!bottyFrontSpriteModeEnabled || !bottyFrontSpriteRendererReady || !window.MoonpetBottyFrontSpriteRenderer) return false;
-    var drew = window.MoonpetBottyFrontSpriteRenderer.renderBottyFrontMoonpet(ctx, mode, x, y, scale, time, {
+  function drawSelectedBotSprite(time, mode, active, x, y, scale) {
+    if (!botArtModeEnabled || !botArtRendererReady || !window.MoonpetBotArtRenderer) return false;
+    var drew = window.MoonpetBotArtRenderer.renderMoonpetBot(ctx, mode, x, y, scale, time, {
       active: active,
       startedAt: active ? actionStartedAt : 0
     });
-    bottyFrontSpriteRendererState = window.MoonpetBottyFrontSpriteRenderer.getMoonpetBottyFrontRendererState();
-    if (!drew && !bottyFrontSpriteFallbackLogged) {
-      bottyFrontSpriteFallbackLogged = true;
-      console.info('[Moonpet] BOTTY front sprite fallback used', bottyFrontSpriteRendererState);
+    botArtRendererState = window.MoonpetBotArtRenderer.getMoonpetBotArtRendererState();
+    if (!drew && !botArtFallbackLogged) {
+      botArtFallbackLogged = true;
+      console.info('[Moonpet] bot art safe loading state used', botArtRendererState);
     }
     return drew;
   }
@@ -3550,7 +3576,7 @@
     var faceX = petFaceOffset(speciesId);
     var x = 160 + (combat && combat.active ? -62 : 0);
     var y = 194;
-    if (drawBottyFrontMoonpetSprite(renderTime, animationMode, active, x, y, scale)) {
+    if (drawSelectedBotSprite(renderTime, animationMode, active, x, y, scale)) {
       if (!active && mood !== 'curious' && !lifecycleCeremonyActive(time)) drawPixelText(mood.toUpperCase(), x, y - 78 * scale, mood === 'hurt' ? '#ff6d6d' : palette.accent, 'center');
       if ((!combat || !combat.active) && !lifecycleCeremonyActive(time)) {
         if (rareName) drawPixelText(rareName.toUpperCase(), x, 70, palette.accent, 'center');
@@ -3561,7 +3587,7 @@
       if (active && animationLabel && !lifecycleCeremonyActive(time)) drawPixelText('[' + animationLabel + ']', 160, 211, animationMode === 'blocked' ? '#ff6d6d' : '#f4ff65', 'center');
       return;
     }
-    if (bottyFrontSpriteModeEnabled) {
+    if (botArtModeEnabled) {
       return;
     }
     if (drawSideScrollerMoonpetSprite(renderTime, animationMode, active, x, y - 2, scale * 0.86)) {
@@ -4170,9 +4196,9 @@
       clock.textContent = now.toISOString().slice(11, 19) + ' UTC';
     }, 1000);
     // Sprite loading must never block the game boot/auth path. Start all renderers in
-    // the background and let drawPet fall back until BOTTY is ready.
+    // the background and keep drawPet in its safe loading state until bot art is ready.
     var spriteStartup = Promise.allSettled([
-      initBottyFrontSpriteMode(),
+      initBotArtMode(),
       initSideScrollerSpriteMode(),
       initApprovedSpriteMode()
     ]);
@@ -4240,8 +4266,8 @@
   window.MoonpetBetaAppearance = {
     getLoadout: function () { return Object.assign({}, wearableLoadout); },
     getEquippedTraits: function () { return equippedWearableTraits().slice(); },
-    getBottyFrontState: function () { return bottyFrontSpriteRendererState; },
-    isBottyFrontReady: function () { return bottyFrontSpriteRendererReady; },
+    getBotArtState: function () { return botArtRendererState; },
+    isBotArtReady: function () { return botArtRendererReady; },
     isSideScrollerEnabled: function () { return sideScrollerSpriteModeEnabled; },
     getIdleSpecialState: function () {
       return { role: idleSpecialRole, nextAt: idleSpecialNextAt, until: idleSpecialUntil, counts: Object.assign({}, idleSpecialCounts) };

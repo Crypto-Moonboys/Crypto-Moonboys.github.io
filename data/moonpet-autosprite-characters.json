@@ -4,5 +4,11 @@
     "source": "autosprite",
     "active": true,
     "discovered_at": "2026-09-25T16:53:07.699Z"
+  },
+  "TUBBY": {
+    "character_id": "cmuhj9bx90014mctfalaa2dcj",
+    "source": "autosprite",
+    "active": true,
+    "discovered_at": "2026-09-25T23:51:01.342Z"
   }
 }

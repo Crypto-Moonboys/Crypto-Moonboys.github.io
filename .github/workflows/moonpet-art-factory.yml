@@ -168,6 +168,7 @@ jobs:
           node --check scripts/discover-autosprite-character.js
           node --check scripts/generate-botty-front-animations.js
           node --check scripts/download-botty-front-animations.js
+          node --check scripts/promote-moonpet-bot-front-pack.js
           node --check js/moonpet-animation-sandbox.js
           node --check js/moonpet-runtime-preview.js
           node scripts/generate-moonpet-assets-extraction.test.js
@@ -309,7 +310,7 @@ jobs:
             echo "No AutoSprite character registry or diagnostic changes to commit."
           else
             git commit -m "chore: persist AutoSprite character registry and diagnostics [skip ci]"
-            git pull --rebase origin ${GITHUB_REF_NAME}
+            git pull --rebase --autostash origin ${GITHUB_REF_NAME}
             git push origin HEAD:${GITHUB_REF_NAME}
           fi
 

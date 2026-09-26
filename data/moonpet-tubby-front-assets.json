@@ -1,0 +1,443 @@
+{
+  "schema_version": 1,
+  "character_name": "TUBBY",
+  "character_id": "cmuhj9bx90014mctfalaa2dcj",
+  "source": "AutoSprite API",
+  "mode": "production-approved-front-pack",
+  "approved_artifact_run": 36202526026,
+  "approved_artifact_id": 10892283462,
+  "installed_at": "2026-09-25T23:55:25.732Z",
+  "cache_version": "20260926-tubby-front-live-beta-v1",
+  "runtime_policy": {
+    "normal_gameplay": "approved_front_pack_only",
+    "disable_side_scroller": true,
+    "disable_random_idle_variants": true,
+    "disable_wearable_overlays": true,
+    "frame_count_source": "atlas frames length"
+  },
+  "runtime_role_map": {
+    "idle": "front_idle",
+    "feed": "front_feed",
+    "play": "front_play",
+    "clean": "front_clean",
+    "sleep": "front_sleep",
+    "train": "front_train",
+    "travel": "front_travel",
+    "work": "front_work",
+    "equip": "front_equip",
+    "evolve": "front_evolve",
+    "trade": "front_trade",
+    "celebrate": "front_celebrate",
+    "interact": "front_interact",
+    "greet": "front_interact",
+    "blocked": "front_blocked",
+    "battle": "front_battle"
+  },
+  "assets": [
+    {
+      "role": "front_idle",
+      "png_path": "/img/moonpets/tubby/front_idle.png",
+      "atlas_path": "/img/moonpets/tubby/front_idle.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": true,
+      "one_shot": false,
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhj9bx90014mctfalaa2dcj",
+        "spritesheet_id": "cmuhjyocr00014i60ryn0nvi1",
+        "status": "succeeded",
+        "created_at": "2026-09-25T22:48:55.754Z",
+        "updated_at": null,
+        "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+        "source": "AutoSprite API"
+      },
+      "review_status": "approved_visual_review"
+    },
+    {
+      "role": "front_feed",
+      "png_path": "/img/moonpets/tubby/front_feed.png",
+      "atlas_path": "/img/moonpets/tubby/front_feed.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": false,
+      "one_shot": true,
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhj9bx90014mctfalaa2dcj",
+        "spritesheet_id": "cmuhk1s2t000v82tarxil3bcq",
+        "status": "succeeded",
+        "created_at": "2026-09-25T22:51:20.549Z",
+        "updated_at": null,
+        "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+        "source": "AutoSprite API"
+      },
+      "review_status": "approved_visual_review"
+    },
+    {
+      "role": "front_play",
+      "png_path": "/img/moonpets/tubby/front_play.png",
+      "atlas_path": "/img/moonpets/tubby/front_play.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": true,
+      "one_shot": false,
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhj9bx90014mctfalaa2dcj",
+        "spritesheet_id": "cmuhk414z0001y87m1z5yh6xo",
+        "status": "succeeded",
+        "created_at": "2026-09-25T22:53:05.602Z",
+        "updated_at": null,
+        "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+        "source": "AutoSprite API"
+      },
+      "review_status": "approved_visual_review"
+    },
+    {
+      "role": "front_clean",
+      "png_path": "/img/moonpets/tubby/front_clean.png",
+      "atlas_path": "/img/moonpets/tubby/front_clean.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": false,
+      "one_shot": true,
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhj9bx90014mctfalaa2dcj",
+        "spritesheet_id": "cmuhk6hb40005j3nxyrddqehu",
+        "status": "succeeded",
+        "created_at": "2026-09-25T22:54:59.873Z",
+        "updated_at": null,
+        "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+        "source": "AutoSprite API"
+      },
+      "review_status": "approved_visual_review"
+    },
+    {
+      "role": "front_sleep",
+      "png_path": "/img/moonpets/tubby/front_sleep.png",
+      "atlas_path": "/img/moonpets/tubby/front_sleep.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": true,
+      "one_shot": false,
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhj9bx90014mctfalaa2dcj",
+        "spritesheet_id": "cmuhk8z38000de307pyozgwuh",
+        "status": "succeeded",
+        "created_at": "2026-09-25T22:56:56.229Z",
+        "updated_at": null,
+        "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+        "source": "AutoSprite API"
+      },
+      "review_status": "approved_visual_review"
+    },
+    {
+      "role": "front_train",
+      "png_path": "/img/moonpets/tubby/front_train.png",
+      "atlas_path": "/img/moonpets/tubby/front_train.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": true,
+      "one_shot": false,
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhj9bx90014mctfalaa2dcj",
+        "spritesheet_id": "cmuhkb2kd0003e5f2hgbwiwjg",
+        "status": "succeeded",
+        "created_at": "2026-09-25T22:58:34.045Z",
+        "updated_at": null,
+        "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+        "source": "AutoSprite API"
+      },
+      "review_status": "approved_visual_review"
+    },
+    {
+      "role": "front_travel",
+      "png_path": "/img/moonpets/tubby/front_travel.png",
+      "atlas_path": "/img/moonpets/tubby/front_travel.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": true,
+      "one_shot": false,
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhj9bx90014mctfalaa2dcj",
+        "spritesheet_id": "cmuhkdeph0005g1i8r944f84v",
+        "status": "succeeded",
+        "created_at": "2026-09-25T23:00:23.093Z",
+        "updated_at": null,
+        "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+        "source": "AutoSprite API"
+      },
+      "review_status": "approved_visual_review"
+    },
+    {
+      "role": "front_work",
+      "png_path": "/img/moonpets/tubby/front_work.png",
+      "atlas_path": "/img/moonpets/tubby/front_work.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": true,
+      "one_shot": false,
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhj9bx90014mctfalaa2dcj",
+        "spritesheet_id": "cmuhkfrt10005125flfh2znvk",
+        "status": "succeeded",
+        "created_at": "2026-09-25T23:02:13.377Z",
+        "updated_at": null,
+        "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+        "source": "AutoSprite API"
+      },
+      "review_status": "approved_visual_review"
+    },
+    {
+      "role": "front_equip",
+      "png_path": "/img/moonpets/tubby/front_equip.png",
+      "atlas_path": "/img/moonpets/tubby/front_equip.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": false,
+      "one_shot": true,
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhj9bx90014mctfalaa2dcj",
+        "spritesheet_id": "cmuhkibk50001zv6hjdbtuixc",
+        "status": "succeeded",
+        "created_at": "2026-09-25T23:04:12.293Z",
+        "updated_at": null,
+        "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+        "source": "AutoSprite API"
+      },
+      "review_status": "approved_visual_review"
+    },
+    {
+      "role": "front_evolve",
+      "png_path": "/img/moonpets/tubby/front_evolve.png",
+      "atlas_path": "/img/moonpets/tubby/front_evolve.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": false,
+      "one_shot": true,
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhj9bx90014mctfalaa2dcj",
+        "spritesheet_id": "cmuhkm0xy0005klqpw6g7mlp4",
+        "status": "succeeded",
+        "created_at": "2026-09-25T23:07:05.158Z",
+        "updated_at": null,
+        "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+        "source": "AutoSprite API"
+      },
+      "review_status": "approved_visual_review"
+    },
+    {
+      "role": "front_trade",
+      "png_path": "/img/moonpets/tubby/front_trade.png",
+      "atlas_path": "/img/moonpets/tubby/front_trade.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": false,
+      "one_shot": true,
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhj9bx90014mctfalaa2dcj",
+        "spritesheet_id": "cmuhko5f8001dvjyaa03b6hlo",
+        "status": "succeeded",
+        "created_at": "2026-09-25T23:08:44.277Z",
+        "updated_at": null,
+        "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+        "source": "AutoSprite API"
+      },
+      "review_status": "approved_visual_review"
+    },
+    {
+      "role": "front_celebrate",
+      "png_path": "/img/moonpets/tubby/front_celebrate.png",
+      "atlas_path": "/img/moonpets/tubby/front_celebrate.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": false,
+      "one_shot": true,
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhj9bx90014mctfalaa2dcj",
+        "spritesheet_id": "cmuhkrtnu00012zt5z2k1n8ij",
+        "status": "succeeded",
+        "created_at": "2026-09-25T23:11:35.658Z",
+        "updated_at": null,
+        "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+        "source": "AutoSprite API"
+      },
+      "review_status": "approved_visual_review"
+    },
+    {
+      "role": "front_interact",
+      "png_path": "/img/moonpets/tubby/front_interact.png",
+      "atlas_path": "/img/moonpets/tubby/front_interact.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": false,
+      "one_shot": true,
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhj9bx90014mctfalaa2dcj",
+        "spritesheet_id": "cmuhkuk24000aaq4wqrj5cicn",
+        "status": "succeeded",
+        "created_at": "2026-09-25T23:13:43.180Z",
+        "updated_at": null,
+        "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+        "source": "AutoSprite API"
+      },
+      "review_status": "approved_visual_review"
+    },
+    {
+      "role": "front_blocked",
+      "png_path": "/img/moonpets/tubby/front_blocked.png",
+      "atlas_path": "/img/moonpets/tubby/front_blocked.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": false,
+      "one_shot": true,
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhj9bx90014mctfalaa2dcj",
+        "spritesheet_id": "cmuhkzgyb00081p0t2odljr3e",
+        "status": "succeeded",
+        "created_at": "2026-09-25T23:17:32.436Z",
+        "updated_at": null,
+        "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+        "source": "AutoSprite API"
+      },
+      "review_status": "approved_visual_review"
+    },
+    {
+      "role": "front_battle",
+      "png_path": "/img/moonpets/tubby/front_battle.png",
+      "atlas_path": "/img/moonpets/tubby/front_battle.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": false,
+      "one_shot": true,
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhj9bx90014mctfalaa2dcj",
+        "spritesheet_id": "cmuhl1u6p0001zmuzels36wuu",
+        "status": "succeeded",
+        "created_at": "2026-09-25T23:19:22.896Z",
+        "updated_at": null,
+        "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+        "source": "AutoSprite API"
+      },
+      "review_status": "approved_visual_review"
+    }
+  ]
+}
