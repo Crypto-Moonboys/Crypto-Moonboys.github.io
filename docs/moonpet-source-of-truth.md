@@ -316,3 +316,19 @@ Any future Moonpet system change should update:
 5. Player-facing Mini App guidance.
 
 This document is the reference point for future Moonpet development.
+
+# Official Daily Run choices and tactics
+
+New Daily Runs pin rules v2 before their first room. Every multi-choice Moon
+Alley room offers safe, balanced and bold risk/score approaches. The preview
+and server resolution share the same probability and score calculation.
+After rooms 3 and 6, players may choose Guardian, Striker or Scavenger for
+the rest of that run, or continue without a tactic. Choices are immutable,
+server-saved and scoped to the original run pet. They affect run score and
+clear odds only; reward authority, daily limits and economic caps are unchanged.
+
+Existing runs retain their earlier rules and condition. New runs select only
+implemented conditions. Relic ownership is collectible/progression state;
+passive relic effects remain inactive. See
+`docs/moonpet-roguelite-wiring-audit-2026-09-27.md` for the wiring matrix,
+concurrency fixes, validation and deployment requirements.

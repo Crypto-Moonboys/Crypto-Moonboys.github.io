@@ -52,7 +52,7 @@
     "challenge_id": "daily_care",
     "category": "care",
     "target": 3,
-    "description": "Complete 3 accepted Moonpet care actions.",
+    "description": "Complete 3 accepted Feed, Play, Clean or Sleep actions.",
     "validation_rules": {
       "event_type": "care_action",
       "authority": "telegram_pet_events",

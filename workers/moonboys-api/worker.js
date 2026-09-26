@@ -5,6 +5,7 @@ import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
 import { buildDailyLoopState, handleDailyLoopStateRoute } from './routes/daily-loop-state.js';
 import { handleRogueliteDailyRoutes } from './routes/daily-digest.js';
 import { getContractBoard, processContractAction } from './pets/continuing-contracts.js';
+import { chooseDailyRunTactic, dailyTacticalBoard, previewDailyChoice, readDailyModifiers } from './pets/daily-run-tactics.js';
 import { handleWaxBridgeRoute } from './routes/wax/index.js';
 import { applyPetRuntimeAward, buildPetGearSummary, buildPetProgressSummary, getOrCreatePetRuntimeState } from './pets/runtime-phase-5a.js';
 import {
@@ -9367,6 +9368,9 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     ? await persistPetGuidanceNotices(db, telegramId, buildPetGuidanceCandidates(guidance)).catch(() => [])
     : [];
   const activeRun = guidance?.active_run || null;
+  const runPet = !activeRun || activeRun.pet_id === petRaw.pet_id ? petRaw
+    : await getPetInstanceWithAtomicDecay(db, activeRun.pet_id).catch(() => null);
+  const runPetAvailable = Boolean(activeRun?.pet_id && runPet?.pet_id === activeRun.pet_id && runPet?.telegram_id === telegramId);
   const contracts = await getContractBoard(db, telegramId, petRaw, now)
     .catch(() => ({ available: false, reason: 'contracts_unavailable' }));
   const dailyRunSummary = await getDailyMoonRunSummary(db, { telegram_id: telegramId, now, active_run: activeRun, hatched: Boolean(lifecycle && lifecycle.phase !== 'egg') })
@@ -9392,14 +9396,16 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       dailyRoom = authoredRoom ? { ...persistedRoom, ...authoredRoom, choices: persistedRoom.choices || [] } : persistedRoom;
     }
   }
-  const runChoices = activeRun
+  const dailyModifiers = dailyReservation ? await readDailyModifiers(db, activeRun) : [];
+  const runChoices = activeRun && runPetAvailable
     ? (dailyReservation
       ? (dailyRoom?.choices || []).map((choice) => ({
         key: choice.choice_id,
         label: choice.label || choice.title || choice.copy || String(choice.choice_id || '').replaceAll('_', ' '),
         type: dailyRoom.room_type,
+        ...previewDailyChoice(runPet, dailyRoom, choice.choice_id, dailyModifiers),
       }))
-      : getPetRunStepChoices(activeRun).map((choice) => serializePetRunChoicePreview(activeRun, choice, petRaw, inventory)))
+      : getPetRunStepChoices(activeRun).map((choice) => serializePetRunChoicePreview(activeRun, choice, runPet, inventory)))
     : [];
   const specialActionCooldowns = await getPetSpecialActionCooldownEntries(db, telegramId, now);
   return {
@@ -9444,6 +9450,9 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     run: activeRun ? {
       ...activeRun,
       daily: Boolean(dailyReservation),
+      source_available: runPetAvailable,
+      source_pet: runPetAvailable ? { pet_id: runPet.pet_id, callsign: runPet.callsign || '', energy: runPet.energy, active: runPet.pet_id === petRaw.pet_id } : null,
+      tactics: dailyReservation && runPetAvailable ? dailyTacticalBoard({ ...activeRun, current_room: dailyReservation.current_room }, dailyModifiers) : null,
       current_room: Number(dailyReservation?.current_room ?? activeRun.current_room ?? activeRun.depth ?? 0),
       max_room: Number(dailyReservation?.max_room ?? activeRun.max_room ?? activeRun.max_depth ?? 0),
       expected_step_index: Number(dailyReservation ? dailyReservation.current_room : Number(activeRun.depth || 0) + 1),
@@ -9620,6 +9629,7 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   }
   if (action === 'run_start') return startOrResumePetRun(db, telegramId, { run_id: body.run_id, source });
   if (action === 'daily_run_start') return createDailyMoonRun(db, { telegram_id: telegramId });
+  if (action === 'daily_run_tactic') return chooseDailyRunTactic(db, telegramId, body);
   if (action === 'run_step') {
     const reservation = await getDailyMoonRunReservation(db, { telegram_id: telegramId, run_id: body.run_id });
     const result = reservation
@@ -13661,7 +13671,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260926-contracts-v1`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260927-daily-tactics-v1`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',
@@ -15068,7 +15078,7 @@ function isPetMiniAppCommand(command) {
 }
 
 const PET_MINI_APP_SCREENS = new Set(['home', 'missions', 'explore', 'work', 'economy', 'profile']);
-const PET_MINI_APP_FOCUSES = new Set(['recommended', 'vitals', 'care', 'details', 'missions', 'achievements', 'districts', 'moon-run', 'adventure', 'street-event', 'weekly-boss', 'story-chains', 'seasonal-boss', 'arena', 'kaiju', 'timed-activity', 'jobs', 'equipment', 'materials', 'relics', 'bounties', 'expedition', 'market', 'shop', 'style-lab', 'inventory', 'trade', 'rare-morph', 'memories', 'callsign', 'evolution', 'faction', 'prestige', 'tracks', 'features', 'alerts', 'season', 'leaderboard']);
+const PET_MINI_APP_FOCUSES = new Set(['contracts', 'play-now', 'practice', 'daily-journey', 'weekly-journey', 'daily-objectives', 'recommended', 'vitals', 'care', 'details', 'missions', 'achievements', 'districts', 'moon-run', 'adventure', 'street-event', 'weekly-boss', 'story-chains', 'seasonal-boss', 'arena', 'kaiju', 'timed-activity', 'jobs', 'equipment', 'materials', 'relics', 'bounties', 'expedition', 'market', 'shop', 'style-lab', 'inventory', 'trade', 'rare-morph', 'memories', 'callsign', 'evolution', 'faction', 'prestige', 'tracks', 'features', 'alerts', 'season', 'leaderboard']);
 const PET_MINI_APP_COMMAND_FOCUSES = Object.freeze({
   petcoach: 'recommended',
   adopt: 'care', feed: 'care', play: 'care', clean: 'care', sleep: 'care', train: 'care', petdaily: 'care',

@@ -5,6 +5,7 @@ import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { chromium } from 'playwright';
 import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
+import { __dailyMoonRunTestHooks as dailyHooks } from '../workers/moonboys-api/pets/daily-moon-run.js';
 
 // Local SQLite-backed API fixture: no live player account or network mutations.
 const root = process.cwd();
@@ -134,6 +135,7 @@ try {
     assert.ok(dailyText.includes('OFFICIAL DAILY MOON RUN') && dailyText.includes('ROOM 1/10'));
     assert.ok(!dailyText.includes('UNBANKED //') && !dailyText.includes('ENDLESS MOON RUN'));
     assert.equal(await page.locator('[data-action="run_step"]').getAttribute('data-payload').then(JSON.parse).then((x) => x.expected_step_index), 0);
+    assert.equal(await page.locator('[data-action="run_extract"]').isDisabled(), true, 'empty run extraction must explain its lock');
     await page.locator('[data-screen="missions"]').click();
     assert.equal(await page.locator('[data-panel="daily-objectives"] [data-jump]').count(), 5);
     // These are real server-backed contract actions, distinct from local practice.
@@ -174,11 +176,53 @@ try {
     assert.equal(youngAfter.pet.pet_xp - youngBefore.pet.pet_xp, 20);
     assert.ok(await page.locator('[data-panel="contracts"]').evaluate((panel) => panel.getBoundingClientRect().right <= innerWidth), 'contract board fits mobile');
     if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-contracts-${viewport.width}.png`) });
+    // A separate real-Worker fixture begins at the first optional daily checkpoint.
+    currentUser = `browser-daily-${viewport.width}`;
+    await seed(currentUser, 'young');
+    dailyOverride = null;
+    const startedDaily = await hooks.processPetMiniAppAction(db, currentUser, { id: currentUser }, { action: 'daily_run_start' }, token);
+    assert.equal(startedDaily.accepted, true);
+    const dailyId = startedDaily.daily_run.run_id;
+    sqlite.prepare('UPDATE telegram_pet_runs SET current_room=3,depth=3,rooms_completed=3 WHERE run_id=?').run(dailyId);
+    let dailyStored = sqlite.prepare('SELECT * FROM telegram_pet_runs WHERE run_id=?').get(dailyId);
+    const checkpointRoom = await hooks.createPetRunRoom(db, dailyStored);
+    await page.reload();
+    await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-screen="explore"]').click();
+    await page.waitForSelector('[data-action="daily_run_tactic"]');
+    assert.equal(await page.locator('[data-action="daily_run_tactic"]').count(), 3);
+    assert.ok((await page.locator('[data-action="run_step"]').first().textContent()).includes('RUN SCORE ON SUCCESS'));
+    const tacticResponse = page.waitForResponse((response) => response.url().endsWith('/telegram-pets/app/action') && response.request().postDataJSON()?.action === 'daily_run_tactic');
+    await page.locator('[data-action="daily_run_tactic"]').filter({ hasText: 'GUARDIAN' }).click();
+    assert.equal((await (await tacticResponse).json()).result.accepted, true);
+    await page.waitForFunction(() => !document.querySelector('[data-action="daily_run_tactic"]'));
+    await page.reload();
+    await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-screen="explore"]').click();
+    assert.equal(await page.locator('[data-action="daily_run_tactic"]').count(), 0, 'a saved tactic cannot be drafted twice');
+    assert.ok((await page.locator('[data-panel="moon-run"]').textContent()).includes('GUARDIAN'));
+    const dailyBefore = await hooks.buildPetMiniAppState(db, currentUser, token);
+    let winningDailyChoice = null;
+    for (const choice of checkpointRoom.choices) {
+      const outcome = await dailyHooks.resolveAuthoritativeDailyRoomOutcome(db, dailyStored, checkpointRoom, choice.choice_id);
+      if (outcome.success) { winningDailyChoice = choice; break; }
+    }
+    assert.ok(winningDailyChoice, 'daily browser fixture needs a valid successful route');
+    const dailyButtons = page.locator('[data-action="run_step"]');
+    const dailyPayloads = await dailyButtons.evaluateAll((buttons) => buttons.map((button) => JSON.parse(button.dataset.payload)));
+    const dailyResponse = page.waitForResponse((response) => response.url().endsWith('/telegram-pets/app/action') && response.request().postDataJSON()?.action === 'run_step');
+    await dailyButtons.nth(dailyPayloads.findIndex((payload) => payload.choice_key === winningDailyChoice.choice_id)).click();
+    const dailyResult = await (await dailyResponse).json();
+    assert.equal(dailyResult.result.accepted, true);
+    assert.equal(dailyResult.state.run.current_room, 4);
+    assert.equal(dailyResult.state.run.score, dailyBefore.run.score + dailyBefore.run.choices.find((choice) => choice.key === winningDailyChoice.choice_id).score);
+    assert.equal(dailyResult.state.pet.pet_xp, dailyBefore.pet.pet_xp, 'daily tactics change score, not Pet XP');
+    if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-tactics-${viewport.width}.png`) });
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
     assert.equal(overflow, false, 'mobile viewport must not overflow horizontally');
     assert.deepEqual(errors, [], 'no runtime errors across all six screens');
     if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-${viewport.width}.png`) });
-    console.log(`Moonpet browser loop passed at ${viewport.width}x${viewport.height}; all six screens; practice isolation; daily run copy; server contract completion/reload/XP/new quests.`);
+    console.log(`Moonpet browser loop passed at ${viewport.width}x${viewport.height}; all six screens; practice isolation; saved contracts; daily tactic choice/reload/odds/score.`);
     await context.close();
   }
 } finally {

@@ -794,6 +794,7 @@
       '<div class="guide-step"><strong>6 // IDENTITY AND ROADMAP</strong>The canonical identity name is revealed when server-authoritative Stage 3 begins. CORE tracks evolution and season rewards. Advanced Traits, Breeding, Lineage, Fusion, Sanctuary and Prestige remain coming soon.</div>' +
       '<div class="guide-step"><strong>CURRENCIES</strong>Pet XP raises level. Moon Gold buys common upgrades. Gems unlock premium routes. Style unlocks cosmetics. Energy powers demanding actions.</div>' +
       '<div class="guide-step"><strong>CONTINUING CONTRACTS</strong>After hatching, open MISSIONS or Play Now. Pick a quest, build and difficulty, then play six branching rooms with upgrades after rooms two and four. Contract rank and new quests continue without cooldowns or pet energy costs. The first three successful contracts per account each UTC day qualify for up to 20 Pet XP each, within your normal XP cap. Every choice is saved online. Contract rank is separate from pet level, Daily Journey and leaderboards.</div>' +
+      '<div class="guide-step"><strong>DAILY RUN TACTICS</strong>New official attempts show clear chance and score for each approach. Safe routes trade score for better odds; bold routes offer more score at higher risk. After rooms 3 and 6, choose Guardian, Striker or Scavenger, or continue without an upgrade. Tactics change later odds and run score only. One official attempt per account each UTC day still applies.</div>' +
       '<div class="guide-step"><strong>PLAY BETWEEN COOLDOWNS</strong>Play Now links to your available routes. Practice Roguelite in EXPLORE offers three builds, risk choices and upgrade drafts with unlimited replays. It uses local practice health and salvage, costs no pet energy and awards no XP, currency or quest credit. This browser saves the run so you can leave and resume.</div>' +
       '<div class="button-grid one"><button type="button" class="terminal-button" data-open-full-guide>OPEN COMPLETE WEBSITE GUIDE</button></div>';
   }
@@ -1813,11 +1814,21 @@
       var runDecisionButtons = (run.choices || []).map(function (choice) {
         return button(choice.label, 'run_step', { run_id: run.run_id, choice_key: choice.key, expected_step_index: run.expected_step_index }, { detail: choice.detail || words(choice.type) });
       }).join('');
+      var tactical = run.tactics || {};
+      var tacticCopy = (tactical.conditions || []).concat(tactical.selected || []).map(function (item) {
+        return '<div class="line signal">' + escapeHtml(item.title) + '</div><div class="line muted">' + escapeHtml(item.detail) + '</div>';
+      }).join('');
+      if (tactical.rules_version === 1) tacticCopy += '<div class="line muted">This saved run uses earlier rules. Checkpoint tactics begin with your next official attempt.</div>';
+      if (tactical.offers && tactical.offers.length) tacticCopy += '<div class="line complete">CHECKPOINT TACTIC // CHOOSE ONE</div><div class="line muted">Applies to the remaining rooms. Choices stack at rooms 3 and 6. Run score only: no extra XP, currency or drops. You may continue without a tactic; the offer then expires.</div><div class="button-grid">' + tactical.offers.map(function (offer) {
+        return button(offer.title, 'daily_run_tactic', { run_id: run.run_id, checkpoint: tactical.checkpoint, tactic_id: offer.key }, { detail: offer.detail });
+      }).join('') + '</div>';
+      var runPetCopy = run.source_pet && !run.source_pet.active ? '<div class="line signal">RUN BELONGS TO ' + escapeHtml(run.source_pet.callsign || 'YOUR ORIGINAL RUN PET') + ' // ENERGY ' + number(run.source_pet.energy) + '</div><div class="line muted">Choices and rewards use this saved pet, even while another pet is selected.</div>' : '';
+      if (run.source_available === false) runPetCopy = '<div class="line locked">This saved run has no available source pet. Contact support to recover it. Other game panels remain available.</div>';
       runBody = '<div class="line complete">' + (run.daily ? 'OFFICIAL DAILY MOON RUN' : 'ENDLESS MOON RUN // DISTRICT TIER ' + number(run.difficulty)) + '</div><div class="line">ROOM ' + number(Number(run.current_room != null ? run.current_room : run.depth || 0) + 1) + '/' + number(run.max_room || run.max_depth) + ' // SCORE ' + number(run.score) + (run.daily ? '' : ' // NEXT CHECKPOINT ' + number(run.next_checkpoint)) + '</div>' +
-        roomBrief +
-        (run.daily ? '<div class="run-stakes"><strong>ONE OFFICIAL ATTEMPT / UTC DAY</strong><span>Room progress counts toward Daily Journey. Extraction ends this attempt; it does not bank the endless-run XP bag. Boss drops settle separately through the server.</span></div>' : '<div class="run-stakes"><strong>UNBANKED // ' + escapeHtml(unbankedSummary) + '</strong><span>EXTRACT TO SECURE IT. A FAILED ROOM LOSES THE BAG.</span></div>') +
+        runPetCopy + roomBrief + tacticCopy +
+        (run.daily ? '<div class="run-stakes"><strong>ONE OFFICIAL ATTEMPT / UTC DAY</strong><span>Choices change run score and clear chance; they do not buy items, heal or spend pet currency. Room progress counts toward Daily Journey. Extraction ends this attempt; it does not bank the endless-run XP bag. Boss drops settle separately through the server.</span></div>' : '<div class="run-stakes"><strong>UNBANKED // ' + escapeHtml(unbankedSummary) + '</strong><span>EXTRACT TO SECURE IT. A FAILED ROOM LOSES THE BAG.</span></div>') +
         '<div class="button-grid run-decisions">' + runDecisionButtons +
-        button(run.daily ? 'EXTRACT DAILY RUN' : 'EXTRACT & BANK', 'run_extract', { run_id: run.run_id }, { danger: true, detail: run.daily ? 'End the official attempt. You cannot restart it today.' : 'END RUN AND SECURE ' + unbankedSummary }) + '</div>';
+        button(run.daily ? 'EXTRACT DAILY RUN' : 'EXTRACT & BANK', 'run_extract', { run_id: run.run_id }, { disabled: run.source_available === false || Number(run.current_room || run.depth || 0) < 1, danger: true, detail: run.source_available === false ? 'Saved run pet unavailable.' : Number(run.current_room || run.depth || 0) < 1 ? 'Clear one room before extracting.' : run.daily ? 'End the official attempt. You cannot restart it today.' : 'END RUN AND SECURE ' + unbankedSummary }) + '</div>';
     } else {
       var dailyRun = state.daily_run || {};
       var dailyUsed = dailyRun.attempted === true;
@@ -2011,7 +2022,7 @@
       panel('LOADOUT SYNERGIES', equipmentSets || '<div class="line muted">NO SET DATA.</div>', 'equipment-sets') +
       panel('CRAFTING MATERIALS', materials || '<div class="line muted">NO MATERIAL DATA.</div>', 'materials') +
       panel('CRAFTING WORKSHOP', '<div class="button-grid">' + crafting + '</div>', 'crafting') +
-      panel('RELIC VAULT', relics || '<div class="line muted">NO RELICS RECOVERED.</div>', 'relics') +
+      panel('RELIC VAULT', '<div class="line muted">Persistent collectibles used by eligible progression requirements. Passive relic powers are not active in Moon Run, Daily Run, contracts or practice.</div>' + (relics || '<div class="line muted">NO RELICS RECOVERED.</div>'), 'relics') +
       panel('DAILY BOUNTIES', bounties || '<div class="line muted">NO BOUNTIES.</div>', 'bounties') +
       panel('CRYSTAL EXPEDITION // ' + escapeHtml(expedition.title || 'LOCKED'), '<div class="line">' + number(economy.expedition_attempts_left) + '/3 ATTEMPTS // COST ' + number(expedition.energy) + ' ENERGY</div><div class="line muted">POSSIBLE FINDS // ' + escapeHtml((expedition.rewards || []).map(valueText).join(' / ')) + '</div><div class="button-grid one">' + button('RUN EXPEDITION', 'expedition', {}, { disabled: !economy.expedition_attempts_left || Number(state.pet && state.pet.energy || 0) < Number(expedition.energy || 0), resourceRequired: Boolean(economy.expedition_attempts_left) && Number(state.pet && state.pet.energy || 0) < Number(expedition.energy || 0) }) + '</div>', 'expedition') +
       panel('MOON MARKET', '<div class="button-grid">' + offers + '</div>', 'market') +
@@ -2323,6 +2334,8 @@
 
   function rejectionMessage(reason) {
     var messages = {
+      daily_tactic_invalid: 'choose one of the offered checkpoint tactics.',
+      daily_tactic_stale: 'that checkpoint has changed or its tactic is already chosen; use the refreshed run.',
       contracts_unavailable: 'contracts are syncing; refresh after the update.',
       contract_pet_changed: 'the active pet changed; reopen its contract board.',
       contract_stale: 'that contract changed; use the refreshed choices.',
@@ -2533,6 +2546,7 @@
     if (key === 'energy_drink') return 'fight';
     if (key === 'dance') return 'dance';
     if (key === 'cuddles') return 'victory';
+    if (key === 'daily_run_tactic') return 'victory';
     if (key === 'contract_step') return payload && payload.choice === 'bold' ? 'fight' : payload && payload.choice === 'rest' ? 'sleep' : 'travel';
     if (key === 'contract_start') return 'travel';
     if (/fail|blocked|denied|lose/.test(key)) return 'blocked';
