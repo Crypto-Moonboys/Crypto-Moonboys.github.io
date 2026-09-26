@@ -32,6 +32,11 @@ assert.deepEqual(registry.bots["F1 EDDY"].canonical_species_ids, ["neon_raccoon"
 for (const [name, config] of Object.entries(registry.bots)) {
   if (name !== "BOTTY") assert.equal(config.fallback, "BOTTY", `${name} fallback`);
 }
+  assert.deepEqual(
+    config.display,
+    { scale: 1, fit_width: 168, fit_height: 168, pivot_y: 0.9 },
+    `${name} must use the shared unsquashed canvas fit box`
+  );
 
 for (const [name, config] of Object.entries(registry.bots).filter(([, entry]) => entry.status === "complete")) {
   const manifest = JSON.parse(fs.readFileSync(path.join(root, config.manifest_path.replace(/^\//, "")), "utf8"));
@@ -87,9 +92,9 @@ assert.equal(f1EddyManifest.character_id, "cmuhjd3wg0023zoeghrmnxoc7");
 assert.ok(f1EddyManifest.assets.every((asset) => asset.frame_count === 25));
 
 const html = fs.readFileSync(path.join(root, "moonpet-game.html"), "utf8");
-assert.match(html, /moonpet-art-resolver\.js\?v=20260926-clean-runtime-v2/);
-assert.match(html, /moonpet-bot-art-loader\.js\?v=20260926-clean-runtime-v2/);
-assert.match(html, /moonpet-bot-art-renderer\.js\?v=20260926-clean-runtime-v2/);
+assert.match(html, /moonpet-art-resolver\.js\?v=20260926-uniform-bot-fit-v3/);
+assert.match(html, /moonpet-bot-art-loader\.js\?v=20260926-uniform-bot-fit-v3/);
+assert.match(html, /moonpet-bot-art-renderer\.js\?v=20260926-uniform-bot-fit-v3/);
 assert.doesNotMatch(html, /moonpet-botty-front-(?:asset-loader|sprite-renderer)\.js/);
 assert.doesNotMatch(html, /moonpet-art-v2\.js/);
 
@@ -98,7 +103,11 @@ assert.match(client, /speciesId: String\(lifecycle\.species_id \|\| pet\.species
 assert.match(client, /selectMoonpetBot\(botArtIdentity\(snapshot\)\)/);
 assert.match(client, /drawSelectedBotSprite\(renderTime, animationMode, active/);
 assert.doesNotMatch(client, /drawSideScrollerMoonpetSprite|drawApprovedMoonpetSprite/, "old character render paths must not remain live");
+assert.match(client, /var x = 112;/, "bots stay inside the left canvas zone");
 assert.match(client, /var y = 194;/, "bots retain the lower stage baseline");
+const rendererSource = fs.readFileSync(path.join(root, "js", "moonpet-bot-art-renderer.js"), "utf8");
+assert.match(rendererSource, /const containScale = Math\.min\(fitWidth \/ frame\.w, fitHeight \/ frame\.h\)/, "renderer must use one contain scale for both axes");
+assert.match(rendererSource, /const width = frame\.w \* drawScale;[\s\S]*const height = frame\.h \* drawScale;/, "renderer must preserve source aspect ratio instead of squashing bots");
 assert.match(client, /var active = sleepLatched \|\| animationUntil > renderTime/);
 assert.match(client, /animationUntil = sleepLatched && animationMode === 'sleep' \? Number\.POSITIVE_INFINITY/);
 

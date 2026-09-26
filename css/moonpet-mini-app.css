@@ -82,7 +82,7 @@ button, input, select, textarea {
   margin: 0 auto;
   position: relative;
   display: grid;
-  grid-template-rows: auto minmax(178px, 32dvh) auto minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(178px, 32dvh) minmax(0, 1fr) auto;
   overflow: hidden;
   background:
     repeating-linear-gradient(180deg, rgba(255,255,255,.008) 0 1px, transparent 1px 6px),
@@ -244,29 +244,34 @@ button, input, select, textarea {
 }
 
 .terminal-output {
-  min-height: 42px;
-  max-height: 56px;
-  padding: 10px 14px;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
   overflow: hidden;
-  border-bottom: 1px solid var(--ui-border);
-  background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0));
-  color: var(--ui-text-secondary);
-  font-size: 12px;
-  line-height: 1.45;
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
   white-space: nowrap;
-  text-overflow: ellipsis;
 }
 
-.terminal-output[data-tone="danger"] { color: rgb(var(--ui-danger)); }
-.terminal-output[data-tone="success"] { color: rgb(var(--ui-success)); }
-
-.terminal-output::before {
-  content: "Live // ";
-  color: var(--ui-text-faint);
-  text-transform: uppercase;
-  letter-spacing: .12em;
-  font-size: 10px;
-  margin-right: 2px;
+.terminal-output[data-tone="danger"] {
+  position: relative;
+  z-index: 72;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 8px 14px;
+  overflow: visible;
+  border-bottom: 1px solid rgba(var(--ui-danger), .18);
+  clip: auto;
+  clip-path: none;
+  background: rgba(var(--ui-danger), .055);
+  color: rgb(var(--ui-danger));
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: normal;
 }
 
 .screen {

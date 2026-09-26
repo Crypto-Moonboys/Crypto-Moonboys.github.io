@@ -102,9 +102,13 @@
     const asset = state.assetsByRole[role];
     const frame = asset && frameForTime(asset, time, options);
     if (!asset || !asset.image || !frame) return false;
-    const packScale = Number(state.display.scale || 0.72);
-    const pivotY = Number(state.display.pivot_y || 0.86);
-    const drawScale = Math.max(0.45, Math.min(1.05, Number(scale) || 1)) * packScale;
+    const fitWidth = Math.max(1, Number(state.display.fit_width || 168));
+    const fitHeight = Math.max(1, Number(state.display.fit_height || 168));
+    const packScale = Math.max(0.5, Math.min(1.5, Number(state.display.scale || 1)));
+    const pivotY = Math.max(0, Math.min(1, Number(state.display.pivot_y || 0.9)));
+    const requestedScale = Math.max(0.45, Math.min(1.05, Number(scale) || 1));
+    const containScale = Math.min(fitWidth / frame.w, fitHeight / frame.h);
+    const drawScale = containScale * packScale * requestedScale;
     const width = frame.w * drawScale;
     const height = frame.h * drawScale;
     ctx.save();
@@ -115,6 +119,9 @@
       requestedEvolution: state.requestedEvolution, resolvedEvolution: state.resolvedEvolution,
       evolutionFallbackUsed: state.evolutionFallbackUsed,
       animationMode, requestedRole, role, frameIndex: frame.index, frameCount: asset.frames.length,
+      frameWidth: frame.w, frameHeight: frame.h, fitWidth, fitHeight,
+      drawWidth: width, drawHeight: height, drawScale,
+      sourceAspect: frame.w / frame.h, drawAspect: width / height,
       loop: asset.loop !== false && asset.one_shot !== true, drew: true
     };
     return true;

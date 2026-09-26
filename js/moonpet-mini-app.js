@@ -2916,7 +2916,7 @@
       return;
     }
 
-    var x = 124;
+    var x = 112;
     var y = 194;
     if (drawSelectedBotSprite(renderTime, animationMode, active, x, y, 1)) return;
     if (!botArtFallbackLogged) {
