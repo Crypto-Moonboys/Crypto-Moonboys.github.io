@@ -1,6 +1,6 @@
 (() => {
   const REGISTRY_PATH = "/data/moonpet-bot-art-registry.json";
-  const FALLBACK_CACHE_VERSION = "20260926-retro-space-stage-v1";
+  const FALLBACK_CACHE_VERSION = "20260926-retro-space-stage-v2";
   const packCache = new Map();
   let registryPromise = null;
 
