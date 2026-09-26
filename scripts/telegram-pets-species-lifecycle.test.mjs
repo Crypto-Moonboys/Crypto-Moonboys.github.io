@@ -121,6 +121,13 @@ for (const [speciesId, speciesName] of Object.entries(SPECIES_LABELS)) {
   assert.equal(mapped.species_id, speciesId);
   assert.equal(mapped.species_name, speciesName, `public lifecycle serializer must map ${speciesId} to ${speciesName}`);
 }
+db.database.prepare(`UPDATE telegram_pet_lifecycle_by_pet
+  SET phase='rare', rare_route_index=0, rare_morph_id='celestial_serpent'
+  WHERE telegram_id='new-player'`).run();
+const rareLifecycle = await getMoonpetLifecycle(db, 'new-player');
+assert.equal(rareLifecycle.rare_morph_id, 'celestial_serpent', 'public lifecycle must expose the stable rare morph ID');
+assert.equal(rareLifecycle.rare.id, 'celestial_serpent', 'rare lifecycle details must include the stable route ID');
+assert.equal(rareLifecycle.rare.name, 'Celestial Serpent');
 db.database.prepare(`UPDATE telegram_pet_lifecycle_by_pet SET phase='adult' WHERE telegram_id='new-player'`).run();
 db.database.prepare(`INSERT OR REPLACE INTO telegram_pet_memories VALUES ('pet:new-player:test:1','new-player','test',100,100,100,100,100,100,100)`).run();
 for (const trait of ['explorer', 'curious', 'street_fighter', 'loyal']) db.database.prepare(

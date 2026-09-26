@@ -1586,7 +1586,7 @@ assert.match(html, /moonpet-canvas/);
 assert.match(client, /requestAnimationFrame\(frame\)/);
 assert.match(client, /if \(reducedMotion\) return/);
 assert.match(client, /fillRect/);
-assert.doesNotMatch(client.replace(/var worldBackgroundImage = new Image\(\);/, ''), /new Image\s*\(/, 'Mini App must only allocate the approved BITTY background image');
+assert.equal((client.match(/new Image\s*\(/g) || []).length, 1, 'Mini App must allocate images only through the guarded background preloader');
 assert.match(client, /typeBoot/);
 assert.match(client, /actionAnimationFamily/);
 assert.match(client, /key === 'activity_start'.*payload && payload\.activity_type/);
@@ -1613,7 +1613,41 @@ assert.doesNotMatch(client, /drawEquipmentLayers|drawCosmeticLayers|wearableTrai
 assert.doesNotMatch(css, /wearable-slot-row/, 'wearable controls must be removed from live CSS');
 assert.match(client, /evolutionStage: Number\(pet\.evolution_stage \|\| lifecycle\.evolution_stage/, 'art identity must include evolution stage');
 assert.match(client, /selectWorldBackgroundForState\(state\)/, 'server snapshots must resolve persistent rare world art');
-assert.match(client, /rare_morph_id \|\| lifecycle\.rare_morph/, 'rare morph state must drive background selection');
+assert.match(client, /rare_morph_id \|\| lifecycle\.rare && lifecycle\.rare\.id \|\| lifecycle\.rare_morph/, 'rare morph state must drive background selection');
+assert.match(client, /var candidateImage = new Image\(\)/, 'background changes must preload a replacement image');
+assert.match(client, /worldBackgroundImage = candidateImage;\s*worldBackgroundUrl = nextUrl;\s*worldBackgroundReady = true;/s,
+  'a replacement background must become active only after it loads');
+assert.match(client, /failedWorldBackgroundUrls\[nextUrl\] = true;[\s\S]*setWorldBackground\(DEFAULT_WORLD_BACKGROUND_URL\)/,
+  'failed approved backgrounds must be quarantined and fall back to the default');
+const worldBackgroundLoaderSource = extractTestExport(client, 'worldBackgroundLoader');
+assert.ok(worldBackgroundLoaderSource, 'world background loader must be extractable for runtime coverage');
+class TestBackgroundImage {
+  static instances = [];
+  constructor() { TestBackgroundImage.instances.push(this); }
+  set src(value) { this.url = value; }
+}
+const backgroundRuntime = new Function('Image', 'drawWorld', 'performance', 'state', 'console',
+  `${worldBackgroundLoaderSource}; return {
+    set: setWorldBackground,
+    url: function () { return worldBackgroundUrl; },
+    image: function () { return worldBackgroundImage; },
+    ready: function () { return worldBackgroundReady; },
+    failed: failedWorldBackgroundUrls
+  };`,
+)(TestBackgroundImage, () => {}, { now: () => 1 }, {}, { error: () => {} });
+const defaultCandidate = TestBackgroundImage.instances[0];
+defaultCandidate.onload();
+assert.equal(backgroundRuntime.url(), '/games/assets/BITTY%20BACKGROUND.jpg');
+const approvedUrl = '/games/assets/moonpets/rare-backgrounds/botty/celestial-serpent.jpg';
+backgroundRuntime.set(approvedUrl);
+const approvedCandidate = TestBackgroundImage.instances[1];
+assert.equal(backgroundRuntime.image(), defaultCandidate, 'current background must remain visible while a replacement loads');
+approvedCandidate.onerror();
+assert.equal(backgroundRuntime.image(), defaultCandidate, 'failed replacement must preserve the loaded default background');
+assert.equal(backgroundRuntime.ready(), true);
+assert.equal(backgroundRuntime.failed[approvedUrl], true, 'failed approved URLs must be quarantined');
+backgroundRuntime.set(approvedUrl);
+assert.equal(TestBackgroundImage.instances.length, 2, 'state refreshes must not retry a quarantined approved URL');
 assert.match(client, /getBackgroundArtState/, 'background provenance must remain inspectable');
 assert.equal(Object.keys(botArtRegistry.bots).length, 8, 'all eight bots must be registered');
 for (const [botName, bot] of Object.entries(botArtRegistry.bots)) {

@@ -108,27 +108,37 @@
   var activeUtility = '';
   var utilityRequestGeneration = 0;
 
+  // TEST-EXPORT: worldBackgroundLoader:start
   var DEFAULT_WORLD_BACKGROUND_URL = '/games/assets/BITTY%20BACKGROUND.jpg';
-  var worldBackgroundUrl = DEFAULT_WORLD_BACKGROUND_URL;
-  var worldBackgroundImage = new Image();
+  var worldBackgroundUrl = '';
+  var worldBackgroundImage = null;
   var worldBackgroundReady = false;
-  worldBackgroundImage.onload = function () {
-    worldBackgroundReady = true;
-    if (state) drawWorld(performance.now());
-  };
-  worldBackgroundImage.onerror = function () {
-    worldBackgroundReady = false;
-    console.error('[Moonpet] world background failed to load:', worldBackgroundUrl);
-  };
-  worldBackgroundImage.src = worldBackgroundUrl;
+  var worldBackgroundLoadGeneration = 0;
+  var failedWorldBackgroundUrls = Object.create(null);
 
   function setWorldBackground(imagePath) {
     var nextUrl = String(imagePath || DEFAULT_WORLD_BACKGROUND_URL);
+    if (failedWorldBackgroundUrls[nextUrl]) nextUrl = DEFAULT_WORLD_BACKGROUND_URL;
     if (nextUrl === worldBackgroundUrl && worldBackgroundReady) return;
-    worldBackgroundUrl = nextUrl;
-    worldBackgroundReady = false;
-    worldBackgroundImage.src = nextUrl;
+    var generation = ++worldBackgroundLoadGeneration;
+    var candidateImage = new Image();
+    candidateImage.onload = function () {
+      if (generation !== worldBackgroundLoadGeneration) return;
+      worldBackgroundImage = candidateImage;
+      worldBackgroundUrl = nextUrl;
+      worldBackgroundReady = true;
+      if (state) drawWorld(performance.now());
+    };
+    candidateImage.onerror = function () {
+      if (generation !== worldBackgroundLoadGeneration) return;
+      failedWorldBackgroundUrls[nextUrl] = true;
+      console.error('[Moonpet] world background failed to load:', nextUrl);
+      if (nextUrl !== DEFAULT_WORLD_BACKGROUND_URL) setWorldBackground(DEFAULT_WORLD_BACKGROUND_URL);
+    };
+    candidateImage.src = nextUrl;
   }
+  setWorldBackground(DEFAULT_WORLD_BACKGROUND_URL);
+  // TEST-EXPORT: worldBackgroundLoader:end
 
   function currentPetSleepKey(snapshot) {
     var pet = snapshot && snapshot.pet || {};
@@ -225,7 +235,7 @@
     var lifecycle = snapshot && snapshot.lifecycle || {};
     var result = await window.MoonpetArtResolver.loadMoonpetBackground(
       botArtIdentity(snapshot),
-      String(lifecycle.rare_morph_id || lifecycle.rare_morph || '')
+      String(lifecycle.rare_morph_id || lifecycle.rare && lifecycle.rare.id || lifecycle.rare_morph || '')
     );
     if (generation !== backgroundSelectionGeneration) return false;
     backgroundArtState = result;
