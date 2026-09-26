@@ -14,11 +14,7 @@ const REPO_ROOT = path.resolve(__dirname, "..");
 const API_BASE_URL = "https://www.autosprite.io/api/v1";
 const REGISTRY_PATH = path.join(REPO_ROOT, "data", "moonpet-autosprite-characters.json");
 const DIAGNOSTIC_DIR = path.join(REPO_ROOT, "data", "autosprite-generation-diagnostics");
-const DIAGNOSTIC_PATH = path.join(DIAGNOSTIC_DIR, "botty-front-last-error.json");
 const DISCOVERY_MANIFEST_PATH = path.join(REPO_ROOT, "output", "manifests", "botty-autosprite-character.json");
-const OUTPUT_DIR = path.join(REPO_ROOT, "output", "moonpets", "botty-front");
-const MANIFEST_PATH = path.join(REPO_ROOT, "output", "manifests", "botty-front-animation-sheets.generated.json");
-const RAW_DIR = path.join(REPO_ROOT, "output", "manifests", "autosprite", "botty-front");
 const FRAME_COUNT = 25;
 const FRAME_SIZE = 256;
 const SHEET_SIZE = { w: 1280, h: 1280 };
@@ -38,7 +34,10 @@ const FRONT_ANIMATIONS = [
   "front_celebrate",
   "front_interact",
   "front_blocked",
-  "front_battle"
+  "front_battle",
+  "front_dance",
+  "front_victory",
+  "front_fight"
 ];
 
 const ACTION_PROMPTS = {
@@ -56,7 +55,10 @@ const ACTION_PROMPTS = {
   front_celebrate: "front-facing celebrate animation, victory cheer, confetti-like energy, joyful bounce",
   front_interact: "front-facing interact animation, friendly wave and attention gesture toward viewer",
   front_blocked: "front-facing blocked animation, clear refusal or shield pose, readable no-entry reaction",
-  front_battle: "front-facing battle animation, combat-ready stance, punchy attack preparation, intense visor focus"
+  front_battle: "front-facing battle animation, combat-ready stance, punchy attack preparation, intense visor focus",
+  front_dance: "front-facing seamless dance loop, rhythmic full-body movement, returning cleanly to the opening pose",
+  front_victory: "front-facing one-shot victory celebration, clear triumphant gesture, ending in a stable victory pose",
+  front_fight: "front-facing one-shot combat action, readable attack motion, recovering cleanly to the centered idle stance"
 };
 
 function parseArgs(argv) {
@@ -152,6 +154,16 @@ function slug(value) {
     .replace(/^_+|_+$/g, "") || "botty";
 }
 
+function outputPaths(characterName) {
+  const characterSlug = slug(characterName).replace(/_/g, "-");
+  return {
+    outputDir: path.join(REPO_ROOT, "output", "moonpets", `${characterSlug}-front`),
+    manifestPath: path.join(REPO_ROOT, "output", "manifests", `${characterSlug}-front-animation-sheets.generated.json`),
+    rawDir: path.join(REPO_ROOT, "output", "manifests", "autosprite", `${characterSlug}-front`),
+    diagnosticPath: path.join(DIAGNOSTIC_DIR, `${characterSlug}-front-last-error.json`)
+  };
+}
+
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -163,7 +175,7 @@ function pollDelayMs(pollCount) {
   return 20000;
 }
 
-async function requestAutoSprite({ method = "GET", urlPath, apiKey, body, rawName }) {
+async function requestAutoSprite({ method = "GET", urlPath, apiKey, body, rawName, rawDir }) {
   const response = await fetch(`${API_BASE_URL}${urlPath}`, {
     method,
     headers: {
@@ -179,7 +191,7 @@ async function requestAutoSprite({ method = "GET", urlPath, apiKey, body, rawNam
   } catch {
     parsed = { rawText: text };
   }
-  if (rawName) await writeJson(path.join(RAW_DIR, rawName), parsed || { rawText: text });
+  if (rawName) await writeJson(path.join(rawDir, rawName), parsed || { rawText: text });
   if (!response.ok) {
     const message = parsed && (parsed.message || parsed.code || parsed.error && parsed.error.message) || text || response.statusText;
     throw new Error(`AutoSprite ${method} ${urlPath} failed HTTP ${response.status}: ${message}`);
@@ -192,7 +204,8 @@ function buildPrompt(characterName, animationId) {
     `${characterName} existing AutoSprite character, custom ${animationId} animation.`,
     ACTION_PROMPTS[animationId],
     "Strict front-facing view, symmetrical body facing the viewer, preserve the uploaded character identity exactly.",
-    "Transparent background, no text, no scenery, no replacement character, no redesign."
+    "Keep the complete character, feet, head, outfit, props, weapons and effects inside every frame with transparent spacing around movement.",
+    "Transparent background, no text, labels, borders, UI, scenery, replacement character, alternate skin or redesign."
   ].join(" ");
 }
 
@@ -236,7 +249,7 @@ function workflowsFromCreateResponse(response) {
   return workflows.filter(Boolean);
 }
 
-async function pollJob({ apiKey, jobId, timeoutMs, animationId }) {
+async function pollJob({ apiKey, jobId, timeoutMs, animationId, paths }) {
   const started = Date.now();
   let pollCount = 0;
   while (Date.now() - started < timeoutMs) {
@@ -246,12 +259,13 @@ async function pollJob({ apiKey, jobId, timeoutMs, animationId }) {
       const job = await requestAutoSprite({
         urlPath: `/jobs/${encodeURIComponent(jobId)}`,
         apiKey,
-        rawName: `${animationId}-job-${slug(jobId)}-poll-${pollCount}.json`
+        rawName: `${animationId}-job-${slug(jobId)}-poll-${pollCount}.json`,
+        rawDir: paths.rawDir
       });
       const status = String(job.status || job.job && job.job.status || job.data && job.data.status || "").toLowerCase();
       console.log(`[${animationId}] job ${jobId} status=${status || "unknown"}`);
       if (["succeeded", "success", "completed", "complete"].includes(status)) {
-        await writeJson(path.join(RAW_DIR, `${animationId}-job-${slug(jobId)}-succeeded.json`), job);
+        await writeJson(path.join(paths.rawDir, `${animationId}-job-${slug(jobId)}-succeeded.json`), job);
         return job;
       }
       if (["failed", "error", "cancelled", "canceled"].includes(status)) {
@@ -276,20 +290,21 @@ function candidateSpritesheetRecords(value, records = []) {
   return records;
 }
 
-async function fetchSpritesheetRecord({ apiKey, spritesheetId, animationId }) {
+async function fetchSpritesheetRecord({ apiKey, spritesheetId, animationId, paths }) {
   return requestAutoSprite({
     urlPath: `/spritesheets/${encodeURIComponent(spritesheetId)}`,
     apiKey,
-    rawName: `${animationId}-spritesheet-${slug(spritesheetId)}.json`
+    rawName: `${animationId}-spritesheet-${slug(spritesheetId)}.json`,
+    rawDir: paths.rawDir
   });
 }
 
-async function resolveSpritesheetRecord({ apiKey, job, createResponse, animationId }) {
+async function resolveSpritesheetRecord({ apiKey, job, createResponse, animationId, paths }) {
   const direct = candidateSpritesheetRecords(job)[0] || candidateSpritesheetRecords(createResponse)[0];
   if (direct) return { id: direct.id || direct.spriteSheetId || direct.spritesheetId || "embedded", record: direct };
   const ids = [...new Set([...findSpritesheetIds(job), ...findSpritesheetIds(createResponse)])];
   if (!ids.length) throw new Error(`No spritesheet id found in AutoSprite ${animationId} job response.`);
-  const record = await fetchSpritesheetRecord({ apiKey, spritesheetId: ids[0], animationId });
+  const record = await fetchSpritesheetRecord({ apiKey, spritesheetId: ids[0], animationId, paths });
   return { id: ids[0], record };
 }
 
@@ -324,12 +339,12 @@ async function checkImageOccupancy(sheetPath) {
   };
 }
 
-async function saveDownloads({ animationId, spritesheetId, spritesheetRecord }) {
+async function saveDownloads({ animationId, spritesheetId, spritesheetRecord, paths }) {
   const targets = extractDownloadTargets(spritesheetRecord);
   const sheet = targets.find((target) => target.kind === "png");
   const atlas = targets.find((target) => target.kind === "atlas");
   if (!sheet) {
-    const rawPath = path.join(RAW_DIR, `${animationId}-missing-download-urls.json`);
+    const rawPath = path.join(paths.rawDir, `${animationId}-missing-download-urls.json`);
     await writeJson(rawPath, {
       animation_id: animationId,
       spritesheet_id: spritesheetId,
@@ -339,8 +354,8 @@ async function saveDownloads({ animationId, spritesheetId, spritesheetRecord }) 
     throw new Error(`AutoSprite ${animationId} did not include a PNG sheet URL. Raw record saved to ${relative(rawPath)}.`);
   }
 
-  const sheetPath = path.join(OUTPUT_DIR, `${animationId}.png`);
-  const atlasPath = path.join(OUTPUT_DIR, `${animationId}.json`);
+  const sheetPath = path.join(paths.outputDir, `${animationId}.png`);
+  const atlasPath = path.join(paths.outputDir, `${animationId}.json`);
   await downloadFile(sheet.url, sheetPath);
   const sheetBytes = await assertOutput(sheetPath, "png");
 
@@ -378,7 +393,7 @@ async function saveDownloads({ animationId, spritesheetId, spritesheetRecord }) 
   };
 }
 
-async function writeManifest(entry) {
+async function writeManifest(entry, paths) {
   let manifest = {
     generated_at: new Date().toISOString(),
     source: "AutoSprite API",
@@ -387,7 +402,7 @@ async function writeManifest(entry) {
     animations: []
   };
   try {
-    manifest = await readJsonIfExists(MANIFEST_PATH, manifest);
+    manifest = await readJsonIfExists(paths.manifestPath, manifest);
     if (!Array.isArray(manifest.animations)) manifest.animations = [];
   } catch {
     // First manifest.
@@ -398,7 +413,7 @@ async function writeManifest(entry) {
   manifest.character_id = entry.character_id;
   manifest.animations = manifest.animations.filter((record) => record.id !== entry.id);
   manifest.animations.push(entry);
-  await writeJson(MANIFEST_PATH, manifest);
+  await writeJson(paths.manifestPath, manifest);
   return manifest;
 }
 
@@ -412,7 +427,7 @@ function selectedAnimations(options) {
   return animations;
 }
 
-async function generateOne({ apiKey, characterName, characterId, animationId, options }) {
+async function generateOne({ apiKey, characterName, characterId, animationId, options, paths }) {
   const payload = buildSpritesheetPayload(characterName, animationId);
   if (options.dryRun || !options.execute) {
     const entry = {
@@ -422,14 +437,14 @@ async function generateOne({ apiKey, characterName, characterId, animationId, op
       source: "AutoSprite API",
       generation_status: "dry_run",
       request_payload: payload,
-      output_png_path: relative(path.join(OUTPUT_DIR, `${animationId}.png`)),
-      output_atlas_path: relative(path.join(OUTPUT_DIR, `${animationId}.json`)),
+      output_png_path: relative(path.join(paths.outputDir, `${animationId}.png`)),
+      output_atlas_path: relative(path.join(paths.outputDir, `${animationId}.json`)),
       frame_count: FRAME_COUNT,
       frame_size: FRAME_SIZE,
       sheet_size: SHEET_SIZE,
       created_at: new Date().toISOString()
     };
-    await writeManifest(entry);
+    await writeManifest(entry, paths);
     return entry;
   }
 
@@ -438,16 +453,17 @@ async function generateOne({ apiKey, characterName, characterId, animationId, op
     urlPath: `/characters/${encodeURIComponent(characterId)}/spritesheets`,
     apiKey,
     body: payload,
-    rawName: `${animationId}-create-spritesheet.json`
+    rawName: `${animationId}-create-spritesheet.json`,
+    rawDir: paths.rawDir
   });
   const workflows = workflowsFromCreateResponse(createResponse);
   if (workflows.length !== 1) throw new Error(`Expected exactly one ${animationId} workflow, received ${workflows.length}.`);
   const jobId = workflows[0].jobId || workflows[0].job_id;
   if (!jobId) throw new Error(`AutoSprite ${animationId} workflow did not include jobId.`);
 
-  const job = await pollJob({ apiKey, jobId, timeoutMs: options.pollTimeoutMs, animationId });
-  const { id: spritesheetId, record } = await resolveSpritesheetRecord({ apiKey, job, createResponse, animationId });
-  const downloads = await saveDownloads({ animationId, spritesheetId, spritesheetRecord: record });
+  const job = await pollJob({ apiKey, jobId, timeoutMs: options.pollTimeoutMs, animationId, paths });
+  const { id: spritesheetId, record } = await resolveSpritesheetRecord({ apiKey, job, createResponse, animationId, paths });
+  const downloads = await saveDownloads({ animationId, spritesheetId, spritesheetRecord: record, paths });
   const entry = {
     id: animationId,
     character_name: characterName,
@@ -465,12 +481,13 @@ async function generateOne({ apiKey, characterName, characterId, animationId, op
     created_at: new Date().toISOString(),
     ...downloads
   };
-  await writeManifest(entry);
+  await writeManifest(entry, paths);
   console.log(`Generated ${animationId} -> ${entry.output_png_path}`);
   return entry;
 }
 
 async function generateBottyFrontAnimations(options) {
+  const paths = outputPaths(options.characterName);
   const characterId = await resolveCharacterId(options);
   const animations = selectedAnimations(options);
   const apiKey = process.env.AUTOSPRITE_API_KEY;
@@ -483,20 +500,22 @@ async function generateBottyFrontAnimations(options) {
       characterName: options.characterName,
       characterId,
       animationId,
-      options
+      options,
+      paths
     }));
   }
 
-  console.log(`BOTTY front animation manifest written to ${relative(MANIFEST_PATH)}`);
+  console.log(`${options.characterName} front animation manifest written to ${relative(paths.manifestPath)}`);
   return entries;
 }
 
 async function main() {
   const options = parseArgs(process.argv.slice(2));
+  const paths = outputPaths(options.characterName);
   try {
     await generateBottyFrontAnimations(options);
   } catch (error) {
-    await writeJson(DIAGNOSTIC_PATH, {
+    await writeJson(paths.diagnosticPath, {
       captured_at: new Date().toISOString(),
       source: "AutoSprite API",
       character_name: options.characterName,
@@ -522,5 +541,6 @@ module.exports = {
   FRONT_ANIMATIONS,
   parseArgs,
   buildSpritesheetPayload,
-  generateBottyFrontAnimations
+  generateBottyFrontAnimations,
+  outputPaths
 };

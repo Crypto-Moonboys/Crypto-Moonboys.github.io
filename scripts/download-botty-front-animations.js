@@ -29,7 +29,10 @@ const FRONT_ANIMATIONS = [
   "front_celebrate",
   "front_interact",
   "front_blocked",
-  "front_battle"
+  "front_battle",
+  "front_dance",
+  "front_victory",
+  "front_fight"
 ];
 
 function parseArgs(argv) {
@@ -432,10 +435,11 @@ function pickRecord(records, animationId) {
 }
 
 async function buildContactSheet(entries, contactSheetPath) {
-  const tileW = 240;
-  const tileH = 210;
-  const labelH = 38;
-  const columns = 5;
+  const reviewLayout = entries.length <= 3;
+  const tileW = reviewLayout ? 480 : 240;
+  const tileH = reviewLayout ? 520 : 210;
+  const labelH = reviewLayout ? 40 : 38;
+  const columns = reviewLayout ? 3 : 5;
   const rows = Math.ceil(entries.length / columns);
   const width = columns * tileW;
   const height = rows * tileH;
@@ -517,6 +521,7 @@ module.exports = {
   isComplete,
   collectStrings,
   recordTimestamp,
+  pickRecord,
   saveExistingSheet,
   buildContactSheet,
   writeJson,

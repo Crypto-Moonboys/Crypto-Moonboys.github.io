@@ -1304,7 +1304,7 @@ assert.match(worker, /const \[journeySummary, hydratedKaiju\] = await Promise\.a
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
-assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260926-stage2-art-mask-v3`/);
+assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260926-front-actions-v1`/);
 assert.match(worker, /const TELEGRAM_GAMES_MENU_URL = `\$\{SITE_URL\}\/games\/telegram\/\?v=20260903-games-shell-v8`/,
   'default Telegram games menu must point at the current shell release');
 assert.match(worker, /const TELEGRAM_GAMES_MENU_TEXT = 'Games'/);
@@ -1405,9 +1405,9 @@ assert.equal(testStatusClasses.has('is-scrolling'), true, 'overflowing updates m
 assert.match(testStatusProperties['--status-scroll-duration'], /s$/, 'overflowing updates must receive a readable duration');
 assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260926-retro-space-stage-v2/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
-assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20260926-stage2-art-mask-v3/);
-assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20260926-stage2-art-mask-v3/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260926-stage2-art-mask-v3/);
+assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20260926-front-actions-v1/);
+assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20260926-front-actions-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260926-front-actions-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1501,7 +1501,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260926-stage2-art-mask-v3/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260926-front-actions-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -1598,8 +1598,19 @@ assert.match(client, /actionAnimationFamily/);
 assert.match(client, /key === 'activity_start'.*payload && payload\.activity_type/);
 assert.match(client, /key === 'activity_claim'.*return 'celebrate'/);
 assert.match(client, /key === 'activity_cancel'.*return 'interact'/);
-assert.match(client, /animateAction\(action, true, 8000, payload\)/);
-assert.match(client, /var actionAccepted = Boolean\(data\.result && data\.result\.accepted\);[\s\S]*if \(!isHatchReveal\) animateAction\(action, actionAccepted, 2800, payload\)/);
+for (const [action, role] of [['energy_drink', 'fight'], ['dance', 'dance'], ['cuddles', 'victory']]) {
+  assert.match(client, new RegExp(`key === '${action}'\\) return '${role}'`), `${action} must use the ${role} animation role`);
+  assert.match(client, new RegExp(`button\\('[^']+', '${action}'\\)`), `${action} must be available in the Care Console`);
+}
+assert.match(client, /var waitForAcceptedAnimation = \['energy_drink', 'dance', 'cuddles'\]\.includes/,
+  'new special actions must wait for an authoritative accepted response before animating');
+assert.match(client, /sleepLatched && actionAnimationFamily\(action, payload\) !== 'sleep' && !waitForAcceptedAnimation/,
+  'rejected special actions must preserve the existing sleep latch');
+assert.match(client, /waitForAcceptedAnimation && actionAccepted && sleepLatched/,
+  'an accepted special action may clear a stale sleep latch only after server authority responds');
+assert.match(client, /if \(!waitForAcceptedAnimation\) animateAction\(action, true, 8000, payload\)/);
+assert.match(client, /var actionAccepted = Boolean\(data\.result && data\.result\.accepted\);[\s\S]*if \(!isHatchReveal\) animateAction\(action, actionAccepted, actionFamily === 'dance' \? 3600 : 2800, payload\)/,
+  'accepted DANCE must use a bounded loop while fight and victory return to idle after one-shot timing');
 assert.match(client, /var actionResultHoldMs = 3600/);
 assert.doesNotMatch(client, /createPetPalette|PET_APPEARANCE_PALETTES|PET_SPECIES_PALETTES|DEFAULT_PET_PALETTE/,
   'retired procedural animal palettes must stay removed');
@@ -2001,8 +2012,8 @@ assert.match(worker, /Math\.floor\(stepIndex \/ PET_RUN_BOSS_INTERVAL\) \+ 1/);
 assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Number\(activeRun\.depth \|\| 0\) \+ 1/);
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
-assert.match(html, /20260926-stage2-art-mask-v3/);
-assert.match(worker, /20260926-stage2-art-mask-v3/);
+assert.match(html, /20260926-front-actions-v1/);
+assert.match(worker, /20260926-front-actions-v1/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');
 assert.match(client, /renderQuality = reducedMotion/, 'canvas quality must start from device capability');

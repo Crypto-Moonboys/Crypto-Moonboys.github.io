@@ -9,6 +9,9 @@ const expectedRoles = [
   "front_train", "front_travel", "front_work", "front_equip", "front_evolve",
   "front_trade", "front_celebrate", "front_interact", "front_blocked", "front_battle"
 ];
+const frontActionRoles = ["front_dance", "front_victory", "front_fight"];
+const frontActionInstalled = Number(registry.front_action_pack?.animation_count || 0) === 30;
+const installedRoles = frontActionInstalled ? [...expectedRoles, ...frontActionRoles] : expectedRoles;
 
 assert.equal(registry.default_bot, "BOTTY");
 assert.equal(Object.keys(registry.bots).length, 8, "WTFBOI must be one shared stage pack, not a ninth identity");
@@ -45,8 +48,8 @@ if (registry.shared_stages.stage_1.status === "complete") {
   const street = registry.shared_stages.stage_1;
   const manifest = JSON.parse(fs.readFileSync(path.join(root, street.manifest_path.replace(/^\//, "")), "utf8"));
   assert.equal(manifest.character_name, "WTFBOI");
-  assert.equal(manifest.assets.length, 15);
-  assert.deepEqual(manifest.assets.map((asset) => asset.role), expectedRoles);
+  assert.equal(manifest.assets.length, installedRoles.length);
+  assert.deepEqual(manifest.assets.map((asset) => asset.role), installedRoles);
   assert.deepEqual(street.display, { scale: 1, fit_width: 184, fit_height: 184, pivot_y: 1 });
 }
 
@@ -54,8 +57,8 @@ for (const [name, config] of Object.entries(registry.bots).filter(([, entry]) =>
   const manifest = JSON.parse(fs.readFileSync(path.join(root, config.manifest_path.replace(/^\//, "")), "utf8"));
   assert.equal(manifest.character_name, name, `${name} manifest identity`);
   assert.equal(manifest.character_id, config.autosprite_character_id, `${name} registry provenance`);
-  assert.equal(manifest.assets.length, 15, `${name} asset count`);
-  assert.deepEqual(manifest.assets.map((asset) => asset.role), expectedRoles, `${name} roles`);
+  assert.equal(manifest.assets.length, installedRoles.length, `${name} asset count`);
+  assert.deepEqual(manifest.assets.map((asset) => asset.role), installedRoles, `${name} roles`);
   for (const asset of manifest.assets) {
     const png = path.join(root, asset.png_path.replace(/^\//, ""));
     const atlasPath = path.join(root, asset.atlas_path.replace(/^\//, ""));
@@ -64,7 +67,10 @@ for (const [name, config] of Object.entries(registry.bots).filter(([, entry]) =>
     const count = Array.isArray(atlas.frames) ? atlas.frames.length : Object.keys(atlas.frames || {}).length;
     assert.equal(count, asset.frame_count, `${name} ${asset.role} authoritative atlas count`);
     assert.equal(asset.autosprite.character_id, manifest.character_id, `${name} ${asset.role} provenance`);
-    assert.equal(asset.review_status, "approved_visual_review", `${name} ${asset.role} review`);
+    const expectedReview = frontActionRoles.includes(asset.role) && registry.front_action_pack?.status !== "complete"
+      ? "pending_visual_review"
+      : "approved_visual_review";
+    assert.equal(asset.review_status, expectedReview, `${name} ${asset.role} review`);
   }
 }
 
@@ -105,9 +111,9 @@ assert.ok(f1EddyManifest.assets.every((asset) => asset.frame_count === 25));
 
 const html = fs.readFileSync(path.join(root, "moonpet-game.html"), "utf8");
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/);
-assert.match(html, /moonpet-bot-art-loader\.js\?v=20260926-stage2-art-mask-v3/);
-assert.match(html, /moonpet-bot-art-renderer\.js\?v=20260926-stage2-art-mask-v3/);
-assert.match(html, /moonpet-mini-app\.js\?v=20260926-stage2-art-mask-v3/);
+assert.match(html, /moonpet-bot-art-loader\.js\?v=20260926-front-actions-v1/);
+assert.match(html, /moonpet-bot-art-renderer\.js\?v=20260926-front-actions-v1/);
+assert.match(html, /moonpet-mini-app\.js\?v=20260926-front-actions-v1/);
 assert.doesNotMatch(html, /moonpet-botty-front-(?:asset-loader|sprite-renderer)\.js/);
 assert.doesNotMatch(html, /moonpet-art-v2\.js/);
 

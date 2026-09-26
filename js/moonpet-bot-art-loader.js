@@ -1,6 +1,6 @@
 (() => {
   const REGISTRY_PATH = "/data/moonpet-bot-art-registry.json";
-  const FALLBACK_CACHE_VERSION = "20260926-stage2-art-mask-v3";
+  const FALLBACK_CACHE_VERSION = "20260926-front-actions-v1";
   const packCache = new Map();
   let registryPromise = null;
 
@@ -46,8 +46,13 @@
     return [];
   }
 
+  function isFrontActionRole(role) {
+    return ["front_dance", "front_victory", "front_fight"].includes(String(role || ""));
+  }
+
   async function loadAsset(asset, manifest, errors) {
     if (!asset || !asset.role || !asset.png_path || !asset.atlas_path) return null;
+    if (isFrontActionRole(asset.role) && asset.review_status !== "approved_visual_review") return null;
     try {
       const token = asset.autosprite && asset.autosprite.spritesheet_id || manifest.cache_version;
       const atlas = await fetchJson(asset.atlas_path, token);
@@ -79,6 +84,7 @@
 
   function eggRoleForAnimationMode(animationMode, lifecycle = {}) {
     const mode = String(animationMode || "idle").toLowerCase();
+    if (["dance", "victory", "fight"].includes(mode)) return `front_${mode}`;
     if (["hatch", "evolve"].includes(mode)) return "egg_hatch";
     if (mode === "sleep") return "egg_sleep";
     if (["feed", "clean", "play"].includes(mode)) return "egg_care";

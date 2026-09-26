@@ -8,7 +8,9 @@ import { chromium } from "playwright";
 const ROOT = process.cwd();
 const OUTPUT = path.join(ROOT, ".tmp", "moonpet-multi-bot-browser-smoke");
 const MIME = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".json": "application/json", ".png": "image/png", ".jpg": "image/jpeg" };
-const MODES = ["idle", "feed", "play", "clean", "sleep", "train", "travel", "work", "equip", "evolve", "trade", "celebrate", "interact", "blocked", "battle"];
+const MODES = ["idle", "feed", "play", "clean", "sleep", "train", "travel", "work", "equip", "evolve", "trade", "celebrate", "interact", "blocked", "battle", "fight", "dance", "victory"];
+const FULL_PACK_ROLE_COUNT = MODES.length;
+const EGG_PACK_ROLE_COUNT = 10;
 const BOTS = [
   ["vinyl_crab", "BOTTY"], ["neon_raccoon", "F1 EDDY"], ["bubble_ram", "JAKE THE SNAKE"],
   ["comet_gecko", "TUBBY"], ["lantern_fox", "RED ALERT"], ["sneaker_snail", "THE TING"],
@@ -35,10 +37,10 @@ function serveStatic() {
 }
 
 async function waitForPack(page, expectedBot) {
-  await page.waitForFunction((bot) => {
+  await page.waitForFunction(({ bot, expectedRoleCount }) => {
     const state = window.MoonpetBotArtRenderer?.getMoonpetBotArtRendererState();
-    return state?.ready && state.resolvedBot === bot && state.loadedRoles.length === 15;
-  }, expectedBot, { timeout: 20000 });
+    return state?.ready && state.resolvedBot === bot && state.loadedRoles.length === expectedRoleCount;
+  }, { bot: expectedBot, expectedRoleCount: FULL_PACK_ROLE_COUNT }, { timeout: 20000 });
 }
 
 async function selectAndWaitForPack(page, identity, expectedBot) {
@@ -46,10 +48,10 @@ async function selectAndWaitForPack(page, identity, expectedBot) {
   while (Date.now() < deadline) {
     await page.evaluate((nextIdentity) => window.MoonpetBotArtRenderer.selectMoonpetBot(nextIdentity), identity);
     try {
-      await page.waitForFunction((bot) => {
+      await page.waitForFunction(({ bot, expectedRoleCount }) => {
         const state = window.MoonpetBotArtRenderer?.getMoonpetBotArtRendererState();
-        return state?.ready && state.resolvedBot === bot && state.loadedRoles.length === 15;
-      }, expectedBot, { timeout: 3000 });
+        return state?.ready && state.resolvedBot === bot && state.loadedRoles.length === expectedRoleCount;
+      }, { bot: expectedBot, expectedRoleCount: FULL_PACK_ROLE_COUNT }, { timeout: 3000 });
       return await page.evaluate(() => window.MoonpetBotArtRenderer.getMoonpetBotArtRendererState());
     } catch {
       await page.waitForTimeout(250);
@@ -182,10 +184,10 @@ try {
 
   for (const [speciesId, botName] of BOTS) {
     await page.evaluate((identity) => window.MoonpetBotArtRenderer.selectMoonpetBot(identity), { speciesId, speciesName: botName, evolutionStage: 0 });
-    await page.waitForFunction(() => {
+    await page.waitForFunction((expectedRoleCount) => {
       const selected = window.MoonpetBotArtRenderer.getMoonpetBotArtRendererState();
-      return selected.ready && selected.resolvedBot === "EGGYONE" && selected.loadedRoles.length === 7;
-    }, null, { timeout: 20000 });
+      return selected.ready && selected.resolvedBot === "EGGYONE" && selected.loadedRoles.length === expectedRoleCount;
+    }, EGG_PACK_ROLE_COUNT, { timeout: 20000 });
     const stageZero = await page.evaluate(() => window.MoonpetBotArtRenderer.getMoonpetBotArtRendererState());
     assert.equal(stageZero.requestedEvolution, "stage_0", `${botName} must request Stage 0`);
     assert.equal(stageZero.resolvedEvolution, "stage_0", `${botName} must resolve to Stage 0`);
@@ -266,7 +268,7 @@ try {
   }, MODES);
   assert.equal(tubby.state.resolvedBot, "TUBBY");
   assert.equal(tubby.state.fallbackUsed, false);
-  assert.equal(tubby.state.loadedRoles.length, 15);
+  assert.equal(tubby.state.loadedRoles.length, FULL_PACK_ROLE_COUNT);
   assert.ok(tubby.renders.every((entry) => entry.drew && entry.resolvedBot === "TUBBY"));
   assert.ok(tubby.renders.every((entry) => entry.frameCount === 25));
 
@@ -289,7 +291,7 @@ try {
   }, MODES);
   assert.equal(tinBob.state.resolvedBot, "TIN BOB");
   assert.equal(tinBob.state.fallbackUsed, false);
-  assert.equal(tinBob.state.loadedRoles.length, 15);
+  assert.equal(tinBob.state.loadedRoles.length, FULL_PACK_ROLE_COUNT);
   assert.ok(tinBob.renders.every((entry) => entry.drew && entry.resolvedBot === "TIN BOB"));
   assert.ok(tinBob.renders.every((entry) => entry.frameCount === 25));
 
@@ -312,7 +314,7 @@ try {
   }, MODES);
   assert.equal(theTing.state.resolvedBot, "THE TING");
   assert.equal(theTing.state.fallbackUsed, false);
-  assert.equal(theTing.state.loadedRoles.length, 15);
+  assert.equal(theTing.state.loadedRoles.length, FULL_PACK_ROLE_COUNT);
   assert.ok(theTing.renders.every((entry) => entry.drew && entry.resolvedBot === "THE TING"));
   assert.ok(theTing.renders.every((entry) => entry.frameCount === 25));
 
@@ -335,7 +337,7 @@ try {
   }, MODES);
   assert.equal(tattooJohn.state.resolvedBot, "TATTOO JOHN");
   assert.equal(tattooJohn.state.fallbackUsed, false);
-  assert.equal(tattooJohn.state.loadedRoles.length, 15);
+  assert.equal(tattooJohn.state.loadedRoles.length, FULL_PACK_ROLE_COUNT);
   assert.ok(tattooJohn.renders.every((entry) => entry.drew && entry.resolvedBot === "TATTOO JOHN"));
   assert.ok(tattooJohn.renders.every((entry) => entry.frameCount === 25));
 
@@ -358,7 +360,7 @@ try {
   }, MODES);
   assert.equal(redAlert.state.resolvedBot, "RED ALERT");
   assert.equal(redAlert.state.fallbackUsed, false);
-  assert.equal(redAlert.state.loadedRoles.length, 15);
+  assert.equal(redAlert.state.loadedRoles.length, FULL_PACK_ROLE_COUNT);
   assert.ok(redAlert.renders.every((entry) => entry.drew && entry.resolvedBot === "RED ALERT"));
   assert.ok(redAlert.renders.every((entry) => entry.frameCount === 25));
 
@@ -380,7 +382,7 @@ try {
   }, MODES);
   assert.equal(jakeTheSnake.state.resolvedBot, "JAKE THE SNAKE");
   assert.equal(jakeTheSnake.state.fallbackUsed, false);
-  assert.equal(jakeTheSnake.state.loadedRoles.length, 15);
+  assert.equal(jakeTheSnake.state.loadedRoles.length, FULL_PACK_ROLE_COUNT);
   assert.ok(jakeTheSnake.renders.every((entry) => entry.drew && entry.resolvedBot === "JAKE THE SNAKE"));
   assert.ok(jakeTheSnake.renders.every((entry) => entry.frameCount === 25));
 
@@ -402,7 +404,7 @@ try {
   }, MODES);
   assert.equal(f1Eddy.state.resolvedBot, "F1 EDDY");
   assert.equal(f1Eddy.state.fallbackUsed, false);
-  assert.equal(f1Eddy.state.loadedRoles.length, 15);
+  assert.equal(f1Eddy.state.loadedRoles.length, FULL_PACK_ROLE_COUNT);
   assert.ok(f1Eddy.renders.every((entry) => entry.drew && entry.resolvedBot === "F1 EDDY"));
   assert.ok(f1Eddy.renders.every((entry) => entry.frameCount === 25));
 
