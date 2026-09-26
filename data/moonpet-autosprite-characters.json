@@ -40,5 +40,11 @@
     "source": "autosprite",
     "active": true,
     "discovered_at": "2026-09-26T02:32:34.693Z"
+  },
+  "F1 EDDY": {
+    "character_id": "cmuhjd3wg0023zoeghrmnxoc7",
+    "source": "autosprite",
+    "active": true,
+    "discovered_at": "2026-09-26T02:43:50.756Z"
   }
 }
