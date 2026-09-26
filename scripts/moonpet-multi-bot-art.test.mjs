@@ -19,6 +19,8 @@ assert.equal(registry.bots["TIN BOB"].status, "complete");
 assert.deepEqual(registry.bots["TIN BOB"].canonical_species_ids, ["moon_ferret"]);
 assert.equal(registry.bots["THE TING"].status, "complete");
 assert.deepEqual(registry.bots["THE TING"].canonical_species_ids, ["sneaker_snail"]);
+assert.equal(registry.bots["TATTOO JOHN"].status, "complete");
+assert.deepEqual(registry.bots["TATTOO JOHN"].canonical_species_ids, ["alley_drake"]);
 for (const [name, config] of Object.entries(registry.bots)) {
   if (name !== "BOTTY") assert.equal(config.fallback, "BOTTY", `${name} fallback`);
 }
@@ -55,6 +57,11 @@ const theTingManifest = JSON.parse(fs.readFileSync(path.join(root, "data", "moon
 assert.equal(theTingManifest.character_name, "THE TING");
 assert.equal(theTingManifest.character_id, "cmuhjb0c30005gkd0aboix1sr");
 assert.ok(theTingManifest.assets.every((asset) => asset.frame_count === 25));
+
+const tattooJohnManifest = JSON.parse(fs.readFileSync(path.join(root, "data", "moonpet-tattoo-john-front-assets.json"), "utf8"));
+assert.equal(tattooJohnManifest.character_name, "TATTOO JOHN");
+assert.equal(tattooJohnManifest.character_id, "cmuhjbjcv00112xtb1oclxk6k");
+assert.ok(tattooJohnManifest.assets.every((asset) => asset.frame_count === 25));
 
 const html = fs.readFileSync(path.join(root, "moonpet-game.html"), "utf8");
 assert.match(html, /moonpet-bot-art-loader\.js\?v=20260926-multi-bot-art-v1/);

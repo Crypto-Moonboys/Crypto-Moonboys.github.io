@@ -1,0 +1,443 @@
+{
+  "schema_version": 1,
+  "character_name": "TATTOO JOHN",
+  "character_id": "cmuhjbjcv00112xtb1oclxk6k",
+  "source": "AutoSprite API",
+  "mode": "production-approved-front-pack",
+  "approved_artifact_run": 36209691569,
+  "approved_artifact_id": 10895221020,
+  "installed_at": "2026-09-26T01:51:35.159Z",
+  "cache_version": "20260926-tattoo-john-front-live-beta-v1",
+  "runtime_policy": {
+    "normal_gameplay": "approved_front_pack_only",
+    "disable_side_scroller": true,
+    "disable_random_idle_variants": true,
+    "disable_wearable_overlays": true,
+    "frame_count_source": "atlas frames length"
+  },
+  "runtime_role_map": {
+    "idle": "front_idle",
+    "feed": "front_feed",
+    "play": "front_play",
+    "clean": "front_clean",
+    "sleep": "front_sleep",
+    "train": "front_train",
+    "travel": "front_travel",
+    "work": "front_work",
+    "equip": "front_equip",
+    "evolve": "front_evolve",
+    "trade": "front_trade",
+    "celebrate": "front_celebrate",
+    "interact": "front_interact",
+    "greet": "front_interact",
+    "blocked": "front_blocked",
+    "battle": "front_battle"
+  },
+  "assets": [
+    {
+      "role": "front_idle",
+      "png_path": "/img/moonpets/tattoo-john/front_idle.png",
+      "atlas_path": "/img/moonpets/tattoo-john/front_idle.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": true,
+      "one_shot": false,
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhjbjcv00112xtb1oclxk6k",
+        "spritesheet_id": "cmuhpraek000569hgskd5e32x",
+        "status": "succeeded",
+        "created_at": "2026-09-26T01:31:08.781Z",
+        "updated_at": null,
+        "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+        "source": "AutoSprite API"
+      },
+      "review_status": "approved_visual_review"
+    },
+    {
+      "role": "front_feed",
+      "png_path": "/img/moonpets/tattoo-john/front_feed.png",
+      "atlas_path": "/img/moonpets/tattoo-john/front_feed.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": false,
+      "one_shot": true,
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhjbjcv00112xtb1oclxk6k",
+        "spritesheet_id": "cmuhps9gi0007bt3we4k1yafg",
+        "status": "succeeded",
+        "created_at": "2026-09-26T01:31:54.211Z",
+        "updated_at": null,
+        "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+        "source": "AutoSprite API"
+      },
+      "review_status": "approved_visual_review"
+    },
+    {
+      "role": "front_play",
+      "png_path": "/img/moonpets/tattoo-john/front_play.png",
+      "atlas_path": "/img/moonpets/tattoo-john/front_play.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": true,
+      "one_shot": false,
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhjbjcv00112xtb1oclxk6k",
+        "spritesheet_id": "cmuhpu9wn0005wqa4upwtfjxn",
+        "status": "succeeded",
+        "created_at": "2026-09-26T01:33:28.103Z",
+        "updated_at": null,
+        "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+        "source": "AutoSprite API"
+      },
+      "review_status": "approved_visual_review"
+    },
+    {
+      "role": "front_clean",
+      "png_path": "/img/moonpets/tattoo-john/front_clean.png",
+      "atlas_path": "/img/moonpets/tattoo-john/front_clean.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": false,
+      "one_shot": true,
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhjbjcv00112xtb1oclxk6k",
+        "spritesheet_id": "cmuhpvd5h0003a9waisgn4sqp",
+        "status": "succeeded",
+        "created_at": "2026-09-26T01:34:18.966Z",
+        "updated_at": null,
+        "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+        "source": "AutoSprite API"
+      },
+      "review_status": "approved_visual_review"
+    },
+    {
+      "role": "front_sleep",
+      "png_path": "/img/moonpets/tattoo-john/front_sleep.png",
+      "atlas_path": "/img/moonpets/tattoo-john/front_sleep.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": true,
+      "one_shot": false,
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhjbjcv00112xtb1oclxk6k",
+        "spritesheet_id": "cmuhpx17a000111ngoca2uu3j",
+        "status": "succeeded",
+        "created_at": "2026-09-26T01:35:36.790Z",
+        "updated_at": null,
+        "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+        "source": "AutoSprite API"
+      },
+      "review_status": "approved_visual_review"
+    },
+    {
+      "role": "front_train",
+      "png_path": "/img/moonpets/tattoo-john/front_train.png",
+      "atlas_path": "/img/moonpets/tattoo-john/front_train.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": true,
+      "one_shot": false,
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhjbjcv00112xtb1oclxk6k",
+        "spritesheet_id": "cmuhpy5y100019asioxr8wauc",
+        "status": "succeeded",
+        "created_at": "2026-09-26T01:36:29.592Z",
+        "updated_at": null,
+        "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+        "source": "AutoSprite API"
+      },
+      "review_status": "approved_visual_review"
+    },
+    {
+      "role": "front_travel",
+      "png_path": "/img/moonpets/tattoo-john/front_travel.png",
+      "atlas_path": "/img/moonpets/tattoo-john/front_travel.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": true,
+      "one_shot": false,
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhjbjcv00112xtb1oclxk6k",
+        "spritesheet_id": "cmuhpz3f90001wnv6t8dj99d5",
+        "status": "succeeded",
+        "created_at": "2026-09-26T01:37:12.980Z",
+        "updated_at": null,
+        "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+        "source": "AutoSprite API"
+      },
+      "review_status": "approved_visual_review"
+    },
+    {
+      "role": "front_work",
+      "png_path": "/img/moonpets/tattoo-john/front_work.png",
+      "atlas_path": "/img/moonpets/tattoo-john/front_work.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": true,
+      "one_shot": false,
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhjbjcv00112xtb1oclxk6k",
+        "spritesheet_id": "cmuhq0ah80001bhoty8w60v96",
+        "status": "succeeded",
+        "created_at": "2026-09-26T01:38:08.779Z",
+        "updated_at": null,
+        "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+        "source": "AutoSprite API"
+      },
+      "review_status": "approved_visual_review"
+    },
+    {
+      "role": "front_equip",
+      "png_path": "/img/moonpets/tattoo-john/front_equip.png",
+      "atlas_path": "/img/moonpets/tattoo-john/front_equip.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": false,
+      "one_shot": true,
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhjbjcv00112xtb1oclxk6k",
+        "spritesheet_id": "cmuhq14xl002byevds6djofdv",
+        "status": "succeeded",
+        "created_at": "2026-09-26T01:38:48.249Z",
+        "updated_at": null,
+        "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+        "source": "AutoSprite API"
+      },
+      "review_status": "approved_visual_review"
+    },
+    {
+      "role": "front_evolve",
+      "png_path": "/img/moonpets/tattoo-john/front_evolve.png",
+      "atlas_path": "/img/moonpets/tattoo-john/front_evolve.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": false,
+      "one_shot": true,
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhjbjcv00112xtb1oclxk6k",
+        "spritesheet_id": "cmuhq3yj50005nw83tm206cxl",
+        "status": "succeeded",
+        "created_at": "2026-09-26T01:40:59.921Z",
+        "updated_at": null,
+        "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+        "source": "AutoSprite API"
+      },
+      "review_status": "approved_visual_review"
+    },
+    {
+      "role": "front_trade",
+      "png_path": "/img/moonpets/tattoo-john/front_trade.png",
+      "atlas_path": "/img/moonpets/tattoo-john/front_trade.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": false,
+      "one_shot": true,
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhjbjcv00112xtb1oclxk6k",
+        "spritesheet_id": "cmuhq4e32000onw832j7zpbk1",
+        "status": "succeeded",
+        "created_at": "2026-09-26T01:41:20.078Z",
+        "updated_at": null,
+        "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+        "source": "AutoSprite API"
+      },
+      "review_status": "approved_visual_review"
+    },
+    {
+      "role": "front_celebrate",
+      "png_path": "/img/moonpets/tattoo-john/front_celebrate.png",
+      "atlas_path": "/img/moonpets/tattoo-john/front_celebrate.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": false,
+      "one_shot": true,
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhjbjcv00112xtb1oclxk6k",
+        "spritesheet_id": "cmuhq86zo000gi915kuh1ykr1",
+        "status": "succeeded",
+        "created_at": "2026-09-26T01:44:17.509Z",
+        "updated_at": null,
+        "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+        "source": "AutoSprite API"
+      },
+      "review_status": "approved_visual_review"
+    },
+    {
+      "role": "front_interact",
+      "png_path": "/img/moonpets/tattoo-john/front_interact.png",
+      "atlas_path": "/img/moonpets/tattoo-john/front_interact.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": false,
+      "one_shot": true,
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhjbjcv00112xtb1oclxk6k",
+        "spritesheet_id": "cmuhq8cbs0002f2e4zxoavznf",
+        "status": "succeeded",
+        "created_at": "2026-09-26T01:44:24.424Z",
+        "updated_at": null,
+        "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+        "source": "AutoSprite API"
+      },
+      "review_status": "approved_visual_review"
+    },
+    {
+      "role": "front_blocked",
+      "png_path": "/img/moonpets/tattoo-john/front_blocked.png",
+      "atlas_path": "/img/moonpets/tattoo-john/front_blocked.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": false,
+      "one_shot": true,
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhjbjcv00112xtb1oclxk6k",
+        "spritesheet_id": "cmuhqar4n0005zg777du82560",
+        "status": "succeeded",
+        "created_at": "2026-09-26T01:46:16.919Z",
+        "updated_at": null,
+        "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+        "source": "AutoSprite API"
+      },
+      "review_status": "approved_visual_review"
+    },
+    {
+      "role": "front_battle",
+      "png_path": "/img/moonpets/tattoo-john/front_battle.png",
+      "atlas_path": "/img/moonpets/tattoo-john/front_battle.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": false,
+      "one_shot": true,
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhjbjcv00112xtb1oclxk6k",
+        "spritesheet_id": "cmuhqbr3q0005bu5md37g8bdj",
+        "status": "succeeded",
+        "created_at": "2026-09-26T01:47:03.542Z",
+        "updated_at": null,
+        "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+        "source": "AutoSprite API"
+      },
+      "review_status": "approved_visual_review"
+    }
+  ]
+}

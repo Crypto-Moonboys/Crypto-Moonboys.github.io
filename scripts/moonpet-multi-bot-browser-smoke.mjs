@@ -135,17 +135,40 @@ try {
   assert.ok(theTing.renders.every((entry) => entry.drew && entry.resolvedBot === "THE TING"));
   assert.ok(theTing.renders.every((entry) => entry.frameCount === 25));
 
+  const tattooJohnSelection = await page.evaluate(() => window.MoonpetBotArtRenderer.selectMoonpetBot({ speciesId: "alley_drake", speciesName: "TATTOO JOHN" }));
+  assert.equal(tattooJohnSelection.resolvedBot, "TATTOO JOHN");
+  assert.equal(tattooJohnSelection.fallbackUsed, false);
+  await waitForPack(page, "TATTOO JOHN");
+  const tattooJohn = await page.evaluate((modes) => {
+    const renderer = window.MoonpetBotArtRenderer;
+    const canvas = document.getElementById("multi-bot-proof");
+    const context = canvas.getContext("2d");
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    const renders = modes.map((mode, index) => {
+      const column = index % 4;
+      const row = Math.floor(index / 4);
+      const drew = renderer.renderMoonpetBot(context, mode, 80 + column * 160, 150 + row * 150, 0.65, 1300, { active: true, startedAt: 0 });
+      return { mode, drew, ...renderer.getMoonpetBotArtRendererState().lastRender };
+    });
+    return { state: renderer.getMoonpetBotArtRendererState(), renders };
+  }, MODES);
+  assert.equal(tattooJohn.state.resolvedBot, "TATTOO JOHN");
+  assert.equal(tattooJohn.state.fallbackUsed, false);
+  assert.equal(tattooJohn.state.loadedRoles.length, 15);
+  assert.ok(tattooJohn.renders.every((entry) => entry.drew && entry.resolvedBot === "TATTOO JOHN"));
+  assert.ok(tattooJohn.renders.every((entry) => entry.frameCount === 25));
+
   const unknown = await page.evaluate(() => window.MoonpetBotArtRenderer.selectMoonpetBot({ speciesId: "future_bot", speciesName: "BOT 9" }));
   assert.equal(unknown.resolvedBot, "BOTTY");
   assert.equal(unknown.fallbackUsed, true);
-  const returned = await page.evaluate(() => window.MoonpetBotArtRenderer.selectMoonpetBot({ speciesId: "sneaker_snail", speciesName: "THE TING" }));
-  assert.equal(returned.resolvedBot, "THE TING");
+  const returned = await page.evaluate(() => window.MoonpetBotArtRenderer.selectMoonpetBot({ speciesId: "alley_drake", speciesName: "TATTOO JOHN" }));
+  assert.equal(returned.resolvedBot, "TATTOO JOHN");
   assert.equal(returned.fallbackUsed, false);
 
-  await waitForPack(page, "THE TING");
+  await waitForPack(page, "TATTOO JOHN");
   await fs.mkdir(OUTPUT, { recursive: true });
-  await page.screenshot({ path: path.join(OUTPUT, "the-ting-mobile-390x844.png"), fullPage: false });
-  console.log(JSON.stringify({ botty: "pass", tubbyActions: tubby.renders.length, tinBobActions: tinBob.renders.length, theTingActions: theTing.renders.length, unknownFallback: unknown.resolvedBot, switchBack: returned.resolvedBot, mobile: "390x844" }));
+  await page.screenshot({ path: path.join(OUTPUT, "tattoo-john-mobile-390x844.png"), fullPage: false });
+  console.log(JSON.stringify({ botty: "pass", tubbyActions: tubby.renders.length, tinBobActions: tinBob.renders.length, theTingActions: theTing.renders.length, tattooJohnActions: tattooJohn.renders.length, unknownFallback: unknown.resolvedBot, switchBack: returned.resolvedBot, mobile: "390x844" }));
 } finally {
   await browser.close();
   await new Promise((resolve) => server.close(resolve));

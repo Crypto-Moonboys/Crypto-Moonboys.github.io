@@ -91,8 +91,15 @@
       "display_names": [
         "TATTOO JOHN"
       ],
-      "status": "pending",
-      "fallback": "BOTTY"
+      "autosprite_character_id": "cmuhjbjcv00112xtb1oclxk6k",
+      "manifest_path": "/data/moonpet-tattoo-john-front-assets.json",
+      "asset_root": "/img/moonpets/tattoo-john/",
+      "status": "complete",
+      "fallback": "BOTTY",
+      "display": {
+        "scale": 0.72,
+        "pivot_y": 0.86
+      }
     },
     "TIN BOB": {
       "canonical_species_ids": [
