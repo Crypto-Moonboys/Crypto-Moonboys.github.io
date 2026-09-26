@@ -2834,17 +2834,6 @@
   }
 
   // TEST-EXPORT: actionPresentation:start
-  var ACTION_INFO_COLORS = {
-    feed: '#c9a15a', play: '#73b9c6', clean: '#79bac0', sleep: '#8c91b8', train: '#ba7966',
-    travel: '#7097bd', work: '#b79a62', equip: '#9db3bd', evolve: '#9a82b5', trade: '#78a58a',
-    celebrate: '#c3a85c', interact: '#7faeb5', greet: '#7faeb5', blocked: '#b56c6c', battle: '#b56c6c'
-  };
-
-  function actionInfoTitle(mode) {
-    if (mode === 'greet') return 'INTERACT';
-    return words(mode || 'action').toUpperCase();
-  }
-
   function drawCanvasText(text, x, y, color, size, weight) {
     ctx.save();
     ctx.fillStyle = color || '#d9e0de';
@@ -2873,16 +2862,6 @@
     });
   }
 
-  function drawActionInfo(time) {
-    var feedbackActive = feedbackUntil > time && feedbackLines.length;
-    var actionActive = sleepLatched || animationUntil > time;
-    if (!feedbackActive && !actionActive) return;
-    var mode = feedbackActive && feedbackActionMode ? feedbackActionMode : animationMode;
-    var lines = feedbackActive ? feedbackLines.slice() : [mode === 'sleep' ? 'Sleeping' : 'Processing...'];
-    if (feedbackActive && feedbackReaction && lines.length < 5) lines.push(feedbackReaction);
-    var fade = feedbackActive && !reducedMotion ? Math.min(1, Math.max(0.35, (feedbackUntil - time) / 480)) : 1;
-    drawActionInfoPanel(actionInfoTitle(mode), lines, ACTION_INFO_COLORS[mode] || '#8fa5a0', fade);
-  }
   // TEST-EXPORT: actionPresentation:end
 
   function createPetPalette(body, shade, accent) {
@@ -2925,7 +2904,6 @@
     if (crack > 0) { drawPixelRect(158, eggY - 47, 4, 12, '#061009'); drawPixelRect(161, eggY - 38, 8, 4, '#061009'); }
     if (crack > 1) { drawPixelRect(151, eggY - 34, 11, 4, '#061009'); drawPixelRect(148, eggY - 30, 4, 9, '#061009'); }
     drawPixelRect(128, eggY + 5, 64, 11, '#6eb8a1'); drawPixelRect(134, eggY + 8, 52, 7, '#d8f9ff');
-    if (active) drawPixelText('SIGNAL!', 160, eggY - 58, '#f4ff65', 'center');
   }
 
   function drawSelectedBotSprite(time, mode, active, x, y, scale) {
@@ -3174,7 +3152,6 @@
 
     if (lifecycleCeremonyActive(renderTime)) drawLifecycleCeremony(renderTime, scene);
     else if (combat.active) drawCombatHud(scene, combat);
-    else drawActionInfo(renderTime);
   }
   // TEST-EXPORT: drawWorld:end
 
