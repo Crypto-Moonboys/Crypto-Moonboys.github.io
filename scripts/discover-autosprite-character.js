@@ -145,11 +145,15 @@ function characterId(character) {
 
 async function persistRegistry(registryPath, manifest) {
   const registry = await readJsonIfExists(registryPath, {});
+  const existing = registry[manifest.character_name];
+  const discoveredAt = existing && String(existing.character_id) === String(manifest.character_id) && existing.discovered_at
+    ? existing.discovered_at
+    : manifest.discovery_timestamp;
   registry[manifest.character_name] = {
     character_id: manifest.character_id,
     source: "autosprite",
     active: true,
-    discovered_at: manifest.discovery_timestamp
+    discovered_at: discoveredAt
   };
   await writeJson(registryPath, registry);
 }
@@ -204,5 +208,6 @@ if (require.main === module) {
 module.exports = {
   parseArgs,
   extractCharactersList,
+  persistRegistry,
   discoverAutoSpriteCharacter
 };
