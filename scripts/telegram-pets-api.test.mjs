@@ -316,7 +316,7 @@ assert.deepEqual(rareLeaderboardEntry, {
 }, 'leaderboard serializer must carry lifecycle identity and all persisted Moonpet currencies');
 const speciesLabelMap = {
   neon_raccoon: 'F1 EDDY',
-  bubble_ram: 'JALE THE SNAKE',
+  bubble_ram: 'JAKE THE SNAKE',
   comet_gecko: 'TUBBY',
   vinyl_crab: 'BOTTY',
   lantern_fox: 'RED ALERT',

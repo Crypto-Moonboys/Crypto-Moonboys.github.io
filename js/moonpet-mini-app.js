@@ -14,17 +14,9 @@
   var botArtRendererState = null;
   var botArtFallbackLogged = false;
   var botArtSelectionGeneration = 0;
-  var approvedSpriteModeEnabled = moonpetApprovedSpritesRequested();
-  var approvedSpriteRendererReady = false;
-  var approvedSpriteRendererState = null;
-  var approvedSpriteFallbackLogged = false;
-  var sideScrollerSpriteModeEnabled = moonpetSideScrollerSpritesRequested();
-  var sideScrollerSpriteRendererReady = false;
-  var sideScrollerSpriteRendererState = null;
-  var sideScrollerSpriteFallbackLogged = false;
+  var backgroundSelectionGeneration = 0;
+  var backgroundArtState = null;
   window.MOONPET_USE_BOT_ART = botArtModeEnabled;
-  window.MOONPET_USE_APPROVED_SPRITES = approvedSpriteModeEnabled;
-  window.MOONPET_USE_SIDE_SCROLLER_SPRITES = sideScrollerSpriteModeEnabled;
   var seasonSnapshotReceivedAt = 0;
   var lastSeasonServerRefreshAt = 0;
   var seasonRefreshBusy = false;
@@ -42,11 +34,6 @@
   var animationMode = 'idle';
   var animationUntil = 0;
   var actionSequence = 0;
-  var idleSpecialRole = '';
-  var idleSpecialUntil = 0;
-  var idleSpecialNextAt = 0;
-  var idleSpecialBag = [];
-  var idleSpecialCounts = {};
   var reducedMotionAnimationTimer = 0;
   var actionResultHoldMs = 3600;
   var actionStartedAt = 0;
@@ -121,7 +108,8 @@
   var activeUtility = '';
   var utilityRequestGeneration = 0;
 
-  var WORLD_BACKGROUND_URL = '/games/assets/BITTY%20BACKGROUND.jpg?v=20260925-botty-front-live-beta-v4';
+  var DEFAULT_WORLD_BACKGROUND_URL = '/games/assets/BITTY%20BACKGROUND.jpg';
+  var worldBackgroundUrl = DEFAULT_WORLD_BACKGROUND_URL;
   var worldBackgroundImage = new Image();
   var worldBackgroundReady = false;
   worldBackgroundImage.onload = function () {
@@ -130,28 +118,17 @@
   };
   worldBackgroundImage.onerror = function () {
     worldBackgroundReady = false;
-    console.error('[Moonpet] BITTY background failed to load:', WORLD_BACKGROUND_URL);
+    console.error('[Moonpet] world background failed to load:', worldBackgroundUrl);
   };
-  worldBackgroundImage.src = WORLD_BACKGROUND_URL;
-  var WEARABLE_LOADOUT_STORAGE_KEY = 'moonpet-wearable-loadout-v2';
-  var WEARABLE_SLOT_ORDER = ['head', 'face', 'chest', 'back', 'hand', 'aura'];
-  var WEARABLE_SLOT_TRAITS = {
-    head: 'neon_borough_cap',
-    face: 'sample_visor_glasses',
-    chest: 'sample_chest_badge',
-    back: 'sample_micro_jetpack',
-    hand: 'sample_wrench_prop',
-    aura: 'sample_electric_aura'
-  };
-  var WEARABLE_BETA_DEFAULT_LOADOUT = {
-    head: 'neon_borough_cap',
-    face: '',
-    chest: '',
-    back: '',
-    hand: '',
-    aura: ''
-  };
-  var wearableLoadout = readWearableLoadout();
+  worldBackgroundImage.src = worldBackgroundUrl;
+
+  function setWorldBackground(imagePath) {
+    var nextUrl = String(imagePath || DEFAULT_WORLD_BACKGROUND_URL);
+    if (nextUrl === worldBackgroundUrl && worldBackgroundReady) return;
+    worldBackgroundUrl = nextUrl;
+    worldBackgroundReady = false;
+    worldBackgroundImage.src = nextUrl;
+  }
 
   function currentPetSleepKey(snapshot) {
     var pet = snapshot && snapshot.pet || {};
@@ -193,96 +170,11 @@
     return '';
   }
 
-  function moonpetApprovedSpritesRequested() {
-    if (window.MOONPET_USE_APPROVED_SPRITES === true) return true;
-    return launchParameter('approvedSprites') === '1';
-  }
-
   function moonpetBotArtRequested() {
     var override = launchParameter('botArt') || launchParameter('bottySprites');
     if (override === '0' || override === 'false') return false;
     if (window.MOONPET_USE_BOT_ART === false) return false;
     return true;
-  }
-
-  function moonpetSideScrollerSpritesRequested() {
-    var override = launchParameter('sideSprites');
-    if (override === '0' || override === 'false') return false;
-    if (override === '1' || override === 'true') return true;
-    if (window.MOONPET_USE_SIDE_SCROLLER_SPRITES === false) return false;
-    if (window.MOONPET_USE_SIDE_SCROLLER_SPRITES === true) return true;
-    return false;
-  }
-
-  function sideSpriteDebugRequested() {
-    return launchParameter('sideSpriteDebug') === '1' || launchParameter('spriteDebug') === '1' || launchParameter('diag') === '1';
-  }
-
-  function wearableTraitDebugRequested() {
-    var value = launchParameter('wearableTraitDebug');
-    if (value === '1' || value === 'true') return 'sample';
-    if (['sample', 'head', 'face', 'chest', 'back', 'hand', 'prop', 'aura', 'all'].indexOf(value) >= 0) return value;
-    return false;
-  }
-
-  function normalizeWearableLoadout(value) {
-    var source = value && typeof value === 'object' ? value : {};
-    return WEARABLE_SLOT_ORDER.reduce(function (loadout, slot) {
-      loadout[slot] = source[slot] === WEARABLE_SLOT_TRAITS[slot] ? source[slot] : '';
-      return loadout;
-    }, {});
-  }
-
-  function readWearableLoadout() {
-    try {
-      var saved = window.localStorage.getItem(WEARABLE_LOADOUT_STORAGE_KEY);
-      if (saved) return normalizeWearableLoadout(JSON.parse(saved));
-    } catch (_) {}
-    return normalizeWearableLoadout(WEARABLE_BETA_DEFAULT_LOADOUT);
-  }
-
-  function persistWearableLoadout() {
-    try { window.localStorage.setItem(WEARABLE_LOADOUT_STORAGE_KEY, JSON.stringify(wearableLoadout)); } catch (_) {}
-  }
-
-  function equippedWearableTraits() {
-    return [];
-  }
-
-  function setWearableSlot(slot, traitId) {
-    if (WEARABLE_SLOT_ORDER.indexOf(slot) < 0) return false;
-    wearableLoadout[slot] = traitId === WEARABLE_SLOT_TRAITS[slot] ? traitId : '';
-    persistWearableLoadout();
-    drawWorld(performance.now());
-    return true;
-  }
-
-  function resetWearableLoadout() {
-    wearableLoadout = normalizeWearableLoadout(WEARABLE_BETA_DEFAULT_LOADOUT);
-    persistWearableLoadout();
-    drawWorld(performance.now());
-  }
-
-  function updateSideSpriteDebug(status) {
-    if (!sideSpriteDebugRequested()) return;
-    var marker = document.getElementById('moonpet-side-sprite-debug');
-    if (!marker) {
-      marker = document.createElement('div');
-      marker.id = 'moonpet-side-sprite-debug';
-      marker.setAttribute('role', 'status');
-      marker.style.cssText = 'position:fixed;left:8px;right:8px;bottom:8px;z-index:9999;padding:7px 9px;border:1px solid #61f5ff;background:rgba(1,4,8,.86);color:#d8f9ff;font:11px/1.35 monospace;pointer-events:none;text-align:left;box-shadow:0 0 16px rgba(97,245,255,.35)';
-      document.body.appendChild(marker);
-    }
-    var stateInfo = sideScrollerSpriteRendererState || {};
-    marker.textContent = 'sideSprites=' + (sideScrollerSpriteModeEnabled ? 'requested' : 'off') +
-      ' | loader=' + (window.MoonpetSideScrollerAssetLoader ? 'loaded' : 'missing') +
-      ' | renderer=' + (sideScrollerSpriteRendererReady ? 'ready' : 'not-ready') +
-      ' | role=' + (status && status.role || stateInfo.lastRender && stateInfo.lastRender.role || 'n/a') +
-      ' | transition=' + (status && status.transition || stateInfo.lastRender && stateInfo.lastRender.transitionPhase || 'n/a') +
-      ' | anchors=' + ((status && status.anchors) || stateInfo.frameAnchorsReady ? 'ready' : 'missing') +
-      ' | wearables=' + (status && status.wearables || stateInfo.lastRender && stateInfo.lastRender.wearableTraits && stateInfo.lastRender.wearableTraits.join(',') || 'none') +
-      ' | fallback=' + ((status && status.fallback) || stateInfo.fallback ? 'yes' : 'no') +
-      ' | reason=' + (status && status.reason || stateInfo.reason || 'pending');
   }
 
   function loadApprovedSpriteScript(src) {
@@ -317,37 +209,28 @@
     });
   }
 
-  async function initApprovedSpriteMode() {
-    if (!approvedSpriteModeEnabled) {
-      console.info('[Moonpet] approved sprite mode disabled');
-      return false;
-    }
-    console.info('[Moonpet] approved sprite mode enabled');
-    try {
-      await loadApprovedSpriteScript('/js/moonpet-approved-asset-loader.js?v=20260923-approved-sprites');
-      await loadApprovedSpriteScript('/js/moonpet-approved-sprite-renderer.js?v=20260923-approved-sprites');
-      if (!window.MoonpetApprovedSpriteRenderer) throw new Error('MoonpetApprovedSpriteRenderer unavailable');
-      approvedSpriteRendererState = await window.MoonpetApprovedSpriteRenderer.initApprovedMoonpetSpriteRenderer();
-      approvedSpriteRendererReady = Boolean(approvedSpriteRendererState && approvedSpriteRendererState.ready);
-      if (!approvedSpriteRendererReady) {
-        console.info('[Moonpet] approved sprite fallback used', approvedSpriteRendererState);
-      }
-      return approvedSpriteRendererReady;
-    } catch (error) {
-      approvedSpriteRendererReady = false;
-      approvedSpriteRendererState = { reason: error.message, errors: [error.message] };
-      console.info('[Moonpet] approved sprite fallback used', approvedSpriteRendererState);
-      return false;
-    }
-  }
-
   function botArtIdentity(snapshot) {
     var lifecycle = snapshot && snapshot.lifecycle || {};
     var pet = snapshot && snapshot.pet || {};
     return {
       speciesId: String(lifecycle.species_id || pet.species || ''),
-      speciesName: String(lifecycle.species_name || '')
+      speciesName: String(lifecycle.species_name || ''),
+      evolutionStage: Number(pet.evolution_stage || lifecycle.evolution_stage || lifecycle.stage || 1)
     };
+  }
+
+  async function selectWorldBackgroundForState(snapshot) {
+    if (!window.MoonpetArtResolver) return false;
+    var generation = ++backgroundSelectionGeneration;
+    var lifecycle = snapshot && snapshot.lifecycle || {};
+    var result = await window.MoonpetArtResolver.loadMoonpetBackground(
+      botArtIdentity(snapshot),
+      String(lifecycle.rare_morph_id || lifecycle.rare_morph || '')
+    );
+    if (generation !== backgroundSelectionGeneration) return false;
+    backgroundArtState = result;
+    setWorldBackground(result && result.imagePath);
+    return Boolean(result && result.imagePath);
   }
 
   async function selectBotArtForState(snapshot) {
@@ -370,8 +253,9 @@
     }
     console.info('[Moonpet] multi-bot art mode enabled');
     try {
-      await loadApprovedSpriteScript('/js/moonpet-bot-art-loader.js?v=20260926-multi-bot-art-v1');
-      await loadApprovedSpriteScript('/js/moonpet-bot-art-renderer.js?v=20260926-multi-bot-art-v1');
+      await loadApprovedSpriteScript('/js/moonpet-art-resolver.js?v=20260926-evolution-art-foundation-v1');
+      await loadApprovedSpriteScript('/js/moonpet-bot-art-loader.js?v=20260926-evolution-art-foundation-v1');
+      await loadApprovedSpriteScript('/js/moonpet-bot-art-renderer.js?v=20260926-evolution-art-foundation-v1');
       if (!window.MoonpetBotArtRenderer) throw new Error('MoonpetBotArtRenderer unavailable');
       botArtRendererState = await window.MoonpetBotArtRenderer.initMoonpetBotArtRenderer(botArtIdentity(state));
       botArtRendererReady = Boolean(botArtRendererState && botArtRendererState.ready);
@@ -383,42 +267,6 @@
       botArtRendererReady = false;
       botArtRendererState = { reason: error.message, errors: [error.message] };
       console.info('[Moonpet] bot art safe loading state used', botArtRendererState);
-      return false;
-    }
-  }
-
-  async function initSideScrollerSpriteMode() {
-    if (!sideScrollerSpriteModeEnabled) {
-      console.info('[Moonpet] side-scroller sprite mode disabled');
-      updateSideSpriteDebug({ fallback: true, reason: 'side-scroller sprite mode disabled' });
-      return false;
-    }
-    console.info('[Moonpet] side-scroller sprite mode enabled');
-    updateSideSpriteDebug({ reason: 'loading side-scroller scripts' });
-    try {
-      await loadApprovedSpriteScript('/js/moonpet-side-scroller-asset-loader.js?v=20260925-moonbot-anchor-category-proof-v17');
-      await loadApprovedSpriteScript('/js/moonpet-side-scroller-sprite-renderer.js?v=20260925-moonbot-anchor-category-proof-v17');
-      if (!window.MoonpetSideScrollerSpriteRenderer) throw new Error('MoonpetSideScrollerSpriteRenderer unavailable');
-      sideScrollerSpriteRendererState = await window.MoonpetSideScrollerSpriteRenderer.initMoonpetSideScrollerRenderer();
-      sideScrollerSpriteRendererReady = Boolean(sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.ready);
-      console.info('[Moonpet] side-scroller sprite status', {
-        ready: sideScrollerSpriteRendererReady,
-        loadedRoles: sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.loadedRoles || [],
-        pendingRoles: sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.pendingRoles || []
-      });
-      if (!sideScrollerSpriteRendererReady) {
-        console.info('[Moonpet] side-scroller sprite fallback used', sideScrollerSpriteRendererState);
-      }
-      updateSideSpriteDebug({
-        fallback: !sideScrollerSpriteRendererReady,
-        reason: sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.reason
-      });
-      return sideScrollerSpriteRendererReady;
-    } catch (error) {
-      sideScrollerSpriteRendererReady = false;
-      sideScrollerSpriteRendererState = { reason: error.message, errors: [error.message] };
-      console.info('[Moonpet] side-scroller sprite fallback used', sideScrollerSpriteRendererState);
-      updateSideSpriteDebug({ fallback: true, reason: error.message });
       return false;
     }
   }
@@ -911,23 +759,6 @@
   }
   // TEST-EXPORT: guideMarkup:end
 
-  function wearableLoadoutMarkup() {
-    var rows = WEARABLE_SLOT_ORDER.map(function (slot) {
-      var traitId = WEARABLE_SLOT_TRAITS[slot];
-      var equipped = wearableLoadout[slot] === traitId;
-      return '<div class="wearable-slot-row">' +
-        '<label for="wearable-slot-' + slot + '"><strong>' + escapeHtml(words(slot)) + '</strong></label>' +
-        '<select id="wearable-slot-' + slot + '" data-wearable-slot="' + slot + '">' +
-        '<option value="">NONE</option>' +
-        '<option value="' + traitId + '"' + (equipped ? ' selected' : '') + '>' + escapeHtml(words(traitId.replace(/^sample_/, ''))) + '</option>' +
-        '</select>' +
-        '<button type="button" class="terminal-button" data-wearable-clear="' + slot + '"' + (equipped ? '' : ' disabled') + '>CLEAR</button>' +
-        '</div>';
-    }).join('');
-    return '<div class="line muted">BETA OUTFIT // SAVED ON THIS DEVICE</div>' + rows +
-      '<div class="button-grid one"><button type="button" class="terminal-button" data-wearable-reset>RESET BETA OUTFIT</button></div>';
-  }
-
   function leaderboardRowsMarkup(entries, self, period) {
     var rows = (entries || []).map(function (entry) {
       var form = entry.phase === 'rare' ? entry.rare_morph_name : entry.species_name || (entry.phase === 'egg' ? 'Moon Egg' : entry.stage);
@@ -966,9 +797,6 @@
     if (kind === 'guide') {
       utilityTitle.textContent = 'HOW TO PLAY MOONPET OS';
       utilityContent.innerHTML = guideMarkup();
-    } else if (kind === 'wearables') {
-      utilityTitle.textContent = 'BOT UPGRADES';
-      utilityContent.innerHTML = '<div class="line">BOTS USE FULL AUTOSPRITE COSTUME PACKS.</div><div class="line muted">OLD HAT / GLASSES / CHEST / BACK / HAND / AURA OVERLAYS ARE DISABLED IN LIVE BETA.</div>';
     } else {
       loadLeaderboard('seasonal');
     }
@@ -1523,6 +1351,10 @@
     sleepLatched = readSleepLatch(state);
     selectBotArtForState(state).catch(function (error) {
       console.info('[Moonpet] bot art selection failed', error);
+    });
+    selectWorldBackgroundForState(state).catch(function (error) {
+      console.info('[Moonpet] background art selection failed', error);
+      setWorldBackground(DEFAULT_WORLD_BACKGROUND_URL);
     });
     seasonSnapshotReceivedAt = performance.now();
     lastSeasonServerRefreshAt = seasonSnapshotReceivedAt;
@@ -2632,7 +2464,7 @@
   screen.addEventListener('click', function (event) {
     var utility = event.target.closest('[data-utility]');
     if (utility) {
-      if (utility.dataset.utility === 'guide' || utility.dataset.utility === 'leaderboard' || utility.dataset.utility === 'wearables') openUtility(utility.dataset.utility);
+      if (utility.dataset.utility === 'guide' || utility.dataset.utility === 'leaderboard') openUtility(utility.dataset.utility);
       else if (utility.dataset.utility === 'audio') toggleAudio();
       else if (utility.dataset.utility === 'radio') toggleRadio();
       else if (utility.dataset.utility === 'sync') syncState();
@@ -2730,27 +2562,9 @@
       closeUtility();
       return;
     }
-    var clearWearable = event.target.closest('[data-wearable-clear]');
-    if (clearWearable) {
-      setWearableSlot(clearWearable.dataset.wearableClear, '');
-      utilityContent.innerHTML = wearableLoadoutMarkup();
-      return;
-    }
-    if (event.target.closest('[data-wearable-reset]')) {
-      resetWearableLoadout();
-      utilityContent.innerHTML = wearableLoadoutMarkup();
-      return;
-    }
     var period = event.target.closest('[data-leaderboard-period]');
     if (period) { loadLeaderboard(period.dataset.leaderboardPeriod); return; }
     if (event.target.closest('[data-open-full-guide]')) openExternalGuide();
-  });
-
-  utilityLayer.addEventListener('change', function (event) {
-    var selector = event.target.closest('[data-wearable-slot]');
-    if (!selector) return;
-    setWearableSlot(selector.dataset.wearableSlot, selector.value);
-    utilityContent.innerHTML = wearableLoadoutMarkup();
   });
 
   document.addEventListener('keydown', function (event) {
@@ -3400,87 +3214,6 @@
     }
   }
 
-  function drawEvolutionLayers(stage, palette) {
-    if (stage >= 1) {
-      drawPixelRect(-24, -11, 48, 8, '#20262b'); drawPixelRect(-7, -11, 14, 8, palette.accent);
-    }
-    if (stage >= 2) {
-      drawPixelRect(-31, -44, 7, 25, '#61f5ff'); drawPixelRect(24, -44, 7, 25, '#61f5ff');
-      drawPixelRect(-4, -53, 8, 5, '#61f5ff');
-    }
-    if (stage >= 3) {
-      drawPixelRect(-36, -18, 12, 24, palette.outline); drawPixelRect(24, -18, 12, 24, palette.outline);
-      drawPixelRect(-32, -14, 7, 16, palette.body); drawPixelRect(25, -14, 7, 16, palette.body);
-      drawPixelRect(-20, -7, 40, 4, palette.accent);
-    }
-    if (stage >= 5) {
-      drawPixelRect(-24, -70, 48, 6, '#f6a7ff'); drawPixelRect(-18, -79, 7, 9, '#f6a7ff');
-      drawPixelRect(-4, -84, 8, 14, palette.accent); drawPixelRect(11, -79, 7, 9, '#f6a7ff');
-    }
-  }
-
-  function drawEquipmentLayers(pet, palette, pose) {
-    var outfit = String(pet && pet.equipped_outfit || '');
-    var armor = String(pet && pet.equipped_armor || '');
-    var weapon = String(pet && pet.equipped_weapon || '');
-    var charm = String(pet && pet.equipped_charm || '');
-    var toy = String(pet && pet.equipped_toy || '');
-    var food = String(pet && pet.equipped_food || '');
-    if (outfit && !/none/.test(outfit)) {
-      drawPixelRect(-22, -16, 44, 13, '#242a38'); drawPixelRect(-18, -13, 36, 5, outfit === 'crown_jacket' ? '#f4cf58' : palette.accent);
-      drawPixelRect(-3, -16, 6, 13, '#f6a7ff');
-    }
-    if (armor && !/none/.test(armor)) {
-      var armorColor = armor === 'cyber_armor' ? '#61f5ff' : armor === 'street_armor' ? '#aab5ae' : '#5b6570';
-      drawPixelRect(-34, -20 + pose.arm, 13, 19, palette.outline); drawPixelRect(21, -20 + pose.arm, 13, 19, palette.outline);
-      drawPixelRect(-30, -16 + pose.arm, 8, 12, armorColor); drawPixelRect(22, -16 + pose.arm, 8, 12, armorColor);
-    }
-    if (weapon && !/none/.test(weapon)) {
-      if (weapon === 'moon_blaster') {
-        drawPixelRect(30, -25 + pose.arm, 29, 10, palette.outline); drawPixelRect(34, -22 + pose.arm, 20, 5, '#61f5ff');
-        drawPixelRect(28, -17 + pose.arm, 9, 13, palette.outline);
-      } else {
-        drawPixelRect(29, -23 + pose.arm, 18, 7, palette.outline);
-        drawPixelRect(39, -31 + pose.arm, 4, 12, weapon === 'laser_claws' ? '#61f5ff' : '#aab5ae');
-        drawPixelRect(46, -29 + pose.arm, 4, 12, weapon === 'laser_claws' ? '#61f5ff' : '#aab5ae');
-      }
-    }
-    if (charm && !/none/.test(charm)) {
-      drawPixelRect(-2, -10, 4, 11, '#f4cf58'); drawPixelRect(-6, -1, 12, 10, palette.outline);
-      drawPixelRect(-3, 1, 6, 5, charm === 'shield_charm' ? '#61f5ff' : '#f4ff65');
-    }
-    if (toy === 'hoverboard') {
-      drawPixelRect(-30, 18, 62, 6, palette.outline); drawPixelRect(-24, 18, 49, 3, '#f6a7ff');
-      drawPixelRect(-23, 24, 8, 4, '#61f5ff'); drawPixelRect(17, 24, 8, 4, '#61f5ff');
-    }
-    if (food === 'crystal_bowl') {
-      drawPixelRect(-51, 5, 20, 8, palette.outline); drawPixelRect(-48, 4, 14, 5, '#61f5ff');
-    }
-  }
-
-  function unlockedCosmetic(key) {
-    var cosmetics = state && state.live_systems && state.live_systems.cosmetics || [];
-    return cosmetics.some(function (item) { return item && item.key === key && item.unlocked; });
-  }
-
-  function drawCosmeticLayers(time, palette, active) {
-    if (unlockedCosmetic('profile_frame')) {
-      drawPixelRect(-61, -73, 22, 4, palette.accent); drawPixelRect(-61, -73, 4, 22, palette.accent);
-      drawPixelRect(39, -73, 22, 4, palette.accent); drawPixelRect(57, -73, 4, 22, palette.accent);
-      drawPixelRect(-61, 17, 22, 4, palette.accent); drawPixelRect(-61, -1, 4, 22, palette.accent);
-      drawPixelRect(39, 17, 22, 4, palette.accent); drawPixelRect(57, -1, 4, 22, palette.accent);
-    }
-    if (unlockedCosmetic('run_trail') && active && animationMode === 'travel') {
-      for (var trail = 0; trail < 5; trail += 1) drawPixelRect(-73 - trail * 9, 5 - trail % 2 * 7, 7, 3, trail % 2 ? palette.accent : '#61f5ff');
-    }
-    if (unlockedCosmetic('victory_pose') && active && animationMode === 'celebrate') {
-      drawPixelText('★ ALL CITY ★', 0, -91, palette.accent, 'center');
-    }
-    if (unlockedCosmetic('rename_badge')) {
-      drawPixelRect(-18, 12, 36, 7, '#20262b'); drawPixelRect(-14, 14, 28, 3, palette.accent);
-    }
-  }
-
   function drawMoonEgg(time, active, incubation) {
     var progress = Math.max(0, Number(incubation && incubation.progress || 0));
     var target = Math.max(1, Number(incubation && incubation.target || 12));
@@ -3497,24 +3230,6 @@
     if (active) drawPixelText('SIGNAL!', 160, eggY - 58, '#f4ff65', 'center');
   }
 
-  function approvedSpriteRoleForMode(active) {
-    if (!active) return 'base_idle';
-    if (animationMode === 'travel') return 'base_run';
-    if (animationMode === 'blocked' || animationMode === 'sleep') return 'base_idle';
-    return 'base_walk';
-  }
-
-  function drawApprovedMoonpetSprite(time, role, x, y, scale) {
-    if (!approvedSpriteModeEnabled || !approvedSpriteRendererReady || !window.MoonpetApprovedSpriteRenderer) return false;
-    var drew = window.MoonpetApprovedSpriteRenderer.renderApprovedMoonpet(ctx, role, x, y, scale, time);
-    if (!drew && !approvedSpriteFallbackLogged) {
-      approvedSpriteFallbackLogged = true;
-      approvedSpriteRendererState = window.MoonpetApprovedSpriteRenderer.getApprovedMoonpetSpriteRendererState();
-      console.info('[Moonpet] approved sprite fallback used', approvedSpriteRendererState);
-    }
-    return drew;
-  }
-
   function drawSelectedBotSprite(time, mode, active, x, y, scale) {
     if (!botArtModeEnabled || !botArtRendererReady || !window.MoonpetBotArtRenderer) return false;
     var drew = window.MoonpetBotArtRenderer.renderMoonpetBot(ctx, mode, x, y, scale, time, {
@@ -3529,124 +3244,26 @@
     return drew;
   }
 
-  function idleSpecialRoleForFrame(time, mode, active) {
-    return '';
-    var now = Number(time) || performance.now();
-    if (active || mode !== 'idle') {
-      idleSpecialRole = '';
-      idleSpecialUntil = 0;
-      idleSpecialNextAt = Math.max(idleSpecialNextAt, now + 6000);
-      return '';
-    }
-    if (idleSpecialRole && now < idleSpecialUntil) return idleSpecialRole;
-    if (idleSpecialRole) {
-      idleSpecialRole = '';
-      idleSpecialUntil = 0;
-      idleSpecialNextAt = now + 6500 + Math.floor(idleSpecialRoll(now, 11) * 4500);
-    }
-    if (!idleSpecialNextAt) idleSpecialNextAt = now + 2800 + Math.floor(idleSpecialRoll(now, 17) * 2200);
-    if (now < idleSpecialNextAt) return '';
-    if (!idleSpecialBag.length) refillIdleSpecialBag(now);
-    idleSpecialRole = idleSpecialBag.pop() || 'side_front_point';
-    idleSpecialCounts[idleSpecialRole] = Number(idleSpecialCounts[idleSpecialRole] || 0) + 1;
-    idleSpecialUntil = now + 2200 + Math.floor(idleSpecialRoll(now, 41) * 900);
-    return idleSpecialRole;
-  }
-
-  function refillIdleSpecialBag(time) {
-    idleSpecialBag = [
-      'side_front_victory',
-      'side_front_dance',
-      'side_front_wave',
-      'side_front_point'
-    ];
-  }
-
-  function idleSpecialRoll(time, salt) {
-    var bucket = Math.floor((Number(time) || 0) / 1000);
-    var seed = (bucket + 1) * 1103515245 + (companionSeedValue || 97) * 2654435761 + salt * 374761393;
-    var value = Math.sin(seed) * 10000;
-    return value - Math.floor(value);
-  }
-
-  function drawSideScrollerMoonpetSprite(time, mode, active, x, y, scale) {
-    if (!sideScrollerSpriteModeEnabled || !sideScrollerSpriteRendererReady || !window.MoonpetSideScrollerSpriteRenderer) return false;
-    var mirroredAction = active && ['travel', 'play', 'feed', 'interact', 'celebrate'].indexOf(mode) >= 0 && actionSequence % 2 === 0;
-    var roleOverride = idleSpecialRoleForFrame(time, mode, active);
-    var drew = window.MoonpetSideScrollerSpriteRenderer.renderSideScrollerMoonbot(ctx, mode, x, y, scale, time, {
-      active: active,
-      facing: mirroredAction ? -1 : 1,
-      variantSeed: active ? actionSequence : Math.floor(time / 1000),
-      role: roleOverride,
-      wearableTraits: equippedWearableTraits(),
-      wearableTraitDebug: wearableTraitDebugRequested()
-    });
-    sideScrollerSpriteRendererState = window.MoonpetSideScrollerSpriteRenderer.getMoonpetSideScrollerRendererState();
-    updateSideSpriteDebug({
-      role: sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.lastRender && sideScrollerSpriteRendererState.lastRender.role,
-      transition: sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.lastRender && sideScrollerSpriteRendererState.lastRender.transitionPhase,
-      anchors: sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.lastRender && sideScrollerSpriteRendererState.lastRender.frameAnchors,
-      wearables: sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.lastRender && sideScrollerSpriteRendererState.lastRender.wearableTraits && sideScrollerSpriteRendererState.lastRender.wearableTraits.join(','),
-      fallback: !drew,
-      reason: sideScrollerSpriteRendererState && sideScrollerSpriteRendererState.reason
-    });
-    if (!drew && !sideScrollerSpriteFallbackLogged) {
-      sideScrollerSpriteFallbackLogged = true;
-      console.info('[Moonpet] side-scroller sprite fallback used', sideScrollerSpriteRendererState);
-    }
-    return drew;
-  }
-
-  function drawPet(time, presence, combat) {
-    var pet = state && state.pet;
-    var lifecycle = state && state.lifecycle || {};
+  // TEST-EXPORT: drawEmergencyMoonpetFallback:start
+  function drawEmergencyMoonpetFallback(time, active, lifecycle, pet, presence, x, y) {
     var stage = petStage(pet);
     var mood = petMood(pet);
-    var renderTime = reducedMotion ? performance.now() : time;
-    var active = sleepLatched || animationUntil > renderTime;
-    if (lifecycle.phase === 'egg') {
-      drawMoonEgg(time, active, lifecycle.incubation);
-      return;
-    }
-
     var pose = petPose(time, active, mood, presence);
     var growth = petGrowthShape(lifecycle.phase, stage);
-    var combatScale = 1;
-    var ceremonyScale = 1;
-    var scale = Math.max(growth.scaleX, growth.scaleY) * combatScale * ceremonyScale;
     var palette = petPalette(lifecycle, stage);
     var speciesId = lifecycle.species_id || pet && pet.species || 'neon_raccoon';
     var faceX = petFaceOffset(speciesId);
-    var x = 124;
-    var y = 194;
-    if (drawSelectedBotSprite(renderTime, animationMode, active, x, y, scale)) {
-      return;
-    }
-    if (botArtModeEnabled) {
-      return;
-    }
-    if (drawSideScrollerMoonpetSprite(renderTime, animationMode, active, x, y - 2, scale * 0.86)) {
-      return;
-    }
-    if (drawApprovedMoonpetSprite(renderTime, approvedSpriteRoleForMode(active), x, y - 8, scale * 0.52)) {
-      return;
-    }
     ctx.save();
     ctx.translate(x, y);
-    ctx.scale(growth.scaleX * pose.squashX * combatScale * ceremonyScale, growth.scaleY * pose.squashY * combatScale * ceremonyScale);
-    ctx.shadowColor = lifecycle.phase === 'rare' ? palette.accent : stage >= 2 ? '#61f5ff' : palette.body;
-    ctx.shadowBlur = lifecycle.phase === 'rare' ? 12 : stage * 2 + (active ? 6 : 2);
-    drawRareMorphShell(rareName, palette, pose);
+    ctx.scale(growth.scaleX * pose.squashX, growth.scaleY * pose.squashY);
+    ctx.shadowColor = palette.body;
+    ctx.shadowBlur = active ? 6 : 2;
     drawSpeciesSilhouette(speciesId, palette, pose);
     ctx.save();
     ctx.translate(faceX, 0);
     drawPetMarking(lifecycle.appearance && lifecycle.appearance.marking, palette, pose.headY);
     ctx.restore();
-    drawEvolutionLayers(stage, palette);
-    drawEquipmentLayers(pet, palette, pose);
-    drawCosmeticLayers(time, palette, active);
-
-    var blink = !reducedMotion && Math.floor(renderTime / 1800) % 7 === 0 || mood === 'tired' || animationMode === 'sleep' && active;
+    var blink = !reducedMotion && Math.floor(time / 1800) % 7 === 0 || mood === 'tired' || animationMode === 'sleep' && active;
     ctx.save();
     ctx.translate(faceX, 0);
     drawPetEyes(lifecycle.appearance && lifecycle.appearance.eyes || 'bright', mood, blink, palette.outline, palette.accent, pose.headY);
@@ -3658,7 +3275,24 @@
     ctx.restore();
     ctx.restore();
     ctx.shadowBlur = 0;
+    return true;
+  }
+  // TEST-EXPORT: drawEmergencyMoonpetFallback:end
 
+  function drawPet(time, presence, combat) {
+    var pet = state && state.pet;
+    var lifecycle = state && state.lifecycle || {};
+    var renderTime = reducedMotion ? performance.now() : time;
+    var active = sleepLatched || animationUntil > renderTime;
+    if (lifecycle.phase === 'egg') {
+      drawMoonEgg(time, active, lifecycle.incubation);
+      return;
+    }
+
+    var x = 124;
+    var y = 194;
+    if (drawSelectedBotSprite(renderTime, animationMode, active, x, y, 1)) return;
+    drawEmergencyMoonpetFallback(renderTime, active, lifecycle, pet, presence, x, y);
   }
 
   var WORLD_SCENES = {
@@ -4175,11 +3809,7 @@
     }, 1000);
     // Sprite loading must never block the game boot/auth path. Start all renderers in
     // the background and keep drawPet in its safe loading state until bot art is ready.
-    var spriteStartup = Promise.allSettled([
-      initBotArtMode(),
-      initSideScrollerSpriteMode(),
-      initApprovedSpriteMode()
-    ]);
+    var spriteStartup = Promise.allSettled([initBotArtMode()]);
     requestAnimationFrame(frame);
     await typeBoot(['MOONPET BIOS 0.9', 'CHECKING TELEGRAM SIGNATURE...', 'CONNECTING TO D1 MEMORY CORE...'], { speed: 10, hold: 180 });
     spriteStartup.then(function () {
@@ -4242,14 +3872,9 @@
   });
 
   window.MoonpetBetaAppearance = {
-    getLoadout: function () { return Object.assign({}, wearableLoadout); },
-    getEquippedTraits: function () { return equippedWearableTraits().slice(); },
     getBotArtState: function () { return botArtRendererState; },
     isBotArtReady: function () { return botArtRendererReady; },
-    isSideScrollerEnabled: function () { return sideScrollerSpriteModeEnabled; },
-    getIdleSpecialState: function () {
-      return { role: idleSpecialRole, nextAt: idleSpecialNextAt, until: idleSpecialUntil, counts: Object.assign({}, idleSpecialCounts) };
-    }
+    getBackgroundArtState: function () { return backgroundArtState; }
   };
 
   start();

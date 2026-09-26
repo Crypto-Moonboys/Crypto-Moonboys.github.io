@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "default_background": "/games/assets/BITTY%20BACKGROUND.jpg",
+  "rare_morphs": {
+    "celestial_serpent": { "display_name": "Celestial Serpent", "theme": "cosmic exploration, celestial energy, deep-space graffiti, serpentine light forms, star trails and moon-city mystery" },
+    "crown_beast": { "display_name": "Crown Beast", "theme": "combat prestige, street royalty, crown symbolism, champion territory and battle-earned gold-black status" },
+    "boombox_kaiju": { "display_name": "Boombox Kaiju", "theme": "kaiju-scale sound systems, bass, speakers, street parties, sound waves and graffiti music culture" },
+    "graffiti_guardian": { "display_name": "Graffiti Guardian", "theme": "graffiti mastery, street-art guardianship, murals, spray paint, protected territory and legendary city walls" }
+  },
+  "bots": {
+    "BOTTY": {
+      "canonical_species_ids": ["vinyl_crab"],
+      "default": "/games/assets/BITTY%20BACKGROUND.jpg",
+      "celestial_serpent": { "status": "pending", "image_path": "/games/assets/moonpets/rare-backgrounds/botty/celestial-serpent.jpg" },
+      "crown_beast": { "status": "pending", "image_path": "/games/assets/moonpets/rare-backgrounds/botty/crown-beast.jpg" },
+      "boombox_kaiju": { "status": "pending", "image_path": "/games/assets/moonpets/rare-backgrounds/botty/boombox-kaiju.jpg" },
+      "graffiti_guardian": { "status": "pending", "image_path": "/games/assets/moonpets/rare-backgrounds/botty/graffiti-guardian.jpg" }
+    },
+    "F1 EDDY": {
+      "canonical_species_ids": ["neon_raccoon"],
+      "default": "/games/assets/BITTY%20BACKGROUND.jpg",
+      "celestial_serpent": { "status": "pending", "image_path": "/games/assets/moonpets/rare-backgrounds/f1-eddy/celestial-serpent.jpg" },
+      "crown_beast": { "status": "pending", "image_path": "/games/assets/moonpets/rare-backgrounds/f1-eddy/crown-beast.jpg" },
+      "boombox_kaiju": { "status": "pending", "image_path": "/games/assets/moonpets/rare-backgrounds/f1-eddy/boombox-kaiju.jpg" },
+      "graffiti_guardian": { "status": "pending", "image_path": "/games/assets/moonpets/rare-backgrounds/f1-eddy/graffiti-guardian.jpg" }
+    },
+    "JAKE THE SNAKE": {
+      "canonical_species_ids": ["bubble_ram"],
+      "default": "/games/assets/BITTY%20BACKGROUND.jpg",
+      "celestial_serpent": { "status": "pending", "image_path": "/games/assets/moonpets/rare-backgrounds/jake-the-snake/celestial-serpent.jpg" },
+      "crown_beast": { "status": "pending", "image_path": "/games/assets/moonpets/rare-backgrounds/jake-the-snake/crown-beast.jpg" },
+      "boombox_kaiju": { "status": "pending", "image_path": "/games/assets/moonpets/rare-backgrounds/jake-the-snake/boombox-kaiju.jpg" },
+      "graffiti_guardian": { "status": "pending", "image_path": "/games/assets/moonpets/rare-backgrounds/jake-the-snake/graffiti-guardian.jpg" }
+    },
+    "TUBBY": {
+      "canonical_species_ids": ["comet_gecko"],
+      "default": "/games/assets/BITTY%20BACKGROUND.jpg",
+      "celestial_serpent": { "status": "pending", "image_path": "/games/assets/moonpets/rare-backgrounds/tubby/celestial-serpent.jpg" },
+      "crown_beast": { "status": "pending", "image_path": "/games/assets/moonpets/rare-backgrounds/tubby/crown-beast.jpg" },
+      "boombox_kaiju": { "status": "pending", "image_path": "/games/assets/moonpets/rare-backgrounds/tubby/boombox-kaiju.jpg" },
+      "graffiti_guardian": { "status": "pending", "image_path": "/games/assets/moonpets/rare-backgrounds/tubby/graffiti-guardian.jpg" }
+    },
+    "RED ALERT": {
+      "canonical_species_ids": ["lantern_fox"],
+      "default": "/games/assets/BITTY%20BACKGROUND.jpg",
+      "celestial_serpent": { "status": "pending", "image_path": "/games/assets/moonpets/rare-backgrounds/red-alert/celestial-serpent.jpg" },
+      "crown_beast": { "status": "pending", "image_path": "/games/assets/moonpets/rare-backgrounds/red-alert/crown-beast.jpg" },
+      "boombox_kaiju": { "status": "pending", "image_path": "/games/assets/moonpets/rare-backgrounds/red-alert/boombox-kaiju.jpg" },
+      "graffiti_guardian": { "status": "pending", "image_path": "/games/assets/moonpets/rare-backgrounds/red-alert/graffiti-guardian.jpg" }
+    },
+    "THE TING": {
+      "canonical_species_ids": ["sneaker_snail"],
+      "default": "/games/assets/BITTY%20BACKGROUND.jpg",
+      "celestial_serpent": { "status": "pending", "image_path": "/games/assets/moonpets/rare-backgrounds/the-ting/celestial-serpent.jpg" },
+      "crown_beast": { "status": "pending", "image_path": "/games/assets/moonpets/rare-backgrounds/the-ting/crown-beast.jpg" },
+      "boombox_kaiju": { "status": "pending", "image_path": "/games/assets/moonpets/rare-backgrounds/the-ting/boombox-kaiju.jpg" },
+      "graffiti_guardian": { "status": "pending", "image_path": "/games/assets/moonpets/rare-backgrounds/the-ting/graffiti-guardian.jpg" }
+    },
+    "TATTOO JOHN": {
+      "canonical_species_ids": ["alley_drake"],
+      "default": "/games/assets/BITTY%20BACKGROUND.jpg",
+      "celestial_serpent": { "status": "pending", "image_path": "/games/assets/moonpets/rare-backgrounds/tattoo-john/celestial-serpent.jpg" },
+      "crown_beast": { "status": "pending", "image_path": "/games/assets/moonpets/rare-backgrounds/tattoo-john/crown-beast.jpg" },
+      "boombox_kaiju": { "status": "pending", "image_path": "/games/assets/moonpets/rare-backgrounds/tattoo-john/boombox-kaiju.jpg" },
+      "graffiti_guardian": { "status": "pending", "image_path": "/games/assets/moonpets/rare-backgrounds/tattoo-john/graffiti-guardian.jpg" }
+    },
+    "TIN BOB": {
+      "canonical_species_ids": ["moon_ferret"],
+      "default": "/games/assets/BITTY%20BACKGROUND.jpg",
+      "celestial_serpent": { "status": "pending", "image_path": "/games/assets/moonpets/rare-backgrounds/tin-bob/celestial-serpent.jpg" },
+      "crown_beast": { "status": "pending", "image_path": "/games/assets/moonpets/rare-backgrounds/tin-bob/crown-beast.jpg" },
+      "boombox_kaiju": { "status": "pending", "image_path": "/games/assets/moonpets/rare-backgrounds/tin-bob/boombox-kaiju.jpg" },
+      "graffiti_guardian": { "status": "pending", "image_path": "/games/assets/moonpets/rare-backgrounds/tin-bob/graffiti-guardian.jpg" }
+    }
+  }
+}

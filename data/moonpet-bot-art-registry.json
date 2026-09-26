@@ -1,6 +1,18 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "default_bot": "BOTTY",
+  "egg_art": {
+    "status": "pending",
+    "fallback": "procedural_egg",
+    "manifest_path": null
+  },
+  "evolution_stages": {
+    "stage_1": "base",
+    "stage_2": "cyber",
+    "stage_3": "elite",
+    "stage_4": "guardian",
+    "stage_5": "legendary_guardian"
+  },
   "role_map": {
     "idle": "front_idle",
     "feed": "front_feed",
@@ -32,6 +44,13 @@
       "asset_root": "/img/moonpets/botty/",
       "status": "complete",
       "fallback": "BOTTY",
+      "evolution_art": {
+        "stage_1": { "form": "base", "status": "complete", "autosprite_character_id": "cmuh1eo4p000113f3alnoim0v", "manifest_path": "/data/moonpet-botty-front-assets.json" },
+        "stage_2": { "form": "cyber", "status": "pending", "fallback_stage": "stage_1" },
+        "stage_3": { "form": "elite", "status": "pending", "fallback_stage": "stage_1" },
+        "stage_4": { "form": "guardian", "status": "pending", "fallback_stage": "stage_1" },
+        "stage_5": { "form": "legendary_guardian", "status": "pending", "fallback_stage": "stage_1" }
+      },
       "display": {
         "scale": 0.72,
         "pivot_y": 0.86
@@ -49,6 +68,13 @@
       "asset_root": "/img/moonpets/f1-eddy/",
       "status": "complete",
       "fallback": "BOTTY",
+      "evolution_art": {
+        "stage_1": { "form": "base", "status": "complete", "autosprite_character_id": "cmuhjd3wg0023zoeghrmnxoc7", "manifest_path": "/data/moonpet-f1-eddy-front-assets.json" },
+        "stage_2": { "form": "cyber", "status": "pending", "fallback_stage": "stage_1" },
+        "stage_3": { "form": "elite", "status": "pending", "fallback_stage": "stage_1" },
+        "stage_4": { "form": "guardian", "status": "pending", "fallback_stage": "stage_1" },
+        "stage_5": { "form": "legendary_guardian", "status": "pending", "fallback_stage": "stage_1" }
+      },
       "display": {
         "scale": 0.72,
         "pivot_y": 0.86
@@ -66,6 +92,13 @@
       "asset_root": "/img/moonpets/red-alert/",
       "status": "complete",
       "fallback": "BOTTY",
+      "evolution_art": {
+        "stage_1": { "form": "base", "status": "complete", "autosprite_character_id": "cmuhjc0xs0002zoeg1jggctix", "manifest_path": "/data/moonpet-red-alert-front-assets.json" },
+        "stage_2": { "form": "cyber", "status": "pending", "fallback_stage": "stage_1" },
+        "stage_3": { "form": "elite", "status": "pending", "fallback_stage": "stage_1" },
+        "stage_4": { "form": "guardian", "status": "pending", "fallback_stage": "stage_1" },
+        "stage_5": { "form": "legendary_guardian", "status": "pending", "fallback_stage": "stage_1" }
+      },
       "display": {
         "scale": 0.72,
         "pivot_y": 0.86
@@ -83,6 +116,13 @@
       "asset_root": "/img/moonpets/the-ting/",
       "status": "complete",
       "fallback": "BOTTY",
+      "evolution_art": {
+        "stage_1": { "form": "base", "status": "complete", "autosprite_character_id": "cmuhjb0c30005gkd0aboix1sr", "manifest_path": "/data/moonpet-the-ting-front-assets.json" },
+        "stage_2": { "form": "cyber", "status": "pending", "fallback_stage": "stage_1" },
+        "stage_3": { "form": "elite", "status": "pending", "fallback_stage": "stage_1" },
+        "stage_4": { "form": "guardian", "status": "pending", "fallback_stage": "stage_1" },
+        "stage_5": { "form": "legendary_guardian", "status": "pending", "fallback_stage": "stage_1" }
+      },
       "display": {
         "scale": 0.72,
         "pivot_y": 0.86
@@ -100,6 +140,13 @@
       "asset_root": "/img/moonpets/tattoo-john/",
       "status": "complete",
       "fallback": "BOTTY",
+      "evolution_art": {
+        "stage_1": { "form": "base", "status": "complete", "autosprite_character_id": "cmuhjbjcv00112xtb1oclxk6k", "manifest_path": "/data/moonpet-tattoo-john-front-assets.json" },
+        "stage_2": { "form": "cyber", "status": "pending", "fallback_stage": "stage_1" },
+        "stage_3": { "form": "elite", "status": "pending", "fallback_stage": "stage_1" },
+        "stage_4": { "form": "guardian", "status": "pending", "fallback_stage": "stage_1" },
+        "stage_5": { "form": "legendary_guardian", "status": "pending", "fallback_stage": "stage_1" }
+      },
       "display": {
         "scale": 0.72,
         "pivot_y": 0.86
@@ -117,6 +164,13 @@
       "asset_root": "/img/moonpets/tin-bob/",
       "status": "complete",
       "fallback": "BOTTY",
+      "evolution_art": {
+        "stage_1": { "form": "base", "status": "complete", "autosprite_character_id": "cmuhjady40001f0c9vekfkr24", "manifest_path": "/data/moonpet-tin-bob-front-assets.json" },
+        "stage_2": { "form": "cyber", "status": "pending", "fallback_stage": "stage_1" },
+        "stage_3": { "form": "elite", "status": "pending", "fallback_stage": "stage_1" },
+        "stage_4": { "form": "guardian", "status": "pending", "fallback_stage": "stage_1" },
+        "stage_5": { "form": "legendary_guardian", "status": "pending", "fallback_stage": "stage_1" }
+      },
       "display": {
         "scale": 0.72,
         "pivot_y": 0.86
@@ -134,6 +188,13 @@
       "asset_root": "/img/moonpets/tubby/",
       "status": "complete",
       "fallback": "BOTTY",
+      "evolution_art": {
+        "stage_1": { "form": "base", "status": "complete", "autosprite_character_id": "cmuhj9bx90014mctfalaa2dcj", "manifest_path": "/data/moonpet-tubby-front-assets.json" },
+        "stage_2": { "form": "cyber", "status": "pending", "fallback_stage": "stage_1" },
+        "stage_3": { "form": "elite", "status": "pending", "fallback_stage": "stage_1" },
+        "stage_4": { "form": "guardian", "status": "pending", "fallback_stage": "stage_1" },
+        "stage_5": { "form": "legendary_guardian", "status": "pending", "fallback_stage": "stage_1" }
+      },
       "display": {
         "scale": 0.72,
         "pivot_y": 0.86
@@ -153,6 +214,13 @@
       "asset_root": "/img/moonpets/jake-the-snake/",
       "status": "complete",
       "fallback": "BOTTY",
+      "evolution_art": {
+        "stage_1": { "form": "base", "status": "complete", "autosprite_character_id": "cmuhjcplv000912alpjmnzyrh", "manifest_path": "/data/moonpet-jake-the-snake-front-assets.json" },
+        "stage_2": { "form": "cyber", "status": "pending", "fallback_stage": "stage_1" },
+        "stage_3": { "form": "elite", "status": "pending", "fallback_stage": "stage_1" },
+        "stage_4": { "form": "guardian", "status": "pending", "fallback_stage": "stage_1" },
+        "stage_5": { "form": "legendary_guardian", "status": "pending", "fallback_stage": "stage_1" }
+      },
       "display": {
         "scale": 0.72,
         "pivot_y": 0.86

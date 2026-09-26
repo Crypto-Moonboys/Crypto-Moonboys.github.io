@@ -284,7 +284,6 @@ button, input, select, textarea {
 .guide-step,
 .leader-row,
 .connection-fault,
-.wearable-slot-row,
 .run-brief,
 .run-stakes,
 .combat-intel,
@@ -367,7 +366,6 @@ button, input, select, textarea {
 .season-slot,
 .guide-step,
 .leader-row,
-.wearable-slot-row,
 .run-brief,
 .run-stakes,
 .district-mission,
@@ -621,8 +619,7 @@ button, input, select, textarea {
   min-height: 46px;
 }
 
-.terminal-input,
-.wearable-slot-row select {
+.terminal-input {
   width: 100%;
   min-width: 0;
   min-height: 40px;
@@ -637,13 +634,7 @@ button, input, select, textarea {
   font-size: 14px;
 }
 
-.wearable-slot-row select {
-  margin: 0;
-  font-size: 12px;
-}
-
-.terminal-input:focus,
-.wearable-slot-row select:focus {
+.terminal-input:focus {
   border-color: var(--ui-border-focus);
   box-shadow: 0 0 0 3px rgba(255,255,255,.06);
 }
@@ -859,27 +850,6 @@ button, input, select, textarea {
   border-color: rgba(var(--ui-danger), .24);
   color: rgba(255, 202, 202, .95);
   background: linear-gradient(180deg, rgba(var(--ui-danger), .08), rgba(var(--ui-danger), .03));
-}
-
-.wearable-slot-row {
-  display: grid;
-  grid-template-columns: minmax(62px, .65fr) minmax(0, 1.5fr) minmax(64px, .55fr);
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.wearable-slot-row label {
-  color: var(--ui-text-secondary);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-}
-
-.wearable-slot-row .terminal-button {
-  min-height: 40px;
-  padding: 8px 6px;
 }
 
 .run-opponent {

@@ -9,7 +9,7 @@ const CARE_TYPES = Object.freeze({
 
 export const MOONPET_SPECIES = Object.freeze({
   neon_raccoon: { name: 'F1 EDDY', affinity: ['social', 'bold'] },
-  bubble_ram: { name: 'JALE THE SNAKE', affinity: ['calm', 'social'] },
+  bubble_ram: { name: 'JAKE THE SNAKE', affinity: ['calm', 'social'] },
   comet_gecko: { name: 'TUBBY', affinity: ['warm', 'bold'] },
   vinyl_crab: { name: 'BOTTY', affinity: ['rhythm', 'calm'] },
   lantern_fox: { name: 'RED ALERT', affinity: ['warm', 'social'] },

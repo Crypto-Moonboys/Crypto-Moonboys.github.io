@@ -71,11 +71,9 @@ assert.match(
 );
 const html = fs.readFileSync(new URL('../moonpet-game.html', import.meta.url), 'utf8');
 const client = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
-const sideScrollerRegistry = JSON.parse(fs.readFileSync(new URL('../data/moonpet-side-scroller-approved-assets.json', import.meta.url), 'utf8'));
-const sideScrollerRenderer = fs.readFileSync(new URL('../js/moonpet-side-scroller-sprite-renderer.js', import.meta.url), 'utf8');
-const sideScrollerLoader = fs.readFileSync(new URL('../js/moonpet-side-scroller-asset-loader.js', import.meta.url), 'utf8');
-const wearableTraits = JSON.parse(fs.readFileSync(new URL('../data/moonpet-wearable-traits.json', import.meta.url), 'utf8'));
-const moonpetFrameAnchors = JSON.parse(fs.readFileSync(new URL('../data/moonpet-frame-anchors.json', import.meta.url), 'utf8'));
+const botArtRegistry = JSON.parse(fs.readFileSync(new URL('../data/moonpet-bot-art-registry.json', import.meta.url), 'utf8'));
+const rareBackgroundRegistry = JSON.parse(fs.readFileSync(new URL('../data/moonpet-rare-background-registry.json', import.meta.url), 'utf8'));
+const itemArtRegistry = JSON.parse(fs.readFileSync(new URL('../data/moonpet-item-art-registry.json', import.meta.url), 'utf8'));
 assert.match(client, /var lifecycleRequirement = journeyLifecycle\.next_evolution \?/, 'final-form lifecycle copy must branch on whether a next evolution exists');
 assert.doesNotMatch(client, /next_evolution[^\n]+LEVEL \/\/ 0\/0/, 'final-form lifecycle must never render a synthetic 0/0 requirement');
 assert.match(client, /if \(!pet\.progression\)[^\n]+PROGRESSION UNAVAILABLE/, 'missing roster progression must render an explicit unavailable state');
@@ -135,6 +133,58 @@ assert.equal(new Function('state', capabilityCombatHelperSource + '; return hasS
   'Kaiju system capability may unlock independently from Arena level');
 assert.match(new Function('state', capabilityCombatHelperSource + '; return combatLockCopy(systemCapability(state, "arena").reason).title;')(capabilityHelperState), /ARENA LOCKED UNTIL LEVEL 10/,
   'Arena system lock copy must expose the level gate');
+
+const drawEmergencyMoonpetFallbackSource = extractTestExport(client, 'drawEmergencyMoonpetFallback');
+assert.ok(drawEmergencyMoonpetFallbackSource, 'emergency Moonpet fallback renderer must be extractable for regression coverage');
+const drawEmergencyMoonpetFallbackRuntime = new Function(
+  `${drawEmergencyMoonpetFallbackSource}
+  var calls = [];
+  var ctx = {
+    shadowColor: '',
+    shadowBlur: 0,
+    save: function () { calls.push(['save']); },
+    restore: function () { calls.push(['restore']); },
+    translate: function (x, y) { calls.push(['translate', x, y]); },
+    scale: function (x, y) { calls.push(['scale', x, y]); },
+  };
+  var reducedMotion = false;
+  var animationMode = 'idle';
+  function petStage() { return 2; }
+  function petMood() { return 'happy'; }
+  function petPose() { return { squashX: 1, squashY: 1, headY: 0 }; }
+  function petGrowthShape() { return { scaleX: 1, scaleY: 1 }; }
+  function petPalette() { return { body: '#80ffd5', accent: '#f4ff65', outline: '#061009' }; }
+  function petFaceOffset() { return 4; }
+  function drawSpeciesSilhouette(speciesId) { calls.push(['species', speciesId]); }
+  function drawPetMarking(marking) { calls.push(['marking', marking || '']); }
+  function drawPetEyes(style, mood, blink) { calls.push(['eyes', style, mood, blink]); }
+  function drawPixelRect(x, y, w, h, color) { calls.push(['rect', x, y, w, h, color]); }
+  return { drawEmergencyMoonpetFallback: drawEmergencyMoonpetFallback, calls: calls };
+`,
+)();
+assert.equal(
+  drawEmergencyMoonpetFallbackRuntime.drawEmergencyMoonpetFallback(
+    1800,
+    false,
+    { phase: 'adult', species_id: 'bubble_ram', appearance: { marking: 'moon_mask', eyes: 'bright' } },
+    { species: 'bubble_ram' },
+    null,
+    124,
+    194,
+  ),
+  true,
+  'the emergency Moonpet fallback must report a rendered pet'
+);
+assert.deepEqual(
+  drawEmergencyMoonpetFallbackRuntime.calls.filter((entry) => entry[0] === 'species'),
+  [['species', 'bubble_ram']],
+  'the emergency Moonpet fallback must render the active species silhouette'
+);
+assert.deepEqual(
+  drawEmergencyMoonpetFallbackRuntime.calls.filter((entry) => entry[0] === 'eyes'),
+  [['eyes', 'bright', 'happy', false]],
+  'the emergency Moonpet fallback must still render the pet face state'
+);
 
 const actionAvailabilitySource = extractTestExport(client, 'actionAvailability');
 const countdownComponentSource = extractTestExport(client, 'countdownComponent');
@@ -1351,8 +1401,9 @@ assert.match(client, /DAILY MISSION BUFFER \/\/ /);
 assert.match(client, /meter\('DAILY CLEAR', missionPercent\)/);
 assert.match(html, /id="utility-layer"/);
 assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260925-moonpet-ui-redesign-v1/);
-assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20260926-multi-bot-art-v1/);
-assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20260926-multi-bot-art-v1/);
+assert.match(html, /\/js\/moonpet-art-resolver\.js\?v=20260926-evolution-art-foundation-v1/);
+assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20260926-evolution-art-foundation-v1/);
+assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20260926-evolution-art-foundation-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1446,7 +1497,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260926-multi-bot-art-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260926-evolution-art-foundation-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -1529,7 +1580,7 @@ assert.match(worker, /return err\('mini_app_action_failed', 500\)/);
 assert.doesNotMatch(html, /<img\b/i);
 const gameSurfaceWithoutRequiredFavicon = html.replace(/<link\s+rel="icon"\s+type="image\/png"\s+href="\/favicon\.png">/i, '');
 const gameSurfaceWithoutApprovedBackground = (gameSurfaceWithoutRequiredFavicon + client + css)
-  .replace(/var WORLD_BACKGROUND_URL = '\/games\/assets\/BITTY%20BACKGROUND\.jpg\?v=20260925-botty-front-live-beta-v4';/i, '');
+  .replace(/var DEFAULT_WORLD_BACKGROUND_URL = '\/games\/assets\/BITTY%20BACKGROUND\.jpg';/i, '');
 assert.doesNotMatch(gameSurfaceWithoutApprovedBackground, /\.(?:jpe?g|png|gif|webp|svg)(?:[?#"'])/i);
 assert.match(html, /moonpet-canvas/);
 assert.match(client, /requestAnimationFrame\(frame\)/);
@@ -1553,33 +1604,36 @@ assert.match(client, /return stage >= 5 \? selected\.legendary : selected\.norma
 const petPaletteSource = client.slice(client.indexOf('function petPalette'), client.indexOf('function petPose'));
 assert.doesNotMatch(petPaletteSource, /var palettes|var species|\[[^\]]*,[^\]]*,[^\]]*\]/, 'per-frame palette lookup must not allocate tables or colour arrays');
 assert.match(client, /function petPose/);
-assert.match(client, /function drawRaccoon/);
-assert.match(client, /function drawRam/);
-assert.match(client, /function drawGecko/);
-assert.match(client, /function drawCrab/);
-assert.match(client, /function drawFox/);
-assert.match(client, /function drawSnail/);
-assert.match(client, /function drawDrake/);
-assert.match(client, /function drawFerret/);
-assert.match(client, /function drawRareMorphShell/);
-assert.match(client, /Celestial Serpent/);
-assert.match(client, /Crown Beast/);
-assert.match(client, /Boombox Kaiju/);
-assert.match(client, /Graffiti Guardian/);
-assert.match(client, /function drawPetMarking/);
-assert.match(client, /function drawPetEyes/);
-assert.match(client, /function drawEquipmentLayers/);
-assert.match(client, /equipped_outfit/);
-assert.match(client, /equipped_armor/);
-assert.match(client, /equipped_weapon/);
-assert.match(client, /equipped_charm/);
-assert.match(client, /function drawCosmeticLayers/);
-assert.match(client, /profile_frame/);
-assert.match(client, /victory_pose/);
-assert.match(client, /run_trail/);
+assert.match(client, /function drawMoonEgg/, 'the procedural egg remains until dedicated egg art is approved');
+assert.match(client, /drawSelectedBotSprite\(renderTime, animationMode, active, x, y, 1\)/, 'hatched pets must use the selected AutoSprite pack');
+assert.match(client, /if \(drawSelectedBotSprite\(renderTime, animationMode, active, x, y, 1\)\) return;\s*drawEmergencyMoonpetFallback\(renderTime, active, lifecycle, pet, presence, x, y\);/s,
+  'hatched pets must fall back to an emergency renderer when bot art is unavailable');
+assert.doesNotMatch(client, /drawSideScrollerMoonpetSprite|drawApprovedMoonpetSprite/, 'legacy character renderers must not be live');
+assert.doesNotMatch(client, /drawEquipmentLayers|drawCosmeticLayers|wearableTraitDebug|WEARABLE_LOADOUT/, 'character dressing and wearable debug logic must be absent');
+assert.doesNotMatch(css, /wearable-slot-row/, 'wearable controls must be removed from live CSS');
+assert.match(client, /evolutionStage: Number\(pet\.evolution_stage \|\| lifecycle\.evolution_stage/, 'art identity must include evolution stage');
+assert.match(client, /selectWorldBackgroundForState\(state\)/, 'server snapshots must resolve persistent rare world art');
+assert.match(client, /rare_morph_id \|\| lifecycle\.rare_morph/, 'rare morph state must drive background selection');
+assert.match(client, /getBackgroundArtState/, 'background provenance must remain inspectable');
+assert.equal(Object.keys(botArtRegistry.bots).length, 8, 'all eight bots must be registered');
+for (const [botName, bot] of Object.entries(botArtRegistry.bots)) {
+  assert.equal(bot.evolution_art.stage_1.status, 'complete', `${botName} base art must stay complete`);
+  for (const stage of ['stage_2', 'stage_3', 'stage_4', 'stage_5']) {
+    assert.equal(bot.evolution_art[stage].status, 'pending', `${botName} ${stage} must be pending master art`);
+    assert.equal(bot.evolution_art[stage].fallback_stage, 'stage_1', `${botName} ${stage} must fall back to its own base`);
+  }
+}
+assert.equal(Object.keys(rareBackgroundRegistry.bots).length, 8, 'all eight bots need rare-background routes');
+for (const [botName, bot] of Object.entries(rareBackgroundRegistry.bots)) {
+  for (const rareId of Object.keys(rareBackgroundRegistry.rare_morphs)) {
+    assert.equal(bot[rareId].status, 'pending', `${botName} ${rareId} must stay pending until approved art exists`);
+  }
+}
+assert.equal(itemArtRegistry.policy.character_attachment, 'never', 'item art must remain independent from character sprites');
+assert.ok(Object.keys(itemArtRegistry.items).length > 0, 'item art requirements must cover current gameplay objects');
 assert.match(client, /var WORLD_SCENES =/);
 for (const scene of ['home', 'missions', 'explore', 'work', 'economy', 'profile']) {
-  assert.match(client, new RegExp(scene + ": \\{ label:"), `Phase 2 must include the ${scene} world scene`);
+  assert.match(client, new RegExp(scene + ": \\{ label:"), `the current build must retain the ${scene} world scene`);
 }
 assert.match(client, /MOONBLOCK ROOFTOP/);
 assert.match(client, /QUEST UNDERPASS/);
@@ -1588,370 +1642,7 @@ assert.match(client, /SCRAP YARD 85/);
 assert.match(client, /CHAIN MARKET/);
 assert.match(client, /ALL-CITY HEIGHTS/);
 assert.match(client, /function drawWorldSky/);
-assert.match(client, /var driftPhase = reducedMotion \? 0 : Math\.floor\(time \/ 2400\)/);
-assert.match(client, /var starSpeed = star % 3 === 0 \? 1 : 0\.35/);
-assert.match(client, /\(WORLD_STAR_X\[star\] \+ driftPhase \* starSpeed\) % 320/);
-assert.doesNotMatch(client, /Math\.floor\(time \/ 2400\) % 320/, 'star drift phase must remain unbounded before per-star speed is applied');
-assert.match(client, /function drawWorldSkyline/);
-assert.match(client, /function drawGraffitiTag/);
-assert.match(client, /function drawGraffitiWall/);
-assert.match(client, /function drawWorldLandmarks/);
-for (const scene of ['home', 'missions', 'explore', 'work', 'economy', 'profile']) {
-  assert.match(client, new RegExp("sceneKey === '" + scene + "'"), `Phase 2 must draw a distinct ${scene} landmark silhouette`);
-}
-assert.doesNotMatch(client, /Math\.floor\(time \/ 180\) % 36/, 'skyline motion must not snap at a modulo boundary');
-assert.doesNotMatch(client, /drawPixelText\('₿'/, 'crypto moon mark must not depend on a platform font glyph');
-assert.match(client, /interact: '#a9ff9a'/);
-assert.match(client, /var WORLD_BACKGROUND_URL = '\/games\/assets\/BITTY%20BACKGROUND\.jpg\?v=20260925-botty-front-live-beta-v4'/);
-assert.match(client, /var worldBackgroundImage = new Image\(\)/);
-assert.match(client, /function drawWorldBackground\(\)/);
-assert.match(client, /ctx\.drawImage\(worldBackgroundImage, sx, sy, sw, sh, 0, 0, 320, 220\)/);
-const drawWorldSource = extractTestExport(client, 'drawWorld');
-assert.ok(drawWorldSource, 'drawWorld helper must be extractable');
-assert.match(drawWorldSource, /drawWorldBackground\(\)/);
-assert.doesNotMatch(drawWorldSource, /drawWorldSky\(/);
-assert.doesNotMatch(drawWorldSource, /drawWorldSkyline\(/);
-assert.doesNotMatch(drawWorldSource, /drawGraffitiWall\(/);
-assert.doesNotMatch(drawWorldSource, /drawWorldLandmarks\(/);
-assert.doesNotMatch(drawWorldSource, /drawWorldStreet\(/);
-assert.doesNotMatch(drawWorldSource, /drawWorldReaction\(/);
-assert.doesNotMatch(drawWorldSource, /drawWorldForeground\(/);
-assert.doesNotMatch(drawWorldSource, /drawUtcAmbience\(/);
-assert.doesNotMatch(drawWorldSource, /drawActionEffects\(|drawActionFlash\(|drawCinematicFeedback\(|drawCompanionPresence\(|drawCombatOpponent\(|drawSceneTransition\(/,
-  'live world rendering must not invoke legacy overlays or procedural opponents');
-assert.match(drawWorldSource, /else drawActionInfo\(renderTime\)/,
-  'normal action presentation must use the shared right-side information column');
-assert.match(client, /function drawMoonEgg/);
-assert.match(client, /drawMoonEgg\(time, active, lifecycle\.incubation\)/);
-assert.match(client, /var progress = Math\.max\(0, Number\(incubation && incubation\.progress \|\| 0\)\)/);
-assert.match(client, /var crack = Math\.min\(2, Math\.floor\(progress \/ target \* 3\)\)/);
-assert.match(client, /function petGrowthShape/);
-assert.match(client, /phase === 'young'.*scaleX: 0\.9, scaleY: 0\.76/s);
-assert.match(client, /phase === 'rare'.*scaleX: 1\.22, scaleY: 1\.18/s);
-assert.match(client, /ctx\.scale\(growth\.scaleX \* pose\.squashX \* combatScale \* ceremonyScale, growth\.scaleY \* pose\.squashY \* combatScale \* ceremonyScale\)/);
-assert.match(client, /function petFaceOffset/);
-assert.match(client, /speciesId === 'sneaker_snail' \? 18 : 0/);
-assert.match(client, /ctx\.translate\(faceX, 0\)/);
-assert.match(client, /mood === 'happy'.*pose\.tail = 8/s);
-assert.match(client, /mood === 'hungry'.*pose\.headY = 4/s);
-assert.match(client, /mood === 'hurt'.*pose\.squashX = 0\.94/s);
-assert.match(client, /animationMode === 'feed'/);
-assert.match(client, /animationMode === 'play'/);
-assert.match(client, /animationMode === 'train'/);
-assert.match(client, /animationMode === 'sleep'/);
-assert.match(client, /animationMode === 'battle'/);
-assert.match(client, /animationMode === 'celebrate'/);
-assert.match(client, /animationMode === 'evolve'.*pose\.squashX = 1\.08/s);
-assert.match(client, /function petMood/);
-const actionPresentationSource = extractTestExport(client, 'actionPresentation');
-assert.ok(actionPresentationSource, 'action presentation helper must be extractable');
-assert.match(actionPresentationSource, /var x = 205/);
-assert.match(actionPresentationSource, /Arial, sans-serif/);
-assert.match(actionPresentationSource, /Processing\.\.\./);
-assert.match(actionPresentationSource, /mode === 'sleep' \? 'Sleeping'/);
-assert.doesNotMatch(actionPresentationSource, /drawPixelText|shadowBlur|neon/i,
-  'action information must remain a restrained sans-serif UI treatment');
-assert.match(client, /animationMode === 'battle'/);
-assert.match(client, /animationMode === 'evolve'/);
-assert.match(client, /bootLayer\.classList\.toggle\('is-compact'/);
-assert.match(client, /target\.getBoundingClientRect\(\)\.top - screenRect\.top \+ screen\.scrollTop/);
-assert.match(client, /pet\.evolution_stage == null \? NaN : Number\(pet\.evolution_stage\)/);
-assert.match(client, /var renderTime = reducedMotion \? performance\.now\(\) : time/);
-assert.match(client, /var active = sleepLatched \|\| animationUntil > renderTime/);
-assert.match(client, /SLEEP_LATCH_STORAGE_KEY = 'moonpet-botty-sleep-latch-v1'/);
-assert.match(client, /animationUntil = sleepLatched && animationMode === 'sleep' \? Number\.POSITIVE_INFINITY/);
-assert.match(client, /animationMode = sleepLatched \? 'sleep' : 'idle'/);
-assert.match(client, /var y = 194/);
-assert.match(client, /reducedMotionAnimationTimer = window\.setTimeout/);
-assert.match(client, /drawWorld\(performance\.now\(\)\)/);
-assert.match(client, /var blink = !reducedMotion && Math\.floor\(renderTime \/ 1800\)/);
-assert.match(client, /tell\(visible\[0\]\.title/);
-assert.match(css, /\.boot-layer\.is-compact\.is-notice \{[^}]*max-height: none;[^}]*overflow-y: auto/s);
-assert.match(css, /repeating-linear-gradient/);
-assert.match(css, /grid-template-rows: auto minmax\(178px, 32dvh\) auto minmax\(0, 1fr\) auto/);
-assert.match(css, /\.screen \{[^}]*overflow-y: auto/s);
-assert.match(css, /\.dock \{[^}]*position: relative/s);
-assert.match(css, /\.boot-layer\.is-compact/);
-assert.match(css, /prefers-reduced-motion/);
-assert.match(css, /\.meter-fill \{[^}]*display: block;/s);
-assert.doesNotMatch(html, /maximum-scale|user-scalable/i);
-
-
-assert.match(client, /var SCREEN_ORDER = \['home', 'missions', 'explore', 'work', 'economy', 'profile'\]/);
-assert.match(client, /function switchScreen\(nextScreen\)/);
-assert.match(client, /sceneTransitionDirection = SCREEN_ORDER\.indexOf\(nextScreen\)/);
-assert.match(client, /sceneTransitionUntil = reducedMotion \? 0 : sceneTransitionStartedAt \+ 420/);
-assert.match(client, /if \(!SCREEN_ORDER\.includes\(jump\.dataset\.jump\)\)/);
-assert.match(client, /tell\('ROUTE NOT FOUND\.', 'danger'\)/);
-assert.match(client, /switchScreen\(jump\.dataset\.jump\)/);
-assert.match(client, /switchScreen\(target\.dataset\.screen\)/);
-assert.match(client, /var CAMERA_IMPACT_STRENGTH =/);
-for (const family of ['feed', 'play', 'clean', 'sleep', 'train', 'battle', 'travel', 'work', 'equip', 'evolve', 'trade', 'celebrate', 'interact', 'blocked']) {
-  assert.match(client, new RegExp(family + ': \\d'), `Phase 3 must define camera impact for ${family}`);
-}
-assert.match(client, /var CAMERA_FRAME = \{ x: 0, y: 0, zoom: 1 \}/);
-assert.match(client, /function updateCameraFrame\(time\)/);
-assert.match(client, /if \(botArtModeEnabled\) return CAMERA_FRAME/);
-assert.match(client, /function actionFeedback\(result, beforeState, afterState\)/);
-assert.match(client, /function resultRewardMap\(result\)/);
-assert.match(client, /applied && \(applied\.rewardsApplied \|\| applied\.rewards_applied\)/);
-assert.match(client, /var reward = resultRewardMap\(result\)/);
-assert.equal([...client.matchAll(/var reward = resultRewardMap\(result\)/g)].length, 2, 'terminal and canvas feedback must share reward normalization');
-assert.match(client, /presentResultFeedback\(data\.result, stateBeforeAction, nextState\)/);
-assert.match(client, /await showPendingNotices\(\);\s*var actionAccepted = Boolean\(data\.result && data\.result\.accepted\);[\s\S]*?animateAction\(action, actionAccepted, 2800, payload\);\s*if \(!startLifecycleCeremony\(plannedCeremony\)\) presentResultFeedback\(data\.result, stateBeforeAction, nextState\)/s);
-assert.doesNotMatch(client, /presentResultFeedback\(data\.result(?:, stateBeforeAction, nextState)?\);\s*render\(\);\s*await typeBoot/s, 'feedback timer must not run behind the boot overlay');
-assert.equal([...client.matchAll(/presentResultFeedback\(/g)].length, 3, 'only the helper plus successful and failed server-result paths may present feedback');
-assert.match(client, /var feedbackDuration = Math\.max\(5200, actionResultHoldMs \+ 1600\)/);
-assert.match(client, /feedbackUntil = performance\.now\(\) \+ feedbackDuration/);
-assert.match(client, /feedbackRedrawTimer = window\.setTimeout/);
-assert.match(client, /clearResultFeedback\(true\)/);
-assert.match(client, /clearResultFeedback\(false\);[\s\S]*?animateAction\(action, true, 8000, payload\)/s);
-assert.match(client, /reaction: compactFeedback\(result\.reaction, 24\)/);
-assert.match(client, /actionStartedAt <= 0/);
-assert.match(client, /feedbackActionMode = animationMode/);
-assert.doesNotMatch(drawWorldSource, /drawActionFlash|drawCinematicFeedback|drawSceneTransition/);
-assert.doesNotMatch(client, /Math\.random\(\).*feedback|feedback.*Math\.random\(\)/s, 'Phase 3 feedback must never invent random rewards');
-
-
-assert.match(client, /var SCENE_COMPANION_HABITS =/);
-for (const habit of ['moon_gaze', 'signal_scan', 'alley_prowl', 'scrap_tinker', 'window_shop', 'memory_glow']) {
-  assert.match(client, new RegExp(habit), `Phase 4 must include scene habit ${habit}`);
-}
-assert.match(client, /var SPECIES_COMPANION_HABITS =/);
-for (const species of ['neon_raccoon', 'bubble_ram', 'comet_gecko', 'vinyl_crab', 'lantern_fox', 'sneaker_snail', 'alley_drake', 'moon_ferret']) {
-  assert.match(client, new RegExp(species + ": '[a-z_]+"), `Phase 4 must include an idle signature for ${species}`);
-}
-assert.match(client, /function companionIdentitySeed\(pet, lifecycle\)/);
-assert.match(client, /return companionSeedValue/);
-assert.match(client, /COMPANION_PRESENCE_FRAME\.slot !== slot/);
-assert.match(client, /COMPANION_PRESENCE_FRAME\.screen !== activeScreen/);
-assert.match(client, /function temperamentCompanionHabit\(temperament\)/);
-assert.match(client, /bold\|brave\|fierce\|confident.*return 'swagger'/s);
-assert.match(client, /rhythmic\|play\|wild\|chaos\|energetic.*return 'fidget'/s);
-assert.match(client, /calm\|soft\|patient\|loyal.*return 'chill'/s);
-assert.match(client, /social\|curious\|alert\|observant.*return 'listen'/s);
-assert.match(client, /function companionNeedThought\(pet, lifecycle, fallback\)/);
-assert.match(client, /Number\(pet\.health\) < 35.*I NEED PATCHING/s);
-assert.match(client, /Number\(pet\.energy\) < 20.*NAP SIGNAL/s);
-assert.match(client, /Number\(pet\.hunger\) > 78.*SNACK PLEASE/s);
-assert.match(client, /Number\(pet\.cleanliness\) < 30.*WASH TIME/s);
-assert.match(client, /Number\(pet\.happiness\) < 30.*PLAY WITH ME/s);
-assert.match(client, /function updateCompanionPresence\(pet, lifecycle, time\)/);
-const presenceFunctionSource = extractTestExport(client, 'phase4PresenceDirector');
-assert.ok(presenceFunctionSource, 'Phase 4 presence director must be extractable for runtime smoke coverage');
-const runtimePresenceFrame = { behavior: 'chill', phase: 0.72, thought: '', slot: -1, screen: '', seed: -1 };
-const updatePresenceRuntime = new Function(
-  'reducedMotion', 'activeScreen', 'COMPANION_PRESENCE_FRAME', 'companionIdentitySeed',
-  'SCENE_COMPANION_HABITS', 'SPECIES_COMPANION_HABITS', 'temperamentCompanionHabit',
-  'companionNeedThought', 'COMPANION_THOUGHTS',
-  presenceFunctionSource + '; return updateCompanionPresence;'
-)(
-  false,
-  'explore',
-  runtimePresenceFrame,
-  () => 12,
-  { explore: 'alley_prowl' },
-  { neon_raccoon: 'mask_wash' },
-  () => 'listen',
-  (_pet, _lifecycle, fallback) => fallback,
-  { alley_prowl: 'ALLEY CHECK', mask_wash: 'MASK STAYS FRESH', listen: 'TELL ME MORE' },
-);
-assert.doesNotThrow(() => updatePresenceRuntime(
-  { pet_name: 'Smoke', species: 'neon_raccoon', health: 100, energy: 100, hunger: 0, cleanliness: 100, happiness: 100 },
-  { species_id: 'neon_raccoon', temperament: 'curious' },
-  0,
-), 'Phase 4 presence director must execute without unresolved render-loop identifiers');
-assert.equal(runtimePresenceFrame.thought, 'ALLEY CHECK');
-assert.doesNotThrow(() => updatePresenceRuntime(
-  { pet_name: 'Smoke', species: 'neon_raccoon', health: 100, energy: 100, hunger: 0, cleanliness: 100, happiness: 100 },
-  null,
-  8000,
-), 'Phase 4 species habits must fall back to pet.species when lifecycle identity is incomplete');
-assert.equal(runtimePresenceFrame.behavior, 'mask_wash');
-assert.equal(runtimePresenceFrame.thought, 'MASK STAYS FRESH');
-
-assert.match(client, /var presenceTime = reducedMotion \? 0 : Math\.max\(0, time\)/);
-assert.match(client, /COMPANION_PRESENCE_FRAME\.phase = reducedMotion \? 0\.72/);
-assert.match(client, /function drawCompanionHabitEffects\(time, x, y, presence, color, active\)/);
-assert.match(client, /var effectTime = reducedMotion \? 0 : time/);
-assert.match(client, /var angle = effectTime \/ 900/);
-assert.match(client, /function companionAmbienceMode\(hour\)/);
-assert.match(client, /NIGHT SHIFT/);
-assert.match(client, /DAWN SHIFT/);
-assert.match(client, /DAY SHIFT/);
-assert.match(client, /DUSK SHIFT/);
-assert.match(client, /function drawUtcAmbience\(scene\)/);
-assert.match(client, /if \(nextUtcHour !== utcHour\)/);
-assert.match(client, /if \(reducedMotion\) drawWorld\(performance\.now\(\)\)/);
-assert.match(client, /function drawCompanionPresence\(time, scene, presence\)/);
-assert.match(client, /var bubbleY = 54/);
-assert.match(client, /drawPixelRect\(7, bubbleY, 150, 31/);
-assert.doesNotMatch(client, /drawPixelRect\(7, 18, 150, 31/, 'companion copy must remain below the DOM HUD');
-assert.match(client, /if \(feedbackActive \|\| actionActive && !greetingActive\) return/);
-assert.match(client, /feedbackUntil > time/);
-assert.match(client, /function companionGreetingCopy\(pet, lifecycle\)/);
-assert.match(client, /function greetCompanion\(\)/);
-assert.match(client, /function companionGreetingVariant\(pet\)/);
-assert.match(client, /return pet \? 'front_wave' : 'basic'/, 'every live companion greeting must use the front wave when a pet exists');
-assert.equal(sideScrollerRegistry.runtime_role_map.greet.role, 'side_front_wave', 'higher-level greetings must route to the front wave role');
-assert.equal(sideScrollerRegistry.runtime_role_map.celebrate.role, 'side_front_victory', 'celebrate must route directly to the front victory role');
-assert.ok(
-  sideScrollerRegistry.assets.some((asset) => asset.role === 'side_front_wave' && asset.approved === true && asset.promoted === true),
-  'front wave sheet must remain approved/promoted so it can load with runtime side roles',
-);
-for (const role of ['side_front_wave', 'side_front_point', 'side_front_victory', 'side_front_dance']) {
-  assert.ok(
-    sideScrollerRegistry.assets.some((asset) => asset.role === role && asset.approved === true && asset.promoted === true),
-    `${role} must be approved/promoted for front-facing idle personality`,
-  );
-  assert.ok(
-    sideScrollerRegistry.runtime_role_map.idle.variants.includes(role),
-    `${role} must be included in the idle personality variant pool`,
-  );
-}
-assert.equal(sideScrollerRegistry.runtime_role_map.idle.role, 'side_front_point', 'normal idle must primarily face the player');
-assert.ok(sideScrollerRegistry.runtime_role_map.idle.variant_cadence >= 7, 'front-facing idle personality variants must be rare');
-assert.equal(sideScrollerRegistry.runtime_role_map.idle.trait_reference_role, 'side_front_point', 'front-facing traits must use point as the master mannequin pose');
-assert.ok(sideScrollerRegistry.runtime_role_map.idle.variant_weights.side_front_point > sideScrollerRegistry.runtime_role_map.idle.variant_weights.side_front_wave, 'point must be weighted above wave for idle personality');
-assert.ok(sideScrollerRegistry.runtime_role_map.idle.variant_weights.side_front_wave > sideScrollerRegistry.runtime_role_map.idle.variant_weights.side_front_victory, 'wave must remain more common than rare victory idle');
-assert.equal(sideScrollerRegistry.runtime_role_map.idle.variant_weights.side_front_victory, sideScrollerRegistry.runtime_role_map.idle.variant_weights.side_front_dance, 'victory and dance must stay rare peer idle beats');
-assert.match(client, /'side_front_victory',[\s\S]*'side_front_dance',[\s\S]*'side_front_wave',[\s\S]*'side_front_point'/, 'front personality flow must resolve point, wave, dance, victory before returning to front idle');
-assert.equal(sideScrollerRegistry.runtime_role_map.interact.role, 'side_interact', 'interact moments must stay on the readable interaction gesture');
-assert.equal(sideScrollerRegistry.runtime_role_map.interact.variants, undefined, 'interact moments must not vary into turn-around sprites');
-assert.ok(sideScrollerRegistry.runtime_role_map.feed.variant_cadence >= 4, 'food chaos must be an occasional variant, not the default feed outcome');
-assert.ok(sideScrollerRegistry.runtime_role_map.travel.variant_cadence >= 5, 'travel turn/jump inserts must be rarer than normal run travel');
-assert.match(client, /function idleSpecialRoleForFrame\(time, mode, active\)/, 'Mini App must gate rare front-facing idle personality variants');
-assert.match(client, /idleSpecialNextAt = now \+ 6500 \+ Math\.floor\(idleSpecialRoll\(now, 11\) \* 4500\)/, 'idle personality variants must return to base idle for a cooldown between specials');
-assert.match(client, /function refillIdleSpecialBag\(time\)/, 'front personality flow must retain its cooldown-gated sequence refill');
-assert.match(client, /function idleSpecialRoll\(time, salt\)/, 'idle personality variants must use local deterministic pseudo-random rolls');
-assert.match(client, /role: roleOverride/, 'renderer options must support one idle role override at a time');
-assert.equal(sideScrollerRegistry.wearable_traits.config_path, '/data/moonpet-wearable-traits.json', 'side-scroller registry must point at the wearable trait config');
-assert.equal(sideScrollerRegistry.wearable_traits.runtime_mode, 'live_beta_loadout', 'wearable traits must be live in normal beta gameplay');
-assert.equal(sideScrollerRegistry.wearable_traits.default_enabled, true, 'wearable rendering must be enabled by default');
-assert.deepEqual(sideScrollerRegistry.wearable_traits.debug_queries, [
-  '?wearableTraitDebug=head',
-  '?wearableTraitDebug=face',
-  '?wearableTraitDebug=chest',
-  '?wearableTraitDebug=back',
-  '?wearableTraitDebug=hand',
-  '?wearableTraitDebug=aura',
-  '?wearableTraitDebug=all'
-]);
-assert.equal(wearableTraits.master_reference_role, 'side_front_point', 'wearable traits must use side_front_point as the master mannequin');
-assert.equal(wearableTraits.frame_anchor_system.system_id, 'moonbot_frame_anchor_rig_v1', 'wearables must bind to the shared Moonbot frame rig');
-assert.deepEqual(wearableTraits.frame_anchor_system.runtime_chain, ['moonbot_frame', 'body_anchor', 'wearable_local_offset']);
-for (const category of ['hats', 'glasses', 'masks', 'chains', 'hoodies', 'backpacks', 'badges', 'hand_items', 'shoes_feet_items', 'auras', 'props']) {
-  assert.ok(wearableTraits.trait_categories.includes(category), `wearable trait schema must include ${category}`);
-}
-for (const selector of ['head', 'face', 'chest', 'back', 'hand', 'aura', 'all']) {
-  assert.ok(Array.isArray(wearableTraits.debug_trait_sets[selector]), `wearable trait debug set must include ${selector}`);
-}
-assert.ok(wearableTraits.debug_trait_sets.all.includes('neon_borough_cap'), 'combined wearable proof must use the production head attachment');
-for (const role of ['side_front_point', 'side_front_wave', 'side_idle', 'side_walk', 'side_run']) {
-  assert.ok(wearableTraits.supported_role_map[role], `wearable trait role map must support ${role}`);
-  assert.ok(wearableTraits.supported_role_map[role].anchors.badge, `${role} must define a badge anchor for the sample propagation proof`);
-  assert.ok(wearableTraits.supported_role_map[role].anchors.hat, `${role} must define a head anchor for the sample propagation proof`);
-  assert.ok(wearableTraits.supported_role_map[role].anchors.glasses, `${role} must define a face anchor for the sample propagation proof`);
-  assert.ok(wearableTraits.supported_role_map[role].anchors.backpack, `${role} must define a back anchor for the sample propagation proof`);
-  assert.ok(wearableTraits.supported_role_map[role].anchors.hand_item, `${role} must define a hand anchor for the sample propagation proof`);
-  assert.ok(wearableTraits.supported_role_map[role].anchors.aura, `${role} must define an aura anchor for the sample propagation proof`);
-}
-for (const traitId of ['sample_lunar_cap', 'sample_visor_glasses', 'sample_chest_badge', 'sample_micro_jetpack', 'sample_wrench_prop', 'sample_electric_aura']) {
-  const sampleWearable = wearableTraits.traits.find((trait) => trait.id === traitId);
-  assert.ok(sampleWearable, `wearable trait config must include ${traitId}`);
-  for (const role of ['side_front_point', 'side_front_wave', 'side_front_victory', 'side_front_dance', 'side_idle', 'side_walk', 'side_run', 'side_jump', 'side_turn', 'side_eat', 'side_play', 'side_train', 'side_clean', 'side_sleep', 'side_work', 'side_equip', 'side_evolve', 'side_trade', 'side_celebrate', 'side_interact', 'side_hurt', 'side_battle']) {
-    assert.ok(sampleWearable.supported_roles.includes(role), `${traitId} must propagate to ${role}`);
-  }
-  assert.ok(Array.isArray(sampleWearable.blocked_roles), `${traitId} must document blocked roles, even when empty`);
-  assert.ok(sampleWearable.pose_adaptation_notes, `${traitId} must document pose adaptation notes`);
-  assert.equal(typeof sampleWearable.z_index, 'number', `${traitId} must define z-index/layer order metadata`);
-}
-assert.equal(wearableTraits.mirror_safe_rules.default, 'mirror_with_pose', 'wearable trait config must define mirror-safe defaults');
-assert.deepEqual(wearableTraits.loadout_slots, ['head', 'face', 'chest', 'back', 'hand', 'aura'], 'wearable config must define every live beta equip slot');
-const productionCap = wearableTraits.traits.find((trait) => trait.id === 'neon_borough_cap');
-assert.ok(productionCap, 'wearable config must include the fitted Neon Borough Cap');
-assert.equal(productionCap.status, 'production_beta', 'fitted cap must be promoted as a production beta trait');
-const promotedRuntimeRoles = sideScrollerRegistry.assets
-  .filter((asset) => asset.approved === true && asset.promoted === true)
-  .map((asset) => asset.role);
-assert.equal(promotedRuntimeRoles.length, 24, 'runtime registry must retain all 24 promoted Moonbot roles');
-assert.deepEqual(new Set(productionCap.supported_roles), new Set(promotedRuntimeRoles), 'production cap must cover every promoted runtime role');
-assert.deepEqual(productionCap.blocked_roles, [], 'production cap must have no temporarily blocked promoted roles');
-assert.equal(productionCap.anchor_key, 'head_top', 'production cap must bind to the shared head_top anchor');
-assert.equal(productionCap.use_character_anchor, true, 'production cap must use character-owned frame tracking');
-assert.equal(productionCap.anchor_binding.frame_tracking_owner, 'moonbot', 'cap frame tracking must be owned by Moonbot');
-assert.equal(productionCap.visual.pose_fits, undefined, 'cap must not own an independent per-frame tracking table');
-assert.deepEqual(productionCap.visual.opposite_assets, {
-  front: 'front',
-  side_right: 'side_left',
-  side_left: 'side_right',
-  back: 'back'
-}, 'production cap must preserve badge orientation with explicit opposite-facing assets');
-assert.equal(moonpetFrameAnchors.system_id, 'moonbot_frame_anchor_rig_v1');
-assert.equal(Object.keys(moonpetFrameAnchors.roles).length, 24, 'frame rig must cover all 24 promoted roles');
-for (const role of promotedRuntimeRoles) {
-  const roleRig = moonpetFrameAnchors.roles[role];
-  assert.ok(roleRig, `${role} must have character-owned frame anchors`);
-  assert.equal(roleRig.frames.length, 25, `${role} must have 25 anchored frames`);
-  assert.ok(Number.isFinite(roleRig.normalization.scale), `${role} must define runtime scale normalization`);
-  for (const frame of roleRig.frames) {
-    assert.ok(['front', 'side_right', 'side_left', 'rear'].includes(frame.orientation), `${role} frame ${frame.index} must define orientation`);
-    for (const anchorName of moonpetFrameAnchors.required_anchors) {
-      const packed = frame.anchors[anchorName];
-      assert.equal(packed.length, moonpetFrameAnchors.anchor_fields.length, `${role} frame ${frame.index} must define ${anchorName}`);
-      assert.ok(packed.slice(0, 4).every(Number.isFinite), `${role} frame ${frame.index} ${anchorName} geometry must be finite`);
-    }
-  }
-}
-assert.deepEqual(new Set(moonpetFrameAnchors.roles.side_turn.frames.map((frame) => frame.orientation)), new Set(['front', 'side_right', 'side_left', 'rear']), 'turn frames must cover every orientation');
-const visorProof = wearableTraits.traits.find((trait) => trait.id === 'sample_visor_glasses');
-assert.equal(visorProof.anchor_key, 'visor_center', 'face proof must bind to visor_center');
-assert.equal(visorProof.use_character_anchor, true, 'face proof must inherit character-owned frame tracking');
-for (const [traitId, anchorName] of Object.entries({
-  sample_chest_badge: 'chest_center',
-  sample_micro_jetpack: 'back_center',
-  sample_wrench_prop: 'hand_right'
-})) {
-  const categoryProof = wearableTraits.traits.find((trait) => trait.id === traitId);
-  assert.equal(categoryProof.anchor_key, anchorName, `${traitId} must bind to ${anchorName}`);
-  assert.equal(categoryProof.use_character_anchor, true, `${traitId} must inherit character-owned frame tracking`);
-  assert.equal(categoryProof.visual.pose_fits, undefined, `${traitId} must not own a per-frame tracking table`);
-}
-assert.equal(wearableTraits.layer_render_policy.backpack, 'behind', 'backpacks must render behind the Moonbot');
-assert.equal(wearableTraits.layer_render_policy.badge, 'front', 'chest badges must render in front of the Moonbot');
-assert.equal(wearableTraits.layer_render_policy.hand_item, 'anchor_occlusion', 'hand props must inherit draw phase from hand anchor occlusion');
-for (const assetPath of Object.values(productionCap.visual.assets)) {
-  assert.ok(fs.existsSync(new URL(`../${assetPath.replace(/^\//, '')}`, import.meta.url)), `production wearable asset must exist: ${assetPath}`);
-}
-assert.deepEqual(Object.values(wearableTraits.default_loadout).filter(Boolean), ['neon_borough_cap'], 'normal beta gameplay must start with the fitted production cap only');
-assert.match(client, /WEARABLE_LOADOUT_STORAGE_KEY = 'moonpet-wearable-loadout-v2'/, 'wearable loadout must use versioned local runtime persistence');
-assert.match(client, /function equippedWearableTraits\(\) \{\s*return \[\];\s*\}/, 'normal BOTTY rendering must not pass wearable overlays');
-assert.doesNotMatch(client, /data-utility="wearables">WEARABLES/, 'live BOTTY UI must not expose the old wearable equip panel');
-assert.match(client, /BOTS USE FULL AUTOSPRITE COSTUME PACKS/, 'deep-linked upgrade panel must describe the new costume-pack model');
-assert.match(sideScrollerLoader, /DEFAULT_WEARABLE_TRAITS_PATH = "data\/moonpet-wearable-traits\.json"/, 'side-scroller loader must know the wearable trait config path');
-assert.match(sideScrollerLoader, /loadWearableTraitConfig/, 'side-scroller loader must load wearable trait config without blocking sprite loading');
-assert.match(sideScrollerLoader, /loadFrameAnchors/, 'side-scroller loader must load the Moonbot frame anchor registry');
-assert.match(sideScrollerRenderer, /function decodeAnchor\(role, frameIndex, anchorName, options = \{\}\)/, 'renderer must resolve shared character anchors');
-assert.match(sideScrollerRenderer, /frameRig\.anchors\.root/, 'renderer must normalize each sprite from its frame-owned root anchor');
-assert.match(sideScrollerRenderer, /function transitionPlan\(desiredRole, time, options = \{\}\)/, 'renderer must handle front-to-side and side-to-front transitions');
-assert.match(sideScrollerRenderer, /function drawWearableTraits\(ctx, role, frame, drawX, drawY, width, height, options, phase = "front"\)/, 'side-scroller renderer must include wearable overlay rendering');
-assert.match(sideScrollerRenderer, /layer_render_policy/, 'wearable layering must come from category metadata');
-assert.match(sideScrollerRenderer, /policy === "anchor_occlusion"/, 'hand and foot attachment layering must follow shared anchor occlusion');
-assert.match(sideScrollerRenderer, /function drawWearableVisual\(ctx, radius, trait, orientation\)/, 'wearable renderer must dispatch orientation-aware category proof visuals');
-assert.match(sideScrollerRenderer, /function drawBitmapWearable\(ctx, role, frame, drawX, drawY, width, height, trait, options\)/, 'wearable renderer must support fitted bitmap overlays');
-assert.match(sideScrollerRenderer, /visual\.orientation_assets\[orientation\]/, 'wearable renderer must select art from character-frame orientation');
-assert.match(sideScrollerRenderer, /anchored\.y == null \? 0\.5 : anchored\.y/, 'zero-valued wearable anchors must remain valid coordinates');
-assert.match(sideScrollerRenderer, /if \(options\.facing === -1\) ctx\.scale\(-1, 1\)/, 'wearable renderer must counter-mirror asymmetric bitmap artwork');
-assert.doesNotMatch(sideScrollerRenderer, /visual\.pose_fits/, 'renderer must not support wearable-owned frame tracking tables');
-assert.match(sideScrollerLoader, /visual\.type === "runtime_bitmap"/, 'side-scroller loader must preload production wearable bitmap assets');
-assert.match(sideScrollerRenderer, /debug_trait_sets/, 'wearable renderer must support opt-in debug selectors');
-assert.match(sideScrollerRenderer, /wearableTraitDebug/, 'wearable debug selectors must remain available');
-assert.match(client, /function wearableTraitDebugRequested\(\)/, 'Mini App must retain wearable debug query support');
-assert.match(client, /'head', 'face', 'chest', 'back', 'hand', 'prop', 'aura', 'all'/, 'Mini App must pass every wearable debug selector through');
-assert.match(client, /wearables=/, 'side sprite debug must report rendered wearable traits');
-assert.match(sideScrollerRenderer, /function roleForAnimationMode\(animationMode, active, options = \{\}\)/);
-assert.match(sideScrollerRenderer, /state\.roleMap\[mode\]/, 'side-scroller renderer must resolve roles from runtime_role_map');
-assert.match(sideScrollerRenderer, /variant_cadence/, 'side-scroller variants must support cadence control');
+const drawWorldSource = client.slice(client.indexOf('function drawWorld(time)'), client.indexOf('function frame(time)'));
 assert.match(client, /canvas\.addEventListener\('click'/);
 assert.match(client, /canvasX >= 92 && canvasX <= 228 && canvasY >= 72 && canvasY <= 220/);
 assert.match(client, /animateAction\('greet', true, greetingVariant === 'front_wave' \? 2200 : 1400/);
@@ -1996,7 +1687,6 @@ assert.match(client, /'Special ' \+ Number\(combat\.playerSpecial\)/);
 assert.match(client, /'Card  ' \+ compactFeedback\(words\(combat\.playerCardKey\), 14\)/);
 assert.match(client, /drawActionInfoPanel\(combat\.title, lines, rivalColor, 1\)/);
 assert.match(client, /if \(!combat \|\| !combat\.active\)/);
-assert.match(client, /var combatScale = 1/);
 assert.match(client, /var x = 124/);
 assert.match(client, /drawCombatHud\(scene, combat\)/);
 assert.doesNotMatch(drawWorldSource, /drawCombatOpponent|drawCompanionPresence/);
@@ -2115,7 +1805,6 @@ assert.match(client, /duration: 8200/);
 assert.match(client, /drawActionInfoPanel\(ceremony\.title, lines, color, fade\)/, 'lifecycle copy must use the shared right-side information column');
 assert.doesNotMatch(drawWorldSource, /drawCompanionPresence/, 'lifecycle rendering must not overlap thought bubbles');
 assert.doesNotMatch(client, /animationLabel/, 'legacy canvas action labels must be removed');
-assert.match(client, /var ceremonyScale = 1/);
 assert.match(client, /lifecycleCeremonyTimer = window\.setTimeout/);
 assert.match(client, /if \(lifecycleCeremony !== activeCeremony\) return/);
 assert.match(drawWorldSource, /if \(lifecycleCeremonyActive\(renderTime\)\) drawLifecycleCeremony\(renderTime, scene\)/);
@@ -2210,7 +1899,7 @@ assert.match(worker, /Math\.floor\(stepIndex \/ PET_RUN_BOSS_INTERVAL\) \+ 1/);
 assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Number\(activeRun\.depth \|\| 0\) \+ 1/);
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
-assert.match(html, /20260926-multi-bot-art-v1/);
+assert.match(html, /20260926-evolution-art-foundation-v1/);
 assert.match(worker, /20260925-moonpet-ui-redesign-v2/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');

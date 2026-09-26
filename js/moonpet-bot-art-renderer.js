@@ -4,7 +4,8 @@
   let selectionGeneration = 0;
   const state = {
     initialized: false, enabled: false, ready: false, reason: "not initialized", errors: [],
-    identityKey: "", requestedBot: null, resolvedBot: null, fallbackUsed: false, manifest: null,
+    identityKey: "", requestedBot: null, resolvedBot: null, fallbackUsed: false,
+    requestedEvolution: "stage_1", resolvedEvolution: "stage_1", evolutionFallbackUsed: false, manifest: null,
     assetsByRole: {}, roleMap: {}, display: {}, pendingRoles: [], lastRender: null
   };
 
@@ -16,6 +17,8 @@
       initialized: state.initialized, enabled: state.enabled, ready: state.ready,
       reason: state.reason, errors: [...state.errors], requestedBot: state.requestedBot,
       resolvedBot: state.resolvedBot, fallbackUsed: state.fallbackUsed, manifest: state.manifest,
+      requestedEvolution: state.requestedEvolution, resolvedEvolution: state.resolvedEvolution,
+      evolutionFallbackUsed: state.evolutionFallbackUsed,
       assetsByRole: state.assetsByRole, roleMap: state.roleMap, display: state.display,
       loadedRoles, pendingRoles: state.pendingRoles.filter((role) => !state.assetsByRole[role]),
       lastRender: state.lastRender
@@ -23,7 +26,7 @@
   }
 
   async function selectMoonpetBot(identity = {}) {
-    const identityKey = `${identity.speciesId || identity.species_id || ""}|${identity.speciesName || identity.species_name || identity.displayName || ""}`;
+    const identityKey = `${identity.speciesId || identity.species_id || ""}|${identity.speciesName || identity.species_name || identity.displayName || ""}|${identity.evolutionStage ?? identity.evolution_stage ?? identity.stage ?? 1}`;
     if (state.ready && state.identityKey === identityKey) return snapshot();
     const generation = ++selectionGeneration;
     state.initialized = true;
@@ -48,13 +51,16 @@
       state.requestedBot = result.requestedBot;
       state.resolvedBot = result.resolvedBot;
       state.fallbackUsed = result.fallbackUsed;
+      state.requestedEvolution = result.requestedEvolution || "stage_1";
+      state.resolvedEvolution = result.resolvedEvolution || "stage_1";
+      state.evolutionFallbackUsed = Boolean(result.evolutionFallbackUsed);
       state.manifest = result.manifest;
       state.assetsByRole = result.assetsByRole || {};
       state.roleMap = result.roleMap || {};
       state.display = result.display || {};
       state.pendingRoles = result.pendingRoles || [];
       state.errors = result.errors || [];
-      state.reason = result.ready ? `${result.resolvedBot} idle ready` : `${result.resolvedBot} idle failed to load`;
+      state.reason = result.ready ? `${result.resolvedBot} ${state.resolvedEvolution} idle ready` : `${result.resolvedBot} idle failed to load`;
       if (result.preload && typeof result.preload.then === "function") {
         result.preload.then(() => {
           if (generation === selectionGeneration) state.reason = `${state.resolvedBot} pack ready`;
@@ -106,6 +112,8 @@
     ctx.restore();
     state.lastRender = {
       requestedBot: state.requestedBot, resolvedBot: state.resolvedBot, fallbackUsed: state.fallbackUsed,
+      requestedEvolution: state.requestedEvolution, resolvedEvolution: state.resolvedEvolution,
+      evolutionFallbackUsed: state.evolutionFallbackUsed,
       animationMode, requestedRole, role, frameIndex: frame.index, frameCount: asset.frames.length,
       loop: asset.loop !== false && asset.one_shot !== true, drew: true
     };
