@@ -136,6 +136,12 @@ async function ensureLocalEggyoneFrontFightAsset(productionDir, characterId) {
   const sourcePath = path.join(REPO_ROOT, LOCAL_FRONT_FIGHT_SOURCE.path.replace(/^[/\\]+/, ""));
   const runtimePng = path.join(productionDir, "front_fight.png");
   const runtimeAtlas = path.join(productionDir, "front_fight.json");
+  const existingAtlas = await readJsonIfExists(runtimeAtlas, null);
+  const existingFrames = atlasFrames(existingAtlas);
+  const existingFrame = existingFrames[0]?.frame || existingFrames[0] || {};
+  const existingFrameWidth = Number(existingFrame.w || existingFrame.width || existingAtlas?.meta?.frame_size?.w);
+  const existingFrameHeight = Number(existingFrame.h || existingFrame.height || existingAtlas?.meta?.frame_size?.h);
+  const existingFrameCount = existingFrames.length || Number(existingAtlas?.meta?.frame_count) || 0;
   await fs.copyFile(sourcePath, runtimePng);
   const sourceBlobSha = await fs.readFile(sourcePath).then((buf) => crypto.createHash("sha1").update(Buffer.concat([Buffer.from(`blob ${buf.length}\0`), buf])).digest("hex"));
   if (sourceBlobSha !== LOCAL_FRONT_FIGHT_SOURCE.blob_sha) {
@@ -144,17 +150,22 @@ async function ensureLocalEggyoneFrontFightAsset(productionDir, characterId) {
   const metadata = await sharp(runtimePng).metadata();
   const width = Number(metadata.width);
   const height = Number(metadata.height);
-  const frameCount = 25;
-  const columns = Math.sqrt(frameCount);
-  if (!Number.isInteger(columns) || width % columns !== 0 || height % columns !== 0) {
-    throw new Error(`front_fight PNG layout ${width}x${height} is not compatible with a ${frameCount}-frame square grid`);
+  if (!(existingFrameCount > 0) || !(existingFrameWidth > 0) || !(existingFrameHeight > 0)) {
+    throw new Error("front_fight local atlas seed is missing or invalid; refusing to invent frame layout");
   }
-  const frameWidth = width / columns;
-  const frameHeight = height / columns;
-  if (frameWidth !== frameHeight) throw new Error("front_fight PNG frame cells are not square");
+  if (width % existingFrameWidth !== 0 || height % existingFrameHeight !== 0) {
+    throw new Error(`front_fight PNG layout ${width}x${height} is incompatible with committed atlas frame size ${existingFrameWidth}x${existingFrameHeight}`);
+  }
+  const columns = width / existingFrameWidth;
+  const rows = height / existingFrameHeight;
+  const frameCount = columns * rows;
+  if (frameCount !== existingFrameCount) {
+    throw new Error(`front_fight PNG grid frame count ${frameCount} does not match committed atlas frame count ${existingFrameCount}`);
+  }
+  if (existingFrameWidth !== existingFrameHeight) throw new Error("front_fight committed atlas frame cells are not square");
   const atlas = buildLocalAtlas({
     frameCount,
-    frameSize: frameWidth,
+    frameSize: existingFrameWidth,
     sheetSize: { w: width, h: height },
     durationS: 2.333
   });
@@ -168,7 +179,7 @@ async function ensureLocalEggyoneFrontFightAsset(productionDir, characterId) {
     png_path: "/img/moonpets/eggyone/front_fight.png",
     atlas_path: "/img/moonpets/eggyone/front_fight.json",
     frame_count: frameCount,
-    frame_dimensions: { w: frameWidth, h: frameHeight },
+    frame_dimensions: { w: existingFrameWidth, h: existingFrameHeight },
     sheet_size: { w: width, h: height },
     fps: 12,
     loop: FRONT_ACTION_PLAYBACK.front_fight.loop,
