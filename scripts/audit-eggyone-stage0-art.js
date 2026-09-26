@@ -42,13 +42,14 @@ function parseCliArgs(argv = process.argv.slice(2)) {
   };
 }
 
-function auditEggyoneStage0(options = {}) {
+function auditEggyoneStage0Manifest(manifest, options = {}) {
   const write = options.write === true;
-  const existingAudit = readExistingAudit();
-  const manifest = JSON.parse(fs.readFileSync(MANIFEST_PATH, "utf8"));
+  const existingAudit = options.existingAudit || null;
   const failures = [];
   if (manifest.character_name !== "EGGYONE") failures.push("manifest character_name must be EGGYONE");
-  if (manifest.source !== "AutoSprite API") failures.push("manifest source must be AutoSprite API");
+  if (!String(manifest.source || "").includes("AutoSprite API")) {
+    failures.push("manifest source must include AutoSprite API for Stage-0 provenance");
+  }
   if (!manifest.character_id) failures.push("manifest character_id is required");
 
   const assets = new Map((manifest.assets || []).map((asset) => [asset.role, asset]));
@@ -81,7 +82,7 @@ function auditEggyoneStage0(options = {}) {
   const result = {
     schema_version: 2,
     audited_at: auditedAt,
-    source: "AutoSprite API",
+    source: manifest.source,
     character_name: manifest.character_name,
     character_id: manifest.character_id,
     manifest_path: "/data/moonpet-eggyone-stage0-assets.json",
@@ -93,6 +94,14 @@ function auditEggyoneStage0(options = {}) {
     failures,
   };
   if (failures.length) throw new Error(`EGGYONE Stage 0 audit failed:\n- ${failures.join("\n- ")}`);
+  return result;
+}
+
+function auditEggyoneStage0(options = {}) {
+  const write = options.write === true;
+  const existingAudit = readExistingAudit();
+  const manifest = JSON.parse(fs.readFileSync(MANIFEST_PATH, "utf8"));
+  const result = auditEggyoneStage0Manifest(manifest, { write, existingAudit });
   const serialized = `${JSON.stringify(result, null, 2)}\n`;
   if (write) {
     fs.writeFileSync(OUTPUT_PATH, serialized, "utf8");
@@ -108,4 +117,11 @@ if (require.main === module) {
   auditEggyoneStage0(options);
 }
 
-module.exports = { EXPECTED_ROLES, OPTIONAL_FRONT_ACTION_ROLES, auditEggyoneStage0, atlasFrameCount, parseCliArgs };
+module.exports = {
+  EXPECTED_ROLES,
+  OPTIONAL_FRONT_ACTION_ROLES,
+  auditEggyoneStage0Manifest,
+  auditEggyoneStage0,
+  atlasFrameCount,
+  parseCliArgs
+};

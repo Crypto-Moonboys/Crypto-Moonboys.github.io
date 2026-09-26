@@ -12,6 +12,11 @@ const {
   spritesheetId,
   writeJson
 } = require("./download-botty-front-animations");
+const {
+  LOCAL_EGGYONE_FRONT_FIGHT,
+  validateLocalEggyoneFrontFightAsset,
+  repoPath: localRepoPath
+} = require("./eggyone-front-fight-local");
 const REPO_ROOT = path.resolve(__dirname, "..");
 const REGISTRY_PATH = path.join(REPO_ROOT, "data", "moonpet-autosprite-characters.json");
 const BOT_ART_REGISTRY_PATH = path.join(REPO_ROOT, "data", "moonpet-bot-art-registry.json");
@@ -39,7 +44,8 @@ async function readJson(filePath) {
   return JSON.parse(await fs.readFile(filePath, "utf8"));
 }
 
-function rolesForCharacter() {
+function rolesForCharacter(character) {
+  if (character && character.name === "EGGYONE") return ["front_dance", "front_victory"];
   return Object.keys(REQUIRED_ROLES);
 }
 
@@ -54,6 +60,58 @@ function canonicalPaths(character, role) {
     atlas: `${root}/${role}.json`,
     contact: `${root}/front-actions-contact-sheet.png`
   };
+}
+
+function buildLocalEggyoneFrontFightEntry(characterId, contactPath) {
+  return {
+    character_name: "EGGYONE",
+    character_id: characterId,
+    role: LOCAL_EGGYONE_FRONT_FIGHT.role,
+    spritesheet_id: null,
+    frame_count: 25,
+    playback_mode: REQUIRED_ROLES.front_fight.playback_mode,
+    source_mode: "local_approved_asset",
+    png_path: LOCAL_EGGYONE_FRONT_FIGHT.runtime_png_path,
+    atlas_path: LOCAL_EGGYONE_FRONT_FIGHT.runtime_atlas_path,
+    contact_sheet_path: contactPath,
+    review_status: "approved_visual_review",
+    user_supplied: {
+      source_png_path: LOCAL_EGGYONE_FRONT_FIGHT.source_png_path,
+      source_blob_sha: LOCAL_EGGYONE_FRONT_FIGHT.source_blob_sha
+    }
+  };
+}
+
+function contactSheetEntryForLocalEggyoneFrontFight() {
+  return {
+    id: LOCAL_EGGYONE_FRONT_FIGHT.role,
+    output_png_path: String(LOCAL_EGGYONE_FRONT_FIGHT.runtime_png_path || "").replace(/^[/\\]+/, "")
+  };
+}
+
+async function buildContactEntriesForCharacter(character, characterId, entries) {
+  const requiredRoles = rolesForCharacter(character);
+  const contactEntries = [...entries];
+  if (character.name === "EGGYONE") {
+    const manifestPath = repoPath(character.manifest);
+    const manifest = await readJson(manifestPath);
+    const existingFight = (manifest.assets || []).find((asset) => asset.role === LOCAL_EGGYONE_FRONT_FIGHT.role);
+    if (!existingFight) throw new Error("EGGYONE front_fight must exist in manifest before front-action contact-sheet build");
+    await validateLocalEggyoneFrontFightAsset({
+      repoRoot: REPO_ROOT,
+      asset: existingFight,
+      manifestCharacterId: characterId
+    });
+    contactEntries.push(contactSheetEntryForLocalEggyoneFrontFight());
+  }
+  const requiredContactRoles = character.name === "EGGYONE" ? Object.keys(REQUIRED_ROLES) : requiredRoles;
+  const contactRoleSet = new Set(contactEntries.map((entry) => entry.id));
+  for (const role of requiredContactRoles) {
+    if (!contactRoleSet.has(role)) {
+      throw new Error(`${character.name}: contact sheet requires role ${role}`);
+    }
+  }
+  return contactEntries;
 }
 
 function asInstalledAsset(character, characterId, entry) {
@@ -104,6 +162,20 @@ async function installCharacter(character, characterId, entries) {
     await fs.copyFile(repoPath(entry.output_atlas_path), repoPath(paths.atlas));
   }
 
+  if (character.name === "EGGYONE") {
+    const sourcePath = localRepoPath(REPO_ROOT, LOCAL_EGGYONE_FRONT_FIGHT.source_png_path);
+    const runtimePngPath = localRepoPath(REPO_ROOT, LOCAL_EGGYONE_FRONT_FIGHT.runtime_png_path);
+    await fs.mkdir(path.dirname(runtimePngPath), { recursive: true });
+    await fs.copyFile(sourcePath, runtimePngPath);
+    const existingFight = (manifest.assets || []).find((asset) => asset.role === "front_fight");
+    if (!existingFight) throw new Error("EGGYONE front_fight must exist in manifest before front-action install");
+    await validateLocalEggyoneFrontFightAsset({
+      repoRoot: REPO_ROOT,
+      asset: existingFight,
+      manifestCharacterId: characterId
+    });
+  }
+
   manifest.runtime_role_map.dance = "front_dance";
   manifest.runtime_role_map.victory = "front_victory";
   manifest.runtime_role_map.fight = "front_fight";
@@ -149,13 +221,14 @@ async function processCharacter(character, apiKey, globalIds) {
     }));
   }
 
-  await buildContactSheet(entries, paths.contactSheetPath);
+  const contactEntries = await buildContactEntriesForCharacter(character, characterId, entries);
+  await buildContactSheet(contactEntries, paths.contactSheetPath);
   const contactPath = canonicalPaths(character, "front_dance").contact;
   await fs.mkdir(path.dirname(repoPath(contactPath)), { recursive: true });
   await fs.copyFile(paths.contactSheetPath, repoPath(contactPath));
   await installCharacter(character, characterId, entries);
 
-  return entries.map((entry) => ({
+  const rows = entries.map((entry) => ({
     character_name: character.name,
     character_id: characterId,
     role: entry.id,
@@ -168,6 +241,10 @@ async function processCharacter(character, apiKey, globalIds) {
     contact_sheet_path: contactPath,
     review_status: "pending_visual_review"
   }));
+  if (character.name === "EGGYONE") {
+    rows.push(buildLocalEggyoneFrontFightEntry(characterId, contactPath));
+  }
+  return rows;
 }
 
 async function main() {
@@ -185,7 +262,12 @@ async function main() {
   for (const character of selectedCharacters) {
     animations.push(...await processCharacter(character, apiKey, globalIds));
   }
-  if (animations.length !== 30) throw new Error(`Front action report must contain 30 existing sheets, received ${animations.length}.`);
+  if (animations.length !== 30) throw new Error(`Front action report must contain 30 runtime sheets, received ${animations.length}.`);
+  const autospriteCount = animations.filter((entry) => entry.source_mode === "downloaded_existing").length;
+  const localCount = animations.filter((entry) => entry.source_mode === "local_approved_asset").length;
+  if (autospriteCount !== 29 || localCount !== 1) {
+    throw new Error(`Front action report must contain 29 AutoSprite sheets + 1 local approved asset, received ${autospriteCount} + ${localCount}.`);
+  }
 
   const botRegistry = await readJson(BOT_ART_REGISTRY_PATH);
   botRegistry.role_map.dance = "front_dance";
@@ -197,20 +279,32 @@ async function main() {
     required_roles: Object.keys(REQUIRED_ROLES),
     character_count: CHARACTERS.length,
     animation_count: animations.length,
+    autosprite_sheet_count: autospriteCount,
+    local_approved_asset_count: localCount,
     audit_path: "/data/moonpet-front-action-audit.json"
   };
   await writeJson(BOT_ART_REGISTRY_PATH, botRegistry);
   await writeJson(REPORT_PATH, {
     schema_version: 1,
     generated_at: new Date().toISOString(),
-    source: "AutoSprite API",
+    source: "AutoSprite API + approved local asset",
     mode: "download_existing_named_sheets",
     cache_version: CACHE_VERSION,
     characters: CHARACTERS.map((character) => character.name),
     required_roles: Object.keys(REQUIRED_ROLES),
+    autosprite_sheet_count: autospriteCount,
+    local_approved_asset_count: localCount,
+    local_approved_assets: [
+      {
+        character_name: "EGGYONE",
+        role: LOCAL_EGGYONE_FRONT_FIGHT.role,
+        source_png_path: LOCAL_EGGYONE_FRONT_FIGHT.source_png_path,
+        source_blob_sha: LOCAL_EGGYONE_FRONT_FIGHT.source_blob_sha
+      }
+    ],
     animations
   });
-  console.log(`Moonpet front action pack staged: ${animations.length} verified existing AutoSprite sheets.`);
+  console.log(`Moonpet front action pack staged: ${autospriteCount} AutoSprite + ${localCount} approved local runtime sheets.`);
 }
 
 if (require.main === module) {
@@ -220,4 +314,14 @@ if (require.main === module) {
   });
 }
 
-module.exports = { CHARACTERS, REQUIRED_ROLES, CACHE_VERSION, canonicalPaths, asInstalledAsset, rolesForCharacter };
+module.exports = {
+  CHARACTERS,
+  REQUIRED_ROLES,
+  CACHE_VERSION,
+  canonicalPaths,
+  asInstalledAsset,
+  rolesForCharacter,
+  buildLocalEggyoneFrontFightEntry,
+  contactSheetEntryForLocalEggyoneFrontFight,
+  buildContactEntriesForCharacter
+};

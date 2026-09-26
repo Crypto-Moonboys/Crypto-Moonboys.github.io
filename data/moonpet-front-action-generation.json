@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generated_at": "2026-09-26T17:21:35.892Z",
-  "source": "AutoSprite API",
+  "source": "AutoSprite API + approved local asset",
   "mode": "download_existing_named_sheets",
   "cache_version": "20260926-front-actions-v1",
   "characters": [
@@ -52,14 +52,18 @@
       "character_name": "EGGYONE",
       "character_id": "cmui5g9430007v27qp8scqirq",
       "role": "front_fight",
-      "spritesheet_id": "cmuimda2g0001p9y057qe1bso",
+      "spritesheet_id": null,
       "frame_count": 25,
       "playback_mode": "once_then_idle",
-      "source_mode": "downloaded_existing",
+      "source_mode": "local_approved_asset",
       "png_path": "/img/moonpets/eggyone/front_fight.png",
       "atlas_path": "/img/moonpets/eggyone/front_fight.json",
       "contact_sheet_path": "/img/moonpets/eggyone/front-actions-contact-sheet.png",
-      "review_status": "pending_visual_review"
+      "review_status": "approved_visual_review",
+      "user_supplied": {
+        "source_png_path": "/img/moonpets/eggyone/EGGYONE-front_fight-v1.png",
+        "source_blob_sha": "835af206e932916ef0c4e1c3ca13cbdae18bf2f1"
+      }
     },
     {
       "character_name": "WTFBOI",
@@ -411,6 +415,16 @@
       "atlas_path": "/img/moonpets/tin-bob/front_fight.json",
       "contact_sheet_path": "/img/moonpets/tin-bob/front-actions-contact-sheet.png",
       "review_status": "pending_visual_review"
+    }
+  ],
+  "autosprite_sheet_count": 29,
+  "local_approved_asset_count": 1,
+  "local_approved_assets": [
+    {
+      "character_name": "EGGYONE",
+      "role": "front_fight",
+      "source_png_path": "/img/moonpets/eggyone/EGGYONE-front_fight-v1.png",
+      "source_blob_sha": "835af206e932916ef0c4e1c3ca13cbdae18bf2f1"
     }
   ]
 }

@@ -3,7 +3,8 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const sharp = require("sharp");
-const { CHARACTERS, REQUIRED_ROLES, CACHE_VERSION, rolesForCharacter } = require("./download-moonpet-front-action-pack");
+const { CHARACTERS, REQUIRED_ROLES, CACHE_VERSION } = require("./download-moonpet-front-action-pack");
+const { LOCAL_EGGYONE_FRONT_FIGHT, validateLocalEggyoneFrontFightAsset } = require("./eggyone-front-fight-local");
 
 const REPO_ROOT = path.resolve(__dirname, "..");
 const CHARACTER_REGISTRY_PATH = path.join(REPO_ROOT, "data", "moonpet-autosprite-characters.json");
@@ -81,7 +82,7 @@ async function audit(options = {}) {
     const contactPath = repoPath(manifest.front_action_contact_sheet_path);
     if (!manifest.front_action_contact_sheet_path || !fs.existsSync(contactPath)) failures.push(`${character.name}: front action contact sheet is missing`);
 
-    const expectedRoles = new Set(rolesForCharacter(character));
+    const expectedRoles = new Set(Object.keys(REQUIRED_ROLES));
     for (const asset of manifest.assets || []) {
       if (REQUIRED_ROLES[asset.role] && !expectedRoles.has(asset.role)) failures.push(`${character.name} ${asset.role}: role is not required`);
     }
@@ -94,9 +95,14 @@ async function audit(options = {}) {
       }
       const owner = `${character.name} ${role}`;
       const spritesheetId = String(asset.autosprite?.spritesheet_id || "");
-      if (!spritesheetId) failures.push(`${owner}: missing genuine spritesheet ID`);
-      if (spritesheetOwners.has(spritesheetId)) failures.push(`${owner}: spritesheet ID duplicates ${spritesheetOwners.get(spritesheetId)}`);
-      else spritesheetOwners.set(spritesheetId, owner);
+      const isApprovedLocalEggyoneFrontFight = character.name === "EGGYONE" && role === "front_fight";
+      if (!spritesheetId && !isApprovedLocalEggyoneFrontFight) {
+        failures.push(`${owner}: missing genuine spritesheet ID`);
+      }
+      if (spritesheetId) {
+        if (spritesheetOwners.has(spritesheetId)) failures.push(`${owner}: spritesheet ID duplicates ${spritesheetOwners.get(spritesheetId)}`);
+        else spritesheetOwners.set(spritesheetId, owner);
+      }
       if (asset.autosprite?.character_id !== expectedCharacterId) failures.push(`${owner}: AutoSprite character ID mismatch`);
       if (!String(asset.png_path || "").startsWith(expectedFolder)) failures.push(`${owner}: PNG path uses the wrong character folder`);
       if (!String(asset.atlas_path || "").startsWith(expectedFolder)) failures.push(`${owner}: atlas path uses the wrong character folder`);
@@ -130,11 +136,18 @@ async function audit(options = {}) {
             break;
           }
         }
+        if (isApprovedLocalEggyoneFrontFight) {
+          await validateLocalEggyoneFrontFightAsset({
+            repoRoot: REPO_ROOT,
+            asset,
+            manifestCharacterId: expectedCharacterId
+          });
+        }
         rows.push({
           character_name: character.name,
           character_id: expectedCharacterId,
           role,
-          spritesheet_id: spritesheetId,
+          spritesheet_id: spritesheetId || null,
           frame_count: frames.length,
           playback_mode: asset.playback_mode,
           png_path: asset.png_path,
@@ -142,7 +155,11 @@ async function audit(options = {}) {
           contact_sheet_path: manifest.front_action_contact_sheet_path,
           transparent_ratio: image.transparent_ratio,
           review_status: options.approve ? "approved_visual_review" : asset.review_status,
-          source_mode: asset.provenance
+          source_mode: isApprovedLocalEggyoneFrontFight ? "local_approved_asset" : asset.provenance,
+          user_supplied: isApprovedLocalEggyoneFrontFight ? {
+            source_png_path: LOCAL_EGGYONE_FRONT_FIGHT.source_png_path,
+            source_blob_sha: LOCAL_EGGYONE_FRONT_FIGHT.source_blob_sha
+          } : undefined
         });
       } catch (error) {
         failures.push(`${owner}: ${error.message}`);
@@ -164,6 +181,21 @@ async function audit(options = {}) {
 
   if (rows.length !== 30) failures.push(`expected 30 audited animations, received ${rows.length}`);
   if (generationReport.animations?.length !== 30) failures.push("generation report must contain 30 animations");
+  const autospriteCount = rows.filter((row) => row.source_mode !== "local_approved_asset").length;
+  const localCount = rows.filter((row) => row.source_mode === "local_approved_asset").length;
+  if (autospriteCount !== 29 || localCount !== 1) failures.push(`expected 29 AutoSprite + 1 local approved assets, received ${autospriteCount} + ${localCount}`);
+  if (generationReport.autosprite_sheet_count !== 29 || generationReport.local_approved_asset_count !== 1) {
+    failures.push("generation report source counts must be 29 AutoSprite + 1 local approved asset");
+  }
+  if (!Array.isArray(generationReport.local_approved_assets) || generationReport.local_approved_assets.length !== 1) {
+    failures.push("generation report must include one local approved asset record");
+  }
+  const localRecord = Array.isArray(generationReport.local_approved_assets) ? generationReport.local_approved_assets[0] : null;
+  if (localRecord) {
+    if (localRecord.character_name !== "EGGYONE" || localRecord.role !== "front_fight") failures.push("generation report local approved record must be EGGYONE front_fight");
+    if (localRecord.source_png_path !== LOCAL_EGGYONE_FRONT_FIGHT.source_png_path) failures.push("generation report local approved source path mismatch");
+    if (localRecord.source_blob_sha !== LOCAL_EGGYONE_FRONT_FIGHT.source_blob_sha) failures.push("generation report local approved source blob mismatch");
+  }
   if (botRegistry.role_map?.dance !== "front_dance" || botRegistry.role_map?.victory !== "front_victory" || botRegistry.role_map?.fight !== "front_fight") {
     failures.push("central bot-art registry is missing front action role mappings");
   }
@@ -177,10 +209,12 @@ async function audit(options = {}) {
   const result = {
     schema_version: 1,
     audited_at: new Date().toISOString(),
-    source: "AutoSprite API",
+    source: "AutoSprite API + approved local asset",
     cache_version: CACHE_VERSION,
     character_count: CHARACTERS.length,
     animation_count: rows.length,
+    autosprite_sheet_count: autospriteCount,
+    local_approved_asset_count: localCount,
     required_roles: Object.keys(REQUIRED_ROLES),
     mechanical_status: failures.length ? "failed" : "complete",
     visual_review_status: allApproved || options.approve && failures.length === 0 ? "approved" : "pending",
