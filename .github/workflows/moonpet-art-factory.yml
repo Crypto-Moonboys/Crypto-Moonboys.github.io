@@ -11,6 +11,7 @@ on:
       - "scripts/promote-moonpet-bot-front-pack.js"
       - "scripts/audit-autosprite-egg-art.js"
       - "scripts/inspect-autosprite-stage0-pack.js"
+      - "scripts/download-eggyone-stage0-animations.js"
       - "data/moonpet-art-factory-request.json"
   workflow_dispatch:
     inputs:
@@ -25,6 +26,7 @@ on:
           - download-existing-front-pack
           - install-existing-street-pack
           - inspect-existing-stage0-pack
+          - download-existing-stage0-pack
       autosprite_character_name:
         description: "Exact existing AutoSprite character name."
         required: true
@@ -86,12 +88,13 @@ jobs:
           node --check scripts/promote-moonpet-bot-front-pack.js
           node --check scripts/audit-autosprite-egg-art.js
           node --check scripts/inspect-autosprite-stage0-pack.js
+          node --check scripts/download-eggyone-stage0-animations.js
           node scripts/generate-moonpet-assets-extraction.test.js
           node scripts/moonpet-art-architecture.test.mjs
           node scripts/moonpet-multi-bot-art.test.mjs
 
       - name: Discover AutoSprite character
-        if: ${{ env.FACTORY_PHASE == 'discover-autosprite-character' || env.FACTORY_PHASE == 'generate-front-pack' || env.FACTORY_PHASE == 'download-existing-front-pack' || env.FACTORY_PHASE == 'install-existing-street-pack' || env.FACTORY_PHASE == 'inspect-existing-stage0-pack' }}
+        if: ${{ env.FACTORY_PHASE == 'discover-autosprite-character' || env.FACTORY_PHASE == 'generate-front-pack' || env.FACTORY_PHASE == 'download-existing-front-pack' || env.FACTORY_PHASE == 'install-existing-street-pack' || env.FACTORY_PHASE == 'inspect-existing-stage0-pack' || env.FACTORY_PHASE == 'download-existing-stage0-pack' }}
         timeout-minutes: 10
         run: node scripts/discover-autosprite-character.js --name "$AUTOSPRITE_CHARACTER_NAME" --persist
 
@@ -118,6 +121,11 @@ jobs:
         if: ${{ env.FACTORY_PHASE == 'inspect-existing-stage0-pack' }}
         timeout-minutes: 30
         run: node scripts/inspect-autosprite-stage0-pack.js --character-name "$AUTOSPRITE_CHARACTER_NAME"
+
+      - name: Download existing EGGYONE Stage-0 pack
+        if: ${{ env.FACTORY_PHASE == 'download-existing-stage0-pack' }}
+        timeout-minutes: 30
+        run: node scripts/download-eggyone-stage0-animations.js --character-name "$AUTOSPRITE_CHARACTER_NAME"
 
       - name: Promote shared Street-stage pack
         if: ${{ env.FACTORY_PHASE == 'install-existing-street-pack' }}
@@ -147,6 +155,9 @@ jobs:
             git add data/moonpet-bot-art-registry.json data/moonpet-art-requirements.json data/moonpet-egg-art-audit.json
             git add data/moonpet-wtfboi-front-assets.json img/moonpets/wtfboi/
             COMMIT_MESSAGE="feat: install WTFBOI shared Street-stage art"
+          elif [ "$FACTORY_PHASE" = "download-existing-stage0-pack" ]; then
+            git add data/moonpet-eggyone-stage0-assets.json img/moonpets/eggyone/
+            COMMIT_MESSAGE="chore: stage existing EGGYONE art for visual review"
           else
             COMMIT_MESSAGE="chore: persist AutoSprite character registry and diagnostics [skip ci]"
           fi
@@ -166,7 +177,9 @@ jobs:
             output/manifests/
             data/moonpet-autosprite-characters.json
             data/moonpet-wtfboi-front-assets.json
+            data/moonpet-eggyone-stage0-assets.json
             data/moonpet-egg-art-audit.json
             img/moonpets/wtfboi/contact-sheet.png
+            img/moonpets/eggyone/contact-sheet.png
             data/autosprite-generation-diagnostics/
           if-no-files-found: warn
