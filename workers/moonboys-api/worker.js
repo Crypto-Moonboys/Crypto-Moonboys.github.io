@@ -6669,16 +6669,18 @@ function serializePet(pet, identity = null, options = {}) {
   const evolutionStage = currentEvolution ? Math.max(0, Number(currentEvolution.stage) || 0) : 0;
   const artIdentityId = decayed.species || identity?.lifecycle?.art_identity_id || null;
   const displayName = resolveMoonpetDisplayName({ evolution_stage: evolutionStage, art_identity_id: artIdentityId }, identity || {});
-  const storedPetName = options.preserve_pet_name === true
-    ? String(decayed.pet_name || '').trim() || displayName
-    : displayName;
   return {
     pet_id: decayed.pet_id || null,
     telegram_id: decayed.telegram_id,
     season_key: decayed.season_key || null,
     name: displayName,
-    pet_name: storedPetName,
+    pet_name: displayName,
     display_name: displayName,
+    ...(options.include_callsign === true ? {
+      callsign: evolutionStage >= MOONPET_IDENTITY_REVEAL_STAGE
+        ? String(decayed.pet_name || '').trim() || displayName
+        : null,
+    } : {}),
     species: evolutionStage >= 3 ? decayed.species : null,
     art_identity_id: privateMoonpetArtIdentityId(artIdentityId, evolutionStage, options.include_art_identity),
     stage: currentEvolution?.name || null,
@@ -9174,7 +9176,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     adventure ? issuePetMiniAppChallenge({ type: 'adventure', telegram_id: telegramId, encounter_key: adventure.key, event_key: adventure.event_key }, botToken) : null,
   ]);
   const serializedLifecycle = publicMoonpetLifecycle(lifecycle, { include_art_identity: true });
-  const canonicalPet = serializePet(petRaw, guidance?.identity, { include_art_identity: true, preserve_pet_name: true });
+  const canonicalPet = serializePet(petRaw, guidance?.identity, { include_art_identity: true, include_callsign: true });
   canonicalPet.display_name = resolveMoonpetDisplayName(serializedLifecycle || lifecycle || {}, guidance?.identity || {});
   canonicalPet.art_identity_id = serializedLifecycle?.identity_revealed ? serializedLifecycle.art_identity_id : canonicalPet.art_identity_id;
   canonicalPet.species = serializedLifecycle?.identity_revealed ? serializedLifecycle.species_id : null;

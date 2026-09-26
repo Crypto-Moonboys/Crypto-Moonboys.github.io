@@ -1007,7 +1007,7 @@ for (const name of TEST_EXPORT_NAMES) {
   assert.ok(source, `the real ${name} export must remain extractable after CRLF conversion`);
   assert.doesNotThrow(() => Function(`"use strict";${source}`), `the real ${name} export must compile after CRLF conversion`);
 }
-const draftState = { pet: { pet_id: 'pet-a', pet_name: 'Server A' } };
+const draftState = { pet: { pet_id: 'pet-a', pet_name: 'UNKNOWN', callsign: 'Server A' } };
 let mountedCallsignInput = null;
 const draftDocument = {
   activeElement: null,
@@ -1022,7 +1022,7 @@ const draftHelpers = Function('state', 'document', `"use strict";
     restoreEditableState,
     setRenderedPet(pet) {
       renderedPetId = pet && pet.pet_id || null;
-      renderedPetName = String(pet && pet.pet_name || '');
+      renderedPetName = String(pet && pet.callsign || '');
     },
   };
 `)(draftState, draftDocument);
@@ -1043,38 +1043,38 @@ assert.deepEqual(
   { petId: 'pet-a', petName: 'Server A', value: 'Local A', dirty: true, focused: true },
   'dirty callsign drafts must capture ownership and focus for the active pet instance',
 );
-draftState.pet = { pet_id: 'pet-a', pet_name: 'Server A refreshed' };
+draftState.pet = { pet_id: 'pet-a', pet_name: 'UNKNOWN', callsign: 'Server A refreshed' };
 mountedCallsignInput = callsignInput('Server A refreshed');
 draftHelpers.restoreEditableState(dirtySamePetDraft);
 assert.equal(mountedCallsignInput.value, 'Local A', 'a dirty draft must survive a background refresh for the same pet');
 assert.equal(mountedCallsignInput.selectionRestored, true, 'a same-pet dirty draft must restore its valid selection');
 
-draftState.pet = { pet_id: 'pet-a', pet_name: 'Server A' };
+draftState.pet = { pet_id: 'pet-a', pet_name: 'UNKNOWN', callsign: 'Server A' };
 mountedCallsignInput = callsignInput('Server A');
 draftHelpers.setRenderedPet(draftState.pet);
 const cleanDraft = draftHelpers.captureEditableState();
-draftState.pet.pet_name = 'New canonical A';
+draftState.pet.callsign = 'New canonical A';
 mountedCallsignInput = callsignInput('New canonical A');
 draftHelpers.restoreEditableState(cleanDraft);
 assert.equal(mountedCallsignInput.value, 'New canonical A', 'a clean input must not overwrite a newer canonical callsign');
 
-draftState.pet = { pet_id: 'pet-b', pet_name: 'Server B' };
+draftState.pet = { pet_id: 'pet-b', pet_name: 'UNKNOWN', callsign: 'Server B' };
 mountedCallsignInput = callsignInput('Server B');
 draftHelpers.restoreEditableState(dirtySamePetDraft);
 assert.equal(mountedCallsignInput.value, 'Server B', 'a draft owned by Pet A must not cross an active switch to Pet B');
 
-draftState.pet = { pet_id: 'pet-a', pet_name: 'Server A switched' };
+draftState.pet = { pet_id: 'pet-a', pet_name: 'UNKNOWN', callsign: 'Server A switched' };
 mountedCallsignInput = callsignInput('Server A switched');
 draftDocument.activeElement = null;
 draftHelpers.restoreEditableState({ ...dirtySamePetDraft, focused: false });
 assert.equal(mountedCallsignInput.value, 'Server A switched', 'a blurred draft must not overwrite a newer canonical callsign for the same pet');
 
-draftState.pet = { pet_id: 'pet-a', pet_name: 'Server A' };
+draftState.pet = { pet_id: 'pet-a', pet_name: 'UNKNOWN', callsign: 'Server A' };
 mountedCallsignInput = callsignInput('Server A');
 draftHelpers.restoreEditableState({ ...dirtySamePetDraft, focused: false });
 assert.equal(mountedCallsignInput.value, 'Local A', 'a blurred dirty draft must still survive rerenders while the canonical callsign is unchanged');
 
-draftState.pet = { pet_id: 'pet-b', pet_name: 'Server Normalized B' };
+draftState.pet = { pet_id: 'pet-b', pet_name: 'UNKNOWN', callsign: 'Server Normalized B' };
 mountedCallsignInput = callsignInput('Server Normalized B');
 draftHelpers.restoreEditableState(null);
 assert.equal(mountedCallsignInput.value, 'Server Normalized B', 'discarding an accepted rename draft must leave the server-normalized callsign visible');
@@ -1083,7 +1083,7 @@ const unsafeSelectionDraft = { petId: 'pet-b', value: 'Local B', dirty: true, fo
 draftHelpers.restoreEditableState(unsafeSelectionDraft);
 assert.equal(mountedCallsignInput.value, 'Local B', 'a dirty same-pet draft still restores when selection metadata is unavailable');
 assert.equal(mountedCallsignInput.selectionRestored, false, 'selection restoration must be skipped unless both offsets are numbers');
-draftState.pet = { pet_id: null, pet_name: 'Unidentified canonical pet' };
+draftState.pet = { pet_id: null, pet_name: 'UNKNOWN', callsign: 'Unidentified canonical pet' };
 mountedCallsignInput = callsignInput('Unidentified canonical pet');
 draftHelpers.restoreEditableState({ ...unsafeSelectionDraft, petId: null, value: 'Unowned draft' });
 assert.equal(mountedCallsignInput.value, 'Unidentified canonical pet', 'a draft without an authoritative pet_id must never be restored');
@@ -1506,6 +1506,9 @@ assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260926-stage2-art-mask-v3/);
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
 assert.match(client, /render\(\{ discardCallsignDraft: action === 'rename' && Boolean\(data\.result && data\.result\.accepted\) \}\)/, 'an accepted rename must discard the old draft so the server-normalized callsign wins');
+assert.match(client, /var callsignUnlocked = Number\(lifecycle\.evolution_stage \|\| state\.pet\.evolution_stage \|\| identity\.current_stage && identity\.current_stage\.stage \|\| 0\) >= MOONPET_IDENTITY_REVEAL_STAGE;/, 'callsign UI must stay locked until Stage 3');
+assert.match(client, /CALLSIGN LOCKED UNTIL STAGE 3\./, 'pre-reveal callsign panel must explain the Stage-3 lock');
+assert.match(client, /value="' \+ escapeHtml\(state\.pet\.callsign \|\| ''\) \+ '"/, 'post-reveal callsign editor must use the separate callsign field instead of player-facing name fields');
 assert.match(callsignDraftSource, /petId: renderedPetId[\s\S]*dirty: input\.value !== renderedPetName/, 'draft capture ownership must come from the snapshot that rendered the existing DOM');
 const renderSource = client.slice(client.indexOf('  function render(options)'), client.indexOf('  function resultRewardMap'));
 assert.ok(renderSource.indexOf('captureEditableState()') < renderSource.indexOf('renderedPetId = state'), 'render must capture the old DOM before recording the incoming snapshot identity');

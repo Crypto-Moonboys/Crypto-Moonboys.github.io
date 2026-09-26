@@ -1985,11 +1985,15 @@
     var rare = lifecycle.rare || {};
     var innate = (lifecycle.innate_traits || []).map(function (trait) { return '<div class="line complete">◆ ' + escapeHtml(words(trait)) + '</div>'; }).join('');
     var rarePanel = '<div class="line ' + (rare.ready ? 'complete' : 'muted') + '">HIDDEN SIGNAL // ' + escapeHtml(words(rare.signal || 'dormant')) + ' // ' + number(rare.progress) + '%</div>' + (rare.name ? '<div class="line complete">REVEALED // ' + escapeHtml(rare.name) + '</div>' : '<div class="line muted">The route remains hidden until your evolution, traits and memories align.</div>') + (rare.ready ? '<div class="button-grid one">' + button('ANSWER RARE SIGNAL', 'rare_morph') + '</div>' : '');
+    var callsignUnlocked = Number(lifecycle.evolution_stage || state.pet.evolution_stage || identity.current_stage && identity.current_stage.stage || 0) >= MOONPET_IDENTITY_REVEAL_STAGE;
+    var callsignPanel = callsignUnlocked
+      ? '<label class="line" for="pet-name-input">CUSTOM CALLSIGN</label><input id="pet-name-input" class="terminal-input" maxlength="32" value="' + escapeHtml(state.pet.callsign || '') + '"><div class="button-grid one">' + button('SAVE CALLSIGN', 'rename') + '</div><div class="line muted">CANONICAL IDENTITY STAYS SEPARATE FROM ANY CUSTOM CALLSIGN.</div>'
+      : '<div class="line complete">UNKNOWN</div><div class="line muted">CALLSIGN LOCKED UNTIL STAGE 3.</div>';
     return activePetSummary() +
       panel('IDENTITY CORE', '<div class="line complete">' + escapeHtml(resolveMoonpetDisplayName(lifecycle, identity)) + ' // ' + escapeHtml(moonpetStageLabel(lifecycle, state.pet || {})) + '</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT</div>' + innate + '<div class="line muted">PERSONALITY</div>' + (traits || '<div class="line muted">TRAITS STILL FORMING. Personality develops through play.</div>')) + panel('HIDDEN MORPH SIGNAL', rarePanel, 'rare-morph') +
       panel('APTITUDES', aptitudeRows) +
       panel('MEMORY ARCHIVE', memoryRows + (milestones || '<div class="line muted">NO MILESTONES RECORDED YET.</div>'), 'memories') +
-      panel('CALLSIGN', '<label class="line" for="pet-name-input">MOONPET NAME</label><input id="pet-name-input" class="terminal-input" maxlength="32" value="' + escapeHtml(state.pet.pet_name || '') + '"><div class="button-grid one">' + button('WRITE NEW CALLSIGN', 'rename') + '</div>', 'callsign') +
+      panel('CALLSIGN', callsignPanel, 'callsign') +
       panel('EVOLUTION', evoHtml, 'evolution') + panel('FACTION PERK', '<div class="line complete">' + escapeHtml(words(faction.key || 'unaligned')) + '</div><div class="line muted">' + escapeHtml(faction.bonus ? words(faction.bonus.system) + ' // ' + costText(faction.bonus.effect) : 'JOIN A FACTION TO ACTIVATE A GAMEPLAY BONUS') + '</div>', 'faction') +
       panel('PRESTIGE // FUTURE SEASON', futureSystemPanelCopy(futureSystemByKey('prestige', 'COMING_SOON')), 'prestige') +
       panel('MOONPET SANCTUARY // FUTURE SEASON', sanctuaryPanel, 'sanctuary') + panel('SPECIALIST TRACKS', tracks, 'tracks') + panel('ROADMAP // FUTURE SEASONS', futureSystemRows, 'future-systems') + panel('UNLOCK DIRECTORY', featureRows, 'features') + panel('ALERT CONTROL', notificationPanel, 'alerts') + panel('SEASON // ' + (season.key || ''), '<div class="line">' + number(season.xp) + ' SEASON XP</div>' + tiers, 'season') + panel('TOP MOONPETS', (leaders || '<div class="line muted">NO RANKS LOADED.</div>') + '<div class="button-grid one"><button type="button" class="terminal-button" data-utility="leaderboard">OPEN FULL LEADERBOARD</button></div>', 'leaderboard');
@@ -2023,7 +2027,7 @@
 
   function restoreEditableState(draft) {
     if (!draft || !draft.dirty || !draft.petId || !state || !state.pet || draft.petId !== state.pet.pet_id) return;
-    if (!draft.focused && String(state.pet.pet_name || '') !== String(draft.petName || '')) return;
+    if (!draft.focused && String(state.pet.callsign || '') !== String(draft.petName || '')) return;
     var input = document.getElementById('pet-name-input');
     if (!input) return;
     input.value = draft.value;
@@ -2043,7 +2047,7 @@
     screen.innerHTML = state ? utilityRail() + sectionJumpBar(activeScreen) + screens[activeScreen]() : '';
     restoreEditableState(editableState);
     renderedPetId = state && state.pet && state.pet.pet_id || null;
-    renderedPetName = String(state && state.pet && state.pet.pet_name || '');
+    renderedPetName = String(state && state.pet && state.pet.callsign || '');
     title.textContent = state && state.pet ? resolveMoonpetDisplayName(state.lifecycle, state.guidance && state.guidance.identity) + ' OS' : 'MOONPET OS';
     if (reducedMotion) drawWorld(0);
   }

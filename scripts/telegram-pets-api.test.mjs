@@ -466,12 +466,14 @@ const stageOneInternalArtPet = serializePet({ ...baseArenaPet, species: 'neon_ra
 assert.equal(stageOneInternalArtPet.art_identity_id, null, 'authenticated Stage-1 pets must not expose the future art identity');
 const stageTwoInternalArtPet = serializePet({ ...baseArenaPet, species: 'neon_raccoon' }, { current_stage: { stage: 2, name: 'Cyber Moonpet' } }, { include_art_identity: true });
 assert.equal(stageTwoInternalArtPet.art_identity_id, 'neon_raccoon', 'authenticated Stage-2 pets may expose the internal art identity needed for sprite selection');
-const preservedCallsignPet = serializePet({ ...baseArenaPet, pet_name: 'Cipher', species: 'neon_raccoon' }, { current_stage: { stage: 2, name: 'Cyber Moonpet' } }, { preserve_pet_name: true });
-assert.equal(preservedCallsignPet.pet_name, 'Cipher', 'authenticated Mini App pet state must preserve the stored callsign separately from the masked identity');
-const revealedIdentityPet = serializePet({ ...baseArenaPet, species: 'neon_raccoon' }, { current_stage: { stage: 3, name: 'Elite Moonpet' } });
+const hiddenCallsignPet = serializePet({ ...baseArenaPet, pet_name: 'Cipher', species: 'neon_raccoon' }, { current_stage: { stage: 2, name: 'Cyber Moonpet' } }, { include_callsign: true });
+assert.equal(hiddenCallsignPet.pet_name, 'UNKNOWN', 'authenticated Stage-2 state must still keep player-facing pet_name masked');
+assert.equal(hiddenCallsignPet.callsign, null, 'authenticated Stage-2 state must keep the stored callsign internal');
+const revealedIdentityPet = serializePet({ ...baseArenaPet, pet_name: 'Cipher', species: 'neon_raccoon' }, { current_stage: { stage: 3, name: 'Elite Moonpet' } }, { include_callsign: true });
 assert.equal(revealedIdentityPet.display_name, 'F1 EDDY', 'serialized pets must reveal the canonical identity at Stage 3');
 assert.equal(revealedIdentityPet.pet_name, 'F1 EDDY', 'Stage 3 pet_name must agree with canonical display_name');
 assert.equal(revealedIdentityPet.name, 'F1 EDDY', 'Stage 3 generic name must agree with canonical display_name');
+assert.equal(revealedIdentityPet.callsign, 'Cipher', 'authenticated Stage-3 state may expose the stored callsign separately from canonical identity');
 assert.equal(revealedIdentityPet.species, 'neon_raccoon', 'serialized pets must expose species at Stage 3');
 assert.equal(revealedIdentityPet.art_identity_id, 'neon_raccoon', 'serialized pets may expose the art identity once revealed');
 const serializedAuthorityPet = serializePet({ ...baseArenaPet, telegram_id: 'serialize-owner', pet_id: 'pet:serialize-owner:pet-s2026-003:1', season_key: 'pet-s2026-003' });
@@ -2036,17 +2038,28 @@ function identityAuditCounts(db) {
 
 const stageOneMiniAppDb = await seedMiniAppIdentityPlayer('mini-stage-one', { petName: 'Cipher', evolutionStage: 1 });
 const stageOneMiniAppState = await buildPetMiniAppState(stageOneMiniAppDb, 'mini-stage-one', '123456:test-token');
-assert.equal(stageOneMiniAppState.pet.pet_name, 'Cipher', 'Mini App state must preserve the stored callsign for the rename surface');
+assert.equal(stageOneMiniAppState.pet.pet_name, 'UNKNOWN', 'Mini App state must keep player-facing pet_name masked before Stage 3');
 assert.equal(stageOneMiniAppState.pet.display_name, 'UNKNOWN', 'Mini App state must still mask the unrevealed identity text');
+assert.equal(stageOneMiniAppState.pet.callsign, null, 'Mini App state must keep the stored callsign internal before Stage 3');
 assert.equal(stageOneMiniAppState.pet.art_identity_id, null, 'Mini App state must not expose the internal art identity before Stage 2');
 assert.equal(stageOneMiniAppState.lifecycle.art_identity_id, null, 'Mini App lifecycle must not expose the internal art identity before Stage 2');
 
 const stageTwoMiniAppDb = await seedMiniAppIdentityPlayer('mini-stage-two', { petName: 'Nova', evolutionStage: 2 });
 const stageTwoMiniAppState = await buildPetMiniAppState(stageTwoMiniAppDb, 'mini-stage-two', '123456:test-token');
-assert.equal(stageTwoMiniAppState.pet.pet_name, 'Nova', 'Stage-2 Mini App state must keep the stored callsign');
+assert.equal(stageTwoMiniAppState.pet.pet_name, 'UNKNOWN', 'Stage-2 Mini App state must keep player-facing pet_name masked');
 assert.equal(stageTwoMiniAppState.pet.display_name, 'UNKNOWN', 'Stage-2 Mini App state must still mask the identity text');
+assert.equal(stageTwoMiniAppState.pet.callsign, null, 'Stage-2 Mini App state must keep the stored callsign internal');
 assert.equal(stageTwoMiniAppState.pet.art_identity_id, 'neon_raccoon', 'Stage-2 Mini App state must expose the internal art identity needed for art routing');
 assert.equal(stageTwoMiniAppState.lifecycle.art_identity_id, 'neon_raccoon', 'Stage-2 lifecycle state must expose the internal art identity needed for art routing');
+
+const stageThreeMiniAppDb = await seedMiniAppIdentityPlayer('mini-stage-three', { petName: 'Nova', evolutionStage: 2 });
+stageThreeMiniAppDb.database.prepare(`INSERT INTO telegram_pet_evolutions
+  (telegram_id, evolution_id, stage, unlock_event_key, materials_consumed)
+  VALUES ('mini-stage-three', 'elite_moonpet', 3, 'fixture:mini-stage-three:elite_moonpet', 1)`).run();
+const stageThreeMiniAppState = await buildPetMiniAppState(stageThreeMiniAppDb, 'mini-stage-three', '123456:test-token');
+assert.equal(stageThreeMiniAppState.pet.pet_name, 'F1 EDDY', 'Stage-3 Mini App state must reveal canonical identity in pet_name');
+assert.equal(stageThreeMiniAppState.pet.display_name, 'F1 EDDY', 'Stage-3 Mini App state must reveal canonical identity text');
+assert.equal(stageThreeMiniAppState.pet.callsign, 'Nova', 'Stage-3 Mini App state must expose the stored callsign separately from canonical identity');
 
 const activityIdentityDb = await seedMiniAppIdentityPlayer('activity-identity', { petName: 'Activity Cipher', evolutionStage: 2 });
 seedAcceptedDailyPetEvent(activityIdentityDb, 'activity-identity', 'activity-identity:train', 18, 4, '2026-08-15');

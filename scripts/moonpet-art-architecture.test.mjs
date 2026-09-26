@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
@@ -42,6 +43,13 @@ assert.equal(eggyoneAudit.status, "complete");
 assert.equal(eggyoneAudit.required_frame_count, 25);
 assert.deepEqual(eggyoneAudit.required_roles, ["egg_idle", "egg_wobble", "egg_sleep", "egg_react", "egg_care", "egg_breakout", "egg_hatch"]);
 assert.equal(eggyoneAudit.failures.length, 0);
+const auditJsonBefore = readText("data/moonpet-eggyone-stage0-audit.json");
+const auditCheck = spawnSync(process.execPath, ["scripts/audit-eggyone-stage0-art.js", "--check"], { cwd: root, encoding: "utf8" });
+assert.equal(auditCheck.status, 0, auditCheck.stderr || auditCheck.stdout || "EGGYONE check run must succeed");
+assert.equal(readText("data/moonpet-eggyone-stage0-audit.json"), auditJsonBefore, "normal EGGYONE validation must not rewrite the tracked audit artifact");
+const auditStatus = spawnSync("git", ["status", "--short", "--", "data/moonpet-eggyone-stage0-audit.json"], { cwd: root, encoding: "utf8" });
+assert.equal(auditStatus.status, 0, auditStatus.stderr || "git status must succeed");
+assert.equal(auditStatus.stdout.trim(), "", "normal EGGYONE validation must leave the tracked audit artifact clean in git status");
 assert.equal(botRegistry.shared_stages.stage_1.character_name, "WTFBOI");
 assert.equal(botRegistry.shared_stages.stage_1.shared_by_all_identities, true);
 assert.equal(fs.existsSync(path.join(root, "js/moonpet-art-resolver.js")), true, "Rare Morph resolver must remain available");
@@ -139,6 +147,8 @@ assert.doesNotMatch(miniAppSource, /createPetPalette|PET_APPEARANCE_PALETTES|PET
   "retired procedural animal palettes must stay removed");
 const artWorkflow = readText(".github/workflows/moonpet-art-factory.yml");
 assert.match(artWorkflow, /audit-eggyone-stage0-art\.js/);
+assert.match(artWorkflow, /audit-eggyone-stage0-art\.js --check/);
+assert.match(artWorkflow, /audit-eggyone-stage0-art\.js --write/);
 assert.doesNotMatch(artWorkflow, /audit-autosprite-egg-art\.js|TEMPORARY LEGACY EGG FALLBACK|MOON EGG|egg_crack/);
 
 console.log("Moonpet evolution, rare-background, and item-art architecture passed");

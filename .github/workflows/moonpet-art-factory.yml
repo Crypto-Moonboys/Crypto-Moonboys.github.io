@@ -90,7 +90,7 @@ jobs:
           node --check scripts/inspect-autosprite-stage0-pack.js
           node --check scripts/download-eggyone-stage0-animations.js
           node scripts/generate-moonpet-assets-extraction.test.js
-          node scripts/audit-eggyone-stage0-art.js
+          node scripts/audit-eggyone-stage0-art.js --check
           node scripts/moonpet-art-architecture.test.mjs
           node scripts/moonpet-multi-bot-art.test.mjs
 
@@ -116,7 +116,7 @@ jobs:
       - name: Audit approved EGGYONE Stage-0 art
         if: ${{ env.FACTORY_PHASE == 'install-existing-street-pack' }}
         timeout-minutes: 10
-        run: node scripts/audit-eggyone-stage0-art.js
+        run: node scripts/audit-eggyone-stage0-art.js --write
 
       - name: Inspect existing Stage-0 pack
         if: ${{ env.FACTORY_PHASE == 'inspect-existing-stage0-pack' }}

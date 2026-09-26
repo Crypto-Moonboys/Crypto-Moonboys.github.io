@@ -26,7 +26,24 @@ function atlasFrameCount(atlas) {
   return 0;
 }
 
-function auditEggyoneStage0() {
+function readExistingAudit() {
+  if (!fs.existsSync(OUTPUT_PATH)) return null;
+  return JSON.parse(fs.readFileSync(OUTPUT_PATH, "utf8"));
+}
+
+function parseCliArgs(argv = process.argv.slice(2)) {
+  const args = new Set(argv);
+  if (args.has("--check") && args.has("--write")) {
+    throw new Error("Use either --check or --write, not both.");
+  }
+  return {
+    write: args.has("--write"),
+  };
+}
+
+function auditEggyoneStage0(options = {}) {
+  const write = options.write === true;
+  const existingAudit = readExistingAudit();
   const manifest = JSON.parse(fs.readFileSync(MANIFEST_PATH, "utf8"));
   const failures = [];
   if (manifest.character_name !== "EGGYONE") failures.push("manifest character_name must be EGGYONE");
@@ -57,10 +74,12 @@ function auditEggyoneStage0() {
   for (const role of assets.keys()) {
     if (!EXPECTED_ROLES[role]) failures.push(`${role}: unexpected Stage 0 role`);
   }
+  const auditedAt = write ? new Date().toISOString() : String(existingAudit && existingAudit.audited_at || "").trim();
+  if (!auditedAt) failures.push("tracked audit artifact must include audited_at; run with --write");
 
   const result = {
     schema_version: 2,
-    audited_at: new Date().toISOString(),
+    audited_at: auditedAt,
     source: "AutoSprite API",
     character_name: manifest.character_name,
     character_id: manifest.character_id,
@@ -72,12 +91,20 @@ function auditEggyoneStage0() {
     genuine_authored_pack_available: failures.length === 0,
     failures,
   };
-  fs.writeFileSync(OUTPUT_PATH, `${JSON.stringify(result, null, 2)}\n`, "utf8");
   if (failures.length) throw new Error(`EGGYONE Stage 0 audit failed:\n- ${failures.join("\n- ")}`);
-  console.log("EGGYONE Stage 0 AutoSprite audit passed: 7 roles, 25 frames each.");
+  const serialized = `${JSON.stringify(result, null, 2)}\n`;
+  if (write) {
+    fs.writeFileSync(OUTPUT_PATH, serialized, "utf8");
+  } else if (!existingAudit || `${JSON.stringify(existingAudit, null, 2)}\n` !== serialized) {
+    throw new Error("EGGYONE Stage 0 audit artifact is stale. Run node scripts/audit-eggyone-stage0-art.js --write during the explicit install/update flow.");
+  }
+  console.log(`EGGYONE Stage 0 AutoSprite audit passed: 7 roles, 25 frames each (${write ? "write" : "check"} mode).`);
   return result;
 }
 
-if (require.main === module) auditEggyoneStage0();
+if (require.main === module) {
+  const options = parseCliArgs();
+  auditEggyoneStage0(options);
+}
 
-module.exports = { EXPECTED_ROLES, auditEggyoneStage0, atlasFrameCount };
+module.exports = { EXPECTED_ROLES, auditEggyoneStage0, atlasFrameCount, parseCliArgs };
