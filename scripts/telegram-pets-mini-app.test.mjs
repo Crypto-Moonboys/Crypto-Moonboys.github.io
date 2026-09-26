@@ -972,7 +972,7 @@ assert.doesNotMatch(completedSeasonBlock, /active seasonal Moonpet required/,
 // Windows checkouts cannot reintroduce indentation/newline-sensitive regexes.
 const TEST_EXPORT_NAMES = [
   'seasonTiming', 'callsignDraft', 'capabilityCombatHelper', 'actionAvailability', 'dailyJourneyMarkup', 'weeklyJourneyMarkup', 'nextGuidance', 'journeyActionProgress', 'actionResultFeedback', 'stateRequestGate',
-  'combatDirector', 'lifecycleCeremonyStarter', 'lifecycleDirector',
+  'combatDirector', 'lifecycleCeremonyStarter', 'lifecycleDirector', 'retroSpaceLoop',
 ];
 for (const name of TEST_EXPORT_NAMES) {
   for (const newline of ['\n', '\r\n']) {
@@ -1304,7 +1304,7 @@ assert.match(worker, /const \[journeySummary, hydratedKaiju\] = await Promise\.a
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
-assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260926-no-canvas-updates-v1`/);
+assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260926-retro-space-stage-v1`/);
 assert.match(worker, /const TELEGRAM_GAMES_MENU_URL = `\$\{SITE_URL\}\/games\/telegram\/\?v=20260903-games-shell-v8`/,
   'default Telegram games menu must point at the current shell release');
 assert.match(worker, /const TELEGRAM_GAMES_MENU_TEXT = 'Games'/);
@@ -1403,10 +1403,10 @@ statusFrames.shift()();
 assert.equal(testStatusOutput.dataset.tone, 'danger');
 assert.equal(testStatusClasses.has('is-scrolling'), true, 'overflowing updates must activate the scrolling text track');
 assert.match(testStatusProperties['--status-scroll-duration'], /s$/, 'overflowing updates must receive a readable duration');
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260926-no-canvas-updates-v1/);
-assert.match(html, /\/js\/moonpet-art-resolver\.js\?v=20260926-uniform-bot-fit-v3/);
-assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20260926-wtfboi-street-v1/);
-assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20260926-uniform-bot-fit-v3/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260926-retro-space-stage-v1/);
+assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
+assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20260926-retro-space-stage-v1/);
+assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20260926-retro-space-stage-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1500,7 +1500,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260926-no-canvas-updates-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260926-retro-space-stage-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -1582,14 +1582,13 @@ assert.match(worker, /return err\('mini_app_action_failed', 500\)/);
 
 assert.doesNotMatch(html, /<img\b/i);
 const gameSurfaceWithoutRequiredFavicon = html.replace(/<link\s+rel="icon"\s+type="image\/png"\s+href="\/favicon\.png">/i, '');
-const gameSurfaceWithoutApprovedBackground = (gameSurfaceWithoutRequiredFavicon + client + css)
-  .replace(/var DEFAULT_WORLD_BACKGROUND_URL = '\/games\/assets\/BITTY%20BACKGROUND\.jpg';/i, '');
-assert.doesNotMatch(gameSurfaceWithoutApprovedBackground, /\.(?:jpe?g|png|gif|webp|svg)(?:[?#"'])/i);
+assert.doesNotMatch(gameSurfaceWithoutRequiredFavicon + client + css, /BITTY%20BACKGROUND|drawWorldBackground|worldBackgroundImage/,
+  'the canvas must not load or draw the retired background image');
 assert.match(html, /moonpet-canvas/);
 assert.match(client, /requestAnimationFrame\(frame\)/);
 assert.match(client, /if \(reducedMotion\) return/);
 assert.match(client, /fillRect/);
-assert.equal((client.match(/new Image\s*\(/g) || []).length, 1, 'Mini App must allocate images only through the guarded background preloader');
+assert.equal((client.match(/new Image\s*\(/g) || []).length, 0, 'Mini App must not allocate a background image');
 assert.match(client, /typeBoot/);
 assert.match(client, /actionAnimationFamily/);
 assert.match(client, /key === 'activity_start'.*payload && payload\.activity_type/);
@@ -1627,43 +1626,18 @@ assert.equal(botArtEvolutionStage({ lifecycle: { phase: 'young' }, pet: { evolut
   'authored post-Street evolution stages must remain unchanged');
 assert.equal(botArtEvolutionStage({ lifecycle: { phase: 'adult' }, pet: {} }), 1,
   'a hatched pet without numeric evolution data must default to Street Stage 1');
-assert.match(client, /selectWorldBackgroundForState\(state\)/, 'server snapshots must resolve persistent rare world art');
-assert.match(client, /rare_morph_id \|\| lifecycle\.rare && lifecycle\.rare\.id \|\| lifecycle\.rare_morph/, 'rare morph state must drive background selection');
-assert.match(client, /var candidateImage = new Image\(\)/, 'background changes must preload a replacement image');
-assert.match(client, /worldBackgroundImage = candidateImage;\s*worldBackgroundUrl = nextUrl;\s*worldBackgroundReady = true;/s,
-  'a replacement background must become active only after it loads');
-assert.match(client, /failedWorldBackgroundUrls\[nextUrl\] = true;[\s\S]*setWorldBackground\(DEFAULT_WORLD_BACKGROUND_URL\)/,
-  'failed approved backgrounds must be quarantined and fall back to the default');
-const worldBackgroundLoaderSource = extractTestExport(client, 'worldBackgroundLoader');
-assert.ok(worldBackgroundLoaderSource, 'world background loader must be extractable for runtime coverage');
-class TestBackgroundImage {
-  static instances = [];
-  constructor() { TestBackgroundImage.instances.push(this); }
-  set src(value) { this.url = value; }
-}
-const backgroundRuntime = new Function('Image', 'drawWorld', 'performance', 'state', 'console',
-  `${worldBackgroundLoaderSource}; return {
-    set: setWorldBackground,
-    url: function () { return worldBackgroundUrl; },
-    image: function () { return worldBackgroundImage; },
-    ready: function () { return worldBackgroundReady; },
-    failed: failedWorldBackgroundUrls
-  };`,
-)(TestBackgroundImage, () => {}, { now: () => 1 }, {}, { error: () => {} });
-const defaultCandidate = TestBackgroundImage.instances[0];
-defaultCandidate.onload();
-assert.equal(backgroundRuntime.url(), '/games/assets/BITTY%20BACKGROUND.jpg');
-const approvedUrl = '/games/assets/moonpets/rare-backgrounds/botty/celestial-serpent.jpg';
-backgroundRuntime.set(approvedUrl);
-const approvedCandidate = TestBackgroundImage.instances[1];
-assert.equal(backgroundRuntime.image(), defaultCandidate, 'current background must remain visible while a replacement loads');
-approvedCandidate.onerror();
-assert.equal(backgroundRuntime.image(), defaultCandidate, 'failed replacement must preserve the loaded default background');
-assert.equal(backgroundRuntime.ready(), true);
-assert.equal(backgroundRuntime.failed[approvedUrl], true, 'failed approved URLs must be quarantined');
-backgroundRuntime.set(approvedUrl);
-assert.equal(TestBackgroundImage.instances.length, 2, 'state refreshes must not retry a quarantined approved URL');
-assert.match(client, /getBackgroundArtState/, 'background provenance must remain inspectable');
+assert.doesNotMatch(client, /selectWorldBackgroundForState|loadMoonpetBackground|setWorldBackground/,
+  'pet state changes must never restore a static canvas background');
+assert.match(client, /backgroundArtState = \{ mode: 'retro_space_loop', loop_ms: 20000, source: 'canvas' \}/,
+  'animated background provenance must remain inspectable');
+const retroSpaceLoopSource = extractTestExport(client, 'retroSpaceLoop');
+assert.ok(retroSpaceLoopSource, 'retro space loop timing must be runtime testable');
+const retroSpaceLoopPhase = new Function(`const RETRO_SPACE_LOOP_MS = 20000;${retroSpaceLoopSource}; return retroSpaceLoopPhase;`)();
+assert.equal(retroSpaceLoopPhase(0), 0);
+assert.equal(retroSpaceLoopPhase(5000), 0.25);
+assert.equal(retroSpaceLoopPhase(19999), 19999 / 20000);
+assert.equal(retroSpaceLoopPhase(20000), 0, 'space battle must return exactly to its first frame after 20 seconds');
+assert.equal(retroSpaceLoopPhase(40000), 0, 'space battle loop must remain stable across repeated cycles');
 assert.equal(Object.keys(botArtRegistry.bots).length, 8, 'all eight bots must be registered');
 for (const [botName, bot] of Object.entries(botArtRegistry.bots)) {
   assert.equal(bot.evolution_art.stage_1.status, 'complete', `${botName} base art must stay complete`);
@@ -1690,13 +1664,18 @@ assert.match(client, /NEON RUN ALLEY/);
 assert.match(client, /SCRAP YARD 85/);
 assert.match(client, /CHAIN MARKET/);
 assert.match(client, /ALL-CITY HEIGHTS/);
-assert.match(client, /drawWorldBackground\(\)/, 'the authored world background must drive environment rendering');
+assert.match(client, /function drawRetroSpaceBackground\(time\)/, 'the canvas must render the animated retro space battle');
+assert.match(client, /drawRetroSpaceBackground\(renderTime\)/, 'the space battle must render behind the selected bot');
+assert.match(client, /var RETRO_SPACE_LOOP_MS = 20000;/, 'the space battle must use a perfect 20-second timeline');
 const drawWorldSource = client.slice(client.indexOf('function drawWorld(time)'), client.indexOf('function frame(time)'));
 assert.match(client, /canvas\.addEventListener\('click'/);
 assert.match(client, /function moonpetBotFitBounds\(\)/);
 assert.match(client, /canvasX >= botBounds\.left && canvasX <= botBounds\.right && canvasY >= botBounds\.top && canvasY <= botBounds\.bottom/);
-assert.match(client, /var BOT_RENDER_CENTER_X = 112/);
-assert.match(client, /var BOT_RENDER_BASELINE_Y = 194/);
+assert.match(client, /var BOT_RENDER_CENTER_X = 160/);
+assert.match(client, /var BOT_RENDER_BASELINE_Y = 219/);
+assert.match(client, /var BOT_RENDER_FIT_WIDTH = 184/);
+assert.match(client, /var BOT_RENDER_FIT_HEIGHT = 184/);
+assert.match(client, /var BOT_RENDER_PIVOT_Y = 1/);
 assert.match(client, /animateAction\('greet', true, greetingVariant === 'front_wave' \? 2200 : 1400/);
 assert.doesNotMatch(client, /greetCompanion[\s\S]{0,1200}(?:post\(|runAction\()/, 'pet taps must remain cosmetic and server-neutral');
 assert.match(client, /companionGreetingTimer = window\.setTimeout/);
@@ -1951,8 +1930,8 @@ assert.match(worker, /Math\.floor\(stepIndex \/ PET_RUN_BOSS_INTERVAL\) \+ 1/);
 assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Number\(activeRun\.depth \|\| 0\) \+ 1/);
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
-assert.match(html, /20260926-uniform-bot-fit-v3/);
-assert.match(worker, /20260926-no-canvas-updates-v1/);
+assert.match(html, /20260926-retro-space-stage-v1/);
+assert.match(worker, /20260926-retro-space-stage-v1/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');
 assert.match(client, /renderQuality = reducedMotion/, 'canvas quality must start from device capability');

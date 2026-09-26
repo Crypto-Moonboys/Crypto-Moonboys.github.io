@@ -18,9 +18,9 @@
       "status": "complete",
       "display": {
         "scale": 1,
-        "fit_width": 168,
-        "fit_height": 168,
-        "pivot_y": 0.9
+        "fit_width": 184,
+        "fit_height": 184,
+        "pivot_y": 1
       },
       "form": "street_moonpet",
       "shared_by_all_identities": true,
@@ -95,9 +95,9 @@
       },
       "display": {
         "scale": 1,
-        "fit_width": 168,
-        "fit_height": 168,
-        "pivot_y": 0.9
+        "fit_width": 184,
+        "fit_height": 184,
+        "pivot_y": 1
       }
     },
     "F1 EDDY": {
@@ -142,9 +142,9 @@
       },
       "display": {
         "scale": 1,
-        "fit_width": 168,
-        "fit_height": 168,
-        "pivot_y": 0.9
+        "fit_width": 184,
+        "fit_height": 184,
+        "pivot_y": 1
       }
     },
     "RED ALERT": {
@@ -189,9 +189,9 @@
       },
       "display": {
         "scale": 1,
-        "fit_width": 168,
-        "fit_height": 168,
-        "pivot_y": 0.9
+        "fit_width": 184,
+        "fit_height": 184,
+        "pivot_y": 1
       }
     },
     "THE TING": {
@@ -236,9 +236,9 @@
       },
       "display": {
         "scale": 1,
-        "fit_width": 168,
-        "fit_height": 168,
-        "pivot_y": 0.9
+        "fit_width": 184,
+        "fit_height": 184,
+        "pivot_y": 1
       }
     },
     "TATTOO JOHN": {
@@ -283,9 +283,9 @@
       },
       "display": {
         "scale": 1,
-        "fit_width": 168,
-        "fit_height": 168,
-        "pivot_y": 0.9
+        "fit_width": 184,
+        "fit_height": 184,
+        "pivot_y": 1
       }
     },
     "TIN BOB": {
@@ -330,9 +330,9 @@
       },
       "display": {
         "scale": 1,
-        "fit_width": 168,
-        "fit_height": 168,
-        "pivot_y": 0.9
+        "fit_width": 184,
+        "fit_height": 184,
+        "pivot_y": 1
       }
     },
     "TUBBY": {
@@ -377,9 +377,9 @@
       },
       "display": {
         "scale": 1,
-        "fit_width": 168,
-        "fit_height": 168,
-        "pivot_y": 0.9
+        "fit_width": 184,
+        "fit_height": 184,
+        "pivot_y": 1
       }
     },
     "JAKE THE SNAKE": {
@@ -426,9 +426,9 @@
       },
       "display": {
         "scale": 1,
-        "fit_width": 168,
-        "fit_height": 168,
-        "pivot_y": 0.9
+        "fit_width": 184,
+        "fit_height": 184,
+        "pivot_y": 1
       }
     }
   }

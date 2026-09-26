@@ -36,7 +36,7 @@ for (const [name, config] of Object.entries(registry.bots)) {
   if (name !== "BOTTY") assert.equal(config.fallback, "BOTTY", `${name} fallback`);
   assert.deepEqual(
     config.display,
-    { scale: 1, fit_width: 168, fit_height: 168, pivot_y: 0.9 },
+    { scale: 1, fit_width: 184, fit_height: 184, pivot_y: 1 },
     `${name} must use the shared unsquashed canvas fit box`
   );
 }
@@ -47,7 +47,7 @@ if (registry.shared_stages.stage_1.status === "complete") {
   assert.equal(manifest.character_name, "WTFBOI");
   assert.equal(manifest.assets.length, 15);
   assert.deepEqual(manifest.assets.map((asset) => asset.role), expectedRoles);
-  assert.deepEqual(street.display, { scale: 1, fit_width: 168, fit_height: 168, pivot_y: 0.9 });
+  assert.deepEqual(street.display, { scale: 1, fit_width: 184, fit_height: 184, pivot_y: 1 });
 }
 
 for (const [name, config] of Object.entries(registry.bots).filter(([, entry]) => entry.status === "complete")) {
@@ -104,9 +104,9 @@ assert.equal(f1EddyManifest.character_id, "cmuhjd3wg0023zoeghrmnxoc7");
 assert.ok(f1EddyManifest.assets.every((asset) => asset.frame_count === 25));
 
 const html = fs.readFileSync(path.join(root, "moonpet-game.html"), "utf8");
-assert.match(html, /moonpet-art-resolver\.js\?v=20260926-uniform-bot-fit-v3/);
-assert.match(html, /moonpet-bot-art-loader\.js\?v=20260926-wtfboi-street-v1/);
-assert.match(html, /moonpet-bot-art-renderer\.js\?v=20260926-uniform-bot-fit-v3/);
+assert.doesNotMatch(html, /moonpet-art-resolver\.js/);
+assert.match(html, /moonpet-bot-art-loader\.js\?v=20260926-retro-space-stage-v1/);
+assert.match(html, /moonpet-bot-art-renderer\.js\?v=20260926-retro-space-stage-v1/);
 assert.doesNotMatch(html, /moonpet-botty-front-(?:asset-loader|sprite-renderer)\.js/);
 assert.doesNotMatch(html, /moonpet-art-v2\.js/);
 
@@ -115,8 +115,10 @@ assert.match(client, /speciesId: String\(lifecycle\.species_id \|\| pet\.species
 assert.match(client, /selectMoonpetBot\(botArtIdentity\(snapshot\)\)/);
 assert.match(client, /drawSelectedBotSprite\(renderTime, animationMode, active/);
 assert.doesNotMatch(client, /drawSideScrollerMoonpetSprite|drawApprovedMoonpetSprite/, "old character render paths must not remain live");
-assert.match(client, /var BOT_RENDER_CENTER_X = 112;/, "bots stay inside the left canvas zone");
-assert.match(client, /var BOT_RENDER_BASELINE_Y = 194;/, "bots retain the lower stage baseline");
+assert.match(client, /var BOT_RENDER_CENTER_X = 160;/, "bots stay centered in front of the space battle");
+assert.match(client, /var BOT_RENDER_BASELINE_Y = 219;/, "bots stand on the bottom canvas edge");
+assert.match(client, /var BOT_RENDER_FIT_WIDTH = 184;/, "bots use the larger shared fit width");
+assert.match(client, /var BOT_RENDER_FIT_HEIGHT = 184;/, "bots use the larger shared fit height");
 assert.match(client, /var x = BOT_RENDER_CENTER_X;/);
 assert.match(client, /var y = BOT_RENDER_BASELINE_Y;/);
 const rendererSource = fs.readFileSync(path.join(root, "js", "moonpet-bot-art-renderer.js"), "utf8");

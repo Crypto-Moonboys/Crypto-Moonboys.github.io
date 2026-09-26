@@ -14,8 +14,7 @@
   var botArtRendererState = null;
   var botArtFallbackLogged = false;
   var botArtSelectionGeneration = 0;
-  var backgroundSelectionGeneration = 0;
-  var backgroundArtState = null;
+  var backgroundArtState = { mode: 'retro_space_loop', loop_ms: 20000, source: 'canvas' };
   window.MOONPET_USE_BOT_ART = botArtModeEnabled;
   var seasonSnapshotReceivedAt = 0;
   var lastSeasonServerRefreshAt = 0;
@@ -109,38 +108,6 @@
   var utilityReturnFocus = null;
   var activeUtility = '';
   var utilityRequestGeneration = 0;
-
-  // TEST-EXPORT: worldBackgroundLoader:start
-  var DEFAULT_WORLD_BACKGROUND_URL = '/games/assets/BITTY%20BACKGROUND.jpg';
-  var worldBackgroundUrl = '';
-  var worldBackgroundImage = null;
-  var worldBackgroundReady = false;
-  var worldBackgroundLoadGeneration = 0;
-  var failedWorldBackgroundUrls = Object.create(null);
-
-  function setWorldBackground(imagePath) {
-    var nextUrl = String(imagePath || DEFAULT_WORLD_BACKGROUND_URL);
-    if (failedWorldBackgroundUrls[nextUrl]) nextUrl = DEFAULT_WORLD_BACKGROUND_URL;
-    if (nextUrl === worldBackgroundUrl && worldBackgroundReady) return;
-    var generation = ++worldBackgroundLoadGeneration;
-    var candidateImage = new Image();
-    candidateImage.onload = function () {
-      if (generation !== worldBackgroundLoadGeneration) return;
-      worldBackgroundImage = candidateImage;
-      worldBackgroundUrl = nextUrl;
-      worldBackgroundReady = true;
-      if (state) drawWorld(performance.now());
-    };
-    candidateImage.onerror = function () {
-      if (generation !== worldBackgroundLoadGeneration) return;
-      failedWorldBackgroundUrls[nextUrl] = true;
-      console.error('[Moonpet] world background failed to load:', nextUrl);
-      if (nextUrl !== DEFAULT_WORLD_BACKGROUND_URL) setWorldBackground(DEFAULT_WORLD_BACKGROUND_URL);
-    };
-    candidateImage.src = nextUrl;
-  }
-  setWorldBackground(DEFAULT_WORLD_BACKGROUND_URL);
-  // TEST-EXPORT: worldBackgroundLoader:end
 
   function currentPetSleepKey(snapshot) {
     var pet = snapshot && snapshot.pet || {};
@@ -243,20 +210,6 @@
       speciesName: String(lifecycle.species_name || ''),
       evolutionStage: botArtEvolutionStage(snapshot)
     };
-  }
-
-  async function selectWorldBackgroundForState(snapshot) {
-    if (!window.MoonpetArtResolver) return false;
-    var generation = ++backgroundSelectionGeneration;
-    var lifecycle = snapshot && snapshot.lifecycle || {};
-    var result = await window.MoonpetArtResolver.loadMoonpetBackground(
-      botArtIdentity(snapshot),
-      String(lifecycle.rare_morph_id || lifecycle.rare && lifecycle.rare.id || lifecycle.rare_morph || '')
-    );
-    if (generation !== backgroundSelectionGeneration) return false;
-    backgroundArtState = result;
-    setWorldBackground(result && result.imagePath);
-    return Boolean(result && result.imagePath);
   }
 
   async function selectBotArtForState(snapshot) {
@@ -1423,10 +1376,6 @@
     selectBotArtForState(state).catch(function (error) {
       console.info('[Moonpet] bot art selection failed', error);
     });
-    selectWorldBackgroundForState(state).catch(function (error) {
-      console.info('[Moonpet] background art selection failed', error);
-      setWorldBackground(DEFAULT_WORLD_BACKGROUND_URL);
-    });
     seasonSnapshotReceivedAt = performance.now();
     lastSeasonServerRefreshAt = seasonSnapshotReceivedAt;
     scheduleCooldownRefresh();
@@ -2581,11 +2530,11 @@
 
   canvas.addEventListener('moonpet:greet', greetCompanion);
 
-  var BOT_RENDER_CENTER_X = 112;
-  var BOT_RENDER_BASELINE_Y = 194;
-  var BOT_RENDER_FIT_WIDTH = 168;
-  var BOT_RENDER_FIT_HEIGHT = 168;
-  var BOT_RENDER_PIVOT_Y = 0.9;
+  var BOT_RENDER_CENTER_X = 160;
+  var BOT_RENDER_BASELINE_Y = 219;
+  var BOT_RENDER_FIT_WIDTH = 184;
+  var BOT_RENDER_FIT_HEIGHT = 184;
+  var BOT_RENDER_PIVOT_Y = 1;
 
   function moonpetBotFitBounds() {
     var display = botArtRendererState && botArtRendererState.display || {};
@@ -3032,30 +2981,106 @@
     return CAMERA_FRAME;
   }
 
-  function drawWorldBackground() {
-    if (!worldBackgroundReady || !worldBackgroundImage.naturalWidth || !worldBackgroundImage.naturalHeight) {
-      drawPixelRect(0, 0, 320, 220, '#010402');
-      return;
+  var RETRO_SPACE_LOOP_MS = 20000;
+  var RETRO_SPACE_TAU = Math.PI * 2;
+
+  // TEST-EXPORT: retroSpaceLoop:start
+  function retroSpaceLoopPhase(time) {
+    var milliseconds = Number(time) || 0;
+    return ((milliseconds % RETRO_SPACE_LOOP_MS) + RETRO_SPACE_LOOP_MS) % RETRO_SPACE_LOOP_MS / RETRO_SPACE_LOOP_MS;
+  }
+  // TEST-EXPORT: retroSpaceLoop:end
+
+  function drawRetroEnemyShip(x, y, color, wingColor) {
+    drawPixelRect(x - 7, y, 15, 3, color);
+    drawPixelRect(x - 11, y + 3, 23, 4, color);
+    drawPixelRect(x - 15, y + 7, 7, 4, wingColor);
+    drawPixelRect(x + 9, y + 7, 7, 4, wingColor);
+    drawPixelRect(x - 5, y + 7, 11, 5, '#10162c');
+    drawPixelRect(x - 2, y + 9, 5, 2, '#f4ff65');
+  }
+
+  function drawRetroPlayerShip(x, y) {
+    drawPixelRect(x - 3, y - 10, 7, 14, '#d8f9ff');
+    drawPixelRect(x - 8, y - 4, 17, 7, '#61f5ff');
+    drawPixelRect(x - 13, y, 7, 5, '#f6a7ff');
+    drawPixelRect(x + 7, y, 7, 5, '#f6a7ff');
+    drawPixelRect(x - 2, y - 7, 5, 5, '#f4ff65');
+    drawPixelRect(x - 6, y + 5, 4, 4, '#ff954f');
+    drawPixelRect(x + 3, y + 5, 4, 4, '#ff954f');
+  }
+
+  function drawRetroExplosion(x, y, amount) {
+    var radius = 2 + Math.floor(amount * 10);
+    drawPixelRect(x - radius, y - 1, radius * 2 + 1, 3, '#ff954f');
+    drawPixelRect(x - 1, y - radius, 3, radius * 2 + 1, '#ffcf68');
+    if (amount > 0.35) {
+      drawPixelRect(x - radius + 2, y - radius + 2, 3, 3, '#f6a7ff');
+      drawPixelRect(x + radius - 4, y + radius - 4, 3, 3, '#61f5ff');
     }
-    var sourceWidth = worldBackgroundImage.naturalWidth;
-    var sourceHeight = worldBackgroundImage.naturalHeight;
-    var sourceRatio = sourceWidth / sourceHeight;
-    var targetRatio = 320 / 220;
-    var sx = 0;
-    var sy = 0;
-    var sw = sourceWidth;
-    var sh = sourceHeight;
-    if (sourceRatio > targetRatio) {
-      sw = sourceHeight * targetRatio;
-      sx = (sourceWidth - sw) / 2;
-    } else if (sourceRatio < targetRatio) {
-      sh = sourceWidth / targetRatio;
-      sy = (sourceHeight - sh) / 2;
-    }
+  }
+
+  function drawRetroSpaceBackground(time) {
+    var phase = retroSpaceLoopPhase(time);
+    var wave = Math.sin(phase * RETRO_SPACE_TAU);
+    drawPixelRect(0, 0, 320, 220, '#03040d');
+    drawPixelRect(0, 38, 320, 1, '#172147');
+    drawPixelRect(0, 39, 320, 1, '#471d59');
+
     ctx.save();
-    ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(worldBackgroundImage, sx, sy, sw, sh, 0, 0, 320, 220);
+    ctx.globalAlpha = 0.34;
+    ctx.fillStyle = '#25134c';
+    ctx.beginPath();
+    ctx.arc(282, 48, 30, 0, RETRO_SPACE_TAU);
+    ctx.fill();
+    ctx.fillStyle = '#165266';
+    ctx.beginPath();
+    ctx.arc(282, 48, 21, 0, RETRO_SPACE_TAU);
+    ctx.fill();
     ctx.restore();
+
+    for (var star = 0; star < 52; star += 1) {
+      var starSpeed = star % 3 + 1;
+      var starX = (star * 67 + star * star * 3 + 17) % 320;
+      var starY = ((star * 43 + 13) % 220 + phase * 220 * starSpeed) % 220;
+      var starColor = star % 11 === 0 ? '#f6a7ff' : star % 7 === 0 ? '#61f5ff' : star % 5 === 0 ? '#f4ff65' : '#8190b6';
+      var starSize = star % 13 === 0 ? 2 : 1;
+      drawPixelRect(starX, starY, starSize, starSize, starColor);
+    }
+
+    var formationShift = wave * 13;
+    for (var row = 0; row < 3; row += 1) {
+      for (var column = 0; column < 6; column += 1) {
+        var enemyIndex = row * 6 + column;
+        var enemyX = 34 + column * 49 + formationShift * (row % 2 ? -0.65 : 1);
+        var enemyY = 55 + row * 27 + Math.sin(phase * RETRO_SPACE_TAU * 2 + enemyIndex) * 3;
+        var blastCycle = (phase * 4 + enemyIndex * 0.137) % 1;
+        if ((enemyIndex === 4 || enemyIndex === 13) && blastCycle < 0.18) {
+          drawRetroExplosion(enemyX, enemyY + 6, blastCycle / 0.18);
+        } else {
+          drawRetroEnemyShip(enemyX, enemyY, row === 1 ? '#f6a7ff' : '#ff6d6d', row === 2 ? '#61f5ff' : '#ff954f');
+        }
+      }
+    }
+
+    var playerX = 257 + Math.sin(phase * RETRO_SPACE_TAU * 2) * 38;
+    var playerY = 187 + Math.cos(phase * RETRO_SPACE_TAU * 4) * 4;
+    drawRetroPlayerShip(playerX, playerY);
+    for (var shot = 0; shot < 7; shot += 1) {
+      var shotProgress = (phase * 7 + shot / 7) % 1;
+      var shotX = 257 + Math.sin((phase - shotProgress / 7) * RETRO_SPACE_TAU * 2) * 38;
+      drawPixelRect(shotX - 1, 176 - shotProgress * 130, 2, 8, shot % 2 ? '#61f5ff' : '#f4ff65');
+    }
+    for (var enemyShot = 0; enemyShot < 5; enemyShot += 1) {
+      var enemyShotProgress = (phase * 5 + enemyShot * 0.2) % 1;
+      drawPixelRect(55 + enemyShot * 52 + wave * 7, 82 + enemyShotProgress * 106, 2, 6, '#ff6d6d');
+    }
+
+    drawPixelRect(0, 214, 320, 6, '#080b18');
+    drawPixelRect(0, 214, 320, 1, '#61f5ff');
+    for (var deck = 0; deck < 16; deck += 1) {
+      drawPixelRect(deck * 22 - 7, 217, 12, 1, deck % 2 ? '#f6a7ff' : '#284c78');
+    }
   }
 
   // TEST-EXPORT: drawWorld:start
@@ -3064,9 +3089,7 @@
     var camera = updateCameraFrame(renderTime);
     updateCombatPresentation(state);
 
-    // The authored BITTY image is now the complete environment. No procedural
-    // sky, skyline, graffiti wall, landmarks, street, foreground or ambience.
-    drawWorldBackground();
+    drawRetroSpaceBackground(renderTime);
 
     ctx.save();
     ctx.translate(160 + camera.x, 110 + camera.y);

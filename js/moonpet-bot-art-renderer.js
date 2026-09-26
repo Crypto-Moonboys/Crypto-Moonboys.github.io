@@ -102,10 +102,10 @@
     const asset = state.assetsByRole[role];
     const frame = asset && frameForTime(asset, time, options);
     if (!asset || !asset.image || !frame) return false;
-    const fitWidth = Math.max(1, Number(state.display.fit_width || 168));
-    const fitHeight = Math.max(1, Number(state.display.fit_height || 168));
+    const fitWidth = Math.max(1, Number(state.display.fit_width || 184));
+    const fitHeight = Math.max(1, Number(state.display.fit_height || 184));
     const packScale = Math.max(0.5, Math.min(1.5, Number(state.display.scale || 1)));
-    const pivotY = Math.max(0, Math.min(1, Number(state.display.pivot_y || 0.9)));
+    const pivotY = Math.max(0, Math.min(1, Number(state.display.pivot_y == null ? 1 : state.display.pivot_y)));
     const requestedScale = Math.max(0.45, Math.min(1.05, Number(scale) || 1));
     const containScale = Math.min(fitWidth / frame.w, fitHeight / frame.h);
     const drawScale = containScale * packScale * requestedScale;

@@ -68,7 +68,24 @@ const chromeCandidates = [
 const executablePath = chromeCandidates.find((candidate) => fsSync.existsSync(candidate));
 const browser = await chromium.launch({ headless: true, ...(executablePath ? { executablePath } : {}) });
 try {
+  const animatedPage = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
+  await animatedPage.emulateMedia({ reducedMotion: "no-preference" });
+  await animatedPage.route("https://telegram.org/**", (route) => route.fulfill({ contentType: "text/javascript", body: "window.Telegram={WebApp:{initData:'',viewportHeight:520,viewportStableHeight:520,ready(){},expand(){},setHeaderColor(){},setBackgroundColor(){},onEvent(){}}};" }));
+  await animatedPage.goto(`http://127.0.0.1:${address.port}/moonpet-game.html?botArt=1&sideSprites=0`, { waitUntil: "networkidle" });
+  await animatedPage.waitForFunction(() => Boolean(window.MoonpetBetaAppearance));
+  const frameSnapshot = () => animatedPage.evaluate(() => {
+    const canvas = document.getElementById("moonpet-canvas");
+    return canvas.toDataURL("image/png");
+  });
+  await animatedPage.waitForTimeout(1200);
+  const firstFrame = await frameSnapshot();
+  await animatedPage.waitForTimeout(250);
+  const secondFrame = await frameSnapshot();
+  assert.notEqual(secondFrame, firstFrame, "the retro space battle must animate between live canvas frames");
+  await animatedPage.close();
+
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.route("https://telegram.org/**", (route) => route.fulfill({ contentType: "text/javascript", body: "window.Telegram={WebApp:{initData:'',viewportHeight:520,viewportStableHeight:520,ready(){},expand(){},setHeaderColor(){},setBackgroundColor(){},onEvent(){}}};" }));
   await page.goto(`http://127.0.0.1:${address.port}/moonpet-game.html?botArt=1&sideSprites=0`, { waitUntil: "networkidle" });
   await page.waitForFunction(() => Boolean(window.MoonpetBotArtRenderer));
@@ -116,6 +133,32 @@ try {
   assert.ok(shellLayout.dockBottom <= 520.5, "bottom dock must not be cropped by Telegram's visible viewport");
   assert.ok(shellLayout.buttonBottoms.every((bottom) => bottom <= 513.5), "every dock button must fit above the dock's bottom padding");
 
+  await fs.mkdir(OUTPUT, { recursive: true });
+  await selectAndWaitForPack(page, { speciesId: "neon_raccoon", speciesName: "F1 EDDY", evolutionStage: 2 }, "F1 EDDY");
+  const liveComposition = await page.evaluate(() => {
+    const canvas = document.getElementById("moonpet-canvas");
+    const context = canvas.getContext("2d");
+    const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+    const colors = new Set();
+    for (let index = 0; index < pixels.length; index += 64) {
+      colors.add(`${pixels[index]},${pixels[index + 1]},${pixels[index + 2]}`);
+    }
+    document.getElementById("hud").innerHTML = ["LVL 12", "GOLD 4,250", "GEMS 84"]
+      .map((value) => `<div class="hud-chip"><strong>${value}</strong></div>`).join("");
+    const renderer = window.MoonpetBotArtRenderer;
+    const drew = renderer.renderMoonpetBot(context, "idle", 160, 219, 1, 0, { active: false, startedAt: 0 });
+    return { drew, colors: colors.size, render: renderer.getMoonpetBotArtRendererState().lastRender };
+  });
+  assert.equal(liveComposition.drew, true, "the selected bot must render over the space battle");
+  assert.ok(liveComposition.colors >= 8, "the retro space battle must render a nonblank multicolor frame");
+  assert.ok(liveComposition.render.drawWidth <= 184.01 && liveComposition.render.drawHeight <= 184.01,
+    "the enlarged bot must stay inside the shared fit box");
+  assert.ok(219 - liveComposition.render.drawHeight >= 35 - 0.01,
+    "the bot frame must start below the HUD detail row");
+  assert.ok(Math.abs(liveComposition.render.sourceAspect - liveComposition.render.drawAspect) < 1e-9,
+    "the live bot must preserve its source aspect ratio");
+  await page.locator(".viewport").screenshot({ path: path.join(OUTPUT, "retro-space-stage-mobile-390.png") });
+
   const result = await page.evaluate(async (modes) => {
     const renderer = window.MoonpetBotArtRenderer;
     const makeIdentity = (speciesId, speciesName) => ({ speciesId, speciesName, evolutionStage: 1 });
@@ -144,10 +187,10 @@ try {
       assert.equal(selection.requestedEvolution, `stage_${evolutionStage}`);
       assert.equal(selection.resolvedEvolution, "stage_1");
       assert.equal(selection.evolutionFallbackUsed, evolutionStage > 1);
-      assert.equal(selection.display.fit_width, 168, `${botName} must use shared fit width`);
-      assert.equal(selection.display.fit_height, 168, `${botName} must use shared fit height`);
+      assert.equal(selection.display.fit_width, 184, `${botName} must use shared fit width`);
+      assert.equal(selection.display.fit_height, 184, `${botName} must use shared fit height`);
       assert.equal(selection.display.scale, 1, `${botName} must use shared scale`);
-      assert.equal(selection.display.pivot_y, 0.9, `${botName} must use shared baseline pivot`);
+      assert.equal(selection.display.pivot_y, 1, `${botName} must stand on the bottom edge`);
       const renders = await page.evaluate((modes) => {
         const renderer = window.MoonpetBotArtRenderer;
         const canvas = document.getElementById("multi-bot-proof");
@@ -159,7 +202,7 @@ try {
         }));
       }, MODES);
       assert.ok(renders.every((entry) => entry.drew && entry.lastRender.resolvedBot === expectedBot), `${botName} stage ${evolutionStage} must render every action`);
-      assert.ok(renders.every((entry) => entry.lastRender.drawWidth <= 168 * 0.65 + 0.01 && entry.lastRender.drawHeight <= 168 * 0.65 + 0.01),
+      assert.ok(renders.every((entry) => entry.lastRender.drawWidth <= 184 * 0.65 + 0.01 && entry.lastRender.drawHeight <= 184 * 0.65 + 0.01),
         `${botName} stage ${evolutionStage} must stay inside the shared canvas fit box`);
       assert.ok(renders.every((entry) => Math.abs(entry.lastRender.sourceAspect - entry.lastRender.drawAspect) < 1e-9),
         `${botName} stage ${evolutionStage} must preserve sprite aspect ratio without squashing`);
@@ -330,7 +373,6 @@ try {
   assert.equal(returned.fallbackUsed, false);
 
   await waitForPack(page, "F1 EDDY");
-  await fs.mkdir(OUTPUT, { recursive: true });
   await page.screenshot({ path: path.join(OUTPUT, "f1-eddy-mobile-390x844.png"), fullPage: false });
   console.log(JSON.stringify({ botty: "pass", streetStage: STREET_BOT || "pending-install", tubbyActions: tubby.renders.length, tinBobActions: tinBob.renders.length, theTingActions: theTing.renders.length, tattooJohnActions: tattooJohn.renders.length, redAlertActions: redAlert.renders.length, jakeTheSnakeActions: jakeTheSnake.renders.length, f1EddyActions: f1Eddy.renders.length, activationOverlay: "removed", unknownFallback: unknown.resolvedBot, switchBack: returned.resolvedBot, mobile: "390x844" }));
 } finally {
