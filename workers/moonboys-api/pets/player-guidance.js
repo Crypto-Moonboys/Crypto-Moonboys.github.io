@@ -134,7 +134,7 @@ export function choosePetNextAction(state = {}) {
   }
   if (positiveInteger(pet.happiness) <= 35) {
     if (isSpecialActionAvailable(state, 'dance')) {
-      return { key: 'dance', title: 'Raise happiness', detail: 'Use DANCE or CUDDLES in the Care Console for a bounded happiness boost.', label: '🎵 Open Care', callback_data: 'pet:details' };
+      return { key: 'dance', title: 'Raise happiness', detail: 'Use DANCE in the Care Console for a bounded happiness boost.', label: '🎵 Open Care', callback_data: 'pet:details' };
     }
     if (isSpecialActionAvailable(state, 'cuddles')) {
       return { key: 'cuddles', title: 'Raise happiness', detail: 'DANCE is blocked right now. Use CUDDLES in the Care Console for a bounded happiness boost.', label: '💞 Open Care', callback_data: 'pet:details' };
