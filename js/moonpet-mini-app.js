@@ -63,6 +63,13 @@
   var companionSeedValue = 0;
   var combatSnapshot = null;
   var combatScreen = '';
+  var COMBAT_RIVAL_COLORS = ['#ff6d6d', '#ff954f', '#f6a7ff', '#61f5ff', '#f4ff65', '#c99cff'];
+  var COMBAT_ARENA_SPECIAL_MAX = 3;
+  var COMBAT_PRESENTATION_FRAME = {
+    active: false, mode: '', title: '', status: '', opponentName: '', round: 0, maxRounds: 0,
+    playerValue: 0, opponentValue: 0, maxValue: 100, playerSpecial: 0, opponentSpecial: 0,
+    playerCardKey: '', opponentCardKey: '', rivalColor: '#ff6d6d', source: null,
+  };
   var noticesBusy = false;
   var lastPassiveRefreshAt = 0;
   var reducedMotion = Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -2842,6 +2849,13 @@
   }
   // TEST-EXPORT: actionPresentation:end
 
+  function createPetPalette(body, shade, accent) {
+    return {
+      normal: { body: body, shade: shade, accent: accent, outline: '#061009' },
+      legendary: { body: body, shade: shade, accent: '#f6a7ff', outline: '#061009' },
+    };
+  }
+
   var PET_APPEARANCE_PALETTES = {
     mint_punch: createPetPalette('#80ffd5', '#36a878', '#f4ff65'),
     coral_pop: createPetPalette('#ff8bbd', '#c84f78', '#61f5ff'),
@@ -2891,9 +2905,6 @@
     }
     return drew;
   }
-
-  // TEST-EXPORT: drawEmergencyMoonpetFallback:start
-  // TEST-EXPORT: drawEmergencyMoonpetFallback:end
 
   function drawPet(time) {
     var pet = state && state.pet;

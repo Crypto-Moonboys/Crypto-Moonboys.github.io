@@ -966,7 +966,7 @@ assert.doesNotMatch(completedSeasonBlock, /active seasonal Moonpet required/,
 // Keep every executable client-source test on marker boundaries so merges and
 // Windows checkouts cannot reintroduce indentation/newline-sensitive regexes.
 const TEST_EXPORT_NAMES = [
-  'seasonTiming', 'callsignDraft', 'capabilityCombatHelper', 'actionAvailability', 'dailyJourneyMarkup', 'weeklyJourneyMarkup', 'nextGuidance', 'journeyActionProgress', 'actionResultFeedback', 'stateRequestGate', 'phase4PresenceDirector',
+  'seasonTiming', 'callsignDraft', 'capabilityCombatHelper', 'actionAvailability', 'dailyJourneyMarkup', 'weeklyJourneyMarkup', 'nextGuidance', 'journeyActionProgress', 'actionResultFeedback', 'stateRequestGate',
   'combatDirector', 'lifecycleCeremonyStarter', 'lifecycleDirector', 'actionPresentation',
 ];
 for (const name of TEST_EXPORT_NAMES) {
@@ -1356,7 +1356,7 @@ assert.match(worker, /counts\.district_mission/);
 assert.match(client, /DAILY MISSION BUFFER \/\/ /);
 assert.match(client, /meter\('DAILY CLEAR', missionPercent\)/);
 assert.match(html, /id="utility-layer"/);
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260925-moonpet-ui-redesign-v1/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260926-clean-runtime-v2/);
 assert.match(html, /\/js\/moonpet-art-resolver\.js\?v=20260926-clean-runtime-v2/);
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20260926-clean-runtime-v2/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20260926-clean-runtime-v2/);
@@ -1555,15 +1555,11 @@ assert.match(client, /function createPetPalette/);
 assert.match(client, /var PET_APPEARANCE_PALETTES =/);
 assert.match(client, /var PET_SPECIES_PALETTES =/);
 assert.match(client, /var DEFAULT_PET_PALETTE = createPetPalette/);
-assert.match(client, /function petPalette/);
-assert.match(client, /return stage >= 5 \? selected\.legendary : selected\.normal/, 'only stage 5 receives the Legendary palette');
-const petPaletteSource = client.slice(client.indexOf('function petPalette'), client.indexOf('function petPose'));
-assert.doesNotMatch(petPaletteSource, /var palettes|var species|\[[^\]]*,[^\]]*,[^\]]*\]/, 'per-frame palette lookup must not allocate tables or colour arrays');
-assert.match(client, /function petPose/);
+assert.doesNotMatch(client, /function petPalette|function petPose/, 'retired procedural palette and pose helpers must stay removed');
 assert.match(client, /function drawMoonEgg/, 'the procedural egg remains until dedicated egg art is approved');
 assert.match(client, /drawSelectedBotSprite\(renderTime, animationMode, active, x, y, 1\)/, 'hatched pets must use the selected AutoSprite pack');
-assert.match(client, /if \(drawSelectedBotSprite\(renderTime, animationMode, active, x, y, 1\)\) return;\s*drawEmergencyMoonpetFallback\(renderTime, active, lifecycle, pet, presence, x, y\);/s,
-  'hatched pets must fall back to an emergency renderer when bot art is unavailable');
+assert.match(client, /if \(drawSelectedBotSprite\(renderTime, animationMode, active, x, y, 1\)\) return;\s*if \(!botArtFallbackLogged\) \{\s*botArtFallbackLogged = true;\s*console\.info\('\[Moonpet\] bot art unavailable; suppressing retired procedural pet fallback', botArtRendererState\);\s*\}/s,
+  'hatched pets must suppress the retired fallback renderer when bot art is unavailable');
 assert.doesNotMatch(client, /drawSideScrollerMoonpetSprite|drawApprovedMoonpetSprite/, 'legacy character renderers must not be live');
 assert.doesNotMatch(client, /drawEquipmentLayers|drawCosmeticLayers|wearableTraitDebug|WEARABLE_LOADOUT/, 'character dressing and wearable debug logic must be absent');
 assert.doesNotMatch(css, /wearable-slot-row/, 'wearable controls must be removed from live CSS');
@@ -1631,14 +1627,14 @@ assert.match(client, /NEON RUN ALLEY/);
 assert.match(client, /SCRAP YARD 85/);
 assert.match(client, /CHAIN MARKET/);
 assert.match(client, /ALL-CITY HEIGHTS/);
-assert.match(client, /function drawWorldSky/);
+assert.match(client, /drawWorldBackground\(\)/, 'the authored world background must drive environment rendering');
 const drawWorldSource = client.slice(client.indexOf('function drawWorld(time)'), client.indexOf('function frame(time)'));
 assert.match(client, /canvas\.addEventListener\('click'/);
 assert.match(client, /canvasX >= 92 && canvasX <= 228 && canvasY >= 72 && canvasY <= 220/);
 assert.match(client, /animateAction\('greet', true, greetingVariant === 'front_wave' \? 2200 : 1400/);
 assert.doesNotMatch(client, /greetCompanion[\s\S]{0,1200}(?:post\(|runAction\()/, 'pet taps must remain cosmetic and server-neutral');
 assert.match(client, /companionGreetingTimer = window\.setTimeout/);
-assert.match(client, /drawPet\(renderTime, presence, combat\)/);
+assert.match(client, /drawPet\(renderTime\)/);
 assert.match(client, /if \(companionGreetingUntil > 0 && companionGreetingUntil <= time\)/);
 assert.match(client, /companionGreeting = '';\s*companionGreetingUntil = 0;/s);
 assert.match(drawWorldSource, /else if \(combat\.active\) drawCombatHud\(scene, combat\)/);
