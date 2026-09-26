@@ -23,19 +23,21 @@ function slug(value) {
 }
 
 function parseArgs(argv) {
-  const options = { manifest: "", sourceRoot: REPO_ROOT, speciesId: "", artifactRun: null, artifactId: null, approved: false };
+  const options = { manifest: "", sourceRoot: REPO_ROOT, speciesId: "", sharedStage: "", artifactRun: null, artifactId: null, approved: false };
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     if (arg === "--manifest") options.manifest = path.resolve(argv[++index]);
     else if (arg === "--source-root") options.sourceRoot = path.resolve(argv[++index]);
     else if (arg === "--species-id") options.speciesId = String(argv[++index] || "").trim();
+    else if (arg === "--shared-stage") options.sharedStage = String(argv[++index] || "").trim();
     else if (arg === "--artifact-run") options.artifactRun = Number(argv[++index]);
     else if (arg === "--artifact-id") options.artifactId = Number(argv[++index]);
     else if (arg === "--approve-visual-review") options.approved = true;
     else throw new Error(`Unknown argument: ${arg}`);
   }
   if (!options.manifest) throw new Error("--manifest is required.");
-  if (!options.speciesId) throw new Error("--species-id is required.");
+  if (!options.speciesId && !options.sharedStage) throw new Error("--species-id or --shared-stage is required.");
+  if (options.speciesId && options.sharedStage) throw new Error("Use either --species-id or --shared-stage, not both.");
   if (!options.approved) throw new Error("--approve-visual-review is required before production promotion.");
   return options;
 }
@@ -110,6 +112,10 @@ async function promote(options) {
     });
   }
 
+  const sourceContactSheet = source.contact_sheet_path && path.join(options.sourceRoot, source.contact_sheet_path);
+  const productionContactSheet = path.join(assetRoot, "contact-sheet.png");
+  if (sourceContactSheet) await fs.copyFile(sourceContactSheet, productionContactSheet);
+
   const cacheVersion = `20260926-${characterSlug}-front-live-beta-v1`;
   const productionManifest = {
     schema_version: 1,
@@ -121,6 +127,7 @@ async function promote(options) {
     approved_artifact_id: options.artifactId,
     installed_at: new Date().toISOString(),
     cache_version: cacheVersion,
+    contact_sheet_path: sourceContactSheet ? `/img/moonpets/${characterSlug}/contact-sheet.png` : null,
     runtime_policy: {
       normal_gameplay: "approved_front_pack_only",
       disable_side_scroller: true,
@@ -155,17 +162,52 @@ async function promote(options) {
     }
   });
   registry.role_map = ROLE_MAP;
-  registry.bots[characterName] = {
-    canonical_species_ids: [options.speciesId],
-    display_names: [characterName],
+  const productionConfig = {
+    character_name: characterName,
     autosprite_character_id: characterId,
     manifest_path: `/data/moonpet-${characterSlug}-front-assets.json`,
     asset_root: `/img/moonpets/${characterSlug}/`,
     status: "complete",
-    fallback: "BOTTY",
     display: { scale: 1, fit_width: 168, fit_height: 168, pivot_y: 0.9 }
   };
+  if (options.sharedStage) {
+    registry.shared_stages = registry.shared_stages || {};
+    registry.shared_stages[options.sharedStage] = {
+      ...productionConfig,
+      form: options.sharedStage === "stage_1" ? "street_moonpet" : options.sharedStage,
+      shared_by_all_identities: true,
+      fallback: null
+    };
+  } else {
+    registry.bots[characterName] = {
+      ...productionConfig,
+      canonical_species_ids: [options.speciesId],
+      display_names: [characterName],
+      fallback: "BOTTY"
+    };
+  }
   await writeJson(registryPath, registry);
+
+  if (options.sharedStage) {
+    const requirementsPath = path.join(REPO_ROOT, "data", "moonpet-art-requirements.json");
+    const requirements = await readJsonIfExists(requirementsPath, null);
+    if (requirements) {
+      requirements.summary = requirements.summary || {};
+      requirements.summary.shared_street_stage_packs_complete = 1;
+      requirements.stage_art = requirements.stage_art || {};
+      requirements.stage_art.stage_1 = {
+        stage: 1,
+        name: "Street Moonpet",
+        character_name: characterName,
+        autosprite_character_id: characterId,
+        status: "complete",
+        shared_pack_count: 1,
+        shared_by_all_identities: true,
+        manifest_path: `/data/moonpet-${characterSlug}-front-assets.json`
+      };
+      await writeJson(requirementsPath, requirements);
+    }
+  }
 
   const autospriteRegistryPath = path.join(REPO_ROOT, "data", "moonpet-autosprite-characters.json");
   const autospriteRegistry = await readJsonIfExists(autospriteRegistryPath, {});
@@ -179,7 +221,7 @@ async function promote(options) {
       : source.generated_at || new Date().toISOString()
   };
   await writeJson(autospriteRegistryPath, autospriteRegistry);
-  console.log(`Promoted ${characterName}: ${assets.length} approved assets -> img/moonpets/${characterSlug}/`);
+  console.log(`Promoted ${characterName}: ${assets.length} approved assets -> img/moonpets/${characterSlug}/${options.sharedStage ? ` as shared ${options.sharedStage}` : ""}`);
   return productionManifest;
 }
 

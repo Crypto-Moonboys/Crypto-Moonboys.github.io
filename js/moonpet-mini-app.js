@@ -226,10 +226,14 @@
   function botArtIdentity(snapshot) {
     var lifecycle = snapshot && snapshot.lifecycle || {};
     var pet = snapshot && snapshot.pet || {};
+    var rawEvolutionStage = pet.evolution_stage;
+    if (rawEvolutionStage == null) rawEvolutionStage = lifecycle.evolution_stage;
+    if (rawEvolutionStage == null) rawEvolutionStage = lifecycle.stage;
+    if (rawEvolutionStage == null) rawEvolutionStage = lifecycle.phase === 'egg' ? 0 : 1;
     return {
       speciesId: String(lifecycle.species_id || pet.species || ''),
       speciesName: String(lifecycle.species_name || ''),
-      evolutionStage: Number(pet.evolution_stage || lifecycle.evolution_stage || lifecycle.stage || 1)
+      evolutionStage: Number(rawEvolutionStage)
     };
   }
 

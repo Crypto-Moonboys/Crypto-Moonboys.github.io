@@ -2,9 +2,29 @@
   "schema_version": 2,
   "default_bot": "BOTTY",
   "egg_art": {
-    "status": "pending",
-    "fallback": "procedural_egg",
-    "manifest_path": null
+    "stage": 0,
+    "character_name": "MOON EGG",
+    "status": "authored_art_required",
+    "fallback": "TEMPORARY LEGACY EGG FALLBACK",
+    "manifest_path": null,
+    "registry_path": "/data/moonpet-egg-art-registry.json"
+  },
+  "shared_stages": {
+    "stage_1": {
+      "form": "street_moonpet",
+      "character_name": "WTFBOI",
+      "status": "pending_authenticated_install",
+      "manifest_path": null,
+      "asset_root": "/img/moonpets/wtfboi/",
+      "shared_by_all_identities": true,
+      "fallback": null,
+      "display": {
+        "scale": 1,
+        "fit_width": 168,
+        "fit_height": 168,
+        "pivot_y": 0.9
+      }
+    }
   },
   "evolution_stages": {
     "stage_1": "base",

@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "audited_at": null,
+  "source": "AutoSprite API",
+  "exact_character_name": "MOON EGG",
+  "required_roles": [
+    "egg_idle",
+    "egg_wobble",
+    "egg_sleep",
+    "egg_react",
+    "egg_care",
+    "egg_crack",
+    "egg_hatch"
+  ],
+  "status": "pending_authenticated_audit",
+  "genuine_authored_pack_available": false,
+  "exact_matches": [],
+  "egg_named_candidates": [],
+  "live_fallback": "TEMPORARY LEGACY EGG FALLBACK"
+}

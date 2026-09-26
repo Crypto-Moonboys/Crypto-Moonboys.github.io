@@ -73,8 +73,23 @@
 
   function evolutionStageKey(identity = {}) {
     const raw = Number(identity.evolutionStage ?? identity.evolution_stage ?? identity.stage ?? 1);
-    const stage = Number.isFinite(raw) ? Math.max(1, Math.min(5, Math.floor(raw))) : 1;
+    const stage = Number.isFinite(raw) ? Math.max(0, Math.min(5, Math.floor(raw))) : 1;
     return `stage_${stage}`;
+  }
+
+  function eggRoleForAnimationMode(animationMode, lifecycle = {}) {
+    const mode = String(animationMode || "idle").toLowerCase();
+    if (["hatch", "evolve"].includes(mode)) return "egg_hatch";
+    if (mode === "sleep") return "egg_sleep";
+    if (["feed", "clean", "play"].includes(mode)) return "egg_care";
+    if (["interact", "greet", "blocked"].includes(mode)) return "egg_react";
+    const incubation = lifecycle.incubation || {};
+    const progress = Math.max(0, Number(incubation.progress || 0));
+    const target = Math.max(1, Number(incubation.target || 12));
+    const ratio = progress / target;
+    if (ratio >= 0.9) return "egg_crack";
+    if (ratio >= 0.66) return "egg_wobble";
+    return "egg_idle";
   }
 
   function artConfig(botConfig, stageKey) {
@@ -105,6 +120,22 @@
     const defaultBot = registry.default_bot || "BOTTY";
     const defaultConfig = registry.bots && registry.bots[defaultBot];
     const defaultBase = artConfig(defaultConfig, "stage_1").base;
+    if (requestedEvolution === "stage_0") {
+      const egg = registry.egg_art || {};
+      return {
+        requestedBot, resolvedBot: egg.character_name || "MOON EGG", config: egg, fallbackUsed: egg.status !== "complete",
+        requestedEvolution, resolvedEvolution: "stage_0", evolutionFallbackUsed: false, artKind: "egg",
+        baseConfig: null, defaultBot, defaultConfig: packConfig(defaultConfig, defaultBase)
+      };
+    }
+    const street = registry.shared_stages && registry.shared_stages.stage_1;
+    if (requestedEvolution === "stage_1" && street && street.status === "complete" && street.manifest_path) {
+      return {
+        requestedBot, resolvedBot: street.character_name || "WTFBOI", config: street, fallbackUsed: false,
+        requestedEvolution, resolvedEvolution: "stage_1", evolutionFallbackUsed: false, artKind: "shared_stage",
+        sharedStage: true, baseConfig: null, defaultBot, defaultConfig: packConfig(defaultConfig, defaultBase)
+      };
+    }
     if (requestedConfig) {
       const requestedArt = artConfig(requestedConfig, requestedEvolution);
       const resolvedArt = requestedArt.selected && requestedArt.selected.status === "complete" && requestedArt.selected.manifest_path
@@ -114,14 +145,15 @@
           requestedBot, resolvedBot: match[0], config: packConfig(requestedConfig, resolvedArt), fallbackUsed: false,
           requestedEvolution, resolvedEvolution: resolvedArt === requestedArt.selected ? requestedEvolution : "stage_1",
           evolutionFallbackUsed: resolvedArt !== requestedArt.selected, baseConfig: packConfig(requestedConfig, requestedArt.base),
-          defaultBot, defaultConfig: packConfig(defaultConfig, defaultBase)
+          defaultBot, defaultConfig: packConfig(defaultConfig, defaultBase),
+          artKind: "identity", streetStagePending: requestedEvolution === "stage_1"
         };
       }
     }
     return {
       requestedBot, resolvedBot: defaultBot, config: packConfig(defaultConfig, defaultBase), fallbackUsed: true,
       requestedEvolution, resolvedEvolution: "stage_1", evolutionFallbackUsed: requestedEvolution !== "stage_1",
-      baseConfig: packConfig(defaultConfig, defaultBase), defaultBot, defaultConfig: packConfig(defaultConfig, defaultBase)
+      baseConfig: packConfig(defaultConfig, defaultBase), defaultBot, defaultConfig: packConfig(defaultConfig, defaultBase), artKind: "identity"
     };
   }
 
@@ -155,10 +187,22 @@
   async function loadMoonpetBotArt(identity = {}) {
     const registry = await loadRegistry();
     const resolution = resolveBot(registry, identity);
+    if (resolution.artKind === "egg" && (!resolution.config || resolution.config.status !== "complete" || !resolution.config.manifest_path)) {
+      return {
+        registry, ...resolution, ready: false, manifest: null, assetsByRole: {}, errors: [], pendingRoles: [],
+        roleMap: {}, display: resolution.config && resolution.config.display || {}, preload: Promise.resolve()
+      };
+    }
     let pack;
     try {
       pack = await loadPack(resolution.resolvedBot, resolution.config);
     } catch (error) {
+      if (resolution.sharedStage) {
+        return {
+          registry, ...resolution, ready: false, manifest: null, assetsByRole: {}, errors: [error.message], pendingRoles: [],
+          roleMap: {}, display: resolution.config && resolution.config.display || {}, preload: Promise.resolve()
+        };
+      }
       if (!resolution.fallbackUsed && resolution.resolvedEvolution !== "stage_1") {
         resolution.resolvedEvolution = "stage_1";
         resolution.evolutionFallbackUsed = true;
@@ -184,7 +228,7 @@
         pack.errors.unshift(`${resolution.requestedBot} pack failed: ${error.message}`);
       }
     }
-    if (!pack.ready && !resolution.fallbackUsed && resolution.resolvedEvolution !== "stage_1") {
+    if (!pack.ready && !resolution.sharedStage && !resolution.fallbackUsed && resolution.resolvedEvolution !== "stage_1") {
       const failedEvolution = resolution.resolvedEvolution;
       resolution.resolvedEvolution = "stage_1";
       resolution.evolutionFallbackUsed = true;
@@ -192,7 +236,7 @@
       pack = await loadPack(resolution.resolvedBot, resolution.baseConfig);
       pack.errors.unshift(`${resolution.requestedBot} ${failedEvolution} idle failed to load`);
     }
-    if (!pack.ready && resolution.resolvedBot !== resolution.defaultBot) {
+    if (!pack.ready && !resolution.sharedStage && resolution.resolvedBot !== resolution.defaultBot) {
       resolution.resolvedBot = resolution.defaultBot;
       resolution.config = resolution.defaultConfig;
       resolution.fallbackUsed = true;
@@ -201,5 +245,5 @@
     return { registry, ...resolution, ...pack };
   }
 
-  window.MoonpetBotArtLoader = { loadMoonpetBotArt, resolveBot, evolutionStageKey, framesFromAtlas };
+  window.MoonpetBotArtLoader = { loadMoonpetBotArt, resolveBot, evolutionStageKey, eggRoleForAnimationMode, framesFromAtlas };
 })();

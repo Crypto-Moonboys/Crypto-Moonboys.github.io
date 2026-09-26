@@ -2,10 +2,29 @@
   "schema_version": 1,
   "summary": {
     "base_bots_complete": 8,
+    "shared_street_stage_packs_complete": 0,
     "evolution_master_designs_pending": 32,
     "rare_morph_backgrounds_pending": 32,
     "moon_egg_art_sets_pending": 1,
     "generated_art_in_this_change": 0
+  },
+  "stage_art": {
+    "stage_0": {
+      "stage": 0,
+      "name": "Moon Egg",
+      "status": "authored_art_required",
+      "required_roles": 7,
+      "registry_path": "/data/moonpet-egg-art-registry.json",
+      "current_fallback": "TEMPORARY LEGACY EGG FALLBACK"
+    },
+    "stage_1": {
+      "stage": 1,
+      "name": "Street Moonpet",
+      "character_name": "WTFBOI",
+      "status": "pending_authenticated_install",
+      "shared_pack_count": 1,
+      "shared_by_all_identities": true
+    }
   },
   "base_bots": [
     { "bot": "BOTTY", "species_id": "vinyl_crab", "status": "complete" },
@@ -37,7 +56,14 @@
     { "bot": "TATTOO JOHN", "rare_morph": "celestial_serpent", "status": "pending" }, { "bot": "TATTOO JOHN", "rare_morph": "crown_beast", "status": "pending" }, { "bot": "TATTOO JOHN", "rare_morph": "boombox_kaiju", "status": "pending" }, { "bot": "TATTOO JOHN", "rare_morph": "graffiti_guardian", "status": "pending" },
     { "bot": "TIN BOB", "rare_morph": "celestial_serpent", "status": "pending" }, { "bot": "TIN BOB", "rare_morph": "crown_beast", "status": "pending" }, { "bot": "TIN BOB", "rare_morph": "boombox_kaiju", "status": "pending" }, { "bot": "TIN BOB", "rare_morph": "graffiti_guardian", "status": "pending" }
   ],
-  "moon_egg_art": { "key": "moon_egg", "status": "pending", "current_fallback": "procedural_egg" },
+  "moon_egg_art": {
+    "key": "moon_egg",
+    "status": "authored_art_required",
+    "required_roles": ["egg_idle", "egg_wobble", "egg_sleep", "egg_react", "egg_care", "egg_crack", "egg_hatch"],
+    "registry_path": "/data/moonpet-egg-art-registry.json",
+    "audit_path": "/data/moonpet-egg-art-audit.json",
+    "current_fallback": "TEMPORARY LEGACY EGG FALLBACK"
+  },
   "item_art_registry": "/data/moonpet-item-art-registry.json",
   "item_art_requirements": [
     { "key": "moon_kibble", "name": "Moon Kibble", "category": "food", "status": "pending" }, { "key": "nebula_snack", "name": "Nebula Snack Pack", "category": "food", "status": "pending" }, { "key": "crystal_bowl", "name": "Crystal Bowl", "category": "food", "status": "pending" },

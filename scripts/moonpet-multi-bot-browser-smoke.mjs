@@ -14,6 +14,9 @@ const BOTS = [
   ["comet_gecko", "TUBBY"], ["lantern_fox", "RED ALERT"], ["sneaker_snail", "THE TING"],
   ["alley_drake", "TATTOO JOHN"], ["moon_ferret", "TIN BOB"]
 ];
+const ART_REGISTRY = JSON.parse(fsSync.readFileSync(path.join(ROOT, "data", "moonpet-bot-art-registry.json"), "utf8"));
+const STREET_READY = ART_REGISTRY.shared_stages?.stage_1?.status === "complete";
+const STREET_BOT = STREET_READY ? "WTFBOI" : null;
 
 function serveStatic() {
   return http.createServer(async (request, response) => {
@@ -92,7 +95,7 @@ try {
 
   const result = await page.evaluate(async (modes) => {
     const renderer = window.MoonpetBotArtRenderer;
-    const makeIdentity = (speciesId, speciesName) => ({ speciesId, speciesName });
+    const makeIdentity = (speciesId, speciesName) => ({ speciesId, speciesName, evolutionStage: 1 });
     await renderer.selectMoonpetBot(makeIdentity("vinyl_crab", "BOTTY"));
     const botty = renderer.getMoonpetBotArtRendererState();
 
@@ -108,12 +111,13 @@ try {
     await switching;
     return { botty, staleDrew };
   }, MODES);
-  assert.equal(result.botty.resolvedBot, "BOTTY");
+  assert.equal(result.botty.resolvedBot, STREET_BOT || "BOTTY");
   assert.equal(result.staleDrew, false, "character switch must clear stale sprites immediately");
 
   for (const [speciesId, botName] of BOTS) {
     for (let evolutionStage = 1; evolutionStage <= 5; evolutionStage += 1) {
-      const selection = await selectAndWaitForPack(page, { speciesId, speciesName: botName, evolutionStage }, botName);
+      const expectedBot = evolutionStage === 1 && STREET_READY ? STREET_BOT : botName;
+      const selection = await selectAndWaitForPack(page, { speciesId, speciesName: botName, evolutionStage }, expectedBot);
       assert.equal(selection.requestedEvolution, `stage_${evolutionStage}`);
       assert.equal(selection.resolvedEvolution, "stage_1");
       assert.equal(selection.evolutionFallbackUsed, evolutionStage > 1);
@@ -131,7 +135,7 @@ try {
           lastRender: renderer.getMoonpetBotArtRendererState().lastRender
         }));
       }, MODES);
-      assert.ok(renders.every((entry) => entry.drew && entry.lastRender.resolvedBot === botName), `${botName} stage ${evolutionStage} must render every action`);
+      assert.ok(renders.every((entry) => entry.drew && entry.lastRender.resolvedBot === expectedBot), `${botName} stage ${evolutionStage} must render every action`);
       assert.ok(renders.every((entry) => entry.lastRender.drawWidth <= 168 * 0.65 + 0.01 && entry.lastRender.drawHeight <= 168 * 0.65 + 0.01),
         `${botName} stage ${evolutionStage} must stay inside the shared canvas fit box`);
       assert.ok(renders.every((entry) => Math.abs(entry.lastRender.sourceAspect - entry.lastRender.drawAspect) < 1e-9),
@@ -139,7 +143,7 @@ try {
     }
   }
 
-  await selectAndWaitForPack(page, { speciesId: "comet_gecko", speciesName: "TUBBY", evolutionStage: 1 }, "TUBBY");
+  await selectAndWaitForPack(page, { speciesId: "comet_gecko", speciesName: "TUBBY", evolutionStage: 2 }, "TUBBY");
   const tubby = await page.evaluate((modes) => {
     const renderer = window.MoonpetBotArtRenderer;
     const canvas = document.getElementById("multi-bot-proof");
@@ -159,7 +163,7 @@ try {
   assert.ok(tubby.renders.every((entry) => entry.drew && entry.resolvedBot === "TUBBY"));
   assert.ok(tubby.renders.every((entry) => entry.frameCount === 25));
 
-  const tinBobSelection = await page.evaluate(() => window.MoonpetBotArtRenderer.selectMoonpetBot({ speciesId: "moon_ferret", speciesName: "TIN BOB" }));
+  const tinBobSelection = await page.evaluate(() => window.MoonpetBotArtRenderer.selectMoonpetBot({ speciesId: "moon_ferret", speciesName: "TIN BOB", evolutionStage: 2 }));
   assert.equal(tinBobSelection.resolvedBot, "TIN BOB");
   assert.equal(tinBobSelection.fallbackUsed, false);
   await waitForPack(page, "TIN BOB");
@@ -182,7 +186,7 @@ try {
   assert.ok(tinBob.renders.every((entry) => entry.drew && entry.resolvedBot === "TIN BOB"));
   assert.ok(tinBob.renders.every((entry) => entry.frameCount === 25));
 
-  const theTingSelection = await page.evaluate(() => window.MoonpetBotArtRenderer.selectMoonpetBot({ speciesId: "sneaker_snail", speciesName: "THE TING" }));
+  const theTingSelection = await page.evaluate(() => window.MoonpetBotArtRenderer.selectMoonpetBot({ speciesId: "sneaker_snail", speciesName: "THE TING", evolutionStage: 2 }));
   assert.equal(theTingSelection.resolvedBot, "THE TING");
   assert.equal(theTingSelection.fallbackUsed, false);
   await waitForPack(page, "THE TING");
@@ -205,7 +209,7 @@ try {
   assert.ok(theTing.renders.every((entry) => entry.drew && entry.resolvedBot === "THE TING"));
   assert.ok(theTing.renders.every((entry) => entry.frameCount === 25));
 
-  const tattooJohnSelection = await page.evaluate(() => window.MoonpetBotArtRenderer.selectMoonpetBot({ speciesId: "alley_drake", speciesName: "TATTOO JOHN" }));
+  const tattooJohnSelection = await page.evaluate(() => window.MoonpetBotArtRenderer.selectMoonpetBot({ speciesId: "alley_drake", speciesName: "TATTOO JOHN", evolutionStage: 2 }));
   assert.equal(tattooJohnSelection.resolvedBot, "TATTOO JOHN");
   assert.equal(tattooJohnSelection.fallbackUsed, false);
   await waitForPack(page, "TATTOO JOHN");
@@ -228,7 +232,7 @@ try {
   assert.ok(tattooJohn.renders.every((entry) => entry.drew && entry.resolvedBot === "TATTOO JOHN"));
   assert.ok(tattooJohn.renders.every((entry) => entry.frameCount === 25));
 
-  const redAlertSelection = await page.evaluate(() => window.MoonpetBotArtRenderer.selectMoonpetBot({ speciesId: "lantern_fox", speciesName: "RED ALERT" }));
+  const redAlertSelection = await page.evaluate(() => window.MoonpetBotArtRenderer.selectMoonpetBot({ speciesId: "lantern_fox", speciesName: "RED ALERT", evolutionStage: 2 }));
   assert.equal(redAlertSelection.resolvedBot, "RED ALERT");
   assert.equal(redAlertSelection.fallbackUsed, false);
   await waitForPack(page, "RED ALERT");
@@ -251,7 +255,7 @@ try {
   assert.ok(redAlert.renders.every((entry) => entry.drew && entry.resolvedBot === "RED ALERT"));
   assert.ok(redAlert.renders.every((entry) => entry.frameCount === 25));
 
-  const jakeSelection = await selectAndWaitForPack(page, { speciesId: "bubble_ram", speciesName: "JACK THE SNAKE" }, "JAKE THE SNAKE");
+  const jakeSelection = await selectAndWaitForPack(page, { speciesId: "bubble_ram", speciesName: "JACK THE SNAKE", evolutionStage: 2 }, "JAKE THE SNAKE");
   assert.equal(jakeSelection.resolvedBot, "JAKE THE SNAKE");
   assert.equal(jakeSelection.fallbackUsed, false);
   const jakeTheSnake = await page.evaluate((modes) => {
@@ -273,7 +277,7 @@ try {
   assert.ok(jakeTheSnake.renders.every((entry) => entry.drew && entry.resolvedBot === "JAKE THE SNAKE"));
   assert.ok(jakeTheSnake.renders.every((entry) => entry.frameCount === 25));
 
-  const f1EddySelection = await selectAndWaitForPack(page, { speciesId: "neon_raccoon", speciesName: "F1 EDDY" }, "F1 EDDY");
+  const f1EddySelection = await selectAndWaitForPack(page, { speciesId: "neon_raccoon", speciesName: "F1 EDDY", evolutionStage: 2 }, "F1 EDDY");
   assert.equal(f1EddySelection.resolvedBot, "F1 EDDY");
   assert.equal(f1EddySelection.fallbackUsed, false);
   const f1Eddy = await page.evaluate((modes) => {
@@ -295,17 +299,17 @@ try {
   assert.ok(f1Eddy.renders.every((entry) => entry.drew && entry.resolvedBot === "F1 EDDY"));
   assert.ok(f1Eddy.renders.every((entry) => entry.frameCount === 25));
 
-  const unknown = await page.evaluate(() => window.MoonpetBotArtRenderer.selectMoonpetBot({ speciesId: "future_bot", speciesName: "BOT 9" }));
+  const unknown = await page.evaluate(() => window.MoonpetBotArtRenderer.selectMoonpetBot({ speciesId: "future_bot", speciesName: "BOT 9", evolutionStage: 2 }));
   assert.equal(unknown.resolvedBot, "BOTTY");
   assert.equal(unknown.fallbackUsed, true);
-  const returned = await selectAndWaitForPack(page, { speciesId: "neon_raccoon", speciesName: "F1 EDDY" }, "F1 EDDY");
+  const returned = await selectAndWaitForPack(page, { speciesId: "neon_raccoon", speciesName: "F1 EDDY", evolutionStage: 2 }, "F1 EDDY");
   assert.equal(returned.resolvedBot, "F1 EDDY");
   assert.equal(returned.fallbackUsed, false);
 
   await waitForPack(page, "F1 EDDY");
   await fs.mkdir(OUTPUT, { recursive: true });
   await page.screenshot({ path: path.join(OUTPUT, "f1-eddy-mobile-390x844.png"), fullPage: false });
-  console.log(JSON.stringify({ botty: "pass", tubbyActions: tubby.renders.length, tinBobActions: tinBob.renders.length, theTingActions: theTing.renders.length, tattooJohnActions: tattooJohn.renders.length, redAlertActions: redAlert.renders.length, jakeTheSnakeActions: jakeTheSnake.renders.length, f1EddyActions: f1Eddy.renders.length, activationOverlay: "removed", unknownFallback: unknown.resolvedBot, switchBack: returned.resolvedBot, mobile: "390x844" }));
+  console.log(JSON.stringify({ botty: "pass", streetStage: STREET_BOT || "pending-install", tubbyActions: tubby.renders.length, tinBobActions: tinBob.renders.length, theTingActions: theTing.renders.length, tattooJohnActions: tattooJohn.renders.length, redAlertActions: redAlert.renders.length, jakeTheSnakeActions: jakeTheSnake.renders.length, f1EddyActions: f1Eddy.renders.length, activationOverlay: "removed", unknownFallback: unknown.resolvedBot, switchBack: returned.resolvedBot, mobile: "390x844" }));
 } finally {
   await browser.close();
   await new Promise((resolve) => server.close(resolve));

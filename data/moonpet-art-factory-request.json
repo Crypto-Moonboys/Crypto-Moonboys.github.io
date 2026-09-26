@@ -1,6 +1,6 @@
 {
-  "phase": "download-existing-front-pack",
-  "autosprite_character_name": "F1 EDDY",
-  "requested_at": "2026-09-26T02:44:00Z",
-  "reason": "Install the existing F1 EDDY front-facing animation pack without generating new art."
+  "phase": "install-existing-street-pack",
+  "autosprite_character_name": "WTFBOI",
+  "requested_at": "2026-09-26T00:00:00Z",
+  "reason": "Discover and install the existing WTFBOI pack as the single shared Street-stage character without generating art."
 }

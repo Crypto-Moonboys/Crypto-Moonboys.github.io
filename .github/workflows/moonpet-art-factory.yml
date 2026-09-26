@@ -9,6 +9,7 @@ on:
       - "scripts/generate-botty-front-animations.js"
       - "scripts/download-botty-front-animations.js"
       - "scripts/promote-moonpet-bot-front-pack.js"
+      - "scripts/audit-autosprite-egg-art.js"
       - "data/moonpet-art-factory-request.json"
   workflow_dispatch:
     inputs:
@@ -21,6 +22,7 @@ on:
           - discover-autosprite-character
           - generate-front-pack
           - download-existing-front-pack
+          - install-existing-street-pack
       autosprite_character_name:
         description: "Exact existing AutoSprite character name."
         required: true
@@ -80,12 +82,13 @@ jobs:
           node --check scripts/generate-botty-front-animations.js
           node --check scripts/download-botty-front-animations.js
           node --check scripts/promote-moonpet-bot-front-pack.js
+          node --check scripts/audit-autosprite-egg-art.js
           node scripts/generate-moonpet-assets-extraction.test.js
           node scripts/moonpet-art-architecture.test.mjs
           node scripts/moonpet-multi-bot-art.test.mjs
 
       - name: Discover AutoSprite character
-        if: ${{ env.FACTORY_PHASE == 'discover-autosprite-character' || env.FACTORY_PHASE == 'generate-front-pack' || env.FACTORY_PHASE == 'download-existing-front-pack' }}
+        if: ${{ env.FACTORY_PHASE == 'discover-autosprite-character' || env.FACTORY_PHASE == 'generate-front-pack' || env.FACTORY_PHASE == 'download-existing-front-pack' || env.FACTORY_PHASE == 'install-existing-street-pack' }}
         timeout-minutes: 10
         run: node scripts/discover-autosprite-character.js --name "$AUTOSPRITE_CHARACTER_NAME" --persist
 
@@ -99,9 +102,30 @@ jobs:
           node scripts/generate-botty-front-animations.js "${ARGS[@]}"
 
       - name: Download existing front-facing pack
-        if: ${{ env.FACTORY_PHASE == 'download-existing-front-pack' }}
+        if: ${{ env.FACTORY_PHASE == 'download-existing-front-pack' || env.FACTORY_PHASE == 'install-existing-street-pack' }}
         timeout-minutes: 30
         run: node scripts/download-botty-front-animations.js --character-name "$AUTOSPRITE_CHARACTER_NAME"
+
+      - name: Audit existing Moon Egg art
+        if: ${{ env.FACTORY_PHASE == 'install-existing-street-pack' }}
+        timeout-minutes: 10
+        run: node scripts/audit-autosprite-egg-art.js
+
+      - name: Promote shared Street-stage pack
+        if: ${{ env.FACTORY_PHASE == 'install-existing-street-pack' }}
+        run: >-
+          node scripts/promote-moonpet-bot-front-pack.js
+          --manifest "output/manifests/wtfboi-front-existing-sheets.generated.json"
+          --source-root .
+          --shared-stage stage_1
+          --artifact-run "${{ github.run_id }}"
+          --approve-visual-review
+
+      - name: Validate promoted Street-stage pack
+        if: ${{ env.FACTORY_PHASE == 'install-existing-street-pack' }}
+        run: |
+          node scripts/moonpet-art-architecture.test.mjs
+          node scripts/moonpet-multi-bot-art.test.mjs
 
       - name: Commit AutoSprite character registry
         if: ${{ always() && env.AUTO_COMMIT_AUTOSPRITE_CHARACTER_REGISTRY == 'true' }}
@@ -111,8 +135,15 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/moonpet-autosprite-characters.json
           if [ -d data/autosprite-generation-diagnostics ]; then git add data/autosprite-generation-diagnostics/; fi
+          if [ "$FACTORY_PHASE" = "install-existing-street-pack" ]; then
+            git add data/moonpet-bot-art-registry.json data/moonpet-art-requirements.json data/moonpet-egg-art-audit.json
+            git add data/moonpet-wtfboi-front-assets.json img/moonpets/wtfboi/
+            COMMIT_MESSAGE="feat: install WTFBOI shared Street-stage art"
+          else
+            COMMIT_MESSAGE="chore: persist AutoSprite character registry and diagnostics [skip ci]"
+          fi
           if ! git diff --cached --quiet; then
-            git commit -m "chore: persist AutoSprite character registry and diagnostics [skip ci]"
+            git commit -m "$COMMIT_MESSAGE"
             git pull --rebase --autostash origin ${GITHUB_REF_NAME}
             git push origin HEAD:${GITHUB_REF_NAME}
           fi
@@ -126,5 +157,8 @@ jobs:
             output/moonpets/
             output/manifests/
             data/moonpet-autosprite-characters.json
+            data/moonpet-wtfboi-front-assets.json
+            data/moonpet-egg-art-audit.json
+            img/moonpets/wtfboi/contact-sheet.png
             data/autosprite-generation-diagnostics/
           if-no-files-found: warn

@@ -11,6 +11,9 @@ const expectedRoles = [
 ];
 
 assert.equal(registry.default_bot, "BOTTY");
+assert.equal(Object.keys(registry.bots).length, 8, "WTFBOI must be one shared stage pack, not a ninth identity");
+assert.equal(registry.shared_stages.stage_1.character_name, "WTFBOI");
+assert.equal(registry.shared_stages.stage_1.shared_by_all_identities, true);
 assert.equal(registry.bots.BOTTY.status, "complete");
 assert.deepEqual(registry.bots.BOTTY.canonical_species_ids, ["vinyl_crab"]);
 assert.equal(registry.bots.TUBBY.status, "complete");
@@ -36,6 +39,15 @@ for (const [name, config] of Object.entries(registry.bots)) {
     { scale: 1, fit_width: 168, fit_height: 168, pivot_y: 0.9 },
     `${name} must use the shared unsquashed canvas fit box`
   );
+}
+
+if (registry.shared_stages.stage_1.status === "complete") {
+  const street = registry.shared_stages.stage_1;
+  const manifest = JSON.parse(fs.readFileSync(path.join(root, street.manifest_path.replace(/^\//, "")), "utf8"));
+  assert.equal(manifest.character_name, "WTFBOI");
+  assert.equal(manifest.assets.length, 15);
+  assert.deepEqual(manifest.assets.map((asset) => asset.role), expectedRoles);
+  assert.deepEqual(street.display, { scale: 1, fit_width: 168, fit_height: 168, pivot_y: 0.9 });
 }
 
 for (const [name, config] of Object.entries(registry.bots).filter(([, entry]) => entry.status === "complete")) {
@@ -93,7 +105,7 @@ assert.ok(f1EddyManifest.assets.every((asset) => asset.frame_count === 25));
 
 const html = fs.readFileSync(path.join(root, "moonpet-game.html"), "utf8");
 assert.match(html, /moonpet-art-resolver\.js\?v=20260926-uniform-bot-fit-v3/);
-assert.match(html, /moonpet-bot-art-loader\.js\?v=20260926-uniform-bot-fit-v3/);
+assert.match(html, /moonpet-bot-art-loader\.js\?v=20260926-wtfboi-street-v1/);
 assert.match(html, /moonpet-bot-art-renderer\.js\?v=20260926-uniform-bot-fit-v3/);
 assert.doesNotMatch(html, /moonpet-botty-front-(?:asset-loader|sprite-renderer)\.js/);
 assert.doesNotMatch(html, /moonpet-art-v2\.js/);
@@ -112,5 +124,6 @@ assert.match(rendererSource, /const containScale = Math\.min\(fitWidth \/ frame\
 assert.match(rendererSource, /const width = frame\.w \* drawScale;[\s\S]*const height = frame\.h \* drawScale;/, "renderer must preserve source aspect ratio instead of squashing bots");
 assert.match(client, /var active = sleepLatched \|\| animationUntil > renderTime/);
 assert.match(client, /animationUntil = sleepLatched && animationMode === 'sleep' \? Number\.POSITIVE_INFINITY/);
+assert.match(client, /rawEvolutionStage == null[\s\S]*lifecycle\.phase === 'egg' \? 0 : 1/);
 
 console.log("Moonpet multi-bot art registry and production packs passed");
