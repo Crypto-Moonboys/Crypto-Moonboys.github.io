@@ -2554,12 +2554,32 @@
 
   canvas.addEventListener('moonpet:greet', greetCompanion);
 
+  var BOT_RENDER_CENTER_X = 112;
+  var BOT_RENDER_BASELINE_Y = 194;
+  var BOT_RENDER_FIT_WIDTH = 168;
+  var BOT_RENDER_FIT_HEIGHT = 168;
+  var BOT_RENDER_PIVOT_Y = 0.9;
+
+  function moonpetBotFitBounds() {
+    var display = botArtRendererState && botArtRendererState.display || {};
+    var fitWidth = Math.max(1, Number(display.fit_width || BOT_RENDER_FIT_WIDTH));
+    var fitHeight = Math.max(1, Number(display.fit_height || BOT_RENDER_FIT_HEIGHT));
+    var pivotY = Math.max(0, Math.min(1, Number(display.pivot_y || BOT_RENDER_PIVOT_Y)));
+    return {
+      left: BOT_RENDER_CENTER_X - fitWidth * 0.5,
+      right: BOT_RENDER_CENTER_X + fitWidth * 0.5,
+      top: BOT_RENDER_BASELINE_Y - fitHeight * pivotY,
+      bottom: BOT_RENDER_BASELINE_Y + fitHeight * (1 - pivotY)
+    };
+  }
+
   canvas.addEventListener('click', function (event) {
     var bounds = canvas.getBoundingClientRect();
     if (!bounds.width || !bounds.height) return;
     var canvasX = (event.clientX - bounds.left) * canvas.width / bounds.width;
     var canvasY = (event.clientY - bounds.top) * canvas.height / bounds.height;
-    if (canvasX >= 92 && canvasX <= 228 && canvasY >= 72 && canvasY <= 220) greetCompanion();
+    var botBounds = moonpetBotFitBounds();
+    if (canvasX >= botBounds.left && canvasX <= botBounds.right && canvasY >= botBounds.top && canvasY <= botBounds.bottom) greetCompanion();
   });
 
   canvas.addEventListener('keydown', function (event) {
@@ -2916,8 +2936,8 @@
       return;
     }
 
-    var x = 124;
-    var y = 194;
+    var x = BOT_RENDER_CENTER_X;
+    var y = BOT_RENDER_BASELINE_Y;
     if (drawSelectedBotSprite(renderTime, animationMode, active, x, y, 1)) return;
     if (!botArtFallbackLogged) {
       botArtFallbackLogged = true;

@@ -52,8 +52,10 @@
         "stage_5": { "form": "legendary_guardian", "status": "pending", "fallback_stage": "stage_1" }
       },
       "display": {
-        "scale": 0.72,
-        "pivot_y": 0.86
+        "scale": 1,
+        "fit_width": 168,
+        "fit_height": 168,
+        "pivot_y": 0.9
       }
     },
     "F1 EDDY": {
@@ -76,8 +78,10 @@
         "stage_5": { "form": "legendary_guardian", "status": "pending", "fallback_stage": "stage_1" }
       },
       "display": {
-        "scale": 0.72,
-        "pivot_y": 0.86
+        "scale": 1,
+        "fit_width": 168,
+        "fit_height": 168,
+        "pivot_y": 0.9
       }
     },
     "RED ALERT": {
@@ -100,8 +104,10 @@
         "stage_5": { "form": "legendary_guardian", "status": "pending", "fallback_stage": "stage_1" }
       },
       "display": {
-        "scale": 0.72,
-        "pivot_y": 0.86
+        "scale": 1,
+        "fit_width": 168,
+        "fit_height": 168,
+        "pivot_y": 0.9
       }
     },
     "THE TING": {
@@ -124,8 +130,10 @@
         "stage_5": { "form": "legendary_guardian", "status": "pending", "fallback_stage": "stage_1" }
       },
       "display": {
-        "scale": 0.72,
-        "pivot_y": 0.86
+        "scale": 1,
+        "fit_width": 168,
+        "fit_height": 168,
+        "pivot_y": 0.9
       }
     },
     "TATTOO JOHN": {
@@ -148,8 +156,10 @@
         "stage_5": { "form": "legendary_guardian", "status": "pending", "fallback_stage": "stage_1" }
       },
       "display": {
-        "scale": 0.72,
-        "pivot_y": 0.86
+        "scale": 1,
+        "fit_width": 168,
+        "fit_height": 168,
+        "pivot_y": 0.9
       }
     },
     "TIN BOB": {
@@ -172,8 +182,10 @@
         "stage_5": { "form": "legendary_guardian", "status": "pending", "fallback_stage": "stage_1" }
       },
       "display": {
-        "scale": 0.72,
-        "pivot_y": 0.86
+        "scale": 1,
+        "fit_width": 168,
+        "fit_height": 168,
+        "pivot_y": 0.9
       }
     },
     "TUBBY": {
@@ -196,8 +208,10 @@
         "stage_5": { "form": "legendary_guardian", "status": "pending", "fallback_stage": "stage_1" }
       },
       "display": {
-        "scale": 0.72,
-        "pivot_y": 0.86
+        "scale": 1,
+        "fit_width": 168,
+        "fit_height": 168,
+        "pivot_y": 0.9
       }
     },
     "JAKE THE SNAKE": {
@@ -222,8 +236,10 @@
         "stage_5": { "form": "legendary_guardian", "status": "pending", "fallback_stage": "stage_1" }
       },
       "display": {
-        "scale": 0.72,
-        "pivot_y": 0.86
+        "scale": 1,
+        "fit_width": 168,
+        "fit_height": 168,
+        "pivot_y": 0.9
       }
     }
   }

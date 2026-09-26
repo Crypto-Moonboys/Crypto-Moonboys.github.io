@@ -100,6 +100,10 @@ try {
       assert.equal(selection.requestedEvolution, `stage_${evolutionStage}`);
       assert.equal(selection.resolvedEvolution, "stage_1");
       assert.equal(selection.evolutionFallbackUsed, evolutionStage > 1);
+      assert.equal(selection.display.fit_width, 168, `${botName} must use shared fit width`);
+      assert.equal(selection.display.fit_height, 168, `${botName} must use shared fit height`);
+      assert.equal(selection.display.scale, 1, `${botName} must use shared scale`);
+      assert.equal(selection.display.pivot_y, 0.9, `${botName} must use shared baseline pivot`);
       const renders = await page.evaluate((modes) => {
         const renderer = window.MoonpetBotArtRenderer;
         const canvas = document.getElementById("multi-bot-proof");
@@ -111,6 +115,10 @@ try {
         }));
       }, MODES);
       assert.ok(renders.every((entry) => entry.drew && entry.lastRender.resolvedBot === botName), `${botName} stage ${evolutionStage} must render every action`);
+      assert.ok(renders.every((entry) => entry.lastRender.drawWidth <= 168 * 0.65 + 0.01 && entry.lastRender.drawHeight <= 168 * 0.65 + 0.01),
+        `${botName} stage ${evolutionStage} must stay inside the shared canvas fit box`);
+      assert.ok(renders.every((entry) => Math.abs(entry.lastRender.sourceAspect - entry.lastRender.drawAspect) < 1e-9),
+        `${botName} stage ${evolutionStage} must preserve sprite aspect ratio without squashing`);
     }
   }
 
@@ -307,7 +315,7 @@ try {
 
     context.fillStyle = "#0e1014";
     context.fillRect(0, 0, 320, 220);
-    window.MoonpetBotArtRenderer.renderMoonpetBot(context, "battle", 124, 194, 1, 2200, { active: true, startedAt: 0 });
+    window.MoonpetBotArtRenderer.renderMoonpetBot(context, "battle", 112, 194, 1, 2200, { active: true, startedAt: 0 });
     ui.drawActionInfoPanel("BATTLE", ["Processing...", "Round 2 of 5"], ui.ACTION_INFO_COLORS.battle, 1);
     return panelChecks;
   }, { modes: MODES, source: PRESENTATION_SOURCE });

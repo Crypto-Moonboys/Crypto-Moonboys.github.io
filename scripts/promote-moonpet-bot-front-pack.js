@@ -144,7 +144,7 @@ async function promote(options) {
         canonical_species_ids: ["vinyl_crab"], display_names: ["BOTTY"],
         autosprite_character_id: "cmuh1eo4p000113f3alnoim0v",
         manifest_path: "/data/moonpet-botty-front-assets.json", asset_root: "/img/moonpets/botty/",
-        status: "complete", fallback: "BOTTY", display: { scale: 0.72, pivot_y: 0.86 }
+        status: "complete", fallback: "BOTTY", display: { scale: 1, fit_width: 168, fit_height: 168, pivot_y: 0.9 }
       },
       "F1 EDDY": { canonical_species_ids: ["neon_raccoon"], display_names: ["F1 EDDY"], status: "pending", fallback: "BOTTY" },
       "JAKE THE SNAKE": { canonical_species_ids: ["bubble_ram"], display_names: ["JAKE THE SNAKE", "JACK THE SNAKE", "JALE THE SNAKE"], status: "pending", fallback: "BOTTY" },
@@ -163,7 +163,7 @@ async function promote(options) {
     asset_root: `/img/moonpets/${characterSlug}/`,
     status: "complete",
     fallback: "BOTTY",
-    display: { scale: 0.72, pivot_y: 0.86 }
+    display: { scale: 1, fit_width: 168, fit_height: 168, pivot_y: 0.9 }
   };
   await writeJson(registryPath, registry);
 
