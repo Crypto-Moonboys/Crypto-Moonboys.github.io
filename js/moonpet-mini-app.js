@@ -1355,7 +1355,9 @@
       panel('RECOMMENDED NEXT MOVE', '<div class="line complete">' + escapeHtml(next.title || 'Maintain current route') + '</div><div class="line muted">NEXT // ' + escapeHtml(homeNextLine(next)) + '</div><div class="line muted">' + escapeHtml(next.detail || 'All systems nominal.') + '</div><div class="button-grid one"><button class="terminal-button" type="button" data-jump="' + nextScreen + '" data-focus="' + focus + '">OPEN RECOMMENDED ROUTE</button></div>', 'recommended') +
       panel('VITAL SYSTEMS', meter('HEALTH', pet.health) + meter('ENERGY', pet.energy) + meter('HUNGER', pet.hunger, true) + meter('FUN', pet.happiness) + meter('CLEAN', pet.cleanliness), 'vitals') +
       panel('CARE CONSOLE', '<div class="button-grid">' +
-        button('FEED', 'feed') + button('PLAY', 'play') + button('CLEAN', 'clean') + button('SLEEP', 'sleep') + button('TRAIN', 'train') + button('DAILY CACHE', 'daily_chest') + '<button class="terminal-button" type="button" data-pet-greet>SAY HELLO</button>' +
+        button('FEED', 'feed') + button('PLAY', 'play') + button('CLEAN', 'clean') + button('SLEEP', 'sleep') + button('TRAIN', 'train') +
+        button('ENERGY DRINK', 'energy_drink') + button('DANCE', 'dance') + button('CUDDLES', 'cuddles') +
+        button('DAILY CACHE', 'daily_chest') + '<button class="terminal-button" type="button" data-pet-greet>SAY HELLO</button>' +
       '</div>', 'care') +
       renderSeasonSlots() +
       panel('COMPANION DETAILS', '<div class="line complete">' + escapeHtml(displayName) + ' // ' + escapeHtml(moonpetStageLabel(lifecycle, pet)) + '</div><div class="line">LEVEL ' + number(pet.level) + ' // ' + number(pet.pet_xp) + ' XP // ' + number(pet.style_tokens) + ' STYLE // ' + number(pet.streak_days) + '-DAY STREAK</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT // ' + escapeHtml(words(lifecycle.appearance && lifecycle.appearance.marking || 'moon mark')) + '</div>' + equipped, 'details');
@@ -2375,6 +2377,9 @@
     if (key === 'greet') return 'greet';
     if (key === 'activity_claim') return 'celebrate';
     if (key === 'activity_cancel') return 'interact';
+    if (key === 'energy_drink') return 'fight';
+    if (key === 'dance') return 'dance';
+    if (key === 'cuddles') return 'victory';
     if (/fail|blocked|denied|lose/.test(key)) return 'blocked';
     if (/feed|use_item/.test(key)) return 'feed';
     if (/play/.test(key)) return 'play';
@@ -2397,7 +2402,7 @@
   }
 
   var CAMERA_IMPACT_STRENGTH = {
-    feed: 1, play: 2, clean: 1, sleep: 0, train: 3, battle: 6, travel: 2,
+    feed: 1, play: 2, clean: 1, sleep: 0, train: 3, fight: 3, dance: 2, victory: 2, battle: 6, travel: 2,
     work: 2, equip: 2, evolve: 5, trade: 2, celebrate: 4, interact: 1, greet: 1, blocked: 4,
   };
 
@@ -2467,10 +2472,11 @@
     busy = true;
     if (buttonElement) buttonElement.classList.add('is-active');
     haptic('medium');
-    if (sleepLatched && actionAnimationFamily(action, payload) !== 'sleep') {
+    var waitForAcceptedAnimation = ['energy_drink', 'dance', 'cuddles'].includes(String(action || '').toLowerCase());
+    if (sleepLatched && actionAnimationFamily(action, payload) !== 'sleep' && !waitForAcceptedAnimation) {
       setSleepLatch(false);
     }
-    animateAction(action, true, 8000, payload);
+    if (!waitForAcceptedAnimation) animateAction(action, true, 8000, payload);
     tell(words(action) + ' in progress...');
     try {
       var stateBeforeAction = state;
@@ -2496,7 +2502,8 @@
       await showPendingNotices();
       var actionFamily = actionAnimationFamily(action, payload);
       if (actionFamily === 'sleep') setSleepLatch(actionAccepted);
-      if (!isHatchReveal) animateAction(action, actionAccepted, 2800, payload);
+      else if (waitForAcceptedAnimation && actionAccepted && sleepLatched) setSleepLatch(false);
+      if (!isHatchReveal) animateAction(action, actionAccepted, actionFamily === 'dance' ? 3600 : 2800, payload);
       startLifecycleCeremony(plannedCeremony);
     } catch (error) {
       animateAction('blocked', false, 2800);

@@ -446,7 +446,7 @@
     }
   },
   "front_action_pack": {
-    "status": "pending_visual_review",
+    "status": "complete",
     "cache_version": "20260926-front-actions-v1",
     "required_roles": [
       "front_dance",
@@ -455,6 +455,7 @@
     ],
     "character_count": 10,
     "animation_count": 30,
-    "audit_path": "/data/moonpet-front-action-audit.json"
+    "audit_path": "/data/moonpet-front-action-audit.json",
+    "approved_at": "2026-09-26T17:35:36.784Z"
   }
 }

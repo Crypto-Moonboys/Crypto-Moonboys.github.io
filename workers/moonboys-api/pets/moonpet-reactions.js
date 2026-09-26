@@ -6,6 +6,7 @@ const deepFreeze = (value) => {
 
 const ACTIVITY_LABELS = Object.freeze({
   status: 'checking in', adopt: 'meeting you', feed: 'feeding time', play: 'playtime', clean: 'getting clean', sleep: 'sleep',
+  energy_drink: 'the energy boost', dance: 'dancing together', cuddles: 'cuddle time',
   train: 'training', job: 'the job', daily: 'the daily chest', event: 'this encounter', boss: 'the boss fight', evolution: 'evolving',
   item: 'using the item', activity_start: 'the new activity', activity_claim: 'finishing the activity', activity_cancel: 'changing plans',
   trade_win: 'the winning trade', trade_loss: 'the lost trade', rename: 'the new name', purchase: 'the new equipment', run: 'the Moon Run',
@@ -55,6 +56,24 @@ const activities = {
     'The first attempt is messy; the second already looks deliberate.',
     'Your Moonpet studies your reaction, corrects the move and tries again.',
     'Training ends, but your Moonpet quietly rehearses the footwork once more.',
+  ],
+  energy_drink: [
+    'Your Moonpet hums with fresh energy, then settles into a ready stance.',
+    'The energy boost lands; your Moonpet looks alert and fully charged.',
+    'A bright pulse runs through your Moonpet before its systems steady.',
+    'Your Moonpet springs upright, ready for whatever comes next.',
+  ],
+  dance: [
+    'Your Moonpet finds the beat and keeps its brightest moves facing you.',
+    'A quick dance turns into a perfectly timed shared routine.',
+    'Your Moonpet repeats the best step, delighted that you noticed.',
+    'The final beat lands cleanly and your Moonpet holds the pose.',
+  ],
+  cuddles: [
+    'Your Moonpet leans close and stays there, completely content.',
+    'Cuddle time ends with one last squeeze and a very happy look.',
+    'Your Moonpet relaxes against you and lets the whole street wait.',
+    'A quiet cuddle leaves your Moonpet calmer and closer than before.',
   ],
   job: [
     'Your Moonpet treats the job like its reputation is written on the result.',

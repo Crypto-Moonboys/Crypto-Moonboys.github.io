@@ -1598,8 +1598,19 @@ assert.match(client, /actionAnimationFamily/);
 assert.match(client, /key === 'activity_start'.*payload && payload\.activity_type/);
 assert.match(client, /key === 'activity_claim'.*return 'celebrate'/);
 assert.match(client, /key === 'activity_cancel'.*return 'interact'/);
-assert.match(client, /animateAction\(action, true, 8000, payload\)/);
-assert.match(client, /var actionAccepted = Boolean\(data\.result && data\.result\.accepted\);[\s\S]*if \(!isHatchReveal\) animateAction\(action, actionAccepted, 2800, payload\)/);
+for (const [action, role] of [['energy_drink', 'fight'], ['dance', 'dance'], ['cuddles', 'victory']]) {
+  assert.match(client, new RegExp(`key === '${action}'\\) return '${role}'`), `${action} must use the ${role} animation role`);
+  assert.match(client, new RegExp(`button\\('[^']+', '${action}'\\)`), `${action} must be available in the Care Console`);
+}
+assert.match(client, /var waitForAcceptedAnimation = \['energy_drink', 'dance', 'cuddles'\]\.includes/,
+  'new special actions must wait for an authoritative accepted response before animating');
+assert.match(client, /sleepLatched && actionAnimationFamily\(action, payload\) !== 'sleep' && !waitForAcceptedAnimation/,
+  'rejected special actions must preserve the existing sleep latch');
+assert.match(client, /waitForAcceptedAnimation && actionAccepted && sleepLatched/,
+  'an accepted special action may clear a stale sleep latch only after server authority responds');
+assert.match(client, /if \(!waitForAcceptedAnimation\) animateAction\(action, true, 8000, payload\)/);
+assert.match(client, /var actionAccepted = Boolean\(data\.result && data\.result\.accepted\);[\s\S]*if \(!isHatchReveal\) animateAction\(action, actionAccepted, actionFamily === 'dance' \? 3600 : 2800, payload\)/,
+  'accepted DANCE must use a bounded loop while fight and victory return to idle after one-shot timing');
 assert.match(client, /var actionResultHoldMs = 3600/);
 assert.doesNotMatch(client, /createPetPalette|PET_APPEARANCE_PALETTES|PET_SPECIES_PALETTES|DEFAULT_PET_PALETTE/,
   'retired procedural animal palettes must stay removed');

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "audited_at": "2026-09-26T17:21:36.370Z",
+  "audited_at": "2026-09-26T17:35:36.785Z",
   "source": "AutoSprite API",
   "cache_version": "20260926-front-actions-v1",
   "character_count": 10,
@@ -11,8 +11,8 @@
     "front_fight"
   ],
   "mechanical_status": "complete",
-  "visual_review_status": "pending",
-  "status": "pending_visual_review",
+  "visual_review_status": "approved",
+  "status": "complete",
   "failures": [],
   "animations": [
     {
@@ -26,7 +26,7 @@
       "atlas_path": "/img/moonpets/eggyone/front_dance.json",
       "contact_sheet_path": "/img/moonpets/eggyone/front-actions-contact-sheet.png",
       "transparent_ratio": 0.5870233154296876,
-      "review_status": "pending_visual_review",
+      "review_status": "approved_visual_review",
       "source_mode": "downloaded_existing"
     },
     {
@@ -40,7 +40,7 @@
       "atlas_path": "/img/moonpets/eggyone/front_victory.json",
       "contact_sheet_path": "/img/moonpets/eggyone/front-actions-contact-sheet.png",
       "transparent_ratio": 0.5575543212890625,
-      "review_status": "pending_visual_review",
+      "review_status": "approved_visual_review",
       "source_mode": "downloaded_existing"
     },
     {
@@ -54,7 +54,7 @@
       "atlas_path": "/img/moonpets/eggyone/front_fight.json",
       "contact_sheet_path": "/img/moonpets/eggyone/front-actions-contact-sheet.png",
       "transparent_ratio": 0.7267535400390625,
-      "review_status": "pending_visual_review",
+      "review_status": "approved_visual_review",
       "source_mode": "downloaded_existing"
     },
     {
@@ -68,7 +68,7 @@
       "atlas_path": "/img/moonpets/wtfboi/front_dance.json",
       "contact_sheet_path": "/img/moonpets/wtfboi/front-actions-contact-sheet.png",
       "transparent_ratio": 0.59942138671875,
-      "review_status": "pending_visual_review",
+      "review_status": "approved_visual_review",
       "source_mode": "downloaded_existing"
     },
     {
@@ -82,7 +82,7 @@
       "atlas_path": "/img/moonpets/wtfboi/front_victory.json",
       "contact_sheet_path": "/img/moonpets/wtfboi/front-actions-contact-sheet.png",
       "transparent_ratio": 0.623189697265625,
-      "review_status": "pending_visual_review",
+      "review_status": "approved_visual_review",
       "source_mode": "downloaded_existing"
     },
     {
@@ -96,7 +96,7 @@
       "atlas_path": "/img/moonpets/wtfboi/front_fight.json",
       "contact_sheet_path": "/img/moonpets/wtfboi/front-actions-contact-sheet.png",
       "transparent_ratio": 0.6168109130859375,
-      "review_status": "pending_visual_review",
+      "review_status": "approved_visual_review",
       "source_mode": "downloaded_existing"
     },
     {
@@ -110,7 +110,7 @@
       "atlas_path": "/img/moonpets/f1-eddy/front_dance.json",
       "contact_sheet_path": "/img/moonpets/f1-eddy/front-actions-contact-sheet.png",
       "transparent_ratio": 0.6992279052734375,
-      "review_status": "pending_visual_review",
+      "review_status": "approved_visual_review",
       "source_mode": "downloaded_existing"
     },
     {
@@ -124,7 +124,7 @@
       "atlas_path": "/img/moonpets/f1-eddy/front_victory.json",
       "contact_sheet_path": "/img/moonpets/f1-eddy/front-actions-contact-sheet.png",
       "transparent_ratio": 0.6195709228515625,
-      "review_status": "pending_visual_review",
+      "review_status": "approved_visual_review",
       "source_mode": "downloaded_existing"
     },
     {
@@ -138,7 +138,7 @@
       "atlas_path": "/img/moonpets/f1-eddy/front_fight.json",
       "contact_sheet_path": "/img/moonpets/f1-eddy/front-actions-contact-sheet.png",
       "transparent_ratio": 0.612882080078125,
-      "review_status": "pending_visual_review",
+      "review_status": "approved_visual_review",
       "source_mode": "downloaded_existing"
     },
     {
@@ -152,7 +152,7 @@
       "atlas_path": "/img/moonpets/jake-the-snake/front_dance.json",
       "contact_sheet_path": "/img/moonpets/jake-the-snake/front-actions-contact-sheet.png",
       "transparent_ratio": 0.621746826171875,
-      "review_status": "pending_visual_review",
+      "review_status": "approved_visual_review",
       "source_mode": "downloaded_existing"
     },
     {
@@ -166,7 +166,7 @@
       "atlas_path": "/img/moonpets/jake-the-snake/front_victory.json",
       "contact_sheet_path": "/img/moonpets/jake-the-snake/front-actions-contact-sheet.png",
       "transparent_ratio": 0.5926226806640625,
-      "review_status": "pending_visual_review",
+      "review_status": "approved_visual_review",
       "source_mode": "downloaded_existing"
     },
     {
@@ -180,7 +180,7 @@
       "atlas_path": "/img/moonpets/jake-the-snake/front_fight.json",
       "contact_sheet_path": "/img/moonpets/jake-the-snake/front-actions-contact-sheet.png",
       "transparent_ratio": 0.6346209716796875,
-      "review_status": "pending_visual_review",
+      "review_status": "approved_visual_review",
       "source_mode": "downloaded_existing"
     },
     {
@@ -194,7 +194,7 @@
       "atlas_path": "/img/moonpets/tubby/front_dance.json",
       "contact_sheet_path": "/img/moonpets/tubby/front-actions-contact-sheet.png",
       "transparent_ratio": 0.61427734375,
-      "review_status": "pending_visual_review",
+      "review_status": "approved_visual_review",
       "source_mode": "downloaded_existing"
     },
     {
@@ -208,7 +208,7 @@
       "atlas_path": "/img/moonpets/tubby/front_victory.json",
       "contact_sheet_path": "/img/moonpets/tubby/front-actions-contact-sheet.png",
       "transparent_ratio": 0.615369873046875,
-      "review_status": "pending_visual_review",
+      "review_status": "approved_visual_review",
       "source_mode": "downloaded_existing"
     },
     {
@@ -222,7 +222,7 @@
       "atlas_path": "/img/moonpets/tubby/front_fight.json",
       "contact_sheet_path": "/img/moonpets/tubby/front-actions-contact-sheet.png",
       "transparent_ratio": 0.62906982421875,
-      "review_status": "pending_visual_review",
+      "review_status": "approved_visual_review",
       "source_mode": "downloaded_existing"
     },
     {
@@ -236,7 +236,7 @@
       "atlas_path": "/img/moonpets/botty/front_dance.json",
       "contact_sheet_path": "/img/moonpets/botty/front-actions-contact-sheet.png",
       "transparent_ratio": 0.5868597412109375,
-      "review_status": "pending_visual_review",
+      "review_status": "approved_visual_review",
       "source_mode": "downloaded_existing"
     },
     {
@@ -250,7 +250,7 @@
       "atlas_path": "/img/moonpets/botty/front_victory.json",
       "contact_sheet_path": "/img/moonpets/botty/front-actions-contact-sheet.png",
       "transparent_ratio": 0.569613037109375,
-      "review_status": "pending_visual_review",
+      "review_status": "approved_visual_review",
       "source_mode": "downloaded_existing"
     },
     {
@@ -264,7 +264,7 @@
       "atlas_path": "/img/moonpets/botty/front_fight.json",
       "contact_sheet_path": "/img/moonpets/botty/front-actions-contact-sheet.png",
       "transparent_ratio": 0.5729547119140626,
-      "review_status": "pending_visual_review",
+      "review_status": "approved_visual_review",
       "source_mode": "downloaded_existing"
     },
     {
@@ -278,7 +278,7 @@
       "atlas_path": "/img/moonpets/red-alert/front_dance.json",
       "contact_sheet_path": "/img/moonpets/red-alert/front-actions-contact-sheet.png",
       "transparent_ratio": 0.5769915771484375,
-      "review_status": "pending_visual_review",
+      "review_status": "approved_visual_review",
       "source_mode": "downloaded_existing"
     },
     {
@@ -292,7 +292,7 @@
       "atlas_path": "/img/moonpets/red-alert/front_victory.json",
       "contact_sheet_path": "/img/moonpets/red-alert/front-actions-contact-sheet.png",
       "transparent_ratio": 0.56849609375,
-      "review_status": "pending_visual_review",
+      "review_status": "approved_visual_review",
       "source_mode": "downloaded_existing"
     },
     {
@@ -306,7 +306,7 @@
       "atlas_path": "/img/moonpets/red-alert/front_fight.json",
       "contact_sheet_path": "/img/moonpets/red-alert/front-actions-contact-sheet.png",
       "transparent_ratio": 0.569769287109375,
-      "review_status": "pending_visual_review",
+      "review_status": "approved_visual_review",
       "source_mode": "downloaded_existing"
     },
     {
@@ -320,7 +320,7 @@
       "atlas_path": "/img/moonpets/the-ting/front_dance.json",
       "contact_sheet_path": "/img/moonpets/the-ting/front-actions-contact-sheet.png",
       "transparent_ratio": 0.594671630859375,
-      "review_status": "pending_visual_review",
+      "review_status": "approved_visual_review",
       "source_mode": "downloaded_existing"
     },
     {
@@ -334,7 +334,7 @@
       "atlas_path": "/img/moonpets/the-ting/front_victory.json",
       "contact_sheet_path": "/img/moonpets/the-ting/front-actions-contact-sheet.png",
       "transparent_ratio": 0.605828857421875,
-      "review_status": "pending_visual_review",
+      "review_status": "approved_visual_review",
       "source_mode": "downloaded_existing"
     },
     {
@@ -348,7 +348,7 @@
       "atlas_path": "/img/moonpets/the-ting/front_fight.json",
       "contact_sheet_path": "/img/moonpets/the-ting/front-actions-contact-sheet.png",
       "transparent_ratio": 0.618984375,
-      "review_status": "pending_visual_review",
+      "review_status": "approved_visual_review",
       "source_mode": "downloaded_existing"
     },
     {
@@ -362,7 +362,7 @@
       "atlas_path": "/img/moonpets/tattoo-john/front_dance.json",
       "contact_sheet_path": "/img/moonpets/tattoo-john/front-actions-contact-sheet.png",
       "transparent_ratio": 0.5717724609375,
-      "review_status": "pending_visual_review",
+      "review_status": "approved_visual_review",
       "source_mode": "downloaded_existing"
     },
     {
@@ -376,7 +376,7 @@
       "atlas_path": "/img/moonpets/tattoo-john/front_victory.json",
       "contact_sheet_path": "/img/moonpets/tattoo-john/front-actions-contact-sheet.png",
       "transparent_ratio": 0.5643096923828125,
-      "review_status": "pending_visual_review",
+      "review_status": "approved_visual_review",
       "source_mode": "downloaded_existing"
     },
     {
@@ -390,7 +390,7 @@
       "atlas_path": "/img/moonpets/tattoo-john/front_fight.json",
       "contact_sheet_path": "/img/moonpets/tattoo-john/front-actions-contact-sheet.png",
       "transparent_ratio": 0.5852349853515625,
-      "review_status": "pending_visual_review",
+      "review_status": "approved_visual_review",
       "source_mode": "downloaded_existing"
     },
     {
@@ -404,7 +404,7 @@
       "atlas_path": "/img/moonpets/tin-bob/front_dance.json",
       "contact_sheet_path": "/img/moonpets/tin-bob/front-actions-contact-sheet.png",
       "transparent_ratio": 0.593826904296875,
-      "review_status": "pending_visual_review",
+      "review_status": "approved_visual_review",
       "source_mode": "downloaded_existing"
     },
     {
@@ -418,7 +418,7 @@
       "atlas_path": "/img/moonpets/tin-bob/front_victory.json",
       "contact_sheet_path": "/img/moonpets/tin-bob/front-actions-contact-sheet.png",
       "transparent_ratio": 0.5963482666015625,
-      "review_status": "pending_visual_review",
+      "review_status": "approved_visual_review",
       "source_mode": "downloaded_existing"
     },
     {
@@ -432,7 +432,7 @@
       "atlas_path": "/img/moonpets/tin-bob/front_fight.json",
       "contact_sheet_path": "/img/moonpets/tin-bob/front-actions-contact-sheet.png",
       "transparent_ratio": 0.61290771484375,
-      "review_status": "pending_visual_review",
+      "review_status": "approved_visual_review",
       "source_mode": "downloaded_existing"
     }
   ]

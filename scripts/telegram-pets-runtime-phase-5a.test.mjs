@@ -22,6 +22,10 @@ assert.equal(normalizePetRuntimeAction('__proto__'), null);
 const feedPlan = buildPetRuntimeAwardPlan('feed', { trait_amount: 4 });
 assert.deepEqual(feedPlan.tracks, { care: 8, bond: 5 });
 assert.deepEqual(feedPlan.traits, { loyal: 4 });
+assert.deepEqual(buildPetRuntimeAwardPlan('energy_drink').tracks, { care: 1, bond: 1 });
+assert.deepEqual(buildPetRuntimeAwardPlan('dance').tracks, { care: 2, bond: 3 });
+assert.deepEqual(buildPetRuntimeAwardPlan('cuddles').tracks, { care: 2, bond: 6 },
+  'CUDDLES must provide the strongest bounded Bond contribution without direct XP or currency');
 
 const capped = calculatePetRuntimeTrackAwards(feedPlan, { care_daily: 298, bond_daily: 180 });
 assert.deepEqual(capped, { care: 2 }, 'daily track caps must be applied independently');

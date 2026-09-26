@@ -26,6 +26,8 @@ assert.deepEqual(candidates.map(({ type }) => type), ['evolution_ready', 'season
 assert.equal(new Set(candidates.map(({ key }) => key)).size, candidates.length, 'each one-time notice needs a stable unique key');
 
 assert.equal(choosePetNextAction({ pet: { ...healthyPet, hunger: 90 } }).key, 'feed', 'urgent care must outrank grinding');
+assert.equal(choosePetNextAction({ pet: { ...healthyPet, energy: 20 } }).key, 'energy_drink', 'Coach must recommend the bounded Energy action when Energy is low');
+assert.equal(choosePetNextAction({ pet: { ...healthyPet, happiness: 20 } }).key, 'dance', 'Coach must recommend the bounded Happiness actions when Happiness is low');
 assert.equal(choosePetNextAction({ pet: healthyPet, activity: { ready: true, activity_type: 'work' } }).key, 'claim_activity');
 assert.equal(choosePetNextAction({ pet: healthyPet, active_run: { run_id: 'run-1', status: 'extractable' } }).callback_data, 'pet:run:run-1:extract');
 assert.equal(choosePetNextAction({ pet: healthyPet, season: { tiers: [{ tier_id: 'street', title: 'Street Cache', unlocked: true }] } }).key, 'season:street');

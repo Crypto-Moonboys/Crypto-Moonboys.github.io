@@ -469,7 +469,7 @@
         "source": "AutoSprite API"
       },
       "provenance": "downloaded_existing",
-      "review_status": "pending_visual_review"
+      "review_status": "approved_visual_review"
     },
     {
       "role": "front_victory",
@@ -498,7 +498,7 @@
         "source": "AutoSprite API"
       },
       "provenance": "downloaded_existing",
-      "review_status": "pending_visual_review"
+      "review_status": "approved_visual_review"
     },
     {
       "role": "front_fight",
@@ -527,8 +527,13 @@
         "source": "AutoSprite API"
       },
       "provenance": "downloaded_existing",
-      "review_status": "pending_visual_review"
+      "review_status": "approved_visual_review"
     }
   ],
-  "front_action_contact_sheet_path": "/img/moonpets/tubby/front-actions-contact-sheet.png"
+  "front_action_contact_sheet_path": "/img/moonpets/tubby/front-actions-contact-sheet.png",
+  "front_action_visual_review": {
+    "status": "approved",
+    "reviewed_at": "2026-09-26T17:35:36.447Z",
+    "contact_sheet_path": "/img/moonpets/tubby/front-actions-contact-sheet.png"
+  }
 }

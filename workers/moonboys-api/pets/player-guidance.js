@@ -121,8 +121,8 @@ export function choosePetNextAction(state = {}) {
   if (positiveInteger(pet.health) <= 45) return { key: 'health', title: 'Stabilise health first', detail: 'Feed, clean, rest and play before taking risks.', label: '📋 Check Needs', callback_data: 'pet:details' };
   if (positiveInteger(pet.hunger) >= 75) return { key: 'feed', title: 'Feed your Moonpet', detail: 'Hunger is high and will drag health down.', label: '🍖 Feed Now', callback_data: 'pet:feed' };
   if (positiveInteger(pet.cleanliness) <= 35) return { key: 'clean', title: 'Clean your Moonpet', detail: 'Cleanliness is low and needs attention.', label: '🧼 Clean Now', callback_data: 'pet:clean' };
-  if (positiveInteger(pet.energy) <= 25) return { key: 'sleep', title: 'Restore energy', detail: 'Sleep before training, boss fights or Moon Runs.', label: '😴 Sleep Now', callback_data: 'pet:sleep' };
-  if (positiveInteger(pet.happiness) <= 35) return { key: 'play', title: 'Raise happiness', detail: 'A quick play session is the best move.', label: '🎮 Play Now', callback_data: 'pet:play' };
+  if (positiveInteger(pet.energy) <= 25) return { key: 'energy_drink', title: 'Restore energy', detail: 'Use ENERGY DRINK in the Care Console before training, boss fights or Moon Runs.', label: '⚡ Open Care', callback_data: 'pet:details' };
+  if (positiveInteger(pet.happiness) <= 35) return { key: 'dance', title: 'Raise happiness', detail: 'Use DANCE or CUDDLES in the Care Console for a bounded happiness boost.', label: '🎵 Open Care', callback_data: 'pet:details' };
   const readyTier = (state.season?.tiers || []).find((tier) => tier.unlocked && !tier.claimed_at);
   if (readyTier) return { key: `season:${readyTier.tier_id}`, title: `Claim ${readyTier.title}`, detail: 'This reward is unlocked and waiting.', label: '🎁 Claim Reward', callback_data: `pet:season:claim:${readyTier.tier_id}` };
   if (state.evolution?.ready) return { key: 'evolve', title: `Evolve into ${state.evolution.name}`, detail: 'Every requirement is complete; this unlocks the next content tier.', label: '🧬 Evolve Now', callback_data: 'pet:evolve' };
