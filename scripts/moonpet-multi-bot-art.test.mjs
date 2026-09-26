@@ -31,12 +31,12 @@ assert.equal(registry.bots["F1 EDDY"].status, "complete");
 assert.deepEqual(registry.bots["F1 EDDY"].canonical_species_ids, ["neon_raccoon"]);
 for (const [name, config] of Object.entries(registry.bots)) {
   if (name !== "BOTTY") assert.equal(config.fallback, "BOTTY", `${name} fallback`);
-}
   assert.deepEqual(
     config.display,
     { scale: 1, fit_width: 168, fit_height: 168, pivot_y: 0.9 },
     `${name} must use the shared unsquashed canvas fit box`
   );
+}
 
 for (const [name, config] of Object.entries(registry.bots).filter(([, entry]) => entry.status === "complete")) {
   const manifest = JSON.parse(fs.readFileSync(path.join(root, config.manifest_path.replace(/^\//, "")), "utf8"));
