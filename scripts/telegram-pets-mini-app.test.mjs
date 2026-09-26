@@ -972,7 +972,7 @@ assert.doesNotMatch(completedSeasonBlock, /active seasonal Moonpet required/,
 // Windows checkouts cannot reintroduce indentation/newline-sensitive regexes.
 const TEST_EXPORT_NAMES = [
   'seasonTiming', 'callsignDraft', 'capabilityCombatHelper', 'actionAvailability', 'dailyJourneyMarkup', 'weeklyJourneyMarkup', 'nextGuidance', 'journeyActionProgress', 'actionResultFeedback', 'stateRequestGate',
-  'combatDirector', 'lifecycleCeremonyStarter', 'lifecycleDirector', 'actionPresentation',
+  'combatDirector', 'lifecycleCeremonyStarter', 'lifecycleDirector',
 ];
 for (const name of TEST_EXPORT_NAMES) {
   for (const newline of ['\n', '\r\n']) {
@@ -1155,8 +1155,8 @@ assert.doesNotMatch(client, /tell\('WEEKLY JOURNEY AUTHORITY REFRESHED\.'\)/, 'W
 assert.doesNotMatch(client, /Weekly Journey authority refreshed/, 'action feedback must describe confirmed journey progress instead of generic refresh state');
 assert.match(client, /var message = resultMessage\(data\.result, stateBeforeAction, nextState\);\s*tell\(message, data\.result && data\.result\.accepted \? '' : 'danger'\);/,
   'action result messages must receive before and after authoritative state snapshots');
-assert.match(client, /presentResultFeedback\(data\.result, stateBeforeAction, nextState\)/,
-  'canvas result feedback must receive before and after authoritative state snapshots');
+assert.doesNotMatch(client, /presentResultFeedback|clearResultFeedback|feedbackLines|feedbackReaction/,
+  'action results must never create transient canvas feedback state');
 assert.match(client, /ACTIVE PET \/\/ SLOT/, 'active pet identity and slot state must be visible');
 assert.match(client, /DAILY JOURNEY \/\/ GROWTH MARK/, 'Daily Journey Growth Mark state must be visible');
 assert.match(client, /function weeklyJourneyMarkup\(weeklyAuthority, weeklyCapability, stateValue\)/, 'Weekly Journey must render from server authority and lifecycle phase');
@@ -1304,7 +1304,7 @@ assert.match(worker, /const \[journeySummary, hydratedKaiju\] = await Promise\.a
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
-assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260926-scrolling-status-details-v1`/);
+assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260926-no-canvas-updates-v1`/);
 assert.match(worker, /const TELEGRAM_GAMES_MENU_URL = `\$\{SITE_URL\}\/games\/telegram\/\?v=20260903-games-shell-v8`/,
   'default Telegram games menu must point at the current shell release');
 assert.match(worker, /const TELEGRAM_GAMES_MENU_TEXT = 'Games'/);
@@ -1403,7 +1403,7 @@ statusFrames.shift()();
 assert.equal(testStatusOutput.dataset.tone, 'danger');
 assert.equal(testStatusClasses.has('is-scrolling'), true, 'overflowing updates must activate the scrolling text track');
 assert.match(testStatusProperties['--status-scroll-duration'], /s$/, 'overflowing updates must receive a readable duration');
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260926-scrolling-status-details-v1/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260926-no-canvas-updates-v1/);
 assert.match(html, /\/js\/moonpet-art-resolver\.js\?v=20260926-uniform-bot-fit-v3/);
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20260926-wtfboi-street-v1/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20260926-uniform-bot-fit-v3/);
@@ -1500,7 +1500,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260926-scrolling-status-details-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260926-no-canvas-updates-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -1703,7 +1703,8 @@ assert.match(client, /companionGreetingTimer = window\.setTimeout/);
 assert.match(client, /drawPet\(renderTime\)/);
 assert.match(client, /if \(companionGreetingUntil > 0 && companionGreetingUntil <= time\)/);
 assert.match(client, /companionGreeting = '';\s*companionGreetingUntil = 0;/s);
-assert.match(drawWorldSource, /else if \(combat\.active\) drawCombatHud\(scene, combat\)/);
+assert.doesNotMatch(drawWorldSource, /drawCombatHud|drawLifecycleCeremony|drawCinematicFeedback/,
+  'no pet slot may draw transient update panels on the game canvas');
 assert.doesNotMatch(drawWorldSource, /drawActionInfo\(/, 'routine bot activation must not draw popup text over the canvas');
 assert.doesNotMatch(client, /drawPixelText\('SIGNAL!'/, 'egg activation must not draw popup text over the canvas');
 assert.doesNotMatch(css, /\.terminal-output\s*\{[^}]*animation:/s, 'the status bar itself must remain fixed');
@@ -1736,14 +1737,11 @@ assert.match(client, /kaiju\.opponent_card_locked/);
 assert.match(client, /var run = snapshot\.run/);
 assert.match(client, /COMBAT_PRESENTATION_FRAME\.mode = 'run'/);
 assert.match(client, /run\.current_room != null \? run\.current_room : run\.depth/);
-assert.match(client, /function drawCombatHud\(scene, combat\)/);
-assert.match(client, /'You  HP ' \+ Number\(combat\.playerValue\)/);
-assert.match(client, /'Special ' \+ Number\(combat\.playerSpecial\)/);
-assert.match(client, /'Card  ' \+ compactFeedback\(words\(combat\.playerCardKey\), 14\)/);
-assert.match(client, /drawActionInfoPanel\(combat\.title, lines, rivalColor, 1\)/);
+assert.doesNotMatch(client, /function drawCombatHud|drawActionInfoPanel/,
+  'combat updates must stay in the controls and scrolling status bar, not the canvas');
 assert.match(client, /if \(!combat \|\| !combat\.active\)/);
 assert.match(client, /var x = BOT_RENDER_CENTER_X/);
-assert.match(client, /drawCombatHud\(scene, combat\)/);
+assert.doesNotMatch(drawWorldSource, /drawCombatHud/);
 assert.match(client, /COMBAT_PRESENTATION_FRAME\.active \|\| lifecycleCeremonyActive\(now\)\) return;/);
 assert.doesNotMatch(client, /Math\.random\(\)[^\n]*(?:combat|rival)|(?:combat|rival)[^\n]*Math\.random\(\)/i, 'Phase 5 combat presentation must remain deterministic');
 
@@ -1837,7 +1835,8 @@ const lifecycleStartSource = extractTestExport(client, 'lifecycleCeremonyStarter
 assert.ok(lifecycleStartSource, 'Phase 6 lifecycle ceremony starter must be extractable for haptic regression coverage');
 assert.doesNotMatch(lifecycleStartSource, /haptic\('success'\)/, 'accepted lifecycle actions must emit only the runAction success haptic');
 assert.match(client, /function clearLifecycleCeremony\(redraw\)/);
-assert.match(client, /function drawLifecycleCeremony\(time, scene\)/);
+assert.doesNotMatch(client, /function drawLifecycleCeremony/,
+  'lifecycle updates must not render a right-side canvas panel');
 assert.match(client, /EGG CARE/);
 assert.match(client, /HATCHED/);
 assert.match(client, /EVOLVED/);
@@ -1856,12 +1855,12 @@ assert.match(client, /after\.stage > before\.stage/);
 assert.match(client, /result\.duplicate/);
 assert.match(client, /duration: 7600/);
 assert.match(client, /duration: 8200/);
-assert.match(client, /drawActionInfoPanel\(ceremony\.title, lines, color, fade\)/, 'lifecycle copy must use the shared right-side information column');
+assert.doesNotMatch(client, /drawActionInfoPanel/, 'the retired right-side canvas information column must stay removed');
 assert.doesNotMatch(client, /animationLabel/, 'legacy canvas action labels must be removed');
 assert.match(client, /lifecycleCeremonyTimer = window\.setTimeout/);
 assert.match(client, /if \(lifecycleCeremony !== activeCeremony\) return/);
-assert.match(drawWorldSource, /if \(lifecycleCeremonyActive\(renderTime\)\) drawLifecycleCeremony\(renderTime, scene\)/);
-assert.match(client, /await showPendingNotices\(\);[\s\S]*?var actionAccepted = Boolean\(data\.result && data\.result\.accepted\);[\s\S]*?if \(!startLifecycleCeremony\(plannedCeremony\)\) presentResultFeedback\(data\.result, stateBeforeAction, nextState\);/);
+assert.doesNotMatch(drawWorldSource, /drawLifecycleCeremony/);
+assert.match(client, /await showPendingNotices\(\);[\s\S]*?var actionAccepted = Boolean\(data\.result && data\.result\.accepted\);[\s\S]*?startLifecycleCeremony\(plannedCeremony\);/);
 assert.doesNotMatch(client, /TRANSMITTING|EXEC |STATE CACHE REFRESHED|FAULT DETECTED/,
   'normal action flow must not expose debug or engine language');
 assert.match(client, /if \(lifecycleCeremonyActive\(\)\) \{\s*tell\('LIFECYCLE REVEAL IN PROGRESS\.'/s);
@@ -1953,7 +1952,7 @@ assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Numbe
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
 assert.match(html, /20260926-uniform-bot-fit-v3/);
-assert.match(worker, /20260926-scrolling-status-details-v1/);
+assert.match(worker, /20260926-no-canvas-updates-v1/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');
 assert.match(client, /renderQuality = reducedMotion/, 'canvas quality must start from device capability');

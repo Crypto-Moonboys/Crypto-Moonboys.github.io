@@ -41,12 +41,6 @@
   var SLEEP_LATCH_STORAGE_KEY = 'moonpet-botty-sleep-latch-v1';
   var cameraImpactUntil = 0;
   var cameraImpactStrength = 0;
-  var feedbackUntil = 0;
-  var feedbackRedrawTimer = 0;
-  var feedbackTone = '';
-  var feedbackLines = [];
-  var feedbackReaction = '';
-  var feedbackActionMode = '';
   var lifecycleCeremony = null;
   var lifecycleCeremonyStartedAt = 0;
   var lifecycleCeremonyUntil = 0;
@@ -2280,33 +2274,6 @@
   }
   // TEST-EXPORT: actionResultFeedback:end
 
-  function clearResultFeedback(redraw) {
-    window.clearTimeout(feedbackRedrawTimer);
-    feedbackUntil = 0;
-    feedbackTone = '';
-    feedbackLines = [];
-    feedbackReaction = '';
-    feedbackActionMode = '';
-    if (redraw && reducedMotion) drawWorld(performance.now());
-  }
-
-  function presentResultFeedback(result, beforeState, afterState) {
-    var feedback = actionFeedback(result, beforeState, afterState);
-    var feedbackDuration = Math.max(5200, actionResultHoldMs + 1600);
-    window.clearTimeout(feedbackRedrawTimer);
-    feedbackTone = feedback.tone;
-    feedbackLines = feedback.lines;
-    feedbackReaction = feedback.reaction;
-    feedbackActionMode = animationMode;
-    feedbackUntil = performance.now() + feedbackDuration;
-    if (reducedMotion) {
-      drawWorld(performance.now());
-      feedbackRedrawTimer = window.setTimeout(function () {
-        clearResultFeedback(true);
-      }, feedbackDuration + 20);
-    }
-  }
-
   // TEST-EXPORT: lifecycleDirector:start
   function lifecycleStateSnapshot(snapshot) {
     var lifecycle = snapshot && snapshot.lifecycle || {};
@@ -2384,7 +2351,6 @@
   // TEST-EXPORT: lifecycleCeremonyStarter:start
   function startLifecycleCeremony(ceremony) {
     if (!ceremony) return false;
-    clearResultFeedback(false);
     window.clearTimeout(lifecycleCeremonyTimer);
     lifecycleCeremony = ceremony;
     lifecycleCeremonyStartedAt = performance.now();
@@ -2493,7 +2459,6 @@
     busy = true;
     if (buttonElement) buttonElement.classList.add('is-active');
     haptic('medium');
-    clearResultFeedback(false);
     if (sleepLatched && actionAnimationFamily(action, payload) !== 'sleep') {
       setSleepLatch(false);
     }
@@ -2516,12 +2481,11 @@
       var actionFamily = actionAnimationFamily(action, payload);
       if (actionFamily === 'sleep') setSleepLatch(actionAccepted);
       animateAction(action, actionAccepted, 2800, payload);
-      if (!startLifecycleCeremony(plannedCeremony)) presentResultFeedback(data.result, stateBeforeAction, nextState);
+      startLifecycleCeremony(plannedCeremony);
     } catch (error) {
       animateAction('blocked', false, 2800);
       tell(error.message || 'CONNECTION FAILED', 'danger');
       haptic('error');
-      presentResultFeedback({ accepted: false, reason: error.message || 'connection failed' }, state, state);
     } finally {
       busy = false;
       if (buttonElement) buttonElement.classList.remove('is-active');
@@ -2598,7 +2562,7 @@
 
   function greetCompanion() {
     var now = performance.now();
-    if (busy || !state || !state.adopted || feedbackUntil > now || animationUntil > now || COMBAT_PRESENTATION_FRAME.active || lifecycleCeremonyActive(now)) return;
+    if (busy || !state || !state.adopted || animationUntil > now || COMBAT_PRESENTATION_FRAME.active || lifecycleCeremonyActive(now)) return;
     companionTapSequence += 1;
     companionGreeting = compactFeedback(companionGreetingCopy(state.pet, state.lifecycle || {}), 24);
     companionGreetingUntil = now + 2600;
@@ -2880,37 +2844,6 @@
     ctx.restore();
   }
 
-  // TEST-EXPORT: actionPresentation:start
-  function drawCanvasText(text, x, y, color, size, weight) {
-    ctx.save();
-    ctx.fillStyle = color || '#d9e0de';
-    ctx.font = String(weight || 400) + ' ' + String(size || 8) + 'px Arial, sans-serif';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'alphabetic';
-    ctx.fillText(String(text || ''), x, y);
-    ctx.restore();
-  }
-
-  function drawActionInfoPanel(title, lines, color, opacity) {
-    var x = 205;
-    var y = 74;
-    var width = 105;
-    var safeLines = (lines || []).filter(Boolean).slice(0, 5);
-    ctx.save();
-    ctx.globalAlpha = opacity == null ? 1 : opacity;
-    ctx.fillStyle = 'rgba(3, 8, 7, 0.68)';
-    ctx.fillRect(x - 6, y - 17, width + 6, 25 + safeLines.length * 13);
-    ctx.fillStyle = color;
-    ctx.fillRect(x, y - 8, width, 1);
-    ctx.restore();
-    drawCanvasText(compactFeedback(title, 18), x, y + 4, color, 9, 600);
-    safeLines.forEach(function (line, index) {
-      drawCanvasText(compactFeedback(String(line).replace(/\s*\/\/\s*/g, ' - '), 23), x, y + 20 + index * 13, index === 0 ? '#eef2f1' : '#bec8c5', 8, index === 0 ? 500 : 400);
-    });
-  }
-
-  // TEST-EXPORT: actionPresentation:end
-
   function createPetPalette(body, shade, accent) {
     return {
       normal: { body: body, shade: shade, accent: accent, outline: '#061009' },
@@ -3066,25 +2999,6 @@
     if (fill > 0) drawPixelRect(reverse ? x + width - 2 - fill : x + 2, y + 2, fill, 3, color);
   }
 
-  function drawCombatHud(scene, combat) {
-    if (!combat || !combat.active) return;
-    var rivalColor = combat.rivalColor || '#ff6d6d';
-    var lines = [String(combat.status || '').replace(/\s*\/\/\s*/g, ' - ')];
-    if (combat.mode === 'arena') {
-      lines.push('You  HP ' + Number(combat.playerValue));
-      lines.push(compactFeedback(combat.opponentName, 13) + '  HP ' + Number(combat.opponentValue));
-      lines.push('Special ' + Number(combat.playerSpecial) + '/' + COMBAT_ARENA_SPECIAL_MAX);
-    } else if (combat.mode === 'kaiju') {
-      lines.push(combat.playerValue ? 'Your card locked' : 'Select your card');
-      lines.push(combat.opponentValue ? 'Rival card locked' : 'Waiting for rival');
-      if (combat.playerCardKey) lines.push('Card  ' + compactFeedback(words(combat.playerCardKey), 14));
-    } else {
-      lines.push('Progress ' + Number(combat.playerValue) + '/' + Number(combat.maxValue));
-      lines.push(Number(combat.opponentValue) + ' rooms remain');
-    }
-    drawActionInfoPanel(combat.title, lines, rivalColor, 1);
-  }
-
   var WORLD_BUILDING_HEIGHTS = [32, 51, 39, 66, 44, 58, 35, 70, 48, 61];
 
   function worldScene() {
@@ -3118,40 +3032,6 @@
     return CAMERA_FRAME;
   }
 
-  function drawCinematicFeedback(time, scene) {
-    if (feedbackUntil <= time || !feedbackLines.length) return;
-    var color = feedbackTone === 'danger' ? '#ff6d6d' : scene.neon;
-    var fade = reducedMotion ? 1 : Math.min(1, Math.max(0, (feedbackUntil - time) / 480));
-    ctx.save(); ctx.globalAlpha = fade;
-    drawPixelRect(53, 174, 214, 35, '#020704');
-    drawPixelRect(53, 174, 214, 2, color); drawPixelRect(53, 207, 214, 2, color);
-    for (var line = 0; line < feedbackLines.length; line += 1) drawPixelText(feedbackLines[line], 160, 185 + line * 10, line === 0 ? color : '#d8f9ff', 'center');
-    if (feedbackReaction) {
-      drawPixelRect(172, 74, 141, 31, '#020704'); drawPixelRect(172, 74, 3, 31, scene.accent);
-      drawPixelText('MOONPET //', 181, 86, scene.accent, 'left');
-      drawPixelText(feedbackReaction, 181, 98, '#f4ff65', 'left');
-    }
-    ctx.restore();
-  }
-
-  function drawLifecycleCeremony(time, scene) {
-    if (!lifecycleCeremonyActive(time)) return;
-    var ceremony = lifecycleCeremony;
-    var duration = Math.max(1, lifecycleCeremonyUntil - lifecycleCeremonyStartedAt);
-    var progress = Math.max(0, Math.min(1, (time - lifecycleCeremonyStartedAt) / duration));
-    var color = ceremony.kind === 'rare' ? '#f6a7ff'
-      : ceremony.kind === 'hatch' ? '#f4ff65'
-        : ceremony.kind === 'evolve' ? '#61f5ff' : scene.accent;
-    var fade = reducedMotion ? 1 : Math.min(1, progress * 5, (1 - progress) * 7);
-    var lines = [ceremony.primary, ceremony.secondary];
-    if (ceremony.kind === 'signal') {
-      lines.push('Hatch progress ' + Number(ceremony.progress) + '/' + Number(ceremony.target));
-    } else if (ceremony.detail) {
-      lines.push(ceremony.detail);
-    }
-    drawActionInfoPanel(ceremony.title, lines, color, fade);
-  }
-
   function drawWorldBackground() {
     if (!worldBackgroundReady || !worldBackgroundImage.naturalWidth || !worldBackgroundImage.naturalHeight) {
       drawPixelRect(0, 0, 320, 220, '#010402');
@@ -3180,10 +3060,9 @@
 
   // TEST-EXPORT: drawWorld:start
   function drawWorld(time) {
-    var scene = worldScene();
     var renderTime = reducedMotion ? performance.now() : time;
     var camera = updateCameraFrame(renderTime);
-    var combat = updateCombatPresentation(state);
+    updateCombatPresentation(state);
 
     // The authored BITTY image is now the complete environment. No procedural
     // sky, skyline, graffiti wall, landmarks, street, foreground or ambience.
@@ -3196,8 +3075,6 @@
     drawPet(renderTime);
     ctx.restore();
 
-    if (lifecycleCeremonyActive(renderTime)) drawLifecycleCeremony(renderTime, scene);
-    else if (combat.active) drawCombatHud(scene, combat);
   }
   // TEST-EXPORT: drawWorld:end
 
