@@ -64,8 +64,15 @@
       "display_names": [
         "RED ALERT"
       ],
-      "status": "pending",
-      "fallback": "BOTTY"
+      "autosprite_character_id": "cmuhjc0xs0002zoeg1jggctix",
+      "manifest_path": "/data/moonpet-red-alert-front-assets.json",
+      "asset_root": "/img/moonpets/red-alert/",
+      "status": "complete",
+      "fallback": "BOTTY",
+      "display": {
+        "scale": 0.72,
+        "pivot_y": 0.86
+      }
     },
     "THE TING": {
       "canonical_species_ids": [
