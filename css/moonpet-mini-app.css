@@ -257,17 +257,22 @@ button, input, select, textarea {
 }
 
 .terminal-output[data-tone="danger"] {
-  position: relative;
+  position: absolute;
   z-index: 72;
+  left: 12px;
+  right: 12px;
+  bottom: calc(70px + var(--safe-bottom));
   width: auto;
   height: auto;
   margin: 0;
-  padding: 8px 14px;
+  padding: 8px 12px;
   overflow: visible;
-  border-bottom: 1px solid rgba(var(--ui-danger), .18);
+  border: 1px solid rgba(var(--ui-danger), .2);
+  border-radius: var(--radius-small);
   clip: auto;
   clip-path: none;
-  background: rgba(var(--ui-danger), .055);
+  background: rgba(38, 12, 14, .96);
+  box-shadow: var(--ui-shadow-soft);
   color: rgb(var(--ui-danger));
   font-size: 11px;
   line-height: 1.4;
