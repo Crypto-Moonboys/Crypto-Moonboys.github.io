@@ -79,17 +79,35 @@ try {
     nav.innerHTML = ["HOME", "MISSIONS", "EXPLORE", "WORK", "ECONOMY", "PROFILE"]
       .map((label) => `<button type="button"><span>+</span>${label}</button>`).join("");
     const shell = document.getElementById("moonpet-app").getBoundingClientRect();
+    const viewport = document.querySelector(".viewport").getBoundingClientRect();
+    const output = document.getElementById("terminal-output");
+    output.textContent = "ACTION COMPLETE // +5 PET XP";
+    const outputBox = output.getBoundingClientRect();
+    const outputStyle = getComputedStyle(output);
+    const screenBox = document.getElementById("screen").getBoundingClientRect();
     const dock = nav.getBoundingClientRect();
     const buttons = Array.from(nav.querySelectorAll("button"), (button) => button.getBoundingClientRect());
     return {
       viewportVariable: getComputedStyle(document.documentElement).getPropertyValue("--moonpet-viewport-height").trim(),
       shellBottom: shell.bottom,
+      viewportBottom: viewport.bottom,
+      outputTop: outputBox.top,
+      outputBottom: outputBox.bottom,
+      outputHeight: outputBox.height,
+      outputPosition: outputStyle.position,
+      outputAnimation: outputStyle.animationName,
+      screenTop: screenBox.top,
       dockBottom: dock.bottom,
       buttonBottoms: buttons.map((button) => button.bottom),
     };
   });
   assert.equal(shellLayout.viewportVariable, "520px", "shell must use Telegram's visible viewport height");
   assert.ok(shellLayout.shellBottom <= 520.5, "shell must fit inside Telegram's visible viewport");
+  assert.ok(Math.abs(shellLayout.outputTop - shellLayout.viewportBottom) < 1, "status strip must sit directly below the canvas");
+  assert.ok(shellLayout.outputHeight >= 34, "status strip must remain visible");
+  assert.equal(shellLayout.outputPosition, "relative", "status strip must occupy a stable grid row");
+  assert.equal(shellLayout.outputAnimation, "none", "status text must not scroll or animate");
+  assert.ok(shellLayout.outputBottom <= shellLayout.screenTop + 1, "status strip must stay above the scrollable controls");
   assert.ok(shellLayout.dockBottom <= 520.5, "bottom dock must not be cropped by Telegram's visible viewport");
   assert.ok(shellLayout.buttonBottoms.every((bottom) => bottom <= 513.5), "every dock button must fit above the dock's bottom padding");
 

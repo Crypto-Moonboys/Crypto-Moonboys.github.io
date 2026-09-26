@@ -127,5 +127,6 @@ assert.match(client, /animationUntil = sleepLatched && animationMode === 'sleep'
 assert.match(client, /if \(String\(lifecycle\.phase \|\| ''\)\.toLowerCase\(\) === 'egg'\) return 0;/);
 assert.match(client, /return Math\.max\(1, Math\.min\(5, Math\.floor\(evolutionStage\)\)\);/);
 assert.match(client, /evolutionStage: botArtEvolutionStage\(snapshot\)/);
+assert.doesNotMatch(client, /lines = lines\.concat\(feedbackLines\)/, "action results must stay off the game canvas");
 
 console.log("Moonpet multi-bot art registry and production packs passed");

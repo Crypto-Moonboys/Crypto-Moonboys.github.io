@@ -606,10 +606,26 @@
     if (token === typingToken) bootLayer.classList.add('is-hidden');
   }
 
-  function tell(message, tone) {
-    output.dataset.tone = tone || '';
-    output.textContent = String(message || 'READY.');
+  // TEST-EXPORT: statusOutput:start
+  function uniqueStatusMessage(message) {
+    var seen = {};
+    return String(message || 'READY.').split(/\s*\/\/\s*/).filter(function (part) {
+      var key = part.replace(/\s+/g, ' ').trim().toUpperCase();
+      if (!key || seen[key]) return false;
+      seen[key] = true;
+      return true;
+    }).join(' // ');
   }
+
+  function tell(message, tone) {
+    var nextTone = tone || '';
+    var nextMessage = uniqueStatusMessage(message);
+    if (output.dataset.tone === nextTone && output.textContent === nextMessage) return false;
+    output.dataset.tone = nextTone;
+    output.textContent = nextMessage;
+    return true;
+  }
+  // TEST-EXPORT: statusOutput:end
 
   // TEST-EXPORT: actionAvailability:start
   function cooldownDisplay(source) {
@@ -3049,7 +3065,6 @@
       lines.push('Progress ' + Number(combat.playerValue) + '/' + Number(combat.maxValue));
       lines.push(Number(combat.opponentValue) + ' rooms remain');
     }
-    if (feedbackUntil > performance.now() && feedbackLines.length) lines = lines.concat(feedbackLines).slice(0, 5);
     drawActionInfoPanel(combat.title, lines, rivalColor, 1);
   }
 

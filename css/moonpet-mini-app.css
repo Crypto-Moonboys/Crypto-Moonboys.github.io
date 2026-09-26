@@ -83,7 +83,7 @@ button, input, select, textarea {
   margin: 0 auto;
   position: relative;
   display: grid;
-  grid-template-rows: auto minmax(178px, 32dvh) minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(178px, 32dvh) auto minmax(0, 1fr) auto;
   overflow: hidden;
   background:
     repeating-linear-gradient(180deg, rgba(255,255,255,.008) 0 1px, transparent 1px 6px),
@@ -245,39 +245,27 @@ button, input, select, textarea {
 }
 
 .terminal-output {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
+  position: relative;
+  z-index: 4;
+  display: block;
+  min-width: 0;
+  min-height: 36px;
+  padding: 9px 12px 8px;
   overflow: hidden;
-  border: 0;
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
+  border-bottom: 1px solid var(--ui-border);
+  background: rgba(8, 8, 10, .96);
+  color: var(--ui-text-secondary);
+  font: 600 10px/1.7 var(--font-mono);
+  letter-spacing: .08em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
   white-space: nowrap;
 }
 
 .terminal-output[data-tone="danger"] {
-  position: absolute;
-  z-index: 72;
-  left: 12px;
-  right: 12px;
-  bottom: calc(70px + var(--safe-bottom));
-  width: auto;
-  height: auto;
-  margin: 0;
-  padding: 8px 12px;
-  overflow: visible;
-  border: 1px solid rgba(var(--ui-danger), .2);
-  border-radius: var(--radius-small);
-  clip: auto;
-  clip-path: none;
-  background: rgba(38, 12, 14, .96);
-  box-shadow: var(--ui-shadow-soft);
+  border-bottom-color: rgba(var(--ui-danger), .24);
+  background: rgba(38, 12, 14, .92);
   color: rgb(var(--ui-danger));
-  font-size: 11px;
-  line-height: 1.4;
-  white-space: normal;
 }
 
 .screen {
@@ -1002,7 +990,7 @@ button, input, select, textarea {
 }
 
 @media (min-width: 560px) {
-  .terminal-shell { grid-template-rows: auto minmax(210px, 35dvh) minmax(0, 1fr) auto; }
+  .terminal-shell { grid-template-rows: auto minmax(210px, 35dvh) auto minmax(0, 1fr) auto; }
   .screen { padding: 14px; }
   .button-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .hud-chip { font-size: 11px; }
@@ -1036,7 +1024,7 @@ button, input, select, textarea {
 }
 
 @media (max-height: 620px) {
-  .terminal-shell { grid-template-rows: auto minmax(150px, 30dvh) minmax(0, 1fr) auto; }
+  .terminal-shell { grid-template-rows: auto minmax(150px, 30dvh) auto minmax(0, 1fr) auto; }
   .system-bar { min-height: 34px; padding-block: 7px; }
   .terminal-output { min-height: 34px; padding-block: 7px; }
   .dock { padding-top: 4px; }
