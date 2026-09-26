@@ -2,116 +2,38 @@ name: Moonpet Art Factory
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
       - ".github/workflows/moonpet-art-factory.yml"
       - "scripts/discover-autosprite-character.js"
       - "scripts/generate-botty-front-animations.js"
       - "scripts/download-botty-front-animations.js"
+      - "scripts/promote-moonpet-bot-front-pack.js"
       - "data/moonpet-art-factory-request.json"
   workflow_dispatch:
     inputs:
       phase:
-        description: "Generation phase. Use dry-run by default; choose test for the existing Moonbot base animation."
+        description: "Current AutoSprite front-pack operation."
         required: true
-        default: "dry-run"
+        default: "download-existing-front-pack"
         type: choice
         options:
-          - dry-run
-          - test
-          - promote-approved
-          - build-approved-pack
-          - generate-custom-animation
-          - generate-side-scroller
-          - side-scroller-autopilot
           - discover-autosprite-character
-          - generate-botty-front-pack
-          - download-botty-front-pack
+          - generate-front-pack
           - download-existing-front-pack
       autosprite_character_name:
-        description: "Exact existing AutoSprite character name for discovery/name-based generation."
-        required: false
+        description: "Exact existing AutoSprite character name."
+        required: true
         default: "BOTTY"
+      execute_front_generation:
+        description: "Actually call AutoSprite when phase=generate-front-pack."
+        required: true
+        default: false
+        type: boolean
       auto_commit_autosprite_character_registry:
         description: "Commit the non-secret AutoSprite character registry after discovery."
         required: true
         default: true
-        type: boolean
-      execute_botty_front_generation:
-        description: "Actually call AutoSprite for the BOTTY front-facing animation pack."
-        required: true
-        default: true
-        type: boolean
-      limit:
-        description: "Optional max character count. Leave blank for the existing Moonbot base character."
-        required: false
-        default: ""
-      animation:
-        description: "Optional single AutoSprite animation kind, such as iso_walk_down or iso_run_down. Do not use attack for Moonbot."
-        required: false
-        default: ""
-      custom_animation_id:
-        description: "Custom animation queue id. For now only custom_eat is enabled."
-        required: false
-        default: "custom_eat"
-      execute_custom_generation:
-        description: "Actually call AutoSprite for the selected custom animation."
-        required: true
-        default: false
-        type: boolean
-      auto_review_custom_animation:
-        description: "Run mechanical review checks and write the custom animation review report."
-        required: true
-        default: true
-        type: boolean
-      auto_promote_if_passed:
-        description: "Promote custom animation to public pending-approval paths only if mechanical review passes."
-        required: true
-        default: false
-        type: boolean
-      auto_commit_promoted_assets:
-        description: "Commit promoted public Moonbot assets and approved registry after build-approved-pack."
-        required: true
-        default: false
-        type: boolean
-      auto_commit_custom_promoted_assets:
-        description: "Commit custom Moonbot eat assets after generate-custom-animation promotes them pending approval."
-        required: true
-        default: false
-        type: boolean
-      side_animation_id:
-        description: "Side-scroller animation queue id, e.g. side_jump, side_turn, side_front_wave, or another queue id."
-        required: false
-        default: "side_idle"
-      execute_side_generation:
-        description: "Actually call AutoSprite for the selected side-scroller animation."
-        required: true
-        default: false
-        type: boolean
-      side_autopilot:
-        description: "Run the side-scroller overnight autopilot sequence."
-        required: true
-        default: false
-        type: boolean
-      side_autopilot_limit:
-        description: "Number of side-scroller animations to attempt in autopilot order."
-        required: false
-        default: "16"
-      auto_continue_on_pass:
-        description: "Continue to the next side-scroller animation when the current one passes."
-        required: true
-        default: true
-        type: boolean
-      auto_promote_side_scroller_assets:
-        description: "Copy mechanically passing side-scroller outputs into public img/moonpets paths."
-        required: true
-        default: false
-        type: boolean
-      auto_commit_side_outputs:
-        description: "Commit promoted side-scroller public assets and queue updates."
-        required: true
-        default: false
         type: boolean
 
 permissions:
@@ -122,17 +44,18 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AUTOSPRITE_API_KEY: ${{ secrets.AUTOSPRITE_API_KEY }}
-      FACTORY_PHASE: ${{ github.event_name == 'workflow_dispatch' && inputs.phase || 'download-botty-front-pack' }}
+      FACTORY_PHASE: ${{ github.event_name == 'workflow_dispatch' && inputs.phase || 'download-existing-front-pack' }}
       AUTOSPRITE_CHARACTER_NAME: ${{ github.event_name == 'workflow_dispatch' && inputs.autosprite_character_name || 'BOTTY' }}
+      EXECUTE_FRONT_GENERATION: ${{ github.event_name == 'workflow_dispatch' && inputs.execute_front_generation || false }}
       AUTO_COMMIT_AUTOSPRITE_CHARACTER_REGISTRY: ${{ github.event_name != 'workflow_dispatch' || inputs.auto_commit_autosprite_character_registry }}
-      EXECUTE_BOTTY_FRONT_GENERATION: ${{ github.event_name != 'workflow_dispatch' || inputs.execute_botty_front_generation }}
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Resolve push-triggered art factory request
+      - name: Resolve push-triggered request
         if: ${{ github.event_name == 'push' }}
         shell: bash
         run: |
@@ -140,7 +63,6 @@ jobs:
           AUTOSPRITE_CHARACTER_NAME="$(node -p 'require("./data/moonpet-art-factory-request.json").autosprite_character_name')"
           echo "FACTORY_PHASE=$FACTORY_PHASE" >> "$GITHUB_ENV"
           echo "AUTOSPRITE_CHARACTER_NAME=$AUTOSPRITE_CHARACTER_NAME" >> "$GITHUB_ENV"
-          echo "Push request: phase=$FACTORY_PHASE character=$AUTOSPRITE_CHARACTER_NAME"
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -151,217 +73,51 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Syntax check Moonpet scripts
+      - name: Validate current Moonpet art pipeline
         run: |
           node --check scripts/generate-moonpet-assets.js
-          node --check scripts/generate-moonpet-assets-extraction.test.js
-          node --check scripts/build-moonpet-contact-sheet.js
-          node --check scripts/promote-moonpet-approved-assets.js
-          node --check scripts/promote-moonpet-approved-assets.test.js
-          node --check scripts/generate-moonpet-custom-animation.js
-          node --check scripts/generate-moonpet-custom-animation.test.js
-          node --check scripts/promote-moonpet-custom-animation.js
-          node --check scripts/moonpet-custom-animation-autopilot.js
-          node --check scripts/generate-moonpet-side-scroller-animation.js
-          node --check scripts/moonpet-side-scroller-autopilot.js
-          node --check scripts/moonpet-side-scroller-queue-check.js
           node --check scripts/discover-autosprite-character.js
           node --check scripts/generate-botty-front-animations.js
           node --check scripts/download-botty-front-animations.js
           node --check scripts/promote-moonpet-bot-front-pack.js
-          node --check js/moonpet-animation-sandbox.js
-          node --check js/moonpet-runtime-preview.js
           node scripts/generate-moonpet-assets-extraction.test.js
-          node scripts/promote-moonpet-approved-assets.test.js
-          node scripts/generate-moonpet-custom-animation.test.js
+          node scripts/moonpet-art-architecture.test.mjs
+          node scripts/moonpet-multi-bot-art.test.mjs
 
-      - name: Dry-run Moonpet plan
-        run: node scripts/generate-moonpet-assets.js --dry-run ${LIMIT:+--limit "$LIMIT"} ${ANIMATION:+--animation "$ANIMATION"}
-        env:
-          LIMIT: ${{ inputs.limit }}
-          ANIMATION: ${{ inputs.animation }}
-
-      - name: Generate Moonpet test batch
-        if: ${{ env.FACTORY_PHASE == 'test' }}
-        timeout-minutes: 20
-        run: node scripts/generate-moonpet-assets.js --phase=test --execute ${LIMIT:+--limit "$LIMIT"} ${ANIMATION:+--animation "$ANIMATION"}
-        env:
-          LIMIT: ${{ inputs.limit }}
-          ANIMATION: ${{ inputs.animation }}
-
-      - name: Build approved Moonbot base pack
-        if: ${{ env.FACTORY_PHASE == 'build-approved-pack' }}
-        timeout-minutes: 60
-        run: |
-          node scripts/generate-moonpet-assets.js --phase=test --execute --limit 1 --animation iso_idle_down --force-approved --no-resume
-          node scripts/generate-moonpet-assets.js --phase=test --execute --limit 1 --animation iso_walk_down --force-approved --no-resume
-          node scripts/generate-moonpet-assets.js --phase=test --execute --limit 1 --animation iso_run_down --force-approved --no-resume
-          node scripts/promote-moonpet-approved-assets.js
-
-      - name: Build Moonpet contact sheet
-        if: ${{ env.FACTORY_PHASE == 'test' || env.FACTORY_PHASE == 'build-approved-pack' }}
-        run: node scripts/build-moonpet-contact-sheet.js
-
-      - name: Promote approved Moonpet assets
-        if: ${{ env.FACTORY_PHASE == 'promote-approved' }}
-        run: node scripts/promote-moonpet-approved-assets.js
-
-      - name: Generate custom Moonpet animation
-        if: ${{ env.FACTORY_PHASE == 'generate-custom-animation' }}
-        timeout-minutes: 30
-        run: |
-          if [ "$CUSTOM_ANIMATION_ID" != "custom_eat" ]; then
-            echo "Only custom_eat is enabled for this generation phase."
-            exit 1
-          fi
-          npm run moonpet:custom-queue:check
-          ARGS=(--id "$CUSTOM_ANIMATION_ID")
-          if [ "$EXECUTE_CUSTOM_GENERATION" = "true" ]; then
-            ARGS+=(--execute)
-          fi
-          if [ "$AUTO_REVIEW_CUSTOM_ANIMATION" != "true" ] && [ "$EXECUTE_CUSTOM_GENERATION" != "true" ]; then
-            ARGS+=(--no-review)
-          fi
-          if [ "$AUTO_PROMOTE_IF_PASSED" = "true" ]; then
-            ARGS+=(--promote-if-passed)
-          fi
-          node scripts/moonpet-custom-animation-autopilot.js "${ARGS[@]}"
-        env:
-          CUSTOM_ANIMATION_ID: ${{ inputs.custom_animation_id }}
-          EXECUTE_CUSTOM_GENERATION: ${{ inputs.execute_custom_generation && 'true' || 'false' }}
-          AUTO_REVIEW_CUSTOM_ANIMATION: ${{ inputs.auto_review_custom_animation && 'true' || 'false' }}
-          AUTO_PROMOTE_IF_PASSED: ${{ inputs.auto_promote_if_passed && 'true' || 'false' }}
-
-      - name: Generate side-scroller Moonbot animation
-        if: ${{ env.FACTORY_PHASE == 'generate-side-scroller' }}
-        timeout-minutes: 30
-        run: |
-          npm run moonpet:side-queue:check
-          ARGS=(--id "$SIDE_ANIMATION_ID")
-          if [ "$EXECUTE_SIDE_GENERATION" = "true" ]; then
-            ARGS+=(--execute)
-          else
-            ARGS+=(--dry-run)
-          fi
-          node scripts/generate-moonpet-side-scroller-animation.js "${ARGS[@]}"
-        env:
-          SIDE_ANIMATION_ID: ${{ inputs.side_animation_id }}
-          EXECUTE_SIDE_GENERATION: ${{ inputs.execute_side_generation && 'true' || 'false' }}
-
-      - name: Run side-scroller Moonbot autopilot
-        if: ${{ env.FACTORY_PHASE == 'side-scroller-autopilot' }}
-        timeout-minutes: 240
-        run: |
-          if [ "$SIDE_AUTOPILOT" != "true" ]; then
-            echo "side_autopilot must be true to run the overnight autopilot sequence."
-            exit 1
-          fi
-          npm run moonpet:side-queue:check
-          ARGS=(--autopilot --limit "$SIDE_AUTOPILOT_LIMIT")
-          if [ "$EXECUTE_SIDE_GENERATION" = "true" ]; then
-            ARGS+=(--execute)
-          fi
-          if [ "$AUTO_CONTINUE_ON_PASS" != "true" ]; then
-            ARGS+=(--no-auto-continue-on-pass)
-          fi
-          if [ "$AUTO_PROMOTE_SIDE_SCROLLER_ASSETS" = "true" ]; then
-            ARGS+=(--promote)
-          fi
-          node scripts/moonpet-side-scroller-autopilot.js "${ARGS[@]}"
-        env:
-          SIDE_AUTOPILOT: ${{ inputs.side_autopilot && 'true' || 'false' }}
-          SIDE_AUTOPILOT_LIMIT: ${{ inputs.side_autopilot_limit }}
-          EXECUTE_SIDE_GENERATION: ${{ inputs.execute_side_generation && 'true' || 'false' }}
-          AUTO_CONTINUE_ON_PASS: ${{ inputs.auto_continue_on_pass && 'true' || 'false' }}
-          AUTO_PROMOTE_SIDE_SCROLLER_ASSETS: ${{ inputs.auto_promote_side_scroller_assets && 'true' || 'false' }}
-
-      - name: Discover AutoSprite character by exact name
-        if: ${{ env.FACTORY_PHASE == 'discover-autosprite-character' || env.FACTORY_PHASE == 'generate-botty-front-pack' || env.FACTORY_PHASE == 'download-botty-front-pack' || env.FACTORY_PHASE == 'download-existing-front-pack' }}
+      - name: Discover AutoSprite character
+        if: ${{ env.FACTORY_PHASE == 'discover-autosprite-character' || env.FACTORY_PHASE == 'generate-front-pack' || env.FACTORY_PHASE == 'download-existing-front-pack' }}
         timeout-minutes: 10
         run: node scripts/discover-autosprite-character.js --name "$AUTOSPRITE_CHARACTER_NAME" --persist
 
-      - name: Generate BOTTY front-facing animation pack
-        if: ${{ env.FACTORY_PHASE == 'generate-botty-front-pack' }}
+      - name: Generate front-facing animation pack
+        if: ${{ env.FACTORY_PHASE == 'generate-front-pack' }}
         timeout-minutes: 240
+        shell: bash
         run: |
           ARGS=(--character-name "$AUTOSPRITE_CHARACTER_NAME")
-          if [ "$EXECUTE_BOTTY_FRONT_GENERATION" = "true" ]; then
-            ARGS+=(--execute)
-          else
-            ARGS+=(--dry-run)
-          fi
+          if [ "$EXECUTE_FRONT_GENERATION" = "true" ]; then ARGS+=(--execute); else ARGS+=(--dry-run); fi
           node scripts/generate-botty-front-animations.js "${ARGS[@]}"
 
-      - name: Download existing front-facing animation pack
-        if: ${{ env.FACTORY_PHASE == 'download-botty-front-pack' || env.FACTORY_PHASE == 'download-existing-front-pack' }}
+      - name: Download existing front-facing pack
+        if: ${{ env.FACTORY_PHASE == 'download-existing-front-pack' }}
         timeout-minutes: 30
         run: node scripts/download-botty-front-animations.js --character-name "$AUTOSPRITE_CHARACTER_NAME"
 
       - name: Commit AutoSprite character registry
-        if: ${{ always() && (env.FACTORY_PHASE == 'discover-autosprite-character' || env.FACTORY_PHASE == 'generate-botty-front-pack' || env.FACTORY_PHASE == 'download-botty-front-pack' || env.FACTORY_PHASE == 'download-existing-front-pack') && env.AUTO_COMMIT_AUTOSPRITE_CHARACTER_REGISTRY == 'true' }}
+        if: ${{ always() && env.AUTO_COMMIT_AUTOSPRITE_CHARACTER_REGISTRY == 'true' }}
+        shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/moonpet-autosprite-characters.json
-          if [ -d data/autosprite-generation-diagnostics ]; then
-            git add data/autosprite-generation-diagnostics/
-          fi
-          if git diff --cached --quiet; then
-            echo "No AutoSprite character registry or diagnostic changes to commit."
-          else
+          if [ -d data/autosprite-generation-diagnostics ]; then git add data/autosprite-generation-diagnostics/; fi
+          if ! git diff --cached --quiet; then
             git commit -m "chore: persist AutoSprite character registry and diagnostics [skip ci]"
             git pull --rebase --autostash origin ${GITHUB_REF_NAME}
             git push origin HEAD:${GITHUB_REF_NAME}
           fi
 
-      - name: Commit promoted Moonpet assets
-        if: ${{ env.FACTORY_PHASE == 'build-approved-pack' && inputs.auto_commit_promoted_assets }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add img/moonpets/moonbot-pet-visor-v1/ data/moonpet-approved-assets.json
-          if git diff --cached --quiet; then
-            echo "No promoted Moonpet asset changes to commit."
-          else
-            git commit -m "feat: promote approved Moonbot spritesheets"
-            git push origin HEAD:${GITHUB_REF_NAME}
-          fi
-
-      - name: Commit promoted custom Moonpet animation
-        if: ${{ env.FACTORY_PHASE == 'generate-custom-animation' && inputs.auto_commit_custom_promoted_assets }}
-        run: |
-          node -e "const q=require('./data/moonpet-custom-animation-queue.json'); const item=q.items.find((entry)=>entry.id==='custom_eat'); if (!item || item.status !== 'promoted_pending_approval' || item.promoted !== true || item.approved !== false) { console.error('custom_eat was not promoted pending approval; refusing to commit.'); process.exit(1); }"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add img/moonpets/moonbot-pet-visor-v1/custom_eat.png img/moonpets/moonbot-pet-visor-v1/custom_eat.json data/moonpet-custom-animation-queue.json
-          if git diff --cached --quiet; then
-            echo "No promoted custom Moonpet asset changes to commit."
-          else
-            git commit -m "feat: promote custom Moonbot eat animation for review"
-            git push origin HEAD:${GITHUB_REF_NAME}
-          fi
-
-      - name: Commit promoted side-scroller Moonpet assets
-        if: ${{ env.FACTORY_PHASE == 'side-scroller-autopilot' && inputs.auto_commit_side_outputs }}
-        run: |
-          if [ "${AUTO_PROMOTE_SIDE_SCROLLER_ASSETS}" != "true" ]; then
-            echo "auto_commit_side_outputs requires auto_promote_side_scroller_assets=true."
-            exit 1
-          fi
-          node -e "const fs=require('fs'); const report=JSON.parse(fs.readFileSync('output/manifests/moonpet-side-scroller-autopilot.generated.json','utf8')); if (report.overall_status !== 'pass') { console.error('Side-scroller autopilot did not pass; refusing to commit.'); process.exit(1); } if (!report.steps.some((step)=>step.promoted)) { console.error('No promoted side-scroller outputs found; refusing to commit.'); process.exit(1); }"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add img/moonpets/moonbot-pet-visor-v1-side/ data/moonpet-side-scroller-animation-queue.json
-          if git diff --cached --quiet; then
-            echo "No promoted side-scroller asset changes to commit."
-          else
-            git commit -m "feat: promote Moonbot side-scroller sprites for review"
-            git push origin HEAD:${GITHUB_REF_NAME}
-          fi
-        env:
-          AUTO_PROMOTE_SIDE_SCROLLER_ASSETS: ${{ inputs.auto_promote_side_scroller_assets && 'true' || 'false' }}
-
-      - name: Upload Moonpet output
+      - name: Upload current Moonpet art output
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -369,10 +125,6 @@ jobs:
           path: |
             output/moonpets/
             output/manifests/
-            img/moonpets/
-            data/moonpet-approved-assets.json
-            data/moonpet-custom-animation-queue.json
-            data/moonpet-side-scroller-animation-queue.json
             data/moonpet-autosprite-characters.json
             data/autosprite-generation-diagnostics/
           if-no-files-found: warn

@@ -74,6 +74,14 @@ const client = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.
 const botArtRegistry = JSON.parse(fs.readFileSync(new URL('../data/moonpet-bot-art-registry.json', import.meta.url), 'utf8'));
 const rareBackgroundRegistry = JSON.parse(fs.readFileSync(new URL('../data/moonpet-rare-background-registry.json', import.meta.url), 'utf8'));
 const itemArtRegistry = JSON.parse(fs.readFileSync(new URL('../data/moonpet-item-art-registry.json', import.meta.url), 'utf8'));
+assert.doesNotMatch(client, /drawEmergencyMoonpetFallback|drawSpeciesSilhouette|drawEquipmentLayers|drawActionEffects|drawCompanionHabitEffects/,
+  'retired procedural pet/equipment/action renderers must not return');
+assert.doesNotMatch(client, /WEARABLE_LOADOUT_STORAGE_KEY|WEARABLE_SLOT_ORDER|wearableTraitDebug/,
+  'retired wearable runtime must not return');
+assert.match(client, /bot art unavailable; suppressing retired procedural pet fallback/,
+  'missing bot art must fail cleanly instead of drawing an old animal');
+assert.match(client, /tg\.setHeaderColor\('#070707'\); tg\.setBackgroundColor\('#070707'\)/,
+  'Telegram chrome must match the graphite shell');
 assert.match(client, /var lifecycleRequirement = journeyLifecycle\.next_evolution \?/, 'final-form lifecycle copy must branch on whether a next evolution exists');
 assert.doesNotMatch(client, /next_evolution[^\n]+LEVEL \/\/ 0\/0/, 'final-form lifecycle must never render a synthetic 0/0 requirement');
 assert.match(client, /if \(!pet\.progression\)[^\n]+PROGRESSION UNAVAILABLE/, 'missing roster progression must render an explicit unavailable state');
@@ -133,58 +141,6 @@ assert.equal(new Function('state', capabilityCombatHelperSource + '; return hasS
   'Kaiju system capability may unlock independently from Arena level');
 assert.match(new Function('state', capabilityCombatHelperSource + '; return combatLockCopy(systemCapability(state, "arena").reason).title;')(capabilityHelperState), /ARENA LOCKED UNTIL LEVEL 10/,
   'Arena system lock copy must expose the level gate');
-
-const drawEmergencyMoonpetFallbackSource = extractTestExport(client, 'drawEmergencyMoonpetFallback');
-assert.ok(drawEmergencyMoonpetFallbackSource, 'emergency Moonpet fallback renderer must be extractable for regression coverage');
-const drawEmergencyMoonpetFallbackRuntime = new Function(
-  `${drawEmergencyMoonpetFallbackSource}
-  var calls = [];
-  var ctx = {
-    shadowColor: '',
-    shadowBlur: 0,
-    save: function () { calls.push(['save']); },
-    restore: function () { calls.push(['restore']); },
-    translate: function (x, y) { calls.push(['translate', x, y]); },
-    scale: function (x, y) { calls.push(['scale', x, y]); },
-  };
-  var reducedMotion = false;
-  var animationMode = 'idle';
-  function petStage() { return 2; }
-  function petMood() { return 'happy'; }
-  function petPose() { return { squashX: 1, squashY: 1, headY: 0 }; }
-  function petGrowthShape() { return { scaleX: 1, scaleY: 1 }; }
-  function petPalette() { return { body: '#80ffd5', accent: '#f4ff65', outline: '#061009' }; }
-  function petFaceOffset() { return 4; }
-  function drawSpeciesSilhouette(speciesId) { calls.push(['species', speciesId]); }
-  function drawPetMarking(marking) { calls.push(['marking', marking || '']); }
-  function drawPetEyes(style, mood, blink) { calls.push(['eyes', style, mood, blink]); }
-  function drawPixelRect(x, y, w, h, color) { calls.push(['rect', x, y, w, h, color]); }
-  return { drawEmergencyMoonpetFallback: drawEmergencyMoonpetFallback, calls: calls };
-`,
-)();
-assert.equal(
-  drawEmergencyMoonpetFallbackRuntime.drawEmergencyMoonpetFallback(
-    1800,
-    false,
-    { phase: 'adult', species_id: 'bubble_ram', appearance: { marking: 'moon_mask', eyes: 'bright' } },
-    { species: 'bubble_ram' },
-    null,
-    124,
-    194,
-  ),
-  true,
-  'the emergency Moonpet fallback must report a rendered pet'
-);
-assert.deepEqual(
-  drawEmergencyMoonpetFallbackRuntime.calls.filter((entry) => entry[0] === 'species'),
-  [['species', 'bubble_ram']],
-  'the emergency Moonpet fallback must render the active species silhouette'
-);
-assert.deepEqual(
-  drawEmergencyMoonpetFallbackRuntime.calls.filter((entry) => entry[0] === 'eyes'),
-  [['eyes', 'bright', 'happy', false]],
-  'the emergency Moonpet fallback must still render the pet face state'
-);
 
 const actionAvailabilitySource = extractTestExport(client, 'actionAvailability');
 const countdownComponentSource = extractTestExport(client, 'countdownComponent');
@@ -1401,9 +1357,9 @@ assert.match(client, /DAILY MISSION BUFFER \/\/ /);
 assert.match(client, /meter\('DAILY CLEAR', missionPercent\)/);
 assert.match(html, /id="utility-layer"/);
 assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260925-moonpet-ui-redesign-v1/);
-assert.match(html, /\/js\/moonpet-art-resolver\.js\?v=20260926-evolution-art-foundation-v1/);
-assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20260926-evolution-art-foundation-v1/);
-assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20260926-evolution-art-foundation-v1/);
+assert.match(html, /\/js\/moonpet-art-resolver\.js\?v=20260926-clean-runtime-v2/);
+assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20260926-clean-runtime-v2/);
+assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20260926-clean-runtime-v2/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1497,7 +1453,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260926-evolution-art-foundation-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260926-clean-runtime-v2/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -1723,7 +1679,6 @@ assert.match(client, /drawActionInfoPanel\(combat\.title, lines, rivalColor, 1\)
 assert.match(client, /if \(!combat \|\| !combat\.active\)/);
 assert.match(client, /var x = 124/);
 assert.match(client, /drawCombatHud\(scene, combat\)/);
-assert.doesNotMatch(drawWorldSource, /drawCombatOpponent|drawCompanionPresence/);
 assert.match(client, /COMBAT_PRESENTATION_FRAME\.active \|\| lifecycleCeremonyActive\(now\)\) return;/);
 assert.doesNotMatch(client, /Math\.random\(\)[^\n]*(?:combat|rival)|(?:combat|rival)[^\n]*Math\.random\(\)/i, 'Phase 5 combat presentation must remain deterministic');
 
@@ -1837,7 +1792,6 @@ assert.match(client, /result\.duplicate/);
 assert.match(client, /duration: 7600/);
 assert.match(client, /duration: 8200/);
 assert.match(client, /drawActionInfoPanel\(ceremony\.title, lines, color, fade\)/, 'lifecycle copy must use the shared right-side information column');
-assert.doesNotMatch(drawWorldSource, /drawCompanionPresence/, 'lifecycle rendering must not overlap thought bubbles');
 assert.doesNotMatch(client, /animationLabel/, 'legacy canvas action labels must be removed');
 assert.match(client, /lifecycleCeremonyTimer = window\.setTimeout/);
 assert.match(client, /if \(lifecycleCeremony !== activeCeremony\) return/);
@@ -1933,7 +1887,7 @@ assert.match(worker, /Math\.floor\(stepIndex \/ PET_RUN_BOSS_INTERVAL\) \+ 1/);
 assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Number\(activeRun\.depth \|\| 0\) \+ 1/);
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
-assert.match(html, /20260926-evolution-art-foundation-v1/);
+assert.match(html, /20260926-clean-runtime-v2/);
 assert.match(worker, /20260925-moonpet-ui-redesign-v2/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');

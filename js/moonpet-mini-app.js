@@ -51,9 +51,6 @@
   var lifecycleCeremonyStartedAt = 0;
   var lifecycleCeremonyUntil = 0;
   var lifecycleCeremonyTimer = 0;
-  var sceneTransitionStartedAt = 0;
-  var sceneTransitionUntil = 0;
-  var sceneTransitionDirection = 1;
   var utcHour = new Date().getUTCHours();
   var companionGreeting = '';
   var companionGreetingUntil = 0;
@@ -2463,10 +2460,7 @@
 
   function switchScreen(nextScreen) {
     if (!SCREEN_ORDER.includes(nextScreen) || nextScreen === activeScreen) return false;
-    sceneTransitionDirection = SCREEN_ORDER.indexOf(nextScreen) >= SCREEN_ORDER.indexOf(activeScreen) ? 1 : -1;
     activeScreen = nextScreen;
-    sceneTransitionStartedAt = performance.now();
-    sceneTransitionUntil = reducedMotion ? 0 : sceneTransitionStartedAt + 420;
     render();
     return true;
   }
@@ -2676,19 +2670,6 @@
     ctx.fillRect(Math.round(x), Math.round(y), Math.round(width), Math.round(height));
   }
 
-  function petStage(pet) {
-    if (!pet) return 0;
-    var explicit = pet.evolution_stage == null ? NaN : Number(pet.evolution_stage);
-    if (Number.isFinite(explicit)) return Math.max(0, Math.min(5, explicit));
-    var label = String(pet.stage || '').toLowerCase();
-    if (label.includes('legend')) return 5;
-    if (label.includes('guardian')) return 4;
-    if (label.includes('elite')) return 3;
-    if (label.includes('cyber')) return 2;
-    if (label.includes('street')) return 1;
-    return 0;
-  }
-
   function petMood(pet) {
     if (!pet) return 'curious';
     if (Number(pet.health) < 35) return 'hurt';
@@ -2699,50 +2680,6 @@
     return 'curious';
   }
 
-  var SCENE_COMPANION_HABITS = {
-    home: 'moon_gaze', missions: 'signal_scan', explore: 'alley_prowl',
-    work: 'scrap_tinker', economy: 'window_shop', profile: 'memory_glow',
-  };
-  var SPECIES_COMPANION_HABITS = {
-    neon_raccoon: 'mask_wash', bubble_ram: 'hoof_tap', comet_gecko: 'wall_cling',
-    vinyl_crab: 'claw_click', lantern_fox: 'ear_flick', sneaker_snail: 'shell_rock',
-    alley_drake: 'wing_flex', moon_ferret: 'tunnel_peek',
-  };
-  var COMPANION_THOUGHTS = {
-    moon_gaze: 'MOON LOOKS CLOSE', signal_scan: 'SIGNAL LOCKED', alley_prowl: 'ALLEY CHECK',
-    scrap_tinker: 'MAKING SOMETHING', window_shop: 'THAT GEAR THOUGH', memory_glow: 'I REMEMBER',
-    mask_wash: 'MASK STAYS FRESH', hoof_tap: 'KEEP THE BEAT', wall_cling: 'UP HERE!',
-    claw_click: 'CLICK CLACK', ear_flick: 'HEARD SOMETHING', shell_rock: 'ROLL WITH IT',
-    wing_flex: 'READY TO LIFT', tunnel_peek: 'SECRET ROUTE?', swagger: 'ALL CITY ENERGY',
-    listen: 'TELL ME MORE', fidget: 'LET US MOVE', chill: 'GOOD VIBES',
-  };
-  var COMPANION_PRESENCE_FRAME = { behavior: 'chill', phase: 0.72, thought: 'GOOD VIBES', slot: -1, screen: '', seed: -1 };
-  var COMBAT_RIVAL_COLORS = ['#ff6d6d', '#ff954f', '#f6a7ff', '#61f5ff', '#f4ff65', '#c99cff'];
-  var COMBAT_ARENA_SPECIAL_MAX = 3;
-  var COMBAT_PRESENTATION_FRAME = {
-    active: false, mode: '', title: '', status: '', opponentName: '', round: 0, maxRounds: 0,
-    playerValue: 0, opponentValue: 0, maxValue: 100, playerSpecial: 0, opponentSpecial: 0,
-    playerCardKey: '', opponentCardKey: '', rivalColor: '#ff6d6d', source: null,
-  };
-
-  function companionIdentitySeed(pet, lifecycle) {
-    var appearance = lifecycle && lifecycle.appearance;
-    var species = lifecycle && lifecycle.species_id || pet && pet.species || 'moonpet';
-    var temperament = lifecycle && lifecycle.temperament || 'curious';
-    var marking = appearance && appearance.marking || 'moon_mark';
-    var petName = pet && pet.pet_name || 'moonpet';
-    if (species === companionSeedSpecies && temperament === companionSeedTemperament && marking === companionSeedMarking && petName === companionSeedName) return companionSeedValue;
-    var source = String(species) + '|' + String(temperament) + '|' + String(marking) + '|' + String(petName);
-    var hash = 0;
-    for (var index = 0; index < source.length; index += 1) hash = (hash * 31 + source.charCodeAt(index)) | 0;
-    companionSeedSpecies = species;
-    companionSeedTemperament = temperament;
-    companionSeedMarking = marking;
-    companionSeedName = petName;
-    companionSeedValue = Math.abs(hash);
-    return companionSeedValue;
-  }
-
   function temperamentCompanionHabit(temperament) {
     var key = String(temperament || '').toLowerCase();
     if (/bold|brave|fierce|confident/.test(key)) return 'swagger';
@@ -2751,46 +2688,6 @@
     if (/social|curious|alert|observant/.test(key)) return 'listen';
     return 'listen';
   }
-
-  function companionNeedThought(pet, lifecycle, fallback) {
-    if (!pet) return fallback;
-    if (Number(pet.health) < 35) return 'I NEED PATCHING';
-    if (Number(pet.energy) < 20) return 'NAP SIGNAL';
-    if (Number(pet.hunger) > 78) return 'SNACK PLEASE';
-    if (Number(pet.cleanliness) < 30) return 'WASH TIME';
-    if (Number(pet.happiness) < 30) return 'PLAY WITH ME';
-    if (lifecycle && lifecycle.phase === 'young') return 'WHAT IS NEXT?';
-    if (lifecycle && lifecycle.phase === 'rare') return 'RARE SIGNAL LIVE';
-    return fallback;
-  }
-
-  // TEST-EXPORT: phase4PresenceDirector:start
-  function updateCompanionPresence(pet, lifecycle, time) {
-    if (!pet) {
-      COMPANION_PRESENCE_FRAME.behavior = 'chill';
-      COMPANION_PRESENCE_FRAME.phase = 0.72;
-      COMPANION_PRESENCE_FRAME.thought = '';
-      return COMPANION_PRESENCE_FRAME;
-    }
-    var presenceTime = reducedMotion ? 0 : Math.max(0, time);
-    var slot = reducedMotion ? 0 : Math.floor(presenceTime / 8000);
-    var seed = companionIdentitySeed(pet, lifecycle);
-    if (COMPANION_PRESENCE_FRAME.slot !== slot || COMPANION_PRESENCE_FRAME.screen !== activeScreen || COMPANION_PRESENCE_FRAME.seed !== seed) {
-      var selector = (seed + slot) % 3;
-      COMPANION_PRESENCE_FRAME.behavior = selector === 0
-        ? SCENE_COMPANION_HABITS[activeScreen] || 'moon_gaze'
-        : selector === 1
-          ? SPECIES_COMPANION_HABITS[lifecycle && lifecycle.species_id || pet && pet.species] || 'listen'
-          : temperamentCompanionHabit(lifecycle && lifecycle.temperament);
-      COMPANION_PRESENCE_FRAME.slot = slot;
-      COMPANION_PRESENCE_FRAME.screen = activeScreen;
-      COMPANION_PRESENCE_FRAME.seed = seed;
-    }
-    COMPANION_PRESENCE_FRAME.phase = reducedMotion ? 0.72 : presenceTime % 8000 / 8000;
-    COMPANION_PRESENCE_FRAME.thought = companionNeedThought(pet, lifecycle, COMPANION_THOUGHTS[COMPANION_PRESENCE_FRAME.behavior] || 'STAY READY');
-    return COMPANION_PRESENCE_FRAME;
-  }
-  // TEST-EXPORT: phase4PresenceDirector:end
 
   // TEST-EXPORT: combatDirector:start
   function clearCombatPresentation() {
@@ -2945,59 +2842,6 @@
   }
   // TEST-EXPORT: actionPresentation:end
 
-  function drawActionEffects(time, x, y, active) {
-    if (!active) return;
-    var phase = Math.floor(time / 90) + actionSequence * 7;
-    var i;
-    if (animationMode === 'feed') {
-      drawPixelRect(x + 36, y - 7, 15, 8, '#ffb84d'); drawPixelRect(x + 43, y - 13, 6, 6, '#f4ff65');
-      drawPixelText('NOM!', x + 52, y - 20, '#f4ff65', 'center');
-    } else if (animationMode === 'play') {
-      var ballX = x + Math.round(Math.sin(time / 105) * 48); var ballY = y - 10 - Math.abs(Math.round(Math.cos(time / 105) * 25));
-      drawPixelRect(ballX - 5, ballY - 5, 10, 10, '#f6a7ff'); drawPixelRect(ballX - 2, ballY - 2, 4, 4, '#61f5ff');
-    } else if (animationMode === 'clean') {
-      for (i = 0; i < 7; i += 1) { var bubbleY = y - 5 - ((phase * 3 + i * 13) % 62); drawPixelRect(x - 45 + i * 15, bubbleY, 4 + i % 2, 4 + i % 2, '#b3ffff'); }
-    } else if (animationMode === 'sleep') {
-      drawPixelText('Z', x + 33, y - 32, '#d8f9ff'); drawPixelText('Z', x + 43, y - 45, '#d8f9ff'); drawPixelText('Z', x + 55, y - 60, '#d8f9ff');
-    } else if (animationMode === 'train') {
-      drawPixelRect(x - 55, y - 7, 34, 5, '#aab5ae'); drawPixelRect(x - 59, y - 13, 5, 17, '#aab5ae'); drawPixelRect(x - 65, y - 16, 6, 23, '#4ea85a');
-      drawPixelText('+XP', x + 45, y - 40, '#f4ff65', 'center');
-    } else if (animationMode === 'battle') {
-      for (i = 0; i < 4; i += 1) { var slash = (phase * 6 + i * 17) % 70; drawPixelRect(x - 50 + slash, y - 55 + i * 9, 18, 2, i % 2 ? '#ff6d6d' : '#f4ff65'); }
-      drawPixelText('COMBO!', x, y - 65, '#ff6d6d', 'center');
-    } else if (animationMode === 'travel') {
-      for (i = 0; i < 6; i += 1) drawPixelRect(x - 62 - ((phase * 4 + i * 15) % 42), y + 18 - i % 3 * 5, 8, 2, '#4ea85a');
-      drawPixelText('RUN!', x + 44, y - 45, '#f4ff65', 'center');
-    } else if (animationMode === 'work') {
-      drawPixelRect(x + 36, y - 28, 4, 28, '#ffcf68'); drawPixelRect(x + 29, y - 33, 19, 7, '#aab5ae');
-      drawPixelText('WORK', x + 43, y - 43, '#f4ff65', 'center');
-    } else if (animationMode === 'equip') {
-      for (i = 0; i < 5; i += 1) { var sparkle = (phase + i * 11) % 40; drawPixelRect(x - 46 + i * 23, y - 18 - sparkle, 3, 3, '#61f5ff'); }
-      drawPixelText('GEAR ON', x, y - 65, '#61f5ff', 'center');
-    } else if (animationMode === 'evolve') {
-      ctx.strokeStyle = phase % 2 ? '#f6a7ff' : '#f4ff65'; ctx.lineWidth = 3; ctx.strokeRect(x - 45 - phase % 8, y - 58 - phase % 8, 90 + phase % 16, 82 + phase % 16);
-      drawPixelText('EVOLVING', x, y - 70, '#f6a7ff', 'center');
-    } else if (animationMode === 'trade' || animationMode === 'celebrate') {
-      for (i = 0; i < 8; i += 1) { var coinY = y - ((phase * 4 + i * 17) % 76); drawPixelRect(x - 55 + i * 16, coinY, 5, 5, i % 3 ? '#f4ff65' : '#61f5ff'); }
-      drawPixelText(animationMode === 'trade' ? 'DEAL!' : 'REWARD!', x, y - 68, '#f4ff65', 'center');
-    } else if (animationMode === 'greet') {
-      for (i = 0; i < 5; i += 1) { drawPixelRect(x + 36 + i * 5, y - 58 - i % 2 * 5, 3, 3, i % 2 ? '#f6a7ff' : '#a9ff9a'); }
-      drawPixelText('HELLO!', x + 48, y - 44, '#a9ff9a', 'center');
-    } else if (animationMode === 'blocked') {
-      drawPixelRect(x - 50, y - 58, 100, 3, '#ff6d6d'); drawPixelRect(x - 50, y - 58, 3, 20, '#ff6d6d');
-      drawPixelText('NOT READY', x, y - 45, '#ff6d6d', 'center');
-    } else {
-      drawPixelText('!', x + 40, y - 44, '#f4ff65', 'center');
-    }
-  }
-
-  function createPetPalette(body, shade, accent) {
-    return {
-      normal: { body: body, shade: shade, accent: accent, outline: '#061009' },
-      legendary: { body: body, shade: shade, accent: '#f6a7ff', outline: '#061009' },
-    };
-  }
-
   var PET_APPEARANCE_PALETTES = {
     mint_punch: createPetPalette('#80ffd5', '#36a878', '#f4ff65'),
     coral_pop: createPetPalette('#ff8bbd', '#c84f78', '#61f5ff'),
@@ -3017,212 +2861,6 @@
     moon_ferret: createPetPalette('#61f5ff', '#277f91', '#f6a7ff'),
   };
   var DEFAULT_PET_PALETTE = createPetPalette('#a9ff9a', '#4ea85a', '#f4ff65');
-
-  function petPalette(lifecycle, stage) {
-    var selected = PET_APPEARANCE_PALETTES[lifecycle && lifecycle.appearance && lifecycle.appearance.palette]
-      || PET_SPECIES_PALETTES[lifecycle && lifecycle.species_id]
-      || DEFAULT_PET_PALETTE;
-    return stage >= 5 ? selected.legendary : selected.normal;
-  }
-
-  function petPose(time, active, mood, presence) {
-    var pose = { x: 0, y: 0, headY: 0, squashX: 1, squashY: 1, arm: 0, tail: 0 };
-    if (!active) {
-      pose.y = mood === 'tired' ? 3 : Math.round(Math.sin(time / 270) * 2);
-      if (mood === 'happy') { pose.y -= 2; pose.arm = -3; pose.tail = 8; }
-      else if (mood === 'hungry') { pose.headY = 4; pose.arm = 5; pose.squashY = 0.96; }
-      else if (mood === 'hurt') { pose.headY = 4; pose.x = -2; pose.squashX = 0.94; pose.squashY = 0.92; }
-      var idleTime = reducedMotion ? 0 : time;
-      var idleWave = Math.sin(idleTime / 520);
-      var behavior = presence && presence.behavior || 'chill';
-      if (behavior === 'moon_gaze') { pose.headY -= 3; pose.x += 2; pose.tail += 3; }
-      else if (behavior === 'signal_scan') { pose.x += Math.round(idleWave * 3); pose.headY -= 1; }
-      else if (behavior === 'alley_prowl') { pose.x += Math.round(idleWave * 6); pose.y += Math.abs(Math.round(idleWave * 2)); pose.tail += 5; }
-      else if (behavior === 'scrap_tinker') { pose.headY += 2; pose.arm = -5; }
-      else if (behavior === 'window_shop') { pose.x += 3; pose.headY -= 2; pose.arm = -2; }
-      else if (behavior === 'memory_glow') { pose.y -= 2; pose.arm = -3; pose.tail += 4; }
-      else if (behavior === 'mask_wash') { pose.arm = -7; pose.headY += 1; }
-      else if (behavior === 'hoof_tap') { pose.y += Math.abs(Math.round(idleWave * 2)); pose.squashY = 0.98; }
-      else if (behavior === 'wall_cling') { pose.x += 4; pose.y -= 3; pose.squashY = 1.04; }
-      else if (behavior === 'claw_click') { pose.arm = Math.round(idleWave * 5); }
-      else if (behavior === 'ear_flick') { pose.headY += Math.round(idleWave * 2); pose.tail += 4; }
-      else if (behavior === 'shell_rock') { pose.x += Math.round(idleWave * 3); pose.squashX = 1.03; }
-      else if (behavior === 'wing_flex') { pose.arm = -8; pose.squashX = 1.04; }
-      else if (behavior === 'tunnel_peek') { pose.x -= 4; pose.headY += 2; }
-      else if (behavior === 'swagger') { pose.x += 3; pose.arm = -4; pose.tail += 6; }
-      else if (behavior === 'listen') { pose.headY -= 2; pose.x += Math.round(idleWave); }
-      else if (behavior === 'fidget') { pose.y -= Math.abs(Math.round(idleWave * 3)); pose.tail += 8; }
-      else { pose.squashX = 1 + idleWave * 0.012; pose.squashY = 1 - idleWave * 0.012; }
-      return pose;
-    }
-    if (animationMode === 'feed') { pose.headY = 5; pose.arm = 7; pose.squashY = 0.96; }
-    else if (animationMode === 'play') { pose.x = Math.round(Math.sin(time / 70) * 20); pose.y = -Math.abs(Math.round(Math.sin(time / 80) * 7)); pose.arm = -8; pose.tail = 13; }
-    else if (animationMode === 'clean') { pose.x = Math.round(Math.sin(time / 90) * 3); pose.squashX = 1.04; }
-    else if (animationMode === 'sleep') { pose.y = 7; pose.headY = 5; pose.squashX = 1.12; pose.squashY = 0.84; }
-    else if (animationMode === 'train') { pose.y = -Math.abs(Math.round(Math.sin(time / 80) * 11)); pose.arm = -10; }
-    else if (animationMode === 'battle') { pose.x = Math.round(Math.sin(time / 65) * 7); pose.headY = -2; pose.arm = -11; }
-    else if (animationMode === 'travel') { pose.x = Math.round(Math.sin(time / 115) * 12); pose.y = -Math.abs(Math.round(Math.sin(time / 90) * 4)); pose.tail = 9; }
-    else if (animationMode === 'work') { pose.headY = 2; pose.arm = -7; }
-    else if (animationMode === 'celebrate') { pose.y = -Math.abs(Math.round(Math.sin(time / 80) * 11)); pose.arm = -13; pose.tail = 14; pose.squashX = 1.06; }
-    else if (animationMode === 'evolve') { pose.y = -6; pose.arm = -13; pose.tail = 14; pose.squashX = 1.08 + Math.sin(time / 90) * 0.05; pose.squashY = 1.08 + Math.sin(time / 90) * 0.05; }
-    else if (animationMode === 'blocked') { pose.x = Math.round(Math.sin(time / 28) * 3); pose.squashX = 0.96; }
-    return pose;
-  }
-
-  function petGrowthShape(phase, stage) {
-    if (phase === 'young') return { scaleX: 0.9, scaleY: 0.76, offsetY: 12 };
-    if (phase === 'rare') return { scaleX: 1.22, scaleY: 1.18, offsetY: -7 };
-    var adultScale = 1 + Math.min(5, stage) * 0.025;
-    return { scaleX: adultScale, scaleY: adultScale, offsetY: 0 };
-  }
-
-  function petFaceOffset(speciesId) {
-    return speciesId === 'sneaker_snail' ? 18 : 0;
-  }
-
-  function drawPetEyes(eyeStyle, mood, blink, outline, accent, headY) {
-    var leftX = -15;
-    var rightX = 8;
-    var eyeHeight = blink ? 2 : mood === 'hurt' ? 4 : eyeStyle === 'sleepy' ? 4 : 7;
-    if (eyeStyle === 'soft') { leftX = -13; rightX = 8; }
-    if (eyeStyle === 'focused' && !blink) {
-      drawPixelRect(leftX, -38 + headY, 8, 3, outline); drawPixelRect(rightX, -38 + headY, 8, 3, outline);
-      drawPixelRect(leftX + 2, -35 + headY, 6, 4, outline); drawPixelRect(rightX, -35 + headY, 6, 4, outline);
-    } else if (eyeStyle === 'mischief' && !blink) {
-      drawPixelRect(leftX, -37 + headY, 7, 6, outline); drawPixelRect(rightX, -38 + headY, 8, 3, outline);
-      drawPixelRect(rightX + 2, -35 + headY, 5, 3, outline);
-    } else {
-      drawPixelRect(leftX, -37 + headY, eyeStyle === 'soft' ? 6 : 7, eyeHeight, outline);
-      drawPixelRect(rightX, -37 + headY, eyeStyle === 'soft' ? 6 : 7, eyeHeight, outline);
-    }
-    if (!blink && eyeStyle === 'bright') {
-      drawPixelRect(leftX + 2, -36 + headY, 2, 2, accent); drawPixelRect(rightX + 2, -36 + headY, 2, 2, accent);
-    }
-  }
-
-  function drawPetMarking(marking, palette, headY) {
-    if (marking === 'moon_mask') {
-      drawPixelRect(-21, -44 + headY, 13, 6, palette.shade); drawPixelRect(8, -44 + headY, 13, 6, palette.shade);
-    } else if (marking === 'spray_stripe') {
-      drawPixelRect(-22, -49 + headY, 8, 28, palette.accent); drawPixelRect(-14, -46 + headY, 5, 8, palette.accent);
-    } else if (marking === 'pixel_freckles') {
-      [-19, -10, 10, 18].forEach(function (markX, index) { drawPixelRect(markX, -27 + headY + index % 2 * 3, 3, 3, palette.accent); });
-    } else if (marking === 'split_face') {
-      drawPixelRect(0, -47 + headY, 22, 29, palette.shade); drawPixelRect(0, -47 + headY, 4, 29, palette.accent);
-    } else if (marking === 'star_patch') {
-      drawPixelRect(11, -45 + headY, 5, 17, palette.accent); drawPixelRect(5, -39 + headY, 17, 5, palette.accent);
-    } else if (marking === 'ink_drops') {
-      drawPixelRect(-20, -45 + headY, 5, 9, palette.shade); drawPixelRect(-12, -47 + headY, 4, 13, palette.shade); drawPixelRect(15, -42 + headY, 4, 8, palette.shade);
-    }
-  }
-
-  function drawRaccoon(palette, pose) {
-    drawPixelRect(27, -31 - pose.tail, 12, 32 + pose.tail, palette.outline); drawPixelRect(30, -28 - pose.tail, 6, 8, palette.body);
-    drawPixelRect(30, -16 - pose.tail, 6, 7, palette.accent); drawPixelRect(30, -4 - pose.tail, 6, 5, palette.body);
-    drawPixelRect(-25, -22, 52, 34, palette.outline); drawPixelRect(-21, -18, 44, 26, palette.body);
-    drawPixelRect(-27, -52 + pose.headY, 54, 39, palette.outline); drawPixelRect(-23, -48 + pose.headY, 46, 31, palette.body);
-    drawPixelRect(-23, -64 + pose.headY, 16, 17, palette.outline); drawPixelRect(7, -64 + pose.headY, 16, 17, palette.outline);
-    drawPixelRect(-18, -59 + pose.headY, 8, 11, palette.shade); drawPixelRect(10, -59 + pose.headY, 8, 11, palette.shade);
-    drawPixelRect(-21, -44 + pose.headY, 15, 8, palette.shade); drawPixelRect(6, -44 + pose.headY, 15, 8, palette.shade);
-  }
-
-  function drawRam(palette, pose) {
-    drawPixelRect(-28, -26, 56, 38, palette.outline); drawPixelRect(-24, -22, 48, 30, palette.body);
-    drawPixelRect(-27, -53 + pose.headY, 54, 40, palette.outline); drawPixelRect(-23, -49 + pose.headY, 46, 32, palette.body);
-    drawPixelRect(-42, -57 + pose.headY, 18, 23, palette.outline); drawPixelRect(24, -57 + pose.headY, 18, 23, palette.outline);
-    drawPixelRect(-38, -53 + pose.headY, 11, 16, palette.accent); drawPixelRect(27, -53 + pose.headY, 11, 16, palette.accent);
-    drawPixelRect(-34, -49 + pose.headY, 7, 8, palette.shade); drawPixelRect(27, -49 + pose.headY, 7, 8, palette.shade);
-    drawPixelRect(-18, 6, 12, 15, palette.outline); drawPixelRect(8, 6, 12, 15, palette.outline);
-  }
-
-  function drawGecko(palette, pose) {
-    drawPixelRect(-32, -19, 58, 28, palette.outline); drawPixelRect(-28, -15, 50, 20, palette.body);
-    drawPixelRect(21, -16 - pose.tail, 17, 9, palette.outline); drawPixelRect(34, -25 - pose.tail, 16, 9, palette.outline);
-    drawPixelRect(47, -36 - pose.tail, 12, 9, palette.outline); drawPixelRect(24, -13 - pose.tail, 14, 4, palette.accent);
-    drawPixelRect(-31, -49 + pose.headY, 58, 35, palette.outline); drawPixelRect(-27, -45 + pose.headY, 50, 27, palette.body);
-    drawPixelRect(-24, -57 + pose.headY, 13, 13, palette.body); drawPixelRect(10, -57 + pose.headY, 13, 13, palette.body);
-    drawPixelRect(-31, 3, 16, 8, palette.outline); drawPixelRect(11, 3, 16, 8, palette.outline);
-  }
-
-  function drawCrab(palette, pose) {
-    drawPixelRect(-31, -24, 62, 34, palette.outline); drawPixelRect(-27, -20, 54, 26, palette.body);
-    drawPixelRect(-48, -28 + pose.arm, 20, 13, palette.outline); drawPixelRect(28, -28 + pose.arm, 20, 13, palette.outline);
-    drawPixelRect(-54, -38 + pose.arm, 16, 16, palette.outline); drawPixelRect(38, -38 + pose.arm, 16, 16, palette.outline);
-    drawPixelRect(-49, -34 + pose.arm, 8, 8, palette.accent); drawPixelRect(41, -34 + pose.arm, 8, 8, palette.accent);
-    drawPixelRect(-27, -52 + pose.headY, 54, 34, palette.outline); drawPixelRect(-23, -48 + pose.headY, 46, 26, palette.body);
-    [-24, -8, 8, 24].forEach(function (legX) { drawPixelRect(legX, 7, 8, 13, palette.outline); });
-  }
-
-  function drawFox(palette, pose) {
-    drawPixelRect(-23, -22, 48, 33, palette.outline); drawPixelRect(-19, -18, 40, 25, palette.body);
-    drawPixelRect(23, -33 - pose.tail, 20, 35 + pose.tail, palette.outline); drawPixelRect(27, -29 - pose.tail, 12, 25 + pose.tail, palette.body);
-    drawPixelRect(29, -11 - pose.tail, 10, 7, palette.accent);
-    drawPixelRect(-27, -53 + pose.headY, 54, 39, palette.outline); drawPixelRect(-23, -49 + pose.headY, 46, 31, palette.body);
-    drawPixelRect(-25, -72 + pose.headY, 18, 23, palette.outline); drawPixelRect(7, -72 + pose.headY, 18, 23, palette.outline);
-    drawPixelRect(-20, -65 + pose.headY, 8, 14, palette.accent); drawPixelRect(12, -65 + pose.headY, 8, 14, palette.accent);
-    drawPixelRect(-17, 6, 11, 14, palette.outline); drawPixelRect(8, 6, 11, 14, palette.outline);
-  }
-
-  function drawSnail(palette, pose) {
-    drawPixelRect(-38, -33, 38, 38, palette.outline); drawPixelRect(-34, -29, 30, 30, palette.shade);
-    drawPixelRect(-27, -22, 17, 17, palette.body); drawPixelRect(-21, -16, 7, 7, palette.accent);
-    drawPixelRect(-8, -21, 42, 28, palette.outline); drawPixelRect(-4, -17, 34, 20, palette.body);
-    drawPixelRect(3, -49 + pose.headY, 33, 34, palette.outline); drawPixelRect(7, -45 + pose.headY, 25, 26, palette.body);
-    drawPixelRect(8, -62 + pose.headY, 5, 17, palette.outline); drawPixelRect(26, -62 + pose.headY, 5, 17, palette.outline);
-    drawPixelRect(7, -65 + pose.headY, 7, 7, palette.accent); drawPixelRect(25, -65 + pose.headY, 7, 7, palette.accent);
-    drawPixelRect(-8, 3, 46, 9, palette.outline); drawPixelRect(-4, 4, 38, 4, palette.accent);
-  }
-
-  function drawDrake(palette, pose) {
-    drawPixelRect(-24, -25, 50, 36, palette.outline); drawPixelRect(-20, -21, 42, 28, palette.body);
-    drawPixelRect(-43, -34 + pose.arm, 22, 29, palette.outline); drawPixelRect(21, -34 + pose.arm, 22, 29, palette.outline);
-    drawPixelRect(-38, -29 + pose.arm, 14, 19, palette.shade); drawPixelRect(24, -29 + pose.arm, 14, 19, palette.shade);
-    drawPixelRect(24, -21 - pose.tail, 25, 11, palette.outline); drawPixelRect(44, -30 - pose.tail, 14, 10, palette.outline);
-    drawPixelRect(-27, -54 + pose.headY, 54, 40, palette.outline); drawPixelRect(-23, -50 + pose.headY, 46, 32, palette.body);
-    drawPixelRect(-19, -68 + pose.headY, 8, 18, palette.accent); drawPixelRect(11, -68 + pose.headY, 8, 18, palette.accent);
-    drawPixelRect(-18, 6, 11, 15, palette.outline); drawPixelRect(8, 6, 11, 15, palette.outline);
-  }
-
-  function drawFerret(palette, pose) {
-    drawPixelRect(-38, -20, 66, 30, palette.outline); drawPixelRect(-34, -16, 58, 22, palette.body);
-    drawPixelRect(24, -23 - pose.tail, 30, 12, palette.outline); drawPixelRect(49, -31 - pose.tail, 13, 12, palette.outline);
-    drawPixelRect(-31, -50 + pose.headY, 58, 35, palette.outline); drawPixelRect(-27, -46 + pose.headY, 50, 27, palette.body);
-    drawPixelRect(-25, -61 + pose.headY, 14, 15, palette.outline); drawPixelRect(10, -61 + pose.headY, 14, 15, palette.outline);
-    drawPixelRect(-20, -56 + pose.headY, 7, 9, palette.accent); drawPixelRect(13, -56 + pose.headY, 7, 9, palette.accent);
-    drawPixelRect(-27, 5, 13, 13, palette.outline); drawPixelRect(10, 5, 13, 13, palette.outline);
-  }
-
-  function drawSpeciesSilhouette(speciesId, palette, pose) {
-    if (speciesId === 'bubble_ram') drawRam(palette, pose);
-    else if (speciesId === 'comet_gecko') drawGecko(palette, pose);
-    else if (speciesId === 'vinyl_crab') drawCrab(palette, pose);
-    else if (speciesId === 'lantern_fox') drawFox(palette, pose);
-    else if (speciesId === 'sneaker_snail') drawSnail(palette, pose);
-    else if (speciesId === 'alley_drake') drawDrake(palette, pose);
-    else if (speciesId === 'moon_ferret') drawFerret(palette, pose);
-    else drawRaccoon(palette, pose);
-  }
-
-  function drawRareMorphShell(name, palette, pose) {
-    if (!name) return;
-    if (name === 'Celestial Serpent') {
-      [-55, -43, -31, -19].forEach(function (segmentX, index) {
-        drawPixelRect(segmentX, -8 - index * 8, 15, 13, palette.outline); drawPixelRect(segmentX + 3, -5 - index * 8, 9, 7, index % 2 ? palette.accent : palette.body);
-      });
-      drawPixelRect(-62, -5, 8, 8, palette.accent);
-    } else if (name === 'Crown Beast') {
-      drawPixelRect(-36, -66 + pose.headY, 72, 7, palette.accent);
-      [-31, -15, 1, 17].forEach(function (spikeX, index) { drawPixelRect(spikeX, -78 - index % 2 * 5 + pose.headY, 9, 15 + index % 2 * 5, palette.accent); });
-    } else if (name === 'Boombox Kaiju') {
-      drawPixelRect(-57, -34, 28, 38, palette.outline); drawPixelRect(29, -34, 28, 38, palette.outline);
-      drawPixelRect(-52, -29, 18, 18, palette.accent); drawPixelRect(34, -29, 18, 18, palette.accent);
-      drawPixelRect(-47, -24, 8, 8, palette.outline); drawPixelRect(39, -24, 8, 8, palette.outline);
-    } else if (name === 'Graffiti Guardian') {
-      drawPixelRect(-61, -49 + pose.arm, 34, 12, palette.outline); drawPixelRect(27, -49 + pose.arm, 34, 12, palette.outline);
-      drawPixelRect(-55, -37 + pose.arm, 27, 9, palette.accent); drawPixelRect(28, -37 + pose.arm, 27, 9, palette.accent);
-      drawPixelRect(-48, -27 + pose.arm, 19, 7, palette.body); drawPixelRect(29, -27 + pose.arm, 19, 7, palette.body);
-    }
-  }
 
   function drawMoonEgg(time, active, incubation) {
     var progress = Math.max(0, Number(incubation && incubation.progress || 0));
@@ -3255,41 +2893,9 @@
   }
 
   // TEST-EXPORT: drawEmergencyMoonpetFallback:start
-  function drawEmergencyMoonpetFallback(time, active, lifecycle, pet, presence, x, y) {
-    var stage = petStage(pet);
-    var mood = petMood(pet);
-    var pose = petPose(time, active, mood, presence);
-    var growth = petGrowthShape(lifecycle.phase, stage);
-    var palette = petPalette(lifecycle, stage);
-    var speciesId = lifecycle.species_id || pet && pet.species || 'neon_raccoon';
-    var faceX = petFaceOffset(speciesId);
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.scale(growth.scaleX * pose.squashX, growth.scaleY * pose.squashY);
-    ctx.shadowColor = palette.body;
-    ctx.shadowBlur = active ? 6 : 2;
-    drawSpeciesSilhouette(speciesId, palette, pose);
-    ctx.save();
-    ctx.translate(faceX, 0);
-    drawPetMarking(lifecycle.appearance && lifecycle.appearance.marking, palette, pose.headY);
-    ctx.restore();
-    var blink = !reducedMotion && Math.floor(time / 1800) % 7 === 0 || mood === 'tired' || animationMode === 'sleep' && active;
-    ctx.save();
-    ctx.translate(faceX, 0);
-    drawPetEyes(lifecycle.appearance && lifecycle.appearance.eyes || 'bright', mood, blink, palette.outline, palette.accent, pose.headY);
-    drawPixelRect(-3, -27 + pose.headY, 6, 4, palette.outline);
-    if (mood === 'happy' || active && ['play', 'celebrate', 'feed'].includes(animationMode)) {
-      drawPixelRect(-8, -20 + pose.headY, 6, 3, palette.outline); drawPixelRect(2, -20 + pose.headY, 6, 3, palette.outline);
-    } else if (mood === 'hungry') drawPixelRect(-5, -20 + pose.headY, 10, 5, palette.outline);
-    else { drawPixelRect(-6, -20 + pose.headY, 12, 2, palette.outline); drawPixelRect(-2, -18 + pose.headY, 4, 2, palette.outline); }
-    ctx.restore();
-    ctx.restore();
-    ctx.shadowBlur = 0;
-    return true;
-  }
   // TEST-EXPORT: drawEmergencyMoonpetFallback:end
 
-  function drawPet(time, presence, combat) {
+  function drawPet(time) {
     var pet = state && state.pet;
     var lifecycle = state && state.lifecycle || {};
     var renderTime = reducedMotion ? performance.now() : time;
@@ -3302,7 +2908,10 @@
     var x = 124;
     var y = 194;
     if (drawSelectedBotSprite(renderTime, animationMode, active, x, y, 1)) return;
-    drawEmergencyMoonpetFallback(renderTime, active, lifecycle, pet, presence, x, y);
+    if (!botArtFallbackLogged) {
+      botArtFallbackLogged = true;
+      console.info('[Moonpet] bot art unavailable; suppressing retired procedural pet fallback', botArtRendererState);
+    }
   }
 
   var WORLD_SCENES = {
@@ -3313,31 +2922,6 @@
     economy: { label: 'CHAIN MARKET', sky: '#080414', haze: '#22103d', wall: '#211433', mortar: '#603d80', neon: '#f4ff65', accent: '#61f5ff', leftTag: 'GEMS', rightTag: 'TRADE' },
     profile: { label: 'ALL-CITY HEIGHTS', sky: '#08030d', haze: '#32102a', wall: '#271325', mortar: '#6d315e', neon: '#ff8bbd', accent: '#f4ff65', leftTag: 'RARE', rightTag: 'CORE' },
   };
-  var WORLD_STAR_X = [13, 41, 78, 109, 147, 181, 214, 249, 286, 311, 28, 64, 126, 167, 231, 274];
-  var WORLD_STAR_Y = [17, 31, 12, 48, 24, 39, 15, 52, 29, 8, 68, 57, 73, 61, 79, 66];
-
-  function drawCompanionHabitEffects(time, x, y, presence, color, active) {
-    if (active || !presence) return;
-    var behavior = presence.behavior;
-    var effectTime = reducedMotion ? 0 : time;
-    var phase = Math.floor(effectTime / 260);
-    if (behavior === 'signal_scan') {
-      drawPixelRect(x - 48, y - 52 + phase % 7 * 5, 96, 1, color);
-    } else if (behavior === 'scrap_tinker' || behavior === 'claw_click') {
-      for (var spark = 0; spark < 3; spark += 1) drawPixelRect(x + 31 + spark * 6, y - 18 - (phase + spark * 3) % 13, 2, 2, color);
-    } else if (behavior === 'memory_glow') {
-      for (var memory = 0; memory < 4; memory += 1) {
-        var angle = effectTime / 900 + memory * Math.PI / 2;
-        drawPixelRect(x + Math.cos(angle) * 54, y - 28 + Math.sin(angle) * 18, 3, 3, color);
-      }
-    } else if (behavior === 'alley_prowl' || behavior === 'tunnel_peek') {
-      drawPixelRect(x - 57, y + 17, 5, 2, color); drawPixelRect(x - 45, y + 13, 5, 2, color);
-    } else if (behavior === 'moon_gaze' || behavior === 'ear_flick') {
-      drawPixelRect(x + 45, y - 67, 3, 3, color); drawPixelRect(x + 52, y - 75, 2, 2, color);
-    } else if (behavior === 'window_shop') {
-      drawPixelRect(x + 48, y - 47, 5, 5, color); drawPixelRect(x + 44, y - 43, 13, 1, color);
-    }
-  }
 
   function companionAmbienceMode(hour) {
     if (hour < 6) return 'NIGHT SHIFT';
@@ -3356,24 +2940,6 @@
     ctx.fillRect(0, 0, 320, 220);
     ctx.restore();
     drawPixelText(mode, 314, 11, tint, 'right');
-  }
-
-  function drawCompanionPresence(time, scene, presence) {
-    if (!state || !state.adopted || !state.pet || !presence) return;
-    var actionActive = animationUntil > time;
-    var feedbackActive = feedbackUntil > time;
-    var greetingActive = companionGreetingUntil > time && companionGreeting;
-    if (feedbackActive || actionActive && !greetingActive) return;
-    var copy = greetingActive ? companionGreeting : presence.phase >= 0.58 ? presence.thought : '';
-    if (!copy) return;
-    copy = compactFeedback(copy, 24);
-    var bubbleY = 54;
-    drawPixelRect(7, bubbleY, 150, 31, '#020704');
-    drawPixelRect(7, bubbleY, 3, 31, scene.accent);
-    drawPixelText(greetingActive ? 'CHECK-IN //' : 'MOONPET THINKS //', 16, bubbleY + 12, scene.accent, 'left');
-    drawPixelText(copy, 16, bubbleY + 24, '#f4ff65', 'left');
-    drawPixelRect(143, bubbleY + 31, 6, 4, '#020704');
-    drawPixelRect(149, bubbleY + 35, 4, 4, '#020704');
   }
 
   function combatRivalColor(combat) {
@@ -3449,56 +3015,9 @@
   }
 
   var WORLD_BUILDING_HEIGHTS = [32, 51, 39, 66, 44, 58, 35, 70, 48, 61];
-  var WORLD_REACTION_COLORS = {
-    feed: '#ffb84d', play: '#f6a7ff', clean: '#b3ffff', sleep: '#8091c9', train: '#f4ff65',
-    battle: '#ff4f64', travel: '#61f5ff', work: '#ffcf68', equip: '#61f5ff', evolve: '#f6a7ff',
-    trade: '#f4ff65', celebrate: '#a9ff55', interact: '#a9ff9a', greet: '#a9ff9a', blocked: '#ff4f64',
-  };
 
   function worldScene() {
     return WORLD_SCENES[activeScreen] || WORLD_SCENES.home;
-  }
-
-  function drawWorldSky(time, scene) {
-    drawPixelRect(0, 0, 320, 112, scene.sky);
-    drawPixelRect(0, 72, 320, 40, scene.haze);
-    var driftPhase = reducedMotion ? 0 : Math.floor(time / 2400);
-    for (var star = 0; star < WORLD_STAR_X.length; star += 1) {
-      var starSpeed = star % 3 === 0 ? 1 : 0.35;
-      var starX = (WORLD_STAR_X[star] + driftPhase * starSpeed) % 320;
-      var twinkle = reducedMotion ? 1 : 1 + (Math.floor(time / 420) + star) % 3;
-      drawPixelRect(Math.floor(starX), WORLD_STAR_Y[star], twinkle === 3 ? 2 : 1, 1, star % 4 ? scene.neon : scene.accent);
-    }
-    drawPixelRect(271, 17, 25, 25, scene.neon);
-    drawPixelRect(275, 13, 17, 33, scene.neon);
-    drawPixelRect(267, 21, 33, 17, scene.neon);
-    drawPixelRect(275, 21, 17, 17, scene.sky);
-    drawPixelRect(279, 23, 3, 14, scene.accent);
-    drawPixelRect(282, 23, 7, 3, scene.accent);
-    drawPixelRect(282, 29, 7, 3, scene.accent);
-    drawPixelRect(282, 34, 7, 3, scene.accent);
-    drawPixelRect(288, 25, 3, 5, scene.accent);
-    drawPixelRect(288, 31, 3, 5, scene.accent);
-    drawPixelRect(281, 20, 2, 4, scene.accent);
-    drawPixelRect(286, 20, 2, 4, scene.accent);
-    drawPixelRect(281, 36, 2, 4, scene.accent);
-    drawPixelRect(286, 36, 2, 4, scene.accent);
-  }
-
-  function drawWorldSkyline(time, scene) {
-    var drift = reducedMotion ? 0 : Math.round(Math.sin(time / 3600) * 4);
-    for (var building = -1; building < WORLD_BUILDING_HEIGHTS.length; building += 1) {
-      var index = (building + WORLD_BUILDING_HEIGHTS.length) % WORLD_BUILDING_HEIGHTS.length;
-      var bx = building * 36 - drift;
-      var bh = WORLD_BUILDING_HEIGHTS[index];
-      drawPixelRect(bx, 112 - bh, 31, bh, '#07100d');
-      drawPixelRect(bx + 4, 112 - bh + 5, 23, 4, scene.mortar);
-      for (var wy = 14; wy < bh - 4; wy += 11) {
-        drawPixelRect(bx + 6, 112 - bh + wy, 4, 4, index % 2 ? scene.neon : scene.accent);
-        if ((wy + index) % 3) drawPixelRect(bx + 19, 112 - bh + wy, 4, 4, scene.neon);
-      }
-    }
-    drawPixelRect(0, 108, 320, 4, scene.mortar);
   }
 
   function drawGraffitiTag(text, x, y, color, align) {
@@ -3514,130 +3033,6 @@
     ctx.restore();
   }
 
-  function drawGraffitiWall(scene) {
-    drawPixelRect(0, 112, 320, 66, scene.wall);
-    for (var row = 0; row < 5; row += 1) {
-      var brickOffset = row % 2 ? -17 : 0;
-      for (var brick = brickOffset; brick < 320; brick += 34) {
-        drawPixelRect(brick, 114 + row * 13, 32, 2, scene.mortar);
-        drawPixelRect(brick + 31, 114 + row * 13, 2, 13, scene.mortar);
-      }
-    }
-    drawPixelRect(105, 117, 110, 54, '#09110d');
-    drawPixelRect(111, 123, 98, 42, scene.haze);
-    drawPixelRect(118, 130, 84, 28, '#07100d');
-    drawGraffitiTag(scene.leftTag, 9, 143, scene.neon, 'left');
-    drawGraffitiTag(scene.rightTag, 311, 164, scene.accent, 'right');
-    drawPixelText('CHAIN // 85', 160, 121, scene.mortar, 'center');
-  }
-
-  function drawWorldLandmarks(sceneKey, scene) {
-    if (sceneKey === 'home') {
-      drawPixelRect(26, 126, 48, 8, '#09100d');
-      drawPixelRect(31, 119, 38, 9, scene.mortar);
-      drawPixelRect(35, 113, 30, 7, '#09100d');
-      drawPixelRect(36, 134, 5, 26, scene.mortar);
-      drawPixelRect(59, 134, 5, 26, scene.mortar);
-      drawPixelRect(269, 116, 4, 44, scene.mortar);
-      drawPixelRect(257, 123, 28, 3, scene.neon);
-      drawPixelRect(264, 129, 15, 3, scene.accent);
-    } else if (sceneKey === 'missions') {
-      drawPixelRect(12, 119, 72, 47, '#080a09');
-      drawPixelRect(17, 124, 62, 37, scene.mortar);
-      drawPixelRect(22, 129, 52, 27, scene.wall);
-      drawPixelText('?', 48, 148, scene.neon, 'center');
-      drawPixelRect(250, 126, 43, 5, scene.accent);
-      drawPixelRect(260, 136, 43, 5, scene.neon);
-      drawPixelRect(250, 146, 43, 5, scene.accent);
-    } else if (sceneKey === 'explore') {
-      drawPixelRect(11, 116, 5, 50, scene.mortar);
-      drawPixelRect(71, 116, 5, 50, scene.mortar);
-      drawPixelRect(16, 122, 55, 4, scene.neon);
-      drawPixelRect(16, 137, 55, 4, scene.mortar);
-      drawPixelRect(16, 152, 55, 4, scene.accent);
-      drawPixelRect(249, 119, 55, 34, '#060b0d');
-      drawPixelRect(254, 124, 45, 24, scene.mortar);
-      drawPixelText('RUN', 276, 140, scene.neon, 'center');
-    } else if (sceneKey === 'work') {
-      drawPixelRect(23, 116, 6, 49, scene.mortar);
-      drawPixelRect(29, 116, 65, 5, scene.neon);
-      drawPixelRect(84, 121, 5, 22, scene.mortar);
-      drawPixelRect(78, 141, 17, 8, '#070b09');
-      drawPixelRect(82, 149, 9, 7, scene.accent);
-      drawPixelRect(247, 152, 59, 14, '#080b09');
-      drawPixelRect(254, 143, 21, 9, scene.mortar);
-      drawPixelRect(277, 138, 18, 14, scene.accent);
-      drawPixelRect(296, 147, 10, 5, scene.neon);
-    } else if (sceneKey === 'economy') {
-      drawPixelRect(10, 125, 78, 9, scene.neon);
-      drawPixelRect(14, 134, 70, 30, '#080a09');
-      drawPixelRect(20, 140, 19, 20, scene.mortar);
-      drawPixelRect(57, 140, 19, 20, scene.accent);
-      drawPixelRect(232, 125, 78, 9, scene.accent);
-      drawPixelRect(236, 134, 70, 30, '#080a09');
-      drawPixelRect(243, 141, 56, 5, scene.mortar);
-      drawPixelText('G', 271, 158, scene.neon, 'center');
-    } else if (sceneKey === 'profile') {
-      drawPixelRect(18, 151, 66, 14, '#080a09');
-      drawPixelRect(26, 141, 50, 10, scene.mortar);
-      drawPixelRect(35, 129, 8, 12, scene.neon);
-      drawPixelRect(47, 123, 8, 18, scene.accent);
-      drawPixelRect(59, 129, 8, 12, scene.neon);
-      drawPixelRect(244, 119, 59, 46, '#080a09');
-      drawPixelRect(250, 125, 47, 34, scene.mortar);
-      drawPixelRect(256, 131, 35, 22, scene.wall);
-      drawPixelText('★', 274, 147, scene.accent, 'center');
-    }
-  }
-
-  function drawWorldStreet(time, scene) {
-    drawPixelRect(0, 178, 320, 42, '#070b09');
-    drawPixelRect(0, 178, 320, 4, scene.mortar);
-    drawPixelRect(0, 212, 320, 8, '#020504');
-    var roadDrift = reducedMotion ? 0 : Math.floor(time / 70) % 32;
-    for (var line = -32; line < 352; line += 32) drawPixelRect(line - roadDrift, 201, 15, 2, scene.mortar);
-    drawPixelRect(15, 164, 18, 14, '#121916');
-    drawPixelRect(19, 159, 10, 5, scene.accent);
-    drawPixelRect(22, 155, 4, 4, scene.neon);
-    drawPixelRect(284, 161, 20, 17, '#121916');
-    drawPixelRect(288, 157, 12, 4, scene.neon);
-    drawPixelRect(291, 151, 6, 6, scene.accent);
-  }
-
-  function drawWorldReaction(time, scene) {
-    var active = animationUntil > (reducedMotion ? performance.now() : time);
-    if (!active) return;
-    var color = WORLD_REACTION_COLORS[animationMode] || scene.neon;
-    ctx.save();
-    ctx.globalAlpha = animationMode === 'blocked' ? 0.2 : 0.14;
-    ctx.fillStyle = color;
-    ctx.fillRect(82, 86, 156, 96);
-    ctx.restore();
-    var pulse = reducedMotion ? 0 : Math.floor(time / 85);
-    if (animationMode === 'battle' || animationMode === 'evolve' || animationMode === 'celebrate') {
-      for (var spark = 0; spark < (renderQuality === 'low' ? 3 : renderQuality === 'medium' ? 6 : 9); spark += 1) {
-        var sparkX = (spark * 41 + pulse * 7) % 320;
-        var sparkY = 31 + (spark * 19 + pulse * 5) % 132;
-        drawPixelRect(sparkX, sparkY, 3, 3, spark % 2 ? color : scene.accent);
-      }
-    } else if (animationMode === 'sleep') {
-      drawPixelRect(0, 0, 320, 112, 'rgba(4,6,20,.28)');
-    } else if (animationMode === 'clean') {
-      for (var drop = 0; drop < 8; drop += 1) {
-        var dropY = (drop * 27 + pulse * 5) % 176;
-        drawPixelRect(18 + drop * 41, dropY, 2, 7, color);
-      }
-    }
-  }
-
-  function drawWorldForeground(scene) {
-    drawPixelRect(3, 185, 7, 27, '#18201c');
-    drawPixelRect(10, 188, 4, 24, scene.neon);
-    drawPixelRect(306, 184, 10, 28, '#18201c');
-    drawPixelRect(302, 191, 4, 21, scene.accent);
-    drawPixelText(scene.label, 6, 11, scene.neon, 'left');
-  }
-
   var CAMERA_FRAME = { x: 0, y: 0, zoom: 1 };
 
   function updateCameraFrame(time) {
@@ -3650,15 +3045,6 @@
     CAMERA_FRAME.y = Math.round(Math.cos((time + actionSequence * 23) / 23) * impact * 0.55);
     CAMERA_FRAME.zoom = 1 + Math.min(0.035, impact * 0.004);
     return CAMERA_FRAME;
-  }
-
-  function drawActionFlash(time, scene) {
-    if (reducedMotion || actionStartedAt <= 0 || time < actionStartedAt || time - actionStartedAt > 210) return;
-    var color = WORLD_REACTION_COLORS[animationMode] || scene.neon;
-    ctx.save();
-    ctx.globalAlpha = Math.max(0, 0.24 * (1 - (time - actionStartedAt) / 210));
-    ctx.fillStyle = color; ctx.fillRect(0, 0, 320, 220);
-    ctx.restore();
   }
 
   function drawCinematicFeedback(time, scene) {
@@ -3695,21 +3081,6 @@
     drawActionInfoPanel(ceremony.title, lines, color, fade);
   }
 
-  function drawSceneTransition(time, scene) {
-    if (reducedMotion || sceneTransitionUntil <= time) return;
-    var duration = Math.max(1, sceneTransitionUntil - sceneTransitionStartedAt);
-    var progress = Math.max(0, Math.min(1, (time - sceneTransitionStartedAt) / duration));
-    var cover = Math.ceil((1 - progress) * 320);
-    var origin = sceneTransitionDirection > 0 ? 320 - cover : 0;
-    drawPixelRect(origin, 0, cover, 220, '#020704');
-    for (var stripe = 0; stripe < 6; stripe += 1) {
-      var stripeWidth = Math.max(0, cover - stripe * 13);
-      var stripeX = sceneTransitionDirection > 0 ? 320 - stripeWidth : 0;
-      drawPixelRect(stripeX, 28 + stripe * 29, stripeWidth, 3, stripe % 2 ? scene.neon : scene.accent);
-    }
-    if (progress < 0.72) drawPixelText('ENTER // ' + scene.label, 160, 111, scene.neon, 'center');
-  }
-
   function drawWorldBackground() {
     if (!worldBackgroundReady || !worldBackgroundImage.naturalWidth || !worldBackgroundImage.naturalHeight) {
       drawPixelRect(0, 0, 320, 220, '#010402');
@@ -3741,7 +3112,6 @@
     var scene = worldScene();
     var renderTime = reducedMotion ? performance.now() : time;
     var camera = updateCameraFrame(renderTime);
-    var presence = updateCompanionPresence(state && state.pet, state && state.lifecycle || {}, renderTime);
     var combat = updateCombatPresentation(state);
 
     // The authored BITTY image is now the complete environment. No procedural
@@ -3752,7 +3122,7 @@
     ctx.translate(160 + camera.x, 110 + camera.y);
     ctx.scale(camera.zoom, camera.zoom);
     ctx.translate(-160, -110);
-    drawPet(renderTime, presence, combat);
+    drawPet(renderTime);
     ctx.restore();
 
     if (lifecycleCeremonyActive(renderTime)) drawLifecycleCeremony(renderTime, scene);
@@ -3806,7 +3176,7 @@
   async function start() {
     await waitForTelegramContext();
     if (tg) {
-      try { tg.ready(); tg.expand(); tg.setHeaderColor('#06110b'); tg.setBackgroundColor('#010402'); if (tg.disableVerticalSwipes) tg.disableVerticalSwipes(); } catch (_) {}
+      try { tg.ready(); tg.expand(); tg.setHeaderColor('#070707'); tg.setBackgroundColor('#070707'); if (tg.disableVerticalSwipes) tg.disableVerticalSwipes(); } catch (_) {}
     }
     setInterval(function () {
       var now = new Date();

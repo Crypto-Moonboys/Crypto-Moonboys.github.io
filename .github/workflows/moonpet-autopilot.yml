@@ -1,4 +1,4 @@
-name: Moonpet Autopilot
+name: Moonpet Art Integrity
 
 on:
   workflow_dispatch:
@@ -6,93 +6,28 @@ on:
     - cron: "24 6 * * *"
 
 jobs:
-  moonpet-autopilot:
-    name: Moonpet Autopilot Checks
+  moonpet-art-integrity:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Syntax checks
-        id: syntax
-        continue-on-error: true
+      - run: npm ci
+      - name: Syntax check current runtime
         run: |
-          node --check js/moonpet-approved-asset-loader.js
-          node --check js/moonpet-approved-sprite-renderer.js
-          node --check js/moonpet-runtime-preview.js
-          node --check js/moonpet-animation-sandbox.js
+          node --check js/moonpet-art-resolver.js
+          node --check js/moonpet-bot-art-loader.js
+          node --check js/moonpet-bot-art-renderer.js
           node --check js/moonpet-mini-app.js
-          node --check js/moonpet-side-scroller-asset-loader.js
-          node --check js/moonpet-side-scroller-sprite-renderer.js
-          node --check scripts/moonpet-custom-animation-queue-check.js
-          node --check scripts/moonpet-custom-animation-autopilot.js
-          node --check scripts/moonpet-runtime-sprite-requirements-check.js
-
-      - name: Generate Moonpet autopilot report
-        id: report
-        if: always()
-        continue-on-error: true
-        run: npm run moonpet:autopilot:report
-
-      - name: Upload Moonpet autopilot report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: moonpet-autopilot-report
-          path: |
-            output/manifests/moonpet-autopilot-report.json
-            output/manifests/moonpet-custom-animation-review.generated.json
-          if-no-files-found: warn
-
-      - name: Run Moonpet autopilot check
-        id: autopilot
-        if: always()
-        continue-on-error: true
-        run: npm run moonpet:autopilot
-
-      - name: Run Moonpet custom animation queue check
-        id: custom_queue
-        if: always()
-        continue-on-error: true
-        run: npm run moonpet:custom-queue:check
-
-      - name: Run Moonpet runtime sprite requirements check
-        id: runtime_sprites
-        if: always()
-        continue-on-error: true
-        run: npm run moonpet:runtime-sprites:check
-
-      - name: Fail on validation errors
-        if: always()
+          node --check scripts/discover-autosprite-character.js
+          node --check scripts/generate-botty-front-animations.js
+          node --check scripts/download-botty-front-animations.js
+          node --check scripts/promote-moonpet-bot-front-pack.js
+      - name: Validate current art architecture
         run: |
-          if [ "${{ steps.syntax.outcome }}" != "success" ]; then
-            echo "Syntax checks failed."
-            exit 1
-          fi
-          if [ "${{ steps.report.outcome }}" != "success" ]; then
-            echo "Moonpet autopilot report failed."
-            exit 1
-          fi
-          if [ "${{ steps.autopilot.outcome }}" != "success" ]; then
-            echo "Moonpet autopilot check failed."
-            exit 1
-          fi
-          if [ "${{ steps.custom_queue.outcome }}" != "success" ]; then
-            echo "Moonpet custom animation queue check failed."
-            exit 1
-          fi
-          if [ "${{ steps.runtime_sprites.outcome }}" != "success" ]; then
-            echo "Moonpet runtime sprite requirements check failed."
-            exit 1
-          fi
+          node scripts/moonpet-art-architecture.test.mjs
+          node scripts/moonpet-multi-bot-art.test.mjs
+          node scripts/telegram-pets-mini-app.test.mjs
