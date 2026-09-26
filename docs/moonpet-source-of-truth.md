@@ -104,6 +104,29 @@ Includes:
 - Extraction
 - Run rewards
 
+### Play Now and practice
+
+Play Now links the current snapshot to available live routes. Navigation does
+not submit an action; each destination still enforces its server requirements.
+Daily Journey exposes each of its five authoritative objectives and progress,
+separately from the seven daily missions. The official Daily Moon Run exposes
+account/day attempt status and its UTC reset; switching pets does not grant a
+second attempt. The standard Moon Run and official Daily Moon Run retain their
+separate reward and completion rules.
+
+Practice Roguelite is an explicitly local, reward-free simulation available
+after adoption, including the egg stage. It has three builds, three goals,
+12 rooms, risk previews, health/supply management, three upgrade drafts and
+extraction. Players may replay without care cooldowns or pet energy costs.
+Practice does not award Pet XP, Community XP, currencies, items, Growth Marks,
+Weekly Crests, achievements, quest credit or leaderboard scores. Runs and a
+personal best are saved in this browser, isolated by pet ID, with at most three
+saved pet entries. They are not authoritative or synced across devices.
+
+Existing story-chain, district, raid and reward limits remain in force. No
+future system is unlocked by practice. The player can leave and resume play;
+there is no penalty for closing the app.
+
 ---
 
 ## Equipment

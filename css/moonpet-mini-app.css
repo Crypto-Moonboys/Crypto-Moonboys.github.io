@@ -83,6 +83,7 @@ button, input, select, textarea {
   margin: 0 auto;
   position: relative;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto minmax(178px, 32dvh) auto minmax(0, 1fr) auto;
   overflow: hidden;
   background:
@@ -286,6 +287,7 @@ button, input, select, textarea {
 }
 
 .screen {
+  min-width: 0;
   min-height: 0;
   padding: 12px 12px 20px;
   overflow-x: hidden;
@@ -1055,4 +1057,17 @@ button, input, select, textarea {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
   }
+}
+/* The practice lab remains usable in the narrow Telegram control pane. */
+[data-panel="practice"] select {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin: 8px 0;
+  padding: 10px;
+  color: inherit;
+  background: #151515;
+  border: 1px solid #777;
+  font: inherit;
 }

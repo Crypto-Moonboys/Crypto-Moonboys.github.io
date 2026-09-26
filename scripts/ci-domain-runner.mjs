@@ -78,6 +78,7 @@ const GROUPS = {
     ['node', 'scripts/moonpet-mini-app-leaderboard-sql.test.mjs'],
     ['node', 'scripts/telegram-pets-mini-app.test.mjs'],
     ['node', 'scripts/telegram-pets-mini-app-parity.test.mjs'],
+    ['node', 'scripts/moonpet-player-loop.test.mjs'],
     ['node', 'scripts/telegram-pets-season-1-production-readiness.test.mjs'],
     ['node', 'scripts/telegram-pets-content-reconciliation.test.mjs'],
     ['node', 'scripts/telegram-pets-live-systems.test.mjs'],
@@ -138,6 +139,7 @@ const GROUPS = {
     ['node', 'scripts/wax-collection-page-fallback.test.mjs'],
   ],
   visual: [
+    ['node', 'scripts/moonpet-player-loop-browser.test.mjs'],
     ['npm', 'run', 'test:avatar-builder'],
     ['node', 'scripts/portal-artwork.test.mjs'],
     ['node', 'scripts/right-rail-live-panels.test.mjs'],

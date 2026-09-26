@@ -464,6 +464,12 @@ assert.equal(
   'Daily Journey summary fixture must include accepted evidence for every objective ID',
 );
 assert.equal(journeySummary.daily.completed_objectives, 0, 'Daily Journey Mini App summary must not count below-target evidence as completed objectives');
+assert.equal(journeySummary.daily.objectives.length, Object.keys(PET_DAILY_CHALLENGES).length);
+for (const objective of journeySummary.daily.objectives) {
+  assert.equal(objective.progress, objective.target - 1, 'objective detail must reflect the same partial evidence as the total');
+  assert.equal(objective.completed, false);
+  assert.equal(objective.description, PET_DAILY_CHALLENGES[objective.challenge_id].description);
+}
 assert.equal(journeySummary.daily.completed_objectives < journeySummary.daily.required_objectives, true);
 assert.equal(journeySummary.daily.growth_mark_awarded, false);
 assert.notEqual(journeySummary.daily.reason, 'daily_journey_ready');

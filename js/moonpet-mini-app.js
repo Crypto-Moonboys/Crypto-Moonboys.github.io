@@ -705,6 +705,7 @@
   }
 
   function recommendedFocus(next) {
+    if (window.MoonpetPlayOptions) return window.MoonpetPlayOptions.route(next).focus;
     var key = String(next && next.key || '') + ' ' + String(next && next.action || '') + ' ' + String(next && next.callback_data || '');
     if (/feed|sleep|clean|play|health/.test(key)) return 'care';
     if (/activity/.test(key)) return 'timed-activity';
@@ -736,7 +737,7 @@
   }
 
   var SECTION_JUMPS = {
-    explore: [['districts', 'DISTRICTS'], ['moon-run', 'RUN'], ['weekly-boss', 'BOSS'], ['story-chains', 'STORIES'], ['seasonal-boss', 'RAID'], ['arena', 'ARENA'], ['kaiju', 'KAIJU']],
+    explore: [['play-now', 'PLAY NOW'], ['practice', 'PRACTICE'], ['districts', 'DISTRICTS'], ['moon-run', 'RUN'], ['adventure', 'ADVENTURE'], ['street-event', 'EVENT'], ['weekly-boss', 'BOSS'], ['story-chains', 'STORIES'], ['seasonal-boss', 'RAID'], ['arena', 'ARENA'], ['kaiju', 'KAIJU']],
     economy: [['equipment', 'GEAR'], ['materials', 'MATERIALS'], ['bounties', 'BOUNTIES'], ['expedition', 'EXPEDITION'], ['market', 'MARKET'], ['shop', 'SHOP'], ['inventory', 'BAG'], ['trade', 'TRADE']],
     profile: [['rare-morph', 'RARE'], ['memories', 'MEMORY'], ['callsign', 'NAME'], ['evolution', 'EVOLVE'], ['season', 'SEASON'], ['leaderboard', 'RANKS']],
   };
@@ -791,6 +792,7 @@
       '<div class="guide-step"><strong>5 // BUILD YOUR LOADOUT</strong>GEAR contains equipment, materials, bounties, market offers, inventory and upgrades. Districts show an objective, opponent and route before you commit. ' + combatGuideCopy + ' Moon Run reaches 100 rooms—extract to bank unbanked rewards.</div>' +
       '<div class="guide-step"><strong>6 // IDENTITY AND ROADMAP</strong>The canonical identity name is revealed when server-authoritative Stage 3 begins. CORE tracks evolution and season rewards. Advanced Traits, Breeding, Lineage, Fusion, Sanctuary and Prestige remain coming soon.</div>' +
       '<div class="guide-step"><strong>CURRENCIES</strong>Pet XP raises level. Moon Gold buys common upgrades. Gems unlock premium routes. Style unlocks cosmetics. Energy powers demanding actions.</div>' +
+      '<div class="guide-step"><strong>PLAY BETWEEN COOLDOWNS</strong>Play Now links to your available routes. Practice Roguelite in EXPLORE offers three builds, risk choices and upgrade drafts with unlimited replays. It uses local practice health and salvage, costs no pet energy and awards no XP, currency or quest credit. This browser saves the run so you can leave and resume.</div>' +
       '<div class="button-grid one"><button type="button" class="terminal-button" data-open-full-guide>OPEN COMPLETE WEBSITE GUIDE</button></div>';
   }
   // TEST-EXPORT: guideMarkup:end
@@ -1340,18 +1342,21 @@
       var signals = incubation.signals || {};
       return '<div class="ticker"><span>SECRET BOT // SIGNAL ' + number(incubation.progress) + '/' + number(incubation.target) + ' // IDENTITY FORMING //</span></div>' +
         panel('SECRET BOT CHAMBER', '<div class="line complete">THE SECRET BOT REMEMBERS HOW YOU TREAT IT.</div><div class="line muted">NEXT // ' + escapeHtml(homeNextLine()) + '</div><div class="line muted">Use at least three types of care. Your pattern shapes the reveal; no species odds are exposed.</div>' + meter('BREAKOUT SIGNAL', Number(incubation.progress || 0) / Math.max(1, Number(incubation.target || 12)) * 100) + '<div class="line">WARM ' + number(signals.warm) + ' // TALK ' + number(signals.talk) + ' // MUSIC ' + number(signals.music) + ' // REST ' + number(signals.rest) + '</div><div class="button-grid">' + button('WARM BOT', 'incubate', { care_type: 'warm' }) + button('TALK TO BOT', 'incubate', { care_type: 'talk' }) + button('PLAY A BEAT', 'incubate', { care_type: 'music' }) + button('LET IT REST', 'incubate', { care_type: 'rest' }) + '</div><div class="button-grid one">' + button('REVEAL BOT', 'hatch', {}, { disabled: !incubation.ready, eggRequired: !incubation.ready }) + '</div><div class="line muted">DAILY SIGNALS ' + number(incubation.actions_today) + '/' + number(incubation.daily_cap) + '</div>', 'incubation') +
-        renderSeasonSlots();
+        panel('SECRET BOT ACTIONS', '<div class="button-grid">' + button('ENERGY DRINK', 'energy_drink') + button('DANCE', 'dance') + button('CUDDLES', 'cuddles') + '</div><div class="line muted">Stat-only care. Does not advance incubation or award XP.</div>', 'care') +
+        renderPlayNow() + renderSeasonSlots();
     }
     var next = state.next || {};
     var nextKey = String(next.key || '') + ' ' + String(next.callback_data || '') + ' ' + String(next.title || '');
     var nextScreen = next.destination || (/buy|shop|market|bount|econom|gear|cosmetic/i.test(nextKey) ? 'economy' : /run|boss|arena|adventure|district|event.chain/i.test(nextKey) ? 'explore' : /job|work|activity/i.test(nextKey) ? 'work' : /mission/i.test(nextKey) ? 'missions' : /evol|season|achievement|trait/i.test(nextKey) ? 'profile' : 'home');
     var focus = recommendedFocus(next);
+    if (window.MoonpetPlayOptions) nextScreen = window.MoonpetPlayOptions.route(next).screen;
     var equipped = ['food', 'toy', 'outfit', 'armor', 'weapon', 'charm'].map(function (slot) {
       return '<div class="line"><strong>' + slot.toUpperCase() + '</strong> // ' + escapeHtml(words(pet['equipped_' + slot] || (slot === 'food' ? 'basic food' : slot === 'toy' ? 'basic toy' : 'none equipped'))) + '</div>';
     }).join('');
     var displayName = resolveMoonpetDisplayName(lifecycle, state.guidance && state.guidance.identity);
     return '<div class="ticker"><span>MOONPET OS // ' + escapeHtml(displayName) + ' // ' + escapeHtml(moonpetStageLabel(lifecycle, pet)) + ' // STREAK ' + number(pet.streak_days) + ' DAYS //</span></div>' +
       activePetSummary() +
+      renderPlayNow() +
       panel('RECOMMENDED NEXT MOVE', '<div class="line complete">' + escapeHtml(next.title || 'Maintain current route') + '</div><div class="line muted">NEXT // ' + escapeHtml(homeNextLine(next)) + '</div><div class="line muted">' + escapeHtml(next.detail || 'All systems nominal.') + '</div><div class="button-grid one"><button class="terminal-button" type="button" data-jump="' + nextScreen + '" data-focus="' + focus + '">OPEN RECOMMENDED ROUTE</button></div>', 'recommended') +
       panel('VITAL SYSTEMS', meter('HEALTH', pet.health) + meter('ENERGY', pet.energy) + meter('HUNGER', pet.hunger, true) + meter('FUN', pet.happiness) + meter('CLEAN', pet.cleanliness), 'vitals') +
       panel('CARE CONSOLE', '<div class="button-grid">' +
@@ -1616,13 +1621,108 @@
       '<div class="line muted">IN DEVELOPMENT // DIMINISHING-RETURN BALANCING · FUTURE // CATCH-UP SYSTEMS</div>', 'season-slots');
   }
 
+  function routeButton(label, route, detail) {
+    return '<button class="terminal-button" type="button" data-jump="' + escapeHtml(route.screen) + '" data-focus="' + escapeHtml(route.focus) + '">' + escapeHtml(label) + (detail ? '<small>' + escapeHtml(detail) + '</small>' : '') + '</button>';
+  }
+
+  function objectiveRouteButton(key) {
+    if (!window.MoonpetPlayOptions) return '';
+    var route = window.MoonpetPlayOptions.route({ key: key });
+    if (state && state.lifecycle && state.lifecycle.phase === 'egg') route = { screen: 'home', focus: 'incubation' };
+    return '<div class="button-grid one">' + routeButton('OPEN OBJECTIVE ROUTE', route) + '</div>';
+  }
+
+  function dailyObjectiveMarkup() {
+    var objectives = state && state.daily_journey && state.daily_journey.objectives;
+    if (!Array.isArray(objectives) || !objectives.length) return '<div class="line muted">Objective details unavailable. Refresh after the Worker update.</div>';
+    return '<div class="line muted">These are the server-tracked Growth Mark goals, separate from the seven daily missions. Official run goals do not count practice or endless runs.</div>' + objectives.map(function (goal) {
+      return '<div class="line ' + (goal.completed ? 'complete' : '') + '">' + (goal.completed ? '[OK] ' : '[ ] ') + escapeHtml(goal.description || words(goal.challenge_id)) + ' // ' + number(goal.progress) + '/' + number(goal.target) + '</div>' + (goal.completed ? '' : objectiveRouteButton(goal.challenge_id));
+    }).join('');
+  }
+
+  function renderPlayNow() {
+    if (!window.MoonpetPlayOptions) return '';
+    var choices = window.MoonpetPlayOptions.options(state);
+    if (!choices.length) return '';
+    return panel('PLAY NOW // YOUR CHOICE', '<div class="line muted">Pick a route. Rewarded actions keep their normal gates and limits; practice has no cooldown or pet cost. Progress is saved—you can leave and return.</div><div class="button-grid">' + choices.map(function (choice) { return routeButton(choice.title, choice, choice.detail); }).join('') + '</div>', 'play-now');
+  }
+
+  var practiceMemory = {};
+  var practiceStorageAvailable = true;
+  function practiceKey() { return String(state && state.pet && state.pet.pet_id || ''); }
+  function practiceRecord() {
+    var key = practiceKey();
+    if (!key || !window.MoonpetPractice) return { run: null, best: 0 };
+    if (practiceMemory[key]) return practiceMemory[key];
+    var saved = {};
+    try { saved = JSON.parse(window.localStorage.getItem('moonpet-practice-v1') || '{}')[key] || {}; } catch (_) { practiceStorageAvailable = false; }
+    var best = Number.isSafeInteger(saved.best) ? Math.max(0, Math.min(100000, saved.best)) : 0;
+    return (practiceMemory[key] = { run: window.MoonpetPractice.restore(saved.run), best: best });
+  }
+  function savePractice(record) {
+    var key = practiceKey();
+    practiceMemory[key] = record;
+    try {
+      var entries = JSON.parse(window.localStorage.getItem('moonpet-practice-v1') || '{}');
+      if (!entries || typeof entries !== 'object' || Array.isArray(entries)) entries = {};
+      delete entries[key];
+      entries[key] = record;
+      var keys = Object.keys(entries);
+      keys.slice(0, Math.max(0, keys.length - 3)).forEach(function (old) { delete entries[old]; });
+      window.localStorage.setItem('moonpet-practice-v1', JSON.stringify(entries));
+    } catch (_) { practiceStorageAvailable = false; }
+  }
+  function practiceButton(label, action, run, detail, disabled) {
+    return '<button class="terminal-button" type="button" data-practice-action="' + escapeHtml(action) + '" data-practice-turn="' + (run ? run.turn : -1) + '"' + (disabled ? ' disabled' : '') + '>' + escapeHtml(label) + (detail ? '<small>' + escapeHtml(detail) + '</small>' : '') + '</button>';
+  }
+  function renderPractice() {
+    var engine = window.MoonpetPractice;
+    if (!engine || !state || !state.adopted || !practiceKey()) return '';
+    var record = practiceRecord(), run = record.run;
+    var body = '<div class="line muted">LOCAL SIMULATION // NO XP, GOLD, ITEMS, QUEST CREDIT OR LEADERBOARD REWARDS. No pet energy cost. Auto-resumes on this browser; not synced across devices.</div>';
+    if (!practiceStorageAvailable) body += '<div class="line locked">Browser storage unavailable. This practice run lasts only while this page stays open.</div>';
+    body += '<div class="line">PERSONAL PRACTICE BEST // ' + number(record.best) + '</div>';
+    if (run) {
+      var goal = engine.goalProgress(run);
+      body += '<div class="line complete">' + escapeHtml(engine.builds[run.build].title) + ' // ' + escapeHtml(words(run.status)) + ' // ROOMS ' + number(run.depth) + '/12</div><div class="line">HP ' + number(run.health) + '/' + number(run.max_health) + ' // SUPPLIES ' + number(run.supplies) + ' // LOCAL SALVAGE ' + number(run.salvage) + ' // SCORE ' + number(run.score) + '</div><div class="line">GOAL // ' + escapeHtml(engine.goals[run.goal].title) + ' // ' + number(goal.progress) + '/' + number(goal.target) + (goal.completed ? ' // COMPLETE' : '') + '</div><div class="line signal">' + escapeHtml(run.last) + '</div>';
+      if (run.perks.length) body += '<div class="line muted">BUILD // ' + escapeHtml(run.perks.map(function (key) { return engine.perks[key].title; }).join(' + ')) + '</div>';
+    }
+    if (!run || run.status !== 'active') {
+      body += '<label class="line">BUILD <select id="practice-build" aria-label="Practice build">' + Object.keys(engine.builds).map(function (key) { return '<option value="' + key + '">' + escapeHtml(engine.builds[key].title + ' — ' + engine.builds[key].detail) + '</option>'; }).join('') + '</select></label><label class="line">GOAL <select id="practice-goal" aria-label="Practice goal">' + Object.keys(engine.goals).map(function (key) { return '<option value="' + key + '">' + escapeHtml(engine.goals[key].title) + '</option>'; }).join('') + '</select></label><div class="button-grid one">' + practiceButton('START NEW PRACTICE RUN', 'start', run, 'New seed. Three builds, three goals and an upgrade draft every three rooms.') + '</div>';
+    } else {
+      var room = engine.room(run);
+      body += '<div class="line"><strong>' + escapeHtml(room.title) + '</strong></div><div class="line muted">' + escapeHtml(room.detail) + '</div><div class="button-grid">';
+      if (run.draft.length) body += run.draft.map(function (key) { return practiceButton(engine.perks[key].title, key, run, engine.perks[key].detail); }).join('');
+      else body += engine.choices(run).map(function (choice) { return practiceButton(choice.title, choice.key, run, choice.odds + '% CLEAR // +' + choice.salvage + ' SALVAGE // FAILURE -' + choice.damage + ' HP. ' + choice.detail, choice.disabled); }).join('');
+      body += practiceButton('EXTRACT PRACTICE', 'extract', run, 'Finish now and bank local salvage. Leaving the app instead preserves the run.') + '</div>';
+    }
+    return panel('PRACTICE ROGUELITE // NO REWARDS', body, 'practice');
+  }
+
+  function handlePractice(buttonElement) {
+    if (!practiceKey() || !window.MoonpetPractice || busy || lifecycleCeremonyActive()) return;
+    var record = practiceRecord(), action = buttonElement.dataset.practiceAction;
+    if (action === 'start') {
+      if (record.run && record.run.status === 'active') return;
+      var build = document.getElementById('practice-build'), goal = document.getElementById('practice-goal');
+      if (!build || !goal) return;
+      record.run = window.MoonpetPractice.create(crypto.randomUUID(), build.value, goal.value);
+    } else record.run = window.MoonpetPractice.step(record.run, action, Number(buttonElement.dataset.practiceTurn));
+    if (!record.run) return;
+    if (record.run.status === 'completed' || record.run.status === 'extracted') record.best = Math.max(record.best, record.run.score);
+    savePractice(record);
+    var scrollTop = screen.scrollTop;
+    render(); screen.scrollTop = scrollTop;
+    tell(record.run.last);
+  }
+
   function renderMissions() {
     var guidance = state.guidance || {};
     var missions = state.guidance && state.guidance.missions || [];
     var completedMissions = missions.filter(function (mission) { return mission.completed; }).length;
     var missionPercent = missions.length ? Math.round(completedMissions / missions.length * 100) : 0;
     var rows = missions.map(function (mission) {
-      return '<div class="line ' + (mission.completed ? 'complete' : '') + '">' + (mission.completed ? '[OK] ' : '[  ] ') + escapeHtml(mission.title) + '</div>';
+      return '<div class="line ' + (mission.completed ? 'complete' : '') + '">' + (mission.completed ? '[OK] ' : '[  ] ') + escapeHtml(mission.title) + '</div>' + (mission.completed ? '' : objectiveRouteButton(mission.key));
     }).join('') || '<div class="line muted">NO MISSION DATA.</div>';
     var achievements = state.guidance && state.guidance.achievements || [];
     var unlockedCount = achievements.filter(function (entry) { return entry.unlocked_at; }).length;
@@ -1645,7 +1745,9 @@
       : weeklyState === 'COMING_SOON' ? 'WEEKLY JOURNEY // PLANNED EXPANSION' : 'WEEKLY JOURNEY // SYNCING';
     var weeklyJourney = weeklyJourneyMarkup(weeklyAuthority, weeklyCapability, state);
     return activePetSummary() +
+      renderPlayNow() +
       panel('DAILY JOURNEY // GROWTH MARK', dailyJourney, 'daily-journey') +
+      panel('OFFICIAL DAILY OBJECTIVES', dailyObjectiveMarkup(), 'daily-objectives') +
       panel(weeklyTitle, weeklyJourney, 'weekly-journey') +
       panel('DAILY MISSION BUFFER // ' + number(completedMissions) + '/' + number(missions.length), '<div class="line muted">NEXT // ' + escapeHtml(dailyJourneyNextAction(dailyAuthority, completedMissions, guidance, state)) + '</div><div class="line muted">DAY ' + escapeHtml(guidance.day_key || 'UTC') + ' // WEEK ' + escapeHtml(guidance.week_key || 'UTC') + '</div>' + meter('DAILY CLEAR', missionPercent) + rows, 'missions') +
       panel('ACHIEVEMENT ARCHIVE // ' + number(unlockedCount) + '/' + number(achievements.length), achievementRows || '<div class="line muted">EMPTY ARCHIVE.</div>', 'achievements');
@@ -1653,7 +1755,7 @@
 
   function renderExplore() {
     var firstSessionExplore = firstSessionExploreMarkup();
-    if (firstSessionExplore) return firstSessionExplore;
+    if (firstSessionExplore) return renderPlayNow() + renderPractice() + firstSessionExplore;
     var guidance = state.guidance || {};
     var encounter = state.encounter;
     var eventButtons = encounter ? encounter.choices.map(function (choice) {
@@ -1678,13 +1780,15 @@
       var runDecisionButtons = (run.choices || []).map(function (choice) {
         return button(choice.label, 'run_step', { run_id: run.run_id, choice_key: choice.key, expected_step_index: run.expected_step_index }, { detail: choice.detail || words(choice.type) });
       }).join('');
-      runBody = '<div class="line complete">ENDLESS MOON RUN // DISTRICT TIER ' + number(run.difficulty) + '</div><div class="line">ROOM ' + number(run.expected_step_index || Number(run.current_room != null ? run.current_room : run.depth || 0) + 1) + '/' + number(run.max_room || run.max_depth) + ' // SCORE ' + number(run.score) + ' // NEXT CHECKPOINT ' + number(run.next_checkpoint) + '</div>' +
+      runBody = '<div class="line complete">' + (run.daily ? 'OFFICIAL DAILY MOON RUN' : 'ENDLESS MOON RUN // DISTRICT TIER ' + number(run.difficulty)) + '</div><div class="line">ROOM ' + number(Number(run.current_room != null ? run.current_room : run.depth || 0) + 1) + '/' + number(run.max_room || run.max_depth) + ' // SCORE ' + number(run.score) + (run.daily ? '' : ' // NEXT CHECKPOINT ' + number(run.next_checkpoint)) + '</div>' +
         roomBrief +
-        '<div class="run-stakes"><strong>UNBANKED // ' + escapeHtml(unbankedSummary) + '</strong><span>EXTRACT TO SECURE IT. A FAILED ROOM LOSES THE BAG.</span></div>' +
+        (run.daily ? '<div class="run-stakes"><strong>ONE OFFICIAL ATTEMPT / UTC DAY</strong><span>Room progress counts toward Daily Journey. Extraction ends this attempt; it does not bank the endless-run XP bag. Boss drops settle separately through the server.</span></div>' : '<div class="run-stakes"><strong>UNBANKED // ' + escapeHtml(unbankedSummary) + '</strong><span>EXTRACT TO SECURE IT. A FAILED ROOM LOSES THE BAG.</span></div>') +
         '<div class="button-grid run-decisions">' + runDecisionButtons +
-        button('EXTRACT & BANK', 'run_extract', { run_id: run.run_id }, { danger: true, detail: 'END RUN AND SECURE ' + unbankedSummary }) + '</div>';
+        button(run.daily ? 'EXTRACT DAILY RUN' : 'EXTRACT & BANK', 'run_extract', { run_id: run.run_id }, { danger: true, detail: run.daily ? 'End the official attempt. You cannot restart it today.' : 'END RUN AND SECURE ' + unbankedSummary }) + '</div>';
     } else {
-      runBody = '<div class="line">NO ACTIVE RUN.</div><div class="button-grid">' + button('START MOON RUN', 'run_start') + button('DAILY RUN', 'daily_run_start') + '</div>';
+      var dailyRun = state.daily_run || {};
+      var dailyUsed = dailyRun.attempted === true;
+      runBody = '<div class="line">NO ACTIVE RUN.</div><div class="button-grid">' + button('START MOON RUN', 'run_start', {}, { disabled: Number(state.pet && state.pet.energy) < 12, resourceRequired: Number(state.pet && state.pet.energy) < 12, detail: '12 energy required to enter. Repeatable; rewards capped.' }) + button('DAILY RUN', 'daily_run_start', {}, { disabled: dailyRun.available !== true, statusLabel: dailyUsed ? 'ATTEMPT USED' : dailyRun.available ? '' : 'UNAVAILABLE', cooldown: dailyUsed ? dailyRun.cooldown : null, detail: dailyUsed ? words(dailyRun.status) + ' // Depth ' + number(dailyRun.depth) + ' // Score ' + number(dailyRun.score) : 'One official attempt per account / UTC day.' }) + '</div>';
     }
     var arena = state.arena;
     var arenaQueue = state.arena_queue;
@@ -1762,7 +1866,7 @@
       var decisions = (mission.choices || []).map(function (choice) {
         return button(choice.label, 'district_mission', { region_key: region.key, approach_key: choice.key }, {
           disabled: !region.available,
-          detail: number(choice.success_percent) + '% CLEAR // +' + number(choice.mastery_success) + ' MASTERY // ' + number(Math.round(number(choice.reward_multiplier) * 100)) + '% REWARD // ' + choice.detail,
+          detail: number(choice.success_percent) + '% CLEAR // +' + number(choice.mastery_success) + ' MASTERY // ' + number(Math.round(Number(choice.reward_multiplier) * 100)) + '% REWARD // ' + choice.detail,
         });
       }).join('');
       var brief = mission.title
@@ -1790,7 +1894,7 @@
       '<div class="line muted">HP ' + number(boss.remaining_hp) + '/' + number(boss.hp) + ' // DAMAGE ' + number(boss.damage) + ' // ATTEMPTS ' + number(boss.attempts) + '/' + number(boss.max_attempts || 7) + '</div>' +
       '<div class="line muted">WEAKNESS ' + escapeHtml(words(boss.weakness || 'unknown')) + ' // REWARD ' + escapeHtml(bossReward) + '</div>' +
       '<div class="button-grid three">' + button('STRIKE', 'weekly_boss', { move: 'strike' }, { disabled: !boss.available, statusLabel: bossStatusLabel, cooldown: boss.defeated ? null : boss.cooldown }) + button('OUTSMART', 'weekly_boss', { move: 'outsmart' }, { disabled: !boss.available, statusLabel: bossStatusLabel, cooldown: boss.defeated ? null : boss.cooldown }) + button('ENDURE', 'weekly_boss', { move: 'endure' }, { disabled: !boss.available, statusLabel: bossStatusLabel, cooldown: boss.defeated ? null : boss.cooldown }) + '</div>';
-    return panel('DISTRICT NETWORK', '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + regions, 'districts') + panel('MOON RUN', '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + runBody, 'moon-run') +
+    return renderPlayNow() + renderPractice() + panel('DISTRICT NETWORK', '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + regions, 'districts') + panel('MOON RUN', '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + runBody, 'moon-run') +
       panel(adventure ? adventure.title : 'PET ADVENTURE', '<div class="line">' + escapeHtml(adventure ? adventure.intro : 'NO ADVENTURE SIGNAL.') + '</div><div class="button-grid three">' + adventureButtons + '</div>', 'adventure') +
       panel(encounter ? encounter.title : 'STREET EVENT', '<div class="line">' + escapeHtml(encounter ? encounter.intro : 'NO EVENT SIGNAL.') + '</div><div class="button-grid three">' + eventButtons + '</div>', 'street-event') +
       panel('WEEKLY BOSS // ' + (boss.title || 'LOCKED'), '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + bossBody, 'weekly-boss') +
@@ -2523,6 +2627,8 @@
   }
 
   screen.addEventListener('click', function (event) {
+    var practiceAction = event.target.closest('[data-practice-action]');
+    if (practiceAction && !practiceAction.disabled) { handlePractice(practiceAction); return; }
     var utility = event.target.closest('[data-utility]');
     if (utility) {
       if (utility.dataset.utility === 'guide' || utility.dataset.utility === 'leaderboard') openUtility(utility.dataset.utility);
