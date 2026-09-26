@@ -17,6 +17,8 @@ assert.equal(registry.bots.TUBBY.status, "complete");
 assert.deepEqual(registry.bots.TUBBY.canonical_species_ids, ["comet_gecko"]);
 assert.equal(registry.bots["TIN BOB"].status, "complete");
 assert.deepEqual(registry.bots["TIN BOB"].canonical_species_ids, ["moon_ferret"]);
+assert.equal(registry.bots["THE TING"].status, "complete");
+assert.deepEqual(registry.bots["THE TING"].canonical_species_ids, ["sneaker_snail"]);
 for (const [name, config] of Object.entries(registry.bots)) {
   if (name !== "BOTTY") assert.equal(config.fallback, "BOTTY", `${name} fallback`);
 }
@@ -48,6 +50,11 @@ const tinBobManifest = JSON.parse(fs.readFileSync(path.join(root, "data", "moonp
 assert.equal(tinBobManifest.character_name, "TIN BOB");
 assert.equal(tinBobManifest.character_id, "cmuhjady40001f0c9vekfkr24");
 assert.ok(tinBobManifest.assets.every((asset) => asset.frame_count === 25));
+
+const theTingManifest = JSON.parse(fs.readFileSync(path.join(root, "data", "moonpet-the-ting-front-assets.json"), "utf8"));
+assert.equal(theTingManifest.character_name, "THE TING");
+assert.equal(theTingManifest.character_id, "cmuhjb0c30005gkd0aboix1sr");
+assert.ok(theTingManifest.assets.every((asset) => asset.frame_count === 25));
 
 const html = fs.readFileSync(path.join(root, "moonpet-game.html"), "utf8");
 assert.match(html, /moonpet-bot-art-loader\.js\?v=20260926-multi-bot-art-v1/);

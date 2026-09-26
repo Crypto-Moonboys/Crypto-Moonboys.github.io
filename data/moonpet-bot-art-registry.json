@@ -74,8 +74,15 @@
       "display_names": [
         "THE TING"
       ],
-      "status": "pending",
-      "fallback": "BOTTY"
+      "autosprite_character_id": "cmuhjb0c30005gkd0aboix1sr",
+      "manifest_path": "/data/moonpet-the-ting-front-assets.json",
+      "asset_root": "/img/moonpets/the-ting/",
+      "status": "complete",
+      "fallback": "BOTTY",
+      "display": {
+        "scale": 0.72,
+        "pivot_y": 0.86
+      }
     },
     "TATTOO JOHN": {
       "canonical_species_ids": [
