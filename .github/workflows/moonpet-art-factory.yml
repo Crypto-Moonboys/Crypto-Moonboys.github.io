@@ -26,6 +26,7 @@ on:
           - discover-autosprite-character
           - generate-front-pack
           - generate-front-action-pack
+          - download-existing-front-actions
           - download-existing-front-pack
           - install-existing-street-pack
           - inspect-existing-stage0-pack
@@ -44,10 +45,6 @@ on:
         required: true
         default: true
         type: boolean
-      front_action_regenerate:
-        description: "Comma-separated CHARACTER:role targets rejected during visual review."
-        required: false
-        default: ""
 
 permissions:
   contents: write
@@ -61,7 +58,6 @@ jobs:
       AUTOSPRITE_CHARACTER_NAME: ${{ github.event_name == 'workflow_dispatch' && inputs.autosprite_character_name || 'BOTTY' }}
       EXECUTE_FRONT_GENERATION: ${{ github.event_name == 'workflow_dispatch' && inputs.execute_front_generation || false }}
       AUTO_COMMIT_AUTOSPRITE_CHARACTER_REGISTRY: ${{ github.event_name != 'workflow_dispatch' || inputs.auto_commit_autosprite_character_registry }}
-      FRONT_ACTION_REGENERATE: ${{ github.event_name == 'workflow_dispatch' && inputs.front_action_regenerate || '' }}
 
     steps:
       - name: Check out repository
@@ -105,7 +101,7 @@ jobs:
           node scripts/moonpet-multi-bot-art.test.mjs
 
       - name: Discover AutoSprite character
-        if: ${{ env.FACTORY_PHASE == 'discover-autosprite-character' || env.FACTORY_PHASE == 'generate-front-pack' || env.FACTORY_PHASE == 'generate-front-action-pack' || env.FACTORY_PHASE == 'download-existing-front-pack' || env.FACTORY_PHASE == 'install-existing-street-pack' || env.FACTORY_PHASE == 'inspect-existing-stage0-pack' || env.FACTORY_PHASE == 'download-existing-stage0-pack' }}
+        if: ${{ env.FACTORY_PHASE == 'discover-autosprite-character' || env.FACTORY_PHASE == 'generate-front-pack' || env.FACTORY_PHASE == 'generate-front-action-pack' || env.FACTORY_PHASE == 'download-existing-front-actions' || env.FACTORY_PHASE == 'download-existing-front-pack' || env.FACTORY_PHASE == 'install-existing-street-pack' || env.FACTORY_PHASE == 'inspect-existing-stage0-pack' || env.FACTORY_PHASE == 'download-existing-stage0-pack' }}
         timeout-minutes: 10
         run: node scripts/discover-autosprite-character.js --name "$AUTOSPRITE_CHARACTER_NAME" --persist
 
@@ -126,14 +122,23 @@ jobs:
       - name: Generate and install ten-character front action pack
         if: ${{ env.FACTORY_PHASE == 'generate-front-action-pack' && env.EXECUTE_FRONT_GENERATION == 'true' }}
         timeout-minutes: 360
-        shell: bash
-        run: |
-          ARGS=()
-          if [ -n "$FRONT_ACTION_REGENERATE" ]; then ARGS+=(--regenerate "$FRONT_ACTION_REGENERATE"); fi
-          node scripts/generate-moonpet-front-action-pack.js "${ARGS[@]}"
+        run: node scripts/generate-moonpet-front-action-pack.js
 
       - name: Validate ten-character front action pack
         if: ${{ env.FACTORY_PHASE == 'generate-front-action-pack' && env.EXECUTE_FRONT_GENERATION == 'true' }}
+        run: |
+          node scripts/audit-moonpet-front-action-pack.js --write
+          node scripts/audit-eggyone-stage0-art.js --check
+          node scripts/moonpet-art-architecture.test.mjs
+          node scripts/moonpet-multi-bot-art.test.mjs
+
+      - name: Download existing named front action sheets
+        if: ${{ env.FACTORY_PHASE == 'download-existing-front-actions' }}
+        timeout-minutes: 60
+        run: node scripts/generate-moonpet-front-action-pack.js --download-only
+
+      - name: Validate downloaded front action sheets
+        if: ${{ env.FACTORY_PHASE == 'download-existing-front-actions' }}
         run: |
           node scripts/audit-moonpet-front-action-pack.js --write
           node scripts/audit-eggyone-stage0-art.js --check
@@ -172,7 +177,7 @@ jobs:
           node scripts/moonpet-multi-bot-art.test.mjs
 
       - name: Commit AutoSprite character registry
-        if: ${{ env.AUTO_COMMIT_AUTOSPRITE_CHARACTER_REGISTRY == 'true' && (success() || env.FACTORY_PHASE != 'generate-front-action-pack') }}
+        if: ${{ env.AUTO_COMMIT_AUTOSPRITE_CHARACTER_REGISTRY == 'true' && (success() || (env.FACTORY_PHASE != 'generate-front-action-pack' && env.FACTORY_PHASE != 'download-existing-front-actions')) }}
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
@@ -183,13 +188,14 @@ jobs:
             git add data/moonpet-bot-art-registry.json data/moonpet-art-requirements.json data/moonpet-eggyone-stage0-audit.json
             git add data/moonpet-wtfboi-front-assets.json img/moonpets/wtfboi/
             COMMIT_MESSAGE="feat: install WTFBOI shared Street-stage art"
-          elif [ "$FACTORY_PHASE" = "generate-front-action-pack" ]; then
+          elif [ "$FACTORY_PHASE" = "generate-front-action-pack" ] || [ "$FACTORY_PHASE" = "download-existing-front-actions" ]; then
             git add data/moonpet-bot-art-registry.json data/moonpet-front-action-generation.json data/moonpet-front-action-audit.json
             git add data/moonpet-*-front-assets.json data/moonpet-eggyone-stage0-assets.json
             git add img/moonpets/*/front_dance.png img/moonpets/*/front_dance.json
             git add img/moonpets/*/front_victory.png img/moonpets/*/front_victory.json
             git add img/moonpets/*/front_fight.png img/moonpets/*/front_fight.json
             git add img/moonpets/*/front-actions-contact-sheet.png
+            git add -u img/moonpets/eggyone/front_fight.png img/moonpets/eggyone/front_fight.json
             COMMIT_MESSAGE="feat: add Moonpet front action sprite pack"
           elif [ "$FACTORY_PHASE" = "download-existing-stage0-pack" ]; then
             git add data/moonpet-eggyone-stage0-assets.json img/moonpets/eggyone/

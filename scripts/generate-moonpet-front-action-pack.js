@@ -54,21 +54,11 @@ async function readJsonIfExists(filePath, fallback) {
 }
 
 function parseArgs(argv) {
-  const index = argv.indexOf("--regenerate");
-  const raw = index >= 0 ? String(argv[index + 1] || "").trim() : "";
-  const requested = new Map();
-  if (!raw) return { requested };
-  for (const token of raw.split(",").map((value) => value.trim()).filter(Boolean)) {
-    const separator = token.lastIndexOf(":");
-    if (separator <= 0) throw new Error(`Invalid regeneration target "${token}"; expected CHARACTER:front_role.`);
-    const characterName = token.slice(0, separator).trim().toUpperCase();
-    const role = token.slice(separator + 1).trim();
-    if (!REQUIRED_ROLES[role]) throw new Error(`Invalid regeneration role "${role}".`);
-    if (!CHARACTERS.some((character) => character.name === characterName)) throw new Error(`Unknown regeneration character "${characterName}".`);
-    if (!requested.has(characterName)) requested.set(characterName, new Set());
-    requested.get(characterName).add(role);
-  }
-  return { requested };
+  return { downloadOnly: argv.includes("--download-only") };
+}
+
+function rolesForCharacter(character) {
+  return Object.keys(REQUIRED_ROLES).filter((role) => character.name !== "EGGYONE" || role !== "front_fight");
 }
 
 function repoPath(relativePath) {
@@ -126,11 +116,18 @@ async function installCharacter(character, characterId, entries, generatedRoles)
   manifest.assets = Array.isArray(manifest.assets) ? manifest.assets : [];
   manifest.runtime_role_map = manifest.runtime_role_map || {};
 
+  if (character.name === "EGGYONE") {
+    manifest.assets = manifest.assets.filter((asset) => asset.role !== "front_fight");
+    delete manifest.runtime_role_map.fight;
+    await fs.rm(repoPath(`/img/moonpets/${character.slug}/front_fight.png`), { force: true });
+    await fs.rm(repoPath(`/img/moonpets/${character.slug}/front_fight.json`), { force: true });
+  }
+
   for (const entry of entries) {
     const existing = findExistingRole(manifest, entry.id);
     const incomingId = String(entry.autosprite_spritesheet_id || "");
     if (!incomingId) throw new Error(`${character.name} ${entry.id}: missing AutoSprite spritesheet ID`);
-    if (existing && !generatedRoles.has(entry.id) && String(existing.autosprite?.spritesheet_id || "") !== incomingId) {
+    if (existing && String(existing.autosprite?.spritesheet_id || "") !== incomingId) {
       throw new Error(`${character.name} ${entry.id}: refusing to replace installed spritesheet ${existing.autosprite?.spritesheet_id} with ${incomingId}`);
     }
     const installed = asInstalledAsset(character, characterId, entry, generatedRoles.has(entry.id));
@@ -144,19 +141,20 @@ async function installCharacter(character, characterId, entries, generatedRoles)
 
   manifest.runtime_role_map.dance = "front_dance";
   manifest.runtime_role_map.victory = "front_victory";
-  manifest.runtime_role_map.fight = "front_fight";
+  if (character.name !== "EGGYONE") manifest.runtime_role_map.fight = "front_fight";
   manifest.front_action_contact_sheet_path = canonicalPaths(character, "front_dance").contact;
   manifest.cache_version = CACHE_VERSION;
   await writeJson(manifestPath, manifest);
 }
 
-async function processCharacter(character, apiKey, globalIds, forceRoles = new Set()) {
+async function processCharacter(character, apiKey, globalIds, forceRoles = new Set(), downloadOnly = false) {
   const paths = outputPaths(character.name);
   const characterId = await resolveCharacterId({ characterName: character.name, characterId: "", registryPath: REGISTRY_PATH });
   let records = await listSpritesheets(apiKey, characterId, paths);
   const generatedRoles = new Set();
 
-  for (const role of Object.keys(REQUIRED_ROLES)) {
+  const requiredRoles = rolesForCharacter(character);
+  for (const role of requiredRoles) {
     if (forceRoles.has(role)) {
       console.log(`[${character.name}] regenerating rejected ${role}`);
       const options = parseGeneratorArgs([
@@ -176,6 +174,7 @@ async function processCharacter(character, apiKey, globalIds, forceRoles = new S
       console.log(`[${character.name}] reusing existing ${role}`);
     } catch (error) {
       if (!/No complete existing AutoSprite spritesheet matched/.test(error.message)) throw error;
+      if (downloadOnly) throw new Error(`${character.name} ${role}: existing named AutoSprite sheet is required; generation is disabled.`);
       console.log(`[${character.name}] generating missing ${role}`);
       const options = parseGeneratorArgs([
         "--character-name", character.name,
@@ -191,7 +190,7 @@ async function processCharacter(character, apiKey, globalIds, forceRoles = new S
   }
 
   const entries = [];
-  for (const role of Object.keys(REQUIRED_ROLES)) {
+  for (const role of requiredRoles) {
     const match = pickRecord(records, role);
     const id = String(spritesheetId(match.record) || "");
     if (!id) throw new Error(`${character.name} ${role}: matched record has no spritesheet ID`);
@@ -239,11 +238,9 @@ async function main() {
 
   const globalIds = new Map();
   const animations = [];
-  const selectedCharacters = options.requested.size
-    ? CHARACTERS.filter((character) => options.requested.has(character.name))
-    : CHARACTERS;
+  const selectedCharacters = CHARACTERS;
   for (const character of selectedCharacters) {
-    animations.push(...await processCharacter(character, apiKey, globalIds, options.requested.get(character.name)));
+    animations.push(...await processCharacter(character, apiKey, globalIds, new Set(), options.downloadOnly));
   }
 
   const previousReport = await readJsonIfExists(REPORT_PATH, { animations: [] });
@@ -252,7 +249,7 @@ async function main() {
     ...(previousReport.animations || []).filter((entry) => !selectedNames.has(entry.character_name)),
     ...animations
   ];
-  if (completeAnimations.length !== 30) throw new Error(`Front action report must contain 30 sheets, received ${completeAnimations.length}.`);
+  if (completeAnimations.length !== 29) throw new Error(`Front action report must contain 29 existing sheets, received ${completeAnimations.length}.`);
 
   const botRegistry = await readJson(BOT_ART_REGISTRY_PATH);
   botRegistry.role_map.dance = "front_dance";
@@ -264,6 +261,7 @@ async function main() {
     required_roles: Object.keys(REQUIRED_ROLES),
     character_count: CHARACTERS.length,
     animation_count: completeAnimations.length,
+    eggyone_front_fight_required: false,
     audit_path: "/data/moonpet-front-action-audit.json"
   };
   await writeJson(BOT_ART_REGISTRY_PATH, botRegistry);
@@ -271,6 +269,7 @@ async function main() {
     schema_version: 1,
     generated_at: new Date().toISOString(),
     source: "AutoSprite API",
+    mode: options.downloadOnly ? "download_existing_named_sheets" : "generate_missing_sheets",
     cache_version: CACHE_VERSION,
     characters: CHARACTERS.map((character) => character.name),
     required_roles: Object.keys(REQUIRED_ROLES),
@@ -286,4 +285,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { CHARACTERS, REQUIRED_ROLES, CACHE_VERSION, canonicalPaths, asInstalledAsset, parseArgs };
+module.exports = { CHARACTERS, REQUIRED_ROLES, CACHE_VERSION, canonicalPaths, asInstalledAsset, parseArgs, rolesForCharacter };
