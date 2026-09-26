@@ -215,6 +215,9 @@ function publicLifecycle(row, rare, now = new Date()) {
   const engagementReady = Number(row.incubation_progress || 0) >= HATCH_PROGRESS
     && Object.keys(CARE_TYPES).filter((key) => Number(incubation[key] || 0) > 0).length >= 3;
   const hatchReady = ageDays >= GUARANTEED_HATCH_DAYS || (ageDays >= EARLIEST_HATCH_DAYS && engagementReady);
+  const rareRoute = row.phase === 'rare'
+    ? RARE_ROUTES.find((route) => route.id === row.rare_morph_id) || RARE_ROUTES[Number(row.rare_route_index || 0)] || null
+    : null;
   return {
     version: Number(row.lifecycle_version || 1),
     phase: row.phase,
@@ -235,7 +238,8 @@ function publicLifecycle(row, rare, now = new Date()) {
       actions_today: Number(row.actions_today || 0),
       daily_cap: DAILY_INCUBATION_CAP,
     },
-    rare: { signal: rare.signal, ready: rare.ready, progress: rare.percent, name: row.phase === 'rare' ? RARE_ROUTES[Number(row.rare_route_index || 0)].name : null },
+    rare_morph_id: rareRoute?.id || null,
+    rare: { signal: rare.signal, ready: rare.ready, progress: rare.percent, id: rareRoute?.id || null, name: rareRoute?.name || null },
     hatched_at: row.hatched_at || null,
     morphed_at: row.rare_morphed_at || null,
   };
