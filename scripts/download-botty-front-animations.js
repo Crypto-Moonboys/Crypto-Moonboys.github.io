@@ -509,5 +509,17 @@ module.exports = {
   FRONT_ANIMATIONS,
   parseArgs,
   outputPaths,
-  downloadBottyFrontAnimations
+  downloadBottyFrontAnimations,
+  resolveCharacterId,
+  listSpritesheets,
+  spritesheetId,
+  statusValue,
+  isComplete,
+  collectStrings,
+  recordTimestamp,
+  saveExistingSheet,
+  buildContactSheet,
+  writeJson,
+  relative,
+  slug
 };

@@ -10,6 +10,7 @@ on:
       - "scripts/download-botty-front-animations.js"
       - "scripts/promote-moonpet-bot-front-pack.js"
       - "scripts/audit-autosprite-egg-art.js"
+      - "scripts/inspect-autosprite-stage0-pack.js"
       - "data/moonpet-art-factory-request.json"
   workflow_dispatch:
     inputs:
@@ -23,6 +24,7 @@ on:
           - generate-front-pack
           - download-existing-front-pack
           - install-existing-street-pack
+          - inspect-existing-stage0-pack
       autosprite_character_name:
         description: "Exact existing AutoSprite character name."
         required: true
@@ -83,12 +85,13 @@ jobs:
           node --check scripts/download-botty-front-animations.js
           node --check scripts/promote-moonpet-bot-front-pack.js
           node --check scripts/audit-autosprite-egg-art.js
+          node --check scripts/inspect-autosprite-stage0-pack.js
           node scripts/generate-moonpet-assets-extraction.test.js
           node scripts/moonpet-art-architecture.test.mjs
           node scripts/moonpet-multi-bot-art.test.mjs
 
       - name: Discover AutoSprite character
-        if: ${{ env.FACTORY_PHASE == 'discover-autosprite-character' || env.FACTORY_PHASE == 'generate-front-pack' || env.FACTORY_PHASE == 'download-existing-front-pack' || env.FACTORY_PHASE == 'install-existing-street-pack' }}
+        if: ${{ env.FACTORY_PHASE == 'discover-autosprite-character' || env.FACTORY_PHASE == 'generate-front-pack' || env.FACTORY_PHASE == 'download-existing-front-pack' || env.FACTORY_PHASE == 'install-existing-street-pack' || env.FACTORY_PHASE == 'inspect-existing-stage0-pack' }}
         timeout-minutes: 10
         run: node scripts/discover-autosprite-character.js --name "$AUTOSPRITE_CHARACTER_NAME" --persist
 
@@ -110,6 +113,11 @@ jobs:
         if: ${{ env.FACTORY_PHASE == 'install-existing-street-pack' }}
         timeout-minutes: 10
         run: node scripts/audit-autosprite-egg-art.js
+
+      - name: Inspect existing Stage-0 pack
+        if: ${{ env.FACTORY_PHASE == 'inspect-existing-stage0-pack' }}
+        timeout-minutes: 30
+        run: node scripts/inspect-autosprite-stage0-pack.js --character-name "$AUTOSPRITE_CHARACTER_NAME"
 
       - name: Promote shared Street-stage pack
         if: ${{ env.FACTORY_PHASE == 'install-existing-street-pack' }}
