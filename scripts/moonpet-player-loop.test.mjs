@@ -17,6 +17,7 @@ for (const [key, screen, focus] of [
   ['pet:boss', 'explore', 'weekly-boss'], ['pet-daily-trade:today', 'economy', 'trade'],
   ['mission:pet-daily-adventure:today', 'explore', 'adventure'], ['daily_explorer', 'explore', 'moon-run'],
   ['pet-daily-care-set:today', 'home', 'care'], ['daily_care', 'home', 'care'],
+  ['rare_morph', 'profile', 'rare-morph'],
   ['achievement', 'missions', 'achievements'], ['season:milestone', 'profile', 'season'],
   ['activity_running', 'work', 'timed-activity'], ['event_chain', 'explore', 'story-chains'],
 ]) assert.deepEqual(options.route({ key }), { screen, focus }, key);

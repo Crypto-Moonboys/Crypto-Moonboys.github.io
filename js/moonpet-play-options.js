@@ -22,6 +22,7 @@
       [/shop|buy|equip/, 'economy', 'shop'],
       [/incubat|hatch/, 'home', 'incubation'],
       [/feed|sleep|clean|play|health|train|care|dance|cuddle|energy.drink/, 'home', 'care'],
+      [/rare.morph/, 'profile', 'rare-morph'],
       [/evol/, 'profile', 'evolution'], [/season/, 'profile', 'season'],
       [/achievement|trait/, 'missions', 'achievements'], [/mission/, 'missions', 'missions'],
     ];
