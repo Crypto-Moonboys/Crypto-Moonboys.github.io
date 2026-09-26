@@ -211,9 +211,9 @@
     var evolutionStage = botArtEvolutionStage(snapshot);
     var identityRevealed = evolutionStage >= MOONPET_IDENTITY_REVEAL_STAGE;
     return {
-      speciesId: identityRevealed ? String(lifecycle.art_identity_id || lifecycle.species_id || pet.art_identity_id || pet.species || '') : '',
+      speciesId: evolutionStage >= 2 ? String(lifecycle.art_identity_id || pet.art_identity_id || lifecycle.species_id || pet.species || '') : '',
       speciesName: identityRevealed ? String(resolveMoonpetDisplayName(lifecycle, snapshot && snapshot.guidance && snapshot.guidance.identity)) : '',
-      evolutionStage: identityRevealed ? evolutionStage : Math.min(evolutionStage, 1)
+      evolutionStage: evolutionStage
     };
   }
   // TEST-EXPORT: botArtIdentity:end
@@ -292,6 +292,15 @@
 
   function words(value) {
     return String(value || '').replaceAll('_', ' ').replace(/\b\w/g, function (letter) { return letter.toUpperCase(); });
+  }
+
+  function moonpetStageLabel(lifecycle, pet) {
+    lifecycle = lifecycle || {};
+    pet = pet || {};
+    var phase = String(lifecycle.phase || '').toLowerCase();
+    var stage = String(pet.stage || '').toLowerCase();
+    if (phase === 'egg' || stage === 'egg' || stage === 'moon_egg' || stage === 'secret_bot') return 'Secret Bot';
+    return words(pet.stage || lifecycle.phase || 'companion');
   }
 
   function number(value) {
@@ -1210,7 +1219,7 @@
       : lifecycle.evolution_ready ? 'ELIGIBLE TO EVOLVE' : 'KEEP DAILY AND WEEKLY ROUTINES MOVING';
     return panel('ACTIVE PET // SLOT ' + number(slot.slot_number || 1),
       '<div class="season-identity"><strong>' + escapeHtml(resolveMoonpetDisplayName(state.lifecycle, state.guidance && state.guidance.identity)) + '</strong><span>' + escapeHtml(seasonKey) + '</span></div>' +
-      '<div class="season-status-grid"><div><span>STAGE</span><strong>' + escapeHtml(words(pet.stage || lifecycle.phase || 'egg')) + '</strong></div><div><span>LEVEL</span><strong>' + number(pet.level) + '</strong></div><div><span>GROWTH MARKS</span><strong>' + number(growth.earned) + '/' + number(growth.required) + '</strong></div><div><span>WEEKLY CRESTS</span><strong>' + number(crests.earned) + '/' + number(crests.required) + '</strong></div></div>' +
+      '<div class="season-status-grid"><div><span>STAGE</span><strong>' + escapeHtml(moonpetStageLabel(lifecycle, pet)) + '</strong></div><div><span>LEVEL</span><strong>' + number(pet.level) + '</strong></div><div><span>GROWTH MARKS</span><strong>' + number(growth.earned) + '/' + number(growth.required) + '</strong></div><div><span>WEEKLY CRESTS</span><strong>' + number(crests.earned) + '/' + number(crests.required) + '</strong></div></div>' +
       '<div class="line complete">' + status + '</div><div class="line muted">NEXT // ' + escapeHtml(profileNextLine()) + '</div><div class="line muted">Progress is per pet. Switching slots changes which Moonpet earns lifecycle, Daily Journey and Weekly Journey progress.</div>', 'active-pet');
   }
 
@@ -1341,7 +1350,7 @@
       return '<div class="line"><strong>' + slot.toUpperCase() + '</strong> // ' + escapeHtml(words(pet['equipped_' + slot] || (slot === 'food' ? 'basic food' : slot === 'toy' ? 'basic toy' : 'none equipped'))) + '</div>';
     }).join('');
     var displayName = resolveMoonpetDisplayName(lifecycle, state.guidance && state.guidance.identity);
-    return '<div class="ticker"><span>MOONPET OS // ' + escapeHtml(displayName) + ' // ' + escapeHtml(words(pet.stage)) + ' // STREAK ' + number(pet.streak_days) + ' DAYS //</span></div>' +
+    return '<div class="ticker"><span>MOONPET OS // ' + escapeHtml(displayName) + ' // ' + escapeHtml(moonpetStageLabel(lifecycle, pet)) + ' // STREAK ' + number(pet.streak_days) + ' DAYS //</span></div>' +
       activePetSummary() +
       panel('RECOMMENDED NEXT MOVE', '<div class="line complete">' + escapeHtml(next.title || 'Maintain current route') + '</div><div class="line muted">NEXT // ' + escapeHtml(homeNextLine(next)) + '</div><div class="line muted">' + escapeHtml(next.detail || 'All systems nominal.') + '</div><div class="button-grid one"><button class="terminal-button" type="button" data-jump="' + nextScreen + '" data-focus="' + focus + '">OPEN RECOMMENDED ROUTE</button></div>', 'recommended') +
       panel('VITAL SYSTEMS', meter('HEALTH', pet.health) + meter('ENERGY', pet.energy) + meter('HUNGER', pet.hunger, true) + meter('FUN', pet.happiness) + meter('CLEAN', pet.cleanliness), 'vitals') +
@@ -1349,7 +1358,7 @@
         button('FEED', 'feed') + button('PLAY', 'play') + button('CLEAN', 'clean') + button('SLEEP', 'sleep') + button('TRAIN', 'train') + button('DAILY CACHE', 'daily_chest') + '<button class="terminal-button" type="button" data-pet-greet>SAY HELLO</button>' +
       '</div>', 'care') +
       renderSeasonSlots() +
-      panel('COMPANION DETAILS', '<div class="line complete">' + escapeHtml(displayName) + ' // ' + escapeHtml(words(lifecycle.phase || pet.stage)) + '</div><div class="line">LEVEL ' + number(pet.level) + ' // ' + number(pet.pet_xp) + ' XP // ' + number(pet.style_tokens) + ' STYLE // ' + number(pet.streak_days) + '-DAY STREAK</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT // ' + escapeHtml(words(lifecycle.appearance && lifecycle.appearance.marking || 'moon mark')) + '</div>' + equipped, 'details');
+      panel('COMPANION DETAILS', '<div class="line complete">' + escapeHtml(displayName) + ' // ' + escapeHtml(moonpetStageLabel(lifecycle, pet)) + '</div><div class="line">LEVEL ' + number(pet.level) + ' // ' + number(pet.pet_xp) + ' XP // ' + number(pet.style_tokens) + ' STYLE // ' + number(pet.streak_days) + '-DAY STREAK</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT // ' + escapeHtml(words(lifecycle.appearance && lifecycle.appearance.marking || 'moon mark')) + '</div>' + equipped, 'details');
   }
 
   // TEST-EXPORT: stateRequestGate:start
@@ -1544,7 +1553,7 @@
     return '<div class="pet-instance-card" data-pet-id="' + escapeHtml(slot.pet_id || '') + '">' +
       '<div class="pet-instance-heading"><strong>' + escapeHtml(pet.display_name || 'UNKNOWN') + '</strong>' + (slot.active ? '<span>◆ ACTIVE</span>' : '<span>OWNED</span>') + '</div>' +
       '<div class="pet-instance-grid"><div><span>IDENTITY</span><strong>' + escapeHtml(pet.display_name || 'UNKNOWN') + '</strong></div>' + variant +
-      '<div><span>LIFECYCLE</span><strong>' + escapeHtml(words(pet.stage || 'egg')) + '</strong></div><div><span>LEVEL</span><strong>' + number(pet.level || 1) + '</strong></div>' +
+      '<div><span>LIFECYCLE</span><strong>' + escapeHtml(moonpetStageLabel({}, pet)) + '</strong></div><div><span>LEVEL</span><strong>' + number(pet.level || 1) + '</strong></div>' +
       '<div><span>PET XP</span><strong>' + number(pet.pet_xp) + '</strong></div><div><span>HEALTH</span><strong>' + number(pet.health) + '</strong></div>' +
       '<div><span>STAGE</span><strong>' + number(lifecycle.current_stage || 1) + '/' + number(lifecycle.total_stages || 6) + '</strong></div><div><span>GROWTH</span><strong>' + number(growth.earned) + '/' + number(growth.required) + '</strong></div>' +
       '<div><span>CRESTS</span><strong>' + number(crests.earned) + '/' + number(crests.required) + '</strong></div><div><span>ENERGY</span><strong>' + number(pet.energy) + '</strong></div><div><span>HUNGER</span><strong>' + number(pet.hunger) + '</strong></div>' +
@@ -1976,11 +1985,15 @@
     var rare = lifecycle.rare || {};
     var innate = (lifecycle.innate_traits || []).map(function (trait) { return '<div class="line complete">◆ ' + escapeHtml(words(trait)) + '</div>'; }).join('');
     var rarePanel = '<div class="line ' + (rare.ready ? 'complete' : 'muted') + '">HIDDEN SIGNAL // ' + escapeHtml(words(rare.signal || 'dormant')) + ' // ' + number(rare.progress) + '%</div>' + (rare.name ? '<div class="line complete">REVEALED // ' + escapeHtml(rare.name) + '</div>' : '<div class="line muted">The route remains hidden until your evolution, traits and memories align.</div>') + (rare.ready ? '<div class="button-grid one">' + button('ANSWER RARE SIGNAL', 'rare_morph') + '</div>' : '');
+    var callsignUnlocked = Number(lifecycle.evolution_stage || state.pet.evolution_stage || identity.current_stage && identity.current_stage.stage || 0) >= MOONPET_IDENTITY_REVEAL_STAGE;
+    var callsignPanel = callsignUnlocked
+      ? '<label class="line" for="pet-name-input">CUSTOM CALLSIGN</label><input id="pet-name-input" class="terminal-input" maxlength="32" value="' + escapeHtml(state.pet.callsign || '') + '"><div class="button-grid one">' + button('SAVE CALLSIGN', 'rename') + '</div><div class="line muted">CANONICAL IDENTITY STAYS SEPARATE FROM ANY CUSTOM CALLSIGN.</div>'
+      : '<div class="line complete">UNKNOWN</div><div class="line muted">CALLSIGN LOCKED UNTIL STAGE 3.</div>';
     return activePetSummary() +
-      panel('IDENTITY CORE', '<div class="line complete">' + escapeHtml(resolveMoonpetDisplayName(lifecycle, identity)) + ' // ' + escapeHtml(words(lifecycle.phase || 'companion')) + '</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT</div>' + innate + '<div class="line muted">PERSONALITY</div>' + (traits || '<div class="line muted">TRAITS STILL FORMING. Personality develops through play.</div>')) + panel('HIDDEN MORPH SIGNAL', rarePanel, 'rare-morph') +
+      panel('IDENTITY CORE', '<div class="line complete">' + escapeHtml(resolveMoonpetDisplayName(lifecycle, identity)) + ' // ' + escapeHtml(moonpetStageLabel(lifecycle, state.pet || {})) + '</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT</div>' + innate + '<div class="line muted">PERSONALITY</div>' + (traits || '<div class="line muted">TRAITS STILL FORMING. Personality develops through play.</div>')) + panel('HIDDEN MORPH SIGNAL', rarePanel, 'rare-morph') +
       panel('APTITUDES', aptitudeRows) +
       panel('MEMORY ARCHIVE', memoryRows + (milestones || '<div class="line muted">NO MILESTONES RECORDED YET.</div>'), 'memories') +
-      panel('CALLSIGN', '<label class="line" for="pet-name-input">MOONPET NAME</label><input id="pet-name-input" class="terminal-input" maxlength="32" value="' + escapeHtml(state.pet.pet_name || '') + '"><div class="button-grid one">' + button('WRITE NEW CALLSIGN', 'rename') + '</div>', 'callsign') +
+      panel('CALLSIGN', callsignPanel, 'callsign') +
       panel('EVOLUTION', evoHtml, 'evolution') + panel('FACTION PERK', '<div class="line complete">' + escapeHtml(words(faction.key || 'unaligned')) + '</div><div class="line muted">' + escapeHtml(faction.bonus ? words(faction.bonus.system) + ' // ' + costText(faction.bonus.effect) : 'JOIN A FACTION TO ACTIVATE A GAMEPLAY BONUS') + '</div>', 'faction') +
       panel('PRESTIGE // FUTURE SEASON', futureSystemPanelCopy(futureSystemByKey('prestige', 'COMING_SOON')), 'prestige') +
       panel('MOONPET SANCTUARY // FUTURE SEASON', sanctuaryPanel, 'sanctuary') + panel('SPECIALIST TRACKS', tracks, 'tracks') + panel('ROADMAP // FUTURE SEASONS', futureSystemRows, 'future-systems') + panel('UNLOCK DIRECTORY', featureRows, 'features') + panel('ALERT CONTROL', notificationPanel, 'alerts') + panel('SEASON // ' + (season.key || ''), '<div class="line">' + number(season.xp) + ' SEASON XP</div>' + tiers, 'season') + panel('TOP MOONPETS', (leaders || '<div class="line muted">NO RANKS LOADED.</div>') + '<div class="button-grid one"><button type="button" class="terminal-button" data-utility="leaderboard">OPEN FULL LEADERBOARD</button></div>', 'leaderboard');
@@ -2014,7 +2027,7 @@
 
   function restoreEditableState(draft) {
     if (!draft || !draft.dirty || !draft.petId || !state || !state.pet || draft.petId !== state.pet.pet_id) return;
-    if (!draft.focused && String(state.pet.pet_name || '') !== String(draft.petName || '')) return;
+    if (!draft.focused && String(state.pet.callsign || '') !== String(draft.petName || '')) return;
     var input = document.getElementById('pet-name-input');
     if (!input) return;
     input.value = draft.value;
@@ -2034,7 +2047,7 @@
     screen.innerHTML = state ? utilityRail() + sectionJumpBar(activeScreen) + screens[activeScreen]() : '';
     restoreEditableState(editableState);
     renderedPetId = state && state.pet && state.pet.pet_id || null;
-    renderedPetName = String(state && state.pet && state.pet.pet_name || '');
+    renderedPetName = String(state && state.pet && state.pet.callsign || '');
     title.textContent = state && state.pet ? resolveMoonpetDisplayName(state.lifecycle, state.guidance && state.guidance.identity) + ' OS' : 'MOONPET OS';
     if (reducedMotion) drawWorld(0);
   }
@@ -2846,33 +2859,6 @@
     ctx.fillText(String(text), x, y);
     ctx.restore();
   }
-
-  function createPetPalette(body, shade, accent) {
-    return {
-      normal: { body: body, shade: shade, accent: accent, outline: '#061009' },
-      legendary: { body: body, shade: shade, accent: '#f6a7ff', outline: '#061009' },
-    };
-  }
-
-  var PET_APPEARANCE_PALETTES = {
-    mint_punch: createPetPalette('#80ffd5', '#36a878', '#f4ff65'),
-    coral_pop: createPetPalette('#ff8bbd', '#c84f78', '#61f5ff'),
-    cobalt_lime: createPetPalette('#61a8ff', '#3158a8', '#a9ff55'),
-    gold_violet: createPetPalette('#f4cf58', '#8450aa', '#f6a7ff'),
-    lavender_ice: createPetPalette('#d8b7ff', '#7757a8', '#b3ffff'),
-    turquoise_flame: createPetPalette('#61f5ff', '#158f94', '#ff954f'),
-  };
-  var PET_SPECIES_PALETTES = {
-    neon_raccoon: createPetPalette('#80ffd5', '#2c8f70', '#f4ff65'),
-    bubble_ram: createPetPalette('#ff8bbd', '#a84770', '#61f5ff'),
-    comet_gecko: createPetPalette('#61a8ff', '#3158a8', '#a9ff55'),
-    vinyl_crab: createPetPalette('#f4ff65', '#bd703b', '#ff8bbd'),
-    lantern_fox: createPetPalette('#c99cff', '#713d91', '#ffcf68'),
-    sneaker_snail: createPetPalette('#a9ff55', '#4d9938', '#61f5ff'),
-    alley_drake: createPetPalette('#ff954f', '#9c4329', '#f4ff65'),
-    moon_ferret: createPetPalette('#61f5ff', '#277f91', '#f6a7ff'),
-  };
-  var DEFAULT_PET_PALETTE = createPetPalette('#a9ff9a', '#4ea85a', '#f4ff65');
 
   function drawSelectedBotSprite(time, mode, active, x, y, scale) {
     if (!botArtModeEnabled || !botArtRendererReady || !window.MoonpetBotArtRenderer) return false;

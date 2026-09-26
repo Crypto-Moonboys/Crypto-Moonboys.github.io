@@ -105,14 +105,17 @@ assert.ok(f1EddyManifest.assets.every((asset) => asset.frame_count === 25));
 
 const html = fs.readFileSync(path.join(root, "moonpet-game.html"), "utf8");
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/);
-assert.match(html, /moonpet-bot-art-loader\.js\?v=20260926-retro-space-stage-v2/);
-assert.match(html, /moonpet-bot-art-renderer\.js\?v=20260926-retro-space-stage-v2/);
+assert.match(html, /moonpet-bot-art-loader\.js\?v=20260926-stage2-art-mask-v3/);
+assert.match(html, /moonpet-bot-art-renderer\.js\?v=20260926-stage2-art-mask-v3/);
+assert.match(html, /moonpet-mini-app\.js\?v=20260926-stage2-art-mask-v3/);
 assert.doesNotMatch(html, /moonpet-botty-front-(?:asset-loader|sprite-renderer)\.js/);
 assert.doesNotMatch(html, /moonpet-art-v2\.js/);
 
 const client = fs.readFileSync(path.join(root, "js", "moonpet-mini-app.js"), "utf8");
-assert.match(client, /speciesId: identityRevealed \? String\(lifecycle\.art_identity_id \|\| lifecycle\.species_id \|\| pet\.art_identity_id \|\| pet\.species \|\| ''\) : ''/);
-assert.match(client, /evolutionStage: identityRevealed \? evolutionStage : Math\.min\(evolutionStage, 1\)/);
+assert.match(client, /speciesId: evolutionStage >= 2 \? String\(lifecycle\.art_identity_id \|\| pet\.art_identity_id \|\| lifecycle\.species_id \|\| pet\.species \|\| ''\) : ''/);
+assert.match(client, /evolutionStage: evolutionStage/);
+assert.doesNotMatch(client, /createPetPalette|PET_APPEARANCE_PALETTES|PET_SPECIES_PALETTES|DEFAULT_PET_PALETTE/,
+  "retired procedural animal palettes must remain absent");
 assert.match(client, /selectMoonpetBot\(botArtIdentity\(snapshot\)\)/);
 assert.match(client, /drawSelectedBotSprite\(renderTime, animationMode, active/);
 assert.doesNotMatch(client, /drawSideScrollerMoonpetSprite|drawApprovedMoonpetSprite/, "old character render paths must not remain live");

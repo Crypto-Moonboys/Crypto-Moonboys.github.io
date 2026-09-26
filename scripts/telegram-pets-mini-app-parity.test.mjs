@@ -645,7 +645,8 @@ assert.equal(arenaMatched.reason, 'arena_match_found');
 const arenaBattle = await getPetArenaBattleForPlayer(db, 'mini:arena:global', 'arena-one');
 assert.ok(arenaBattle?.battle_id);
 assert.equal(await getPetArenaQueueState(db, 'mini:arena:global', 'arena-one'), null);
-assert.equal(serializePetMiniAppArenaBattle(arenaBattle, 'arena-two').player.pet_name, 'Cyber Cat', 'arena state must orient each player as self');
+assert.equal(serializePetMiniAppArenaBattle(arenaBattle, 'arena-two').player.pet_name, 'UNKNOWN', 'arena state must mask the pre-reveal player identity');
+assert.equal(serializePetMiniAppArenaBattle(arenaBattle, 'arena-two').opponent.pet_name, 'UNKNOWN', 'arena state must mask the pre-reveal opponent identity');
 assert.equal(serializePetMiniAppArenaBattle(arenaBattle, 'arena-two').player.telegram_id, undefined, 'Arena DTO must redact the player Telegram ID');
 assert.equal(serializePetMiniAppArenaBattle(arenaBattle, 'arena-two').opponent.telegram_id, undefined, 'Arena DTO must redact the opponent Telegram ID');
 

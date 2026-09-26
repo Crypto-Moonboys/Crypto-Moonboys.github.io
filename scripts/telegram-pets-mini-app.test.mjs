@@ -692,19 +692,19 @@ assert.equal(nextGuidanceRuntime({
   'authoritative state lifecycle phase must keep egg guidance even when progression lifecycle lacks phase');
 assert.equal(nextGuidanceRuntime({
   adopted: true,
-  pet: { pet_id: 'pet-a', pet_name: 'Moon Egg' },
+  pet: { pet_id: 'pet-a', pet_name: 'Secret Bot' },
   lifecycle: { phase: 'egg', incubation: { ready: false, progress: 4, target: 12 } },
 }).homeNextLine(), 'Build care signals until the breakout signal is ready.',
   'egg Home guidance must explain incubation signals');
 assert.equal(nextGuidanceRuntime({
   adopted: true,
-  pet: { pet_id: 'pet-a', pet_name: 'Moon Egg' },
+  pet: { pet_id: 'pet-a', pet_name: 'Secret Bot' },
   lifecycle: { phase: 'egg', incubation: { ready: true, progress: 12, target: 12 } },
 }).homeNextLine(), 'REVEAL BOT to wake your first companion.',
   'hatch-ready Home guidance must point directly to REVEAL BOT');
 assert.equal(nextGuidanceRuntime({
   adopted: true,
-  pet: { pet_id: 'pet-a', pet_name: 'Moon Egg' },
+  pet: { pet_id: 'pet-a', pet_name: 'Secret Bot' },
   lifecycle: { phase: 'egg', incubation: { ready: true, progress: 12, target: 12 } },
 }).profileNextLine(), 'REVEAL BOT to wake your first companion.',
   'hatch-ready Profile NEXT guidance must point directly to REVEAL BOT');
@@ -1007,7 +1007,7 @@ for (const name of TEST_EXPORT_NAMES) {
   assert.ok(source, `the real ${name} export must remain extractable after CRLF conversion`);
   assert.doesNotThrow(() => Function(`"use strict";${source}`), `the real ${name} export must compile after CRLF conversion`);
 }
-const draftState = { pet: { pet_id: 'pet-a', pet_name: 'Server A' } };
+const draftState = { pet: { pet_id: 'pet-a', pet_name: 'UNKNOWN', callsign: 'Server A' } };
 let mountedCallsignInput = null;
 const draftDocument = {
   activeElement: null,
@@ -1022,7 +1022,7 @@ const draftHelpers = Function('state', 'document', `"use strict";
     restoreEditableState,
     setRenderedPet(pet) {
       renderedPetId = pet && pet.pet_id || null;
-      renderedPetName = String(pet && pet.pet_name || '');
+      renderedPetName = String(pet && pet.callsign || '');
     },
   };
 `)(draftState, draftDocument);
@@ -1043,38 +1043,38 @@ assert.deepEqual(
   { petId: 'pet-a', petName: 'Server A', value: 'Local A', dirty: true, focused: true },
   'dirty callsign drafts must capture ownership and focus for the active pet instance',
 );
-draftState.pet = { pet_id: 'pet-a', pet_name: 'Server A refreshed' };
+draftState.pet = { pet_id: 'pet-a', pet_name: 'UNKNOWN', callsign: 'Server A refreshed' };
 mountedCallsignInput = callsignInput('Server A refreshed');
 draftHelpers.restoreEditableState(dirtySamePetDraft);
 assert.equal(mountedCallsignInput.value, 'Local A', 'a dirty draft must survive a background refresh for the same pet');
 assert.equal(mountedCallsignInput.selectionRestored, true, 'a same-pet dirty draft must restore its valid selection');
 
-draftState.pet = { pet_id: 'pet-a', pet_name: 'Server A' };
+draftState.pet = { pet_id: 'pet-a', pet_name: 'UNKNOWN', callsign: 'Server A' };
 mountedCallsignInput = callsignInput('Server A');
 draftHelpers.setRenderedPet(draftState.pet);
 const cleanDraft = draftHelpers.captureEditableState();
-draftState.pet.pet_name = 'New canonical A';
+draftState.pet.callsign = 'New canonical A';
 mountedCallsignInput = callsignInput('New canonical A');
 draftHelpers.restoreEditableState(cleanDraft);
 assert.equal(mountedCallsignInput.value, 'New canonical A', 'a clean input must not overwrite a newer canonical callsign');
 
-draftState.pet = { pet_id: 'pet-b', pet_name: 'Server B' };
+draftState.pet = { pet_id: 'pet-b', pet_name: 'UNKNOWN', callsign: 'Server B' };
 mountedCallsignInput = callsignInput('Server B');
 draftHelpers.restoreEditableState(dirtySamePetDraft);
 assert.equal(mountedCallsignInput.value, 'Server B', 'a draft owned by Pet A must not cross an active switch to Pet B');
 
-draftState.pet = { pet_id: 'pet-a', pet_name: 'Server A switched' };
+draftState.pet = { pet_id: 'pet-a', pet_name: 'UNKNOWN', callsign: 'Server A switched' };
 mountedCallsignInput = callsignInput('Server A switched');
 draftDocument.activeElement = null;
 draftHelpers.restoreEditableState({ ...dirtySamePetDraft, focused: false });
 assert.equal(mountedCallsignInput.value, 'Server A switched', 'a blurred draft must not overwrite a newer canonical callsign for the same pet');
 
-draftState.pet = { pet_id: 'pet-a', pet_name: 'Server A' };
+draftState.pet = { pet_id: 'pet-a', pet_name: 'UNKNOWN', callsign: 'Server A' };
 mountedCallsignInput = callsignInput('Server A');
 draftHelpers.restoreEditableState({ ...dirtySamePetDraft, focused: false });
 assert.equal(mountedCallsignInput.value, 'Local A', 'a blurred dirty draft must still survive rerenders while the canonical callsign is unchanged');
 
-draftState.pet = { pet_id: 'pet-b', pet_name: 'Server Normalized B' };
+draftState.pet = { pet_id: 'pet-b', pet_name: 'UNKNOWN', callsign: 'Server Normalized B' };
 mountedCallsignInput = callsignInput('Server Normalized B');
 draftHelpers.restoreEditableState(null);
 assert.equal(mountedCallsignInput.value, 'Server Normalized B', 'discarding an accepted rename draft must leave the server-normalized callsign visible');
@@ -1083,7 +1083,7 @@ const unsafeSelectionDraft = { petId: 'pet-b', value: 'Local B', dirty: true, fo
 draftHelpers.restoreEditableState(unsafeSelectionDraft);
 assert.equal(mountedCallsignInput.value, 'Local B', 'a dirty same-pet draft still restores when selection metadata is unavailable');
 assert.equal(mountedCallsignInput.selectionRestored, false, 'selection restoration must be skipped unless both offsets are numbers');
-draftState.pet = { pet_id: null, pet_name: 'Unidentified canonical pet' };
+draftState.pet = { pet_id: null, pet_name: 'UNKNOWN', callsign: 'Unidentified canonical pet' };
 mountedCallsignInput = callsignInput('Unidentified canonical pet');
 draftHelpers.restoreEditableState({ ...unsafeSelectionDraft, petId: null, value: 'Unowned draft' });
 assert.equal(mountedCallsignInput.value, 'Unidentified canonical pet', 'a draft without an authoritative pet_id must never be restored');
@@ -1304,7 +1304,7 @@ assert.match(worker, /const \[journeySummary, hydratedKaiju\] = await Promise\.a
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
-assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260926-stage3-identity-v1`/);
+assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260926-stage2-art-mask-v3`/);
 assert.match(worker, /const TELEGRAM_GAMES_MENU_URL = `\$\{SITE_URL\}\/games\/telegram\/\?v=20260903-games-shell-v8`/,
   'default Telegram games menu must point at the current shell release');
 assert.match(worker, /const TELEGRAM_GAMES_MENU_TEXT = 'Games'/);
@@ -1405,8 +1405,9 @@ assert.equal(testStatusClasses.has('is-scrolling'), true, 'overflowing updates m
 assert.match(testStatusProperties['--status-scroll-duration'], /s$/, 'overflowing updates must receive a readable duration');
 assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260926-retro-space-stage-v2/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
-assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20260926-retro-space-stage-v2/);
-assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20260926-retro-space-stage-v2/);
+assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20260926-stage2-art-mask-v3/);
+assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20260926-stage2-art-mask-v3/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260926-stage2-art-mask-v3/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1500,11 +1501,14 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260926-stage3-identity-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260926-stage2-art-mask-v3/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
 assert.match(client, /render\(\{ discardCallsignDraft: action === 'rename' && Boolean\(data\.result && data\.result\.accepted\) \}\)/, 'an accepted rename must discard the old draft so the server-normalized callsign wins');
+assert.match(client, /var callsignUnlocked = Number\(lifecycle\.evolution_stage \|\| state\.pet\.evolution_stage \|\| identity\.current_stage && identity\.current_stage\.stage \|\| 0\) >= MOONPET_IDENTITY_REVEAL_STAGE;/, 'callsign UI must stay locked until Stage 3');
+assert.match(client, /CALLSIGN LOCKED UNTIL STAGE 3\./, 'pre-reveal callsign panel must explain the Stage-3 lock');
+assert.match(client, /value="' \+ escapeHtml\(state\.pet\.callsign \|\| ''\) \+ '"/, 'post-reveal callsign editor must use the separate callsign field instead of player-facing name fields');
 assert.match(callsignDraftSource, /petId: renderedPetId[\s\S]*dirty: input\.value !== renderedPetName/, 'draft capture ownership must come from the snapshot that rendered the existing DOM');
 const renderSource = client.slice(client.indexOf('  function render(options)'), client.indexOf('  function resultRewardMap'));
 assert.ok(renderSource.indexOf('captureEditableState()') < renderSource.indexOf('renderedPetId = state'), 'render must capture the old DOM before recording the incoming snapshot identity');
@@ -1540,7 +1544,7 @@ assert.doesNotMatch(client, /BUY SLOT|PURCHASE OFFLINE/, 'player-facing slot UI 
 assert.match(client, /owned \? button\('SWITCH TO SLOT ' \+ slotNumber, 'switch_pet_slot', \{ pet_id: slot\.pet_id, slot_number: slotNumber \}\)/, 'owned inactive slots must dispatch switch_pet_slot');
 assert.match(client, /active \? '<strong class="slot-active-marker"/, 'active slots must show a marker instead of a switch control');
 assert.match(client, /function renderPetInstanceCard\(slot\)/, 'owned slots must use a reusable pet-instance card');
-for (const field of ['SPECIES', 'VARIANT', 'LIFECYCLE', 'LEVEL', 'PET XP', 'HEALTH', 'ENERGY']) {
+for (const field of ['IDENTITY', 'VARIANT', 'LIFECYCLE', 'LEVEL', 'PET XP', 'HEALTH', 'ENERGY']) {
   assert.match(client, new RegExp(field), `pet-instance cards must expose ${field}`);
 }
 for (const reason of ['insufficient_arcade_xp', 'pet_slot_already_owned', 'pet_slot_not_switchable', 'pet_activity_active', 'pet_run_active', 'pet_arena_active', 'pet_kaiju_active', 'season_slots_unavailable']) {
@@ -1597,16 +1601,8 @@ assert.match(client, /key === 'activity_cancel'.*return 'interact'/);
 assert.match(client, /animateAction\(action, true, 8000, payload\)/);
 assert.match(client, /var actionAccepted = Boolean\(data\.result && data\.result\.accepted\);[\s\S]*if \(!isHatchReveal\) animateAction\(action, actionAccepted, 2800, payload\)/);
 assert.match(client, /var actionResultHoldMs = 3600/);
-assert.match(client, /function createPetPalette/);
-assert.match(client, /var PET_APPEARANCE_PALETTES =/);
-assert.match(client, /var PET_SPECIES_PALETTES =/);
-assert.match(client, /var DEFAULT_PET_PALETTE = createPetPalette/);
-const paletteRegistrySource = client.slice(client.indexOf('function createPetPalette'), client.indexOf('var WORLD_SCENES'));
-const paletteRegistry = Function(`"use strict";${paletteRegistrySource}; return { PET_APPEARANCE_PALETTES, PET_SPECIES_PALETTES, DEFAULT_PET_PALETTE };`)();
-assert.deepEqual(paletteRegistry.PET_APPEARANCE_PALETTES.mint_punch.normal, { body: '#80ffd5', shade: '#36a878', accent: '#f4ff65', outline: '#061009' });
-assert.equal(paletteRegistry.PET_APPEARANCE_PALETTES.mint_punch.legendary.accent, '#f6a7ff');
-assert.deepEqual(paletteRegistry.PET_SPECIES_PALETTES.neon_raccoon.normal, { body: '#80ffd5', shade: '#2c8f70', accent: '#f4ff65', outline: '#061009' });
-assert.deepEqual(paletteRegistry.DEFAULT_PET_PALETTE.normal, { body: '#a9ff9a', shade: '#4ea85a', accent: '#f4ff65', outline: '#061009' });
+assert.doesNotMatch(client, /createPetPalette|PET_APPEARANCE_PALETTES|PET_SPECIES_PALETTES|DEFAULT_PET_PALETTE/,
+  'retired procedural animal palettes must stay removed');
 assert.doesNotMatch(client, /function petPalette|function petPose/, 'retired procedural palette and pose helpers must stay removed');
 assert.doesNotMatch(client, /function drawMoonEgg/, 'the retired procedural egg must not remain after EGGYONE approval');
 assert.match(client, /STAGE_ZERO_BACKGROUND_URL = '\/games\/assets\/BITTY BACKGROUND\.jpg'/, 'Stage 0 must use the BITTY background');
@@ -1657,13 +1653,29 @@ const botArtIdentity = new Function(
   return botArtIdentity;`
 )();
 assert.deepEqual(botArtIdentity({
-  lifecycle: { phase: 'adult', evolution_stage: 2, art_identity_id: 'neon_raccoon', identity_revealed: false },
+  lifecycle: { phase: 'egg', evolution_stage: 0, art_identity_id: null, identity_revealed: false },
+  pet: { art_identity_id: null, species: null },
+}), {
+  speciesId: '',
+  speciesName: '',
+  evolutionStage: 0,
+}, 'Stage 0 must resolve the shared EGGYONE pack');
+assert.deepEqual(botArtIdentity({
+  lifecycle: { phase: 'young', evolution_stage: 1, art_identity_id: 'neon_raccoon', identity_revealed: false },
   pet: { art_identity_id: 'neon_raccoon', species: null },
 }), {
   speciesId: '',
   speciesName: '',
   evolutionStage: 1,
-}, 'pre-Stage-3 bot art must stay on shared non-identifying art');
+}, 'Stage 1 must resolve the shared WTFBOI pack');
+assert.deepEqual(botArtIdentity({
+  lifecycle: { phase: 'adult', evolution_stage: 2, art_identity_id: 'neon_raccoon', identity_revealed: false },
+  pet: { art_identity_id: 'neon_raccoon', species: null },
+}), {
+  speciesId: 'neon_raccoon',
+  speciesName: '',
+  evolutionStage: 2,
+}, 'Stage 2 must use the selected canonical bot pack while its text identity remains hidden');
 assert.deepEqual(botArtIdentity({
   lifecycle: { phase: 'adult', evolution_stage: 3, art_identity_id: 'neon_raccoon', identity_revealed: true },
   pet: { art_identity_id: 'neon_raccoon', species: 'neon_raccoon' },
@@ -1905,7 +1917,7 @@ const planCeremonyRuntime = new Function(
 
 const eggState = {
   adopted: true,
-  pet: { species: 'moon_egg', evolution_stage: 0, stage: 'Moon Egg' },
+  pet: { species: 'moon_egg', evolution_stage: 0, stage: 'Secret Bot' },
   lifecycle: { phase: 'egg', incubation: { progress: 4, target: 12 } },
 };
 const dormantState = { adopted: false, pet: null, lifecycle: null };
@@ -1917,7 +1929,7 @@ assert.equal(planCeremonyRuntime(dormantState, eggState, 'adopt', { accepted: tr
 
 const strongerEggState = {
   adopted: true,
-  pet: { species: 'moon_egg', evolution_stage: 0, stage: 'Moon Egg' },
+  pet: { species: 'moon_egg', evolution_stage: 0, stage: 'Secret Bot' },
   lifecycle: { phase: 'egg', incubation: { progress: 6, target: 12 } },
 };
 const signalCeremony = planCeremonyRuntime(eggState, strongerEggState, 'incubate', { accepted: true, care_type: 'music' });
@@ -1989,8 +2001,8 @@ assert.match(worker, /Math\.floor\(stepIndex \/ PET_RUN_BOSS_INTERVAL\) \+ 1/);
 assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Number\(activeRun\.depth \|\| 0\) \+ 1/);
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
-assert.match(html, /20260926-retro-space-stage-v2/);
-assert.match(worker, /20260926-stage3-identity-v1/);
+assert.match(html, /20260926-stage2-art-mask-v3/);
+assert.match(worker, /20260926-stage2-art-mask-v3/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');
 assert.match(client, /renderQuality = reducedMotion/, 'canvas quality must start from device capability');

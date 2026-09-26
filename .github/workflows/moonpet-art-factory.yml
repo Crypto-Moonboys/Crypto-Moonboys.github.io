@@ -9,7 +9,7 @@ on:
       - "scripts/generate-botty-front-animations.js"
       - "scripts/download-botty-front-animations.js"
       - "scripts/promote-moonpet-bot-front-pack.js"
-      - "scripts/audit-autosprite-egg-art.js"
+      - "scripts/audit-eggyone-stage0-art.js"
       - "scripts/inspect-autosprite-stage0-pack.js"
       - "scripts/download-eggyone-stage0-animations.js"
       - "data/moonpet-art-factory-request.json"
@@ -86,10 +86,11 @@ jobs:
           node --check scripts/generate-botty-front-animations.js
           node --check scripts/download-botty-front-animations.js
           node --check scripts/promote-moonpet-bot-front-pack.js
-          node --check scripts/audit-autosprite-egg-art.js
+          node --check scripts/audit-eggyone-stage0-art.js
           node --check scripts/inspect-autosprite-stage0-pack.js
           node --check scripts/download-eggyone-stage0-animations.js
           node scripts/generate-moonpet-assets-extraction.test.js
+          node scripts/audit-eggyone-stage0-art.js --check
           node scripts/moonpet-art-architecture.test.mjs
           node scripts/moonpet-multi-bot-art.test.mjs
 
@@ -112,10 +113,10 @@ jobs:
         timeout-minutes: 30
         run: node scripts/download-botty-front-animations.js --character-name "$AUTOSPRITE_CHARACTER_NAME"
 
-      - name: Audit existing Moon Egg art
+      - name: Audit approved EGGYONE Stage-0 art
         if: ${{ env.FACTORY_PHASE == 'install-existing-street-pack' }}
         timeout-minutes: 10
-        run: node scripts/audit-autosprite-egg-art.js
+        run: node scripts/audit-eggyone-stage0-art.js --write
 
       - name: Inspect existing Stage-0 pack
         if: ${{ env.FACTORY_PHASE == 'inspect-existing-stage0-pack' }}
@@ -152,7 +153,7 @@ jobs:
           git add data/moonpet-autosprite-characters.json
           if [ -d data/autosprite-generation-diagnostics ]; then git add data/autosprite-generation-diagnostics/; fi
           if [ "$FACTORY_PHASE" = "install-existing-street-pack" ]; then
-            git add data/moonpet-bot-art-registry.json data/moonpet-art-requirements.json data/moonpet-egg-art-audit.json
+            git add data/moonpet-bot-art-registry.json data/moonpet-art-requirements.json data/moonpet-eggyone-stage0-audit.json
             git add data/moonpet-wtfboi-front-assets.json img/moonpets/wtfboi/
             COMMIT_MESSAGE="feat: install WTFBOI shared Street-stage art"
           elif [ "$FACTORY_PHASE" = "download-existing-stage0-pack" ]; then
@@ -178,7 +179,7 @@ jobs:
             data/moonpet-autosprite-characters.json
             data/moonpet-wtfboi-front-assets.json
             data/moonpet-eggyone-stage0-assets.json
-            data/moonpet-egg-art-audit.json
+            data/moonpet-eggyone-stage0-audit.json
             img/moonpets/wtfboi/contact-sheet.png
             img/moonpets/eggyone/contact-sheet.png
             data/autosprite-generation-diagnostics/

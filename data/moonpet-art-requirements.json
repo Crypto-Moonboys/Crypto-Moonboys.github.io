@@ -444,7 +444,7 @@
       "egg_hatch"
     ],
     "registry_path": "/data/moonpet-egg-art-registry.json",
-    "audit_path": "/data/moonpet-egg-art-audit.json",
+    "audit_path": "/data/moonpet-eggyone-stage0-audit.json",
     "manifest_path": "/data/moonpet-eggyone-stage0-assets.json",
     "current_fallback": null
   },

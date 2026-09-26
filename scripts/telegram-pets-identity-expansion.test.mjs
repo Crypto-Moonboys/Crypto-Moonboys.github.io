@@ -337,7 +337,7 @@ assert.equal(canonical070Db.prepare('PRAGMA foreign_key_check').all().length, 0,
   'blocked migration 070 canonical replay remains schema-valid');
 
 assert.deepEqual(Object.values(MOONPET_EVOLUTIONS).map(({ name }) => name), [
-  'Moon Egg', 'Street Moonpet', 'Cyber Moonpet', 'Elite Moonpet', 'Moon Guardian', 'Legendary Moon Guardian',
+  'Secret Bot', 'Street Moonpet', 'Cyber Moonpet', 'Elite Moonpet', 'Moon Guardian', 'Legendary Moon Guardian',
 ]);
 assert.deepEqual(Object.values(MOONPET_PERSONALITY_TRAITS).map(({ name }) => name), ['Street Fighter', 'Explorer', 'Loyal', 'Curious']);
 assert.equal(validateMoonpetEvolutionContent(), true);
