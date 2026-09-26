@@ -1682,7 +1682,7 @@ assert.match(client, /'Special ' \+ Number\(combat\.playerSpecial\)/);
 assert.match(client, /'Card  ' \+ compactFeedback\(words\(combat\.playerCardKey\), 14\)/);
 assert.match(client, /drawActionInfoPanel\(combat\.title, lines, rivalColor, 1\)/);
 assert.match(client, /if \(!combat \|\| !combat\.active\)/);
-assert.match(client, /var x = 124/);
+assert.match(client, /var x = 112/);
 assert.match(client, /drawCombatHud\(scene, combat\)/);
 assert.match(client, /COMBAT_PRESENTATION_FRAME\.active \|\| lifecycleCeremonyActive\(now\)\) return;/);
 assert.doesNotMatch(client, /Math\.random\(\)[^\n]*(?:combat|rival)|(?:combat|rival)[^\n]*Math\.random\(\)/i, 'Phase 5 combat presentation must remain deterministic');
