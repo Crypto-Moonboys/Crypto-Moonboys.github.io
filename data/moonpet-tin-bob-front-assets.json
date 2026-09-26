@@ -7,7 +7,7 @@
   "approved_artifact_run": 36206663617,
   "approved_artifact_id": 10893936927,
   "installed_at": "2026-09-26T00:58:39.202Z",
-  "cache_version": "20260926-tin-bob-front-live-beta-v1",
+  "cache_version": "20260926-front-actions-v1",
   "runtime_policy": {
     "normal_gameplay": "approved_front_pack_only",
     "disable_side_scroller": true,
@@ -31,7 +31,10 @@
     "interact": "front_interact",
     "greet": "front_interact",
     "blocked": "front_blocked",
-    "battle": "front_battle"
+    "battle": "front_battle",
+    "dance": "front_dance",
+    "victory": "front_victory",
+    "fight": "front_fight"
   },
   "assets": [
     {
@@ -438,6 +441,94 @@
         "source": "AutoSprite API"
       },
       "review_status": "approved_visual_review"
+    },
+    {
+      "role": "front_dance",
+      "png_path": "/img/moonpets/tin-bob/front_dance.png",
+      "atlas_path": "/img/moonpets/tin-bob/front_dance.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": true,
+      "one_shot": false,
+      "playback_mode": "loop",
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhjady40001f0c9vekfkr24",
+        "spritesheet_id": "cmuijujjh0001sydgem5jaq1f",
+        "status": "succeeded",
+        "created_at": "2026-09-26T15:33:29.068Z",
+        "updated_at": null,
+        "provenance": "existing exact AutoSprite spritesheet reused for the front action pack",
+        "source": "AutoSprite API"
+      },
+      "provenance": "reused_existing",
+      "review_status": "pending_visual_review"
+    },
+    {
+      "role": "front_victory",
+      "png_path": "/img/moonpets/tin-bob/front_victory.png",
+      "atlas_path": "/img/moonpets/tin-bob/front_victory.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": false,
+      "one_shot": true,
+      "playback_mode": "once_hold_last",
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhjady40001f0c9vekfkr24",
+        "spritesheet_id": "cmuika8pr0007h2hgdbx5z7d9",
+        "status": "succeeded",
+        "created_at": "2026-09-26T15:45:41.535Z",
+        "updated_at": null,
+        "provenance": "existing exact AutoSprite spritesheet reused for the front action pack",
+        "source": "AutoSprite API"
+      },
+      "provenance": "reused_existing",
+      "review_status": "pending_visual_review"
+    },
+    {
+      "role": "front_fight",
+      "png_path": "/img/moonpets/tin-bob/front_fight.png",
+      "atlas_path": "/img/moonpets/tin-bob/front_fight.json",
+      "frame_count": 25,
+      "frame_dimensions": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "loop": false,
+      "one_shot": true,
+      "playback_mode": "once_then_idle",
+      "fps": 12,
+      "autosprite": {
+        "character_id": "cmuhjady40001f0c9vekfkr24",
+        "spritesheet_id": "cmuikolf90005xghtr0z3zcnz",
+        "status": "succeeded",
+        "created_at": "2026-09-26T15:56:51.189Z",
+        "updated_at": null,
+        "provenance": "existing exact AutoSprite spritesheet reused for the front action pack",
+        "source": "AutoSprite API"
+      },
+      "provenance": "reused_existing",
+      "review_status": "pending_visual_review"
     }
-  ]
+  ],
+  "front_action_contact_sheet_path": "/img/moonpets/tin-bob/front-actions-contact-sheet.png"
 }
