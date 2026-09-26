@@ -1,0 +1,355 @@
+{
+  "schema_version": 1,
+  "character_name": "EGGYONE",
+  "character_id": "cmui5g9430007v27qp8scqirq",
+  "source": "AutoSprite API",
+  "provenance": "existing AutoSprite sheets; no generation request was made",
+  "downloaded_at": "2026-09-26T09:07:17.078Z",
+  "approval_status": "mechanical_validation_passed_pending_visual_review",
+  "contact_sheet_path": "/img/moonpets/eggyone/contact-sheet.png",
+  "animations": [
+    {
+      "id": "egg_idle",
+      "character_name": "EGGYONE",
+      "source": "AutoSprite API",
+      "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+      "review_status": "downloaded_pending_visual_review",
+      "autosprite_spritesheet_id": "cmui5ivji000iv27qva0k6za6",
+      "autosprite_status": "succeeded",
+      "autosprite_updated_at": null,
+      "autosprite_created_at": "2026-09-26T08:52:30.126Z",
+      "output_png_path": "output/moonpets/eggyone-stage0/egg_idle.png",
+      "output_atlas_path": "output/moonpets/eggyone-stage0/egg_idle.json",
+      "frame_count": 25,
+      "frame_size": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "image_stats": {
+        "width": 1280,
+        "height": 1280,
+        "hasAlpha": true,
+        "nonTransparentRatio": 0.441551513671875
+      },
+      "downloads": [
+        {
+          "kind": "png",
+          "path": "output/moonpets/eggyone-stage0/egg_idle.png",
+          "bytes": 612776,
+          "fieldName": "sheetUrl"
+        },
+        {
+          "kind": "atlas",
+          "path": "output/moonpets/eggyone-stage0/egg_idle.json",
+          "fieldName": "atlasUrl",
+          "generatedLocal": false
+        }
+      ],
+      "role": "egg_idle",
+      "autosprite_animation_name": "EGGONE",
+      "playback_mode": "loop",
+      "character_id": "cmui5g9430007v27qp8scqirq",
+      "png_path": "/img/moonpets/eggyone/egg_idle.png",
+      "atlas_path": "/img/moonpets/eggyone/egg_idle.json",
+      "approval_status": "mechanical_validation_passed_pending_visual_review"
+    },
+    {
+      "id": "egg_wobble",
+      "character_name": "EGGYONE",
+      "source": "AutoSprite API",
+      "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+      "review_status": "downloaded_pending_visual_review",
+      "autosprite_spritesheet_id": "cmui5lde60001j0b4thbs6y43",
+      "autosprite_status": "succeeded",
+      "autosprite_updated_at": null,
+      "autosprite_created_at": "2026-09-26T08:54:26.573Z",
+      "output_png_path": "output/moonpets/eggyone-stage0/egg_wobble.png",
+      "output_atlas_path": "output/moonpets/eggyone-stage0/egg_wobble.json",
+      "frame_count": 25,
+      "frame_size": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "image_stats": {
+        "width": 1280,
+        "height": 1280,
+        "hasAlpha": true,
+        "nonTransparentRatio": 0.4382257080078125
+      },
+      "downloads": [
+        {
+          "kind": "png",
+          "path": "output/moonpets/eggyone-stage0/egg_wobble.png",
+          "bytes": 666344,
+          "fieldName": "sheetUrl"
+        },
+        {
+          "kind": "atlas",
+          "path": "output/moonpets/eggyone-stage0/egg_wobble.json",
+          "fieldName": "atlasUrl",
+          "generatedLocal": false
+        }
+      ],
+      "role": "egg_wobble",
+      "autosprite_animation_name": "EGGTWO",
+      "playback_mode": "loop",
+      "character_id": "cmui5g9430007v27qp8scqirq",
+      "png_path": "/img/moonpets/eggyone/egg_wobble.png",
+      "atlas_path": "/img/moonpets/eggyone/egg_wobble.json",
+      "approval_status": "mechanical_validation_passed_pending_visual_review"
+    },
+    {
+      "id": "egg_sleep",
+      "character_name": "EGGYONE",
+      "source": "AutoSprite API",
+      "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+      "review_status": "downloaded_pending_visual_review",
+      "autosprite_spritesheet_id": "cmui5nhjc000naepv4aspp2fg",
+      "autosprite_status": "succeeded",
+      "autosprite_updated_at": null,
+      "autosprite_created_at": "2026-09-26T08:56:05.256Z",
+      "output_png_path": "output/moonpets/eggyone-stage0/egg_sleep.png",
+      "output_atlas_path": "output/moonpets/eggyone-stage0/egg_sleep.json",
+      "frame_count": 25,
+      "frame_size": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "image_stats": {
+        "width": 1280,
+        "height": 1280,
+        "hasAlpha": true,
+        "nonTransparentRatio": 0.4336468505859375
+      },
+      "downloads": [
+        {
+          "kind": "png",
+          "path": "output/moonpets/eggyone-stage0/egg_sleep.png",
+          "bytes": 600956,
+          "fieldName": "sheetUrl"
+        },
+        {
+          "kind": "atlas",
+          "path": "output/moonpets/eggyone-stage0/egg_sleep.json",
+          "fieldName": "atlasUrl",
+          "generatedLocal": false
+        }
+      ],
+      "role": "egg_sleep",
+      "autosprite_animation_name": "EGGTHREE",
+      "playback_mode": "loop",
+      "character_id": "cmui5g9430007v27qp8scqirq",
+      "png_path": "/img/moonpets/eggyone/egg_sleep.png",
+      "atlas_path": "/img/moonpets/eggyone/egg_sleep.json",
+      "approval_status": "mechanical_validation_passed_pending_visual_review"
+    },
+    {
+      "id": "egg_react",
+      "character_name": "EGGYONE",
+      "source": "AutoSprite API",
+      "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+      "review_status": "downloaded_pending_visual_review",
+      "autosprite_spritesheet_id": "cmui5n2ct000jlw198nde7i4l",
+      "autosprite_status": "succeeded",
+      "autosprite_updated_at": null,
+      "autosprite_created_at": "2026-09-26T08:55:45.582Z",
+      "output_png_path": "output/moonpets/eggyone-stage0/egg_react.png",
+      "output_atlas_path": "output/moonpets/eggyone-stage0/egg_react.json",
+      "frame_count": 25,
+      "frame_size": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "image_stats": {
+        "width": 1280,
+        "height": 1280,
+        "hasAlpha": true,
+        "nonTransparentRatio": 0.448780517578125
+      },
+      "downloads": [
+        {
+          "kind": "png",
+          "path": "output/moonpets/eggyone-stage0/egg_react.png",
+          "bytes": 653032,
+          "fieldName": "sheetUrl"
+        },
+        {
+          "kind": "atlas",
+          "path": "output/moonpets/eggyone-stage0/egg_react.json",
+          "fieldName": "atlasUrl",
+          "generatedLocal": false
+        }
+      ],
+      "role": "egg_react",
+      "autosprite_animation_name": "EGGFOUR",
+      "playback_mode": "once_then_idle",
+      "character_id": "cmui5g9430007v27qp8scqirq",
+      "png_path": "/img/moonpets/eggyone/egg_react.png",
+      "atlas_path": "/img/moonpets/eggyone/egg_react.json",
+      "approval_status": "mechanical_validation_passed_pending_visual_review"
+    },
+    {
+      "id": "egg_care",
+      "character_name": "EGGYONE",
+      "source": "AutoSprite API",
+      "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+      "review_status": "downloaded_pending_visual_review",
+      "autosprite_spritesheet_id": "cmui5ozdd0001m4nvqqrvqi4p",
+      "autosprite_status": "succeeded",
+      "autosprite_updated_at": null,
+      "autosprite_created_at": "2026-09-26T08:57:15.024Z",
+      "output_png_path": "output/moonpets/eggyone-stage0/egg_care.png",
+      "output_atlas_path": "output/moonpets/eggyone-stage0/egg_care.json",
+      "frame_count": 25,
+      "frame_size": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "image_stats": {
+        "width": 1280,
+        "height": 1280,
+        "hasAlpha": true,
+        "nonTransparentRatio": 0.433961181640625
+      },
+      "downloads": [
+        {
+          "kind": "png",
+          "path": "output/moonpets/eggyone-stage0/egg_care.png",
+          "bytes": 666146,
+          "fieldName": "sheetUrl"
+        },
+        {
+          "kind": "atlas",
+          "path": "output/moonpets/eggyone-stage0/egg_care.json",
+          "fieldName": "atlasUrl",
+          "generatedLocal": false
+        }
+      ],
+      "role": "egg_care",
+      "autosprite_animation_name": "EGGFIVE",
+      "playback_mode": "once_then_idle",
+      "character_id": "cmui5g9430007v27qp8scqirq",
+      "png_path": "/img/moonpets/eggyone/egg_care.png",
+      "atlas_path": "/img/moonpets/eggyone/egg_care.json",
+      "approval_status": "mechanical_validation_passed_pending_visual_review"
+    },
+    {
+      "id": "egg_breakout",
+      "character_name": "EGGYONE",
+      "source": "AutoSprite API",
+      "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+      "review_status": "downloaded_pending_visual_review",
+      "autosprite_spritesheet_id": "cmui5p4yz001pm4nva1bg9jr5",
+      "autosprite_status": "succeeded",
+      "autosprite_updated_at": null,
+      "autosprite_created_at": "2026-09-26T08:57:22.283Z",
+      "output_png_path": "output/moonpets/eggyone-stage0/egg_breakout.png",
+      "output_atlas_path": "output/moonpets/eggyone-stage0/egg_breakout.json",
+      "frame_count": 25,
+      "frame_size": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "image_stats": {
+        "width": 1280,
+        "height": 1280,
+        "hasAlpha": true,
+        "nonTransparentRatio": 0.448829345703125
+      },
+      "downloads": [
+        {
+          "kind": "png",
+          "path": "output/moonpets/eggyone-stage0/egg_breakout.png",
+          "bytes": 647382,
+          "fieldName": "sheetUrl"
+        },
+        {
+          "kind": "atlas",
+          "path": "output/moonpets/eggyone-stage0/egg_breakout.json",
+          "fieldName": "atlasUrl",
+          "generatedLocal": false
+        }
+      ],
+      "role": "egg_breakout",
+      "autosprite_animation_name": "EGGSIX",
+      "playback_mode": "once_hold_last",
+      "character_id": "cmui5g9430007v27qp8scqirq",
+      "png_path": "/img/moonpets/eggyone/egg_breakout.png",
+      "atlas_path": "/img/moonpets/eggyone/egg_breakout.json",
+      "approval_status": "mechanical_validation_passed_pending_visual_review"
+    },
+    {
+      "id": "egg_hatch",
+      "character_name": "EGGYONE",
+      "source": "AutoSprite API",
+      "provenance": "existing AutoSprite spritesheet download; no generation request was made",
+      "review_status": "downloaded_pending_visual_review",
+      "autosprite_spritesheet_id": "cmui5qbz40001hki2qjhib2hh",
+      "autosprite_status": "succeeded",
+      "autosprite_updated_at": null,
+      "autosprite_created_at": "2026-09-26T08:58:18.015Z",
+      "output_png_path": "output/moonpets/eggyone-stage0/egg_hatch.png",
+      "output_atlas_path": "output/moonpets/eggyone-stage0/egg_hatch.json",
+      "frame_count": 25,
+      "frame_size": {
+        "w": 256,
+        "h": 256
+      },
+      "sheet_size": {
+        "w": 1280,
+        "h": 1280
+      },
+      "image_stats": {
+        "width": 1280,
+        "height": 1280,
+        "hasAlpha": true,
+        "nonTransparentRatio": 0.435738525390625
+      },
+      "downloads": [
+        {
+          "kind": "png",
+          "path": "output/moonpets/eggyone-stage0/egg_hatch.png",
+          "bytes": 665241,
+          "fieldName": "sheetUrl"
+        },
+        {
+          "kind": "atlas",
+          "path": "output/moonpets/eggyone-stage0/egg_hatch.json",
+          "fieldName": "atlasUrl",
+          "generatedLocal": false
+        }
+      ],
+      "role": "egg_hatch",
+      "autosprite_animation_name": "EGGSEVEN",
+      "playback_mode": "once",
+      "character_id": "cmui5g9430007v27qp8scqirq",
+      "png_path": "/img/moonpets/eggyone/egg_hatch.png",
+      "atlas_path": "/img/moonpets/eggyone/egg_hatch.json",
+      "approval_status": "mechanical_validation_passed_pending_visual_review"
+    }
+  ]
+}
