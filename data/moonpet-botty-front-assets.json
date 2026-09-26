@@ -450,10 +450,10 @@
         "status": "succeeded",
         "created_at": "2026-09-26T15:35:10.572Z",
         "updated_at": null,
-        "provenance": "existing exact AutoSprite spritesheet reused for the front action pack",
+        "provenance": "current existing AutoSprite spritesheet downloaded for the front action pack",
         "source": "AutoSprite API"
       },
-      "provenance": "reused_existing",
+      "provenance": "downloaded_existing",
       "review_status": "pending_visual_review"
     },
     {
@@ -479,10 +479,10 @@
         "status": "succeeded",
         "created_at": "2026-09-26T15:46:55.627Z",
         "updated_at": null,
-        "provenance": "existing exact AutoSprite spritesheet reused for the front action pack",
+        "provenance": "current existing AutoSprite spritesheet downloaded for the front action pack",
         "source": "AutoSprite API"
       },
-      "provenance": "reused_existing",
+      "provenance": "downloaded_existing",
       "review_status": "pending_visual_review"
     },
     {
@@ -508,10 +508,10 @@
         "status": "succeeded",
         "created_at": "2026-09-26T15:57:46.445Z",
         "updated_at": null,
-        "provenance": "existing exact AutoSprite spritesheet reused for the front action pack",
+        "provenance": "current existing AutoSprite spritesheet downloaded for the front action pack",
         "source": "AutoSprite API"
       },
-      "provenance": "reused_existing",
+      "provenance": "downloaded_existing",
       "review_status": "pending_visual_review"
     }
   ],
