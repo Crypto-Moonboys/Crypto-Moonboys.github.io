@@ -800,7 +800,7 @@
       '<div class="guide-step"><strong>5 // BUILD YOUR LOADOUT</strong>GEAR contains equipment, materials, bounties, market offers, inventory and upgrades. Districts show an objective, opponent and route before you commit. ' + combatGuideCopy + ' Moon Run reaches 100 rooms—extract to bank unbanked rewards.</div>' +
       '<div class="guide-step"><strong>6 // IDENTITY AND ROADMAP</strong>The canonical identity name is revealed when server-authoritative Stage 3 begins. CORE tracks evolution and season rewards. Advanced Traits, Breeding, Lineage, Fusion, Sanctuary and Prestige remain coming soon.</div>' +
       '<div class="guide-step"><strong>CURRENCIES</strong>Pet XP raises level. Moon Gold buys common upgrades. Gems unlock premium routes. Style unlocks cosmetics. Energy powers demanding actions.</div>' +
-      '<div class="guide-step"><strong>CONTINUING CONTRACTS</strong>After hatching, open MISSIONS or Play Now. Pick a quest, build and difficulty, then play six branching rooms with upgrades after rooms two and four. Contract rank and new quests continue without cooldowns or pet energy costs. The first three successful contracts per account each UTC day qualify for up to 20 Pet XP each, within your normal XP cap. Every choice is saved online. Contract rank is separate from pet level, Daily Journey and leaderboards.</div>' +
+      '<div class="guide-step"><strong>CONTINUING CONTRACTS</strong>After hatching, open MISSIONS or Play Now. Pick a quest, build, difficulty and route length. Standard routes have six rooms and two upgrade drafts; long routes have ten rooms and four drafts. Later rooms get harder, and long routes have higher targets. Complete the whole route to earn rank. New quests continue without cooldowns or pet energy costs. The first three successful contracts per account each UTC day qualify for up to 20 Pet XP each, within your normal XP cap, for either length. Every choice is saved online. Contract rank is separate from pet level, Daily Journey and leaderboards.</div>' +
       '<div class="guide-step"><strong>DAILY RUN TACTICS</strong>New official attempts show clear chance and score for each approach. Safe routes trade score for better odds; bold routes offer more score at higher risk. After rooms 3 and 6, choose Guardian, Striker or Scavenger, or continue without an upgrade. Tactics change later odds and run score only. One official attempt per account each UTC day still applies.</div>' +
       '<div class="guide-step"><strong>PLAY BETWEEN COOLDOWNS</strong>Play Now links to your available routes. Practice Roguelite in EXPLORE offers three builds, risk choices and upgrade drafts with unlimited replays. It uses local practice health and salvage, costs no pet energy and awards no XP, currency or quest credit. This browser saves the run so you can leave and resume.</div>' +
       '<div class="button-grid one"><button type="button" class="terminal-button" data-open-full-guide>OPEN COMPLETE WEBSITE GUIDE</button></div>';
@@ -1096,7 +1096,7 @@
     return objective.name || objective.title || ({
       weekly_care: 'Weekly care actions',
       weekly_training: 'Weekly training sessions',
-      weekly_run: 'Daily Moon Runs',
+      weekly_run: 'Moon Run finishes',
       weekly_boss_attempt: 'Weekly boss attempt',
       weekly_check_in: 'Daily chest check-ins',
     })[String(objective.objective_id || '')] || words(objective.objective_id || 'weekly objective');
@@ -1202,7 +1202,7 @@
       var complete = objective.completed || progress >= target;
       var label = weeklyObjectiveLabel(objective);
       return '<div class="line ' + (complete ? 'complete' : '') + '">' + (complete ? '[OK] ' : '[  ] ') +
-        escapeHtml(label) + ' // ' + number(Math.min(progress, target)) + '/' + number(target) + ' // ' + (complete ? 'COMPLETE' : 'INCOMPLETE') + '</div>';
+        escapeHtml(label) + ' // ' + number(Math.min(progress, target)) + '/' + number(target) + ' // ' + (complete ? 'COMPLETE' : 'INCOMPLETE') + '</div>' + (complete ? '' : objectiveRouteButton(objective.objective_id));
     }).join('') || '<div class="line muted">NO WEEKLY OBJECTIVE EVIDENCE YET.</div>';
     var remaining = weeklyRemainingLabels(objectives);
     var remainingCopy = remaining.length ? remaining.join(', ')
@@ -1640,9 +1640,10 @@
 
   function objectiveRouteButton(key) {
     if (!window.MoonpetPlayOptions) return '';
-    var route = window.MoonpetPlayOptions.route({ key: key });
-    if (state && state.lifecycle && state.lifecycle.phase === 'egg') route = { screen: 'home', focus: 'incubation' };
-    return '<div class="button-grid one">' + routeButton('OPEN OBJECTIVE ROUTE', route) + '</div>';
+    var routes = window.MoonpetPlayOptions.objectiveRoutes(key);
+    if (state && state.lifecycle && state.lifecycle.phase === 'egg') routes = [{ title: 'OPEN INCUBATION', screen: 'home', focus: 'incubation' }];
+    var controls = routes.map(function (route) { return routeButton(route.title, route, route.detail); });
+    return '<div class="button-grid one">' + controls[0] + '</div>' + (controls.length > 1 ? '<details><summary class="line">OTHER QUALIFYING ROUTES</summary><div class="button-grid">' + controls.slice(1).join('') + '</div></details>' : '');
   }
 
   function dailyObjectiveMarkup() {
@@ -1774,7 +1775,7 @@
     (board.pending_rewards || []).forEach(function (pending) {
       body += '<div class="button-grid one">' + button('RETRY SAVED XP BONUS', 'contract_claim', { pet_id: board.pet_id, contract_id: pending.contract_id }, { detail: 'Your completed contract and bonus reservation are saved.' }) + '</div>';
     });
-    if (board.collection) body += '<div class="line complete">ROUTE COLLECTION // ' + number(board.collection.cleared_routes) + '/' + number(board.collection.total_routes) + ' CLEARED // ' + number(board.collection.unlocked_routes) + ' UNLOCKED</div><div class="line muted">Clear each goal with each build at each tier. These saved records keep progressing after daily bonuses. No extra rewards for the checklist.</div>';
+    if (board.collection) body += '<div class="line complete">ROUTE COLLECTION // ' + number(board.collection.cleared_routes) + '/' + number(board.collection.total_routes) + ' CLEARED // ' + number(board.collection.unlocked_routes) + ' UNLOCKED</div><div class="line muted">Clear each goal with each build at each tier and route length. These saved records keep progressing after daily bonuses. No extra rewards for the checklist.</div>';
     if (run) {
       body += '<div class="line complete">' + escapeHtml(run.title) + ' // ' + escapeHtml(words(run.status)) + '</div><div class="line">' + escapeHtml(run.build_title) + ' // TIER ' + number(run.tier) + ' // ROOMS ' + number(run.depth) + '/' + number(run.max_depth) + '</div>' +
         '<div class="line">ROUTE HP ' + number(run.health) + '/' + number(run.max_health) + ' // SUPPLIES ' + number(run.supplies) + ' // SALVAGE ' + number(run.salvage) + '</div><div class="line muted">' + escapeHtml(run.objective) + '</div><div class="line">GOAL ' + number(run.progress) + '/' + number(run.target) + '</div><div class="line signal">' + escapeHtml(run.last) + '</div>';
@@ -1795,13 +1796,15 @@
       }).join('') + '</div>';
       body += '<div class="button-grid one">' + button('ABANDON CONTRACT', 'contract_step', { pet_id: board.pet_id, contract_id: run.contract_id, revision: run.revision, choice: 'abandon' }, { danger: true, detail: 'Ends this contract with no points or XP. Closing the app instead preserves it.' }) + '</div>';
     } else {
+      if (board.formats && board.formats.length) body += '<label class="line">ROUTE LENGTH <select id="contract-format" aria-label="Contract route length">' + board.formats.map(function (format) { return '<option value="' + escapeHtml(format.key) + '"' + (run && run.format === format.key ? ' selected' : '') + '>' + escapeHtml(format.title + ' // ' + format.rooms + ' ROOMS') + '</option>'; }).join('') + '</select></label>' + board.formats.map(function (format) { return '<div class="line muted">' + escapeHtml(format.title + ' // ' + format.detail) + '</div>'; }).join('');
       body += '<label class="line">BUILD <select id="contract-build" aria-label="Contract build">' + board.builds.map(function (build) { return '<option value="' + escapeHtml(build.key) + '"' + (run && run.build === build.key ? ' selected' : '') + '>' + escapeHtml(build.title + ' — ' + build.detail) + '</option>'; }).join('') + '</select></label><label class="line">DIFFICULTY <select id="contract-tier" aria-label="Contract difficulty">';
       for (var tier = 1; tier <= board.max_tier; tier++) body += '<option value="' + tier + '"' + (run && run.tier === tier ? ' selected' : '') + '>TIER ' + tier + ' — ' + tier + '× RANK POINTS</option>';
       body += '</select></label>';
       if (board.side_goals && board.side_goals.length) body += '<label class="line">OPTIONAL SIDE OBJECTIVE <select id="contract-side-goal" aria-label="Contract side objective">' + board.side_goals.map(function (goal) { return '<option value="' + escapeHtml(goal.key) + '"' + (run && run.side_goal && run.side_goal.key === goal.key ? ' selected' : '') + '>' + escapeHtml(goal.title + ' — ' + goal.detail) + '</option>'; }).join('') + '</select></label><div class="line muted">Complete both goals for +' + number(board.side_rank) + ' × tier extra Contract Rank. No extra XP or currency. Missing the side objective does not fail the main contract.</div>';
-      if (run) body += '<div class="line muted">Your last build, tier and side objective are selected. Keep them or change your next setup.</div>';
-      body += '<div class="line muted">' + (board.max_tier < 3 ? number((board.max_tier === 1 ? 5 : 15) - board.completed) + ' MORE COMPLETIONS TO TIER ' + number(board.max_tier + 1) + '. ' : 'ALL DIFFICULTY TIERS UNLOCKED. ') + 'Choose your next six-room quest:</div><div class="button-grid">' + board.offers.map(function (offer) {
-        return button(offer.title, 'contract_start', { pet_id: board.pet_id, sequence: board.next_sequence, goal: offer.key }, { detail: offer.detail + ' // ' + number(offer.completed) + ' COMPLETED // BEST ' + number(offer.best_rank_points) + ' RANK POINTS' });
+      if (run) body += '<div class="line muted">Your last route length, build, tier and side objective are selected. Keep them or change your next setup.</div>';
+      body += '<div class="line muted">' + (board.max_tier < 3 ? number((board.max_tier === 1 ? 5 : 15) - board.completed) + ' MORE COMPLETIONS TO TIER ' + number(board.max_tier + 1) + '. ' : 'ALL DIFFICULTY TIERS UNLOCKED. ') + 'Choose your next quest. Each goal shows the target for both route lengths:</div><div class="button-grid">' + board.offers.map(function (offer) {
+        var objectives = offer.objectives ? offer.objectives.map(function (goal) { return goal.format_title + ': ' + goal.detail; }).join(' // ') : offer.detail;
+        return button(offer.title, 'contract_start', { pet_id: board.pet_id, sequence: board.next_sequence, goal: offer.key }, { detail: objectives + ' // ' + number(offer.completed) + ' COMPLETED // BEST ' + number(offer.best_rank_points) + ' RANK POINTS ACROSS FORMATS' });
       }).join('') + '</div>';
       if (board.collection) {
         if (board.collection.next_route) body += '<div class="button-grid one">' + contractSetupButton('CHOOSE AN UNCLEARED ROUTE', board.collection.next_route) + '</div>';
@@ -1816,7 +1819,7 @@
   }
 
   function contractSetupButton(label, record) {
-    return '<button class="terminal-button" type="button" data-contract-setup="' + escapeHtml(JSON.stringify({ build: record.build, tier: record.tier, goal: record.goal })) + '"' + (record.unlocked ? '' : ' disabled') + '>' + escapeHtml(label) + '<small>' + escapeHtml(record.title + ' // ' + record.build_title + ' // TIER ' + record.tier) + '<br>' + (record.unlocked ? number(record.completed) + ' CLEARS // BEST ' + number(record.best_rank_points) + ' RANK' : 'LOCKED // COMPLETE ' + (record.tier === 2 ? '5' : '15') + ' CONTRACTS') + '</small></button>';
+    return '<button class="terminal-button" type="button" data-contract-setup="' + escapeHtml(JSON.stringify({ build: record.build, tier: record.tier, goal: record.goal, format: record.format || 'standard' })) + '"' + (record.unlocked ? '' : ' disabled') + '>' + escapeHtml(label) + '<small>' + escapeHtml(record.title + ' // ' + record.build_title + ' // TIER ' + record.tier + ' // ' + (record.format_title || 'STANDARD ROUTE')) + '<br>' + (record.unlocked ? number(record.completed) + ' CLEARS // BEST ' + number(record.best_rank_points) + ' RANK' : 'LOCKED // COMPLETE ' + (record.tier === 2 ? '5' : '15') + ' CONTRACTS') + '</small></button>';
   }
 
   function renderMissions() {
@@ -2346,7 +2349,7 @@
     var editableState = options && options.discardCallsignDraft ? null : captureEditableState();
     var routeDraft = {};
     var draftPetId = renderedPetId;
-    ['contract-build', 'contract-tier', 'contract-side-goal', 'practice-build', 'practice-goal'].forEach(function (id) {
+    ['contract-format', 'contract-build', 'contract-tier', 'contract-side-goal', 'practice-build', 'practice-goal'].forEach(function (id) {
       var input = document.getElementById(id); if (input) routeDraft[id] = input.value;
     });
     renderHud();
@@ -2902,12 +2905,14 @@
     if (setupButton && !setupButton.disabled && !busy) {
       var setup;
       try { setup = JSON.parse(setupButton.dataset.contractSetup); } catch (_) { return; }
-      var buildSelect = document.getElementById('contract-build'), tierSelect = document.getElementById('contract-tier');
+      var buildSelect = document.getElementById('contract-build'), tierSelect = document.getElementById('contract-tier'), formatSelect = document.getElementById('contract-format');
       if (!buildSelect || !tierSelect) return;
       var startButton = Array.from(screen.querySelectorAll('[data-action="contract_start"]')).find(function (entry) { return JSON.parse(entry.dataset.payload).goal === setup.goal; });
       if (!startButton || !Array.from(buildSelect.options).some(function (option) { return option.value === setup.build; }) || !Array.from(tierSelect.options).some(function (option) { return option.value === String(setup.tier); })) return;
+      if (formatSelect && !Array.from(formatSelect.options).some(function (option) { return option.value === setup.format; })) return;
       buildSelect.value = setup.build; tierSelect.value = String(setup.tier);
-      tell('SETUP SELECTED // ' + words(setup.build) + ' // TIER ' + setup.tier + '. Press the focused quest button to start.');
+      if (formatSelect) formatSelect.value = setup.format;
+      tell('SETUP SELECTED // ' + words(setup.build) + ' // TIER ' + setup.tier + ' // ' + words(setup.format || 'standard') + '. Press the focused quest button to start.');
       startButton.focus({ preventScroll: true }); startButton.scrollIntoView({ block: 'center', behavior: reducedMotion ? 'auto' : 'smooth' });
       return;
     }
@@ -2936,6 +2941,8 @@
       payload.tier = Number(document.getElementById('contract-tier').value);
       var sideGoal = document.getElementById('contract-side-goal');
       if (sideGoal) payload.side_goal = sideGoal.value;
+      var routeFormat = document.getElementById('contract-format');
+      if (routeFormat) payload.format = routeFormat.value;
     }
     runAction(target.dataset.action, payload, target);
   });

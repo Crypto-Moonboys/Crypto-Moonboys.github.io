@@ -2,10 +2,17 @@
 export const CONTRACT_BONUS_LIMIT = 3;
 export const CONTRACT_BONUS_XP = 20;
 export const CONTRACT_ROOMS = 6;
+export const CONTRACT_FORMATS = Object.freeze({
+  standard: { title: 'STANDARD ROUTE', rooms: CONTRACT_ROOMS, detail: '6 rooms, 2 upgrade drafts. Finish the whole route to earn rank.' },
+  extended: { title: 'LONG ROUTE', rooms: 10, detail: '10 rooms, 4 upgrade drafts. Later rooms grow harder. Same daily XP bonus; more salvage opportunities.' },
+});
 export const CONTRACT_GOALS = Object.freeze({
-  scout: { title: 'MAP THE BACKSTREETS', detail: 'Finish six rooms with at least four successful routes.', target: 4 },
-  salvage: { title: 'RECOVER THE LOST TECH', detail: 'Finish six rooms carrying at least 65 salvage.', target: 65 },
-  escort: { title: 'BRING THE COURIER HOME', detail: 'Finish six rooms with at least 50 route health.', target: 50 },
+  scout: { title: 'MAP THE BACKSTREETS', detail: 'Finish six rooms with at least four successful routes.', target: 4, extended_target: 7 },
+  salvage: { title: 'RECOVER THE LOST TECH', detail: 'Finish six rooms carrying at least 65 salvage.', target: 65, extended_target: 120 },
+  escort: { title: 'BRING THE COURIER HOME', detail: 'Finish six rooms with at least 50 route health.', target: 50, extended_target: 50 },
+  breach: { title: 'BREAK THE BLOCKADE', detail: 'Finish six rooms with at least three successful bold routes.', target: 3, extended_target: 5 },
+  recon: { title: 'TRACE THE LOST SIGNAL', detail: 'Finish six rooms with at least three successful search routes.', target: 3, extended_target: 5 },
+  resupply: { title: 'RESTOCK THE CREW', detail: 'Finish six rooms carrying at least five supplies.', target: 5, extended_target: 8 },
 });
 export const CONTRACT_BUILDS = Object.freeze({
   scout: { title: 'SCOUT', detail: 'Safer cover/search routes. 90 health, 2 supplies.', health: 90, supplies: 2, guard: 8, power: 0 },
@@ -53,22 +60,35 @@ const has = (o, k) => Object.hasOwn(o, k);
 const integer = (n) => Math.max(0, Math.floor(Number(n) || 0));
 const day = (now) => now.toISOString().slice(0, 10);
 function hash(value) { let n = 2166136261; for (const c of String(value)) n = Math.imul(n ^ c.charCodeAt(0), 16777619); return n >>> 0; }
-export function contractRoom(s) {
-  const index = s.depth >= CONTRACT_ROOMS - 1 ? 7 : hash(s.seed + s.depth) % 7;
-  return { title: SCENES[index][0], detail: SCENES[index][1], rule: [2, 3, 4, 5].includes(s.version) ? SCENE_RULES[index] : null };
+function formatKey(s) { return s.version === 6 && s.format === 'extended' ? 'extended' : 'standard'; }
+export function contractLength(s) { return CONTRACT_FORMATS[formatKey(s)].rooms; }
+export function contractObjective(s) {
+  const goal = CONTRACT_GOALS[s.goal];
+  if (formatKey(s) === 'standard') return { title: goal.title, detail: goal.detail, target: goal.target };
+  const target = goal.extended_target;
+  const requirement = {
+    scout: `${target} successful routes`, salvage: `${target} salvage`, escort: `${target} route health`,
+    breach: `${target} successful bold routes`, recon: `${target} successful search routes`, resupply: `${target} supplies`,
+  }[s.goal];
+  return { title: goal.title, detail: `Finish ten rooms with at least ${requirement}.`, target };
 }
-export function createContractState(goal, build, tier, seed, sideGoal = 'none') {
+export function contractRoom(s) {
+  const index = s.depth >= contractLength(s) - 1 ? 7 : hash(s.seed + s.depth) % 7;
+  return { title: SCENES[index][0], detail: SCENES[index][1], rule: [2, 3, 4, 5, 6].includes(s.version) ? SCENE_RULES[index] : null };
+}
+export function createContractState(goal, build, tier, seed, sideGoal = 'none', format = 'standard') {
   if (typeof goal !== 'string' || typeof build !== 'string' || typeof sideGoal !== 'string'
+    || typeof format !== 'string' || !has(CONTRACT_FORMATS, format)
     || !has(CONTRACT_GOALS, goal) || !has(CONTRACT_BUILDS, build) || !has(CONTRACT_SIDE_GOALS, sideGoal) || ![1, 2, 3].includes(tier)) return null;
   const b = CONTRACT_BUILDS[build];
-  return { version: 5, draft_redrawn: false, preparation: null, goal, build, tier, seed, side_goal: sideGoal, route_wins: { cover: 0, bold: 0, search: 0 }, depth: 0, wins: 0, health: b.health, max_health: b.health,
+  return { version: 6, format, draft_redrawn: false, preparation: null, goal, build, tier, seed, side_goal: sideGoal, route_wins: { cover: 0, bold: 0, search: 0 }, depth: 0, wins: 0, health: b.health, max_health: b.health,
     supplies: b.supplies, salvage: 0, perks: [], draft: [], last: 'Choose a route. Your contract is saved after every decision.' };
 }
 export function contractChoices(s) {
   const b = CONTRACT_BUILDS[s.build], perks = s.perks;
   const threat = (s.tier - 1) * 7 + s.depth * 2;
   const rules = contractRoom(s).rule || {};
-  const prepared = [3, 4, 5].includes(s.version) && s.preparation === 'prepare_scout';
+  const prepared = [3, 4, 5, 6].includes(s.version) && s.preparation === 'prepare_scout';
   const odds = (key, base) => Math.max(30, Math.min(98, base - threat + (rules[key]?.odds || 0) + (prepared ? 10 : 0)));
   const shield = perks.includes('shield') ? 8 : 0, bonus = perks.includes('magnet') ? 10 : 0;
   return [
@@ -79,27 +99,29 @@ export function contractChoices(s) {
   ].map((choice) => ({ ...choice, salvage: choice.salvage + (rules[choice.key]?.salvage || 0), damage: choice.damage + (rules[choice.key]?.damage || 0) }));
 }
 export function contractPreparations(s) {
-  if (![3, 4, 5].includes(s.version) || s.depth >= CONTRACT_ROOMS || s.health <= 0 || s.draft.length || s.preparation) return [];
+  if (![3, 4, 5, 6].includes(s.version) || s.depth >= contractLength(s) || s.health <= 0 || s.draft.length || s.preparation) return [];
   return [
     { key: 'prepare_scout', title: 'SCOUT AHEAD', disabled: s.supplies < 2, detail: 'Spend 2 supplies: +10 percentage points to route clear chances in this room, capped at 98%. No room advance.' },
     { key: 'prepare_patch', title: 'FIELD PATCH', disabled: s.salvage < 20 || s.health >= s.max_health, detail: 'Spend 20 salvage: heal up to 25 route HP now. No room advance. Spent salvage no longer counts toward the goal or rank.' },
   ];
 }
 export function contractGoalProgress(s) {
-  return s.goal === 'scout' ? s.wins : s.goal === 'salvage' ? s.salvage : s.health;
+  return s.goal === 'scout' ? s.wins : s.goal === 'salvage' ? s.salvage
+    : s.goal === 'breach' ? s.route_wins.bold : s.goal === 'recon' ? s.route_wins.search
+      : s.goal === 'resupply' ? s.supplies : s.health;
 }
 function redrawPool(s) {
   return Object.keys(PERKS).filter((key) => !s.perks.includes(key) && !s.draft.includes(key));
 }
 export function contractDraftActions(s) {
-  if (s.version !== 5 || !s.draft.length || s.draft_redrawn || s.health <= 0 || s.depth >= CONTRACT_ROOMS) return [];
+  if (![5, 6].includes(s.version) || !s.draft.length || s.draft_redrawn || s.health <= 0 || s.depth >= contractLength(s)) return [];
   const count = Math.min(3, redrawPool(s).length);
   if (!count) return [];
   return [{ key: 'redraw_draft', title: 'REDRAW UPGRADES', disabled: s.salvage < CONTRACT_REDRAW_COST,
     detail: `Spend ${CONTRACT_REDRAW_COST} salvage to replace these perks with ${count} different unowned upgrades. Once per draft; no room advance. Supplies remain an option. Spent salvage reduces final rank and salvage-goal progress.` }];
 }
 export function contractSideProgress(s) {
-  if (![2, 3, 4, 5].includes(s.version) || s.side_goal === 'none') return null;
+  if (![2, 3, 4, 5, 6].includes(s.version) || s.side_goal === 'none') return null;
   const goal = CONTRACT_SIDE_GOALS[s.side_goal];
   const progress = s.side_goal === 'versatile' ? Object.values(s.route_wins).filter((n) => n > 0).length
     : s.side_goal === 'daredevil' ? s.route_wins.bold : s.supplies;
@@ -107,7 +129,7 @@ export function contractSideProgress(s) {
 }
 export function advanceContract(value, action, roll) {
   const s = structuredClone(value);
-  if (s.depth >= CONTRACT_ROOMS || s.health <= 0) return null;
+  if (s.depth >= contractLength(s) || s.health <= 0) return null;
   if (action === 'abandon') return { state: s, status: 'abandoned', rank_points: 0 };
   const preparation = contractPreparations(s).find((entry) => entry.key === action);
   if (preparation) {
@@ -127,7 +149,7 @@ export function advanceContract(value, action, roll) {
       s.last = `Spent ${CONTRACT_REDRAW_COST} salvage to redraw upgrades. Choose one of the new perks or take supplies.`;
       return { state: s, status: 'active', rank_points: 0 };
     }
-    if ([4, 5].includes(s.version) && action === 'supply_cache') {
+    if ([4, 5, 6].includes(s.version) && action === 'supply_cache') {
       s.supplies += 2; s.draft = [];
       s.last = 'Took 2 contract supplies instead of an upgrade. Use them to heal, scout or pursue the supply objective.';
       return { state: s, status: 'active', rank_points: 0 };
@@ -146,18 +168,18 @@ export function advanceContract(value, action, roll) {
     s.last = 'Used one supply and moved on. No salvage or route-clear credit.';
   } else if (roll < choice.odds) {
     s.wins++; s.salvage += choice.salvage; if (action === 'search') s.supplies++;
-    if ([2, 3, 4, 5].includes(s.version)) s.route_wins[action]++;
+    if ([2, 3, 4, 5, 6].includes(s.version)) s.route_wins[action]++;
     s.last = `Route cleared. +${choice.salvage} contract salvage.`;
   } else { s.health = Math.max(0, s.health - choice.damage); s.last = `Setback: -${choice.damage} route health. Keep going if you can.`; }
   s.depth++;
-  if ([3, 4, 5].includes(s.version)) s.preparation = null;
+  if ([3, 4, 5, 6].includes(s.version)) s.preparation = null;
   let status = 'active';
   if (!s.health) { status = 'failed'; s.last = 'Route health exhausted. Another contract is available immediately.'; }
-  else if (s.depth === CONTRACT_ROOMS) {
-    status = contractGoalProgress(s) >= CONTRACT_GOALS[s.goal].target ? 'completed' : 'failed';
+  else if (s.depth === contractLength(s)) {
+    status = contractGoalProgress(s) >= contractObjective(s).target ? 'completed' : 'failed';
     s.last = status === 'completed' ? 'Contract complete. Rank recorded; choose another contract whenever you like.' : 'Route finished, but the contract goal was missed. Try a different build or route.';
   } else if (s.depth % 2 === 0) {
-    if (s.version === 5) s.draft_redrawn = false;
+    if ([5, 6].includes(s.version)) s.draft_redrawn = false;
     s.draft = Object.keys(PERKS).filter((k) => !s.perks.includes(k)).sort((a, b) => hash(s.seed + s.depth + a) - hash(s.seed + s.depth + b)).slice(0, 3);
   }
   const side = contractSideProgress(s);
@@ -165,18 +187,19 @@ export function advanceContract(value, action, roll) {
 }
 function projection(row) {
   if (!row) return null;
-  const s = JSON.parse(row.state_json), room = contractRoom(s), side = contractSideProgress(s);
+  const s = JSON.parse(row.state_json), room = contractRoom(s), side = contractSideProgress(s), objective = contractObjective(s);
   return { contract_id: row.contract_id, pet_id: row.pet_id, revision: row.revision, sequence: row.sequence, status: row.status,
-    goal: s.goal, title: CONTRACT_GOALS[s.goal].title, objective: CONTRACT_GOALS[s.goal].detail,
-    build: s.build, build_title: CONTRACT_BUILDS[s.build].title, tier: s.tier, depth: s.depth, max_depth: CONTRACT_ROOMS,
+    goal: s.goal, title: objective.title, objective: objective.detail,
+    build: s.build, build_title: CONTRACT_BUILDS[s.build].title, tier: s.tier, depth: s.depth, max_depth: contractLength(s),
+    format: formatKey(s), format_title: CONTRACT_FORMATS[formatKey(s)].title,
     health: s.health, max_health: s.max_health, supplies: s.supplies, salvage: s.salvage,
-    progress: contractGoalProgress(s), target: CONTRACT_GOALS[s.goal].target, last: s.last,
+    progress: contractGoalProgress(s), target: objective.target, last: s.last,
     room: { title: room.title, detail: room.detail, effect: room.rule?.detail || '' }, perks: s.perks.map((key) => ({ key, ...PERKS[key] })),
     side_goal: side ? { ...side, earned: row.status === 'completed' && side.reached } : null,
-    preparation: [3, 4, 5].includes(s.version) ? s.preparation : null,
+    preparation: [3, 4, 5, 6].includes(s.version) ? s.preparation : null,
     preparations: row.status === 'active' ? contractPreparations(s) : [],
     draft_actions: row.status === 'active' ? contractDraftActions(s) : [],
-    choices: row.status !== 'active' ? [] : s.draft.length ? [...s.draft.map((key) => ({ key, ...PERKS[key], upgrade: true })), ...([4, 5].includes(s.version) ? [{ key: 'supply_cache', title: 'TAKE SUPPLY CACHE', upgrade: true, detail: 'Take 2 contract supplies instead of an upgrade. Spend them on healing or scouting, or save them for Well Supplied. No room advance, pet item, XP or currency.' }] : [])] : contractChoices(s),
+    choices: row.status !== 'active' ? [] : s.draft.length ? [...s.draft.map((key) => ({ key, ...PERKS[key], upgrade: true })), ...([4, 5, 6].includes(s.version) ? [{ key: 'supply_cache', title: 'TAKE SUPPLY CACHE', upgrade: true, detail: 'Take 2 contract supplies instead of an upgrade. Spend them on healing or scouting, or save them for a supply objective. No room advance, pet item, XP or currency.' }] : [])] : contractChoices(s),
     rank_points: row.rank_points, reward_pending: row.reward_xp > 0 && !row.reward_settled, xp_awarded: row.xp_awarded };
 }
 async function authority(db, owner, petId, seasonKey) {
@@ -199,17 +222,18 @@ export async function getContractBoard(db, owner, pet, now = new Date()) {
     db.prepare('SELECT COUNT(*) AS used FROM telegram_pet_contracts WHERE telegram_id=? AND reward_day=? AND reward_xp>0').bind(owner, day(now)).first(),
     db.prepare(`SELECT contract_id FROM telegram_pet_contracts WHERE telegram_id=? AND pet_id=? AND season_key=? AND reward_xp>0 AND reward_settled=0 ORDER BY sequence LIMIT 10`).bind(owner, petId, seasonKey).all(),
     db.prepare(`SELECT json_extract(state_json,'$.goal') AS goal, json_extract(state_json,'$.build') AS build,
+      CASE WHEN json_extract(state_json,'$.version')=6 AND json_extract(state_json,'$.format')='extended' THEN 'extended' ELSE 'standard' END AS format,
       json_extract(state_json,'$.tier') AS tier, COUNT(*) AS completed, MAX(rank_points) AS best_rank_points
       FROM telegram_pet_contracts WHERE telegram_id=? AND pet_id=? AND season_key=? AND status='completed'
-      GROUP BY json_extract(state_json,'$.goal'), json_extract(state_json,'$.build'), json_extract(state_json,'$.tier')`).bind(owner, petId, seasonKey).all(),
+      GROUP BY goal, build, tier, format`).bind(owner, petId, seasonKey).all(),
   ]);
   const completed = integer(stats?.completed), points = integer(stats?.rank_points);
   const maxTier = completed >= 15 ? 3 : completed >= 5 ? 2 : 1;
-  const records = [1, 2, 3].flatMap((tier) => Object.entries(CONTRACT_GOALS).flatMap(([goal, definition]) => Object.entries(CONTRACT_BUILDS).map(([build, setup]) => {
-    const record = (mastery.results || []).find((entry) => entry.goal === goal && entry.build === build && Number(entry.tier) === tier);
-    return { key: `${goal}:${build}:${tier}`, goal, build, tier, title: definition.title, build_title: setup.title,
+  const records = Object.entries(CONTRACT_FORMATS).flatMap(([format, route]) => [1, 2, 3].flatMap((tier) => Object.entries(CONTRACT_GOALS).flatMap(([goal, definition]) => Object.entries(CONTRACT_BUILDS).map(([build, setup]) => {
+    const record = (mastery.results || []).find((entry) => entry.goal === goal && entry.build === build && Number(entry.tier) === tier && entry.format === format);
+    return { key: `${goal}:${build}:${tier}${format === 'extended' ? ':extended' : ''}`, goal, build, tier, format, format_title: route.title, rooms: route.rooms, title: definition.title, build_title: setup.title,
       unlocked: tier <= maxTier, completed: integer(record?.completed), best_rank_points: integer(record?.best_rank_points) };
-  })));
+  }))));
   return { available: true, pet_id: petId, next_sequence: stats.next_sequence, completed, rank_points: points,
     rank: 1 + Math.floor(points / 500), next_rank_at: (1 + Math.floor(points / 500)) * 500,
     max_tier: maxTier,
@@ -219,10 +243,12 @@ export async function getContractBoard(db, owner, pet, now = new Date()) {
     bonus_remaining: Math.max(0, CONTRACT_BONUS_LIMIT - integer(bonuses?.used)), bonus_limit: CONTRACT_BONUS_LIMIT, bonus_xp: CONTRACT_BONUS_XP,
     pending_rewards: pending.results || [], offers: Object.entries(CONTRACT_GOALS).map(([key, goal]) => {
       const entries = (mastery.results || []).filter((entry) => entry.goal === key);
-      return { key, ...goal, completed: entries.reduce((sum, record) => sum + integer(record.completed), 0),
+      return { key, ...goal, objectives: Object.entries(CONTRACT_FORMATS).map(([format, route]) => ({ format, format_title: route.title, ...contractObjective({ version: 6, format, goal: key }) })),
+        completed: entries.reduce((sum, record) => sum + integer(record.completed), 0),
         best_rank_points: entries.reduce((best, record) => Math.max(best, integer(record.best_rank_points)), 0) };
     }),
     side_goals: Object.entries(CONTRACT_SIDE_GOALS).map(([key, goal]) => ({ key, ...goal })), side_rank: CONTRACT_SIDE_RANK,
+    formats: Object.entries(CONTRACT_FORMATS).map(([key, format]) => ({ key, ...format })),
     builds: Object.entries(CONTRACT_BUILDS).map(([key, b]) => ({ key, title: b.title, detail: b.detail })), run: projection(rows) };
 }
 async function settleBonus(db, owner, row, award, now) {
@@ -250,7 +276,7 @@ export async function processContractAction(db, owner, pet, request, award, now 
     const board = await getContractBoard(db, owner, pet, now);
     if (board.run?.status === 'active') return reject('contract_active');
     if (!Number.isSafeInteger(request.sequence) || request.sequence !== board.next_sequence) return reject('contract_stale');
-    const s = createContractState(request.goal, request.build, request.tier, crypto.randomUUID(), request.side_goal);
+    const s = createContractState(request.goal, request.build, request.tier, crypto.randomUUID(), request.side_goal, request.format);
     if (!s || request.tier > board.max_tier) return reject('contract_invalid_choice');
     row = await db.prepare(`INSERT OR IGNORE INTO telegram_pet_contracts
       (contract_id,pet_id,telegram_id,season_key,sequence,status,state_json)
