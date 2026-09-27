@@ -19,6 +19,7 @@ const sqlite = new DatabaseSync(':memory:');
 sqlite.exec(await fs.readFile(path.join(root, 'workers/moonboys-api/schema.sql'), 'utf8'));
 sqlite.exec(await fs.readFile(path.join(root, 'workers/moonboys-api/migrations/048_telegram_pet_player_expansion.sql'), 'utf8'));
 sqlite.exec(await fs.readFile(path.join(root, 'workers/moonboys-api/migrations/058_telegram_pet_season_completion.sql'), 'utf8'));
+sqlite.exec(await fs.readFile(path.join(root, 'workers/moonboys-api/migrations/061_moonpet_season_economy_calibration.sql'), 'utf8'));
 let failActivitySettlement = false;
 let failWeeklyReward = false;
 let failDailyEnding = false;
