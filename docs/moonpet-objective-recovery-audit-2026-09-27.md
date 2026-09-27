@@ -48,7 +48,10 @@ client-supplied progress, pet or period. Each refresh attempts at most five
 daily and five weekly scopes. Accepted receipts and settled duplicate limits
 leave the queue. An interrupted scope remains retryable; other candidate
 scopes can still settle. Old pets and earlier periods are included. Weekly
-earning dates come from accepted source events, not the refresh date. Daily
+earning dates use the latest of each objective's first threshold-crossing days,
+computed in accepted source-day order with the configured additive/max rules.
+Later surplus actions cannot move that date; every required objective must
+have a source-backed crossing. Existing Crest timestamps remain unchanged. Daily
 receipts require a verified mark and can repair a legacy missing mark link.
 Existing unique mark/crest constraints and finalizers prevent repeat awards.
 
@@ -63,6 +66,9 @@ Focused SQLite regressions cover receipt interruption, interruption before
 weekly award insertion, owner isolation, previous-period/season recovery,
 original earning dates, repeat refreshes, missing daily receipt links, and
 interrupted season completion after the tenth Crest and sixtieth Growth Mark.
+The review regression spans multiple source days, delivers run evidence out of
+day order, then records surplus actions for every objective while award writes
+fail. Recovery must retain 5 January, not the later actions on 7 January.
 Route tests cover exhausted daily attempts, other source pets, unavailable run
 sources, care cooldowns, active activities, cache reset waits and season tiers.
 The mobile suite exercises all six screens at 390×844 and 360×640, including

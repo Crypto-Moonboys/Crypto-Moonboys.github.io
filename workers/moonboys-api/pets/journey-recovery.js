@@ -38,11 +38,25 @@ export async function recoverPetJourneyAwards(db, telegramId) {
       try {
         let earnedAt;
         if (kind === 'weekly') {
-          const source = await db.prepare(`SELECT MAX(e.day_key) AS day FROM telegram_pet_weekly_journey_objectives o
-            JOIN telegram_pet_events e ON e.event_key=o.source_event_key AND e.telegram_id=o.telegram_id
-              AND e.pet_id=o.pet_id AND e.season_key=o.season_key AND e.status='accepted'
-            WHERE o.telegram_id=? AND o.pet_id=? AND o.season_key=? AND o.qualification_week=? AND o.status='accepted'`)
-            .bind(owner, scope.pet_id, scope.season_key, scope.qualification_week).first();
+          // Extra actions after qualification cannot move the earning day.
+          // Count each objective in source-day order, take its first threshold
+          // crossing, then the latest of those crossings for the full Journey.
+          const source = await db.prepare(`SELECT MAX(day) AS day FROM (
+            SELECT objective_id, MIN(day) AS day FROM (
+              SELECT o.objective_id, e.day_key AS day,
+                CASE WHEN o.objective_id IN (${maxIds.join(',')})
+                  THEN MAX(o.progress_value) OVER objective_progress
+                  ELSE SUM(o.progress_value) OVER objective_progress END AS progress
+              FROM telegram_pet_weekly_journey_objectives o
+              JOIN telegram_pet_events e ON e.event_key=o.source_event_key AND e.telegram_id=o.telegram_id
+                AND e.pet_id=o.pet_id AND e.season_key=o.season_key AND e.status='accepted'
+              WHERE o.telegram_id=? AND o.pet_id=? AND o.season_key=? AND o.qualification_week=? AND o.status='accepted'
+              WINDOW objective_progress AS (PARTITION BY o.objective_id ORDER BY e.day_key, o.event_id
+                ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)
+            ) WHERE progress >= CASE objective_id ${targetSql} END
+            GROUP BY objective_id
+          ) HAVING COUNT(*)=?`)
+            .bind(owner, scope.pet_id, scope.season_key, scope.qualification_week, journey.required).first();
           if (!source?.day) continue;
           earnedAt = `${source.day}T00:00:00.000Z`;
         }
