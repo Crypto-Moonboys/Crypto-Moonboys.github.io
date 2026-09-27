@@ -630,7 +630,7 @@
 
   function availabilityDetailMarkup(options) {
     options = options || {};
-    var label = options.cooldown ? countdownMarkup(options.cooldown, 'Available in ') : escapeHtml(availabilityLabel(options));
+    var label = options.cooldown ? (options.statusLabel ? escapeHtml(options.statusLabel) + ' // ' : '') + countdownMarkup(options.cooldown, 'Available in ') : escapeHtml(availabilityLabel(options));
     var detail = options.detail ? String(options.detail) : '';
     return detail ? label + ' // ' + escapeHtml(detail) : label;
   }
@@ -1347,6 +1347,7 @@
       return panel('DORMANT SECRET BOT', '<div class="line">NO COMPANION RECORD FOUND.</div><div class="line muted">NEXT // ' + escapeHtml(homeNextLine()) + '</div><div class="button-grid one">' + button('INITIALISE MOONPET', 'adopt') + '</div>');
     }
     var pet = state.pet;
+    var dailyCache = state.guidance && state.guidance.daily_cache || {};
     var lifecycle = state.lifecycle || {};
     var incubation = lifecycle.incubation || {};
     if (lifecycle.phase === 'egg') {
@@ -1373,8 +1374,9 @@
       panel('CARE CONSOLE', '<div class="button-grid">' +
         button('FEED', 'feed') + button('PLAY', 'play') + button('CLEAN', 'clean') + button('SLEEP', 'sleep') + button('TRAIN', 'train') +
         button('ENERGY DRINK', 'energy_drink') + button('DANCE', 'dance') + button('CUDDLES', 'cuddles') +
-        button('DAILY CACHE', 'daily_chest') + '<button class="terminal-button" type="button" data-pet-greet>SAY HELLO</button>' +
-      '</div>', 'care') +
+        button('DAILY CACHE', 'daily_chest', {}, { disabled: dailyCache.available !== true, statusLabel: dailyCache.claimed ? 'CLAIMED TODAY' : dailyCache.available ? '' : 'SYNCING', cooldown: dailyCache.claimed ? dailyCache.cooldown : null,
+          detail: dailyCache.claimed ? number(dailyCache.receipt && dailyCache.receipt.pet_xp_awarded) + ' PET XP COLLECTED // One cache per account / UTC day.' : dailyCache.available ? '40 MOON GOLD + 2 STYLE // UP TO ' + number(dailyCache.available_pet_xp) + ' PET XP WITH TODAY’S CAP.' : 'Waiting for cache status.' }) + '<button class="terminal-button" type="button" data-pet-greet>SAY HELLO</button>' +
+      '</div>' + (dailyCache.claimed && state.contracts && state.contracts.available ? '<div class="button-grid one">' + routeButton('CONTINUE WITH CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'Your cache is collected. Saved quests keep going without energy or cooldowns.') + '</div>' : ''), 'care') +
       renderSeasonSlots() +
       panel('COMPANION DETAILS', '<div class="line complete">' + escapeHtml(displayName) + ' // ' + escapeHtml(moonpetStageLabel(lifecycle, pet)) + '</div><div class="line">LEVEL ' + number(pet.level) + ' // ' + number(pet.pet_xp) + ' XP // ' + number(pet.style_tokens) + ' STYLE // ' + number(pet.streak_days) + '-DAY STREAK</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT // ' + escapeHtml(words(lifecycle.appearance && lifecycle.appearance.marking || 'moon mark')) + '</div>' + equipped, 'details');
   }
@@ -1751,7 +1753,7 @@
         return button(choice.title, 'contract_step', { pet_id: board.pet_id, contract_id: run.contract_id, revision: run.revision, choice: choice.key }, { disabled: Boolean(choice.disabled), detail: choice.detail });
       }).join('') + '</div>';
       body += '<div class="line"><strong>' + escapeHtml(run.room.title) + '</strong></div><div class="line muted">' + escapeHtml(run.room.detail) + '</div>' + (run.room.effect ? '<div class="line signal">' + escapeHtml(run.room.effect) + '</div><div class="line muted">Room effects are included below. pp means percentage points; clear chance is capped at 98%.</div>' : '') + '<div class="button-grid">' + run.choices.map(function (choice) {
-        return button(choice.title, 'contract_step', { pet_id: board.pet_id, contract_id: run.contract_id, revision: run.revision, choice: choice.key }, { disabled: Boolean(choice.disabled), detail: (choice.upgrade ? 'CHOOSE AN UPGRADE // ' : choice.key === 'rest' ? 'RECOVER // ' : choice.odds + '% CLEAR // +' + choice.salvage + ' SALVAGE // FAILURE -' + choice.damage + ' HP // ') + choice.detail });
+        return button(choice.title, 'contract_step', { pet_id: board.pet_id, contract_id: run.contract_id, revision: run.revision, choice: choice.key }, { disabled: Boolean(choice.disabled), detail: (choice.upgrade ? 'DRAFT CHOICE // ' : choice.key === 'rest' ? 'RECOVER // ' : choice.odds + '% CLEAR // +' + choice.salvage + ' SALVAGE // FAILURE -' + choice.damage + ' HP // ') + choice.detail });
       }).join('') + '</div>';
       body += '<div class="button-grid one">' + button('ABANDON CONTRACT', 'contract_step', { pet_id: board.pet_id, contract_id: run.contract_id, revision: run.revision, choice: 'abandon' }, { danger: true, detail: 'Ends this contract with no points or XP. Closing the app instead preserves it.' }) + '</div>';
     } else {
@@ -2464,6 +2466,9 @@
       expedition_daily_limit: 'all three account attempts are used today. Contracts and practice remain available.',
       weekly_boss_pet_changed: 'your active pet changed; review its boss choices.',
       weekly_boss_state_changed: 'your pet or boss state changed; review the refreshed choices.',
+      daily_cache_state_changed: 'your pet changed before the cache could settle; refresh and try again.',
+      season_reward_pending: 'the season reward has not settled yet; refresh and retry the saved tier.',
+      wallet_reconciliation_recovery_pending: 'your saved wallet is waiting for recovery. This transaction was not applied.',
       weekly_boss_reward_pending: 'the saved victory reward is still pending; use Recover Weekly Reward to try again without another attack.',
       weekly_boss_reward_not_found: 'no matching saved victory belongs to this account and pet.',
       moon_egg_must_hatch: 'hatch your Moonpet first.',

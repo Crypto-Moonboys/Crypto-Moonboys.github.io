@@ -1044,18 +1044,11 @@ for (const job of ['street_artist', 'courier', 'crystal_miner', 'vault_guard']) 
 const dailyChest = asyncBlock('processPetDailyChest');
 assert.ok(dailyChest.includes('duplicate'), 'daily chest must short-circuit duplicate event keys');
 assert.ok(dailyChest.includes("daily_chest"), 'daily chest must write daily_chest events');
-assert.ok(dailyChest.includes('getPetWindowTotals(db, telegramId, dayKey, weekKey)'), 'daily chest pet XP must check existing daily totals before awarding');
-assert.ok(dailyChest.includes('totals.day.pet_xp >= PETS_DAILY_PET_XP_CAP'), 'daily chest must award 0 pet XP when the daily cap is already reached');
-assert.ok(dailyChest.includes('totals.day.pet_xp + petXp > PETS_DAILY_PET_XP_CAP'), 'daily chest must clamp pet XP against prior daily pet XP');
+assert.match(dailyChest, /MIN\(40,MAX\(0,\?[-]\(SELECT COALESCE\(SUM\(pet_xp_awarded\),0\)/, 'Daily Cache must clamp against accepted account/day XP inside the transaction');
+assert.match(dailyChest, /pet_xp \+ \(SELECT pet_xp_awarded FROM daily_award\)/, 'Daily Cache must add the actual event award to current instance XP');
 assert.ok(dailyChest.includes("reason: 'wallet_reconciliation_recovery_pending'"), 'daily chest must freeze wallet credits while historical recovery is pending');
-assert.ok(dailyChest.includes('const persistedPet = await getPetProfile(db, telegramId)'),
-  'daily chest success responses must reload persisted state');
-assertOrder(
-  dailyChest,
-  'const totals = await getPetWindowTotals(db, telegramId, dayKey, weekKey);',
-  'pet.pet_xp = Math.max(0',
-  'daily chest must cap pet XP before mutating the pet'
-);
+assert.ok(dailyChest.includes('const persistedPet = await getPetInstanceWithAtomicDecay(db, pet.pet_id)'), 'Daily Cache must return its captured source pet');
+assert.match(dailyChest, /FROM telegram_pet_active_slots WHERE telegram_id=\? AND pet_id=\? AND season_key=\?/, 'compatibility mirror must remain conditional on the captured pet still being selected');
 
 const randomEvent = asyncBlock('processPetRandomEvent');
 assert.ok(randomEvent.includes('duplicate: true'), 'random event must short-circuit duplicate event keys');
@@ -3043,7 +3036,7 @@ try {
 const dailyChestRecoveryDb = seedRepeatRewardPlayer('daily-chest-recovery', 70);
 await ensurePetStarterSeasonSlot(dailyChestRecoveryDb, 'daily-chest-recovery', new Date('2026-08-15T00:00:00Z'));
 await __petMediaTestHooks.ensureActivePetInstance(dailyChestRecoveryDb, 'daily-chest-recovery');
-dailyChestRecoveryDb.failBatchOnSql(/UPDATE telegram_pet_profiles SET\s+pet_xp = \?/);
+dailyChestRecoveryDb.failBatchOnSql(/UPDATE telegram_pet_profiles SET\s+\(pet_xp,level,stage/);
 await assert.rejects(
   processPetDailyChest(dailyChestRecoveryDb, 'daily-chest-recovery', { event_key: 'callback:daily:failure', source: 'telegram_callback' }),
   /simulated_d1_batch_failure/,

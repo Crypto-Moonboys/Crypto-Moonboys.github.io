@@ -216,11 +216,19 @@ try {
       const candidates = page.locator('[data-action="contract_step"]');
       const payloads = await candidates.evaluateAll((buttons) => buttons.map((button) => JSON.parse(button.dataset.payload)));
       const routeChoice = turn === 1 ? 'bold' : turn === 3 ? 'search' : 'cover';
-      const chosen = payloads.find((x) => x.choice === routeChoice) || payloads.find((x) => x.choice === 'medkit') || payloads.find((x) => x.choice === 'shield') || payloads.find((x) => x.choice !== 'abandon' && !x.choice.startsWith('prepare_'));
+      const chosen = (turn === 2 && payloads.find((x) => x.choice === 'supply_cache')) || payloads.find((x) => x.choice === routeChoice) || payloads.find((x) => x.choice === 'medkit') || payloads.find((x) => x.choice === 'shield') || payloads.find((x) => x.choice !== 'abandon' && !x.choice.startsWith('prepare_'));
       assert.ok(chosen, 'active contract must offer a route or upgrade');
+      const beforeSupply = chosen.choice === 'supply_cache' ? (await hooks.buildPetMiniAppState(db, currentUser, token)).contracts.run : null;
+      if (beforeSupply && process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-supply-draft-${viewport.width}.png`) });
       const response = page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'contract_step');
       await candidates.nth(payloads.indexOf(chosen)).click();
       const data = await (await response).json(); assert.equal(data.result.accepted, true);
+      if (beforeSupply) {
+        assert.equal(data.state.contracts.run.supplies, beforeSupply.supplies + 2);
+        assert.equal(data.state.contracts.run.depth, beforeSupply.depth);
+        assert.deepEqual(data.state.contracts.run.perks, beforeSupply.perks);
+        assert.equal(data.state.pet.energy, prepared.state.pet.energy);
+      }
       assert.equal(data.state.contracts.run.side_goal.key, 'versatile');
       assert.ok(data.state.contracts.run.room.effect, 'mechanical room effect must be visible');
       await page.waitForFunction((revision) => {
@@ -538,11 +546,55 @@ try {
     await page.locator('[data-panel="weekly-boss"] [data-focus="contracts"]').click();
     assert.equal(gameplayCount(), beforeBossContinue);
     assert.equal(await page.locator('[data-panel="contracts"]').count(), 1);
+    currentUser = 'browser-cache-' + viewport.width;
+    await seed(currentUser, 'young');
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    const cacheButton = page.locator('[data-action="daily_chest"]');
+    assert.equal(await cacheButton.isEnabled(), true);
+    assert.ok((await cacheButton.textContent()).includes('40 MOON GOLD + 2 STYLE'));
+    const cacheResponse = page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'daily_chest');
+    await cacheButton.click();
+    const cacheResult = await (await cacheResponse).json();
+    assert.equal(cacheResult.result.pet_xp_awarded, 40); assert.equal(cacheResult.state.pet.pet_xp, 3280);
+    assert.equal(cacheResult.state.pet.moon_gold, 140);
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    assert.equal(await cacheButton.isDisabled(), true);
+    assert.ok((await cacheButton.textContent()).includes('CLAIMED TODAY'));
+    await cacheButton.scrollIntoViewIfNeeded();
+    if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-daily-cache-${viewport.width}.png`) });
+    const beforeCacheContinue = gameplayCount();
+    await page.locator('[data-panel="care"] [data-focus="contracts"]').click();
+    assert.equal(gameplayCount(), beforeCacheContinue);
+    assert.equal(await page.locator('[data-panel="contracts"]').count(), 1);
+
+    const cachePet = cacheResult.state.pet;
+    sqlite.prepare(`UPDATE telegram_pet_season_state SET season_xp=1000 WHERE telegram_id=? AND season_key=?`).run(currentUser, cachePet.season_key);
+    sqlite.prepare(`INSERT INTO telegram_pet_season_reward_claims (telegram_id,season_key,tier_id,event_key)
+      VALUES (?,?,'street','legacy-unpaid')`).run(currentUser, cachePet.season_key);
+    // Model an unresolved historical wallet, rather than an already reconciled one.
+    sqlite.prepare("DELETE FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='wallet_reconciliation'").run(currentUser);
+    sqlite.prepare(`INSERT INTO telegram_pet_reward_claims (claim_id,telegram_id,source,idempotency_key,day_key,status,requested_rewards,applied_rewards,metadata)
+      VALUES (?,?,'wallet_reconciliation_recovery_required','moonpet_wallet_reconcile_recovery_required:v1',?,'pending','{}','{}','{}')`)
+      .run('browser-cache-freeze-' + viewport.width, currentUser, new Date().toISOString().slice(0, 10));
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-screen="profile"]').click();
+    const seasonButton = page.locator('[data-action="season_claim"]').filter({ hasText: 'Street Cache' });
+    const blockedResponse = page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'season_claim');
+    await seasonButton.click();
+    const blocked = await (await blockedResponse).json(); assert.equal(blocked.result.accepted, false);
+    assert.equal(blocked.state.guidance.season.tiers.find((tier) => tier.tier_id === 'street').claimed_at, null);
+    await page.waitForFunction(() => !document.querySelector('[data-action="season_claim"]')?.disabled);
+    sqlite.prepare('DELETE FROM telegram_pet_reward_claims WHERE claim_id=?').run('browser-cache-freeze-' + viewport.width);
+    const paidResponse = page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'season_claim');
+    await seasonButton.click();
+    const paid = await (await paidResponse).json(); assert.equal(paid.result.accepted, true); assert.equal(paid.result.duplicate, false);
+    assert.equal(paid.state.pet.moon_gold, 220); assert.ok(paid.state.guidance.season.tiers.find((tier) => tier.tier_id === 'street').claimed_at);
+    await page.waitForFunction(() => ![...document.querySelectorAll('[data-action="season_claim"]')].some((button) => button.textContent.includes('Street Cache')));
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
     assert.equal(overflow, false, 'mobile viewport must not overflow horizontally');
     assert.deepEqual(errors, [], 'no runtime errors across all six screens');
     if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-${viewport.width}.png`) });
-    console.log(`Moonpet browser loop passed at ${viewport.width}x${viewport.height}; all six screens; bounties; practice; contracts and records; daily tactics; raids; timed recovery; Trade; expeditions; weekly boss previews, energy, saved victory recovery, reset and continuation.`);
+    console.log(`Moonpet browser loop passed at ${viewport.width}x${viewport.height}; all six screens; bounties; practice; contracts and records; daily tactics; raids; timed recovery; Trade; expeditions; weekly boss recovery; Daily Cache claimed/reset state; season reward rejection/recovery; supply drafts.`);
     await context.close();
   }
 } finally {
