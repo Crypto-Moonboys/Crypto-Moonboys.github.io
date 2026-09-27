@@ -56,6 +56,7 @@
       choices.push(Object.assign({}, destination || route({ key: key }), { key: key, title: title, detail: detail }));
     };
     var egg = s.lifecycle && s.lifecycle.phase === 'egg';
+    if (g.weekly_boss && (g.weekly_boss.pending_rewards || []).length) add('weekly_boss_claim', 'RECOVER WEEKLY BOSS REWARDS', 'Collect saved victories, including earlier weeks. No energy, new attack or current level requirement.');
     var bounties = g.economy && g.economy.bounties || [];
     if (!egg) {
       if (live.seasonal_boss && (live.seasonal_boss.pending_rewards || []).length) add('seasonal_boss_claim', 'CLAIM SAVED RAID REWARDS', 'Recover defeated boss rewards, including older rotations. No energy cost.');

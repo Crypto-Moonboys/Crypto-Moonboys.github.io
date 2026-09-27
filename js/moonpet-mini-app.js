@@ -694,7 +694,7 @@
   function button(label, action, payload, options) {
     options = actionCooldownButtonOptions(action, options);
     var accountActions = ['adopt', 'guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'arena_queue_cancel', 'arena_forfeit', 'kaiju_queue_cancel', 'kaiju_match_cancel'];
-    var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles']);
+    var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim']);
     if (state && state.lifecycle && state.lifecycle.phase === 'egg' && !eggActions.includes(action)) {
       options = Object.assign({}, options, { disabled: true, cooldown: null, statusLabel: 'HATCH REQUIRED' });
     } else if (state && state.adopted === false && !accountActions.includes(action)) {
@@ -1283,9 +1283,10 @@
   function exploreNextLine() {
     var firstSession = firstSessionPhase();
     if (firstSession === 'unadopted') return 'Initialise a Secret Bot to begin.';
+    var boss = state && state.guidance && state.guidance.weekly_boss || {};
+    if ((boss.pending_rewards || []).length) return 'Recover your saved Weekly Boss reward. No energy or new attack needed.';
     if (firstSession === 'egg') return 'Care for or REVEAL BOT before Explore actions open.';
     if (state && state.run) return 'Resolve the visible Moon Run room or extract to bank rewards.';
-    var boss = state && state.guidance && state.guidance.weekly_boss || {};
     var weekly = state && state.weekly_journey || {};
     var objectives = Array.isArray(weekly.objectives) ? weekly.objectives : [];
     var bossObjective = objectives.find(function (objective) { return String(objective.objective_id || '') === 'weekly_boss_attempt'; });
@@ -1974,11 +1975,26 @@
     }).join('');
     var seasonalBody = '<div class="line">' + escapeHtml(words(seasonal.title || 'offline')) + ' // ' + number(seasonal.damage) + '/' + number(seasonal.hp) + ' DAMAGE // PHASE ' + number(seasonal.phase || 1) + '/' + number(seasonal.phases) + '</div><div class="line muted">WEAKNESS ' + escapeHtml(words(seasonal.weakness)) + ' // REWARD ' + escapeHtml(words(seasonal.reward)) + '</div><div class="line muted">One attack per pet / UTC day. Counter attacks change this hit’s damage; they do not apply ongoing Arena status effects.</div><div class="button-grid">' + raidButtons + raidClaims + '</div>';
     var bossReward = valueText(boss.reward);
-    var bossStatusLabel = boss.defeated ? 'DEFEATED' : boss.attempt_used ? 'USED TODAY' : '';
+    var bossStatusLabel = boss.defeated ? 'DEFEATED' : boss.attempt_used ? 'USED TODAY' : Number(state.pet.level) < 5 ? 'LEVEL 5 REQUIRED' : Number(state.pet.energy) < 12 ? '12 ENERGY REQUIRED' : '';
+    var weeklyChoices = (boss.choices || ['strike', 'outsmart', 'endure'].map(function (key) { return { key: key, title: key.toUpperCase(), energy: 12 }; })).map(function (choice) {
+      var detail = number(choice.energy) + ' ENERGY';
+      if (choice.minimum_damage != null) detail += ' // ' + number(choice.minimum_damage) + '–' + number(choice.maximum_damage) + ' DAMAGE' + (choice.weakness_bonus ? ' // WEAKNESS +' + number(choice.weakness_bonus) + ' INCLUDED' : '') + (choice.personality_bonus ? ' // PERSONALITY +' + number(choice.personality_bonus) + ' INCLUDED' : '');
+      return button(choice.title, 'weekly_boss', { move: choice.key, pet_id: state.pet.pet_id }, { disabled: !boss.available, statusLabel: bossStatusLabel, cooldown: boss.defeated ? null : boss.cooldown, detail: detail });
+    }).join('');
+    var weeklyClaims = (boss.pending_rewards || []).map(function (claim) {
+      return button('RECOVER WEEKLY REWARD // ' + claim.title, 'weekly_boss_claim', { pet_id: claim.pet_id, boss_id: claim.boss_id, week_key: claim.week_key }, {
+        detail: claim.week_key + ' // ' + valueText(claim.reward) + ' // No energy or new attempt. Keeps the original pet’s victory.' });
+    }).join('');
     var bossBody = '<div class="line">' + (boss.defeated ? 'TARGET DEFEATED.' : boss.attempt_used ? 'DAILY ATTEMPT USED.' : 'SELECT AN ATTACK ROUTINE.') + '</div>' +
+      (weeklyClaims ? '<div class="button-grid one">' + weeklyClaims + '</div>' : '') +
       '<div class="line muted">HP ' + number(boss.remaining_hp) + '/' + number(boss.hp) + ' // DAMAGE ' + number(boss.damage) + ' // ATTEMPTS ' + number(boss.attempts) + '/' + number(boss.max_attempts || 7) + '</div>' +
       '<div class="line muted">WEAKNESS ' + escapeHtml(words(boss.weakness || 'unknown')) + ' // REWARD ' + escapeHtml(bossReward) + '</div>' +
-      '<div class="button-grid three">' + button('STRIKE', 'weekly_boss', { move: 'strike' }, { disabled: !boss.available, statusLabel: bossStatusLabel, cooldown: boss.defeated ? null : boss.cooldown }) + button('OUTSMART', 'weekly_boss', { move: 'outsmart' }, { disabled: !boss.available, statusLabel: bossStatusLabel, cooldown: boss.defeated ? null : boss.cooldown }) + button('ENDURE', 'weekly_boss', { move: 'endure' }, { disabled: !boss.available, statusLabel: bossStatusLabel, cooldown: boss.defeated ? null : boss.cooldown }) + '</div>';
+      '<div class="line muted">Level 5 after hatching. All moves cost 12 energy and share one account attempt per UTC day. Damage ranges include the listed bonuses; Endure does not heal or apply a defensive buff.</div>' +
+      '<div class="button-grid one">' + weeklyChoices + '</div>' +
+      (boss.last_attempt ? '<div class="line complete">TODAY’S SAVED ATTACK // ' + escapeHtml(words(boss.last_attempt.action)) + ' // ' + number(boss.last_attempt.damage) + ' DAMAGE</div>' : '') +
+      (boss.defeated ? '<div class="line">' + (boss.reward_claimed ? 'VICTORY REWARD COLLECTED.' : 'VICTORY RECORDED. CHECK SAVED REWARDS.') + '</div>' : '') +
+      (boss.rotation_cooldown ? '<div class="line muted">NEXT WEEKLY BOSS ' + countdownMarkup(boss.rotation_cooldown, 'in ') + '</div>' : '') +
+      '<div class="button-grid">' + (state.contracts && state.contracts.available ? routeButton('CONTINUE WITH CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'Saved quests without pet energy costs or cooldowns.') : '') + routeButton('PLAY PRACTICE', { screen: 'explore', focus: 'practice' }, 'Unlimited local runs with no pet costs or rewards.') + '</div>';
     return renderPlayNow() + renderPractice() + panel('DISTRICT NETWORK', '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + regions, 'districts') + panel('MOON RUN', '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + runBody, 'moon-run') +
       panel(adventure ? adventure.title : 'PET ADVENTURE', '<div class="line">' + escapeHtml(adventure ? adventure.intro : 'NO ADVENTURE SIGNAL.') + '</div><div class="line muted">One adventure every 30 minutes. Entry energy is a requirement; actual costs depend on the outcome below. Base rewards remain subject to caps. Hunger costs increase hunger.</div><div class="button-grid">' + adventureButtons + '</div>', 'adventure') +
       panel(encounter ? encounter.title : 'STREET EVENT', '<div class="line">' + escapeHtml(encounter ? encounter.intro : 'NO EVENT SIGNAL.') + '</div><div class="line muted">Compare both outcomes before choosing. Base rewards are reduced by repeated-play scaling and daily caps; stat changes stop at their limits. Hunger costs increase hunger.</div><div class="button-grid">' + eventButtons + '</div>', 'street-event') +
@@ -2446,6 +2462,10 @@
       expedition_pet_changed: 'your active pet changed; review its expedition choices.',
       expedition_state_changed: 'another action changed your expedition state; review the refreshed choices before trying again.',
       expedition_daily_limit: 'all three account attempts are used today. Contracts and practice remain available.',
+      weekly_boss_pet_changed: 'your active pet changed; review its boss choices.',
+      weekly_boss_state_changed: 'your pet or boss state changed; review the refreshed choices.',
+      weekly_boss_reward_pending: 'the saved victory reward is still pending; use Recover Weekly Reward to try again without another attack.',
+      weekly_boss_reward_not_found: 'no matching saved victory belongs to this account and pet.',
       moon_egg_must_hatch: 'hatch your Moonpet first.',
       pet_not_adopted: 'initialise your Moonpet first.',
       insufficient_gold: 'not enough Moon Gold.',

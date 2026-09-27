@@ -54,6 +54,9 @@ assert.ok(!options.options({ ...snapshot, daily_run: { available: false } }).som
 assert.deepEqual(options.options({ ...snapshot, lifecycle: { phase: 'egg' } }).map((x) => x.key), ['practice', 'incubate']);
 assert.ok(!options.options({ ...snapshot, pet: { energy: 0 } }).some((x) => x.key === 'run'));
 assert.deepEqual(options.options({ adopted: false }), []);
+const weeklyRecovery = { ...snapshot, lifecycle: { phase: 'egg' }, guidance: { weekly_boss: { pending_rewards: [{ week_key: '2026-W38' }] } } };
+assert.equal(options.options(weeklyRecovery)[0].key, 'weekly_boss_claim');
+assert.equal(options.options(weeklyRecovery)[0].focus, 'weekly-boss');
 const expeditionChoices = { ...snapshot, guidance: { economy: { expedition_options: [{ key: 'dust_tunnels', available: true }, { key: 'guardian_rift', available: false }] } } };
 assert.equal(options.options(expeditionChoices).find((entry) => entry.key === 'expedition').focus, 'expedition');
 assert.ok(!options.options({ ...expeditionChoices, lifecycle: { phase: 'egg' } }).some((entry) => entry.key === 'expedition'));

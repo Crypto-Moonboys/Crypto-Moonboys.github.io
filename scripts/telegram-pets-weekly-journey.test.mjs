@@ -196,6 +196,13 @@ function seedAdditionalPet(db, telegramId, petId, slotNumber = 2, seasonKey = 'p
     VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`).run(petId, telegramId, seasonKey, slotNumber);
 }
 
+function seedBossPlayer(db, telegramId, seasonKey) {
+  const petId = seedPlayer(db, telegramId, seasonKey);
+  db.database.prepare(`INSERT INTO telegram_pet_lifecycle_by_pet (pet_id,telegram_id,identity_seed,phase,incubation_json,innate_traits_json)
+    VALUES (?,?,?,'young','{}','[]')`).run(petId, telegramId, petId);
+  return petId;
+}
+
 function switchActivePet(db, telegramId, petId, seasonKey) {
   db.database.prepare(`UPDATE telegram_pet_active_slots
     SET pet_id=?, season_key=?
@@ -892,7 +899,7 @@ assert.equal(runDuplicateRecoveryDb.database.prepare(`SELECT COUNT(*) AS count F
 const bossMemorySwitchDb = createDb();
 const bossMemorySwitchTelegramId = 'weekly-boss-memory-switch';
 const bossMemorySwitchSeasonKey = getPetSeasonInfo(new Date()).key;
-const bossMemoryPetA = seedPlayer(bossMemorySwitchDb, bossMemorySwitchTelegramId, bossMemorySwitchSeasonKey);
+const bossMemoryPetA = seedBossPlayer(bossMemorySwitchDb, bossMemorySwitchTelegramId, bossMemorySwitchSeasonKey);
 const bossMemoryPetB = 'pet-weekly-boss-memory-switch-b';
 seedAdditionalPet(bossMemorySwitchDb, bossMemorySwitchTelegramId, bossMemoryPetB, 2, bossMemorySwitchSeasonKey);
 bossMemorySwitchDb.database.prepare(`UPDATE telegram_pet_profiles
@@ -921,7 +928,7 @@ assert.equal(bossMemorySwitchDb.database.prepare(`SELECT COUNT(*) AS count FROM 
 
 const bossMissingAuthorityDb = createDb();
 const bossMissingAuthorityTelegramId = 'weekly-boss-missing-authority';
-const bossMissingAuthorityPet = seedPlayer(bossMissingAuthorityDb, bossMissingAuthorityTelegramId, getPetSeasonInfo(new Date()).key);
+const bossMissingAuthorityPet = seedBossPlayer(bossMissingAuthorityDb, bossMissingAuthorityTelegramId, getPetSeasonInfo(new Date()).key);
 bossMissingAuthorityDb.database.prepare(`UPDATE telegram_pet_profiles
   SET pet_xp=392040, level=100, energy=100, health=100, happiness=100, cleanliness=100
   WHERE telegram_id=?`).run(bossMissingAuthorityTelegramId);
@@ -946,7 +953,7 @@ assert.equal(bossMissingAuthorityDb.database.prepare(`SELECT COUNT(*) AS count F
 const bossDuplicateDb = createDb();
 const bossDuplicateTelegramId = 'weekly-boss-duplicate';
 const bossDuplicateSeasonKey = getPetSeasonInfo(new Date()).key;
-const bossDuplicatePet = seedPlayer(bossDuplicateDb, bossDuplicateTelegramId, bossDuplicateSeasonKey);
+const bossDuplicatePet = seedBossPlayer(bossDuplicateDb, bossDuplicateTelegramId, bossDuplicateSeasonKey);
 const bossDuplicatePetB = 'pet-weekly-boss-duplicate-b';
 seedAdditionalPet(bossDuplicateDb, bossDuplicateTelegramId, bossDuplicatePetB, 2, bossDuplicateSeasonKey);
 bossDuplicateDb.database.prepare(`UPDATE telegram_pet_profiles
@@ -1006,7 +1013,7 @@ assert.equal(bossDuplicateDb.database.prepare(`SELECT source_event_key FROM tele
 const bossUnattributedDuplicateDb = createDb();
 const bossUnattributedTelegramId = 'weekly-boss-unattributed-duplicate';
 const bossUnattributedSeasonKey = getPetSeasonInfo(new Date()).key;
-const bossUnattributedPet = seedPlayer(bossUnattributedDuplicateDb, bossUnattributedTelegramId, bossUnattributedSeasonKey);
+const bossUnattributedPet = seedBossPlayer(bossUnattributedDuplicateDb, bossUnattributedTelegramId, bossUnattributedSeasonKey);
 const bossUnattributedPetB = 'pet-weekly-boss-unattributed-b';
 seedAdditionalPet(bossUnattributedDuplicateDb, bossUnattributedTelegramId, bossUnattributedPetB, 2, bossUnattributedSeasonKey);
 bossUnattributedDuplicateDb.database.prepare(`UPDATE telegram_pet_profiles
@@ -1036,7 +1043,7 @@ assert.equal(bossUnattributedDuplicateDb.database.prepare(`SELECT COUNT(*) AS co
 const bossDefeatedBackfillDb = createDb();
 const bossDefeatedTelegramId = 'weekly-boss-defeated-backfill';
 const bossDefeatedSeasonKey = getPetSeasonInfo(new Date()).key;
-const bossDefeatedPet = seedPlayer(bossDefeatedBackfillDb, bossDefeatedTelegramId, bossDefeatedSeasonKey);
+const bossDefeatedPet = seedBossPlayer(bossDefeatedBackfillDb, bossDefeatedTelegramId, bossDefeatedSeasonKey);
 bossDefeatedBackfillDb.database.prepare(`UPDATE telegram_pet_profiles
   SET pet_xp=2500, level=20, energy=100, health=100, happiness=100, cleanliness=100
   WHERE telegram_id=?`).run(bossDefeatedTelegramId);

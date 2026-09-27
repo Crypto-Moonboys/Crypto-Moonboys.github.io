@@ -198,6 +198,15 @@ function getRewardAuthorization(source, telegramId, context = {}, now = new Date
       args: [telegramId, dayKey, telegramId, dayKey, attempt - 1, petId, telegramId, energyCost, minimumLevel],
     };
   }
+  if (source === 'pet_weekly_boss') {
+    const weekKey = String(context.week_key || '');
+    const bossId = String(context.boss_id || '');
+    if (!weekKey || !bossId || !petId) throw new Error('invalid_pet_reward_context');
+    return { sql: `AND EXISTS (SELECT 1 FROM telegram_pet_weekly_boss_victories_by_pet v
+      JOIN telegram_pet_weekly_boss_progress p ON p.telegram_id=v.telegram_id AND p.week_key=v.week_key AND p.boss_id=v.boss_id
+      WHERE v.telegram_id=? AND v.pet_id=? AND v.week_key=? AND v.boss_id=? AND p.defeated_at IS NOT NULL)`,
+    args: [telegramId, petId, weekKey, bossId] };
+  }
   if (source === 'roguelite_completion') {
     if (!runId) throw new Error('invalid_pet_reward_context');
     return { sql: "AND EXISTS (SELECT 1 FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ? AND status IN ('completed', 'extracted'))", args: [runId, telegramId] };
@@ -320,7 +329,7 @@ export async function awardPetReward(db, request = {}) {
         cleanliness = MIN(100, MAX(0, cleanliness + ?)), energy = MIN(100, MAX(0, energy + ?)), happiness = MIN(100, MAX(0, happiness + ?)),
         streak_days = CASE WHEN ? = 0 THEN streak_days WHEN last_active_day > ? THEN streak_days WHEN last_active_day = ? THEN MAX(1, streak_days) WHEN last_active_day = ? THEN streak_days + 1 ELSE 1 END,
         last_active_day = CASE WHEN ? = 0 THEN last_active_day WHEN last_active_day > ? THEN last_active_day ELSE ? END,
-        last_decay_at = CASE WHEN ? = 0 THEN last_decay_at ELSE ? END,
+        last_decay_at = CASE WHEN ? = 0 OR julianday(last_decay_at) > julianday(?) THEN last_decay_at ELSE ? END,
         level = level,
         ${petAuthority ? `source_profile_updated_at = '${PET_INSTANCE_AUTHORITY_VERSION}',` : ''}
         updated_at = CURRENT_TIMESTAMP
@@ -329,7 +338,7 @@ export async function awardPetReward(db, request = {}) {
       .bind(eventId, metadata,
         ...(petAuthority ? [] : [MAX_CURRENCY, rewards.moon_gold, currencyCosts.moon_gold, MAX_CURRENCY, rewards.moon_crystals, currencyCosts.moon_crystals, MAX_CURRENCY, rewards.style_tokens, currencyCosts.style_tokens]),
         profileDeltas.health, profileDeltas.hunger, profileDeltas.cleanliness, profileDeltas.energy, profileDeltas.happiness,
-        touchStreak, dayKey, dayKey, previousDayKey, touchStreak, dayKey, dayKey, touchStreak, now.toISOString(),
+        touchStreak, dayKey, dayKey, previousDayKey, touchStreak, dayKey, dayKey, touchStreak, now.toISOString(), now.toISOString(),
         ...(petAuthority ? [petId, telegramId] : [telegramId]), eventId, metadata),
     petAuthority
       ? db.prepare(`UPDATE telegram_pet_profiles SET

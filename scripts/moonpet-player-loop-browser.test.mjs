@@ -15,7 +15,9 @@ const root = process.cwd();
 const sqlite = new DatabaseSync(':memory:');
 sqlite.exec(await fs.readFile(path.join(root, 'workers/moonboys-api/schema.sql'), 'utf8'));
 sqlite.exec(await fs.readFile(path.join(root, 'workers/moonboys-api/migrations/048_telegram_pet_player_expansion.sql'), 'utf8'));
+sqlite.exec(await fs.readFile(path.join(root, 'workers/moonboys-api/migrations/058_telegram_pet_season_completion.sql'), 'utf8'));
 let failActivitySettlement = false;
+let failWeeklyReward = false;
 class Statement {
   constructor(sql, args = []) { this.sql = sql; this.args = args; }
   bind(...args) { return new Statement(this.sql, args); }
@@ -32,6 +34,9 @@ class Statement {
 const db = {
   prepare(sql) { return new Statement(sql); },
   async batch(statements) {
+    if (failWeeklyReward && statements[0].sql.includes('INSERT OR IGNORE INTO telegram_pet_reward_claims') && statements[0].args.includes('pet_weekly_boss')) {
+      failWeeklyReward = false; throw Error('interrupted_weekly_reward');
+    }
     sqlite.exec('BEGIN IMMEDIATE');
     try { const results = []; for (const statement of statements) results.push(await statement.run()); sqlite.exec('COMMIT'); return results; }
     catch (error) { sqlite.exec('ROLLBACK'); throw error; }
@@ -495,11 +500,49 @@ try {
     assert.equal(await page.locator('[data-action="expedition"]').count(), 0, 'old Worker responses cannot advertise choices the old handler would ignore');
     assert.ok((await page.locator('[data-panel="expedition"]').textContent()).includes('destinations are syncing'));
     oldExpeditionState = false;
+    currentUser = 'browser-weekly-' + viewport.width;
+    await seed(currentUser, 'young');
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    const bossBefore = (await hooks.buildPetMiniAppState(db, currentUser, token)).guidance.weekly_boss;
+    const beforeBossNavigation = gameplayCount();
+    await page.locator('[data-panel="play-now"] [data-focus="weekly-boss"]').click();
+    assert.equal(gameplayCount(), beforeBossNavigation);
+    assert.equal(await page.locator('[data-panel="weekly-boss"] [data-action="weekly_boss"]').count(), 3);
+    const bossText = await page.locator('[data-panel="weekly-boss"]').textContent();
+    for (const choice of bossBefore.choices) assert.ok(bossText.includes(choice.minimum_damage + '–' + choice.maximum_damage + ' DAMAGE'));
+    assert.ok(bossText.includes('12 ENERGY') && bossText.includes('NEXT WEEKLY BOSS'));
+    if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-weekly-${viewport.width}.png`) });
+    sqlite.prepare(`INSERT INTO telegram_pet_weekly_boss_progress (telegram_id,week_key,boss_id,damage,attempts)
+      VALUES (?,?,?,?,1)`).run(currentUser, bossBefore.week_key, bossBefore.boss_id, bossBefore.hp - 1);
+    failWeeklyReward = true;
+    const bossResponse = page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'weekly_boss');
+    await page.locator('[data-action="weekly_boss"]').first().click();
+    const bossResult = await (await bossResponse).json();
+    assert.equal(bossResult.result.reason, 'boss_defeated');
+    assert.equal(bossResult.result.reward_pending, true);
+    assert.equal(bossResult.state.pet.energy, 68);
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-panel="play-now"] [data-focus="weekly-boss"]').click();
+    await page.waitForSelector('[data-action="weekly_boss_claim"]');
+    assert.equal(await page.locator('[data-action="weekly_boss"]:not([disabled])').count(), 0);
+    assert.ok((await page.locator('[data-panel="weekly-boss"]').textContent()).includes('TODAY’S SAVED ATTACK'));
+    if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-weekly-recovery-${viewport.width}.png`) });
+    const weeklyClaimResponse = page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'weekly_boss_claim');
+    await page.locator('[data-action="weekly_boss_claim"]').click();
+    const weeklyClaimed = await (await weeklyClaimResponse).json();
+    assert.equal(weeklyClaimed.result.accepted, true);
+    assert.equal(weeklyClaimed.state.pet.energy, 68);
+    assert.equal(weeklyClaimed.state.guidance.weekly_boss.pending_rewards.length, 0);
+    await page.waitForFunction(() => !document.querySelector('[data-action="weekly_boss_claim"]'));
+    const beforeBossContinue = gameplayCount();
+    await page.locator('[data-panel="weekly-boss"] [data-focus="contracts"]').click();
+    assert.equal(gameplayCount(), beforeBossContinue);
+    assert.equal(await page.locator('[data-panel="contracts"]').count(), 1);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
     assert.equal(overflow, false, 'mobile viewport must not overflow horizontally');
     assert.deepEqual(errors, [], 'no runtime errors across all six screens');
     if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-${viewport.width}.png`) });
-    console.log(`Moonpet browser loop passed at ${viewport.width}x${viewport.height}; all six screens; bounties; practice; contracts and records; daily tactics; raids; timed recovery; Trade; expedition destinations, costs, receipts, reset, continuation and old-Worker compatibility.`);
+    console.log(`Moonpet browser loop passed at ${viewport.width}x${viewport.height}; all six screens; bounties; practice; contracts and records; daily tactics; raids; timed recovery; Trade; expeditions; weekly boss previews, energy, saved victory recovery, reset and continuation.`);
     await context.close();
   }
 } finally {
