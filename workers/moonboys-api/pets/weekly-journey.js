@@ -23,6 +23,10 @@ const WEEKLY_JOURNEY_OBJECTIVE_SOURCE_TYPES = Object.freeze({
   weekly_check_in: Object.freeze(new Set(['check_in', 'daily_check_in', 'weekly_check_in', 'daily_chest'])),
 });
 
+export const WEEKLY_JOURNEY_SOURCE_OBJECTIVES = Object.freeze(Object.fromEntries(
+  Object.entries(WEEKLY_JOURNEY_OBJECTIVE_SOURCE_TYPES).flatMap(([objective, types]) => [...types].map((type) => [type, objective])),
+));
+
 export const WEEKLY_JOURNEY_TOTAL_OBJECTIVES = Object.freeze(Object.keys(PET_WEEKLY_JOURNEY_OBJECTIVES).length);
 
 // Authority invariant: Weekly Crest difficulty is intentionally full completion.
@@ -278,7 +282,7 @@ export async function finalizeWeeklyJourneyCrest(db, request) {
   };
 }
 
-export async function recordWeeklyJourneyObjectiveEvidence(db, request = {}) {
+export async function recordWeeklyJourneyObjectiveEvidence(db, request = {}, options = {}) {
   const objective = PET_WEEKLY_JOURNEY_OBJECTIVES[String(request.objective_id || '')];
   if (!objective) throw new Error('invalid_weekly_journey_objective');
   const authority = await validateWeeklyEvidenceAuthority(db, request);
@@ -294,7 +298,9 @@ export async function recordWeeklyJourneyObjectiveEvidence(db, request = {}) {
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'accepted', ?)`)
     .bind(eventId, authority.pet.telegram_id, authority.pet.pet_id, authority.pet.season_key, authority.qualification_week,
       objective.objective_id, authority.source_event.event_key, authority.source_event.event_type, progressValue, safeJson(request.evidence)).run();
-  const journey = await finalizeWeeklyJourneyCrest(db, {
+  // Recovery rebuilds a batch before the award queue computes the original
+  // threshold-crossing date. The last repaired event may be an earlier action.
+  const journey = options.defer_award ? { accepted: false } : await finalizeWeeklyJourneyCrest(db, {
     telegram_id: authority.pet.telegram_id,
     pet_id: authority.pet.pet_id,
     season_key: authority.pet.season_key,

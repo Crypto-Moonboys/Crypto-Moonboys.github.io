@@ -1414,8 +1414,56 @@ assert.equal(resumedEnding.reason, 'daily_run_completed', 'saved final-room retr
 assert.equal(interruptedEnding.adapter.database.prepare('SELECT current_room FROM telegram_pet_runs WHERE run_id=?').get(interruptedEnding.run.run_id).current_room, 10);
 assert.equal(interruptedEnding.adapter.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_run_rooms WHERE run_id=? AND room_number>10').get(interruptedEnding.run.run_id).count, 0);
 
+// Early extraction can commit before daily/weekly records. It is no longer an
+// active run and has no final boss, so the final-boss recovery queue misses it.
+{
+  const f = await endingFixture('early-ending-records');
+  f.adapter.database.prepare('DELETE FROM telegram_pet_run_rooms WHERE run_id=?').run(f.run.run_id);
+  f.adapter.database.prepare('UPDATE telegram_pet_runs SET current_room=0,depth=0,score=0 WHERE run_id=?').run(f.run.run_id);
+  const run = f.adapter.database.prepare('SELECT * FROM telegram_pet_runs WHERE run_id=?').get(f.run.run_id);
+  const room = await createPetRunRoom(f.adapter, run);
+  await persistPetRunRoomOutcome(f.adapter, run, room, { success: true, score: 25, choice_id: room.choices[0].choice_id });
+  f.adapter.database.prepare('UPDATE telegram_pet_runs SET current_room=1,depth=1,score=25 WHERE run_id=?').run(f.run.run_id);
+  f.adapter.failWrite = /UPDATE telegram_pet_daily_runs SET status =/;
+  await assert.rejects(__petMediaTestHooks.processPetMiniAppAction(f.adapter, f.owner, { id: f.owner }, {
+    action: 'run_extract', run_id: run.run_id,
+  }, 'fixture-token'), /injected_journey_write_failure/);
+  f.adapter.failWrite = null;
+  assert.equal(f.adapter.database.prepare('SELECT status FROM telegram_pet_runs WHERE run_id=?').get(run.run_id).status, 'extracted');
+  const wallet = f.adapter.database.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner);
+  await __petMediaTestHooks.buildPetMiniAppState(f.adapter, f.owner, 'fixture-token');
+  assert.equal(f.adapter.database.prepare('SELECT status FROM telegram_pet_daily_runs WHERE run_id=?').get(run.run_id).status, 'extracted',
+    'refresh must settle early extraction records even though there is no final boss room');
+  assert.equal(f.adapter.database.prepare("SELECT COUNT(*) AS n FROM telegram_pet_daily_journey_objectives WHERE pet_id=? AND utc_day='2026-08-20' AND challenge_id='daily_extraction'").get(run.pet_id).n, 1);
+  assert.equal(f.adapter.database.prepare("SELECT COUNT(*) AS n FROM telegram_pet_weekly_journey_objectives WHERE pet_id=? AND objective_id='weekly_run'").get(run.pet_id).n, 1);
+  await __petMediaTestHooks.buildPetMiniAppState(f.adapter, f.owner, 'fixture-token');
+  assert.deepEqual(f.adapter.database.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner), wallet);
+  const records = f.adapter.database.prepare('SELECT runs_recorded,extraction_successes,boss_completions FROM telegram_pet_daily_leaderboard_records WHERE telegram_id=?').get(f.owner);
+  assert.deepEqual({ ...records }, { runs_recorded: 1, extraction_successes: 1, boss_completions: 0 });
+  assert.equal(f.adapter.database.prepare('SELECT COUNT(*) AS n FROM telegram_pet_specialist_events WHERE telegram_id=?').get(f.owner).n, 0);
+}
+
 // Exercise both sides of each non-atomic boundary, then recover through the
 // actual state route after switching pets. Persisted evidence owns all credit.
+for (const status of ['failed', 'abandoned']) for (const sourceOwned of [true, false]) {
+  const f = await endingFixture(`early-${status}-${sourceOwned}`);
+  f.adapter.database.prepare('DELETE FROM telegram_pet_run_rooms WHERE run_id=?').run(f.run.run_id);
+  f.adapter.database.prepare('UPDATE telegram_pet_runs SET current_room=0,depth=0,score=0 WHERE run_id=?').run(f.run.run_id);
+  const run = f.adapter.database.prepare('SELECT * FROM telegram_pet_runs WHERE run_id=?').get(f.run.run_id);
+  const room = await createPetRunRoom(f.adapter, run);
+  await persistPetRunRoomOutcome(f.adapter, run, room, { success: true, score: 25, choice_id: room.choices[0].choice_id });
+  f.adapter.database.prepare('UPDATE telegram_pet_runs SET status=?,current_room=1,depth=1,score=25 WHERE run_id=?').run(status,run.run_id);
+  if (!sourceOwned) f.adapter.database.prepare('UPDATE telegram_pet_run_rooms SET pet_id=NULL WHERE run_id=?').run(run.run_id);
+  await __petMediaTestHooks.getPetProfile(f.adapter, f.owner); // complete the independent wallet migration before the baseline
+  const claims = f.adapter.database.prepare('SELECT * FROM telegram_pet_reward_claims WHERE telegram_id=? ORDER BY claim_id').all(f.owner);
+  await __petMediaTestHooks.buildPetMiniAppState(f.adapter, f.owner, 'fixture-token');
+  assert.equal(f.adapter.database.prepare('SELECT status FROM telegram_pet_daily_runs WHERE run_id=?').get(run.run_id).status, sourceOwned ? status : 'active');
+  assert.equal(f.adapter.database.prepare("SELECT COUNT(*) AS n FROM telegram_pet_weekly_journey_objectives WHERE pet_id=? AND objective_id='weekly_run'").get(run.pet_id).n, 0,
+    'failed or abandoned runs do not become successful weekly finishes');
+  assert.equal(f.adapter.database.prepare("SELECT COUNT(*) AS n FROM telegram_pet_daily_journey_objectives WHERE pet_id=? AND challenge_id IN ('daily_extraction','daily_boss')").get(run.pet_id).n, 0);
+  assert.deepEqual(f.adapter.database.prepare('SELECT * FROM telegram_pet_reward_claims WHERE telegram_id=? ORDER BY claim_id').all(f.owner), claims);
+}
+
 for (const fault of ['reward', 'win', 'terminal', 'sync', 'rejected', 'legacy-completed', 'legacy-extracted']) {
   const f = await endingFixture('ending-' + fault);
   const originalBatch = f.adapter.batch.bind(f.adapter);
