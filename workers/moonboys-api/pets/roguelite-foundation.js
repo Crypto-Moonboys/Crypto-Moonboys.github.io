@@ -183,12 +183,19 @@ function getRewardAuthorization(source, telegramId, context = {}, now = new Date
   if (source === 'pet_expedition') {
     const dayKey = String(context.day_key || '').trim();
     const energyCost = positiveInteger(context.energy_cost, 100);
-    if (!dayKey || !energyCost) throw new Error('invalid_pet_reward_context');
+    const attempt = Number(context.attempt);
+    const minimumLevel = positiveInteger(context.min_level, 100);
+    if (!dayKey || !energyCost || !petId || !minimumLevel || !Number.isInteger(attempt) || attempt < 1 || attempt > 3) throw new Error('invalid_pet_reward_context');
     return {
       sql: `AND (SELECT COUNT(*) FROM telegram_pet_reward_claims
         WHERE telegram_id = ? AND source = 'pet_expedition' AND day_key = ? AND status IN ('pending', 'awarded')) < 3
-        AND EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id = ? AND energy >= ?)`,
-      args: [telegramId, dayKey, telegramId, energyCost],
+        AND (SELECT COUNT(*) FROM telegram_pet_reward_claims
+          WHERE telegram_id = ? AND source = 'pet_expedition' AND day_key = ? AND status IN ('pending', 'awarded')) = ?
+        AND EXISTS (SELECT 1 FROM telegram_pet_instances p JOIN telegram_pet_lifecycle_by_pet l
+          ON l.pet_id = p.pet_id AND l.telegram_id = p.telegram_id
+          WHERE p.pet_id = ? AND p.telegram_id = ? AND p.status = 'active' AND l.phase <> 'egg'
+            AND p.energy >= ? AND ${getPetVisibleLevelSql('p.pet_xp')} >= ?)`,
+      args: [telegramId, dayKey, telegramId, dayKey, attempt - 1, petId, telegramId, energyCost, minimumLevel],
     };
   }
   if (source === 'roguelite_completion') {

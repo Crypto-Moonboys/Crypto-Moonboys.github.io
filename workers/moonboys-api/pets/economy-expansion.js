@@ -84,12 +84,15 @@ export function getPetMarketOffers(dayKey) {
   return rotate(PET_MARKET_OFFERS, `market:${dayKey}`, 4);
 }
 
-export function getPetExpedition(level = 1) {
+export function getPetExpedition(level = 1, key = '') {
+  if (typeof key !== 'string') return null;
+  if (key) return PET_EXPEDITION_TIERS.find((tier) => tier.key === key && integer(level) >= tier.min_level) || null;
   return [...PET_EXPEDITION_TIERS].reverse().find((tier) => integer(level) >= tier.min_level) || PET_EXPEDITION_TIERS[0];
 }
 
-export function resolvePetExpeditionReward(dayKey, telegramId, attempt, level = 1) {
-  const expedition = getPetExpedition(level);
+export function resolvePetExpeditionReward(dayKey, telegramId, attempt, level = 1, key = '') {
+  const expedition = getPetExpedition(level, key);
+  if (!expedition) return null;
   const rewards = expedition.rewards;
   return { expedition, reward: rewards[hash(`${dayKey}:${telegramId}:${attempt}:${expedition.key}`) % rewards.length] };
 }
@@ -111,9 +114,11 @@ export function buildPetEconomyGuidanceActions(state = {}) {
     detail: `Completed ${claimable.progress}/${claimable.required}. Reward: ${formatPetEconomyValue(claimable.reward)}.`,
     label: '📜 Claim Bounty', callback_data: `pet:bounty:${claimable.key}`,
   });
-  if (integer(state.expedition_attempts_left) > 0 && integer(state.pet?.energy) >= integer(state.expedition?.energy)) actions.push({
-    key: 'economy:expedition', priority: 43, title: `Explore ${state.expedition.title}`,
-    detail: `${state.expedition_attempts_left}/3 attempts remain today. Costs ${state.expedition.energy} Energy; earns gold and can find crystals or upgrade materials.`,
+  const expedition = Array.isArray(state.expedition_options)
+    ? state.expedition_options.filter((entry) => entry.available).at(-1) : state.expedition;
+  if (expedition && integer(state.expedition_attempts_left) > 0 && integer(state.pet?.energy) >= integer(expedition.energy)) actions.push({
+    key: 'economy:expedition', priority: 43, title: `Explore ${expedition.title}`,
+    detail: `${state.expedition_attempts_left}/3 attempts remain today. ${expedition.energy} Energy for this route; open the board to compare unlocked destinations and possible finds.`,
     label: '⛏️ Expedition', callback_data: 'pet:expedition',
   });
   const affordable = (state.market_offers || []).find((offer) => !offer.purchased && offer.affordable);

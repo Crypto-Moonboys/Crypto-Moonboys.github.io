@@ -2068,7 +2068,26 @@
       return '<div class="line">' + escapeHtml(words(item.title || item.key || item.item_key)) + ' x' + number(item.count || item.quantity) + '</div>' +
         ((item.kind === 'usable_item' || item.usable) ? '<div class="button-grid one">' + button('USE ' + (item.title || item.key), 'use_item', { item_key: item.key || item.item_key }) + '</div>' : '');
     }).join('');
-    var expedition = economy.expedition || {};
+    var expeditionOptions = economy.expedition_options;
+    var expeditionBody = '<div class="line muted">Expedition destinations are syncing. Refresh after the game update.</div>';
+    if (Array.isArray(expeditionOptions)) {
+      expeditionBody = '<div class="line">' + number(economy.expedition_attempts_left) + '/3 SHARED ATTEMPTS LEFT TODAY</div>' +
+        '<div class="line muted">Choose any unlocked destination. Earlier routes stay open as you level up. Each costs one account-wide attempt and its listed energy. Each awards up to 12 Pet XP under the existing cap; finds vary by destination.</div>' +
+        (economy.expedition_cooldown ? '<div class="line">ATTEMPTS RESET ' + countdownMarkup(economy.expedition_cooldown, 'in ') + '</div>' : '') +
+        expeditionOptions.map(function (entry) {
+          return '<div class="line"><strong>' + escapeHtml(entry.title) + '</strong> // LEVEL ' + number(entry.min_level) + ' // ' + number(entry.energy) + ' ENERGY</div>' +
+            '<div class="line muted">POSSIBLE FINDS // ' + escapeHtml((entry.rewards || []).map(valueText).join(' / ')) + '</div>' +
+            '<div class="button-grid one">' + button('EXPLORE ' + entry.title, 'expedition', { expedition_key: entry.key, pet_id: state.pet.pet_id }, {
+              disabled: !entry.available, cooldown: economy.expedition_cooldown,
+              resourceRequired: entry.unlocked && !entry.affordable,
+              detail: !entry.unlocked ? 'Requires Level ' + number(entry.min_level) : !entry.affordable ? 'Requires ' + number(entry.energy) + ' Energy' : 'Spend ' + number(entry.energy) + ' Energy and 1 attempt',
+            }) + '</div>';
+        }).join('');
+      if ((economy.expedition_history || []).length) expeditionBody += '<details><summary class="line">TODAY’S EXPEDITION RECEIPTS</summary>' + economy.expedition_history.map(function (receipt) {
+        return '<div class="line">' + escapeHtml(receipt.title) + ' // ' + number(receipt.energy_cost) + ' ENERGY // ' + (receipt.pet_id === state.pet.pet_id ? 'THIS PET' : receipt.pet_id ? 'OTHER PET' : 'EARLIER ACCOUNT RECEIPT') + '</div><div class="line muted">RECEIVED ' + escapeHtml(valueText(receipt.rewards)) + '</div>';
+      }).join('') + '</details>';
+    }
+    expeditionBody += '<div class="button-grid">' + (state.contracts && state.contracts.available ? routeButton('CONTINUE WITH CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'Saved quests without pet energy costs or cooldowns.') : '') + routeButton('PLAY PRACTICE', { screen: 'explore', focus: 'practice' }, 'Unlimited local runs, with no pet costs or rewards.') + '</div>';
     var live = state.live_systems || {};
     var upgrades = new Map((live.upgrades || []).map(function (item) { return [item.item_key, item]; }));
     var gear = (state.gear || []).map(function (item) {
@@ -2096,7 +2115,7 @@
       panel('CRAFTING WORKSHOP', '<div class="button-grid">' + crafting + '</div>', 'crafting') +
       panel('RELIC VAULT', '<div class="line muted">Persistent collectibles used by eligible progression requirements. Passive relic powers are not active in Moon Run, Daily Run, contracts or practice.</div>' + (relics || '<div class="line muted">NO RELICS RECOVERED.</div>'), 'relics') +
       panel('DAILY BOUNTIES', '<div class="line muted">Four account-wide targets per UTC day. Only accepted actions count. The Energy Drink, Dance and Cuddles care buttons do not count. New targets arrive at 00:00 UTC. Contracts remain available between resets.</div>' + (bounties || '<div class="line muted">NO BOUNTIES.</div>'), 'bounties') +
-      panel('CRYSTAL EXPEDITION // ' + escapeHtml(expedition.title || 'LOCKED'), '<div class="line">' + number(economy.expedition_attempts_left) + '/3 ATTEMPTS // COST ' + number(expedition.energy) + ' ENERGY</div><div class="line muted">POSSIBLE FINDS // ' + escapeHtml((expedition.rewards || []).map(valueText).join(' / ')) + '</div><div class="button-grid one">' + button('RUN EXPEDITION', 'expedition', {}, { disabled: !economy.expedition_attempts_left || Number(state.pet && state.pet.energy || 0) < Number(expedition.energy || 0), resourceRequired: Boolean(economy.expedition_attempts_left) && Number(state.pet && state.pet.energy || 0) < Number(expedition.energy || 0) }) + '</div>', 'expedition') +
+      panel('CRYSTAL EXPEDITIONS // CHOOSE A DESTINATION', expeditionBody, 'expedition') +
       panel('MOON MARKET', '<div class="button-grid">' + offers + '</div>', 'market') +
       panel('PERMANENT SHOP', '<div class="button-grid">' + shop + '</div>', 'shop') + panel('STYLE LAB', '<div class="button-grid">' + cosmetics + '</div>', 'style-lab') +
       panel('INVENTORY', inventory || '<div class="line muted">BAG EMPTY.</div>', 'inventory') +
@@ -2423,6 +2442,10 @@
       trade_cooldown: 'wait for cooldown.',
       trade_state_changed: 'your pet or balance changed; review the refreshed state before trying again.',
       adventure_cooldown: 'wait for cooldown.',
+      expedition_locked: 'choose an expedition your pet has unlocked.',
+      expedition_pet_changed: 'your active pet changed; review its expedition choices.',
+      expedition_state_changed: 'another action changed your expedition state; review the refreshed choices before trying again.',
+      expedition_daily_limit: 'all three account attempts are used today. Contracts and practice remain available.',
       moon_egg_must_hatch: 'hatch your Moonpet first.',
       pet_not_adopted: 'initialise your Moonpet first.',
       insufficient_gold: 'not enough Moon Gold.',

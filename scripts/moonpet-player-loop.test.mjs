@@ -54,6 +54,10 @@ assert.ok(!options.options({ ...snapshot, daily_run: { available: false } }).som
 assert.deepEqual(options.options({ ...snapshot, lifecycle: { phase: 'egg' } }).map((x) => x.key), ['practice', 'incubate']);
 assert.ok(!options.options({ ...snapshot, pet: { energy: 0 } }).some((x) => x.key === 'run'));
 assert.deepEqual(options.options({ adopted: false }), []);
+const expeditionChoices = { ...snapshot, guidance: { economy: { expedition_options: [{ key: 'dust_tunnels', available: true }, { key: 'guardian_rift', available: false }] } } };
+assert.equal(options.options(expeditionChoices).find((entry) => entry.key === 'expedition').focus, 'expedition');
+assert.ok(!options.options({ ...expeditionChoices, lifecycle: { phase: 'egg' } }).some((entry) => entry.key === 'expedition'));
+assert.ok(!options.options({ ...snapshot, guidance: { economy: { expedition_options: [{ available: false }] } } }).some((entry) => entry.key === 'expedition'));
 assert.ok(!options.options({ ...snapshot, capabilities: { systems: { arena: { state: 'AVAILABLE' } } } }).some((x) => x.key === 'arena'), 'incomplete capabilities never open combat');
 
 // All ten rotating targets lead to qualifying actions, including alternative run routes.
