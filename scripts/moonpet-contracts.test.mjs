@@ -165,6 +165,18 @@ const missed = finishSide('versatile', Array(6).fill('cover'));
 assert.equal(missed.status, 'completed', 'optional target cannot fail a successful main goal');
 assert.equal(contractSideProgress(missed.state).reached, false);
 assert.equal(advanceContract(missed.state, 'cover', 0), null, 'finished state cannot earn another side bonus');
+const supplyDraft = { ...createContractState('escort', 'scavenger', 1, 'supply-choice', 'stocked'), depth: 2, draft: ['shield', 'radar', 'boots'] };
+const supplyBefore = structuredClone(supplyDraft);
+const supplied = advanceContract(supplyDraft, 'supply_cache', 0);
+assert.deepEqual(supplyDraft, supplyBefore, 'a draft choice must not mutate the supplied state');
+assert.equal(supplied.state.supplies, supplyBefore.supplies + 2);
+assert.equal(supplied.state.depth, supplyBefore.depth); assert.deepEqual(supplied.state.perks, supplyBefore.perks);
+assert.deepEqual(supplied.state.draft, []); assert.equal(supplied.rank_points, 0);
+assert.equal(contractSideProgress(supplied.state).reached, true, 'supplies may satisfy Well Supplied but rank waits for completion');
+assert.equal(advanceContract(supplied.state, 'supply_cache', 0), null, 'the same draft cannot grant supplies again');
+assert.equal(advanceContract(supplied.state, 'shield', 0), null, 'taking supplies consumes the upgrade offer');
+for (const version of [1, 2, 3]) assert.equal(advanceContract({ ...supplyDraft, version }, 'supply_cache', 0), null, 'saved old versions keep their draft rules');
+assert.equal(advanceContract(createContractState('escort', 'scout', 1, 'no-draft'), 'supply_cache', 0), null);
 const failedMain = advanceContract({ ...createContractState('scout', 'bruiser', 1, 'fail-main', 'daredevil'), depth: 5, wins: 2, route_wins: { cover: 0, bold: 2, search: 0 } }, 'bold', 0);
 assert.equal(contractSideProgress(failedMain.state).reached, true);
 assert.equal(failedMain.status, 'failed'); assert.equal(failedMain.rank_points, 0);
@@ -178,6 +190,22 @@ assert.equal((await act(a, { action: 'contract_start', sequence: 1, goal: 'escor
 const realCrypto = globalThis.crypto;
 Object.defineProperty(globalThis, 'crypto', { configurable: true, value: { subtle: realCrypto.subtle, randomUUID: () => realCrypto.randomUUID(), getRandomValues: (values) => { values.fill(0); return values; } } });
 try {
+  const supplyPet = await seed('contract-supply-draft');
+  await start(supplyPet);
+  for (let i = 0; i < 2; i++) {
+    const r = (await board(supplyPet)).run;
+    assert.equal((await act(supplyPet, { action: 'contract_step', contract_id: r.contract_id, revision: r.revision, choice: 'cover' })).accepted, true);
+  }
+  const offer = (await board(supplyPet)).run;
+  assert.equal(offer.choices.some((c) => c.key === 'supply_cache'), true);
+  const takeSupply = { action: 'contract_step', contract_id: offer.contract_id, revision: offer.revision, choice: 'supply_cache', supplies: 999999 };
+  const supplyRace = await Promise.all([act(supplyPet, takeSupply), act(supplyPet, takeSupply)]);
+  assert.equal(supplyRace.filter((r) => r.accepted).length, 1);
+  const savedSupply = (await board(supplyPet)).run;
+  assert.equal(savedSupply.supplies, offer.supplies + 2); assert.equal(savedSupply.depth, offer.depth);
+  assert.equal(savedSupply.perks.length, 0); assert.equal(savedSupply.choices.some((c) => c.upgrade), false);
+  assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_contract'").get(supplyPet.telegram_id).n, 0);
+  assert.equal(sqlite.prepare('SELECT energy FROM telegram_pet_instances WHERE pet_id=?').get(supplyPet.pet_id).energy, 0);
   const tacticalPet = await seed('contract-prepared');
   await act(tacticalPet, { action: 'contract_start', sequence: 1, goal: 'escort', build: 'scavenger', tier: 1 });
   let tacticalRun = (await board(tacticalPet)).run;

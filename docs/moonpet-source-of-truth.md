@@ -65,6 +65,26 @@ Rules:
 
 ---
 
+### Daily Cache and season reward receipts
+
+Daily Cache grants 40 Moon Gold, two Style Tokens and up to 40 Pet XP once per
+account per UTC day. It retains its existing account/day 1,200 Pet XP window.
+The XP amount is recalculated against accepted events inside settlement, then
+added to the captured pet's current XP. Concurrent XP cannot be overwritten or
+push the cache through the cap. Currency, instance changes and the accepted
+receipt commit together. The compatibility profile is mirrored only while that
+same pet is selected, and retries do not give Bond progression to another pet.
+
+The Care Console shows the current XP allowance, claimed receipt and UTC reset.
+Play Now links to an available cache; after collection, Contracts remains
+available directly from Care. This is a single daily reward, not an endless
+reward farm.
+
+Season tiers are marked claimed only by an awarded unified reward receipt.
+A rejected payout leaves the tier available; an old unpaid compatibility marker
+cannot hide it. A paid receipt remains claimed even if writing the compatibility
+marker was interrupted. Retries use the same owner/season/tier reward key.
+
 ## Weekly Journey
 
 Weekly structured progression system.
@@ -129,12 +149,20 @@ points for its source pet and immediately offers another quest. Rank has no
 daily cap and no effect on Pet XP, currencies, combat, Growth Marks or Weekly
 Crests. Difficulty tiers 2 and 3 open after 5 and 15 completions respectively.
 
+New v4 contracts add Take Supply Cache to both draft checkpoints. It replaces
+that checkpoint's upgrade with two contract supplies. Choosing it does not
+advance a room, change pet energy or grant XP, inventory or currencies. Supplies
+can fund recovery, Scout Ahead, or Well Supplied. The saved revision consumes
+the draft once, so retries or parallel clicks cannot collect twice. Existing
+v1/v2/v3 contracts retain their original draft choices; v4 keeps v3's room,
+preparation, side-objective, rank and daily-bonus rules.
+
 Contracts from v2 onward give all eight room scenes real route modifiers. The displayed
 odds, salvage and failure damage already include the room, build, difficulty
 and upgrades. Clear chance stays between 30% and 98%. Saved v1 contracts keep
 their original mechanics and rank calculation until they finish.
 
-New v3 contracts add one optional preparation per room. Scout Ahead spends two
+Contracts from v3 onward add one optional preparation per room. Scout Ahead spends two
 contract supplies for +10 percentage points to that room's route odds, capped
 at 98%. Field Patch spends 20 contract salvage to heal up to 25 route HP.
 Neither advances the room or earns points/XP by itself. Field Patch requires
