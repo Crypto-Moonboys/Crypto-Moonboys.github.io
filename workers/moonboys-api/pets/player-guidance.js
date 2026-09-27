@@ -111,10 +111,8 @@ function isSpecialActionAvailable(state = {}, key) {
 export function choosePetNextAction(state = {}) {
   const pet = state.pet || null;
   if (!pet) return null;
-  if (state.activity) {
-    return state.activity.ready
-      ? { key: 'claim_activity', title: 'Claim the finished activity', detail: 'Rewards are ready now.', label: '🎁 Claim', callback_data: 'pet:claim' }
-      : { key: 'activity_running', title: `Let ${pet.pet_name || 'Moonpet'} finish ${state.activity.activity_type || 'the activity'}`, detail: state.activity.detail || 'Return when the claim timer is ready.', label: '⏱ Check Activity', callback_data: 'pet:activity' };
+  if (state.activity?.ready) {
+    return { key: 'claim_activity', title: state.activity.recovery_pending ? 'Recover the saved activity reward' : 'Claim the finished activity', detail: state.activity.recovery_pending ? 'Retry the saved claim; the reward will not be issued twice.' : 'Rewards are ready now. Compare the next duration preview before claiming.', label: '🎁 Claim', callback_data: 'pet:claim' };
   }
   if (state.active_run) {
     const runId = String(state.active_run.run_id || '');
@@ -158,7 +156,8 @@ export function choosePetNextAction(state = {}) {
   if (economyAction) return economyAction;
   const upgrade = (state.shop_items || []).find((item) => item.unlocked && item.affordable && !item.equipped);
   if (upgrade) return { key: `buy:${upgrade.key}`, title: `Equip ${upgrade.title}`, detail: 'You already have enough currency for this upgrade.', label: '🛒 Open Shop', callback_data: 'pet:shop' };
-  return { key: 'timed-work', title: 'Start a timed activity', detail: 'Timed work builds resources while you are away.', label: '⏱ Activities', callback_data: 'pet:activity' };
+  if (state.activity) return { key: 'activity_running', title: 'Activity is accumulating', detail: 'You can keep playing while the activity runs, or leave and return to claim.', label: '⏱ Check Activity', callback_data: 'pet:activity' };
+  return { key: 'timed-work', title: 'Choose a timed activity', detail: 'Compare recovery, training, work and exploration rewards by duration.', label: '⏱ Activities', callback_data: 'pet:activity' };
 }
 
 export function mergePetGuidanceReplyMarkup(replyMarkup = null, nextAction = null) {

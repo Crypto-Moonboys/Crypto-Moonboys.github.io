@@ -89,6 +89,22 @@ Includes:
 - Rewards
 - Specialist progression
 
+Timed activities expose server-derived reward and stat-cost previews at five
+minutes, thirty minutes, two hours and their duration cap. Training caps at two
+hours; sleep, work and explore cap at eight hours. Explore gives one crystal
+from thirty minutes until two hours; the Adventure Map replaces that crystal
+at two hours. Previews remain subject to reward caps and stat limits.
+
+One background activity continues while other routes are played. The Work
+screen links directly to Contracts and Practice. Ready claims and recoverable
+interrupted claims appear in Play Now. Recovery uses the stored reward snapshot,
+does not accumulate a new reward and cannot be cancelled or paid twice. Active
+sessions expire twenty-four hours after their duration cap if left unclaimed.
+
+Egg and unadopted players see clear action locks across Work, Economy and other
+panels. Egg care, incubation, hatching, account controls and stale-combat cleanup
+retain their existing rules. Practice remains available after adoption.
+
 ---
 
 ## Runs
