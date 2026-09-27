@@ -85,6 +85,13 @@ A rejected payout leaves the tier available; an old unpaid compatibility marker
 cannot hide it. A paid receipt remains claimed even if writing the compatibility
 marker was interrupted. Retries use the same owner/season/tier reward key.
 
+Daily mission shortcuts show qualifying alternatives for the adventure, shopping
+and bank targets. Weekly objective routes lead directly to care, training, runs,
+Weekly Boss and Daily Cache. The weekly run label includes standard as well as
+official runs; standard completion/extraction and official Daily Run finishes
+use the existing accepted-event authority. Contracts and Practice remain excluded.
+The links are navigation only and never spend resources or submit progress.
+
 ## Weekly Journey
 
 Weekly structured progression system.
@@ -142,12 +149,30 @@ Includes:
 
 ### Continuing contracts
 
-Continuing contracts are server-owned six-room quests for hatched active pets.
-They have three goals, three starting builds, route risk/reward choices and
-upgrade drafts after rooms two and four. Each completed contract records rank
+Continuing contracts are server-owned quests for hatched active pets.
+New v6 contracts have six goals, three starting builds and two route lengths:
+Standard has six rooms and drafts after rooms two/four; Long has ten rooms and
+drafts after rooms two/four/six/eight. Both use route risk/reward choices. Each completed contract records rank
 points for its source pet and immediately offers another quest. Rank has no
 daily cap and no effect on Pet XP, currencies, combat, Growth Marks or Weekly
 Crests. Difficulty tiers 2 and 3 open after 5 and 15 completions respectively.
+
+New v6 goals add Break the Blockade (successful bold routes), Trace the Lost
+Signal (successful search routes), and Restock the Crew (remaining supplies).
+The six Standard targets, in goal order, are 4 route wins / 65 salvage / 50 HP /
+3 bold wins / 3 search wins / 5 supplies. Long targets are 7 / 120 / 50 / 5 / 5 /
+8. All require surviving the full chosen route. Failure, abandonment and merely
+reaching a target mid-route earn no rank or bonus. Later rooms retain increasing
+threat and failure damage. Longer routes offer more salvage and upgrade choices,
+not a larger XP bonus. The existing three account/day bonus slots and 1,200 XP
+cap are unchanged. All 108 setups are available once their existing tier gate
+is met; no new unlock currency or migration is introduced.
+
+Goal, format, target, depth and progress are controlled by saved server state.
+Moves cannot switch length or supply progress. Saved versions 1–5 keep six rooms,
+original goal thresholds and original draft/preparation rules. In long routes,
+late redraws are offered only when different unowned perks remain. Supply caches
+remain available at every draft. The final room does not create a new draft.
 
 New v4 contracts add Take Supply Cache to both draft checkpoints. It replaces
 that checkpoint's upgrade with two contract supplies. Choosing it does not
@@ -157,7 +182,7 @@ the draft once, so retries or parallel clicks cannot collect twice. Existing
 v1/v2/v3 contracts retain their original draft choices; v4 keeps v3's room,
 preparation, side-objective, rank and daily-bonus rules.
 
-New v5 contracts also offer one optional Redraw Upgrades at each checkpoint.
+Contracts from v5 also offer one optional Redraw Upgrades at each checkpoint when different unowned perks remain.
 It costs 15 contract salvage and replaces the displayed perks with different
 unowned perks: three at the first checkpoint and two at the second after taking
 an upgrade (three if the earlier choice was supplies). The replacement is saved
@@ -189,14 +214,15 @@ progress are stored with the run; clients cannot change them or supply wins.
 The board shows each goal's completion count and best rank total for the active
 pet and season, plus completions remaining until the next difficulty unlock.
 
-The Route Collection groups completed contracts into the 27 combinations of
-three goals, three builds and three difficulty tiers. It reads existing saved
+The Route Collection groups completed contracts into 108 combinations of
+six goals, three builds, three difficulty tiers and two route lengths.
+Saved v1–v5 completions remain Standard records; Long records are separate. It reads existing saved
 contracts; no separate currency, reward or claim is created. Repeat clears add
 to that setup's count and can improve its best rank. Failed/abandoned runs do
 not clear a combination. Records are scoped to the active pet and season.
 An uncleared unlocked route can fill the setup controls without starting a run;
 the player still chooses the quest's Start button. Tier gates remain authoritative.
-After a run finishes or the page reloads, its build, tier and optional side goal
+After a run finishes or the page reloads, its route length, build, tier and optional side goal
 are selected for the next contract. Players can change them freely.
 
 There is no pet energy cost or gameplay cooldown. Contract health, supplies

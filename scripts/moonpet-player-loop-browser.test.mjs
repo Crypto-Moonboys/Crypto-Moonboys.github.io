@@ -183,6 +183,19 @@ try {
     assert.equal(await page.locator('[data-action="run_extract"]').isDisabled(), true, 'empty run extraction must explain its lock');
     await page.locator('[data-screen="missions"]').click();
     assert.equal(await page.locator('[data-panel="daily-objectives"] [data-jump]').count(), 5);
+    const weeklyState = await hooks.buildPetMiniAppState(db, currentUser, token);
+    const unfinishedWeekly = weeklyState.weekly_journey.objectives.filter((goal) => !goal.completed && goal.progress < goal.target);
+    assert.equal(await page.locator('[data-panel="weekly-journey"] [data-jump]').count(), unfinishedWeekly.length);
+    assert.ok(!(await page.locator('[data-panel="weekly-journey"]').textContent()).includes('Daily Moon Runs'));
+    const weeklyRoutes = await page.locator('[data-panel="weekly-journey"] [data-jump]').evaluateAll((buttons) => buttons.map((b) => ({ screen:b.dataset.jump, focus:b.dataset.focus })));
+    const beforeWeeklyNavigation = gameplayCount();
+    for (const route of weeklyRoutes) {
+      await page.locator('[data-screen="missions"]').click();
+      await page.locator(`[data-panel="weekly-journey"] [data-focus="${route.focus}"]`).first().click();
+      assert.equal(await page.locator(`[data-panel="${route.focus}"]`).count(), 1);
+    }
+    assert.equal(gameplayCount(), beforeWeeklyNavigation, 'weekly navigation must not issue gameplay actions');
+    await page.locator('[data-screen="missions"]').click();
     // These are real server-backed contract actions, distinct from local practice.
     const youngBefore = await hooks.buildPetMiniAppState(db, currentUser, token);
     await page.locator('#contract-build').selectOption('scavenger');
@@ -306,6 +319,77 @@ try {
     await page.waitForSelector('[data-action="contract_start"]');
     assert.ok(await page.locator('[data-panel="contracts"]').evaluate((panel) => panel.getBoundingClientRect().right <= innerWidth), 'contract board fits mobile');
     if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-contracts-${viewport.width}.png`) });
+
+    // Ten-room format: real controls, saved extra checkpoints, and one final bonus.
+    currentUser = `browser-contract-long-${viewport.width}`;
+    await seed(currentUser, 'young');
+    sqlite.prepare('UPDATE telegram_pet_profiles SET energy=0 WHERE telegram_id=?').run(currentUser);
+    sqlite.prepare('UPDATE telegram_pet_instances SET energy=0 WHERE telegram_id=?').run(currentUser);
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-panel="play-now"] [data-focus="contracts"]').click();
+    assert.equal(await page.locator('[data-action="contract_start"]').count(), 6);
+    await page.locator('#contract-format').selectOption('extended');
+    await page.locator('#contract-build').selectOption('scavenger');
+    const oldFormat = await page.locator('#contract-format').elementHandle();
+    await page.locator('[data-utility="sync"]').click();
+    await page.waitForFunction((node) => !node.isConnected, oldFormat);
+    assert.equal(await page.locator('#contract-format').inputValue(), 'extended');
+    await page.locator('[data-action="contract_start"]').filter({hasText:'TRACE THE LOST SIGNAL'}).click();
+    await page.waitForSelector('[data-action="contract_step"]');
+    const longBefore = await hooks.buildPetMiniAppState(db, currentUser, token);
+    assert.equal(longBefore.contracts.run.max_depth, 10); assert.equal(longBefore.contracts.run.target, 5);
+    let longDrafts = 0, resumedLong = false, longAfter = longBefore;
+    for (let turn = 0; turn < 15 && longAfter.contracts.run.status === 'active'; turn++) {
+      const activeLong = longAfter.contracts.run;
+      const draft = activeLong.choices.find((c) => c.upgrade && c.key !== 'supply_cache');
+      const choice = draft ? draft.key : 'search';
+      if (draft) longDrafts++;
+      if (activeLong.depth === 6 && !resumedLong) {
+        assert.equal(longAfter.contracts.bonus_remaining, 3); assert.equal(activeLong.rank_points, 0);
+        await page.reload(); await page.waitForSelector('[data-panel="care"]');
+        await page.locator('[data-panel="play-now"] [data-focus="contracts"]').click();
+        const resumed = (await hooks.buildPetMiniAppState(db, currentUser, token)).contracts.run;
+        assert.deepEqual(resumed, activeLong); resumedLong = true;
+        assert.ok((await page.locator('[data-panel="contracts"]').textContent()).includes('ROOMS 6/10'));
+        if (process.env.MOONPET_BROWSER_SCREENSHOT) {
+          await page.locator('[data-panel="contracts"]').scrollIntoViewIfNeeded();
+          await page.screenshot({path:process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-long-${viewport.width}.png`)});
+        }
+      }
+      const longButtons = page.locator('[data-action="contract_step"]');
+      const choiceIndex = await longButtons.evaluateAll((buttons, key) => buttons.findIndex((b) => JSON.parse(b.dataset.payload).choice === key), choice);
+      assert.ok(choiceIndex >= 0);
+      const [response] = await Promise.all([
+        page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'contract_step'),
+        longButtons.nth(choiceIndex).click(),
+      ]);
+      const result = await response.json(); assert.equal(result.result.accepted, true);
+      longAfter = result.state;
+      await page.waitForFunction((revision) => {
+        const button=document.querySelector('[data-action="contract_step"]');
+        return !button || JSON.parse(button.dataset.payload).revision > revision;
+      }, activeLong.revision);
+    }
+    assert.equal(longDrafts, 4); assert.equal(resumedLong, true);
+    assert.equal(longAfter.contracts.run.status, 'completed'); assert.equal(longAfter.contracts.run.depth, 10);
+    assert.equal(longAfter.contracts.run.xp_awarded, 20); assert.equal(longAfter.contracts.bonus_remaining, 2);
+    assert.equal(longAfter.pet.energy, 0); assert.equal(longAfter.pet.moon_gold, longBefore.pet.moon_gold);
+    assert.equal(longAfter.contracts.collection.records.find((r) => r.key === 'recon:scavenger:1:extended').completed, 1);
+    assert.equal(longAfter.contracts.collection.records.find((r) => r.key === 'recon:scavenger:1').completed, 0);
+    assert.equal(await page.locator('#contract-format').inputValue(), 'extended');
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-panel="play-now"] [data-focus="contracts"]').click();
+    assert.equal(await page.locator('#contract-format').inputValue(), 'extended', 'last format survives reload');
+    await page.locator('[data-panel="contracts"] summary').filter({hasText:'VIEW ALL ROUTE RECORDS'}).click();
+    const longSetups = page.locator('[data-contract-setup]');
+    const longSetupIndex = await longSetups.evaluateAll((buttons) => buttons.findIndex((b) => {
+      const s=JSON.parse(b.dataset.contractSetup); return s.format==='standard' && s.goal==='resupply' && s.build==='scout' && s.tier===1;
+    }));
+    const beforeFormatSetup = gameplayCount();
+    await longSetups.nth(longSetupIndex).click();
+    assert.equal(gameplayCount(), beforeFormatSetup);
+    assert.equal(await page.locator('#contract-format').inputValue(), 'standard');
+    assert.equal(await page.locator('[data-action="contract_start"]:focus').getAttribute('data-payload').then(JSON.parse).then((p) => p.goal), 'resupply');
     // A separate real-Worker fixture begins at the first optional daily checkpoint.
     currentUser = `browser-daily-${viewport.width}`;
     await seed(currentUser, 'young');
@@ -708,7 +792,7 @@ try {
     assert.equal(overflow, false, 'mobile viewport must not overflow horizontally');
     assert.deepEqual(errors, [], 'no runtime errors across all six screens');
     if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-${viewport.width}.png`) });
-    console.log(`Moonpet browser loop passed at ${viewport.width}x${viewport.height}; all six screens; bounties; practice; contracts and records; daily tactics; raids; timed recovery; Trade; expeditions; weekly boss recovery; Daily Cache claimed/reset state; season reward rejection/recovery; supply drafts; crafting goals, material routes, craft/use and goal isolation; paid-bundle capacity and exact-fit purchase; persisted draft redraw.`);
+    console.log(`Moonpet browser loop passed at ${viewport.width}x${viewport.height}; all six screens; bounties; practice; contracts and records; daily tactics; raids; timed recovery; Trade; expeditions; weekly boss recovery; Daily Cache claimed/reset state; season reward rejection/recovery; supply drafts; crafting goals, material routes, craft/use and goal isolation; paid-bundle capacity and exact-fit purchase; persisted draft redraw; weekly objective routes; six goals and saved ten-room Contracts with four drafts and separate records.`);
     await context.close();
   }
 } finally {

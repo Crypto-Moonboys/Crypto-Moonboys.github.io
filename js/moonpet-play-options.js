@@ -5,6 +5,8 @@
   function route(next) {
     var key = [next && next.key, next && next.action, next && next.callback_data].filter(Boolean).join(' ').toLowerCase();
     var routes = [
+      [/weekly[_-]journey/, 'missions', 'weekly-journey'],
+      [/daily[_-]journey|daily[_-]objectives/, 'missions', 'daily-objectives'],
       [/daily[_-]run|daily_(combat|explorer|extraction|boss)/, 'explore', 'moon-run'],
       [/contract/, 'missions', 'contracts'],
       [/district/, 'explore', 'districts'],
@@ -32,6 +34,22 @@
     ];
     for (var entry of routes) if (entry[0].test(key)) return { screen: entry[1], focus: entry[2] };
     return { screen: 'home', focus: 'care' };
+  }
+
+  function objectiveRoutes(key) {
+    var id = String(key || '').replace(/^mission:/, '').split(':')[0];
+    var targets = {
+      weekly_care: [['CARE', 'care', 'Accepted Feed, Play, Clean or Sleep actions count.']],
+      weekly_training: [['TRAINING', 'train', 'Use the Train care action. A timed activity is a separate action.']],
+      weekly_run: [['MOON RUNS', 'run', 'Accepted standard run completions/extractions and official Daily Run finishes count. Contracts and Practice do not.']],
+      weekly_boss_attempt: [['WEEKLY BOSS', 'weekly_boss', 'Use an available Weekly Boss attack. Seasonal raids are separate.']],
+      weekly_check_in: [['DAILY CACHE', 'daily_chest', 'Collect Daily Cache on two UTC days. One account cache is available each day.']],
+      'pet-daily-shop': [['SHOP', 'shop', 'Buy a pet item.'], ['EQUIPMENT', 'gear_upgrade', 'An accepted equipment upgrade also counts.']],
+      'pet-daily-adventure': [['ADVENTURE', 'adventure'], ['MOON RUN', 'run'], ['DISTRICTS', 'district'], ['STORY CHOICES', 'story'], ['SEASONAL RAID', 'seasonal_boss']],
+      'pet-daily-bank': [['PET JOBS', 'work', 'Hold at least 50 Moon Gold. Spending gold can make this target incomplete again.'], ['DAILY CACHE', 'daily_chest', 'An unclaimed Daily Cache adds 40 Moon Gold.']],
+    };
+    if (!Object.prototype.hasOwnProperty.call(targets, id)) return [Object.assign({ title: 'OPEN OBJECTIVE ROUTE' }, route({ key: key }))];
+    return targets[id].map(function (entry) { return Object.assign({ title: 'OPEN ' + entry[0], detail: entry[2] || 'Accepted actions count. Check this route’s energy, cooldown and level requirements.' }, route({ key: entry[1] })); });
   }
 
   function bountyRoutes(bounty) {
@@ -117,7 +135,7 @@
       })[0];
       if (nextBounty) add('bounty_target', 'NEXT BOUNTY // ' + nextBounty.title, nextBounty.progress + '/' + nextBounty.required + ' // ' + nextBounty.detail + ' Open the route to check its requirements.', bountyRoutes(nextBounty)[0]);
     }
-    if (s.contracts && s.contracts.available) add('contract', s.contracts.run && s.contracts.run.status === 'active' ? 'CONTINUE CONTRACT' : 'CONTINUING CONTRACTS', 'New quests after every finish. Saved rank, three builds and route upgrades. No pet energy cost.');
+    if (s.contracts && s.contracts.available) add('contract', s.contracts.run && s.contracts.run.status === 'active' ? 'CONTINUE CONTRACT' : 'CONTINUING CONTRACTS', 'Choose a quest, build and route length. Saved rank and upgrade drafts. New quests after every finish; no pet energy cost.');
     add('practice', 'PRACTICE ROGUELITE', 'Unlimited replays. Build choices, room risks and local goals. No rewards or pet costs.');
     if (egg) {
       add('incubate', 'SECRET BOT CARE', 'Care and reveal remain server-controlled. Practice is available while you wait.');
@@ -145,12 +163,14 @@
         add(name, name === 'arena' ? 'ARENA CHOICES' : 'KAIJU CARDS', 'Open the battle panel for entry requirements, opponents and active matches.');
       }
     }
-    add('mission', 'DAILY & WEEKLY OBJECTIVES', 'See recorded progress and jump directly to unfinished goals.');
+    add('daily_journey', 'DAILY JOURNEY OBJECTIVES', 'See Growth Mark goals and the official Daily Run requirements.');
+    add('weekly_journey', 'WEEKLY JOURNEY TARGETS', 'Open care, training, run, boss and cache routes directly from unfinished targets.');
+    add('mission', 'DAILY MISSIONS', 'Compare qualifying routes for today’s seven mission targets.');
     add('bounty', 'BOUNTY BOARD', 'Check server-tracked targets and claim only completed bounties.');
     return choices;
   }
 
-  var api = { route: route, bountyRoutes: bountyRoutes, craftingGoal: craftingGoal, options: options };
+  var api = { route: route, objectiveRoutes: objectiveRoutes, bountyRoutes: bountyRoutes, craftingGoal: craftingGoal, options: options };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.MoonpetPlayOptions = api;
 })(typeof window !== 'undefined' ? window : globalThis);

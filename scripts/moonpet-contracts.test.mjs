@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
-import { advanceContract, contractChoices, contractPreparations, contractDraftActions, contractRoom, contractSideProgress, createContractState, getContractBoard, processContractAction } from '../workers/moonboys-api/pets/continuing-contracts.js';
+import { CONTRACT_GOALS, CONTRACT_FORMATS, advanceContract, contractLength, contractObjective, contractChoices, contractPreparations, contractDraftActions, contractRoom, contractSideProgress, createContractState, getContractBoard, processContractAction } from '../workers/moonboys-api/pets/continuing-contracts.js';
 import { awardPetReward } from '../workers/moonboys-api/pets/roguelite-foundation.js';
 import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 
@@ -43,10 +43,11 @@ const board = (pet, time = now) => getContractBoard(db, pet.telegram_id, pet, ti
 const start = async (pet, goal = 'escort', time = now) => act(pet, { action: 'contract_start', sequence: (await board(pet, time)).next_sequence, goal, build: 'bruiser', tier: 1 }, awardPetReward, time);
 async function complete(pet, award = awardPetReward, time = now) {
   let result;
-  for (let step = 0; step < 10; step++) {
+  for (let step = 0; step < 20; step++) {
     const run = (await board(pet, time)).run;
     if (run.status !== 'active') return run;
-    const choice = run.choices.find((x) => x.key === 'medkit') || run.choices.find((x) => x.key === 'shield') || run.choices.find((x) => x.key === 'cover') || run.choices[0];
+    const route = run.goal === 'breach' ? 'bold' : ['recon', 'resupply'].includes(run.goal) ? 'search' : 'cover';
+    const choice = run.choices.find((x) => x.key === 'medkit') || run.choices.find((x) => x.key === 'shield') || run.choices.find((x) => x.key === route) || run.choices[0];
     result = await act(pet, { action: 'contract_step', contract_id: run.contract_id, revision: run.revision, choice: choice.key, roll: 0, reward_xp: 999999 }, award, time);
     assert.equal(result.accepted, true, JSON.stringify(result));
   }
@@ -55,16 +56,16 @@ async function complete(pet, award = awardPetReward, time = now) {
 
 // Exhaustive state mechanics across goals/builds/tiers and deterministic roll streams.
 let clears = 0, failures = 0, drafts = 0;
-for (const goal of ['scout', 'salvage', 'escort']) for (const build of ['scout', 'bruiser', 'scavenger']) for (const tier of [1, 2, 3]) for (let seed = 0; seed < 40; seed++) {
-  let s = createContractState(goal, build, tier, 'seed-' + seed, ['none', 'versatile', 'daredevil', 'stocked'][seed % 4]), status = 'active';
+for (const format of Object.keys(CONTRACT_FORMATS)) for (const goal of Object.keys(CONTRACT_GOALS)) for (const build of ['scout', 'bruiser', 'scavenger']) for (const tier of [1, 2, 3]) for (let seed = 0; seed < 40; seed++) {
+  let s = createContractState(goal, build, tier, 'seed-' + seed, ['none', 'versatile', 'daredevil', 'stocked'][seed % 4], format), status = 'active';
   for (let turn = 0; status === 'active'; turn++) {
-    assert.ok(turn < 10);
+    assert.ok(turn < 16);
     const action = s.draft.length ? s.draft[seed % s.draft.length] : ['cover', 'bold', 'search'][(seed + turn) % 3];
     if (s.draft.length) drafts++;
     const prior = structuredClone(s), n = advanceContract(s, action, (seed * 13 + turn * 7) % 100);
     assert.deepEqual(s, prior, 'engine input is immutable');
     assert.ok(n); s = n.state; status = n.status;
-    assert.ok(s.health >= 0 && s.health <= s.max_health && s.depth <= 6);
+    assert.ok(s.health >= 0 && s.health <= s.max_health && s.depth <= contractLength(s));
     if (status === 'completed') {
       clears++; const side = contractSideProgress(s);
       assert.equal(n.rank_points, (40 + s.salvage + s.wins * 5) * s.tier + (side?.reached ? 60 * s.tier : 0));
@@ -73,6 +74,40 @@ for (const goal of ['scout', 'salvage', 'escort']) for (const build of ['scout',
   }
 }
 assert.ok(clears && failures && drafts);
+for (const invalid of [null, '__proto__', 'marathon', ['extended'], {}, 10]) assert.equal(createContractState('escort', 'scout', 1, 'x', 'none', invalid), null);
+
+// Every setup is completable; new objectives require the named actions/resources,
+// and reaching the target before the final room never pays early.
+for (const format of Object.keys(CONTRACT_FORMATS)) for (const goal of Object.keys(CONTRACT_GOALS)) for (const build of ['scout', 'bruiser', 'scavenger']) for (const tier of [1, 2, 3]) {
+  let state = createContractState(goal, build, tier, 'complete-setup', 'none', format), result, checkpointCount = 0;
+  const rooms = contractLength(state);
+  while (state.depth < rooms) {
+    if (state.draft.length) {
+      checkpointCount++;
+      state = advanceContract(state, 'supply_cache', 0).state;
+    }
+    const choice = goal === 'breach' ? 'bold' : ['recon', 'resupply', 'salvage'].includes(goal) ? 'search' : 'cover';
+    result = advanceContract(state, choice, 0); state = result.state;
+    if (state.depth < rooms) { assert.equal(result.status, 'active'); assert.equal(result.rank_points, 0); }
+  }
+  assert.equal(result.status, 'completed', `${format}/${goal}/${build}/${tier}`);
+  assert.equal(checkpointCount, format === 'extended' ? 4 : 2);
+  assert.equal(advanceContract(state, 'cover', 0), null);
+}
+for (const goal of ['breach', 'recon', 'resupply']) {
+  const state = { ...createContractState(goal, 'bruiser', 1, 'missed-goal'), depth: 5, wins: 5, salvage: 200 };
+  assert.equal(advanceContract(state, 'cover', 0).status, 'failed', `${goal} cannot be completed by unrelated successes`);
+}
+const lastLongDraft = { ...createContractState('escort', 'bruiser', 1, 'last-draft', 'none', 'extended'), depth: 8, salvage: 100, perks: ['shield', 'radar', 'boots'], draft: ['medkit', 'pockets', 'magnet'] };
+assert.deepEqual(contractDraftActions(lastLongDraft), [], 'a late draft cannot promise nonexistent replacement perks');
+assert.equal(advanceContract(lastLongDraft, 'redraw_draft', 0), null);
+assert.equal(advanceContract(lastLongDraft, 'supply_cache', 0).state.depth, 8);
+for (const version of [1, 2, 3, 4, 5]) {
+  const old = { ...createContractState('scout', 'scout', 1, 'old-format', 'none', 'extended'), version, depth: 5, wins: 4 };
+  assert.equal(contractLength(old), 6, 'legacy versions ignore new format data');
+  assert.equal(contractObjective(old).target, 4);
+  assert.equal(advanceContract(old, 'cover', 0).status, 'completed');
+}
 assert.equal(createContractState('__proto__', 'scout', 1, 'x'), null);
 assert.equal(createContractState('escort', 'scout', 4, 'x'), null);
 assert.equal(advanceContract(createContractState('escort', 'scout', 1, 'x'), 'rest', 0), null);
@@ -281,8 +316,8 @@ try {
   assert.equal(capped.offers.find((offer) => offer.key === 'escort').completed, 5);
   assert.equal(capped.offers.find((offer) => offer.key === 'scout').completed, 0);
   assert.ok(capped.offers.find((offer) => offer.key === 'escort').best_rank_points >= closed.rank_points);
-  assert.equal(capped.collection.total_routes, 27);
-  assert.equal(capped.collection.unlocked_routes, 18);
+  assert.equal(capped.collection.total_routes, 108);
+  assert.equal(capped.collection.unlocked_routes, 72);
   assert.equal(capped.collection.cleared_routes, 1, 'repeating the same setup increases its record, not distinct route clears');
   assert.equal(capped.collection.records.find((record) => record.key === 'escort:bruiser:1').completed, 5);
   assert.equal(capped.collection.records.find((record) => record.key === 'escort:bruiser:1').best_rank_points, capped.offers.find((offer) => offer.key === 'escort').best_rank_points);
@@ -360,10 +395,39 @@ try {
   await act(collectionPet, { action: 'contract_step', contract_id: abandoning.contract_id, revision: abandoning.revision, choice: 'abandon' });
   assert.equal((await board(collectionPet)).collection.cleared_routes, 2, 'abandonment cannot award a collection clear');
   assert.equal((await board(collectionPet)).collection.records.find((record) => record.key === 'salvage:bruiser:1').completed, 0);
+
+  // Format and progress are saved by the dispatcher, never accepted from moves.
+  const longPet = await seed('long-contract');
+  const longStart = { action: 'contract_start', pet_id: longPet.pet_id, sequence: 1, goal: 'recon', build: 'scavenger', tier: 1, format: 'extended', max_depth: 1, target: 0, version: 1 };
+  assert.equal((await hooks.processPetMiniAppAction(db, longPet.telegram_id, { id:longPet.telegram_id }, { ...longStart, request_id:realCrypto.randomUUID() }, 'fixture-token')).accepted, true);
+  let longRun = (await board(longPet)).run;
+  assert.equal(longRun.max_depth, 10); assert.equal(longRun.target, 5); assert.equal(longRun.format, 'extended');
+  while (longRun.depth < 6) {
+    const choice = longRun.choices.some((c) => c.key === 'search') ? 'search' : 'supply_cache';
+    await act(longPet, { action:'contract_step', contract_id:longRun.contract_id, revision:longRun.revision, choice, format:'standard', target:0, max_depth:6, route_wins:{ search:1000 } });
+    longRun = (await board(longPet)).run;
+  }
+  assert.equal(longRun.status, 'active'); assert.equal(longRun.progress, 6);
+  assert.equal(longRun.max_depth, 10); assert.equal(longRun.target, 5);
+  assert.equal((await board(longPet)).bonus_remaining, 3, 'long routes cannot reserve a reward at the old finish');
+  assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_contract'").get(longPet.telegram_id).n, 0);
+  const longFinished = await complete(longPet);
+  assert.equal(longFinished.status, 'completed'); assert.equal(longFinished.depth, 10); assert.equal(longFinished.xp_awarded, 20);
+  assert.equal((await act(longPet, { action:'contract_claim', contract_id:longFinished.contract_id })).pet_xp_awarded, 0);
+  let longBoard = await board(longPet);
+  assert.equal(longBoard.collection.records.find((r) => r.key === 'recon:scavenger:1:extended').completed, 1);
+  assert.equal(longBoard.collection.records.find((r) => r.key === 'recon:scavenger:1').completed, 0);
+  assert.equal((await act(longPet, { ...longStart, sequence:2, format:'__proto__' })).accepted, false);
+  await act(longPet, { ...longStart, sequence:2, format:'standard' }); await complete(longPet);
+  longBoard = await board(longPet);
+  assert.equal(longBoard.collection.cleared_routes, 2);
+  assert.equal(longBoard.collection.records.find((r) => r.key === 'recon:scavenger:1').completed, 1);
+  assert.equal(longBoard.bonus_remaining, 1, 'formats share the same existing daily bonus budget');
+  assert.equal(sqlite.prepare('SELECT energy FROM telegram_pet_instances WHERE pet_id=?').get(longPet.pet_id).energy, 0);
   sqlite.exec('DROP TABLE telegram_pet_contracts');
   assert.equal((await hooks.buildPetMiniAppState(db, b.telegram_id, 'fixture-token')).contracts.available, false);
   const blocked = await hooks.processPetMiniAppAction(db, b.telegram_id, { id:b.telegram_id }, { action:'contract_start',pet_id:b.pet_id,sequence:1,goal:'escort',build:'bruiser',tier:1,request_id:realCrypto.randomUUID() }, 'fixture-token');
   assert.equal(blocked.reason, 'contracts_unavailable');
   sqlite.exec(migration); sqlite.exec(migration);
 } finally { Object.defineProperty(globalThis, 'crypto', { configurable: true, value: realCrypto }); sqlite.close(); }
-console.log(`Continuing contract tests passed: 1080 simulated runs (${clears} goals met, ${failures} failures, ${drafts} drafts), SQLite authority/concurrency/reward recovery, and actual Mini App dispatch.`);
+console.log(`Continuing contract tests passed: 4320 simulated runs (${clears} goals met, ${failures} failures, ${drafts} drafts), all 108 setups completable, legacy formats, SQLite authority/concurrency/reward recovery, and actual Mini App dispatch.`);

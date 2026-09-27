@@ -47,6 +47,20 @@ for (const [key, screen, focus] of [
   ['craft_goal', 'economy', 'crafting'], ['materials', 'economy', 'materials'],
 ]) assert.deepEqual(options.route({ key }), { screen, focus }, key);
 
+const weeklyTargets = { weekly_care:'care', weekly_training:'care', weekly_run:'moon-run', weekly_boss_attempt:'weekly-boss', weekly_check_in:'care' };
+for (const [key, focus] of Object.entries(weeklyTargets)) {
+  const routes = options.objectiveRoutes(key);
+  assert.equal(routes.length, 1); assert.equal(routes[0].focus, focus, key);
+  assert.ok(routes[0].detail);
+}
+assert.match(options.objectiveRoutes('weekly_run')[0].detail, /standard run.*official Daily Run/);
+assert.deepEqual(options.objectiveRoutes('pet-daily-adventure:today').map((r) => r.focus), ['adventure','moon-run','districts','story-chains','seasonal-boss']);
+assert.deepEqual(options.objectiveRoutes('mission:pet-daily-shop:today').map((r) => r.focus), ['shop','equipment']);
+assert.deepEqual(options.objectiveRoutes('pet-daily-bank:today').map((r) => r.focus), ['jobs','care']);
+assert.equal(options.objectiveRoutes('__proto__')[0].focus, 'care');
+assert.equal(options.route({key:'weekly_journey'}).focus, 'weekly-journey');
+assert.equal(options.route({key:'daily_journey'}).focus, 'daily-objectives');
+
 const snapshot = { adopted: true, pet: { pet_id: 'pet-a', energy: 100 }, lifecycle: { phase: 'young' }, daily_run: { available: true }, live_systems: { chains: [{ available: true }] } };
 assert.ok(options.options(snapshot).some((x) => x.key === 'daily_run'));
 assert.ok(options.options(snapshot).some((x) => x.key === 'event_chain'));
