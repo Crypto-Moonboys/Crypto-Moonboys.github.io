@@ -560,7 +560,7 @@ try {
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
     assert.equal(await cacheButton.isDisabled(), true);
     assert.ok((await cacheButton.textContent()).includes('CLAIMED TODAY'));
-    await cacheButton.scrollIntoViewIfNeeded();
+    await cacheButton.evaluate((button) => button.scrollIntoView({ block: 'center' }));
     if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-daily-cache-${viewport.width}.png`) });
     const beforeCacheContinue = gameplayCount();
     await page.locator('[data-panel="care"] [data-focus="contracts"]').click();
@@ -590,11 +590,69 @@ try {
     const paid = await (await paidResponse).json(); assert.equal(paid.result.accepted, true); assert.equal(paid.result.duplicate, false);
     assert.equal(paid.state.pet.moon_gold, 220); assert.ok(paid.state.guidance.season.tiers.find((tier) => tier.tier_id === 'street').claimed_at);
     await page.waitForFunction(() => ![...document.querySelectorAll('[data-action="season_claim"]')].some((button) => button.textContent.includes('Street Cache')));
+
+    currentUser = 'browser-crafting-' + viewport.width;
+    await seed(currentUser, 'young');
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-screen="economy"]').click();
+    await page.locator('[data-panel-jump="crafting"]').click();
+    const beforePlanning = gameplayCount();
+    await page.locator('#crafting-goal').selectOption('street_rations');
+    const workshop = page.locator('[data-panel="crafting"]');
+    assert.ok((await workshop.textContent()).includes('MISSING 2'));
+    assert.ok((await workshop.textContent()).includes('MISSING 1'));
+    assert.equal(gameplayCount(), beforePlanning, 'choosing a goal must not submit a gameplay action');
+    await workshop.locator('[data-focus="districts"]').first().click();
+    assert.equal(await page.locator('[data-panel="districts"]').count(), 1);
+    assert.equal(gameplayCount(), beforePlanning, 'following a material route is navigation only');
+    assert.ok((await page.locator('[data-panel="districts"]').textContent()).includes('MATERIAL ON CLEAR'));
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-panel="play-now"] [data-focus="crafting"]').click();
+    assert.equal(await page.locator('#crafting-goal').inputValue(), 'street_rations', 'goal survives reload for this pet');
+    await page.locator('#crafting-goal').scrollIntoViewIfNeeded();
+    if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-crafting-${viewport.width}.png`) });
+
+    // Simulate supplies earned elsewhere, then use the real craft and item handlers.
+    for (const [material, quantity] of [['scrap_metal', 2], ['moon_fabric', 1]]) {
+      sqlite.prepare('INSERT INTO telegram_pet_material_balances (telegram_id,material_key,quantity) VALUES (?,?,?)').run(currentUser, material, quantity);
+    }
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    const readyGoal = page.locator('[data-panel="play-now"] [data-focus="crafting"]');
+    assert.ok((await readyGoal.textContent()).includes('READY TO CRAFT'));
+    await readyGoal.click();
+    const craftResponse = page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'craft');
+    await page.locator('[data-action="craft"]').filter({ hasText: 'Street Rations' }).click();
+    const crafted = await (await craftResponse).json();
+    assert.equal(crafted.result.accepted, true);
+    assert.equal(crafted.state.inventory.find((item) => item.key === 'moon_snack').count, 2);
+    assert.equal(crafted.state.materials.find((material) => material.key === 'scrap_metal').quantity, 0);
+    assert.equal(crafted.state.pet.moon_gold, 100);
+    await page.waitForSelector('[data-panel="crafting"] [data-focus="inventory"]');
+    await page.locator('[data-panel="crafting"] [data-focus="inventory"]').click();
+    assert.ok((await page.locator('[data-panel="inventory"]').textContent()).includes('reduce hunger by 18'));
+    const useResponse = page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'use_item');
+    await page.locator('[data-action="use_item"]').filter({ hasText: 'Moon Snack' }).click();
+    const used = await (await useResponse).json();
+    assert.equal(used.result.accepted, true); assert.equal(used.result.pet_xp_awarded, 4);
+    assert.equal(used.state.inventory.find((item) => item.key === 'moon_snack').count, 1);
+
+    const craftingOwner = currentUser;
+    currentUser = 'browser-crafting-other-' + viewport.width;
+    await seed(currentUser, 'young');
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    assert.equal(await page.locator('[data-panel="play-now"] [data-focus="crafting"]').count(), 0);
+    currentUser = craftingOwner;
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-panel="play-now"] [data-focus="crafting"]').click();
+    assert.equal(await page.locator('#crafting-goal').inputValue(), 'street_rations');
+    await page.locator('#crafting-goal').selectOption('');
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    assert.equal(await page.locator('[data-panel="play-now"] [data-focus="crafting"]').count(), 0, 'clearing a goal persists');
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
     assert.equal(overflow, false, 'mobile viewport must not overflow horizontally');
     assert.deepEqual(errors, [], 'no runtime errors across all six screens');
     if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-${viewport.width}.png`) });
-    console.log(`Moonpet browser loop passed at ${viewport.width}x${viewport.height}; all six screens; bounties; practice; contracts and records; daily tactics; raids; timed recovery; Trade; expeditions; weekly boss recovery; Daily Cache claimed/reset state; season reward rejection/recovery; supply drafts.`);
+    console.log(`Moonpet browser loop passed at ${viewport.width}x${viewport.height}; all six screens; bounties; practice; contracts and records; daily tactics; raids; timed recovery; Trade; expeditions; weekly boss recovery; Daily Cache claimed/reset state; season reward rejection/recovery; supply drafts; crafting goals, material routes, craft/use and goal isolation.`);
     await context.close();
   }
 } finally {

@@ -44,6 +44,7 @@ for (const [key, screen, focus] of [
   ['rare_morph', 'profile', 'rare-morph'],
   ['achievement', 'missions', 'achievements'], ['season:milestone', 'profile', 'season'],
   ['activity_running', 'work', 'timed-activity'], ['event_chain', 'explore', 'story-chains'],
+  ['craft_goal', 'economy', 'crafting'], ['materials', 'economy', 'materials'],
 ]) assert.deepEqual(options.route({ key }), { screen, focus }, key);
 
 const snapshot = { adopted: true, pet: { pet_id: 'pet-a', energy: 100 }, lifecycle: { phase: 'young' }, daily_run: { available: true }, live_systems: { chains: [{ available: true }] } };
@@ -93,6 +94,51 @@ assert.ok(!options.options({ ...snapshot, pet: { energy: 0 }, regions: [{ availa
 const savedRaid = { available: true, pending_move: 'counter', choices: [{ key: 'conserve', energy: 12 }, { key: 'counter', energy: 18 }] };
 assert.ok(!options.options({ ...raidAtTwelve, live_systems: { seasonal_boss: savedRaid } }).some((c) => c.key === 'seasonal_boss'), 'a saved counter cannot switch to the cheaper move');
 assert.ok(options.options({ ...raidAtTwelve, pet: { energy: 0 }, live_systems: { seasonal_boss: { ...savedRaid, retry_energy_charged: true } } }).some((c) => c.key === 'seasonal_boss'), 'a paid raid resumes at zero energy');
+
+const craftRecipe = { key: 'battery_pack', title: 'Battery Pack', unlocked: true, affordable: false, cost: { battery_cell: 3, crystal_shard: 1 }, output: { item_key: 'energy_drink', quantity: 1 } };
+const craftSnapshot = { ...snapshot, live_systems: { crafting: [craftRecipe] }, materials: [{ key: 'battery_cell', label: 'Battery Cell', quantity: 1 }],
+  regions: [{ key: 'blockchain_sewers', available: true, energy_cost: 10, mission: { material_reward: 'battery_cell' } }, { key: 'wrong-material', available: true, mission: { material_reward: 'scrap_metal' } }],
+  guidance: { economy: { expedition_options: [{ title: 'Crystal Caves', available: true, energy: 18, rewards: [{ materials: { crystal_shard: 1 } }] }],
+    market_offers: [{ title: 'Cell Case', affordable: true, unlocked: true, cost: { moon_gold: 150 }, reward: { materials: { battery_cell: 3 } } },
+      { title: 'Drink Crate', affordable: true, unlocked: true, cost: { moon_gold: 120 }, reward: { items: { energy_drink: 2 } } },
+      { title: 'Sold', purchased: true, affordable: true, unlocked: true, reward: { materials: { battery_cell: 3 } } },
+      { title: 'Unaffordable', affordable: false, unlocked: true, reward: { materials: { battery_cell: 3 } } },
+      { title: 'Locked', affordable: true, unlocked: false, reward: { materials: { battery_cell: 3 } } }] } } };
+const craftBefore = structuredClone(craftSnapshot);
+const craftPlan = options.craftingGoal(craftSnapshot, 'battery_pack');
+assert.deepEqual(craftPlan.ingredients.map((m) => m.missing), [2, 1]);
+assert.equal(craftPlan.ready, false);
+assert.deepEqual(craftPlan.routes.map((r) => r.focus), ['districts', 'expedition', 'market', 'market']);
+assert.ok(craftPlan.routes.find((r) => r.title === 'MARKET // Drink Crate').detail.includes('instead of crafting'));
+assert.deepEqual(craftSnapshot, craftBefore, 'planning never mutates server state');
+assert.equal(options.craftingGoal(craftSnapshot, '__proto__'), null);
+assert.equal(options.craftingGoal({ adopted: false }, 'battery_pack'), null);
+const eggPlan = options.craftingGoal({ ...craftSnapshot, lifecycle: { phase: 'egg' } }, 'battery_pack');
+assert.equal(eggPlan.ready, false); assert.deepEqual(eggPlan.routes, []);
+const noRoutes = { ...craftSnapshot, pet: { energy: 0 }, guidance: { economy: { expedition_options: [{ available: false, rewards: [{ materials: { battery_cell: 1 } }] }] } } };
+assert.deepEqual(options.craftingGoal(noRoutes, 'battery_pack').routes, []);
+assert.equal(options.craftingGoal({ ...noRoutes, regions: [{ ...craftSnapshot.regions[0], retry_energy_charged: true }] }, 'battery_pack').routes[0].focus, 'districts');
+const readyCraft = { ...craftSnapshot, materials: [{ key: 'battery_cell', quantity: 3 }, { key: 'crystal_shard', quantity: 1 }], live_systems: { crafting: [{ ...craftRecipe, affordable: true }] } };
+assert.equal(options.craftingGoal(readyCraft, 'battery_pack').ready, true);
+assert.ok(options.options(readyCraft, { crafting_goal: 'battery_pack' }).find((r) => r.key === 'craft_goal').title.startsWith('READY TO CRAFT'));
+assert.ok(!options.options(readyCraft).some((r) => r.key === 'craft_goal'));
+const fullCraft = options.craftingGoal({ ...readyCraft, inventory: [{ key: 'energy_drink', count: 999999 }] }, 'battery_pack');
+assert.equal(fullCraft.output_full, true); assert.equal(fullCraft.ready, false);
+assert.ok(!fullCraft.routes.some((r) => r.focus === 'market'), 'a full output stack must not recommend buying more finished items');
+for (const [owned, bundle, expected] of [[0, 2, true], [999997, 2, true], [999998, 1, true], [999998, 2, false], [999999, 1, false]]) {
+  for (const includeMaterials of [false, true]) {
+    const offer = { title: 'Capacity Check', affordable: true, unlocked: true, cost: { moon_gold: 120 },
+      reward: { items: { energy_drink: bundle }, ...(includeMaterials ? { materials: { battery_cell: 3 } } : {}) } };
+    const goal = options.craftingGoal({ ...craftSnapshot, inventory: [{ key: 'energy_drink', count: owned }],
+      guidance: { economy: { market_offers: [offer] } } }, 'battery_pack');
+    assert.equal(goal.routes.some((r) => r.focus === 'market'), expected,
+      `market bundle of ${bundle} with ${owned} owned${includeMaterials ? ' and needed materials' : ''} must fit in full`);
+  }
+}
+const fullOutputWithMissingMaterials = options.craftingGoal({ ...craftSnapshot, inventory: [{ item_key: 'energy_drink', quantity: 999999 }] }, 'battery_pack');
+assert.deepEqual(fullOutputWithMissingMaterials.routes.filter((r) => r.focus === 'market').map((r) => r.title), ['MARKET // Cell Case'],
+  'material-only offers remain available without recommending overflowing finished items');
+assert.equal(options.craftingGoal({ ...readyCraft, live_systems: { crafting: [{ ...craftRecipe, affordable: true, unlocked: false }] } }, 'battery_pack').ready, false);
 
 assert.equal(practice.create('x', '__proto__', 'explorer'), null);
 assert.equal(practice.restore({ version: 1 }), null);

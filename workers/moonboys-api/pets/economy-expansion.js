@@ -62,7 +62,7 @@ export const PET_MARKET_OFFERS = freeze([
   { key: 'runner_bundle', title: 'Runner Bundle', detail: 'An Adventure Map plus Energy Drink.', cost: { moon_gold: 160, style_tokens: 2 }, reward: { items: { adventure_map: 1, energy_drink: 1 } }, min_level: 8 },
   { key: 'fabric_roll', title: 'Moon Fabric Roll', detail: 'Craft Moon Snacks, Clean Wipes and Style Patches.', cost: { moon_gold: 90 }, reward: { materials: { moon_fabric: 3 } }, min_level: 1 },
   { key: 'scrap_box', title: 'Scrap Box', detail: 'Reliable upgrade material without a lucky drop.', cost: { moon_gold: 110 }, reward: { materials: { scrap_metal: 4 } }, min_level: 1 },
-  { key: 'cell_case', title: 'Cell Case', detail: 'Battery Cells used by advanced equipment.', cost: { moon_gold: 150 }, reward: { materials: { battery_cell: 3 } }, min_level: 10 },
+  { key: 'cell_case', title: 'Cell Case', detail: 'Battery Cells for crafting Energy Drinks.', cost: { moon_gold: 150 }, reward: { materials: { battery_cell: 3 } }, min_level: 10 },
   { key: 'shard_pouch', title: 'Shard Pouch', detail: 'Crystal Shards for higher upgrade tiers.', cost: { moon_gold: 220 }, reward: { materials: { crystal_shard: 2 } }, min_level: 12 },
   { key: 'style_cache', title: 'Style Cache', detail: 'Convert crystals into cosmetic currency.', cost: { moon_crystals: 3 }, reward: { style_tokens: 12 }, min_level: 8 },
   { key: 'crystal_exchange', title: 'Crystal Exchange', detail: 'A costly direct crystal route, limited to this daily offer.', cost: { moon_gold: 300 }, reward: { moon_crystals: 1 }, min_level: 15 },

@@ -5,6 +5,7 @@ import { getPetVisibleLevel, getPetVisibleLevelSql } from './progression-phase-2
 import { seasonalRaidChoices, resolveSeasonalRaidAttack } from './seasonal-raid-tactics.js';
 import { normalizeFaction } from '../shared/faction-canon.js';
 import {
+  accountWalletRecoveryResolvedSql,
   ensurePetAccountWalletReadyForMutation,
 } from './wallet-reconciliation.js';
 
@@ -97,6 +98,11 @@ async function getPetLiveProgressionState(db, telegramId, pet, runtime = {}, res
   return row || { region_mastery_json: '{}', completed_regions_json: '[]', prestige_count: 0 };
 }
 
+function districtMaterialReward(regionKey, mastery) {
+  const materials = PET_REGION_CONTENT[regionKey].reward_focus;
+  return materials[Math.floor(integer(mastery) / 25) % materials.length];
+}
+
 function getDistrictMission(telegramId, pet, region, today = dayKey()) {
   const content = PET_REGION_CONTENT[region.key];
   const mastery = integer(region.mastery_xp);
@@ -123,7 +129,8 @@ function getDistrictMission(telegramId, pet, region, today = dayKey()) {
     const riskPercent = Math.round(clamp(12 + integer(encounter.threat) * 7 - relief + approach.risk_delta, 8, 70));
     return { key, label: approach.label, detail: approach.detail, risk_percent: riskPercent, success_percent: 100 - riskPercent, mastery_success: approach.mastery_success, mastery_setback: approach.mastery_setback, reward_multiplier: approach.reward_multiplier };
   });
-  return { key: encounterKey, ...encounter, boss, choices };
+  const materialReward = districtMaterialReward(region.key, mastery);
+  return { key: encounterKey, ...encounter, boss, choices, material_reward: materialReward };
 }
 
 function getEventChainScene(chain, stepIndex) {
@@ -258,9 +265,10 @@ export async function processPetCraftRecipe(db, telegramId, recipeKey, requestKe
   const checks = costs.map(() => 'AND EXISTS (SELECT 1 FROM telegram_pet_material_balances WHERE telegram_id=? AND material_key=? AND quantity>=?)').join(' ');
   const results = await db.batch([
     db.prepare(`UPDATE telegram_pet_system_events SET status='settling', updated_at=CURRENT_TIMESTAMP WHERE id=? AND status IN ('pending','rejected') ${checks}
+      AND EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id=? AND ${getPetVisibleLevelSql('pet_xp')}>=?)
       AND (NOT EXISTS (SELECT 1 FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item' AND asset_key=?)
         OR EXISTS (SELECT 1 FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item' AND asset_key=? AND quantity<=?))`)
-      .bind(reservation.id, ...costs.flatMap(([key, amount]) => [telegramId, key, amount]), telegramId, recipe.output.item_key, telegramId, recipe.output.item_key, 999999 - integer(recipe.output.quantity)),
+      .bind(reservation.id, ...costs.flatMap(([key, amount]) => [telegramId, key, amount]), telegramId, recipe.min_level, telegramId, recipe.output.item_key, telegramId, recipe.output.item_key, 999999 - integer(recipe.output.quantity)),
     ...costs.map(([key, amount]) => db.prepare("UPDATE telegram_pet_material_balances SET quantity=quantity-?, updated_at=CURRENT_TIMESTAMP WHERE telegram_id=? AND material_key=? AND EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling')").bind(amount, telegramId, key, reservation.id)),
     db.prepare(`INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity)
       SELECT ?, 'item', ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling')
@@ -414,7 +422,7 @@ export async function processPetDistrictMission(db, telegramId, regionKey, pet, 
     const masteryGain = succeeded ? choice.mastery_success : Math.min(choice.mastery_setback, Math.max(0, nextCheckpoint - currentMastery - 1));
     const nextMastery = currentMastery + masteryGain;
     const bossVictory = succeeded && mission.boss && currentMastery < nextCheckpoint && nextMastery >= nextCheckpoint;
-    const rewardMaterial = content.reward_focus[Math.floor(currentMastery / 25) % content.reward_focus.length];
+    const rewardMaterial = districtMaterialReward(region.key, currentMastery);
     const scale = succeeded ? choice.reward_multiplier : 0.55;
     const baseRewards = { pet_xp: Math.max(8, Math.floor((bossVictory ? 55 : 25) * scale)), moon_gold: Math.max(6, Math.floor((bossVictory ? 65 : 28) * scale)), materials: { [rewardMaterial]: bossVictory ? 3 : succeeded ? 1 : 0 } };
     const adjusted = applyPetFactionBonus(baseRewards, factionKey, 'runs');
@@ -600,9 +608,10 @@ export async function processPetEquipmentUpgrade(db, telegramId, itemKey, reques
   const materialArgs = payableMaterials.flatMap(([key, amount]) => [telegramId, key, amount]);
   const statements = [
     db.prepare(`UPDATE telegram_pet_system_events SET status='settling', updated_at=CURRENT_TIMESTAMP WHERE id=? AND status IN ('pending','rejected')
-      AND EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id=? AND moon_gold>=?) ${materialChecks}
+      AND EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id=? AND moon_gold>=? AND ${getPetVisibleLevelSql('pet_xp')}>=15) ${materialChecks}
+      AND ${accountWalletRecoveryResolvedSql('?')}
       AND EXISTS (SELECT 1 FROM telegram_pet_equipment_progression WHERE telegram_id=? AND item_key=? AND item_level=?)`)
-      .bind(reservation.id, telegramId, integer(cost.moon_gold), ...materialArgs, telegramId, itemKey, target - 1),
+      .bind(reservation.id, telegramId, integer(cost.moon_gold), ...materialArgs, telegramId, telegramId, itemKey, target - 1),
     db.prepare("UPDATE telegram_pet_profiles SET moon_gold=moon_gold-?, updated_at=CURRENT_TIMESTAMP WHERE telegram_id=? AND EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling')").bind(integer(cost.moon_gold), telegramId, reservation.id),
     ...payableMaterials.map(([key, amount]) => db.prepare("UPDATE telegram_pet_material_balances SET quantity=quantity-?, updated_at=CURRENT_TIMESTAMP WHERE telegram_id=? AND material_key=? AND EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling')").bind(amount, telegramId, key, reservation.id)),
     db.prepare("UPDATE telegram_pet_equipment_progression SET item_level=?, updated_at=CURRENT_TIMESTAMP WHERE telegram_id=? AND item_key=? AND item_level=? AND EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling')").bind(target, telegramId, itemKey, target - 1, reservation.id),
@@ -617,7 +626,7 @@ export async function processPetEquipmentUpgrade(db, telegramId, itemKey, reques
 }
 
 export async function processPetCosmeticUnlock(db, telegramId, cosmeticKey, requestKey) {
-  const sink = PET_COSMETIC_SINKS[String(cosmeticKey || '')];
+  const sink = typeof cosmeticKey === 'string' && Object.prototype.hasOwnProperty.call(PET_COSMETIC_SINKS, cosmeticKey) ? PET_COSMETIC_SINKS[cosmeticKey] : null;
   if (!sink) return { accepted: false, reason: 'cosmetic_invalid' };
   const replay = await getCompletedRequest(db, telegramId, 'cosmetic', cosmeticKey, requestKey);
   if (replay) return { accepted: true, duplicate: true, reason: 'cosmetic_already_unlocked', cosmetic: parse(replay.payload_json, {}) };
@@ -641,8 +650,9 @@ export async function processPetCosmeticUnlock(db, telegramId, cosmeticKey, requ
   const results = await db.batch([
     db.prepare(`UPDATE telegram_pet_system_events SET status='settling', updated_at=CURRENT_TIMESTAMP WHERE id=? AND status IN ('pending','rejected')
       AND EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id=? AND ${profileCheck}) ${materialChecks}
+      AND ${accountWalletRecoveryResolvedSql('?')}
       ${sink.repeatable ? '' : 'AND NOT EXISTS (SELECT 1 FROM telegram_pet_cosmetic_unlocks WHERE telegram_id=? AND cosmetic_key=?)'}`)
-      .bind(reservation.id, telegramId, ...Object.values(profileCosts), ...materialCosts.flatMap(([key, amount]) => [telegramId, key, amount]), ...(sink.repeatable ? [] : [telegramId, cosmeticKey])),
+      .bind(reservation.id, telegramId, ...Object.values(profileCosts), ...materialCosts.flatMap(([key, amount]) => [telegramId, key, amount]), telegramId, ...(sink.repeatable ? [] : [telegramId, cosmeticKey])),
     ...Object.entries(profileCosts).map(([key, amount]) => db.prepare(`UPDATE telegram_pet_profiles SET ${key}=${key}-?, updated_at=CURRENT_TIMESTAMP WHERE telegram_id=? AND EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling')`).bind(amount, telegramId, reservation.id)),
     ...materialCosts.map(([key, amount]) => db.prepare("UPDATE telegram_pet_material_balances SET quantity=quantity-?, updated_at=CURRENT_TIMESTAMP WHERE telegram_id=? AND material_key=? AND EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling')").bind(amount, telegramId, key, reservation.id)),
     db.prepare(`INSERT INTO telegram_pet_cosmetic_unlocks (telegram_id, cosmetic_key, quantity)

@@ -272,10 +272,14 @@ assert.equal(serializedActivePet.pet_id, serializedRawPet.pet_id, 'serialized ac
 assert.equal(serializedActivePet.season_key, serializedRawPet.season_key, 'serialized active pet must preserve season_key authority');
 const serializedRuntime = runtimeDb.prepare("SELECT * FROM telegram_pet_progression_state WHERE telegram_id='serialized-authority'").get();
 const serializedState = await buildPetLiveSystemsState(d1, 'serialized-authority', serializedActivePet, serializedRuntime, [], []);
+for (const region of serializedState.regions) assert.equal(region.mission.material_reward, PET_REGION_CONTENT[region.key].reward_focus[0]);
 assert.equal(serializedState.regions.find((region) => region.key === 'moon_alley').available, true,
   'live-system state must accept complete serialized pet authority');
 const serializedDistrict = await processPetDistrictMission(d1, 'serialized-authority', 'moon_alley', serializedActivePet, serializedRuntime, reward, null);
 assert.equal(serializedDistrict.accepted, true, 'district missions must settle with serialized pet authority');
+const displayedMaterial = serializedState.regions.find((r) => r.key === 'moon_alley').mission.material_reward;
+const materialReceipt = runtimeDb.prepare("SELECT applied_rewards FROM telegram_pet_reward_claims WHERE telegram_id='serialized-authority' AND source='pet_district' AND status='awarded'").get();
+assert.deepEqual(Object.keys(JSON.parse(materialReceipt.applied_rewards).materials), serializedDistrict.outcome.success ? [displayedMaterial] : [], 'district material preview must match actual settlement');
 assert.equal(runtimeDb.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id='serialized-authority' AND pet_id=? AND season_key=?")
   .get(serializedActivePet.pet_id, serializedActivePet.season_key).count, 1,
   'serialized district settlement must write the complete pet authority tuple');
@@ -545,6 +549,55 @@ assert.equal(runtimeDb.prepare("SELECT moon_gold FROM telegram_pet_profiles WHER
   'thawed live equipment spend must debit once after recovery');
 
 const scrapBeforeCraft = runtimeDb.prepare("SELECT quantity FROM telegram_pet_material_balances WHERE telegram_id='live-1' AND material_key='scrap_metal'").get().quantity;
+// The selected pet can change while a crafting/upgrade request is in flight.
+seedPlayer('live-craft-level-race');
+seedMaterials('live-craft-level-race');
+d1.afterReservation = () => { d1.afterReservation = null; runtimeDb.prepare("UPDATE telegram_pet_profiles SET pet_xp=0 WHERE telegram_id='live-craft-level-race'").run(); };
+assert.equal((await processPetCraftRecipe(d1, 'live-craft-level-race', 'battery_pack', 'craft-level-race')).accepted, false,
+  'craft settlement must recheck the current level before spending materials');
+assert.equal(runtimeDb.prepare("SELECT quantity FROM telegram_pet_material_balances WHERE telegram_id='live-craft-level-race' AND material_key='battery_cell'").get().quantity, 100);
+assert.equal(runtimeDb.prepare("SELECT COUNT(*) n FROM telegram_pet_inventory WHERE telegram_id='live-craft-level-race'").get().n, 0);
+runtimeDb.prepare("UPDATE telegram_pet_profiles SET pet_xp=392040 WHERE telegram_id='live-craft-level-race'").run();
+assert.equal((await processPetCraftRecipe(d1, 'live-craft-level-race', 'battery_pack', 'craft-level-race')).accepted, true);
+assert.equal((await processPetCraftRecipe(d1, 'live-craft-level-race', 'battery_pack', 'craft-level-race')).duplicate, true);
+assert.equal(runtimeDb.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id='live-craft-level-race' AND asset_key='energy_drink'").get().quantity, 1);
+
+seedPlayer('live-upgrade-level-race'); seedMaterials('live-upgrade-level-race');
+runtimeDb.prepare("INSERT INTO telegram_pet_equipment_progression (telegram_id,item_key,slot) VALUES ('live-upgrade-level-race','hoverboard','toy')").run();
+d1.afterReservation = () => { d1.afterReservation = null; runtimeDb.prepare("UPDATE telegram_pet_profiles SET pet_xp=0 WHERE telegram_id='live-upgrade-level-race'").run(); };
+assert.equal((await processPetEquipmentUpgrade(d1, 'live-upgrade-level-race', 'hoverboard', 'upgrade-level-race')).accepted, false);
+assert.equal(runtimeDb.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='live-upgrade-level-race'").get().moon_gold, 10000);
+assert.equal(runtimeDb.prepare("SELECT item_level FROM telegram_pet_equipment_progression WHERE telegram_id='live-upgrade-level-race'").get().item_level, 1);
+
+for (const key of ['__proto__', 'constructor', 'toString', {}, []]) assert.equal((await processPetCosmeticUnlock(d1, 'live-1', key, 'invalid-cosmetic')).reason, 'cosmetic_invalid');
+
+for (const kind of ['equipment', 'cosmetic']) {
+  const owner = 'live-late-freeze-' + kind;
+  seedPlayer(owner); seedMaterials(owner);
+  runtimeDb.prepare("INSERT INTO telegram_pet_equipment_progression (telegram_id,item_key,slot) VALUES (?,'hoverboard','toy')").run(owner);
+  d1.afterReservation = () => {
+    d1.afterReservation = null;
+    runtimeDb.prepare('DELETE FROM telegram_pet_reward_claims WHERE telegram_id=? AND source=?').run(owner, PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE);
+    insertWalletRecoveryRequired(owner);
+  };
+  const result = kind === 'equipment'
+    ? await processPetEquipmentUpgrade(d1, owner, 'hoverboard', 'late-freeze')
+    : await processPetCosmeticUnlock(d1, owner, 'profile_frame', 'late-freeze');
+  assert.equal(result.accepted, false, kind + ' must not spend after wallet recovery becomes pending');
+  assert.deepEqual({ ...runtimeDb.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(owner) },
+    { moon_gold: 10000, moon_crystals: 100, style_tokens: 500 });
+  assert.equal(runtimeDb.prepare('SELECT item_level FROM telegram_pet_equipment_progression WHERE telegram_id=?').get(owner).item_level, 1);
+  assert.equal(runtimeDb.prepare('SELECT COUNT(*) n FROM telegram_pet_cosmetic_unlocks WHERE telegram_id=?').get(owner).n, 0);
+  insertWalletReconciled(owner);
+  const retry = () => kind === 'equipment'
+    ? processPetEquipmentUpgrade(d1, owner, 'hoverboard', 'late-freeze')
+    : processPetCosmeticUnlock(d1, owner, 'profile_frame', 'late-freeze');
+  assert.equal((await retry()).accepted, true);
+  assert.equal((await retry()).duplicate, true);
+  assert.deepEqual({ ...runtimeDb.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(owner) },
+    kind === 'equipment' ? { moon_gold: 9920, moon_crystals: 100, style_tokens: 500 } : { moon_gold: 10000, moon_crystals: 96, style_tokens: 420 });
+}
+
 const crafted = await processPetCraftRecipe(d1, 'live-1', 'street_rations', 'request-craft-1');
 assert.equal(crafted.accepted, true);
 assert.equal(runtimeDb.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id='live-1' AND asset_type='item' AND asset_key='moon_snack'").get().quantity, 2);
