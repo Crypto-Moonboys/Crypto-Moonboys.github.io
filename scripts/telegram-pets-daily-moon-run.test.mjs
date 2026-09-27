@@ -24,7 +24,7 @@ import {
   persistPetRunRoomOutcome,
   startPetRogueliteRun,
 } from '../workers/moonboys-api/pets/roguelite-foundation.js';
-import { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
+import moonboysApiWorker, { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
 import { DAILY_RUN_CONDITIONS, DAILY_RUN_RULES_ID, DAILY_RUN_TACTICS, chooseDailyRunTactic, dailyTacticalBoard, previewDailyChoice, readDailyModifiers } from '../workers/moonboys-api/pets/daily-run-tactics.js';
 
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
@@ -1347,6 +1347,63 @@ async function endingFixture(owner) {
   const room = await createPetRunRoom(adapter, run);
   await persistPetRunRoomOutcome(adapter, run, room, { success: true, score: 100, choice_id: room.choices[0].choice_id });
   return { adapter, owner, now, run, room, request: { telegram_id: owner, run_id: run.run_id, choice_key: room.choices[0].choice_id, expected_step_index: 9, now } };
+}
+
+// Finish Saved Daily Run is settlement recovery, just like refresh. It must
+// never grant the extraction-only XP, traits or equipment progression.
+let endingAwardOwner = 9342000;
+async function invokeEndingAction(f, surface, action, suffix = 'first') {
+  const body = { ...f.request, action, event_key: `ending-award:${suffix}`, request_id: `ending-award:${suffix}` };
+  if (surface === 'mini') return __petMediaTestHooks.processPetMiniAppAction(f.adapter, f.owner, { id: f.owner }, body, 'fixture-token');
+  const response = await moonboysApiWorker.fetch(new Request('https://moonboys.test/telegram-pets/action', {
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Pets-Bot-Secret': 'fixture-secret' }, body: JSON.stringify(body),
+  }), { DB: f.adapter, TELEGRAM_PETS_BOT_SECRET: 'fixture-secret' });
+  assert.equal(response.status, 200);
+  return response.json();
+}
+function endingRuntimeState(f) {
+  return {
+    progression: f.adapter.database.prepare('SELECT adventure_xp,traits_json FROM telegram_pet_specialist_progression WHERE pet_id=?').get(f.run.pet_id),
+    events: f.adapter.database.prepare('SELECT action,payload_json FROM telegram_pet_specialist_events WHERE pet_id=? ORDER BY event_key').all(f.run.pet_id),
+  };
+}
+for (const surface of ['mini', 'api', 'refresh']) {
+  for (const mode of surface === 'refresh' ? ['finish'] : ['finish', 'step', 'extract']) {
+    const f = await endingFixture(String(++endingAwardOwner));
+    f.adapter.database.prepare(`INSERT INTO telegram_pet_specialist_progression (pet_id,telegram_id,season_key,adventure_xp,traits_json)
+      VALUES (?,?,?,37,'{}')`).run(f.run.pet_id,f.owner,f.run.season_key);
+    const before = endingRuntimeState(f);
+    if (mode === 'finish') {
+      f.adapter.failWrite = /INSERT OR IGNORE INTO telegram_pet_run_analytics[\s\S]*'boss_fought'/;
+      await assert.rejects(processDailyMoonRunStep(f.adapter, f.request), /injected_journey_write_failure/);
+      f.adapter.failWrite = null;
+      if (surface === 'refresh') await __petMediaTestHooks.buildPetMiniAppState(f.adapter, f.owner, 'fixture-token');
+      else {
+        const finished = await invokeEndingAction(f, surface, 'run_extract');
+        assert.equal(finished.reason, 'daily_run_completed');
+        assert.equal(finished.duplicate, false, 'first completion must exercise the runtime award gate');
+        await invokeEndingAction(f, surface, 'run_extract', 'retry');
+      }
+      assert.equal(f.adapter.database.prepare('SELECT status FROM telegram_pet_runs WHERE run_id=?').get(f.run.run_id).status, 'completed');
+      assert.deepEqual(endingRuntimeState(f), before, `${surface} settlement recovery must not award extraction progression`);
+      assert.equal(f.adapter.database.prepare("SELECT COUNT(*) AS n FROM telegram_pet_reward_claims WHERE source='roguelite_boss' AND status='awarded'").get().n, 1);
+    } else {
+      if (mode === 'extract') {
+        f.adapter.database.prepare('UPDATE telegram_pet_runs SET current_room=1,depth=1 WHERE run_id=?').run(f.run.run_id);
+        f.adapter.database.prepare('DELETE FROM telegram_pet_run_rooms WHERE run_id=?').run(f.run.run_id);
+      }
+      const result = await invokeEndingAction(f, surface, mode === 'step' ? 'run_step' : 'run_extract');
+      assert.equal(result.accepted, true);
+      const after = endingRuntimeState(f);
+      assert.equal(after.progression.adventure_xp - before.progression.adventure_xp, mode === 'step' ? 10 : 24,
+        `${surface} ordinary ${mode} keeps its existing Adventure XP`);
+      assert.equal(after.events.length, 1);
+      const plan = JSON.parse(after.events[0].payload_json);
+      assert.equal(plan.action, mode === 'step' ? 'run_step' : 'run_extract');
+      assert.equal(plan.equipment_action, plan.action);
+      assert.deepEqual(JSON.parse(after.progression.traits_json), plan.traits);
+    }
+  }
 }
 const interruptedEnding = await endingFixture('ending-retry');
 interruptedEnding.adapter.failWrite = /INSERT OR IGNORE INTO telegram_pet_run_analytics[\s\S]*'boss_fought'/;

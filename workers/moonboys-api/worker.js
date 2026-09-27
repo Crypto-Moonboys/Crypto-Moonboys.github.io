@@ -9720,7 +9720,8 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
       ? extractDailyMoonRunWithWeeklyJourney(db, { telegram_id: telegramId, run_id: body.run_id })
       : processPetRunExtract(db, telegramId, body.run_id, { event_key: eventKey, source });
     const resolved = await result;
-    if (resolved.accepted && !resolved.duplicate) await applyPetRuntimeCommandAward(db, telegramId, `runtime:mini:${eventKey}`, 'run_extract', {
+    // Finishing a saved boss clear only settles the ending, as refresh does.
+    if (resolved.accepted && !resolved.duplicate && resolved.reason !== 'daily_run_completed') await applyPetRuntimeCommandAward(db, telegramId, `runtime:mini:${eventKey}`, 'run_extract', {
       pet_id: resolved.run?.pet_id || resolved.daily_run?.pet_id || resolved.pet?.pet_id,
       season_key: resolved.run?.season_key || resolved.daily_run?.season_key || resolved.pet?.season_key,
     });
@@ -10926,7 +10927,9 @@ export default {
         run_step: 'run_step',
         run_extract: 'run_extract',
       }[String(body.action || '').trim().toLowerCase()];
-      if (result?.accepted && !result.duplicate && apiRuntimeAction) {
+      // The extraction endpoint also resumes saved Daily Run boss completions.
+      const settlingDailyEnding = apiRuntimeAction === 'run_extract' && result?.reason === 'daily_run_completed';
+      if (result?.accepted && !result.duplicate && apiRuntimeAction && !settlingDailyEnding) {
         await applyPetRuntimeCommandAward(env.DB, telegramId, `runtime:api:${body.event_key || body.action || crypto.randomUUID()}`, apiRuntimeAction, {
           pet_id: result.run?.pet_id || result.daily_run?.pet_id || result.pet?.pet_id,
           season_key: result.run?.season_key || result.daily_run?.season_key || result.pet?.season_key,

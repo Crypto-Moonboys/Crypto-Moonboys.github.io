@@ -54,6 +54,15 @@ action to finish an already-won ending; the Worker preserves completed status
 and records completed Weekly Journey evidence. Refresh can finish recovery
 without a button press once the failure is gone.
 
+Review follow-up: the finish button initially reached the extraction runtime
+award handler, adding 24 Adventure XP to an already-won boss ending. Both the
+Mini App and bot API now suppress that extraction award when the result is
+`daily_run_completed`. Finish and refresh recovery only settle the saved
+ending; ordinary boss steps retain their 10 Adventure XP and genuine early
+extractions retain 24. Regressions exercise both action handlers, repeated
+finish requests, unchanged specialist events/traits on recovery, and normal
+step/extraction award plans, including their equipment action classification.
+
 ## What actually ends and what it pays
 
 | System | Ending / boss | Rewards and next play |
