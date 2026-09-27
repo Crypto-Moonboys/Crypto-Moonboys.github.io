@@ -693,6 +693,13 @@
 
   function button(label, action, payload, options) {
     options = actionCooldownButtonOptions(action, options);
+    var accountActions = ['adopt', 'guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'arena_queue_cancel', 'arena_forfeit', 'kaiju_queue_cancel', 'kaiju_match_cancel'];
+    var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles']);
+    if (state && state.lifecycle && state.lifecycle.phase === 'egg' && !eggActions.includes(action)) {
+      options = Object.assign({}, options, { disabled: true, cooldown: null, statusLabel: 'HATCH REQUIRED' });
+    } else if (state && state.adopted === false && !accountActions.includes(action)) {
+      options = Object.assign({}, options, { disabled: true, cooldown: null, statusLabel: 'ADOPT A PET FIRST' });
+    }
     var disabled = options && options.disabled;
     var detail = shouldShowAvailability(options)
       ? '<small>' + availabilityDetailMarkup(options) + '</small>'
@@ -1975,10 +1982,39 @@
       return button(job.title, 'work', { job_key: job.key }, { disabled: job.available === false, cooldown: job.cooldown, detail: 'LVL ' + job.min_level + ' // STAGE ' + number(job.min_evolution_stage) + specialistGate + ' // BASE REWARD ' + jobRewards + ' // ' + (job.lore || '') });
     }).join('');
     var activity = guidance.activity;
-    var activityHtml = activity
-      ? '<div class="line">ACTIVE: ' + escapeHtml(words(activity.activity_type)) + ' // ' + (activity.ready ? escapeHtml(activity.detail) : countdownMarkup(activity.cooldown || activity, 'Claim ready in ')) + '</div><div class="button-grid">' + button('CLAIM', 'activity_claim', {}, activityClaimButtonOptions(activity)) + button('CANCEL', 'activity_cancel', {}, { danger: true }) + '</div>'
-      : '<div class="button-grid">' + ['sleep', 'train', 'work', 'explore'].map(function (kind) { return button(kind, 'activity_start', { activity_type: kind }); }).join('') + '</div>';
+    var activityHtml = activity ? '' : '<div class="line muted">Choose recovery, training, work or exploration. One activity at a time; it continues while you play other routes or close the app. Claiming ends it. Base previews are subject to reward caps and stat limits; hunger increases are costs.</div>';
+    if (activity) {
+      activityHtml += '<div class="line">' + (activity.recovery_pending ? 'SAVED CLAIM: ' : 'ACTIVE: ') + escapeHtml(words(activity.activity_type)) + ' // ' + (activity.ready ? escapeHtml(activity.detail) : countdownMarkup(activity.cooldown || activity, 'Claim ready in ')) + '</div>';
+      activityHtml += '<div class="button-grid">' + button(activity.recovery_pending ? 'RECOVER SAVED REWARD' : 'CLAIM NOW', 'activity_claim', {}, activityClaimButtonOptions(activity)) + (activity.recovery_pending ? '' : button('CANCEL ACTIVITY', 'activity_cancel', {}, { danger: true, detail: 'Ends this activity without its rewards.' })) + '</div>';
+      if (activity.preview) activityHtml += '<div class="line complete">' + (activity.recovery_pending ? 'SAVED CLAIM PREVIEW' : 'CLAIM PREVIEW AT LAST SYNC') + ' // ' + escapeHtml(activityPreviewText(activity.preview)) + '</div>';
+      activityHtml += '<div class="line muted">Base previews; reward caps and stat limits apply. Hunger increases are costs. ' + (activity.recovery_pending ? 'Retry finishes the saved claim without paying twice.' : 'Claiming ends this activity. You can keep playing other routes while it runs.') + '</div>';
+      if (activity.next_checkpoint) activityHtml += '<div class="line">NEXT DURATION // ' + escapeHtml(formatCountdownSeconds(activity.next_checkpoint.seconds)) + ' TOTAL // ' + countdownMarkup(activity.next_checkpoint.cooldown, 'in ') + '</div><div class="line muted">' + escapeHtml(activityPreviewText(activity.next_checkpoint)) + '</div>';
+      if (activity.activity_type === 'explore' && !activity.recovery_pending) activityHtml += '<div class="line muted">Explore gives 1 crystal from 30 minutes until 2 hours. At 2 hours, the Adventure Map replaces that crystal. Compare before claiming.</div>';
+      if (activity.capped) activityHtml += '<div class="line complete">DURATION CAP REACHED // Waiting longer adds no activity rewards.</div>';
+      if (activity.ends_at && !activity.recovery_pending) activityHtml += '<div class="line muted">Claim within 24 hours after the duration cap; unclaimed activities then expire.</div>';
+    } else {
+      var activityOptions = guidance.activity_options || [];
+      activityHtml += activityOptions.length ? activityOptions.map(function (offer) {
+        return '<div class="line"><strong>' + escapeHtml(words(offer.key)) + '</strong> // CLAIM FROM ' + escapeHtml(formatCountdownSeconds(offer.minimum_seconds)) + ' // CAP ' + escapeHtml(formatCountdownSeconds(offer.cap_seconds)) + '</div>' +
+          '<details><summary class="line">COMPARE ' + escapeHtml(words(offer.key).toUpperCase()) + ' DURATION REWARDS</summary>' + offer.checkpoints.map(function (preview) { return '<div class="line muted">' + escapeHtml(formatCountdownSeconds(preview.seconds) + ' TOTAL // ' + activityPreviewText(preview)) + '</div>'; }).join('') + '</details>' +
+          '<div class="button-grid one">' + button('START ' + words(offer.key), 'activity_start', { activity_type: offer.key }) + '</div>';
+      }).join('') : '<div class="button-grid">' + ['sleep', 'train', 'work', 'explore'].map(function (kind) { return button(kind, 'activity_start', { activity_type: kind }); }).join('') + '</div>';
+    }
+    if (state.contracts && state.contracts.available) activityHtml += '<div class="button-grid one">' + routeButton('PLAY CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'No pet energy cost or cooldown. The activity keeps accumulating.') + '</div>';
+    activityHtml += '<div class="button-grid one">' + routeButton('PLAY PRACTICE', { screen: 'explore', focus: 'practice' }, 'Unlimited local runs, without pet costs or rewards.') + '</div>';
     return panel('TIMED ACTIVITY', activityHtml, 'timed-activity') + panel('JOB TERMINAL', '<div class="button-grid">' + jobsHtml + '</div>', 'jobs');
+  }
+
+  function activityPreviewText(preview) {
+    var gains = [], costs = [];
+    Object.entries(preview && preview.rewards || {}).forEach(function (entry) {
+      var key = entry[0], amount = entry[1];
+      if (key === 'item_key') { if (amount) gains.push('1 ' + words(amount)); return; }
+      if (!Number(amount)) return;
+      var isCost = key === 'hunger' ? amount > 0 : amount < 0;
+      (isCost ? costs : gains).push(Math.abs(amount) + ' ' + (key === 'hunger' ? amount > 0 ? 'Hunger increase' : 'Hunger reduction' : words(key)));
+    });
+    return 'GAIN ' + (gains.join(' + ') || 'NONE') + ' // COST ' + (costs.join(' + ') || 'NONE');
   }
 
   function valueText(value) {

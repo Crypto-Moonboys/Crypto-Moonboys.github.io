@@ -5933,6 +5933,44 @@ function computePetActivityRewards(activityType, elapsedSeconds) {
   return { type, seconds, capped_seconds: seconds, rewards };
 }
 
+function petActivityCheckpoints(type) {
+  return [...new Set([PET_ACTIVITY_MIN_SECONDS, 1800, 7200, PET_ACTIVITY_CAP_SECONDS[type]])]
+    .filter((seconds) => seconds <= PET_ACTIVITY_CAP_SECONDS[type]).sort((a, b) => a - b);
+}
+
+function buildPetActivityOptions() {
+  return PET_ACTIVITY_TYPES.map((type) => ({
+    key: type, minimum_seconds: PET_ACTIVITY_MIN_SECONDS, cap_seconds: PET_ACTIVITY_CAP_SECONDS[type],
+    checkpoints: petActivityCheckpoints(type).map((seconds) => computePetActivityRewards(type, seconds)),
+  }));
+}
+
+// Display the same snapshot that claim recovery will settle, never a newly
+// accumulated reward for a session whose claim has already been reserved.
+function buildPetActivitySummary(activity, now = new Date()) {
+  if (!activity) return null;
+  const recovery = getRecoverablePetActivityClaim(activity);
+  const started = parseSqliteTs(activity.started_at);
+  const elapsed = started == null ? 0 : Math.max(0, Math.floor((now.getTime() - started) / 1000));
+  const ready = Boolean(recovery) || started != null && elapsed >= PET_ACTIVITY_MIN_SECONDS;
+  const cooldown = !ready && started != null
+    ? normalizePetCooldownWindow(new Date(started + PET_ACTIVITY_MIN_SECONDS * 1000).toISOString(), now) : null;
+  const cap = PET_ACTIVITY_CAP_SECONDS[activity.activity_type];
+  const nextSeconds = recovery ? null : petActivityCheckpoints(activity.activity_type).find((seconds) => seconds > elapsed);
+  return {
+    ...activity, ready, recovery_pending: Boolean(recovery),
+    cooldown, expires_at: cooldown?.expires_at || null, remaining_seconds: cooldown?.remaining_seconds || 0,
+    elapsed_seconds: recovery ? recovery.computed.seconds : elapsed,
+    cap_seconds: cap, capped: !recovery && elapsed >= cap,
+    preview: recovery?.computed || (ready ? computePetActivityRewards(activity.activity_type, elapsed) : null),
+    next_checkpoint: nextSeconds && started != null ? {
+      ...computePetActivityRewards(activity.activity_type, nextSeconds),
+      cooldown: normalizePetCooldownWindow(new Date(started + nextSeconds * 1000).toISOString(), now),
+    } : null,
+    detail: recovery ? 'Saved reward ready to recover. Retry the claim.' : ready ? 'Claim ready now.' : `Claim ready in ${formatPetDuration(Math.max(0, PET_ACTIVITY_MIN_SECONDS - elapsed))}.`,
+  };
+}
+
 async function startPetActivitySession(db, telegramId, activityTypeRaw, options = {}) {
   const activityType = normalizePetActivityType(activityTypeRaw);
   if (!activityType) return { accepted: false, reason: 'invalid_activity' };
@@ -9210,6 +9248,7 @@ function buildPetMiniAppCooldownSummary({ journeySummary = null, guidance = null
   addPetCooldownEntry(entries, 'daily_journey_reset', 'Daily Journey reset', journeySummary?.daily?.cooldown, 'daily');
   addPetCooldownEntry(entries, 'weekly_journey_reset', 'Weekly Journey reset', journeySummary?.weekly?.cooldown, 'weekly');
   addPetCooldownEntry(entries, 'timed_activity_claim', 'Timed activity claim', guidance?.activity?.cooldown, 'action');
+  addPetCooldownEntry(entries, 'timed_activity_checkpoint', 'Timed activity preview', guidance?.activity?.next_checkpoint?.cooldown, 'preview');
   addPetCooldownEntry(entries, 'weekly_boss_attempt', 'Weekly Boss daily attempt', guidance?.weekly_boss?.defeated ? null : guidance?.weekly_boss?.cooldown, 'daily');
   for (const region of liveSystems?.regions || []) {
     addPetCooldownEntry(entries, `district:${region.key}`, `${region.title || region.key} district reset`, region.cooldown, 'daily');
@@ -9369,7 +9408,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
             : activeChain
               ? { key: 'event_chain', title: `Continue ${String(activeChain.key).replaceAll('_', ' ')}`, detail: `Current step ${activeChain.step_index + 1}/${activeChain.steps.length}: ${String(activeChain.current_step).replaceAll('_', ' ')}. Choose one of two authored routes; each choice adds its shown bonus to the protected base reward.`, action: 'event_chain', destination: 'explore' }
               : null;
-  const next = lifecycle?.phase === 'egg'
+  let next = lifecycle?.phase === 'egg'
     ? { key: 'incubate', title: lifecycle.incubation.ready ? 'Start EGGYONE BREAKOUT' : 'Awaken EGGYONE', detail: lifecycle.incubation.ready ? 'The Secret Bot is answering. Start BREAKOUT when ready.' : `Build ${lifecycle.incubation.target} signal with at least three kinds of care.`, action: lifecycle.incubation.ready ? 'hatch' : 'incubate', destination: 'home' }
     : lifecycle?.rare?.ready
       ? { key: 'rare_morph', title: 'Answer the hidden signal', detail: 'Your companion history has opened a one-of-one morph path.', action: 'rare_morph', destination: 'profile' }
@@ -9383,6 +9422,11 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
   const runPetAvailable = Boolean(activeRun?.pet_id && runPet?.pet_id === activeRun.pet_id && runPet?.telegram_id === telegramId);
   const contracts = await getContractBoard(db, telegramId, petRaw, now)
     .catch(() => ({ available: false, reason: 'contracts_unavailable' }));
+  if (next?.key === 'activity_running' && contracts.available) next = {
+    key: 'contract', title: contracts.run?.status === 'active' ? 'Continue your saved contract' : 'Choose another contract',
+    detail: 'Your timed activity keeps accumulating. Contracts have no pet energy cost or cooldown.',
+    action: 'contract', destination: 'missions',
+  };
   const dailyRunSummary = await getDailyMoonRunSummary(db, { telegram_id: telegramId, now, active_run: activeRun, hatched: Boolean(lifecycle && lifecycle.phase !== 'egg') })
     .catch(() => ({ available: false, attempted: false, status: 'authority_unavailable' }));
   const dailyReservation = activeRun
@@ -13689,7 +13733,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260927-route-preparation-v1`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260927-activity-options-v1`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',
@@ -14727,6 +14771,8 @@ export const __petMediaTestHooks = Object.freeze({
   resolvePetRandomEncounter,
   normalizePetActivityType,
   computePetActivityRewards,
+  buildPetActivityOptions,
+  buildPetActivitySummary,
   formatPetActivityLine,
   resolvePetOutcomeMediaKey,
   selectPetAdventureEncounter,
@@ -15701,7 +15747,7 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null) {
   const weekKey = getPetWeekKey(now);
   const [identity, activity, activeRun, missions, seasonState, achievements, weeklyProgress, weeklyAttempt, runtime, specialActions] = await Promise.all([
     getMoonpetIdentityWithLifecycle(db, telegramId),
-    getActivePetActivitySession(db, telegramId, now).catch(() => null),
+    getActivePetActivitySession(db, telegramId, now).then((active) => active || getRecoverablePetActivitySession(db, telegramId)).catch(() => null),
     getActivePetRun(db, telegramId).catch(() => null),
     buildPetMissions(db, telegramId).catch(() => ({ daily: [] })),
     getPetSeasonRewardState(db, telegramId),
@@ -15728,9 +15774,6 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null) {
   }));
   const level = getPetLevel(pet.pet_xp);
   const stage = Math.max(0, Number(identity?.current_stage?.stage) || 0);
-  const elapsedSeconds = activity ? Math.max(0, Math.floor((now.getTime() - (parseSqliteTs(activity.started_at) ?? now.getTime())) / 1000)) : 0;
-  const activityReadyAt = activity ? new Date((parseSqliteTs(activity.started_at) ?? now.getTime()) + PET_ACTIVITY_MIN_SECONDS * 1000).toISOString() : null;
-  const activityCooldown = activity ? normalizePetCooldownWindow(activityReadyAt, now) : null;
   const boss = getPetWeeklyBoss(weekKey);
   const weeklyBossDefeated = Boolean(weeklyProgress?.defeated_at);
   const weeklyAttemptCooldown = weeklyAttempt && !weeklyBossDefeated ? normalizePetCooldownWindow(getNextPetUtcDayResetAt(now), now) : null;
@@ -15739,14 +15782,8 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null) {
     day_key: dayKey,
     week_key: weekKey,
     identity,
-    activity: activity ? {
-      ...activity,
-      ready: elapsedSeconds >= PET_ACTIVITY_MIN_SECONDS,
-      expires_at: activityCooldown?.expires_at || activityReadyAt,
-      remaining_seconds: activityCooldown?.remaining_seconds || 0,
-      cooldown: activityCooldown,
-      detail: elapsedSeconds >= PET_ACTIVITY_MIN_SECONDS ? 'Claim ready now.' : `Claim ready in ${formatPetDuration(PET_ACTIVITY_MIN_SECONDS - elapsedSeconds)}.`,
-    } : null,
+    activity: buildPetActivitySummary(activity, now),
+    activity_options: buildPetActivityOptions(),
     active_run: activeRun,
     missions: missions.daily || [],
     evolution,

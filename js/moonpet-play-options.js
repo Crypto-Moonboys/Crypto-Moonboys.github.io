@@ -62,7 +62,7 @@
       if ((s.regions || []).some(function (region) { return region.available && region.pending_choice_key && (region.retry_energy_charged || Number(s.pet && s.pet.energy) >= 10); })) add('district_retry', 'RESUME SAVED DISTRICT CHOICE', 'Finish an interrupted decision without changing its reward or charging energy twice.');
       var ready = bounties.filter(function (b) { return b.complete && !b.claimed; });
       if (ready.length) add('bounty_claims', 'CLAIM READY BOUNTIES // ' + ready.length, 'Open the board to collect verified rewards.');
-      if (g.activity && g.activity.ready) add('activity', 'CLAIM FINISHED ACTIVITY', 'Your timed activity is ready to settle.');
+      if (g.activity && g.activity.ready) add('activity', g.activity.recovery_pending ? 'RECOVER SAVED ACTIVITY REWARD' : 'CLAIM OR CONTINUE ACTIVITY', g.activity.recovery_pending ? 'Retry the interrupted claim. Its saved reward is protected against duplicate payment.' : 'Compare the current reward with the next duration checkpoint before claiming.');
       var nextBounty = bounties.filter(function (b) { return !b.complete && !b.claimed && bountyRoutes(b).length; }).sort(function (a, b) {
         return Number(b.progress || 0) / Math.max(1, Number(b.required)) - Number(a.progress || 0) / Math.max(1, Number(a.required));
       })[0];
@@ -74,6 +74,8 @@
       add('incubate', 'SECRET BOT CARE', 'Care and reveal remain server-controlled. Practice is available while you wait.');
       return choices;
     }
+    if (!g.activity && (g.activity_options || []).length) add('activity', 'CHOOSE A BACKGROUND ACTIVITY', 'Compare four activities and duration rewards. Keep playing contracts while it accumulates.');
+    else if (g.activity && !g.activity.ready) add('activity', 'CHECK BACKGROUND ACTIVITY', 'Your timer continues while you play other routes. Check its next reward preview.');
     if (s.run) add('run', 'CONTINUE ' + (s.run.daily ? 'DAILY RUN' : 'MOON RUN'), 'Choose the next room or extract. Finish this run before opening another.');
     else {
       if (Number(s.pet && s.pet.energy) >= 12) add('run', 'MOON RUN', 'Repeatable risk / reward routes. Requires energy; server reward caps still apply.');

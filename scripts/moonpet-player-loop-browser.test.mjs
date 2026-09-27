@@ -15,12 +15,16 @@ const root = process.cwd();
 const sqlite = new DatabaseSync(':memory:');
 sqlite.exec(await fs.readFile(path.join(root, 'workers/moonboys-api/schema.sql'), 'utf8'));
 sqlite.exec(await fs.readFile(path.join(root, 'workers/moonboys-api/migrations/048_telegram_pet_player_expansion.sql'), 'utf8'));
+let failActivitySettlement = false;
 class Statement {
   constructor(sql, args = []) { this.sql = sql; this.args = args; }
   bind(...args) { return new Statement(this.sql, args); }
   async first() { return sqlite.prepare(this.sql).get(...this.args) || null; }
   async all() { return { results: sqlite.prepare(this.sql).all(...this.args) }; }
   async run() {
+    if (failActivitySettlement && this.sql.includes('UPDATE telegram_pet_activity_sessions') && this.sql.includes('SET metadata = ?')) {
+      failActivitySettlement = false; throw Error('interrupted_activity_settlement');
+    }
     if (/\bRETURNING\b/i.test(this.sql)) { const results = sqlite.prepare(this.sql).all(...this.args); return { results, meta: { changes: results.length } }; }
     const result = sqlite.prepare(this.sql).run(...this.args); return { results: [], meta: { changes: Number(result.changes) } };
   }
@@ -93,6 +97,12 @@ try {
     await page.waitForSelector('[data-panel="care"]');
     assert.ok(await page.locator('#nav button').evaluateAll((buttons) => buttons.length === 6 && buttons.every((b) => b.getBoundingClientRect().right <= innerWidth && b.getBoundingClientRect().left >= 0)), 'all six navigation buttons must fit the viewport');
     for (const action of ['energy_drink', 'dance', 'cuddles']) assert.equal(await page.locator(`[data-panel="care"] [data-action="${action}"]`).count(), 1);
+    for (const screen of ['work', 'economy']) {
+      await page.locator(`[data-screen="${screen}"]`).click();
+      assert.equal(await page.locator('#screen [data-action]:not([disabled])').count(), 0, 'egg must not advertise actions that require hatching: ' + screen);
+      assert.ok((await page.locator('#screen').textContent()).includes('HATCH REQUIRED'));
+    }
+    await page.locator('[data-screen="home"]').click();
     await page.locator('[data-panel="play-now"] [data-focus="practice"]').click();
     await page.waitForSelector('#practice-build');
     const gameplayCount = () => actions.filter((action) => action !== 'guidance_ack').length;
@@ -336,6 +346,55 @@ try {
     await page.waitForFunction(() => Array.from(document.querySelectorAll('[data-action="work"]')).every((b) => b.disabled));
     sqlite.prepare("UPDATE telegram_pet_events SET created_at=datetime('now','-31 minutes') WHERE telegram_id=? AND event_type='work'").run(currentUser);
     assert.ok((await hooks.buildPetMiniAppState(db, currentUser, token)).guidance.jobs.some((job) => job.available));
+    // Background activities expose real duration choices and survive interrupted claims.
+    currentUser = `browser-activity-${viewport.width}`;
+    await seed(currentUser, 'young');
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-panel="play-now"] [data-focus="timed-activity"]').click();
+    await page.waitForFunction(() => {
+      const panel = document.querySelector('[data-panel="timed-activity"]');
+      const rail = document.querySelector('.utility-rail');
+      return panel && panel.getBoundingClientRect().top >= rail.getBoundingClientRect().bottom;
+    });
+    assert.equal(await page.locator('[data-action="activity_start"]').count(), 4);
+    assert.ok((await page.locator('[data-panel="timed-activity"]').textContent()).includes('Hunger increase'));
+    if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-activity-options-${viewport.width}.png`) });
+    const startActivityResponse = page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'activity_start');
+    await page.locator('[data-action="activity_start"]').filter({ hasText: 'START Explore' }).click();
+    assert.equal((await (await startActivityResponse).json()).result.accepted, true);
+    await page.waitForSelector('[data-action="activity_claim"]');
+    assert.equal(await page.locator('[data-action="activity_claim"]').isDisabled(), true);
+    await page.locator('[data-panel="timed-activity"] [data-focus="contracts"]').click();
+    assert.ok(await page.locator('#contract-build').count());
+    assert.ok((await hooks.buildPetMiniAppState(db, currentUser, token)).guidance.activity, 'navigating to contracts must leave the activity running');
+    sqlite.prepare("UPDATE telegram_pet_activity_sessions SET started_at=datetime('now','-30 minutes') WHERE telegram_id=? AND status='active'").run(currentUser);
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-panel="play-now"] [data-focus="timed-activity"]').click();
+    assert.equal(await page.locator('[data-action="activity_claim"]').isEnabled(), true);
+    const activityText = await page.locator('[data-panel="timed-activity"]').textContent();
+    assert.ok(activityText.includes('1 Moon Crystals') && activityText.includes('Adventure Map replaces'));
+    const beforeFailedClaim = await hooks.buildPetMiniAppState(db, currentUser, token);
+    failActivitySettlement = true;
+    await assert.rejects(hooks.processPetMiniAppAction(db, currentUser, { id: currentUser }, { action: 'activity_claim' }, token), /interrupted_activity_settlement/);
+    const paidBeforeRetry = await hooks.buildPetMiniAppState(db, currentUser, token);
+    assert.equal(paidBeforeRetry.pet.moon_crystals, beforeFailedClaim.pet.moon_crystals + 1);
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-panel="play-now"] [data-focus="timed-activity"]').filter({ hasText: 'RECOVER SAVED ACTIVITY REWARD' }).click();
+    await page.waitForFunction(() => {
+      const panel = document.querySelector('[data-panel="timed-activity"]');
+      return panel && panel.getBoundingClientRect().top >= document.querySelector('.utility-rail').getBoundingClientRect().bottom;
+    });
+    assert.equal(await page.locator('[data-action="activity_start"]').count(), 0);
+    assert.equal(await page.locator('[data-action="activity_cancel"]').count(), 0, 'a reserved reward cannot be cancelled');
+    if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-activity-recovery-${viewport.width}.png`) });
+    const recoveryResponse = page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'activity_claim');
+    await page.locator('[data-action="activity_claim"]').filter({ hasText: 'RECOVER SAVED REWARD' }).click();
+    const recoveryResult = await (await recoveryResponse).json();
+    assert.equal(recoveryResult.result.accepted, true);
+    assert.equal(recoveryResult.state.pet.moon_crystals, paidBeforeRetry.pet.moon_crystals);
+    assert.equal(recoveryResult.state.pet.pet_xp, paidBeforeRetry.pet.pet_xp);
+    await page.waitForSelector('[data-action="activity_start"]');
+    assert.equal(await page.locator('[data-action="activity_start"]').count(), 4, 'a recovered claim must unblock the next activity');
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
     assert.equal(overflow, false, 'mobile viewport must not overflow horizontally');
     assert.deepEqual(errors, [], 'no runtime errors across all six screens');
