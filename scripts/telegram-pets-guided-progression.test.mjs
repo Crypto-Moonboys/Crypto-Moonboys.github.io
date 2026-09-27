@@ -75,6 +75,18 @@ assert.equal(materialGrind.callback_data, 'pet:run');
 assert.match(materialGrind.detail, /3\/5/);
 assert.equal(choosePetNextAction({ pet: healthyPet, missions: [{ key: 'pet-daily-train', title: 'Train once', completed: false }] }).callback_data, 'pet:train');
 
+// Coach follows accepted care substeps and never recommends blocked Sleep/Train.
+for (let completed = 0; completed < 3; completed++) {
+  const actions = ['feed', 'play', 'clean'];
+  const mission = { key: 'pet-daily-care-set:2026-09-27', title: 'Complete feed, play and clean', completed: false,
+    steps: actions.map((key, index) => ({ key, completed: index < completed })) };
+  assert.equal(choosePetNextAction({ pet: healthyPet, missions: [mission] }).callback_data, 'pet:' + actions[completed]);
+}
+assert.equal(choosePetNextAction({ pet: healthyPet, missions: [{ key: 'pet-daily-care-set', title: 'Complete feed, play and clean' }] }).callback_data, 'pet:details', 'older summaries open care instead of guessing a substep');
+assert.equal(choosePetNextAction({ pet: { ...healthyPet, energy: 10 }, special_actions: { energy_drink: { available: false } }, activity: { status: 'active', ready: false } }).callback_data, 'pet:activity');
+assert.equal(choosePetNextAction({ pet: healthyPet, activity: { status: 'active', ready: false }, missions: [{ key: 'train', title: 'Train once' }] }).callback_data, 'pet:activity');
+assert.equal(choosePetNextAction({ pet: healthyPet, missions: [{ key: 'bank', title: 'Bank 50 Moon Gold' }] }).callback_data, 'pet:work');
+
 const merged = mergePetGuidanceReplyMarkup({ inline_keyboard: [[{ text: 'Feed', callback_data: 'pet:feed' }]] }, { label: 'Feed Now', callback_data: 'pet:feed' });
 assert.equal(merged.inline_keyboard[0].length, 1, 'a recommendation must not duplicate an existing action button');
 assert.equal(merged.inline_keyboard[0][0].callback_data, 'pet:coach');

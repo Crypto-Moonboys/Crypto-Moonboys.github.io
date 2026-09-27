@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
-import { CONTRACT_GOALS, CONTRACT_FORMATS, advanceContract, contractLength, contractObjective, contractChoices, contractPreparations, contractDraftActions, contractRoom, contractSideProgress, createContractState, getContractBoard, processContractAction } from '../workers/moonboys-api/pets/continuing-contracts.js';
+import { CONTRACT_GOALS, CONTRACT_FORMATS, advanceContract, contractLength, contractObjective, contractChoices, contractPreparations, contractDraftActions, contractPathChoices, contractRoom, contractSideProgress, createContractState, getContractBoard, processContractAction } from '../workers/moonboys-api/pets/continuing-contracts.js';
 import { awardPetReward } from '../workers/moonboys-api/pets/roguelite-foundation.js';
 import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 
@@ -59,8 +59,9 @@ let clears = 0, failures = 0, drafts = 0;
 for (const format of Object.keys(CONTRACT_FORMATS)) for (const goal of Object.keys(CONTRACT_GOALS)) for (const build of ['scout', 'bruiser', 'scavenger']) for (const tier of [1, 2, 3]) for (let seed = 0; seed < 40; seed++) {
   let s = createContractState(goal, build, tier, 'seed-' + seed, ['none', 'versatile', 'daredevil', 'stocked'][seed % 4], format), status = 'active';
   for (let turn = 0; status === 'active'; turn++) {
-    assert.ok(turn < 16);
-    const action = s.draft.length ? s.draft[seed % s.draft.length] : ['cover', 'bold', 'search'][(seed + turn) % 3];
+    assert.ok(turn < 20);
+    const paths = contractPathChoices(s);
+    const action = paths.length && seed % 4 !== 3 ? paths[seed % paths.length].key : s.draft.length ? s.draft[seed % s.draft.length] : ['cover', 'bold', 'search'][(seed + turn) % 3];
     if (s.draft.length) drafts++;
     const prior = structuredClone(s), n = advanceContract(s, action, (seed * 13 + turn * 7) % 100);
     assert.deepEqual(s, prior, 'engine input is immutable');
@@ -113,6 +114,56 @@ assert.equal(createContractState('escort', 'scout', 4, 'x'), null);
 assert.equal(advanceContract(createContractState('escort', 'scout', 1, 'x'), 'rest', 0), null);
 assert.equal(createContractState('escort', 'scout', 1, 'x', '__proto__'), null);
 for (const invalid of [null, ['versatile'], { toString: 'versatile' }, 1]) assert.equal(createContractState('escort', 'scout', 1, 'x', invalid), null);
+
+// Checkpoint paths use their actual previews, last two room advances, and cannot
+// be chosen again or smuggled into legacy saves. Rest consumes their duration.
+let checkpoint = createContractState('salvage', 'scavenger', 3, 'paths');
+assert.equal(advanceContract(checkpoint, 'path_hazard', 0), null);
+for (let room = 0; room < 2; room++) checkpoint = advanceContract(checkpoint, 'search', 0).state;
+assert.deepEqual(contractPathChoices(checkpoint), [], 'choose an upgrade before planning the path');
+assert.equal(advanceContract(checkpoint, 'path_quiet', 0), null);
+checkpoint = advanceContract(checkpoint, 'supply_cache', 0).state;
+assert.equal(contractPathChoices(checkpoint).length, 3);
+for (const [key, odds, salvage, damage] of [['path_quiet', 8, -5, -4], ['path_hazard', -8, 10, 4], ['path_steady', 0, 0, 0]]) {
+  const selected = advanceContract(checkpoint, key, 0), s = selected.state;
+  assert.equal(selected.rank_points, 0); assert.equal(s.depth, 2);
+  assert.equal(s.health, checkpoint.health); assert.equal(s.supplies, checkpoint.supplies); assert.equal(s.salvage, checkpoint.salvage);
+  assert.deepEqual(contractPathChoices(s), []); assert.equal(advanceContract(s, key, 0), null);
+  for (const baseline of contractChoices(checkpoint).filter((choice) => choice.key !== 'rest')) {
+    const preview = contractChoices(s).find((choice) => choice.key === baseline.key);
+    assert.equal(preview.odds, Math.max(30, Math.min(98, baseline.odds + odds)));
+    assert.equal(preview.salvage, baseline.salvage + salvage); assert.equal(preview.damage, baseline.damage + damage);
+    const win = advanceContract(s, preview.key, preview.odds - 1).state;
+    const loss = advanceContract(s, preview.key, preview.odds).state;
+    assert.equal(win.salvage - s.salvage, preview.salvage); assert.equal(s.health - loss.health, preview.damage);
+    assert.equal(win.path.remaining, 1);
+    const second = advanceContract(win, 'cover', 0).state;
+    assert.equal(second.path, null); assert.equal(second.path_offer, true); assert.ok(second.draft.length);
+  }
+  assert.equal(advanceContract({ ...s, health: 40 }, 'rest', 0).state.path.remaining, 1);
+  const prepared = advanceContract(s, 'prepare_scout', 0).state;
+  assert.equal(prepared.path.remaining, 2); assert.equal(prepared.depth, 2);
+}
+const skipped = advanceContract(checkpoint, 'cover', 0).state;
+assert.equal(skipped.path_offer, false); assert.equal(skipped.path, null); assert.equal(advanceContract(skipped, 'path_quiet', 0), null);
+for (const version of [1, 2, 3, 4, 5, 6]) {
+  const old = { ...checkpoint, version };
+  assert.deepEqual(contractPathChoices(old), []); assert.equal(advanceContract(old, 'path_hazard', 0), null);
+  assert.deepEqual(contractChoices({ ...old, path: { key: 'path_hazard', remaining: 2 } }), contractChoices(old));
+}
+// v6 and a v7 run that skips paths have identical outcomes and rank in both formats.
+for (const format of ['standard', 'extended']) {
+  let modern = createContractState('escort', 'bruiser', 1, 'compatible', 'none', format), old = { ...modern, version: 6 };
+  while (modern.depth < contractLength(modern)) {
+    const choice = modern.draft.length ? modern.draft[0] : 'cover';
+    const a = advanceContract(modern, choice, 0), b = advanceContract(old, choice, 0);
+    assert.equal(a.status, b.status); assert.equal(a.rank_points, b.rank_points);
+    modern = a.state; old = b.state;
+    const { version: v1, path: p1, path_offer: o1, ...aState } = modern;
+    const { version: v2, path: p2, path_offer: o2, ...bState } = old;
+    assert.deepEqual(aState, bState);
+  }
+}
 
 // Every authored room affects actual outcomes, with previews using the same rules.
 const seenRooms = new Set();
@@ -273,6 +324,19 @@ try {
   assert.equal(savedSupply.perks.length, 0); assert.equal(savedSupply.choices.some((c) => c.upgrade), false);
   assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_contract'").get(supplyPet.telegram_id).n, 0);
   assert.equal(sqlite.prepare('SELECT energy FROM telegram_pet_instances WHERE pet_id=?').get(supplyPet.pet_id).energy, 0);
+  // Two tabs cannot choose different paths at the same checkpoint. Client path
+  // duration, modifiers and rewards cannot override the server's saved choice.
+  assert.equal(savedSupply.path_choices.length, 3);
+  const pathRequest = { action: 'contract_step', contract_id: savedSupply.contract_id, revision: savedSupply.revision, choice: 'path_hazard', path: { remaining: 999, salvage: 9999 }, reward_xp: 9999 };
+  const pathRace = await Promise.all([act(supplyPet, pathRequest), act(supplyPet, { ...pathRequest, choice: 'path_quiet' })]);
+  assert.equal(pathRace.filter((r) => r.accepted).length, 1);
+  const savedPath = (await board(supplyPet)).run;
+  assert.equal(savedPath.path.key, 'path_hazard'); assert.equal(savedPath.path.remaining, 2);
+  assert.equal(savedPath.depth, savedSupply.depth); assert.equal(savedPath.salvage, savedSupply.salvage);
+  assert.equal(savedPath.path_choices.length, 0); assert.equal((await board(supplyPet)).bonus_remaining, 3);
+  assert.equal((await act(supplyPet, { ...pathRequest, revision: savedPath.revision })).accepted, false);
+  assert.equal((await act(b, pathRequest)).accepted, false);
+  assert.deepEqual((await board(supplyPet)).run.path, savedPath.path, 'reload projects the saved path');
   const tacticalPet = await seed('contract-prepared');
   await act(tacticalPet, { action: 'contract_start', sequence: 1, goal: 'escort', build: 'scavenger', tier: 1 });
   let tacticalRun = (await board(tacticalPet)).run;

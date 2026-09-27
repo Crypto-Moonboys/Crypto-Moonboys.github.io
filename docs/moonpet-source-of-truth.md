@@ -50,6 +50,13 @@ Includes:
 - Training actions
 
 Care actions contribute to progression systems where applicable.
+The Care Console disables Sleep and Train while a background activity has active
+status, matching the server's existing busy gate. Train also requires 18 energy.
+Feed, Play and Clean remain available subject to their normal cooldowns. A
+completed activity awaiting reward recovery does not block care. The console
+links to the Work activity panel; Contracts can continue alongside the timer.
+Daily care-set missions show accepted Feed/Play/Clean substeps, and Coach selects
+the first missing one. These are account/day event summaries, not client progress.
 
 ---
 
@@ -150,14 +157,14 @@ Includes:
 ### Continuing contracts
 
 Continuing contracts are server-owned quests for hatched active pets.
-New v6 contracts have six goals, three starting builds and two route lengths:
+New v7 contracts retain six goals, three starting builds and two route lengths:
 Standard has six rooms and drafts after rooms two/four; Long has ten rooms and
 drafts after rooms two/four/six/eight. Both use route risk/reward choices. Each completed contract records rank
 points for its source pet and immediately offers another quest. Rank has no
 daily cap and no effect on Pet XP, currencies, combat, Growth Marks or Weekly
 Crests. Difficulty tiers 2 and 3 open after 5 and 15 completions respectively.
 
-New v6 goals add Break the Blockade (successful bold routes), Trace the Lost
+Goals introduced in v6 include Break the Blockade (successful bold routes), Trace the Lost
 Signal (successful search routes), and Restock the Crew (remaining supplies).
 The six Standard targets, in goal order, are 4 route wins / 65 salvage / 50 HP /
 3 bold wins / 3 search wins / 5 supplies. Long targets are 7 / 120 / 50 / 5 / 5 /
@@ -173,6 +180,18 @@ Moves cannot switch length or supply progress. Saved versions 1–5 keep six roo
 original goal thresholds and original draft/preparation rules. In long routes,
 late redraws are offered only when different unowned perks remain. Supply caches
 remain available at every draft. The final room does not create a new draft.
+
+New v7 contracts offer an optional path after each upgrade/supply choice.
+Quiet Streets adds 8 percentage points to route odds, subtracts 5 salvage per
+success and subtracts 4 failure damage. Salvage Hotspot subtracts 8 percentage
+points, adds 10 salvage per success and adds 4 failure damage. Stay on Course
+keeps normal rules. Each lasts two room advances; Rest counts as an advance but
+keeps its own healing and zero-salvage rules. Preparations do not consume path
+duration. Skipping the offer by taking a route keeps normal rules. Path choice
+is saved once with the same revision guard, costs no resources, advances no room
+and earns nothing immediately. Route previews and resolution use the same
+modifiers, with final odds clamped to 30–98%. Paths do not add collection entries
+or increase the daily XP budget. Existing v1–v6 saves gain no path offers.
 
 New v4 contracts add Take Supply Cache to both draft checkpoints. It replaces
 that checkpoint's upgrade with two contract supplies. Choosing it does not

@@ -6846,7 +6846,8 @@ async function buildPetMissions(db, telegramId) {
     daily: [
       { key: `pet-daily-feed:${dayKey}`, title: 'Feed your Moonpet', completed: Number(counts.feed || 0) > 0 },
       { key: `pet-daily-train:${dayKey}`, title: 'Train once', completed: Number(counts.train || 0) > 0 },
-      { key: `pet-daily-care-set:${dayKey}`, title: 'Complete feed, play and clean', completed: fullCareDone },
+      { key: `pet-daily-care-set:${dayKey}`, title: 'Complete feed, play and clean', completed: fullCareDone,
+        steps: ['feed', 'play', 'clean'].map((action) => ({ key: action, title: action.toUpperCase(), completed: Number(counts[action] || 0) > 0 })) },
       { key: `pet-daily-trade:${dayKey}`, title: 'Run one Moon Gold trade', completed: Number(counts.trade || 0) > 0 },
       { key: `pet-daily-shop:${dayKey}`, title: 'Buy or upgrade one pet item', completed: Number(counts.buy || 0) + equipmentUpgradeCount > 0 },
       { key: `pet-daily-adventure:${dayKey}`, title: 'Run one pet adventure', completed: Number(counts.adventure || 0) + Number(counts.run_extract || 0) + Number(counts.run_complete || 0) + Number(counts.district_mission || 0) + Number(counts.event_chain || 0) + Number(counts.seasonal_boss || 0) > 0 },
@@ -13722,7 +13723,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260927-contract-routes-v1`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260927-contract-paths-v1`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',
