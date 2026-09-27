@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
-import { advanceContract, contractChoices, contractPreparations, contractRoom, contractSideProgress, createContractState, getContractBoard, processContractAction } from '../workers/moonboys-api/pets/continuing-contracts.js';
+import { advanceContract, contractChoices, contractPreparations, contractDraftActions, contractRoom, contractSideProgress, createContractState, getContractBoard, processContractAction } from '../workers/moonboys-api/pets/continuing-contracts.js';
 import { awardPetReward } from '../workers/moonboys-api/pets/roguelite-foundation.js';
 import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 
@@ -181,6 +181,31 @@ const failedMain = advanceContract({ ...createContractState('scout', 'bruiser', 
 assert.equal(contractSideProgress(failedMain.state).reached, true);
 assert.equal(failedMain.status, 'failed'); assert.equal(failedMain.rank_points, 0);
 
+const redrawState = { ...supplyDraft, salvage: 65 };
+const redrawn = advanceContract(redrawState, 'redraw_draft', 0);
+assert.equal(redrawn.state.salvage,50); assert.equal(redrawn.state.depth,2);
+assert.equal(redrawn.rank_points,0); assert.equal(redrawn.state.supplies,redrawState.supplies);
+assert.equal(redrawn.state.draft.length,3);
+assert.ok(redrawn.state.draft.every((key) => !redrawState.draft.includes(key)));
+assert.deepEqual(redrawn.state.perks,redrawState.perks);
+assert.equal(advanceContract(redrawn.state,'redraw_draft',0),null);
+assert.equal(advanceContract(redrawn.state,'shield',0),null,'old offers cannot be picked after redraw');
+assert.equal(advanceContract({ ...redrawState, salvage: 14 },'redraw_draft',0),null);
+assert.equal(advanceContract({ ...redrawState, salvage: 15 },'redraw_draft',0).state.salvage,0);
+assert.equal(advanceContract({ ...redrawState, draft: [] },'redraw_draft',0),null);
+for (const version of [1,2,3,4]) {
+  assert.deepEqual(contractDraftActions({ ...redrawState, version }),[]);
+  assert.equal(advanceContract({ ...redrawState, version },'redraw_draft',0),null);
+}
+let secondDraft = advanceContract(redrawn.state,'medkit',0).state;
+secondDraft = advanceContract(secondDraft,'cover',0).state;
+secondDraft = advanceContract(secondDraft,'cover',0).state;
+assert.equal(secondDraft.depth,4); assert.equal(secondDraft.draft_redrawn,false);
+const secondRedraw = advanceContract(secondDraft,'redraw_draft',0);
+assert.equal(secondRedraw.state.draft.length,2,'second checkpoint excludes owned and currently offered perks');
+assert.ok(secondRedraw.state.draft.every((key) => !secondDraft.draft.includes(key) && !secondDraft.perks.includes(key)));
+assert.equal(advanceContract(secondRedraw.state,'supply_cache',0).state.supplies,secondRedraw.state.supplies+2);
+
 assert.equal((await board(egg)).available, false);
 assert.equal((await act(egg, { action: 'contract_start' })).accepted, false);
 assert.equal((await act(a, { action: 'contract_start', pet_id: b.pet_id })).accepted, false);
@@ -194,9 +219,16 @@ try {
   await start(supplyPet);
   for (let i = 0; i < 2; i++) {
     const r = (await board(supplyPet)).run;
-    assert.equal((await act(supplyPet, { action: 'contract_step', contract_id: r.contract_id, revision: r.revision, choice: 'cover' })).accepted, true);
+    assert.equal((await act(supplyPet, { action: 'contract_step', contract_id: r.contract_id, revision: r.revision, choice: 'bold' })).accepted, true);
   }
+  const firstDraft = (await board(supplyPet)).run;
+  const redrawRequest = { action: 'contract_step', contract_id: firstDraft.contract_id, revision: firstDraft.revision, choice: 'redraw_draft' };
+  const redrawRace = await Promise.all([act(supplyPet,redrawRequest),act(supplyPet,redrawRequest)]);
+  assert.equal(redrawRace.filter((r) => r.accepted).length,1);
   const offer = (await board(supplyPet)).run;
+  assert.equal(offer.salvage,firstDraft.salvage-15); assert.equal(offer.depth,firstDraft.depth);
+  assert.deepEqual(offer.draft_actions,[],'saved redraw cannot be charged again');
+  assert.ok(offer.choices.filter((c) => c.key !== 'supply_cache').every((c) => !firstDraft.choices.some((old) => old.key === c.key)));
   assert.equal(offer.choices.some((c) => c.key === 'supply_cache'), true);
   const takeSupply = { action: 'contract_step', contract_id: offer.contract_id, revision: offer.revision, choice: 'supply_cache', supplies: 999999 };
   const supplyRace = await Promise.all([act(supplyPet, takeSupply), act(supplyPet, takeSupply)]);

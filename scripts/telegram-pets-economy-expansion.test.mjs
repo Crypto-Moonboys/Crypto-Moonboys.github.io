@@ -103,12 +103,15 @@ for (const kind of ['market_offer', 'daily_bounty', 'crystal_expedition']) {
 assert.equal(audit.surfaces.find((entry) => entry.kind === 'currency' && entry.key === 'moon_crystals').sources.includes('daily_chest'), false,
   'audit currency metadata must not claim Daily Chest creates Moon Crystals');
 
+let beforeRewardBatch = null;
 class D1Adapter {
   constructor(database) { this.database = database; }
   prepare(sql) {
     const statement = this.database.prepare(sql);
     let values = [];
     return {
+      sql,
+      get args() { return values; },
       bind(...params) { values = params; return this; },
       async first() { return statement.get(...values) || null; },
       async all() { return { results: statement.all(...values).map((row) => ({ ...row })) }; },
@@ -122,7 +125,16 @@ class D1Adapter {
       },
     };
   }
-  async batch(statements) {
+  batch(statements) {
+    // D1 serializes transactional batches even when requests run concurrently.
+    const operation = (this.tail || Promise.resolve()).then(() => this.runBatch(statements));
+    this.tail = operation.catch(() => {});
+    return operation;
+  }
+  async runBatch(statements) {
+    if (beforeRewardBatch && statements[0].sql.includes('INSERT OR IGNORE INTO telegram_pet_reward_claims') && statements[0].args.includes('pet_market')) {
+      const callback = beforeRewardBatch; beforeRewardBatch = null; callback();
+    }
     this.database.exec('BEGIN');
     try {
       const results = [];
@@ -190,5 +202,88 @@ assert.ok(offer);
 const marketClaim = await hooks.buyPetMarketOffer(d1, 'economy-player', offer.key);
 assert.equal(marketClaim.accepted, true);
 assert.equal((await hooks.buyPetMarketOffer(d1, 'economy-player', offer.key)).duplicate, true, 'daily market stock cannot be bought twice');
+
+// Paid bundles must fit in full, including late changes after the board was read.
+async function marketPlayer(id) {
+  sqlite.prepare('INSERT INTO telegram_users (telegram_id) VALUES (?)').run(id);
+  sqlite.prepare(`INSERT INTO telegram_pet_profiles (telegram_id,pet_xp,level,energy,moon_gold,moon_crystals,style_tokens,last_decay_at)
+    VALUES (?,4300,44,100,2000,20,50,?)`).run(id, new Date().toISOString());
+  await hooks.ensurePetStarterSeasonSlot(d1, id);
+  const pet = await hooks.ensureActivePetInstance(d1, id);
+  sqlite.prepare(`INSERT INTO telegram_pet_lifecycle_by_pet (pet_id,telegram_id,identity_seed,phase,incubation_json,innate_traits_json)
+    VALUES (?,?,?,'young','{}','[]')`).run(pet.pet_id, id, id);
+  return pet;
+}
+function offerDate(key) {
+  for (let day = 1; day < 90; day++) {
+    const date = new Date(Date.UTC(2026, 8, day, 12));
+    if (getPetMarketOffers(date.toISOString().slice(0, 10)).some((offer) => offer.key === key)) return date;
+  }
+  throw Error('offer not found');
+}
+function setAsset(id, kind, key, quantity) {
+  if (kind === 'item') sqlite.prepare(`INSERT INTO telegram_pet_inventory (telegram_id,asset_type,asset_key,quantity)
+    VALUES (?,'item',?,?) ON CONFLICT(telegram_id,asset_type,asset_key) DO UPDATE SET quantity=excluded.quantity`).run(id,key,quantity);
+  else if (kind === 'material') sqlite.prepare(`INSERT INTO telegram_pet_material_balances (telegram_id,material_key,quantity)
+    VALUES (?,?,?) ON CONFLICT(telegram_id,material_key) DO UPDATE SET quantity=excluded.quantity`).run(id,key,quantity);
+  else sqlite.prepare(`UPDATE telegram_pet_profiles SET ${key}=? WHERE telegram_id=?`).run(quantity,id);
+}
+for (const [key, kind, asset, cap, quantity] of [
+  ['snack_crate','item','moon_snack',999999,3],
+  ['runner_bundle','item','energy_drink',999999,1],
+  ['scrap_box','material','scrap_metal',9999,4],
+  ['style_cache','currency','style_tokens',999999,12],
+]) {
+  const id = 'market-cap-' + key, date = offerDate(key);
+  await marketPlayer(id);
+  setAsset(id, kind, asset, cap - quantity + 1);
+  const walletBefore = sqlite.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(id);
+  const blocked = await hooks.buyPetMarketOffer(d1,id,key,date);
+  assert.equal(blocked.accepted,false, key + ': an overflowing paid bundle must be rejected');
+  assert.equal(blocked.reason,'market_capacity_full');
+  const projected = (await hooks.getPetEconomyState(d1,id,null,date)).market_offers.find((offer) => offer.key === key);
+  assert.equal(projected.capacity.available,false); assert.equal(projected.available,false);
+  assert.equal(buildPetEconomyGuidanceActions({ market_offers: [projected] }).length,0,'coach must not recommend a truncated purchase');
+  assert.deepEqual(sqlite.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(id), walletBefore);
+  assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_market'").get(id).n,0);
+  setAsset(id, kind, asset, cap - quantity);
+  assert.equal((await hooks.buyPetMarketOffer(d1,id,key,date)).accepted,true,'exact fit must remain available');
+  assert.equal((await hooks.buyPetMarketOffer(d1,id,key,date)).duplicate,true,'replay stays harmless after the stack becomes full');
+}
+
+const lateId = 'market-late-fill', lateDate = offerDate('snack_crate');
+await marketPlayer(lateId);
+beforeRewardBatch = () => setAsset(lateId,'item','moon_snack',999998);
+assert.equal((await hooks.buyPetMarketOffer(d1,lateId,'snack_crate',lateDate)).accepted,false,'capacity is rechecked at settlement');
+assert.equal(sqlite.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(lateId).moon_gold,2000);
+assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_market'").get(lateId).n,0);
+setAsset(lateId,'item','moon_snack',999996);
+const races = await Promise.all([hooks.buyPetMarketOffer(d1,lateId,'snack_crate',lateDate), hooks.buyPetMarketOffer(d1,lateId,'snack_crate',lateDate)]);
+assert.equal(races.filter((r) => r.accepted && !r.duplicate).length,1);
+assert.equal(sqlite.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(lateId).moon_gold,1930);
+assert.equal(sqlite.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_key='moon_snack'").get(lateId).quantity,999999);
+
+for (const mutation of ['level','egg','active_slot']) {
+  const id = 'market-late-' + mutation, date = offerDate('battery_pack');
+  const pet = await marketPlayer(id);
+  beforeRewardBatch = () => {
+    if (mutation === 'level') sqlite.prepare('UPDATE telegram_pet_instances SET pet_xp=0 WHERE pet_id=?').run(pet.pet_id);
+    if (mutation === 'egg') sqlite.prepare("UPDATE telegram_pet_lifecycle_by_pet SET phase='egg' WHERE pet_id=?").run(pet.pet_id);
+    if (mutation === 'active_slot') sqlite.prepare('DELETE FROM telegram_pet_active_slots WHERE pet_id=?').run(pet.pet_id);
+  };
+  assert.equal((await hooks.buyPetMarketOffer(d1,id,'battery_pack',date)).accepted,false,'late ' + mutation + ' must reject spending');
+  assert.equal(sqlite.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(id).moon_gold,2000);
+  assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_market'").get(id).n,0);
+}
+
+const rollbackId = 'market-rollback', rollbackDate = offerDate('snack_crate');
+await marketPlayer(rollbackId);
+sqlite.exec(`CREATE TRIGGER market_reward_failure BEFORE INSERT ON telegram_pet_inventory
+  WHEN NEW.telegram_id='market-rollback' AND NEW.quantity>0 BEGIN SELECT RAISE(ABORT,'test delivery failure'); END`);
+await assert.rejects(hooks.buyPetMarketOffer(d1,rollbackId,'snack_crate',rollbackDate),/test delivery failure/);
+assert.equal(sqlite.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(rollbackId).moon_gold,2000);
+assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_market'").get(rollbackId).n,0);
+sqlite.exec('DROP TRIGGER market_reward_failure');
+assert.equal((await hooks.buyPetMarketOffer(d1,rollbackId,'snack_crate',rollbackDate)).accepted,true,'failed delivery can retry without losing stock');
 
 console.log('telegram pets economy expansion tests passed');

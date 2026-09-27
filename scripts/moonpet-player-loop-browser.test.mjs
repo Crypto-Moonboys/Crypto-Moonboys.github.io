@@ -213,6 +213,26 @@ try {
     assert.ok((await page.locator('[data-panel="contracts"]').textContent()).includes('SCOUT AHEAD READY'));
     assert.equal(await page.locator('[data-action="contract_step"]').filter({ hasText: 'SCOUT AHEAD' }).count(), 0);
     for (let turn = 0; turn < 8; turn++) {
+      if (turn === 2) {
+        const beforeRedraw = await hooks.buildPetMiniAppState(db,currentUser,token);
+        const redrawButton = page.locator('[data-action="contract_step"]').filter({ hasText: 'REDRAW UPGRADES' });
+        assert.equal(await redrawButton.isDisabled(),false);
+        await redrawButton.scrollIntoViewIfNeeded();
+        if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-redraw-${viewport.width}.png`) });
+        const redrawResponse = page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.choice === 'redraw_draft');
+        await redrawButton.click();
+        const redrawn = await (await redrawResponse).json();
+        assert.equal(redrawn.result.accepted,true);
+        assert.equal(redrawn.state.contracts.run.salvage,beforeRedraw.contracts.run.salvage-15);
+        assert.equal(redrawn.state.contracts.run.depth,2);
+        assert.equal(redrawn.state.pet.energy,beforeRedraw.pet.energy);
+        await page.reload(); await page.waitForSelector('[data-panel="care"]');
+        await page.locator('[data-screen="missions"]').click();
+        assert.equal(await page.locator('[data-action="contract_step"]').filter({ hasText: 'REDRAW UPGRADES' }).count(),0);
+        const reloaded = await hooks.buildPetMiniAppState(db,currentUser,token);
+        assert.deepEqual(reloaded.contracts.run.choices,redrawn.state.contracts.run.choices);
+        assert.equal(reloaded.contracts.run.salvage,redrawn.state.contracts.run.salvage);
+      }
       const candidates = page.locator('[data-action="contract_step"]');
       const payloads = await candidates.evaluateAll((buttons) => buttons.map((button) => JSON.parse(button.dataset.payload)));
       const routeChoice = turn === 1 ? 'bold' : turn === 3 ? 'search' : 'cover';
@@ -648,11 +668,47 @@ try {
     await page.locator('#crafting-goal').selectOption('');
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
     assert.equal(await page.locator('[data-panel="play-now"] [data-focus="crafting"]').count(), 0, 'clearing a goal persists');
+    currentUser = 'browser-market-' + viewport.width;
+    await seed(currentUser,'young');
+    sqlite.prepare('UPDATE telegram_pet_profiles SET moon_gold=2000,moon_crystals=20,style_tokens=20 WHERE telegram_id=?').run(currentUser);
+    const marketState = await hooks.getPetEconomyState(db,currentUser);
+    const marketOffer = marketState.market_offers.find((offer) => offer.unlocked && Object.keys(offer.reward.items || offer.reward.materials || {}).length);
+    assert.ok(marketOffer,'rotating board has an unlocked item or material offer');
+    const isItemOffer = Boolean(marketOffer.reward.items), storageCap = isItemOffer ? 999999 : 9999;
+    const [itemKey,itemAmount] = Object.entries(marketOffer.reward.items || marketOffer.reward.materials)[0];
+    const setMarketStock = (quantity) => {
+      if (isItemOffer) sqlite.prepare("INSERT INTO telegram_pet_inventory (telegram_id,asset_type,asset_key,quantity) VALUES (?,'item',?,?) ON CONFLICT(telegram_id,asset_type,asset_key) DO UPDATE SET quantity=excluded.quantity").run(currentUser,itemKey,quantity);
+      else sqlite.prepare('INSERT INTO telegram_pet_material_balances (telegram_id,material_key,quantity) VALUES (?,?,?) ON CONFLICT(telegram_id,material_key) DO UPDATE SET quantity=excluded.quantity').run(currentUser,itemKey,quantity);
+    };
+    setMarketStock(storageCap);
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-screen="economy"]').click();
+    await page.locator('[data-panel-jump="market"]').click();
+    const marketButton = page.locator('[data-action="market_buy"]').filter({ hasText: marketOffer.title });
+    assert.equal(await marketButton.isDisabled(),true);
+    assert.ok((await marketButton.textContent()).includes('STORAGE FULL'));
+    await marketButton.scrollIntoViewIfNeeded();
+    if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-market-${viewport.width}.png`) });
+    const marketActions = gameplayCount();
+    await page.locator('[data-panel="market"] [data-focus="inventory"]').click();
+    assert.equal(gameplayCount(),marketActions,'making space link only navigates');
+    setMarketStock(storageCap-itemAmount);
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-screen="economy"]').click();
+    await page.locator('[data-panel-jump="market"]').click();
+    assert.equal(await marketButton.isDisabled(),false,'exact-fit bundle stays available');
+    const marketResponse = page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'market_buy');
+    await marketButton.click();
+    const bought = await (await marketResponse).json();
+    assert.equal(bought.result.accepted,true); assert.equal(bought.result.duplicate,false);
+    assert.equal(isItemOffer ? bought.state.inventory.find((item) => item.key === itemKey).count : bought.state.materials.find((item) => item.key === itemKey).quantity,storageCap);
+    assert.equal(bought.state.pet.moon_gold,2000-(marketOffer.cost.moon_gold || 0));
+    await page.waitForFunction((title) => [...document.querySelectorAll('[data-action="market_buy"]')].some((button) => button.disabled && button.textContent.includes(title) && button.textContent.includes('SOLD')),marketOffer.title);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
     assert.equal(overflow, false, 'mobile viewport must not overflow horizontally');
     assert.deepEqual(errors, [], 'no runtime errors across all six screens');
     if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-${viewport.width}.png`) });
-    console.log(`Moonpet browser loop passed at ${viewport.width}x${viewport.height}; all six screens; bounties; practice; contracts and records; daily tactics; raids; timed recovery; Trade; expeditions; weekly boss recovery; Daily Cache claimed/reset state; season reward rejection/recovery; supply drafts; crafting goals, material routes, craft/use and goal isolation.`);
+    console.log(`Moonpet browser loop passed at ${viewport.width}x${viewport.height}; all six screens; bounties; practice; contracts and records; daily tactics; raids; timed recovery; Trade; expeditions; weekly boss recovery; Daily Cache claimed/reset state; season reward rejection/recovery; supply drafts; crafting goals, material routes, craft/use and goal isolation; paid-bundle capacity and exact-fit purchase; persisted draft redraw.`);
     await context.close();
   }
 } finally {

@@ -105,6 +105,10 @@ const craftSnapshot = { ...snapshot, live_systems: { crafting: [craftRecipe] }, 
       { title: 'Unaffordable', affordable: false, unlocked: true, reward: { materials: { battery_cell: 3 } } },
       { title: 'Locked', affordable: true, unlocked: false, reward: { materials: { battery_cell: 3 } } }] } } };
 const craftBefore = structuredClone(craftSnapshot);
+const blockedBundle = structuredClone(craftSnapshot);
+blockedBundle.guidance.economy.market_offers = blockedBundle.guidance.economy.market_offers.map((offer) => ({ ...offer, capacity: { available: false } }));
+assert.ok(!options.craftingGoal(blockedBundle,'battery_pack').routes.some((route) => route.focus === 'market'),
+  'server capacity blocks apply to every bundle asset, including ingredients and non-goal items');
 const craftPlan = options.craftingGoal(craftSnapshot, 'battery_pack');
 assert.deepEqual(craftPlan.ingredients.map((m) => m.missing), [2, 1]);
 assert.equal(craftPlan.ready, false);

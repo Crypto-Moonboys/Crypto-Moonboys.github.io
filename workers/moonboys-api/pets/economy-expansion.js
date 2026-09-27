@@ -84,6 +84,20 @@ export function getPetMarketOffers(dayKey) {
   return rotate(PET_MARKET_OFFERS, `market:${dayKey}`, 4);
 }
 
+export function getPetMarketCapacity(offer, wallet = {}, items = {}, materials = {}) {
+  const blocked = [];
+  for (const [kind, rewards, balances, limit] of [
+    ['item', offer.reward?.items, items, 999999],
+    ['material', offer.reward?.materials, materials, 9999],
+    ['currency', Object.fromEntries(['moon_gold', 'moon_crystals', 'style_tokens'].map((key) => [key, offer.reward?.[key]])), wallet, 999999],
+  ]) for (const [key, value] of Object.entries(rewards || {})) {
+    const amount = integer(value), owned = integer(balances[key]);
+    const spent = kind === 'currency' ? integer(offer.cost?.[key]) : 0;
+    if (amount && owned - spent + amount > limit) blocked.push({ kind, key, owned, amount, limit });
+  }
+  return { available: blocked.length === 0, blocked };
+}
+
 export function getPetExpedition(level = 1, key = '') {
   if (typeof key !== 'string') return null;
   if (key) return PET_EXPEDITION_TIERS.find((tier) => tier.key === key && integer(level) >= tier.min_level) || null;
@@ -121,7 +135,7 @@ export function buildPetEconomyGuidanceActions(state = {}) {
     detail: `${state.expedition_attempts_left}/3 attempts remain today. ${expedition.energy} Energy for this route; open the board to compare unlocked destinations and possible finds.`,
     label: '⛏️ Expedition', callback_data: 'pet:expedition',
   });
-  const affordable = (state.market_offers || []).find((offer) => !offer.purchased && offer.affordable);
+  const affordable = (state.market_offers || []).find((offer) => !offer.purchased && offer.affordable && offer.capacity?.available !== false && offer.available !== false);
   if (affordable) actions.push({
     key: `market:${affordable.key}`, priority: 34, title: `Buy ${affordable.title}`,
     detail: `Cost: ${formatPetEconomyValue(affordable.cost)}. Gives: ${formatPetEconomyValue(affordable.reward)}. Daily stock: 1.`,
