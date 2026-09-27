@@ -6561,6 +6561,7 @@ async function processPetGoldTrade(db, telegramId, wagerRaw, options = {}) {
     petXp = Math.max(0, PETS_DAILY_PET_XP_CAP - totals.day.pet_xp);
   }
   const walletDeltas = { moon_gold: goldDelta, moon_crystals: crystalDelta };
+  const startingPetXp = Number(pet.pet_xp || 0);
   pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) + petXp));
   updatePetStreakForAction(pet, dayKey);
   pet.last_decay_at = now.toISOString();
@@ -6573,10 +6574,21 @@ async function processPetGoldTrade(db, telegramId, wagerRaw, options = {}) {
         (id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
       SELECT ?, ?, 'trade', ?, 0, ?, ?, ?, ?, 'pending', 'trade_pending', ?
       WHERE EXISTS (SELECT 1 FROM telegram_pet_profiles
-        WHERE telegram_id = ? AND ${accountWalletAffordabilitySql()} AND ${accountWalletRecoveryResolvedSql('telegram_pet_profiles.telegram_id')})
+        WHERE telegram_id = ? AND ${accountWalletAffordabilitySql()} AND ${accountWalletRecoveryResolvedSql('telegram_pet_profiles.telegram_id')}
+          AND moon_gold >= ? AND pet_xp = ?)
+        AND EXISTS (SELECT 1 FROM telegram_pet_active_slots a JOIN telegram_pet_instances p
+          ON p.pet_id=a.pet_id AND p.telegram_id=a.telegram_id AND p.season_key=a.season_key
+          WHERE a.telegram_id=? AND a.pet_id=? AND a.season_key=? AND p.status='active')
+        AND NOT EXISTS (SELECT 1 FROM telegram_pet_events
+          WHERE telegram_id=? AND event_type='trade' AND status IN ('pending','accepted')
+            AND julianday(created_at) > julianday(?))
+        AND (?=0 OR ? + (SELECT COALESCE(SUM(pet_xp_awarded),0) FROM telegram_pet_events
+          WHERE telegram_id=? AND day_key=? AND status='accepted') <= ?)
       RETURNING id
     `).bind(eventId, telegramId, eventKey, petXp, season.key, dayKey, weekKey, metadata, telegramId,
-      walletDeltas.moon_gold, walletDeltas.moon_crystals, walletDeltas.style_tokens || 0),
+      walletDeltas.moon_gold, walletDeltas.moon_crystals, walletDeltas.style_tokens || 0, wager, startingPetXp,
+      telegramId, pet.pet_id, pet.season_key, telegramId, new Date(now.getTime() - PET_TRADE_COOLDOWN_SECONDS * 1000).toISOString(),
+      petXp, petXp, telegramId, dayKey, PETS_DAILY_PET_XP_CAP),
     accountWalletDeltaStatement(db, telegramId, walletDeltas,
       "EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')", [eventId]),
     db.prepare(`
@@ -6612,7 +6624,11 @@ async function processPetGoldTrade(db, telegramId, wagerRaw, options = {}) {
   if (!tradeResults?.[5]?.results?.[0]) {
     const acceptedDuplicate = await buildAcceptedPetEventDuplicate(db, telegramId, eventKey, pet, { wager });
     if (acceptedDuplicate) return acceptedDuplicate;
-    return { accepted: false, reason: 'not_enough_moon_gold', pet };
+    const recent = await db.prepare("SELECT created_at FROM telegram_pet_events WHERE telegram_id=? AND event_type='trade' AND status IN ('pending','accepted') ORDER BY created_at DESC LIMIT 1").bind(telegramId).first();
+    const cooldown = recent ? buildPetCooldownFromStart(recent.created_at, PET_TRADE_COOLDOWN_SECONDS, new Date()) : null;
+    const currentPet = await getPetProfile(db, telegramId);
+    if (cooldown?.remaining_seconds > 0) return attachPetCooldown({ accepted: false, reason: 'trade_cooldown', pet: currentPet }, cooldown);
+    return { accepted: false, reason: Number(currentPet?.moon_gold || 0) < wager ? 'not_enough_moon_gold' : 'trade_state_changed', pet: currentPet };
   }
   const persistedPet = await getPetProfile(db, telegramId);
   if (persistedPet) Object.assign(persistedPet, await readPetAccountWallet(db, telegramId) || {});
@@ -9241,10 +9257,11 @@ async function getPetSpecialActionGuidanceState(db, telegramId, now = new Date()
   return state;
 }
 
-function buildPetMiniAppCooldownSummary({ journeySummary = null, guidance = null, liveSystems = null, seasonSlots = null, actionCooldowns = [], adventureCooldown = null, workCooldown = null, now = new Date() } = {}) {
+function buildPetMiniAppCooldownSummary({ journeySummary = null, guidance = null, liveSystems = null, seasonSlots = null, actionCooldowns = [], adventureCooldown = null, workCooldown = null, tradeCooldown = null, now = new Date() } = {}) {
   const entries = [];
   addPetCooldownEntry(entries, 'adventure', 'Adventure ready', adventureCooldown, 'action');
   addPetCooldownEntry(entries, 'work', 'Jobs ready', workCooldown, 'action');
+  addPetCooldownEntry(entries, 'trade', 'Moon Gold trade ready', tradeCooldown, 'action');
   addPetCooldownEntry(entries, 'daily_journey_reset', 'Daily Journey reset', journeySummary?.daily?.cooldown, 'daily');
   addPetCooldownEntry(entries, 'weekly_journey_reset', 'Weekly Journey reset', journeySummary?.weekly?.cooldown, 'weekly');
   addPetCooldownEntry(entries, 'timed_activity_claim', 'Timed activity claim', guidance?.activity?.cooldown, 'action');
@@ -9358,7 +9375,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     }),
     getPetNotificationPreference(db, telegramId),
     buildPetSeasonSlotSummary(db, telegramId).catch(() => null),
-    db.prepare("SELECT event_type, MAX(created_at) AS created_at FROM telegram_pet_events WHERE telegram_id=? AND event_type IN ('adventure','work') AND status='accepted' GROUP BY event_type").bind(telegramId).all(),
+    db.prepare("SELECT event_type, MAX(created_at) AS created_at FROM telegram_pet_events WHERE telegram_id=? AND event_type IN ('adventure','work','trade') AND status='accepted' GROUP BY event_type").bind(telegramId).all(),
   ]);
   const leaderboardRows = await materializePetLeaderboardRows(db, leaderboard.results || []);
   const [journeySummary, hydratedKaiju] = await Promise.all([
@@ -9375,8 +9392,10 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
   const adventureEntry = adventure ? petAdventuresForPet(petRaw).find((entry) => entry.key === adventure.key) : null;
   const lastAdventure = (recentActions.results || []).find((entry) => entry.event_type === 'adventure');
   const lastWork = (recentActions.results || []).find((entry) => entry.event_type === 'work');
+  const lastTrade = (recentActions.results || []).find((entry) => entry.event_type === 'trade');
   const adventureCooldown = lastAdventure ? buildPetCooldownFromStart(lastAdventure.created_at, PET_ADVENTURE_COOLDOWN_SECONDS, now) : null;
   const workCooldown = lastWork ? buildPetCooldownFromStart(lastWork.created_at, PETS_ACTION_COOLDOWN_SECONDS, now) : null;
+  const tradeCooldown = lastTrade ? buildPetCooldownFromStart(lastTrade.created_at, PET_TRADE_COOLDOWN_SECONDS, now) : null;
   if (guidance && workCooldown?.remaining_seconds > 0) guidance.jobs = (guidance.jobs || []).map((job) => ({ ...job, available: false, cooldown: job.available ? workCooldown : null }));
   const [encounterToken, adventureToken] = await Promise.all([
     encounter ? issuePetMiniAppChallenge({ type: 'event', telegram_id: telegramId, encounter_key: encounter.key, event_key: encounter.event_key }, botToken) : null,
@@ -9501,6 +9520,11 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     inventory,
     daily_run: dailyRunSummary,
     contracts,
+    trade: {
+      cooldown: tradeCooldown?.remaining_seconds > 0 ? tradeCooldown : null,
+      offers: [10, 25, 50].map((wager) => ({ wager, affordable: Number(petRaw.moon_gold) >= wager,
+        available: lifecycle?.phase !== 'egg' && Number(petRaw.moon_gold) >= wager && !(tradeCooldown?.remaining_seconds > 0) })),
+    },
     run: activeRun ? {
       ...activeRun,
       daily: Boolean(dailyReservation),
@@ -9548,7 +9572,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       last_notified_at: notifications?.last_notified_at || null,
       last_reason: notifications?.last_reason || null,
     },
-    cooldowns: buildPetMiniAppCooldownSummary({ journeySummary, guidance, liveSystems, seasonSlots, actionCooldowns: specialActionCooldowns, adventureCooldown, workCooldown, now }),
+    cooldowns: buildPetMiniAppCooldownSummary({ journeySummary, guidance, liveSystems, seasonSlots, actionCooldowns: specialActionCooldowns, adventureCooldown, workCooldown, tradeCooldown, now }),
     server_time: now.toISOString(),
   };
 }
@@ -13733,7 +13757,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260927-activity-options-v1`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260927-contract-records-v1`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',
