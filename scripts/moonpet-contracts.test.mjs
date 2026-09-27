@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
-import { CONTRACT_GOALS, CONTRACT_FORMATS, advanceContract, contractLength, contractObjective, contractChoices, contractPreparations, contractDraftActions, contractPathChoices, contractBoss, contractRoom, contractSideProgress, createContractState, getContractBoard, processContractAction } from '../workers/moonboys-api/pets/continuing-contracts.js';
+import { CONTRACT_GOALS, CONTRACT_FORMATS, advanceContract, contractLength, contractObjective, contractChoices, contractPreparations, contractDraftActions, contractPathChoices, contractFieldEncounter, contractBoss, contractRoom, contractSideProgress, createContractState, getContractBoard, processContractAction } from '../workers/moonboys-api/pets/continuing-contracts.js';
 import { awardPetReward } from '../workers/moonboys-api/pets/roguelite-foundation.js';
 import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 
@@ -55,13 +55,16 @@ async function complete(pet, award = awardPetReward, time = now) {
 }
 
 // Exhaustive state mechanics across goals/builds/tiers and deterministic roll streams.
-let clears = 0, failures = 0, drafts = 0;
+let clears = 0, failures = 0, drafts = 0, fieldDecisions = 0;
+const fieldActionsSeen = new Set();
 for (const format of Object.keys(CONTRACT_FORMATS)) for (const goal of Object.keys(CONTRACT_GOALS)) for (const build of ['scout', 'bruiser', 'scavenger']) for (const tier of [1, 2, 3]) for (let seed = 0; seed < 40; seed++) {
   let s = createContractState(goal, build, tier, 'seed-' + seed, ['none', 'versatile', 'daredevil', 'stocked'][seed % 4], format), status = 'active';
   for (let turn = 0; status === 'active'; turn++) {
-    assert.ok(turn < 20);
+    assert.ok(turn < 28);
     const paths = contractPathChoices(s);
-    const action = paths.length && seed % 4 !== 3 ? paths[seed % paths.length].key : s.draft.length ? s.draft[seed % s.draft.length] : ['cover', 'bold', 'search'][(seed + turn) % 3];
+    const field = contractFieldEncounter(s)?.choices.filter((choice) => !choice.disabled);
+    const action = field?.length && seed % 4 !== 3 ? field[seed % field.length].key : paths.length && seed % 4 !== 3 ? paths[seed % paths.length].key : s.draft.length ? s.draft[seed % s.draft.length] : ['cover', 'bold', 'search'][(seed + turn) % 3];
+    if (action.startsWith('field_')) { fieldDecisions++; fieldActionsSeen.add(action); }
     if (s.draft.length) drafts++;
     const prior = structuredClone(s), n = advanceContract(s, action, (seed * 13 + turn * 7) % 100);
     assert.deepEqual(s, prior, 'engine input is immutable');
@@ -75,6 +78,79 @@ for (const format of Object.keys(CONTRACT_FORMATS)) for (const goal of Object.ke
   }
 }
 assert.ok(clears && failures && drafts);
+assert.ok(fieldDecisions > 0);
+assert.equal(fieldActionsSeen.size, 7, 'simulations exercise both decisions in all three encounters and leave');
+
+// One optional field decision per checkpoint; previews are exact, all trades
+// stay within this contract, and neither forged effects nor repeat clicks apply.
+const fieldEffects = {
+  field_buy_supplies: { health: 0, supplies: 2, salvage: -18 },
+  field_sell_supplies: { health: 0, supplies: -2, salvage: 16 },
+  field_aid: { health: 18, supplies: -1, salvage: 0 },
+  field_detour: { health: -10, supplies: 0, salvage: 14 },
+  field_recover: { health: 0, supplies: -1, salvage: 18 },
+  field_repair: { health: 22, supplies: 0, salvage: -14 },
+  field_leave: { health: 0, supplies: 0, salvage: 0 },
+};
+const encountered = new Set();
+for (let seed = 0; seed < 30; seed++) {
+  let s = createContractState('salvage', 'scavenger', 1, 'field-' + seed);
+  assert.equal(contractFieldEncounter(s), null);
+  assert.equal(advanceContract(s, 'field_leave', 0), null);
+  for (let i = 0; i < 2; i++) s = advanceContract(s, 'search', 0).state;
+  assert.equal(contractFieldEncounter(s), null, 'draft selection comes first');
+  assert.equal(advanceContract(s, 'field_leave', 0), null);
+  s = { ...advanceContract(s, 'supply_cache', 0).state, health: 40, supplies: 5, salvage: 50 };
+  const offer = contractFieldEncounter(s); encountered.add(offer.key);
+  assert.equal(offer.checkpoint, 2); assert.equal(offer.choices.length, 3);
+  for (const choice of offer.choices) {
+    const before = structuredClone(s), next = advanceContract(s, choice.key, 99);
+    assert.deepEqual(s, before);
+    assert.deepEqual(choice.delta, fieldEffects[choice.key]);
+    assert.equal(next.status, 'active'); assert.equal(next.rank_points, 0);
+    for (const [key, delta] of Object.entries(choice.delta)) assert.equal(next.state[key], s[key] + delta);
+    for (const key of ['depth', 'wins', 'route_wins', 'path', 'path_offer', 'preparation', 'perks', 'draft', 'boss_result']) assert.deepEqual(next.state[key], s[key]);
+    assert.equal(contractFieldEncounter(next.state), null);
+    assert.equal(advanceContract(next.state, choice.key, 0), null);
+    assert.deepEqual(next.state.field_result.delta, choice.delta);
+  }
+  const unavailable = contractFieldEncounter({ ...s, health: s.max_health, supplies: 0, salvage: 0 });
+  for (const choice of unavailable.choices) if (choice.key !== 'field_detour' && choice.key !== 'field_leave') {
+    assert.equal(choice.disabled, true);
+    assert.equal(advanceContract({ ...s, health: s.max_health, supplies: 0, salvage: 0 }, choice.key, 0), null);
+  }
+  for (const choice of contractFieldEncounter({ ...s, health: s.max_health - 3 }).choices.filter((c) => c.delta.health > 0)) {
+    assert.equal(choice.delta.health, 3, 'healing preview is the actual capped gain');
+    assert.equal(advanceContract({ ...s, health: s.max_health - 3 }, choice.key, 0).state.health, s.max_health);
+  }
+  if (offer.key === 'medic') {
+    assert.equal(advanceContract({ ...s, health: 10 }, 'field_detour', 0), null, 'a field trade cannot kill the run');
+    assert.equal(advanceContract({ ...s, health: 11 }, 'field_detour', 0).state.health, 1);
+  }
+  for (const key of Object.keys(fieldEffects).filter((key) => !offer.choices.some((c) => c.key === key))) assert.equal(advanceContract(s, key, 0), null);
+  const skipped = advanceContract(s, 'cover', 0).state;
+  assert.equal(skipped.field_pending, false); assert.equal(contractFieldEncounter(skipped), null);
+  assert.equal(advanceContract(skipped, 'field_leave', 0), null);
+  for (const version of [1, 2, 3, 4, 5, 6, 7, 8]) {
+    assert.equal(contractFieldEncounter({ ...s, version }), null);
+    assert.equal(advanceContract({ ...s, version }, offer.choices[0].key, 0), null);
+  }
+}
+assert.equal(encountered.size, 3);
+// Skipping encounters preserves v8 rooms, goals, boss, payouts and rank exactly.
+for (const format of ['standard', 'extended']) {
+  let modern = createContractState('escort', 'bruiser', 1, 'field-compatible', 'none', format);
+  let old = { ...modern, version: 8 }; delete old.field_pending; delete old.field_result;
+  while (modern.depth < contractLength(modern)) {
+    const choice = modern.draft.length ? modern.draft[0] : 'cover';
+    const a = advanceContract(modern, choice, 0), b = advanceContract(old, choice, 0);
+    assert.equal(a.status, b.status); assert.equal(a.rank_points, b.rank_points);
+    modern = a.state; old = b.state;
+    const { version: v1, field_pending: pending, field_result: result, ...newState } = modern;
+    const { version: v2, ...oldState } = old;
+    assert.deepEqual(newState, oldState);
+  }
+}
 for (const invalid of [null, '__proto__', 'marathon', ['extended'], {}, 10]) assert.equal(createContractState('escort', 'scout', 1, 'x', 'none', invalid), null);
 
 // Every setup is completable; new objectives require the named actions/resources,
@@ -377,6 +453,24 @@ try {
   assert.equal((await act(supplyPet, { ...pathRequest, revision: savedPath.revision })).accepted, false);
   assert.equal((await act(b, pathRequest)).accepted, false);
   assert.deepEqual((await board(supplyPet)).run.path, savedPath.path, 'reload projects the saved path');
+  const fieldOffer = savedPath.field_encounter;
+  assert.ok(fieldOffer);
+  const fieldChoice = fieldOffer.choices.find((choice) => !choice.disabled && choice.key !== 'field_leave');
+  const fieldWallet = sqlite.prepare('SELECT pet_xp, moon_gold, moon_crystals, style_tokens, energy FROM telegram_pet_profiles WHERE telegram_id=?').get(supplyPet.telegram_id);
+  const fieldRequest = { action: 'contract_step', contract_id: savedPath.contract_id, revision: savedPath.revision, choice: fieldChoice.key, field_pending: true, delta: { salvage: 99999, health: 99999 }, reward_xp: 99999 };
+  assert.equal((await act(b, fieldRequest)).accepted, false);
+  const fieldRace = await Promise.all([act(supplyPet, fieldRequest), act(supplyPet, { ...fieldRequest, choice: 'field_leave' })]);
+  assert.equal(fieldRace.filter((result) => result.accepted).length, 1);
+  const savedField = (await board(supplyPet)).run;
+  assert.equal(savedField.field_encounter, null);
+  for (const [key, delta] of Object.entries(fieldChoice.delta)) assert.equal(savedField[key], savedPath[key] + delta);
+  assert.equal(savedField.depth, savedPath.depth); assert.deepEqual(savedField.path, savedPath.path);
+  assert.equal(savedField.field_result.choice, fieldChoice.key);
+  assert.deepEqual((await board(supplyPet)).run.field_result, savedField.field_result, 'field receipt survives reload');
+  assert.equal((await act(supplyPet, fieldRequest)).accepted, false, 'stale retry cannot pay twice');
+  assert.equal((await act(supplyPet, { ...fieldRequest, revision: savedField.revision })).accepted, false, 'fresh revision cannot reopen the encounter');
+  assert.deepEqual(sqlite.prepare('SELECT pet_xp, moon_gold, moon_crystals, style_tokens, energy FROM telegram_pet_profiles WHERE telegram_id=?').get(supplyPet.telegram_id), fieldWallet);
+  assert.equal((await board(supplyPet)).bonus_remaining, 3);
   const bossPet = await seed('contract-boss-authority');
   await start(bossPet);
   let bossRun = (await board(bossPet)).run;
@@ -548,4 +642,4 @@ try {
   assert.equal(blocked.reason, 'contracts_unavailable');
   sqlite.exec(migration); sqlite.exec(migration);
 } finally { Object.defineProperty(globalThis, 'crypto', { configurable: true, value: realCrypto }); sqlite.close(); }
-console.log(`Continuing contract tests passed: 4320 simulated runs (${clears} goals met, ${failures} failures, ${drafts} drafts), all 108 setups completable, legacy formats, SQLite authority/concurrency/reward recovery, and actual Mini App dispatch.`);
+console.log(`Continuing contract tests passed: 4320 simulated runs (${clears} goals met, ${failures} failures, ${drafts} drafts, ${fieldDecisions} field decisions), all 108 setups completable, legacy formats, SQLite authority/concurrency/reward recovery, and actual Mini App dispatch.`);

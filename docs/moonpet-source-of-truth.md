@@ -167,7 +167,7 @@ Includes:
 ### Continuing contracts
 
 Continuing contracts are server-owned quests for hatched active pets.
-New v8 contracts retain six goals, three starting builds and two route lengths:
+New v9 contracts retain six goals, three starting builds and two route lengths:
 Standard has six rooms and drafts after rooms two/four; Long has ten rooms and
 drafts after rooms two/four/six/eight. Both use route risk/reward choices. Each completed contract records rank
 points for its source pet and immediately offers another quest. Rank has no
@@ -191,7 +191,7 @@ original goal thresholds and original draft/preparation rules. In long routes,
 late redraws are offered only when different unowned perks remain. Supply caches
 remain available at every draft. The final room does not create a new draft.
 
-New v8 contracts have a final boss in the last room. Scout/Escort meet the
+Contracts from v8 onward have a final boss in the last room. Scout/Escort meet the
 Shield Warden, Recon/Resupply the Signal Hound, and Salvage/Breach the Vault
 Breaker. Each offers named cover/bold/search tactics with different route
 modifiers. The boss is disclosed before starting and throughout the run. A
@@ -203,7 +203,28 @@ modifiers are included in previews. Boss outcome is saved once with the final
 move. There is no separate boss payout or extra daily-bonus slot. Existing v1–v7
 saves retain their last-room setback/rest rules and do not gain a boss.
 
-New v7 contracts offer an optional path after each upgrade/supply choice.
+New v9 contracts also offer one optional field encounter after each checkpoint
+draft: rooms 2/4 in Standard and 2/4/6/8 in Long. The server seed fixes the
+encounter; refreshing cannot redraw it. Each has two resource decisions and a
+free leave option. Taking a room route instead skips the encounter. Choices do
+not advance a room, consume path duration or replace the optional preparation.
+
+| Encounter | First decision | Second decision |
+| --- | --- | --- |
+| Roadside Quartermaster | Spend 18 salvage for 2 supplies | Sell 2 supplies for 16 salvage |
+| Courier Aid Station | Spend 1 supply to heal up to 18 route HP | Lose 10 route HP for 14 salvage |
+| Abandoned Salvage Rig | Spend 1 supply for 18 salvage | Spend 14 salvage to heal up to 22 route HP |
+
+Healing previews show the actual gain up to maximum route HP. Full-health heals,
+unaffordable trades and a detour that would leave fewer than 1 HP are unavailable.
+Only contract resources change. Spent salvage/supplies/HP may reduce the main or
+side objective and final rank. There are no pet items, currencies, energy costs,
+extra XP bonuses, Growth Marks or Weekly Crests. The same owner, active-pet,
+season and revision guard saves one choice and its receipt; retries cannot trade
+again. Old v1–v8 saves gain no encounters. Skipping all encounters preserves v8
+room, boss, goal and rank rules. Existing 108 records include v9 Long results.
+
+Contracts from v7 onward offer an optional path after each upgrade/supply choice.
 Quiet Streets adds 8 percentage points to route odds, subtracts 5 salvage per
 success and subtracts 4 failure damage. Salvage Hotspot subtracts 8 percentage
 points, adds 10 salvage per success and adds 4 failure damage. Stay on Course
