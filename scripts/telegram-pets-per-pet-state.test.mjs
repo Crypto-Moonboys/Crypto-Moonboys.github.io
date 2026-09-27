@@ -90,11 +90,12 @@ assert.match(worker, /e\.event_key <> \?/,
 const weeklyBossStart = worker.indexOf('async function processPetWeeklyBoss');
 const weeklyBossEnd = worker.indexOf('async function getPetSeasonRewardState', weeklyBossStart);
 const weeklyBoss = worker.slice(weeklyBossStart, weeklyBossEnd);
-assert.notEqual(weeklyBoss.indexOf('await mirrorPetProfileToActiveInstance(db, telegramId)'), -1, 'weekly boss must explicitly sync its profile-only mutation');
-assert.ok(
-  weeklyBoss.indexOf('await mirrorPetProfileToActiveInstance(db, telegramId)') < weeklyBoss.lastIndexOf('pet: await getPetProfile(db, telegramId)'),
-  'weekly boss must sync its direct profile Energy deduction to the active instance before returning pet state',
-);
+assert.match(weeklyBoss, /UPDATE telegram_pet_instances SET energy = energy - 12[\s\S]*WHERE pet_id = \? AND telegram_id = \?/,
+  'weekly boss must debit the captured pet instance, even when active selection changes');
+assert.doesNotMatch(weeklyBoss, /mirrorPetProfileToActiveInstance|UPDATE telegram_pet_profiles SET energy/,
+  'weekly boss must not route its energy debit through the mutable active profile');
+assert.match(weeklyBoss, /pet: await getPetInstanceWithAtomicDecay\(db, bossPetAuthority\.pet_id\)/,
+  'weekly boss must return the pet that paid for the attack');
 assert.match(worker, /if \(result\.accepted && !result\.duplicate\) result\.lifecycle = await syncMoonpetLifecycleStage\(db, telegramId, next\.stage\);/, 'runtime evolve handling must only sync lifecycle on a newly unlocked evolution');
 assert.match(worker, /if \(result\.accepted && !result\.duplicate\) \{\s+const identity = await getMoonpetIdentitySummary\(env\.DB, telegramId\)\.catch\(\(\) => null\);\s+result\.lifecycle = await syncMoonpetLifecycleStage\(env\.DB, telegramId, identity\?\.current_stage\?\.stage \|\| 0\);\s+\}/, 'API evolve handling must not advance lifecycle for duplicate owner-level evolution unlocks');
 assert.match(worker, /if \(!result\.duplicate\) await syncMoonpetLifecycleStage\(db, telegramId, next\.stage\);/, 'command evolve handling must not advance lifecycle for duplicate owner-level evolution unlocks');

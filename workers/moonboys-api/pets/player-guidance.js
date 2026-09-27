@@ -111,6 +111,9 @@ function isSpecialActionAvailable(state = {}, key) {
 export function choosePetNextAction(state = {}) {
   const pet = state.pet || null;
   if (!pet) return null;
+  if (state.weekly_boss?.pending_rewards?.length) {
+    return { key: 'weekly-boss-reward', title: 'Recover your saved Weekly Boss reward', detail: 'Open the boss board to collect the original victory reward without energy or another attack.', label: '🎁 Saved Boss Reward', callback_data: 'pet:boss' };
+  }
   if (state.activity?.ready) {
     return { key: 'claim_activity', title: state.activity.recovery_pending ? 'Recover the saved activity reward' : 'Claim the finished activity', detail: state.activity.recovery_pending ? 'Retry the saved claim; the reward will not be issued twice.' : 'Rewards are ready now. Compare the next duration preview before claiming.', label: '🎁 Claim', callback_data: 'pet:claim' };
   }

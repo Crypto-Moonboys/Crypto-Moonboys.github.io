@@ -70,6 +70,18 @@ export function calculatePetWeeklyBossDamage(state = {}) {
   return Math.max(8, Math.floor(18 + (level * 1.4) + getPetEvolutionPerk(evolutionStage).weekly_power + (condition / 10) + weaknessBonus + personalityBonus + roll));
 }
 
+export function previewPetWeeklyBossChoices(state = {}) {
+  return ['strike', 'outsmart', 'endure'].map((key) => {
+    const trait = key === 'strike' ? 'street_fighter' : key === 'outsmart' ? 'curious' : 'loyal';
+    return { key, title: key.toUpperCase(), energy: 12,
+      minimum_damage: calculatePetWeeklyBossDamage({ ...state, action: key, roll: 0 }),
+      maximum_damage: calculatePetWeeklyBossDamage({ ...state, action: key, roll: 12 }),
+      weakness_bonus: key === state.boss?.weakness ? 12 : 0,
+      personality_bonus: state.personality_ids?.includes(trait) ? 5 : 0,
+      detail: 'Damage includes current level, evolution, health and energy. One shared account attempt per UTC day.' };
+  });
+}
+
 export function getPetSeasonRewardTier(tierId) {
   return PET_SEASON_REWARD_TIERS.find((tier) => tier.tier_id === String(tierId || '').trim().toLowerCase()) || null;
 }

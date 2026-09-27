@@ -59,6 +59,9 @@ assert.equal(
   'Coach must avoid blocked bounded Happiness actions',
 );
 assert.equal(choosePetNextAction({ pet: healthyPet, activity: { ready: true, activity_type: 'work' } }).key, 'claim_activity');
+const bossRecovery = choosePetNextAction({ pet: { ...healthyPet, energy: 0 }, weekly_boss: { available: false, pending_rewards: [{ week_key: '2026-W38' }] } });
+assert.equal(bossRecovery.key, 'weekly-boss-reward', 'already earned rewards remain discoverable at zero energy');
+assert.equal(bossRecovery.callback_data, 'pet:boss', 'Coach opens the reward board without claiming on navigation');
 assert.equal(choosePetNextAction({ pet: healthyPet, activity: { ready: false, activity_type: 'work' }, active_run: { run_id: 'saved', status: 'active' } }).key, 'continue-run', 'an accumulating activity must not hide a playable run');
 assert.equal(choosePetNextAction({ pet: { ...healthyPet, hunger: 90 }, activity: { ready: false } }).key, 'feed', 'urgent care remains actionable during a timer');
 assert.equal(choosePetNextAction({ pet: healthyPet, active_run: { run_id: 'run-1', status: 'extractable' } }).callback_data, 'pet:run:run-1:extract');

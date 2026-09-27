@@ -292,6 +292,34 @@ reward idempotency key. Switching to another pet cannot claim that reward.
 
 ---
 
+### Weekly Boss choices and recovery
+
+The Weekly Boss unlocks at visible level 5 after hatching. Strike, Outsmart
+and Endure each cost 12 energy and share one account attempt per UTC day.
+The board shows the actual damage range for the selected pet, including its
+level, evolution, health, energy and any weakness/personality bonuses.
+Endure deals damage; it does not heal or apply a persistent defensive effect.
+The boss rotates Monday at 00:00 UTC. Today's saved action/damage and the
+next rotation are visible alongside the existing daily reset.
+
+An attack captures its source pet and season. The transaction rechecks that
+pet's eligibility and stats, debits its energy, saves damage and records any
+defeating pet before reward delivery. Switching the active pet cannot move
+that debit or victory to another pet.
+
+Saved victory rewards have a separate recovery control, including older UTC
+weeks and wins by another pet owned by the same player. Recovery requires the
+original stored owner, pet, season and defeat. It does not require a fresh
+attack, energy or a level-5 active pet; switching to an egg does not hide an
+already earned reward. The receipt keeps its original idempotency key and
+victory day/week. Old recovery cannot rewind care clocks, reset a newer streak
+or fabricate this week's Journey evidence.
+
+Play Now and Coach surface pending rewards. After an attack, the board links
+to server-saved Contracts and local Practice. Their existing rules remain:
+contracts continue without energy or cooldowns, with bounded daily bonuses;
+practice is unlimited and grants no authoritative rewards.
+
 ## Equipment
 
 Equipment progression system.

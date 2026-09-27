@@ -82,6 +82,7 @@ const GROUPS = {
     ['node', 'scripts/moonpet-activity-options.test.mjs'],
     ['node', 'scripts/moonpet-trade-availability.test.mjs'],
     ['node', 'scripts/moonpet-expedition-choices.test.mjs'],
+    ['node', 'scripts/moonpet-weekly-boss-choices.test.mjs'],
     ['node', 'scripts/moonpet-contracts.test.mjs'],
     ['node', 'scripts/telegram-pets-season-1-production-readiness.test.mjs'],
     ['node', 'scripts/telegram-pets-content-reconciliation.test.mjs'],
