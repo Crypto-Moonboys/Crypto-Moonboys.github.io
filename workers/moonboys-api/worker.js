@@ -1517,37 +1517,37 @@ const PET_INVENTORY_ITEMS = Object.freeze({
     key: 'moon_snack',
     title: 'Moon Snack',
     kind: 'usable_item',
-    description: 'Restores hunger and a bit of energy.',
+    description: 'Use: reduce hunger by 18, restore 8 energy and gain up to 4 Pet XP. Stat limits and the daily XP cap apply.',
   },
   energy_drink: {
     key: 'energy_drink',
     title: 'Energy Drink',
     kind: 'usable_item',
-    description: 'Restores energy and gives a small pet XP boost.',
+    description: 'Use: restore 22 energy and gain up to 6 Pet XP. Stat limits and the daily XP cap apply. This consumes a bag item; the Care button is separate.',
   },
   clean_wipe: {
     key: 'clean_wipe',
     title: 'Clean Wipe',
     kind: 'usable_item',
-    description: 'Improves cleanliness and happiness.',
+    description: 'Use: restore 24 cleanliness and 4 happiness, plus up to 4 Pet XP. Stat limits and the daily XP cap apply.',
   },
   lucky_charm: {
     key: 'lucky_charm',
     title: 'Lucky Charm',
     kind: 'usable_item',
-    description: 'One-use charm that can boost a run or random event outcome.',
+    description: 'Use now for up to 8 Pet XP, or keep it for an automatic risk/reward bonus in a standard Moon Run. A run room consumes the charm; using it here does not apply a future buff.',
   },
   style_patch: {
     key: 'style_patch',
     title: 'Style Patch',
     kind: 'usable_item',
-    description: 'Adds style tokens and a little pet XP.',
+    description: 'Use: add 2 Style Tokens and up to 5 Pet XP, subject to wallet and daily XP caps. This is a consumable, not equipped clothing.',
   },
   adventure_map: {
     key: 'adventure_map',
     title: 'Adventure Map',
     kind: 'usable_item',
-    description: 'Reduces adventure fatigue and improves job luck.',
+    description: 'Use now for 6 energy and up to 5 Pet XP, or keep it in the bag for gold and sneak-risk bonuses in a standard Moon Run. Stat limits and the daily XP cap apply.',
   },
 });
 
@@ -13722,7 +13722,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260927-cache-drafts-v1`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260927-crafting-goals-v1`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',
@@ -15132,7 +15132,7 @@ function isPetMiniAppCommand(command) {
 }
 
 const PET_MINI_APP_SCREENS = new Set(['home', 'missions', 'explore', 'work', 'economy', 'profile']);
-const PET_MINI_APP_FOCUSES = new Set(['contracts', 'play-now', 'practice', 'daily-journey', 'weekly-journey', 'daily-objectives', 'recommended', 'vitals', 'care', 'details', 'missions', 'achievements', 'districts', 'moon-run', 'adventure', 'street-event', 'weekly-boss', 'story-chains', 'seasonal-boss', 'arena', 'kaiju', 'timed-activity', 'jobs', 'equipment', 'materials', 'relics', 'bounties', 'expedition', 'market', 'shop', 'style-lab', 'inventory', 'trade', 'rare-morph', 'memories', 'callsign', 'evolution', 'faction', 'prestige', 'tracks', 'features', 'alerts', 'season', 'leaderboard']);
+const PET_MINI_APP_FOCUSES = new Set(['contracts', 'play-now', 'practice', 'daily-journey', 'weekly-journey', 'daily-objectives', 'recommended', 'vitals', 'care', 'details', 'missions', 'achievements', 'districts', 'moon-run', 'adventure', 'street-event', 'weekly-boss', 'story-chains', 'seasonal-boss', 'arena', 'kaiju', 'timed-activity', 'jobs', 'equipment', 'materials', 'crafting', 'relics', 'bounties', 'expedition', 'market', 'shop', 'style-lab', 'inventory', 'trade', 'rare-morph', 'memories', 'callsign', 'evolution', 'faction', 'prestige', 'tracks', 'features', 'alerts', 'season', 'leaderboard']);
 const PET_MINI_APP_COMMAND_FOCUSES = Object.freeze({
   petcoach: 'recommended',
   adopt: 'care', feed: 'care', play: 'care', clean: 'care', sleep: 'care', train: 'care', petdaily: 'care',

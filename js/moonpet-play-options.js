@@ -18,6 +18,7 @@
       [/practice/, 'explore', 'practice'], [/run/, 'explore', 'moon-run'],
       [/job|work|bank/, 'work', 'jobs'],
       [/bount/, 'economy', 'bounties'], [/expedition/, 'economy', 'expedition'],
+      [/craft/, 'economy', 'crafting'], [/material/, 'economy', 'materials'],
       [/market/, 'economy', 'market'], [/trade/, 'economy', 'trade'],
       [/cosmetic/, 'economy', 'style-lab'], [/gear|upgrade/, 'economy', 'equipment'],
       [/shop|buy|equip/, 'economy', 'shop'],
@@ -48,7 +49,49 @@
     return destinations;
   }
 
-  function options(snapshot) {
+  function craftingGoal(snapshot, recipeKey) {
+    var s = snapshot || {}, economy = s.guidance && s.guidance.economy || {};
+    var recipe = (s.live_systems && s.live_systems.crafting || []).find(function (r) { return r.key === recipeKey; });
+    if (!s.adopted || !recipe || !recipe.output) return null;
+    var amount = function (n) { return Math.max(0, Math.floor(Number(n) || 0)); };
+    var label = function (key) { return String(key).replace(/_/g, ' '); };
+    var ingredients = Object.entries(recipe.cost || {}).map(function (entry) {
+      var material = (s.materials || []).find(function (m) { return m.key === entry[0]; }) || {};
+      var owned = amount(material.quantity), required = amount(entry[1]);
+      return { key: entry[0], title: material.label || label(entry[0]), owned: owned, required: required, missing: Math.max(0, required - owned) };
+    });
+    var missing = ingredients.filter(function (m) { return m.missing > 0; });
+    var output = (s.inventory || []).find(function (i) { return (i.key || i.item_key) === recipe.output.item_key; }) || {};
+    var outputCount = amount(output.count == null ? output.quantity : output.count);
+    var full = outputCount > 999999 - amount(recipe.output.quantity);
+    var hatched = Boolean(s.lifecycle && s.lifecycle.phase !== 'egg');
+    var routes = [];
+    var needed = function (reward) { return missing.filter(function (m) { return amount(reward && reward.materials && reward.materials[m.key]) > 0; }); };
+    if (hatched) {
+      (s.regions || []).forEach(function (region) {
+        var material = missing.find(function (m) { return m.key === (region.mission && region.mission.material_reward); });
+        if (!region.available || !material || !(region.retry_energy_charged || Number(s.pet && s.pet.energy) >= Number(region.energy_cost || 10))) return;
+        routes.push({ screen: 'explore', focus: 'districts', title: 'DISTRICT // ' + (region.title || label(region.key)),
+          detail: 'Possible ' + material.title + ' on a clear. Compare approaches and risk. ' + (region.retry_energy_charged ? 'Saved energy payment; resume the original choice.' : (region.energy_cost || 10) + ' energy; daily route limit.') });
+      });
+      (economy.expedition_options || []).forEach(function (entry) {
+        if (!entry.available || !(entry.rewards || []).some(function (reward) { return needed(reward).length; })) return;
+        routes.push({ screen: 'economy', focus: 'expedition', title: 'EXPEDITION // ' + entry.title,
+          detail: 'Possible materials for this goal; the find is not guaranteed. ' + entry.energy + ' energy and one shared daily attempt.' });
+      });
+      (economy.market_offers || []).forEach(function (offer) {
+        if (offer.purchased || !offer.unlocked || !offer.affordable) return;
+        var direct = amount(offer.reward && offer.reward.items && offer.reward.items[recipe.output.item_key]);
+        if (!needed(offer.reward).length && !direct) return;
+        routes.push({ screen: 'economy', focus: 'market', title: 'MARKET // ' + offer.title,
+          detail: (direct ? 'Buy the finished item instead of crafting. ' : 'Buy missing materials. ') + 'Cost: ' + Object.entries(offer.cost || {}).map(function (entry) { return amount(entry[1]) + ' ' + label(entry[0]); }).join(' + ') + '. One purchase of this offer today.' });
+      });
+    }
+    return { recipe: recipe, ingredients: ingredients, missing: missing, output_count: outputCount, output_full: full,
+      ready: hatched && recipe.unlocked === true && recipe.affordable === true && !missing.length && !full, routes: routes };
+  }
+
+  function options(snapshot, preferences) {
     var s = snapshot || {}, g = s.guidance || {}, live = s.live_systems || {};
     if (!s.adopted) return [];
     var choices = [];
@@ -56,6 +99,9 @@
       choices.push(Object.assign({}, destination || route({ key: key }), { key: key, title: title, detail: detail }));
     };
     var egg = s.lifecycle && s.lifecycle.phase === 'egg';
+    var goal = craftingGoal(s, preferences && preferences.crafting_goal);
+    if (goal && !egg) add('craft_goal', (goal.ready ? 'READY TO CRAFT // ' : 'CRAFTING GOAL // ') + goal.recipe.title,
+      goal.ready ? 'Materials are ready. Review the recipe and choose when to craft.' : 'Compare missing materials, district risks, expedition finds and current market alternatives.');
     if (g.weekly_boss && (g.weekly_boss.pending_rewards || []).length) add('weekly_boss_claim', 'RECOVER WEEKLY BOSS REWARDS', 'Collect saved victories, including earlier weeks. No energy, new attack or current level requirement.');
     if (!egg && g.daily_cache && g.daily_cache.available) add('daily_chest', 'OPEN DAILY CACHE', 'One account cache per UTC day. Check the current XP allowance before claiming.', { screen: 'home', focus: 'care' });
     var bounties = g.economy && g.economy.bounties || [];
@@ -103,7 +149,7 @@
     return choices;
   }
 
-  var api = { route: route, bountyRoutes: bountyRoutes, options: options };
+  var api = { route: route, bountyRoutes: bountyRoutes, craftingGoal: craftingGoal, options: options };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.MoonpetPlayOptions = api;
 })(typeof window !== 'undefined' ? window : globalThis);

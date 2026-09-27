@@ -1067,7 +1067,8 @@ button, input, select, textarea {
 }
 
 [data-panel="practice"] select,
-[data-panel="contracts"] select {
+[data-panel="contracts"] select,
+[data-panel="crafting"] select {
   display: block;
   width: 100%;
   max-width: 100%;

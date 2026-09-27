@@ -219,6 +219,38 @@ the bonus budget is exhausted. Records are pet/season scoped.
 Migration 076 is required before the updated Worker is deployed. Without the
 table, the board is unavailable while the rest of the Mini App remains usable.
 
+### Crafting goals and account spending
+
+Players can select one crafting goal for each pet on the current device. The
+goal survives reloads when browser storage is available; it remains local to
+the session otherwise. It can be changed or cleared without spending anything.
+The workshop shows owned/required/missing materials, the output stack, and a
+Play Now link when a goal is selected. Crafting remains a separate explicit
+server action. Goals grant no additional rewards or official quest credit.
+
+Available routes come from the current state: districts offering a missing
+material, expeditions whose possible finds include it, and affordable unbought
+market offers for either ingredients or the finished item. District material
+previews and settlement share the same selection function. Risk, attempt caps,
+energy, daily reset, prices and actual payment checks still apply. A route link
+only navigates. Contracts remain available while limited routes reset and do
+not supply crafting materials.
+
+Crafting and equipment upgrades recheck the current level inside the spend
+transaction. Equipment and cosmetic purchases recheck wallet recovery there as
+well. A rejected transaction spends nothing; the same request can retry after
+the requirement is restored, and successful retries cannot spend again.
+Catalog lookups reject inherited property names as invalid cosmetic keys.
+
+Inventory descriptions distinguish consuming an item from leaving it in the
+bag for a standard Moon Run bonus. Style Patch is a consumable, not clothing;
+Adventure Map does not improve expedition outcomes or job luck. Care's Energy
+Drink button and the consumable Energy Drink remain separate actions. Style Lab
+currently stores account collection unlocks only: no visible frame, trail or
+pose is applied. Its copy states this before purchase. Rename Badge ownership
+is not required by the existing callsign editor. Existing ownership records are
+preserved; no visual cosmetic implementation or new assets are introduced here.
+
 ### Moon Gold trade availability
 
 Moon Gold Trade remains a separate game-currency action with a shared five-minute

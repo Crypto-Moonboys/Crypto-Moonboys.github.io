@@ -746,7 +746,7 @@
   var SECTION_JUMPS = {
     missions: [['contracts', 'CONTRACTS'], ['daily-journey', 'DAILY'], ['weekly-journey', 'WEEKLY'], ['daily-objectives', 'OBJECTIVES'], ['missions', 'MISSIONS'], ['achievements', 'ACHIEVEMENTS']],
     explore: [['play-now', 'PLAY NOW'], ['practice', 'PRACTICE'], ['districts', 'DISTRICTS'], ['moon-run', 'RUN'], ['adventure', 'ADVENTURE'], ['street-event', 'EVENT'], ['weekly-boss', 'BOSS'], ['story-chains', 'STORIES'], ['seasonal-boss', 'RAID'], ['arena', 'ARENA'], ['kaiju', 'KAIJU']],
-    economy: [['equipment', 'GEAR'], ['materials', 'MATERIALS'], ['bounties', 'BOUNTIES'], ['expedition', 'EXPEDITION'], ['market', 'MARKET'], ['shop', 'SHOP'], ['inventory', 'BAG'], ['trade', 'TRADE']],
+    economy: [['crafting', 'CRAFT'], ['equipment', 'GEAR'], ['materials', 'MATERIALS'], ['bounties', 'BOUNTIES'], ['expedition', 'EXPEDITION'], ['market', 'MARKET'], ['shop', 'SHOP'], ['inventory', 'BAG'], ['trade', 'TRADE']],
     profile: [['rare-morph', 'RARE'], ['memories', 'MEMORY'], ['callsign', 'NAME'], ['evolution', 'EVOLVE'], ['season', 'SEASON'], ['leaderboard', 'RANKS']],
   };
 
@@ -1655,9 +1655,44 @@
 
   function renderPlayNow() {
     if (!window.MoonpetPlayOptions) return '';
-    var choices = window.MoonpetPlayOptions.options(state);
+    var choices = window.MoonpetPlayOptions.options(state, { crafting_goal: selectedCraftingGoal() });
     if (!choices.length) return '';
     return panel('PLAY NOW // YOUR CHOICE', '<div class="line muted">Pick a route. Rewarded actions keep their normal gates and limits; practice has no cooldown or pet cost. Progress is saved—you can leave and return.</div><div class="button-grid">' + choices.map(function (choice) { return routeButton(choice.title, choice, choice.detail); }).join('') + '</div>', 'play-now');
+  }
+
+  var craftingGoalMemory = Object.create(null);
+  var craftingGoalStorageAvailable = true;
+  function selectedCraftingGoal() {
+    var petId = state && state.pet && state.pet.pet_id;
+    if (!petId) return '';
+    if (!Object.prototype.hasOwnProperty.call(craftingGoalMemory, petId)) {
+      try { craftingGoalMemory[petId] = window.localStorage.getItem('moonpet-crafting-goal:' + petId) || ''; }
+      catch (_) { craftingGoalStorageAvailable = false; craftingGoalMemory[petId] = ''; }
+    }
+    var selected = craftingGoalMemory[petId];
+    return (state.live_systems && state.live_systems.crafting || []).some(function (recipe) { return recipe.key === selected; }) ? selected : '';
+  }
+
+  function craftingGoalMarkup() {
+    if (!window.MoonpetPlayOptions || !window.MoonpetPlayOptions.craftingGoal) return '';
+    var selected = selectedCraftingGoal();
+    var recipes = state.live_systems && state.live_systems.crafting || [];
+    var body = '<label class="line" for="crafting-goal">CHOOSE A CRAFTING GOAL</label><select id="crafting-goal"><option value="">NO TRACKED GOAL</option>' + recipes.map(function (recipe) {
+      return '<option value="' + escapeHtml(recipe.key) + '"' + (recipe.key === selected ? ' selected' : '') + '>' + escapeHtml(recipe.title) + ' // LEVEL ' + number(recipe.min_level) + '</option>';
+    }).join('') + '</select><div class="line muted">Track supplies for this pet on this device. Change or clear the goal any time. Choosing a goal spends nothing and adds no quest reward.</div>';
+    if (!craftingGoalStorageAvailable) body += '<div class="line muted">Device storage unavailable; this goal is kept for this session only.</div>';
+    var plan = window.MoonpetPlayOptions.craftingGoal(state, selected);
+    if (!plan) return body;
+    body += '<div class="line signal">' + escapeHtml(plan.recipe.title) + ' // ' + (plan.ready ? 'READY TO CRAFT' : plan.output_full ? 'OUTPUT STACK FULL' : !plan.recipe.unlocked ? 'REQUIRES LEVEL ' + number(plan.recipe.min_level) : 'GATHER SUPPLIES') + '</div>';
+    body += plan.ingredients.map(function (material) {
+      return '<div class="line ' + (material.missing ? '' : 'complete') + '">' + escapeHtml(material.title) + ' // HAVE ' + number(material.owned) + ' / NEED ' + number(material.required) + (material.missing ? ' // MISSING ' + number(material.missing) : ' // READY') + '</div>';
+    }).join('');
+    body += '<div class="line muted">BAG // ' + number(plan.output_count) + ' ' + escapeHtml(words(plan.recipe.output.item_key)) + '. Crafting makes ' + number(plan.recipe.output.quantity) + '.</div>';
+    if (plan.output_count) body += '<div class="button-grid one">' + routeButton('REVIEW ITEMS IN BAG', { screen: 'economy', focus: 'inventory' }, 'Review the item before choosing whether to use it.') + '</div>';
+    if (plan.routes.length) body += '<div class="button-grid">' + plan.routes.map(function (target) { return routeButton(target.title, target, target.detail); }).join('') + '</div>';
+    else if (plan.missing.length) body += '<div class="line muted">No matching district, expedition or affordable market option is available in this snapshot. Check the material sources below or continue a Contract while routes reset.</div>';
+    body += '<div class="button-grid">' + routeButton('CHECK MATERIAL SOURCES', { screen: 'economy', focus: 'materials' }) + (state.contracts && state.contracts.available ? routeButton('CONTINUE CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'Saved quests without pet energy costs or cooldowns. Contracts do not award crafting materials.') : '') + '</div>';
+    return body;
   }
 
   var practiceMemory = {};
@@ -1947,7 +1982,7 @@
       }).join('');
       if (region.pending_choice_key) decisions = button('RESUME SAVED DISTRICT CHOICE', 'district_mission', { region_key: region.key, approach_key: region.pending_choice_key }, { disabled: !region.available || !region.retry_energy_charged && Number(state.pet.energy) < 10, detail: region.retry_energy_charged ? 'Energy already paid. Resume the original decision and reward.' : '10 energy. Resume the original decision.' });
       var brief = mission.title
-        ? '<div class="district-mission"><div class="line signal"><strong>' + escapeHtml(mission.title) + '</strong> // THREAT ' + number(mission.threat) + '/5' + (mission.boss ? ' // BOSS CHECKPOINT' : '') + '</div><div class="line">' + escapeHtml(mission.intro) + '</div><div class="line muted">OBJECTIVE // ' + escapeHtml(mission.objective) + '</div>' + (opponent.name ? '<div class="run-opponent"><strong>' + escapeHtml(opponent.name) + '</strong> // ' + escapeHtml(words(opponent.role)) + '<small>' + escapeHtml(opponent.intro || '') + '</small></div>' : '') + '</div>'
+        ? '<div class="district-mission"><div class="line signal"><strong>' + escapeHtml(mission.title) + '</strong> // THREAT ' + number(mission.threat) + '/5' + (mission.boss ? ' // BOSS CHECKPOINT' : '') + '</div><div class="line">' + escapeHtml(mission.intro) + '</div><div class="line muted">OBJECTIVE // ' + escapeHtml(mission.objective) + '</div>' + (mission.material_reward ? '<div class="line muted">MATERIAL ON CLEAR // ' + escapeHtml(words(mission.material_reward)) + ' // 1 on a clear, 3 when a boss checkpoint is defeated. Setbacks give none; reward caps apply.</div>' : '') + (opponent.name ? '<div class="run-opponent"><strong>' + escapeHtml(opponent.name) + '</strong> // ' + escapeHtml(words(opponent.role)) + '<small>' + escapeHtml(opponent.intro || '') + '</small></div>' : '') + '</div>'
         : '';
       return '<div class="region-entry ' + (region.playable ? 'complete' : 'locked') + '"><div class="line"><strong>' + escapeHtml(region.title) + '</strong> // ' + escapeHtml(region.used_today ? 'COMPLETE TODAY' : region.playable ? 'ONLINE' : region.status.toUpperCase()) + '</div><div class="line muted">' + escapeHtml(region.strapline) + '</div><div class="line">' + escapeHtml(region.lore) + '</div><div class="line">MASTERY ' + number(region.mastery_xp) + ' // BOSS: ' + escapeHtml(words(region.boss)) + ' // FOCUS: ' + escapeHtml(region.focus.map(words).join(' + ')) + '</div>' + brief + (region.lock_reason ? '<div class="line locked">LOCK: ' + escapeHtml(region.lock_reason) + '</div>' : region.used_today ? '<div class="line complete">DISTRICT PLAY COMPLETE TODAY // RESET ' + countdownMarkup(region.cooldown, 'in ') + '</div>' : '<div class="button-grid district-decisions">' + decisions + '</div>') + '</div>';
     }).join('');
@@ -2084,6 +2119,7 @@
     }).join('');
     var inventory = (state.inventory || []).filter(function (item) { return Number(item.count || item.quantity || 0) > 0; }).map(function (item) {
       return '<div class="line">' + escapeHtml(words(item.title || item.key || item.item_key)) + ' x' + number(item.count || item.quantity) + '</div>' +
+        (item.description ? '<div class="line muted">' + escapeHtml(item.description) + '</div>' : '') +
         ((item.kind === 'usable_item' || item.usable) ? '<div class="button-grid one">' + button('USE ' + (item.title || item.key), 'use_item', { item_key: item.key || item.item_key }) + '</div>' : '');
     }).join('');
     var expeditionOptions = economy.expedition_options;
@@ -2118,7 +2154,9 @@
       return '<div class="line ' + (item.quantity ? 'complete' : 'locked') + '">' + escapeHtml(item.label) + ' x' + number(item.quantity) + '</div><div class="line muted">SOURCE: ' + escapeHtml((item.sources || []).map(words).join(' / ')) + '</div>';
     }).join('');
     var crafting = (live.crafting || []).map(function (recipe) {
-      return button(recipe.title, 'craft', { recipe_key: recipe.key }, { disabled: !recipe.unlocked || !recipe.affordable, resourceRequired: recipe.unlocked && !recipe.affordable, detail: (recipe.unlocked ? '' : 'REQUIRES LEVEL ' + number(recipe.min_level) + ' // ') + (recipe.detail || '') + ' // COST ' + costText(recipe.cost) + ' // MAKES ' + number(recipe.output && recipe.output.quantity) + ' ' + words(recipe.output && recipe.output.item_key) });
+      var plan = window.MoonpetPlayOptions && window.MoonpetPlayOptions.craftingGoal && window.MoonpetPlayOptions.craftingGoal(state, recipe.key);
+      var full = plan && plan.output_full;
+      return button(recipe.title, 'craft', { recipe_key: recipe.key }, { disabled: !recipe.unlocked || !recipe.affordable || full, statusLabel: full ? 'OUTPUT STACK FULL' : '', resourceRequired: recipe.unlocked && !recipe.affordable, detail: (recipe.unlocked ? '' : 'REQUIRES LEVEL ' + number(recipe.min_level) + ' // ') + (recipe.detail || '') + ' // COST ' + costText(recipe.cost) + ' // MAKES ' + number(recipe.output && recipe.output.quantity) + ' ' + words(recipe.output && recipe.output.item_key) });
     }).join('');
     var relics = (state.relics || []).map(function (item) { return '<div class="line complete">◆ ' + escapeHtml(words(item.relic_id)) + '</div>'; }).join('');
     var equipmentSets = (live.equipment_sets || []).map(function (set) {
@@ -2130,12 +2168,12 @@
     return panel('EQUIPMENT PROGRESSION', gear || '<div class="line muted">NO EQUIPMENT MASTERY RECORDS.</div>', 'equipment') +
       panel('LOADOUT SYNERGIES', equipmentSets || '<div class="line muted">NO SET DATA.</div>', 'equipment-sets') +
       panel('CRAFTING MATERIALS', materials || '<div class="line muted">NO MATERIAL DATA.</div>', 'materials') +
-      panel('CRAFTING WORKSHOP', '<div class="button-grid">' + crafting + '</div>', 'crafting') +
+      panel('CRAFTING WORKSHOP', craftingGoalMarkup() + '<div class="line signal">RECIPES // CHOOSE TO SPEND MATERIALS</div><div class="button-grid">' + crafting + '</div>', 'crafting') +
       panel('RELIC VAULT', '<div class="line muted">Persistent collectibles used by eligible progression requirements. Passive relic powers are not active in Moon Run, Daily Run, contracts or practice.</div>' + (relics || '<div class="line muted">NO RELICS RECOVERED.</div>'), 'relics') +
       panel('DAILY BOUNTIES', '<div class="line muted">Four account-wide targets per UTC day. Only accepted actions count. The Energy Drink, Dance and Cuddles care buttons do not count. New targets arrive at 00:00 UTC. Contracts remain available between resets.</div>' + (bounties || '<div class="line muted">NO BOUNTIES.</div>'), 'bounties') +
       panel('CRYSTAL EXPEDITIONS // CHOOSE A DESTINATION', expeditionBody, 'expedition') +
       panel('MOON MARKET', '<div class="button-grid">' + offers + '</div>', 'market') +
-      panel('PERMANENT SHOP', '<div class="button-grid">' + shop + '</div>', 'shop') + panel('STYLE LAB', '<div class="button-grid">' + cosmetics + '</div>', 'style-lab') +
+      panel('PERMANENT SHOP', '<div class="button-grid">' + shop + '</div>', 'shop') + panel('STYLE LAB // COLLECTION', '<div class="line muted">These purchases add account collection records only. They do not change your pet’s appearance, animations or stats. A Rename Badge is not required to change your callsign.</div><div class="button-grid one">' + routeButton('EDIT CALLSIGN', { screen: 'profile', focus: 'callsign' }, 'Use the existing name control; no badge purchase is required.') + '</div><div class="button-grid">' + cosmetics + '</div>', 'style-lab') +
       panel('INVENTORY', inventory || '<div class="line muted">BAG EMPTY.</div>', 'inventory') +
       panel('MOON GOLD TRADE', '<div class="line muted">Game currency only. A loss spends the selected stake. Trades share a five-minute account cooldown.</div><div class="button-grid three">' + (state.trade && state.trade.offers || []).map(function (offer) { return button(offer.wager + ' GOLD', 'trade', { wager: offer.wager }, { disabled: !offer.available, cooldown: state.trade.cooldown, resourceRequired: !offer.affordable, detail: offer.affordable ? '' : 'Requires ' + number(offer.wager) + ' Moon Gold.' }); }).join('') + '</div>', 'trade');
   }
@@ -2467,6 +2505,9 @@
       weekly_boss_pet_changed: 'your active pet changed; review its boss choices.',
       weekly_boss_state_changed: 'your pet or boss state changed; review the refreshed choices.',
       daily_cache_state_changed: 'your pet changed before the cache could settle; refresh and try again.',
+      crafting_settlement_conflict: 'your level, materials or bag capacity changed before crafting. Nothing was spent; review the refreshed recipe.',
+      upgrade_conflict: 'your level, balance or gear changed before the upgrade, or wallet recovery is pending. Nothing was spent; review the refreshed gear.',
+      cosmetic_settlement_conflict: 'your balance or collection changed, or wallet recovery is pending. Nothing was spent; review the refreshed collection.',
       season_reward_pending: 'the season reward has not settled yet; refresh and retry the saved tier.',
       wallet_reconciliation_recovery_pending: 'your saved wallet is waiting for recovery. This transaction was not applied.',
       weekly_boss_reward_pending: 'the saved victory reward is still pending; use Recover Weekly Reward to try again without another attack.',
@@ -2811,6 +2852,18 @@
     render();
     return true;
   }
+
+  screen.addEventListener('change', function (event) {
+    if (event.target.id !== 'crafting-goal' || !state || !state.pet || busy) return;
+    var selected = event.target.value;
+    if (selected && !(state.live_systems && state.live_systems.crafting || []).some(function (recipe) { return recipe.key === selected; })) return;
+    craftingGoalMemory[state.pet.pet_id] = selected;
+    try { window.localStorage.setItem('moonpet-crafting-goal:' + state.pet.pet_id, selected); }
+    catch (_) { craftingGoalStorageAvailable = false; }
+    render();
+    var control = document.getElementById('crafting-goal');
+    if (control) control.focus({ preventScroll: true });
+  });
 
   screen.addEventListener('click', function (event) {
     var practiceAction = event.target.closest('[data-practice-action]');
