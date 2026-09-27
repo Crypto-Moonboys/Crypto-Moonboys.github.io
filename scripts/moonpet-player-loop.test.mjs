@@ -124,6 +124,20 @@ assert.ok(options.options(readyCraft, { crafting_goal: 'battery_pack' }).find((r
 assert.ok(!options.options(readyCraft).some((r) => r.key === 'craft_goal'));
 const fullCraft = options.craftingGoal({ ...readyCraft, inventory: [{ key: 'energy_drink', count: 999999 }] }, 'battery_pack');
 assert.equal(fullCraft.output_full, true); assert.equal(fullCraft.ready, false);
+assert.ok(!fullCraft.routes.some((r) => r.focus === 'market'), 'a full output stack must not recommend buying more finished items');
+for (const [owned, bundle, expected] of [[0, 2, true], [999997, 2, true], [999998, 1, true], [999998, 2, false], [999999, 1, false]]) {
+  for (const includeMaterials of [false, true]) {
+    const offer = { title: 'Capacity Check', affordable: true, unlocked: true, cost: { moon_gold: 120 },
+      reward: { items: { energy_drink: bundle }, ...(includeMaterials ? { materials: { battery_cell: 3 } } : {}) } };
+    const goal = options.craftingGoal({ ...craftSnapshot, inventory: [{ key: 'energy_drink', count: owned }],
+      guidance: { economy: { market_offers: [offer] } } }, 'battery_pack');
+    assert.equal(goal.routes.some((r) => r.focus === 'market'), expected,
+      `market bundle of ${bundle} with ${owned} owned${includeMaterials ? ' and needed materials' : ''} must fit in full`);
+  }
+}
+const fullOutputWithMissingMaterials = options.craftingGoal({ ...craftSnapshot, inventory: [{ item_key: 'energy_drink', quantity: 999999 }] }, 'battery_pack');
+assert.deepEqual(fullOutputWithMissingMaterials.routes.filter((r) => r.focus === 'market').map((r) => r.title), ['MARKET // Cell Case'],
+  'material-only offers remain available without recommending overflowing finished items');
 assert.equal(options.craftingGoal({ ...readyCraft, live_systems: { crafting: [{ ...craftRecipe, affordable: true, unlocked: false }] } }, 'battery_pack').ready, false);
 
 assert.equal(practice.create('x', '__proto__', 'explorer'), null);

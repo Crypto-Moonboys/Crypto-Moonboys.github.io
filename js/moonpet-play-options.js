@@ -82,6 +82,7 @@
       (economy.market_offers || []).forEach(function (offer) {
         if (offer.purchased || !offer.unlocked || !offer.affordable) return;
         var direct = amount(offer.reward && offer.reward.items && offer.reward.items[recipe.output.item_key]);
+        if (direct && outputCount + direct > 999999) return;
         if (!needed(offer.reward).length && !direct) return;
         routes.push({ screen: 'economy', focus: 'market', title: 'MARKET // ' + offer.title,
           detail: (direct ? 'Buy the finished item instead of crafting. ' : 'Buy missing materials. ') + 'Cost: ' + Object.entries(offer.cost || {}).map(function (entry) { return amount(entry[1]) + ' ' + label(entry[0]); }).join(' + ') + '. One purchase of this offer today.' });
