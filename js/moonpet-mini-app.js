@@ -1696,7 +1696,7 @@
       var room = engine.room(run);
       body += '<div class="line"><strong>' + escapeHtml(room.title) + '</strong></div><div class="line muted">' + escapeHtml(room.detail) + '</div><div class="button-grid">';
       if (run.draft.length) body += run.draft.map(function (key) { return practiceButton(engine.perks[key].title, key, run, engine.perks[key].detail); }).join('');
-      else body += engine.choices(run).map(function (choice) { return practiceButton(choice.title, choice.key, run, choice.odds + '% CLEAR // +' + choice.salvage + ' SALVAGE // FAILURE -' + choice.damage + ' HP. ' + choice.detail, choice.disabled); }).join('');
+      else body += engine.choices(run).map(function (choice) { return practiceButton(choice.title, choice.key, run, (choice.key === 'rest' ? 'RECOVER // ' : choice.odds + '% CLEAR // +' + choice.salvage + ' SALVAGE // FAILURE -' + choice.damage + ' HP. ') + choice.detail, choice.disabled); }).join('');
       body += practiceButton('EXTRACT PRACTICE', 'extract', run, 'Finish now and bank local salvage. Leaving the app instead preserves the run.') + '</div>';
     }
     return panel('PRACTICE ROGUELITE // NO REWARDS', body, 'practice');
@@ -1737,9 +1737,14 @@
       if (run.status === 'completed') body += '<div class="line complete">+' + number(run.rank_points) + ' RANK POINTS // ' + number(run.xp_awarded) + ' PET XP' + (run.reward_pending ? ' // BONUS DELIVERY PENDING' : '') + '</div>';
     }
     if (run && run.status === 'active') {
+      if (run.preparation) body += '<div class="line complete">' + (run.preparation === 'prepare_scout' ? 'SCOUT AHEAD READY // This room’s route odds include the bonus.' : 'FIELD PATCH APPLIED // Route health restored.') + '</div>';
+      if (run.preparations && run.preparations.length) body += '<div class="line signal">OPTIONAL ROOM PREPARATION</div><div class="line muted">Choose up to one before taking a route. You can skip preparation. Only contract resources are spent; no pet energy or currency.</div><div class="button-grid">' + run.preparations.map(function (choice) {
+        return button(choice.title, 'contract_step', { pet_id: board.pet_id, contract_id: run.contract_id, revision: run.revision, choice: choice.key }, { disabled: Boolean(choice.disabled), detail: choice.detail });
+      }).join('') + '</div>';
       body += '<div class="line"><strong>' + escapeHtml(run.room.title) + '</strong></div><div class="line muted">' + escapeHtml(run.room.detail) + '</div>' + (run.room.effect ? '<div class="line signal">' + escapeHtml(run.room.effect) + '</div><div class="line muted">Room effects are included below. pp means percentage points; clear chance is capped at 98%.</div>' : '') + '<div class="button-grid">' + run.choices.map(function (choice) {
         return button(choice.title, 'contract_step', { pet_id: board.pet_id, contract_id: run.contract_id, revision: run.revision, choice: choice.key }, { disabled: Boolean(choice.disabled), detail: (choice.upgrade ? 'CHOOSE AN UPGRADE // ' : choice.key === 'rest' ? 'RECOVER // ' : choice.odds + '% CLEAR // +' + choice.salvage + ' SALVAGE // FAILURE -' + choice.damage + ' HP // ') + choice.detail });
-      }).join('') + '</div><div class="button-grid one">' + button('ABANDON CONTRACT', 'contract_step', { pet_id: board.pet_id, contract_id: run.contract_id, revision: run.revision, choice: 'abandon' }, { danger: true, detail: 'Ends this contract with no points or XP. Closing the app instead preserves it.' }) + '</div>';
+      }).join('') + '</div>';
+      body += '<div class="button-grid one">' + button('ABANDON CONTRACT', 'contract_step', { pet_id: board.pet_id, contract_id: run.contract_id, revision: run.revision, choice: 'abandon' }, { danger: true, detail: 'Ends this contract with no points or XP. Closing the app instead preserves it.' }) + '</div>';
     } else {
       body += '<label class="line">BUILD <select id="contract-build" aria-label="Contract build">' + board.builds.map(function (build) { return '<option value="' + escapeHtml(build.key) + '">' + escapeHtml(build.title + ' — ' + build.detail) + '</option>'; }).join('') + '</select></label><label class="line">DIFFICULTY <select id="contract-tier" aria-label="Contract difficulty">';
       for (var tier = 1; tier <= board.max_tier; tier++) body += '<option value="' + tier + '">TIER ' + tier + ' — ' + tier + '× RANK POINTS</option>';
@@ -1796,11 +1801,11 @@
     var guidance = state.guidance || {};
     var encounter = state.encounter;
     var eventButtons = encounter ? encounter.choices.map(function (choice) {
-      return button(choice.label, 'random_event', { choice: choice.key, challenge_token: encounter.challenge_token });
+      return button(choice.label, 'random_event', { choice: choice.key, challenge_token: encounter.challenge_token }, { detail: choice.preview && choice.preview.detail || '' });
     }).join('') : '';
     var adventure = state.adventure;
     var adventureButtons = adventure ? adventure.choices.map(function (choice) {
-      return button(choice.label, 'adventure', { adventure_key: choice.key, challenge_token: adventure.challenge_token });
+      return button(choice.label, 'adventure', { adventure_key: choice.key, challenge_token: adventure.challenge_token }, { disabled: adventure.available === false, cooldown: adventure.cooldown, detail: (adventure.minimum_energy ? 'ENTRY REQUIRES ' + number(adventure.minimum_energy) + ' ENERGY // ' : '') + (choice.preview && choice.preview.detail || '') });
     }).join('') : '';
     var boss = guidance.weekly_boss || {};
     var run = state.run;
@@ -1954,8 +1959,8 @@
       '<div class="line muted">WEAKNESS ' + escapeHtml(words(boss.weakness || 'unknown')) + ' // REWARD ' + escapeHtml(bossReward) + '</div>' +
       '<div class="button-grid three">' + button('STRIKE', 'weekly_boss', { move: 'strike' }, { disabled: !boss.available, statusLabel: bossStatusLabel, cooldown: boss.defeated ? null : boss.cooldown }) + button('OUTSMART', 'weekly_boss', { move: 'outsmart' }, { disabled: !boss.available, statusLabel: bossStatusLabel, cooldown: boss.defeated ? null : boss.cooldown }) + button('ENDURE', 'weekly_boss', { move: 'endure' }, { disabled: !boss.available, statusLabel: bossStatusLabel, cooldown: boss.defeated ? null : boss.cooldown }) + '</div>';
     return renderPlayNow() + renderPractice() + panel('DISTRICT NETWORK', '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + regions, 'districts') + panel('MOON RUN', '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + runBody, 'moon-run') +
-      panel(adventure ? adventure.title : 'PET ADVENTURE', '<div class="line">' + escapeHtml(adventure ? adventure.intro : 'NO ADVENTURE SIGNAL.') + '</div><div class="button-grid three">' + adventureButtons + '</div>', 'adventure') +
-      panel(encounter ? encounter.title : 'STREET EVENT', '<div class="line">' + escapeHtml(encounter ? encounter.intro : 'NO EVENT SIGNAL.') + '</div><div class="button-grid three">' + eventButtons + '</div>', 'street-event') +
+      panel(adventure ? adventure.title : 'PET ADVENTURE', '<div class="line">' + escapeHtml(adventure ? adventure.intro : 'NO ADVENTURE SIGNAL.') + '</div><div class="line muted">One adventure every 30 minutes. Entry energy is a requirement; actual costs depend on the outcome below. Base rewards remain subject to caps. Hunger costs increase hunger.</div><div class="button-grid">' + adventureButtons + '</div>', 'adventure') +
+      panel(encounter ? encounter.title : 'STREET EVENT', '<div class="line">' + escapeHtml(encounter ? encounter.intro : 'NO EVENT SIGNAL.') + '</div><div class="line muted">Compare both outcomes before choosing. Base rewards are reduced by repeated-play scaling and daily caps; stat changes stop at their limits. Hunger costs increase hunger.</div><div class="button-grid">' + eventButtons + '</div>', 'street-event') +
       panel('WEEKLY BOSS // ' + (boss.title || 'LOCKED'), '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + bossBody, 'weekly-boss') +
       panel('STREET STORY CHAINS', chains || '<div class="line muted">NO CHAIN SIGNAL.</div>', 'story-chains') + panel('SEASONAL RAID', seasonalBody, 'seasonal-boss') +
       panel('PET ARENA', arenaBody, 'arena') + panel('KAIJU CODE CARDS', kaijuBody, 'kaiju');
@@ -1967,7 +1972,7 @@
     var jobsHtml = jobs.map(function (job) {
       var specialistGate = job.required_track ? ' // ' + words(job.required_track).toUpperCase() + ' ' + number(job.current_xp) + '/' + number(job.required_xp) : '';
       var jobRewards = valueText({ pet_xp: job.pet_xp, moon_gold: job.moon_gold, moon_crystals: job.moon_crystals, style_tokens: job.style_tokens });
-      return button(job.title, 'work', { job_key: job.key }, { disabled: job.available === false, detail: 'LVL ' + job.min_level + ' // STAGE ' + number(job.min_evolution_stage) + specialistGate + ' // REWARD ' + jobRewards + ' // ' + (job.lore || '') });
+      return button(job.title, 'work', { job_key: job.key }, { disabled: job.available === false, cooldown: job.cooldown, detail: 'LVL ' + job.min_level + ' // STAGE ' + number(job.min_evolution_stage) + specialistGate + ' // BASE REWARD ' + jobRewards + ' // ' + (job.lore || '') });
     }).join('');
     var activity = guidance.activity;
     var activityHtml = activity

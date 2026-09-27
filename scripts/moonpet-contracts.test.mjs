@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
-import { advanceContract, contractChoices, contractRoom, contractSideProgress, createContractState, getContractBoard, processContractAction } from '../workers/moonboys-api/pets/continuing-contracts.js';
+import { advanceContract, contractChoices, contractPreparations, contractRoom, contractSideProgress, createContractState, getContractBoard, processContractAction } from '../workers/moonboys-api/pets/continuing-contracts.js';
 import { awardPetReward } from '../workers/moonboys-api/pets/roguelite-foundation.js';
 import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 
@@ -103,6 +103,41 @@ assert.deepEqual(contractChoices(legacyState).slice(0, 3).map(({ odds, damage, s
 assert.equal(advanceContract(legacyState, 'cover', 0).rank_points, 118);
 assert.equal(contractSideProgress(legacyState), null);
 
+// Preparations spend contract resources, do not advance a room or award points,
+// and use the same chance preview as resolution. Existing v1/v2 rules are frozen.
+for (const build of ['scout', 'bruiser', 'scavenger']) for (const tier of [1, 2, 3]) {
+  const s = { ...createContractState('salvage', build, tier, 'prepared-' + build, 'stocked'), depth: 1, supplies: 4, salvage: 65, health: 40 };
+  const before = contractChoices(s);
+  const scouted = advanceContract(s, 'prepare_scout', 0);
+  assert.equal(scouted.state.depth, s.depth); assert.equal(scouted.state.supplies, 2);
+  assert.equal(scouted.rank_points, 0); assert.equal(contractPreparations(scouted.state).length, 0);
+  assert.equal(advanceContract(scouted.state, 'prepare_scout', 0), null);
+  assert.equal(advanceContract(scouted.state, 'prepare_patch', 0), null);
+  for (let i = 0; i < 3; i++) {
+    const choice = contractChoices(scouted.state)[i];
+    assert.equal(choice.odds, Math.min(98, before[i].odds + 10));
+    assert.equal(choice.salvage, before[i].salvage); assert.equal(choice.damage, before[i].damage);
+    assert.equal(advanceContract(scouted.state, choice.key, choice.odds - 1).state.wins, 1);
+    assert.equal(advanceContract(scouted.state, choice.key, choice.odds).state.wins, 0);
+    assert.equal(advanceContract(scouted.state, choice.key, 0).state.preparation, null);
+  }
+  const patched = advanceContract(s, 'prepare_patch', 0);
+  assert.equal(patched.state.health, 65); assert.equal(patched.state.salvage, 45);
+  assert.equal(patched.state.depth, 1); assert.equal(patched.rank_points, 0);
+  assert.equal(patched.status, 'active');
+  assert.equal(advanceContract({ ...s, supplies: 1 }, 'prepare_scout', 0), null);
+  assert.equal(advanceContract({ ...s, salvage: 19 }, 'prepare_patch', 0), null);
+  assert.equal(advanceContract({ ...s, health: s.max_health }, 'prepare_patch', 0), null);
+  assert.equal(advanceContract({ ...s, draft: ['radar'] }, 'prepare_scout', 0), null);
+  for (const version of [1, 2]) {
+    const old = { ...s, version };
+    assert.deepEqual(contractPreparations(old), []);
+    assert.equal(advanceContract(old, 'prepare_scout', 0), null);
+    assert.deepEqual(contractChoices({ ...old, preparation: 'prepare_scout' }), contractChoices(old));
+    if (version === 2) assert.deepEqual(contractChoices(old), before);
+  }
+}
+
 function finishSide(side, actions, tier = 1) {
   let s = createContractState('escort', 'scavenger', tier, 'side-test', side), result;
   for (const action of actions) {
@@ -111,6 +146,12 @@ function finishSide(side, actions, tier = 1) {
   }
   return result;
 }
+const beforePatch = { ...createContractState('salvage', 'scout', 1, 'patch-tradeoff'), depth: 5, health: 40, salvage: 65 };
+assert.equal(advanceContract(beforePatch, 'cover', 0).status, 'completed');
+const afterPatch = advanceContract(beforePatch, 'prepare_patch', 0).state;
+const missedAfterPatch = advanceContract(afterPatch, 'cover', 0);
+assert.equal(missedAfterPatch.status, 'failed', 'spending salvage can sacrifice the selected salvage goal');
+assert.equal(missedAfterPatch.rank_points, 0);
 for (const [side, actions] of [
   ['versatile', ['cover', 'bold', 'search', 'cover', 'cover', 'cover']],
   ['daredevil', ['bold', 'bold', 'bold', 'cover', 'cover', 'cover']],
@@ -137,6 +178,22 @@ assert.equal((await act(a, { action: 'contract_start', sequence: 1, goal: 'escor
 const realCrypto = globalThis.crypto;
 Object.defineProperty(globalThis, 'crypto', { configurable: true, value: { subtle: realCrypto.subtle, randomUUID: () => realCrypto.randomUUID(), getRandomValues: (values) => { values.fill(0); return values; } } });
 try {
+  const tacticalPet = await seed('contract-prepared');
+  await act(tacticalPet, { action: 'contract_start', sequence: 1, goal: 'escort', build: 'scavenger', tier: 1 });
+  let tacticalRun = (await board(tacticalPet)).run;
+  const prep = { action: 'contract_step', contract_id: tacticalRun.contract_id, revision: 0, choice: 'prepare_scout' };
+  const preparationRace = await Promise.all([act(tacticalPet, prep), act(tacticalPet, prep)]);
+  assert.equal(preparationRace.filter((r) => r.accepted).length, 1);
+  tacticalRun = (await board(tacticalPet)).run;
+  assert.equal(tacticalRun.preparation, 'prepare_scout'); assert.equal(tacticalRun.supplies, 1);
+  assert.equal(tacticalRun.depth, 0); assert.equal(tacticalRun.revision, 1);
+  assert.equal((await board(tacticalPet)).bonus_remaining, 3);
+  const unchangedPet = sqlite.prepare('SELECT energy,moon_gold,pet_xp FROM telegram_pet_profiles WHERE telegram_id=?').get(tacticalPet.telegram_id);
+  assert.deepEqual({ ...unchangedPet }, { energy: 0, moon_gold: 100, pet_xp: 3240 });
+  assert.equal((await act(b, { ...prep, pet_id: tacticalPet.pet_id })).accepted, false);
+  assert.equal((await act(tacticalPet, { ...prep, revision: 1, choice: 'prepare_patch' })).accepted, false);
+  await complete(tacticalPet);
+  assert.equal((await board(tacticalPet)).completed, 1);
   const starters = await Promise.all([start(a), start(a)]);
   assert.equal(starters.filter((x) => x.accepted).length, 1, 'parallel starts must create one run');
   let run = (await board(a)).run;

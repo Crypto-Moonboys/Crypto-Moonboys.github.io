@@ -5,6 +5,8 @@ import { createRequire } from 'node:module';
 import { DatabaseSync } from 'node:sqlite';
 import { getDailyMoonRunSummary } from '../workers/moonboys-api/pets/daily-moon-run.js';
 import { PET_DAILY_BOUNTIES } from '../workers/moonboys-api/pets/economy-expansion.js';
+import { previewEncounterChoice } from '../workers/moonboys-api/pets/choice-preview.js';
+import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 
 const require = createRequire(import.meta.url);
 const options = require('../js/moonpet-play-options.js');
@@ -12,6 +14,27 @@ const practice = require('../js/moonpet-practice.js');
 const read = (path) => fs.readFileSync(new URL('../' + path, import.meta.url), 'utf8');
 const client = read('js/moonpet-mini-app.js');
 const worker = read('workers/moonboys-api/worker.js');
+
+for (const encounter of [
+  ...['moon_alley', 'graffiti_vault', 'nebula_market'].map(hooks.resolvePetAdventureEncounter),
+  ...['lost_delivery_drone', 'neon_storm', 'underground_cipher'].map(hooks.resolvePetRandomEncounter),
+]) {
+  assert.ok(encounter);
+  for (const choice of encounter.choices) {
+    const preview = previewEncounterChoice(choice);
+    assert.ok(Math.abs(preview.outcomes.reduce((sum, outcome) => sum + outcome.chance, 0) - 100) < 1e-9);
+    for (const outcome of preview.outcomes) {
+      const actual = outcome.kind === 'setback' ? choice.risk : choice;
+      assert.ok(Math.abs(outcome.chance - (outcome.kind === 'setback' ? choice.risk.chance : 1 - (choice.risk?.chance || 0)) * 100) < 1e-9);
+      for (const type of ['rewards', 'costs']) for (const [key, bounds] of Object.entries(outcome[type])) {
+        const value = actual[type][key];
+        assert.deepEqual(bounds, Array.isArray(value) ? [Math.min(...value), Math.max(...value)] : [value, value]);
+      }
+    }
+    assert.ok(preview.detail.includes('BASE REWARD') && preview.detail.includes('COST'));
+  }
+}
+assert.equal(previewEncounterChoice({ rewards: { moon_gold: 3 }, risk: { chance: 1, costs: { energy: 2 } } }).outcomes[0].kind, 'setback');
 
 for (const [key, screen, focus] of [
   ['district_mission', 'explore', 'districts'], ['seasonal_boss', 'explore', 'seasonal-boss'],

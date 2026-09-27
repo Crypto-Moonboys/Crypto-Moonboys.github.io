@@ -15,8 +15,8 @@
   };
   var PERKS = {
     shield: { title: 'SCRAP SHIELD', detail: 'Failure damage -7.' },
-    radar: { title: 'ROUTE RADAR', detail: 'Safe and search clear odds +10%.' },
-    boots: { title: 'STREET BOOTS', detail: 'Bold clear odds +12%.' },
+    radar: { title: 'ROUTE RADAR', detail: 'Safe and search clear odds +10 percentage points.' },
+    boots: { title: 'STREET BOOTS', detail: 'Bold clear odds +12 percentage points.' },
     medkit: { title: 'MED KIT', detail: 'Heal 35 now; max health +15.' },
     pockets: { title: 'DEEP POCKETS', detail: 'Gain 2 supplies now.' },
     magnet: { title: 'SALVAGE MAGNET', detail: '+8 salvage on successful rooms.' },
