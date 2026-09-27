@@ -35,6 +35,7 @@ class Statement {
   async first() { return this.db.prepare(this.sql).get(...this.args) || null; }
   async all() { return { results: this.db.prepare(this.sql).all(...this.args) }; }
   async run() {
+    if (this.d1.failWrite?.test(this.sql)) throw new Error('injected_journey_write_failure');
     if (/INSERT\s+OR\s+IGNORE\s+INTO\s+telegram_pet_weekly_crests/i.test(this.sql)) {
       this.d1.beforeWeeklyCrestInsert?.(this.args);
     }
@@ -1278,5 +1279,53 @@ assert.equal(invalidDayResult.reason, 'weekly_journey_invalid_source_window',
 assert.equal(invalidDayDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
   WHERE pet_id=?`).get(invalidDayPet).count, 0,
   'Test 9: invalid UTC day evidence writes no weekly objective row');
+
+// Refresh alone recovers both interruptions: before the crest and after the
+// crest but before its receipt. Original periods survive rollover and switching.
+for (const failWrite of [/INSERT OR IGNORE INTO telegram_pet_weekly_crests/, /INSERT OR IGNORE INTO telegram_pet_weekly_journey_receipts/]) {
+  const db = createDb(), owner = 'weekly-refresh';
+  const petId = seedPlayer(db, owner);
+  for (const objectiveId of Object.keys(PET_WEEKLY_JOURNEY_OBJECTIVES).slice(0, -1)) await completeObjective(db, { telegramId: owner, petId, objectiveId });
+  db.failWrite = failWrite;
+  await assert.rejects(completeObjective(db, { telegramId: owner, petId, objectiveId: 'weekly_check_in' }), /injected_journey_write_failure/);
+  db.failWrite = null;
+  assert.equal(db.database.prepare("SELECT COUNT(*) AS n FROM telegram_pet_weekly_journey_receipts WHERE status='accepted'").get().n, 0);
+  await __petMediaTestHooks.buildPetMiniAppState(db, owner, 'fixture-token');
+  const receipt = db.database.prepare("SELECT * FROM telegram_pet_weekly_journey_receipts WHERE status='accepted'").get();
+  assert.ok(receipt?.crest_id, 'refresh settles fully evidenced weekly awards without another action');
+  assert.equal(receipt.pet_id, petId); assert.equal(receipt.qualification_week, 1); assert.equal(receipt.season_key, 'pet-s2026-001');
+  const crest = db.database.prepare('SELECT * FROM telegram_pet_weekly_crests').get();
+  assert.match(crest.earned_at, /^2026-01-05/, 'a recovery must not use the current week as its earning date');
+  await __petMediaTestHooks.buildPetMiniAppState(db, owner, 'fixture-token');
+  assert.equal(db.database.prepare('SELECT COUNT(*) AS n FROM telegram_pet_weekly_crests').get().n, 1);
+  assert.equal(db.database.prepare('SELECT COUNT(*) AS n FROM telegram_pet_weekly_journey_receipts').get().n, 1);
+}
+
+{
+  const db = createDb(), owner = 'weekly-season-refresh';
+  const petId = seedPlayer(db, owner);
+  db.database.prepare(`INSERT INTO telegram_pet_evolutions_by_pet (pet_id,telegram_id,evolution_id,stage,unlock_event_key,unlocked_at)
+    VALUES (?,?,'legendary_moon_guardian',5,'fixture-legendary','2026-03-03T00:00:00Z')`).run(petId, owner);
+  for (let day = 0; day < 60; day++) {
+    const earned = new Date(Date.UTC(2026, 0, 1 + day)).toISOString();
+    db.database.prepare(`INSERT INTO telegram_pet_growth_marks (mark_id,pet_id,telegram_id,season_key,milestone_type,evidence_key,earned_day,earned_at)
+      VALUES (?,?,?,'pet-s2026-001','care_milestone',?,?,?)`).run(`fixture-mark:${day}`, petId, owner, `care:${day}`, earned.slice(0,10), earned);
+  }
+  for (let week = 1; week < 10; week++) db.database.prepare(`INSERT INTO telegram_pet_weekly_crests
+    (crest_id,pet_id,telegram_id,season_key,season_week,qualification_week,objective_id,evidence_key)
+    VALUES (?,?,?,'pet-s2026-001',?,?,'weekly_journey',?)`).run(`fixture-crest:${week}`, petId, owner, week, week, `weekly-journey:fixture:${week}`);
+  const request = { telegramId: owner, petId, qualificationWeek: 10, day: '2026-03-05' };
+  for (const objectiveId of Object.keys(PET_WEEKLY_JOURNEY_OBJECTIVES).slice(0, -1)) await completeObjective(db, { ...request, objectiveId });
+  db.failWrite = /INSERT OR IGNORE INTO telegram_pet_season_completions/;
+  await assert.rejects(completeObjective(db, { ...request, objectiveId: 'weekly_check_in' }), /injected_journey_write_failure/);
+  db.failWrite = null;
+  assert.equal(db.database.prepare('SELECT COUNT(*) AS n FROM telegram_pet_weekly_crests').get().n, 10);
+  await __petMediaTestHooks.buildPetMiniAppState(db, owner, 'fixture-token');
+  assert.equal(db.database.prepare('SELECT COUNT(*) AS n FROM telegram_pet_season_completions WHERE pet_id=?').get(petId).n, 1,
+    'recovering the final earned Crest must also repair interrupted season completion');
+  const completedAt = db.database.prepare('SELECT completed_at FROM telegram_pet_season_completions WHERE pet_id=?').get(petId).completed_at;
+  await __petMediaTestHooks.buildPetMiniAppState(db, owner, 'fixture-token');
+  assert.equal(db.database.prepare('SELECT completed_at FROM telegram_pet_season_completions WHERE pet_id=?').get(petId).completed_at, completedAt);
+}
 
 console.log('telegram-pets-weekly-journey.test.mjs passed');

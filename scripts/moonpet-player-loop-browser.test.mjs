@@ -546,6 +546,26 @@ try {
     assert.equal(dailyResult.state.run.score, dailyBefore.run.score + dailyBefore.run.choices.find((choice) => choice.key === winningDailyChoice.choice_id).score);
     assert.equal(dailyResult.state.pet.pet_xp, dailyBefore.pet.pet_xp, 'daily tactics change score, not Pet XP');
     if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-tactics-${viewport.width}.png`) });
+    const extractedDaily = await hooks.processPetMiniAppAction(db, currentUser, { id: currentUser }, { action: 'run_extract' }, token);
+    assert.equal(extractedDaily.accepted, true);
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-screen="missions"]').click();
+    const dailyGoals = await hooks.buildPetMiniAppState(db, currentUser, token);
+    const remainingRunGoals = dailyGoals.daily_journey.objectives.filter((goal) => goal.challenge_id !== 'daily_care' && !goal.completed);
+    assert.ok(remainingRunGoals.length > 0);
+    assert.equal(await page.locator('[data-panel="daily-objectives"] [data-jump]').filter({ hasText: 'DAILY ATTEMPT USED' }).count(), remainingRunGoals.length);
+    assert.ok((await page.locator('[data-panel="daily-objectives"]').textContent()).includes('next UTC day'));
+    const beforeObjectiveNavigation = gameplayCount();
+    await page.locator('[data-panel="daily-objectives"] [data-jump]').filter({ hasText: 'DAILY ATTEMPT USED' }).first().click();
+    assert.equal(gameplayCount(), beforeObjectiveNavigation, 'reviewing a used attempt must not start a new run');
+    assert.equal(await page.locator('[data-action="daily_run_start"]').isDisabled(), true);
+    await page.locator('[data-screen="missions"]').click();
+    if (process.env.MOONPET_BROWSER_SCREENSHOT) {
+      await page.locator('[data-panel="daily-objectives"]').evaluate((panel) => {
+        document.getElementById('screen').scrollTop += panel.getBoundingClientRect().top - document.querySelector('.utility-rail').getBoundingClientRect().bottom - 8;
+      });
+      await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-objectives-${viewport.width}.png`) });
+    }
     // Real raid choices respect energy, and old rewards can be recovered at zero energy.
     currentUser = `browser-raid-${viewport.width}`;
     await seed(currentUser, 'young');
@@ -868,7 +888,9 @@ try {
       VALUES (?,?,'wallet_reconciliation_recovery_required','moonpet_wallet_reconcile_recovery_required:v1',?,'pending','{}','{}','{}')`)
       .run('browser-cache-freeze-' + viewport.width, currentUser, new Date().toISOString().slice(0, 10));
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
-    await page.locator('[data-screen="profile"]').click();
+    const beforeSeasonNavigation = gameplayCount();
+    await page.locator('[data-panel="play-now"] [data-focus="season"]').filter({ hasText: 'CLAIM SEASON REWARDS' }).click();
+    assert.equal(gameplayCount(), beforeSeasonNavigation, 'season navigation must not auto-claim rewards');
     const seasonButton = page.locator('[data-action="season_claim"]').filter({ hasText: 'Street Cache' });
     const blockedResponse = page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'season_claim');
     await seasonButton.click();

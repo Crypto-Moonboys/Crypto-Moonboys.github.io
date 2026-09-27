@@ -5,6 +5,7 @@ import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
 import { buildDailyLoopState, handleDailyLoopStateRoute } from './routes/daily-loop-state.js';
 import { handleRogueliteDailyRoutes } from './routes/daily-digest.js';
 import { getContractBoard, processContractAction } from './pets/continuing-contracts.js';
+import { recoverPetJourneyAwards } from './pets/journey-recovery.js';
 import { chooseDailyRunTactic, dailyTacticalBoard, previewDailyChoice, readDailyModifiers } from './pets/daily-run-tactics.js';
 import { handleWaxBridgeRoute } from './routes/wax/index.js';
 import { applyPetRuntimeAward, buildPetGearSummary, buildPetProgressSummary, getOrCreatePetRuntimeState } from './pets/runtime-phase-5a.js';
@@ -9291,6 +9292,9 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
   // State preparation owns current-season initialization. Roster projection
   // remains read-only and assumes this authoritative bootstrap already ran.
   await preparePetMiniAppState(db, telegramId, now);
+  await recoverPetJourneyAwards(db, telegramId).catch((error) => {
+    logApiFailure('pet_journey_recovery_failed', { message: error?.message || String(error) });
+  });
   const petRaw = await getPetProfile(db, telegramId).catch(() => null);
   if (!petRaw) {
     return {
@@ -13728,7 +13732,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260927-field-choices-v1`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260927-objective-recovery-v1`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',
