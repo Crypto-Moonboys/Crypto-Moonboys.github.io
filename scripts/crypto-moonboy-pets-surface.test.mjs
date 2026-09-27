@@ -84,7 +84,7 @@ for (const script of [
   '/js/components/global-player-header.js',
   '/js/components/live-activity-summary.js',
   '/js/wiki.js',
-  '/js/crypto-moonboy-pets.js',
+  '/js/crypto-moonboy-pets.js?v=20260927-public-sync-v1',
 ]) {
   assert.ok(howTo.includes(`src="${script}"`), `How To Play must load canonical boot script ${script}`);
 }

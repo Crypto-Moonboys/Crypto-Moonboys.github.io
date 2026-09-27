@@ -86,7 +86,7 @@ const {
   getPetArenaBucketDistance,
   serializePet,
   serializePetLeaderboardEntry,
-  materializePetLeaderboardRows,
+  buildPetMiniAppLeaderboard,
   formatPetStatus,
   formatPetDetails,
   petReplyMarkup,
@@ -295,8 +295,8 @@ assert.doesNotMatch(identityAuditRouteSource, /\b(?:INSERT|UPDATE|DELETE|DROP|AL
 assert.ok(!worker.includes("path === '/telegram-pets/season/slots'"), '/telegram-pets/season/slots must not expose owner-specific slot data without auth');
 assert.ok(worker.includes("path === '/telegram-pets/missions'"), '/telegram-pets/missions route must exist');
 assert.ok(worker.includes("path === '/telegram-pets/activity'"), '/telegram-pets/activity route must exist');
-const activityRouteSource = worker.slice(worker.indexOf("path === '/telegram-pets/activity'"), worker.indexOf("path === '/telegram-pets/leaderboard'"));
-assert.ok(!activityRouteSource.includes('e.event_type <> ?') && activityRouteSource.includes('e.event_key <> ?') && activityRouteSource.includes('PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY'),
+const activityRouteSource = fs.readFileSync(new URL('../workers/moonboys-api/pets/leaderboard.js', import.meta.url), 'utf8');
+assert.ok(!activityRouteSource.includes('e.event_type <> ?') && activityRouteSource.includes('e.event_key<>?') && activityRouteSource.includes('PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY'),
   '/telegram-pets/activity must filter wallet reconciliation markers by the shared event-key constant only');
 assert.ok(worker.includes("path === '/telegram-pets/shop'"), '/telegram-pets/shop route must exist');
 assert.ok(worker.includes("path === '/telegram-pets/inventory'"), '/telegram-pets/inventory route must exist');
@@ -384,14 +384,11 @@ assert.equal(eggLeaderboardEntry.pet_name, 'UNKNOWN', 'stored nicknames must not
 assert.equal(eggLeaderboardEntry.name, 'UNKNOWN', 'generic name fields must not leak a stored nickname');
 assert.match(worker, /player_display_name: \[row\.first_name, row\.last_name\][\s\S]*'Anonymous'/, 'public pet leaderboard must never fall back to a Telegram ID');
 assert.match(worker, /MOONPET_SPECIES, createMoonEggLifecycle, ensureMoonpetLifecycle,/, 'legacy lifecycle materialization dependency must be imported');
-assert.match(worker, /async function materializePetLeaderboardRows/, 'leaderboards must materialize deterministic identities for legacy rows');
+assert.match(worker, /import \{ readPetLeaderboard, readPetActivity \}/, 'public read surfaces must use shared read-only projections');
 assert.match(worker, /pet_mini_app_state_failed/, 'Mini App state failures must return a controlled JSON error instead of an uncaught fetch failure');
 const miniAppStateBuilder = asyncBlock('buildPetMiniAppState');
-assert.match(worker, /const PET_MINI_APP_INITIAL_LEADERBOARD_SQL = `SELECT p\.telegram_id, p\.pet_name,/, 'Mini App leaderboard SQL must select the owner ID needed to materialize legacy lifecycle rows');
-assert.match(miniAppStateBuilder, /db\.prepare\(PET_MINI_APP_INITIAL_LEADERBOARD_SQL\)/, 'Mini App state must execute the tested leaderboard SQL contract');
-assert.match(miniAppStateBuilder, /pet_mini_app_initial_leaderboard_failed[\s\S]*throw error/, 'Mini App state must log and propagate leaderboard programming errors');
-assert.doesNotMatch(miniAppStateBuilder, /PET_MINI_APP_INITIAL_LEADERBOARD_SQL\)\.all\(\)\.catch\(\(\) => \(\{ results: \[\] \}\)\)/,
-  'Mini App leaderboard SQL failures must not be silently converted to an empty ranking');
+assert.match(miniAppStateBuilder, /readPetLeaderboard\(db, \{ period: 'seasonal', limit: 10, now \}\)/, 'initial Mini App ranks must use the shared current-season query');
+assert.match(miniAppStateBuilder, /pet_mini_app_initial_leaderboard_failed[\s\S]*throw error/, 'Mini App state must propagate ranking query errors');
 assert.match(miniAppStateBuilder, /season_slots: seasonSlots/, 'Mini App state must expose current-season pet slots');
 const miniAppActionProcessor = asyncBlock('processPetMiniAppAction');
 assert.match(miniAppActionProcessor, /action === 'season_slots'/, 'Mini App action handler must expose season slot summary reads');
@@ -404,9 +401,9 @@ assert.match(worker, /await syncMoonpetLifecycleStage\(db, telegramId, next\.sta
 assert.match(worker, /async function getMoonpetIdentityWithLifecycle/, 'Telegram reactions must receive lifecycle temperament and traits');
 assert.match(worker, /getExistingMoonpetLifecycle\(db, telegramId\)/, 'reaction reads must not materialize lifecycle rows or mutate state');
 const petLeaderboardRoute = routeBlock('/telegram-pets/leaderboard');
-assert.ok(petLeaderboardRoute.includes('LEFT JOIN telegram_pet_lifecycle_by_pet l'), 'public leaderboard must join persisted Moonpet lifecycle');
+assert.ok(petLeaderboardRoute.includes('readPetLeaderboard(env.DB'), 'public and Mini App ranks must use the same projection');
 for (const field of ['moon_gold', 'moon_crystals', 'style_tokens', 'lifecycle_phase', 'lifecycle_species_id', 'rare_morph_id']) {
-  assert.ok(petLeaderboardRoute.includes(field), `public leaderboard must return ${field}`);
+  assert.ok(activityRouteSource.includes(field), `shared leaderboard projection must return ${field}`);
 }
 
 assert.ok(worker.includes("case 'petarena'"), '/petarena command must exist');
@@ -2090,7 +2087,7 @@ const activityIdentityResponse = await moonboysApiWorker.fetch(
 );
 assert.equal(activityIdentityResponse.status, 200, 'activity route must return successfully for seeded regression coverage');
 const activityIdentityBody = await activityIdentityResponse.json();
-assert.equal(activityIdentityBody.items[0].stage, 'cyber_moonpet', 'activity route must preserve the evolved stage after lifecycle materialization');
+assert.equal(activityIdentityBody.items[0].stage, 'secret_bot', 'an unattributed legacy event must not inherit the current pet evolution');
 assert.equal(activityIdentityBody.items[0].display_name, 'UNKNOWN', 'activity route must keep the Stage-2 identity text masked');
 
 const identityAuditDb = new SqliteD1();
@@ -2388,21 +2385,10 @@ assert.equal(seasonSlotRuntimeDb.database.prepare("SELECT arcade_xp_total FROM a
 assert.equal(seasonSlotRuntimeDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_season_slots WHERE telegram_id='season-slot-runtime'").get().count, 1, 'read-only slot summary must not create paid slots before per-pet state exists');
 
 const legacyLifecycleStateDb = seedRepeatRewardPlayer('legacy-lifecycle-state');
-const materializedLegacyRows = await materializePetLeaderboardRows(legacyLifecycleStateDb, [{
-  telegram_id: 'legacy-lifecycle-state',
-  pet_name: 'Legacy',
-  lifecycle_phase: null,
-  lifecycle_species_id: null,
-  rare_morph_id: null,
-}]);
-assert.equal(materializedLegacyRows.length, 1);
-assert.equal(materializedLegacyRows[0].lifecycle_phase, 'adult', 'legacy player state must materialize an adult lifecycle instead of crashing');
-assert.ok(materializedLegacyRows[0].lifecycle_species_id, 'legacy player state must derive a deterministic species');
-assert.equal(
-  legacyLifecycleStateDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_by_pet WHERE telegram_id = ?').get('legacy-lifecycle-state').count,
-  1,
-  'legacy player state must persist exactly one lifecycle row',
-);
+const legacyLifecycleBefore = legacyLifecycleStateDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_by_pet').get().count;
+await buildPetMiniAppLeaderboard(legacyLifecycleStateDb, 'legacy-lifecycle-state', 'all_time');
+assert.equal(legacyLifecycleStateDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_by_pet').get().count, legacyLifecycleBefore,
+  'reading rankings must not create another player lifecycle');
 
 const repeatTradeDb = seedRepeatRewardPlayer('trade-repeat', 70);
 repeatTradeDb.database.prepare("UPDATE telegram_pet_profiles SET moon_gold = 200, happiness = 90, cleanliness = 90, hunger = 10 WHERE telegram_id = 'trade-repeat'").run();
