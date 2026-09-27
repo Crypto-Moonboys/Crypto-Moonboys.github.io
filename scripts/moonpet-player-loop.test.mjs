@@ -34,6 +34,28 @@ for (const encounter of [
     assert.ok(preview.detail.includes('BASE REWARD') && preview.detail.includes('COST'));
   }
 }
+// Currency gates must reflect every possible rolled outcome, not pet stats or
+// rewards that have not been earned yet. Conditional choices remain usable.
+const paidChoice = { costs: { moon_gold: [4, 12], energy: [4, 10] } };
+assert.equal(previewEncounterChoice(paidChoice, { moon_gold: 3 }).available, false);
+assert.equal(previewEncounterChoice(paidChoice, { moon_gold: 4 }).available, true);
+assert.equal(previewEncounterChoice(paidChoice, { moon_gold: 4 }).affordability, 'conditional');
+assert.match(previewEncounterChoice(paidChoice, { moon_gold: 4 }).detail, /Some rolled costs exceed/);
+assert.equal(previewEncounterChoice(paidChoice, { moon_gold: 12 }).affordability, 'available');
+assert.equal(previewEncounterChoice({ costs: { energy: [4, 10] } }, { energy: 0 }).available, true, 'stat costs are clamped by the server, not currency gates');
+assert.equal(previewEncounterChoice({ ...paidChoice, rewards: { moon_gold: [100, 100] } }, { moon_gold: 0 }).available, false, 'future rewards cannot pay entry costs');
+assert.equal(previewEncounterChoice({ ...paidChoice, risk: { chance: 0.3, costs: {} } }, { moon_gold: 0 }).affordability, 'conditional', 'an affordable setback must keep the choice open');
+assert.equal(previewEncounterChoice({ costs: {}, risk: { chance: 1, costs: { moon_crystals: [1, 2] } } }, { moon_crystals: 0 }).available, false);
+assert.equal(previewEncounterChoice({ costs: { moon_gold: [4, 4] }, risk: { chance: 0.5, costs: { moon_crystals: [1, 1] } } }, {}).available, false, 'no branch is affordable even with different currencies');
+assert.equal(previewEncounterChoice({ costs: { style_tokens: [3, 3] }, risk: { chance: 0, costs: {} } }, { style_tokens: 2 }).available, false, 'zero-probability free paths cannot open a choice');
+assert.equal(previewEncounterChoice(paidChoice).available, undefined, 'catalog-only previews have no wallet authority');
+const tradePreview = (gold) => hooks.serializePetRunChoicePreview({ depth: 0 }, hooks.PET_RUN_CHOICE_LIBRARY.trade, { energy: 80, moon_gold: 999 }, [], { moon_gold: gold });
+assert.equal(tradePreview(0).available, false, 'the account wallet, not the original pet balance or unbanked loot, pays run costs');
+assert.equal(tradePreview(4).affordability, 'conditional');
+assert.equal(tradePreview(12).affordability, 'available');
+assert.equal(hooks.serializePetRunChoicePreview({ depth: 0 }, hooks.PET_RUN_CHOICE_LIBRARY.fight, { energy: 1 }, [], {}).available, true);
+
+
 assert.equal(previewEncounterChoice({ rewards: { moon_gold: 3 }, risk: { chance: 1, costs: { energy: 2 } } }).outcomes[0].kind, 'setback');
 
 for (const [key, screen, focus] of [
@@ -105,6 +127,13 @@ assert.deepEqual(options.runAvailability({ ...exhaustedRun, run: { ...exhaustedR
 assert.deepEqual(options.runAvailability({ ...snapshot, run: { depth: 0, source_pet: { energy: 1 } } }), { step: true, extract: false });
 assert.deepEqual(options.runAvailability({}), { step: false, extract: false });
 assert.deepEqual(options.options({ adopted: false }), []);
+const blockedEvent = { ...snapshot, encounter: { choices: [{ preview: { available: false } }] } };
+assert.ok(!options.options(blockedEvent).some((entry) => entry.key === 'random_event'));
+assert.equal(options.bountyRouteOptions({ event_types: ['random_event'] }, blockedEvent)[0].available, false);
+const freeAlternative = { ...blockedEvent, encounter: { choices: [...blockedEvent.encounter.choices, { preview: { available: true, affordability: 'conditional' } }] } };
+assert.ok(options.options(freeAlternative).some((entry) => entry.key === 'random_event'));
+assert.equal(options.bountyRouteOptions({ event_types: ['random_event'] }, freeAlternative)[0].available, true);
+
 const weeklyRecovery = { ...snapshot, lifecycle: { phase: 'egg' }, guidance: { weekly_boss: { pending_rewards: [{ week_key: '2026-W38' }] } } };
 assert.equal(options.options(weeklyRecovery)[0].key, 'weekly_boss_claim');
 assert.equal(options.options(weeklyRecovery)[0].focus, 'weekly-boss');

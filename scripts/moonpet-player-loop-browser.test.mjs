@@ -6,6 +6,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { chromium } from 'playwright';
 import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 import { __dailyMoonRunTestHooks as dailyHooks } from '../workers/moonboys-api/pets/daily-moon-run.js';
+import { previewEncounterChoice } from '../workers/moonboys-api/pets/choice-preview.js';
 import { createContractState, contractChoices } from '../workers/moonboys-api/pets/continuing-contracts.js';
 import { getActiveSeasonalBoss } from '../workers/moonboys-api/pets/live-systems.js';
 import { createRequire } from 'node:module';
@@ -637,6 +638,43 @@ try {
     currentUser = `browser-run-gates-${viewport.width}`;
     await seed(currentUser, 'young');
     assert.equal((await hooks.processPetMiniAppAction(db, currentUser, { id: currentUser }, { action: 'run_start' }, token)).accepted, true);
+    // Real Worker projections: a paid choice is blocked with no currency,
+    // conditional at the minimum roll, and fully funded at the maximum roll.
+    sqlite.prepare('UPDATE telegram_pet_profiles SET moon_gold=0 WHERE telegram_id=?').run(currentUser);
+    let pricedRun;
+    for (let seed = 1; seed <= 100; seed++) {
+      sqlite.prepare("UPDATE telegram_pet_runs SET seed=? WHERE telegram_id=? AND status IN ('active','extractable')").run(seed, currentUser);
+      pricedRun = (await hooks.buildPetMiniAppState(db, currentUser, token)).run;
+      if (pricedRun.choices.some((choice) => choice.key === 'trade')) break;
+    }
+    assert.equal(pricedRun.choices.find((choice) => choice.key === 'trade')?.available, false);
+    for (const gold of [0, 4, 12]) {
+      sqlite.prepare('UPDATE telegram_pet_profiles SET moon_gold=? WHERE telegram_id=?').run(gold, currentUser);
+      const loadedState = page.waitForResponse((response) => response.url().endsWith('/telegram-pets/app/state'));
+      await page.reload(); await page.waitForSelector('[data-panel="care"]');
+      const displayedState = (await (await loadedState).json()).state;
+      await page.locator('[data-screen="explore"]').click();
+      const trade = page.locator('[data-action="run_step"]').filter({ hasText: /^Trade/ });
+      assert.equal(await trade.isDisabled(), gold === 0);
+      assert.ok(await page.locator('[data-action="run_step"]:not([disabled])').count(), 'a free route remains usable');
+      if (gold === 0) assert.match(await trade.textContent(), /HAVE 0, COST UP TO 12/);
+      if (gold === 4) assert.match(await trade.textContent(), /Some rolled costs exceed/);
+      // Notice acknowledgements can replace the random encounter after boot.
+      // Resolve the exact signed encounter currently rendered, not an earlier
+      // state response or a newly rolled encounter.
+      const eventButtons = await page.locator('[data-action="random_event"]').evaluateAll((buttons) => buttons.map((button) => ({ payload: JSON.parse(button.dataset.payload), disabled: button.disabled })));
+      assert.ok(eventButtons.length);
+      for (const button of eventButtons) {
+        const challenge = JSON.parse(Buffer.from(button.payload.challenge_token.split('.')[0], 'base64url').toString());
+        const encounter = hooks.resolvePetRandomEncounter(challenge.encounter_key);
+        const choice = encounter.choices.find((choice) => choice.key === button.payload.choice);
+        assert.equal(button.disabled, previewEncounterChoice(choice, displayedState.pet).available === false);
+      }
+      if (gold === 0 && process.env.MOONPET_BROWSER_SCREENSHOT) {
+        await trade.scrollIntoViewIfNeeded();
+        await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-run-cost-${viewport.width}.png`) });
+      }
+    }
     const setRunEnergy = (energy) => {
       sqlite.prepare('UPDATE telegram_pet_profiles SET energy=? WHERE telegram_id=?').run(energy, currentUser);
       sqlite.prepare('UPDATE telegram_pet_instances SET energy=? WHERE telegram_id=?').run(energy, currentUser);
