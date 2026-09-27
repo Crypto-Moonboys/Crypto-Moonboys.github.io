@@ -25,7 +25,7 @@
 
   function apiFetch(path) {
     if (!BASE) return Promise.resolve(null);
-    return fetch(BASE + path).then(function (res) {
+    return fetch(BASE + path, { cache: 'no-store' }).then(function (res) {
       return res.ok ? res.json() : null;
     }).catch(function () { return null; });
   }
@@ -68,28 +68,64 @@
 
   function initPetLeaderboard(el) {
     var period = el.getAttribute('data-period') || 'seasonal';
-    el.innerHTML = '<div class="community-loading">Loading pet leaderboard…</div>';
-    apiFetch('/telegram-pets/leaderboard?period=' + encodeURIComponent(period) + '&limit=25').then(function (data) {
-      if (!data || !data.entries || !data.entries.length) {
-        el.innerHTML = '<div class="community-empty">No pet leaderboard entries yet. Use <code>/adopt</code> in Telegram.</div>';
+    if (!el.dataset.loaded) el.innerHTML = '<div class="community-loading">Loading pet leaderboard…</div>';
+    return apiFetch('/telegram-pets/leaderboard?period=' + encodeURIComponent(period) + '&limit=25').then(function (data) {
+      if (!data || !Array.isArray(data.entries)) { showSyncFailure(el); return; }
+      el.dataset.loaded = 'true';
+      if (!data.entries.length) {
+        el.innerHTML = '<div class="community-empty">No Pet XP entries for this period yet.</div>';
         return;
       }
       var rows = data.entries.map(function (entry) {
         return '<tr>' +
           '<td>' + escapeHtml(entry.rank) + '</td>' +
           '<td>' + escapeHtml(entry.player_display_name || entry.username || 'Moonboy') + '</td>' +
+          '<td>' + escapeHtml(entry.pet_xp || 0) + '</td>' +
           '<td>' + escapeHtml(entry.display_name || 'UNKNOWN') + '</td>' +
           '<td>' + escapeHtml(entry.stage || 'egg') + '</td>' +
           '<td>' + escapeHtml(entry.level || 1) + '</td>' +
-          '<td>' + escapeHtml(entry.pet_xp || 0) + '</td>' +
           '<td>' + escapeHtml(entry.streak_days || 0) + '</td>' +
         '</tr>';
       }).join('');
-      el.innerHTML = '<table class="guide-table pets-leaderboard-table">' +
-        '<thead><tr><th>Rank</th><th>Player</th><th>Identity</th><th>Stage</th><th>Level</th><th>Pet XP</th><th>Streak</th></tr></thead>' +
+      el.innerHTML = '<div class="pets-leaderboard-scroll" role="region" aria-label="' + escapeHtml(period.replace('_', ' ')) + ' pet rankings" tabindex="0" style="max-width:100%;overflow-x:auto"><table class="guide-table pets-leaderboard-table">' +
+        '<thead><tr><th>Rank</th><th>Player</th><th>Pet XP</th><th>Identity</th><th>Stage</th><th>Level</th><th>Streak</th></tr></thead>' +
         '<tbody>' + rows + '</tbody>' +
-      '</table>';
+      '</table></div>';
     });
+  }
+
+  function showSyncFailure(el) {
+    var warning = '<div class="community-empty pets-sync-warning" role="status">Rankings or activity could not refresh. ' + (el.dataset.loaded ? 'Showing the last loaded data. ' : '') + '<button type="button" data-crypto-pets-retry>Retry refresh</button></div>';
+    var oldWarning = el.querySelector('.pets-sync-warning');
+    if (oldWarning) oldWarning.remove();
+    el.innerHTML = warning + (el.dataset.loaded ? el.innerHTML : '');
+  }
+
+  function initPetActivity(el) {
+    if (!el.dataset.loaded) el.innerHTML = '<div class="community-loading">Loading recorded activity…</div>';
+    return apiFetch('/telegram-pets/activity?limit=10').then(function (data) {
+      if (!data || !Array.isArray(data.items)) { showSyncFailure(el); return; }
+      el.dataset.loaded = 'true';
+      el.innerHTML = data.items.length ? '<ul>' + data.items.map(function (item) {
+        return '<li>' + escapeHtml(item.text) + ' <small>' + escapeHtml(item.time_ago) + '</small></li>';
+      }).join('') + '</ul>' : '<div class="community-empty">No recorded pet activity yet.</div>';
+    });
+  }
+
+  var refreshPending = null, lastRefresh = 0;
+  function refreshPetRanks(force) {
+    if (refreshPending || (force !== true && Date.now() - lastRefresh < 30000)) return refreshPending;
+    lastRefresh = Date.now();
+    var buttons = document.querySelectorAll('[data-crypto-pets-refresh], [data-crypto-pets-retry]');
+    buttons.forEach(function (button) { button.disabled = true; });
+    var requests = [];
+    document.querySelectorAll('[data-crypto-pets-leaderboard]').forEach(function (el) { requests.push(initPetLeaderboard(el)); });
+    document.querySelectorAll('[data-crypto-pets-activity]').forEach(function (el) { requests.push(initPetActivity(el)); });
+    refreshPending = Promise.all(requests).finally(function () {
+      refreshPending = null;
+      buttons.forEach(function (button) { button.disabled = false; });
+    });
+    return refreshPending;
   }
 
   function initPetMissions(el) {
@@ -112,7 +148,12 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('[data-crypto-pets-summary]').forEach(initPetSummary);
-    document.querySelectorAll('[data-crypto-pets-leaderboard]').forEach(initPetLeaderboard);
+    refreshPetRanks(true);
     document.querySelectorAll('[data-crypto-pets-missions]').forEach(initPetMissions);
   });
+  document.addEventListener('click', function (event) {
+    if (event.target.closest('[data-crypto-pets-refresh], [data-crypto-pets-retry]')) refreshPetRanks(true);
+  });
+  window.addEventListener('focus', function () { refreshPetRanks(false); });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) refreshPetRanks(false); });
 }());

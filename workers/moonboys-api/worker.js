@@ -36,6 +36,7 @@ import {
 import { reconcileLegacyPetInventory } from './pets/inventory-cutover.js';
 import { awardPetGrowthMark, awardPetWeeklyCrest, evaluatePetSeasonCompletion, getPetSeasonWeek, reconcileEvolutionGrowthMarks } from './pets/season-completion.js';
 import { getMoonpetSeasonInfo } from './pets/season-authority.js';
+import { readPetLeaderboard, readPetActivity } from './pets/leaderboard.js';
 import { listSanctuaryPets, PET_RECOVERABLE_ACTIVITY_PREDICATE, reconcileCompletedPetsToSanctuary } from './pets/sanctuary.js';
 import {
   PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY,
@@ -6721,23 +6722,6 @@ function serializePetLeaderboardEntry(row, index = 0) {
   };
 }
 
-async function materializePetLeaderboardRows(db, rows = []) {
-  return Promise.all(rows.map(async (row) => {
-    if (row.lifecycle_phase && row.evolution_stage != null && (row.lifecycle_phase === 'egg' || row.lifecycle_species_id)) return row;
-    await ensurePetStarterSeasonSlot(db, row.telegram_id).catch(() => null);
-    await ensureActivePetInstance(db, row.telegram_id).catch(() => null);
-    const lifecycle = await getMoonpetLifecycle(db, row.telegram_id).catch(() => null);
-    if (!lifecycle) return row;
-    return {
-      ...row,
-      lifecycle_phase: lifecycle.phase,
-      lifecycle_species_id: lifecycle.art_identity_id,
-      evolution_stage: lifecycle.evolution_stage,
-      rare_morph_id: lifecycle.rare_morph_id,
-    };
-  }));
-}
-
 function publicMoonpetArtIdentityId(artIdentityId, evolutionStage = 0) {
   return Number(evolutionStage) >= MOONPET_IDENTITY_REVEAL_STAGE ? artIdentityId : null;
 }
@@ -8706,69 +8690,16 @@ function serializePetMiniAppKaijuMatch(match, telegramId = '') {
   };
 }
 
-const PET_MINI_APP_LEADERBOARD_PERIODS = new Set(['daily', 'weekly', 'seasonal', 'all_time', 'run_depth']);
-
 async function buildPetMiniAppLeaderboard(db, telegramId, requestedPeriod = 'seasonal', requestedLimit = 25) {
-  const period = PET_MINI_APP_LEADERBOARD_PERIODS.has(String(requestedPeriod || '').toLowerCase())
-    ? String(requestedPeriod).toLowerCase()
-    : 'seasonal';
-  const limit = Math.min(Math.max(Number(requestedLimit) || 25, 1), 50);
-  const now = new Date();
-  const dayKey = getPetDayKey(now);
-  const weekKey = getPetWeekKey(now);
-  const season = getPetSeasonInfo(now);
-  let scoreSql;
-  let scoreBindings = [];
-  if (period === 'daily') {
-    scoreSql = `SELECT telegram_id, SUM(pet_xp_awarded) AS pet_xp
-      FROM telegram_pet_events WHERE day_key = ? AND status = 'accepted' GROUP BY telegram_id`;
-    scoreBindings = [dayKey];
-  } else if (period === 'weekly') {
-    scoreSql = `SELECT telegram_id, SUM(pet_xp_awarded) AS pet_xp
-      FROM telegram_pet_events WHERE week_key = ? AND status = 'accepted' GROUP BY telegram_id`;
-    scoreBindings = [weekKey];
-  } else if (period === 'all_time') {
-    scoreSql = 'SELECT telegram_id, pet_xp FROM telegram_pet_profiles';
-  } else if (period === 'run_depth') {
-    scoreSql = `SELECT telegram_id, MAX(depth) AS pet_xp FROM telegram_pet_runs WHERE status IN ('completed','extracted','failed') GROUP BY telegram_id`;
-  } else {
-    scoreSql = 'SELECT telegram_id, season_xp AS pet_xp FROM telegram_pet_season_state WHERE season_key = ?';
-    scoreBindings = [season.key];
-  }
-  const rows = await db.prepare(`
-    WITH scores AS (${scoreSql}),
-    ranked AS (
-      SELECT scores.telegram_id, scores.pet_xp, p.pet_name,
-        COALESCE(
-          (SELECT pe.evolution_id FROM telegram_pet_evolutions_by_pet pe
-            WHERE pe.telegram_id = scores.telegram_id
-              AND EXISTS (SELECT 1 FROM telegram_pet_active_slots a
-                WHERE a.telegram_id = scores.telegram_id AND a.pet_id = pe.pet_id
-                  AND NOT EXISTS (SELECT 1 FROM telegram_pet_instances stale_i
-                    WHERE stale_i.pet_id = pe.pet_id AND stale_i.telegram_id = pe.telegram_id AND stale_i.season_key <> a.season_key)
-                  AND NOT EXISTS (SELECT 1 FROM telegram_pet_season_slots stale_s
-                    WHERE stale_s.pet_id = pe.pet_id AND stale_s.telegram_id = pe.telegram_id AND stale_s.season_key <> a.season_key))
-            ORDER BY pe.stage DESC LIMIT 1),
-          (SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=scores.telegram_id ORDER BY pe.stage DESC LIMIT 1),
-          'moon_egg'
-        ) AS stage,
-        p.level, p.moon_gold, p.moon_crystals, p.style_tokens, p.streak_days, p.updated_at,
-        l.phase AS lifecycle_phase, l.species_id AS lifecycle_species_id, l.rare_morph_id,
-        ROW_NUMBER() OVER (ORDER BY scores.pet_xp DESC, COALESCE(p.updated_at, '') ASC, scores.telegram_id ASC) AS rank
-      FROM scores
-      LEFT JOIN telegram_pet_profiles p ON p.telegram_id = scores.telegram_id
-      LEFT JOIN telegram_pet_lifecycle_by_pet l ON l.telegram_id = scores.telegram_id AND l.pet_id = (SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = scores.telegram_id)
-    )
-    SELECT * FROM ranked WHERE rank <= ? OR telegram_id = ? ORDER BY rank
-  `).bind(...scoreBindings, limit, String(telegramId)).all();
-  const materialized = await materializePetLeaderboardRows(db, rows.results || []);
-  const serialized = materialized.map((row) => ({
+  const limit = Math.min(50, Math.max(1, Math.floor(Number(requestedLimit) || 25)));
+  const board = await readPetLeaderboard(db, { period: requestedPeriod, limit, owner: telegramId });
+  const serialized = board.rows.map((row) => ({
     ...serializePetLeaderboardEntry(row, Number(row.rank || 1) - 1),
     is_current: String(row.telegram_id) === String(telegramId),
   }));
   return {
-    period,
-    season,
+    period: board.period,
+    season: board.season,
     entries: serialized.filter((entry) => entry.rank <= limit),
     self: serialized.find((entry) => entry.is_current) || null,
   };
@@ -9255,41 +9186,6 @@ function buildPetMiniAppCooldownSummary({ journeySummary = null, guidance = null
   };
 }
 
-// TEST-EXPORT: petMiniAppInitialLeaderboardSql:start
-const PET_MINI_APP_INITIAL_LEADERBOARD_SQL = `SELECT p.telegram_id, p.pet_name,
-    COALESCE(
-      (SELECT e.evolution_id FROM telegram_pet_evolutions_by_pet e
-        WHERE e.telegram_id = p.telegram_id
-          AND EXISTS (SELECT 1 FROM telegram_pet_active_slots a
-            WHERE a.telegram_id = p.telegram_id AND a.pet_id = e.pet_id
-              AND NOT EXISTS (SELECT 1 FROM telegram_pet_instances stale_i
-                WHERE stale_i.pet_id = e.pet_id AND stale_i.telegram_id = e.telegram_id AND stale_i.season_key <> a.season_key)
-              AND NOT EXISTS (SELECT 1 FROM telegram_pet_season_slots stale_s
-                WHERE stale_s.pet_id = e.pet_id AND stale_s.telegram_id = e.telegram_id AND stale_s.season_key <> a.season_key))
-        ORDER BY e.stage DESC LIMIT 1),
-      (SELECT e.evolution_id FROM telegram_pet_evolutions e WHERE e.telegram_id = p.telegram_id ORDER BY e.stage DESC LIMIT 1),
-      'moon_egg'
-    ) AS stage,
-    p.level, p.pet_xp, p.moon_gold, p.moon_crystals, p.style_tokens, p.streak_days,
-    l.phase AS lifecycle_phase, l.species_id AS lifecycle_species_id, l.rare_morph_id,
-    COALESCE(
-      (SELECT MAX(e.stage) FROM telegram_pet_evolutions_by_pet e
-        WHERE e.telegram_id = p.telegram_id
-          AND EXISTS (SELECT 1 FROM telegram_pet_active_slots a
-            WHERE a.telegram_id = p.telegram_id AND a.pet_id = e.pet_id
-              AND NOT EXISTS (SELECT 1 FROM telegram_pet_instances stale_i
-                WHERE stale_i.pet_id = e.pet_id AND stale_i.telegram_id = e.telegram_id AND stale_i.season_key <> a.season_key)
-              AND NOT EXISTS (SELECT 1 FROM telegram_pet_season_slots stale_s
-                WHERE stale_s.pet_id = e.pet_id AND stale_s.telegram_id = e.telegram_id AND stale_s.season_key <> a.season_key))),
-      (SELECT MAX(e.stage) FROM telegram_pet_evolutions e WHERE e.telegram_id = p.telegram_id),
-      0
-    ) AS evolution_stage
-  FROM telegram_pet_profiles p
-  LEFT JOIN telegram_pet_lifecycle_by_pet l ON l.telegram_id = p.telegram_id
-    AND l.pet_id = (SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = p.telegram_id)
-  ORDER BY p.pet_xp DESC, p.updated_at ASC LIMIT 10`;
-// TEST-EXPORT: petMiniAppInitialLeaderboardSql:end
-
 async function buildPetMiniAppState(db, telegramId, botToken) {
   const now = new Date();
   // State preparation owns current-season initialization. Roster projection
@@ -9342,7 +9238,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     db.prepare(`SELECT * FROM telegram_pet_kaiju_matches WHERE status='completed'
       AND (player1_telegram_id=? OR player2_telegram_id=?) ORDER BY completed_at DESC LIMIT 1`)
       .bind(String(telegramId), String(telegramId)).first().catch(() => null),
-    db.prepare(PET_MINI_APP_INITIAL_LEADERBOARD_SQL).all().catch((error) => {
+    readPetLeaderboard(db, { period: 'seasonal', limit: 10, now }).catch((error) => {
       logApiFailure('pet_mini_app_initial_leaderboard_failed', {
         telegramId: String(telegramId),
         message: error?.message || String(error),
@@ -9353,7 +9249,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     buildPetSeasonSlotSummary(db, telegramId).catch(() => null),
     db.prepare("SELECT event_type, MAX(created_at) AS created_at FROM telegram_pet_events WHERE telegram_id=? AND event_type IN ('adventure','work','trade','feed','play','clean','sleep','train') AND status='accepted' GROUP BY event_type").bind(telegramId).all(),
   ]);
-  const leaderboardRows = await materializePetLeaderboardRows(db, leaderboard.results || []);
+  const leaderboardRows = leaderboard.rows;
   const [journeySummary, hydratedKaiju] = await Promise.all([
     buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now).catch(() => null),
     ensurePetKaijuMatchCategory(db, kaiju).catch(() => kaiju),
@@ -10633,35 +10529,17 @@ export default {
 
     if (path === '/telegram-pets/activity' && request.method === 'GET') {
       const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '20', 10), 1), 50);
-      const rows = await env.DB.prepare(`
-        SELECT e.telegram_id, e.event_type, e.xp_awarded, e.pet_xp_awarded, e.reason, e.created_at,
-               p.pet_name, COALESCE(
-                 (SELECT pe.evolution_id FROM telegram_pet_evolutions_by_pet pe
-                   WHERE pe.telegram_id = e.telegram_id
-                     AND EXISTS (SELECT 1 FROM telegram_pet_active_slots a
-                       WHERE a.telegram_id = e.telegram_id AND a.pet_id = pe.pet_id
-                         AND NOT EXISTS (SELECT 1 FROM telegram_pet_instances stale_i
-                           WHERE stale_i.pet_id = pe.pet_id AND stale_i.telegram_id = pe.telegram_id AND stale_i.season_key <> a.season_key)
-                         AND NOT EXISTS (SELECT 1 FROM telegram_pet_season_slots stale_s
-                           WHERE stale_s.pet_id = pe.pet_id AND stale_s.telegram_id = pe.telegram_id AND stale_s.season_key <> a.season_key))
-                   ORDER BY pe.stage DESC LIMIT 1),
-                 (SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=e.telegram_id ORDER BY pe.stage DESC LIMIT 1),
-                 'moon_egg'
-               ) AS stage,
-               u.username, u.first_name, u.last_name
-        FROM telegram_pet_events e
-        LEFT JOIN telegram_pet_profiles p ON p.telegram_id = e.telegram_id
-        LEFT JOIN telegram_users u ON u.telegram_id = e.telegram_id
-        WHERE e.status = 'accepted'
-          AND e.event_key <> ?
-        ORDER BY e.created_at DESC
-        LIMIT ?
-      `).bind(PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY, limit).all().catch(() => ({ results: [] }));
-      const activityRows = await materializePetLeaderboardRows(env.DB, rows.results || []);
-      return json({ items: activityRows.map((row) => {
+      let activityRows;
+      try { activityRows = await readPetActivity(env.DB, limit); }
+      catch (error) {
+        logApiFailure('pet_public_activity_failed', { message: error?.message || String(error) });
+        return err('pet_activity_unavailable', 503);
+      }
+      const response = json({ items: activityRows.map((row) => {
         const petIdentity = serializePetLeaderboardEntry(row);
+        const playerDisplayName = [row.first_name, row.last_name].filter(Boolean).join(' ') || row.username || 'Anonymous';
         return {
-        text: `${displayNameFromRow(row)} ${row.event_type} ${petIdentity.display_name} (+${row.pet_xp_awarded || 0} pet XP, +${row.xp_awarded || 0} XP)`,
+        text: `${playerDisplayName} ${row.event_type} ${petIdentity.display_name} (+${row.pet_xp_awarded || 0} pet XP, +${row.xp_awarded || 0} XP)`,
         event_type: row.event_type,
         name: petIdentity.display_name,
         pet_name: petIdentity.display_name,
@@ -10672,132 +10550,29 @@ export default {
         created_at: row.created_at,
         time_ago: timeAgo(row.created_at),
       }}) });
+      response.headers.set('Cache-Control', 'no-store');
+      return response;
     }
 
     if (path === '/telegram-pets/leaderboard' && request.method === 'GET') {
-      const period = String(url.searchParams.get('period') || 'seasonal').toLowerCase();
-      const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '25', 10), 1), 100);
-      const now = new Date();
-      const dayKey = getPetDayKey(now);
-      const weekKey = getPetWeekKey(now);
-      const season = getPetSeasonInfo(now);
-      let rows;
-      if (period === 'daily') {
-        rows = await env.DB.prepare(`
-          SELECT e.telegram_id, SUM(e.pet_xp_awarded) AS pet_xp, p.pet_name, COALESCE(
-                   (SELECT pe.evolution_id FROM telegram_pet_evolutions_by_pet pe
-                     WHERE pe.telegram_id = e.telegram_id
-                       AND EXISTS (SELECT 1 FROM telegram_pet_active_slots a
-                         WHERE a.telegram_id = e.telegram_id AND a.pet_id = pe.pet_id
-                           AND NOT EXISTS (SELECT 1 FROM telegram_pet_instances stale_i
-                             WHERE stale_i.pet_id = pe.pet_id AND stale_i.telegram_id = pe.telegram_id AND stale_i.season_key <> a.season_key)
-                           AND NOT EXISTS (SELECT 1 FROM telegram_pet_season_slots stale_s
-                             WHERE stale_s.pet_id = pe.pet_id AND stale_s.telegram_id = pe.telegram_id AND stale_s.season_key <> a.season_key))
-                     ORDER BY pe.stage DESC LIMIT 1),
-                   (SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=e.telegram_id ORDER BY pe.stage DESC LIMIT 1),
-                   'moon_egg'
-                 ) AS stage,
-                 p.level, p.moon_gold, p.moon_crystals, p.style_tokens, p.streak_days, p.updated_at,
-                 l.phase AS lifecycle_phase, l.species_id AS lifecycle_species_id, l.rare_morph_id,
-                 u.username, u.first_name, u.last_name
-          FROM telegram_pet_events e
-          LEFT JOIN telegram_pet_profiles p ON p.telegram_id = e.telegram_id
-          LEFT JOIN telegram_pet_lifecycle_by_pet l ON l.telegram_id = e.telegram_id AND l.pet_id = (SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = e.telegram_id)
-          LEFT JOIN telegram_users u ON u.telegram_id = e.telegram_id
-          WHERE e.day_key = ? AND e.status = 'accepted'
-          GROUP BY e.telegram_id
-          ORDER BY pet_xp DESC
-          LIMIT ?
-        `).bind(dayKey, limit).all().catch(() => ({ results: [] }));
-      } else if (period === 'weekly') {
-        rows = await env.DB.prepare(`
-          SELECT e.telegram_id, SUM(e.pet_xp_awarded) AS pet_xp, p.pet_name, COALESCE(
-                   (SELECT pe.evolution_id FROM telegram_pet_evolutions_by_pet pe
-                     WHERE pe.telegram_id = e.telegram_id
-                       AND EXISTS (SELECT 1 FROM telegram_pet_active_slots a
-                         WHERE a.telegram_id = e.telegram_id AND a.pet_id = pe.pet_id
-                           AND NOT EXISTS (SELECT 1 FROM telegram_pet_instances stale_i
-                             WHERE stale_i.pet_id = pe.pet_id AND stale_i.telegram_id = pe.telegram_id AND stale_i.season_key <> a.season_key)
-                           AND NOT EXISTS (SELECT 1 FROM telegram_pet_season_slots stale_s
-                             WHERE stale_s.pet_id = pe.pet_id AND stale_s.telegram_id = pe.telegram_id AND stale_s.season_key <> a.season_key))
-                     ORDER BY pe.stage DESC LIMIT 1),
-                   (SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=e.telegram_id ORDER BY pe.stage DESC LIMIT 1),
-                   'moon_egg'
-                 ) AS stage,
-                 p.level, p.moon_gold, p.moon_crystals, p.style_tokens, p.streak_days, p.updated_at,
-                 l.phase AS lifecycle_phase, l.species_id AS lifecycle_species_id, l.rare_morph_id,
-                 u.username, u.first_name, u.last_name
-          FROM telegram_pet_events e
-          LEFT JOIN telegram_pet_profiles p ON p.telegram_id = e.telegram_id
-          LEFT JOIN telegram_pet_lifecycle_by_pet l ON l.telegram_id = e.telegram_id AND l.pet_id = (SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = e.telegram_id)
-          LEFT JOIN telegram_users u ON u.telegram_id = e.telegram_id
-          WHERE e.week_key = ? AND e.status = 'accepted'
-          GROUP BY e.telegram_id
-          ORDER BY pet_xp DESC
-          LIMIT ?
-        `).bind(weekKey, limit).all().catch(() => ({ results: [] }));
-      } else if (period === 'all_time') {
-        rows = await env.DB.prepare(`
-          SELECT p.telegram_id, p.pet_xp, p.pet_name, COALESCE(
-                   (SELECT pe.evolution_id FROM telegram_pet_evolutions_by_pet pe
-                     WHERE pe.telegram_id = p.telegram_id
-                       AND EXISTS (SELECT 1 FROM telegram_pet_active_slots a
-                         WHERE a.telegram_id = p.telegram_id AND a.pet_id = pe.pet_id
-                           AND NOT EXISTS (SELECT 1 FROM telegram_pet_instances stale_i
-                             WHERE stale_i.pet_id = pe.pet_id AND stale_i.telegram_id = pe.telegram_id AND stale_i.season_key <> a.season_key)
-                           AND NOT EXISTS (SELECT 1 FROM telegram_pet_season_slots stale_s
-                             WHERE stale_s.pet_id = pe.pet_id AND stale_s.telegram_id = pe.telegram_id AND stale_s.season_key <> a.season_key))
-                     ORDER BY pe.stage DESC LIMIT 1),
-                   (SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=p.telegram_id ORDER BY pe.stage DESC LIMIT 1),
-                   'moon_egg'
-                 ) AS stage,
-                 p.level, p.moon_gold, p.moon_crystals, p.style_tokens, p.streak_days, p.updated_at,
-                 l.phase AS lifecycle_phase, l.species_id AS lifecycle_species_id, l.rare_morph_id,
-                 u.username, u.first_name, u.last_name
-          FROM telegram_pet_profiles p
-          LEFT JOIN telegram_pet_lifecycle_by_pet l ON l.telegram_id = p.telegram_id AND l.pet_id = (SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = p.telegram_id)
-          LEFT JOIN telegram_users u ON u.telegram_id = p.telegram_id
-          ORDER BY p.pet_xp DESC
-          LIMIT ?
-        `).bind(limit).all().catch(() => ({ results: [] }));
-      } else {
-        rows = await env.DB.prepare(`
-          SELECT s.telegram_id, s.season_xp AS pet_xp, p.pet_name, COALESCE(
-                   (SELECT pe.evolution_id FROM telegram_pet_evolutions_by_pet pe
-                     WHERE pe.telegram_id = s.telegram_id
-                       AND EXISTS (SELECT 1 FROM telegram_pet_active_slots a
-                         WHERE a.telegram_id = s.telegram_id AND a.pet_id = pe.pet_id
-                           AND NOT EXISTS (SELECT 1 FROM telegram_pet_instances stale_i
-                             WHERE stale_i.pet_id = pe.pet_id AND stale_i.telegram_id = pe.telegram_id AND stale_i.season_key <> a.season_key)
-                           AND NOT EXISTS (SELECT 1 FROM telegram_pet_season_slots stale_s
-                             WHERE stale_s.pet_id = pe.pet_id AND stale_s.telegram_id = pe.telegram_id AND stale_s.season_key <> a.season_key))
-                     ORDER BY pe.stage DESC LIMIT 1),
-                   (SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=s.telegram_id ORDER BY pe.stage DESC LIMIT 1),
-                   'moon_egg'
-                 ) AS stage,
-                 p.level, p.moon_gold, p.moon_crystals, p.style_tokens, p.streak_days, p.updated_at,
-                 l.phase AS lifecycle_phase, l.species_id AS lifecycle_species_id, l.rare_morph_id,
-                 u.username, u.first_name, u.last_name
-          FROM telegram_pet_season_state s
-          LEFT JOIN telegram_pet_profiles p ON p.telegram_id = s.telegram_id
-          LEFT JOIN telegram_pet_lifecycle_by_pet l ON l.telegram_id = s.telegram_id AND l.pet_id = (SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = s.telegram_id)
-          LEFT JOIN telegram_users u ON u.telegram_id = s.telegram_id
-          WHERE s.season_key = ?
-          ORDER BY s.season_xp DESC
-          LIMIT ?
-        `).bind(season.key, limit).all().catch(() => ({ results: [] }));
+      try {
+        const board = await readPetLeaderboard(env.DB, { period: url.searchParams.get('period') || 'seasonal', limit: url.searchParams.get('limit') || 25 });
+        const response = json({
+          period: board.period,
+          season: board.season,
+          entries: board.rows.map((row, index) => ({
+            ...serializePetLeaderboardEntry(row, index),
+            player_display_name: [row.first_name, row.last_name].filter(Boolean).join(' ') || row.username || 'Anonymous',
+            username: row.username || null,
+            last_active_label: timeAgo(row.updated_at),
+          })),
+        });
+        response.headers.set('Cache-Control', 'no-store');
+        return response;
+      } catch (error) {
+        logApiFailure('pet_public_leaderboard_failed', { message: error?.message || String(error) });
+        return err('pet_leaderboard_unavailable', 503);
       }
-      const leaderboardRows = await materializePetLeaderboardRows(env.DB, rows.results || []);
-      return json({
-        period,
-        season,
-        entries: leaderboardRows.map((row, index) => ({
-          ...serializePetLeaderboardEntry(row, index),
-          player_display_name: [row.first_name, row.last_name].filter(Boolean).join(' ') || row.username || 'Anonymous',
-          username: row.username || null,
-          last_active_label: timeAgo(row.updated_at),
-        })),
-      });
     }
 
     if (path === '/telegram-pets/action' && request.method === 'POST') {
@@ -10983,16 +10758,16 @@ export default {
 
         if (season?.id) {
           const rows = await env.DB.prepare(
-            `SELECT tl.telegram_id, tl.xp, tl.rank,
+            `SELECT tl.telegram_id, tl.xp,
                     tu.username, tu.first_name, tu.last_name
              FROM telegram_leaderboard tl
              LEFT JOIN telegram_users tu ON tu.telegram_id = tl.telegram_id
              WHERE tl.season_id = ?
-             ORDER BY tl.xp DESC
+             ORDER BY tl.xp DESC, tl.telegram_id ASC
              LIMIT ?`
           ).bind(season.id, limit).all();
           entries = (rows.results || []).map((r, i) => ({
-            rank:         r.rank || i + 1,
+            rank:         i + 1,
             telegram_id:  r.telegram_id,
             username:     r.username || null,
             display_name: displayNameFromRow(r),
@@ -13744,7 +13519,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260927-contract-recovery-v1`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260927-public-sync-v1`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',
@@ -14748,7 +14523,7 @@ export const __petMediaTestHooks = Object.freeze({
   getPetKaijuQueueState,
   serializePet,
   serializePetLeaderboardEntry,
-  materializePetLeaderboardRows,
+  buildPetMiniAppLeaderboard,
   formatPetStatus,
   formatPetDetails,
   getPetEvolutionGuidance,
@@ -17440,45 +17215,15 @@ async function cmdPetNotify(db, tok, chatId, telegramId, argStr = '') {
 }
 
 async function cmdPetLeaderboard(db, tok, chatId, replyMarkup = null) {
-  const season = getPetSeasonInfo(new Date());
-  const rows = await db.prepare(`
-    SELECT s.telegram_id, s.season_xp, p.pet_name, COALESCE(
-             (SELECT pe.evolution_id FROM telegram_pet_evolutions_by_pet pe
-               WHERE pe.telegram_id = s.telegram_id
-                 AND EXISTS (SELECT 1 FROM telegram_pet_active_slots a
-                   WHERE a.telegram_id = s.telegram_id AND a.pet_id = pe.pet_id
-                     AND NOT EXISTS (SELECT 1 FROM telegram_pet_instances stale_i
-                       WHERE stale_i.pet_id = pe.pet_id AND stale_i.telegram_id = pe.telegram_id AND stale_i.season_key <> a.season_key)
-                     AND NOT EXISTS (SELECT 1 FROM telegram_pet_season_slots stale_s
-                       WHERE stale_s.pet_id = pe.pet_id AND stale_s.telegram_id = pe.telegram_id AND stale_s.season_key <> a.season_key))
-               ORDER BY pe.stage DESC LIMIT 1),
-             (SELECT pe.evolution_id FROM telegram_pet_evolutions pe WHERE pe.telegram_id=s.telegram_id ORDER BY pe.stage DESC LIMIT 1),
-             'moon_egg'
-           ) AS stage, p.level,
-           COALESCE(
-             (SELECT MAX(pe.stage) FROM telegram_pet_evolutions_by_pet pe
-               WHERE pe.telegram_id=s.telegram_id
-                 AND EXISTS (SELECT 1 FROM telegram_pet_active_slots a WHERE a.telegram_id=s.telegram_id AND a.pet_id=pe.pet_id)),
-             (SELECT MAX(pe.stage) FROM telegram_pet_evolutions pe WHERE pe.telegram_id=s.telegram_id),
-             0
-           ) AS evolution_stage,
-           l.phase AS lifecycle_phase, l.species_id AS lifecycle_species_id, l.rare_morph_id,
-           u.username, u.first_name, u.last_name
-    FROM telegram_pet_season_state s
-    LEFT JOIN telegram_pet_profiles p ON p.telegram_id = s.telegram_id
-    LEFT JOIN telegram_pet_lifecycle_by_pet l ON l.telegram_id=s.telegram_id AND l.pet_id=(SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id=s.telegram_id)
-    LEFT JOIN telegram_users u ON u.telegram_id = s.telegram_id
-    WHERE s.season_key = ?
-    ORDER BY s.season_xp DESC
-    LIMIT 10
-  `).bind(season.key).all().catch(() => ({ results: [] }));
+  const { season, rows: entries } = await readPetLeaderboard(db, { period: 'seasonal', limit: 10 });
+  const rows = { results: entries };
   if (!rows.results?.length) {
     await sendTelegramMessage(tok, chatId, 'No Crypto Moonboy Pets leaderboard entries yet. Use /adopt to start.', replyMarkup ? { reply_markup: replyMarkup } : {});
     return;
   }
   const lines = rows.results.map((row, index) => {
     const entry = serializePetLeaderboardEntry(row, index);
-    return `${index + 1}. ${escapeHtml(displayNameFromRow(row))} — ${escapeHtml(entry.display_name)} (${escapeHtml(entry.stage)}) ${row.season_xp || 0} pet XP`;
+    return `${index + 1}. ${escapeHtml(displayNameFromRow(row))} — ${escapeHtml(entry.display_name)} (${escapeHtml(entry.stage)}) ${entry.pet_xp || 0} pet XP`;
   });
   await sendTelegramPetReply(tok, chatId, `<b>Crypto Moonboy Pets Leaderboard</b>\n${escapeHtml(season.key)}\n\n${lines.join('\n')}`, replyMarkup ? { reply_markup: replyMarkup } : {}, 'leaderboard');
 }

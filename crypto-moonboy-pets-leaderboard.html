@@ -35,8 +35,9 @@
 
   <section class="section">
     <h2>How Pet Ranks Work</h2>
-    <p>Pet XP comes from care, training, shop-powered bonuses, in-game Moon Gold trades and energy-gated adventures. Assigned identity names remain <strong>UNKNOWN</strong> at Stages 0–2 and become canonical when Stage 3 begins.</p>
-    <p>Use <code>/petshop</code>, <code>/petbuy</code>, <code>/pettrade</code>, <code>/petrun</code>, <code>/petextract</code>, <code>/petadventure</code> and <code>/petnotify on</code> in Telegram to push your pet progression further.</p>
+    <p>Ranks total Pet XP per player. Daily and weekly scores use accepted reward records; seasonal scores use the earning season. All-time XP includes owned pets from earlier seasons. Identity, level and streak describe the currently selected pet. Identity names remain <strong>UNKNOWN</strong> until Stage 3.</p>
+    <p>Play care, quests, runs and bosses in Moonpet OS. Contract XP bonuses count when paid; Contract Rank, Practice scores, Growth Marks and Weekly Crests are separate progression. Community XP and Arcade scores have their own leaderboards.</p>
+    <button type="button" data-crypto-pets-refresh>Refresh rankings</button>
   </section>
 
   <section class="section">
@@ -58,6 +59,11 @@
     <h2>All Time</h2>
     <div data-crypto-pets-leaderboard data-period="all_time"></div>
   </section>
+  <section class="section">
+    <h2>Recent Recorded Activity</h2>
+    <p>Latest accepted server records, showing the pet associated with each action. Rewards appear after settlement; this is not a log of every button press.</p>
+    <div data-crypto-pets-activity aria-live="polite"></div>
+  </section>
 </main>
 
 <script data-cfasync="false" src="/js/api-config.js"></script>
@@ -70,6 +76,6 @@
 <script data-cfasync="false" src="/js/components/global-player-header.js"></script>
 <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
 <script data-cfasync="false" src="/js/wiki.js"></script>
-<script data-cfasync="false" src="/js/crypto-moonboy-pets.js"></script>
+<script data-cfasync="false" src="/js/crypto-moonboy-pets.js?v=20260927-public-sync-v1"></script>
 </body>
 </html>

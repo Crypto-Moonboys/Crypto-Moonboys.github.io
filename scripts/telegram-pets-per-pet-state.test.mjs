@@ -85,7 +85,7 @@ assert.match(worker, /PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY[\s\S]*accountW
   'worker must import the shared wallet reconciliation event key and recovery predicate');
 assert.match(walletReconciliation, /export function accountWalletRecoveryResolvedSql[\s\S]*PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE[\s\S]*PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY/,
   'wallet module must own the shared recovery marker source/key SQL');
-assert.match(worker, /e\.event_key <> \?/,
+assert.match(await readFile(new URL('../workers/moonboys-api/pets/leaderboard.js', import.meta.url), 'utf8'), /e\.event_key\s*<>\s*\?/,
   'activity feed must bind the shared wallet reconciliation marker key instead of duplicating the literal');
 const weeklyBossStart = worker.indexOf('async function processPetWeeklyBoss');
 const weeklyBossEnd = worker.indexOf('async function getPetSeasonRewardState', weeklyBossStart);
