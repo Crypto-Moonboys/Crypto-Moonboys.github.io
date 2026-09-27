@@ -225,7 +225,10 @@ function getRewardAuthorization(source, telegramId, context = {}, now = new Date
     const petId = String(context.pet_id || '');
     const seasonKey = String(context.season_key || '');
     if (!contractId || !petId || !seasonKey) throw new Error('invalid_pet_reward_context');
-    return { sql: `AND EXISTS (SELECT 1 FROM telegram_pet_contracts WHERE contract_id=? AND telegram_id=? AND pet_id=? AND season_key=? AND status='completed' AND reward_xp=20)`, args: [contractId, telegramId, petId, seasonKey] };
+    return { sql: `AND EXISTS (SELECT 1 FROM telegram_pet_contracts c
+      JOIN telegram_pet_instances p ON p.pet_id=c.pet_id AND p.telegram_id=c.telegram_id AND p.season_key=c.season_key
+      JOIN telegram_pet_season_slots s ON s.pet_id=p.pet_id AND s.telegram_id=p.telegram_id AND s.season_key=p.season_key AND s.slot_number=p.slot_number
+      WHERE c.contract_id=? AND c.telegram_id=? AND c.pet_id=? AND c.season_key=? AND c.status='completed' AND c.reward_xp=20)`, args: [contractId, telegramId, petId, seasonKey] };
   }
   if (source === 'pet_run_legacy') {
     if (!runId) throw new Error('invalid_pet_reward_context');

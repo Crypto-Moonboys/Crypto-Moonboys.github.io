@@ -9622,7 +9622,7 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   if (action === 'hatch') return hatchMoonpet(db, telegramId, eventKey);
   if (action === 'rare_morph') return morphMoonpetRare(db, telegramId, eventKey);
   const lifecycle = await getMoonpetLifecycle(db, telegramId).catch(() => null);
-  const eggAllowedActions = ['guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim'];
+  const eggAllowedActions = ['guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim', 'contract_claim'];
   if (lifecycle?.phase === 'egg' && !eggAllowedActions.includes(action)) {
     if (PET_MINI_APP_COMBAT_CLEANUP_ACTIONS.has(action) || PET_MINI_APP_FUTURE_COMBAT_ACTIONS.has(action)) {
       // fall through; locked cleanup must remain available for stale combat state.
@@ -13744,7 +13744,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260927-endings-v1`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260927-contract-recovery-v1`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',

@@ -12,6 +12,8 @@ sqlite.exec(read('workers/moonboys-api/migrations/048_telegram_pet_player_expans
 const migration = read('workers/moonboys-api/migrations/076_moonpet_continuing_contracts.sql');
 sqlite.exec(migration); sqlite.exec(migration);
 let beforeStatement = null;
+let beforeBatch = null;
+let batchQueue = Promise.resolve();
 class Statement {
   constructor(sql, args = []) { this.sql = sql; this.args = args; }
   bind(...args) { return new Statement(this.sql, args); }
@@ -22,15 +24,21 @@ class Statement {
     const r = sqlite.prepare(this.sql).run(...this.args); return { results: [], meta: { changes: Number(r.changes) } };
   }
 }
-const db = { prepare(sql) { return new Statement(sql); }, async batch(statements) {
-  sqlite.exec('BEGIN IMMEDIATE');
-  try { const results = []; for (const s of statements) results.push(await s.run()); sqlite.exec('COMMIT'); return results; }
-  catch (e) { sqlite.exec('ROLLBACK'); throw e; }
+const db = { prepare(sql) { return new Statement(sql); }, batch(statements) {
+  // D1 batches are serialized atomic transactions, including simultaneous claims.
+  const task = batchQueue.then(async () => {
+    if (beforeBatch) beforeBatch(statements);
+    sqlite.exec('BEGIN IMMEDIATE');
+    try { const results = []; for (const s of statements) results.push(await s.run()); sqlite.exec('COMMIT'); return results; }
+    catch (e) { sqlite.exec('ROLLBACK'); throw e; }
+  });
+  batchQueue = task.catch(() => {});
+  return task;
 } };
-async function seed(owner, phase = 'young') {
+async function seed(owner, phase = 'young', time = new Date()) {
   sqlite.prepare('INSERT INTO telegram_users (telegram_id, first_name, xp, level) VALUES (?, ?, 0, 1)').run(owner, owner);
   sqlite.prepare(`INSERT INTO telegram_pet_profiles (telegram_id,pet_name,pet_xp,level,health,energy,moon_gold) VALUES (?,?,3240,20,90,0,100)`).run(owner, owner);
-  await hooks.ensurePetStarterSeasonSlot(db, owner);
+  await hooks.ensurePetStarterSeasonSlot(db, owner, time);
   const pet = await hooks.ensureActivePetInstance(db, owner);
   sqlite.prepare(`INSERT INTO telegram_pet_lifecycle_by_pet (pet_id,telegram_id,identity_seed,phase,incubation_json,innate_traits_json) VALUES (?,?,?,?,'{}','[]')`).run(pet.pet_id, owner, owner, phase);
   sqlite.prepare('UPDATE telegram_pet_instances SET stage=? WHERE pet_id=?').run(phase, pet.pet_id);
@@ -562,6 +570,88 @@ try {
     VALUES ('cap',?,?, 'feed','cap',1200,?,?, 'test','accepted','{}')`).run(capPet.pet_id, capPet.telegram_id, capPet.season_key, now.toISOString().slice(0,10));
   await start(capPet); const atCap = await complete(capPet); assert.equal(atCap.status, 'completed'); assert.equal(atCap.xp_awarded, 0);
   assert.equal(atCap.reward_pending, false);
+
+  // A completed reservation belongs to its earning pet, even with an egg active.
+  const sourcePet = await seed('contract-saved-owner');
+  await start(sourcePet);
+  const savedBonus = await complete(sourcePet, async () => { throw Error('delivery offline'); });
+  const eggId = sourcePet.pet_id + ':egg';
+  sqlite.prepare(`INSERT INTO telegram_pet_season_slots (pet_id,telegram_id,season_key,slot_number,acquisition_type,source_event_key,arcade_xp_spent,status) VALUES (?,?,?,2,'arcade_xp','saved-claim-test',0,'active')`).run(eggId,sourcePet.telegram_id,sourcePet.season_key);
+  sqlite.prepare(`INSERT INTO telegram_pet_instances (pet_id,telegram_id,season_key,slot_number,stage,source_profile_updated_at) VALUES (?,?,?,2,'egg',CURRENT_TIMESTAMP)`).run(eggId,sourcePet.telegram_id,sourcePet.season_key);
+  sqlite.prepare(`INSERT INTO telegram_pet_lifecycle_by_pet (pet_id,telegram_id,identity_seed,phase,incubation_json,innate_traits_json) VALUES (?,?,'saved-claim-egg','egg','{}','[]')`).run(eggId,sourcePet.telegram_id);
+  assert.equal((await hooks.switchActivePetSeasonSlot(db,sourcePet.telegram_id,eggId)).accepted,true);
+  const activeEgg = { ...sourcePet, pet_id: eggId, stage: 'egg' };
+  const savedBoard = await board(activeEgg);
+  assert.equal(savedBoard.available, false);
+  assert.ok(savedBoard.pending_rewards?.some((entry) => entry.contract_id === savedBonus.contract_id && entry.pet_id === sourcePet.pet_id), 'saved bonus remains visible after switching to an egg');
+  const originalXp = sqlite.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(sourcePet.pet_id).pet_xp;
+  const eggXp = sqlite.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(eggId).pet_xp;
+  const savedClaim = { action:'contract_claim',pet_id:sourcePet.pet_id,contract_id:savedBonus.contract_id };
+  const dispatchClaim = () => hooks.processPetMiniAppAction(db,sourcePet.telegram_id,{id:sourcePet.telegram_id},{...savedClaim,request_id:realCrypto.randomUUID()},'fixture-token');
+  assert.equal((await dispatchClaim()).pet_xp_awarded,20);
+  assert.equal((await dispatchClaim()).pet_xp_awarded,0);
+  assert.equal(sqlite.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(sourcePet.pet_id).pet_xp,originalXp+20);
+  assert.equal(sqlite.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(eggId).pet_xp,eggXp);
+  assert.equal(sqlite.prepare('SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id=?').get(sourcePet.telegram_id).pet_id,eggId);
+  assert.deepEqual((await board(activeEgg)).pending_rewards,[]);
+  assert.equal((await act(activeEgg,{...savedClaim,pet_id:eggId})).accepted,false,'claim cannot be redirected to the active egg');
+  assert.equal((await act(b,savedClaim)).accepted,false,'another owner cannot claim a saved bonus');
+  assert.equal((await start(sourcePet)).accepted,false,'recovery does not reopen old-pet gameplay');
+
+  // Real season rollover: old earned XP remains recoverable with a fresh egg.
+  const oldTime = new Date(Date.UTC(now.getUTCFullYear()-1,0,15));
+  const oldPet = await seed('contract-rollover','young',oldTime);
+  await start(oldPet,'escort',oldTime);
+  const oldBonus = await complete(oldPet,async () => { throw Error('delivery offline'); },oldTime);
+  assert.equal(await hooks.preparePetMiniAppState(db,oldPet.telegram_id,now),true);
+  const newPet = await hooks.ensureActivePetInstance(db,oldPet.telegram_id);
+  assert.notEqual(newPet.pet_id,oldPet.pet_id);
+  sqlite.prepare("UPDATE telegram_pet_instances SET status='archived' WHERE pet_id=?").run(oldPet.pet_id);
+  sqlite.prepare("UPDATE telegram_pet_season_slots SET status='archived' WHERE pet_id=?").run(oldPet.pet_id);
+  const oldClaim = { action:'contract_claim',pet_id:oldPet.pet_id,contract_id:oldBonus.contract_id,season_key:newPet.season_key,reward_xp:999999 };
+  const oldRequest = () => act(newPet,oldClaim);
+  assert.equal((await board(newPet)).pending_rewards[0].season_key,oldPet.season_key);
+  const beforeOld = sqlite.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(oldPet.pet_id).pet_xp;
+  // Legacy malformed reservations must not fill the inbox ahead of valid ones.
+  sqlite.exec('PRAGMA foreign_keys=OFF');
+  for (let i=0;i<12;i++) sqlite.prepare(`INSERT INTO telegram_pet_contracts
+    (contract_id,pet_id,telegram_id,season_key,sequence,status,state_json,reward_xp,reward_day)
+    VALUES (?,?,?,?,1,'completed','{}',20,'2000-01-01')`).run('orphan-bonus-'+i,'missing-pet-'+i,oldPet.telegram_id,oldPet.season_key);
+  sqlite.exec('PRAGMA foreign_keys=ON');
+  assert.deepEqual((await board(newPet)).pending_rewards.map((entry) => entry.contract_id),[oldBonus.contract_id]);
+  assert.equal((await act(newPet,{action:'contract_claim',pet_id:'missing-pet-0',contract_id:'orphan-bonus-0'})).accepted,false);
+  // Recheck source authority inside the award transaction, after the claim read.
+  beforeBatch = (statements) => {
+    if (!statements[0].args.includes('pet_contract')) return;
+    beforeBatch = null;
+    sqlite.exec('PRAGMA foreign_keys=OFF');
+    sqlite.prepare('UPDATE telegram_pet_season_slots SET slot_number=2 WHERE pet_id=?').run(oldPet.pet_id);
+    sqlite.exec('PRAGMA foreign_keys=ON');
+  };
+  assert.equal((await oldRequest()).pet_xp_awarded,0);
+  assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_contract'").get(oldPet.telegram_id).n,0);
+  assert.deepEqual((await board(newPet)).pending_rewards,[],'mismatched source slot is hidden');
+  assert.equal((await oldRequest()).accepted,false);
+  sqlite.exec('PRAGMA foreign_keys=OFF');
+  sqlite.prepare('UPDATE telegram_pet_season_slots SET slot_number=1 WHERE pet_id=?').run(oldPet.pet_id);
+  sqlite.exec('PRAGMA foreign_keys=ON');
+  for (const change of ["status='active'","reward_xp=0"]) {
+    sqlite.prepare('UPDATE telegram_pet_contracts SET '+change+' WHERE contract_id=?').run(oldBonus.contract_id);
+    assert.equal((await oldRequest()).accepted,false,'only completed reserved bonuses are claimable');
+    sqlite.prepare("UPDATE telegram_pet_contracts SET status='completed',reward_xp=20 WHERE contract_id=?").run(oldBonus.contract_id);
+  }
+  const recoveredTogether = await Promise.all([oldRequest(),oldRequest()]);
+  assert.equal(recoveredTogether.reduce((sum,result) => sum+result.pet_xp_awarded,0),20,'parallel claims pay once');
+  assert.equal(sqlite.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(oldPet.pet_id).pet_xp,beforeOld+20);
+  assert.equal(sqlite.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(newPet.pet_id).pet_xp,newPet.pet_xp);
+  const oldEvent = sqlite.prepare("SELECT season_key,pet_id FROM telegram_pet_events WHERE telegram_id=? AND event_type='contract_complete'").get(oldPet.telegram_id);
+  assert.equal(oldEvent.season_key,oldPet.season_key); assert.equal(oldEvent.pet_id,oldPet.pet_id);
+  assert.equal(sqlite.prepare('SELECT reward_day FROM telegram_pet_contracts WHERE contract_id=?').get(oldBonus.contract_id).reward_day,oldTime.toISOString().slice(0,10));
+  sqlite.prepare('UPDATE telegram_pet_contracts SET reward_settled=0,xp_awarded=0 WHERE contract_id=?').run(oldBonus.contract_id);
+  assert.equal((await oldRequest()).pet_xp_awarded,0,'post-payment receipt recovery never pays twice');
+  assert.equal(sqlite.prepare('SELECT xp_awarded FROM telegram_pet_contracts WHERE contract_id=?').get(oldBonus.contract_id).xp_awarded,20);
+  assert.deepEqual((await board(newPet)).pending_rewards,[]);
+  assert.equal((await start(oldPet,'escort',oldTime)).accepted,false);
 
   // Slot switches preserve the original pet record and shared daily bonus budget.
   const altId = a.pet_id + ':alternate';

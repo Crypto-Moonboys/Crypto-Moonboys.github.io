@@ -208,6 +208,7 @@
     if (goal && !egg) add('craft_goal', (goal.ready ? 'READY TO CRAFT // ' : 'CRAFTING GOAL // ') + goal.recipe.title,
       goal.ready ? 'Materials are ready. Review the recipe and choose when to craft.' : 'Compare missing materials, district risks, expedition finds and current market alternatives.');
     if (g.weekly_boss && (g.weekly_boss.pending_rewards || []).length) add('weekly_boss_claim', 'RECOVER WEEKLY BOSS REWARDS', 'Collect saved victories, including earlier weeks. No energy, new attack or current level requirement.');
+    if (s.contracts && (s.contracts.pending_rewards || []).length) add('contract_claim', 'RECOVER SAVED CONTRACT XP', 'Collect saved bonuses for the pets that earned them, including earlier seasons. No new run or energy cost.');
     if (!egg && g.daily_cache && g.daily_cache.available) add('daily_chest', 'OPEN DAILY CACHE', 'One account cache per UTC day. Check the current XP allowance before claiming.', { screen: 'home', focus: 'care' });
     var bounties = g.economy && g.economy.bounties || [];
     if (!egg) {
