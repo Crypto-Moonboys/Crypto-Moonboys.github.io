@@ -27,6 +27,17 @@ When no bounty has a playable route, Play Now continues to offer Contracts and
 Practice. Client suggestions never submit progress, override a server gate or
 give a reward. Server validation remains necessary if state changes after render.
 
+Review follow-up: ordinary Feed/Play/Clean/Sleep/Train cooldowns were enforced by
+the Worker but missing from its Mini App snapshots. The existing accepted-event
+query now also reads all five care actions, using the same account scope and
+45-second window as action validation. Each response and fresh reload includes
+every still-active care cooldown alongside the existing special-action entries.
+Expired entries are omitted; pending or rejected care events cannot extend them.
+SQLite regression tests first reproduced the missing Feed cooldown, then verified
+sequential actions, reloads, rejected retries, expiry and bounty route readiness.
+Mobile tests click Feed, Play and Clean during a background activity and verify
+that all five care buttons remain disabled after subsequent responses and reload.
+
 ## New v8 Contract finales
 
 Players see their final boss before starting, while building their run and in

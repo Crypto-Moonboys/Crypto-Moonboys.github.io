@@ -593,6 +593,18 @@ try {
     assert.equal(await page.locator('[data-action="sleep"]').isDisabled(), true);
     assert.equal(await page.locator('[data-action="train"]').isDisabled(), true);
     assert.equal(await page.locator('[data-action="feed"]').isEnabled(), true);
+    const completedCare = [];
+    for (const action of ['feed', 'play', 'clean']) {
+      const careResponse = page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === action);
+      await page.locator(`[data-panel="care"] [data-action="${action}"]`).click();
+      const careResult = await (await careResponse).json();
+      assert.equal(careResult.result.accepted, true);
+      completedCare.push(action);
+      for (const completed of completedCare) assert.ok(careResult.state.cooldowns.entries.some((entry) => entry.key === 'action:' + completed && entry.remaining_seconds > 0), 'later actions must retain earlier care cooldowns');
+      await page.waitForFunction((actions) => actions.every((key) => document.querySelector(`[data-panel="care"] [data-action="${key}"]`)?.disabled), completedCare);
+    }
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    for (const action of ['feed', 'play', 'clean', 'sleep', 'train']) assert.equal(await page.locator(`[data-panel="care"] [data-action="${action}"]`).isDisabled(), true, 'cooldowns and busy gates survive a fresh reload: ' + action);
     await page.locator('[data-panel="care"] [data-focus="timed-activity"]').click();
     assert.ok(await page.locator('[data-action="activity_claim"]').count());
     await page.locator('[data-panel="timed-activity"] [data-focus="contracts"]').click();
