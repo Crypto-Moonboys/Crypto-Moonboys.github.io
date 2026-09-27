@@ -6,6 +6,8 @@ import { DatabaseSync } from 'node:sqlite';
 import { chromium } from 'playwright';
 import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 import { __dailyMoonRunTestHooks as dailyHooks } from '../workers/moonboys-api/pets/daily-moon-run.js';
+import { createRequire } from 'node:module';
+const { bountyRoutes } = createRequire(import.meta.url)('../js/moonpet-play-options.js');
 
 // Local SQLite-backed API fixture: no live player account or network mutations.
 const root = process.cwd();
@@ -122,6 +124,31 @@ try {
       const jumps = await page.locator('#screen [data-jump]').evaluateAll((buttons) => buttons.map((b) => ({ screen: b.dataset.jump, focus: b.dataset.focus })));
       for (const jump of jumps) assert.ok(['home', 'missions', 'explore', 'work', 'economy', 'profile'].includes(jump.screen));
     }
+    // Actual rotating bounties navigate without consuming actions or rewards.
+    const bountyState = await hooks.buildPetMiniAppState(db, currentUser, token);
+    const bountyJumps = new Map(bountyState.guidance.economy.bounties.filter((b) => !b.complete).flatMap(bountyRoutes).map((route) => [route.focus, route]));
+    const beforeBountyNavigation = gameplayCount();
+    for (const route of bountyJumps.values()) {
+      await page.locator('[data-screen="economy"]').click();
+      await page.locator(`[data-panel="bounties"] [data-focus="${route.focus}"]`).first().click();
+      assert.equal(await page.locator(`[data-panel="${route.focus}"]`).count(), 1);
+    }
+    assert.equal(gameplayCount(), beforeBountyNavigation);
+    // Seed accepted evidence for one current bounty, then use its real claim handler.
+    const readyBounty = bountyState.guidance.economy.bounties.find((b) => !b.complete);
+    assert.ok(readyBounty);
+    const questDay = new Date().toISOString().slice(0, 10);
+    for (let i = 0; i < readyBounty.required; i++) sqlite.prepare(`INSERT INTO telegram_pet_events
+      (id,pet_id,telegram_id,event_type,event_key,pet_xp_awarded,season_key,day_key,week_key,status,metadata)
+      VALUES (?,?,?,?,?,0,?,?,'fixture','accepted','{}')`).run(realCrypto.randomUUID(), bountyState.pet.pet_id, currentUser, readyBounty.event_types[0], realCrypto.randomUUID(), bountyState.pet.season_key, questDay);
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-panel="play-now"] [data-focus="bounties"]').filter({ hasText: 'CLAIM READY BOUNTIES' }).click();
+    const bountyResponse = page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'bounty_claim');
+    await page.locator('[data-action="bounty_claim"]').filter({ hasText: readyBounty.title }).click();
+    const bountyResult = await (await bountyResponse).json();
+    assert.equal(bountyResult.result.accepted, true);
+    assert.equal(bountyResult.state.guidance.economy.bounties.find((b) => b.key === readyBounty.key).claimed, true);
+    await page.waitForFunction(() => document.querySelector('[data-panel="bounties"]').textContent.includes('CLAIMED'));
     await page.locator('[data-screen="explore"]').click();
     const districtText = await page.locator('[data-panel="districts"]').textContent();
     assert.ok(!districtText.includes('// 0% REWARD'), 'fractional reward preview must not round to zero');
@@ -141,10 +168,12 @@ try {
     // These are real server-backed contract actions, distinct from local practice.
     const youngBefore = await hooks.buildPetMiniAppState(db, currentUser, token);
     await page.locator('#contract-build').selectOption('bruiser');
+    await page.locator('#contract-side-goal').selectOption('versatile');
     const oldContractSelect = await page.locator('#contract-build').elementHandle();
     await page.locator('[data-utility="sync"]').click();
     await page.waitForFunction((node) => !node.isConnected, oldContractSelect);
     assert.equal(await page.locator('#contract-build').inputValue(), 'bruiser', 'refresh must preserve build selection');
+    assert.equal(await page.locator('#contract-side-goal').inputValue(), 'versatile', 'refresh must preserve optional objective');
     const startContract = page.locator('[data-action="contract_start"]').filter({ hasText: 'BRING THE COURIER HOME' });
     await startContract.click();
     await page.waitForSelector('[data-action="contract_step"]');
@@ -152,11 +181,14 @@ try {
     for (let turn = 0; turn < 8; turn++) {
       const candidates = page.locator('[data-action="contract_step"]');
       const payloads = await candidates.evaluateAll((buttons) => buttons.map((button) => JSON.parse(button.dataset.payload)));
-      const chosen = payloads.find((x) => x.choice === 'cover') || payloads.find((x) => x.choice === 'medkit') || payloads.find((x) => x.choice === 'shield') || payloads.find((x) => x.choice !== 'abandon');
+      const routeChoice = turn === 1 ? 'bold' : turn === 3 ? 'search' : 'cover';
+      const chosen = payloads.find((x) => x.choice === routeChoice) || payloads.find((x) => x.choice === 'medkit') || payloads.find((x) => x.choice === 'shield') || payloads.find((x) => x.choice !== 'abandon');
       assert.ok(chosen, 'active contract must offer a route or upgrade');
       const response = page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'contract_step');
       await candidates.nth(payloads.indexOf(chosen)).click();
       const data = await (await response).json(); assert.equal(data.result.accepted, true);
+      assert.equal(data.state.contracts.run.side_goal.key, 'versatile');
+      assert.ok(data.state.contracts.run.room.effect, 'mechanical room effect must be visible');
       await page.waitForFunction((revision) => {
         const button = document.querySelector('[data-action="contract_step"]');
         return !button || JSON.parse(button.dataset.payload).revision !== revision;
@@ -170,6 +202,9 @@ try {
     await page.waitForSelector('[data-action="contract_start"]');
     const youngAfter = await hooks.buildPetMiniAppState(db, currentUser, token);
     assert.equal(youngAfter.contracts.completed, youngBefore.contracts.completed + 1);
+    assert.equal(youngAfter.contracts.run.side_goal.earned, true);
+    assert.equal(youngAfter.contracts.run.side_goal.rank_points, 60);
+    assert.ok((await page.locator('[data-panel="contracts"]').textContent()).includes('RANK INCLUDED'));
     assert.ok(youngAfter.contracts.rank_points > youngBefore.contracts.rank_points);
     assert.equal(youngAfter.pet.moon_gold, youngBefore.pet.moon_gold);
     assert.equal(youngAfter.pet.energy, youngBefore.pet.energy);
@@ -222,7 +257,7 @@ try {
     assert.equal(overflow, false, 'mobile viewport must not overflow horizontally');
     assert.deepEqual(errors, [], 'no runtime errors across all six screens');
     if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-${viewport.width}.png`) });
-    console.log(`Moonpet browser loop passed at ${viewport.width}x${viewport.height}; all six screens; practice isolation; saved contracts; daily tactic choice/reload/odds/score.`);
+    console.log(`Moonpet browser loop passed at ${viewport.width}x${viewport.height}; all six screens; bounty routes/claim; practice isolation; contract rooms/side objectives/reload; daily tactic choice/reload/odds/score.`);
     await context.close();
   }
 } finally {

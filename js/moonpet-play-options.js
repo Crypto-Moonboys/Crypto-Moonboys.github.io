@@ -21,6 +21,8 @@
       [/market/, 'economy', 'market'], [/trade/, 'economy', 'trade'],
       [/cosmetic/, 'economy', 'style-lab'], [/gear|upgrade/, 'economy', 'equipment'],
       [/shop|buy|equip/, 'economy', 'shop'],
+      [/use.item|inventory/, 'economy', 'inventory'],
+      [/daily.chest|daily.cache/, 'home', 'care'],
       [/incubat|hatch/, 'home', 'incubation'],
       [/feed|sleep|clean|play|health|train|care|dance|cuddle|energy.drink/, 'home', 'care'],
       [/rare.morph/, 'profile', 'rare-morph'],
@@ -31,16 +33,42 @@
     return { screen: 'home', focus: 'care' };
   }
 
+  function bountyRoutes(bounty) {
+    var labels = { feed: 'CARE', play: 'CARE', clean: 'CARE', sleep: 'CARE', train: 'CARE', work: 'PET JOBS',
+      random_event: 'STREET EVENT', activity_claim: 'TIMED ACTIVITY', run_complete: 'MOON RUN', run_extract: 'MOON RUN',
+      adventure: 'ADVENTURE', daily_chest: 'DAILY CACHE', kaiju_battle: 'KAIJU', use_item: 'INVENTORY', use_item_reward: 'INVENTORY' };
+    var destinations = [];
+    (bounty.event_types || []).forEach(function (event) {
+      if (!Object.prototype.hasOwnProperty.call(labels, event)) return;
+      var target = route({ key: event });
+      if (!destinations.some(function (entry) { return entry.screen === target.screen && entry.focus === target.focus; })) {
+        destinations.push(Object.assign({ title: 'OPEN ' + labels[event] }, target));
+      }
+    });
+    return destinations;
+  }
+
   function options(snapshot) {
     var s = snapshot || {}, g = s.guidance || {}, live = s.live_systems || {};
     if (!s.adopted) return [];
     var choices = [];
     var add = function (key, title, detail, destination) {
-      choices.push(Object.assign({ key: key, title: title, detail: detail }, destination || route({ key: key })));
+      choices.push(Object.assign({}, destination || route({ key: key }), { key: key, title: title, detail: detail }));
     };
+    var egg = s.lifecycle && s.lifecycle.phase === 'egg';
+    var bounties = g.economy && g.economy.bounties || [];
+    if (!egg) {
+      var ready = bounties.filter(function (b) { return b.complete && !b.claimed; });
+      if (ready.length) add('bounty_claims', 'CLAIM READY BOUNTIES // ' + ready.length, 'Open the board to collect verified rewards.');
+      if (g.activity && g.activity.ready) add('activity', 'CLAIM FINISHED ACTIVITY', 'Your timed activity is ready to settle.');
+      var nextBounty = bounties.filter(function (b) { return !b.complete && !b.claimed && bountyRoutes(b).length; }).sort(function (a, b) {
+        return Number(b.progress || 0) / Math.max(1, Number(b.required)) - Number(a.progress || 0) / Math.max(1, Number(a.required));
+      })[0];
+      if (nextBounty) add('bounty_target', 'NEXT BOUNTY // ' + nextBounty.title, nextBounty.progress + '/' + nextBounty.required + ' // ' + nextBounty.detail + ' Open the route to check its requirements.', bountyRoutes(nextBounty)[0]);
+    }
     if (s.contracts && s.contracts.available) add('contract', s.contracts.run && s.contracts.run.status === 'active' ? 'CONTINUE CONTRACT' : 'CONTINUING CONTRACTS', 'New quests after every finish. Saved rank, three builds and route upgrades. No pet energy cost.');
     add('practice', 'PRACTICE ROGUELITE', 'Unlimited replays. Build choices, room risks and local goals. No rewards or pet costs.');
-    if (s.lifecycle && s.lifecycle.phase === 'egg') {
+    if (egg) {
       add('incubate', 'SECRET BOT CARE', 'Care and reveal remain server-controlled. Practice is available while you wait.');
       return choices;
     }
@@ -49,7 +77,6 @@
       if (Number(s.pet && s.pet.energy) >= 12) add('run', 'MOON RUN', 'Repeatable risk / reward routes. Requires energy; server reward caps still apply.');
       if (s.daily_run && s.daily_run.available) add('daily_run', 'OFFICIAL DAILY RUN', 'One official attempt per account / UTC day. Advances Daily Journey.');
     }
-    if (g.activity && g.activity.ready) add('activity', 'CLAIM FINISHED ACTIVITY', 'Your timed activity is ready to settle.');
     if ((live.chains || []).some(function (x) { return x.available; })) add('event_chain', 'STORY CHOICES', 'Continue an available authored story. One rewarded step per chain / UTC day.');
     if ((s.regions || []).some(function (x) { return x.available; }) && Number(s.pet && s.pet.energy) >= 10) add('district', 'DISTRICT MISSIONS', 'Choose safe, balanced or bold approaches. Build mastery toward boss checkpoints.');
     if (g.weekly_boss && g.weekly_boss.available) add('weekly_boss', 'WEEKLY BOSS', 'Strike, outsmart or endure. One attack per UTC day.');
@@ -66,7 +93,7 @@
     return choices;
   }
 
-  var api = { route: route, options: options };
+  var api = { route: route, bountyRoutes: bountyRoutes, options: options };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.MoonpetPlayOptions = api;
 })(typeof window !== 'undefined' ? window : globalThis);

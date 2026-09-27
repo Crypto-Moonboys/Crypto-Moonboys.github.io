@@ -4,6 +4,7 @@ import vm from 'node:vm';
 import { createRequire } from 'node:module';
 import { DatabaseSync } from 'node:sqlite';
 import { getDailyMoonRunSummary } from '../workers/moonboys-api/pets/daily-moon-run.js';
+import { PET_DAILY_BOUNTIES } from '../workers/moonboys-api/pets/economy-expansion.js';
 
 const require = createRequire(import.meta.url);
 const options = require('../js/moonpet-play-options.js');
@@ -31,6 +32,27 @@ assert.deepEqual(options.options({ ...snapshot, lifecycle: { phase: 'egg' } }).m
 assert.ok(!options.options({ ...snapshot, pet: { energy: 0 } }).some((x) => x.key === 'run'));
 assert.deepEqual(options.options({ adopted: false }), []);
 assert.ok(!options.options({ ...snapshot, capabilities: { systems: { arena: { state: 'AVAILABLE' } } } }).some((x) => x.key === 'arena'), 'incomplete capabilities never open combat');
+
+// All ten rotating targets lead to qualifying actions, including alternative run routes.
+const bountyTargets = {
+  care_pair: ['care'], triple_care: ['care'], job_shift: ['jobs'], job_double: ['jobs'],
+  event_scout: ['street-event'], activity_claim: ['timed-activity'], run_bank: ['moon-run', 'adventure'],
+  daily_cache: ['care'], kaiju_watch: ['kaiju'], item_user: ['inventory'],
+};
+for (const bounty of PET_DAILY_BOUNTIES) assert.deepEqual(options.bountyRoutes(bounty).map((target) => target.focus), bountyTargets[bounty.key]);
+assert.deepEqual(options.bountyRoutes({ event_types: ['__proto__', 'unknown'] }), []);
+const careTarget = { ...PET_DAILY_BOUNTIES[0], complete: false, progress: 1, claimed: false };
+const claimTarget = { ...PET_DAILY_BOUNTIES[2], complete: true, progress: 1, claimed: false };
+const targeted = { ...snapshot, guidance: { economy: { bounties: [careTarget, claimTarget] }, activity: { ready: true } } };
+const choices = options.options(targeted);
+assert.equal(choices[0].key, 'bounty_claims'); assert.equal(choices[0].focus, 'bounties');
+assert.equal(choices[1].key, 'activity');
+assert.equal(choices.find((c) => c.key === 'bounty_target').focus, 'care');
+assert.match(choices.find((c) => c.key === 'bounty_target').title, /Care Pair/);
+assert.deepEqual(options.options({ ...targeted, lifecycle: { phase: 'egg' } }).map((c) => c.key), ['practice', 'incubate']);
+const finishedChoices = options.options({ ...snapshot, guidance: { economy: { bounties: [{ ...claimTarget, claimed: true }] } }, contracts: { available: true } });
+assert.ok(!finishedChoices.some((c) => ['bounty_claims', 'bounty_target'].includes(c.key)));
+assert.ok(finishedChoices.some((c) => c.key === 'contract') && finishedChoices.some((c) => c.key === 'practice'));
 
 assert.equal(practice.create('x', '__proto__', 'explorer'), null);
 assert.equal(practice.restore({ version: 1 }), null);
