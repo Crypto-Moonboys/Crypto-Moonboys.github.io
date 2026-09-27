@@ -42,8 +42,8 @@
     if (snapshot && /^daily_(combat|explorer|extraction|boss)$/.test(id)) {
       var daily = s.daily_run || {}, currentPet = s.pet && s.pet.pet_id;
       var ownRun = daily.pet_id && daily.pet_id === currentPet;
-      var playable = Boolean(daily.available || daily.resumable && ownRun && s.run && s.run.run_id === daily.run_id && runAvailability(s).step);
-      var title = daily.available ? 'OPEN OFFICIAL DAILY RUN' : playable ? 'CONTINUE OFFICIAL DAILY RUN' : 'CHECK OFFICIAL DAILY RUN';
+      var playable = Boolean(daily.available || daily.resumable && ownRun && s.run && s.run.run_id === daily.run_id && (runAvailability(s).step || s.run.settlement_pending && runAvailability(s).extract));
+      var title = daily.available ? 'OPEN OFFICIAL DAILY RUN' : playable ? s.run.settlement_pending ? 'FINISH SAVED DAILY RUN' : 'CONTINUE OFFICIAL DAILY RUN' : 'CHECK OFFICIAL DAILY RUN';
       var detail = 'Only today’s official Daily Run for this pet advances this goal. Contracts, Practice and standard Moon Runs do not.';
       if (daily.attempted && !daily.resumable) {
         title = 'DAILY ATTEMPT USED';
@@ -112,7 +112,7 @@
     var source = Boolean(run && run.source_available !== false);
     var energy = Number(run && run.source_pet ? run.source_pet.energy : s.pet && s.pet.energy || 0);
     var progress = run && (run.daily ? Number(run.current_room != null ? run.current_room : run.depth || 0) : Number(run.depth || 0));
-    return { step: source && (Boolean(run.daily) || energy > 0), extract: source && progress > 0 };
+    return { step: source && !run.settlement_pending && (Boolean(run.daily) || energy > 0), extract: source && progress > 0 };
   }
 
   // Recommendations only. The server still validates every gameplay action.
@@ -235,7 +235,8 @@
     else if (g.activity && !g.activity.ready) add('activity', 'CHECK BACKGROUND ACTIVITY', 'Your timer continues while you play other routes. Check its next reward preview.');
     if (s.run) {
       var playableRun = runAvailability(s);
-      if (playableRun.step || playableRun.extract) add('run', playableRun.step ? 'CONTINUE ' + (s.run.daily ? 'DAILY RUN' : 'MOON RUN') : 'EXTRACT SAVED MOON RUN',
+      if (s.run.settlement_pending && playableRun.extract) add('run', 'FINISH SAVED DAILY RUN', 'The final boss room is saved. Retry its reward and completion without another fight.');
+      else if (playableRun.step || playableRun.extract) add('run', playableRun.step ? 'CONTINUE ' + (s.run.daily ? 'DAILY RUN' : 'MOON RUN') : 'EXTRACT SAVED MOON RUN',
         playableRun.step ? 'Choose the next room or extract after clearing a room. Finish this run before opening another.' : 'Your original run pet has no energy for another room. You can still extract and bank this saved run.');
     }
     else {

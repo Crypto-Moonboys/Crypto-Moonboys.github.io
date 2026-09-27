@@ -10,7 +10,7 @@ import { chooseDailyRunTactic, dailyTacticalBoard, previewDailyChoice, readDaily
 import { handleWaxBridgeRoute } from './routes/wax/index.js';
 import { applyPetRuntimeAward, buildPetGearSummary, buildPetProgressSummary, getOrCreatePetRuntimeState } from './pets/runtime-phase-5a.js';
 import {
-  createDailyMoonRun, extractDailyMoonRun, getDailyMoonRunReservation, getDailyMoonRunSummary, processDailyMoonRunStep,
+  createDailyMoonRun, extractDailyMoonRun, getDailyMoonRunReservation, getDailyMoonRunSummary, processDailyMoonRunStep, recoverDailyMoonRunEndings,
   DAILY_JOURNEY_REQUIRED_OBJECTIVES, PET_DAILY_CHALLENGES, recordDailyCareChallenge, syncDailyMoonRun,
 } from './pets/daily-moon-run.js';
 import {
@@ -4090,7 +4090,8 @@ async function extractDailyMoonRunWithWeeklyJourney(db, request = {}) {
   const result = await extractDailyMoonRun(db, request);
   const runId = String(request.run_id || result?.daily_run?.run_id || '').trim();
   const telegramId = String(request.telegram_id || result?.daily_run?.telegram_id || '').trim();
-  const terminalStatus = result?.accepted || result?.duplicate || String(result?.extraction?.status || '') === 'extracted'
+  const terminalStatus = result?.reason === 'daily_run_completed' ? 'completed'
+    : result?.accepted || result?.duplicate || String(result?.extraction?.status || '') === 'extracted'
     ? 'extracted'
     : '';
   if (telegramId && runId && terminalStatus) {
@@ -9294,6 +9295,10 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
   // State preparation owns current-season initialization. Roster projection
   // remains read-only and assumes this authoritative bootstrap already ran.
   await preparePetMiniAppState(db, telegramId, now);
+  const recoveredEndings = await recoverDailyMoonRunEndings(db, telegramId, now).catch(() => []);
+  for (const ending of recoveredEndings) if (ending.accepted) {
+    await recordWeeklyJourneyFromDailyMoonRunTerminal(db, telegramId, ending.daily_run.run_id, ending.daily_run.status);
+  }
   await recoverPetJourneyAwards(db, telegramId).catch((error) => {
     logApiFailure('pet_journey_recovery_failed', { message: error?.message || String(error) });
   });
@@ -9427,9 +9432,10 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
   const dailyReservation = activeRun
     ? await getDailyMoonRunReservation(db, { telegram_id: telegramId, run_id: activeRun.run_id })
     : null;
+  const dailyEndingPending = Boolean(dailyReservation && Number(dailyReservation.current_room) >= Number(dailyReservation.max_room));
   let dailyRoom = null;
   if (dailyReservation) {
-    const roomNumber = Math.max(1, Number(dailyReservation.current_room || 0) + 1);
+    const roomNumber = dailyEndingPending ? Number(dailyReservation.max_room) : Math.max(1, Number(dailyReservation.current_room || 0) + 1);
     const row = await db.prepare(`SELECT room_number, room_type, status, generated_data
       FROM telegram_pet_run_rooms
       WHERE telegram_id = ? AND run_id = ? AND room_number = ? LIMIT 1`)
@@ -9446,7 +9452,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     }
   }
   const dailyModifiers = dailyReservation ? await readDailyModifiers(db, activeRun) : [];
-  const runChoices = activeRun && runPetAvailable
+  const runChoices = activeRun && runPetAvailable && !dailyEndingPending
     ? (dailyReservation
       ? (dailyRoom?.choices || []).map((choice) => ({
         key: choice.choice_id,
@@ -9512,6 +9518,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       expected_step_index: Number(dailyReservation ? dailyReservation.current_room : Number(activeRun.depth || 0) + 1),
       room: dailyRoom || activeRun.room || null,
       choices: runChoices,
+      settlement_pending: dailyEndingPending,
     } : null,
     encounter: encounter ? {
       key: encounter.key,
@@ -13734,7 +13741,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260927-live-options-v1`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260927-endings-v1`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',

@@ -6,6 +6,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { chromium } from 'playwright';
 import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 import { __dailyMoonRunTestHooks as dailyHooks } from '../workers/moonboys-api/pets/daily-moon-run.js';
+import { persistPetRunRoomOutcome } from '../workers/moonboys-api/pets/roguelite-foundation.js';
 import { previewEncounterChoice } from '../workers/moonboys-api/pets/choice-preview.js';
 import { createContractState, contractChoices } from '../workers/moonboys-api/pets/continuing-contracts.js';
 import { getActiveSeasonalBoss } from '../workers/moonboys-api/pets/live-systems.js';
@@ -20,12 +21,14 @@ sqlite.exec(await fs.readFile(path.join(root, 'workers/moonboys-api/migrations/0
 sqlite.exec(await fs.readFile(path.join(root, 'workers/moonboys-api/migrations/058_telegram_pet_season_completion.sql'), 'utf8'));
 let failActivitySettlement = false;
 let failWeeklyReward = false;
+let failDailyEnding = false;
 class Statement {
   constructor(sql, args = []) { this.sql = sql; this.args = args; }
   bind(...args) { return new Statement(this.sql, args); }
   async first() { return sqlite.prepare(this.sql).get(...this.args) || null; }
   async all() { return { results: sqlite.prepare(this.sql).all(...this.args) }; }
   async run() {
+    if (failDailyEnding && this.sql.includes('INSERT OR IGNORE INTO telegram_pet_run_analytics') && this.args.some((value) => String(value).endsWith(':alley_king:win'))) throw Error('interrupted_daily_ending');
     if (failActivitySettlement && this.sql.includes('UPDATE telegram_pet_activity_sessions') && this.sql.includes('SET metadata = ?')) {
       failActivitySettlement = false; throw Error('interrupted_activity_settlement');
     }
@@ -504,6 +507,48 @@ try {
     await page.locator('[data-action="contract_start"]').filter({ hasText: 'MAP THE BACKSTREETS' }).click();
     await page.waitForSelector('[data-action="contract_step"]');
     assert.equal((await hooks.buildPetMiniAppState(db, currentUser, token)).contracts.run.depth, 0);
+
+    // A won final boss remains a recoverable ending across reloads. No room 11,
+    // second fight, extraction downgrade or duplicate boss reward is allowed.
+    currentUser = `browser-ending-${viewport.width}`;
+    await seed(currentUser, 'young');
+    dailyOverride = null;
+    const endingStart = await hooks.processPetMiniAppAction(db, currentUser, { id: currentUser }, { action: 'daily_run_start' }, token);
+    const endingId = endingStart.daily_run.run_id;
+    sqlite.prepare('UPDATE telegram_pet_runs SET current_room=9,depth=9,score=123 WHERE run_id=?').run(endingId);
+    const endingRun = sqlite.prepare('SELECT * FROM telegram_pet_runs WHERE run_id=?').get(endingId);
+    const endingRoom = await hooks.createPetRunRoom(db, endingRun);
+    await persistPetRunRoomOutcome(db, endingRun, endingRoom, { success: true, score: 100, choice_id: endingRoom.choices[0].choice_id });
+    failDailyEnding = true;
+    await assert.rejects(hooks.processPetMiniAppAction(db, currentUser, { id: currentUser }, { action: 'run_step', run_id: endingId, choice_key: endingRoom.choices[0].choice_id, expected_step_index: 9 }, token), /interrupted_daily_ending/);
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-panel="play-now"] [data-focus="moon-run"]').filter({ hasText: 'FINISH SAVED DAILY RUN' }).click();
+    const savedEndingText = await page.locator('[data-panel="moon-run"]').textContent();
+    assert.match(savedEndingText, /ROOM 10\/10/); assert.doesNotMatch(savedEndingText, /ROOM 11/);
+    assert.match(savedEndingText, /FINAL BOSS ROOM SAVED/);
+    assert.match(savedEndingText, /FINAL RESULT SAVED/);
+    assert.doesNotMatch(savedEndingText, /Extraction ends this attempt/);
+    assert.equal(await page.locator('[data-action="run_step"]').count(), 0);
+    assert.equal(await page.locator('[data-action="run_extract"]').isEnabled(), true);
+    const endingWallet = sqlite.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(currentUser);
+    if (process.env.MOONPET_BROWSER_SCREENSHOT) {
+      await page.locator('[data-action="run_extract"]').scrollIntoViewIfNeeded();
+      await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-saved-ending-${viewport.width}.png`) });
+    }
+    failDailyEnding = false;
+    const endingResponse = page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'run_extract');
+    await page.locator('[data-action="run_extract"]').click();
+    const completedEnding = await (await endingResponse).json();
+    assert.equal(completedEnding.result.reason, 'daily_run_completed');
+    assert.equal(completedEnding.state.run, null); assert.equal(completedEnding.state.daily_run.status, 'completed');
+    assert.equal(completedEnding.state.daily_run.score, 223);
+    assert.deepEqual(sqlite.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(currentUser), endingWallet);
+    assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='roguelite_boss'").get(currentUser).n, 1);
+    assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_pet_run_rooms WHERE run_id=? AND room_number>10').get(endingId).n, 0);
+    await page.waitForSelector('[data-action="run_start"]');
+    assert.equal(await page.locator('[data-action="daily_run_start"]').isDisabled(), true);
+    assert.ok(await page.locator('[data-panel="play-now"] [data-focus="contracts"]').count());
+    assert.ok(await page.locator('[data-panel="play-now"] [data-focus="practice"]').count());
 
     // A separate real-Worker fixture begins at the first optional daily checkpoint.
     currentUser = `browser-daily-${viewport.width}`;
