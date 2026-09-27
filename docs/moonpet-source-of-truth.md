@@ -99,6 +99,16 @@ official runs; standard completion/extraction and official Daily Run finishes
 use the existing accepted-event authority. Contracts and Practice remain excluded.
 The links are navigation only and never spend resources or submit progress.
 
+Play Now's next bounty chooses only currently available qualifying routes,
+ranked by existing progress. It checks care/work cooldowns, active activities,
+run-source energy and availability, Adventure readiness, cache status, usable
+inventory and Kaiju capability gates. A blocked Moon Run may route to an
+available Adventure. Official Daily Runs are not suggested for a bounty that
+counts standard run events. When all targets are blocked, Contracts, Practice
+and the bounty board remain accessible. Board links explain that a route is not
+ready without hiding the target or granting progress. All checks are navigation
+hints from the latest state; the server still validates gameplay and rewards.
+
 ## Weekly Journey
 
 Weekly structured progression system.
@@ -157,7 +167,7 @@ Includes:
 ### Continuing contracts
 
 Continuing contracts are server-owned quests for hatched active pets.
-New v7 contracts retain six goals, three starting builds and two route lengths:
+New v8 contracts retain six goals, three starting builds and two route lengths:
 Standard has six rooms and drafts after rooms two/four; Long has ten rooms and
 drafts after rooms two/four/six/eight. Both use route risk/reward choices. Each completed contract records rank
 points for its source pet and immediately offers another quest. Rank has no
@@ -180,6 +190,18 @@ Moves cannot switch length or supply progress. Saved versions 1–5 keep six roo
 original goal thresholds and original draft/preparation rules. In long routes,
 late redraws are offered only when different unowned perks remain. Supply caches
 remain available at every draft. The final room does not create a new draft.
+
+New v8 contracts have a final boss in the last room. Scout/Escort meet the
+Shield Warden, Recon/Resupply the Signal Hound, and Salvage/Breach the Vault
+Breaker. Each offers named cover/bold/search tactics with different route
+modifiers. The boss is disclosed before starting and throughout the run. A
+successful final tactic and the main objective are both required for completion;
+a failed tactic ends the contract with zero rank/XP even if route health remains.
+Supply rest is disabled in the boss room; optional preparation remains available.
+The existing chance clamp and server roll apply, and path/perk/preparation
+modifiers are included in previews. Boss outcome is saved once with the final
+move. There is no separate boss payout or extra daily-bonus slot. Existing v1–v7
+saves retain their last-room setback/rest rules and do not gain a boss.
 
 New v7 contracts offer an optional path after each upgrade/supply choice.
 Quiet Streets adds 8 percentage points to route odds, subtracts 5 salvage per

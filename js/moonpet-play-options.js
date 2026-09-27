@@ -67,6 +67,44 @@
     return destinations;
   }
 
+  // Recommendations only. The server still validates every gameplay action.
+  function bountyRouteOptions(bounty, snapshot) {
+    var s = snapshot || {}, g = s.guidance || {}, energy = Number(s.pet && s.pet.energy || 0);
+    var ready = function (event) {
+      if (!s.adopted || !s.lifecycle || s.lifecycle.phase === 'egg') return false;
+      var cooldown = (s.cooldowns && s.cooldowns.entries || []).some(function (entry) {
+        return entry.key === 'action:' + event && Number(entry.remaining_seconds) > 0;
+      });
+      if (cooldown) return false;
+      if (['feed', 'play', 'clean'].includes(event)) return true;
+      if (event === 'sleep' || event === 'train') return !(g.activity && g.activity.status === 'active') && (event !== 'train' || energy >= 18);
+      if (event === 'work') return (g.jobs || []).some(function (job) { return job.available; });
+      if (event === 'random_event') return Boolean(s.encounter && (s.encounter.choices || []).length);
+      if (event === 'activity_claim') return Boolean(g.activity && g.activity.ready);
+      if (event === 'run_complete' || event === 'run_extract') return s.run
+        ? !s.run.daily && s.run.source_available !== false && (Number(s.run.source_pet ? s.run.source_pet.energy : energy) > 0 || Number(s.run.depth) > 0)
+        : energy >= 12;
+      if (event === 'adventure') return Boolean(s.adventure && s.adventure.available);
+      if (event === 'daily_chest') return Boolean(g.daily_cache && g.daily_cache.available);
+      if (event === 'kaiju_battle') {
+        var capability = s.capabilities && s.capabilities.systems && s.capabilities.systems.kaiju;
+        return s.capabilities_version === 1 && Boolean(capability && capability.state === 'AVAILABLE' && capability.unlocked === true && capability.active === true);
+      }
+      if (event === 'use_item' || event === 'use_item_reward') return (s.inventory || []).some(function (item) {
+        return Number(item.count == null ? item.quantity : item.count) > 0 && (item.usable || item.kind === 'usable_item');
+      });
+      return false;
+    };
+    return bountyRoutes(bounty).map(function (target) {
+      var available = (bounty.event_types || []).some(function (event) {
+        var destination = route({ key: event });
+        return destination.screen === target.screen && destination.focus === target.focus && ready(event);
+      });
+      return Object.assign({}, target, { available: available,
+        detail: available ? 'A qualifying action is available in the latest game state. Review its costs before playing.' : 'No qualifying action is ready here now. Open to review its unlocks, cooldowns or resources; Contracts and Practice remain available.' });
+    });
+  }
+
   function craftingGoal(snapshot, recipeKey) {
     var s = snapshot || {}, economy = s.guidance && s.guidance.economy || {};
     var recipe = (s.live_systems && s.live_systems.crafting || []).find(function (r) { return r.key === recipeKey; });
@@ -130,10 +168,12 @@
       var ready = bounties.filter(function (b) { return b.complete && !b.claimed; });
       if (ready.length) add('bounty_claims', 'CLAIM READY BOUNTIES // ' + ready.length, 'Open the board to collect verified rewards.');
       if (g.activity && g.activity.ready) add('activity', g.activity.recovery_pending ? 'RECOVER SAVED ACTIVITY REWARD' : 'CLAIM OR CONTINUE ACTIVITY', g.activity.recovery_pending ? 'Retry the interrupted claim. Its saved reward is protected against duplicate payment.' : 'Compare the current reward with the next duration checkpoint before claiming.');
-      var nextBounty = bounties.filter(function (b) { return !b.complete && !b.claimed && bountyRoutes(b).length; }).sort(function (a, b) {
-        return Number(b.progress || 0) / Math.max(1, Number(b.required)) - Number(a.progress || 0) / Math.max(1, Number(a.required));
+      var nextBounty = bounties.filter(function (b) { return !b.complete && !b.claimed; }).map(function (b) {
+        return { bounty: b, routes: bountyRouteOptions(b, s).filter(function (r) { return r.available; }) };
+      }).filter(function (entry) { return entry.routes.length; }).sort(function (a, b) {
+        return Number(b.bounty.progress || 0) / Math.max(1, Number(b.bounty.required)) - Number(a.bounty.progress || 0) / Math.max(1, Number(a.bounty.required));
       })[0];
-      if (nextBounty) add('bounty_target', 'NEXT BOUNTY // ' + nextBounty.title, nextBounty.progress + '/' + nextBounty.required + ' // ' + nextBounty.detail + ' Open the route to check its requirements.', bountyRoutes(nextBounty)[0]);
+      if (nextBounty) add('bounty_target', 'NEXT BOUNTY // ' + nextBounty.bounty.title, nextBounty.bounty.progress + '/' + nextBounty.bounty.required + ' // ' + (nextBounty.bounty.detail || '') + ' A qualifying route is ready; review its costs.', nextBounty.routes[0]);
     }
     if (s.contracts && s.contracts.available) add('contract', s.contracts.run && s.contracts.run.status === 'active' ? 'CONTINUE CONTRACT' : 'CONTINUING CONTRACTS', 'Choose a quest, build and route length. Saved rank and upgrade drafts. New quests after every finish; no pet energy cost.');
     add('practice', 'PRACTICE ROGUELITE', 'Unlimited replays. Build choices, room risks and local goals. No rewards or pet costs.');
@@ -170,7 +210,7 @@
     return choices;
   }
 
-  var api = { route: route, objectiveRoutes: objectiveRoutes, bountyRoutes: bountyRoutes, craftingGoal: craftingGoal, options: options };
+  var api = { route: route, objectiveRoutes: objectiveRoutes, bountyRoutes: bountyRoutes, bountyRouteOptions: bountyRouteOptions, craftingGoal: craftingGoal, options: options };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.MoonpetPlayOptions = api;
 })(typeof window !== 'undefined' ? window : globalThis);

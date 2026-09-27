@@ -32,11 +32,29 @@ const PATHS = Object.freeze({
   path_hazard: { title: 'SALVAGE HOTSPOT', detail: '-8pp clear chance, +10 salvage per success, +4 failure damage.', odds: -8, salvage: 10, damage: 4 },
   path_steady: { title: 'STAY ON COURSE', detail: 'Keep normal odds, salvage and damage.', odds: 0, salvage: 0, damage: 0 },
 });
-function activePath(s) { return s.version === 7 && s.path?.remaining > 0 && has(PATHS, s.path.key) ? { key: s.path.key, ...PATHS[s.path.key], remaining: s.path.remaining } : null; }
+function activePath(s) { return [7, 8].includes(s.version) && s.path?.remaining > 0 && has(PATHS, s.path.key) ? { key: s.path.key, ...PATHS[s.path.key], remaining: s.path.remaining } : null; }
 export function contractPathChoices(s) {
-  if (s.version !== 7 || !s.path_offer || s.draft.length || s.health <= 0 || s.depth >= contractLength(s)) return [];
+  if (![7, 8].includes(s.version) || !s.path_offer || s.draft.length || s.health <= 0 || s.depth >= contractLength(s)) return [];
   return Object.entries(PATHS).map(([key, path]) => ({ key, title: path.title, detail: 'Next 2 rooms: ' + path.detail }));
 }
+// Final bosses change the last room only; older saves keep their original ending.
+const BOSSES = Object.freeze({
+  warden: { title: 'SHIELD WARDEN', detail: 'The Warden locks down the exit. Flanking has better cover odds; breaking its guard risks a heavy hit for extra salvage.',
+    tactics: { cover: 'FLANK THE SHIELD', bold: 'BREAK THE GUARD', search: 'CUT THE POWER' },
+    rule: { detail: 'Warden: cover +10pp and -4 failure damage; bold -8pp, +12 salvage and +6 failure damage; search +4pp and +6 salvage.', cover: { odds: 10, damage: -4 }, bold: { odds: -8, salvage: 12, damage: 6 }, search: { odds: 4, salvage: 6 } } },
+  hound: { title: 'SIGNAL HOUND', detail: 'A tracking machine follows your signal. Searching for its relay is favoured; hiding from its sensors is less reliable.',
+    tactics: { cover: 'HIDE THE SIGNAL', bold: 'RUSH THE TRACKER', search: 'JAM THE RELAY' },
+    rule: { detail: 'Hound: search +12pp and +8 salvage; cover -4pp and +2 failure damage; bold +6pp and +4 failure damage.', search: { odds: 12, salvage: 8 }, cover: { odds: -4, damage: 2 }, bold: { odds: 6, damage: 4 } } },
+  breaker: { title: 'VAULT BREAKER', detail: 'A salvage rig guards the haul. A direct strike exploits its exposed drive; searching its vault is riskier but profitable.',
+    tactics: { cover: 'DODGE THE RIG', bold: 'STRIKE THE DRIVE', search: 'RAID THE VAULT' },
+    rule: { detail: 'Breaker: bold +10pp and +10 salvage; cover +4pp and -2 salvage; search -8pp, +12 salvage and +4 failure damage.', bold: { odds: 10, salvage: 10 }, cover: { odds: 4, salvage: -2 }, search: { odds: -8, salvage: 12, damage: 4 } } },
+});
+export function contractBoss(s) {
+  if (s.version !== 8) return null;
+  const key = ['recon', 'resupply'].includes(s.goal) ? 'hound' : ['salvage', 'breach'].includes(s.goal) ? 'breaker' : 'warden';
+  return { key, ...BOSSES[key] };
+}
+function finalBoss(s) { return s.depth === contractLength(s) - 1 ? contractBoss(s) : null; }
 const PERKS = Object.freeze({
   shield: { title: 'SCRAP SHIELD', detail: 'Failure damage -8.' },
   radar: { title: 'ROUTE RADAR', detail: 'Cover/search odds +12 percentage points.' },
@@ -70,35 +88,38 @@ const has = (o, k) => Object.hasOwn(o, k);
 const integer = (n) => Math.max(0, Math.floor(Number(n) || 0));
 const day = (now) => now.toISOString().slice(0, 10);
 function hash(value) { let n = 2166136261; for (const c of String(value)) n = Math.imul(n ^ c.charCodeAt(0), 16777619); return n >>> 0; }
-function formatKey(s) { return [6, 7].includes(s.version) && s.format === 'extended' ? 'extended' : 'standard'; }
+function formatKey(s) { return [6, 7, 8].includes(s.version) && s.format === 'extended' ? 'extended' : 'standard'; }
 export function contractLength(s) { return CONTRACT_FORMATS[formatKey(s)].rooms; }
 export function contractObjective(s) {
   const goal = CONTRACT_GOALS[s.goal];
-  if (formatKey(s) === 'standard') return { title: goal.title, detail: goal.detail, target: goal.target };
+  const ending = s.version === 8 ? ' Clear the final boss route to complete the contract.' : '';
+  if (formatKey(s) === 'standard') return { title: goal.title, detail: goal.detail + ending, target: goal.target };
   const target = goal.extended_target;
   const requirement = {
     scout: `${target} successful routes`, salvage: `${target} salvage`, escort: `${target} route health`,
     breach: `${target} successful bold routes`, recon: `${target} successful search routes`, resupply: `${target} supplies`,
   }[s.goal];
-  return { title: goal.title, detail: `Finish ten rooms with at least ${requirement}.`, target };
+  return { title: goal.title, detail: `Finish ten rooms with at least ${requirement}.` + ending, target };
 }
 export function contractRoom(s) {
+  const boss = finalBoss(s);
+  if (boss) return { title: boss.title, detail: boss.detail, rule: boss.rule };
   const index = s.depth >= contractLength(s) - 1 ? 7 : hash(s.seed + s.depth) % 7;
-  return { title: SCENES[index][0], detail: SCENES[index][1], rule: [2, 3, 4, 5, 6, 7].includes(s.version) ? SCENE_RULES[index] : null };
+  return { title: SCENES[index][0], detail: SCENES[index][1], rule: [2, 3, 4, 5, 6, 7, 8].includes(s.version) ? SCENE_RULES[index] : null };
 }
 export function createContractState(goal, build, tier, seed, sideGoal = 'none', format = 'standard') {
   if (typeof goal !== 'string' || typeof build !== 'string' || typeof sideGoal !== 'string'
     || typeof format !== 'string' || !has(CONTRACT_FORMATS, format)
     || !has(CONTRACT_GOALS, goal) || !has(CONTRACT_BUILDS, build) || !has(CONTRACT_SIDE_GOALS, sideGoal) || ![1, 2, 3].includes(tier)) return null;
   const b = CONTRACT_BUILDS[build];
-  return { version: 7, format, path_offer: false, path: null, draft_redrawn: false, preparation: null, goal, build, tier, seed, side_goal: sideGoal, route_wins: { cover: 0, bold: 0, search: 0 }, depth: 0, wins: 0, health: b.health, max_health: b.health,
+  return { version: 8, boss_result: null, format, path_offer: false, path: null, draft_redrawn: false, preparation: null, goal, build, tier, seed, side_goal: sideGoal, route_wins: { cover: 0, bold: 0, search: 0 }, depth: 0, wins: 0, health: b.health, max_health: b.health,
     supplies: b.supplies, salvage: 0, perks: [], draft: [], last: 'Choose a route. Your contract is saved after every decision.' };
 }
 export function contractChoices(s) {
-  const b = CONTRACT_BUILDS[s.build], perks = s.perks;
+  const b = CONTRACT_BUILDS[s.build], perks = s.perks, boss = finalBoss(s);
   const threat = (s.tier - 1) * 7 + s.depth * 2;
   const rules = contractRoom(s).rule || {}, path = activePath(s) || {};
-  const prepared = [3, 4, 5, 6, 7].includes(s.version) && s.preparation === 'prepare_scout';
+  const prepared = [3, 4, 5, 6, 7, 8].includes(s.version) && s.preparation === 'prepare_scout';
   const odds = (key, base) => Math.max(30, Math.min(98, base - threat + (rules[key]?.odds || 0) + (path.odds || 0) + (prepared ? 10 : 0)));
   const shield = perks.includes('shield') ? 8 : 0, bonus = perks.includes('magnet') ? 10 : 0;
   return [
@@ -106,10 +127,11 @@ export function contractChoices(s) {
     { key: 'bold', title: 'BREAK THROUGH', odds: odds('bold', 74 + b.power + (perks.includes('boots') ? 15 : 0)), salvage: 27 + bonus, damage: 29 + s.depth - shield, detail: 'More salvage; heavier damage on failure.' },
     { key: 'search', title: 'SEARCH SIDE ROUTE', odds: odds('search', 80 + b.guard + (perks.includes('radar') ? 12 : 0)), salvage: 19 + bonus + (s.build === 'scavenger' ? 6 : 0), damage: 21 + s.depth - shield, detail: 'Success also finds one supply.' },
     { key: 'rest', title: 'USE SUPPLY', odds: 100, salvage: 0, damage: 0, disabled: s.supplies < 1 || s.health >= s.max_health, detail: `Use 1 supply to heal ${perks.includes('pockets') ? 40 : 28}. Advances a room without a successful route.` },
-  ].map((choice) => ({ ...choice, salvage: choice.salvage + (rules[choice.key]?.salvage || 0) + (choice.key !== 'rest' ? path.salvage || 0 : 0), damage: choice.damage + (rules[choice.key]?.damage || 0) + (choice.key !== 'rest' ? path.damage || 0 : 0) }));
+  ].map((choice) => ({ ...choice, title: boss?.tactics[choice.key] || choice.title,
+    ...(boss ? choice.key === 'rest' ? { disabled: true, detail: 'Supply rest cannot clear the final boss. Use Field Patch before a tactic if you need healing.' } : { detail: choice.detail + ' Final tactic: failure ends this contract with zero rank or XP.' } : {}), salvage: choice.salvage + (rules[choice.key]?.salvage || 0) + (choice.key !== 'rest' ? path.salvage || 0 : 0), damage: choice.damage + (rules[choice.key]?.damage || 0) + (choice.key !== 'rest' ? path.damage || 0 : 0) }));
 }
 export function contractPreparations(s) {
-  if (![3, 4, 5, 6, 7].includes(s.version) || s.depth >= contractLength(s) || s.health <= 0 || s.draft.length || s.preparation) return [];
+  if (![3, 4, 5, 6, 7, 8].includes(s.version) || s.depth >= contractLength(s) || s.health <= 0 || s.draft.length || s.preparation) return [];
   return [
     { key: 'prepare_scout', title: 'SCOUT AHEAD', disabled: s.supplies < 2, detail: 'Spend 2 supplies: +10 percentage points to route clear chances in this room, capped at 98%. No room advance.' },
     { key: 'prepare_patch', title: 'FIELD PATCH', disabled: s.salvage < 20 || s.health >= s.max_health, detail: 'Spend 20 salvage: heal up to 25 route HP now. No room advance. Spent salvage no longer counts toward the goal or rank.' },
@@ -124,14 +146,14 @@ function redrawPool(s) {
   return Object.keys(PERKS).filter((key) => !s.perks.includes(key) && !s.draft.includes(key));
 }
 export function contractDraftActions(s) {
-  if (![5, 6, 7].includes(s.version) || !s.draft.length || s.draft_redrawn || s.health <= 0 || s.depth >= contractLength(s)) return [];
+  if (![5, 6, 7, 8].includes(s.version) || !s.draft.length || s.draft_redrawn || s.health <= 0 || s.depth >= contractLength(s)) return [];
   const count = Math.min(3, redrawPool(s).length);
   if (!count) return [];
   return [{ key: 'redraw_draft', title: 'REDRAW UPGRADES', disabled: s.salvage < CONTRACT_REDRAW_COST,
     detail: `Spend ${CONTRACT_REDRAW_COST} salvage to replace these perks with ${count} different unowned upgrades. Once per draft; no room advance. Supplies remain an option. Spent salvage reduces final rank and salvage-goal progress.` }];
 }
 export function contractSideProgress(s) {
-  if (![2, 3, 4, 5, 6, 7].includes(s.version) || s.side_goal === 'none') return null;
+  if (![2, 3, 4, 5, 6, 7, 8].includes(s.version) || s.side_goal === 'none') return null;
   const goal = CONTRACT_SIDE_GOALS[s.side_goal];
   const progress = s.side_goal === 'versatile' ? Object.values(s.route_wins).filter((n) => n > 0).length
     : s.side_goal === 'daredevil' ? s.route_wins.bold : s.supplies;
@@ -165,7 +187,7 @@ export function advanceContract(value, action, roll) {
       s.last = `Spent ${CONTRACT_REDRAW_COST} salvage to redraw upgrades. Choose one of the new perks or take supplies.`;
       return { state: s, status: 'active', rank_points: 0 };
     }
-    if ([4, 5, 6, 7].includes(s.version) && action === 'supply_cache') {
+    if ([4, 5, 6, 7, 8].includes(s.version) && action === 'supply_cache') {
       s.supplies += 2; s.draft = [];
       s.last = 'Took 2 contract supplies instead of an upgrade. Use them to heal, scout or pursue the supply objective.';
       return { state: s, status: 'active', rank_points: 0 };
@@ -179,28 +201,30 @@ export function advanceContract(value, action, roll) {
   }
   const choice = contractChoices(s).find((c) => c.key === action);
   if (!choice || choice.disabled || !Number.isInteger(roll) || roll < 0 || roll >= 100) return null;
+  const boss = finalBoss(s);
+  if (boss) s.boss_result = { key: boss.key, choice: action, cleared: roll < choice.odds };
   if (action === 'rest') {
     s.supplies--; s.health = Math.min(s.max_health, s.health + (s.perks.includes('pockets') ? 40 : 28));
     s.last = 'Used one supply and moved on. No salvage or route-clear credit.';
   } else if (roll < choice.odds) {
     s.wins++; s.salvage += choice.salvage; if (action === 'search') s.supplies++;
-    if ([2, 3, 4, 5, 6, 7].includes(s.version)) s.route_wins[action]++;
+    if ([2, 3, 4, 5, 6, 7, 8].includes(s.version)) s.route_wins[action]++;
     s.last = `Route cleared. +${choice.salvage} contract salvage.`;
   } else { s.health = Math.max(0, s.health - choice.damage); s.last = `Setback: -${choice.damage} route health. Keep going if you can.`; }
   s.depth++;
-  if (s.version === 7) {
+  if ([7, 8].includes(s.version)) {
     s.path_offer = false;
     if (s.path && --s.path.remaining <= 0) s.path = null;
   }
-  if ([3, 4, 5, 6, 7].includes(s.version)) s.preparation = null;
+  if ([3, 4, 5, 6, 7, 8].includes(s.version)) s.preparation = null;
   let status = 'active';
   if (!s.health) { status = 'failed'; s.last = 'Route health exhausted. Another contract is available immediately.'; }
   else if (s.depth === contractLength(s)) {
-    status = contractGoalProgress(s) >= contractObjective(s).target ? 'completed' : 'failed';
-    s.last = status === 'completed' ? 'Contract complete. Rank recorded; choose another contract whenever you like.' : 'Route finished, but the contract goal was missed. Try a different build or route.';
+    status = contractGoalProgress(s) >= contractObjective(s).target && (!boss || s.boss_result.cleared) ? 'completed' : 'failed';
+    s.last = boss && !s.boss_result.cleared ? 'The boss held the exit. No rank or XP; another contract is ready immediately.' : status === 'completed' ? 'Contract complete. Rank recorded; choose another contract whenever you like.' : 'Route finished, but the contract goal was missed. Try a different build or route.';
   } else if (s.depth % 2 === 0) {
-    if (s.version === 7) s.path_offer = true;
-    if ([5, 6, 7].includes(s.version)) s.draft_redrawn = false;
+    if ([7, 8].includes(s.version)) s.path_offer = true;
+    if ([5, 6, 7, 8].includes(s.version)) s.draft_redrawn = false;
     s.draft = Object.keys(PERKS).filter((k) => !s.perks.includes(k)).sort((a, b) => hash(s.seed + s.depth + a) - hash(s.seed + s.depth + b)).slice(0, 3);
   }
   const side = contractSideProgress(s);
@@ -208,21 +232,22 @@ export function advanceContract(value, action, roll) {
 }
 function projection(row) {
   if (!row) return null;
-  const s = JSON.parse(row.state_json), room = contractRoom(s), side = contractSideProgress(s), objective = contractObjective(s);
+  const s = JSON.parse(row.state_json), room = contractRoom(s), side = contractSideProgress(s), objective = contractObjective(s), boss = contractBoss(s);
   return { contract_id: row.contract_id, pet_id: row.pet_id, revision: row.revision, sequence: row.sequence, status: row.status,
     goal: s.goal, title: objective.title, objective: objective.detail,
+    boss: boss ? { key: boss.key, title: boss.title, detail: boss.detail, active: row.status === 'active' && Boolean(finalBoss(s)), result: s.boss_result || null } : null,
     build: s.build, build_title: CONTRACT_BUILDS[s.build].title, tier: s.tier, depth: s.depth, max_depth: contractLength(s),
     format: formatKey(s), format_title: CONTRACT_FORMATS[formatKey(s)].title,
     health: s.health, max_health: s.max_health, supplies: s.supplies, salvage: s.salvage,
     progress: contractGoalProgress(s), target: objective.target, last: s.last,
     room: { title: room.title, detail: room.detail, effect: room.rule?.detail || '' }, perks: s.perks.map((key) => ({ key, ...PERKS[key] })),
     side_goal: side ? { ...side, earned: row.status === 'completed' && side.reached } : null,
-    preparation: [3, 4, 5, 6, 7].includes(s.version) ? s.preparation : null,
+    preparation: [3, 4, 5, 6, 7, 8].includes(s.version) ? s.preparation : null,
     path: activePath(s),
     path_choices: row.status === 'active' ? contractPathChoices(s) : [],
     preparations: row.status === 'active' ? contractPreparations(s) : [],
     draft_actions: row.status === 'active' ? contractDraftActions(s) : [],
-    choices: row.status !== 'active' ? [] : s.draft.length ? [...s.draft.map((key) => ({ key, ...PERKS[key], upgrade: true })), ...([4, 5, 6, 7].includes(s.version) ? [{ key: 'supply_cache', title: 'TAKE SUPPLY CACHE', upgrade: true, detail: 'Take 2 contract supplies instead of an upgrade. Spend them on healing or scouting, or save them for a supply objective. No room advance, pet item, XP or currency.' }] : [])] : contractChoices(s),
+    choices: row.status !== 'active' ? [] : s.draft.length ? [...s.draft.map((key) => ({ key, ...PERKS[key], upgrade: true })), ...([4, 5, 6, 7, 8].includes(s.version) ? [{ key: 'supply_cache', title: 'TAKE SUPPLY CACHE', upgrade: true, detail: 'Take 2 contract supplies instead of an upgrade. Spend them on healing or scouting, or save them for a supply objective. No room advance, pet item, XP or currency.' }] : [])] : contractChoices(s),
     rank_points: row.rank_points, reward_pending: row.reward_xp > 0 && !row.reward_settled, xp_awarded: row.xp_awarded };
 }
 async function authority(db, owner, petId, seasonKey) {
@@ -245,7 +270,7 @@ export async function getContractBoard(db, owner, pet, now = new Date()) {
     db.prepare('SELECT COUNT(*) AS used FROM telegram_pet_contracts WHERE telegram_id=? AND reward_day=? AND reward_xp>0').bind(owner, day(now)).first(),
     db.prepare(`SELECT contract_id FROM telegram_pet_contracts WHERE telegram_id=? AND pet_id=? AND season_key=? AND reward_xp>0 AND reward_settled=0 ORDER BY sequence LIMIT 10`).bind(owner, petId, seasonKey).all(),
     db.prepare(`SELECT json_extract(state_json,'$.goal') AS goal, json_extract(state_json,'$.build') AS build,
-      CASE WHEN json_extract(state_json,'$.version') IN (6,7) AND json_extract(state_json,'$.format')='extended' THEN 'extended' ELSE 'standard' END AS format,
+      CASE WHEN json_extract(state_json,'$.version') IN (6,7,8) AND json_extract(state_json,'$.format')='extended' THEN 'extended' ELSE 'standard' END AS format,
       json_extract(state_json,'$.tier') AS tier, COUNT(*) AS completed, MAX(rank_points) AS best_rank_points
       FROM telegram_pet_contracts WHERE telegram_id=? AND pet_id=? AND season_key=? AND status='completed'
       GROUP BY goal, build, tier, format`).bind(owner, petId, seasonKey).all(),
@@ -266,7 +291,7 @@ export async function getContractBoard(db, owner, pet, now = new Date()) {
     bonus_remaining: Math.max(0, CONTRACT_BONUS_LIMIT - integer(bonuses?.used)), bonus_limit: CONTRACT_BONUS_LIMIT, bonus_xp: CONTRACT_BONUS_XP,
     pending_rewards: pending.results || [], offers: Object.entries(CONTRACT_GOALS).map(([key, goal]) => {
       const entries = (mastery.results || []).filter((entry) => entry.goal === key);
-      return { key, ...goal, objectives: Object.entries(CONTRACT_FORMATS).map(([format, route]) => ({ format, format_title: route.title, ...contractObjective({ version: 6, format, goal: key }) })),
+      return { key, ...goal, boss: contractBoss({ version: 8, goal: key }).title, objectives: Object.entries(CONTRACT_FORMATS).map(([format, route]) => ({ format, format_title: route.title, ...contractObjective({ version: 8, format, goal: key }) })),
         completed: entries.reduce((sum, record) => sum + integer(record.completed), 0),
         best_rank_points: entries.reduce((best, record) => Math.max(best, integer(record.best_rank_points)), 0) };
     }),
