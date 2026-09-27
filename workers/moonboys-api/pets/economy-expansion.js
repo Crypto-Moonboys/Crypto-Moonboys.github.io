@@ -43,13 +43,13 @@ export const PET_ECONOMY_ROUTES = freeze([
 ]);
 
 export const PET_DAILY_BOUNTIES = freeze([
-  { key: 'care_pair', title: 'Care Pair', detail: 'Complete any 2 care actions.', event_types: ['feed', 'play', 'clean', 'sleep', 'train'], required: 2, reward: { moon_gold: 30 } },
-  { key: 'triple_care', title: 'Full Care Circuit', detail: 'Complete any 3 care actions.', event_types: ['feed', 'play', 'clean', 'sleep', 'train'], required: 3, reward: { moon_gold: 45, style_tokens: 1 } },
+  { key: 'care_pair', title: 'Care Pair', detail: 'Complete 2 accepted Feed, Play, Clean, Sleep or Train actions.', event_types: ['feed', 'play', 'clean', 'sleep', 'train'], required: 2, reward: { moon_gold: 30 } },
+  { key: 'triple_care', title: 'Full Care Circuit', detail: 'Complete 3 accepted Feed, Play, Clean, Sleep or Train actions.', event_types: ['feed', 'play', 'clean', 'sleep', 'train'], required: 3, reward: { moon_gold: 45, style_tokens: 1 } },
   { key: 'job_shift', title: 'Clock In', detail: 'Complete 1 Pet Job.', event_types: ['work'], required: 1, reward: { moon_gold: 35 } },
   { key: 'job_double', title: 'Double Shift', detail: 'Complete 2 Pet Jobs.', event_types: ['work'], required: 2, reward: { moon_gold: 55, style_tokens: 1 } },
   { key: 'event_scout', title: 'Street Scout', detail: 'Resolve 1 random event.', event_types: ['random_event'], required: 1, reward: { moon_gold: 30, style_tokens: 1 } },
   { key: 'activity_claim', title: 'Patient Worker', detail: 'Claim 1 timed activity.', event_types: ['activity_claim'], required: 1, reward: { moon_gold: 40 } },
-  { key: 'run_bank', title: 'Bring It Home', detail: 'Complete or extract 1 Moon Run.', event_types: ['run_complete', 'run_extract', 'adventure'], required: 1, reward: { moon_gold: 55, moon_crystals: 1 } },
+  { key: 'run_bank', title: 'Bring It Home', detail: 'Complete or extract 1 Moon Run, or complete 1 Adventure.', event_types: ['run_complete', 'run_extract', 'adventure'], required: 1, reward: { moon_gold: 55, moon_crystals: 1 } },
   { key: 'daily_cache', title: 'Daily Cache', detail: 'Open today’s Moonpet chest.', event_types: ['daily_chest'], required: 1, reward: { moon_gold: 40, style_tokens: 2 } },
   { key: 'kaiju_watch', title: 'Kaiju Watch', detail: 'Complete 1 Kaiju battle.', event_types: ['kaiju_battle'], required: 1, reward: { moon_gold: 45, moon_crystals: 1 } },
   { key: 'item_user', title: 'Prepared Moonpet', detail: 'Use 1 consumable item.', event_types: ['use_item', 'use_item_reward'], required: 1, reward: { moon_gold: 25, style_tokens: 1 } },
@@ -60,7 +60,7 @@ export const PET_MARKET_OFFERS = freeze([
   { key: 'clean_kit', title: 'Clean Kit', detail: '3 Clean Wipes for missions and recovery.', cost: { moon_gold: 60 }, reward: { items: { clean_wipe: 3 } }, min_level: 1 },
   { key: 'battery_pack', title: 'Battery Pack', detail: '2 Energy Drinks for runs and bosses.', cost: { moon_gold: 120 }, reward: { items: { energy_drink: 2 } }, min_level: 5 },
   { key: 'runner_bundle', title: 'Runner Bundle', detail: 'An Adventure Map plus Energy Drink.', cost: { moon_gold: 160, style_tokens: 2 }, reward: { items: { adventure_map: 1, energy_drink: 1 } }, min_level: 8 },
-  { key: 'fabric_roll', title: 'Moon Fabric Roll', detail: 'Materials for future equipment upgrades.', cost: { moon_gold: 90 }, reward: { materials: { moon_fabric: 3 } }, min_level: 1 },
+  { key: 'fabric_roll', title: 'Moon Fabric Roll', detail: 'Craft Moon Snacks, Clean Wipes and Style Patches.', cost: { moon_gold: 90 }, reward: { materials: { moon_fabric: 3 } }, min_level: 1 },
   { key: 'scrap_box', title: 'Scrap Box', detail: 'Reliable upgrade material without a lucky drop.', cost: { moon_gold: 110 }, reward: { materials: { scrap_metal: 4 } }, min_level: 1 },
   { key: 'cell_case', title: 'Cell Case', detail: 'Battery Cells used by advanced equipment.', cost: { moon_gold: 150 }, reward: { materials: { battery_cell: 3 } }, min_level: 10 },
   { key: 'shard_pouch', title: 'Shard Pouch', detail: 'Crystal Shards for higher upgrade tiers.', cost: { moon_gold: 220 }, reward: { materials: { crystal_shard: 2 } }, min_level: 12 },

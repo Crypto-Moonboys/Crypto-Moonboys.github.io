@@ -113,6 +113,21 @@ points for its source pet and immediately offers another quest. Rank has no
 daily cap and no effect on Pet XP, currencies, combat, Growth Marks or Weekly
 Crests. Difficulty tiers 2 and 3 open after 5 and 15 completions respectively.
 
+New v2 contracts give all eight room scenes real route modifiers. The displayed
+odds, salvage and failure damage already include the room, build, difficulty
+and upgrades. Clear chance stays between 30% and 98%. Saved v1 contracts keep
+their original mechanics and rank calculation until they finish.
+
+At the start, players may choose All Routes (one success with cover, bold and
+search), Daredevil (three bold successes), or Well Supplied (finish with five
+supplies). Completing both the main and optional objective adds 60 × tier
+Contract Rank, included in the total. Missing only the optional objective does
+not fail the contract. Failed or abandoned contracts earn zero rank. Side
+objectives grant no extra XP, currency or official quest credit. Selection and
+progress are stored with the run; clients cannot change them or supply wins.
+The board shows each goal's completion count and best rank total for the active
+pet and season, plus completions remaining until the next difficulty unlock.
+
 There is no pet energy cost or gameplay cooldown. Contract health, supplies
 and salvage are isolated run resources. Leaving the app preserves the run on
 the server; abandoning or failing a contract gives no points or bonus.
@@ -132,6 +147,13 @@ table, the board is unavailable while the rest of the Mini App remains usable.
 
 Play Now links the current snapshot to available live routes. Navigation does
 not submit an action; each destination still enforces its server requirements.
+It prioritizes claimable bounties and finished activities, then shows a direct
+route for the closest unfinished bounty. Every unfinished bounty has links to
+its qualifying actions; Bring It Home includes both Moon Run and Adventure.
+Four bounties rotate per account at 00:00 UTC. Their care targets explicitly
+count Feed, Play, Clean, Sleep and Train, not the three stat-only care buttons.
+The Energy Drink consumable remains an item-use action, distinct from the
+Energy Drink care button. Claimed bounties show their claimed state.
 Daily Journey exposes each of its five authoritative objectives and progress,
 separately from the seven daily missions. The official Daily Moon Run exposes
 account/day attempt status and its UTC reset; switching pets does not grant a

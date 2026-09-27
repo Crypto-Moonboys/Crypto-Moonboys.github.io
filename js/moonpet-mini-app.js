@@ -1733,17 +1733,20 @@
       body += '<div class="line complete">' + escapeHtml(run.title) + ' // ' + escapeHtml(words(run.status)) + '</div><div class="line">' + escapeHtml(run.build_title) + ' // TIER ' + number(run.tier) + ' // ROOMS ' + number(run.depth) + '/' + number(run.max_depth) + '</div>' +
         '<div class="line">ROUTE HP ' + number(run.health) + '/' + number(run.max_health) + ' // SUPPLIES ' + number(run.supplies) + ' // SALVAGE ' + number(run.salvage) + '</div><div class="line muted">' + escapeHtml(run.objective) + '</div><div class="line">GOAL ' + number(run.progress) + '/' + number(run.target) + '</div><div class="line signal">' + escapeHtml(run.last) + '</div>';
       if (run.perks.length) body += '<div class="line">UPGRADES // ' + escapeHtml(run.perks.map(function (perk) { return perk.title; }).join(' + ')) + '</div>';
+      if (run.side_goal) body += '<div class="line ' + (run.side_goal.earned ? 'complete' : '') + '">SIDE OBJECTIVE // ' + escapeHtml(run.side_goal.title) + ' // ' + number(run.side_goal.progress) + '/' + number(run.side_goal.target) + (run.side_goal.earned ? ' // +' + number(run.side_goal.rank_points) + ' RANK INCLUDED' : '') + '</div><div class="line muted">' + escapeHtml(run.side_goal.detail) + ' Main contract must also succeed. Rank only; no extra XP.</div>';
       if (run.status === 'completed') body += '<div class="line complete">+' + number(run.rank_points) + ' RANK POINTS // ' + number(run.xp_awarded) + ' PET XP' + (run.reward_pending ? ' // BONUS DELIVERY PENDING' : '') + '</div>';
     }
     if (run && run.status === 'active') {
-      body += '<div class="line"><strong>' + escapeHtml(run.room.title) + '</strong></div><div class="line muted">' + escapeHtml(run.room.detail) + '</div><div class="button-grid">' + run.choices.map(function (choice) {
-        return button(choice.title, 'contract_step', { pet_id: board.pet_id, contract_id: run.contract_id, revision: run.revision, choice: choice.key }, { disabled: Boolean(choice.disabled), detail: (choice.upgrade ? 'CHOOSE AN UPGRADE // ' : choice.odds + '% CLEAR // +' + choice.salvage + ' SALVAGE // FAILURE -' + choice.damage + ' HP // ') + choice.detail });
+      body += '<div class="line"><strong>' + escapeHtml(run.room.title) + '</strong></div><div class="line muted">' + escapeHtml(run.room.detail) + '</div>' + (run.room.effect ? '<div class="line signal">' + escapeHtml(run.room.effect) + '</div><div class="line muted">Room effects are included below. pp means percentage points; clear chance is capped at 98%.</div>' : '') + '<div class="button-grid">' + run.choices.map(function (choice) {
+        return button(choice.title, 'contract_step', { pet_id: board.pet_id, contract_id: run.contract_id, revision: run.revision, choice: choice.key }, { disabled: Boolean(choice.disabled), detail: (choice.upgrade ? 'CHOOSE AN UPGRADE // ' : choice.key === 'rest' ? 'RECOVER // ' : choice.odds + '% CLEAR // +' + choice.salvage + ' SALVAGE // FAILURE -' + choice.damage + ' HP // ') + choice.detail });
       }).join('') + '</div><div class="button-grid one">' + button('ABANDON CONTRACT', 'contract_step', { pet_id: board.pet_id, contract_id: run.contract_id, revision: run.revision, choice: 'abandon' }, { danger: true, detail: 'Ends this contract with no points or XP. Closing the app instead preserves it.' }) + '</div>';
     } else {
       body += '<label class="line">BUILD <select id="contract-build" aria-label="Contract build">' + board.builds.map(function (build) { return '<option value="' + escapeHtml(build.key) + '">' + escapeHtml(build.title + ' — ' + build.detail) + '</option>'; }).join('') + '</select></label><label class="line">DIFFICULTY <select id="contract-tier" aria-label="Contract difficulty">';
       for (var tier = 1; tier <= board.max_tier; tier++) body += '<option value="' + tier + '">TIER ' + tier + ' — ' + tier + '× RANK POINTS</option>';
-      body += '</select></label><div class="line muted">Tier 2 opens after 5 completions; Tier 3 after 15. Choose your next six-room quest:</div><div class="button-grid">' + board.offers.map(function (offer) {
-        return button(offer.title, 'contract_start', { pet_id: board.pet_id, sequence: board.next_sequence, goal: offer.key }, { detail: offer.detail });
+      body += '</select></label>';
+      if (board.side_goals && board.side_goals.length) body += '<label class="line">OPTIONAL SIDE OBJECTIVE <select id="contract-side-goal" aria-label="Contract side objective">' + board.side_goals.map(function (goal) { return '<option value="' + escapeHtml(goal.key) + '">' + escapeHtml(goal.title + ' — ' + goal.detail) + '</option>'; }).join('') + '</select></label><div class="line muted">Complete both goals for +' + number(board.side_rank) + ' × tier extra Contract Rank. No extra XP or currency. Missing the side objective does not fail the main contract.</div>';
+      body += '<div class="line muted">' + (board.max_tier < 3 ? number((board.max_tier === 1 ? 5 : 15) - board.completed) + ' MORE COMPLETIONS TO TIER ' + number(board.max_tier + 1) + '. ' : 'ALL DIFFICULTY TIERS UNLOCKED. ') + 'Choose your next six-room quest:</div><div class="button-grid">' + board.offers.map(function (offer) {
+        return button(offer.title, 'contract_start', { pet_id: board.pet_id, sequence: board.next_sequence, goal: offer.key }, { detail: offer.detail + ' // ' + number(offer.completed) + ' COMPLETED // BEST ' + number(offer.best_rank_points) + ' RANK POINTS' });
       }).join('') + '</div>';
     }
     return panel('CONTINUING CONTRACTS // ALWAYS ANOTHER QUEST', body, 'contracts');
@@ -1982,9 +1985,11 @@
     var guidance = state.guidance || {};
     var economy = guidance.economy || {};
     var bounties = (economy.bounties || []).map(function (bounty) {
-      return '<div class="line ' + (bounty.complete ? 'complete' : '') + '">' + escapeHtml(bounty.title) + ' ' + number(bounty.progress) + '/' + number(bounty.required) + '</div>' +
+      var routes = window.MoonpetPlayOptions && window.MoonpetPlayOptions.bountyRoutes ? window.MoonpetPlayOptions.bountyRoutes(bounty) : [];
+      if (state.lifecycle && state.lifecycle.phase === 'egg') routes = [{ title: 'HATCH TO WORK ON BOUNTIES', screen: 'home', focus: 'incubation' }];
+      return '<div class="line ' + (bounty.complete ? 'complete' : '') + '">' + escapeHtml(bounty.title) + ' ' + number(bounty.progress) + '/' + number(bounty.required) + (bounty.claimed ? ' // CLAIMED' : bounty.complete ? ' // READY TO CLAIM' : '') + '</div>' +
         '<div class="line muted">' + escapeHtml(bounty.detail || '') + ' // REWARD ' + escapeHtml(valueText(bounty.reward)) + '</div>' +
-        (bounty.complete && !bounty.claimed ? '<div class="button-grid one">' + button('CLAIM ' + bounty.title, 'bounty_claim', { bounty_key: bounty.key }) + '</div>' : '');
+        (bounty.complete && !bounty.claimed ? '<div class="button-grid one">' + button('CLAIM ' + bounty.title, 'bounty_claim', { bounty_key: bounty.key }) + '</div>' : !bounty.claimed && !bounty.complete ? '<div class="button-grid">' + routes.map(function (route) { return routeButton(route.title, route); }).join('') + '</div>' : '');
     }).join('');
     var offers = (economy.market_offers || []).map(function (offer) {
       return button(offer.title, 'market_buy', { offer_key: offer.key }, { disabled: !offer.unlocked || !offer.affordable || offer.purchased, statusLabel: offer.purchased ? 'SOLD' : '', resourceRequired: offer.unlocked && !offer.affordable && !offer.purchased, detail: (offer.unlocked ? '' : 'REQUIRES LEVEL ' + number(offer.min_level) + ' // ') + (offer.detail || '') + ' // COST ' + costText(offer.cost) + ' // GIVES ' + valueText(offer.reward) });
@@ -2023,7 +2028,7 @@
       panel('CRAFTING MATERIALS', materials || '<div class="line muted">NO MATERIAL DATA.</div>', 'materials') +
       panel('CRAFTING WORKSHOP', '<div class="button-grid">' + crafting + '</div>', 'crafting') +
       panel('RELIC VAULT', '<div class="line muted">Persistent collectibles used by eligible progression requirements. Passive relic powers are not active in Moon Run, Daily Run, contracts or practice.</div>' + (relics || '<div class="line muted">NO RELICS RECOVERED.</div>'), 'relics') +
-      panel('DAILY BOUNTIES', bounties || '<div class="line muted">NO BOUNTIES.</div>', 'bounties') +
+      panel('DAILY BOUNTIES', '<div class="line muted">Four account-wide targets per UTC day. Only accepted actions count. The Energy Drink, Dance and Cuddles care buttons do not count. New targets arrive at 00:00 UTC. Contracts remain available between resets.</div>' + (bounties || '<div class="line muted">NO BOUNTIES.</div>'), 'bounties') +
       panel('CRYSTAL EXPEDITION // ' + escapeHtml(expedition.title || 'LOCKED'), '<div class="line">' + number(economy.expedition_attempts_left) + '/3 ATTEMPTS // COST ' + number(expedition.energy) + ' ENERGY</div><div class="line muted">POSSIBLE FINDS // ' + escapeHtml((expedition.rewards || []).map(valueText).join(' / ')) + '</div><div class="button-grid one">' + button('RUN EXPEDITION', 'expedition', {}, { disabled: !economy.expedition_attempts_left || Number(state.pet && state.pet.energy || 0) < Number(expedition.energy || 0), resourceRequired: Boolean(economy.expedition_attempts_left) && Number(state.pet && state.pet.energy || 0) < Number(expedition.energy || 0) }) + '</div>', 'expedition') +
       panel('MOON MARKET', '<div class="button-grid">' + offers + '</div>', 'market') +
       panel('PERMANENT SHOP', '<div class="button-grid">' + shop + '</div>', 'shop') + panel('STYLE LAB', '<div class="button-grid">' + cosmetics + '</div>', 'style-lab') +
@@ -2194,7 +2199,7 @@
     var editableState = options && options.discardCallsignDraft ? null : captureEditableState();
     var routeDraft = {};
     var draftPetId = renderedPetId;
-    ['contract-build', 'contract-tier', 'practice-build', 'practice-goal'].forEach(function (id) {
+    ['contract-build', 'contract-tier', 'contract-side-goal', 'practice-build', 'practice-goal'].forEach(function (id) {
       var input = document.getElementById(id); if (input) routeDraft[id] = input.value;
     });
     renderHud();
@@ -2739,6 +2744,8 @@
     if (target.dataset.action === 'contract_start') {
       payload.build = document.getElementById('contract-build').value;
       payload.tier = Number(document.getElementById('contract-tier').value);
+      var sideGoal = document.getElementById('contract-side-goal');
+      if (sideGoal) payload.side_goal = sideGoal.value;
     }
     runAction(target.dataset.action, payload, target);
   });
