@@ -23,6 +23,7 @@ let failActivitySettlement = false;
 let failWeeklyReward = false;
 let failDailyEnding = false;
 let failContractReward = false;
+let failStandardReward = false;
 class Statement {
   constructor(sql, args = []) { this.sql = sql; this.args = args; }
   bind(...args) { return new Statement(this.sql, args); }
@@ -40,6 +41,9 @@ class Statement {
 const db = {
   prepare(sql) { return new Statement(sql); },
   async batch(statements) {
+    if (failStandardReward && statements[0].sql.includes('INSERT OR IGNORE INTO telegram_pet_reward_claims') && statements[0].args.includes('pet_run_legacy')) {
+      failStandardReward = false; throw Error('interrupted_standard_reward');
+    }
     if (failContractReward && statements[0].sql.includes('INSERT OR IGNORE INTO telegram_pet_reward_claims') && statements[0].args.includes('pet_contract')) {
       failContractReward = false; throw Error('interrupted_contract_reward');
     }
@@ -595,6 +599,32 @@ try {
     assert.equal(await page.locator('[data-action="daily_run_start"]').isDisabled(), true);
     assert.ok(await page.locator('[data-panel="play-now"] [data-focus="contracts"]').count());
     assert.ok(await page.locator('[data-panel="play-now"] [data-focus="practice"]').count());
+
+    // Standard extraction can close before settlement. Reload must restore
+    // the hidden payout and display the updated pet without a second action.
+    currentUser = `browser-standard-ending-${viewport.width}`;
+    await seed(currentUser, 'young');
+    const standardStart = await hooks.buildPetMiniAppState(db, currentUser, token);
+    const standardId = 'standard-ending-' + viewport.width;
+    sqlite.prepare(`INSERT INTO telegram_pet_runs
+      (id,run_id,telegram_id,pet_id,season_key,status,depth,current_room,max_depth,max_room,unbanked_pet_xp,unbanked_moon_gold)
+      VALUES (?,?,?,?,?,'extractable',2,2,100,100,24,9)`).run(standardId, standardId, currentUser, standardStart.pet.pet_id, standardStart.pet.season_key);
+    sqlite.prepare(`INSERT INTO telegram_pet_run_steps (id,run_id,telegram_id,pet_id,step_index,choice_key,choice_type,event_key,success)
+      VALUES (?,?,?,?,2,'fight','fight',?,1)`).run(standardId + '-step', standardId, currentUser, standardStart.pet.pet_id, standardId + '-step');
+    failStandardReward = true;
+    await assert.rejects(hooks.processPetRunExtract(db, currentUser, standardId), /interrupted_standard_reward/);
+    assert.equal(sqlite.prepare('SELECT status FROM telegram_pet_runs WHERE run_id=?').get(standardId).status, 'extracted');
+    const recoveredStandardResponse = page.waitForResponse(r => r.url().endsWith('/telegram-pets/app/state'));
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    const recoveredStandard = await (await recoveredStandardResponse).json();
+    assert.equal(recoveredStandard.state.pet.pet_xp, standardStart.pet.pet_xp + 24);
+    assert.equal(recoveredStandard.state.pet.moon_gold, standardStart.pet.moon_gold + 9);
+    assert.equal(recoveredStandard.state.run, null);
+    await page.locator('[data-screen="explore"]').click();
+    assert.match(await page.locator('[data-panel="moon-run"]').textContent(), /NO ACTIVE RUN/);
+    assert.equal(await page.locator('[data-action="run_step"]').count(), 0);
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE telegram_id=? AND event_type='run_extract'").get(currentUser).n, 1);
 
     // A separate real-Worker fixture begins at the first optional daily checkpoint.
     currentUser = `browser-daily-${viewport.width}`;
