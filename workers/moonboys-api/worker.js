@@ -52,7 +52,7 @@ import {
   buildPetGuidanceCandidates, choosePetNextAction, mergePetGuidanceReplyMarkup,
 } from './pets/player-guidance.js';
 import {
-  PET_ECONOMY_ROUTES, buildPetEconomyGuidanceActions, formatPetEconomyValue,
+  PET_ECONOMY_ROUTES, PET_EXPEDITION_TIERS, buildPetEconomyGuidanceActions, formatPetEconomyValue,
   getPetDailyBounties, getPetExpedition, getPetMarketOffers, resolvePetExpeditionReward,
 } from './pets/economy-expansion.js';
 import { PET_CRAFTING_MATERIALS, getActivePetSetBonuses } from './pets/economy-phase-3.js';
@@ -9258,6 +9258,7 @@ function buildPetMiniAppCooldownSummary({ journeySummary = null, guidance = null
   addPetCooldownEntry(entries, 'adventure', 'Adventure ready', adventureCooldown, 'action');
   addPetCooldownEntry(entries, 'work', 'Jobs ready', workCooldown, 'action');
   addPetCooldownEntry(entries, 'trade', 'Moon Gold trade ready', tradeCooldown, 'action');
+  addPetCooldownEntry(entries, 'expedition_reset', 'Expedition attempts reset', guidance?.economy?.expedition_cooldown, 'daily');
   addPetCooldownEntry(entries, 'daily_journey_reset', 'Daily Journey reset', journeySummary?.daily?.cooldown, 'daily');
   addPetCooldownEntry(entries, 'weekly_journey_reset', 'Weekly Journey reset', journeySummary?.weekly?.cooldown, 'weekly');
   addPetCooldownEntry(entries, 'timed_activity_claim', 'Timed activity claim', guidance?.activity?.cooldown, 'action');
@@ -9760,7 +9761,7 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
     return { accepted: true, reason: 'guidance_acknowledged', acknowledged: keys.length };
   }
   if (action === 'bounty_claim') return claimPetEconomyBounty(db, telegramId, body.bounty_key);
-  if (action === 'expedition') return runPetCrystalExpedition(db, telegramId, new Date(), eventKey);
+  if (action === 'expedition') return runPetCrystalExpedition(db, telegramId, new Date(), eventKey, body.expedition_key, body.pet_id);
   if (action === 'market_buy') return buyPetMarketOffer(db, telegramId, body.offer_key);
   if (action === 'district_mission') {
     const petRaw = await getPetProfileWithAtomicDecay(db, telegramId, new Date());
@@ -13753,7 +13754,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260927-contract-records-v1`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260927-expedition-choices-v1`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',
@@ -14842,7 +14843,7 @@ async function handleTelegramUpdate(update, env) {
       if (payload === 'bounties') { await answerTelegramCallback(tok, query.id, '/petbounties'); await cmdPetBounties(db, tok, chatId, telegramId); return; }
       if (payload.startsWith('bounty:')) { const key = payload.slice(7); await answerTelegramCallback(tok, query.id, 'Claim bounty'); await cmdPetBountyClaim(db, tok, chatId, telegramId, key); return; }
       if (payload === 'expedition') { await answerTelegramCallback(tok, query.id, '/petexpedition'); await cmdPetExpedition(db, tok, chatId, telegramId); return; }
-      if (payload === 'expedition:go') { await answerTelegramCallback(tok, query.id, 'Start expedition'); await cmdPetExpedition(db, tok, chatId, telegramId, true, eventKey); return; }
+      if (payload === 'expedition:go' || payload.startsWith('expedition:go:')) { await answerTelegramCallback(tok, query.id, 'Start expedition'); await cmdPetExpedition(db, tok, chatId, telegramId, true, eventKey, payload.slice('expedition:go:'.length)); return; }
       if (payload === 'market') { await answerTelegramCallback(tok, query.id, '/petmarket'); await cmdPetMarket(db, tok, chatId, telegramId); return; }
       if (payload.startsWith('market:')) { const key = payload.slice(7); await answerTelegramCallback(tok, query.id, 'Buy market offer'); await cmdPetMarketBuy(db, tok, chatId, telegramId, key); return; }
       if (payload.startsWith('trade:')) { const wager = payload.slice(6); await answerTelegramCallback(tok, query.id, `/pettrade ${wager}`); await cmdPetTrade(db, tok, chatId, telegramId, wager, eventKey); return; }
@@ -15669,14 +15670,17 @@ async function getPetEconomyState(db, telegramId, petRaw = null, now = new Date(
   if (!pet) return null;
   const dayKey = getPetDayKey(now);
   const level = getPetLevel(pet.pet_xp);
-  const [eventRows, claimRows] = await Promise.all([
+  const [eventRows, claimRows, sourcePet] = await Promise.all([
     db.prepare(`SELECT event_type, COUNT(*) AS total FROM telegram_pet_events
       WHERE telegram_id = ? AND day_key = ? AND status = 'accepted' GROUP BY event_type`)
       .bind(telegramId, dayKey).all().catch(() => ({ results: [] })),
-    db.prepare(`SELECT source, idempotency_key FROM telegram_pet_reward_claims
+    db.prepare(`SELECT source, idempotency_key, pet_id, metadata, applied_rewards FROM telegram_pet_reward_claims
       WHERE telegram_id = ? AND day_key = ? AND status = 'awarded'
         AND source IN ('pet_bounty', 'pet_expedition', 'pet_market')`)
       .bind(telegramId, dayKey).all().catch(() => ({ results: [] })),
+    db.prepare(`SELECT p.status,l.phase FROM telegram_pet_instances p JOIN telegram_pet_lifecycle_by_pet l
+      ON l.pet_id=p.pet_id AND l.telegram_id=p.telegram_id WHERE p.pet_id=? AND p.telegram_id=?`)
+      .bind(pet.pet_id, telegramId).first().catch(() => null),
   ]);
   const counts = new Map((eventRows.results || []).map((row) => [String(row.event_type), Math.max(0, Number(row.total) || 0)]));
   const claims = claimRows.results || [];
@@ -15694,6 +15698,7 @@ async function getPetEconomyState(db, telegramId, petRaw = null, now = new Date(
   }));
   const expeditionAttempts = claims.filter((row) => row.source === 'pet_expedition').length;
   const expedition = getPetExpedition(level);
+  const attemptsLeft = Math.max(0, 3 - expeditionAttempts);
   const state = {
     day_key: dayKey,
     pet,
@@ -15702,7 +15707,19 @@ async function getPetEconomyState(db, telegramId, petRaw = null, now = new Date(
     market_offers: marketOffers,
     expedition,
     expedition_attempts: expeditionAttempts,
-    expedition_attempts_left: Math.max(0, 3 - expeditionAttempts),
+    expedition_attempts_left: attemptsLeft,
+    expedition_cooldown: attemptsLeft ? null : normalizePetCooldownWindow(getNextPetUtcDayResetAt(now), now),
+    expedition_options: PET_EXPEDITION_TIERS.map((entry) => ({ ...entry,
+      unlocked: level >= entry.min_level, affordable: Number(pet.energy) >= entry.energy,
+      available: sourcePet?.status === 'active' && sourcePet?.phase !== 'egg'
+        && level >= entry.min_level && Number(pet.energy) >= entry.energy && attemptsLeft > 0,
+    })),
+    expedition_history: claims.filter((row) => row.source === 'pet_expedition').map((row) => {
+      const context = safeJsonParse(row.metadata, {}).context || {};
+      const destination = PET_EXPEDITION_TIERS.find((entry) => entry.key === context.expedition_key);
+      return { pet_id: row.pet_id, attempt: context.attempt, title: destination?.title || 'Expedition',
+        energy_cost: context.energy_cost, rewards: safeJsonParse(row.applied_rewards, {}) };
+    }).sort((a, b) => Number(a.attempt) - Number(b.attempt)),
   };
   return { ...state, guidance_actions: buildPetEconomyGuidanceActions(state) };
 }
@@ -15722,22 +15739,52 @@ async function claimPetEconomyBounty(db, telegramId, bountyKey, now = new Date()
   return { ...awarded, reason: awarded.accepted ? 'bounty_claimed' : awarded.reason, bounty };
 }
 
-async function runPetCrystalExpedition(db, telegramId, now = new Date(), requestKey = '') {
+async function readPetExpeditionReceipt(db, telegramId, key) {
+  if (!key) return null;
+  const receipt = await db.prepare(`SELECT pet_id, day_key, metadata, applied_rewards FROM telegram_pet_reward_claims
+    WHERE telegram_id=? AND source='pet_expedition' AND idempotency_key=? AND status='awarded'`)
+    .bind(telegramId, key).first();
+  if (!receipt) return null;
+  const context = safeJsonParse(receipt.metadata, {}).context || {};
+  return { accepted: true, duplicate: true, reason: 'expedition_complete', pet_xp_awarded: 0, xp_awarded: 0, rewards: {},
+    attempt: context.attempt, expedition: PET_EXPEDITION_TIERS.find((entry) => entry.key === context.expedition_key) || null,
+    receipt: { pet_id: receipt.pet_id, day_key: receipt.day_key, energy_cost: context.energy_cost, rewards: safeJsonParse(receipt.applied_rewards, {}) } };
+}
+
+async function runPetCrystalExpedition(db, telegramId, now = new Date(), requestKey = '', expeditionKey = '', expectedPetId = '') {
+  const requestedKey = String(requestKey || '').slice(0, 120);
+  const duplicate = await readPetExpeditionReceipt(db, telegramId, requestedKey);
+  if (duplicate) return duplicate;
   const state = await getPetEconomyState(db, telegramId, null, now);
   if (!state) return { accepted: false, reason: 'pet_not_adopted' };
+  const sourceAuthority = activePetRewardAuthority(state.pet);
+  if (!sourceAuthority) return { accepted: false, reason: 'source_pet_authority_required' };
+  if (expectedPetId && expectedPetId !== sourceAuthority.pet_id) return { accepted: false, reason: 'expedition_pet_changed' };
+  const lifecycle = await db.prepare('SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id=? AND telegram_id=?').bind(sourceAuthority.pet_id, telegramId).first();
+  if (!lifecycle || lifecycle.phase === 'egg') return { accepted: false, reason: 'moon_egg_must_hatch' };
   if (!state.expedition_attempts_left) return { accepted: false, reason: 'expedition_daily_limit', state };
-  if (Number(state.pet.energy || 0) < state.expedition.energy) return { accepted: false, reason: 'pet_tired', state };
   const attempt = state.expedition_attempts + 1;
   const level = getPetLevel(state.pet.pet_xp);
-  const resolved = resolvePetExpeditionReward(state.day_key, telegramId, attempt, level);
-  const settlementKey = String(requestKey || `${state.day_key}:${attempt}`).slice(0, 120);
+  const resolved = resolvePetExpeditionReward(state.day_key, telegramId, attempt, level, expeditionKey);
+  if (!resolved) return { accepted: false, reason: 'expedition_locked', state };
+  if (Number(state.pet.energy || 0) < resolved.expedition.energy) return { accepted: false, reason: 'pet_tired', expedition: resolved.expedition, state };
+  const settlementKey = requestedKey || `${state.day_key}:${attempt}`;
   const awarded = await awardPetReward(db, {
     telegram_id: telegramId, source: 'pet_expedition', idempotency_key: settlementKey,
+    pet_id: sourceAuthority.pet_id, season_key: sourceAuthority.season_key,
     event_key: `pet:economy:expedition:${telegramId}:${settlementKey}`.slice(0, 220),
     event_type: 'economy_expedition', reason: resolved.expedition.key, rewards: { ...resolved.reward, pet_xp: 12 },
     profile_deltas: { energy: -resolved.expedition.energy }, touch_streak: true, now,
-    context: { expedition_key: resolved.expedition.key, attempt, day_key: state.day_key, energy_cost: resolved.expedition.energy },
+    context: { expedition_key: resolved.expedition.key, attempt, day_key: state.day_key, energy_cost: resolved.expedition.energy, min_level: resolved.expedition.min_level },
   });
+  if (awarded.duplicate) return await readPetExpeditionReceipt(db, telegramId, settlementKey) || awarded;
+  if (!awarded.accepted && awarded.reason === 'reward_not_authorized') {
+    const refreshed = await getPetEconomyState(db, telegramId, null, now);
+    const sourcePet = await getPetInstanceWithAtomicDecay(db, sourceAuthority.pet_id);
+    return { ...awarded, reason: !refreshed ? 'pet_not_adopted' : !refreshed.expedition_attempts_left ? 'expedition_daily_limit'
+      : Number(sourcePet?.energy || 0) < resolved.expedition.energy ? 'pet_tired' : 'expedition_state_changed',
+    expedition: resolved.expedition, state: refreshed };
+  }
   return { ...awarded, reason: awarded.accepted ? 'expedition_complete' : awarded.reason, attempt, expedition: resolved.expedition };
 }
 
@@ -17068,12 +17115,12 @@ async function cmdPetBountyClaim(db, tok, chatId, telegramId, bountyKey) {
     { reply_markup: buildPetEconomyMenuReplyMarkup() }, 'economy', { db, telegram_id: telegramId, pet: result.pet });
 }
 
-async function cmdPetExpedition(db, tok, chatId, telegramId, start = false, eventKey = '') {
+async function cmdPetExpedition(db, tok, chatId, telegramId, start = false, eventKey = '', expeditionKey = '') {
   if (start) {
-    const result = await runPetCrystalExpedition(db, telegramId, new Date(), eventKey).catch((error) => ({ accepted: false, reason: error?.message || 'expedition_failed' }));
+    const result = await runPetCrystalExpedition(db, telegramId, new Date(), eventKey, expeditionKey).catch((error) => ({ accepted: false, reason: error?.message || 'expedition_failed' }));
     if (!result.accepted) {
       const copy = result.reason === 'expedition_daily_limit' ? 'All 3 Crystal Expedition attempts are used. Return after 00:00 UTC.'
-        : result.reason === 'pet_tired' ? `Not enough Energy. This expedition costs ${result.state?.expedition?.energy || 12} Energy; sleep first.`
+        : result.reason === 'pet_tired' ? `Not enough Energy. This expedition costs ${result.expedition?.energy || 12} Energy; compare cheaper unlocked routes or recover first.`
           : 'The expedition could not start. Open Economy to check its requirements.';
       await sendTelegramMessage(tok, chatId, copy, { reply_markup: buildPetEconomyMenuReplyMarkup() }); return;
     }
@@ -17086,11 +17133,11 @@ async function cmdPetExpedition(db, tok, chatId, telegramId, start = false, even
   const state = await getPetEconomyState(db, telegramId).catch(() => null);
   if (!state) { await sendTelegramMessage(tok, chatId, 'No Crypto Moonboy Pet found. Use /adopt to start.'); return; }
   await sendTelegramPetReply(tok, chatId,
-    `<b>⛏️ ${escapeHtml(state.expedition.title)}</b>\n` +
-    `${state.expedition_attempts_left}/3 attempts remain today · Cost ${state.expedition.energy} Energy each\n\n` +
-    `Possible finds include Moon Gold, Moon Crystals, Style and upgrade materials. Higher levels open richer expedition zones.\n` +
+    `<b>⛏️ Choose an expedition</b>\n` +
+    `${state.expedition_attempts_left}/3 shared attempts remain today. Older destinations remain available as you level up.\n\n` +
+    state.expedition_options.map((entry) => `${entry.unlocked ? '⛏️' : '🔒'} ${escapeHtml(entry.title)} · Level ${entry.min_level} · ${entry.energy} Energy\nPossible finds: ${entry.rewards.map((reward) => escapeHtml(formatPetEconomyValue(reward))).join(' / ')}`).join('\n\n') + '\n\n' +
     `Current Energy: ${formatPetDisplayNumber(state.pet.energy)}.`,
-    { reply_markup: { inline_keyboard: [[{ text: '⛏️ Start Expedition', callback_data: 'pet:expedition:go' }], [{ text: '💰 Economy', callback_data: 'pet:economy' }, { text: '⬅️ Back', callback_data: 'pet:menu:management' }]] } },
+    { reply_markup: { inline_keyboard: [...state.expedition_options.filter((entry) => entry.available).map((entry) => [{ text: `⛏️ ${entry.title} · ${entry.energy} Energy`, callback_data: `pet:expedition:go:${entry.key}` }]), [{ text: '💰 Economy', callback_data: 'pet:economy' }, { text: '⬅️ Back', callback_data: 'pet:menu:management' }]] } },
     'economy', { db, telegram_id: telegramId, pet: state.pet });
 }
 

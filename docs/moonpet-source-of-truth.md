@@ -200,6 +200,31 @@ Pet XP and the daily XP cap before reserving a result. Concurrent requests canno
 bypass the cooldown; stale state is rejected for review instead of overwriting
 newer progression. Duplicate accepted requests return the existing receipt.
 
+### Expedition destination choices
+
+Crystal Expeditions let a hatched active pet choose any unlocked destination:
+Dust Tunnels at Level 1 for 12 energy, Crystal Caves at Level 10 for 18 energy,
+and Guardian Rift at Level 25 for 24 energy. Earlier routes stay available.
+Each displays its existing possible finds; all destinations share the original
+three account-wide attempts per UTC day and up-to-12 Pet XP award per attempt.
+The source pet's normal daily XP cap still applies. Changing pets or routes
+does not grant more attempts. Older clients retain their highest-unlocked default.
+
+The reward transaction verifies the captured pet's ownership, season, active
+status, hatched lifecycle, XP-derived level and full energy cost. It also reserves
+the next account/day attempt number. Concurrent distinct requests cannot reuse
+an ordinal or exceed the three-attempt cap; rejected requests spend nothing.
+XP, energy and streak changes stay with that pet if the active selection changes
+in flight. Wallet currencies and materials remain account-owned.
+
+Accepted request keys replay their original destination, cost and saved receipt,
+including after the last attempt, a pet switch or UTC rollover. Historical
+account-only receipts remain account-only. Replay grants no further rewards.
+The Mini App shows today's receipts, the UTC reset, and available destinations
+in Play Now. Contracts and Practice are linked from the board for continued
+play after energy or attempts run out. A frontend awaiting the updated Worker
+shows a syncing message instead of submitting destination choices it cannot honour.
+
 ### Play Now and practice
 
 Play Now links the current snapshot to available live routes. Navigation does

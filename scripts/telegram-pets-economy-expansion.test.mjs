@@ -84,7 +84,7 @@ const rewardFoundation = fs.readFileSync(new URL('../workers/moonboys-api/pets/r
 for (const source of ['pet_bounty', 'pet_expedition', 'pet_market']) assert.match(rewardFoundation, new RegExp(`'${source}'`));
 assert.match(rewardFoundation, /moon_gold >= \? AND moon_crystals >= \? AND style_tokens >= \?/, 'currency exchanges must be authorized before rewards are created');
 assert.match(rewardFoundation, /source = 'pet_expedition'[\s\S]*status IN \('pending', 'awarded'\)\) < 3/, 'the expedition cap must be reserved inside reward settlement');
-assert.match(rewardFoundation, /telegram_pet_profiles WHERE telegram_id = \? AND energy >= \?/, 'the full expedition Energy cost must be reserved atomically');
+assert.match(rewardFoundation, /p\.pet_id = \? AND p\.telegram_id = \?[\s\S]*p\.energy >= \?/, 'the source pet must cover the full expedition Energy cost atomically');
 
 const worker = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
 for (const command of ['peteconomy', 'petbounties', 'petexpedition', 'petmarket']) assert.match(worker, new RegExp(`case ['"]${command}['"]`));
@@ -153,7 +153,11 @@ for (let index = 0; index < bounty.required; index += 1) {
     VALUES (?, 'economy-player', ?, ?, 'test-season', ?, 'test-week', 'accepted', 'test', '{}')`)
     .run(`event-${index}`, bounty.event_types[0], `event-${index}`, currentDay);
 }
+await hooks.ensurePetStarterSeasonSlot(d1, 'economy-player');
+await hooks.ensureActivePetInstance(d1, 'economy-player');
 const readyState = await hooks.getPetEconomyState(d1, 'economy-player');
+sqlite.prepare(`INSERT INTO telegram_pet_lifecycle_by_pet (pet_id,telegram_id,identity_seed,phase,incubation_json,innate_traits_json)
+  VALUES (?,'economy-player','economy-fixture','young','{}','[]')`).run(readyState.pet.pet_id);
 assert.equal(readyState.bounties.find(({ key }) => key === bounty.key).complete, true);
 const bountyClaim = await hooks.claimPetEconomyBounty(d1, 'economy-player', bounty.key);
 assert.equal(bountyClaim.accepted, true);
@@ -161,20 +165,22 @@ assert.equal((await hooks.claimPetEconomyBounty(d1, 'economy-player', bounty.key
 
 const beforeEnergy = sqlite.prepare(`SELECT energy FROM telegram_pet_profiles WHERE telegram_id = 'economy-player'`).get().energy;
 const expeditionClaim = await hooks.runPetCrystalExpedition(d1, 'economy-player', new Date(), 'request-expedition-1');
-assert.equal(expeditionClaim.accepted, true);
-assert.equal(sqlite.prepare(`SELECT energy FROM telegram_pet_profiles WHERE telegram_id = 'economy-player'`).get().energy, beforeEnergy - expeditionClaim.expedition.energy);
+assert.equal(expeditionClaim.accepted, true, expeditionClaim.reason);
+assert.equal(sqlite.prepare(`SELECT energy FROM telegram_pet_instances WHERE pet_id=?`).get(readyState.pet.pet_id).energy, beforeEnergy - expeditionClaim.expedition.energy);
 const repeatedExpedition = await hooks.runPetCrystalExpedition(d1, 'economy-player', new Date(), 'request-expedition-1');
 assert.equal(repeatedExpedition.duplicate, true);
-assert.equal(sqlite.prepare(`SELECT energy FROM telegram_pet_profiles WHERE telegram_id = 'economy-player'`).get().energy, beforeEnergy - expeditionClaim.expedition.energy, 'a repeated expedition callback cannot charge Energy twice');
+assert.equal(sqlite.prepare(`SELECT energy FROM telegram_pet_instances WHERE pet_id=?`).get(readyState.pet.pet_id).energy, beforeEnergy - expeditionClaim.expedition.energy, 'a repeated expedition callback cannot charge Energy twice');
 assert.equal((await hooks.runPetCrystalExpedition(d1, 'economy-player', new Date(), 'request-expedition-2')).accepted, true);
 assert.equal((await hooks.runPetCrystalExpedition(d1, 'economy-player', new Date(), 'request-expedition-3')).accepted, true);
 assert.equal((await hooks.runPetCrystalExpedition(d1, 'economy-player', new Date(), 'request-expedition-4')).reason, 'expedition_daily_limit');
 
 sqlite.prepare(`UPDATE telegram_pet_profiles SET energy = 10 WHERE telegram_id = 'economy-player'`).run();
+sqlite.prepare('UPDATE telegram_pet_instances SET energy=10 WHERE pet_id=?').run(readyState.pet.pet_id);
 const rejectedEnergyClaim = await hooks.awardPetReward(d1, {
   telegram_id: 'economy-player', source: 'pet_expedition', idempotency_key: 'energy-guard-review',
+  pet_id: readyState.pet.pet_id, season_key: readyState.pet.season_key,
   event_key: 'energy-guard-review', rewards: { moon_gold: 999 }, profile_deltas: { energy: -24 },
-  context: { day_key: '2099-01-01', energy_cost: 24 }, now: new Date('2099-01-01T00:00:00.000Z'),
+  context: { day_key: '2099-01-01', energy_cost: 24, min_level: 1, attempt: 1 }, now: new Date('2099-01-01T00:00:00.000Z'),
 });
 assert.equal(rejectedEnergyClaim.accepted, false, 'an expedition reward cannot reserve when the full Energy cost is unavailable');
 assert.equal(sqlite.prepare(`SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id = 'economy-player'`).get().moon_gold < 2999, true, 'rejected expedition must not pay its reward');

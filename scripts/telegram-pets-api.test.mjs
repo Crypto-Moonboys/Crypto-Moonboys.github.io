@@ -2474,15 +2474,18 @@ staleExpeditionDb.database.prepare(`UPDATE telegram_pet_instances
   SET pet_xp=5000, level=51, energy=20
   WHERE telegram_id='expedition-stale-level'`).run();
 const staleExpeditionNow = new Date('2026-08-19T12:00:00Z');
+staleExpeditionDb.database.prepare(`INSERT INTO telegram_pet_lifecycle_by_pet
+  (pet_id,telegram_id,identity_seed,phase,incubation_json,innate_traits_json)
+  VALUES ('pet:expedition-stale-level:pet-s2026-003:1','expedition-stale-level','expedition-fixture','young','{}','[]')`).run();
 const staleExpeditionState = await getPetEconomyState(staleExpeditionDb, 'expedition-stale-level', null, staleExpeditionNow);
 assert.equal(staleExpeditionState.expedition.key, 'crystal_caves',
   'Crystal Expedition selection must use XP-derived visible level for stale stored-level pets');
 assert.equal(staleExpeditionState.expedition.energy, 18);
 const staleExpeditionResult = await runPetCrystalExpedition(staleExpeditionDb, 'expedition-stale-level', staleExpeditionNow, 'stale-level-expedition');
-assert.equal(staleExpeditionResult.accepted, true);
+assert.equal(staleExpeditionResult.accepted, true, staleExpeditionResult.reason);
 assert.equal(staleExpeditionResult.expedition.key, 'crystal_caves',
   'Crystal Expedition settlement must use the same XP-derived tier as selection');
-assert.equal(staleExpeditionDb.database.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id='expedition-stale-level'").get().energy, 2,
+assert.equal(staleExpeditionDb.database.prepare("SELECT energy FROM telegram_pet_instances WHERE pet_id='pet:expedition-stale-level:pet-s2026-003:1'").get().energy, 2,
   'Crystal Expedition settlement must charge the selected XP-derived tier energy cost');
 const staleExpeditionClaim = staleExpeditionDb.database.prepare(`SELECT metadata FROM telegram_pet_reward_claims
   WHERE telegram_id='expedition-stale-level' AND source='pet_expedition'`).get();

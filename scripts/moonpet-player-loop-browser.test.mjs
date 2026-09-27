@@ -73,6 +73,7 @@ try {
     const errors = [], actions = [], unexpected = [];
     let currentUser = 'browser-egg';
     let dailyOverride = null;
+    let oldExpeditionState = false;
     page.on('pageerror', (error) => errors.push(error.message));
     await page.route('**/*', async (route) => {
       const url = new URL(route.request().url());
@@ -87,6 +88,7 @@ try {
         }
         const state = await hooks.buildPetMiniAppState(db, currentUser, token);
         if (dailyOverride) state.run = dailyOverride;
+        if (oldExpeditionState) delete state.guidance.economy.expedition_options;
         return route.fulfill({ json: { state, result } });
       }
       if (url.hostname === '127.0.0.1') return route.continue();
@@ -443,11 +445,61 @@ try {
     assert.equal(await page.locator('[data-action="trade"]:not([disabled])').count(), 0, 'trade cooldown survives reload');
     sqlite.prepare("UPDATE telegram_pet_events SET created_at=datetime('now','-6 minutes') WHERE telegram_id=? AND event_type='trade'").run(currentUser);
     assert.equal((await hooks.buildPetMiniAppState(db, currentUser, token)).trade.offers[0].available, true);
+    // Destination choices use the real API; cheaper routes remain playable at higher levels.
+    currentUser = 'browser-expeditions-' + viewport.width;
+    await seed(currentUser, 'young');
+    sqlite.prepare('UPDATE telegram_pet_instances SET pet_xp=23040,energy=12 WHERE telegram_id=?').run(currentUser);
+    sqlite.prepare('UPDATE telegram_pet_profiles SET pet_xp=23040,energy=12 WHERE telegram_id=?').run(currentUser);
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    const beforeExpeditionNavigation = gameplayCount();
+    await page.locator('[data-panel="play-now"] [data-focus="expedition"]').click();
+    assert.equal(gameplayCount(), beforeExpeditionNavigation, 'comparing expeditions must not spend an attempt');
+    assert.equal(await page.locator('[data-action="expedition"]').count(), 3);
+    assert.equal(await page.locator('[data-action="expedition"]:not([disabled])').count(), 1);
+    assert.equal(await page.locator('[data-action="expedition"]').filter({ hasText: 'Dust Tunnels' }).isEnabled(), true);
+    assert.equal(await page.locator('[data-action="expedition"]').filter({ hasText: 'Guardian Rift' }).isDisabled(), true);
+    if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-expeditions-${viewport.width}.png`) });
+    for (const [index, title] of ['Dust Tunnels', 'Crystal Caves', 'Guardian Rift'].entries()) {
+      if (index > 0) {
+        sqlite.prepare('UPDATE telegram_pet_instances SET energy=100 WHERE telegram_id=?').run(currentUser);
+        sqlite.prepare('UPDATE telegram_pet_profiles SET energy=100 WHERE telegram_id=?').run(currentUser);
+        await page.reload(); await page.waitForSelector('[data-panel="care"]');
+        await page.locator('[data-panel="play-now"] [data-focus="expedition"]').click();
+      }
+      const expeditionResponse = page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'expedition');
+      await page.locator('[data-action="expedition"]').filter({ hasText: title }).click();
+      const response = await expeditionResponse, data = await response.json();
+      assert.equal(data.result.accepted, true);
+      assert.equal(data.result.expedition.title, title);
+      assert.equal(response.request().postDataJSON().expedition_key, data.result.expedition.key);
+      assert.equal(data.state.guidance.economy.expedition_attempts_left, 2 - index);
+      assert.equal(data.state.pet.energy, (index === 0 ? 12 : 100) - data.result.expedition.energy);
+      assert.equal(data.state.pet.pet_xp, 23040 + (index + 1) * 12);
+      await page.waitForFunction((count) => document.querySelector('[data-panel="expedition"]').textContent.includes(count + '/3 SHARED ATTEMPTS'), 2 - index);
+    }
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    assert.equal(await page.locator('[data-panel="play-now"] [data-focus="expedition"]').count(), 0);
+    await page.locator('[data-screen="economy"]').click();
+    await page.locator('[data-panel-jump="expedition"]').click();
+    assert.equal(await page.locator('[data-action="expedition"]:not([disabled])').count(), 0);
+    assert.ok((await page.locator('[data-panel="expedition"]').textContent()).includes('ATTEMPTS RESET'));
+    await page.locator('[data-panel="expedition"] summary').click();
+    for (const title of ['Dust Tunnels', 'Crystal Caves', 'Guardian Rift']) assert.ok((await page.locator('[data-panel="expedition"] details').textContent()).includes(title));
+    const beforeContinue = gameplayCount();
+    await page.locator('[data-panel="expedition"] [data-focus="contracts"]').click();
+    assert.equal(await page.locator('[data-panel="contracts"]').count(), 1);
+    assert.equal(gameplayCount(), beforeContinue, 'continuation links navigate without starting a quest');
+    oldExpeditionState = true;
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-screen="economy"]').click();
+    assert.equal(await page.locator('[data-action="expedition"]').count(), 0, 'old Worker responses cannot advertise choices the old handler would ignore');
+    assert.ok((await page.locator('[data-panel="expedition"]').textContent()).includes('destinations are syncing'));
+    oldExpeditionState = false;
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
     assert.equal(overflow, false, 'mobile viewport must not overflow horizontally');
     assert.deepEqual(errors, [], 'no runtime errors across all six screens');
     if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-${viewport.width}.png`) });
-    console.log(`Moonpet browser loop passed at ${viewport.width}x${viewport.height}; all six screens; bounty routes/claim; practice isolation; contract rooms/side objectives/preparation/reload; daily tactic choice/reload/odds/score; raid choices/energy/old reward recovery; event previews and adventure costs/cooldown/reset.`);
+    console.log(`Moonpet browser loop passed at ${viewport.width}x${viewport.height}; all six screens; bounties; practice; contracts and records; daily tactics; raids; timed recovery; Trade; expedition destinations, costs, receipts, reset, continuation and old-Worker compatibility.`);
     await context.close();
   }
 } finally {
