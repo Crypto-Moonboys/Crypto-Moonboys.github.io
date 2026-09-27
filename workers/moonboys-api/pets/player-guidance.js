@@ -95,17 +95,28 @@ export function buildPetGuidanceCandidates(state = {}) {
 
 function missionAction(mission = {}) {
   const key = `${mission.key || ''} ${mission.title || ''}`.toLowerCase();
+  if (String(mission.key || '').includes('pet-daily-care-set')) {
+    const next = (mission.steps || []).find((step) => ['feed', 'play', 'clean'].includes(step.key) && !step.completed);
+    const choices = { feed: ['🍖 Feed Now', 'pet:feed'], play: ['🎮 Play Now', 'pet:play'], clean: ['🧼 Clean Now', 'pet:clean'] };
+    return next ? { label: choices[next.key][0], callback_data: choices[next.key][1] }
+      : { label: '📋 Open Care', callback_data: 'pet:details' };
+  }
   if (key.includes('feed')) return { label: '🍖 Feed Now', callback_data: 'pet:feed' };
   if (key.includes('train')) return { label: '🏋️ Train Now', callback_data: 'pet:train' };
   if (key.includes('trade')) return { label: '💱 Open Trade', callback_data: 'pet:trade' };
   if (key.includes('shop') || key.includes('buy') || key.includes('equip')) return { label: '🛒 Open Shop', callback_data: 'pet:shop' };
   if (key.includes('adventure') || key.includes('run')) return { label: '🏃 Start Moon Run', callback_data: 'pet:run' };
+  if (key.includes('bank')) return { label: '💼 Pet Jobs', callback_data: 'pet:work' };
   return { label: '🎯 View Missions', callback_data: 'pet:missions' };
 }
 
 function isSpecialActionAvailable(state = {}, key) {
   const status = state?.special_actions?.[key];
   return status ? status.available !== false : true;
+}
+function activityBlocksCare(state = {}) { return state.activity?.status === 'active'; }
+function reviewBlockingActivity() {
+  return { key: 'activity_running', title: 'Review your background activity', detail: 'Sleep and Train unlock after the activity ends. Other care and Contracts remain available while it runs.', label: '⏱ Check Activity', callback_data: 'pet:activity' };
 }
 
 export function choosePetNextAction(state = {}) {
@@ -131,6 +142,7 @@ export function choosePetNextAction(state = {}) {
     if (isSpecialActionAvailable(state, 'energy_drink')) {
       return { key: 'energy_drink', title: 'Restore energy', detail: 'Use ENERGY DRINK in the Care Console before training, boss fights or Moon Runs.', label: '⚡ Open Care', callback_data: 'pet:details' };
     }
+    if (activityBlocksCare(state)) return reviewBlockingActivity();
     return { key: 'sleep', title: 'Restore energy with sleep', detail: 'ENERGY DRINK is on cooldown or capped today, so sleep now to recover safely.', label: '😴 Sleep Now', callback_data: 'pet:sleep' };
   }
   if (positiveInteger(pet.happiness) <= 35) {
@@ -154,7 +166,11 @@ export function choosePetNextAction(state = {}) {
     .sort((left, right) => positiveInteger(right.priority) - positiveInteger(left.priority))[0];
   if (economyAction && positiveInteger(economyAction.priority) >= 80) return economyAction;
   const mission = (state.missions || []).find((entry) => !entry.completed);
-  if (mission) return { key: `mission:${mission.key}`, title: mission.title, detail: 'Complete this next to advance today’s mission set.', ...missionAction(mission) };
+  if (mission) {
+    const action = missionAction(mission);
+    if (action.callback_data === 'pet:train' && activityBlocksCare(state)) return reviewBlockingActivity();
+    return { key: `mission:${mission.key}`, title: mission.title, detail: 'Complete this next to advance today’s mission set.', ...action };
+  }
   if (state.weekly_boss?.available) return { key: 'weekly-boss', title: `Use today’s attack on ${state.weekly_boss.title || 'the Weekly Boss'}`, detail: 'One attempt is available before the UTC reset.', label: '👑 Weekly Boss', callback_data: 'pet:boss' };
   if (economyAction) return economyAction;
   const upgrade = (state.shop_items || []).find((item) => item.unlocked && item.affordable && !item.equipped);

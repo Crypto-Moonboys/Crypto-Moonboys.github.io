@@ -689,10 +689,21 @@
       statusLabel: '',
     });
   }
+  function careActionButtonOptions(action, options) {
+    var activity = state && state.guidance && state.guidance.activity;
+    if (['sleep', 'train'].includes(action) && activity && activity.status === 'active') return Object.assign({}, options, {
+      disabled: true, cooldown: null, statusLabel: 'ACTIVITY RUNNING',
+      detail: 'Review your background activity in Work before using Sleep or Train. Other care and Contracts remain available.',
+    });
+    if (action === 'train' && state && state.pet && Number(state.pet.energy) < 18) return Object.assign({}, options, {
+      disabled: true, resourceRequired: true, detail: 'Requires 18 energy. Use care or review a recovery activity.',
+    });
+    return options;
+  }
   // TEST-EXPORT: actionAvailability:end
 
   function button(label, action, payload, options) {
-    options = actionCooldownButtonOptions(action, options);
+    options = careActionButtonOptions(action, actionCooldownButtonOptions(action, options));
     var accountActions = ['adopt', 'guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'arena_queue_cancel', 'arena_forfeit', 'kaiju_queue_cancel', 'kaiju_match_cancel'];
     var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim']);
     if (state && state.lifecycle && state.lifecycle.phase === 'egg' && !eggActions.includes(action)) {
@@ -1376,7 +1387,7 @@
         button('ENERGY DRINK', 'energy_drink') + button('DANCE', 'dance') + button('CUDDLES', 'cuddles') +
         button('DAILY CACHE', 'daily_chest', {}, { disabled: dailyCache.available !== true, statusLabel: dailyCache.claimed ? 'CLAIMED TODAY' : dailyCache.available ? '' : 'SYNCING', cooldown: dailyCache.claimed ? dailyCache.cooldown : null,
           detail: dailyCache.claimed ? number(dailyCache.receipt && dailyCache.receipt.pet_xp_awarded) + ' PET XP COLLECTED // One cache per account / UTC day.' : dailyCache.available ? '40 MOON GOLD + 2 STYLE // UP TO ' + number(dailyCache.available_pet_xp) + ' PET XP WITH TODAY’S CAP.' : 'Waiting for cache status.' }) + '<button class="terminal-button" type="button" data-pet-greet>SAY HELLO</button>' +
-      '</div>' + (dailyCache.claimed && state.contracts && state.contracts.available ? '<div class="button-grid one">' + routeButton('CONTINUE WITH CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'Your cache is collected. Saved quests keep going without energy or cooldowns.') + '</div>' : ''), 'care') +
+      '</div>' + (state.guidance && state.guidance.activity && state.guidance.activity.status === 'active' ? '<div class="button-grid one">' + routeButton('REVIEW BACKGROUND ACTIVITY', { screen: 'work', focus: 'timed-activity' }, 'Sleep and Train unlock when the activity ends. Feed, Play, Clean and Contracts remain available.') + '</div>' : '') + (dailyCache.claimed && state.contracts && state.contracts.available ? '<div class="button-grid one">' + routeButton('CONTINUE WITH CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'Your cache is collected. Saved quests keep going without energy or cooldowns.') + '</div>' : ''), 'care') +
       renderSeasonSlots() +
       panel('COMPANION DETAILS', '<div class="line complete">' + escapeHtml(displayName) + ' // ' + escapeHtml(moonpetStageLabel(lifecycle, pet)) + '</div><div class="line">LEVEL ' + number(pet.level) + ' // ' + number(pet.pet_xp) + ' XP // ' + number(pet.style_tokens) + ' STYLE // ' + number(pet.streak_days) + '-DAY STREAK</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT // ' + escapeHtml(words(lifecycle.appearance && lifecycle.appearance.marking || 'moon mark')) + '</div>' + equipped, 'details');
   }
@@ -1784,6 +1795,10 @@
       if (run.status === 'completed') body += '<div class="line complete">+' + number(run.rank_points) + ' RANK POINTS // ' + number(run.xp_awarded) + ' PET XP' + (run.reward_pending ? ' // BONUS DELIVERY PENDING' : '') + '</div>';
     }
     if (run && run.status === 'active') {
+      if (run.path) body += '<div class="line complete">PATH // ' + escapeHtml(run.path.title) + ' // ' + number(run.path.remaining) + ' ROOMS LEFT</div><div class="line muted">' + escapeHtml(run.path.detail) + ' Effects are included below. Rest also uses a room of this path.</div>';
+      if (run.path_choices && run.path_choices.length) body += '<div class="line signal">OPTIONAL CHECKPOINT PATH</div><div class="line muted">Plan the next two rooms. Choose once here, or take a route now to stay on course. No room advance or resource cost. Clear chances stay between 30% and 98%.</div><div class="button-grid">' + run.path_choices.map(function (choice) {
+        return button(choice.title, 'contract_step', { pet_id: board.pet_id, contract_id: run.contract_id, revision: run.revision, choice: choice.key }, { detail: choice.detail });
+      }).join('') + '</div>';
       if (run.preparation) body += '<div class="line complete">' + (run.preparation === 'prepare_scout' ? 'SCOUT AHEAD READY // This room’s route odds include the bonus.' : 'FIELD PATCH APPLIED // Route health restored.') + '</div>';
       if (run.preparations && run.preparations.length) body += '<div class="line signal">OPTIONAL ROOM PREPARATION</div><div class="line muted">Choose up to one before taking a route. You can skip preparation. Only contract resources are spent; no pet energy or currency.</div><div class="button-grid">' + run.preparations.map(function (choice) {
         return button(choice.title, 'contract_step', { pet_id: board.pet_id, contract_id: run.contract_id, revision: run.revision, choice: choice.key }, { disabled: Boolean(choice.disabled), detail: choice.detail });
@@ -1828,7 +1843,8 @@
     var completedMissions = missions.filter(function (mission) { return mission.completed; }).length;
     var missionPercent = missions.length ? Math.round(completedMissions / missions.length * 100) : 0;
     var rows = missions.map(function (mission) {
-      return '<div class="line ' + (mission.completed ? 'complete' : '') + '">' + (mission.completed ? '[OK] ' : '[  ] ') + escapeHtml(mission.title) + '</div>' + (mission.completed ? '' : objectiveRouteButton(mission.key));
+      var steps = (mission.steps || []).map(function (step) { return (step.completed ? '[OK] ' : '[ ] ') + step.title; }).join(' // ');
+      return '<div class="line ' + (mission.completed ? 'complete' : '') + '">' + (mission.completed ? '[OK] ' : '[  ] ') + escapeHtml(mission.title) + '</div>' + (steps ? '<div class="line muted">' + escapeHtml(steps) + '</div>' : '') + (mission.completed ? '' : objectiveRouteButton(mission.key));
     }).join('') || '<div class="line muted">NO MISSION DATA.</div>';
     var achievements = state.guidance && state.guidance.achievements || [];
     var unlockedCount = achievements.filter(function (entry) { return entry.unlocked_at; }).length;
@@ -2492,6 +2508,8 @@
       daily_tactic_invalid: 'choose one of the offered checkpoint tactics.',
       daily_tactic_stale: 'that checkpoint has changed or its tactic is already chosen; use the refreshed run.',
       contracts_unavailable: 'contracts are syncing; refresh after the update.',
+      pet_busy: 'a background activity is running. Open Work to review it; other care and Contracts are available.',
+      pet_tired: 'Train needs 18 energy. Use care or a recovery activity.',
       contract_pet_changed: 'the active pet changed; reopen its contract board.',
       contract_stale: 'that contract changed; use the refreshed choices.',
       contract_active: 'finish or abandon your current contract first.',

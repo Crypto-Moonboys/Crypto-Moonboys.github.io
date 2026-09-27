@@ -63,6 +63,20 @@ const startingState = await hooks.buildPetMiniAppState(db, id, 'test-token');
 assert.equal(startingState.guidance.activity_options.length, 4);
 assert.ok(startingState.cooldowns.entries.some((entry) => entry.key === 'timed_activity_checkpoint'));
 assert.equal(sqlite.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id=? AND event_type='activity_claim'").get(id).count, 0, 'viewing previews cannot claim a reward');
+// An active background session blocks only Sleep/Train, not the daily care set.
+assert.equal((await act('sleep')).reason, 'pet_busy');
+assert.equal((await act('train')).reason, 'pet_busy');
+for (let index = 0; index < 3; index++) {
+  const care = ['feed', 'play', 'clean'];
+  const before = (await hooks.buildPetGuidanceState(db, id)).missions.find((m) => m.key.includes('pet-daily-care-set'));
+  assert.deepEqual(before.steps.map((step) => step.completed), care.map((_, n) => n < index));
+  assert.equal((await act(care[index], { steps: care.map((key) => ({ key, completed: true })) })).accepted, true);
+  const after = (await hooks.buildPetGuidanceState(db, id)).missions.find((m) => m.key.includes('pet-daily-care-set'));
+  assert.deepEqual(after.steps.map((step) => step.completed), care.map((_, n) => n <= index), 'only the accepted action advances care; request steps are ignored');
+  assert.equal(after.completed, index === 2);
+}
+assert.equal((await act('train')).reason, 'pet_busy');
+assert.equal((await hooks.buildPetGuidanceState(db, id)).missions.find((m) => m.title === 'Train once').completed, false);
 sqlite.prepare('UPDATE telegram_pet_activity_sessions SET started_at=? WHERE telegram_id=?').run(new Date(now.getTime() - 7200_000).toISOString(), id);
 failSettlement = true;
 await assert.rejects(act('activity_claim'), /interrupted_settlement/);

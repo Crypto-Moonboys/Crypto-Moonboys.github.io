@@ -338,12 +338,33 @@ try {
     await page.waitForSelector('[data-action="contract_step"]');
     const longBefore = await hooks.buildPetMiniAppState(db, currentUser, token);
     assert.equal(longBefore.contracts.run.max_depth, 10); assert.equal(longBefore.contracts.run.target, 5);
-    let longDrafts = 0, resumedLong = false, longAfter = longBefore;
-    for (let turn = 0; turn < 15 && longAfter.contracts.run.status === 'active'; turn++) {
+    let longDrafts = 0, pathChoices = 0, resumedPath = false, resumedLong = false, longAfter = longBefore;
+    for (let turn = 0; turn < 20 && longAfter.contracts.run.status === 'active'; turn++) {
       const activeLong = longAfter.contracts.run;
       const draft = activeLong.choices.find((c) => c.upgrade && c.key !== 'supply_cache');
-      const choice = draft ? draft.key : 'search';
+      const pathKey = activeLong.path_choices.length ? ['path_quiet', 'path_hazard', 'path_steady'][pathChoices++ % 3] : null;
+      const choice = draft ? draft.key : pathKey || 'search';
+      if (pathKey) {
+        assert.ok((await page.locator('[data-panel="contracts"]').textContent()).includes('OPTIONAL CHECKPOINT PATH'));
+        if (pathChoices === 1 && process.env.MOONPET_BROWSER_SCREENSHOT) {
+          await page.locator('[data-action="contract_step"]').filter({ hasText: 'SALVAGE HOTSPOT' }).scrollIntoViewIfNeeded();
+          await page.screenshot({path:process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-path-options-${viewport.width}.png`)});
+        }
+      }
       if (draft) longDrafts++;
+      if (activeLong.path && !resumedPath) {
+        await page.reload(); await page.waitForSelector('[data-panel="care"]');
+        assert.equal(await page.locator('[data-action="train"]').isDisabled(), true, 'zero-energy training must show its gate');
+        await page.locator('[data-panel="play-now"] [data-focus="contracts"]').click();
+        assert.deepEqual((await hooks.buildPetMiniAppState(db, currentUser, token)).contracts.run.path, activeLong.path);
+        assert.ok((await page.locator('[data-panel="contracts"]').textContent()).includes('QUIET STREETS // 2 ROOMS LEFT'));
+        assert.equal(await page.locator('[data-action="contract_step"]').filter({ hasText: 'SALVAGE HOTSPOT' }).count(), 0, 'saved path cannot be chosen twice');
+        if (process.env.MOONPET_BROWSER_SCREENSHOT) {
+          await page.locator('[data-panel="contracts"] .line').filter({ hasText: /^PATH \/\// }).scrollIntoViewIfNeeded();
+          await page.screenshot({path:process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-path-${viewport.width}.png`)});
+        }
+        resumedPath = true;
+      }
       if (activeLong.depth === 6 && !resumedLong) {
         assert.equal(longAfter.contracts.bonus_remaining, 3); assert.equal(activeLong.rank_points, 0);
         await page.reload(); await page.waitForSelector('[data-panel="care"]');
@@ -365,12 +386,18 @@ try {
       ]);
       const result = await response.json(); assert.equal(result.result.accepted, true);
       longAfter = result.state;
+      if (pathKey) {
+        assert.equal(longAfter.contracts.run.path.key, pathKey); assert.equal(longAfter.contracts.run.path.remaining, 2);
+        assert.equal(longAfter.contracts.run.depth, activeLong.depth); assert.equal(longAfter.contracts.run.rank_points, 0);
+        assert.equal(longAfter.contracts.run.salvage, activeLong.salvage); assert.equal(longAfter.contracts.bonus_remaining, 3);
+      }
+
       await page.waitForFunction((revision) => {
         const button=document.querySelector('[data-action="contract_step"]');
         return !button || JSON.parse(button.dataset.payload).revision > revision;
       }, activeLong.revision);
     }
-    assert.equal(longDrafts, 4); assert.equal(resumedLong, true);
+    assert.equal(longDrafts, 4); assert.equal(pathChoices, 4); assert.equal(resumedPath, true); assert.equal(resumedLong, true);
     assert.equal(longAfter.contracts.run.status, 'completed'); assert.equal(longAfter.contracts.run.depth, 10);
     assert.equal(longAfter.contracts.run.xp_awarded, 20); assert.equal(longAfter.contracts.bonus_remaining, 2);
     assert.equal(longAfter.pet.energy, 0); assert.equal(longAfter.pet.moon_gold, longBefore.pet.moon_gold);
@@ -516,6 +543,12 @@ try {
     assert.equal((await (await startActivityResponse).json()).result.accepted, true);
     await page.waitForSelector('[data-action="activity_claim"]');
     assert.equal(await page.locator('[data-action="activity_claim"]').isDisabled(), true);
+    await page.locator('[data-screen="home"]').click();
+    assert.equal(await page.locator('[data-action="sleep"]').isDisabled(), true);
+    assert.equal(await page.locator('[data-action="train"]').isDisabled(), true);
+    assert.equal(await page.locator('[data-action="feed"]').isEnabled(), true);
+    await page.locator('[data-panel="care"] [data-focus="timed-activity"]').click();
+    assert.ok(await page.locator('[data-action="activity_claim"]').count());
     await page.locator('[data-panel="timed-activity"] [data-focus="contracts"]').click();
     assert.ok(await page.locator('#contract-build').count());
     assert.ok((await hooks.buildPetMiniAppState(db, currentUser, token)).guidance.activity, 'navigating to contracts must leave the activity running');
@@ -531,6 +564,7 @@ try {
     const paidBeforeRetry = await hooks.buildPetMiniAppState(db, currentUser, token);
     assert.equal(paidBeforeRetry.pet.moon_crystals, beforeFailedClaim.pet.moon_crystals + 1);
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    assert.equal(await page.locator('[data-action="sleep"]').isEnabled(), true, 'completed activity waiting for receipt recovery does not block care');
     await page.locator('[data-panel="play-now"] [data-focus="timed-activity"]').filter({ hasText: 'RECOVER SAVED ACTIVITY REWARD' }).click();
     await page.waitForFunction(() => {
       const panel = document.querySelector('[data-panel="timed-activity"]');
@@ -792,7 +826,7 @@ try {
     assert.equal(overflow, false, 'mobile viewport must not overflow horizontally');
     assert.deepEqual(errors, [], 'no runtime errors across all six screens');
     if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-${viewport.width}.png`) });
-    console.log(`Moonpet browser loop passed at ${viewport.width}x${viewport.height}; all six screens; bounties; practice; contracts and records; daily tactics; raids; timed recovery; Trade; expeditions; weekly boss recovery; Daily Cache claimed/reset state; season reward rejection/recovery; supply drafts; crafting goals, material routes, craft/use and goal isolation; paid-bundle capacity and exact-fit purchase; persisted draft redraw; weekly objective routes; six goals and saved ten-room Contracts with four drafts and separate records.`);
+    console.log(`Moonpet browser loop passed at ${viewport.width}x${viewport.height}; all six screens; bounties; practice; contracts and records; daily tactics; raids; timed recovery; Trade; expeditions; weekly boss recovery; Daily Cache claimed/reset state; season reward rejection/recovery; supply drafts; crafting goals, material routes, craft/use and goal isolation; paid-bundle capacity and exact-fit purchase; persisted draft redraw; weekly objective routes; six goals and saved ten-room Contracts with four drafts and separate records; saved checkpoint paths, care busy/energy gates and recovery unlock.`);
     await context.close();
   }
 } finally {
