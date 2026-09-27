@@ -234,10 +234,20 @@ function getRewardAuthorization(source, telegramId, context = {}, now = new Date
   if (source === 'roguelite_room' || source === 'roguelite_boss') {
     if (!runId || !roomId) throw new Error('invalid_pet_reward_context');
     const bossGuard = source === 'roguelite_boss' ? "AND room_type = 'boss'" : '';
+    // A saved official final-boss win may outlive a failed payout. Permit only
+    // that source-backed ending to settle after completion/extraction.
+    const dailyEndingGuard = source === 'roguelite_boss' ? ` OR EXISTS (
+      SELECT 1 FROM telegram_pet_daily_runs d JOIN telegram_pet_runs r ON r.run_id=d.run_id AND r.telegram_id=d.telegram_id AND r.pet_id=d.pet_id
+      JOIN telegram_pet_run_rooms f ON f.run_id=r.run_id AND f.telegram_id=r.telegram_id AND f.pet_id=r.pet_id AND f.room_number=r.max_room
+      WHERE r.run_id=? AND r.telegram_id=? AND r.pet_id=? AND r.status IN ('completed','extracted') AND r.current_room>=r.max_room
+        AND f.room_id=? AND f.status='resolved' AND f.room_type='boss' AND r.max_room>0
+        AND json_valid(f.outcome_data) AND COALESCE(json_extract(f.outcome_data,'$.success'),1)<>0
+        AND json_valid(f.generated_data) AND json_extract(f.generated_data,'$.boss_id')=?
+    )` : '';
     return {
       sql: `AND EXISTS (SELECT 1 FROM telegram_pet_run_rooms WHERE room_id = ? AND run_id = ? AND telegram_id = ? AND status = 'resolved' ${bossGuard})
-        AND EXISTS (SELECT 1 FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ? AND status IN ('active', 'extractable'))`,
-      args: [roomId, runId, telegramId, runId, telegramId],
+        AND (EXISTS (SELECT 1 FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ? AND status IN ('active', 'extractable'))${dailyEndingGuard})`,
+      args: [roomId, runId, telegramId, runId, telegramId, ...(source === 'roguelite_boss' ? [runId, telegramId, petId, roomId, String(context.boss_id || '')] : [])],
     };
   }
   return { sql: '', args: [] };
@@ -760,6 +770,24 @@ export async function rewardPetRogueliteBoss(db, run, bossId, room = null) {
       VALUES (?, ?, ?, ?, 'boss_fought', ?)`).bind(`${run.run_id}:boss:${persistedRoom.room_id}:${bossId}:win`, requireRunPetId(run), run.run_id, run.telegram_id,
         safeJson({ boss_id: bossId, room_id: persistedRoom.room_id, outcome: 'win', rewards: awarded.rewards,
           relics_discovered: Object.keys(awarded.rewards?.relics || {}), achievement_id: boss.achievement_id || null })).run();
+  }
+  if (awarded.accepted && awarded.duplicate) {
+    const analyticsId = `${run.run_id}:boss:${persistedRoom.room_id}:${bossId}:win`;
+    const existing = await db.prepare('SELECT 1 AS recorded FROM telegram_pet_run_analytics WHERE analytics_id=?').bind(analyticsId).first();
+    if (!existing) {
+      // Duplicate results deliberately contain zero rewards. Recover the win
+      // from the awarded receipt, never from that empty callback payload.
+      const receipt = await db.prepare(`SELECT applied_rewards FROM telegram_pet_reward_claims
+        WHERE telegram_id=? AND pet_id=? AND source='roguelite_boss' AND idempotency_key=? AND status='awarded'`)
+        .bind(run.telegram_id, requireRunPetId(run), `${persistedRoom.room_id}:${bossId}`).first();
+      if (receipt) {
+        const credited = JSON.parse(receipt.applied_rewards);
+        await db.prepare(`INSERT OR IGNORE INTO telegram_pet_run_analytics (analytics_id, pet_id, run_id, telegram_id, event_type, event_data)
+          VALUES (?, ?, ?, ?, 'boss_fought', ?)`).bind(analyticsId, requireRunPetId(run), run.run_id, run.telegram_id,
+            safeJson({ boss_id: bossId, room_id: persistedRoom.room_id, outcome: 'win', rewards: credited,
+              relics_discovered: Object.keys(credited.relics || {}), achievement_id: boss.achievement_id || null })).run();
+      }
+    }
   }
   if (awarded.accepted) {
     await recordMoonpetBehaviour(db, runIdentityAuthority(run, {

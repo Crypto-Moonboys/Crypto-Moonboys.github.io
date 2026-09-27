@@ -126,6 +126,15 @@ assert.ok(!options.options(missingRunPet).some((entry) => entry.key === 'run'));
 assert.deepEqual(options.runAvailability({ ...exhaustedRun, run: { ...exhaustedRun.run, daily: true } }), { step: true, extract: false }, 'official room choices do not require standard-run energy');
 assert.deepEqual(options.runAvailability({ ...snapshot, run: { depth: 0, source_pet: { energy: 1 } } }), { step: true, extract: false });
 assert.deepEqual(options.runAvailability({}), { step: false, extract: false });
+const savedDailyEnding = { ...snapshot, run: { daily: true, current_room: 10, max_room: 10, settlement_pending: true } };
+assert.deepEqual(options.runAvailability(savedDailyEnding), { step: false, extract: true });
+assert.equal(options.options(savedDailyEnding).find((entry) => entry.key === 'run').title, 'FINISH SAVED DAILY RUN');
+const savedDailyGoal = { ...savedDailyEnding, daily_run: { pet_id: 'pet-a', run_id: 'saved-ending', resumable: true }, run: { ...savedDailyEnding.run, run_id: 'saved-ending' } };
+assert.equal(options.objectiveRoutes('daily_boss', savedDailyGoal)[0].available, true);
+assert.equal(options.objectiveRoutes('daily_boss', savedDailyGoal)[0].title, 'FINISH SAVED DAILY RUN');
+assert.equal(options.objectiveRoutes('daily_boss', { ...savedDailyGoal, pet: { pet_id: 'pet-b' } })[0].available, false);
+
+
 assert.deepEqual(options.options({ adopted: false }), []);
 const blockedEvent = { ...snapshot, encounter: { choices: [{ preview: { available: false } }] } };
 assert.ok(!options.options(blockedEvent).some((entry) => entry.key === 'random_event'));

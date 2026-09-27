@@ -11,6 +11,7 @@ import {
   getDailyMoonRunLeaderboard,
   getDailySeasonId,
   processDailyMoonRunStep,
+  recoverDailyMoonRunEnding,
   recordDailyCareChallenge,
   syncDailyMoonRun,
   validateDailyChallengeContent,
@@ -23,7 +24,7 @@ import {
   persistPetRunRoomOutcome,
   startPetRogueliteRun,
 } from '../workers/moonboys-api/pets/roguelite-foundation.js';
-import { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
+import moonboysApiWorker, { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
 import { DAILY_RUN_CONDITIONS, DAILY_RUN_RULES_ID, DAILY_RUN_TACTICS, chooseDailyRunTactic, dailyTacticalBoard, previewDailyChoice, readDailyModifiers } from '../workers/moonboys-api/pets/daily-run-tactics.js';
 
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
@@ -42,6 +43,7 @@ class Statement {
   bind(...args) { return new Statement(this.adapter, this.sql, args); }
   async first() { return this.adapter.database.prepare(this.sql).get(...this.args) || null; }
   async run() {
+    if (this.adapter.failEndingWrite?.(this.sql, this.args)) throw new Error('injected_ending_write_failure');
     if (this.adapter.failWrite?.test(this.sql)) throw new Error('injected_journey_write_failure');
     const result = this.adapter.database.prepare(this.sql).run(...this.args);
     return { results: [], meta: { changes: Number(result.changes || 0) } };
@@ -1329,5 +1331,203 @@ assert.deepEqual(orphanPreview.run.choices, []);
   assert.deepEqual(recoveryDb.database.prepare('SELECT * FROM telegram_pet_growth_marks ORDER BY mark_id').all(), recoveryMarksBefore);
 
 }
+
+// An interruption after saving the final room must resume settlement, not
+// generate an eleventh boss or require the player to win the ending twice.
+async function endingFixture(owner) {
+  const adapter = new D1();
+  adapter.database.exec(fs.readFileSync(new URL('../workers/moonboys-api/migrations/048_telegram_pet_player_expansion.sql', import.meta.url), 'utf8'));
+  const now = new Date('2026-08-20T12:00:00Z');
+  seedPlayer(adapter, owner);
+  adapter.database.prepare("UPDATE telegram_pet_instances SET stage='young',source_profile_updated_at='0001-01-01 00:00:00' WHERE telegram_id=?").run(owner);
+  adapter.database.prepare("INSERT INTO telegram_pet_lifecycle_by_pet (pet_id,telegram_id,identity_seed,phase,incubation_json,innate_traits_json) VALUES (?,?,?,'young','{}','[]')").run(`pet-${owner}`,owner,owner);
+  const created = await createDailyMoonRun(adapter, { telegram_id: owner, now });
+  adapter.database.prepare('UPDATE telegram_pet_runs SET current_room=9,depth=9,score=123 WHERE run_id=?').run(created.daily_run.run_id);
+  const run = adapter.database.prepare('SELECT * FROM telegram_pet_runs WHERE run_id=?').get(created.daily_run.run_id);
+  const room = await createPetRunRoom(adapter, run);
+  await persistPetRunRoomOutcome(adapter, run, room, { success: true, score: 100, choice_id: room.choices[0].choice_id });
+  return { adapter, owner, now, run, room, request: { telegram_id: owner, run_id: run.run_id, choice_key: room.choices[0].choice_id, expected_step_index: 9, now } };
+}
+
+// Finish Saved Daily Run is settlement recovery, just like refresh. It must
+// never grant the extraction-only XP, traits or equipment progression.
+let endingAwardOwner = 9342000;
+async function invokeEndingAction(f, surface, action, suffix = 'first') {
+  const body = { ...f.request, action, event_key: `ending-award:${suffix}`, request_id: `ending-award:${suffix}` };
+  if (surface === 'mini') return __petMediaTestHooks.processPetMiniAppAction(f.adapter, f.owner, { id: f.owner }, body, 'fixture-token');
+  const response = await moonboysApiWorker.fetch(new Request('https://moonboys.test/telegram-pets/action', {
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Pets-Bot-Secret': 'fixture-secret' }, body: JSON.stringify(body),
+  }), { DB: f.adapter, TELEGRAM_PETS_BOT_SECRET: 'fixture-secret' });
+  assert.equal(response.status, 200);
+  return response.json();
+}
+function endingRuntimeState(f) {
+  return {
+    progression: f.adapter.database.prepare('SELECT adventure_xp,traits_json FROM telegram_pet_specialist_progression WHERE pet_id=?').get(f.run.pet_id),
+    events: f.adapter.database.prepare('SELECT action,payload_json FROM telegram_pet_specialist_events WHERE pet_id=? ORDER BY event_key').all(f.run.pet_id),
+  };
+}
+for (const surface of ['mini', 'api', 'refresh']) {
+  for (const mode of surface === 'refresh' ? ['finish'] : ['finish', 'step', 'extract']) {
+    const f = await endingFixture(String(++endingAwardOwner));
+    f.adapter.database.prepare(`INSERT INTO telegram_pet_specialist_progression (pet_id,telegram_id,season_key,adventure_xp,traits_json)
+      VALUES (?,?,?,37,'{}')`).run(f.run.pet_id,f.owner,f.run.season_key);
+    const before = endingRuntimeState(f);
+    if (mode === 'finish') {
+      f.adapter.failWrite = /INSERT OR IGNORE INTO telegram_pet_run_analytics[\s\S]*'boss_fought'/;
+      await assert.rejects(processDailyMoonRunStep(f.adapter, f.request), /injected_journey_write_failure/);
+      f.adapter.failWrite = null;
+      if (surface === 'refresh') await __petMediaTestHooks.buildPetMiniAppState(f.adapter, f.owner, 'fixture-token');
+      else {
+        const finished = await invokeEndingAction(f, surface, 'run_extract');
+        assert.equal(finished.reason, 'daily_run_completed');
+        assert.equal(finished.duplicate, false, 'first completion must exercise the runtime award gate');
+        await invokeEndingAction(f, surface, 'run_extract', 'retry');
+      }
+      assert.equal(f.adapter.database.prepare('SELECT status FROM telegram_pet_runs WHERE run_id=?').get(f.run.run_id).status, 'completed');
+      assert.deepEqual(endingRuntimeState(f), before, `${surface} settlement recovery must not award extraction progression`);
+      assert.equal(f.adapter.database.prepare("SELECT COUNT(*) AS n FROM telegram_pet_reward_claims WHERE source='roguelite_boss' AND status='awarded'").get().n, 1);
+    } else {
+      if (mode === 'extract') {
+        f.adapter.database.prepare('UPDATE telegram_pet_runs SET current_room=1,depth=1 WHERE run_id=?').run(f.run.run_id);
+        f.adapter.database.prepare('DELETE FROM telegram_pet_run_rooms WHERE run_id=?').run(f.run.run_id);
+      }
+      const result = await invokeEndingAction(f, surface, mode === 'step' ? 'run_step' : 'run_extract');
+      assert.equal(result.accepted, true);
+      const after = endingRuntimeState(f);
+      assert.equal(after.progression.adventure_xp - before.progression.adventure_xp, mode === 'step' ? 10 : 24,
+        `${surface} ordinary ${mode} keeps its existing Adventure XP`);
+      assert.equal(after.events.length, 1);
+      const plan = JSON.parse(after.events[0].payload_json);
+      assert.equal(plan.action, mode === 'step' ? 'run_step' : 'run_extract');
+      assert.equal(plan.equipment_action, plan.action);
+      assert.deepEqual(JSON.parse(after.progression.traits_json), plan.traits);
+    }
+  }
+}
+const interruptedEnding = await endingFixture('ending-retry');
+interruptedEnding.adapter.failWrite = /INSERT OR IGNORE INTO telegram_pet_run_analytics[\s\S]*'boss_fought'/;
+await assert.rejects(processDailyMoonRunStep(interruptedEnding.adapter, interruptedEnding.request), /injected_journey_write_failure/);
+interruptedEnding.adapter.failWrite = null;
+const resumedEnding = await processDailyMoonRunStep(interruptedEnding.adapter, interruptedEnding.request);
+assert.equal(resumedEnding.reason, 'daily_run_completed', 'saved final-room retry must complete instead of returning stale_daily_room');
+assert.equal(interruptedEnding.adapter.database.prepare('SELECT current_room FROM telegram_pet_runs WHERE run_id=?').get(interruptedEnding.run.run_id).current_room, 10);
+assert.equal(interruptedEnding.adapter.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_run_rooms WHERE run_id=? AND room_number>10').get(interruptedEnding.run.run_id).count, 0);
+
+// Exercise both sides of each non-atomic boundary, then recover through the
+// actual state route after switching pets. Persisted evidence owns all credit.
+for (const fault of ['reward', 'win', 'terminal', 'sync', 'rejected', 'legacy-completed', 'legacy-extracted']) {
+  const f = await endingFixture('ending-' + fault);
+  const originalBatch = f.adapter.batch.bind(f.adapter);
+  let blocked = true;
+  f.adapter.batch = async (statements) => {
+    if (blocked && statements[0].args.includes('roguelite_boss') && ['reward', 'rejected', 'legacy-completed', 'legacy-extracted'].includes(fault)) {
+      if (fault === 'rejected') return statements.map(() => ({ results: [], meta: { changes: 0 } }));
+      throw new Error('injected_ending_batch_failure');
+    }
+    if (blocked && fault === 'terminal' && statements[0].sql.includes('UPDATE telegram_pet_runs SET status =')) throw new Error('injected_ending_batch_failure');
+    return originalBatch(statements);
+  };
+  f.adapter.failEndingWrite = (sql, args) => blocked && (
+    fault === 'win' && sql.includes('INSERT OR IGNORE INTO telegram_pet_run_analytics') && args.some((value) => String(value).endsWith(':alley_king:win'))
+    || fault === 'sync' && sql.includes('UPDATE telegram_pet_daily_runs SET status ='));
+  if (fault === 'rejected') {
+    const rejected = await processDailyMoonRunStep(f.adapter, f.request);
+    assert.equal(rejected.reason, 'daily_boss_reward_pending');
+    assert.equal(f.adapter.database.prepare('SELECT status FROM telegram_pet_runs WHERE run_id=?').get(f.run.run_id).status, 'active');
+  } else await assert.rejects(processDailyMoonRunStep(f.adapter, f.request), /injected_ending/);
+  const pending = await __petMediaTestHooks.buildPetMiniAppState(f.adapter, f.owner, 'fixture-token');
+  if (!['sync'].includes(fault)) {
+    assert.equal(pending.run.settlement_pending, true);
+    assert.deepEqual(pending.run.choices, [], 'a won ending cannot offer another boss choice');
+  }
+  blocked = false;
+  if (fault.startsWith('legacy-')) {
+    f.adapter.database.prepare("UPDATE telegram_pet_runs SET status=?, completed_at='2026-08-20 12:30:00' WHERE run_id=?").run(fault.slice(7),f.run.run_id);
+    await syncDailyMoonRun(f.adapter, f.request); // old code finalized these records without a paid boss win
+  }
+  seedAdditionalPet(f.adapter, f.owner, 'other-' + f.owner);
+  f.adapter.database.prepare('UPDATE telegram_pet_active_slots SET pet_id=? WHERE telegram_id=?').run('other-' + f.owner, f.owner);
+  const before = f.adapter.database.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get('other-' + f.owner);
+  if (fault === 'rejected') {
+    const finished = await __petMediaTestHooks.processPetMiniAppAction(f.adapter, f.owner, { id: f.owner }, { action: 'run_extract', run_id: f.run.run_id }, 'fixture-token');
+    assert.equal(finished.reason, 'daily_run_completed', 'Finish Saved Daily Run must preserve a completed boss ending');
+  }
+  await __petMediaTestHooks.buildPetMiniAppState(f.adapter, f.owner, 'fixture-token');
+  const settled = f.adapter.database.prepare('SELECT status,current_room,score FROM telegram_pet_runs WHERE run_id=?').get(f.run.run_id);
+  assert.equal(settled.status, fault === 'legacy-extracted' ? 'extracted' : 'completed');
+  assert.equal(settled.current_room, 10); assert.equal(settled.score, 223, 'recovery cannot add final-room score again');
+  assert.equal(f.adapter.database.prepare('SELECT boss_defeated FROM telegram_pet_daily_runs WHERE run_id=?').get(f.run.run_id).boss_defeated, 1);
+  assert.equal(f.adapter.database.prepare('SELECT boss_completions,runs_recorded FROM telegram_pet_daily_leaderboard_records WHERE telegram_id=?').get(f.owner).boss_completions, 1);
+  assert.equal(f.adapter.database.prepare('SELECT boss_records FROM telegram_pet_seasonal_challenge_state WHERE telegram_id=? AND season_id=?').get(f.owner, f.run.season_key).boss_records, 1);
+  assert.equal(f.adapter.database.prepare("SELECT COUNT(*) AS n FROM telegram_pet_seasonal_achievements WHERE telegram_id=? AND achievement_id='daily_boss_victory'").get(f.owner).n, 1);
+
+  assert.equal(f.adapter.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_daily_journey_objectives WHERE pet_id=? AND utc_day='2026-08-20' AND challenge_id='daily_boss' AND status='accepted'").get(f.run.pet_id).count, 1);
+  const evidence = f.adapter.database.prepare("SELECT pet_id,season_key,day_key FROM telegram_pet_events WHERE telegram_id=? AND event_type='daily_moon_run'").get(f.owner);
+  assert.equal(evidence.pet_id, f.run.pet_id); assert.equal(evidence.season_key, f.run.season_key); assert.equal(evidence.day_key, '2026-08-20');
+  assert.equal(f.adapter.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives WHERE pet_id=? AND objective_id='weekly_run' AND status='accepted'").get(f.run.pet_id).count, 1);
+  assert.deepEqual(f.adapter.database.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get('other-' + f.owner), before);
+  const receipt = f.adapter.database.prepare("SELECT * FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='roguelite_boss'").get(f.owner);
+  assert.ok(receipt && receipt.status === 'awarded');
+  const win = JSON.parse(f.adapter.database.prepare("SELECT event_data FROM telegram_pet_run_analytics WHERE analytics_id=?").get(`${f.run.run_id}:boss:${f.room.room_id}:alley_king:win`).event_data);
+  assert.deepEqual(win.rewards, JSON.parse(receipt.applied_rewards), 'recovered boss analytics use the durable awarded payload');
+  const wallet = f.adapter.database.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner);
+  await Promise.all([__petMediaTestHooks.buildPetMiniAppState(f.adapter, f.owner, 'fixture-token'), __petMediaTestHooks.buildPetMiniAppState(f.adapter, f.owner, 'fixture-token')]);
+  assert.deepEqual(f.adapter.database.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner), wallet);
+  assert.equal(f.adapter.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='roguelite_boss'").get(f.owner).count, 1);
+  assert.equal(f.adapter.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_run_rooms WHERE run_id=? AND room_number>10').get(f.run.run_id).count, 0);
+  await Promise.all([syncDailyMoonRun(f.adapter, f.request), syncDailyMoonRun(f.adapter, f.request)]);
+  const finalRecords = f.adapter.database.prepare('SELECT boss_completions,runs_recorded FROM telegram_pet_daily_leaderboard_records WHERE telegram_id=?').get(f.owner);
+  assert.equal(finalRecords.boss_completions, 1); assert.equal(finalRecords.runs_recorded, 1);
+  assert.equal(f.adapter.database.prepare('SELECT boss_records FROM telegram_pet_seasonal_challenge_state WHERE telegram_id=? AND season_id=?').get(f.owner, f.run.season_key).boss_records, 1);
+
+}
+
+// Even after the old terminal event and recovered win exist, an interrupted
+// aggregate repair must remain in the refresh queue until its ledger is true.
+const repairEnding = await endingFixture('ending-record-retry');
+repairEnding.adapter.database.prepare("UPDATE telegram_pet_runs SET current_room=10,depth=10,score=223,status='completed' WHERE run_id=?").run(repairEnding.run.run_id);
+await syncDailyMoonRun(repairEnding.adapter, repairEnding.request);
+repairEnding.adapter.database.prepare(`INSERT INTO telegram_pet_events (id,pet_id,telegram_id,event_type,event_key,season_key,day_key,week_key,status)
+  VALUES ('old-ending-event',?,?,'daily_moon_run',?,?,'2026-08-20','2026-W34','accepted')`)
+  .run(repairEnding.run.pet_id,repairEnding.owner,`daily-moon-run:${repairEnding.owner}:${repairEnding.run.run_id}:completed`,repairEnding.run.season_key);
+const repairBatch = repairEnding.adapter.batch.bind(repairEnding.adapter);
+repairEnding.adapter.batch = async (statements) => {
+  if (statements.some((statement) => statement.sql.includes('SET boss_completions=boss_completions+1'))) throw Error('interrupted_boss_record_repair');
+  return repairBatch(statements);
+};
+await assert.rejects(recoverDailyMoonRunEnding(repairEnding.adapter, repairEnding.request), /interrupted_boss_record_repair/);
+repairEnding.adapter.batch = repairBatch;
+await __petMediaTestHooks.buildPetMiniAppState(repairEnding.adapter, repairEnding.owner, 'fixture-token');
+assert.equal(repairEnding.adapter.database.prepare('SELECT boss_completions FROM telegram_pet_daily_leaderboard_records WHERE telegram_id=?').get(repairEnding.owner).boss_completions,1);
+assert.equal(repairEnding.adapter.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE source='roguelite_boss'").get().count,1);
+
+// Ending recovery requires the persisted owner, pet, season and won boss room.
+for (const invalid of ['owner', 'pet', 'season', 'failed', 'boss']) {
+  const f = await endingFixture('invalid-ending-' + invalid);
+  f.adapter.database.prepare('UPDATE telegram_pet_runs SET current_room=10,depth=10,score=223 WHERE run_id=?').run(f.run.run_id);
+  if (invalid === 'pet') f.adapter.database.prepare('UPDATE telegram_pet_run_rooms SET pet_id=NULL WHERE room_id=?').run(f.room.room_id);
+  if (invalid === 'season') f.adapter.database.prepare("UPDATE telegram_pet_runs SET season_key='pet-s2026-001' WHERE run_id=?").run(f.run.run_id);
+  if (invalid === 'failed') f.adapter.database.prepare("UPDATE telegram_pet_run_rooms SET status='failed',outcome_data=? WHERE room_id=?").run(JSON.stringify({success:false}),f.room.room_id);
+  if (invalid === 'boss') f.adapter.database.prepare("UPDATE telegram_pet_run_rooms SET generated_data=json_set(generated_data,'$.boss_id','missing-boss') WHERE room_id=?").run(f.room.room_id);
+  assert.equal(await recoverDailyMoonRunEnding(f.adapter, { ...f.request, telegram_id: invalid === 'owner' ? 'another-owner' : f.owner }), null);
+  assert.equal(f.adapter.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE source='roguelite_boss'").get().count, 0);
+}
+// Five older source-less endings cannot consume the recovery budget ahead of
+// the sixth valid ending. Refresh must inspect source-backed candidates first.
+const queueEnding = await endingFixture('ending-queue');
+queueEnding.adapter.database.prepare('UPDATE telegram_pet_runs SET current_room=10,depth=10,score=223 WHERE run_id=?').run(queueEnding.run.run_id);
+for (let index = 1; index <= 5; index++) {
+  const runId = 'invalid-old-ending-' + index;
+  queueEnding.adapter.database.prepare(`INSERT INTO telegram_pet_runs (id,run_id,telegram_id,pet_id,season_key,status,current_room,max_room,depth,score)
+    VALUES (?,?,?,?,?,'completed',10,10,10,223)`).run(runId,runId,queueEnding.owner,queueEnding.run.pet_id,queueEnding.run.season_key);
+  queueEnding.adapter.database.prepare(`INSERT INTO telegram_pet_daily_runs (telegram_id,pet_id,utc_day,seed,run_id,status) VALUES (?,?,?,?,?,'active')`)
+    .run(queueEnding.owner,queueEnding.run.pet_id,'2026-08-0'+index,'old-seed',runId);
+  queueEnding.adapter.database.prepare(`INSERT INTO telegram_pet_run_rooms (room_id,run_id,telegram_id,room_number,room_type,status,generated_data,outcome_data)
+    VALUES (?,?,?,10,'boss','resolved',?,?)`).run(runId+':10',runId,queueEnding.owner,JSON.stringify({boss_id:'alley_king'}),JSON.stringify({success:true}));
+}
+await __petMediaTestHooks.buildPetMiniAppState(queueEnding.adapter, queueEnding.owner, 'fixture-token');
+assert.equal(queueEnding.adapter.database.prepare('SELECT status FROM telegram_pet_runs WHERE run_id=?').get(queueEnding.run.run_id).status,'completed');
+assert.equal(queueEnding.adapter.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE source='roguelite_boss'").get().count, 1);
 
 console.log('Telegram Pets Daily Moon Run tests passed (10,000-run economy simulation; versioned tactics, risk/score previews and concurrent outcome authority included).');

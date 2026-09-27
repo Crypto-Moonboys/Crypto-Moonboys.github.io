@@ -477,7 +477,8 @@ assert.equal(bossDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet
   'the authoritative callback must persist the deterministic relic discovery');
 assert.equal(bossDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_run_analytics WHERE event_type = 'boss_fought'").get().count, 2,
   'backend analytics must record one boss attempt and one boss win despite duplicate callbacks');
-assert.equal(bossDb.bossWinAnalyticsInsertAttempts, 1, 'only the authoritative boss settlement may attempt the boss-win analytics insert');
+const bossWinWriteAttempts = bossDb.bossWinAnalyticsInsertAttempts;
+assert.ok(bossWinWriteAttempts >= 1 && bossWinWriteAttempts <= 8, 'concurrent recovery may race an idempotent analytics insert');
 const bossWinAnalytics = JSON.parse(bossDb.database.prepare('SELECT event_data FROM telegram_pet_run_analytics WHERE analytics_id = ?').get(bossWinAnalyticsId).event_data);
 assert.deepEqual(bossWinAnalytics.rewards.materials, expectedBossRewards.materials, 'boss-win analytics must retain authoritative materials');
 assert.deepEqual(bossWinAnalytics.rewards.items, expectedBossRewards.items, 'boss-win analytics must retain the evolution fragment');
@@ -490,9 +491,20 @@ assert.match(foundationFunction('rewardPetRogueliteBoss'), /if \(awarded\.accept
 const bossWinBeforeDuplicateRetry = JSON.stringify(bossWinAnalytics);
 const duplicateBossRetry = await rewardPetRogueliteBoss(bossDb, { run_id: bossRunId, telegram_id: 'boss-player', pet_id: 'pet-boss-player', season_key: 'pet-s2026-001' }, 'alley_king');
 assert.equal(duplicateBossRetry.duplicate, true, 'an explicit boss retry after settlement must remain duplicate');
-assert.equal(bossDb.bossWinAnalyticsInsertAttempts, 1, 'a duplicate boss retry cannot attempt another boss-win analytics insert');
+assert.equal(bossDb.bossWinAnalyticsInsertAttempts, bossWinWriteAttempts, 'an already-recorded win does not need another insert');
 assert.equal(bossDb.database.prepare('SELECT event_data FROM telegram_pet_run_analytics WHERE analytics_id = ?').get(bossWinAnalyticsId).event_data,
   bossWinBeforeDuplicateRetry, 'a duplicate boss retry cannot replace authoritative analytics with an empty payload');
+
+// Reward can commit before analytics. Duplicate recovery must use the receipt,
+// not the zero-valued duplicate response, and must not pay anything again.
+const walletBeforeRepair = bossDb.database.prepare("SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id='boss-player'").get();
+bossDb.database.prepare('DELETE FROM telegram_pet_run_analytics WHERE analytics_id=?').run(bossWinAnalyticsId);
+await rewardPetRogueliteBoss(bossDb, { run_id: bossRunId, telegram_id: 'boss-player', pet_id: 'pet-boss-player', season_key: 'pet-s2026-001' }, 'alley_king');
+const repairedWin = JSON.parse(bossDb.database.prepare('SELECT event_data FROM telegram_pet_run_analytics WHERE analytics_id=?').get(bossWinAnalyticsId).event_data);
+assert.deepEqual(repairedWin.rewards.materials, expectedBossRewards.materials);
+assert.deepEqual(repairedWin.relics_discovered, expectedRelics);
+assert.deepEqual(bossDb.database.prepare("SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id='boss-player'").get(), walletBeforeRepair);
+assert.equal(bossDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE source='roguelite_boss'").get().count, 1);
 
 const bossRetryDb = seedPlayer('boss-retry-player');
 bossRetryDb.database.prepare(`INSERT INTO telegram_pet_runs (id, telegram_id, run_id, season_key, status)
