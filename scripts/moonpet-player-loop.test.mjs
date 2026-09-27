@@ -53,6 +53,16 @@ assert.deepEqual(options.options({ ...targeted, lifecycle: { phase: 'egg' } }).m
 const finishedChoices = options.options({ ...snapshot, guidance: { economy: { bounties: [{ ...claimTarget, claimed: true }] } }, contracts: { available: true } });
 assert.ok(!finishedChoices.some((c) => ['bounty_claims', 'bounty_target'].includes(c.key)));
 assert.ok(finishedChoices.some((c) => c.key === 'contract') && finishedChoices.some((c) => c.key === 'practice'));
+const raidAtTwelve = { ...snapshot, pet: { energy: 12 }, live_systems: { seasonal_boss: { available: true, choices: [{ energy: 12 }, { energy: 18 }] } } };
+assert.ok(options.options(raidAtTwelve).some((c) => c.key === 'seasonal_boss'));
+const exhaustedWithClaim = { ...raidAtTwelve, pet: { energy: 0 }, live_systems: { seasonal_boss: { available: false, pending_rewards: [{ boss_key: 'neon_titan' }] } } };
+assert.equal(options.options(exhaustedWithClaim)[0].key, 'seasonal_boss_claim');
+assert.equal(options.options(exhaustedWithClaim)[0].focus, 'seasonal-boss');
+assert.ok(options.options({ ...snapshot, pet: { energy: 0 }, regions: [{ available: true, pending_choice_key: 'careful', retry_energy_charged: true }] }).some((c) => c.key === 'district_retry'));
+assert.ok(!options.options({ ...snapshot, pet: { energy: 0 }, regions: [{ available: true, pending_choice_key: 'careful' }] }).some((c) => c.key === 'district_retry'), 'an unpaid retry still needs energy');
+const savedRaid = { available: true, pending_move: 'counter', choices: [{ key: 'conserve', energy: 12 }, { key: 'counter', energy: 18 }] };
+assert.ok(!options.options({ ...raidAtTwelve, live_systems: { seasonal_boss: savedRaid } }).some((c) => c.key === 'seasonal_boss'), 'a saved counter cannot switch to the cheaper move');
+assert.ok(options.options({ ...raidAtTwelve, pet: { energy: 0 }, live_systems: { seasonal_boss: { ...savedRaid, retry_energy_charged: true } } }).some((c) => c.key === 'seasonal_boss'), 'a paid raid resumes at zero energy');
 
 assert.equal(practice.create('x', '__proto__', 'explorer'), null);
 assert.equal(practice.restore({ version: 1 }), null);

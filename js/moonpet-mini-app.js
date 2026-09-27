@@ -1912,10 +1912,11 @@
       var opponent = mission.opponent || {};
       var decisions = (mission.choices || []).map(function (choice) {
         return button(choice.label, 'district_mission', { region_key: region.key, approach_key: choice.key }, {
-          disabled: !region.available,
-          detail: number(choice.success_percent) + '% CLEAR // +' + number(choice.mastery_success) + ' MASTERY // ' + number(Math.round(Number(choice.reward_multiplier) * 100)) + '% REWARD // ' + choice.detail,
+          disabled: !region.available || Number(state.pet.energy) < 10,
+          detail: (region.settling ? 'SETTLEMENT IN PROGRESS // ' : '') + '10 ENERGY // ' + number(choice.success_percent) + '% CLEAR // +' + number(choice.mastery_success) + ' MASTERY // ' + number(Math.round(Number(choice.reward_multiplier) * 100)) + '% REWARD // ' + choice.detail,
         });
       }).join('');
+      if (region.pending_choice_key) decisions = button('RESUME SAVED DISTRICT CHOICE', 'district_mission', { region_key: region.key, approach_key: region.pending_choice_key }, { disabled: !region.available || !region.retry_energy_charged && Number(state.pet.energy) < 10, detail: region.retry_energy_charged ? 'Energy already paid. Resume the original decision and reward.' : '10 energy. Resume the original decision.' });
       var brief = mission.title
         ? '<div class="district-mission"><div class="line signal"><strong>' + escapeHtml(mission.title) + '</strong> // THREAT ' + number(mission.threat) + '/5' + (mission.boss ? ' // BOSS CHECKPOINT' : '') + '</div><div class="line">' + escapeHtml(mission.intro) + '</div><div class="line muted">OBJECTIVE // ' + escapeHtml(mission.objective) + '</div>' + (opponent.name ? '<div class="run-opponent"><strong>' + escapeHtml(opponent.name) + '</strong> // ' + escapeHtml(words(opponent.role)) + '<small>' + escapeHtml(opponent.intro || '') + '</small></div>' : '') + '</div>'
         : '';
@@ -1926,15 +1927,26 @@
       var scene = chain.scene || {};
       var decisions = (scene.choices || []).map(function (choice) {
         var bonus = valueText(choice.reward_bonus);
-        return button(choice.label, 'event_chain', { chain_key: chain.key, choice_key: choice.key }, { disabled: !chain.available, detail: choice.detail + (bonus === 'FREE' ? '' : ' // BONUS ' + bonus) });
+        return button(choice.label, 'event_chain', { chain_key: chain.key, choice_key: choice.key }, { disabled: !chain.available, detail: (chain.settling ? 'SETTLEMENT IN PROGRESS // ' : '') + choice.detail + (bonus === 'FREE' ? '' : ' // BONUS ' + bonus) });
       }).join('');
+      if (chain.pending_choice_key) decisions = button('RESUME SAVED STORY CHOICE', 'event_chain', { chain_key: chain.key, choice_key: chain.pending_choice_key }, { disabled: !chain.available, detail: 'Finish the original choice. Its reward cannot be duplicated.' });
       return '<div class="story-scene"><div class="line signal"><strong>' + escapeHtml(chain.title || words(chain.key)) + '</strong> // STEP ' + number(chain.step_index + 1) + '/' + number(chain.steps.length) + '</div><div class="line"><strong>' + escapeHtml(scene.title || words(chain.current_step)) + '</strong></div><div class="line">' + escapeHtml(scene.intro || '') + '</div><div class="line muted">OBJECTIVE // ' + escapeHtml(scene.objective || '') + '</div>' + (chain.used_today ? '<div class="line complete">STORY CHOICE LOCKED IN TODAY // RESET ' + countdownMarkup(chain.cooldown, 'in ') + '</div>' : '<div class="button-grid story-decisions">' + decisions + '</div>') + '</div>';
     }).join('');
     var seasonal = live.seasonal_boss || {};
     var seasonalDefeated = Boolean(seasonal.defeated_at);
-    var seasonalButtonLabel = seasonalDefeated ? 'SEASONAL BOSS DEFEATED' : seasonal.attempted_today ? 'ATTACK USED TODAY' : 'ATTACK SEASONAL BOSS // 18 ENERGY';
     var seasonalStatusLabel = seasonalDefeated ? 'DEFEATED' : seasonal.attempted_today ? 'USED TODAY' : '';
-    var seasonalBody = '<div class="line">' + escapeHtml(words(seasonal.title || 'offline')) + ' // ' + number(seasonal.damage) + '/' + number(seasonal.hp) + ' DAMAGE</div><div class="line muted">WEAKNESS ' + escapeHtml(words(seasonal.weakness)) + ' // REWARD ' + escapeHtml(words(seasonal.reward)) + '</div><div class="button-grid one">' + button(seasonalButtonLabel, 'seasonal_boss', {}, { disabled: !seasonal.available, statusLabel: seasonalStatusLabel, cooldown: seasonalDefeated ? null : seasonal.cooldown }) + '</div>';
+    var raidChoices = seasonal.choices || [{ key: 'strike', label: 'STEADY STRIKE', energy: 18, chance: 100, detail: 'Original raid attack.' }];
+    var raidButtons = raidChoices.filter(function (choice) { return !seasonal.pending_move || choice.key === seasonal.pending_move; }).map(function (choice) {
+      var paid = seasonal.pending_move && seasonal.retry_energy_charged;
+      var detail = seasonal.pending_move ? 'Resume the original attack. ' + (paid ? 'Energy already paid.' : number(choice.energy) + ' energy.') : number(choice.energy) + ' ENERGY // ' + (choice.damage != null ? number(choice.chance) + '%: ' + number(choice.damage) + ' DAMAGE' + (choice.chance < 100 ? ' // SETBACK: ' + number(choice.setback_damage) + ' DAMAGE' : '') + ' // ' : '') + choice.detail;
+      if (seasonal.settling) detail = 'SETTLEMENT IN PROGRESS // ' + detail;
+      if (Number(state.pet.level) < Number(seasonal.min_level)) detail = 'REQUIRES LEVEL ' + number(seasonal.min_level) + ' // ' + detail;
+      return button(seasonal.pending_move ? 'RESUME SAVED RAID ATTACK' : choice.label, 'seasonal_boss', { pet_id: state.pet.pet_id, move: choice.key }, { disabled: !seasonal.available || !paid && Number(state.pet.energy) < choice.energy, statusLabel: seasonalStatusLabel, cooldown: seasonalDefeated ? null : seasonal.cooldown, detail: detail });
+    }).join('');
+    var raidClaims = (seasonal.pending_rewards || []).map(function (claim) {
+      return button('CLAIM SAVED RAID REWARD // ' + claim.title, 'seasonal_boss_claim', { pet_id: claim.pet_id, boss_key: claim.boss_key, season_instance: claim.season_instance }, { detail: 'Recover this defeated boss reward. No energy or new attempt; older rotations remain claimable.' });
+    }).join('');
+    var seasonalBody = '<div class="line">' + escapeHtml(words(seasonal.title || 'offline')) + ' // ' + number(seasonal.damage) + '/' + number(seasonal.hp) + ' DAMAGE // PHASE ' + number(seasonal.phase || 1) + '/' + number(seasonal.phases) + '</div><div class="line muted">WEAKNESS ' + escapeHtml(words(seasonal.weakness)) + ' // REWARD ' + escapeHtml(words(seasonal.reward)) + '</div><div class="line muted">One attack per pet / UTC day. Counter attacks change this hit’s damage; they do not apply ongoing Arena status effects.</div><div class="button-grid">' + raidButtons + raidClaims + '</div>';
     var bossReward = valueText(boss.reward);
     var bossStatusLabel = boss.defeated ? 'DEFEATED' : boss.attempt_used ? 'USED TODAY' : '';
     var bossBody = '<div class="line">' + (boss.defeated ? 'TARGET DEFEATED.' : boss.attempt_used ? 'DAILY ATTEMPT USED.' : 'SELECT AN ATTACK ROUTINE.') + '</div>' +

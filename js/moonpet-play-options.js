@@ -58,6 +58,8 @@
     var egg = s.lifecycle && s.lifecycle.phase === 'egg';
     var bounties = g.economy && g.economy.bounties || [];
     if (!egg) {
+      if (live.seasonal_boss && (live.seasonal_boss.pending_rewards || []).length) add('seasonal_boss_claim', 'CLAIM SAVED RAID REWARDS', 'Recover defeated boss rewards, including older rotations. No energy cost.');
+      if ((s.regions || []).some(function (region) { return region.available && region.pending_choice_key && (region.retry_energy_charged || Number(s.pet && s.pet.energy) >= 10); })) add('district_retry', 'RESUME SAVED DISTRICT CHOICE', 'Finish an interrupted decision without changing its reward or charging energy twice.');
       var ready = bounties.filter(function (b) { return b.complete && !b.claimed; });
       if (ready.length) add('bounty_claims', 'CLAIM READY BOUNTIES // ' + ready.length, 'Open the board to collect verified rewards.');
       if (g.activity && g.activity.ready) add('activity', 'CLAIM FINISHED ACTIVITY', 'Your timed activity is ready to settle.');
@@ -80,7 +82,7 @@
     if ((live.chains || []).some(function (x) { return x.available; })) add('event_chain', 'STORY CHOICES', 'Continue an available authored story. One rewarded step per chain / UTC day.');
     if ((s.regions || []).some(function (x) { return x.available; }) && Number(s.pet && s.pet.energy) >= 10) add('district', 'DISTRICT MISSIONS', 'Choose safe, balanced or bold approaches. Build mastery toward boss checkpoints.');
     if (g.weekly_boss && g.weekly_boss.available) add('weekly_boss', 'WEEKLY BOSS', 'Strike, outsmart or endure. One attack per UTC day.');
-    if (live.seasonal_boss && live.seasonal_boss.available && Number(s.pet && s.pet.energy) >= 18) add('seasonal_boss', 'SEASONAL RAID', 'Take an available raid attempt. Costs 18 energy.');
+    if (live.seasonal_boss && live.seasonal_boss.available && (live.seasonal_boss.pending_move && live.seasonal_boss.retry_energy_charged || (live.seasonal_boss.choices || [{ key: 'strike', energy: 18 }]).some(function (choice) { return (!live.seasonal_boss.pending_move || choice.key === live.seasonal_boss.pending_move) && Number(s.pet && s.pet.energy) >= choice.energy; }))) add('seasonal_boss', 'SEASONAL RAID', 'Conserve energy, strike steadily or counter the boss weakness. One attack per pet / UTC day.');
     var systems = s.capabilities && s.capabilities.systems || {};
     if (s.capabilities_version === 1) for (var name of ['arena', 'kaiju']) {
       var capability = systems[name];

@@ -5,8 +5,9 @@ import { PET_DISTRICT_APPROACHES, PET_DISTRICT_ENCOUNTERS, PET_EVENT_CHAINS, PET
 import { PET_COSMETIC_SINKS, PET_EQUIPMENT_UPGRADE_COSTS, PET_PRESTIGE_REQUIREMENTS } from '../workers/moonboys-api/pets/economy-phase-3.js';
 import {
   applyPetFactionBonus, buildPetLiveSystemsState, getActiveSeasonalBoss, processPetCosmeticUnlock, processPetDistrictMission,
-  processPetCraftRecipe, processPetEquipmentUpgrade, processPetEventChain, processPetPrestige, processPetSeasonalBoss,
+  processPetCraftRecipe, processPetEquipmentUpgrade, processPetEventChain, processPetPrestige, processPetSeasonalBoss, claimPetSeasonalBossReward,
 } from '../workers/moonboys-api/pets/live-systems.js';
+import { seasonalRaidChoices, resolveSeasonalRaidAttack } from '../workers/moonboys-api/pets/seasonal-raid-tactics.js';
 import {
   MOONPET_LIVE_SYSTEM_OWNERSHIP_CLASSIFICATION,
   validateMoonpetLiveSystemOwnershipClassification,
@@ -296,8 +297,8 @@ assert.equal(runtimeDb.prepare("SELECT energy FROM telegram_pet_instances WHERE 
 const runtimeState = runtimeDb.prepare("SELECT * FROM telegram_pet_progression_state WHERE telegram_id='live-1'").get();
 const district = await processPetDistrictMission(d1, 'live-1', 'moon_alley', livePet('live-1'), runtimeState, reward, 'nomad-bears');
 assert.equal(district.accepted, true);
-assert.equal(district.choice.key, 'tactical', 'cached clients must retain the balanced guaranteed path');
-assert.equal(district.outcome.success, true);
+assert.equal(district.choice.key, 'tactical', 'cached clients default to the same balanced approach');
+assert.equal(district.outcome.mastery_gain, district.outcome.success ? 25 : 12);
 assert.equal(runtimeDb.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id='live-1'").get().energy, 90);
 assert.equal(runtimeDb.prepare("SELECT energy FROM telegram_pet_instances WHERE pet_id=? AND telegram_id='live-1' AND season_key=?").get(livePet('live-1').pet_id, livePet('live-1').season_key).energy, 90,
   'district Energy must be charged on the authoritative pet instance');
@@ -334,9 +335,10 @@ const interleavedReward = async (request) => {
   }
   return reward(request);
 };
-assert.equal((await processPetDistrictMission(d1, 'lease-race', 'moon_alley', livePet('lease-race'), leaseRuntime, interleavedReward, 'nomad-bears')).accepted, true);
+const leaseResult = await processPetDistrictMission(d1, 'lease-race', 'moon_alley', livePet('lease-race'), leaseRuntime, interleavedReward, 'nomad-bears');
+assert.equal(leaseResult.accepted, true);
 assert.equal(concurrentDistrict.reason, 'district_busy', 'a concurrent request must not own an active settlement lease');
-assert.equal(JSON.parse(runtimeDb.prepare("SELECT region_mastery_json FROM telegram_pet_live_progression_state WHERE pet_id=?").get(livePet('lease-race').pet_id).region_mastery_json).moon_alley, 25, 'one district reservation may advance progression only once');
+assert.equal(JSON.parse(runtimeDb.prepare("SELECT region_mastery_json FROM telegram_pet_live_progression_state WHERE pet_id=?").get(livePet('lease-race').pet_id).region_mastery_json).moon_alley, leaseResult.outcome.mastery_gain, 'one district reservation may advance progression only once');
 assert.equal(runtimeDb.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id='lease-race'").get().energy, 90, 'one district reservation may charge Energy only once');
 
 seedPlayer('district-interleave');
@@ -351,11 +353,12 @@ const crossDistrictReward = async (request) => {
   }
   return reward(request);
 };
-assert.equal((await processPetDistrictMission(d1, 'district-interleave', 'moon_alley', livePet('district-interleave'), interleaveRuntime, crossDistrictReward, 'nomad-bears')).accepted, true);
+const interleavedResult = await processPetDistrictMission(d1, 'district-interleave', 'moon_alley', livePet('district-interleave'), interleaveRuntime, crossDistrictReward, 'nomad-bears');
+assert.equal(interleavedResult.accepted, true);
 assert.equal(nestedDistrict.accepted, true);
 const interleavedMastery = JSON.parse(runtimeDb.prepare("SELECT region_mastery_json FROM telegram_pet_live_progression_state WHERE pet_id=?").get(livePet('district-interleave').pet_id).region_mastery_json);
-assert.equal(interleavedMastery.moon_alley, 125);
-assert.equal(interleavedMastery.neon_rooftops, 25, 'concurrent districts must preserve both JSON mastery updates');
+assert.equal(interleavedMastery.moon_alley, 100 + interleavedResult.outcome.mastery_gain);
+assert.equal(interleavedMastery.neon_rooftops, nestedDistrict.outcome.mastery_gain, 'concurrent districts must preserve both JSON mastery updates');
 
 seedPlayer('alias-state', { level: 14, pet_xp: 1300 });
 runtimeDb.prepare("UPDATE blocktopia_progression SET faction='graff-punks' WHERE telegram_id='alias-state'").run();
@@ -653,7 +656,142 @@ const checkpointProgress = runtimeDb.prepare('SELECT region_mastery_json, comple
 assert.ok(JSON.parse(checkpointProgress.region_mastery_json).moon_alley < 100);
 assert.equal(JSON.parse(checkpointProgress.completed_regions_json).includes('moon_alley'), false, 'a setback must not unlock the next district');
 
+// Omitting the approach no longer grants a guaranteed clear.
+let defaultSetbacks = 0;
+for (let i = 0; i < 32; i++) {
+  const owner = 'default-risk-' + i; seedPlayer(owner);
+  const result = await processPetDistrictMission(d1, owner, 'moon_alley', livePet(owner), {}, reward, null);
+  assert.equal(result.accepted, true); assert.equal(result.choice.key, 'tactical');
+  if (!result.outcome.success) defaultSetbacks++;
+}
+assert.ok(defaultSetbacks > 0 && defaultSetbacks < 32);
+
+// A reward receipt may exist before a failed HTTP response. A retry must finish
+// the exact decision, without spending Energy or paying the receipt twice.
+seedPlayer('district-frozen', { energy: 10 });
+const paidThenInterrupted = async (request) => { await reward(request); throw Error('after reward receipt'); };
+await assert.rejects(() => processPetDistrictMission(d1, 'district-frozen', 'moon_alley', livePet('district-frozen'), {}, paidThenInterrupted, null, 'careful'), /after reward receipt/);
+const frozenDistrictEvent = runtimeDb.prepare("SELECT payload_json FROM telegram_pet_system_events WHERE telegram_id='district-frozen'").get();
+const frozenDistrict = JSON.parse(frozenDistrictEvent.payload_json).decision;
+const retryState = await buildPetLiveSystemsState(d1, 'district-frozen', livePet('district-frozen'), {});
+assert.equal(retryState.regions[0].pending_choice_key, 'careful');
+assert.equal(retryState.regions[0].retry_energy_charged, true);
+const frozenGold = runtimeDb.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='district-frozen'").get().moon_gold;
+const resumedDistrict = await processPetDistrictMission(d1, 'district-frozen', 'moon_alley', livePet('district-frozen'), {}, reward, 'nomad-bears', 'bold');
+assert.equal(resumedDistrict.accepted, true);
+assert.equal(resumedDistrict.choice.key, 'careful');
+assert.equal(resumedDistrict.outcome.success, frozenDistrict.succeeded);
+assert.equal(resumedDistrict.outcome.mastery_gain, frozenDistrict.masteryGain);
+assert.equal(runtimeDb.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id='district-frozen'").get().energy, 0);
+assert.equal(runtimeDb.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='district-frozen'").get().moon_gold, frozenGold);
+assert.equal((await processPetDistrictMission(d1, 'district-frozen', 'moon_alley', livePet('district-frozen'), {}, reward, null, 'tactical')).duplicate, true);
+
+seedPlayer('story-frozen');
+const storyChoices = PET_EVENT_CHAINS.lost_delivery_drone.step_content[PET_EVENT_CHAINS.lost_delivery_drone.steps[0]].choices;
+await assert.rejects(() => processPetEventChain(d1, 'story-frozen', 'lost_delivery_drone', paidThenInterrupted, null, storyChoices[0].key, livePet('story-frozen')), /after reward receipt/);
+const storyGold = runtimeDb.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='story-frozen'").get().moon_gold;
+const pendingStory = await buildPetLiveSystemsState(d1, 'story-frozen', livePet('story-frozen'), {});
+assert.equal(pendingStory.chains.find((c) => c.key === 'lost_delivery_drone').pending_choice_key, storyChoices[0].key);
+const resumedStory = await processPetEventChain(d1, 'story-frozen', 'lost_delivery_drone', reward, 'graffpunks', storyChoices[1].key, livePet('story-frozen'));
+assert.equal(resumedStory.accepted, true); assert.equal(resumedStory.choice.key, storyChoices[0].key);
+assert.equal(runtimeDb.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='story-frozen'").get().moon_gold, storyGold);
+assert.equal(runtimeDb.prepare("SELECT step_index FROM telegram_pet_event_chain_progress WHERE telegram_id='story-frozen'").get().step_index, 1);
+assert.equal((await processPetEventChain(d1, 'story-frozen', 'lost_delivery_drone', reward, null, storyChoices[0].key, livePet('story-frozen'))).duplicate, true, 'a repeated response for the previous scene must acknowledge completion');
+assert.equal((await processPetEventChain(d1, 'story-frozen', '__proto__', reward, null, null, livePet('story-frozen'))).reason, 'event_chain_invalid');
+
+// All four weaknesses have real, accurately previewed counter damage profiles.
+for (const definition of Object.values(PET_SEASONAL_BOSSES)) {
+  for (const level of [definition.min_level, 100]) {
+    const choices = seasonalRaidChoices(level, definition);
+    assert.equal(choices.length, 3); assert.equal(choices[0].energy, 12); assert.equal(choices[1].energy, 18);
+    assert.equal(choices[1].damage, 35 + level * 2, 'steady preserves original damage');
+    const counter = choices[2]; let successes = 0;
+    for (let roll = 0; roll < 100; roll++) {
+      const attack = resolveSeasonalRaidAttack(level, definition, 'counter', roll);
+      if (attack.success) successes++;
+      assert.equal(attack.damage, attack.success ? counter.damage : counter.setback_damage);
+    }
+    assert.equal(successes, counter.chance);
+    assert.equal(resolveSeasonalRaidAttack(level, definition, '__proto__'), null);
+  }
+}
+
 const boss = getActiveSeasonalBoss();
+seedPlayer('raid-conserve', { energy: 12 });
+assert.equal((await processPetSeasonalBoss(d1, 'raid-conserve', livePet('raid-conserve'), reward, 'invalid')).reason, 'seasonal_boss_move_invalid');
+const conserved = await processPetSeasonalBoss(d1, 'raid-conserve', livePet('raid-conserve'), reward, 'conserve');
+assert.equal(conserved.accepted, true); assert.equal(conserved.damage, Math.floor(235 * 0.65));
+assert.equal(runtimeDb.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id='raid-conserve'").get().energy, 0);
+assert.equal((await processPetSeasonalBoss(d1, 'raid-conserve', livePet('raid-conserve'), reward, 'counter')).duplicate, true);
+
+seedPlayer('raid-frozen', { energy: 18 });
+const originalBatch = d1.batch;
+d1.batch = async function (statements) {
+  if (statements.some((entry) => entry.sql.includes('INSERT INTO telegram_pet_seasonal_boss_progress'))) throw Error('raid write interrupted');
+  return originalBatch.call(this, statements);
+};
+try { await assert.rejects(() => processPetSeasonalBoss(d1, 'raid-frozen', livePet('raid-frozen'), reward, 'counter'), /raid write interrupted/); }
+finally { d1.batch = originalBatch; }
+let interruptedRaid = await buildPetLiveSystemsState(d1, 'raid-frozen', livePet('raid-frozen'), {});
+assert.equal(interruptedRaid.seasonal_boss.settling, true);
+assert.equal(interruptedRaid.seasonal_boss.attempted_today, false, 'a lease is not a completed daily attempt');
+runtimeDb.prepare("UPDATE telegram_pet_system_events SET updated_at=datetime('now','-3 minutes') WHERE telegram_id='raid-frozen'").run();
+interruptedRaid = await buildPetLiveSystemsState(d1, 'raid-frozen', livePet('raid-frozen'), {});
+assert.equal(interruptedRaid.seasonal_boss.available, true);
+assert.equal(interruptedRaid.seasonal_boss.pending_move, 'counter');
+assert.equal(interruptedRaid.seasonal_boss.retry_energy_charged, true);
+const storedAttack = JSON.parse(runtimeDb.prepare("SELECT payload_json FROM telegram_pet_system_events WHERE telegram_id='raid-frozen'").get().payload_json).attack;
+const resumedRaid = await processPetSeasonalBoss(d1, 'raid-frozen', livePet('raid-frozen'), reward, 'conserve');
+assert.equal(resumedRaid.accepted, true); assert.equal(resumedRaid.choice.key, 'counter');
+assert.equal(resumedRaid.damage, storedAttack.damage);
+assert.equal(runtimeDb.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id='raid-frozen'").get().energy, 0);
+
+// Requests on either side of a UTC reset may settle in reverse order.
+// Each paid hit must be added once, without overwriting the other day's damage.
+seedPlayer('raid-midnight');
+let nextDayRaid;
+d1.batch = async function (statements) {
+  if (!nextDayRaid && statements.some((entry) => entry.sql.includes('INSERT INTO telegram_pet_seasonal_boss_progress'))) {
+    nextDayRaid = { pending: true };
+    nextDayRaid = await processPetSeasonalBoss(d1, 'raid-midnight', livePet('raid-midnight'), reward, 'strike', new Date('2026-09-26T00:00:01Z'));
+  }
+  return originalBatch.call(this, statements);
+};
+let midnightRaid;
+try { midnightRaid = await processPetSeasonalBoss(d1, 'raid-midnight', livePet('raid-midnight'), reward, 'strike', new Date('2026-09-25T23:59:59Z')); }
+finally { d1.batch = originalBatch; }
+assert.equal(nextDayRaid.accepted, true); assert.equal(midnightRaid.accepted, true);
+assert.equal(midnightRaid.progress.damage, midnightRaid.damage + nextDayRaid.damage);
+assert.equal(runtimeDb.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id='raid-midnight'").get().energy, 64);
+
+seedPlayer('raid-award-interrupted');
+const interruptedPet = livePet('raid-award-interrupted');
+runtimeDb.prepare('INSERT INTO telegram_pet_seasonal_boss_progress (pet_id,telegram_id,pet_season_key,season_key,boss_key,damage) VALUES (?,?,?,?,?,?)')
+  .run(interruptedPet.pet_id, 'raid-award-interrupted', interruptedPet.season_key, boss.season_instance, boss.key, boss.hp - 1);
+const pendingVictory = await processPetSeasonalBoss(d1, 'raid-award-interrupted', interruptedPet, paidThenInterrupted, 'strike');
+assert.equal(pendingVictory.accepted, true); assert.equal(pendingVictory.reward_pending, true);
+const paidVictoryGold = runtimeDb.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='raid-award-interrupted'").get().moon_gold;
+const pendingVictoryState = await buildPetLiveSystemsState(d1, 'raid-award-interrupted', livePet('raid-award-interrupted'), {});
+assert.equal(pendingVictoryState.seasonal_boss.available, false);
+assert.equal(pendingVictoryState.seasonal_boss.pending_rewards.length, 1);
+assert.equal((await claimPetSeasonalBossReward(d1, 'raid-award-interrupted', interruptedPet, reward, pendingVictoryState.seasonal_boss.pending_rewards[0])).accepted, true);
+assert.equal(runtimeDb.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='raid-award-interrupted'").get().moon_gold, paidVictoryGold);
+
+seedPlayer('raid-history', { energy: 0, pet_xp: 0, level: 1 });
+const historyPet = livePet('raid-history');
+const oldRotation = `${boss.season}:w1`;
+runtimeDb.prepare('INSERT INTO telegram_pet_seasonal_boss_progress (pet_id,telegram_id,pet_season_key,season_key,boss_key,damage,defeated_at) VALUES (?,?,?,?,?,?,CURRENT_TIMESTAMP)')
+  .run(historyPet.pet_id, 'raid-history', historyPet.season_key, oldRotation, boss.key, boss.hp);
+const historyState = await buildPetLiveSystemsState(d1, 'raid-history', historyPet, {});
+assert.equal(historyState.seasonal_boss.pending_rewards[0].season_instance, oldRotation);
+const historyRequest = { pet_id: historyPet.pet_id, boss_key: boss.key, season_instance: oldRotation };
+assert.equal((await claimPetSeasonalBossReward(d1, 'raid-conserve', livePet('raid-conserve'), reward, historyRequest)).accepted, false);
+assert.equal((await claimPetSeasonalBossReward(d1, 'raid-history', historyPet, reward, { ...historyRequest, boss_key: '__proto__' })).accepted, false);
+assert.equal((await claimPetSeasonalBossReward(d1, 'raid-history', historyPet, reward, historyRequest)).accepted, true);
+const historyGold = runtimeDb.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='raid-history'").get().moon_gold;
+assert.equal((await claimPetSeasonalBossReward(d1, 'raid-history', historyPet, reward, historyRequest)).duplicate, true);
+assert.equal(runtimeDb.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='raid-history'").get().moon_gold, historyGold);
+assert.equal((await buildPetLiveSystemsState(d1, 'raid-history', historyPet, {})).seasonal_boss.pending_rewards.length, 0);
 seedPlayer('serialized-boss');
 const serializedBossPet = serializePet({ ...livePet('serialized-boss'), telegram_id: 'serialized-boss', pet_name: 'Boss Tuple' });
 runtimeDb.prepare('INSERT INTO telegram_pet_seasonal_boss_progress (pet_id, telegram_id, pet_season_key, season_key, boss_key, damage) VALUES (?, ?, ?, ?, ?, ?)')
