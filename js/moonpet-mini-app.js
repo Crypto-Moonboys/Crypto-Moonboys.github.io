@@ -2509,7 +2509,7 @@
       daily_tactic_stale: 'that checkpoint has changed or its tactic is already chosen; use the refreshed run.',
       contracts_unavailable: 'contracts are syncing; refresh after the update.',
       pet_busy: 'a background activity is running. Open Work to review it; other care and Contracts are available.',
-      pet_tired: 'Train needs 18 energy. Use care or a recovery activity.',
+      pet_tired: 'not enough energy for this action. Review its displayed requirement or use care to recover.',
       contract_pet_changed: 'the active pet changed; reopen its contract board.',
       contract_stale: 'that contract changed; use the refreshed choices.',
       contract_active: 'finish or abandon your current contract first.',
