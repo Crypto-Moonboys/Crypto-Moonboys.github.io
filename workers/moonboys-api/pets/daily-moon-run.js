@@ -413,6 +413,26 @@ export async function recoverDailyMoonRunEndings(db, telegramId, now = new Date(
       if (result) results.push(result);
     } catch (error) { console.error('daily_run_ending_pending', error?.message || String(error)); }
   }
+  // An early terminal transition can also precede its quest/record writes.
+  // These runs have no won final boss to settle and must never receive one.
+  const terminalRecords = await db.prepare(`SELECT d.run_id FROM telegram_pet_daily_runs d
+    JOIN telegram_pet_runs r ON r.run_id=d.run_id AND r.telegram_id=d.telegram_id AND r.pet_id=d.pet_id
+    JOIN telegram_pet_instances i ON i.pet_id=r.pet_id AND i.telegram_id=r.telegram_id AND i.season_key=r.season_key
+    JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id AND s.season_key=i.season_key AND s.slot_number=i.slot_number
+    WHERE d.telegram_id=? AND r.max_room>0 AND r.current_room<r.max_room AND r.status IN ('extracted','failed','abandoned')
+      AND EXISTS (SELECT 1 FROM telegram_pet_run_rooms f WHERE f.run_id=r.run_id AND f.telegram_id=r.telegram_id
+        AND f.pet_id=r.pet_id AND f.room_number<=r.current_room+1 AND f.status IN ('resolved','failed'))
+      AND (d.status<>r.status OR NOT EXISTS (SELECT 1 FROM telegram_pet_daily_analytics a
+        WHERE a.analytics_id=r.run_id||':daily:terminal' AND a.applied_at IS NOT NULL)
+        OR r.status='extracted' AND NOT EXISTS (SELECT 1 FROM telegram_pet_events e
+          WHERE e.telegram_id=d.telegram_id AND e.pet_id=d.pet_id AND e.season_key=r.season_key
+            AND e.status='accepted' AND e.event_key='daily-moon-run:'||d.telegram_id||':'||d.run_id||':extracted'))
+    ORDER BY d.utc_day,d.run_id LIMIT 5`).bind(String(telegramId)).all();
+  for (const candidate of terminalRecords.results || []) {
+    try {
+      results.push(await syncDailyMoonRun(db, { telegram_id: String(telegramId), run_id: candidate.run_id, now }));
+    } catch (error) { console.error('daily_run_records_pending', error?.message || String(error)); }
+  }
   return results;
 }
 
