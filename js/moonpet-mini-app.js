@@ -1796,6 +1796,10 @@
       if (run.status === 'completed') body += '<div class="line complete">+' + number(run.rank_points) + ' RANK POINTS // ' + number(run.xp_awarded) + ' PET XP' + (run.reward_pending ? ' // BONUS DELIVERY PENDING' : '') + '</div>';
     }
     if (run && run.status === 'active') {
+      if (run.field_result) body += '<div class="line muted" data-contract-field-result>LAST FIELD DECISION // AFTER ROOM ' + number(run.field_result.checkpoint) + ' // ' + escapeHtml(run.field_result.title) + ' // ' + escapeHtml(run.field_result.detail) + '</div>';
+      if (run.field_encounter) body += '<div data-contract-field><div class="line signal">OPTIONAL FIELD ENCOUNTER // ' + escapeHtml(run.field_encounter.title) + '</div><div class="line muted">' + escapeHtml(run.field_encounter.detail) + ' Choose once at this checkpoint, leave, or take a route to skip. No room advance. Only contract HP, supplies and salvage change; spending them can reduce goal progress and final rank. No pet energy, items, currency or extra XP.</div><div class="button-grid">' + run.field_encounter.choices.map(function (choice) {
+        return button(choice.title, 'contract_step', { pet_id: board.pet_id, contract_id: run.contract_id, revision: run.revision, choice: choice.key }, { disabled: Boolean(choice.disabled), detail: choice.detail });
+      }).join('') + '</div></div>';
       if (run.path) body += '<div class="line complete">PATH // ' + escapeHtml(run.path.title) + ' // ' + number(run.path.remaining) + ' ROOMS LEFT</div><div class="line muted">' + escapeHtml(run.path.detail) + ' Effects are included below. Rest also uses a room of this path.</div>';
       if (run.path_choices && run.path_choices.length) body += '<div class="line signal">OPTIONAL CHECKPOINT PATH</div><div class="line muted">Plan the next two rooms. Choose once here, or take a route now to stay on course. No room advance or resource cost. Clear chances stay between 30% and 98%.</div><div class="button-grid">' + run.path_choices.map(function (choice) {
         return button(choice.title, 'contract_step', { pet_id: board.pet_id, contract_id: run.contract_id, revision: run.revision, choice: choice.key }, { detail: choice.detail });
@@ -1894,6 +1898,7 @@
     var runBody;
     if (run) {
       var runRoom = run.room || {};
+      var playableRun = window.MoonpetPlayOptions.runAvailability(state);
       var opponent = runRoom.opponent || {};
       var unbankedSummary = number(run.unbanked_pet_xp) + ' XP // ' + number(run.unbanked_moon_gold) + ' GOLD // ' + number(run.unbanked_moon_crystals) + ' GEMS // ' + number(run.unbanked_style_tokens) + ' STYLE';
       var roomBrief = '<div class="run-brief"><div class="line complete">ROOM SIGNAL // ' + escapeHtml(words(runRoom.title || run.checkpoint || 'street')) + '</div>' +
@@ -1902,7 +1907,7 @@
         (opponent.name ? '<div class="run-opponent"><strong>' + escapeHtml(opponent.name) + '</strong> // ' + escapeHtml(words(opponent.role || 'enemy')) + ' // THREAT ' + number(runRoom.threat) + '/5' + (opponent.intro ? '<small>' + escapeHtml(opponent.intro) + '</small>' : '') + '</div>' : '') +
         meter('THREAT', number(runRoom.threat) * 20) + '</div>';
       var runDecisionButtons = (run.choices || []).map(function (choice) {
-        return button(choice.label, 'run_step', { run_id: run.run_id, choice_key: choice.key, expected_step_index: run.expected_step_index }, { detail: choice.detail || words(choice.type) });
+        return button(choice.label, 'run_step', { run_id: run.run_id, choice_key: choice.key, expected_step_index: run.expected_step_index }, { disabled: !playableRun.step, resourceRequired: run.source_available !== false && !playableRun.step, detail: !playableRun.step ? run.source_available === false ? 'Saved run pet unavailable.' : 'Your original run pet needs energy before another room. Recover that pet, or extract if a room is already cleared.' : choice.detail || words(choice.type) });
       }).join('');
       var tactical = run.tactics || {};
       var tacticCopy = (tactical.conditions || []).concat(tactical.selected || []).map(function (item) {
@@ -1914,11 +1919,12 @@
       }).join('') + '</div>';
       var runPetCopy = run.source_pet && !run.source_pet.active ? '<div class="line signal">RUN BELONGS TO ' + escapeHtml(run.source_pet.callsign || 'YOUR ORIGINAL RUN PET') + ' // ENERGY ' + number(run.source_pet.energy) + '</div><div class="line muted">Choices and rewards use this saved pet, even while another pet is selected.</div>' : '';
       if (run.source_available === false) runPetCopy = '<div class="line locked">This saved run has no available source pet. Contact support to recover it. Other game panels remain available.</div>';
+      else if (!playableRun.step) runPetCopy += '<div class="line locked">Your original run pet has no energy for another room. ' + (playableRun.extract ? 'Extract below to bank this run, or recover that pet first.' : 'Recover that pet to continue. Contracts and Practice remain available while you wait.') + '</div>';
       runBody = '<div class="line complete">' + (run.daily ? 'OFFICIAL DAILY MOON RUN' : 'ENDLESS MOON RUN // DISTRICT TIER ' + number(run.difficulty)) + '</div><div class="line">ROOM ' + number(Number(run.current_room != null ? run.current_room : run.depth || 0) + 1) + '/' + number(run.max_room || run.max_depth) + ' // SCORE ' + number(run.score) + (run.daily ? '' : ' // NEXT CHECKPOINT ' + number(run.next_checkpoint)) + '</div>' +
         runPetCopy + roomBrief + tacticCopy +
         (run.daily ? '<div class="run-stakes"><strong>ONE OFFICIAL ATTEMPT / UTC DAY</strong><span>Choices change run score and clear chance; they do not buy items, heal or spend pet currency. Room progress counts toward Daily Journey. Extraction ends this attempt; it does not bank the endless-run XP bag. Boss drops settle separately through the server.</span></div>' : '<div class="run-stakes"><strong>UNBANKED // ' + escapeHtml(unbankedSummary) + '</strong><span>EXTRACT TO SECURE IT. A FAILED ROOM LOSES THE BAG.</span></div>') +
         '<div class="button-grid run-decisions">' + runDecisionButtons +
-        button(run.daily ? 'EXTRACT DAILY RUN' : 'EXTRACT & BANK', 'run_extract', { run_id: run.run_id }, { disabled: run.source_available === false || Number(run.current_room || run.depth || 0) < 1, danger: true, detail: run.source_available === false ? 'Saved run pet unavailable.' : Number(run.current_room || run.depth || 0) < 1 ? 'Clear one room before extracting.' : run.daily ? 'End the official attempt. You cannot restart it today.' : 'END RUN AND SECURE ' + unbankedSummary }) + '</div>';
+        button(run.daily ? 'EXTRACT DAILY RUN' : 'EXTRACT & BANK', 'run_extract', { run_id: run.run_id }, { disabled: !playableRun.extract, danger: true, detail: run.source_available === false ? 'Saved run pet unavailable.' : !playableRun.extract ? 'Clear one room before extracting.' : run.daily ? 'End the official attempt. You cannot restart it today.' : 'END RUN AND SECURE ' + unbankedSummary }) + '</div>';
     } else {
       var dailyRun = state.daily_run || {};
       var dailyUsed = dailyRun.attempted === true;

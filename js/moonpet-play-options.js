@@ -67,6 +67,14 @@
     return destinations;
   }
 
+  function runAvailability(snapshot) {
+    var s = snapshot || {}, run = s.run;
+    var source = Boolean(run && run.source_available !== false);
+    var energy = Number(run && run.source_pet ? run.source_pet.energy : s.pet && s.pet.energy || 0);
+    var progress = run && (run.daily ? Number(run.current_room != null ? run.current_room : run.depth || 0) : Number(run.depth || 0));
+    return { step: source && (Boolean(run.daily) || energy > 0), extract: source && progress > 0 };
+  }
+
   // Recommendations only. The server still validates every gameplay action.
   function bountyRouteOptions(bounty, snapshot) {
     var s = snapshot || {}, g = s.guidance || {}, energy = Number(s.pet && s.pet.energy || 0);
@@ -82,7 +90,7 @@
       if (event === 'random_event') return Boolean(s.encounter && (s.encounter.choices || []).length);
       if (event === 'activity_claim') return Boolean(g.activity && g.activity.ready);
       if (event === 'run_complete' || event === 'run_extract') return s.run
-        ? !s.run.daily && s.run.source_available !== false && (Number(s.run.source_pet ? s.run.source_pet.energy : energy) > 0 || Number(s.run.depth) > 0)
+        ? !s.run.daily && (runAvailability(s).step || runAvailability(s).extract)
         : energy >= 12;
       if (event === 'adventure') return Boolean(s.adventure && s.adventure.available);
       if (event === 'daily_chest') return Boolean(g.daily_cache && g.daily_cache.available);
@@ -183,7 +191,11 @@
     }
     if (!g.activity && (g.activity_options || []).length) add('activity', 'CHOOSE A BACKGROUND ACTIVITY', 'Compare four activities and duration rewards. Keep playing contracts while it accumulates.');
     else if (g.activity && !g.activity.ready) add('activity', 'CHECK BACKGROUND ACTIVITY', 'Your timer continues while you play other routes. Check its next reward preview.');
-    if (s.run) add('run', 'CONTINUE ' + (s.run.daily ? 'DAILY RUN' : 'MOON RUN'), 'Choose the next room or extract. Finish this run before opening another.');
+    if (s.run) {
+      var playableRun = runAvailability(s);
+      if (playableRun.step || playableRun.extract) add('run', playableRun.step ? 'CONTINUE ' + (s.run.daily ? 'DAILY RUN' : 'MOON RUN') : 'EXTRACT SAVED MOON RUN',
+        playableRun.step ? 'Choose the next room or extract after clearing a room. Finish this run before opening another.' : 'Your original run pet has no energy for another room. You can still extract and bank this saved run.');
+    }
     else {
       if (Number(s.pet && s.pet.energy) >= 12) add('run', 'MOON RUN', 'Repeatable risk / reward routes. Requires energy; server reward caps still apply.');
       if (s.daily_run && s.daily_run.available) add('daily_run', 'OFFICIAL DAILY RUN', 'One official attempt per account / UTC day. Advances Daily Journey.');
@@ -210,7 +222,7 @@
     return choices;
   }
 
-  var api = { route: route, objectiveRoutes: objectiveRoutes, bountyRoutes: bountyRoutes, bountyRouteOptions: bountyRouteOptions, craftingGoal: craftingGoal, options: options };
+  var api = { route: route, objectiveRoutes: objectiveRoutes, bountyRoutes: bountyRoutes, bountyRouteOptions: bountyRouteOptions, runAvailability: runAvailability, craftingGoal: craftingGoal, options: options };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.MoonpetPlayOptions = api;
 })(typeof window !== 'undefined' ? window : globalThis);

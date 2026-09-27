@@ -340,12 +340,36 @@ try {
     await page.waitForSelector('[data-action="contract_step"]');
     const longBefore = await hooks.buildPetMiniAppState(db, currentUser, token);
     assert.equal(longBefore.contracts.run.max_depth, 10); assert.equal(longBefore.contracts.run.target, 5);
-    let longDrafts = 0, pathChoices = 0, resumedPath = false, resumedLong = false, longAfter = longBefore;
-    for (let turn = 0; turn < 20 && longAfter.contracts.run.status === 'active'; turn++) {
+    let longDrafts = 0, pathChoices = 0, fieldChoices = 0, resumedPath = false, resumedLong = false, longAfter = longBefore;
+    for (let turn = 0; turn < 28 && longAfter.contracts.run.status === 'active'; turn++) {
       const activeLong = longAfter.contracts.run;
       const draft = activeLong.choices.find((c) => c.upgrade && c.key !== 'supply_cache');
-      const pathKey = activeLong.path_choices.length ? ['path_quiet', 'path_hazard', 'path_steady'][pathChoices++ % 3] : null;
-      const choice = draft ? draft.key : pathKey || 'search';
+      const field = activeLong.field_encounter;
+      const fieldChoice = field && (field.choices.find((c) => !c.disabled && c.key !== 'field_leave') || field.choices.at(-1));
+      const pathKey = !fieldChoice && activeLong.path_choices.length ? ['path_quiet', 'path_hazard', 'path_steady'][pathChoices++ % 3] : null;
+      const choice = draft ? draft.key : fieldChoice ? fieldChoice.key : pathKey || 'search';
+      if (fieldChoice) {
+        fieldChoices++;
+        if (fieldChoices === 1) {
+          await page.reload(); await page.waitForSelector('[data-panel="care"]');
+          await page.locator('[data-panel="play-now"] [data-focus="contracts"]').click();
+          assert.deepEqual((await hooks.buildPetMiniAppState(db, currentUser, token)).contracts.run.field_encounter, field, 'reload cannot redraw a field offer');
+        }
+        for (const offer of field.choices) {
+          const control = page.locator('[data-contract-field] [data-action="contract_step"]').filter({ hasText: offer.title });
+          assert.equal(await control.isDisabled(), offer.disabled);
+          assert.ok((await control.textContent()).includes(offer.detail));
+        }
+        assert.ok(await page.locator('[data-contract-field]').evaluate((panel) => panel.getBoundingClientRect().right <= innerWidth), 'field choices fit mobile');
+        if (fieldChoices === 1 && process.env.MOONPET_BROWSER_SCREENSHOT) {
+          await page.locator('[data-contract-field]').scrollIntoViewIfNeeded();
+          await page.locator('[data-contract-field]').evaluate((panel) => {
+            const top = document.querySelector('.utility-rail').getBoundingClientRect().bottom + 8;
+            document.getElementById('screen').scrollTop += panel.getBoundingClientRect().top - top;
+          });
+          await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-field-${viewport.width}.png`) });
+        }
+      }
       if (pathKey) {
         assert.ok((await page.locator('[data-panel="contracts"]').textContent()).includes('OPTIONAL CHECKPOINT PATH'));
         if (pathChoices === 1 && process.env.MOONPET_BROWSER_SCREENSHOT) {
@@ -402,6 +426,16 @@ try {
       ]);
       const result = await response.json(); assert.equal(result.result.accepted, true);
       longAfter = result.state;
+      if (fieldChoice) {
+        for (const [key, delta] of Object.entries(fieldChoice.delta)) assert.equal(longAfter.contracts.run[key], activeLong[key] + delta);
+        assert.equal(longAfter.contracts.run.depth, activeLong.depth);
+        assert.equal(longAfter.contracts.run.field_encounter, null);
+        assert.equal(longAfter.contracts.run.field_result.choice, fieldChoice.key);
+        assert.equal(longAfter.contracts.bonus_remaining, 3);
+        assert.equal(longAfter.pet.energy, longBefore.pet.energy);
+        assert.equal(longAfter.pet.pet_xp, longBefore.pet.pet_xp);
+        assert.equal(longAfter.pet.moon_gold, longBefore.pet.moon_gold);
+      }
       if (pathKey) {
         assert.equal(longAfter.contracts.run.path.key, pathKey); assert.equal(longAfter.contracts.run.path.remaining, 2);
         assert.equal(longAfter.contracts.run.depth, activeLong.depth); assert.equal(longAfter.contracts.run.rank_points, 0);
@@ -412,8 +446,15 @@ try {
         const button=document.querySelector('[data-action="contract_step"]');
         return !button || JSON.parse(button.dataset.payload).revision > revision;
       }, activeLong.revision);
+      if (fieldChoice && fieldChoices === 1) {
+        await page.reload(); await page.waitForSelector('[data-panel="care"]');
+        await page.locator('[data-panel="play-now"] [data-focus="contracts"]').click();
+        assert.equal(await page.locator('[data-contract-field]').count(), 0);
+        assert.ok((await page.locator('[data-contract-field-result]').textContent()).includes(fieldChoice.title));
+        assert.deepEqual((await hooks.buildPetMiniAppState(db, currentUser, token)).contracts.run.field_result, longAfter.contracts.run.field_result);
+      }
     }
-    assert.equal(longDrafts, 4); assert.equal(pathChoices, 4); assert.equal(resumedPath, true); assert.equal(resumedLong, true);
+    assert.equal(longDrafts, 4); assert.equal(pathChoices, 4); assert.equal(fieldChoices, 4); assert.equal(resumedPath, true); assert.equal(resumedLong, true);
     assert.equal(longAfter.contracts.run.status, 'completed'); assert.equal(longAfter.contracts.run.depth, 10);
     assert.equal(longAfter.contracts.run.boss.result.cleared, true);
     assert.equal(longAfter.contracts.run.xp_awarded, 20); assert.equal(longAfter.contracts.bonus_remaining, 2);
@@ -571,6 +612,60 @@ try {
     await page.waitForFunction(() => Array.from(document.querySelectorAll('[data-action="work"]')).every((b) => b.disabled));
     sqlite.prepare("UPDATE telegram_pet_events SET created_at=datetime('now','-31 minutes') WHERE telegram_id=? AND event_type='work'").run(currentUser);
     assert.ok((await hooks.buildPetMiniAppState(db, currentUser, token)).guidance.jobs.some((job) => job.available));
+    // Standard runs use their original pet's energy; a bankable run can still
+    // extract at zero energy, while a missing source pet cannot perform either move.
+    currentUser = `browser-run-gates-${viewport.width}`;
+    await seed(currentUser, 'young');
+    assert.equal((await hooks.processPetMiniAppAction(db, currentUser, { id: currentUser }, { action: 'run_start' }, token)).accepted, true);
+    const setRunEnergy = (energy) => {
+      sqlite.prepare('UPDATE telegram_pet_profiles SET energy=? WHERE telegram_id=?').run(energy, currentUser);
+      sqlite.prepare('UPDATE telegram_pet_instances SET energy=? WHERE telegram_id=?').run(energy, currentUser);
+    };
+    setRunEnergy(0);
+    const tiredRun = (await hooks.buildPetMiniAppState(db, currentUser, token)).run;
+    assert.equal(tiredRun.source_pet.energy, 0); assert.equal(tiredRun.depth, 0);
+    assert.equal((await hooks.processPetMiniAppAction(db, currentUser, { id: currentUser }, { action: 'run_step', run_id: tiredRun.run_id, choice_key: tiredRun.choices[0].key, expected_step_index: tiredRun.expected_step_index }, token)).reason, 'pet_tired');
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    assert.equal(await page.locator('[data-panel="play-now"] [data-focus="moon-run"]').count(), 0);
+    await page.locator('[data-screen="explore"]').click();
+    assert.ok(await page.locator('[data-action="run_step"]').count());
+    assert.equal(await page.locator('[data-action="run_step"]:not([disabled])').count(), 0);
+    assert.equal(await page.locator('[data-action="run_extract"]').isDisabled(), true);
+    assert.ok((await page.locator('[data-panel="moon-run"]').textContent()).includes('original run pet has no energy'));
+    setRunEnergy(80);
+    const restedRun = (await hooks.buildPetMiniAppState(db, currentUser, token)).run;
+    const realRandom = Math.random;
+    try {
+      Math.random = () => 0.99; // deterministic success for this test-only standard room
+      assert.equal((await hooks.processPetMiniAppAction(db, currentUser, { id: currentUser }, { action: 'run_step', run_id: restedRun.run_id, choice_key: restedRun.choices[0].key, expected_step_index: restedRun.expected_step_index }, token)).accepted, true);
+    } finally { Math.random = realRandom; }
+    setRunEnergy(0);
+    const bankable = (await hooks.buildPetMiniAppState(db, currentUser, token)).run;
+    assert.equal(bankable.depth, 1); assert.equal(bankable.source_pet.energy, 0);
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-panel="play-now"] [data-focus="moon-run"]').filter({ hasText: 'EXTRACT SAVED MOON RUN' }).click();
+    assert.equal(await page.locator('[data-action="run_step"]:not([disabled])').count(), 0);
+    assert.equal(await page.locator('[data-action="run_extract"]').isEnabled(), true);
+    if (process.env.MOONPET_BROWSER_SCREENSHOT) {
+      await page.locator('[data-action="run_extract"]').scrollIntoViewIfNeeded();
+      await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-run-energy-${viewport.width}.png`) });
+    }
+    const extractResponse = page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'run_extract');
+    await page.locator('[data-action="run_extract"]').click();
+    const extractedRun = await (await extractResponse).json();
+    assert.equal(extractedRun.result.accepted, true); assert.equal(extractedRun.state.run, null);
+    await page.waitForSelector('[data-action="run_start"]');
+    setRunEnergy(80);
+    assert.equal((await hooks.processPetMiniAppAction(db, currentUser, { id: currentUser }, { action: 'run_start' }, token)).accepted, true);
+    sqlite.prepare("UPDATE telegram_pet_runs SET pet_id=NULL WHERE telegram_id=? AND status IN ('active','extractable')").run(currentUser);
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    assert.equal(await page.locator('[data-panel="play-now"] [data-focus="moon-run"]').count(), 0);
+    await page.locator('[data-screen="explore"]').click();
+    assert.equal(await page.locator('[data-action="run_step"]:not([disabled])').count(), 0);
+    assert.equal(await page.locator('[data-action="run_extract"]').isDisabled(), true);
+    assert.ok(await page.locator('[data-panel="play-now"] [data-focus="contracts"]').count());
+    assert.ok(await page.locator('[data-panel="play-now"] [data-focus="practice"]').count());
+
     // Background activities expose real duration choices and survive interrupted claims.
     currentUser = `browser-activity-${viewport.width}`;
     await seed(currentUser, 'young');
