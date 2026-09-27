@@ -146,6 +146,11 @@ assert.equal(options.bountyRouteOptions({ event_types: ['random_event'] }, freeA
 const weeklyRecovery = { ...snapshot, lifecycle: { phase: 'egg' }, guidance: { weekly_boss: { pending_rewards: [{ week_key: '2026-W38' }] } } };
 assert.equal(options.options(weeklyRecovery)[0].key, 'weekly_boss_claim');
 assert.equal(options.options(weeklyRecovery)[0].focus, 'weekly-boss');
+const contractRecovery = { ...snapshot, lifecycle: { phase: 'egg' }, contracts: { available: false, pending_rewards: [{ contract_id: 'saved-contract', pet_id: 'earlier-pet' }] } };
+assert.equal(options.options(contractRecovery)[0].key, 'contract_claim');
+assert.equal(options.options(contractRecovery)[0].screen, 'missions');
+assert.equal(options.options(contractRecovery)[0].focus, 'contracts');
+assert.ok(!options.options(contractRecovery).some((entry) => entry.key === 'contract'), 'saved recovery does not advertise new egg contracts');
 const expeditionChoices = { ...snapshot, guidance: { economy: { expedition_options: [{ key: 'dust_tunnels', available: true }, { key: 'guardian_rift', available: false }] } } };
 assert.equal(options.options(expeditionChoices).find((entry) => entry.key === 'expedition').focus, 'expedition');
 assert.ok(!options.options({ ...expeditionChoices, lifecycle: { phase: 'egg' } }).some((entry) => entry.key === 'expedition'));

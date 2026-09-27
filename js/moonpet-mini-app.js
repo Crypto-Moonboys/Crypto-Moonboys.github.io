@@ -705,7 +705,7 @@
   function button(label, action, payload, options) {
     options = careActionButtonOptions(action, actionCooldownButtonOptions(action, options));
     var accountActions = ['adopt', 'guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'arena_queue_cancel', 'arena_forfeit', 'kaiju_queue_cancel', 'kaiju_match_cancel'];
-    var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim']);
+    var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim', 'contract_claim']);
     if (state && state.lifecycle && state.lifecycle.phase === 'egg' && !eggActions.includes(action)) {
       options = Object.assign({}, options, { disabled: true, cooldown: null, statusLabel: 'HATCH REQUIRED' });
     } else if (state && state.adopted === false && !accountActions.includes(action)) {
@@ -1778,14 +1778,15 @@
 
   function renderContracts() {
     var board = state && state.contracts;
-    if (!board || !board.available) return panel('CONTINUING CONTRACTS', '<div class="line muted">' + (state && state.lifecycle && state.lifecycle.phase === 'egg' ? 'Hatch your Secret Bot to unlock saved contracts. Practice is available now.' : 'Contracts are syncing. Refresh once the game update is complete.') + '</div>', 'contracts');
+    var savedBonuses = (board && board.pending_rewards || []).map(function (pending) {
+      return '<div class="line">SAVED BONUS' + (pending.slot_number ? ' // SLOT ' + number(pending.slot_number) : '') + (pending.reward_day ? ' // ' + escapeHtml(pending.reward_day) : '') + '</div><div class="button-grid one">' + button('RETRY SAVED XP BONUS', 'contract_claim', { pet_id: pending.pet_id || board.pet_id, contract_id: pending.contract_id }, { detail: 'Credits the pet that completed this contract, including earlier seasons. No new run or energy cost. Normal Pet XP caps still apply.' }) + '</div>';
+    }).join('');
+    if (!board || !board.available) return panel('CONTINUING CONTRACTS', savedBonuses + '<div class="line muted">' + (state && state.lifecycle && state.lifecycle.phase === 'egg' ? 'Hatch your Secret Bot to start new contracts. Practice is available now.' : 'Contracts are syncing. Refresh once the game update is complete.') + '</div>', 'contracts');
     var run = board.run;
     var body = '<div class="line complete">CONTRACT RANK ' + number(board.rank) + ' // ' + number(board.completed) + ' COMPLETED</div><div class="line">' + number(board.rank_points) + ' RANK POINTS // NEXT RANK ' + number(board.next_rank_at) + '</div>' +
       '<div class="line muted">Play as many contracts as you like. No pet energy cost or cooldown. Route health and salvage belong to this contract; salvage becomes rank points, not Moon Gold. Saved after every choice; leave and resume anytime.</div>' +
       '<div class="line">DAILY BONUS SLOTS ' + number(board.bonus_remaining) + '/' + number(board.bonus_limit) + ' // UP TO ' + number(board.bonus_xp) + ' PET XP PER SUCCESS</div><div class="line muted">Bonus slots are shared across your pets and reset at 00:00 UTC. Your normal Pet XP cap still applies. Contract rank keeps growing after bonuses run out. No Growth Marks, Weekly Crests or official Daily Run credit.</div>';
-    (board.pending_rewards || []).forEach(function (pending) {
-      body += '<div class="button-grid one">' + button('RETRY SAVED XP BONUS', 'contract_claim', { pet_id: board.pet_id, contract_id: pending.contract_id }, { detail: 'Your completed contract and bonus reservation are saved.' }) + '</div>';
-    });
+    body += savedBonuses;
     if (board.collection) body += '<div class="line complete">ROUTE COLLECTION // ' + number(board.collection.cleared_routes) + '/' + number(board.collection.total_routes) + ' CLEARED // ' + number(board.collection.unlocked_routes) + ' UNLOCKED</div><div class="line muted">Clear each goal with each build at each tier and route length. These saved records keep progressing after daily bonuses. No extra rewards for the checklist.</div>';
     if (run) {
       body += '<div class="line complete">' + escapeHtml(run.title) + ' // ' + escapeHtml(words(run.status)) + '</div><div class="line">' + escapeHtml(run.build_title) + ' // TIER ' + number(run.tier) + ' // ROOMS ' + number(run.depth) + '/' + number(run.max_depth) + '</div>' +

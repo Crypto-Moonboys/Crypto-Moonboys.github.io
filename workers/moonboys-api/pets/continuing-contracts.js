@@ -305,15 +305,24 @@ const ACTIVE_GUARD = `EXISTS (SELECT 1 FROM telegram_pet_active_slots a JOIN tel
   ON p.pet_id=a.pet_id AND p.telegram_id=a.telegram_id AND p.season_key=a.season_key
   JOIN telegram_pet_lifecycle_by_pet l ON l.pet_id=p.pet_id AND l.telegram_id=p.telegram_id
   WHERE a.telegram_id=? AND a.pet_id=? AND a.season_key=? AND p.status='active' AND l.phase<>'egg')`;
+// Completed reservations retain their original pet/season authority after a
+// switch or rollover. Source ownership is checked before limiting the inbox.
+const SAVED_BONUS_FROM = `FROM telegram_pet_contracts c
+  JOIN telegram_pet_instances p ON p.pet_id=c.pet_id AND p.telegram_id=c.telegram_id AND p.season_key=c.season_key
+  JOIN telegram_pet_season_slots s ON s.pet_id=p.pet_id AND s.telegram_id=p.telegram_id AND s.season_key=p.season_key AND s.slot_number=p.slot_number
+  WHERE c.telegram_id=? AND c.status='completed' AND c.reward_xp=20`;
 export async function getContractBoard(db, owner, pet, now = new Date()) {
   const petId = pet?.pet_id, seasonKey = pet?.season_key;
-  if (!petId || !seasonKey || !await authority(db, owner, petId, seasonKey)) return { available: false, reason: 'hatch_required' };
-  const [stats, rows, bonuses, pending, mastery] = await Promise.all([
+  const pending = await db.prepare(`SELECT c.contract_id,c.pet_id,c.season_key,c.reward_day,s.slot_number
+    ${SAVED_BONUS_FROM} AND c.reward_settled=0
+    ORDER BY c.reward_day,c.created_at,c.contract_id LIMIT 10`).bind(owner).all();
+  const pendingRewards = pending.results || [];
+  if (!petId || !seasonKey || !await authority(db, owner, petId, seasonKey)) return { available: false, reason: 'hatch_required', pending_rewards: pendingRewards };
+  const [stats, rows, bonuses, mastery] = await Promise.all([
     db.prepare(`SELECT COALESCE(MAX(sequence),0)+1 AS next_sequence, COALESCE(SUM(rank_points),0) AS rank_points,
       SUM(CASE WHEN status='completed' THEN 1 ELSE 0 END) AS completed FROM telegram_pet_contracts WHERE telegram_id=? AND pet_id=? AND season_key=?`).bind(owner, petId, seasonKey).first(),
     db.prepare('SELECT * FROM telegram_pet_contracts WHERE telegram_id=? AND pet_id=? AND season_key=? ORDER BY sequence DESC LIMIT 1').bind(owner, petId, seasonKey).first(),
     db.prepare('SELECT COUNT(*) AS used FROM telegram_pet_contracts WHERE telegram_id=? AND reward_day=? AND reward_xp>0').bind(owner, day(now)).first(),
-    db.prepare(`SELECT contract_id FROM telegram_pet_contracts WHERE telegram_id=? AND pet_id=? AND season_key=? AND reward_xp>0 AND reward_settled=0 ORDER BY sequence LIMIT 10`).bind(owner, petId, seasonKey).all(),
     db.prepare(`SELECT json_extract(state_json,'$.goal') AS goal, json_extract(state_json,'$.build') AS build,
       CASE WHEN json_extract(state_json,'$.version') IN (6,7,8,9) AND json_extract(state_json,'$.format')='extended' THEN 'extended' ELSE 'standard' END AS format,
       json_extract(state_json,'$.tier') AS tier, COUNT(*) AS completed, MAX(rank_points) AS best_rank_points
@@ -334,7 +343,7 @@ export async function getContractBoard(db, owner, pet, now = new Date()) {
       unlocked_routes: records.filter((record) => record.unlocked).length,
       next_route: records.find((record) => record.unlocked && record.completed === 0) || null, records },
     bonus_remaining: Math.max(0, CONTRACT_BONUS_LIMIT - integer(bonuses?.used)), bonus_limit: CONTRACT_BONUS_LIMIT, bonus_xp: CONTRACT_BONUS_XP,
-    pending_rewards: pending.results || [], offers: Object.entries(CONTRACT_GOALS).map(([key, goal]) => {
+    pending_rewards: pendingRewards, offers: Object.entries(CONTRACT_GOALS).map(([key, goal]) => {
       const entries = (mastery.results || []).filter((entry) => entry.goal === key);
       return { key, ...goal, boss: contractBoss({ version: 9, goal: key }).title, objectives: Object.entries(CONTRACT_FORMATS).map(([format, route]) => ({ format, format_title: route.title, ...contractObjective({ version: 9, format, goal: key }) })),
         completed: entries.reduce((sum, record) => sum + integer(record.completed), 0),
@@ -363,6 +372,13 @@ async function settleBonus(db, owner, row, award, now) {
 export async function processContractAction(db, owner, pet, request, award, now = new Date()) {
   const petId = pet?.pet_id, seasonKey = pet?.season_key;
   const reject = (reason) => ({ accepted: false, reason, pet_xp_awarded: 0 });
+  if (request.action === 'contract_claim') {
+    const saved = await db.prepare(`SELECT c.* ${SAVED_BONUS_FROM} AND c.contract_id=? AND c.pet_id=?`)
+      .bind(owner, String(request.contract_id || ''), String(request.pet_id || '')).first();
+    if (!saved) return reject('contract_not_found');
+    try { return { accepted: true, reason: 'contract_bonus_checked', ...await settleBonus(db, owner, saved, award, now) }; }
+    catch { return { accepted: true, reason: 'contract_bonus_pending', reward_pending: true, pet_xp_awarded: 0 }; }
+  }
   if (!petId || !seasonKey || request.pet_id !== petId || !await authority(db, owner, petId, seasonKey)) return reject('contract_pet_changed');
   let row;
   if (request.action === 'contract_start') {
@@ -380,10 +396,6 @@ export async function processContractAction(db, owner, pet, request, award, now 
   }
   row = await db.prepare('SELECT * FROM telegram_pet_contracts WHERE contract_id=? AND telegram_id=? AND pet_id=? AND season_key=?').bind(String(request.contract_id || ''), owner, petId, seasonKey).first();
   if (!row) return reject('contract_not_found');
-  if (request.action === 'contract_claim') {
-    try { return { accepted: true, reason: 'contract_bonus_checked', ...await settleBonus(db, owner, row, award, now) }; }
-    catch { return { accepted: true, reason: 'contract_bonus_pending', reward_pending: true, pet_xp_awarded: 0 }; }
-  }
   if (request.action !== 'contract_step' || row.status !== 'active' || request.revision !== row.revision) return reject('contract_stale');
   const roll = crypto.getRandomValues(new Uint32Array(1))[0] % 100;
   const next = advanceContract(JSON.parse(row.state_json), request.choice, roll);

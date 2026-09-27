@@ -22,6 +22,7 @@ sqlite.exec(await fs.readFile(path.join(root, 'workers/moonboys-api/migrations/0
 let failActivitySettlement = false;
 let failWeeklyReward = false;
 let failDailyEnding = false;
+let failContractReward = false;
 class Statement {
   constructor(sql, args = []) { this.sql = sql; this.args = args; }
   bind(...args) { return new Statement(this.sql, args); }
@@ -39,6 +40,9 @@ class Statement {
 const db = {
   prepare(sql) { return new Statement(sql); },
   async batch(statements) {
+    if (failContractReward && statements[0].sql.includes('INSERT OR IGNORE INTO telegram_pet_reward_claims') && statements[0].args.includes('pet_contract')) {
+      failContractReward = false; throw Error('interrupted_contract_reward');
+    }
     if (failWeeklyReward && statements[0].sql.includes('INSERT OR IGNORE INTO telegram_pet_reward_claims') && statements[0].args.includes('pet_weekly_boss')) {
       failWeeklyReward = false; throw Error('interrupted_weekly_reward');
     }
@@ -479,6 +483,48 @@ try {
     assert.equal(gameplayCount(), beforeFormatSetup);
     assert.equal(await page.locator('#contract-format').inputValue(), 'standard');
     assert.equal(await page.locator('[data-action="contract_start"]:focus').getAttribute('data-payload').then(JSON.parse).then((p) => p.goal), 'resupply');
+    // Saved Contract XP stays visible and targets its earning pet with an egg active.
+    currentUser = `browser-contract-recovery-${viewport.width}`;
+    await seed(currentUser,'young');
+    const sourceState = await hooks.buildPetMiniAppState(db,currentUser,token);
+    const sourcePetId = sourceState.pet.pet_id;
+    await hooks.processPetMiniAppAction(db,currentUser,{id:currentUser},{action:'contract_start',pet_id:sourcePetId,sequence:1,goal:'escort',build:'bruiser',tier:1},token);
+    const savedContract = sqlite.prepare('SELECT * FROM telegram_pet_contracts WHERE telegram_id=?').get(currentUser);
+    const savedFinale = { ...createContractState('escort','bruiser',1,'browser-saved-bonus'),depth:5,health:110,wins:5 };
+    sqlite.prepare('UPDATE telegram_pet_contracts SET state_json=? WHERE contract_id=?').run(JSON.stringify(savedFinale),savedContract.contract_id);
+    failContractReward = true;
+    const savedFinish = await hooks.processPetMiniAppAction(db,currentUser,{id:currentUser},{action:'contract_step',pet_id:sourcePetId,contract_id:savedContract.contract_id,revision:0,choice:'cover'},token);
+    assert.equal(savedFinish.reward_pending,true);
+    const recoveryEgg = sourcePetId+':egg';
+    sqlite.prepare(`INSERT INTO telegram_pet_season_slots (pet_id,telegram_id,season_key,slot_number,acquisition_type,source_event_key,arcade_xp_spent,status) VALUES (?,?,?,2,'arcade_xp','browser-saved-bonus',0,'active')`).run(recoveryEgg,currentUser,savedContract.season_key);
+    sqlite.prepare(`INSERT INTO telegram_pet_instances (pet_id,telegram_id,season_key,slot_number,stage,source_profile_updated_at) VALUES (?,?,?,2,'egg',CURRENT_TIMESTAMP)`).run(recoveryEgg,currentUser,savedContract.season_key);
+    sqlite.prepare(`INSERT INTO telegram_pet_lifecycle_by_pet (pet_id,telegram_id,identity_seed,phase,incubation_json,innate_traits_json) VALUES (?,?,'saved-bonus-egg','egg','{}','[]')`).run(recoveryEgg,currentUser);
+    assert.equal((await hooks.switchActivePetSeasonSlot(db,currentUser,recoveryEgg)).accepted,true);
+    const sourceXp = sqlite.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(sourcePetId).pet_xp;
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-panel="play-now"] [data-focus="contracts"]').filter({hasText:'RECOVER SAVED CONTRACT XP'}).click();
+    const savedButton = page.locator('[data-action="contract_claim"]');
+    assert.equal(await savedButton.isEnabled(),true,'egg client gate must permit saved claims');
+    const savedPayload = JSON.parse(await savedButton.getAttribute('data-payload'));
+    assert.equal(savedPayload.pet_id,sourcePetId); assert.equal(savedPayload.contract_id,savedContract.contract_id);
+    assert.equal(await page.locator('[data-action="contract_start"]').count(),0);
+    assert.ok((await page.locator('[data-panel="contracts"]').textContent()).includes('Hatch your Secret Bot to start new contracts'));
+    assert.ok(await savedButton.evaluate((button) => button.getBoundingClientRect().right <= innerWidth));
+    if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({path:process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png',`-contract-recovery-${viewport.width}.png`)});
+    const [savedResponse] = await Promise.all([
+      page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'contract_claim'),
+      savedButton.click(),
+    ]);
+    const savedPaid = await savedResponse.json();
+    assert.equal(savedPaid.result.pet_xp_awarded,20);
+    assert.equal(savedPaid.state.pet.pet_id,recoveryEgg); assert.equal(savedPaid.state.pet.pet_xp,0);
+    assert.equal(savedPaid.state.contracts.available,false); assert.deepEqual(savedPaid.state.contracts.pending_rewards,[]);
+    assert.equal(sqlite.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(sourcePetId).pet_xp,sourceXp+20);
+    await savedButton.waitFor({state:'detached'});
+    assert.equal((await hooks.processPetMiniAppAction(db,currentUser,{id:currentUser},{action:'contract_claim',...savedPayload,request_id:realCrypto.randomUUID()},token)).pet_xp_awarded,0);
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    assert.equal(await page.locator('[data-panel="play-now"] [data-focus="contracts"]').count(),0);
+
     // Boss setback at the mobile control: no completion/XP and a new quest immediately.
     currentUser = `browser-boss-failure-${viewport.width}`;
     await seed(currentUser, 'young');
