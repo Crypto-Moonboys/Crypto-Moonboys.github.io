@@ -1887,11 +1887,11 @@
     var guidance = state.guidance || {};
     var encounter = state.encounter;
     var eventButtons = encounter ? encounter.choices.map(function (choice) {
-      return button(choice.label, 'random_event', { choice: choice.key, challenge_token: encounter.challenge_token }, { detail: choice.preview && choice.preview.detail || '' });
+      return button(choice.label, 'random_event', { choice: choice.key, challenge_token: encounter.challenge_token }, { disabled: choice.preview && choice.preview.available === false, resourceRequired: choice.preview && choice.preview.available === false, detail: choice.preview && choice.preview.detail || '' });
     }).join('') : '';
     var adventure = state.adventure;
     var adventureButtons = adventure ? adventure.choices.map(function (choice) {
-      return button(choice.label, 'adventure', { adventure_key: choice.key, challenge_token: adventure.challenge_token }, { disabled: adventure.available === false, cooldown: adventure.cooldown, detail: (adventure.minimum_energy ? 'ENTRY REQUIRES ' + number(adventure.minimum_energy) + ' ENERGY // ' : '') + (choice.preview && choice.preview.detail || '') });
+      return button(choice.label, 'adventure', { adventure_key: choice.key, challenge_token: adventure.challenge_token }, { disabled: adventure.available === false || choice.preview && choice.preview.available === false, resourceRequired: choice.preview && choice.preview.available === false, cooldown: adventure.cooldown, detail: (adventure.minimum_energy ? 'ENTRY REQUIRES ' + number(adventure.minimum_energy) + ' ENERGY // ' : '') + (choice.preview && choice.preview.detail || '') });
     }).join('') : '';
     var boss = guidance.weekly_boss || {};
     var run = state.run;
@@ -1907,7 +1907,7 @@
         (opponent.name ? '<div class="run-opponent"><strong>' + escapeHtml(opponent.name) + '</strong> // ' + escapeHtml(words(opponent.role || 'enemy')) + ' // THREAT ' + number(runRoom.threat) + '/5' + (opponent.intro ? '<small>' + escapeHtml(opponent.intro) + '</small>' : '') + '</div>' : '') +
         meter('THREAT', number(runRoom.threat) * 20) + '</div>';
       var runDecisionButtons = (run.choices || []).map(function (choice) {
-        return button(choice.label, 'run_step', { run_id: run.run_id, choice_key: choice.key, expected_step_index: run.expected_step_index }, { disabled: !playableRun.step, resourceRequired: run.source_available !== false && !playableRun.step, detail: !playableRun.step ? run.source_available === false ? 'Saved run pet unavailable.' : 'Your original run pet needs energy before another room. Recover that pet, or extract if a room is already cleared.' : choice.detail || words(choice.type) });
+        return button(choice.label, 'run_step', { run_id: run.run_id, choice_key: choice.key, expected_step_index: run.expected_step_index }, { disabled: !playableRun.step || choice.available === false, resourceRequired: run.source_available !== false && (!playableRun.step || choice.available === false), detail: !playableRun.step ? run.source_available === false ? 'Saved run pet unavailable.' : 'Your original run pet needs energy before another room. Recover that pet, or extract if a room is already cleared.' : choice.detail || words(choice.type) });
       }).join('');
       var tactical = run.tactics || {};
       var tacticCopy = (tactical.conditions || []).concat(tactical.selected || []).map(function (item) {

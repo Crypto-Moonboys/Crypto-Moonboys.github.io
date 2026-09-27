@@ -127,7 +127,7 @@
       if (['feed', 'play', 'clean'].includes(event)) return true;
       if (event === 'sleep' || event === 'train') return !(g.activity && g.activity.status === 'active') && (event !== 'train' || energy >= 18);
       if (event === 'work') return (g.jobs || []).some(function (job) { return job.available; });
-      if (event === 'random_event') return Boolean(s.encounter && (s.encounter.choices || []).length);
+      if (event === 'random_event') return Boolean(s.encounter && (s.encounter.choices || []).some(function (choice) { return !choice.preview || choice.preview.available !== false; }));
       if (event === 'activity_claim') return Boolean(g.activity && g.activity.ready);
       if (event === 'run_complete' || event === 'run_extract') return s.run
         ? !s.run.daily && (runAvailability(s).step || runAvailability(s).extract)
@@ -244,7 +244,7 @@
     }
     if ((live.chains || []).some(function (x) { return x.available; })) add('event_chain', 'STORY CHOICES', 'Continue an available authored story. One rewarded step per chain / UTC day.');
     if (s.adventure && s.adventure.available) add('adventure', 'ADVENTURE CHOICES', 'Compare outcome odds and costs. One adventure every 30 minutes; entry requires ' + s.adventure.minimum_energy + ' energy.');
-    if (s.encounter && (s.encounter.choices || []).length) add('random_event', 'STREET EVENT CHOICES', 'Compare rewards, costs and setbacks. Repeated-play scaling and daily reward caps apply.');
+    if (s.encounter && (s.encounter.choices || []).some(function (choice) { return !choice.preview || choice.preview.available !== false; })) add('random_event', 'STREET EVENT CHOICES', 'Compare rewards, costs and setbacks. Repeated-play scaling and daily reward caps apply.');
     if ((g.jobs || []).some(function (job) { return job.available; })) add('work', 'AVAILABLE PET JOBS', 'Choose among jobs your pet has unlocked; each job keeps its costs and reward rules.');
     if ((g.economy && g.economy.expedition_options || []).some(function (entry) { return entry.available; })) add('expedition', 'CHOOSE AN EXPEDITION', 'Compare unlocked destinations, energy costs and possible finds. Three shared attempts per UTC day.');
     if ((s.regions || []).some(function (x) { return x.available; }) && Number(s.pet && s.pet.energy) >= 10) add('district', 'DISTRICT MISSIONS', 'Choose safe, balanced or bold approaches. Build mastery toward boss checkpoints.');

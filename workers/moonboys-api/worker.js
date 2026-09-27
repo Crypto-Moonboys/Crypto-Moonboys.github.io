@@ -60,7 +60,7 @@ import { PET_CRAFTING_MATERIALS, getActivePetSetBonuses } from './pets/economy-p
 import { PET_ELITE_JOBS, canStartPetEliteJob } from './pets/content-phase-4.js';
 import { PET_JOB_LORE, buildPetRegionDirectory } from './pets/game-content.js';
 import { PET_VISIBLE_LEVEL_CURVE, getPetVisibleLevel, getPetVisibleLevelSql, getPetXpToNextVisibleLevel } from './pets/progression-phase-2.js';
-import { previewEncounterChoice } from './pets/choice-preview.js';
+import { previewEncounterChoice, previewChoiceAffordability } from './pets/choice-preview.js';
 import {
   applyPetFactionBonus, buildPetLiveSystemsState, processPetCosmeticUnlock, processPetCraftRecipe, processPetDistrictMission,
   processPetEquipmentUpgrade, processPetEventChain, processPetSeasonalBoss, claimPetSeasonalBossReward,
@@ -2570,7 +2570,8 @@ function formatPetRunPreviewRange(range, multiplier = 1, flatBonus = 0) {
   return minimum === maximum ? String(minimum) : `${minimum}-${maximum}`;
 }
 
-function serializePetRunChoicePreview(run, choice, pet, inventory = []) {
+function serializePetRunChoicePreview(run, choice, pet, inventory = [], wallet = null) {
+  const affordability = previewChoiceAffordability([choice.costs || {}], wallet);
   const analysis = analyzePetRunChoice(run, choice, pet, inventory);
   const rewardLabels = { pet_xp: 'XP', moon_gold: 'GOLD', moon_crystals: 'GEMS', style_tokens: 'STYLE', energy: 'ENERGY', happiness: 'HAPPY' };
   const costLabels = { energy: 'ENERGY', hunger: 'HUNGER', cleanliness: 'CLEAN', moon_gold: 'GOLD' };
@@ -2594,12 +2595,13 @@ function serializePetRunChoicePreview(run, choice, pet, inventory = []) {
     key: choice.key,
     label: choice.label,
     type: choice.type,
+    ...affordability,
     risk_percent: riskPercent,
     risk_band: riskBand,
     reward_preview: rewards,
     cost_preview: costs,
     advantages,
-    detail: [`${riskBand} RISK ${riskPercent}%`, rewards.join(' + '), costs.length ? `COST ${costs.join(' + ')}` : 'NO DIRECT COST', advantages.join(' + ')].filter(Boolean).join(' // '),
+    detail: [`${riskBand} RISK ${riskPercent}%`, rewards.join(' + '), costs.length ? `COST ${costs.join(' + ')}` : 'NO DIRECT COST', advantages.join(' + '), affordability.affordability_detail].filter(Boolean).join(' // '),
   };
 }
 
@@ -9452,7 +9454,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
         type: dailyRoom.room_type,
         ...previewDailyChoice(runPet, dailyRoom, choice.choice_id, dailyModifiers),
       }))
-      : getPetRunStepChoices(activeRun).map((choice) => serializePetRunChoicePreview(activeRun, choice, runPet, inventory)))
+      : getPetRunStepChoices(activeRun).map((choice) => serializePetRunChoicePreview(activeRun, choice, runPet, inventory, petRaw)))
     : [];
   const specialActionCooldowns = await getPetSpecialActionCooldownEntries(db, telegramId, now);
   return {
@@ -9517,7 +9519,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       challenge_token: encounterToken,
       title: encounter.title,
       intro: encounter.intro,
-      choices: encounter.choices.map((choice) => ({ key: choice.key, label: choice.label, preview: previewEncounterChoice(choice) })),
+      choices: encounter.choices.map((choice) => ({ key: choice.key, label: choice.label, preview: previewEncounterChoice(choice, petRaw) })),
     } : null,
     adventure: adventure ? {
       key: adventure.key,
@@ -9528,7 +9530,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       minimum_energy: adventureEntry?.energy_cost || 0,
       available: Boolean(adventureEntry?.unlocked && clampPetStat(petRaw.energy) >= adventureEntry.energy_cost && !(adventureCooldown?.remaining_seconds > 0)),
       cooldown: adventureCooldown?.remaining_seconds > 0 ? adventureCooldown : null,
-      choices: adventure.choices.map((choice) => ({ key: choice.key, label: choice.label, preview: previewEncounterChoice(choice) })),
+      choices: adventure.choices.map((choice) => ({ key: choice.key, label: choice.label, preview: previewEncounterChoice(choice, petRaw) })),
     } : null,
     arena: serializePetMiniAppArenaBattle(arena, telegramId),
     arena_queue: arenaQueue,
@@ -13732,7 +13734,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260927-objective-recovery-v1`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260927-live-options-v1`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',
@@ -14696,6 +14698,7 @@ export const __petMediaTestHooks = Object.freeze({
   recordPetRunBankedEvent,
   processPetRunStep,
   serializePetRun,
+  serializePetRunChoicePreview,
   reservePetRepeatRewardEvent,
   scalePetRewards,
   buildPetKaijuCardReplyMarkup,

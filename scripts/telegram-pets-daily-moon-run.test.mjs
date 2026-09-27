@@ -1273,6 +1273,22 @@ assert.equal(switchedPreview.pet.pet_id, 'preview-pet-b');
 assert.equal(switchedPreview.run.source_pet.active, false);
 assert.equal(switchedPreview.run.source_pet.pet_id, `pet-${previewOwner}`);
 assert.deepEqual(switchedPreview.run.choices, sourcePreview.run.choices, 'changing active pets must not change the saved run preview');
+// A paid standard choice uses the account wallet even after switching pets.
+previewDb.database.prepare('UPDATE telegram_pet_profiles SET moon_gold=0 WHERE telegram_id=?').run(previewOwner);
+let poorRun;
+for (let seed = 1; seed <= 100; seed++) {
+  previewDb.database.prepare('UPDATE telegram_pet_runs SET seed=? WHERE run_id=?').run(seed, previewStarted.run.run_id);
+  poorRun = (await __petMediaTestHooks.buildPetMiniAppState(previewDb, previewOwner, 'fixture-token')).run;
+  if (poorRun.choices.some((choice) => choice.key === 'trade')) break;
+}
+assert.equal(poorRun.choices.find((choice) => choice.key === 'trade')?.available, false);
+assert.ok(poorRun.choices.some((choice) => choice.available), 'free run alternatives remain playable');
+const rejectedTrade = await __petMediaTestHooks.processPetMiniAppAction(previewDb, previewOwner, { id: previewOwner }, { action: 'run_step', run_id: poorRun.run_id, choice_key: 'trade', expected_step_index: poorRun.expected_step_index }, 'fixture-token');
+assert.equal(rejectedTrade.reason, 'insufficient_run_cost', 'projection matches the authoritative rejection');
+previewDb.database.prepare('UPDATE telegram_pet_profiles SET moon_gold=12 WHERE telegram_id=?').run(previewOwner);
+const fundedRun = (await __petMediaTestHooks.buildPetMiniAppState(previewDb, previewOwner, 'fixture-token')).run;
+assert.equal(fundedRun.choices.find((choice) => choice.key === 'trade').affordability, 'available');
+assert.equal(fundedRun.depth, poorRun.depth, 'previewing or rejecting costs cannot advance the run');
 previewDb.database.prepare('UPDATE telegram_pet_runs SET pet_id=NULL WHERE run_id=?').run(previewStarted.run.run_id);
 const orphanPreview = await __petMediaTestHooks.buildPetMiniAppState(previewDb, previewOwner, 'fixture-token');
 assert.equal(orphanPreview.adopted, true, 'an old orphaned run must not break the Mini App');
