@@ -6,6 +6,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { chromium } from 'playwright';
 import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 import { __dailyMoonRunTestHooks as dailyHooks } from '../workers/moonboys-api/pets/daily-moon-run.js';
+import { getActiveSeasonalBoss } from '../workers/moonboys-api/pets/live-systems.js';
 import { createRequire } from 'node:module';
 const { bountyRoutes } = createRequire(import.meta.url)('../js/moonpet-play-options.js');
 
@@ -253,11 +254,46 @@ try {
     assert.equal(dailyResult.state.run.score, dailyBefore.run.score + dailyBefore.run.choices.find((choice) => choice.key === winningDailyChoice.choice_id).score);
     assert.equal(dailyResult.state.pet.pet_xp, dailyBefore.pet.pet_xp, 'daily tactics change score, not Pet XP');
     if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-tactics-${viewport.width}.png`) });
+    // Real raid choices respect energy, and old rewards can be recovered at zero energy.
+    currentUser = `browser-raid-${viewport.width}`;
+    await seed(currentUser, 'young');
+    sqlite.prepare('UPDATE telegram_pet_profiles SET pet_xp=392040,level=100,energy=12 WHERE telegram_id=?').run(currentUser);
+    sqlite.prepare('UPDATE telegram_pet_instances SET pet_xp=392040,level=100,energy=12 WHERE telegram_id=?').run(currentUser);
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-panel="play-now"] [data-focus="seasonal-boss"]').click();
+    const raidButtons = page.locator('[data-action="seasonal_boss"]');
+    assert.equal(await raidButtons.count(), 3);
+    assert.equal(await raidButtons.filter({ hasText: 'CONSERVE ENERGY' }).isEnabled(), true);
+    assert.equal(await raidButtons.filter({ hasText: 'STEADY STRIKE' }).isDisabled(), true);
+    const raidBefore = await hooks.buildPetMiniAppState(db, currentUser, token);
+    const raidPreview = raidBefore.live_systems.seasonal_boss.choices.find((c) => c.key === 'conserve');
+    const raidResponse = page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'seasonal_boss');
+    await raidButtons.filter({ hasText: 'CONSERVE ENERGY' }).click();
+    const raidResult = await (await raidResponse).json();
+    assert.equal(raidResult.result.accepted, true); assert.equal(raidResult.result.damage, raidPreview.damage);
+    assert.equal(raidResult.state.pet.energy, 0);
+    await page.waitForFunction(() => Array.from(document.querySelectorAll('[data-action="seasonal_boss"]')).every((b) => b.disabled));
+    const oldBoss = getActiveSeasonalBoss(new Date(Date.now() - 8 * 86400000));
+    sqlite.prepare(`INSERT INTO telegram_pet_seasonal_boss_progress
+      (pet_id,telegram_id,pet_season_key,season_key,boss_key,damage,defeated_at) VALUES (?,?,?,?,?,?,CURRENT_TIMESTAMP)`)
+      .run(raidBefore.pet.pet_id, currentUser, raidBefore.pet.season_key, oldBoss.season_instance, oldBoss.key, oldBoss.hp);
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-panel="play-now"] [data-focus="seasonal-boss"]').filter({ hasText: 'CLAIM SAVED RAID REWARDS' }).click();
+    const claimRaid = page.locator('[data-action="seasonal_boss_claim"]');
+    assert.equal(await claimRaid.isEnabled(), true);
+    if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-raid-${viewport.width}.png`) });
+    const claimRaidResponse = page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'seasonal_boss_claim');
+    await claimRaid.click();
+    const claimRaidResult = await (await claimRaidResponse).json();
+    assert.equal(claimRaidResult.result.accepted, true);
+    assert.equal(claimRaidResult.state.pet.energy, 0);
+    assert.equal(claimRaidResult.state.pet.moon_gold, raidBefore.pet.moon_gold + 250);
+    await page.waitForFunction(() => !document.querySelector('[data-action="seasonal_boss_claim"]'));
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
     assert.equal(overflow, false, 'mobile viewport must not overflow horizontally');
     assert.deepEqual(errors, [], 'no runtime errors across all six screens');
     if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-${viewport.width}.png`) });
-    console.log(`Moonpet browser loop passed at ${viewport.width}x${viewport.height}; all six screens; bounty routes/claim; practice isolation; contract rooms/side objectives/reload; daily tactic choice/reload/odds/score.`);
+    console.log(`Moonpet browser loop passed at ${viewport.width}x${viewport.height}; all six screens; bounty routes/claim; practice isolation; contract rooms/side objectives/reload; daily tactic choice/reload/odds/score; raid choices/energy/old reward recovery.`);
     await context.close();
   }
 } finally {

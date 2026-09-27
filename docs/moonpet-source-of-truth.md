@@ -147,7 +147,8 @@ table, the board is unavailable while the rest of the Mini App remains usable.
 
 Play Now links the current snapshot to available live routes. Navigation does
 not submit an action; each destination still enforces its server requirements.
-It prioritizes claimable bounties and finished activities, then shows a direct
+It prioritizes saved raid rewards and affordable or already-paid district
+retries, then claimable bounties and finished activities, and shows a direct
 route for the closest unfinished bounty. Every unfinished bounty has links to
 its qualifying actions; Bring It Home includes both Moon Run and Adventure.
 Four bounties rotate per account at 00:00 UTC. Their care targets explicitly
@@ -172,6 +173,40 @@ saved pet entries. They are not authoritative or synced across devices.
 Existing story-chain, district, raid and reward limits remain in force. No
 future system is unlocked by practice. The player can leave and resume play;
 there is no penalty for closing the app.
+
+### District, story and seasonal raid decisions
+
+District approaches all use their advertised risk, including the default
+balanced approach used by older clients. An omitted approach does not grant
+a guaranteed clear. Every attempt costs 10 energy; setbacks retain only the
+documented partial rewards and mastery. The existing daily limit remains.
+
+Story chains retain two authored choices per scene and one rewarded step per
+chain/pet/UTC day. District and story decisions are saved before reward
+settlement. Retries keep the original choice, reward and outcome, including
+after a reward receipt is written but the response fails. Completed story
+requests acknowledge the original completion even after the scene advances.
+
+Seasonal raids offer Conserve Energy (12 energy, 65% of steady damage rounded
+down), Steady Strike (18 energy, original damage), and a boss-specific counter
+(18 energy, displayed success chance and damage). Steady damage is
+`35 + 2 × visible level`. The four weaknesses select distinct counter profiles;
+failed counters deal half steady damage rounded down. Counters resolve this
+hit only and do not apply Arena status effects. One attack per pet/UTC day,
+boss unlock levels, rotation HP and defeat rewards remain in force.
+
+Raid randomness is server-generated and saved before energy debit. A retry
+cannot change the move, damage or cost. Damage accumulates atomically even when
+attempts from adjacent UTC days settle out of order. The phase display divides
+the existing boss HP into 300-damage segments; it is not a separate combat mode.
+
+Unsettled district, story and raid requests expose their saved choice once
+the settlement lease expires. Paid attempts can resume at zero energy; unpaid
+attempts still need their original cost. Saved raid rewards have a separate
+claim control, including older rotations for the same pet and pet season.
+Claiming does not require a new attack, energy or the current boss level.
+Claims verify the stored defeat and original ownership and retain the original
+reward idempotency key. Switching to another pet cannot claim that reward.
 
 ---
 

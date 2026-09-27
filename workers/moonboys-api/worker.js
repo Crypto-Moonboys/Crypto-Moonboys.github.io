@@ -60,7 +60,7 @@ import { PET_JOB_LORE, buildPetRegionDirectory } from './pets/game-content.js';
 import { PET_VISIBLE_LEVEL_CURVE, getPetVisibleLevel, getPetVisibleLevelSql, getPetXpToNextVisibleLevel } from './pets/progression-phase-2.js';
 import {
   applyPetFactionBonus, buildPetLiveSystemsState, processPetCosmeticUnlock, processPetCraftRecipe, processPetDistrictMission,
-  processPetEquipmentUpgrade, processPetEventChain, processPetSeasonalBoss,
+  processPetEquipmentUpgrade, processPetEventChain, processPetSeasonalBoss, claimPetSeasonalBossReward,
 } from './pets/live-systems.js';
 import { issuePetMiniAppChallenge, verifyPetMiniAppChallenge, verifyTelegramMiniAppInitData } from './pets/mini-app-auth.js';
 import { resolvePetCallbackRoute } from './pets/mini-app-routing.js';
@@ -9706,10 +9706,15 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   if (action === 'seasonal_boss') {
     const petRaw = await getPetProfileWithAtomicDecay(db, telegramId, new Date());
     if (!petRaw) return { accepted: false, reason: 'pet_not_adopted' };
+    if (body.pet_id && body.pet_id !== petRaw.pet_id) return { accepted: false, reason: 'source_pet_changed' };
     const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
-    const result = await processPetSeasonalBoss(db, telegramId, serializePet(petRaw, identity), (args) => awardPetReward(db, args));
+    const result = await processPetSeasonalBoss(db, telegramId, serializePet(petRaw, identity), (args) => awardPetReward(db, args), body.move);
     if (result.accepted && result.reason === 'seasonal_boss_defeated') await applyPetRuntimeCommandAward(db, telegramId, `runtime:mini:${eventKey}`, 'run_boss', activePetRewardAuthority(petRaw));
     return result;
+  }
+  if (action === 'seasonal_boss_claim') {
+    const pet = await getPetProfile(db, telegramId);
+    return claimPetSeasonalBossReward(db, telegramId, pet, (args) => awardPetReward(db, args), body);
   }
   if (action === 'gear_upgrade') return processPetEquipmentUpgrade(db, telegramId, body.item_key, eventKey);
   if (action === 'craft') return processPetCraftRecipe(db, telegramId, body.recipe_key, eventKey);
@@ -13671,7 +13676,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260927-quest-progression-v1`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260927-mission-choices-v1`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',
