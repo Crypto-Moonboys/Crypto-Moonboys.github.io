@@ -157,6 +157,15 @@ the draft once, so retries or parallel clicks cannot collect twice. Existing
 v1/v2/v3 contracts retain their original draft choices; v4 keeps v3's room,
 preparation, side-objective, rank and daily-bonus rules.
 
+New v5 contracts also offer one optional Redraw Upgrades at each checkpoint.
+It costs 15 contract salvage and replaces the displayed perks with different
+unowned perks: three at the first checkpoint and two at the second after taking
+an upgrade (three if the earlier choice was supplies). The replacement is saved
+before returning and can be used only once per checkpoint. The player must still
+choose an upgrade or supplies; redraw does not advance a room. Spent salvage
+reduces salvage-goal progress and final rank. Redraw grants no XP, currency,
+items or official mission credit. Existing v1–v4 contracts retain their rules.
+
 Contracts from v2 onward give all eight room scenes real route modifiers. The displayed
 odds, salvage and failure damage already include the room, build, difficulty
 and upgrades. Clear chance stays between 30% and 98%. Saved v1 contracts keep
@@ -241,6 +250,16 @@ transaction. Equipment and cosmetic purchases recheck wallet recovery there as
 well. A rejected transaction spends nothing; the same request can retry after
 the requirement is restored, and successful retries cannot spend again.
 Catalog lookups reject inherited property names as invalid cosmetic keys.
+
+Moon Market purchases require the entire paid bundle to fit: 999,999 per item
+stack, 9,999 per material, and 999,999 per account currency after the exchange.
+The board, Coach and crafting planner expose or respect this capacity check.
+Settlement checks every bundle component atomically before stock reservation
+and payment. A concurrent fill, level loss, hatch-state change or active-pet
+switch cannot spend using an earlier snapshot. Rejection charges nothing and
+keeps the offer unbought. Exact-fit purchases and already-paid retries remain
+valid. These all-or-nothing rules apply to paid Market bundles; existing earned
+loot caps and other reward sources retain their existing behavior.
 
 Inventory descriptions distinguish consuming an item from leaving it in the
 bag for a standard Moon Run bonus. Style Patch is a consumable, not clothing;

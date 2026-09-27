@@ -1790,6 +1790,9 @@
       body += '<div class="line"><strong>' + escapeHtml(run.room.title) + '</strong></div><div class="line muted">' + escapeHtml(run.room.detail) + '</div>' + (run.room.effect ? '<div class="line signal">' + escapeHtml(run.room.effect) + '</div><div class="line muted">Room effects are included below. pp means percentage points; clear chance is capped at 98%.</div>' : '') + '<div class="button-grid">' + run.choices.map(function (choice) {
         return button(choice.title, 'contract_step', { pet_id: board.pet_id, contract_id: run.contract_id, revision: run.revision, choice: choice.key }, { disabled: Boolean(choice.disabled), detail: (choice.upgrade ? 'DRAFT CHOICE // ' : choice.key === 'rest' ? 'RECOVER // ' : choice.odds + '% CLEAR // +' + choice.salvage + ' SALVAGE // FAILURE -' + choice.damage + ' HP // ') + choice.detail });
       }).join('') + '</div>';
+      if (run.draft_actions && run.draft_actions.length) body += '<div class="line signal">OPTIONAL DRAFT REDRAW</div><div class="button-grid one">' + run.draft_actions.map(function (choice) {
+        return button(choice.title, 'contract_step', { pet_id: board.pet_id, contract_id: run.contract_id, revision: run.revision, choice: choice.key }, { disabled: Boolean(choice.disabled), detail: choice.detail });
+      }).join('') + '</div>';
       body += '<div class="button-grid one">' + button('ABANDON CONTRACT', 'contract_step', { pet_id: board.pet_id, contract_id: run.contract_id, revision: run.revision, choice: 'abandon' }, { danger: true, detail: 'Ends this contract with no points or XP. Closing the app instead preserves it.' }) + '</div>';
     } else {
       body += '<label class="line">BUILD <select id="contract-build" aria-label="Contract build">' + board.builds.map(function (build) { return '<option value="' + escapeHtml(build.key) + '"' + (run && run.build === build.key ? ' selected' : '') + '>' + escapeHtml(build.title + ' — ' + build.detail) + '</option>'; }).join('') + '</select></label><label class="line">DIFFICULTY <select id="contract-tier" aria-label="Contract difficulty">';
@@ -2112,7 +2115,9 @@
         (bounty.complete && !bounty.claimed ? '<div class="button-grid one">' + button('CLAIM ' + bounty.title, 'bounty_claim', { bounty_key: bounty.key }) + '</div>' : !bounty.claimed && !bounty.complete ? '<div class="button-grid">' + routes.map(function (route) { return routeButton(route.title, route); }).join('') + '</div>' : '');
     }).join('');
     var offers = (economy.market_offers || []).map(function (offer) {
-      return button(offer.title, 'market_buy', { offer_key: offer.key }, { disabled: !offer.unlocked || !offer.affordable || offer.purchased, statusLabel: offer.purchased ? 'SOLD' : '', resourceRequired: offer.unlocked && !offer.affordable && !offer.purchased, detail: (offer.unlocked ? '' : 'REQUIRES LEVEL ' + number(offer.min_level) + ' // ') + (offer.detail || '') + ' // COST ' + costText(offer.cost) + ' // GIVES ' + valueText(offer.reward) });
+      var full = offer.capacity && !offer.capacity.available;
+      var capacityDetail = full ? ' // MAKE SPACE FOR ' + offer.capacity.blocked.map(function (entry) { return number(entry.amount) + ' ' + String(entry.key).replace(/_/g, ' ') + ' (' + number(entry.owned) + '/' + number(entry.limit) + ' stored)'; }).join(' + ') + '. Whole bundle required; nothing is charged while full.' : '';
+      return button(offer.title, 'market_buy', { offer_key: offer.key }, { disabled: !offer.unlocked || !offer.affordable || offer.purchased || full || offer.available === false, statusLabel: offer.purchased ? 'SOLD' : full ? 'STORAGE FULL' : '', resourceRequired: offer.unlocked && !offer.affordable && !offer.purchased && !full, detail: (offer.unlocked ? '' : 'REQUIRES LEVEL ' + number(offer.min_level) + ' // ') + (offer.detail || '') + ' // COST ' + costText(offer.cost) + ' // GIVES ' + valueText(offer.reward) + capacityDetail });
     }).join('');
     var shop = (guidance.shop_items || []).map(function (item) {
       return button(item.title, 'buy', { item_key: item.key }, { disabled: !item.unlocked || !item.affordable || item.equipped, statusLabel: item.equipped ? 'EQUIPPED' : '', resourceRequired: item.unlocked && !item.affordable && !item.equipped, detail: item.equipped ? (item.description || '') : (item.unlocked ? '' : 'REQUIRES LEVEL ' + number(item.min_level) + ' // ') + (item.description || '') + ' // COST ' + costText(item.cost) });
@@ -2172,7 +2177,7 @@
       panel('RELIC VAULT', '<div class="line muted">Persistent collectibles used by eligible progression requirements. Passive relic powers are not active in Moon Run, Daily Run, contracts or practice.</div>' + (relics || '<div class="line muted">NO RELICS RECOVERED.</div>'), 'relics') +
       panel('DAILY BOUNTIES', '<div class="line muted">Four account-wide targets per UTC day. Only accepted actions count. The Energy Drink, Dance and Cuddles care buttons do not count. New targets arrive at 00:00 UTC. Contracts remain available between resets.</div>' + (bounties || '<div class="line muted">NO BOUNTIES.</div>'), 'bounties') +
       panel('CRYSTAL EXPEDITIONS // CHOOSE A DESTINATION', expeditionBody, 'expedition') +
-      panel('MOON MARKET', '<div class="button-grid">' + offers + '</div>', 'market') +
+      panel('MOON MARKET', '<div class="line muted">Paid bundles must fit in full. Use items or spend materials before buying when storage is full.</div><div class="button-grid one">' + offers + '</div><div class="button-grid">' + routeButton('OPEN BAG', { screen: 'economy', focus: 'inventory' }) + routeButton('OPEN CRAFTING', { screen: 'economy', focus: 'crafting' }) + '</div>', 'market') +
       panel('PERMANENT SHOP', '<div class="button-grid">' + shop + '</div>', 'shop') + panel('STYLE LAB // COLLECTION', '<div class="line muted">These purchases add account collection records only. They do not change your pet’s appearance, animations or stats. A Rename Badge is not required to change your callsign.</div><div class="button-grid one">' + routeButton('EDIT CALLSIGN', { screen: 'profile', focus: 'callsign' }, 'Use the existing name control; no badge purchase is required.') + '</div><div class="button-grid">' + cosmetics + '</div>', 'style-lab') +
       panel('INVENTORY', inventory || '<div class="line muted">BAG EMPTY.</div>', 'inventory') +
       panel('MOON GOLD TRADE', '<div class="line muted">Game currency only. A loss spends the selected stake. Trades share a five-minute account cooldown.</div><div class="button-grid three">' + (state.trade && state.trade.offers || []).map(function (offer) { return button(offer.wager + ' GOLD', 'trade', { wager: offer.wager }, { disabled: !offer.available, cooldown: state.trade.cooldown, resourceRequired: !offer.affordable, detail: offer.affordable ? '' : 'Requires ' + number(offer.wager) + ' Moon Gold.' }); }).join('') + '</div>', 'trade');
@@ -2488,6 +2493,9 @@
       contract_stale: 'that contract changed; use the refreshed choices.',
       contract_active: 'finish or abandon your current contract first.',
       contract_invalid_choice: 'choose one of the available routes or upgrades.',
+      market_capacity_full: 'the whole bundle must fit. Use items or spend materials/currency first; nothing was charged.',
+      market_state_changed: 'your pet or balances changed before purchase. Nothing was charged; review the refreshed offer.',
+      market_pet_unavailable: 'select a hatched active pet before buying.',
       contract_not_found: 'contract unavailable for this pet.',
       contract_bonus_pending: 'bonus saved; retry its delivery from the contract board.',
       active_pet_required: 'active seasonal Moonpet required.',

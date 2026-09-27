@@ -138,6 +138,15 @@ export function validatePetRunModifier(modifier) {
 function getRewardAuthorization(source, telegramId, context = {}, now = new Date(), petId = '') {
   const runId = String(context.run_id || '').trim();
   const roomId = String(context.room_id || '').trim();
+  if (source === 'pet_market') {
+    if (!context.pet_id || !context.season_key || !context.min_level) throw new Error('invalid_pet_reward_context');
+    return { sql: `AND EXISTS (SELECT 1 FROM telegram_pet_instances p
+      JOIN telegram_pet_active_slots a ON a.pet_id=p.pet_id AND a.telegram_id=p.telegram_id AND a.season_key=p.season_key
+      JOIN telegram_pet_lifecycle_by_pet l ON l.pet_id=p.pet_id AND l.telegram_id=p.telegram_id
+      WHERE p.pet_id=? AND p.telegram_id=? AND p.season_key=? AND p.status='active' AND l.phase<>'egg'
+        AND ${getPetVisibleLevelSql('p.pet_xp')} >= ?)`,
+    args: [context.pet_id, telegramId, context.season_key, context.min_level] };
+  }
   if (source === 'pet_job' || source === 'pet_adventure') {
     const adventure = source === 'pet_adventure';
     const seconds = adventure ? PET_ADVENTURE_COOLDOWN_SECONDS : PET_JOB_COOLDOWN_SECONDS;
@@ -272,6 +281,23 @@ export async function awardPetReward(db, request = {}) {
   const reason = String(request.reason || 'reward_awarded').trim().slice(0, 120);
   const profileDeltas = normalizeProfileDeltas(request.profile_deltas);
   const currencyCosts = normalizeCurrencyCosts(request.currency_costs);
+  // Paid market bundles are all-or-nothing. Guard every included asset in the
+  // same transaction as stock reservation and debit, before any capped writes.
+  const capacity = { sql: '', args: [] };
+  if (source === 'pet_market') {
+    for (const [key, quantity] of Object.entries(rewards.items)) {
+      capacity.sql += ` AND COALESCE((SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item' AND asset_key=?),0) <= ?`;
+      capacity.args.push(telegramId, key, MAX_CURRENCY - quantity);
+    }
+    for (const [key, quantity] of Object.entries(rewards.materials)) {
+      capacity.sql += ' AND COALESCE((SELECT quantity FROM telegram_pet_material_balances WHERE telegram_id=? AND material_key=?),0) <= ?';
+      capacity.args.push(telegramId, key, 9999 - quantity);
+    }
+    for (const key of ['moon_gold', 'moon_crystals', 'style_tokens']) if (rewards[key]) {
+      capacity.sql += ` AND EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id=? AND ${key} - ? + ? <= ?)`;
+      capacity.args.push(telegramId, currencyCosts[key], rewards[key], MAX_CURRENCY);
+    }
+  }
   if (hasAccountWalletMovement(rewards, currencyCosts) && !(await ensurePetAccountWalletReadyForMutation(db, telegramId, now))) {
     return { accepted: false, duplicate: false, reason: 'wallet_reconciliation_recovery_pending', pet_xp_awarded: 0, xp_awarded: 0, rewards: normalizePetReward() };
   }
@@ -299,11 +325,11 @@ export async function awardPetReward(db, request = {}) {
       WHERE EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id = ?
         AND moon_gold >= ? AND moon_crystals >= ? AND style_tokens >= ?
         AND ${accountWalletRecoveryResolvedSql('telegram_pet_profiles.telegram_id')})
-      ${petOwnerGuard} ${authorization.sql} ${reservationGuard}`)
+      ${petOwnerGuard} ${authorization.sql} ${reservationGuard} ${capacity.sql}`)
       .bind(claimId, petId || null, telegramId, source, idempotencyKey, dayKey, safeJson(rewards), metadata, telegramId,
         currencyCosts.moon_gold, currencyCosts.moon_crystals, currencyCosts.style_tokens,
         ...(petAuthority ? [petId, telegramId, seasonKey] : []),
-        ...authorization.args, ...(reservationId ? [reservationId, telegramId] : [])),
+        ...authorization.args, ...(reservationId ? [reservationId, telegramId] : []), ...capacity.args),
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_events
       (id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
       SELECT ?, ?, ?, ?, ?, 0, 0, ?, ?, ?, 'pending', 'reward_pending', ?

@@ -19,6 +19,7 @@ export const CONTRACT_SIDE_GOALS = Object.freeze({
   stocked: { title: 'WELL SUPPLIED', detail: 'Finish carrying at least five supplies.', target: 5 },
 });
 export const CONTRACT_SIDE_RANK = 60;
+export const CONTRACT_REDRAW_COST = 15;
 const PERKS = Object.freeze({
   shield: { title: 'SCRAP SHIELD', detail: 'Failure damage -8.' },
   radar: { title: 'ROUTE RADAR', detail: 'Cover/search odds +12 percentage points.' },
@@ -37,7 +38,7 @@ const SCENES = Object.freeze([
   ['Power Cut', 'The street goes dark. Save your health or push through before the lights return.'],
   ['Courier Checkpoint', 'The final barrier is ahead. Check your goal before committing.'],
 ]);
-// Applied to v2 and v3 contracts. Preview and resolution share these modifiers.
+// Applied to v2 and later contracts. Preview and resolution share these modifiers.
 const SCENE_RULES = Object.freeze([
   { detail: 'Patrol: cover +8pp clear chance; bold -6pp and +5 failure damage.', cover: { odds: 8 }, bold: { odds: -6, damage: 5 } },
   { detail: 'Tech cache: search +8 salvage; bold +4pp clear chance.', search: { salvage: 8 }, bold: { odds: 4 } },
@@ -54,20 +55,20 @@ const day = (now) => now.toISOString().slice(0, 10);
 function hash(value) { let n = 2166136261; for (const c of String(value)) n = Math.imul(n ^ c.charCodeAt(0), 16777619); return n >>> 0; }
 export function contractRoom(s) {
   const index = s.depth >= CONTRACT_ROOMS - 1 ? 7 : hash(s.seed + s.depth) % 7;
-  return { title: SCENES[index][0], detail: SCENES[index][1], rule: [2, 3, 4].includes(s.version) ? SCENE_RULES[index] : null };
+  return { title: SCENES[index][0], detail: SCENES[index][1], rule: [2, 3, 4, 5].includes(s.version) ? SCENE_RULES[index] : null };
 }
 export function createContractState(goal, build, tier, seed, sideGoal = 'none') {
   if (typeof goal !== 'string' || typeof build !== 'string' || typeof sideGoal !== 'string'
     || !has(CONTRACT_GOALS, goal) || !has(CONTRACT_BUILDS, build) || !has(CONTRACT_SIDE_GOALS, sideGoal) || ![1, 2, 3].includes(tier)) return null;
   const b = CONTRACT_BUILDS[build];
-  return { version: 4, preparation: null, goal, build, tier, seed, side_goal: sideGoal, route_wins: { cover: 0, bold: 0, search: 0 }, depth: 0, wins: 0, health: b.health, max_health: b.health,
+  return { version: 5, draft_redrawn: false, preparation: null, goal, build, tier, seed, side_goal: sideGoal, route_wins: { cover: 0, bold: 0, search: 0 }, depth: 0, wins: 0, health: b.health, max_health: b.health,
     supplies: b.supplies, salvage: 0, perks: [], draft: [], last: 'Choose a route. Your contract is saved after every decision.' };
 }
 export function contractChoices(s) {
   const b = CONTRACT_BUILDS[s.build], perks = s.perks;
   const threat = (s.tier - 1) * 7 + s.depth * 2;
   const rules = contractRoom(s).rule || {};
-  const prepared = [3, 4].includes(s.version) && s.preparation === 'prepare_scout';
+  const prepared = [3, 4, 5].includes(s.version) && s.preparation === 'prepare_scout';
   const odds = (key, base) => Math.max(30, Math.min(98, base - threat + (rules[key]?.odds || 0) + (prepared ? 10 : 0)));
   const shield = perks.includes('shield') ? 8 : 0, bonus = perks.includes('magnet') ? 10 : 0;
   return [
@@ -78,7 +79,7 @@ export function contractChoices(s) {
   ].map((choice) => ({ ...choice, salvage: choice.salvage + (rules[choice.key]?.salvage || 0), damage: choice.damage + (rules[choice.key]?.damage || 0) }));
 }
 export function contractPreparations(s) {
-  if (![3, 4].includes(s.version) || s.depth >= CONTRACT_ROOMS || s.health <= 0 || s.draft.length || s.preparation) return [];
+  if (![3, 4, 5].includes(s.version) || s.depth >= CONTRACT_ROOMS || s.health <= 0 || s.draft.length || s.preparation) return [];
   return [
     { key: 'prepare_scout', title: 'SCOUT AHEAD', disabled: s.supplies < 2, detail: 'Spend 2 supplies: +10 percentage points to route clear chances in this room, capped at 98%. No room advance.' },
     { key: 'prepare_patch', title: 'FIELD PATCH', disabled: s.salvage < 20 || s.health >= s.max_health, detail: 'Spend 20 salvage: heal up to 25 route HP now. No room advance. Spent salvage no longer counts toward the goal or rank.' },
@@ -87,8 +88,18 @@ export function contractPreparations(s) {
 export function contractGoalProgress(s) {
   return s.goal === 'scout' ? s.wins : s.goal === 'salvage' ? s.salvage : s.health;
 }
+function redrawPool(s) {
+  return Object.keys(PERKS).filter((key) => !s.perks.includes(key) && !s.draft.includes(key));
+}
+export function contractDraftActions(s) {
+  if (s.version !== 5 || !s.draft.length || s.draft_redrawn || s.health <= 0 || s.depth >= CONTRACT_ROOMS) return [];
+  const count = Math.min(3, redrawPool(s).length);
+  if (!count) return [];
+  return [{ key: 'redraw_draft', title: 'REDRAW UPGRADES', disabled: s.salvage < CONTRACT_REDRAW_COST,
+    detail: `Spend ${CONTRACT_REDRAW_COST} salvage to replace these perks with ${count} different unowned upgrades. Once per draft; no room advance. Supplies remain an option. Spent salvage reduces final rank and salvage-goal progress.` }];
+}
 export function contractSideProgress(s) {
-  if (![2, 3, 4].includes(s.version) || s.side_goal === 'none') return null;
+  if (![2, 3, 4, 5].includes(s.version) || s.side_goal === 'none') return null;
   const goal = CONTRACT_SIDE_GOALS[s.side_goal];
   const progress = s.side_goal === 'versatile' ? Object.values(s.route_wins).filter((n) => n > 0).length
     : s.side_goal === 'daredevil' ? s.route_wins.bold : s.supplies;
@@ -108,7 +119,15 @@ export function advanceContract(value, action, roll) {
     return { state: s, status: 'active', rank_points: 0 };
   }
   if (s.draft.length) {
-    if (s.version === 4 && action === 'supply_cache') {
+    if (action === 'redraw_draft') {
+      const redraw = contractDraftActions(s)[0];
+      if (!redraw || redraw.disabled) return null;
+      s.draft = redrawPool(s).sort((a, b) => hash(s.seed + s.depth + 'redraw' + a) - hash(s.seed + s.depth + 'redraw' + b)).slice(0, 3);
+      s.salvage -= CONTRACT_REDRAW_COST; s.draft_redrawn = true;
+      s.last = `Spent ${CONTRACT_REDRAW_COST} salvage to redraw upgrades. Choose one of the new perks or take supplies.`;
+      return { state: s, status: 'active', rank_points: 0 };
+    }
+    if ([4, 5].includes(s.version) && action === 'supply_cache') {
       s.supplies += 2; s.draft = [];
       s.last = 'Took 2 contract supplies instead of an upgrade. Use them to heal, scout or pursue the supply objective.';
       return { state: s, status: 'active', rank_points: 0 };
@@ -127,17 +146,18 @@ export function advanceContract(value, action, roll) {
     s.last = 'Used one supply and moved on. No salvage or route-clear credit.';
   } else if (roll < choice.odds) {
     s.wins++; s.salvage += choice.salvage; if (action === 'search') s.supplies++;
-    if ([2, 3, 4].includes(s.version)) s.route_wins[action]++;
+    if ([2, 3, 4, 5].includes(s.version)) s.route_wins[action]++;
     s.last = `Route cleared. +${choice.salvage} contract salvage.`;
   } else { s.health = Math.max(0, s.health - choice.damage); s.last = `Setback: -${choice.damage} route health. Keep going if you can.`; }
   s.depth++;
-  if ([3, 4].includes(s.version)) s.preparation = null;
+  if ([3, 4, 5].includes(s.version)) s.preparation = null;
   let status = 'active';
   if (!s.health) { status = 'failed'; s.last = 'Route health exhausted. Another contract is available immediately.'; }
   else if (s.depth === CONTRACT_ROOMS) {
     status = contractGoalProgress(s) >= CONTRACT_GOALS[s.goal].target ? 'completed' : 'failed';
     s.last = status === 'completed' ? 'Contract complete. Rank recorded; choose another contract whenever you like.' : 'Route finished, but the contract goal was missed. Try a different build or route.';
   } else if (s.depth % 2 === 0) {
+    if (s.version === 5) s.draft_redrawn = false;
     s.draft = Object.keys(PERKS).filter((k) => !s.perks.includes(k)).sort((a, b) => hash(s.seed + s.depth + a) - hash(s.seed + s.depth + b)).slice(0, 3);
   }
   const side = contractSideProgress(s);
@@ -153,9 +173,10 @@ function projection(row) {
     progress: contractGoalProgress(s), target: CONTRACT_GOALS[s.goal].target, last: s.last,
     room: { title: room.title, detail: room.detail, effect: room.rule?.detail || '' }, perks: s.perks.map((key) => ({ key, ...PERKS[key] })),
     side_goal: side ? { ...side, earned: row.status === 'completed' && side.reached } : null,
-    preparation: [3, 4].includes(s.version) ? s.preparation : null,
+    preparation: [3, 4, 5].includes(s.version) ? s.preparation : null,
     preparations: row.status === 'active' ? contractPreparations(s) : [],
-    choices: row.status !== 'active' ? [] : s.draft.length ? [...s.draft.map((key) => ({ key, ...PERKS[key], upgrade: true })), ...(s.version === 4 ? [{ key: 'supply_cache', title: 'TAKE SUPPLY CACHE', upgrade: true, detail: 'Take 2 contract supplies instead of an upgrade. Spend them on healing or scouting, or save them for Well Supplied. No room advance, pet item, XP or currency.' }] : [])] : contractChoices(s),
+    draft_actions: row.status === 'active' ? contractDraftActions(s) : [],
+    choices: row.status !== 'active' ? [] : s.draft.length ? [...s.draft.map((key) => ({ key, ...PERKS[key], upgrade: true })), ...([4, 5].includes(s.version) ? [{ key: 'supply_cache', title: 'TAKE SUPPLY CACHE', upgrade: true, detail: 'Take 2 contract supplies instead of an upgrade. Spend them on healing or scouting, or save them for Well Supplied. No room advance, pet item, XP or currency.' }] : [])] : contractChoices(s),
     rank_points: row.rank_points, reward_pending: row.reward_xp > 0 && !row.reward_settled, xp_awarded: row.xp_awarded };
 }
 async function authority(db, owner, petId, seasonKey) {

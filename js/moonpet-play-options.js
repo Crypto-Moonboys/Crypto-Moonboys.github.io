@@ -80,7 +80,7 @@
           detail: 'Possible materials for this goal; the find is not guaranteed. ' + entry.energy + ' energy and one shared daily attempt.' });
       });
       (economy.market_offers || []).forEach(function (offer) {
-        if (offer.purchased || !offer.unlocked || !offer.affordable) return;
+        if (offer.purchased || !offer.unlocked || !offer.affordable || offer.capacity && !offer.capacity.available || offer.available === false) return;
         var direct = amount(offer.reward && offer.reward.items && offer.reward.items[recipe.output.item_key]);
         if (direct && outputCount + direct > 999999) return;
         if (!needed(offer.reward).length && !direct) return;
