@@ -113,10 +113,18 @@ points for its source pet and immediately offers another quest. Rank has no
 daily cap and no effect on Pet XP, currencies, combat, Growth Marks or Weekly
 Crests. Difficulty tiers 2 and 3 open after 5 and 15 completions respectively.
 
-New v2 contracts give all eight room scenes real route modifiers. The displayed
+Contracts from v2 onward give all eight room scenes real route modifiers. The displayed
 odds, salvage and failure damage already include the room, build, difficulty
 and upgrades. Clear chance stays between 30% and 98%. Saved v1 contracts keep
 their original mechanics and rank calculation until they finish.
+
+New v3 contracts add one optional preparation per room. Scout Ahead spends two
+contract supplies for +10 percentage points to that room's route odds, capped
+at 98%. Field Patch spends 20 contract salvage to heal up to 25 route HP.
+Neither advances the room or earns points/XP by itself. Field Patch requires
+missing health; spent salvage no longer counts toward the goal or final rank.
+Preparation is saved with the run and resets after advancing a room. Upgrade
+drafts must be resolved first. Saved v1/v2 contracts do not gain preparations.
 
 At the start, players may choose All Routes (one success with cover, bold and
 search), Daredevil (three bold successes), or Well Supplied (finish with five
@@ -131,6 +139,16 @@ pet and season, plus completions remaining until the next difficulty unlock.
 There is no pet energy cost or gameplay cooldown. Contract health, supplies
 and salvage are isolated run resources. Leaving the app preserves the run on
 the server; abandoning or failing a contract gives no points or bonus.
+
+Street Event and Adventure choices expose normal and setback probabilities,
+base reward ranges and cost ranges from the same catalog used by resolution.
+They do not expose a rolled outcome. Repeated Street Event scaling, reward caps,
+and stat limits still govern the actual award. Adventure entry energy is a
+separate requirement from the rolled cost. The Mini App shows the existing
+30-minute Adventure cooldown and the shared job cooldown, disables those
+controls during the wait, and includes their expiry in its refresh schedule.
+Play Now links to available Adventures, Street Events and unlocked jobs whose
+cooldown has elapsed, alongside Contracts, Practice and other existing routes.
 
 The first three successful contracts per account per UTC day reserve a bonus
 of up to 20 Pet XP each, subject to the existing 1,200 daily Pet XP cap. The

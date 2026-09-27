@@ -80,6 +80,9 @@
       if (s.daily_run && s.daily_run.available) add('daily_run', 'OFFICIAL DAILY RUN', 'One official attempt per account / UTC day. Advances Daily Journey.');
     }
     if ((live.chains || []).some(function (x) { return x.available; })) add('event_chain', 'STORY CHOICES', 'Continue an available authored story. One rewarded step per chain / UTC day.');
+    if (s.adventure && s.adventure.available) add('adventure', 'ADVENTURE CHOICES', 'Compare outcome odds and costs. One adventure every 30 minutes; entry requires ' + s.adventure.minimum_energy + ' energy.');
+    if (s.encounter && (s.encounter.choices || []).length) add('random_event', 'STREET EVENT CHOICES', 'Compare rewards, costs and setbacks. Repeated-play scaling and daily reward caps apply.');
+    if ((g.jobs || []).some(function (job) { return job.available; })) add('work', 'AVAILABLE PET JOBS', 'Choose among jobs your pet has unlocked; each job keeps its costs and reward rules.');
     if ((s.regions || []).some(function (x) { return x.available; }) && Number(s.pet && s.pet.energy) >= 10) add('district', 'DISTRICT MISSIONS', 'Choose safe, balanced or bold approaches. Build mastery toward boss checkpoints.');
     if (g.weekly_boss && g.weekly_boss.available) add('weekly_boss', 'WEEKLY BOSS', 'Strike, outsmart or endure. One attack per UTC day.');
     if (live.seasonal_boss && live.seasonal_boss.available && (live.seasonal_boss.pending_move && live.seasonal_boss.retry_energy_charged || (live.seasonal_boss.choices || [{ key: 'strike', energy: 18 }]).some(function (choice) { return (!live.seasonal_boss.pending_move || choice.key === live.seasonal_boss.pending_move) && Number(s.pet && s.pet.energy) >= choice.energy; }))) add('seasonal_boss', 'SEASONAL RAID', 'Conserve energy, strike steadily or counter the boss weakness. One attack per pet / UTC day.');

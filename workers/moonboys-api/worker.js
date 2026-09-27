@@ -58,6 +58,7 @@ import { PET_CRAFTING_MATERIALS, getActivePetSetBonuses } from './pets/economy-p
 import { PET_ELITE_JOBS, canStartPetEliteJob } from './pets/content-phase-4.js';
 import { PET_JOB_LORE, buildPetRegionDirectory } from './pets/game-content.js';
 import { PET_VISIBLE_LEVEL_CURVE, getPetVisibleLevel, getPetVisibleLevelSql, getPetXpToNextVisibleLevel } from './pets/progression-phase-2.js';
+import { previewEncounterChoice } from './pets/choice-preview.js';
 import {
   applyPetFactionBonus, buildPetLiveSystemsState, processPetCosmeticUnlock, processPetCraftRecipe, processPetDistrictMission,
   processPetEquipmentUpgrade, processPetEventChain, processPetSeasonalBoss, claimPetSeasonalBossReward,
@@ -9202,8 +9203,10 @@ async function getPetSpecialActionGuidanceState(db, telegramId, now = new Date()
   return state;
 }
 
-function buildPetMiniAppCooldownSummary({ journeySummary = null, guidance = null, liveSystems = null, seasonSlots = null, actionCooldowns = [], now = new Date() } = {}) {
+function buildPetMiniAppCooldownSummary({ journeySummary = null, guidance = null, liveSystems = null, seasonSlots = null, actionCooldowns = [], adventureCooldown = null, workCooldown = null, now = new Date() } = {}) {
   const entries = [];
+  addPetCooldownEntry(entries, 'adventure', 'Adventure ready', adventureCooldown, 'action');
+  addPetCooldownEntry(entries, 'work', 'Jobs ready', workCooldown, 'action');
   addPetCooldownEntry(entries, 'daily_journey_reset', 'Daily Journey reset', journeySummary?.daily?.cooldown, 'daily');
   addPetCooldownEntry(entries, 'weekly_journey_reset', 'Weekly Journey reset', journeySummary?.weekly?.cooldown, 'weekly');
   addPetCooldownEntry(entries, 'timed_activity_claim', 'Timed activity claim', guidance?.activity?.cooldown, 'action');
@@ -9285,7 +9288,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
 
   const pet = serializePet(petRaw);
   const lifecycle = await getMoonpetLifecycle(db, telegramId).catch(() => null);
-  const [guidance, inventory, runtime, gear, materials, relics, arena, arenaQueue, recentArena, kaiju, kaijuQueue, recentKaiju, leaderboard, notifications, seasonSlots] = await Promise.all([
+  const [guidance, inventory, runtime, gear, materials, relics, arena, arenaQueue, recentArena, kaiju, kaijuQueue, recentKaiju, leaderboard, notifications, seasonSlots, recentActions] = await Promise.all([
     buildPetGuidanceState(db, telegramId, petRaw),
     getPetInventory(db, telegramId).catch(() => []),
     getOrCreatePetRuntimeState(db, telegramId, getPetDayKey(now), activePetRewardAuthority(petRaw)).catch(() => null),
@@ -9316,6 +9319,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     }),
     getPetNotificationPreference(db, telegramId),
     buildPetSeasonSlotSummary(db, telegramId).catch(() => null),
+    db.prepare("SELECT event_type, MAX(created_at) AS created_at FROM telegram_pet_events WHERE telegram_id=? AND event_type IN ('adventure','work') AND status='accepted' GROUP BY event_type").bind(telegramId).all(),
   ]);
   const leaderboardRows = await materializePetLeaderboardRows(db, leaderboard.results || []);
   const [journeySummary, hydratedKaiju] = await Promise.all([
@@ -9329,6 +9333,12 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     ...adventureBase,
     event_key: `${adventureBase.key}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`.slice(0, 120),
   } : null;
+  const adventureEntry = adventure ? petAdventuresForPet(petRaw).find((entry) => entry.key === adventure.key) : null;
+  const lastAdventure = (recentActions.results || []).find((entry) => entry.event_type === 'adventure');
+  const lastWork = (recentActions.results || []).find((entry) => entry.event_type === 'work');
+  const adventureCooldown = lastAdventure ? buildPetCooldownFromStart(lastAdventure.created_at, PET_ADVENTURE_COOLDOWN_SECONDS, now) : null;
+  const workCooldown = lastWork ? buildPetCooldownFromStart(lastWork.created_at, PETS_ACTION_COOLDOWN_SECONDS, now) : null;
+  if (guidance && workCooldown?.remaining_seconds > 0) guidance.jobs = (guidance.jobs || []).map((job) => ({ ...job, available: false, cooldown: job.available ? workCooldown : null }));
   const [encounterToken, adventureToken] = await Promise.all([
     encounter ? issuePetMiniAppChallenge({ type: 'event', telegram_id: telegramId, encounter_key: encounter.key, event_key: encounter.event_key }, botToken) : null,
     adventure ? issuePetMiniAppChallenge({ type: 'adventure', telegram_id: telegramId, encounter_key: adventure.key, event_key: adventure.event_key }, botToken) : null,
@@ -9465,7 +9475,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       challenge_token: encounterToken,
       title: encounter.title,
       intro: encounter.intro,
-      choices: encounter.choices.map((choice) => ({ key: choice.key, label: choice.label })),
+      choices: encounter.choices.map((choice) => ({ key: choice.key, label: choice.label, preview: previewEncounterChoice(choice) })),
     } : null,
     adventure: adventure ? {
       key: adventure.key,
@@ -9473,7 +9483,10 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       challenge_token: adventureToken,
       title: adventure.title,
       intro: adventure.intro,
-      choices: adventure.choices.map((choice) => ({ key: choice.key, label: choice.label })),
+      minimum_energy: adventureEntry?.energy_cost || 0,
+      available: Boolean(adventureEntry?.unlocked && clampPetStat(petRaw.energy) >= adventureEntry.energy_cost && !(adventureCooldown?.remaining_seconds > 0)),
+      cooldown: adventureCooldown?.remaining_seconds > 0 ? adventureCooldown : null,
+      choices: adventure.choices.map((choice) => ({ key: choice.key, label: choice.label, preview: previewEncounterChoice(choice) })),
     } : null,
     arena: serializePetMiniAppArenaBattle(arena, telegramId),
     arena_queue: arenaQueue,
@@ -9491,7 +9504,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       last_notified_at: notifications?.last_notified_at || null,
       last_reason: notifications?.last_reason || null,
     },
-    cooldowns: buildPetMiniAppCooldownSummary({ journeySummary, guidance, liveSystems, seasonSlots, actionCooldowns: specialActionCooldowns, now }),
+    cooldowns: buildPetMiniAppCooldownSummary({ journeySummary, guidance, liveSystems, seasonSlots, actionCooldowns: specialActionCooldowns, adventureCooldown, workCooldown, now }),
     server_time: now.toISOString(),
   };
 }
@@ -13676,7 +13689,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260927-mission-choices-v1`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260927-route-preparation-v1`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',
