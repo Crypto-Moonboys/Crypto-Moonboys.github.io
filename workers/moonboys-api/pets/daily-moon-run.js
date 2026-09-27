@@ -540,12 +540,20 @@ async function recordChallengeEvidence(db, request) {
 async function insertDailyJourneyReceipt(db, receipt) {
   await db.prepare(`INSERT OR IGNORE INTO telegram_pet_daily_journey_receipts
     (receipt_id, event_key, telegram_id, pet_id, season_key, utc_day, completed_objectives, status, reason, growth_mark_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(receipt_id) DO UPDATE SET growth_mark_id=excluded.growth_mark_id
+      WHERE telegram_pet_daily_journey_receipts.growth_mark_id IS NULL
+        AND telegram_pet_daily_journey_receipts.event_key=excluded.event_key
+        AND telegram_pet_daily_journey_receipts.telegram_id=excluded.telegram_id
+        AND telegram_pet_daily_journey_receipts.pet_id=excluded.pet_id
+        AND telegram_pet_daily_journey_receipts.season_key=excluded.season_key
+        AND telegram_pet_daily_journey_receipts.utc_day=excluded.utc_day
+        AND telegram_pet_daily_journey_receipts.status=excluded.status`)
     .bind(receipt.receipt_id, receipt.event_key, receipt.telegram_id, receipt.pet_id, receipt.season_key, receipt.utc_day,
       receipt.completed_objectives, receipt.status, receipt.reason, receipt.growth_mark_id || null).run();
 }
 
-async function finalizeDailyJourneyGrowthMark(db, request) {
+export async function finalizeDailyJourneyGrowthMark(db, request) {
   const progressRows = await db.prepare(`SELECT challenge_id, SUM(progress_value) AS additive_progress, MAX(progress_value) AS max_progress
     FROM telegram_pet_daily_journey_objectives
     WHERE telegram_id = ? AND pet_id = ? AND season_key = ? AND utc_day = ? AND status = 'accepted'
@@ -572,7 +580,7 @@ async function finalizeDailyJourneyGrowthMark(db, request) {
   }
   const existing = await db.prepare(`SELECT status, growth_mark_id FROM telegram_pet_daily_journey_receipts
     WHERE event_key = ? AND status = 'accepted' LIMIT 1`).bind(eventKey).first().catch(() => null);
-  if (existing) {
+  if (existing?.growth_mark_id) {
     await insertDailyJourneyReceipt(db, {
       receipt_id: `${eventKey}:rejected:duplicate`,
       event_key: eventKey,
@@ -609,6 +617,7 @@ async function finalizeDailyJourneyGrowthMark(db, request) {
   const authoritativeMark = mark.mark_id ? await db.prepare(`SELECT mark_id FROM telegram_pet_growth_marks
     WHERE mark_id=? AND pet_id=? AND telegram_id=? AND season_key=? AND earned_day=? LIMIT 1`)
     .bind(mark.mark_id, request.pet_id, request.telegram_id, request.season_key, request.utc_day).first().catch(() => null) : null;
+  if ((mark.accepted || mark.duplicate) && !authoritativeMark) throw new Error('daily_journey_growth_mark_pending');
   if (!mark.accepted && mark.duplicate && authoritativeMark?.mark_id === expectedMarkId) {
     await insertDailyJourneyReceipt(db, {
       receipt_id: `${eventKey}:accepted`,

@@ -42,6 +42,7 @@ class Statement {
   bind(...args) { return new Statement(this.adapter, this.sql, args); }
   async first() { return this.adapter.database.prepare(this.sql).get(...this.args) || null; }
   async run() {
+    if (this.adapter.failWrite?.test(this.sql)) throw new Error('injected_journey_write_failure');
     const result = this.adapter.database.prepare(this.sql).run(...this.args);
     return { results: [], meta: { changes: Number(result.changes || 0) } };
   }
@@ -1277,5 +1278,40 @@ const orphanPreview = await __petMediaTestHooks.buildPetMiniAppState(previewDb, 
 assert.equal(orphanPreview.adopted, true, 'an old orphaned run must not break the Mini App');
 assert.equal(orphanPreview.run.source_available, false);
 assert.deepEqual(orphanPreview.run.choices, []);
+
+// A refresh must finish an interrupted award from persisted evidence, even
+// after the account has moved to a new pet/season. No new gameplay is needed.
+{
+  const recoveryDb = new D1();
+  recoveryDb.database.exec(fs.readFileSync(new URL('../workers/moonboys-api/migrations/048_telegram_pet_player_expansion.sql', import.meta.url), 'utf8'));
+  seedPlayer(recoveryDb, 'journey-refresh', 'pet-s2026-002');
+  seedPlayer(recoveryDb, 'other-journey-owner', 'pet-s2026-002');
+  for (const owner of ['journey-refresh', 'other-journey-owner']) {
+    for (const challengeId of ['daily_combat', 'daily_explorer']) await recordFullJourneyObjective(recoveryDb, {
+      telegramId: owner, petId: `pet-${owner}`, day: '2026-06-30', challengeId,
+    });
+    recoveryDb.failWrite = /INSERT OR IGNORE INTO telegram_pet_daily_journey_receipts/;
+    await assert.rejects(recordFullJourneyObjective(recoveryDb, {
+      telegramId: owner, petId: `pet-${owner}`, day: '2026-06-30', challengeId: 'daily_extraction',
+    }), /injected_journey_write_failure/);
+    recoveryDb.failWrite = null;
+  }
+  const recoveryMarksBefore = recoveryDb.database.prepare('SELECT * FROM telegram_pet_growth_marks ORDER BY mark_id').all();
+  await __petMediaTestHooks.buildPetMiniAppState(recoveryDb, 'journey-refresh', 'fixture-token');
+  assert.equal(recoveryDb.database.prepare("SELECT COUNT(*) AS n FROM telegram_pet_daily_journey_receipts WHERE telegram_id='journey-refresh' AND status='accepted'").get().n, 1,
+    'refresh recovers a previously earned Journey receipt without replaying gameplay');
+  assert.equal(recoveryDb.database.prepare("SELECT COUNT(*) AS n FROM telegram_pet_daily_journey_receipts WHERE telegram_id='other-journey-owner'").get().n, 0,
+    'refresh cannot recover or mutate another owner');
+  await __petMediaTestHooks.buildPetMiniAppState(recoveryDb, 'journey-refresh', 'fixture-token');
+  assert.deepEqual(recoveryDb.database.prepare('SELECT * FROM telegram_pet_growth_marks ORDER BY mark_id').all(), recoveryMarksBefore,
+    'refresh preserves original marks and dates, with no duplicate or current-day award');
+  // Repair a legacy accepted receipt whose mark lookup was interrupted, without
+  // replacing its identity or paying the same earned mark again.
+  recoveryDb.database.prepare("UPDATE telegram_pet_daily_journey_receipts SET growth_mark_id=NULL WHERE telegram_id='journey-refresh' AND status='accepted'").run();
+  await __petMediaTestHooks.buildPetMiniAppState(recoveryDb, 'journey-refresh', 'fixture-token');
+  assert.ok(recoveryDb.database.prepare("SELECT growth_mark_id FROM telegram_pet_daily_journey_receipts WHERE telegram_id='journey-refresh' AND status='accepted'").get().growth_mark_id);
+  assert.deepEqual(recoveryDb.database.prepare('SELECT * FROM telegram_pet_growth_marks ORDER BY mark_id').all(), recoveryMarksBefore);
+
+}
 
 console.log('Telegram Pets Daily Moon Run tests passed (10,000-run economy simulation; versioned tactics, risk/score previews and concurrent outcome authority included).');

@@ -62,6 +62,28 @@ assert.equal(options.route({key:'weekly_journey'}).focus, 'weekly-journey');
 assert.equal(options.route({key:'daily_journey'}).focus, 'daily-objectives');
 
 const snapshot = { adopted: true, pet: { pet_id: 'pet-a', energy: 100 }, lifecycle: { phase: 'young' }, daily_run: { available: true }, live_systems: { chains: [{ available: true }] } };
+for (const objective of ['daily_combat', 'daily_explorer', 'daily_extraction', 'daily_boss']) {
+  assert.equal(options.objectiveRoutes(objective, snapshot)[0].available, true);
+  const used = options.objectiveRoutes(objective, { ...snapshot, daily_run: { attempted: true, status: 'failed' } })[0];
+  assert.equal(used.available, false); assert.equal(used.title, 'DAILY ATTEMPT USED');
+  assert.match(used.detail, /next UTC day/);
+  const activeDaily = { ...snapshot, daily_run: { attempted: true, resumable: true, pet_id: 'pet-a', run_id: 'daily-a' }, run: { daily: true, run_id: 'daily-a' } };
+  assert.equal(options.objectiveRoutes(objective, activeDaily)[0].available, true);
+  assert.equal(options.objectiveRoutes(objective, { ...activeDaily, pet: { pet_id: 'pet-b' } })[0].available, false, 'a different pet cannot inherit daily progress');
+  assert.equal(options.objectiveRoutes(objective, { ...activeDaily, run: { daily: true, run_id: 'yesterday' } })[0].available, false);
+  assert.equal(options.objectiveRoutes(objective, { ...activeDaily, run: { ...activeDaily.run, source_available: false } })[0].available, false);
+}
+assert.equal(options.objectiveRoutes('weekly_check_in', { ...snapshot, guidance: { daily_cache: { available: false } } })[0].available, false);
+assert.match(options.objectiveRoutes('weekly_check_in', snapshot)[0].detail, /two UTC days/);
+assert.equal(options.objectiveRoutes('weekly_check_in', { ...snapshot, guidance: { daily_cache: { available: true } } })[0].available, true);
+assert.equal(options.objectiveRoutes('weekly_boss_attempt', snapshot)[0].available, false);
+assert.equal(options.objectiveRoutes('weekly_run', { ...snapshot, run: { depth: 2, source_pet: { pet_id: 'pet-b', energy: 100 } } })[0].available, false);
+assert.equal(options.objectiveRoutes('weekly_run', { ...snapshot, run: { depth: 2, source_pet: { pet_id: 'pet-a', energy: 0 } } })[0].available, true);
+const seasonReady = { ...snapshot, guidance: { season: { xp: 1000, tiers: [{ title: 'Street Cache', required_xp: 100, unlocked: true, claimed_at: null }] } } };
+assert.equal(options.options(seasonReady).find((entry) => entry.key === 'season_claims').focus, 'season');
+assert.ok(!options.options({ ...seasonReady, lifecycle: { phase: 'egg' } }).some((entry) => entry.key === 'season_claims'));
+assert.equal(options.options({ ...snapshot, guidance: { season: { xp: 20, tiers: [{ title: 'Street Cache', required_xp: 100, unlocked: false }] } } }).find((entry) => entry.key === 'season').detail.startsWith('80 more season XP'), true);
+assert.equal(options.options({ ...snapshot, guidance: { season: { xp: 100, tiers: [{ title: 'Street Cache', required_xp: 100, unlocked: true, claimed_at: 'today' }] } } }).find((entry) => entry.key === 'season').title, 'SEASON REWARDS COMPLETE');
 assert.ok(options.options(snapshot).some((x) => x.key === 'daily_run'));
 assert.ok(options.options(snapshot).some((x) => x.key === 'event_chain'));
 assert.ok(!options.options({ ...snapshot, run: { daily: true } }).some((x) => x.key === 'daily_run'));
@@ -117,6 +139,9 @@ const bountyByKey = Object.fromEntries(PET_DAILY_BOUNTIES.map((b) => [b.key, { .
 const selectBounty = (extra, keys) => options.options({ ...snapshot, ...extra, guidance: { ...(extra.guidance || {}), economy: { bounties: keys.map((key) => bountyByKey[key]) } } }).find((c) => c.key === 'bounty_target');
 assert.equal(selectBounty({ pet: { energy: 0 } }, ['kaiju_watch', 'care_pair']).focus, 'care');
 const careCooldowns = { entries: ['feed','play','clean','sleep','train'].map((key) => ({ key: 'action:' + key, remaining_seconds: 60 })) };
+for (const key of ['daily_care', 'weekly_care', 'weekly_training']) assert.equal(options.objectiveRoutes(key, { ...snapshot, cooldowns: careCooldowns })[0].available, false);
+assert.equal(options.objectiveRoutes('weekly_training', { ...snapshot, guidance: { activity: { status: 'active' } } })[0].available, false);
+assert.equal(options.objectiveRoutes('weekly_care', snapshot)[0].available, true);
 assert.equal(selectBounty({ cooldowns: careCooldowns, guidance: { jobs: [{ available: true }] } }, ['care_pair','job_shift']).focus, 'jobs');
 assert.equal(selectBounty({ pet: { energy: 0 }, adventure: { available: true } }, ['run_bank']).focus, 'adventure');
 assert.equal(selectBounty({ run: { daily: true }, adventure: { available: true } }, ['run_bank']).focus, 'adventure', 'official run is not a qualifying standard run event');

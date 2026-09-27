@@ -1651,7 +1651,7 @@
 
   function objectiveRouteButton(key) {
     if (!window.MoonpetPlayOptions) return '';
-    var routes = window.MoonpetPlayOptions.objectiveRoutes(key);
+    var routes = window.MoonpetPlayOptions.objectiveRoutes(key, state);
     if (state && state.lifecycle && state.lifecycle.phase === 'egg') routes = [{ title: 'OPEN INCUBATION', screen: 'home', focus: 'incubation' }];
     var controls = routes.map(function (route) { return routeButton(route.title, route, route.detail); });
     return '<div class="button-grid one">' + controls[0] + '</div>' + (controls.length > 1 ? '<details><summary class="line">OTHER QUALIFYING ROUTES</summary><div class="button-grid">' + controls.slice(1).join('') + '</div></details>' : '');
