@@ -172,17 +172,29 @@ export async function getContractBoard(db, owner, pet, now = new Date()) {
     db.prepare('SELECT * FROM telegram_pet_contracts WHERE telegram_id=? AND pet_id=? AND season_key=? ORDER BY sequence DESC LIMIT 1').bind(owner, petId, seasonKey).first(),
     db.prepare('SELECT COUNT(*) AS used FROM telegram_pet_contracts WHERE telegram_id=? AND reward_day=? AND reward_xp>0').bind(owner, day(now)).first(),
     db.prepare(`SELECT contract_id FROM telegram_pet_contracts WHERE telegram_id=? AND pet_id=? AND season_key=? AND reward_xp>0 AND reward_settled=0 ORDER BY sequence LIMIT 10`).bind(owner, petId, seasonKey).all(),
-    db.prepare(`SELECT json_extract(state_json,'$.goal') AS goal, COUNT(*) AS completed, MAX(rank_points) AS best_rank_points
-      FROM telegram_pet_contracts WHERE telegram_id=? AND pet_id=? AND season_key=? AND status='completed' GROUP BY json_extract(state_json,'$.goal')`).bind(owner, petId, seasonKey).all(),
+    db.prepare(`SELECT json_extract(state_json,'$.goal') AS goal, json_extract(state_json,'$.build') AS build,
+      json_extract(state_json,'$.tier') AS tier, COUNT(*) AS completed, MAX(rank_points) AS best_rank_points
+      FROM telegram_pet_contracts WHERE telegram_id=? AND pet_id=? AND season_key=? AND status='completed'
+      GROUP BY json_extract(state_json,'$.goal'), json_extract(state_json,'$.build'), json_extract(state_json,'$.tier')`).bind(owner, petId, seasonKey).all(),
   ]);
   const completed = integer(stats?.completed), points = integer(stats?.rank_points);
+  const maxTier = completed >= 15 ? 3 : completed >= 5 ? 2 : 1;
+  const records = [1, 2, 3].flatMap((tier) => Object.entries(CONTRACT_GOALS).flatMap(([goal, definition]) => Object.entries(CONTRACT_BUILDS).map(([build, setup]) => {
+    const record = (mastery.results || []).find((entry) => entry.goal === goal && entry.build === build && Number(entry.tier) === tier);
+    return { key: `${goal}:${build}:${tier}`, goal, build, tier, title: definition.title, build_title: setup.title,
+      unlocked: tier <= maxTier, completed: integer(record?.completed), best_rank_points: integer(record?.best_rank_points) };
+  })));
   return { available: true, pet_id: petId, next_sequence: stats.next_sequence, completed, rank_points: points,
     rank: 1 + Math.floor(points / 500), next_rank_at: (1 + Math.floor(points / 500)) * 500,
-    max_tier: completed >= 15 ? 3 : completed >= 5 ? 2 : 1,
+    max_tier: maxTier,
+    collection: { cleared_routes: records.filter((record) => record.completed > 0).length, total_routes: records.length,
+      unlocked_routes: records.filter((record) => record.unlocked).length,
+      next_route: records.find((record) => record.unlocked && record.completed === 0) || null, records },
     bonus_remaining: Math.max(0, CONTRACT_BONUS_LIMIT - integer(bonuses?.used)), bonus_limit: CONTRACT_BONUS_LIMIT, bonus_xp: CONTRACT_BONUS_XP,
     pending_rewards: pending.results || [], offers: Object.entries(CONTRACT_GOALS).map(([key, goal]) => {
-      const record = (mastery.results || []).find((entry) => entry.goal === key);
-      return { key, ...goal, completed: integer(record?.completed), best_rank_points: integer(record?.best_rank_points) };
+      const entries = (mastery.results || []).filter((entry) => entry.goal === key);
+      return { key, ...goal, completed: entries.reduce((sum, record) => sum + integer(record.completed), 0),
+        best_rank_points: entries.reduce((best, record) => Math.max(best, integer(record.best_rank_points)), 0) };
     }),
     side_goals: Object.entries(CONTRACT_SIDE_GOALS).map(([key, goal]) => ({ key, ...goal })), side_rank: CONTRACT_SIDE_RANK,
     builds: Object.entries(CONTRACT_BUILDS).map(([key, b]) => ({ key, title: b.title, detail: b.detail })), run: projection(rows) };

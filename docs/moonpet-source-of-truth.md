@@ -152,6 +152,16 @@ progress are stored with the run; clients cannot change them or supply wins.
 The board shows each goal's completion count and best rank total for the active
 pet and season, plus completions remaining until the next difficulty unlock.
 
+The Route Collection groups completed contracts into the 27 combinations of
+three goals, three builds and three difficulty tiers. It reads existing saved
+contracts; no separate currency, reward or claim is created. Repeat clears add
+to that setup's count and can improve its best rank. Failed/abandoned runs do
+not clear a combination. Records are scoped to the active pet and season.
+An uncleared unlocked route can fill the setup controls without starting a run;
+the player still chooses the quest's Start button. Tier gates remain authoritative.
+After a run finishes or the page reloads, its build, tier and optional side goal
+are selected for the next contract. Players can change them freely.
+
 There is no pet energy cost or gameplay cooldown. Contract health, supplies
 and salvage are isolated run resources. Leaving the app preserves the run on
 the server; abandoning or failing a contract gives no points or bonus.
@@ -163,6 +173,10 @@ and stat limits still govern the actual award. Adventure entry energy is a
 separate requirement from the rolled cost. The Mini App shows the existing
 30-minute Adventure cooldown and the shared job cooldown, disables those
 controls during the wait, and includes their expiry in its refresh schedule.
+Jobs and Adventures also enforce their account cooldown inside reward settlement,
+so distinct simultaneous requests cannot both award. Adventure settlement
+rechecks the captured pet's entry energy. Rejections preserve the real cooldown
+or energy reason and never report an unawarded rolled outcome as a success.
 Play Now links to available Adventures, Street Events and unlocked jobs whose
 cooldown has elapsed, alongside Contracts, Practice and other existing routes.
 
@@ -176,6 +190,15 @@ the bonus budget is exhausted. Records are pet/season scoped.
 
 Migration 076 is required before the updated Worker is deployed. Without the
 table, the board is unavailable while the rest of the Mini App remains usable.
+
+### Moon Gold trade availability
+
+Moon Gold Trade remains a separate game-currency action with a shared five-minute
+account cooldown. Buttons use the current server cooldown and affordability.
+The transaction rechecks cooldown, stake affordability, active pet, unchanged
+Pet XP and the daily XP cap before reserving a result. Concurrent requests cannot
+bypass the cooldown; stale state is rejected for review instead of overwriting
+newer progression. Duplicate accepted requests return the existing receipt.
 
 ### Play Now and practice
 
