@@ -764,6 +764,34 @@ assert.equal(nextDayRaid.accepted, true); assert.equal(midnightRaid.accepted, tr
 assert.equal(midnightRaid.progress.damage, midnightRaid.damage + nextDayRaid.damage);
 assert.equal(runtimeDb.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id='raid-midnight'").get().energy, 64);
 
+// Two paid daily attempts can observe the same defeat when one was still in
+// flight at reset. The actual Mini App handler must award specialist credit once.
+seedPlayer('raid-victory-race');
+const racePet = livePet('raid-victory-race');
+runtimeDb.prepare(`INSERT INTO telegram_pet_lifecycle_by_pet (pet_id,telegram_id,identity_seed,phase,incubation_json,innate_traits_json)
+  VALUES (?, ?, 'raid-victory-race', 'young', '{"progress":12,"target":12,"signals":{}}', '[]')`).run(racePet.pet_id, 'raid-victory-race');
+runtimeDb.prepare("UPDATE telegram_pet_instances SET stage='young' WHERE pet_id=?").run(racePet.pet_id);
+runtimeDb.prepare('INSERT INTO telegram_pet_seasonal_boss_progress (pet_id,telegram_id,pet_season_key,season_key,boss_key,damage) VALUES (?,?,?,?,?,?)')
+  .run(racePet.pet_id, 'raid-victory-race', racePet.season_key, boss.season_instance, boss.key, boss.hp - 1);
+const raidAction = () => __petMediaTestHooks.processPetMiniAppAction(d1, 'raid-victory-race', { id: 'raid-victory-race' }, { action: 'seasonal_boss', pet_id: racePet.pet_id, move: 'strike' }, 'local-test-token');
+let overlappingVictory;
+d1.batch = async function (statements) {
+  if (!overlappingVictory && statements.some((entry) => entry.sql.includes('INSERT INTO telegram_pet_seasonal_boss_progress'))) {
+    overlappingVictory = { pending: true };
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    runtimeDb.prepare("UPDATE telegram_pet_system_events SET period_key=? WHERE telegram_id='raid-victory-race' AND system_key='seasonal_boss' AND status='settling'").run(`${boss.season_instance}:${yesterday}`);
+    overlappingVictory = await raidAction();
+  }
+  return originalBatch.call(this, statements);
+};
+let overlappingFirst;
+try { overlappingFirst = await raidAction(); }
+finally { d1.batch = originalBatch; }
+assert.equal(overlappingVictory.accepted, true); assert.equal(overlappingFirst.accepted, true);
+assert.equal(overlappingVictory.progress.defeated, true); assert.equal(overlappingFirst.progress.defeated, true);
+assert.equal(runtimeDb.prepare("SELECT COUNT(*) AS n FROM telegram_pet_specialist_events WHERE telegram_id='raid-victory-race' AND action='run_boss'").get().n, 1);
+assert.equal(runtimeDb.prepare("SELECT adventure_xp FROM telegram_pet_specialist_progression WHERE telegram_id='raid-victory-race'").get().adventure_xp, 30);
+
 seedPlayer('raid-award-interrupted');
 const interruptedPet = livePet('raid-award-interrupted');
 runtimeDb.prepare('INSERT INTO telegram_pet_seasonal_boss_progress (pet_id,telegram_id,pet_season_key,season_key,boss_key,damage) VALUES (?,?,?,?,?,?)')
