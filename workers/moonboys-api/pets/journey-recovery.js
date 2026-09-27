@@ -21,11 +21,16 @@ export async function recoverPetJourneyAwards(db, telegramId) {
     const targetSql = definitions.map(([id, definition]) => `WHEN '${id}' THEN ${Number(definition.target)}`).join(' ');
     const maxIds = definitions.filter(([, definition]) => (definition.progress_mode || definition.validation_rules?.progress_mode) === 'max').map(([id]) => `'${id}'`);
     const progressSql = maxIds.length ? `CASE WHEN o.${objective} IN (${maxIds.join(',')}) THEN MAX(o.progress_value) ELSE SUM(o.progress_value) END` : 'SUM(o.progress_value)';
+    // Apply the same source authority before LIMIT and when deriving the date.
+    // Missing sources must not consume every slot in the recovery budget.
+    const sourceJoin = kind === 'weekly' ? `JOIN telegram_pet_events e ON e.event_key=o.source_event_key AND e.telegram_id=o.telegram_id
+      AND e.pet_id=o.pet_id AND e.season_key=o.season_key AND e.status='accepted' AND e.day_key<>''` : '';
     const pending = await db.prepare(`SELECT pet_id, season_key, ${period} FROM (
       SELECT o.pet_id, o.season_key, o.${period}, o.${objective}
       FROM telegram_pet_season_slots s
       JOIN telegram_pet_instances i ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id AND i.season_key=s.season_key AND i.slot_number=s.slot_number
       JOIN telegram_pet_${kind}_journey_objectives o ON o.pet_id=s.pet_id AND o.telegram_id=s.telegram_id AND o.season_key=s.season_key
+      ${sourceJoin}
       WHERE s.telegram_id=? AND o.status='accepted' AND NOT EXISTS (
         SELECT 1 FROM telegram_pet_${kind}_journey_receipts r
         WHERE r.telegram_id=o.telegram_id AND r.pet_id=o.pet_id AND r.season_key=o.season_key AND r.${period}=o.${period}
@@ -48,8 +53,7 @@ export async function recoverPetJourneyAwards(db, telegramId) {
                   THEN MAX(o.progress_value) OVER objective_progress
                   ELSE SUM(o.progress_value) OVER objective_progress END AS progress
               FROM telegram_pet_weekly_journey_objectives o
-              JOIN telegram_pet_events e ON e.event_key=o.source_event_key AND e.telegram_id=o.telegram_id
-                AND e.pet_id=o.pet_id AND e.season_key=o.season_key AND e.status='accepted'
+              ${sourceJoin}
               WHERE o.telegram_id=? AND o.pet_id=? AND o.season_key=? AND o.qualification_week=? AND o.status='accepted'
               WINDOW objective_progress AS (PARTITION BY o.objective_id ORDER BY e.day_key, o.event_id
                 ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)

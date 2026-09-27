@@ -45,7 +45,11 @@ boundary tests; it does not promise an extra daily attempt or cache per pet.
 
 Recovery is owner-scoped, with strict slot/instance ownership joins and no
 client-supplied progress, pet or period. Each refresh attempts at most five
-daily and five weekly scopes. Accepted receipts and settled duplicate limits
+daily and five weekly scopes. Weekly candidates must reach every threshold
+using accepted, dated events matching the original owner, pet and season
+before the five-scope limit is applied. Older scopes missing that evidence do
+not consume the budget or block later recoverable awards. The date lookup uses
+the same source join. Accepted receipts and settled duplicate limits
 leave the queue. An interrupted scope remains retryable; other candidate
 scopes can still settle. Old pets and earlier periods are included. Weekly
 earning dates use the latest of each objective's first threshold-crossing days,
@@ -69,6 +73,10 @@ interrupted season completion after the tenth Crest and sixtieth Growth Mark.
 The review regression spans multiple source days, delivers run evidence out of
 day order, then records surplus actions for every objective while award writes
 fail. Recovery must retain 5 January, not the later actions on 7 January.
+A queue regression creates five older scopes with missing, rejected, partially
+missing or mismatched sources, followed by six valid scopes. The first refresh
+recovers weeks 6–10, the next recovers week 11, and repeats create no duplicates;
+unrecoverable scopes stay unawarded and the five-award limit remains intact.
 Route tests cover exhausted daily attempts, other source pets, unavailable run
 sources, care cooldowns, active activities, cache reset waits and season tiers.
 The mobile suite exercises all six screens at 390×844 and 360×640, including

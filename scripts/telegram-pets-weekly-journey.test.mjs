@@ -1339,6 +1339,49 @@ for (const [failWrite, earnedAt] of [
   assert.deepEqual(db.database.prepare('SELECT * FROM telegram_pet_weekly_crests WHERE pet_id=?').all(petId), [crest]);
 }
 
+// Five older scopes without enough accepted source evidence must not consume
+// the recovery budget forever. Six recoverable scopes drain in batches of five.
+{
+  const db = createDb(), owner = 'weekly-recovery-queue';
+  const petId = seedPlayer(db, owner);
+  db.failWrite = /INSERT OR IGNORE INTO telegram_pet_weekly_crests/;
+  for (let week = 1; week <= 11; week++) {
+    const day = new Date(Date.UTC(2026, 0, 2 + (week - 1) * 7)).toISOString().slice(0, 10);
+    const nextDay = new Date(Date.UTC(2026, 0, 3 + (week - 1) * 7)).toISOString().slice(0, 10);
+    const request = { telegramId: owner, petId, qualificationWeek: week, day };
+    for (const objectiveId of Object.keys(PET_WEEKLY_JOURNEY_OBJECTIVES).slice(0, -1)) await completeObjective(db, { ...request, objectiveId });
+    await completeObjective(db, { ...request, objectiveId: 'weekly_check_in', eventKey: `queue:${week}:cache:first` });
+    await assert.rejects(completeObjective(db, { ...request, day: nextDay, objectiveId: 'weekly_check_in', eventKey: `queue:${week}:cache:second` }), /injected_journey_write_failure/);
+  }
+  db.failWrite = null;
+  const sourceKeys = (week, objectiveId = null) => db.database.prepare(`SELECT source_event_key FROM telegram_pet_weekly_journey_objectives
+    WHERE telegram_id=? AND pet_id=? AND qualification_week=? AND (? IS NULL OR objective_id=?)`)
+    .all(owner, petId, week, objectiveId, objectiveId).map((row) => row.source_event_key);
+  for (const key of sourceKeys(1)) db.database.prepare('DELETE FROM telegram_pet_events WHERE telegram_id=? AND event_key=?').run(owner, key);
+  for (const key of sourceKeys(2, 'weekly_training')) db.database.prepare("UPDATE telegram_pet_events SET status='rejected' WHERE telegram_id=? AND event_key=?").run(owner, key);
+  // Some matching sources are insufficient if an additive objective no longer
+  // reaches its target. Neither a different season nor a missing source pet counts.
+  db.database.prepare('DELETE FROM telegram_pet_events WHERE telegram_id=? AND event_key=?').run(owner, sourceKeys(3, 'weekly_training')[0]);
+  for (const key of sourceKeys(4, 'weekly_training')) db.database.prepare("UPDATE telegram_pet_events SET season_key='pet-s2026-002' WHERE telegram_id=? AND event_key=?").run(owner, key);
+  for (const key of sourceKeys(5, 'weekly_training')) db.database.prepare('UPDATE telegram_pet_events SET pet_id=NULL WHERE telegram_id=? AND event_key=?').run(owner, key);
+  const earnedWeeks = () => db.database.prepare('SELECT qualification_week FROM telegram_pet_weekly_crests WHERE pet_id=? ORDER BY qualification_week').all(petId).map((row) => row.qualification_week);
+  await __petMediaTestHooks.buildPetMiniAppState(db, owner, 'fixture-token');
+  assert.deepEqual(earnedWeeks(), [6, 7, 8, 9, 10],
+    'filter source-backed threshold crossings before LIMIT 5 so older unrecoverable scopes cannot starve the sixth scope');
+  assert.equal(db.database.prepare('SELECT earned_at FROM telegram_pet_weekly_crests WHERE pet_id=? AND qualification_week=6').get(petId).earned_at,
+    '2026-02-07T00:00:00.000Z', 'queue filtering preserves the original qualification day');
+  await __petMediaTestHooks.buildPetMiniAppState(db, owner, 'fixture-token');
+  assert.deepEqual(earnedWeeks(), [6, 7, 8, 9, 10, 11], 'the remaining recoverable scope settles on the next refresh');
+  await __petMediaTestHooks.buildPetMiniAppState(db, owner, 'fixture-token');
+  assert.deepEqual(earnedWeeks(), [6, 7, 8, 9, 10, 11], 'repeat refreshes neither duplicate awards nor qualify missing evidence');
+  assert.equal(db.database.prepare('SELECT COUNT(*) AS n FROM telegram_pet_weekly_journey_receipts WHERE pet_id=?').get(petId).n, 6);
+  for (const key of sourceKeys(2, 'weekly_training')) db.database.prepare("UPDATE telegram_pet_events SET status='accepted' WHERE telegram_id=? AND event_key=?").run(owner, key);
+  await __petMediaTestHooks.buildPetMiniAppState(db, owner, 'fixture-token');
+  assert.deepEqual(earnedWeeks(), [2, 6, 7, 8, 9, 10, 11], 'skipped scopes remain eligible if their accepted sources become available again');
+  assert.equal(db.database.prepare('SELECT earned_at FROM telegram_pet_weekly_crests WHERE pet_id=? AND qualification_week=2').get(petId).earned_at,
+    '2026-01-10T00:00:00.000Z');
+}
+
 {
   const db = createDb(), owner = 'weekly-season-refresh';
   const petId = seedPlayer(db, owner);
