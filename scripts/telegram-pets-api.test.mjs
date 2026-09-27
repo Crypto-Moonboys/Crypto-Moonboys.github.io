@@ -1137,7 +1137,7 @@ assertOrder(
 assertOrder(
   adventure,
   "const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);",
-  'const lastAdventure = await db.prepare(`',
+  "getPetAcceptedActionCooldown(db, telegramId, 'adventure', PET_ADVENTURE_COOLDOWN_SECONDS, now)",
   'adventures must check duplicate event keys before the cooldown lookup'
 );
 

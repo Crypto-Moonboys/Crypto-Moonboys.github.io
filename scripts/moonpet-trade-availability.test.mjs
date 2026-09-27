@@ -43,6 +43,42 @@ await seed(id);
 const realRandom = Math.random;
 try {
   Math.random = () => 0.9;
+  for (const mode of ['job', 'adventure']) {
+    const owner = 'concurrent-' + mode;
+    const pet = await seed(owner);
+    const eventType = mode === 'job' ? 'work' : 'adventure';
+    const perform = (i) => mode === 'job'
+      ? hooks.processPetJob(db, owner, i === 1 ? 'street_artist' : 'courier', { event_key: mode + '-race-' + i })
+      : hooks.processPetAdventure(db, owner, 'push_forward', { event_key: mode + '-race-' + i, encounter_key: 'moon_alley' });
+    const actions = await Promise.all([perform(1), perform(2)]);
+    assert.equal(actions.filter((r) => r.accepted).length, 1, mode + ' cooldown must be atomic across distinct keys');
+    const rejected = actions.find((r) => !r.accepted);
+    assert.equal(rejected.reason, mode === 'job' ? 'cooldown' : 'adventure_cooldown');
+    assert.ok(rejected.cooldown.remaining_seconds > (mode === 'job' ? 40 : 1790));
+    assert.equal(sqlite.prepare('SELECT COUNT(*) n FROM telegram_pet_events WHERE telegram_id=? AND event_type=?').get(owner, eventType).n, 1);
+    const accepted = actions.find((r) => r.accepted);
+    assert.equal(sqlite.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(pet.pet_id).pet_xp, 3240 + accepted.pet_xp_awarded);
+    assert.equal(sqlite.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(owner).moon_gold, 100 + accepted.rewards.moon_gold);
+    assert.equal((await perform(actions[0].accepted ? 1 : 2)).duplicate, true, mode + ' accepted receipt remains replayable');
+    sqlite.prepare("UPDATE telegram_pet_events SET created_at=datetime('now','-31 minutes') WHERE telegram_id=? AND event_type=?").run(owner, eventType);
+    const afterCooldown = await perform(actions[0].accepted ? 2 : 1);
+    assert.equal(afterCooldown.accepted, true, mode + ' becomes playable after cooldown: ' + afterCooldown.reason);
+  }
+  const energyOwner = 'adventure-energy-change';
+  const energyPet = await seed(energyOwner);
+  beforeBatch = (statements) => {
+    if (!statements[0].sql.includes('INSERT OR IGNORE INTO telegram_pet_reward_claims')) return;
+    beforeBatch = null;
+    sqlite.prepare('UPDATE telegram_pet_instances SET energy=0 WHERE pet_id=?').run(energyPet.pet_id);
+    sqlite.prepare('UPDATE telegram_pet_profiles SET energy=0 WHERE telegram_id=?').run(energyOwner);
+  };
+  const depleted = await hooks.processPetAdventure(db, energyOwner, 'push_forward', { event_key: 'energy-change', encounter_key: 'moon_alley' });
+  assert.equal(depleted.accepted, false, 'Adventure must recheck current pet energy during settlement');
+  assert.equal(depleted.reason, 'pet_tired');
+  assert.equal(depleted.applied, undefined, 'rejected Adventures must not display a rolled success');
+  assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE telegram_id=? AND event_type='adventure'").get(energyOwner).n, 0);
+  assert.equal(sqlite.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(energyOwner).moon_gold, 100);
+
   const trades = await Promise.all([1, 2].map((i) => hooks.processPetGoldTrade(db, id, 50, { event_key: 'trade-race-' + i })));
   assert.equal(trades.filter((r) => r.accepted).length, 1, 'only one concurrent trade can pass the account cooldown');
   assert.equal(trades.find((r) => !r.accepted).reason, 'trade_cooldown');
@@ -89,4 +125,4 @@ try {
     }
   }
 } finally { Math.random = realRandom; sqlite.close(); }
-console.log('Moonpet trade availability and concurrency tests passed.');
+console.log('Moonpet Trade, Job and Adventure availability and concurrency tests passed.');

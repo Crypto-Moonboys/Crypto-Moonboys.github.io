@@ -41,6 +41,8 @@ const MAX_ROGUELITE_STYLE_TOKENS_PER_CLAIM = 5;
 import { getPetVisibleLevelSql } from './progression-phase-2.js';
 
 const MAX_CURRENCY = 999999;
+export const PET_JOB_COOLDOWN_SECONDS = 45;
+export const PET_ADVENTURE_COOLDOWN_SECONDS = 1800;
 
 export const PET_RUN_STATUSES = Object.freeze(['active', 'completed', 'failed', 'abandoned', 'extracted']);
 export const PET_ROOM_TYPES = Object.freeze(['battle', 'choice_event', 'loot', 'elite', 'boss']);
@@ -133,9 +135,23 @@ export function validatePetRunModifier(modifier) {
   return validatePetRunModifierContent(modifier);
 }
 
-function getRewardAuthorization(source, telegramId, context = {}) {
+function getRewardAuthorization(source, telegramId, context = {}, now = new Date(), petId = '') {
   const runId = String(context.run_id || '').trim();
   const roomId = String(context.room_id || '').trim();
+  if (source === 'pet_job' || source === 'pet_adventure') {
+    const adventure = source === 'pet_adventure';
+    const seconds = adventure ? PET_ADVENTURE_COOLDOWN_SECONDS : PET_JOB_COOLDOWN_SECONDS;
+    const cutoff = new Date(now.getTime() - seconds * 1000).toISOString();
+    const minimumEnergy = positiveInteger(context.minimum_energy, 100);
+    if (adventure && (!petId || !minimumEnergy)) throw new Error('invalid_pet_reward_context');
+    return {
+      sql: `AND NOT EXISTS (SELECT 1 FROM telegram_pet_events
+        WHERE telegram_id = ? AND event_type = ? AND status IN ('pending', 'accepted')
+          AND julianday(created_at) > julianday(?))
+        ${adventure ? 'AND EXISTS (SELECT 1 FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ? AND energy >= ?)' : ''}`,
+      args: [telegramId, adventure ? 'adventure' : 'work', cutoff, ...(adventure ? [petId, telegramId, minimumEnergy] : [])],
+    };
+  }
   if (source === 'pet_district' || source === 'pet_event_chain') {
     const systemEventId = String(context.system_event_id || '').trim();
     const petId = String(context.pet_id || '').trim();
@@ -230,7 +246,7 @@ export async function awardPetReward(db, request = {}) {
   const week = Math.ceil((((weekDate - weekYearStart) / 86400000) + 1) / 7);
   const weekKey = String((reservationId && request.week_key) || `${weekDate.getUTCFullYear()}-W${String(week).padStart(2, '0')}`);
   const seasonKey = String(request.season_key || getMoonpetSeasonKey(now));
-  const authorization = getRewardAuthorization(source, telegramId, request.context);
+  const authorization = getRewardAuthorization(source, telegramId, request.context, now, petId);
   const claimId = crypto.randomUUID();
   const eventId = reservationId || crypto.randomUUID();
   const finalizationId = crypto.randomUUID();

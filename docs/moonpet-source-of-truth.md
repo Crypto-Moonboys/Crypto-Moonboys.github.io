@@ -173,6 +173,10 @@ and stat limits still govern the actual award. Adventure entry energy is a
 separate requirement from the rolled cost. The Mini App shows the existing
 30-minute Adventure cooldown and the shared job cooldown, disables those
 controls during the wait, and includes their expiry in its refresh schedule.
+Jobs and Adventures also enforce their account cooldown inside reward settlement,
+so distinct simultaneous requests cannot both award. Adventure settlement
+rechecks the captured pet's entry energy. Rejections preserve the real cooldown
+or energy reason and never report an unawarded rolled outcome as a success.
 Play Now links to available Adventures, Street Events and unlocked jobs whose
 cooldown has elapsed, alongside Contracts, Practice and other existing routes.
 
