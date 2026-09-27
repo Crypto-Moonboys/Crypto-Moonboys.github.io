@@ -17,6 +17,7 @@ were modified. This is a new PR after the previous deployment.
 | Seasonal boss weakness was decorative | Add real conserve, steady and weakness-counter attacks with shared preview/resolution rules |
 | A defeated raid disabled the only route to an undelivered reward | Separate claim action for verified defeats, including older rotations of the same pet and pet season |
 | Raid requests settling across UTC midnight could overwrite progress | Add each paid hit atomically with the event completion, preserving both days' damage |
+| Overlapping daily attacks could both credit the same boss defeat to specialist progression | Key specialist credit by pet and raid rotation; verify one credit through the actual Mini App handler |
 | Raid state ignored its supplied clock when selecting the boss | Use the same clock for rotation and attempt status |
 | Catalog lookup accepted inherited object property names | Reject non-catalog story and reward keys before mutation |
 
@@ -83,7 +84,8 @@ added.
 - Expanded live-systems tests cover all four counter profiles and all 100 roll
   values at unlock level and level 100, district default risk, original-choice
   retries, interrupted reward receipts, zero-energy recovery, completed-story
-  replays, expired raid leases, midnight interleaving, invalid choices,
+  replays, expired raid leases, midnight interleaving and single specialist
+  defeat credit, invalid choices,
   ownership and repeated claims. These tests use SQLite and the actual reward
   authority.
 - Player-loop checks cover 35 literal server-action buttons and 900 practice

@@ -9709,7 +9709,7 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
     if (body.pet_id && body.pet_id !== petRaw.pet_id) return { accepted: false, reason: 'source_pet_changed' };
     const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
     const result = await processPetSeasonalBoss(db, telegramId, serializePet(petRaw, identity), (args) => awardPetReward(db, args), body.move);
-    if (result.accepted && result.reason === 'seasonal_boss_defeated') await applyPetRuntimeCommandAward(db, telegramId, `runtime:mini:${eventKey}`, 'run_boss', activePetRewardAuthority(petRaw));
+    if (result.accepted && result.reason === 'seasonal_boss_defeated') await applyPetRuntimeCommandAward(db, telegramId, `runtime:mini:seasonal-boss:${petRaw.pet_id}:${result.boss.season_instance}`, 'run_boss', activePetRewardAuthority(petRaw));
     return result;
   }
   if (action === 'seasonal_boss_claim') {
