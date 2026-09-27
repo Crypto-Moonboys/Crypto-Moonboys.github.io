@@ -9340,7 +9340,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     }),
     getPetNotificationPreference(db, telegramId),
     buildPetSeasonSlotSummary(db, telegramId).catch(() => null),
-    db.prepare("SELECT event_type, MAX(created_at) AS created_at FROM telegram_pet_events WHERE telegram_id=? AND event_type IN ('adventure','work','trade') AND status='accepted' GROUP BY event_type").bind(telegramId).all(),
+    db.prepare("SELECT event_type, MAX(created_at) AS created_at FROM telegram_pet_events WHERE telegram_id=? AND event_type IN ('adventure','work','trade','feed','play','clean','sleep','train') AND status='accepted' GROUP BY event_type").bind(telegramId).all(),
   ]);
   const leaderboardRows = await materializePetLeaderboardRows(db, leaderboard.results || []);
   const [journeySummary, hydratedKaiju] = await Promise.all([
@@ -9361,6 +9361,11 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
   const adventureCooldown = lastAdventure ? buildPetCooldownFromStart(lastAdventure.created_at, PET_ADVENTURE_COOLDOWN_SECONDS, now) : null;
   const workCooldown = lastWork ? buildPetCooldownFromStart(lastWork.created_at, PET_JOB_COOLDOWN_SECONDS, now) : null;
   const tradeCooldown = lastTrade ? buildPetCooldownFromStart(lastTrade.created_at, PET_TRADE_COOLDOWN_SECONDS, now) : null;
+  // Match processPetAction's account-wide, per-action accepted-event cooldowns.
+  // Include every care action so subsequent responses and reloads retain them all.
+  const careActionCooldowns = (recentActions.results || [])
+    .filter((entry) => ['feed', 'play', 'clean', 'sleep', 'train'].includes(entry.event_type))
+    .map((entry) => ({ action: entry.event_type, cooldown: buildPetCooldownFromStart(entry.created_at, PETS_ACTION_COOLDOWN_SECONDS, now) }));
   if (guidance && workCooldown?.remaining_seconds > 0) guidance.jobs = (guidance.jobs || []).map((job) => ({ ...job, available: false, cooldown: job.available ? workCooldown : null }));
   const [encounterToken, adventureToken] = await Promise.all([
     encounter ? issuePetMiniAppChallenge({ type: 'event', telegram_id: telegramId, encounter_key: encounter.key, event_key: encounter.event_key }, botToken) : null,
@@ -9537,7 +9542,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       last_notified_at: notifications?.last_notified_at || null,
       last_reason: notifications?.last_reason || null,
     },
-    cooldowns: buildPetMiniAppCooldownSummary({ journeySummary, guidance, liveSystems, seasonSlots, actionCooldowns: specialActionCooldowns, adventureCooldown, workCooldown, tradeCooldown, now }),
+    cooldowns: buildPetMiniAppCooldownSummary({ journeySummary, guidance, liveSystems, seasonSlots, actionCooldowns: [...careActionCooldowns, ...specialActionCooldowns], adventureCooldown, workCooldown, tradeCooldown, now }),
     server_time: now.toISOString(),
   };
 }
@@ -13723,7 +13728,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260927-contract-paths-v1`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260927-boss-finales-v1`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',

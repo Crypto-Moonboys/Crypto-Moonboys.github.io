@@ -98,6 +98,28 @@ assert.deepEqual(options.options({ ...targeted, lifecycle: { phase: 'egg' } }).m
 const finishedChoices = options.options({ ...snapshot, guidance: { economy: { bounties: [{ ...claimTarget, claimed: true }] } }, contracts: { available: true } });
 assert.ok(!finishedChoices.some((c) => ['bounty_claims', 'bounty_target'].includes(c.key)));
 assert.ok(finishedChoices.some((c) => c.key === 'contract') && finishedChoices.some((c) => c.key === 'practice'));
+// Prefer currently playable qualifying bounty routes, not locked/cooling options.
+const bountyByKey = Object.fromEntries(PET_DAILY_BOUNTIES.map((b) => [b.key, { ...b, complete: false, claimed: false, progress: 0 }]));
+const selectBounty = (extra, keys) => options.options({ ...snapshot, ...extra, guidance: { ...(extra.guidance || {}), economy: { bounties: keys.map((key) => bountyByKey[key]) } } }).find((c) => c.key === 'bounty_target');
+assert.equal(selectBounty({ pet: { energy: 0 } }, ['kaiju_watch', 'care_pair']).focus, 'care');
+const careCooldowns = { entries: ['feed','play','clean','sleep','train'].map((key) => ({ key: 'action:' + key, remaining_seconds: 60 })) };
+assert.equal(selectBounty({ cooldowns: careCooldowns, guidance: { jobs: [{ available: true }] } }, ['care_pair','job_shift']).focus, 'jobs');
+assert.equal(selectBounty({ pet: { energy: 0 }, adventure: { available: true } }, ['run_bank']).focus, 'adventure');
+assert.equal(selectBounty({ run: { daily: true }, adventure: { available: true } }, ['run_bank']).focus, 'adventure', 'official run is not a qualifying standard run event');
+assert.equal(selectBounty({ pet: { energy: 0 }, run: { daily: false, depth: 1 } }, ['run_bank']).focus, 'moon-run', 'saved extraction is available at zero energy');
+assert.equal(selectBounty({ pet: { energy: 100 }, run: { daily: false, depth: 0, source_pet: { energy: 0 } } }, ['run_bank']), undefined, 'use the saved run pet energy after a slot switch');
+assert.equal(selectBounty({ run: { daily: false, depth: 2, source_available: false } }, ['run_bank']), undefined, 'unavailable source pets cannot resume or bank a run');
+assert.equal(selectBounty({ guidance: { activity: { ready: false } } }, ['activity_claim']), undefined);
+assert.equal(selectBounty({ guidance: { activity: { ready: true, recovery_pending: true } } }, ['activity_claim']).focus, 'timed-activity');
+assert.equal(selectBounty({ guidance: { daily_cache: { available: false } } }, ['daily_cache']), undefined);
+assert.equal(selectBounty({}, ['item_user']), undefined);
+assert.equal(selectBounty({ inventory: [{ key: 'snack', count: 1, usable: true }] }, ['item_user']).focus, 'inventory');
+const blockedCare = { ...snapshot, pet: { energy: 0 }, cooldowns: { entries: ['feed','play','clean'].map((key) => ({ key: 'action:' + key, remaining_seconds: 60 })) }, guidance: { activity: { status: 'active' } } };
+assert.equal(options.bountyRouteOptions(bountyByKey.care_pair, blockedCare)[0].available, false);
+const boardOnly = options.options({ ...blockedCare, contracts: { available: true }, guidance: { ...blockedCare.guidance, economy: { bounties: [bountyByKey.care_pair, bountyByKey.kaiju_watch] } } });
+assert.ok(!boardOnly.some((r) => r.key === 'bounty_target'));
+assert.ok(boardOnly.some((r) => r.key === 'contract') && boardOnly.some((r) => r.key === 'practice') && boardOnly.some((r) => r.key === 'bounty'));
+
 const raidAtTwelve = { ...snapshot, pet: { energy: 12 }, live_systems: { seasonal_boss: { available: true, choices: [{ energy: 12 }, { energy: 18 }] } } };
 assert.ok(options.options(raidAtTwelve).some((c) => c.key === 'seasonal_boss'));
 const exhaustedWithClaim = { ...raidAtTwelve, pet: { energy: 0 }, live_systems: { seasonal_boss: { available: false, pending_rewards: [{ boss_key: 'neon_titan' }] } } };

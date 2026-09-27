@@ -1790,6 +1790,7 @@
     if (run) {
       body += '<div class="line complete">' + escapeHtml(run.title) + ' // ' + escapeHtml(words(run.status)) + '</div><div class="line">' + escapeHtml(run.build_title) + ' // TIER ' + number(run.tier) + ' // ROOMS ' + number(run.depth) + '/' + number(run.max_depth) + '</div>' +
         '<div class="line">ROUTE HP ' + number(run.health) + '/' + number(run.max_health) + ' // SUPPLIES ' + number(run.supplies) + ' // SALVAGE ' + number(run.salvage) + '</div><div class="line muted">' + escapeHtml(run.objective) + '</div><div class="line">GOAL ' + number(run.progress) + '/' + number(run.target) + '</div><div class="line signal">' + escapeHtml(run.last) + '</div>';
+      if (run.boss) body += '<div class="line signal" data-contract-boss>FINAL BOSS // ' + escapeHtml(run.boss.title) + ' // ' + (run.boss.result ? run.boss.result.cleared ? 'ROUTE CLEARED' : 'ROUTE MISSED' : 'ROOM ' + number(run.max_depth)) + '</div><div class="line muted">' + escapeHtml(run.boss.detail) + ' ' + (run.boss.active ? 'Choose a boss tactic below. A failed tactic ends the contract with no rank or XP. Supply rest is unavailable; preparation remains optional.' : 'Complete your main goal and clear the final boss route to earn rank. No separate boss reward.') + '</div>';
       if (run.perks.length) body += '<div class="line">UPGRADES // ' + escapeHtml(run.perks.map(function (perk) { return perk.title; }).join(' + ')) + '</div>';
       if (run.side_goal) body += '<div class="line ' + (run.side_goal.earned ? 'complete' : '') + '">SIDE OBJECTIVE // ' + escapeHtml(run.side_goal.title) + ' // ' + number(run.side_goal.progress) + '/' + number(run.side_goal.target) + (run.side_goal.earned ? ' // +' + number(run.side_goal.rank_points) + ' RANK INCLUDED' : '') + '</div><div class="line muted">' + escapeHtml(run.side_goal.detail) + ' Main contract must also succeed. Rank only; no extra XP.</div>';
       if (run.status === 'completed') body += '<div class="line complete">+' + number(run.rank_points) + ' RANK POINTS // ' + number(run.xp_awarded) + ' PET XP' + (run.reward_pending ? ' // BONUS DELIVERY PENDING' : '') + '</div>';
@@ -1819,7 +1820,7 @@
       if (run) body += '<div class="line muted">Your last route length, build, tier and side objective are selected. Keep them or change your next setup.</div>';
       body += '<div class="line muted">' + (board.max_tier < 3 ? number((board.max_tier === 1 ? 5 : 15) - board.completed) + ' MORE COMPLETIONS TO TIER ' + number(board.max_tier + 1) + '. ' : 'ALL DIFFICULTY TIERS UNLOCKED. ') + 'Choose your next quest. Each goal shows the target for both route lengths:</div><div class="button-grid">' + board.offers.map(function (offer) {
         var objectives = offer.objectives ? offer.objectives.map(function (goal) { return goal.format_title + ': ' + goal.detail; }).join(' // ') : offer.detail;
-        return button(offer.title, 'contract_start', { pet_id: board.pet_id, sequence: board.next_sequence, goal: offer.key }, { detail: objectives + ' // ' + number(offer.completed) + ' COMPLETED // BEST ' + number(offer.best_rank_points) + ' RANK POINTS ACROSS FORMATS' });
+        return button(offer.title, 'contract_start', { pet_id: board.pet_id, sequence: board.next_sequence, goal: offer.key }, { detail: objectives + (offer.boss ? ' // FINAL BOSS: ' + offer.boss : '') + ' // ' + number(offer.completed) + ' COMPLETED // BEST ' + number(offer.best_rank_points) + ' RANK POINTS ACROSS FORMATS' });
       }).join('') + '</div>';
       if (board.collection) {
         if (board.collection.next_route) body += '<div class="button-grid one">' + contractSetupButton('CHOOSE AN UNCLEARED ROUTE', board.collection.next_route) + '</div>';
@@ -2127,11 +2128,11 @@
     var guidance = state.guidance || {};
     var economy = guidance.economy || {};
     var bounties = (economy.bounties || []).map(function (bounty) {
-      var routes = window.MoonpetPlayOptions && window.MoonpetPlayOptions.bountyRoutes ? window.MoonpetPlayOptions.bountyRoutes(bounty) : [];
+      var routes = window.MoonpetPlayOptions && window.MoonpetPlayOptions.bountyRouteOptions ? window.MoonpetPlayOptions.bountyRouteOptions(bounty, state) : [];
       if (state.lifecycle && state.lifecycle.phase === 'egg') routes = [{ title: 'HATCH TO WORK ON BOUNTIES', screen: 'home', focus: 'incubation' }];
       return '<div class="line ' + (bounty.complete ? 'complete' : '') + '">' + escapeHtml(bounty.title) + ' ' + number(bounty.progress) + '/' + number(bounty.required) + (bounty.claimed ? ' // CLAIMED' : bounty.complete ? ' // READY TO CLAIM' : '') + '</div>' +
         '<div class="line muted">' + escapeHtml(bounty.detail || '') + ' // REWARD ' + escapeHtml(valueText(bounty.reward)) + '</div>' +
-        (bounty.complete && !bounty.claimed ? '<div class="button-grid one">' + button('CLAIM ' + bounty.title, 'bounty_claim', { bounty_key: bounty.key }) + '</div>' : !bounty.claimed && !bounty.complete ? '<div class="button-grid">' + routes.map(function (route) { return routeButton(route.title, route); }).join('') + '</div>' : '');
+        (bounty.complete && !bounty.claimed ? '<div class="button-grid one">' + button('CLAIM ' + bounty.title, 'bounty_claim', { bounty_key: bounty.key }) + '</div>' : !bounty.claimed && !bounty.complete ? '<div class="button-grid">' + routes.map(function (route) { return routeButton(route.title, route, route.detail); }).join('') + '</div>' : '');
     }).join('');
     var offers = (economy.market_offers || []).map(function (offer) {
       var full = offer.capacity && !offer.capacity.available;

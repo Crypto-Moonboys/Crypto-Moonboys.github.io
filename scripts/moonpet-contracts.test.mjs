@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
-import { CONTRACT_GOALS, CONTRACT_FORMATS, advanceContract, contractLength, contractObjective, contractChoices, contractPreparations, contractDraftActions, contractPathChoices, contractRoom, contractSideProgress, createContractState, getContractBoard, processContractAction } from '../workers/moonboys-api/pets/continuing-contracts.js';
+import { CONTRACT_GOALS, CONTRACT_FORMATS, advanceContract, contractLength, contractObjective, contractChoices, contractPreparations, contractDraftActions, contractPathChoices, contractBoss, contractRoom, contractSideProgress, createContractState, getContractBoard, processContractAction } from '../workers/moonboys-api/pets/continuing-contracts.js';
 import { awardPetReward } from '../workers/moonboys-api/pets/roguelite-foundation.js';
 import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 
@@ -153,7 +153,7 @@ for (const version of [1, 2, 3, 4, 5, 6]) {
 }
 // v6 and a v7 run that skips paths have identical outcomes and rank in both formats.
 for (const format of ['standard', 'extended']) {
-  let modern = createContractState('escort', 'bruiser', 1, 'compatible', 'none', format), old = { ...modern, version: 6 };
+  let modern = { ...createContractState('escort', 'bruiser', 1, 'compatible', 'none', format), version: 7 }, old = { ...modern, version: 6 };
   while (modern.depth < contractLength(modern)) {
     const choice = modern.draft.length ? modern.draft[0] : 'cover';
     const a = advanceContract(modern, choice, 0), b = advanceContract(old, choice, 0);
@@ -188,6 +188,46 @@ const legacyState = { version: 1, goal: 'escort', build: 'bruiser', tier: 1, see
 assert.deepEqual(contractChoices(legacyState).slice(0, 3).map(({ odds, damage, salvage }) => [odds, damage, salvage]), [[80, 20, 8], [76, 34, 27], [70, 26, 19]], 'saved v1 odds and resources stay unchanged');
 assert.equal(advanceContract(legacyState, 'cover', 0).rank_points, 118);
 assert.equal(contractSideProgress(legacyState), null);
+
+// All three finales are real mechanics. A boss clear alone is insufficient;
+// both the main goal and successful final route are required for v8 completion.
+const bossKeys = new Set();
+for (const format of ['standard', 'extended']) for (const goal of Object.keys(CONTRACT_GOALS)) for (const tier of [1, 2, 3]) {
+  const initial = createContractState(goal, 'scavenger', tier, 'finale-' + goal, 'none', format);
+  const state = { ...initial, depth: contractLength(initial) - 1, health: 90, wins: 9, salvage: 200, supplies: 10, route_wins: { cover: 3, bold: 6, search: 6 } };
+  const boss = contractBoss(state); bossKeys.add(boss.key);
+  assert.equal(contractRoom(state).title, boss.title);
+  assert.equal(advanceContract({ ...state, health: 40 }, 'rest', 0), null, 'rest cannot skip the boss');
+  assert.ok(contractChoices({ ...state, health: 40 }).find((c) => c.key === 'rest').disabled);
+  for (const choice of contractChoices(state).filter((c) => c.key !== 'rest')) {
+    assert.equal(choice.title, boss.tactics[choice.key]);
+    const win = advanceContract(state, choice.key, choice.odds - 1);
+    const loss = advanceContract(state, choice.key, choice.odds);
+    assert.equal(win.status, 'completed'); assert.equal(win.state.boss_result.cleared, true);
+    assert.equal(win.state.salvage - state.salvage, choice.salvage);
+    assert.equal(loss.state.health, state.health - choice.damage);
+    assert.equal(loss.status, 'failed'); assert.equal(loss.rank_points, 0); assert.equal(loss.state.boss_result.cleared, false);
+    assert.equal(advanceContract(win.state, choice.key, 0), null);
+    for (const path of ['path_quiet', 'path_hazard', 'path_steady']) {
+      const prepared = advanceContract({ ...state, path: { key: path, remaining: 1 } }, 'prepare_scout', 0).state;
+      const preview = contractChoices(prepared).find((c) => c.key === choice.key);
+      const resolved = advanceContract(prepared, choice.key, preview.odds - 1);
+      assert.equal(resolved.status, 'completed'); assert.equal(resolved.state.salvage - prepared.salvage, preview.salvage);
+      assert.equal(resolved.state.path, null);
+    }
+  }
+  for (const version of [1, 2, 3, 4, 5, 6, 7]) {
+    const old = { ...state, version, goal: 'escort', depth: version < 6 ? 5 : state.depth, boss_result: null };
+    assert.equal(contractBoss(old), null); assert.equal(contractRoom(old).title, 'Courier Checkpoint');
+    const oldChoice = contractChoices(old).find((c) => c.key === 'cover');
+    assert.equal(advanceContract(old, 'cover', oldChoice.odds).status, 'completed', 'old saves may survive a last-room setback and still finish');
+    assert.equal(advanceContract({ ...old, health: 40 }, 'rest', 0).status, 'completed', 'old saves keep final-room rest');
+  }
+}
+assert.equal(bossKeys.size, 3);
+const missedBossGoal = { ...createContractState('breach', 'scout', 1, 'missed-boss-goal'), depth: 5, health: 90 };
+const clearedButMissed = advanceContract(missedBossGoal, 'search', 0);
+assert.equal(clearedButMissed.state.boss_result.cleared, true); assert.equal(clearedButMissed.status, 'failed'); assert.equal(clearedButMissed.rank_points, 0);
 
 // Preparations spend contract resources, do not advance a room or award points,
 // and use the same chance preview as resolution. Existing v1/v2 rules are frozen.
@@ -337,6 +377,20 @@ try {
   assert.equal((await act(supplyPet, { ...pathRequest, revision: savedPath.revision })).accepted, false);
   assert.equal((await act(b, pathRequest)).accepted, false);
   assert.deepEqual((await board(supplyPet)).run.path, savedPath.path, 'reload projects the saved path');
+  const bossPet = await seed('contract-boss-authority');
+  await start(bossPet);
+  let bossRun = (await board(bossPet)).run;
+  const bossState = { ...createContractState('escort', 'bruiser', 1, 'saved-boss'), depth: 5, health: 100, wins: 5 };
+  sqlite.prepare('UPDATE telegram_pet_contracts SET state_json=? WHERE contract_id=?').run(JSON.stringify(bossState), bossRun.contract_id);
+  bossRun = (await board(bossPet)).run;
+  assert.equal(bossRun.boss.active, true); assert.equal(bossRun.boss.title, 'SHIELD WARDEN');
+  const bossMove = { action: 'contract_step', contract_id: bossRun.contract_id, revision: bossRun.revision, choice: 'cover', boss_result: { cleared: false }, boss: 'hound', rank_points: 9999 };
+  const bossRace = await Promise.all([act(bossPet, bossMove), act(bossPet, bossMove)]);
+  assert.equal(bossRace.filter((r) => r.accepted).length, 1);
+  const bossFinish = (await board(bossPet)).run;
+  assert.equal(bossFinish.status, 'completed'); assert.equal(bossFinish.boss.result.cleared, true); assert.equal(bossFinish.boss.result.key, 'warden');
+  assert.equal(bossFinish.xp_awarded, 20); assert.equal((await board(bossPet)).bonus_remaining, 2);
+  assert.equal((await act(bossPet, { action: 'contract_claim', contract_id: bossRun.contract_id })).pet_xp_awarded, 0);
   const tacticalPet = await seed('contract-prepared');
   await act(tacticalPet, { action: 'contract_start', sequence: 1, goal: 'escort', build: 'scavenger', tier: 1 });
   let tacticalRun = (await board(tacticalPet)).run;
