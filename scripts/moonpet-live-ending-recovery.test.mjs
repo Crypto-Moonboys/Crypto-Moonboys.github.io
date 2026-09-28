@@ -3,7 +3,7 @@ import test from 'node:test';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import worker, { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
-import { getActiveSeasonalBoss, recoverPetLiveSystemEndings, buildPetLiveSystemsState } from '../workers/moonboys-api/pets/live-systems.js';
+import { getActiveSeasonalBoss, recoverPetLiveSystemEndings, buildPetLiveSystemsState, processPetDistrictMission } from '../workers/moonboys-api/pets/live-systems.js';
 import { PET_EVENT_CHAINS } from '../workers/moonboys-api/pets/content-phase-4.js';
 
 const currentSeason = 'pet-s2026-003';
@@ -53,6 +53,56 @@ function fixture(owner) {
   return { sql, db, owner, pet, active, act, reveal, state, get };
 }
 
+
+for (const fault of ['initialize', 'read', 'authority']) test(`district ${fault} failure cannot consume the attempt or lose mastery`, async (t) => {
+  t.mock.timers.enable({ apis: ['Date'], now: Date.UTC(2026, 8, 26, 12) });
+  const f = fixture('district-state-' + fault), petId = 'current-' + f.owner;
+  const oldMastery = fault === 'initialize' ? 0 : 90;
+  if (oldMastery) f.sql.prepare(`INSERT INTO telegram_pet_live_progression_state
+    (pet_id,telegram_id,season_key,region_mastery_json) VALUES (?,?,?,?)`)
+    .run(petId, f.owner, currentSeason, JSON.stringify({ moon_alley: oldMastery }));
+  const fail = statement => {
+    const matches = fault === 'authority'
+      ? statement.query.startsWith('SELECT 1 AS ok FROM telegram_pet_instances')
+      : statement.query.includes('telegram_pet_live_progression_state');
+    if (matches) throw Error('district_state_unavailable');
+  };
+  if (fault === 'initialize') f.db.beforeRun = fail;
+  else f.db.beforeFirst = fail;
+  const body = { action: 'district_mission', region_key: 'moon_alley', approach_key: 'careful', request_id: 'state-failure' };
+  await assert.rejects(f.state(), /district_state_unavailable/, 'state must not advertise a zero-mastery fallback');
+  await assert.rejects(f.act(body), /district_state_unavailable/);
+  assert.equal(f.sql.prepare('SELECT energy FROM telegram_pet_instances WHERE pet_id=?').get(petId).energy, 100);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_system_events WHERE system_key='district'").get().n, 0);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='district_mission'").get().n, 0);
+  f.db.beforeRun = null; f.db.beforeFirst = null;
+  const restored = (await f.state()).live_systems.regions.find(region => region.key === 'moon_alley');
+  assert.equal(restored.mastery_xp, oldMastery);
+  assert.equal(restored.mission.boss, oldMastery > 0);
+  const result = await f.act(body);
+  assert.equal(result.accepted, true);
+  assert.equal(result.mission.boss, oldMastery > 0);
+  const progress = f.sql.prepare('SELECT region_mastery_json FROM telegram_pet_live_progression_state WHERE pet_id=?').get(petId);
+  assert.equal(JSON.parse(progress.region_mastery_json).moon_alley, oldMastery + result.outcome.mastery_gain);
+  assert.equal(f.sql.prepare('SELECT energy FROM telegram_pet_instances WHERE pet_id=?').get(petId).energy, 90);
+  const receipt = f.sql.prepare("SELECT pet_xp_awarded FROM telegram_pet_events WHERE event_type='district_mission'").all();
+  assert.equal(receipt.length, 1);
+  assert.equal((await f.get('/telegram-pets/leaderboard?period=daily')).entries[0].pet_xp, receipt[0].pet_xp_awarded);
+  assert.equal((await f.get('/telegram-pets/leaderboard?period=all_time')).entries[0].pet_xp, 200 + receipt[0].pet_xp_awarded);
+  await f.act(body);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='district_mission'").get().n, 1);
+  assert.equal(f.sql.prepare('SELECT region_mastery_json FROM telegram_pet_live_progression_state WHERE pet_id=?').get(petId).region_mastery_json, progress.region_mastery_json);
+});
+
+test('a successful missing-pet authority lookup remains a normal action rejection', async () => {
+  const f = fixture('missing-district-pet');
+  const result = await processPetDistrictMission(f.db, f.owner, 'moon_alley',
+    { pet_id: 'missing-pet', season_key: currentSeason, pet_xp: 200, energy: 100 }, {},
+    () => assert.fail('a missing pet must not receive rewards'));
+  assert.equal(result.accepted, false);
+  assert.equal(result.reason, 'source_pet_authority_required');
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_system_events').get().n, 0);
+});
 
 for (const action of ['district_mission', 'event_chain']) test(`${action} repairs a paid ending after midnight and a pet switch`, async (t) => {
   t.mock.timers.enable({ apis: ['Date'], now: Date.UTC(2026, 8, 26, 12) });
