@@ -28,6 +28,7 @@ const GROUPS = {
     ['node', 'scripts/audit-published-vs-index.js'],
   ],
   'worker-api': [
+    ['node', '--test', 'scripts/radio-stream.test.mjs'],
     ['node', 'scripts/module-type-boundaries.test.mjs'],
     ['node', 'scripts/telegram-link-token-security.test.mjs'],
     ['node', 'scripts/admin-grant-telegram-auth-security.test.mjs'],

@@ -2,10 +2,13 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import http from 'node:http';
 import { chromium } from 'playwright';
+import worker from '../workers/moonboys-api/deployment-entry.js';
 
 // Exercise the production controller with native media playback and browser
 // gesture restrictions. The local WAV replaces only the remote station.
 const client = await fs.readFile('js/moonpet-mini-app.js', 'utf8');
+const gameHtml = await fs.readFile('moonpet-game.html', 'utf8');
+const productionAudio = gameHtml.match(/<audio id="moonpet-radio"[^>]*><\/audio>/)[0].replace('id="moonpet-radio"', 'id="stream"');
 const preferences = client.slice(client.indexOf('  function readRadioPreference()'), client.indexOf('  // TEST-EXPORT: radioPlayback:start'));
 const controller = client.split('// TEST-EXPORT: radioPlayback:start')[1].split('// TEST-EXPORT: radioPlayback:end')[0];
 const listeners = client.slice(client.indexOf('  bindRadioGestureResume();'), client.indexOf('  function ensureAudio()'));
@@ -41,6 +44,7 @@ const base = `http://127.0.0.1:${server.address().port}`;
 const launch = { headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage'] };
 if (process.env.CHROMIUM_EXECUTABLE_PATH) launch.executablePath = process.env.CHROMIUM_EXECUTABLE_PATH;
 let browser;
+const originalFetch = globalThis.fetch;
 try {
   browser = await chromium.launch({ ...launch, args: [...launch.args, '--autoplay-policy=user-gesture-required'] });
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
@@ -81,7 +85,69 @@ try {
   await broken.waitForFunction(() => document.getElementById('notice').textContent.includes('FORMAT / 4'));
   assert.equal(await broken.evaluate(() => radioState().gesture), false, 'source errors are distinct from permission blocks');
   console.log('Native radio passed: permitted autoplay, mobile first tap, direct icon, remembered Off, source error diagnostics.');
+  await browser.close(); browser = null;
+
+  // Reproduce a strict mobile WebView: an HTTPS stream redirects to HTTP.
+  // Disable Chrome's automatic media upgrades so desktop tolerance cannot hide it.
+  browser = await chromium.launch({ ...launch, args: [...launch.args, '--disable-features=AutoupgradeMixedContent'] });
+  const upstreamRequests = [];
+  globalThis.fetch = async (url, options) => {
+    upstreamRequests.push(url);
+    assert.equal(options.redirect, 'manual');
+    if (url === 'https://stream.radiojar.com/2qm1fc5kb') {
+      return new Response(null, { status: 302, headers: { Location: 'http://n02.radiojar.com/2qm1fc5kb?rj-tok=fixture' } });
+    }
+    assert.equal(url, 'https://n02.radiojar.com/2qm1fc5kb?rj-tok=fixture');
+    // Synthetic native audio avoids storing broadcast content or depending on
+    // the station being online in CI. Live MP3 is checked separately.
+    return new Response(wav, { headers: { 'Content-Type': 'audio/mpeg' } });
+  };
+  for (const legacy of [true, false]) {
+    const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+    const page = await context.newPage();
+    const mediaRequests = [];
+    await context.route('**/*', async route => {
+      const url = route.request().url();
+      if (url === 'https://moonpet-radio.test/') {
+        const audio = legacy ? productionAudio.replace(/src="[^"]+"/, 'src="https://stream.radiojar.com/2qm1fc5kb"') : productionAudio;
+        return route.fulfill({ contentType: 'text/html', body: `<!doctype html><head><meta http-equiv="Content-Security-Policy" content="block-all-mixed-content"></head><body>
+          <button id="radio" data-utility="radio">Radio</button><output id="notice"></output>${audio}<script>
+          var state = {}, radioPlayer = document.getElementById('stream');
+          var radioRequestedOn = false, radioEnabled = false, radioRequestGeneration = 0, radioRetryNeedsLoad = false, radioNeedsGesture = false;
+          function syncMoonpetScore() {} function haptic() {} function renderCanvasTools() {}
+          function tell(text) { document.getElementById('notice').textContent = text; }
+          ${preferences}\n${controller}\n${listeners}
+          document.getElementById('radio').addEventListener('click', toggleRadio);
+          window.radioState = () => ({ enabled: radioEnabled, requested: radioRequestedOn, error: radioPlayer.error && radioPlayer.error.code });
+          </script></body>` });
+      }
+      mediaRequests.push(url);
+      if (url === 'https://stream.radiojar.com/2qm1fc5kb') {
+        return route.fulfill({ status: 302, headers: { Location: 'http://n02.radiojar.com/2qm1fc5kb?rj-tok=fixture' } });
+      }
+      assert.equal(url, 'https://moonboys-api.sercullen.workers.dev/radio/stream');
+      const response = await worker.fetch(new Request(url), {}, {});
+      return route.fulfill({ status: response.status, headers: Object.fromEntries(response.headers), body: Buffer.from(await response.arrayBuffer()) });
+    });
+    await page.goto('https://moonpet-radio.test/');
+    await page.locator('#radio').tap();
+    if (legacy) {
+      await page.waitForFunction(() => radioState().error === 4);
+      assert.match(await page.locator('#notice').textContent(), /FORMAT \/ 4/, 'reproduce the reported error on the old direct stream');
+      assert.equal(upstreamRequests.length, 0);
+    } else {
+      await page.waitForFunction(() => radioState().enabled && document.getElementById('stream').currentTime > 0);
+      assert.equal(await page.locator('#notice').textContent(), 'GRAFFPUNKS RADIO LIVE.');
+      assert.deepEqual(mediaRequests, ['https://moonboys-api.sercullen.workers.dev/radio/stream'], 'no Radiojar redirect reaches the mobile player');
+      assert.deepEqual(upstreamRequests, ['https://stream.radiojar.com/2qm1fc5kb', 'https://n02.radiojar.com/2qm1fc5kb?rj-tok=fixture']);
+      await page.locator('#radio').tap();
+      assert.equal(await page.evaluate(() => radioState().enabled), false);
+    }
+    await context.close();
+  }
+  console.log('Secure mobile radio passed: old redirect reproduces FORMAT / 4; production source through deployed Worker handler plays and stops.');
 } finally {
+  globalThis.fetch = originalFetch;
   if (browser) await browser.close();
   await new Promise(resolve => server.close(resolve));
 }

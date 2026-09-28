@@ -6,6 +6,7 @@ import { getOrCreateBlockTopiaProgression, hasBlockTopiaFactionColumns } from '.
 import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
 import { buildDailyLoopState, handleDailyLoopStateRoute } from './routes/daily-loop-state.js';
 import { handleRogueliteDailyRoutes } from './routes/daily-digest.js';
+import { handleRadioStream } from './routes/radio-stream.js';
 import { getContractBoard, processContractAction } from './pets/continuing-contracts.js';
 import { recoverPetJourneyAwards } from './pets/journey-recovery.js';
 import { recoverPetWeeklyBossVictories } from './pets/weekly-boss-recovery.js';
@@ -10345,6 +10346,10 @@ export default {
     // ── GET /health ────────────────────────────────────────────────────────
     if (path === '/health' && request.method === 'GET') {
       return json({ ok: true });
+    }
+
+    if (path === '/radio/stream') {
+      return handleRadioStream(request, corsHeaders);
     }
 
     // ── GET /sam/status ────────────────────────────────────────────────────

@@ -1567,7 +1567,7 @@ assert.equal(retryRadio.snapshot().enabled, true, 'mobile reconnect tap must rec
 assert.match(client, /window\.addEventListener\('pagehide'[\s\S]*radioRequestGeneration \+= 1;[\s\S]*radioPlayer\.pause\(\)/);
 assert.match(client, /window\.addEventListener\('pageshow'[\s\S]*event\.persisted && radioRequestedOn[\s\S]*setRadioEnabled\(true, false\)/);
 assert.doesNotMatch(client, /radioPlayer\.src = ''/, 'BFCache teardown must preserve the stream source');
-assert.match(arcadeRadio, /export const ARCADE_RADIO_URL = 'https:\/\/stream\.radiojar\.com\/2qm1fc5kb'/);
+assert.equal(canonicalRadioUrl, 'https://moonboys-api.sercullen.workers.dev/radio/stream');
 assert.match(arcadeRadio, /export const ARCADE_RADIO_STORAGE_KEY = 'arcade_radio_on'/);
 assert.match(client, /function playAudioCue\(kind\)/);
 assert.match(client, /window\.AudioContext \|\| window\.webkitAudioContext/);
