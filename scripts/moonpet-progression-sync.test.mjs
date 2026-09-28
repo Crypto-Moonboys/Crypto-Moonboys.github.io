@@ -364,6 +364,8 @@ test('historical extraction without a saved runtime identity cannot mint a new a
   f.sql.prepare("UPDATE telegram_pet_specialist_events SET event_key='runtime:api:old-client-key' WHERE action='run_extract'").run();
   assert.equal((await api(f,{action:'run_extract',run_id:'legacy-extract',event_key:'new-client-key'})).accepted,true);
   assert.equal(progress(f).adventure_xp,24);
+  await deployedWorker.fetch(new Request('https://moonboys-api.test/telegram/webhook',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({callback_query:{id:'legacy-retry',from:{id:f.owner},data:'pet:run:legacy-extract:extract'}})}),{DB:f.db});
+  assert.equal(progress(f).adventure_xp,24,'a callback cannot reinterpret an old API award as new progress');
 });
 
 test('saved final-step repair does not repay an already credited step or award extraction progress',async()=>{

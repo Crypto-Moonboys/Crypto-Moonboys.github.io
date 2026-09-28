@@ -80,7 +80,8 @@ async function applyRuntimeAward(env, telegramId, eventKey, runtimeAction, prima
     const source = await runtimeSource(env.DB, telegramId, primaryEventKey, runtimeAction);
     // Legacy unscoped events and settlement-only responses cannot name a new pet.
     if (!source?.pet_id || !source?.season_key || !source?.day_key) return null;
-    if (requireStoredKey && source.runtime_event_key !== eventKey) {
+    const apiExtractionReceipt = runtimeAction === 'run_extract' && source.source_surface === 'telegram_pets_api';
+    if ((requireStoredKey || apiExtractionReceipt) && source.runtime_event_key !== eventKey) {
       if (source.runtime_event_key || source.source_surface !== 'telegram_pets_api') return null;
       // Old API receipts did not retain their client key. Recover only when no
       // unlinked API extraction award could already belong to this receipt.
