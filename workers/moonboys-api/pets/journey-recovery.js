@@ -1,3 +1,4 @@
+import { boundedRecoveryLimit } from './recovery-limits.js';
 import { PET_DAILY_CHALLENGES, DAILY_JOURNEY_REQUIRED_OBJECTIVES, finalizeDailyJourneyGrowthMark, recordDailyCareChallenge } from './daily-moon-run.js';
 import { PET_WEEKLY_JOURNEY_OBJECTIVES, WEEKLY_JOURNEY_REQUIRED_OBJECTIVES, WEEKLY_JOURNEY_SOURCE_OBJECTIVES, finalizeWeeklyJourneyCrest, recordWeeklyJourneyObjectiveEvidence } from './weekly-journey.js';
 import { finalizePetSeasonCompletionIfEligible, getPetSeasonWeek } from './season-completion.js';
@@ -21,7 +22,7 @@ const validSource = `e.status='accepted' AND e.event_key<>'' AND e.event_key=tri
   AND e.event_type IN (${types}) AND length(e.day_key)=10 AND date(e.day_key,'+0 days')=e.day_key
   AND e.season_key=printf('pet-s%s-%03d',strftime('%Y',e.day_key),1+(CAST(strftime('%m',e.day_key) AS INTEGER)-1)/3)`;
 
-async function recoverJourneySourceEvidence(db, owner) {
+async function recoverJourneySourceEvidence(db, owner, limit) {
   // Validate source ownership and its canonical UTC season before the limit.
   // Older malformed/unowned events must not repeatedly consume the budget.
   const rows = await db.prepare(`SELECT e.event_key,e.event_type,e.pet_id,e.season_key,e.day_key,
@@ -29,7 +30,7 @@ async function recoverJourneySourceEvidence(db, owner) {
     FROM telegram_pet_events e ${sourceJoins}
     WHERE e.telegram_id=? AND ${validSource}
       AND ((${missingWeekly}) OR (${missingDaily}))
-    ORDER BY e.day_key,e.created_at,e.id LIMIT 50`).bind(owner).all();
+    ORDER BY e.day_key,e.created_at,e.id LIMIT ?`).bind(owner, boundedRecoveryLimit(limit, 50)).all();
   for (const event of rows.results || []) {
     if (event.missing_weekly) {
       try {
@@ -43,7 +44,7 @@ async function recoverJourneySourceEvidence(db, owner) {
       } catch (error) { console.error('moonpet_journey_evidence_pending', 'weekly', error?.message || String(error)); }
     }
     if (event.missing_daily) {
-      try { await recordDailyCareChallenge(db, { telegram_id: owner, event_key: event.event_key }); }
+      try { await recordDailyCareChallenge(db, { telegram_id: owner, event_key: event.event_key }, { defer_award: true }); }
       catch (error) { console.error('moonpet_journey_evidence_pending', 'daily', error?.message || String(error)); }
     }
   }
@@ -59,10 +60,10 @@ const JOURNEYS = [
     required: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES, definitions: PET_WEEKLY_JOURNEY_OBJECTIVES, finalize: finalizeWeeklyJourneyCrest },
 ];
 
-export async function recoverPetJourneyAwards(db, telegramId) {
+export async function recoverPetJourneyAwards(db, telegramId, options = {}) {
   const owner = String(telegramId || '').trim();
   if (!owner) return;
-  await recoverJourneySourceEvidence(db, owner);
+  await recoverJourneySourceEvidence(db, owner, options.source_limit);
   for (const journey of JOURNEYS) {
     const { kind, period, objective, reward } = journey;
     const definitions = Object.entries(journey.definitions);
@@ -92,7 +93,7 @@ export async function recoverPetJourneyAwards(db, telegramId) {
       GROUP BY o.pet_id, o.season_key, o.${period}, o.${objective}
       HAVING ${progressSql} >= CASE o.${objective} ${targetSql} END
     ) GROUP BY pet_id, season_key, ${period} HAVING COUNT(*)>=?
-    ORDER BY season_key, ${period}, pet_id LIMIT 5`).bind(owner, journey.required).all();
+    ORDER BY season_key, ${period}, pet_id LIMIT ?`).bind(owner, journey.required, boundedRecoveryLimit(options.award_limit, 5)).all();
     for (const scope of pending.results || []) {
       try {
         let earnedAt;

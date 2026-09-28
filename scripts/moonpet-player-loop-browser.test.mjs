@@ -25,11 +25,12 @@ let failWeeklyReward = false;
 let failDailyEnding = false;
 let failContractReward = false;
 let failStandardReward = false;
+let failRelicRead = false;
 class Statement {
   constructor(sql, args = []) { this.sql = sql; this.args = args; }
   bind(...args) { return new Statement(this.sql, args); }
   async first() { return sqlite.prepare(this.sql).get(...this.args) || null; }
-  async all() { return { results: sqlite.prepare(this.sql).all(...this.args) }; }
+  async all() { if (failRelicRead && this.sql.includes('SELECT relic_id,')) throw Error('isolated_relic_read_failure'); return { results: sqlite.prepare(this.sql).all(...this.args) }; }
   async run() {
     if (failDailyEnding && this.sql.includes('INSERT OR IGNORE INTO telegram_pet_run_analytics') && this.args.some((value) => String(value).endsWith(':alley_king:win'))) throw Error('interrupted_daily_ending');
     if (failActivitySettlement && this.sql.includes('UPDATE telegram_pet_activity_sessions') && this.sql.includes('SET metadata = ?')) {
@@ -1159,6 +1160,21 @@ try {
     assert.equal(isItemOffer ? bought.state.inventory.find((item) => item.key === itemKey).count : bought.state.materials.find((item) => item.key === itemKey).quantity,storageCap);
     assert.equal(bought.state.pet.moon_gold,2000-(marketOffer.cost.moon_gold || 0));
     await page.waitForFunction((title) => [...document.querySelectorAll('[data-action="market_buy"]')].some((button) => button.disabled && button.textContent.includes(title) && button.textContent.includes('SOLD')),marketOffer.title);
+    // Real relic state reaches the vault, while a read outage is never labelled empty.
+    sqlite.prepare("INSERT OR IGNORE INTO telegram_pet_relics (telegram_id,relic_id,rarity) VALUES (?,'alley_crown','rare')").run(currentUser);
+    for (const unavailable of [false,true,false]) {
+      failRelicRead=unavailable;
+      await page.reload(); await page.waitForSelector('[data-panel="care"]');
+      await page.locator('[data-screen="economy"]').click();
+      const vault=page.locator('[data-panel="relics"]');
+      const copy=await vault.textContent();
+      if(unavailable) assert.match(copy,/RELIC VAULT TEMPORARILY UNAVAILABLE/);
+      else assert.match(copy,/alley crown/i);
+      assert.doesNotMatch(copy,/NO RELICS RECOVERED/);
+      assert.equal(sqlite.prepare('SELECT COUNT(*) n FROM telegram_pet_relics WHERE telegram_id=?').get(currentUser).n>=1,true);
+    }
+    await page.locator('[data-panel="relics"]').evaluate(node=>node.scrollIntoView({block:'center'}));
+    if(process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({path:process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png',`-vault-${viewport.width}.png`)});
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
     assert.equal(overflow, false, 'mobile viewport must not overflow horizontally');
     assert.deepEqual(errors, [], 'no runtime errors across all six screens');

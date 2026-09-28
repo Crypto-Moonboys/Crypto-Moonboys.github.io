@@ -49,7 +49,11 @@ class Statement {
     const result = this.adapter.database.prepare(this.sql).run(...this.args);
     return { results: [], meta: { changes: Number(result.changes || 0) } };
   }
-  async all() { return { results: this.adapter.database.prepare(this.sql).all(...this.args) }; }
+  async all() {
+    const result = { results: this.adapter.database.prepare(this.sql).all(...this.args) };
+    await this.adapter.afterAll?.(this.sql);
+    return result;
+  }
 }
 
 class D1 {
@@ -1335,13 +1339,15 @@ assert.deepEqual(orphanPreview.run.choices, []);
 
 // An interruption after saving the final room must resume settlement, not
 // generate an eleventh boss or require the player to win the ending twice.
-async function endingFixture(owner) {
-  const adapter = new D1();
-  adapter.database.exec(fs.readFileSync(new URL('../workers/moonboys-api/migrations/048_telegram_pet_player_expansion.sql', import.meta.url), 'utf8'));
-  const now = new Date('2026-08-20T12:00:00Z');
-  seedPlayer(adapter, owner);
-  adapter.database.prepare("UPDATE telegram_pet_instances SET stage='young',source_profile_updated_at='0001-01-01 00:00:00' WHERE telegram_id=?").run(owner);
-  adapter.database.prepare("INSERT INTO telegram_pet_lifecycle_by_pet (pet_id,telegram_id,identity_seed,phase,incubation_json,innate_traits_json) VALUES (?,?,?,'young','{}','[]')").run(`pet-${owner}`,owner,owner);
+async function endingFixture(owner, options = {}) {
+  const adapter = options.adapter || new D1();
+  const now = options.now || new Date('2026-08-20T12:00:00Z');
+  if (!options.adapter) {
+    adapter.database.exec(fs.readFileSync(new URL('../workers/moonboys-api/migrations/048_telegram_pet_player_expansion.sql', import.meta.url), 'utf8'));
+    seedPlayer(adapter, owner);
+    adapter.database.prepare("UPDATE telegram_pet_instances SET stage='young',source_profile_updated_at='0001-01-01 00:00:00' WHERE telegram_id=?").run(owner);
+    adapter.database.prepare("INSERT INTO telegram_pet_lifecycle_by_pet (pet_id,telegram_id,identity_seed,phase,incubation_json,innate_traits_json) VALUES (?,?,?,'young','{}','[]')").run(`pet-${owner}`,owner,owner);
+  }
   const created = await createDailyMoonRun(adapter, { telegram_id: owner, now });
   adapter.database.prepare('UPDATE telegram_pet_runs SET current_room=9,depth=9,score=123 WHERE run_id=?').run(created.daily_run.run_id);
   const run = adapter.database.prepare('SELECT * FROM telegram_pet_runs WHERE run_id=?').get(created.daily_run.run_id);
@@ -1586,4 +1592,82 @@ await __petMediaTestHooks.buildPetMiniAppState(queueEnding.adapter, queueEnding.
 assert.equal(queueEnding.adapter.database.prepare('SELECT status FROM telegram_pet_runs WHERE run_id=?').get(queueEnding.run.run_id).status,'completed');
 assert.equal(queueEnding.adapter.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE source='roguelite_boss'").get().count, 1);
 
-console.log('Telegram Pets Daily Moon Run tests passed (10,000-run economy simulation; versioned tactics, risk/score previews and concurrent outcome authority included).');
+// A permanently failing oldest source must not monopolize either one-record
+// state queue. Test the real state path and fresh D1 wrappers between requests.
+for (const kind of ['endings', 'records']) {
+  const owner = `daily-fair-${kind}`;
+  const sources = [];
+  let adapter;
+  for (let index = 0; index < 3; index++) {
+    const f = await endingFixture(owner, { adapter, now: new Date(`2026-08-${20 + index}T12:00:00Z`) });
+    adapter = f.adapter;
+    if (kind === 'endings') {
+      adapter.database.prepare("UPDATE telegram_pet_runs SET status='completed',current_room=10,depth=10,score=223 WHERE run_id=?").run(f.run.run_id);
+    } else {
+      adapter.database.prepare('DELETE FROM telegram_pet_run_rooms WHERE run_id=?').run(f.run.run_id);
+      const run = { ...f.run, current_room: 0, depth: 0 };
+      const room = await createPetRunRoom(adapter, run);
+      await persistPetRunRoomOutcome(adapter, run, room, { success: true, score: 25, choice_id: room.choices[0].choice_id });
+      adapter.database.prepare("UPDATE telegram_pet_runs SET status='abandoned',current_room=1,depth=1,score=25 WHERE run_id=?").run(f.run.run_id);
+    }
+    sources.push(f);
+  }
+  seedPlayer(adapter, `other-${owner}`);
+  adapter.database.prepare("INSERT INTO telegram_settings (telegram_id,setting_key,setting_value) VALUES (?,?,'untouched')")
+    .run(`other-${owner}`, `moonpet:daily-recovery:${kind}`);
+  const blocked = new Set(sources.slice(0, 2).map(f => f.run.run_id));
+  const attempts = [];
+  const failSource = (sql, args) => {
+    const isAttempt = kind === 'endings'
+      ? sql.includes("'boss_fought'") && String(args[0]).endsWith(':attempt')
+      : sql.includes('UPDATE telegram_pet_daily_runs SET status =');
+    if (!isAttempt) return false;
+    const runId = sources.find(f => args.includes(f.run.run_id))?.run.run_id;
+    if (runId) attempts.push(runId);
+    return blocked.has(runId);
+  };
+  adapter.failEndingWrite = failSource;
+  const recover = () => __petMediaTestHooks.buildPetMiniAppState(adapter, owner, 'fixture-token');
+  for (let pass = 0; pass < 3; pass++) {
+    attempts.length = 0;
+    await recover();
+    assert.deepEqual(attempts, [sources[pass].run.run_id], `${kind}: later runs must get a turn while older sources keep failing`);
+    // A fresh D1 wrapper has no request-local retry history to help it.
+    adapter = Object.assign(Object.create(D1.prototype), { database: adapter.database, queue: Promise.resolve(), failEndingWrite: failSource });
+  }
+  assert.equal(adapter.database.prepare('SELECT status FROM telegram_pet_daily_runs WHERE run_id=?').get(sources[2].run.run_id).status,
+    kind === 'endings' ? 'completed' : 'abandoned');
+  assert.equal(adapter.database.prepare('SELECT runs_recorded FROM telegram_pet_daily_leaderboard_records WHERE telegram_id=?').get(owner).runs_recorded, 1);
+  // Wrap around and retain failed sources; the cursor is not a success marker.
+  // Force overlapping requests to select the same old cursor. Only one may
+  // advance it and attempt settlement; the stale request must yield.
+  let selected = 0;
+  let release;
+  const barrier = new Promise(resolve => { release = resolve; });
+  adapter.afterAll = async sql => {
+    if (!sql.includes(`cursor.setting_key='moonpet:daily-recovery:${kind}'`)) return;
+    if (++selected === 2) release();
+    await barrier;
+  };
+  attempts.length = 0;
+  await Promise.all([recover(), recover()]);
+  adapter.afterAll = null;
+  assert.deepEqual(attempts, [sources[0].run.run_id]);
+  assert.equal(adapter.database.prepare('SELECT status FROM telegram_pet_daily_runs WHERE run_id=?').get(sources[0].run.run_id).status, 'active');
+  blocked.clear();
+  await recover();
+  await recover();
+  assert.equal(adapter.database.prepare('SELECT runs_recorded FROM telegram_pet_daily_leaderboard_records WHERE telegram_id=?').get(owner).runs_recorded, 3);
+  const receipts = adapter.database.prepare('SELECT * FROM telegram_pet_reward_claims WHERE telegram_id=? ORDER BY claim_id').all(owner);
+  const xp = adapter.database.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE telegram_id=?').get(owner);
+  const cursors = adapter.database.prepare('SELECT * FROM telegram_settings ORDER BY telegram_id,setting_key').all();
+  attempts.length = 0;
+  await Promise.all([recover(), recover()]);
+  assert.deepEqual(attempts, []);
+  assert.deepEqual(adapter.database.prepare('SELECT * FROM telegram_pet_reward_claims WHERE telegram_id=? ORDER BY claim_id').all(owner), receipts);
+  assert.deepEqual(adapter.database.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE telegram_id=?').get(owner), xp);
+  assert.deepEqual(adapter.database.prepare('SELECT * FROM telegram_settings ORDER BY telegram_id,setting_key').all(), cursors, 'empty queues do not write cursors');
+  assert.equal(adapter.database.prepare('SELECT setting_value FROM telegram_settings WHERE telegram_id=?').get(`other-${owner}`).setting_value, 'untouched');
+}
+
+console.log('Telegram Pets Daily Moon Run tests passed (10,000-run economy simulation; versioned tactics, risk/score previews, concurrent outcome authority and fair recovery included).');

@@ -1312,7 +1312,7 @@ for (const missing of ['all', 'earlier-care']) {
   const sourceXp = db.database.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(petId).pet_xp;
   await __petMediaTestHooks.buildPetMiniAppState(db, owner, 'fixture-token');
   assert.equal(db.database.prepare('SELECT COUNT(*) AS n FROM telegram_pet_weekly_journey_objectives WHERE pet_id=?').get(petId).n, 14,
-    'refresh restores all accepted source events missing their Weekly Journey evidence');
+    'bounded refreshes restore all accepted source events missing their Weekly Journey evidence');
   const crest = db.database.prepare('SELECT pet_id,qualification_week,season_key,earned_at FROM telegram_pet_weekly_crests').get();
   assert.deepEqual({ ...crest }, { pet_id: petId, qualification_week: 1, season_key: 'pet-s2026-001', earned_at: '2026-01-06T00:00:00.000Z' });
   const mark = db.database.prepare('SELECT pet_id,earned_day FROM telegram_pet_growth_marks').get();
@@ -1342,14 +1342,14 @@ for (const missing of ['all', 'earlier-care']) {
     telegramId: owner, petId, eventKey: `valid-source:${String(index).padStart(2,'0')}`, eventType: 'train', day: '2026-01-06',
   });
   await __petMediaTestHooks.buildPetMiniAppState(db, owner, 'fixture-token');
-  assert.equal(db.database.prepare('SELECT COUNT(*) AS n FROM telegram_pet_weekly_journey_objectives').get().n, 50);
-  await __petMediaTestHooks.buildPetMiniAppState(db, owner, 'fixture-token');
+  assert.equal(db.database.prepare('SELECT COUNT(*) AS n FROM telegram_pet_weekly_journey_objectives').get().n, 20);
+  for (let pass=1;pass<3;pass++) await __petMediaTestHooks.buildPetMiniAppState(db, owner, 'fixture-token');
   assert.equal(db.database.prepare('SELECT COUNT(*) AS n FROM telegram_pet_weekly_journey_objectives').get().n, 51);
   assert.equal(db.database.prepare("SELECT COUNT(*) AS n FROM telegram_pet_weekly_journey_objectives WHERE source_event_key NOT LIKE 'valid-source:%'").get().n, 0);
 }
 
-// A week with more than 50 missing sources waits for its earlier threshold
-// evidence, without blocking an independently complete week before LIMIT 5.
+// A week with a large evidence backlog waits for its earlier threshold
+// evidence, without blocking an independently complete week.
 {
   const db = createDb(), owner = 'evidence-backlog';
   const petId = seedPlayer(db, owner);
@@ -1370,7 +1370,7 @@ for (const missing of ['all', 'earlier-care']) {
     eventKey: `earlier:${String(index).padStart(2,'0')}`, eventType: index < 60 ? 'feed' : 'train', day: index < 60 ? '2026-01-01' : '2026-01-02' });
   await __petMediaTestHooks.buildPetMiniAppState(db, owner, 'fixture-token');
   assert.deepEqual(db.database.prepare('SELECT qualification_week FROM telegram_pet_weekly_crests').all().map((r) => r.qualification_week), [2]);
-  await __petMediaTestHooks.buildPetMiniAppState(db, owner, 'fixture-token');
+  for (let pass=1;pass<4;pass++) await __petMediaTestHooks.buildPetMiniAppState(db, owner, 'fixture-token');
   assert.equal(db.database.prepare('SELECT earned_at FROM telegram_pet_weekly_crests WHERE qualification_week=1').get().earned_at, '2026-01-05T00:00:00.000Z');
 }
 
@@ -1434,7 +1434,7 @@ for (const [failWrite, earnedAt] of [
 }
 
 // Five older scopes without enough accepted source evidence must not consume
-// the recovery budget forever. Six recoverable scopes drain in batches of five.
+// the recovery budget forever. Six recoverable scopes drain in batches of two.
 {
   const db = createDb(), owner = 'weekly-recovery-queue';
   const petId = seedPlayer(db, owner);
@@ -1460,12 +1460,14 @@ for (const [failWrite, earnedAt] of [
   for (const key of sourceKeys(5, 'weekly_training')) db.database.prepare('UPDATE telegram_pet_events SET pet_id=NULL WHERE telegram_id=? AND event_key=?').run(owner, key);
   const earnedWeeks = () => db.database.prepare('SELECT qualification_week FROM telegram_pet_weekly_crests WHERE pet_id=? ORDER BY qualification_week').all(petId).map((row) => row.qualification_week);
   await __petMediaTestHooks.buildPetMiniAppState(db, owner, 'fixture-token');
-  assert.deepEqual(earnedWeeks(), [6, 7, 8, 9, 10],
-    'filter source-backed threshold crossings before LIMIT 5 so older unrecoverable scopes cannot starve the sixth scope');
+  assert.deepEqual(earnedWeeks(), [6, 7],
+    'filter source-backed threshold crossings before the two-award bound');
   assert.equal(db.database.prepare('SELECT earned_at FROM telegram_pet_weekly_crests WHERE pet_id=? AND qualification_week=6').get(petId).earned_at,
     '2026-02-07T00:00:00.000Z', 'queue filtering preserves the original qualification day');
   await __petMediaTestHooks.buildPetMiniAppState(db, owner, 'fixture-token');
-  assert.deepEqual(earnedWeeks(), [6, 7, 8, 9, 10, 11], 'the remaining recoverable scope settles on the next refresh');
+  assert.deepEqual(earnedWeeks(), [6, 7, 8, 9], 'the next two recoverable scopes settle on the next refresh');
+  await __petMediaTestHooks.buildPetMiniAppState(db, owner, 'fixture-token');
+  assert.deepEqual(earnedWeeks(), [6, 7, 8, 9, 10, 11], 'all six recoverable scopes eventually settle');
   await __petMediaTestHooks.buildPetMiniAppState(db, owner, 'fixture-token');
   assert.deepEqual(earnedWeeks(), [6, 7, 8, 9, 10, 11], 'repeat refreshes neither duplicate awards nor qualify missing evidence');
   assert.equal(db.database.prepare('SELECT COUNT(*) AS n FROM telegram_pet_weekly_journey_receipts WHERE pet_id=?').get(petId).n, 6);
