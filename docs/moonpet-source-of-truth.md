@@ -29,6 +29,11 @@ it never clears ownership. Passive relic powers remain inactive in runs.
 State refreshes batch notice/achievement writes and do not rewrite unchanged
 achievement progress or timestamps. Recovery uses per-queue source allowances
 from `pets/recovery-limits.js`; larger backlogs drain across later refreshes.
+Daily final-ending and early-ending queues rotate through pending sources using
+separate account cursors in `telegram_settings`. A turn is saved before repair,
+so failed sources yield to newer work and remain eligible after wraparound.
+Overlapping refreshes compare the saved cursor before advancing it. Cursors are
+scheduling data only; existing source and receipt checks still decide rewards.
 Each repair retains its original pet, season, day and idempotent receipt. Daily
 care recovery defers award finalization to the bounded Journey award pass, while
 direct gameplay retains immediate finalization. Reward amounts, caps and gates
