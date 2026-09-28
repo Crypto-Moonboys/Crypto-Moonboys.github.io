@@ -68,6 +68,10 @@ There is no artificial Moonpet-to-graph connection.
 - Worker regression suite passed, covering daily/weekly/season progression,
   ownership, reward settlement, public synchronization and game options.
 - Full `npm test` and final CI status are recorded in the PR.
+- The first local full run exposed an existing avatar browser-test race: it read
+  the live region before the scheduled announcement frame. The test now waits
+  for the expected announcement and retains the original assertion; no avatar
+  runtime behavior changed.
 - `node scripts/live-graph-pets-verify.mjs` passed against production.
 
 Weekly victory repair handles up to 20 source-backed records per refresh. The
