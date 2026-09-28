@@ -1,4 +1,5 @@
-import baseWorker, { applyPetRuntimeCommandAward } from './worker.js';
+import baseWorker from './worker.js';
+import { applyPetRuntimeCommandAward } from './worker.js';
 import { handleDeadRunRequest, cleanupExpiredSessions } from './routes/dead-run.js';
 
 const PROGRESSION_API_ACTIONS = Object.freeze({
