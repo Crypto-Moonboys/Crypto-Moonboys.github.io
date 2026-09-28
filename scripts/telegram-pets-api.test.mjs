@@ -1526,19 +1526,18 @@ assert.ok(callbackBranch.includes("if (payload.startsWith('kaiju:'))"), 'pet:kai
 assert.ok(callbackBranch.includes("await cmdPetKaiju(db, tok, chatId, telegramId, kaijuPayload, chatType, fromUser, eventKey);"), 'Kaiju callbacks must forward stable callback event keys and chat type');
 assert.ok(worker.includes('Card locked for <code>${escapeHtml(telegramId)}</code>. Waiting for the other player.'), 'Kaiju card lock waiting message must not reveal card names before both players lock');
 assert.ok(!worker.includes('Card locked: ${escapeHtml(getPetKaijuCard(cardKey)?.name || cardKey)}'), 'Kaiju waiting message must not leak selected card names');
-assert.ok(worker.includes("AND player1_card_key IS NULL"), 'Kaiju player 1 card choice must be immutable after first lock');
-assert.ok(worker.includes("AND player2_card_key IS NULL"), 'Kaiju player 2 card choice must be immutable after first lock');
-assert.ok(worker.includes('Card already locked for <code>${escapeHtml(telegramId)}</code>. Waiting for the other player.'), 'Kaiju duplicate card taps must get an already-locked response');
+// Immutable choices and locked-card recovery are exercised with real SQLite
+// in moonpet-combat-sanity.test.mjs for both Mini App and Telegram entry points.
 assert.ok(worker.includes("score?.result === 'player2_win' && opponent.telegram_id === 'app'"), 'Kaiju solo app wins must render as an app win instead of a draw');
-assert.ok(worker.includes('roll = CASE WHEN roll IS NULL OR roll = 0 THEN ? ELSE roll END'), 'Kaiju rolled category number must persist even when the default roll is 0');
+assert.ok(worker.includes('roll=CASE WHEN roll IS NULL OR roll=0 THEN ? ELSE roll END'), 'Kaiju rolled category number must persist even when the default roll is 0');
 assert.ok(worker.includes("joinResult?.meta?.changes"), 'Kaiju join race handling must check update changes before announcing players');
 assert.ok(worker.includes('async function getFreshPetKaijuMatch'), 'Kaiju callbacks must expire stale matches before acting');
 assert.ok(worker.includes("WHERE match_id = ? AND status IN ('open', 'selecting') AND updated_at < datetime('now', ?)"), 'Kaiju stale callback handling must cancel expired open/selecting matches by match id');
 assert.ok(worker.includes('This Kaiju table expired. Tap Kaiju or run /petkaiju to start a fresh battle.'), 'Kaiju stale Join/Start/Card callbacks must return a clear expired-table message');
 assert.ok(worker.includes('const freshMatch = await getFreshPetKaijuMatch(db, args[0]);'), 'Kaiju join/cpu/card actions must read through the fresh match helper');
 assert.ok(worker.includes('const completionResult = await db.prepare'), 'Kaiju completion must capture the status update result before awarding');
-assert.ok(worker.includes("reason: 'already_completed'"), 'Kaiju duplicate finish attempts must return an already-completed result');
-assert.ok(worker.includes('Number(completionResult.meta.changes || 0) <= 0'), 'Kaiju duplicate finish attempts must skip rewards when the completion update no-ops');
+assert.ok(worker.includes("reason: duplicate ? 'already_completed'"), 'Kaiju duplicate finish attempts must return an already-completed result');
+assert.ok(worker.includes("if (saved?.status !== 'completed' ||"), 'Kaiju no-op completion must confirm persisted completed status before awarding');
 assert.ok(callbackBranch.includes('const stableRunEventKey = buildPetRunExtractEventKey(telegramId, runId);'), 'run extract callbacks must use stable run extract keys');
 assert.ok(callbackBranch.includes('const stableRunEventKey = buildPetRunStepEventKey(telegramId, runId, stepIndex, choiceKey);'), 'run step callbacks must use stable run step keys');
 assert.ok(callbackBranch.includes('await cmdPetRun(db, tok, chatId, telegramId, `${runId}:${choiceKey}`, stableRunEventKey, stepIndex);'), 'run step callbacks must pass the callback step index through to cmdPetRun');
@@ -4608,7 +4607,7 @@ kaijuRecoveryDb.database.prepare(`
   VALUES ('Day B active leaderboard season', '2026-09-28T00:00:00.000Z', '2027-12-31T23:59:59.999Z', 1)
 `).run();
 seedAcceptedDailyPetEvent(kaijuRecoveryDb, 'kaiju-recovery', 'kaiju-recovery-day-a-cap', 1190, 245, recoveryDayAKey, { petScoped: true });
-const kaijuMatch = { match_id: 'kaiju-recovery-match', mode: 'solo' };
+const kaijuMatch = kaijuSourceMatch('kaiju-recovery', 'kaiju-recovery-match');
 const kaijuRewards = { pet_xp: 38, community_xp: 8, moon_gold: 18, style_tokens: 1, happiness: 5, energy_cost: 6 };
 kaijuRecoveryDb.failOnBatch(3);
 await assert.rejects(
@@ -4689,6 +4688,12 @@ assert.equal(duplicateKaiju.duplicate, true, 'a completed Kaiju result retry mus
 assert.deepEqual(repeatRewardSnapshot(kaijuRecoveryDb, 'kaiju-recovery', 'kaiju'), kaijuAfterRecovery, 'duplicate Kaiju result must not change XP, currencies, Energy, or its slot');
 globalThis.Date = repeatRecoveryRealDate;
 
+function kaijuSourceMatch(telegramId, matchId) {
+  return { match_id: matchId, mode: 'solo', score_json: JSON.stringify({ reward_sources: {
+    [telegramId]: { pet_id: `pet:${telegramId}:pet-s2026-003:1`, season_key: 'pet-s2026-003', equipment_snapshot: {} },
+  } }) };
+}
+
 function seedSelectableSoloKaijuMatch(db, telegramId, matchId) {
   db.database.prepare(`
     INSERT INTO telegram_pet_kaiju_matches
@@ -4703,6 +4708,7 @@ function seedSelectableSoloKaijuMatch(db, telegramId, matchId) {
     PET_KAIJU_CARDS[1].id,
     PET_KAIJU_CATEGORIES[0].key,
   );
+  db.database.prepare('UPDATE telegram_pet_kaiju_matches SET score_json=? WHERE match_id=?').run(kaijuSourceMatch(telegramId,matchId).score_json,matchId);
   return { ...db.database.prepare('SELECT * FROM telegram_pet_kaiju_matches WHERE match_id = ?').get(matchId) };
 }
 
@@ -4743,7 +4749,7 @@ const rejectedCompletion = await finishPetKaijuMatch(insufficientCompletedDb, in
 assert.equal(rejectedCompletion.reward_results[0].result.accepted, false, 'completed Kaiju result must expose a rejected Energy claim');
 assert.equal(rejectedCompletion.reward_results[0].result.reason, 'insufficient_energy', 'completed Kaiju result must report insufficient Energy instead of promising rewards');
 assert.equal(repeatRewardSnapshot(insufficientCompletedDb, 'completed-insufficient', 'kaiju').event, null, 'insufficient completion must not create a reward reservation');
-insufficientCompletedDb.database.prepare('UPDATE telegram_pet_profiles SET energy = 50 WHERE telegram_id = ?').run('completed-insufficient');
+insufficientCompletedDb.database.prepare('UPDATE telegram_pet_instances SET energy = 50 WHERE telegram_id = ?').run('completed-insufficient');
 const restoredEnergyRecovery = await finishPetKaijuMatch(
   insufficientCompletedDb,
   { ...insufficientCompletedDb.database.prepare('SELECT * FROM telegram_pet_kaiju_matches WHERE match_id = ?').get('completed-insufficient-match') },
@@ -4755,7 +4761,7 @@ const insufficientKaijuResultDb = seedRepeatRewardPlayer('kaiju-insufficient', 5
 const insufficientKaijuResult = await awardPetKaijuPlayerResult(
   insufficientKaijuResultDb,
   'kaiju-insufficient',
-  { match_id: 'kaiju-insufficient-match', mode: 'solo' },
+  kaijuSourceMatch('kaiju-insufficient','kaiju-insufficient-match'),
   'kaiju_win',
   kaijuRewards,
 );
@@ -4792,7 +4798,7 @@ seedAcceptedDailyPetEvent(kaijuCapDb, 'kaiju-cap', 'prior-kaiju-cap', 1190, 245,
 const cappedKaiju = await awardPetKaijuPlayerResult(
   kaijuCapDb,
   'kaiju-cap',
-  { match_id: 'kaiju-cap-match', mode: 'solo' },
+  kaijuSourceMatch('kaiju-cap','kaiju-cap-match'),
   'kaiju_win',
   kaijuRewards,
 );
@@ -4829,7 +4835,7 @@ assert.ok(adventure.includes('energy: Number(applied.costsApplied.energy || 0),'
 assert.ok(!adventure.includes('+ adventure.energy_cost'), 'Adventure profile deltas must not charge the base Energy cost a second time');
 
 const kaijuHardening = asyncBlock('awardPetKaijuPlayerResult');
-assert.ok(kaijuHardening.indexOf('getPetProfileWithAtomicDecay') < kaijuHardening.indexOf('reservePetRepeatRewardEvent'), 'Kaiju must persist current stat decay before atomically claiming Energy and a reward slot');
+assert.ok(kaijuHardening.indexOf('getPetInstanceWithAtomicDecay') < kaijuHardening.indexOf('reservePetRepeatRewardEvent'), 'Kaiju must persist current stat decay before atomically claiming Energy and a reward slot');
 assert.ok(kaijuHardening.indexOf('reservePetRepeatRewardEvent') < kaijuHardening.indexOf('scalePetRewards'), 'Kaiju Energy and slot must be claimed before rewards are calculated');
 assert.ok(kaijuHardening.includes('energy_cost: energyCost') && kaijuHardening.includes('existing_event: duplicate'), 'Kaiju retries must resume the original paid reservation without paying Energy twice');
 assert.ok(kaijuHardening.includes('const accountingDayKey = rewardSlot.day_key') && kaijuHardening.includes('accountingSeasonKey, accountingDayKey, accountingWeekKey'), 'Kaiju recovery must finalize caps and season totals against the stored reservation accounting window');
@@ -4839,7 +4845,7 @@ assert.ok(!kaijuHardening.includes('awardCommunityXp(db, telegramId, communityXp
 assert.ok(!kaijuHardening.includes('savePetProfile(db, pet)'), 'Kaiju rewards must not restore spent Energy or overwrite concurrent rewards through a stale save');
 assert.ok(worker.includes("INSERT OR IGNORE INTO telegram_pet_events") && worker.includes("'pending', 'repeat_reward_pending'"), 'repeat reward reservations must reuse the unique event key for concurrent idempotency');
 const finishKaijuHardening = asyncBlock('finishPetKaijuMatch');
-assert.ok(finishKaijuHardening.includes('awardPetKaijuMatchResults(db, match, resolved)') && finishKaijuHardening.indexOf('awardPetKaijuMatchResults(db, match, resolved)') < finishKaijuHardening.indexOf("reason: 'already_completed'"), 'duplicate Kaiju completion callbacks must recover unfinished player reward reservations');
+assert.ok(finishKaijuHardening.includes('awardPetKaijuMatchResults(db, match, committed)') && finishKaijuHardening.indexOf('awardPetKaijuMatchResults(db, match, committed)') < finishKaijuHardening.indexOf("reason: duplicate ? 'already_completed'"), 'duplicate Kaiju completion callbacks must recover unfinished player reward reservations');
 const kaijuCommandHardening = asyncBlock('cmdPetKaiju');
 const completedMatchBranch = kaijuCommandHardening.slice(kaijuCommandHardening.indexOf("if (match.status === 'completed')"), kaijuCommandHardening.indexOf('if (!cardKey)'));
 assert.ok(completedMatchBranch.includes('finishPetKaijuMatch(db, match)') && completedMatchBranch.includes('formatPetKaijuResult(recovered)'), 'normal completed card callbacks must invoke pending reward recovery and report its settlement result');

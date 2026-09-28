@@ -222,7 +222,7 @@ test('Kaiju recovery keeps its reservation pet, original accounting and single e
   const f=fixture('82010'), petId='current-'+f.owner;
   f.pet('kaiju-second',currentSeason,300,2); f.reveal(petId);
   await f.state();
-  const match={match_id:'kaiju-sync',mode:'solo'};
+  const match={match_id:'kaiju-sync',mode:'solo',score_json:JSON.stringify({reward_sources:{[f.owner]:{pet_id:petId,season_key:currentSeason,equipment_snapshot:{}}}})};
   const rewards={pet_xp:38,community_xp:8,moon_gold:18,happiness:5,energy_cost:6};
   f.db.failReward=true;
   await assert.rejects(hooks.awardPetKaijuPlayerResult(f.db,f.owner,match,'kaiju_win',rewards),/interrupted_terminal_reward/);

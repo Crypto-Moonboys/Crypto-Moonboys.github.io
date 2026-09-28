@@ -2174,7 +2174,7 @@ async function reservePetRepeatRewardEvent(db, details) {
   const existing = details.existing_event || await db.prepare(`
     SELECT id, pet_id, status, reason, day_key, week_key, season_key
     FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?
-  `).bind(telegramId, eventKey).first().catch(() => null);
+  `).bind(telegramId, eventKey).first();
   if (existing) return parsePetRepeatRewardReservation(existing, normalizedMode);
 
   const reservationId = crypto.randomUUID();
@@ -2182,8 +2182,16 @@ async function reservePetRepeatRewardEvent(db, details) {
   const seasonKey = String(details.season_key || '').trim();
   if (normalizedMode === 'event' && (!petId || !seasonKey)) throw new Error('pet_repeat_reward_authority_required');
   const energyCost = normalizedMode === 'kaiju' ? Math.max(0, Math.floor(Number(details.energy_cost || 0))) : 0;
-  const metadata = JSON.stringify({ source: details.source || 'telegram_bot', mode: normalizedMode });
-  const insert = normalizedMode === 'kaiju'
+  const sourceSettlement = normalizedMode === 'kaiju' && details.source_pet_settlement === true && Boolean(petId && seasonKey);
+  const metadata = JSON.stringify({ source: details.source || 'telegram_bot', mode: normalizedMode, equipment_snapshot: details.equipment_snapshot || {} });
+  const insert = sourceSettlement
+    ? db.prepare(`INSERT OR IGNORE INTO telegram_pet_events
+        (id,pet_id,telegram_id,event_type,event_key,xp_awarded,pet_xp_awarded,season_key,day_key,week_key,status,reason,metadata)
+      SELECT ?,?,?,?,?,0,0,?,?,?,'pending','repeat_reward_pending',?
+      WHERE EXISTS (SELECT 1 FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=? AND season_key=? AND energy>=?)`)
+      .bind(reservationId,petId,telegramId,String(details.event_type),eventKey,seasonKey,String(details.day_key),String(details.week_key),metadata,
+        petId,telegramId,seasonKey,energyCost)
+    : normalizedMode === 'kaiju'
     ? db.prepare(`
         INSERT OR IGNORE INTO telegram_pet_events
           (id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
@@ -2206,7 +2214,16 @@ async function reservePetRepeatRewardEvent(db, details) {
         String(details.day_key), String(details.week_key), metadata,
       );
   const statements = [insert];
-  if (normalizedMode === 'kaiju') {
+  if (sourceSettlement) {
+    statements.push(db.prepare(`UPDATE telegram_pet_instances SET energy=energy-?,source_profile_updated_at=?,updated_at=CURRENT_TIMESTAMP
+      WHERE pet_id=? AND telegram_id=? AND season_key=? AND energy>=?
+        AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id=? AND status='pending')`)
+      .bind(energyCost,PET_INSTANCE_AUTHORITY_VERSION,petId,telegramId,seasonKey,energyCost,reservationId));
+    statements.push(db.prepare(`UPDATE telegram_pet_profiles SET energy=(SELECT energy FROM telegram_pet_instances WHERE pet_id=?),updated_at=CURRENT_TIMESTAMP
+      WHERE telegram_id=? AND EXISTS (SELECT 1 FROM telegram_pet_active_slots WHERE telegram_id=? AND pet_id=? AND season_key=?)
+        AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id=? AND status='pending')`)
+      .bind(petId,telegramId,telegramId,petId,seasonKey,reservationId));
+  } else if (normalizedMode === 'kaiju') {
     statements.push(db.prepare(`
       UPDATE telegram_pet_profiles
       SET energy = energy - ?, updated_at = CURRENT_TIMESTAMP
@@ -2257,7 +2274,7 @@ async function reservePetRepeatRewardEvent(db, details) {
   const concurrent = await db.prepare(`
     SELECT id, pet_id, status, reason, day_key, week_key, season_key
     FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?
-  `).bind(telegramId, eventKey).first().catch(() => null);
+  `).bind(telegramId, eventKey).first();
   if (concurrent) return parsePetRepeatRewardReservation(concurrent, normalizedMode);
   if (normalizedMode === 'kaiju') return { claimed: false, reason: 'insufficient_energy', reservation_id: null };
   throw new Error('pet_repeat_reward_reservation_failed');
@@ -3891,7 +3908,7 @@ function petStateTimestamp(value) {
   const normalizedValue = String(value).trim();
   const zoned = normalizedValue.includes('T') ? normalizedValue : `${normalizedValue.replace(' ', 'T')}Z`;
   const normalized = /(?:Z|[+-]\d\d:\d\d)$/.test(zoned)
-    ? zoned.replace(/\.\d+(?=(Z|[+-]\d\d:\d\d)$)/, '$1')
+    ? zoned.replace(/\.\d+(?=(Z|[+-]\d\d:\d\d)$)/, '')
     : `${zoned.replace(/\.\d+$/, '')}Z`;
   const timestamp = Date.parse(normalized);
   return Number.isFinite(timestamp) ? timestamp : 0;
@@ -5009,6 +5026,7 @@ async function getActivePetKaijuMatch(db, chatId) {
     UPDATE telegram_pet_kaiju_matches
     SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP
     WHERE chat_id = ? AND status IN ('open', 'selecting') AND updated_at < datetime('now', ?)
+      AND NOT (player1_card_key IS NOT NULL AND (CASE WHEN mode='solo' THEN cpu_card_key ELSE player2_card_key END) IS NOT NULL)
   `).bind(String(chatId), `-${PET_KAIJU_MATCH_TTL_MINUTES} minutes`).run();
   const row = await db.prepare(`
     SELECT * FROM telegram_pet_kaiju_matches
@@ -5035,6 +5053,7 @@ async function getFreshPetKaijuMatch(db, matchId) {
     UPDATE telegram_pet_kaiju_matches
     SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP
     WHERE match_id = ? AND status IN ('open', 'selecting') AND updated_at < datetime('now', ?)
+      AND NOT (player1_card_key IS NOT NULL AND (CASE WHEN mode='solo' THEN cpu_card_key ELSE player2_card_key END) IS NOT NULL)
   `).bind(id, `-${PET_KAIJU_MATCH_TTL_MINUTES} minutes`).run();
   const match = await getPetKaijuMatch(db, id);
   return {
@@ -5116,7 +5135,8 @@ async function getPetKaijuQueue(db, chatId, excluded = []) {
 
 async function getPetKaijuMatchForPlayer(db, telegramId) {
   await db.prepare(`UPDATE telegram_pet_kaiju_matches SET status='cancelled', updated_at=CURRENT_TIMESTAMP
-    WHERE chat_id LIKE 'mini:kaiju:match:%' AND status IN ('open','selecting') AND updated_at < datetime('now', ?)`)
+    WHERE chat_id LIKE 'mini:kaiju:match:%' AND status IN ('open','selecting') AND updated_at < datetime('now', ?)
+      AND NOT (player1_card_key IS NOT NULL AND (CASE WHEN mode='solo' THEN cpu_card_key ELSE player2_card_key END) IS NOT NULL)`)
     .bind(`-${PET_KAIJU_MATCH_TTL_MINUTES} minutes`).run();
   const row = await db.prepare(`SELECT * FROM telegram_pet_kaiju_matches
     WHERE chat_id LIKE 'mini:kaiju:match:%' AND status IN ('open','selecting')
@@ -5203,6 +5223,45 @@ async function cancelPetKaijuMiniAppMatch(db, telegramId, matchId = '') {
   return { accepted: true, reason: 'kaiju_match_cancelled', match: await getPetKaijuMatch(db, matchId) };
 }
 
+function petKaijuRewardSource(match, telegramId) {
+  return safeJsonParse(match?.score_json, {}).reward_sources?.[String(telegramId)] || null;
+}
+
+async function applyPetKaijuCard(db, match, telegramId, cardKey) {
+  const owner = String(telegramId);
+  const isPlayer1 = String(match.player1_telegram_id) === owner;
+  if (!isPlayer1 && String(match.player2_telegram_id || '') !== owner) return { accepted: false, reason: 'not_participant' };
+  if (match.status === 'completed') return finishPetKaijuMatch(db, match);
+  if (match.status !== 'selecting') return { accepted: false, reason: 'kaiju_match_not_active' };
+  const column = isPlayer1 ? 'player1_card_key' : 'player2_card_key';
+  if (!match[column]) {
+    const pet = await getPetProfile(db, owner);
+    const authority = activePetRewardAuthority(pet);
+    if (!authority) return { accepted: false, reason: 'source_pet_authority_required' };
+    const source = JSON.stringify({ ...authority, equipment_snapshot: pet.equipment_progression || {} });
+    const category = PET_KAIJU_CATEGORIES.find(entry => entry.key === match.category_key) || pickPetKaijuCategory();
+    const cpuCard = isPlayer1 && match.mode === 'solo' ? pickPetKaijuCpuCard(cardKey).id : null;
+    // The card and its pet/gear provenance commit together. A concurrent switch
+    // rejects the lock; retries never replace a saved card, CPU choice or source.
+    await db.prepare(`UPDATE telegram_pet_kaiju_matches SET ${column}=?,
+        cpu_card_key=COALESCE(cpu_card_key,?), category_key=COALESCE(category_key,?),
+        roll=CASE WHEN roll IS NULL OR roll=0 THEN ? ELSE roll END,
+        score_json=json_set(CASE WHEN json_valid(score_json) THEN score_json ELSE '{}' END, ?, json(?)),
+        updated_at=CURRENT_TIMESTAMP
+      WHERE match_id=? AND status='selecting' AND ${column} IS NULL
+        AND EXISTS (SELECT 1 FROM telegram_pet_active_slots WHERE telegram_id=? AND pet_id=? AND season_key=?)`)
+      .bind(cardKey,cpuCard,category.key,category.roll,`$.reward_sources."${owner}"`,source,
+        match.match_id,owner,authority.pet_id,authority.season_key).run();
+  }
+  const saved = await getPetKaijuMatch(db, match.match_id);
+  if (saved?.status === 'completed') return finishPetKaijuMatch(db, saved);
+  if (saved?.status !== 'selecting') return { accepted: false, reason: 'kaiju_match_not_active', match: saved };
+  if (!saved[column]) return { accepted: false, reason: 'source_pet_changed', match: saved };
+  const ready = saved.player1_card_key && (saved.mode === 'solo' ? saved.cpu_card_key : saved.player2_card_key);
+  if (!ready) return { accepted: true, reason: 'kaiju_card_waiting', match: saved };
+  return finishPetKaijuMatch(db, saved);
+}
+
 async function awardPetKaijuPlayerResult(db, telegramId, match, outcome, rewards = {}, options = {}) {
   if (match?.mode === 'pet_arena') {
     const now = options.now instanceof Date ? new Date(options.now.getTime()) : new Date();
@@ -5240,20 +5299,28 @@ async function awardPetKaijuPlayerResult(db, telegramId, match, outcome, rewards
     return { ...awarded, reward_slot: null, reward_multiplier: 1 };
   }
   const now = options.now instanceof Date ? new Date(options.now.getTime()) : new Date();
-  const pet = await getPetProfileWithAtomicDecay(db, telegramId, now);
-  if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
-  const dayKey = getPetDayKey(now);
-  const weekKey = getPetWeekKey(now);
-  const season = getPetSeasonInfo(now);
   const eventKey = buildStablePetEventKey(['pet_kaiju', match.match_id, telegramId]);
   const duplicate = await db.prepare(`
-    SELECT id, pet_id, status, reason, day_key, week_key, season_key
+    SELECT id, pet_id, status, reason, day_key, week_key, season_key, metadata
     FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?
-  `).bind(telegramId, eventKey).first().catch(() => null);
-  if (duplicate && duplicate.status !== 'pending') return { accepted: true, duplicate: true, reason: 'duplicate', pet, xp_awarded: 0, pet_xp_awarded: 0 };
+  `).bind(telegramId, eventKey).first();
+  if (duplicate && duplicate.status !== 'pending') return { accepted: duplicate.status === 'accepted', duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0 };
+  const savedSource = petKaijuRewardSource(match, telegramId);
+  const sourceAuthority = duplicate?.pet_id
+    ? { pet_id: duplicate.pet_id, season_key: duplicate.season_key } : savedSource;
+  if (!sourceAuthority?.pet_id || !sourceAuthority?.season_key) return { accepted: false, reason: 'source_pet_authority_required', xp_awarded: 0, pet_xp_awarded: 0 };
+  const pet = await getPetInstanceWithAtomicDecay(db, sourceAuthority.pet_id, now);
+  if (!pet || String(pet.telegram_id) !== String(telegramId) || String(pet.season_key) !== sourceAuthority.season_key) {
+    return { accepted: false, reason: 'source_pet_authority_required', xp_awarded: 0, pet_xp_awarded: 0 };
+  }
+  const equipmentSnapshot = savedSource?.pet_id === sourceAuthority.pet_id && savedSource?.season_key === sourceAuthority.season_key
+    ? savedSource.equipment_snapshot || {} : safeJsonParse(duplicate?.metadata, {}).equipment_snapshot || {};
+  const completedAt = parseSqliteTs(match.completed_at);
+  const earnedAt = Number.isFinite(completedAt) && completedAt > 0 ? new Date(completedAt) : now;
+  const dayKey = getPetDayKey(earnedAt);
+  const weekKey = getPetWeekKey(earnedAt);
+  const season = getPetSeasonInfo(earnedAt);
   const energyCost = Math.max(0, Math.floor(Number(rewards.energy_cost || 0)));
-  const sourceAuthority = activePetRewardAuthority(pet);
-  if (!sourceAuthority) return { accepted: false, reason: 'source_pet_authority_required', pet, xp_awarded: 0, pet_xp_awarded: 0 };
   const reservation = await reservePetRepeatRewardEvent(db, {
     telegram_id: telegramId,
     pet_id: sourceAuthority.pet_id,
@@ -5266,6 +5333,8 @@ async function awardPetKaijuPlayerResult(db, telegramId, match, outcome, rewards
     source: 'telegram_kaiju',
     energy_cost: energyCost,
     existing_event: duplicate,
+    source_pet_settlement: true,
+    equipment_snapshot: equipmentSnapshot,
   });
   if (!reservation.claimed && reservation.reason === 'insufficient_energy') {
     return {
@@ -5289,7 +5358,7 @@ async function awardPetKaijuPlayerResult(db, telegramId, match, outcome, rewards
     event_type: 'kaiju_battle', xp_action: 'pet_kaiju_battle', reason: outcome, reservation_id: reservation.reservation_id,
     rewards: scaledRewardsAuthority, profile_deltas: { happiness: scaledRewardsAuthority.happiness },
     touch_streak: true, now, day_key: rewardSlotAuthority.day_key, week_key: rewardSlotAuthority.week_key, season_key: rewardSlotAuthority.season_key,
-    context: { source: 'telegram_kaiju', match_id: match.match_id, mode: match.mode, reward_slot: rewardSlotAuthority.claimed_slot, reward_multiplier: rewardSlotAuthority.multiplier, energy_cost: energyCost },
+    context: { source: 'telegram_kaiju', equipment_snapshot: equipmentSnapshot, match_id: match.match_id, mode: match.mode, reward_slot: rewardSlotAuthority.claimed_slot, reward_multiplier: rewardSlotAuthority.multiplier, energy_cost: energyCost },
   });
   await getPetProfile(db, telegramId);
   if (awardedAuthority.accepted && outcome === 'kaiju_win') {
@@ -5474,6 +5543,7 @@ async function finishPetKaijuMatch(db, match) {
       ? String(match.player2_telegram_id)
       : null;
   const scoreJson = JSON.stringify({
+    reward_sources: safeJsonParse(match.score_json, {}).reward_sources || {},
     category,
     player1: { telegram_id: String(match.player1_telegram_id), card: player1Card.id, score: resolved.playerScore },
     opponent: { telegram_id: match.mode === 'group' ? String(match.player2_telegram_id) : 'app', card: player2Card.id, score: resolved.opponentScore },
@@ -5491,32 +5561,23 @@ async function finishPetKaijuMatch(db, match) {
         updated_at = CURRENT_TIMESTAMP
     WHERE match_id = ? AND status IN ('open', 'selecting')
   `).bind(category.key, category.roll, winnerTelegramId, resolved.result, scoreJson, match.match_id).run();
-  if (completionResult?.meta?.changes !== undefined && Number(completionResult.meta.changes || 0) <= 0) {
-    // A completed match may still have a recoverable pending player award from an earlier D1 failure.
-    const rewardResults = await awardPetKaijuMatchResults(db, match, resolved);
-    await reconcileSanctuaryBestEffort(db, String(match.player1_telegram_id), 'kaiju_terminal');
-    if (match.player2_telegram_id) await reconcileSanctuaryBestEffort(db, String(match.player2_telegram_id), 'kaiju_terminal');
-    return {
-      accepted: true,
-      duplicate: true,
-      reason: 'already_completed',
-      match: await getPetKaijuMatch(db, match.match_id),
-      resolved,
-      reward_results: rewardResults,
-      queue: await getPetKaijuQueue(db, match.chat_id, [match.player1_telegram_id, match.player2_telegram_id || '']),
-    };
+  const saved = await getPetKaijuMatch(db, match.match_id);
+  if (saved?.status !== 'completed' || !['player1_win','player2_win','draw'].includes(saved.result)) {
+    return { accepted: false, reason: 'kaiju_match_not_active', match: saved };
   }
-
-  const rewardResults = await awardPetKaijuMatchResults(db, match, resolved);
-  await db.prepare(`
-    UPDATE telegram_pet_kaiju_queue
-    SET status = 'played', updated_at = CURRENT_TIMESTAMP
-    WHERE chat_id = ? AND telegram_id IN (?, ?) AND status = 'waiting'
-  `).bind(String(match.chat_id), String(match.player1_telegram_id), String(match.player2_telegram_id || '')).run().catch(() => {});
+  match = saved;
+  // Only the committed result authorizes a payout, including concurrent retries.
+  const committed = { ...resolved, result: saved.result };
+  const rewardResults = await awardPetKaijuMatchResults(db, match, committed);
+  await db.prepare(`UPDATE telegram_pet_kaiju_queue SET status='played', updated_at=CURRENT_TIMESTAMP
+    WHERE chat_id=? AND telegram_id IN (?,?) AND status='waiting'`)
+    .bind(String(match.chat_id),String(match.player1_telegram_id),String(match.player2_telegram_id || '')).run();
   const queue = await getPetKaijuQueue(db, match.chat_id, [match.player1_telegram_id, match.player2_telegram_id || '']);
   await reconcileSanctuaryBestEffort(db, String(match.player1_telegram_id), 'kaiju_terminal');
   if (match.player2_telegram_id) await reconcileSanctuaryBestEffort(db, String(match.player2_telegram_id), 'kaiju_terminal');
-  return { accepted: true, reason: 'kaiju_completed', match: await getPetKaijuMatch(db, match.match_id), resolved, reward_results: rewardResults, queue };
+  const duplicate = Number(completionResult?.meta?.changes || 0) === 0;
+  return { accepted: true, duplicate, reason: duplicate ? 'already_completed' : 'kaiju_completed',
+    match, resolved: committed, reward_results: rewardResults, queue };
 }
 
 function getPetArenaRankBucket(level) {
@@ -5864,25 +5925,50 @@ async function completePetArenaBattle(db, battle, newlyCompleted = false) {
   return { accepted:true, duplicate:duplicateCompletion, reason:duplicateCompletion ? 'already_completed' : 'arena_completed',
     battle:saved, result:petArenaResult(saved), rewards:{player1,player2} };
 }
-async function recoverPetArenaProgress(db, telegramId) {
-  // One battle repair per refresh. The cursor is scheduling only; accepted
-  // source receipts prove payment, so an invalid old battle cannot starve later wins.
-  const rows = await db.prepare(`SELECT b.*, r.player1_move AS saved_player1_move, r.player2_move AS saved_player2_move,
-      b.battle_id AS recovery_key, cursor.setting_value AS recovery_cursor
-    FROM telegram_pet_arena_battles b
+async function recoverPetCombatProgress(db, telegramId) {
+  // Arena and Kaiju share one rotating slot so combined combat/care backlogs
+  // remain within D1's request budget and neither combat mode can starve the other.
+  const owner = String(telegramId);
+  const rows = await db.prepare(`WITH candidates(kind,id,recovery_key) AS (
+    SELECT 'arena',b.battle_id,'arena:'||b.battle_id FROM telegram_pet_arena_battles b
     LEFT JOIN telegram_pet_arena_rounds r ON r.battle_id=b.battle_id AND r.round_number=b.current_round
-    LEFT JOIN telegram_settings cursor ON cursor.telegram_id=? AND cursor.setting_key='moonpet:recovery:arena'
     WHERE (b.player1_telegram_id=? OR b.player2_telegram_id=?)
       AND ((b.status='completed' AND NOT EXISTS (SELECT 1 FROM telegram_pet_events e WHERE e.telegram_id=? AND e.status='accepted'
         AND e.event_type='arena_battle' AND e.event_key=SUBSTR('pet_arena:'||b.battle_id||':'||?,1,120)))
         OR (b.status='active' AND r.player1_move IS NOT NULL AND (r.player2_move IS NOT NULL OR b.player2_telegram_id='app')))
-    ORDER BY CASE WHEN b.battle_id>COALESCE(cursor.setting_value,'') THEN 0 ELSE 1 END,b.battle_id LIMIT 1`)
-    .bind(String(telegramId),String(telegramId),String(telegramId),String(telegramId),String(telegramId)).all();
-  if (!await claimPetRecoveryBatch(db, String(telegramId), 'arena', rows.results || [])) return;
-  for (const battle of rows.results || []) {
-    if (battle.status === 'completed') await awardPetArenaParticipant(db, battle, telegramId);
-    else await applyPetArenaMove(db, battle, telegramId, battle.current_round,
-      String(battle.player1_telegram_id) === String(telegramId) ? battle.saved_player1_move : battle.saved_player2_move);
+    UNION ALL
+    SELECT 'kaiju',b.match_id,'kaiju:'||b.match_id FROM telegram_pet_kaiju_matches b
+    WHERE (b.player1_telegram_id=? OR b.player2_telegram_id=?)
+      AND b.player1_card_key IS NOT NULL AND (CASE WHEN b.mode='solo' THEN b.cpu_card_key ELSE b.player2_card_key END) IS NOT NULL
+      AND (b.status='selecting' OR (b.status='completed' AND b.result IN ('player1_win','player2_win','draw')
+        AND NOT EXISTS (SELECT 1 FROM telegram_pet_events e WHERE e.telegram_id=? AND e.status='accepted'
+          AND e.event_type='kaiju_battle' AND e.event_key=SUBSTR('pet_kaiju:'||b.match_id||':'||?,1,120))
+        AND (json_extract(CASE WHEN json_valid(b.score_json) THEN b.score_json ELSE '{}' END,?) IS NOT NULL
+          OR EXISTS (SELECT 1 FROM telegram_pet_events e WHERE e.telegram_id=? AND e.status='pending' AND e.pet_id IS NOT NULL
+            AND e.event_type='kaiju_battle' AND e.event_key=SUBSTR('pet_kaiju:'||b.match_id||':'||?,1,120)))))
+  ) SELECT c.*,cursor.setting_value AS recovery_cursor FROM candidates c
+    LEFT JOIN telegram_settings cursor ON cursor.telegram_id=? AND cursor.setting_key='moonpet:recovery:combat'
+    ORDER BY CASE WHEN c.recovery_key>COALESCE(cursor.setting_value,'') THEN 0 ELSE 1 END,c.recovery_key LIMIT 1`)
+    .bind(owner,owner,owner,owner,owner,owner,owner,owner,`$.reward_sources."${owner}".pet_id`,owner,owner,owner).all();
+  if (!await claimPetRecoveryBatch(db, owner, 'combat', rows.results || [])) return;
+  for (const candidate of rows.results || []) {
+    if (candidate.kind === 'kaiju') {
+      const match = await getPetKaijuMatch(db, candidate.id);
+      if (match?.status === 'completed') {
+        const outcome = match.result === 'draw' ? 'kaiju_draw'
+          : match.result === (String(match.player1_telegram_id) === owner ? 'player1_win' : 'player2_win') ? 'kaiju_win' : 'kaiju_loss';
+        await awardPetKaijuPlayerResult(db, owner, match, outcome, PET_KAIJU_RESULT_REWARDS[outcome]);
+      } else if (match?.status === 'selecting') await finishPetKaijuMatch(db, match);
+    } else {
+      const battle = await getPetArenaBattle(db, candidate.id);
+      if (battle?.status === 'completed') await awardPetArenaParticipant(db, battle, owner);
+      else if (battle?.status === 'active') {
+        const round = await db.prepare('SELECT player1_move,player2_move FROM telegram_pet_arena_rounds WHERE battle_id=? AND round_number=?')
+          .bind(battle.battle_id,battle.current_round).first();
+        const move = String(battle.player1_telegram_id) === owner ? round?.player1_move : round?.player2_move;
+        if (move) await applyPetArenaMove(db, battle, owner, battle.current_round, move);
+      }
+    }
   }
   return true;
 }
@@ -8892,7 +8978,7 @@ function serializePetMiniAppKaijuMatch(match, telegramId = '') {
     category_key: category?.key || null,
     category,
     roll: category ? Number(match.roll || category.roll || 0) : null,
-    score_json: completed ? match.score_json : null,
+    score_json: completed ? JSON.stringify({ category: rawScore.category, player1: rawScore.player1, opponent: rawScore.opponent, result: rawScore.result }) : null,
     score: completed ? {
       player: Number(ownScore?.score || 0),
       opponent: Number(rivalScore?.score || 0),
@@ -9412,11 +9498,11 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
   await recoverPetLiveSystemEndings(db, telegramId, (args) => awardPetReward(db, args), PET_STATE_RECOVERY_LIMITS.live_endings).catch(error => {
     logApiFailure('pet_live_ending_recovery_failed', { message: error?.message || String(error) });
   });
-  const arenaRecovery = await recoverPetArenaProgress(db, telegramId).catch(error => {
-    logApiFailure('pet_arena_recovery_failed', { message: error?.message || String(error) });
+  const combatRecovery = await recoverPetCombatProgress(db, telegramId).catch(error => {
+    logApiFailure('pet_combat_recovery_failed', { message: error?.message || String(error) });
     return true; // Reserve the same budget after an interrupted combat repair.
   });
-  await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward, { limit: arenaRecovery ? PET_STATE_RECOVERY_LIMITS.runtime_after_arena : PET_STATE_RECOVERY_LIMITS.runtime }).catch((error) => {
+  await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward, { limit: combatRecovery ? PET_STATE_RECOVERY_LIMITS.runtime_after_combat : PET_STATE_RECOVERY_LIMITS.runtime }).catch((error) => {
     logApiFailure('pet_runtime_recovery_failed', { message: error?.message || String(error) });
   });
   await recoverPetWeeklyBossVictories(db, telegramId, finishPetWeeklyBossVictory, PET_STATE_RECOVERY_LIMITS.weekly_bosses).catch((error) => {
@@ -9989,25 +10075,7 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
     }
     if (!cardKey) return { accepted: false, reason: 'kaiju_card_invalid' };
     if (match.status === 'completed') return finishPetKaijuMatch(db, match);
-    const isPlayer1 = String(match.player1_telegram_id) === String(telegramId);
-    const cpuCard = match.mode === 'solo' ? pickPetKaijuCpuCard(cardKey).id : null;
-    const category = match.category_key ? PET_KAIJU_CATEGORIES.find((entry) => entry.key === match.category_key) : pickPetKaijuCategory();
-    const locked = isPlayer1
-      ? await db.prepare(`UPDATE telegram_pet_kaiju_matches
-          SET player1_card_key=?, cpu_card_key=COALESCE(?, cpu_card_key), category_key=COALESCE(category_key, ?),
-              roll=CASE WHEN roll IS NULL OR roll=0 THEN ? ELSE roll END, updated_at=CURRENT_TIMESTAMP
-          WHERE match_id=? AND status='selecting' AND player1_card_key IS NULL`)
-        .bind(cardKey, cpuCard, category.key, category.roll, match.match_id).run()
-      : await db.prepare(`UPDATE telegram_pet_kaiju_matches SET player2_card_key=?, updated_at=CURRENT_TIMESTAMP
-          WHERE match_id=? AND status='selecting' AND player2_card_key IS NULL`)
-        .bind(cardKey, match.match_id).run();
-    if (Number(locked?.meta?.changes || 0) <= 0) return { accepted: false, reason: 'kaiju_card_locked' };
-    const updated = await getPetKaijuMatch(db, match.match_id);
-    const ready = updated.mode === 'solo'
-      ? updated.player1_card_key && updated.cpu_card_key
-      : updated.player1_card_key && updated.player2_card_key;
-    if (!ready) return { accepted: true, reason: 'kaiju_card_waiting', match: updated };
-    return finishPetKaijuMatch(db, updated);
+    return applyPetKaijuCard(db, match, telegramId, cardKey);
   }
   return { accepted: false, reason: 'mini_app_action_invalid' };
 }
@@ -14710,6 +14778,7 @@ export const __petMediaTestHooks = Object.freeze({
   applyPetItemActionBonuses,
   awardPetKaijuPlayerResult,
   finishPetKaijuMatch,
+  cmdPetKaiju,
   getPetHighLevelGearXpMultiplier,
   getPetRepeatRewardMultiplier,
   parsePetRepeatRewardReservation,
@@ -16804,7 +16873,7 @@ function formatPetKaijuResult(result) {
 
 async function cmdPetKaiju(db, tok, chatId, telegramId, argStr = '', chatType = '', fromUser = {}, eventKey = null) {
   await upsertTelegramUser(db, fromUser).catch(() => {});
-  const pet = await getPetProfile(db, telegramId).catch(() => null);
+  const pet = await getPetProfile(db, telegramId);
   if (!pet) {
     await sendTelegramMessage(tok, chatId, 'You need a Moonpet first. Use /adopt to start.');
     return;
@@ -16909,45 +16978,22 @@ async function cmdPetKaiju(db, tok, chatId, telegramId, argStr = '', chatType = 
       }
       return;
     }
-    if (String(match.player1_telegram_id) === String(telegramId)) {
-      const cpuCard = match.mode === 'solo' ? pickPetKaijuCpuCard(cardKey).id : match.cpu_card_key || null;
-      const category = match.category_key ? PET_KAIJU_CATEGORIES.find((entry) => entry.key === match.category_key) : pickPetKaijuCategory();
-      const lockResult = await db.prepare(`
-        UPDATE telegram_pet_kaiju_matches
-        SET player1_card_key = ?, cpu_card_key = COALESCE(?, cpu_card_key), category_key = COALESCE(category_key, ?), roll = CASE WHEN roll IS NULL OR roll = 0 THEN ? ELSE roll END, updated_at = CURRENT_TIMESTAMP
-        WHERE match_id = ? AND status = 'selecting' AND player1_card_key IS NULL
-      `).bind(cardKey, cpuCard, category.key, category.roll, match.match_id).run();
-      if (lockResult?.meta?.changes !== undefined && Number(lockResult.meta.changes || 0) <= 0) {
-        await sendTelegramMessage(tok, chatId, `Card already locked for <code>${escapeHtml(telegramId)}</code>. Waiting for the other player.`);
-        return;
-      }
-    } else {
-      const lockResult = await db.prepare(`
-        UPDATE telegram_pet_kaiju_matches
-        SET player2_card_key = ?, updated_at = CURRENT_TIMESTAMP
-        WHERE match_id = ? AND status = 'selecting' AND player2_card_key IS NULL
-      `).bind(cardKey, match.match_id).run();
-      if (lockResult?.meta?.changes !== undefined && Number(lockResult.meta.changes || 0) <= 0) {
-        await sendTelegramMessage(tok, chatId, `Card already locked for <code>${escapeHtml(telegramId)}</code>. Waiting for the other player.`);
-        return;
-      }
-    }
-    const updated = await getPetKaijuMatch(db, match.match_id);
-    const ready = updated.mode === 'solo'
-      ? updated.player1_card_key && updated.cpu_card_key
-      : updated.player1_card_key && updated.player2_card_key;
-    if (!ready) {
+    const completed = await applyPetKaijuCard(db, match, telegramId, cardKey);
+    if (completed.reason === 'kaiju_card_waiting') {
       await sendTelegramMessage(tok, chatId, `Card locked for <code>${escapeHtml(telegramId)}</code>. Waiting for the other player.`);
       return;
     }
-    const completed = await finishPetKaijuMatch(db, updated);
+    if (!completed.accepted) {
+      await sendTelegramMessage(tok, chatId, 'That Kaiju table changed before the choice settled. Use /petkaiju to refresh.');
+      return;
+    }
     const copy = await appendMoonpetReaction(db, telegramId, 'kaiju', formatPetKaijuResult(completed), pet, { activity_label: 'the Kaiju battle result' });
     await sendTelegramPetReply(tok, chatId, copy, { reply_markup: petReplyMarkup() }, 'play');
     return;
   }
 
   if (!groupChat) {
-    const active = await getActivePetKaijuMatch(db, chatId).catch(() => null);
+    const active = await getActivePetKaijuMatch(db, chatId);
     const match = active && String(active.player1_telegram_id) === String(telegramId) && active.mode === 'solo'
       ? active
       : await createPetKaijuMatch(db, chatId, telegramId, 'solo');
@@ -16961,7 +17007,7 @@ async function cmdPetKaiju(db, tok, chatId, telegramId, argStr = '', chatType = 
     return;
   }
 
-  const active = await getActivePetKaijuMatch(db, chatId).catch(() => null);
+  const active = await getActivePetKaijuMatch(db, chatId);
   if (!active) {
     const match = await createPetKaijuMatch(db, chatId, telegramId, 'group');
     await sendTelegramPetReply(tok, chatId, formatPetKaijuLobby(match), { reply_markup: buildPetKaijuLobbyReplyMarkup(match) }, 'play');
