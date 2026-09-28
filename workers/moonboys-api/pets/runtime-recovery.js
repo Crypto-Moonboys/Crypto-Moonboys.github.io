@@ -12,7 +12,9 @@ export async function recoverPetRuntimeAwards(db, owner, award, filter = {}) {
   // Match JS trim before excluding paid rows. Old oversized API keys may have
   // longer specialist receipts than their 120-character primary source key;
   // those ambiguous prefixes must not be paid again under the shortened key.
-  const rows = await db.prepare(`WITH raw_candidates AS (
+  // D1 permits at most five terms in one compound SELECT. Materialize the
+  // four-source groups so SQLite cannot flatten them back into eight terms.
+  const rows = await db.prepare(`WITH run_candidates AS MATERIALIZED (
     SELECT s.pet_id, r.season_key, r.run_id, 'run_step' AS action, date(s.created_at) AS day_key,
       COALESCE(json_extract(CASE WHEN json_valid(s.metadata) THEN s.metadata ELSE '{}' END,'$.runtime_event_key'),
         CASE json_extract(CASE WHEN json_valid(s.metadata) THEN s.metadata ELSE '{}' END,'$.source')
@@ -50,7 +52,7 @@ export async function recoverPetRuntimeAwards(db, owner, award, filter = {}) {
       ON r.run_id=m.run_id AND r.telegram_id=m.telegram_id AND r.pet_id=m.pet_id
     JOIN telegram_pet_daily_runs d ON d.run_id=r.run_id AND d.telegram_id=r.telegram_id AND d.pet_id=r.pet_id
     WHERE m.telegram_id=? AND m.event_type='run_end' AND r.status='extracted' AND r.current_room<r.max_room
-    UNION ALL
+  ), other_candidates(pet_id,season_key,run_id,action,day_key,event_key,equipment_snapshot,equipment_action,source_event_id) AS MATERIALIZED (
     SELECT e.pet_id,e.season_key,'','explore',e.day_key,
       CASE WHEN e.event_type='adventure' THEN
         CASE json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.context.source')
@@ -88,6 +90,8 @@ export async function recoverPetRuntimeAwards(db, owner, award, filter = {}) {
       AND e.event_key='seasonal:'||b.season_key||':'||b.telegram_id||':'||b.pet_id
       AND e.event_type='seasonal_boss' AND e.status='accepted'
     WHERE b.telegram_id=? AND b.defeated_at IS NOT NULL AND b.boss_key IN (${Object.keys(PET_SEASONAL_BOSSES).map(() => '?').join(',')})
+  ), raw_candidates AS (
+    SELECT * FROM run_candidates UNION ALL SELECT * FROM other_candidates
   ), candidates AS (
     SELECT pet_id,season_key,run_id,action,day_key,
       TRIM(event_key, char(9,10,11,12,13,32,160,5760,8192,8193,8194,8195,8196,8197,8198,8199,8200,8201,8202,8232,8233,8239,8287,12288,65279)) AS event_key, equipment_snapshot, equipment_action, source_event_id
