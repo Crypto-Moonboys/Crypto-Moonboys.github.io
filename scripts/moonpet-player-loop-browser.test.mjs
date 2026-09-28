@@ -268,21 +268,15 @@ try {
     currentUser = 'browser-young';
     await page.reload();
     await page.waitForSelector('[data-panel="care"]');
-    await page.waitForFunction(() => window.MoonpetBetaAppearance.getBackgroundArtState().mode === 'space_sprite_loop');
-    assert.equal(await page.evaluate(() => window.MoonpetBetaAppearance.getBackgroundArtState().frame), 0, 'reduced motion uses the first background frame');
+    await page.waitForFunction(() => window.MoonpetBetaAppearance.getBackgroundArtState().mode === 'bitty_background');
+    assert.equal(await page.evaluate(() => window.MoonpetBetaAppearance.getBackgroundArtState().source), '/img/BITTY BACKGROUND.jpg');
     if (viewport.width === 390) {
       await page.emulateMedia({ reducedMotion: 'no-preference' });
       await page.reload();
       await page.waitForSelector('[data-panel="care"]');
-      await page.waitForFunction(() => window.MoonpetBetaAppearance.getBackgroundArtState().mode === 'space_sprite_loop');
-      const initialFrame = await page.evaluate(() => window.MoonpetBetaAppearance.getBackgroundArtState().frame);
-      await page.waitForFunction(previous => window.MoonpetBetaAppearance.getBackgroundArtState().frame !== previous, initialFrame);
-      await page.screenshot({ path: '/tmp/moonpet-space-background-mobile.png' });
+      await page.waitForFunction(() => window.MoonpetBetaAppearance.getBackgroundArtState().mode === 'bitty_background');
+      await page.screenshot({ path: '/tmp/moonpet-bitty-background-mobile.png' });
       await page.emulateMedia({ reducedMotion: 'reduce' });
-      await page.reload();
-      await page.waitForSelector('[data-panel="care"]');
-      await page.waitForFunction(() => window.MoonpetBetaAppearance.getBackgroundArtState().mode === 'space_sprite_loop');
-      assert.equal(await page.evaluate(() => window.MoonpetBetaAppearance.getBackgroundArtState().frame), 0);
     }
     for (const screen of ['missions', 'explore', 'work', 'economy', 'profile', 'home']) {
       await page.locator(`[data-screen="${screen}"]`).click();
