@@ -97,7 +97,8 @@ export async function recoverPetEquipmentRows(db, owner) {
     owned_pets AS (SELECT i.* FROM telegram_pet_instances i JOIN telegram_pet_season_slots s
       ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id AND s.season_key=i.season_key AND s.slot_number=i.slot_number
       WHERE i.telegram_id=?), ownership AS (
-      ${slots.map(slot => `SELECT equipped_${slot} AS item_key FROM owned_pets`).join(' UNION ')}
+      SELECT d.item_key FROM definitions d JOIN owned_pets p
+        ON d.item_key IN (${slots.map(slot => `p.equipped_${slot}`).join(',')})
       UNION SELECT json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.item_key')
         FROM telegram_pet_events e JOIN owned_pets p ON p.pet_id=e.pet_id AND p.season_key=e.season_key
         WHERE e.telegram_id=? AND e.event_type='buy' AND e.status='accepted'

@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import fs from 'node:fs';
+import { createHmac } from 'node:crypto';
+import { spawnSync } from 'node:child_process';
 import { DatabaseSync } from 'node:sqlite';
 import { applyPetRuntimeAward, getPetRuntimeSourceDropRoll, getOrCreatePetRuntimeState } from '../workers/moonboys-api/pets/runtime-phase-5a.js';
 import { resolvePetRareDrop } from '../workers/moonboys-api/pets/economy-phase-3.js';
@@ -1260,4 +1262,70 @@ test('a transient timed-claim receipt lookup cannot settle without its material 
   const event=f.sql.prepare("SELECT id FROM telegram_pet_events WHERE event_type='activity_claim'").get();
   assert.equal((await f.act({action:'activity_claim'})).accepted,true);
   await assertSourceMaterial(f,'timed_work',event.id,'job');
+});
+
+
+test('full Mini App actions for two equipped pets compile under the production compound SELECT limit', async () => {
+  const f = fixture('84999');
+  f.pet('second-d1-limit', currentSeason, 300, 2);
+  for (const table of ['telegram_pet_profiles', 'telegram_pet_instances']) {
+    f.sql.prepare(`UPDATE ${table} SET equipped_food='crystal_bowl',equipped_toy='hoverboard',equipped_outfit='crown_jacket',
+      equipped_armor='cyber_armor',equipped_weapon='moon_blaster',equipped_charm='shield_charm' WHERE telegram_id=?`).run(f.owner);
+  }
+  const statements = new Map();
+  const capture = statement => {
+    if (/WITH (?:run_candidates|raw_candidates|definitions)/.test(statement.query)) statements.set(statement.query, statement.args);
+  };
+  f.db.beforeFirst = capture; f.db.beforeAll = capture; f.db.beforeRun = capture;
+  f.db.beforeBatch = batch => batch.forEach(capture);
+  const token = 'isolated-mini-app-test-token';
+  const auth = new URLSearchParams({ auth_date: String(Math.floor(Date.now() / 1000)),
+    user: JSON.stringify({ id: Number(f.owner), first_name: 'D1 test player' }) });
+  const check = [...auth].sort(([a], [b]) => a.localeCompare(b)).map(([key, value]) => `${key}=${value}`).join('\n');
+  auth.set('hash', createHmac('sha256', createHmac('sha256', 'WebAppData').update(token).digest()).update(check).digest('hex'));
+  async function request(path, body = {}) {
+    const response = await deployedWorker.fetch(new Request(`https://moonboys.test/telegram-pets/app/${path}`, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ init_data: auth.toString(), ...body }),
+    }), { DB: f.db, TELEGRAM_BOT_TOKEN: token });
+    const data = await response.json();
+    assert.equal(response.status, 200, JSON.stringify(data));
+    assert.ok(data.state?.pet, 'the full HTTP response includes a usable state');
+    if (path === 'action') assert.equal(data.result.accepted, true);
+    return data;
+  }
+  await request('state');
+  await request('action', { action: 'feed', request_id: 'd1-feed' });
+  await request('action', { action: 'switch_pet_slot', pet_id: 'second-d1-limit', request_id: 'd1-switch' });
+  const played = await request('action', { action: 'play', request_id: 'd1-play' });
+  assert.equal(played.state.pet.pet_id, 'second-d1-limit');
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_equipment_progression').get().n, 6);
+  assert.equal(progress(f).care_xp, 8);
+  assert.equal(f.sql.prepare('SELECT care_xp FROM telegram_pet_specialist_progression WHERE pet_id=?').get('second-d1-limit').care_xp, 7);
+
+  // Node SQLite does not expose sqlite3_limit. Python 3.11+ exposes the real
+  // SQLite compiler limit, unlike counting UNION tokens (which misses nesting).
+  const schema = f.sql.prepare("SELECT sql FROM sqlite_schema WHERE sql IS NOT NULL AND name NOT LIKE 'sqlite_%' ORDER BY CASE type WHEN 'table' THEN 0 ELSE 1 END").all().map(row => row.sql + ';').join('\n');
+  assert.equal(statements.size, 2, 'exercise both production recovery queries through real HTTP routes');
+  const compiled = spawnSync('python3', ['-c', `
+import json, sqlite3, sys
+payload = json.load(sys.stdin)
+db = sqlite3.connect(':memory:')
+db.executescript(payload['schema'])
+db.setlimit(sqlite3.SQLITE_LIMIT_COMPOUND_SELECT, 5)
+try:
+    db.execute(' UNION ALL '.join(['SELECT 1'] * 6))
+except sqlite3.OperationalError as error:
+    assert 'too many terms in compound SELECT' in str(error)
+else:
+    raise AssertionError('D1 compound limit was not enforced')
+for query, args in payload['statements']:
+    try:
+        db.execute('EXPLAIN ' + query, args).fetchall()
+    except Exception as error:
+        raise AssertionError(str(error) + '\\n' + query) from error
+print('Compiled', len(payload['statements']), 'actual Mini App statements with compound limit 5')
+`], { input: JSON.stringify({ schema, statements: [...statements] }), encoding: 'utf8' });
+  assert.ifError(compiled.error);
+  assert.equal(compiled.status, 0, compiled.stderr);
 });
