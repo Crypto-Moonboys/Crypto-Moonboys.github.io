@@ -80,6 +80,7 @@
   var radioEnabled = false;
   var radioRequestedOn = readRadioPreference();
   var radioRequestGeneration = 0;
+  var radioRetryNeedsLoad = false;
   var deviceMemory = Number(navigator.deviceMemory || 0);
   var hardwareConcurrency = Number(navigator.hardwareConcurrency || 0);
   var renderQuality = reducedMotion || deviceMemory && deviceMemory <= 2 || hardwareConcurrency && hardwareConcurrency <= 2 ? 'low'
@@ -379,6 +380,7 @@
   function radioPlaybackFailed(error, announce) {
     radioRequestedOn = false;
     radioEnabled = false;
+    radioRetryNeedsLoad = true;
     saveRadioPreference(false);
     syncMoonpetScore();
     renderCanvasTools();
@@ -405,7 +407,7 @@
       player.volume = 0.5;
       // Reset a failed stream inside this tap, then call play before any await.
       // iOS/WebViews can lose media permission across an async module load.
-      if (player.error) player.load();
+      if (radioRetryNeedsLoad || player.error) player.load();
       var playback = player.play();
       syncMoonpetScore();
       renderCanvasTools();
@@ -415,6 +417,7 @@
         return false;
       }
       radioEnabled = true;
+      radioRetryNeedsLoad = false;
       saveRadioPreference(true);
       syncMoonpetScore();
       renderCanvasTools();
