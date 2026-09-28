@@ -387,8 +387,6 @@ db.exec(`CREATE TABLE telegram_pet_activity_sessions (
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 )`);
 
-const missingSwitch = await switchActivePetSeasonSlot(d1, 'state-player', 2, { now: new Date('2026-08-16T12:00:00Z') });
-assert.equal(missingSwitch.accepted, false, 'a paid slot missing its pet instance must be rejected');
 
 db.exec(`CREATE TABLE arcade_progression_state (
   telegram_id TEXT PRIMARY KEY, arcade_xp_total INTEGER NOT NULL DEFAULT 0,
@@ -401,6 +399,27 @@ db.exec(`CREATE TABLE arcade_xp_wallets (
   arcade_xp_spendable INTEGER NOT NULL DEFAULT 0, arcade_xp_spent INTEGER NOT NULL DEFAULT 0,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 )`);
+db.exec(`CREATE TABLE telegram_pet_runs (
+  run_id TEXT PRIMARY KEY,
+  telegram_id TEXT NOT NULL,
+  status TEXT NOT NULL
+)`);
+db.exec(`CREATE TABLE telegram_pet_arena_battles (
+  battle_id TEXT PRIMARY KEY,
+  player1_telegram_id TEXT NOT NULL,
+  player2_telegram_id TEXT,
+  status TEXT NOT NULL
+)`);
+db.exec(`CREATE TABLE telegram_pet_kaiju_matches (
+  match_id TEXT PRIMARY KEY,
+  player1_telegram_id TEXT NOT NULL,
+  player2_telegram_id TEXT,
+  status TEXT NOT NULL
+)`);
+
+const missingSwitch = await switchActivePetSeasonSlot(d1, 'state-player', 2, { now: new Date('2026-08-16T12:00:00Z') });
+assert.equal(missingSwitch.accepted, false, 'a paid slot missing its pet instance must be rejected');
+
 db.prepare(`INSERT INTO arcade_progression_state (telegram_id, arcade_xp_total) VALUES ('state-player', 1500)`).run();
 db.prepare(`INSERT INTO arcade_xp_wallets (telegram_id, arcade_xp_earned, arcade_xp_spendable) VALUES ('state-player', 1500, 1500)`).run();
 const rolloverNow = new Date('2026-08-16T12:00:00Z');
@@ -598,23 +617,6 @@ db.prepare(`INSERT INTO arcade_xp_wallets (telegram_id, arcade_xp_earned, arcade
 assert.equal((await buyPetSeasonSlot(d1, 'wallet-attacker', 2, { now: rolloverNow })).reason, 'insufficient_arcade_xp', 'a Telegram user cannot use another owner wallet');
 assert.equal(db.prepare(`SELECT arcade_xp_spendable FROM arcade_xp_wallets WHERE telegram_id='wallet-victim'`).get().arcade_xp_spendable, 500, 'another owner wallet must remain untouched');
 
-db.exec(`CREATE TABLE telegram_pet_runs (
-  run_id TEXT PRIMARY KEY,
-  telegram_id TEXT NOT NULL,
-  status TEXT NOT NULL
-)`);
-db.exec(`CREATE TABLE telegram_pet_arena_battles (
-  battle_id TEXT PRIMARY KEY,
-  player1_telegram_id TEXT NOT NULL,
-  player2_telegram_id TEXT,
-  status TEXT NOT NULL
-)`);
-db.exec(`CREATE TABLE telegram_pet_kaiju_matches (
-  match_id TEXT PRIMARY KEY,
-  player1_telegram_id TEXT NOT NULL,
-  player2_telegram_id TEXT,
-  status TEXT NOT NULL
-)`);
 
 db.prepare(`INSERT INTO telegram_pet_kaiju_matches (match_id, player1_telegram_id, player2_telegram_id, status)
   VALUES ('kaiju-switch-p1', 'state-player', 'kaiju-rival', 'active')`).run();

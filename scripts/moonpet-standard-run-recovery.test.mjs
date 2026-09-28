@@ -14,8 +14,8 @@ function fixture(owner) {
   class Statement {
     constructor(query, args = []) { this.query = query; this.args = args; }
     bind(...args) { return new Statement(this.query, args); }
-    async first() { return sql.prepare(this.query).get(...this.args) || null; }
-    async all() { return { results: sql.prepare(this.query).all(...this.args) }; }
+    async first() { if (db.beforeFirst) await db.beforeFirst(this); return sql.prepare(this.query).get(...this.args) || null; }
+    async all() { if (db.beforeAll) await db.beforeAll(this); return { results: sql.prepare(this.query).all(...this.args) }; }
     exec() {
       if (/\bRETURNING\b/i.test(this.query)) { const results = sql.prepare(this.query).all(...this.args); return { results, meta: { changes: results.length } }; }
       return { results: [], meta: { changes: Number(sql.prepare(this.query).run(...this.args).changes) } };
@@ -293,4 +293,66 @@ for (const [index, action] of ['run_step', 'run_extract'].entries()) test(action
   assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_runtime_events WHERE action IN ('run_step','run_extract')").get().n, 0, 'recovering saved work cannot mint another action award');
   await f.state();
   assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='run_complete'").get().n, 1);
+});
+
+for(const [label,method,match] of [
+  ['source pet','beforeFirst',q=>q==='SELECT * FROM telegram_pet_instances WHERE pet_id = ? LIMIT 1'],
+  ['wallet','beforeFirst',q=>q==='SELECT moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id = ?'],
+  ['inventory','beforeAll',q=>q.includes('FROM telegram_pet_inventory') && q.includes('quantity > 0')],
+  ['daily XP cap','beforeFirst',q=>q.includes('SELECT COALESCE(SUM(pet_xp_awarded), 0) AS pet_xp') && q.includes('WHERE pet_id = ?')],
+]) test(`account audit: Standard Run ${label} outage cannot resolve against missing evidence`,async()=>{
+  const f=fixture('run-read-'+label.replaceAll(' ','-')); await f.state(); f.run('read-run',{depth:0});
+  f.sql.exec('UPDATE telegram_pet_profiles SET moon_gold=1000');
+  const choice=hooks.buildPetRunChoiceReplyMarkup({run_id:'read-run',depth:0,max_depth:100,unbanked_items:'{}'}).inline_keyboard[0][0].callback_data.split(':').at(-1);
+  if(label==='daily XP cap') f.sql.prepare(`INSERT INTO telegram_pet_events
+    (id,pet_id,telegram_id,event_type,event_key,pet_xp_awarded,season_key,day_key,week_key,status)
+    VALUES ('cap',?,?,'feed','cap',1200,?,?,'test-week','accepted')`)
+    .run('current-'+f.owner,f.owner,currentSeason,now.toISOString().slice(0,10));
+  if(label==='inventory') f.sql.prepare("INSERT INTO telegram_pet_inventory (telegram_id,asset_type,asset_key,quantity) VALUES (?,'item','lucky_charm',1)").run(f.owner);
+  const before=f.sql.prepare('SELECT * FROM telegram_pet_runs').get();
+  let triggered=false;
+  f.db[method]=s=>{if(match(s.query)){triggered=true;throw Error('run_required_read_unavailable');}};
+  const originalRandom=Math.random; Math.random=()=>0;
+  try { await assert.rejects(hooks.processPetRunStep(f.db,f.owner,'read-run',choice,{event_key:'read-step'}),/run_required_read_unavailable/); }
+  finally { Math.random=originalRandom; }
+  assert.equal(triggered,true); assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_runs').get(),before);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_run_steps').get().n,0);
+  f.db[method]=null; Math.random=()=>0;
+  try { assert.equal((await hooks.processPetRunStep(f.db,f.owner,'read-run',choice,{event_key:'read-step'})).reason,'run_failed'); }
+  finally { Math.random=originalRandom; }
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_run_steps').get().n,1);
+  if(label==='daily XP cap') assert.equal(f.sql.prepare("SELECT pet_xp_awarded FROM telegram_pet_events WHERE event_type='run_fail'").get().pet_xp_awarded,0);
+  if(label==='inventory') assert.equal(f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE asset_key='lucky_charm'").get().quantity,0);
+});
+
+for(const win of [true,false]) test(`account audit: ${win?'successful':'failed'} Standard step cannot erase a concurrent care reward`,async()=>{
+  const f=fixture('run-race-'+win); await f.state(); f.run('race-run',{depth:0});
+  f.sql.exec('UPDATE telegram_pet_profiles SET moon_gold=1000');
+  const choice=hooks.buildPetRunChoiceReplyMarkup({run_id:'race-run',depth:0,max_depth:100,unbanked_items:'{}'}).inline_keyboard[0][0].callback_data.split(':').at(-1);
+  let saved,care,triggered=false;
+  f.db.beforeBatch=async statements=>{
+    for(const s of statements) assert.ok(s.args.length<=100,'D1 binding limit');
+    if(!statements.some(s=>s.query.includes('INSERT OR IGNORE INTO telegram_pet_run_steps')))return;
+    f.db.beforeBatch=null; triggered=true;
+    care=await hooks.processPetAction(f.db,f.owner,'feed',{event_key:'concurrent-feed'});
+    assert.equal(care.accepted,true);
+    saved=f.sql.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=?').get('current-'+f.owner);
+  };
+  const originalRandom=Math.random; Math.random=()=>win?0.99:0;
+  let result;
+  try { result=await hooks.processPetRunStep(f.db,f.owner,'race-run',choice,{event_key:'race-step'}); }
+  finally { Math.random=originalRandom; }
+  assert.equal(triggered,true); assert.equal(result.accepted,false,'stale step must not commit a snapshot from before the care reward');
+  assert.equal(result.reason,'run_state_changed');
+  assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=?').get('current-'+f.owner),saved);
+  assert.equal(f.sql.prepare('SELECT depth FROM telegram_pet_runs').get().depth,0);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_run_steps').get().n,0);
+  Math.random=()=>win?0.99:0;
+  try { result=await hooks.processPetRunStep(f.db,f.owner,'race-run',choice,{event_key:'race-step'}); }
+  finally { Math.random=originalRandom; }
+  assert.equal(result.accepted,true);
+  const earned=care.pet_xp_awarded+result.pet_xp_awarded;
+  assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances').get().pet_xp,200+earned);
+  for(const period of ['daily','weekly','seasonal']) assert.equal((await f.get('/telegram-pets/leaderboard?period='+period)).entries[0].pet_xp,earned,period);
+  assert.equal((await f.get('/telegram-pets/leaderboard?period=all_time')).entries[0].pet_xp,200+earned);
 });

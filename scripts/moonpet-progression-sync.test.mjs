@@ -1534,3 +1534,75 @@ for (const [label, method, match] of [
   assert.deepEqual(after.lifecycle,before.lifecycle);
   assert.equal(after.pet.moon_gold,before.pet.moon_gold);
 });
+
+for (const [label, method, match] of [
+  ['roster adoption', 'beforeFirst', q=>q.includes('SELECT telegram_id FROM telegram_pet_profiles WHERE telegram_id = ? LIMIT 1')],
+  ['roster active pointer', 'beforeFirst', q=>q.includes('SELECT pet_id, season_key FROM telegram_pet_active_slots')],
+  ['Arcade lifetime XP', 'beforeFirst', q=>q.includes('SELECT arcade_xp_total FROM arcade_progression_state')],
+  ['Arcade spendable XP', 'beforeFirst', q=>q.includes('SELECT arcade_xp_spendable, arcade_xp_spent FROM arcade_xp_wallets')],
+  ['roster owned pets', 'beforeAll', q=>q.includes('SELECT s.pet_id, s.telegram_id, s.season_key, s.slot_number, s.acquisition_type,')],
+]) test(`account audit: ${label} outage cannot reset roster or hide earned purchasing options`, async()=>{
+  const f=fixture('roster-'+label.replaceAll(' ','-'));
+  f.pet('selected-roster-pet',currentSeason,300,2); f.active('selected-roster-pet');
+  await f.state();
+  f.sql.prepare('INSERT OR REPLACE INTO arcade_progression_state (telegram_id,arcade_xp_total) VALUES (?,50000)').run(f.owner);
+  f.sql.prepare('INSERT OR REPLACE INTO arcade_xp_wallets (telegram_id,arcade_xp_earned,arcade_xp_spendable,arcade_xp_spent) VALUES (?,50000,40000,10000)').run(f.owner);
+  const before=await hooks.buildPetSeasonSlotSummary(f.db,f.owner,now);
+  assert.equal(before.active_pet_id,'selected-roster-pet'); assert.equal(before.arcade_xp_available,40000);
+  let triggered=false;
+  f.db[method]=s=>{if(match(s.query)){triggered=true;throw Error('roster_read_unavailable');}};
+  await assert.rejects(hooks.buildPetSeasonSlotSummary(f.db,f.owner,now),/roster_read_unavailable/);
+  await assert.rejects(f.state(),/roster_read_unavailable/,'full state must preserve the last good roster on the client');
+  assert.equal(triggered,true); f.db[method]=null;
+  assert.deepEqual(await hooks.buildPetSeasonSlotSummary(f.db,f.owner,now),before);
+});
+
+for(const system of ['run','arena','kaiju']) test(`account audit: unreadable pending ${system} cannot permit a pet switch`,async()=>{
+  const f=fixture('pending-'+system); f.pet('switch-target',currentSeason,300,2); await f.state();
+  if(system==='run') { standardRun(f,'pending-run'); f.sql.exec("UPDATE telegram_pet_runs SET status='active'"); }
+  if(system==='arena') f.sql.prepare(`INSERT INTO telegram_pet_arena_battles (id,battle_id,chat_id,player1_telegram_id,player1_pet_snapshot_json,player2_pet_snapshot_json) VALUES ('pending','pending','fixture',?,'{}','{}')`).run(f.owner);
+  if(system==='kaiju') f.sql.prepare(`INSERT INTO telegram_pet_kaiju_matches (id,match_id,chat_id,player1_telegram_id) VALUES ('pending','pending','fixture',?)`).run(f.owner);
+  const before=f.sql.prepare('SELECT * FROM telegram_pet_active_slots WHERE telegram_id=?').get(f.owner);
+  f.db.beforeFirst=s=>{if(s.query.includes(' AS id FROM telegram_pet_'+({run:'runs',arena:'arena_battles',kaiju:'kaiju_matches'}[system])))throw Error('pending_work_unavailable');};
+  await assert.rejects(hooks.switchActivePetSeasonSlot(f.db,f.owner,'switch-target'),/pending_work_unavailable/);
+  assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_active_slots WHERE telegram_id=?').get(f.owner),before);
+  f.db.beforeFirst=null;
+  assert.equal((await hooks.switchActivePetSeasonSlot(f.db,f.owner,'switch-target')).reason,'pet_'+system+'_active');
+});
+
+for(const kind of ['objectives','latest receipt','accepted receipt']) test(`account audit: Daily Journey ${kind} failure cannot advertise lost or unsettled progress`,async()=>{
+  const f=fixture('daily-display-'+kind.replaceAll(' ','-')); const state=await f.state();
+  const day=state.daily_journey.utc_day;
+  f.sql.prepare(`INSERT INTO telegram_pet_daily_journey_receipts (receipt_id,event_key,telegram_id,pet_id,season_key,utc_day,completed_objectives,status,reason,growth_mark_id)
+    VALUES ('earned','earned',?,?,?,?,3,'accepted','daily_journey_growth_mark_awarded','saved-mark')`).run(f.owner,authority(f).pet_id,currentSeason,day);
+  const before=await hooks.buildPetMiniAppJourneySummary(f.db,f.owner,state.season_slots,now);
+  assert.equal(before.daily.growth_mark_awarded,true);
+  let triggered=false;
+  const match=q=>kind==='objectives' ? q.includes('FROM telegram_pet_daily_journey_objectives') && q.includes('GROUP BY')
+    :q.includes('SELECT status, reason, growth_mark_id, completed_objectives') && q.includes(kind==='latest receipt'?'ORDER BY created_at DESC':'ORDER BY created_at ASC');
+  const fail=s=>{if(match(s.query)){triggered=true;throw Error('daily_journey_read_unavailable');}};
+  f.db.beforeFirst=fail; f.db.beforeAll=fail;
+  await assert.rejects(hooks.buildPetMiniAppJourneySummary(f.db,f.owner,state.season_slots,now),/daily_journey_read_unavailable/);
+  await assert.rejects(f.state(),/daily_journey_read_unavailable/);
+  assert.equal(triggered,true); f.db.beforeFirst=null; f.db.beforeAll=null;
+  assert.deepEqual((await hooks.buildPetMiniAppJourneySummary(f.db,f.owner,state.season_slots,now)).daily,before.daily);
+});
+
+test('account audit: Weekly Journey latest receipt failure uses its existing syncing state',async()=>{
+  const f=fixture('weekly-display'); const state=await f.state();
+  f.db.beforeFirst=s=>{if(s.query.includes('SELECT status, reason, crest_id, completed_objectives') && s.query.includes('ORDER BY created_at DESC'))throw Error('weekly_journey_read_unavailable');};
+  const failed=await hooks.buildPetMiniAppJourneySummary(f.db,f.owner,state.season_slots,now);
+  assert.equal(failed.weekly.authority_available,false);
+  assert.equal(failed.weekly.reason,'weekly_journey_authority_syncing');
+  f.db.beforeFirst=null;
+  assert.equal((await hooks.buildPetMiniAppJourneySummary(f.db,f.owner,state.season_slots,now)).weekly.authority_available,true);
+});
+
+test('account audit: genuine empty roster wallet and unearned journeys remain valid',async()=>{
+  const f=fixture('empty-account'); const state=await f.state();
+  assert.equal(state.season_slots.arcade_xp_available,0);
+  assert.equal(state.season_slots.can_buy_next_slot,false);
+  assert.equal(state.daily_journey.completed_objectives,0);
+  assert.equal(state.daily_journey.growth_mark_awarded,false);
+  assert.equal(state.weekly_journey.weekly_crest_awarded,false);
+});
