@@ -55,7 +55,10 @@ The wiki graph reads `js/graph-data.json` and `js/entity-graph-lite.json`, gener
 from canonical wiki data. The Arcade leaderboard passes its selected Arcade row
 to `setPlayerState`. Neither graph consumes Moonpet Pet XP or specialist XP.
 The live graph/Pets verifier passed with 327 wiki nodes and 1,629 graph edges.
-No graph regeneration or artificial Moonpet-to-graph connection is required.
+The publishing gate crossed its 20-hour freshness threshold during CI. Running
+the canonical publishing generator refreshed only the matching `verified_at`
+stamps in the full and mobile graph files; node/edge contents did not change.
+There is no artificial Moonpet-to-graph connection.
 
 ## Verification and limits
 
@@ -76,9 +79,10 @@ Already-paid historical duplicate XP is not automatically clawed back.
 
 ## Release
 
-Worker-only runtime change: deploy `moonboys-api` from clean merged main using
+Worker runtime change: deploy `moonboys-api` from clean merged main using
 `node scripts/deploy-worker-with-provenance.mjs moonboys-api`.
-No D1 migration, frontend cache bump, graph rebuild or VPS restart is needed.
+Pages automatically publishes the refreshed graph verification stamps on merge.
+No D1 migration, frontend cache bump or VPS restart is needed.
 After deployment, verify the commit at `/deployment-info`, reopen the Mini App,
 and check progression plus the public leaderboard/activity.
 
