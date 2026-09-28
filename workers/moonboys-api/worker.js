@@ -69,7 +69,7 @@ import { PET_VISIBLE_LEVEL_CURVE, getPetVisibleLevel, getPetVisibleLevelSql, get
 import { previewEncounterChoice, previewChoiceAffordability } from './pets/choice-preview.js';
 import {
   applyPetFactionBonus, buildPetLiveSystemsState, processPetCosmeticUnlock, processPetCraftRecipe, processPetDistrictMission,
-  processPetEquipmentUpgrade, processPetEventChain, processPetSeasonalBoss, claimPetSeasonalBossReward,
+  processPetEquipmentUpgrade, processPetEventChain, processPetSeasonalBoss, claimPetSeasonalBossReward, recoverPetLiveSystemEndings,
 } from './pets/live-systems.js';
 import { issuePetMiniAppChallenge, verifyPetMiniAppChallenge, verifyTelegramMiniAppInitData } from './pets/mini-app-auth.js';
 import { resolvePetCallbackRoute } from './pets/mini-app-routing.js';
@@ -9269,6 +9269,9 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
   }
   await recoverPetEquipmentRows(db, telegramId).catch(error => {
     logApiFailure('equipment_ownership_recovery_pending', { telegramId, message: error?.message || String(error) });
+  });
+  await recoverPetLiveSystemEndings(db, telegramId, (args) => awardPetReward(db, args), PET_STATE_RECOVERY_LIMITS.live_endings).catch(error => {
+    logApiFailure('pet_live_ending_recovery_failed', { message: error?.message || String(error) });
   });
   await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward, { limit: PET_STATE_RECOVERY_LIMITS.runtime }).catch((error) => {
     logApiFailure('pet_runtime_recovery_failed', { message: error?.message || String(error) });

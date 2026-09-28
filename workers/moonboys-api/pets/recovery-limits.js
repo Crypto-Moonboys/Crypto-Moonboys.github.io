@@ -6,6 +6,7 @@ export const PET_STATE_RECOVERY_LIMITS = Object.freeze({
   standard_endings: 2,
   daily_endings: 1,
   daily_records: 1,
+  live_endings: 2,
   runtime: 20,
   weekly_bosses: 2,
   journey_sources: 20,
