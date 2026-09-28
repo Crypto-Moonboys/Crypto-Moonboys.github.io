@@ -66,7 +66,7 @@ const OWNERSHIP_AUDIT_TUPLE_TABLE_SPECS = [
   {
     table: 'telegram_pet_system_events',
     seasonColumn: 'season_key',
-    petOwnedRowFilter: "t.system_key IN ('district', 'event_chain', 'seasonal_boss')",
+    petOwnedRowFilter: "t.system_key IN ('district', 'event_chain', 'seasonal_boss', 'weekly_boss_finish')",
   },
   { table: 'telegram_pet_event_chain_progress', seasonColumn: 'season_key' },
   { table: 'telegram_pet_weekly_boss_progress', seasonColumn: 'season_key' },

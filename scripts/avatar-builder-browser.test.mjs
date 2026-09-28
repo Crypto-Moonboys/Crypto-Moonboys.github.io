@@ -542,6 +542,9 @@ try {
   assert(fullExportState.draws.every((source) => source.includes('/img/avatar-builder/layers/')), 'Export must use full-size layer paths');
   assert(!fullExportState.draws.some((source) => source.includes('/thumbnails/') || source.includes('/img/CRYPTO-MOONBOYS-OG-TRAITS/')), 'Export must never use thumbnails or original 4000x4000 sources');
   assert.equal(await fullExport.locator('#download-png').isEnabled(), true, 'Download button must re-enable after success');
+  // announce() updates the live region on the next animation frame, after the
+  // download has begun. Wait for that UI contract instead of racing the frame.
+  await fullExport.waitForFunction(() => /download ready/i.test(document.getElementById('live-region')?.textContent || ''), null, { timeout: 5000 });
   assert.match(await fullExport.locator('#live-region').textContent(), /download ready/i, 'Successful export must be announced in the ARIA live region');
   await fullExport.close();
 

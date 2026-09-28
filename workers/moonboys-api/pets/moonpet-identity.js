@@ -95,7 +95,7 @@ async function resolveMoonpetIdentityScope(db, telegramId, request = {}) {
 async function readMoonpetIdentitySourceEvent(db, telegramId, request = {}) {
   const sourceEventKey = sourceEventKeyFor(request);
   if (!sourceEventKey) return { ok: true, source_event_key: null, source_event: null };
-  const row = await db.prepare(`SELECT pet_id, telegram_id, season_key, event_type, status, reason, metadata
+  const row = await db.prepare(`SELECT pet_id, telegram_id, season_key, event_type, status, reason, metadata, created_at
     FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ? LIMIT 1`)
     .bind(telegramId, sourceEventKey).first().catch(() => null);
   if (!row || row.status !== 'accepted') return { ok: false, reason: 'source_event_not_accepted', source_event_key: sourceEventKey };
@@ -126,7 +126,7 @@ function verifyMoonpetIdentitySourceEvent(request = {}, scope, source, expectedT
   return { ok: true, source_event_key: sourceEventKey, source_event: row };
 }
 
-async function resolveMoonpetIdentityAuthority(db, telegramId, request = {}, expectedTypes = []) {
+async function resolveMoonpetIdentityAuthority(db, telegramId, request = {}, expectedTypes = [], recoverSource = false) {
   const source = await readMoonpetIdentitySourceEvent(db, telegramId, request);
   if (!source.ok) return { ok: false, reason: source.reason, source_event_key: source.source_event_key };
   const hasSource = Boolean(source.source_event_key && source.source_event);
@@ -140,8 +140,9 @@ async function resolveMoonpetIdentityAuthority(db, telegramId, request = {}, exp
   }
   let scope = null;
   if (hasSource) {
-    scope = await resolveMoonpetIdentityScope(db, telegramId, {
+    scope = await (recoverSource ? readMoonpetIdentityScope : resolveMoonpetIdentityScope)(db, telegramId, {
       ...request,
+      include_archived: recoverSource,
       pet_id: source.source_event.pet_id,
       season_key: source.source_event.season_key,
     });
@@ -332,11 +333,15 @@ export async function recordMoonpetMemory(db, request = {}) {
   if (values.boss_id && !ID_PATTERN.test(values.boss_id)) throw new Error('invalid_moonpet_memory');
   if ((values.type === 'milestone' && !values.milestone) || (values.milestone && (!ID_PATTERN.test(values.milestone) || !MOONPET_MEMORY_MILESTONES.has(values.milestone)))) throw new Error('invalid_moonpet_memory');
   const expectedTypes = request.source_event_types || request.source_event_type || (values.type === 'boss_victory' ? ['weekly_boss', 'run_boss', 'daily_moon_run'] : []);
-  const authority = await resolveMoonpetIdentityAuthority(db, telegramId, request, expectedTypes);
+  const authority = await resolveMoonpetIdentityAuthority(db, telegramId, request, expectedTypes, request.recover_source_event === true);
   if (!authority.ok) return { accepted: false, duplicate: false, reason: authority.reason, source_event_key: authority.source_event_key };
   const petId = authority.scope.pet_id;
   const seasonKey = authority.scope.season_key;
   const sourceEventKey = authority.source.source_event_key;
+  // Only accepted source-backed memory recovery may write an archived pet.
+  const recoverSource = request.recover_source_event === true && Boolean(sourceEventKey);
+  const memoryStatus = recoverSource ? "IN ('active','archived')" : "= 'active'";
+  const sourceTimestamp = recoverSource ? authority.source.source_event.created_at : null;
   const eventId = crypto.randomUUID();
   const milestoneJson = safeJson(values.milestone ? [values.milestone] : []);
   const corruptMemory = await db.prepare(`SELECT 1 AS corrupt FROM telegram_pet_memories
@@ -352,13 +357,13 @@ export async function recordMoonpetMemory(db, request = {}) {
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_identity_events
       (event_id, pet_id, telegram_id, season_key, event_key, event_kind, payload)
       SELECT ?, ?, ?, ?, ?, 'memory', ? WHERE EXISTS
-        (SELECT 1 FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ? AND season_key = ? AND status = 'active')`)
+        (SELECT 1 FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ? AND season_key = ? AND status ${memoryStatus})`)
       .bind(eventId, petId, telegramId, seasonKey, eventKey, safeJson({ ...values, source_event_key: sourceEventKey }), petId, telegramId, seasonKey),
     db.prepare(`INSERT INTO telegram_pet_memories
       (pet_id, telegram_id, season_key, first_adoption_at, first_run_at, first_extraction_at, first_boss_victory_at, first_boss_id,
        biggest_reward_amount, biggest_reward_currency, total_runs, total_bosses_defeated, milestones)
       SELECT ?, ?, ?, CASE WHEN ?=1 THEN CURRENT_TIMESTAMP END, CASE WHEN ?=1 THEN CURRENT_TIMESTAMP END,
-        CASE WHEN ?=1 THEN CURRENT_TIMESTAMP END, CASE WHEN ?=1 THEN CURRENT_TIMESTAMP END, NULLIF(?, ''), ?, ?, ?, ?, ?
+        CASE WHEN ?=1 THEN CURRENT_TIMESTAMP END, CASE WHEN ?=1 THEN COALESCE(?, CURRENT_TIMESTAMP) END, NULLIF(?, ''), ?, ?, ?, ?, ?
       WHERE EXISTS (SELECT 1 FROM telegram_pet_identity_events WHERE event_id = ? AND pet_id = ? AND telegram_id = ? AND season_key = ? AND applied_at IS NULL)
         AND NOT EXISTS (SELECT 1 FROM telegram_pet_boss_victories
           WHERE pet_id = ? AND boss_id = ? AND NOT (telegram_id = ? AND season_key = ?))
@@ -366,8 +371,10 @@ export async function recordMoonpetMemory(db, request = {}) {
         first_adoption_at = COALESCE(telegram_pet_memories.first_adoption_at, excluded.first_adoption_at),
         first_run_at = COALESCE(telegram_pet_memories.first_run_at, excluded.first_run_at),
         first_extraction_at = COALESCE(telegram_pet_memories.first_extraction_at, excluded.first_extraction_at),
-        first_boss_victory_at = COALESCE(telegram_pet_memories.first_boss_victory_at, excluded.first_boss_victory_at),
-        first_boss_id = COALESCE(telegram_pet_memories.first_boss_id, excluded.first_boss_id),
+        first_boss_victory_at = CASE WHEN julianday(excluded.first_boss_victory_at)<julianday(telegram_pet_memories.first_boss_victory_at)
+          THEN excluded.first_boss_victory_at ELSE COALESCE(telegram_pet_memories.first_boss_victory_at, excluded.first_boss_victory_at) END,
+        first_boss_id = CASE WHEN julianday(excluded.first_boss_victory_at)<julianday(telegram_pet_memories.first_boss_victory_at)
+          THEN excluded.first_boss_id ELSE COALESCE(telegram_pet_memories.first_boss_id, excluded.first_boss_id) END,
         biggest_reward_currency = CASE WHEN excluded.biggest_reward_amount > telegram_pet_memories.biggest_reward_amount THEN excluded.biggest_reward_currency ELSE telegram_pet_memories.biggest_reward_currency END,
         biggest_reward_amount = MAX(telegram_pet_memories.biggest_reward_amount, excluded.biggest_reward_amount),
         total_runs = telegram_pet_memories.total_runs + excluded.total_runs,
@@ -378,7 +385,7 @@ export async function recordMoonpetMemory(db, request = {}) {
       WHERE telegram_pet_memories.pet_id = excluded.pet_id
         AND telegram_pet_memories.telegram_id = excluded.telegram_id
         AND telegram_pet_memories.season_key = excluded.season_key`)
-      .bind(petId, telegramId, seasonKey, values.first_adoption, values.first_run, values.first_extraction, values.first_boss, values.boss_id,
+      .bind(petId, telegramId, seasonKey, values.first_adoption, values.first_run, values.first_extraction, values.first_boss, sourceTimestamp, values.boss_id,
         values.reward_amount, values.reward_currency, values.total_runs, values.total_bosses, milestoneJson, eventId, petId, telegramId, seasonKey,
         petId, values.boss_id, telegramId, seasonKey),
   ];
