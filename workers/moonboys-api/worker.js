@@ -15899,6 +15899,9 @@ function buildPetProgressMenuReplyMarkup() {
 }
 
 async function syncPetAchievementsForPet(db, telegramId, petIdRaw, seasonKeyRaw, recoverSource = false) {
+  // A recovery completion marker requires successful authoritative reads.
+  // UI-only projections may still degrade gracefully when a read is unavailable.
+  const unavailable = (error) => { if (recoverSource) throw error; return null; };
   const petId = String(petIdRaw || '').trim();
   const seasonKey = String(seasonKeyRaw || '').trim();
   if (!telegramId || !petId || !seasonKey) return [];
@@ -15913,24 +15916,24 @@ async function syncPetAchievementsForPet(db, telegramId, petIdRaw, seasonKeyRaw,
       AND s.status ${recoverSource ? "IN ('active','archived')" : "= 'active'"}
       AND i.status ${recoverSource ? "IN ('active','archived')" : "= 'active'"}
     LIMIT 1`)
-    .bind(petId, telegramId, seasonKey).first().catch(() => null);
+    .bind(petId, telegramId, seasonKey).first().catch(unavailable);
   if (!scope || !scope.pet_id || !scope.telegram_id || !scope.season_key) return [];
   const corruptExisting = await db.prepare(`SELECT 1 AS corrupt FROM telegram_pet_achievements
     WHERE pet_id = ? AND NOT (telegram_id = ? AND season_key = ?) LIMIT 1`)
     .bind(petId, telegramId, seasonKey).first();
   if (corruptExisting) throw new Error('moonpet_achievement_authority_tuple_mismatch');
   const [profile, events, memory, personalities, evolution] = await Promise.all([
-    db.prepare(`SELECT 1 AS adopted FROM telegram_pet_profiles WHERE telegram_id = ?`).bind(telegramId).first().catch(() => null),
+    db.prepare(`SELECT 1 AS adopted FROM telegram_pet_profiles WHERE telegram_id = ?`).bind(telegramId).first().catch(unavailable),
     db.prepare(`SELECT
       SUM(CASE WHEN event_type IN ('feed','play','clean','sleep','train') AND status='accepted' THEN 1 ELSE 0 END) AS care_actions,
       SUM(CASE WHEN event_type='random_event' AND status='accepted' THEN 1 ELSE 0 END) AS event_actions,
       SUM(CASE WHEN event_type='work' AND status='accepted' THEN 1 ELSE 0 END) AS job_actions,
       COUNT(DISTINCT CASE WHEN event_type='work' AND status='accepted' THEN reason END) AS distinct_jobs
-      FROM telegram_pet_events WHERE telegram_id = ? AND pet_id = ? AND season_key = ?`).bind(telegramId, petId, seasonKey).first().catch(() => null),
+      FROM telegram_pet_events WHERE telegram_id = ? AND pet_id = ? AND season_key = ?`).bind(telegramId, petId, seasonKey).first().catch(unavailable),
     db.prepare(`SELECT total_runs, total_bosses_defeated FROM telegram_pet_memories
-      WHERE pet_id = ? AND telegram_id = ? AND season_key = ?`).bind(petId, telegramId, seasonKey).first().catch(() => null),
+      WHERE pet_id = ? AND telegram_id = ? AND season_key = ?`).bind(petId, telegramId, seasonKey).first().catch(unavailable),
     db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_personality_traits
-      WHERE pet_id = ? AND telegram_id = ? AND season_key = ? AND unlocked_at IS NOT NULL`).bind(petId, telegramId, seasonKey).first().catch(() => null),
+      WHERE pet_id = ? AND telegram_id = ? AND season_key = ? AND unlocked_at IS NOT NULL`).bind(petId, telegramId, seasonKey).first().catch(unavailable),
     db.prepare(`SELECT COALESCE((
       SELECT MAX(e.stage)
       FROM telegram_pet_evolutions_by_pet e
@@ -15940,7 +15943,7 @@ async function syncPetAchievementsForPet(db, telegramId, petIdRaw, seasonKeyRaw,
         AND NOT EXISTS (SELECT 1 FROM telegram_pet_season_slots stale_s
           WHERE stale_s.pet_id = e.pet_id AND stale_s.telegram_id = e.telegram_id AND stale_s.season_key <> ?)
     ), 0) AS stage`)
-      .bind(petId, telegramId, seasonKey, seasonKey).first().catch(() => null),
+      .bind(petId, telegramId, seasonKey, seasonKey).first().catch(unavailable),
   ]);
   if (!profile) return [];
   const values = {
@@ -16038,7 +16041,8 @@ async function finishPetWeeklyBossVictory(db, telegramId, weekKey, boss, victory
       source_event_reason: 'weekly_boss_attempt', source_event_category: 'pet_weekly_boss',
       memory_type: 'boss_victory', boss_id: boss.boss_id, milestone: 'first_boss_victory', recover_source_event: true });
     if (!memory.accepted && !memory.duplicate) return;
-    await syncPetAchievementsForPet(db, telegramId, victory.pet_id, victory.season_key, true);
+    const achievements = await syncPetAchievementsForPet(db, telegramId, victory.pet_id, victory.season_key, true);
+    if (!achievements.length) return;
     const runtime = await applyPetRuntimeCommandAward(db, telegramId, `runtime:${event.event_key}`, 'run_boss', { ...victory, day_key: event.day_key });
     if (!runtime?.ok) return;
   }

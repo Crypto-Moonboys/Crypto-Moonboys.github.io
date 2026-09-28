@@ -62,9 +62,9 @@ There is no artificial Moonpet-to-graph connection.
 
 ## Verification and limits
 
-- `scripts/moonpet-progression-sync.test.mjs`: 52 SQLite tests, including 13 new
+- `scripts/moonpet-progression-sync.test.mjs`: 54 SQLite tests, including 15 new
   cases for the faults above, archived victory dates, interrupted completion
-  markers, unbacked candidates ahead of recoverable victories, and command keys.
+  markers, failed achievement authority/memory reads, unbacked candidates ahead of recoverable victories, and command keys.
 - Worker regression suite passed, covering daily/weekly/season progression,
   ownership, reward settlement, public synchronization and game options.
 - Full `npm test` and final CI status are recorded in the PR.

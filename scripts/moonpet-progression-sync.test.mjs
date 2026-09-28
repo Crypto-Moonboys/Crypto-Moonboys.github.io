@@ -16,7 +16,7 @@ function fixture(owner) {
   class Statement {
     constructor(query, args = []) { this.query = query; this.args = args; }
     bind(...args) { return new Statement(this.query, args); }
-    async first() { return sql.prepare(this.query).get(...this.args) || null; }
+    async first() { if (db.beforeFirst) await db.beforeFirst(this); return sql.prepare(this.query).get(...this.args) || null; }
     async all() { return { results: sql.prepare(this.query).all(...this.args) }; }
     exec() {
       if (/\bRETURNING\b/i.test(this.query)) { const results = sql.prepare(this.query).all(...this.args); return { results, meta: { changes: results.length } }; }
@@ -722,6 +722,25 @@ test('Weekly Boss recovery preserves the original date and achievements for an a
   assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_specialist_events WHERE action='run_boss'").get().n, 1);
   assert.deepEqual((await f.get('/telegram-pets/leaderboard?period=all_time')).entries, before.entries);
   assert.equal(f.sql.prepare('SELECT moon_gold FROM telegram_pet_profiles').get().moon_gold, 1000);
+});
+
+for (const lookup of ['authority','memory']) test(`Weekly Boss ${lookup} lookup failure must leave completion open for repair`, async () => {
+  const f = fixture('weekly-lookup-' + lookup);
+  savedWeeklyVictory(f, now.toISOString().slice(0,10));
+  let failed = false;
+  f.db.beforeFirst = async statement => {
+    if (!(lookup === 'authority'
+      ? statement.query.startsWith('SELECT s.pet_id, s.telegram_id, s.season_key, s.slot_number')
+      : statement.query.startsWith('SELECT total_runs, total_bosses_defeated FROM telegram_pet_memories'))) return;
+    f.db.beforeFirst = null; failed = true; throw Error('interrupted_achievement_lookup');
+  };
+  await f.state();
+  assert.equal(failed, true);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_system_events WHERE system_key='weekly_boss_finish'").get().n, 0);
+  await f.state();
+  assert.equal(f.sql.prepare("SELECT progress FROM telegram_pet_achievements WHERE pet_id=? AND achievement_id='boss_breaker'").get(authority(f).pet_id)?.progress,1);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_system_events WHERE system_key='weekly_boss_finish'").get().n, 1);
+  assert.equal(progress(f).adventure_xp,30);
 });
 
 test('Weekly Boss completion-marker failure retries without repeating any award', async () => {
