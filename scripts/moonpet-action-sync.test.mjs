@@ -143,6 +143,9 @@ test('timed activity at its Pet XP cap still settles once without creating anoth
 
 test('bounty, market and season claims log the claiming pet without adding XP', async () => {
   const f=fixture('82006'), petId='current-'+f.owner; f.reveal(petId);
+  // The daily rotation can contain only high-level offers on some dates.
+  f.sql.prepare('UPDATE telegram_pet_instances SET pet_xp=50000 WHERE pet_id=?').run(petId);
+  f.sql.prepare('UPDATE telegram_pet_profiles SET pet_xp=50000 WHERE telegram_id=?').run(f.owner);
   const economy=await hooks.getPetEconomyState(f.db,f.owner);
   const bounty=economy.bounties[0];
   for(let i=0;i<bounty.required;i++) f.sql.prepare("INSERT INTO telegram_pet_events (id,pet_id,telegram_id,event_type,event_key,season_key,day_key,week_key,status) VALUES (?,?,?,?,?,?,?,?,'accepted')").run('b'+i,petId,f.owner,bounty.event_types[0],'b'+i,currentSeason,economy.day_key,'fixture');
