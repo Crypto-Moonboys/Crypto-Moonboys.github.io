@@ -29,6 +29,13 @@ it never clears ownership. Passive relic powers remain inactive in runs.
 State refreshes batch notice/achievement writes and do not rewrite unchanged
 achievement progress or timestamps. Recovery uses per-queue source allowances
 from `pets/recovery-limits.js`; larger backlogs drain across later refreshes.
+Journey source evidence, daily Mark awards and weekly Crest awards rotate past
+their last attempted batch. A persistently failing batch cannot hold later
+eligible quests at the back of the queue. Each queue saves one scheduling cursor
+in existing account settings before processing a nonempty batch; an overlapping
+refresh must still match the cursor it read. The cursor grants no quest credit.
+Failures remain pending and are revisited on wraparound. Award/source limits,
+qualification rules, original pet/season attribution and reward keys still apply.
 Daily final-ending and early-ending queues rotate through pending sources using
 separate account cursors in `telegram_settings`. A turn is saved before repair,
 so failed sources yield to newer work and remain eligible after wraparound.

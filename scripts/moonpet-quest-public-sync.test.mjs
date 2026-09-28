@@ -6,6 +6,7 @@ import worker, { __petMediaTestHooks as hooks } from '../workers/moonboys-api/wo
 import { PET_WEEKLY_JOURNEY_OBJECTIVES, recordWeeklyJourneyObjectiveEvidence, finalizeWeeklyJourneyCrest } from '../workers/moonboys-api/pets/weekly-journey.js';
 import { recoverPetJourneyAwards } from '../workers/moonboys-api/pets/journey-recovery.js';
 import { processPetCraftRecipe } from '../workers/moonboys-api/pets/live-systems.js';
+import { PET_DAILY_CHALLENGES } from '../workers/moonboys-api/pets/daily-moon-run.js';
 
 const day = '2026-07-05';
 const seasonKey = 'pet-s2026-003';
@@ -20,7 +21,7 @@ function fixture(owner) {
     bind(...args) { return new Statement(this.query, args); }
     async first() { return sql.prepare(this.query).get(...this.args) || null; }
     async all() { return { results: sql.prepare(this.query).all(...this.args) }; }
-    async run() { return { results: [], meta: { changes: Number(sql.prepare(this.query).run(...this.args).changes) } }; }
+    async run() { if (db.beforeRun) await db.beforeRun(this); return { results: [], meta: { changes: Number(sql.prepare(this.query).run(...this.args).changes) } }; }
   }
   const db = { prepare: query => new Statement(query), async batch(statements) {
     sql.exec('BEGIN');
@@ -79,6 +80,105 @@ test('account-owned crafting is logged once without borrowing a selected pet or 
   assert.match(rows[0].text, /Audit player crafted Street Rations/);
   assert.equal(rows[0].pet_xp_awarded, 0);
   assert.ok(!JSON.stringify(activity).includes(f.owner));
+});
+
+function seedDailyJourney(f, date) {
+  // Persisted accepted objective evidence is the award queue's input. Source
+  // validation is covered separately; this fixture isolates award delivery.
+  for (const [id, goal] of Object.entries(PET_DAILY_CHALLENGES).slice(0, 3)) {
+    const key = `${date}:${id}`;
+    f.sql.prepare(`INSERT INTO telegram_pet_daily_journey_objectives
+      (event_id,telegram_id,pet_id,season_key,utc_day,challenge_id,event_key,progress_value,status)
+      VALUES (?,?,?,?,?,?,?,?,'accepted')`).run(key,f.owner,f.petId,seasonKey,date,id,key,goal.target);
+  }
+}
+
+for (const kind of ['daily', 'weekly']) test(`${kind} Journey recovery rotates past two persistently failing awards`, async () => {
+  const f = fixture(`fair-${kind}`);
+  for (let index = 0; index < 3; index++) {
+    if (kind === 'daily') seedDailyJourney(f, `2026-07-0${index + 5}`);
+    else {
+      f.request.qualification_week = index + 1;
+      for (const [id, goal] of Object.entries(PET_WEEKLY_JOURNEY_OBJECTIVES)) {
+        for (let n = 0; n < goal.target; n++) {
+          const date = new Date(Date.UTC(2026, 6, 5 + index * 7 + (id === 'weekly_check_in' ? n : 0))).toISOString().slice(0, 10);
+          await f.evidence(id, `${index}:${id}:${n}`, date, true);
+        }
+      }
+    }
+  }
+  f.pet('selected-new-pet', 2);
+  f.sql.prepare('UPDATE telegram_pet_active_slots SET pet_id=? WHERE telegram_id=?').run('selected-new-pet', f.owner);
+  const table = kind === 'daily' ? 'telegram_pet_growth_marks' : 'telegram_pet_weekly_crests';
+  f.db.beforeRun = statement => {
+    if (statement.query.includes(`INSERT OR IGNORE INTO ${table}`)
+      && (kind === 'daily' ? statement.args.some(arg => ['2026-07-05','2026-07-06'].includes(arg)) : Number(statement.args[4]) <= 2)) {
+      throw Error('persistent_journey_award_failure');
+    }
+  };
+  const recover = () => recoverPetJourneyAwards(f.db, f.owner, { award_limit: 2 });
+  await recover();
+  assert.equal(f.sql.prepare(`SELECT COUNT(*) n FROM ${table}`).get().n, 0);
+  await recover();
+  const rows = f.sql.prepare(`SELECT * FROM ${table}`).all();
+  assert.equal(rows.length, 1, 'a later earned award must not remain blocked behind the failed batch');
+  assert.equal(rows[0].pet_id, f.petId);
+  assert.equal(rows[0].season_key, seasonKey);
+  if (kind === 'daily') assert.equal(rows[0].earned_day, '2026-07-07');
+  else { assert.equal(rows[0].qualification_week, 3); assert.equal(rows[0].earned_at.slice(0,10), '2026-07-20'); }
+  f.db.beforeRun = null;
+  await recover(); await recover();
+  assert.equal(f.sql.prepare(`SELECT COUNT(*) n FROM ${table}`).get().n, 3, 'rotation must return to the failed awards after repair');
+  const saved = f.sql.prepare(`SELECT * FROM ${table} ORDER BY earned_at`).all();
+  await recover();
+  assert.deepEqual(f.sql.prepare(`SELECT * FROM ${table} ORDER BY earned_at`).all(), saved);
+  assert.equal((await f.get('/telegram-pets/leaderboard?period=all_time')).entries[0].pet_xp, 40000, 'Marks and Crests do not create Pet XP');
+});
+
+test('Journey source recovery rotates past persistent evidence failures without changing accepted XP receipts', async () => {
+  const f = fixture('fair-sources');
+  for (const id of ['source-a','source-b','source-c']) f.sql.prepare(`INSERT INTO telegram_pet_events
+    (id,pet_id,telegram_id,event_type,event_key,season_key,day_key,week_key,status)
+    VALUES (?,?,?,'feed',?,?,?,'2026-W27','accepted')`).run(id,f.petId,f.owner,id,seasonKey,day);
+  const receipts = f.sql.prepare('SELECT * FROM telegram_pet_events ORDER BY id').all();
+  f.db.beforeRun = statement => {
+    if (statement.query.includes('INSERT OR IGNORE INTO telegram_pet_weekly_journey_objectives')
+      && statement.args.some(arg => ['source-a','source-b'].includes(arg))) throw Error('persistent_source_failure');
+  };
+  const recover = () => recoverPetJourneyAwards(f.db, f.owner, { source_limit: 2 });
+  await recover(); await recover();
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_weekly_journey_objectives WHERE source_event_key='source-c'").get().n, 1);
+  f.db.beforeRun = null;
+  await recover(); await recover();
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_weekly_journey_objectives').get().n, 3);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_daily_journey_objectives').get().n, 3);
+  assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_events ORDER BY id').all(), receipts);
+});
+
+test('an overlapping Journey refresh cannot rewind the retry cursor or process a stale batch', async () => {
+  const f = fixture('fair-overlap');
+  for (const date of ['2026-07-05','2026-07-06','2026-07-07']) seedDailyJourney(f, date);
+  const key = 'moonpet:journey-recovery:daily';
+  const concurrentCursor = `${seasonKey}:2026-07-05:${f.petId}`;
+  let raced = false;
+  f.db.beforeRun = statement => {
+    if (!raced && statement.query.includes('INSERT INTO telegram_settings') && statement.args[1] === key) {
+      raced = true;
+      // A different refresh claimed its turn after this request read the queue.
+      f.sql.prepare('INSERT INTO telegram_settings (telegram_id,setting_key,setting_value) VALUES (?,?,?)')
+        .run(f.owner, key, concurrentCursor);
+    }
+  };
+  const recover = () => recoverPetJourneyAwards(f.db, f.owner, { award_limit: 2 });
+  await recover();
+  assert.equal(raced, true);
+  assert.equal(f.sql.prepare('SELECT setting_value FROM telegram_settings WHERE setting_key=?').get(key).setting_value, concurrentCursor);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_growth_marks').get().n, 0);
+  f.db.beforeRun = null;
+  await recover();
+  assert.deepEqual(f.sql.prepare('SELECT earned_day FROM telegram_pet_growth_marks ORDER BY earned_day').all().map(row => row.earned_day), ['2026-07-06','2026-07-07']);
+  await recover();
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_growth_marks').get().n, 3);
 });
 
 test('Weekly check-in needs two source UTC days in both the UI and live Crest settlement', async () => {
