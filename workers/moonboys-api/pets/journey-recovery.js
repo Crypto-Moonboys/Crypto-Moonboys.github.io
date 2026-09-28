@@ -22,15 +22,33 @@ const validSource = `e.status='accepted' AND e.event_key<>'' AND e.event_key=tri
   AND e.event_type IN (${types}) AND length(e.day_key)=10 AND date(e.day_key,'+0 days')=e.day_key
   AND e.season_key=printf('pet-s%s-%03d',strftime('%Y',e.day_key),1+(CAST(strftime('%m',e.day_key) AS INTEGER)-1)/3)`;
 
+async function claimJourneyRecoveryBatch(db, owner, queue, candidates) {
+  if (!candidates.length) return false;
+  // Advance before attempting the bounded batch, so failed/rejected work also
+  // yields its turn. This cursor schedules retries; it never proves an award.
+  // A stale overlapping refresh cannot move the cursor back to its snapshot.
+  const result = await db.prepare(`INSERT INTO telegram_settings (telegram_id,setting_key,setting_value)
+    VALUES (?,?,?) ON CONFLICT(telegram_id,setting_key) DO UPDATE SET
+      setting_value=excluded.setting_value, updated_at=CURRENT_TIMESTAMP
+    WHERE telegram_settings.setting_value IS ?`)
+    .bind(owner, `moonpet:journey-recovery:${queue}`, candidates.at(-1).recovery_key, candidates[0].recovery_cursor ?? null).run();
+  return Number(result?.meta?.changes || 0) > 0;
+}
+
 async function recoverJourneySourceEvidence(db, owner, limit) {
   // Validate source ownership and its canonical UTC season before the limit.
   // Older malformed/unowned events must not repeatedly consume the budget.
+  const recoveryKey = "e.day_key||':'||e.id";
   const rows = await db.prepare(`SELECT e.event_key,e.event_type,e.pet_id,e.season_key,e.day_key,
+      ${recoveryKey} AS recovery_key,cursor.setting_value AS recovery_cursor,
       (${missingWeekly}) AS missing_weekly, (${missingDaily}) AS missing_daily
     FROM telegram_pet_events e ${sourceJoins}
+    LEFT JOIN telegram_settings cursor ON cursor.telegram_id=e.telegram_id AND cursor.setting_key='moonpet:journey-recovery:sources'
     WHERE e.telegram_id=? AND ${validSource}
       AND ((${missingWeekly}) OR (${missingDaily}))
-    ORDER BY e.day_key,e.created_at,e.id LIMIT ?`).bind(owner, boundedRecoveryLimit(limit, 50)).all();
+    ORDER BY CASE WHEN ${recoveryKey}>COALESCE(cursor.setting_value,'') THEN 0 ELSE 1 END,
+      ${recoveryKey} LIMIT ?`).bind(owner, boundedRecoveryLimit(limit, 50)).all();
+  if (!await claimJourneyRecoveryBatch(db, owner, 'sources', rows.results || [])) return;
   for (const event of rows.results || []) {
     if (event.missing_weekly) {
       try {
@@ -81,7 +99,9 @@ export async function recoverPetJourneyAwards(db, telegramId, options = {}) {
       SELECT 1 FROM telegram_pet_events e ${sourceJoins}
       WHERE e.telegram_id=o.telegram_id AND e.pet_id=o.pet_id AND e.season_key=o.season_key
         AND ${validSource} AND ${sourceWeek}=o.qualification_week AND ${missingWeekly})` : '';
-    const pending = await db.prepare(`SELECT pet_id, season_key, ${period} FROM (
+    const recoveryKey = `eligible.season_key||':'||${kind === 'weekly' ? "printf('%02d',eligible.qualification_week)" : 'eligible.utc_day'}||':'||eligible.pet_id`;
+    const pending = await db.prepare(`SELECT eligible.*,${recoveryKey} AS recovery_key,cursor.setting_value AS recovery_cursor FROM (
+      SELECT pet_id, season_key, ${period} FROM (
       SELECT o.pet_id, o.season_key, o.${period}, o.${objective}
       FROM telegram_pet_season_slots s
       JOIN telegram_pet_instances i ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id AND i.season_key=s.season_key AND i.slot_number=s.slot_number
@@ -93,8 +113,11 @@ export async function recoverPetJourneyAwards(db, telegramId, options = {}) {
           AND r.${reward} IS NOT NULL AND (r.status='accepted' OR r.reason='${kind}_journey_${kind === 'daily' ? 'growth_mark' : 'crest'}_duplicate'))
       GROUP BY o.pet_id, o.season_key, o.${period}, o.${objective}
       HAVING ${progressSql} >= CASE o.${objective} ${targetSql} END
-    ) GROUP BY pet_id, season_key, ${period} HAVING COUNT(*)>=?
-    ORDER BY season_key, ${period}, pet_id LIMIT ?`).bind(owner, journey.required, boundedRecoveryLimit(options.award_limit, 5)).all();
+      ) GROUP BY pet_id, season_key, ${period} HAVING COUNT(*)>=?
+    ) eligible LEFT JOIN telegram_settings cursor ON cursor.telegram_id=? AND cursor.setting_key=?
+    ORDER BY CASE WHEN ${recoveryKey}>COALESCE(cursor.setting_value,'') THEN 0 ELSE 1 END,
+      ${recoveryKey} LIMIT ?`).bind(owner, journey.required, owner, `moonpet:journey-recovery:${kind}`, boundedRecoveryLimit(options.award_limit, 5)).all();
+    if (!await claimJourneyRecoveryBatch(db, owner, kind, pending.results || [])) continue;
     for (const scope of pending.results || []) {
       try {
         let earnedAt;
