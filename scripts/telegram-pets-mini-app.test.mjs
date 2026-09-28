@@ -1429,7 +1429,7 @@ assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260928-sections-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20260926-front-actions-v1/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20260926-front-actions-v1/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260928-space-sheet-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260928-bitty-background-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1613,7 +1613,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260928-space-sheet-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260928-bitty-background-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -1704,7 +1704,7 @@ assert.match(html, /moonpet-canvas/);
 assert.match(client, /requestAnimationFrame\(frame\)/);
 assert.match(client, /if \(reducedMotion\) return/);
 assert.match(client, /fillRect/);
-assert.equal((client.match(/new Image\s*\(/g) || []).length, 2, 'Mini App keeps one Stage 0 image and one shared space sheet');
+assert.equal((client.match(/new Image\s*\(/g) || []).length, 2, 'Mini App keeps one Stage 0 image and one shared pet background');
 assert.match(client, /typeBoot/);
 assert.match(client, /actionAnimationFamily/);
 assert.match(client, /key === 'activity_start'.*payload && payload\.activity_type/);
@@ -1808,7 +1808,7 @@ assert.deepEqual(botArtIdentity({
   evolutionStage: 3,
 }, 'Stage 3 bot art may resolve the revealed identity pack');
 assert.doesNotMatch(client, /selectWorldBackgroundForState|loadMoonpetBackground|setWorldBackground/,
-  'pet state changes must never restore a static canvas background');
+  'pet state changes must not invoke retired background selectors');
 assert.match(client, /backgroundArtState = \{ mode: 'retro_space_loop', loop_ms: 20000, source: 'canvas' \}/,
   'animated background provenance must remain inspectable');
 const retroSpaceLoopSource = extractTestExport(client, 'retroSpaceLoop');
@@ -1819,52 +1819,41 @@ assert.equal(retroSpaceLoopPhase(5000), 0.25);
 assert.equal(retroSpaceLoopPhase(19999), 19999 / 20000);
 assert.equal(retroSpaceLoopPhase(20000), 0, 'space battle must return exactly to its first frame after 20 seconds');
 assert.equal(retroSpaceLoopPhase(40000), 0, 'space battle loop must remain stable across repeated cycles');
-const spaceSheetSource = extractTestExport(client, 'spaceSheetBackground');
-const sheetPng = fs.readFileSync(new URL('../img/bg-bg23999-v1.png', import.meta.url));
-assert.equal(sheetPng.readUInt32BE(16), 1280);
-assert.equal(sheetPng.readUInt32BE(20), 1280);
-function sheetHarness(reduce = false) {
-  const images = [], draws = [], clears = [];
-  const api = new Function('images', 'draws', 'clears', 'reducedMotion', `
-    var spaceBackgroundImage = null, spaceBackgroundReady = false, backgroundArtState, state = {}, redraws = 0;
+const petBackgroundSource = extractTestExport(client, 'petBackground');
+assert.ok(fs.existsSync(new URL('../img/BITTY BACKGROUND.jpg', import.meta.url)));
+assert.doesNotMatch(client, /bg-bg23999-v1|SPACE_BACKGROUND_FRAMES|drawSpaceSheetBackground/);
+function backgroundHarness(reduce = false) {
+  const images = [], draws = [];
+  const api = new Function('images', 'draws', 'reducedMotion', `
+    var petBackgroundImage = null, petBackgroundReady = false, backgroundArtState, state = {}, redraws = 0;
     function Image() { images.push(this); }
     var ctx = { save() {}, restore() {}, drawImage(...args) { draws.push(args); } };
-    function drawPixelRect(...args) { clears.push(args); }
     function drawWorld() { redraws++; }
-    ${spaceSheetSource}
-    return { draw: drawSpaceSheetBackground, frame: spaceBackgroundFrame, info: () => backgroundArtState, redraws: () => redraws };
-  `)(images, draws, clears, reduce);
-  return { ...api, images, draws, clears };
+    ${petBackgroundSource}
+    return { draw: drawPetBackground, info: () => backgroundArtState, redraws: () => redraws };
+  `)(images, draws, reduce);
+  return { ...api, images, draws };
 }
-const sheet = sheetHarness();
-assert.equal(sheet.draw(0), false, 'procedural fallback stays visible while loading');
-assert.equal(sheet.draw(250), false);
-assert.equal(sheet.images.length, 1, 'reuse one decoded sheet instead of reloading each frame');
-Object.assign(sheet.images[0], { naturalWidth: 1280, naturalHeight: 1280 });
-sheet.images[0].onload();
-const expectedFrames = [0, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24];
-for (let index = 0; index < expectedFrames.length; index++) {
-  const frame = expectedFrames[index];
-  assert.equal(sheet.draw(index * 250), true);
-  assert.deepEqual(sheet.draws.at(-1).slice(1), [frame % 5 * 256, Math.floor(frame / 5) * 256 + 40, 256, 176, 0, 0, 320, 220]);
-  assert.equal(sheet.info().frame, frame);
-}
-assert.equal(sheet.frame(4249), 24);
-assert.equal(sheet.frame(4250), 0, 'loop wraps to the first good frame');
-assert.equal(sheet.clears.filter(args => args[2] === 320 && args[3] === 220).length, 17, 'clear transparency every frame to prevent trails');
-const stillSheet = sheetHarness(true);
-stillSheet.draw(1000);
-Object.assign(stillSheet.images[0], { naturalWidth: 1280, naturalHeight: 1280 });
-stillSheet.images[0].onload();
-assert.equal(stillSheet.redraws(), 1, 'reduced-motion background appears when loading completes');
-assert.equal(stillSheet.frame(1000), 0);
-assert.equal(stillSheet.frame(99999), 0);
-const brokenSheet = sheetHarness();
-brokenSheet.draw(0); brokenSheet.images[0].onerror();
-assert.equal(brokenSheet.draw(250), false, 'failed image retains procedural fallback');
-Object.assign(brokenSheet.images[0], { naturalWidth: 256, naturalHeight: 256 });
-brokenSheet.images[0].onload();
-assert.equal(brokenSheet.draw(500), false, 'wrong sheet dimensions must not draw neighbouring or empty cells');
+const background = backgroundHarness();
+assert.equal(background.draw(), false, 'retain fallback while loading');
+assert.equal(background.draw(), false);
+assert.equal(background.images.length, 1, 'load the background once');
+assert.equal(background.images[0].src, '/img/BITTY BACKGROUND.jpg');
+Object.assign(background.images[0], { naturalWidth: 1280, naturalHeight: 880 });
+background.images[0].onload();
+assert.equal(background.draw(), true);
+assert.deepEqual(background.draws.at(-1).slice(1), [0, 0, 1280, 880, 0, 0, 320, 220], 'full image fills the canvas without sheet cropping');
+assert.equal(background.info().mode, 'bitty_background');
+Object.assign(background.images[0], { naturalWidth: 1280, naturalHeight: 1280 });
+background.draw();
+assert.deepEqual(background.draws.at(-1).slice(1), [0, 200, 1280, 880, 0, 0, 320, 220], 'cover fitting preserves aspect ratio');
+const stillBackground = backgroundHarness(true);
+stillBackground.draw();
+Object.assign(stillBackground.images[0], { naturalWidth: 1280, naturalHeight: 880 });
+stillBackground.images[0].onload();
+assert.equal(stillBackground.redraws(), 1, 'redraw loaded image in reduced motion');
+background.images[0].onerror();
+assert.equal(background.draw(), false, 'failed image retains fallback');
 assert.equal(Object.keys(botArtRegistry.bots).length, 8, 'all eight bots must be registered');
 for (const [botName, bot] of Object.entries(botArtRegistry.bots)) {
   assert.equal(bot.evolution_art.stage_1.status, 'complete', `${botName} base art must stay complete`);

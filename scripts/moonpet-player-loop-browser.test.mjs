@@ -83,7 +83,7 @@ Object.defineProperty(globalThis, 'crypto', { configurable: true, value: { subtl
 const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg' };
 const server = http.createServer(async (request, response) => {
   try {
-    const target = path.resolve(root, '.' + new URL(request.url, 'http://localhost').pathname);
+    const target = path.resolve(root, '.' + decodeURIComponent(new URL(request.url, 'http://localhost').pathname));
     if (!target.startsWith(root + path.sep)) throw Error('outside root');
     response.setHeader('Content-Type', mime[path.extname(target)] || 'application/octet-stream');
     response.end(await fs.readFile(target));
@@ -268,21 +268,15 @@ try {
     currentUser = 'browser-young';
     await page.reload();
     await page.waitForSelector('[data-panel="care"]');
-    await page.waitForFunction(() => window.MoonpetBetaAppearance.getBackgroundArtState().mode === 'space_sprite_loop');
-    assert.equal(await page.evaluate(() => window.MoonpetBetaAppearance.getBackgroundArtState().frame), 0, 'reduced motion uses the first background frame');
+    await page.waitForFunction(() => window.MoonpetBetaAppearance.getBackgroundArtState().mode === 'bitty_background');
+    assert.equal(await page.evaluate(() => window.MoonpetBetaAppearance.getBackgroundArtState().source), '/img/BITTY BACKGROUND.jpg');
     if (viewport.width === 390) {
       await page.emulateMedia({ reducedMotion: 'no-preference' });
       await page.reload();
       await page.waitForSelector('[data-panel="care"]');
-      await page.waitForFunction(() => window.MoonpetBetaAppearance.getBackgroundArtState().mode === 'space_sprite_loop');
-      const initialFrame = await page.evaluate(() => window.MoonpetBetaAppearance.getBackgroundArtState().frame);
-      await page.waitForFunction(previous => window.MoonpetBetaAppearance.getBackgroundArtState().frame !== previous, initialFrame);
-      await page.screenshot({ path: '/tmp/moonpet-space-background-mobile.png' });
+      await page.waitForFunction(() => window.MoonpetBetaAppearance.getBackgroundArtState().mode === 'bitty_background');
+      await page.screenshot({ path: '/tmp/moonpet-bitty-background-mobile.png' });
       await page.emulateMedia({ reducedMotion: 'reduce' });
-      await page.reload();
-      await page.waitForSelector('[data-panel="care"]');
-      await page.waitForFunction(() => window.MoonpetBetaAppearance.getBackgroundArtState().mode === 'space_sprite_loop');
-      assert.equal(await page.evaluate(() => window.MoonpetBetaAppearance.getBackgroundArtState().frame), 0);
     }
     for (const screen of ['missions', 'explore', 'work', 'economy', 'profile', 'home']) {
       await page.locator(`[data-screen="${screen}"]`).click();

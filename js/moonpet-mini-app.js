@@ -15,8 +15,8 @@
   var botArtFallbackLogged = false;
   var botArtSelectionGeneration = 0;
   var backgroundArtState = { mode: 'retro_space_loop', loop_ms: 20000, source: 'canvas' };
-  var spaceBackgroundImage = null;
-  var spaceBackgroundReady = false;
+  var petBackgroundImage = null;
+  var petBackgroundReady = false;
   window.MOONPET_USE_BOT_ART = botArtModeEnabled;
   var seasonSnapshotReceivedAt = 0;
   var lastSeasonServerRefreshAt = 0;
@@ -3694,46 +3694,33 @@
     }
   }
 
-  // TEST-EXPORT: spaceSheetBackground:start
-  var SPACE_BACKGROUND_URL = '/img/bg-bg23999-v1.png';
-  // 5x5 cells of 256px. The 16:11 artwork sits inside the square export padding.
-  // Frames 1-8 (zero-based) are washed-out export frames; keep the source intact.
-  var SPACE_BACKGROUND_FRAMES = [0, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24];
-  var SPACE_BACKGROUND_FRAME_MS = 250;
-
-  function spaceBackgroundFrame(time) {
-    var elapsed = Math.max(0, Number(time) || 0);
-    var index = reducedMotion ? 0 : Math.floor(elapsed / SPACE_BACKGROUND_FRAME_MS) % SPACE_BACKGROUND_FRAMES.length;
-    return SPACE_BACKGROUND_FRAMES[index];
-  }
-
-  function drawSpaceSheetBackground(time) {
-    if (!spaceBackgroundImage) {
-      spaceBackgroundImage = new Image();
-      spaceBackgroundImage.decoding = 'async';
-      spaceBackgroundImage.onload = function () {
-        spaceBackgroundReady = spaceBackgroundImage.naturalWidth === 1280 && spaceBackgroundImage.naturalHeight === 1280;
+  // TEST-EXPORT: petBackground:start
+  var PET_BACKGROUND_URL = '/img/BITTY BACKGROUND.jpg';
+  function drawPetBackground() {
+    if (!petBackgroundImage) {
+      petBackgroundImage = new Image();
+      petBackgroundImage.decoding = 'async';
+      petBackgroundImage.onload = function () {
+        petBackgroundReady = petBackgroundImage.naturalWidth > 0 && petBackgroundImage.naturalHeight > 0;
         if (reducedMotion && state) drawWorld(performance.now());
       };
-      spaceBackgroundImage.onerror = function () { spaceBackgroundReady = false; };
-      spaceBackgroundImage.src = SPACE_BACKGROUND_URL;
+      petBackgroundImage.onerror = function () { petBackgroundReady = false; };
+      petBackgroundImage.src = PET_BACKGROUND_URL;
     }
-    if (!spaceBackgroundReady) return false;
-    var frame = spaceBackgroundFrame(time);
-    // The sheet is transparent: clear every frame so moving objects leave no trails.
-    drawPixelRect(0, 0, 320, 220, '#03040d');
-    for (var star = 0; star < 40; star += 1) {
-      drawPixelRect((star * 67 + star * star * 3 + 17) % 320, (star * 43 + 13) % 220, 1, 1, star % 7 ? '#36415f' : '#8190b6');
-    }
+    if (!petBackgroundReady) return false;
+    var width = petBackgroundImage.naturalWidth;
+    var height = petBackgroundImage.naturalHeight;
+    var scale = Math.max(320 / width, 220 / height);
+    var cropWidth = 320 / scale;
+    var cropHeight = 220 / scale;
     ctx.save();
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(spaceBackgroundImage, frame % 5 * 256, Math.floor(frame / 5) * 256 + 40, 256, 176, 0, 0, 320, 220);
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(petBackgroundImage, (width - cropWidth) / 2, (height - cropHeight) / 2, cropWidth, cropHeight, 0, 0, 320, 220);
     ctx.restore();
-    backgroundArtState = { mode: 'space_sprite_loop', source: SPACE_BACKGROUND_URL, frame: frame,
-      frame_count: SPACE_BACKGROUND_FRAMES.length, loop_ms: SPACE_BACKGROUND_FRAMES.length * SPACE_BACKGROUND_FRAME_MS, reduced_motion: reducedMotion };
+    backgroundArtState = { mode: 'bitty_background', source: PET_BACKGROUND_URL };
     return true;
   }
-  // TEST-EXPORT: spaceSheetBackground:end
+  // TEST-EXPORT: petBackground:end
 
   function stageZeroPresentationActive(time) {
     var phase = String(state && state.lifecycle && state.lifecycle.phase || '');
@@ -3776,7 +3763,7 @@
     if (stageZeroPresentationActive(renderTime)) {
       backgroundArtState = { mode: 'stage0_secret_bot', source: STAGE_ZERO_BACKGROUND_URL };
       drawStageZeroBackground();
-    } else if (!drawSpaceSheetBackground(renderTime)) {
+    } else if (!drawPetBackground()) {
       backgroundArtState = { mode: 'retro_space_loop', loop_ms: 20000, source: 'canvas' };
       drawRetroSpaceBackground(renderTime);
     }
