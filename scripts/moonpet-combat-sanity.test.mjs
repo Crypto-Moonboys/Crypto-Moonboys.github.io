@@ -289,3 +289,234 @@ for(const group of [false,true]) test(`Arena ${group?'two-player ending':'payout
   assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='arena_battle'").get().n,group?2:1);
   console.log('Combat and care recovery budget:',f.db.statementCount,'statements');
 });
+
+async function kaijuFixture(owner) {
+  const f=fixture(owner);
+  const started=await f.act({action:'kaiju_start'});
+  assert.equal(started.reason,'kaiju_started');
+  f.id=started.match.match_id;
+  f.card=()=>f.act({action:'kaiju_card',match_id:f.id,card_key:hooks.PET_KAIJU_CARDS[0].id});
+  f.match=()=>f.sql.prepare('SELECT * FROM telegram_pet_kaiju_matches WHERE match_id=?').get(f.id);
+  return f;
+}
+for(const recovery of ['retry','refresh']) test(`Kaiju ${recovery} finishes a saved card after the ending write failed`,async()=>{
+  const f=await kaijuFixture('kaiju-locked-'+recovery);
+  f.sql.exec("CREATE TRIGGER fail_kaiju_ending BEFORE UPDATE OF status ON telegram_pet_kaiju_matches WHEN NEW.status='completed' BEGIN SELECT RAISE(ABORT,'ending_unavailable'); END");
+  await assert.rejects(f.card(),/ending_unavailable/);
+  const locked=f.match();
+  assert.ok(locked.player1_card_key&&locked.cpu_card_key);
+  f.sql.exec('DROP TRIGGER fail_kaiju_ending');
+  if(recovery==='retry')assert.equal((await f.card()).accepted,true);
+  else await f.state();
+  assert.equal(f.match().status,'completed');
+  assert.equal(f.match().cpu_card_key,locked.cpu_card_key);
+  assert.equal(f.match().category_key,locked.category_key);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='kaiju_battle' AND status='accepted'").get().n,1);
+});
+test('Kaiju cannot award a match cancelled after the saved cards were read',async()=>{
+  const f=await kaijuFixture('kaiju-cancel-race');
+  f.db.beforeRun=s=>{
+    if(!s.query.includes("SET status = 'completed'"))return;
+    f.db.beforeRun=null;
+    f.sql.prepare("UPDATE telegram_pet_kaiju_matches SET status='cancelled' WHERE match_id=?").run(f.id);
+  };
+  const result=await f.card();
+  assert.equal(result.accepted,false);
+  assert.equal(f.match().status,'cancelled');
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='kaiju_battle'").get().n,0);
+});
+for(const recovery of ['retry','refresh']) test(`Kaiju ${recovery} pays the original pet after failure before reserving its reward`,async()=>{
+  const f=await kaijuFixture('kaiju-source-'+recovery);
+  f.sql.exec("CREATE TRIGGER fail_kaiju_reservation BEFORE INSERT ON telegram_pet_events WHEN NEW.event_type='kaiju_battle' BEGIN SELECT RAISE(ABORT,'reservation_unavailable'); END");
+  await assert.rejects(f.card(),/reservation_unavailable/);
+  assert.equal(f.match().status,'completed');
+  f.sql.exec('DROP TRIGGER fail_kaiju_reservation');
+  f.pet('replacement',currentSeason,200,2);f.active('replacement');
+  if(recovery==='retry')assert.equal((await f.card()).accepted,true);
+  else await f.state();
+  const receipt=f.sql.prepare("SELECT * FROM telegram_pet_events WHERE event_type='kaiju_battle' AND status='accepted'").get();
+  assert.equal(receipt?.pet_id,'current-'+f.owner);
+  assert.equal(f.sql.prepare("SELECT pet_xp,energy FROM telegram_pet_instances WHERE pet_id='replacement'").get().pet_xp,200);
+  assert.equal(f.sql.prepare("SELECT energy FROM telegram_pet_instances WHERE pet_id='replacement'").get().energy,100);
+  const energy=f.sql.prepare('SELECT energy FROM telegram_pet_instances WHERE pet_id=?').get(receipt.pet_id).energy;
+  assert.ok(energy<100);
+  await f.card();await f.state();
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='kaiju_battle'").get().n,1);
+  assert.equal(f.sql.prepare('SELECT energy FROM telegram_pet_instances WHERE pet_id=?').get(receipt.pet_id).energy,energy);
+  const publicBoard=await f.get('/telegram-pets/leaderboard?period=daily&limit=100');
+  assert.equal(publicBoard.entries[0].pet_xp,receipt.pet_xp_awarded);
+  const activity=await f.get('/telegram-pets/activity');
+  assert.equal(activity.items.filter(row=>row.event_type==='kaiju_battle').length,1);
+});
+
+test('a fractional ISO pet version cannot let an older compatibility profile overwrite earned XP',async()=>{
+  const f=fixture('fractional-state');
+  await f.state();
+  f.sql.prepare("UPDATE telegram_pet_profiles SET pet_xp=200,updated_at='2026-09-28 15:00:00' WHERE telegram_id=?").run(f.owner);
+  f.sql.prepare("UPDATE telegram_pet_instances SET pet_xp=10000,source_profile_updated_at='2026-09-28T15:00:00.123Z',updated_at='2026-09-28T15:01:00.456Z' WHERE telegram_id=?").run(f.owner);
+  assert.equal((await hooks.getPetProfile(f.db,f.owner)).pet_xp,10000);
+  assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner).pet_xp,10000);
+});
+
+async function addRival(f) {
+  const rival='rival-'+f.owner;
+  f.sql.prepare('INSERT INTO telegram_users (telegram_id,first_name) VALUES (?,?)').run(rival,'Rival');
+  f.sql.prepare('INSERT INTO telegram_pet_profiles (telegram_id,pet_xp,health,energy) VALUES (?,10000,100,100)').run(rival);
+  await hooks.preparePetMiniAppState(f.db,rival,new Date());
+  f.sql.prepare("UPDATE telegram_pet_lifecycle_by_pet SET phase='young' WHERE telegram_id=?").run(rival);
+  return rival;
+}
+
+test('Kaiju group retries keep both immutable cards and settle each player once',async()=>{
+  const f=fixture('kaiju-group'),rival=await addRival(f);
+  const act=(owner,body)=>hooks.processPetMiniAppAction(f.db,owner,{id:owner},body,'fixture-token');
+  assert.equal((await f.act({action:'kaiju_matchmake'})).reason,'kaiju_queued');
+  const joined=await act(rival,{action:'kaiju_matchmake'}),id=joined.match.match_id;
+  const pick=(owner,index)=>act(owner,{action:'kaiju_card',match_id:id,card_key:hooks.PET_KAIJU_CARDS[index].id});
+  assert.equal((await pick(f.owner,0)).reason,'kaiju_card_waiting');
+  assert.equal((await pick(f.owner,1)).reason,'kaiju_card_waiting');
+  f.sql.exec("CREATE TRIGGER fail_group_ending BEFORE UPDATE OF status ON telegram_pet_kaiju_matches WHEN NEW.status='completed' BEGIN SELECT RAISE(ABORT,'group_ending_unavailable'); END");
+  await assert.rejects(pick(rival,1),/group_ending_unavailable/);
+  f.sql.exec('DROP TRIGGER fail_group_ending');
+  await f.state();
+  const match=f.sql.prepare('SELECT * FROM telegram_pet_kaiju_matches WHERE match_id=?').get(id);
+  assert.equal(match.player1_card_key,hooks.PET_KAIJU_CARDS[0].id);
+  assert.equal(match.player2_card_key,hooks.PET_KAIJU_CARDS[1].id);
+  assert.equal(match.status,'completed');
+  await pick(f.owner,2);await pick(rival,2);
+  const receipts=f.sql.prepare("SELECT telegram_id,pet_id,status FROM telegram_pet_events WHERE event_type='kaiju_battle'").all();
+  assert.equal(receipts.length,2);
+  for(const row of receipts) {
+    assert.equal(row.status,'accepted');
+    assert.equal(f.sql.prepare('SELECT telegram_id FROM telegram_pet_instances WHERE pet_id=?').get(row.pet_id).telegram_id,row.telegram_id);
+  }
+});
+
+test('Kaiju saved cards survive the lobby timeout until refresh settles them',async()=>{
+  const f=await kaijuFixture('kaiju-ttl');
+  f.sql.exec("CREATE TRIGGER fail_ttl_ending BEFORE UPDATE OF status ON telegram_pet_kaiju_matches WHEN NEW.status='completed' BEGIN SELECT RAISE(ABORT,'ending_unavailable'); END");
+  await assert.rejects(f.card(),/ending_unavailable/);
+  f.sql.exec('DROP TRIGGER fail_ttl_ending');
+  f.sql.prepare("UPDATE telegram_pet_kaiju_matches SET updated_at='2000-01-01' WHERE match_id=?").run(f.id);
+  assert.equal((await f.card()).accepted,true);
+  assert.equal(f.match().status,'completed');
+});
+
+test('Kaiju card locking cannot capture a concurrently replaced active pet',async()=>{
+  const f=await kaijuFixture('kaiju-lock-switch');f.pet('new-pet',currentSeason,200,2);
+  f.db.beforeRun=s=>{
+    if(!s.query.includes('SET player1_card_key='))return;
+    f.db.beforeRun=null;f.active('new-pet');
+  };
+  const result=await f.card();
+  assert.equal(result.accepted,false);
+  assert.equal(f.match().player1_card_key,null);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='kaiju_battle'").get().n,0);
+});
+
+test('Kaiju payout consumes the saved equipment snapshot after a shop change',async()=>{
+  const f=await kaijuFixture('kaiju-gear');
+  assert.equal((await f.act({action:'buy',item_key:'moon_kibble'})).accepted,true);
+  f.sql.exec("CREATE TRIGGER fail_gear_payout BEFORE INSERT ON telegram_pet_events WHEN NEW.event_type='kaiju_battle' BEGIN SELECT RAISE(ABORT,'payout_unavailable'); END");
+  await assert.rejects(f.card(),/payout_unavailable/);
+  const snapshot=JSON.parse(f.match().score_json).reward_sources[f.owner].equipment_snapshot;
+  assert.ok(snapshot.moon_kibble);
+  f.sql.exec('DROP TRIGGER fail_gear_payout');
+  assert.equal((await f.act({action:'buy',item_key:'nebula_snack'})).accepted,true);
+  await f.card();
+  const receipt=f.sql.prepare("SELECT metadata FROM telegram_pet_events WHERE event_type='kaiju_battle'").get();
+  assert.deepEqual(JSON.parse(receipt.metadata).context.equipment_snapshot,snapshot);
+  const state=await f.state();
+  assert.equal(state.kaiju.result.score_json.includes('reward_sources'),false,'public match output excludes internal source snapshots');
+});
+
+test('legacy Kaiju pending receipts recover without guessing the current pet',async()=>{
+  const f=await kaijuFixture('kaiju-legacy');
+  f.sql.exec("CREATE TRIGGER fail_legacy_payout BEFORE INSERT ON telegram_pet_reward_claims WHEN NEW.source='pet_kaiju' BEGIN SELECT RAISE(ABORT,'payout_unavailable'); END");
+  await assert.rejects(f.card(),/payout_unavailable/);
+  f.sql.exec('DROP TRIGGER fail_legacy_payout');
+  f.sql.prepare("UPDATE telegram_pet_kaiju_matches SET score_json=json_remove(score_json,'$.reward_sources') WHERE match_id=?").run(f.id);
+  f.pet('legacy-replacement',currentSeason,200,2);f.active('legacy-replacement');
+  await f.state();
+  const receipt=f.sql.prepare("SELECT pet_id,status FROM telegram_pet_events WHERE event_type='kaiju_battle'").get();
+  assert.equal(receipt.status,'accepted');assert.equal(receipt.pet_id,'current-'+f.owner);
+});
+
+test('legacy Kaiju without any source proof cannot award the currently selected pet',async()=>{
+  const f=await kaijuFixture('kaiju-unproven');
+  f.sql.prepare("UPDATE telegram_pet_kaiju_matches SET status='completed',player1_card_key=?,cpu_card_key=?,result='player1_win' WHERE match_id=?")
+    .run(hooks.PET_KAIJU_CARDS[0].id,hooks.PET_KAIJU_CARDS[1].id,f.id);
+  const result=await f.card();
+  assert.equal(result.reward_results[0].result.reason,'source_pet_authority_required');
+  await f.state();
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='kaiju_battle'").get().n,0);
+});
+
+test('Telegram Kaiju repairs saved choices and propagates unavailable table reads',async()=>{
+  const f=await kaijuFixture('kaiju-telegram');
+  f.sql.prepare("UPDATE telegram_pet_kaiju_matches SET chat_id='fixture-chat' WHERE match_id=?").run(f.id);
+  const originalFetch=globalThis.fetch;
+  const sent=[];
+  globalThis.fetch=async(url,options)=>{
+    assert.ok(String(url).startsWith('https://api.telegram.org/'));
+    sent.push(options?.body);
+    return new Response(JSON.stringify({ok:true,result:{message_id:1}}),{status:200,headers:{'Content-Type':'application/json'}});
+  };
+  try {
+    const choose=()=>hooks.cmdPetKaiju(f.db,'fixture-token','fixture-chat',f.owner,`card:${f.id}:${hooks.PET_KAIJU_CARDS[0].id}`,'private',{id:f.owner});
+    f.sql.exec("CREATE TRIGGER fail_bot_ending BEFORE UPDATE OF status ON telegram_pet_kaiju_matches WHEN NEW.status='completed' BEGIN SELECT RAISE(ABORT,'bot_ending_unavailable'); END");
+    await assert.rejects(choose(),/bot_ending_unavailable/);
+    f.sql.exec('DROP TRIGGER fail_bot_ending');
+    await choose();
+    assert.equal(f.match().status,'completed');
+    assert.ok(sent.length>0);
+    f.db.beforeFirst=s=>{if(s.query.includes('SELECT * FROM telegram_pet_kaiju_matches'))throw Error('table_read_unavailable');};
+    await assert.rejects(hooks.cmdPetKaiju(f.db,'fixture-token','fixture-chat',f.owner,'','private',{id:f.owner}),/table_read_unavailable/);
+    assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_kaiju_matches').get().n,1);
+  } finally { globalThis.fetch=originalFetch; }
+});
+
+test('mixed Kaiju, Arena and care recovery stays bounded and makes progress in both modes',async()=>{
+  const f=fixture('combined-budget'),rival=await addRival(f);
+  await f.state();
+  await f.act({action:'kaiju_matchmake'});
+  const joined=await hooks.processPetMiniAppAction(f.db,rival,{id:rival},{action:'kaiju_matchmake'},'fixture-token');
+  const id=joined.match.match_id;
+  await f.act({action:'kaiju_card',match_id:id,card_key:hooks.PET_KAIJU_CARDS[0].id});
+  f.sql.exec("CREATE TRIGGER fail_budget_ending BEFORE UPDATE OF status ON telegram_pet_kaiju_matches WHEN NEW.status='completed' BEGIN SELECT RAISE(ABORT,'ending_unavailable'); END");
+  await assert.rejects(hooks.processPetMiniAppAction(f.db,rival,{id:rival},{action:'kaiju_card',match_id:id,card_key:hooks.PET_KAIJU_CARDS[1].id},'fixture-token'),/ending_unavailable/);
+  f.sql.exec('DROP TRIGGER fail_budget_ending');
+  f.sql.prepare(`INSERT INTO telegram_pet_arena_battles
+    (id,battle_id,chat_id,player1_telegram_id,player1_pet_id,player1_season_key,player1_pet_snapshot_json,player2_pet_snapshot_json,status,result)
+    VALUES ('budget-arena','budget-arena','fixture',?,?,?,'{}','{}','completed','player1_win')`).run(f.owner,'current-'+f.owner,currentSeason);
+  const day=new Date().toISOString().slice(0,10);
+  for(let i=0;i<50;i++)f.sql.prepare(`INSERT INTO telegram_pet_events
+    (id,pet_id,telegram_id,event_type,event_key,season_key,day_key,week_key,status,metadata)
+    VALUES (?,?,?,'feed',?,?,?,'fixture','accepted',?)`)
+    .run('mixed-'+i,'current-'+f.owner,f.owner,'mixed-'+i,currentSeason,day,JSON.stringify({context:{source:'telegram_mini_app',equipment_snapshot:{}}}));
+  const costs=[];
+  for(let i=0;i<2;i++) {f.db.statementCount=0;await f.state();costs.push(f.db.statementCount);}
+  assert.ok(Math.max(...costs)<=600,`combined recovery costs ${costs}`);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='arena_battle' AND status='accepted'").get().n,1);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='kaiju_battle' AND status='accepted'").get().n,2);
+  console.log('Combined combat/care budget:',costs.join(', '),'statements');
+});
+
+test('Kaiju gets the next recovery turn despite new Arena arrivals, while Arena retains its own cursor',async()=>{
+  const f=await kaijuFixture('combat-fairness');
+  f.sql.exec("CREATE TRIGGER fail_fair_ending BEFORE UPDATE OF status ON telegram_pet_kaiju_matches WHEN NEW.status='completed' BEGIN SELECT RAISE(ABORT,'ending_unavailable'); END");
+  await assert.rejects(f.card(),/ending_unavailable/);
+  f.sql.exec('DROP TRIGGER fail_fair_ending');
+  const arena=(id,petId=null)=>f.sql.prepare(`INSERT INTO telegram_pet_arena_battles
+    (id,battle_id,chat_id,player1_telegram_id,player1_pet_id,player1_season_key,player1_pet_snapshot_json,player2_pet_snapshot_json,status,result)
+    VALUES (?,?,?, ?,?,?,'{}','{}','completed','player1_win')`).run(id,id,'fixture',f.owner,petId,currentSeason);
+  arena('a-broken');arena('b-broken');arena('z-valid','current-'+f.owner);
+  await f.state();
+  assert.equal(f.match().status,'selecting');
+  arena('c-new-arrival');
+  await f.state();
+  assert.equal(f.match().status,'completed','Kaiju must get the next turn before the Arena backlog is exhausted');
+  for(let i=0;i<3;i++)await f.state();
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='arena_battle' AND status='accepted'").get().n,1,
+    'returning to Arena must continue beyond its earlier broken scopes');
+});

@@ -1337,7 +1337,8 @@ for(const outcome of ['arena_win','arena_draw','arena_loss','kaiju_win']) test(`
   const f=fixture('draw-'+outcome);
   const arena=outcome.startsWith('arena_');
   const match={match_id:'draw-match',battle_id:'draw-match',mode:arena?'pet_arena':'solo',
-    player1_telegram_id:f.owner,player1_pet_id:authority(f).pet_id,player1_season_key:currentSeason};
+    player1_telegram_id:f.owner,player1_pet_id:authority(f).pet_id,player1_season_key:currentSeason,
+    score_json:JSON.stringify({reward_sources:{[f.owner]:{...authority(f),equipment_snapshot:{}}}})};
   const reward=await hooks.awardPetKaijuPlayerResult(f.db,f.owner,match,outcome,{pet_xp:20,moon_gold:10});
   assert.equal(reward.accepted,true,JSON.stringify(reward));
   const event=f.sql.prepare('SELECT id FROM telegram_pet_events WHERE event_type=?').get(arena?'arena_battle':'kaiju_battle');
