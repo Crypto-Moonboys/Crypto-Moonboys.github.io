@@ -15,6 +15,8 @@ The production `/deployment-info` endpoint matched this commit, deployed at
 - Specialist awards calculated equipment mastery but never persisted it. A
   qualifying use now writes one item XP and one mastery XP using the existing
   mastery-action registry, with generic care/run and timed-action aliases.
+  Standard Run recovery retains the saved room choice for fight/sneak/rest/boss
+  equipment use while keeping the original ten Adventure XP step award.
   Equipment receipts, counters, mastery tiers, specialist XP, traits and any
   material award commit together. Retrying the same source cannot pay twice.
   Paid upgrade levels remain authoritative; item XP does not bypass upgrade costs.
@@ -22,13 +24,16 @@ The production `/deployment-info` endpoint matched this commit, deployed at
   Standard Run and Arena formulas. Those established equipped-item bonuses now
   use the existing +8% per level and +3% per mastery tier multipliers. Level-one,
   zero-mastery behavior stays the same. Standard Run preview and resolution share
-  the formula; Arena saves progression in its participant snapshot. Official
+  the formula; Arena saves progression in its participant snapshot. Outfit and
+  toy power contributions scale with paid levels and mastery alongside combat gear. Official
   Daily Run room balance remains governed by its fixed rules.
 - Failed equipment or faction reads could silently close an incomplete specialist
   award. They now leave it uncredited for recovery. Training retains the faction
   bonus when the dependency becomes available.
 - New primary care/job/run/reward receipts retain equipment snapshots. A later
-  replacement, pet switch or refresh uses the source equipment. Recovery of old
+  replacement, pet switch or refresh uses the source equipment. Immediate API
+  and Telegram care/job awards also read the saved receipt through the recovery
+  queue, so a purchase between primary settlement and follow-up cannot redirect mastery. Recovery of old
   receipts without a snapshot does not invent historical mastery. Already-paid
   specialist receipts are not replayed to manufacture missing historical gear XP.
 - Arena completion and Kaiju victory specialist awards now use the source-backed
@@ -68,8 +73,9 @@ are not inputs to either graph. This patch does not manufacture that connection.
 
 ## Verification
 
-- `node --test scripts/moonpet-progression-sync.test.mjs`: 69 passed, including
-  15 new integration and fault-injection cases.
+- `node --test scripts/moonpet-progression-sync.test.mjs`: 79 passed, including
+  25 new integration and fault-injection cases. All ten review regressions fail
+  on the previous runtime and pass after the three review fixes.
 - Worker, Arcade, Wiki and WAX suites passed on the runtime changes. The final
   complete `npm test` run and CI results are recorded in the PR.
 - Moonpet browser loop passed at 390×844 and 360×640; public ranks/activity passed

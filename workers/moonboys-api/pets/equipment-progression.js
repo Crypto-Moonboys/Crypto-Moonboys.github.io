@@ -62,6 +62,7 @@ export function getPetEquipmentMasteryAward(itemKey, action, amount = 1) {
   const aliases = {
     feed: ['care'], play: ['care'], clean: ['care'], sleep: ['care'], train: ['care'],
     timed_train: ['train'], timed_work: ['job'], run_step: ['run'], run_extract: ['run'], run_boss: ['run'],
+    run_fight: ['run'], run_sneak: ['run'], run_rest: ['run'], run_loot: ['run'], run_trade: ['run'], run_gamble: ['run'],
   };
   if (!definition || ![key, ...(aliases[key] || [])].some(value => definition.mastery_actions.includes(value))) return 0;
   return Math.max(1, Math.min(25, Math.floor(Number(amount) || 1)));

@@ -1027,3 +1027,79 @@ test('Mini App equipment upgrade spends once, completes its mission and appears 
   assert.equal(events[0].pet_xp_awarded,0);
   assert.equal((await f.get('/telegram-pets/leaderboard?period=all_time')).entries[0].pet_xp,100000);
 });
+
+for (const [choice, matching] of [['fight','laser_claws'],['sneak','hoverboard'],['rest','crystal_bowl'],['boss','crown_jacket']]) {
+  test(`saved Standard ${choice} keeps its equipment action and original specialist award`, async () => {
+    const f=fixture('gear-choice-'+choice);
+    standardRun(f,'choice-run',choice==='boss'?10:2);
+    const loadout=[['laser_claws','weapon'],['hoverboard','toy'],['crystal_bowl','food'],[choice==='boss'?'crown_jacket':'moon_armor','outfit']];
+    const snapshot=Object.fromEntries(loadout.map(([item_key,slot])=>[item_key,{item_key,slot,item_level:1,mastery_xp:0}]));
+    for(const [key,slot] of loadout) f.sql.prepare('INSERT INTO telegram_pet_equipment_progression (telegram_id,item_key,slot) VALUES (?,?,?)').run(f.owner,key,slot);
+    f.sql.prepare('UPDATE telegram_pet_run_steps SET choice_key=?,choice_type=?,metadata=?').run(choice,choice,JSON.stringify({source:'telegram_pets_api',equipment_snapshot:snapshot}));
+    f.pet('choice-other',currentSeason,300,2); f.active('choice-other');
+    await f.state(); await f.state();
+    assert.equal(progress(f).adventure_xp,10,'a boss room remains a step award, not a standalone boss award');
+    const receipt=JSON.parse(f.sql.prepare('SELECT payload_json FROM telegram_pet_specialist_events').get().payload_json);
+    assert.equal(receipt.action,'run_step');
+    assert.equal(receipt.equipment_action,'run_'+choice);
+    const gear=f.sql.prepare('SELECT item_key,mastery_xp FROM telegram_pet_equipment_progression').all();
+    for(const row of gear) assert.equal(row.mastery_xp,row.item_key===matching||row.item_key==='moon_armor'?1:0,row.item_key);
+  });
+}
+
+for(const [item,slot] of [['crown_jacket','outfit'],['hoverboard','toy']]) test(`Arena ${slot} power uses both paid levels and mastery`, async () => {
+  const f=fixture('gear-arena-'+slot);
+  f.sql.prepare(`UPDATE telegram_pet_instances SET equipped_${slot}=?,source_profile_updated_at='moonpet-instance-v1'`).run(item);
+  f.sql.prepare(`UPDATE telegram_pet_profiles SET equipped_${slot}=?`).run(item);
+  f.sql.prepare('INSERT INTO telegram_pet_equipment_progression (telegram_id,item_key,slot) VALUES (?,?,?)').run(f.owner,item,slot);
+  const power=async()=>hooks.calculatePetArenaPower(await hooks.getPetProfile(f.db,f.owner),'fixed');
+  const base=await power();
+  f.sql.prepare('UPDATE telegram_pet_equipment_progression SET item_level=10').run();
+  const leveled=await power();
+  assert.ok(leveled>base);
+  f.sql.prepare('UPDATE telegram_pet_equipment_progression SET mastery_xp=5000,mastery_tier=5').run();
+  assert.ok(await power()>leveled);
+});
+
+for(const surface of ['API','Telegram']) for(const action of ['feed','work']) {
+  test(`immediate ${surface} ${action} credits saved gear when a concurrent purchase replaces it`, async () => {
+    const f=fixture('847'+(surface==='API'?'1':'2')+(action==='feed'?'1':'2'));
+    f.sql.prepare('UPDATE telegram_pet_instances SET pet_xp=10000').run();
+    f.sql.prepare('UPDATE telegram_pet_profiles SET pet_xp=10000').run();
+    const [original,replacement]=action==='feed'?['moon_kibble','nebula_snack']:['street_hoodie','moon_armor'];
+    assert.equal((await f.act({action:'buy',item_key:original})).accepted,true);
+    const batch=f.db.batch.bind(f.db);
+    let replaced=false;
+    f.db.batch=async statements=>{
+      const result=await batch(statements);
+      if(!replaced && f.sql.prepare("SELECT 1 FROM telegram_pet_events WHERE event_type=? AND status='accepted'").get(action)) {
+        replaced=true;
+        assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_specialist_events').get().n,0);
+        assert.equal((await f.act({action:'buy',item_key:replacement})).accepted,true);
+      }
+      return result;
+    };
+    const body={action,job_key:'street_artist',event_key:'concurrent-gear'};
+    const originalFetch=globalThis.fetch;
+    const invoke=surface==='API'?async()=>assert.equal((await api(f,body)).accepted,true):async()=>{
+      const response=await worker.fetch(new Request('https://moonboys-api.test/telegram/webhook',{
+        method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({message:{message_id:1,
+          chat:{id:Number(f.owner),type:'private'},from:{id:Number(f.owner),first_name:'Test player'},
+          text:action==='feed'?'/feed':'/petwork street_artist'}})
+      }),{DB:f.db,TELEGRAM_BOT_TOKEN:'fixture-only-token',PET_MINI_APP_ENABLED:'false'});
+      assert.equal(response.status,200);
+    };
+    globalThis.fetch=async url=>{
+      assert.match(String(url),/^https:\/\/api\.telegram\.org\/botfixture-only-token\//);
+      return new Response(JSON.stringify({ok:true,result:{message_id:1}}),{headers:{'content-type':'application/json'}});
+    };
+    try { await invoke(); await invoke(); } finally { globalThis.fetch=originalFetch; }
+    assert.equal(replaced,true,'replacement happened after the accepted primary receipt');
+    await f.state();
+    const gear=Object.fromEntries(f.sql.prepare('SELECT item_key,mastery_xp FROM telegram_pet_equipment_progression').all().map(row=>[row.item_key,row.mastery_xp]));
+    assert.equal(gear[original],1);
+    assert.equal(gear[replacement],0);
+    assert.equal(progress(f)[action==='feed'?'care_xp':'job_xp'],action==='feed'?8:14);
+    assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_specialist_events').get().n,1);
+  });
+}
