@@ -2765,22 +2765,26 @@ assert.equal(routeBlockedBody.accepted, false);
 assert.equal(routeBlockedBody.reason, 'moon_egg_must_hatch',
   '/telegram-pets/action must continue blocking hatch-restricted actions');
 
-const dailyLimitDb = seedRepeatRewardPlayer('special-daily-limit', 80, specialActionNow.toISOString());
+// Keep the simulated five-cooldown sequence within one UTC day, even near midnight.
+const dailyLimitNow = new Date(specialActionNow);
+dailyLimitNow.setUTCHours(12, 0, 0, 0);
+const dailyLimitDb = seedRepeatRewardPlayer('special-daily-limit', 80, dailyLimitNow.toISOString());
 dailyLimitDb.database.prepare("UPDATE telegram_pet_profiles SET happiness=0 WHERE telegram_id='special-daily-limit'").run();
 dailyLimitDb.database.prepare("UPDATE telegram_pet_instances SET happiness=0 WHERE telegram_id='special-daily-limit'").run();
 for (let index = 0; index < PET_SPECIAL_ACTION_POLICIES.dance.daily_limit; index += 1) {
   const result = await processPetAction(dailyLimitDb, 'special-daily-limit', 'dance', {
     event_key: `mini:special-daily-limit:dance:${index}`,
     source: 'telegram_mini_app',
-    now: new Date(specialActionNow.getTime() + index * 301_000),
+    now: new Date(dailyLimitNow.getTime() + index * 301_000),
   });
+  dailyLimitDb.database.prepare("UPDATE telegram_pet_events SET created_at=? WHERE event_key=?").run(new Date(dailyLimitNow.getTime() + index * 301_000).toISOString(), `mini:special-daily-limit:dance:${index}`);
   assert.equal(result.accepted, true, `DANCE use ${index + 1} must remain inside the daily limit`);
 }
 const beforeDailyLimit = dailyLimitDb.database.prepare("SELECT happiness FROM telegram_pet_profiles WHERE telegram_id='special-daily-limit'").get().happiness;
 const dailyLimitDance = await processPetAction(dailyLimitDb, 'special-daily-limit', 'dance', {
   event_key: 'mini:special-daily-limit:dance:blocked',
   source: 'telegram_mini_app',
-  now: new Date(specialActionNow.getTime() + PET_SPECIAL_ACTION_POLICIES.dance.daily_limit * 301_000),
+  now: new Date(dailyLimitNow.getTime() + PET_SPECIAL_ACTION_POLICIES.dance.daily_limit * 301_000),
 });
 assert.equal(dailyLimitDance.accepted, false);
 assert.equal(dailyLimitDance.reason, 'daily_limit');
@@ -2788,7 +2792,7 @@ assert.equal(dailyLimitDance.used_today, 5);
 assert.equal(dailyLimitDb.database.prepare("SELECT happiness FROM telegram_pet_profiles WHERE telegram_id='special-daily-limit'").get().happiness, beforeDailyLimit,
   'daily-limit rejection must not mutate Happiness');
 const specialCooldownEntries = await getPetSpecialActionCooldownEntries(dailyLimitDb, 'special-daily-limit',
-  new Date(specialActionNow.getTime() + PET_SPECIAL_ACTION_POLICIES.dance.daily_limit * 301_000));
+  new Date(dailyLimitNow.getTime() + PET_SPECIAL_ACTION_POLICIES.dance.daily_limit * 301_000));
 assert.equal(specialCooldownEntries.find((entry) => entry.action === 'dance')?.daily_limit, 5,
   'state cooldown authority must advertise the exhausted DANCE daily limit');
 
@@ -3147,7 +3151,8 @@ assert.equal(normalActivity.db.database.prepare("SELECT pet_xp FROM telegram_pet
   'a duplicate activity claim must not grant Pet XP twice');
 
 const recoverableActivity = seedPetActivitySession('activity-reward-retry', { now: activityNow, elapsed_seconds: 1800 });
-recoverableActivity.db.failOnBatch(1);
+await __petMediaTestHooks.getPetProfile(recoverableActivity.db, 'activity-reward-retry');
+recoverableActivity.db.failBatchOnSql(/INSERT OR IGNORE INTO telegram_pet_reward_claims/);
 await assert.rejects(
   claimPetActivitySession(recoverableActivity.db, 'activity-reward-retry', { now: activityNow, source: 'activity_claim_regression' }),
   /simulated_d1_batch_failure/,
@@ -3315,7 +3320,7 @@ assert.equal(expiryRaceActivity.db.database.prepare("SELECT COUNT(*) AS count FR
   'an expired session must not create a reward event');
 
 const cappedActivity = seedPetActivitySession('activity-caps', { now: activityNow, elapsed_seconds: 1800 });
-seedAcceptedDailyPetEvent(cappedActivity.db, 'activity-caps', 'activity-caps-prior', 1199, 249, '2026-08-10');
+seedAcceptedDailyPetEvent(cappedActivity.db, 'activity-caps', 'activity-caps-prior', 1199, 249, '2026-08-10', { petScoped: true });
 const cappedActivityClaim = await claimPetActivitySession(cappedActivity.db, 'activity-caps', { now: activityNow, source: 'activity_claim_regression' });
 assert.equal(cappedActivityClaim.pet_xp_awarded, 1, 'activity claims must preserve the 1,200/day Pet XP cap');
 assert.equal(cappedActivityClaim.xp_awarded, 1, 'activity claims must preserve the 250/day Community XP cap');
@@ -4561,6 +4566,14 @@ assert.equal(legacyPendingSecondRetry.accepted, false, 'cancelled legacy pending
 assert.equal(legacyPendingSecondRetry.duplicate, true, 'cancelled legacy pending Event retries must be idempotent');
 assert.equal(legacyPendingSecondRetry.reason, 'legacy_repeat_reward_missing_pet_authority', 'cancelled legacy pending Event retries must keep the compatibility reason');
 
+// Settlement helpers also read the server clock. Advance that clock with the
+// request so rounded decay cannot depend on when CI happens to run this case.
+const kaijuRecoveryRealDate = globalThis.Date;
+let kaijuRecoveryClock = recoveryDayA.getTime();
+globalThis.Date = class extends kaijuRecoveryRealDate {
+  constructor(...args) { super(...(args.length ? args : [kaijuRecoveryClock])); }
+  static now() { return kaijuRecoveryClock; }
+};
 const kaijuRecoveryDb = seedRepeatRewardPlayer('kaiju-recovery', 50, recoveryDayA.toISOString());
 kaijuRecoveryDb.database.exec('DELETE FROM telegram_seasons');
 kaijuRecoveryDb.database.prepare(`
@@ -4574,7 +4587,7 @@ kaijuRecoveryDb.database.prepare(`
   INSERT INTO telegram_seasons (name, start_date, end_date, is_active)
   VALUES ('Day B active leaderboard season', '2026-09-28T00:00:00.000Z', '2027-12-31T23:59:59.999Z', 1)
 `).run();
-seedAcceptedDailyPetEvent(kaijuRecoveryDb, 'kaiju-recovery', 'kaiju-recovery-day-a-cap', 1190, 245, recoveryDayAKey);
+seedAcceptedDailyPetEvent(kaijuRecoveryDb, 'kaiju-recovery', 'kaiju-recovery-day-a-cap', 1190, 245, recoveryDayAKey, { petScoped: true });
 const kaijuMatch = { match_id: 'kaiju-recovery-match', mode: 'solo' };
 const kaijuRewards = { pet_xp: 38, community_xp: 8, moon_gold: 18, style_tokens: 1, happiness: 5, energy_cost: 6 };
 kaijuRecoveryDb.failOnBatch(3);
@@ -4592,6 +4605,8 @@ assert.deepEqual(kaijuAfterFailure.user, { xp: 0, level: 1 }, 'failed Kaiju fina
 kaijuRecoveryDb.database.prepare(`
   UPDATE telegram_pet_profiles SET last_active_day = ?, streak_days = 9 WHERE telegram_id = ?
 `).run(recoveryDayBKey, 'kaiju-recovery');
+kaijuRecoveryDb.database.prepare('UPDATE telegram_pet_instances SET last_active_day=?,streak_days=9 WHERE telegram_id=?').run(recoveryDayBKey, 'kaiju-recovery');
+kaijuRecoveryClock = recoveryDayB.getTime();
 const recoveredKaiju = await awardPetKaijuPlayerResult(kaijuRecoveryDb, 'kaiju-recovery', kaijuMatch, 'kaiju_win', kaijuRewards, { now: recoveryDayB });
 assert.equal(recoveredKaiju.accepted, true, 'retrying a failed Kaiju result must complete its pending reservation');
 assert.equal(recoveredKaiju.reward_slot, 1, 'Kaiju recovery must reuse the original slot');
@@ -4652,6 +4667,7 @@ assert.deepEqual(
 const duplicateKaiju = await awardPetKaijuPlayerResult(kaijuRecoveryDb, 'kaiju-recovery', kaijuMatch, 'kaiju_win', kaijuRewards, { now: recoveryDayB });
 assert.equal(duplicateKaiju.duplicate, true, 'a completed Kaiju result retry must be idempotent');
 assert.deepEqual(repeatRewardSnapshot(kaijuRecoveryDb, 'kaiju-recovery', 'kaiju'), kaijuAfterRecovery, 'duplicate Kaiju result must not change XP, currencies, Energy, or its slot');
+globalThis.Date = kaijuRecoveryRealDate;
 
 function seedSelectableSoloKaijuMatch(db, telegramId, matchId) {
   db.database.prepare(`
@@ -4752,7 +4768,7 @@ assert.equal(eventCapDb.database.prepare(`
 `).get(new Date().toISOString().slice(0, 10)).total, 1200, 'Event rewards must not bypass the global Pet XP cap');
 
 const kaijuCapDb = seedRepeatRewardPlayer('kaiju-cap', 50);
-seedAcceptedDailyPetEvent(kaijuCapDb, 'kaiju-cap', 'prior-kaiju-cap', 1190, 245);
+seedAcceptedDailyPetEvent(kaijuCapDb, 'kaiju-cap', 'prior-kaiju-cap', 1190, 245, undefined, { petScoped: true });
 const cappedKaiju = await awardPetKaijuPlayerResult(
   kaijuCapDb,
   'kaiju-cap',

@@ -31,6 +31,7 @@ assert.equal(hooks.computePetActivityRewards('explore', 7200).rewards.item_key, 
 const sqlite = new DatabaseSync(':memory:');
 sqlite.exec(fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8'));
 sqlite.exec(fs.readFileSync(new URL('../workers/moonboys-api/migrations/048_telegram_pet_player_expansion.sql', import.meta.url), 'utf8'));
+for (const migration of ['058_telegram_pet_season_completion.sql','061_moonpet_season_economy_calibration.sql']) sqlite.exec(fs.readFileSync(new URL('../workers/moonboys-api/migrations/'+migration, import.meta.url),'utf8'));
 let failSettlement = false;
 class Statement {
   constructor(sql, args = []) { this.sql = sql; this.args = args; }
