@@ -67,7 +67,7 @@ async function runtimeSource(db, telegramId, eventKey, action) {
       WHERE s.telegram_id=? AND s.event_key=? LIMIT 1`).bind(telegramId, eventKey).first();
   }
   const eventType = action === 'job' ? 'work' : action;
-  return db.prepare(`SELECT e.pet_id, e.season_key, e.day_key,
+  return db.prepare(`SELECT e.pet_id, e.season_key, e.day_key, e.id AS source_event_id,
       json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END, '$.context.runtime_event_key') AS runtime_event_key,
       json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END, '$.context.source') AS source_surface,
       json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END, '$.context.equipment_snapshot') AS equipment_snapshot

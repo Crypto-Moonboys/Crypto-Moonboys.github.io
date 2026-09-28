@@ -67,8 +67,9 @@ export async function readPetActivity(db, limit = 20) {
     SELECT id,telegram_id,pet_id,season_key,event_type,xp_awarded,pet_xp_awarded,reason,created_at
     FROM telegram_pet_events e WHERE e.status='accepted' AND e.event_key<>?
     UNION ALL
-    SELECT id,telegram_id,NULL,NULL,'equipment_upgrade',0,0,action_key,updated_at
-    FROM telegram_pet_system_events WHERE system_key='equipment_upgrade' AND status='completed'
+    SELECT id,telegram_id,NULL,NULL,
+      CASE system_key WHEN 'cosmetic' THEN 'cosmetic_unlock' ELSE system_key END,0,0,action_key,updated_at
+    FROM telegram_pet_system_events WHERE system_key IN ('equipment_upgrade','crafting','cosmetic') AND status='completed'
   )
     SELECT e.telegram_id,e.event_type,e.xp_awarded,e.pet_xp_awarded,e.reason,e.created_at,
       d.lifecycle_phase,d.lifecycle_species_id,d.rare_morph_id,d.evolution_stage,d.stage,

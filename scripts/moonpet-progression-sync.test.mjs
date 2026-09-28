@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
-import { applyPetRuntimeAward, getOrCreatePetRuntimeState } from '../workers/moonboys-api/pets/runtime-phase-5a.js';
+import { applyPetRuntimeAward, getPetRuntimeSourceDropRoll, getOrCreatePetRuntimeState } from '../workers/moonboys-api/pets/runtime-phase-5a.js';
+import { resolvePetRareDrop } from '../workers/moonboys-api/pets/economy-phase-3.js';
 import deployedWorker from '../workers/moonboys-api/deployment-entry.js';
 import worker, { applyPetRuntimeCommandAward, __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 
@@ -185,8 +186,8 @@ test('deployed retry uses the accepted event day and ignores client-supplied mat
   const body={action:'work',job_key:'street_artist',event_key:'  spaced-key  ',drop_roll:0,material_amount:25};
   assert.equal((await api(f,body)).accepted,true);
   assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_specialist_events').get().n,1);
-  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_material_balances').get().n,0);
-  f.sql.exec('DELETE FROM telegram_pet_specialist_events; DELETE FROM telegram_pet_specialist_progression;');
+  assert.equal(f.sql.prepare('SELECT SUM(quantity) n FROM telegram_pet_material_balances').get().n,1,'the server grants one draw, never the client-requested 25');
+  f.sql.exec('DELETE FROM telegram_pet_specialist_events; DELETE FROM telegram_pet_specialist_progression; DELETE FROM telegram_pet_material_balances;');
   f.sql.prepare("UPDATE telegram_pet_events SET day_key='2026-09-26' WHERE event_key=?").run(body.event_key);
   await runtime(f,'today','2026-09-27','job');
   assert.equal((await api(f,body)).duplicate,true);
@@ -508,6 +509,7 @@ for (const extract of [false,true]) test(`Official Daily ${extract?'extraction':
   f.pet('daily-second',currentSeason,300,2); f.active('daily-second');
   await f.state();
   assert.equal(progress(f).adventure_xp,extract?34:10);
+  if(extract) await assertSourceMaterial(f,'run_extract',f.sql.prepare("SELECT analytics_id FROM telegram_pet_run_analytics WHERE event_type='run_end'").get().analytics_id,'run');
   assert.equal(f.sql.prepare("SELECT mastery_xp FROM telegram_pet_equipment_progression WHERE item_key='moon_armor'").get().mastery_xp,extract?2:1);
   await f.state();
   if(extract) await api(f,{action:'run_extract',run_id:run.run_id,event_key:'api-daily-retry'});
@@ -1103,3 +1105,159 @@ for(const surface of ['API','Telegram']) for(const action of ['feed','work']) {
     assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_specialist_events').get().n,1);
   });
 }
+
+async function assertSourceMaterial(f, action, sourceId, table) {
+  const receipt=f.sql.prepare('SELECT payload_json FROM telegram_pet_specialist_events WHERE action=?').get(action);
+  assert.ok(receipt,'specialist receipt exists');
+  const plan=JSON.parse(receipt.payload_json);
+  const expected=resolvePetRareDrop(table,await getPetRuntimeSourceDropRoll(action,f.owner,sourceId));
+  assert.equal(plan.material_source_id,sourceId);
+  assert.equal(plan.material,expected);
+  assert.equal(f.sql.prepare('SELECT quantity FROM telegram_pet_material_balances WHERE material_key=?').get(expected)?.quantity,1);
+}
+
+test('live job material draw is server-owned, atomic and stable across failed settlement, pet switching and API retries', async()=>{
+  const f=fixture('84801');
+  const body={action:'work',job_key:'street_artist',event_key:'source-draw',source_event_id:'forged',drop_roll:0,material_amount:25};
+  f.sql.exec("CREATE TRIGGER fail_material_draw BEFORE INSERT ON telegram_pet_material_balances BEGIN SELECT RAISE(ABORT,'interrupted_material_draw'); END");
+  assert.equal((await api(f,body)).accepted,true);
+  const event=f.sql.prepare("SELECT * FROM telegram_pet_events WHERE event_type='work'").get();
+  assert.ok(event); assert.notEqual(event.id,body.source_event_id);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_specialist_events').get().n,0);
+  const xp=f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances').get().pet_xp;
+  f.sql.exec('DROP TRIGGER fail_material_draw');
+  f.pet('draw-other',currentSeason,300,2); f.active('draw-other');
+  await f.state();
+  await assertSourceMaterial(f,'job',event.id,'job');
+  assert.equal((await api(f,{...body,drop_roll:0.9999,material_amount:9999})).duplicate,true);
+  await f.state();
+  assert.equal(f.sql.prepare('SELECT SUM(quantity) n FROM telegram_pet_material_balances').get().n,1);
+  assert.equal(progress(f).job_xp,14);
+  assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(authority(f).pet_id).pet_xp,xp);
+});
+
+test('Standard extraction gets one source-backed material draw across different request keys', async()=>{
+  const f=fixture('84802'); standardRun(f,'material-extract');
+  const first=await api(f,{action:'run_extract',run_id:'material-extract',event_key:'client-extract'});
+  assert.equal(first.accepted,true,JSON.stringify(first));
+  const event=f.sql.prepare("SELECT id FROM telegram_pet_events WHERE event_type='run_extract'").get();
+  await assertSourceMaterial(f,'run_extract',event.id,'run');
+  await api(f,{action:'run_extract',run_id:'material-extract',event_key:'different-client-extract'});
+  await f.state();
+  assert.equal(f.sql.prepare('SELECT SUM(quantity) n FROM telegram_pet_material_balances').get().n,1);
+});
+
+test('timed Work keeps its material draw pending until the whole specialist award commits', async()=>{
+  const f=fixture('draw-timed');
+  assert.equal((await f.act({action:'activity_start',activity_type:'work'})).accepted,true);
+  f.sql.prepare("UPDATE telegram_pet_activity_sessions SET started_at=datetime('now','-30 minutes')").run();
+  f.sql.exec("CREATE TRIGGER fail_timed_material BEFORE INSERT ON telegram_pet_material_balances BEGIN SELECT RAISE(ABORT,'interrupted_timed_material'); END");
+  assert.equal((await f.act({action:'activity_claim'})).reason,'activity_reward_recovery_pending');
+  const event=f.sql.prepare("SELECT * FROM telegram_pet_events WHERE event_type='activity_claim'").get();
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_specialist_events').get().n,0);
+  f.sql.exec('DROP TRIGGER fail_timed_material');
+  assert.equal((await f.act({action:'activity_claim'})).accepted,true);
+  await assertSourceMaterial(f,'timed_work',event.id,'job');
+  await f.act({action:'activity_claim'}); await f.state();
+  assert.equal(f.sql.prepare('SELECT SUM(quantity) n FROM telegram_pet_material_balances').get().n,1);
+});
+
+for(const outcome of ['arena_win','arena_draw','arena_loss','kaiju_win']) test(`${outcome} awards one material from its committed combat receipt`, async()=>{
+  const f=fixture('draw-'+outcome);
+  const arena=outcome.startsWith('arena_');
+  const match={match_id:'draw-match',battle_id:'draw-match',mode:arena?'pet_arena':'solo',
+    player1_telegram_id:f.owner,player1_pet_id:authority(f).pet_id,player1_season_key:currentSeason};
+  const reward=await hooks.awardPetKaijuPlayerResult(f.db,f.owner,match,outcome,{pet_xp:20,moon_gold:10});
+  assert.equal(reward.accepted,true,JSON.stringify(reward));
+  const event=f.sql.prepare('SELECT id FROM telegram_pet_events WHERE event_type=?').get(arena?'arena_battle':'kaiju_battle');
+  await assertSourceMaterial(f,arena?'arena_complete':'kaiju_win',event.id,arena?'arena':'kaiju');
+  await hooks.awardPetKaijuPlayerResult(f.db,f.owner,match,outcome,{pet_xp:20,moon_gold:10});
+  await f.state();
+  assert.equal(f.sql.prepare('SELECT SUM(quantity) n FROM telegram_pet_material_balances').get().n,1);
+});
+
+test('Weekly Boss recovery retains its source material draw and does not close after a failed material write', async()=>{
+  const f=fixture('draw-weekly');
+  const victory=savedWeeklyVictory(f,now.toISOString().slice(0,10));
+  f.sql.exec("CREATE TRIGGER fail_boss_material BEFORE INSERT ON telegram_pet_material_balances BEGIN SELECT RAISE(ABORT,'interrupted_boss_material'); END");
+  await f.state();
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_system_events WHERE system_key='weekly_boss_finish'").get().n,0);
+  f.sql.exec('DROP TRIGGER fail_boss_material');
+  await f.state(); await f.state();
+  await assertSourceMaterial(f,'run_boss',victory.key,'run');
+  assert.equal(f.sql.prepare('SELECT SUM(quantity) n FROM telegram_pet_material_balances').get().n,1);
+});
+
+test('material draws respect stack caps without reopening completed specialist rewards', async()=>{
+  const f=fixture('draw-cap');
+  for(const key of ['scrap_metal','moon_fabric','spray_core']) f.sql.prepare('INSERT INTO telegram_pet_material_balances (telegram_id,material_key,quantity) VALUES (?,?,9999)').run(f.owner,key);
+  assert.equal((await f.act({action:'work',job_key:'street_artist',request_id:'cap-draw'})).accepted,true);
+  const plan=JSON.parse(f.sql.prepare('SELECT payload_json FROM telegram_pet_specialist_events').get().payload_json);
+  assert.ok(plan.material);
+  f.sql.prepare('UPDATE telegram_pet_material_balances SET quantity=9998').run();
+  await f.state();
+  assert.ok(f.sql.prepare('SELECT quantity FROM telegram_pet_material_balances').all().every(row=>row.quantity===9998));
+});
+
+for(const type of ['crafting','cosmetic_unlock']) test(`completed ${type} is public once with zero ranking XP and unfinished purchases stay hidden`, async()=>{
+  const f=fixture('public-'+type);
+  f.sql.exec('UPDATE telegram_pet_instances SET pet_xp=10000; UPDATE telegram_pet_profiles SET pet_xp=10000;');
+  for(const key of ['scrap_metal','moon_fabric']) f.sql.prepare('INSERT INTO telegram_pet_material_balances (telegram_id,material_key,quantity) VALUES (?,?,10)').run(f.owner,key);
+  const body=type==='crafting'?{action:'craft',recipe_key:'street_rations',request_id:'public-once'}:{action:'cosmetic_unlock',cosmetic_key:'profile_frame',request_id:'public-once'};
+  assert.equal((await f.act(body)).accepted,true);
+  const balance=f.sql.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles').get();
+  assert.equal((await f.act(body)).duplicate,true);
+  for(const status of ['pending','rejected','settling']) f.sql.prepare('INSERT INTO telegram_pet_system_events (id,telegram_id,system_key,action_key,period_key,status) VALUES (?,?,?,?,?,?)').run(status,f.owner,type==='crafting'?'crafting':'cosmetic','unfinished',status,status);
+  const activity=(await f.get('/telegram-pets/activity')).items.filter(row=>row.event_type===type);
+  assert.equal(activity.length,1);
+  assert.match(activity[0].text,type==='crafting'?/crafted Street Rations/:/collected profile frame/);
+  assert.equal(activity[0].pet_xp_awarded,0); assert.equal(activity[0].xp_awarded,0);
+  assert.equal((await f.get('/telegram-pets/leaderboard?period=all_time')).entries[0].pet_xp,10000);
+  for(const period of ['daily','weekly','seasonal']) assert.equal((await f.get('/telegram-pets/leaderboard?period='+period)).entries.reduce((sum,row)=>sum+row.pet_xp,0),0);
+  assert.deepEqual(f.sql.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles').get(),balance);
+});
+
+test('material source hints describe live settlement routes, including weighted draws', async()=>{
+  const f=fixture('material-hints');
+  const materials=Object.fromEntries((await f.state()).materials.map(row=>[row.key,row.sources]));
+  assert.ok(materials.scrap_metal.includes('job_material_draw'));
+  assert.ok(materials.battery_cell.includes('moon_run_extraction_material_draw'));
+  assert.ok(materials.arena_token.includes('arena_completion_material_draw'));
+  assert.deepEqual(materials.evolution_fragment,['daily_run_boss']);
+  assert.deepEqual(materials.mastery_token,['seasonal_raid_victory']);
+  for(const sources of Object.values(materials)) assert.ok(!sources.some(source=>['run_fight','run_loot','arena_daily','event','arena_win','arena_draw'].includes(source)));
+});
+
+test('a saved seasonal raid reward repairs its material draw once from the accepted reward receipt', async()=>{
+  const f=fixture('draw-raid');
+  const rotation='saved-raid-rotation', source='saved-raid-reward';
+  f.sql.prepare(`INSERT INTO telegram_pet_seasonal_boss_progress
+    (pet_id,telegram_id,pet_season_key,season_key,boss_key,damage,defeated_at,reward_claimed_at)
+    VALUES (?,?,?,?,'neon_titan',900,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)`)
+    .run(authority(f).pet_id,f.owner,currentSeason,rotation);
+  f.sql.prepare(`INSERT INTO telegram_pet_events
+    (id,pet_id,telegram_id,season_key,event_type,event_key,day_key,week_key,status)
+    VALUES (?,?,?,?,'seasonal_boss',?,?,'fixture','accepted')`)
+    .run(source,authority(f).pet_id,f.owner,currentSeason,`seasonal:${rotation}:${f.owner}:${authority(f).pet_id}`,now.toISOString().slice(0,10));
+  await f.state(); await f.state();
+  await assertSourceMaterial(f,'run_boss',source,'run');
+  assert.equal(f.sql.prepare('SELECT SUM(quantity) n FROM telegram_pet_material_balances').get().n,1);
+});
+
+test('a transient timed-claim receipt lookup cannot settle without its material draw', async()=>{
+  const f=fixture('draw-source-read');
+  await f.act({action:'activity_start',activity_type:'work'});
+  f.sql.prepare("UPDATE telegram_pet_activity_sessions SET started_at=datetime('now','-30 minutes')").run();
+  let failed=false;
+  f.db.beforeFirst=async statement=>{
+    if(!statement.query.includes('SELECT id, pet_id, telegram_id, event_type, event_key, status, reason, xp_awarded') ||
+      !f.sql.prepare("SELECT 1 FROM telegram_pet_events WHERE event_type='activity_claim' AND status='accepted'").get()) return;
+    f.db.beforeFirst=null; failed=true; throw Error('receipt_read_unavailable');
+  };
+  assert.equal((await f.act({action:'activity_claim'})).reason,'activity_reward_recovery_pending');
+  assert.equal(failed,true);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_specialist_events').get().n,0);
+  const event=f.sql.prepare("SELECT id FROM telegram_pet_events WHERE event_type='activity_claim'").get();
+  assert.equal((await f.act({action:'activity_claim'})).accepted,true);
+  await assertSourceMaterial(f,'timed_work',event.id,'job');
+});
