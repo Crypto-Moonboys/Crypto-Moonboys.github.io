@@ -78,7 +78,8 @@ function sourceMatchesObjective(objectiveId, sourceEvent) {
 
 async function ownedPet(db, petId, telegramId, seasonKey) {
   return db.prepare(`SELECT s.pet_id, s.telegram_id, s.season_key
-    FROM telegram_pet_season_slots s JOIN telegram_pet_instances i ON i.pet_id=s.pet_id
+    FROM telegram_pet_season_slots s JOIN telegram_pet_instances i
+      ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id AND i.season_key=s.season_key AND i.slot_number=s.slot_number
     WHERE s.pet_id=? AND s.telegram_id=? AND s.season_key=? LIMIT 1`)
     .bind(petId, telegramId, seasonKey).first();
 }
@@ -136,6 +137,25 @@ async function readExistingWeeklyJourneyCrest(db, request) {
     .bind(request.pet_id, request.telegram_id, request.season_key, request.qualification_week).first().catch(() => null);
 }
 
+// Use the same source-backed totals for the UI and reward qualification.
+// Check-ins count UTC days, even if legacy aliases saved multiple events on one
+// day. Preserve all evidence rows so recovery can recognize them as processed.
+export async function readWeeklyJourneyObjectiveProgress(db, request) {
+  return db.prepare(`SELECT o.objective_id,
+      CASE WHEN o.objective_id='weekly_check_in' THEN COUNT(DISTINCT e.day_key)
+        ELSE SUM(o.progress_value) END AS additive_progress,
+      MAX(o.progress_value) AS max_progress, COUNT(*) AS source_event_count
+    FROM telegram_pet_weekly_journey_objectives o
+    JOIN telegram_pet_events e ON e.telegram_id=o.telegram_id AND e.pet_id=o.pet_id
+      AND e.season_key=o.season_key AND e.event_key=o.source_event_key AND e.status='accepted'
+    JOIN telegram_pet_instances i ON i.pet_id=o.pet_id AND i.telegram_id=o.telegram_id AND i.season_key=o.season_key
+    JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id
+      AND s.season_key=i.season_key AND s.slot_number=i.slot_number
+    WHERE o.pet_id=? AND o.telegram_id=? AND o.season_key=? AND o.qualification_week=? AND o.status='accepted'
+    GROUP BY o.objective_id`)
+    .bind(request.pet_id, request.telegram_id, request.season_key, request.qualification_week).all();
+}
+
 export async function finalizeWeeklyJourneyCrest(db, request) {
   const telegramId = safeText(request.telegram_id);
   const petId = safeText(request.pet_id);
@@ -145,11 +165,9 @@ export async function finalizeWeeklyJourneyCrest(db, request) {
     return { accepted: false, duplicate: false, reason: 'invalid_weekly_journey_authority' };
   }
 
-  const rows = await db.prepare(`SELECT objective_id, SUM(progress_value) AS additive_progress, MAX(progress_value) AS max_progress
-    FROM telegram_pet_weekly_journey_objectives
-    WHERE telegram_id=? AND pet_id=? AND season_key=? AND qualification_week=? AND status='accepted'
-    GROUP BY objective_id`)
-    .bind(telegramId, petId, seasonKey, qualificationWeek).all().catch(() => ({ results: [] }));
+  const rows = await readWeeklyJourneyObjectiveProgress(db, {
+    telegram_id: telegramId, pet_id: petId, season_key: seasonKey, qualification_week: qualificationWeek,
+  }).catch(() => ({ results: [] }));
   const completedObjectives = (rows.results || []).reduce((count, row) => {
     const objective = PET_WEEKLY_JOURNEY_OBJECTIVES[String(row.objective_id || '')];
     if (!objective) return count;

@@ -70,6 +70,26 @@ function seedPlayer(db, telegramId, name, xp) {
     VALUES (?, ?, ?, 20, 100, 100, 90, 90, 100)`).run(telegramId, name, xp);
 }
 
+function seedWeeklyObjective(db, { telegramId, pet, week, objectiveId, progress, key }) {
+  const objective = PET_WEEKLY_JOURNEY_OBJECTIVES[objectiveId];
+  const sourceTypes = { weekly_care: 'feed', weekly_training: 'train', weekly_run: 'run_complete', weekly_boss_attempt: 'weekly_boss', weekly_check_in: 'daily_chest' };
+  const season = getPetSeasonInfo(new Date());
+  const weekStart = Date.parse(season.start_at) + (week - 1) * 7 * 86400000;
+  const count = objective.progress_mode === 'max' ? 1 : Math.max(1, progress);
+  for (let index = 0; index < count; index += 1) {
+    const eventKey = `${key}:${index}`;
+    const day = new Date(weekStart + (objectiveId === 'weekly_check_in' ? index : 0) * 86400000).toISOString().slice(0, 10);
+    db.database.prepare(`INSERT INTO telegram_pet_events
+      (id, pet_id, telegram_id, event_type, event_key, season_key, day_key, week_key, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'accepted')`)
+      .run(`source:${eventKey}`, pet.pet_id, telegramId, sourceTypes[objectiveId], eventKey, pet.season_key, day, `${pet.season_key}:week:${week}`);
+    db.database.prepare(`INSERT INTO telegram_pet_weekly_journey_objectives
+      (event_id, telegram_id, pet_id, season_key, qualification_week, objective_id, source_event_key, source_event_type, progress_value, status, evidence)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'accepted', '{}')`)
+      .run(eventKey, telegramId, pet.pet_id, pet.season_key, week, objectiveId, eventKey, sourceTypes[objectiveId], objective.progress_mode === 'max' ? progress : Math.min(1, progress));
+  }
+}
+
 function installSeasonCompletionMarkerTable(db) {
   db.database.exec(`CREATE TABLE IF NOT EXISTS telegram_pet_season_completions (
     pet_id TEXT NOT NULL,
@@ -444,10 +464,8 @@ for (const [challengeId, challenge] of Object.entries(PET_DAILY_CHALLENGES)) {
     .run(`daily-summary:${challengeId}`, journeyPetId, journeySeasonKey, journeyDay, challengeId, `daily-evidence:${challengeId}`, Math.max(0, Number(challenge.target || 1) - 1));
 }
 for (const [objectiveId, objective] of Object.entries(PET_WEEKLY_JOURNEY_OBJECTIVES)) {
-  journeySummaryDb.database.prepare(`INSERT INTO telegram_pet_weekly_journey_objectives
-    (event_id, telegram_id, pet_id, season_key, qualification_week, objective_id, source_event_key, source_event_type, progress_value, status, evidence)
-    VALUES (?, 'journey-summary', ?, ?, ?, ?, ?, 'weekly_journey_test', ?, 'accepted', '{}')`)
-    .run(`weekly-summary:${objectiveId}`, journeyPetId, journeySeasonKey, journeyWeek, objectiveId, `weekly-evidence:${objectiveId}`, Math.max(0, Number(objective.target || 1) - 1));
+  seedWeeklyObjective(journeySummaryDb, { telegramId: 'journey-summary', pet: journeyPet, week: journeyWeek,
+    objectiveId, progress: Math.max(0, Number(objective.target || 1) - 1), key: `weekly-summary:${objectiveId}` });
 }
 const journeySummary = await buildPetMiniAppJourneySummary(journeySummaryDb, 'journey-summary', {
   season: { key: journeySeasonKey },
@@ -539,14 +557,10 @@ seedPlayer(partialWeeklyDb, 'weekly-partial-progress', 'Partial Cat', 1200);
 await ensurePetStarterSeasonSlot(partialWeeklyDb, 'weekly-partial-progress', new Date());
 const partialWeeklyPet = await ensureActivePetInstance(partialWeeklyDb, 'weekly-partial-progress');
 const partialWeeklyWeek = 1;
-partialWeeklyDb.database.prepare(`INSERT INTO telegram_pet_weekly_journey_objectives
-  (event_id, telegram_id, pet_id, season_key, qualification_week, objective_id, source_event_key, source_event_type, progress_value, status, evidence)
-  VALUES (?, 'weekly-partial-progress', ?, ?, ?, 'weekly_care', ?, 'feed', 5, 'accepted', '{}')`)
-  .run('weekly-partial:care', partialWeeklyPet.pet_id, partialWeeklyPet.season_key, partialWeeklyWeek, 'weekly-partial:care:event');
-partialWeeklyDb.database.prepare(`INSERT INTO telegram_pet_weekly_journey_objectives
-  (event_id, telegram_id, pet_id, season_key, qualification_week, objective_id, source_event_key, source_event_type, progress_value, status, evidence)
-  VALUES (?, 'weekly-partial-progress', ?, ?, ?, 'weekly_training', ?, 'train', 1, 'accepted', '{}')`)
-  .run('weekly-partial:training', partialWeeklyPet.pet_id, partialWeeklyPet.season_key, partialWeeklyWeek, 'weekly-partial:training:event');
+seedWeeklyObjective(partialWeeklyDb, { telegramId: 'weekly-partial-progress', pet: partialWeeklyPet, week: partialWeeklyWeek,
+  objectiveId: 'weekly_care', progress: 5, key: 'weekly-partial:care' });
+seedWeeklyObjective(partialWeeklyDb, { telegramId: 'weekly-partial-progress', pet: partialWeeklyPet, week: partialWeeklyWeek,
+  objectiveId: 'weekly_training', progress: 1, key: 'weekly-partial:training' });
 const partialWeeklySummary = await buildPetMiniAppJourneySummary(partialWeeklyDb, 'weekly-partial-progress', {
   season: getPetSeasonInfo(new Date()),
   current_season_week: partialWeeklyWeek,
@@ -562,10 +576,8 @@ seedPlayer(completeWeeklyDb, 'weekly-complete-progress', 'Complete Weekly Cat', 
 await ensurePetStarterSeasonSlot(completeWeeklyDb, 'weekly-complete-progress', new Date());
 const completeWeeklyPet = await ensureActivePetInstance(completeWeeklyDb, 'weekly-complete-progress');
 for (const [objectiveId, objective] of Object.entries(PET_WEEKLY_JOURNEY_OBJECTIVES)) {
-  completeWeeklyDb.database.prepare(`INSERT INTO telegram_pet_weekly_journey_objectives
-    (event_id, telegram_id, pet_id, season_key, qualification_week, objective_id, source_event_key, source_event_type, progress_value, status, evidence)
-    VALUES (?, 'weekly-complete-progress', ?, ?, 1, ?, ?, 'weekly_journey_test', ?, 'accepted', '{}')`)
-    .run(`weekly-complete:${objectiveId}`, completeWeeklyPet.pet_id, completeWeeklyPet.season_key, objectiveId, `weekly-complete:${objectiveId}:event`, Number(objective.target || 1));
+  seedWeeklyObjective(completeWeeklyDb, { telegramId: 'weekly-complete-progress', pet: completeWeeklyPet, week: 1,
+    objectiveId, progress: Number(objective.target || 1), key: `weekly-complete:${objectiveId}` });
 }
 const completeWeeklySummary = await buildPetMiniAppJourneySummary(completeWeeklyDb, 'weekly-complete-progress', {
   season: getPetSeasonInfo(new Date()),

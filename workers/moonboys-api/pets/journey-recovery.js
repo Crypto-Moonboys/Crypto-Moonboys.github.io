@@ -69,7 +69,8 @@ export async function recoverPetJourneyAwards(db, telegramId, options = {}) {
     const definitions = Object.entries(journey.definitions);
     const targetSql = definitions.map(([id, definition]) => `WHEN '${id}' THEN ${Number(definition.target)}`).join(' ');
     const maxIds = definitions.filter(([, definition]) => (definition.progress_mode || definition.validation_rules?.progress_mode) === 'max').map(([id]) => `'${id}'`);
-    const progressSql = maxIds.length ? `CASE WHEN o.${objective} IN (${maxIds.join(',')}) THEN MAX(o.progress_value) ELSE SUM(o.progress_value) END` : 'SUM(o.progress_value)';
+    const checkInProgress = kind === 'weekly' ? "WHEN o.objective_id='weekly_check_in' THEN COUNT(DISTINCT e.day_key) " : '';
+    const progressSql = maxIds.length ? `CASE ${checkInProgress}WHEN o.${objective} IN (${maxIds.join(',')}) THEN MAX(o.progress_value) ELSE SUM(o.progress_value) END` : 'SUM(o.progress_value)';
     // Apply the same source authority before LIMIT and when deriving the date.
     // Missing sources must not consume every slot in the recovery budget.
     const sourceJoin = kind === 'weekly' ? `JOIN telegram_pet_events e ON e.event_key=o.source_event_key AND e.telegram_id=o.telegram_id
@@ -103,14 +104,21 @@ export async function recoverPetJourneyAwards(db, telegramId, options = {}) {
           // crossing, then the latest of those crossings for the full Journey.
           const source = await db.prepare(`SELECT MAX(day) AS day FROM (
             SELECT objective_id, MIN(day) AS day FROM (
-              SELECT o.objective_id, e.day_key AS day,
-                CASE WHEN o.objective_id IN (${maxIds.join(',')})
-                  THEN MAX(o.progress_value) OVER objective_progress
-                  ELSE SUM(o.progress_value) OVER objective_progress END AS progress
-              FROM telegram_pet_weekly_journey_objectives o
-              ${sourceJoin}
-              WHERE o.telegram_id=? AND o.pet_id=? AND o.season_key=? AND o.qualification_week=? AND o.status='accepted'
-              WINDOW objective_progress AS (PARTITION BY o.objective_id ORDER BY e.day_key, o.event_id
+              SELECT objective_id, day,
+                CASE WHEN objective_id IN (${maxIds.join(',')})
+                  THEN MAX(day_progress) OVER objective_progress
+                  ELSE SUM(day_progress) OVER objective_progress END AS progress
+              FROM (
+                SELECT o.objective_id,e.day_key AS day,
+                  CASE WHEN o.objective_id='weekly_check_in' THEN 1
+                    WHEN o.objective_id IN (${maxIds.join(',')}) THEN MAX(o.progress_value)
+                    ELSE SUM(o.progress_value) END AS day_progress
+                FROM telegram_pet_weekly_journey_objectives o
+                ${sourceJoin}
+                WHERE o.telegram_id=? AND o.pet_id=? AND o.season_key=? AND o.qualification_week=? AND o.status='accepted'
+                GROUP BY o.objective_id,e.day_key
+              )
+              WINDOW objective_progress AS (PARTITION BY objective_id ORDER BY day
                 ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)
             ) WHERE progress >= CASE objective_id ${targetSql} END
             GROUP BY objective_id

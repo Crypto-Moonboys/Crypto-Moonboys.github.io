@@ -1284,7 +1284,8 @@ assert.match(worker, /listPetMiniAppDailyJourneyObjectives/, 'Mini App Daily Jou
 assert.match(worker, /SELECT challenge_id, SUM\(progress_value\) AS additive_progress, MAX\(progress_value\) AS max_progress[\s\S]*GROUP BY challenge_id/, 'Mini App Daily Journey summary must aggregate progress by objective');
 assert.doesNotMatch(worker, /COUNT\(DISTINCT challenge_id\) AS completed_objectives[\s\S]*telegram_pet_daily_journey_objectives/, 'Mini App Daily Journey summary must not count raw accepted evidence rows as completed objectives');
 assert.match(worker, /countPetMiniAppCompletedWeeklyJourneyObjectives/, 'Mini App Weekly Journey summary must use target-aware aggregation');
-assert.match(worker, /SELECT objective_id, SUM\(progress_value\) AS additive_progress, MAX\(progress_value\) AS max_progress[\s\S]*GROUP BY objective_id/, 'Mini App Weekly Journey summary must aggregate progress by objective');
+// Weekly totals are shared with settlement. Real SQLite UI/award parity and
+// distinct-day qualification are covered in moonpet-quest-public-sync.test.mjs.
 assert.doesNotMatch(worker, /COUNT\(DISTINCT objective_id\) AS completed_objectives[\s\S]*telegram_pet_weekly_journey_objectives/, 'Mini App Weekly Journey summary must not count raw accepted evidence rows as completed objectives');
 assert.match(worker, /dailyAcceptedReceipt[\s\S]*status='accepted' AND growth_mark_id IS NOT NULL[\s\S]*growth_mark_awarded: Boolean\(dailyAcceptedReceipt\?\.growth_mark_id\)/, 'Daily Journey summary must derive awarded state from any accepted receipt');
 assert.match(worker, /weeklyAcceptedReceipt[\s\S]*status='accepted' AND crest_id IS NOT NULL[\s\S]*weekly_crest_awarded: Boolean\(weeklyAcceptedReceipt\?\.crest_id\)/, 'Weekly Journey summary must derive awarded state from any accepted receipt');
