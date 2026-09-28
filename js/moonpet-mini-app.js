@@ -81,6 +81,7 @@
   var radioRequestedOn = readRadioPreference();
   var radioRequestGeneration = 0;
   var radioRetryNeedsLoad = false;
+  var radioNeedsGesture = false;
   var deviceMemory = Number(navigator.deviceMemory || 0);
   var hardwareConcurrency = Number(navigator.hardwareConcurrency || 0);
   var renderQuality = reducedMotion || deviceMemory && deviceMemory <= 2 || hardwareConcurrency && hardwareConcurrency <= 2 ? 'low'
@@ -369,10 +370,12 @@
   }
 
   function readRadioPreference() {
-    try { return window.localStorage.getItem('arcade_radio_on') === 'true'; } catch (_) { return false; }
+    // Legacy arcade_radio_on=false also recorded playback failures, not just user choices.
+    try { return window.localStorage.getItem('moonpet-radio-preference') !== 'off'; } catch (_) { return true; }
   }
 
   function saveRadioPreference(on) {
+    try { window.localStorage.setItem('moonpet-radio-preference', on ? 'on' : 'off'); } catch (_) {}
     try { window.localStorage.setItem('arcade_radio_on', on ? 'true' : 'false'); } catch (_) {}
   }
 
@@ -380,17 +383,20 @@
   function radioPlaybackFailed(error, announce) {
     radioRequestedOn = false;
     radioEnabled = false;
-    radioRetryNeedsLoad = true;
-    saveRadioPreference(false);
+    radioNeedsGesture = Boolean(error && error.name === 'NotAllowedError');
+    radioRetryNeedsLoad = !radioNeedsGesture;
     syncMoonpetScore();
     renderCanvasTools();
-    if (announce !== false) tell(error && error.name === 'NotAllowedError'
+    var code = Number(radioPlayer && radioPlayer.error && radioPlayer.error.code || error && error.code || 0);
+    var reason = ({ 1: 'INTERRUPTED', 2: 'NETWORK', 3: 'DECODE', 4: 'FORMAT' })[code];
+    if (announce !== false) tell(radioNeedsGesture
       ? 'RADIO NEEDS A TAP. TAP THE RADIO ICON TO PLAY.'
-      : 'RADIO CONNECTION LOST. TAP THE RADIO ICON TO RECONNECT.', 'danger');
+      : 'RADIO CONNECTION LOST' + (reason ? ' [' + reason + ' / ' + code + ']' : '') + '. TAP THE RADIO ICON TO RECONNECT.', 'danger');
   }
 
   async function setRadioEnabled(on, announce) {
     radioRequestedOn = Boolean(on);
+    radioNeedsGesture = false;
     var requestGeneration = ++radioRequestGeneration;
     if (!on) {
       if (radioPlayer) radioPlayer.pause();
@@ -435,7 +441,21 @@
     haptic('light');
     return playback;
   }
+  function resumeRadioOnGesture(event) {
+    if (!radioNeedsGesture || radioRequestedOn || radioEnabled || !state || document.hidden || !event.isTrusted) return;
+    if (event.type === 'keydown' && (event.repeat || !['Enter', ' '].includes(event.key))) return;
+    // The Radio button owns its toggle; Audio should not unexpectedly start radio.
+    if (event.target && event.target.closest && event.target.closest('[data-utility="radio"], [data-utility="audio"]')) return;
+    setRadioEnabled(true, false);
+  }
+
+  function bindRadioGestureResume() {
+    document.addEventListener('click', resumeRadioOnGesture, true);
+    document.addEventListener('keydown', resumeRadioOnGesture, true);
+  }
   // TEST-EXPORT: radioPlayback:end
+
+  bindRadioGestureResume();
 
   radioPlayer.addEventListener('error', function () {
     // A pending play promise handles its own failure. This covers later dropouts.
