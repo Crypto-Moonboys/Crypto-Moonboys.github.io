@@ -2774,6 +2774,7 @@ async function recordPetRunBankedEvent(db, telegramId, run, pet, options = {}) {
   const eventType = options.completed ? 'run_complete' : 'run_extract';
   const eventKey = String(options.completed ? (options.event_key || buildStablePetEventKey(['pet_run_complete', telegramId, run.run_id])) : buildPetRunExtractEventKey(telegramId, run.run_id)).slice(0, 120);
   const terminalStatus = options.completed ? 'completed' : 'extracted';
+  const runtimeEventKey = options.completed ? null : `runtime:run-extract:${eventKey}`;
   const claimedRow = await db.prepare(`UPDATE telegram_pet_runs
     SET status = ?, completed_at = COALESCE(completed_at, CURRENT_TIMESTAMP), updated_at = CURRENT_TIMESTAMP
     WHERE telegram_id = ? AND run_id = ? AND status IN ('active', 'extractable') AND depth = ?
@@ -2793,7 +2794,8 @@ async function recordPetRunBankedEvent(db, telegramId, run, pet, options = {}) {
       moon_gold: rewardRun.unbanked_moon_gold, moon_crystals: rewardRun.unbanked_moon_crystals,
       style_tokens: rewardRun.unbanked_style_tokens, items: bankedItemsAuthority },
     touch_streak: true, now,
-    context: { source: options.source || 'telegram_command', run_id: rewardRun.run_id, depth: rewardRun.depth, max_depth: rewardRun.max_depth },
+    context: { source: options.source || 'telegram_command', run_id: rewardRun.run_id, depth: rewardRun.depth, max_depth: rewardRun.max_depth,
+      ...(runtimeEventKey ? { runtime_event_key: runtimeEventKey } : {}) },
   });
   if (awardedAuthority.accepted || awardedAuthority.duplicate) {
     await recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, eventKey);
@@ -2811,7 +2813,11 @@ async function recordPetRunBankedEvent(db, telegramId, run, pet, options = {}) {
   // Legacy runs have no persisted canonical boss room. Their completion may
   // record exploration and completion memories, but never boss authority.
   await reconcileSanctuaryBestEffort(db, telegramId, options.completed ? 'run_completed' : 'run_extracted');
-  return { ...awardedAuthority, reason: awardedAuthority.duplicate ? 'duplicate' : (options.completed ? 'run_completed' : 'run_extracted'),
+  const receipt = await readAcceptedPetEventByKey(db, telegramId, eventKey);
+  const savedRuntimeKey = parsePersistedPetReward(receipt?.metadata)?.context?.runtime_event_key;
+  return { ...awardedAuthority, source_event_key: receipt?.event_key,
+    runtime_event_key: savedRuntimeKey === runtimeEventKey ? runtimeEventKey : null,
+    accounting_window: { day_key: receipt?.day_key }, reason: awardedAuthority.duplicate ? 'duplicate' : (options.completed ? 'run_completed' : 'run_extracted'),
     run: rewardRun, banked_items: bankedItemsAuthority };
 }
 
@@ -9661,8 +9667,9 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
       ? extractDailyMoonRunWithWeeklyJourney(db, { telegram_id: telegramId, run_id: body.run_id })
       : processPetRunExtract(db, telegramId, body.run_id, { event_key: eventKey, source });
     const resolved = await result;
+    const runtimeEventKey = resolved.run ? resolved.runtime_event_key : `runtime:mini:${eventKey}`;
     // Finishing a saved boss clear only settles the ending, as refresh does.
-    if (resolved.accepted && !resolved.duplicate && !resolved.settlement_recovered && resolved.reason !== 'daily_run_completed') await applyPetRuntimeCommandAward(db, telegramId, `runtime:mini:${eventKey}`, 'run_extract', {
+    if (runtimeEventKey && resolved.accepted && !resolved.duplicate && !resolved.settlement_recovered && resolved.reason !== 'daily_run_completed') await applyPetRuntimeCommandAward(db, telegramId, runtimeEventKey, 'run_extract', {
       pet_id: resolved.run?.pet_id || resolved.daily_run?.pet_id || resolved.pet?.pet_id,
       season_key: resolved.run?.season_key || resolved.daily_run?.season_key || resolved.pet?.season_key,
     });
@@ -10745,8 +10752,10 @@ export default {
       }[String(body.action || '').trim().toLowerCase()];
       // The extraction endpoint also resumes saved Daily Run boss completions.
       const settlingDailyEnding = apiRuntimeAction === 'run_extract' && result?.reason === 'daily_run_completed';
-      if (result?.accepted && !result.duplicate && !result.settlement_recovered && apiRuntimeAction && !settlingDailyEnding) {
-        await applyPetRuntimeCommandAward(env.DB, telegramId, `runtime:api:${body.event_key || body.action || crypto.randomUUID()}`, apiRuntimeAction, {
+      const apiRuntimeKey = apiRuntimeAction === 'run_extract' && result?.run
+        ? result.runtime_event_key : `runtime:api:${body.event_key || body.action || crypto.randomUUID()}`;
+      if (apiRuntimeKey && result?.accepted && !result.duplicate && !result.settlement_recovered && apiRuntimeAction && !settlingDailyEnding) {
+        await applyPetRuntimeCommandAward(env.DB, telegramId, apiRuntimeKey, apiRuntimeAction, {
           pet_id: result.run?.pet_id || result.daily_run?.pet_id || result.pet?.pet_id,
           season_key: result.run?.season_key || result.daily_run?.season_key || result.pet?.season_key,
           pet: result.pet,
@@ -17219,7 +17228,7 @@ async function cmdPetExtract(db, tok, chatId, telegramId, argStr = '', eventKey 
     await sendTelegramMessage(tok, chatId, formatPetBlockedCopy('extract', result.reason, result));
     return;
   }
-  if (!result.settlement_recovered) await applyPetRuntimeCommandAward(db, telegramId, `runtime:run-extract:${eventKey || result.run?.run_id || argStr || 'active'}`, 'run_extract', {
+  if (!result.settlement_recovered && result.runtime_event_key) await applyPetRuntimeCommandAward(db, telegramId, result.runtime_event_key, 'run_extract', {
     pet_id: result.run?.pet_id || result.pet?.pet_id,
     season_key: result.run?.season_key || result.pet?.season_key,
   });

@@ -290,3 +290,105 @@ test('special care actions award the same specialist tracks through the deployed
     assert.equal(progress(f).bond_xp,bond);
   }
 });
+
+function standardRun(f,id,depth=2) {
+  f.sql.prepare(`INSERT INTO telegram_pet_runs (id,run_id,telegram_id,pet_id,season_key,status,depth,current_room,max_depth,max_room,unbanked_pet_xp,unbanked_moon_gold)
+    VALUES (?,?,?,?,?,'extractable',?,?,100,100,24,9)`).run(id,id,f.owner,authority(f).pet_id,currentSeason,depth,depth);
+  f.sql.prepare(`INSERT INTO telegram_pet_run_steps (id,run_id,telegram_id,pet_id,step_index,choice_key,choice_type,event_key,success,metadata)
+    VALUES (?,?,?,?,?,'fight','fight',?,1,'{"source":"telegram_pets_api"}')`).run(id+'-prior',id,f.owner,authority(f).pet_id,depth,id+'-prior');
+}
+
+for (const persistent of [false,true]) test(`Standard extraction repairs its canonical receipt after ${persistent?'persistent':'one'} specialist failure`,async()=>{
+  const f=fixture(persistent?'84202':'84201'); standardRun(f,'extract-repair');
+  let failed=false;
+  f.db.beforeBatch=async statements=>{
+    if(statements.some(s=>s.query.includes('INSERT INTO telegram_pet_specialist_events')) && (persistent||!failed)) {
+      failed=true; throw Error('interrupted_extraction_specialist');
+    }
+  };
+  const body={action:'run_extract',run_id:'extract-repair',event_key:'client-extract-key'};
+  const first=await api(f,body);
+  assert.equal(first.accepted,true,JSON.stringify(first));
+  assert.ok(failed);
+  assert.equal(f.sql.prepare("SELECT event_key FROM telegram_pet_events WHERE event_type='run_extract'").get().event_key,hooks.buildPetRunExtractEventKey(f.owner,body.run_id));
+  const paid=f.sql.prepare('SELECT pet_xp,moon_gold FROM telegram_pet_instances').get();
+  if(persistent) {
+    assert.equal(progress(f)?.adventure_xp||0,0);
+    f.db.beforeBatch=null;
+    f.pet('extract-second',currentSeason,300,2); f.active('extract-second');
+    assert.equal((await api(f,body)).accepted,true);
+  }
+  assert.equal(progress(f)?.adventure_xp,24);
+  assert.equal((await api(f,{...body,event_key:'replacement-client-key'})).accepted,true);
+  assert.equal(f.sql.prepare('SELECT SUM(adventure_xp) xp FROM telegram_pet_specialist_progression').get().xp,24);
+  assert.deepEqual(f.sql.prepare('SELECT pet_xp,moon_gold FROM telegram_pet_instances WHERE pet_id=?').get(authority(f).pet_id),paid);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='run_extract'").get().n,1);
+});
+
+for(const changedKey of [false,true]) test(`final Standard Run step repairs on first successful settlement with ${changedKey?'a new':'the original'} request key`,async()=>{
+  const f=fixture(changedKey?'84204':'84203'); standardRun(f,'final-repair',99);
+  f.sql.exec("CREATE TRIGGER fail_ending BEFORE INSERT ON telegram_pet_reward_claims WHEN NEW.source='pet_run_legacy' BEGIN SELECT RAISE(ABORT,'interrupted_final_reward'); END");
+  const body={action:'run_step',run_id:'final-repair',choice_key:'boss',expected_step_index:100,event_key:'saved-final-step'};
+  const random=Math.random; Math.random=()=>0.999;
+  try { await assert.rejects(api(f,body),/interrupted_final_reward/); }
+  finally { Math.random=random; }
+  assert.equal(f.sql.prepare("SELECT depth FROM telegram_pet_runs WHERE run_id='final-repair'").get().depth,100);
+  assert.equal(progress(f)?.adventure_xp||0,0);
+  f.sql.exec('DROP TRIGGER fail_ending');
+  // Recovery may happen on another day and with another pet selected.
+  f.sql.prepare("UPDATE telegram_pet_run_steps SET created_at='2026-09-26 12:00:00' WHERE event_key='saved-final-step'").run();
+  f.pet('final-second',currentSeason,300,2); f.active('final-second');
+  const retry=await api(f,{...body,event_key:changedKey?'new-finish-request':body.event_key});
+  assert.equal(retry.accepted,true,JSON.stringify(retry));
+  assert.equal(retry.settlement_recovered,true);
+  assert.equal(progress(f)?.adventure_xp,10);
+  assert.equal(progress(f).daily_key,'2026-09-26');
+  assert.equal((await api(f,body)).duplicate,true);
+  assert.equal(f.sql.prepare('SELECT SUM(adventure_xp) xp FROM telegram_pet_specialist_progression').get().xp,10);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='run_complete'").get().n,1);
+});
+
+test('Mini App and API extraction retries share one saved reward identity',async()=>{
+  const f=fixture('84205'); standardRun(f,'shared-extract');
+  assert.equal((await f.act({action:'run_extract',run_id:'shared-extract',request_id:'mini-extract'})).accepted,true);
+  assert.equal(progress(f).adventure_xp,24);
+  assert.equal((await api(f,{action:'run_extract',run_id:'shared-extract',event_key:'api-retry'})).accepted,true);
+  assert.equal(progress(f).adventure_xp,24);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_specialist_events WHERE action='run_extract'").get().n,1);
+});
+
+test('historical extraction without a saved runtime identity cannot mint a new award under a different request key',async()=>{
+  const f=fixture('84206'); standardRun(f,'legacy-extract');
+  await api(f,{action:'run_extract',run_id:'legacy-extract',event_key:'old-client-key'});
+  f.sql.prepare("UPDATE telegram_pet_events SET metadata=json_remove(metadata,'$.context.runtime_event_key') WHERE event_type='run_extract'").run();
+  f.sql.prepare("UPDATE telegram_pet_specialist_events SET event_key='runtime:api:old-client-key' WHERE action='run_extract'").run();
+  assert.equal((await api(f,{action:'run_extract',run_id:'legacy-extract',event_key:'new-client-key'})).accepted,true);
+  assert.equal(progress(f).adventure_xp,24);
+});
+
+test('saved final-step repair does not repay an already credited step or award extraction progress',async()=>{
+  const f=fixture('84207'); standardRun(f,'credited-final',100);
+  f.sql.prepare("UPDATE telegram_pet_runs SET status='completed' WHERE run_id='credited-final'").run();
+  const key='credited-final-prior',day=now.toISOString().slice(0,10);
+  await runtime(f,'runtime:api:'+key,day,'run_step');
+  const before=progress(f);
+  const result=await api(f,{action:'run_step',run_id:'credited-final',choice_key:'boss',event_key:'new-client-key'});
+  assert.equal(result.accepted,true); assert.equal(result.settlement_recovered,true);
+  assert.equal(progress(f).adventure_xp,10);
+  assert.equal(progress(f).traits_json,before.traits_json);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_specialist_events WHERE action='run_extract'").get().n,0);
+});
+
+
+test('an uncredited historical API extraction repairs when no ambiguous legacy award exists',async()=>{
+  const f=fixture('84208'); standardRun(f,'unpaid-legacy');
+  f.sql.exec("CREATE TRIGGER fail_extract_specialist BEFORE INSERT ON telegram_pet_specialist_events BEGIN SELECT RAISE(ABORT,'interrupted_specialist'); END");
+  const body={action:'run_extract',run_id:'unpaid-legacy',event_key:'legacy-client-key'};
+  assert.equal((await api(f,body)).accepted,true);
+  f.sql.exec('DROP TRIGGER fail_extract_specialist');
+  f.sql.prepare("UPDATE telegram_pet_events SET metadata=json_remove(metadata,'$.context.runtime_event_key') WHERE event_type='run_extract'").run();
+  assert.equal((await api(f,body)).accepted,true);
+  assert.equal(progress(f).adventure_xp,24);
+  assert.equal((await api(f,{...body,event_key:'another-retry'})).accepted,true);
+  assert.equal(progress(f).adventure_xp,24);
+});

@@ -37,6 +37,35 @@ checks. It does not certify the deployed version or inspect production accounts.
 The first five regression scenarios failed before the fixes. A separate API
 parity test reproduced the missing special-care awards before adding the mapping.
 
+## PR #1349 review follow-up
+
+Both review findings on `b52bc78261` reproduced in the deployed entrypoint.
+Standard extraction persisted a canonical event key but repair searched for the
+client request key. Final-step settlement recovery skipped the only successful
+opportunity to credit the saved step.
+
+- New Standard extraction receipts save one canonical runtime identity with the
+  primary reward. API, Mini App and Telegram extraction awards use that identity;
+  changing the retry key or surface cannot create another 24 Adventure XP award.
+  API repair looks up the canonical extraction receipt and its original pet/day.
+- Standard final-step settlement repair finds the saved successful API step and
+  uses its original event key and day, including a retry with a different request
+  key. An already-credited step stays idempotent. Daily boss completion remains
+  excluded from extraction progress.
+- Older API extraction receipts can recover when no unlinked legacy API
+  extraction award exists for that pet/season. If such an award exists, its old
+  receipt cannot be identified reliably: repair declines to guess or pay again.
+  This leaves ambiguous historical cases for an evidence-backed repair.
+
+The eight new checks cover transient/persistent specialist failure, original/new
+retry keys, pet switching, midnight recovery, API/Mini App duplicate prevention,
+already-paid steps and legacy paid/unpaid receipts. The initial four fault cases
+failed before the change and pass after it.
+
+Review backup: `codex/backup-moonpet-run-repair-20260928-012120`.
+Local review sandbox: `codex/sandbox-moonpet-run-repair-20260928-012120`.
+Changes are published to the existing PR #1349 sandbox branch.
+
 ## Gameplay and display coverage
 
 | Area | Checked behavior |
@@ -61,10 +90,11 @@ new payout or change progression thresholds.
 
 ## Validation
 
-Fifteen SQLite regressions in `scripts/moonpet-progression-sync.test.mjs` cover
+Twenty-three SQLite regressions in `scripts/moonpet-progression-sync.test.mjs` cover
 source ownership, old-day caps, concurrent rollover, duplicate claims, transaction
 rollback, legacy receipts, deployed API repair, timed recovery, public projections
-and API special-care parity. The suite is registered in `ci:worker-api`.
+and API special-care parity. Eight follow-up regressions cover extraction and
+terminal-step repair through the deployed entrypoint. The suite is registered in `ci:worker-api`.
 
 The full Worker/API domain passes. The Mini App browser loop passes at 390×844
 and 360×640 through all six screens, including quests, tactics, Contracts, bosses,
