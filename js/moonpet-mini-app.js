@@ -2922,6 +2922,15 @@
       var data = await post('/telegram-pets/app/action', Object.assign({ action: action, request_id: crypto.randomUUID() }, payload || {}));
       var responseState = mergeActionResultCooldown(data.state, data.result, action);
       var actionAccepted = Boolean(data.result && data.result.accepted);
+      // The action may have committed before its separate state read failed.
+      // Preserve that result and the last valid view; Refresh retries only the
+      // read, without submitting the paid action a second time.
+      if (!responseState && stateRequestGate.isCurrent(requestGeneration)) {
+        tell(resultMessage(data.result, stateBeforeAction, stateBeforeAction) + ' // DISPLAY SYNC FAILED. TAP REFRESH.', actionAccepted ? '' : 'danger');
+        haptic(actionAccepted ? 'success' : 'error');
+        animateAction(action, actionAccepted, 2800, payload);
+        return;
+      }
       var beforePhase = String(stateBeforeAction && stateBeforeAction.lifecycle && stateBeforeAction.lifecycle.phase || '');
       var afterPhase = String(responseState && responseState.lifecycle && responseState.lifecycle.phase || '');
       var isHatchReveal = actionAccepted && beforePhase === 'egg' && afterPhase !== 'egg' && actionAnimationFamily(action, payload) === 'hatch';

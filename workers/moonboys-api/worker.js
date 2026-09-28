@@ -1,5 +1,5 @@
 import { readDailyCompletion, claimDailyCompletion, getSeasonFinales, processSeasonFinale } from './pets/completion-features.js';
-import { PET_STATE_RECOVERY_LIMITS, boundedRecoveryLimit } from './pets/recovery-limits.js';
+import { PET_STATE_RECOVERY_LIMITS, boundedRecoveryLimit, claimPetRecoveryBatch } from './pets/recovery-limits.js';
 import { BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP, GEMS_MAX, GEMS_MIN, TELEGRAM_AUTH_MAX_AGE, XP_MAX, XP_MIN } from './blocktopia/config.js';
 import { verifyTelegramIdentityFromBody } from './blocktopia/auth.js';
 import { getOrCreateBlockTopiaProgression, hasBlockTopiaFactionColumns } from './blocktopia/db.js';
@@ -2717,7 +2717,7 @@ async function getActivePetRun(db, telegramId) {
     WHERE telegram_id = ? AND status IN ('active', 'extractable')
     ORDER BY updated_at DESC
     LIMIT 1
-  `).bind(telegramId).first().catch(() => null);
+  `).bind(telegramId).first();
   return row ? serializePetRun(row) : null;
 }
 
@@ -2836,9 +2836,11 @@ async function recoverPetStandardRunEndings(db, telegramId, runIdRaw = '', limit
   const owner = String(telegramId || '').trim();
   if (!owner) return [];
   const runId = String(runIdRaw || '').trim();
-  const candidates = await db.prepare(`SELECT r.* FROM telegram_pet_runs r
+  const recoveryKey = "r.started_at||':'||r.run_id";
+  const candidates = await db.prepare(`SELECT r.*,${recoveryKey} AS recovery_key,cursor.setting_value AS recovery_cursor FROM telegram_pet_runs r
     JOIN telegram_pet_instances i ON i.pet_id=r.pet_id AND i.telegram_id=r.telegram_id AND i.season_key=r.season_key
     JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id AND s.season_key=i.season_key AND s.slot_number=i.slot_number
+    LEFT JOIN telegram_settings cursor ON cursor.telegram_id=r.telegram_id AND cursor.setting_key='moonpet:recovery:standard-endings'
     WHERE r.telegram_id=? AND r.depth>0 AND (?='' OR r.run_id=?)
       AND (r.status='extracted' OR r.status='completed' AND r.depth>=r.max_depth
         OR r.status IN ('active','extractable') AND r.depth>=MAX(?,r.max_depth,r.max_room))
@@ -2849,7 +2851,9 @@ async function recoverPetStandardRunEndings(db, telegramId, runIdRaw = '', limit
       AND NOT EXISTS (SELECT 1 FROM telegram_pet_reward_claims c WHERE c.telegram_id=r.telegram_id
         AND c.source='pet_run_legacy' AND c.status='awarded'
         AND c.idempotency_key=SUBSTR('pet_run_'||CASE WHEN r.status='extracted' THEN 'extract' ELSE 'complete' END||':'||r.telegram_id||':'||r.run_id,1,120))
-    ORDER BY COALESCE(r.completed_at,r.updated_at),r.run_id LIMIT ?`).bind(owner, runId, runId, PET_RUN_MAX_DEPTH, boundedRecoveryLimit(limit, 5)).all();
+    ORDER BY CASE WHEN ${recoveryKey}>COALESCE(cursor.setting_value,'') THEN 0 ELSE 1 END,
+      ${recoveryKey} LIMIT ?`).bind(owner, runId, runId, PET_RUN_MAX_DEPTH, boundedRecoveryLimit(limit, 5)).all();
+  if (!runId && !await claimPetRecoveryBatch(db, owner, 'standard-endings', candidates.results || [])) return [];
   const results = [];
   for (const row of candidates.results || []) {
     try {
@@ -3244,7 +3248,7 @@ async function getPetInventory(db, telegramId) {
     SELECT asset_key, quantity
     FROM telegram_pet_inventory
     WHERE telegram_id = ? AND asset_type = 'item' AND quantity > 0
-  `).bind(telegramId).all().catch(() => ({ results: [] }));
+  `).bind(telegramId).all();
   const inventory = {};
   for (const item of Object.values(PET_INVENTORY_ITEMS)) inventory[item.key] = 0;
   for (const row of rows.results || []) {
@@ -4829,13 +4833,13 @@ async function getPetWindowTotals(db, telegramId, dayKey, weekKey) {
            COALESCE(SUM(pet_xp_awarded), 0) AS pet_xp
     FROM telegram_pet_events
     WHERE telegram_id = ? AND day_key = ? AND status = 'accepted'
-  `).bind(telegramId, dayKey).first().catch(() => ({ community_xp: 0, pet_xp: 0 }));
+  `).bind(telegramId, dayKey).first();
   const week = await db.prepare(`
     SELECT COALESCE(SUM(xp_awarded), 0) AS community_xp,
            COALESCE(SUM(pet_xp_awarded), 0) AS pet_xp
     FROM telegram_pet_events
     WHERE telegram_id = ? AND week_key = ? AND status = 'accepted'
-  `).bind(telegramId, weekKey).first().catch(() => ({ community_xp: 0, pet_xp: 0 }));
+  `).bind(telegramId, weekKey).first();
   return {
     day: { community_xp: Number(day?.community_xp || 0), pet_xp: Number(day?.pet_xp || 0) },
     week: { community_xp: Number(week?.community_xp || 0), pet_xp: Number(week?.pet_xp || 0) },
@@ -5870,7 +5874,7 @@ async function getActivePetActivitySession(db, telegramId, now = new Date()) {
     SELECT * FROM telegram_pet_activity_sessions
     WHERE telegram_id = ? AND status = 'active'
     ORDER BY started_at DESC LIMIT 1
-  `).bind(String(telegramId)).first().catch(() => null);
+  `).bind(String(telegramId)).first();
 }
 
 function parsePetActivitySessionMetadata(session) {
@@ -5888,7 +5892,7 @@ async function getRecoverablePetActivitySession(db, telegramId) {
     WHERE telegram_id = ?
       AND ${PET_RECOVERABLE_ACTIVITY_PREDICATE}
     ORDER BY claimed_at ASC LIMIT 1
-  `).bind(String(telegramId)).first().catch(() => null);
+  `).bind(String(telegramId)).first();
 }
 
 function getRecoverablePetActivityClaim(session) {
@@ -6888,14 +6892,14 @@ async function buildPetMissions(db, telegramId) {
       FROM telegram_pet_events
       WHERE telegram_id = ? AND day_key = ? AND status = 'accepted'
       GROUP BY event_type
-    `).bind(telegramId, dayKey).all().catch(() => ({ results: [] })),
+    `).bind(telegramId, dayKey).all(),
     db.prepare(`
       SELECT COUNT(*) AS count
       FROM telegram_pet_system_events
       WHERE telegram_id = ? AND system_key = 'equipment_upgrade' AND status = 'completed'
         AND updated_at >= ? AND updated_at < ?
-    `).bind(telegramId, dayKey, nextDayKey).first().catch(() => null),
-    getPetProfile(db, telegramId).catch(() => null),
+    `).bind(telegramId, dayKey, nextDayKey).first(),
+    getPetProfile(db, telegramId),
   ]);
   const counts = Object.fromEntries((events.results || []).map((row) => [row.event_type, Number(row.count || 0)]));
   const equipmentUpgradeCount = Number(equipmentUpgradeEvents?.count || 0);
@@ -9179,7 +9183,7 @@ async function getPetSpecialActionCooldownEntries(db, telegramId, now = new Date
       SUM(CASE WHEN day_key = ? THEN 1 ELSE 0 END) AS used_today
     FROM telegram_pet_events
     WHERE telegram_id = ? AND status IN ('pending','accepted') AND event_type IN ('energy_drink','dance','cuddles')
-    GROUP BY event_type`).bind(dayKey, String(telegramId)).all().catch(() => ({ results: [] }));
+    GROUP BY event_type`).bind(dayKey, String(telegramId)).all();
   const entries = [];
   for (const row of rows.results || []) {
     const action = String(row.event_type || '');
@@ -9203,7 +9207,7 @@ async function getPetSpecialActionGuidanceState(db, telegramId, now = new Date()
       SUM(CASE WHEN day_key = ? THEN 1 ELSE 0 END) AS used_today
     FROM telegram_pet_events
     WHERE telegram_id = ? AND status IN ('pending','accepted') AND event_type IN ('energy_drink','dance','cuddles')
-    GROUP BY event_type`).bind(dayKey, String(telegramId)).all().catch(() => ({ results: [] }));
+    GROUP BY event_type`).bind(dayKey, String(telegramId)).all();
   const byAction = new Map((rows.results || []).map((row) => [String(row.event_type || ''), row]));
   const state = {};
   for (const [action, policy] of Object.entries(PET_SPECIAL_ACTION_POLICIES)) {
@@ -9306,13 +9310,13 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
   const lifecycle = await getMoonpetLifecycle(db, telegramId).catch(() => null);
   const [guidance, inventory, runtime, gear, materials, relics, arena, arenaQueue, recentArena, kaiju, kaijuQueue, recentKaiju, leaderboard, notifications, seasonSlots, recentActions] = await Promise.all([
     buildPetGuidanceState(db, telegramId, petRaw),
-    getPetInventory(db, telegramId).catch(() => []),
-    getOrCreatePetRuntimeState(db, telegramId, getPetDayKey(now), activePetRewardAuthority(petRaw)).catch(() => null),
+    getPetInventory(db, telegramId),
+    getOrCreatePetRuntimeState(db, telegramId, getPetDayKey(now), activePetRewardAuthority(petRaw)),
     db.prepare(`SELECT item_key, slot, item_level, item_xp, mastery_xp, mastery_tier
       FROM telegram_pet_equipment_progression WHERE telegram_id = ?
-      ORDER BY slot, item_level DESC, item_key`).bind(telegramId).all().catch(() => ({ results: [] })),
+      ORDER BY slot, item_level DESC, item_key`).bind(telegramId).all(),
     db.prepare(`SELECT material_key, quantity FROM telegram_pet_material_balances
-      WHERE telegram_id = ? AND quantity > 0 ORDER BY material_key`).bind(telegramId).all().catch(() => ({ results: [] })),
+      WHERE telegram_id = ? AND quantity > 0 ORDER BY material_key`).bind(telegramId).all(),
     db.prepare(`SELECT relic_id, unlocked_at AS acquired_at FROM telegram_pet_relics
       WHERE telegram_id = ? ORDER BY unlocked_at DESC, relic_id`).bind(telegramId).all().catch((error) => {
         logApiFailure('pet_relic_vault_unavailable', { message: error?.message || String(error) });
@@ -13612,7 +13616,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260928-completion-finale-v1`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260928-recovery-state-v1`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',
@@ -15535,14 +15539,14 @@ async function getPetEconomyState(db, telegramId, petRaw = null, now = new Date(
   const [eventRows, claimRows, sourcePet, itemRows, materialRows] = await Promise.all([
     db.prepare(`SELECT event_type, COUNT(*) AS total FROM telegram_pet_events
       WHERE telegram_id = ? AND day_key = ? AND status = 'accepted' GROUP BY event_type`)
-      .bind(telegramId, dayKey).all().catch(() => ({ results: [] })),
+      .bind(telegramId, dayKey).all(),
     db.prepare(`SELECT source, idempotency_key, pet_id, metadata, applied_rewards FROM telegram_pet_reward_claims
       WHERE telegram_id = ? AND day_key = ? AND status = 'awarded'
         AND source IN ('pet_bounty', 'pet_expedition', 'pet_market')`)
-      .bind(telegramId, dayKey).all().catch(() => ({ results: [] })),
+      .bind(telegramId, dayKey).all(),
     db.prepare(`SELECT p.status,l.phase FROM telegram_pet_instances p JOIN telegram_pet_lifecycle_by_pet l
       ON l.pet_id=p.pet_id AND l.telegram_id=p.telegram_id WHERE p.pet_id=? AND p.telegram_id=?`)
-      .bind(pet.pet_id, telegramId).first().catch(() => null),
+      .bind(pet.pet_id, telegramId).first(),
     db.prepare("SELECT asset_key,quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item'").bind(telegramId).all(),
     db.prepare('SELECT material_key,quantity FROM telegram_pet_material_balances WHERE telegram_id=?').bind(telegramId).all(),
   ]);
@@ -15703,16 +15707,16 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null) {
   const weekKey = getPetWeekKey(now);
   const [identity, activity, activeRun, missions, seasonState, achievements, weeklyProgress, weeklyAttempt, runtime, specialActions, weeklyPending, dailyCache, dailyTotals] = await Promise.all([
     getMoonpetIdentityWithLifecycle(db, telegramId),
-    getActivePetActivitySession(db, telegramId, now).then((active) => active || getRecoverablePetActivitySession(db, telegramId)).catch(() => null),
-    getActivePetRun(db, telegramId).catch(() => null),
-    buildPetMissions(db, telegramId).catch(() => ({ daily: [] })),
+    getActivePetActivitySession(db, telegramId, now).then((active) => active || getRecoverablePetActivitySession(db, telegramId)),
+    getActivePetRun(db, telegramId),
+    buildPetMissions(db, telegramId),
     getPetSeasonRewardState(db, telegramId),
     syncPetAchievements(db, telegramId),
     db.prepare(`SELECT boss_id, attempts, damage, defeated_at, reward_claimed_at FROM telegram_pet_weekly_boss_progress WHERE telegram_id = ? AND week_key = ?`)
-      .bind(telegramId, weekKey).first().catch(() => null),
+      .bind(telegramId, weekKey).first(),
     db.prepare(`SELECT action, damage, event_key FROM telegram_pet_weekly_boss_events WHERE telegram_id = ? AND week_key = ? AND day_key = ?`)
-      .bind(telegramId, weekKey, dayKey).first().catch(() => null),
-    getOrCreatePetRuntimeState(db, telegramId, dayKey, activePetRewardAuthority(sourcePet)).catch(() => null),
+      .bind(telegramId, weekKey, dayKey).first(),
+    getOrCreatePetRuntimeState(db, telegramId, dayKey, activePetRewardAuthority(sourcePet)),
     getPetSpecialActionGuidanceState(db, telegramId, now),
     getPendingPetWeeklyBossRewards(db, telegramId),
     readAcceptedDailyChestPetEventForDay(db, telegramId, dayKey),
@@ -16271,9 +16275,9 @@ async function processPetWeeklyBoss(db, telegramId, actionRaw, eventKeyRaw = '',
 async function getPetSeasonRewardState(db, telegramId) {
   const season = getPetSeasonInfo(new Date());
   const [state, claims, identity] = await Promise.all([
-    db.prepare(`SELECT season_xp FROM telegram_pet_season_state WHERE telegram_id = ? AND season_key = ?`).bind(telegramId, season.key).first().catch(() => null),
+    db.prepare(`SELECT season_xp FROM telegram_pet_season_state WHERE telegram_id = ? AND season_key = ?`).bind(telegramId, season.key).first(),
     db.prepare(`SELECT idempotency_key, COALESCE(awarded_at,created_at) AS claimed_at FROM telegram_pet_reward_claims
-      WHERE telegram_id=? AND source='pet_season_reward' AND status='awarded'`).bind(telegramId).all().catch(() => ({ results: [] })),
+      WHERE telegram_id=? AND source='pet_season_reward' AND status='awarded'`).bind(telegramId).all(),
     getMoonpetIdentityWithLifecycle(db, telegramId),
   ]);
   const claimed = new Map((claims.results || []).map((row) => [row.idempotency_key, row.claimed_at]));

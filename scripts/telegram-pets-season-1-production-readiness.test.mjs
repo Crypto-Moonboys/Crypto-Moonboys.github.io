@@ -35,6 +35,7 @@ class D1 {
     this.database = new DatabaseSync(':memory:');
     this.blockLifecycleMaterializationForTelegramId = null;
     this.database.exec(schema);
+    this.database.exec(fs.readFileSync(new URL('../workers/moonboys-api/migrations/048_telegram_pet_player_expansion.sql', import.meta.url), 'utf8'));
     installSeasonCompletionMarkerTable(this);
   }
   prepare(sql) { return new Statement(this, sql); }

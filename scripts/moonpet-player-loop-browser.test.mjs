@@ -27,11 +27,16 @@ let failDailyEnding = false;
 let failContractReward = false;
 let failStandardReward = false;
 let failRelicRead = false;
+let failLiveStateRead = false;
 class Statement {
   constructor(sql, args = []) { this.sql = sql; this.args = args; }
   bind(...args) { return new Statement(this.sql, args); }
   async first() { return sqlite.prepare(this.sql).get(...this.args) || null; }
-  async all() { if (failRelicRead && this.sql.includes('SELECT relic_id,')) throw Error('isolated_relic_read_failure'); return { results: sqlite.prepare(this.sql).all(...this.args) }; }
+  async all() {
+    if (failRelicRead && this.sql.includes('SELECT relic_id,')) throw Error('isolated_relic_read_failure');
+    if (failLiveStateRead && this.sql.startsWith('SELECT chain_key, step_index')) throw Error('isolated_saved_state_read_failure');
+    return { results: sqlite.prepare(this.sql).all(...this.args) };
+  }
   async run() {
     if (failDailyEnding && this.sql.includes('INSERT OR IGNORE INTO telegram_pet_run_analytics') && this.args.some((value) => String(value).endsWith(':alley_king:win'))) throw Error('interrupted_daily_ending');
     if (failActivitySettlement && this.sql.includes('UPDATE telegram_pet_activity_sessions') && this.sql.includes('SET metadata = ?')) {
@@ -109,7 +114,15 @@ try {
           actions.push(body.action);
           result = await hooks.processPetMiniAppAction(db, currentUser, { id: currentUser }, body, token);
         }
-        const state = await hooks.buildPetMiniAppState(db, currentUser, token);
+        let state;
+        try { state = await hooks.buildPetMiniAppState(db, currentUser, token); }
+        catch (error) {
+          if (error.message !== 'isolated_saved_state_read_failure') throw error;
+          // Production preserves an action's committed result if only its
+          // response-state read fails; the read-only state endpoint returns 500.
+          return result ? route.fulfill({ json: { result, state: null } })
+            : route.fulfill({ status: 500, json: { error: 'mini_app_state_failed' } });
+        }
         if (dailyOverride) state.run = dailyOverride;
         if (oldExpeditionState) delete state.guidance.economy.expedition_options;
         return route.fulfill({ json: { state, result } });
@@ -1229,8 +1242,16 @@ try {
     }
     await page.waitForSelector('[data-action="finale_claim"]');
     assert.match(await page.locator('[data-panel="season-finale"]').textContent(),/FINALE VICTOR/);
-    await completionAction(page.locator('[data-action="finale_claim"]'),'finale_claim');
+    failLiveStateRead=true;
+    const committedClaim=await completionAction(page.locator('[data-action="finale_claim"]'),'finale_claim');
+    assert.equal(committedClaim.state,null);
+    await page.waitForFunction(()=>document.querySelector('#terminal-output').textContent.includes('DISPLAY SYNC FAILED'));
+    assert.ok(currentFinale().claimed_at,'the reward committed even though the following read failed');
+    const claimsBeforeRefresh=actions.filter(action=>action==='finale_claim').length;
+    failLiveStateRead=false;
+    await page.locator('[data-utility="sync"]').click();
     await page.waitForFunction(()=>document.querySelector('[data-panel="season-finale"]').textContent.includes('VICTORY REWARD CLAIMED'));
+    assert.equal(actions.filter(action=>action==='finale_claim').length,claimsBeforeRefresh,'Refresh reads the saved result without replaying the claim');
     assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE telegram_id=? AND event_type='season_finale'").get(currentUser).n,1);
     assert.match(await page.locator('[data-panel="achievements"]').textContent(),/UNLOCKED.*Finale Victor/);
     await page.locator('[data-screen="explore"]').click();

@@ -371,6 +371,13 @@ db.prepare(`DELETE FROM telegram_pet_instances WHERE telegram_id='state-player'`
 const recreated = await readActivePetInstance(d1, 'state-player');
 assert.equal(recreated.pet_name, 'Saved Nova', 'a missing active starter instance must be recreated from its compatibility profile');
 
+db.exec(`CREATE TABLE telegram_pet_activity_sessions (
+  id TEXT PRIMARY KEY, telegram_id TEXT NOT NULL, activity_type TEXT NOT NULL,
+  started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, ends_at DATETIME NOT NULL,
+  claimed_at DATETIME, status TEXT NOT NULL DEFAULT 'active', metadata TEXT,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+)`);
+
 const missingSwitch = await switchActivePetSeasonSlot(d1, 'state-player', 2, { now: new Date('2026-08-16T12:00:00Z') });
 assert.equal(missingSwitch.accepted, false, 'a paid slot missing its pet instance must be rejected');
 
@@ -436,12 +443,7 @@ assert.equal(boughtSecond.season_slots.slots[2].purchase_disabled_reason, null, 
 assert.equal(db.prepare(`SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id='pet:state-player:pet-s2026-003:2'`).get().phase, 'egg', 'a purchased pet must receive a fresh egg lifecycle');
 assert.equal(db.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='state-player'`).get().pet_id, 'pet:state-player:pet-s2026-003:1', 'purchase must not auto-switch');
 assert.equal((await getMoonpetLifecycle(d1, 'state-player')).phase, 'egg', 'a rollover starter must receive a fresh egg lifecycle');
-db.exec(`CREATE TABLE telegram_pet_activity_sessions (
-  id TEXT PRIMARY KEY, telegram_id TEXT NOT NULL, activity_type TEXT NOT NULL,
-  started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, ends_at DATETIME NOT NULL,
-  claimed_at DATETIME, status TEXT NOT NULL DEFAULT 'active', metadata TEXT,
-  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-)`);
+
 db.prepare(`INSERT INTO telegram_pet_activity_sessions (id, telegram_id, activity_type, ends_at, status)
   VALUES ('active-before-switch', 'state-player', 'train', '2026-08-16 13:00:00', 'active')`).run();
 const activityBlocked = await switchActivePetSeasonSlot(d1, 'state-player', 2, { now: new Date('2026-08-16T12:00:00Z') });

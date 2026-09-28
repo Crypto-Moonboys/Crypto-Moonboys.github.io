@@ -1846,7 +1846,9 @@ class SqliteD1Statement {
       this.adapter.failReadSqlPattern = null;
       return { success: false, error: 'simulated_d1_read_failure' };
     }
-    return this.adapter.database.prepare(this.sql).get(...this.args) || null;
+    const row = this.adapter.database.prepare(this.sql).get(...this.args) || null;
+    if (this.adapter.afterFirst) await this.adapter.afterFirst(this.sql, this.args, row);
+    return row;
   }
 
   async all() {
@@ -1868,6 +1870,7 @@ class SqliteD1 {
   constructor() {
     this.database = new DatabaseSync(':memory:');
     this.database.exec(schema);
+    this.database.exec(fs.readFileSync(new URL('../workers/moonboys-api/migrations/048_telegram_pet_player_expansion.sql', import.meta.url), 'utf8'));
     this.database.exec(`CREATE TABLE IF NOT EXISTS telegram_pet_growth_marks(mark_id TEXT PRIMARY KEY,pet_id TEXT,telegram_id TEXT,season_key TEXT,milestone_type TEXT,evidence_key TEXT,earned_day TEXT,earned_at TEXT,UNIQUE(pet_id,season_key,earned_day));
       CREATE TABLE IF NOT EXISTS telegram_pet_weekly_crests(crest_id TEXT PRIMARY KEY,pet_id TEXT,telegram_id TEXT,season_key TEXT,season_week INTEGER,qualification_week INTEGER,objective_id TEXT,evidence_key TEXT,earned_at TEXT);
       CREATE TABLE IF NOT EXISTS telegram_pet_season_completions(pet_id TEXT,telegram_id TEXT,season_key TEXT,completed_at TEXT,legendary_evolution_id TEXT,growth_marks_earned INTEGER,weekly_crests_earned INTEGER,authority_version INTEGER);`);
@@ -4102,14 +4105,28 @@ const originalRandom = Math.random;
 Math.random = () => 0.99;
 let extractResult;
 let racingStepResult;
+let announceExtractClaim, releaseExtract;
+const extractClaimed = new Promise(resolve => { announceExtractClaim = resolve; });
+const continueExtract = new Promise(resolve => { releaseExtract = resolve; });
+terminalRaceDb.afterFirst = async (sql, args, row) => {
+  if (sql.includes('UPDATE telegram_pet_runs') && sql.includes('RETURNING *') && args[0] === 'extracted' && row) {
+    announceExtractClaim();
+    await continueExtract;
+  }
+};
 try {
-  [extractResult, racingStepResult] = await Promise.all([
-    processPetRunExtract(terminalRaceDb, 'terminal-race', 'terminal-race-run', { source: 'concurrency_regression' }),
-    processPetRunStep(terminalRaceDb, 'terminal-race', 'terminal-race-run', 'elite', {
-      source: 'concurrency_regression', expected_step_index: 5, event_key: 'terminal-race-step',
-    }),
-  ]);
+  // Pause after the terminal CAS but before payout. This tests the intended
+  // overlap without depending on unrelated promise/microtask counts.
+  const pendingExtract = processPetRunExtract(terminalRaceDb, 'terminal-race', 'terminal-race-run', { source: 'concurrency_regression' });
+  await extractClaimed;
+  racingStepResult = await processPetRunStep(terminalRaceDb, 'terminal-race', 'terminal-race-run', 'elite', {
+    source: 'concurrency_regression', expected_step_index: 5, event_key: 'terminal-race-step',
+  });
+  releaseExtract();
+  extractResult = await pendingExtract;
 } finally {
+  releaseExtract();
+  terminalRaceDb.afterFirst = null;
   Math.random = originalRandom;
 }
 assert.equal(extractResult.accepted, true, 'the terminal extraction claim must settle successfully');

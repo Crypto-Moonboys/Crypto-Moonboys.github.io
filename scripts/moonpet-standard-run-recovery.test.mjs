@@ -23,6 +23,7 @@ function fixture(owner) {
     async run() { return this.exec(); }
   }
   const db = { failReward: false, rejectReward: false, prepare(query) { return new Statement(query); }, async batch(statements) {
+    if (this.beforeBatch) await this.beforeBatch(statements);
     if (this.failReward && statements.some(s => /INSERT OR IGNORE INTO telegram_pet_reward_claims/.test(s.query))) {
       this.failReward = false;
       throw Error('interrupted_terminal_reward');
@@ -56,6 +57,26 @@ function fixture(owner) {
   const get = async path => { const response = await worker.fetch(new Request('https://moonboys-api.test' + path), { DB: db }); assert.equal(response.status, 200); return response.json(); };
   return { sql, db, owner, pet, run, state, get };
 }
+
+test('two persistently failing Standard endings yield the state budget to later payouts and retry on wraparound', async () => {
+  const f = fixture('standard-fair');
+  await f.state();
+  for (const id of ['a-blocked', 'b-blocked', 'c-ready']) f.run(id, { status: 'extracted' });
+  f.db.beforeBatch = statements => {
+    if (statements.some(s => s.query.includes('INSERT OR IGNORE INTO telegram_pet_reward_claims') && s.args.some(arg => typeof arg === 'string' && /[ab]-blocked/.test(arg)))) throw Error('persistent_standard_failure');
+  };
+  await f.state();
+  await f.state();
+  const events = () => f.sql.prepare("SELECT event_key,pet_id,pet_xp_awarded FROM telegram_pet_events WHERE event_type='run_extract' ORDER BY event_key").all();
+  assert.equal(events().length, 1, 'later extraction must recover despite the two failed oldest endings');
+  assert.match(events()[0].event_key, /c-ready$/);
+  assert.equal((await f.get('/telegram-pets/leaderboard?period=daily')).entries[0].pet_xp, 24);
+  f.db.beforeBatch = null;
+  await f.state(); await f.state();
+  assert.equal(events().length, 3, 'failed records remain retryable');
+  assert.equal((await f.get('/telegram-pets/leaderboard?period=all_time')).entries[0].pet_xp, 272);
+  const paid = events(); await f.state(); assert.deepEqual(events(), paid);
+});
 
 test('failed saved run XP and item activity keep the original pet and season', async () => {
   const f = fixture('81001');
