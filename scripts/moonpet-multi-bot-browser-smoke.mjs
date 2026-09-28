@@ -90,6 +90,14 @@ try {
     return getComputedStyle(output.querySelector('.terminal-output-text')).animationName;
   });
   assert.equal(animatedStatus, 'terminal-status-scroll', 'normal-motion status details retain their scrolling track');
+  const glowTracks = await animatedPage.locator('.canvas-tool').evaluateAll(buttons => buttons.map(button => {
+    const style = getComputedStyle(button);
+    return [style.animationName, style.animationDuration, style.animationDelay];
+  }));
+  assert.equal(glowTracks.length, 3);
+  assert.ok(glowTracks.every(track => track[0] === 'canvas-tool-glow'));
+  assert.equal(new Set(glowTracks.map(track => track[1])).size, 3, 'each icon must glow at a different pace');
+  assert.equal(new Set(glowTracks.map(track => track[2])).size, 3, 'glow phases must be staggered');
   await animatedPage.close();
 
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
@@ -105,6 +113,9 @@ try {
       .map((label) => `<button type="button"><span>+</span>${label}</button>`).join("");
     const shell = document.getElementById("moonpet-app").getBoundingClientRect();
     const viewport = document.querySelector(".viewport").getBoundingClientRect();
+    const tools = document.getElementById('canvas-tools');
+    tools.hidden = false;
+    const toolBoxes = [...tools.children].map(button => button.getBoundingClientRect());
     const output = document.getElementById("terminal-output");
     const outputText = output.querySelector(".terminal-output-text");
     outputText.textContent = "ACTION COMPLETE // +5 PET XP // GROWTH MARK AWARDED // MOONPET REACTION CONFIRMED";
@@ -119,6 +130,7 @@ try {
       viewportVariable: getComputedStyle(document.documentElement).getPropertyValue("--moonpet-viewport-height").trim(),
       shellBottom: shell.bottom,
       viewportTop: viewport.top,
+      toolsFit: toolBoxes.every(box => box.top >= viewport.top && box.bottom <= viewport.bottom && box.right <= viewport.right),
       viewportBottom: viewport.bottom,
       outputTop: outputBox.top,
       outputBottom: outputBox.bottom,
@@ -135,6 +147,7 @@ try {
   assert.equal(shellLayout.viewportVariable, "520px", "shell must use Telegram's visible viewport height");
   assert.ok(shellLayout.shellBottom <= 520.5, "shell must fit inside Telegram's visible viewport");
   assert.ok(Math.abs(shellLayout.outputBottom - shellLayout.viewportTop) < 1, "status strip must sit directly above the canvas");
+  assert.equal(shellLayout.toolsFit, true, 'all three 44px canvas controls must fit a short Telegram viewport');
   assert.ok(shellLayout.outputHeight >= 34, "status strip must remain visible");
   assert.equal(shellLayout.outputPosition, "relative", "status strip must occupy a stable grid row");
   assert.equal(shellLayout.outputAnimation, "none", "the fixed status bar must not move or animate");
