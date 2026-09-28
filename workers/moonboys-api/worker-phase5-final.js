@@ -205,14 +205,7 @@ async function handlePetApiPostProcessing(env, body, response) {
     return;
   }
   if (payload.settlement_recovered || payload.daily_run) return;
-  const runtimeEventKey = String(body.event_key || '');
-  await applyRuntimeAward(
-    env,
-    telegramId,
-    `runtime:api:${runtimeEventKey}`,
-    runtimeAction,
-    runtimeEventKey.slice(0, 120),
-  );
+  await recoverPetRuntimeAwards(env.DB, telegramId, applyPetRuntimeCommandAward, { action: runtimeAction });
 }
 
 function telegramRunCallbackContext(update) {

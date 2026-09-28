@@ -134,7 +134,7 @@ export const MOONPET_LIVE_SYSTEM_OWNERSHIP_CLASSIFICATION = Object.freeze([
     status: 'live',
     authority_owner: 'mixed',
     required_authority_keys: ['telegram_id', 'pet_id', 'season_key', 'week_key', 'event_key'],
-    write_tables: ['telegram_pet_weekly_boss_progress', 'telegram_pet_reward_claims', 'telegram_pet_events', 'telegram_pet_boss_victories'],
+    write_tables: ['telegram_pet_weekly_boss_progress', 'telegram_pet_reward_claims', 'telegram_pet_events', 'telegram_pet_boss_victories', 'telegram_pet_system_events'],
     read_tables: ['telegram_pet_weekly_boss_progress', 'telegram_pet_instances'],
     risk_notes: 'Victory identity evidence is pet-owned; account reward balances are shared.',
     expected_ownership_rule: 'Weekly boss victory/progression evidence uses the victorious pet authority.',

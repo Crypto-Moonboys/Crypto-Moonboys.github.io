@@ -55,6 +55,16 @@ export async function recoverPetRuntimeAwards(db, owner, award, filter = {}) {
     FROM telegram_pet_events e WHERE e.telegram_id=? AND e.status='accepted'
       AND e.event_type IN ('adventure','district_mission','event_chain')
     UNION ALL
+    SELECT e.pet_id,e.season_key,'',CASE e.event_type WHEN 'work' THEN 'job' ELSE e.event_type END,e.day_key,
+      COALESCE(json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.runtime_event_key'),
+        json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.context.runtime_event_key'),
+        CASE COALESCE(json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.context.source'),
+          json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.source'))
+          WHEN 'telegram_mini_app' THEN 'runtime:mini:'||e.event_key
+          WHEN 'telegram_pets_api' THEN 'runtime:api:'||e.event_key END)
+    FROM telegram_pet_events e WHERE e.telegram_id=? AND e.status='accepted'
+      AND e.event_type IN ('feed','play','clean','sleep','train','energy_drink','dance','cuddles','work','daily_chest')
+    UNION ALL
     SELECT b.pet_id,b.pet_season_key,'','run_boss',date(b.defeated_at),
       'runtime:mini:seasonal-boss:'||b.pet_id||':'||b.season_key
     FROM telegram_pet_seasonal_boss_progress b
@@ -75,7 +85,7 @@ export async function recoverPetRuntimeAwards(db, owner, award, filter = {}) {
           AND substr(e.event_key,1,132)=c.event_key)))
     GROUP BY c.pet_id,c.season_key,c.event_key
     ORDER BY c.day_key,c.event_key LIMIT 20`)
-    .bind(owner, filter.event_key || '', filter.event_key || '', owner, owner, owner, owner, owner,
+    .bind(owner, filter.event_key || '', filter.event_key || '', owner, owner, owner, owner, owner, owner,
       ...Object.keys(PET_SEASONAL_BOSSES), owner, filter.run_id || '', filter.run_id || '', filter.action || '', filter.action || '').all();
   for (const row of rows.results || []) await award(db, owner, row.event_key, row.action, row);
 }

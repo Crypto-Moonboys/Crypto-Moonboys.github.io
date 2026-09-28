@@ -615,6 +615,160 @@ test('historical oversized Adventure keys cannot create a second award during re
   assert.equal(progress(f).adventure_xp,14);
 });
 
+for (const [index, [action, track, amount]] of [['feed','care',8], ['work','job',14], ['daily_chest','bond',8]].entries()) {
+  test(`${action} repairs interrupted progression on refresh and rejects cross-surface double credit`, async () => {
+    const f = fixture('8451' + index);
+    f.sql.exec("CREATE TRIGGER fail_specialist BEFORE INSERT ON telegram_pet_specialist_events BEGIN SELECT RAISE(ABORT,'interrupted_specialist'); END");
+    const first = await f.act({ action, job_key: 'street_artist', request_id: 'ordinary-refresh' });
+    assert.equal(first.accepted, true);
+    const event = f.sql.prepare('SELECT event_key FROM telegram_pet_events WHERE status=\'accepted\' AND event_type=?').get(action);
+    f.sql.exec('DROP TRIGGER fail_specialist');
+    f.pet('ordinary-replacement', currentSeason, 200, 2); f.active('ordinary-replacement');
+    await f.state();
+    assert.equal(progress(f)?.[track + '_xp'], amount);
+    assert.equal((await api(f, { action, job_key: 'street_artist', event_key: event.event_key })).duplicate, true);
+    assert.equal(progress(f)[track + '_xp'], amount);
+    assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_specialist_events').get().n, 1);
+  });
+  test(`${action} API replay of a successful Mini App action cannot award another specialist receipt`, async () => {
+    const f = fixture('8452' + index);
+    assert.equal((await f.act({ action, job_key: 'street_artist', request_id: 'ordinary-replay' })).accepted, true);
+    const event = f.sql.prepare('SELECT event_key FROM telegram_pet_events WHERE status=\'accepted\' AND event_type=?').get(action);
+    assert.equal((await api(f, { action, job_key: 'street_artist', event_key: event.event_key })).duplicate, true);
+    assert.equal(progress(f)[track + '_xp'], amount);
+  });
+}
+
+test('a paid Weekly Boss victory repairs missing specialist progression on refresh', async () => {
+  const f = fixture('84040');
+  f.sql.exec('UPDATE telegram_pet_instances SET pet_xp=3240; UPDATE telegram_pet_profiles SET pet_xp=3240;');
+  const preview = await hooks.processPetWeeklyBoss(f.db, f.owner, '');
+  f.sql.prepare(`INSERT INTO telegram_pet_weekly_boss_progress (telegram_id,week_key,boss_id,damage,attempts)
+    VALUES (?,?,?,?,1)`).run(f.owner, preview.week_key, preview.boss.boss_id, preview.boss.hp - 1);
+  f.sql.exec("CREATE TRIGGER fail_specialist BEFORE INSERT ON telegram_pet_specialist_events BEGIN SELECT RAISE(ABORT,'interrupted_specialist'); END");
+  const victory = await hooks.processPetWeeklyBoss(f.db, f.owner, 'strike', 'weekly-saved-victory');
+  assert.equal(victory.reason, 'boss_defeated');
+  assert.equal(victory.reward.accepted, true);
+  f.sql.exec('DROP TRIGGER fail_specialist');
+  f.pet('weekly-replacement', currentSeason, 200, 2); f.active('weekly-replacement');
+  await f.state();
+  assert.equal(progress(f)?.adventure_xp, 30);
+  assert.equal(progress(f)?.arena_xp, 8);
+  const receipt = f.sql.prepare("SELECT * FROM telegram_pet_specialist_events WHERE action='run_boss'").get();
+  assert.equal(receipt.pet_id, authority(f).pet_id);
+  await f.state();
+  assert.equal(progress(f).adventure_xp, 30);
+});
+
+for (const missing of ['memory', 'crest']) test(`Weekly Boss refresh repairs interrupted ${missing} after its main reward is paid`, async () => {
+  const f = fixture('weekly-' + missing);
+  f.sql.exec('UPDATE telegram_pet_instances SET pet_xp=3240; UPDATE telegram_pet_profiles SET pet_xp=3240;');
+  const preview = await hooks.processPetWeeklyBoss(f.db, f.owner, '');
+  f.sql.prepare(`INSERT INTO telegram_pet_weekly_boss_progress (telegram_id,week_key,boss_id,damage,attempts)
+    VALUES (?,?,?,?,1)`).run(f.owner, preview.week_key, preview.boss.boss_id, preview.boss.hp - 1);
+  const table = missing === 'memory' ? 'telegram_pet_memories' : 'telegram_pet_weekly_crests';
+  f.sql.exec(`CREATE TRIGGER fail_finish BEFORE INSERT ON ${table} BEGIN SELECT RAISE(ABORT,'interrupted_finish'); END`);
+  const attempt = hooks.processPetWeeklyBoss(f.db, f.owner, 'strike', 'weekly-' + missing);
+  if (missing === 'memory') await assert.rejects(attempt, /interrupted_finish/);
+  else assert.equal((await attempt).reason, 'boss_defeated');
+  assert.ok(f.sql.prepare('SELECT reward_claimed_at FROM telegram_pet_weekly_boss_progress').get().reward_claimed_at);
+  f.sql.exec('DROP TRIGGER fail_finish');
+  const gold = f.sql.prepare('SELECT moon_gold FROM telegram_pet_profiles').get().moon_gold;
+  await f.state();
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_weekly_crests').get().n, 1);
+  assert.equal(f.sql.prepare('SELECT total_bosses_defeated n FROM telegram_pet_memories WHERE pet_id=?').get(authority(f).pet_id)?.n, 1);
+  assert.equal(progress(f)?.adventure_xp, 30);
+  await f.state();
+  assert.equal(f.sql.prepare('SELECT moon_gold FROM telegram_pet_profiles').get().moon_gold, gold);
+  assert.equal(f.sql.prepare('SELECT total_bosses_defeated n FROM telegram_pet_memories WHERE pet_id=?').get(authority(f).pet_id).n, 1);
+});
+
+function savedWeeklyVictory(f, day, petId = authority(f).pet_id) {
+  const at = new Date(day + 'T12:00:00Z');
+  const iso = new Date(at); iso.setUTCHours(0,0,0,0); iso.setUTCDate(iso.getUTCDate() + 4 - (iso.getUTCDay() || 7));
+  const week = `${iso.getUTCFullYear()}-W${String(Math.ceil(((iso - Date.UTC(iso.getUTCFullYear(),0,1)) / 86400000 + 1) / 7)).padStart(2,'0')}`;
+  const season = hooks.getPetSeasonInfo(at).key, boss = hooks.getPetWeeklyBoss(week);
+  const key = 'saved-weekly:' + petId + ':' + day;
+  f.sql.prepare(`INSERT INTO telegram_pet_weekly_boss_progress (telegram_id,week_key,boss_id,damage,attempts,defeated_at,reward_claimed_at)
+    VALUES (?,?,?,?,1,?,?)`).run(f.owner, week, boss.boss_id, boss.hp, at.toISOString(), at.toISOString());
+  f.sql.prepare(`INSERT INTO telegram_pet_weekly_boss_victories_by_pet (telegram_id,week_key,boss_id,pet_id,season_key,victory_event_key,defeated_at)
+    VALUES (?,?,?,?,?,?,?)`).run(f.owner, week, boss.boss_id, petId, season, key, at.toISOString());
+  f.sql.prepare(`INSERT INTO telegram_pet_events (id,telegram_id,pet_id,season_key,event_type,event_key,day_key,week_key,status,reason,metadata,created_at)
+    VALUES (?,?,?,?,'weekly_boss',?,?,?,'accepted','weekly_boss_attempt',?,?)`)
+    .run(key, f.owner, petId, season, key, day, week, JSON.stringify({source:'pet_weekly_boss',boss_id:boss.boss_id}), at.toISOString());
+  return { pet_id: petId, season, week, boss, key, at };
+}
+
+test('Weekly Boss recovery preserves the original date and achievements for an archived victor', async () => {
+  const f = fixture('84530');
+  const day = (now.getUTCFullYear() - 1) + '-01-15';
+  const season = hooks.getPetSeasonInfo(new Date(day)).key;
+  f.pet('archived-weekly', season, 3200);
+  f.sql.prepare("UPDATE telegram_pet_instances SET status='archived' WHERE pet_id='archived-weekly'").run();
+  f.sql.prepare("UPDATE telegram_pet_season_slots SET status='archived' WHERE pet_id='archived-weekly'").run();
+  const saved = savedWeeklyVictory(f, day, 'archived-weekly');
+  const before = await f.get('/telegram-pets/leaderboard?period=all_time');
+  await f.state();
+  const receipt = f.sql.prepare("SELECT * FROM telegram_pet_specialist_events WHERE action='run_boss'").get();
+  assert.equal(receipt.pet_id, 'archived-weekly');
+  assert.equal(JSON.parse(receipt.payload_json).day_key, day);
+  const crest = f.sql.prepare('SELECT * FROM telegram_pet_weekly_crests').get();
+  assert.equal(crest.pet_id, 'archived-weekly'); assert.equal(crest.earned_at, saved.at.toISOString());
+  const memory = f.sql.prepare("SELECT * FROM telegram_pet_memories WHERE pet_id='archived-weekly'").get();
+  assert.equal(memory.total_bosses_defeated, 1); assert.equal(memory.first_boss_victory_at, saved.at.toISOString());
+  assert.equal(f.sql.prepare("SELECT progress FROM telegram_pet_achievements WHERE pet_id='archived-weekly' AND achievement_id='boss_breaker'").get()?.progress, 1);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_system_events WHERE system_key='weekly_boss_finish'").get().n, 1);
+  await f.state();
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_specialist_events WHERE action='run_boss'").get().n, 1);
+  assert.deepEqual((await f.get('/telegram-pets/leaderboard?period=all_time')).entries, before.entries);
+  assert.equal(f.sql.prepare('SELECT moon_gold FROM telegram_pet_profiles').get().moon_gold, 1000);
+});
+
+test('Weekly Boss completion-marker failure retries without repeating any award', async () => {
+  const f = fixture('84531');
+  savedWeeklyVictory(f, now.toISOString().slice(0,10));
+  f.sql.exec("CREATE TRIGGER fail_finish_marker BEFORE INSERT ON telegram_pet_system_events WHEN NEW.system_key='weekly_boss_finish' BEGIN SELECT RAISE(ABORT,'interrupted_finish_marker'); END");
+  await f.state();
+  assert.equal(progress(f).adventure_xp, 30);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_weekly_crests').get().n, 1);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_system_events WHERE system_key='weekly_boss_finish'").get().n, 0);
+  f.sql.exec('DROP TRIGGER fail_finish_marker');
+  await f.state();
+  assert.equal(progress(f).adventure_xp, 30);
+  assert.equal(f.sql.prepare('SELECT total_bosses_defeated n FROM telegram_pet_memories').get().n, 1);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_weekly_crests').get().n, 1);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_system_events WHERE system_key='weekly_boss_finish'").get().n, 1);
+});
+
+test('unbacked Weekly Boss victories cannot fill the recovery queue ahead of a valid victory', async () => {
+  const f = fixture('84532'), pets = new Map();
+  for (let index=0; index<22; index++) {
+    const day = new Date(Date.UTC(now.getUTCFullYear()-1,0,15+index*7)).toISOString().slice(0,10);
+    const season = hooks.getPetSeasonInfo(new Date(day)).key;
+    if (!pets.has(season)) { pets.set(season, 'weekly-'+season); f.pet(pets.get(season), season); }
+    const saved = savedWeeklyVictory(f, day, pets.get(season));
+    if (index<21) f.sql.prepare('DELETE FROM telegram_pet_events WHERE event_key=?').run(saved.key);
+  }
+  await f.state();
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_specialist_events WHERE action='run_boss'").get().n, 1);
+  assert.equal(f.sql.prepare('SELECT SUM(total_bosses_defeated) n FROM telegram_pet_memories').get().n, 1);
+});
+
+test('new Telegram command receipts retain their exact specialist identity for refresh and API retries', async () => {
+  const f = fixture('84533');
+  const options = (action) => ({event_key:'bot-primary-'+action, source:'telegram_command', runtime_event_key:'runtime:bot-original-'+action});
+  assert.equal((await hooks.processPetAction(f.db,f.owner,'feed',options('feed'))).accepted,true);
+  assert.equal((await hooks.processPetJob(f.db,f.owner,'street_artist',options('work'))).accepted,true);
+  assert.equal((await hooks.processPetDailyChest(f.db,f.owner,options('daily_chest'))).accepted,true);
+  await f.state();
+  assert.equal(progress(f).care_xp,8); assert.equal(progress(f).job_xp,14); assert.equal(progress(f).bond_xp,13);
+  for (const action of ['feed','work','daily_chest']) {
+    assert.equal((await api(f,{action,event_key:options(action).event_key,job_key:'street_artist'})).duplicate,true);
+  }
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_specialist_events').get().n,3);
+  assert.ok(f.sql.prepare('SELECT event_key FROM telegram_pet_specialist_events').all().every(row=>row.event_key.startsWith('runtime:bot-original-')));
+});
+
 test('already paid whitespace keys cannot starve recovery behind the batch limit', async () => {
   const f=fixture('84316'); standardRun(f,'spaces',21);
   f.sql.prepare('DELETE FROM telegram_pet_run_steps').run();
