@@ -1,3 +1,4 @@
+import { withPetEquipmentProgression } from './equipment-progression.js';
 import dailyChallenges from './content/daily-challenges.json' with { type: 'json' };
 import {
   PET_ROGUELITE_REGIONS,
@@ -473,7 +474,8 @@ export async function processDailyMoonRunStep(db, request = {}) {
   let resolved = room;
   if (room.status === 'pending') {
     const outcome = await resolveAuthoritativeDailyRoomOutcome(db, run, room, choiceId);
-    const authoritativeResolution = resolvePetRunRoom(room, { ...outcome, runtime_event_key: `runtime:daily-step:${room.room_id}` });
+    const equipped = await withPetEquipmentProgression(db, await db.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=? AND season_key=?').bind(run.pet_id, run.telegram_id, run.season_key).first());
+    const authoritativeResolution = resolvePetRunRoom(room, { ...outcome, equipment_snapshot: equipped?.equipment_progression || {}, runtime_event_key: `runtime:daily-step:${room.room_id}` });
     resolved = await persistPetRunRoomOutcome(db, run, room, authoritativeResolution.outcome);
   }
   if (resolved.status === 'failed') {
@@ -529,7 +531,9 @@ export async function extractDailyMoonRun(db, request = {}) {
   };
   // The terminal analytics row and status commit together. Closed legacy runs
   // keep their existing identity; a retry cannot invent a second award key.
+  const equipped = await withPetEquipmentProgression(db, await db.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=? AND season_key=?').bind(run.pet_id, run.telegram_id, run.season_key).first());
   const extraction = await extractPetRogueliteRun(db, run, {}, {
+    equipment_snapshot: equipped?.equipment_progression || {},
     rooms_completed: positiveInteger(run.current_room),
     ...(['active','extractable'].includes(run.status) ? { runtime_event_key: `runtime:daily-extract:${run.run_id}` } : {}),
   });

@@ -202,6 +202,7 @@ db.prepare(`INSERT INTO telegram_pet_evolutions
   ('state-player', 'moon_egg', 0, 'legacy:moon-egg', '[]', '[]', 1, '2026-01-02T03:04:05Z'),
   ('state-player', 'street_moonpet', 1, 'legacy:street', '[]', '[]', 1, '2026-02-03T04:05:06Z')`).run();
 
+db.exec(await readFile(new URL('../workers/moonboys-api/migrations/038_telegram_pet_equipment_progression.sql', import.meta.url), 'utf8'));
 db.exec(migration055);
 db.exec(migration056);
 db.exec(migration056);

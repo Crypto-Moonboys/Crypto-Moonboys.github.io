@@ -63,15 +63,20 @@ export async function readPetLeaderboard(db, { period = 'seasonal', limit = 25, 
 }
 
 export async function readPetActivity(db, limit = 20) {
-  const rows = await db.prepare(`WITH ${DISPLAY_CTES}
+  const rows = await db.prepare(`WITH ${DISPLAY_CTES}, activity_events AS (
+    SELECT id,telegram_id,pet_id,season_key,event_type,xp_awarded,pet_xp_awarded,reason,created_at
+    FROM telegram_pet_events e WHERE e.status='accepted' AND e.event_key<>?
+    UNION ALL
+    SELECT id,telegram_id,NULL,NULL,'equipment_upgrade',0,0,action_key,updated_at
+    FROM telegram_pet_system_events WHERE system_key='equipment_upgrade' AND status='completed'
+  )
     SELECT e.telegram_id,e.event_type,e.xp_awarded,e.pet_xp_awarded,e.reason,e.created_at,
       d.lifecycle_phase,d.lifecycle_species_id,d.rare_morph_id,d.evolution_stage,d.stage,
       u.username,u.first_name,u.last_name
-    FROM telegram_pet_events e
+    FROM activity_events e
     LEFT JOIN identities d ON d.telegram_id=e.telegram_id AND
       ((e.pet_id IS NOT NULL AND d.pet_id=e.pet_id AND d.season_key=e.season_key) OR (e.pet_id IS NULL AND d.pet_id IS NULL))
     LEFT JOIN telegram_users u ON u.telegram_id=e.telegram_id
-    WHERE e.status='accepted' AND e.event_key<>?
     ORDER BY e.created_at DESC,e.id DESC LIMIT ?`)
     .bind(PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY, boundedLimit(limit, 50)).all();
   return rows.results || [];

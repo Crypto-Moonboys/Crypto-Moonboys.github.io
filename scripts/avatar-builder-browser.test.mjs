@@ -467,6 +467,7 @@ try {
   await failedAnimated.route('**/js/avatar-backgrounds/neon-pulse.js', (route) => route.abort());
   await selectTrait(failedAnimated, 'background-neon-pulse');
   assert.equal(await failedAnimated.locator('.animated-background-canvas').getAttribute('data-renderer'), 'matrix-rain', 'Renderer load failure must restore the previous working background');
+  await failedAnimated.waitForFunction(() => /previous background was restored/i.test(document.getElementById('live-region')?.textContent || ''), null, { timeout: 5000 });
   assert.match(await failedAnimated.locator('#live-region').textContent(), /previous background was restored/i, 'Renderer load failure must be announced accessibly');
   await failedAnimated.close();
 
@@ -609,6 +610,7 @@ try {
   await failedExport.locator('#download-png:not([disabled])').waitFor();
   await failedExport.waitForTimeout(100);
   assert.equal(failedDownloadCount, 0, 'Failed image loading must not produce a partial download');
+  await failedExport.waitForFunction(() => /could not be loaded for export/i.test(document.getElementById('live-region')?.textContent || ''), null, { timeout: 5000 });
   assert.match(await failedExport.locator('#live-region').textContent(), /could not be loaded for export/i, 'Export failure must be announced accessibly');
   assert.equal(await failedExport.locator('#download-png').isEnabled(), true, 'Download button must re-enable after export failure');
   await failedExport.close();
