@@ -73,8 +73,9 @@ function livePetAuthority(telegramId, pet = {}) {
 async function resolveLivePetAuthority(db, telegramId, pet = {}) {
   const authority = livePetAuthority(telegramId, pet);
   if (!authority) return null;
+  // A failed lookup is not evidence that this pet has no saved authority.
   const row = await db.prepare('SELECT 1 AS ok FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=? AND season_key=? LIMIT 1')
-    .bind(authority.pet_id, authority.telegram_id, authority.season_key).first().catch(() => null);
+    .bind(authority.pet_id, authority.telegram_id, authority.season_key).first();
   return row ? authority : null;
 }
 

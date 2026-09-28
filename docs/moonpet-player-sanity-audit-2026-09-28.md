@@ -26,16 +26,25 @@ checkpoint, material, reward and mastery increment:
   were zero. A pet at 90 mastery can receive a normal encounter instead of its
   checkpoint boss, with the wrong reward decision.
 
-Both fault-injection tests failed on merged main because the action continued
-instead of reporting the database failure. The getter now propagates those
+Both original fault-injection tests failed on merged main because the action
+continued instead of reporting the database failure. The getter now propagates those
 errors and requires a real initialized row. The action stops before reserving
 an attempt, charging energy or awarding a reward. A successful retry uses the
 saved mastery. State projections also fail instead of advertising a fabricated
 zero-mastery mission. The existing request error/retry path remains in use.
 
-The two new real SQLite regressions check no attempt, energy or XP consumption
-on failure; a correct checkpoint on retry; one mastery increment and reward
-receipt; and matching daily/all-time public leaderboard totals after replay.
+Review of commit `3f10a442f8` found another entry to the same fallback: the pet
+authority lookup swallowed its database error. Both calls during state building
+could fail, returning the unrelated runtime object and advertising zero mastery.
+An added full Mini App state regression reproduces this on that reviewed commit.
+The authority lookup now propagates database failures while a successful lookup
+that finds no matching pet still returns the normal action rejection.
+
+Three real SQLite fault cases now check both state construction and action
+handling: no false zero-mastery projection, no attempt, energy or XP consumption
+on failure, correct checkpoint display on retry, one mastery increment/reward
+receipt, and matching daily/all-time public leaderboard totals after replay.
+A separate test preserves the successful missing-pet rejection behavior.
 Existing reset, pet-switch and season-rollover recovery tests remain in place.
 No additional state queries or raised SQL budgets are introduced.
 This prevents new bad settlements; it does not guess or rewrite historical
@@ -82,7 +91,7 @@ review found no new leaderboard mapping change needed for this patch.
 
 ## Validation and deployment
 
-The expanded ending suite has nine passing tests, and the existing 98-case
+The expanded ending suite has eleven tests, and the existing 98-case
 progression suite passes with unchanged SQL budgets. Live-system tests pass.
 Full local `npm test` and GitHub CI results are recorded in the PR, including
 Mini App mobile screens and public leaderboard mobile/desktop browser tests.

@@ -454,9 +454,11 @@ there is no penalty for closing the app.
 
 ### District, story and seasonal raid decisions
 
-District mastery must be successfully initialized and read before a mission is
-shown or reserved. A database failure is a retryable request failure, not zero
-mastery: it must not consume energy, bypass a checkpoint, pay the wrong reward
+District pet authority and mastery must be successfully read (and mastery
+initialized if needed) before a mission is shown or reserved. A failed authority
+query must not be treated as a successful missing-pet lookup. A database failure
+is a retryable request failure, not zero mastery: it must not consume energy,
+bypass a checkpoint, pay the wrong reward
 or mark a mission complete without its mastery. The successful path uses the
 same queries and reward limits as before.
 
