@@ -215,7 +215,7 @@ test('deployed Standard Run step retry repairs the original run pet only',async(
   const f=fixture('84011'); f.pet('second-run',currentSeason,300,2);
   f.sql.prepare("INSERT INTO telegram_pet_runs (id,run_id,telegram_id,pet_id,season_key,status,depth,current_room) VALUES ('run','run',?,?,?,'active',1,1)")
     .run(f.owner,authority(f).pet_id,currentSeason);
-  f.sql.prepare("INSERT INTO telegram_pet_run_steps (id,run_id,telegram_id,pet_id,step_index,choice_key,choice_type,event_key,success,created_at) VALUES ('step','run',?,?,1,'fight','fight','saved-step',1,'2026-09-26 12:00:00')")
+  f.sql.prepare("INSERT INTO telegram_pet_run_steps (id,run_id,telegram_id,pet_id,step_index,choice_key,choice_type,event_key,success,created_at,metadata) VALUES ('step','run',?,?,1,'fight','fight','saved-step',1,'2026-09-26 12:00:00','{\"source\":\"telegram_pets_api\"}')")
     .run(f.owner,authority(f).pet_id);
   f.active('second-run');
   const body={action:'run_step',run_id:'run',choice_key:'fight',event_key:'saved-step',expected_step_index:1};
@@ -393,4 +393,239 @@ test('an uncredited historical API extraction repairs when no ambiguous legacy a
   assert.equal(progress(f).adventure_xp,24);
   assert.equal((await api(f,{...body,event_key:'another-retry'})).accepted,true);
   assert.equal(progress(f).adventure_xp,24);
+});
+
+for (const finish of [false, true]) test(`Mini App repairs ${finish ? 'final step' : 'extraction'} progression on refresh after a failed specialist write`, async () => {
+  const f = fixture(finish ? '84302' : '84301'); standardRun(f, 'mini-repair', finish ? 99 : 2);
+  // The already-played room has its normal existing award.
+  await runtime(f, 'runtime:api:mini-repair-prior', now.toISOString().slice(0,10), 'run_step');
+  f.sql.exec("CREATE TRIGGER fail_specialist BEFORE INSERT ON telegram_pet_specialist_events BEGIN SELECT RAISE(ABORT,'interrupted_specialist'); END");
+  const body = finish ? {action:'run_step',run_id:'mini-repair',choice_key:'boss',expected_step_index:100,request_id:'finish'}
+    : {action:'run_extract',run_id:'mini-repair',request_id:'extract'};
+  const random = Math.random; Math.random = () => 0.999;
+  try { assert.equal((await f.act(body)).accepted, true); } finally { Math.random = random; }
+  assert.equal(progress(f).adventure_xp, 10);
+  const paid = f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(authority(f).pet_id);
+  f.sql.exec('DROP TRIGGER fail_specialist');
+  f.pet('mini-second', currentSeason, 300, 2); f.active('mini-second');
+  await f.state();
+  assert.equal(progress(f).adventure_xp, finish ? 20 : 34);
+  await f.state(); await f.act({...body,request_id:'changed-request'});
+  assert.equal(f.sql.prepare('SELECT SUM(adventure_xp) xp FROM telegram_pet_specialist_progression').get().xp, finish ? 20 : 34);
+  assert.deepEqual(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(authority(f).pet_id), paid);
+});
+
+test('Mini App terminal reward recovery credits its saved final step on the original day', async () => {
+  const f = fixture('84303'); standardRun(f,'mini-ending',99);
+  await runtime(f,'runtime:api:mini-ending-prior',now.toISOString().slice(0,10),'run_step');
+  f.sql.exec("CREATE TRIGGER fail_ending BEFORE INSERT ON telegram_pet_reward_claims WHEN NEW.source='pet_run_legacy' BEGIN SELECT RAISE(ABORT,'interrupted_final_reward'); END");
+  const body={action:'run_step',run_id:'mini-ending',choice_key:'boss',expected_step_index:100,request_id:'mini-final'};
+  const random=Math.random; Math.random=()=>0.999;
+  try { await assert.rejects(f.act(body),/interrupted_final_reward/); } finally { Math.random=random; }
+  f.sql.exec('DROP TRIGGER fail_ending');
+  f.sql.prepare("UPDATE telegram_pet_run_steps SET created_at='2026-09-26 12:00:00' WHERE step_index=100").run();
+  const result=await f.act({...body,request_id:'new-request'});
+  assert.equal(result.accepted,true);
+  assert.equal(progress(f).adventure_xp,20);
+  assert.equal(progress(f).adventure_daily,10,'recovery does not consume today’s allowance');
+});
+
+test('a saved raid victory repairs specialist progression on refresh for its original pet', async () => {
+  const f=fixture('84304');
+  f.sql.prepare(`INSERT INTO telegram_pet_seasonal_boss_progress
+    (pet_id,telegram_id,pet_season_key,season_key,boss_key,damage,defeated_at,reward_claimed_at)
+    VALUES (?,?,?,'season1:w2959','neon_titan',900,'2026-09-26 12:00:00',CURRENT_TIMESTAMP)`)
+    .run(authority(f).pet_id,f.owner,currentSeason);
+  f.pet('raid-second',currentSeason,300,2); f.active('raid-second');
+  await f.state();
+  assert.equal(progress(f)?.adventure_xp,30);
+  assert.equal(progress(f).arena_xp,8);
+  assert.equal(progress(f).daily_key,'2026-09-26');
+  await f.state();
+  assert.equal(f.sql.prepare('SELECT SUM(adventure_xp) xp FROM telegram_pet_specialist_progression').get().xp,30);
+});
+
+test('API cannot pay a Mini App room again by replaying its saved request key', async () => {
+  const f=fixture('84305'); standardRun(f,'shared-step');
+  const random=Math.random; Math.random=()=>0.999;
+  let result;
+  try { result=await f.act({action:'run_step',run_id:'shared-step',choice_key:'fight',expected_step_index:3,request_id:'mini-room'}); }
+  finally { Math.random=random; }
+  assert.equal(result.accepted,true);
+  const key=f.sql.prepare('SELECT event_key FROM telegram_pet_run_steps WHERE step_index=3').get().event_key;
+  const before=progress(f).adventure_xp;
+  assert.equal((await api(f,{action:'run_step',run_id:'shared-step',choice_key:'fight',expected_step_index:3,event_key:key})).duplicate,true);
+  assert.equal(progress(f).adventure_xp,before);
+});
+
+for (const action of ['district_mission', 'event_chain']) test(`${action} repairs the saved specialist award after a new request ID`, async () => {
+  const { PET_EVENT_CHAINS } = await import('../workers/moonboys-api/pets/content-phase-4.js');
+  const f=fixture(action==='event_chain'?'84307':'84306');
+  f.sql.exec('UPDATE telegram_pet_instances SET pet_xp=1000000; UPDATE telegram_pet_profiles SET pet_xp=1000000;');
+  const body={action,region_key:'moon_alley',chain_key:Object.keys(PET_EVENT_CHAINS)[0],request_id:'original-explore'};
+  f.sql.exec("CREATE TRIGGER fail_specialist BEFORE INSERT ON telegram_pet_specialist_events BEGIN SELECT RAISE(ABORT,'interrupted_specialist'); END");
+  const first=await f.act(body);
+  assert.equal(first.accepted,true,JSON.stringify(first));
+  assert.equal(progress(f)?.adventure_xp||0,0);
+  const paid=f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances').get().pet_xp;
+  f.sql.exec('DROP TRIGGER fail_specialist');
+  assert.equal((await f.act({...body,request_id:'retry-new-key'})).duplicate,true);
+  assert.equal(progress(f)?.adventure_xp,14);
+  await f.state();
+  assert.equal(progress(f).adventure_xp,14);
+  assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances').get().pet_xp,paid);
+});
+
+for (const extract of [false,true]) test(`Official Daily ${extract?'extraction':'room'} survives specialist failure and pet switching`, async () => {
+  const { __dailyMoonRunTestHooks: daily } = await import('../workers/moonboys-api/pets/daily-moon-run.js');
+  const f=fixture(extract?'84309':'84308');
+  const created=await f.act({action:'daily_run_start'});
+  assert.equal(created.accepted,true,JSON.stringify(created));
+  const run=f.sql.prepare('SELECT * FROM telegram_pet_runs WHERE run_id=?').get(created.daily_run.run_id);
+  const room=created.room;
+  // Choose a deterministic successful fixture seed; play still uses the real
+  // authoritative resolver and persisted room, rather than mocking its result.
+  let choice;
+  for(let seed=1;seed<=100 && !choice;seed++) {
+    run.seed=seed;
+    for(const option of room.choices) if((await daily.resolveAuthoritativeDailyRoomOutcome(f.db,run,room,option.choice_id)).success) { choice=option.choice_id; break; }
+  }
+  assert.ok(choice);
+  f.sql.prepare('UPDATE telegram_pet_runs SET seed=? WHERE run_id=?').run(run.seed,run.run_id);
+  if(!extract) f.sql.exec("CREATE TRIGGER fail_specialist BEFORE INSERT ON telegram_pet_specialist_events BEGIN SELECT RAISE(ABORT,'interrupted_specialist'); END");
+  const step=await f.act({action:'run_step',run_id:run.run_id,choice_key:choice,expected_step_index:0,request_id:'daily-room'});
+  assert.equal(step.reason,'daily_room_resolved',JSON.stringify(step));
+  if(extract) {
+    f.sql.exec("CREATE TRIGGER fail_specialist BEFORE INSERT ON telegram_pet_specialist_events BEGIN SELECT RAISE(ABORT,'interrupted_specialist'); END");
+    assert.equal((await f.act({action:'run_extract',run_id:run.run_id,request_id:'daily-extract'})).accepted,true);
+  }
+  const before=progress(f)?.adventure_xp||0;
+  assert.equal(before,extract?10:0);
+  f.sql.exec('DROP TRIGGER fail_specialist');
+  f.pet('daily-second',currentSeason,300,2); f.active('daily-second');
+  await f.state();
+  assert.equal(progress(f).adventure_xp,extract?34:10);
+  await f.state();
+  if(extract) await api(f,{action:'run_extract',run_id:run.run_id,event_key:'api-daily-retry'});
+  else await api(f,{action:'run_step',run_id:run.run_id,choice_key:choice,expected_step_index:0,event_key:'api-daily-retry'});
+  assert.equal(f.sql.prepare('SELECT SUM(adventure_xp) xp FROM telegram_pet_specialist_progression').get().xp,extract?34:10);
+});
+
+test('new Daily boss settlement repairs only its saved step on refresh or finish', async () => {
+  const { createPetRunRoom, persistPetRunRoomOutcome } = await import('../workers/moonboys-api/pets/roguelite-foundation.js');
+  const f=fixture('84310');
+  const created=await f.act({action:'daily_run_start'});
+  const run=f.sql.prepare('SELECT * FROM telegram_pet_runs WHERE run_id=?').get(created.daily_run.run_id);
+  run.current_room=9; run.depth=9;
+  f.sql.prepare('UPDATE telegram_pet_runs SET current_room=9,depth=9 WHERE run_id=?').run(run.run_id);
+  const room=await createPetRunRoom(f.db,run);
+  await persistPetRunRoomOutcome(f.db,run,room,{success:true,score:100,choice_id:room.choices[0].choice_id,runtime_event_key:`runtime:daily-step:${room.room_id}`});
+  f.sql.prepare("UPDATE telegram_pet_run_rooms SET resolved_at='2026-09-26 12:00:00' WHERE room_id=?").run(room.room_id);
+  f.sql.prepare('UPDATE telegram_pet_runs SET current_room=10,depth=10 WHERE run_id=?').run(run.run_id);
+  const result=await f.act({action:'run_extract',run_id:run.run_id,request_id:'finish-saved'});
+  assert.equal(result.reason,'daily_run_completed');
+  assert.equal(progress(f).adventure_xp,10);
+  assert.equal(progress(f).daily_key,'2026-09-26');
+  await f.state();
+  await api(f,{action:'run_extract',run_id:run.run_id,event_key:'finish-again'});
+  assert.equal(progress(f).adventure_xp,10);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_specialist_events WHERE action='run_extract'").get().n,0);
+});
+
+test('story retries retain the first reserved identity when primary settlement fails', async () => {
+  const { PET_EVENT_CHAINS } = await import('../workers/moonboys-api/pets/content-phase-4.js');
+  const f=fixture('84311');
+  const body={action:'event_chain',chain_key:Object.keys(PET_EVENT_CHAINS)[0],request_id:'reserved-story'};
+  f.sql.exec("CREATE TRIGGER fail_primary BEFORE INSERT ON telegram_pet_reward_claims WHEN NEW.source='pet_event_chain' BEGIN SELECT RAISE(ABORT,'primary-story-failure'); END");
+  await assert.rejects(f.act(body),/primary-story-failure/);
+  f.sql.exec('DROP TRIGGER fail_primary');
+  assert.equal((await f.act({...body,request_id:'different-retry'})).accepted,true);
+  assert.equal(progress(f).adventure_xp,14);
+  assert.match(f.sql.prepare("SELECT event_key FROM telegram_pet_specialist_events WHERE action='explore'").get().event_key,/reserved-story$/);
+  await f.state();
+  assert.equal(progress(f).adventure_xp,14);
+});
+
+test('Adventure API retry restores its original pet progression once', async () => {
+  const f=fixture('84312');
+  const encounter=hooks.resolvePetAdventureEncounter('moon_alley');
+  const body={action:'adventure',adventure_key:encounter.choices[0].key,event_key:'moon_alley'};
+  f.sql.exec("CREATE TRIGGER fail_specialist BEFORE INSERT ON telegram_pet_specialist_events BEGIN SELECT RAISE(ABORT,'interrupted_specialist'); END");
+  assert.equal((await api(f,body)).accepted,true);
+  f.sql.exec('DROP TRIGGER fail_specialist');
+  f.pet('adventure-second',currentSeason,300,2); f.active('adventure-second');
+  assert.equal((await api(f,body)).duplicate,true);
+  assert.equal(progress(f).adventure_xp,14);
+  await f.state();
+  assert.equal(f.sql.prepare('SELECT SUM(adventure_xp) xp FROM telegram_pet_specialist_progression').get().xp,14);
+  assert.equal((await api(f,{...body,event_key:'x'.repeat(121)})).status,400);
+});
+
+test('recovery filters invalid owners before its bound and drains paid candidates on later refreshes', async () => {
+  const f=fixture('84313'); standardRun(f,'queue',1);
+  f.sql.prepare('DELETE FROM telegram_pet_run_steps').run();
+  for(let i=0;i<47;i++) f.sql.prepare(`INSERT INTO telegram_pet_run_steps
+    (id,pet_id,telegram_id,run_id,step_index,choice_key,choice_type,event_key,success,metadata,created_at)
+    VALUES (?,?,?,'queue',?,'fight','fight',?,1,'{"source":"telegram_pets_api"}','2026-09-26 12:00:00')`)
+    .run('queue-'+i,i<25?'missing-pet':authority(f).pet_id,f.owner,i+1,'queue-'+i);
+  await f.state();
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_specialist_events').get().n,20);
+  await f.state();
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_specialist_events').get().n,22);
+  assert.equal(progress(f).adventure_xp,220);
+  await f.state();
+  assert.equal(progress(f).adventure_xp,220);
+});
+
+test('an earlier season raid stays visible and claimable while the selected pet is an egg', async () => {
+  const f=fixture('84314'); f.pet('old-raid','pet-s2026-002',5000,1); f.reveal('old-raid');
+  f.sql.prepare("UPDATE telegram_pet_lifecycle_by_pet SET phase='egg' WHERE pet_id=?").run(authority(f).pet_id);
+  f.sql.prepare(`INSERT INTO telegram_pet_seasonal_boss_progress
+    (pet_id,telegram_id,pet_season_key,season_key,boss_key,damage,defeated_at)
+    VALUES ('old-raid',?,'pet-s2026-002','neon_uprising:w2900','neon_titan',900,'2026-05-12 12:00:00')`).run(f.owner);
+  const snapshot=await f.state();
+  const claim=snapshot.live_systems.seasonal_boss.pending_rewards.find(r=>r.pet_id==='old-raid');
+  assert.ok(claim,'old season rewards remain reachable from the current pet');
+  const result=await f.act({action:'seasonal_boss_claim',...claim});
+  assert.equal(result.accepted,true,JSON.stringify(result));
+  assert.equal(f.sql.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id='old-raid'").get().pet_xp,5150);
+  assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(authority(f).pet_id).pet_xp,200);
+  assert.equal((await f.state()).live_systems.seasonal_boss.pending_rewards.length,0);
+  assert.equal((await f.get('/telegram-pets/leaderboard?period=daily')).entries[0].pet_xp,150);
+  assert.equal((await f.get('/telegram-pets/leaderboard?period=weekly')).entries[0].pet_xp,150);
+  assert.equal((await f.get('/telegram-pets/leaderboard?period=all_time')).entries[0].pet_xp,5350);
+  assert.equal(f.sql.prepare("SELECT season_xp FROM telegram_pet_season_state WHERE season_key='pet-s2026-002'").get().season_xp,150);
+  assert.equal((await f.get('/telegram-pets/activity')).items.find(e=>e.event_type==='seasonal_boss').display_name,'BOTTY');
+
+  const total=f.sql.prepare('SELECT SUM(pet_xp) xp FROM telegram_pet_instances').get().xp;
+  assert.equal((await f.act({action:'seasonal_boss_claim',...claim})).duplicate,true);
+  assert.equal(f.sql.prepare('SELECT SUM(pet_xp) xp FROM telegram_pet_instances').get().xp,total);
+  assert.equal((await f.act({action:'seasonal_boss_claim',...claim,pet_id:'unowned'})).accepted,false);
+});
+
+
+test('historical oversized Adventure keys cannot create a second award during refresh', async () => {
+  const f=fixture('84315'), key='a'.repeat(120), day=now.toISOString().slice(0,10);
+  f.sql.prepare(`INSERT INTO telegram_pet_events
+    (id,pet_id,telegram_id,event_type,event_key,season_key,day_key,week_key,status,metadata)
+    VALUES ('legacy-long',?,?,'adventure',?,?,?,'week','accepted','{"context":{"source":"telegram_pets_api"}}')`)
+    .run(authority(f).pet_id,f.owner,key,currentSeason,day);
+  await runtime(f,'runtime:api:'+key+'-legacy-suffix',day,'explore');
+  await f.state();
+  assert.equal(progress(f).adventure_xp,14);
+});
+
+test('already paid whitespace keys cannot starve recovery behind the batch limit', async () => {
+  const f=fixture('84316'); standardRun(f,'spaces',21);
+  f.sql.prepare('DELETE FROM telegram_pet_run_steps').run();
+  for(let i=0;i<21;i++) {
+    const key='spaces-'+i+' \t';
+    f.sql.prepare(`INSERT INTO telegram_pet_run_steps
+      (id,pet_id,telegram_id,run_id,step_index,choice_key,choice_type,event_key,success,metadata)
+      VALUES (?,?,?,'spaces',?,'fight','fight',?,1,'{"source":"telegram_pets_api"}')`)
+      .run('spaces-'+i,authority(f).pet_id,f.owner,i+1,key);
+    if(i<20) await runtime(f,'runtime:api:'+key,now.toISOString().slice(0,10),'run_step');
+  }
+  await f.state();
+  assert.equal(progress(f).adventure_xp,210);
 });

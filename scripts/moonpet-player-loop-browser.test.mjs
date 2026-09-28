@@ -712,7 +712,8 @@ try {
     sqlite.prepare(`INSERT INTO telegram_pet_seasonal_boss_progress
       (pet_id,telegram_id,pet_season_key,season_key,boss_key,damage,defeated_at) VALUES (?,?,?,?,?,?,CURRENT_TIMESTAMP)`)
       .run(raidBefore.pet.pet_id, currentUser, raidBefore.pet.season_key, oldBoss.season_instance, oldBoss.key, oldBoss.hp);
-    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    sqlite.prepare("UPDATE telegram_pet_lifecycle_by_pet SET phase='egg' WHERE pet_id=?").run(raidBefore.pet.pet_id);
+    await page.reload(); await page.waitForSelector('[data-panel="incubation"]');
     await page.locator('[data-panel="play-now"] [data-focus="seasonal-boss"]').filter({ hasText: 'CLAIM SAVED RAID REWARDS' }).click();
     const claimRaid = page.locator('[data-action="seasonal_boss_claim"]');
     assert.equal(await claimRaid.isEnabled(), true);
@@ -724,6 +725,7 @@ try {
     assert.equal(claimRaidResult.state.pet.energy, 0);
     assert.equal(claimRaidResult.state.pet.moon_gold, raidBefore.pet.moon_gold + 250);
     await page.waitForFunction(() => !document.querySelector('[data-action="seasonal_boss_claim"]'));
+    sqlite.prepare('UPDATE telegram_pet_lifecycle_by_pet SET phase=? WHERE pet_id=?').run(raidBefore.lifecycle.phase,raidBefore.pet.pet_id);
     // Adventure controls expose their real entry gate, costs and cooldown.
     sqlite.prepare('UPDATE telegram_pet_instances SET energy=100 WHERE telegram_id=?').run(currentUser);
     sqlite.prepare('UPDATE telegram_pet_profiles SET energy=100 WHERE telegram_id=?').run(currentUser);

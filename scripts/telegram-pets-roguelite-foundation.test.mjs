@@ -46,7 +46,7 @@ const foundationFunction = (name) => {
 assert.match(petIdMigration, /ALTER TABLE telegram_pet_runs ADD COLUMN pet_id TEXT/);
 assert.doesNotMatch(petIdMigration, /(?:DROP|DELETE|TRIGGER|telegram_pet_(?:kaiju|arena|weekly|identity|season_reward))/i,
   'migration 066 must remain nullable, additive, and scoped to run-owned tables');
-const runStepAuthoritySource = workerFunction('processPetRunStep');
+const runStepAuthoritySource = workerFunction('processPetRunStepResult');
 assert.doesNotMatch(runStepAuthoritySource, /getPetProfile\s*\(/, 'run steps cannot re-read the active pet selector');
 assert.match(runStepAuthoritySource, /getPetInstanceWithAtomicDecay\(db, run\.pet_id\)/, 'run steps must load the stored run pet');
 assert.match(foundationFunction('completePetRun'), /pet_id:\s*requireRunPetId\(run\)/, 'completion settlement requires run.pet_id');

@@ -473,7 +473,7 @@ export async function processDailyMoonRunStep(db, request = {}) {
   let resolved = room;
   if (room.status === 'pending') {
     const outcome = await resolveAuthoritativeDailyRoomOutcome(db, run, room, choiceId);
-    const authoritativeResolution = resolvePetRunRoom(room, outcome);
+    const authoritativeResolution = resolvePetRunRoom(room, { ...outcome, runtime_event_key: `runtime:daily-step:${room.room_id}` });
     resolved = await persistPetRunRoomOutcome(db, run, room, authoritativeResolution.outcome);
   }
   if (resolved.status === 'failed') {
@@ -527,7 +527,12 @@ export async function extractDailyMoonRun(db, request = {}) {
     depth: daily.authoritative_depth,
     status: daily.authoritative_status,
   };
-  const extraction = await extractPetRogueliteRun(db, run, {}, { rooms_completed: positiveInteger(run.current_room) });
+  // The terminal analytics row and status commit together. Closed legacy runs
+  // keep their existing identity; a retry cannot invent a second award key.
+  const extraction = await extractPetRogueliteRun(db, run, {}, {
+    rooms_completed: positiveInteger(run.current_room),
+    ...(['active','extractable'].includes(run.status) ? { runtime_event_key: `runtime:daily-extract:${run.run_id}` } : {}),
+  });
   const synchronized = await syncDailyMoonRun(db, {
     telegram_id: daily.telegram_id, utc_day: daily.utc_day, run_id: daily.run_id, now: request.now,
   });

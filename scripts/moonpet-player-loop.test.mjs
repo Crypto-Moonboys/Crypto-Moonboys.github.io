@@ -207,6 +207,7 @@ assert.ok(options.options(raidAtTwelve).some((c) => c.key === 'seasonal_boss'));
 const exhaustedWithClaim = { ...raidAtTwelve, pet: { energy: 0 }, live_systems: { seasonal_boss: { available: false, pending_rewards: [{ boss_key: 'neon_titan' }] } } };
 assert.equal(options.options(exhaustedWithClaim)[0].key, 'seasonal_boss_claim');
 assert.equal(options.options(exhaustedWithClaim)[0].focus, 'seasonal-boss');
+assert.equal(options.options({ ...exhaustedWithClaim, lifecycle: { phase: 'egg' } })[0].key, 'seasonal_boss_claim', 'an egg cannot hide saved raid rewards');
 assert.ok(options.options({ ...snapshot, pet: { energy: 0 }, regions: [{ available: true, pending_choice_key: 'careful', retry_energy_charged: true }] }).some((c) => c.key === 'district_retry'));
 assert.ok(!options.options({ ...snapshot, pet: { energy: 0 }, regions: [{ available: true, pending_choice_key: 'careful' }] }).some((c) => c.key === 'district_retry'), 'an unpaid retry still needs energy');
 const savedRaid = { available: true, pending_move: 'counter', choices: [{ key: 'conserve', energy: 12 }, { key: 'counter', energy: 18 }] };

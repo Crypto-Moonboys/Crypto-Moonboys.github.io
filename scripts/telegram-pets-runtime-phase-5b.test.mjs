@@ -22,7 +22,7 @@ assert.match(worker, /runtime:care:/, 'care actions must use isolated runtime ev
 assert.match(worker, /runtime:activity:/, 'timed activities must use stable session-based runtime event keys');
 assert.match(worker, /runtime:job:/, 'jobs must use isolated runtime event keys');
 assert.match(worker, /runtime:daily:/, 'daily chests must use isolated runtime event keys');
-assert.match(worker, /runtime:run-step:/, 'run steps must use isolated runtime event keys');
+assert.match(worker, /standardStepRuntimeKey\(eventKey, options.source\)/, 'run steps persist their isolated runtime event keys');
 assert.match(worker, /runtime:run-extract:/, 'run extraction must use isolated runtime event keys');
 
 assert.match(finalWorker, /runtime:api:/, 'API-dispatched actions must use isolated runtime event keys');

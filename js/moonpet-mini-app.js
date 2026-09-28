@@ -705,7 +705,7 @@
   function button(label, action, payload, options) {
     options = careActionButtonOptions(action, actionCooldownButtonOptions(action, options));
     var accountActions = ['adopt', 'guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'arena_queue_cancel', 'arena_forfeit', 'kaiju_queue_cancel', 'kaiju_match_cancel'];
-    var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim', 'contract_claim']);
+    var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim', 'contract_claim', 'seasonal_boss_claim']);
     if (state && state.lifecycle && state.lifecycle.phase === 'egg' && !eggActions.includes(action)) {
       options = Object.assign({}, options, { disabled: true, cooldown: null, statusLabel: 'HATCH REQUIRED' });
     } else if (state && state.adopted === false && !accountActions.includes(action)) {
@@ -1309,10 +1309,25 @@
     return 'Start a Moon Run or pick an available Explore action.';
   }
 
+  function savedWeeklyBossButtons(boss) {
+    return (boss.pending_rewards || []).map(function (claim) {
+      return button('RECOVER WEEKLY REWARD // ' + claim.title, 'weekly_boss_claim', { pet_id: claim.pet_id, boss_id: claim.boss_id, week_key: claim.week_key }, {
+        detail: claim.week_key + ' // ' + valueText(claim.reward) + ' // No energy or new attempt. Keeps the original pet’s victory.' });
+    }).join('');
+  }
+
+  function savedRaidButtons(seasonal) {
+    return (seasonal.pending_rewards || []).map(function (claim) {
+      return button('CLAIM SAVED RAID REWARD // ' + claim.title, 'seasonal_boss_claim', { pet_id: claim.pet_id, boss_key: claim.boss_key, season_instance: claim.season_instance }, { detail: 'Recover this defeated boss reward. No energy or new attempt; older rotations remain claimable.' });
+    }).join('');
+  }
+
   function firstSessionExploreMarkup() {
     var phase = firstSessionPhase();
     if (!phase) return '';
     var nextLine = exploreNextLine();
+    var weeklyClaims = savedWeeklyBossButtons(state && state.guidance && state.guidance.weekly_boss || {});
+    var raidClaims = savedRaidButtons(state && state.live_systems && state.live_systems.seasonal_boss || {});
     var arena = state && state.arena;
     var arenaQueue = state && state.arena_queue;
     var kaiju = state && state.kaiju || {};
@@ -1345,9 +1360,9 @@
       panel('MOON RUN', '<div class="line muted">NEXT // ' + escapeHtml(nextLine) + '</div><div class="line muted">' + escapeHtml(copy.run) + '</div>', 'moon-run') +
       panel('PET ADVENTURE', '<div class="line muted">' + escapeHtml(copy.journey) + '</div>', 'adventure') +
       panel('STREET EVENT', '<div class="line muted">' + escapeHtml(copy.journey) + '</div>', 'street-event') +
-      panel('WEEKLY BOSS // LOCKED', '<div class="line muted">' + escapeHtml(copy.journey) + '</div>', 'weekly-boss') +
+      panel(weeklyClaims ? 'SAVED WEEKLY BOSS REWARDS' : 'WEEKLY BOSS // LOCKED', '<div class="line muted">' + escapeHtml(copy.journey) + '</div><div class="button-grid one">' + weeklyClaims + '</div>', 'weekly-boss') +
       panel('STREET STORY CHAINS', '<div class="line muted">' + escapeHtml(copy.journey) + '</div>', 'story-chains') +
-      panel('SEASONAL RAID', '<div class="line muted">' + escapeHtml(copy.journey) + '</div>', 'seasonal-boss') +
+      panel('SEASONAL RAID', '<div class="line muted">' + escapeHtml(copy.journey) + '</div><div class="button-grid one">' + raidClaims + '</div>', 'seasonal-boss') +
       panel('PET ARENA', arenaBody, 'arena') +
       panel('KAIJU CODE CARDS', kaijuBody, 'kaiju');
   }
@@ -2038,9 +2053,7 @@
       if (Number(state.pet.level) < Number(seasonal.min_level)) detail = 'REQUIRES LEVEL ' + number(seasonal.min_level) + ' // ' + detail;
       return button(seasonal.pending_move ? 'RESUME SAVED RAID ATTACK' : choice.label, 'seasonal_boss', { pet_id: state.pet.pet_id, move: choice.key }, { disabled: !seasonal.available || !paid && Number(state.pet.energy) < choice.energy, statusLabel: seasonalStatusLabel, cooldown: seasonalDefeated ? null : seasonal.cooldown, detail: detail });
     }).join('');
-    var raidClaims = (seasonal.pending_rewards || []).map(function (claim) {
-      return button('CLAIM SAVED RAID REWARD // ' + claim.title, 'seasonal_boss_claim', { pet_id: claim.pet_id, boss_key: claim.boss_key, season_instance: claim.season_instance }, { detail: 'Recover this defeated boss reward. No energy or new attempt; older rotations remain claimable.' });
-    }).join('');
+    var raidClaims = savedRaidButtons(seasonal);
     var seasonalBody = '<div class="line">' + escapeHtml(words(seasonal.title || 'offline')) + ' // ' + number(seasonal.damage) + '/' + number(seasonal.hp) + ' DAMAGE // PHASE ' + number(seasonal.phase || 1) + '/' + number(seasonal.phases) + '</div><div class="line muted">WEAKNESS ' + escapeHtml(words(seasonal.weakness)) + ' // REWARD ' + escapeHtml(words(seasonal.reward)) + '</div><div class="line muted">One attack per pet / UTC day. Counter attacks change this hit’s damage; they do not apply ongoing Arena status effects.</div><div class="button-grid">' + raidButtons + raidClaims + '</div>';
     var bossReward = valueText(boss.reward);
     var bossStatusLabel = boss.defeated ? 'DEFEATED' : boss.attempt_used ? 'USED TODAY' : Number(state.pet.level) < 5 ? 'LEVEL 5 REQUIRED' : Number(state.pet.energy) < 12 ? '12 ENERGY REQUIRED' : '';
@@ -2049,10 +2062,7 @@
       if (choice.minimum_damage != null) detail += ' // ' + number(choice.minimum_damage) + '–' + number(choice.maximum_damage) + ' DAMAGE' + (choice.weakness_bonus ? ' // WEAKNESS +' + number(choice.weakness_bonus) + ' INCLUDED' : '') + (choice.personality_bonus ? ' // PERSONALITY +' + number(choice.personality_bonus) + ' INCLUDED' : '');
       return button(choice.title, 'weekly_boss', { move: choice.key, pet_id: state.pet.pet_id }, { disabled: !boss.available, statusLabel: bossStatusLabel, cooldown: boss.defeated ? null : boss.cooldown, detail: detail });
     }).join('');
-    var weeklyClaims = (boss.pending_rewards || []).map(function (claim) {
-      return button('RECOVER WEEKLY REWARD // ' + claim.title, 'weekly_boss_claim', { pet_id: claim.pet_id, boss_id: claim.boss_id, week_key: claim.week_key }, {
-        detail: claim.week_key + ' // ' + valueText(claim.reward) + ' // No energy or new attempt. Keeps the original pet’s victory.' });
-    }).join('');
+    var weeklyClaims = savedWeeklyBossButtons(boss);
     var bossBody = '<div class="line">' + (boss.defeated ? 'TARGET DEFEATED.' : boss.attempt_used ? 'DAILY ATTEMPT USED.' : 'SELECT AN ATTACK ROUTINE.') + '</div>' +
       (weeklyClaims ? '<div class="button-grid one">' + weeklyClaims + '</div>' : '') +
       '<div class="line muted">HP ' + number(boss.remaining_hp) + '/' + number(boss.hp) + ' // DAMAGE ' + number(boss.damage) + ' // ATTEMPTS ' + number(boss.attempts) + '/' + number(boss.max_attempts || 7) + '</div>' +
