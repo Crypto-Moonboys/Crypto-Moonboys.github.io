@@ -5946,12 +5946,18 @@ async function recoverPetCombatProgress(db, telegramId) {
         AND (json_extract(CASE WHEN json_valid(b.score_json) THEN b.score_json ELSE '{}' END,?) IS NOT NULL
           OR EXISTS (SELECT 1 FROM telegram_pet_events e WHERE e.telegram_id=? AND e.status='pending' AND e.pet_id IS NOT NULL
             AND e.event_type='kaiju_battle' AND e.event_key=SUBSTR('pet_kaiju:'||b.match_id||':'||?,1,120)))))
-  ) SELECT c.*,cursor.setting_value AS recovery_cursor FROM candidates c
+  ) SELECT c.*,cursor.setting_value AS recovery_cursor,kind_cursor.setting_value AS kind_cursor FROM candidates c
     LEFT JOIN telegram_settings cursor ON cursor.telegram_id=? AND cursor.setting_key='moonpet:recovery:combat'
-    ORDER BY CASE WHEN c.recovery_key>COALESCE(cursor.setting_value,'') THEN 0 ELSE 1 END,c.recovery_key LIMIT 1`)
-    .bind(owner,owner,owner,owner,owner,owner,owner,owner,`$.reward_sources."${owner}".pet_id`,owner,owner,owner).all();
+    LEFT JOIN telegram_settings kind_cursor ON kind_cursor.telegram_id=? AND kind_cursor.setting_key='moonpet:recovery:combat:'||c.kind
+    ORDER BY CASE WHEN cursor.setting_value LIKE c.kind||':%' THEN 1 ELSE 0 END,
+      CASE WHEN c.recovery_key>COALESCE(kind_cursor.setting_value,'') THEN 0 ELSE 1 END,c.recovery_key LIMIT 1`)
+    .bind(owner,owner,owner,owner,owner,owner,owner,owner,`$.reward_sources."${owner}".pet_id`,owner,owner,owner,owner).all();
   if (!await claimPetRecoveryBatch(db, owner, 'combat', rows.results || [])) return;
   for (const candidate of rows.results || []) {
+    // Alternate modes first, then continue that mode's own cursor. A new Arena
+    // arrival cannot jump ahead of Kaiju, nor reset Arena to an invalid old row.
+    if (!await claimPetRecoveryBatch(db, owner, `combat:${candidate.kind}`,
+      [{ ...candidate, recovery_cursor: candidate.kind_cursor }])) return true;
     if (candidate.kind === 'kaiju') {
       const match = await getPetKaijuMatch(db, candidate.id);
       if (match?.status === 'completed') {

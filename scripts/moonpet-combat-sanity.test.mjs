@@ -501,3 +501,22 @@ test('mixed Kaiju, Arena and care recovery stays bounded and makes progress in b
   assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='kaiju_battle' AND status='accepted'").get().n,2);
   console.log('Combined combat/care budget:',costs.join(', '),'statements');
 });
+
+test('Kaiju gets the next recovery turn despite new Arena arrivals, while Arena retains its own cursor',async()=>{
+  const f=await kaijuFixture('combat-fairness');
+  f.sql.exec("CREATE TRIGGER fail_fair_ending BEFORE UPDATE OF status ON telegram_pet_kaiju_matches WHEN NEW.status='completed' BEGIN SELECT RAISE(ABORT,'ending_unavailable'); END");
+  await assert.rejects(f.card(),/ending_unavailable/);
+  f.sql.exec('DROP TRIGGER fail_fair_ending');
+  const arena=(id,petId=null)=>f.sql.prepare(`INSERT INTO telegram_pet_arena_battles
+    (id,battle_id,chat_id,player1_telegram_id,player1_pet_id,player1_season_key,player1_pet_snapshot_json,player2_pet_snapshot_json,status,result)
+    VALUES (?,?,?, ?,?,?,'{}','{}','completed','player1_win')`).run(id,id,'fixture',f.owner,petId,currentSeason);
+  arena('a-broken');arena('b-broken');arena('z-valid','current-'+f.owner);
+  await f.state();
+  assert.equal(f.match().status,'selecting');
+  arena('c-new-arrival');
+  await f.state();
+  assert.equal(f.match().status,'completed','Kaiju must get the next turn before the Arena backlog is exhausted');
+  for(let i=0;i<3;i++)await f.state();
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='arena_battle' AND status='accepted'").get().n,1,
+    'returning to Arena must continue beyond its earlier broken scopes');
+});

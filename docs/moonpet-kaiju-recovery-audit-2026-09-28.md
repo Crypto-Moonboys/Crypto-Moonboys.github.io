@@ -16,7 +16,9 @@ other paths, using isolated SQLite fault injection and the real dispatchers.
 | Telegram Kaiju catches failed active-match/profile reads as empty results | Required reads propagate failure; an unavailable table cannot authorize another match. Receipt reads also retain errors rather than masquerading as absent receipts. |
 | Fractional ISO timestamps parse as zero because the timezone suffix is duplicated | Preserve the timezone once. A regression reproduces an older profile reducing a pet from 10,000 XP to 200 XP before the fix, and confirms newer pet state survives after it. |
 
-Arena and Kaiju share one rotating combat recovery slot per refresh. Accepted
+Arena and Kaiju share one combat recovery slot per refresh, alternating modes
+and retaining a separate cursor within each mode. A regression adds new Arena
+arrivals during an older backlog and verifies Kaiju still receives the next turn. Accepted
 receipts remain the payment authority; the cursor only schedules work. This
 keeps one combat backlog from permanently excluding the other and reserves room
 for normal state rendering and care recovery. No schema migration is required.
@@ -47,20 +49,20 @@ wiki-driven; it does not claim to update from pet XP.
 
 - All five original Kaiju reproductions failed before the fixes and pass after.
   The fractional-timestamp reproduction also failed before its fix.
-- `node --test scripts/moonpet-combat-sanity.test.mjs`: 40 passing cases,
-  including 14 new regressions/control cases. Covers both players, Telegram,
+- `node --test scripts/moonpet-combat-sanity.test.mjs`: 41 passing cases,
+  including 15 new regressions/control cases. Covers both players, Telegram,
   retries, timeout, cancellation, switching, original gear, legacy receipts,
   public synchronization and mixed backlogs.
 - `node --test scripts/moonpet-combat-sanity.test.mjs scripts/moonpet-action-sync.test.mjs scripts/moonpet-progression-sync.test.mjs`:
-  178 passing tests. Existing source-pet and original-day accounting assertions
+  179 passing tests. Existing source-pet and original-day accounting assertions
   remain in place; fixtures now supply the provenance required by the real flow.
 - `node scripts/telegram-pets-api.test.mjs`: passed, including XP caps,
   reservation/energy idempotency and original-day leaderboard recovery.
-- The real HTTP SQL test compiles 249 captured Mini App statements under D1's
+- The real HTTP SQL test compiles 250 captured Mini App statements under D1's
   compound-select, parameter and function-argument limits.
-- Mixed Arena/Kaiju/50-care recovery used 526 and 565 statements across its two
+- Mixed Arena/Kaiju/50-care recovery used 527 and 566 statements across its two
   refreshes. The two-player Arena repair remains below the 600-statement test
-  budget at 589. Warm-state and ordinary backlog budget checks pass.
+  budget at 590. Warm-state and ordinary backlog budget checks pass.
 - Read-only `node scripts/live-graph-pets-verify.mjs`: passed, 327 wiki nodes and
   1,629 graph edges, with public Pets/graph consistency checks.
 - `CHROMIUM_EXECUTABLE_PATH=/tmp/moonpet-chromium/chromium npm test`: passed
