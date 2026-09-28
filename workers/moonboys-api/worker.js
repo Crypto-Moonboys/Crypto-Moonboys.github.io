@@ -5163,6 +5163,7 @@ async function matchmakePetKaijuMiniApp(db, telegramId) {
   if (Number(claimed?.meta?.changes || 0) !== 2) {
     await db.prepare(`UPDATE telegram_pet_kaiju_queue SET status=CASE WHEN EXISTS (
         SELECT 1 FROM telegram_pet_kaiju_matches b WHERE b.status IN ('open','selecting')
+          AND b.chat_id LIKE 'mini:kaiju:match:%'
           AND (b.player1_telegram_id=telegram_pet_kaiju_queue.telegram_id OR b.player2_telegram_id=telegram_pet_kaiju_queue.telegram_id)
       ) THEN 'played' ELSE 'waiting' END, updated_at=CURRENT_TIMESTAMP
       WHERE chat_id=? AND status='played' AND updated_at=?`).bind(PET_MINI_APP_KAIJU_LOBBY, claimToken).run().catch(() => {});
@@ -5177,6 +5178,7 @@ async function matchmakePetKaijuMiniApp(db, telegramId) {
   } catch (error) {
     await db.prepare(`UPDATE telegram_pet_kaiju_queue SET status=CASE WHEN EXISTS (
         SELECT 1 FROM telegram_pet_kaiju_matches b WHERE b.status IN ('open','selecting')
+          AND b.chat_id LIKE 'mini:kaiju:match:%'
           AND (b.player1_telegram_id=telegram_pet_kaiju_queue.telegram_id OR b.player2_telegram_id=telegram_pet_kaiju_queue.telegram_id)
       ) THEN 'played' ELSE 'waiting' END, updated_at=CURRENT_TIMESTAMP
       WHERE chat_id=? AND status='played' AND updated_at=?`)
@@ -5706,6 +5708,7 @@ async function queuePetArenaMiniApp(db, telegramId, acceptAnyRank = false) {
   if (Number(claimed?.meta?.changes || 0) !== 2) {
     await db.prepare(`UPDATE telegram_pet_arena_queue SET status=CASE WHEN EXISTS (
         SELECT 1 FROM telegram_pet_arena_battles b WHERE b.status IN ('readying','active')
+          AND b.chat_id=telegram_pet_arena_queue.chat_id
           AND (b.player1_telegram_id=telegram_pet_arena_queue.telegram_id OR b.player2_telegram_id=telegram_pet_arena_queue.telegram_id)
       ) THEN 'matched' ELSE 'waiting' END, updated_at=CURRENT_TIMESTAMP
       WHERE chat_id=? AND status='matched' AND updated_at=?`).bind(PET_MINI_APP_ARENA_LOBBY, claimToken).run().catch(() => {});
@@ -5724,6 +5727,7 @@ async function queuePetArenaMiniApp(db, telegramId, acceptAnyRank = false) {
   } catch (error) {
     await db.prepare(`UPDATE telegram_pet_arena_queue SET status=CASE WHEN EXISTS (
         SELECT 1 FROM telegram_pet_arena_battles b WHERE b.status IN ('readying','active')
+          AND b.chat_id=telegram_pet_arena_queue.chat_id
           AND (b.player1_telegram_id=telegram_pet_arena_queue.telegram_id OR b.player2_telegram_id=telegram_pet_arena_queue.telegram_id)
       ) THEN 'matched' ELSE 'waiting' END, updated_at=CURRENT_TIMESTAMP
       WHERE chat_id=? AND status='matched' AND updated_at=?`)

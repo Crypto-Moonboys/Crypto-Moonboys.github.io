@@ -218,6 +218,39 @@ for (const system of ['arena','kaiju']) test(`${system}: a committed match survi
   assert.equal((await f.act({action:`${system}_matchmake`})).reason,`${system}_match_active`);
 });
 
+for(const system of ['arena','kaiju']) for(const failure of ['partial-claim','match-write'])
+test(`${system}: ${failure} restores the Mini App queue despite an unrelated Telegram battle`,async()=>{
+  const f=fixture(`cross-chat-${system}-${failure}`),rival='rival-'+f.owner;
+  f.sql.prepare('INSERT INTO telegram_users (telegram_id,first_name) VALUES (?,?)').run(rival,'Rival');
+  f.sql.prepare('INSERT INTO telegram_pet_profiles (telegram_id,pet_xp,health,energy) VALUES (?,10000,100,100)').run(rival);
+  await hooks.preparePetMiniAppState(f.db,rival,new Date());
+  f.sql.prepare("UPDATE telegram_pet_lifecycle_by_pet SET phase='young' WHERE telegram_id=?").run(rival);
+  const queued=await hooks.processPetMiniAppAction(f.db,rival,{id:rival},{action:`${system}_matchmake`},'fixture-token');
+  assert.equal(queued.reason,`${system}_queued`);
+  const table=`telegram_pet_${system}_${system==='arena'?'battles':'matches'}`;
+  if(system==='arena') f.sql.prepare(`INSERT INTO telegram_pet_arena_battles
+    (id,battle_id,chat_id,player1_telegram_id,player1_pet_snapshot_json,player2_pet_snapshot_json,status,expires_at)
+    VALUES ('other','other','unrelated-telegram-chat',?,'{}','{}','active','2999-01-01')`).run(f.owner);
+  else f.sql.prepare(`INSERT INTO telegram_pet_kaiju_matches (id,match_id,chat_id,player1_telegram_id,status)
+    VALUES ('other','other','unrelated-telegram-chat',?,'selecting')`).run(f.owner);
+  let injected=false;
+  f.db.beforeRun=s=>{
+    if(failure==='partial-claim'&&!injected&&s.query.includes(`UPDATE telegram_pet_${system}_queue SET status=`)&&s.query.includes('telegram_id IN (?,?)')) {
+      injected=true;
+      f.sql.prepare(`UPDATE telegram_pet_${system}_queue SET status='expired' WHERE telegram_id=?`).run(rival);
+    }
+    if(failure==='match-write'&&s.query.includes(`INSERT INTO ${table}`)) {injected=true;throw Error('match_write_unavailable');}
+  };
+  if(failure==='partial-claim') {
+    const result=await f.act({action:`${system}_matchmake`});
+    assert.equal(result.reason,`${system}_queued`);
+    assert.equal(result.queue?.waiting,true,'queued success must include the restored waiting row');
+  } else await assert.rejects(f.act({action:`${system}_matchmake`}),/match_write_unavailable/);
+  assert.equal(injected,true);
+  assert.equal(f.sql.prepare(`SELECT COUNT(*) n FROM telegram_pet_${system}_queue WHERE telegram_id=? AND status='waiting'`).get(f.owner).n,1);
+  assert.equal(f.sql.prepare(`SELECT COUNT(*) n FROM ${table}`).get().n,1,'unrelated match remains untouched');
+});
+
 test('a broken historical Arena source cannot starve a later recoverable payout',async()=>{
   const f=await arenaFixture('arena-cursor');
   f.sql.prepare("UPDATE telegram_pet_arena_battles SET status='completed',result='player1_win' WHERE battle_id=?").run(f.id);

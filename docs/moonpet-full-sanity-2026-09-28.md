@@ -13,7 +13,7 @@ production endpoints. It does not inspect or play every private account.
 | Arena/Kaiju database failures are interpreted as no match, queue or result | Required reads now fail into the existing retry path. The client retains its previous state; failed guards cannot permit another match. Failed Kaiju queue writes cannot report a successful join. |
 | An Arena move remains locked after a CPU move or round write fails | Replays keep the original move and finish its missing work. Round outcome, HP, turn advancement and terminal status commit together. Refresh can repair saved moves, including older partially saved rounds. |
 | Arena terminal payout fails, but subsequent actions reject the completed battle | Owned action retries and bounded refresh recovery deliver the original participant's reward through the existing idempotent authority. Switching pets cannot redirect it. Public XP/activity receives one accepted receipt. |
-| A failed matchmaking response requeues players already attached to a saved match | Recovery checks committed matches before restoring queue entries. Kaiju matchmaking saves both participants in its initial insert, preventing an orphan host when the join write is interrupted. |
+| A failed matchmaking response requeues players already attached to a saved match | Recovery checks committed Mini App matches before restoring queue entries; unrelated Telegram chats cannot consume a Mini App queue claim. Kaiju matchmaking saves both participants in its initial insert, preventing an orphan host when the join write is interrupted. |
 | A delayed Arena round can overwrite a concurrent forfeit | Terminal outcomes are committed atomically and round updates require the same active turn. A delayed write cannot replace the settled winner, HP or reward. |
 
 Arena recovery uses a rotating cursor, one battle per refresh, so an older
@@ -48,11 +48,11 @@ button click. The website entity graph follows wiki content rather than Pet XP.
 
 ## Verification
 
-- 22 new SQLite regressions/control cases cover read/write faults, saved moves,
+- 26 new SQLite regressions/control cases cover read/write faults, saved moves,
   atomic settlement, concurrent forfeit, foreign owners, switched pets,
   matchmaking recovery, cursor fairness and public payout visibility. All pass.
 - Expanded the real HTTP D1 compiler regression from six selected queries to all
-  248 captured statements across state, care, pet switching, Arena and Kaiju.
+  more than 240 captured statements across state, care, pet switching, Arena and Kaiju.
   SQLite enforces compound SELECT limit 5, parameter limit 100 and function
   argument limit 32, with a failing six-term control.
 - Mixed care backlog and combat recovery peaks at 587 SQL statements for a
