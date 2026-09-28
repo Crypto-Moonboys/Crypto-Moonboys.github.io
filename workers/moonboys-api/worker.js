@@ -12,7 +12,7 @@ import { recoverPetRuntimeAwards, standardStepRuntimeKey } from './pets/runtime-
 import { petCareDeltaStatements, petCareCommunityStatements } from './pets/care-writes.js';
 import { chooseDailyRunTactic, dailyTacticalBoard, previewDailyChoice, readDailyModifiers } from './pets/daily-run-tactics.js';
 import { handleWaxBridgeRoute } from './routes/wax/index.js';
-import { applyPetRuntimeAward, buildPetGearSummary, buildPetProgressSummary, getOrCreatePetRuntimeState } from './pets/runtime-phase-5a.js';
+import { applyPetRuntimeAward, getPetRuntimeSourceDropRoll, getPetRuntimeMaterialSources, buildPetGearSummary, buildPetProgressSummary, getOrCreatePetRuntimeState } from './pets/runtime-phase-5a.js';
 import {
   createDailyMoonRun, extractDailyMoonRun, getDailyMoonRunReservation, getDailyMoonRunSummary, processDailyMoonRunStep, recoverDailyMoonRunEndings,
   DAILY_JOURNEY_REQUIRED_OBJECTIVES, PET_DAILY_CHALLENGES, recordDailyCareChallenge, syncDailyMoonRun,
@@ -61,7 +61,7 @@ import {
   PET_ECONOMY_ROUTES, PET_EXPEDITION_TIERS, buildPetEconomyGuidanceActions, formatPetEconomyValue,
   getPetDailyBounties, getPetExpedition, getPetMarketOffers, getPetMarketCapacity, resolvePetExpeditionReward,
 } from './pets/economy-expansion.js';
-import { PET_CRAFTING_MATERIALS, getActivePetSetBonuses } from './pets/economy-phase-3.js';
+import { PET_CRAFTING_MATERIALS, PET_CRAFTING_RECIPES, getActivePetSetBonuses } from './pets/economy-phase-3.js';
 import { PET_ELITE_JOBS, canStartPetEliteJob } from './pets/content-phase-4.js';
 import { PET_JOB_LORE, buildPetRegionDirectory } from './pets/game-content.js';
 import { PET_VISIBLE_LEVEL_CURVE, getPetVisibleLevel, getPetVisibleLevelSql, getPetXpToNextVisibleLevel } from './pets/progression-phase-2.js';
@@ -6132,10 +6132,11 @@ async function claimPetActivitySession(db, telegramId, options = {}) {
     return { accepted: false, reason: 'activity_reward_recovery_pending', session, computed: settledComputed };
   }
   const runtimeReceipt = await readAcceptedPetEventByKey(db, telegramId, eventKey);
+  if (!runtimeReceipt?.id) return { accepted: false, reason: 'activity_reward_recovery_pending', session, computed: settledComputed };
   const runtimeEquipment = safeJsonParse(runtimeReceipt?.metadata, {}).context?.equipment_snapshot || {};
   const runtimeAction = session.activity_type === 'train' ? 'timed_train' : session.activity_type === 'work' ? 'timed_work' : session.activity_type;
   const runtime = await applyPetRuntimeCommandAward(db, telegramId, `runtime:activity:${session.id}`, runtimeAction,
-    { pet: authoritativeAward.pet, day_key: getPetDayKey(rewardNow), equipment_snapshot: runtimeEquipment });
+    { pet: authoritativeAward.pet, day_key: getPetDayKey(rewardNow), source_event_id: runtimeReceipt?.id, equipment_snapshot: runtimeEquipment });
   if (!runtime?.ok) {
     return { accepted: false, reason: 'activity_reward_recovery_pending', session, computed: settledComputed };
   }
@@ -9477,7 +9478,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       key,
       label: definition.label,
       quantity: Math.max(0, Number((materials.results || []).find((row) => row.material_key === key)?.quantity || 0)),
-      sources: definition.sources,
+      sources: [...definition.sources, ...getPetRuntimeMaterialSources(key)],
     })),
     relics: relics.results || [],
     regions: liveSystems.regions,
@@ -10614,6 +10615,10 @@ export default {
         return {
         text: row.event_type === 'equipment_upgrade'
           ? `${playerDisplayName} upgraded ${PET_SHOP_ITEMS[row.reason]?.title || 'equipment'}`
+          : row.event_type === 'crafting'
+            ? `${playerDisplayName} crafted ${PET_CRAFTING_RECIPES[row.reason]?.title || 'an item'}`
+          : row.event_type === 'cosmetic_unlock'
+            ? `${playerDisplayName} collected ${String(row.reason || 'a Style Lab unlock').replaceAll('_', ' ')}`
           : `${playerDisplayName} ${row.event_type} ${petIdentity.display_name} (+${row.pet_xp_awarded || 0} pet XP, +${row.xp_awarded || 0} XP)`,
         event_type: row.event_type,
         name: petIdentity.display_name,
@@ -16043,7 +16048,7 @@ async function claimPetWeeklyBossReward(db, telegramId, request = {}) {
 async function finishPetWeeklyBossVictory(db, telegramId, weekKey, boss, victory) {
   // New victories preserve the exact defeating event in the attack transaction.
   // Older evidence keys remain valid for their existing reward and crest receipt.
-  const event = await db.prepare(`SELECT event_key, day_key, metadata FROM telegram_pet_events
+  const event = await db.prepare(`SELECT id, event_key, day_key, metadata FROM telegram_pet_events
     WHERE telegram_id=? AND pet_id=? AND season_key=? AND event_key=? AND event_type='weekly_boss' AND status='accepted'`)
     .bind(telegramId, victory.pet_id, victory.season_key, victory.victory_event_key).first();
   if (event) {
@@ -16055,7 +16060,7 @@ async function finishPetWeeklyBossVictory(db, telegramId, weekKey, boss, victory
     if (!memory.accepted && !memory.duplicate) return;
     const achievements = await syncPetAchievementsForPet(db, telegramId, victory.pet_id, victory.season_key, true);
     if (!achievements.length) return;
-    const runtime = await applyPetRuntimeCommandAward(db, telegramId, `runtime:${event.event_key}`, 'run_boss', { ...victory, day_key: event.day_key, equipment_snapshot: safeJsonParse(event.metadata, {}).equipment_snapshot || {} });
+    const runtime = await applyPetRuntimeCommandAward(db, telegramId, `runtime:${event.event_key}`, 'run_boss', { ...victory, day_key: event.day_key, source_event_id: event.id, equipment_snapshot: safeJsonParse(event.metadata, {}).equipment_snapshot || {} });
     if (!runtime?.ok) return;
   }
   const crest = await awardStoredWeeklyBossVictoryCrest(db, telegramId, weekKey, boss.boss_id);
@@ -16521,6 +16526,8 @@ export async function applyPetRuntimeCommandAward(db, telegramId, eventKey, acti
       ? applyPetFactionBonus({}, factionRow?.faction, 'training').bonus : null;
     return await applyPetRuntimeAward(db, telegramId, stableKey, action, {
       ...authority, day_key: getPetDayKey(new Date()), ...options,
+      drop_roll: await getPetRuntimeSourceDropRoll(action, telegramId, options.source_event_id),
+      material_amount: 1,
       equipment_rows: Object.values(Object.hasOwn(options, 'equipment_snapshot')
         ? (typeof options.equipment_snapshot === 'string' ? safeJsonParse(options.equipment_snapshot, {}) : options.equipment_snapshot) || {}
         : equipped.equipment_progression),

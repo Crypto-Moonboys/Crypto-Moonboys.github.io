@@ -8,6 +8,7 @@ import {
 } from './progression-phase-2.js';
 import {
   PET_CRAFTING_MATERIALS,
+  PET_RARE_DROP_TABLES,
   normalizePetMaterial,
   resolvePetRareDrop,
 } from './economy-phase-3.js';
@@ -56,6 +57,23 @@ const ACTION_DROP_TABLE = Object.freeze({
   arena_complete: 'arena',
   kaiju_win: 'kaiju',
 });
+
+export function getPetRuntimeMaterialSources(materialKey) {
+  const labels = { job: 'job_material_draw', timed_work: 'timed_work_material_draw',
+    run_extract: 'moon_run_extraction_material_draw', run_boss: 'weekly_boss_or_raid_victory_material_draw',
+    arena_complete: 'arena_completion_material_draw', kaiju_win: 'kaiju_victory_material_draw' };
+  return Object.entries(ACTION_DROP_TABLE).filter(([, table]) =>
+    PET_RARE_DROP_TABLES[table].some(entry => entry.item === materialKey)).map(([action]) => labels[action]);
+}
+
+// The committed server receipt fixes the draw across surfaces and retries.
+// Never derive this from a client request key or accept a client-provided roll.
+export async function getPetRuntimeSourceDropRoll(action, owner, sourceEventId) {
+  if (!Object.hasOwn(ACTION_DROP_TABLE, action) || !String(sourceEventId || '').trim()) return undefined;
+  const bytes = new TextEncoder().encode(JSON.stringify(['moonpet-material-v1', String(owner), action, String(sourceEventId)]));
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return new DataView(digest).getUint32(0) / 0x100000000;
+}
 
 function hasOwn(object, key) {
   return Object.prototype.hasOwnProperty.call(object, key);
@@ -178,6 +196,7 @@ export function buildPetRuntimeAwardPlan(action, options = {}) {
   const table = ACTION_DROP_TABLE[key];
   if (table && options.drop_roll !== undefined) {
     plan.material = resolvePetRareDrop(table, options.drop_roll);
+    if (options.source_event_id) plan.material_source_id = String(options.source_event_id);
   }
   return plan;
 }
