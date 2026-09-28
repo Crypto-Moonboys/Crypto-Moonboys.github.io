@@ -274,7 +274,78 @@
     return choices;
   }
 
-  var api = { route: route, objectiveRoutes: objectiveRoutes, bountyRoutes: bountyRoutes, bountyRouteOptions: bountyRouteOptions, runAvailability: runAvailability, craftingGoal: craftingGoal, options: options };
+  // Rank navigation choices, never perform actions or promise a universally best build.
+  function recommendations(snapshot, preferences) {
+    var s = snapshot || {}, g = s.guidance || {}, lifecycle = s.lifecycle || {};
+    if (!s.adopted) return [];
+    var candidates = options(s, preferences).map(function (entry, index) {
+      var rank = 60;
+      if (/claim|daily_completion/.test(entry.key)) rank = 10;
+      else if (entry.key === 'activity' && g.activity && g.activity.ready) rank = 12;
+      else if (entry.key === 'run' && s.run) rank = 20;
+      else if (entry.key === 'contract' && s.contracts.run && s.contracts.run.status === 'active') rank = 22;
+      else if (entry.key === 'district_retry') rank = 23;
+      else if (entry.key === 'finale') rank = (s.season_finales.pets || []).some(function (pet) { return pet.status === 'won' && !pet.claimed; }) ? 10 : 24;
+      else if (entry.key === 'incubate') rank = 25;
+      else if (entry.key === 'daily_chest') rank = 30;
+      else if (entry.key === 'bounty_target') rank = 38;
+      else if (entry.key === 'craft_goal') { var goal = craftingGoal(s, preferences && preferences.crafting_goal); rank = goal && goal.ready ? 40 : goal && goal.routes.length ? 70 : 85; }
+      else if (entry.key === 'daily_run' || entry.key === 'weekly_boss') rank = 45;
+      else if (['daily_journey', 'weekly_journey', 'mission', 'bounty', 'season'].includes(entry.key)) rank = 85;
+      else if (entry.key === 'activity' && g.activity && !g.activity.ready) rank = 90;
+      else if (entry.key === 'practice') rank = 100;
+      return Object.assign({}, entry, { rank: rank, order: index });
+    });
+    function add(key, title, detail, destination, rank) {
+      candidates.push(Object.assign({}, destination, { key: key, title: title, detail: detail, rank: rank, order: candidates.length }));
+    }
+    if (lifecycle.phase !== 'egg') {
+      var pet = s.pet || {};
+      [['feed', Number(pet.hunger) >= 60], ['clean', Number(pet.cleanliness) <= 35], ['play', Number(pet.happiness) <= 35], ['sleep', Number(pet.energy) < 12]].forEach(function (entry) {
+        if (entry[1] && bountyRouteOptions({ event_types: [entry[0]] }, s).some(function (r) { return r.available; })) {
+          add(entry[0], 'CARE // ' + entry[0].toUpperCase(), 'Restore this need before choosing a costly route. Other ready care is in the same section.', route({ key: entry[0] }), 28);
+        }
+      });
+      [['daily_journey', 'DAILY GOAL'], ['weekly_journey', 'WEEKLY GOAL']].forEach(function (group) {
+        (s[group[0]] && s[group[0]].objectives || []).filter(function (goal) {
+          return !goal.completed && Number(goal.progress || 0) < Number(goal.target || 1);
+        }).forEach(function (goal) {
+          // Only advertise objectives whose qualifying route has an explicit ready check.
+          var target = objectiveRoutes(goal.objective_id || goal.challenge_id || goal.key, s).find(function (r) { return r.available === true; });
+          if (target) add(group[0] + ':' + (goal.objective_id || goal.challenge_id || goal.key), group[1] + ' // ' + (goal.title || goal.label || goal.description || goal.objective_id || goal.challenge_id || goal.key),
+            String(goal.progress || 0) + '/' + String(goal.target || 1) + '. ' + (target.detail || 'A qualifying route is ready.'), target, 36);
+        });
+      });
+      if (s.arena && ['readying', 'active'].includes(s.arena.status)) add('arena_resume', 'RETURN TO ARENA MATCH', 'Check the current round before the match expires.', route({ key: 'arena' }), 18);
+      if (s.kaiju && s.kaiju.match && ['open', 'selecting'].includes(s.kaiju.match.status)) add('kaiju_resume', 'RETURN TO KAIJU MATCH', 'Review your cards and the current match.', route({ key: 'kaiju' }), 19);
+      if (g.evolution && g.evolution.ready) add('evolution_ready', 'EVOLUTION READY // ' + g.evolution.name, 'Your requirements are met. Review the new form and perk before evolving.', route({ key: 'evolution' }), 41);
+      if (lifecycle.rare && lifecycle.rare.ready) add('rare_morph', 'ANSWER THE HIDDEN SIGNAL', 'A morph path is ready. Review it before choosing.', route({ key: 'rare_morph' }), 42);
+      if ((s.live_systems && s.live_systems.upgrades || []).some(function (item) { return item.affordable && !item.maxed; })) {
+        add('gear_upgrade', 'REVIEW EQUIPMENT UPGRADES', 'An upgrade is affordable. Compare its benefit and material cost before spending.', route({ key: 'gear_upgrade' }), 75);
+      }
+      if (!preferences || !preferences.crafting_goal) {
+        if ((s.live_systems && s.live_systems.crafting || []).some(function (recipe) { var goal = craftingGoal(s, recipe.key); return goal && goal.ready; })) {
+          add('craft', 'REVIEW READY RECIPES', 'You can craft an item. Choose a recipe and check its material cost.', route({ key: 'craft' }), 74);
+        }
+      }
+      // Preserve server guidance only where it agrees with a currently available route.
+      // Browsing a locked panel is useful, but must not become a "ready" recommendation.
+      var next = s.next;
+      if (next && next.title) {
+        var destination = route(next);
+        var match = candidates.find(function (entry) { return entry.key === next.key && entry.screen === destination.screen && entry.focus === destination.focus && entry.rank < 85; });
+        if (match) add('server:' + next.key, next.title, next.detail || match.detail, destination, Math.max(29, match.rank - 1));
+      }
+    }
+    var seen = new Set();
+    return candidates.sort(function (a, b) { return a.rank - b.rank || a.order - b.order; }).filter(function (entry) {
+      var destination = entry.screen + ':' + entry.focus;
+      if (seen.has(destination)) return false;
+      seen.add(destination); return true;
+    });
+  }
+
+  var api = { recommendations: recommendations, route: route, objectiveRoutes: objectiveRoutes, bountyRoutes: bountyRoutes, bountyRouteOptions: bountyRouteOptions, runAvailability: runAvailability, craftingGoal: craftingGoal, options: options };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.MoonpetPlayOptions = api;
 })(typeof window !== 'undefined' ? window : globalThis);

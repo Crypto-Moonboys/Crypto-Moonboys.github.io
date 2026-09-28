@@ -1091,3 +1091,17 @@ button, input, select, textarea {
   border: 1px solid #777;
   font: inherit;
 }
+
+/* Compact native disclosures: keyboard/touch friendly on every game screen. */
+.panel-summary { display:flex; align-items:center; gap:10px; min-height:56px; padding:10px 12px; cursor:pointer; list-style:none; }
+.panel-summary::-webkit-details-marker { display:none; }
+.panel-summary::marker { content:''; }
+.panel-summary:focus-visible { outline:2px solid var(--ui-text); outline-offset:-3px; border-radius:var(--radius-medium); }
+.panel-icon { flex:0 0 26px; text-align:center; font-size:20px; color:var(--ui-text); }
+.panel-caption { flex:1; min-width:0; }
+.panel-summary .panel-title { display:block; padding:0; border:0; line-height:1.5; letter-spacing:.08em; }
+.panel-description { display:block; margin-top:3px; color:var(--ui-text-secondary); font-size:11px; line-height:1.4; }
+.panel-chevron { flex:0 0 16px; font-size:18px; text-align:center; }
+.panel[open] > .panel-summary { border-bottom:1px solid rgba(var(--section-rgb),.1); }
+.panel[open] > .panel-summary .panel-chevron { transform:rotate(180deg); }
+.panel:not([open]) > .panel-body { display:none; }

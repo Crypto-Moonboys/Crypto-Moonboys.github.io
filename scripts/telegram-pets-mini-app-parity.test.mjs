@@ -749,7 +749,7 @@ for (const action of appActions) {
 assert.match(workerSource, /\['feed', 'play', 'clean', 'sleep', 'train'\]\.includes\(action\)/, 'Worker must handle all five care actions');
 
 const informationSurfaces = [
-  'RECOMMENDED NEXT MOVE', 'VITAL SYSTEMS', 'COMPANION DETAILS', 'DAILY MISSION BUFFER',
+  'RECOMMENDED NEXT', 'VITAL SYSTEMS', 'COMPANION DETAILS', 'DAILY MISSION BUFFER',
   'ACHIEVEMENT ARCHIVE', 'MEMORY ARCHIVE', 'APTITUDES', 'EVOLUTION', 'CURRENT PERK',
   'UNLOCK DIRECTORY', 'SPECIALIST TRACKS', 'SEASON //', 'TOP MOONPETS', 'WEEKLY BOSS', 'MOON RUN',
   'PET ADVENTURE', 'STREET EVENT', 'PET ARENA', 'KAIJU CODE CARDS', 'TIMED ACTIVITY', 'JOB TERMINAL',
