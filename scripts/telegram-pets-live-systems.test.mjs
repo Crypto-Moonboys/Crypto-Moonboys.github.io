@@ -64,7 +64,7 @@ for (const [faction, definition] of Object.entries(PET_FACTION_BONUSES)) {
   if (definition.system !== 'training') assert.ok(applied.rewards.moon_gold > 100 || applied.rewards.pet_xp > 100, `${faction} must change a live reward`);
 }
 assert.match(workerSource, /track_multiplier: 1 \+ Number\(factionBonus/, 'training faction bonus must change runtime Training XP');
-assert.match(workerSource, /applyPetFactionBonus\(player1Scaled\.rewards/, 'Arena faction bonuses must be applied before settlement');
+assert.match(workerSource, /applyPetFactionBonus\(scaled\.rewards/, 'Arena faction bonuses must be applied before settlement');
 assert.equal(Object.keys(PET_EQUIPMENT_UPGRADE_COSTS).length, 9);
 assert.equal(Object.keys(PET_COSMETIC_SINKS).length, 4);
 assert.equal(PET_PRESTIGE_REQUIREMENTS.min_level, 100);

@@ -417,12 +417,13 @@ assert.ok(worker.includes("Move locked. Waiting for opponent."), 'Group battle w
 assert.ok(worker.includes("Stale Pet Arena move. Choose from the latest round prompt."), 'Stale round move callbacks are rejected.');
 assert.ok(worker.includes("reason:'stale_arena_round'"), 'stale app callbacks reject by callback round mismatch.');
 assert.ok(worker.includes('Number(expectedRound || 0) !== roundNumber'), 'stale group callbacks reject by active battle round mismatch.');
-assert.ok(worker.includes("reason:'move_already_locked'"), 'Duplicate move callbacks do not double-apply damage.');
+// Duplicate damage and interrupted retries are exercised against SQLite in moonpet-combat-sanity.test.mjs.
+assert.ok(worker.includes("'move_already_locked'"), 'A locked move still waiting for the opponent remains explicit.');
 assert.ok(worker.includes('forfeitPetArenaBattle'), 'Forfeit resolves safely.');
 assert.ok(worker.includes("!['readying','active'].includes(String(battle.status))"), 'stale forfeit after completed battle is rejected before mutation.');
 assert.ok(worker.includes("WHERE battle_id=? AND status IN ('readying','active')"), 'forfeit update only claims live battles and cannot rewrite completed winner/result/HP.');
 assert.ok(worker.includes("Number(claim?.meta?.changes || 0) <= 0) return { accepted:true, duplicate:true, reason:'already_completed'"), 'stale forfeit with zero changed rows is treated as duplicate and does not award again.');
-assert.ok(worker.indexOf("Number(claim?.meta?.changes || 0) <= 0") < worker.indexOf('return completePetArenaBattle(db, await getPetArenaBattle(db, battle.battle_id));', worker.indexOf('async function forfeitPetArenaBattle')), 'forfeit calls completePetArenaBattle only after claiming a live battle.');
+assert.ok(worker.indexOf("Number(claim?.meta?.changes || 0) <= 0") < worker.indexOf('return completePetArenaBattle(db, await getPetArenaBattle(db, battle.battle_id), true);', worker.indexOf('async function forfeitPetArenaBattle')), 'forfeit calls completePetArenaBattle only after claiming a live battle.');
 assert.ok(worker.includes('telegram_pet_arena_queue'), 'group queue works');
 assert.ok(worker.includes('ORDER BY CASE WHEN rank_bucket=? THEN 0'), 'same-rank match preferred');
 assert.ok(worker.includes('Accept Any Rank'), 'mismatch fallback works');
