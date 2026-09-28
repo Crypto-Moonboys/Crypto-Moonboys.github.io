@@ -4,6 +4,7 @@ import { buildPetRegionDirectory } from './game-content.js';
 import { getPetVisibleLevel, getPetVisibleLevelSql } from './progression-phase-2.js';
 import { seasonalRaidChoices, resolveSeasonalRaidAttack } from './seasonal-raid-tactics.js';
 import { normalizeFaction } from '../shared/faction-canon.js';
+import { boundedRecoveryLimit } from './recovery-limits.js';
 import {
   accountWalletRecoveryResolvedSql,
   ensurePetAccountWalletReadyForMutation,
@@ -159,8 +160,9 @@ export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gea
     db.prepare('SELECT faction FROM blocktopia_progression WHERE telegram_id = ?').bind(telegramId).first().catch(() => null),
     db.prepare(`SELECT system_key, action_key, period_key, status, payload_json, updated_at FROM telegram_pet_system_events
       WHERE pet_id=? AND telegram_id=? AND season_key=? AND status IN ('pending','rejected','settling','completed')
-        AND ((system_key IN ('district','event_chain') AND period_key=?)
-          OR (system_key='seasonal_boss' AND period_key LIKE ?))`)
+        AND ((system_key IN ('district','event_chain') AND (period_key=? OR status IN ('pending','rejected','settling')))
+          OR (system_key='seasonal_boss' AND period_key LIKE ?))
+      ORDER BY period_key,id`)
       .bind(authority?.pet_id || '', telegramId, authority?.season_key || '', today, `%:${today}`).all().catch(() => ({ results: [] })),
     db.prepare(`SELECT b.pet_id,b.season_key,b.boss_key FROM telegram_pet_seasonal_boss_progress b
       JOIN telegram_pet_instances p ON p.pet_id=b.pet_id AND p.telegram_id=b.telegram_id AND p.season_key=b.pet_season_key
@@ -232,7 +234,7 @@ export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gea
   return {
     regions: buildPetRegionDirectory(visibleLevel, mastery).map((region) => {
       const dailyUsed = usedToday.has(`district:${region.key}`);
-      const mission = getDistrictMission(telegramId, pet, region, today);
+      const mission = pendingDecision('district', region.key)?.decision?.mission || getDistrictMission(telegramId, pet, region, today);
     return { ...region, completed: completed.includes(region.key), energy_cost: 10, mastery_gain: 25, mission, used_today: dailyUsed, settling: busyToday.has(`district:${region.key}`), available: region.playable && !dailyUsed && !busyToday.has(`district:${region.key}`), pending_choice_key: pendingDecision('district', region.key)?.approach_key || null, retry_energy_charged: Boolean(pendingDecision('district', region.key)?.energy_charged), cooldown: dailyUsed ? dailyCooldown : null, expires_at: dailyUsed ? dailyCooldown?.expires_at : null, remaining_seconds: dailyUsed ? dailyCooldown?.remaining_seconds || 0 : 0, server_time: dailyUsed ? dailyCooldown?.server_time : null };
     }),
     chains: chainState.map((chain) => ({ ...chain, cooldown: chain.used_today ? dailyCooldown : null, expires_at: chain.used_today ? dailyCooldown?.expires_at : null, remaining_seconds: chain.used_today ? dailyCooldown?.remaining_seconds || 0 : 0, server_time: chain.used_today ? dailyCooldown?.server_time : null })),
@@ -306,9 +308,13 @@ async function reserveSystemEvent(db, telegramId, system, action, period, payloa
 }
 
 async function readSystemEvent(db, authority, system, action, period) {
-  return db.prepare(`SELECT id, status, payload_json FROM telegram_pet_system_events
-    WHERE pet_id=? AND telegram_id=? AND season_key=? AND system_key=? AND action_key=? AND period_key=?`)
-    .bind(authority.pet_id, authority.telegram_id, authority.season_key, system, action, period).first();
+  // Finish an older district/story decision before starting today's step.
+  // Raid rotations have independent bosses and are recovered by saved period.
+  return db.prepare(`SELECT id, status, payload_json, period_key FROM telegram_pet_system_events
+    WHERE pet_id=? AND telegram_id=? AND season_key=? AND system_key=? AND action_key=?
+      AND (period_key=? OR (?=1 AND period_key<? AND status IN ('pending','rejected','settling')))
+    ORDER BY period_key, id LIMIT 1`)
+    .bind(authority.pet_id, authority.telegram_id, authority.season_key, system, action, period, system === 'seasonal_boss' ? 0 : 1, period).first();
 }
 
 // Freeze the decision before awarding. Retries retain the first choice, odds,
@@ -400,7 +406,7 @@ async function releaseSettlement(db, reservationId, token) {
     WHERE id=? AND status='settling' AND json_extract(payload_json, '$.claim_token')=?`).bind(reservationId, token).run();
 }
 
-export async function processPetDistrictMission(db, telegramId, regionKey, pet, runtime, awardReward, factionKey, approachKey, runtimeEventKey = null) {
+export async function processPetDistrictMission(db, telegramId, regionKey, pet, runtime, awardReward, factionKey, approachKey, runtimeEventKey = null, now = new Date()) {
   const authority = await resolveLivePetAuthority(db, telegramId, pet);
   if (!authority) return { accepted: false, reason: 'source_pet_authority_required' };
   const liveProgression = await getPetLiveProgressionState(db, telegramId, pet, runtime, authority);
@@ -409,19 +415,16 @@ export async function processPetDistrictMission(db, telegramId, regionKey, pet, 
   const region = directory.find((entry) => entry.key === String(regionKey || ''));
   if (!region) return { accepted: false, reason: 'district_invalid' };
   if (!region.playable) return { accepted: false, reason: 'district_locked', region };
-  let mission = getDistrictMission(telegramId, pet, region);
-  const explicitApproach = String(approachKey || '');
+  const saved = await readSystemEvent(db, authority, 'district', region.key, dayKey(now));
+  const period = saved?.period_key || dayKey(now);
+  const savedPayload = parse(saved?.payload_json, {});
+  let mission = savedPayload.decision?.mission || getDistrictMission(telegramId, pet, region, period);
+  const explicitApproach = String(savedPayload.approach_key || approachKey || '');
   let choice = mission.choices.find((entry) => entry.key === explicitApproach) || (!explicitApproach ? mission.choices.find((entry) => entry.key === 'tactical') : null);
   if (!choice) return { accepted: false, reason: 'district_approach_invalid', mission };
-  const period = dayKey();
-  const saved = await readSystemEvent(db, authority, 'district', region.key, period);
   if (!saved && integer(pet.energy) < 10) return { accepted: false, reason: 'pet_tired' };
-  const reservation = saved || await reserveSystemEvent(db, telegramId, 'district', region.key, period, { region_key: region.key, mission_key: mission.key, approach_key: choice.key, runtime_event_key: runtimeEventKey }, authority);
-  if (reservation.status === 'completed') return { accepted: true, duplicate: true, reason: 'district_completed_today', region };
-  const claim = await claimEnergySettlement(db, reservation, telegramId, 10, authority);
-  if (claim.state !== 'settling') return { accepted: false, reason: claim.state === 'busy' ? 'district_busy' : 'pet_tired' };
   const content = PET_REGION_CONTENT[region.key];
-  const decision = await frozenSystemDecision(db, reservation, claim.token, (payload) => {
+  const decide = (payload) => {
     choice = mission.choices.find((entry) => entry.key === (payload.approach_key || 'tactical')) || choice;
     const currentMastery = integer(parse(liveProgression?.region_mastery_json, {})[region.key]);
     const succeeded = stableLiveSystemRoll(telegramId, region.key, period, mission.key, choice.key) % 100 >= choice.risk_percent;
@@ -435,7 +438,15 @@ export async function processPetDistrictMission(db, telegramId, regionKey, pet, 
     const adjusted = applyPetFactionBonus(baseRewards, factionKey, 'runs');
     const resultCopy = bossVictory ? `${mission.opponent.name} falls. Your crew owns the next district tier.` : succeeded ? `${mission.title} cleared via ${choice.label}. The district remembers the play.` : `${choice.label} breaks under pressure. You save the route and keep partial mastery.`;
     return { mission, choice, succeeded, masteryGain, nextMastery, bossVictory, adjusted, resultCopy };
-  });
+  };
+  const reservation = saved || await reserveSystemEvent(db, telegramId, 'district', region.key, period, {
+    region_key: region.key, mission_key: mission.key, approach_key: choice.key, runtime_event_key: runtimeEventKey,
+    decision: decide({ approach_key: choice.key }),
+  }, authority);
+  if (reservation.status === 'completed') return { accepted: true, duplicate: true, reason: 'district_completed_today', region };
+  const claim = await claimEnergySettlement(db, reservation, telegramId, 10, authority);
+  if (claim.state !== 'settling') return { accepted: false, reason: claim.state === 'busy' ? 'district_busy' : 'pet_tired' };
+  const decision = await frozenSystemDecision(db, reservation, claim.token, decide);
   if (!decision) return { accepted: false, reason: 'district_busy' };
   ({ mission, choice } = decision);
   const { succeeded, masteryGain, nextMastery, bossVictory, adjusted, resultCopy } = decision;
@@ -464,13 +475,13 @@ export async function processPetDistrictMission(db, telegramId, regionKey, pet, 
   return { ...awarded, reason: bossVictory ? 'district_boss_defeated' : succeeded ? 'district_mission_complete' : 'district_mission_setback', region: { ...region, mastery_xp: nextMastery }, mission: { key: mission.key, title: mission.title, boss: mission.boss }, choice: { key: choice.key, label: choice.label }, outcome: { success: succeeded, copy: resultCopy, risk_percent: choice.risk_percent, mastery_gain: masteryGain }, result_copy: resultCopy, boss: bossVictory ? content.boss : null, faction_bonus: adjusted.bonus };
 }
 
-export async function processPetEventChain(db, telegramId, chainKey, awardReward, factionKey, choiceKey, pet = {}, runtimeEventKey = null) {
+export async function processPetEventChain(db, telegramId, chainKey, awardReward, factionKey, choiceKey, pet = {}, runtimeEventKey = null, now = new Date()) {
   const authority = await resolveLivePetAuthority(db, telegramId, pet);
   if (!authority) return { accepted: false, reason: 'source_pet_authority_required' };
   const chain = Object.hasOwn(PET_EVENT_CHAINS, String(chainKey || '')) ? PET_EVENT_CHAINS[String(chainKey)] : null;
   if (!chain) return { accepted: false, reason: 'event_chain_invalid' };
-  const period = dayKey();
-  const saved = await readSystemEvent(db, authority, 'event_chain', chainKey, period);
+  const saved = await readSystemEvent(db, authority, 'event_chain', chainKey, dayKey(now));
+  const period = saved?.period_key || dayKey(now);
   if (saved?.status === 'completed') return { accepted: true, duplicate: true, reason: 'event_chain_step_used_today' };
   const savedPayload = parse(saved?.payload_json, {});
   const row = await db.prepare('SELECT step_index, completed_cycles FROM telegram_pet_event_chain_progress WHERE pet_id=? AND telegram_id=? AND season_key=? AND chain_key=?').bind(authority.pet_id, telegramId, authority.season_key, chainKey).first();
@@ -480,11 +491,7 @@ export async function processPetEventChain(db, telegramId, chainKey, awardReward
   const authoredChoices = chain.step_content?.[scene.key]?.choices || [];
   let selectedChoice = authoredChoices.find((choice) => choice.key === explicitChoice) || (!explicitChoice ? authoredChoices[0] : null);
   if (!selectedChoice) return { accepted: false, reason: 'event_chain_choice_invalid', scene };
-  const reservation = saved || await reserveSystemEvent(db, telegramId, 'event_chain', chainKey, period, { step_index: stepIndex, step: scene.key, choice_key: selectedChoice.key, completed_cycles: integer(row?.completed_cycles), runtime_event_key: runtimeEventKey }, authority);
-  if (reservation.status === 'completed') return { accepted: true, duplicate: true, reason: 'event_chain_step_used_today' };
-  const claim = await claimNoCostSettlement(db, reservation);
-  if (claim.state !== 'settling') return { accepted: false, reason: 'event_chain_busy' };
-  const decision = await frozenSystemDecision(db, reservation, claim.token, (payload) => {
+  const decide = (payload) => {
     stepIndex = integer(payload.step_index);
     scene = getEventChainScene(chain, stepIndex);
     const choices = chain.step_content[scene.key].choices;
@@ -493,7 +500,13 @@ export async function processPetEventChain(db, telegramId, chainKey, awardReward
     const baseRewards = { pet_xp: final ? 45 : 18, moon_gold: final ? 50 : 16, style_tokens: final ? 4 : 1 };
     for (const [key, amount] of Object.entries(selectedChoice.reward_bonus || {})) baseRewards[key] = integer(baseRewards[key]) + integer(amount);
     return { stepIndex, scene, selectedChoice, final, completedCycles: integer(payload.completed_cycles ?? row?.completed_cycles) + (final ? 1 : 0), reward: applyPetFactionBonus(baseRewards, factionKey, 'events') };
-  });
+  };
+  const initial = { step_index: stepIndex, step: scene.key, choice_key: selectedChoice.key, completed_cycles: integer(row?.completed_cycles), runtime_event_key: runtimeEventKey };
+  const reservation = saved || await reserveSystemEvent(db, telegramId, 'event_chain', chainKey, period, { ...initial, decision: decide(initial) }, authority);
+  if (reservation.status === 'completed') return { accepted: true, duplicate: true, reason: 'event_chain_step_used_today' };
+  const claim = await claimNoCostSettlement(db, reservation);
+  if (claim.state !== 'settling') return { accepted: false, reason: 'event_chain_busy' };
+  const decision = await frozenSystemDecision(db, reservation, claim.token, decide);
   if (!decision) return { accepted: false, reason: 'event_chain_busy' };
   ({ stepIndex, scene, selectedChoice } = decision);
   const { final, reward, completedCycles } = decision;
@@ -507,8 +520,11 @@ export async function processPetEventChain(db, telegramId, chainKey, awardReward
     db.prepare(`INSERT INTO telegram_pet_event_chain_progress (pet_id, telegram_id, season_key, chain_key, step_index, completed_cycles)
       SELECT ?, ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling' AND json_extract(payload_json, '$.claim_token')=?)
       ON CONFLICT(pet_id, telegram_id, season_key, chain_key) DO UPDATE SET step_index=excluded.step_index, completed_cycles=excluded.completed_cycles, updated_at=CURRENT_TIMESTAMP
-      WHERE EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling' AND json_extract(payload_json, '$.claim_token')=?)`)
-      .bind(authority.pet_id, telegramId, authority.season_key, chainKey, final ? 0 : stepIndex + 1, completedCycles, reservation.id, claim.token, reservation.id, claim.token),
+      WHERE EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling' AND json_extract(payload_json, '$.claim_token')=?)
+        AND NOT EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE pet_id=? AND telegram_id=? AND season_key=?
+          AND system_key='event_chain' AND action_key=? AND period_key>? AND status='completed')`)
+      .bind(authority.pet_id, telegramId, authority.season_key, chainKey, final ? 0 : stepIndex + 1, completedCycles, reservation.id, claim.token, reservation.id, claim.token,
+        authority.pet_id, telegramId, authority.season_key, chainKey, period),
     db.prepare("UPDATE telegram_pet_system_events SET status='completed', payload_json=?, updated_at=CURRENT_TIMESTAMP WHERE id=? AND status='settling' AND json_extract(payload_json, '$.claim_token')=?").bind(completionPayload, reservation.id, claim.token),
   ]);
   if (Number(results?.[1]?.meta?.changes || 0) < 1) return { accepted: false, reason: 'event_chain_busy' };
@@ -545,18 +561,19 @@ export async function processPetSeasonalBoss(db, telegramId, pet, awardReward, m
   if (!authority) return { accepted: false, reason: 'source_pet_authority_required' };
   const boss = getActiveSeasonalBoss(now);
   const visibleLevel = getRuntimePetLevel(pet);
+  const period = `${boss.season_instance}:${dayKey(now)}`;
+  const saved = await readSystemEvent(db, authority, 'seasonal_boss', boss.key, period);
+  const charged = Boolean(parse(saved?.payload_json, {}).energy_charged);
   const existing = await db.prepare('SELECT damage, defeated_at, reward_claimed_at FROM telegram_pet_seasonal_boss_progress WHERE pet_id=? AND telegram_id=? AND pet_season_key=? AND season_key=? AND boss_key=?').bind(authority.pet_id, telegramId, authority.season_key, boss.season_instance, boss.key).first();
   const settleReward = () => claimPetSeasonalBossReward(db, telegramId, pet, awardReward, { pet_id: authority.pet_id, boss_key: boss.key, season_instance: boss.season_instance });
-  if (existing?.defeated_at) {
+  if (existing?.defeated_at && !charged) {
     if (existing.reward_claimed_at) return { accepted: false, reason: 'seasonal_boss_defeated', boss };
     const recovered = await settleReward();
     return { ...recovered, accepted: Boolean(recovered.accepted), duplicate: true, boss, progress: { damage: boss.hp, hp: boss.hp, defeated: true } };
   }
-  if (visibleLevel < boss.min_level) return { accepted: false, reason: 'seasonal_boss_locked', required_level: boss.min_level };
+  if (!charged && visibleLevel < boss.min_level) return { accepted: false, reason: 'seasonal_boss_locked', required_level: boss.min_level };
   const choice = seasonalRaidChoices(visibleLevel, boss).find((entry) => entry.key === (move === undefined ? 'strike' : move));
   if (!choice) return { accepted: false, reason: 'seasonal_boss_move_invalid' };
-  const period = `${boss.season_instance}:${dayKey(now)}`;
-  const saved = await readSystemEvent(db, authority, 'seasonal_boss', boss.key, period);
   if (!saved && integer(pet.energy) < choice.energy) return { accepted: false, reason: 'pet_tired' };
   const reservation = saved || await reserveSystemEvent(db, telegramId, 'seasonal_boss', boss.key, period,
     { attack: resolveSeasonalRaidAttack(visibleLevel, boss, choice.key, crypto.getRandomValues(new Uint32Array(1))[0] % 100) }, authority);
@@ -590,6 +607,56 @@ export async function processPetSeasonalBoss(db, telegramId, pet, awardReward, m
   const resultCopy = `${decision.attack.label}: ${damage} damage${decision.attack.success ? '.' : ' after a setback.'} ${defeated ? 'Boss defeated.' : 'Your raid progress is saved.'}`;
   return { accepted: true, reason: defeated ? 'seasonal_boss_defeated' : 'seasonal_boss_hit', damage, choice: decision.attack, result_copy: resultCopy,
     progress: { damage: total, hp: boss.hp, defeated }, boss, rewards: reward?.rewards || null, reward_pending: defeated && !reward?.accepted };
+}
+
+// Recover only persisted decisions for the authenticated owner's original pet.
+// A state read never starts an uncharged energy action or rerolls a choice.
+export async function recoverPetLiveSystemEndings(db, telegramId, awardReward, limit = 2) {
+  const payload = "CASE WHEN json_valid(e.payload_json) THEN e.payload_json ELSE '{}' END";
+  const rows = await db.prepare(`SELECT p.*, e.id AS ending_id, e.system_key, e.action_key, e.period_key
+    FROM telegram_pet_system_events e
+    JOIN telegram_pet_instances p ON p.pet_id=e.pet_id AND p.telegram_id=e.telegram_id AND p.season_key=e.season_key
+    JOIN telegram_pet_season_slots s ON s.pet_id=p.pet_id AND s.telegram_id=p.telegram_id AND s.season_key=p.season_key AND s.slot_number=p.slot_number
+    WHERE e.telegram_id=? AND e.status IN ('pending','rejected','settling')
+      AND e.updated_at < datetime('now','-2 minutes')
+      AND date(substr(e.period_key,-10),'+0 days')=substr(e.period_key,-10)
+      AND substr(e.period_key,-10)<=?
+      AND ((e.system_key='district' AND e.action_key IN (${Object.keys(PET_REGION_CONTENT).map(() => '?').join(',')})
+          AND json_extract(${payload},'$.energy_charged')=1 AND json_type(${payload},'$.decision')='object')
+        OR (e.system_key='event_chain' AND e.action_key IN (${Object.keys(PET_EVENT_CHAINS).map(() => '?').join(',')})
+          AND json_type(${payload},'$.decision')='object')
+        OR (e.system_key='seasonal_boss' AND e.action_key IN (${Object.keys(PET_SEASONAL_BOSSES).map(() => '?').join(',')})
+          AND json_extract(${payload},'$.energy_charged')=1
+          AND (json_type(${payload},'$.attack')='object' OR json_type(${payload},'$.decision.attack')='object')))
+      AND NOT EXISTS (SELECT 1 FROM telegram_pet_system_events earlier
+        WHERE earlier.pet_id=e.pet_id AND earlier.telegram_id=e.telegram_id AND earlier.season_key=e.season_key
+          AND earlier.system_key=e.system_key AND earlier.action_key=e.action_key AND earlier.period_key<e.period_key
+          AND earlier.status IN ('pending','rejected','settling'))
+    ORDER BY e.updated_at,e.period_key,e.id LIMIT ?`)
+    .bind(String(telegramId), dayKey(), ...Object.keys(PET_REGION_CONTENT), ...Object.keys(PET_EVENT_CHAINS), ...Object.keys(PET_SEASONAL_BOSSES), boundedRecoveryLimit(limit, 2)).all();
+  for (const row of rows.results || []) {
+    try {
+      const now = new Date(`${row.period_key.slice(-10)}T12:00:00.000Z`);
+      let result;
+      if (row.system_key === 'district') {
+        result = await processPetDistrictMission(db, telegramId, row.action_key, row, {}, awardReward, null, undefined, null, now);
+      } else if (row.system_key === 'event_chain') {
+        result = await processPetEventChain(db, telegramId, row.action_key, awardReward, null, undefined, row, null, now);
+      } else {
+        const boss = getActiveSeasonalBoss(now);
+        if (row.action_key !== boss.key || row.period_key !== `${boss.season_instance}:${dayKey(now)}`) throw Error('invalid_saved_raid_period');
+        result = await processPetSeasonalBoss(db, telegramId, row, awardReward, undefined, now);
+      }
+      if (!result?.accepted) throw Error(result?.reason || 'saved_ending_not_ready');
+    } catch (error) {
+      // Back off this source so a persistent failure cannot monopolize the
+      // bounded queue. Other pets/quests can still finish on this refresh.
+      await db.prepare(`UPDATE telegram_pet_system_events SET updated_at=CURRENT_TIMESTAMP
+        WHERE id=? AND telegram_id=? AND status IN ('pending','rejected','settling')`)
+        .bind(row.ending_id, String(telegramId)).run().catch(() => null);
+      console.error('moonpet_live_ending_pending', row.system_key, error?.message || String(error));
+    }
+  }
 }
 
 export async function processPetEquipmentUpgrade(db, telegramId, itemKey, requestKey) {

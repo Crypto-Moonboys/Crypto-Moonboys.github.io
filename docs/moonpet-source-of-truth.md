@@ -454,6 +454,19 @@ there is no penalty for closing the app.
 
 ### District, story and seasonal raid decisions
 
+Saved district/story decisions survive UTC resets. A new click finishes the
+old pending decision before starting today's step; it keeps the original choice
+and reward receipt. New district/story reservations freeze the decision before
+settlement begins. An older story repair cannot rewind a later completed step.
+
+State refresh recovers at most two abandoned district/story/raid settlements
+whose existing two-minute lease has elapsed. Recovery uses the original owned
+pet and season, including archived pets, and a raid's original boss rotation.
+It never charges an unstarted energy action. Already paid XP stays on its
+original receipt; a newly delivered reward enters the current daily/weekly
+settlement window and its source season. Failed repairs back off so other
+quests can proceed. Missing ownership or decision evidence is not invented.
+
 District approaches all use their advertised risk, including the default
 balanced approach used by older clients. An omitted approach does not grant
 a guaranteed clear. Every attempt costs 10 energy; setbacks retain only the
@@ -481,10 +494,10 @@ the existing boss HP into 300-damage segments; it is not a separate combat mode.
 Unsettled district, story and raid requests expose their saved choice once
 the settlement lease expires. Paid attempts can resume at zero energy; unpaid
 attempts still need their original cost. Saved raid rewards have a separate
-claim control, including older rotations for the same pet and pet season.
+claim control, including older rotations and archived source pets.
 Claiming does not require a new attack, energy or the current boss level.
 Claims verify the stored defeat and original ownership and retain the original
-reward idempotency key. Switching to another pet cannot claim that reward.
+reward idempotency key. Switching to another pet cannot redirect that reward.
 
 ---
 
