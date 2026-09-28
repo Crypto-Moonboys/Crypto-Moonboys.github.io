@@ -1131,7 +1131,7 @@ assertOrder(
   'adventures must check duplicate event keys before the cooldown lookup'
 );
 
-const runStep = asyncBlock('processPetRunStep');
+const runStep = asyncBlock('processPetRunStepResult');
 assert.ok(runStep.includes('buildPetRunStepEventKey'), 'run steps must use stable callback event keys');
 assert.ok(runStep.includes('telegram_pet_run_steps'), 'run steps must persist step records');
 assert.ok(runStep.includes('telegram_pet_runs'), 'run steps must update persistent run state');

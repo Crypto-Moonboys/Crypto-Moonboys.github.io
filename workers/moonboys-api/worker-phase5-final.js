@@ -1,5 +1,6 @@
 import baseWorker from './worker.js';
 import { applyPetRuntimeCommandAward } from './worker.js';
+import { recoverPetRuntimeAwards } from './pets/runtime-recovery.js';
 import { handleDeadRunRequest, cleanupExpiredSessions } from './routes/dead-run.js';
 
 const PROGRESSION_API_ACTIONS = Object.freeze({
@@ -13,6 +14,7 @@ const PROGRESSION_API_ACTIONS = Object.freeze({
   cuddles: 'cuddles',
   work: 'job',
   daily_chest: 'daily_chest',
+  adventure: 'explore',
   run_step: 'run_step',
   run_extract: 'run_extract',
 });
@@ -193,21 +195,17 @@ async function handlePetApiPostProcessing(env, body, response) {
     return;
   }
 
-  let runtimeEventKey = String(body.event_key || '');
-  if (payload.settlement_recovered) {
-    if (runtimeAction !== 'run_step' || !payload.run?.run_id || payload.daily_run) return;
-    // A recovered terminal payout can include a previously uncredited final
-    // Standard step. Use the saved API step's key, not the retry request key.
-    const step = await env.DB.prepare(`SELECT s.event_key FROM telegram_pet_run_steps s
-      JOIN telegram_pet_runs r ON r.run_id=s.run_id AND r.telegram_id=s.telegram_id AND r.pet_id=s.pet_id
-      WHERE r.telegram_id=? AND r.run_id=? AND r.status='completed' AND r.depth>=r.max_depth
-        AND s.step_index=r.depth AND s.success=1
-        AND json_extract(CASE WHEN json_valid(s.metadata) THEN s.metadata ELSE '{}' END, '$.source')='telegram_pets_api'
-        AND NOT EXISTS (SELECT 1 FROM telegram_pet_daily_runs d WHERE d.run_id=r.run_id)
-      LIMIT 1`).bind(telegramId, payload.run.run_id).first().catch(() => null);
-    if (!step?.event_key) return;
-    runtimeEventKey = step.event_key;
+  if (runtimeAction === 'explore') {
+    await recoverPetRuntimeAwards(env.DB, telegramId, applyPetRuntimeCommandAward, { action: 'explore' });
+    return;
   }
+  if (runtimeAction === 'run_step') {
+    if (payload.run?.run_id) await recoverPetRuntimeAwards(env.DB, telegramId, applyPetRuntimeCommandAward,
+      { run_id: payload.run.run_id, action: 'run_step', event_key: String(body.event_key || '') });
+    return;
+  }
+  if (payload.settlement_recovered || payload.daily_run) return;
+  const runtimeEventKey = String(body.event_key || '');
   await applyRuntimeAward(
     env,
     telegramId,
@@ -235,6 +233,7 @@ function telegramRunCallbackContext(update) {
     const primaryEventKey = stableEventKey(['pet_run_step', telegramId, runId, stepIndex, choiceKey]);
     return {
       telegramId,
+      runId,
       primaryEventKey,
       runtimeEventKey: `runtime:run-step:${primaryEventKey}`,
       runtimeAction: 'run_step',
@@ -245,6 +244,7 @@ function telegramRunCallbackContext(update) {
     const primaryEventKey = stableEventKey(['pet_run_extract', telegramId, runId]);
     return {
       telegramId,
+      runId,
       primaryEventKey,
       runtimeEventKey: `runtime:run-extract:${primaryEventKey}`,
       runtimeAction: 'run_extract',
@@ -259,6 +259,11 @@ async function repairTelegramRunRuntimeAward(env, update) {
   const context = telegramRunCallbackContext(update);
   if (!context) return;
 
+  if (context.runtimeAction === 'run_step') {
+    await recoverPetRuntimeAwards(env.DB, context.telegramId, applyPetRuntimeCommandAward,
+      { run_id: context.runId, action: 'run_step', event_key: context.primaryEventKey });
+    return;
+  }
   await applyRuntimeAward(env, context.telegramId, context.runtimeEventKey, context.runtimeAction, context.primaryEventKey);
 }
 

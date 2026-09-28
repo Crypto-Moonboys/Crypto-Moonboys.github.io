@@ -1390,6 +1390,9 @@ for (const surface of ['mini', 'api', 'refresh']) {
       assert.deepEqual(endingRuntimeState(f), before, `${surface} settlement recovery must not award extraction progression`);
       assert.equal(f.adapter.database.prepare("SELECT COUNT(*) AS n FROM telegram_pet_reward_claims WHERE source='roguelite_boss' AND status='awarded'").get().n, 1);
     } else {
+      // Ordinary play resolves a new room and saves its canonical award key.
+      // The unmarked legacy room above is reserved for settlement-only cases.
+      if (mode === 'step') f.adapter.database.prepare('DELETE FROM telegram_pet_run_rooms WHERE room_id=?').run(f.room.room_id);
       if (mode === 'extract') {
         f.adapter.database.prepare('UPDATE telegram_pet_runs SET current_room=1,depth=1 WHERE run_id=?').run(f.run.run_id);
         f.adapter.database.prepare('DELETE FROM telegram_pet_run_rooms WHERE run_id=?').run(f.run.run_id);
@@ -1443,7 +1446,9 @@ assert.equal(interruptedEnding.adapter.database.prepare('SELECT COUNT(*) AS coun
   assert.deepEqual(f.adapter.database.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner), wallet);
   const records = f.adapter.database.prepare('SELECT runs_recorded,extraction_successes,boss_completions FROM telegram_pet_daily_leaderboard_records WHERE telegram_id=?').get(f.owner);
   assert.deepEqual({ ...records }, { runs_recorded: 1, extraction_successes: 1, boss_completions: 0 });
-  assert.equal(f.adapter.database.prepare('SELECT COUNT(*) AS n FROM telegram_pet_specialist_events WHERE telegram_id=?').get(f.owner).n, 0);
+  assert.equal(f.adapter.database.prepare('SELECT COUNT(*) AS n FROM telegram_pet_specialist_events WHERE telegram_id=?').get(f.owner).n, 1);
+  assert.equal(f.adapter.database.prepare('SELECT adventure_xp FROM telegram_pet_specialist_progression WHERE pet_id=?').get(run.pet_id).adventure_xp, 24,
+    'refresh repairs the saved extraction award once after terminal synchronization failed');
 }
 
 // Exercise both sides of each non-atomic boundary, then recover through the
