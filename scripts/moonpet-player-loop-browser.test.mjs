@@ -272,6 +272,21 @@ try {
       const jumps = await page.locator('#screen [data-jump]').evaluateAll((buttons) => buttons.map((b) => ({ screen: b.dataset.jump, focus: b.dataset.focus })));
       for (const jump of jumps) assert.ok(['home', 'missions', 'explore', 'work', 'economy', 'profile'].includes(jump.screen));
     }
+    const moreRecommendations = page.locator('[data-panel="recommended"] .more-recommendations');
+    assert.equal(await page.locator('[data-panel="recommended"] > .panel-body > .button-grid > button').count(), 3);
+    assert.equal(await moreRecommendations.evaluate(node => node.open), false, 'extra recommendations start collapsed');
+    const beforeMoreNavigation = gameplayCount();
+    await moreRecommendations.locator(':scope > summary').click();
+    const oldMore = await moreRecommendations.elementHandle();
+    await page.locator('[data-utility="sync"]').click();
+    await page.waitForFunction(node => !node.isConnected, oldMore);
+    assert.equal(await moreRecommendations.evaluate(node => node.open), true, 'Refresh preserves the extra-options dropdown');
+    const extraRoute = moreRecommendations.locator('[data-jump]').first();
+    const extraTarget = await extraRoute.getAttribute('data-focus');
+    await extraRoute.click();
+    await page.waitForFunction(focus => document.querySelector('[data-panel="' + focus + '"]').open, extraTarget);
+    assert.equal(gameplayCount(), beforeMoreNavigation, 'additional recommendations only navigate');
+    await page.locator('[data-screen="home"]').click();
     // Actual rotating bounties navigate without consuming actions or rewards.
     const bountyState = await hooks.buildPetMiniAppState(db, currentUser, token);
     const bountyJumps = new Map(bountyState.guidance.economy.bounties.filter((b) => !b.complete).flatMap(bountyRoutes).map((route) => [route.focus, route]));

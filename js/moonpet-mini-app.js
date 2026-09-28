@@ -1747,9 +1747,12 @@
     if (!window.MoonpetPlayOptions || !window.MoonpetPlayOptions.recommendations) return '';
     var choices = window.MoonpetPlayOptions.recommendations(state, { crafting_goal: selectedCraftingGoal() });
     if (!choices.length) return '';
-    return panel('RECOMMENDED NEXT', '<div class="button-grid one">' + choices.slice(0, 3).map(function (choice, index) {
+    var controls = choices.map(function (choice, index) {
       return routeButton((index + 1) + '. ' + choice.title, choice, choice.detail);
-    }).join('') + '</div>', 'recommended', 'Next: ' + choices[0].title);
+    });
+    var moreKey = [state && state.pet && state.pet.pet_id || 'account', activeScreen, 'recommended-more'].join(':');
+    var more = controls.length > 3 ? '<details class="more-recommendations" data-panel-key="' + escapeHtml(moreKey) + '"' + (panelOpenState[moreKey] ? ' open' : '') + '><summary class="panel-summary"><span class="panel-icon" aria-hidden="true">＋</span><span class="panel-caption"><span class="panel-title">MORE RECOMMENDED OPTIONS // ' + (controls.length - 3) + '</span><span class="panel-description">More routes, optional upgrades and goals to review.</span></span><span class="panel-chevron" aria-hidden="true">⌄</span></summary><div class="button-grid one">' + controls.slice(3).join('') + '</div></details>' : '';
+    return panel('RECOMMENDED NEXT', '<div class="button-grid one">' + controls.slice(0, 3).join('') + '</div>' + more, 'recommended', 'Next: ' + choices[0].title);
   }
 
   function renderPlayNow() {

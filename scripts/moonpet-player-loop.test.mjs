@@ -41,6 +41,19 @@ assert.ok(recommended.some(x => x.key === 'daily_journey:daily_boss' && x.title.
 recommended = options.recommendations({ adopted: true, lifecycle: { phase: 'young' }, guidance: { evolution: { ready: true, name: 'Next form' } } });
 assert.ok(recommended.some(x => x.key === 'evolution_ready' && x.focus === 'evolution'));
 
+const shoppingState = { adopted: true, lifecycle: { phase: 'young' },
+  inventory: [{ quantity: 1, kind: 'usable_item' }],
+  guidance: { shop_items: [{ unlocked: true, affordable: true }], economy: { market_offers: [{ unlocked: true, affordable: true, capacity: { available: true } }] } },
+  live_systems: { cosmetics: [{ affordable: true, unlocked: false }] } };
+for (const key of ['inventory', 'market', 'shop', 'cosmetic']) assert.ok(options.recommendations(shoppingState).some(x => x.key === key), key);
+const unavailableShopping = structuredClone(shoppingState);
+unavailableShopping.inventory[0].quantity = 0;
+unavailableShopping.guidance.shop_items[0].equipped = true;
+unavailableShopping.guidance.economy.market_offers[0].capacity.available = false;
+unavailableShopping.live_systems.cosmetics[0].unlocked = true;
+assert.ok(!options.recommendations(unavailableShopping).some(x => ['inventory', 'market', 'shop', 'cosmetic'].includes(x.key)));
+assert.ok(!options.recommendations({ ...shoppingState, lifecycle: { phase: 'egg' } }).some(x => ['inventory', 'market', 'shop', 'cosmetic'].includes(x.key)));
+
 for (const encounter of [
   ...['moon_alley', 'graffiti_vault', 'nebula_market'].map(hooks.resolvePetAdventureEncounter),
   ...['lost_delivery_drone', 'neon_storm', 'underground_cipher'].map(hooks.resolvePetRandomEncounter),

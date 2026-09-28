@@ -328,6 +328,20 @@
           add('craft', 'REVIEW READY RECIPES', 'You can craft an item. Choose a recipe and check its material cost.', route({ key: 'craft' }), 74);
         }
       }
+      if ((s.inventory || []).some(function (item) { return Number(item.count == null ? item.quantity : item.count) > 0 && (item.usable || item.kind === 'usable_item'); })) {
+        add('inventory', 'REVIEW USABLE ITEMS', 'You have items in your bag. Check each effect before choosing whether to use one.', route({ key: 'inventory' }), 72);
+      }
+      if ((g.economy && g.economy.market_offers || []).some(function (offer) {
+        return offer.unlocked && offer.affordable && !offer.purchased && offer.available !== false && (!offer.capacity || offer.capacity.available);
+      })) {
+        add('market', 'COMPARE AVAILABLE MARKET BUNDLES', 'Optional purchase with game currency. Compare costs, contents and storage before buying.', route({ key: 'market' }), 78);
+      }
+      if ((g.shop_items || []).some(function (item) { return item.unlocked && item.affordable && !item.equipped; })) {
+        add('shop', 'COMPARE AFFORDABLE SHOP ITEMS', 'Optional gear choices are within your budget. Review bonuses and costs before buying.', route({ key: 'shop' }), 79);
+      }
+      if ((s.live_systems && s.live_systems.cosmetics || []).some(function (item) { return item.affordable && (!item.unlocked || item.repeatable); })) {
+        add('cosmetic', 'EXPLORE AVAILABLE STYLES', 'Optional cosmetic collection. Review the game-currency cost before choosing a style.', route({ key: 'cosmetic' }), 80);
+      }
       // Preserve server guidance only where it agrees with a currently available route.
       // Browsing a locked panel is useful, but must not become a "ready" recommendation.
       var next = s.next;
