@@ -1188,7 +1188,7 @@ assert.match(client, /var waitingTitle = weeklyState === 'COMING_SOON'[\s\S]*'WE
 assert.match(client, /var waitingCopy = weeklyState === 'COMING_SOON'[\s\S]*Weekly Journey is planned expansion\.[\s\S]*Weekly Journey authority is syncing\./,
   'Weekly Journey panel body copy must keep COMING_SOON planned copy separate from syncing authority copy');
 assert.match(client, /WEEKLY CREST ALREADY SETTLED|DUPLICATE WEEKLY CREST BLOCKED|WEEKLY CREST READY FOR SERVER SETTLEMENT/, 'Weekly Journey live UI must surface Crest settlement states');
-assert.doesNotMatch(client, /Growth Mark[^'\n]*(?:claim|claimable)|Weekly Crest[^'\n]*(?:claim|claimable)/i,
+assert.doesNotMatch(client, /Growth Mark[^.!?'\n]*(?:claim|claimable)|Weekly Crest[^.!?'\n]*(?:claim|claimable)/i,
   'Journey reward copy must avoid claim language when no claim action exists');
 assert.doesNotMatch(client, /Gameplay integration not active yet\./, 'Weekly Journey must no longer use inactive integration copy');
 assert.match(client, /Personality develops through play/, 'traits-still-forming fallback must use current-beta-safe copy');
@@ -1425,11 +1425,11 @@ statusFrames.shift()();
 assert.equal(testStatusOutput.dataset.tone, 'danger');
 assert.equal(testStatusClasses.has('is-scrolling'), true, 'overflowing updates must activate the scrolling text track');
 assert.match(testStatusProperties['--status-scroll-duration'], /s$/, 'overflowing updates must receive a readable duration');
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260928-compact-shell-v1/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260928-canvas-tools-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20260926-front-actions-v1/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20260926-front-actions-v1/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260928-compact-shell-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260928-canvas-tools-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1452,6 +1452,9 @@ for (const [label, pattern] of [
   ['Arena', /Arena/],
   ['Kaiju', /Kaiju/],
   ['Progression', /evolution and season rewards|progression/i],
+  ['Current navigation', /HOME[\s\S]*MISSIONS[\s\S]*EXPLORE[\s\S]*WORK[\s\S]*ECONOMY[\s\S]*PROFILE/],
+  ['Season Finale', /SEASON FINALE/],
+  ['Growth Mark and Weekly Crest', /Growth Mark[\s\S]*Weekly Crest/],
 ]) {
   assert.match(lockedGuideMarkup, pattern, `guideMarkup must include current-build vocabulary for ${label}`);
 }
@@ -1464,19 +1467,77 @@ for (const futureSystem of ['Advanced Traits', 'Breeding', 'Lineage', 'Fusion', 
   assert.ok(!guideOutsideRoadmap.includes(futureSystem), `guideMarkup must only mention ${futureSystem} in the coming-soon roadmap step`);
 }
 assert.match(client, /data-utility="leaderboard">OPEN FULL LEADERBOARD/);
-assert.match(client, /data-utility="sync">REFRESH/);
-assert.match(client, /data-utility="audio" aria-pressed=/);
-assert.match(client, /data-utility="audio"[\s\S]*data-utility="radio"/, 'radio control must sit next to audio');
-assert.match(client, /data-utility="radio" aria-pressed=/);
-assert.match(client, /import\('\/js\/arcade\/core\/radio\.js\?v=20260814-moonpet-aaa-pass'\)/);
-assert.match(client, /new Audio\(radio\.ARCADE_RADIO_URL\)/);
-assert.match(client, /arcade_radio_on/);
+assert.match(html, /id="canvas-tools"[\s\S]*data-utility="audio"[\s\S]*data-utility="radio"[\s\S]*data-utility="sync"/);
+assert.match(html, /data-utility="sync" aria-label="Refresh live save"/);
+assert.match(client, /canvasTools\.addEventListener\('click'/);
 assert.match(client, /else if \(utility\.dataset\.utility === 'radio'\) toggleRadio\(\)/);
 assert.match(client, /var radioRequestGeneration = 0/);
-assert.match(client, /radioRequestedOn = Boolean\(on\)/);
-assert.match(client, /setRadioEnabled\(!radioRequestedOn, true\)/);
 assert.match(client, /var requestGeneration = \+\+radioRequestGeneration/);
-assert.match(client, /requestGeneration !== radioRequestGeneration[\s\S]*await player\.play\(\)[\s\S]*requestGeneration !== radioRequestGeneration/);
+assert.doesNotMatch(client, /loadRadioPlayer|radioLoadPromise/, 'playback must not wait for an import before consuming a mobile tap');
+const canonicalRadioUrl = arcadeRadio.match(/ARCADE_RADIO_URL = '([^']+)'/)[1];
+assert.ok(html.includes(`id="moonpet-radio" preload="none" src="${canonicalRadioUrl}"`), 'Moonpet and the Arcade must use the same stream');
+const radioPlaybackSource = extractTestExport(client, 'radioPlayback');
+function radioHarness() {
+  const attempts = [], notices = [];
+  const player = { error: null, pauseCount: 0, loads: 0, volume: 0,
+    play() { return new Promise((resolve, reject) => attempts.push({ resolve, reject })); },
+    pause() { this.pauseCount++; }, load() { this.loads++; this.error = null; } };
+  const api = new Function('radioPlayer', 'notices', `
+    var radioRequestedOn = false, radioEnabled = false, radioRequestGeneration = 0, saved = false;
+    function saveRadioPreference(on) { saved = on; }
+    function syncMoonpetScore() {}
+    function renderCanvasTools() {}
+    function haptic() {}
+    function tell(message) { notices.push(message); }
+    ${radioPlaybackSource}
+    return { set: setRadioEnabled, toggle: toggleRadio,
+      snapshot: () => ({ requested: radioRequestedOn, enabled: radioEnabled, saved }) };
+  `)(player, notices);
+  return { ...api, player, attempts, notices };
+}
+const directRadio = radioHarness();
+const firstRadioTap = directRadio.toggle();
+assert.equal(directRadio.attempts.length, 1, 'the first mobile tap must call play synchronously before returning to the event loop');
+directRadio.attempts[0].resolve();
+assert.equal(await firstRadioTap, true);
+assert.deepEqual(directRadio.snapshot(), { requested: true, enabled: true, saved: true });
+await directRadio.toggle();
+assert.equal(directRadio.player.pauseCount, 1);
+assert.deepEqual(directRadio.snapshot(), { requested: false, enabled: false, saved: false });
+
+const racingRadio = radioHarness();
+const abandonedStart = racingRadio.toggle();
+await racingRadio.toggle();
+const newestStart = racingRadio.toggle();
+racingRadio.attempts[1].resolve(); await newestStart;
+racingRadio.attempts[0].reject(Object.assign(new Error('old start aborted'), { name: 'AbortError' }));
+await abandonedStart;
+assert.deepEqual(racingRadio.snapshot(), { requested: true, enabled: true, saved: true }, 'a late rejection cannot turn off a newer successful request');
+assert.ok(!racingRadio.notices.some(message => /LOST|NEEDS A TAP/.test(message)));
+
+const stoppedRadio = radioHarness();
+const stoppedStart = stoppedRadio.toggle();
+await stoppedRadio.toggle();
+stoppedRadio.attempts[0].resolve(); await stoppedStart;
+assert.equal(stoppedRadio.snapshot().enabled, false, 'a late success must not undo Stop');
+assert.equal(stoppedRadio.player.pauseCount, 2, 'late playback after Stop must be paused again');
+
+const retryRadio = radioHarness();
+const blockedAutoStart = retryRadio.set(true, false);
+retryRadio.attempts[0].reject(Object.assign(new Error('gesture required'), { name: 'NotAllowedError' }));
+await blockedAutoStart;
+assert.equal(retryRadio.notices.length, 0, 'restored preferences must not announce blocked autoplay');
+retryRadio.player.error = { code: 2 };
+const retryTap = retryRadio.toggle();
+assert.equal(retryRadio.player.loads, 1, 'a broken media resource must be reloaded on retry');
+assert.equal(retryRadio.attempts.length, 2, 'retry must call play within the new tap too');
+retryRadio.attempts[1].resolve(); await retryTap;
+assert.equal(retryRadio.snapshot().enabled, true);
+await retryRadio.set(false);
+const networkFailure = retryRadio.toggle();
+retryRadio.attempts[2].reject(new Error('network failed')); await networkFailure;
+assert.match(retryRadio.notices.at(-1), /CONNECTION LOST/, 'network failures must not be misreported as permission blocks');
+assert.equal(retryRadio.snapshot().requested, false, 'the next tap after a failure must retry, not toggle an invisible ON state off');
 assert.match(client, /window\.addEventListener\('pagehide'[\s\S]*radioRequestGeneration \+= 1;[\s\S]*radioPlayer\.pause\(\)/);
 assert.match(client, /window\.addEventListener\('pageshow'[\s\S]*event\.persisted && radioRequestedOn[\s\S]*setRadioEnabled\(true, false\)/);
 assert.doesNotMatch(client, /radioPlayer\.src = ''/, 'BFCache teardown must preserve the stream source');
@@ -1485,7 +1546,7 @@ assert.match(arcadeRadio, /export const ARCADE_RADIO_STORAGE_KEY = 'arcade_radio
 assert.match(client, /function playAudioCue\(kind\)/);
 assert.match(client, /window\.AudioContext \|\| window\.webkitAudioContext/);
 assert.match(client, /moonpet-audio/);
-assert.match(client, /else if \(utility\.dataset\.utility === 'audio'\) toggleAudio\(\)/);
+assert.match(client, /if \(utility\.dataset\.utility === 'audio'\) toggleAudio\(\)/);
 assert.match(css, /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/, 'mobile utility controls must wrap into readable rows');
 assert.match(css, /grid-template-columns: repeat\(6, minmax\(0, 1fr\)\)/, 'wide utility controls must fit the live wearable entry');
 assert.match(client, /RETRY CONNECTION/);
@@ -1497,7 +1558,7 @@ assert.match(client, /data-panel-jump/);
 assert.match(client, /data-pet-greet>SAY HELLO/);
 assert.match(client, /\/telegram-pets\/app\/leaderboard/);
 assert.match(client, /requestedFocus = launchParameter\('focus'\)/);
-assert.match(client, /stickyInset = rail \? Math\.max\(0, rail\.getBoundingClientRect\(\)\.bottom - screenRect\.top\)/);
+assert.doesNotMatch(client, /stickyInset|utility-rail/, 'canvas controls must not create a sticky offset inside the scrolling panels');
 assert.match(client, /generation !== utilityRequestGeneration \|\| utilityLayer\.hidden \|\| activeUtility !== 'leaderboard'/);
 assert.match(client, /event\.key !== 'Tab'/);
 assert.match(client, /utilityLayer\.contains\(current\)/);
@@ -1524,7 +1585,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260928-compact-shell-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260928-canvas-tools-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');

@@ -76,10 +76,9 @@
   var audioEnabled = readAudioPreference();
   var scoreTimer = 0;
   var scoreStep = 0;
-  var radioPlayer = null;
-  var radioLoadPromise = null;
-  var radioEnabled = readRadioPreference();
-  var radioRequestedOn = radioEnabled;
+  var radioPlayer = document.getElementById('moonpet-radio');
+  var radioEnabled = false;
+  var radioRequestedOn = readRadioPreference();
   var radioRequestGeneration = 0;
   var deviceMemory = Number(navigator.deviceMemory || 0);
   var hardwareConcurrency = Number(navigator.hardwareConcurrency || 0);
@@ -97,6 +96,7 @@
   var canvas = document.getElementById('moonpet-canvas');
   var ctx = canvas.getContext('2d', { alpha: false });
   var hud = document.getElementById('hud');
+  var canvasTools = document.getElementById('canvas-tools');
   var screen = document.getElementById('screen');
   var nav = document.getElementById('nav');
   var output = document.getElementById('terminal-output');
@@ -375,20 +375,16 @@
     try { window.localStorage.setItem('arcade_radio_on', on ? 'true' : 'false'); } catch (_) {}
   }
 
-  function loadRadioPlayer() {
-    if (radioPlayer) return Promise.resolve(radioPlayer);
-    if (!radioLoadPromise) {
-      radioLoadPromise = import('/js/arcade/core/radio.js?v=20260814-moonpet-aaa-pass').then(function (radio) {
-        radioPlayer = new Audio(radio.ARCADE_RADIO_URL);
-        radioPlayer.preload = 'none';
-        radioPlayer.volume = 0.5;
-        return radioPlayer;
-      }).catch(function (error) {
-        radioLoadPromise = null;
-        throw error;
-      });
-    }
-    return radioLoadPromise;
+  // TEST-EXPORT: radioPlayback:start
+  function radioPlaybackFailed(error, announce) {
+    radioRequestedOn = false;
+    radioEnabled = false;
+    saveRadioPreference(false);
+    syncMoonpetScore();
+    renderCanvasTools();
+    if (announce !== false) tell(error && error.name === 'NotAllowedError'
+      ? 'RADIO NEEDS A TAP. TAP THE RADIO ICON TO PLAY.'
+      : 'RADIO CONNECTION LOST. TAP THE RADIO ICON TO RECONNECT.', 'danger');
   }
 
   async function setRadioEnabled(on, announce) {
@@ -399,15 +395,21 @@
       radioEnabled = false;
       saveRadioPreference(false);
       syncMoonpetScore();
-      if (state) render();
+      renderCanvasTools();
       if (announce !== false) tell('GRAFFPUNKS RADIO OFFLINE.');
       return false;
     }
-    if (state) render();
     try {
-      var player = await loadRadioPlayer();
-      if (requestGeneration !== radioRequestGeneration || !radioRequestedOn) return false;
-      await player.play();
+      radioEnabled = false;
+      var player = radioPlayer;
+      player.volume = 0.5;
+      // Reset a failed stream inside this tap, then call play before any await.
+      // iOS/WebViews can lose media permission across an async module load.
+      if (player.error) player.load();
+      var playback = player.play();
+      syncMoonpetScore();
+      renderCanvasTools();
+      await playback;
       if (requestGeneration !== radioRequestGeneration) {
         if (!radioRequestedOn) player.pause();
         return false;
@@ -415,24 +417,30 @@
       radioEnabled = true;
       saveRadioPreference(true);
       syncMoonpetScore();
-      if (state) render();
+      renderCanvasTools();
       if (announce !== false) tell('GRAFFPUNKS RADIO LIVE.');
       return true;
-    } catch (_) {
-      radioRequestedOn = false;
-      radioEnabled = false;
-      saveRadioPreference(false);
-      syncMoonpetScore();
-      if (state) render();
-      if (announce !== false) tell('RADIO STREAM BLOCKED. TAP RADIO TO RETRY.', 'danger');
+    } catch (error) {
+      if (requestGeneration !== radioRequestGeneration) return false;
+      radioPlaybackFailed(error, announce);
       return false;
     }
   }
 
   function toggleRadio() {
+    var playback = setRadioEnabled(!radioRequestedOn, true);
     haptic('light');
-    return setRadioEnabled(!radioRequestedOn, true);
+    return playback;
   }
+  // TEST-EXPORT: radioPlayback:end
+
+  radioPlayer.addEventListener('error', function () {
+    // A pending play promise handles its own failure. This covers later dropouts.
+    if (radioEnabled && radioRequestedOn && radioPlayer.error) {
+      radioRequestGeneration += 1;
+      radioPlaybackFailed(radioPlayer.error, true);
+    }
+  });
 
   function ensureAudio() {
     if (!audioEnabled) return null;
@@ -509,7 +517,7 @@
     try { window.localStorage.setItem('moonpet-audio', audioEnabled ? 'on' : 'off'); } catch (_) {}
     if (audioEnabled) playAudioCue('success');
     syncMoonpetScore();
-    render();
+    renderCanvasTools();
     tell('AUDIO ' + (audioEnabled ? 'ONLINE.' : 'MUTED.'));
   }
 
@@ -756,15 +764,20 @@
     missions: [['contracts', 'CONTRACTS'], ['daily-journey', 'DAILY'], ['weekly-journey', 'WEEKLY'], ['daily-objectives', 'OBJECTIVES'], ['missions', 'MISSIONS'], ['achievements', 'ACHIEVEMENTS']],
     explore: [['play-now', 'PLAY NOW'], ['practice', 'PRACTICE'], ['districts', 'DISTRICTS'], ['moon-run', 'RUN'], ['adventure', 'ADVENTURE'], ['street-event', 'EVENT'], ['weekly-boss', 'BOSS'], ['story-chains', 'STORIES'], ['seasonal-boss', 'RAID'], ['arena', 'ARENA'], ['kaiju', 'KAIJU']],
     economy: [['crafting', 'CRAFT'], ['equipment', 'GEAR'], ['materials', 'MATERIALS'], ['bounties', 'BOUNTIES'], ['expedition', 'EXPEDITION'], ['market', 'MARKET'], ['shop', 'SHOP'], ['inventory', 'BAG'], ['trade', 'TRADE']],
-    profile: [['rare-morph', 'RARE'], ['memories', 'MEMORY'], ['callsign', 'NAME'], ['evolution', 'EVOLVE'], ['season', 'SEASON'], ['leaderboard', 'RANKS']],
+    profile: [['how-to-play', 'HELP'], ['rare-morph', 'RARE'], ['memories', 'MEMORY'], ['callsign', 'NAME'], ['evolution', 'EVOLVE'], ['season', 'SEASON'], ['leaderboard', 'RANKS']],
   };
 
-  function utilityRail() {
-    return '<nav class="utility-rail" aria-label="Game utilities">' +
-      '<button type="button" class="utility-button" data-utility="audio" aria-pressed="' + (audioEnabled ? 'true' : 'false') + '">AUDIO ' + (audioEnabled ? 'ON' : 'OFF') + '</button>' +
-      '<button type="button" class="utility-button" data-utility="radio" aria-pressed="' + (radioRequestedOn ? 'true' : 'false') + '">RADIO ' + (radioRequestedOn ? 'ON' : 'OFF') + '</button>' +
-      '<button type="button" class="utility-button" data-utility="sync">REFRESH</button>' +
-      '</nav>';
+  function renderCanvasTools() {
+    canvasTools.hidden = !state;
+    var audioButton = canvasTools.querySelector('[data-utility="audio"]');
+    var radioButton = canvasTools.querySelector('[data-utility="radio"]');
+    audioButton.setAttribute('aria-pressed', String(audioEnabled));
+    audioButton.setAttribute('aria-label', audioEnabled ? 'Mute game audio' : 'Enable game audio');
+    audioButton.title = audioButton.getAttribute('aria-label');
+    radioButton.setAttribute('aria-pressed', String(radioRequestedOn));
+    radioButton.setAttribute('aria-busy', String(radioRequestedOn && !radioEnabled));
+    radioButton.setAttribute('aria-label', radioRequestedOn ? 'Stop GraffPUNKS Radio' : 'Play GraffPUNKS Radio');
+    radioButton.title = radioButton.getAttribute('aria-label');
   }
 
   function sectionJumpBar(screenKey) {
@@ -801,14 +814,17 @@
       ? 'Arena and Kaiju are part of the current build. Arena still needs a level 10 active Moonpet.'
       : 'Arena and Kaiju are current-build systems. Kaiju requires a hatched active Moonpet, and Arena requires a hatched active Moonpet plus level 10.';
     return '<div class="guide-step"><strong>1 // WAKE THE SECRET BOT</strong>Initialise EGGYONE, then use at least three kinds of care. Its assigned identity remains UNKNOWN through Stages 0, 1 and 2.</div>' +
-      '<div class="guide-step"><strong>2 // PLAY THE CURRENT BUILD</strong>PET handles care, TASKS tracks Daily Journey and Weekly Journey, WORK covers jobs and timers, and RUN handles bosses plus Moon Run.</div>' +
-      '<div class="guide-step"><strong>3 // KEEP NEEDS STABLE</strong>Feed, play, clean and rest. Training, care and daily routines build Pet XP, specialist XP, personality, aptitudes and equipment mastery.</div>' +
-      '<div class="guide-step"><strong>4 // FOLLOW THE ROUTE</strong>The PET screen recommends the best next move. Daily Journey, Weekly Journey, missions and achievements are current gameplay priorities.</div>' +
-      '<div class="guide-step"><strong>5 // BUILD YOUR LOADOUT</strong>GEAR contains equipment, materials, bounties, market offers, inventory and upgrades. Districts show an objective, opponent and route before you commit. ' + combatGuideCopy + ' Moon Run reaches 100 rooms—extract to bank unbanked rewards.</div>' +
-      '<div class="guide-step"><strong>6 // IDENTITY AND ROADMAP</strong>The canonical identity name is revealed when server-authoritative Stage 3 begins. CORE tracks evolution and season rewards. Advanced Traits, Breeding, Lineage, Fusion, Sanctuary and Prestige remain coming soon.</div>' +
+      '<div class="guide-step"><strong>2 // PLAY THE CURRENT BUILD</strong>HOME handles care and Play Now. MISSIONS holds contracts, Daily Journey, Weekly Journey and the Season Finale. EXPLORE contains runs, districts and combat. WORK handles jobs and timers; ECONOMY holds gear and crafting; PROFILE holds identity, season rewards, ranks and this guide.</div>' +
+      '<div class="guide-step"><strong>3 // KEEP NEEDS STABLE</strong>Feed, play, clean and rest. Check energy, hunger and cooldowns before training or starting a demanding route. A timed activity can lock some actions until you claim or cancel it. Care and daily routines build Pet XP, specialist XP, personality, aptitudes and equipment mastery. Use Play Now to find an available route while care cools down.</div>' +
+      '<div class="guide-step"><strong>4 // FOLLOW THE ROUTE</strong>HOME recommends the next move. In MISSIONS, complete the official daily objectives to earn a Growth Mark at the displayed target. Finish every Weekly Journey objective to earn a Weekly Crest. Keep claiming completed missions, achievements and the Daily Cache; the all-missions daily bonus is a separate claim. Daily resets use UTC. Each panel shows its own reset and requirements.</div>' +
+      '<div class="guide-step"><strong>5 // BUILD YOUR LOADOUT</strong>ECONOMY contains equipment, materials, bounties, market offers, inventory and upgrades. Equip an item to use its bonus; eligible actions build mastery. Set a crafting goal, follow its material routes and craft or use the result. Check storage space before buying a bundle. Districts show an objective, opponent and route before you commit. ' + combatGuideCopy + ' Moon Run reaches 100 rooms—extract to bank unbanked rewards.</div>' +
+      '<div class="guide-step"><strong>6 // IDENTITY AND ROADMAP</strong>The canonical identity name is revealed when server-authoritative Stage 3 begins. PROFILE tracks evolution and season rewards. Growth Marks, Weekly Crests and the displayed season-age requirements advance your Season Journey. Pet level and evolution are separate; use the live requirements shown for your selected pet. Advanced Traits, Breeding, Lineage, Fusion, Sanctuary and Prestige remain coming soon.</div>' +
+      '<div class="guide-step"><strong>CANVAS CONTROLS</strong>The cyan speaker toggles game audio, the purple radio plays or stops GraffPUNKS Radio, and the amber arrows refresh your live save. They sit at the top right of the canvas. Radio starts from your tap; tap it again to stop, or retry after a connection error. Reduced-motion mode keeps the buttons steady.</div>' +
       '<div class="guide-step"><strong>CURRENCIES</strong>Pet XP raises level. Moon Gold buys common upgrades. Gems unlock premium routes. Style unlocks cosmetics. Energy powers demanding actions.</div>' +
       '<div class="guide-step"><strong>CONTINUING CONTRACTS</strong>After hatching, open MISSIONS or Play Now. Pick a quest, build, difficulty and route length. Standard routes have six rooms and two upgrade drafts; long routes have ten rooms and four drafts. Later rooms get harder, and long routes have higher targets. Complete the whole route to earn rank. New quests continue without cooldowns or pet energy costs. The first three successful contracts per account each UTC day qualify for up to 20 Pet XP each, within your normal XP cap, for either length. Every choice is saved online. Contract rank is separate from pet level, Daily Journey and leaderboards.</div>' +
-      '<div class="guide-step"><strong>DAILY RUN TACTICS</strong>New official attempts show clear chance and score for each approach. Safe routes trade score for better odds; bold routes offer more score at higher risk. After rooms 3 and 6, choose Guardian, Striker or Scavenger, or continue without an upgrade. Tactics change later odds and run score only. One official attempt per account each UTC day still applies.</div>' +
+      '<div class="guide-step"><strong>DAILY RUN TACTICS</strong>New official attempts show clear chance and score for each approach. Safe routes trade score for better odds; bold routes offer more score at higher risk. After rooms 3 and 6, choose Guardian, Striker or Scavenger, or continue without an upgrade. Tactics change later odds and run score only. One official attempt per account each UTC day still applies. Reach the final room and defeat its boss to finish. Extracting ends that day’s attempt early. If a saved ending needs settlement, use FINISH SAVED DAILY RUN to recover it without spending a new attempt.</div>' +
+      '<div class="guide-step"><strong>BOSSES AND SEASON FINALE</strong>EXPLORE holds the weekly boss and seasonal raid; read the current requirements, choose an approach and claim any saved victory reward. In MISSIONS, the Season Finale unlocks when your pet meets the final evolution, Growth Mark and Weekly Crest requirements shown. Pick a build, read the boss intent, then Strike, Guard or use your special options. The battle saves between turns, uses separate battle health and supplies, and allows free retries after defeat. Win and claim its reward once per pet per season; completing the season does not stop repeatable contracts or practice.</div>' +
+      '<div class="guide-step"><strong>SAVES, PETS AND RANKS</strong>Each pet keeps its own progression and loadout. Switching pets does not reset account-wide cooldowns or official daily attempts. Saved runs and rewards stay with their source pet. Use Refresh after a connection interruption. PROFILE opens daily, weekly, seasonal, all-time and run-depth leaderboards; practice and contract rank are separate from Pet XP ranks.</div>' +
       '<div class="guide-step"><strong>PLAY BETWEEN COOLDOWNS</strong>Play Now links to your available routes. Practice Roguelite in EXPLORE offers three builds, risk choices and upgrade drafts with unlimited replays. It uses local practice health and salvage, costs no pet energy and awards no XP, currency or quest credit. This browser saves the run so you can leave and resume.</div>' +
       '<div class="button-grid one"><button type="button" class="terminal-button" data-open-full-guide>OPEN COMPLETE WEBSITE GUIDE</button></div>';
   }
@@ -2264,7 +2280,8 @@
   }
 
   function renderProfile() {
-    if (!state.pet) return panel('IDENTITY CORE', '<div class="line muted">INITIALISE A MOONPET TO UNLOCK THIS MODULE.</div>');
+    var helpPanel = panel('HOW TO PLAY', '<div class="line muted">Care, daily and weekly goals, runs, bosses, rewards and the season finale.</div><div class="button-grid one"><button type="button" class="terminal-button" data-utility="guide">HOW TO PLAY</button></div>', 'how-to-play');
+    if (!state.pet) return helpPanel + panel('IDENTITY CORE', '<div class="line muted">INITIALISE A MOONPET TO UNLOCK THIS MODULE.</div>');
     var guidance = state.guidance || {};
     var identity = guidance.identity || {};
     var evolution = guidance.evolution;
@@ -2371,7 +2388,7 @@
     var callsignPanel = callsignUnlocked
       ? '<label class="line" for="pet-name-input">CUSTOM CALLSIGN</label><input id="pet-name-input" class="terminal-input" maxlength="32" value="' + escapeHtml(state.pet.callsign || '') + '"><div class="button-grid one">' + button('SAVE CALLSIGN', 'rename') + '</div><div class="line muted">CANONICAL IDENTITY STAYS SEPARATE FROM ANY CUSTOM CALLSIGN.</div>'
       : '<div class="line complete">UNKNOWN</div><div class="line muted">CALLSIGN LOCKED UNTIL STAGE 3.</div>';
-    return activePetSummary() +
+    return activePetSummary() + helpPanel +
       panel('IDENTITY CORE', '<div class="line complete">' + escapeHtml(resolveMoonpetDisplayName(lifecycle, identity)) + ' // ' + escapeHtml(moonpetStageLabel(lifecycle, state.pet || {})) + '</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT</div>' + innate + '<div class="line muted">PERSONALITY</div>' + (traits || '<div class="line muted">TRAITS STILL FORMING. Personality develops through play.</div>')) + panel('HIDDEN MORPH SIGNAL', rarePanel, 'rare-morph') +
       panel('APTITUDES', aptitudeRows) +
       panel('MEMORY ARCHIVE', memoryRows + (milestones || '<div class="line muted">NO MILESTONES RECORDED YET.</div>'), 'memories') +
@@ -2432,7 +2449,8 @@
     });
     renderHud();
     renderNav();
-    screen.innerHTML = state ? utilityRail() + sectionJumpBar(activeScreen) + screens[activeScreen]() : '';
+    renderCanvasTools();
+    screen.innerHTML = state ? sectionJumpBar(activeScreen) + screens[activeScreen]() : '';
     restoreEditableState(editableState);
     if (draftPetId === (state && state.pet && state.pet.pet_id)) Object.keys(routeDraft).forEach(function (id) {
       var input = document.getElementById(id);
@@ -2776,10 +2794,8 @@
       var target = screen.querySelector('[data-panel="' + CSS.escape(panelId) + '"]');
       if (target) {
         var screenRect = screen.getBoundingClientRect();
-        var rail = screen.querySelector('.utility-rail');
-        var stickyInset = rail ? Math.max(0, rail.getBoundingClientRect().bottom - screenRect.top) : 0;
         var relativeTop = target.getBoundingClientRect().top - screenRect.top + screen.scrollTop;
-        screen.scrollTo({ top: Math.max(0, relativeTop - stickyInset - 8), behavior: reducedMotion ? 'auto' : 'smooth' });
+        screen.scrollTo({ top: Math.max(0, relativeTop - 8), behavior: reducedMotion ? 'auto' : 'smooth' });
       }
     }, 0);
   }
@@ -2976,15 +2992,20 @@
     if (control) control.focus({ preventScroll: true });
   });
 
+  canvasTools.addEventListener('click', function (event) {
+    var utility = event.target.closest('[data-utility]');
+    if (!utility) return;
+    if (utility.dataset.utility === 'audio') toggleAudio();
+    else if (utility.dataset.utility === 'radio') toggleRadio();
+    else if (utility.dataset.utility === 'sync') syncState();
+  });
+
   screen.addEventListener('click', function (event) {
     var practiceAction = event.target.closest('[data-practice-action]');
     if (practiceAction && !practiceAction.disabled) { handlePractice(practiceAction); return; }
     var utility = event.target.closest('[data-utility]');
     if (utility) {
       if (utility.dataset.utility === 'guide' || utility.dataset.utility === 'leaderboard') openUtility(utility.dataset.utility);
-      else if (utility.dataset.utility === 'audio') toggleAudio();
-      else if (utility.dataset.utility === 'radio') toggleRadio();
-      else if (utility.dataset.utility === 'sync') syncState();
       else if (utility.dataset.utility === 'retry') window.location.reload();
       return;
     }
@@ -3734,7 +3755,7 @@
         performanceFrames = 0; performanceSlowFrames = 0; performanceStartedAt = 0; performanceLastFrameAt = 0;
         render();
       }
-      if (radioEnabled) setRadioEnabled(true, false);
+      if (radioRequestedOn) setRadioEnabled(true, false);
       tell(state.adopted ? 'LIVE SAVE LOADED. CHOOSE A ROUTINE.' : 'SECRET BOT READY FOR INITIALISATION.');
       await typeBoot(['SIGNATURE VERIFIED', 'PLAYER SAVE LOADED', 'MOONPET OS READY'], { speed: 8, hold: 320 });
       await showPendingNotices();

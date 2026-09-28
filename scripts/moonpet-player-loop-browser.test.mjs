@@ -131,8 +131,64 @@ try {
       unexpected.push(url.origin + url.pathname); return route.abort();
     });
     const url = `http://127.0.0.1:${server.address().port}/moonpet-game.html`;
+    await page.addInitScript(() => {
+      // Model WebViews that require play() in the actual click task, not after await/import.
+      window.radioTapChecks = [];
+      let inRadioTap = false;
+      const originalListen = EventTarget.prototype.addEventListener;
+      EventTarget.prototype.addEventListener = function (type, listener, options) {
+        if (this.id === 'canvas-tools' && type === 'click') {
+          return originalListen.call(this, type, function (event) {
+            inRadioTap = Boolean(event.target.closest('[data-utility="radio"]'));
+            try { return listener.call(this, event); } finally { inRadioTap = false; }
+          }, options);
+        }
+        return originalListen.call(this, type, listener, options);
+      };
+      const originalPlay = HTMLMediaElement.prototype.play;
+      HTMLMediaElement.prototype.play = function () {
+        if (this.id !== 'moonpet-radio') return originalPlay.call(this);
+        window.radioTapChecks.push(inRadioTap);
+        return inRadioTap ? Promise.resolve() : Promise.reject(new DOMException('Tap required', 'NotAllowedError'));
+      };
+    });
     await page.goto(url);
     await page.waitForSelector('[data-panel="care"]');
+    const canvasTools = page.locator('#canvas-tools');
+    assert.equal(await canvasTools.locator('button').count(), 3);
+    assert.equal((await canvasTools.textContent()).trim(), '', 'canvas controls must be icons without visible text');
+    assert.equal(await page.locator('#screen [data-utility="audio"], #screen [data-utility="radio"], #screen [data-utility="sync"]').count(), 0);
+    const layout = await canvasTools.evaluate((tools) => {
+      const viewport = document.querySelector('.viewport').getBoundingClientRect();
+      const hud = document.getElementById('hud').getBoundingClientRect();
+      return [...tools.children].map(button => {
+        const box = button.getBoundingClientRect();
+        return { top: box.top, bottom: box.bottom, left: box.left, right: box.right, width: box.width, height: box.height,
+          within: box.top >= viewport.top && box.bottom <= viewport.bottom && box.right <= viewport.right,
+          clearOfHud: box.left > hud.right, motion: getComputedStyle(button).animationName,
+          label: button.getAttribute('aria-label') };
+      });
+    });
+    assert.ok(layout.every(button => button.within && button.clearOfHud && button.width >= 44 && button.height >= 44 && button.label));
+    assert.ok(layout.every((button, index) => index === 0 || button.top >= layout[index - 1].bottom));
+    assert.ok(layout.every(button => button.motion === 'none'), 'reduced motion must stop all three glow animations');
+    const radio = canvasTools.locator('[data-utility="radio"]');
+    await radio.click();
+    await page.waitForFunction(() => document.querySelector('[data-utility="radio"]').getAttribute('aria-busy') === 'false');
+    assert.equal(await radio.getAttribute('aria-pressed'), 'true');
+    assert.deepEqual(await page.evaluate(() => window.radioTapChecks), [true], 'first real radio click must start playback in its gesture');
+    await radio.click();
+    assert.equal(await radio.getAttribute('aria-pressed'), 'false');
+    await canvasTools.locator('[data-utility="audio"]').click();
+    assert.equal(await canvasTools.locator('[data-utility="audio"]').getAttribute('aria-pressed'), 'false');
+    await page.locator('[data-screen="profile"]').click();
+    await page.locator('[data-panel="how-to-play"] [data-utility="guide"]').click();
+    const help = await page.locator('#utility-content').textContent();
+    for (const topic of ['HOME', 'MISSIONS', 'EXPLORE', 'WORK', 'ECONOMY', 'PROFILE', 'Daily Journey', 'Weekly Journey', 'Season Finale', 'CONTINUING CONTRACTS', 'CANVAS CONTROLS']) assert.ok(help.includes(topic), topic);
+    await page.locator('[data-utility-close]').click();
+    assert.equal(await page.locator('[data-panel="how-to-play"] [data-utility="guide"]').evaluate(b => b === document.activeElement), true, 'closing help returns focus to Profile');
+    if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-canvas-tools-${viewport.width}.png`) });
+    await page.locator('[data-screen="home"]').click();
     assert.ok(await page.locator('#nav button').evaluateAll((buttons) => buttons.length === 6 && buttons.every((b) => b.getBoundingClientRect().right <= innerWidth && b.getBoundingClientRect().left >= 0)), 'all six navigation buttons must fit the viewport');
     for (const action of ['energy_drink', 'dance', 'cuddles']) assert.equal(await page.locator(`[data-panel="care"] [data-action="${action}"]`).count(), 1);
     for (const screen of ['work', 'economy']) {
@@ -393,7 +449,7 @@ try {
         if (fieldChoices === 1 && process.env.MOONPET_BROWSER_SCREENSHOT) {
           await page.locator('[data-contract-field]').scrollIntoViewIfNeeded();
           await page.locator('[data-contract-field]').evaluate((panel) => {
-            const top = document.querySelector('.utility-rail').getBoundingClientRect().bottom + 8;
+            const top = document.getElementById('screen').getBoundingClientRect().top + 8;
             document.getElementById('screen').scrollTop += panel.getBoundingClientRect().top - top;
           });
           await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-field-${viewport.width}.png`) });
@@ -701,7 +757,7 @@ try {
     await page.locator('[data-screen="missions"]').click();
     if (process.env.MOONPET_BROWSER_SCREENSHOT) {
       await page.locator('[data-panel="daily-objectives"]').evaluate((panel) => {
-        document.getElementById('screen').scrollTop += panel.getBoundingClientRect().top - document.querySelector('.utility-rail').getBoundingClientRect().bottom - 8;
+        document.getElementById('screen').scrollTop += panel.getBoundingClientRect().top - document.getElementById('screen').getBoundingClientRect().top - 8;
       });
       await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-objectives-${viewport.width}.png`) });
     }
@@ -871,8 +927,8 @@ try {
     await page.locator('[data-panel="play-now"] [data-focus="timed-activity"]').click();
     await page.waitForFunction(() => {
       const panel = document.querySelector('[data-panel="timed-activity"]');
-      const rail = document.querySelector('.utility-rail');
-      return panel && panel.getBoundingClientRect().top >= rail.getBoundingClientRect().bottom;
+      const controls = document.getElementById('screen');
+      return panel && panel.getBoundingClientRect().top >= controls.getBoundingClientRect().top;
     });
     assert.equal(await page.locator('[data-action="activity_start"]').count(), 4);
     assert.ok((await page.locator('[data-panel="timed-activity"]').textContent()).includes('Hunger increase'));
@@ -919,7 +975,7 @@ try {
     await page.locator('[data-panel="play-now"] [data-focus="timed-activity"]').filter({ hasText: 'RECOVER SAVED ACTIVITY REWARD' }).click();
     await page.waitForFunction(() => {
       const panel = document.querySelector('[data-panel="timed-activity"]');
-      return panel && panel.getBoundingClientRect().top >= document.querySelector('.utility-rail').getBoundingClientRect().bottom;
+      return panel && panel.getBoundingClientRect().top >= document.getElementById('screen').getBoundingClientRect().top;
     });
     assert.equal(await page.locator('[data-action="activity_start"]').count(), 0);
     assert.equal(await page.locator('[data-action="activity_cancel"]').count(), 0, 'a reserved reward cannot be cancelled');
