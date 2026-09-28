@@ -2726,8 +2726,22 @@ async function getPetRunById(db, telegramId, runId) {
     SELECT * FROM telegram_pet_runs
     WHERE telegram_id = ? AND run_id = ?
     LIMIT 1
-  `).bind(telegramId, runId).first().catch(() => null);
+  `).bind(telegramId, runId).first();
   return row ? serializePetRun(row) : null;
+}
+
+// Standard controls cannot mutate a saved official/canonical room run. The
+// Daily route owns its room choices, ten-room ending and settlement rules.
+async function blockCanonicalPetRun(db, telegramId, run) {
+  const canonical = await db.prepare(`SELECT 1 AS found WHERE
+    EXISTS (SELECT 1 FROM telegram_pet_daily_runs WHERE telegram_id=? AND run_id=?)
+    OR EXISTS (SELECT 1 FROM telegram_pet_run_rooms WHERE telegram_id=? AND run_id=?)`)
+    .bind(telegramId, run.run_id, telegramId, run.run_id).first();
+  return canonical || run.run_id.startsWith('daily:') ? {
+    accepted: false, reason: 'daily_run_requires_mini_app', run,
+    result_copy: 'Continue your saved Daily Run in Explore in the Moonpet Mini App.',
+    xp_awarded: 0, pet_xp_awarded: 0,
+  } : null;
 }
 
 async function startOrResumePetRun(db, telegramId, options = {}) {
@@ -2738,6 +2752,8 @@ async function startOrResumePetRun(db, telegramId, options = {}) {
   if (requestedRunId) {
     const requestedRun = await getPetRunById(db, telegramId, requestedRunId);
     if (requestedRun && ['active', 'extractable'].includes(requestedRun.status)) {
+      const blocked = await blockCanonicalPetRun(db, telegramId, requestedRun);
+      if (blocked) return blocked;
       if (!requestedRun.pet_id) return { accepted: false, reason: 'run_pet_authority_required', run: requestedRun, xp_awarded: 0, pet_xp_awarded: 0 };
       const pet = await getPetInstanceWithAtomicDecay(db, requestedRun.pet_id);
       if (!pet || pet.telegram_id !== telegramId) return { accepted: false, reason: 'run_pet_not_found', run: requestedRun, xp_awarded: 0, pet_xp_awarded: 0 };
@@ -2749,6 +2765,8 @@ async function startOrResumePetRun(db, telegramId, options = {}) {
   }
   const active = await getActivePetRun(db, telegramId);
   if (active) {
+    const blocked = await blockCanonicalPetRun(db, telegramId, active);
+    if (blocked) return blocked;
     if (!active.pet_id) return { accepted: false, reason: 'run_pet_authority_required', run: active, xp_awarded: 0, pet_xp_awarded: 0 };
     const pet = await getPetInstanceWithAtomicDecay(db, active.pet_id);
     if (!pet || pet.telegram_id !== telegramId) return { accepted: false, reason: 'run_pet_not_found', run: active, xp_awarded: 0, pet_xp_awarded: 0 };
@@ -2808,19 +2826,19 @@ async function recordPetRunBankedEvent(db, telegramId, run, pet, options = {}) {
     await recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, eventKey);
   }
   if (!awardedAuthority.accepted) return { ...awardedAuthority, run: rewardRun, pet };
+  const receipt = await readAcceptedPetEventByKey(db, telegramId, eventKey);
   await recordMoonpetBehaviour(db, {
     telegram_id: telegramId, pet_id: rewardRun.pet_id, season_key: rewardRun.season_key,
     event_key: `${rewardRun.run_id}:terminal:personality`, source_event_key: eventKey, source_event_type: eventType,
-    behaviour: 'exploration', activity: 'adventure', amount: 2,
+    behaviour: 'exploration', activity: 'adventure', amount: 2, recover_source_event: true,
   });
   await recordMoonpetMemory(db, { telegram_id: telegramId, pet_id: rewardRun.pet_id, season_key: rewardRun.season_key,
     event_key: `${rewardRun.run_id}:terminal:memory`, source_event_key: eventKey, source_event_type: eventType,
-    memory_type: options.completed ? 'run_completed' : 'extraction',
+    recover_source_event: true, memory_type: options.completed ? 'run_completed' : 'extraction',
     milestone: options.completed ? 'first_run_completed' : 'first_extraction', reward_amount: awardedAuthority.rewards?.moon_gold, reward_currency: 'moon_gold' });
   // Legacy runs have no persisted canonical boss room. Their completion may
   // record exploration and completion memories, but never boss authority.
   await reconcileSanctuaryBestEffort(db, telegramId, options.completed ? 'run_completed' : 'run_extracted');
-  const receipt = await readAcceptedPetEventByKey(db, telegramId, eventKey);
   const savedRuntimeKey = parsePersistedPetReward(receipt?.metadata)?.context?.runtime_event_key;
   await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward,
     { run_id: rewardRun.run_id, action: options.completed ? 'run_step' : 'run_extract', event_key: '__terminal__' });
@@ -2837,6 +2855,7 @@ async function recoverPetStandardRunEndings(db, telegramId, runIdRaw = '', limit
   if (!owner) return [];
   const runId = String(runIdRaw || '').trim();
   const recoveryKey = "r.started_at||':'||r.run_id";
+  const terminalKey = "SUBSTR('pet_run_'||CASE WHEN r.status='extracted' THEN 'extract' ELSE 'complete' END||':'||r.telegram_id||':'||r.run_id,1,120)";
   const candidates = await db.prepare(`SELECT r.*,${recoveryKey} AS recovery_key,cursor.setting_value AS recovery_cursor FROM telegram_pet_runs r
     JOIN telegram_pet_instances i ON i.pet_id=r.pet_id AND i.telegram_id=r.telegram_id AND i.season_key=r.season_key
     JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id AND s.season_key=i.season_key AND s.slot_number=i.slot_number
@@ -2848,9 +2867,17 @@ async function recoverPetStandardRunEndings(db, telegramId, runIdRaw = '', limit
         AND step.pet_id=r.pet_id AND step.step_index=r.depth AND step.success=1)
       AND NOT EXISTS (SELECT 1 FROM telegram_pet_daily_runs d WHERE d.run_id=r.run_id)
       AND NOT EXISTS (SELECT 1 FROM telegram_pet_run_rooms room WHERE room.run_id=r.run_id)
-      AND NOT EXISTS (SELECT 1 FROM telegram_pet_reward_claims c WHERE c.telegram_id=r.telegram_id
-        AND c.source='pet_run_legacy' AND c.status='awarded'
-        AND c.idempotency_key=SUBSTR('pet_run_'||CASE WHEN r.status='extracted' THEN 'extract' ELSE 'complete' END||':'||r.telegram_id||':'||r.run_id,1,120))
+      AND (NOT EXISTS (SELECT 1 FROM telegram_pet_reward_claims c WHERE c.telegram_id=r.telegram_id
+        AND c.source='pet_run_legacy' AND c.status='awarded' AND c.idempotency_key=${terminalKey})
+        OR EXISTS (SELECT 1 FROM telegram_pet_events e WHERE e.telegram_id=r.telegram_id AND e.pet_id=r.pet_id
+          AND e.season_key=r.season_key AND e.event_key=${terminalKey} AND e.status='accepted'
+          AND e.event_type=CASE WHEN r.status='extracted' THEN 'run_extract' ELSE 'run_complete' END
+          AND (NOT EXISTS (SELECT 1 FROM telegram_pet_identity_events identity WHERE identity.telegram_id=e.telegram_id
+            AND identity.pet_id=e.pet_id AND identity.season_key=e.season_key AND identity.event_kind='personality'
+            AND identity.event_key=SUBSTR(r.run_id||':terminal:personality',1,180) AND identity.applied_at IS NOT NULL)
+          OR NOT EXISTS (SELECT 1 FROM telegram_pet_identity_events identity WHERE identity.telegram_id=e.telegram_id
+            AND identity.pet_id=e.pet_id AND identity.season_key=e.season_key AND identity.event_kind='memory'
+            AND identity.event_key=SUBSTR(r.run_id||':terminal:memory',1,180) AND identity.applied_at IS NOT NULL))))
     ORDER BY CASE WHEN ${recoveryKey}>COALESCE(cursor.setting_value,'') THEN 0 ELSE 1 END,
       ${recoveryKey} LIMIT ?`).bind(owner, runId, runId, PET_RUN_MAX_DEPTH, boundedRecoveryLimit(limit, 5)).all();
   if (!runId && !await claimPetRecoveryBatch(db, owner, 'standard-endings', candidates.results || [])) return [];
@@ -2915,6 +2942,8 @@ async function processPetRunExtract(db, telegramId, runIdRaw = '', options = {})
   const runId = String(runIdRaw || '').trim();
   const run = runId ? await getPetRunById(db, telegramId, runId) : await getActivePetRun(db, telegramId);
   if (!run) return { accepted: false, reason: 'run_not_found', xp_awarded: 0, pet_xp_awarded: 0 };
+  const blocked = await blockCanonicalPetRun(db, telegramId, run);
+  if (blocked) return blocked;
   if (run.status === 'extracted' || (run.depth >= PET_RUN_MAX_DEPTH && ['active', 'extractable', 'completed'].includes(run.status))) {
     const recovered = (await recoverPetStandardRunEndings(db, telegramId, run.run_id))[0];
     if (recovered) return recovered;
@@ -2962,6 +2991,8 @@ async function processPetRunStepResult(db, telegramId, runIdRaw, choiceKeyRaw, o
   const runId = String(runIdRaw || '').trim();
   const run = runId ? await getPetRunById(db, telegramId, runId) : await getActivePetRun(db, telegramId);
   if (!run) return { accepted: false, reason: 'run_not_found', xp_awarded: 0, pet_xp_awarded: 0 };
+  const blocked = await blockCanonicalPetRun(db, telegramId, run);
+  if (blocked) return blocked;
   if (run.depth >= PET_RUN_MAX_DEPTH && ['active', 'extractable', 'completed'].includes(run.status)) {
     const recovered = (await recoverPetStandardRunEndings(db, telegramId, run.run_id))[0];
     if (recovered) return recovered;
@@ -9430,10 +9461,20 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
   let dailyRoom = null;
   if (dailyReservation) {
     const roomNumber = dailyEndingPending ? Number(dailyReservation.max_room) : Math.max(1, Number(dailyReservation.current_room || 0) + 1);
-    const row = await db.prepare(`SELECT room_number, room_type, status, generated_data
+    const roomQuery = db.prepare(`SELECT room_number, room_type, status, generated_data
       FROM telegram_pet_run_rooms
       WHERE telegram_id = ? AND run_id = ? AND room_number = ? LIMIT 1`)
-      .bind(telegramId, activeRun.run_id, roomNumber).first().catch(() => null);
+      .bind(telegramId, activeRun.run_id, roomNumber);
+    let row = await roomQuery.first();
+    // A saved reservation/advance can outlive an interrupted room insert.
+    // Restore only a genuinely missing next room from the original seed; a
+    // failed read must propagate and an existing outcome is never regenerated.
+    if (!row && !dailyEndingPending && runPetAvailable) {
+      await createPetRunRoom(db, { ...dailyReservation, seed: dailyReservation.run_seed,
+        status: dailyReservation.authoritative_status, depth: dailyReservation.authoritative_depth,
+        score: dailyReservation.authoritative_score });
+      row = await roomQuery.first();
+    }
     if (row) {
       const persistedRoom = { ...safeJsonParse(row.generated_data, {}), room: row.room_number, room_type: row.room_type, status: row.status };
       const roomDefinition = PET_ROGUELITE_ROOMS[persistedRoom.content_id] || null;
@@ -9695,7 +9736,7 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   if (action === 'run_step') {
     const reservation = await getDailyMoonRunReservation(db, { telegram_id: telegramId, run_id: body.run_id });
     const result = reservation
-      ? processDailyMoonRunStepWithWeeklyJourney(db, { telegram_id: telegramId, run_id: body.run_id, choice_key: body.choice_key, expected_step_index: body.expected_step_index })
+      ? processDailyMoonRunStepWithWeeklyJourney(db, { telegram_id: telegramId, run_id: reservation.run_id, choice_key: body.choice_key, expected_step_index: body.expected_step_index })
       : processPetRunStep(db, telegramId, body.run_id, body.choice_key, { event_key: eventKey, expected_step_index: body.expected_step_index, source });
     const resolved = await result;
     return resolved;
@@ -9711,7 +9752,7 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   if (action === 'run_extract') {
     const reservation = await getDailyMoonRunReservation(db, { telegram_id: telegramId, run_id: body.run_id });
     const result = reservation
-      ? extractDailyMoonRunWithWeeklyJourney(db, { telegram_id: telegramId, run_id: body.run_id })
+      ? extractDailyMoonRunWithWeeklyJourney(db, { telegram_id: telegramId, run_id: reservation.run_id })
       : processPetRunExtract(db, telegramId, body.run_id, { event_key: eventKey, source });
     const resolved = await result;
     return resolved;
@@ -10732,7 +10773,7 @@ export default {
         result = dailyReservation
           ? await processDailyMoonRunStepWithWeeklyJourney(env.DB, {
             telegram_id: telegramId,
-            run_id: body.run_id,
+            run_id: dailyReservation.run_id,
             choice_key: body.choice_key,
             expected_step_index: body.expected_step_index,
           })
@@ -10744,7 +10785,7 @@ export default {
       } else if (body.action === 'run_extract') {
         const dailyReservation = await getDailyMoonRunReservation(env.DB, { telegram_id: telegramId, run_id: body.run_id });
         result = dailyReservation
-          ? await extractDailyMoonRunWithWeeklyJourney(env.DB, { telegram_id: telegramId, run_id: body.run_id })
+          ? await extractDailyMoonRunWithWeeklyJourney(env.DB, { telegram_id: telegramId, run_id: dailyReservation.run_id })
           : await processPetRunExtract(env.DB, telegramId, body.run_id, {
             event_key: body.event_key,
             source: 'telegram_pets_api',
@@ -16829,6 +16870,7 @@ function formatPetBlockedCopy(kind, reason, extra = {}) {
   if (code === 'cooldown' || code === 'trade_cooldown' || code === 'adventure_cooldown') {
     return `Moonpet needs a short break before another ${kind}. Try again in ${extra.retry_after_seconds || 0}s.`;
   }
+  if (code === 'daily_run_requires_mini_app') return `Your official Daily Run is saved. Continue its choices or extract in Explore: ${MOONPET_MINI_APP_URL}`;
   if (code === 'run_not_found') return `No active pet run found. Use /petrun to start one.`;
   if (code === 'run_empty') return `Clear at least one run step before extracting. Use /petrun to pick a route.`;
   if (code === 'invalid_run_choice') return `That run choice is not available on this step. Use /petrun to refresh the run.`;

@@ -775,3 +775,16 @@ If an action commits but its following state read fails, show the saved action
 result and use Refresh to read the save without resubmitting the action. See
 `docs/moonpet-cross-system-sanity-2026-09-28.md` for the regression evidence,
 gameplay/leaderboard matrix and deployment notes.
+# Run engines and interrupted endings
+
+Official Daily Runs are classified from their saved reservation, including
+actions which omit a run ID. Required authority/evidence read failures must
+propagate; they are not proof that a run is Standard or a boss was not beaten.
+Legacy Standard controls cannot mutate Daily/canonical room runs and direct
+the player to the Mini App. Refresh may restore a missing next Daily room from
+its saved seed; existing room outcomes are never regenerated.
+
+A paid Standard ending can still need personality/memory recovery. Accepted
+source receipts, original pet/season/day, fixed identity keys and the existing
+bounded recovery cursor govern that repair; it does not pay the primary reward
+again. See [the follow-up audit](moonpet-run-authority-sanity-2026-09-28.md).

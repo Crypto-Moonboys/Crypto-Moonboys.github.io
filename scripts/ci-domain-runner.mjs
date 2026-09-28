@@ -84,6 +84,7 @@ const GROUPS = {
     ['node', 'scripts/moonpet-care-integrity.test.mjs'],
     ['node', 'scripts/moonpet-progression-sync.test.mjs'],
     ['node', 'scripts/moonpet-standard-run-recovery.test.mjs'],
+    ['node', 'scripts/moonpet-run-authority-sanity.test.mjs'],
     ['node', 'scripts/telegram-pets-mini-app.test.mjs'],
     ['node', 'scripts/telegram-pets-mini-app-parity.test.mjs'],
     ['node', 'scripts/moonpet-player-loop.test.mjs'],

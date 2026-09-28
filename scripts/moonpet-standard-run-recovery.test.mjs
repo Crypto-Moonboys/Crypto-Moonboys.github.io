@@ -78,6 +78,53 @@ test('two persistently failing Standard endings yield the state budget to later 
   const paid = events(); await f.state(); assert.deepEqual(events(), paid);
 });
 
+for (const kind of ['personality','memory']) test(`paid Standard ending repairs its missing ${kind} without another reward`, async () => {
+  const f=fixture('paid-ending-'+kind), source='current-'+f.owner;
+  await f.state(); f.run('paid-ending');
+  f.db.beforeBatch=statements=>{
+    if(statements.some(s=>s.query.includes('INSERT OR IGNORE INTO telegram_pet_identity_events') && s.query.includes("'"+kind+"'"))) throw Error('identity_finish_unavailable');
+  };
+  await assert.rejects(hooks.processPetRunExtract(f.db,f.owner,'paid-ending'),/identity_finish_unavailable/);
+  const paid=f.sql.prepare("SELECT pet_xp_awarded FROM telegram_pet_events WHERE event_type='run_extract'").get();
+  assert.equal(paid.pet_xp_awarded,24);
+  f.db.beforeBatch=null;
+  await f.state();
+  const identities=()=>f.sql.prepare("SELECT event_kind,event_key FROM telegram_pet_identity_events WHERE event_key LIKE 'paid-ending:terminal:%' AND applied_at IS NOT NULL ORDER BY event_kind").all();
+  assert.equal(identities().length,2,'payment must not hide an interrupted identity finish from recovery');
+  assert.equal(f.sql.prepare('SELECT total_runs FROM telegram_pet_memories WHERE pet_id=?').get(source).total_runs,1);
+  assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(source).pet_xp,224);
+  assert.equal((await f.get('/telegram-pets/leaderboard?period=daily')).entries[0].pet_xp,24);
+  const before=identities(); await f.state();
+  assert.deepEqual(identities(),before);
+  assert.equal(f.sql.prepare('SELECT total_runs FROM telegram_pet_memories WHERE pet_id=?').get(source).total_runs,1);
+});
+
+test('paid ending identity recovery retains the original day and archived pet', async t => {
+  t.mock.timers.enable({apis:['Date'],now:Date.UTC(2026,8,27,12)});
+  const f=fixture('historic-identity');
+  await f.state(); f.pet('archived-source',oldSeason,100);
+  f.run('historic-run',{petId:'archived-source',season:oldSeason});
+  f.db.beforeBatch=statements=>{
+    if(statements.some(s=>s.query.includes('INSERT OR IGNORE INTO telegram_pet_identity_events') && s.query.includes("'personality'"))) throw Error('identity_unavailable');
+  };
+  await assert.rejects(hooks.processPetRunExtract(f.db,f.owner,'historic-run'),/identity_unavailable/);
+  const source=f.sql.prepare("SELECT day_key,created_at FROM telegram_pet_events WHERE event_type='run_extract'").get();
+  f.sql.prepare("UPDATE telegram_pet_instances SET status='archived' WHERE pet_id='archived-source'").run();
+  f.sql.prepare("UPDATE telegram_pet_season_slots SET status='archived' WHERE pet_id='archived-source'").run();
+  f.db.beforeBatch=null; t.mock.timers.tick(86400000);
+  await f.state();
+  const identity=f.sql.prepare("SELECT day_key,progress_delta FROM telegram_pet_identity_events WHERE pet_id='archived-source' AND event_kind='personality'").get();
+  assert.ok(identity,'the source-backed repair can finish for an archived pet');
+  assert.equal(identity.day_key,source.day_key);
+  assert.equal(identity.progress_delta,2);
+  const memories=f.sql.prepare("SELECT total_runs,first_extraction_at FROM telegram_pet_memories WHERE pet_id='archived-source'").get();
+  assert.equal(memories.total_runs,1); assert.equal(memories.first_extraction_at,source.created_at);
+  assert.equal(f.sql.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id='archived-source'").get().pet_xp,124);
+  assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get('current-'+f.owner).pet_xp,200);
+  await f.state();
+  assert.equal(f.sql.prepare("SELECT total_runs FROM telegram_pet_memories WHERE pet_id='archived-source'").get().total_runs,1);
+});
+
 test('failed saved run XP and item activity keep the original pet and season', async () => {
   const f = fixture('81001');
   f.pet('old-run-pet', oldSeason, 100);
