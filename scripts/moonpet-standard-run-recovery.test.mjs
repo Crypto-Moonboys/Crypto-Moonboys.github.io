@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
+import { processPetEquipmentUpgrade } from '../workers/moonboys-api/pets/live-systems.js';
 import worker, { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 
 const now = new Date();
@@ -355,4 +356,60 @@ for(const win of [true,false]) test(`account audit: ${win?'successful':'failed'}
   assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances').get().pet_xp,200+earned);
   for(const period of ['daily','weekly','seasonal']) assert.equal((await f.get('/telegram-pets/leaderboard?period='+period)).entries[0].pet_xp,earned,period);
   assert.equal((await f.get('/telegram-pets/leaderboard?period=all_time')).entries[0].pet_xp,200+earned);
+});
+
+for(const change of ['upgrade','mastery','new row']) test(`account audit: concurrent equipped ${change} requires a fresh Standard outcome`,async()=>{
+  const f=fixture('gear-race-'+change.replaceAll(' ','-'));
+  f.sql.exec("UPDATE telegram_pet_instances SET pet_xp=100000,equipped_toy='hoverboard'; UPDATE telegram_pet_profiles SET pet_xp=100000,equipped_toy='hoverboard',moon_gold=10000");
+  await f.state(); f.run('gear-race',{depth:0});
+  for(const material of ['moon_dust','scrap_metal','crystal_shard','mastery_token','battery_cell']) f.sql.prepare('INSERT INTO telegram_pet_material_balances (telegram_id,material_key,quantity) VALUES (?,?,100)').run(f.owner,material);
+  if(change==='new row') f.sql.exec('DELETE FROM telegram_pet_equipment_progression');
+  const choice=hooks.buildPetRunChoiceReplyMarkup({run_id:'gear-race',depth:0,max_depth:100,unbanked_items:'{}'}).inline_keyboard[0][0].callback_data.split(':').at(-1);
+  let upgraded,triggered=false;
+  const petBefore=f.sql.prepare('SELECT * FROM telegram_pet_instances').get();
+  f.db.beforeBatch=async statements=>{
+    for(const s of statements) assert.ok(s.args.length<=100,'D1 binding limit with equipped progression');
+    if(!statements.some(s=>s.query.includes('INSERT OR IGNORE INTO telegram_pet_run_steps')))return;
+    f.db.beforeBatch=null; triggered=true;
+    if(change==='upgrade') {
+      const result=await processPetEquipmentUpgrade(f.db,f.owner,'hoverboard','upgrade-during-run');
+      assert.equal(result.accepted,true,JSON.stringify(result));
+    }else if(change==='mastery') f.sql.exec("UPDATE telegram_pet_equipment_progression SET mastery_xp=75,mastery_tier=1 WHERE item_key='hoverboard'");
+    else f.sql.prepare("INSERT INTO telegram_pet_equipment_progression (telegram_id,item_key,slot,item_level) VALUES (?,'hoverboard','toy',2)").run(f.owner);
+    assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_instances').get(),petBefore,'the race changes progression without changing the pet row');
+    upgraded=f.sql.prepare('SELECT moon_gold FROM telegram_pet_profiles').get().moon_gold;
+  };
+  const originalRandom=Math.random; Math.random=()=>0.99;
+  try {
+    const rejected=await hooks.processPetRunStep(f.db,f.owner,'gear-race',choice,{event_key:'gear-race-step'});
+    assert.equal(triggered,true); assert.equal(rejected.accepted,false,'old equipment bonuses must not commit');
+    assert.equal(rejected.reason,'run_state_changed');
+    assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_run_steps').get().n,0);
+    assert.equal(f.sql.prepare('SELECT depth FROM telegram_pet_runs').get().depth,0);
+    assert.equal(f.sql.prepare('SELECT moon_gold FROM telegram_pet_profiles').get().moon_gold,upgraded,'the rejected step cannot spend more wallet funds');
+    const retry=await hooks.processPetRunStep(f.db,f.owner,'gear-race',choice,{event_key:'gear-race-step'});
+    assert.equal(retry.accepted,true);
+    const saved=JSON.parse(f.sql.prepare('SELECT metadata FROM telegram_pet_run_steps').get().metadata).equipment_snapshot.hoverboard;
+    assert.equal(change==='mastery'?saved.mastery_xp:saved.item_level,change==='mastery'?75:2);
+  }finally { Math.random=originalRandom; }
+});
+
+test('account audit: unrelated inventory and another owner equipment do not block a Standard step',async()=>{
+  const f=fixture('gear-scope'); await f.state(); f.run('gear-scope-run',{depth:0});
+  f.sql.exec("UPDATE telegram_pet_instances SET equipped_toy='hoverboard'; UPDATE telegram_pet_profiles SET equipped_toy='hoverboard',moon_gold=1000");
+  f.sql.prepare("INSERT INTO telegram_pet_equipment_progression (telegram_id,item_key,slot) VALUES (?,'hoverboard','toy'),(?,'moon_kibble','food')").run(f.owner,f.owner);
+  f.sql.exec("INSERT INTO telegram_users (telegram_id) VALUES ('gear-other-owner'); INSERT INTO telegram_pet_profiles (telegram_id) VALUES ('gear-other-owner'); INSERT INTO telegram_pet_equipment_progression (telegram_id,item_key,slot) VALUES ('gear-other-owner','hoverboard','toy')");
+  const choice=hooks.buildPetRunChoiceReplyMarkup({run_id:'gear-scope-run',depth:0,max_depth:100,unbanked_items:'{}'}).inline_keyboard[0][0].callback_data.split(':').at(-1);
+  let triggered=false;
+  f.db.beforeBatch=statements=>{
+    if(!statements.some(s=>s.query.includes('INSERT OR IGNORE INTO telegram_pet_run_steps')))return;
+    triggered=true;f.db.beforeBatch=null;
+    f.sql.exec("UPDATE telegram_pet_equipment_progression SET item_level=2 WHERE item_key='moon_kibble' OR telegram_id='gear-other-owner'");
+  };
+  const originalRandom=Math.random;Math.random=()=>0.99;
+  try { assert.equal((await hooks.processPetRunStep(f.db,f.owner,'gear-scope-run',choice,{event_key:'gear-scope-step'})).accepted,true); }
+  finally { Math.random=originalRandom; }
+  assert.equal(triggered,true);
+  const saved=JSON.parse(f.sql.prepare('SELECT metadata FROM telegram_pet_run_steps').get().metadata).equipment_snapshot;
+  assert.deepEqual(Object.keys(saved),['hoverboard']);assert.equal(saved.hoverboard.item_level,1);
 });

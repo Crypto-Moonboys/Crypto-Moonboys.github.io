@@ -68,8 +68,9 @@ latest-receipt read. Successfully empty results remain valid empty state.
 Pending run/Arena/Kaiju reads must succeed before switching the active pet or
 moving its pointer during season preparation. Standard Run resolution also
 requires readable source-pet, inventory, account-wallet and daily XP-cap evidence.
-Its transaction verifies every pet-owned field captured before resolving the
-choice. Concurrent care, rewards or equipment changes reject the stale step
+Its transaction verifies every pet-owned field and the equipped progression rows
+(including missing rows) captured before resolving the choice. Concurrent care,
+rewards, equipment upgrades or mastery changes reject the stale step
 before costs, consumed items, run advancement or failure XP are committed.
 The player can refresh and choose again. Reward amounts, source-pet/season
 ownership, caps and public leaderboard formulas remain unchanged.

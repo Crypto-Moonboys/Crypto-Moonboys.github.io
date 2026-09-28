@@ -9,7 +9,7 @@ import { handleRogueliteDailyRoutes } from './routes/daily-digest.js';
 import { getContractBoard, processContractAction } from './pets/continuing-contracts.js';
 import { recoverPetJourneyAwards } from './pets/journey-recovery.js';
 import { recoverPetWeeklyBossVictories } from './pets/weekly-boss-recovery.js';
-import { getPetEquipmentMultiplier, withPetEquipmentProgression, recoverPetEquipmentRows } from './pets/equipment-progression.js';
+import { PET_EQUIPMENT_UTILITY, getPetEquipmentMultiplier, withPetEquipmentProgression, recoverPetEquipmentRows } from './pets/equipment-progression.js';
 import { recoverPetRuntimeAwards, standardStepRuntimeKey } from './pets/runtime-recovery.js';
 import { petCareDeltaStatements, petCareCommunityStatements } from './pets/care-writes.js';
 import { chooseDailyRunTactic, dailyTacticalBoard, previewDailyChoice, readDailyModifiers } from './pets/daily-run-tactics.js';
@@ -3044,6 +3044,14 @@ async function processPetRunStepResult(db, telegramId, runIdRaw, choiceKeyRaw, o
   // Reject a stale absolute write if care, rewards or equipment change this pet
   // while the choice is resolving. Guard the step reservation so costs stay atomic.
   const sourceState = PET_INSTANCE_STATE_COLUMNS.map(column => pet[column] ?? null);
+  // Equipment upgrades/mastery live outside the pet row. Include missing rows
+  // so a concurrent backfill cannot change the bonuses underneath this choice.
+  const sourceEquipment = JSON.stringify(Object.entries(PET_EQUIPMENT_UTILITY)
+    .filter(([key, item]) => pet[`equipped_${item.slot}`] === key)
+    .map(([item_key, { slot }]) => ({ item_key, slot,
+      ...Object.fromEntries(['item_level', 'item_xp', 'mastery_xp', 'mastery_tier']
+        .map(column => [column, pet.equipment_progression?.[item_key]?.[column] ?? null])),
+    })));
   const inventory = await getPetInventory(db, telegramId);
   const outcome = buildPetRunStepOutcome(run, choice, pet, inventory);
   const walletCosts = getPetRunWalletCosts(outcome.costs);
@@ -3086,6 +3094,14 @@ async function processPetRunStepResult(db, telegramId, runIdRaw, choiceKeyRaw, o
       AND EXISTS (SELECT 1 FROM telegram_pet_instances source_pet
         WHERE source_pet.pet_id=? AND source_pet.telegram_id=? AND source_pet.season_key=?
           AND ${PET_INSTANCE_STATE_COLUMNS.map(column => `source_pet.${column} IS ?`).join(' AND ')})
+      AND NOT EXISTS (SELECT 1 FROM json_each(?) expected
+        LEFT JOIN telegram_pet_equipment_progression gear
+          ON gear.telegram_id=? AND gear.item_key=json_extract(expected.value,'$.item_key')
+            AND gear.slot=json_extract(expected.value,'$.slot')
+        WHERE gear.item_level IS NOT json_extract(expected.value,'$.item_level')
+          OR gear.item_xp IS NOT json_extract(expected.value,'$.item_xp')
+          OR gear.mastery_xp IS NOT json_extract(expected.value,'$.mastery_xp')
+          OR gear.mastery_tier IS NOT json_extract(expected.value,'$.mastery_tier'))
   `).bind(
     stepId,
     run.pet_id,
@@ -3113,7 +3129,7 @@ async function processPetRunStepResult(db, telegramId, runIdRaw, choiceKeyRaw, o
     outcome.consumed_item_key,
     telegramId,
     outcome.consumed_item_key,
-    run.pet_id, telegramId, run.season_key, ...sourceState,
+    run.pet_id, telegramId, run.season_key, ...sourceState, sourceEquipment, telegramId,
   );
   const consumedItemEventId = outcome.consumed_item_key ? crypto.randomUUID() : null;
   const consumedItemStatements = outcome.consumed_item_key

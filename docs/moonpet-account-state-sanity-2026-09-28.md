@@ -10,11 +10,17 @@ checks are read-only; no private player account was played, modified or reset.
 
 | Finding | Reproduction | Repair |
 | --- | --- | --- |
-| Standard Run can erase an overlapping care reward | Pause either a successful or failed Standard step before its batch; commit Feed; resume the stale step. The old absolute pet write overwrites the new care XP, while the accepted Feed receipt and leaderboard totals remain. | Check all captured pet-owned fields inside the step reservation. A conflict writes no step, spends no wallet/item cost, and advances no room; refresh/retry uses the new pet state. Daily, weekly, seasonal and all-time XP agree after the retry. |
+| Standard Run can erase an overlapping care reward | Pause either a successful or failed Standard step before its batch; commit Feed; resume the stale step. The old absolute pet write overwrites the new care XP, while the accepted Feed receipt and leaderboard totals remain. | Check all captured pet-owned fields and equipped progression rows inside the step reservation. A conflict writes no step, spends no wallet/item cost, and advances no room; refresh/retry uses the new pet state. Daily, weekly, seasonal and all-time XP agree after the retry. |
 | Missing read evidence can change a Standard outcome | Fail source-pet, inventory, wallet or daily-XP lookup. Old code reports the pet missing, assumes an empty bag/wallet, or treats already capped daily XP as zero. | Required reads propagate failure before resolution. Retry retains original source ownership and normal inventory consumption/XP caps. |
 | Pending work can be bypassed when changing pets | Persist an active Run, Arena or Kaiju session, then fail only its pending-work query while switching to another owned pet. | The shared switch/season-preparation guard propagates failures. The active pointer remains unchanged; a healthy retry still sees the saved blocker. |
 | Roster and Arcade options can falsely reset | Fail roster adoption, selected pointer, owned-pet list, lifetime Arcade XP or spendable Arcade XP. Previously the roster could select slot one, show no purchasing balance, or disappear from full state. | Required roster evidence reaches the normal display retry path. Legitimately empty balances still display zero. Per-pet progression retains its existing explicit unavailable card. |
 | Journey settlement can look missing | Fail Daily objective/latest/accepted-receipt reads after a saved Mark receipt, or the Weekly latest-receipt query. | Daily required reads preserve the last good full state through retry. Weekly uses its existing authority-syncing state. Saved claims and reward limits are unchanged. |
+
+Automated review additionally caught upgrades/mastery in the separate equipment
+progression table. The reservation now compares equipped level, item XP, mastery
+XP/tier and missing rows using one JSON-bound snapshot; unrelated equipment or
+another owner's equipment does not block the step. Three more race regressions
+fail on the initial PR head and pass with this extension.
 
 The shared wallet and atomic pet reads now distinguish database errors from a
 successful missing-row lookup. Best-effort recovery queues, optional reaction
@@ -50,9 +56,10 @@ wiki entities/relationships and is not a Pet XP graph.
 
 ## Verification
 
-- Added 19 regression/control cases: 18 fail against the unpatched baseline;
-  the empty-state control passes. All 19 pass with these fixes.
-- All 181 tests in the three expanded progression/run suites pass and cover the previous recovery, cross-pet,
+- Added 23 regression/control cases: 18 fail against the unpatched baseline,
+  and three equipment races fail on the initial PR head. Empty-state and
+  unrelated-equipment controls pass. All 23 pass with the final fixes.
+- All 185 tests in the three expanded progression/run suites pass and cover the previous recovery, cross-pet,
   historical-season, hatch-gate and required-state-read regressions as well.
 - The race tests exercise both success/failure outcomes, no partial step commit,
   safe retry, agreement of all four Pet XP leaderboard periods, and the D1
