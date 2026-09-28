@@ -1,3 +1,4 @@
+import { boundedRecoveryLimit } from './recovery-limits.js';
 import { withPetEquipmentProgression } from './equipment-progression.js';
 import dailyChallenges from './content/daily-challenges.json' with { type: 'json' };
 import {
@@ -388,7 +389,7 @@ export async function recoverDailyMoonRunEnding(db, request = {}) {
     reason: completion.status === 'completed' ? 'daily_run_completed' : 'daily_run_terminal', room, boss_reward, completion };
 }
 
-export async function recoverDailyMoonRunEndings(db, telegramId, now = new Date()) {
+export async function recoverDailyMoonRunEndings(db, telegramId, now = new Date(), limits = {}) {
   const bossIds = Object.keys(PET_ROGUELITE_BOSSES).map((id) => `'${id}'`).join(',');
   // Filter source-backed endings before bounding the queue. Failed/unowned or
   // malformed rows cannot strand another player's valid final-room settlement.
@@ -406,7 +407,7 @@ export async function recoverDailyMoonRunEndings(db, telegramId, now = new Date(
         OR NOT EXISTS (SELECT 1 FROM telegram_pet_daily_analytics a WHERE a.analytics_id=r.run_id||':daily:terminal'
           AND json_valid(a.event_data) AND json_extract(a.event_data,'$.boss_defeated')=1)
         OR NOT EXISTS (SELECT 1 FROM telegram_pet_events e WHERE e.telegram_id=d.telegram_id AND e.pet_id=d.pet_id AND e.season_key=r.season_key AND e.status='accepted' AND e.event_key='daily-moon-run:'||d.telegram_id||':'||d.run_id||':'||r.status))
-    ORDER BY d.utc_day, d.run_id LIMIT 5`).bind(String(telegramId)).all();
+    ORDER BY d.utc_day, d.run_id LIMIT ?`).bind(String(telegramId), boundedRecoveryLimit(limits.endings, 5)).all();
   const results = [];
   for (const candidate of candidates.results || []) {
     try {
@@ -428,7 +429,7 @@ export async function recoverDailyMoonRunEndings(db, telegramId, now = new Date(
         OR r.status='extracted' AND NOT EXISTS (SELECT 1 FROM telegram_pet_events e
           WHERE e.telegram_id=d.telegram_id AND e.pet_id=d.pet_id AND e.season_key=r.season_key
             AND e.status='accepted' AND e.event_key='daily-moon-run:'||d.telegram_id||':'||d.run_id||':extracted'))
-    ORDER BY d.utc_day,d.run_id LIMIT 5`).bind(String(telegramId)).all();
+    ORDER BY d.utc_day,d.run_id LIMIT ?`).bind(String(telegramId), boundedRecoveryLimit(limits.records, 5)).all();
   for (const candidate of terminalRecords.results || []) {
     try {
       results.push(await syncDailyMoonRun(db, { telegram_id: String(telegramId), run_id: candidate.run_id, now }));
@@ -543,7 +544,7 @@ export async function extractDailyMoonRun(db, request = {}) {
   return { ...synchronized, accepted: Boolean(extraction.accepted), duplicate: Boolean(extraction.duplicate), extraction };
 }
 
-async function recordChallengeEvidence(db, request) {
+async function recordChallengeEvidence(db, request, options = {}) {
   const challenge = PET_DAILY_CHALLENGES[request.challenge_id];
   if (!challenge) throw new Error('invalid_daily_challenge');
   const telegramId = String(request.telegram_id || '').trim();
@@ -607,7 +608,7 @@ async function recordChallengeEvidence(db, request) {
   const legacyResultOffset = petId ? 1 : 0;
   const progress = await db.prepare(`SELECT progress, completed_at FROM telegram_pet_daily_challenge_progress
     WHERE telegram_id = ? AND utc_day = ? AND challenge_id = ?`).bind(telegramId, utcDay, challenge.challenge_id).first().catch(() => null);
-  const dailyJourney = petId ? await finalizeDailyJourneyGrowthMark(db, {
+  const dailyJourney = petId && !options.defer_award ? await finalizeDailyJourneyGrowthMark(db, {
     telegram_id: telegramId,
     pet_id: petId,
     season_key: seasonId,
@@ -756,7 +757,7 @@ export async function finalizeDailyJourneyGrowthMark(db, request) {
   };
 }
 
-export async function recordDailyCareChallenge(db, request = {}) {
+export async function recordDailyCareChallenge(db, request = {}, options = {}) {
   const telegramId = String(request.telegram_id || '').trim();
   const eventKey = String(request.event_key || '').trim();
   if (!telegramId || !eventKey) throw new Error('invalid_daily_care_evidence');
@@ -774,7 +775,7 @@ export async function recordDailyCareChallenge(db, request = {}) {
     event_key: `care:${eventKey}`,
     progress_value: 1,
     evidence: { authority: 'telegram_pet_events', pet_id: evidence.pet_id, event_key: eventKey, action: evidence.event_type },
-  });
+  }, options);
 }
 
 async function reconcileRunChallenges(db, daily) {

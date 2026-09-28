@@ -20,6 +20,21 @@ Any gameplay, documentation, or UI change affecting Moonpet status should refere
 
 The following systems are considered live gameplay systems.
 
+### State refresh and relic visibility
+
+Relic Vault projects the account's stored relics using their `unlocked_at`
+timestamp. A failed vault read is labelled temporarily unavailable, not empty;
+it never clears ownership. Passive relic powers remain inactive in runs.
+
+State refreshes batch notice/achievement writes and do not rewrite unchanged
+achievement progress or timestamps. Recovery uses per-queue source allowances
+from `pets/recovery-limits.js`; larger backlogs drain across later refreshes.
+Each repair retains its original pet, season, day and idempotent receipt. Daily
+care recovery defers award finalization to the bounded Journey award pass, while
+direct gameplay retains immediate finalization. Reward amounts, caps and gates
+are unchanged. See `moonpet-vault-state-performance-2026-09-28.md` for measured
+query counts and regression coverage.
+
 ## PET
 
 Core Moonpet identity and lifecycle.

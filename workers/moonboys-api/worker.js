@@ -1,3 +1,4 @@
+import { PET_STATE_RECOVERY_LIMITS, boundedRecoveryLimit } from './pets/recovery-limits.js';
 import { BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP, GEMS_MAX, GEMS_MIN, TELEGRAM_AUTH_MAX_AGE, XP_MAX, XP_MIN } from './blocktopia/config.js';
 import { verifyTelegramIdentityFromBody } from './blocktopia/auth.js';
 import { getOrCreateBlockTopiaProgression, hasBlockTopiaFactionColumns } from './blocktopia/db.js';
@@ -2830,7 +2831,7 @@ async function recordPetRunBankedEvent(db, telegramId, run, pet, options = {}) {
 
 // Standard run steps and their banked snapshot survive a lost terminal reward
 // response. Only source-backed owned runs may enter this bounded recovery queue.
-async function recoverPetStandardRunEndings(db, telegramId, runIdRaw = '') {
+async function recoverPetStandardRunEndings(db, telegramId, runIdRaw = '', limit) {
   const owner = String(telegramId || '').trim();
   if (!owner) return [];
   const runId = String(runIdRaw || '').trim();
@@ -2847,7 +2848,7 @@ async function recoverPetStandardRunEndings(db, telegramId, runIdRaw = '') {
       AND NOT EXISTS (SELECT 1 FROM telegram_pet_reward_claims c WHERE c.telegram_id=r.telegram_id
         AND c.source='pet_run_legacy' AND c.status='awarded'
         AND c.idempotency_key=SUBSTR('pet_run_'||CASE WHEN r.status='extracted' THEN 'extract' ELSE 'complete' END||':'||r.telegram_id||':'||r.run_id,1,120))
-    ORDER BY COALESCE(r.completed_at,r.updated_at),r.run_id LIMIT 5`).bind(owner, runId, runId, PET_RUN_MAX_DEPTH).all();
+    ORDER BY COALESCE(r.completed_at,r.updated_at),r.run_id LIMIT ?`).bind(owner, runId, runId, PET_RUN_MAX_DEPTH, boundedRecoveryLimit(limit, 5)).all();
   const results = [];
   for (const row of candidates.results || []) {
     try {
@@ -9267,23 +9268,23 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
   // State preparation owns current-season initialization. Roster projection
   // remains read-only and assumes this authoritative bootstrap already ran.
   await preparePetMiniAppState(db, telegramId, now);
-  await recoverPetStandardRunEndings(db, telegramId).catch((error) => {
+  await recoverPetStandardRunEndings(db, telegramId, '', PET_STATE_RECOVERY_LIMITS.standard_endings).catch((error) => {
     logApiFailure('pet_standard_run_recovery_failed', { message: error?.message || String(error) });
   });
-  const recoveredEndings = await recoverDailyMoonRunEndings(db, telegramId, now).catch(() => []);
+  const recoveredEndings = await recoverDailyMoonRunEndings(db, telegramId, now, { endings: PET_STATE_RECOVERY_LIMITS.daily_endings, records: PET_STATE_RECOVERY_LIMITS.daily_records }).catch(() => []);
   for (const ending of recoveredEndings) if (ending.accepted) {
     await recordWeeklyJourneyFromDailyMoonRunTerminal(db, telegramId, ending.daily_run.run_id, ending.daily_run.status);
   }
   await recoverPetEquipmentRows(db, telegramId).catch(error => {
     logApiFailure('equipment_ownership_recovery_pending', { telegramId, message: error?.message || String(error) });
   });
-  await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward).catch((error) => {
+  await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward, { limit: PET_STATE_RECOVERY_LIMITS.runtime }).catch((error) => {
     logApiFailure('pet_runtime_recovery_failed', { message: error?.message || String(error) });
   });
-  await recoverPetWeeklyBossVictories(db, telegramId, finishPetWeeklyBossVictory).catch((error) => {
+  await recoverPetWeeklyBossVictories(db, telegramId, finishPetWeeklyBossVictory, PET_STATE_RECOVERY_LIMITS.weekly_bosses).catch((error) => {
     logApiFailure('pet_weekly_boss_recovery_failed', { message: error?.message || String(error) });
   });
-  await recoverPetJourneyAwards(db, telegramId).catch((error) => {
+  await recoverPetJourneyAwards(db, telegramId, { source_limit: PET_STATE_RECOVERY_LIMITS.journey_sources, award_limit: PET_STATE_RECOVERY_LIMITS.journey_awards }).catch((error) => {
     logApiFailure('pet_journey_recovery_failed', { message: error?.message || String(error) });
   });
   const petRaw = await getPetProfile(db, telegramId).catch(() => null);
@@ -9313,8 +9314,11 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       ORDER BY slot, item_level DESC, item_key`).bind(telegramId).all().catch(() => ({ results: [] })),
     db.prepare(`SELECT material_key, quantity FROM telegram_pet_material_balances
       WHERE telegram_id = ? AND quantity > 0 ORDER BY material_key`).bind(telegramId).all().catch(() => ({ results: [] })),
-    db.prepare(`SELECT relic_id, acquired_at FROM telegram_pet_relics
-      WHERE telegram_id = ? ORDER BY acquired_at DESC`).bind(telegramId).all().catch(() => ({ results: [] })),
+    db.prepare(`SELECT relic_id, unlocked_at AS acquired_at FROM telegram_pet_relics
+      WHERE telegram_id = ? ORDER BY unlocked_at DESC, relic_id`).bind(telegramId).all().catch((error) => {
+        logApiFailure('pet_relic_vault_unavailable', { message: error?.message || String(error) });
+        return { results: [], available: false };
+      }),
     getPetArenaBattleForPlayer(db, PET_MINI_APP_ARENA_LOBBY, telegramId)
       .then((battle) => battle || getPetArenaBattleForPlayer(db, `mini:${telegramId}`, telegramId)),
     getPetArenaQueueState(db, PET_MINI_APP_ARENA_LOBBY, telegramId),
@@ -9481,6 +9485,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       sources: [...definition.sources, ...getPetRuntimeMaterialSources(key)],
     })),
     relics: relics.results || [],
+    relics_available: relics.available !== false,
     regions: liveSystems.regions,
     live_systems: liveSystems,
     inventory,
@@ -13598,7 +13603,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260928-runtime-recovery-v1`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260928-vault-recovery-budget-v1`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',
@@ -15819,11 +15824,17 @@ async function sendTelegramBuiltPetGuidedReply(botToken, chatId, db, telegramId,
 }
 
 async function persistPetGuidanceNotices(db, telegramId, candidates) {
-  const writes = candidates.map((notice) => db.prepare(`INSERT OR IGNORE INTO telegram_pet_guidance_notices
+  // One statement instead of one per candidate; JSON keeps D1's parameter
+  // limit independent of the number of unlocks. Existing/shown notices stay put.
+  if (candidates.length) await db.prepare(`INSERT OR IGNORE INTO telegram_pet_guidance_notices
     (telegram_id, notice_key, notice_type, title, detail, callback_data)
-    VALUES (?, ?, ?, ?, ?, ?)`)
-    .bind(telegramId, notice.key, notice.type, String(notice.title).slice(0, 160), String(notice.detail || '').slice(0, 500), String(notice.callback_data || 'pet:coach').slice(0, 100)));
-  if (writes.length) await db.batch(writes);
+    SELECT ?, json_extract(value,'$.key'), json_extract(value,'$.type'),
+      json_extract(value,'$.title'), json_extract(value,'$.detail'), json_extract(value,'$.callback_data')
+    FROM json_each(?)`)
+    .bind(telegramId, JSON.stringify(candidates.map(notice => ({
+      key: notice.key, type: notice.type, title: String(notice.title).slice(0, 160),
+      detail: String(notice.detail || '').slice(0, 500), callback_data: String(notice.callback_data || 'pet:coach').slice(0, 100),
+    })))).run();
   const pending = await db.prepare(`SELECT notice_key AS key, notice_type AS type, title, detail, callback_data
     FROM telegram_pet_guidance_notices WHERE telegram_id = ? AND shown_at IS NULL
     ORDER BY CASE notice_type
@@ -15974,21 +15985,26 @@ async function syncPetAchievementsForPet(db, telegramId, petIdRaw, seasonKeyRaw,
     personalities: Number(personalities?.count || 0),
     evolution_stage: Number(evolution?.stage || 0),
   };
-  const statements = Object.entries(PET_ACHIEVEMENTS).map(([achievementId, definition]) => {
-    const progress = Math.max(0, Math.floor(values[definition.source] || 0));
-    return db.prepare(`INSERT INTO telegram_pet_achievements (pet_id, telegram_id, season_key, achievement_id, progress, target, unlocked_at)
-      VALUES (?, ?, ?, ?, ?, ?, CASE WHEN ? >= ? THEN CURRENT_TIMESTAMP ELSE NULL END)
-      ON CONFLICT(pet_id, achievement_id) DO UPDATE SET
-        progress = MAX(telegram_pet_achievements.progress, excluded.progress), target = excluded.target,
-        unlocked_at = COALESCE(telegram_pet_achievements.unlocked_at,
-          CASE WHEN MAX(telegram_pet_achievements.progress, excluded.progress) >= excluded.target THEN CURRENT_TIMESTAMP ELSE NULL END),
-        updated_at = CURRENT_TIMESTAMP
-      WHERE telegram_pet_achievements.pet_id = excluded.pet_id
-        AND telegram_pet_achievements.telegram_id = excluded.telegram_id
-        AND telegram_pet_achievements.season_key = excluded.season_key`)
-      .bind(petId, telegramId, seasonKey, achievementId, progress, definition.target, progress, definition.target);
-  });
-  await db.batch(statements);
+  const achievements = Object.entries(PET_ACHIEVEMENTS).map(([achievementId, definition]) => ({
+    id: achievementId, progress: Math.max(0, Math.floor(values[definition.source] || 0)), target: definition.target,
+  }));
+  // The conflict guard remains authoritative under concurrent refreshes. Do
+  // not rewrite unchanged rows (including updated_at) on every state request.
+  await db.prepare(`INSERT INTO telegram_pet_achievements (pet_id, telegram_id, season_key, achievement_id, progress, target, unlocked_at)
+    SELECT ?, ?, ?, json_extract(value,'$.id'), json_extract(value,'$.progress'), json_extract(value,'$.target'),
+      CASE WHEN json_extract(value,'$.progress') >= json_extract(value,'$.target') THEN CURRENT_TIMESTAMP ELSE NULL END
+    FROM json_each(?) WHERE 1
+    ON CONFLICT(pet_id, achievement_id) DO UPDATE SET
+      progress = MAX(telegram_pet_achievements.progress, excluded.progress), target = excluded.target,
+      unlocked_at = COALESCE(telegram_pet_achievements.unlocked_at,
+        CASE WHEN MAX(telegram_pet_achievements.progress, excluded.progress) >= excluded.target THEN CURRENT_TIMESTAMP ELSE NULL END),
+      updated_at = CURRENT_TIMESTAMP
+    WHERE telegram_pet_achievements.pet_id = excluded.pet_id
+      AND telegram_pet_achievements.telegram_id = excluded.telegram_id
+      AND telegram_pet_achievements.season_key = excluded.season_key
+      AND (telegram_pet_achievements.progress < excluded.progress OR telegram_pet_achievements.target <> excluded.target
+        OR telegram_pet_achievements.unlocked_at IS NULL AND MAX(telegram_pet_achievements.progress, excluded.progress) >= excluded.target)`)
+    .bind(petId, telegramId, seasonKey, JSON.stringify(achievements)).run();
   const rows = await db.prepare(`SELECT achievement_id, progress, target, unlocked_at FROM telegram_pet_achievements
     WHERE pet_id = ? AND telegram_id = ? AND season_key = ?
     ORDER BY unlocked_at IS NULL, unlocked_at, achievement_id`).bind(petId, telegramId, seasonKey).all();

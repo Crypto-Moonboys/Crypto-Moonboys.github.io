@@ -19,15 +19,16 @@ function fixture(owner) {
   class Statement {
     constructor(query, args = []) { this.query = query; this.args = args; }
     bind(...args) { return new Statement(this.query, args); }
-    async first() { if (db.beforeFirst) await db.beforeFirst(this); return sql.prepare(this.query).get(...this.args) || null; }
-    async all() { if (db.beforeAll) await db.beforeAll(this); return { results: sql.prepare(this.query).all(...this.args) }; }
+    async first() { db.statementCount++; if (db.beforeFirst) await db.beforeFirst(this); return sql.prepare(this.query).get(...this.args) || null; }
+    async all() { db.statementCount++; if (db.beforeAll) await db.beforeAll(this); return { results: sql.prepare(this.query).all(...this.args) }; }
     exec() {
+      db.statementCount++;
       if (/\bRETURNING\b/i.test(this.query)) { const results = sql.prepare(this.query).all(...this.args); return { results, meta: { changes: results.length } }; }
       return { results: [], meta: { changes: Number(sql.prepare(this.query).run(...this.args).changes) } };
     }
     async run() { if (db.beforeRun) await db.beforeRun(this); return this.exec(); }
   }
-  const db = { beforeBatch: null, beforeRun: null, prepare(query) { return new Statement(query); }, async batch(statements) {
+  const db = { statementCount: 0, beforeBatch: null, beforeRun: null, prepare(query) { return new Statement(query); }, async batch(statements) {
     if (this.beforeBatch) await this.beforeBatch(statements);
     sql.exec('BEGIN');
     try { const results = []; for (const s of statements) results.push(s.exec()); sql.exec('COMMIT'); return results; }
@@ -66,6 +67,95 @@ async function api(f,body,secret='pet-secret') {
   }),{DB:f.db,TELEGRAM_PETS_BOT_SECRET:'pet-secret'});
   return { status:response.status, ...await response.json() };
 }
+
+test('owned relics reach full state, remain private, and distinguish a read outage from empty inventory', async () => {
+  const f=fixture('vault-owner');
+  f.sql.prepare("INSERT INTO telegram_pet_relics (telegram_id,relic_id,rarity,unlocked_at) VALUES (?,'alley_crown','rare','2026-09-01 12:00:00')").run(f.owner);
+  f.sql.prepare("INSERT INTO telegram_pet_relics (telegram_id,relic_id,rarity,unlocked_at) VALUES (?,'neon_shard','common','2026-09-02 12:00:00')").run(f.owner);
+  f.sql.prepare("INSERT INTO telegram_users (telegram_id) VALUES ('other-vault')").run();
+  f.sql.prepare("INSERT INTO telegram_pet_relics (telegram_id,relic_id,rarity) VALUES ('other-vault','private_relic','rare')").run();
+  const first=await f.state();
+  assert.equal(first.relics_available,true);
+  assert.deepEqual(first.relics.map(r=>r.relic_id),['neon_shard','alley_crown']);
+  assert.equal(first.relics[1].acquired_at,'2026-09-01 12:00:00');
+  f.db.beforeAll=statement=>{if(statement.query.includes('SELECT relic_id,')) throw Error('isolated_vault_outage');};
+  const failed=await f.state();
+  assert.equal(failed.relics_available,false);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_relics WHERE telegram_id=?').get(f.owner).n,2);
+  f.db.beforeAll=null;
+  assert.deepEqual((await f.state()).relics,first.relics);
+});
+
+test('warm state stays below its SQL budget and does not rewrite unchanged achievements', async () => {
+  const f=fixture('state-budget'); await f.state();
+  f.sql.prepare("UPDATE telegram_pet_achievements SET updated_at='2000-01-01 00:00:00' WHERE telegram_id=?").run(f.owner);
+  const before=f.sql.prepare('SELECT * FROM telegram_pet_achievements WHERE telegram_id=? ORDER BY achievement_id').all(f.owner);
+  f.db.statementCount=0;
+  await f.state();
+  assert.ok(f.db.statementCount<=180,`warm state executed ${f.db.statementCount} statements`);
+  assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_achievements WHERE telegram_id=? ORDER BY achievement_id').all(f.owner),before);
+  await f.act({action:'feed',request_id:'budget-feed'});
+  await f.state();
+  assert.ok(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_achievements WHERE telegram_id=? AND updated_at<>'2000-01-01 00:00:00'").get(f.owner).n>0,'new gameplay still advances achievements');
+  const earned=f.sql.prepare('SELECT * FROM telegram_pet_achievements WHERE telegram_id=? ORDER BY achievement_id').all(f.owner);
+  await Promise.all([f.state(),f.state()]);
+  assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_achievements WHERE telegram_id=? ORDER BY achievement_id').all(f.owner),earned,'overlapping unchanged refreshes preserve progress and unlock timestamps');
+});
+
+test('bulk guidance notices fit D1 parameters and keep shown notices one-time', async () => {
+  const f=fixture('notice-budget');
+  const notices=Array.from({length:100},(_,i)=>({key:'bulk-'+i,type:'feature',title:'Notice '+i,detail:'Saved notice',callback_data:'pet:coach'}));
+  f.db.beforeRun=statement=>assert.ok(statement.args.length<=100,'D1 parameter limit');
+  await hooks.persistPetGuidanceNotices(f.db,f.owner,notices);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_guidance_notices').get().n,100);
+  f.sql.prepare("UPDATE telegram_pet_guidance_notices SET shown_at='2026-09-01' WHERE telegram_id=?").run(f.owner);
+  assert.deepEqual(await hooks.persistPetGuidanceNotices(f.db,f.owner,notices),[]);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_guidance_notices').get().n,100);
+});
+
+test('large recovery backlog drains within per-refresh SQL budget across failures and pet switches', async () => {
+  const f=fixture('backlog-budget'); await f.state();
+  const sourcePet=authority(f).pet_id;
+  f.pet('other-budget-pet',currentSeason,300,2);
+  const sourceDay=new Date(now.getTime()-86400000).toISOString().slice(0,10);
+  const sourceSeason=hooks.getPetSeasonInfo(new Date(sourceDay+'T12:00:00Z')).key;
+  // Use an owned historical pet if the test runs across a season boundary.
+  const earnedPet=sourceSeason===currentSeason?sourcePet:'old-budget-pet';
+  if(earnedPet!==sourcePet) f.pet(earnedPet,sourceSeason);
+  for(let i=0;i<50;i++) f.sql.prepare(`INSERT INTO telegram_pet_events
+    (id,pet_id,telegram_id,event_type,event_key,pet_xp_awarded,season_key,day_key,week_key,status,reason,metadata)
+    VALUES (?,?,?,'feed',?,0,?,?,'original-week','accepted','pet_feed',?)`)
+    .run('saved-source-'+i,earnedPet,f.owner,'saved-feed-'+i,sourceSeason,sourceDay,JSON.stringify({context:{source:'telegram_mini_app',equipment_snapshot:{}}}));
+  const sourceXp=f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(earnedPet).pet_xp;
+  const sourceEvents=f.sql.prepare('SELECT * FROM telegram_pet_events ORDER BY id').all();
+  let failed=false;
+  f.db.beforeRun=statement=>{
+    if(!failed && statement.query.includes('INSERT OR IGNORE INTO telegram_pet_weekly_journey_objectives')) {failed=true;throw Error('interrupted_budget_evidence');}
+  };
+  let peak=0;
+  for(let pass=0;pass<4;pass++) {
+    if(pass===1) f.active('other-budget-pet');
+    f.db.statementCount=0;
+    const state=await f.state();
+    assert.equal(state.adopted,true);
+    peak=Math.max(peak,f.db.statementCount);
+    assert.ok(f.db.statementCount<=600,`refresh ${pass} executed ${f.db.statementCount} statements`);
+    if(pass===0) {
+      assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_specialist_events').get().n,20);
+      assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_daily_journey_objectives').get().n,20);
+    }
+  }
+  assert.equal(failed,true);
+  for(const table of ['telegram_pet_specialist_events','telegram_pet_daily_journey_objectives','telegram_pet_weekly_journey_objectives']) {
+    assert.equal(f.sql.prepare(`SELECT COUNT(*) n FROM ${table} WHERE pet_id=?`).get(earnedPet).n,50,table);
+    assert.equal(f.sql.prepare(`SELECT COUNT(*) n FROM ${table} WHERE pet_id='other-budget-pet'`).get().n,0,table);
+  }
+  const specialist=f.sql.prepare('SELECT care_xp,bond_xp FROM telegram_pet_specialist_progression WHERE pet_id=?').get(earnedPet);
+  assert.deepEqual({...specialist},{care_xp:300,bond_xp:180},'original daily caps remain enforced');
+  assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(earnedPet).pet_xp,sourceXp);
+  assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_events ORDER BY id').all(),sourceEvents,'no primary reward replay');
+  console.log(`Recovery budget: peak ${peak} SQL statements; 50 saved sources fully recovered`);
+});
 
 test('a job retry after switching pets cannot credit the new pet',async()=>{
   const f=fixture('84001'); f.pet('second-job',currentSeason,300,2);
@@ -1274,7 +1364,7 @@ test('full Mini App actions for two equipped pets compile under the production c
   }
   const statements = new Map();
   const capture = statement => {
-    if (/WITH (?:run_candidates|raw_candidates|definitions)/.test(statement.query)) statements.set(statement.query, statement.args);
+    if (/WITH (?:run_candidates|raw_candidates|definitions)|INSERT(?: OR IGNORE)? INTO telegram_pet_(?:achievements|guidance_notices)|SELECT relic_id, unlocked_at/.test(statement.query)) statements.set(statement.query, statement.args);
   };
   f.db.beforeFirst = capture; f.db.beforeAll = capture; f.db.beforeRun = capture;
   f.db.beforeBatch = batch => batch.forEach(capture);
@@ -1306,13 +1396,15 @@ test('full Mini App actions for two equipped pets compile under the production c
   // Node SQLite does not expose sqlite3_limit. Python 3.11+ exposes the real
   // SQLite compiler limit, unlike counting UNION tokens (which misses nesting).
   const schema = f.sql.prepare("SELECT sql FROM sqlite_schema WHERE sql IS NOT NULL AND name NOT LIKE 'sqlite_%' ORDER BY CASE type WHEN 'table' THEN 0 ELSE 1 END").all().map(row => row.sql + ';').join('\n');
-  assert.equal(statements.size, 2, 'exercise both production recovery queries through real HTTP routes');
+  assert.equal(statements.size, 5, 'exercise recovery, bulk writes and relic reads through real HTTP routes');
   const compiled = spawnSync('python3', ['-c', `
 import json, sqlite3, sys
 payload = json.load(sys.stdin)
 db = sqlite3.connect(':memory:')
 db.executescript(payload['schema'])
 db.setlimit(sqlite3.SQLITE_LIMIT_COMPOUND_SELECT, 5)
+db.setlimit(sqlite3.SQLITE_LIMIT_VARIABLE_NUMBER, 100)
+db.setlimit(sqlite3.SQLITE_LIMIT_FUNCTION_ARG, 32)
 try:
     db.execute(' UNION ALL '.join(['SELECT 1'] * 6))
 except sqlite3.OperationalError as error:

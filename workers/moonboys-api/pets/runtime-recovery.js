@@ -1,3 +1,4 @@
+import { boundedRecoveryLimit } from './recovery-limits.js';
 import { PET_SEASONAL_BOSSES } from './content-phase-4.js';
 
 // Keys come from committed game records, never from the current selection or
@@ -107,8 +108,8 @@ export async function recoverPetRuntimeAwards(db, owner, award, filter = {}) {
         (e.event_key=c.event_key OR (c.event_key LIKE 'runtime:api:%' AND length(c.event_key)=132
           AND substr(e.event_key,1,132)=c.event_key)))
     GROUP BY c.pet_id,c.season_key,c.event_key
-    ORDER BY c.day_key,c.event_key LIMIT 20`)
+    ORDER BY c.day_key,c.event_key LIMIT ?`)
     .bind(owner, filter.event_key || '', filter.event_key || '', owner, owner, owner, owner, owner, owner, owner,
-      ...Object.keys(PET_SEASONAL_BOSSES), owner, filter.run_id || '', filter.run_id || '', filter.action || '', filter.action || '').all();
+      ...Object.keys(PET_SEASONAL_BOSSES), owner, filter.run_id || '', filter.run_id || '', filter.action || '', filter.action || '', boundedRecoveryLimit(filter.limit, 20)).all();
   for (const row of rows.results || []) await award(db, owner, row.event_key, row.action, row);
 }
