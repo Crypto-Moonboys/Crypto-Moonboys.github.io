@@ -106,8 +106,6 @@
   output.replaceChildren(outputText);
   var bootLayer = document.getElementById('boot-layer');
   var bootText = document.getElementById('boot-text');
-  var title = document.getElementById('system-title');
-  var clock = document.getElementById('system-clock');
   var utilityLayer = document.getElementById('utility-layer');
   var utilityTitle = document.getElementById('utility-title');
   var utilityContent = document.getElementById('utility-content');
@@ -763,8 +761,6 @@
 
   function utilityRail() {
     return '<nav class="utility-rail" aria-label="Game utilities">' +
-      '<button type="button" class="utility-button" data-utility="guide">HOW TO PLAY</button>' +
-      '<button type="button" class="utility-button" data-utility="leaderboard">LEADERBOARD</button>' +
       '<button type="button" class="utility-button" data-utility="audio" aria-pressed="' + (audioEnabled ? 'true' : 'false') + '">AUDIO ' + (audioEnabled ? 'ON' : 'OFF') + '</button>' +
       '<button type="button" class="utility-button" data-utility="radio" aria-pressed="' + (radioRequestedOn ? 'true' : 'false') + '">RADIO ' + (radioRequestedOn ? 'ON' : 'OFF') + '</button>' +
       '<button type="button" class="utility-button" data-utility="sync">REFRESH</button>' +
@@ -2444,7 +2440,6 @@
     });
     renderedPetId = state && state.pet && state.pet.pet_id || null;
     renderedPetName = String(state && state.pet && state.pet.callsign || '');
-    title.textContent = state && state.pet ? resolveMoonpetDisplayName(state.lifecycle, state.guidance && state.guidance.identity) + ' OS' : 'MOONPET OS';
     if (reducedMotion) drawWorld(0);
   }
 
@@ -3706,7 +3701,6 @@
         utcHour = nextUtcHour;
         if (reducedMotion) drawWorld(performance.now());
       }
-      clock.textContent = now.toISOString().slice(11, 19) + ' UTC';
     }, 1000);
     // Sprite loading must never block the game boot/auth path. Start all renderers in
     // the background and keep drawPet in its safe loading state until bot art is ready.

@@ -84,7 +84,7 @@ button, input, select, textarea {
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto minmax(178px, 32dvh) auto minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(178px, 32dvh) minmax(0, 1fr) auto;
   overflow: hidden;
   background:
     repeating-linear-gradient(180deg, rgba(255,255,255,.008) 0 1px, transparent 1px 6px),
@@ -115,25 +115,6 @@ button, input, select, textarea {
     linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0) 18%, rgba(0,0,0,.08) 100%),
     radial-gradient(circle at top, rgba(255,255,255,.025), transparent 38%);
   opacity: .8;
-}
-
-.system-bar, .dock {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-}
-
-.system-bar {
-  min-height: 42px;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--ui-border);
-  background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
-  color: var(--ui-text-secondary);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: .16em;
-  text-transform: uppercase;
 }
 
 .viewport {
@@ -659,11 +640,13 @@ button, input, select, textarea {
 
 .dock {
   display: grid;
+  align-items: center;
+  gap: 4px;
   grid-template-columns: repeat(6, minmax(0, 1fr));
   position: relative;
   z-index: 60;
   width: 100%;
-  padding: 7px 7px calc(7px + var(--safe-bottom));
+  padding: 4px 4px calc(4px + var(--safe-bottom));
   border-top: 1px solid var(--ui-border);
   background: rgba(9, 9, 11, 0.94);
 }
@@ -672,10 +655,10 @@ button, input, select, textarea {
   position: relative;
   min-width: 0;
   flex: 1;
-  min-height: 52px;
-  padding: 7px 4px 6px;
+  min-height: 44px;
+  padding: 4px 2px;
   border: 1px solid transparent;
-  border-radius: 12px;
+  border-radius: 10px;
   background: transparent;
   color: var(--ui-text-muted);
   font-size: 9px;
@@ -686,9 +669,9 @@ button, input, select, textarea {
 
 .dock button span {
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   color: inherit;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1;
 }
 
@@ -744,7 +727,7 @@ button, input, select, textarea {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
   margin: -12px -12px 12px;
-  padding: 10px 12px;
+  padding: 6px 12px;
   border-bottom: 1px solid var(--ui-border);
   background: rgba(10, 10, 12, 0.88);
 }
@@ -756,6 +739,11 @@ button, input, select, textarea {
   min-height: 36px;
   padding: 8px;
   font-size: 10px;
+}
+
+.utility-button {
+  min-height: 32px;
+  padding: 5px 8px;
 }
 
 .utility-button[aria-pressed="true"] {
@@ -1013,7 +1001,7 @@ button, input, select, textarea {
 }
 
 @media (min-width: 560px) {
-  .terminal-shell { grid-template-rows: auto minmax(210px, 35dvh) auto minmax(0, 1fr) auto; }
+  .terminal-shell { grid-template-rows: auto minmax(210px, 35dvh) minmax(0, 1fr) auto; }
   .screen { padding: 14px; }
   .button-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .hud-chip { font-size: 11px; }
@@ -1021,7 +1009,7 @@ button, input, select, textarea {
     top: -14px;
     margin: -14px -14px 12px;
     padding-inline: 14px;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(3, 104px);
   }
   .utility-dialog {
     width: min(100%, 620px);
@@ -1047,14 +1035,19 @@ button, input, select, textarea {
 }
 
 @media (max-height: 620px) {
-  .terminal-shell { grid-template-rows: auto minmax(150px, 30dvh) auto minmax(0, 1fr) auto; }
-  .system-bar { min-height: 34px; padding-block: 7px; }
+  .terminal-shell { grid-template-rows: auto minmax(150px, 30dvh) minmax(0, 1fr) auto; }
   .terminal-output { min-height: 34px; padding-block: 7px; }
-  .dock { padding-top: 4px; }
-  .dock button { min-height: 44px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .terminal-output.is-scrolling .terminal-output-text {
+    max-width: 100%;
+    min-width: 0;
+    padding-left: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    animation: none;
+  }
   *, *::before, *::after {
     animation-duration: .001ms !important;
     animation-iteration-count: 1 !important;
