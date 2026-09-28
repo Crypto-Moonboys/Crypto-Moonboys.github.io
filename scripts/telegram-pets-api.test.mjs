@@ -959,14 +959,14 @@ assert.ok(worker.includes("reason: 'wallet_reconciliation_recovery_pending'"),
 const petAction = asyncBlock('processPetAction');
 assert.ok(petAction.includes('PETS_DAILY_COMMUNITY_XP_CAP'), 'pet action must apply Community XP daily cap');
 assert.ok(petAction.includes('PETS_DAILY_PET_XP_CAP'), 'pet action must apply pet XP daily cap');
-assert.ok(petAction.includes('awardCommunityXp'), 'pet action must award through shared Community XP helper');
+assert.ok(petAction.includes('...petCareCommunityStatements(db, eventId)'), 'care must commit the Community XP log and both leaderboard projections in its reward batch');
 assert.ok(petAction.includes("if (existing) {"), 'pet action must short-circuit duplicate event keys first');
-assert.ok(petAction.includes('updatePetStreakForAction(pet, dayKey)'), 'accepted pet actions must update streaks before saving the active day');
+assert.ok(petAction.includes('...petCareDeltaStatements(db, { eventId, dayKey'), 'care must apply current-row stats and streaks in the reward batch');
 assert.ok(petAction.includes('const actionHasWalletReward = hasPetAccountWalletDelta(tokenRewards)'),
   'pet actions must detect wallet movement before applying recovery guards');
 assert.ok(petAction.includes("${actionHasWalletReward ? accountWalletRecoveryResolvedSql('?') : '1 = 1'}"),
   'pet-only actions must not be blocked by account-wallet recovery SQL');
-assert.ok(petAction.includes('const persistedPet = await getPetProfile(db, telegramId)'),
+assert.ok(petAction.includes('const persistedPet = await getPetInstanceWithAtomicDecay(db, pet.pet_id, now)'),
   'pet action success responses must reload persisted state');
 assert.ok(petAction.includes("if (action === 'adopt')"), 'adopt branch must be explicit');
 assert.ok(petAction.includes('const pet = await getOrCreatePetProfile(db, telegramId, options)'), 'adopt branch must create the pet profile');
@@ -3070,7 +3070,7 @@ assert.deepEqual(
 const actionRecoveryDb = seedRepeatRewardPlayer('pet-action-recovery', 70);
 await ensurePetStarterSeasonSlot(actionRecoveryDb, 'pet-action-recovery', new Date('2026-08-15T00:00:00Z'));
 await __petMediaTestHooks.ensureActivePetInstance(actionRecoveryDb, 'pet-action-recovery');
-actionRecoveryDb.failBatchOnSql(/UPDATE telegram_pet_profiles SET\s+pet_xp = \?/);
+actionRecoveryDb.failBatchOnSql(/UPDATE telegram_pet_profiles SET\s+\(pet_xp,level,stage/);
 await assert.rejects(
   processPetAction(actionRecoveryDb, 'pet-action-recovery', 'feed', { event_key: 'callback:feed:failure', source: 'telegram_callback' }),
   /simulated_d1_batch_failure/,
@@ -3503,7 +3503,7 @@ await ensurePetStarterSeasonSlot(rollbackUseItemDb, 'use-item-rollback', new Dat
 await __petMediaTestHooks.ensureActivePetInstance(rollbackUseItemDb, 'use-item-rollback');
 rollbackUseItemDb.database.prepare(`INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity)
   VALUES ('use-item-rollback', 'item', 'style_patch', 1)`).run();
-rollbackUseItemDb.failBatchOnSql(/UPDATE telegram_pet_profiles SET\s+pet_xp = MAX/);
+rollbackUseItemDb.failBatchOnSql(/UPDATE telegram_pet_profiles SET\s+\(pet_xp,level,stage/);
 await assert.rejects(
   processPetUseItem(rollbackUseItemDb, 'use-item-rollback', 'style_patch', {
     event_key: 'use-item-rollback', source: 'inventory_authority_regression',
@@ -4425,6 +4425,14 @@ const recoveryDayBKey = '2026-09-28';
 const recoveryWeekAKey = '2026-W39';
 const recoverySeasonAKey = 'pet-s2026-003';
 
+// Settlement helpers also read the server clock. Advance that clock with the
+// request so rounded decay cannot depend on when CI happens to run this case.
+const repeatRecoveryRealDate = globalThis.Date;
+let repeatRecoveryClock = recoveryDayA.getTime();
+globalThis.Date = class extends repeatRecoveryRealDate {
+  constructor(...args) { super(...(args.length ? args : [repeatRecoveryClock])); }
+  static now() { return repeatRecoveryClock; }
+};
 const eventRecoveryDb = seedRepeatRewardPlayer('event-recovery', 70, recoveryDayA.toISOString());
 seedAcceptedDailyPetEvent(eventRecoveryDb, 'event-recovery', 'event-recovery-day-a-cap', 1199, 0, recoveryDayAKey, { petScoped: true });
 eventRecoveryDb.failOnBatch(3);
@@ -4445,6 +4453,7 @@ assert.deepEqual(eventAfterFailure.profile, { pet_xp: 0, moon_gold: 0, moon_crys
 eventRecoveryDb.database.prepare(`
   UPDATE telegram_pet_profiles SET last_active_day = ?, streak_days = 9 WHERE telegram_id = ?
 `).run(recoveryDayBKey, 'event-recovery');
+repeatRecoveryClock = recoveryDayB.getTime();
 const recoveredEvent = await processPetRandomEvent(eventRecoveryDb, 'event-recovery', 'leave_it', {
   event_key: 'event-recovery-callback',
   encounter: PET_RANDOM_EVENTS.moon_crate_found,
@@ -4566,14 +4575,7 @@ assert.equal(legacyPendingSecondRetry.accepted, false, 'cancelled legacy pending
 assert.equal(legacyPendingSecondRetry.duplicate, true, 'cancelled legacy pending Event retries must be idempotent');
 assert.equal(legacyPendingSecondRetry.reason, 'legacy_repeat_reward_missing_pet_authority', 'cancelled legacy pending Event retries must keep the compatibility reason');
 
-// Settlement helpers also read the server clock. Advance that clock with the
-// request so rounded decay cannot depend on when CI happens to run this case.
-const kaijuRecoveryRealDate = globalThis.Date;
-let kaijuRecoveryClock = recoveryDayA.getTime();
-globalThis.Date = class extends kaijuRecoveryRealDate {
-  constructor(...args) { super(...(args.length ? args : [kaijuRecoveryClock])); }
-  static now() { return kaijuRecoveryClock; }
-};
+repeatRecoveryClock = recoveryDayA.getTime();
 const kaijuRecoveryDb = seedRepeatRewardPlayer('kaiju-recovery', 50, recoveryDayA.toISOString());
 kaijuRecoveryDb.database.exec('DELETE FROM telegram_seasons');
 kaijuRecoveryDb.database.prepare(`
@@ -4606,7 +4608,7 @@ kaijuRecoveryDb.database.prepare(`
   UPDATE telegram_pet_profiles SET last_active_day = ?, streak_days = 9 WHERE telegram_id = ?
 `).run(recoveryDayBKey, 'kaiju-recovery');
 kaijuRecoveryDb.database.prepare('UPDATE telegram_pet_instances SET last_active_day=?,streak_days=9 WHERE telegram_id=?').run(recoveryDayBKey, 'kaiju-recovery');
-kaijuRecoveryClock = recoveryDayB.getTime();
+repeatRecoveryClock = recoveryDayB.getTime();
 const recoveredKaiju = await awardPetKaijuPlayerResult(kaijuRecoveryDb, 'kaiju-recovery', kaijuMatch, 'kaiju_win', kaijuRewards, { now: recoveryDayB });
 assert.equal(recoveredKaiju.accepted, true, 'retrying a failed Kaiju result must complete its pending reservation');
 assert.equal(recoveredKaiju.reward_slot, 1, 'Kaiju recovery must reuse the original slot');
@@ -4667,7 +4669,7 @@ assert.deepEqual(
 const duplicateKaiju = await awardPetKaijuPlayerResult(kaijuRecoveryDb, 'kaiju-recovery', kaijuMatch, 'kaiju_win', kaijuRewards, { now: recoveryDayB });
 assert.equal(duplicateKaiju.duplicate, true, 'a completed Kaiju result retry must be idempotent');
 assert.deepEqual(repeatRewardSnapshot(kaijuRecoveryDb, 'kaiju-recovery', 'kaiju'), kaijuAfterRecovery, 'duplicate Kaiju result must not change XP, currencies, Energy, or its slot');
-globalThis.Date = kaijuRecoveryRealDate;
+globalThis.Date = repeatRecoveryRealDate;
 
 function seedSelectableSoloKaijuMatch(db, telegramId, matchId) {
   db.database.prepare(`
