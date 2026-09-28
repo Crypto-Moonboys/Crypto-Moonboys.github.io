@@ -156,6 +156,7 @@ try {
     });
     await page.goto(url);
     await page.waitForSelector('[data-panel="care"]');
+    assert.equal(await page.evaluate(() => window.MoonpetBetaAppearance.getBackgroundArtState().mode), 'stage0_secret_bot', 'egg keeps its existing background');
     // Check the real collapsed UX before expanding the older gameplay matrix.
     const beforeDisclosures = actions.length;
     for (const section of ['home', 'missions', 'explore', 'work', 'economy', 'profile']) {
@@ -267,6 +268,22 @@ try {
     currentUser = 'browser-young';
     await page.reload();
     await page.waitForSelector('[data-panel="care"]');
+    await page.waitForFunction(() => window.MoonpetBetaAppearance.getBackgroundArtState().mode === 'space_sprite_loop');
+    assert.equal(await page.evaluate(() => window.MoonpetBetaAppearance.getBackgroundArtState().frame), 0, 'reduced motion uses the first background frame');
+    if (viewport.width === 390) {
+      await page.emulateMedia({ reducedMotion: 'no-preference' });
+      await page.reload();
+      await page.waitForSelector('[data-panel="care"]');
+      await page.waitForFunction(() => window.MoonpetBetaAppearance.getBackgroundArtState().mode === 'space_sprite_loop');
+      const initialFrame = await page.evaluate(() => window.MoonpetBetaAppearance.getBackgroundArtState().frame);
+      await page.waitForFunction(previous => window.MoonpetBetaAppearance.getBackgroundArtState().frame !== previous, initialFrame);
+      await page.screenshot({ path: '/tmp/moonpet-space-background-mobile.png' });
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await page.reload();
+      await page.waitForSelector('[data-panel="care"]');
+      await page.waitForFunction(() => window.MoonpetBetaAppearance.getBackgroundArtState().mode === 'space_sprite_loop');
+      assert.equal(await page.evaluate(() => window.MoonpetBetaAppearance.getBackgroundArtState().frame), 0);
+    }
     for (const screen of ['missions', 'explore', 'work', 'economy', 'profile', 'home']) {
       await page.locator(`[data-screen="${screen}"]`).click();
       assert.ok(await page.locator('#screen [data-panel]').count(), 'screen must render: ' + screen);
