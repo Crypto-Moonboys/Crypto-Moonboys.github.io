@@ -81,6 +81,8 @@ async function resolveLivePetAuthority(db, telegramId, pet = {}) {
 async function getPetLiveProgressionState(db, telegramId, pet, runtime = {}, resolvedAuthority = null) {
   const authority = resolvedAuthority || await resolveLivePetAuthority(db, telegramId, pet);
   if (!authority) return runtime || {};
+  // This row determines the next mission, checkpoint and payout. A database
+  // failure must not turn an owned pet's saved mastery into a fresh zero state.
   await db.prepare(`INSERT OR IGNORE INTO telegram_pet_live_progression_state
     (pet_id, telegram_id, season_key, region_mastery_json, completed_regions_json, prestige_count)
     SELECT ?, ?, ?, '{}', '[]', 0
@@ -92,11 +94,12 @@ async function getPetLiveProgressionState(db, telegramId, pet, runtime = {}, res
       authority.pet_id,
       authority.telegram_id,
       authority.season_key,
-    ).run().catch(() => null);
+    ).run();
   const row = await db.prepare(`SELECT * FROM telegram_pet_live_progression_state
     WHERE pet_id=? AND telegram_id=? AND season_key=?`)
-    .bind(authority.pet_id, authority.telegram_id, authority.season_key).first().catch(() => null);
-  return row || { region_mastery_json: '{}', completed_regions_json: '[]', prestige_count: 0 };
+    .bind(authority.pet_id, authority.telegram_id, authority.season_key).first();
+  if (!row) throw new Error('pet_live_progression_unavailable');
+  return row;
 }
 
 function districtMaterialReward(regionKey, mastery) {
