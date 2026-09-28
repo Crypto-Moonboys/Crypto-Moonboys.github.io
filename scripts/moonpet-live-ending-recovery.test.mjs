@@ -53,6 +53,68 @@ function fixture(owner) {
   return { sql, db, owner, pet, active, act, reveal, state, get };
 }
 
+for (const [label, match] of [
+  ['story progress', q => q.startsWith('SELECT chain_key, step_index, completed_cycles')],
+  ['raid progress', q => q.startsWith('SELECT season_key, boss_key, damage')],
+  ['owned cosmetics', q => q.startsWith('SELECT cosmetic_key, quantity, unlocked_at')],
+  ['used daily attempts', q => q.startsWith('SELECT system_key, action_key, period_key')],
+  ['saved raid rewards', q => q.startsWith('SELECT b.pet_id,b.season_key,b.boss_key')],
+]) test(`${label} read failures must not replace saved state with an empty board`, async () => {
+  const f=fixture('read-'+label.replaceAll(' ','-')), petId='current-'+f.owner;
+  await f.act({action:'event_chain',chain_key:'lost_delivery_drone',request_id:'saved-story'});
+  const boss=getActiveSeasonalBoss();
+  f.sql.prepare(`INSERT INTO telegram_pet_seasonal_boss_progress
+    (pet_id,telegram_id,pet_season_key,season_key,boss_key,damage,defeated_at)
+    VALUES (?,?,?,?,?,?,?)`).run(petId,f.owner,currentSeason,boss.season_instance,boss.key,boss.hp,new Date().toISOString());
+  f.sql.prepare("INSERT INTO telegram_pet_cosmetic_unlocks (telegram_id,cosmetic_key,quantity) VALUES (?,'profile_frame',1)").run(f.owner);
+  const before=(await f.state()).live_systems;
+  assert.equal(before.chains.find(c=>c.key==='lost_delivery_drone').step_index,1);
+  assert.equal(before.seasonal_boss.damage,boss.hp);
+  assert.equal(before.seasonal_boss.pending_rewards.length,1);
+  assert.equal(before.cosmetics.find(c=>c.key==='profile_frame').unlocked,true);
+  f.db.beforeAll=statement=>{if(match(statement.query))throw Error('saved_state_read_failed');};
+  await assert.rejects(f.state(),/saved_state_read_failed/,'a failed read must enter the retry path, not fabricate empty player state');
+  f.db.beforeAll=null;
+  const after=(await f.state()).live_systems;
+  assert.deepEqual(after.chains.map(c=>[c.key,c.step_index,c.used_today]),before.chains.map(c=>[c.key,c.step_index,c.used_today]));
+  assert.equal(after.seasonal_boss.damage,before.seasonal_boss.damage);
+  assert.deepEqual(after.seasonal_boss.pending_rewards,before.seasonal_boss.pending_rewards);
+  assert.deepEqual(after.cosmetics,before.cosmetics);
+});
+
+for (const [label, method, match] of [
+  ['inventory','beforeAll',q=>q.includes('SELECT asset_key, quantity') && q.includes('telegram_pet_inventory')],
+  ['materials','beforeAll',q=>q.includes('SELECT material_key, quantity') && q.includes('quantity > 0 ORDER BY material_key')],
+  ['equipment','beforeAll',q=>q.includes('SELECT item_key, slot, item_level, item_xp, mastery_xp, mastery_tier')],
+  ['special care cooldowns','beforeAll',q=>q.includes('MAX(created_at) AS last_created_at') && q.includes("'energy_drink','dance','cuddles'")],
+  ['weekly boss progress','beforeFirst',q=>q.includes('SELECT boss_id, attempts, damage, defeated_at, reward_claimed_at')],
+  ['weekly boss attempts','beforeFirst',q=>q.includes('SELECT action, damage, event_key FROM telegram_pet_weekly_boss_events')],
+  ['season XP','beforeFirst',q=>q.startsWith('SELECT season_xp FROM telegram_pet_season_state')],
+  ['season reward claims','beforeAll',q=>q.startsWith('SELECT idempotency_key, COALESCE(awarded_at,created_at) AS claimed_at')],
+  ['economy objectives','beforeAll',q=>q.startsWith('SELECT event_type, COUNT(*) AS total FROM telegram_pet_events')],
+  ['bounty and expedition receipts','beforeAll',q=>q.startsWith('SELECT source, idempotency_key, pet_id, metadata, applied_rewards')],
+  ['daily and weekly XP totals','beforeFirst',q=>q.includes('SUM(xp_awarded)') && q.includes('AS community_xp') && q.includes('SUM(pet_xp_awarded)')],
+  ['specialist progress','beforeFirst',q=>q.startsWith('SELECT * FROM telegram_pet_specialist_progression')],
+  ['daily mission sources','beforeAll',q=>q.includes('SELECT event_type, COUNT(*) AS count') && q.includes('FROM telegram_pet_events')],
+  ['active run','beforeFirst',q=>q.includes('SELECT * FROM telegram_pet_runs') && q.includes("status IN ('active', 'extractable')")],
+  ['timed activity','beforeFirst',q=>q.includes('SELECT * FROM telegram_pet_activity_sessions') && q.includes("status = 'active'")],
+]) test(`${label} outages must not advertise missing items or fresh action allowances`, async () => {
+  const f=fixture('state-'+label.replaceAll(' ','-'));
+  await f.state();
+  f.sql.prepare('UPDATE telegram_pet_instances SET happiness=40 WHERE telegram_id=?').run(f.owner);
+  f.sql.prepare('UPDATE telegram_pet_profiles SET happiness=40 WHERE telegram_id=?').run(f.owner);
+  assert.equal((await f.act({action:'dance',request_id:'saved-dance'})).accepted,true);
+  f.sql.prepare("INSERT INTO telegram_pet_inventory (telegram_id,asset_type,asset_key,quantity) VALUES (?,'item','moon_kibble',2)").run(f.owner);
+  const before=await f.state();
+  assert.ok(before.cooldowns.entries.some(entry=>entry.key==='action:dance'));
+  f.db[method]=statement=>{if(match(statement.query))throw Error('required_state_read_failed');};
+  await assert.rejects(f.state(),/required_state_read_failed/);
+  f.db[method]=null;
+  const after=await f.state();
+  assert.deepEqual(after.inventory,before.inventory);
+  assert.ok(after.cooldowns.entries.some(entry=>entry.key==='action:dance'));
+});
+
 
 for (const fault of ['initialize', 'read', 'authority']) test(`district ${fault} failure cannot consume the attempt or lose mastery`, async (t) => {
   t.mock.timers.enable({ apis: ['Date'], now: Date.UTC(2026, 8, 26, 12) });

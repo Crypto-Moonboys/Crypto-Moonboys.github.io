@@ -8,6 +8,7 @@ import { applyPetRuntimeAward, getPetRuntimeSourceDropRoll, getOrCreatePetRuntim
 import { resolvePetRareDrop } from '../workers/moonboys-api/pets/economy-phase-3.js';
 import deployedWorker from '../workers/moonboys-api/deployment-entry.js';
 import worker, { applyPetRuntimeCommandAward, __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
+import { recoverPetRuntimeAwards } from '../workers/moonboys-api/pets/runtime-recovery.js';
 
 const now = new Date();
 const currentSeason = hooks.getPetSeasonInfo(now).key;
@@ -60,6 +61,84 @@ function fixture(owner) {
 function authority(f) { return { pet_id: 'current-'+f.owner, season_key: currentSeason }; }
 function runtime(f,key,day,action='feed',options={}) { return applyPetRuntimeAward(f.db,f.owner,key,action,{...authority(f),day_key:day,...options}); }
 function progress(f) { return f.sql.prepare('SELECT * FROM telegram_pet_specialist_progression WHERE pet_id=?').get('current-'+f.owner); }
+
+test('specialist recovery rotates beyond a full failed batch and continues within a partially failed batch', async () => {
+  const f = fixture('runtime-fair'); await f.state();
+  const petId = authority(f).pet_id, day = now.toISOString().slice(0,10);
+  for (let i=0;i<22;i++) f.sql.prepare(`INSERT INTO telegram_pet_events
+    (id,pet_id,telegram_id,event_type,event_key,season_key,day_key,week_key,status,metadata)
+    VALUES (?,?,?,'feed',?,?,?,'fixture-week','accepted',?)`)
+    .run('source-'+i,petId,f.owner,'fair-'+String(i).padStart(2,'0'),currentSeason,day,JSON.stringify({context:{source:'telegram_mini_app'}}));
+  const before = f.sql.prepare('SELECT * FROM telegram_pet_events ORDER BY id').all();
+  let failed = new Set(Array.from({length:20},(_,i)=>'runtime:mini:fair-'+String(i).padStart(2,'0')));
+  const award = async (db,owner,key,action,row) => {
+    if (failed.has(key)) throw Error('persistent_specialist_failure');
+    return applyPetRuntimeCommandAward(db,owner,key,action,row);
+  };
+  await recoverPetRuntimeAwards(f.db,f.owner,award,{limit:20});
+  await recoverPetRuntimeAwards(f.db,f.owner,award,{limit:20});
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_specialist_events').get().n,2,'sources beyond the failed batch must receive their awards');
+  failed = new Set(['runtime:mini:fair-18']);
+  for(let pass=0;pass<3;pass++) await recoverPetRuntimeAwards(f.db,f.owner,award,{limit:20});
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_specialist_events').get().n,21,'a failed row cannot abort its whole batch');
+  failed.clear(); await recoverPetRuntimeAwards(f.db,f.owner,award,{limit:20});
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_specialist_events').get().n,22);
+  await recoverPetRuntimeAwards(f.db,f.owner,award,{limit:20});
+  assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_events ORDER BY id').all(),before,'recovery cannot rewrite primary rewards or public XP');
+  assert.equal((await f.get('/telegram-pets/leaderboard?period=all_time')).entries[0].pet_xp,200);
+});
+
+test('two failed Weekly Boss finishes do not strand a later victor and remain recoverable after a pet switch', async () => {
+  const f=fixture('weekly-fair'); await f.state();
+  const year=now.getUTCFullYear()-1, season=hooks.getPetSeasonInfo(new Date(Date.UTC(year,0,15))).key;
+  f.pet('old-weekly-fair',season,300);
+  const victories=[15,22,29].map(date=>savedWeeklyVictory(f,`${year}-01-${date}`,'old-weekly-fair'));
+  f.sql.exec(`CREATE TRIGGER fail_old_finishes BEFORE INSERT ON telegram_pet_system_events
+    WHEN NEW.system_key='weekly_boss_finish' AND NEW.action_key NOT LIKE '%-01-29'
+    BEGIN SELECT RAISE(ABORT,'persistent_weekly_finish_failure'); END`);
+  await f.state(); await f.state();
+  const finished=()=>f.sql.prepare("SELECT action_key FROM telegram_pet_system_events WHERE system_key='weekly_boss_finish' ORDER BY action_key").all();
+  assert.deepEqual(finished().map(row=>row.action_key),[victories[2].key]);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_weekly_crests').get().n,3,'successful substeps remain once per original week');
+  f.sql.exec('DROP TRIGGER fail_old_finishes');
+  await f.state(); await f.state();
+  assert.equal(finished().length,3);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_weekly_crests').get().n,3);
+  assert.equal(f.sql.prepare("SELECT total_bosses_defeated FROM telegram_pet_memories WHERE pet_id='old-weekly-fair'").get().total_bosses_defeated,3);
+  assert.equal((await f.get('/telegram-pets/leaderboard?period=all_time')).entries[0].pet_xp,500,'finishing progression does not duplicate already paid primary XP');
+});
+
+test('overlapping specialist recovery cannot rewind scheduling and targeted repair leaves the background cursor alone', async () => {
+  const f=fixture('runtime-overlap'); await f.state();
+  const day=now.toISOString().slice(0,10);
+  for(const suffix of ['a','b','c']) f.sql.prepare(`INSERT INTO telegram_pet_events
+    (id,pet_id,telegram_id,event_type,event_key,season_key,day_key,week_key,status,metadata)
+    VALUES (?,?,?,'feed',?,?,?,'test','accepted',?)`)
+    .run(suffix,authority(f).pet_id,f.owner,'overlap-'+suffix,currentSeason,day,JSON.stringify({context:{source:'telegram_mini_app'}}));
+  let release,entered;
+  const paused=new Promise(resolve=>{entered=resolve;}),resume=new Promise(resolve=>{release=resolve;});
+  let first=true;
+  f.db.beforeRun=async statement=>{
+    if(first && statement.query.startsWith('INSERT INTO telegram_settings') && statement.args.includes('moonpet:recovery:runtime')) {
+      first=false;entered();await resume;
+    }
+  };
+  const attempted=[];
+  const fail=async (_db,_owner,key)=>{attempted.push(key);return {accepted:false,reason:'fixture_pending'};};
+  const stale=recoverPetRuntimeAwards(f.db,f.owner,fail,{limit:1});
+  await paused;
+  await recoverPetRuntimeAwards(f.db,f.owner,fail,{limit:1});
+  await recoverPetRuntimeAwards(f.db,f.owner,fail,{limit:1});
+  release(); await stale;
+  const cursor=()=>f.sql.prepare("SELECT setting_value FROM telegram_settings WHERE telegram_id=? AND setting_key='moonpet:recovery:runtime'").get(f.owner).setting_value;
+  assert.match(cursor(),/overlap-b$/);
+  assert.deepEqual(attempted,['runtime:mini:overlap-a','runtime:mini:overlap-b'],'stale reader must not retry or rewind its old batch');
+  const before=cursor();
+  await recoverPetRuntimeAwards(f.db,f.owner,applyPetRuntimeCommandAward,{action:'feed',limit:1});
+  assert.equal(cursor(),before,'targeted action repair does not skip unrelated background work');
+  await recoverPetRuntimeAwards(f.db,f.owner,applyPetRuntimeCommandAward,{limit:1});
+  assert.ok(f.sql.prepare("SELECT event_key FROM telegram_pet_specialist_events WHERE event_key='runtime:mini:overlap-c'").get());
+});
 async function api(f,body,secret='pet-secret') {
   const response=await deployedWorker.fetch(new Request('https://moonboys-api.test/telegram-pets/action',{
     method:'POST', headers:{'content-type':'application/json','x-pets-bot-secret':secret},
@@ -1396,7 +1475,7 @@ test('full Mini App actions for two equipped pets compile under the production c
   // Node SQLite does not expose sqlite3_limit. Python 3.11+ exposes the real
   // SQLite compiler limit, unlike counting UNION tokens (which misses nesting).
   const schema = f.sql.prepare("SELECT sql FROM sqlite_schema WHERE sql IS NOT NULL AND name NOT LIKE 'sqlite_%' ORDER BY CASE type WHEN 'table' THEN 0 ELSE 1 END").all().map(row => row.sql + ';').join('\n');
-  assert.equal(statements.size, 5, 'exercise recovery, bulk writes and relic reads through real HTTP routes');
+  assert.equal(statements.size, 6, 'exercise rotating and targeted recovery, bulk writes and relic reads through real HTTP routes');
   const compiled = spawnSync('python3', ['-c', `
 import json, sqlite3, sys
 payload = json.load(sys.stdin)

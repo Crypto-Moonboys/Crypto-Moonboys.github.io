@@ -759,3 +759,19 @@ implemented conditions. Relic ownership is collectible/progression state;
 passive relic effects remain inactive. See
 `docs/moonpet-roguelite-wiring-audit-2026-09-27.md` for the wiring matrix,
 concurrency fixes, validation and deployment requirements.
+
+## Recovery fairness and state-read failures
+
+State recovery reserves bounded work for each queue. Standard endings,
+specialist awards and Weekly Boss finishes rotate past failed batches using
+private account cursors, like the existing Daily Run and Journey queues. Cursor
+positions schedule retries and never authorize payment. Failed sources remain
+pending; targeted repairs do not advance unrelated background scheduling.
+
+Required inventory, mission, progression, cooldown and reward reads must not
+turn a database failure into a normal empty/zero state. They use the existing
+error/retry path; deliberate feature-unavailable projections remain explicit.
+If an action commits but its following state read fails, show the saved action
+result and use Refresh to read the save without resubmitting the action. See
+`docs/moonpet-cross-system-sanity-2026-09-28.md` for the regression evidence,
+gameplay/leaderboard matrix and deployment notes.

@@ -155,26 +155,26 @@ export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gea
   const dailyCooldown = cooldownWindow(dailyResetAt, now);
   const [chains, bossProgress, cosmetics, factionRow, dailyEvents, pendingBossRewards] = await Promise.all([
     authority
-      ? db.prepare('SELECT chain_key, step_index, completed_cycles FROM telegram_pet_event_chain_progress WHERE pet_id=? AND telegram_id=? AND season_key=?').bind(authority.pet_id, telegramId, authority.season_key).all().catch(() => ({ results: [] }))
-      : db.prepare("SELECT chain_key, step_index, completed_cycles FROM telegram_pet_event_chain_progress WHERE pet_id='' AND telegram_id = ? AND season_key=''").bind(telegramId).all().catch(() => ({ results: [] })),
+      ? db.prepare('SELECT chain_key, step_index, completed_cycles FROM telegram_pet_event_chain_progress WHERE pet_id=? AND telegram_id=? AND season_key=?').bind(authority.pet_id, telegramId, authority.season_key).all()
+      : db.prepare("SELECT chain_key, step_index, completed_cycles FROM telegram_pet_event_chain_progress WHERE pet_id='' AND telegram_id = ? AND season_key=''").bind(telegramId).all(),
     authority
-      ? db.prepare('SELECT season_key, boss_key, damage, defeated_at, reward_claimed_at FROM telegram_pet_seasonal_boss_progress WHERE pet_id=? AND telegram_id=? AND pet_season_key=?').bind(authority.pet_id, telegramId, authority.season_key).all().catch(() => ({ results: [] }))
-      : db.prepare("SELECT season_key, boss_key, damage, defeated_at, reward_claimed_at FROM telegram_pet_seasonal_boss_progress WHERE pet_id='' AND telegram_id = ? AND pet_season_key=''").bind(telegramId).all().catch(() => ({ results: [] })),
-    db.prepare('SELECT cosmetic_key, quantity, unlocked_at FROM telegram_pet_cosmetic_unlocks WHERE telegram_id = ?').bind(telegramId).all().catch(() => ({ results: [] })),
-    db.prepare('SELECT faction FROM blocktopia_progression WHERE telegram_id = ?').bind(telegramId).first().catch(() => null),
+      ? db.prepare('SELECT season_key, boss_key, damage, defeated_at, reward_claimed_at FROM telegram_pet_seasonal_boss_progress WHERE pet_id=? AND telegram_id=? AND pet_season_key=?').bind(authority.pet_id, telegramId, authority.season_key).all()
+      : db.prepare("SELECT season_key, boss_key, damage, defeated_at, reward_claimed_at FROM telegram_pet_seasonal_boss_progress WHERE pet_id='' AND telegram_id = ? AND pet_season_key=''").bind(telegramId).all(),
+    db.prepare('SELECT cosmetic_key, quantity, unlocked_at FROM telegram_pet_cosmetic_unlocks WHERE telegram_id = ?').bind(telegramId).all(),
+    db.prepare('SELECT faction FROM blocktopia_progression WHERE telegram_id = ?').bind(telegramId).first(),
     db.prepare(`SELECT system_key, action_key, period_key, status, payload_json, updated_at FROM telegram_pet_system_events
       WHERE pet_id=? AND telegram_id=? AND season_key=? AND status IN ('pending','rejected','settling','completed')
         AND ((system_key IN ('district','event_chain') AND (period_key=? OR status IN ('pending','rejected','settling')))
           OR (system_key='seasonal_boss' AND period_key LIKE ?))
       ORDER BY period_key,id`)
-      .bind(authority?.pet_id || '', telegramId, authority?.season_key || '', today, `%:${today}`).all().catch(() => ({ results: [] })),
+      .bind(authority?.pet_id || '', telegramId, authority?.season_key || '', today, `%:${today}`).all(),
     db.prepare(`SELECT b.pet_id,b.season_key,b.boss_key FROM telegram_pet_seasonal_boss_progress b
       JOIN telegram_pet_instances p ON p.pet_id=b.pet_id AND p.telegram_id=b.telegram_id AND p.season_key=b.pet_season_key
       JOIN telegram_pet_season_slots s ON s.pet_id=p.pet_id AND s.telegram_id=p.telegram_id AND s.season_key=p.season_key AND s.slot_number=p.slot_number
       WHERE b.telegram_id=? AND b.defeated_at IS NOT NULL AND b.reward_claimed_at IS NULL
         AND b.boss_key IN (${Object.keys(PET_SEASONAL_BOSSES).map(() => '?').join(',')})
       ORDER BY b.defeated_at,b.pet_id,b.season_key LIMIT 10`)
-      .bind(telegramId,...Object.keys(PET_SEASONAL_BOSSES)).all().catch(() => ({ results: [] })),
+      .bind(telegramId,...Object.keys(PET_SEASONAL_BOSSES)).all(),
   ]);
   const events = dailyEvents.results || [];
   const busyOrComplete = (row) => {
