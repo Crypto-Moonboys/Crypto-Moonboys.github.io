@@ -56,6 +56,28 @@ retaining the existing checklist. Other database errors follow the retry path.
 Apply migration 077 before deploying the Worker; GitHub Pages serves the new UI.
 See [implementation and deployment notes](moonpet-completion-features-2026-09-28.md).
 
+### Account state and concurrent Standard Run actions
+
+Roster adoption, the active-pet pointer, Arcade balances and Daily Journey
+objective/receipt reads are required display evidence. A failed read reaches
+the Mini App refresh retry path, preserving the previous valid display; it does
+not show the starter as selected, zero Arcade XP, missing slots or an unearned
+Growth Mark. The existing Weekly Journey syncing state also covers a failed
+latest-receipt read. Successfully empty results remain valid empty state.
+
+Pending run/Arena/Kaiju reads must succeed before switching the active pet or
+moving its pointer during season preparation. Standard Run resolution also
+requires readable source-pet, inventory, account-wallet and daily XP-cap evidence.
+Its transaction verifies every pet-owned field and the equipped progression rows
+(including missing rows) captured before resolving the choice. Concurrent care,
+rewards, equipment upgrades or mastery changes reject the stale step
+before costs, consumed items, run advancement or failure XP are committed.
+The player can refresh and choose again. Reward amounts, source-pet/season
+ownership, caps and public leaderboard formulas remain unchanged.
+
+See [the account-state sanity audit](moonpet-account-state-sanity-2026-09-28.md).
+Worker deploy only; no new migration, frontend deployment or assets are needed.
+
 ### State refresh and relic visibility
 
 Relic Vault projects the account's stored relics using their `unlocked_at`
