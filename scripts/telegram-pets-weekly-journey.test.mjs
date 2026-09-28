@@ -241,8 +241,14 @@ async function completeObjective(db, {
   const evidenceCount = eventKey || progressValue != null || objective.progress_mode !== 'add' ? 1 : objective.target;
   let result = null;
   for (let index = 0; index < evidenceCount; index += 1) {
+    let sourceDay = day;
+    if (objectiveId === 'weekly_check_in' && evidenceCount > 1) {
+      const weekStart = Date.parse(getPetSeasonInfo(new Date(`${day}T12:00:00.000Z`)).start_at) + (qualificationWeek - 1) * 7 * 86400000;
+      const firstDay = Math.max(weekStart, Date.parse(`${day}T00:00:00.000Z`) - 86400000);
+      sourceDay = new Date(firstDay + index * 86400000).toISOString().slice(0, 10);
+    }
     const sourceEventKey = eventKey || `${petId}:${seasonKey}:${qualificationWeek}:${objectiveId}:${day}:${index + 1}`;
-    insertSourceEvent(db, { telegramId, petId, seasonKey, day, eventKey: sourceEventKey, eventType: eventType || TEST_WEEKLY_SOURCE_TYPES[objectiveId] });
+    insertSourceEvent(db, { telegramId, petId, seasonKey, day: sourceDay, eventKey: sourceEventKey, eventType: eventType || TEST_WEEKLY_SOURCE_TYPES[objectiveId] });
     result = await recordWeeklyJourneyObjectiveEvidence(db, {
       telegram_id: telegramId,
       pet_id: petId,
@@ -252,7 +258,7 @@ async function completeObjective(db, {
       source_event_key: sourceEventKey,
       progress_value: progressValue ?? objective.target,
       evidence: { authority: 'test_weekly_journey_authority', pet_id: petId, season_key: seasonKey, qualification_week: qualificationWeek },
-      now: `${day}T12:00:00.000Z`,
+      now: `${sourceDay}T12:00:00.000Z`,
     });
   }
   return result;
@@ -375,6 +381,9 @@ for (const [objectiveId, objective] of Object.entries(PET_WEEKLY_JOURNEY_OBJECTI
   const count = objective.progress_mode === 'add' ? objective.target : 1;
   for (let index = 0; index < count; index += 1) {
     const sourceEventKey = `weekly-recovery:${objectiveId}:${index + 1}`;
+    insertSourceEvent(recoveryDb, { telegramId: 'weekly-recovery', petId: recoveryPet,
+      eventKey: sourceEventKey, eventType: TEST_WEEKLY_SOURCE_TYPES[objectiveId],
+      day: objectiveId === 'weekly_check_in' && index === 0 ? '2026-01-04' : '2026-01-05' });
     recoveryInsertObjective.run(
       `weekly-journey:objective:${recoveryPet}:pet-s2026-001:1:${objectiveId}:${sourceEventKey}`,
       recoveryPet,
@@ -426,6 +435,7 @@ await completeObjective(concurrentDb, {
   petId: concurrentPet,
   objectiveId: raceObjectiveId,
   eventKey: 'weekly-concurrent-check-in-prior',
+  day: '2026-01-04',
 });
 const raceEventKey = 'weekly-concurrent-final-objective';
 insertSourceEvent(concurrentDb, {

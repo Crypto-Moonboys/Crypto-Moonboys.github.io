@@ -19,7 +19,7 @@ import {
   DAILY_JOURNEY_REQUIRED_OBJECTIVES, PET_DAILY_CHALLENGES, recordDailyCareChallenge, syncDailyMoonRun,
 } from './pets/daily-moon-run.js';
 import {
-  PET_WEEKLY_JOURNEY_OBJECTIVES, WEEKLY_JOURNEY_REQUIRED_OBJECTIVES, finalizeWeeklyJourneyCrest, recordWeeklyJourneyObjectiveEvidence,
+  PET_WEEKLY_JOURNEY_OBJECTIVES, WEEKLY_JOURNEY_REQUIRED_OBJECTIVES, finalizeWeeklyJourneyCrest, recordWeeklyJourneyObjectiveEvidence, readWeeklyJourneyObjectiveProgress,
 } from './pets/weekly-journey.js';
 import {
   MOONPET_EVOLUTIONS, MOONPET_PERSONALITY_TRAITS, evolveMoonpet, formatMoonpetIdentitySummary,
@@ -8860,20 +8860,12 @@ async function listPetMiniAppDailyJourneyObjectives(db, telegramId, petId, seaso
 }
 
 async function countPetMiniAppCompletedWeeklyJourneyObjectives(db, telegramId, petId, seasonKey, week) {
-  const rows = await db.prepare(`SELECT objective_id, SUM(progress_value) AS additive_progress, MAX(progress_value) AS max_progress
-    FROM telegram_pet_weekly_journey_objectives
-    WHERE pet_id=? AND telegram_id=? AND season_key=? AND qualification_week=? AND status='accepted'
-    GROUP BY objective_id`)
-    .bind(petId, telegramId, seasonKey, week).all();
+  const rows = await readWeeklyJourneyObjectiveProgress(db, { telegram_id: telegramId, pet_id: petId, season_key: seasonKey, qualification_week: week });
   return countMiniAppCompletedJourneyObjectives(rows.results || [], PET_WEEKLY_JOURNEY_OBJECTIVES);
 }
 
 async function listPetMiniAppWeeklyJourneyObjectives(db, telegramId, petId, seasonKey, week) {
-  const rows = await db.prepare(`SELECT objective_id, SUM(progress_value) AS additive_progress, MAX(progress_value) AS max_progress, COUNT(*) AS source_event_count
-    FROM telegram_pet_weekly_journey_objectives
-    WHERE pet_id=? AND telegram_id=? AND season_key=? AND qualification_week=? AND status='accepted'
-    GROUP BY objective_id`)
-    .bind(petId, telegramId, seasonKey, week).all();
+  const rows = await readWeeklyJourneyObjectiveProgress(db, { telegram_id: telegramId, pet_id: petId, season_key: seasonKey, qualification_week: week });
   const rowByObjective = new Map((rows.results || []).map((row) => [String(row.objective_id || ''), row]));
   return Object.values(PET_WEEKLY_JOURNEY_OBJECTIVES).map((objective) => {
     const row = rowByObjective.get(objective.objective_id) || {};

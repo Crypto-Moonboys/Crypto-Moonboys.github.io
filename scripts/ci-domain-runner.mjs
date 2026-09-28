@@ -77,6 +77,7 @@ const GROUPS = {
     ['node', 'scripts/moonpet-art-architecture.test.mjs'],
     ['node', 'scripts/moonpet-mini-app-leaderboard-sql.test.mjs'],
     ['node', 'scripts/moonpet-public-sync.test.mjs'],
+    ['node', 'scripts/moonpet-quest-public-sync.test.mjs'],
     ['node', 'scripts/moonpet-action-sync.test.mjs'],
     ['node', 'scripts/moonpet-care-integrity.test.mjs'],
     ['node', 'scripts/moonpet-progression-sync.test.mjs'],

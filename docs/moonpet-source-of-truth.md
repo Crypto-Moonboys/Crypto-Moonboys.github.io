@@ -139,6 +139,15 @@ Rules:
 - Rewards require validated completion.
 - Duplicate settlement must not create duplicate rewards.
 
+The five objectives require five care actions, three training actions, three
+qualifying run finishes, one Weekly Boss attempt and check-ins on two distinct
+UTC days in the same season-relative week. Mini App progress, live Crest
+qualification and historical recovery use accepted source events for the same
+owner, pet and season. Multiple check-in aliases on one day count as one day.
+Recovery preserves the first day all five targets were met; extra later actions
+cannot move it. Instance and season-slot ownership must agree before evidence
+is accepted. Already awarded Crests are not removed by this validation change.
+
 ---
 
 ## Jobs
