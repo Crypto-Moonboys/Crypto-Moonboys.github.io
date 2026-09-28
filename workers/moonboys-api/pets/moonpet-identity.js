@@ -49,7 +49,7 @@ export async function readActivePetIdentityScope(db, telegramId) {
     JOIN telegram_pet_instances i
       ON i.pet_id = s.pet_id AND i.telegram_id = s.telegram_id AND i.season_key = s.season_key AND i.slot_number = s.slot_number
     WHERE a.telegram_id = ? AND s.status = 'active' AND i.status = 'active'
-    LIMIT 1`).bind(telegramId).first().catch(() => null);
+    LIMIT 1`).bind(telegramId).first();
   if (scope) return scope;
   return db.prepare(`SELECT s.pet_id, s.season_key, s.slot_number, s.acquisition_type
     FROM telegram_pet_season_slots s
@@ -57,7 +57,7 @@ export async function readActivePetIdentityScope(db, telegramId) {
       ON i.pet_id = s.pet_id AND i.telegram_id = s.telegram_id AND i.season_key = s.season_key AND i.slot_number = s.slot_number
     WHERE s.telegram_id = ? AND s.slot_number = 1 AND s.status = 'active' AND i.status = 'active'
     ORDER BY s.updated_at DESC
-    LIMIT 1`).bind(telegramId).first().catch(() => null);
+    LIMIT 1`).bind(telegramId).first();
 }
 
 async function readMoonpetIdentityScope(db, telegramId, request = {}) {
@@ -74,7 +74,7 @@ async function readMoonpetIdentityScope(db, telegramId, request = {}) {
     WHERE s.pet_id = ? AND s.telegram_id = ? AND s.season_key = ?
       AND s.status ${statusPredicate}
       AND i.status ${statusPredicate}
-    LIMIT 1`).bind(requestedPetId, telegramId, requestedSeasonKey).first().catch(() => null);
+    LIMIT 1`).bind(requestedPetId, telegramId, requestedSeasonKey).first();
 }
 
 async function resolveMoonpetIdentityScope(db, telegramId, request = {}) {
@@ -630,24 +630,24 @@ export async function getMoonpetIdentitySummary(db, telegramIdRaw, request = {})
           AND NOT EXISTS (SELECT 1 FROM telegram_pet_season_slots stale_s
             WHERE stale_s.pet_id = e.pet_id AND stale_s.telegram_id = e.telegram_id AND stale_s.season_key <> ?)
         ORDER BY e.stage DESC LIMIT 1`)
-      .bind(scope.pet_id, telegramId, scope.season_key, scope.season_key, scope.season_key).first().catch(() => null)
+      .bind(scope.pet_id, telegramId, scope.season_key, scope.season_key, scope.season_key).first()
     : null;
   const [legacyEvolution, traits, memory, bossVictories] = await Promise.all([
     (!explicitScopeRequested && !evolution && (!scope?.pet_id || Number(scope?.slot_number || 1) <= 1 || scope?.acquisition_type === 'free'))
-      ? db.prepare(`SELECT evolution_id, stage, unlocked_at FROM telegram_pet_evolutions WHERE telegram_id = ? ORDER BY stage DESC LIMIT 1`).bind(telegramId).first().catch(() => null)
+      ? db.prepare(`SELECT evolution_id, stage, unlocked_at FROM telegram_pet_evolutions WHERE telegram_id = ? ORDER BY stage DESC LIMIT 1`).bind(telegramId).first()
       : Promise.resolve(null),
     scope?.pet_id
       ? db.prepare(`SELECT trait_id, progress, unlocked_at FROM telegram_pet_personality_traits
           WHERE pet_id = ? AND telegram_id = ? AND season_key = ? AND unlocked_at IS NOT NULL
-          ORDER BY unlocked_at, trait_id LIMIT 4`).bind(scope.pet_id, telegramId, scope.season_key).all().catch(() => ({ results: [] }))
+          ORDER BY unlocked_at, trait_id LIMIT 4`).bind(scope.pet_id, telegramId, scope.season_key).all()
       : Promise.resolve({ results: [] }),
     scope?.pet_id
-      ? db.prepare(`SELECT * FROM telegram_pet_memories WHERE pet_id = ? AND telegram_id = ? AND season_key = ?`).bind(scope.pet_id, telegramId, scope.season_key).first().catch(() => null)
+      ? db.prepare(`SELECT * FROM telegram_pet_memories WHERE pet_id = ? AND telegram_id = ? AND season_key = ?`).bind(scope.pet_id, telegramId, scope.season_key).first()
       : Promise.resolve(null),
     scope?.pet_id
       ? db.prepare(`SELECT boss_id, victories, updated_at FROM telegram_pet_boss_victories
           WHERE pet_id = ? AND telegram_id = ? AND season_key = ?
-          ORDER BY victories DESC, boss_id LIMIT 20`).bind(scope.pet_id, telegramId, scope.season_key).all().catch(() => ({ results: [] }))
+          ORDER BY victories DESC, boss_id LIMIT 20`).bind(scope.pet_id, telegramId, scope.season_key).all()
       : Promise.resolve({ results: [] }),
   ]);
   const currentEvolution = evolution || legacyEvolution;

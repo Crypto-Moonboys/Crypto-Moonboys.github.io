@@ -132,10 +132,21 @@ export async function getDailyMoonRunReservation(db, request = {}) {
     runId = active?.run_id || '';
   }
   if (!runId) return null;
-  return db.prepare(`SELECT d.*, r.season_key, r.status AS authoritative_status, r.region, r.difficulty, r.seed AS run_seed,
-      r.current_room, r.max_room, r.score AS authoritative_score, r.depth AS authoritative_depth, r.started_at
+  const query = db.prepare(`SELECT d.*, r.season_key, r.status AS authoritative_status, r.region, r.difficulty, r.seed AS run_seed,
+      r.current_room, r.max_room, r.score AS authoritative_score, r.depth AS authoritative_depth, r.started_at,
+      (r.current_room=0 AND r.status IN ('active','extractable') AND NOT EXISTS
+        (SELECT 1 FROM telegram_pet_run_modifiers m WHERE m.run_id=r.run_id AND m.telegram_id=r.telegram_id
+          AND m.modifier_id IN (${Object.keys(PET_RUN_MODIFIERS).map(id => `'${id}'`).join(',')}))) AS initialization_pending
     FROM telegram_pet_daily_runs d JOIN telegram_pet_runs r ON r.run_id = d.run_id AND r.telegram_id = d.telegram_id
-    WHERE d.telegram_id = ? AND d.run_id = ? LIMIT 1`).bind(telegramId, runId).first();
+    WHERE d.telegram_id = ? AND d.run_id = ? LIMIT 1`).bind(telegramId, runId);
+  const reservation = await query.first();
+  if (reservation && !reservation.initialization_pending) return reservation;
+  const utcDay = runId.slice(6, 16);
+  if (!validUtcDay(utcDay) || dailyRunId(telegramId, utcDay) !== runId) return reservation;
+  if (!await recoverDailyMoonRunStart(db, telegramId, runId)) return null;
+  const restored = await query.first();
+  if (!restored || restored.initialization_pending) throw new Error('daily_run_start_unavailable');
+  return restored;
 }
 
 // The reservation is account/day scoped. Switching pets must not advertise a
@@ -305,9 +316,53 @@ export async function createDailyMoonRun(db, request = {}) {
   if (!String(authoritativeRun.pet_id || '').trim()) {
     return { accepted: false, duplicate: false, reason: 'run_pet_authority_required', utc_day: utcDay, run_id: runId, seed: generated.seed };
   }
+  if (String(authoritativeRun.pet_id) !== String(requestedSeasonPet.pet_id) || authoritativeRun.season_key !== seasonId) {
+    return { accepted: false, reason: 'daily_run_pet_authority_mismatch', utc_day: utcDay };
+  }
+  return initializeDailyMoonRun(db, authoritativeRun, generated);
+}
+
+// Complete only a verifiable, unplayed start. Never take ownership from the
+// currently selected pet or derive the challenge day from the current clock.
+async function recoverDailyMoonRunStart(db, telegramId, runId) {
+  const utcDay = runId.slice(6, 16);
+  if (!validUtcDay(utcDay) || dailyRunId(telegramId, utcDay) !== runId) throw new Error('daily_run_start_unavailable');
+  const generated = await generateDailyMoonRunSeed(utcDay);
+  const run = await db.prepare(`SELECT r.*, s.pet_id AS source_owned, a.analytics_id AS source_started,
+      EXISTS (SELECT 1 FROM telegram_pet_run_rooms rr WHERE rr.run_id=r.run_id AND rr.status<>'pending') AS source_resolved
+    FROM telegram_pet_runs r
+    LEFT JOIN telegram_pet_instances i ON i.pet_id=r.pet_id AND i.telegram_id=r.telegram_id AND i.season_key=r.season_key
+    LEFT JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id
+      AND s.season_key=i.season_key AND s.slot_number=i.slot_number
+    LEFT JOIN telegram_pet_run_analytics a ON a.analytics_id=r.run_id||':start' AND a.run_id=r.run_id
+      AND a.telegram_id=r.telegram_id AND a.pet_id=r.pet_id AND a.event_type='run_start'
+    WHERE r.run_id=? AND r.telegram_id=?`)
+    .bind(runId, telegramId).first();
+  if (!run) return false;
+  if (!run.source_owned || !run.source_started || run.source_resolved
+    || !['active','extractable'].includes(run.status) || run.current_room !== 0 || run.depth !== 0 || run.rooms_completed !== 0
+    || Number(run.seed) !== generated.run_seed || run.season_key !== getDailySeasonId(utcDay)
+    || run.region !== 'moon_alley' || Number(run.max_room) !== PET_ROGUELITE_REGIONS.moon_alley.max_rooms) {
+    throw new Error('daily_run_start_unavailable');
+  }
+  const restored = await initializeDailyMoonRun(db, run, generated);
+  if (!restored.accepted) throw new Error('daily_run_start_unavailable');
+  return true;
+}
+
+async function initializeDailyMoonRun(db, authoritativeRun, generated) {
+  const telegramId = authoritativeRun.telegram_id, runId = authoritativeRun.run_id;
+  const utcDay = generated.utc_day, seasonId = authoritativeRun.season_key;
+  const region = PET_ROGUELITE_REGIONS.moon_alley;
   // Preserve an already-started run's condition when deploying a new catalogue.
   const storedModifiers = await readDailyModifiers(db, authoritativeRun);
-  const modifierId = storedModifiers.find((row) => Object.hasOwn(PET_RUN_MODIFIERS, row.modifier_id))?.modifier_id || dailyModifierId(generated.run_seed);
+  const creation = await db.prepare(`SELECT event_data FROM telegram_pet_daily_analytics
+    WHERE analytics_id=? AND telegram_id=? AND pet_id=? AND event_type='run_created'`)
+    .bind(`${runId}:daily:created`, telegramId, authoritativeRun.pet_id).first();
+  const savedModifier = parseJsonObject(creation?.event_data).modifier_id;
+  if (savedModifier && !Object.hasOwn(PET_RUN_MODIFIERS, savedModifier)) throw new Error('daily_run_condition_unavailable');
+  const modifierId = storedModifiers.find((row) => Object.hasOwn(PET_RUN_MODIFIERS, row.modifier_id))?.modifier_id
+    || savedModifier || dailyModifierId(generated.run_seed);
   const reservationWrites = await db.batch([
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_daily_runs
       (telegram_id, pet_id, utc_day, seed, run_id, status, score, depth, boss_defeated)
@@ -324,7 +379,7 @@ export async function createDailyMoonRun(db, request = {}) {
   const daily = await getDailyRunRow(db, telegramId, utcDay);
   if (
     !daily ||
-    String(daily.pet_id || '') !== String(requestedSeasonPet?.pet_id || '') ||
+    String(daily.pet_id || '') !== String(authoritativeRun.pet_id || '') ||
     String(daily.season_key || '') !== String(seasonId)
   ) {
     return {

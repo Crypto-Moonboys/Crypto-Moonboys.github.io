@@ -86,7 +86,7 @@ async function activePetAuthority(db, telegramId) {
     WHERE a.telegram_id=?
       AND s.status='active'
       AND i.status='active'
-    LIMIT 1`).bind(telegramId).first().catch(() => null);
+    LIMIT 1`).bind(telegramId).first();
   if (!row) row = await db.prepare(`SELECT s.pet_id, s.telegram_id, s.season_key, s.slot_number
     FROM telegram_pet_season_slots s
     JOIN telegram_pet_instances i
@@ -99,7 +99,7 @@ async function activePetAuthority(db, telegramId) {
       AND s.status='active'
       AND i.status='active'
     ORDER BY s.updated_at DESC
-    LIMIT 1`).bind(telegramId).first().catch(() => null);
+    LIMIT 1`).bind(telegramId).first();
   return row?.pet_id && row?.season_key ? row : null;
 }
 
@@ -121,16 +121,16 @@ async function readLifecycle(db, telegramId) {
     WHERE a.telegram_id=?
       AND s.status='active'
       AND i.status='active'
-    LIMIT 1`).bind(telegramId).first().catch(() => null);
+    LIMIT 1`).bind(telegramId).first();
 }
 
 async function readEvolutionStage(db, row) {
   if (!row?.pet_id) return 0;
   const current = await db.prepare('SELECT MAX(stage) AS stage FROM telegram_pet_evolutions_by_pet WHERE pet_id=? AND telegram_id=?')
-    .bind(row.pet_id, row.telegram_id).first().catch(() => null);
+    .bind(row.pet_id, row.telegram_id).first();
   if (current?.stage != null) return Math.max(0, Number(current.stage) || 0);
   const legacy = await db.prepare('SELECT MAX(stage) AS stage FROM telegram_pet_evolutions WHERE telegram_id=?')
-    .bind(row.telegram_id).first().catch(() => null);
+    .bind(row.telegram_id).first();
   return Math.max(0, Number(legacy?.stage) || 0);
 }
 
@@ -198,10 +198,10 @@ async function rareProgress(db, telegramId, row) {
   if (row.phase === 'rare') return { signal: 'morphed', ready: false, percent: 100 };
   const route = RARE_ROUTES[Math.max(0, Number(row.rare_route_index || 0)) % RARE_ROUTES.length];
   const [memory, evolution, traitRows] = await Promise.all([
-    db.prepare('SELECT * FROM telegram_pet_memories WHERE pet_id=? AND telegram_id=? AND season_key=?').bind(row.pet_id, telegramId, row.season_key).first().catch(() => null),
-    db.prepare('SELECT MAX(stage) AS stage FROM telegram_pet_evolutions_by_pet WHERE pet_id=?').bind(row.pet_id).first().catch(() => null),
+    db.prepare('SELECT * FROM telegram_pet_memories WHERE pet_id=? AND telegram_id=? AND season_key=?').bind(row.pet_id, telegramId, row.season_key).first(),
+    db.prepare('SELECT MAX(stage) AS stage FROM telegram_pet_evolutions_by_pet WHERE pet_id=?').bind(row.pet_id).first(),
     db.prepare('SELECT trait_id FROM telegram_pet_personality_traits WHERE pet_id=? AND telegram_id=? AND season_key=? AND unlocked_at IS NOT NULL')
-      .bind(row.pet_id, telegramId, row.season_key).all().catch(() => ({ results: [] })),
+      .bind(row.pet_id, telegramId, row.season_key).all(),
   ]);
   const unlocked = new Set((traitRows.results || []).map((entry) => entry.trait_id));
   const traitDone = route.traits.filter((trait) => unlocked.has(trait)).length;
@@ -277,7 +277,7 @@ export async function getExistingMoonpetLifecycle(db, telegramId) {
   if (!row) return null;
   const dayKey = new Date().toISOString().slice(0, 10);
   const daily = await db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_events_by_pet
-    WHERE pet_id=? AND action LIKE 'incubate_%' AND day_key=? AND applied_at IS NOT NULL`).bind(row.pet_id, dayKey).first().catch(() => null);
+    WHERE pet_id=? AND action LIKE 'incubate_%' AND day_key=? AND applied_at IS NOT NULL`).bind(row.pet_id, dayKey).first();
   row.actions_today = Number(daily?.count || 0);
   const [rare, evolutionStage] = await Promise.all([rareProgress(db, id, row), readEvolutionStage(db, row)]);
   return publicLifecycle(row, rare, new Date(), evolutionStage);
@@ -289,7 +289,7 @@ export async function getMoonpetLifecycle(db, telegramId) {
   if (!row) return null;
   const dayKey = new Date().toISOString().slice(0, 10);
   const daily = await db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_events_by_pet
-    WHERE pet_id=? AND action LIKE 'incubate_%' AND day_key=?`).bind(row.pet_id, dayKey).first().catch(() => null);
+    WHERE pet_id=? AND action LIKE 'incubate_%' AND day_key=?`).bind(row.pet_id, dayKey).first();
   row.actions_today = Number(daily?.count || 0);
   const [rare, evolutionStage] = await Promise.all([rareProgress(db, id, row), readEvolutionStage(db, row)]);
   return publicLifecycle(row, rare, new Date(), evolutionStage);

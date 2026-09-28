@@ -209,6 +209,15 @@ db.exec(migration056);
 db.exec(migration053);
 db.exec(migration057);
 db.exec(migration057);
+// Current identity reads must distinguish empty tables from a schema/read outage.
+db.exec('CREATE UNIQUE INDEX identity_test_owner_tuple ON telegram_pet_season_slots(pet_id,telegram_id,season_key)');
+const currentSchema = await readFile(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
+for (const table of ['telegram_pet_personality_traits', 'telegram_pet_memories', 'telegram_pet_boss_victories']) {
+  const start = currentSchema.indexOf(`CREATE TABLE IF NOT EXISTS ${table} (`);
+  assert.ok(start >= 0, table);
+  db.exec(currentSchema.slice(start, currentSchema.indexOf('\n);', start) + 4));
+}
+
 assert.equal(db.prepare(`SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id='pet:state-player:2026-q3:1'`).get().phase, 'adult', 'migration must retain the starter lifecycle');
 assert.deepEqual(
   db.prepare(`SELECT evolution_id, stage FROM telegram_pet_evolutions_by_pet WHERE pet_id='pet:state-player:2026-q3:1' ORDER BY stage`).all().map((row) => ({ ...row })),
