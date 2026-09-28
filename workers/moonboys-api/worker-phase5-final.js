@@ -1,6 +1,6 @@
 import baseWorker from './worker.js';
+import { applyPetRuntimeCommandAward } from './worker.js';
 import { handleDeadRunRequest, cleanupExpiredSessions } from './routes/dead-run.js';
-import { applyPetRuntimeAward } from './pets/runtime-phase-5a.js';
 
 const PROGRESSION_API_ACTIONS = Object.freeze({
   feed: 'feed',
@@ -8,6 +8,9 @@ const PROGRESSION_API_ACTIONS = Object.freeze({
   clean: 'clean',
   sleep: 'sleep',
   train: 'train',
+  energy_drink: 'energy_drink',
+  dance: 'dance',
+  cuddles: 'cuddles',
   work: 'job',
   daily_chest: 'daily_chest',
   run_step: 'run_step',
@@ -37,10 +40,6 @@ function jsonError(request, message, status = 400) {
   });
 }
 
-function utcDayKey() {
-  return new Date().toISOString().slice(0, 10);
-}
-
 function stableEventKey(parts = []) {
   return parts.map((part) => String(part || '').trim()).filter(Boolean).join(':').slice(0, 120);
 }
@@ -57,39 +56,49 @@ async function readJsonSafe(request) {
   }
 }
 
-async function getEquipmentRows(db, telegramId) {
-  const result = await db.prepare(`
-    SELECT item_key, slot, item_level, item_xp, mastery_xp, mastery_tier
-    FROM telegram_pet_equipment_progression
-    WHERE telegram_id = ?
-  `).bind(telegramId).all().catch(() => ({ results: [] }));
-  return result.results || [];
+async function runtimeSource(db, telegramId, eventKey, action) {
+  if (action === 'run_step') {
+    return db.prepare(`SELECT s.pet_id, r.season_key, date(s.created_at) AS day_key
+      FROM telegram_pet_run_steps s JOIN telegram_pet_runs r
+        ON r.run_id=s.run_id AND r.telegram_id=s.telegram_id AND r.pet_id=s.pet_id
+      JOIN telegram_pet_instances p ON p.pet_id=s.pet_id AND p.telegram_id=s.telegram_id AND p.season_key=r.season_key
+      WHERE s.telegram_id=? AND s.event_key=? LIMIT 1`).bind(telegramId, eventKey).first();
+  }
+  const eventType = action === 'job' ? 'work' : action;
+  return db.prepare(`SELECT e.pet_id, e.season_key, e.day_key,
+      json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END, '$.context.runtime_event_key') AS runtime_event_key,
+      json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END, '$.context.source') AS source_surface
+    FROM telegram_pet_events e
+    JOIN telegram_pet_instances p ON p.pet_id=e.pet_id AND p.telegram_id=e.telegram_id AND p.season_key=e.season_key
+    WHERE e.telegram_id=? AND e.event_key=? AND e.event_type=? AND e.status='accepted' LIMIT 1`)
+    .bind(telegramId, eventKey, eventType).first();
 }
 
-async function applyRuntimeAward(env, telegramId, eventKey, runtimeAction, options = {}) {
+async function applyRuntimeAward(env, telegramId, eventKey, runtimeAction, primaryEventKey, requireStoredKey = false) {
   if (!env?.DB || !telegramId || !eventKey || !runtimeAction) return null;
-  const equipmentRows = await getEquipmentRows(env.DB, telegramId);
-  return applyPetRuntimeAward(
-    env.DB,
-    telegramId,
-    eventKey,
-    runtimeAction,
-    {
-      day_key: utcDayKey(),
-      equipment_rows: equipmentRows,
-      ...options,
-    },
-  ).catch((error) => {
+  try {
+    const source = await runtimeSource(env.DB, telegramId, primaryEventKey, runtimeAction);
+    // Legacy unscoped events and settlement-only responses cannot name a new pet.
+    if (!source?.pet_id || !source?.season_key || !source?.day_key) return null;
+    const apiExtractionReceipt = runtimeAction === 'run_extract' && source.source_surface === 'telegram_pets_api';
+    if ((requireStoredKey || apiExtractionReceipt) && source.runtime_event_key !== eventKey) {
+      if (source.runtime_event_key || source.source_surface !== 'telegram_pets_api') return null;
+      // Old API receipts did not retain their client key. Recover only when no
+      // unlinked API extraction award could already belong to this receipt.
+      const legacyAward = await env.DB.prepare(`SELECT 1 FROM telegram_pet_specialist_events
+        WHERE pet_id=? AND telegram_id=? AND season_key=? AND action='run_extract'
+          AND event_key LIKE 'runtime:api:%' LIMIT 1`)
+        .bind(source.pet_id, telegramId, source.season_key).first();
+      if (legacyAward) return null;
+    }
+    return await applyPetRuntimeCommandAward(env.DB, telegramId, eventKey, runtimeAction, source);
+  } catch (error) {
     console.log('[moonboys-api]', JSON.stringify({
-      event: 'runtime_api_award_failed',
-      telegramId,
-      action: runtimeAction,
-      eventKey,
-      message: error?.message || String(error),
-      timestamp: new Date().toISOString(),
+      event: 'runtime_api_award_failed', telegramId, action: runtimeAction, eventKey,
+      message: error?.message || String(error), timestamp: new Date().toISOString(),
     }));
     return null;
-  });
+  }
 }
 
 async function repairEquippedProgressionRows(db, telegramId) {
@@ -163,6 +172,7 @@ async function handlePetApiPostProcessing(env, body, response) {
     return;
   }
   if (!payload?.accepted) return;
+  if (body.action === 'run_extract' && payload.reason === 'daily_run_completed') return;
 
   const telegramId = telegramIdFromPetBody(body);
   if (!telegramId) return;
@@ -171,19 +181,39 @@ async function handlePetApiPostProcessing(env, body, response) {
     await upsertPurchasedEquipment(env.DB, telegramId, body.item_key).catch(() => {});
   }
 
-  const runtimeAction = PROGRESSION_API_ACTIONS[String(body.action || '').trim()];
+  const runtimeAction = PROGRESSION_API_ACTIONS[String(body.action || '').trim().toLowerCase()];
   if (!runtimeAction) return;
 
-  const runtimeEventKey = String(body.event_key || '').trim();
+  if (runtimeAction === 'run_extract' && payload.run) {
+    if (payload.daily_run || payload.run.status !== 'extracted') return;
+    const sourceKey = stableEventKey(['pet_run_extract', telegramId, payload.run.run_id]);
+    // Every new Standard extraction stores one runtime identity with its primary
+    // receipt. Different request keys and surfaces must share that same claim.
+    await applyRuntimeAward(env, telegramId, `runtime:run-extract:${sourceKey}`, runtimeAction, sourceKey, true);
+    return;
+  }
+
+  let runtimeEventKey = String(body.event_key || '');
+  if (payload.settlement_recovered) {
+    if (runtimeAction !== 'run_step' || !payload.run?.run_id || payload.daily_run) return;
+    // A recovered terminal payout can include a previously uncredited final
+    // Standard step. Use the saved API step's key, not the retry request key.
+    const step = await env.DB.prepare(`SELECT s.event_key FROM telegram_pet_run_steps s
+      JOIN telegram_pet_runs r ON r.run_id=s.run_id AND r.telegram_id=s.telegram_id AND r.pet_id=s.pet_id
+      WHERE r.telegram_id=? AND r.run_id=? AND r.status='completed' AND r.depth>=r.max_depth
+        AND s.step_index=r.depth AND s.success=1
+        AND json_extract(CASE WHEN json_valid(s.metadata) THEN s.metadata ELSE '{}' END, '$.source')='telegram_pets_api'
+        AND NOT EXISTS (SELECT 1 FROM telegram_pet_daily_runs d WHERE d.run_id=r.run_id)
+      LIMIT 1`).bind(telegramId, payload.run.run_id).first().catch(() => null);
+    if (!step?.event_key) return;
+    runtimeEventKey = step.event_key;
+  }
   await applyRuntimeAward(
     env,
     telegramId,
     `runtime:api:${runtimeEventKey}`,
     runtimeAction,
-    {
-      drop_roll: body.drop_roll,
-      material_amount: body.material_amount,
-    },
+    runtimeEventKey.slice(0, 120),
   );
 }
 
@@ -208,7 +238,6 @@ function telegramRunCallbackContext(update) {
       primaryEventKey,
       runtimeEventKey: `runtime:run-step:${primaryEventKey}`,
       runtimeAction: 'run_step',
-      table: 'telegram_pet_run_steps',
     };
   }
 
@@ -219,7 +248,6 @@ function telegramRunCallbackContext(update) {
       primaryEventKey,
       runtimeEventKey: `runtime:run-extract:${primaryEventKey}`,
       runtimeAction: 'run_extract',
-      table: 'telegram_pet_events',
     };
   }
 
@@ -231,12 +259,7 @@ async function repairTelegramRunRuntimeAward(env, update) {
   const context = telegramRunCallbackContext(update);
   if (!context) return;
 
-  const primary = context.table === 'telegram_pet_run_steps'
-    ? await env.DB.prepare(`SELECT event_key FROM telegram_pet_run_steps WHERE telegram_id = ? AND event_key = ? LIMIT 1`).bind(context.telegramId, context.primaryEventKey).first().catch(() => null)
-    : await env.DB.prepare(`SELECT event_key FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ? AND status = 'accepted' LIMIT 1`).bind(context.telegramId, context.primaryEventKey).first().catch(() => null);
-  if (!primary?.event_key) return;
-
-  await applyRuntimeAward(env, context.telegramId, context.runtimeEventKey, context.runtimeAction);
+  await applyRuntimeAward(env, context.telegramId, context.runtimeEventKey, context.runtimeAction, context.primaryEventKey);
 }
 
 export default {
@@ -250,9 +273,12 @@ export default {
     const body = (isPetAction || isTelegramWebhook) ? await readJsonSafe(request) : null;
 
     if (isPetAction && body) {
-      const runtimeAction = PROGRESSION_API_ACTIONS[String(body.action || '').trim()];
+      const runtimeAction = PROGRESSION_API_ACTIONS[String(body.action || '').trim().toLowerCase()];
       if (runtimeAction && !String(body.event_key || '').trim()) {
         return jsonError(request, 'event_key required for progression-bearing pet actions', 400);
+      }
+      if (runtimeAction && String(body.event_key).length > 120) {
+        return jsonError(request, 'event_key must be at most 120 characters', 400);
       }
     }
 
@@ -265,7 +291,7 @@ export default {
     if (isPetAction && body) {
       await handlePetApiPostProcessing(env, body, response);
     }
-    if (isTelegramWebhook && body) {
+    if (isTelegramWebhook && body && response.ok) {
       await repairTelegramRunRuntimeAward(env, body);
     }
 

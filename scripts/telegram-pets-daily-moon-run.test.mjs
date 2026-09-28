@@ -24,7 +24,8 @@ import {
   persistPetRunRoomOutcome,
   startPetRogueliteRun,
 } from '../workers/moonboys-api/pets/roguelite-foundation.js';
-import moonboysApiWorker, { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
+import { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
+import moonboysApiWorker from '../workers/moonboys-api/deployment-entry.js';
 import { DAILY_RUN_CONDITIONS, DAILY_RUN_RULES_ID, DAILY_RUN_TACTICS, chooseDailyRunTactic, dailyTacticalBoard, previewDailyChoice, readDailyModifiers } from '../workers/moonboys-api/pets/daily-run-tactics.js';
 
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
@@ -1365,6 +1366,7 @@ function endingRuntimeState(f) {
   return {
     progression: f.adapter.database.prepare('SELECT adventure_xp,traits_json FROM telegram_pet_specialist_progression WHERE pet_id=?').get(f.run.pet_id),
     events: f.adapter.database.prepare('SELECT action,payload_json FROM telegram_pet_specialist_events WHERE pet_id=? ORDER BY event_key').all(f.run.pet_id),
+    legacy_events: f.adapter.database.prepare('SELECT action,payload_json FROM telegram_pet_runtime_events WHERE telegram_id=? ORDER BY event_key').all(f.owner),
   };
 }
 for (const surface of ['mini', 'api', 'refresh']) {
@@ -1398,6 +1400,7 @@ for (const surface of ['mini', 'api', 'refresh']) {
       assert.equal(after.progression.adventure_xp - before.progression.adventure_xp, mode === 'step' ? 10 : 24,
         `${surface} ordinary ${mode} keeps its existing Adventure XP`);
       assert.equal(after.events.length, 1);
+      assert.deepEqual(after.legacy_events, [], 'deployed wrapper must not add a second unscoped award');
       const plan = JSON.parse(after.events[0].payload_json);
       assert.equal(plan.action, mode === 'step' ? 'run_step' : 'run_extract');
       assert.equal(plan.equipment_action, plan.action);
