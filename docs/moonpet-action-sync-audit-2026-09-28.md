@@ -65,6 +65,8 @@ calendar-qualification schema needed to check real Marks. The large API suite
 uses pet-scoped cap/streak fixtures for the corrected paths, targets reward-batch
 faults directly, and keeps its simulated daily-limit sequence within one UTC day
 so running near midnight cannot make its sixth action fall on a new day.
+The Kaiju midnight-recovery fixture also advances the server clock with its
+request clock; otherwise rounded stat decay depended on the time CI ran it.
 
 The real Mini App browser loop runs at 390×844 and 360×640 across all six screens,
 including quest routes, boss endings, saved rewards, crafting, market, cooldowns,

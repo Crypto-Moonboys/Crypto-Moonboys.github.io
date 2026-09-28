@@ -4566,6 +4566,14 @@ assert.equal(legacyPendingSecondRetry.accepted, false, 'cancelled legacy pending
 assert.equal(legacyPendingSecondRetry.duplicate, true, 'cancelled legacy pending Event retries must be idempotent');
 assert.equal(legacyPendingSecondRetry.reason, 'legacy_repeat_reward_missing_pet_authority', 'cancelled legacy pending Event retries must keep the compatibility reason');
 
+// Settlement helpers also read the server clock. Advance that clock with the
+// request so rounded decay cannot depend on when CI happens to run this case.
+const kaijuRecoveryRealDate = globalThis.Date;
+let kaijuRecoveryClock = recoveryDayA.getTime();
+globalThis.Date = class extends kaijuRecoveryRealDate {
+  constructor(...args) { super(...(args.length ? args : [kaijuRecoveryClock])); }
+  static now() { return kaijuRecoveryClock; }
+};
 const kaijuRecoveryDb = seedRepeatRewardPlayer('kaiju-recovery', 50, recoveryDayA.toISOString());
 kaijuRecoveryDb.database.exec('DELETE FROM telegram_seasons');
 kaijuRecoveryDb.database.prepare(`
@@ -4598,6 +4606,7 @@ kaijuRecoveryDb.database.prepare(`
   UPDATE telegram_pet_profiles SET last_active_day = ?, streak_days = 9 WHERE telegram_id = ?
 `).run(recoveryDayBKey, 'kaiju-recovery');
 kaijuRecoveryDb.database.prepare('UPDATE telegram_pet_instances SET last_active_day=?,streak_days=9 WHERE telegram_id=?').run(recoveryDayBKey, 'kaiju-recovery');
+kaijuRecoveryClock = recoveryDayB.getTime();
 const recoveredKaiju = await awardPetKaijuPlayerResult(kaijuRecoveryDb, 'kaiju-recovery', kaijuMatch, 'kaiju_win', kaijuRewards, { now: recoveryDayB });
 assert.equal(recoveredKaiju.accepted, true, 'retrying a failed Kaiju result must complete its pending reservation');
 assert.equal(recoveredKaiju.reward_slot, 1, 'Kaiju recovery must reuse the original slot');
@@ -4658,6 +4667,7 @@ assert.deepEqual(
 const duplicateKaiju = await awardPetKaijuPlayerResult(kaijuRecoveryDb, 'kaiju-recovery', kaijuMatch, 'kaiju_win', kaijuRewards, { now: recoveryDayB });
 assert.equal(duplicateKaiju.duplicate, true, 'a completed Kaiju result retry must be idempotent');
 assert.deepEqual(repeatRewardSnapshot(kaijuRecoveryDb, 'kaiju-recovery', 'kaiju'), kaijuAfterRecovery, 'duplicate Kaiju result must not change XP, currencies, Energy, or its slot');
+globalThis.Date = kaijuRecoveryRealDate;
 
 function seedSelectableSoloKaijuMatch(db, telegramId, matchId) {
   db.database.prepare(`
