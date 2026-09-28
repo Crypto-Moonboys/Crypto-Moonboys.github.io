@@ -1436,6 +1436,7 @@ test('a transient timed-claim receipt lookup cannot settle without its material 
 
 test('full Mini App actions for two equipped pets compile under the production compound SELECT limit', async () => {
   const f = fixture('84999');
+  f.sql.exec(fs.readFileSync(new URL('../workers/moonboys-api/migrations/059_telegram_pet_sanctuary.sql',import.meta.url),'utf8'));
   f.pet('second-d1-limit', currentSeason, 300, 2);
   for (const table of ['telegram_pet_profiles', 'telegram_pet_instances']) {
     f.sql.prepare(`UPDATE ${table} SET equipped_food='crystal_bowl',equipped_toy='hoverboard',equipped_outfit='crown_jacket',
@@ -1443,7 +1444,7 @@ test('full Mini App actions for two equipped pets compile under the production c
   }
   const statements = new Map();
   const capture = statement => {
-    if (/WITH (?:run_candidates|raw_candidates|definitions)|INSERT(?: OR IGNORE)? INTO telegram_pet_(?:achievements|guidance_notices)|SELECT relic_id, unlocked_at/.test(statement.query)) statements.set(statement.query, statement.args);
+    statements.set(statement.query, statement.args);
   };
   f.db.beforeFirst = capture; f.db.beforeAll = capture; f.db.beforeRun = capture;
   f.db.beforeBatch = batch => batch.forEach(capture);
@@ -1472,10 +1473,19 @@ test('full Mini App actions for two equipped pets compile under the production c
   assert.equal(progress(f).care_xp, 8);
   assert.equal(f.sql.prepare('SELECT care_xp FROM telegram_pet_specialist_progression WHERE pet_id=?').get('second-d1-limit').care_xp, 7);
 
+  for (const table of ['telegram_pet_profiles','telegram_pet_instances']) {
+    f.sql.prepare(`UPDATE ${table} SET pet_xp=10000,health=100,energy=100 WHERE telegram_id=?`).run(f.owner);
+  }
+  const arena = await request('action', { action:'arena_start' });
+  await request('action', { action:'arena_move',battle_id:arena.result.battle.battle_id,expected_round:1,move:'ab' });
+  await request('action', { action:'arena_forfeit',battle_id:arena.result.battle.battle_id });
+  const kaiju = await request('action', { action:'kaiju_start' });
+  await request('action', { action:'kaiju_card',match_id:kaiju.result.match.match_id,card_key:'big-daddy-kong' });
+
   // Node SQLite does not expose sqlite3_limit. Python 3.11+ exposes the real
   // SQLite compiler limit, unlike counting UNION tokens (which misses nesting).
   const schema = f.sql.prepare("SELECT sql FROM sqlite_schema WHERE sql IS NOT NULL AND name NOT LIKE 'sqlite_%' ORDER BY CASE type WHEN 'table' THEN 0 ELSE 1 END").all().map(row => row.sql + ';').join('\n');
-  assert.equal(statements.size, 6, 'exercise rotating and targeted recovery, bulk writes and relic reads through real HTTP routes');
+  assert.ok(statements.size > 100, 'compile all SQL reached by full HTTP state, care, switch and combat flows');
   const compiled = spawnSync('python3', ['-c', `
 import json, sqlite3, sys
 payload = json.load(sys.stdin)
@@ -1499,6 +1509,7 @@ print('Compiled', len(payload['statements']), 'actual Mini App statements with c
 `], { input: JSON.stringify({ schema, statements: [...statements] }), encoding: 'utf8' });
   assert.ifError(compiled.error);
   assert.equal(compiled.status, 0, compiled.stderr);
+  console.log(compiled.stdout.trim());
 });
 
 for (const [label, method, match] of [

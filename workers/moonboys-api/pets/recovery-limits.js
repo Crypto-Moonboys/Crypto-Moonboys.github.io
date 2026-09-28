@@ -8,6 +8,7 @@ export const PET_STATE_RECOVERY_LIMITS = Object.freeze({
   daily_records: 1,
   live_endings: 2,
   runtime: 20,
+  runtime_after_arena: 6, // A recovered group ending can settle both players.
   weekly_bosses: 2,
   journey_sources: 20,
   journey_awards: 2,

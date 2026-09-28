@@ -166,7 +166,9 @@ for (const [path, fn, source] of [
   assert.ok(body.includes('awardPetReward(db') && body.includes(`source: '${source}'`), `${path} rewards cannot bypass awardPetReward()`);
 }
 const arenaCompletion = workerFunction('completePetArenaBattle');
-assert.ok(arenaCompletion.indexOf('awardPetKaijuPlayerResult') < arenaCompletion.lastIndexOf('return { accepted:true'),
+assert.ok(arenaCompletion.indexOf('awardPetArenaParticipant') >= 0
+  && arenaCompletion.indexOf('awardPetArenaParticipant') < arenaCompletion.lastIndexOf('return { accepted:true')
+  && workerFunction('awardPetArenaParticipant').includes('await awardPetKaijuPlayerResult'),
   'duplicate Arena completion callbacks must retry idempotent reward settlement before returning');
 
 const capDb = seedPlayer('cap-player');
