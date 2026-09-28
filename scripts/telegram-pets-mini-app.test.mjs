@@ -1429,7 +1429,7 @@ assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260928-canvas-tools-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20260926-front-actions-v1/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20260926-front-actions-v1/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260928-canvas-tools-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260928-radio-reconnect-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1483,7 +1483,7 @@ function radioHarness() {
     play() { return new Promise((resolve, reject) => attempts.push({ resolve, reject })); },
     pause() { this.pauseCount++; }, load() { this.loads++; this.error = null; } };
   const api = new Function('radioPlayer', 'notices', `
-    var radioRequestedOn = false, radioEnabled = false, radioRequestGeneration = 0, saved = false;
+    var radioRequestedOn = false, radioEnabled = false, radioRequestGeneration = 0, radioRetryNeedsLoad = false, saved = false;
     function saveRadioPreference(on) { saved = on; }
     function syncMoonpetScore() {}
     function renderCanvasTools() {}
@@ -1538,6 +1538,11 @@ const networkFailure = retryRadio.toggle();
 retryRadio.attempts[2].reject(new Error('network failed')); await networkFailure;
 assert.match(retryRadio.notices.at(-1), /CONNECTION LOST/, 'network failures must not be misreported as permission blocks');
 assert.equal(retryRadio.snapshot().requested, false, 'the next tap after a failure must retry, not toggle an invisible ON state off');
+retryRadio.player.error = null;
+const reconnectTap = retryRadio.toggle();
+assert.equal(retryRadio.player.loads, 2, 'retry after a stream failure must still force a media reload when error metadata is cleared');
+retryRadio.attempts[3].resolve(); await reconnectTap;
+assert.equal(retryRadio.snapshot().enabled, true, 'mobile reconnect tap must recover playback after a prior drop');
 assert.match(client, /window\.addEventListener\('pagehide'[\s\S]*radioRequestGeneration \+= 1;[\s\S]*radioPlayer\.pause\(\)/);
 assert.match(client, /window\.addEventListener\('pageshow'[\s\S]*event\.persisted && radioRequestedOn[\s\S]*setRadioEnabled\(true, false\)/);
 assert.doesNotMatch(client, /radioPlayer\.src = ''/, 'BFCache teardown must preserve the stream source');
@@ -1585,7 +1590,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260928-canvas-tools-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260928-radio-reconnect-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
