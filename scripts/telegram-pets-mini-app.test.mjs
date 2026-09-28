@@ -1429,7 +1429,7 @@ assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260928-sections-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20260926-front-actions-v1/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20260926-front-actions-v1/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260928-sections-v2/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260928-radio-autostart-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1483,14 +1483,15 @@ function radioHarness() {
     play() { return new Promise((resolve, reject) => attempts.push({ resolve, reject })); },
     pause() { this.pauseCount++; }, load() { this.loads++; this.error = null; } };
   const api = new Function('radioPlayer', 'notices', `
-    var radioRequestedOn = false, radioEnabled = false, radioRequestGeneration = 0, radioRetryNeedsLoad = false, saved = false;
+    var radioRequestedOn = false, radioEnabled = false, radioRequestGeneration = 0, radioRetryNeedsLoad = false, radioNeedsGesture = false, saved = false;
+    var state = { adopted: true }, document = { hidden: false };
     function saveRadioPreference(on) { saved = on; }
     function syncMoonpetScore() {}
     function renderCanvasTools() {}
     function haptic() {}
     function tell(message) { notices.push(message); }
     ${radioPlaybackSource}
-    return { set: setRadioEnabled, toggle: toggleRadio,
+    return { set: setRadioEnabled, toggle: toggleRadio, gesture: resumeRadioOnGesture, needsGesture: () => radioNeedsGesture,
       snapshot: () => ({ requested: radioRequestedOn, enabled: radioEnabled, saved }) };
   `)(player, notices);
   return { ...api, player, attempts, notices };
@@ -1521,6 +1522,26 @@ await stoppedRadio.toggle();
 stoppedRadio.attempts[0].resolve(); await stoppedStart;
 assert.equal(stoppedRadio.snapshot().enabled, false, 'a late success must not undo Stop');
 assert.equal(stoppedRadio.player.pauseCount, 2, 'late playback after Stop must be paused again');
+
+const autoRadio = radioHarness();
+const autoAttempt = autoRadio.set(true, false);
+autoRadio.attempts[0].reject(Object.assign(new Error('tap required'), { name: 'NotAllowedError' }));
+await autoAttempt;
+assert.equal(autoRadio.needsGesture(), true);
+autoRadio.gesture({ type: 'click', isTrusted: false });
+assert.equal(autoRadio.attempts.length, 1, 'synthetic clicks cannot unlock radio');
+autoRadio.gesture({ type: 'click', isTrusted: true, target: { closest: () => ({}) } });
+assert.equal(autoRadio.attempts.length, 1, 'the Radio/Audio controls keep their own gesture');
+autoRadio.gesture({ type: 'click', isTrusted: true });
+assert.equal(autoRadio.attempts.length, 2, 'the first normal tap must call play synchronously');
+autoRadio.attempts[1].resolve(); await Promise.resolve();
+assert.equal(autoRadio.snapshot().enabled, true);
+await autoRadio.set(false);
+autoRadio.gesture({ type: 'click', isTrusted: true });
+assert.equal(autoRadio.attempts.length, 2, 'manual Off must cancel automatic gesture recovery');
+const failedAuto = autoRadio.set(true, false);
+autoRadio.attempts[2].reject(new Error('network')); await failedAuto;
+assert.equal(autoRadio.needsGesture(), false, 'network failures must not retry on every game click');
 
 const retryRadio = radioHarness();
 const blockedAutoStart = retryRadio.set(true, false);
@@ -1592,7 +1613,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260928-sections-v2/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260928-radio-autostart-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');

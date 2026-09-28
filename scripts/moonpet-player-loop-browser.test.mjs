@@ -132,6 +132,8 @@ try {
     });
     const url = `http://127.0.0.1:${server.address().port}/moonpet-game.html`;
     await page.addInitScript(() => {
+      // Gameplay matrix keeps radio manually off; native autoplay has its own browser test.
+      localStorage.setItem('moonpet-radio-preference', 'off');
       // Model WebViews that require play() in the actual click task, not after await/import.
       window.radioTapChecks = [];
       let inRadioTap = false;

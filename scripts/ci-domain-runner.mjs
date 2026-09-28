@@ -155,6 +155,7 @@ const GROUPS = {
     ['node', 'scripts/wax-collection-page-fallback.test.mjs'],
   ],
   visual: [
+    ['node', 'scripts/moonpet-radio-browser.test.mjs'],
     ['node', 'scripts/moonpet-player-loop-browser.test.mjs'],
     ['node', 'scripts/moonpet-public-sync-browser.test.mjs'],
     ['npm', 'run', 'test:avatar-builder'],
