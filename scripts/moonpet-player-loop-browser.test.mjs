@@ -83,7 +83,7 @@ Object.defineProperty(globalThis, 'crypto', { configurable: true, value: { subtl
 const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg' };
 const server = http.createServer(async (request, response) => {
   try {
-    const target = path.resolve(root, '.' + new URL(request.url, 'http://localhost').pathname);
+    const target = path.resolve(root, '.' + decodeURIComponent(new URL(request.url, 'http://localhost').pathname));
     if (!target.startsWith(root + path.sep)) throw Error('outside root');
     response.setHeader('Content-Type', mime[path.extname(target)] || 'application/octet-stream');
     response.end(await fs.readFile(target));
