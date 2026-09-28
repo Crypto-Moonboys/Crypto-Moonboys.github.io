@@ -88,8 +88,8 @@ assert.match(client, /if \(!pet\.progression\)[^\n]+PROGRESSION UNAVAILABLE/, 'm
 const apiConfig = fs.readFileSync(new URL('../js/api-config.js', import.meta.url), 'utf8');
 const css = fs.readFileSync(new URL('../css/moonpet-mini-app.css', import.meta.url), 'utf8');
 assert.match(css, /--moonpet-viewport-height:\s*100dvh/, 'Moonpet shell must have a dynamic viewport-height fallback');
-assert.equal((css.match(/grid-template-rows:\s*auto minmax\([^;]+\) auto minmax\(0,\s*1fr\) auto/g) || []).length, 3,
-  'base, wide and short layouts must each preserve the five-row canvas, status, controls and dock flow');
+assert.equal((css.match(/grid-template-rows:\s*auto minmax\([^;]+\) minmax\(0,\s*1fr\) auto/g) || []).length, 3,
+  'base, wide and short layouts must each preserve the four-row status, canvas, controls and dock flow');
 assert.match(client, /tg\.viewportHeight \|\| tg\.viewportStableHeight/, 'Moonpet shell must use Telegram visible viewport height');
 assert.match(client, /tg\.onEvent\('viewportChanged', syncViewportHeight\)/, 'Moonpet shell must track Telegram viewport changes');
 const guide = fs.readFileSync(new URL('../how-to-play-crypto-moonboy-pets.html', import.meta.url), 'utf8');
@@ -1383,14 +1383,14 @@ assert.match(fs.readFileSync(new URL('../workers/moonboys-api/pets/completion-fe
 assert.match(client, /DAILY MISSION BUFFER \/\/ /);
 assert.match(client, /meter\('DAILY CLEAR', missionPercent\)/);
 assert.match(html, /id="utility-layer"/);
-assert.match(css, /grid-template-rows:\s*auto minmax\([^;]+\) auto minmax\(0,\s*1fr\) auto/,
-  'the fixed status row must sit between the canvas and scrollable controls');
+assert.match(css, /grid-template-rows:\s*auto minmax\([^;]+\) minmax\(0,\s*1fr\) auto/,
+  'the fixed status header must leave the canvas directly above scrollable controls');
 assert.match(css, /\.terminal-output \{[\s\S]*min-height:\s*36px/,
-  'routine status updates must remain visibly fixed beneath the canvas');
+  'routine status updates must remain visibly fixed above the canvas');
 assert.match(css, /\.terminal-output\.is-scrolling \.terminal-output-text \{[\s\S]*animation:\s*terminal-status-scroll/,
   'overflowing status details must scroll inside the fixed bar');
 assert.doesNotMatch(css, /\.terminal-output \{[\s\S]{0,500}clip-path:\s*inset\(50%\)/,
-  'the under-canvas update strip must not be visually hidden');
+  'the header update strip must not be visually hidden');
 assert.match(css, /\.terminal-output\[data-tone="danger"\]/, 'danger/error status must use the same fixed strip');
 const statusOutputSource = extractTestExport(client, 'statusOutput');
 assert.ok(statusOutputSource, 'fixed status output must be runtime testable');
@@ -1425,11 +1425,11 @@ statusFrames.shift()();
 assert.equal(testStatusOutput.dataset.tone, 'danger');
 assert.equal(testStatusClasses.has('is-scrolling'), true, 'overflowing updates must activate the scrolling text track');
 assert.match(testStatusProperties['--status-scroll-duration'], /s$/, 'overflowing updates must receive a readable duration');
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260928-recovery-state-v1/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260928-compact-shell-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20260926-front-actions-v1/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20260926-front-actions-v1/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260928-recovery-state-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260928-compact-shell-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1463,7 +1463,7 @@ for (const futureSystem of ['Advanced Traits', 'Breeding', 'Lineage', 'Fusion', 
   assert.ok(roadmapStepBody.includes(futureSystem), `guide roadmap step must list ${futureSystem}`);
   assert.ok(!guideOutsideRoadmap.includes(futureSystem), `guideMarkup must only mention ${futureSystem} in the coming-soon roadmap step`);
 }
-assert.match(client, /data-utility="leaderboard">LEADERBOARD/);
+assert.match(client, /data-utility="leaderboard">OPEN FULL LEADERBOARD/);
 assert.match(client, /data-utility="sync">REFRESH/);
 assert.match(client, /data-utility="audio" aria-pressed=/);
 assert.match(client, /data-utility="audio"[\s\S]*data-utility="radio"/, 'radio control must sit next to audio');
@@ -1524,7 +1524,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260928-recovery-state-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260928-compact-shell-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');

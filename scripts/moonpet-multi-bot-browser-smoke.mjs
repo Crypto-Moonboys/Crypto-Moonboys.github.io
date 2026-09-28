@@ -84,6 +84,12 @@ try {
   await animatedPage.waitForTimeout(250);
   const secondFrame = await frameSnapshot();
   assert.notEqual(secondFrame, firstFrame, "the retro space battle must animate between live canvas frames");
+  const animatedStatus = await animatedPage.evaluate(() => {
+    const output = document.getElementById('terminal-output');
+    output.classList.add('is-scrolling');
+    return getComputedStyle(output.querySelector('.terminal-output-text')).animationName;
+  });
+  assert.equal(animatedStatus, 'terminal-status-scroll', 'normal-motion status details retain their scrolling track');
   await animatedPage.close();
 
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
@@ -112,6 +118,7 @@ try {
     return {
       viewportVariable: getComputedStyle(document.documentElement).getPropertyValue("--moonpet-viewport-height").trim(),
       shellBottom: shell.bottom,
+      viewportTop: viewport.top,
       viewportBottom: viewport.bottom,
       outputTop: outputBox.top,
       outputBottom: outputBox.bottom,
@@ -119,6 +126,7 @@ try {
       outputPosition: outputStyle.position,
       outputAnimation: outputStyle.animationName,
       outputTextAnimation: outputTextStyle.animationName,
+      outputTextPadding: outputTextStyle.paddingLeft,
       screenTop: screenBox.top,
       dockBottom: dock.bottom,
       buttonBottoms: buttons.map((button) => button.bottom),
@@ -126,14 +134,15 @@ try {
   });
   assert.equal(shellLayout.viewportVariable, "520px", "shell must use Telegram's visible viewport height");
   assert.ok(shellLayout.shellBottom <= 520.5, "shell must fit inside Telegram's visible viewport");
-  assert.ok(Math.abs(shellLayout.outputTop - shellLayout.viewportBottom) < 1, "status strip must sit directly below the canvas");
+  assert.ok(Math.abs(shellLayout.outputBottom - shellLayout.viewportTop) < 1, "status strip must sit directly above the canvas");
   assert.ok(shellLayout.outputHeight >= 34, "status strip must remain visible");
   assert.equal(shellLayout.outputPosition, "relative", "status strip must occupy a stable grid row");
   assert.equal(shellLayout.outputAnimation, "none", "the fixed status bar must not move or animate");
-  assert.equal(shellLayout.outputTextAnimation, "terminal-status-scroll", "overflowing details must scroll inside the fixed strip");
-  assert.ok(shellLayout.outputBottom <= shellLayout.screenTop + 1, "status strip must stay above the scrollable controls");
+  assert.equal(shellLayout.outputTextAnimation, "none", "reduced-motion status details must remain stationary");
+  assert.equal(shellLayout.outputTextPadding, "0px", "reduced-motion status must start inside its visible header");
+  assert.ok(Math.abs(shellLayout.viewportBottom - shellLayout.screenTop) < 1, "controls must begin directly below the canvas");
   assert.ok(shellLayout.dockBottom <= 520.5, "bottom dock must not be cropped by Telegram's visible viewport");
-  assert.ok(shellLayout.buttonBottoms.every((bottom) => bottom <= 513.5), "every dock button must fit above the dock's bottom padding");
+  assert.ok(shellLayout.buttonBottoms.every((bottom) => bottom <= 516.5), "every dock button must fit above the dock's bottom padding");
 
   await fs.mkdir(OUTPUT, { recursive: true });
   await selectAndWaitForPack(page, { speciesId: "neon_raccoon", speciesName: "F1 EDDY", evolutionStage: 2 }, "F1 EDDY");
