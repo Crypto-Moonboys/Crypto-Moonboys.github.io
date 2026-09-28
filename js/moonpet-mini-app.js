@@ -705,7 +705,7 @@
   function button(label, action, payload, options) {
     options = careActionButtonOptions(action, actionCooldownButtonOptions(action, options));
     var accountActions = ['adopt', 'guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'arena_queue_cancel', 'arena_forfeit', 'kaiju_queue_cancel', 'kaiju_match_cancel'];
-    var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim', 'contract_claim', 'seasonal_boss_claim']);
+    var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim', 'contract_claim', 'seasonal_boss_claim', 'daily_completion_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim']);
     if (state && state.lifecycle && state.lifecycle.phase === 'egg' && !eggActions.includes(action)) {
       options = Object.assign({}, options, { disabled: true, cooldown: null, statusLabel: 'HATCH REQUIRED' });
     } else if (state && state.adopted === false && !accountActions.includes(action)) {
@@ -1771,6 +1771,7 @@
       else body += engine.choices(run).map(function (choice) { return practiceButton(choice.title, choice.key, run, (choice.key === 'rest' ? 'RECOVER // ' : choice.odds + '% CLEAR // +' + choice.salvage + ' SALVAGE // FAILURE -' + choice.damage + ' HP. ') + choice.detail, choice.disabled); }).join('');
       body += practiceButton('EXTRACT PRACTICE', 'extract', run, 'Finish now and bank local salvage. Leaving the app instead preserves the run.') + '</div>';
     }
+    if (state.contracts && state.contracts.available) body += '<div class="line muted">For saved progression and rewards, play Continuing Contracts: repeatable rank and three daily Pet XP bonus slots.</div><div class="button-grid one">' + routeButton('PLAY CONTRACTS FOR PROGRESSION', { screen: 'missions', focus: 'contracts' }) + '</div>';
     return panel('PRACTICE ROGUELITE // NO REWARDS', body, 'practice');
   }
 
@@ -1858,6 +1859,49 @@
     return '<button class="terminal-button" type="button" data-contract-setup="' + escapeHtml(JSON.stringify({ build: record.build, tier: record.tier, goal: record.goal, format: record.format || 'standard' })) + '"' + (record.unlocked ? '' : ' disabled') + '>' + escapeHtml(label) + '<small>' + escapeHtml(record.title + ' // ' + record.build_title + ' // TIER ' + record.tier + ' // ' + (record.format_title || 'STANDARD ROUTE')) + '<br>' + (record.unlocked ? number(record.completed) + ' CLEARS // BEST ' + number(record.best_rank_points) + ' RANK' : 'LOCKED // COMPLETE ' + (record.tier === 2 ? '5' : '15') + ' CONTRACTS') + '</small></button>';
   }
 
+  function renderDailyCompletion() {
+    var bonus = state.guidance && state.guidance.daily_completion;
+    if (!bonus || bonus.available === false) return panel('DAILY 7/7 BONUS', '<div class="line muted">Daily bonuses are temporarily unavailable. Your existing checklist remains playable.</div>', 'daily-completion');
+    var body = '<div class="line">Complete all seven daily missions: up to ' + number(bonus.rewards.pet_xp) + ' Pet XP, ' + number(bonus.rewards.moon_gold) + ' Gold and ' + number(bonus.rewards.style_tokens) + ' Style.</div>' +
+      '<div class="line muted">One bonus per account / UTC day. Earned progress stays complete after spending gold. Unclaimed bonuses stay saved. Pet XP uses your normal daily cap.</div>';
+    body += '<div class="line ' + (bonus.claimed ? 'complete' : '') + '">' + (bonus.claimed ? 'TODAY’S BONUS CLAIMED' : bonus.ready ? 'TODAY // 7/7 COMPLETE' : 'TODAY // FINISH THE CHECKLIST BELOW') + '</div>';
+    body += '<div class="button-grid one">' + (bonus.pending || []).map(function (claim) {
+      var needsHatch = !claim.pet_id && (!state.lifecycle || state.lifecycle.phase === 'egg');
+      return button('CLAIM 7/7 BONUS // ' + claim.utc_day, 'daily_completion_claim', { utc_day: claim.utc_day, pet_id: claim.pet_id || state.pet.pet_id }, {
+        disabled: needsHatch, statusLabel: needsHatch ? 'HATCH REQUIRED' : '',
+        detail: claim.pet_id ? 'Saved for the original claim pet. No new mission or energy cost.' : 'Pet XP goes to your selected hatched pet. The target is saved when you claim.',
+      });
+    }).join('') + '</div>';
+    return panel('DAILY 7/7 BONUS', body, 'daily-completion');
+  }
+
+  function renderSeasonFinales() {
+    var board = state.season_finales;
+    if (!board) return '';
+    if (board.available === false) return panel('SEASON FINALE', '<div class="line muted">Finale battles are temporarily unavailable. Your season progress is unchanged.</div>', 'season-finale');
+    var body = '<div class="line muted">Saved battle. Free retries. Battle HP and kits are separate from pet resources.</div>';
+    body += (board.pets || []).map(function (pet) {
+      var payload = { pet_id: pet.pet_id, season_key: pet.season_key, revision: pet.revision };
+      var section = '<div class="line signal">' + escapeHtml(pet.season_key) + ' // SLOT ' + number(pet.slot_number) + (state.pet.pet_id === pet.pet_id ? ' // SELECTED PET' : ' // SAVED PET') + '</div>';
+      if (!pet.eligible && pet.status === 'not_started') return section + '<div class="line muted">LOCKED // Requires final evolution, ' + number(board.requirements.required_growth_marks) + ' daily Marks and ' + number(board.requirements.required_weekly_crests) + ' weekly Crests.</div>';
+      if (pet.state) section += '<div class="line">ATTEMPT ' + number(pet.attempt) + ' // ROUND ' + number(pet.state.round) + ' // ' + escapeHtml(words(pet.state.build)) + '</div>' +
+        meter('BATTLE HP', pet.state.health / pet.state.max_health * 100) + meter('BOSS HP', pet.state.boss_health / pet.state.boss_max_health * 100) +
+        '<div class="line">YOU ' + number(pet.state.health) + '/' + number(pet.state.max_health) + ' // BOSS ' + number(pet.state.boss_health) + '/' + number(pet.state.boss_max_health) + ' // CHARGE ' + number(pet.state.charge) + ' // KITS ' + number(pet.state.supplies) + '</div><div class="line">' + escapeHtml(pet.state.last) + '</div>';
+      if (pet.status === 'won') return section + '<div class="line complete">FINALE VICTOR // ACHIEVEMENT SAVED</div>' + (pet.claimed
+        ? '<div class="line complete">VICTORY REWARD CLAIMED</div>'
+        : '<div class="button-grid one">' + button('CLAIM FINALE REWARD', 'finale_claim', payload, { detail: 'Your victory is saved. Retry this claim without fighting again.' }) + '</div>');
+      if (pet.status === 'active') return section + '<div class="combat-intent"><strong>NEXT // ' + escapeHtml(pet.intent.title) + (pet.intent.enraged ? ' // ENRAGED' : '') + '</strong><span>' + number(pet.intent.damage) + ' base incoming damage. ' + (pet.intent.multiplier > 1 ? 'Strike and Surge deal double damage this turn.' : 'Guard reduces damage and builds charge.') + '</span></div><div class="button-grid">' + pet.choices.map(function (choice) {
+        return button(choice.title, 'finale_step', Object.assign({}, payload, { move: choice.key }), { disabled: choice.disabled, detail: choice.detail });
+      }).join('') + '</div>';
+      return section + '<div class="button-grid">' + board.builds.map(function (build) {
+        return button((pet.status === 'failed' ? 'RETRY // ' : 'START // ') + build.title, pet.status === 'failed' ? 'finale_retry' : 'finale_start', Object.assign({}, payload, { build: build.key }), { detail: build.detail + ' No pet energy cost.' });
+      }).join('') + '</div>';
+    }).join('');
+    body += '<div class="line muted">First victory: Finale Victor achievement, up to ' + number(board.reward.pet_xp) + ' Pet XP, ' + number(board.reward.moon_gold) + ' Gold and ' + number(board.reward.style_tokens) + ' Style. One reward per pet / season; normal daily XP cap. This additional challenge preserves existing season-completion status. Completed season pets can also enter.</div>';
+    if (state.contracts && state.contracts.available) body += '<div class="button-grid one">' + routeButton('CONTINUE WITH CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'Repeatable routes with rank and limited daily Pet XP bonuses.') + '</div>';
+    return panel('SEASON FINALE // ' + board.title, body, 'season-finale');
+  }
+
   function renderMissions() {
     var guidance = state.guidance || {};
     var missions = state.guidance && state.guidance.missions || [];
@@ -1893,7 +1937,9 @@
       panel('DAILY JOURNEY // GROWTH MARK', dailyJourney, 'daily-journey') +
       panel('OFFICIAL DAILY OBJECTIVES', dailyObjectiveMarkup(), 'daily-objectives') +
       panel(weeklyTitle, weeklyJourney, 'weekly-journey') +
+      renderDailyCompletion() +
       panel('DAILY MISSION BUFFER // ' + number(completedMissions) + '/' + number(missions.length), '<div class="line muted">NEXT // ' + escapeHtml(dailyJourneyNextAction(dailyAuthority, completedMissions, guidance, state)) + '</div><div class="line muted">DAY ' + escapeHtml(guidance.day_key || 'UTC') + ' // WEEK ' + escapeHtml(guidance.week_key || 'UTC') + '</div>' + meter('DAILY CLEAR', missionPercent) + rows, 'missions') +
+      renderSeasonFinales() +
       panel('ACHIEVEMENT ARCHIVE // ' + number(unlockedCount) + '/' + number(achievements.length), achievementRows || '<div class="line muted">EMPTY ARCHIVE.</div>', 'achievements');
   }
 
@@ -2334,6 +2380,7 @@
       panel('APTITUDES', aptitudeRows) +
       panel('MEMORY ARCHIVE', memoryRows + (milestones || '<div class="line muted">NO MILESTONES RECORDED YET.</div>'), 'memories') +
       panel('CALLSIGN', callsignPanel, 'callsign') +
+      panel('SEASON FINALE', '<div class="button-grid one">' + routeButton('OPEN SEASON FINALE', { screen: 'missions', focus: 'season-finale' }, 'Check your unlocks, resume a saved fight or collect a victory reward.') + '</div>', 'finale-link') +
       panel('EVOLUTION', evoHtml, 'evolution') + panel('FACTION PERK', '<div class="line complete">' + escapeHtml(words(faction.key || 'unaligned')) + '</div><div class="line muted">' + escapeHtml(faction.bonus ? words(faction.bonus.system) + ' // ' + costText(faction.bonus.effect) : 'JOIN A FACTION TO ACTIVATE A GAMEPLAY BONUS') + '</div>', 'faction') +
       panel('PRESTIGE // FUTURE SEASON', futureSystemPanelCopy(futureSystemByKey('prestige', 'COMING_SOON')), 'prestige') +
       panel('MOONPET SANCTUARY // FUTURE SEASON', sanctuaryPanel, 'sanctuary') + panel('SPECIALIST TRACKS', tracks, 'tracks') + panel('ROADMAP // FUTURE SEASONS', futureSystemRows, 'future-systems') + panel('UNLOCK DIRECTORY', featureRows, 'features') + panel('ALERT CONTROL', notificationPanel, 'alerts') + panel('SEASON // ' + (season.key || ''), '<div class="line">' + number(season.xp) + ' SEASON XP</div>' + tiers, 'season') + panel('TOP MOONPETS // CURRENT SEASON', (leaders || '<div class="line muted">NO RANKS LOADED.</div>') + '<div class="button-grid one"><button type="button" class="terminal-button" data-utility="leaderboard">OPEN FULL LEADERBOARD</button></div>', 'leaderboard');
@@ -2500,7 +2547,7 @@
       return blockedParts.join(' - ');
     }
     var reward = resultRewardMap(result);
-    var gains = Object.entries(reward).filter(function (entry) { return Number(entry[1]) > 0 && typeof entry[1] !== 'object'; }).map(function (entry) { return '+' + number(entry[1]) + ' ' + words(entry[0]); });
+    var gains = Object.entries(reward).filter(function (entry) { return Number(entry[1]) > 0 && typeof entry[1] !== 'object' && !(entry[0] === 'pet_xp' && result.pet_xp_awarded != null); }).map(function (entry) { return '+' + number(entry[1]) + ' ' + words(entry[0]); });
     var parts = ['Action complete'];
     var reasonCopy = rejectionMessage(result.reason);
     if (reasonCopy) parts.push(reasonCopy);
@@ -2529,6 +2576,14 @@
       contracts_unavailable: 'contracts are syncing; refresh after the update.',
       pet_busy: 'a background activity is running. Open Work to review it; other care and Contracts are available.',
       pet_tired: 'not enough energy for this action. Review its displayed requirement or use care to recover.',
+      daily_completion_not_ready: 'finish all seven daily missions before claiming.',
+      daily_completion_pending: 'your daily bonus is saved. Retry the claim.',
+      finale_requirements_not_met: 'reach final evolution, 60 daily Marks and 10 weekly Crests.',
+      finale_stale_turn: 'this battle changed. Use the refreshed moves.',
+      finale_invalid_move: 'check your charge or repair kits and choose an available move.',
+      finale_reward_pending: 'your victory is saved. Retry the reward claim.',
+      finale_victory_required: 'defeat the finale boss before claiming.',
+      finale_already_started: 'resume your saved fight or use Retry after defeat.',
       contract_pet_changed: 'the active pet changed; reopen its contract board.',
       contract_stale: 'that contract changed; use the refreshed choices.',
       contract_active: 'finish or abandon your current contract first.',
@@ -2611,7 +2666,7 @@
     var reward = resultRewardMap(result);
     Object.entries(reward).some(function (entry) {
       if (lines.length >= 3) return true;
-      if (Number(entry[1]) > 0 && typeof entry[1] !== 'object') lines.push('+' + number(entry[1]) + ' ' + words(entry[0]));
+      if (Number(entry[1]) > 0 && typeof entry[1] !== 'object' && !(entry[0] === 'pet_xp' && result.pet_xp_awarded != null)) lines.push('+' + number(entry[1]) + ' ' + words(entry[0]));
       return lines.length >= 3;
     });
     var resultCopy = result.result_copy || result.outcome && result.outcome.copy;
@@ -2759,6 +2814,8 @@
     if (key === 'dance') return 'dance';
     if (key === 'cuddles') return 'victory';
     if (key === 'daily_run_tactic') return 'victory';
+    if (key === 'finale_step') return payload && payload.move === 'patch' ? 'interact' : 'fight';
+    if (key === 'finale_start' || key === 'finale_retry') return 'battle';
     if (key === 'contract_step') return payload && payload.choice === 'bold' ? 'fight' : payload && payload.choice === 'rest' ? 'sleep' : 'travel';
     if (key === 'contract_start') return 'travel';
     if (/fail|blocked|denied|lose/.test(key)) return 'blocked';
