@@ -12,6 +12,7 @@ import {
 import { recordMoonpetBehaviour, recordMoonpetBiggestReward, recordMoonpetMemory } from './moonpet-identity.js';
 import { reconcileLegacyPetInventory } from './inventory-cutover.js';
 import { getMoonpetSeasonKey } from './season-authority.js';
+import { DAILY_COMPLETION_REWARD, SEASON_FINALE_REWARD, dailyCompletionKey, seasonFinaleKey, completionRewardAuthorization } from './completion-policy.js';
 import {
   PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY,
   PET_INSTANCE_AUTHORITY_VERSION,
@@ -48,7 +49,7 @@ export const PET_RUN_STATUSES = Object.freeze(['active', 'completed', 'failed', 
 export const PET_ROOM_TYPES = Object.freeze(['battle', 'choice_event', 'loot', 'elite', 'boss']);
 export const PET_REWARD_SOURCES = Object.freeze([
   'pet_event', 'pet_kaiju', 'pet_job', 'pet_activity', 'pet_adventure', 'pet_arena', 'pet_run_legacy', 'pet_action', 'pet_item_use',
-  'pet_weekly_boss', 'pet_season_reward', 'pet_contract',
+  'pet_weekly_boss', 'pet_season_reward', 'pet_contract', 'pet_daily_completion', 'pet_season_finale',
   'pet_bounty', 'pet_expedition', 'pet_market',
   'pet_district', 'pet_event_chain', 'pet_seasonal_boss',
   'roguelite_room', 'roguelite_boss', 'roguelite_completion',
@@ -136,6 +137,7 @@ export function validatePetRunModifier(modifier) {
 }
 
 function getRewardAuthorization(source, telegramId, context = {}, now = new Date(), petId = '') {
+  if (source === 'pet_daily_completion' || source === 'pet_season_finale') return completionRewardAuthorization(source, telegramId, petId, context);
   const runId = String(context.run_id || '').trim();
   const roomId = String(context.room_id || '').trim();
   if (source === 'pet_market') {
@@ -266,6 +268,13 @@ export async function awardPetReward(db, request = {}) {
   const now = request.now instanceof Date ? request.now : new Date(request.now || Date.now());
   const reservationId = String(request.reservation_id || '').trim();
   let rewards = normalizePetReward(request.rewards);
+  if (source === 'pet_daily_completion' || source === 'pet_season_finale') {
+    const daily = source === 'pet_daily_completion';
+    const key = daily ? dailyCompletionKey(telegramId, request.context?.utc_day) : seasonFinaleKey(petId, request.season_key);
+    if (!petId || request.context?.season_key !== request.season_key || idempotencyKey !== key || request.event_key !== key
+      || request.event_type !== (daily ? 'daily_completion' : 'season_finale')) throw Error('invalid_pet_reward_context');
+    rewards = normalizePetReward(daily ? DAILY_COMPLETION_REWARD : SEASON_FINALE_REWARD);
+  }
   if (source === 'pet_contract') {
     if (!petId || petId !== request.context?.pet_id || request.season_key !== request.context?.season_key || idempotencyKey !== request.context?.contract_id) throw new Error('invalid_pet_reward_context');
     rewards = normalizePetReward({ pet_xp: 20 });

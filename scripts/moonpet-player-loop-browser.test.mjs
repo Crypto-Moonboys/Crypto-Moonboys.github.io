@@ -21,6 +21,7 @@ sqlite.exec(await fs.readFile(path.join(root, 'workers/moonboys-api/migrations/0
 sqlite.exec(await fs.readFile(path.join(root, 'workers/moonboys-api/migrations/058_telegram_pet_season_completion.sql'), 'utf8'));
 sqlite.exec(await fs.readFile(path.join(root, 'workers/moonboys-api/migrations/061_moonpet_season_economy_calibration.sql'), 'utf8'));
 let failActivitySettlement = false;
+let failFinaleReward = false;
 let failWeeklyReward = false;
 let failDailyEnding = false;
 let failContractReward = false;
@@ -52,6 +53,7 @@ const db = {
     if (failWeeklyReward && statements[0].sql.includes('INSERT OR IGNORE INTO telegram_pet_reward_claims') && statements[0].args.includes('pet_weekly_boss')) {
       failWeeklyReward = false; throw Error('interrupted_weekly_reward');
     }
+    if (failFinaleReward && statements[0].sql.includes('INSERT OR IGNORE INTO telegram_pet_reward_claims') && statements[0].args.includes('pet_season_finale')) { failFinaleReward=false; throw Error('interrupted_finale_reward'); }
     sqlite.exec('BEGIN IMMEDIATE');
     try { const results = []; for (const statement of statements) results.push(await statement.run()); sqlite.exec('COMMIT'); return results; }
     catch (error) { sqlite.exec('ROLLBACK'); throw error; }
@@ -1175,11 +1177,70 @@ try {
     }
     await page.locator('[data-panel="relics"]').evaluate(node=>node.scrollIntoView({block:'center'}));
     if(process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({path:process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png',`-vault-${viewport.width}.png`)});
+    // Daily completion and the optional season finale use real handlers and saved state.
+    currentUser = 'browser-finale-' + viewport.width;
+    await seed(currentUser, 'young');
+    const finalePet = await hooks.getPetProfile(db,currentUser);
+    sqlite.prepare("INSERT OR IGNORE INTO telegram_pet_evolutions_by_pet (pet_id,telegram_id,evolution_id,stage,unlock_event_key) VALUES (?,?,'legendary_moon_guardian',5,'browser-finale')").run(finalePet.pet_id,currentUser);
+    const bonusDay = new Date().toISOString().slice(0,10);
+    for (const type of ['feed','play','clean','train','trade','buy','adventure']) sqlite.prepare(`INSERT INTO telegram_pet_events
+      (id,pet_id,telegram_id,event_type,event_key,pet_xp_awarded,season_key,day_key,week_key,status)
+      VALUES (?,?,?,?,?,0,?,?,'fixture','accepted')`).run(realCrypto.randomUUID(),finalePet.pet_id,currentUser,type,realCrypto.randomUUID(),finalePet.season_key,bonusDay);
+    sqlite.prepare('UPDATE telegram_pet_profiles SET moon_gold=0 WHERE telegram_id=?').run(currentUser);
+    await page.reload();await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-panel="play-now"] [data-focus="daily-completion"]').click();
+    assert.match(await page.locator('[data-panel="daily-completion"]').textContent(),/7\/7 COMPLETE/);
+    assert.match(await page.locator('[data-panel="missions"]').textContent(),/7\/7/);
+    async function completionAction(locator, action) {
+      const response=page.waitForResponse(r=>r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action===action);
+      await locator.click();const data=await (await response).json();assert.equal(data.result.accepted,true,JSON.stringify(data.result));
+      await page.waitForFunction(()=>!document.querySelector('.is-active'));
+      return data;
+    }
+    await completionAction(page.locator('[data-action="daily_completion_claim"]'),'daily_completion_claim');
+    await page.waitForFunction(()=>document.querySelector('[data-panel="daily-completion"]').textContent.includes('BONUS CLAIMED'));
+    assert.equal(await page.locator('[data-action="daily_completion_claim"]').count(),0);
+    assert.match(await page.locator('[data-panel="season-finale"]').textContent(),/LOCKED/);
+    sqlite.prepare(`INSERT INTO telegram_pet_season_completions
+      (pet_id,telegram_id,season_key,legendary_evolution_id,growth_marks_earned,weekly_crests_earned)
+      VALUES (?,?,?,'legendary_moon_guardian',60,10)`).run(finalePet.pet_id,currentUser,finalePet.season_key);
+    await page.reload();await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-panel="play-now"] [data-focus="season-finale"]').click();
+    await completionAction(page.locator('[data-action="finale_start"]').filter({hasText:'STRIKER'}),'finale_start');
+    await page.waitForSelector('[data-action="finale_step"]');
+    assert.equal(await page.locator('[data-action="finale_step"]').filter({hasText:'RELEASE SURGE'}).isDisabled(),true);
+    const currentFinale=()=>sqlite.prepare('SELECT * FROM telegram_pet_season_finales WHERE pet_id=?').get(finalePet.pet_id);
+    while(currentFinale().status==='active') await completionAction(page.locator('[data-action="finale_step"]').filter({hasText:'STRIKE'}),'finale_step');
+    await page.waitForSelector('[data-action="finale_retry"]');
+    assert.match(await page.locator('[data-panel="season-finale"]').textContent(),/pet is unharmed/);
+    await completionAction(page.locator('[data-action="finale_retry"]').filter({hasText:'GUARDIAN'}),'finale_retry');
+    await page.waitForSelector('[data-action="finale_step"]');
+    await completionAction(page.locator('[data-action="finale_step"]').filter({hasText:'GUARD / CHARGE'}),'finale_step');
+    const persisted=currentFinale();
+    await page.reload();await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-panel="play-now"] [data-focus="season-finale"]').click();
+    assert.equal(currentFinale().state_json,persisted.state_json);
+    await page.locator('[data-panel="season-finale"]').evaluate(node=>node.scrollIntoView({block:'start'}));
+    if(process.env.MOONPET_BROWSER_SCREENSHOT)await page.screenshot({path:process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png',`-finale-${viewport.width}.png`)});
+    failFinaleReward=true;
+    while(currentFinale().status==='active') {
+      const battle=JSON.parse(currentFinale().state_json), label=(battle.round-1)%3===2?'RELEASE SURGE':'GUARD / CHARGE';
+      await completionAction(page.locator('[data-action="finale_step"]').filter({hasText:label}),'finale_step');
+    }
+    await page.waitForSelector('[data-action="finale_claim"]');
+    assert.match(await page.locator('[data-panel="season-finale"]').textContent(),/FINALE VICTOR/);
+    await completionAction(page.locator('[data-action="finale_claim"]'),'finale_claim');
+    await page.waitForFunction(()=>document.querySelector('[data-panel="season-finale"]').textContent.includes('VICTORY REWARD CLAIMED'));
+    assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE telegram_id=? AND event_type='season_finale'").get(currentUser).n,1);
+    assert.match(await page.locator('[data-panel="achievements"]').textContent(),/UNLOCKED.*Finale Victor/);
+    await page.locator('[data-screen="explore"]').click();
+    await page.locator('[data-panel="practice"] [data-focus="contracts"]').click();
+    assert.equal(await page.locator('[data-panel="contracts"]').count(),1);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
     assert.equal(overflow, false, 'mobile viewport must not overflow horizontally');
     assert.deepEqual(errors, [], 'no runtime errors across all six screens');
     if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-${viewport.width}.png`) });
-    console.log(`Moonpet browser loop passed at ${viewport.width}x${viewport.height}; all six screens; bounties; practice; contracts and records; daily tactics; raids; timed recovery; Trade; expeditions; weekly boss recovery; Daily Cache claimed/reset state; season reward rejection/recovery; supply drafts; crafting goals, material routes, craft/use and goal isolation; paid-bundle capacity and exact-fit purchase; persisted draft redraw; weekly objective routes; six goals and saved ten-room Contracts with four drafts and separate records; saved checkpoint paths, care busy/energy gates and recovery unlock; boss tactic previews, saved final-room reload, clear/failure and immediate replay.`);
+    console.log(`Moonpet browser loop passed at ${viewport.width}x${viewport.height}; all six screens; daily 7/7 bonus; season finale builds, failure/retry, saved reload, victory and payout recovery; bounties; practice; contracts and records; daily tactics; raids; timed recovery; Trade; expeditions; weekly boss recovery; Daily Cache claimed/reset state; season reward rejection/recovery; supply drafts; crafting goals, material routes, craft/use and goal isolation; paid-bundle capacity and exact-fit purchase; persisted draft redraw; weekly objective routes; six goals and saved ten-room Contracts with four drafts and separate records; saved checkpoint paths, care busy/energy gates and recovery unlock; boss tactic previews, saved final-room reload, clear/failure and immediate replay.`);
     await context.close();
   }
 } finally {

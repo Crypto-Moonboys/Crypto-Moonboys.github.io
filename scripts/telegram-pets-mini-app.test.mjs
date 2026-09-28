@@ -916,6 +916,11 @@ ${weeklyJourneyMarkupSource}
 ${journeyActionProgressSource}
 ${actionResultFeedbackSource}; return { resultMessage: resultMessage(result, beforeState, afterState), actionFeedback: actionFeedback(result, beforeState, afterState) };`,
 );
+const completionFeedback = actionResultFeedbackRuntime({ accepted: true, pet_xp_awarded: 25, rewards: { pet_xp: 25, moon_gold: 50, style_tokens: 1 } }, {}, {});
+assert.equal((completionFeedback.resultMessage.match(/25 pet xp/gi) || []).length, 1, 'daily/finale reward text must not duplicate the actual Pet XP payout');
+assert.equal(completionFeedback.actionFeedback.lines.filter(line => /25 pet xp/i.test(line)).length, 1, 'the compact reward panel must show Pet XP once');
+const cappedCompletionFeedback = actionResultFeedbackRuntime({ accepted: true, pet_xp_awarded: 0, rewards: { pet_xp: 25, moon_gold: 50 } }, {}, {});
+assert.doesNotMatch(cappedCompletionFeedback.resultMessage, /25 pet xp/i, 'actual zero XP must override a nominal reward value');
 const blockedResultFeedback = actionResultFeedbackRuntime({
   accepted: false,
   reason: 'moon_egg_must_hatch',
@@ -1316,12 +1321,12 @@ assert.match(worker, /WHERE match_id=\? AND chat_id LIKE 'mini:kaiju:%' AND mode
 const kaijuCancelSource = worker.slice(worker.indexOf('async function cancelPetKaijuMiniAppMatch'), worker.indexOf('async function awardPetKaijuPlayerResult'));
 assert.doesNotMatch(kaijuCancelSource, /getPetMiniAppCombatEligibility|combat_unlocked|kaiju_match_cancel_unavailable/,
   'Kaiju stale match cleanup authority must depend on owned solo match state, not combat eligibility');
-assert.match(worker, /const \[journeySummary, hydratedKaiju\] = await Promise\.all\(\[[\s\S]*buildPetMiniAppJourneySummary[\s\S]*ensurePetKaijuMatchCategory/, 'Mini App state loading must hydrate journey summary and Kaiju category in parallel');
+assert.match(worker, /const \[journeySummary, hydratedKaiju, seasonFinales\] = await Promise\.all\(\[[\s\S]*buildPetMiniAppJourneySummary[\s\S]*ensurePetKaijuMatchCategory/, 'Mini App state loading must hydrate journey summary and Kaiju category in parallel');
 
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
-assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260928-vault-recovery-budget-v1`/);
+assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260928-completion-finale-v1`/);
 assert.match(worker, /const TELEGRAM_GAMES_MENU_URL = `\$\{SITE_URL\}\/games\/telegram\/\?v=20260903-games-shell-v8`/,
   'default Telegram games menu must point at the current shell release');
 assert.match(worker, /const TELEGRAM_GAMES_MENU_TEXT = 'Games'/);
@@ -1374,7 +1379,7 @@ assert.match(worker, /system_key = 'equipment_upgrade'/);
 assert.match(worker, /updated_at >= \? AND updated_at < \?/);
 assert.match(worker, /equipmentUpgradeCount/);
 assert.doesNotMatch(worker, /date\(created_at\) = \?/);
-assert.match(worker, /counts\.district_mission/);
+assert.match(fs.readFileSync(new URL('../workers/moonboys-api/pets/completion-features.js', import.meta.url), 'utf8'), /district_mission: 64/);
 assert.match(client, /DAILY MISSION BUFFER \/\/ /);
 assert.match(client, /meter\('DAILY CLEAR', missionPercent\)/);
 assert.match(html, /id="utility-layer"/);
@@ -1420,11 +1425,11 @@ statusFrames.shift()();
 assert.equal(testStatusOutput.dataset.tone, 'danger');
 assert.equal(testStatusClasses.has('is-scrolling'), true, 'overflowing updates must activate the scrolling text track');
 assert.match(testStatusProperties['--status-scroll-duration'], /s$/, 'overflowing updates must receive a readable duration');
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260928-vault-recovery-budget-v1/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260928-completion-finale-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20260926-front-actions-v1/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20260926-front-actions-v1/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260928-vault-recovery-budget-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260928-completion-finale-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1519,7 +1524,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260928-vault-recovery-budget-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260928-completion-finale-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -2031,7 +2036,7 @@ assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Numbe
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
 assert.match(html, /20260926-front-actions-v1/);
-assert.match(worker, /20260928-vault-recovery-budget-v1/);
+assert.match(worker, /20260928-completion-finale-v1/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');
 assert.match(client, /renderQuality = reducedMotion/, 'canvas quality must start from device capability');

@@ -1,3 +1,4 @@
+import { readDailyCompletion, claimDailyCompletion, getSeasonFinales, processSeasonFinale } from './pets/completion-features.js';
 import { PET_STATE_RECOVERY_LIMITS, boundedRecoveryLimit } from './pets/recovery-limits.js';
 import { BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP, GEMS_MAX, GEMS_MIN, TELEGRAM_AUTH_MAX_AGE, XP_MAX, XP_MIN } from './blocktopia/config.js';
 import { verifyTelegramIdentityFromBody } from './blocktopia/auth.js';
@@ -6898,7 +6899,9 @@ async function buildPetMissions(db, telegramId) {
   ]);
   const counts = Object.fromEntries((events.results || []).map((row) => [row.event_type, Number(row.count || 0)]));
   const equipmentUpgradeCount = Number(equipmentUpgradeEvents?.count || 0);
-  const fullCareDone = ['feed', 'play', 'clean'].every((key) => counts[key] > 0);
+  const completion = await readDailyCompletion(db, telegramId, dayKey, counts, equipmentUpgradeCount, clampPetCurrency(pet?.moon_gold));
+  const done = (bits) => (completion.progress_bits & bits) === bits;
+  const fullCareDone = done(7);
   return {
     day_key: dayKey,
     week_key: weekKey,
@@ -6908,15 +6911,16 @@ async function buildPetMissions(db, telegramId) {
       moon_crystals: clampPetCurrency(pet.moon_crystals),
       style_tokens: clampPetCurrency(pet.style_tokens),
     } : null,
+    completion,
     daily: [
-      { key: `pet-daily-feed:${dayKey}`, title: 'Feed your Moonpet', completed: Number(counts.feed || 0) > 0 },
-      { key: `pet-daily-train:${dayKey}`, title: 'Train once', completed: Number(counts.train || 0) > 0 },
+      { key: `pet-daily-feed:${dayKey}`, title: 'Feed your Moonpet', completed: done(1) },
+      { key: `pet-daily-train:${dayKey}`, title: 'Train once', completed: done(8) },
       { key: `pet-daily-care-set:${dayKey}`, title: 'Complete feed, play and clean', completed: fullCareDone,
-        steps: ['feed', 'play', 'clean'].map((action) => ({ key: action, title: action.toUpperCase(), completed: Number(counts[action] || 0) > 0 })) },
-      { key: `pet-daily-trade:${dayKey}`, title: 'Run one Moon Gold trade', completed: Number(counts.trade || 0) > 0 },
-      { key: `pet-daily-shop:${dayKey}`, title: 'Buy or upgrade one pet item', completed: Number(counts.buy || 0) + equipmentUpgradeCount > 0 },
-      { key: `pet-daily-adventure:${dayKey}`, title: 'Run one pet adventure', completed: Number(counts.adventure || 0) + Number(counts.run_extract || 0) + Number(counts.run_complete || 0) + Number(counts.district_mission || 0) + Number(counts.event_chain || 0) + Number(counts.seasonal_boss || 0) > 0 },
-      { key: `pet-daily-bank:${dayKey}`, title: 'Bank 50 Moon Gold', completed: clampPetCurrency(pet?.moon_gold) >= 50 },
+        steps: ['feed', 'play', 'clean'].map((action) => ({ key: action, title: action.toUpperCase(), completed: done({ feed: 1, play: 2, clean: 4 }[action]) })) },
+      { key: `pet-daily-trade:${dayKey}`, title: 'Run one Moon Gold trade', completed: done(16) },
+      { key: `pet-daily-shop:${dayKey}`, title: 'Buy or upgrade one pet item', completed: done(32) },
+      { key: `pet-daily-adventure:${dayKey}`, title: 'Run one pet adventure', completed: done(64) },
+      { key: `pet-daily-bank:${dayKey}`, title: 'Bank 50 Moon Gold', completed: done(128) },
     ],
   };
 }
@@ -9337,10 +9341,13 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     db.prepare("SELECT event_type, MAX(created_at) AS created_at FROM telegram_pet_events WHERE telegram_id=? AND event_type IN ('adventure','work','trade','feed','play','clean','sleep','train') AND status='accepted' GROUP BY event_type").bind(telegramId).all(),
   ]);
   const leaderboardRows = leaderboard.rows;
-  const [journeySummary, hydratedKaiju] = await Promise.all([
+  const [journeySummary, hydratedKaiju, seasonFinales] = await Promise.all([
     buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now).catch(() => null),
     ensurePetKaijuMatchCategory(db, kaiju).catch(() => kaiju),
+    getSeasonFinales(db, telegramId, petRaw.pet_id),
   ]);
+  const finaleAchievement = seasonFinales.pets.find(entry => entry.pet_id === petRaw.pet_id && entry.season_key === petRaw.season_key);
+  if (guidance && finaleAchievement) guidance.achievements.push({ achievement_id: 'finale_victor', title: 'Finale Victor', description: 'Defeat Signal Sovereign with this season pet.', target: 1, progress: finaleAchievement.status === 'won' ? 1 : 0, unlocked_at: finaleAchievement.defeated_at || null });
   const combatEligibility = await getPetMiniAppCombatEligibility(db, telegramId, lifecycle);
   const encounter = selectPetRandomEncounter(guidance?.identity || {});
   const adventureBase = selectPetAdventureEncounter(petRaw);
@@ -9455,6 +9462,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     notices: guidanceNotices,
     progress: runtime,
     season_slots: seasonSlots,
+    season_finales: seasonFinales,
     capabilities_version: 1,
     capabilities: buildPetMiniAppCapabilities(combatEligibility, journeySummary?.weekly || null),
     daily_journey: journeySummary?.daily || null,
@@ -9606,7 +9614,7 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   if (action === 'hatch') return hatchMoonpet(db, telegramId, eventKey);
   if (action === 'rare_morph') return morphMoonpetRare(db, telegramId, eventKey);
   const lifecycle = await getMoonpetLifecycle(db, telegramId).catch(() => null);
-  const eggAllowedActions = ['guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim', 'contract_claim', 'seasonal_boss_claim'];
+  const eggAllowedActions = ['guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim', 'contract_claim', 'seasonal_boss_claim', 'daily_completion_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim'];
   if (lifecycle?.phase === 'egg' && !eggAllowedActions.includes(action)) {
     if (PET_MINI_APP_COMBAT_CLEANUP_ACTIONS.has(action) || PET_MINI_APP_FUTURE_COMBAT_ACTIONS.has(action)) {
       // fall through; locked cleanup must remain available for stale combat state.
@@ -9635,6 +9643,8 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
       };
     }
   }
+  if (action === 'daily_completion_claim') return claimDailyCompletion(db, telegramId, await getPetProfile(db, telegramId), body, awardPetReward);
+  if (['finale_start', 'finale_retry', 'finale_step', 'finale_claim'].includes(action)) return processSeasonFinale(db, telegramId, body, awardPetReward);
   if (action === 'season_slots') return { accepted: true, reason: 'season_slots', season_slots: await buildPetSeasonSlotSummary(db, telegramId) };
   if (action === 'buy_pet_slot') return buyPetSeasonSlot(db, telegramId, body.slot_number, { event_key: eventKey, switch_active: body.switch_active });
   if (action === 'switch_pet_slot') return switchActivePetSeasonSlot(db, telegramId, body.pet_id || body.slot_number);
@@ -10619,6 +10629,10 @@ export default {
             ? `${playerDisplayName} crafted ${PET_CRAFTING_RECIPES[row.reason]?.title || 'an item'}`
           : row.event_type === 'cosmetic_unlock'
             ? `${playerDisplayName} collected ${String(row.reason || 'a Style Lab unlock').replaceAll('_', ' ')}`
+          : row.event_type === 'daily_completion'
+            ? `${playerDisplayName} claimed the 7/7 daily bonus with ${petIdentity.display_name} (+${row.pet_xp_awarded || 0} pet XP)`
+          : row.event_type === 'season_finale'
+            ? `${playerDisplayName} defeated Signal Sovereign with ${petIdentity.display_name} (+${row.pet_xp_awarded || 0} pet XP)`
           : `${playerDisplayName} ${row.event_type} ${petIdentity.display_name} (+${row.pet_xp_awarded || 0} pet XP, +${row.xp_awarded || 0} XP)`,
         event_type: row.event_type,
         name: petIdentity.display_name,
@@ -13598,7 +13612,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260928-vault-recovery-budget-v1`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260928-completion-finale-v1`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',
@@ -15741,6 +15755,7 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null) {
     },
     active_run: activeRun,
     missions: missions.daily || [],
+    daily_completion: missions.completion || null,
     evolution,
     current_evolution_perk: getPetEvolutionPerk(stage),
     season: {

@@ -5,6 +5,8 @@
   function route(next) {
     var key = [next && next.key, next && next.action, next && next.callback_data].filter(Boolean).join(' ').toLowerCase();
     var routes = [
+      [/daily.completion/, 'missions', 'daily-completion'],
+      [/finale/, 'missions', 'season-finale'],
       [/weekly[_-]journey/, 'missions', 'weekly-journey'],
       [/daily[_-]journey|daily[_-]objectives/, 'missions', 'daily-objectives'],
       [/daily[_-]run|daily_(combat|explorer|extraction|boss)/, 'explore', 'moon-run'],
@@ -204,6 +206,8 @@
       choices.push(Object.assign({}, destination || route({ key: key }), { key: key, title: title, detail: detail }));
     };
     var egg = s.lifecycle && s.lifecycle.phase === 'egg';
+    if ((g.daily_completion && g.daily_completion.pending || []).some(function (claim) { return claim.pet_id || !egg; })) add('daily_completion', 'CLAIM DAILY 7/7 BONUS', 'Collect a saved daily checklist reward. One per account / UTC day.');
+    if ((s.season_finales && s.season_finales.pets || []).some(function (pet) { return pet.status === 'active' || pet.status === 'failed' || pet.status === 'won' && !pet.claimed || pet.eligible && pet.status === 'not_started'; })) add('finale', 'SEASON FINALE // SIGNAL SOVEREIGN', 'Choose a build, resume a saved battle or collect your victory reward. No pet energy cost.');
     var goal = craftingGoal(s, preferences && preferences.crafting_goal);
     if (goal && !egg) add('craft_goal', (goal.ready ? 'READY TO CRAFT // ' : 'CRAFTING GOAL // ') + goal.recipe.title,
       goal.ready ? 'Materials are ready. Review the recipe and choose when to craft.' : 'Compare missing materials, district risks, expedition finds and current market alternatives.');

@@ -20,6 +20,42 @@ Any gameplay, documentation, or UI change affecting Moonpet status should refere
 
 The following systems are considered live gameplay systems.
 
+### Daily checklist bonus and season finale
+
+Migration `077_moonpet_completion_rewards.sql` and the matching Worker deploy
+activate two additions in MISSIONS. The seven existing daily checklist goals
+now have one account/UTC-day completion bonus: up to 25 Pet XP, 50 Gold and
+1 Style. This is separate from Daily Journey and awards no Mark, Crest,
+Community XP or official-run credit. Accepted action and upgrade receipts latch
+checklist bits; an account wallet crossing or holding 50 Gold latches the bank
+goal. Spending cannot erase earned progress. Complete unclaimed days remain
+claimable after midnight. The first claim freezes its selected hatched source
+pet/season; duplicate or interrupted delivery uses that same reward key.
+
+Signal Sovereign is an additional season finale. Eligibility is final evolution
+plus 60 distinct-day Marks and 10 distinct-week Crests, or an existing season
+completion marker. It never removes completion, changes Sanctuary gates or
+makes boss victory a new mandatory requirement. Retained qualified/complete
+pets, including earlier seasons, can play. Striker, Guardian and Tactician have
+separate battle HP, charge and repair kits. Boss intents and exact move effects
+are previewed; choices save online with a monotonic revision, including retries.
+There is no pet energy/stat cost. Defeat allows a free retry with another build.
+First victory records the pet's Finale Victor achievement and pays up to 100
+Pet XP, 200 Gold and 5 Style once per pet/season. A failed payout leaves the
+victory saved with an explicit claim button, even after changing the active pet.
+
+Both rewards use the existing atomic ledger, fixed server reward values and
+1200 daily Pet XP cap. Daily/weekly leaderboards count settlement-time Pet XP;
+seasonal XP stays with the source season and all-time includes retained pets.
+Public activity names the two rewards. These payouts add no Journey objectives
+or specialist/material bonuses. Practice remains local and reward-free; its
+panel links to continuing Contracts for official progression.
+
+Missing feature tables during rollout show the additions as unavailable while
+retaining the existing checklist. Other database errors follow the retry path.
+Apply migration 077 before deploying the Worker; GitHub Pages serves the new UI.
+See [implementation and deployment notes](moonpet-completion-features-2026-09-28.md).
+
 ### State refresh and relic visibility
 
 Relic Vault projects the account's stored relics using their `unlocked_at`
