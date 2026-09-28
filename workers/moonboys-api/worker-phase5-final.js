@@ -69,7 +69,8 @@ async function runtimeSource(db, telegramId, eventKey, action) {
   const eventType = action === 'job' ? 'work' : action;
   return db.prepare(`SELECT e.pet_id, e.season_key, e.day_key,
       json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END, '$.context.runtime_event_key') AS runtime_event_key,
-      json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END, '$.context.source') AS source_surface
+      json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END, '$.context.source') AS source_surface,
+      json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END, '$.context.equipment_snapshot') AS equipment_snapshot
     FROM telegram_pet_events e
     JOIN telegram_pet_instances p ON p.pet_id=e.pet_id AND p.telegram_id=e.telegram_id AND p.season_key=e.season_key
     WHERE e.telegram_id=? AND e.event_key=? AND e.event_type=? AND e.status='accepted' LIMIT 1`)

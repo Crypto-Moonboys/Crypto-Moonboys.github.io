@@ -58,8 +58,51 @@ export function scalePetEquipmentEffects(itemKey, progression = {}) {
 
 export function getPetEquipmentMasteryAward(itemKey, action, amount = 1) {
   const definition = getPetEquipmentDefinition(itemKey);
-  if (!definition || !definition.mastery_actions.includes(String(action || ''))) return 0;
+  const key = String(action || '');
+  const aliases = {
+    feed: ['care'], play: ['care'], clean: ['care'], sleep: ['care'], train: ['care'],
+    timed_train: ['train'], timed_work: ['job'], run_step: ['run'], run_extract: ['run'], run_boss: ['run'],
+  };
+  if (!definition || ![key, ...(aliases[key] || [])].some(value => definition.mastery_actions.includes(value))) return 0;
   return Math.max(1, Math.min(25, Math.floor(Number(amount) || 1)));
+}
+
+export function getPetEquipmentMultiplier(pet, itemKey) {
+  const row = pet?.equipment_progression?.[itemKey];
+  if (!row) return 1;
+  const level = Math.min(PET_EQUIPMENT_MAX_LEVEL, Math.max(1, Math.floor(Number(row.item_level) || 1)));
+  return (1 + (level - 1) * 0.08) * (1 + getPetEquipmentMasteryTier(row.mastery_xp) * 0.03);
+}
+
+// Account inventory remains shared, but only this source pet's equipped items
+// affect its actions. Read failures must not silently remove paid bonuses.
+export async function withPetEquipmentProgression(db, pet) {
+  if (!pet) return pet;
+  const equipped = new Set(Object.values(PET_EQUIPMENT_UTILITY).map(item => pet[`equipped_${item.slot}`]).filter(Boolean));
+  if (!equipped.size) return { ...pet, equipment_progression: {} };
+  const rows = await db.prepare(`SELECT item_key, slot, item_level, item_xp, mastery_xp, mastery_tier
+    FROM telegram_pet_equipment_progression WHERE telegram_id = ?`).bind(pet.telegram_id).all();
+  return { ...pet, equipment_progression: Object.fromEntries((rows.results || [])
+    .filter(row => equipped.has(row.item_key) && PET_EQUIPMENT_UTILITY[row.item_key]?.slot === row.slot)
+    .map(row => [row.item_key, row])) };
+}
+
+// Repair previously equipped/purchased inventory without charging again or
+// inventing historical mastery. New purchases create their row atomically.
+export async function recoverPetEquipmentRows(db, owner) {
+  const definitions = Object.entries(PET_EQUIPMENT_UTILITY);
+  const slots = [...new Set(definitions.map(([, item]) => item.slot))];
+  await db.prepare(`WITH definitions(item_key,slot) AS (VALUES ${definitions.map(() => '(?,?)').join(',')}),
+    owned_pets AS (SELECT i.* FROM telegram_pet_instances i JOIN telegram_pet_season_slots s
+      ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id AND s.season_key=i.season_key AND s.slot_number=i.slot_number
+      WHERE i.telegram_id=?), ownership AS (
+      ${slots.map(slot => `SELECT equipped_${slot} AS item_key FROM owned_pets`).join(' UNION ')}
+      UNION SELECT json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.item_key')
+        FROM telegram_pet_events e JOIN owned_pets p ON p.pet_id=e.pet_id AND p.season_key=e.season_key
+        WHERE e.telegram_id=? AND e.event_type='buy' AND e.status='accepted'
+    ) INSERT OR IGNORE INTO telegram_pet_equipment_progression (telegram_id,item_key,slot)
+      SELECT ?,d.item_key,d.slot FROM definitions d JOIN ownership o ON o.item_key=d.item_key`)
+    .bind(...definitions.flatMap(([key, item]) => [key,item.slot]), owner, owner, owner).run();
 }
 
 export function formatPetEquipmentProgression(itemKey, progression = {}) {

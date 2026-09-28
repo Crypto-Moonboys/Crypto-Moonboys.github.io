@@ -267,6 +267,11 @@ export async function applyPetRuntimeAward(db, telegramId, eventKey, action, opt
   const dayKey = String(options.day_key || new Date().toISOString().slice(0, 10));
   const authority = normalizePetSpecialistAuthority(id, options);
   const claimId = crypto.randomUUID();
+  const equipmentAwards = [...new Map((Array.isArray(options.equipment_rows) ? options.equipment_rows : [])
+    .map(row => [row.item_key, { item_key: row.item_key,
+      mastery_xp: getPetEquipmentMasteryAward(row.item_key, plan.equipment_action, options.equipment_mastery_amount ?? 1) }])).values()]
+    .filter(row => row.mastery_xp > 0);
+  plan.equipment_awards = equipmentAwards;
   const stateUpdate = buildAtomicStateUpdate(plan, claimId, id, dayKey, authority);
   const claim = buildAtomicClaim(plan, claimId, id, stableEventKey, dayKey, authority);
   const statements = authority
@@ -302,8 +307,30 @@ export async function applyPetRuntimeAward(db, telegramId, eventKey, action, opt
       RETURNING quantity`).bind(id, plan.material, requestedMaterialQuantity, maxStack, claimId, maxStack));
   }
 
-  // Cloudflare D1 executes db.batch() as one transaction. A failed statement rolls back
-  // the event claim, progression update and material mutation together.
+  const equipmentResults = [];
+  const eventTable = authority ? 'telegram_pet_specialist_events' : 'telegram_pet_runtime_events';
+  for (const gear of equipmentAwards) {
+    const gearClaimId = crypto.randomUUID();
+    const metadata = JSON.stringify({ day_key: dayKey, pet_id: authority?.pet_id || null, season_key: authority?.season_key || null });
+    statements.push(db.prepare(`INSERT OR IGNORE INTO telegram_pet_equipment_events
+      (id,telegram_id,item_key,action,event_key,item_xp_awarded,mastery_xp_awarded,metadata_json)
+      SELECT ?,?,?,?,?,?,?,? WHERE EXISTS (SELECT 1 FROM ${eventTable} WHERE id=?)
+        AND EXISTS (SELECT 1 FROM telegram_pet_equipment_progression WHERE telegram_id=? AND item_key=?)`)
+      .bind(gearClaimId,id,gear.item_key,plan.equipment_action,stableEventKey,gear.mastery_xp,gear.mastery_xp,metadata,claimId,id,gear.item_key));
+    equipmentResults.push({ index: statements.length, award: gear });
+    statements.push(db.prepare(`UPDATE telegram_pet_equipment_progression SET
+      item_xp=item_xp+?, mastery_xp=mastery_xp+?,
+      mastery_tier=CASE WHEN mastery_xp+?>=5000 THEN 5 WHEN mastery_xp+?>=2500 THEN 4
+        WHEN mastery_xp+?>=1000 THEN 3 WHEN mastery_xp+?>=300 THEN 2 WHEN mastery_xp+?>=75 THEN 1 ELSE 0 END,
+      last_used_action=CASE WHEN substr(COALESCE(last_used_at,''),1,10)<=? THEN ? ELSE last_used_action END,
+      last_used_at=CASE WHEN substr(COALESCE(last_used_at,''),1,10)<=? THEN ? ELSE last_used_at END,
+      updated_at=CURRENT_TIMESTAMP
+      WHERE telegram_id=? AND item_key=? AND EXISTS (SELECT 1 FROM telegram_pet_equipment_events WHERE id=?)
+      RETURNING item_key`)
+      .bind(...Array(7).fill(gear.mastery_xp),dayKey,plan.equipment_action,dayKey,`${dayKey}T00:00:00.000Z`,id,gear.item_key,gearClaimId));
+  }
+
+  // D1 rolls back receipts, tracks, traits, materials and equipment together.
   const results = await db.batch(statements);
   const priorState = firstBatchRow(results[1]) || {};
   const receipt = firstBatchRow(results[2]);
@@ -325,11 +352,6 @@ export async function applyPetRuntimeAward(db, telegramId, eventKey, action, opt
     material = { key: plan.material, quantity_awarded: credited, balance: Math.max(0, Math.floor(Number(after) || 0)), requested: requestedMaterialQuantity };
   }
 
-  const equipmentAwards = [];
-  for (const row of Array.isArray(options.equipment_rows) ? options.equipment_rows : []) {
-    const mastery = getPetEquipmentMasteryAward(row.item_key, plan.equipment_action, options.equipment_mastery_amount ?? 1);
-    if (mastery > 0) equipmentAwards.push({ item_key: row.item_key, mastery_xp: mastery });
-  }
-
-  return { ok: true, duplicate: false, tracks: trackAwards, traits: plan.traits, material, equipment_awards: equipmentAwards };
+  return { ok: true, duplicate: false, tracks: trackAwards, traits: plan.traits, material,
+    equipment_awards: equipmentResults.filter(entry => firstBatchRow(results[entry.index])).map(entry => entry.award) };
 }
