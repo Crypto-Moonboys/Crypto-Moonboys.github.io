@@ -199,7 +199,9 @@ test('training checks energy consumed by an overlapping action', async()=>{
 
 test('item effects apply elapsed decay and preserve the current visible level curve', async()=>{
   const f=fixture('83011'); items(f,'moon_snack');
-  const past=new Date(Date.now()-3600000).toISOString();
+  // Avoid the exact 4.5 hunger rounding boundary: Julian-day arithmetic has
+  // tiny floating-point differences across SQLite versions.
+  const past=new Date(Date.now()-61*60000).toISOString();
   for(const table of ['telegram_pet_instances','telegram_pet_profiles']) f.sql.prepare(`UPDATE ${table} SET pet_xp=10000,hunger=25,happiness=70,cleanliness=70,energy=70,last_decay_at=?`).run(past);
   const r=await hooks.processPetUseItem(f.db,f.owner,'moon_snack',{event_key:'decay'});
   assert.equal(r.accepted,true);
