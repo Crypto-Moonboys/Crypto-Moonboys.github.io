@@ -788,3 +788,20 @@ A paid Standard ending can still need personality/memory recovery. Accepted
 source receipts, original pet/season/day, fixed identity keys and the existing
 bounded recovery cursor govern that repair; it does not pay the primary reward
 again. See [the follow-up audit](moonpet-run-authority-sanity-2026-09-28.md).
+
+## Interrupted Daily startup and lifecycle projections
+
+A canonical Daily start can predate its reservation. Classification may finish
+that initialization only from intact, unplayed source evidence: original
+owner/pet/season, run-start receipt, Daily ID/day/seed and route. Existing creation
+receipts preserve legacy conditions; existing rooms/outcomes and rules are not
+rerolled. Read the Daily summary after recovery so its attempt flag agrees with
+the board. Recovery does not pay run rewards or create another attempt.
+
+Lifecycle, account-wallet and required identity/guidance reads must propagate
+database failures instead of hiding saved evolution, memories, personalities,
+boss victories or rare-morph progress. Pet-age failures use the existing explicit
+PROGRESSION UNAVAILABLE card. Optional reaction text may retain its fallback.
+Gameplay must not treat a failed lifecycle lookup as permission to bypass hatch;
+combat keeps its explicit closed lifecycle-unavailable response.
+See [the startup/lifecycle audit](moonpet-start-lifecycle-sanity-2026-09-28.md).

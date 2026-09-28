@@ -56,12 +56,8 @@ async function ownedPet(db, petId, seasonKey, telegramId = null) {
 }
 
 async function seasonSlotCreatedAt(db, petId, seasonKey) {
-  try {
-    const row = await db.prepare(`SELECT created_at FROM telegram_pet_season_slots WHERE pet_id=? AND season_key=?`).bind(petId, seasonKey).first();
-    return row?.created_at || null;
-  } catch {
-    return null;
-  }
+  const row = await db.prepare(`SELECT created_at FROM telegram_pet_season_slots WHERE pet_id=? AND season_key=?`).bind(petId, seasonKey).first();
+  return row?.created_at || null;
 }
 
 export async function isPetLegendary(db, petId, seasonKey) {

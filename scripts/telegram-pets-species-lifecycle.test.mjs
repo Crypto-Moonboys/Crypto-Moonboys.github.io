@@ -174,6 +174,7 @@ const pendingDb = new D1();
 pendingDb.database.exec(`
   CREATE TABLE telegram_pet_profiles (telegram_id TEXT PRIMARY KEY, species TEXT NOT NULL DEFAULT '', stage TEXT DEFAULT 'egg', created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT DEFAULT CURRENT_TIMESTAMP);
   CREATE TABLE telegram_pet_evolutions (telegram_id TEXT, stage INTEGER);
+  CREATE TABLE telegram_pet_evolutions_by_pet (pet_id TEXT, telegram_id TEXT, evolution_id TEXT, stage INTEGER);
   CREATE TABLE telegram_pet_memories (pet_id TEXT PRIMARY KEY, telegram_id TEXT, season_key TEXT, exploration_actions INTEGER DEFAULT 0, total_runs INTEGER DEFAULT 0,
     combat_actions INTEGER DEFAULT 0, total_bosses_defeated INTEGER DEFAULT 0, care_actions INTEGER DEFAULT 0, event_actions INTEGER DEFAULT 0,
     adventure_actions INTEGER DEFAULT 0);

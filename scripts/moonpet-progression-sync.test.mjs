@@ -1500,3 +1500,37 @@ print('Compiled', len(payload['statements']), 'actual Mini App statements with c
   assert.ifError(compiled.error);
   assert.equal(compiled.status, 0, compiled.stderr);
 });
+
+for (const [label, method, match] of [
+  ['adoption authority', 'beforeFirst', q=>q.includes('SELECT telegram_id FROM telegram_pet_profiles WHERE telegram_id = ? LIMIT 1')],
+  ['account wallet profile', 'beforeFirst', q=>q.trim()==='SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?'],
+  ['saved lifecycle', 'beforeFirst', q=>q.includes('SELECT l.*, s.season_key')],
+  ['evolution reveal', 'beforeFirst', q=>q.includes('SELECT MAX(stage) AS stage FROM telegram_pet_evolutions_by_pet WHERE pet_id=? AND telegram_id=?')],
+  ['incubation daily count', 'beforeFirst', q=>q.includes('SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_events_by_pet')],
+  ['rare morph memory', 'beforeFirst', q=>q==='SELECT * FROM telegram_pet_memories WHERE pet_id=? AND telegram_id=? AND season_key=?'],
+  ['rare morph stage', 'beforeFirst', q=>q==='SELECT MAX(stage) AS stage FROM telegram_pet_evolutions_by_pet WHERE pet_id=?'],
+  ['rare morph traits', 'beforeAll', q=>q.includes('SELECT trait_id FROM telegram_pet_personality_traits WHERE pet_id=? AND telegram_id=? AND season_key=? AND unlocked_at IS NOT NULL')],
+  ['pet age', 'beforeFirst', q=>q.includes('SELECT created_at FROM telegram_pet_season_slots WHERE pet_id=? AND season_key=?')],
+  ['identity scope', 'beforeFirst', q=>q.includes('SELECT s.pet_id, s.season_key, s.slot_number, s.acquisition_type') && q.includes('FROM telegram_pet_active_slots')],
+  ['identity stage', 'beforeFirst', q=>q.includes('SELECT e.evolution_id, e.stage, e.unlocked_at')],
+  ['identity memories', 'beforeFirst', q=>q==='SELECT * FROM telegram_pet_memories WHERE pet_id = ? AND telegram_id = ? AND season_key = ?'],
+  ['identity personalities', 'beforeAll', q=>q.includes('SELECT trait_id, progress, unlocked_at FROM telegram_pet_personality_traits')],
+  ['identity boss victories', 'beforeAll', q=>q.includes('SELECT boss_id, victories, updated_at FROM telegram_pet_boss_victories')],
+]) test(`required ${label} read failure cannot display missing or reset pet progress`, async()=>{
+  const f=fixture('read-'+label.replaceAll(' ','-'));
+  f.reveal(authority(f).pet_id);
+  f.sql.prepare("UPDATE telegram_pet_lifecycle_by_pet SET phase='adult' WHERE pet_id=?").run(authority(f).pet_id);
+  const before=await f.state();
+  let triggered=false;
+  f.db[method]=s=>{if(match(s.query)){triggered=true;throw Error('required_pet_read_unavailable');}};
+  if(label==='pet age') {
+    const failed=await f.state();
+    assert.equal(failed.season_slots.slots.find(s=>s.active).pet.progression,null,'age outage uses the existing PROGRESSION UNAVAILABLE card');
+  } else await assert.rejects(f.state(),/required_pet_read_unavailable/);
+  assert.equal(triggered,true);
+  f.db[method]=null;
+  const after=await f.state();
+  assert.equal(after.adopted,true);
+  assert.deepEqual(after.lifecycle,before.lifecycle);
+  assert.equal(after.pet.moon_gold,before.pet.moon_gold);
+});
