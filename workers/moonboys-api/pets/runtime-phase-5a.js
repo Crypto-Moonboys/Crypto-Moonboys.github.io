@@ -85,22 +85,54 @@ function normalizePetSpecialistAuthority(telegramId, options = {}) {
   return id && petId && seasonKey ? { telegram_id: id, pet_id: petId, season_key: seasonKey } : null;
 }
 
+// Keep immutable per-day receipts: a late recovery must use its original allowance,
+// without rewinding the current-day summary. Legacy receipts carry requested tracks
+// only, so count those conservatively rather than creating another allowance.
+function buildAtomicClaim(plan, claimId, telegramId, eventKey, dayKey, authority) {
+  const stateTable = authority ? 'telegram_pet_specialist_progression' : 'telegram_pet_progression_state';
+  const eventTable = authority ? 'telegram_pet_specialist_events' : 'telegram_pet_runtime_events';
+  const scope = authority ? 'pet_id = ? AND telegram_id = ? AND season_key = ?' : 'telegram_id = ?';
+  const scopeBindings = authority ? [authority.pet_id, telegramId, authority.season_key] : [telegramId];
+  const payload = "CASE WHEN json_valid(payload_json) THEN payload_json ELSE '{}' END";
+  const usage = [], allowance = [], awards = [], totals = [];
+  for (const [track, columns] of Object.entries(TRACK_COLUMNS)) {
+    const cap = PET_PROGRESSION_TRACKS[track].max_daily_award;
+    const requested = Math.max(0, Math.floor(Number(plan.tracks?.[track]) || 0));
+    usage.push(`MAX(COALESCE(SUM(MAX(0, COALESCE(json_extract(${payload}, '$.awarded_tracks.${track}'), json_extract(${payload}, '$.tracks.${track}'), 0))), 0), COALESCE(MAX(json_extract(${payload}, '$.daily_totals.${track}')), 0)) AS ${track}`);
+    allowance.push(`MAX(CASE WHEN s.daily_key = ? THEN s.${columns.daily} ELSE 0 END, u.${track}) AS ${track}`);
+    const award = `MIN(${requested}, MAX(0, ${cap} - ${track}))`;
+    awards.push(`'${track}', ${award}`);
+    totals.push(`'${track}', MIN(${cap}, ${track} + ${award})`);
+  }
+  const columns = authority ? 'id, pet_id, telegram_id, season_key, event_key, action, payload_json' : 'id, telegram_id, event_key, action, payload_json';
+  const values = authority ? '?, ?, ?, ?, ?, ?' : '?, ?, ?, ?';
+  const keys = authority ? 'pet_id, telegram_id, season_key, event_key' : 'telegram_id, event_key';
+  return {
+    sql: `WITH daily_usage AS (
+      SELECT ${usage.join(', ')} FROM ${eventTable}
+      WHERE ${scope} AND COALESCE(json_extract(${payload}, '$.day_key'), substr(created_at, 1, 10)) = ?
+    ), allowance AS (
+      SELECT ${allowance.join(', ')} FROM ${stateTable} s CROSS JOIN daily_usage u WHERE ${scope}
+    ) INSERT INTO ${eventTable} (${columns})
+      SELECT ${values}, json_set(?, '$.day_key', ?, '$.awarded_tracks', json_object(${awards.join(', ')}), '$.daily_totals', json_object(${totals.join(', ')}))
+      FROM allowance WHERE 1 ON CONFLICT (${keys}) DO NOTHING RETURNING id, payload_json`,
+    bindings: [...scopeBindings, dayKey, ...Object.keys(TRACK_COLUMNS).map(() => dayKey), ...scopeBindings,
+      claimId, ...(authority ? [authority.pet_id, telegramId, authority.season_key] : [telegramId]), eventKey, plan.action, JSON.stringify(plan), dayKey],
+  };
+}
+
 function buildAtomicStateUpdate(plan, claimId, telegramId, dayKey, authority = null) {
-  const assignments = ['daily_key = ?', 'updated_at = CURRENT_TIMESTAMP'];
+  const assignments = ['daily_key = MAX(daily_key, ?)', 'updated_at = CURRENT_TIMESTAMP'];
   const bindings = [dayKey];
   const stateTable = authority ? 'telegram_pet_specialist_progression' : 'telegram_pet_progression_state';
   const eventTable = authority ? 'telegram_pet_specialist_events' : 'telegram_pet_runtime_events';
   const claimSql = `EXISTS (SELECT 1 FROM ${eventTable} WHERE id = ?)`;
 
   for (const [track, columns] of Object.entries(TRACK_COLUMNS)) {
-    const requested = Math.max(0, Math.floor(Number(plan.tracks?.[track]) || 0));
-    const cap = PET_PROGRESSION_TRACKS[track].max_daily_award;
-    const priorDaily = `CASE WHEN daily_key = ? THEN ${columns.daily} ELSE 0 END`;
-    const credited = `CASE WHEN ${claimSql} THEN MIN(?, MAX(0, ? - ${priorDaily})) ELSE 0 END`;
-    assignments.push(`${columns.total} = ${columns.total} + ${credited}`);
-    bindings.push(claimId, requested, cap, dayKey);
-    assignments.push(`${columns.daily} = ${priorDaily} + ${credited}`);
-    bindings.push(dayKey, claimId, requested, cap, dayKey);
+    assignments.push(`${columns.total} = ${columns.total} + (SELECT json_extract(payload_json, '$.awarded_tracks.${track}') FROM ${eventTable} WHERE id = ?)`);
+    bindings.push(claimId);
+    assignments.push(`${columns.daily} = CASE WHEN daily_key <= ? THEN (SELECT json_extract(payload_json, '$.daily_totals.${track}') FROM ${eventTable} WHERE id = ?) ELSE ${columns.daily} END`);
+    bindings.push(dayKey, claimId);
   }
 
   const traitEntries = Object.entries(plan.traits || {});
@@ -209,9 +241,9 @@ export async function getOrCreatePetRuntimeState(db, telegramId, dayKey, options
       .bind(authority.pet_id, id, authority.season_key, day, authority.pet_id, id, authority.season_key).run();
     let state = await db.prepare(`SELECT * FROM telegram_pet_specialist_progression WHERE pet_id = ? AND telegram_id = ? AND season_key = ?`)
       .bind(authority.pet_id, id, authority.season_key).first();
-    if (state && state.daily_key !== day) {
-      await db.prepare(`UPDATE telegram_pet_specialist_progression SET daily_key = ?, care_daily = 0, training_daily = 0, adventure_daily = 0, arena_daily = 0, job_daily = 0, bond_daily = 0, updated_at = CURRENT_TIMESTAMP WHERE pet_id = ? AND telegram_id = ? AND season_key = ?`)
-        .bind(day, authority.pet_id, id, authority.season_key).run();
+    if (state && state.daily_key < day) {
+      await db.prepare(`UPDATE telegram_pet_specialist_progression SET daily_key = ?, care_daily = 0, training_daily = 0, adventure_daily = 0, arena_daily = 0, job_daily = 0, bond_daily = 0, updated_at = CURRENT_TIMESTAMP WHERE pet_id = ? AND telegram_id = ? AND season_key = ? AND daily_key < ?`)
+        .bind(day, authority.pet_id, id, authority.season_key, day).run();
       state = await db.prepare(`SELECT * FROM telegram_pet_specialist_progression WHERE pet_id = ? AND telegram_id = ? AND season_key = ?`)
         .bind(authority.pet_id, id, authority.season_key).first();
     }
@@ -219,8 +251,8 @@ export async function getOrCreatePetRuntimeState(db, telegramId, dayKey, options
   }
   await db.prepare(`INSERT OR IGNORE INTO telegram_pet_progression_state (telegram_id, daily_key) VALUES (?, ?)`).bind(id, day).run();
   let state = await db.prepare(`SELECT * FROM telegram_pet_progression_state WHERE telegram_id = ?`).bind(id).first();
-  if (state && state.daily_key !== day) {
-    await db.prepare(`UPDATE telegram_pet_progression_state SET daily_key = ?, care_daily = 0, training_daily = 0, adventure_daily = 0, arena_daily = 0, job_daily = 0, bond_daily = 0, updated_at = CURRENT_TIMESTAMP WHERE telegram_id = ?`).bind(day, id).run();
+  if (state && state.daily_key < day) {
+    await db.prepare(`UPDATE telegram_pet_progression_state SET daily_key = ?, care_daily = 0, training_daily = 0, adventure_daily = 0, arena_daily = 0, job_daily = 0, bond_daily = 0, updated_at = CURRENT_TIMESTAMP WHERE telegram_id = ? AND daily_key < ?`).bind(day, id, day).run();
     state = await db.prepare(`SELECT * FROM telegram_pet_progression_state WHERE telegram_id = ?`).bind(id).first();
   }
   return state;
@@ -236,6 +268,7 @@ export async function applyPetRuntimeAward(db, telegramId, eventKey, action, opt
   const authority = normalizePetSpecialistAuthority(id, options);
   const claimId = crypto.randomUUID();
   const stateUpdate = buildAtomicStateUpdate(plan, claimId, id, dayKey, authority);
+  const claim = buildAtomicClaim(plan, claimId, id, stableEventKey, dayKey, authority);
   const statements = authority
     ? [
       db.prepare(`INSERT OR IGNORE INTO telegram_pet_specialist_progression (pet_id, telegram_id, season_key, daily_key)
@@ -243,16 +276,13 @@ export async function applyPetRuntimeAward(db, telegramId, eventKey, action, opt
         .bind(authority.pet_id, id, authority.season_key, dayKey, authority.pet_id, id, authority.season_key),
       db.prepare(`SELECT * FROM telegram_pet_specialist_progression WHERE pet_id = ? AND telegram_id = ? AND season_key = ?`)
         .bind(authority.pet_id, id, authority.season_key),
-      db.prepare(`INSERT INTO telegram_pet_specialist_events (id, pet_id, telegram_id, season_key, event_key, action, payload_json)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-        ON CONFLICT (pet_id, telegram_id, season_key, event_key) DO NOTHING RETURNING id`)
-        .bind(claimId, authority.pet_id, id, authority.season_key, stableEventKey, plan.action, JSON.stringify(plan)),
+      db.prepare(claim.sql).bind(...claim.bindings),
       db.prepare(stateUpdate.sql).bind(...stateUpdate.bindings),
     ]
     : [
       db.prepare(`INSERT OR IGNORE INTO telegram_pet_progression_state (telegram_id, daily_key) VALUES (?, ?)`).bind(id, dayKey),
       db.prepare(`SELECT * FROM telegram_pet_progression_state WHERE telegram_id = ?`).bind(id),
-      db.prepare(`INSERT INTO telegram_pet_runtime_events (id, telegram_id, event_key, action, payload_json) VALUES (?, ?, ?, ?, ?) ON CONFLICT (telegram_id, event_key) DO NOTHING RETURNING id`).bind(claimId, id, stableEventKey, plan.action, JSON.stringify(plan)),
+      db.prepare(claim.sql).bind(...claim.bindings),
       db.prepare(stateUpdate.sql).bind(...stateUpdate.bindings),
     ];
 
@@ -276,13 +306,16 @@ export async function applyPetRuntimeAward(db, telegramId, eventKey, action, opt
   // the event claim, progression update and material mutation together.
   const results = await db.batch(statements);
   const priorState = firstBatchRow(results[1]) || {};
-  const claim = firstBatchRow(results[2]);
-  if (!claim || claim.id !== claimId) return { ok: true, duplicate: true, tracks: {}, traits: {}, material: null, equipment_awards: [] };
+  const receipt = firstBatchRow(results[2]);
+  if (!receipt || receipt.id !== claimId) return { ok: true, duplicate: true, tracks: {}, traits: {}, material: null, equipment_awards: [] };
 
   const capState = priorState.daily_key === dayKey
     ? priorState
     : { ...priorState, care_daily: 0, training_daily: 0, adventure_daily: 0, arena_daily: 0, job_daily: 0, bond_daily: 0 };
-  const trackAwards = calculatePetRuntimeTrackAwards(plan, capState);
+  const persistedAwards = parseJsonObject(receipt.payload_json).awarded_tracks;
+  const trackAwards = persistedAwards
+    ? Object.fromEntries(Object.entries(persistedAwards).filter(([, value]) => value > 0))
+    : calculatePetRuntimeTrackAwards(plan, capState);
 
   let material = null;
   if (materialAfterIndex >= 0) {
