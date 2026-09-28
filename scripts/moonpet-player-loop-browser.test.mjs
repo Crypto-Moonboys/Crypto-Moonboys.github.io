@@ -154,6 +154,49 @@ try {
     });
     await page.goto(url);
     await page.waitForSelector('[data-panel="care"]');
+    // Check the real collapsed UX before expanding the older gameplay matrix.
+    const beforeDisclosures = actions.length;
+    for (const section of ['home', 'missions', 'explore', 'work', 'economy', 'profile']) {
+      await page.locator(`[data-screen="${section}"]`).click();
+      const panels = page.locator('#screen > details.panel');
+      assert.ok(await panels.count() > 0);
+      assert.equal(await page.locator('#screen > section.panel').count(), 0);
+      assert.ok(await panels.evaluateAll(nodes => nodes.every(node => {
+        const summary = node.querySelector(':scope > summary');
+        return summary && summary.querySelector('.panel-icon').textContent && summary.querySelector('.panel-description').textContent && node.getBoundingClientRect().right <= innerWidth;
+      })), 'all sections have accessible summaries, icons, descriptions and fit mobile');
+      assert.equal(await page.locator('#screen > details[open]').count(), section === 'home' ? 1 : 0, 'only Home Recommended starts expanded');
+      if (viewport.width === 390) await page.screenshot({ path: `/tmp/moonpet-sections-${section}.png` });
+    }
+    await page.locator('[data-screen="home"]').click();
+    const careSummary = page.locator('[data-panel="care"] > summary');
+    await careSummary.focus(); await page.keyboard.press('Enter');
+    assert.equal(await page.locator('[data-panel="care"]').evaluate(node => node.open), true);
+    const oldCare = await page.locator('[data-panel="care"]').elementHandle();
+    await page.locator('[data-utility="sync"]').click();
+    await page.waitForFunction(node => !node.isConnected, oldCare);
+    assert.equal(await page.locator('[data-panel="care"]').evaluate(node => node.open), true, 'refresh preserves expansion');
+    await page.locator('[data-panel="care"] > summary').click();
+    await page.locator('[data-screen="missions"]').click();
+    await page.locator('[data-screen="home"]').click();
+    assert.equal(await page.locator('[data-panel="care"]').evaluate(node => node.open), false, 'navigation preserves explicit collapse');
+    await page.locator('[data-panel="recommended"] [data-jump]').first().click();
+    await page.waitForFunction(() => document.querySelector('[data-panel="incubation"]').open);
+    assert.equal(await page.locator('[data-panel="incubation"] > summary').evaluate(node => node === document.activeElement), true, 'recommendation opens and focuses destination');
+    assert.equal(actions.length, beforeDisclosures, 'disclosures and recommendations do not submit gameplay actions');
+    // The remaining matrix tests gameplay, not collapsed defaults. Expand through
+    // native summary clicks after each render so its controls remain reachable.
+    function expandGameplayPanels() {
+      if (!document.documentElement) { document.addEventListener('DOMContentLoaded', expandGameplayPanels, { once: true }); return; }
+      const expand = () => document.querySelectorAll('#screen > details.panel:not([open]) > summary').forEach(summary => summary.click());
+      const observer = new MutationObserver(expand);
+      observer.observe(document.documentElement, { childList: true, subtree: true });
+      window.stopPanelExpansion = () => observer.disconnect();
+      expand();
+    }
+    await page.addInitScript(expandGameplayPanels);
+    await page.evaluate(expandGameplayPanels);
+    await page.locator('[data-screen="home"]').click();
     const canvasTools = page.locator('#canvas-tools');
     assert.equal(await canvasTools.locator('button').count(), 3);
     assert.equal((await canvasTools.textContent()).trim(), '', 'canvas controls must be icons without visible text');
@@ -229,6 +272,21 @@ try {
       const jumps = await page.locator('#screen [data-jump]').evaluateAll((buttons) => buttons.map((b) => ({ screen: b.dataset.jump, focus: b.dataset.focus })));
       for (const jump of jumps) assert.ok(['home', 'missions', 'explore', 'work', 'economy', 'profile'].includes(jump.screen));
     }
+    const moreRecommendations = page.locator('[data-panel="recommended"] .more-recommendations');
+    assert.equal(await page.locator('[data-panel="recommended"] > .panel-body > .button-grid > button').count(), 3);
+    assert.equal(await moreRecommendations.evaluate(node => node.open), false, 'extra recommendations start collapsed');
+    const beforeMoreNavigation = gameplayCount();
+    await moreRecommendations.locator(':scope > summary').click();
+    const oldMore = await moreRecommendations.elementHandle();
+    await page.locator('[data-utility="sync"]').click();
+    await page.waitForFunction(node => !node.isConnected, oldMore);
+    assert.equal(await moreRecommendations.evaluate(node => node.open), true, 'Refresh preserves the extra-options dropdown');
+    const extraRoute = moreRecommendations.locator('[data-jump]').first();
+    const extraTarget = await extraRoute.getAttribute('data-focus');
+    await extraRoute.click();
+    await page.waitForFunction(focus => document.querySelector('[data-panel="' + focus + '"]').open, extraTarget);
+    assert.equal(gameplayCount(), beforeMoreNavigation, 'additional recommendations only navigate');
+    await page.locator('[data-screen="home"]').click();
     // Actual rotating bounties navigate without consuming actions or rewards.
     const bountyState = await hooks.buildPetMiniAppState(db, currentUser, token);
     const bountyJumps = new Map(bountyState.guidance.economy.bounties.filter((b) => !b.complete).flatMap(bountyRoutes).map((route) => [route.focus, route]));
@@ -991,7 +1049,7 @@ try {
     sqlite.prepare('UPDATE telegram_pet_profiles SET moon_gold=20 WHERE telegram_id=?').run(currentUser);
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
     await page.locator('[data-screen="economy"]').click();
-    await page.locator('[data-panel-jump="trade"]').click();
+    await page.locator('[data-panel="trade"] > summary').scrollIntoViewIfNeeded();
     assert.equal(await page.locator('[data-action="trade"]').filter({ hasText: '10 GOLD' }).isEnabled(), true);
     assert.equal(await page.locator('[data-action="trade"]').filter({ hasText: '25 GOLD' }).isDisabled(), true);
     const tradeResponse = page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'trade');
@@ -1038,10 +1096,10 @@ try {
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
     assert.equal(await page.locator('[data-panel="play-now"] [data-focus="expedition"]').count(), 0);
     await page.locator('[data-screen="economy"]').click();
-    await page.locator('[data-panel-jump="expedition"]').click();
+    await page.locator('[data-panel="expedition"] > summary').scrollIntoViewIfNeeded();
     assert.equal(await page.locator('[data-action="expedition"]:not([disabled])').count(), 0);
     assert.ok((await page.locator('[data-panel="expedition"]').textContent()).includes('ATTEMPTS RESET'));
-    await page.locator('[data-panel="expedition"] summary').click();
+    await page.locator('[data-panel="expedition"] .panel-body details > summary').click();
     for (const title of ['Dust Tunnels', 'Crystal Caves', 'Guardian Rift']) assert.ok((await page.locator('[data-panel="expedition"] details').textContent()).includes(title));
     const beforeContinue = gameplayCount();
     await page.locator('[data-panel="expedition"] [data-focus="contracts"]').click();
@@ -1142,7 +1200,7 @@ try {
     await seed(currentUser, 'young');
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
     await page.locator('[data-screen="economy"]').click();
-    await page.locator('[data-panel-jump="crafting"]').click();
+    await page.locator('[data-panel="crafting"] > summary').scrollIntoViewIfNeeded();
     const beforePlanning = gameplayCount();
     await page.locator('#crafting-goal').selectOption('street_rations');
     const workshop = page.locator('[data-panel="crafting"]');
@@ -1210,7 +1268,7 @@ try {
     setMarketStock(storageCap);
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
     await page.locator('[data-screen="economy"]').click();
-    await page.locator('[data-panel-jump="market"]').click();
+    await page.locator('[data-panel="market"] > summary').scrollIntoViewIfNeeded();
     const marketButton = page.locator('[data-action="market_buy"]').filter({ hasText: marketOffer.title });
     assert.equal(await marketButton.isDisabled(),true);
     assert.ok((await marketButton.textContent()).includes('STORAGE FULL'));
@@ -1222,7 +1280,7 @@ try {
     setMarketStock(storageCap-itemAmount);
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
     await page.locator('[data-screen="economy"]').click();
-    await page.locator('[data-panel-jump="market"]').click();
+    await page.locator('[data-panel="market"] > summary').scrollIntoViewIfNeeded();
     assert.equal(await marketButton.isDisabled(),false,'exact-fit bundle stays available');
     const marketResponse = page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'market_buy');
     await marketButton.click();
@@ -1313,6 +1371,13 @@ try {
     await page.locator('[data-screen="explore"]').click();
     await page.locator('[data-panel="practice"] [data-focus="contracts"]').click();
     assert.equal(await page.locator('[data-panel="contracts"]').count(),1);
+    await page.evaluate(() => window.stopPanelExpansion());
+    for (const section of ['home', 'missions', 'explore', 'work', 'economy', 'profile']) {
+      await page.locator(`[data-screen="${section}"]`).click();
+      await page.evaluate(() => document.querySelectorAll('#screen > details.panel[open] > summary').forEach(summary => summary.click()));
+      assert.equal(await page.locator('#screen > details[open]').count(), 0);
+      if (viewport.width === 390) await page.screenshot({ path: `/tmp/moonpet-sections-grown-${section}.png` });
+    }
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
     assert.equal(overflow, false, 'mobile viewport must not overflow horizontally');
     assert.deepEqual(errors, [], 'no runtime errors across all six screens');

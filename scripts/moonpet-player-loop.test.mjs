@@ -15,6 +15,45 @@ const read = (path) => fs.readFileSync(new URL('../' + path, import.meta.url), '
 const client = read('js/moonpet-mini-app.js');
 const worker = read('workers/moonboys-api/worker.js');
 
+// Ranked guidance keeps recovery ahead of new play and never adds a blocked care route.
+const guideState = { adopted: true, pet: { pet_id: 'p1', energy: 0, hunger: 80, cleanliness: 90, happiness: 90 }, lifecycle: { phase: 'young' },
+  guidance: { daily_cache: { available: true }, activity: { status: 'active' }, weekly_boss: { pending_rewards: [{ pet_id: 'p1' }] } },
+  contracts: { available: true, run: { status: 'active' } }, cooldowns: { entries: [{ key: 'action:feed', remaining_seconds: 30 }] } };
+let recommended = options.recommendations(guideState);
+assert.equal(recommended[0].key, 'weekly_boss_claim');
+assert.ok(recommended.findIndex(x => x.key === 'contract') < recommended.findIndex(x => x.key === 'daily_chest'));
+assert.ok(!recommended.some(x => x.key === 'feed' || x.key === 'sleep' || x.key === 'run'));
+assert.equal(new Set(recommended.map(x => x.screen + ':' + x.focus)).size, recommended.length);
+recommended = options.recommendations({ ...guideState, cooldowns: { entries: [] }, guidance: {} });
+assert.ok(recommended.some(x => x.key === 'feed'));
+assert.equal(options.recommendations({ adopted: false }).length, 0);
+recommended = options.recommendations({ adopted: true, lifecycle: { phase: 'egg' } });
+assert.equal(recommended[0].key, 'incubate');
+assert.ok(!recommended.some(x => ['daily_chest', 'run', 'sleep'].includes(x.key)));
+recommended = options.recommendations({ ...guideState, next: { key: 'train', title: 'Train now' } });
+assert.ok(!recommended.some(x => x.key === 'server:train'), 'a blocked care suggestion must not replace a ready cache route');
+recommended = options.recommendations({ ...guideState, weekly_journey: { objectives: [{ objective_id: 'weekly_check_in', title: 'Check in', progress: 1, target: 2 }] } });
+assert.ok(recommended.some(x => x.key === 'daily_chest' || x.title.includes('Check in')));
+
+recommended = options.recommendations({ adopted: true, lifecycle: { phase: 'young' }, pet: { energy: 30 },
+  daily_run: { available: true }, daily_journey: { objectives: [{ challenge_id: 'daily_boss', description: 'Clear the daily boss', progress: 0, target: 1 }] } });
+assert.ok(recommended.some(x => x.key === 'daily_journey:daily_boss' && x.title.includes('Clear the daily boss') && x.focus === 'moon-run'));
+recommended = options.recommendations({ adopted: true, lifecycle: { phase: 'young' }, guidance: { evolution: { ready: true, name: 'Next form' } } });
+assert.ok(recommended.some(x => x.key === 'evolution_ready' && x.focus === 'evolution'));
+
+const shoppingState = { adopted: true, lifecycle: { phase: 'young' },
+  inventory: [{ quantity: 1, kind: 'usable_item' }],
+  guidance: { shop_items: [{ unlocked: true, affordable: true }], economy: { market_offers: [{ unlocked: true, affordable: true, capacity: { available: true } }] } },
+  live_systems: { cosmetics: [{ affordable: true, unlocked: false }] } };
+for (const key of ['inventory', 'market', 'shop', 'cosmetic']) assert.ok(options.recommendations(shoppingState).some(x => x.key === key), key);
+const unavailableShopping = structuredClone(shoppingState);
+unavailableShopping.inventory[0].quantity = 0;
+unavailableShopping.guidance.shop_items[0].equipped = true;
+unavailableShopping.guidance.economy.market_offers[0].capacity.available = false;
+unavailableShopping.live_systems.cosmetics[0].unlocked = true;
+assert.ok(!options.recommendations(unavailableShopping).some(x => ['inventory', 'market', 'shop', 'cosmetic'].includes(x.key)));
+assert.ok(!options.recommendations({ ...shoppingState, lifecycle: { phase: 'egg' } }).some(x => ['inventory', 'market', 'shop', 'cosmetic'].includes(x.key)));
+
 for (const encounter of [
   ...['moon_alley', 'graffiti_vault', 'nebula_market'].map(hooks.resolvePetAdventureEncounter),
   ...['lost_delivery_drone', 'neon_storm', 'underground_cipher'].map(hooks.resolvePetRandomEncounter),

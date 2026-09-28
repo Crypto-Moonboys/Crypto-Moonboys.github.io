@@ -727,8 +727,77 @@
     return '<button class="terminal-button' + (options && options.danger ? ' danger' : '') + '" type="button" data-action="' + escapeHtml(action) + '" data-payload="' + escapeHtml(JSON.stringify(payload || {})) + '"' + (disabled ? ' disabled' : '') + '>' + escapeHtml(label) + detail + '</button>';
   }
 
-  function panel(name, body, panelId) {
-    return '<section class="panel"' + (panelId ? ' data-panel="' + escapeHtml(panelId) + '"' : '') + '><h2 class="panel-title">' + escapeHtml(name) + '</h2><div class="panel-body">' + body + '</div></section>';
+  var panelOpenState = Object.create(null);
+  var panelDescriptions = {
+    recommended: ['✦', 'Your next three routes, ranked from the current save.'],
+    'play-now': ['▶', 'Browse more activities, goals and ways to play.'],
+    'active-pet': ['◉', 'Your active companion, stage and growth progress.'],
+    incubation: ['◉', 'Care for your Secret Bot and reveal its identity.'],
+    vitals: ['♥', 'Check health, energy, hunger, fun and cleanliness.'],
+    care: ['♥', 'Feed, play, rest, train and collect Daily Cache.'],
+    details: ['◉', 'Companion stats, personality and equipped items.'],
+    'season-slots': ['◈', 'Check the season clock and manage your pets.'],
+    contracts: ['↻', 'Saved quests with builds, bosses and repeatable play.'],
+    'daily-journey': ['☀', 'Complete daily goals to earn a Growth Mark.'],
+    'daily-objectives': ['☀', 'Track care and official Daily Run objectives.'],
+    'weekly-journey': ['▦', 'Build five weekly objectives toward a Crest.'],
+    'daily-completion': ['★', 'Check and collect your daily 7/7 bonus.'],
+    missions: ['☷', 'Today’s missions, progress and qualifying routes.'],
+    achievements: ['★', 'View milestones and unlocked achievements.'],
+    practice: ['↻', 'Try builds and tactics freely; no rewards or pet costs.'],
+    districts: ['⌖', 'Choose district routes and clear mastery bosses.'],
+    'moon-run': ['☾', 'Start or resume a run; survive, extract or face the boss.'],
+    adventure: ['⌖', 'Choose an adventure and compare risks and rewards.'],
+    'street-event': ['⚡', 'Make a street choice with visible costs and outcomes.'],
+    'weekly-boss': ['⚔', 'Fight the weekly boss or recover saved rewards.'],
+    'story-chains': ['☷', 'Continue your stories and choose what happens next.'],
+    'seasonal-boss': ['⚔', 'Plan a raid attack and collect earned boss rewards.'],
+    arena: ['⚔', 'Join matchmaking or return to your Arena battle.'],
+    kaiju: ['◆', 'Choose cards, join a match or manage your queue.'],
+    'timed-activity': ['◷', 'Start background work; review, continue or claim it.'],
+    jobs: ['⚒', 'Compare available jobs, energy costs and rewards.'],
+    equipment: ['⚒', 'Inspect mastery and choose equipment upgrades.'],
+    'equipment-sets': ['◈', 'Compare gear combinations and their set bonuses.'],
+    materials: ['◇', 'See your materials and where to find more.'],
+    crafting: ['⚒', 'Track a recipe and choose when to spend materials.'],
+    relics: ['◆', 'Inspect your collected relics and progression uses.'],
+    bounties: ['◎', 'Track four daily targets and claim completed rewards.'],
+    expedition: ['⌖', 'Compare destinations, entry costs and possible finds.'],
+    market: ['◇', 'Review today’s bundles before spending game currency.'],
+    shop: ['◇', 'Browse permanent gear and check purchase costs.'],
+    'style-lab': ['✧', 'Collect cosmetic styles with game currency.'],
+    inventory: ['▣', 'Inspect your bag and choose items to use.'],
+    trade: ['⇄', 'Review Moon Gold stakes and the risk of a loss.'],
+    'how-to-play': ['?', 'A guide to care, quests, runs, bosses and rewards.'],
+    memories: ['☷', 'Revisit your companion’s history and milestones.'],
+    callsign: ['✎', 'Check naming eligibility and change your callsign.'],
+    'season-finale': ['⚑', 'Unlock the final boss, choose a build and claim victory.'],
+    'finale-link': ['⚑', 'Open the season finale and its saved rewards.'],
+    evolution: ['✦', 'Check requirements and evolve when you are ready.'],
+    'rare-morph': ['✧', 'Inspect your hidden signal and morph eligibility.'],
+    faction: ['⚑', 'View your faction and its gameplay perk.'],
+    prestige: ['◇', 'Planned for a future season; not available now.'],
+    sanctuary: ['◈', 'Check sanctuary information and future availability.'],
+    tracks: ['▥', 'Follow specialist XP and progression.'],
+    'future-systems': ['⌁', 'Preview planned systems; these are not playable yet.'],
+    features: ['▦', 'Check which features are open, locked or planned.'],
+    alerts: ['◌', 'Choose which game notifications you receive.'],
+    season: ['★', 'Track season XP and collect unlocked tier rewards.'],
+    leaderboard: ['♜', 'See current season rankings and the full leaderboard.'],
+  };
+
+  function panel(name, body, panelId, description) {
+    var key = [state && state.pet && state.pet.pet_id || 'account', activeScreen, panelId || name.split(' //')[0]].join(':');
+    var copy = panelDescriptions[panelId] || (/IDENTITY/.test(name) ? ['◉', 'Your companion’s identity and personality.']
+      : /APTITUDES/.test(name) ? ['▥', 'Compare your companion’s natural strengths.']
+      : /DORMANT/.test(name) ? ['◉', 'Initialise your first Secret Bot.'] : ['◈', 'Open to view details and available options.']);
+    if (panelId === 'care' && state && state.lifecycle && state.lifecycle.phase === 'egg') copy = ['♥', 'Energy Drink, Dance and Cuddles; stat-only care.'];
+    var expanded = Object.prototype.hasOwnProperty.call(panelOpenState, key) ? panelOpenState[key] : panelId === 'recommended' && activeScreen === 'home' || /DORMANT/.test(name);
+    return '<details class="panel" data-panel-key="' + escapeHtml(key) + '"' + (panelId ? ' data-panel="' + escapeHtml(panelId) + '"' : '') + (expanded ? ' open' : '') + '><summary class="panel-summary"><span class="panel-icon" aria-hidden="true">' + copy[0] + '</span><span class="panel-caption"><span class="panel-title">' + escapeHtml(name) + '</span><span class="panel-description">' + escapeHtml(description || copy[1]) + '</span></span><span class="panel-chevron" aria-hidden="true">⌄</span></summary><div class="panel-body">' + body + '</div></details>';
+  }
+
+  function rememberPanels() {
+    screen.querySelectorAll('details[data-panel-key]').forEach(function (entry) { panelOpenState[entry.dataset.panelKey] = entry.open; });
   }
 
   function recommendedFocus(next) {
@@ -763,13 +832,6 @@
     return '<div class="meter"><span>' + escapeHtml(label) + '</span><span class="meter-track"><span class="meter-fill" style="width:' + amount + '%"></span></span><strong>' + Math.floor(amount) + '</strong></div>';
   }
 
-  var SECTION_JUMPS = {
-    missions: [['contracts', 'CONTRACTS'], ['daily-journey', 'DAILY'], ['weekly-journey', 'WEEKLY'], ['daily-objectives', 'OBJECTIVES'], ['missions', 'MISSIONS'], ['achievements', 'ACHIEVEMENTS']],
-    explore: [['play-now', 'PLAY NOW'], ['practice', 'PRACTICE'], ['districts', 'DISTRICTS'], ['moon-run', 'RUN'], ['adventure', 'ADVENTURE'], ['street-event', 'EVENT'], ['weekly-boss', 'BOSS'], ['story-chains', 'STORIES'], ['seasonal-boss', 'RAID'], ['arena', 'ARENA'], ['kaiju', 'KAIJU']],
-    economy: [['crafting', 'CRAFT'], ['equipment', 'GEAR'], ['materials', 'MATERIALS'], ['bounties', 'BOUNTIES'], ['expedition', 'EXPEDITION'], ['market', 'MARKET'], ['shop', 'SHOP'], ['inventory', 'BAG'], ['trade', 'TRADE']],
-    profile: [['how-to-play', 'HELP'], ['rare-morph', 'RARE'], ['memories', 'MEMORY'], ['callsign', 'NAME'], ['evolution', 'EVOLVE'], ['season', 'SEASON'], ['leaderboard', 'RANKS']],
-  };
-
   function renderCanvasTools() {
     canvasTools.hidden = !state;
     var audioButton = canvasTools.querySelector('[data-utility="audio"]');
@@ -781,14 +843,6 @@
     radioButton.setAttribute('aria-busy', String(radioRequestedOn && !radioEnabled));
     radioButton.setAttribute('aria-label', radioRequestedOn ? 'Stop GraffPUNKS Radio' : 'Play GraffPUNKS Radio');
     radioButton.title = radioButton.getAttribute('aria-label');
-  }
-
-  function sectionJumpBar(screenKey) {
-    var jumps = SECTION_JUMPS[screenKey] || [];
-    if (!jumps.length) return '';
-    return '<nav class="section-jumps" aria-label="' + escapeHtml(words(screenKey)) + ' shortcuts">' + jumps.map(function (jump) {
-      return '<button type="button" class="jump-button" data-panel-jump="' + escapeHtml(jump[0]) + '">' + escapeHtml(jump[1]) + '</button>';
-    }).join('') + '</nav>';
   }
 
   function closeUtility() {
@@ -1398,11 +1452,6 @@
         panel('SECRET BOT ACTIONS', '<div class="button-grid">' + button('ENERGY DRINK', 'energy_drink') + button('DANCE', 'dance') + button('CUDDLES', 'cuddles') + '</div><div class="line muted">Stat-only care. Does not advance incubation or award XP.</div>', 'care') +
         renderPlayNow() + renderSeasonSlots();
     }
-    var next = state.next || {};
-    var nextKey = String(next.key || '') + ' ' + String(next.callback_data || '') + ' ' + String(next.title || '');
-    var nextScreen = next.destination || (/buy|shop|market|bount|econom|gear|cosmetic/i.test(nextKey) ? 'economy' : /run|boss|arena|adventure|district|event.chain/i.test(nextKey) ? 'explore' : /job|work|activity/i.test(nextKey) ? 'work' : /mission/i.test(nextKey) ? 'missions' : /evol|season|achievement|trait/i.test(nextKey) ? 'profile' : 'home');
-    var focus = recommendedFocus(next);
-    if (window.MoonpetPlayOptions) nextScreen = window.MoonpetPlayOptions.route(next).screen;
     var equipped = ['food', 'toy', 'outfit', 'armor', 'weapon', 'charm'].map(function (slot) {
       return '<div class="line"><strong>' + slot.toUpperCase() + '</strong> // ' + escapeHtml(words(pet['equipped_' + slot] || (slot === 'food' ? 'basic food' : slot === 'toy' ? 'basic toy' : 'none equipped'))) + '</div>';
     }).join('');
@@ -1410,7 +1459,6 @@
     return '<div class="ticker"><span>MOONPET OS // ' + escapeHtml(displayName) + ' // ' + escapeHtml(moonpetStageLabel(lifecycle, pet)) + ' // STREAK ' + number(pet.streak_days) + ' DAYS //</span></div>' +
       activePetSummary() +
       renderPlayNow() +
-      panel('RECOMMENDED NEXT MOVE', '<div class="line complete">' + escapeHtml(next.title || 'Maintain current route') + '</div><div class="line muted">NEXT // ' + escapeHtml(homeNextLine(next)) + '</div><div class="line muted">' + escapeHtml(next.detail || 'All systems nominal.') + '</div><div class="button-grid one"><button class="terminal-button" type="button" data-jump="' + nextScreen + '" data-focus="' + focus + '">OPEN RECOMMENDED ROUTE</button></div>', 'recommended') +
       panel('VITAL SYSTEMS', meter('HEALTH', pet.health) + meter('ENERGY', pet.energy) + meter('HUNGER', pet.hunger, true) + meter('FUN', pet.happiness) + meter('CLEAN', pet.cleanliness), 'vitals') +
       panel('CARE CONSOLE', '<div class="button-grid">' +
         button('FEED', 'feed') + button('PLAY', 'play') + button('CLEAN', 'clean') + button('SLEEP', 'sleep') + button('TRAIN', 'train') +
@@ -1693,6 +1741,18 @@
     return '<div class="line muted">These are the server-tracked Growth Mark goals, separate from the seven daily missions. Official run goals do not count contracts, practice or endless runs.</div>' + objectives.map(function (goal) {
       return '<div class="line ' + (goal.completed ? 'complete' : '') + '">' + (goal.completed ? '[OK] ' : '[ ] ') + escapeHtml(goal.description || words(goal.challenge_id)) + ' // ' + number(goal.progress) + '/' + number(goal.target) + '</div>' + (goal.completed ? '' : objectiveRouteButton(goal.challenge_id));
     }).join('');
+  }
+
+  function renderRecommended() {
+    if (!window.MoonpetPlayOptions || !window.MoonpetPlayOptions.recommendations) return '';
+    var choices = window.MoonpetPlayOptions.recommendations(state, { crafting_goal: selectedCraftingGoal() });
+    if (!choices.length) return '';
+    var controls = choices.map(function (choice, index) {
+      return routeButton((index + 1) + '. ' + choice.title, choice, choice.detail);
+    });
+    var moreKey = [state && state.pet && state.pet.pet_id || 'account', activeScreen, 'recommended-more'].join(':');
+    var more = controls.length > 3 ? '<details class="more-recommendations" data-panel-key="' + escapeHtml(moreKey) + '"' + (panelOpenState[moreKey] ? ' open' : '') + '><summary class="panel-summary"><span class="panel-icon" aria-hidden="true">＋</span><span class="panel-caption"><span class="panel-title">MORE RECOMMENDED OPTIONS // ' + (controls.length - 3) + '</span><span class="panel-description">More routes, optional upgrades and goals to review.</span></span><span class="panel-chevron" aria-hidden="true">⌄</span></summary><div class="button-grid one">' + controls.slice(3).join('') + '</div></details>' : '';
+    return panel('RECOMMENDED NEXT', '<div class="button-grid one">' + controls.slice(0, 3).join('') + '</div>' + more, 'recommended', 'Next: ' + choices[0].title);
   }
 
   function renderPlayNow() {
@@ -2445,6 +2505,7 @@
 
   function render(options) {
     var editableState = options && options.discardCallsignDraft ? null : captureEditableState();
+    rememberPanels();
     var routeDraft = {};
     var draftPetId = renderedPetId;
     ['contract-format', 'contract-build', 'contract-tier', 'contract-side-goal', 'practice-build', 'practice-goal'].forEach(function (id) {
@@ -2453,7 +2514,7 @@
     renderHud();
     renderNav();
     renderCanvasTools();
-    screen.innerHTML = state ? sectionJumpBar(activeScreen) + screens[activeScreen]() : '';
+    screen.innerHTML = state ? renderRecommended() + screens[activeScreen]() : '';
     restoreEditableState(editableState);
     if (draftPetId === (state && state.pet && state.pet.pet_id)) Object.keys(routeDraft).forEach(function (id) {
       var input = document.getElementById(id);
@@ -2796,6 +2857,10 @@
     window.setTimeout(function () {
       var target = screen.querySelector('[data-panel="' + CSS.escape(panelId) + '"]');
       if (target) {
+        if (target.tagName === 'DETAILS') target.open = true;
+        rememberPanels();
+        var summary = target.querySelector('summary');
+        if (summary) summary.focus({ preventScroll: true });
         var screenRect = screen.getBoundingClientRect();
         var relativeTop = target.getBoundingClientRect().top - screenRect.top + screen.scrollTop;
         screen.scrollTo({ top: Math.max(0, relativeTop - 8), behavior: reducedMotion ? 'auto' : 'smooth' });
@@ -3010,12 +3075,6 @@
     if (utility) {
       if (utility.dataset.utility === 'guide' || utility.dataset.utility === 'leaderboard') openUtility(utility.dataset.utility);
       else if (utility.dataset.utility === 'retry') window.location.reload();
-      return;
-    }
-    var panelJump = event.target.closest('[data-panel-jump]');
-    if (panelJump) {
-      scrollToPanel(panelJump.dataset.panelJump);
-      haptic('light');
       return;
     }
     var petGreeting = event.target.closest('[data-pet-greet]');
