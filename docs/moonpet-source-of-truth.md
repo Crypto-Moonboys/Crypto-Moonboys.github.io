@@ -18,6 +18,22 @@ Any gameplay, documentation, or UI change affecting Moonpet status should refere
 
 # Current Live Build
 
+### Saved state and public ranking read integrity
+
+Required game-state and public ranking/activity list reads reject both thrown
+D1 errors and resolved failed/malformed results. An outage must not publish an
+empty inventory, reset mission/boss progress or hide a saved claim. Existing
+Mini App/website retry behavior and explicit Relic Vault/Weekly Journey
+unavailable states remain. Successful empty lists are valid. Material reads for
+crafting, upgrades and Style Lab must succeed before spending.
+See [the read-integrity audit](moonpet-read-integrity-audit-2026-09-29.md).
+
+The operator's migration 078 check confirmed three seasonal corrections and no
+pending correction. Public seasonal/all-time pairs now agree, but the audit
+still observes a historical weekly receipt total above retained all-time XP.
+The beta rebaseline preserved daily/weekly receipts; it was not a reconstruction
+of all old earning history. Do not describe that remaining discrepancy as fixed.
+
 The following systems are considered live gameplay systems.
 
 ### Weekly Boss reward-list availability

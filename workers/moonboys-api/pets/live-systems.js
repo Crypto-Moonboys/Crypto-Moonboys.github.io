@@ -1,3 +1,4 @@
+import { requirePetReadResult } from './read-result.js';
 import { PET_DISTRICT_APPROACHES, PET_DISTRICT_COMPLICATIONS, PET_DISTRICT_ENCOUNTERS, PET_EVENT_CHAINS, PET_FACTION_BONUSES, PET_REGION_CONTENT, PET_SEASONAL_BOSSES } from './content-phase-4.js';
 import { PET_COSMETIC_SINKS, PET_CRAFTING_RECIPES, PET_EQUIPMENT_SETS, PET_PRESTIGE_REQUIREMENTS, getPetCraftingRecipe, getPetEquipmentUpgradeCost } from './economy-phase-3.js';
 import { buildPetRegionDirectory } from './game-content.js';
@@ -155,26 +156,26 @@ export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gea
   const dailyCooldown = cooldownWindow(dailyResetAt, now);
   const [chains, bossProgress, cosmetics, factionRow, dailyEvents, pendingBossRewards] = await Promise.all([
     authority
-      ? db.prepare('SELECT chain_key, step_index, completed_cycles FROM telegram_pet_event_chain_progress WHERE pet_id=? AND telegram_id=? AND season_key=?').bind(authority.pet_id, telegramId, authority.season_key).all()
-      : db.prepare("SELECT chain_key, step_index, completed_cycles FROM telegram_pet_event_chain_progress WHERE pet_id='' AND telegram_id = ? AND season_key=''").bind(telegramId).all(),
+      ? db.prepare('SELECT chain_key, step_index, completed_cycles FROM telegram_pet_event_chain_progress WHERE pet_id=? AND telegram_id=? AND season_key=?').bind(authority.pet_id, telegramId, authority.season_key).all().then(requirePetReadResult)
+      : db.prepare("SELECT chain_key, step_index, completed_cycles FROM telegram_pet_event_chain_progress WHERE pet_id='' AND telegram_id = ? AND season_key=''").bind(telegramId).all().then(requirePetReadResult),
     authority
-      ? db.prepare('SELECT season_key, boss_key, damage, defeated_at, reward_claimed_at FROM telegram_pet_seasonal_boss_progress WHERE pet_id=? AND telegram_id=? AND pet_season_key=?').bind(authority.pet_id, telegramId, authority.season_key).all()
-      : db.prepare("SELECT season_key, boss_key, damage, defeated_at, reward_claimed_at FROM telegram_pet_seasonal_boss_progress WHERE pet_id='' AND telegram_id = ? AND pet_season_key=''").bind(telegramId).all(),
-    db.prepare('SELECT cosmetic_key, quantity, unlocked_at FROM telegram_pet_cosmetic_unlocks WHERE telegram_id = ?').bind(telegramId).all(),
+      ? db.prepare('SELECT season_key, boss_key, damage, defeated_at, reward_claimed_at FROM telegram_pet_seasonal_boss_progress WHERE pet_id=? AND telegram_id=? AND pet_season_key=?').bind(authority.pet_id, telegramId, authority.season_key).all().then(requirePetReadResult)
+      : db.prepare("SELECT season_key, boss_key, damage, defeated_at, reward_claimed_at FROM telegram_pet_seasonal_boss_progress WHERE pet_id='' AND telegram_id = ? AND pet_season_key=''").bind(telegramId).all().then(requirePetReadResult),
+    db.prepare('SELECT cosmetic_key, quantity, unlocked_at FROM telegram_pet_cosmetic_unlocks WHERE telegram_id = ?').bind(telegramId).all().then(requirePetReadResult),
     db.prepare('SELECT faction FROM blocktopia_progression WHERE telegram_id = ?').bind(telegramId).first(),
     db.prepare(`SELECT system_key, action_key, period_key, status, payload_json, updated_at FROM telegram_pet_system_events
       WHERE pet_id=? AND telegram_id=? AND season_key=? AND status IN ('pending','rejected','settling','completed')
         AND ((system_key IN ('district','event_chain') AND (period_key=? OR status IN ('pending','rejected','settling')))
           OR (system_key='seasonal_boss' AND period_key LIKE ?))
       ORDER BY period_key,id`)
-      .bind(authority?.pet_id || '', telegramId, authority?.season_key || '', today, `%:${today}`).all(),
+      .bind(authority?.pet_id || '', telegramId, authority?.season_key || '', today, `%:${today}`).all().then(requirePetReadResult),
     db.prepare(`SELECT b.pet_id,b.season_key,b.boss_key FROM telegram_pet_seasonal_boss_progress b
       JOIN telegram_pet_instances p ON p.pet_id=b.pet_id AND p.telegram_id=b.telegram_id AND p.season_key=b.pet_season_key
       JOIN telegram_pet_season_slots s ON s.pet_id=p.pet_id AND s.telegram_id=p.telegram_id AND s.season_key=p.season_key AND s.slot_number=p.slot_number
       WHERE b.telegram_id=? AND b.defeated_at IS NOT NULL AND b.reward_claimed_at IS NULL
         AND b.boss_key IN (${Object.keys(PET_SEASONAL_BOSSES).map(() => '?').join(',')})
       ORDER BY b.defeated_at,b.pet_id,b.season_key LIMIT 10`)
-      .bind(telegramId,...Object.keys(PET_SEASONAL_BOSSES)).all(),
+      .bind(telegramId,...Object.keys(PET_SEASONAL_BOSSES)).all().then(requirePetReadResult),
   ]);
   const events = dailyEvents.results || [];
   const busyOrComplete = (row) => {
@@ -267,7 +268,7 @@ export async function processPetCraftRecipe(db, telegramId, recipeKey, requestKe
   const pet = await db.prepare('SELECT pet_xp, level FROM telegram_pet_profiles WHERE telegram_id=?').bind(telegramId).first();
   if (!pet) return { accepted: false, reason: 'pet_not_adopted' };
   if (getRuntimePetLevel(pet) < recipe.min_level) return { accepted: false, reason: 'crafting_locked', required_level: recipe.min_level };
-  const balances = await db.prepare('SELECT material_key, quantity FROM telegram_pet_material_balances WHERE telegram_id=?').bind(telegramId).all();
+  const balances = await db.prepare('SELECT material_key, quantity FROM telegram_pet_material_balances WHERE telegram_id=?').bind(telegramId).all().then(requirePetReadResult);
   const wallet = Object.fromEntries((balances.results || []).map((row) => [row.material_key, integer(row.quantity)]));
   if (!Object.entries(recipe.cost).every(([key, amount]) => integer(wallet[key]) >= amount)) return { accepted: false, reason: 'crafting_materials_missing', cost: recipe.cost };
   const outputBalance = await db.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item' AND asset_key=?").bind(telegramId, recipe.output.item_key).first();
@@ -679,7 +680,7 @@ export async function processPetEquipmentUpgrade(db, telegramId, itemKey, reques
   const walletRow = integer(cost.moon_gold) > 0
     ? await db.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').bind(telegramId).first()
     : pet;
-  const balances = await db.prepare('SELECT material_key, quantity FROM telegram_pet_material_balances WHERE telegram_id=?').bind(telegramId).all();
+  const balances = await db.prepare('SELECT material_key, quantity FROM telegram_pet_material_balances WHERE telegram_id=?').bind(telegramId).all().then(requirePetReadResult);
   const wallet = { moon_gold: integer(walletRow?.moon_gold), ...Object.fromEntries((balances.results || []).map((row) => [row.material_key, integer(row.quantity)])) };
   if (!Object.entries(cost).every(([key, amount]) => integer(wallet[key]) >= amount)) return { accepted: false, reason: 'upgrade_cost_missing', cost };
   const period = String(requestKey || `level:${target}`);
@@ -721,7 +722,7 @@ export async function processPetCosmeticUnlock(db, telegramId, cosmeticKey, requ
     return { accepted: false, reason: 'wallet_reconciliation_recovery_pending', cost: sink.cost };
   }
   const pet = await db.prepare('SELECT moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').bind(telegramId).first();
-  const mats = await db.prepare('SELECT material_key, quantity FROM telegram_pet_material_balances WHERE telegram_id=?').bind(telegramId).all();
+  const mats = await db.prepare('SELECT material_key, quantity FROM telegram_pet_material_balances WHERE telegram_id=?').bind(telegramId).all().then(requirePetReadResult);
   const wallet = { ...pet, ...Object.fromEntries((mats.results || []).map((row) => [row.material_key, row.quantity])) };
   if (!Object.entries(sink.cost).every(([key, amount]) => integer(wallet[key]) >= amount)) return { accepted: false, reason: 'cosmetic_cost_missing', cost: sink.cost };
   const serial = sink.repeatable ? integer(owned?.quantity) + 1 : 1;

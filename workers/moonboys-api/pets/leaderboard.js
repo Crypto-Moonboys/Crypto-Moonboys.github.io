@@ -1,3 +1,4 @@
+import { requirePetReadResult } from './read-result.js';
 import { getMoonpetSeasonInfo } from './season-authority.js';
 import { PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY } from './wallet-reconciliation.js';
 
@@ -58,7 +59,7 @@ export async function readPetLeaderboard(db, { period = 'seasonal', limit = 25, 
   LEFT JOIN identities d ON d.telegram_id=r.telegram_id AND (d.pet_id IS NULL OR (d.pet_id=a.pet_id AND d.season_key=a.season_key))
   LEFT JOIN telegram_users u ON u.telegram_id=r.telegram_id
   WHERE r.rank<=? OR r.telegram_id=? ORDER BY r.rank`)
-    .bind(...bindings, boundedLimit(limit, 100), owner == null ? '' : String(owner)).all();
+    .bind(...bindings, boundedLimit(limit, 100), owner == null ? '' : String(owner)).all().then(requirePetReadResult);
   return { period, season, rows: rows.results || [] };
 }
 
@@ -79,6 +80,6 @@ export async function readPetActivity(db, limit = 20) {
       ((e.pet_id IS NOT NULL AND d.pet_id=e.pet_id AND d.season_key=e.season_key) OR (e.pet_id IS NULL AND d.pet_id IS NULL))
     LEFT JOIN telegram_users u ON u.telegram_id=e.telegram_id
     ORDER BY e.created_at DESC,e.id DESC LIMIT ?`)
-    .bind(PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY, boundedLimit(limit, 50)).all();
+    .bind(PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY, boundedLimit(limit, 50)).all().then(requirePetReadResult);
   return rows.results || [];
 }
