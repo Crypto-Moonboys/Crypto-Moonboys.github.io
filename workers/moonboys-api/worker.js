@@ -5379,143 +5379,6 @@ async function awardPetKaijuPlayerResult(db, telegramId, match, outcome, rewards
   }
   return { ...awardedAuthority, reward_slot: rewardSlotAuthority.claimed_slot, reward_multiplier: rewardSlotAuthority.multiplier,
     accounting_window: { day_key: rewardSlotAuthority.day_key, week_key: rewardSlotAuthority.week_key, season_key: rewardSlotAuthority.season_key } };
-
-  // Energy payment and the recoverable numbered slot commit together before rewards are calculated.
-  const rewardSlot = reservation;
-  const accountingDayKey = rewardSlot.day_key;
-  const accountingWeekKey = rewardSlot.week_key;
-  const accountingSeasonKey = rewardSlot.season_key;
-  const scaledRewards = scalePetRewards(rewards, rewardSlot.multiplier);
-  const requestedPetXp = Math.max(0, Math.floor(Number(scaledRewards.pet_xp || 0)));
-  const requestedCommunityXp = Math.max(0, Math.floor(Number(scaledRewards.community_xp || 0)));
-  const moonGold = Math.max(0, Math.floor(Number(scaledRewards.moon_gold || 0)));
-  const styleTokens = Math.max(0, Math.floor(Number(scaledRewards.style_tokens || 0)));
-  const happiness = Math.max(0, Math.floor(Number(scaledRewards.happiness || 0)));
-  const previousDayKey = getPreviousPetDayKey(accountingDayKey);
-  const finalizationId = crypto.randomUUID();
-  const metadata = JSON.stringify({
-    finalization_id: finalizationId,
-    source: 'telegram_kaiju',
-    match_id: match.match_id,
-    mode: match.mode,
-    reward_slot: rewardSlot.claimed_slot,
-    reward_multiplier: rewardSlot.multiplier,
-    energy_cost: energyCost,
-    rewards: scaledRewards,
-  });
-  const [eventWrite] = await db.batch([
-    db.prepare(`
-      UPDATE telegram_pet_events
-      SET pet_xp_awarded = MIN(?, MAX(0, ? - (
-            SELECT COALESCE(SUM(pet_xp_awarded), 0) FROM telegram_pet_events
-            WHERE telegram_id = ? AND day_key = ? AND status = 'accepted'
-          ))),
-          xp_awarded = MIN(?, MAX(0, ? - (
-            SELECT COALESCE(SUM(xp_awarded), 0) FROM telegram_pet_events
-            WHERE telegram_id = ? AND day_key = ? AND status = 'accepted'
-          ))),
-          status = 'accepted', reason = ?, metadata = ?
-      WHERE id = ? AND telegram_id = ? AND status = 'pending'
-      RETURNING pet_xp_awarded, xp_awarded
-    `).bind(
-      requestedPetXp, PETS_DAILY_PET_XP_CAP, telegramId, accountingDayKey,
-      requestedCommunityXp, PETS_DAILY_COMMUNITY_XP_CAP, telegramId, accountingDayKey,
-      outcome, metadata, reservation.reservation_id, telegramId,
-    ),
-    db.prepare(`
-      UPDATE telegram_pet_profiles
-      SET pet_xp = pet_xp + COALESCE((SELECT pet_xp_awarded FROM telegram_pet_events WHERE id = ? AND status = 'accepted' AND metadata = ?), 0),
-          moon_gold = MIN(999999, moon_gold + ?),
-          style_tokens = MIN(999999, style_tokens + ?),
-          happiness = MIN(100, happiness + ?),
-          streak_days = CASE
-            WHEN last_active_day > ? THEN streak_days
-            WHEN last_active_day = ? THEN MAX(1, streak_days)
-            WHEN last_active_day = ? THEN streak_days + 1
-            ELSE 1
-          END,
-          last_active_day = CASE WHEN last_active_day > ? THEN last_active_day ELSE ? END,
-          last_decay_at = ?, updated_at = CURRENT_TIMESTAMP
-      WHERE telegram_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'accepted' AND metadata = ?)
-    `).bind(
-      reservation.reservation_id, metadata, moonGold, styleTokens, happiness,
-      accountingDayKey, accountingDayKey, previousDayKey, accountingDayKey, accountingDayKey,
-      now.toISOString(), telegramId, reservation.reservation_id, metadata,
-    ),
-    db.prepare(`
-      UPDATE telegram_pet_profiles
-      SET stage = CASE WHEN pet_xp >= 1800 THEN 'legendary companion' WHEN pet_xp >= 900 THEN 'moon guardian' WHEN pet_xp >= 360 THEN 'street scout' WHEN pet_xp >= 120 THEN 'runner' WHEN pet_xp >= 25 THEN 'hatchling' ELSE 'egg' END,
-          level = ${getPetVisibleLevelSql('pet_xp')},
-          health = MIN(100, MAX(0, ROUND(((100 - hunger) + happiness + cleanliness + energy) / 4.0)))
-      WHERE telegram_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'accepted' AND metadata = ?)
-    `).bind(telegramId, reservation.reservation_id, metadata),
-    db.prepare(`
-      INSERT INTO telegram_pet_season_state
-        (telegram_id, season_key, season_xp, weekly_xp, daily_xp, daily_key, weekly_key)
-      SELECT ?, ?, pet_xp_awarded, pet_xp_awarded, pet_xp_awarded, ?, ?
-      FROM telegram_pet_events WHERE id = ? AND status = 'accepted' AND metadata = ?
-      ON CONFLICT(telegram_id, season_key) DO UPDATE SET
-        season_xp = season_xp + excluded.season_xp,
-        weekly_xp = CASE WHEN weekly_key = excluded.weekly_key THEN weekly_xp + excluded.weekly_xp ELSE excluded.weekly_xp END,
-        daily_xp = CASE WHEN daily_key = excluded.daily_key THEN daily_xp + excluded.daily_xp ELSE excluded.daily_xp END,
-        daily_key = excluded.daily_key, weekly_key = excluded.weekly_key, updated_at = CURRENT_TIMESTAMP
-    `).bind(telegramId, accountingSeasonKey, accountingDayKey, accountingWeekKey, reservation.reservation_id, metadata),
-    db.prepare(`
-      INSERT INTO telegram_xp_log (telegram_id, action, xp_change, reference_id)
-      SELECT ?, 'pet_kaiju_battle', xp_awarded, ?
-      FROM telegram_pet_events
-      WHERE id = ? AND status = 'accepted' AND metadata = ? AND xp_awarded > 0
-    `).bind(telegramId, eventKey, reservation.reservation_id, metadata),
-    db.prepare(`
-      UPDATE telegram_users
-      SET xp = xp + COALESCE((
-            SELECT xp_awarded FROM telegram_pet_events
-            WHERE id = ? AND status = 'accepted' AND metadata = ?
-          ), 0),
-          level = CAST((xp + COALESCE((
-            SELECT xp_awarded FROM telegram_pet_events
-            WHERE id = ? AND status = 'accepted' AND metadata = ?
-          ), 0)) / 100 AS INTEGER) + 1,
-          updated_at = CURRENT_TIMESTAMP
-      WHERE telegram_id = ? AND EXISTS (
-        SELECT 1 FROM telegram_pet_events
-        WHERE id = ? AND status = 'accepted' AND metadata = ? AND xp_awarded > 0
-      )
-    `).bind(
-      reservation.reservation_id, metadata, reservation.reservation_id, metadata,
-      telegramId, reservation.reservation_id, metadata,
-    ),
-    db.prepare(`
-      INSERT INTO telegram_leaderboard (telegram_id, season_id, xp)
-      SELECT ?, season.id, event.xp_awarded
-      FROM telegram_pet_events AS event
-      JOIN telegram_seasons AS season ON season.id = (
-        SELECT id FROM telegram_seasons
-        WHERE ${communitySeasonSql('season')}
-        ORDER BY start_date DESC, id DESC LIMIT 1
-      )
-      WHERE event.id = ? AND event.status = 'accepted' AND event.metadata = ? AND event.xp_awarded > 0
-      ON CONFLICT(telegram_id, season_id) DO UPDATE SET
-        xp = xp + excluded.xp,
-        updated_at = CURRENT_TIMESTAMP
-    `).bind(telegramId, accountingDayKey, accountingDayKey, reservation.reservation_id, metadata),
-  ]);
-  if (!eventWrite?.results?.[0]) {
-    return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0, pet: await getPetProfile(db, telegramId) };
-  }
-  const awardedRow = eventWrite?.results?.[0] || {};
-  const petXp = Math.max(0, Math.floor(Number(awardedRow.pet_xp_awarded || 0)));
-  const communityXp = Math.max(0, Math.floor(Number(awardedRow.xp_awarded || 0)));
-  return {
-    accepted: true,
-    reason: outcome,
-    xp_awarded: communityXp,
-    pet_xp_awarded: petXp,
-    reward_slot: rewardSlot.claimed_slot,
-    reward_multiplier: rewardSlot.multiplier,
-    accounting_window: { day_key: accountingDayKey, week_key: accountingWeekKey, season_key: accountingSeasonKey },
-    pet: await getPetProfile(db, telegramId),
-  };
 }
 
 const PET_KAIJU_RESULT_REWARDS = Object.freeze({
@@ -10953,31 +10816,55 @@ export default {
     if (path === '/telegram-pets/state' && request.method === 'GET') {
       const telegramId = String(url.searchParams.get('telegram_id') || '').trim();
       if (!/^\d{1,20}$/.test(telegramId)) return err('telegram_id required');
-      const pet = await getPetProfile(env.DB, telegramId).catch(() => null);
-      if (!pet) return err('Pet profile not found', 404);
-      const identity = await getMoonpetIdentitySummary(env.DB, telegramId).catch(() => null);
-      return json({ pet: serializePet(pet, identity), missions: await buildPetMissions(env.DB, telegramId) });
+      try {
+        const pet = await getPetProfile(env.DB, telegramId);
+        if (!pet) return err('Pet profile not found', 404);
+        const identity = await getMoonpetIdentitySummary(env.DB, telegramId);
+        return json({ pet: serializePet(pet, identity), missions: await buildPetMissions(env.DB, telegramId) });
+      } catch (error) {
+        logApiFailure('pet_legacy_state_failed', { telegramId, message: error?.message || String(error) });
+        return err('pet_state_unavailable', 503);
+      }
     }
 
     if (path === '/telegram-pets/inventory' && request.method === 'GET') {
       const telegramId = String(url.searchParams.get('telegram_id') || '').trim();
       if (!/^\d{1,20}$/.test(telegramId)) return err('telegram_id required');
-      const pet = await getPetProfile(env.DB, telegramId, true).catch(() => null);
-      if (!pet) return err('Pet profile not found', 404);
-      const identity = await getMoonpetIdentitySummary(env.DB, telegramId).catch(() => null);
-      return json({ pet: serializePet(pet, identity), inventory: await getPetInventory(env.DB, telegramId) });
+      try {
+        const pet = await getPetProfile(env.DB, telegramId, true);
+        if (!pet) return err('Pet profile not found', 404);
+        const identity = await getMoonpetIdentitySummary(env.DB, telegramId);
+        return json({ pet: serializePet(pet, identity), inventory: await getPetInventory(env.DB, telegramId) });
+      } catch (error) {
+        logApiFailure('pet_legacy_inventory_failed', { telegramId, message: error?.message || String(error) });
+        return err('pet_inventory_unavailable', 503);
+      }
     }
 
     if (path === '/telegram-pets/missions' && request.method === 'GET') {
       const telegramId = String(url.searchParams.get('telegram_id') || '').trim();
       if (!/^\d{1,20}$/.test(telegramId)) return err('telegram_id required');
-      return json({ missions: await buildPetMissions(env.DB, telegramId) });
+      try {
+        return json({ missions: await buildPetMissions(env.DB, telegramId) });
+      } catch (error) {
+        logApiFailure('pet_legacy_missions_failed', { telegramId, message: error?.message || String(error) });
+        return err('pet_missions_unavailable', 503);
+      }
     }
 
     if (path === '/telegram-pets/shop' && request.method === 'GET') {
       const telegramId = String(url.searchParams.get('telegram_id') || '').trim();
-      const pet = /^\d{1,20}$/.test(telegramId) ? await getPetProfile(env.DB, telegramId).catch(() => null) : null;
-      const identity = pet ? await getMoonpetIdentitySummary(env.DB, telegramId).catch(() => null) : null;
+      let pet = null;
+      let identity = null;
+      if (/^\d{1,20}$/.test(telegramId)) {
+        try {
+          pet = await getPetProfile(env.DB, telegramId);
+          identity = pet ? await getMoonpetIdentitySummary(env.DB, telegramId) : null;
+        } catch (error) {
+          logApiFailure('pet_legacy_shop_failed', { telegramId, message: error?.message || String(error) });
+          return err('pet_shop_unavailable', 503);
+        }
+      }
       return json({
         currencies: ['moon_gold', 'moon_crystals', 'style_tokens'],
         pet: serializePet(pet, identity),
