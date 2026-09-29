@@ -20,6 +20,16 @@ Any gameplay, documentation, or UI change affecting Moonpet status should refere
 
 The following systems are considered live gameplay systems.
 
+### Callsign and Trade write integrity
+
+Callsign changes update only the owned selected pet's name, with its compatibility
+mirror in the same transaction. Trade reservations compare authoritative instance
+XP as well as the profile mirror; conflicts consume no wallet balance or attempt.
+Trade settlement applies receipt XP to current instance state. These protections
+prevent overlapping rewards from being erased by old snapshots. Historical live
+leaderboard discrepancies need separate source-ledger reconciliation; this change
+does not invent or replay old rewards. See [the 29 September sanity audit](moonpet-sanity-audit-2026-09-29.md).
+
 ### Daily checklist bonus and season finale
 
 Migration `077_moonpet_completion_rewards.sql` and the matching Worker deploy
