@@ -1243,7 +1243,7 @@ assert.match(worker, /weekly_journey: isPetMiniAppWeeklyJourneySummaryLive\(jour
 assert.match(worker, /capabilities: buildPetMiniAppCapabilities\(combatEligibility, journeySummary\?\.weekly \|\| null\)/, 'Mini App state must serialize capability authority from the worker');
 assert.match(worker, /pet: null,[\s\S]*capabilities_version: 1,[\s\S]*capabilities: buildPetMiniAppCapabilities/, 'unadopted Mini App state must serialize the top-level capability contract version');
 assert.match(worker, /season_slots: seasonSlots,[\s\S]*capabilities_version: 1,[\s\S]*capabilities: buildPetMiniAppCapabilities\(combatEligibility, journeySummary\?\.weekly \|\| null\)/, 'adopted Mini App state must serialize the top-level capability contract version');
-assert.match(worker, /combat: \{[\s\S]*state: combatEligibility\.combat_unlocked === true[\s\S]*unlocked: combatEligibility\.combat_unlocked === true[\s\S]*requirements: \{[\s\S]*completed_season_pet:[\s\S]*active_pet_hatched:/, 'capabilities must expose one nested combat authority object');
+assert.match(worker, /combat: \{[\s\S]*state:[\s\S]*combatEligibility\.combat_unlocked === true[\s\S]*unlocked:[\s\S]*combatEligibility\.combat_unlocked === true[\s\S]*requirements: \{[\s\S]*completed_season_pet:[\s\S]*active_pet_hatched:/, 'capabilities must expose one nested combat authority object');
 assert.doesNotMatch(worker, /\n\s+has_completed_season_pet: combatEligibility\.has_completed_season_pet,/, 'Mini App state must not serialize duplicate top-level completed-season authority');
 assert.doesNotMatch(worker, /\n\s+combat_unlocked: combatEligibility\.combat_unlocked,/, 'Mini App state must not serialize duplicate top-level combat authority');
 assert.doesNotMatch(worker, /\n\s+combat_eligibility: combatEligibility,/, 'Mini App state must not serialize duplicate top-level combat eligibility authority');
@@ -1694,7 +1694,7 @@ assert.match(worker, /buildPetMiniAppLaunchReplyMarkup\(alert\.destination/);
 assert.doesNotMatch(worker, /Notifications: \/petnotify off\nStatus: \/pet/);
 assert.match(client, /filter\(function \(item\) \{ return Number\(item\.count \|\| item\.quantity \|\| 0\) > 0;/);
 assert.doesNotMatch(html, /id="moonpet-app"[^>]*aria-live/);
-assert.match(worker, /return err\('mini_app_action_failed', 500\)/);
+assert.match(worker, /mini_app_action_failed[\s\S]*503/);
 
 assert.doesNotMatch(html, /<img\b/i);
 const gameSurfaceWithoutRequiredFavicon = html.replace(/<link\s+rel="icon"\s+type="image\/png"\s+href="\/favicon\.png">/i, '');

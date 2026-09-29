@@ -15,3 +15,9 @@ export async function selectCommunitySeason(db, at = new Date()) {
   `).bind(date.toISOString(), date.toISOString()).all());
   return rows[0] || null;
 }
+
+export function communitySeasonSql(alias = 'season', dateExpression = '?') {
+  return `${alias}.is_active=1
+    AND datetime(${alias}.start_date) <= datetime(${dateExpression})
+    AND (${alias}.end_date IS NULL OR datetime(${dateExpression}) < datetime(${alias}.end_date))`;
+}

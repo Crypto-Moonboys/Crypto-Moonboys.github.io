@@ -126,6 +126,7 @@ class MockStatement {
 
   async all() {
     const sql = this.normalizedSql();
+    if (sql.includes('FROM telegram_seasons')) return { results: [] };
     if (sql.includes('FROM wiki_comments') && sql.includes("status = 'approved'")) {
       const [pageId, limit] = this.args;
       const results = [...this.db.comments.values()]

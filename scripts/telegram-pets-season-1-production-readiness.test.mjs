@@ -263,17 +263,14 @@ db.database.prepare('DELETE FROM telegram_pet_lifecycle_by_pet WHERE pet_id=? AN
 db.blockLifecycleMaterializationForTelegramId = '100006';
 const missingLifecycleEligibility = await getPetMiniAppCombatEligibility(db, '100006');
 assert.equal(missingLifecycleEligibility.has_completed_season_pet, true, 'missing-lifecycle player keeps completed-season authority');
-assert.equal(missingLifecycleEligibility.active_pet_exists, true, 'missing-lifecycle player still has an active pet profile');
-assert.equal(missingLifecycleEligibility.active_pet_lifecycle_known, false, 'missing lifecycle data must be explicit');
-assert.equal(missingLifecycleEligibility.active_pet_combat_eligible, false, 'missing lifecycle data cannot be combat eligible');
-assert.equal(missingLifecycleEligibility.combat_unlocked, false, 'missing lifecycle data fails closed');
-assert.equal(missingLifecycleEligibility.reason, 'moonpet_lifecycle_required');
+assert.equal(missingLifecycleEligibility.combat_authority_available, false, 'failed lifecycle reads must be unavailable, not a normal combat lock');
+assert.equal(missingLifecycleEligibility.reason, 'combat_authority_unavailable');
 const missingLifecycleCountsBefore = countCombatRows(db, '100006');
 const missingLifecycleAction = await act(db, '100006', 'arena_matchmake');
 assert.equal(missingLifecycleAction.accepted, false, 'missing lifecycle combat action must reject');
-assert.equal(missingLifecycleAction.reason, 'moonpet_lifecycle_required');
+assert.equal(missingLifecycleAction.reason, 'combat_authority_unavailable');
 assert.equal(missingLifecycleAction.capabilities_version, 1);
-assert.equal(missingLifecycleAction.capabilities?.combat?.state, 'LOCKED');
+assert.equal(missingLifecycleAction.capabilities?.combat?.state, 'UNAVAILABLE');
 assert.equal(missingLifecycleAction.capabilities?.combat?.unlocked, false);
 assert.equal(
   missingLifecycleAction.capabilities?.combat?.requirements?.active_pet_lifecycle_known,

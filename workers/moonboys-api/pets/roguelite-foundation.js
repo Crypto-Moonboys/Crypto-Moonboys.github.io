@@ -9,6 +9,7 @@ import {
   validatePetRogueliteContent,
   validatePetRunModifierContent,
 } from './content/index.js';
+import { communitySeasonSql } from '../community-season-authority.js';
 import { recordMoonpetBehaviour, recordMoonpetBiggestReward, recordMoonpetMemory } from './moonpet-identity.js';
 import { reconcileLegacyPetInventory } from './inventory-cutover.js';
 import { getMoonpetSeasonKey } from './season-authority.js';
@@ -432,9 +433,9 @@ export async function awardPetReward(db, request = {}) {
       .bind(eventId, metadata, eventId, metadata, telegramId, eventId, metadata),
     db.prepare(`INSERT INTO telegram_leaderboard (telegram_id, season_id, xp)
       SELECT ?, season.id, event.xp_awarded FROM telegram_seasons AS season, telegram_pet_events AS event
-      WHERE date(?) >= date(season.start_date) AND (season.end_date IS NULL OR date(?) <= date(season.end_date))
+      WHERE ${communitySeasonSql('season')}
         AND event.id = ? AND event.metadata = ? AND event.status = 'accepted' AND event.xp_awarded > 0
-      ORDER BY season.start_date DESC LIMIT 1
+      ORDER BY season.start_date DESC, season.id DESC LIMIT 1
       ON CONFLICT(telegram_id, season_id) DO UPDATE SET xp = xp + excluded.xp, updated_at = CURRENT_TIMESTAMP`)
       .bind(telegramId, dayKey, dayKey, eventId, metadata),
     db.prepare(`INSERT INTO telegram_pet_season_state (telegram_id, season_key, season_xp, weekly_xp, daily_xp, daily_key, weekly_key)

@@ -1,5 +1,6 @@
 import { getPetVisibleLevelSql } from './progression-phase-2.js';
 import { PET_INSTANCE_AUTHORITY_VERSION } from './wallet-reconciliation.js';
+import { communitySeasonSql } from '../community-season-authority.js';
 
 // These statements belong in the same D1 batch as a fresh pending event.
 // Read the applied XP from that receipt; never apply an earlier JS snapshot.
@@ -55,9 +56,7 @@ export function petCareCommunityStatements(db, eventId) {
     // expired or future period.
     db.prepare(`INSERT INTO telegram_leaderboard (telegram_id,season_id,xp)
       SELECT r.telegram_id,s.id,r.xp_awarded FROM (${receipt}) r
-      JOIN telegram_seasons s ON s.is_active=1
-        AND s.start_date <= COALESCE(r.day_key, date('now'))
-        AND (s.end_date IS NULL OR s.end_date > COALESCE(r.day_key, date('now')))
+      JOIN telegram_seasons s ON ${communitySeasonSql('s', "COALESCE(r.day_key, date('now'))")}
       ORDER BY s.start_date DESC, s.id DESC LIMIT 1
       ON CONFLICT(telegram_id,season_id) DO UPDATE SET xp=xp+excluded.xp,updated_at=CURRENT_TIMESTAMP`).bind(eventId),
   ];

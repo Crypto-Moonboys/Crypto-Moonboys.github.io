@@ -3,6 +3,7 @@ import { getStyleLoadout, equipPetStyle } from './pets/style-loadout.js';
 import { RELIC_ROUTE_DETAILS } from './pets/relic-passives.js';
 import { requirePetReadResult } from './pets/read-result.js';
 import { readCommunityLeaderboard } from './community-leaderboard.js';
+import { selectCommunitySeason, communitySeasonSql } from './community-season-authority.js';
 import { getCombatEligibility, PET_ARENA_MIN_LEVEL as COMBAT_ARENA_MIN_LEVEL, PET_WEEKLY_BOSS_MIN_LEVEL } from './pets/combat-eligibility.js';
 import { readDailyCompletion, claimDailyCompletion, getSeasonFinales, processSeasonFinale } from './pets/completion-features.js';
 import { PET_STATE_RECOVERY_LIMITS, boundedRecoveryLimit, claimPetRecoveryBatch } from './pets/recovery-limits.js';
@@ -911,6 +912,7 @@ async function awardCommunityXp(db, telegramId, xpChange, action, referenceId = 
     if (xpChange < 0) console.log('awardCommunityXp: negative xpChange ignored', JSON.stringify({ telegramId, xpChange, action }));
     return;
   }
+  const season = await selectCommunitySeason(db);
   await db.prepare(`
     INSERT INTO telegram_xp_log (telegram_id, action, xp_change, reference_id)
     VALUES (?, ?, ?, ?)
@@ -924,7 +926,6 @@ async function awardCommunityXp(db, telegramId, xpChange, action, referenceId = 
     WHERE telegram_id = ?
   `).bind(xpChange, xpChange, telegramId).run();
 
-  const season = await getCurrentSeason(db).catch(() => null);
   if (season?.id) {
     await db.prepare(`
       INSERT INTO telegram_leaderboard (telegram_id, season_id, xp)
@@ -5472,9 +5473,8 @@ async function awardPetKaijuPlayerResult(db, telegramId, match, outcome, rewards
       FROM telegram_pet_events AS event
       JOIN telegram_seasons AS season ON season.id = (
         SELECT id FROM telegram_seasons
-        WHERE date(?) >= date(start_date)
-          AND (end_date IS NULL OR date(?) <= date(end_date))
-        ORDER BY start_date DESC LIMIT 1
+        WHERE ${communitySeasonSql('season')}
+        ORDER BY start_date DESC, id DESC LIMIT 1
       )
       WHERE event.id = ? AND event.status = 'accepted' AND event.metadata = ? AND event.xp_awarded > 0
       ON CONFLICT(telegram_id, season_id) DO UPDATE SET
@@ -9434,11 +9434,13 @@ function buildPetMiniAppCapabilities(combatEligibility = {}, weeklyJourneySummar
     capabilities_version: 1,
     systems,
     combat: {
-      state: combatEligibility.combat_unlocked === true
+      state: combatEligibility.combat_authority_available === false
+        ? 'UNAVAILABLE'
+        : combatEligibility.combat_unlocked === true
         ? PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE
         : PET_MINI_APP_FUTURE_SYSTEM_STATUS.LOCKED,
-      unlocked: combatEligibility.combat_unlocked === true,
-      active: combatEligibility.combat_unlocked === true,
+      unlocked: combatEligibility.combat_authority_available !== false && combatEligibility.combat_unlocked === true,
+      active: combatEligibility.combat_authority_available !== false && combatEligibility.combat_unlocked === true,
       reason: combatEligibility.reason || 'current_combat_requirements_unmet',
       requirements: {
         completed_season_pet: combatEligibility.has_completed_season_pet === true,
@@ -9447,7 +9449,7 @@ function buildPetMiniAppCapabilities(combatEligibility = {}, weeklyJourneySummar
         active_pet_hatched: combatEligibility.active_pet_combat_eligible === true,
         active_pet_level: miniAppProgressInteger(combatEligibility.active_pet_level, 0),
         arena_level_met: combatEligibility.arena_level_met === true,
-        weekly_boss_level_met: combatEligibility.weekly_boss_unlocked === true,
+        weekly_boss_level_met: combatEligibility.weekly_boss_level_met === true,
       },
     },
     breeding: systemByKey.breeding,
@@ -9903,9 +9905,33 @@ async function hasCompletedPetMiniAppSeasonPet(db, telegramId) {
 
 async function getPetMiniAppCombatEligibility(db, telegramId, lifecycle = null) {
   const hasCompletedSeasonPet = await hasCompletedPetMiniAppSeasonPet(db, telegramId);
-  const activePet = await db.prepare('SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id=? LIMIT 1')
-    .bind(String(telegramId)).first().catch(() => null);
-  const activeLifecycle = lifecycle || await getMoonpetLifecycle(db, telegramId).catch(() => null);
+  let activePet;
+  let activeLifecycle;
+  try {
+    activePet = await db.prepare('SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id=? LIMIT 1')
+      .bind(String(telegramId)).first();
+    activeLifecycle = lifecycle || await getMoonpetLifecycle(db, telegramId);
+  } catch (error) {
+    return {
+      has_completed_season_pet: hasCompletedSeasonPet,
+      combat_authority_available: false,
+      active_pet_exists: false,
+      active_pet_lifecycle_known: false,
+      active_pet_combat_eligible: false,
+      active_pet_level: 0,
+      arena_level_met: false,
+      weekly_boss_level_met: false,
+      combat_unlocked: false,
+      arena_unlocked: false,
+      kaiju_unlocked: false,
+      weekly_boss_unlocked: false,
+      reason: 'combat_authority_unavailable',
+      arena_reason: 'combat_authority_unavailable',
+      kaiju_reason: 'combat_authority_unavailable',
+      weekly_boss_reason: 'combat_authority_unavailable',
+      error: error?.message || String(error),
+    };
+  }
   const activePetExists = Boolean(activePet);
   const activePetLevel = activePetExists ? getPetLevel(activePet.pet_xp) : 0;
   const activePetCombatEligible = Boolean(activePetExists && activeLifecycle && activeLifecycle.phase !== 'egg');
@@ -9923,7 +9949,7 @@ async function getPetMiniAppCombatEligibility(db, telegramId, lifecycle = null) 
     active_pet_exists: activePetExists,
     active_pet_lifecycle_known: Boolean(activeLifecycle),
     ...eligibility,
-    arena_level_met: eligibility.arena_unlocked,
+    arena_level_met: eligibility.arena_level_met,
   };
 }
 
@@ -10761,7 +10787,7 @@ export default {
           telegramId: verified.telegramId,
           message: error?.message || String(error),
         });
-        return err('mini_app_state_failed', 500);
+        return err('mini_app_state_failed', 503);
       }
     }
 
@@ -10831,7 +10857,7 @@ export default {
         await mirrorPetProfileToActiveInstance(env.DB, verified.telegramId);
       } catch (error) {
         logApiFailure('mini_app_action_failed', { telegramId: verified.telegramId, action: String(body.action || ''), message: error?.message || String(error) });
-        return err('mini_app_action_failed', 500);
+        return err('mini_app_action_failed', /D1|read|unavailable/i.test(String(error?.message || '')) ? 503 : 500);
       }
       const state = await buildPetMiniAppState(env.DB, verified.telegramId, env.TELEGRAM_BOT_TOKEN).catch((error) => {
         logApiFailure('pet_mini_app_action_state_failed', {
@@ -16035,14 +16061,7 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null) {
     getPetEvolutionGuidance(db, telegramId, pet, identity),
     getPetEconomyState(db, telegramId, pet, now),
   ]);
-  const combatEligibility = await getPetMiniAppCombatEligibility(db, telegramId, identity?.lifecycle).catch(() => ({
-    has_completed_season_pet: false,
-    active_pet_exists: true,
-    active_pet_lifecycle_known: false,
-    active_pet_combat_eligible: false,
-    combat_unlocked: false,
-    reason: 'moonpet_lifecycle_required',
-  }));
+  const combatEligibility = await getPetMiniAppCombatEligibility(db, telegramId, identity?.lifecycle);
   const level = getPetLevel(pet.pet_xp);
   const stage = Math.max(0, Number(identity?.current_stage?.stage) || 0);
   const boss = getPetWeeklyBoss(weekKey);
