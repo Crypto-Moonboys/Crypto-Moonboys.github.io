@@ -13,6 +13,10 @@ const workflow = fs.readFileSync(new URL('../.github/workflows/d1-production-mig
 const remoteQueryStep = workflow.match(/- name: Query production migration records[\s\S]*?(?=\n\s+- name: Report sanitised query failure)/)?.[0] || '';
 const remoteIdentityAuditStep = workflow.match(/- name: Query production identity authority violations[\s\S]*?(?=\n\s+- name: Upload sanitised evidence)/)?.[0] || '';
 const pullRequestPaths = workflow.match(/pull_request:\s*\n\s*paths:([\s\S]*?)\n\s*workflow_dispatch:/)?.[1] || '';
+for (const name of ['077_moonpet_completion_rewards.sql', '078_moonpet_beta_season_xp_rebaseline.sql']) {
+  assert.ok(pullRequestPaths.includes('workers/moonboys-api/migrations/' + name));
+  assert.ok(remoteQueryStep.includes(name));
+}
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/058_telegram_pet_season_completion\.sql/, 'migration 058 changes must trigger production migration verification');
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/059_telegram_pet_sanctuary\.sql/, 'migration 059 changes must trigger production migration verification');
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/060_telegram_pet_sanctuary_indexes\.sql/, 'migration 060 changes must trigger production migration verification');

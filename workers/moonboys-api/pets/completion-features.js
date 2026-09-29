@@ -57,10 +57,10 @@ function dailyPublic(row) {
   return { utc_day: row.utc_day, progress_bits: row.progress_bits, ready: row.progress_bits === 255, pet_id: row.pet_id,
     claimed: Boolean(row.claimed_at), claimed_at: row.claimed_at, rewards: DAILY_COMPLETION_REWARD };
 }
-export async function readDailyCompletion(db, owner, date, counts, upgrades, gold) {
+export async function readDailyCompletion(db, owner, date, counts, upgrades, gold, equipmentCollectionComplete = false) {
   let bits = gold >= 50 ? 128 : 0;
   for (const [type, flag] of Object.entries({ feed: 1, play: 2, clean: 4, train: 8, trade: 16, buy: 32, adventure: 64, run_extract: 64, run_complete: 64, district_mission: 64, event_chain: 64, seasonal_boss: 64 })) if (counts[type] > 0) bits |= flag;
-  if (upgrades > 0) bits |= 32;
+  if (upgrades > 0 || equipmentCollectionComplete) bits |= 32;
   // Covers existing today's receipts at rollout and holding gold across midnight.
   // Database triggers capture new receipts/balance crossings even without a refresh.
   try {

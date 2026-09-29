@@ -77,14 +77,18 @@ export function getPetEquipmentMultiplier(pet, itemKey) {
 
 // Account inventory remains shared, but only this source pet's equipped items
 // affect its actions. Read failures must not silently remove paid bonuses.
-export async function withPetEquipmentProgression(db, pet) {
+export async function withPetEquipmentProgression(db, pet, includeOwned = false) {
   if (!pet) return pet;
   const equipped = new Set(Object.values(PET_EQUIPMENT_UTILITY).map(item => pet[`equipped_${item.slot}`]).filter(Boolean));
-  if (!equipped.size) return { ...pet, equipment_progression: {} };
+  if (!equipped.size && !includeOwned) return { ...pet, equipment_progression: {} };
   const rows = await db.prepare(`SELECT item_key, slot, item_level, item_xp, mastery_xp, mastery_tier
     FROM telegram_pet_equipment_progression WHERE telegram_id = ?`).bind(pet.telegram_id).all();
-  return { ...pet, equipment_progression: Object.fromEntries((rows.results || [])
-    .filter(row => equipped.has(row.item_key) && PET_EQUIPMENT_UTILITY[row.item_key]?.slot === row.slot)
+  if (rows?.success === false || !Array.isArray(rows?.results)) throw new Error('equipment_ownership_unavailable');
+  const owned = rows.results.filter(row => PET_EQUIPMENT_UTILITY[row.item_key]?.slot === row.slot);
+  return { ...pet, owned_equipment: owned.map(row => row.item_key),
+    equipment_collection_complete: Object.keys(PET_EQUIPMENT_UTILITY).every(key => owned.some(row => row.item_key === key && row.item_level >= PET_EQUIPMENT_MAX_LEVEL)),
+    equipment_progression: Object.fromEntries(owned
+    .filter(row => equipped.has(row.item_key))
     .map(row => [row.item_key, row])) };
 }
 
@@ -93,7 +97,7 @@ export async function withPetEquipmentProgression(db, pet) {
 export async function recoverPetEquipmentRows(db, owner) {
   const definitions = Object.entries(PET_EQUIPMENT_UTILITY);
   const slots = [...new Set(definitions.map(([, item]) => item.slot))];
-  await db.prepare(`WITH definitions(item_key,slot) AS (VALUES ${definitions.map(() => '(?,?)').join(',')}),
+  const result = await db.prepare(`WITH definitions(item_key,slot) AS (VALUES ${definitions.map(() => '(?,?)').join(',')}),
     owned_pets AS (SELECT i.* FROM telegram_pet_instances i JOIN telegram_pet_season_slots s
       ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id AND s.season_key=i.season_key AND s.slot_number=i.slot_number
       WHERE i.telegram_id=?), ownership AS (
@@ -105,6 +109,7 @@ export async function recoverPetEquipmentRows(db, owner) {
     ) INSERT OR IGNORE INTO telegram_pet_equipment_progression (telegram_id,item_key,slot)
       SELECT ?,d.item_key,d.slot FROM definitions d JOIN ownership o ON o.item_key=d.item_key`)
     .bind(...definitions.flatMap(([key, item]) => [key,item.slot]), owner, owner, owner).run();
+  if (result?.success === false) throw new Error('equipment_ownership_unavailable');
 }
 
 export function formatPetEquipmentProgression(itemKey, progression = {}) {

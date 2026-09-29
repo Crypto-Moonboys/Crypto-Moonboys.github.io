@@ -43,6 +43,8 @@ export const REQUIRED_D1_MIGRATIONS = Object.freeze([
   '074_moonpet_live_system_ownership_classification.sql',
   '075_dead_run_gps_survival.sql',
   '076_moonpet_continuing_contracts.sql',
+  '077_moonpet_completion_rewards.sql',
+  '078_moonpet_beta_season_xp_rebaseline.sql',
 ]);
 
 function readJson(filePath, label) {

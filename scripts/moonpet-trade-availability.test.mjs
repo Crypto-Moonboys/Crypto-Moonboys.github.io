@@ -6,6 +6,9 @@ import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js'
 const sqlite = new DatabaseSync(':memory:');
 sqlite.exec(fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8'));
 sqlite.exec(fs.readFileSync(new URL('../workers/moonboys-api/migrations/048_telegram_pet_player_expansion.sql', import.meta.url), 'utf8'));
+for (const seasonMigration of ['058_telegram_pet_season_completion.sql', '061_moonpet_season_economy_calibration.sql']) {
+  sqlite.exec(fs.readFileSync(new URL('../workers/moonboys-api/migrations/' + seasonMigration, import.meta.url), 'utf8'));
+}
 let beforeBatch = null, tail = Promise.resolve();
 class Statement {
   constructor(sql, args = []) { this.sql = sql; this.args = args; }
