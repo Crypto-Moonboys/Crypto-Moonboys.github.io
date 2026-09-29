@@ -1336,13 +1336,44 @@ const stateRoute = routeBlock('/telegram-pets/state');
 assert.ok(stateRoute.includes('getPetProfile(env.DB, telegramId)'), 'GET /telegram-pets/state must use read-only pet lookup');
 assert.ok(stateRoute.includes('getMoonpetIdentitySummary(env.DB, telegramId)'), 'GET /telegram-pets/state must derive evolution stage from stored identity');
 assert.ok(!stateRoute.includes('getOrCreatePetProfile'), 'GET /telegram-pets/state must not create pets');
+assert.ok(stateRoute.includes("return err('pet_state_unavailable', 503)"), 'GET /telegram-pets/state must expose a retryable read failure');
+assert.ok(!stateRoute.includes('.catch(() => null)'), 'GET /telegram-pets/state must not turn failed reads into a missing pet');
 
 const inventoryRoute = routeBlock('/telegram-pets/inventory');
 assert.ok(inventoryRoute.includes('getPetInventory(env.DB, telegramId)'), 'GET /telegram-pets/inventory must expose bag contents');
+assert.ok(inventoryRoute.includes("return err('pet_inventory_unavailable', 503)"), 'GET /telegram-pets/inventory must expose a retryable read failure');
+assert.ok(!inventoryRoute.includes('.catch(() => null)'), 'GET /telegram-pets/inventory must not turn failed reads into a missing pet or empty bag');
 
 const shopRoute = routeBlock('/telegram-pets/shop');
 assert.ok(shopRoute.includes('usable_items'), 'GET /telegram-pets/shop must expose usable items');
 assert.ok(shopRoute.includes('jobs'), 'GET /telegram-pets/shop must expose jobs');
+assert.ok(shopRoute.includes("return err('pet_shop_unavailable', 503)"), 'GET /telegram-pets/shop must expose a retryable personalized read failure');
+assert.ok(!shopRoute.includes('.catch(() => null)'), 'GET /telegram-pets/shop must not turn failed personalized reads into an anonymous Shop');
+
+const missionsRoute = routeBlock('/telegram-pets/missions');
+assert.ok(missionsRoute.includes("return err('pet_missions_unavailable', 503)"), 'GET /telegram-pets/missions must expose a retryable read failure');
+
+const failedLegacyReadDb = {
+  prepare() {
+    return {
+      bind() { return this; },
+      async first() { throw new Error('simulated_d1_read_failure'); },
+      async all() { throw new Error('simulated_d1_read_failure'); },
+      async run() { throw new Error('unexpected_write_during_failed_read'); },
+    };
+  },
+  async batch() { throw new Error('unexpected_batch_during_failed_read'); },
+};
+for (const [path, expectedError] of [
+  ['/telegram-pets/state?telegram_id=9001001', 'pet_state_unavailable'],
+  ['/telegram-pets/inventory?telegram_id=9001001', 'pet_inventory_unavailable'],
+  ['/telegram-pets/missions?telegram_id=9001001', 'pet_missions_unavailable'],
+  ['/telegram-pets/shop?telegram_id=9001001', 'pet_shop_unavailable'],
+]) {
+  const response = await moonboysApiWorker.fetch(new Request(`https://moonboys.test${path}`), { DB: failedLegacyReadDb });
+  assert.equal(response.status, 503, `${path} must fail closed when its personalized D1 read fails`);
+  assert.equal((await response.json()).error, expectedError, `${path} must return a stable retryable error`);
+}
 
 const petStatus = asyncBlock('cmdPetStatus');
 assert.ok(petStatus.includes('getPetProfile(db, telegramId)'), '/pet status command must use read-only pet lookup');
@@ -4835,11 +4866,12 @@ const kaijuHardening = asyncBlock('awardPetKaijuPlayerResult');
 assert.ok(kaijuHardening.indexOf('getPetInstanceWithAtomicDecay') < kaijuHardening.indexOf('reservePetRepeatRewardEvent'), 'Kaiju must persist current stat decay before atomically claiming Energy and a reward slot');
 assert.ok(kaijuHardening.indexOf('reservePetRepeatRewardEvent') < kaijuHardening.indexOf('scalePetRewards'), 'Kaiju Energy and slot must be claimed before rewards are calculated');
 assert.ok(kaijuHardening.includes('energy_cost: energyCost') && kaijuHardening.includes('existing_event: duplicate'), 'Kaiju retries must resume the original paid reservation without paying Energy twice');
-assert.ok(kaijuHardening.includes('const accountingDayKey = rewardSlot.day_key') && kaijuHardening.includes('accountingSeasonKey, accountingDayKey, accountingWeekKey'), 'Kaiju recovery must finalize caps and season totals against the stored reservation accounting window');
+assert.ok(kaijuHardening.includes('day_key: rewardSlotAuthority.day_key') && kaijuHardening.includes('week_key: rewardSlotAuthority.week_key') && kaijuHardening.includes('season_key: rewardSlotAuthority.season_key'), 'Kaiju recovery must finalize caps and season totals through the stored reservation accounting window');
 assert.ok(kaijuHardening.includes("reason: 'insufficient_energy'") && kaijuHardening.includes('pet_xp_awarded: 0') && kaijuHardening.includes('xp_awarded: 0'), 'failed Energy claims must return no Pet or Community XP');
 assert.ok(kaijuHardening.includes("source: 'pet_kaiju'") && kaijuHardening.includes('reservation_id: reservation.reservation_id'), 'Kaiju finalization must preserve both global XP caps through the unified authority');
 assert.ok(!kaijuHardening.includes('awardCommunityXp(db, telegramId, communityXp'), 'Kaiju Community XP must commit in the same recoverable finalization batch');
 assert.ok(!kaijuHardening.includes('savePetProfile(db, pet)'), 'Kaiju rewards must not restore spent Energy or overwrite concurrent rewards through a stale save');
+assert.ok(!kaijuHardening.includes('finalizationId') && !kaijuHardening.includes('eventWrite'), 'the retired manual Kaiju finalizer must not remain as unreachable source after the central reward return');
 assert.ok(worker.includes("INSERT OR IGNORE INTO telegram_pet_events") && worker.includes("'pending', 'repeat_reward_pending'"), 'repeat reward reservations must reuse the unique event key for concurrent idempotency');
 const finishKaijuHardening = asyncBlock('finishPetKaijuMatch');
 assert.ok(finishKaijuHardening.includes('awardPetKaijuMatchResults(db, match, committed)') && finishKaijuHardening.indexOf('awardPetKaijuMatchResults(db, match, committed)') < finishKaijuHardening.indexOf("reason: duplicate ? 'already_completed'"), 'duplicate Kaiju completion callbacks must recover unfinished player reward reservations');

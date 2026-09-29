@@ -33,10 +33,23 @@ the how-to page already covered both. This batch repairs contradictory surfaces,
 not duplicate reward systems. Practice already awards bounded official Pet XP;
 cosmetic equipment and ten relic adaptations were already shipped in #1380.
 
-## Batch 2 — gameplay authority and reachability (next)
+## Batch 2 — gameplay authority and reachability (in progress)
 
-- Centralize/verify Arena and Kaiju gates across UI, coach, preview and every
-  backend start path: Kaiju hatched; Arena hatched plus level 10.
+Implemented after the initial reconciliation:
+
+- Centralized Arena and Kaiju gates across Mini App and direct Telegram start,
+  join, CPU and card-lock paths: Kaiju requires a hatched active pet; Arena
+  requires a hatched active pet at level 10.
+- Legacy website Pet state, inventory, mission and personalized Shop reads now
+  fail with a retryable 503 instead of presenting a database outage as no pet,
+  no missions, an empty bag or an anonymous Shop. Website profile/checklist
+  widgets retain their last valid state and expose Retry.
+- Removed the unreachable pre-ledger Kaiju reward finalizer. Kaiju has one live
+  reward path through the central capped/idempotent reward authority, and tests
+  now assert that path rather than matching obsolete source below a return.
+
+Remaining Batch 2 work:
+
 - Audit source pet/season/day authority and retry settlement across care, shop,
   upgrades, timed work, quests, runs, raids, Weekly Boss, daily bonus and finale.
   Include active-pet switches, rollover, concurrent equipment changes and D1
