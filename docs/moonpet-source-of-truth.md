@@ -41,9 +41,12 @@ The lifecycle name **Egg**, Stage-0 display name **Secret Bot**, and art identit
 **EGGYONE** refer to different aspects of the same starting pet.
 
 The Community leaderboard and chart use one `/telegram/leaderboard` response and
-explicit `score_basis`. An existing Community season with no scores stays empty;
-all-time is used only when no Community season row exists. Thrown, unsuccessful or
-malformed database reads produce an unavailable/retry response, never zero ranks.
+explicit `score_basis`. The shared Community season authority selects an active
+date-containing row by start date descending, then id descending; future and
+expired rows are ignored. An existing active Community season with no scores stays
+empty; all-time is used only when no active Community season exists. Thrown,
+unsuccessful or malformed database reads produce an unavailable/retry response,
+never zero ranks.
 This chart compares player totals; it is not a historical/source breakdown or the
 wiki relationship graph. Pet XP is not added to Community XP or Arcade scores.
 

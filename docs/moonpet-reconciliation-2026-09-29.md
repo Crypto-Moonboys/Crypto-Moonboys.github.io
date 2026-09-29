@@ -9,8 +9,9 @@ not considered current until checked against that baseline's runtime.
 Implemented in this change:
 
 - Fixed `/telegram/leaderboard` silently replacing an empty Community season
-  with all-time scores. No season row means all-time; a real empty season stays
-  empty. Season selection preserves the existing latest-Community-season rule.
+  with all-time scores. No active date-containing season means all-time; a real
+  empty active season stays empty. Reads and Community XP writes share
+  date-range selection, ordered by start date descending then id descending.
 - Season and score reads reject thrown errors, `success:false` and missing result
   arrays. They return a retryable 503 without cached zero/empty rankings.
 - `/gkleaderboard` uses the same reader, so Telegram cannot substitute all-time

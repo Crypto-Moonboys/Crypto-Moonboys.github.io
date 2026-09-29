@@ -50,10 +50,15 @@ export function petCareCommunityStatements(db, eventId) {
       SET xp=xp+(SELECT xp_awarded FROM receipt),
         level=CAST((xp+(SELECT xp_awarded FROM receipt))/100 AS INTEGER)+1,updated_at=CURRENT_TIMESTAMP
       WHERE telegram_id=(SELECT telegram_id FROM receipt)`).bind(eventId),
-    // Preserve the existing Community season selection used by awardCommunityXp.
+    // Select the active Community season for the receipt's authoritative day.
+    // No active season means no new Community reward row; never write to an
+    // expired or future period.
     db.prepare(`INSERT INTO telegram_leaderboard (telegram_id,season_id,xp)
       SELECT r.telegram_id,s.id,r.xp_awarded FROM (${receipt}) r
-      JOIN telegram_seasons s ON s.id=(SELECT id FROM telegram_seasons ORDER BY id DESC LIMIT 1)
+      JOIN telegram_seasons s ON s.is_active=1
+        AND s.start_date <= COALESCE(r.day_key, date('now'))
+        AND (s.end_date IS NULL OR s.end_date > COALESCE(r.day_key, date('now')))
+      ORDER BY s.start_date DESC, s.id DESC LIMIT 1
       ON CONFLICT(telegram_id,season_id) DO UPDATE SET xp=xp+excluded.xp,updated_at=CURRENT_TIMESTAMP`).bind(eventId),
   ];
 }

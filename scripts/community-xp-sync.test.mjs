@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import worker from '../workers/moonboys-api/worker.js';
 import { readCommunityLeaderboard } from '../workers/moonboys-api/community-leaderboard.js';
+import { selectCommunitySeason } from '../workers/moonboys-api/community-season-authority.js';
 
 // Exercise the command with a local message sink; never contact Telegram.
 const source = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
@@ -76,5 +77,9 @@ sql.exec("INSERT INTO telegram_seasons (name,start_date,end_date) VALUES ('Commu
 result = await get();
 assert.equal(result.data.season.name, 'Community B');
 assert.deepEqual(result.data.entries, [], 'new Community season cannot reuse earlier scores');
+sql.exec("INSERT INTO telegram_seasons (name,start_date,end_date) VALUES ('Future','2999-01-01','3000-01-01'),('Expired','2000-01-01','2001-01-01'),('Overlap','2000-01-01','2999-01-01')");
+assert.equal((await selectCommunitySeason(db, new Date('2026-09-29T00:00:00Z'))).name, 'Overlap', 'overlapping current seasons use start date then id ordering');
+assert.equal((await selectCommunitySeason(db, new Date('2999-06-01T00:00:00Z'))).name, 'Future', 'future season becomes current only inside its date range');
+assert.equal(await selectCommunitySeason(db, new Date('1999-01-01T00:00:00Z')), null, 'no active season is an explicit all-time period');
 sql.close();
 console.log('Community XP API: explicit score basis, empty season, bounds, stable ranks and fail-closed D1 reads passed');
