@@ -54,6 +54,7 @@ const db = {
   async batch(statements) {
     if (upgradeDuringCare && statements[0].sql.includes('pet_action_pending')) {
       sqlite.prepare("UPDATE telegram_pet_equipment_progression SET item_level=2 WHERE telegram_id=? AND item_key='moon_kibble'").run(upgradeDuringCare);
+      sqlite.prepare("INSERT INTO telegram_pet_guidance_notices (telegram_id,notice_key,notice_type,title,detail,callback_data) VALUES (?,'care-race-notice','shop','Equipment updated','Review your gear','pet:equipment')").run(upgradeDuringCare);
       upgradeDuringCare = null;
     }
     if (failStandardReward && statements[0].sql.includes('INSERT OR IGNORE INTO telegram_pet_reward_claims') && statements[0].args.includes('pet_run_legacy')) {
@@ -1029,6 +1030,7 @@ try {
     assert.equal(staleCare.result.accepted, false);
     assert.equal(staleCare.result.reason, 'pet_action_state_changed');
     await page.waitForFunction(() => document.getElementById('terminal-output').textContent.includes('No care reward or cooldown was applied'));
+    assert.equal(sqlite.prepare("SELECT shown_at FROM telegram_pet_guidance_notices WHERE telegram_id=? AND notice_key='care-race-notice'").get(currentUser).shown_at, null, 'a rejection cannot acknowledge and replace a queued progress notice');
     assert.equal(await page.locator('[data-action="feed"]').isEnabled(), true, 'a stale gear rejection leaves care ready to retry');
     const completedCare = [];
     for (const action of ['feed', 'play', 'clean']) {

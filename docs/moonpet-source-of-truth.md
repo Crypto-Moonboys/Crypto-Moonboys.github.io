@@ -895,6 +895,8 @@ for the five ordinary care actions. Concurrent paid upgrades, mastery changes,
 row creation or deletion require a fresh action. Rejection consumes no care
 reward or cooldown; unrelated slots and other accounts do not block it. This
 uses the same progression guard as Standard Run choices and adds no D1 queries.
+Rejected-action feedback takes priority over queued progress notices; those
+notices remain unacknowledged until a successful action or refresh.
 
 Shop descriptions describe the effects applied by the Worker. Crystal Bowl adds
 energy, not health; outfit XP/currency bonuses apply to Feed, Play, Clean, Sleep

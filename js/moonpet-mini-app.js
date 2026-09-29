@@ -3050,7 +3050,9 @@
       tell(message, data.result && data.result.accepted ? '' : 'danger');
       haptic(data.result && data.result.accepted ? 'success' : 'error');
       render({ discardCallsignDraft: action === 'rename' && Boolean(data.result && data.result.accepted) });
-      await showPendingNotices();
+      // Keep the rejection and retry instructions visible. Queued unlock notices
+      // remain unacknowledged until the next successful action or refresh.
+      if (actionAccepted) await showPendingNotices();
       var actionFamily = actionAnimationFamily(action, payload);
       if (actionFamily === 'sleep') setSleepLatch(actionAccepted);
       else if (waitForAcceptedAnimation && actionAccepted && sleepLatched) setSleepLatch(false);

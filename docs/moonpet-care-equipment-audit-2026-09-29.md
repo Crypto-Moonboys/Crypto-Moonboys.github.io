@@ -29,6 +29,11 @@ with additional coverage for equipment changes during care and advertised Shop e
    and the same live Shop descriptions. `/petgear` still opens Mini App Equipment
    when the live Mini App flag is enabled. No reward formula or balance is changed.
 
+3. **Progress notices could hide rejected-action feedback.** The mobile test
+   reproduced a rejected care response whose explanation was immediately replaced
+   by a queued unlock notice. Rejected actions now retain their explanation and
+   leave notices unacknowledged for a later successful action or refresh.
+
 The Mini App explains a stale care rejection and leaves the button available.
 A mobile browser regression changes equipment immediately before the care batch,
 checks that message, and then successfully retries at both tested viewport sizes.
