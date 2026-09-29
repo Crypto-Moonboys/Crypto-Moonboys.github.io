@@ -223,6 +223,11 @@ recoveryDb.database.prepare('INSERT INTO telegram_pet_profiles (telegram_id) VAL
 provisionActivePet(recoveryDb.database, 'recovery-player');
 recoveryDb.database.prepare('DELETE FROM telegram_pet_lifecycle_by_pet WHERE telegram_id=?').run('recovery-player');
 await createMoonEggLifecycle(recoveryDb, 'recovery-player', 'adopt:recovery');
+const crossActionReplay = await incubateMoonEgg(recoveryDb, 'recovery-player', 'warm', 'adopt:recovery');
+assert.equal(crossActionReplay.accepted, false, 'an egg-creation receipt cannot be recovered as an incubation');
+assert.equal(crossActionReplay.reason, 'incubation_conflict');
+assert.equal(recoveryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_growth_marks WHERE evidence_key='incubation:adopt:recovery'").get().count, 0,
+  'a receipt for a different lifecycle action must not mint an incubation Growth Mark');
 
 recoveryDb.beforeAll = (sql) => {
   if (/FROM telegram_pet_lifecycle_events_by_pet[\s\S]*WHERE telegram_id=\? AND event_key=\?/i.test(sql)) throw new Error('injected_lifecycle_receipt_read_failure');

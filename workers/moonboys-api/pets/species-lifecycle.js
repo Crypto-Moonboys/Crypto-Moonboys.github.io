@@ -111,7 +111,7 @@ async function activePetAuthority(db, telegramId) {
 }
 
 async function readIncubationReceipt(db, telegramId, eventKey) {
-  const rows = await db.prepare(`SELECT event_id, pet_id, day_key, applied_at
+  const rows = await db.prepare(`SELECT event_id, pet_id, action, day_key, applied_at
     FROM telegram_pet_lifecycle_events_by_pet
     WHERE telegram_id=? AND event_key=?
     ORDER BY created_at, event_id LIMIT 2`).bind(telegramId, eventKey).all().then(requirePetReadResult);
@@ -335,6 +335,9 @@ export async function incubateMoonEgg(db, telegramId, careType, eventKey, now = 
   if (!definition) return { accepted: false, reason: 'invalid_incubation_action' };
   const key = String(eventKey || crypto.randomUUID()).slice(0, 180);
   const existing = await readIncubationReceipt(db, id, key);
+  if (existing && !String(existing.action || '').startsWith('incubate_')) {
+    return { accepted: false, reason: 'incubation_conflict', lifecycle: await getMoonpetLifecycle(db, id) };
+  }
   if (existing?.applied_at) {
     const originalDay = validUtcDay(existing.day_key) ? `${existing.day_key}T00:00:00.000Z` : now;
     await settleIncubationGrowthMark(db, id, existing.pet_id, key, originalDay);
