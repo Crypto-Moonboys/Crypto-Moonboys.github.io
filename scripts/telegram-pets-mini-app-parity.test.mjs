@@ -44,6 +44,11 @@ class D1 {
     this.database = new DatabaseSync(':memory:');
     this.database.exec(schema);
     this.database.exec(playerExpansionMigration);
+    // These combat-gate fixtures deliberately allow isolated completion markers.
+    installSeasonCompletionMarkerTable(this);
+    for (const seasonMigration of ['058_telegram_pet_season_completion.sql', '061_moonpet_season_economy_calibration.sql']) {
+      this.database.exec(fs.readFileSync(new URL('../workers/moonboys-api/migrations/' + seasonMigration, import.meta.url), 'utf8'));
+    }
   }
   prepare(sql) { return new Statement(this, sql); }
   async batch(statements) {

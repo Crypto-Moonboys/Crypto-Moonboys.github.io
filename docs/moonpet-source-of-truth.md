@@ -20,6 +20,13 @@ Any gameplay, documentation, or UI change affecting Moonpet status should refere
 
 The following systems are considered live gameplay systems.
 
+### Weekly Boss reward-list availability
+
+A failed Weekly Boss pending-reward read reaches the existing state refresh retry
+path. It cannot publish an empty claim list that hides a saved payout. Successful
+empty reads remain valid. Reward settlement and source-pet ownership are unchanged.
+See [the Shop and completion audit](moonpet-shop-sanity-audit-2026-09-29.md).
+
 ### Economy actions preserve care decay
 
 Trade, Shop purchases and Daily Cache must not advance `last_decay_at` without

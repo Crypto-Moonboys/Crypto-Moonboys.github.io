@@ -1618,3 +1618,34 @@ test('account audit: genuine empty roster wallet and unearned journeys remain va
   assert.equal(state.daily_journey.growth_mark_awarded,false);
   assert.equal(state.weekly_journey.weekly_crest_awarded,false);
 });
+
+for (const pending of [false, true]) test(`Weekly Boss reward-list outage cannot advertise ${pending ? 'a missing saved payout' : 'an empty claim list'}`, async () => {
+  const f = fixture('weekly-claim-list-' + pending);
+  await f.state();
+  if (pending) {
+    const day = `${now.getUTCFullYear() - 1}-01-15`;
+    const oldSeason = hooks.getPetSeasonInfo(new Date(day + 'T12:00:00Z')).key;
+    f.pet('old-claim-list', oldSeason, 300);
+    savedWeeklyVictory(f, day, 'old-claim-list');
+    f.sql.prepare('UPDATE telegram_pet_weekly_boss_progress SET reward_claimed_at=NULL WHERE telegram_id=?').run(f.owner);
+    // Keep the durable victory pending while testing only the display read.
+    f.db.beforeBatch = statements => {
+      if (statements.some(s => s.query.includes('INSERT OR IGNORE INTO telegram_pet_reward_claims') && s.args.includes('pet_weekly_boss'))) throw Error('fixture_payout_pending');
+    };
+  }
+  const before = await f.state();
+  assert.equal(before.guidance.weekly_boss.pending_rewards.length, pending ? 1 : 0);
+  let triggered = false;
+  f.db.beforeAll = s => {
+    if (/SELECT v\.pet_id,\s*v\.season_key,\s*v\.week_key,\s*v\.boss_id/.test(s.query)) {
+      triggered = true; throw Error('weekly_reward_list_unavailable');
+    }
+  };
+  await assert.rejects(f.state(), /weekly_reward_list_unavailable/);
+  assert.equal(triggered, true);
+  f.db.beforeAll = null;
+  const after = await f.state();
+  assert.deepEqual(after.guidance.weekly_boss.pending_rewards, before.guidance.weekly_boss.pending_rewards);
+  assert.equal(after.pet.moon_gold, before.pet.moon_gold);
+  assert.equal(after.pet.pet_xp, before.pet.pet_xp);
+});

@@ -15942,12 +15942,14 @@ async function buyPetMarketOffer(db, telegramId, offerKey, now = new Date()) {
 }
 
 async function getPendingPetWeeklyBossRewards(db, telegramId) {
+  // A failed claim-list read must retain the last valid UI through refresh retry,
+  // not hide an earned payout behind a successful empty list.
   const rows = await db.prepare(`SELECT v.pet_id, v.season_key, v.week_key, v.boss_id
     FROM telegram_pet_weekly_boss_victories_by_pet v
     JOIN telegram_pet_weekly_boss_progress p ON p.telegram_id=v.telegram_id AND p.week_key=v.week_key AND p.boss_id=v.boss_id
     JOIN telegram_pet_instances i ON i.pet_id=v.pet_id AND i.telegram_id=v.telegram_id AND i.season_key=v.season_key
     WHERE v.telegram_id=? AND p.defeated_at IS NOT NULL AND p.reward_claimed_at IS NULL
-    ORDER BY v.defeated_at LIMIT 10`).bind(telegramId).all().catch(() => ({ results: [] }));
+    ORDER BY v.defeated_at LIMIT 10`).bind(telegramId).all();
   return (rows.results || []).filter((row) => getPetWeeklyBoss(row.week_key).boss_id === row.boss_id)
     .map((row) => ({ ...row, title: getPetWeeklyBoss(row.week_key).title, reward: getPetWeeklyBoss(row.week_key).reward }));
 }

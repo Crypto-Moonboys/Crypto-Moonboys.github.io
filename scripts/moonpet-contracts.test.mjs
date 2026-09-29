@@ -9,6 +9,9 @@ const sqlite = new DatabaseSync(':memory:');
 const read = (name) => fs.readFileSync(new URL('../' + name, import.meta.url), 'utf8');
 sqlite.exec(read('workers/moonboys-api/schema.sql'));
 sqlite.exec(read('workers/moonboys-api/migrations/048_telegram_pet_player_expansion.sql'));
+for (const seasonMigration of ['058_telegram_pet_season_completion.sql', '061_moonpet_season_economy_calibration.sql']) {
+  sqlite.exec(fs.readFileSync(new URL('../workers/moonboys-api/migrations/' + seasonMigration, import.meta.url), 'utf8'));
+}
 const migration = read('workers/moonboys-api/migrations/076_moonpet_continuing_contracts.sql');
 sqlite.exec(migration); sqlite.exec(migration);
 let beforeStatement = null;
