@@ -60,6 +60,7 @@ export async function processPracticeAction(db,owner,pet,request,award,now=new D
     if(!await db.prepare(`SELECT 1 WHERE ${GUARD}`).bind(...args).first())return reject('practice_pet_changed');
     if(request.action==='practice_start') {
       if(!Number.isSafeInteger(request.sequence)||request.sequence<1)return reject('practice_stale');
+      if (typeof request.build !== 'string' || typeof request.goal !== 'string') return reject('practice_invalid_choice');
       const s=engine.create(crypto.randomUUID(),request.build,request.goal);
       if(!s)return reject('practice_invalid_choice');
       initializeRelicRoute(s,await readOwnedRelics(db,owner));
@@ -76,6 +77,10 @@ export async function processPracticeAction(db,owner,pet,request,award,now=new D
     const next=advancePractice(s,request.choice,s.turn,random[0]%100,random[1]%10000);
     if(next.turn===s.turn)return reject('practice_invalid_choice');
     const complete=next.status==='completed'&&engine.goalProgress(next).completed;
+    if (next.status === 'completed' && !complete) {
+      next.status = 'failed';
+      next.last = 'Circuit finished, but the training goal was missed. No rank or XP. Try another build or route.';
+    }
     row=await db.prepare(`UPDATE telegram_pet_practice SET state_json=?,status=?,revision=revision+1,rank_points=?,
       reward_xp=CASE WHEN ?=1 AND (SELECT COUNT(*) FROM telegram_pet_practice WHERE telegram_id=? AND reward_day=? AND reward_xp>0)<3 THEN 10 ELSE 0 END,
       reward_day=CASE WHEN ?=1 THEN ? ELSE NULL END

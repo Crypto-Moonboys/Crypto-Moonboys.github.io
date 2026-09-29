@@ -140,13 +140,23 @@ test('practice capped receipt settles at actual XP and never replays on the next
 });
 
 test('extraction, missed goal, boss failure and hatch gates cannot create practice rewards',async t=>{
-  safeRolls(t);const f=fixture('training-gates');await f.state();await start(f);
+  safeRolls(t);const f=fixture('training-gates');await f.state();
+  assert.equal((await start(f,{build:['bruiser']})).accepted,false);
+  await start(f);
   let b=await board(f);await act(f,{action:'practice_step',run_id:b.run.run_id,revision:0,choice:'extract'});
   assert.equal((await board(f)).bonus_remaining,3);assert.equal(petRow(f).pet_xp,200);
   let s=engine.create('server','scout','collector');s.depth=11;s.salvage=0;
   assert.equal(advancePractice(s,'rest',s.turn,0,0).turn,s.turn,'rest cannot clear the boss');
   assert.equal(advancePractice(s,'safe',s.turn,99,0).status,'failed');
   const miss=advancePractice(s,'safe',s.turn,0,0);assert.equal(miss.status,'completed');assert.equal(engine.goalProgress(miss).completed,false);
+  await start(f,{goal:'collector'});
+  b=await board(f);
+  const saved=JSON.parse(f.sql.prepare('SELECT state_json FROM telegram_pet_practice WHERE run_id=?').get(b.run.run_id).state_json);
+  saved.depth=11; saved.salvage=0;
+  f.sql.prepare('UPDATE telegram_pet_practice SET state_json=? WHERE run_id=?').run(JSON.stringify(saved),b.run.run_id);
+  const missed=await act(f,{action:'practice_step',run_id:b.run.run_id,revision:b.run.revision,choice:'safe'});
+  assert.equal(missed.pet_xp_awarded,0);assert.equal((await board(f)).run.status,'failed');
+  assert.match((await board(f)).run.last,/goal was missed/);
   f.sql.exec("UPDATE telegram_pet_lifecycle_by_pet SET phase='egg'");
   assert.equal((await board(f)).available,false);assert.equal((await start(f)).accepted,false);
 });
