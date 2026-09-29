@@ -409,7 +409,7 @@ for (const field of ['moon_gold', 'moon_crystals', 'style_tokens', 'lifecycle_ph
 assert.ok(worker.includes("case 'petarena'"), '/petarena command must exist');
 assert.ok(worker.includes("callback_data: 'pet:arena'"), 'pet menu must include Arena button');
 assert.ok(worker.includes('Pet Arena unlocks at level 10. Keep growing your Moonpet.'), 'level <10 blocked copy must be exact');
-assert.ok(worker.includes('PET_ARENA_MIN_LEVEL = 10'), 'level 10+ can enter Pet Arena');
+assert.ok(worker.includes("PET_ARENA_MIN_LEVEL as COMBAT_ARENA_MIN_LEVEL"), 'level 10+ can enter Pet Arena through the shared combat contract');
 assert.ok(worker.includes("createPetArenaBattle(db, chatId, pet, appPet, 'app')"), 'private app battle works');
 assert.ok(!worker.includes('const done = await completePetArenaBattle(db, battle); await sendTelegramMessage(tok, chatId, formatPetArenaResult(done.battle || battle)); return;'), 'App battle does not instantly complete on create.');
 assert.ok(worker.includes('selectPetArenaAppMove(battle)'), 'App battle advances after player move and app AI move.');
