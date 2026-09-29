@@ -1209,6 +1209,34 @@ try {
     assert.equal(paid.state.pet.moon_gold, 220); assert.ok(paid.state.guidance.season.tiers.find((tier) => tier.tier_id === 'street').claimed_at);
     await page.waitForFunction(() => ![...document.querySelectorAll('[data-action="season_claim"]')].some((button) => button.textContent.includes('Street Cache')));
 
+    currentUser = 'browser-owned-gear-' + viewport.width;
+    await seed(currentUser, 'young');
+    sqlite.prepare('UPDATE telegram_pet_profiles SET moon_gold=1000,moon_crystals=10 WHERE telegram_id=?').run(currentUser);
+    for (const key of ['moon_kibble','nebula_snack']) {
+      const bought = await hooks.processPetMiniAppAction(db,currentUser,{id:currentUser},{action:'buy',item_key:key,request_id:key},token);
+      assert.equal(bought.accepted,true,bought.reason);
+    }
+    sqlite.prepare('UPDATE telegram_pet_profiles SET moon_gold=0 WHERE telegram_id=?').run(currentUser);
+    sqlite.prepare("UPDATE telegram_pet_events SET day_key='2000-01-01' WHERE telegram_id=?").run(currentUser);
+    sqlite.prepare('DELETE FROM telegram_pet_daily_completion WHERE telegram_id=?').run(currentUser);
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-screen="economy"]').click();
+    const freeGear = page.locator('[data-panel="shop"] [data-action="equip"]').filter({hasText:'Moon Kibble'});
+    assert.equal(await freeGear.isEnabled(),true,'owned gear must be usable with zero Gold');
+    const equippedResponse = page.waitForResponse(r=>r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action==='equip');
+    await freeGear.click();
+    const switched = await (await equippedResponse).json();
+    assert.equal(switched.result.reason,'equipment_equipped');
+    assert.equal(switched.state.pet.equipped_food,'moon_kibble');
+    assert.equal(switched.state.pet.moon_gold,0);
+    assert.equal(switched.state.guidance.missions.find(m=>m.key.startsWith('pet-daily-shop:')).completed,false);
+    await page.waitForFunction(()=>[...document.querySelectorAll('[data-panel="shop"] [data-action="equip"]')].some(b=>b.disabled && b.textContent.includes('Moon Kibble')));
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-screen="economy"]').click();
+    assert.equal(await page.locator('[data-panel="equipment"] [data-action="equip"]:not([disabled])').count(),1);
+    await page.locator('[data-screen="missions"]').click();
+    assert.match(await page.locator('[data-panel="missions"]').textContent(),/Market purchases, crafting and free equipment switches do not count/);
+
     currentUser = 'browser-crafting-' + viewport.width;
     await seed(currentUser, 'young');
     await page.reload(); await page.waitForSelector('[data-panel="care"]');

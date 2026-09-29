@@ -63,7 +63,7 @@
       weekly_run: [['MOON RUNS', 'run', 'Accepted standard run completions/extractions and official Daily Run finishes count. Contracts and Practice do not.']],
       weekly_boss_attempt: [['WEEKLY BOSS', 'weekly_boss', 'Use an available Weekly Boss attack. Seasonal raids are separate.']],
       weekly_check_in: [['DAILY CACHE', 'daily_chest', 'Collect Daily Cache on two UTC days. One account cache is available each day.']],
-      'pet-daily-shop': [['SHOP', 'shop', 'Buy a pet item.'], ['EQUIPMENT', 'gear_upgrade', 'An accepted equipment upgrade also counts.']],
+      'pet-daily-shop': [['SHOP', 'shop', 'Buy new permanent gear. Market, crafting and free switches do not count.'], ['EQUIPMENT', 'gear_upgrade', 'An accepted equipment upgrade also counts.']],
       'pet-daily-adventure': [['ADVENTURE', 'adventure'], ['MOON RUN', 'run'], ['DISTRICTS', 'district'], ['STORY CHOICES', 'story'], ['SEASONAL RAID', 'seasonal_boss']],
       'pet-daily-bank': [['PET JOBS', 'work', 'Hold at least 50 Moon Gold. Spending gold can make this target incomplete again.'], ['DAILY CACHE', 'daily_chest', 'An unclaimed Daily Cache adds 40 Moon Gold.']],
     };

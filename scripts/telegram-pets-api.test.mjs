@@ -995,7 +995,7 @@ assert.ok(shopPurchase.includes('const persistedPet = await getPetProfile(db, te
 assertOrder(
   shopPurchase,
   'const duplicate = await readAcceptedPetEventByKey(db, telegramId, eventKey);',
-  'const pet = await getPetProfile(db, telegramId);',
+  'const pet = await getPetProfile(db, telegramId, true);',
   'shop purchases must check duplicate event keys before loading the pet'
 );
 assertOrder(

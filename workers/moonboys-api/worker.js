@@ -3769,8 +3769,10 @@ function canAffordPetItem(pet, item) {
 
 function petShopItemsForPet(pet) {
   const level = getPetLevel(pet?.pet_xp);
+  const owned = new Set(pet?.owned_equipment || []);
   return Object.values(PET_SHOP_ITEMS).map((item) => ({
     ...item,
+    owned: owned.has(item.key),
     unlocked: level >= item.min_level,
     affordable: !!pet && level >= item.min_level && canAffordPetItem(pet, item),
     equipped: !!pet && String(pet[`equipped_${item.slot}`] || '') === item.key,
@@ -3792,13 +3794,13 @@ function verifyPetsBotSecret(request, env) {
   return !!expected && !!supplied && supplied === expected;
 }
 
-async function getPetProfile(db, telegramId) {
+async function getPetProfile(db, telegramId, includeOwnedEquipment = false) {
   await reconcilePetInstanceWalletToProfile(db, telegramId);
   const instance = await readActivePetInstance(db, telegramId);
   const profile = await db.prepare(`
     SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?
   `).bind(telegramId).first();
-  if (!instance) return withPetEquipmentProgression(db, profile ? applyPetDecay(profile) : null);
+  if (!instance) return withPetEquipmentProgression(db, profile ? applyPetDecay(profile) : null, includeOwnedEquipment);
   const walletFields = profile ? pickPetAccountWallet(profile) : {};
 
   if (profile && petStateColumnsDiffer(profile, instance)) {
@@ -3808,17 +3810,17 @@ async function getPetProfile(db, telegramId) {
     const hasInstanceAuthority = instance.source_profile_updated_at === PET_INSTANCE_AUTHORITY_VERSION;
     if (hasInstanceAuthority) {
       await mirrorActivePetOwnedStateToProfile(db, instance);
-      return withPetEquipmentProgression(db, applyPetDecay({ ...instance, ...walletFields }));
+      return withPetEquipmentProgression(db, applyPetDecay({ ...instance, ...walletFields }), includeOwnedEquipment);
     }
     const profileIsNewer = !hasInstanceAuthority && (profileUpdatedAt > instanceProfileVersion
       || (profileUpdatedAt === instanceProfileVersion && instanceUpdatedAt <= instanceProfileVersion));
     if (profileIsNewer) {
       await writeActivePetInstance(db, telegramId, profile);
-      return withPetEquipmentProgression(db, applyPetDecay({ ...instance, ...profile, ...walletFields, pet_id: instance.pet_id }));
+      return withPetEquipmentProgression(db, applyPetDecay({ ...instance, ...profile, ...walletFields, pet_id: instance.pet_id }), includeOwnedEquipment);
     }
     await mirrorActivePetInstanceToProfile(db, instance);
   }
-  return withPetEquipmentProgression(db, applyPetDecay({ ...instance, ...walletFields }));
+  return withPetEquipmentProgression(db, applyPetDecay({ ...instance, ...walletFields }), includeOwnedEquipment);
 }
 
 async function getPetProfileWithAtomicDecay(db, telegramId, now = new Date()) {
@@ -6722,12 +6724,15 @@ async function processPetShopPurchase(db, telegramId, itemKey, options = {}) {
   const eventKey = String(options.event_key || `pet:buy:${telegramId}:${key}:${Date.now()}`).slice(0, 120);
   const duplicate = await readAcceptedPetEventByKey(db, telegramId, eventKey);
   if (duplicate) return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0 };
-  const pet = await getPetProfile(db, telegramId);
+  await recoverPetEquipmentRows(db, telegramId);
+  const pet = await getPetProfile(db, telegramId, true);
   if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
   const sourceAuthority = activePetRewardAuthority(pet);
   if (!sourceAuthority) return { accepted: false, reason: 'source_pet_authority_required', xp_awarded: 0, pet_xp_awarded: 0 };
   if (getPetLevel(pet.pet_xp) < item.min_level) return { accepted: false, reason: 'level_locked', item, pet };
   if (String(pet[`equipped_${item.slot}`] || '') === item.key) return { accepted: false, reason: 'already_equipped', item, pet };
+  // Old clients and bot purchase buttons must also switch owned gear for free.
+  if (pet.owned_equipment?.includes(item.key)) return processPetEquipmentEquip(db, telegramId, key, { ...options, event_key: eventKey, pet_id: options.pet_id || pet.pet_id });
   if (!(await ensurePetAccountWalletReadyForMutation(db, telegramId, now))) {
     return { accepted: false, reason: 'wallet_reconciliation_recovery_pending', item, pet, xp_awarded: 0, pet_xp_awarded: 0 };
   }
@@ -6749,6 +6754,7 @@ async function processPetShopPurchase(db, telegramId, itemKey, options = {}) {
       SELECT ?, ?, ?, 'buy', ?, 0, 0, ?, ?, ?, 'pending', 'shop_purchase_pending', ?
       WHERE EXISTS (SELECT 1 FROM telegram_pet_profiles
         WHERE telegram_id = ? AND ${accountWalletAffordabilitySql()} AND ${accountWalletRecoveryResolvedSql('telegram_pet_profiles.telegram_id')})
+        AND NOT EXISTS (SELECT 1 FROM telegram_pet_equipment_progression WHERE telegram_id=? AND item_key=?)
         AND EXISTS (SELECT 1 FROM telegram_pet_active_slots a JOIN telegram_pet_instances p
           ON p.pet_id=a.pet_id AND p.telegram_id=a.telegram_id AND p.season_key=a.season_key
           WHERE a.telegram_id=? AND a.pet_id=? AND a.season_key=? AND p.status='active'
@@ -6756,6 +6762,7 @@ async function processPetShopPurchase(db, telegramId, itemKey, options = {}) {
       RETURNING id
     `).bind(eventId, sourceAuthority.pet_id, telegramId, eventKey, sourceAuthority.season_key, dayKey, weekKey, metadata, telegramId,
       walletDeltas.moon_gold, walletDeltas.moon_crystals, walletDeltas.style_tokens,
+      telegramId, item.key,
       telegramId, sourceAuthority.pet_id, sourceAuthority.season_key, item.key, item.min_level),
     accountWalletDeltaStatement(db, telegramId, walletDeltas,
       "EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')", [eventId]),
@@ -6792,6 +6799,50 @@ async function processPetShopPurchase(db, telegramId, itemKey, options = {}) {
   const persistedPet = await getPetProfile(db, telegramId);
   if (persistedPet) Object.assign(persistedPet, await readPetAccountWallet(db, telegramId) || {});
   return { accepted: true, reason: 'shop_purchase', item, pet: persistedPet || pet, xp_awarded: 0, pet_xp_awarded: 0 };
+}
+
+async function processPetEquipmentEquip(db, telegramId, itemKey, options = {}) {
+  const key = normalizePetShopItemKey(itemKey);
+  if (!key) return { accepted: false, reason: 'invalid_shop_item' };
+  const item = PET_SHOP_ITEMS[key];
+  const eventKey = String(options.event_key || `pet:equip:${telegramId}:${crypto.randomUUID()}`).slice(0, 120);
+  const duplicate = await readAcceptedPetEventByKey(db, telegramId, eventKey);
+  if (duplicate) return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0 };
+  await recoverPetEquipmentRows(db, telegramId);
+  const pet = await getPetProfile(db, telegramId, true);
+  const authority = activePetRewardAuthority(pet);
+  if (!authority) return { accepted: false, reason: 'source_pet_authority_required' };
+  if (options.pet_id && options.pet_id !== authority.pet_id) return { accepted: false, reason: 'equipment_state_changed' };
+  if (!pet.owned_equipment?.includes(key)) return { accepted: false, reason: 'equipment_not_owned', item };
+  if (getPetLevel(pet.pet_xp) < item.min_level) return { accepted: false, reason: 'level_locked', item };
+  if (pet[`equipped_${item.slot}`] === key) return { accepted: false, reason: 'already_equipped', item };
+  const now = new Date(), id = crypto.randomUUID();
+  const results = await db.batch([
+    db.prepare(`INSERT OR IGNORE INTO telegram_pet_events
+      (id,pet_id,telegram_id,event_type,event_key,season_key,day_key,week_key,status,reason,metadata)
+      SELECT ?,?,?,'equip',?,?,?,?,'pending','equipment_switch_pending',?
+      WHERE EXISTS (SELECT 1 FROM telegram_pet_equipment_progression WHERE telegram_id=? AND item_key=? AND slot=?)
+        AND EXISTS (SELECT 1 FROM telegram_pet_active_slots a JOIN telegram_pet_instances p
+          ON p.pet_id=a.pet_id AND p.telegram_id=a.telegram_id AND p.season_key=a.season_key
+          JOIN telegram_pet_lifecycle_by_pet l ON l.pet_id=p.pet_id AND l.telegram_id=p.telegram_id
+          WHERE a.telegram_id=? AND a.pet_id=? AND a.season_key=? AND p.status='active' AND l.phase<>'egg'
+            AND COALESCE(p.equipped_${item.slot},'')=? AND ${getPetVisibleLevelSql('p.pet_xp')}>=?)`)
+      .bind(id, authority.pet_id, telegramId, eventKey, authority.season_key, getPetDayKey(now), getPetWeekKey(now),
+        JSON.stringify({ item_key:key, slot:item.slot, source:options.source || 'telegram_bot', cost:{} }),
+        telegramId, key, item.slot, telegramId, authority.pet_id, authority.season_key, pet[`equipped_${item.slot}`] || '', item.min_level),
+    db.prepare(`UPDATE telegram_pet_instances SET equipped_${item.slot}=?,source_profile_updated_at=?,updated_at=CURRENT_TIMESTAMP
+      WHERE pet_id=? AND telegram_id=? AND season_key=? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id=? AND status='pending')`)
+      .bind(key, PET_INSTANCE_AUTHORITY_VERSION, authority.pet_id, telegramId, authority.season_key, id),
+    db.prepare(`UPDATE telegram_pet_profiles SET equipped_${item.slot}=?,updated_at=CURRENT_TIMESTAMP
+      WHERE telegram_id=? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id=? AND status='pending')`).bind(key, telegramId, id),
+    db.prepare(`UPDATE telegram_pet_events SET status='accepted',reason='equipment_equipped'
+      WHERE id=? AND status='pending' RETURNING id`).bind(id),
+  ]);
+  if (!results?.[3]?.results?.length) {
+    const replay = await buildAcceptedPetEventDuplicate(db, telegramId, eventKey, pet, { item });
+    return replay || { accepted: false, reason: 'equipment_state_changed', item };
+  }
+  return { accepted: true, reason: 'equipment_equipped', item, pet: await getPetProfile(db, telegramId), xp_awarded: 0, pet_xp_awarded: 0 };
 }
 
 async function processPetGoldTrade(db, telegramId, wagerRaw, options = {}) {
@@ -7124,7 +7175,7 @@ function serializePet(pet, identity = null, options = {}) {
   };
 }
 
-async function buildPetMissions(db, telegramId) {
+async function buildPetMissions(db, telegramId, petRaw = null) {
   const now = new Date();
   const dayKey = getPetDayKey(now);
   const weekKey = getPetWeekKey(now);
@@ -7143,11 +7194,11 @@ async function buildPetMissions(db, telegramId) {
       WHERE telegram_id = ? AND system_key = 'equipment_upgrade' AND status = 'completed'
         AND updated_at >= ? AND updated_at < ?
     `).bind(telegramId, dayKey, nextDayKey).first(),
-    getPetProfile(db, telegramId),
+    petRaw || getPetProfile(db, telegramId, true),
   ]);
   const counts = Object.fromEntries((events.results || []).map((row) => [row.event_type, Number(row.count || 0)]));
   const equipmentUpgradeCount = Number(equipmentUpgradeEvents?.count || 0);
-  const completion = await readDailyCompletion(db, telegramId, dayKey, counts, equipmentUpgradeCount, clampPetCurrency(pet?.moon_gold));
+  const completion = await readDailyCompletion(db, telegramId, dayKey, counts, equipmentUpgradeCount, clampPetCurrency(pet?.moon_gold), pet?.equipment_collection_complete === true);
   const done = (bits) => (completion.progress_bits & bits) === bits;
   const fullCareDone = done(7);
   return {
@@ -7166,7 +7217,7 @@ async function buildPetMissions(db, telegramId) {
       { key: `pet-daily-care-set:${dayKey}`, title: 'Complete feed, play and clean', completed: fullCareDone,
         steps: ['feed', 'play', 'clean'].map((action) => ({ key: action, title: action.toUpperCase(), completed: done({ feed: 1, play: 2, clean: 4 }[action]) })) },
       { key: `pet-daily-trade:${dayKey}`, title: 'Run one Moon Gold trade', completed: done(16) },
-      { key: `pet-daily-shop:${dayKey}`, title: 'Buy or upgrade one pet item', completed: done(32) },
+      { key: `pet-daily-shop:${dayKey}`, title: pet?.equipment_collection_complete ? 'Permanent gear collection fully upgraded' : 'Buy new permanent gear or upgrade owned gear', detail: pet?.equipment_collection_complete ? 'All permanent gear is level 10: this daily goal is automatically complete.' : 'Market purchases, crafting and free equipment switches do not count. Fully upgrading all permanent gear completes this goal automatically.', completed: done(32) },
       { key: `pet-daily-adventure:${dayKey}`, title: 'Run one pet adventure', completed: done(64) },
       { key: `pet-daily-bank:${dayKey}`, title: 'Bank 50 Moon Gold', completed: done(128) },
     ],
@@ -9538,7 +9589,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
   await recoverPetJourneyAwards(db, telegramId, { source_limit: PET_STATE_RECOVERY_LIMITS.journey_sources, award_limit: PET_STATE_RECOVERY_LIMITS.journey_awards }).catch((error) => {
     logApiFailure('pet_journey_recovery_failed', { message: error?.message || String(error) });
   });
-  const petRaw = await getPetProfile(db, telegramId);
+  const petRaw = await getPetProfile(db, telegramId, true);
   if (!petRaw) {
     return {
       adopted: false,
@@ -9922,6 +9973,7 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   }
   if (action === 'rename') return processPetAction(db, telegramId, 'rename', { event_key: eventKey, pet_name: body.pet_name, source });
   if (action === 'buy') return processPetShopPurchase(db, telegramId, body.item_key, { event_key: eventKey, source });
+  if (action === 'equip') return processPetEquipmentEquip(db, telegramId, body.item_key, { event_key: eventKey, source, pet_id: body.pet_id });
   if (action === 'use_item') return processPetUseItem(db, telegramId, body.item_key, { event_key: eventKey, source });
   if (action === 'trade') return processPetGoldTrade(db, telegramId, body.wager, { event_key: eventKey, source });
   if (action === 'work') {
@@ -10839,7 +10891,7 @@ export default {
     if (path === '/telegram-pets/inventory' && request.method === 'GET') {
       const telegramId = String(url.searchParams.get('telegram_id') || '').trim();
       if (!/^\d{1,20}$/.test(telegramId)) return err('telegram_id required');
-      const pet = await getPetProfile(env.DB, telegramId).catch(() => null);
+      const pet = await getPetProfile(env.DB, telegramId, true).catch(() => null);
       if (!pet) return err('Pet profile not found', 404);
       const identity = await getMoonpetIdentitySummary(env.DB, telegramId).catch(() => null);
       return json({ pet: serializePet(pet, identity), inventory: await getPetInventory(env.DB, telegramId) });
@@ -10876,7 +10928,9 @@ export default {
         const petIdentity = serializePetLeaderboardEntry(row);
         const playerDisplayName = [row.first_name, row.last_name].filter(Boolean).join(' ') || row.username || 'Anonymous';
         return {
-        text: row.event_type === 'equipment_upgrade'
+        text: row.event_type === 'equip'
+          ? `${playerDisplayName} switched ${petIdentity.display_name}'s equipment for free`
+          : row.event_type === 'equipment_upgrade'
           ? `${playerDisplayName} upgraded ${PET_SHOP_ITEMS[row.reason]?.title || 'equipment'}`
           : row.event_type === 'crafting'
             ? `${playerDisplayName} crafted ${PET_CRAFTING_RECIPES[row.reason]?.title || 'an item'}`
@@ -10956,6 +11010,8 @@ export default {
         });
       } else if (body.action === 'switch_pet_slot') {
         result = await switchActivePetSeasonSlot(env.DB, telegramId, body.pet_id || body.slot_number);
+      } else if (body.action === 'equip') {
+        result = await processPetEquipmentEquip(env.DB, telegramId, body.item_key, { event_key: body.event_key, source: 'telegram_pets_api', pet_id: body.pet_id });
       } else if (body.action === 'buy') {
         result = await processPetShopPurchase(env.DB, telegramId, body.item_key, {
           event_key: body.event_key,
@@ -14366,6 +14422,8 @@ function buildPetShopReplyMarkup(items = []) {
     rows.push(items.slice(index, index + 2).map((item) => {
       const label = item.equipped
         ? `Equipped ${item.title}`
+        : item.owned && item.unlocked
+          ? `Equip free ${item.title}`
         : item.affordable
           ? `Buy ${item.title}`
           : item.unlocked
@@ -15958,7 +16016,8 @@ async function getPendingPetWeeklyBossRewards(db, telegramId) {
 }
 
 async function buildPetGuidanceState(db, telegramId, petRaw = null) {
-  const sourcePet = petRaw || await getPetProfile(db, telegramId).catch(() => null);
+  let sourcePet = petRaw || await getPetProfile(db, telegramId, true).catch(() => null);
+  if (sourcePet && !sourcePet.owned_equipment) sourcePet = await withPetEquipmentProgression(db, sourcePet, true);
   const pet = serializePet(sourcePet);
   if (!pet) return null;
   const now = new Date();
@@ -15968,7 +16027,7 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null) {
     getMoonpetIdentityWithLifecycle(db, telegramId, { required: true }),
     getActivePetActivitySession(db, telegramId, now).then((active) => active || getRecoverablePetActivitySession(db, telegramId)),
     getActivePetRun(db, telegramId),
-    buildPetMissions(db, telegramId),
+    buildPetMissions(db, telegramId, sourcePet),
     getPetSeasonRewardState(db, telegramId),
     syncPetAchievements(db, telegramId),
     db.prepare(`SELECT boss_id, attempts, damage, defeated_at, reward_claimed_at FROM telegram_pet_weekly_boss_progress WHERE telegram_id = ? AND week_key = ?`)
@@ -16066,7 +16125,7 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null) {
       available: level >= job.min_level && stage >= job.min_evolution_stage
         && (!PET_ELITE_JOBS[job.key] || canStartPetEliteJob(job.key, { ...runtime, level })),
     })),
-    shop_items: petShopItemsForPet(pet),
+    shop_items: petShopItemsForPet(sourcePet),
     economy,
     economy_actions: economy?.guidance_actions || [],
     special_actions: specialActions,
@@ -17073,6 +17132,8 @@ function formatPetBlockedCopy(kind, reason, extra = {}) {
   if (code === 'stale_run_step') return `That run button is from an older step. Use /petrun to see the current choice.`;
   if (code === 'insufficient_run_cost') return `Moonpet cannot afford that run choice cost. Try another route or extract first.`;
   if (code === 'pet_not_adopted') return `You need a Moonpet first. Use /adopt to start.`;
+  if (code === 'equipment_not_owned') return 'Buy this permanent gear once in Shop before equipping it for free.';
+  if (code === 'equipment_state_changed') return 'Your active pet or equipment changed. Refresh and choose again. Nothing was charged.';
   if (code === 'already_equipped') return `That ${kind} is already equipped.`;
   if (code === 'level_locked') return `That ${kind} unlocks at level ${extra.item?.min_level || '?'}.`;
   if (code === 'job_locked') return `That job needs level ${extra.required_level || '?'} and evolution stage ${extra.required_evolution_stage || 0}.`;
@@ -17296,7 +17357,7 @@ async function cmdPetRename(db, tok, chatId, telegramId, argStr) {
 
 async function cmdPetMissions(db, tok, chatId, telegramId) {
   const missions = await buildPetMissions(db, telegramId);
-  const daily = missions.daily.map((m) => `${m.completed ? '✅' : '⬜'} ${escapeHtml(m.title)}`).join('\n');
+  const daily = missions.daily.map((m) => `${m.completed ? '✅' : '⬜'} ${escapeHtml(m.title)}${m.detail ? '\n' + escapeHtml(m.detail) : ''}`).join('\n');
   await sendTelegramPetReply(tok, chatId,
     `<b>🎯 Crypto Moonboy Pets Missions</b>\n` +
     `Day: ${escapeHtml(missions.day_key)}\n` +
@@ -17425,7 +17486,7 @@ async function cmdPetMarketBuy(db, tok, chatId, telegramId, offerKey) {
 }
 
 async function cmdPetShop(db, tok, chatId, telegramId) {
-  const pet = await getPetProfile(db, telegramId).catch(() => null);
+  const pet = await getPetProfile(db, telegramId, true).catch(() => null);
   if (!pet) {
     await sendTelegramMessage(tok, chatId, 'No Crypto Moonboy Pet found. Use /adopt to start.');
     return;
@@ -17434,16 +17495,16 @@ async function cmdPetShop(db, tok, chatId, telegramId) {
   const items = petShopItemsForPet(pet);
   const lines = items.map((item) => {
     const cost = item.cost || {};
-    const state = item.equipped ? 'equipped' : item.affordable ? 'ready' : item.unlocked ? 'need currency' : `level ${item.min_level}`;
+    const state = item.equipped ? 'equipped' : item.owned && item.unlocked ? 'owned: equip free' : item.affordable ? 'ready' : item.unlocked ? 'need currency' : `level ${item.min_level}`;
     return `${item.equipped ? '✅' : '⬜'} <code>${escapeHtml(item.key)}</code> — ${escapeHtml(item.title)} [${escapeHtml(state)}]\n` +
-      `  Cost: ${cost.moon_gold || 0} gold, ${cost.moon_crystals || 0} crystals, ${cost.style_tokens || 0} style\n` +
+      (item.owned ? '  Owned: switching is free; keeps upgrades and mastery.\n' : `  Cost: ${cost.moon_gold || 0} gold, ${cost.moon_crystals || 0} crystals, ${cost.style_tokens || 0} style\n`) +
       `  ${escapeHtml(item.description)}`;
   }).join('\n\n');
   await sendTelegramPetReply(tok, chatId,
     `<b>🛒 Crypto Moonboy Pet Shop</b>\n` +
     `Balance: ${p.moon_gold} gold · ${p.moon_crystals} crystals · ${p.style_tokens} style\n\n` +
     `${lines}\n\n` +
-    `Buy/equip: <code>/petbuy moon_kibble</code>\n` +
+    `Buy new / switch owned gear free: <code>/petbuy moon_kibble</code>\n` +
     `🎰 Risk game gold: <code>/pettrade 25</code>\n` +
     `Pet Run: <code>/petrun</code> | Extract: <code>/petextract</code>\n` +
     `🔔 Alerts: <code>/petnotify on</code>`,
@@ -17476,7 +17537,7 @@ async function cmdPetBuy(db, tok, chatId, telegramId, argStr, eventKey = null) {
   await sendTelegramPetReply(
     tok,
     chatId,
-    `🛒 Upgrade equipped: <b>${escapeHtml(result.item.title)}</b>.\n\n` +
+    `${result.reason === 'equipment_equipped' ? 'Free equipment switch' : 'Gear purchased'}: <b>${escapeHtml(result.item.title)}</b>.\n\n` +
       `<b>Next upgrade run</b>\n` +
       `Buy another upgrade, spend resources deeper, or grind more gold/crystals/style before the next tier.\n\n` +
       `${formatPetStatus(result.pet, identity, null, reaction)}`,

@@ -852,3 +852,21 @@ PROGRESSION UNAVAILABLE card. Optional reaction text may retain its fallback.
 Gameplay must not treat a failed lifecycle lookup as permission to bypass hatch;
 combat keeps its explicit closed lifecycle-unavailable response.
 See [the startup/lifecycle audit](moonpet-start-lifecycle-sanity-2026-09-28.md).
+
+
+### Owned equipment and beta XP correction (29 September 2026)
+
+Permanent gear is bought once per account. Shop and Equipment offer free
+switching on an eligible active pet, preserving gear level and mastery. The
+`equip` receipt awards no Pet XP, Community XP or daily shopping credit. Legacy
+Buy controls switch owned items for free too. The daily shopping goal accepts a
+new permanent gear purchase or paid upgrade; Market and crafting are separate.
+All 17 permanent items at level 10 automatically satisfy that one daily goal.
+
+Migration 078 is a user-authorized beta rebaseline, not a reconstruction of
+historical missing XP. It only reduces season counters that exceed all retained
+owned Pet XP, setting them to retained owned Pet XP for that season. It records
+before/after values and receipt totals, preserves pet levels, wallets, items and
+claimed rewards, and does not alter daily/weekly receipt totals. Apply it before
+the Worker deployment, then run the count-only rebaseline check. No full player
+wipe is required. Deeper legacy ledger differences remain diagnostic evidence.

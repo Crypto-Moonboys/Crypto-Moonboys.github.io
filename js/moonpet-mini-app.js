@@ -2006,7 +2006,7 @@
     var missionPercent = missions.length ? Math.round(completedMissions / missions.length * 100) : 0;
     var rows = missions.map(function (mission) {
       var steps = (mission.steps || []).map(function (step) { return (step.completed ? '[OK] ' : '[ ] ') + step.title; }).join(' // ');
-      return '<div class="line ' + (mission.completed ? 'complete' : '') + '">' + (mission.completed ? '[OK] ' : '[  ] ') + escapeHtml(mission.title) + '</div>' + (steps ? '<div class="line muted">' + escapeHtml(steps) + '</div>' : '') + (mission.completed ? '' : objectiveRouteButton(mission.key));
+      return '<div class="line ' + (mission.completed ? 'complete' : '') + '">' + (mission.completed ? '[OK] ' : '[  ] ') + escapeHtml(mission.title) + '</div>' + (mission.detail ? '<div class="line muted">' + escapeHtml(mission.detail) + '</div>' : '') + (steps ? '<div class="line muted">' + escapeHtml(steps) + '</div>' : '') + (mission.completed ? '' : objectiveRouteButton(mission.key));
     }).join('') || '<div class="line muted">NO MISSION DATA.</div>';
     var achievements = state.guidance && state.guidance.achievements || [];
     var unlockedCount = achievements.filter(function (entry) { return entry.unlocked_at; }).length;
@@ -2301,7 +2301,7 @@
       return button(offer.title, 'market_buy', { offer_key: offer.key }, { disabled: !offer.unlocked || !offer.affordable || offer.purchased || full || offer.available === false, statusLabel: offer.purchased ? 'SOLD' : full ? 'STORAGE FULL' : '', resourceRequired: offer.unlocked && !offer.affordable && !offer.purchased && !full, detail: (offer.unlocked ? '' : 'REQUIRES LEVEL ' + number(offer.min_level) + ' // ') + (offer.detail || '') + ' // COST ' + costText(offer.cost) + ' // GIVES ' + valueText(offer.reward) + capacityDetail });
     }).join('');
     var shop = (guidance.shop_items || []).map(function (item) {
-      return button(item.title, 'buy', { item_key: item.key }, { disabled: !item.unlocked || !item.affordable || item.equipped, statusLabel: item.equipped ? 'EQUIPPED' : '', resourceRequired: item.unlocked && !item.affordable && !item.equipped, detail: item.equipped ? (item.description || '') : (item.unlocked ? '' : 'REQUIRES LEVEL ' + number(item.min_level) + ' // ') + (item.description || '') + ' // COST ' + costText(item.cost) });
+      return button((item.owned && !item.equipped ? 'EQUIP FREE // ' : '') + item.title, item.owned ? 'equip' : 'buy', { item_key: item.key, pet_id: state.pet.pet_id }, { disabled: !item.unlocked || (!item.owned && !item.affordable) || item.equipped, statusLabel: item.equipped ? 'EQUIPPED' : item.owned ? 'OWNED' : '', resourceRequired: item.unlocked && !item.owned && !item.affordable && !item.equipped, detail: (item.unlocked ? '' : 'REQUIRES LEVEL ' + number(item.min_level) + ' // ') + (item.description || '') + (item.owned ? ' // FREE SWITCH. Keeps upgrades and mastery; no XP or daily shopping credit.' : ' // COST ' + costText(item.cost)) });
     }).join('');
     var inventory = (state.inventory || []).filter(function (item) { return Number(item.count || item.quantity || 0) > 0; }).map(function (item) {
       return '<div class="line">' + escapeHtml(words(item.title || item.key || item.item_key)) + ' x' + number(item.count || item.quantity) + '</div>' +
@@ -2332,8 +2332,10 @@
     var upgrades = new Map((live.upgrades || []).map(function (item) { return [item.item_key, item]; }));
     var gear = (state.gear || []).map(function (item) {
       var upgrade = upgrades.get(item.item_key) || {};
+      var catalogItem = (guidance.shop_items || []).find(function (entry) { return entry.key === item.item_key; });
+      var equip = catalogItem ? '<div class="button-grid one">' + button(catalogItem.equipped ? 'EQUIPPED' : 'EQUIP FREE', 'equip', { item_key: item.item_key, pet_id: state.pet.pet_id }, { disabled: !catalogItem.unlocked || catalogItem.equipped, detail: catalogItem.unlocked ? 'Keeps upgrades and mastery. No currency cost, XP or shopping credit.' : 'REQUIRES LEVEL ' + number(catalogItem.min_level) }) + '</div>' : '';
       return '<div class="line complete">' + escapeHtml(words(item.slot)) + ' // ' + escapeHtml(words(item.item_key)) + '</div>' +
-        '<div class="line muted">LEVEL ' + number(item.item_level) + ' // ITEM XP ' + number(item.item_xp) + ' // MASTERY ' + number(item.mastery_tier) + ' (' + number(item.mastery_xp) + ' XP)</div>' +
+        '<div class="line muted">LEVEL ' + number(item.item_level) + ' // ITEM XP ' + number(item.item_xp) + ' // MASTERY ' + number(item.mastery_tier) + ' (' + number(item.mastery_xp) + ' XP)</div>' + equip +
         (upgrade.maxed ? '<div class="line complete">MAX LEVEL</div>' : '<div class="button-grid one">' + button('UPGRADE TO LEVEL ' + number(upgrade.target_level), 'gear_upgrade', { item_key: item.item_key }, { disabled: !upgrade.affordable, resourceRequired: upgrade.unlocked && !upgrade.affordable, detail: (upgrade.unlocked ? '' : 'REQUIRES LEVEL ' + number(upgrade.required_level) + ' // ') + costText(upgrade.cost) }) + '</div>');
     }).join('');
     var materials = (state.materials || []).map(function (item) {

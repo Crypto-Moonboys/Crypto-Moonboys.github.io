@@ -131,3 +131,149 @@ test('all twelve market offers deliver their full bundle exactly once', async ()
     assert.equal(f.sql.prepare("SELECT SUM(pet_xp_awarded) n FROM telegram_pet_events WHERE telegram_id=? AND status='accepted'").get(f.owner).n,0);
   }
 });
+
+const wallet = f => f.sql.prepare('SELECT moon_gold,moon_crystals,style_tokens,pet_xp FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner);
+const shopMission = state => state.guidance.missions.find(m => m.key.startsWith('pet-daily-shop:'));
+for (const action of ['equip','buy']) test(`${action} switches owned gear free without shopping or XP credit`, async () => {
+  const f=funded('free-'+action);
+  for (const key of ['moon_kibble','nebula_snack']) assert.equal((await f.act({action:'buy',item_key:key,request_id:key})).accepted,true);
+  f.sql.prepare("UPDATE telegram_pet_equipment_progression SET item_level=10,mastery_tier=4,mastery_xp=950 WHERE telegram_id=? AND item_key='moon_kibble'").run(f.owner);
+  // Purchases happened yesterday; today's switch must not fill shopping.
+  f.sql.prepare("UPDATE telegram_pet_events SET day_key='2000-01-01' WHERE telegram_id=?").run(f.owner);
+  f.sql.prepare('DELETE FROM telegram_pet_daily_completion WHERE telegram_id=?').run(f.owner);
+  f.sql.prepare('UPDATE telegram_pet_profiles SET moon_gold=0,moon_crystals=0,style_tokens=0 WHERE telegram_id=?').run(f.owner);
+  const state=await hooks.buildPetMiniAppState(f.db,f.owner,'fixture-token');
+  assert.equal(state.guidance.shop_items.find(x=>x.key==='moon_kibble').owned,true);
+  assert.equal(shopMission(state).completed,false);
+  assert.match(shopMission(state).detail,/Market purchases, crafting and free equipment switches do not count/);
+  const before=wallet(f), gear=f.sql.prepare('SELECT * FROM telegram_pet_equipment_progression WHERE telegram_id=?').all(f.owner);
+  const body={action,item_key:'moon_kibble',pet_id:state.pet.pet_id,request_id:'free-switch'};
+  const equipped=await f.act(body); assert.equal(equipped.accepted,true,equipped.reason); assert.equal(equipped.reason,'equipment_equipped');
+  assert.equal(equipped.pet.equipped_food,'moon_kibble');
+  assert.equal(equipped.pet.equipment_progression.moon_kibble.item_level,10);
+  assert.equal((await f.act(body)).duplicate,true);
+  assert.deepEqual(wallet(f),before);
+  assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_equipment_progression WHERE telegram_id=?').all(f.owner),gear);
+  assert.equal(shopMission(await hooks.buildPetMiniAppState(f.db,f.owner,'fixture-token')).completed,false);
+  const e=f.sql.prepare("SELECT * FROM telegram_pet_events WHERE telegram_id=? AND event_type='equip'").all(f.owner);
+  assert.equal(e.length,1); assert.equal(e[0].pet_xp_awarded,0); assert.equal(e[0].xp_awarded,0);
+  assert.equal(e[0].pet_id,state.pet.pet_id);
+});
+
+test('equipment switch rejects unowned, under-level and stale-pet requests',async()=>{
+  const f=funded('free-guards');
+  assert.equal((await f.act({action:'equip',item_key:'moon_kibble',request_id:'unowned'})).reason,'equipment_not_owned');
+  for(const key of ['moon_kibble','nebula_snack']) await f.act({action:'buy',item_key:key,request_id:key});
+  assert.equal((await f.act({action:'equip',item_key:'moon_kibble',pet_id:'someone-else',request_id:'stale'})).reason,'equipment_state_changed');
+  f.pet('new-pet',currentSeason,0,2); f.active('new-pet');
+  assert.equal((await f.act({action:'equip',item_key:'nebula_snack',request_id:'low-level'})).reason,'level_locked');
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='equip'").get().n,0);
+});
+
+for(const conflict of ['active pet','ownership','loadout']) test(`equipment reservation rejects concurrent ${conflict} changes`,async()=>{
+  const f=funded('equip-race-'+conflict);
+  for(const key of ['moon_kibble','nebula_snack']) await f.act({action:'buy',item_key:key,request_id:key});
+  f.pet('second-pet',currentSeason,500000,2);
+  const before=wallet(f); let injected=false;
+  f.db.beforeBatch=statements=>{
+    if(!statements.some(s=>s.query.includes("'equipment_switch_pending'")))return;
+    injected=true;
+    if(conflict==='active pet')f.active('second-pet');
+    if(conflict==='ownership')f.sql.prepare("DELETE FROM telegram_pet_equipment_progression WHERE telegram_id=? AND item_key='moon_kibble'").run(f.owner);
+    if(conflict==='loadout')f.sql.prepare("UPDATE telegram_pet_instances SET equipped_food='crystal_bowl' WHERE telegram_id=?").run(f.owner);
+  };
+  const r=await f.act({action:'equip',item_key:'moon_kibble',request_id:'race'});
+  assert.equal(injected,true);assert.equal(r.accepted,false);assert.equal(r.reason,'equipment_state_changed');
+  assert.deepEqual(wallet(f),before);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='equip'").get().n,0);
+});
+
+test('purchase race cannot charge gear bought by another request',async()=>{
+  const f=funded('buy-race-owned');const before=wallet(f);let injected=false;
+  f.db.beforeBatch=statements=>{
+    if(!statements.some(s=>s.query.includes("'shop_purchase_pending'")))return;
+    injected=true; f.sql.prepare("INSERT INTO telegram_pet_equipment_progression (telegram_id,item_key,slot) VALUES (?,'moon_kibble','food')").run(f.owner);
+  };
+  const r=await f.act({action:'buy',item_key:'moon_kibble',request_id:'race'});
+  assert.equal(injected,true);assert.equal(r.accepted,false);assert.deepEqual(wallet(f),before);
+  f.db.beforeBatch=null;
+  assert.equal((await f.act({action:'buy',item_key:'moon_kibble',request_id:'retry'})).reason,'equipment_equipped');
+  assert.deepEqual(wallet(f),before);
+});
+
+test('legacy accepted purchase recovers ownership before a free switch',async()=>{
+  const f=funded('old-gear');
+  for(const key of ['moon_kibble','nebula_snack'])await f.act({action:'buy',item_key:key,request_id:key});
+  f.sql.prepare("DELETE FROM telegram_pet_equipment_progression WHERE telegram_id=? AND item_key='moon_kibble'").run(f.owner);
+  const before=wallet(f);
+  assert.equal((await f.act({action:'equip',item_key:'moon_kibble',request_id:'recover'})).reason,'equipment_equipped');
+  assert.deepEqual(wallet(f),before);
+});
+
+test('fully upgraded collection keeps daily completion reachable without repeat purchases',async()=>{
+  const f=funded('maxed-collection');
+  const initial=await hooks.buildPetMiniAppState(f.db,f.owner,'fixture-token');
+  for(const item of initial.guidance.shop_items)f.sql.prepare('INSERT INTO telegram_pet_equipment_progression (telegram_id,item_key,slot,item_level) VALUES (?,?,?,10)').run(f.owner,item.key,item.slot);
+  f.sql.prepare("UPDATE telegram_pet_equipment_progression SET item_level=9 WHERE telegram_id=? AND item_key='moon_kibble'").run(f.owner);
+  assert.equal(shopMission(await hooks.buildPetMiniAppState(f.db,f.owner,'fixture-token')).completed,false);
+  f.sql.prepare("UPDATE telegram_pet_equipment_progression SET item_level=10 WHERE telegram_id=? AND item_key='moon_kibble'").run(f.owner);
+  const state=await hooks.buildPetMiniAppState(f.db,f.owner,'fixture-token');
+  assert.equal(shopMission(state).completed,true);
+  assert.match(shopMission(state).detail,/automatically complete/);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type IN ('buy','equip')").get().n,0);
+});
+
+const rebaselineSql=fs.readFileSync(new URL('../workers/moonboys-api/migrations/078_moonpet_beta_season_xp_rebaseline.sql',import.meta.url),'utf8');
+for(const [stored,actual] of [[9077,6935],[4099,4027],[2400,1901]]) test(`beta rebaseline repairs impossible ${stored}/${actual} totals without wiping progression`,async()=>{
+  const f=funded('xp-'+stored);
+  await hooks.buildPetMiniAppState(f.db,f.owner,'fixture-token');
+  f.sql.prepare('UPDATE telegram_pet_instances SET pet_xp=? WHERE telegram_id=?').run(actual,f.owner);
+  f.sql.prepare('UPDATE telegram_pet_profiles SET pet_xp=? WHERE telegram_id=?').run(actual,f.owner);
+  f.sql.prepare('INSERT INTO telegram_pet_season_state (telegram_id,season_key,season_xp) VALUES (?,?,?) ON CONFLICT(telegram_id,season_key) DO UPDATE SET season_xp=excluded.season_xp').run(f.owner,currentSeason,stored);
+  f.sql.prepare("INSERT INTO telegram_pet_events (id,telegram_id,pet_id,event_key,event_type,season_key,day_key,week_key,pet_xp_awarded,status,created_at) VALUES ('e',?,?,'e','feed',?,'2000-01-01','2000-W01',12,'accepted','2000-01-01 00:00:00')").run(f.owner,'current-'+f.owner,currentSeason);
+  const before=wallet(f), receipts=f.sql.prepare('SELECT * FROM telegram_pet_events').all();
+  f.sql.exec('BEGIN'); f.sql.exec(rebaselineSql); f.sql.exec('COMMIT');
+  const row=f.sql.prepare('SELECT * FROM moonpet_beta_xp_rebaseline').get();
+  assert.equal(row.previous_season_xp,stored);assert.equal(row.retained_season_xp,actual);assert.equal(row.accepted_receipt_xp,12);assert.ok(row.applied_at);
+  assert.deepEqual(wallet(f),before);assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_events').all(),receipts);
+  for(const period of ['seasonal','all_time']) assert.equal((await f.get('/telegram-pets/leaderboard?period='+period)).entries[0].pet_xp,actual);
+  // A new real reward increments the rebased season and authoritative pet together.
+  const reward=await f.act({action:'feed',request_id:'after-rebase'});assert.equal(reward.accepted,true,reward.reason);assert.ok(reward.pet_xp_awarded>0);
+  f.sql.exec(rebaselineSql);
+  for(const period of ['seasonal','all_time']) assert.equal((await f.get('/telegram-pets/leaderboard?period='+period)).entries[0].pet_xp,actual+reward.pet_xp_awarded);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM moonpet_beta_xp_rebaseline').get().n,1);
+});
+
+test('beta rebaseline respects multiple seasons, valid counters and unowned instance rows',async()=>{
+  const f=funded('xp-scope');
+  f.sql.prepare('UPDATE telegram_pet_instances SET pet_xp=100 WHERE telegram_id=?').run(f.owner);
+  f.pet('old-pet','pet-s2025-001',500);
+  // Invalid orphan must not become public XP or rescue an impossible counter.
+  f.sql.exec('PRAGMA foreign_keys=OFF');
+  f.sql.prepare("INSERT INTO telegram_pet_instances (pet_id,telegram_id,season_key,slot_number,pet_xp,source_profile_updated_at) VALUES ('orphan',?,?,3,999999,'0001-01-01 00:00:00')").run(f.owner,currentSeason);
+  f.sql.exec('PRAGMA foreign_keys=ON');
+  for(const [season,xp] of [[currentSeason,800],['pet-s2025-001',500]])f.sql.prepare('INSERT INTO telegram_pet_season_state (telegram_id,season_key,season_xp) VALUES (?,?,?)').run(f.owner,season,xp);
+  f.sql.exec(rebaselineSql);
+  assert.equal(f.sql.prepare('SELECT season_xp FROM telegram_pet_season_state WHERE telegram_id=? AND season_key=?').get(f.owner,currentSeason).season_xp,100);
+  assert.equal(f.sql.prepare('SELECT season_xp FROM telegram_pet_season_state WHERE telegram_id=? AND season_key=?').get(f.owner,'pet-s2025-001').season_xp,500);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM moonpet_beta_xp_rebaseline').get().n,1);
+  assert.equal((await f.get('/telegram-pets/leaderboard?period=all_time')).entries[0].pet_xp,600);
+});
+
+for (const failure of ['ownership read','legacy recovery']) test(`resolved ${failure} failure cannot charge again for owned gear`,async()=>{
+  const f=funded('owned-outage-'+failure);
+  for (const key of ['moon_kibble','nebula_snack'])await f.act({action:'buy',item_key:key,request_id:key});
+  if(failure==='legacy recovery') f.sql.prepare("DELETE FROM telegram_pet_equipment_progression WHERE telegram_id=? AND item_key='moon_kibble'").run(f.owner);
+  const before=wallet(f), prepare=f.db.prepare.bind(f.db);let injected=false;
+  f.db.prepare=query=>{
+    const statement=prepare(query);
+    if(failure==='legacy recovery' ? query.includes('WITH definitions(item_key,slot)') : query.includes('FROM telegram_pet_equipment_progression WHERE telegram_id = ?')){
+      const bind=statement.bind.bind(statement);
+      statement.bind=(...args)=>{const bound=bind(...args);bound[failure==='legacy recovery'?'run':'all']=async()=>{injected=true;return {success:false,error:'D1 unavailable',results:[]};};return bound;};
+    }
+    return statement;
+  };
+  await assert.rejects(f.act({action:'buy',item_key:'moon_kibble',request_id:'outage'}),/equipment_ownership_unavailable/);
+  assert.equal(injected,true);assert.deepEqual(wallet(f),before);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='buy'").get().n,2);
+});
