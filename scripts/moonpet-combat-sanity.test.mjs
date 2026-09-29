@@ -476,6 +476,49 @@ test('Telegram Kaiju repairs saved choices and propagates unavailable table read
   } finally { globalThis.fetch=originalFetch; }
 });
 
+test('direct Telegram Kaiju uses the canonical hatch and lifecycle authority gate',async()=>{
+  const f=fixture('kaiju-direct-gate');
+  const originalFetch=globalThis.fetch;
+  const sent=[];
+  globalThis.fetch=async(url,options)=>{
+    sent.push(String(options?.body?.get?.('text') || options?.body || ''));
+    return new Response(JSON.stringify({ok:true,result:{message_id:1}}),{status:200,headers:{'Content-Type':'application/json'}});
+  };
+  try {
+    f.sql.prepare("UPDATE telegram_pet_lifecycle_by_pet SET phase='egg' WHERE telegram_id=?").run(f.owner);
+    await hooks.cmdPetKaiju(f.db,'fixture-token','fixture-chat',f.owner,'','private',{id:f.owner});
+    assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_kaiju_matches').get().n,0,
+      'an Egg cannot create a Kaiju match through the direct Telegram command');
+    assert.ok(sent.at(-1).includes('must hatch'), 'the direct command must explain the hatch requirement');
+
+    f.sql.prepare("INSERT INTO telegram_users (telegram_id,first_name) VALUES ('direct-rival','Rival')").run();
+    f.sql.prepare("INSERT INTO telegram_pet_kaiju_matches (id,match_id,chat_id,mode,status,player1_telegram_id,category_key,roll) VALUES ('direct-join-row','direct-join','fixture-join','group','open','direct-rival','lgcy',10)").run();
+    await hooks.cmdPetKaiju(f.db,'fixture-token','fixture-join',f.owner,'join:direct-join','group',{id:f.owner});
+    assert.equal(f.sql.prepare("SELECT player2_telegram_id FROM telegram_pet_kaiju_matches WHERE match_id='direct-join'").get().player2_telegram_id,null,
+      'an Egg cannot join an open direct Telegram Kaiju match');
+
+    f.sql.prepare("INSERT INTO telegram_pet_kaiju_matches (id,match_id,chat_id,mode,status,player1_telegram_id,category_key,roll) VALUES ('direct-cpu-row','direct-cpu','fixture-cpu','group','open',?,'lgcy',10)").run(f.owner);
+    await hooks.cmdPetKaiju(f.db,'fixture-token','fixture-cpu',f.owner,'cpu:direct-cpu','private',{id:f.owner});
+    assert.equal(f.sql.prepare("SELECT status FROM telegram_pet_kaiju_matches WHERE match_id='direct-cpu'").get().status,'open',
+      'an Egg cannot convert an open table into a direct app battle');
+
+    f.sql.prepare("INSERT INTO telegram_pet_kaiju_matches (id,match_id,chat_id,mode,status,player1_telegram_id,category_key,roll) VALUES ('direct-card-row','direct-card','fixture-card','solo','selecting',?,'lgcy',10)").run(f.owner);
+    await hooks.cmdPetKaiju(f.db,'fixture-token','fixture-card',f.owner,`card:direct-card:${hooks.PET_KAIJU_CARDS[0].id}`,'private',{id:f.owner});
+    assert.equal(f.sql.prepare("SELECT player1_card_key FROM telegram_pet_kaiju_matches WHERE match_id='direct-card'").get().player1_card_key,null,
+      'an Egg cannot lock a card through a direct Telegram callback');
+
+    const matchesBeforeOutage=f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_kaiju_matches').get().n;
+    f.sql.prepare("UPDATE telegram_pet_lifecycle_by_pet SET phase='young' WHERE telegram_id=?").run(f.owner);
+    f.db.beforeFirst=s=>{if(s.query.includes('telegram_pet_lifecycle_by_pet'))throw Error('lifecycle_read_unavailable');};
+    await hooks.cmdPetKaiju(f.db,'fixture-token','fixture-chat',f.owner,'','private',{id:f.owner});
+    assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_kaiju_matches').get().n,matchesBeforeOutage,
+      'a lifecycle outage cannot create a Kaiju match');
+    assert.ok(sent.at(-1).includes('temporarily unavailable'), 'the direct command must expose a retryable authority outage');
+  } finally {
+    globalThis.fetch=originalFetch;
+  }
+});
+
 test('mixed Kaiju, Arena and care recovery stays bounded and makes progress in both modes',async()=>{
   const f=fixture('combined-budget'),rival=await addRival(f);
   await f.state();
