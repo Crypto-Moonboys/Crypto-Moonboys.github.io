@@ -2065,6 +2065,44 @@ function seedRepeatRewardPlayer(telegramId, energy = 70, lastDecayAt = new Date(
   return db;
 }
 
+for (const [label, query] of [
+  ['scope', /FROM telegram_pet_active_slots a/],
+  ['evolution', /FROM telegram_pet_evolutions_by_pet e/],
+  ['season XP', /SELECT season_xp FROM telegram_pet_season_state/],
+]) {
+  const db = seedRepeatRewardPlayer(`season-identity-${label}`);
+  db.failReadOnSql(query);
+  await assert.rejects(__petMediaTestHooks.getPetSeasonRewardState(db, `season-identity-${label}`),
+    /(?:moonpet_identity|pet_state)_read_unavailable/,
+    `a failed ${label} read must not turn the Season evolution bonus into zero`);
+  db.failReadOnSql(query);
+  await assert.rejects(__petMediaTestHooks.claimPetSeasonReward(db, `season-identity-${label}`, 'street'),
+    /(?:moonpet_identity|pet_state)_read_unavailable/,
+    `a failed ${label} read must prevent a Season reward from using a zero evolution bonus`);
+}
+
+{
+  const telegramId = 'season-saved-reward';
+  const db = seedRepeatRewardPlayer(telegramId);
+  const season = (await __petMediaTestHooks.getPetSeasonRewardState(db, telegramId)).season;
+  db.database.prepare('INSERT INTO telegram_pet_season_state (telegram_id, season_key, season_xp) VALUES (?, ?, 250)')
+    .run(telegramId, season.key);
+  db.beforeRun = (sql) => {
+    if (sql.includes('INSERT OR IGNORE INTO telegram_pet_season_reward_claims')) {
+      db.failReadOnSql(/FROM telegram_pet_active_slots a/);
+    }
+  };
+  const result = await __petMediaTestHooks.claimPetSeasonReward(db, telegramId, 'street', 'season-saved-reward:street');
+  assert.equal(result.accepted, true, 'a failed post-award read must not conceal a saved Season reward');
+  assert.ok(result.state.tiers.find((tier) => tier.tier_id === 'street').claimed_at,
+    'the fallback claim view must not offer an already-awarded tier again');
+}
+
+const bossCommand = asyncBlock('cmdPetWeeklyBoss');
+assert.ok(bossCommand.includes('telegram_pet_boss_guidance_read_failed') &&
+  bossCommand.includes('await sendTelegramPetReply(tok, chatId, bossText'),
+  'a completed boss attack must retain its result when guidance cannot be read');
+
 function seedAndSwitchRepeatRewardPet(db, telegramId, slotNumber = 2, energy = 70) {
   const petId = `pet:${telegramId}:pet-s2026-003:${slotNumber}`;
   db.database.prepare(`INSERT INTO telegram_pet_season_slots

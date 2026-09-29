@@ -1,6 +1,7 @@
 import evolutions from './content/evolutions.json' with { type: 'json' };
 import { getPetVisibleLevelSql } from './progression-phase-2.js';
 import { reconcileLegacyPetInventory } from './inventory-cutover.js';
+import { requirePetReadResult } from './read-result.js';
 
 const ID_PATTERN = /^[a-z0-9][a-z0-9_-]*$/;
 const FORBIDDEN_EVOLUTION_KEYS = /(?:^|_)(?:xp|reward)_multiplier$|cap_(?:increase|bonus)$|(?:pet|community)_xp_cap/i;
@@ -50,14 +51,17 @@ export async function readActivePetIdentityScope(db, telegramId) {
       ON i.pet_id = s.pet_id AND i.telegram_id = s.telegram_id AND i.season_key = s.season_key AND i.slot_number = s.slot_number
     WHERE a.telegram_id = ? AND s.status = 'active' AND i.status = 'active'
     LIMIT 1`).bind(telegramId).first();
+  if (scope?.success === false) throw new Error('moonpet_identity_read_unavailable');
   if (scope) return scope;
-  return db.prepare(`SELECT s.pet_id, s.season_key, s.slot_number, s.acquisition_type
+  scope = await db.prepare(`SELECT s.pet_id, s.season_key, s.slot_number, s.acquisition_type
     FROM telegram_pet_season_slots s
     JOIN telegram_pet_instances i
       ON i.pet_id = s.pet_id AND i.telegram_id = s.telegram_id AND i.season_key = s.season_key AND i.slot_number = s.slot_number
     WHERE s.telegram_id = ? AND s.slot_number = 1 AND s.status = 'active' AND i.status = 'active'
     ORDER BY s.updated_at DESC
     LIMIT 1`).bind(telegramId).first();
+  if (scope?.success === false) throw new Error('moonpet_identity_read_unavailable');
+  return scope;
 }
 
 async function readMoonpetIdentityScope(db, telegramId, request = {}) {
@@ -619,6 +623,7 @@ export async function getMoonpetIdentitySummary(db, telegramIdRaw, request = {})
   const telegramId = String(telegramIdRaw || '').trim();
   const explicitScopeRequested = Boolean(String(request.pet_id || '').trim() || String(request.season_key || '').trim());
   const scope = await readMoonpetIdentityScope(db, telegramId, request);
+  if (scope?.success === false) throw new Error('moonpet_identity_read_unavailable');
   if (explicitScopeRequested && !scope) return null;
   const evolution = scope?.pet_id
     ? await db.prepare(`SELECT e.evolution_id, e.stage, e.unlocked_at
@@ -632,6 +637,7 @@ export async function getMoonpetIdentitySummary(db, telegramIdRaw, request = {})
         ORDER BY e.stage DESC LIMIT 1`)
       .bind(scope.pet_id, telegramId, scope.season_key, scope.season_key, scope.season_key).first()
     : null;
+  if (evolution?.success === false) throw new Error('moonpet_identity_read_unavailable');
   const [legacyEvolution, traits, memory, bossVictories] = await Promise.all([
     (!explicitScopeRequested && !evolution && (!scope?.pet_id || Number(scope?.slot_number || 1) <= 1 || scope?.acquisition_type === 'free'))
       ? db.prepare(`SELECT evolution_id, stage, unlocked_at FROM telegram_pet_evolutions WHERE telegram_id = ? ORDER BY stage DESC LIMIT 1`).bind(telegramId).first()
@@ -650,6 +656,9 @@ export async function getMoonpetIdentitySummary(db, telegramIdRaw, request = {})
           ORDER BY victories DESC, boss_id LIMIT 20`).bind(scope.pet_id, telegramId, scope.season_key).all()
       : Promise.resolve({ results: [] }),
   ]);
+  if (legacyEvolution?.success === false || memory?.success === false) throw new Error('moonpet_identity_read_unavailable');
+  requirePetReadResult(traits);
+  requirePetReadResult(bossVictories);
   const currentEvolution = evolution || legacyEvolution;
   const current = currentEvolution ? MOONPET_EVOLUTIONS[currentEvolution.evolution_id] : MOONPET_EVOLUTIONS.moon_egg;
   let milestones = [];
