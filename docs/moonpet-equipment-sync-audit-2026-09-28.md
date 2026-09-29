@@ -1,5 +1,11 @@
 # Moonpet equipment and public synchronization audit — 28 September 2026
 
+> Historical audit: findings describe the build tested below. Later releases added
+> the daily 7/7 bonus, Signal Sovereign finale, rewarded Practice, cosmetic
+> equipment and relic effects. See [current rules](moonpet-source-of-truth.md) and
+> the [reconciliation tracker](moonpet-reconciliation-2026-09-29.md). Historical XP
+> discrepancies are not presumed repaired.
+
 Base: merged PR #1351, `781afee30cc30bc20411995aaf098a86024a8d43`.
 The production `/deployment-info` endpoint matched this commit, deployed at
 `2026-09-28T03:20:30.950Z`. No production player account was changed.

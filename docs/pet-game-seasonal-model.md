@@ -1,6 +1,6 @@
 # Moonpet Season 1 Seasonal Model
 
-**Status:** Canonical product rules for Season 1. This document defines the rules; it does not mean that every described system is implemented.
+**Status:** Season 1 product rules, reconciled with the current build on 2026-09-29. Live behavior is cross-referenced in [Moonpet Source of Truth](moonpet-source-of-truth.md); dated audits describe the build they tested, not every later release.
 
 ## Product boundary
 
@@ -22,8 +22,8 @@ Crypto Moonboy Pets is a **community-only game**. There are no cash purchases, c
 | Pet 2 | **LIVE** | Unlock by spending 500 **spendable Arcade XP** earned through community play. |
 | Pet 3 | **LIVE** | Unlock by spending 1,000 **spendable Arcade XP** earned through community play. |
 | Active pet | **LIVE** | A player has one active seasonal Moonpet at a time. Pet-instance state resolves against the active or explicitly participating `pet_id`; account seasonal systems remain account-level. |
-| Daily growth | **IN DEVELOPMENT** | Pet XP may exceed the daily target, with diminishing returns planned; Growth Marks are capped at one per `pet_id` per day. |
-| Weekly growth | **IN DEVELOPMENT** | Weekly Crests are capped at one per `pet_id` per week. |
+| Daily growth | **LIVE** | Qualifying gameplay can award one Growth Mark per pet per UTC day. Pet XP still has a 1,200 account/UTC-day cap; diminishing returns beyond a target remain planned. |
+| Weekly growth | **LIVE** | Qualifying Weekly Journey or Weekly Boss completion can award one Weekly Crest per pet per qualification week. |
 
 Pet 2 and Pet 3 are **gameplay unlocks**, not purchases with money or crypto. No paid shortcut or paid recovery route exists. The 500 and 1,000 spendable Arcade XP amounts are the current live Season 1 community XP unlock costs.
 
@@ -35,17 +35,21 @@ Higher costs such as 10,000 Arcade XP for Pet 2 and 25,000 Arcade XP for Pet 3 m
 
 **LIVE.** A player has one active seasonal Moonpet at a time. Pet-instance actions resolve against one active or explicitly participating `pet_id`. Switching the active Moonpet preserves that instance's identity, stats, lifecycle, and other pet-specific progression rather than replacing them with another pet's state.
 
-This isolation does not make every progression system pet-owned. Seasonal XP, seasonal tiers, leaderboard progression, and other systems explicitly defined at account level remain shared account seasonal state. Implementations and public copy must distinguish pet-instance records from account seasonal records instead of implying that all XP, rewards, or progression are independent per pet.
+**Account Season XP** is the player's aggregate of awarded Pet XP attributed to a pet season. It controls the shared seasonal leaderboard and one-time account tier rewards; it is not another spendable currency or the selected pet's XP. An interrupted reward retains its original pet and pet season when recovered. Daily/weekly ranks use accepted reward settlement windows; all-time ranks sum retained owned pets, including earlier seasons. Changing the selected pet changes the displayed pet identity, not the account's ranking total.
 
-Season 1 ownership split: Pet XP, pet needs/stats, lifecycle, evolution, Growth Marks, Weekly Crests, and later pet memories/traits/history are pet-owned. Moon Gold, Moon Crystals, Style Tokens, materials, inventory ownership, cosmetics, and spendable Arcade XP are account-owned. Switching the active pet must not redirect Pet XP, and it must not fragment or hide account wallet balances.
+Season 1 ownership split: Pet XP, specialist progression, needs/stats, lifecycle, evolution, Growth Marks, Weekly Crests, memories and personality are pet-owned. Moon Gold, Moon Crystals, Style Tokens, materials, inventory ownership, cosmetic ownership and spendable Arcade XP are account-owned. Cosmetic selection is per pet. Community XP is a separate account score with its own Community season. Switching pets must not redirect earned Pet XP or split the account wallet.
 
 ## Legendary completion
 
-**IN DEVELOPMENT.** A seasonal Moonpet's Legendary target is:
+**LIVE.** A pet's completion marker requires:
 
 - 60 Growth Marks;
 - 10 Weekly Crests; and
-- the required Pet XP and trials defined by the eventual balancing contract.
+- the final Legendary Moon Guardian evolution. Its level, age, boss, relic and material requirements are defined in `workers/moonboys-api/pets/content/evolutions.json` and displayed by the game.
+
+The marker is persistent and does not immediately remove the pet from its current seasonal slot. Sanctuary eligibility/settlement records exist; expanded Sanctuary gameplay remains future work. The optional **Signal Sovereign** finale accepts a qualifying or already completed pet and awards up to 100 Pet XP, 200 Moon Gold and 5 Style Tokens once per pet/season. Defeating it is not an extra prerequisite for existing completion or Sanctuary eligibility.
+
+The separate daily seven-mission checklist pays up to 25 Pet XP, 50 Moon Gold and 1 Style Token once per account/UTC day after an explicit claim. It does not award a Growth Mark or Weekly Crest. Both payouts obey the existing Pet XP cap.
 
 Standard seasons target a 90-day progression cycle. The 60 Growth Mark requirement and 10 Weekly Crest requirement provide natural scheduling flexibility: Growth Marks allow up to roughly 30 missed daily opportunities, while Weekly Crests allow roughly 3 missed weekly windows during a full-length cycle. During a full-length cycle, the 60 Growth Mark and 10 Weekly Crest gates provide approximately three to four weeks of scheduling flexibility before additional balancing or catch-up systems are required. Partial year-end seasons require separate balancing because the available progression window may be shorter. Pet XP can continue past its normal daily target under the later diminishing-returns design, which must prevent heavy play from collapsing the intended seasonal journey into one week. Marks and Crests provide calendar-based fairness and remain independently capped per pet.
 
@@ -55,7 +59,7 @@ Standard seasons target a 90-day progression cycle. The 60 Growth Mark requireme
 
 ## Sanctuary
 
-**FUTURE.** A Moonpet that completes the Legendary requirements moves into Sanctuary as a completed Legendary pet. Sanctuary is the durable record used to recognize completed pets after their seasonal journey; it is not a cashout, token reward, or financial asset.
+**LIVE records / FUTURE expansion.** Completed pets have durable completion and Sanctuary eligibility records. Transition is deferred to season settlement, so completion does not evict the active pet mid-season. A richer Sanctuary home/gameplay loop remains future work; these records do not imply that breeding, Fusion or Prestige are playable.
 
 ## Breeding and Fusion
 

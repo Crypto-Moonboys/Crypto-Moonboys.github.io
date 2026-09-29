@@ -14,6 +14,39 @@ Its purpose is to prevent documentation drift between:
 
 Any gameplay, documentation, or UI change affecting Moonpet status should reference this document.
 
+## Current rules and historical audits
+
+This reference and the seasonal model describe current rules. Dated audits are
+evidence for their reviewed commit and must not override later shipped behavior.
+In particular, old “no completion bonus/finale” and “Practice/Style/relics inactive”
+findings were superseded by completion rewards and the training/style/relic release.
+See [the September 29 reconciliation tracker](moonpet-reconciliation-2026-09-29.md)
+for verified fixes and work still outstanding.
+
+## XP and score ownership
+
+| Value | Owner and meaning |
+| --- | --- |
+| Pet XP | Original earning pet; controls its level and unlocks. |
+| Specialist XP | Original pet's Care, Training, Adventure, Arena, Job and Bond tracks. |
+| Account Season XP | Aggregate awarded Pet XP for the player and source pet season; drives shared tier claims and seasonal ranks. Not spendable. |
+| Daily / weekly pet ranks | Accepted Pet XP receipts in the settlement UTC day / week. |
+| All-time pet ranks | Sum of retained owned pets' XP, including earlier seasons; legacy profile fallback only before per-pet authority exists. |
+| Community XP | Separate account score; only the Community XP portion of accepted pet rewards feeds this board and its chart. Community and pet seasons are independent. |
+
+Moon Gold, Moon Crystals, Style Tokens, materials, consumables, gear/cosmetic
+ownership and spendable Arcade XP belong to the account. Equipped gear and cosmetic
+selection belong to the pet. Switching pets never redirects a saved reward.
+The lifecycle name **Egg**, Stage-0 display name **Secret Bot**, and art identity
+**EGGYONE** refer to different aspects of the same starting pet.
+
+The Community leaderboard and chart use one `/telegram/leaderboard` response and
+explicit `score_basis`. An existing Community season with no scores stays empty;
+all-time is used only when no Community season row exists. Thrown, unsuccessful or
+malformed database reads produce an unavailable/retry response, never zero ranks.
+This chart compares player totals; it is not a historical/source breakdown or the
+wiki relationship graph. Pet XP is not added to Community XP or Arcade scores.
+
 ---
 
 # Current Live Build
@@ -123,7 +156,9 @@ Worker deploy only; no new migration, frontend deployment or assets are needed.
 
 Relic Vault projects the account's stored relics using their `unlocked_at`
 timestamp. A failed vault read is labelled temporarily unavailable, not empty;
-it never clears ownership. Passive relic powers remain inactive in runs.
+it never clears ownership. All ten relics have active, snapshotted adaptations in
+new Practice and Contract runs. Standard and official Daily Runs retain their
+separate rules, and earlier saved runs retain their original rules.
 
 State refreshes batch notice/achievement writes and do not rewrite unchanged
 achievement progress or timestamps. Recovery uses per-queue source allowances

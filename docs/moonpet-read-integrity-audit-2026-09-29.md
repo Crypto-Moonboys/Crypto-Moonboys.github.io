@@ -1,5 +1,11 @@
 # Moonpet game, Shop and leaderboard audit — 29 September 2026
 
+> Historical audit: findings describe the build tested below. Later releases added
+> the daily 7/7 bonus, Signal Sovereign finale, rewarded Practice, cosmetic
+> equipment and relic effects. See [current rules](moonpet-source-of-truth.md) and
+> the [reconciliation tracker](moonpet-reconciliation-2026-09-29.md). Historical XP
+> discrepancies are not presumed repaired.
+
 ## Baseline and verdict
 
 Audited main: `156da4788cca8e270fadc6c72c3abf934c2c5165`. The live Worker

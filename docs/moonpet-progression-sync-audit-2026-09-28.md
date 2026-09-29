@@ -1,5 +1,11 @@
 # Moonpet progression and public synchronization audit — 28 September 2026
 
+> Historical audit: findings describe the build tested below. Later releases added
+> the daily 7/7 bonus, Signal Sovereign finale, rewarded Practice, cosmetic
+> equipment and relic effects. See [current rules](moonpet-source-of-truth.md) and
+> the [reconciliation tracker](moonpet-reconciliation-2026-09-29.md). Historical XP
+> discrepancies are not presumed repaired.
+
 Base: merged PR #1348, `8fb4e7bb72088773e26041cf07f9df7e53bf1cbe`.
 This pass uses source inspection, isolated SQLite databases and local browser
 checks. It does not certify the deployed version or inspect production accounts.

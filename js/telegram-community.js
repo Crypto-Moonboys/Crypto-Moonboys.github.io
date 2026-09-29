@@ -53,7 +53,7 @@
   // ── Fetch helpers ─────────────────────────────────────────────
 
   function apiFetch(path) {
-    return fetch(BASE + path)
+    return fetch(BASE + path, { cache: 'no-store' })
       .then(function (r) { return r.ok ? r.json() : null; })
       .catch(function () { return null; });
   }
@@ -91,30 +91,60 @@
       el.innerHTML = '<div class="community-empty">' + COPY.FEATURE_UNAVAILABLE + '</div>';
       return;
     }
-    el.innerHTML = '<div class="community-loading">Loading community leaderboard…</div>';
+    var request = (el._leaderboardRequest || 0) + 1;
+    el._leaderboardRequest = request;
+    el.setAttribute('aria-busy', 'true');
+    if (!el._leaderboardSnapshot) el.innerHTML = '<div class="community-loading">Loading community leaderboard…</div>';
+    var currentButton = el.querySelector('[data-community-refresh]');
+    if (currentButton) currentButton.disabled = true;
 
-    apiFetch('/telegram/leaderboard?limit=10').then(function (data) {
-      if (!data || !data.entries || !data.entries.length) {
-        el.innerHTML = '<div class="community-empty">No community XP recorded yet. Be the first! 🚀</div>';
+    return apiFetch('/telegram/leaderboard?limit=10').then(function (data) {
+      if (request !== el._leaderboardRequest) return;
+      el.setAttribute('aria-busy', 'false');
+      var refresh = '<button type="button" data-community-refresh>Refresh Community XP</button>';
+      function bindRefresh() {
+        el.querySelector('[data-community-refresh]').addEventListener('click', function () { initTgLeaderboard(el); });
+      }
+      if (!data || !Array.isArray(data.entries) || data.entries.some(function (e) {
+        return !e || !Number.isFinite(e.xp) || e.xp < 0;
+      })) {
+        el.innerHTML = '<p class="community-sync-warning" role="status">Community XP unavailable. ' +
+          (el._leaderboardSnapshot ? 'Showing the last loaded rankings and chart. ' : '') + 'Please retry.</p>' +
+          (el._leaderboardSnapshot || '') + refresh;
+        bindRefresh();
         return;
       }
+      var basis = data.score_basis === 'community_season'
+        ? 'Community season: ' + escapeHtml(data.season && data.season.name || 'current')
+        : data.score_basis === 'all_time' ? 'All-time Community XP' : 'Community XP — period not supplied';
+      var header = '<div class="tg-lb-header">' + basis + '</div>' +
+        '<p class="tg-lb-note">Top 10 players. Bars compare the same XP totals as these rankings, including pet-awarded Community XP. Pet XP has its own leaderboard.</p>';
+      if (!data.entries.length) {
+        el._leaderboardSnapshot = header + '<div class="community-empty">No Community XP recorded for this period yet.</div>';
+        el.innerHTML = el._leaderboardSnapshot + refresh;
+        bindRefresh();
+        return;
+      }
+      var maximum = Math.max.apply(null, data.entries.map(function (e) { return e.xp; }));
       var rows = data.entries.map(function (e, i) {
         var avatar = e.avatar_url
           ? '<img class="tg-avatar" src="' + escapeHtml(e.avatar_url) + '" alt="" loading="lazy">'
           : '<img class="tg-avatar" src="' + gravatar(e.linked_email_hash || '', 32) + '" alt="" loading="lazy">';
         var faction = e.faction ? ' <span class="tg-faction">' + escapeHtml(e.faction) + '</span>' : '';
         var name = escapeHtml(e.display_name || e.username || 'Unknown Moonboy');
-        return '<div class="tg-lb-row">' +
+        var width = maximum > 0 ? e.xp / maximum * 100 : 0;
+        return '<li class="tg-lb-row">' +
           '<span class="tg-lb-rank">' + (i + 1) + '</span>' +
           avatar +
-          '<span class="tg-lb-name">' + name + faction + '</span>' +
-          '<span class="tg-lb-xp">⚡ ' + (e.xp || 0) + ' Community XP</span>' +
-        '</div>';
+          '<span class="tg-lb-name" title="' + name + '">' + name + faction + '</span>' +
+          '<span class="tg-lb-xp">⚡ ' + e.xp + ' Community XP</span>' +
+          '<span class="tg-lb-bar" aria-hidden="true"><span style="width:' + width + '%"></span></span>' +
+        '</li>';
       }).join('');
 
-      el.innerHTML =
-        '<div class="tg-lb-header">Community XP <span class="tg-lb-note">(includes synced arcade progression)</span></div>' +
-        '<div class="tg-lb-list">' + rows + '</div>';
+      el._leaderboardSnapshot = header + '<ol class="tg-lb-list" aria-label="Community XP rankings and chart">' + rows + '</ol>';
+      el.innerHTML = el._leaderboardSnapshot + refresh;
+      bindRefresh();
     });
   }
 

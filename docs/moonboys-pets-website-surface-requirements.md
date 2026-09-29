@@ -104,7 +104,7 @@ Do not expose private Telegram IDs in the UI.
 
 ## Main Leaderboard And Graph Integration
 
-The existing main Community XP leaderboard and graph must include XP earned from Crypto Moonboys Pets because pet actions call the existing `awardXp(...)` flow.
+The main Community XP leaderboard and comparison chart include the **Community XP portion** of accepted pet rewards. Pet XP is a separate score. Current pet settlement uses the protected reward authority; merely calling a generic XP function is not proof that every projection was credited.
 
 Required behavior:
 
@@ -112,12 +112,13 @@ Required behavior:
 - Pet Community XP is logged in `telegram_xp_log` with action names prefixed by `pet_`.
 - Pet Community XP is also written into the active-season `telegram_leaderboard` row when an active `telegram_seasons` row exists.
 - Existing `/telegram/leaderboard` includes pet-earned XP in active seasonal environments. Do not rely on `awardXp(...)` alone if the endpoint reads `telegram_leaderboard` first.
-- Existing Community XP graph uses the same XP log source, so pet XP contributes to the graph.
-- The graph may show source/category breakdown if supported, but must not require all pet stats to be dumped into current pages.
+- The Community chart in `js/telegram-community.js` renders the same top-player totals from the same `/telegram/leaderboard` response as the ranked list. `score_basis` distinguishes Community-season totals from all-time totals. An empty season must not fall back to all-time; failed reads must show an unavailable/retry state.
+- This is a comparison of current player totals, not an XP history chart or source breakdown. `telegram_xp_log` remains reward evidence; missing legacy events must not be fabricated to draw historical points. A time-series/source view is separate follow-up work requiring complete evidence.
+- Wiki relationship/engagement graphs and Arcade score charts keep their existing meanings. They are not Community XP charts and must not be fed Pet XP.
 
 Important separation:
 
-- Main Community XP leaderboard = combined XP from Telegram, arcade, wiki missions, pets, and future official sources.
+- Main Community XP leaderboard = accepted Community XP from connected sources, including pet-awarded Community XP and synced Arcade progression. Do not assume every wiki action or game score awards Community XP.
 - Pet leaderboard = pet-only progression and ranking.
 - Pet stats = shown on Crypto Moonboy Pets pages/panels only.
 - Existing community pages should show only a compact pet summary or CTA, not every live pet stat.
@@ -165,8 +166,8 @@ The implementation PR is not complete until all of these are true:
 - A dedicated How To Play page exists and is linked from the pet wiki page.
 - A dedicated pet leaderboard page or page section exists.
 - The pet leaderboard is separate from the main Community XP leaderboard.
-- Pet XP contributes to the main Community XP leaderboard via `telegram_users`, `telegram_xp_log`, and active-season `telegram_leaderboard` writes.
-- Pet XP contributes to the current XP graph through the existing XP log/source path.
+- Pet-awarded Community XP contributes to the main Community XP leaderboard via `telegram_users`, `telegram_xp_log`, and Community-season `telegram_leaderboard` writes.
+- The Community chart and ranking list show exactly the same returned totals and score period, including pet-awarded Community XP. Pet XP stays on the dedicated pet board.
 - Existing pages do not receive a heavy dump of every pet stat.
 - `community.html` gets only a compact pet summary or CTA.
 - `games/index.html` gets a Telegram Game card pointing users to play.
