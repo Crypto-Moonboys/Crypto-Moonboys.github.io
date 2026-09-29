@@ -410,6 +410,8 @@ assert.ok(worker.includes("case 'petarena'"), '/petarena command must exist');
 assert.ok(worker.includes("callback_data: 'pet:arena'"), 'pet menu must include Arena button');
 assert.ok(worker.includes('Pet Arena unlocks at level 10. Keep growing your Moonpet.'), 'level <10 blocked copy must be exact');
 assert.ok(worker.includes("PET_ARENA_MIN_LEVEL as COMBAT_ARENA_MIN_LEVEL"), 'level 10+ can enter Pet Arena through the shared combat contract');
+assert.ok(worker.includes("reason: combat.arena_reason"), 'direct Arena actions must return the canonical Arena lock reason');
+assert.ok(!worker.includes("eligible.reason === 'level_locked' ? 'Pet Arena unlocks"), 'Telegram Arena guidance must not retain the legacy level-lock reason');
 assert.ok(worker.includes("createPetArenaBattle(db, chatId, pet, appPet, 'app')"), 'private app battle works');
 assert.ok(!worker.includes('const done = await completePetArenaBattle(db, battle); await sendTelegramMessage(tok, chatId, formatPetArenaResult(done.battle || battle)); return;'), 'App battle does not instantly complete on create.');
 assert.ok(worker.includes('selectPetArenaAppMove(battle)'), 'App battle advances after player move and app AI move.');
