@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
+import { buildPetGearSummary } from '../workers/moonboys-api/pets/runtime-phase-5a.js';
 import worker, { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 
 const currentSeason = hooks.getPetSeasonInfo(new Date()).key;
@@ -62,6 +63,32 @@ function funded(id) {
     f.sql.prepare('INSERT INTO telegram_pet_material_balances (telegram_id,material_key,quantity) VALUES (?,?,9000)').run(f.owner,key);
   return f;
 }
+
+test('gear summary uses live Shop descriptions without advertising unused utility targets', async () => {
+  const f = funded('gear-copy');
+  const state = await hooks.buildPetMiniAppState(f.db, f.owner, 'fixture-token');
+  const catalog = Object.fromEntries(state.guidance.shop_items.map(item => [item.key, item]));
+  const text = buildPetGearSummary(Object.values(catalog).map(item => ({ item_key: item.key, item_level: 10, mastery_xp: 5000 })), catalog);
+  for (const item of Object.values(catalog)) assert.ok(text.includes(item.description), item.key);
+  assert.match(text, /bonus ×1\.978/);
+  assert.doesNotMatch(text, /strength training|guard job|explore reward|run fight|health restore/);
+  assert.ok(text.length <= 4096, 'a complete collection must fit one Telegram message');
+  assert.match(catalog.crystal_bowl.description, /energy/);
+  assert.doesNotMatch(catalog.crystal_bowl.description, /health/);
+  assert.match(catalog.hoverboard.description, /Standard Runs/);
+  for (const key of ['street_hoodie', 'moon_armor', 'crown_jacket']) assert.match(catalog[key].description, /Feed, Play, Clean, Sleep and Train/);
+  const rule = { ...hooks.PET_ACTIONS.feed };
+  const rewards = { pet_xp: rule.pet_xp, moon_gold: rule.gold, style_tokens: 0 };
+  hooks.applyPetItemActionBonuses({ pet_xp: 0, equipped_food: 'crystal_bowl' }, 'feed', rule, rewards);
+  assert.equal(rule.energy, hooks.PET_ACTIONS.feed.energy + 10);
+  assert.equal(rule.health, undefined, 'Crystal Bowl does not grant the previously advertised health');
+  for (const action of ['dance', 'energy_drink', 'cuddles']) {
+    const specialRule = { ...hooks.PET_ACTIONS[action] };
+    const specialRewards = { pet_xp: 0, moon_gold: 0, style_tokens: 0 };
+    hooks.applyPetItemActionBonuses({ equipped_outfit: 'crown_jacket' }, action, specialRule, specialRewards);
+    assert.deepEqual(specialRewards, { pet_xp: 0, moon_gold: 0, style_tokens: 0 });
+  }
+});
 test('audit every permanent Shop item, each upgrade level, and replay',async()=>{
  const f=funded('catalog');
  const state=await hooks.buildPetMiniAppState(f.db,f.owner,'fixture-token');

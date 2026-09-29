@@ -11,7 +11,7 @@ import { handleRadioStream } from './routes/radio-stream.js';
 import { getContractBoard, processContractAction } from './pets/continuing-contracts.js';
 import { recoverPetJourneyAwards } from './pets/journey-recovery.js';
 import { recoverPetWeeklyBossVictories } from './pets/weekly-boss-recovery.js';
-import { PET_EQUIPMENT_UTILITY, getPetEquipmentMultiplier, withPetEquipmentProgression, recoverPetEquipmentRows } from './pets/equipment-progression.js';
+import { PET_EQUIPMENT_UTILITY, getPetEquipmentMultiplier, withPetEquipmentProgression, recoverPetEquipmentRows, snapshotPetEquipmentProgression, PET_EQUIPMENT_SNAPSHOT_MATCH_SQL } from './pets/equipment-progression.js';
 import { recoverPetRuntimeAwards, standardStepRuntimeKey } from './pets/runtime-recovery.js';
 import { petCareDeltaStatements, petCareCommunityStatements } from './pets/care-writes.js';
 import { chooseDailyRunTactic, dailyTacticalBoard, previewDailyChoice, readDailyModifiers } from './pets/daily-run-tactics.js';
@@ -1669,7 +1669,7 @@ const PET_SHOP_ITEMS = Object.freeze({
     key: 'street_hoodie',
     slot: 'outfit',
     title: 'Street Hoodie',
-    description: 'Clothing upgrade: all care actions add +2 pet XP.',
+    description: 'Feed, Play, Clean, Sleep and Train add +2 pet XP.',
     cost: { moon_gold: 60, moon_crystals: 0, style_tokens: 6 },
     min_level: 2,
   },
@@ -1677,7 +1677,7 @@ const PET_SHOP_ITEMS = Object.freeze({
     key: 'moon_armor',
     slot: 'outfit',
     title: 'Moon Armor',
-    description: 'High-tier clothing: all care actions add +5 pet XP and +1 gold.',
+    description: 'Feed, Play, Clean, Sleep and Train add +5 pet XP and +1 gold.',
     cost: { moon_gold: 180, moon_crystals: 8, style_tokens: 12 },
     min_level: 8,
   },
@@ -1685,7 +1685,7 @@ const PET_SHOP_ITEMS = Object.freeze({
     key: 'crystal_bowl',
     slot: 'food',
     title: 'Crystal Bowl',
-    description: 'Endgame food: feed restores more hunger, health and +18 pet XP.',
+    description: 'Feed restores more hunger and energy and adds +18 pet XP.',
     cost: { moon_gold: 360, moon_crystals: 18, style_tokens: 0 },
     min_level: 12,
   },
@@ -1693,7 +1693,7 @@ const PET_SHOP_ITEMS = Object.freeze({
     key: 'hoverboard',
     slot: 'toy',
     title: 'Moon Hoverboard',
-    description: 'Adventure toy: play gives more happiness and adventures can find extra gold.',
+    description: 'Play gives more happiness, XP and gold. Standard Runs gain extra gold and safer Sneak choices.',
     cost: { moon_gold: 240, moon_crystals: 10, style_tokens: 4 },
     min_level: 7,
   },
@@ -1701,7 +1701,7 @@ const PET_SHOP_ITEMS = Object.freeze({
     key: 'crown_jacket',
     slot: 'outfit',
     title: 'Crown Jacket',
-    description: 'Season flex: all care actions add +8 pet XP, +2 gold and +1 style.',
+    description: 'Feed, Play, Clean, Sleep and Train add +8 pet XP, +2 gold and +1 style.',
     cost: { moon_gold: 520, moon_crystals: 22, style_tokens: 30 },
     min_level: 15,
   },
@@ -3063,14 +3063,7 @@ async function processPetRunStepResult(db, telegramId, runIdRaw, choiceKeyRaw, o
   // Reject a stale absolute write if care, rewards or equipment change this pet
   // while the choice is resolving. Guard the step reservation so costs stay atomic.
   const sourceState = PET_INSTANCE_STATE_COLUMNS.map(column => pet[column] ?? null);
-  // Equipment upgrades/mastery live outside the pet row. Include missing rows
-  // so a concurrent backfill cannot change the bonuses underneath this choice.
-  const sourceEquipment = JSON.stringify(Object.entries(PET_EQUIPMENT_UTILITY)
-    .filter(([key, item]) => pet[`equipped_${item.slot}`] === key)
-    .map(([item_key, { slot }]) => ({ item_key, slot,
-      ...Object.fromEntries(['item_level', 'item_xp', 'mastery_xp', 'mastery_tier']
-        .map(column => [column, pet.equipment_progression?.[item_key]?.[column] ?? null])),
-    })));
+  const sourceEquipment = snapshotPetEquipmentProgression(pet);
   const inventory = await getPetInventory(db, telegramId);
   const outcome = buildPetRunStepOutcome(run, choice, pet, inventory);
   const walletCosts = getPetRunWalletCosts(outcome.costs);
@@ -3113,14 +3106,7 @@ async function processPetRunStepResult(db, telegramId, runIdRaw, choiceKeyRaw, o
       AND EXISTS (SELECT 1 FROM telegram_pet_instances source_pet
         WHERE source_pet.pet_id=? AND source_pet.telegram_id=? AND source_pet.season_key=?
           AND ${PET_INSTANCE_STATE_COLUMNS.map(column => `source_pet.${column} IS ?`).join(' AND ')})
-      AND NOT EXISTS (SELECT 1 FROM json_each(?) expected
-        LEFT JOIN telegram_pet_equipment_progression gear
-          ON gear.telegram_id=? AND gear.item_key=json_extract(expected.value,'$.item_key')
-            AND gear.slot=json_extract(expected.value,'$.slot')
-        WHERE gear.item_level IS NOT json_extract(expected.value,'$.item_level')
-          OR gear.item_xp IS NOT json_extract(expected.value,'$.item_xp')
-          OR gear.mastery_xp IS NOT json_extract(expected.value,'$.mastery_xp')
-          OR gear.mastery_tier IS NOT json_extract(expected.value,'$.mastery_tier'))
+      AND ${PET_EQUIPMENT_SNAPSHOT_MATCH_SQL}
   `).bind(
     stepId,
     run.pet_id,
@@ -6577,6 +6563,12 @@ async function processPetAction(db, telegramId, action, options = {}) {
     return { accepted: false, reason: 'wallet_reconciliation_recovery_pending', pet, xp_awarded: 0, pet_xp_awarded: 0 };
   }
 
+  // Care rewards depend on paid level/mastery as well as the equipped key.
+  // Stat-only actions have no gear bonuses; unrelated slots cannot block care.
+  const careGearSlots = specialPolicy ? [] : ['outfit',
+    ...(normalizedAction === 'feed' ? ['food'] : []),
+    ...(normalizedAction === 'play' ? ['toy'] : [])];
+  const sourceEquipment = snapshotPetEquipmentProgression(pet, careGearSlots);
   const eventId = crypto.randomUUID();
   const metadata = JSON.stringify({ source: options.source || 'telegram_bot', runtime_event_key: options.runtime_event_key || null, equipment_snapshot: pet.equipment_progression || {}, rewards: tokenRewards,
     ...(specialPolicy ? { policy: specialPolicy } : {}) });
@@ -6599,6 +6591,7 @@ async function processPetAction(db, telegramId, action, options = {}) {
           WHERE p.pet_id=? AND p.telegram_id=? AND p.season_key=? AND p.status='active'
             AND COALESCE(p.equipped_food,'')=? AND COALESCE(p.equipped_toy,'')=? AND COALESCE(p.equipped_outfit,'')=?
             AND (?<>'train' OR ROUND(p.energy-MAX(0,(julianday(?)-julianday(p.last_decay_at))*24)*2.2)>=18))
+        AND ${PET_EQUIPMENT_SNAPSHOT_MATCH_SQL}
         AND (? NOT IN ('sleep','train') OR NOT EXISTS (SELECT 1 FROM telegram_pet_activity_sessions WHERE telegram_id=? AND status='active'))
         AND (?=0 OR (
           NOT EXISTS (SELECT 1 FROM telegram_pet_activity_sessions WHERE telegram_id=? AND (status='active' OR (${PET_RECOVERABLE_ACTIVITY_PREDICATE})))
@@ -6614,6 +6607,7 @@ async function processPetAction(db, telegramId, action, options = {}) {
       specialPolicy ? 1 : 0, telegramId, normalizedAction, dayKey, Number(specialPolicy?.daily_limit || 0),
       telegramId, normalizedAction, specialPolicy ? 1 : 0, Math.floor(now.getTime() / 1000), specialPolicy?.cooldown_seconds || PETS_ACTION_COOLDOWN_SECONDS,
       pet.pet_id, telegramId, season.key, pet.equipped_food || '', pet.equipped_toy || '', pet.equipped_outfit || '', normalizedAction, now.toISOString(),
+      sourceEquipment, telegramId,
       normalizedAction, telegramId, specialPolicy ? 1 : 0, telegramId, telegramId, telegramId, telegramId, telegramId, telegramId),
     accountWalletDeltaStatement(db, telegramId, tokenRewards,
       "EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')", [eventId]),
@@ -16853,7 +16847,7 @@ async function cmdPetGear(db, tok, chatId, telegramId) {
     return;
   }
   const rows = await db.prepare(`SELECT item_key, slot, item_level, item_xp, mastery_xp, mastery_tier FROM telegram_pet_equipment_progression WHERE telegram_id = ? ORDER BY slot, item_level DESC, item_key`).bind(telegramId).all().catch(() => ({ results: [] }));
-  await sendTelegramMessage(tok, chatId, buildPetGearSummary(rows.results || []), { reply_markup: buildPetManagementMenuReplyMarkup() });
+  await sendTelegramMessage(tok, chatId, buildPetGearSummary(rows.results, PET_SHOP_ITEMS), { reply_markup: buildPetManagementMenuReplyMarkup() });
 }
 
 export async function applyPetRuntimeCommandAward(db, telegramId, eventKey, action, options = {}) {

@@ -75,6 +75,27 @@ export function getPetEquipmentMultiplier(pet, itemKey) {
   return (1 + (level - 1) * 0.08) * (1 + getPetEquipmentMasteryTier(row.mastery_xp) * 0.03);
 }
 
+// Include absent rows: an ownership repair can introduce a different multiplier
+// without changing the equipped item key on the pet itself.
+export function snapshotPetEquipmentProgression(pet, slots = null) {
+  return JSON.stringify(Object.entries(PET_EQUIPMENT_UTILITY)
+    .filter(([key, item]) => pet[`equipped_${item.slot}`] === key && (!slots || slots.includes(item.slot)))
+    .map(([item_key, { slot }]) => ({ item_key, slot,
+      ...Object.fromEntries(['item_level', 'item_xp', 'mastery_xp', 'mastery_tier']
+        .map(column => [column, pet.equipment_progression?.[item_key]?.[column] ?? null])),
+    })));
+}
+
+// Bind snapshot JSON, then its account owner inside the action reservation.
+export const PET_EQUIPMENT_SNAPSHOT_MATCH_SQL = `NOT EXISTS (SELECT 1 FROM json_each(?) expected
+  LEFT JOIN telegram_pet_equipment_progression gear
+    ON gear.telegram_id=? AND gear.item_key=json_extract(expected.value,'$.item_key')
+      AND gear.slot=json_extract(expected.value,'$.slot')
+  WHERE gear.item_level IS NOT json_extract(expected.value,'$.item_level')
+    OR gear.item_xp IS NOT json_extract(expected.value,'$.item_xp')
+    OR gear.mastery_xp IS NOT json_extract(expected.value,'$.mastery_xp')
+    OR gear.mastery_tier IS NOT json_extract(expected.value,'$.mastery_tier'))`;
+
 // Account inventory remains shared, but only this source pet's equipped items
 // affect its actions. Read failures must not silently remove paid bonuses.
 export async function withPetEquipmentProgression(db, pet, includeOwned = false) {
@@ -115,6 +136,10 @@ export async function recoverPetEquipmentRows(db, owner) {
 export function formatPetEquipmentProgression(itemKey, progression = {}) {
   const scaled = scalePetEquipmentEffects(itemKey, progression);
   if (!scaled) return null;
-  const effectText = Object.entries(scaled.effects).map(([key, value]) => `${key.replace(/_/g, ' ')} +${value}`).join(', ');
-  return `${itemKey} · Lv.${scaled.level} · Mastery ${scaled.mastery_tier}/5 · ${effectText}`;
+  // Legacy utility targets are not the gameplay formulas. Show the actual
+  // multiplier; the caller supplies supported effects from the live Shop.
+  const multiplier = getPetEquipmentMultiplier({ equipment_progression: {
+    [itemKey]: { ...progression, item_level: scaled.level },
+  } }, itemKey);
+  return `${itemKey} · Lv.${scaled.level} · Mastery ${scaled.mastery_tier}/5 · bonus ×${Number(multiplier.toFixed(4))}`;
 }

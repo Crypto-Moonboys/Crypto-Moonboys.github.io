@@ -28,6 +28,7 @@ let failContractReward = false;
 let failStandardReward = false;
 let failRelicRead = false;
 let failLiveStateRead = false;
+let upgradeDuringCare = null;
 class Statement {
   constructor(sql, args = []) { this.sql = sql; this.args = args; }
   bind(...args) { return new Statement(this.sql, args); }
@@ -51,6 +52,11 @@ class Statement {
 const db = {
   prepare(sql) { return new Statement(sql); },
   async batch(statements) {
+    if (upgradeDuringCare && statements[0].sql.includes('pet_action_pending')) {
+      sqlite.prepare("UPDATE telegram_pet_equipment_progression SET item_level=2 WHERE telegram_id=? AND item_key='moon_kibble'").run(upgradeDuringCare);
+      sqlite.prepare("INSERT INTO telegram_pet_guidance_notices (telegram_id,notice_key,notice_type,title,detail,callback_data) VALUES (?,'care-race-notice','shop','Equipment updated','Review your gear','pet:equipment')").run(upgradeDuringCare);
+      upgradeDuringCare = null;
+    }
     if (failStandardReward && statements[0].sql.includes('INSERT OR IGNORE INTO telegram_pet_reward_claims') && statements[0].args.includes('pet_run_legacy')) {
       failStandardReward = false; throw Error('interrupted_standard_reward');
     }
@@ -996,6 +1002,8 @@ try {
     // Background activities expose real duration choices and survive interrupted claims.
     currentUser = `browser-activity-${viewport.width}`;
     await seed(currentUser, 'young');
+    sqlite.prepare("UPDATE telegram_pet_profiles SET equipped_food='moon_kibble' WHERE telegram_id=?").run(currentUser);
+    sqlite.prepare("UPDATE telegram_pet_instances SET equipped_food='moon_kibble' WHERE telegram_id=?").run(currentUser);
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
     await page.locator('[data-panel="play-now"] [data-focus="timed-activity"]').click();
     await page.waitForFunction(() => {
@@ -1015,6 +1023,15 @@ try {
     assert.equal(await page.locator('[data-action="sleep"]').isDisabled(), true);
     assert.equal(await page.locator('[data-action="train"]').isDisabled(), true);
     assert.equal(await page.locator('[data-action="feed"]').isEnabled(), true);
+    upgradeDuringCare = currentUser;
+    const staleCareResponse = page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'feed');
+    await page.locator('[data-panel="care"] [data-action="feed"]').click();
+    const staleCare = await (await staleCareResponse).json();
+    assert.equal(staleCare.result.accepted, false);
+    assert.equal(staleCare.result.reason, 'pet_action_state_changed');
+    await page.waitForFunction(() => document.getElementById('terminal-output').textContent.includes('No care reward or cooldown was applied'));
+    assert.equal(sqlite.prepare("SELECT shown_at FROM telegram_pet_guidance_notices WHERE telegram_id=? AND notice_key='care-race-notice'").get(currentUser).shown_at, null, 'a rejection cannot acknowledge and replace a queued progress notice');
+    assert.equal(await page.locator('[data-action="feed"]').isEnabled(), true, 'a stale gear rejection leaves care ready to retry');
     const completedCare = [];
     for (const action of ['feed', 'play', 'clean']) {
       const careResponse = page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === action);
