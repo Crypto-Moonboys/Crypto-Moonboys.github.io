@@ -57,8 +57,9 @@ private production accounts.
 | Arena / Kaiju | Source attribution, costs, saved results and settlement regressions; no live human-opponent match performed |
 | Rankings / activity | Accepted reward receipts, four Pet XP periods, recent activity, Community XP and replay/rollback assertions |
 
-Practice remains local and gives no official progress. Style Lab collects unlocks
-without appearance/stat effects; passive relic powers remain inactive. Breeding,
+The initial audit found local-only Practice, collection-only Style Lab and inactive
+relic powers. The pre-merge follow-up replaces these limitations; see
+[Practice, styles and relic routes](moonpet-training-style-relics-2026-09-29.md). Breeding,
 Traits, Sanctuary, Lineage, Fusion and Prestige remain unavailable in the Mini
 App. These are existing explicit limitations, not newly activated functionality.
 
@@ -86,8 +87,9 @@ separate meanings; public activity is a recent receipt feed, not every click.
 
 ## Release
 
-After merge, deploy `moonboys-api` using the provenance wrapper. No new D1
-migration, frontend deployment or VPS restart is required by the runtime fix.
+The faction-read fix alone needs only `moonboys-api`. The pre-merge training/style
+addition also requires migration 079 before Worker deployment and the updated
+Pages frontend; no VPS restart is required.
 Normal Pages automation may publish the documentation. Check jobs, district
 choices and story choices after deployment, plus the four public Pet boards.
 Full local tests, syntax/diff checks and GitHub checks are recorded in the PR.

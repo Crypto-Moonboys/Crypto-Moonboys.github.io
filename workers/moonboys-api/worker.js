@@ -1,3 +1,6 @@
+import { getPracticeBoard, processPracticeAction } from './pets/practice-progression.js';
+import { getStyleLoadout, equipPetStyle } from './pets/style-loadout.js';
+import { RELIC_ROUTE_DETAILS } from './pets/relic-passives.js';
 import { requirePetReadResult } from './pets/read-result.js';
 import { readDailyCompletion, claimDailyCompletion, getSeasonFinales, processSeasonFinale } from './pets/completion-features.js';
 import { PET_STATE_RECOVERY_LIMITS, boundedRecoveryLimit, claimPetRecoveryBatch } from './pets/recovery-limits.js';
@@ -9708,6 +9711,8 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
   const runPet = !activeRun || activeRun.pet_id === petRaw.pet_id ? petRaw
     : await getPetInstanceWithAtomicDecay(db, activeRun.pet_id);
   const runPetAvailable = Boolean(activeRun?.pet_id && runPet?.pet_id === activeRun.pet_id && runPet?.telegram_id === telegramId);
+  const practice = await getPracticeBoard(db, telegramId, petRaw, now).catch(() => ({ available: false, reason: 'practice_unavailable' }));
+  const styleLoadout = await getStyleLoadout(db, telegramId, petRaw.pet_id).catch(() => ({ available: false, equipped: [] }));
   const contracts = await getContractBoard(db, telegramId, petRaw, now)
     .catch(() => ({ available: false, reason: 'contracts_unavailable' }));
   if (next?.key === 'activity_running' && contracts.available) next = {
@@ -9795,13 +9800,15 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       quantity: Math.max(0, Number((materials.results || []).find((row) => row.material_key === key)?.quantity || 0)),
       sources: [...definition.sources, ...getPetRuntimeMaterialSources(key)],
     })),
-    relics: relics.results || [],
+    relics: (relics.results || []).map(row => ({ ...row, route_effect: RELIC_ROUTE_DETAILS[row.relic_id] || null })),
     relics_available: relics.available !== false,
     regions: liveSystems.regions,
     live_systems: liveSystems,
     inventory,
     daily_run: dailyRunSummary,
     contracts,
+    practice,
+    style_loadout: styleLoadout,
     trade: {
       cooldown: tradeCooldown?.remaining_seconds > 0 ? tradeCooldown : null,
       offers: [10, 25, 50].map((wager) => ({ wager, affordable: Number(petRaw.moon_gold) >= wager,
@@ -9927,7 +9934,7 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
     if (PET_MINI_APP_FUTURE_COMBAT_ACTIONS.has(action) || PET_MINI_APP_COMBAT_CLEANUP_ACTIONS.has(action)) return null;
     throw error;
   });
-  const eggAllowedActions = ['guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim', 'contract_claim', 'seasonal_boss_claim', 'daily_completion_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim'];
+  const eggAllowedActions = ['guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim', 'contract_claim', 'practice_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim'];
   if (lifecycle?.phase === 'egg' && !eggAllowedActions.includes(action)) {
     if (PET_MINI_APP_COMBAT_CLEANUP_ACTIONS.has(action) || PET_MINI_APP_FUTURE_COMBAT_ACTIONS.has(action)) {
       // fall through; locked cleanup must remain available for stale combat state.
@@ -10010,6 +10017,8 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
     const resolved = await result;
     return resolved;
   }
+  if (action === 'style_equip') return equipPetStyle(db, telegramId, await getPetProfile(db, telegramId), body);
+  if (['practice_start', 'practice_step', 'practice_claim'].includes(action)) return processPracticeAction(db, telegramId, await getPetProfile(db, telegramId), body, awardPetReward);
   if (['contract_start', 'contract_step', 'contract_claim'].includes(action)) {
     const contractPet = await getPetProfile(db, telegramId);
     try { return await processContractAction(db, telegramId, contractPet, body, awardPetReward); }
@@ -13916,7 +13925,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260928-recovery-state-v1`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260929-training-style-v1`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',

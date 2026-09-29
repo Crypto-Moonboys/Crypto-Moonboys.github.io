@@ -98,7 +98,7 @@ for (const source of ['pet_district', 'pet_event_chain', 'pet_seasonal_boss']) a
 assert.match(workerSource, /processPetEquipmentUpgrade\(db, telegramId, body\.item_key, eventKey\)/, 'gear upgrades must retain request idempotency');
 assert.match(workerSource, /if \(!petRaw\) return \{ accepted: false, reason: 'pet_not_adopted' \}; const faction = await db\.prepare\('SELECT faction FROM blocktopia_progression/, 'event chains must reject users without a pet before inserting a system event');
 assert.match(workerSource, /destination: 'economy'/, 'recommendations must provide explicit destinations');
-assert.match(clientSource, /disabled: !item\.affordable \|\| item\.unlocked && !item\.repeatable/, 'Style Lab must disable unaffordable purchases');
+assert.match(clientSource, /button\('UNLOCK ' \+ words\(item\.key\), 'cosmetic_unlock', \{ cosmetic_key: item\.key \}, \{ disabled: !item\.affordable/, 'Style Lab must disable unaffordable purchases');
 assert.match(normalizeSourceWhitespace(liveSystemsSource), /ensurePetAccountWalletReadyForMutation[\s\S]*wallet_reconciliation_recovery_pending/,
   'live-system account-wallet sinks must use the shared reconcile-first guard and return the structured pending reason');
 assert.match(normalizeSourceWhitespace(liveSystemsSource), /const authority = await resolveLivePetAuthority\(db, telegramId, pet\); if \(!authority\) return \{ accepted: false, reason: 'source_pet_authority_required' \}; const liveProgression = await getPetLiveProgressionState\(db, telegramId, pet, runtime, authority\);/,

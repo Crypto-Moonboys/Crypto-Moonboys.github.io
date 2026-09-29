@@ -231,9 +231,9 @@
       if (nextBounty) add('bounty_target', 'NEXT BOUNTY // ' + nextBounty.bounty.title, nextBounty.bounty.progress + '/' + nextBounty.bounty.required + ' // ' + (nextBounty.bounty.detail || '') + ' A qualifying route is ready; review its costs.', nextBounty.routes[0]);
     }
     if (s.contracts && s.contracts.available) add('contract', s.contracts.run && s.contracts.run.status === 'active' ? 'CONTINUE CONTRACT' : 'CONTINUING CONTRACTS', 'Choose a quest, build and route length. Saved rank and upgrade drafts. New quests after every finish; no pet energy cost.');
-    add('practice', 'PRACTICE ROGUELITE', 'Unlimited replays. Build choices, room risks and local goals. No rewards or pet costs.');
+    add('practice', 'PRACTICE ROGUELITE', egg ? 'Hatch to unlock saved training and daily XP bonuses.' : 'Saved training rank on qualifying clears; three daily XP bonuses. No pet costs.');
     if (egg) {
-      add('incubate', 'SECRET BOT CARE', 'Care and reveal remain server-controlled. Practice is available while you wait.');
+      add('incubate', 'SECRET BOT CARE', 'Care and reveal remain server-controlled. Hatch to unlock official training.');
       return choices;
     }
     if (!g.activity && (g.activity_options || []).length) add('activity', 'CHOOSE A BACKGROUND ACTIVITY', 'Compare four activities and duration rewards. Keep playing contracts while it accumulates.');

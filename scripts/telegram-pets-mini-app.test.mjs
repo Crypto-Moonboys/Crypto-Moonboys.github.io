@@ -1326,7 +1326,7 @@ assert.match(worker, /const \[journeySummary, hydratedKaiju, seasonFinales\] = a
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
-assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260928-recovery-state-v1`/);
+assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260929-training-style-v1`/);
 assert.match(worker, /const TELEGRAM_GAMES_MENU_URL = `\$\{SITE_URL\}\/games\/telegram\/\?v=20260903-games-shell-v8`/,
   'default Telegram games menu must point at the current shell release');
 assert.match(worker, /const TELEGRAM_GAMES_MENU_TEXT = 'Games'/);
@@ -1429,7 +1429,7 @@ assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260928-sections-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20260926-front-actions-v1/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20260926-front-actions-v1/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260929-care-equipment-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260929-training-style-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1613,7 +1613,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260929-care-equipment-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260929-training-style-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -1734,8 +1734,8 @@ assert.match(client, /MoonpetBotArtLoader\.loadMoonpetBotArt\(botArtIdentity\(ne
 assert.match(client, /await hatchStageOnePreloadPromise;[\s\S]*selectBotArtForState\(state\)/, 'the renderer must not switch to WTFBOI before its preload completes');
 assert.match(client, /animationUntil = Number\.POSITIVE_INFINITY/, 'the final EGGYONE hatch frame must remain visible until the Stage 1 swap');
 assert.match(client, /lifecycle\.phase === 'egg' \? 'stage0:' \+ seasonKey/, 'Stage 0 sleep must have a stable persistence key before a pet ID exists');
-assert.match(client, /drawSelectedBotSprite\(renderTime, animationMode, active, x, y, 1\)/, 'hatched pets must use the selected AutoSprite pack');
-assert.match(client, /if \(drawSelectedBotSprite\(renderTime, animationMode, active, x, y, 1\)\) return;\s*if \(!botArtFallbackLogged\) \{\s*botArtFallbackLogged = true;\s*console\.info\('\[Moonpet\] bot art unavailable; suppressing retired procedural pet fallback', botArtRendererState\);\s*\}/s,
+assert.match(client, /drawSelectedBotSprite\(renderTime, styledVictory \? 'victory' : animationMode, active \|\| styledVictory, x, y, 1\)/, 'hatched pets must use the selected AutoSprite pack');
+assert.match(client, /if \(drawSelectedBotSprite\(renderTime, styledVictory \? 'victory' : animationMode, active \|\| styledVictory, x, y, 1\)\) return;\s*if \(!botArtFallbackLogged\) \{\s*botArtFallbackLogged = true;\s*console\.info\('\[Moonpet\] bot art unavailable; suppressing retired procedural pet fallback', botArtRendererState\);\s*\}/s,
   'hatched pets must suppress the retired fallback renderer when bot art is unavailable');
 assert.doesNotMatch(client, /drawSideScrollerMoonpetSprite|drawApprovedMoonpetSprite/, 'legacy character renderers must not be live');
 assert.doesNotMatch(client, /drawEquipmentLayers|drawCosmeticLayers|wearableTraitDebug|WEARABLE_LOADOUT/, 'character dressing and wearable debug logic must be absent');
@@ -2160,7 +2160,7 @@ assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Numbe
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
 assert.match(html, /20260926-front-actions-v1/);
-assert.match(worker, /20260928-recovery-state-v1/);
+assert.match(worker, /20260929-training-style-v1/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');
 assert.match(client, /renderQuality = reducedMotion/, 'canvas quality must start from device capability');

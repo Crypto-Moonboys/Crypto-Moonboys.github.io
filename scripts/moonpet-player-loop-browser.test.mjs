@@ -252,26 +252,37 @@ try {
     }
     await page.locator('[data-screen="home"]').click();
     await page.locator('[data-panel="play-now"] [data-focus="practice"]').click();
+    assert.match(await page.locator('[data-panel="practice"]').textContent(), /Hatch your pet/);
+    currentUser = 'browser-young';
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-panel="play-now"] [data-focus="practice"]').click();
     await page.waitForSelector('#practice-build');
     const gameplayCount = () => actions.filter((action) => action !== 'guidance_ack').length;
     const beforeActions = gameplayCount();
     await page.locator('#practice-build').selectOption('scavenger');
     await page.locator('#practice-goal').selectOption('collector');
     await page.locator('[data-practice-action="start"]').click();
-    for (let i = 0; i < 3; i++) await page.locator('[data-practice-action="safe"]').click();
+    await page.waitForSelector('[data-practice-action="safe"]');
+    for (let i = 0; i < 3; i++) {
+      await page.locator('[data-practice-action="safe"]').click();
+      await page.waitForFunction(depth => document.querySelector('[data-panel="practice"]').textContent.includes('ROOMS ' + depth + '/12'), i + 1);
+    }
     assert.equal(await page.locator('[data-panel="practice"] [data-practice-action]:not([data-practice-action="extract"])').count(), 3, 'third room must offer three upgrade choices');
     const draft = page.locator('[data-panel="practice"] [data-practice-action]:not([data-practice-action="extract"])').first();
     await draft.click();
-    const storedBefore = await page.evaluate(() => localStorage.getItem('moonpet-practice-v1'));
+    await page.waitForSelector('[data-practice-action="safe"]');
+    const storedBefore = sqlite.prepare('SELECT state_json FROM telegram_pet_practice WHERE telegram_id=? ORDER BY sequence DESC LIMIT 1').get(currentUser).state_json;
     await page.reload();
     await page.waitForSelector('[data-panel="care"]');
     await page.locator('[data-panel="play-now"] [data-focus="practice"]').click();
-    assert.equal(await page.evaluate(() => localStorage.getItem('moonpet-practice-v1')), storedBefore, 'refresh must preserve local practice run');
-    assert.equal(gameplayCount(), beforeActions, 'practice must never post a gameplay action (boot notice acknowledgements are separate)');
+    assert.equal(sqlite.prepare('SELECT state_json FROM telegram_pet_practice WHERE telegram_id=? ORDER BY sequence DESC LIMIT 1').get(currentUser).state_json, storedBefore, 'refresh preserves server-owned practice');
+    assert.equal(await page.evaluate(() => localStorage.getItem('moonpet-practice-v1')), null, 'official runs never trust local records');
+    assert.equal(gameplayCount(), beforeActions + 5, 'start, three turns and draft use authenticated server actions');
     const practiceBounds = await page.locator('[data-panel="practice"]').evaluate((panel) => ({ right: panel.getBoundingClientRect().right, width: panel.getBoundingClientRect().width, viewport: window.innerWidth, screenWidth: document.getElementById('screen').clientWidth }));
     assert.ok(practiceBounds.right <= viewport.width, JSON.stringify(practiceBounds));
     if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-practice-${viewport.width}.png`) });
     await page.locator('[data-practice-action="extract"]').click();
+    await page.waitForSelector('[data-practice-action="start"]');
     assert.equal(await page.locator('[data-practice-action="start"]').count(), 1);
     currentUser = 'browser-young';
     await page.reload();
@@ -293,6 +304,33 @@ try {
       const jumps = await page.locator('#screen [data-jump]').evaluateAll((buttons) => buttons.map((b) => ({ screen: b.dataset.jump, focus: b.dataset.focus })));
       for (const jump of jumps) assert.ok(['home', 'missions', 'explore', 'work', 'economy', 'profile'].includes(jump.screen));
     }
+    // Existing collection purchases become visible without another charge.
+    const styleWallet = sqlite.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(currentUser);
+    for (const key of ['rename_badge','profile_frame','victory_pose','run_trail']) sqlite.prepare('INSERT OR IGNORE INTO telegram_pet_cosmetic_unlocks(telegram_id,cosmetic_key,quantity)VALUES(?,?,1)').run(currentUser,key);
+    await page.locator('[data-utility="sync"]').click();
+    await page.locator('[data-screen="economy"]').click();
+    await page.waitForSelector('[data-action="style_equip"]');
+    for (const key of ['rename_badge','profile_frame','victory_pose','run_trail']) {
+      const selector = '[data-action="style_equip"][data-payload*="' + key + '"]';
+      const response = page.waitForResponse(r => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'style_equip');
+      await page.locator(selector).click();
+      const data = await (await response).json();
+      assert.equal(data.result.accepted,true); assert.ok(data.state.style_loadout.equipped.includes(key));
+      await page.waitForFunction(sel => document.querySelector(sel).textContent.startsWith('UNEQUIP FREE'), selector);
+    }
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.waitForFunction(() => window.MoonpetBetaAppearance.getBotArtState()?.lastRender?.animationMode === 'victory');
+    await page.locator('[data-screen="explore"]').click();
+    await page.screenshot({ path: '/tmp/moonpet-equipped-styles-' + viewport.width + '.png' });
+    await page.locator('[data-screen="economy"]').click();
+    assert.equal(await page.locator('[data-action="style_equip"]').filter({hasText:'UNEQUIP FREE'}).count(),4);
+    for (const key of ['rename_badge','profile_frame','victory_pose','run_trail']) {
+      const selector = '[data-action="style_equip"][data-payload*="' + key + '"]';
+      await page.locator(selector).click();
+      await page.waitForFunction(sel => document.querySelector(sel).textContent.startsWith('EQUIP FREE'), selector);
+    }
+    assert.deepEqual(sqlite.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(currentUser),styleWallet);
+    await page.locator('[data-screen="home"]').click();
     const moreRecommendations = page.locator('[data-panel="recommended"] .more-recommendations');
     assert.equal(await page.locator('[data-panel="recommended"] > .panel-body > .button-grid > button').count(), 3);
     assert.equal(await moreRecommendations.evaluate(node => node.open), false, 'extra recommendations start collapsed');
@@ -362,7 +400,7 @@ try {
     }
     assert.equal(gameplayCount(), beforeWeeklyNavigation, 'weekly navigation must not issue gameplay actions');
     await page.locator('[data-screen="missions"]').click();
-    // These are real server-backed contract actions, distinct from local practice.
+    // These are real server-backed contract actions, alongside server-owned practice.
     const youngBefore = await hooks.buildPetMiniAppState(db, currentUser, token);
     await page.locator('#contract-build').selectOption('scavenger');
     await page.locator('#contract-side-goal').selectOption('versatile');

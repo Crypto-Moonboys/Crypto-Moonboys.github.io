@@ -736,7 +736,7 @@
   function button(label, action, payload, options) {
     options = careActionButtonOptions(action, actionCooldownButtonOptions(action, options));
     var accountActions = ['adopt', 'guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'arena_queue_cancel', 'arena_forfeit', 'kaiju_queue_cancel', 'kaiju_match_cancel'];
-    var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim', 'contract_claim', 'seasonal_boss_claim', 'daily_completion_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim']);
+    var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim', 'contract_claim', 'practice_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim']);
     if (state && state.lifecycle && state.lifecycle.phase === 'egg' && !eggActions.includes(action)) {
       options = Object.assign({}, options, { disabled: true, cooldown: null, statusLabel: 'HATCH REQUIRED' });
     } else if (state && state.adopted === false && !accountActions.includes(action)) {
@@ -766,7 +766,7 @@
     'daily-completion': ['★', 'Check and collect your daily 7/7 bonus.'],
     missions: ['☷', 'Today’s missions, progress and qualifying routes.'],
     achievements: ['★', 'View milestones and unlocked achievements.'],
-    practice: ['↻', 'Try builds and tactics freely; no rewards or pet costs.'],
+    practice: ['↻', 'Train with saved runs, repeatable rank and limited daily XP; no pet costs.'],
     districts: ['⌖', 'Choose district routes and clear mastery bosses.'],
     'moon-run': ['☾', 'Start or resume a run; survive, extract or face the boss.'],
     adventure: ['⌖', 'Choose an adventure and compare risks and rewards.'],
@@ -787,7 +787,7 @@
     expedition: ['⌖', 'Compare destinations, entry costs and possible finds.'],
     market: ['◇', 'Review today’s bundles before spending game currency.'],
     shop: ['◇', 'Browse permanent gear and check purchase costs.'],
-    'style-lab': ['✧', 'Collect cosmetic styles with game currency.'],
+    'style-lab': ['✧', 'Unlock and equip visible cosmetic styles. Switching is free.'],
     inventory: ['▣', 'Inspect your bag and choose items to use.'],
     trade: ['⇄', 'Review Moon Gold stakes and the risk of a loss.'],
     'how-to-play': ['?', 'A guide to care, quests, runs, bosses and rewards.'],
@@ -904,7 +904,7 @@
       '<div class="guide-step"><strong>DAILY RUN TACTICS</strong>New official attempts show clear chance and score for each approach. Safe routes trade score for better odds; bold routes offer more score at higher risk. After rooms 3 and 6, choose Guardian, Striker or Scavenger, or continue without an upgrade. Tactics change later odds and run score only. One official attempt per account each UTC day still applies. Reach the final room and defeat its boss to finish. Extracting ends that day’s attempt early. If a saved ending needs settlement, use FINISH SAVED DAILY RUN to recover it without spending a new attempt.</div>' +
       '<div class="guide-step"><strong>BOSSES AND SEASON FINALE</strong>EXPLORE holds the weekly boss and seasonal raid; read the current requirements, choose an approach and claim any saved victory reward. In MISSIONS, the Season Finale unlocks when your pet meets the final evolution, Growth Mark and Weekly Crest requirements shown. Pick a build, read the boss intent, then Strike, Guard or use your special options. The battle saves between turns, uses separate battle health and supplies, and allows free retries after defeat. Win and claim its reward once per pet per season; completing the season does not stop repeatable contracts or practice.</div>' +
       '<div class="guide-step"><strong>SAVES, PETS AND RANKS</strong>Each pet keeps its own progression and loadout. Switching pets does not reset account-wide cooldowns or official daily attempts. Saved runs and rewards stay with their source pet. Use Refresh after a connection interruption. PROFILE opens daily, weekly, seasonal, all-time and run-depth leaderboards; practice and contract rank are separate from Pet XP ranks.</div>' +
-      '<div class="guide-step"><strong>PLAY BETWEEN COOLDOWNS</strong>Play Now links to your available routes. Practice Roguelite in EXPLORE offers three builds, risk choices and upgrade drafts with unlimited replays. It uses local practice health and salvage, costs no pet energy and awards no XP, currency or quest credit. This browser saves the run so you can leave and resume.</div>' +
+      '<div class="guide-step"><strong>PLAY BETWEEN COOLDOWNS</strong>Play Now links to your available routes. Practice Roguelite in EXPLORE offers three builds, risk choices and upgrade drafts with unlimited replays. It uses separate route health and salvage, costs no pet energy and saves each turn on the server. Clear the circuit and goal for training rank; the first three clears per UTC day can award 10 Pet XP each. It does not grant Growth Marks or weekly boss credit.</div>' +
       '<div class="button-grid one"><button type="button" class="terminal-button" data-open-full-guide>OPEN COMPLETE WEBSITE GUIDE</button></div>';
   }
   // TEST-EXPORT: guideMarkup:end
@@ -1819,74 +1819,43 @@
     return body;
   }
 
-  var practiceMemory = {};
-  var practiceStorageAvailable = true;
-  function practiceKey() { return String(state && state.pet && state.pet.pet_id || ''); }
-  function practiceRecord() {
-    var key = practiceKey();
-    if (!key || !window.MoonpetPractice) return { run: null, best: 0 };
-    if (practiceMemory[key]) return practiceMemory[key];
-    var saved = {};
-    try { saved = JSON.parse(window.localStorage.getItem('moonpet-practice-v1') || '{}')[key] || {}; } catch (_) { practiceStorageAvailable = false; }
-    var best = Number.isSafeInteger(saved.best) ? Math.max(0, Math.min(100000, saved.best)) : 0;
-    return (practiceMemory[key] = { run: window.MoonpetPractice.restore(saved.run), best: best });
-  }
-  function savePractice(record) {
-    var key = practiceKey();
-    practiceMemory[key] = record;
-    try {
-      var entries = JSON.parse(window.localStorage.getItem('moonpet-practice-v1') || '{}');
-      if (!entries || typeof entries !== 'object' || Array.isArray(entries)) entries = {};
-      delete entries[key];
-      entries[key] = record;
-      var keys = Object.keys(entries);
-      keys.slice(0, Math.max(0, keys.length - 3)).forEach(function (old) { delete entries[old]; });
-      window.localStorage.setItem('moonpet-practice-v1', JSON.stringify(entries));
-    } catch (_) { practiceStorageAvailable = false; }
-  }
   function practiceButton(label, action, run, detail, disabled) {
-    return '<button class="terminal-button" type="button" data-practice-action="' + escapeHtml(action) + '" data-practice-turn="' + (run ? run.turn : -1) + '"' + (disabled ? ' disabled' : '') + '>' + escapeHtml(label) + (detail ? '<small>' + escapeHtml(detail) + '</small>' : '') + '</button>';
+    return '<button class="terminal-button" type="button" data-practice-action="' + escapeHtml(action) + '" data-practice-turn="' + (run ? run.revision : -1) + '"' + (disabled ? ' disabled' : '') + '>' + escapeHtml(label) + (detail ? '<small>' + escapeHtml(detail) + '</small>' : '') + '</button>';
   }
   function renderPractice() {
-    var engine = window.MoonpetPractice;
-    if (!engine || !state || !state.adopted || !practiceKey()) return '';
-    var record = practiceRecord(), run = record.run;
-    var body = '<div class="line muted">LOCAL SIMULATION // NO XP, GOLD, ITEMS, QUEST CREDIT OR LEADERBOARD REWARDS. No pet energy cost. Auto-resumes on this browser; not synced across devices.</div>';
-    if (!practiceStorageAvailable) body += '<div class="line locked">Browser storage unavailable. This practice run lasts only while this page stays open.</div>';
-    body += '<div class="line">PERSONAL PRACTICE BEST // ' + number(record.best) + '</div>';
+    var board = state && state.practice;
+    var pending = (board && board.pending_rewards || []).map(function (entry) { return button('RECOVER TRAINING XP', 'practice_claim', { run_id: entry.run_id, pet_id: entry.pet_id }, { detail: 'Credits the original pet once. No replay required.' }); }).join('');
+    if (!board || !board.available) return panel('PRACTICE ROGUELITE', '<div class="line muted">' + (board && board.reason === 'hatch_required' ? 'Hatch your pet to start official training.' : 'Training is temporarily unavailable. Refresh to retry.') + '</div><div class="button-grid">' + pending + '</div>', 'practice');
+    var run = board.run;
+    var body = '<div class="line muted">SERVER-SAVED TRAINING // Clear all 12 rooms, beat the checkpoint boss and meet your goal. No pet energy cost. Training rank continues on every qualifying clear. First 3 clears per account / UTC day can each earn 10 Pet XP, subject to the normal XP cap. No Growth Marks or weekly boss credit.</div>';
+    body += '<div class="line">TRAINING RANK POINTS ' + number(board.rank_points) + ' // CLEARS ' + number(board.completed) + ' // XP BONUSES LEFT ' + number(board.bonus_remaining) + '/3</div><div class="button-grid">' + pending + '</div>';
     if (run) {
-      var goal = engine.goalProgress(run);
-      body += '<div class="line complete">' + escapeHtml(engine.builds[run.build].title) + ' // ' + escapeHtml(words(run.status)) + ' // ROOMS ' + number(run.depth) + '/12</div><div class="line">HP ' + number(run.health) + '/' + number(run.max_health) + ' // SUPPLIES ' + number(run.supplies) + ' // LOCAL SALVAGE ' + number(run.salvage) + ' // SCORE ' + number(run.score) + '</div><div class="line">GOAL // ' + escapeHtml(engine.goals[run.goal].title) + ' // ' + number(goal.progress) + '/' + number(goal.target) + (goal.completed ? ' // COMPLETE' : '') + '</div><div class="line signal">' + escapeHtml(run.last) + '</div>';
-      if (run.perks.length) body += '<div class="line muted">BUILD // ' + escapeHtml(run.perks.map(function (key) { return engine.perks[key].title; }).join(' + ')) + '</div>';
+      body += '<div class="line complete">' + escapeHtml(words(run.build)) + ' // ' + escapeHtml(words(run.status)) + ' // ROOMS ' + number(run.depth) + '/12</div><div class="line">HP ' + number(run.health) + '/' + number(run.max_health) + ' // SUPPLIES ' + number(run.supplies) + ' // ROUTE SALVAGE ' + number(run.salvage) + ' // SCORE ' + number(run.score) + '</div><div class="line">GOAL // ' + escapeHtml(board.goals[run.goal].title) + ' // ' + number(run.goal_progress.progress) + '/' + number(run.goal_progress.target) + '</div><div class="line signal">' + escapeHtml(run.last) + '</div>';
+      body += (run.relics || []).map(function (relic) { return '<div class="line muted">◆ ' + escapeHtml(relic.title + ': ' + relic.detail) + '</div>'; }).join('');
+      if (run.status !== 'active') body += '<div class="line">THIS RUN // TRAINING POINTS ' + number(run.rank_points) + ' // PET XP ' + number(run.xp_awarded) + (run.reward_pending ? ' // SAVED XP PENDING' : '') + '</div>';
     }
     if (!run || run.status !== 'active') {
-      body += '<label class="line">BUILD <select id="practice-build" aria-label="Practice build">' + Object.keys(engine.builds).map(function (key) { return '<option value="' + key + '">' + escapeHtml(engine.builds[key].title + ' — ' + engine.builds[key].detail) + '</option>'; }).join('') + '</select></label><label class="line">GOAL <select id="practice-goal" aria-label="Practice goal">' + Object.keys(engine.goals).map(function (key) { return '<option value="' + key + '">' + escapeHtml(engine.goals[key].title) + '</option>'; }).join('') + '</select></label><div class="button-grid one">' + practiceButton('START NEW PRACTICE RUN', 'start', run, 'New seed. Three builds, three goals and an upgrade draft every three rooms.') + '</div>';
+      body += '<label class="line">BUILD <select id="practice-build" aria-label="Practice build">' + Object.keys(board.builds).map(function (key) { return '<option value="' + key + '">' + escapeHtml(board.builds[key].title + ' — ' + board.builds[key].detail) + '</option>'; }).join('') + '</select></label><label class="line">GOAL <select id="practice-goal" aria-label="Practice goal">' + Object.keys(board.goals).map(function (key) { return '<option value="' + key + '">' + escapeHtml(board.goals[key].title) + '</option>'; }).join('') + '</select></label><div class="button-grid one">' + practiceButton('START NEW PRACTICE RUN', 'start', run, 'Three builds, three goals. Relics are locked in when the run starts.') + '</div>';
     } else {
-      var room = engine.room(run);
-      body += '<div class="line"><strong>' + escapeHtml(room.title) + '</strong></div><div class="line muted">' + escapeHtml(room.detail) + '</div><div class="button-grid">';
-      if (run.draft.length) body += run.draft.map(function (key) { return practiceButton(engine.perks[key].title, key, run, engine.perks[key].detail); }).join('');
-      else body += engine.choices(run).map(function (choice) { return practiceButton(choice.title, choice.key, run, (choice.key === 'rest' ? 'RECOVER // ' : choice.odds + '% CLEAR // +' + choice.salvage + ' SALVAGE // FAILURE -' + choice.damage + ' HP. ') + choice.detail, choice.disabled); }).join('');
-      body += practiceButton('EXTRACT PRACTICE', 'extract', run, 'Finish now and bank local salvage. Leaving the app instead preserves the run.') + '</div>';
+      body += '<div class="line"><strong>' + escapeHtml(run.room.title) + '</strong></div><div class="line muted">' + escapeHtml(run.room.detail) + '</div><div class="button-grid">' + run.choices.map(function (choice) { return practiceButton(choice.title, choice.key, run, (choice.upgrade ? '' : choice.odds + '% CLEAR // +' + choice.salvage + ' SALVAGE // FAILURE -' + choice.damage + ' HP. ') + choice.detail, choice.disabled); }).join('') + practiceButton('EXTRACT PRACTICE', 'extract', run, 'Finish without rank or XP. Leaving the app preserves the run.') + '</div>';
     }
-    if (state.contracts && state.contracts.available) body += '<div class="line muted">For saved progression and rewards, play Continuing Contracts: repeatable rank and three daily Pet XP bonus slots.</div><div class="button-grid one">' + routeButton('PLAY CONTRACTS FOR PROGRESSION', { screen: 'missions', focus: 'contracts' }) + '</div>';
-    return panel('PRACTICE ROGUELITE // NO REWARDS', body, 'practice');
+    body += '<div class="button-grid one">' + routeButton('PLAY CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'More saved goals and a separate daily XP allowance.') + '</div>';
+    return panel('PRACTICE ROGUELITE // TRAINING PROGRESS', body, 'practice');
   }
-
   function handlePractice(buttonElement) {
-    if (!practiceKey() || !window.MoonpetPractice || busy || lifecycleCeremonyActive()) return;
-    var record = practiceRecord(), action = buttonElement.dataset.practiceAction;
+    var board = state && state.practice;
+    if (!board || !board.available || busy || lifecycleCeremonyActive()) return;
+    var action = buttonElement.dataset.practiceAction;
+    var payload = { pet_id: board.pet_id };
     if (action === 'start') {
-      if (record.run && record.run.status === 'active') return;
       var build = document.getElementById('practice-build'), goal = document.getElementById('practice-goal');
       if (!build || !goal) return;
-      record.run = window.MoonpetPractice.create(crypto.randomUUID(), build.value, goal.value);
-    } else record.run = window.MoonpetPractice.step(record.run, action, Number(buttonElement.dataset.practiceTurn));
-    if (!record.run) return;
-    if (record.run.status === 'completed' || record.run.status === 'extracted') record.best = Math.max(record.best, record.run.score);
-    savePractice(record);
-    var scrollTop = screen.scrollTop;
-    render(); screen.scrollTop = scrollTop;
-    tell(record.run.last);
+      Object.assign(payload, { build: build.value, goal: goal.value, sequence: board.next_sequence });
+    } else {
+      if (!board.run) return;
+      Object.assign(payload, { run_id: board.run.run_id, revision: Number(buttonElement.dataset.practiceTurn), choice: action });
+    }
+    runAction(action === 'start' ? 'practice_start' : 'practice_step', payload, buttonElement);
   }
 
   function renderContracts() {
@@ -1894,12 +1863,13 @@
     var savedBonuses = (board && board.pending_rewards || []).map(function (pending) {
       return '<div class="line">SAVED BONUS' + (pending.slot_number ? ' // SLOT ' + number(pending.slot_number) : '') + (pending.reward_day ? ' // ' + escapeHtml(pending.reward_day) : '') + '</div><div class="button-grid one">' + button('RETRY SAVED XP BONUS', 'contract_claim', { pet_id: pending.pet_id || board.pet_id, contract_id: pending.contract_id }, { detail: 'Credits the pet that completed this contract, including earlier seasons. No new run or energy cost. Normal Pet XP caps still apply.' }) + '</div>';
     }).join('');
-    if (!board || !board.available) return panel('CONTINUING CONTRACTS', savedBonuses + '<div class="line muted">' + (state && state.lifecycle && state.lifecycle.phase === 'egg' ? 'Hatch your Secret Bot to start new contracts. Practice is available now.' : 'Contracts are syncing. Refresh once the game update is complete.') + '</div>', 'contracts');
+    if (!board || !board.available) return panel('CONTINUING CONTRACTS', savedBonuses + '<div class="line muted">' + (state && state.lifecycle && state.lifecycle.phase === 'egg' ? 'Hatch your Secret Bot to start new contracts and official training.' : 'Contracts are syncing. Refresh once the game update is complete.') + '</div>', 'contracts');
     var run = board.run;
     var body = '<div class="line complete">CONTRACT RANK ' + number(board.rank) + ' // ' + number(board.completed) + ' COMPLETED</div><div class="line">' + number(board.rank_points) + ' RANK POINTS // NEXT RANK ' + number(board.next_rank_at) + '</div>' +
       '<div class="line muted">Play as many contracts as you like. No pet energy cost or cooldown. Route health and salvage belong to this contract; salvage becomes rank points, not Moon Gold. Saved after every choice; leave and resume anytime.</div>' +
       '<div class="line">DAILY BONUS SLOTS ' + number(board.bonus_remaining) + '/' + number(board.bonus_limit) + ' // UP TO ' + number(board.bonus_xp) + ' PET XP PER SUCCESS</div><div class="line muted">Bonus slots are shared across your pets and reset at 00:00 UTC. Your normal Pet XP cap still applies. Contract rank keeps growing after bonuses run out. No Growth Marks, Weekly Crests or official Daily Run credit.</div>';
     body += savedBonuses;
+    if (run) body += (run.relics || []).map(function (relic) { return '<div class="line muted">◆ ' + escapeHtml(relic.title + ': ' + relic.detail) + '</div>'; }).join('');
     if (board.collection) body += '<div class="line complete">ROUTE COLLECTION // ' + number(board.collection.cleared_routes) + '/' + number(board.collection.total_routes) + ' CLEARED // ' + number(board.collection.unlocked_routes) + ' UNLOCKED</div><div class="line muted">Clear each goal with each build at each tier and route length. These saved records keep progressing after daily bonuses. No extra rewards for the checklist.</div>';
     if (run) {
       body += '<div class="line complete">' + escapeHtml(run.title) + ' // ' + escapeHtml(words(run.status)) + '</div><div class="line">' + escapeHtml(run.build_title) + ' // TIER ' + number(run.tier) + ' // ROOMS ' + number(run.depth) + '/' + number(run.max_depth) + '</div>' +
@@ -2215,7 +2185,7 @@
       (boss.last_attempt ? '<div class="line complete">TODAY’S SAVED ATTACK // ' + escapeHtml(words(boss.last_attempt.action)) + ' // ' + number(boss.last_attempt.damage) + ' DAMAGE</div>' : '') +
       (boss.defeated ? '<div class="line">' + (boss.reward_claimed ? 'VICTORY REWARD COLLECTED.' : 'VICTORY RECORDED. CHECK SAVED REWARDS.') + '</div>' : '') +
       (boss.rotation_cooldown ? '<div class="line muted">NEXT WEEKLY BOSS ' + countdownMarkup(boss.rotation_cooldown, 'in ') + '</div>' : '') +
-      '<div class="button-grid">' + (state.contracts && state.contracts.available ? routeButton('CONTINUE WITH CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'Saved quests without pet energy costs or cooldowns.') : '') + routeButton('PLAY PRACTICE', { screen: 'explore', focus: 'practice' }, 'Unlimited local runs with no pet costs or rewards.') + '</div>';
+      '<div class="button-grid">' + (state.contracts && state.contracts.available ? routeButton('CONTINUE WITH CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'Saved quests without pet energy costs or cooldowns.') : '') + routeButton('PLAY PRACTICE', { screen: 'explore', focus: 'practice' }, 'Saved training with repeatable rank and limited daily XP.') + '</div>';
     return renderPlayNow() + renderPractice() + panel('DISTRICT NETWORK', '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + regions, 'districts') + panel('MOON RUN', '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + runBody, 'moon-run') +
       panel(adventure ? adventure.title : 'PET ADVENTURE', '<div class="line">' + escapeHtml(adventure ? adventure.intro : 'NO ADVENTURE SIGNAL.') + '</div><div class="line muted">One adventure every 30 minutes. Entry energy is a requirement; actual costs depend on the outcome below. Base rewards remain subject to caps. Hunger costs increase hunger.</div><div class="button-grid">' + adventureButtons + '</div>', 'adventure') +
       panel(encounter ? encounter.title : 'STREET EVENT', '<div class="line">' + escapeHtml(encounter ? encounter.intro : 'NO EVENT SIGNAL.') + '</div><div class="line muted">Compare both outcomes before choosing. Base rewards are reduced by repeated-play scaling and daily caps; stat changes stop at their limits. Hunger costs increase hunger.</div><div class="button-grid">' + eventButtons + '</div>', 'street-event') +
@@ -2252,7 +2222,7 @@
       }).join('') : '<div class="button-grid">' + ['sleep', 'train', 'work', 'explore'].map(function (kind) { return button(kind, 'activity_start', { activity_type: kind }); }).join('') + '</div>';
     }
     if (state.contracts && state.contracts.available) activityHtml += '<div class="button-grid one">' + routeButton('PLAY CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'No pet energy cost or cooldown. The activity keeps accumulating.') + '</div>';
-    activityHtml += '<div class="button-grid one">' + routeButton('PLAY PRACTICE', { screen: 'explore', focus: 'practice' }, 'Unlimited local runs, without pet costs or rewards.') + '</div>';
+    activityHtml += '<div class="button-grid one">' + routeButton('PLAY PRACTICE', { screen: 'explore', focus: 'practice' }, 'Saved training with repeatable rank and limited daily XP.') + '</div>';
     return panel('TIMED ACTIVITY', activityHtml, 'timed-activity') + panel('JOB TERMINAL', '<div class="button-grid">' + jobsHtml + '</div>', 'jobs');
   }
 
@@ -2327,7 +2297,7 @@
         return '<div class="line">' + escapeHtml(receipt.title) + ' // ' + number(receipt.energy_cost) + ' ENERGY // ' + (receipt.pet_id === state.pet.pet_id ? 'THIS PET' : receipt.pet_id ? 'OTHER PET' : 'EARLIER ACCOUNT RECEIPT') + '</div><div class="line muted">RECEIVED ' + escapeHtml(valueText(receipt.rewards)) + '</div>';
       }).join('') + '</details>';
     }
-    expeditionBody += '<div class="button-grid">' + (state.contracts && state.contracts.available ? routeButton('CONTINUE WITH CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'Saved quests without pet energy costs or cooldowns.') : '') + routeButton('PLAY PRACTICE', { screen: 'explore', focus: 'practice' }, 'Unlimited local runs, with no pet costs or rewards.') + '</div>';
+    expeditionBody += '<div class="button-grid">' + (state.contracts && state.contracts.available ? routeButton('CONTINUE WITH CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'Saved quests without pet energy costs or cooldowns.') : '') + routeButton('PLAY PRACTICE', { screen: 'explore', focus: 'practice' }, 'Saved training with repeatable rank and limited daily XP.') + '</div>';
     var live = state.live_systems || {};
     var upgrades = new Map((live.upgrades || []).map(function (item) { return [item.item_key, item]; }));
     var gear = (state.gear || []).map(function (item) {
@@ -2346,22 +2316,27 @@
       var full = plan && plan.output_full;
       return button(recipe.title, 'craft', { recipe_key: recipe.key }, { disabled: !recipe.unlocked || !recipe.affordable || full, statusLabel: full ? 'OUTPUT STACK FULL' : '', resourceRequired: recipe.unlocked && !recipe.affordable, detail: (recipe.unlocked ? '' : 'REQUIRES LEVEL ' + number(recipe.min_level) + ' // ') + (recipe.detail || '') + ' // COST ' + costText(recipe.cost) + ' // MAKES ' + number(recipe.output && recipe.output.quantity) + ' ' + words(recipe.output && recipe.output.item_key) });
     }).join('');
-    var relics = (state.relics || []).map(function (item) { return '<div class="line complete">◆ ' + escapeHtml(words(item.relic_id)) + '</div>'; }).join('');
+    var relics = (state.relics || []).map(function (item) { return '<div class="line complete">◆ ' + escapeHtml(words(item.relic_id)) + '</div><div class="line muted">' + escapeHtml(item.route_effect || 'Collection requirement.') + '</div>'; }).join('');
     var equipmentSets = (live.equipment_sets || []).map(function (set) {
       var bonuses = (set.active_bonuses || []).map(function (bonus) { return number(bonus.required) + ' PIECE // ' + valueText(bonus.effects); }).join(' / ');
       return '<div class="line ' + (set.pieces >= 2 ? 'complete' : '') + '">' + escapeHtml(words(set.key)) + ' // EQUIPPED ' + number(set.pieces) + '/' + number(set.total_pieces) + ' // OWNED ' + number(set.owned_pieces) + '</div>' +
         '<div class="line muted">' + (bonuses ? 'ACTIVE ' + escapeHtml(bonuses) : 'MISSING ' + escapeHtml((set.missing || []).map(words).join(' / ') || 'EQUIP OWNED SET PIECES')) + '</div>';
     }).join('');
-    var cosmetics = (live.cosmetics || []).map(function (item) { return button(words(item.key), 'cosmetic_unlock', { cosmetic_key: item.key }, { disabled: !item.affordable || item.unlocked && !item.repeatable, statusLabel: item.unlocked && !item.repeatable ? 'OWNED' : '', resourceRequired: !item.affordable && !(item.unlocked && !item.repeatable), detail: (item.unlocked ? 'x' + number(item.quantity) + ' // ' : '') + costText(item.cost) }); }).join('');
+    var cosmetics = (live.cosmetics || []).map(function (item) {
+      var loadout = state.style_loadout || {}, equipped = (loadout.equipped || []).includes(item.key);
+      return '<div class="line">' + escapeHtml(words(item.key)) + '</div><div class="line muted">' + escapeHtml((loadout.details || {})[item.key] || '') + '</div>' + (item.unlocked
+        ? button(equipped ? 'UNEQUIP FREE' : 'EQUIP FREE', 'style_equip', { pet_id: state.pet.pet_id, cosmetic_key: item.key, enabled: !equipped }, { disabled: loadout.available !== true, detail: loadout.available ? 'Owned. No currency cost.' : 'Style state unavailable. Refresh before switching.' })
+        : button('UNLOCK ' + words(item.key), 'cosmetic_unlock', { cosmetic_key: item.key }, { disabled: !item.affordable, resourceRequired: !item.affordable, detail: costText(item.cost) }));
+    }).join('');
     return panel('EQUIPMENT PROGRESSION', gear || '<div class="line muted">NO EQUIPMENT MASTERY RECORDS.</div>', 'equipment') +
       panel('LOADOUT SYNERGIES', equipmentSets || '<div class="line muted">NO SET DATA.</div>', 'equipment-sets') +
       panel('CRAFTING MATERIALS', materials || '<div class="line muted">NO MATERIAL DATA.</div>', 'materials') +
       panel('CRAFTING WORKSHOP', craftingGoalMarkup() + '<div class="line signal">RECIPES // CHOOSE TO SPEND MATERIALS</div><div class="button-grid">' + crafting + '</div>', 'crafting') +
-      panel('RELIC VAULT', '<div class="line muted">Persistent collectibles used by eligible progression requirements. Passive relic powers are not active in Moon Run, Daily Run, contracts or practice.</div>' + (state.relics_available === false ? '<div class="line danger">RELIC VAULT TEMPORARILY UNAVAILABLE. Refresh to try again. Your collection has not been cleared.</div>' : relics || '<div class="line muted">NO RELICS RECOVERED.</div>'), 'relics') +
+      panel('RELIC VAULT', '<div class="line muted">Owned relics activate automatically in new Practice and Contract runs. Their route effects are listed below and saved at run start; new drops apply on the next run. Standard Moon Run and Daily Run keep their separate rules.</div>' + (state.relics_available === false ? '<div class="line danger">RELIC VAULT TEMPORARILY UNAVAILABLE. Refresh to try again. Your collection has not been cleared.</div>' : relics || '<div class="line muted">NO RELICS RECOVERED.</div>'), 'relics') +
       panel('DAILY BOUNTIES', '<div class="line muted">Four account-wide targets per UTC day. Only accepted actions count. The Energy Drink, Dance and Cuddles care buttons do not count. New targets arrive at 00:00 UTC. Contracts remain available between resets.</div>' + (bounties || '<div class="line muted">NO BOUNTIES.</div>'), 'bounties') +
       panel('CRYSTAL EXPEDITIONS // CHOOSE A DESTINATION', expeditionBody, 'expedition') +
       panel('MOON MARKET', '<div class="line muted">Paid bundles must fit in full. Use items or spend materials before buying when storage is full.</div><div class="button-grid one">' + offers + '</div><div class="button-grid">' + routeButton('OPEN BAG', { screen: 'economy', focus: 'inventory' }) + routeButton('OPEN CRAFTING', { screen: 'economy', focus: 'crafting' }) + '</div>', 'market') +
-      panel('PERMANENT SHOP', '<div class="button-grid">' + shop + '</div>', 'shop') + panel('STYLE LAB // COLLECTION', '<div class="line muted">These purchases add account collection records only. They do not change your pet’s appearance, animations or stats. A Rename Badge is not required to change your callsign.</div><div class="button-grid one">' + routeButton('EDIT CALLSIGN', { screen: 'profile', focus: 'callsign' }, 'Use the existing name control; no badge purchase is required.') + '</div><div class="button-grid">' + cosmetics + '</div>', 'style-lab') +
+      panel('PERMANENT SHOP', '<div class="button-grid">' + shop + '</div>', 'shop') + panel('STYLE LAB // EQUIP YOUR LOOK', '<div class="line muted">Unlock once, then equip or remove each style free for this pet. Cosmetics change the canvas presentation, not stats. Existing owned styles work immediately. A Rename Badge adds a nameplate; callsign editing stays free.</div><div class="button-grid one">' + routeButton('EDIT CALLSIGN', { screen: 'profile', focus: 'callsign' }, 'Use the existing name control; no badge purchase is required.') + '</div><div class="button-grid">' + cosmetics + '</div>', 'style-lab') +
       panel('INVENTORY', inventory || '<div class="line muted">BAG EMPTY.</div>', 'inventory') +
       panel('MOON GOLD TRADE', '<div class="line muted">Game currency only. A loss spends the selected stake. Trades share a five-minute account cooldown.</div><div class="button-grid three">' + (state.trade && state.trade.offers || []).map(function (offer) { return button(offer.wager + ' GOLD', 'trade', { wager: offer.wager }, { disabled: !offer.available, cooldown: state.trade.cooldown, resourceRequired: !offer.affordable, detail: offer.affordable ? '' : 'Requires ' + number(offer.wager) + ' Moon Gold.' }); }).join('') + '</div>', 'trade');
   }
@@ -3477,7 +3452,8 @@
     var active = sleepLatched || animationUntil > renderTime;
     var x = BOT_RENDER_CENTER_X;
     var y = BOT_RENDER_BASELINE_Y;
-    if (drawSelectedBotSprite(renderTime, animationMode, active, x, y, 1)) return;
+    var styledVictory = !active && state && state.lifecycle && state.lifecycle.phase !== 'egg' && (state.style_loadout && state.style_loadout.equipped || []).includes('victory_pose');
+    if (drawSelectedBotSprite(renderTime, styledVictory ? 'victory' : animationMode, active || styledVictory, x, y, 1)) return;
     if (!botArtFallbackLogged) {
       botArtFallbackLogged = true;
       console.info('[Moonpet] bot art unavailable; suppressing retired procedural pet fallback', botArtRendererState);
@@ -3759,6 +3735,29 @@
     ctx.drawImage(stageZeroBackgroundImage, (sourceWidth - cropWidth) / 2, (sourceHeight - cropHeight) / 2, cropWidth, cropHeight, 0, 0, 320, 220);
   }
 
+  function drawEquippedStyles(time, foreground) {
+    var equipped = state && state.style_loadout && state.style_loadout.equipped || [];
+    if (!equipped.length) return;
+    ctx.save();
+    if (!foreground && equipped.includes('run_trail') && activeScreen === 'explore') {
+      for (var i = 0; i < 8; i++) {
+        ctx.fillStyle = i % 2 ? '#f6a7ff' : '#61f5ff';
+        ctx.globalAlpha = 0.25 + i / 16;
+        ctx.fillRect(72 + i * 9, 190 + (reducedMotion ? 0 : Math.sin(time / 180 + i) * 3), 5, 3);
+      }
+    }
+    ctx.globalAlpha = 1;
+    if (foreground && equipped.includes('profile_frame')) {
+      ctx.strokeStyle = '#f6a7ff'; ctx.lineWidth = 2; ctx.strokeRect(3, 3, 314, 214);
+      ctx.strokeStyle = '#61f5ff'; ctx.strokeRect(6, 6, 308, 208);
+    }
+    if (foreground && equipped.includes('rename_badge')) {
+      ctx.fillStyle = '#081b28'; ctx.fillRect(65, 199, 190, 14);
+      drawPixelText('◆ ' + String(state.pet.callsign || state.pet.pet_name || 'MOONPET').slice(0, 24), 160, 209, '#61f5ff', 'center');
+    }
+    ctx.restore();
+  }
+
   // TEST-EXPORT: drawWorld:start
   function drawWorld(time) {
     var renderTime = reducedMotion ? performance.now() : time;
@@ -3774,11 +3773,13 @@
     }
 
     ctx.save();
+    drawEquippedStyles(renderTime, false);
     ctx.translate(160 + camera.x, 110 + camera.y);
     ctx.scale(camera.zoom, camera.zoom);
     ctx.translate(-160, -110);
     drawPet(renderTime);
     ctx.restore();
+    drawEquippedStyles(renderTime, true);
 
   }
   // TEST-EXPORT: drawWorld:end

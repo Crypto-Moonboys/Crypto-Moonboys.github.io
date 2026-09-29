@@ -1,8 +1,8 @@
 (function (root) {
   'use strict';
 
-  // This simulation is deliberately isolated from every API, wallet and XP ledger.
-  // Local scores are editable practice records, never competitive progression.
+  // Shared simulation rules. Official runs use server-owned state and server rolls.
+  // Browser-created scores are never accepted as reward evidence.
   var BUILDS = {
     scout: { title: 'SCOUT', detail: 'Safer routes; starts with 3 supplies.', health: 75, supplies: 3, guard: 9, power: 0 },
     bruiser: { title: 'BRUISER', detail: '110 health; better at bold routes.', health: 110, supplies: 1, guard: 0, power: 12 },
@@ -70,11 +70,12 @@
       { key: 'rest', title: 'USE SUPPLY & REST', odds: 100, salvage: 0, damage: 0, disabled: s.supplies < 1 || s.health >= s.max_health, detail: 'Costs 1 supply; heals 26; advances one room without salvage.' },
     ];
   }
-  function step(value, action, expectedTurn) {
+  function step(value, action, expectedTurn, options) {
+    options = options || {};
     var s = restore(value);
     if (!s || s.status !== 'active' || expectedTurn !== s.turn) return value;
     if (action === 'extract') {
-      s.status = 'extracted'; s.turn++; s.last = 'Practice extracted. Salvage and score are local only.'; return s;
+      s.status = 'extracted'; s.turn++; s.last = 'Practice extracted. Complete the full circuit and goal to earn training progress.'; return s;
     }
     if (s.draft.length) {
       if (!s.draft.includes(action)) return value;
@@ -83,15 +84,17 @@
       if (action === 'pockets') s.supplies += 2;
       s.last = PERKS[action].title + ' installed for this practice run.'; return s;
     }
-    var choice = choices(s).find(function (x) { return x.key === action; });
+    var choice = (options.choices || choices(s)).find(function (x) { return x.key === action; });
     if (!choice || choice.disabled) return value;
-    var success = hash(s.seed + ':' + s.depth + ':' + action) % 100 < choice.odds;
-    if (action === 'rest') { s.supplies--; s.health = Math.min(s.max_health, s.health + 26); }
+    var success = (options.roll === undefined ? hash(s.seed + ':' + s.depth + ':' + action) % 100 : options.roll) < choice.odds;
+    if (options.success) success = options.success(s, success);
+    if (success && options.salvageBonus) choice = Object.assign({}, choice, { salvage: choice.salvage + options.salvageBonus });
+    if (action === 'rest') { s.supplies--; s.health = Math.min(s.max_health, s.health + 26 + (options.restBonus || 0)); }
     else if (success) { s.salvage += choice.salvage; s.score += choice.salvage * 3 + 10; if (action === 'search') s.supplies++; }
     else s.health = Math.max(0, s.health - choice.damage);
     s.depth++; s.turn++;
     s.last = action === 'rest' ? 'Recovered 26 health (up to maximum). The route moved on.' : success ? 'Route cleared: +' + choice.salvage + ' practice salvage.' : 'Setback: -' + choice.damage + ' practice health.';
-    if (s.health === 0) { s.status = 'failed'; s.salvage = 0; s.last += ' Run over; unbanked salvage lost.'; }
+    if (s.health === 0 || options.boss && !success) { s.status = 'failed'; s.salvage = 0; s.last += ' Run over; unbanked salvage lost.'; }
     else if (s.depth === 12) { s.status = 'completed'; s.last += ' Twelve-room circuit cleared.'; }
     else if (s.depth % 3 === 0) {
       s.draft = Object.keys(PERKS).filter(function (x) { return !s.perks.includes(x); })

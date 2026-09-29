@@ -89,8 +89,8 @@ Both rewards use the existing atomic ledger, fixed server reward values and
 1200 daily Pet XP cap. Daily/weekly leaderboards count settlement-time Pet XP;
 seasonal XP stays with the source season and all-time includes retained pets.
 Public activity names the two rewards. These payouts add no Journey objectives
-or specialist/material bonuses. Practice remains local and reward-free; its
-panel links to continuing Contracts for official progression.
+or specialist/material bonuses. Practice has its own server-saved training rank and bounded daily XP bonuses
+(see Play Now and practice below).
 
 Missing feature tables during rollout show the additions as unavailable while
 retaining the existing checklist. Other database errors follow the retry path.
@@ -282,7 +282,7 @@ sessions expire twenty-four hours after their duration cap if left unclaimed.
 
 Egg and unadopted players see clear action locks across Work, Economy and other
 panels. Egg care, incubation, hatching, account controls and stale-combat cleanup
-retain their existing rules. Practice remains available after adoption.
+retain their existing rules. Official Practice unlocks after hatching.
 
 ---
 
@@ -488,10 +488,11 @@ Inventory descriptions distinguish consuming an item from leaving it in the
 bag for a standard Moon Run bonus. Style Patch is a consumable, not clothing;
 Adventure Map does not improve expedition outcomes or job luck. Care's Energy
 Drink button and the consumable Energy Drink remain separate actions. Style Lab
-currently stores account collection unlocks only: no visible frame, trail or
-pose is applied. Its copy states this before purchase. Rename Badge ownership
-is not required by the existing callsign editor. Existing ownership records are
-preserved; no visual cosmetic implementation or new assets are introduced here.
+uses account-owned unlocks and per-pet visual loadouts. Equip/remove is free;
+frames, nameplates, Explore trails and idle victory poses render on the canvas.
+Existing ownership works without repurchasing. Callsign editing remains free.
+The styles do not change stats; reduced-motion mode keeps decorative trails still.
+
 
 ### Moon Gold trade availability
 
@@ -545,14 +546,21 @@ account/day attempt status and its UTC reset; switching pets does not grant a
 second attempt. The standard Moon Run and official Daily Moon Run retain their
 separate reward and completion rules.
 
-Practice Roguelite is an explicitly local, reward-free simulation available
-after adoption, including the egg stage. It has three builds, three goals,
-12 rooms, risk previews, health/supply management, three upgrade drafts and
-extraction. Players may replay without care cooldowns or pet energy costs.
-Practice does not award Pet XP, Community XP, currencies, items, Growth Marks,
-Weekly Crests, achievements, quest credit or leaderboard scores. Runs and a
-personal best are saved in this browser, isolated by pet ID, with at most three
-saved pet entries. They are not authoritative or synced across devices.
+Practice Roguelite is authenticated, server-saved training for hatched pets.
+Three builds and three goals span 12 rooms, three upgrade drafts and a final
+checkpoint boss. Full circuit + goal + successful final tactic earns repeatable
+training rank. The first three qualifying clears per account/UTC day reserve
+10 Pet XP each under the usual 1,200 daily cap. Rank continues after bonuses.
+There is no pet energy/currency cost. Extraction, failure and a missed goal pay
+nothing. Rest cannot clear the boss. It grants no Community XP, materials,
+Growth Marks, Weekly Crests or official Daily Run objective credit.
+
+Server state and random rolls are authoritative; browser seeds/scores/rewards
+are ignored. Turns use revision checks. Reward claims use fixed values and the
+original pet/season; failed payouts appear as recoverable claims across pet
+switches and season changes. The normal four XP periods count applied rewards;
+training rank is a separate per-pet record. Old local runs remain unrewarded.
+Apply migration 079 before deploying this Worker/frontend revision.
 
 Existing story-chain, district, raid and reward limits remain in force. No
 future system is unlocked by practice. The player can leave and resume play;
@@ -639,9 +647,9 @@ victory day/week. Old recovery cannot rewind care clocks, reset a newer streak
 or fabricate this week's Journey evidence.
 
 Play Now and Coach surface pending rewards. After an attack, the board links
-to server-saved Contracts and local Practice. Their existing rules remain:
+to server-saved Contracts and Practice. Their existing rules remain:
 contracts continue without energy or cooldowns, with bounded daily bonuses;
-practice is unlimited and grants no authoritative rewards.
+practice is unlimited with saved training rank and three daily XP bonus slots.
 
 ## Equipment
 
@@ -818,8 +826,12 @@ server-saved and scoped to the original run pet. They affect run score and
 clear odds only; reward authority, daily limits and economic caps are unchanged.
 
 Existing runs retain their earlier rules and condition. New runs select only
-implemented conditions. Relic ownership is collectible/progression state;
-passive relic effects remain inactive. See
+implemented conditions. All ten relics now have active, documented adaptations
+in new Practice and Contract runs: health, odds, hidden routes, damage reduction,
+rest, a once-per-run escape and rare salvage. Their canonical IDs are read from
+owned relics and snapshotted at start; database reads must succeed. Stored
+effects JSON cannot inject a bonus. Old saved runs retain their rules.
+Standard Moon Run and official Daily Run retain their existing separate rules. See
 `docs/moonpet-roguelite-wiring-audit-2026-09-27.md` for the wiring matrix,
 concurrency fixes, validation and deployment requirements.
 
