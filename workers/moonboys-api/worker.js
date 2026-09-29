@@ -6465,9 +6465,26 @@ async function processPetAction(db, telegramId, action, options = {}) {
   if (action === 'rename') {
     const petName = normalizePetName(options.pet_name);
     if (!petName) return { accepted: false, reason: 'invalid_pet_name', pet };
-    pet.pet_name = petName;
-    await savePetProfile(db, pet);
-    return { accepted: true, reason: 'renamed', xp_awarded: 0, pet_xp_awarded: 0, pet };
+    // A callsign change must never save the previously read XP, care or gear.
+    // Bind it to the selected source pet so a concurrent switch cannot rename
+    // (or overwrite) the replacement companion.
+    if (!pet.pet_id || !pet.season_key) return { accepted: false, reason: 'source_pet_authority_required' };
+    const renamed = await db.batch([
+      db.prepare(`UPDATE telegram_pet_instances SET pet_name=?,source_profile_updated_at=?,updated_at=CURRENT_TIMESTAMP
+        WHERE pet_id=? AND telegram_id=? AND season_key=? AND status='active'
+          AND EXISTS (SELECT 1 FROM telegram_pet_active_slots a JOIN telegram_pet_season_slots s
+            ON s.pet_id=a.pet_id AND s.telegram_id=a.telegram_id AND s.season_key=a.season_key
+            WHERE a.telegram_id=? AND a.pet_id=? AND a.season_key=? AND s.slot_number=telegram_pet_instances.slot_number AND s.status='active')
+        RETURNING *`).bind(petName, PET_INSTANCE_AUTHORITY_VERSION, pet.pet_id, telegramId, pet.season_key,
+          telegramId, pet.pet_id, pet.season_key),
+      db.prepare(`UPDATE telegram_pet_profiles SET pet_name=(SELECT pet_name FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=?),updated_at=CURRENT_TIMESTAMP
+        WHERE telegram_id=? AND EXISTS (SELECT 1 FROM telegram_pet_active_slots WHERE telegram_id=? AND pet_id=? AND season_key=?)`)
+        .bind(pet.pet_id, telegramId, telegramId, telegramId, pet.pet_id, pet.season_key),
+    ]);
+    const sourcePet = renamed[0]?.results?.[0];
+    if (!sourcePet) return { accepted: false, reason: 'source_pet_changed' };
+    return { accepted: true, reason: 'renamed', xp_awarded: 0, pet_xp_awarded: 0,
+      pet: { ...pet, ...applyPetDecay(sourcePet), moon_gold: pet.moon_gold, moon_crystals: pet.moon_crystals, style_tokens: pet.style_tokens } };
   }
 
   const existing = await readAcceptedPetEventByKey(db, telegramId, eventKey);
@@ -6839,13 +6856,9 @@ async function processPetGoldTrade(db, telegramId, wagerRaw, options = {}) {
     petXp = Math.max(0, PETS_DAILY_PET_XP_CAP - totals.day.pet_xp);
   }
   const walletDeltas = { moon_gold: goldDelta, moon_crystals: crystalDelta };
-  const startingPetXp = Number(pet.pet_xp || 0);
-  pet.pet_xp = Math.max(0, Math.floor(Number(pet.pet_xp || 0) + petXp));
-  updatePetStreakForAction(pet, dayKey);
-  pet.last_decay_at = now.toISOString();
-
   const eventId = crypto.randomUUID();
   const metadata = JSON.stringify({ source: options.source || 'telegram_bot', wager, won, gold_delta: goldDelta, crystal_delta: crystalDelta, roll });
+  const nextXp = '(pet_xp + (SELECT pet_xp_awarded FROM trade_award))';
   const tradeResults = await db.batch([
     db.prepare(`
       INSERT OR IGNORE INTO telegram_pet_events
@@ -6856,7 +6869,7 @@ async function processPetGoldTrade(db, telegramId, wagerRaw, options = {}) {
           AND moon_gold >= ? AND pet_xp = ?)
         AND EXISTS (SELECT 1 FROM telegram_pet_active_slots a JOIN telegram_pet_instances p
           ON p.pet_id=a.pet_id AND p.telegram_id=a.telegram_id AND p.season_key=a.season_key
-          WHERE a.telegram_id=? AND a.pet_id=? AND a.season_key=? AND p.status='active')
+          WHERE a.telegram_id=? AND a.pet_id=? AND a.season_key=? AND p.status='active' AND p.pet_xp=?)
         AND NOT EXISTS (SELECT 1 FROM telegram_pet_events
           WHERE telegram_id=? AND event_type='trade' AND status IN ('pending','accepted')
             AND julianday(created_at) > julianday(?))
@@ -6864,22 +6877,32 @@ async function processPetGoldTrade(db, telegramId, wagerRaw, options = {}) {
           WHERE telegram_id=? AND day_key=? AND status='accepted') <= ?)
       RETURNING id
     `).bind(eventId, sourceAuthority.pet_id, telegramId, eventKey, petXp, sourceAuthority.season_key, dayKey, weekKey, metadata, telegramId,
-      walletDeltas.moon_gold, walletDeltas.moon_crystals, walletDeltas.style_tokens || 0, wager, startingPetXp,
-      telegramId, pet.pet_id, pet.season_key, telegramId, new Date(now.getTime() - PET_TRADE_COOLDOWN_SECONDS * 1000).toISOString(),
+      walletDeltas.moon_gold, walletDeltas.moon_crystals, walletDeltas.style_tokens || 0, wager, Number(pet.pet_xp || 0),
+      telegramId, pet.pet_id, pet.season_key, Number(pet.pet_xp || 0), telegramId, new Date(now.getTime() - PET_TRADE_COOLDOWN_SECONDS * 1000).toISOString(),
       petXp, petXp, telegramId, dayKey, PETS_DAILY_PET_XP_CAP),
     accountWalletDeltaStatement(db, telegramId, walletDeltas,
       "EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')", [eventId]),
-    db.prepare(`
-      UPDATE telegram_pet_profiles
-      SET pet_xp = ?, level = ?, stage = ?, streak_days = ?, last_active_day = ?, last_decay_at = ?, updated_at = CURRENT_TIMESTAMP
-      WHERE telegram_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')
-    `).bind(pet.pet_xp, getPetLevel(pet.pet_xp), getPetGrowthStage(pet.pet_xp), pet.streak_days, pet.last_active_day, pet.last_decay_at, telegramId, eventId),
-    db.prepare(`
+    db.prepare(`WITH trade_award AS (SELECT pet_xp_awarded FROM telegram_pet_events WHERE id=? AND status='pending')
       UPDATE telegram_pet_instances
-      SET pet_xp = ?, level = ?, stage = ?, streak_days = ?, last_active_day = ?, last_decay_at = ?, source_profile_updated_at = ?, updated_at = CURRENT_TIMESTAMP
+      SET pet_xp = ${nextXp}, level = ${getPetVisibleLevelSql(nextXp)},
+        stage = CASE WHEN ${nextXp} >= 1800 THEN 'legendary companion' WHEN ${nextXp} >= 900 THEN 'moon guardian'
+          WHEN ${nextXp} >= 360 THEN 'street scout' WHEN ${nextXp} >= 120 THEN 'runner' WHEN ${nextXp} >= 25 THEN 'hatchling' ELSE 'egg' END,
+        streak_days = CASE WHEN last_active_day > ? THEN streak_days WHEN last_active_day = ? THEN MAX(1,streak_days)
+          WHEN last_active_day = ? THEN streak_days+1 ELSE 1 END,
+        last_active_day = CASE WHEN last_active_day > ? THEN last_active_day ELSE ? END,
+        last_decay_at = CASE WHEN julianday(last_decay_at) > julianday(?) THEN last_decay_at ELSE ? END,
+        source_profile_updated_at = ?, updated_at = CURRENT_TIMESTAMP
       WHERE telegram_id = ? AND pet_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')
-    `).bind(pet.pet_xp, getPetLevel(pet.pet_xp), getPetGrowthStage(pet.pet_xp), pet.streak_days, pet.last_active_day, pet.last_decay_at,
+    `).bind(eventId,
+      dayKey, dayKey, getPreviousPetDayKey(dayKey), dayKey, dayKey, now.toISOString(), now.toISOString(),
       PET_INSTANCE_AUTHORITY_VERSION, telegramId, pet.pet_id || '', eventId),
+    db.prepare(`UPDATE telegram_pet_profiles SET
+        (pet_xp,level,stage,streak_days,last_active_day,last_decay_at)=
+          (SELECT pet_xp,level,stage,streak_days,last_active_day,last_decay_at FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=?),
+        updated_at=CURRENT_TIMESTAMP
+      WHERE telegram_id=? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id=? AND status='pending')
+        AND EXISTS (SELECT 1 FROM telegram_pet_active_slots WHERE telegram_id=? AND pet_id=? AND season_key=?)`)
+      .bind(pet.pet_id, telegramId, telegramId, eventId, telegramId, pet.pet_id, pet.season_key),
     db.prepare(`
       INSERT INTO telegram_pet_season_state
         (telegram_id, season_key, season_xp, weekly_xp, daily_xp, daily_key, weekly_key)
@@ -14693,6 +14716,7 @@ function resolvePetOutcomeMediaKey(action, beforePet, result = null) {
 }
 
 export const __petMediaTestHooks = Object.freeze({
+  cmdPetRename,
   PET_ACTIONS,
   PET_SPECIAL_ACTION_POLICIES,
   normalizePetCooldownWindow,
@@ -17259,6 +17283,10 @@ async function cmdPetRename(db, tok, chatId, telegramId, argStr) {
     return;
   }
   const result = await processPetAction(db, telegramId, 'rename', { pet_name: petName, source: 'telegram_command' });
+  if (!result.accepted) {
+    await sendTelegramMessage(tok, chatId, 'Pet rename was not saved. Your active pet may have changed. Check /pet and try /petname again.');
+    return;
+  }
   const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
   const reaction = await selectMoonpetReaction(db, telegramId, 'rename', identity || {}, { pet: result.pet }).catch(() => buildMoonpetReaction('rename', identity || {}, { pet: result.pet }));
   await sendTelegramPetReply(tok, chatId, `🌕 Pet renamed.\n\n${formatPetStatus(result.pet, identity, null, reaction)}`, { reply_markup: petReplyMarkup() }, 'level_up', { db, telegram_id: telegramId, pet: result.pet });

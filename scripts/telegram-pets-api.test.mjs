@@ -2984,7 +2984,7 @@ const tradeRecoveryDb = seedRepeatRewardPlayer('trade-recovery', 70);
 tradeRecoveryDb.database.prepare("UPDATE telegram_pet_profiles SET moon_gold = 200, happiness = 90, cleanliness = 90, hunger = 10 WHERE telegram_id = 'trade-recovery'").run();
 await ensurePetStarterSeasonSlot(tradeRecoveryDb, 'trade-recovery', new Date('2026-08-15T00:00:00Z'));
 await __petMediaTestHooks.ensureActivePetInstance(tradeRecoveryDb, 'trade-recovery');
-tradeRecoveryDb.failBatchOnSql(/UPDATE telegram_pet_profiles\s+SET pet_xp = \?/);
+tradeRecoveryDb.failBatchOnSql(/UPDATE telegram_pet_profiles\s+SET\s+\(pet_xp,level,stage,streak_days,last_active_day,last_decay_at\)=/);
 const tradeRecoveryRandom = Math.random;
 Math.random = () => 0.9;
 try {
