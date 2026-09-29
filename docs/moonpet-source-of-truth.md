@@ -886,3 +886,20 @@ before/after values and receipt totals, preserves pet levels, wallets, items and
 claimed rewards, and does not alter daily/weekly receipt totals. Apply it before
 the Worker deployment, then run the count-only rebaseline check. No full player
 wipe is required. Deeper legacy ledger differences remain diagnostic evidence.
+
+### Care equipment authority (29 September 2026)
+
+Care reserves its accepted receipt only while the relevant equipped progression
+rows still match the reward calculation: food for Feed, toy for Play, and outfit
+for the five ordinary care actions. Concurrent paid upgrades, mastery changes,
+row creation or deletion require a fresh action. Rejection consumes no care
+reward or cooldown; unrelated slots and other accounts do not block it. This
+uses the same progression guard as Standard Run choices and adds no D1 queries.
+
+Shop descriptions describe the effects applied by the Worker. Crystal Bowl adds
+energy, not health; outfit XP/currency bonuses apply to Feed, Play, Clean, Sleep
+and Train. Dance, Energy Drink and Cuddles retain their stat-only policies. The
+legacy Telegram gear summary shows the live Shop description and actual
+level/mastery multiplier rather than presenting utility-registry targets as
+implemented bonuses. Its command still launches Equipment when the Mini App
+flag is enabled. See [the follow-up audit](moonpet-care-equipment-audit-2026-09-29.md).

@@ -240,12 +240,13 @@ export function buildPetProgressSummary(state = {}) {
   return lines.join('\n');
 }
 
-export function buildPetGearSummary(rows = []) {
+export function buildPetGearSummary(rows = [], catalog = {}) {
   const lines = ['🧰 PET GEAR'];
   if (!Array.isArray(rows) || rows.length === 0) return `${lines[0]}\nNo equipment progression recorded yet.`;
+  lines.push('Bonuses apply while equipped. Shop effects below are base values; levels/mastery scale supported bonuses. XP scaling and caps still apply.');
   for (const row of rows) {
     const text = formatPetEquipmentProgression(row.item_key, row);
-    if (text) lines.push(text);
+    if (text) lines.push(text + (catalog[row.item_key]?.description ? `\n${catalog[row.item_key].description}` : ''));
   }
   return lines.join('\n');
 }

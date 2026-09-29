@@ -3,6 +3,7 @@ import test from 'node:test';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import { getPetVisibleLevel } from '../workers/moonboys-api/pets/progression-phase-2.js';
+import { processPetEquipmentUpgrade } from '../workers/moonboys-api/pets/live-systems.js';
 import worker, { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 
 const now = new Date();
@@ -69,6 +70,81 @@ function cap(f,petXp=1198,communityXp=249) {
 function items(f,key,count=2) {
   f.sql.prepare("INSERT INTO telegram_pet_inventory (telegram_id,asset_type,asset_key,quantity) VALUES (?,'item',?,?)").run(f.owner,key,count);
 }
+
+for (const change of ['upgrade', 'mastery', 'backfill', 'deletion']) test(`care rejects concurrent equipped progression ${change} without spending the action`, async () => {
+  const f = fixture('care-gear-' + change);
+  f.sql.exec("UPDATE telegram_pet_instances SET pet_xp=100000,equipped_food='crystal_bowl'; UPDATE telegram_pet_profiles SET pet_xp=100000,equipped_food='crystal_bowl',moon_gold=10000");
+  await f.state();
+  for (const material of ['moon_dust', 'scrap_metal', 'crystal_shard', 'mastery_token', 'battery_cell']) {
+    f.sql.prepare('INSERT INTO telegram_pet_material_balances (telegram_id,material_key,quantity) VALUES (?,?,100)').run(f.owner, material);
+  }
+  if (change === 'backfill') f.sql.exec('DELETE FROM telegram_pet_equipment_progression');
+  let triggered = false, wallet;
+  f.db.beforeBatch = async statements => {
+    for (const statement of statements) assert.ok(statement.args.length <= 100, 'D1 binding limit');
+    if (!statements[0].query.includes('pet_action_pending')) return;
+    f.db.beforeBatch = null; triggered = true;
+    if (change === 'upgrade') {
+      const upgrade = await processPetEquipmentUpgrade(f.db, f.owner, 'crystal_bowl', 'concurrent-upgrade');
+      assert.equal(upgrade.accepted, true, JSON.stringify(upgrade));
+    } else if (change === 'mastery') f.sql.exec("UPDATE telegram_pet_equipment_progression SET mastery_xp=300,mastery_tier=2 WHERE item_key='crystal_bowl'");
+    else if (change === 'backfill') f.sql.prepare("INSERT INTO telegram_pet_equipment_progression (telegram_id,item_key,slot,item_level) VALUES (?,'crystal_bowl','food',2)").run(f.owner);
+    else f.sql.exec("DELETE FROM telegram_pet_equipment_progression WHERE item_key='crystal_bowl'");
+    wallet = f.sql.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles').get();
+  };
+  const rejected = await care(f, 'feed', 'gear-feed');
+  assert.equal(triggered, true);
+  assert.equal(rejected.accepted, false, 'old gear bonuses must not commit');
+  assert.equal(rejected.reason, 'pet_action_state_changed');
+  assert.equal(xp(f), 100000);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_key='gear-feed'").get().n, 0);
+  assert.deepEqual(f.sql.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles').get(), wallet);
+  const retry = await care(f, 'feed', 'gear-feed');
+  assert.equal(retry.accepted, true, JSON.stringify(retry));
+  const saved = JSON.parse(f.sql.prepare("SELECT metadata FROM telegram_pet_events WHERE event_key='gear-feed'").get().metadata).equipment_snapshot.crystal_bowl;
+  if (change === 'deletion') assert.equal(saved, undefined);
+  else assert.equal(change === 'mastery' ? saved.mastery_xp : saved.item_level, change === 'mastery' ? 300 : 2);
+  assert.equal(xp(f), 100000 + retry.pet_xp_awarded);
+  assert.equal((await care(f, 'feed', 'gear-feed')).duplicate, true);
+  for (const period of ['daily', 'weekly', 'seasonal']) assert.equal((await f.get('/telegram-pets/leaderboard?period=' + period)).entries[0].pet_xp, retry.pet_xp_awarded, period);
+  assert.equal((await f.get('/telegram-pets/leaderboard?period=all_time')).entries[0].pet_xp, 100000 + retry.pet_xp_awarded);
+});
+
+for (const [slot, item, action] of [['toy', 'hoverboard', 'play'], ['outfit', 'crown_jacket', 'clean']]) {
+  test(`care guards ${slot} mastery before reserving ${action}`, async () => {
+    const f = fixture('care-' + slot);
+    f.sql.exec(`UPDATE telegram_pet_instances SET equipped_${slot}='${item}'; UPDATE telegram_pet_profiles SET equipped_${slot}='${item}'`);
+    await f.state();
+    f.db.beforeBatch = statements => {
+      if (!statements[0].query.includes('pet_action_pending')) return;
+      f.db.beforeBatch = null;
+      f.sql.prepare('UPDATE telegram_pet_equipment_progression SET mastery_xp=5000,mastery_tier=5 WHERE item_key=?').run(item);
+    };
+    assert.equal((await care(f, action, 'mastery-care')).reason, 'pet_action_state_changed');
+    assert.equal(xp(f), 200);
+    const retry = await care(f, action, 'mastery-care');
+    assert.equal(retry.accepted, true);
+    // Both items add 8 base XP; tier-five mastery rounds this to 9.
+    assert.equal(retry.pet_xp_awarded, hooks.PET_ACTIONS[action].pet_xp + 9);
+  });
+}
+
+test('unrelated slots and other accounts do not block care', async () => {
+  const f = fixture('care-gear-scope');
+  f.sql.exec("UPDATE telegram_pet_instances SET equipped_food='moon_kibble',equipped_toy='hoverboard'; UPDATE telegram_pet_profiles SET equipped_food='moon_kibble',equipped_toy='hoverboard'");
+  await f.state();
+  f.sql.exec("INSERT INTO telegram_users (telegram_id) VALUES ('other-gear-owner'); INSERT INTO telegram_pet_profiles (telegram_id) VALUES ('other-gear-owner'); INSERT INTO telegram_pet_equipment_progression (telegram_id,item_key,slot) VALUES ('other-gear-owner','moon_kibble','food')");
+  let triggered = false;
+  f.db.beforeBatch = statements => {
+    if (!statements[0].query.includes('pet_action_pending')) return;
+    f.db.beforeBatch = null; triggered = true;
+    f.sql.exec("UPDATE telegram_pet_equipment_progression SET item_level=10 WHERE item_key='hoverboard' OR telegram_id='other-gear-owner'");
+  };
+  const result = await care(f, 'feed', 'unrelated');
+  assert.equal(triggered, true);
+  assert.equal(result.accepted, true);
+  assert.equal(result.pet_xp_awarded, hooks.PET_ACTIONS.feed.pet_xp + 4);
+});
 
 test('rapid repeated care cannot bypass the ordinary cooldown', async()=>{
   const f=fixture('83001');

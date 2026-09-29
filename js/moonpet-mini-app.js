@@ -2677,6 +2677,7 @@
       contracts_unavailable: 'contracts are syncing; refresh after the update.',
       pet_busy: 'a background activity is running. Open Work to review it; other care and Contracts are available.',
       pet_tired: 'not enough energy for this action. Review its displayed requirement or use care to recover.',
+      pet_action_state_changed: 'your pet or equipment changed while care was loading. No care reward or cooldown was applied; try again with the refreshed pet.',
       daily_completion_not_ready: 'finish all seven daily missions before claiming.',
       daily_completion_pending: 'your daily bonus is saved. Retry the claim.',
       finale_requirements_not_met: 'reach final evolution, 60 daily Marks and 10 weekly Crests.',
