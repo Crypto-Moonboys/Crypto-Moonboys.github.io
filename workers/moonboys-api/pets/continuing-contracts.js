@@ -1,3 +1,4 @@
+import { readOwnedRelics, initializeRelicRoute, relicRouteChoices, relicRouteSuccess, relicSearchSalvage, relicNames } from './relic-passives.js';
 // Authenticated, server-owned quests. Never accept a client's state, seed, roll or reward.
 export const CONTRACT_BONUS_LIMIT = 3;
 export const CONTRACT_BONUS_XP = 20;
@@ -153,14 +154,16 @@ export function contractChoices(s) {
   const prepared = [3, 4, 5, 6, 7, 8, 9].includes(s.version) && s.preparation === 'prepare_scout';
   const odds = (key, base) => Math.max(30, Math.min(98, base - threat + (rules[key]?.odds || 0) + (path.odds || 0) + (prepared ? 10 : 0)));
   const shield = perks.includes('shield') ? 8 : 0, bonus = perks.includes('magnet') ? 10 : 0;
-  return [
+  const choices = [
     { key: 'cover', title: 'TAKE COVER', odds: odds('cover', 90 + b.guard + (perks.includes('radar') ? 12 : 0)), salvage: 8 + bonus, damage: 15 + s.depth - shield, detail: 'A safer route with a smaller haul.' },
     { key: 'bold', title: 'BREAK THROUGH', odds: odds('bold', 74 + b.power + (perks.includes('boots') ? 15 : 0)), salvage: 27 + bonus, damage: 29 + s.depth - shield, detail: 'More salvage; heavier damage on failure.' },
     { key: 'search', title: 'SEARCH SIDE ROUTE', odds: odds('search', 80 + b.guard + (perks.includes('radar') ? 12 : 0)), salvage: 19 + bonus + (s.build === 'scavenger' ? 6 : 0), damage: 21 + s.depth - shield, detail: 'Success also finds one supply.' },
     { key: 'rest', title: 'USE SUPPLY', odds: 100, salvage: 0, damage: 0, disabled: s.supplies < 1 || s.health >= s.max_health, detail: `Use 1 supply to heal ${perks.includes('pockets') ? 40 : 28}. Advances a room without a successful route.` },
   ].map((choice) => ({ ...choice, title: boss?.tactics[choice.key] || choice.title,
     ...(boss ? choice.key === 'rest' ? { disabled: true, detail: 'Supply rest cannot clear the final boss. Use Field Patch before a tactic if you need healing.' } : { detail: choice.detail + ' Final tactic: failure ends this contract with zero rank or XP.' } : {}), salvage: choice.salvage + (rules[choice.key]?.salvage || 0) + (choice.key !== 'rest' ? path.salvage || 0 : 0), damage: choice.damage + (rules[choice.key]?.damage || 0) + (choice.key !== 'rest' ? path.damage || 0 : 0) }));
+  return relicRouteChoices(s, choices, { boss: !!boss, graffiti: contractRoom(s).title === 'Graffiti Junction' });
 }
+
 export function contractPreparations(s) {
   if (![3, 4, 5, 6, 7, 8, 9].includes(s.version) || s.depth >= contractLength(s) || s.health <= 0 || s.draft.length || s.preparation) return [];
   return [
@@ -186,11 +189,11 @@ export function contractDraftActions(s) {
 export function contractSideProgress(s) {
   if (![2, 3, 4, 5, 6, 7, 8, 9].includes(s.version) || s.side_goal === 'none') return null;
   const goal = CONTRACT_SIDE_GOALS[s.side_goal];
-  const progress = s.side_goal === 'versatile' ? Object.values(s.route_wins).filter((n) => n > 0).length
+  const progress = s.side_goal === 'versatile' ? ['cover', 'bold', 'search'].filter(key => s.route_wins[key] > 0).length
     : s.side_goal === 'daredevil' ? s.route_wins.bold : s.supplies;
   return { key: s.side_goal, ...goal, progress, reached: progress >= goal.target, rank_points: CONTRACT_SIDE_RANK * s.tier };
 }
-export function advanceContract(value, action, roll) {
+export function advanceContract(value, action, roll, rareRoll = 10000) {
   const s = structuredClone(value);
   if (s.depth >= contractLength(s) || s.health <= 0) return null;
   if (action === 'abandon') return { state: s, status: 'abandoned', rank_points: 0 };
@@ -243,14 +246,16 @@ export function advanceContract(value, action, roll) {
   const choice = contractChoices(s).find((c) => c.key === action);
   if (!choice || choice.disabled || !Number.isInteger(roll) || roll < 0 || roll >= 100) return null;
   const boss = finalBoss(s);
-  if (boss) s.boss_result = { key: boss.key, choice: action, cleared: roll < choice.odds };
+  const success = relicRouteSuccess(s, roll < choice.odds, !!boss);
+  if (boss) s.boss_result = { key: boss.key, choice: action, cleared: success };
   if (action === 'rest') {
-    s.supplies--; s.health = Math.min(s.max_health, s.health + (s.perks.includes('pockets') ? 40 : 28));
+    s.supplies--; s.health = Math.min(s.max_health, s.health + (s.perks.includes('pockets') ? 40 : 28) + (s.relics?.includes('neon_boots') ? 1 : 0));
     s.last = 'Used one supply and moved on. No salvage or route-clear credit.';
-  } else if (roll < choice.odds) {
-    s.wins++; s.salvage += choice.salvage; if (action === 'search') s.supplies++;
-    if ([2, 3, 4, 5, 6, 7, 8, 9].includes(s.version)) s.route_wins[action]++;
-    s.last = `Route cleared. +${choice.salvage} contract salvage.`;
+  } else if (success) {
+    const salvage = choice.salvage + relicSearchSalvage(s, action, rareRoll);
+    s.wins++; s.salvage += salvage; if (action === 'search') s.supplies++;
+    if ([2, 3, 4, 5, 6, 7, 8, 9].includes(s.version)) s.route_wins[action] = (s.route_wins[action] || 0) + 1;
+    s.last = `Route cleared. +${salvage} contract salvage.`;
   } else { s.health = Math.max(0, s.health - choice.damage); s.last = `Setback: -${choice.damage} route health. Keep going if you can.`; }
   s.depth++;
   if (s.version === 9) s.field_pending = false;
@@ -280,6 +285,7 @@ function projection(row) {
     goal: s.goal, title: objective.title, objective: objective.detail,
     boss: boss ? { key: boss.key, title: boss.title, detail: boss.detail, active: row.status === 'active' && Boolean(finalBoss(s)), result: s.boss_result || null } : null,
     build: s.build, build_title: CONTRACT_BUILDS[s.build].title, tier: s.tier, depth: s.depth, max_depth: contractLength(s),
+    relics: relicNames(s.relics),
     format: formatKey(s), format_title: CONTRACT_FORMATS[formatKey(s)].title,
     health: s.health, max_health: s.max_health, supplies: s.supplies, salvage: s.salvage,
     progress: contractGoalProgress(s), target: objective.target, last: s.last,
@@ -387,6 +393,7 @@ export async function processContractAction(db, owner, pet, request, award, now 
     if (!Number.isSafeInteger(request.sequence) || request.sequence !== board.next_sequence) return reject('contract_stale');
     const s = createContractState(request.goal, request.build, request.tier, crypto.randomUUID(), request.side_goal, request.format);
     if (!s || request.tier > board.max_tier) return reject('contract_invalid_choice');
+    initializeRelicRoute(s, await readOwnedRelics(db, owner));
     row = await db.prepare(`INSERT OR IGNORE INTO telegram_pet_contracts
       (contract_id,pet_id,telegram_id,season_key,sequence,status,state_json)
       SELECT ?,?,?,?,?,'active',? WHERE ${ACTIVE_GUARD}
@@ -398,7 +405,7 @@ export async function processContractAction(db, owner, pet, request, award, now 
   if (!row) return reject('contract_not_found');
   if (request.action !== 'contract_step' || row.status !== 'active' || request.revision !== row.revision) return reject('contract_stale');
   const roll = crypto.getRandomValues(new Uint32Array(1))[0] % 100;
-  const next = advanceContract(JSON.parse(row.state_json), request.choice, roll);
+  const next = advanceContract(JSON.parse(row.state_json), request.choice, roll, crypto.getRandomValues(new Uint32Array(1))[0] % 10000);
   if (!next) return reject('contract_invalid_choice');
   const completed = next.status === 'completed';
   // One compare-and-swap both commits the move and reserves the account/day bonus.

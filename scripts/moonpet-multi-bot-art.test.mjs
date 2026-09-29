@@ -113,7 +113,7 @@ const html = fs.readFileSync(path.join(root, "moonpet-game.html"), "utf8");
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/);
 assert.match(html, /moonpet-bot-art-loader\.js\?v=20260926-front-actions-v1/);
 assert.match(html, /moonpet-bot-art-renderer\.js\?v=20260926-front-actions-v1/);
-assert.match(html, /moonpet-mini-app\.js\?v=20260929-care-equipment-v1/);
+assert.match(html, /moonpet-mini-app\.js\?v=20260929-training-style-v1/);
 assert.doesNotMatch(html, /moonpet-botty-front-(?:asset-loader|sprite-renderer)\.js/);
 assert.doesNotMatch(html, /moonpet-art-v2\.js/);
 
@@ -123,7 +123,7 @@ assert.match(client, /evolutionStage: evolutionStage/);
 assert.doesNotMatch(client, /createPetPalette|PET_APPEARANCE_PALETTES|PET_SPECIES_PALETTES|DEFAULT_PET_PALETTE/,
   "retired procedural animal palettes must remain absent");
 assert.match(client, /selectMoonpetBot\(botArtIdentity\(snapshot\)\)/);
-assert.match(client, /drawSelectedBotSprite\(renderTime, animationMode, active/);
+assert.match(client, /drawSelectedBotSprite\(renderTime, styledVictory \? 'victory' : animationMode, active \|\| styledVictory/);
 assert.doesNotMatch(client, /drawSideScrollerMoonpetSprite|drawApprovedMoonpetSprite/, "old character render paths must not remain live");
 assert.match(client, /var BOT_RENDER_CENTER_X = 160;/, "bots stay centered in front of the space battle");
 assert.match(client, /var BOT_RENDER_BASELINE_Y = 219;/, "bots stand on the bottom canvas edge");

@@ -1,5 +1,21 @@
 export const MOONPET_LIVE_SYSTEM_OWNERSHIP_CLASSIFICATION = Object.freeze([
   {
+    system_key: 'practice_training', status: 'live', authority_owner: 'pet',
+    required_authority_keys: ['telegram_id', 'pet_id', 'season_key', 'run_id', 'revision'],
+    write_tables: ['telegram_pet_practice', 'telegram_pet_reward_claims', 'telegram_pet_events', 'telegram_pet_instances'],
+    read_tables: ['telegram_pet_active_slots', 'telegram_pet_lifecycle_by_pet', 'telegram_pet_relics'],
+    risk_notes: 'Three ten-XP reservations per account/UTC day; unlimited training rank. Server rolls, immutable relic snapshot and revision checks.',
+    expected_ownership_rule: 'Training and rewards stay with their source pet; account/day limits cannot be reset by switching pets.',
+  },
+  {
+    system_key: 'style_loadouts', status: 'live', authority_owner: 'mixed',
+    required_authority_keys: ['telegram_id', 'pet_id', 'season_key', 'cosmetic_key'],
+    write_tables: ['telegram_pet_style_loadouts'],
+    read_tables: ['telegram_pet_active_slots', 'telegram_pet_instances', 'telegram_pet_cosmetic_unlocks'],
+    risk_notes: 'Unlocks are account-owned; enabled cosmetics are per pet. Equipping never spends or awards currency.',
+    expected_ownership_rule: 'The selected owned active pet can equip only account-owned styles; no client-provided style effect is trusted.',
+  },
+  {
     system_key: 'continuing_contracts',
     status: 'live',
     authority_owner: 'pet',
