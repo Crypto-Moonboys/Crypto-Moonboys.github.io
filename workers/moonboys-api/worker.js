@@ -5098,6 +5098,24 @@ async function createPetKaijuMatch(db, chatId, telegramId, mode = 'solo', option
   return getPetKaijuMatch(db, matchId);
 }
 
+async function ensurePetKaijuEligible(db, telegramId, existingPet = null) {
+  const pet = existingPet || await getPetProfile(db, telegramId);
+  if (!pet) return { ok: false, reason: 'pet_not_adopted' };
+  let lifecycle;
+  try {
+    lifecycle = await getMoonpetLifecycle(db, telegramId);
+  } catch (error) {
+    return { ok: false, reason: 'combat_authority_unavailable', error: error?.message || String(error) };
+  }
+  const combat = getCombatEligibility({
+    activePetExists: true,
+    lifecycleKnown: Boolean(lifecycle),
+    hatched: Boolean(lifecycle && lifecycle.phase !== 'egg'),
+    level: getPetLevel(pet.pet_xp),
+  });
+  return { ok: combat.kaiju_unlocked, reason: combat.kaiju_reason, pet };
+}
+
 async function enqueuePetKaijuPlayer(db, chatId, telegramId) {
   await db.prepare(`
     UPDATE telegram_pet_kaiju_queue
@@ -17000,8 +17018,22 @@ async function cmdPetKaiju(db, tok, chatId, telegramId, argStr = '', chatType = 
   const args = String(argStr || '').trim().split(':').filter(Boolean);
   const action = args.shift() || '';
   const groupChat = isTelegramGroupChat(chatId, chatType);
+  const requireKaijuEligibility = async () => {
+    const eligibility = await ensurePetKaijuEligible(db, telegramId, pet);
+    if (eligibility.ok) return true;
+    const copy = eligibility.reason === 'moon_egg_must_hatch'
+      ? 'Your Moon Egg must hatch before entering a Kaiju battle.'
+      : eligibility.reason === 'combat_authority_unavailable'
+        ? 'Kaiju eligibility is temporarily unavailable. Try again shortly.'
+        : eligibility.reason === 'moonpet_lifecycle_required'
+          ? 'Moonpet lifecycle authority is still syncing. Try Kaiju again shortly.'
+          : 'You need an eligible active Moonpet before entering a Kaiju battle.';
+    await sendTelegramMessage(tok, chatId, copy);
+    return false;
+  };
 
   if (action === 'join') {
+    if (!await requireKaijuEligibility()) return;
     const freshMatch = await getFreshPetKaijuMatch(db, args[0]);
     const match = freshMatch.match;
     if (isPetKaijuExpiredResult(freshMatch)) {
@@ -17042,6 +17074,7 @@ async function cmdPetKaiju(db, tok, chatId, telegramId, argStr = '', chatType = 
   }
 
   if (action === 'cpu') {
+    if (!await requireKaijuEligibility()) return;
     const freshMatch = await getFreshPetKaijuMatch(db, args[0]);
     const match = freshMatch.match;
     if (isPetKaijuExpiredResult(freshMatch)) {
@@ -17096,6 +17129,7 @@ async function cmdPetKaiju(db, tok, chatId, telegramId, argStr = '', chatType = 
       }
       return;
     }
+    if (!await requireKaijuEligibility()) return;
     const completed = await applyPetKaijuCard(db, match, telegramId, cardKey);
     if (completed.reason === 'kaiju_card_waiting') {
       await sendTelegramMessage(tok, chatId, `Card locked for <code>${escapeHtml(telegramId)}</code>. Waiting for the other player.`);
@@ -17109,6 +17143,8 @@ async function cmdPetKaiju(db, tok, chatId, telegramId, argStr = '', chatType = 
     await sendTelegramPetReply(tok, chatId, copy, { reply_markup: petReplyMarkup() }, 'play');
     return;
   }
+
+  if (!await requireKaijuEligibility()) return;
 
   if (!groupChat) {
     const active = await getActivePetKaijuMatch(db, chatId);
