@@ -1619,7 +1619,15 @@ test('account audit: genuine empty roster wallet and unearned journeys remain va
   assert.equal(state.weekly_journey.weekly_crest_awarded,false);
 });
 
-for (const pending of [false, true]) test(`Weekly Boss reward-list outage cannot advertise ${pending ? 'a missing saved payout' : 'an empty claim list'}`, async () => {
+const weeklyRewardReadFailures = [
+  ['thrown', () => { throw Error('weekly_reward_list_unavailable'); }],
+  ['resolved failure', () => ({ success: false, error: 'D1 unavailable', results: [] })],
+  ['missing results', () => ({ success: true })],
+  ['malformed results', () => ({ success: true, results: {} })],
+  ['null response', () => null],
+];
+for (const [failure, failRead] of weeklyRewardReadFailures)
+for (const pending of [false, true]) test(`Weekly Boss reward-list ${failure} outage cannot advertise ${pending ? 'a missing saved payout' : 'an empty claim list'}`, async () => {
   const f = fixture('weekly-claim-list-' + pending);
   await f.state();
   if (pending) {
@@ -1636,14 +1644,22 @@ for (const pending of [false, true]) test(`Weekly Boss reward-list outage cannot
   const before = await f.state();
   assert.equal(before.guidance.weekly_boss.pending_rewards.length, pending ? 1 : 0);
   let triggered = false;
-  f.db.beforeAll = s => {
-    if (/SELECT v\.pet_id,\s*v\.season_key,\s*v\.week_key,\s*v\.boss_id/.test(s.query)) {
-      triggered = true; throw Error('weekly_reward_list_unavailable');
+  const prepare = f.db.prepare.bind(f.db);
+  f.db.prepare = query => {
+    const statement = prepare(query);
+    if (/SELECT v\.pet_id,\s*v\.season_key,\s*v\.week_key,\s*v\.boss_id/.test(query)) {
+      const bind = statement.bind.bind(statement);
+      statement.bind = (...args) => {
+        const bound = bind(...args);
+        bound.all = async () => { triggered = true; return failRead(); };
+        return bound;
+      };
     }
+    return statement;
   };
   await assert.rejects(f.state(), /weekly_reward_list_unavailable/);
   assert.equal(triggered, true);
-  f.db.beforeAll = null;
+  f.db.prepare = prepare;
   const after = await f.state();
   assert.deepEqual(after.guidance.weekly_boss.pending_rewards, before.guidance.weekly_boss.pending_rewards);
   assert.equal(after.pet.moon_gold, before.pet.moon_gold);

@@ -23,9 +23,11 @@ including an older victory belonging to another retained pet.
 The read now propagates failures through the existing Mini App state retry path.
 A previous valid client state is retained; a first load can retry. Successful
 empty reads still mean no pending claim. Recovery/settlement and reward amounts
-are unchanged. Two SQLite regressions first failed on main and pass with this
-fix: a genuinely empty list and a saved older payout. Restored reads return the
-same claim data and preserve wallet/XP balances.
+are unchanged. Ten SQLite cases cover thrown errors, resolved `success: false`,
+missing results, malformed results and null responses, each with an empty list
+and a saved older payout. The eight resolved-response cases reproduced the
+review finding before the follow-up guard. Restored reads return the same claim
+data and preserve wallet/XP balances.
 
 Eight existing state-building fixtures omitted the victory table. They now load
 the existing 058/061 migrations. The general API fixture replaces its three

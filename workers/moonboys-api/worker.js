@@ -15950,7 +15950,10 @@ async function getPendingPetWeeklyBossRewards(db, telegramId) {
     JOIN telegram_pet_instances i ON i.pet_id=v.pet_id AND i.telegram_id=v.telegram_id AND i.season_key=v.season_key
     WHERE v.telegram_id=? AND p.defeated_at IS NOT NULL AND p.reward_claimed_at IS NULL
     ORDER BY v.defeated_at LIMIT 10`).bind(telegramId).all();
-  return (rows.results || []).filter((row) => getPetWeeklyBoss(row.week_key).boss_id === row.boss_id)
+  if (rows?.success === false || !Array.isArray(rows?.results)) {
+    throw new Error('weekly_reward_list_unavailable');
+  }
+  return rows.results.filter((row) => getPetWeeklyBoss(row.week_key).boss_id === row.boss_id)
     .map((row) => ({ ...row, title: getPetWeeklyBoss(row.week_key).title, reward: getPetWeeklyBoss(row.week_key).reward }));
 }
 
