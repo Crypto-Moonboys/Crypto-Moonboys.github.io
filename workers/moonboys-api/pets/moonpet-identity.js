@@ -87,7 +87,7 @@ async function resolveMoonpetIdentityScope(db, telegramId, request = {}) {
       JOIN telegram_pet_instances i
         ON i.pet_id = s.pet_id AND i.telegram_id = s.telegram_id AND i.season_key = s.season_key AND i.slot_number = s.slot_number
       WHERE s.pet_id = ? AND s.telegram_id = ? AND s.season_key = ? AND s.status = 'active' AND i.status = 'active'
-      LIMIT 1`).bind(requestedPetId, telegramId, requestedSeasonKey).first().catch(() => null);
+      LIMIT 1`).bind(requestedPetId, telegramId, requestedSeasonKey).first();
   }
   return readActivePetIdentityScope(db, telegramId);
 }
@@ -97,7 +97,7 @@ async function readMoonpetIdentitySourceEvent(db, telegramId, request = {}) {
   if (!sourceEventKey) return { ok: true, source_event_key: null, source_event: null };
   const row = await db.prepare(`SELECT pet_id, telegram_id, season_key, event_type, status, reason, metadata, created_at, day_key
     FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ? LIMIT 1`)
-    .bind(telegramId, sourceEventKey).first().catch(() => null);
+    .bind(telegramId, sourceEventKey).first();
   if (!row || row.status !== 'accepted') return { ok: false, reason: 'source_event_not_accepted', source_event_key: sourceEventKey };
   return { ok: true, source_event_key: sourceEventKey, source_event: row };
 }
@@ -305,9 +305,9 @@ export async function recordMoonpetBehaviour(db, request = {}) {
         ))`).bind(eventId, petId, telegramId, seasonKey, petId, telegramId, seasonKey, definition.trait_id, petId, telegramId, seasonKey),
   ]);
   const identityEvent = await db.prepare(`SELECT progress_delta FROM telegram_pet_identity_events
-    WHERE event_id = ? AND pet_id = ? AND telegram_id = ? AND season_key = ?`).bind(eventId, petId, telegramId, seasonKey).first().catch(() => null);
+    WHERE event_id = ? AND pet_id = ? AND telegram_id = ? AND season_key = ?`).bind(eventId, petId, telegramId, seasonKey).first();
   const trait = await db.prepare(`SELECT trait_id, progress, unlocked_at FROM telegram_pet_personality_traits
-    WHERE pet_id = ? AND telegram_id = ? AND season_key = ? AND trait_id = ?`).bind(petId, telegramId, seasonKey, definition.trait_id).first().catch(() => null);
+    WHERE pet_id = ? AND telegram_id = ? AND season_key = ? AND trait_id = ?`).bind(petId, telegramId, seasonKey, definition.trait_id).first();
   return { accepted: Boolean(results?.[5]?.meta?.changes), duplicate: !results?.[0]?.meta?.changes,
     unlocked: Boolean(results?.[4]?.meta?.changes), progress_applied: positiveInteger(identityEvent?.progress_delta),
     daily_capped: Boolean(results?.[0]?.meta?.changes) && positiveInteger(identityEvent?.progress_delta) === 0, trait };
@@ -544,7 +544,7 @@ export async function evolveMoonpet(db, request = {}) {
   if (!petId || !scope?.season_key) return { accepted: false, duplicate: false, reason: 'evolution_authority_unavailable' };
   const existing = await db.prepare(`SELECT evolution_id, stage, unlocked_at FROM telegram_pet_evolutions_by_pet
     WHERE pet_id = ? AND telegram_id = ? AND evolution_id = ?`)
-    .bind(petId, telegramId, evolutionId).first().catch(() => null);
+    .bind(petId, telegramId, evolutionId).first();
   if (existing) return { accepted: true, duplicate: true, reason: 'already_evolved', evolution: existing };
   const requirements = evolutionRequirementSql(definition, telegramId, petId, scope.season_key);
   const evolutionMilestone = `evolution_${evolutionId}`;
@@ -608,7 +608,7 @@ export async function evolveMoonpet(db, request = {}) {
   if (!results?.[0]?.meta?.changes) {
     const concurrent = await db.prepare(`SELECT evolution_id, stage, unlocked_at FROM telegram_pet_evolutions_by_pet
       WHERE pet_id = ? AND telegram_id = ? AND evolution_id = ?`)
-      .bind(petId, telegramId, evolutionId).first().catch(() => null);
+      .bind(petId, telegramId, evolutionId).first();
     if (concurrent) return { accepted: true, duplicate: true, reason: 'already_evolved', evolution: concurrent };
     return { accepted: false, duplicate: false, reason: 'requirements_not_met' };
   }

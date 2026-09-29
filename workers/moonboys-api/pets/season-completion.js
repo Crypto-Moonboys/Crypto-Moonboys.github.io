@@ -87,11 +87,11 @@ export async function awardPetGrowthMark(db, award) {
   const accepted = Number(result?.meta?.changes || 0) === 1;
   const exactExisting = accepted ? null : await db.prepare(`SELECT mark_id FROM telegram_pet_growth_marks
     WHERE mark_id=? AND pet_id=? AND telegram_id=? AND season_key=? LIMIT 1`)
-    .bind(markId, petId, pet.telegram_id, seasonKey).first().catch(() => null);
+    .bind(markId, petId, pet.telegram_id, seasonKey).first();
   const sameDayExisting = accepted || exactExisting ? null : await db.prepare(`SELECT mark_id FROM telegram_pet_growth_marks
     WHERE pet_id=? AND telegram_id=? AND season_key=? AND earned_day=?
     ORDER BY earned_at, mark_id LIMIT 1`)
-    .bind(petId, pet.telegram_id, seasonKey, earnedDay).first().catch(() => null);
+    .bind(petId, pet.telegram_id, seasonKey, earnedDay).first();
   const existing = exactExisting || sameDayExisting;
   const response = {
     accepted,

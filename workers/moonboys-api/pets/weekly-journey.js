@@ -102,10 +102,10 @@ async function validateWeeklyEvidenceAuthority(db, request) {
     return { accepted: false, reason: 'invalid_weekly_journey_evidence' };
   }
 
-  const sourceEvent = await readSourceEvent(db, telegramId, sourceEventKey).catch(() => null);
+  const sourceEvent = await readSourceEvent(db, telegramId, sourceEventKey);
   if (!sourceEvent) return { accepted: false, reason: 'weekly_journey_source_event_missing' };
   if (String(sourceEvent.season_key || '') !== seasonKey) return { accepted: false, reason: 'weekly_journey_season_authority_mismatch' };
-  const pet = await ownedPet(db, petId, telegramId, seasonKey).catch(() => null);
+  const pet = await ownedPet(db, petId, telegramId, seasonKey);
   if (!pet) return { accepted: false, reason: 'weekly_journey_pet_authority_mismatch' };
   if (String(sourceEvent.pet_id || '') !== petId) return { accepted: false, reason: 'weekly_journey_pet_authority_mismatch' };
   if (!sourceMatchesObjective(request.objective_id, sourceEvent)) {
@@ -135,7 +135,7 @@ async function insertWeeklyJourneyReceipt(db, receipt) {
 async function readExistingWeeklyJourneyCrest(db, request) {
   return db.prepare(`SELECT crest_id, objective_id, evidence_key FROM telegram_pet_weekly_crests
     WHERE pet_id=? AND telegram_id=? AND season_key=? AND qualification_week=? LIMIT 1`)
-    .bind(request.pet_id, request.telegram_id, request.season_key, request.qualification_week).first().catch(() => null);
+    .bind(request.pet_id, request.telegram_id, request.season_key, request.qualification_week).first();
 }
 
 // Use the same source-backed totals for the UI and reward qualification.
@@ -168,7 +168,7 @@ export async function finalizeWeeklyJourneyCrest(db, request) {
 
   const rows = await readWeeklyJourneyObjectiveProgress(db, {
     telegram_id: telegramId, pet_id: petId, season_key: seasonKey, qualification_week: qualificationWeek,
-  }).catch(() => ({ results: [] }));
+  });
   const completedObjectives = (rows.results || []).reduce((count, row) => {
     const objective = PET_WEEKLY_JOURNEY_OBJECTIVES[String(row.objective_id || '')];
     if (!objective) return count;
@@ -189,7 +189,7 @@ export async function finalizeWeeklyJourneyCrest(db, request) {
   }
 
   const existingReceipt = await db.prepare(`SELECT status, crest_id FROM telegram_pet_weekly_journey_receipts
-    WHERE event_key=? AND status='accepted' LIMIT 1`).bind(eventKey).first().catch(() => null);
+    WHERE event_key=? AND status='accepted' LIMIT 1`).bind(eventKey).first();
   if (existingReceipt?.crest_id) {
     return {
       accepted: true,

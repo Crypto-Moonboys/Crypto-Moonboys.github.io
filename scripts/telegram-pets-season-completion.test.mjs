@@ -8,13 +8,26 @@ import {
 import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 
 class Statement {
-  constructor(db, sql, args = []) { this.db = db; this.sql = sql; this.args = args; }
-  bind(...args) { return new Statement(this.db, this.sql, args); }
-  async first() { return this.db.prepare(this.sql).get(...this.args) || null; }
-  async all() { return { results: this.db.prepare(this.sql).all(...this.args) }; }
-  async run() { const result = this.db.prepare(this.sql).run(...this.args); return { meta: { changes: result.changes } }; }
+  constructor(adapter, sql, args = []) { this.adapter = adapter; this.sql = sql; this.args = args; }
+  bind(...args) { return new Statement(this.adapter, this.sql, args); }
+  async first() {
+    this.adapter.beforeFirst?.(this.sql, this.args);
+    return this.adapter.db.prepare(this.sql).get(...this.args) || null;
+  }
+  async all() {
+    this.adapter.beforeAll?.(this.sql, this.args);
+    return { results: this.adapter.db.prepare(this.sql).all(...this.args) };
+  }
+  async run() {
+    this.adapter.beforeRun?.(this.sql, this.args);
+    const result = this.adapter.db.prepare(this.sql).run(...this.args);
+    return { meta: { changes: result.changes } };
+  }
 }
-class D1 { constructor(db) { this.db = db; } prepare(sql) { return new Statement(this.db, sql); } }
+class D1 {
+  constructor(db) { this.db = db; this.beforeFirst = null; this.beforeAll = null; this.beforeRun = null; }
+  prepare(sql) { return new Statement(this, sql); }
+}
 
 const sqlite = new DatabaseSync(':memory:');
 sqlite.exec(`PRAGMA foreign_keys=ON;
@@ -72,6 +85,21 @@ const sameDayDuplicateMark = await awardPetGrowthMark(db, {
 });
 assert.equal(sameDayDuplicateMark.duplicate, true, 'same-day Growth Marks are capped per pet');
 assert.equal(sameDayDuplicateMark.mark_id, firstMark.mark_id, 'same-day duplicate returns the existing authoritative mark_id, not a generated fake id');
+db.beforeFirst = (sql) => {
+  if (/FROM telegram_pet_growth_marks\s+WHERE mark_id=\?/i.test(sql)) throw new Error('injected_exact_growth_mark_read_failure');
+};
+await assert.rejects(awardPetGrowthMark(db, mark), /injected_exact_growth_mark_read_failure/,
+  'an exact duplicate Growth Mark read outage must not return an ambiguous null mark ID');
+db.beforeFirst = (sql) => {
+  if (/FROM telegram_pet_growth_marks\s+WHERE pet_id=\?.*earned_day=\?/is.test(sql)) throw new Error('injected_daily_growth_mark_read_failure');
+};
+await assert.rejects(awardPetGrowthMark(db, {
+  ...mark, milestone: 'care', evidence_key: 'care:same-day-read-outage', earned_at: '2026-03-15T20:00:00.000Z',
+}), /injected_daily_growth_mark_read_failure/,
+'a same-day duplicate Growth Mark read outage must fail closed');
+db.beforeFirst = null;
+assert.equal(sqlite.prepare("SELECT COUNT(*) AS count FROM telegram_pet_growth_marks WHERE pet_id='pet-a' AND earned_day='2026-03-15'").get().count, 1,
+  'duplicate authority read outages cannot create an extra daily Growth Mark');
 assert.equal((await awardPetGrowthMark(db, { ...mark, pet_id: 'forged' })).accepted, false, 'foreign pet IDs are rejected');
 const malformedTimestampMark = await awardPetGrowthMark(db, {
   ...mark, pet_id: 'forged', telegram_id: 'attacker', milestone: 'evolution', evidence_key: 'evolution:street:malformed', earned_at: 'not-a-persisted-date',
