@@ -178,3 +178,18 @@ test('Telegram rename reports a rejected concurrent switch without claiming succ
     assert.doesNotMatch(messages[0], /Pet renamed|No pet found/);
   } finally { globalThis.fetch = originalFetch; }
 });
+
+for (const action of ['trade', 'buy', 'daily_chest']) test(action + ' does not erase elapsed care decay', async () => {
+  const f = fixture('decay-' + action);
+  f.sql.prepare("UPDATE telegram_pet_instances SET energy=80,hunger=20,happiness=80,cleanliness=80,last_decay_at=datetime('now','-10 hours') WHERE pet_id=?").run('current-' + f.owner);
+  const result = action === 'trade' ? await hooks.processPetGoldTrade(f.db, f.owner, 10, { event_key: 'decay-trade' })
+    : action === 'buy' ? await hooks.processPetShopPurchase(f.db, f.owner, 'moon_kibble', { event_key: 'decay-buy' })
+    : await hooks.processPetDailyChest(f.db, f.owner, { event_key: 'decay-daily' });
+  assert.equal(result.accepted, true);
+  assert.ok(result.pet.energy >= 57 && result.pet.energy <= 58, `elapsed energy decay must survive ${action}; got ${result.pet.energy}`);
+  assert.ok(result.pet.hunger >= 65 && result.pet.hunger <= 66, `elapsed hunger must survive ${action}; got ${result.pet.hunger}`);
+  const refreshed = await hooks.getPetProfile(f.db, f.owner);
+  assert.ok(refreshed.energy >= 57 && refreshed.energy <= 58, 'a fresh read must preserve the same elapsed decay');
+  assert.ok(refreshed.hunger >= 65 && refreshed.hunger <= 66);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE status='accepted' AND event_type=?").get(action).n, 1);
+});
