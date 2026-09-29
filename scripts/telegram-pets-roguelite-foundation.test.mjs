@@ -352,6 +352,21 @@ await assert.rejects(awardPetReward(duplicateReceiptDb, {
 assert.equal(duplicateReceiptDb.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='reward-receipt-read'").get().moon_gold, rewardBalance);
 assert.equal(duplicateReceiptDb.database.prepare("SELECT COUNT(*) count FROM telegram_pet_reward_claims WHERE idempotency_key='receipt-read'").get().count, 1);
 
+const awardedReceiptDb = seedPlayer('awarded-receipt-read');
+awardedReceiptDb.beforeFirst = (statement) => {
+  if (statement.sql.includes('SELECT applied_rewards FROM telegram_pet_reward_claims WHERE claim_id = ?')) throw Error('awarded_receipt_read_unavailable');
+};
+const receiptRequest = {
+  telegram_id: 'awarded-receipt-read', source: 'pet_job', idempotency_key: 'awarded-receipt', rewards: { moon_gold: 9 },
+};
+await assert.rejects(awardPetReward(awardedReceiptDb, receiptRequest), /awarded_receipt_read_unavailable/);
+assert.equal(awardedReceiptDb.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='awarded-receipt-read'").get().moon_gold, 9);
+assert.equal(awardedReceiptDb.database.prepare("SELECT COUNT(*) count FROM telegram_pet_reward_claims WHERE idempotency_key='awarded-receipt' AND status='awarded'").get().count, 1);
+awardedReceiptDb.beforeFirst = null;
+const awardedRetry = await awardPetReward(awardedReceiptDb, receiptRequest);
+assert.equal(awardedRetry.duplicate, true);
+assert.equal(awardedReceiptDb.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='awarded-receipt-read'").get().moon_gold, 9);
+
 const bossRoomReadDb = seedPlayer('boss-room-read');
 bossRoomReadDb.database.prepare(`INSERT INTO telegram_pet_runs
   (id,pet_id,telegram_id,run_id,season_key,status) VALUES ('boss-room-read-row','pet-boss-room-read','boss-room-read','boss-room-read-run','pet-s2026-001','active')`).run();

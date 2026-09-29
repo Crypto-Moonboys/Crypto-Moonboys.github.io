@@ -501,7 +501,7 @@ export async function awardPetReward(db, request = {}) {
       ? { accepted: true, duplicate: true, pet_xp_awarded: 0, xp_awarded: 0, rewards: normalizePetReward() }
       : { accepted: false, duplicate: false, reason: 'reward_not_authorized', pet_xp_awarded: 0, xp_awarded: 0, rewards: normalizePetReward() };
   }
-  const claim = await db.prepare(`SELECT applied_rewards FROM telegram_pet_reward_claims WHERE claim_id = ?`).bind(claimId).first().catch(() => null);
+  const claim = await db.prepare(`SELECT applied_rewards FROM telegram_pet_reward_claims WHERE claim_id = ?`).bind(claimId).first();
   let appliedRewards = rewards;
   try { appliedRewards = { ...rewards, ...JSON.parse(claim?.applied_rewards || '{}') }; } catch {}
   const pet = await db.prepare(petAuthority
