@@ -20,6 +20,14 @@ Any gameplay, documentation, or UI change affecting Moonpet status should refere
 
 The following systems are considered live gameplay systems.
 
+### Economy actions preserve care decay
+
+Trade, Shop purchases and Daily Cache must not advance `last_decay_at` without
+applying elapsed care decay. Their reward/equipment writes leave the care clock
+alone; existing decay reads/writes apply it. This avoids restoring stale energy,
+hunger, happiness and cleanliness after inactivity. Rewards and leaderboard
+accounting are unchanged. See [the post-deployment audit](moonpet-post-deploy-audit-2026-09-29.md).
+
 ### Callsign and Trade write integrity
 
 Callsign changes update only the owned selected pet's name, with its compatibility

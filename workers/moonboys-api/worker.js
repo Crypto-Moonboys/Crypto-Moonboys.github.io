@@ -3594,10 +3594,9 @@ async function processPetDailyChest(db, telegramId, options = {}) {
       UPDATE telegram_pet_instances SET pet_xp=${nextXp}, level=${getPetVisibleLevelSql(nextXp)}, stage=${nextStage},
         streak_days=CASE WHEN last_active_day>? THEN streak_days WHEN last_active_day=? THEN MAX(1,streak_days) WHEN last_active_day=? THEN streak_days+1 ELSE 1 END,
         last_active_day=CASE WHEN last_active_day>? THEN last_active_day ELSE ? END,
-        last_decay_at=CASE WHEN julianday(last_decay_at)>julianday(?) THEN last_decay_at ELSE ? END,
         source_profile_updated_at=?, updated_at=CURRENT_TIMESTAMP
       WHERE pet_id=(SELECT pet_id FROM daily_award) AND telegram_id=(SELECT telegram_id FROM daily_award)`)
-      .bind(eventId, dayKey, dayKey, getPreviousPetDayKey(dayKey), dayKey, dayKey, now.toISOString(), now.toISOString(), PET_INSTANCE_AUTHORITY_VERSION),
+      .bind(eventId, dayKey, dayKey, getPreviousPetDayKey(dayKey), dayKey, dayKey, PET_INSTANCE_AUTHORITY_VERSION),
     // Mirror only if this is still the selected pet. The instance owns the award.
     db.prepare(`UPDATE telegram_pet_profiles SET
         (pet_xp,level,stage,streak_days,last_active_day,last_decay_at)=
@@ -6743,7 +6742,6 @@ async function processPetShopPurchase(db, telegramId, itemKey, options = {}) {
   };
   const eventId = crypto.randomUUID();
   const metadata = JSON.stringify({ source: options.source || 'telegram_bot', item_key: item.key, slot: item.slot, cost });
-  const purchasedAt = now.toISOString();
   const purchaseResults = await db.batch([
     db.prepare(`
       INSERT OR IGNORE INTO telegram_pet_events
@@ -6763,14 +6761,14 @@ async function processPetShopPurchase(db, telegramId, itemKey, options = {}) {
       "EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')", [eventId]),
     db.prepare(`
       UPDATE telegram_pet_profiles
-      SET equipped_${item.slot} = ?, last_decay_at = ?, updated_at = CURRENT_TIMESTAMP
+      SET equipped_${item.slot} = ?, updated_at = CURRENT_TIMESTAMP
       WHERE telegram_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')
-    `).bind(item.key, purchasedAt, telegramId, eventId),
+    `).bind(item.key, telegramId, eventId),
     db.prepare(`
       UPDATE telegram_pet_instances
-      SET equipped_${item.slot} = ?, last_decay_at = ?, source_profile_updated_at = ?, updated_at = CURRENT_TIMESTAMP
+      SET equipped_${item.slot} = ?, source_profile_updated_at = ?, updated_at = CURRENT_TIMESTAMP
       WHERE telegram_id = ? AND pet_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')
-    `).bind(item.key, purchasedAt, PET_INSTANCE_AUTHORITY_VERSION, telegramId, pet.pet_id || '', eventId),
+    `).bind(item.key, PET_INSTANCE_AUTHORITY_VERSION, telegramId, pet.pet_id || '', eventId),
     db.prepare(`
       UPDATE telegram_pet_events
       SET status = 'accepted', reason = 'shop_purchase'
@@ -6890,11 +6888,10 @@ async function processPetGoldTrade(db, telegramId, wagerRaw, options = {}) {
         streak_days = CASE WHEN last_active_day > ? THEN streak_days WHEN last_active_day = ? THEN MAX(1,streak_days)
           WHEN last_active_day = ? THEN streak_days+1 ELSE 1 END,
         last_active_day = CASE WHEN last_active_day > ? THEN last_active_day ELSE ? END,
-        last_decay_at = CASE WHEN julianday(last_decay_at) > julianday(?) THEN last_decay_at ELSE ? END,
         source_profile_updated_at = ?, updated_at = CURRENT_TIMESTAMP
       WHERE telegram_id = ? AND pet_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')
     `).bind(eventId,
-      dayKey, dayKey, getPreviousPetDayKey(dayKey), dayKey, dayKey, now.toISOString(), now.toISOString(),
+      dayKey, dayKey, getPreviousPetDayKey(dayKey), dayKey, dayKey,
       PET_INSTANCE_AUTHORITY_VERSION, telegramId, pet.pet_id || '', eventId),
     db.prepare(`UPDATE telegram_pet_profiles SET
         (pet_xp,level,stage,streak_days,last_active_day,last_decay_at)=
