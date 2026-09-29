@@ -340,9 +340,11 @@ async function frozenSystemDecision(db, reservation, token, create) {
 
 async function getCompletedRequest(db, telegramId, system, action, requestKey, authority = null) {
   if (!requestKey) return null;
+  // A failed replay lookup is not evidence that this request is new. Let the
+  // action route return a retryable outage before it reserves or spends.
   return db.prepare(`SELECT id, status, payload_json FROM telegram_pet_system_events
     WHERE pet_id=? AND telegram_id=? AND season_key=? AND system_key=? AND action_key=? AND period_key=? AND status='completed'`)
-    .bind(authority?.pet_id || '', telegramId, authority?.season_key || '', system, action, String(requestKey)).first().catch(() => null);
+    .bind(authority?.pet_id || '', telegramId, authority?.season_key || '', system, action, String(requestKey)).first();
 }
 
 async function claimEnergySettlement(db, reservation, telegramId, energyCost, authority = null) {

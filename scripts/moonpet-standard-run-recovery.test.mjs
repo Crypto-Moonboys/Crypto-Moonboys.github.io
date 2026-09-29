@@ -300,6 +300,7 @@ for (const [index, action] of ['run_step', 'run_extract'].entries()) test(action
 });
 
 for(const [label,method,match] of [
+  ['step replay','beforeFirst',q=>q.includes('SELECT * FROM telegram_pet_run_steps WHERE telegram_id = ? AND event_key = ?')],
   ['source pet','beforeFirst',q=>q==='SELECT * FROM telegram_pet_instances WHERE pet_id = ? LIMIT 1'],
   ['wallet','beforeFirst',q=>q==='SELECT moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id = ?'],
   ['inventory','beforeAll',q=>q.includes('FROM telegram_pet_inventory') && q.includes('quantity > 0')],

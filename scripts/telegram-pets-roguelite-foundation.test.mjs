@@ -60,7 +60,10 @@ for (const fn of ['rewardPetRunRoom', 'rewardPetRogueliteBoss', 'completePetRun'
 class Statement {
   constructor(adapter, sql, args = []) { this.adapter = adapter; this.sql = sql; this.args = args; }
   bind(...args) { return new Statement(this.adapter, this.sql, args); }
-  async first() { return this.adapter.database.prepare(this.sql).get(...this.args) || null; }
+  async first() {
+    if (this.adapter.beforeFirst) await this.adapter.beforeFirst(this);
+    return this.adapter.database.prepare(this.sql).get(...this.args) || null;
+  }
   async run() {
     if (/INSERT OR IGNORE INTO telegram_pet_run_analytics/i.test(this.sql) && String(this.args[0] || '').endsWith(':win')) {
       this.adapter.bossWinAnalyticsInsertAttempts += 1;
@@ -77,6 +80,7 @@ class D1 {
     this.queue = Promise.resolve();
     this.batchCount = 0;
     this.failBatchNumber = 0;
+    this.beforeFirst = null;
     this.bossWinAnalyticsInsertAttempts = 0;
   }
   prepare(sql) { return new Statement(this, sql); }
@@ -297,6 +301,70 @@ assert.equal(startDb.database.prepare("SELECT runs_completed FROM telegram_pet_r
   'account-scoped history may aggregate multiple pets only without attributing the row to one pet_id');
 assert.equal(startDb.database.prepare("SELECT COUNT(*) AS count FROM pragma_table_info('telegram_pet_run_history') WHERE name='pet_id'").get().count, 0,
   'account-scoped run history must not label mixed aggregate counters with the latest pet_id');
+
+for (const [label, request, matches] of [
+  ['active pet', { telegram_id: 'run-read-active', run_id: 'read-active' }, (sql) => sql.includes('FROM telegram_pet_active_slots a')],
+  ['requested pet', { telegram_id: 'run-read-requested', run_id: 'read-requested', pet_id: 'pet-run-read-requested', season_key: 'pet-s2026-001' }, (sql) => sql.includes('FROM telegram_pet_instances i') && sql.includes('JOIN telegram_pet_season_slots s')],
+]) {
+  const readDb = seedPlayer(request.telegram_id);
+  let hit = false;
+  readDb.beforeFirst = (statement) => {
+    if (matches(statement.sql)) { hit = true; throw Error('run_pet_authority_read_unavailable'); }
+  };
+  await assert.rejects(startPetRogueliteRun(readDb, request), /run_pet_authority_read_unavailable/);
+  assert.equal(hit, true, `${label} authority fault must be injected`);
+  assert.equal(readDb.database.prepare('SELECT COUNT(*) count FROM telegram_pet_runs').get().count, 0,
+    `${label} authority outage cannot create a run`);
+}
+
+const existingRunReadDb = seedPlayer('run-read-existing');
+await startPetRogueliteRun(existingRunReadDb, { telegram_id: 'run-read-existing', run_id: 'existing-read' });
+existingRunReadDb.beforeFirst = (statement) => {
+  if (statement.sql.includes('SELECT run_id, pet_id, season_key, region, difficulty, seed, max_room')) throw Error('existing_run_read_unavailable');
+};
+await assert.rejects(startPetRogueliteRun(existingRunReadDb, { telegram_id: 'run-read-existing', run_id: 'existing-read' }), /existing_run_read_unavailable/);
+assert.equal(existingRunReadDb.database.prepare("SELECT COUNT(*) count FROM telegram_pet_runs WHERE run_id='existing-read'").get().count, 1,
+  'existing-run lookup outage cannot create a second run');
+
+const persistedRunReadDb = seedPlayer('run-read-persisted');
+persistedRunReadDb.beforeFirst = (statement) => {
+  if (statement.sql.includes('SELECT run_id, pet_id, season_key FROM telegram_pet_runs')) throw Error('persisted_run_read_unavailable');
+};
+await assert.rejects(startPetRogueliteRun(persistedRunReadDb, { telegram_id: 'run-read-persisted', run_id: 'persisted-read' }), /persisted_run_read_unavailable/);
+assert.equal(persistedRunReadDb.database.prepare("SELECT COUNT(*) count FROM telegram_pet_runs WHERE run_id='persisted-read'").get().count, 1,
+  'a lost post-commit read leaves one recoverable run');
+persistedRunReadDb.beforeFirst = null;
+const persistedRetry = await startPetRogueliteRun(persistedRunReadDb, { telegram_id: 'run-read-persisted', run_id: 'persisted-read' });
+assert.equal(persistedRetry.duplicate, true);
+assert.equal(persistedRetry.pet_id, 'pet-run-read-persisted');
+
+const duplicateReceiptDb = seedPlayer('reward-receipt-read');
+await awardPetReward(duplicateReceiptDb, {
+  telegram_id: 'reward-receipt-read', source: 'pet_job', idempotency_key: 'receipt-read', rewards: { moon_gold: 9 },
+});
+const rewardBalance = duplicateReceiptDb.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='reward-receipt-read'").get().moon_gold;
+duplicateReceiptDb.beforeFirst = (statement) => {
+  if (statement.sql.includes('SELECT claim_id FROM telegram_pet_reward_claims')) throw Error('reward_receipt_read_unavailable');
+};
+await assert.rejects(awardPetReward(duplicateReceiptDb, {
+  telegram_id: 'reward-receipt-read', source: 'pet_job', idempotency_key: 'receipt-read', rewards: { moon_gold: 9 },
+}), /reward_receipt_read_unavailable/);
+assert.equal(duplicateReceiptDb.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='reward-receipt-read'").get().moon_gold, rewardBalance);
+assert.equal(duplicateReceiptDb.database.prepare("SELECT COUNT(*) count FROM telegram_pet_reward_claims WHERE idempotency_key='receipt-read'").get().count, 1);
+
+const bossRoomReadDb = seedPlayer('boss-room-read');
+bossRoomReadDb.database.prepare(`INSERT INTO telegram_pet_runs
+  (id,pet_id,telegram_id,run_id,season_key,status) VALUES ('boss-room-read-row','pet-boss-room-read','boss-room-read','boss-room-read-run','pet-s2026-001','active')`).run();
+bossRoomReadDb.database.prepare(`INSERT INTO telegram_pet_run_rooms
+  (room_id,pet_id,run_id,telegram_id,room_number,room_type,status) VALUES ('boss-room-read-room','pet-boss-room-read','boss-room-read-run','boss-room-read',10,'boss','resolved')`).run();
+bossRoomReadDb.beforeFirst = (statement) => {
+  if (statement.sql.includes("room_type = 'boss' AND status = 'resolved'")) throw Error('boss_room_read_unavailable');
+};
+await assert.rejects(rewardPetRogueliteBoss(bossRoomReadDb, {
+  run_id: 'boss-room-read-run', telegram_id: 'boss-room-read', pet_id: 'pet-boss-room-read', season_key: 'pet-s2026-001',
+}, 'alley_king'), /boss_room_read_unavailable/);
+assert.equal(bossRoomReadDb.database.prepare("SELECT COUNT(*) count FROM telegram_pet_reward_claims WHERE telegram_id='boss-room-read'").get().count, 0);
+assert.equal(bossRoomReadDb.database.prepare("SELECT COUNT(*) count FROM telegram_pet_run_analytics WHERE telegram_id='boss-room-read'").get().count, 0);
 
 
 

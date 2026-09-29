@@ -77,7 +77,7 @@ const targets = {
   season_claims: /SELECT idempotency_key, COALESCE\(awarded_at,created_at\)/,
 };
 function durableSnapshot(f) {
-  return ['telegram_pet_instances','telegram_pet_profiles','telegram_pet_equipment_progression','telegram_pet_material_balances','telegram_pet_inventory','telegram_pet_reward_claims','telegram_pet_daily_completion']
+  return ['telegram_pet_instances','telegram_pet_profiles','telegram_pet_equipment_progression','telegram_pet_material_balances','telegram_pet_inventory','telegram_pet_reward_claims','telegram_pet_events','telegram_pet_system_events','telegram_pet_daily_completion']
     .map(table => f.sql.prepare('SELECT * FROM '+table).all());
 }
 async function savedFixture(owner) {
@@ -147,6 +147,67 @@ for(const [name,act] of [
  await assert.rejects(act(f),/pet_state_read_unavailable/);
  assert.deepEqual(durableSnapshot(f),before);
  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_system_events').get().n,0);
+});
+for(const [name,act] of [
+ ['craft',f=>processPetCraftRecipe(f.db,f.owner,'street_rations','replay-outage')],
+ ['upgrade',f=>processPetEquipmentUpgrade(f.db,f.owner,'moon_kibble','replay-outage')],
+ ['cosmetic',f=>processPetCosmeticUnlock(f.db,f.owner,Object.keys(PET_COSMETIC_SINKS)[0],'replay-outage')],
+]) test(`${name} cannot treat an unavailable replay receipt as a new purchase`,async()=>{
+ const f=await savedFixture('replay-'+name);
+ f.sql.prepare('UPDATE telegram_pet_profiles SET pet_xp=500000 WHERE telegram_id=?').run(f.owner);
+ const before=durableSnapshot(f);
+ let hit=false;
+ f.db.beforeFirst=s=>{
+  if(s.query.includes('FROM telegram_pet_system_events') && s.query.includes("status='completed'")){
+   hit=true;throw Error('mutation_replay_read_unavailable');
+  }
+ };
+ await assert.rejects(act(f),/mutation_replay_read_unavailable/);
+ assert.equal(hit,true);
+ assert.deepEqual(durableSnapshot(f),before);
+ assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_system_events').get().n,0);
+});
+test('shared accepted-event outage stops timed work before reward settlement',async()=>{
+ const f=await savedFixture('accepted-event-replay');
+ const before=durableSnapshot(f);
+ let hit=false;
+ f.db.beforeFirst=s=>{
+  if(s.query.includes('FROM telegram_pet_events') && s.query.includes("status = 'accepted'") && s.query.includes('event_key = ?')){
+   hit=true;throw Error('accepted_event_read_unavailable');
+  }
+ };
+ await assert.rejects(hooks.processPetJob(f.db,f.owner,'street_artist',{event_key:'timed-work-outage'}),/accepted_event_read_unavailable/);
+ assert.equal(hit,true);
+ assert.deepEqual(durableSnapshot(f),before);
+});
+for(const [name,act] of [
+ ['care',f=>hooks.processPetAction(f.db,f.owner,'feed',{event_key:'care-cooldown-outage'})],
+ ['timed work',f=>hooks.processPetJob(f.db,f.owner,'street_artist',{event_key:'work-cooldown-outage'})],
+]) test(`${name} cannot treat an unavailable cooldown read as ready`,async()=>{
+ const f=await savedFixture('cooldown-'+name.replaceAll(' ','-'));
+ const before=durableSnapshot(f);
+ let hit=false;
+ f.db.beforeFirst=s=>{
+  if(s.query.includes('SELECT created_at FROM telegram_pet_events') && s.query.includes("status = 'accepted'")){
+   hit=true;throw Error('cooldown_read_unavailable');
+  }
+ };
+ await assert.rejects(act(f),/cooldown_read_unavailable/);
+ assert.equal(hit,true);
+ assert.deepEqual(durableSnapshot(f),before);
+});
+test('Daily Cache cannot treat an unavailable same-day receipt as unclaimed',async()=>{
+ const f=await savedFixture('daily-cache-receipt');
+ const before=durableSnapshot(f);
+ let hit=false;
+ f.db.beforeFirst=s=>{
+  if(s.query.includes("event_type = 'daily_chest'") && s.query.includes("status = 'accepted'")){
+   hit=true;throw Error('daily_cache_receipt_unavailable');
+  }
+ };
+ await assert.rejects(hooks.processPetDailyChest(f.db,f.owner,{event_key:'daily-cache-outage'}),/daily_cache_receipt_unavailable/);
+ assert.equal(hit,true);
+ assert.deepEqual(durableSnapshot(f),before);
 });
 for(const [name,read] of [
  ['daily completion', db=>readDailyCompletion(db,'owner','2026-09-29',{},0,0)],

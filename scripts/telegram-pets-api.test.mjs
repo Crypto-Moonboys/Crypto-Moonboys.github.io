@@ -1117,19 +1117,19 @@ assert.ok(adventure.includes("reason: 'invalid_adventure_choice'"), 'adventures 
 assert.ok(adventure.includes("reason: 'adventure_unavailable'"), 'adventures must reject missing encounters');
 assertOrder(
   adventure,
-  "const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);",
+  "const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first();",
   'const pet = await getPetProfile(db, telegramId);',
   'adventures must check duplicate event keys before loading the pet'
 );
 assertOrder(
   adventure,
-  "const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);",
+  "const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first();",
   'if (clampPetStat(pet.energy) < adventure.energy_cost) return { accepted: false, reason: \'pet_tired\', encounter, choice, adventure, pet };',
   'adventures must check duplicate event keys before energy spend'
 );
 assertOrder(
   adventure,
-  "const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);",
+  "const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first();",
   "getPetAcceptedActionCooldown(db, telegramId, 'adventure', PET_ADVENTURE_COOLDOWN_SECONDS, now)",
   'adventures must check duplicate event keys before the cooldown lookup'
 );
