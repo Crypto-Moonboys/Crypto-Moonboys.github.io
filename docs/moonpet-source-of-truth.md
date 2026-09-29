@@ -604,6 +604,20 @@ Existing story-chain, district, raid and reward limits remain in force. No
 future system is unlocked by practice. The player can leave and resume play;
 there is no penalty for closing the app.
 
+### Telegram presentation read authority
+
+Legacy Telegram Moonpet screens must distinguish an authoritative missing row
+from an unavailable database read. Status, Details, Coach, Missions, Progress,
+Identity, Achievements, Season, Evolution, Streak, Gear, Bag, Economy,
+Bounties, Expeditions, Market and Shop show retry copy when a required read
+fails. They must not describe an existing pet as unadopted or turn unavailable
+inventory, materials, boss victories, relics, achievements or equipment into
+zero/empty progress.
+
+The shared guidance and Economy projections follow the same rule, including
+Mini App callers. Optional reaction text and media remain best effort because
+they do not authorize progress, costs or rewards.
+
 ### District, story and seasonal raid decisions
 
 District pet authority and mastery must be successfully read (and mastery

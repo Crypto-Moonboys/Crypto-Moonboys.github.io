@@ -96,6 +96,10 @@ const {
   normalizePetActivityType,
   computePetActivityRewards,
   getPetEconomyState,
+  getPetEvolutionGuidance,
+  buildPetGuidanceState,
+  syncPetAchievements,
+  readTelegramPetPresentation,
   runPetCrystalExpedition,
   formatPetActivityLine,
   buildPetMediaUrl,
@@ -1375,6 +1379,59 @@ for (const [path, expectedError] of [
   assert.equal((await response.json()).error, expectedError, `${path} must return a stable retryable error`);
 }
 
+const failedPresentationReadDb = {
+  prepare() {
+    return {
+      bind() { return this; },
+      async first() { throw new Error('presentation_read_unavailable'); },
+      async all() { throw new Error('presentation_read_unavailable'); },
+      async run() { throw new Error('unexpected_write_during_failed_presentation_read'); },
+    };
+  },
+  async batch() { throw new Error('unexpected_batch_during_failed_presentation_read'); },
+};
+await assert.rejects(getPetEconomyState(failedPresentationReadDb, 'presentation-outage'), /presentation_read_unavailable/,
+  'economy state must distinguish a failed profile read from a player with no pet');
+await assert.rejects(buildPetGuidanceState(failedPresentationReadDb, 'presentation-outage'), /presentation_read_unavailable/,
+  'guidance must distinguish a failed profile read from a player with no pet');
+await assert.rejects(syncPetAchievements(failedPresentationReadDb, 'presentation-outage', true), /presentation_read_unavailable/,
+  'required achievement projections must distinguish an authority outage from no achievements');
+await assert.rejects(getPetEvolutionGuidance(failedPresentationReadDb, 'presentation-outage', { pet_xp: 0 }, {
+  current_stage: { stage: 0 }, scope: { pet_id: 'pet-presentation', season_key: 'pet-s2026-001' },
+}), /presentation_read_unavailable/,
+'evolution guidance must not display zero inventory, victories or relics when its reads fail');
+
+{
+  const originalFetch = globalThis.fetch;
+  const sent = [];
+  globalThis.fetch = async (_url, init = {}) => {
+    sent.push(JSON.parse(String(init.body || '{}')).text || '');
+    return new Response(JSON.stringify({ ok: true, result: { message_id: 1 } }), { status: 200, headers: { 'content-type': 'application/json' } });
+  };
+  try {
+    const unavailable = await readTelegramPetPresentation('fixture-token', 'fixture-chat', 'presentation-outage', 'fixture', async () => {
+      throw new Error('presentation_read_unavailable');
+    });
+    assert.equal(unavailable.ok, false);
+    assert.match(sent.at(-1), /temporarily unavailable/i,
+      'Telegram presentation outages must tell the player to retry instead of claiming the pet or progress is missing');
+    const beforeMissing = sent.length;
+    const missing = await readTelegramPetPresentation('fixture-token', 'fixture-chat', 'presentation-missing', 'fixture', async () => null);
+    assert.deepEqual(missing, { ok: true, value: null }, 'a successful missing-row read must remain distinct from an outage');
+    assert.equal(sent.length, beforeMissing, 'a successful missing-row read must not emit an outage warning');
+    await sendTelegramPetReply('fixture-token', 'fixture-chat', '<b>Saved action result</b>', {}, null, {
+      db: failedPresentationReadDb,
+      telegram_id: 'presentation-outage',
+      pet: { pet_id: 'pet-presentation', telegram_id: 'presentation-outage', season_key: 'pet-s2026-001', pet_xp: 0, owned_equipment: {} },
+    });
+    assert.match(sent.at(-1), /Saved action result/, 'a guidance outage must not hide an already-authoritative action result');
+    assert.match(sent.at(-1), /recommendations are temporarily unavailable/i,
+      'a guidance outage must be disclosed without turning a saved action into a false failure');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}
+
 const petStatus = asyncBlock('cmdPetStatus');
 assert.ok(petStatus.includes('getPetProfile(db, telegramId)'), '/pet status command must use read-only pet lookup');
 assert.ok(!petStatus.includes('getOrCreatePetProfile'), '/pet status command must not create pets');
@@ -1430,10 +1487,10 @@ for (const [command, label] of [
   ['cmdPetEvent', 'Event'],
   ['cmdPetRun', 'Run'],
 ]) {
-  assert.ok(asyncBlock(command).includes('getMoonpetIdentityWithLifecycle(db, telegramId)'), `${label} status must retain stored Moonpet identity`);
+  assert.ok(asyncBlock(command).includes('getMoonpetIdentityWithLifecycle(db, telegramId'), `${label} status must retain stored Moonpet identity`);
 }
 for (const command of ['cmdPetUse', 'cmdPetDaily', 'cmdPetClaim', 'cmdPetTrade', 'cmdPetExtract']) {
-  assert.ok(asyncBlock(command).includes('getMoonpetIdentityWithLifecycle(db, telegramId)'), `${command} status must pass identity instead of missions`);
+  assert.ok(asyncBlock(command).includes('getMoonpetIdentityWithLifecycle(db, telegramId'), `${command} status must pass identity instead of missions`);
 }
 assert.ok(!worker.includes('formatPetStatus(result.pet, await buildPetMissions(db, telegramId))'), 'missions must never be passed into the formatPetStatus identity parameter');
 assert.ok(asyncBlock('cmdPetDetails').includes('buildPetMissions(db, telegramId)'), 'missions must remain available in the separate Details response');
@@ -1495,6 +1552,15 @@ assert.ok(petBagCommand.includes('buildPetBagReplyMarkup(inventory)'), '/petbag 
 assert.ok(worker.includes('function buildPetBagReplyMarkup'), 'bag must have a dedicated reply markup builder');
 assert.ok(worker.includes('callback_data: `pet:use:${item.key}`'), 'bag item buttons must carry item use callbacks');
 assert.ok(worker.includes('function buildPetPurchaseNextReplyMarkup'), 'purchase complete must have a dedicated next-choice builder');
+
+for (const command of [
+  'cmdPetStatus', 'cmdPetDetails', 'cmdPetCoach', 'cmdPetIdentity', 'cmdPetAchievements', 'cmdPetSeason',
+  'cmdPetEvolve', 'cmdPetStreak', 'cmdPetProgress', 'cmdPetGear', 'cmdPetMissions', 'cmdPetBag',
+  'cmdPetEconomy', 'cmdPetBounties', 'cmdPetExpedition', 'cmdPetMarket', 'cmdPetShop',
+]) {
+  assert.ok(asyncBlock(command).includes('readTelegramPetPresentation('),
+    `${command} must preserve unavailable vs missing player state and expose a retry message`);
+}
 
 const mainButtons = petReplyMarkup().inline_keyboard.flat();
 assert.deepEqual(mainButtons.map((button) => button.text), ['🍖 Feed', '🎮 Play', '🧼 Clean', '😴 Sleep', '🏋️ Train', '⚔️ Adventure', '⏱ Activities', '⚙️ Management', '🧭 Coach', '📋 Details'], '/pet must expose care actions, guidance and the three primary navigation areas');
@@ -1998,6 +2064,44 @@ function seedRepeatRewardPlayer(telegramId, energy = 70, lastDecayAt = new Date(
   }
   return db;
 }
+
+for (const [label, query] of [
+  ['scope', /FROM telegram_pet_active_slots a/],
+  ['evolution', /FROM telegram_pet_evolutions_by_pet e/],
+  ['season XP', /SELECT season_xp FROM telegram_pet_season_state/],
+]) {
+  const db = seedRepeatRewardPlayer(`season-identity-${label}`);
+  db.failReadOnSql(query);
+  await assert.rejects(__petMediaTestHooks.getPetSeasonRewardState(db, `season-identity-${label}`),
+    /(?:moonpet_identity|pet_state)_read_unavailable/,
+    `a failed ${label} read must not turn the Season evolution bonus into zero`);
+  db.failReadOnSql(query);
+  await assert.rejects(__petMediaTestHooks.claimPetSeasonReward(db, `season-identity-${label}`, 'street'),
+    /(?:moonpet_identity|pet_state)_read_unavailable/,
+    `a failed ${label} read must prevent a Season reward from using a zero evolution bonus`);
+}
+
+{
+  const telegramId = 'season-saved-reward';
+  const db = seedRepeatRewardPlayer(telegramId);
+  const season = (await __petMediaTestHooks.getPetSeasonRewardState(db, telegramId)).season;
+  db.database.prepare('INSERT INTO telegram_pet_season_state (telegram_id, season_key, season_xp) VALUES (?, ?, 250)')
+    .run(telegramId, season.key);
+  db.beforeRun = (sql) => {
+    if (sql.includes('INSERT OR IGNORE INTO telegram_pet_season_reward_claims')) {
+      db.failReadOnSql(/FROM telegram_pet_active_slots a/);
+    }
+  };
+  const result = await __petMediaTestHooks.claimPetSeasonReward(db, telegramId, 'street', 'season-saved-reward:street');
+  assert.equal(result.accepted, true, 'a failed post-award read must not conceal a saved Season reward');
+  assert.ok(result.state.tiers.find((tier) => tier.tier_id === 'street').claimed_at,
+    'the fallback claim view must not offer an already-awarded tier again');
+}
+
+const bossCommand = asyncBlock('cmdPetWeeklyBoss');
+assert.ok(bossCommand.includes('telegram_pet_boss_guidance_read_failed') &&
+  bossCommand.includes('await sendTelegramPetReply(tok, chatId, bossText'),
+  'a completed boss attack must retain its result when guidance cannot be read');
 
 function seedAndSwitchRepeatRewardPet(db, telegramId, slotNumber = 2, energy = 70) {
   const petId = `pet:${telegramId}:pet-s2026-003:${slotNumber}`;

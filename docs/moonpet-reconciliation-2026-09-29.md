@@ -92,7 +92,31 @@ This batch changes no schema, balances, historical counters or leaderboard
 totals. The Community XP chart remains the already-shipped totals comparison;
 Pet XP is not injected into unrelated website/Arcade graphs.
 
-## Batch 4 — historical evidence and remaining presentation
+## Batch 4 — Telegram presentation read integrity (complete)
+
+Implemented after the source-evidence batch:
+
+- Legacy Telegram status, Details, Coach, Missions, Progress, Identity,
+  Achievements, Season, Evolution, Streak, Gear, Bag, Economy, Bounties,
+  Expedition, Market and Shop views now preserve the difference between a
+  successful missing-pet result and an unavailable D1 read.
+- Required presentation reads use one retry boundary. An outage reports that
+  Moonpet data is temporarily unavailable and confirms that no new player
+  action was applied;
+  it cannot tell an existing player to adopt again.
+- Evolution guidance no longer converts failed inventory, material, boss or
+  relic reads into zero progress. Gear and achievement reads likewise cannot
+  become empty collections during an outage.
+- Guidance and Economy profile reads now propagate failure. The Mini App keeps
+  its existing retry/last-good-state handling, while legacy Telegram commands
+  receive explicit retry copy.
+- Optional reaction/media decoration remains best effort. It cannot change
+  game state, qualification or reward authority.
+
+This batch changes no schema, balances, cooldowns, rewards, XP caps,
+leaderboard formula or future-feature availability.
+
+## Batch 5 — historical evidence and final documentation reconciliation
 
 - Reconcile private ledger evidence before any historical counter repair. The
   supplied migration checks proved three seasonal corrections applied, not full
