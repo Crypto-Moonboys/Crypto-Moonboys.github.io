@@ -1,3 +1,4 @@
+import { requirePetReadResult } from './read-result.js';
 import { awardPetWeeklyCrest, getPetSeasonWeek } from './season-completion.js';
 import { getMoonpetSeasonInfo, getMoonpetSeasonKey } from './season-authority.js';
 
@@ -153,7 +154,7 @@ export async function readWeeklyJourneyObjectiveProgress(db, request) {
       AND s.season_key=i.season_key AND s.slot_number=i.slot_number
     WHERE o.pet_id=? AND o.telegram_id=? AND o.season_key=? AND o.qualification_week=? AND o.status='accepted'
     GROUP BY o.objective_id`)
-    .bind(request.pet_id, request.telegram_id, request.season_key, request.qualification_week).all();
+    .bind(request.pet_id, request.telegram_id, request.season_key, request.qualification_week).all().then(requirePetReadResult);
 }
 
 export async function finalizeWeeklyJourneyCrest(db, request) {

@@ -33,6 +33,8 @@ class Statement {
   bind(...args) { return new Statement(this.sql, args); }
   async first() { return sqlite.prepare(this.sql).get(...this.args) || null; }
   async all() {
+    if (failRelicRead === 'resolved' && this.sql.includes('SELECT relic_id,')) return {success:false,results:[]};
+    if (failLiveStateRead === 'resolved' && this.sql.startsWith('SELECT chain_key, step_index')) return {success:false,results:[]};
     if (failRelicRead && this.sql.includes('SELECT relic_id,')) throw Error('isolated_relic_read_failure');
     if (failLiveStateRead && this.sql.startsWith('SELECT chain_key, step_index')) throw Error('isolated_saved_state_read_failure');
     return { results: sqlite.prepare(this.sql).all(...this.args) };
@@ -117,7 +119,7 @@ try {
         let state;
         try { state = await hooks.buildPetMiniAppState(db, currentUser, token); }
         catch (error) {
-          if (error.message !== 'isolated_saved_state_read_failure') throw error;
+          if (!['isolated_saved_state_read_failure','pet_state_read_unavailable'].includes(error.message)) throw error;
           // Production preserves an action's committed result if only its
           // response-state read fails; the read-only state endpoint returns 500.
           return result ? route.fulfill({ json: { result, state: null } })
@@ -1332,7 +1334,7 @@ try {
     await page.waitForFunction((title) => [...document.querySelectorAll('[data-action="market_buy"]')].some((button) => button.disabled && button.textContent.includes(title) && button.textContent.includes('SOLD')),marketOffer.title);
     // Real relic state reaches the vault, while a read outage is never labelled empty.
     sqlite.prepare("INSERT OR IGNORE INTO telegram_pet_relics (telegram_id,relic_id,rarity) VALUES (?,'alley_crown','rare')").run(currentUser);
-    for (const unavailable of [false,true,false]) {
+    for (const unavailable of [false,true,'resolved',false]) {
       failRelicRead=unavailable;
       await page.reload(); await page.waitForSelector('[data-panel="care"]');
       await page.locator('[data-screen="economy"]').click();
@@ -1397,7 +1399,7 @@ try {
     }
     await page.waitForSelector('[data-action="finale_claim"]');
     assert.match(await page.locator('[data-panel="season-finale"]').textContent(),/FINALE VICTOR/);
-    failLiveStateRead=true;
+    failLiveStateRead=viewport.width===360?'resolved':true;
     const committedClaim=await completionAction(page.locator('[data-action="finale_claim"]'),'finale_claim');
     assert.equal(committedClaim.state,null);
     await page.waitForFunction(()=>document.querySelector('#terminal-output').textContent.includes('DISPLAY SYNC FAILED'));

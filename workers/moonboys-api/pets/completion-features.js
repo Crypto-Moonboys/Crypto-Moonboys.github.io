@@ -1,3 +1,4 @@
+import { requirePetReadResult } from './read-result.js';
 import evolutions from './content/evolutions.json' with { type: 'json' };
 import { PET_SEASON_COMPLETION_CONFIG } from './season-completion.js';
 import { DAILY_COMPLETION_REWARD, SEASON_FINALE_REWARD, dailyCompletionKey, seasonFinaleKey } from './completion-policy.js';
@@ -68,13 +69,13 @@ export async function readDailyCompletion(db, owner, date, counts, upgrades, gol
       ON CONFLICT (telegram_id,utc_day) DO UPDATE SET progress_bits=progress_bits|excluded.progress_bits
       WHERE (progress_bits|excluded.progress_bits)<>progress_bits`).bind(owner, date, bits).run();
     const rows = await db.prepare(`SELECT * FROM telegram_pet_daily_completion WHERE telegram_id=?
-      AND (utc_day=? OR (progress_bits=255 AND claimed_at IS NULL)) ORDER BY utc_day`).bind(owner, date).all();
+      AND (utc_day=? OR (progress_bits=255 AND claimed_at IS NULL)) ORDER BY utc_day`).bind(owner, date).all().then(requirePetReadResult);
     const today = rows.results.find(row => row.utc_day === date) || { utc_day: date, progress_bits: 0 };
     return { ...dailyPublic(today), available: true, pending: rows.results.filter(row => row.progress_bits === 255 && !row.claimed_at).map(dailyPublic) };
   } catch (error) {
     // Keep the existing checklist usable if Worker and migration rollout differ.
     // Other database failures must still follow the normal error/retry path.
-    if (!/no such table: telegram_pet_daily_completion\b/.test(error?.message || '')) throw error;
+    if (!/no such table: telegram_pet_daily_completion\b/.test(error?.cause?.message || error?.message || '')) throw error;
     return { available: false, progress_bits: bits, pending: [] };
   }
 }
@@ -120,9 +121,9 @@ export async function getSeasonFinales(db, owner, activePetId) {
     FROM telegram_pet_instances i ${ownedSlots}
     LEFT JOIN telegram_pet_season_finales f ON f.pet_id=i.pet_id AND f.telegram_id=i.telegram_id AND f.season_key=i.season_key
     WHERE i.telegram_id=? AND (i.pet_id=? OR f.pet_id IS NOT NULL OR ${qualified}) ORDER BY i.season_key DESC,i.slot_number`)
-    .bind(owner, activePetId || '').all();
+    .bind(owner, activePetId || '').all().then(requirePetReadResult);
   } catch (error) {
-    if (!/no such table: telegram_pet_(season_finales|season_completions|growth_marks|weekly_crests)\b|no such column: (earned_day|qualification_week)\b/.test(error?.message || '')) throw error;
+    if (!/no such table: telegram_pet_(season_finales|season_completions|growth_marks|weekly_crests)\b|no such column: (earned_day|qualification_week)\b/.test(error?.cause?.message || error?.message || '')) throw error;
     return { available: false, pets: [] };
   }
   return { available: true, title: 'SIGNAL SOVEREIGN', reward: SEASON_FINALE_REWARD, builds: Object.entries(FINALE_BUILDS).map(([key, value]) => ({ key, ...value })),
