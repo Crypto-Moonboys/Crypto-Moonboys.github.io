@@ -66,7 +66,33 @@ Implemented after the initial reconciliation:
   recovery paths, cooldowns, Shop/equipment, crafting and completion/finale.
   The audit found no dead user button or duplicate entry point to remove.
 
-## Batch 3 — historical evidence and remaining presentation
+## Batch 3 — source evidence and post-commit recovery (complete)
+
+Implemented after the gameplay-authority batch:
+
+- Weekly Journey source-event, pet-scope, objective-progress, accepted-receipt
+  and existing-Crest reads now propagate D1 failures. An outage cannot be
+  reported as missing evidence, zero progress or an absent reward.
+- Egg incubation, hatch and rare-morph receipt reads now fail closed. A failed
+  receipt read cannot authorize a second lifecycle transition.
+- Incubation Growth Mark settlement is no longer best effort. If lifecycle
+  progress commits and Mark settlement fails, the request reports failure;
+  replaying the same action key repairs exactly one daily Mark without applying
+  lifecycle progress again. Receipt recovery follows the original pet/season
+  tuple even after an active-pet switch or hatch.
+- Identity source-event and explicit pet-scope reads now preserve the difference
+  between missing authority and unavailable authority. Post-commit personality
+  response reads surface failure while event-key replay remains idempotent.
+- Evolution replay and post-reservation reads no longer translate D1 outages
+  into `requirements_not_met`. Duplicate evolution authority remains stable.
+- Duplicate Growth Mark lookups now fail closed instead of returning a null
+  authoritative Mark ID. Exact and same-day duplicate paths are covered.
+
+This batch changes no schema, balances, historical counters or leaderboard
+totals. The Community XP chart remains the already-shipped totals comparison;
+Pet XP is not injected into unrelated website/Arcade graphs.
+
+## Batch 4 — historical evidence and remaining presentation
 
 - Reconcile private ledger evidence before any historical counter repair. The
   supplied migration checks proved three seasonal corrections applied, not full

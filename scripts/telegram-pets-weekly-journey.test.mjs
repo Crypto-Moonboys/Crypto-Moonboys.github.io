@@ -34,8 +34,15 @@ function getPetWeekKey(now = new Date()) {
 class Statement {
   constructor(d1, sql, args = []) { this.d1 = d1; this.db = d1.database; this.sql = sql; this.args = args; }
   bind(...args) { return new Statement(this.d1, this.sql, args); }
-  async first() { return this.db.prepare(this.sql).get(...this.args) || null; }
-  async all() { return { results: this.db.prepare(this.sql).all(...this.args) }; }
+  async first() {
+    this.d1.beforeFirst?.(this.sql, this.args);
+    return this.db.prepare(this.sql).get(...this.args) || null;
+  }
+  async all() {
+    const override = this.d1.beforeAll?.(this.sql, this.args);
+    if (override !== undefined) return override;
+    return { results: this.db.prepare(this.sql).all(...this.args) };
+  }
   async run() {
     if (this.d1.failWrite?.test(this.sql)) throw new Error('injected_journey_write_failure');
     if (/INSERT\s+OR\s+IGNORE\s+INTO\s+telegram_pet_weekly_crests/i.test(this.sql)) {
@@ -55,6 +62,8 @@ class D1 {
     this.beforeWeeklyCrestInsert = null;
     this.beforeDailyMoonRunEventInsert = null;
     this.beforeWeeklyBossEventInsert = null;
+    this.beforeFirst = null;
+    this.beforeAll = null;
   }
   prepare(sql) { return new Statement(this, sql); }
   async batch(statements) {
@@ -1513,6 +1522,80 @@ for (const [failWrite, earnedAt] of [
   const completedAt = db.database.prepare('SELECT completed_at FROM telegram_pet_season_completions WHERE pet_id=?').get(petId).completed_at;
   await __petMediaTestHooks.buildPetMiniAppState(db, owner, 'fixture-token');
   assert.equal(db.database.prepare('SELECT completed_at FROM telegram_pet_season_completions WHERE pet_id=?').get(petId).completed_at, completedAt);
+}
+
+{
+  const db = createDb(), owner = 'weekly-source-read-outage';
+  const petId = seedPlayer(db, owner);
+  const sourceEventKey = 'weekly-source-read-outage:feed';
+  insertSourceEvent(db, { telegramId: owner, petId, eventKey: sourceEventKey, eventType: 'feed' });
+  db.beforeFirst = (sql) => {
+    if (/FROM telegram_pet_events\s+WHERE telegram_id=\? AND event_key=\?/i.test(sql)) throw new Error('injected_weekly_source_read_failure');
+  };
+  await assert.rejects(recordWeeklyJourneyObjectiveEvidence(db, {
+    telegram_id: owner,
+    pet_id: petId,
+    season_key: 'pet-s2026-001',
+    qualification_week: 1,
+    objective_id: 'weekly_care',
+    source_event_key: sourceEventKey,
+  }), /injected_weekly_source_read_failure/,
+  'a failed source event read must not be reported as missing evidence');
+  db.beforeFirst = null;
+  assert.equal(db.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives WHERE pet_id=?').get(petId).count, 0,
+    'source event read outages cannot mutate Weekly Journey progress');
+}
+
+{
+  const db = createDb(), owner = 'weekly-progress-read-outage';
+  const petId = seedPlayer(db, owner);
+  db.beforeAll = (sql) => {
+    if (/FROM telegram_pet_weekly_journey_objectives/i.test(sql)) throw new Error('injected_weekly_progress_read_failure');
+  };
+  await assert.rejects(finalizeWeeklyJourneyCrest(db, {
+    telegram_id: owner, pet_id: petId, season_key: 'pet-s2026-001', qualification_week: 1,
+  }), /injected_weekly_progress_read_failure/,
+  'a failed objective progress read must not be converted into zero progress');
+  db.beforeAll = (sql) => (/FROM telegram_pet_weekly_journey_objectives/i.test(sql)
+    ? { success: false, error: 'injected_resolved_weekly_progress_read_failure' }
+    : undefined);
+  await assert.rejects(finalizeWeeklyJourneyCrest(db, {
+    telegram_id: owner, pet_id: petId, season_key: 'pet-s2026-001', qualification_week: 1,
+  }), /pet_state_read_unavailable/,
+  'a resolved D1 objective failure must not be converted into zero progress');
+  db.beforeAll = null;
+}
+
+{
+  const db = createDb(), owner = 'weekly-receipt-read-outage';
+  const petId = seedPlayer(db, owner);
+  await completeWeeklyJourney(db, owner, petId);
+  db.beforeFirst = (sql) => {
+    if (/FROM telegram_pet_weekly_journey_receipts/i.test(sql)) throw new Error('injected_weekly_receipt_read_failure');
+  };
+  await assert.rejects(finalizeWeeklyJourneyCrest(db, {
+    telegram_id: owner, pet_id: petId, season_key: 'pet-s2026-001', qualification_week: 1,
+  }), /injected_weekly_receipt_read_failure/,
+  'a failed accepted receipt read must not start duplicate settlement');
+  db.beforeFirst = null;
+  assert.equal(db.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_weekly_crests WHERE pet_id=?').get(petId).count, 1);
+}
+
+{
+  const db = createDb(), owner = 'weekly-crest-read-outage';
+  const petId = seedPlayer(db, owner);
+  await completeWeeklyJourney(db, owner, petId);
+  db.database.prepare('DELETE FROM telegram_pet_weekly_journey_receipts WHERE pet_id=?').run(petId);
+  db.beforeFirst = (sql) => {
+    if (/FROM telegram_pet_weekly_crests/i.test(sql)) throw new Error('injected_weekly_crest_read_failure');
+  };
+  await assert.rejects(finalizeWeeklyJourneyCrest(db, {
+    telegram_id: owner, pet_id: petId, season_key: 'pet-s2026-001', qualification_week: 1,
+  }), /injected_weekly_crest_read_failure/,
+  'a failed Crest authority read must not be converted into an absent Crest');
+  db.beforeFirst = null;
+  assert.equal(db.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_receipts WHERE pet_id=?').get(petId).count, 0,
+    'Crest authority outages cannot write a misleading recovery receipt');
 }
 
 console.log('telegram-pets-weekly-journey.test.mjs passed');

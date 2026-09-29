@@ -44,6 +44,8 @@ const migration055 = await readFile(new URL('../workers/moonboys-api/migrations/
 const migration056 = await readFile(new URL('../workers/moonboys-api/migrations/056_telegram_pet_instance_state.sql', import.meta.url), 'utf8');
 const migration053 = await readFile(new URL('../workers/moonboys-api/migrations/053_telegram_pet_species_lifecycle.sql', import.meta.url), 'utf8');
 const migration057 = await readFile(new URL('../workers/moonboys-api/migrations/057_telegram_pet_lifecycle_pet_id.sql', import.meta.url), 'utf8');
+const migration058 = await readFile(new URL('../workers/moonboys-api/migrations/058_telegram_pet_season_completion.sql', import.meta.url), 'utf8');
+const migration061 = await readFile(new URL('../workers/moonboys-api/migrations/061_moonpet_season_economy_calibration.sql', import.meta.url), 'utf8');
 const migration039 = await readFile(new URL('../workers/moonboys-api/migrations/039_telegram_pet_runtime_progression.sql', import.meta.url), 'utf8');
 const migration073 = await readFile(new URL('../workers/moonboys-api/migrations/073_moonpet_per_pet_specialist_progression.sql', import.meta.url), 'utf8');
 const worker = await readFile(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
@@ -167,6 +169,18 @@ db.exec(`
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (telegram_id, season_key)
   );
+  CREATE TABLE telegram_pet_material_balances (
+    telegram_id TEXT NOT NULL, material_key TEXT NOT NULL, quantity INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (telegram_id, material_key)
+  );
+  CREATE TABLE telegram_pet_inventory (
+    telegram_id TEXT NOT NULL, asset_type TEXT NOT NULL, asset_key TEXT NOT NULL, quantity INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (telegram_id, asset_type, asset_key)
+  );
+  CREATE TABLE telegram_pet_relics (
+    telegram_id TEXT NOT NULL, relic_id TEXT NOT NULL,
+    PRIMARY KEY (telegram_id, relic_id)
+  );
   CREATE TABLE telegram_pet_evolutions (
     telegram_id TEXT NOT NULL,
     evolution_id TEXT NOT NULL,
@@ -209,6 +223,8 @@ db.exec(migration056);
 db.exec(migration053);
 db.exec(migration057);
 db.exec(migration057);
+db.exec(migration058);
+db.exec(migration061);
 // Current identity reads must distinguish empty tables from a schema/read outage.
 db.exec('CREATE UNIQUE INDEX identity_test_owner_tuple ON telegram_pet_season_slots(pet_id,telegram_id,season_key)');
 const currentSchema = await readFile(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');

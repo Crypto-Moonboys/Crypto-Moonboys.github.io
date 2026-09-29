@@ -56,12 +56,19 @@ assert.doesNotMatch(identitySource, /authority_assertion|personality_authority_a
 class Statement {
   constructor(adapter, sql, args = []) { this.adapter = adapter; this.sql = sql; this.args = args; }
   bind(...args) { return new Statement(this.adapter, this.sql, args); }
-  async first() { return this.adapter.database.prepare(this.sql).get(...this.args) || null; }
+  async first() {
+    this.adapter.beforeFirst?.(this.sql, this.args);
+    return this.adapter.database.prepare(this.sql).get(...this.args) || null;
+  }
   async run() {
+    this.adapter.beforeRun?.(this.sql, this.args);
     const result = this.adapter.database.prepare(this.sql).run(...this.args);
     return { results: [], meta: { changes: Number(result.changes || 0) } };
   }
-  async all() { return { results: this.adapter.database.prepare(this.sql).all(...this.args) }; }
+  async all() {
+    this.adapter.beforeAll?.(this.sql, this.args);
+    return { results: this.adapter.database.prepare(this.sql).all(...this.args) };
+  }
 }
 
 class D1 {
@@ -71,6 +78,9 @@ class D1 {
       CREATE TABLE telegram_pet_weekly_crests(crest_id TEXT PRIMARY KEY,pet_id TEXT,telegram_id TEXT,season_key TEXT,season_week INTEGER,qualification_week INTEGER,objective_id TEXT,evidence_key TEXT,earned_at TEXT);
       CREATE TABLE telegram_pet_season_completions(pet_id TEXT,telegram_id TEXT,season_key TEXT,completed_at TEXT,legendary_evolution_id TEXT,growth_marks_earned INTEGER,weekly_crests_earned INTEGER,authority_version INTEGER);`);
     this.queue = Promise.resolve();
+    this.beforeFirst = null;
+    this.beforeRun = null;
+    this.beforeAll = null;
   }
   prepare(sql) { return new Statement(this, sql); }
   async batch(statements) {
@@ -1127,5 +1137,99 @@ for (const definition of Object.values(MOONPET_EVOLUTIONS)) {
 assert.equal(identitySource.includes('awardPetReward('), false, 'identity systems cannot create a reward-authority bypass');
 assert.equal(__rogueliteFoundationTestHooks.DAILY_PET_XP_CAP, 1200, 'Pet XP cap must remain unchanged');
 assert.equal(__rogueliteFoundationTestHooks.DAILY_COMMUNITY_XP_CAP, 250, 'Community XP cap must remain unchanged');
+
+const identitySourceReadDb = seedPlayer('identity-source-read-outage', false);
+const identitySourceReadPet = `pet:identity-source-read-outage:${TEST_SEASON_KEY}:1`;
+identitySourceReadDb.database.prepare(`INSERT INTO telegram_pet_events
+  (id, pet_id, telegram_id, event_type, event_key, season_key, day_key, week_key, status)
+  VALUES ('identity-source-read-outage', ?, 'identity-source-read-outage', 'random_event', 'identity-source-read-outage:event', ?, '2026-08-01', '2026-W31', 'accepted')`)
+  .run(identitySourceReadPet, TEST_SEASON_KEY);
+identitySourceReadDb.beforeFirst = (sql) => {
+  if (/FROM telegram_pet_events WHERE telegram_id = \? AND event_key = \?/i.test(sql)) throw new Error('injected_identity_source_read_failure');
+};
+await assert.rejects(recordMoonpetBehaviour(identitySourceReadDb, {
+  telegram_id: 'identity-source-read-outage',
+  event_key: 'identity-source-read-outage:behaviour',
+  source_event_key: 'identity-source-read-outage:event',
+  source_event_type: 'random_event',
+  behaviour: 'event',
+}), /injected_identity_source_read_failure/,
+'a failed identity source-event read must not be converted into rejected or missing evidence');
+identitySourceReadDb.beforeFirst = null;
+assert.equal(identitySourceReadDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_identity_events').get().count, 0,
+  'identity source read outages cannot mutate behaviour progress');
+
+const identityScopeReadDb = seedPlayer('identity-scope-read-outage', false);
+const identityScopeReadPet = `pet:identity-scope-read-outage:${TEST_SEASON_KEY}:1`;
+identityScopeReadDb.beforeFirst = (sql) => {
+  if (/WHERE s\.pet_id = \? AND s\.telegram_id = \? AND s\.season_key = \?/i.test(sql)) throw new Error('injected_identity_scope_read_failure');
+};
+await assert.rejects(recordMoonpetBehaviour(identityScopeReadDb, {
+  telegram_id: 'identity-scope-read-outage',
+  pet_id: identityScopeReadPet,
+  season_key: TEST_SEASON_KEY,
+  event_key: 'identity-scope-read-outage:behaviour',
+  behaviour: 'care',
+}), /injected_identity_scope_read_failure/,
+'a failed explicit pet authority read must not fall back to an unavailable/missing scope');
+identityScopeReadDb.beforeFirst = null;
+assert.equal(identityScopeReadDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_identity_events').get().count, 0);
+
+const identityReceiptReadDb = seedPlayer('identity-receipt-read-outage', false);
+let failIdentityReceiptRead = true;
+identityReceiptReadDb.beforeFirst = (sql) => {
+  if (failIdentityReceiptRead && /SELECT progress_delta FROM telegram_pet_identity_events/i.test(sql)) {
+    failIdentityReceiptRead = false;
+    throw new Error('injected_identity_receipt_read_failure');
+  }
+};
+await assert.rejects(recordMoonpetBehaviour(identityReceiptReadDb, {
+  telegram_id: 'identity-receipt-read-outage',
+  event_key: 'identity-receipt-read-outage:behaviour',
+  behaviour: 'care',
+  day_key: '2026-08-01',
+}), /injected_identity_receipt_read_failure/,
+'a post-commit identity receipt read failure must be visible to the caller');
+assert.equal(identityReceiptReadDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_identity_events WHERE event_key='identity-receipt-read-outage:behaviour' AND applied_at IS NOT NULL").get().count, 1,
+  'the identity write remains committed before a response read outage');
+assert.equal(identityReceiptReadDb.database.prepare("SELECT progress FROM telegram_pet_personality_traits WHERE trait_id='loyal'").get().progress, 1);
+identityReceiptReadDb.beforeFirst = null;
+const identityReceiptRetry = await recordMoonpetBehaviour(identityReceiptReadDb, {
+  telegram_id: 'identity-receipt-read-outage',
+  event_key: 'identity-receipt-read-outage:behaviour',
+  behaviour: 'care',
+  day_key: '2026-08-01',
+});
+assert.equal(identityReceiptRetry.duplicate, true, 'retrying after a response read outage is idempotent');
+assert.equal(identityReceiptReadDb.database.prepare("SELECT progress FROM telegram_pet_personality_traits WHERE trait_id='loyal'").get().progress, 1,
+  'response recovery cannot apply personality progress twice');
+
+const evolutionReceiptReadDb = seedPlayer('evolution-receipt-read-outage', false);
+await evolveMoonpet(evolutionReceiptReadDb, {
+  telegram_id: 'evolution-receipt-read-outage', evolution_id: 'moon_egg', event_key: 'evolution-receipt-read-outage:egg',
+});
+evolutionReceiptReadDb.beforeFirst = (sql) => {
+  if (/SELECT evolution_id, stage, unlocked_at FROM telegram_pet_evolutions_by_pet/i.test(sql)) throw new Error('injected_evolution_receipt_read_failure');
+};
+await assert.rejects(evolveMoonpet(evolutionReceiptReadDb, {
+  telegram_id: 'evolution-receipt-read-outage', evolution_id: 'moon_egg', event_key: 'evolution-receipt-read-outage:retry',
+}), /injected_evolution_receipt_read_failure/,
+'a failed evolution replay read must not be reported as requirements not met');
+evolutionReceiptReadDb.beforeFirst = null;
+assert.equal(evolutionReceiptReadDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_evolutions_by_pet WHERE evolution_id='moon_egg'").get().count, 1);
+
+const evolutionConcurrentReadDb = seedPlayer('evolution-concurrent-read-outage', false);
+let evolutionReadCount = 0;
+evolutionConcurrentReadDb.beforeFirst = (sql) => {
+  if (/SELECT evolution_id, stage, unlocked_at FROM telegram_pet_evolutions_by_pet/i.test(sql)) {
+    evolutionReadCount += 1;
+    if (evolutionReadCount === 2) throw new Error('injected_evolution_concurrent_read_failure');
+  }
+};
+await assert.rejects(evolveMoonpet(evolutionConcurrentReadDb, {
+  telegram_id: 'evolution-concurrent-read-outage', evolution_id: 'street_moonpet', event_key: 'evolution-concurrent-read-outage:street',
+}), /injected_evolution_concurrent_read_failure/,
+'a failed post-reservation evolution read must not be collapsed into requirements_not_met');
+evolutionConcurrentReadDb.beforeFirst = null;
 
 console.log('Telegram Pets identity expansion tests passed.');

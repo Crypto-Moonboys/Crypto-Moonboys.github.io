@@ -26,12 +26,23 @@ assert.equal(incubationAgeDays({ created_at: '2026-08-01T02:00:00+02:00' }, '202
 class Statement {
   constructor(adapter, sql, args = []) { this.adapter = adapter; this.sql = sql; this.args = args; }
   bind(...args) { return new Statement(this.adapter, this.sql, args); }
-  async first() { return this.adapter.database.prepare(this.sql).get(...this.args) || null; }
-  async all() { return { results: this.adapter.database.prepare(this.sql).all(...this.args) }; }
-  async run() { const result = this.adapter.database.prepare(this.sql).run(...this.args); return { meta: { changes: Number(result.changes || 0) } }; }
+  async first() {
+    this.adapter.beforeFirst?.(this.sql, this.args);
+    return this.adapter.database.prepare(this.sql).get(...this.args) || null;
+  }
+  async all() {
+    const override = this.adapter.beforeAll?.(this.sql, this.args);
+    if (override !== undefined) return override;
+    return { results: this.adapter.database.prepare(this.sql).all(...this.args) };
+  }
+  async run() {
+    this.adapter.beforeRun?.(this.sql, this.args);
+    const result = this.adapter.database.prepare(this.sql).run(...this.args);
+    return { meta: { changes: Number(result.changes || 0) } };
+  }
 }
 class D1 {
-  constructor() { this.database = new DatabaseSync(':memory:'); }
+  constructor() { this.database = new DatabaseSync(':memory:'); this.beforeFirst = null; this.beforeAll = null; this.beforeRun = null; }
   prepare(sql) { return new Statement(this, sql); }
   async batch(statements) {
     this.database.exec('BEGIN IMMEDIATE');
@@ -42,10 +53,15 @@ class D1 {
 function provisionActivePet(database, telegramId) {
   database.exec(`
     CREATE TABLE telegram_pet_instances (pet_id TEXT PRIMARY KEY, telegram_id TEXT, season_key TEXT, slot_number INTEGER DEFAULT 1, level INTEGER DEFAULT 1, pet_xp INTEGER DEFAULT 0, status TEXT DEFAULT 'active');
-    CREATE TABLE telegram_pet_season_slots (pet_id TEXT PRIMARY KEY, telegram_id TEXT, season_key TEXT, slot_number INTEGER DEFAULT 1, status TEXT DEFAULT 'active', updated_at TEXT DEFAULT CURRENT_TIMESTAMP);
+    CREATE TABLE telegram_pet_season_slots (pet_id TEXT PRIMARY KEY, telegram_id TEXT, season_key TEXT, slot_number INTEGER DEFAULT 1, status TEXT DEFAULT 'active', created_at TEXT DEFAULT CURRENT_TIMESTAMP, updated_at TEXT DEFAULT CURRENT_TIMESTAMP);
     CREATE TABLE telegram_pet_active_slots (telegram_id TEXT PRIMARY KEY, pet_id TEXT, season_key TEXT);
     CREATE TABLE telegram_pet_growth_marks (mark_id TEXT PRIMARY KEY, pet_id TEXT, telegram_id TEXT, season_key TEXT, milestone_type TEXT, evidence_key TEXT, earned_day TEXT, earned_at TEXT, UNIQUE(pet_id,season_key,earned_day));
     CREATE TABLE telegram_pet_weekly_crests (pet_id TEXT, telegram_id TEXT, season_key TEXT, qualification_week INTEGER);
+    CREATE TABLE telegram_pet_season_completions (pet_id TEXT, telegram_id TEXT, season_key TEXT, completed_at TEXT);
+    CREATE TABLE telegram_pet_relics (telegram_id TEXT, relic_id TEXT);
+    CREATE TABLE telegram_pet_boss_victories (pet_id TEXT, telegram_id TEXT, season_key TEXT, boss_id TEXT, victories INTEGER DEFAULT 0);
+    CREATE TABLE telegram_pet_material_balances (telegram_id TEXT, material_key TEXT, quantity INTEGER DEFAULT 0);
+    CREATE TABLE telegram_pet_inventory (telegram_id TEXT, asset_type TEXT, asset_key TEXT, quantity INTEGER DEFAULT 0);
     CREATE TABLE telegram_pet_lifecycle_by_pet (
       pet_id TEXT PRIMARY KEY, telegram_id TEXT, lifecycle_version INTEGER DEFAULT 1, identity_seed TEXT,
       phase TEXT DEFAULT 'egg', species_id TEXT, palette_id TEXT, marking_id TEXT, eye_style TEXT, temperament TEXT,
@@ -191,5 +207,122 @@ pendingDb.database.prepare(`INSERT INTO telegram_pet_lifecycle_events_by_pet
 const pendingRetry = await incubateMoonEgg(pendingDb, 'pending-player', 'warm', 'pending-care');
 assert.equal(pendingRetry.accepted, false, 'a reserved but unapplied lifecycle event must not be reported as an accepted duplicate');
 assert.equal(pendingRetry.reason, 'incubation_conflict');
+
+const recoveryDb = new D1();
+recoveryDb.database.exec(`
+  CREATE TABLE telegram_pet_profiles (telegram_id TEXT PRIMARY KEY, species TEXT NOT NULL DEFAULT '', stage TEXT DEFAULT 'egg', created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT DEFAULT CURRENT_TIMESTAMP);
+  CREATE TABLE telegram_pet_evolutions (telegram_id TEXT, stage INTEGER);
+  CREATE TABLE telegram_pet_evolutions_by_pet (pet_id TEXT, telegram_id TEXT, evolution_id TEXT, stage INTEGER);
+  CREATE TABLE telegram_pet_memories (pet_id TEXT PRIMARY KEY, telegram_id TEXT, season_key TEXT, exploration_actions INTEGER DEFAULT 0, total_runs INTEGER DEFAULT 0,
+    combat_actions INTEGER DEFAULT 0, total_bosses_defeated INTEGER DEFAULT 0, care_actions INTEGER DEFAULT 0, event_actions INTEGER DEFAULT 0,
+    adventure_actions INTEGER DEFAULT 0);
+  CREATE TABLE telegram_pet_personality_traits (pet_id TEXT, telegram_id TEXT, season_key TEXT, trait_id TEXT, unlocked_at TEXT);
+`);
+recoveryDb.database.exec(await (await import('node:fs/promises')).readFile(new URL('../workers/moonboys-api/migrations/053_telegram_pet_species_lifecycle.sql', import.meta.url), 'utf8'));
+recoveryDb.database.prepare('INSERT INTO telegram_pet_profiles (telegram_id) VALUES (?)').run('recovery-player');
+provisionActivePet(recoveryDb.database, 'recovery-player');
+recoveryDb.database.prepare('DELETE FROM telegram_pet_lifecycle_by_pet WHERE telegram_id=?').run('recovery-player');
+await createMoonEggLifecycle(recoveryDb, 'recovery-player', 'adopt:recovery');
+
+recoveryDb.beforeAll = (sql) => {
+  if (/FROM telegram_pet_lifecycle_events_by_pet[\s\S]*WHERE telegram_id=\? AND event_key=\?/i.test(sql)) throw new Error('injected_lifecycle_receipt_read_failure');
+};
+await assert.rejects(
+  incubateMoonEgg(recoveryDb, 'recovery-player', 'warm', 'recovery:receipt-read'),
+  /injected_lifecycle_receipt_read_failure/,
+  'a failed lifecycle receipt read must not be converted into a missing receipt',
+);
+recoveryDb.beforeAll = null;
+assert.equal(recoveryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_events_by_pet WHERE event_key='recovery:receipt-read'").get().count, 0,
+  'receipt read outages must not create a second lifecycle action');
+recoveryDb.beforeAll = (sql) => (/FROM telegram_pet_lifecycle_events_by_pet[\s\S]*WHERE telegram_id=\? AND event_key=\?/i.test(sql)
+  ? { success: false, error: 'injected_resolved_lifecycle_receipt_read_failure' }
+  : undefined);
+await assert.rejects(
+  incubateMoonEgg(recoveryDb, 'recovery-player', 'warm', 'recovery:resolved-receipt-read'),
+  /pet_state_read_unavailable/,
+  'a resolved D1 failure must not be treated as an empty lifecycle receipt result',
+);
+recoveryDb.beforeAll = null;
+assert.equal(recoveryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_events_by_pet WHERE event_key='recovery:resolved-receipt-read'").get().count, 0);
+
+let failGrowthMarkOnce = true;
+recoveryDb.beforeRun = (sql) => {
+  if (failGrowthMarkOnce && /INSERT OR IGNORE INTO telegram_pet_growth_marks/i.test(sql)) {
+    failGrowthMarkOnce = false;
+    throw new Error('injected_growth_mark_write_failure');
+  }
+};
+await assert.rejects(
+  incubateMoonEgg(recoveryDb, 'recovery-player', 'warm', 'recovery:growth-mark', new Date('2026-08-02T12:00:00Z')),
+  /injected_growth_mark_write_failure/,
+  'a post-commit Growth Mark failure must be visible to the caller',
+);
+assert.equal(recoveryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_events_by_pet WHERE event_key='recovery:growth-mark' AND applied_at IS NOT NULL").get().count, 1,
+  'the lifecycle action stays committed when later reward settlement fails');
+assert.equal(recoveryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_growth_marks WHERE evidence_key='incubation:recovery:growth-mark'").get().count, 0);
+recoveryDb.beforeRun = null;
+const recoveredGrowthMark = await incubateMoonEgg(recoveryDb, 'recovery-player', 'warm', 'recovery:growth-mark', new Date('2026-08-02T12:00:00Z'));
+assert.equal(recoveredGrowthMark.duplicate, true, 'replaying the committed lifecycle key repairs post-commit reward settlement');
+assert.equal(recoveryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_growth_marks WHERE evidence_key='incubation:recovery:growth-mark'").get().count, 1,
+  'Growth Mark recovery is idempotent and creates exactly one authoritative mark');
+assert.equal(recoveryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_events_by_pet WHERE event_key='recovery:growth-mark'").get().count, 1,
+  'Growth Mark recovery never repeats lifecycle progress');
+
+recoveryDb.database.prepare("DELETE FROM telegram_pet_growth_marks WHERE evidence_key='incubation:recovery:growth-mark'").run();
+recoveryDb.database.prepare(`INSERT INTO telegram_pet_instances
+  (pet_id, telegram_id, season_key, slot_number) VALUES ('pet:recovery-player:test:2', 'recovery-player', 'test', 2)`).run();
+recoveryDb.database.prepare(`INSERT INTO telegram_pet_season_slots
+  (pet_id, telegram_id, season_key, slot_number) VALUES ('pet:recovery-player:test:2', 'recovery-player', 'test', 2)`).run();
+recoveryDb.database.prepare(`INSERT INTO telegram_pet_lifecycle_by_pet
+  (pet_id, telegram_id, identity_seed, phase, incubation_json, innate_traits_json)
+  VALUES ('pet:recovery-player:test:2', 'recovery-player', 'recovery-player-b', 'egg', '{}', '[]')`).run();
+recoveryDb.database.prepare(`UPDATE telegram_pet_active_slots
+  SET pet_id='pet:recovery-player:test:2' WHERE telegram_id='recovery-player'`).run();
+const switchedPetRecovery = await incubateMoonEgg(
+  recoveryDb, 'recovery-player', 'warm', 'recovery:growth-mark', new Date('2026-08-03T12:00:00Z'),
+);
+assert.equal(switchedPetRecovery.duplicate, true, 'a replay after pet switching resolves the original lifecycle receipt');
+assert.equal(recoveryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_growth_marks WHERE pet_id='pet:recovery-player:test:1' AND evidence_key='incubation:recovery:growth-mark'").get().count, 1,
+  'post-switch recovery settles the original pet Growth Mark');
+assert.equal(recoveryDb.database.prepare("SELECT earned_day FROM telegram_pet_growth_marks WHERE pet_id='pet:recovery-player:test:1' AND evidence_key='incubation:recovery:growth-mark'").get().earned_day, '2026-08-02',
+  'post-switch recovery preserves the original action day instead of using the retry day');
+assert.equal(recoveryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_events_by_pet WHERE pet_id='pet:recovery-player:test:2' AND event_key='recovery:growth-mark'").get().count, 0,
+  'post-switch recovery never applies the original action key to the newly active egg');
+recoveryDb.database.prepare(`UPDATE telegram_pet_active_slots
+  SET pet_id='pet:recovery-player:test:1' WHERE telegram_id='recovery-player'`).run();
+
+recoveryDb.database.prepare("UPDATE telegram_pet_lifecycle_by_pet SET created_at=datetime('now','-14 days') WHERE telegram_id='recovery-player'").run();
+recoveryDb.beforeFirst = (sql) => {
+  if (/FROM telegram_pet_lifecycle_events_by_pet[\s\S]*action='hatch'/i.test(sql)) throw new Error('injected_hatch_receipt_read_failure');
+};
+await assert.rejects(hatchMoonpet(recoveryDb, 'recovery-player', 'recovery:hatch'), /injected_hatch_receipt_read_failure/,
+  'a failed hatch receipt read must not be converted into a new hatch');
+recoveryDb.beforeFirst = null;
+assert.equal(recoveryDb.database.prepare("SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE telegram_id='recovery-player'").get().phase, 'egg');
+assert.equal(recoveryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_events_by_pet WHERE event_key='recovery:hatch'").get().count, 0);
+
+recoveryDb.database.prepare(`UPDATE telegram_pet_lifecycle_by_pet
+  SET phase='adult', species_id='neon_raccoon', rare_route_index=0 WHERE telegram_id='recovery-player'`).run();
+assert.equal((await incubateMoonEgg(
+  recoveryDb, 'recovery-player', 'warm', 'recovery:growth-mark', new Date('2026-08-02T12:00:00Z'),
+)).duplicate, true, 'a committed incubation receipt remains recoverable after the source pet hatches');
+recoveryDb.database.prepare(`INSERT INTO telegram_pet_memories
+  (pet_id, telegram_id, season_key, exploration_actions, total_runs)
+  VALUES ('pet:recovery-player:test:1', 'recovery-player', 'test', 30, 10)`).run();
+for (const trait of ['explorer', 'curious']) recoveryDb.database.prepare(`INSERT INTO telegram_pet_personality_traits
+  (pet_id, telegram_id, season_key, trait_id, unlocked_at)
+  VALUES ('pet:recovery-player:test:1', 'recovery-player', 'test', ?, CURRENT_TIMESTAMP)`).run(trait);
+recoveryDb.database.prepare(`INSERT INTO telegram_pet_evolutions_by_pet
+  (pet_id, telegram_id, evolution_id, stage)
+  VALUES ('pet:recovery-player:test:1', 'recovery-player', 'legendary_moon_guardian', 5)`).run();
+recoveryDb.beforeFirst = (sql) => {
+  if (/FROM telegram_pet_lifecycle_events_by_pet[\s\S]*action='rare_morph'/i.test(sql)) throw new Error('injected_rare_receipt_read_failure');
+};
+await assert.rejects(morphMoonpetRare(recoveryDb, 'recovery-player', 'recovery:rare'), /injected_rare_receipt_read_failure/,
+  'a failed rare-morph receipt read must not be converted into a new morph');
+recoveryDb.beforeFirst = null;
+assert.equal(recoveryDb.database.prepare("SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE telegram_id='recovery-player'").get().phase, 'adult');
+assert.equal(recoveryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_events_by_pet WHERE event_key='recovery:rare'").get().count, 0);
 
 console.log('telegram-pets-species-lifecycle.test.mjs passed');
