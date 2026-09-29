@@ -23,7 +23,12 @@ const {
 class Statement {
   constructor(adapter, sql, args = []) { this.adapter = adapter; this.sql = sql; this.args = args; }
   bind(...args) { return new Statement(this.adapter, this.sql, args); }
-  async first() { return this.adapter.database.prepare(this.sql).get(...this.args) || null; }
+  async first() {
+    if (this.adapter.blockSeasonCompletionAuthority && /FROM telegram_pet_season_completions/i.test(this.sql)) {
+      throw new Error('simulated_completion_authority_failure');
+    }
+    return this.adapter.database.prepare(this.sql).get(...this.args) || null;
+  }
   async all() { return { results: this.adapter.database.prepare(this.sql).all(...this.args) }; }
   async run() {
     return this.adapter.runStatement(this.sql, this.args);
@@ -34,6 +39,7 @@ class D1 {
   constructor() {
     this.database = new DatabaseSync(':memory:');
     this.blockLifecycleMaterializationForTelegramId = null;
+    this.blockSeasonCompletionAuthority = false;
     this.database.exec(schema);
     this.database.exec(fs.readFileSync(new URL('../workers/moonboys-api/migrations/048_telegram_pet_player_expansion.sql', import.meta.url), 'utf8'));
     // These combat-gate fixtures deliberately allow isolated completion markers.
@@ -253,6 +259,13 @@ assert.equal(completedAdultEligibility.combat_unlocked, true, 'completed Season 
 assert.equal(buildPetMiniAppCapabilities(completedAdultEligibility).systems.arena.state, 'AVAILABLE');
 assert.notEqual((await act(db, '100005', 'arena_matchmake')).reason, 'completed_season_pet_required',
   'completed hatched users are not blocked by any completed-season combat gate');
+db.blockSeasonCompletionAuthority = true;
+const completionAuthorityFailure = await getPetMiniAppCombatEligibility(db, '100005');
+assert.equal(completionAuthorityFailure.reason, 'combat_authority_unavailable',
+  'failed completion-authority reads must not become an incomplete pet');
+assert.equal((await act(db, '100005', 'arena_matchmake')).reason, 'combat_authority_unavailable',
+  'Arena rejects direct actions when completion authority is unavailable');
+db.blockSeasonCompletionAuthority = false;
 
 seedUser(db, '100006', 'Missing Lifecycle');
 markSeasonComplete(db, '100006');

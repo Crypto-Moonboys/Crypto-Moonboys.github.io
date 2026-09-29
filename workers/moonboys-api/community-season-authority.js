@@ -10,7 +10,9 @@ export async function selectCommunitySeason(db, at = new Date()) {
   if (!Number.isFinite(date.getTime())) throw new Error('community_season_unavailable');
   const rows = readRows(await db.prepare(`
     SELECT * FROM telegram_seasons
-    WHERE is_active=1 AND start_date <= ? AND (end_date IS NULL OR end_date > ?)
+    WHERE is_active=1
+      AND datetime(start_date) <= datetime(?)
+      AND (end_date IS NULL OR datetime(?) < datetime(end_date))
     ORDER BY start_date DESC, id DESC
   `).bind(date.toISOString(), date.toISOString()).all());
   return rows[0] || null;

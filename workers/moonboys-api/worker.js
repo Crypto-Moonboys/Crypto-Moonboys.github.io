@@ -5686,7 +5686,12 @@ function parsePetArenaCallbackPayload(payload) {
 async function ensurePetArenaEligible(db, telegramId) {
   const pet = await getPetProfile(db, telegramId);
   if (!pet) return { ok:false, reason:'pet_not_adopted' };
-  const lifecycle = await getMoonpetLifecycle(db, telegramId).catch(() => null);
+  let lifecycle;
+  try {
+    lifecycle = await getMoonpetLifecycle(db, telegramId);
+  } catch (error) {
+    return { ok:false, reason:'combat_authority_unavailable', error: error?.message || String(error) };
+  }
   if (!lifecycle || lifecycle.phase === 'egg') return { ok:false, reason: lifecycle ? 'moon_egg_must_hatch' : 'moonpet_lifecycle_required' };
   const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
   const serialized = serializePet(pet, identity, { include_art_identity: true });
@@ -9899,15 +9904,16 @@ async function hasCompletedPetMiniAppSeasonPet(db, telegramId) {
     FROM telegram_pet_season_completions
     WHERE telegram_id=?
     LIMIT 1`)
-    .bind(String(telegramId)).first().catch(() => null);
+    .bind(String(telegramId)).first();
   return Boolean(row?.completed);
 }
 
 async function getPetMiniAppCombatEligibility(db, telegramId, lifecycle = null) {
-  const hasCompletedSeasonPet = await hasCompletedPetMiniAppSeasonPet(db, telegramId);
   let activePet;
   let activeLifecycle;
+  let hasCompletedSeasonPet;
   try {
+    hasCompletedSeasonPet = await hasCompletedPetMiniAppSeasonPet(db, telegramId);
     activePet = await db.prepare('SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id=? LIMIT 1')
       .bind(String(telegramId)).first();
     activeLifecycle = lifecycle || await getMoonpetLifecycle(db, telegramId);
