@@ -1,5 +1,11 @@
 # Moonpet account state and reward consistency audit — 2026-09-28
 
+> Historical audit: findings describe the build tested below. Later releases added
+> the daily 7/7 bonus, Signal Sovereign finale, rewarded Practice, cosmetic
+> equipment and relic effects. See [current rules](moonpet-source-of-truth.md) and
+> the [reconciliation tracker](moonpet-reconciliation-2026-09-29.md). Historical XP
+> discrepancies are not presumed repaired.
+
 Baseline: merged/deployed `bf1a0a26d72479015bbc7d3c456b41844016f6ae` (#1363).
 Scope: trace earlier false-empty reads and interrupted/replayed reward bugs through
 remaining game, mission and public-display paths. Reproduce confirmed defects in

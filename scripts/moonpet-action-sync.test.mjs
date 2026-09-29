@@ -80,7 +80,7 @@ test('shop and trade receipts identify the earning pet after switching, with con
   assert.equal((await f.state()).guidance.missions.find(m=>m.key.startsWith('pet-daily-trade:')).completed,true);
   assert.equal((await hooks.processPetGoldTrade(f.db,f.owner,10,{event_key:'trade-sync'})).duplicate,true);
   assert.equal((await hooks.processPetShopPurchase(f.db,f.owner,'moon_kibble',{event_key:'buy-sync'})).duplicate,true);
-  assert.equal((await f.get('/telegram/leaderboard')).entries[0].xp,0,'zero Community XP actions do not increase Community ranks');
+  assert.deepEqual((await f.get('/telegram/leaderboard')).entries,[],'zero Community XP actions leave the Community season empty, without all-time fallback');
 });
 
 test('overlapping purchases charge once for the same equipped item', async () => {

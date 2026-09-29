@@ -2,6 +2,7 @@ import { getPracticeBoard, processPracticeAction } from './pets/practice-progres
 import { getStyleLoadout, equipPetStyle } from './pets/style-loadout.js';
 import { RELIC_ROUTE_DETAILS } from './pets/relic-passives.js';
 import { requirePetReadResult } from './pets/read-result.js';
+import { readCommunityLeaderboard } from './community-leaderboard.js';
 import { readDailyCompletion, claimDailyCompletion, getSeasonFinales, processSeasonFinale } from './pets/completion-features.js';
 import { PET_STATE_RECOVERY_LIMITS, boundedRecoveryLimit, claimPetRecoveryBatch } from './pets/recovery-limits.js';
 import { BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP, GEMS_MAX, GEMS_MIN, TELEGRAM_AUTH_MAX_AGE, XP_MAX, XP_MIN } from './blocktopia/config.js';
@@ -11155,50 +11156,24 @@ export default {
     }
 
     // ── GET /telegram/leaderboard?limit= ──────────────────────────────────
-    // Uses current season from telegram_seasons; falls back to telegram_users.xp.
+    // Uses the Community season; all-time is used only when no season exists.
     if (path === '/telegram/leaderboard' && request.method === 'GET') {
-      const limit = Math.min(parseInt(url.searchParams.get('limit') || '10', 10), 50);
       try {
-        const season = await getCurrentSeason(env.DB);
-        let entries;
-
-        if (season?.id) {
-          const rows = await env.DB.prepare(
-            `SELECT tl.telegram_id, tl.xp,
-                    tu.username, tu.first_name, tu.last_name
-             FROM telegram_leaderboard tl
-             LEFT JOIN telegram_users tu ON tu.telegram_id = tl.telegram_id
-             WHERE tl.season_id = ?
-             ORDER BY tl.xp DESC, tl.telegram_id ASC
-             LIMIT ?`
-          ).bind(season.id, limit).all();
-          entries = (rows.results || []).map((r, i) => ({
-            rank:         i + 1,
-            telegram_id:  r.telegram_id,
-            username:     r.username || null,
-            display_name: displayNameFromRow(r),
-            xp:           r.xp || 0,
-          }));
-        }
-
-        // Fallback: top users by xp from telegram_users
-        if (!entries || !entries.length) {
-          const rows = await env.DB.prepare(
-            `SELECT telegram_id, username, first_name, last_name, xp, level
-             FROM telegram_users ORDER BY xp DESC LIMIT ?`
-          ).bind(limit).all();
-          entries = (rows.results || []).map((r, i) => ({
-            rank:         i + 1,
-            telegram_id:  r.telegram_id,
-            username:     r.username || null,
-            display_name: displayNameFromRow(r),
-            xp:           r.xp || 0,
-          }));
-        }
-
-        return json({ type: 'community_xp', season: season || null, entries });
+        const { season, score_basis, rows } = await readCommunityLeaderboard(env.DB, url.searchParams.get('limit') || 10);
+        const entries = rows.map((r, i) => ({
+          rank: i + 1,
+          telegram_id: r.telegram_id,
+          username: r.username || null,
+          display_name: displayNameFromRow(r),
+          xp: r.xp || 0,
+        }));
+        const response = json({ type: 'community_xp', season, score_basis, entries });
+        response.headers.set('Cache-Control', 'no-store');
+        return response;
       } catch {
-        return err('Failed to load leaderboard', 500);
+        const response = err('Failed to load leaderboard. Please retry.', 503);
+        response.headers.set('Cache-Control', 'no-store');
+        return response;
       }
     }
 
@@ -17937,45 +17912,26 @@ async function cmdGkSeason(db, tok, chatId) {
 }
 
 async function cmdGkLeaderboard(db, tok, chatId) {
-  const season = await getCurrentSeason(db).catch(() => null);
-  let entries = [];
-
-  if (season?.id) {
-    const rows = await db.prepare(
-      `SELECT tl.telegram_id, tl.xp,
-              tu.username, tu.first_name, tu.last_name
-       FROM telegram_leaderboard tl
-       LEFT JOIN telegram_users tu ON tu.telegram_id = tl.telegram_id
-       WHERE tl.season_id = ?
-       ORDER BY tl.xp DESC LIMIT 10`
-    ).bind(season.id).all().catch(() => ({ results: [] }));
-    entries = rows.results || [];
-  }
-
-  // Fallback: top users by xp from telegram_users
-  if (!entries.length) {
-    const rows = await db.prepare(
-      `SELECT telegram_id, username, first_name, last_name, xp
-       FROM telegram_users ORDER BY xp DESC LIMIT 10`
-    ).all().catch(() => ({ results: [] }));
-    entries = rows.results || [];
-  }
-
-  if (!entries.length) {
+  let board;
+  try {
+    board = await readCommunityLeaderboard(db, 10);
+  } catch {
     await sendTelegramMessage(tok, chatId,
-      '📊 No leaderboard data yet. Use /gkstart to get on the board!');
+      'Community XP is unavailable. Please retry /gkleaderboard.');
     return;
   }
-
-  const seasonLabel = season ? `Season ${season.id}` : 'All Time';
-  const lines = entries.map((r, i) => {
+  const seasonLabel = board.season ? `Community season: ${escapeHtml(board.season.name || String(board.season.id))}` : 'All-time Community XP';
+  if (!board.rows.length) {
+    await sendTelegramMessage(tok, chatId,
+      `📊 <b>${seasonLabel}</b>\n\nNo Community XP recorded for this period yet.`);
+    return;
+  }
+  const lines = board.rows.map((r, i) => {
     const name = escapeHtml(displayNameFromRow(r));
-    return `${i + 1}. ${name} — ${r.xp || 0} XP`;
+    return `${i + 1}. ${name} — ${r.xp || 0} Community XP`;
   }).join('\n');
-
   await sendTelegramMessage(tok, chatId,
-    `🏆 <b>Leaderboard — ${seasonLabel}</b>\n\n${lines}`
-  );
+    `🏆 <b>Leaderboard — ${seasonLabel}</b>\n\n${lines}`);
 }
 
 async function cmdGkQuests(env, tok, chatId, telegramId, fromUser) {

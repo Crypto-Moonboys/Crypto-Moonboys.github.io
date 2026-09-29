@@ -1642,8 +1642,8 @@ assert.match(client, /setInterval\(tickSeasonDisplay, 30000\)/, 'open apps must 
 assert.match(client, /visibilitychange[\s\S]*refreshSeasonSnapshot\(true\)/, 'returning to the app must refresh the authoritative season snapshot');
 assert.match(client, /YEAR-END PARTIAL.*90-DAY TARGET/, 'season status must distinguish a shortened runtime season from the target cycle');
 assert.match(client, /SEASON STATUS \/\/ LIVE/, 'season panel must label current runtime timing as live');
-assert.match(client, /PET PROGRESSION[\s\S]*SEASON PROGRESSION/, 'season UI must separate pet-instance progression from account seasonal progression');
-assert.match(client, /seasonal XP[\s\S]*tiers[\s\S]*account leaderboard status/, 'account seasonal values must not be presented as pet-instance fields');
+assert.match(client, /PET PROGRESSION[\s\S]*ACCOUNT SEASON XP/, 'season UI must separate pet-instance progression from the named account aggregate');
+assert.match(client, /XP across your pets for this season[\s\S]*tiers[\s\S]*shared seasonal rank/, 'account seasonal values must not be presented as pet-instance fields');
 assert.match(client, /\[1, 2, 3\]\.map/, 'slot summary must always materialize all three seasonal slots');
 assert.match(client, /CURRENT ARCADE XP/, 'slot summary must display the shared Arcade XP balance');
 assert.match(client, /PET 1 IS FREE \/\/ PET 2 REQUIRES 500 XP \/\/ PET 3 REQUIRES 1,000 XP/, 'slot costs must match live community XP unlock rules');

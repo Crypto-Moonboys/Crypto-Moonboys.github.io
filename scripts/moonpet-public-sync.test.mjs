@@ -74,6 +74,7 @@ assert.equal(activity.items[0].pet_xp_awarded,20);
 assert.equal(activity.items.length,1,'duplicate recovery creates no second public action');
 sql.prepare("UPDATE telegram_leaderboard SET rank=99 WHERE telegram_id='70001'").run();
 const community=await get('/telegram/leaderboard');
+assert.equal(community.score_basis,'community_season');
 assert.equal(community.entries.find((entry)=>entry.telegram_id==='70001').xp,3,'only Community XP reaches the Community leaderboard');
 assert.equal(community.entries.find((entry)=>entry.telegram_id==='70001').rank,1,'displayed rank follows current XP rather than a stale stored rank');
 

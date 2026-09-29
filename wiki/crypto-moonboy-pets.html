@@ -57,7 +57,7 @@
 
     <section class="wiki-section">
       <h2>Persistent Companion And Identity Reveal</h2>
-      <p>Every seasonal Moonpet has a persistent server-owned lifecycle, assigned identity, care history, sleep state, XP, equipment state and evolution record. Stage 0 presents the shared EGGYONE Secret Bot and Stage 1 presents the shared WTFBOI Street Moonpet. The assigned identity name is shown as exactly <strong>UNKNOWN</strong> throughout Stages 0, 1 and 2.</p>
+      <p>Every seasonal Moonpet has a persistent server-owned lifecycle, assigned identity, care history, sleep state, XP, equipment state and evolution record. The starting lifecycle is <strong>Egg</strong>; its Stage-0 display is <strong>Secret Bot</strong> and its shared art identity is <strong>EGGYONE</strong>. Stage 0 presents the shared Secret Bot and Stage 1 presents the shared WTFBOI Street Moonpet. The assigned identity name is shown as exactly <strong>UNKNOWN</strong> throughout Stages 0, 1 and 2.</p>
       <p>The canonical identity name is revealed only when the authoritative lifecycle reaches Stage 3, Elite Moonpet. It remains visible through Stage 4 Moon Guardian and Stage 5 Legendary Moon Guardian, where identity-specific art and approved evolution fallbacks apply. Equipment affects gameplay state and is not painted onto animation frames. Rare Morph progression changes the environment rather than replacing the Moonpet identity.</p>
     </section>
 
@@ -67,10 +67,10 @@
       <div class="pets-live-grid">
         <article class="pets-live-card"><h3>LIVE — Season Length</h3><p>Seasons target a 90-day progression cycle. The current runtime calendar resets at UTC year boundaries, so a year-end partial season may be shorter.</p></article>
         <article class="pets-live-card"><h3>LIVE — Three Pets</h3><p>Each player can have at most three seasonal Moonpets. Pet 1 is free each season; Pet 2 unlocks for 500 spendable Arcade XP and Pet 3 for 1,000 spendable Arcade XP. These are the current Season 1 earned community XP unlocks—not money or crypto purchases.</p></article>
-        <article class="pets-live-card"><h3>LIVE — Active Pet</h3><p>One seasonal Moonpet is active at a time. Pet-instance actions resolve against the active or explicitly participating <code>pet_id</code>. Switching preserves that pet’s identity, stats, lifecycle and pet-specific progression. Seasonal XP, seasonal tiers, leaderboard progression and other explicitly account-level systems remain shared account seasonal state.</p></article>
-        <article class="pets-live-card"><h3>COMING SOON — Future Systems</h3><p>Advanced Traits, Breeding, Lineage, Fusion, Sanctuary and Prestige remain roadmap systems. They should be presented as future work, not disguised as current Moonpet OS gameplay.</p></article>
+        <article class="pets-live-card"><h3>LIVE — Active Pet</h3><p>One seasonal Moonpet is active at a time. Pet-instance actions resolve against the active or explicitly participating <code>pet_id</code>. Switching preserves that pet’s identity, stats, lifecycle and pet-specific progression. <strong>Account Season XP</strong> adds together the player’s awarded Pet XP for that pet season and unlocks shared tier rewards. Each pet keeps its own Pet XP, specialist tracks, Marks and Crests; currencies and owned items belong to the account.</p></article>
+        <article class="pets-live-card"><h3>COMING SOON — Future Systems</h3><p>Advanced Traits, Breeding, Lineage, Fusion, Sanctuary gameplay expansion and Prestige remain roadmap systems. They should be presented as future work, not disguised as current Moonpet OS gameplay.</p></article>
       </div>
-      <p><strong>Legendary target — IN DEVELOPMENT:</strong> 60 Growth Marks, 10 Weekly Crests, and the required Pet XP and trials. Growth Marks are limited to one per pet per day and Weekly Crests to one per pet per week. In a full target 90-day cycle, the requirements allow roughly 30 missed daily Mark opportunities and roughly 3 missed weekly Crest windows—approximately three to four weeks of scheduling flexibility before additional balancing or catch-up is required. Partial year-end seasons require separate balancing because their progression window may be shorter.</p>
+      <p><strong>Legendary completion — LIVE:</strong> reach the final Legendary Moon Guardian evolution and earn 60 distinct-day Growth Marks and 10 distinct-week Crests. Evolution also has the level, age, boss, relic and material requirements shown in CORE. Completion is recorded without removing your active pet mid-season. Growth Marks are limited to one per pet per day and Weekly Crests to one per pet per week. In a full target 90-day cycle, the requirements allow roughly 30 missed daily Mark opportunities and roughly 3 missed weekly Crest windows—approximately three to four weeks of scheduling flexibility before additional balancing or catch-up is required. Partial year-end seasons require separate balancing because their progression window may be shorter.</p>
       <p><strong>Catch-up — FUTURE:</strong> Rested XP, behind-pace bonuses and one difficult seasonal Crest recovery challenge per pet are planned. They will never fabricate Growth Marks, Weekly Crests or Arcade XP, and there will be no paid recovery route.</p>
     </section>
 
@@ -104,7 +104,7 @@
         <article class="pets-live-card"><h3>Breeding</h3><p>Parent selection, offspring generation, breeding limits, UI flow and balancing are approved future work, not current Moonpet OS gameplay.</p></article>
         <article class="pets-live-card"><h3>Lineage</h3><p>Ancestry, family history and inherited identity remain future roadmap systems.</p></article>
         <article class="pets-live-card"><h3>Fusion</h3><p>Fusion inputs, result generation, success states and balancing are still coming soon.</p></article>
-        <article class="pets-live-card"><h3>Sanctuary</h3><p>Legendary-pet completion tracking and Sanctuary gameplay remain future expansion work.</p></article>
+        <article class="pets-live-card"><h3>Sanctuary</h3><p>Completion tracking and Sanctuary eligibility already exist. Expanded Sanctuary home and gameplay systems remain future work.</p></article>
         <article class="pets-live-card"><h3>Prestige</h3><p>Prestige is not a live reset/reward loop in the current build. Treat it as roadmap-only until a later reviewed release.</p></article>
       </div>
       <p><strong>Recommended build order:</strong> Advanced Traits → Breeding → Lineage → Fusion → Sanctuary → Prestige. That order minimizes rework because Breeding, Lineage and Fusion depend on the trait and identity architecture staying stable.</p>
@@ -125,10 +125,11 @@
     <section class="wiki-section">
       <h2>Three Separate Progression Layers</h2>
       <div class="pets-live-grid">
-        <article class="pets-live-card"><h3>Pet XP</h3><p>Controls the Moonpet’s level, growth stage, unlocks and pet leaderboard position.</p></article>
+        <article class="pets-live-card"><h3>Pet XP</h3><p>Belongs to the earning pet and controls its level and unlocks. Public pet ranks total Pet XP per player; they do not rank only the selected pet.</p></article>
         <article class="pets-live-card"><h3>Specialist XP</h3><p>Records how the pet is played through Care, Training, Adventure, Arena, Job and Bond progression.</p></article>
-        <article class="pets-live-card"><h3>Community XP</h3><p>Accepted linked actions can contribute to the player’s existing Crypto Moonboys profile. It remains separate from Pet XP and specialist XP.</p></article>
+        <article class="pets-live-card"><h3>Community XP</h3><p>The Community XP portion of accepted rewards contributes to the player’s main Community profile, leaderboard and chart. It is separate from Pet XP and specialist XP.</p></article>
       </div>
+      <p><strong>Account Season XP</strong> is the player’s aggregate Pet XP for the source pet season, used by seasonal ranks and tier rewards. It is not a currency. Switching pets changes the displayed identity, not that total. The Community season is a separate calendar.</p>
       <p class="pets-status-note"><strong>Server authority — LIVE:</strong> reward-bearing actions finalize through the Cloudflare Worker/server with source allowlisting, stable idempotency keys and duplicate protection. The client cannot self-award progression. <strong>IN DEVELOPMENT:</strong> Pet XP will use a daily target followed by diminishing returns rather than a hard stop, while protected Growth Mark and Weekly Crest limits preserve seasonal fairness.</p>
     </section>
 
@@ -150,7 +151,7 @@
       <p><strong>Care Loadout:</strong> Food, Toy and Outfit. These affect care actions, selected currencies, Pet XP and some run modifiers.</p>
       <p><strong>Battle Loadout:</strong> armor, weapon and charm. Armor supports defense, weapons support attack, and charms support crit, dodge or luck.</p>
       <p>The two loadouts are independent. Changing one does not reset the other. Empty battle slots display <strong>none</strong>; the game does not invent starter armor or starter weapons.</p>
-      <p>The GEAR module opens care upgrades and Pet Arena equipment, buys and equips eligible items, and displays registered equipment levels, item XP, mastery XP and mastery tiers. The server repairs missing progression records for equipment already fitted to the pet.</p>
+      <p>The GEAR module opens care upgrades and Pet Arena equipment, buys eligible items and switches already-owned equipment free. Upgrading an item has its displayed cost. Daily shopping credit counts permanent gear purchases and upgrades, not free switching, Market purchases or crafting. GEAR also displays equipment levels, item XP, mastery XP and mastery tiers. The server repairs missing progression records for equipment already fitted to the pet.</p>
       <h3>Expanded Moonpet Economy</h3>
       <p>GEAR is the earn → spend → upgrade → unlock dashboard. Bounties select four goals from ten each UTC day and only pay goals proven by accepted server events. Expeditions provide three daily attempts across Dust Tunnels, Crystal Caves and Guardian Rift, with higher zones unlocked by level. The Market rotates four offers from twelve, each with one unit of personal daily stock.</p>
       <p>The larger loop connects care, 14 standard and elite jobs, activities, events, runs, Arena, Kaiju, bosses and seasons to Moon Gold, Moon Crystals, Style Tokens, consumables and nine canonical upgrade materials. Consumable items and materials have separate, explicit balance authorities. The Workshop turns collected materials into five useful consumable recipes with level gates, exact cost previews and protected one-time settlement. Daily caps, Energy costs, wallet checks, stable settlement keys and one-stock offers prevent unlimited faucets.</p>
@@ -167,7 +168,7 @@
     <section class="wiki-section">
       <h2>Weekly Boss</h2>
       <p>The RUN module opens the current personal weekly boss. The boss rotates deterministically each UTC week between Neon Titan, Rugpull Colossus, Kaiju Zero and Citadel Overlord. Choose <strong>Strike</strong>, <strong>Outsmart</strong> or <strong>Endure</strong>; matching the boss weakness, relevant personality and a later evolution stage improve damage.</p>
-      <p>Each player gets one attempt per UTC day, enforced by a D1 unique constraint. An attempt costs 12 Energy. Damage persists for the week, the boss reward settles once through the protected reward authority, and delivery retries recover the same result rather than creating extra attempts or rewards.</p>
+      <p>After hatching and reaching level 5, each account gets <strong>one attack per UTC day</strong>, shared by its pets. This is not one attack per week; the boss resets Monday at 00:00 UTC. An attempt costs 12 Energy. Damage persists for the week, the boss reward settles once through the protected reward authority, and delivery retries recover the same result rather than creating extra attempts or rewards.</p>
     </section>
 
     <section class="wiki-section">
@@ -180,9 +181,11 @@
 
     <section class="wiki-section">
       <h2>Roguelite Rewards, Modifiers And Relics</h2>
+      <p><strong>Practice:</strong> server-saved, 12-room training with three builds, checkpoints and a boss. After hatching, the first three qualifying clears per account per UTC day can each award up to 10 Pet XP within the daily cap. Training rank can continue after that; Practice does not grant Journey or official Daily Run credit.</p>
+      <p><strong>Style Lab:</strong> owned frame, badge, Explore trail and idle victory-pose cosmetics can be equipped or removed free for each pet. They change presentation, not stats.</p>
       <div class="pets-live-grid">
         <article class="pets-live-card"><h3>Run Modifiers</h3><p>Temporary run-scoped effects can be persisted and are removed at terminal run states. Validation rejects XP, cap, currency and permanent-stat mutations.</p></article>
-        <article class="pets-live-card"><h3>Relics</h3><p>Permanent relic ownership now has a protected persistence layer with rarity, unlock time and effect metadata. Future relic bonuses must still request rewards through the central reward authority.</p></article>
+        <article class="pets-live-card"><h3>Relics</h3><p>All ten owned relics have active effects in new Practice and Continuing Contract runs, such as route odds, health, rests and salvage. Each run saves its starting relic set. Earlier runs keep their original rules; Standard Moon Run and official Daily Run use separate rules.</p></article>
         <article class="pets-live-card"><h3>Boss Rewards</h3><p>The starter roguelite boss path is deliberately not an XP farm. Repeatable boss rewards favor bounded materials, an evolution item and idempotent relic ownership rather than repeatable Pet XP or Community XP.</p></article>
         <article class="pets-live-card"><h3>Analytics</h3><p>Run start, room, modifier, boss and end events can be recorded for future balancing, difficulty tuning and content expansion.</p></article>
       </div>
@@ -213,8 +216,10 @@
 
     <section class="wiki-section">
       <h2>Missions, Seasons And Leaderboards</h2>
+      <p><strong>Daily 7/7 Completion Bonus:</strong> finish all seven checklist missions and claim up to 25 Pet XP, 50 Moon Gold and 1 Style Token once per account per UTC day. Complete unclaimed days survive midnight. This is separate from the Daily Journey Growth Mark.</p>
+      <p><strong>Season finale — Signal Sovereign:</strong> a final-evolution pet with 60 distinct-day Marks and 10 distinct-week Crests, or an already completed pet, can fight this optional saved-turn boss. First victory awards up to 100 Pet XP, 200 Moon Gold and 5 Style Tokens once per pet/season. It does not replace existing completion or Sanctuary eligibility. Both bonuses use the normal Pet XP cap.</p>
       <p>Daily missions reset by UTC day. Weekly windows and automatic pet seasons roll over independently without a manual reset. Seasons target 90 days, but the runtime resets its season calendar at the UTC year boundary, which can shorten the final season of a year.</p>
-      <p><code>/petseason</code> shows four one-time tiers at 250, 1,000, 3,000 and 7,500 seasonal Pet XP. Each tier is unique per player and season in D1. Claims use stable settlement keys, and the Moonpet’s evolution stage adds a small bounded Style bonus without increasing XP caps.</p>
+      <p><code>/petseason</code> shows four one-time tiers at 250, 1,000, 3,000 and 7,500 Account Season XP. Each tier is unique per player and season in D1. Claims use stable settlement keys, and the Moonpet’s evolution stage adds a small bounded Style bonus without increasing XP caps.</p>
       <p><code>/petleaderboard</code> and the website leaderboard rank Pet XP across daily, weekly, seasonal and all-time views. Specialist track levels, traits, job rank, equipment records, relic ownership and run-history data remain personal development systems rather than the current public leaderboard score.</p>
       <p><strong>IN DEVELOPMENT:</strong> Pet XP may beat its daily target at reduced rates so players with concentrated play time can still make progress. <strong>FUTURE:</strong> after a heavy-grind threshold, continued activity will provide only tiny prestige or cosmetic value. Marks and Crests—not a paid shortcut—protect the intended seasonal pace.</p>
     </section>

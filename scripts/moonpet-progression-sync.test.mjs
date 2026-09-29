@@ -445,7 +445,8 @@ test('job replay leaves quest evidence, public activity and both XP leaderboards
   assert.deepEqual(stableActivity((await f.get('/telegram-pets/activity')).items),stableActivity(before.items));
   for(const period of ['daily','weekly','seasonal']) assert.equal((await f.get('/telegram-pets/leaderboard?period='+period)).entries[0].pet_xp,first.pet_xp_awarded);
   assert.equal((await f.get('/telegram-pets/leaderboard?period=all_time')).entries[0].pet_xp,200+first.pet_xp_awarded);
-  assert.equal((await f.get('/telegram/leaderboard')).entries[0].xp,first.xp_awarded);
+  assert.equal(first.xp_awarded,0,'this job awards Pet XP without Community XP');
+  assert.deepEqual((await f.get('/telegram/leaderboard')).entries,[],'a zero-Community-XP job does not populate the Community season');
   assert.equal(f.sql.prepare('SELECT COALESCE(SUM(xp_change),0) xp FROM telegram_xp_log').get().xp,first.xp_awarded);
   assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_weekly_journey_objectives ORDER BY rowid').all(),quests);
 });
