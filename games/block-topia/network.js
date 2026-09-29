@@ -1,4 +1,5 @@
 import { BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP } from '../../shared/block-topia/constants.js';
+import { loadColyseusClient } from './colyseus-client.mjs';
 
 let room = null;
 
@@ -25,6 +26,7 @@ function exposeBlockTopiaRoom(activeRoom) {
 }
 
 let client = null;
+let clientSdk = null;
 let _reconnectOptions = null;
 let _reconnecting = false;
 let _isConnecting = false;
@@ -210,16 +212,13 @@ export async function connectMultiplayer({
   let lastError = null;
   _cityUnavailable = false;
 
-  if (!window.Colyseus) {
-    onStatus?.({ ws: 'failed', joined: false, error: 'Colyseus not loaded', roomId });
-    return null;
-  }
-
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt += 1) {
     try {
       onStatus?.({ ws: 'connecting', joined: false, error: '', roomId });
-      client = new window.Colyseus.Client(endpoint);
+      clientSdk = await loadColyseusClient(endpoint);
+      client = new clientSdk.Client(endpoint);
       room = await joinCityOnly(client, roomId, { name: playerName, telegram_auth: telegramAuth });
+      if (room.reconnection) room.reconnection.enabled = false;
     exposeBlockTopiaRoom(room);
 
       _reconnectionToken = room.reconnectionToken || null;
@@ -409,11 +408,12 @@ function _scheduleReconnect() {
 }
 
 async function _tryWarmReconnect() {
-  if (!_reconnectionToken || !_colyseusEndpoint || !window.Colyseus) return null;
+  if (!_reconnectionToken || !_colyseusEndpoint || !clientSdk) return null;
   try {
     const { onStatus, onPlayers, onNpcs, onWorld, onFeed, roomId } = _reconnectOptions;
-    const warmClient = new window.Colyseus.Client(_colyseusEndpoint);
+    const warmClient = new clientSdk.Client(_colyseusEndpoint);
     const reconRoom = await warmClient.reconnect(_reconnectionToken);
+    if (reconRoom.reconnection) reconRoom.reconnection.enabled = false;
     client = warmClient;
     room = reconRoom;
     exposeBlockTopiaRoom(room);

@@ -26,13 +26,13 @@ server/block-topia/
 ```
 
 ## Prerequisites
-- Node.js 18 or higher
+- Node.js 22 or higher (required by Colyseus 0.17)
 - npm or yarn
 
 ## Installation
 ```bash
 cd server/block-topia
-npm install
+npm ci
 ```
 
 ## Running the Server
@@ -89,25 +89,33 @@ MONITOR_USERNAME=admin MONITOR_PASSWORD=<secret> npm start
 ```
 
 ## Connecting from the Client
-Install the Colyseus client in your frontend project:
+The website's `colyseus-client.mjs` reads `/health` before joining. Servers with
+`client_protocol: "0.17"` serve the exact installed browser SDK at
+`/client/colyseus.js`. Legacy servers without that field use the pinned 0.16.22
+client until the VPS is upgraded. Failed/unknown health responses do not select
+a guessed protocol. A fresh connection checks health again, including rollback.
+
+For a separate client targeting the upgraded server:
 
 ```bash
-npm install colyseus.js
+npm install @colyseus/sdk@0.17.43
 ```
 
 Example connection code:
 
 ```javascript
-import { Client } from 'colyseus.js';
+import { Client } from '@colyseus/sdk';
 
 const client = new Client('wss://your-domain.com');
-const room = await client.joinOrCreate('city', { name: 'Rebel' });
+// Use the same verified Telegram auth payload as the website; XP is checked by the server.
+const room = await client.join('city', { name: 'Rebel', telegram_auth: telegramAuth });
 
 room.onStateChange((state) => {
   console.log('Room state updated:', state);
 });
 
-room.send('move', { x: 10, y: 20 });
+room.send('ready');
+// Movement must be adjacent, passable and within the server's cooldown.
 ```
 
 ## Deployment Notes (Nginx + Let's Encrypt + Colyseus)
@@ -115,6 +123,45 @@ room.send('move', { x: 10, y: 20 });
 - Ensure the VPS firewall allows inbound traffic on ports 80/443.
 - Keep the Colyseus process running locally on `127.0.0.1:2567`.
 - Client default endpoint is `wss://game.cryptomoonboys.com`, so `game.cryptomoonboys.com` must terminate TLS on `443` and reverse-proxy to `127.0.0.1:2567`.
+
+### Security dependency upgrade (29 September 2026)
+
+The server now uses explicit Colyseus core/monitor/WebSocket modules on 0.17,
+schema 4 and a pinned matching SDK. The unused umbrella package's OAuth, Redis
+and uWebSockets peer trees were removed. Nano ID, WebSocket and Express parser
+dependencies are patched. `npm audit` in this directory reports zero findings
+at this revision, down from 16; there are no audit suppressions or overrides.
+
+Colyseus 0.17 uses numeric leave codes. Only `CloseCode.CONSENTED` is an explicit
+leave; disconnected ready players retain the existing 60-second warm slot.
+The website retains control of reconnect timing rather than also using the
+SDK's automatic retries. Express and Colyseus HTTP routes use the same CORS
+allowlist. Two-player capacity, XP gating, server-owned movement and rewards
+retain their existing rules.
+
+After merge, the Pages change can publish before the VPS upgrade because it
+still supports the old server protocol. On the VPS, in the repository checkout:
+
+```bash
+node --version # must be v22 or newer; upgrade Node before installing if needed
+git switch main
+git pull --ff-only origin main
+npm ci --prefix server/block-topia --omit=dev
+npm audit --prefix server/block-topia
+npm test --prefix server/block-topia
+```
+
+Restart the **existing Block Topia process** using its current service manager
+(for PM2, use `pm2 ls` to identify it, then `pm2 restart <existing-name> --update-env`).
+Keep its production environment, Telegram/API configuration and monitor secret.
+If Node was upgraded, ensure that service uses the new Node executable too.
+Verify `https://game.cryptomoonboys.com/health` reports `client_protocol: "0.17"`,
+then reload `/games/block-topia/` and check an authenticated join and reconnect.
+Restarting this in-memory server disconnects current rooms; schedule accordingly.
+**No D1 migration or Cloudflare Worker deploy is required.**
+
+`npm test` exercises actual HTTP and WebSocket connections with a local-only
+progression fixture. CI installs and audits this separate lockfile explicitly.
 
 ### Nginx Two-Phase Rollout
 

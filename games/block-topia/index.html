@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Block Topia Live City - 2P Survival Mission Prototype</title>
     <link rel="stylesheet" href="./styles.css" />
-    <!-- Colyseus v0.16 client (required for multiplayer) -->
-    <script src="https://unpkg.com/colyseus.js@0.16/dist/colyseus.js"></script>
+    <!-- The Colyseus client is selected from the live server protocol before joining. -->
     <link rel="icon" type="image/png" href="/favicon.png">
 </head>
   <body class="page-standalone-tool">
@@ -355,7 +354,7 @@
         // server-side XP gate has been verified.  Loading them earlier would
         // render the map canvas before the check completes.
         await import("./main.js");
-        const { connectMultiplayer, sendMovement, sendAttack, sendExtract, sendReady, sendRestartRun, sendChooseUpgrade } = await import("./network.js");
+        const { connectMultiplayer, sendMovement, sendAttack, sendExtract, sendReady, sendRestartRun, sendChooseUpgrade } = await import("./network.js?v=20260929-colyseus17");
 
         // main.js registers window.BlockTopiaMap synchronously during evaluation.
         const api = window.BlockTopiaMap;
@@ -471,7 +470,7 @@
             if (!readySent) {
               if (!joined || !connected) {
                 api.pushFeedback?.("Connecting to city... please wait", 1000);
-                try { await import("./network.js").then((m) => m.reconnectMultiplayer?.()); } catch {}
+                try { await import("./network.js?v=20260929-colyseus17").then((m) => m.reconnectMultiplayer?.()); } catch {}
               }
               const snapAfterReconnect = api.getSnapshot?.();
               const readyAfterReconnect = snapAfterReconnect?.localPlayer?.ready === true;

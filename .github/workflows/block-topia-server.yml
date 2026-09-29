@@ -1,0 +1,45 @@
+name: Block Topia Server
+
+on:
+  pull_request:
+    paths:
+      - 'server/block-topia/**'
+      - 'games/block-topia/**'
+      - 'shared/block-topia/**'
+      - 'scripts/blocktopia-client-browser.test.mjs'
+      - '.github/workflows/block-topia-server.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'server/block-topia/**'
+      - 'games/block-topia/**'
+      - 'shared/block-topia/**'
+      - 'scripts/blocktopia-client-browser.test.mjs'
+      - '.github/workflows/block-topia-server.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: server/block-topia
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: server/block-topia/package-lock.json
+      - run: npm ci
+      - run: npm audit --audit-level=low
+      - run: npm test
+      - run: npm ci
+        working-directory: .
+      - run: npx playwright install --with-deps chromium
+        working-directory: .
+      - run: node scripts/blocktopia-client-browser.test.mjs
+        working-directory: .

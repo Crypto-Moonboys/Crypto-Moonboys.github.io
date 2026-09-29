@@ -41,7 +41,8 @@ assertContains(room, '_warmSlotsBySession = new Map()', '_warmSlotsBySession mus
 assertContains(room, '_identityKeyBySession = new Map()', '_identityKeyBySession must be initialised in onCreate');
 
 // ── async onLeave with allowReconnection ──────────────────────────────────────
-must(room, /async\s+onLeave\s*\(client,\s*consented\)/, 'onLeave must be async and accept consented flag');
+must(room, /async\s+onLeave\s*\(client,\s*code\)/, 'onLeave must accept the Colyseus 0.17 close code');
+assertContains(room, 'const consented = code === CloseCode.CONSENTED', 'Only the explicit leave code counts as consented');
 assertContains(room, 'this.allowReconnection(client, RECONNECT_HOLD_SECS)', 'allowReconnection must use the RECONNECT_HOLD_SECS constant');
 assertContains(room, 'await this.allowReconnection(client, RECONNECT_HOLD_SECS)', 'allowReconnection must be awaited to hold the warm slot');
 

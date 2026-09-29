@@ -3,7 +3,9 @@ import express from 'express';
 import cors from 'cors';
 import crypto from 'node:crypto';
 import dotenv from 'dotenv';
-import { Server, matchMaker } from 'colyseus';
+import { fileURLToPath } from 'node:url';
+import { Server, matchMaker } from '@colyseus/core';
+import { WebSocketTransport } from '@colyseus/ws-transport';
 import { monitor } from '@colyseus/monitor';
 
 import { MinimalCityRoom } from './rooms/MinimalCityRoom.js';
@@ -25,15 +27,25 @@ const ALLOWED_ORIGINS = rawCorsOrigins
       'https://crypto-moonboys.github.io',
     ];
 
+function isAllowedOrigin(origin) {
+  // Development permits localhost and 127.0.0.1; production uses the allowlist.
+  return !origin || ALLOWED_ORIGINS.includes(origin)
+    || (!IS_PRODUCTION && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin));
+}
+
+// Colyseus 0.17 wraps the HTTP listener and sets its own CORS headers before
+// Express. Apply the same allowlist there, including matchmaking preflights.
+delete matchMaker.controller.DEFAULT_CORS_HEADERS['Access-Control-Allow-Origin'];
+matchMaker.controller.getCorsHeaders = (headers) => {
+  const origin = headers.get('origin');
+  return origin && isAllowedOrigin(origin)
+    ? { 'Access-Control-Allow-Origin': origin, Vary: 'Origin' }
+    : { Vary: 'Origin' };
+};
+
 const corsOptions = {
   origin(origin, callback) {
-    // Allow requests with no origin (server-to-server, health checks).
-    if (!origin) return callback(null, true);
-    if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
-    // In development, allow localhost/127.0.0.1 origins.
-    if (!IS_PRODUCTION && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
-      return callback(null, true);
-    }
+    if (isAllowedOrigin(origin)) return callback(null, true);
     return callback(new Error(`CORS: origin '${origin}' not allowed`));
   },
   methods: ['GET', 'POST', 'OPTIONS'],
@@ -46,7 +58,15 @@ app.use(express.json());
 
 // Health check — always public, no auth required.
 app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', service: 'block-topia-server' });
+  res.set('Cache-Control', 'no-store');
+  res.json({ status: 'ok', service: 'block-topia-server', client_protocol: '0.17' });
+});
+
+// Serve the SDK installed with this server so Pages can negotiate a rolling upgrade.
+const clientSdkPath = fileURLToPath(new URL('../node_modules/@colyseus/sdk/dist/colyseus.js', import.meta.url));
+app.get('/client/colyseus.js', (_req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.sendFile(clientSdkPath);
 });
 
 // SAM webhook endpoint
@@ -103,7 +123,7 @@ function buildMonitorAuthMiddleware() {
 
 const server = http.createServer(app);
 
-const gameServer = new Server({ server });
+const gameServer = new Server({ transport: new WebSocketTransport({ server }) });
 
 // Register rooms
 gameServer.define('city', MinimalCityRoom).enableRealtimeListing();
@@ -138,8 +158,8 @@ app.use('/colyseus', buildMonitorAuthMiddleware(), monitor());
 app.get("/", (req, res) => {
   res.send("Block Topia Game Server is running 🚀");
 });
-server.listen(PORT, async () => {
-  console.log(`Block Topia server running on port ${PORT}`);
+gameServer.listen(Number(PORT)).then(async () => {
+  console.log(`Block Topia server running on port ${server.address().port}`);
   if (IS_PRODUCTION && !process.env.MONITOR_PASSWORD) {
     console.log('[server] /colyseus monitor is DISABLED (set MONITOR_PASSWORD to enable in production)');
   }
@@ -149,4 +169,8 @@ server.listen(PORT, async () => {
   } catch (err) {
     console.error('[server] failed to pre-create city room:', err?.message || err);
   }
+}).catch((err) => {
+  console.error('[server] startup failed:', err?.message || err);
+  process.exitCode = 1;
+  server.close();
 });
