@@ -9,11 +9,11 @@ const sqlite = new DatabaseSync(':memory:');
 for (const file of ['schema.sql', 'migrations/048_telegram_pet_player_expansion.sql', 'migrations/058_telegram_pet_season_completion.sql']) {
   sqlite.exec(fs.readFileSync(new URL('../workers/moonboys-api/' + file, import.meta.url), 'utf8'));
 }
-let beforeBatch = null, tail = Promise.resolve();
+let beforeBatch = null, beforeFirst = null, tail = Promise.resolve();
 class Statement {
   constructor(sql, args = []) { this.sql = sql; this.args = args; }
   bind(...args) { return new Statement(this.sql, args); }
-  async first() { return sqlite.prepare(this.sql).get(...this.args) || null; }
+  async first() { if (beforeFirst) await beforeFirst(this); return sqlite.prepare(this.sql).get(...this.args) || null; }
   async all() { return { results: sqlite.prepare(this.sql).all(...this.args) }; }
   async run() {
     if (/\bRETURNING\b/i.test(this.sql)) { const results = sqlite.prepare(this.sql).all(...this.args); return { results, meta: { changes: results.length } }; }
@@ -122,6 +122,28 @@ assert.equal(simultaneous.filter((r) => r.accepted && !r.duplicate).length, 1);
 assert.equal(sqlite.prepare('SELECT energy FROM telegram_pet_instances WHERE telegram_id=?').get('weekly-concurrent').energy, 68);
 assert.equal(sqlite.prepare('SELECT COUNT(*) n FROM telegram_pet_weekly_boss_events WHERE telegram_id=?').get('weekly-concurrent').n, 1);
 for (const result of simultaneous) assert.equal(result.progress.attempts, 1, 'concurrent callers must see the saved boss progress');
+
+for (const [label, matches] of [
+  ['daily attempt', (sql) => sql.includes('FROM telegram_pet_weekly_boss_events WHERE telegram_id = ? AND week_key = ? AND day_key = ?')],
+  ['weekly progress', (sql) => sql.includes('SELECT * FROM telegram_pet_weekly_boss_progress WHERE telegram_id = ? AND week_key = ?')],
+]) {
+  const id = 'weekly-read-outage-' + label.replaceAll(' ', '-');
+  const pet = await seed(id);
+  const energy = sqlite.prepare('SELECT energy FROM telegram_pet_instances WHERE pet_id=?').get(pet.pet_id).energy;
+  let hit = false;
+  beforeFirst = (statement) => {
+    if (matches(statement.sql)) { hit = true; throw Error('weekly_boss_authority_read_unavailable'); }
+  };
+  try {
+    await assert.rejects(hooks.processPetWeeklyBoss(db, id, 'strike', 'weekly-read-outage'), /weekly_boss_authority_read_unavailable/);
+  } finally {
+    beforeFirst = null;
+  }
+  assert.equal(hit, true, `${label} fault must reach the authoritative read`);
+  assert.equal(sqlite.prepare('SELECT energy FROM telegram_pet_instances WHERE pet_id=?').get(pet.pet_id).energy, energy);
+  assert.equal(sqlite.prepare('SELECT COUNT(*) n FROM telegram_pet_weekly_boss_events WHERE telegram_id=?').get(id).n, 0);
+  assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE telegram_id=? AND event_type='weekly_boss'").get(id).n, 0);
+}
 
 const low = await seed('weekly-low', 0, 0);
 assert.equal((await hooks.processPetWeeklyBoss(db, 'weekly-low', 'strike', 'low-level')).reason, 'boss_level_locked');

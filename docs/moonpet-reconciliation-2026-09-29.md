@@ -33,7 +33,7 @@ the how-to page already covered both. This batch repairs contradictory surfaces,
 not duplicate reward systems. Practice already awards bounded official Pet XP;
 cosmetic equipment and ten relic adaptations were already shipped in #1380.
 
-## Batch 2 — gameplay authority and reachability (in progress)
+## Batch 2 — gameplay authority and reachability (complete)
 
 Implemented after the initial reconciliation:
 
@@ -47,16 +47,24 @@ Implemented after the initial reconciliation:
 - Removed the unreachable pre-ledger Kaiju reward finalizer. Kaiju has one live
   reward path through the central capped/idempotent reward authority, and tests
   now assert that path rather than matching obsolete source below a return.
-
-Remaining Batch 2 work:
-
-- Audit source pet/season/day authority and retry settlement across care, shop,
-  upgrades, timed work, quests, runs, raids, Weekly Boss, daily bonus and finale.
-  Include active-pet switches, rollover, concurrent equipment changes and D1
-  resolved read failures. Expand tests only for concrete gaps.
-- Check the six-module navigation and every actionable option against actual
-  endpoint behavior, especially ready claims, endings, boss access and recovery.
-  Simplify the entry points without removing working activity choices.
+- Mutation replay, cooldown and recovery reads now fail closed across care,
+  Shop/equipment event receipts, crafting, upgrades, cosmetics, timed work,
+  activities, standard and roguelite runs, Daily Cache and Weekly Boss. A D1
+  outage can no longer be interpreted as a fresh request, unused cooldown,
+  missing run authority or absent saved payout.
+- Roguelite start preserves explicit active/requested pet and season authority.
+  Failed pre-write reads create nothing; a failed post-commit read leaves one
+  idempotently recoverable run; boss-room reward lookup failures cannot become
+  false “room not resolved” results.
+- Weekly Boss reads for today's attempt, saved progress, victory attribution
+  and accepted source evidence now propagate failure into the existing retry
+  path before energy or rewards can move.
+- Existing source-pet-switch, season rollover, equipment concurrency, finale,
+  Daily Run, raid and bounded recovery suites remain authoritative and pass.
+- Six-module reachability is covered by literal button-to-handler parity plus
+  browser execution of all six screens, ready claims, saved endings, bosses,
+  recovery paths, cooldowns, Shop/equipment, crafting and completion/finale.
+  The audit found no dead user button or duplicate entry point to remove.
 
 ## Batch 3 — historical evidence and remaining presentation
 

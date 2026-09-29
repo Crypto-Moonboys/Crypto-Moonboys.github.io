@@ -2348,13 +2348,15 @@ function applyPetItemActionBonuses(pet, action, rule, rewards) {
 
 async function getPetSpecialActionLimitState(db, telegramId, action, policy, dayKey, now = new Date()) {
   if (!policy) return null;
+  // Daily limits and cooldowns are mutation authority. If D1 cannot read them,
+  // do not grant another special-care use as though the history were empty.
   const row = await db.prepare(`SELECT
       SUM(CASE WHEN day_key = ? THEN 1 ELSE 0 END) AS used_today,
       MAX(created_at) AS last_created_at
     FROM telegram_pet_events
     WHERE telegram_id = ? AND event_type = ? AND status IN ('pending','accepted')`)
     .bind(dayKey, telegramId, action)
-    .first().catch(() => null);
+    .first();
   const usedToday = Math.max(0, Number(row?.used_today || 0));
   if (usedToday >= policy.daily_limit) {
     const cooldown = normalizePetCooldownWindow(getNextPetUtcDayResetAt(now), now);
@@ -2930,7 +2932,7 @@ async function getPetRunTerminalRewardClaim(db, telegramId, runId, completed = t
     FROM telegram_pet_reward_claims
     WHERE telegram_id = ? AND source = 'pet_run_legacy' AND idempotency_key = ? AND status = 'awarded'
     LIMIT 1
-  `).bind(telegramId, eventKey).first().catch(() => null);
+  `).bind(telegramId, eventKey).first();
 }
 
 async function retryUnsettledTerminalRunStep(db, telegramId, run, step, choice, options = {}) {
@@ -3033,7 +3035,7 @@ async function processPetRunStepResult(db, telegramId, runIdRaw, choiceKeyRaw, o
     : Math.max(1, Math.floor(Number.isFinite(suppliedExpectedStepIndex) ? suppliedExpectedStepIndex : 0));
   const explicitEventKey = options.event_key ? String(options.event_key).slice(0, 120) : null;
   if (explicitEventKey) {
-    const duplicate = await db.prepare(`SELECT * FROM telegram_pet_run_steps WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, explicitEventKey).first().catch(() => null);
+    const duplicate = await db.prepare(`SELECT * FROM telegram_pet_run_steps WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, explicitEventKey).first();
     if (duplicate) {
       const choice = getPetRunChoice(run, duplicate.choice_key || choiceKeyRaw);
       const recovered = await retryUnsettledTerminalRunStep(db, telegramId, run, duplicate, choice, options);
@@ -3046,7 +3048,7 @@ async function processPetRunStepResult(db, telegramId, runIdRaw, choiceKeyRaw, o
   if (!choice) return { accepted: false, reason: 'invalid_run_choice', run, xp_awarded: 0, pet_xp_awarded: 0 };
   const eventKey = explicitEventKey || String(buildPetRunStepEventKey(telegramId, run.run_id, expectedStepIndex || stepIndex, choice.key)).slice(0, 120);
   if (!explicitEventKey) {
-    const duplicate = await db.prepare(`SELECT * FROM telegram_pet_run_steps WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);
+    const duplicate = await db.prepare(`SELECT * FROM telegram_pet_run_steps WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first();
     if (duplicate) {
       const recovered = await retryUnsettledTerminalRunStep(db, telegramId, run, duplicate, choice, options);
       if (recovered) return recovered;
@@ -3056,7 +3058,7 @@ async function processPetRunStepResult(db, telegramId, runIdRaw, choiceKeyRaw, o
   if (expectedStepIndex !== null && expectedStepIndex !== stepIndex) {
     return { accepted: false, reason: 'stale_run_step', run, choice, expected_step_index: expectedStepIndex, current_step_index: stepIndex, xp_awarded: 0, pet_xp_awarded: 0 };
   }
-  const existingStep = await db.prepare(`SELECT * FROM telegram_pet_run_steps WHERE run_id = ? AND step_index = ?`).bind(run.run_id, stepIndex).first().catch(() => null);
+  const existingStep = await db.prepare(`SELECT * FROM telegram_pet_run_steps WHERE run_id = ? AND step_index = ?`).bind(run.run_id, stepIndex).first();
   if (existingStep) {
     const recovered = await retryUnsettledTerminalRunStep(db, telegramId, run, existingStep, choice, options);
     if (recovered) return recovered;
@@ -3645,7 +3647,7 @@ async function processPetRandomEvent(db, telegramId, choiceRaw, options = {}) {
   const duplicate = await db.prepare(`
     SELECT id, pet_id, status, reason, day_key, week_key, season_key
     FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?
-  `).bind(telegramId, eventKey).first().catch(() => null);
+  `).bind(telegramId, eventKey).first();
   if (duplicate && duplicate.status !== 'pending') {
     if (String(duplicate.status) === 'cancelled' && String(duplicate.reason) === 'legacy_repeat_reward_missing_pet_authority') {
       return { accepted: false, duplicate: true, reason: 'legacy_repeat_reward_missing_pet_authority', xp_awarded: 0, pet_xp_awarded: 0 };
@@ -3930,12 +3932,14 @@ async function readPetAccountWallet(db, telegramId) {
 }
 
 async function readAcceptedPetEventByKey(db, telegramId, eventKey) {
+  // This lookup is the shared idempotency authority for care, work, shopping,
+  // item use and reward recovery. An outage must stop the mutation path.
   return db.prepare(`
     SELECT id, pet_id, telegram_id, event_type, event_key, status, reason, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, metadata
     FROM telegram_pet_events
     WHERE telegram_id = ? AND event_key = ? AND status = 'accepted'
     LIMIT 1
-  `).bind(telegramId, eventKey).first().catch(() => null);
+  `).bind(telegramId, eventKey).first();
 }
 
 async function readAcceptedDailyChestPetEventForDay(db, telegramId, dayKey) {
@@ -3952,7 +3956,7 @@ async function readAcceptedDailyChestPetEventForDay(db, telegramId, dayKey) {
       AND status = 'accepted'
     ORDER BY created_at ASC, id ASC
     LIMIT 1
-  `).bind(owner, day).first().catch(() => null);
+  `).bind(owner, day).first();
 }
 
 const WEEKLY_JOURNEY_SOURCE_OBJECTIVES = Object.freeze({
@@ -4044,11 +4048,11 @@ async function readAcceptedWeeklyBossPetEvent(db, telegramId, weekKey, dayKey, b
   const sameDayEvent = day ? await db.prepare(`${baseSql}
       AND day_key = ?
     ORDER BY created_at ASC, id ASC
-    LIMIT 1`).bind(owner, week, bossPattern, day).first().catch(() => null) : null;
+    LIMIT 1`).bind(owner, week, bossPattern, day).first() : null;
   if (sameDayEvent) return sameDayEvent;
   return db.prepare(`${baseSql}
     ORDER BY day_key ASC, created_at ASC, id ASC
-    LIMIT 1`).bind(owner, week, bossPattern).first().catch(() => null);
+    LIMIT 1`).bind(owner, week, bossPattern).first();
 }
 
 async function readWeeklyBossVictoryPetAttribution(db, telegramId, weekKey, bossId) {
@@ -4060,7 +4064,7 @@ async function readWeeklyBossVictoryPetAttribution(db, telegramId, weekKey, boss
     FROM telegram_pet_weekly_boss_victories_by_pet
     WHERE telegram_id = ? AND week_key = ? AND boss_id = ?
     ORDER BY defeated_at ASC
-    LIMIT 1`).bind(owner, week, boss).first().catch(() => null);
+    LIMIT 1`).bind(owner, week, boss).first();
 }
 
 async function ensureAcceptedWeeklyBossPetEvent(db, telegramId, weekKey, dayKey, boss, attemptRow, season) {
@@ -4110,10 +4114,10 @@ async function readWeeklyBossAttemptRow(db, telegramId, weekKey, dayKey, bossId)
     FROM telegram_pet_weekly_boss_events
     WHERE telegram_id = ? AND week_key = ? AND boss_id = ?`;
   const sameDay = day ? await db.prepare(`${baseSql} AND day_key = ? ORDER BY created_at ASC LIMIT 1`)
-    .bind(owner, week, boss, day).first().catch(() => null) : null;
+    .bind(owner, week, boss, day).first() : null;
   if (sameDay) return sameDay;
   return db.prepare(`${baseSql} ORDER BY day_key ASC, created_at ASC LIMIT 1`)
-    .bind(owner, week, boss).first().catch(() => null);
+    .bind(owner, week, boss).first();
 }
 
 async function recordWeeklyJourneyFromAcceptedWeeklyBossEvent(db, telegramId, weekKey, dayKey, boss, attemptRow, victoriousPet, season) {
@@ -6044,12 +6048,12 @@ async function getPersistedPetActivityAward(db, telegramId, eventKey, legacyAuth
       AND claim.idempotency_key = ?
       AND claim.status = 'awarded'
     LIMIT 1
-  `).bind(eventKey, eventKey, String(telegramId), eventKey).first().catch(() => null);
+  `).bind(eventKey, eventKey, String(telegramId), eventKey).first();
   const rewards = parsePersistedPetReward(persisted?.applied_rewards);
   if (!persisted || !rewards) return null;
   const authority = activePetRewardAuthority(persisted) || legacyAuthority;
   const pet = authority && await db.prepare(`SELECT * FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ? AND season_key = ?`)
-    .bind(authority.pet_id, String(telegramId), authority.season_key).first().catch(() => null);
+    .bind(authority.pet_id, String(telegramId), authority.season_key).first();
   if (!pet) return null;
   Object.assign(pet, await readPetAccountWallet(db, telegramId) || {});
   return {
@@ -6199,7 +6203,7 @@ async function claimPetActivitySession(db, telegramId, options = {}) {
     ).run();
     if (Number(claimResult?.meta?.changes || 0) !== 1) {
       const closedSession = await db.prepare(`SELECT * FROM telegram_pet_activity_sessions WHERE id = ? AND telegram_id = ? LIMIT 1`)
-        .bind(session.id, telegramId).first().catch(() => session);
+        .bind(session.id, telegramId).first();
       recovery = getRecoverablePetActivityClaim(closedSession);
       if (!recovery) {
         return { accepted: false, reason: 'activity_already_closed', session: closedSession || session, computed };
@@ -6417,7 +6421,7 @@ async function processPetAction(db, telegramId, action, options = {}) {
     SELECT created_at FROM telegram_pet_events
     WHERE telegram_id = ? AND event_type = ? AND status = 'accepted'
     ORDER BY created_at DESC LIMIT 1
-  `).bind(telegramId, normalizedAction).first().catch(() => null);
+  `).bind(telegramId, normalizedAction).first();
   if (lastAction?.created_at && !specialPolicy) {
     const elapsedSeconds = (now.getTime() - (parseSqliteTs(lastAction.created_at) ?? now.getTime())) / 1000;
     const cooldownSeconds = specialPolicy?.cooldown_seconds || PETS_ACTION_COOLDOWN_SECONDS;
@@ -6768,7 +6772,7 @@ async function processPetGoldTrade(db, telegramId, wagerRaw, options = {}) {
     SELECT created_at FROM telegram_pet_events
     WHERE telegram_id = ? AND event_type = 'trade' AND status = 'accepted'
     ORDER BY created_at DESC LIMIT 1
-  `).bind(telegramId).first().catch(() => null);
+  `).bind(telegramId).first();
   if (lastTrade?.created_at) {
     const elapsedSeconds = (now.getTime() - (parseSqliteTs(lastTrade.created_at) ?? now.getTime())) / 1000;
     if (elapsedSeconds < PET_TRADE_COOLDOWN_SECONDS) {
@@ -6890,7 +6894,7 @@ async function processPetAdventure(db, telegramId, adventureKeyRaw, options = {}
     : null;
   if (!choice) return { accepted: false, reason: 'invalid_adventure_choice', encounter, xp_awarded: 0, pet_xp_awarded: 0 };
   const eventKey = String(options.event_key || `pet:adventure:${telegramId}:${encounter.key}:${choice.key}:${Date.now()}`).slice(0, 120);
-  const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().catch(() => null);
+  const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first();
   if (duplicate) return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0, encounter, choice };
   const pet = await getPetProfile(db, telegramId);
   if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0, encounter, choice };
@@ -9009,7 +9013,7 @@ function buildPetCooldownFromStart(startedAtRaw, cooldownSeconds, now = new Date
 async function getPetAcceptedActionCooldown(db, telegramId, eventType, seconds, now = new Date()) {
   const last = await db.prepare(`SELECT created_at FROM telegram_pet_events
     WHERE telegram_id = ? AND event_type = ? AND status = 'accepted'
-    ORDER BY created_at DESC LIMIT 1`).bind(telegramId, eventType).first().catch(() => null);
+    ORDER BY created_at DESC LIMIT 1`).bind(telegramId, eventType).first();
   const cooldown = last ? buildPetCooldownFromStart(last.created_at, seconds, now) : null;
   return cooldown?.remaining_seconds > 0 ? cooldown : null;
 }
@@ -16395,12 +16399,12 @@ async function processPetWeeklyBoss(db, telegramId, actionRaw, eventKeyRaw = '',
     getPetProfileWithAtomicDecay(db, telegramId, now),
     db.prepare(`SELECT event_id, telegram_id, week_key, day_key, boss_id, event_key, action, damage
       FROM telegram_pet_weekly_boss_events WHERE telegram_id = ? AND week_key = ? AND day_key = ?`)
-      .bind(telegramId, weekKey, dayKey).first().catch(() => null),
+      .bind(telegramId, weekKey, dayKey).first(),
     findActivePetSlot(db, telegramId),
   ]);
   if (!pet) return { accepted: false, reason: 'pet_not_adopted', boss, week_key: weekKey };
   const progressBefore = await db.prepare(`SELECT * FROM telegram_pet_weekly_boss_progress WHERE telegram_id = ? AND week_key = ?`)
-    .bind(telegramId, weekKey).first().catch(() => null);
+    .bind(telegramId, weekKey).first();
   if (!action) return { accepted: true, preview: true, boss, progress: progressBefore, week_key: weekKey, energy_cost: 12, pet };
   const bossPetAuthority = victoriousPet?.pet_id && victoriousPet?.season_key && victoriousPet.pet_id === pet.pet_id
     ? { pet_id: String(victoriousPet.pet_id), season_key: String(victoriousPet.season_key) }
