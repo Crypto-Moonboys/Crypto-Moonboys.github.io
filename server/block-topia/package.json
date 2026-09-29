@@ -6,15 +6,20 @@
   "description": "Colyseus multiplayer server scaffold for Block Topia",
   "scripts": {
     "dev": "node --watch src/index.js",
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "test": "node --test test/*.test.mjs"
   },
   "dependencies": {
-    "@colyseus/core": "^0.16.4",
-    "@colyseus/monitor": "^0.16.0",
-    "@colyseus/schema": "^3.0.32",
-    "colyseus": "^0.16.5",
-    "cors": "^2.8.5",
+    "@colyseus/core": "^0.17.51",
+    "@colyseus/monitor": "^0.17.8",
+    "@colyseus/schema": "^4.0.8",
+    "@colyseus/sdk": "0.17.43",
+    "@colyseus/ws-transport": "^0.17.13",
+    "cors": "^2.8.6",
     "dotenv": "^16.4.5",
-    "express": "^4.19.2"
+    "express": "^4.22.3"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

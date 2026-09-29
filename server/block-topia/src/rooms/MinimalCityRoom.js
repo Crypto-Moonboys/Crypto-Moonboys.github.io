@@ -1,4 +1,4 @@
-import { Room } from 'colyseus';
+import { Room, CloseCode } from '@colyseus/core';
 import { Schema, ArraySchema, defineTypes } from '@colyseus/schema';
 import { BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP } from '../../../../shared/block-topia/constants.js';
 
@@ -455,7 +455,8 @@ export class MinimalCityRoom extends Room {
     });
   }
 
-  async onLeave(client, consented) {
+  async onLeave(client, code) {
+    const consented = code === CloseCode.CONSENTED;
     const player = this.playersBySession.get(client.sessionId);
     const identityKey = this._identityKeyBySession.get(client.sessionId);
 

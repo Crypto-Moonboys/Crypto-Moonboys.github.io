@@ -78,8 +78,8 @@ for (const id of BANNED_IDENTIFIERS) {
 // 3. index.html wires Colyseus + connectMultiplayer
 // ---------------------------------------------------------------------------
 assert.ok(
-  indexHtml.includes('colyseus'),
-  'index.html must load the Colyseus client library.',
+  networkSource.includes("import { loadColyseusClient } from './colyseus-client.mjs'"),
+  'network.js must load the SDK matching the live server protocol.',
 );
 assert.ok(
   indexHtml.includes('connectMultiplayer'),
