@@ -46,8 +46,8 @@
   },
   "devDependencies": {
     "playwright": "^1.59.1",
-    "sharp": "^0.35.2",
-    "wrangler": "^4.100.0"
+    "sharp": "^0.35.5",
+    "wrangler": "^4.143.1"
   },
   "dependencies": {
     "@pixellab-code/pixellab": "^1.0.2",
