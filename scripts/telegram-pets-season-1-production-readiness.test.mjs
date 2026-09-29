@@ -23,7 +23,12 @@ const {
 class Statement {
   constructor(adapter, sql, args = []) { this.adapter = adapter; this.sql = sql; this.args = args; }
   bind(...args) { return new Statement(this.adapter, this.sql, args); }
-  async first() { return this.adapter.database.prepare(this.sql).get(...this.args) || null; }
+  async first() {
+    if (this.adapter.blockSeasonCompletionAuthority && /FROM telegram_pet_season_completions/i.test(this.sql)) {
+      throw new Error('simulated_completion_authority_failure');
+    }
+    return this.adapter.database.prepare(this.sql).get(...this.args) || null;
+  }
   async all() { return { results: this.adapter.database.prepare(this.sql).all(...this.args) }; }
   async run() {
     return this.adapter.runStatement(this.sql, this.args);
@@ -34,6 +39,7 @@ class D1 {
   constructor() {
     this.database = new DatabaseSync(':memory:');
     this.blockLifecycleMaterializationForTelegramId = null;
+    this.blockSeasonCompletionAuthority = false;
     this.database.exec(schema);
     this.database.exec(fs.readFileSync(new URL('../workers/moonboys-api/migrations/048_telegram_pet_player_expansion.sql', import.meta.url), 'utf8'));
     // These combat-gate fixtures deliberately allow isolated completion markers.
@@ -253,6 +259,13 @@ assert.equal(completedAdultEligibility.combat_unlocked, true, 'completed Season 
 assert.equal(buildPetMiniAppCapabilities(completedAdultEligibility).systems.arena.state, 'AVAILABLE');
 assert.notEqual((await act(db, '100005', 'arena_matchmake')).reason, 'completed_season_pet_required',
   'completed hatched users are not blocked by any completed-season combat gate');
+db.blockSeasonCompletionAuthority = true;
+const completionAuthorityFailure = await getPetMiniAppCombatEligibility(db, '100005');
+assert.equal(completionAuthorityFailure.reason, 'combat_authority_unavailable',
+  'failed completion-authority reads must not become an incomplete pet');
+assert.equal((await act(db, '100005', 'arena_matchmake')).reason, 'combat_authority_unavailable',
+  'Arena rejects direct actions when completion authority is unavailable');
+db.blockSeasonCompletionAuthority = false;
 
 seedUser(db, '100006', 'Missing Lifecycle');
 markSeasonComplete(db, '100006');
@@ -263,17 +276,14 @@ db.database.prepare('DELETE FROM telegram_pet_lifecycle_by_pet WHERE pet_id=? AN
 db.blockLifecycleMaterializationForTelegramId = '100006';
 const missingLifecycleEligibility = await getPetMiniAppCombatEligibility(db, '100006');
 assert.equal(missingLifecycleEligibility.has_completed_season_pet, true, 'missing-lifecycle player keeps completed-season authority');
-assert.equal(missingLifecycleEligibility.active_pet_exists, true, 'missing-lifecycle player still has an active pet profile');
-assert.equal(missingLifecycleEligibility.active_pet_lifecycle_known, false, 'missing lifecycle data must be explicit');
-assert.equal(missingLifecycleEligibility.active_pet_combat_eligible, false, 'missing lifecycle data cannot be combat eligible');
-assert.equal(missingLifecycleEligibility.combat_unlocked, false, 'missing lifecycle data fails closed');
-assert.equal(missingLifecycleEligibility.reason, 'moonpet_lifecycle_required');
+assert.equal(missingLifecycleEligibility.combat_authority_available, false, 'failed lifecycle reads must be unavailable, not a normal combat lock');
+assert.equal(missingLifecycleEligibility.reason, 'combat_authority_unavailable');
 const missingLifecycleCountsBefore = countCombatRows(db, '100006');
 const missingLifecycleAction = await act(db, '100006', 'arena_matchmake');
 assert.equal(missingLifecycleAction.accepted, false, 'missing lifecycle combat action must reject');
-assert.equal(missingLifecycleAction.reason, 'moonpet_lifecycle_required');
+assert.equal(missingLifecycleAction.reason, 'combat_authority_unavailable');
 assert.equal(missingLifecycleAction.capabilities_version, 1);
-assert.equal(missingLifecycleAction.capabilities?.combat?.state, 'LOCKED');
+assert.equal(missingLifecycleAction.capabilities?.combat?.state, 'UNAVAILABLE');
 assert.equal(missingLifecycleAction.capabilities?.combat?.unlocked, false);
 assert.equal(
   missingLifecycleAction.capabilities?.combat?.requirements?.active_pet_lifecycle_known,

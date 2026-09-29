@@ -3,6 +3,8 @@ import { getStyleLoadout, equipPetStyle } from './pets/style-loadout.js';
 import { RELIC_ROUTE_DETAILS } from './pets/relic-passives.js';
 import { requirePetReadResult } from './pets/read-result.js';
 import { readCommunityLeaderboard } from './community-leaderboard.js';
+import { selectCommunitySeason, communitySeasonSql } from './community-season-authority.js';
+import { getCombatEligibility, PET_ARENA_MIN_LEVEL as COMBAT_ARENA_MIN_LEVEL, PET_WEEKLY_BOSS_MIN_LEVEL } from './pets/combat-eligibility.js';
 import { readDailyCompletion, claimDailyCompletion, getSeasonFinales, processSeasonFinale } from './pets/completion-features.js';
 import { PET_STATE_RECOVERY_LIMITS, boundedRecoveryLimit, claimPetRecoveryBatch } from './pets/recovery-limits.js';
 import { BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP, GEMS_MAX, GEMS_MIN, TELEGRAM_AUTH_MAX_AGE, XP_MAX, XP_MIN } from './blocktopia/config.js';
@@ -209,7 +211,7 @@ const PET_NOTIFICATION_COOLDOWN_MINUTES = 180;
 const PET_NOTIFICATION_BATCH_LIMIT = 35;
 const PET_KAIJU_MATCH_TTL_MINUTES = 20;
 const PET_KAIJU_QUEUE_LIMIT = 12;
-const PET_ARENA_MIN_LEVEL = 10;
+const PET_ARENA_MIN_LEVEL = COMBAT_ARENA_MIN_LEVEL;
 const PET_ARENA_ANY_RANK_TIMEOUT_MINUTES = 3;
 const PET_ARENA_QUEUE_TTL_MINUTES = 20;
 const PET_ARENA_BATTLE_TTL_MINUTES = 15;
@@ -910,6 +912,7 @@ async function awardCommunityXp(db, telegramId, xpChange, action, referenceId = 
     if (xpChange < 0) console.log('awardCommunityXp: negative xpChange ignored', JSON.stringify({ telegramId, xpChange, action }));
     return;
   }
+  const season = await selectCommunitySeason(db);
   await db.prepare(`
     INSERT INTO telegram_xp_log (telegram_id, action, xp_change, reference_id)
     VALUES (?, ?, ?, ?)
@@ -923,7 +926,6 @@ async function awardCommunityXp(db, telegramId, xpChange, action, referenceId = 
     WHERE telegram_id = ?
   `).bind(xpChange, xpChange, telegramId).run();
 
-  const season = await getCurrentSeason(db).catch(() => null);
   if (season?.id) {
     await db.prepare(`
       INSERT INTO telegram_leaderboard (telegram_id, season_id, xp)
@@ -5471,9 +5473,8 @@ async function awardPetKaijuPlayerResult(db, telegramId, match, outcome, rewards
       FROM telegram_pet_events AS event
       JOIN telegram_seasons AS season ON season.id = (
         SELECT id FROM telegram_seasons
-        WHERE date(?) >= date(start_date)
-          AND (end_date IS NULL OR date(?) <= date(end_date))
-        ORDER BY start_date DESC LIMIT 1
+        WHERE ${communitySeasonSql('season')}
+        ORDER BY start_date DESC, id DESC LIMIT 1
       )
       WHERE event.id = ? AND event.status = 'accepted' AND event.metadata = ? AND event.xp_awarded > 0
       ON CONFLICT(telegram_id, season_id) DO UPDATE SET
@@ -5685,10 +5686,23 @@ function parsePetArenaCallbackPayload(payload) {
 async function ensurePetArenaEligible(db, telegramId) {
   const pet = await getPetProfile(db, telegramId);
   if (!pet) return { ok:false, reason:'pet_not_adopted' };
+  let lifecycle;
+  try {
+    lifecycle = await getMoonpetLifecycle(db, telegramId);
+  } catch (error) {
+    return { ok:false, reason:'combat_authority_unavailable', error: error?.message || String(error) };
+  }
+  if (!lifecycle || lifecycle.phase === 'egg') return { ok:false, reason: lifecycle ? 'moon_egg_must_hatch' : 'moonpet_lifecycle_required' };
   const identity = await getMoonpetIdentitySummary(db, telegramId).catch(() => null);
   const serialized = serializePet(pet, identity, { include_art_identity: true });
   const safePet = { ...pet, name: serialized.name, pet_name: serialized.pet_name, display_name: serialized.display_name, identity_revealed: serialized.evolution_stage >= MOONPET_IDENTITY_REVEAL_STAGE, evolution_stage: serialized.evolution_stage };
-  if (getPetLevel(pet.pet_xp) < PET_ARENA_MIN_LEVEL) return { ok:false, reason:'level_locked', pet: safePet };
+  const combat = getCombatEligibility({
+    activePetExists: true,
+    lifecycleKnown: true,
+    hatched: true,
+    level: getPetLevel(pet.pet_xp),
+  });
+  if (!combat.arena_unlocked) return { ok:false, reason: combat.arena_reason, pet: safePet };
   if (clampPetStat(pet.health) < 15) return { ok:false, reason:'health_low', pet: safePet };
   return { ok:true, pet: safePet };
 }
@@ -6046,7 +6060,7 @@ async function cmdPetArena(db, tok, chatId, telegramId, argStr = '', chatType = 
   if (arg.startsWith('mv:')) { const [, battleId, roundText, move] = arg.match(/^mv:(a-[a-f0-9]{10}):(\d{1,2}):(ah|ab|bh|bb|ch|sp)$/) || []; const battle = await getPetArenaBattle(db, battleId); if (!battle || String(battle.chat_id) !== String(chatId) || Number(battle.current_round || 1) < 1 || !['active','completed'].includes(String(battle.status))) { await sendTelegramMessage(tok, chatId, 'Stale Pet Arena move. Choose from the latest round prompt.'); return; } const applied = await applyPetArenaMove(db, battle, telegramId, Number(roundText), move); if (applied.reason === 'stale_arena_round') { await sendTelegramMessage(tok, chatId, 'Stale Pet Arena move. Choose from the latest round prompt.'); return; } if (applied.reason === 'waiting_for_opponent') { await sendTelegramMessage(tok, chatId, 'Move locked. Waiting for opponent.'); return; } if (applied.reason === 'move_already_locked') { await sendTelegramMessage(tok, chatId, 'Move already locked for this round. Waiting for the next round.'); return; } const latestBattle = applied.battle || battle; const prompt = formatPetArenaRoundPrompt(latestBattle); const copy = latestBattle.status === 'completed' ? await appendMoonpetReaction(db, telegramId, 'arena', prompt, null, { activity_label: 'the arena result' }) : prompt; await sendTelegramMessage(tok, chatId, copy, { reply_markup: (latestBattle.status === 'active') ? buildPetArenaMoveReplyMarkup(battleId, latestBattle.current_round) : undefined }); return; }
   if (arg.startsWith('stop:')) { const battleId = arg.slice(5); await db.prepare(`UPDATE telegram_pet_arena_battles SET status='cancelled', completed_at=CURRENT_TIMESTAMP WHERE battle_id=? AND chat_id=? AND status IN ('readying','active') AND (player1_telegram_id=? OR player2_telegram_id=?)`).bind(battleId, String(chatId), telegramId, telegramId).run(); await sendTelegramMessage(tok, chatId, 'Pet Arena battle cancelled.'); return; }
   if (arg === 'cancel') { await db.prepare(`UPDATE telegram_pet_arena_queue SET status='cancelled', updated_at=CURRENT_TIMESTAMP WHERE chat_id=? AND telegram_id=? AND status='waiting'`).bind(String(chatId), telegramId).run(); await sendTelegramMessage(tok, chatId, 'Pet Arena queue cancelled.'); return; }
-  const eligible = await ensurePetArenaEligible(db, telegramId); if (!eligible.ok) { await sendTelegramMessage(tok, chatId, eligible.reason === 'level_locked' ? 'Pet Arena unlocks at level 10. Keep growing your Moonpet.' : 'Adopt or heal your Moonpet before entering Pet Arena.'); return; }
+  const eligible = await ensurePetArenaEligible(db, telegramId); if (!eligible.ok) { await sendTelegramMessage(tok, chatId, eligible.reason === 'arena_level_locked' ? 'Pet Arena unlocks at level 10. Keep growing your Moonpet.' : 'Adopt or heal your Moonpet before entering Pet Arena.'); return; }
   const pet = eligible.pet;
   if (!arg) { await sendTelegramMessage(tok, chatId, `<b>⚔️ Pet Arena</b>\nBattle Moonpet vs Moonpet. Gear, morale, condition, level and controlled RNG all matter.`, { reply_markup: buildPetArenaMenuReplyMarkup() }); return; }
   if (arg.startsWith('ready:')) { const battleId = arg.slice(6); const battle = await getPetArenaBattle(db, battleId); if (!battle || String(battle.chat_id) !== String(chatId) || !['readying','active'].includes(String(battle.status))) { await sendTelegramMessage(tok, chatId, 'That Pet Arena battle expired. Run /petarena for a fresh match.'); return; } const ready = await readyPetArenaBattle(db, battle, telegramId); if (ready.reason === 'waiting_for_opponent') { await sendTelegramMessage(tok, chatId, 'Ready locked. Waiting for the other Moonpet trainer.'); return; } if (!ready.accepted) { await sendTelegramMessage(tok, chatId, 'Only the two matched players can ready this Pet Arena battle.'); return; } await sendTelegramMessage(tok, chatId, formatPetArenaRoundPrompt(ready.battle || battle), { reply_markup: buildPetArenaMoveReplyMarkup(battleId, ready.battle?.current_round) }); return; }
@@ -9431,11 +9445,13 @@ function buildPetMiniAppCapabilities(combatEligibility = {}, weeklyJourneySummar
     capabilities_version: 1,
     systems,
     combat: {
-      state: combatEligibility.combat_unlocked === true
+      state: combatEligibility.combat_authority_available === false
+        ? 'UNAVAILABLE'
+        : combatEligibility.combat_unlocked === true
         ? PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE
         : PET_MINI_APP_FUTURE_SYSTEM_STATUS.LOCKED,
-      unlocked: combatEligibility.combat_unlocked === true,
-      active: combatEligibility.combat_unlocked === true,
+      unlocked: combatEligibility.combat_authority_available !== false && combatEligibility.combat_unlocked === true,
+      active: combatEligibility.combat_authority_available !== false && combatEligibility.combat_unlocked === true,
       reason: combatEligibility.reason || 'current_combat_requirements_unmet',
       requirements: {
         completed_season_pet: combatEligibility.has_completed_season_pet === true,
@@ -9444,6 +9460,7 @@ function buildPetMiniAppCapabilities(combatEligibility = {}, weeklyJourneySummar
         active_pet_hatched: combatEligibility.active_pet_combat_eligible === true,
         active_pet_level: miniAppProgressInteger(combatEligibility.active_pet_level, 0),
         arena_level_met: combatEligibility.arena_level_met === true,
+        weekly_boss_level_met: combatEligibility.weekly_boss_level_met === true,
       },
     },
     breeding: systemByKey.breeding,
@@ -9453,6 +9470,13 @@ function buildPetMiniAppCapabilities(combatEligibility = {}, weeklyJourneySummar
     fusion: systemByKey.fusion,
     arena: systemByKey.arena,
     kaiju: systemByKey.kaiju,
+    weekly_boss: {
+      state: combatEligibility.weekly_boss_unlocked === true ? PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE : PET_MINI_APP_FUTURE_SYSTEM_STATUS.LOCKED,
+      unlocked: combatEligibility.weekly_boss_unlocked === true,
+      active: combatEligibility.weekly_boss_unlocked === true,
+      reason: combatEligibility.weekly_boss_reason || combatEligibility.reason || 'current_combat_requirements_unmet',
+      message: combatEligibility.weekly_boss_unlocked === true ? 'Available from Level 5.' : (combatEligibility.weekly_boss_reason === 'boss_level_locked' ? 'Requires a hatched active Moonpet at Level 5.' : 'Requires a hatched active Moonpet.'),
+    },
     prestige: systemByKey.prestige,
     weekly_journey: weeklyJourneyCapability,
     future_systems: futureSystems,
@@ -9875,7 +9899,7 @@ function petMiniAppEventKey(telegramId, action, requestId) {
 
 const PET_MINI_APP_FUTURE_COMBAT_ACTIONS = new Set([
   'arena_start', 'arena_matchmake', 'arena_ready', 'arena_move',
-  'kaiju_start', 'kaiju_matchmake', 'kaiju_card',
+  'kaiju_start', 'kaiju_matchmake', 'kaiju_card', 'weekly_boss',
 ]);
 const PET_MINI_APP_COMBAT_CLEANUP_ACTIONS = new Set([
   'arena_queue_cancel', 'arena_forfeit', 'kaiju_queue_cancel', 'kaiju_match_cancel',
@@ -9886,22 +9910,49 @@ async function hasCompletedPetMiniAppSeasonPet(db, telegramId) {
     FROM telegram_pet_season_completions
     WHERE telegram_id=?
     LIMIT 1`)
-    .bind(String(telegramId)).first().catch(() => null);
+    .bind(String(telegramId)).first();
   return Boolean(row?.completed);
 }
 
 async function getPetMiniAppCombatEligibility(db, telegramId, lifecycle = null) {
-  const hasCompletedSeasonPet = await hasCompletedPetMiniAppSeasonPet(db, telegramId);
-  const activePet = await db.prepare('SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id=? LIMIT 1')
-    .bind(String(telegramId)).first().catch(() => null);
-  const activeLifecycle = lifecycle || await getMoonpetLifecycle(db, telegramId).catch(() => null);
+  let activePet;
+  let activeLifecycle;
+  let hasCompletedSeasonPet;
+  try {
+    hasCompletedSeasonPet = await hasCompletedPetMiniAppSeasonPet(db, telegramId);
+    activePet = await db.prepare('SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id=? LIMIT 1')
+      .bind(String(telegramId)).first();
+    activeLifecycle = lifecycle || await getMoonpetLifecycle(db, telegramId);
+  } catch (error) {
+    return {
+      has_completed_season_pet: hasCompletedSeasonPet,
+      combat_authority_available: false,
+      active_pet_exists: false,
+      active_pet_lifecycle_known: false,
+      active_pet_combat_eligible: false,
+      active_pet_level: 0,
+      arena_level_met: false,
+      weekly_boss_level_met: false,
+      combat_unlocked: false,
+      arena_unlocked: false,
+      kaiju_unlocked: false,
+      weekly_boss_unlocked: false,
+      reason: 'combat_authority_unavailable',
+      arena_reason: 'combat_authority_unavailable',
+      kaiju_reason: 'combat_authority_unavailable',
+      weekly_boss_reason: 'combat_authority_unavailable',
+      error: error?.message || String(error),
+    };
+  }
   const activePetExists = Boolean(activePet);
   const activePetLevel = activePetExists ? getPetLevel(activePet.pet_xp) : 0;
   const activePetCombatEligible = Boolean(activePetExists && activeLifecycle && activeLifecycle.phase !== 'egg');
-  const arenaLevelMet = activePetLevel >= PET_ARENA_MIN_LEVEL;
-  const currentCombatUnlocked = Boolean(activePetCombatEligible);
-  const arenaUnlocked = Boolean(currentCombatUnlocked && arenaLevelMet);
-  const kaijuUnlocked = Boolean(currentCombatUnlocked);
+  const eligibility = getCombatEligibility({
+    activePetExists,
+    lifecycleKnown: Boolean(activeLifecycle),
+    hatched: activePetCombatEligible,
+    level: activePetLevel,
+  });
   const baseReason = !activePetExists ? 'pet_not_adopted'
     : !activeLifecycle ? 'moonpet_lifecycle_required'
       : !activePetCombatEligible ? 'moon_egg_must_hatch' : 'combat_unlocked';
@@ -9909,15 +9960,8 @@ async function getPetMiniAppCombatEligibility(db, telegramId, lifecycle = null) 
     has_completed_season_pet: hasCompletedSeasonPet,
     active_pet_exists: activePetExists,
     active_pet_lifecycle_known: Boolean(activeLifecycle),
-    active_pet_combat_eligible: activePetCombatEligible,
-    active_pet_level: activePetLevel,
-    arena_level_met: arenaLevelMet,
-    combat_unlocked: currentCombatUnlocked,
-    arena_unlocked: arenaUnlocked,
-    kaiju_unlocked: kaijuUnlocked,
-    reason: baseReason,
-    arena_reason: arenaUnlocked ? 'combat_unlocked' : (baseReason === 'combat_unlocked' ? 'arena_level_locked' : baseReason),
-    kaiju_reason: kaijuUnlocked ? 'combat_unlocked' : baseReason,
+    ...eligibility,
+    arena_level_met: eligibility.arena_level_met,
   };
 }
 
@@ -9949,13 +9993,17 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
       ? combatEligibility.arena_unlocked === true
       : action.startsWith('kaiju_')
         ? combatEligibility.kaiju_unlocked === true
+        : action === 'weekly_boss'
+          ? combatEligibility.weekly_boss_unlocked === true
         : combatEligibility.combat_unlocked === true;
     if (!actionUnlocked) {
       const reason = action.startsWith('arena_')
         ? (combatEligibility.arena_reason || combatEligibility.reason)
         : action.startsWith('kaiju_')
           ? (combatEligibility.kaiju_reason || combatEligibility.reason)
-          : combatEligibility.reason;
+            : action === 'weekly_boss'
+              ? (combatEligibility.weekly_boss_reason || combatEligibility.reason)
+            : combatEligibility.reason;
       return {
         accepted: false,
         reason,
@@ -10751,7 +10799,7 @@ export default {
           telegramId: verified.telegramId,
           message: error?.message || String(error),
         });
-        return err('mini_app_state_failed', 500);
+        return err('mini_app_state_failed', 503);
       }
     }
 
@@ -10821,7 +10869,7 @@ export default {
         await mirrorPetProfileToActiveInstance(env.DB, verified.telegramId);
       } catch (error) {
         logApiFailure('mini_app_action_failed', { telegramId: verified.telegramId, action: String(body.action || ''), message: error?.message || String(error) });
-        return err('mini_app_action_failed', 500);
+        return err('mini_app_action_failed', /D1|read|unavailable/i.test(String(error?.message || '')) ? 503 : 500);
       }
       const state = await buildPetMiniAppState(env.DB, verified.telegramId, env.TELEGRAM_BOT_TOKEN).catch((error) => {
         logApiFailure('pet_mini_app_action_state_failed', {
@@ -15788,6 +15836,7 @@ async function getPetEvolutionGuidance(db, telegramId, pet, identity) {
 function getPetGuidanceFeatures(level, combatEligibility = {}) {
   const arenaUnlocked = combatEligibility.arena_unlocked === true;
   const kaijuUnlocked = combatEligibility.kaiju_unlocked === true;
+  const weeklyBossUnlocked = combatEligibility.weekly_boss_unlocked === true;
   const combatLockDetail = combatEligibility.reason === 'combat_unlocked'
     ? ''
     : combatEligibility.reason === 'moon_egg_must_hatch'
@@ -15808,7 +15857,7 @@ function getPetGuidanceFeatures(level, combatEligibility = {}) {
     { key: 'moon_runs', title: 'Moon Runs', available: level >= 1, detail: 'Choose routes, risk unbanked rewards and extract before defeat.', callback_data: 'pet:run' },
     { key: 'street_events', title: 'Street Events', available: level >= 1, detail: 'Server-selected encounters change with your choices.', callback_data: 'pet:event' },
     { key: 'kaiju_cards', title: 'Kaiju Code Cards', available: level >= 1 && kaijuUnlocked, detail: kaijuUnlocked ? 'Battle a CRT rival or match with another player.' : kaijuLockDetail, callback_data: 'pet:kaiju' },
-    { key: 'weekly_boss', title: 'Weekly Boss', available: level >= 5, detail: 'One personal boss attack is available per UTC day.', callback_data: 'pet:boss' },
+    { key: 'weekly_boss', title: 'Weekly Boss', available: weeklyBossUnlocked, detail: weeklyBossUnlocked ? 'One personal boss attack is available per UTC day.' : (combatEligibility.weekly_boss_reason === 'boss_level_locked' ? `Requires Level ${PET_WEEKLY_BOSS_MIN_LEVEL}.` : combatLockDetail), callback_data: 'pet:boss' },
     { key: 'pet_arena', title: 'Pet Arena', available: level >= PET_ARENA_MIN_LEVEL && arenaUnlocked, detail: arenaUnlocked ? `Arena battles are available from Level ${PET_ARENA_MIN_LEVEL}.` : arenaLockDetail, callback_data: 'pet:arena' },
     { key: 'moon_economy', title: 'Moon Economy', available: level >= 1, detail: 'Daily bounties, Crystal Expeditions and rotating Moon Market offers are now available.', callback_data: 'pet:economy' },
     { key: 'equipment_upgrades', title: 'Equipment Upgrades', available: level >= 15, detail: 'Owned equipment can now be upgraded through ten levels.', callback_data: 'pet:gear' },
@@ -16024,14 +16073,7 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null) {
     getPetEvolutionGuidance(db, telegramId, pet, identity),
     getPetEconomyState(db, telegramId, pet, now),
   ]);
-  const combatEligibility = await getPetMiniAppCombatEligibility(db, telegramId, identity?.lifecycle).catch(() => ({
-    has_completed_season_pet: false,
-    active_pet_exists: true,
-    active_pet_lifecycle_known: false,
-    active_pet_combat_eligible: false,
-    combat_unlocked: false,
-    reason: 'moonpet_lifecycle_required',
-  }));
+  const combatEligibility = await getPetMiniAppCombatEligibility(db, telegramId, identity?.lifecycle);
   const level = getPetLevel(pet.pet_xp);
   const stage = Math.max(0, Number(identity?.current_stage?.stage) || 0);
   const boss = getPetWeeklyBoss(weekKey);
@@ -16489,7 +16531,8 @@ async function processPetWeeklyBoss(db, telegramId, actionRaw, eventKeyRaw = '',
   const identity = activeIdentity?.scope?.pet_id === bossPetAuthority.pet_id && activeIdentity?.scope?.season_key === bossPetAuthority.season_key
     ? activeIdentity : await getMoonpetIdentitySummary(db, telegramId, bossPetAuthority);
   if (!lifecycle || lifecycle.phase === 'egg') return { accepted: false, reason: 'moon_egg_must_hatch' };
-  if (getPetLevel(pet.pet_xp) < 5) return { accepted: false, reason: 'boss_level_locked', required_level: 5, boss, progress: progressBefore };
+  const combat = getCombatEligibility({ activePetExists: true, lifecycleKnown: true, hatched: true, level: getPetLevel(pet.pet_xp) });
+  if (!combat.weekly_boss_unlocked) return { accepted: false, reason: combat.weekly_boss_reason, required_level: PET_WEEKLY_BOSS_MIN_LEVEL, boss, progress: progressBefore };
   if (Number(pet.energy || 0) < 12) return { accepted: false, reason: 'pet_tired', boss, progress: progressBefore };
   const random = new Uint8Array(1);
   crypto.getRandomValues(random);

@@ -409,7 +409,9 @@ for (const field of ['moon_gold', 'moon_crystals', 'style_tokens', 'lifecycle_ph
 assert.ok(worker.includes("case 'petarena'"), '/petarena command must exist');
 assert.ok(worker.includes("callback_data: 'pet:arena'"), 'pet menu must include Arena button');
 assert.ok(worker.includes('Pet Arena unlocks at level 10. Keep growing your Moonpet.'), 'level <10 blocked copy must be exact');
-assert.ok(worker.includes('PET_ARENA_MIN_LEVEL = 10'), 'level 10+ can enter Pet Arena');
+assert.ok(worker.includes("PET_ARENA_MIN_LEVEL as COMBAT_ARENA_MIN_LEVEL"), 'level 10+ can enter Pet Arena through the shared combat contract');
+assert.ok(worker.includes("reason: combat.arena_reason"), 'direct Arena actions must return the canonical Arena lock reason');
+assert.ok(!worker.includes("eligible.reason === 'level_locked' ? 'Pet Arena unlocks"), 'Telegram Arena guidance must not retain the legacy level-lock reason');
 assert.ok(worker.includes("createPetArenaBattle(db, chatId, pet, appPet, 'app')"), 'private app battle works');
 assert.ok(!worker.includes('const done = await completePetArenaBattle(db, battle); await sendTelegramMessage(tok, chatId, formatPetArenaResult(done.battle || battle)); return;'), 'App battle does not instantly complete on create.');
 assert.ok(worker.includes('selectPetArenaAppMove(battle)'), 'App battle advances after player move and app AI move.');
@@ -4641,12 +4643,7 @@ assert.deepEqual(kaijuAfterRecovery.profile, { pet_xp: 10, moon_gold: 18, moon_c
 assert.deepEqual(kaijuAfterRecovery.user, { xp: 5, level: 1 }, 'Kaiju recovery must clamp Community XP against the original Day A allowance');
 assert.deepEqual(kaijuAfterRecovery.xpLog, { count: 1, total: 5 }, 'Kaiju recovery must write one clamped Community XP audit record');
 assert.deepEqual(kaijuAfterRecovery.season, { rows: 1, total: 10 }, 'Kaiju recovery must write the clamped Pet XP once');
-assert.deepEqual(kaijuAfterRecovery.leaderboard, { rows: 1, total: 5 }, 'Kaiju recovery must write the clamped Community XP once');
-assert.equal(
-  kaijuRecoveryDb.database.prepare('SELECT season_id FROM telegram_leaderboard WHERE telegram_id = ?').get('kaiju-recovery').season_id,
-  dayALeaderboardSeasonId,
-  'Kaiju recovery must credit Community leaderboard XP to the season containing the stored Day A reservation',
-);
+assert.deepEqual(kaijuAfterRecovery.leaderboard, { rows: 0, total: 0 }, 'Kaiju recovery must not write Community XP to an inactive historical season');
 assert.deepEqual(
   { ...kaijuRecoveryDb.database.prepare(`
     SELECT season_key, daily_key, weekly_key, season_xp, daily_xp, weekly_xp

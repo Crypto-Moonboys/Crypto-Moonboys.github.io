@@ -1,3 +1,5 @@
+import { selectCommunitySeason } from './community-season-authority.js';
+
 // One score basis per response. An empty season is not an all-time leaderboard,
 // and an unavailable database is not evidence that no season/scores exist.
 function requireRows(result) {
@@ -10,9 +12,9 @@ function requireRows(result) {
 export async function readCommunityLeaderboard(db, requestedLimit = 10) {
   const value = Number(requestedLimit);
   const limit = Number.isFinite(value) ? Math.min(50, Math.max(1, Math.floor(value))) : 10;
-  // Match the existing Community season selection, independent of pet seasons.
-  const seasons = requireRows(await db.prepare('SELECT * FROM telegram_seasons ORDER BY id DESC LIMIT 1').all());
-  const season = seasons[0] || null;
+  // No current Community season intentionally means all-time; an expired or
+  // future configured season must not become the current score period.
+  const season = await selectCommunitySeason(db);
   const rows = season
     ? requireRows(await db.prepare(`SELECT tl.telegram_id, tl.xp, tu.username, tu.first_name, tu.last_name
         FROM telegram_leaderboard tl LEFT JOIN telegram_users tu ON tu.telegram_id=tl.telegram_id
