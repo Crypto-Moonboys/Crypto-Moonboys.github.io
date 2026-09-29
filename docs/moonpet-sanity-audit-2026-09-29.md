@@ -36,10 +36,10 @@ access, historical record mutation, merge or deployment was performed.
    instance and mirrors the committed values, preserving current streak/date
    fields rather than writing an old snapshot.
 
-Both XP-loss cases failed against baseline before correction. Seven new cases
+Both XP-loss cases failed against baseline before correction. Nine new cases
 cover reward overlap, all four public periods and Mini App parity, duplicate
 retry, care/equipment preservation, pet-switch rejection, cap races and rename
-rollback. Existing trade cooldown, wallet, source-pet and persistence rollback
+rollback, decayed response stats and Telegram rejection messaging. Existing trade cooldown, wallet, source-pet and persistence rollback
 tests remain. The trade fault injection now targets the updated mirror statement;
 its rollback and exactly-once assertions are unchanged.
 

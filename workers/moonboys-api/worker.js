@@ -6484,7 +6484,7 @@ async function processPetAction(db, telegramId, action, options = {}) {
     const sourcePet = renamed[0]?.results?.[0];
     if (!sourcePet) return { accepted: false, reason: 'source_pet_changed' };
     return { accepted: true, reason: 'renamed', xp_awarded: 0, pet_xp_awarded: 0,
-      pet: { ...pet, ...sourcePet, moon_gold: pet.moon_gold, moon_crystals: pet.moon_crystals, style_tokens: pet.style_tokens } };
+      pet: { ...pet, ...applyPetDecay(sourcePet), moon_gold: pet.moon_gold, moon_crystals: pet.moon_crystals, style_tokens: pet.style_tokens } };
   }
 
   const existing = await readAcceptedPetEventByKey(db, telegramId, eventKey);
@@ -14716,6 +14716,7 @@ function resolvePetOutcomeMediaKey(action, beforePet, result = null) {
 }
 
 export const __petMediaTestHooks = Object.freeze({
+  cmdPetRename,
   PET_ACTIONS,
   PET_SPECIAL_ACTION_POLICIES,
   normalizePetCooldownWindow,
@@ -17282,6 +17283,10 @@ async function cmdPetRename(db, tok, chatId, telegramId, argStr) {
     return;
   }
   const result = await processPetAction(db, telegramId, 'rename', { pet_name: petName, source: 'telegram_command' });
+  if (!result.accepted) {
+    await sendTelegramMessage(tok, chatId, 'Pet rename was not saved. Your active pet may have changed. Check /pet and try /petname again.');
+    return;
+  }
   const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
   const reaction = await selectMoonpetReaction(db, telegramId, 'rename', identity || {}, { pet: result.pet }).catch(() => buildMoonpetReaction('rename', identity || {}, { pet: result.pet }));
   await sendTelegramPetReply(tok, chatId, `🌕 Pet renamed.\n\n${formatPetStatus(result.pet, identity, null, reaction)}`, { reply_markup: petReplyMarkup() }, 'level_up', { db, telegram_id: telegramId, pet: result.pet });

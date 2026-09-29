@@ -145,3 +145,36 @@ test('rename rolls back its source change if the compatibility mirror fails', as
   f.sql.exec('DROP TRIGGER fail_rename');
   assert.equal((await f.act({ action: 'rename', pet_name: 'RETRY NAME' })).accepted, true);
 });
+
+
+test('rename returns decayed care stats from the freshly committed source row', async () => {
+  const f = fixture('rename-decay');
+  const injected = intercept(f, 'rename', async () => {
+    f.sql.prepare("UPDATE telegram_pet_instances SET energy=80,hunger=20,last_decay_at=datetime('now','-10 hours') WHERE pet_id=?").run('current-' + f.owner);
+  });
+  const result = await f.act({ action: 'rename', pet_name: 'DECAY TEST' });
+  injected();
+  assert.equal(result.accepted, true);
+  assert.ok(result.pet.energy >= 57 && result.pet.energy <= 58);
+  assert.ok(result.pet.hunger >= 65 && result.pet.hunger <= 66);
+  assert.equal(f.sql.prepare('SELECT energy FROM telegram_pet_instances WHERE pet_id=?').get('current-' + f.owner).energy, 80, 'rename must not persist a care snapshot');
+});
+
+test('Telegram rename reports a rejected concurrent switch without claiming success', async () => {
+  const f = fixture('rename-command-switch');
+  f.pet('replacement', currentSeason, 500, 2);
+  const injected = intercept(f, 'rename', async () => f.active('replacement'));
+  const originalFetch = globalThis.fetch;
+  const messages = [];
+  globalThis.fetch = async (url, init) => {
+    messages.push(JSON.parse(init.body).text);
+    return new Response(JSON.stringify({ ok: true, result: {} }), { status: 200 });
+  };
+  try {
+    await hooks.cmdPetRename(f.db, 'fixture-token', f.owner, f.owner, 'NEW NAME');
+    injected();
+    assert.equal(messages.length, 1);
+    assert.match(messages[0], /not saved/);
+    assert.doesNotMatch(messages[0], /Pet renamed|No pet found/);
+  } finally { globalThis.fetch = originalFetch; }
+});
