@@ -3509,7 +3509,7 @@ async function processPetJob(db, telegramId, jobKeyRaw, options = {}) {
   }
   const sourceAuthority = activePetRewardAuthority(pet);
   if (!sourceAuthority) return { accepted: false, reason: 'source_pet_authority_required', xp_awarded: 0, pet_xp_awarded: 0, pet };
-  const factionRow = await db.prepare('SELECT faction FROM blocktopia_progression WHERE telegram_id = ?').bind(telegramId).first().catch(() => null);
+  const factionRow = await db.prepare('SELECT faction FROM blocktopia_progression WHERE telegram_id = ?').bind(telegramId).first();
   const adjusted = applyPetFactionBonus(job, factionRow?.faction, 'jobs');
   const setEffects = getPetActiveSetEffects(pet);
   const jobSetPct = Math.max(0, Number(setEffects.job_reward_pct) || 0);
@@ -10047,7 +10047,7 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
     if (!petRaw) return { accepted: false, reason: 'pet_not_adopted' };
     const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
     const runtime = await getOrCreatePetRuntimeState(db, telegramId, getPetDayKey(new Date()), activePetRewardAuthority(petRaw));
-    const faction = await db.prepare('SELECT faction FROM blocktopia_progression WHERE telegram_id=?').bind(telegramId).first().catch(() => null);
+    const faction = await db.prepare('SELECT faction FROM blocktopia_progression WHERE telegram_id=?').bind(telegramId).first();
     const result = await processPetDistrictMission(db, telegramId, body.region_key, serializePet(petRaw, identity), runtime, (args) => awardPetReward(db, args), faction?.faction, body.approach_key, `runtime:mini:${eventKey}`);
     if (result.accepted) await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward, { action: 'explore' });
     return result;
@@ -10055,7 +10055,7 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   if (action === 'event_chain') {
     const petRaw = await getPetProfile(db, telegramId);
     if (!petRaw) return { accepted: false, reason: 'pet_not_adopted' };
-    const faction = await db.prepare('SELECT faction FROM blocktopia_progression WHERE telegram_id=?').bind(telegramId).first().catch(() => null);
+    const faction = await db.prepare('SELECT faction FROM blocktopia_progression WHERE telegram_id=?').bind(telegramId).first();
     const result = await processPetEventChain(db, telegramId, body.chain_key, (args) => awardPetReward(db, args), faction?.faction, body.choice_key, petRaw, `runtime:mini:${eventKey}`);
     if (result.accepted) await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward, { action: 'explore' });
     return result;

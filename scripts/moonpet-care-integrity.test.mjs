@@ -17,7 +17,7 @@ function fixture(owner) {
   class Statement {
     constructor(query, args = []) { this.query = query; this.args = args; }
     bind(...args) { return new Statement(this.query, args); }
-    async first() { return sql.prepare(this.query).get(...this.args) || null; }
+    async first() { if (db.beforeFirst) await db.beforeFirst(this); return sql.prepare(this.query).get(...this.args) || null; }
     async all() { return { results: sql.prepare(this.query).all(...this.args) }; }
     exec() {
       if (/\bRETURNING\b/i.test(this.query)) { const results = sql.prepare(this.query).all(...this.args); return { results, meta: { changes: results.length } }; }
@@ -327,4 +327,74 @@ test('a duplicate Mini App care request cannot give specialist progress to a new
   assert.equal(duplicate.pet.pet_id,'current-'+f.owner);
   assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_specialist_events WHERE pet_id='retry-second'").get().n,0);
   assert.deepEqual(f.sql.prepare('SELECT care_xp,bond_xp FROM telegram_pet_specialist_progression WHERE pet_id=?').get('current-'+f.owner),original);
+});
+
+const factionActions = [
+  { action: 'work', faction: 'blockstars', body: { job_key: 'courier' }, source: 'pet_job' },
+  { action: 'district_mission', faction: 'rugpull-miners', body: { region_key: 'moon_alley', approach_key: 'tactical' }, source: 'pet_district' },
+  { action: 'event_chain', faction: 'graffpunks', body: { chain_key: 'lost_delivery_drone' }, source: 'pet_event_chain' },
+];
+function factionFixture(action) {
+  const f = fixture('faction-' + action);
+  if (action === 'event_chain') f.sql.prepare(`INSERT INTO telegram_pet_event_chain_progress
+    (pet_id,telegram_id,season_key,chain_key,step_index,completed_cycles)
+    VALUES (?,?,?,'lost_delivery_drone',2,0)`).run('current-' + f.owner, f.owner, currentSeason);
+  return f;
+}
+function rewardState(f) {
+  return {
+    pet: f.sql.prepare('SELECT pet_xp,energy FROM telegram_pet_instances WHERE telegram_id=?').get(f.owner),
+    wallet: f.sql.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner),
+    receipts: f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE status='accepted'").get().n,
+    claims: f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_reward_claims').get().n,
+    systems: f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_system_events WHERE system_key IN ('district','event_chain')").get().n,
+    story: f.sql.prepare('SELECT step_index,completed_cycles FROM telegram_pet_event_chain_progress').all(),
+  };
+}
+for (const entry of factionActions) test(`${entry.action} preserves faction rewards across an unreadable lookup and retry`, async () => {
+  const f = factionFixture(entry.action);
+  f.sql.prepare('INSERT INTO blocktopia_progression (telegram_id,faction) VALUES (?,?)').run(f.owner, entry.faction);
+  const body = { action: entry.action, ...entry.body, request_id: 'faction-retry' };
+  await f.state();
+  const before = rewardState(f);
+  let failedReads = 0;
+  f.db.beforeFirst = statement => {
+    if (/SELECT faction FROM blocktopia_progression/.test(statement.query)) {
+      failedReads++;
+      throw Error('faction_lookup_unavailable');
+    }
+  };
+  await assert.rejects(f.act(body), /faction_lookup_unavailable/);
+  assert.ok(failedReads > 0);
+  assert.deepEqual(rewardState(f), before, 'failed evidence cannot spend energy, start cooldowns, advance a story or settle a lesser reward');
+  f.db.beforeFirst = null;
+  const accepted = await f.act(body);
+  assert.equal(accepted.accepted, true, JSON.stringify(accepted));
+  assert.equal(accepted.faction_bonus.faction, entry.faction);
+  const claim = f.sql.prepare('SELECT * FROM telegram_pet_reward_claims WHERE source=?').get(entry.source);
+  const metadata = JSON.parse(claim.metadata);
+  assert.equal(metadata.context.faction_bonus.faction, entry.faction, 'the authoritative reward receipt retains its applied faction');
+  const applied = JSON.parse(claim.applied_rewards);
+  const neutral = factionFixture(entry.action);
+  assert.equal((await neutral.act(body)).accepted, true);
+  const base = JSON.parse(neutral.sql.prepare('SELECT applied_rewards FROM telegram_pet_reward_claims WHERE source=?').get(entry.source).applied_rewards);
+  for (const key of ['pet_xp', 'moon_gold']) assert.equal(applied[key], Math.floor(base[key] * 1.05), key + ' must retain the earned five-percent faction bonus');
+  assert.equal(xp(f), 200 + applied.pet_xp);
+  const after = rewardState(f);
+  assert.equal((await f.act(body)).duplicate, true);
+  assert.deepEqual(rewardState(f), after, 'retrying a settled action cannot pay or advance twice');
+  for (const period of ['daily', 'weekly', 'seasonal', 'all_time']) {
+    const publicBoard = await f.get('/telegram-pets/leaderboard?period=' + period);
+    const mini = await hooks.buildPetMiniAppLeaderboard(f.db, f.owner, period, 10);
+    assert.equal(publicBoard.entries[0].pet_xp, (period === 'all_time' ? 200 : 0) + applied.pet_xp);
+    assert.equal(mini.entries[0].pet_xp, publicBoard.entries[0].pet_xp);
+  }
+  assert.ok((await f.get('/telegram-pets/activity')).items.some(row => row.pet_xp_awarded === applied.pet_xp || row.pet_xp === applied.pet_xp));
+});
+
+for (const entry of factionActions) test(`${entry.action} allows a successful missing-faction lookup`, async () => {
+  const f = factionFixture(entry.action);
+  const result = await f.act({ action: entry.action, ...entry.body, request_id: 'unaligned' });
+  assert.equal(result.accepted, true, JSON.stringify(result));
+  assert.equal(result.faction_bonus, null);
 });

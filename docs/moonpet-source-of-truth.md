@@ -905,3 +905,12 @@ legacy Telegram gear summary shows the live Shop description and actual
 level/mastery multiplier rather than presenting utility-registry targets as
 implemented bonuses. Its command still launches Equipment when the Mini App
 flag is enabled. See [the follow-up audit](moonpet-care-equipment-audit-2026-09-29.md).
+
+### Faction evidence before reward settlement (29 September 2026)
+
+Jobs, district missions and story choices must distinguish a successful missing
+faction row from a failed faction query. Database errors propagate before the
+action reserves rewards, charges energy or advances progress; retry calculates
+the correct faction bonus. Missing rows retain normal unaligned rewards. Saved
+receipts and decisions keep their existing replay semantics. See the
+[faction reward-boundary audit](moonpet-faction-reward-audit-2026-09-29.md).
