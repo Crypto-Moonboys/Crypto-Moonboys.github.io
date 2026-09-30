@@ -39,7 +39,7 @@ function buildTelegramInitData() {
   const values = new URLSearchParams({
     auth_date: String(Math.floor(Date.now() / 1000)),
     query_id: `moonpet-canary-${EXPECTED_COMMIT.slice(0, 12)}`,
-    user: JSON.stringify({ id: Number(TELEGRAM_ID), first_name: 'Moonpet Canary', username: 'moonpet_canary' }),
+    user: JSON.stringify({ id: TELEGRAM_ID, first_name: 'Moonpet Canary', username: 'moonpet_canary' }),
   });
   const checkString = [...values.entries()].sort(([left], [right]) => left.localeCompare(right))
     .map(([key, value]) => `${key}=${value}`).join('\n');

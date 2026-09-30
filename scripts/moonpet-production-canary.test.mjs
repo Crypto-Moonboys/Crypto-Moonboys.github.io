@@ -9,7 +9,7 @@ const SCRIPT = new URL('./moonpet-production-canary.mjs', import.meta.url);
 const WORKFLOW = readFileSync(new URL('../.github/workflows/moonpet-production-canary.yml', import.meta.url), 'utf8');
 const COMMIT = 'a'.repeat(40);
 const TOKEN = '123456:test-canary-secret';
-const TELEGRAM_ID = '987654321';
+const TELEGRAM_ID = '9007199254740993';
 
 function runCanary(env = {}) {
   return new Promise((resolve, reject) => {
