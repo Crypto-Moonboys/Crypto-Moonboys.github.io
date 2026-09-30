@@ -78,7 +78,7 @@ const targets = {
   practice: /SELECT c\.run_id,c\.pet_id,c\.reward_day[\s\S]*telegram_pet_practice/,
   style_loadout: /SELECT s\.cosmetic_key FROM telegram_pet_style_loadouts/,
   contracts: /SELECT c\.contract_id,c\.pet_id,c\.season_key,c\.reward_day/,
-  daily_run_recovery: /SELECT d\.run_id,d\.utc_day,cursor\.setting_value AS recovery_cursor FROM telegram_pet_daily_runs d/,
+  daily_run_recovery: /SELECT d\.run_id,d\.utc_day,recovery_state\.setting_value AS recovery_cursor FROM telegram_pet_daily_runs d/,
 };
 function durableSnapshot(f) {
   return ['telegram_pet_instances','telegram_pet_profiles','telegram_pet_equipment_progression','telegram_pet_material_balances','telegram_pet_inventory','telegram_pet_reward_claims','telegram_pet_events','telegram_pet_system_events','telegram_pet_daily_completion']
