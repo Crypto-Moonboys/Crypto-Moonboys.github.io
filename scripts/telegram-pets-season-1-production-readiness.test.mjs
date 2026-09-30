@@ -450,7 +450,29 @@ for (const duplicateField of ['has_completed_season_pet', 'combat_unlocked', 'co
 assert.deepEqual(countCombatRows(routeDb, '200004'), actionSmokeBefore, 'locked route-level combat action creates no queue/match/battle writes');
 
 seedUser(routeDb, '200005', 'Fast Care Player');
-await setActivePetLifecyclePhase(routeDb, '200005', 'adult');
+const fastCarePet = await setActivePetLifecyclePhase(routeDb, '200005', 'adult');
+const adultCoreBeforeCache = await postAppRoute('/telegram-pets/app/state', routeDb, '200005', { mode: 'core' });
+assert.equal(adultCoreBeforeCache.status, 200, 'adult core HOME state loads');
+assert.equal(adultCoreBeforeCache.body.state.guidance.daily_cache.available, true,
+  'core HOME keeps the once-per-day Daily Cache claim available');
+assert.equal(adultCoreBeforeCache.body.state.guidance.daily_cache.claimed, false,
+  'unclaimed Daily Cache is not rendered as already collected');
+
+routeDb.database.prepare("UPDATE telegram_pet_lifecycle_by_pet SET species_id='neon_raccoon', phase='adult' WHERE pet_id=?")
+  .run(fastCarePet.pet_id);
+routeDb.database.prepare(`INSERT OR REPLACE INTO telegram_pet_evolutions_by_pet
+  (pet_id,telegram_id,evolution_id,stage,unlock_event_key)
+  VALUES (?,?,'street_moonpet',1,'readiness-stage-one')`).run(fastCarePet.pet_id, '200005');
+const stageOneCore = await postAppRoute('/telegram-pets/app/state', routeDb, '200005', { mode: 'core' });
+assert.equal(stageOneCore.body.state.lifecycle.art_identity_id, null,
+  'core HOME must not reveal Stage-1 future art identity');
+assert.equal(stageOneCore.body.state.lifecycle.species_id, null,
+  'core HOME must not reveal Stage-1 species');
+assert.equal(stageOneCore.body.state.pet.art_identity_id, null,
+  'core HOME pet projection must not leak Stage-1 future identity');
+assert.equal(stageOneCore.body.state.pet.display_name, 'UNKNOWN',
+  'core HOME Stage-1 display name remains hidden');
+
 const fastCareSmoke = await postAppRoute('/telegram-pets/app/action', routeDb, '200005', {
   action: 'feed',
   request_id: 'route:fast-feed',
