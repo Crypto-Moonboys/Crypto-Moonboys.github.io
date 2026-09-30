@@ -178,6 +178,9 @@ try {
     await page.goto(url);
     await page.waitForSelector('[data-panel="care"]');
     assert.equal(startupStateFailures, 0, 'startup must recover from two transient state failures');
+    // The two startup 503s above are intentional retry coverage, not failures
+    // from the later scenario whose diagnostics this array describes.
+    failedResponses.length = 0;
     assert.equal(await page.evaluate(() => window.MoonpetBetaAppearance.getBackgroundArtState().mode), 'stage0_secret_bot', 'egg keeps its existing background');
     // Check the real collapsed UX before expanding the older gameplay matrix.
     const beforeDisclosures = actions.length;
