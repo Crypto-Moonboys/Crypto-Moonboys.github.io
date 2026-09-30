@@ -4,6 +4,12 @@ on:
   schedule:
     - cron: "*/15 * * * *"
   workflow_dispatch:
+    inputs:
+      notification_test:
+        description: Send a harmless Telegram monitor test after healthy probes
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -92,6 +98,7 @@ jobs:
           retention-days: 30
 
       - name: Send retryable incident notifications
+        if: github.event_name != 'workflow_dispatch' || inputs.notification_test != true
         env:
           GH_TOKEN: ${{ github.token }}
           RESULT: ${{ steps.probe.outputs.result }}
@@ -101,6 +108,17 @@ jobs:
           MOONPET_ALERT_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           MOONPET_HEALTH_REPORT: moonpet-production-health-report.json
         run: node scripts/moonpet-production-health-incident.mjs
+
+      - name: Send manual Telegram monitor test
+        if: github.event_name == 'workflow_dispatch' && inputs.notification_test && steps.probe.outputs.result == 'healthy'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_GROUP_CHAT_ID: ${{ secrets.TELEGRAM_GROUP_CHAT_ID }}
+          TELEGRAM_GROUP_THREAD_ID: ${{ secrets.TELEGRAM_GROUP_THREAD_ID }}
+          MOONPET_ALERT_STATE: test
+          MOONPET_ALERT_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          MOONPET_HEALTH_REPORT: moonpet-production-health-report.json
+        run: node scripts/moonpet-production-health-alert.mjs
 
       - name: Fail unhealthy or degraded run
         if: steps.probe.outputs.result != 'healthy'
