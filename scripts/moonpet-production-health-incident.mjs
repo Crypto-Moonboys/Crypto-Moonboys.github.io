@@ -56,8 +56,10 @@ if (RESULT === 'failed' && !issue) {
 if (!issue) process.exit(0);
 
 let notification = null;
-if (hasLabel(issue, 'alert-pending')) notification = 'failed';
-else if (RESULT === 'healthy') notification = 'recovered';
+// A healthy probe supersedes an outage alert that Telegram never received.
+// Send one truthful recovery notice and close only after delivery succeeds.
+if (RESULT === 'healthy') notification = 'recovered';
+else if (hasLabel(issue, 'alert-pending')) notification = 'failed';
 
 if (!notification) process.exit(0);
 
