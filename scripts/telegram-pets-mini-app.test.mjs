@@ -69,6 +69,31 @@ assert.match(
   /progress: runtime/,
   'Mini App progress payload must expose the selected pet specialist state',
 );
+assert.match(
+  miniAppStateSource,
+  /const identityPromise = getMoonpetIdentityWithLifecycle\(db, telegramId, \{ required: true \}\);[\s\S]*const lifecyclePromise = identityPromise\.then\([\s\S]*buildPetGuidanceState\(db, telegramId, petRaw, \{ identity: identityPromise, runtime: runtimePromise, combatEligibility: combatEligibilityPromise \}\)/,
+  'Mini App state must share one fail-closed identity/lifecycle authority result with guidance and combat eligibility',
+);
+assert.equal(
+  (miniAppStateSource.match(/getPetMiniAppCombatEligibility\(db, telegramId, lifecycle, petRaw\)/g) || []).length,
+  1,
+  'Mini App state must not issue duplicate combat-eligibility reads',
+);
+assert.match(
+  miniAppStateSource,
+  /const \[runPet, practice, styleLoadout, contracts, dailyReservation\] = await Promise\.all\(\[/,
+  'independent Practice, Style, Contract and Daily reservation reads must execute concurrently',
+);
+assert.match(
+  miniAppStateSource,
+  /const dailyRunSummaryPromise = getDailyMoonRunSummary\([\s\S]*const \[dailyRunSummary, guidanceNotices\] = await Promise\.all\(\[dailyRunSummaryPromise, guidanceNoticesPromise\]\);/,
+  'Daily summary must start after reservation repair while overlapping only unrelated guidance-notice persistence',
+);
+assert.match(
+  miniAppStateSource,
+  /const dailyModifiersPromise = dailyReservation \? readDailyModifiers\(db, activeRun\) : Promise\.resolve\(\[\]\);[\s\S]*const dailyModifiers = await dailyModifiersPromise;/,
+  'Daily Run modifier loading must overlap room hydration instead of adding another serial read',
+);
 const html = fs.readFileSync(new URL('../moonpet-game.html', import.meta.url), 'utf8');
 const client = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
 const botArtRegistry = JSON.parse(fs.readFileSync(new URL('../data/moonpet-bot-art-registry.json', import.meta.url), 'utf8'));

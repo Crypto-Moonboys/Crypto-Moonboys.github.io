@@ -67,8 +67,13 @@ assert.match(
 
 assert.match(
   source,
-  /const createdAtSource = await seasonSlotCreatedAt\(db, petId, seasonKey\);/,
-  'Lifecycle age readiness must use the same season-slot age authority as evolution mutation.',
+  /s\.created_at AS season_slot_created_at/,
+  'Lifecycle authority read must carry the persisted season-slot creation timestamp for age readiness.',
+);
+assert.match(
+  source,
+  /const createdAtSource = pet\.season_slot_created_at \|\| await seasonSlotCreatedAt\(db, petId, seasonKey\);/,
+  'Lifecycle age readiness must reuse the persisted season-slot timestamp while retaining the direct authority fallback.',
 );
 
 assert.match(

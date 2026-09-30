@@ -564,6 +564,10 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_pet_arena_battles_p1_active
 CREATE UNIQUE INDEX IF NOT EXISTS idx_pet_arena_battles_p2_active
   ON telegram_pet_arena_battles(chat_id, player2_telegram_id)
   WHERE status IN ('readying', 'active') AND player2_telegram_id IS NOT NULL AND player2_telegram_id <> 'app';
+CREATE INDEX IF NOT EXISTS idx_pet_arena_battles_p1_status_completed
+  ON telegram_pet_arena_battles(player1_telegram_id, status, completed_at DESC);
+CREATE INDEX IF NOT EXISTS idx_pet_arena_battles_p2_status_completed
+  ON telegram_pet_arena_battles(player2_telegram_id, status, completed_at DESC);
 
 CREATE TABLE IF NOT EXISTS telegram_pet_arena_rounds (
   id TEXT PRIMARY KEY,
@@ -604,6 +608,8 @@ CREATE TABLE IF NOT EXISTS telegram_pet_events (
 
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_events_user_created
   ON telegram_pet_events(telegram_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_telegram_pet_events_user_type_status_created
+  ON telegram_pet_events(telegram_id, event_type, status, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_events_user_day
   ON telegram_pet_events(telegram_id, day_key, status);
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_events_pet_day
@@ -850,6 +856,10 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_telegram_pet_kaiju_one_open_chat
   ON telegram_pet_kaiju_matches(chat_id) WHERE status IN ('open', 'selecting');
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_kaiju_chat_status
   ON telegram_pet_kaiju_matches(chat_id, status, updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_pet_kaiju_matches_p1_status_completed
+  ON telegram_pet_kaiju_matches(player1_telegram_id, status, completed_at DESC);
+CREATE INDEX IF NOT EXISTS idx_pet_kaiju_matches_p2_status_completed
+  ON telegram_pet_kaiju_matches(player2_telegram_id, status, completed_at DESC);
 
 CREATE TABLE IF NOT EXISTS telegram_pet_kaiju_queue (
   id TEXT PRIMARY KEY,
