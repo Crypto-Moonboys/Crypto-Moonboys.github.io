@@ -71,8 +71,8 @@ assert.match(
 );
 assert.match(
   miniAppStateSource,
-  /const lifecyclePromise = getMoonpetLifecycle\(db, telegramId\);[\s\S]*const combatEligibilityPromise = lifecyclePromise\.then\([\s\S]*buildPetGuidanceState\(db, telegramId, petRaw, \{ runtime: runtimePromise, combatEligibility: combatEligibilityPromise \}\)/,
-  'Mini App state must overlap lifecycle loading and share one combat-eligibility authority result with guidance',
+  /const identityPromise = getMoonpetIdentityWithLifecycle\(db, telegramId, \{ required: true \}\);[\s\S]*const lifecyclePromise = identityPromise\.then\([\s\S]*buildPetGuidanceState\(db, telegramId, petRaw, \{ identity: identityPromise, runtime: runtimePromise, combatEligibility: combatEligibilityPromise \}\)/,
+  'Mini App state must share one fail-closed identity/lifecycle authority result with guidance and combat eligibility',
 );
 assert.equal(
   (miniAppStateSource.match(/getPetMiniAppCombatEligibility\(db, telegramId, lifecycle, petRaw\)/g) || []).length,
