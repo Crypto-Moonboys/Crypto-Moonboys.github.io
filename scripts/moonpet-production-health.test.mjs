@@ -270,3 +270,21 @@ test('recovery keeps the incident open and retries after Telegram fails once', a
     assert.equal(JSON.parse(readFileSync(path.join(directory, 'telegram.json'), 'utf8')).count, 2);
   });
 });
+
+test('healthy recovery supersedes an undelivered outage alert without sending stale failure', async () => {
+  await withIncidentHarness(null, async ({ runIncident, statePath, directory }) => {
+    const failedDelivery = await runIncident('failed');
+    assert.notEqual(failedDelivery.status, 0);
+    let state = JSON.parse(readFileSync(statePath, 'utf8'));
+    assert.equal(state.issue.state, 'open');
+    assert.ok(state.issue.labels.includes('alert-pending'));
+
+    const recovery = await runIncident('healthy');
+    assert.equal(recovery.status, 0, recovery.stderr);
+    state = JSON.parse(readFileSync(statePath, 'utf8'));
+    assert.equal(state.issue.state, 'closed');
+    assert.match(recovery.stdout, /Moonpet recovered notification sent/);
+    assert.doesNotMatch(recovery.stdout, /Moonpet failed notification sent/);
+    assert.equal(JSON.parse(readFileSync(path.join(directory, 'telegram.json'), 'utf8')).count, 2);
+  });
+});
