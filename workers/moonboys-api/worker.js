@@ -9665,8 +9665,14 @@ async function buildPetMiniAppMissionsState(db, telegramId, petRaw, now) {
   const journey = await buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now);
   const finaleAchievement = seasonFinales.pets.find(entry => entry.pet_id === petRaw.pet_id && entry.season_key === petRaw.season_key);
   if (finaleAchievement) achievements.push({ achievement_id: 'finale_victor', title: 'Finale Victor', description: 'Defeat Signal Sovereign with this season pet.', target: 1, progress: finaleAchievement.status === 'won' ? 1 : 0, unlocked_at: finaleAchievement.defeated_at || null });
+  // Reuse active-pet progression for generic reaction metadata without loading
+  // private identity detail or adding another evolution read.
+  const currentEvolution = MOONPET_EVOLUTIONS[progression.lifecycle.current_evolution];
+  const identity = { ...core.guidance.identity, current_stage: {
+    evolution_id: currentEvolution.evolution_id, name: currentEvolution.name, stage: currentEvolution.stage,
+  } };
   const guidance = { ...core.guidance, day_key: missions.day_key, week_key: missions.week_key,
-    missions: missions.daily || [], daily_completion: missions.completion || null, achievements };
+    identity, missions: missions.daily || [], daily_completion: missions.completion || null, achievements };
   return {
     ...core,
     hydration: { mode: 'missions', full: false, modules: ['missions'] },

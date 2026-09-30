@@ -10,6 +10,7 @@ import deployedWorker from '../workers/moonboys-api/deployment-entry.js';
 import worker, { applyPetRuntimeCommandAward, __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 import { recoverPetRuntimeAwards } from '../workers/moonboys-api/pets/runtime-recovery.js';
 import { MOONPET_D1_PERFORMANCE_BUDGETS } from './moonpet-d1-performance-budget.mjs';
+import { buildMoonpetReactionChoice } from '../workers/moonboys-api/pets/moonpet-reactions.js';
 
 const now = new Date();
 const currentSeason = hooks.getPetSeasonInfo(now).key;
@@ -213,6 +214,36 @@ test('Missions uses less SQL, preserves its panels and never loads unrelated mod
   assert.ok(!queries.some(query => /ORDER BY slot, item_level DESC, item_key|SELECT material_key, quantity[\s\S]*ORDER BY material_key|SELECT relic_id, unlocked_at|SELECT \* FROM telegram_pet_arena_battles WHERE status='completed'|SELECT \* FROM telegram_pet_kaiju_matches WHERE status='completed'/.test(query)));
   f.db.beforeAll = statement => { if (/SELECT event_type, COUNT\(\*\) AS count/.test(statement.query)) throw new Error('missions_read_outage'); };
   await assert.rejects(hooks.buildPetMiniAppState(f.db, f.owner, 'fixture-token', { mode: 'missions' }), /missions_read_outage/);
+});
+
+test('Missions reactions follow the active evolution through every stage and pet switches', async () => {
+  const f = fixture('missions-reaction-stages');
+  await f.state();
+  const petId = authority(f).pet_id;
+  for (const evolution of Object.values(hooks.MOONPET_EVOLUTIONS)) {
+    f.sql.prepare(`INSERT INTO telegram_pet_evolutions_by_pet
+      (pet_id,telegram_id,evolution_id,stage,unlock_event_key) VALUES (?,?,?,?,?)`)
+      .run(petId, f.owner, evolution.evolution_id, evolution.stage, 'missions-stage-' + evolution.stage);
+    const missions = await hooks.buildPetMiniAppState(f.db, f.owner, 'fixture-token', { mode: 'missions' });
+    const full = await f.state();
+    const identity = missions.guidance.identity;
+    for (const key of ['evolution_id', 'name', 'stage']) {
+      assert.equal(identity.current_stage[key], full.guidance.identity.current_stage[key]);
+    }
+    const choices = Array.from({ length: 100 }, (_, seed) => buildMoonpetReactionChoice('generic', identity, { seed: String(seed) }));
+    const evolutionChoices = choices.filter(choice => choice.source === 'evolution');
+    assert.ok(evolutionChoices.length, 'exercise evolution-specific reaction selection');
+    assert.ok(evolutionChoices.every(choice => choice.key.startsWith('evolution:' + evolution.evolution_id + ':')));
+    if (evolution.stage > 0) assert.ok(choices.every(choice => !/EGGYONE|Secret Bot/.test(choice.text)));
+    if (evolution.stage <= 1) {
+      assert.equal(missions.pet.art_identity_id, null);
+      assert.equal(missions.lifecycle.species_id, null);
+    }
+  }
+  f.pet('other-missions-reaction', currentSeason, 200, 2);
+  f.active('other-missions-reaction');
+  const switched = await hooks.buildPetMiniAppState(f.db, f.owner, 'fixture-token', { mode: 'missions' });
+  assert.equal(switched.guidance.identity.current_stage.evolution_id, 'moon_egg', 'never reuse the previous pet evolution');
 });
 
 test('warm state stays below its SQL budget and does not rewrite unchanged achievements', async () => {
