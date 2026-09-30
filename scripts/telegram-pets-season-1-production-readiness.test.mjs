@@ -12,6 +12,7 @@ const clientSource = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import
 
 const {
   buildPetMiniAppCapabilities,
+  buildPetMiniAppCoreState,
   buildPetMiniAppState,
   ensureActivePetInstance,
   ensurePetStarterSeasonSlot,
@@ -357,6 +358,11 @@ assert.match(
   /return\s+json\(\s*\{\s*ok\s*:\s*true\s*,\s*state\s*\}\s*\)/,
   '/telegram-pets/app/state must return the canonical Mini App state envelope',
 );
+assert.match(
+  stateRoute,
+  /body\.mode === 'core'[\s\S]*buildPetMiniAppCoreState\(env\.DB, verified\.telegramId\)[\s\S]*buildPetMiniAppState/,
+  '/telegram-pets/app/state must support a lightweight core bootstrap while retaining full state hydration',
+);
 const actionRoute = routeBlock('/telegram-pets/app/action');
 assert.match(
   actionRoute,
@@ -399,6 +405,19 @@ const stateSmoke = await postAppRoute('/telegram-pets/app/state', routeDb, '2000
 assert.equal(stateSmoke.status, 200, '/telegram-pets/app/state smoke route returns 200');
 assert.equal(stateSmoke.body.state.capabilities_version, 1, '/telegram-pets/app/state response includes capabilities_version: 1');
 assert.ok(stateSmoke.body.state.capabilities?.systems, '/telegram-pets/app/state response includes capabilities.systems');
+const coreStateSmoke = await postAppRoute('/telegram-pets/app/state', routeDb, '200004', { mode: 'core' });
+assert.equal(coreStateSmoke.status, 200, '/telegram-pets/app/state core smoke route returns 200');
+assert.equal(coreStateSmoke.body.state.hydration?.full, false, 'core state marks itself as not fully hydrated');
+assert.equal(coreStateSmoke.body.state.hydration?.mode, 'core', 'core state identifies its hydration mode');
+assert.equal(coreStateSmoke.body.state.season_slots?.hydrated, false, 'core state exposes lightweight slot ownership only');
+assert.ok(coreStateSmoke.body.state.pet, 'core state includes the active pet');
+assert.ok(coreStateSmoke.body.state.lifecycle, 'core state includes lifecycle authority');
+for (const heavy of ['practice','contracts','live_systems','leaderboard','arena','kaiju','daily_journey','weekly_journey','season_finales']) {
+  assert.equal(coreStateSmoke.body.state[heavy], undefined, `core route must not hydrate ${heavy}`);
+}
+const directCore = await buildPetMiniAppCoreState(routeDb, '200004');
+assert.equal(directCore.pet.pet_id, coreStateSmoke.body.state.pet.pet_id, 'route core state matches direct core authority');
+
 
 const sanctuarySmoke = await postAppRoute('/telegram-pets/app/sanctuary', routeDb, '200004');
 assert.equal(sanctuarySmoke.status, 200, '/telegram-pets/app/sanctuary unavailable smoke route returns 200');
@@ -431,7 +450,29 @@ for (const duplicateField of ['has_completed_season_pet', 'combat_unlocked', 'co
 assert.deepEqual(countCombatRows(routeDb, '200004'), actionSmokeBefore, 'locked route-level combat action creates no queue/match/battle writes');
 
 seedUser(routeDb, '200005', 'Fast Care Player');
-await setActivePetLifecyclePhase(routeDb, '200005', 'adult');
+const fastCarePet = await setActivePetLifecyclePhase(routeDb, '200005', 'adult');
+const adultCoreBeforeCache = await postAppRoute('/telegram-pets/app/state', routeDb, '200005', { mode: 'core' });
+assert.equal(adultCoreBeforeCache.status, 200, 'adult core HOME state loads');
+assert.equal(adultCoreBeforeCache.body.state.guidance.daily_cache.available, true,
+  'core HOME keeps the once-per-day Daily Cache claim available');
+assert.equal(adultCoreBeforeCache.body.state.guidance.daily_cache.claimed, false,
+  'unclaimed Daily Cache is not rendered as already collected');
+
+routeDb.database.prepare("UPDATE telegram_pet_lifecycle_by_pet SET species_id='neon_raccoon', phase='adult' WHERE pet_id=?")
+  .run(fastCarePet.pet_id);
+routeDb.database.prepare(`INSERT OR REPLACE INTO telegram_pet_evolutions_by_pet
+  (pet_id,telegram_id,evolution_id,stage,unlock_event_key)
+  VALUES (?,?,'street_moonpet',1,'readiness-stage-one')`).run(fastCarePet.pet_id, '200005');
+const stageOneCore = await postAppRoute('/telegram-pets/app/state', routeDb, '200005', { mode: 'core' });
+assert.equal(stageOneCore.body.state.lifecycle.art_identity_id, null,
+  'core HOME must not reveal Stage-1 future art identity');
+assert.equal(stageOneCore.body.state.lifecycle.species_id, null,
+  'core HOME must not reveal Stage-1 species');
+assert.equal(stageOneCore.body.state.pet.art_identity_id, null,
+  'core HOME pet projection must not leak Stage-1 future identity');
+assert.equal(stageOneCore.body.state.pet.display_name, 'UNKNOWN',
+  'core HOME Stage-1 display name remains hidden');
+
 const fastCareSmoke = await postAppRoute('/telegram-pets/app/action', routeDb, '200005', {
   action: 'feed',
   request_id: 'route:fast-feed',

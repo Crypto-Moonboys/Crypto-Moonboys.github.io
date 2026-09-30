@@ -166,6 +166,25 @@ test('owned relics reach full state, remain private, and distinguish a read outa
   assert.deepEqual((await f.state()).relics,first.relics);
 });
 
+test('core Mini App bootstrap stays below its SQL budget and omits heavy modules', async () => {
+  const f=fixture('core-state-budget');
+  await f.state();
+  f.db.statementCount=0;
+  const core=await hooks.buildPetMiniAppCoreState(f.db,f.owner);
+  const coreStatements=f.db.statementCount;
+  assert.ok(coreStatements<=MOONPET_D1_PERFORMANCE_BUDGETS.core_bootstrap_max_statements,
+    `core bootstrap executed ${coreStatements} statements`);
+  assert.equal(core.hydration?.full,false);
+  assert.equal(core.hydration?.mode,'core');
+  assert.equal(core.season_slots?.hydrated,false);
+  assert.ok(core.pet?.pet_id);
+  assert.ok(core.lifecycle);
+  for(const heavy of ['practice','contracts','live_systems','leaderboard','arena','kaiju','daily_journey','weekly_journey','season_finales']) {
+    assert.equal(core[heavy],undefined,`core bootstrap must not hydrate ${heavy}`);
+  }
+  console.log(`Core-state budget: ${coreStatements}/${MOONPET_D1_PERFORMANCE_BUDGETS.core_bootstrap_max_statements} SQL statements`);
+});
+
 test('warm state stays below its SQL budget and does not rewrite unchanged achievements', async () => {
   const f=fixture('state-budget'); await f.state();
   f.sql.prepare("UPDATE telegram_pet_achievements SET updated_at='2000-01-01 00:00:00' WHERE telegram_id=?").run(f.owner);
