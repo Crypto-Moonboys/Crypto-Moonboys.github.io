@@ -2883,10 +2883,10 @@ async function recoverPetStandardRunEndings(db, telegramId, runIdRaw = '', limit
   const runId = String(runIdRaw || '').trim();
   const recoveryKey = "r.started_at||':'||r.run_id";
   const terminalKey = "SUBSTR('pet_run_'||CASE WHEN r.status='extracted' THEN 'extract' ELSE 'complete' END||':'||r.telegram_id||':'||r.run_id,1,120)";
-  const candidates = await db.prepare(`SELECT r.*,${recoveryKey} AS recovery_key,cursor.setting_value AS recovery_cursor FROM telegram_pet_runs r
+  const candidates = await db.prepare(`SELECT r.*,${recoveryKey} AS recovery_key,recovery_state.setting_value AS recovery_cursor FROM telegram_pet_runs r
     JOIN telegram_pet_instances i ON i.pet_id=r.pet_id AND i.telegram_id=r.telegram_id AND i.season_key=r.season_key
     JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id AND s.season_key=i.season_key AND s.slot_number=i.slot_number
-    LEFT JOIN telegram_settings cursor ON cursor.telegram_id=r.telegram_id AND cursor.setting_key='moonpet:recovery:standard-endings'
+    LEFT JOIN telegram_settings recovery_state ON recovery_state.telegram_id=r.telegram_id AND cursor.setting_key='moonpet:recovery:standard-endings'
     WHERE r.telegram_id=? AND r.depth>0 AND (?='' OR r.run_id=?)
       AND (r.status='extracted' OR r.status='completed' AND r.depth>=r.max_depth
         OR r.status IN ('active','extractable') AND r.depth>=MAX(?,r.max_depth,r.max_room))
@@ -2905,7 +2905,7 @@ async function recoverPetStandardRunEndings(db, telegramId, runIdRaw = '', limit
           OR NOT EXISTS (SELECT 1 FROM telegram_pet_identity_events identity WHERE identity.telegram_id=e.telegram_id
             AND identity.pet_id=e.pet_id AND identity.season_key=e.season_key AND identity.event_kind='memory'
             AND identity.event_key=SUBSTR(r.run_id||':terminal:memory',1,180) AND identity.applied_at IS NOT NULL))))
-    ORDER BY CASE WHEN ${recoveryKey}>COALESCE(cursor.setting_value,'') THEN 0 ELSE 1 END,
+    ORDER BY CASE WHEN ${recoveryKey}>COALESCE(recovery_state.setting_value,'') THEN 0 ELSE 1 END,
       ${recoveryKey} LIMIT ?`).bind(owner, runId, runId, PET_RUN_MAX_DEPTH, boundedRecoveryLimit(limit, 5)).all();
   if (!runId && !await claimPetRecoveryBatch(db, owner, 'standard-endings', candidates.results || [])) return [];
   const results = [];
@@ -5838,11 +5838,11 @@ async function recoverPetCombatProgress(db, telegramId) {
         AND (json_extract(CASE WHEN json_valid(b.score_json) THEN b.score_json ELSE '{}' END,?) IS NOT NULL
           OR EXISTS (SELECT 1 FROM telegram_pet_events e WHERE e.telegram_id=? AND e.status='pending' AND e.pet_id IS NOT NULL
             AND e.event_type='kaiju_battle' AND e.event_key=SUBSTR('pet_kaiju:'||b.match_id||':'||?,1,120)))))
-  ) SELECT c.*,cursor.setting_value AS recovery_cursor,kind_cursor.setting_value AS kind_cursor FROM candidates c
-    LEFT JOIN telegram_settings cursor ON cursor.telegram_id=? AND cursor.setting_key='moonpet:recovery:combat'
-    LEFT JOIN telegram_settings kind_cursor ON kind_cursor.telegram_id=? AND kind_cursor.setting_key='moonpet:recovery:combat:'||c.kind
-    ORDER BY CASE WHEN cursor.setting_value LIKE c.kind||':%' THEN 1 ELSE 0 END,
-      CASE WHEN c.recovery_key>COALESCE(kind_cursor.setting_value,'') THEN 0 ELSE 1 END,c.recovery_key LIMIT 1`)
+  ) SELECT c.*,recovery_state.setting_value AS recovery_cursor,kind_recovery_state.setting_value AS kind_cursor FROM candidates c
+    LEFT JOIN telegram_settings recovery_state ON recovery_state.telegram_id=? AND cursor.setting_key='moonpet:recovery:combat'
+    LEFT JOIN telegram_settings kind_recovery_state ON kind_recovery_state.telegram_id=? AND kind_cursor.setting_key='moonpet:recovery:combat:'||c.kind
+    ORDER BY CASE WHEN recovery_state.setting_value LIKE c.kind||':%' THEN 1 ELSE 0 END,
+      CASE WHEN c.recovery_key>COALESCE(kind_recovery_state.setting_value,'') THEN 0 ELSE 1 END,c.recovery_key LIMIT 1`)
     .bind(owner,owner,owner,owner,owner,owner,owner,owner,`$.reward_sources."${owner}".pet_id`,owner,owner,owner,owner).all();
   if (!await claimPetRecoveryBatch(db, owner, 'combat', rows.results || [])) return;
   for (const candidate of rows.results || []) {
