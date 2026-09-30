@@ -1649,13 +1649,13 @@
     if (refreshKey) lastCooldownRefreshKey = refreshKey;
     try {
       var requestGeneration = beginStateRequest();
-      var data = await post('/telegram-pets/app/state');
+      var data = await post('/telegram-pets/app/state', stateRefreshPayload(state));
       if (!setStateSnapshot(data.state, requestGeneration)) return;
       var scrollTop = screen.scrollTop;
       render();
       screen.scrollTop = scrollTop;
       tell('COOLDOWN EXPIRED. STATE REFRESHED.');
-      await showPendingNotices();
+      if (!stateNeedsFullHydration(state)) await showPendingNotices();
     } catch (_) {
       if (refreshKey && refreshKey === lastCooldownRefreshKey) lastCooldownRefreshKey = '';
       scheduleCooldownRefresh();
@@ -1743,6 +1743,10 @@
     window.clearTimeout(fastActionStateRefreshTimer);
     fastActionStateRefreshTimer = 0;
     if (!fastActionStateDirty || fastActionStateRefreshInFlight) return;
+    if (fullStateHydrationPromise) {
+      scheduleFastActionStateRefresh(750);
+      return;
+    }
     if (busy || noticesBusy) {
       scheduleFastActionStateRefresh(500);
       return;
@@ -1756,7 +1760,7 @@
       var scrollTop = screen.scrollTop;
       render();
       screen.scrollTop = scrollTop;
-      await showPendingNotices();
+      if (!stateNeedsFullHydration(state)) await showPendingNotices();
     } catch (_) {
       scheduleFastActionStateRefresh(2000);
     } finally {
@@ -3290,8 +3294,13 @@
         haptic('error');
         return;
       }
+      var needsModuleHydration = stateNeedsFullHydration(state) && jump.dataset.jump !== 'home';
       switchScreen(jump.dataset.jump);
-      scrollToPanel(jump.dataset.focus);
+      if (needsModuleHydration) {
+        hydrateFullState(jump.dataset.jump).then(function () { scrollToPanel(jump.dataset.focus); });
+      } else {
+        scrollToPanel(jump.dataset.focus);
+      }
       haptic('light');
       return;
     }
@@ -3463,7 +3472,7 @@
 
   async function refreshSeasonSnapshot(force) {
     var monotonicNow = performance.now();
-    if (busy || noticesBusy || seasonRefreshBusy || !state || !state.adopted) return;
+    if (busy || noticesBusy || seasonRefreshBusy || fullStateHydrationPromise || !state || !state.adopted) return;
     if (!force && lastSeasonServerRefreshAt > 0 && monotonicNow - lastSeasonServerRefreshAt < 300000) return;
     seasonRefreshBusy = true;
     try {
