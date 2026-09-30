@@ -4750,6 +4750,65 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
   }
 }
 
+async function buildPetSeasonSlotCoreSummary(db, telegramId, now = new Date()) {
+  const owner = String(telegramId || '').trim();
+  if (!owner) return { adopted: false, reason: 'missing_telegram_id', hydrated: false, slots: [] };
+  const season = getPetSeasonInfo(now);
+  const [slotRows, activeSlot, arcade, wallet] = await Promise.all([
+    db.prepare(`
+      SELECT s.pet_id, s.telegram_id, s.season_key, s.slot_number, s.acquisition_type,
+        s.source_event_key, s.arcade_xp_spent, s.status, s.created_at, s.updated_at,
+        i.pet_name, i.species, i.stage, i.level, i.pet_xp, i.health, i.energy,
+        i.hunger, i.happiness, i.cleanliness, i.last_decay_at, l.phase AS lifecycle_phase,
+        l.species_id AS lifecycle_species_id, l.rare_morph_id,
+        COALESCE((SELECT MAX(e.stage) FROM telegram_pet_evolutions_by_pet e WHERE e.pet_id=s.pet_id), 0) AS evolution_stage
+      FROM telegram_pet_season_slots s
+      LEFT JOIN telegram_pet_instances i
+        ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id
+      LEFT JOIN telegram_pet_lifecycle_by_pet l
+        ON l.pet_id=s.pet_id AND l.telegram_id=s.telegram_id
+      WHERE s.telegram_id=? AND s.season_key=?
+      ORDER BY s.slot_number ASC
+    `).bind(owner, season.key).all().then(requirePetReadResult),
+    db.prepare(`SELECT pet_id, season_key FROM telegram_pet_active_slots WHERE telegram_id=? LIMIT 1`)
+      .bind(owner).first().then(requirePetFirstReadResult),
+    db.prepare(`SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id=? LIMIT 1`)
+      .bind(owner).first().then(requirePetFirstReadResult),
+    db.prepare(`SELECT arcade_xp_spendable, arcade_xp_spent FROM arcade_xp_wallets WHERE telegram_id=? LIMIT 1`)
+      .bind(owner).first().then(requirePetFirstReadResult),
+  ]);
+  const rawRows = slotRows.results || [];
+  const rowsBySlot = new Map(rawRows.map((row) => [Number(row.slot_number), applyPetDecay({ ...row }, now)]));
+  const activePetId = activeSlot?.season_key === season.key ? activeSlot.pet_id : rowsBySlot.get(1)?.pet_id || null;
+  const arcadeXpLifetime = Math.max(0, Number(arcade?.arcade_xp_total || 0));
+  const arcadeXpAvailable = Math.max(0, Number(wallet?.arcade_xp_spendable || 0));
+  const arcadeXpSpent = Math.max(0, Number(wallet?.arcade_xp_spent || 0));
+  const nextSlotNumber = Math.min(PET_SEASON_MAX_SLOTS + 1, rawRows.length + 1);
+  const nextSlotCost = Number(PET_SEASON_EXTRA_SLOT_COSTS[nextSlotNumber] || 0);
+  const previousSlotOwned = nextSlotNumber <= 1 ? true : rowsBySlot.has(nextSlotNumber - 1);
+  return {
+    adopted: true,
+    hydrated: false,
+    season,
+    current_season_week: getPetSeasonWeek(season, now),
+    max_slots: PET_SEASON_MAX_SLOTS,
+    active_pet_id: activePetId,
+    arcade_xp_available: arcadeXpAvailable,
+    arcade_xp_lifetime: arcadeXpLifetime,
+    arcade_xp_spendable: arcadeXpAvailable,
+    arcade_xp_spent: arcadeXpSpent,
+    next_slot_cost: nextSlotCost,
+    can_buy_next_slot: nextSlotNumber <= PET_SEASON_MAX_SLOTS && previousSlotOwned && arcadeXpAvailable >= nextSlotCost,
+    purchase_enabled: true,
+    purchase_disabled_reason: null,
+    slots: Array.from({ length: PET_SEASON_MAX_SLOTS }, (_, index) => {
+      const slotNumber = index + 1;
+      const previousOwned = slotNumber <= 1 ? true : rowsBySlot.has(slotNumber - 1);
+      return serializePetSeasonSlot(rowsBySlot.get(slotNumber), slotNumber, activePetId, arcadeXpAvailable, previousOwned);
+    }),
+  };
+}
+
 async function buyPetSeasonSlot(db, telegramId, requestedSlot, options = {}) {
   const slotNumber = Number(requestedSlot);
   if (!Number.isInteger(slotNumber) || slotNumber < 2 || slotNumber > PET_SEASON_MAX_SLOTS) {
@@ -9468,6 +9527,101 @@ function buildPetMiniAppCooldownSummary({ journeySummary = null, guidance = null
   };
 }
 
+async function buildPetMiniAppCoreState(db, telegramId) {
+  const now = new Date();
+  await preparePetMiniAppState(db, telegramId, now);
+  const petRaw = await getPetProfile(db, telegramId, false);
+  if (!petRaw) {
+    return {
+      adopted: false,
+      hydration: { mode: 'core', full: false },
+      pet: null,
+      lifecycle: null,
+      next: { key: 'adopt', title: 'Activate EGGYONE', detail: 'Awaken your first Secret Bot to begin.', action: 'adopt', destination: 'home' },
+      guidance: null,
+      season_slots: { adopted: false, hydrated: false, season: getPetSeasonInfo(now), slots: [] },
+      cooldowns: { server_time: now.toISOString(), next_expires_at: null, entries: [] },
+      server_time: now.toISOString(),
+    };
+  }
+
+  const lifecyclePromise = getExistingMoonpetLifecycle(db, telegramId)
+    .then((lifecycle) => lifecycle || getMoonpetLifecycle(db, telegramId));
+  const activityPromise = getActivePetActivitySession(db, telegramId, now)
+    .then((active) => active || getRecoverablePetActivitySession(db, telegramId));
+  const [lifecycle, activity, seasonSlots, specialActions, recentCare] = await Promise.all([
+    lifecyclePromise,
+    activityPromise,
+    buildPetSeasonSlotCoreSummary(db, telegramId, now),
+    getPetSpecialActionGuidanceState(db, telegramId, now),
+    db.prepare(`SELECT event_type, MAX(created_at) AS created_at
+      FROM telegram_pet_events
+      WHERE telegram_id=? AND event_type IN ('feed','play','clean','sleep','train') AND status='accepted'
+      GROUP BY event_type`).bind(String(telegramId)).all().then(requirePetReadResult),
+  ]);
+
+  const identityProxy = {
+    current_stage: {
+      stage: Math.max(0, Number(lifecycle?.evolution_stage) || 0),
+      evolution_id: null,
+      name: null,
+    },
+    lifecycle,
+  };
+  const canonicalPet = serializePet(petRaw, identityProxy, { include_art_identity: true, include_callsign: true });
+  if (canonicalPet) {
+    canonicalPet.display_name = resolveMoonpetDisplayName(lifecycle || {}, identityProxy);
+    canonicalPet.name = canonicalPet.display_name;
+    canonicalPet.pet_name = canonicalPet.display_name;
+    canonicalPet.art_identity_id = lifecycle?.art_identity_id || canonicalPet.art_identity_id || null;
+    canonicalPet.species = lifecycle?.identity_revealed ? lifecycle.species_id : null;
+  }
+
+  const activitySummary = buildPetActivitySummary(activity, now);
+  const careCooldowns = (recentCare.results || []).map((entry) => ({
+    action: entry.event_type,
+    cooldown: buildPetCooldownFromStart(entry.created_at, PETS_ACTION_COOLDOWN_SECONDS, now),
+  }));
+  const specialCooldowns = getPetSpecialActionCooldownEntriesFromState(specialActions);
+  const guidance = {
+    pet: canonicalPet,
+    identity: identityProxy,
+    activity: activitySummary,
+    special_actions: specialActions,
+    daily_cache: { available: false, claimed: false, syncing: true, cooldown: null },
+  };
+  const next = lifecycle?.phase === 'egg'
+    ? {
+        key: 'incubate',
+        title: lifecycle.incubation?.ready ? 'Start EGGYONE BREAKOUT' : 'Awaken EGGYONE',
+        detail: lifecycle.incubation?.ready
+          ? 'The Secret Bot is answering. Start BREAKOUT when ready.'
+          : `Build ${lifecycle.incubation?.target || 12} signal with at least three kinds of care.`,
+        action: lifecycle.incubation?.ready ? 'hatch' : 'incubate',
+        destination: 'home',
+      }
+    : lifecycle?.rare?.ready
+      ? { key: 'rare_morph', title: 'Answer the hidden signal', detail: 'Your companion history has opened a morph path.', action: 'rare_morph', destination: 'profile' }
+      : { key: 'care', title: 'Keep your Moonpet moving', detail: 'Care is ready now. Open another module when you want missions, runs, economy or profile detail.', action: 'care', destination: 'home' };
+
+  return {
+    adopted: true,
+    hydration: { mode: 'core', full: false },
+    pet: canonicalPet,
+    lifecycle,
+    next,
+    guidance,
+    season_slots: seasonSlots,
+    cooldowns: buildPetMiniAppCooldownSummary({
+      guidance,
+      seasonSlots,
+      actionCooldowns: [...careCooldowns, ...specialCooldowns],
+      now,
+    }),
+    server_time: now.toISOString(),
+  };
+}
+
 async function buildPetMiniAppState(db, telegramId, botToken) {
   const now = new Date();
   // State preparation owns current-season initialization. Roster projection
@@ -10704,7 +10858,9 @@ export default {
       { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/state', null, corsHeaders, { includeIp: false, telegramId: verified.telegramId }); if (limited) return limited; }
       await upsertTelegramUser(env.DB, verified.user).catch(() => {});
       try {
-        const state = await buildPetMiniAppState(env.DB, verified.telegramId, env.TELEGRAM_BOT_TOKEN);
+        const state = body.mode === 'core'
+          ? await buildPetMiniAppCoreState(env.DB, verified.telegramId)
+          : await buildPetMiniAppState(env.DB, verified.telegramId, env.TELEGRAM_BOT_TOKEN);
         return json({ ok: true, state });
       } catch (error) {
         logApiFailure('pet_mini_app_state_failed', {
