@@ -15064,6 +15064,7 @@ export const __petMediaTestHooks = Object.freeze({
   buildPetMiniAppJourneySummary,
   buildPetMiniAppFutureSystemState,
   buildPetMiniAppCapabilities,
+  buildPetMiniAppCoreState,
   buildPetMiniAppState,
   hasCompletedPetMiniAppSeasonPet,
   getPetMiniAppCombatEligibility,
