@@ -39,11 +39,16 @@ const text = [
 
 const body = { chat_id: CHAT_ID, text, disable_web_page_preview: true };
 if (THREAD_ID) body.message_thread_id = Number(THREAD_ID);
-const response = await fetch(`${API_BASE}/bot${TOKEN}/sendMessage`, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(body),
-});
+let response;
+try {
+  response = await fetch(`${API_BASE}/bot${TOKEN}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+} catch {
+  fail('Telegram sendMessage request failed');
+}
 let payload;
 try { payload = await response.json(); } catch { payload = null; }
 if (!response.ok || payload?.ok !== true) fail(`Telegram sendMessage returned HTTP ${response.status}`);

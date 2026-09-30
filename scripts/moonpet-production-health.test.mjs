@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -9,8 +9,10 @@ import test from 'node:test';
 
 const PROBE = new URL('./moonpet-production-health-probe.mjs', import.meta.url);
 const ALERT = new URL('./moonpet-production-health-alert.mjs', import.meta.url);
+const INCIDENT = new URL('./moonpet-production-health-incident.mjs', import.meta.url);
 const WORKFLOW = readFileSync(new URL('../.github/workflows/moonpet-production-health.yml', import.meta.url), 'utf8');
 const PROBE_SOURCE = readFileSync(PROBE, 'utf8');
+const INCIDENT_SOURCE = readFileSync(INCIDENT, 'utf8');
 const COMMIT = 'a'.repeat(40);
 const BOT_TOKEN = '123456:canary-secret';
 const TELEGRAM_ID = '9007199254740993';
@@ -64,9 +66,9 @@ test('scheduled workflow probes twice, deduplicates incidents and alerts only on
   assert.equal((WORKFLOW.match(/node scripts\/moonpet-production-health-probe\.mjs/g) || []).length, 2);
   assert.match(PROBE_SOURCE, /MOONPET_CANARY_ACTION: 'none'/);
   assert.match(PROBE_SOURCE, /MOONPET_CANARY_ALLOW_ACTION: '0'/);
-  assert.match(WORKFLOW, /gh issue list --state open --label production-alert/);
-  assert.match(WORKFLOW, /notify=failed/);
-  assert.match(WORKFLOW, /notify=recovered/);
+  assert.match(WORKFLOW, /node scripts\/moonpet-production-health-incident\.mjs/);
+  assert.match(INCIDENT_SOURCE, /alert-pending/);
+  assert.match(INCIDENT_SOURCE, /notify\(notification\);\s*if \(notification === 'failed'\)/);
   assert.match(WORKFLOW, /secrets\.TELEGRAM_BOT_TOKEN/);
   assert.match(WORKFLOW, /secrets\.TELEGRAM_GROUP_CHAT_ID/);
 });
@@ -146,5 +148,125 @@ test('Telegram alert sends the configured chat and optional topic without loggin
     assert.equal(received.body.message_thread_id, 42);
     assert.match(received.body.text, /MOONPET PRODUCTION ALERT/);
     assert.doesNotMatch(result.stdout + result.stderr, /alert-secret/);
+  });
+});
+
+async function withIncidentHarness(initialIssue, callback) {
+  const directory = mkdtempSync(path.join(tmpdir(), 'moonpet-health-incident-'));
+  const ghPath = path.join(directory, 'gh');
+  const statePath = path.join(directory, 'state.json');
+  const reportPath = path.join(directory, 'report.json');
+  writeFileSync(statePath, JSON.stringify({ issue: initialIssue, nextNumber: 42 }));
+  writeFileSync(reportPath, JSON.stringify({
+    checked_at: '2026-09-30T05:00:00.000Z',
+    deployed_commit: COMMIT,
+    summary: 'Two consecutive production probes failed.',
+  }));
+  writeFileSync(ghPath, `#!/usr/bin/env node
+const fs = require('node:fs');
+const statePath = process.env.MOCK_GH_STATE_FILE;
+const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+const args = process.argv.slice(2);
+const save = () => fs.writeFileSync(statePath, JSON.stringify(state));
+if (args[0] === 'label') process.exit(0);
+if (args[0] === 'issue' && args[1] === 'list') {
+  console.log(JSON.stringify(state.issue?.state === 'open' ? [state.issue] : []));
+  process.exit(0);
+}
+if (args[0] === 'issue' && args[1] === 'create') {
+  const title = args[args.indexOf('--title') + 1];
+  state.issue = { number: state.nextNumber++, title, state: 'open', labels: ['production-alert', 'alert-pending'] };
+  save();
+  console.log('https://github.com/example/repo/issues/' + state.issue.number);
+  process.exit(0);
+}
+if (args[0] === 'issue' && args[1] === 'edit') {
+  const remove = args[args.indexOf('--remove-label') + 1];
+  const add = args[args.indexOf('--add-label') + 1];
+  state.issue.labels = state.issue.labels.filter((label) => label !== remove);
+  if (!state.issue.labels.includes(add)) state.issue.labels.push(add);
+  save();
+  process.exit(0);
+}
+if (args[0] === 'issue' && args[1] === 'close') {
+  state.issue.state = 'closed';
+  save();
+  process.exit(0);
+}
+process.exit(2);
+`);
+  chmodSync(ghPath, 0o755);
+  await withServer(async (request, response) => {
+    response.setHeader('content-type', 'application/json');
+    if (request.method !== 'POST' || !request.url.endsWith('/sendMessage')) {
+      response.statusCode = 404;
+      return response.end(JSON.stringify({ ok: false }));
+    }
+    const calls = JSON.parse(readFileSync(path.join(directory, 'telegram.json'), 'utf8'));
+    calls.count += 1;
+    writeFileSync(path.join(directory, 'telegram.json'), JSON.stringify(calls));
+    if (calls.count === 1) {
+      response.statusCode = 503;
+      return response.end(JSON.stringify({ ok: false }));
+    }
+    response.end(JSON.stringify({ ok: true, result: { message_id: calls.count } }));
+  }, async (apiBase) => {
+    writeFileSync(path.join(directory, 'telegram.json'), JSON.stringify({ count: 0 }));
+    await callback({
+      directory,
+      reportPath,
+      statePath,
+      apiBase,
+      runIncident: (result) => run(INCIDENT, {
+        PATH: `${directory}${path.delimiter}${process.env.PATH}`,
+        MOCK_GH_STATE_FILE: statePath,
+        GH_TOKEN: 'test-token',
+        RESULT: result,
+        MOONPET_HEALTH_REPORT: reportPath,
+        MOONPET_ALERT_RUN_URL: 'https://github.com/example/actions/runs/1',
+        TELEGRAM_API_BASE_URL: apiBase,
+        TELEGRAM_BOT_TOKEN: '999:alert-secret',
+        TELEGRAM_GROUP_CHAT_ID: '-1001234567890',
+      }, directory),
+    });
+  });
+}
+
+test('failed outage alert stays pending and retries after Telegram fails once', async () => {
+  await withIncidentHarness(null, async ({ runIncident, statePath, directory }) => {
+    const first = await runIncident('failed');
+    assert.notEqual(first.status, 0);
+    let state = JSON.parse(readFileSync(statePath, 'utf8'));
+    assert.equal(state.issue.state, 'open');
+    assert.ok(state.issue.labels.includes('alert-pending'));
+    assert.ok(!state.issue.labels.includes('alert-sent'));
+
+    const retry = await runIncident('failed');
+    assert.equal(retry.status, 0, retry.stderr);
+    state = JSON.parse(readFileSync(statePath, 'utf8'));
+    assert.equal(state.issue.state, 'open');
+    assert.ok(state.issue.labels.includes('alert-sent'));
+    assert.ok(!state.issue.labels.includes('alert-pending'));
+    assert.equal(JSON.parse(readFileSync(path.join(directory, 'telegram.json'), 'utf8')).count, 2);
+  });
+});
+
+test('recovery keeps the incident open and retries after Telegram fails once', async () => {
+  await withIncidentHarness({
+    number: 41,
+    title: '[Production alert] Moonpet health check failed',
+    state: 'open',
+    labels: ['production-alert', 'alert-sent'],
+  }, async ({ runIncident, statePath, directory }) => {
+    const first = await runIncident('healthy');
+    assert.notEqual(first.status, 0);
+    let state = JSON.parse(readFileSync(statePath, 'utf8'));
+    assert.equal(state.issue.state, 'open');
+
+    const retry = await runIncident('healthy');
+    assert.equal(retry.status, 0, retry.stderr);
+    state = JSON.parse(readFileSync(statePath, 'utf8'));
+    assert.equal(state.issue.state, 'closed');
+    assert.equal(JSON.parse(readFileSync(path.join(directory, 'telegram.json'), 'utf8')).count, 2);
   });
 });

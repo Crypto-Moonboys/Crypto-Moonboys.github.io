@@ -91,42 +91,16 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-      - name: Open or resolve production incident
-        id: incident
-        shell: bash
+      - name: Send retryable incident notifications
         env:
           GH_TOKEN: ${{ github.token }}
           RESULT: ${{ steps.probe.outputs.result }}
-        run: |
-          set -euo pipefail
-          title='[Production alert] Moonpet health check failed'
-          gh label create production-alert --color B60205 --description 'Automated production health incident' --force
-          issue="$(gh issue list --state open --label production-alert --search "$title in:title" --json number --jq '.[0].number // empty')"
-          notify=none
-
-          if [ "$RESULT" = failed ]; then
-            if [ -z "$issue" ]; then
-              issue_url="$(gh issue create --title "$title" --label production-alert --body-file moonpet-production-health-report.json)"
-              notify=failed
-              echo "Opened $issue_url"
-            fi
-          elif [ "$RESULT" = healthy ] && [ -n "$issue" ]; then
-            gh issue close "$issue" --comment "Two consecutive production probes passed. Closing the automated incident. Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-            notify=recovered
-          fi
-
-          echo "notify=$notify" >> "$GITHUB_OUTPUT"
-
-      - name: Notify Telegram of state change
-        if: steps.incident.outputs.notify != 'none'
-        env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_GROUP_CHAT_ID: ${{ secrets.TELEGRAM_GROUP_CHAT_ID }}
           TELEGRAM_GROUP_THREAD_ID: ${{ secrets.TELEGRAM_GROUP_THREAD_ID }}
-          MOONPET_ALERT_STATE: ${{ steps.incident.outputs.notify }}
           MOONPET_ALERT_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           MOONPET_HEALTH_REPORT: moonpet-production-health-report.json
-        run: node scripts/moonpet-production-health-alert.mjs
+        run: node scripts/moonpet-production-health-incident.mjs
 
       - name: Fail unhealthy or degraded run
         if: steps.probe.outputs.result != 'healthy'
