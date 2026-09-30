@@ -25,10 +25,10 @@ export function boundedRecoveryLimit(value, maximum) {
 // No read/write is added for an empty queue; stale readers cannot rewind it.
 export async function claimPetRecoveryBatch(db, owner, queue, candidates) {
   if (!candidates.length) return false;
-  const result = await db.prepare(`INSERT INTO telegram_settings (telegram_id,setting_key,setting_value)
+  const result = await db.prepare(`INSERT INTO telegram_pet_recovery_cursors (telegram_id,setting_key,setting_value)
     VALUES (?,?,?) ON CONFLICT(telegram_id,setting_key) DO UPDATE SET
       setting_value=excluded.setting_value, updated_at=CURRENT_TIMESTAMP
-    WHERE telegram_settings.setting_value IS ?`)
+    WHERE telegram_pet_recovery_cursors.setting_value IS ?`)
     .bind(owner, `moonpet:recovery:${queue}`, candidates.at(-1).recovery_key, candidates[0].recovery_cursor ?? null).run();
   return Number(result?.meta?.changes || 0) > 0;
 }
