@@ -281,6 +281,17 @@ CREATE TABLE IF NOT EXISTS telegram_settings (
 CREATE INDEX IF NOT EXISTS idx_telegram_settings_telegram
   ON telegram_settings(telegram_id);
 
+-- Moonpet owns a dedicated cursor table because historical production
+-- telegram_settings uses the legacy global key/value schema.
+CREATE TABLE IF NOT EXISTS telegram_pet_recovery_cursors (
+  telegram_id   TEXT NOT NULL,
+  setting_key   TEXT NOT NULL,
+  setting_value TEXT,
+  created_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (telegram_id, setting_key)
+);
+
 INSERT OR IGNORE INTO telegram_factions (name, description, icon) VALUES
   ('diamond-hands', 'Long-term holders with conviction.', '💎'),
   ('hodl-warriors', 'Battle-hardened holders in the trenches.', '⚔️'),
