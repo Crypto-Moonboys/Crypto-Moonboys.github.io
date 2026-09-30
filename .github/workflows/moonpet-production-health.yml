@@ -1,0 +1,107 @@
+name: Moonpet Production Health
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: moonpet-production-health
+  cancel-in-progress: false
+
+jobs:
+  monitor:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    steps:
+      - name: Checkout complete main history
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run two production probes
+        id: probe
+        shell: bash
+        env:
+          MOONPET_CANARY_BOT_TOKEN: ${{ secrets.MOONPET_CANARY_BOT_TOKEN }}
+          MOONPET_CANARY_TELEGRAM_ID: ${{ secrets.MOONPET_CANARY_TELEGRAM_ID }}
+        run: |
+          set +e
+          node scripts/moonpet-production-health-probe.mjs > probe-one.json 2> probe-one.error
+          first=$?
+          sleep 15
+          node scripts/moonpet-production-health-probe.mjs > probe-two.json 2> probe-two.error
+          second=$?
+          set -e
+
+          if [ "$first" -eq 0 ] && [ "$second" -eq 0 ]; then
+            result=healthy
+          elif [ "$first" -ne 0 ] && [ "$second" -ne 0 ]; then
+            result=failed
+          else
+            result=degraded
+          fi
+
+          RESULT="$result" FIRST="$first" SECOND="$second" node <<'NODE'
+          const fs = require('node:fs');
+          const readJson = (path) => {
+            try { return JSON.parse(fs.readFileSync(path, 'utf8')); } catch { return null; }
+          };
+          const readError = (path) => {
+            try { return fs.readFileSync(path, 'utf8').trim().slice(-2000); } catch { return ''; }
+          };
+          const probes = [
+            process.env.FIRST === '0' ? readJson('probe-one.json') : { ok: false, error: readError('probe-one.error') },
+            process.env.SECOND === '0' ? readJson('probe-two.json') : { ok: false, error: readError('probe-two.error') },
+          ];
+          const deployed = probes.find((probe) => probe?.deployed_commit)?.deployed_commit || 'unknown';
+          const summary = process.env.RESULT === 'healthy'
+            ? 'Two consecutive production probes passed.'
+            : process.env.RESULT === 'failed'
+              ? 'Two consecutive production probes failed.'
+              : 'One production probe failed and one passed; incident state was not changed.';
+          fs.writeFileSync('moonpet-production-health-report.json', JSON.stringify({
+            result: process.env.RESULT,
+            checked_at: new Date().toISOString(),
+            deployed_commit: deployed,
+            summary,
+            probes,
+          }, null, 2) + '\n');
+          NODE
+          echo "result=$result" >> "$GITHUB_OUTPUT"
+
+      - name: Upload sanitised health report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: moonpet-production-health-${{ github.run_id }}
+          path: moonpet-production-health-report.json
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Send retryable incident notifications
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RESULT: ${{ steps.probe.outputs.result }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_GROUP_CHAT_ID: ${{ secrets.TELEGRAM_GROUP_CHAT_ID }}
+          TELEGRAM_GROUP_THREAD_ID: ${{ secrets.TELEGRAM_GROUP_THREAD_ID }}
+          MOONPET_ALERT_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          MOONPET_HEALTH_REPORT: moonpet-production-health-report.json
+        run: node scripts/moonpet-production-health-incident.mjs
+
+      - name: Fail unhealthy or degraded run
+        if: steps.probe.outputs.result != 'healthy'
+        run: exit 1

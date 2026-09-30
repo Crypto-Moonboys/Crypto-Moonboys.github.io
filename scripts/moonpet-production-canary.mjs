@@ -121,6 +121,9 @@ const publicBoard = await requestJson('/telegram-pets/leaderboard?period=seasona
 if (publicBoard.response.status !== 200 || !Array.isArray(publicBoard.payload?.entries)) {
   fail(`/telegram-pets/leaderboard returned invalid HTTP ${publicBoard.response.status}`);
 }
+if (privateBoard.payload.period !== 'seasonal' || publicBoard.payload.period !== 'seasonal') {
+  fail('authenticated and public leaderboards did not report the seasonal period');
+}
 const leaderboardProjection = (entries) => entries.map((entry) => ({
   rank: Number(entry.rank),
   pet_id: String(entry.pet_id || ''),
