@@ -130,7 +130,8 @@
         "047_fix_telegram_leaderboard_reward_constraint.sql",
         "075_dead_run_gps_survival.sql",
         "079_moonpet_training_and_style.sql",
-        "080_moonpet_beta_xp_quarantine.sql"
+        "080_moonpet_beta_xp_quarantine.sql",
+        "081_moonpet_recovery_cursors.sql"
       ],
       "verified_migrations": [],
       "evidence": [],

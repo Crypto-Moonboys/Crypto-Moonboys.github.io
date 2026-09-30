@@ -10,6 +10,7 @@ const petRecoverySqlSources = [
   worker,
   'daily-moon-run.js',
   'journey-recovery.js',
+  'recovery-limits.js',
   'runtime-recovery.js',
   'weekly-boss-recovery.js',
 ].map((source) => source === worker ? source : fs.readFileSync(new URL(`../workers/moonboys-api/pets/${source}`, import.meta.url), 'utf8')).join('\n');
@@ -411,7 +412,8 @@ assert.match(worker, /player_display_name: \[row\.first_name, row\.last_name\][\
 assert.match(worker, /MOONPET_SPECIES, createMoonEggLifecycle, ensureMoonpetLifecycle,/, 'legacy lifecycle materialization dependency must be imported');
 assert.match(worker, /import \{ readPetLeaderboard, readPetActivity \}/, 'public read surfaces must use shared read-only projections');
 assert.match(worker, /pet_mini_app_state_failed/, 'Mini App state failures must return a controlled JSON error instead of an uncaught fetch failure');
-assert.doesNotMatch(petRecoverySqlSources, /\btelegram_settings\s+cursor\b|\bcursor\.setting_value\b/, 'D1 recovery queries must not use cursor as a SQL table alias');
+assert.doesNotMatch(petRecoverySqlSources, /\btelegram_settings\b/, 'Moonpet recovery must not depend on the legacy production telegram_settings schema');
+assert.match(schema, /CREATE TABLE IF NOT EXISTS telegram_pet_recovery_cursors[\s\S]*PRIMARY KEY \(telegram_id, setting_key\)/, 'schema must define the dedicated per-player Moonpet cursor table');
 const miniAppStateBuilder = asyncBlock('buildPetMiniAppState');
 assert.match(miniAppStateBuilder, /readPetLeaderboard\(db, \{ period: 'seasonal', limit: 10, now \}\)/, 'initial Mini App ranks must use the shared current-season query');
 assert.match(miniAppStateBuilder, /pet_mini_app_initial_leaderboard_failed[\s\S]*throw error/, 'Mini App state must propagate ranking query errors');

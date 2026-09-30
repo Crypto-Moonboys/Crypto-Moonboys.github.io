@@ -162,17 +162,17 @@ test('an overlapping Journey refresh cannot rewind the retry cursor or process a
   const concurrentCursor = `${seasonKey}:2026-07-05:${f.petId}`;
   let raced = false;
   f.db.beforeRun = statement => {
-    if (!raced && statement.query.includes('INSERT INTO telegram_settings') && statement.args[1] === key) {
+    if (!raced && statement.query.includes('INSERT INTO telegram_pet_recovery_cursors') && statement.args[1] === key) {
       raced = true;
       // A different refresh claimed its turn after this request read the queue.
-      f.sql.prepare('INSERT INTO telegram_settings (telegram_id,setting_key,setting_value) VALUES (?,?,?)')
+      f.sql.prepare('INSERT INTO telegram_pet_recovery_cursors (telegram_id,setting_key,setting_value) VALUES (?,?,?)')
         .run(f.owner, key, concurrentCursor);
     }
   };
   const recover = () => recoverPetJourneyAwards(f.db, f.owner, { award_limit: 2 });
   await recover();
   assert.equal(raced, true);
-  assert.equal(f.sql.prepare('SELECT setting_value FROM telegram_settings WHERE setting_key=?').get(key).setting_value, concurrentCursor);
+  assert.equal(f.sql.prepare('SELECT setting_value FROM telegram_pet_recovery_cursors WHERE setting_key=?').get(key).setting_value, concurrentCursor);
   assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_growth_marks').get().n, 0);
   f.db.beforeRun = null;
   await recover();

@@ -12,7 +12,7 @@ export async function recoverPetWeeklyBossVictories(db, owner, finish, limit) {
       AND e.reason='weekly_boss_attempt' AND e.week_key=v.week_key AND e.day_key=date(v.defeated_at)
     JOIN telegram_pet_instances i ON i.pet_id=v.pet_id AND i.telegram_id=v.telegram_id AND i.season_key=v.season_key
     JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id AND s.season_key=i.season_key AND s.slot_number=i.slot_number
-    LEFT JOIN telegram_settings recovery_state ON recovery_state.telegram_id=v.telegram_id AND recovery_state.setting_key='moonpet:recovery:weekly-boss'
+    LEFT JOIN telegram_pet_recovery_cursors recovery_state ON recovery_state.telegram_id=v.telegram_id AND recovery_state.setting_key='moonpet:recovery:weekly-boss'
     WHERE v.telegram_id=? AND p.defeated_at IS NOT NULL
       AND i.status IN ('active','archived') AND s.status IN ('active','archived')
       AND v.boss_id IN (${PET_WEEKLY_BOSSES.map(() => '?').join(',')})

@@ -1613,7 +1613,7 @@ for (const kind of ['endings', 'records']) {
     sources.push(f);
   }
   seedPlayer(adapter, `other-${owner}`);
-  adapter.database.prepare("INSERT INTO telegram_settings (telegram_id,setting_key,setting_value) VALUES (?,?,'untouched')")
+  adapter.database.prepare("INSERT INTO telegram_pet_recovery_cursors (telegram_id,setting_key,setting_value) VALUES (?,?,'untouched')")
     .run(`other-${owner}`, `moonpet:daily-recovery:${kind}`);
   const blocked = new Set(sources.slice(0, 2).map(f => f.run.run_id));
   const attempts = [];
@@ -1660,14 +1660,14 @@ for (const kind of ['endings', 'records']) {
   assert.equal(adapter.database.prepare('SELECT runs_recorded FROM telegram_pet_daily_leaderboard_records WHERE telegram_id=?').get(owner).runs_recorded, 3);
   const receipts = adapter.database.prepare('SELECT * FROM telegram_pet_reward_claims WHERE telegram_id=? ORDER BY claim_id').all(owner);
   const xp = adapter.database.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE telegram_id=?').get(owner);
-  const cursors = adapter.database.prepare('SELECT * FROM telegram_settings ORDER BY telegram_id,setting_key').all();
+  const cursors = adapter.database.prepare('SELECT * FROM telegram_pet_recovery_cursors ORDER BY telegram_id,setting_key').all();
   attempts.length = 0;
   await Promise.all([recover(), recover()]);
   assert.deepEqual(attempts, []);
   assert.deepEqual(adapter.database.prepare('SELECT * FROM telegram_pet_reward_claims WHERE telegram_id=? ORDER BY claim_id').all(owner), receipts);
   assert.deepEqual(adapter.database.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE telegram_id=?').get(owner), xp);
-  assert.deepEqual(adapter.database.prepare('SELECT * FROM telegram_settings ORDER BY telegram_id,setting_key').all(), cursors, 'empty queues do not write cursors');
-  assert.equal(adapter.database.prepare('SELECT setting_value FROM telegram_settings WHERE telegram_id=?').get(`other-${owner}`).setting_value, 'untouched');
+  assert.deepEqual(adapter.database.prepare('SELECT * FROM telegram_pet_recovery_cursors ORDER BY telegram_id,setting_key').all(), cursors, 'empty queues do not write cursors');
+  assert.equal(adapter.database.prepare('SELECT setting_value FROM telegram_pet_recovery_cursors WHERE telegram_id=?').get(`other-${owner}`).setting_value, 'untouched');
 }
 
 console.log('Telegram Pets Daily Moon Run tests passed (10,000-run economy simulation; versioned tactics, risk/score previews, concurrent outcome authority and fair recovery included).');
