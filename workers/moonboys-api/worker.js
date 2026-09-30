@@ -1,4 +1,4 @@
-Y��x-���jם��i��+��j[h��ܢ���m��}���o+^����םimport { getPracticeBoard, processPracticeAction } from './pets/practice-progression.js';
+import { getPracticeBoard, processPracticeAction } from './pets/practice-progression.js';
 import { getStyleLoadout, equipPetStyle } from './pets/style-loadout.js';
 import { RELIC_ROUTE_DETAILS } from './pets/relic-passives.js';
 import { requirePetFirstReadResult, requirePetReadResult } from './pets/read-result.js';
@@ -5820,7 +5820,6960 @@ async function completePetArenaBattle(db, battle, newlyCompleted = false) {
   if (saved?.status !== 'completed') return { accepted:false, reason:'battle_not_active', battle:saved };
   const duplicateCompletion = !newlyCompleted && Number(claim?.meta?.changes || 0) === 0;
   const player1 = await awardPetArenaParticipant(db, saved, saved.player1_telegram_id);
-  const player2 = saved.player2_telegram_id && saved.player2_telegram_id !== '�my��$z{-���jםeId,
+  const player2 = saved.player2_telegram_id && saved.player2_telegram_id !== 'app'
+    ? await awardPetArenaParticipant(db, saved, saved.player2_telegram_id) : null;
+  return { accepted:true, duplicate:duplicateCompletion, reason:duplicateCompletion ? 'already_completed' : 'arena_completed',
+    battle:saved, result:petArenaResult(saved), rewards:{player1,player2} };
+}
+async function recoverPetCombatProgress(db, telegramId) {
+  // Arena and Kaiju share one rotating slot so combined combat/care backlogs
+  // remain within D1's request budget and neither combat mode can starve the other.
+  const owner = String(telegramId);
+  const rows = await db.prepare(`WITH candidates(kind,id,recovery_key) AS (
+    SELECT 'arena',b.battle_id,'arena:'||b.battle_id FROM telegram_pet_arena_battles b
+    LEFT JOIN telegram_pet_arena_rounds r ON r.battle_id=b.battle_id AND r.round_number=b.current_round
+    WHERE (b.player1_telegram_id=? OR b.player2_telegram_id=?)
+      AND ((b.status='completed' AND NOT EXISTS (SELECT 1 FROM telegram_pet_events e WHERE e.telegram_id=? AND e.status='accepted'
+        AND e.event_type='arena_battle' AND e.event_key=SUBSTR('pet_arena:'||b.battle_id||':'||?,1,120)))
+        OR (b.status='active' AND r.player1_move IS NOT NULL AND (r.player2_move IS NOT NULL OR b.player2_telegram_id='app')))
+    UNION ALL
+    SELECT 'kaiju',b.match_id,'kaiju:'||b.match_id FROM telegram_pet_kaiju_matches b
+    WHERE (b.player1_telegram_id=? OR b.player2_telegram_id=?)
+      AND b.player1_card_key IS NOT NULL AND (CASE WHEN b.mode='solo' THEN b.cpu_card_key ELSE b.player2_card_key END) IS NOT NULL
+      AND (b.status='selecting' OR (b.status='completed' AND b.result IN ('player1_win','player2_win','draw')
+        AND NOT EXISTS (SELECT 1 FROM telegram_pet_events e WHERE e.telegram_id=? AND e.status='accepted'
+          AND e.event_type='kaiju_battle' AND e.event_key=SUBSTR('pet_kaiju:'||b.match_id||':'||?,1,120))
+        AND (json_extract(CASE WHEN json_valid(b.score_json) THEN b.score_json ELSE '{}' END,?) IS NOT NULL
+          OR EXISTS (SELECT 1 FROM telegram_pet_events e WHERE e.telegram_id=? AND e.status='pending' AND e.pet_id IS NOT NULL
+            AND e.event_type='kaiju_battle' AND e.event_key=SUBSTR('pet_kaiju:'||b.match_id||':'||?,1,120)))))
+  ) SELECT c.*,recovery_state.setting_value AS recovery_cursor,kind_recovery_state.setting_value AS kind_cursor FROM candidates c
+    LEFT JOIN telegram_pet_recovery_cursors recovery_state ON recovery_state.telegram_id=? AND recovery_state.setting_key='moonpet:recovery:combat'
+    LEFT JOIN telegram_pet_recovery_cursors kind_recovery_state ON kind_recovery_state.telegram_id=? AND kind_recovery_state.setting_key='moonpet:recovery:combat:'||c.kind
+    ORDER BY CASE WHEN recovery_state.setting_value LIKE c.kind||':%' THEN 1 ELSE 0 END,
+      CASE WHEN c.recovery_key>COALESCE(kind_recovery_state.setting_value,'') THEN 0 ELSE 1 END,c.recovery_key LIMIT 1`)
+    .bind(owner,owner,owner,owner,owner,owner,owner,owner,`$.reward_sources."${owner}".pet_id`,owner,owner,owner,owner).all();
+  if (!await claimPetRecoveryBatch(db, owner, 'combat', rows.results || [])) return;
+  for (const candidate of rows.results || []) {
+    // Alternate modes first, then continue that mode's own cursor. A new Arena
+    // arrival cannot jump ahead of Kaiju, nor reset Arena to an invalid old row.
+    if (!await claimPetRecoveryBatch(db, owner, `combat:${candidate.kind}`,
+      [{ ...candidate, recovery_cursor: candidate.kind_cursor }])) return true;
+    if (candidate.kind === 'kaiju') {
+      const match = await getPetKaijuMatch(db, candidate.id);
+      if (match?.status === 'completed') {
+        const outcome = match.result === 'draw' ? 'kaiju_draw'
+          : match.result === (String(match.player1_telegram_id) === owner ? 'player1_win' : 'player2_win') ? 'kaiju_win' : 'kaiju_loss';
+        await awardPetKaijuPlayerResult(db, owner, match, outcome, PET_KAIJU_RESULT_REWARDS[outcome]);
+      } else if (match?.status === 'selecting') await finishPetKaijuMatch(db, match);
+    } else {
+      const battle = await getPetArenaBattle(db, candidate.id);
+      if (battle?.status === 'completed') await awardPetArenaParticipant(db, battle, owner);
+      else if (battle?.status === 'active') {
+        const round = await db.prepare('SELECT player1_move,player2_move FROM telegram_pet_arena_rounds WHERE battle_id=? AND round_number=?')
+          .bind(battle.battle_id,battle.current_round).first();
+        const move = String(battle.player1_telegram_id) === owner ? round?.player1_move : round?.player2_move;
+        if (move) await applyPetArenaMove(db, battle, owner, battle.current_round, move);
+      }
+    }
+  }
+  return true;
+}
+async function readyPetArenaBattle(db, battle, telegramId) {
+  const isP1 = String(battle.player1_telegram_id) === String(telegramId);
+  const isP2 = String(battle.player2_telegram_id) === String(telegramId);
+  if (!isP1 && !isP2) return { accepted:false, reason:'not_participant', battle };
+  const column = isP1 ? 'player1_ready_at' : 'player2_ready_at';
+  await db.prepare(`UPDATE telegram_pet_arena_battles SET ${column}=COALESCE(${column}, CURRENT_TIMESTAMP), expires_at=?
+    WHERE battle_id=? AND status IN ('readying','active')`).bind(petArenaExpiryTimestamp(), battle.battle_id).run();
+  let updated = await getPetArenaBattle(db, battle.battle_id);
+  if (updated?.player1_ready_at && updated?.player2_ready_at) {
+    await db.prepare(`UPDATE telegram_pet_arena_battles SET status='active', expires_at=?
+      WHERE battle_id=? AND status='readying' AND player1_ready_at IS NOT NULL AND player2_ready_at IS NOT NULL`)
+      .bind(petArenaExpiryTimestamp(), battle.battle_id).run();
+    updated = await getPetArenaBattle(db, battle.battle_id);
+    await ensurePetArenaRound(db, battle.battle_id, Number(updated?.current_round || 1));
+    return { accepted:true, reason:'round_prompt', battle: updated };
+  }
+  return { accepted:true, reason:'waiting_for_opponent', battle: updated };
+}
+async function forfeitPetArenaBattle(db, battle, telegramId) {
+  const isP1 = String(battle.player1_telegram_id) === String(telegramId), isP2 = String(battle.player2_telegram_id) === String(telegramId);
+  if (!isP1 && !isP2) return { accepted:false, reason:'not_participant', battle };
+  if (String(battle.status) === 'completed') return completePetArenaBattle(db, battle);
+  if (!['readying','active'].includes(String(battle.status))) return { accepted:true, duplicate:true, reason:'already_completed', battle };
+  const winner = isP1 ? battle.player2_telegram_id : battle.player1_telegram_id;
+  const claim = await db.prepare(`UPDATE telegram_pet_arena_battles SET winner_telegram_id=?, result=?, player1_hp=?, player2_hp=?, status='completed', completed_at=CURRENT_TIMESTAMP WHERE battle_id=? AND status IN ('readying','active')`).bind(winner === 'app' ? null : winner, isP1 ? 'player2_win' : 'player1_win', isP1 ? 0 : Number(battle.player1_hp || PET_ARENA_MAX_HP), isP2 ? 0 : Number(battle.player2_hp || PET_ARENA_MAX_HP), battle.battle_id).run();
+  if (Number(claim?.meta?.changes || 0) <= 0) return { accepted:true, duplicate:true, reason:'already_completed', battle: await getPetArenaBattle(db, battle.battle_id) };
+  return completePetArenaBattle(db, await getPetArenaBattle(db, battle.battle_id), true);
+}
+async function applyPetArenaMove(db, battle, telegramId, expectedRound, move) {
+  const isP1 = String(battle.player1_telegram_id) === String(telegramId), isP2 = String(battle.player2_telegram_id) === String(telegramId);
+  if (!isP1 && !isP2) return { accepted:false, reason:'not_participant', battle };
+  if (String(battle.status) === 'completed') return completePetArenaBattle(db, battle);
+  if (String(battle.status) !== 'active') return { accepted:false, reason:'battle_not_active', battle };
+  const roundNumber = Number(battle.current_round || 1); if (Number(expectedRound || 0) !== roundNumber) return { accepted:false, reason:'stale_arena_round', battle }; await ensurePetArenaRound(db, battle.battle_id, roundNumber);
+  const col = isP1 ? 'player1_move' : 'player2_move';
+  const claim = await db.prepare(`UPDATE telegram_pet_arena_rounds SET ${col}=? WHERE battle_id=? AND round_number=? AND status='selecting' AND ${col} IS NULL`).bind(move, battle.battle_id, roundNumber).run();
+  // A saved move is immutable, but may still need its CPU move or settlement.
+  let round = await db.prepare(`SELECT * FROM telegram_pet_arena_rounds WHERE battle_id=? AND round_number=?`).bind(battle.battle_id, roundNumber).first();
+  if (String(battle.player2_telegram_id) === 'app' && !round.player2_move) { const ai = selectPetArenaAppMove(battle); await db.prepare(`UPDATE telegram_pet_arena_rounds SET player2_move=? WHERE battle_id=? AND round_number=? AND player2_move IS NULL`).bind(ai, battle.battle_id, roundNumber).run(); round = { ...round, player2_move: ai }; }
+  if (!round.player1_move || !round.player2_move) { await refreshPetArenaExpiry(db, battle.battle_id); return { accepted:true, duplicate:Number(claim?.meta?.changes || 0) === 0, reason:Number(claim?.meta?.changes || 0) === 0 ? 'move_already_locked' : 'waiting_for_opponent', battle: await getPetArenaBattle(db, battle.battle_id) }; }
+  // Pre-upgrade interrupted rounds may already have an authoritative outcome.
+  const savedOutcome = round.status === 'resolved' ? safeParsePetArenaSnapshot(round.result_json) : null;
+  const resolved = savedOutcome?.player1_hp != null && savedOutcome?.player2_hp != null
+    ? savedOutcome : resolvePetArenaRoundState(battle, round.player1_move, round.player2_move);
+  const end = resolved.player1_hp <= 0 || resolved.player2_hp <= 0 || roundNumber >= Number(battle.max_rounds || PET_ARENA_MAX_ROUNDS);
+  const result = resolved.player1_hp === resolved.player2_hp ? 'draw' : resolved.player1_hp > resolved.player2_hp ? 'player1_win' : 'player2_win';
+  const roundLog = JSON.stringify({ round: roundNumber, moves: [round.player1_move, round.player2_move], log: resolved.log });
+  const settlement = await db.batch([
+    db.prepare(`UPDATE telegram_pet_arena_rounds SET player1_damage=?, player2_damage=?, result_json=?, status='resolved', resolved_at=CURRENT_TIMESTAMP
+      WHERE battle_id=? AND round_number=? AND status='selecting'
+        AND EXISTS (SELECT 1 FROM telegram_pet_arena_battles b WHERE b.battle_id=telegram_pet_arena_rounds.battle_id
+          AND b.current_round=telegram_pet_arena_rounds.round_number AND b.status='active')`)
+      .bind(resolved.player1_damage, resolved.player2_damage, JSON.stringify(resolved), battle.battle_id, roundNumber),
+    db.prepare(`UPDATE telegram_pet_arena_battles SET player1_hp=?, player2_hp=?, player1_special=?, player2_special=?,
+      current_round=?, last_round_log_json=?, result=?, winner_telegram_id=?,
+      status=CASE WHEN ?=1 THEN 'completed' ELSE status END,
+      completed_at=CASE WHEN ?=1 THEN CURRENT_TIMESTAMP ELSE completed_at END
+      WHERE battle_id=? AND status='active' AND current_round=?
+        AND COALESCE(json_extract(CASE WHEN json_valid(last_round_log_json) THEN last_round_log_json ELSE '{}' END,'$.round'),0)<?`)
+      .bind(resolved.player1_hp, resolved.player2_hp, resolved.player1_special, resolved.player2_special,
+        end ? roundNumber : roundNumber + 1, roundLog, end ? result : battle.result,
+        end && result !== 'draw' ? (result === 'player1_win' ? battle.player1_telegram_id : battle.player2_telegram_id) : null,
+        end ? 1 : 0, end ? 1 : 0, battle.battle_id, roundNumber, roundNumber),
+  ]);
+  if (!end) { await ensurePetArenaRound(db, battle.battle_id, roundNumber + 1); await refreshPetArenaExpiry(db, battle.battle_id); return { accepted:true, reason:'round_resolved', battle: await getPetArenaBattle(db, battle.battle_id), round, resolved }; }
+  return completePetArenaBattle(db, await getPetArenaBattle(db, battle.battle_id), Number(settlement[1]?.meta?.changes || 0) > 0);
+}
+async function cmdPetArena(db, tok, chatId, telegramId, argStr = '', chatType = '') {
+  await db.prepare(`UPDATE telegram_pet_arena_queue SET status='expired', updated_at=CURRENT_TIMESTAMP WHERE chat_id=? AND status='waiting' AND updated_at < datetime('now', ?)`).bind(String(chatId), `-${PET_ARENA_QUEUE_TTL_MINUTES} minutes`).run().catch(() => {});
+  await db.prepare(`UPDATE telegram_pet_arena_battles SET status='expired', completed_at=CURRENT_TIMESTAMP WHERE chat_id=? AND status IN ('readying','active') AND COALESCE(expires_at, created_at) < ?`).bind(String(chatId), new Date().toISOString()).run().catch(() => {});
+  const arg = String(argStr || '').trim();
+  if (arg.startsWith('ff:')) { const battleId = arg.slice(3); const battle = await getPetArenaBattle(db, battleId); if (!battle || String(battle.chat_id) !== String(chatId)) { await sendTelegramMessage(tok, chatId, 'That Pet Arena battle expired. Run /petarena for a fresh match.'); return; } const done = await forfeitPetArenaBattle(db, battle, telegramId); const copy = await appendMoonpetReaction(db, telegramId, 'arena', formatPetArenaResult(done.battle || battle), null, { activity_label: 'the arena result' }); await sendTelegramMessage(tok, chatId, copy); return; }
+  if (arg.startsWith('mv:')) { const [, battleId, roundText, move] = arg.match(/^mv:(a-[a-f0-9]{10}):(\d{1,2}):(ah|ab|bh|bb|ch|sp)$/) || []; const battle = await getPetArenaBattle(db, battleId); if (!battle || String(battle.chat_id) !== String(chatId) || Number(battle.current_round || 1) < 1 || !['active','completed'].includes(String(battle.status))) { await sendTelegramMessage(tok, chatId, 'Stale Pet Arena move. Choose from the latest round prompt.'); return; } const applied = await applyPetArenaMove(db, battle, telegramId, Number(roundText), move); if (applied.reason === 'stale_arena_round') { await sendTelegramMessage(tok, chatId, 'Stale Pet Arena move. Choose from the latest round prompt.'); return; } if (applied.reason === 'waiting_for_opponent') { await sendTelegramMessage(tok, chatId, 'Move locked. Waiting for opponent.'); return; } if (applied.reason === 'move_already_locked') { await sendTelegramMessage(tok, chatId, 'Move already locked for this round. Waiting for the next round.'); return; } const latestBattle = applied.battle || battle; const prompt = formatPetArenaRoundPrompt(latestBattle); const copy = latestBattle.status === 'completed' ? await appendMoonpetReaction(db, telegramId, 'arena', prompt, null, { activity_label: 'the arena result' }) : prompt; await sendTelegramMessage(tok, chatId, copy, { reply_markup: (latestBattle.status === 'active') ? buildPetArenaMoveReplyMarkup(battleId, latestBattle.current_round) : undefined }); return; }
+  if (arg.startsWith('stop:')) { const battleId = arg.slice(5); await db.prepare(`UPDATE telegram_pet_arena_battles SET status='cancelled', completed_at=CURRENT_TIMESTAMP WHERE battle_id=? AND chat_id=? AND status IN ('readying','active') AND (player1_telegram_id=? OR player2_telegram_id=?)`).bind(battleId, String(chatId), telegramId, telegramId).run(); await sendTelegramMessage(tok, chatId, 'Pet Arena battle cancelled.'); return; }
+  if (arg === 'cancel') { await db.prepare(`UPDATE telegram_pet_arena_queue SET status='cancelled', updated_at=CURRENT_TIMESTAMP WHERE chat_id=? AND telegram_id=? AND status='waiting'`).bind(String(chatId), telegramId).run(); await sendTelegramMessage(tok, chatId, 'Pet Arena queue cancelled.'); return; }
+  const eligible = await ensurePetArenaEligible(db, telegramId); if (!eligible.ok) { await sendTelegramMessage(tok, chatId, eligible.reason === 'arena_level_locked' ? 'Pet Arena unlocks at level 10. Keep growing your Moonpet.' : 'Adopt or heal your Moonpet before entering Pet Arena.'); return; }
+  const pet = eligible.pet;
+  if (!arg) { await sendTelegramMessage(tok, chatId, `<b>⚔️ Pet Arena</b>\nBattle Moonpet vs Moonpet. Gear, morale, condition, level and controlled RNG all matter.`, { reply_markup: buildPetArenaMenuReplyMarkup() }); return; }
+  if (arg.startsWith('ready:')) { const battleId = arg.slice(6); const battle = await getPetArenaBattle(db, battleId); if (!battle || String(battle.chat_id) !== String(chatId) || !['readying','active'].includes(String(battle.status))) { await sendTelegramMessage(tok, chatId, 'That Pet Arena battle expired. Run /petarena for a fresh match.'); return; } const ready = await readyPetArenaBattle(db, battle, telegramId); if (ready.reason === 'waiting_for_opponent') { await sendTelegramMessage(tok, chatId, 'Ready locked. Waiting for the other Moonpet trainer.'); return; } if (!ready.accepted) { await sendTelegramMessage(tok, chatId, 'Only the two matched players can ready this Pet Arena battle.'); return; } await sendTelegramMessage(tok, chatId, formatPetArenaRoundPrompt(ready.battle || battle), { reply_markup: buildPetArenaMoveReplyMarkup(battleId, ready.battle?.current_round) }); return; }
+  if (arg === 'status') { await sendTelegramMessage(tok, chatId, `Arena status: ${escapeHtml(pet.pet_name)} LVL ${getPetLevel(pet.pet_xp)} ${getPetArenaRankBucket(getPetLevel(pet.pet_xp))}. Power now: ${calculatePetArenaPower(pet, 'status')}.`); return; }
+  if (await hasActivePetArenaBattle(db, chatId, telegramId)) { await sendTelegramMessage(tok, chatId, 'Finish your current Pet Arena battle first.'); return; }
+  if (arg === 'app' || chatType === 'private') { const appPet = { ...pet, telegram_id: 'app', pet_name: 'App Moonpet', pet_xp: Math.max(0, Number(pet.pet_xp || 0) + 80), energy: 82, health: 88, happiness: 80, cleanliness: 80 }; const battle = await createPetArenaBattle(db, chatId, pet, appPet, 'app'); await sendTelegramMessage(tok, chatId, formatPetArenaRoundPrompt(battle), { reply_markup: buildPetArenaMoveReplyMarkup(battle.battle_id, battle.current_round) }); return; }
+  const acceptAnyRank = arg === 'any' ? 1 : 0;
+  const sourceAuthority = activePetRewardAuthority(pet);
+  if (!sourceAuthority) { await sendTelegramMessage(tok, chatId, 'Your active Moonpet could not be verified for Pet Arena.'); return; }
+  const bucket = getPetArenaRankBucket(getPetLevel(pet.pet_xp)); await db.prepare(`INSERT INTO telegram_pet_arena_queue (id,chat_id,telegram_id,pet_id,season_key,rank_bucket,pet_snapshot_json,status,accept_any_rank) VALUES (?,?,?,?,?,?,?,'waiting',?) ON CONFLICT(chat_id,telegram_id) WHERE status='waiting' DO UPDATE SET pet_id=excluded.pet_id, season_key=excluded.season_key, rank_bucket=excluded.rank_bucket, pet_snapshot_json=excluded.pet_snapshot_json, accept_any_rank=MAX(telegram_pet_arena_queue.accept_any_rank, excluded.accept_any_rank), updated_at=CURRENT_TIMESTAMP`).bind(crypto.randomUUID(), String(chatId), telegramId, sourceAuthority.pet_id, sourceAuthority.season_key, bucket, JSON.stringify(buildPetArenaSnapshot(pet)), acceptAnyRank).run();
+  const idx = PET_ARENA_BUCKET_ORDER.indexOf(bucket); const lower = PET_ARENA_BUCKET_ORDER[idx - 1] || ''; const upper = PET_ARENA_BUCKET_ORDER[idx + 1] || '';
+  const rows = await db.prepare(`SELECT * FROM telegram_pet_arena_queue WHERE chat_id=? AND status='waiting' AND telegram_id<>? AND (rank_bucket=? OR rank_bucket IN (?,?) OR accept_any_rank=1 OR ?=1 OR updated_at < datetime('now', ?)) ORDER BY CASE WHEN rank_bucket=? THEN 0 WHEN rank_bucket IN (?,?) THEN 1 ELSE 2 END, created_at ASC LIMIT 6`).bind(String(chatId), telegramId, bucket, lower, upper, acceptAnyRank, `-${PET_ARENA_ANY_RANK_TIMEOUT_MINUTES} minutes`, bucket, lower, upper).all().catch(()=>({results:[]}));
+  const opponent = (rows.results || []).find((row) => String(row.telegram_id) !== telegramId);
+  if (!opponent) { await sendTelegramMessage(tok, chatId, 'Queued for Pet Arena. Prefer same rank; tap Accept Any Rank if matchmaking is slow.', { reply_markup: { inline_keyboard: [[{ text:'Accept Any Rank', callback_data:'pet:arena:any' }, { text:'Cancel Queue', callback_data:'pet:arena:cancel' }]] } }); return; }
+  if (await hasActivePetArenaBattle(db, chatId, opponent.telegram_id)) { await sendTelegramMessage(tok, chatId, 'Queued for Pet Arena. A nearby trainer is finishing another battle first.'); return; }
+  const oppPet = { ...JSON.parse(opponent.pet_snapshot_json || '{}'), pet_id: opponent.pet_id, season_key: opponent.season_key };
+  const claimRows = await db.prepare(`UPDATE telegram_pet_arena_queue SET status='matched', updated_at=CURRENT_TIMESTAMP WHERE chat_id=? AND telegram_id IN (?,?) AND status='waiting'`).bind(String(chatId), telegramId, String(opponent.telegram_id)).run();
+  if (Number(claimRows?.meta?.changes || 0) !== 2) { await db.prepare(`UPDATE telegram_pet_arena_queue SET status='waiting', updated_at=CURRENT_TIMESTAMP WHERE chat_id=? AND telegram_id=? AND status='matched'`).bind(String(chatId), telegramId).run().catch(() => {}); await sendTelegramMessage(tok, chatId, 'Pet Arena queue changed before the match was claimed. You are still queued; tap Find Pet Battle again to retry.'); return; }
+  const battle = await createPetArenaBattle(db, chatId, pet, oppPet, 'group'); await sendTelegramMessage(tok, chatId, `<b>Pet Arena Match Found</b>
+${escapeHtml(pet.pet_name)} LVL ${getPetLevel(pet.pet_xp)} vs ${escapeHtml(oppPet.pet_name || 'RivalPet')} LVL ${getPetLevel(oppPet.pet_xp)}`, { reply_markup: buildPetArenaMatchReplyMarkup(battle.battle_id) });
+}
+function formatPetArenaRoundPrompt(battle) { const p1 = publicPetArenaSnapshot(battle.player1_pet_snapshot_json); const p2 = publicPetArenaSnapshot(battle.player2_pet_snapshot_json); const last = safeParsePetArenaSnapshot(battle.last_round_log_json); const log = Array.isArray(last.log) ? `\n\nLast round: ${last.log.map(escapeHtml).join(' ')}` : ''; if (String(battle.status) === 'completed') return formatPetArenaResult(battle); return `<b>⚔️ Pet Arena Round ${Number(battle.current_round || 1)}</b>\n${escapeHtml(p1.pet_name || MOONPET_UNKNOWN_NAME)} HP: ${Number(battle.player1_hp ?? PET_ARENA_MAX_HP)}/${PET_ARENA_MAX_HP} | Special: ${Number(battle.player1_special || 0)}/${PET_ARENA_SPECIAL_COST}\n${escapeHtml(p2.pet_name || 'APP MOONPET')} HP: ${Number(battle.player2_hp ?? PET_ARENA_MAX_HP)}/${PET_ARENA_MAX_HP} | Special: ${Number(battle.player2_special || 0)}/${PET_ARENA_SPECIAL_COST}${log}\n\nChoose your next move.`; }
+function formatPetArenaResult(battle) { const winner = battle.winner_telegram_id || 'Draw'; return `<b>⚔️ Pet Arena Result</b>
+Battle <code>${escapeHtml(battle.battle_id)}</code>
+Winner: ${escapeHtml(String(winner))}
+Final HP: ${Number(battle.player1_hp ?? PET_ARENA_MAX_HP)} vs ${Number(battle.player2_hp ?? PET_ARENA_MAX_HP)}
+Key moves: attack head/body, block head/body, charge special, special move
+Rewards: winner Moon Gold + pet XP + Community XP; loser consolation pet XP. Gear effects used from armor, weapon, charm, outfit and toy.`; }
+
+async function expireOldPetActivitySessions(db, telegramId, now = new Date()) {
+  await db.prepare(`
+    UPDATE telegram_pet_activity_sessions
+    SET status = 'expired'
+    WHERE telegram_id = ? AND status = 'active' AND ends_at < datetime(?, ?)
+  `).bind(String(telegramId), now.toISOString(), `-${PET_ACTIVITY_GRACE_SECONDS} seconds`).run().catch(() => {});
+}
+
+async function getActivePetActivitySession(db, telegramId, now = new Date()) {
+  await expireOldPetActivitySessions(db, telegramId, now);
+  return db.prepare(`
+    SELECT * FROM telegram_pet_activity_sessions
+    WHERE telegram_id = ? AND status = 'active'
+    ORDER BY started_at DESC LIMIT 1
+  `).bind(String(telegramId)).first();
+}
+
+function parsePetActivitySessionMetadata(session) {
+  try {
+    const parsed = JSON.parse(session?.metadata || '{}');
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+async function getRecoverablePetActivitySession(db, telegramId) {
+  return db.prepare(`
+    SELECT * FROM telegram_pet_activity_sessions
+    WHERE telegram_id = ?
+      AND ${PET_RECOVERABLE_ACTIVITY_PREDICATE}
+    ORDER BY claimed_at ASC LIMIT 1
+  `).bind(String(telegramId)).first();
+}
+
+function getRecoverablePetActivityClaim(session) {
+  const metadata = parsePetActivitySessionMetadata(session);
+  const computed = metadata.computed;
+  if (session?.status !== 'completed' || metadata.claim_state !== 'claiming' || !computed?.rewards) return null;
+  const claimedAtMs = parseSqliteTs(session.claimed_at);
+  return {
+    computed,
+    eventKey: metadata.reward_idempotency_key || buildStablePetEventKey(['pet_activity_claim', session.telegram_id, session.id]),
+    rewardNow: claimedAtMs == null ? new Date() : new Date(claimedAtMs),
+  };
+}
+
+function parsePersistedPetReward(value) {
+  try {
+    const parsed = JSON.parse(value || '{}');
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+async function getPersistedPetActivityAward(db, telegramId, eventKey, legacyAuthority = null) {
+  const persisted = await db.prepare(`
+    SELECT claim.claim_id, claim.applied_rewards,
+           event.pet_id, event.season_key, event.pet_xp_awarded, event.xp_awarded
+    FROM telegram_pet_reward_claims AS claim
+    JOIN telegram_pet_events AS event
+      ON event.telegram_id = claim.telegram_id
+     AND event.event_key = ?
+     AND event.status = 'accepted'
+     AND json_valid(event.metadata) = 1
+     AND json_extract(event.metadata, '$.source') = 'pet_activity'
+     AND json_extract(event.metadata, '$.idempotency_key') = ?
+    WHERE claim.telegram_id = ?
+      AND claim.source = 'pet_activity'
+      AND claim.idempotency_key = ?
+      AND claim.status = 'awarded'
+    LIMIT 1
+  `).bind(eventKey, eventKey, String(telegramId), eventKey).first();
+  const rewards = parsePersistedPetReward(persisted?.applied_rewards);
+  if (!persisted || !rewards) return null;
+  const authority = activePetRewardAuthority(persisted) || legacyAuthority;
+  const pet = authority && await db.prepare(`SELECT * FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ? AND season_key = ?`)
+    .bind(authority.pet_id, String(telegramId), authority.season_key).first();
+  if (!pet) return null;
+  Object.assign(pet, await readPetAccountWallet(db, telegramId) || {});
+  return {
+    accepted: true,
+    duplicate: true,
+    claim_id: persisted.claim_id,
+    pet_xp_awarded: Math.max(0, Math.floor(Number(persisted.pet_xp_awarded) || 0)),
+    xp_awarded: Math.max(0, Math.floor(Number(persisted.xp_awarded) || 0)),
+    rewards,
+    pet,
+  };
+}
+
+function computePetActivityRewards(activityType, elapsedSeconds) {
+  const type = normalizePetActivityType(activityType);
+  const cap = PET_ACTIVITY_CAP_SECONDS[type] || PET_ACTIVITY_MIN_SECONDS;
+  const seconds = Math.max(0, Math.min(Math.floor(Number(elapsedSeconds) || 0), cap));
+  const units = seconds / 1800;
+  const rewards = { pet_xp: 0, community_xp: 0, moon_gold: 0, moon_crystals: 0, item_key: null, health: 0, hunger: 0, cleanliness: 0, energy: 0, happiness: 0 };
+  if (type === 'sleep') Object.assign(rewards, { energy: Math.ceil(10 + units * 12), health: Math.ceil(4 + units * 5), hunger: Math.ceil(units * 3), cleanliness: -Math.ceil(units) });
+  if (type === 'train') Object.assign(rewards, { pet_xp: Math.ceil(6 + units * 20), community_xp: Math.ceil(units * 2), energy: -Math.ceil(8 + units * 10), hunger: Math.ceil(5 + units * 5), cleanliness: -Math.ceil(2 + units * 3), happiness: Math.ceil(units * 2) });
+  if (type === 'work') Object.assign(rewards, { moon_gold: Math.ceil(8 + units * 18), pet_xp: Math.ceil(2 + units * 4), community_xp: Math.ceil(units), energy: -Math.ceil(6 + units * 5), hunger: Math.ceil(units * 2) });
+  if (type === 'explore') {
+    Object.assign(rewards, { pet_xp: Math.ceil(4 + units * 8), moon_gold: Math.ceil(units * 8), energy: -Math.ceil(5 + units * 4), hunger: Math.ceil(units * 2), cleanliness: -Math.ceil(units * 2) });
+    if (seconds >= 7200) rewards.item_key = 'adventure_map';
+    else if (seconds >= 1800) rewards.moon_crystals = 1;
+  }
+  return { type, seconds, capped_seconds: seconds, rewards };
+}
+
+function petActivityCheckpoints(type) {
+  return [...new Set([PET_ACTIVITY_MIN_SECONDS, 1800, 7200, PET_ACTIVITY_CAP_SECONDS[type]])]
+    .filter((seconds) => seconds <= PET_ACTIVITY_CAP_SECONDS[type]).sort((a, b) => a - b);
+}
+
+function buildPetActivityOptions() {
+  return PET_ACTIVITY_TYPES.map((type) => ({
+    key: type, minimum_seconds: PET_ACTIVITY_MIN_SECONDS, cap_seconds: PET_ACTIVITY_CAP_SECONDS[type],
+    checkpoints: petActivityCheckpoints(type).map((seconds) => computePetActivityRewards(type, seconds)),
+  }));
+}
+
+// Display the same snapshot that claim recovery will settle, never a newly
+// accumulated reward for a session whose claim has already been reserved.
+function buildPetActivitySummary(activity, now = new Date()) {
+  if (!activity) return null;
+  const recovery = getRecoverablePetActivityClaim(activity);
+  const started = parseSqliteTs(activity.started_at);
+  const elapsed = started == null ? 0 : Math.max(0, Math.floor((now.getTime() - started) / 1000));
+  const ready = Boolean(recovery) || started != null && elapsed >= PET_ACTIVITY_MIN_SECONDS;
+  const cooldown = !ready && started != null
+    ? normalizePetCooldownWindow(new Date(started + PET_ACTIVITY_MIN_SECONDS * 1000).toISOString(), now) : null;
+  const cap = PET_ACTIVITY_CAP_SECONDS[activity.activity_type];
+  const nextSeconds = recovery ? null : petActivityCheckpoints(activity.activity_type).find((seconds) => seconds > elapsed);
+  return {
+    ...activity, ready, recovery_pending: Boolean(recovery),
+    cooldown, expires_at: cooldown?.expires_at || null, remaining_seconds: cooldown?.remaining_seconds || 0,
+    elapsed_seconds: recovery ? recovery.computed.seconds : elapsed,
+    cap_seconds: cap, capped: !recovery && elapsed >= cap,
+    preview: recovery?.computed || (ready ? computePetActivityRewards(activity.activity_type, elapsed) : null),
+    next_checkpoint: nextSeconds && started != null ? {
+      ...computePetActivityRewards(activity.activity_type, nextSeconds),
+      cooldown: normalizePetCooldownWindow(new Date(started + nextSeconds * 1000).toISOString(), now),
+    } : null,
+    detail: recovery ? 'Saved reward ready to recover. Retry the claim.' : ready ? 'Claim ready now.' : `Claim ready in ${formatPetDuration(Math.max(0, PET_ACTIVITY_MIN_SECONDS - elapsed))}.`,
+  };
+}
+
+async function startPetActivitySession(db, telegramId, activityTypeRaw, options = {}) {
+  const activityType = normalizePetActivityType(activityTypeRaw);
+  if (!activityType) return { accepted: false, reason: 'invalid_activity' };
+  const pet = await getPetProfile(db, telegramId);
+  if (!pet) return { accepted: false, reason: 'pet_not_adopted' };
+  const sourceAuthority = activePetRewardAuthority(pet);
+  if (!sourceAuthority) return { accepted: false, reason: 'source_pet_authority_required' };
+  const now = options.now || new Date();
+  const active = await getActivePetActivitySession(db, telegramId, now);
+  if (active) return { accepted: false, reason: 'already_busy', session: active, pet };
+  const pendingClaim = await getRecoverablePetActivitySession(db, telegramId);
+  if (pendingClaim) return { accepted: false, reason: 'activity_claim_pending', session: pendingClaim, pet };
+  const cap = PET_ACTIVITY_CAP_SECONDS[activityType];
+  const sessionId = crypto.randomUUID();
+  const started = await db.prepare(`
+    INSERT INTO telegram_pet_activity_sessions
+      (id, telegram_id, activity_type, started_at, ends_at, status, metadata)
+    SELECT ?, ?, ?, ?, datetime(?, ?), 'active', ?
+    WHERE EXISTS (SELECT 1 FROM telegram_pet_active_slots WHERE telegram_id=? AND pet_id=? AND season_key=?)
+      AND NOT EXISTS (SELECT 1 FROM telegram_pet_activity_sessions WHERE telegram_id=?
+        AND (status='active' OR (${PET_RECOVERABLE_ACTIVITY_PREDICATE})))
+  `).bind(sessionId, telegramId, activityType, now.toISOString(), now.toISOString(), `+${cap} seconds`,
+    JSON.stringify({ source: options.source || 'telegram_bot', cap_seconds: cap, ...sourceAuthority }),
+    telegramId, sourceAuthority.pet_id, sourceAuthority.season_key, telegramId).run();
+  if (!started?.meta?.changes) return { accepted: false, reason: 'activity_state_changed', pet };
+  return { accepted: true, reason: 'started', session: await getActivePetActivitySession(db, telegramId, now), pet };
+}
+
+async function claimPetActivitySession(db, telegramId, options = {}) {
+  const now = options.now || new Date();
+  let session = await getActivePetActivitySession(db, telegramId, now);
+  let recovery = null;
+
+  if (!session) {
+    session = await getRecoverablePetActivitySession(db, telegramId);
+    recovery = getRecoverablePetActivityClaim(session);
+    if (!session || !recovery) return { accepted: false, reason: 'no_active_activity' };
+  }
+
+  // New sessions retain their starting pet. Legacy pending sessions cannot be
+  // switched, so pin that protected active pointer before the first settlement.
+  const sourceAuthority = activePetRewardAuthority(parsePetActivitySessionMetadata(session))
+    || activePetRewardAuthority(await getPetProfile(db, telegramId));
+  if (!sourceAuthority) return { accepted: false, reason: 'source_pet_authority_required', session };
+  if (!activePetRewardAuthority(parsePetActivitySessionMetadata(session))) {
+    await db.prepare(`UPDATE telegram_pet_activity_sessions
+      SET metadata=json_set(CASE WHEN json_valid(metadata) THEN metadata ELSE '{}' END, '$.pet_id', ?, '$.season_key', ?)
+      WHERE id=? AND telegram_id=? AND status IN ('active','completed')`)
+      .bind(sourceAuthority.pet_id, sourceAuthority.season_key, session.id, telegramId).run();
+  }
+
+  let computed;
+  let eventKey;
+  let rewardNow;
+
+  if (recovery) {
+    ({ computed, eventKey, rewardNow } = recovery);
+  } else {
+    const startedAtMs = parseSqliteTs(session.started_at);
+    if (startedAtMs == null) return { accepted: false, reason: 'activity_timestamp_invalid', session };
+    const elapsedSeconds = Math.floor((now.getTime() - startedAtMs) / 1000);
+    if (elapsedSeconds < PET_ACTIVITY_MIN_SECONDS) {
+      const unlockAt = new Date(startedAtMs + PET_ACTIVITY_MIN_SECONDS * 1000).toISOString();
+      const cooldown = normalizePetCooldownWindow(unlockAt, now);
+      return attachPetCooldown({ accepted: false, reason: 'activity_too_short', retry_after_seconds: cooldown?.remaining_seconds || 0, cooldown, session }, cooldown);
+    }
+    eventKey = buildStablePetEventKey(['pet_activity_claim', telegramId, session.id]);
+    computed = computePetActivityRewards(session.activity_type, elapsedSeconds);
+    rewardNow = now;
+    const claimMetadata = JSON.stringify({ ...sourceAuthority, computed, claim_state: 'claiming', reward_idempotency_key: eventKey });
+    const claimResult = await db.prepare(`
+      UPDATE telegram_pet_activity_sessions
+      SET status = 'completed', claimed_at = ?, metadata = ?
+      WHERE id = ? AND telegram_id = ? AND status = 'active'
+        AND ends_at >= datetime(?, ?)
+    `).bind(
+      now.toISOString(), claimMetadata, session.id, telegramId, now.toISOString(),
+      `-${PET_ACTIVITY_GRACE_SECONDS} seconds`,
+    ).run();
+    if (Number(claimResult?.meta?.changes || 0) !== 1) {
+      const closedSession = await db.prepare(`SELECT * FROM telegram_pet_activity_sessions WHERE id = ? AND telegram_id = ? LIMIT 1`)
+        .bind(session.id, telegramId).first();
+      recovery = getRecoverablePetActivityClaim(closedSession);
+      if (!recovery) {
+        return { accepted: false, reason: 'activity_already_closed', session: closedSession || session, computed };
+      }
+      session = closedSession;
+      ({ computed, eventKey, rewardNow } = recovery);
+    } else {
+      session = { ...session, status: 'completed', claimed_at: now.toISOString(), metadata: claimMetadata };
+    }
+  }
+
+  const { item_key: itemKey, health, hunger, cleanliness, energy, happiness, ...permanentRewards } = computed.rewards;
+  const awarded = await awardPetReward(db, {
+    telegram_id: telegramId, source: 'pet_activity', idempotency_key: eventKey, event_key: eventKey,
+    pet_id: sourceAuthority.pet_id, season_key: sourceAuthority.season_key,
+    event_type: 'activity_claim', reason: session.activity_type,
+    rewards: { ...permanentRewards, items: itemKey ? { [itemKey]: 1 } : {} },
+    profile_deltas: { health, hunger, cleanliness, energy, happiness }, touch_streak: true, now: rewardNow,
+    context: { source: options.source || 'telegram_bot', session_id: session.id, activity_type: session.activity_type },
+  });
+  if (!awarded.accepted) return { ...awarded, session, computed };
+
+  const authoritativeAward = awarded.duplicate
+    ? await getPersistedPetActivityAward(db, telegramId, eventKey, sourceAuthority)
+    : awarded;
+  if (!authoritativeAward) {
+    return { accepted: false, reason: 'activity_reward_recovery_pending', session, computed };
+  }
+  // Refresh the current compatibility view; the response and follow-up awards
+  // still retain the immutable activity pet, even if another pet is now active.
+  await getPetProfile(db, telegramId);
+  const settledComputed = {
+    ...computed,
+    rewards: {
+      ...computed.rewards,
+      pet_xp: authoritativeAward.pet_xp_awarded,
+      community_xp: authoritativeAward.xp_awarded,
+      moon_gold: authoritativeAward.rewards.moon_gold,
+      moon_crystals: authoritativeAward.rewards.moon_crystals,
+      style_tokens: authoritativeAward.rewards.style_tokens,
+    },
+  };
+
+  const growthMark = await awardActivePetActivityGrowthMark(db, telegramId, eventKey, rewardNow,
+    activePetRewardAuthority(authoritativeAward.pet) || sourceAuthority);
+  if (!growthMark.accepted && !growthMark.duplicate) {
+    return { accepted: false, reason: 'activity_reward_recovery_pending', session, computed: settledComputed };
+  }
+  const runtimeReceipt = await readAcceptedPetEventByKey(db, telegramId, eventKey);
+  if (!runtimeReceipt?.id) return { accepted: false, reason: 'activity_reward_recovery_pending', session, computed: settledComputed };
+  const runtimeEquipment = safeJsonParse(runtimeReceipt?.metadata, {}).context?.equipment_snapshot || {};
+  const runtimeAction = session.activity_type === 'train' ? 'timed_train' : session.activity_type === 'work' ? 'timed_work' : session.activity_type;
+  const runtime = await applyPetRuntimeCommandAward(db, telegramId, `runtime:activity:${session.id}`, runtimeAction,
+    { pet: authoritativeAward.pet, day_key: getPetDayKey(rewardNow), source_event_id: runtimeReceipt?.id, equipment_snapshot: runtimeEquipment });
+  if (!runtime?.ok) {
+    return { accepted: false, reason: 'activity_reward_recovery_pending', session, computed: settledComputed };
+  }
+  const settledMetadata = JSON.stringify({
+    ...sourceAuthority,
+    computed: settledComputed,
+    applied_rewards: authoritativeAward.rewards,
+    claim_state: 'settled',
+    reward_idempotency_key: eventKey,
+  });
+  await db.prepare(`
+    UPDATE telegram_pet_activity_sessions
+    SET metadata = ?
+    WHERE id = ? AND telegram_id = ? AND status = 'completed'
+      AND json_valid(metadata) = 1
+      AND json_extract(metadata, '$.claim_state') = 'claiming'
+      AND json_extract(metadata, '$.reward_idempotency_key') = ?
+  `).bind(settledMetadata, session.id, telegramId, eventKey).run();
+
+  await reconcileSanctuaryBestEffort(db, telegramId, 'activity_claim', { now: now.toISOString() });
+
+  return {
+    ...authoritativeAward,
+    reason: authoritativeAward.duplicate ? 'duplicate' : 'claimed',
+    session: { ...session, status: 'completed', metadata: settledMetadata },
+    computed: settledComputed,
+  };
+}
+
+async function awardActivePetActivityGrowthMark(db, telegramId, settlementEventKey, settledAt = new Date(), sourceAuthority = null) {
+  try {
+    const active = sourceAuthority || await findActivePetSlot(db, telegramId);
+    if (!active) return { accepted: false, non_fatal: true, reason: 'active_pet_missing' };
+    return await awardPetGrowthMark(db, {
+      pet_id: active.pet_id,
+      telegram_id: telegramId,
+      season_key: active.season_key,
+      milestone: 'care',
+      evidence_key: `care:activity:${settlementEventKey}`,
+      earned_at: settledAt instanceof Date ? settledAt.toISOString() : settledAt,
+    });
+  } catch {
+    return { accepted: false, non_fatal: true, reason: 'growth_mark_unavailable' };
+  }
+}
+
+async function cancelPetActivitySession(db, telegramId) {
+  const session = await getActivePetActivitySession(db, telegramId);
+  if (!session) return { accepted: false, reason: 'no_active_activity' };
+  const cancelResult = await db.prepare(`UPDATE telegram_pet_activity_sessions SET status = 'cancelled' WHERE id = ? AND telegram_id = ? AND status = 'active'`).bind(session.id, telegramId).run();
+  if (Number(cancelResult?.meta?.changes || 0) !== 1) {
+    return { accepted: false, reason: 'activity_already_closed', session };
+  }
+  await reconcileSanctuaryBestEffort(db, telegramId, 'activity_cancel');
+  return { accepted: true, reason: 'cancelled', session };
+}
+
+async function processPetAction(db, telegramId, action, options = {}) {
+  const normalizedAction = normalizePetAction(action);
+  if (!normalizedAction && action !== 'adopt' && action !== 'rename') {
+    return { accepted: false, reason: 'invalid_action', xp_awarded: 0, pet_xp_awarded: 0 };
+  }
+
+  const now = options.now instanceof Date ? options.now : new Date(options.now || Date.now());
+  const dayKey = getPetDayKey(now);
+  const weekKey = getPetWeekKey(now);
+  const season = getPetSeasonInfo(now);
+  const eventKey = String(options.event_key || `pet:${normalizedAction || action}:${telegramId}:${Date.now()}`).slice(0, 120);
+
+  if (action === 'adopt') {
+    const existingPet = await getPetProfile(db, telegramId);
+    if (existingPet) {
+      await ensurePetStarterSeasonSlot(db, telegramId, now);
+      const lifecycleRow = await db.prepare('SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE telegram_id=?')
+        .bind(telegramId).first().catch(() => null);
+      if (!lifecycleRow) {
+        await createMoonEggLifecycle(db, telegramId, `${eventKey}:lifecycle-repair`);
+        await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${eventKey}:memory-repair`, memory_type: 'first_adoption', milestone: 'first_adoption' });
+        await evolveMoonpet(db, { telegram_id: telegramId, evolution_id: 'moon_egg', event_key: `${eventKey}:moon-egg-repair` });
+      }
+      return { accepted: false, reason: 'pet_already_adopted', xp_awarded: 0, pet_xp_awarded: 0, pet: existingPet };
+    }
+    const pet = await getOrCreatePetProfile(db, telegramId, options);
+    await savePetProfile(db, pet);
+    await createMoonEggLifecycle(db, telegramId, `${eventKey}:lifecycle`);
+    await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${eventKey}:memory`, memory_type: 'first_adoption', milestone: 'first_adoption' });
+    await evolveMoonpet(db, { telegram_id: telegramId, evolution_id: 'moon_egg', event_key: `${eventKey}:moon_egg` });
+    return { accepted: true, reason: 'adopted', xp_awarded: 0, pet_xp_awarded: 0, pet };
+  }
+
+  let pet = await getPetProfile(db, telegramId);
+  if (!pet) {
+    return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
+  }
+
+  if (action === 'rename') {
+    const petName = normalizePetName(options.pet_name);
+    if (!petName) return { accepted: false, reason: 'invalid_pet_name', pet };
+    // A callsign change must never save the previously read XP, care or gear.
+    // Bind it to the selected source pet so a concurrent switch cannot rename
+    // (or overwrite) the replacement companion.
+    if (!pet.pet_id || !pet.season_key) return { accepted: false, reason: 'source_pet_authority_required' };
+    const renamed = await db.batch([
+      db.prepare(`UPDATE telegram_pet_instances SET pet_name=?,source_profile_updated_at=?,updated_at=CURRENT_TIMESTAMP
+        WHERE pet_id=? AND telegram_id=? AND season_key=? AND status='active'
+          AND EXISTS (SELECT 1 FROM telegram_pet_active_slots a JOIN telegram_pet_season_slots s
+            ON s.pet_id=a.pet_id AND s.telegram_id=a.telegram_id AND s.season_key=a.season_key
+            WHERE a.telegram_id=? AND a.pet_id=? AND a.season_key=? AND s.slot_number=telegram_pet_instances.slot_number AND s.status='active')
+        RETURNING *`).bind(petName, PET_INSTANCE_AUTHORITY_VERSION, pet.pet_id, telegramId, pet.season_key,
+          telegramId, pet.pet_id, pet.season_key),
+      db.prepare(`UPDATE telegram_pet_profiles SET pet_name=(SELECT pet_name FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=?),updated_at=CURRENT_TIMESTAMP
+        WHERE telegram_id=? AND EXISTS (SELECT 1 FROM telegram_pet_active_slots WHERE telegram_id=? AND pet_id=? AND season_key=?)`)
+        .bind(pet.pet_id, telegramId, telegramId, telegramId, pet.pet_id, pet.season_key),
+    ]);
+    const sourcePet = renamed[0]?.results?.[0];
+    if (!sourcePet) return { accepted: false, reason: 'source_pet_changed' };
+    return { accepted: true, reason: 'renamed', xp_awarded: 0, pet_xp_awarded: 0,
+      pet: { ...pet, ...applyPetDecay(sourcePet), moon_gold: pet.moon_gold, moon_crystals: pet.moon_crystals, style_tokens: pet.style_tokens } };
+  }
+
+  const existing = await readAcceptedPetEventByKey(db, telegramId, eventKey);
+  if (existing) {
+    const legacyBehaviourPet = pet;
+    pet = existing.pet_id ? await getPetInstanceWithAtomicDecay(db, existing.pet_id, now) : null;
+    if (pet) Object.assign(pet, await readPetAccountWallet(db, telegramId) || {});
+    const careBehaviour = PET_CARE_BEHAVIOUR_ACTIONS.has(String(existing.event_type || normalizedAction)) ? 'care' : 'combat';
+    await recordPetActionBehaviourFromAcceptedEvent(db, {
+      telegram_id: telegramId,
+      event_key: eventKey,
+      action: normalizedAction,
+      behaviour: careBehaviour,
+      activity: careBehaviour,
+      pet: pet || legacyBehaviourPet,
+    });
+    if (PET_DAILY_CHALLENGE_ACTIONS.has(String(existing.event_type || normalizedAction))) {
+      await recordDailyCareChallenge(db, { telegram_id: telegramId, event_key: eventKey, utc_day: existing.day_key, now });
+    }
+    await recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, eventKey, { accepted_event: existing });
+    return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0, pet,
+      accounting_window: { day_key: existing.day_key, week_key: existing.week_key, season_key: existing.season_key } };
+  }
+
+  if (requiresWeeklyJourneyDirectActionPetPreparation(normalizedAction)) {
+    const preparedPet = await prepareCurrentSeasonActivePetForWeeklyJourneySource(db, telegramId, now);
+    if (!preparedPet) return { accepted: false, reason: 'pet_current_season_unavailable', xp_awarded: 0, pet_xp_awarded: 0, pet };
+    pet = preparedPet;
+  }
+
+  const busySession = await getActivePetActivitySession(db, telegramId, now);
+  if (busySession && ['sleep', 'train'].includes(normalizedAction)) {
+    return { accepted: false, reason: 'pet_busy', session: busySession, pet };
+  }
+
+  const specialPolicy = PET_SPECIAL_ACTION_POLICIES[normalizedAction] || null;
+  if (specialPolicy) {
+    const pendingWork = await getPetActiveSlotPendingWork(db, telegramId, now);
+    if (pendingWork) return { accepted: false, reason: pendingWork.reason, pending: pendingWork, pet };
+  }
+
+  const lastAction = await db.prepare(`
+    SELECT created_at FROM telegram_pet_events
+    WHERE telegram_id = ? AND event_type = ? AND status = 'accepted'
+    ORDER BY created_at DESC LIMIT 1
+  `).bind(telegramId, normalizedAction).first();
+  if (lastAction?.created_at && !specialPolicy) {
+    const elapsedSeconds = (now.getTime() - (parseSqliteTs(lastAction.created_at) ?? now.getTime())) / 1000;
+    const cooldownSeconds = specialPolicy?.cooldown_seconds || PETS_ACTION_COOLDOWN_SECONDS;
+    if (elapsedSeconds < cooldownSeconds) {
+      const cooldown = buildPetCooldownFromStart(lastAction.created_at, cooldownSeconds, now);
+      return {
+        accepted: false,
+        reason: 'cooldown',
+        retry_after_seconds: Math.max(1, Math.ceil(cooldownSeconds - elapsedSeconds)),
+        cooldown,
+        expires_at: cooldown?.expires_at || null,
+        remaining_seconds: cooldown?.remaining_seconds || 0,
+        xp_awarded: 0,
+        pet_xp_awarded: 0,
+        pet,
+      };
+    }
+  }
+
+  const rule = { ...PET_ACTIONS[normalizedAction] };
+  if (normalizedAction === 'train' && Number(pet.energy || 0) < 18) {
+    return { accepted: false, reason: 'pet_tired', xp_awarded: 0, pet_xp_awarded: 0, pet };
+  }
+
+  let communityXp = rule.community_xp;
+  let petXp = rule.pet_xp;
+  const tokenRewards = {
+    moon_gold: clampPetCurrency(rule.gold),
+    moon_crystals: clampPetCurrency(rule.crystals),
+    style_tokens: clampPetCurrency(rule.style_tokens),
+  };
+  applyPetItemActionBonuses(pet, normalizedAction, rule, {
+    get pet_xp() { return petXp; },
+    set pet_xp(value) { petXp = value; },
+    get moon_gold() { return tokenRewards.moon_gold; },
+    set moon_gold(value) { tokenRewards.moon_gold = clampPetCurrency(value); },
+    get style_tokens() { return tokenRewards.style_tokens; },
+    set style_tokens(value) { tokenRewards.style_tokens = clampPetCurrency(value); },
+  });
+  const actionHasWalletReward = hasPetAccountWalletDelta(tokenRewards);
+  if (actionHasWalletReward && !(await ensurePetAccountWalletReadyForMutation(db, telegramId, now))) {
+    return { accepted: false, reason: 'wallet_reconciliation_recovery_pending', pet, xp_awarded: 0, pet_xp_awarded: 0 };
+  }
+
+  // Care rewards depend on paid level/mastery as well as the equipped key.
+  // Stat-only actions have no gear bonuses; unrelated slots cannot block care.
+  const careGearSlots = specialPolicy ? [] : ['outfit',
+    ...(normalizedAction === 'feed' ? ['food'] : []),
+    ...(normalizedAction === 'play' ? ['toy'] : [])];
+  const sourceEquipment = snapshotPetEquipmentProgression(pet, careGearSlots);
+  const eventId = crypto.randomUUID();
+  const metadata = JSON.stringify({ source: options.source || 'telegram_bot', runtime_event_key: options.runtime_event_key || null, equipment_snapshot: pet.equipment_progression || {}, rewards: tokenRewards,
+    ...(specialPolicy ? { policy: specialPolicy } : {}) });
+  const actionResults = await db.batch([
+    db.prepare(`
+      INSERT OR IGNORE INTO telegram_pet_events
+        (id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
+      SELECT ?, ?, ?, ?, ?,
+        MIN(?,MAX(0,?-(SELECT COALESCE(SUM(xp_awarded),0) FROM telegram_pet_events WHERE telegram_id=? AND day_key=? AND status='accepted'))),
+        MIN(?,MAX(0,?-(SELECT COALESCE(SUM(pet_xp_awarded),0) FROM telegram_pet_events WHERE telegram_id=? AND day_key=? AND status='accepted'))),
+        ?, ?, ?, 'pending', 'pet_action_pending', ?
+      WHERE ${actionHasWalletReward ? accountWalletRecoveryResolvedSql('?') : '1 = 1'}
+        AND (? = 0 OR (SELECT COUNT(*) FROM telegram_pet_events
+          WHERE telegram_id=? AND event_type=? AND day_key=? AND status IN ('pending','accepted')) < ?)
+        AND NOT EXISTS (SELECT 1 FROM telegram_pet_events
+          WHERE telegram_id=? AND event_type=? AND (status='accepted' OR (?=1 AND status='pending'))
+            AND (? - unixepoch(created_at)) < ?)
+        AND EXISTS (SELECT 1 FROM telegram_pet_instances p JOIN telegram_pet_active_slots a
+          ON a.pet_id=p.pet_id AND a.telegram_id=p.telegram_id AND a.season_key=p.season_key
+          WHERE p.pet_id=? AND p.telegram_id=? AND p.season_key=? AND p.status='active'
+            AND COALESCE(p.equipped_food,'')=? AND COALESCE(p.equipped_toy,'')=? AND COALESCE(p.equipped_outfit,'')=?
+            AND (?<>'train' OR ROUND(p.energy-MAX(0,(julianday(?)-julianday(p.last_decay_at))*24)*2.2)>=18))
+        AND ${PET_EQUIPMENT_SNAPSHOT_MATCH_SQL}
+        AND (? NOT IN ('sleep','train') OR NOT EXISTS (SELECT 1 FROM telegram_pet_activity_sessions WHERE telegram_id=? AND status='active'))
+        AND (?=0 OR (
+          NOT EXISTS (SELECT 1 FROM telegram_pet_activity_sessions WHERE telegram_id=? AND (status='active' OR (${PET_RECOVERABLE_ACTIVITY_PREDICATE})))
+          AND NOT EXISTS (SELECT 1 FROM telegram_pet_runs WHERE telegram_id=? AND status='active')
+          AND NOT EXISTS (SELECT 1 FROM telegram_pet_arena_battles WHERE (player1_telegram_id=? OR player2_telegram_id=?) AND status NOT IN ('completed','cancelled','expired'))
+          AND NOT EXISTS (SELECT 1 FROM telegram_pet_kaiju_matches WHERE (player1_telegram_id=? OR player2_telegram_id=?) AND status NOT IN ('completed','cancelled','expired'))
+        ))
+      RETURNING id
+    `).bind(eventId, pet.pet_id, telegramId, normalizedAction, eventKey,
+      communityXp, PETS_DAILY_COMMUNITY_XP_CAP, telegramId, dayKey,
+      petXp, PETS_DAILY_PET_XP_CAP, telegramId, dayKey, season.key, dayKey, weekKey, metadata,
+      ...(actionHasWalletReward ? [telegramId] : []),
+      specialPolicy ? 1 : 0, telegramId, normalizedAction, dayKey, Number(specialPolicy?.daily_limit || 0),
+      telegramId, normalizedAction, specialPolicy ? 1 : 0, Math.floor(now.getTime() / 1000), specialPolicy?.cooldown_seconds || PETS_ACTION_COOLDOWN_SECONDS,
+      pet.pet_id, telegramId, season.key, pet.equipped_food || '', pet.equipped_toy || '', pet.equipped_outfit || '', normalizedAction, now.toISOString(),
+      sourceEquipment, telegramId,
+      normalizedAction, telegramId, specialPolicy ? 1 : 0, telegramId, telegramId, telegramId, telegramId, telegramId, telegramId),
+    accountWalletDeltaStatement(db, telegramId, tokenRewards,
+      "EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')", [eventId]),
+    ...petCareDeltaStatements(db, { eventId, dayKey, previousDayKey: getPreviousPetDayKey(dayKey), now,
+      deltas: rule, stages: PET_GROWTH_STAGE_THRESHOLDS }),
+    db.prepare(`
+      INSERT INTO telegram_pet_season_state
+        (telegram_id, season_key, season_xp, weekly_xp, daily_xp, daily_key, weekly_key)
+      SELECT ?, ?, pet_xp_awarded, pet_xp_awarded, pet_xp_awarded, ?, ? FROM telegram_pet_events WHERE id=? AND status='pending'
+      ON CONFLICT(telegram_id, season_key) DO UPDATE SET
+        season_xp = season_xp + excluded.season_xp,
+        weekly_xp = CASE WHEN weekly_key = excluded.weekly_key THEN weekly_xp + excluded.weekly_xp ELSE excluded.weekly_xp END,
+        daily_xp = CASE WHEN daily_key = excluded.daily_key THEN daily_xp + excluded.daily_xp ELSE excluded.daily_xp END,
+        daily_key = excluded.daily_key,
+        weekly_key = excluded.weekly_key,
+        updated_at = CURRENT_TIMESTAMP
+    `).bind(telegramId, season.key, dayKey, weekKey, eventId),
+    ...petCareCommunityStatements(db, eventId),
+    db.prepare(`UPDATE telegram_pet_events SET status='accepted', reason=CASE
+        WHEN xp_awarded<? THEN CASE WHEN xp_awarded=0 THEN 'community_daily_cap_reached' ELSE 'community_daily_cap_clamped' END
+        WHEN pet_xp_awarded<? THEN CASE WHEN pet_xp_awarded=0 THEN 'pet_daily_cap_reached' ELSE 'pet_daily_cap_clamped' END
+        ELSE 'accepted' END
+      WHERE id=? AND status='pending' RETURNING id,xp_awarded,pet_xp_awarded,reason`)
+      .bind(communityXp, petXp, eventId),
+  ]);
+  const committedAction = actionResults?.at(-1)?.results?.[0];
+  if (!committedAction) {
+    const acceptedDuplicate = await buildAcceptedPetEventDuplicate(db, telegramId, eventKey, pet, { action: normalizedAction, season });
+    if (acceptedDuplicate) {
+      const existingEvent = await readAcceptedPetEventByKey(db, telegramId, eventKey);
+      acceptedDuplicate.pet = existingEvent?.pet_id ? await getPetInstanceWithAtomicDecay(db, existingEvent.pet_id, now) : null;
+      if (acceptedDuplicate.pet) Object.assign(acceptedDuplicate.pet, await readPetAccountWallet(db, telegramId) || {});
+      acceptedDuplicate.accounting_window = { day_key: existingEvent?.day_key, week_key: existingEvent?.week_key, season_key: existingEvent?.season_key };
+      if (PET_DAILY_CHALLENGE_ACTIONS.has(normalizedAction)) {
+        await recordDailyCareChallenge(db, {
+          telegram_id: telegramId,
+          event_key: eventKey,
+          utc_day: existingEvent?.day_key,
+          now,
+        });
+      }
+      await recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, eventKey, { accepted_event: existingEvent });
+      return acceptedDuplicate;
+    }
+    if (specialPolicy) {
+      const limitState = await getPetSpecialActionLimitState(db, telegramId, normalizedAction, specialPolicy, dayKey, now);
+      if (limitState?.blocked) {
+        return {
+          accepted: false,
+          reason: limitState.reason,
+          daily_limit: limitState.daily_limit,
+          used_today: limitState.used_today,
+          retry_after_seconds: limitState.retry_after_seconds,
+          remaining_seconds: limitState.remaining_seconds,
+          expires_at: limitState.expires_at,
+          cooldown: limitState.cooldown,
+          xp_awarded: 0,
+          pet_xp_awarded: 0,
+          pet,
+        };
+      }
+    }
+    const cooldown = await getPetAcceptedActionCooldown(db, telegramId, normalizedAction, specialPolicy?.cooldown_seconds || PETS_ACTION_COOLDOWN_SECONDS, now);
+    if (cooldown) return attachPetCooldown({ accepted: false, reason: 'cooldown', retry_after_seconds: cooldown.remaining_seconds, cooldown, xp_awarded: 0, pet_xp_awarded: 0, pet }, cooldown);
+    const pending = specialPolicy ? await getPetActiveSlotPendingWork(db, telegramId, now) : null;
+    if (pending) return { accepted: false, reason: pending.reason, pending, pet };
+    if (['sleep','train'].includes(normalizedAction) && await getActivePetActivitySession(db, telegramId, now)) return { accepted: false, reason: 'pet_busy', pet };
+    return { accepted: false, reason: 'pet_action_state_changed', action: normalizedAction, xp_awarded: 0, pet_xp_awarded: 0, pet };
+  }
+
+  // The receipt and both Community projections were committed in the care batch.
+  communityXp = Number(committedAction.xp_awarded);
+  petXp = Number(committedAction.pet_xp_awarded);
+  const reason = committedAction.reason;
+  const persistedPet = await getPetInstanceWithAtomicDecay(db, pet.pet_id, now);
+  if (persistedPet) Object.assign(persistedPet, await readPetAccountWallet(db, telegramId) || {});
+
+  const careBehaviour = PET_CARE_BEHAVIOUR_ACTIONS.has(normalizedAction) ? 'care' : 'combat';
+  const acceptedSourceEvent = await readAcceptedPetEventByKey(db, telegramId, eventKey);
+  await recordPetActionBehaviourFromAcceptedEvent(db, {
+    telegram_id: telegramId,
+    event_key: eventKey,
+    action: acceptedSourceEvent?.event_type || normalizedAction,
+    behaviour: careBehaviour, activity: careBehaviour,
+    pet: persistedPet || pet,
+  });
+  if (PET_DAILY_CHALLENGE_ACTIONS.has(normalizedAction)) {
+    await recordDailyCareChallenge(db, {
+      telegram_id: telegramId,
+      event_key: eventKey,
+      utc_day: acceptedSourceEvent?.day_key,
+      now,
+    });
+  }
+  await recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, eventKey, { accepted_event: acceptedSourceEvent });
+
+  return { accepted: true, reason, action: normalizedAction, xp_awarded: communityXp, pet_xp_awarded: petXp,
+    accounting_window: { day_key: dayKey, week_key: weekKey, season_key: season.key },
+    ...(specialPolicy ? { daily_limit: specialPolicy.daily_limit } : {}), pet: persistedPet || pet, season };
+}
+
+async function processPetShopPurchase(db, telegramId, itemKey, options = {}) {
+  const key = normalizePetShopItemKey(itemKey);
+  if (!key) return { accepted: false, reason: 'invalid_shop_item', xp_awarded: 0, pet_xp_awarded: 0 };
+  const item = PET_SHOP_ITEMS[key];
+  const now = new Date();
+  const dayKey = getPetDayKey(now);
+  const weekKey = getPetWeekKey(now);
+  const eventKey = String(options.event_key || `pet:buy:${telegramId}:${key}:${Date.now()}`).slice(0, 120);
+  const duplicate = await readAcceptedPetEventByKey(db, telegramId, eventKey);
+  if (duplicate) return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0 };
+  await recoverPetEquipmentRows(db, telegramId);
+  const pet = await getPetProfile(db, telegramId, true);
+  if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
+  const sourceAuthority = activePetRewardAuthority(pet);
+  if (!sourceAuthority) return { accepted: false, reason: 'source_pet_authority_required', xp_awarded: 0, pet_xp_awarded: 0 };
+  if (getPetLevel(pet.pet_xp) < item.min_level) return { accepted: false, reason: 'level_locked', item, pet };
+  if (String(pet[`equipped_${item.slot}`] || '') === item.key) return { accepted: false, reason: 'already_equipped', item, pet };
+  // Old clients and bot purchase buttons must also switch owned gear for free.
+  if (pet.owned_equipment?.includes(item.key)) return processPetEquipmentEquip(db, telegramId, key, { ...options, event_key: eventKey, pet_id: options.pet_id || pet.pet_id });
+  if (!(await ensurePetAccountWalletReadyForMutation(db, telegramId, now))) {
+    return { accepted: false, reason: 'wallet_reconciliation_recovery_pending', item, pet, xp_awarded: 0, pet_xp_awarded: 0 };
+  }
+  Object.assign(pet, await readPetAccountWallet(db, telegramId) || {});
+  if (!canAffordPetItem(pet, item)) return { accepted: false, reason: 'not_enough_pet_currency', item, pet };
+
+  const cost = item.cost || {};
+  const walletDeltas = {
+    moon_gold: -Math.max(0, Number(cost.moon_gold || 0)),
+    moon_crystals: -Math.max(0, Number(cost.moon_crystals || 0)),
+    style_tokens: -Math.max(0, Number(cost.style_tokens || 0)),
+  };
+  const eventId = crypto.randomUUID();
+  const metadata = JSON.stringify({ source: options.source || 'telegram_bot', item_key: item.key, slot: item.slot, cost });
+  const purchaseResults = await db.batch([
+    db.prepare(`
+      INSERT OR IGNORE INTO telegram_pet_events
+        (id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
+      SELECT ?, ?, ?, 'buy', ?, 0, 0, ?, ?, ?, 'pending', 'shop_purchase_pending', ?
+      WHERE EXISTS (SELECT 1 FROM telegram_pet_profiles
+        WHERE telegram_id = ? AND ${accountWalletAffordabilitySql()} AND ${accountWalletRecoveryResolvedSql('telegram_pet_profiles.telegram_id')})
+        AND NOT EXISTS (SELECT 1 FROM telegram_pet_equipment_progression WHERE telegram_id=? AND item_key=?)
+        AND EXISTS (SELECT 1 FROM telegram_pet_active_slots a JOIN telegram_pet_instances p
+          ON p.pet_id=a.pet_id AND p.telegram_id=a.telegram_id AND p.season_key=a.season_key
+          WHERE a.telegram_id=? AND a.pet_id=? AND a.season_key=? AND p.status='active'
+            AND COALESCE(p.equipped_${item.slot}, '') <> ? AND ${getPetVisibleLevelSql('p.pet_xp')} >= ?)
+      RETURNING id
+    `).bind(eventId, sourceAuthority.pet_id, telegramId, eventKey, sourceAuthority.season_key, dayKey, weekKey, metadata, telegramId,
+      walletDeltas.moon_gold, walletDeltas.moon_crystals, walletDeltas.style_tokens,
+      telegramId, item.key,
+      telegramId, sourceAuthority.pet_id, sourceAuthority.season_key, item.key, item.min_level),
+    accountWalletDeltaStatement(db, telegramId, walletDeltas,
+      "EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')", [eventId]),
+    db.prepare(`
+      UPDATE telegram_pet_profiles
+      SET equipped_${item.slot} = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE telegram_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')
+    `).bind(item.key, telegramId, eventId),
+    db.prepare(`
+      UPDATE telegram_pet_instances
+      SET equipped_${item.slot} = ?, source_profile_updated_at = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE telegram_id = ? AND pet_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')
+    `).bind(item.key, PET_INSTANCE_AUTHORITY_VERSION, telegramId, pet.pet_id || '', eventId),
+    db.prepare(`
+      UPDATE telegram_pet_events
+      SET status = 'accepted', reason = 'shop_purchase'
+      WHERE id = ? AND status = 'pending'
+        AND EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id = ? AND equipped_${item.slot} = ?)
+      RETURNING id
+    `).bind(eventId, telegramId, item.key),
+    db.prepare(`INSERT OR IGNORE INTO telegram_pet_equipment_progression (telegram_id,item_key,slot)
+      SELECT ?,?,? WHERE EXISTS (SELECT 1 FROM telegram_pet_events WHERE id=? AND status='accepted')`)
+      .bind(telegramId, item.key, item.slot, eventId),
+  ]);
+  if (!purchaseResults?.[4]?.results?.[0]) {
+    const acceptedDuplicate = await buildAcceptedPetEventDuplicate(db, telegramId, eventKey, pet, { item });
+    if (acceptedDuplicate) return acceptedDuplicate;
+    const currentPet = await getPetProfile(db, telegramId);
+    const reason = currentPet?.pet_id !== sourceAuthority.pet_id ? 'shop_state_changed'
+      : currentPet?.[`equipped_${item.slot}`] === item.key ? 'already_equipped'
+      : currentPet && !canAffordPetItem(currentPet, item) ? 'not_enough_pet_currency' : 'shop_state_changed';
+    return { accepted: false, reason, item, pet: currentPet };
+  }
+  const persistedPet = await getPetProfile(db, telegramId);
+  if (persistedPet) Object.assign(persistedPet, await readPetAccountWallet(db, telegramId) || {});
+  return { accepted: true, reason: 'shop_purchase', item, pet: persistedPet || pet, xp_awarded: 0, pet_xp_awarded: 0 };
+}
+
+async function processPetEquipmentEquip(db, telegramId, itemKey, options = {}) {
+  const key = normalizePetShopItemKey(itemKey);
+  if (!key) return { accepted: false, reason: 'invalid_shop_item' };
+  const item = PET_SHOP_ITEMS[key];
+  const eventKey = String(options.event_key || `pet:equip:${telegramId}:${crypto.randomUUID()}`).slice(0, 120);
+  const duplicate = await readAcceptedPetEventByKey(db, telegramId, eventKey);
+  if (duplicate) return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0 };
+  await recoverPetEquipmentRows(db, telegramId);
+  const pet = await getPetProfile(db, telegramId, true);
+  const authority = activePetRewardAuthority(pet);
+  if (!authority) return { accepted: false, reason: 'source_pet_authority_required' };
+  if (options.pet_id && options.pet_id !== authority.pet_id) return { accepted: false, reason: 'equipment_state_changed' };
+  if (!pet.owned_equipment?.includes(key)) return { accepted: false, reason: 'equipment_not_owned', item };
+  if (getPetLevel(pet.pet_xp) < item.min_level) return { accepted: false, reason: 'level_locked', item };
+  if (pet[`equipped_${item.slot}`] === key) return { accepted: false, reason: 'already_equipped', item };
+  const now = new Date(), id = crypto.randomUUID();
+  const results = await db.batch([
+    db.prepare(`INSERT OR IGNORE INTO telegram_pet_events
+      (id,pet_id,telegram_id,event_type,event_key,season_key,day_key,week_key,status,reason,metadata)
+      SELECT ?,?,?,'equip',?,?,?,?,'pending','equipment_switch_pending',?
+      WHERE EXISTS (SELECT 1 FROM telegram_pet_equipment_progression WHERE telegram_id=? AND item_key=? AND slot=?)
+        AND EXISTS (SELECT 1 FROM telegram_pet_active_slots a JOIN telegram_pet_instances p
+          ON p.pet_id=a.pet_id AND p.telegram_id=a.telegram_id AND p.season_key=a.season_key
+          JOIN telegram_pet_lifecycle_by_pet l ON l.pet_id=p.pet_id AND l.telegram_id=p.telegram_id
+          WHERE a.telegram_id=? AND a.pet_id=? AND a.season_key=? AND p.status='active' AND l.phase<>'egg'
+            AND COALESCE(p.equipped_${item.slot},'')=? AND ${getPetVisibleLevelSql('p.pet_xp')}>=?)`)
+      .bind(id, authority.pet_id, telegramId, eventKey, authority.season_key, getPetDayKey(now), getPetWeekKey(now),
+        JSON.stringify({ item_key:key, slot:item.slot, source:options.source || 'telegram_bot', cost:{} }),
+        telegramId, key, item.slot, telegramId, authority.pet_id, authority.season_key, pet[`equipped_${item.slot}`] || '', item.min_level),
+    db.prepare(`UPDATE telegram_pet_instances SET equipped_${item.slot}=?,source_profile_updated_at=?,updated_at=CURRENT_TIMESTAMP
+      WHERE pet_id=? AND telegram_id=? AND season_key=? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id=? AND status='pending')`)
+      .bind(key, PET_INSTANCE_AUTHORITY_VERSION, authority.pet_id, telegramId, authority.season_key, id),
+    db.prepare(`UPDATE telegram_pet_profiles SET equipped_${item.slot}=?,updated_at=CURRENT_TIMESTAMP
+      WHERE telegram_id=? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id=? AND status='pending')`).bind(key, telegramId, id),
+    db.prepare(`UPDATE telegram_pet_events SET status='accepted',reason='equipment_equipped'
+      WHERE id=? AND status='pending' RETURNING id`).bind(id),
+  ]);
+  if (!results?.[3]?.results?.length) {
+    const replay = await buildAcceptedPetEventDuplicate(db, telegramId, eventKey, pet, { item });
+    return replay || { accepted: false, reason: 'equipment_state_changed', item };
+  }
+  return { accepted: true, reason: 'equipment_equipped', item, pet: await getPetProfile(db, telegramId), xp_awarded: 0, pet_xp_awarded: 0 };
+}
+
+async function processPetGoldTrade(db, telegramId, wagerRaw, options = {}) {
+  const wagerText = String(wagerRaw ?? '').trim();
+  if (!/^\d+$/.test(wagerText)) {
+    return { accepted: false, reason: 'invalid_trade_wager', xp_awarded: 0, pet_xp_awarded: 0 };
+  }
+  const wager = Number(wagerText);
+  if (!Number.isFinite(wager) || wager < PET_TRADE_MIN_GOLD || wager > PET_TRADE_MAX_GOLD) {
+    return { accepted: false, reason: 'invalid_trade_wager', xp_awarded: 0, pet_xp_awarded: 0 };
+  }
+  const now = new Date();
+  const dayKey = getPetDayKey(now);
+  const weekKey = getPetWeekKey(now);
+  const eventKey = String(options.event_key || `pet:trade:${telegramId}:${Date.now()}`).slice(0, 120);
+  const duplicate = await readAcceptedPetEventByKey(db, telegramId, eventKey);
+  if (duplicate) return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0 };
+  const pet = await getPetProfile(db, telegramId);
+  if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
+  const sourceAuthority = activePetRewardAuthority(pet);
+  if (!sourceAuthority) return { accepted: false, reason: 'source_pet_authority_required', xp_awarded: 0, pet_xp_awarded: 0 };
+  if (!(await ensurePetAccountWalletReadyForMutation(db, telegramId, now))) {
+    return { accepted: false, reason: 'wallet_reconciliation_recovery_pending', pet, xp_awarded: 0, pet_xp_awarded: 0 };
+  }
+  Object.assign(pet, await readPetAccountWallet(db, telegramId) || {});
+  if (clampPetCurrency(pet.moon_gold) < wager) return { accepted: false, reason: 'not_enough_moon_gold', pet };
+
+  const lastTrade = await db.prepare(`
+    SELECT created_at FROM telegram_pet_events
+    WHERE telegram_id = ? AND event_type = 'trade' AND status = 'accepted'
+    ORDER BY created_at DESC LIMIT 1
+  `).bind(telegramId).first();
+  if (lastTrade?.created_at) {
+    const elapsedSeconds = (now.getTime() - (parseSqliteTs(lastTrade.created_at) ?? now.getTime())) / 1000;
+    if (elapsedSeconds < PET_TRADE_COOLDOWN_SECONDS) {
+      const cooldown = buildPetCooldownFromStart(lastTrade.created_at, PET_TRADE_COOLDOWN_SECONDS, now);
+      return {
+        accepted: false,
+        reason: 'trade_cooldown',
+        retry_after_seconds: Math.max(1, Math.ceil(PET_TRADE_COOLDOWN_SECONDS - elapsedSeconds)),
+        cooldown,
+        expires_at: cooldown?.expires_at || null,
+        remaining_seconds: cooldown?.remaining_seconds || 0,
+        xp_awarded: 0,
+        pet_xp_awarded: 0,
+        pet,
+      };
+    }
+  }
+
+  const totals = await getPetWindowTotals(db, telegramId, dayKey, weekKey);
+  const roll = Math.random();
+  const won = roll >= 0.46;
+  const goldDelta = won ? Math.max(6, Math.floor(wager * 0.75)) : -wager;
+  const crystalDelta = won && wager >= 50 ? 1 : 0;
+  let petXp = won ? Math.max(3, Math.floor(wager / 8)) : 1;
+  if (totals.day.pet_xp >= PETS_DAILY_PET_XP_CAP) {
+    petXp = 0;
+  } else if (totals.day.pet_xp + petXp > PETS_DAILY_PET_XP_CAP) {
+    petXp = Math.max(0, PETS_DAILY_PET_XP_CAP - totals.day.pet_xp);
+  }
+  const walletDeltas = { moon_gold: goldDelta, moon_crystals: crystalDelta };
+  const eventId = crypto.randomUUID();
+  const metadata = JSON.stringify({ source: options.source || 'telegram_bot', wager, won, gold_delta: goldDelta, crystal_delta: crystalDelta, roll });
+  const nextXp = '(pet_xp + (SELECT pet_xp_awarded FROM trade_award))';
+  const tradeResults = await db.batch([
+    db.prepare(`
+      INSERT OR IGNORE INTO telegram_pet_events
+        (id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
+      SELECT ?, ?, ?, 'trade', ?, 0, ?, ?, ?, ?, 'pending', 'trade_pending', ?
+      WHERE EXISTS (SELECT 1 FROM telegram_pet_profiles
+        WHERE telegram_id = ? AND ${accountWalletAffordabilitySql()} AND ${accountWalletRecoveryResolvedSql('telegram_pet_profiles.telegram_id')}
+          AND moon_gold >= ? AND pet_xp = ?)
+        AND EXISTS (SELECT 1 FROM telegram_pet_active_slots a JOIN telegram_pet_instances p
+          ON p.pet_id=a.pet_id AND p.telegram_id=a.telegram_id AND p.season_key=a.season_key
+          WHERE a.telegram_id=? AND a.pet_id=? AND a.season_key=? AND p.status='active' AND p.pet_xp=?)
+        AND NOT EXISTS (SELECT 1 FROM telegram_pet_events
+          WHERE telegram_id=? AND event_type='trade' AND status IN ('pending','accepted')
+            AND julianday(created_at) > julianday(?))
+        AND (?=0 OR ? + (SELECT COALESCE(SUM(pet_xp_awarded),0) FROM telegram_pet_events
+          WHERE telegram_id=? AND day_key=? AND status='accepted') <= ?)
+      RETURNING id
+    `).bind(eventId, sourceAuthority.pet_id, telegramId, eventKey, petXp, sourceAuthority.season_key, dayKey, weekKey, metadata, telegramId,
+      walletDeltas.moon_gold, walletDeltas.moon_crystals, walletDeltas.style_tokens || 0, wager, Number(pet.pet_xp || 0),
+      telegramId, pet.pet_id, pet.season_key, Number(pet.pet_xp || 0), telegramId, new Date(now.getTime() - PET_TRADE_COOLDOWN_SECONDS * 1000).toISOString(),
+      petXp, petXp, telegramId, dayKey, PETS_DAILY_PET_XP_CAP),
+    accountWalletDeltaStatement(db, telegramId, walletDeltas,
+      "EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')", [eventId]),
+    db.prepare(`WITH trade_award AS (SELECT pet_xp_awarded FROM telegram_pet_events WHERE id=? AND status='pending')
+      UPDATE telegram_pet_instances
+      SET pet_xp = ${nextXp}, level = ${getPetVisibleLevelSql(nextXp)},
+        stage = CASE WHEN ${nextXp} >= 1800 THEN 'legendary companion' WHEN ${nextXp} >= 900 THEN 'moon guardian'
+          WHEN ${nextXp} >= 360 THEN 'street scout' WHEN ${nextXp} >= 120 THEN 'runner' WHEN ${nextXp} >= 25 THEN 'hatchling' ELSE 'egg' END,
+        streak_days = CASE WHEN last_active_day > ? THEN streak_days WHEN last_active_day = ? THEN MAX(1,streak_days)
+          WHEN last_active_day = ? THEN streak_days+1 ELSE 1 END,
+        last_active_day = CASE WHEN last_active_day > ? THEN last_active_day ELSE ? END,
+        source_profile_updated_at = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE telegram_id = ? AND pet_id = ? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')
+    `).bind(eventId,
+      dayKey, dayKey, getPreviousPetDayKey(dayKey), dayKey, dayKey,
+      PET_INSTANCE_AUTHORITY_VERSION, telegramId, pet.pet_id || '', eventId),
+    db.prepare(`UPDATE telegram_pet_profiles SET
+        (pet_xp,level,stage,streak_days,last_active_day,last_decay_at)=
+          (SELECT pet_xp,level,stage,streak_days,last_active_day,last_decay_at FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=?),
+        updated_at=CURRENT_TIMESTAMP
+      WHERE telegram_id=? AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id=? AND status='pending')
+        AND EXISTS (SELECT 1 FROM telegram_pet_active_slots WHERE telegram_id=? AND pet_id=? AND season_key=?)`)
+      .bind(pet.pet_id, telegramId, telegramId, eventId, telegramId, pet.pet_id, pet.season_key),
+    db.prepare(`
+      INSERT INTO telegram_pet_season_state
+        (telegram_id, season_key, season_xp, weekly_xp, daily_xp, daily_key, weekly_key)
+      SELECT ?, ?, ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')
+      ON CONFLICT(telegram_id, season_key) DO UPDATE SET
+        season_xp = season_xp + excluded.season_xp,
+        weekly_xp = CASE WHEN weekly_key = excluded.weekly_key THEN weekly_xp + excluded.weekly_xp ELSE excluded.weekly_xp END,
+        daily_xp = CASE WHEN daily_key = excluded.daily_key THEN daily_xp + excluded.daily_xp ELSE excluded.daily_xp END,
+        daily_key = excluded.daily_key,
+        weekly_key = excluded.weekly_key,
+        updated_at = CURRENT_TIMESTAMP
+    `).bind(telegramId, sourceAuthority.season_key, petXp, petXp, petXp, dayKey, weekKey, eventId),
+    db.prepare(`
+      UPDATE telegram_pet_events
+      SET status = 'accepted', reason = ?
+      WHERE id = ? AND status = 'pending'
+      RETURNING id
+    `).bind(won ? 'trade_won' : 'trade_lost', eventId),
+  ]);
+  if (!tradeResults?.[5]?.results?.[0]) {
+    const acceptedDuplicate = await buildAcceptedPetEventDuplicate(db, telegramId, eventKey, pet, { wager });
+    if (acceptedDuplicate) return acceptedDuplicate;
+    const recent = await db.prepare("SELECT created_at FROM telegram_pet_events WHERE telegram_id=? AND event_type='trade' AND status IN ('pending','accepted') ORDER BY created_at DESC LIMIT 1").bind(telegramId).first();
+    const cooldown = recent ? buildPetCooldownFromStart(recent.created_at, PET_TRADE_COOLDOWN_SECONDS, new Date()) : null;
+    const currentPet = await getPetProfile(db, telegramId);
+    if (cooldown?.remaining_seconds > 0) return attachPetCooldown({ accepted: false, reason: 'trade_cooldown', pet: currentPet }, cooldown);
+    return { accepted: false, reason: Number(currentPet?.moon_gold || 0) < wager ? 'not_enough_moon_gold' : 'trade_state_changed', pet: currentPet };
+  }
+  const persistedPet = await getPetProfile(db, telegramId);
+  if (persistedPet) Object.assign(persistedPet, await readPetAccountWallet(db, telegramId) || {});
+
+  return { accepted: true, reason: won ? 'trade_won' : 'trade_lost', wager, won, gold_delta: goldDelta, crystal_delta: crystalDelta, xp_awarded: 0, pet_xp_awarded: petXp, pet: persistedPet || pet };
+}
+
+async function processPetAdventure(db, telegramId, adventureKeyRaw, options = {}) {
+  const requestedChoice = normalizePetAdventureChoice(adventureKeyRaw);
+  const encounterKey = String(options.encounter_key || options.encounterKey || '').trim();
+  const now = new Date();
+  const encounter = resolvePetAdventureEncounter(encounterKey || options.event_key || options.eventKey) || options.encounter || null;
+  if (!encounter) return { accepted: false, reason: 'adventure_unavailable', xp_awarded: 0, pet_xp_awarded: 0 };
+  const choice = requestedChoice
+    ? encounter.choices.find((entry) => entry.key === requestedChoice) || null
+    : null;
+  if (!choice) return { accepted: false, reason: 'invalid_adventure_choice', encounter, xp_awarded: 0, pet_xp_awarded: 0 };
+  const eventKey = String(options.event_key || `pet:adventure:${telegramId}:${encounter.key}:${choice.key}:${Date.now()}`).slice(0, 120);
+  const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first();
+  if (duplicate) return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0, encounter, choice };
+  const pet = await getPetProfile(db, telegramId);
+  if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0, encounter, choice };
+  const sourceAuthority = activePetRewardAuthority(pet);
+  if (!sourceAuthority) return { accepted: false, reason: 'source_pet_authority_required', xp_awarded: 0, pet_xp_awarded: 0, encounter, choice, pet };
+  const available = petAdventuresForPet(pet);
+  const adventure = available.find((item) => item.key === encounter.key) || null;
+  if (!adventure) return { accepted: false, reason: 'adventure_unavailable', encounter, choice, pet };
+  if (!adventure.unlocked) return { accepted: false, reason: 'level_locked', encounter, choice, adventure, pet };
+  if (clampPetStat(pet.energy) < adventure.energy_cost) return { accepted: false, reason: 'pet_tired', encounter, choice, adventure, pet };
+
+  const cooldown = await getPetAcceptedActionCooldown(db, telegramId, 'adventure', PET_ADVENTURE_COOLDOWN_SECONDS, now);
+  if (cooldown) {
+    return attachPetCooldown({ accepted: false, reason: 'adventure_cooldown', retry_after_seconds: cooldown.remaining_seconds,
+      cooldown, xp_awarded: 0, pet_xp_awarded: 0, encounter, choice, adventure, pet }, cooldown);
+  }
+
+  const outcome = pickPetRandomEventOutcome(choice);
+  const applied = applyPetRandomEventDeltas(
+    { ...pet },
+    { ...outcome.rewards },
+    outcome.costs,
+  );
+  const profileDeltas = buildPetProfileDeltas(applied.rewardsApplied, {
+    ...applied.costsApplied,
+    energy: Number(applied.costsApplied.energy || 0),
+  });
+  const awarded = await awardPetReward(db, {
+    telegram_id: telegramId, source: 'pet_adventure', idempotency_key: eventKey, event_key: eventKey,
+    pet_id: sourceAuthority.pet_id, season_key: sourceAuthority.season_key,
+    event_type: 'adventure', reason: `${encounter.key}:${choice.key}:${outcome.kind}`,
+    rewards: applied.rewardsApplied, currency_costs: applied.costsApplied, profile_deltas: profileDeltas,
+    touch_streak: true, now,
+    context: { source: options.source || 'telegram_bot', encounter_key: encounter.key, choice_key: choice.key, result_kind: outcome.kind, copy: outcome.copy, minimum_energy: adventure.energy_cost },
+  });
+  if (!awarded.accepted) {
+    const cooldown = await getPetAcceptedActionCooldown(db, telegramId, 'adventure', PET_ADVENTURE_COOLDOWN_SECONDS);
+    if (cooldown) return attachPetCooldown({ ...awarded, reason: 'adventure_cooldown', retry_after_seconds: cooldown.remaining_seconds, cooldown, encounter, choice }, cooldown);
+    const currentPet = await getPetInstanceWithAtomicDecay(db, sourceAuthority.pet_id).catch(() => null);
+    return { ...awarded, reason: currentPet && clampPetStat(currentPet.energy) < adventure.energy_cost ? 'pet_tired' : awarded.reason, encounter, choice };
+  }
+  applied.rewardsApplied = awarded.rewards;
+  applied.deltas.pet_xp = awarded.pet_xp_awarded;
+  if (awarded.accepted) {
+    await runPetIdentityWriteHook(options, { event_key: eventKey, ...sourceAuthority, event_type: 'adventure' });
+    await recordMoonpetBehaviour(db, {
+      pet_id: sourceAuthority.pet_id, season_key: sourceAuthority.season_key,
+      telegram_id: telegramId, event_key: `${eventKey}:personality`, source_event_key: eventKey, source_event_type: 'adventure',
+      behaviour: 'exploration', activity: 'adventure',
+    });
+    await recordMoonpetBiggestReward(db, {
+      pet_id: sourceAuthority.pet_id, season_key: sourceAuthority.season_key,
+      telegram_id: telegramId, event_key: `${eventKey}:biggest-reward`, source_event_key: eventKey, source_event_type: 'adventure',
+      reward_amount: awarded.rewards?.moon_gold, reward_currency: 'moon_gold',
+    });
+  }
+
+  return {
+    ...awarded,
+    reason: awarded.duplicate ? 'duplicate' : `${encounter.key}:${choice.key}`,
+    encounter,
+    choice,
+    result_copy: outcome.copy,
+    applied,
+  };
+}
+
+function serializePetLeaderboardEntry(row, index = 0) {
+  const phase = ['egg', 'young', 'adult', 'rare'].includes(String(row?.lifecycle_phase || ''))
+    ? String(row.lifecycle_phase)
+    : 'egg';
+  const evolutionStage = Math.max(0, Number(row?.evolution_stage) || 0);
+  const artIdentityId = MOONPET_SPECIES[row?.lifecycle_species_id] ? String(row.lifecycle_species_id) : null;
+  const revealed = evolutionStage >= 3;
+  const speciesId = revealed ? artIdentityId : null;
+  const publicArtIdentityId = evolutionStage >= MOONPET_IDENTITY_REVEAL_STAGE ? artIdentityId : null;
+  const rareMorphId = phase === 'rare' && row?.rare_morph_id ? String(row.rare_morph_id) : null;
+  const displayName = resolveMoonpetDisplayName({ evolution_stage: evolutionStage, art_identity_id: artIdentityId });
+  const stageLabel = String(row?.stage || '') === 'moon_egg' || evolutionStage === 0 ? 'secret_bot' : row?.stage || 'secret_bot';
+  return {
+    rank: Math.max(1, Number(row?.rank) || Number(index) + 1),
+    name: displayName,
+    pet_name: displayName,
+    stage: rareMorphId || stageLabel,
+    phase,
+    evolution_stage: evolutionStage,
+    identity_revealed: revealed,
+    display_name: displayName,
+    art_identity_id: publicArtIdentityId,
+    species_id: speciesId,
+    species_name: speciesId ? MOONPET_SPECIES[speciesId].name : MOONPET_UNKNOWN_NAME,
+    rare_morph_id: rareMorphId,
+    rare_morph_name: rareMorphId ? rareMorphId.split('_').map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(' ') : null,
+    level: Number(row?.level || 1),
+    pet_xp: Number(row?.pet_xp || 0),
+    moon_gold: clampPetCurrency(row?.moon_gold),
+    moon_crystals: clampPetCurrency(row?.moon_crystals),
+    style_tokens: clampPetCurrency(row?.style_tokens),
+    streak_days: Number(row?.streak_days || 0),
+  };
+}
+
+function publicMoonpetArtIdentityId(artIdentityId, evolutionStage = 0) {
+  return Number(evolutionStage) >= MOONPET_IDENTITY_REVEAL_STAGE ? artIdentityId : null;
+}
+
+function privateMoonpetArtIdentityId(artIdentityId, evolutionStage = 0, includeArtIdentity = false) {
+  if (includeArtIdentity === true && Number(evolutionStage) >= 2) return artIdentityId;
+  return publicMoonpetArtIdentityId(artIdentityId, evolutionStage);
+}
+
+function publicMoonpetLifecycle(lifecycle, options = {}) {
+  if (!lifecycle) return null;
+  const evolutionStage = Math.max(0, Number(lifecycle.evolution_stage) || 0);
+  const artIdentityId = MOONPET_SPECIES[lifecycle.art_identity_id || lifecycle.species_id]
+    ? String(lifecycle.art_identity_id || lifecycle.species_id)
+    : null;
+  const revealed = evolutionStage >= MOONPET_IDENTITY_REVEAL_STAGE;
+  const displayName = resolveMoonpetDisplayName({ evolution_stage: evolutionStage, art_identity_id: artIdentityId });
+  return {
+    ...lifecycle,
+    name: displayName,
+    pet_name: displayName,
+    display_name: displayName,
+    identity_revealed: revealed,
+    species_id: revealed ? artIdentityId : null,
+    species_name: revealed ? displayName : MOONPET_UNKNOWN_NAME,
+    art_identity_id: privateMoonpetArtIdentityId(artIdentityId, evolutionStage, options.include_art_identity),
+  };
+}
+
+function serializePet(pet, identity = null, options = {}) {
+  if (!pet) return null;
+  const decayed = applyPetDecay({ ...pet });
+  const currentEvolution = identity?.current_stage || null;
+  const evolutionStage = currentEvolution ? Math.max(0, Number(currentEvolution.stage) || 0) : 0;
+  const artIdentityId = decayed.species || identity?.lifecycle?.art_identity_id || null;
+  const displayName = resolveMoonpetDisplayName({ evolution_stage: evolutionStage, art_identity_id: artIdentityId }, identity || {});
+  return {
+    pet_id: decayed.pet_id || null,
+    telegram_id: decayed.telegram_id,
+    season_key: decayed.season_key || null,
+    name: displayName,
+    pet_name: displayName,
+    display_name: displayName,
+    ...(options.include_callsign === true ? {
+      callsign: evolutionStage >= MOONPET_IDENTITY_REVEAL_STAGE
+        ? String(decayed.pet_name || '').trim() || displayName
+        : null,
+    } : {}),
+    species: evolutionStage >= 3 ? decayed.species : null,
+    art_identity_id: privateMoonpetArtIdentityId(artIdentityId, evolutionStage, options.include_art_identity),
+    stage: currentEvolution?.name || null,
+    evolution_id: currentEvolution?.evolution_id || null,
+    evolution_stage: evolutionStage,
+    growth_stage: getPetGrowthStage(decayed.pet_xp),
+    pet_xp: Number(decayed.pet_xp || 0),
+    level: getPetLevel(decayed.pet_xp),
+    hunger: clampPetStat(decayed.hunger),
+    happiness: clampPetStat(decayed.happiness),
+    cleanliness: clampPetStat(decayed.cleanliness),
+    energy: clampPetStat(decayed.energy),
+    health: calculatePetHealth(decayed),
+    moon_gold: clampPetCurrency(decayed.moon_gold),
+    moon_crystals: clampPetCurrency(decayed.moon_crystals),
+    style_tokens: clampPetCurrency(decayed.style_tokens),
+    equipped_food: decayed.equipped_food || null,
+    equipped_toy: decayed.equipped_toy || null,
+    equipped_outfit: decayed.equipped_outfit || null,
+    equipped_armor: decayed.equipped_armor || null,
+    equipped_weapon: decayed.equipped_weapon || null,
+    equipped_charm: decayed.equipped_charm || null,
+    streak_days: Number(decayed.streak_days || 0),
+    last_active_day: decayed.last_active_day || null,
+    updated_at: decayed.updated_at || null,
+  };
+}
+
+async function buildPetMissions(db, telegramId, petRaw = null) {
+  const now = new Date();
+  const dayKey = getPetDayKey(now);
+  const weekKey = getPetWeekKey(now);
+  const season = getPetSeasonInfo(now);
+  const nextDayKey = getPetDayKey(new Date(now.getTime() + 86400000));
+  const [events, equipmentUpgradeEvents, pet] = await Promise.all([
+    db.prepare(`
+      SELECT event_type, COUNT(*) AS count
+      FROM telegram_pet_events
+      WHERE telegram_id = ? AND day_key = ? AND status = 'accepted'
+      GROUP BY event_type
+    `).bind(telegramId, dayKey).all().then(requirePetReadResult),
+    db.prepare(`
+      SELECT COUNT(*) AS count
+      FROM telegram_pet_system_events
+      WHERE telegram_id = ? AND system_key = 'equipment_upgrade' AND status = 'completed'
+        AND updated_at >= ? AND updated_at < ?
+    `).bind(telegramId, dayKey, nextDayKey).first().then(requirePetFirstReadResult),
+    petRaw || getPetProfile(db, telegramId, true),
+  ]);
+  const counts = Object.fromEntries((events.results || []).map((row) => [row.event_type, Number(row.count || 0)]));
+  const equipmentUpgradeCount = Number(equipmentUpgradeEvents?.count || 0);
+  const completion = await readDailyCompletion(db, telegramId, dayKey, counts, equipmentUpgradeCount, clampPetCurrency(pet?.moon_gold), pet?.equipment_collection_complete === true);
+  const done = (bits) => (completion.progress_bits & bits) === bits;
+  const fullCareDone = done(7);
+  return {
+    day_key: dayKey,
+    week_key: weekKey,
+    season,
+    balances: pet ? {
+      moon_gold: clampPetCurrency(pet.moon_gold),
+      moon_crystals: clampPetCurrency(pet.moon_crystals),
+      style_tokens: clampPetCurrency(pet.style_tokens),
+    } : null,
+    completion,
+    daily: [
+      { key: `pet-daily-feed:${dayKey}`, title: 'Feed your Moonpet', completed: done(1) },
+      { key: `pet-daily-train:${dayKey}`, title: 'Train once', completed: done(8) },
+      { key: `pet-daily-care-set:${dayKey}`, title: 'Complete feed, play and clean', completed: fullCareDone,
+        steps: ['feed', 'play', 'clean'].map((action) => ({ key: action, title: action.toUpperCase(), completed: done({ feed: 1, play: 2, clean: 4 }[action]) })) },
+      { key: `pet-daily-trade:${dayKey}`, title: 'Run one Moon Gold trade', completed: done(16) },
+      { key: `pet-daily-shop:${dayKey}`, title: pet?.equipment_collection_complete ? 'Permanent gear collection fully upgraded' : 'Buy new permanent gear or upgrade owned gear', detail: pet?.equipment_collection_complete ? 'All permanent gear is level 10: this daily goal is automatically complete.' : 'Market purchases, crafting and free equipment switches do not count. Fully upgrading all permanent gear completes this goal automatically.', completed: done(32) },
+      { key: `pet-daily-adventure:${dayKey}`, title: 'Run one pet adventure', completed: done(64) },
+      { key: `pet-daily-bank:${dayKey}`, title: 'Bank 50 Moon Gold', completed: done(128) },
+    ],
+  };
+}
+
+function getPetNeedsAlert(pet, missions = null, identity = null) {
+  const p = serializePet(pet, identity);
+  if (!p) return null;
+  const unfinishedMission = missions?.daily?.find((mission) => !mission.completed);
+  if (p.health <= 45) return { reason: 'health_low', destination: 'home', text: `${p.pet_name} health is low. Open Moonpet OS and restore its needs before taking risks.` };
+  if (p.hunger >= 75) return { reason: 'hungry', destination: 'home', text: `${p.pet_name} is hungry. Open Moonpet OS and feed it before health drops.` };
+  if (p.cleanliness <= 35) return { reason: 'dirty', destination: 'home', text: `${p.pet_name} needs cleaning. Open Moonpet OS to restore cleanliness.` };
+  if (p.energy <= 25) return { reason: 'tired', destination: 'home', text: `${p.pet_name} is tired. Open Moonpet OS and sleep before training or adventures.` };
+  if (p.happiness <= 35) return { reason: 'lonely', destination: 'home', text: `${p.pet_name} wants attention. Open Moonpet OS for a play session.` };
+  if (unfinishedMission) return { reason: 'mission_open', destination: 'missions', text: `${p.pet_name} still has a daily mission open: ${unfinishedMission.title}.` };
+  return null;
+}
+
+async function setPetNotificationPreference(db, telegramId, enabled) {
+  await db.prepare(`
+    INSERT INTO telegram_pet_notification_settings (telegram_id, enabled)
+    VALUES (?, ?)
+    ON CONFLICT(telegram_id) DO UPDATE SET
+      enabled = excluded.enabled,
+      updated_at = CURRENT_TIMESTAMP
+  `).bind(telegramId, enabled ? 1 : 0).run();
+  return { telegram_id: telegramId, enabled: enabled ? 1 : 0 };
+}
+
+async function getPetNotificationPreference(db, telegramId) {
+  const row = await db.prepare(`
+    SELECT telegram_id, enabled, last_notified_at, last_reason
+    FROM telegram_pet_notification_settings
+    WHERE telegram_id = ?
+  `).bind(telegramId).first().catch(() => null);
+  return row || { telegram_id: telegramId, enabled: 0, last_notified_at: null, last_reason: null };
+}
+
+async function runPetNeedsNotifications(env, options = {}) {
+  const tok = env.TELEGRAM_BOT_TOKEN;
+  if (!tok) return { ok: false, error: 'telegram_bot_token_missing' };
+  const limit = Math.min(Math.max(Number(options.limit || PET_NOTIFICATION_BATCH_LIMIT), 1), 100);
+  const rows = await env.DB.prepare(`
+    SELECT p.*, n.last_notified_at, n.last_reason
+    FROM telegram_pet_profiles p
+    JOIN telegram_pet_notification_settings n ON n.telegram_id = p.telegram_id
+    WHERE n.enabled = 1
+      AND (n.last_notified_at IS NULL OR n.last_notified_at <= datetime('now', ?))
+    ORDER BY p.health ASC, p.updated_at ASC
+    LIMIT ?
+  `).bind(`-${PET_NOTIFICATION_COOLDOWN_MINUTES} minutes`, limit).all().catch(() => ({ results: [] }));
+
+  let sent = 0;
+  let skipped = 0;
+  let failed = 0;
+  for (const row of rows.results || []) {
+    const telegramId = String(row.telegram_id);
+    const pet = applyPetDecay({ ...row });
+    let guidanceState = null;
+    let guidanceNotices = [];
+    try {
+      guidanceState = await buildPetGuidanceState(env.DB, telegramId, pet);
+      guidanceNotices = await persistPetGuidanceNotices(
+        env.DB,
+        telegramId,
+        buildPetGuidanceCandidates(guidanceState || {}),
+      );
+    } catch (error) {
+      logApiFailure('telegram_pet_guidance_notification_failed', {
+        telegramId,
+        message: error?.message || String(error),
+      });
+    }
+    const missions = guidanceState
+      ? { daily: guidanceState.missions || [] }
+      : await buildPetMissions(env.DB, telegramId).catch(() => null);
+    const alert = guidanceNotices.length
+      ? {
+          reason: 'progress_ready',
+          destination: 'home',
+          text: `${guidanceNotices.slice(0, 3).map((notice) => `🎉 ${notice.title}`).join('\n')}${guidanceNotices.length > 3 ? `\n+${guidanceNotices.length - 3} more unlocks are available.` : ''}\nOpen Moonpet OS for the best next move.`,
+        }
+      : getPetNeedsAlert(pet, missions, guidanceState?.identity || null);
+    if (!alert) {
+      skipped += 1;
+      continue;
+    }
+    const result = await sendTelegramMessage(tok, telegramId, `<b>Crypto Moonboy Pet Update</b>\n${escapeHtml(alert.text)}\n\nAlert settings are inside Moonpet OS.`, { reply_markup: buildPetMiniAppLaunchReplyMarkup(alert.destination || 'home') });
+    if (result?.ok) {
+      sent += 1;
+      if (guidanceNotices.length) await markPetGuidanceNoticesShown(env.DB, telegramId, guidanceNotices).catch((error) => {
+        logApiFailure('telegram_pet_guidance_notification_mark_failed', {
+          telegramId,
+          message: error?.message || String(error),
+        });
+      });
+      await env.DB.prepare(`
+        UPDATE telegram_pet_notification_settings
+        SET last_notified_at = CURRENT_TIMESTAMP, last_reason = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE telegram_id = ?
+      `).bind(alert.reason, telegramId).run().catch(() => {});
+    } else {
+      failed += 1;
+    }
+  }
+  return { ok: true, considered: rows.results?.length || 0, sent, skipped, failed };
+}
+
+// ── Player state helpers ──────────────────────────────────────────────────────
+
+// Maximum contribution points accepted per single faction signal request.
+// Prevents arbitrarily large client numbers from skewing faction totals.
+const FACTION_SIGNAL_CONTRIBUTION_MAX = 10000;
+
+// Allowed reason values for faction signal contributions.
+const FACTION_SIGNAL_ALLOWED_REASONS = new Set([
+  'score_submission', 'mission_complete', 'arcade_run', 'daily_bonus', 'war_contribution', 'manual',
+]);
+
+const BATTLE_CHAMBER_TABLES = [
+  'battle_chamber_faction_clout',
+  'battle_chamber_member_clout',
+  'battle_chamber_activity_log',
+];
+
+const BATTLE_CHAMBER_PERIODS = Object.freeze(['daily', 'weekly', 'monthly', 'seasonal']);
+
+const BATTLE_CHAMBER_EVENT_TYPES = new Set([
+  'score_accept',
+  'faction_join',
+  'mission_complete',
+  'daily_mission_progress',
+  'weekly_contribution',
+  'streak_bonus',
+  'reward_unlock',
+  'manual_safe_event',
+]);
+
+const BATTLE_CHAMBER_FACTIONS = CANONICAL_FACTION_KEYS;
+
+const BATTLE_CHAMBER_FACTION_LABELS = Object.freeze({
+  'hard-fork-rockers': 'Hard Fork Rockers',
+  'rugpull-miners': 'Rugpull Miners',
+  graffpunks: 'GraffPUNKS',
+  'blockchain-furies': 'Blockchain Furies',
+  'crypto-moongirls': 'Crypto Moongirls',
+  blockstars: 'The Blockstars',
+  'all-city-bulls': 'All City Bulls',
+  'nomad-bears': 'Nomad Bears',
+  'crypto-stoned-boys': 'Crypto Stoned Boys',
+});
+
+const BATTLE_CHAMBER_CLAMP_MAX = 5000;
+const BATTLE_CHAMBER_METADATA_MAX_LENGTH = 4000;
+const BATTLE_CHAMBER_SEASON_EPOCH_MS = Date.UTC(2024, 0, 1);
+const BATTLE_CHAMBER_DAYS_PER_SEASON = 90;
+
+const PLAYER_STATE_TABLES = [
+  'player_modifier_state',
+  'player_daily_mission_state',
+  'player_faction_signal_state',
+  'player_streak_state',
+  'player_game_mastery_state',
+];
+const WIKI_ENGAGEMENT_TABLES = [
+  'wiki_comments',
+  'wiki_comment_votes',
+  'wiki_page_likes',
+  'wiki_citation_votes',
+  'wiki_mission_completions',
+];
+
+const DAILY_DIGEST_TABLES = [
+  'daily_missed_perks',
+  'telegram_daily_digest_log',
+  'daily_opportunity_state',
+];
+const TELEGRAM_GROUP_ANNOUNCEMENT_TABLES = [
+  'telegram_group_announcement_log',
+];
+const DAILY_WTF_TABLES = [
+  'daily_wtf_events',
+  'daily_wtf_player_events',
+  'daily_wtf_chain_options',
+];
+const WTF_MAX_CHAIN_DEPTH = 5;
+const WTF_MAX_CHAIN_TRIGGERS_PER_DAY = 12;
+const WTF_MAX_BONUS_XP_PER_EVENT = 500;
+const WTF_ALLOWED_COMPLETION_SOURCES = new Set([
+  'arcade_run_accepted',
+  'faction_daily_mission',
+  'battle_chamber_proof',
+  'roguelite_branch',
+]);
+const WTF_REQUIRED_ACTION_SOURCE_MAP = Object.freeze({
+  play_any_accepted_arcade_run: ['arcade_run_accepted'],
+  complete_faction_or_battle_action: ['faction_daily_mission', 'battle_chamber_proof'],
+  score_target_any_game: ['arcade_run_accepted'],
+  choose_and_complete_chaos_path: ['roguelite_branch', 'arcade_run_accepted'],
+});
+
+const DAILY_MISSED_TEXT_LIMITS = Object.freeze({
+  source: 80,
+  opportunityType: 80,
+  title: 140,
+  description: 400,
+  missedReason: 160,
+});
+
+const DAILY_MISSED_HISTORY_MAX_LIMIT = 100;
+// Notional XP values per event type (never awarded; tracking only).
+// status_value (0/1) is a presence flag — missed_xp_value is the real XP amount.
+const MISSED_XP_PER_TIMED_EVENT = 50;   // WTF signal window missed
+const MISSED_XP_PER_DAILY_WINDOW = 25;  // daily activation window backfill
+const DIGEST_PENDING_STALE_MINUTES = 15;
+const DIGEST_PENDING_STALE_MS = DIGEST_PENDING_STALE_MINUTES * 60 * 1000;
+const DIGEST_SEND_BATCH_SIZE = 12;
+const DIGEST_SEND_MAX_CONCURRENCY = 3;
+
+async function ensurePlayerStateTables(db, responseHeaders = {}) {
+  for (const tableName of PLAYER_STATE_TABLES) {
+    const row = await db.prepare(
+      `SELECT name FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1`
+    ).bind(tableName).first().catch(() => null);
+    if (!row?.name) {
+      // Return a structured Response so callers can return it directly.
+      // This is not a server error — it means migration 015 has not been applied yet.
+      return {
+        _isPlayerStateUnavailable: true,
+        tableName,
+        response: new Response(JSON.stringify({
+          ok: false,
+          error: 'player_state_unavailable',
+          reason: `migration_pending:${tableName}`,
+          message: 'Player state tables are not yet configured. Apply migration 015.',
+        }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json', 'Retry-After': '60', ...responseHeaders },
+        }),
+      };
+    }
+  }
+  return null; // all tables present
+}
+
+async function ensureWikiEngagementTables(db, responseHeaders = {}) {
+  for (const tableName of WIKI_ENGAGEMENT_TABLES) {
+    const row = await db.prepare(
+      `SELECT name FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1`
+    ).bind(tableName).first().catch(() => null);
+    if (!row?.name) {
+      return {
+        _isWikiEngagementUnavailable: true,
+        tableName,
+        response: new Response(JSON.stringify({
+          ok: false,
+          error: 'wiki_engagement_unavailable',
+          reason: `migration_pending:${tableName}`,
+          message: 'Wiki engagement tables are not yet configured. Apply migration 029.',
+        }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json', 'Retry-After': '60', ...responseHeaders },
+        }),
+      };
+    }
+  }
+  return null;
+}
+
+function safeJsonParse(raw, fallback) {
+  try { return raw != null ? JSON.parse(raw) : fallback; } catch { return fallback; }
+}
+
+function getIsoWeekKey() {
+  const d = new Date();
+  const dow = d.getUTCDay() || 7;
+  const thu = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + (4 - dow)));
+  const yearStart = new Date(Date.UTC(thu.getUTCFullYear(), 0, 1));
+  const weekNum = Math.ceil(((thu - yearStart) / 86400000 + 1) / 7);
+  return thu.getUTCFullYear() + '-W' + String(weekNum).padStart(2, '0');
+}
+
+async function ensureBattleChamberTables(db, responseHeaders = {}) {
+  const checks = await Promise.all(BATTLE_CHAMBER_TABLES.map((tableName) =>
+    db.prepare(
+      `SELECT name FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1`
+    ).bind(tableName).first().catch(() => null).then((row) => ({ tableName, row }))
+  ));
+  const missing = checks.find((entry) => !entry.row?.name);
+  if (missing) {
+    return {
+      _isBattleChamberUnavailable: true,
+      tableName: missing.tableName,
+      response: new Response(JSON.stringify({
+        ok: false,
+        error: 'battle_chamber_unavailable',
+        reason: `migration_pending:${missing.tableName}`,
+        message: 'Battle Chamber authority tables are not yet configured. Apply migration 016.',
+      }), {
+        status: 503,
+        headers: { 'Content-Type': 'application/json', 'Retry-After': '60', ...responseHeaders },
+      }),
+    };
+  }
+  return null;
+}
+
+// Battle Chamber uses canonical 9-faction keys while legacy faction progression
+// routes still rely on normalizeFaction() for backward-compatible aliases.
+function normalizeBattleChamberFaction(value) {
+  const normalized = normalizeFaction(value);
+  return BATTLE_CHAMBER_FACTIONS.includes(normalized) ? normalized : null;
+}
+
+function getBattleChamberPeriodKey(periodType, nowMs = Date.now()) {
+  const now = new Date(nowMs);
+  if (periodType === 'daily') {
+    return now.toISOString().slice(0, 10);
+  }
+  if (periodType === 'weekly') {
+    const dow = now.getUTCDay() || 7;
+    const thu = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + (4 - dow)));
+    const yearStart = new Date(Date.UTC(thu.getUTCFullYear(), 0, 1));
+    const weekNum = Math.ceil(((thu - yearStart) / 86400000 + 1) / 7);
+    return `${thu.getUTCFullYear()}-W${String(weekNum).padStart(2, '0')}`;
+  }
+  if (periodType === 'monthly') {
+    return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
+  }
+  return null;
+}
+
+function getBattleSeasonFallbackKey(nowMs = Date.now()) {
+  const seasonLengthMs = BATTLE_CHAMBER_DAYS_PER_SEASON * 24 * 60 * 60 * 1000;
+  const seasonIndex = Math.floor((nowMs - BATTLE_CHAMBER_SEASON_EPOCH_MS) / seasonLengthMs);
+  return `S${seasonIndex + 1}`;
+}
+
+async function getBattleSeasonKey(db, nowMs = Date.now()) {
+  const season = await getCurrentSeason(db).catch(() => null);
+  if (season && typeof season === 'object') {
+    const explicit = season.season_key || season.key || season.slug || season.code;
+    if (explicit) return String(explicit);
+    if (season.id != null) return `S${season.id}`;
+  }
+  return getBattleSeasonFallbackKey(nowMs);
+}
+
+async function getBattlePeriodKey(periodType, db, nowMs = Date.now()) {
+  if (periodType === 'seasonal') return getBattleSeasonKey(db, nowMs);
+  return getBattleChamberPeriodKey(periodType, nowMs);
+}
+
+function clampBattleClout(raw, max = BATTLE_CHAMBER_CLAMP_MAX) {
+  const n = Math.floor(Number(raw) || 0);
+  if (n <= 0) return 0;
+  return Math.min(max, n);
+}
+
+function classifyBattleChamberEvent(eventType, cloutDelta) {
+  const delta = Math.max(0, Math.floor(Number(cloutDelta) || 0));
+  if (eventType === 'mission_complete' || eventType === 'daily_mission_progress') {
+    return { mission: delta, score: 0, contribution: 0, streak: 0 };
+  }
+  if (eventType === 'score_accept') {
+    return { mission: 0, score: delta, contribution: 0, streak: 0 };
+  }
+  if (eventType === 'streak_bonus') {
+    return { mission: 0, score: 0, contribution: 0, streak: delta };
+  }
+  return { mission: 0, score: 0, contribution: delta, streak: 0 };
+}
+
+function buildBattleEventText({ displayName, factionId, eventType }) {
+  const name = String(displayName || 'Player');
+  const factionLabel = BATTLE_CHAMBER_FACTION_LABELS[factionId] || factionId || 'faction';
+  if (eventType === 'faction_join') return `${name} joined ${factionLabel}.`;
+  if (eventType === 'mission_complete') return `${name} completed a mission for ${factionLabel}.`;
+  if (eventType === 'weekly_contribution') return `${name} gained weekly pressure for ${factionLabel}.`;
+  if (eventType === 'streak_bonus') return `${name} triggered a streak bonus for ${factionLabel}.`;
+  if (eventType === 'reward_unlock') return `${name} unlocked a reward in ${factionLabel}.`;
+  if (eventType === 'score_accept') return `${name} moved up the weekly clout board for ${factionLabel}.`;
+  return `${name} logged Battle Chamber activity for ${factionLabel}.`;
+}
+
+async function appendBattleChamberActivity(db, {
+  telegramId,
+  displayName,
+  factionId,
+  eventType,
+  eventText,
+  cloutDelta,
+  source,
+  metadata,
+  createdAt,
+}) {
+  const metadataJson = metadata && typeof metadata === 'object'
+    ? JSON.stringify(metadata).slice(0, BATTLE_CHAMBER_METADATA_MAX_LENGTH)
+    : null;
+  await db.prepare(`
+    INSERT INTO battle_chamber_activity_log
+      (telegram_id, display_name, faction_id, event_type, event_text, clout_delta, source, metadata_json, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).bind(
+    String(telegramId),
+    displayName || null,
+    factionId,
+    eventType,
+    eventText,
+    Math.max(0, Math.floor(Number(cloutDelta) || 0)),
+    source || null,
+    metadataJson,
+    createdAt || new Date().toISOString(),
+  ).run();
+}
+
+async function applyBattleChamberCloutUpdate(db, {
+  telegramId,
+  factionId,
+  eventType,
+  cloutDelta,
+  nowMs,
+}) {
+  const ts = Number.isFinite(nowMs) ? nowMs : Date.now();
+  const nowStr = new Date(ts).toISOString();
+  const safeDelta = Math.max(0, Math.floor(Number(cloutDelta) || 0));
+  const bucket = classifyBattleChamberEvent(eventType, safeDelta);
+  const periodKeys = {};
+  for (const periodType of BATTLE_CHAMBER_PERIODS) {
+    periodKeys[periodType] = await getBattlePeriodKey(periodType, db, ts);
+  }
+  if (safeDelta <= 0) return periodKeys;
+
+  for (const periodType of BATTLE_CHAMBER_PERIODS) {
+    const periodKey = periodKeys[periodType];
+    const memberInsert = await db.prepare(`
+      INSERT OR IGNORE INTO battle_chamber_member_clout
+        (telegram_id, faction_id, period_type, period_key, clout_total, mission_total, score_total, streak_total, last_event_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      String(telegramId),
+      factionId,
+      periodType,
+      periodKey,
+      safeDelta,
+      bucket.mission,
+      bucket.score,
+      bucket.streak,
+      nowStr,
+      nowStr,
+    ).run();
+    const insertedMemberPeriod = Number(memberInsert?.meta?.changes || 0) > 0;
+    if (!insertedMemberPeriod) {
+      await db.prepare(`
+        UPDATE battle_chamber_member_clout
+        SET
+          clout_total = clout_total + ?,
+          mission_total = mission_total + ?,
+          score_total = score_total + ?,
+          streak_total = streak_total + ?,
+          last_event_at = ?,
+          updated_at = ?
+        WHERE telegram_id = ? AND faction_id = ? AND period_type = ? AND period_key = ?
+      `).bind(
+        safeDelta,
+        bucket.mission,
+        bucket.score,
+        bucket.streak,
+        nowStr,
+        nowStr,
+        String(telegramId),
+        factionId,
+        periodType,
+        periodKey,
+      ).run();
+    }
+
+    await db.prepare(`
+      INSERT INTO battle_chamber_faction_clout
+        (faction_id, period_type, period_key, clout_total, contribution_total, mission_total, score_total, member_count, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(faction_id, period_type, period_key) DO UPDATE SET
+        clout_total = battle_chamber_faction_clout.clout_total + excluded.clout_total,
+        contribution_total = battle_chamber_faction_clout.contribution_total + excluded.contribution_total,
+        mission_total = battle_chamber_faction_clout.mission_total + excluded.mission_total,
+        score_total = battle_chamber_faction_clout.score_total + excluded.score_total,
+        member_count = battle_chamber_faction_clout.member_count + excluded.member_count,
+        updated_at = excluded.updated_at
+    `).bind(
+      factionId,
+      periodType,
+      periodKey,
+      safeDelta,
+      bucket.contribution,
+      bucket.mission,
+      bucket.score,
+      insertedMemberPeriod ? 1 : 0,
+      nowStr,
+    ).run();
+  }
+
+  return periodKeys;
+}
+
+async function _updateMissionStreak(db, telegramId, todayKey) {
+  try {
+    const row = await db.prepare(
+      `SELECT mission_streak, last_mission_date FROM player_streak_state WHERE telegram_id = ? LIMIT 1`
+    ).bind(telegramId).first().catch(() => null);
+    const lastDate = row?.last_mission_date || null;
+    const nowStr = new Date().toISOString();
+    if (lastDate === todayKey) return; // already recorded today
+    const yesterday = new Date(new Date(todayKey + 'T00:00:00Z').getTime() - 86400000).toISOString().slice(0, 10);
+    const newStreak = lastDate === yesterday ? (row?.mission_streak || 0) + 1 : 1;
+    await db.prepare(`
+      INSERT INTO player_streak_state (telegram_id, mission_streak, last_mission_date, updated_at)
+      VALUES (?, ?, ?, ?)
+      ON CONFLICT(telegram_id) DO UPDATE SET
+        mission_streak = ?,
+        last_mission_date = ?,
+        updated_at = ?
+    `).bind(telegramId, newStreak, todayKey, nowStr, newStreak, todayKey, nowStr).run();
+  } catch { /* non-fatal */ }
+}
+
+async function _updateContributionStreak(db, telegramId, todayKey) {
+  try {
+    const row = await db.prepare(
+      `SELECT contribution_streak, last_contribution_date FROM player_streak_state WHERE telegram_id = ? LIMIT 1`
+    ).bind(telegramId).first().catch(() => null);
+    const lastDate = row?.last_contribution_date || null;
+    const nowStr = new Date().toISOString();
+    if (lastDate === todayKey) return; // already recorded today
+    const yesterday = new Date(new Date(todayKey + 'T00:00:00Z').getTime() - 86400000).toISOString().slice(0, 10);
+    const newStreak = lastDate === yesterday ? (row?.contribution_streak || 0) + 1 : 1;
+    await db.prepare(`
+      INSERT INTO player_streak_state (telegram_id, contribution_streak, last_contribution_date, updated_at)
+      VALUES (?, ?, ?, ?)
+      ON CONFLICT(telegram_id) DO UPDATE SET
+        contribution_streak = ?,
+        last_contribution_date = ?,
+        updated_at = ?
+    `).bind(telegramId, newStreak, todayKey, nowStr, newStreak, todayKey, nowStr).run().catch(() => {});
+  } catch { /* non-fatal */ }
+}
+
+async function ensureDailyDigestTables(db) {
+  for (const tableName of DAILY_DIGEST_TABLES) {
+    const row = await db.prepare(
+      `SELECT name FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1`
+    ).bind(tableName).first().catch(() => null);
+    if (!row?.name) {
+      return {
+        _isDailyDigestUnavailable: true,
+        tableName,
+        response: new Response(JSON.stringify({
+          ok: false,
+          error: 'daily_digest_unavailable',
+          reason: `migration_pending:${tableName}`,
+          message: 'Daily digest and missed history tables are not yet configured. Apply migration 018.',
+        }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json', 'Retry-After': '60' },
+        }),
+      };
+    }
+  }
+  return null;
+}
+
+async function ensureDailyWtfTables(db) {
+  for (const tableName of DAILY_WTF_TABLES) {
+    const row = await db.prepare(
+      `SELECT name FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1`
+    ).bind(tableName).first().catch(() => null);
+    if (!row?.name) {
+      return {
+        _isDailyWtfUnavailable: true,
+        tableName,
+        response: new Response(JSON.stringify({
+          ok: false,
+          error: 'daily_wtf_unavailable',
+          reason: `migration_pending:${tableName}`,
+          message: 'Daily WTF event tables are not yet configured. Apply migration 019.',
+        }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json', 'Retry-After': '60' },
+        }),
+      };
+    }
+  }
+  return null;
+}
+
+function addUtcDays(utcDay, days) {
+  const d = new Date(`${utcDay}T00:00:00.000Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+async function getNextDailyWtfEvent(db, utcDay, normalizeRow) {
+  const tomorrow = addUtcDays(utcDay, 1);
+  await ensureWtfEventsForDay(db, tomorrow).catch(() => {});
+  const rows = await db.prepare(`SELECT * FROM daily_wtf_events WHERE utc_day = ? ORDER BY starts_at ASC`).bind(tomorrow).all().catch(() => ({ results: [] }));
+  const officialIds = new Set(getWtfDailySchedule(tomorrow).map((event) => event.event_id));
+  const row = (rows?.results || []).find((candidate) => officialIds.has(String(candidate.event_id))) || null;
+  return row ? normalizeRow(row) : null;
+}
+
+function getAllowedSourcesForWtfEvent(eventRow) {
+  const key = String(eventRow?.required_action || '').trim();
+  const fromAction = WTF_REQUIRED_ACTION_SOURCE_MAP[key];
+  if (Array.isArray(fromAction) && fromAction.length) return fromAction.slice();
+  return ['arcade_run_accepted'];
+}
+
+async function upsertWtfMissedEntry(db, { telegramId, utcDay, eventRow, reason }) {
+  const safeTitle = String(eventRow?.title || 'WTF signal window missed').slice(0, 140);
+  const eventId = String(eventRow?.event_id || '').trim() || null;
+  const existing = await db.prepare(`
+    SELECT id FROM daily_missed_perks
+    WHERE telegram_id = ? AND utc_day = ? AND source = 'daily_wtf_timed_event'
+      AND opportunity_type = 'timed_event_window'
+      AND title = ?
+      AND (
+        metadata_json LIKE ?
+        OR metadata_json LIKE ?
+      )
+    LIMIT 1
+  `).bind(String(telegramId), String(utcDay), safeTitle, `%"event_id":"${eventId}"%`, `%"event_id": "${eventId}"%`).first().catch(() => null);
+  if (existing?.id) return;
+  await insertMissedPerkEntry(db, {
+    telegramId,
+    utcDay,
+    factionId: eventRow?.faction_id || null,
+    source: 'daily_wtf_timed_event',
+    opportunityType: 'timed_event_window',
+    title: safeTitle,
+    description: 'The city kept moving while you were away.',
+    missedReason: reason || 'event_expired',
+    statusValue: 1,
+    missedXpValue: MISSED_XP_PER_TIMED_EVENT,
+    metadataJson: {
+      event_id: eventRow?.event_id || null,
+      reward_preview: eventRow?.reward_key || null,
+      starts_at: eventRow?.starts_at || null,
+      ends_at: eventRow?.ends_at || null,
+    },
+    missedAt: eventRow?.ends_at || new Date().toISOString(),
+  });
+}
+
+async function verifyWtfCompletionProof(db, { telegramId, source, sourceId, event, utcDay }) {
+  const safeTelegramId = String(telegramId || '').trim();
+  const safeSourceId = String(sourceId || '').trim();
+  if (!safeSourceId) {
+    return { ok: false, error: 'proof_required', message: 'Completion proof is required before this WTF signal can be cleared.' };
+  }
+  if (source === 'arcade_run_accepted') {
+    const row = await db.prepare(`
+      SELECT client_run_id, status
+      FROM arcade_progression_events
+      WHERE telegram_id = ? AND client_run_id = ? AND status = 'accepted'
+      LIMIT 1
+    `).bind(safeTelegramId, safeSourceId).first().catch(() => null);
+    if (!row) return { ok: false, error: 'proof_required', message: 'Accepted arcade run proof was not verified.' };
+    return { ok: true, proof: { type: 'arcade_run_accepted', source_id: safeSourceId } };
+  }
+  if (source === 'faction_daily_mission') {
+    const row = await db.prepare(`
+      SELECT mission_id, completed
+      FROM player_daily_mission_state
+      WHERE telegram_id = ? AND mission_date = ? AND mission_id = ? AND completed = 1
+      LIMIT 1
+    `).bind(safeTelegramId, String(utcDay), safeSourceId).first().catch(() => null);
+    if (!row) return { ok: false, error: 'proof_required', message: 'Faction mission completion proof was not verified.' };
+    return { ok: true, proof: { type: 'faction_daily_mission', source_id: safeSourceId } };
+  }
+  if (source === 'battle_chamber_proof') {
+    const sourceNumeric = Number.parseInt(safeSourceId, 10);
+    if (!Number.isFinite(sourceNumeric) || sourceNumeric <= 0) {
+      return { ok: false, error: 'proof_required', message: 'Battle Chamber proof id is required.' };
+    }
+    const row = await db.prepare(`
+      SELECT id, event_type
+      FROM battle_chamber_activity_log
+      WHERE id = ? AND telegram_id = ?
+      LIMIT 1
+    `).bind(sourceNumeric, safeTelegramId).first().catch(() => null);
+    if (!row) return { ok: false, error: 'proof_required', message: 'Battle Chamber proof was not verified.' };
+    return { ok: true, proof: { type: 'battle_chamber_proof', source_id: sourceNumeric } };
+  }
+  if (source === 'roguelite_branch') {
+    const row = await db.prepare(`
+      SELECT option_id, status
+      FROM daily_wtf_chain_options
+      WHERE telegram_id = ? AND utc_day = ? AND option_id = ? AND status IN ('chosen', 'completed')
+      LIMIT 1
+    `).bind(safeTelegramId, String(utcDay), safeSourceId).first().catch(() => null);
+    if (!row) return { ok: false, error: 'proof_required', message: 'Roguelite branch proof was not verified.' };
+    return { ok: true, proof: { type: 'roguelite_branch', source_id: safeSourceId } };
+  }
+  return { ok: false, error: 'proof_required', message: 'Completion proof is required before this WTF signal can be cleared.' };
+}
+
+async function reconcileWtfExpiryForUser(db, telegramId, utcDay, nowMs) {
+  const rows = await db.prepare(`
+    SELECT e.event_id, e.utc_day, e.title, e.faction_id, e.reward_key, e.starts_at, e.ends_at, p.status, p.checked_in_at, p.completed_at
+    FROM daily_wtf_events e
+    LEFT JOIN daily_wtf_player_events p
+      ON p.event_id = e.event_id AND p.utc_day = e.utc_day AND p.telegram_id = ?
+    WHERE e.utc_day = ?
+  `).bind(String(telegramId), String(utcDay)).all().catch(() => ({ results: [] }));
+  const officialIds = new Set(getWtfDailySchedule(utcDay).map((event) => event.event_id));
+  for (const row of (rows?.results || [])) {
+    if (!officialIds.has(String(row.event_id))) continue;
+    const endMs = Date.parse(row.ends_at);
+    if (!Number.isFinite(endMs) || nowMs < endMs) continue;
+    if (row.completed_at) continue;
+    const priorStatus = String(row.status || '').trim();
+    const nextStatus = row.checked_in_at ? 'missed' : 'expired';
+    await db.prepare(`
+      INSERT INTO daily_wtf_player_events
+        (telegram_id, event_id, utc_day, status, checked_in_at, completed_at, missed_at, chain_depth, reward_status, metadata_json, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, NULL, ?, 0, 'none', ?, ?, ?)
+      ON CONFLICT(telegram_id, event_id, utc_day) DO UPDATE SET
+        status = CASE WHEN daily_wtf_player_events.completed_at IS NOT NULL THEN 'completed' ELSE excluded.status END,
+        missed_at = CASE WHEN daily_wtf_player_events.completed_at IS NOT NULL THEN daily_wtf_player_events.missed_at ELSE excluded.missed_at END,
+        updated_at = excluded.updated_at
+    `).bind(
+      String(telegramId), row.event_id, row.utc_day, nextStatus, row.checked_in_at || null,
+      new Date(endMs).toISOString(),
+      JSON.stringify({ prior_status: priorStatus || 'none', reason: 'window_expired' }),
+      new Date().toISOString(),
+      new Date().toISOString(),
+    ).run();
+    await upsertWtfMissedEntry(db, {
+      telegramId,
+      utcDay,
+      eventRow: row,
+      reason: row.checked_in_at ? 'checked_in_not_completed_before_expiry' : 'not_checked_in_before_expiry',
+    });
+  }
+}
+
+function buildWtfScheduleRow(utcDay, event) {
+  const startsAt = buildWtfIso(utcDay, event.startHour, 0);
+  return {
+    event_id: event.event_id,
+    utc_day: utcDay,
+    event_type: event.event_type,
+    title: event.title,
+    description: 'Check in during the signal window, complete the objective, and trigger a status burst.',
+    starts_at: startsAt,
+    ends_at: new Date(Date.parse(startsAt) + event.durationMinutes * 60 * 1000).toISOString(),
+    required_action: event.required_action,
+    reward_key: event.reward_key,
+    xp_multiplier_display: '5x XP opportunity',
+    theme: event.theme,
+    metadata_json: JSON.stringify({ chain_cap: WTF_MAX_CHAIN_DEPTH, duration_minutes: event.durationMinutes, official_schedule: true }),
+  };
+}
+
+function wtfScheduleRowMatches(row, expected) {
+  if (!row || !expected) return false;
+  return String(row.event_id) === expected.event_id &&
+    String(row.utc_day) === expected.utc_day &&
+    String(row.event_type || '') === expected.event_type &&
+    String(row.title || '') === expected.title &&
+    String(row.description || '') === expected.description &&
+    String(row.starts_at || '') === expected.starts_at &&
+    String(row.ends_at || '') === expected.ends_at &&
+    String(row.required_action || '') === expected.required_action &&
+    String(row.reward_key || '') === expected.reward_key &&
+    String(row.xp_multiplier_display || '') === expected.xp_multiplier_display &&
+    String(row.theme || '') === expected.theme &&
+    String(row.metadata_json || '') === expected.metadata_json;
+}
+
+async function ensureWtfEventsForDay(db, utcDay) {
+  const scheduleRows = getWtfDailySchedule(utcDay).map((event) => buildWtfScheduleRow(utcDay, event));
+  const officialIds = new Set(scheduleRows.map((event) => event.event_id));
+  const existingRows = await db.prepare(`SELECT * FROM daily_wtf_events WHERE utc_day = ? ORDER BY starts_at ASC`).bind(utcDay).all().catch(() => ({ results: [] }));
+  const existingById = new Map((existingRows?.results || []).filter((row) => officialIds.has(String(row.event_id))).map((row) => [String(row.event_id), row]));
+  const scheduleAlreadyCurrent = existingById.size === scheduleRows.length && scheduleRows.every((expected) => wtfScheduleRowMatches(existingById.get(expected.event_id), expected));
+  if (scheduleAlreadyCurrent) return;
+
+  for (const event of scheduleRows) {
+    await db.prepare(`
+      INSERT INTO daily_wtf_events
+        (event_id, utc_day, event_type, title, description, starts_at, ends_at, required_action, reward_key, xp_multiplier_display, faction_id, game_key, theme, metadata_json, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, ?, ?, ?)
+      ON CONFLICT(event_id, utc_day) DO UPDATE SET
+        event_type = excluded.event_type,
+        title = excluded.title,
+        description = excluded.description,
+        starts_at = excluded.starts_at,
+        ends_at = excluded.ends_at,
+        required_action = excluded.required_action,
+        reward_key = excluded.reward_key,
+        xp_multiplier_display = excluded.xp_multiplier_display,
+        theme = excluded.theme,
+        metadata_json = excluded.metadata_json
+      WHERE daily_wtf_events.event_type IS NOT excluded.event_type
+        OR daily_wtf_events.title IS NOT excluded.title
+        OR daily_wtf_events.description IS NOT excluded.description
+        OR daily_wtf_events.starts_at IS NOT excluded.starts_at
+        OR daily_wtf_events.ends_at IS NOT excluded.ends_at
+        OR daily_wtf_events.required_action IS NOT excluded.required_action
+        OR daily_wtf_events.reward_key IS NOT excluded.reward_key
+        OR daily_wtf_events.xp_multiplier_display IS NOT excluded.xp_multiplier_display
+        OR daily_wtf_events.theme IS NOT excluded.theme
+        OR daily_wtf_events.metadata_json IS NOT excluded.metadata_json
+    `).bind(
+      event.event_id, event.utc_day, event.event_type, event.title,
+      event.description, event.starts_at, event.ends_at, event.required_action,
+      event.reward_key, event.xp_multiplier_display, event.theme,
+      event.metadata_json, new Date().toISOString(),
+    ).run();
+  }
+}
+
+function clampText(value, maxLen, fallback = '') {
+  const safe = String(value == null ? fallback : value).trim();
+  if (!safe) return String(fallback || '').slice(0, maxLen);
+  return safe.slice(0, maxLen);
+}
+
+function getUtcDayFromIso(isoLike) {
+  if (!isoLike) return null;
+  const ts = Date.parse(String(isoLike));
+  if (!Number.isFinite(ts)) return null;
+  return new Date(ts).toISOString().slice(0, 10);
+}
+
+function getPreviousUtcDay(utcDay) {
+  const ts = Date.parse(`${String(utcDay)}T00:00:00Z`);
+  if (!Number.isFinite(ts)) return null;
+  return new Date(ts - 86400000).toISOString().slice(0, 10);
+}
+
+/**
+ * Returns UTC day keys between start and end, excluding both boundary days.
+ */
+function listUtcDaysBetweenExclusive(startUtcDay, endUtcDay, maxDays = 45) {
+  const startTs = Date.parse(`${String(startUtcDay)}T00:00:00Z`);
+  const endTs = Date.parse(`${String(endUtcDay)}T00:00:00Z`);
+  if (!Number.isFinite(startTs) || !Number.isFinite(endTs) || endTs <= startTs) return [];
+  const days = [];
+  let cursor = startTs + 86400000;
+  while (cursor < endTs && days.length < maxDays) {
+    days.push(new Date(cursor).toISOString().slice(0, 10));
+    cursor += 86400000;
+  }
+  return days;
+}
+
+function normaliseMissedMetadata(metadata) {
+  if (!metadata) return null;
+  if (typeof metadata === 'string') {
+    const parsed = safeJsonParse(metadata, null);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return JSON.stringify(parsed).slice(0, 4000);
+    }
+    return null;
+  }
+  if (typeof metadata === 'object' && !Array.isArray(metadata)) {
+    return JSON.stringify(metadata).slice(0, 4000);
+  }
+  return null;
+}
+
+function formatMissionIdLabel(missionId) {
+  const base = String(missionId || '').replace(/[_-]+/g, ' ').trim();
+  if (!base) return 'Mission';
+  return base.replace(/\b\w/g, (m) => m.toUpperCase()).slice(0, 60);
+}
+
+async function insertMissedPerkEntry(db, {
+  telegramId,
+  utcDay,
+  factionId,
+  source,
+  opportunityType,
+  title,
+  description,
+  missedReason,
+  statusValue,
+  missedXpValue,
+  metadataJson,
+  missedAt,
+  missedXpValueAvailable,
+}) {
+  const safeTelegramId = String(telegramId || '').trim();
+  if (!safeTelegramId) return null;
+  const fallbackToday = getTodayUtcDate();
+  const safeUtcDay = clampText(utcDay || fallbackToday, 10, fallbackToday);
+  const normalizedFaction = factionId ? normalizeBattleChamberFaction(factionId) : null;
+  const safeSource = clampText(source, DAILY_MISSED_TEXT_LIMITS.source, 'unknown');
+  const safeType = clampText(opportunityType, DAILY_MISSED_TEXT_LIMITS.opportunityType, 'daily_opportunity');
+  const safeTitle = clampText(title, DAILY_MISSED_TEXT_LIMITS.title, 'Missed daily opportunity');
+  const safeDescription = clampText(description, DAILY_MISSED_TEXT_LIMITS.description, '');
+  const safeReason = clampText(missedReason, DAILY_MISSED_TEXT_LIMITS.missedReason, 'not_played');
+  const safeStatusValue = Math.max(0, Math.floor(Number(statusValue) || 0));
+  // missed_xp_value: notional XP forfeited (never awarded to player; tracking only)
+  const safeMissedXpValue = Math.max(0, Math.floor(Number(missedXpValue) || 0));
+  const safeMetadata = normaliseMissedMetadata(metadataJson);
+  const safeMissedAt = missedAt && Number.isFinite(Date.parse(String(missedAt)))
+    ? new Date(missedAt).toISOString()
+    : new Date().toISOString();
+  const safeCreatedAt = new Date().toISOString();
+  const hasMissedXpValue = missedXpValueAvailable == null
+    ? await hasDailyMissedXpValueColumn(db)
+    : !!missedXpValueAvailable;
+
+  const runInsertWithXp = () => db.prepare(`
+    INSERT INTO daily_missed_perks
+      (telegram_id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, missed_xp_value, metadata_json, missed_at, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).bind(
+    safeTelegramId,
+    safeUtcDay,
+    normalizedFaction || null,
+    safeSource,
+    safeType,
+    safeTitle,
+    safeDescription || null,
+    safeReason || null,
+    safeStatusValue,
+    safeMissedXpValue,
+    safeMetadata,
+    safeMissedAt,
+    safeCreatedAt,
+  ).run();
+
+  const runInsertWithoutXp = () => db.prepare(`
+    INSERT INTO daily_missed_perks
+      (telegram_id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, metadata_json, missed_at, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).bind(
+    safeTelegramId,
+    safeUtcDay,
+    normalizedFaction || null,
+    safeSource,
+    safeType,
+    safeTitle,
+    safeDescription || null,
+    safeReason || null,
+    safeStatusValue,
+    safeMetadata,
+    safeMissedAt,
+    safeCreatedAt,
+  ).run();
+
+  let result = null;
+  if (hasMissedXpValue) {
+    result = await runInsertWithXp().catch(async (error) => {
+      const message = String(error?.message || error || '').toLowerCase();
+      if (message.includes('no such column') || message.includes('missed_xp_value')) {
+        return runInsertWithoutXp().catch(() => null);
+      }
+      return null;
+    });
+  } else {
+    result = await runInsertWithoutXp().catch(() => null);
+  }
+  return result;
+}
+
+async function ensureDailyOpportunityStateForToday(db, telegramId, utcDay) {
+  const safeTelegramId = String(telegramId || '').trim();
+  const dayKey = clampText(utcDay || getTodayUtcDate(), 10, getTodayUtcDate());
+  await db.prepare(`
+    INSERT INTO daily_opportunity_state
+      (telegram_id, utc_day, daily_seed, chain_depth, activated_at, last_roll_at, created_at, updated_at)
+    VALUES (?, ?, ?, 0, ?, NULL, ?, ?)
+    ON CONFLICT(telegram_id, utc_day) DO NOTHING
+  `).bind(
+    safeTelegramId,
+    dayKey,
+    crypto.randomUUID(),
+    new Date().toISOString(),
+    new Date().toISOString(),
+    new Date().toISOString(),
+  ).run();
+  return db.prepare(`
+    SELECT telegram_id, utc_day, daily_seed, chain_depth, activated_at, last_roll_at, created_at, updated_at
+    FROM daily_opportunity_state
+    WHERE telegram_id = ? AND utc_day = ?
+    LIMIT 1
+  `).bind(safeTelegramId, dayKey).first().catch(() => null);
+}
+
+async function backfillMissedPerkGapsFromLastActiveDay(db, telegramId, todayUtcDay, factionId) {
+  const prior = await db.prepare(`
+    SELECT utc_day
+    FROM daily_opportunity_state
+    WHERE telegram_id = ? AND utc_day < ?
+    ORDER BY utc_day DESC
+    LIMIT 1
+  `).bind(String(telegramId), todayUtcDay).first().catch(() => null);
+  if (!prior?.utc_day) return { days_backfilled: 0, entries_created: 0, created: 0, missed_days: [] };
+  const missedDays = listUtcDaysBetweenExclusive(prior.utc_day, todayUtcDay, 45);
+  const missedXpValueAvailable = await hasDailyMissedXpValueColumn(db);
+  let entriesCreated = 0;
+  let daysFilledCount = 0;
+  for (const missedDay of missedDays) {
+    const existing = await db.prepare(`
+      SELECT id
+      FROM daily_missed_perks
+      WHERE telegram_id = ? AND utc_day = ? AND source = 'daily_reset' AND opportunity_type = 'daily_activation_window'
+      LIMIT 1
+    `).bind(String(telegramId), missedDay).first().catch(() => null);
+    if (existing?.id) continue;
+    const dailyResetInsert = await insertMissedPerkEntry(db, {
+      telegramId,
+      utcDay: missedDay,
+      factionId: factionId || null,
+      source: 'daily_reset',
+      opportunityType: 'daily_activation_window',
+      title: 'Daily activation window expired',
+      description: 'The city kept moving while you were away.',
+      missedReason: 'inactive_utc_day',
+      statusValue: 1,
+      missedXpValue: MISSED_XP_PER_DAILY_WINDOW,
+      metadataJson: { trigger: 'utc_reset_backfill' },
+      missedAt: `${missedDay}T23:59:59.000Z`,
+      missedXpValueAvailable,
+    });
+    entriesCreated += Number(dailyResetInsert?.meta?.changes || 0);
+    daysFilledCount += 1;
+    const factionNormalized = normalizeBattleChamberFaction(factionId);
+    if (factionNormalized) {
+      const factionInsert = await insertMissedPerkEntry(db, {
+        telegramId,
+        utcDay: missedDay,
+        factionId: factionNormalized,
+        source: 'faction_missions',
+        opportunityType: 'daily_mission_window',
+        title: 'Faction daily mission window missed',
+        description: 'Faction daily missions reset at UTC midnight.',
+        missedReason: 'faction_mission_window_expired',
+        statusValue: 1,
+        missedXpValue: MISSED_XP_PER_DAILY_WINDOW,
+        metadataJson: { trigger: 'utc_reset_backfill' },
+        missedAt: `${missedDay}T23:59:59.000Z`,
+        missedXpValueAvailable,
+      });
+      entriesCreated += Number(factionInsert?.meta?.changes || 0);
+    } else {
+      const factionSelectionInsert = await insertMissedPerkEntry(db, {
+        telegramId,
+        utcDay: missedDay,
+        factionId: null,
+        source: 'faction_selection',
+        opportunityType: 'faction_unselected',
+        title: 'Faction clout window missed',
+        description: 'No faction selected. Join a faction to activate faction war opportunities.',
+        missedReason: 'faction_not_selected',
+        statusValue: 1,
+        missedXpValue: MISSED_XP_PER_DAILY_WINDOW,
+        metadataJson: { trigger: 'utc_reset_backfill' },
+        missedAt: `${missedDay}T23:59:59.000Z`,
+        missedXpValueAvailable,
+      });
+      entriesCreated += Number(factionSelectionInsert?.meta?.changes || 0);
+    }
+  }
+  return {
+    days_backfilled: daysFilledCount,
+    entries_created: entriesCreated,
+    created: entriesCreated,
+    missed_days: missedDays,
+  };
+}
+
+async function hasDailyMissedXpValueColumn(db) {
+  const info = await db.prepare(`PRAGMA table_info(daily_missed_perks)`).all().catch(() => ({ results: [] }));
+  return (info?.results || []).some((column) => String(column?.name || '') === 'missed_xp_value');
+}
+
+async function getMissedPerkTotals(db, telegramId, utcDay = null, missedXpValueAvailable = null) {
+  const hasMissedXpValue = missedXpValueAvailable == null
+    ? await hasDailyMissedXpValueColumn(db)
+    : !!missedXpValueAvailable;
+  const countRow = utcDay
+    ? await db.prepare(`
+        SELECT COUNT(*) AS events_total
+        FROM daily_missed_perks
+        WHERE telegram_id = ? AND utc_day = ?
+      `).bind(String(telegramId), String(utcDay)).first().catch(() => ({ events_total: 0 }))
+    : await db.prepare(`
+        SELECT COUNT(*) AS events_total
+        FROM daily_missed_perks
+        WHERE telegram_id = ?
+      `).bind(String(telegramId)).first().catch(() => ({ events_total: 0 }));
+  if (!hasMissedXpValue) {
+    return {
+      events_total: Math.max(0, Math.floor(Number(countRow?.events_total) || 0)),
+      xp_total: 0,
+      has_missed_xp_value: false,
+    };
+  }
+  const xpRow = utcDay
+    ? await db.prepare(`
+        SELECT COALESCE(SUM(missed_xp_value), 0) AS xp_total
+        FROM daily_missed_perks
+        WHERE telegram_id = ? AND utc_day = ?
+      `).bind(String(telegramId), String(utcDay)).first().catch(() => ({ xp_total: 0 }))
+    : await db.prepare(`
+        SELECT COALESCE(SUM(missed_xp_value), 0) AS xp_total
+        FROM daily_missed_perks
+        WHERE telegram_id = ?
+      `).bind(String(telegramId)).first().catch(() => ({ xp_total: 0 }));
+  return {
+    events_total: Math.max(0, Math.floor(Number(countRow?.events_total) || 0)),
+    xp_total: Math.max(0, Math.floor(Number(xpRow?.xp_total) || 0)),
+    has_missed_xp_value: true,
+  };
+}
+
+async function getMissedPerkRows(db, telegramId, limit = 5, utcDay = null, missedXpValueAvailable = null) {
+  const safeLimit = Math.max(1, Math.floor(Number(limit) || 5));
+  const hasMissedXpValue = missedXpValueAvailable == null
+    ? await hasDailyMissedXpValueColumn(db)
+    : !!missedXpValueAvailable;
+  const query = hasMissedXpValue
+    ? (utcDay
+      ? db.prepare(`
+          SELECT id, telegram_id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, missed_xp_value, metadata_json, missed_at, created_at
+          FROM daily_missed_perks
+          WHERE telegram_id = ? AND utc_day = ?
+          ORDER BY missed_at DESC, id DESC
+          LIMIT ?
+        `).bind(String(telegramId), String(utcDay), safeLimit)
+      : db.prepare(`
+          SELECT id, telegram_id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, missed_xp_value, metadata_json, missed_at, created_at
+          FROM daily_missed_perks
+          WHERE telegram_id = ?
+          ORDER BY missed_at DESC, id DESC
+          LIMIT ?
+        `).bind(String(telegramId), safeLimit))
+    : (utcDay
+      ? db.prepare(`
+          SELECT id, telegram_id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, metadata_json, missed_at, created_at
+          FROM daily_missed_perks
+          WHERE telegram_id = ? AND utc_day = ?
+          ORDER BY missed_at DESC, id DESC
+          LIMIT ?
+        `).bind(String(telegramId), String(utcDay), safeLimit)
+      : db.prepare(`
+          SELECT id, telegram_id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, metadata_json, missed_at, created_at
+          FROM daily_missed_perks
+          WHERE telegram_id = ?
+          ORDER BY missed_at DESC, id DESC
+          LIMIT ?
+        `).bind(String(telegramId), safeLimit));
+  const rows = await query.all().catch(() => ({ results: [] }));
+  return {
+    rows: rows?.results || [],
+    has_missed_xp_value: hasMissedXpValue,
+  };
+}
+
+async function getMissedHistorySnapshot(db, telegramId, limit = 5, missedXpValueAvailable = null) {
+  const [totals, rowResult] = await Promise.all([
+    getMissedPerkTotals(db, telegramId, null, missedXpValueAvailable),
+    getMissedPerkRows(db, telegramId, limit, null, missedXpValueAvailable),
+  ]);
+  return {
+    total: totals.events_total,
+    xp_total: totals.xp_total,
+    recent: (rowResult.rows || []).map((row) => ({
+      id: row.id,
+      utc_day: row.utc_day,
+      faction_id: row.faction_id || null,
+      source: row.source,
+      opportunity_type: row.opportunity_type,
+      title: row.title,
+      description: row.description || null,
+      missed_reason: row.missed_reason || null,
+      status_value: Number(row.status_value) || 0,
+      missed_xp_value: rowResult.has_missed_xp_value ? Math.max(0, Math.floor(Number(row.missed_xp_value) || 0)) : 0,
+      metadata: safeJsonParse(row.metadata_json, {}),
+      missed_at: row.missed_at || null,
+      created_at: row.created_at || null,
+    })),
+  };
+}
+
+async function getMissionDigestRows(db, telegramId, utcDay) {
+  const rows = await db.prepare(`
+    SELECT mission_id, progress, completed
+    FROM player_daily_mission_state
+    WHERE telegram_id = ? AND mission_date = ?
+    ORDER BY mission_id ASC
+    LIMIT 3
+  `).bind(String(telegramId), String(utcDay)).all().catch(() => ({ results: [] }));
+  return (rows?.results || []).map((row) => ({
+    mission_id: row.mission_id,
+    title: formatMissionIdLabel(row.mission_id),
+    progress: Math.max(0, Math.floor(Number(row.progress) || 0)),
+    target: null,
+    completed: Number(row.completed) === 1,
+  }));
+}
+
+async function getFactionDailyLog(db, telegramId, factionId, utcDay) {
+  const weekKey = getIsoWeekKey();
+  const normalizedFaction = normalizeBattleChamberFaction(factionId);
+  const [dailyRow, weeklyRow] = await Promise.all([
+    normalizedFaction
+      ? db.prepare(`
+          SELECT contribution
+          FROM player_faction_signal_state
+          WHERE telegram_id = ? AND faction_id = ? AND day_key = ?
+          LIMIT 1
+        `).bind(String(telegramId), normalizedFaction, utcDay).first().catch(() => null)
+      : Promise.resolve(null),
+    normalizedFaction
+      ? db.prepare(`
+          SELECT SUM(contribution) AS total
+          FROM player_faction_signal_state
+          WHERE telegram_id = ? AND faction_id = ? AND week_key = ?
+        `).bind(String(telegramId), normalizedFaction, weekKey).first().catch(() => null)
+      : Promise.resolve(null),
+  ]);
+
+  let weeklyStanding = null;
+  let momentum = null;
+  const bcCheck = await ensureBattleChamberTables(db);
+  if (!bcCheck && normalizedFaction) {
+    const weeklyPeriodKey = await getBattlePeriodKey('weekly', db, Date.now());
+    const rows = await db.prepare(`
+      SELECT faction_id, clout_total
+      FROM battle_chamber_faction_clout
+      WHERE period_type = 'weekly' AND period_key = ?
+      ORDER BY clout_total DESC, faction_id ASC
+    `).bind(weeklyPeriodKey).all().catch(() => ({ results: [] }));
+    const list = rows?.results || [];
+    for (let i = 0; i < list.length; i++) {
+      if (list[i].faction_id === normalizedFaction) {
+        weeklyStanding = i + 1;
+        const lead = Number(list[0]?.clout_total) || 0;
+        const mine = Number(list[i]?.clout_total) || 0;
+        const ratio = lead > 0 ? mine / lead : 0;
+        momentum = ratio >= 0.95 ? 'Dominant' : (ratio >= 0.7 ? 'Hot' : (ratio >= 0.45 ? 'Rising' : 'Building'));
+        break;
+      }
+    }
+  }
+
+  return {
+    daily_contribution: Math.max(0, Math.floor(Number(dailyRow?.contribution) || 0)),
+    weekly_contribution: Math.max(0, Math.floor(Number(weeklyRow?.total) || 0)),
+    momentum: momentum || 'Building',
+    weekly_standing: weeklyStanding,
+  };
+}
+
+function buildDigestNextBestAction({ factionId, missions, missedTotal }) {
+  if (!normalizeBattleChamberFaction(factionId)) {
+    return 'Pick a faction to activate faction war missions and clout opportunities.';
+  }
+  const pendingMission = (missions || []).find((mission) => !mission.completed);
+  if (pendingMission) {
+    return `Complete ${pendingMission.title} in Battle Chamber to push faction clout today.`;
+  }
+  if (Number(missedTotal) > 0) {
+    return 'Open Battle Chamber and clear today’s opportunities to slow missed-history growth.';
+  }
+  return 'Log a Battle Chamber proof action and run Arcade to keep momentum up.';
+}
+
+function buildFactionChamberLink(factionId) {
+  const normalizedFaction = normalizeBattleChamberFaction(factionId);
+  if (!normalizedFaction) return `${SITE_URL}/battle-chamber/factions/index.html`;
+  return `${SITE_URL}/battle-chamber/factions/${encodeURIComponent(normalizedFaction)}.html`;
+}
+
+async function claimDailyDigestSlot(db, telegramId, utcDay, options = {}) {
+  const nowIso = new Date().toISOString();
+  const retryCutoffTs = Date.now() - DIGEST_PENDING_STALE_MS;
+  const retryCutoffIso = new Date(retryCutoffTs).toISOString();
+  const forceRetry = !!options.forceRetry;
+  const safeMetadata = normaliseMissedMetadata({
+    claim_source: 'daily_digest_run',
+    trigger: options.trigger || null,
+    retry_override: forceRetry,
+  });
+  const insertResult = await db.prepare(`
+    INSERT INTO telegram_daily_digest_log
+      (telegram_id, utc_day, sent_at, status, error_message, metadata_json, created_at, updated_at)
+    VALUES (?, ?, NULL, 'pending', NULL, ?, ?, ?)
+    ON CONFLICT(telegram_id, utc_day) DO NOTHING
+  `).bind(
+    String(telegramId),
+    String(utcDay),
+    safeMetadata,
+    nowIso,
+    nowIso,
+  ).run().catch(() => null);
+  if (Number(insertResult?.meta?.changes || 0) === 1) {
+    return { claimed: true, reason: 'created' };
+  }
+  const existing = await db.prepare(`
+    SELECT status, sent_at, updated_at
+    FROM telegram_daily_digest_log
+    WHERE telegram_id = ? AND utc_day = ?
+    LIMIT 1
+  `).bind(String(telegramId), String(utcDay)).first().catch(() => null);
+  const status = String(existing?.status || '').toLowerCase();
+  if (status === 'sent') {
+    return { claimed: false, reason: 'already_sent' };
+  }
+  const updatedAtTs = parseSqliteTs(existing?.updated_at);
+  const isStalePending = status === 'pending' && (!Number.isFinite(updatedAtTs) || updatedAtTs <= retryCutoffTs);
+  if (!forceRetry && status === 'pending' && !isStalePending) {
+    return { claimed: false, reason: 'pending_recent' };
+  }
+  if (!forceRetry && status !== 'failed' && !isStalePending) {
+    return { claimed: false, reason: status || 'blocked' };
+  }
+  const retryUpdate = await db.prepare(`
+    UPDATE telegram_daily_digest_log
+    SET status = 'pending', sent_at = NULL, error_message = NULL, metadata_json = ?, updated_at = ?
+    WHERE telegram_id = ? AND utc_day = ?
+      AND (
+        (? = 1 AND status <> 'sent')
+        OR status = 'failed'
+        OR (status = 'pending' AND (updated_at IS NULL OR updated_at <= ?))
+      )
+  `).bind(
+    safeMetadata,
+    nowIso,
+    String(telegramId),
+    String(utcDay),
+    forceRetry ? 1 : 0,
+    retryCutoffIso,
+  ).run().catch(() => null);
+  if (Number(retryUpdate?.meta?.changes || 0) === 1) {
+    return { claimed: true, reason: forceRetry ? 'retry_override' : (status === 'failed' ? 'retry_failed' : 'retry_stale_pending') };
+  }
+  return { claimed: false, reason: status === 'pending' ? 'pending_recent' : (status || 'blocked') };
+}
+
+async function finalizeDailyDigestLog(db, telegramId, utcDay, status, payload = {}) {
+  const safeStatus = status === 'sent' ? 'sent' : 'failed';
+  const safeError = payload?.error ? String(payload.error).slice(0, 500) : null;
+  const safeMetadata = normaliseMissedMetadata(payload?.metadata || null);
+  const nowIso = new Date().toISOString();
+  const sentAt = safeStatus === 'sent' ? nowIso : null;
+  await db.prepare(`
+    UPDATE telegram_daily_digest_log
+    SET sent_at = ?, status = ?, error_message = ?, metadata_json = ?, updated_at = ?
+    WHERE telegram_id = ? AND utc_day = ?
+  `).bind(
+    sentAt,
+    safeStatus,
+    safeError,
+    safeMetadata,
+    nowIso,
+    String(telegramId),
+    String(utcDay),
+  ).run().catch(() => {});
+}
+
+async function getLinkedTelegramUsersForDigest(db, targetTelegramId = null) {
+  if (targetTelegramId) {
+    const row = await db.prepare(`
+      SELECT u.telegram_id
+      FROM telegram_users u
+      WHERE u.telegram_id = ?
+        AND (
+          EXISTS (
+            SELECT 1 FROM telegram_activity_log al
+            WHERE al.telegram_id = u.telegram_id AND al.action = 'link_confirmed'
+          )
+          OR EXISTS (
+            SELECT 1 FROM blocktopia_progression bp
+            WHERE bp.telegram_id = u.telegram_id
+          )
+        )
+      LIMIT 1
+    `).bind(String(targetTelegramId)).first().catch(() => null);
+    return row?.telegram_id ? [String(row.telegram_id)] : [];
+  }
+
+  const rows = await db.prepare(`
+    SELECT u.telegram_id
+    FROM telegram_users u
+    WHERE
+      EXISTS (
+        SELECT 1 FROM telegram_activity_log al
+        WHERE al.telegram_id = u.telegram_id AND al.action = 'link_confirmed'
+      )
+      OR EXISTS (
+        SELECT 1 FROM blocktopia_progression bp
+        WHERE bp.telegram_id = u.telegram_id
+      )
+    ORDER BY u.updated_at DESC, u.telegram_id DESC
+  `).all().catch(() => ({ results: [] }));
+  return (rows?.results || []).map((row) => String(row.telegram_id)).filter(Boolean);
+}
+
+async function sendDailyDigestMessage(db, env, telegramId, utcDay) {
+  const [faction, missions, missedSnapshot, yesterdayCountRow] = await Promise.all([
+    getUserFaction(db, telegramId),
+    getMissionDigestRows(db, telegramId, utcDay),
+    getMissedHistorySnapshot(db, telegramId, 1),
+    db.prepare(`
+      SELECT COUNT(*) AS total
+      FROM daily_missed_perks
+      WHERE telegram_id = ? AND utc_day = ?
+    `).bind(String(telegramId), getPreviousUtcDay(utcDay) || '').first().catch(() => ({ total: 0 })),
+  ]);
+
+  const factionId = normalizeBattleChamberFaction(faction?.id || faction?.name) || null;
+  const factionLabel = factionId ? (BATTLE_CHAMBER_FACTION_LABELS[factionId] || factionId) : 'Unaligned';
+  const factionLogData = await getFactionDailyLog(db, telegramId, factionId, utcDay);
+  const missedTotal = Number(missedSnapshot?.total) || 0;
+  const yesterdayMissed = Number(yesterdayCountRow?.total) || 0;
+  const recentMissed = missedSnapshot?.recent && missedSnapshot.recent.length ? missedSnapshot.recent[0] : null;
+  const nextBestAction = buildDigestNextBestAction({
+    factionId,
+    missions,
+    missedTotal,
+  });
+  await ensureWtfEventsForDay(db, utcDay).catch(() => {});
+  const nextWtfRows = await db.prepare(`
+    SELECT event_id, title, starts_at, ends_at
+    FROM daily_wtf_events
+    WHERE utc_day = ? AND ends_at >= ?
+    ORDER BY starts_at ASC
+  `).bind(utcDay, new Date().toISOString()).all().catch(() => ({ results: [] }));
+  const officialWtfIds = new Set(getWtfDailySchedule(utcDay).map((event) => event.event_id));
+  const nextWtf = (nextWtfRows?.results || []).find((row) => officialWtfIds.has(String(row.event_id))) || null;
+
+  const missionLines = missions.length
+    ? missions.map((mission, idx) => {
+        const progressLabel = mission.completed ? 'complete' : `${mission.progress} / ${mission.target || '?'}`;
+        return `${idx + 1}. <b>${escapeHtml(mission.title)}</b> — ${escapeHtml(progressLabel)} — clout/status push`;
+      }).join('\n')
+    : 'No synced mission progress yet. Open Battle Chamber to activate today’s faction missions.';
+
+  const missedLine = recentMissed
+    ? `Recent missed: ${escapeHtml(recentMissed.title)} (${escapeHtml(recentMissed.utc_day)})`
+    : 'Recent missed: none recorded yet';
+
+  const weeklyStanding = factionLogData.weekly_standing ? `#${factionLogData.weekly_standing}` : '—';
+  const wtfSignalLine = nextWtf
+    ? `${nextWtf.title} (${String(nextWtf.starts_at).slice(11, 16)}-${String(nextWtf.ends_at).slice(11, 16)} UTC)`
+    : 'No live window right now. Next signal loads soon.';
+  const message =
+    `GM, the Battle Chamber has reset. Your faction has new work.\n\n` +
+    `<b>Faction:</b> ${escapeHtml(factionLabel)}\n\n` +
+    `<b>Today’s faction daily missions</b>\n${missionLines}\n\n` +
+    `<b>WTF timed signal</b>\n${escapeHtml(wtfSignalLine)}\nCheck in when the signal opens.\n\n` +
+    `<b>Missed perks update</b>\n` +
+    `You have ${missedTotal} missed opportunities in your Battle Chamber history. The city kept moving while you were away.\n` +
+    `Yesterday missed: ${yesterdayMissed}\n` +
+    `${missedLine}\n\n` +
+    `<b>Faction daily log</b>\n` +
+    `Daily contribution: ${factionLogData.daily_contribution}\n` +
+    `Weekly contribution: ${factionLogData.weekly_contribution}\n` +
+    `Momentum: ${escapeHtml(factionLogData.momentum)}\n` +
+    `Weekly standing: ${escapeHtml(weeklyStanding)}\n` +
+    `Next best action: ${escapeHtml(nextBestAction)}`;
+
+  const sendResult = await sendTelegramMessage(env.TELEGRAM_BOT_TOKEN, telegramId, message, {
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { text: '⚔️ Open Battle Chamber', url: `${SITE_URL}/community.html` },
+          { text: '🕹️ Play Arcade', url: `${SITE_URL}/games/index.html` },
+        ],
+        [
+          { text: '🏛️ View Faction Chamber', url: buildFactionChamberLink(factionId) },
+          { text: '🔗 Refresh Telegram Link', url: `${SITE_URL}/gkniftyheads-incubator.html` },
+        ],
+      ],
+    },
+  });
+
+  return {
+    ok: !!sendResult?.ok,
+    status: sendResult?.status || null,
+    error: sendResult?.ok ? null : (sendResult?.error || sendResult?.response || 'telegram_send_failed'),
+    context: {
+      faction_id: factionId,
+      missions_count: missions.length,
+      missed_total: missedTotal,
+      yesterday_missed: yesterdayMissed,
+      next_best_action: nextBestAction,
+      daily_contribution: factionLogData.daily_contribution,
+      weekly_contribution: factionLogData.weekly_contribution,
+      momentum: factionLogData.momentum,
+      weekly_standing: factionLogData.weekly_standing,
+      utc_day: utcDay,
+    },
+  };
+}
+
+async function runTelegramDailyDigest(env, options = {}) {
+  const db = env.DB;
+  const utcDay = options.utcDay || getTodayUtcDate();
+  const targetTelegramId = options.targetTelegramId ? String(options.targetTelegramId) : null;
+  const forceRetry = !!options.forceRetry;
+  const dbCheck = await ensureDailyDigestTables(db);
+  if (dbCheck) {
+    return { ok: false, error: 'daily_digest_unavailable', reason: dbCheck.tableName };
+  }
+  const linkedIds = await getLinkedTelegramUsersForDigest(db, targetTelegramId);
+  const summary = {
+    ok: true,
+    utc_day: utcDay,
+    trigger: options.trigger || 'manual',
+    linked_users_considered: linkedIds.length,
+    processed: 0,
+    sent: 0,
+    skipped: targetTelegramId && !linkedIds.length ? 1 : 0,
+    skipped_already_sent: 0,
+    skipped_pending_recent: 0,
+    skipped_unlinked: targetTelegramId && !linkedIds.length ? 1 : 0,
+    failed: 0,
+    failures: [],
+  };
+  const processTelegramId = async (telegramId) => {
+    const claim = await claimDailyDigestSlot(db, telegramId, utcDay, {
+      forceRetry,
+      trigger: options.trigger || 'manual',
+    });
+    if (!claim?.claimed) {
+      return { kind: 'skipped', telegram_id: telegramId, reason: claim?.reason || 'blocked' };
+    }
+    const result = await sendDailyDigestMessage(db, env, telegramId, utcDay).catch((error) => ({
+      ok: false,
+      error: error?.message || String(error),
+      context: {},
+    }));
+    if (result.ok) {
+      await finalizeDailyDigestLog(db, telegramId, utcDay, 'sent', {
+        metadata: {
+          trigger: options.trigger || 'manual',
+          ...result.context,
+        },
+      });
+      return { kind: 'sent', telegram_id: telegramId };
+    }
+    await finalizeDailyDigestLog(db, telegramId, utcDay, 'failed', {
+      error: result.error || 'telegram_send_failed',
+      metadata: {
+        trigger: options.trigger || 'manual',
+        status: result.status || null,
+        ...result.context,
+      },
+    });
+    return {
+      kind: 'failed',
+      telegram_id: telegramId,
+      error: result.error || 'telegram_send_failed',
+    };
+  };
+  for (let i = 0; i < linkedIds.length; i += DIGEST_SEND_BATCH_SIZE) {
+    const batch = linkedIds.slice(i, i + DIGEST_SEND_BATCH_SIZE);
+    for (let j = 0; j < batch.length; j += DIGEST_SEND_MAX_CONCURRENCY) {
+      const concurrencySlice = batch.slice(j, j + DIGEST_SEND_MAX_CONCURRENCY);
+      const results = await Promise.all(concurrencySlice.map((telegramId) => processTelegramId(telegramId)));
+      for (const entry of results) {
+        if (entry.kind === 'sent') {
+          summary.processed += 1;
+          summary.sent += 1;
+          continue;
+        }
+        if (entry.kind === 'failed') {
+          summary.processed += 1;
+          summary.failed += 1;
+          summary.failures.push({
+            telegram_id: entry.telegram_id,
+            error: entry.error,
+          });
+          continue;
+        }
+        summary.skipped += 1;
+        if (entry.reason === 'already_sent') summary.skipped_already_sent += 1;
+        if (entry.reason === 'pending_recent') summary.skipped_pending_recent += 1;
+      }
+    }
+  }
+  return summary;
+}
+
+
+const TELEGRAM_GROUP_ANNOUNCEMENT_TYPES = Object.freeze({
+  TIMED_EVENTS: 'timed_events',
+  DAILY_SUMMARY: 'daily_summary',
+  ALL: 'all',
+});
+const TELEGRAM_GROUP_ANNOUNCEMENT_LOOKAHEAD_MS = 15 * 60 * 1000;
+const TELEGRAM_GROUP_PRE_EVENT_MINUTES = 10;
+const TELEGRAM_GROUP_RETRY_PENDING_AFTER_MS = 10 * 60 * 1000;
+
+async function ensureTelegramGroupAnnouncementTables(db) {
+  for (const tableName of TELEGRAM_GROUP_ANNOUNCEMENT_TABLES) {
+    const row = await db.prepare(
+      `SELECT name FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1`
+    ).bind(tableName).first().catch(() => null);
+    if (!row?.name) {
+      return {
+        _isTelegramGroupAnnouncementsUnavailable: true,
+        tableName,
+        response: new Response(JSON.stringify({
+          ok: false,
+          error: 'telegram_group_announcements_unavailable',
+          reason: `migration_pending:${tableName}`,
+          message: 'Telegram group announcement tables are not yet configured. Apply migration 020.',
+        }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json', 'Retry-After': '60' },
+        }),
+      };
+    }
+  }
+  return null;
+}
+
+function getTelegramGroupConfig(env) {
+  const chatId = String(env.TELEGRAM_GROUP_CHAT_ID || '').trim();
+  const threadId = String(env.TELEGRAM_GROUP_THREAD_ID || '').trim();
+  return {
+    configured: !!chatId,
+    chat_id: chatId || null,
+    message_thread_id: threadId || null,
+  };
+}
+
+function describeWtfRequiredAction(requiredAction) {
+  if (requiredAction === 'complete_faction_or_battle_action') return 'Complete a faction mission or Battle Chamber proof while the signal is live.';
+  if (requiredAction === 'score_target_any_game') return 'Post an accepted arcade score while the burst is live.';
+  if (requiredAction === 'choose_and_complete_chaos_path') return 'Choose a roguelite chaos path and complete the objective.';
+  return 'Open an accepted arcade run while the signal is live.';
+}
+
+function formatUtcHm(iso) {
+  return String(iso || '').slice(11, 16);
+}
+
+function buildWtfPreEventGroupAnnouncement(eventRow) {
+  const durationMinutes = Math.round((Date.parse(eventRow.ends_at) - Date.parse(eventRow.starts_at)) / 60000) || 90;
+  return [
+    '🚨 WTF SIGNAL IN 10 MINUTES',
+    '',
+    `${eventRow.title} opens at ${formatUtcHm(eventRow.starts_at)} UTC.`,
+    '',
+    `Objective: ${describeWtfRequiredAction(eventRow.required_action)}`,
+    `Window: ${durationMinutes} minutes.`,
+    '',
+    'Check in when it opens, complete the objective, and unlock roguelite options.',
+    '',
+    `Battle Chamber: ${SITE_URL}/community.html`,
+    `Arcade: ${SITE_URL}/games/`,
+    '',
+    'Fun community gameplay/status event only — not a market signal.',
+  ].join('\n');
+}
+
+function buildDailyGroupSummaryMessage(utcDay) {
+  const windows = getWtfDailySchedule(utcDay)
+    .map((event) => `${String(event.startHour).padStart(2, '0')}:00`)
+    .join(', ');
+  return [
+    '⚡ Battle Chamber Daily Board is live.',
+    '',
+    `Six Daily WTF signals open today at ${windows} UTC.`,
+    '',
+    'Current focus: Battle Chamber proof, faction clout, accepted arcade runs, and missed opportunity history.',
+    '',
+    'Daily faction missions are live. Faction chambers have mission boards, and missed history does not reset. The city keeps moving while you are away.',
+    '',
+    'Check the site for current tasks, timed quests, roguelite options, and XP/status preview details.',
+    '',
+    `Battle Chamber: ${SITE_URL}/community.html`,
+    `Arcade: ${SITE_URL}/games/`,
+    `Faction Chambers: ${SITE_URL}/battle-chamber/factions/index.html`,
+  ].join('\n');
+}
+
+function getTimedGroupAnnouncementCandidates(nowMs, options = {}) {
+  const windowMs = Number(options.windowMs) || TELEGRAM_GROUP_ANNOUNCEMENT_LOOKAHEAD_MS;
+  const force = !!options.force;
+  const announcementKeyFilter = options.announcementKey ? String(options.announcementKey).trim() : null;
+  const eventIdFilter = options.eventId ? String(options.eventId).trim() : null;
+  const utcDayFilter = options.utcDay ? String(options.utcDay).trim().slice(0, 10) : null;
+  const now = new Date(nowMs);
+  const today = now.toISOString().slice(0, 10);
+  const days = [...new Set([today, addUtcDays(today, 1), addUtcDays(today, -1)].filter(Boolean))];
+  const candidates = [];
+  for (const utcDay of days) {
+    if (utcDayFilter && utcDay !== utcDayFilter) continue;
+    for (const event of getWtfDailySchedule(utcDay)) {
+      const row = buildWtfScheduleRow(utcDay, event);
+      const announcementKey = `wtf:${utcDay}:${row.event_id}:minus_10`;
+      if (announcementKeyFilter && announcementKey !== announcementKeyFilter) continue;
+      if (eventIdFilter && row.event_id !== eventIdFilter) continue;
+      const scheduledMs = Date.parse(row.starts_at) - TELEGRAM_GROUP_PRE_EVENT_MINUTES * 60 * 1000;
+      const dueByTime = nowMs >= scheduledMs && nowMs <= scheduledMs + windowMs;
+      const explicitlyForced = force && (announcementKeyFilter || (eventIdFilter && utcDayFilter));
+      const due = dueByTime || explicitlyForced;
+      if (!due) continue;
+      candidates.push({
+        announcement_key: announcementKey,
+        utc_day: utcDay,
+        event_id: row.event_id,
+        announcement_type: 'wtf_pre_event_minus_10',
+        scheduled_for: new Date(scheduledMs).toISOString(),
+        message: buildWtfPreEventGroupAnnouncement(row),
+        metadata: {
+          title: row.title,
+          starts_at: row.starts_at,
+          ends_at: row.ends_at,
+          required_action: row.required_action,
+          pre_event_minutes: TELEGRAM_GROUP_PRE_EVENT_MINUTES,
+        },
+      });
+    }
+  }
+  return candidates.sort((a, b) => String(a.scheduled_for).localeCompare(String(b.scheduled_for)) || String(a.announcement_key).localeCompare(String(b.announcement_key)));
+}
+
+function getDailyGroupSummaryCandidates(nowMs, options = {}) {
+  const force = !!options.force;
+  const now = new Date(nowMs);
+  const utcDay = now.toISOString().slice(0, 10);
+  const scheduledMs = Date.parse(`${utcDay}T09:00:00.000Z`);
+  const windowMs = Number(options.windowMs) || TELEGRAM_GROUP_ANNOUNCEMENT_LOOKAHEAD_MS;
+  if (!force && !(nowMs >= scheduledMs && nowMs <= scheduledMs + windowMs)) return [];
+  return [{
+    announcement_key: `daily-summary:${utcDay}`,
+    utc_day: utcDay,
+    event_id: null,
+    announcement_type: 'daily_summary',
+    scheduled_for: new Date(scheduledMs).toISOString(),
+    message: buildDailyGroupSummaryMessage(utcDay),
+    metadata: {
+      wtf_windows_utc: getWtfDailySchedule(utcDay).map((event) => `${String(event.startHour).padStart(2, '0')}:00`),
+      coverage: ['daily_faction_missions', 'battle_chamber_proof', 'missed_opportunities'],
+    },
+  }];
+}
+
+function getTelegramGroupAnnouncementCandidates(type, nowMs, options = {}) {
+  const normalized = String(type || TELEGRAM_GROUP_ANNOUNCEMENT_TYPES.ALL).trim().toLowerCase();
+  const candidates = [];
+  if (normalized === TELEGRAM_GROUP_ANNOUNCEMENT_TYPES.ALL || normalized === TELEGRAM_GROUP_ANNOUNCEMENT_TYPES.TIMED_EVENTS) {
+    candidates.push(...getTimedGroupAnnouncementCandidates(nowMs, options));
+  }
+  if (normalized === TELEGRAM_GROUP_ANNOUNCEMENT_TYPES.ALL || normalized === TELEGRAM_GROUP_ANNOUNCEMENT_TYPES.DAILY_SUMMARY) {
+    candidates.push(...getDailyGroupSummaryCandidates(nowMs, options));
+  }
+  return candidates;
+}
+
+async function authenticatePetMiniApp(body, env) {
+  if (body?.init_data) {
+    const verified = await verifyTelegramMiniAppInitData(body.init_data, env.TELEGRAM_BOT_TOKEN, { max_age_seconds: 3600 });
+    if (!verified.ok) return { error: verified.reason, status: 401 };
+    return verified;
+  }
+  const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+  if (verified.error) return verified;
+  return { ok: true, telegramId: verified.telegramId, user: verified.user, authDate: Number(verified.authPayload?.auth_date || 0) };
+}
+
+function publicPetArenaSnapshot(raw) {
+  const snapshot = typeof raw === 'string' ? safeParsePetArenaSnapshot(raw) : { ...(raw || {}) };
+  const appOpponent = String(snapshot.telegram_id || '') === 'app';
+  const revealed = appOpponent || snapshot.identity_revealed === true || Number(snapshot.evolution_stage || 0) >= MOONPET_IDENTITY_REVEAL_STAGE;
+  const displayName = appOpponent
+    ? String(snapshot.display_name || snapshot.pet_name || 'APP MOONPET')
+    : revealed ? String(snapshot.display_name || MOONPET_UNKNOWN_NAME) : MOONPET_UNKNOWN_NAME;
+  return { ...snapshot, name: displayName, pet_name: displayName, display_name: displayName, identity_revealed: revealed };
+}
+
+function serializePetMiniAppArenaBattle(battle, telegramId = '') {
+  if (!battle) return null;
+  const isPlayer2 = String(battle.player2_telegram_id || '') === String(telegramId);
+  const player = publicPetArenaSnapshot(isPlayer2 ? battle.player2_pet_snapshot_json : battle.player1_pet_snapshot_json);
+  const opponent = publicPetArenaSnapshot(isPlayer2 ? battle.player1_pet_snapshot_json : battle.player2_pet_snapshot_json);
+  delete player.telegram_id;
+  delete opponent.telegram_id;
+  const winner = battle.winner_telegram_id || null;
+  const mode = String(battle.player2_telegram_id) === 'app' ? 'solo' : 'multiplayer';
+  const outcome = !battle.result ? null : battle.result === 'draw' ? 'draw' : String(winner || '') === String(telegramId) ? 'win' : 'loss';
+  return {
+    battle_id: battle.battle_id,
+    status: battle.status,
+    result: battle.result,
+    current_round: Number(battle.current_round || 1),
+    max_rounds: Number(battle.max_rounds || PET_ARENA_MAX_ROUNDS),
+    player_hp: Number(isPlayer2 ? battle.player2_hp ?? PET_ARENA_MAX_HP : battle.player1_hp ?? PET_ARENA_MAX_HP),
+    opponent_hp: Number(isPlayer2 ? battle.player1_hp ?? PET_ARENA_MAX_HP : battle.player2_hp ?? PET_ARENA_MAX_HP),
+    player_special: Number(isPlayer2 ? battle.player2_special || 0 : battle.player1_special || 0),
+    opponent_special: Number(isPlayer2 ? battle.player1_special || 0 : battle.player2_special || 0),
+    special_cost: PET_ARENA_SPECIAL_COST,
+    player,
+    opponent,
+    moves: buildPetArenaMovePreviews(battle, telegramId),
+    opponent_intent: mode === 'solo' && battle.status === 'active'
+      ? serializePetArenaMovePreview(selectPetArenaAppMove(battle), Number(battle.player2_special || 0))
+      : null,
+    last_round: orientPetArenaLastRound(battle, isPlayer2),
+    outcome,
+    mode,
+    ready: Boolean(isPlayer2 ? battle.player2_ready_at : battle.player1_ready_at),
+    opponent_ready: Boolean(isPlayer2 ? battle.player1_ready_at : battle.player2_ready_at),
+  };
+}
+
+function serializePetMiniAppKaijuMatch(match, telegramId = '') {
+  if (!match) return null;
+  const isPlayer2 = String(match.player2_telegram_id || '') === String(telegramId);
+  const ownCard = isPlayer2 ? match.player2_card_key : match.player1_card_key;
+  const opponentCard = isPlayer2 ? match.player1_card_key : (match.mode === 'solo' ? match.cpu_card_key : match.player2_card_key);
+  const winner = match.winner_telegram_id || null;
+  const completed = match.status === 'completed';
+  const category = PET_KAIJU_CATEGORIES.find((entry) => entry.key === match.category_key) || null;
+  const rawScore = completed ? safeParsePetArenaSnapshot(match.score_json) : {};
+  const ownScore = isPlayer2 ? rawScore.opponent : rawScore.player1;
+  const rivalScore = isPlayer2 ? rawScore.player1 : rawScore.opponent;
+  return {
+    match_id: match.match_id,
+    mode: match.mode,
+    status: match.status,
+    result: completed ? match.result : null,
+    category_key: category?.key || null,
+    category,
+    roll: category ? Number(match.roll || category.roll || 0) : null,
+    score_json: completed ? JSON.stringify({ category: rawScore.category, player1: rawScore.player1, opponent: rawScore.opponent, result: rawScore.result }) : null,
+    score: completed ? {
+      player: Number(ownScore?.score || 0),
+      opponent: Number(rivalScore?.score || 0),
+    } : null,
+    own_card_key: ownCard || null,
+    opponent_card_key: completed ? opponentCard || null : null,
+    role: isPlayer2 ? 'player2' : 'player1',
+    own_card_locked: Boolean(ownCard),
+    opponent_card_locked: Boolean(opponentCard),
+    outcome: !match.result ? null : match.result === 'draw' ? 'draw' : String(winner || '') === String(telegramId) ? 'win' : 'loss',
+  };
+}
+
+async function buildPetMiniAppLeaderboard(db, telegramId, requestedPeriod = 'seasonal', requestedLimit = 25) {
+  const limit = Math.min(50, Math.max(1, Math.floor(Number(requestedLimit) || 25)));
+  const board = await readPetLeaderboard(db, { period: requestedPeriod, limit, owner: telegramId });
+  const serialized = board.rows.map((row) => ({
+    ...serializePetLeaderboardEntry(row, Number(row.rank || 1) - 1),
+    is_current: String(row.telegram_id) === String(telegramId),
+  }));
+  return {
+    period: board.period,
+    season: board.season,
+    entries: serialized.filter((entry) => entry.rank <= limit),
+    self: serialized.find((entry) => entry.is_current) || null,
+  };
+}
+
+const miniAppProgressInteger = (value, fallback = 0) => Math.max(0, Math.floor(Number(value ?? fallback) || 0));
+
+function normalizePetCooldownWindow(expiresAtRaw, now = new Date()) {
+  const nowMs = now instanceof Date ? now.getTime() : Date.parse(now);
+  const expiresMs = expiresAtRaw instanceof Date ? expiresAtRaw.getTime() : Date.parse(String(expiresAtRaw || ''));
+  if (!Number.isFinite(nowMs) || !Number.isFinite(expiresMs)) return null;
+  return {
+    expires_at: new Date(expiresMs).toISOString(),
+    remaining_seconds: Math.max(0, Math.ceil((expiresMs - nowMs) / 1000)),
+    server_time: new Date(nowMs).toISOString(),
+  };
+}
+
+function buildPetCooldownFromSeconds(seconds, now = new Date()) {
+  const nowMs = now instanceof Date ? now.getTime() : Date.parse(now);
+  const remaining = Math.max(0, Math.ceil(Number(seconds) || 0));
+  if (!Number.isFinite(nowMs) || remaining <= 0) return null;
+  return normalizePetCooldownWindow(new Date(nowMs + remaining * 1000), new Date(nowMs));
+}
+
+function buildPetCooldownFromStart(startedAtRaw, cooldownSeconds, now = new Date()) {
+  const startedMs = parseSqliteTs(startedAtRaw);
+  const seconds = Math.max(0, Math.ceil(Number(cooldownSeconds) || 0));
+  if (startedMs == null || seconds <= 0) return null;
+  return normalizePetCooldownWindow(new Date(startedMs + seconds * 1000), now);
+}
+
+async function getPetAcceptedActionCooldown(db, telegramId, eventType, seconds, now = new Date()) {
+  const last = await db.prepare(`SELECT created_at FROM telegram_pet_events
+    WHERE telegram_id = ? AND event_type = ? AND status = 'accepted'
+    ORDER BY created_at DESC LIMIT 1`).bind(telegramId, eventType).first();
+  const cooldown = last ? buildPetCooldownFromStart(last.created_at, seconds, now) : null;
+  return cooldown?.remaining_seconds > 0 ? cooldown : null;
+}
+
+function getNextPetUtcDayResetAt(now = new Date()) {
+  const date = now instanceof Date ? now : new Date(now);
+  if (!Number.isFinite(date.getTime())) return null;
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + 1)).toISOString();
+}
+
+function attachPetCooldown(target, cooldown) {
+  if (!target || !cooldown || cooldown.remaining_seconds <= 0) return target;
+  target.expires_at = cooldown.expires_at;
+  target.remaining_seconds = cooldown.remaining_seconds;
+  target.server_time = cooldown.server_time;
+  return target;
+}
+
+function countMiniAppCompletedJourneyObjectives(rows = [], definitions = {}) {
+  return rows.reduce((count, row) => {
+    const objective = definitions[String(row.challenge_id || row.objective_id || '')];
+    if (!objective) return count;
+    const target = miniAppProgressInteger(objective.target, 1);
+    const progressMode = String(objective.progress_mode || objective.validation_rules?.progress_mode || 'add');
+    const progress = progressMode === 'max'
+      ? miniAppProgressInteger(row.max_progress, target)
+      : Math.min(target, miniAppProgressInteger(row.additive_progress, target));
+    return progress >= target ? count + 1 : count;
+  }, 0);
+}
+
+async function listPetMiniAppDailyJourneyObjectives(db, telegramId, petId, seasonKey, dayKey) {
+  const rows = await db.prepare(`SELECT challenge_id, SUM(progress_value) AS additive_progress, MAX(progress_value) AS max_progress
+    FROM telegram_pet_daily_journey_objectives
+    WHERE pet_id=? AND telegram_id=? AND season_key=? AND utc_day=? AND status='accepted'
+    GROUP BY challenge_id`)
+    .bind(petId, telegramId, seasonKey, dayKey).all().then(requirePetReadResult);
+  const byId = new Map((rows.results || []).map((row) => [row.challenge_id, row]));
+  return Object.values(PET_DAILY_CHALLENGES).map((definition) => {
+    const row = byId.get(definition.challenge_id) || {};
+    const target = miniAppProgressInteger(definition.target, 1);
+    const progress = Math.min(target, miniAppProgressInteger(definition.validation_rules?.progress_mode === 'max' ? row.max_progress : row.additive_progress, 0));
+    return { challenge_id: definition.challenge_id, description: definition.description, target, progress, completed: progress >= target };
+  });
+}
+
+async function countPetMiniAppCompletedWeeklyJourneyObjectives(db, telegramId, petId, seasonKey, week) {
+  const rows = await readWeeklyJourneyObjectiveProgress(db, { telegram_id: telegramId, pet_id: petId, season_key: seasonKey, qualification_week: week });
+  return countMiniAppCompletedJourneyObjectives(rows.results || [], PET_WEEKLY_JOURNEY_OBJECTIVES);
+}
+
+async function listPetMiniAppWeeklyJourneyObjectives(db, telegramId, petId, seasonKey, week) {
+  const rows = await readWeeklyJourneyObjectiveProgress(db, { telegram_id: telegramId, pet_id: petId, season_key: seasonKey, qualification_week: week });
+  const rowByObjective = new Map((rows.results || []).map((row) => [String(row.objective_id || ''), row]));
+  return Object.values(PET_WEEKLY_JOURNEY_OBJECTIVES).map((objective) => {
+    const row = rowByObjective.get(objective.objective_id) || {};
+    const target = miniAppProgressInteger(objective.target, 1);
+    const progress = objective.progress_mode === 'max'
+      ? Math.min(target, miniAppProgressInteger(row.max_progress, 0))
+      : Math.min(target, miniAppProgressInteger(row.additive_progress, 0));
+    return {
+      objective_id: objective.objective_id,
+      progress,
+      target,
+      completed: progress >= target,
+      progress_mode: objective.progress_mode,
+      source_event_count: miniAppProgressInteger(row.source_event_count, 0),
+    };
+  });
+}
+
+function getPetMiniAppWeekResetAt(seasonSlots = {}, now = new Date()) {
+  const season = seasonSlots?.season || getPetSeasonInfo(now);
+  const startMs = Date.parse(season?.start_at || '');
+  const endMs = Date.parse(season?.end_at || '');
+  const week = Math.min(13, Math.max(1, Number(seasonSlots?.current_season_week || getPetSeasonWeek(season, now)) || 1));
+  if (!Number.isFinite(startMs)) return null;
+  if (week >= 13 && Number.isFinite(endMs)) {
+    return new Date(endMs).toISOString();
+  }
+  const resetMs = Math.min(
+    Number.isFinite(endMs) ? endMs : startMs + (week * 7 * 86400000),
+    startMs + (week * 7 * 86400000),
+  );
+  return Number.isFinite(resetMs) ? new Date(resetMs).toISOString() : null;
+}
+
+async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = new Date()) {
+  const activeSlot = (seasonSlots?.slots || []).find((slot) => slot.active) || null;
+  const petId = String(activeSlot?.pet_id || '');
+  const seasonKey = String(activeSlot?.season_key || seasonSlots?.season?.key || '');
+  const dayKey = getPetDayKey(now);
+  const week = Math.min(13, Math.max(1, Number(seasonSlots?.current_season_week || getPetSeasonWeek(seasonSlots?.season || getPetSeasonInfo(now), now)) || 1));
+  const week_reset_at = getPetMiniAppWeekResetAt(seasonSlots, now);
+  const day_reset_at = getNextPetUtcDayResetAt(now);
+  const dailyCooldown = normalizePetCooldownWindow(day_reset_at, now);
+  const weeklyCooldown = normalizePetCooldownWindow(week_reset_at, now);
+  if (!petId || !seasonKey) {
+    return {
+      daily: { utc_day: dayKey, day_reset_at, cooldown: dailyCooldown, expires_at: dailyCooldown?.expires_at || null, remaining_seconds: dailyCooldown?.remaining_seconds || 0, server_time: dailyCooldown?.server_time || now.toISOString(), completed_objectives: 0, required_objectives: DAILY_JOURNEY_REQUIRED_OBJECTIVES, growth_mark_awarded: false, duplicate_blocked: false, reason: 'active_pet_required' },
+      weekly: { qualification_week: week, week_reset_at, cooldown: weeklyCooldown, expires_at: weeklyCooldown?.expires_at || null, remaining_seconds: weeklyCooldown?.remaining_seconds || 0, server_time: weeklyCooldown?.server_time || now.toISOString(), completed_objectives: 0, required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES, objectives: [], weekly_crest_awarded: false, duplicate_blocked: false, reason: 'active_pet_required', authority_available: false },
+    };
+  }
+  const [dailyObjectives, dailyReceipt, dailyAcceptedReceipt] = await Promise.all([
+    listPetMiniAppDailyJourneyObjectives(db, telegramId, petId, seasonKey, dayKey),
+    db.prepare(`SELECT status, reason, growth_mark_id, completed_objectives
+      FROM telegram_pet_daily_journey_receipts
+      WHERE pet_id=? AND telegram_id=? AND season_key=? AND utc_day=?
+      ORDER BY created_at DESC LIMIT 1`)
+      .bind(petId, telegramId, seasonKey, dayKey).first(),
+    db.prepare(`SELECT status, reason, growth_mark_id, completed_objectives
+      FROM telegram_pet_daily_journey_receipts
+      WHERE pet_id=? AND telegram_id=? AND season_key=? AND utc_day=? AND status='accepted' AND growth_mark_id IS NOT NULL
+      ORDER BY created_at ASC LIMIT 1`)
+      .bind(petId, telegramId, seasonKey, dayKey).first(),
+  ]);
+  let weeklyObjectives = 0;
+  let weeklyObjectiveList = null;
+  let weeklyReceipt = null;
+  let weeklyAcceptedReceipt = null;
+  let weeklyAuthorityAvailable = true;
+  try {
+    [weeklyObjectives, weeklyObjectiveList, weeklyReceipt, weeklyAcceptedReceipt] = await Promise.all([
+    countPetMiniAppCompletedWeeklyJourneyObjectives(db, telegramId, petId, seasonKey, week),
+    listPetMiniAppWeeklyJourneyObjectives(db, telegramId, petId, seasonKey, week),
+    db.prepare(`SELECT status, reason, crest_id, completed_objectives
+      FROM telegram_pet_weekly_journey_receipts
+      WHERE pet_id=? AND telegram_id=? AND season_key=? AND qualification_week=?
+      ORDER BY created_at DESC LIMIT 1`)
+      .bind(petId, telegramId, seasonKey, week).first(),
+    db.prepare(`SELECT status, reason, crest_id, completed_objectives
+      FROM telegram_pet_weekly_journey_receipts
+      WHERE pet_id=? AND telegram_id=? AND season_key=? AND qualification_week=? AND status='accepted' AND crest_id IS NOT NULL
+      ORDER BY created_at ASC LIMIT 1`)
+      .bind(petId, telegramId, seasonKey, week).first(),
+    ]);
+  } catch {
+    weeklyAuthorityAvailable = false;
+  }
+  const dailyCompleted = Math.max((dailyObjectives || []).filter((objective) => objective.completed).length, Number(dailyReceipt?.completed_objectives || 0), Number(dailyAcceptedReceipt?.completed_objectives || 0));
+  if (!weeklyAuthorityAvailable) {
+    return {
+      daily: {
+        pet_id: petId, season_key: seasonKey, utc_day: dayKey,
+        day_reset_at,
+        cooldown: dailyCooldown,
+        expires_at: dailyCooldown?.expires_at || null,
+        remaining_seconds: dailyCooldown?.remaining_seconds || 0,
+        server_time: dailyCooldown?.server_time || now.toISOString(),
+        completed_objectives: dailyCompleted, required_objectives: DAILY_JOURNEY_REQUIRED_OBJECTIVES,
+        objectives: dailyObjectives, authority_available: dailyObjectives !== null,
+        growth_mark_awarded: Boolean(dailyAcceptedReceipt?.growth_mark_id),
+        duplicate_blocked: dailyReceipt?.reason === 'daily_journey_growth_mark_duplicate',
+        reason: dailyReceipt?.reason || (dailyCompleted >= DAILY_JOURNEY_REQUIRED_OBJECTIVES ? 'daily_journey_ready' : 'daily_journey_in_progress'),
+      },
+      weekly: {
+        pet_id: null, season_key: seasonKey, qualification_week: week, week_reset_at,
+        cooldown: weeklyCooldown,
+        expires_at: weeklyCooldown?.expires_at || null,
+        remaining_seconds: weeklyCooldown?.remaining_seconds || 0,
+        server_time: weeklyCooldown?.server_time || now.toISOString(),
+        completed_objectives: 0, required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES,
+        objectives: [],
+        weekly_crest_awarded: false,
+        duplicate_blocked: false,
+        reason: 'weekly_journey_authority_syncing',
+        authority_available: false,
+      },
+    };
+  }
+  const weeklyCompleted = Math.max(Number(weeklyObjectives || 0), Number(weeklyReceipt?.completed_objectives || 0), Number(weeklyAcceptedReceipt?.completed_objectives || 0));
+  return {
+    daily: {
+      pet_id: petId, season_key: seasonKey, utc_day: dayKey,
+      day_reset_at,
+      cooldown: dailyCooldown,
+      expires_at: dailyCooldown?.expires_at || null,
+      remaining_seconds: dailyCooldown?.remaining_seconds || 0,
+      server_time: dailyCooldown?.server_time || now.toISOString(),
+      completed_objectives: dailyCompleted, required_objectives: DAILY_JOURNEY_REQUIRED_OBJECTIVES,
+      objectives: dailyObjectives, authority_available: dailyObjectives !== null,
+      growth_mark_awarded: Boolean(dailyAcceptedReceipt?.growth_mark_id),
+      duplicate_blocked: dailyReceipt?.reason === 'daily_journey_growth_mark_duplicate',
+      reason: dailyReceipt?.reason || (dailyCompleted >= DAILY_JOURNEY_REQUIRED_OBJECTIVES ? 'daily_journey_ready' : 'daily_journey_in_progress'),
+    },
+    weekly: {
+      pet_id: petId, season_key: seasonKey, qualification_week: week, week_reset_at,
+      cooldown: weeklyCooldown,
+      expires_at: weeklyCooldown?.expires_at || null,
+      remaining_seconds: weeklyCooldown?.remaining_seconds || 0,
+      server_time: weeklyCooldown?.server_time || now.toISOString(),
+      completed_objectives: weeklyCompleted, required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES,
+      objectives: weeklyObjectiveList || [],
+      weekly_crest_awarded: Boolean(weeklyAcceptedReceipt?.crest_id),
+      duplicate_blocked: weeklyReceipt?.reason === 'weekly_journey_crest_duplicate',
+      reason: weeklyReceipt?.reason || (weeklyCompleted >= WEEKLY_JOURNEY_REQUIRED_OBJECTIVES ? 'weekly_journey_ready' : 'weekly_journey_in_progress'),
+      authority_available: true,
+    },
+  };
+}
+
+const PET_MINI_APP_FUTURE_SYSTEM_STATUS = Object.freeze({
+  LOCKED: 'LOCKED',
+  COMING_SOON: 'COMING_SOON',
+  AVAILABLE: 'AVAILABLE',
+});
+
+function buildPetMiniAppFutureSystemState(combatEligibility = {}) {
+  const completedSeasonPet = combatEligibility.has_completed_season_pet === true;
+  const arenaUnlocked = combatEligibility.arena_unlocked === true;
+  const kaijuUnlocked = combatEligibility.kaiju_unlocked === true;
+  const postSeasonLockedDetail = 'Requires completed Season pet. Locked until you complete a Season pet.';
+  const comingSoonDetail = 'Future expansion content. Not available yet.';
+  const betaCombatLockedDetail = (reason) => reason === 'moon_egg_must_hatch'
+    ? 'Requires a hatched active Moonpet.'
+    : reason === 'pet_not_adopted'
+      ? 'Requires an adopted active Moonpet.'
+      : reason === 'moonpet_lifecycle_required'
+        ? 'Requires synced active Moonpet lifecycle authority before combat unlocks.'
+        : reason === 'arena_level_locked'
+          ? `Requires a hatched active Moonpet at Level ${PET_ARENA_MIN_LEVEL}.`
+          : 'Requires current beta combat authority.';
+  const combatLockedDetail = betaCombatLockedDetail(combatEligibility.reason);
+  const arenaLockedDetail = combatEligibility.arena_reason
+    ? betaCombatLockedDetail(combatEligibility.arena_reason)
+    : combatLockedDetail;
+  const kaijuLockedDetail = combatEligibility.kaiju_reason
+    ? betaCombatLockedDetail(combatEligibility.kaiju_reason)
+    : combatLockedDetail;
+  const futureStatus = completedSeasonPet
+    ? PET_MINI_APP_FUTURE_SYSTEM_STATUS.COMING_SOON
+    : PET_MINI_APP_FUTURE_SYSTEM_STATUS.LOCKED;
+  const futureDetail = completedSeasonPet ? comingSoonDetail : postSeasonLockedDetail;
+  const arenaStatus = arenaUnlocked
+    ? PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE
+    : PET_MINI_APP_FUTURE_SYSTEM_STATUS.LOCKED;
+  const kaijuStatus = kaijuUnlocked
+    ? PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE
+    : PET_MINI_APP_FUTURE_SYSTEM_STATUS.LOCKED;
+  return [
+    { key: 'breeding', title: 'Breeding', status: futureStatus, detail: futureDetail },
+    { key: 'traits', title: 'Traits', status: futureStatus, detail: futureDetail },
+    { key: 'sanctuary', title: 'Sanctuary', status: futureStatus, detail: futureDetail },
+    { key: 'lineage', title: 'Lineage', status: futureStatus, detail: futureDetail },
+    { key: 'fusion', title: 'Fusion', status: futureStatus, detail: futureDetail },
+    { key: 'arena', title: 'Arena', status: arenaStatus, detail: arenaUnlocked ? `Available from Level ${PET_ARENA_MIN_LEVEL}.` : arenaLockedDetail },
+    { key: 'kaiju', title: 'Kaiju', status: kaijuStatus, detail: kaijuUnlocked ? 'Available from Explore.' : kaijuLockedDetail },
+    { key: 'prestige', title: 'Prestige', status: PET_MINI_APP_FUTURE_SYSTEM_STATUS.COMING_SOON, detail: comingSoonDetail },
+  ];
+}
+
+function isPetMiniAppWeeklyJourneySummaryLive(weeklyJourneySummary = null) {
+  return Boolean(
+    weeklyJourneySummary
+    && weeklyJourneySummary.authority_available !== false
+    && String(weeklyJourneySummary.pet_id || '').trim()
+    && Number(weeklyJourneySummary.required_objectives || 0) > 0
+    && Array.isArray(weeklyJourneySummary.objectives)
+  );
+}
+
+function buildPetMiniAppCapabilities(combatEligibility = {}, weeklyJourneySummary = null) {
+  const futureSystems = buildPetMiniAppFutureSystemState(combatEligibility);
+  const systemByKey = Object.fromEntries(futureSystems.map((system) => [system.key, {
+    state: system.status,
+    unlocked: system.status === PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE,
+    reason: system.status === PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE ? 'available' : system.status === PET_MINI_APP_FUTURE_SYSTEM_STATUS.COMING_SOON ? 'feature_not_available' : (
+      system.key === 'arena' ? (combatEligibility.arena_reason || combatEligibility.reason || 'current_combat_requirements_unmet')
+        : system.key === 'kaiju' ? (combatEligibility.kaiju_reason || combatEligibility.reason || 'current_combat_requirements_unmet')
+          : 'completed_season_pet_required'
+    ),
+    active: system.status === PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE,
+    message: system.detail,
+  }]));
+  const weeklyJourneyLive = isPetMiniAppWeeklyJourneySummaryLive(weeklyJourneySummary);
+  const weeklyJourneyCapability = weeklyJourneyLive ? {
+    state: PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE,
+    unlocked: true,
+    active: true,
+    reason: weeklyJourneySummary.reason || 'weekly_journey_in_progress',
+    message: 'Weekly Journey live tracking is active.',
+    qualification_week: miniAppProgressInteger(weeklyJourneySummary.qualification_week, 1),
+    week_reset_at: weeklyJourneySummary.week_reset_at || null,
+    cooldown: weeklyJourneySummary.cooldown || null,
+    expires_at: weeklyJourneySummary.cooldown?.expires_at || null,
+    remaining_seconds: weeklyJourneySummary.cooldown?.remaining_seconds || 0,
+    completed_objectives: miniAppProgressInteger(weeklyJourneySummary.completed_objectives, 0),
+    required_objectives: miniAppProgressInteger(weeklyJourneySummary.required_objectives, WEEKLY_JOURNEY_REQUIRED_OBJECTIVES),
+    objectives: Array.isArray(weeklyJourneySummary.objectives) ? weeklyJourneySummary.objectives : [],
+    weekly_crest_awarded: Boolean(weeklyJourneySummary.weekly_crest_awarded),
+    duplicate_blocked: Boolean(weeklyJourneySummary.duplicate_blocked),
+  } : {
+    state: PET_MINI_APP_FUTURE_SYSTEM_STATUS.LOCKED,
+    unlocked: false,
+    active: false,
+    reason: weeklyJourneySummary?.reason || 'weekly_journey_authority_syncing',
+    message: weeklyJourneySummary?.reason === 'active_pet_required'
+      ? 'Pick an active seasonal Moonpet before Weekly Journey tracking can start.'
+      : 'Weekly Journey authority is syncing.',
+    qualification_week: null,
+    week_reset_at: weeklyJourneySummary?.week_reset_at || null,
+    cooldown: weeklyJourneySummary?.cooldown || null,
+    expires_at: weeklyJourneySummary?.cooldown?.expires_at || null,
+    remaining_seconds: weeklyJourneySummary?.cooldown?.remaining_seconds || 0,
+    completed_objectives: 0,
+    required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES,
+    objectives: [],
+  };
+  const systems = {
+    ...systemByKey,
+    weekly_journey: weeklyJourneyCapability,
+  };
+  return {
+    capabilities_version: 1,
+    systems,
+    combat: {
+      state: combatEligibility.combat_authority_available === false
+        ? 'UNAVAILABLE'
+        : combatEligibility.combat_unlocked === true
+        ? PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE
+        : PET_MINI_APP_FUTURE_SYSTEM_STATUS.LOCKED,
+      unlocked: combatEligibility.combat_authority_available !== false && combatEligibility.combat_unlocked === true,
+      active: combatEligibility.combat_authority_available !== false && combatEligibility.combat_unlocked === true,
+      reason: combatEligibility.reason || 'current_combat_requirements_unmet',
+      requirements: {
+        completed_season_pet: combatEligibility.has_completed_season_pet === true,
+        active_pet_exists: combatEligibility.active_pet_exists === true,
+        active_pet_lifecycle_known: combatEligibility.active_pet_lifecycle_known === true,
+        active_pet_hatched: combatEligibility.active_pet_combat_eligible === true,
+        active_pet_level: miniAppProgressInteger(combatEligibility.active_pet_level, 0),
+        arena_level_met: combatEligibility.arena_level_met === true,
+        weekly_boss_level_met: combatEligibility.weekly_boss_level_met === true,
+      },
+    },
+    breeding: systemByKey.breeding,
+    traits: systemByKey.traits,
+    sanctuary: systemByKey.sanctuary,
+    lineage: systemByKey.lineage,
+    fusion: systemByKey.fusion,
+    arena: systemByKey.arena,
+    kaiju: systemByKey.kaiju,
+    weekly_boss: {
+      state: combatEligibility.weekly_boss_unlocked === true ? PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE : PET_MINI_APP_FUTURE_SYSTEM_STATUS.LOCKED,
+      unlocked: combatEligibility.weekly_boss_unlocked === true,
+      active: combatEligibility.weekly_boss_unlocked === true,
+      reason: combatEligibility.weekly_boss_reason || combatEligibility.reason || 'current_combat_requirements_unmet',
+      message: combatEligibility.weekly_boss_unlocked === true ? 'Available from Level 5.' : (combatEligibility.weekly_boss_reason === 'boss_level_locked' ? 'Requires a hatched active Moonpet at Level 5.' : 'Requires a hatched active Moonpet.'),
+    },
+    prestige: systemByKey.prestige,
+    weekly_journey: weeklyJourneyCapability,
+    future_systems: futureSystems,
+  };
+}
+
+function addPetCooldownEntry(entries, key, label, cooldown, kind = 'action') {
+  if (!cooldown || !cooldown.expires_at || Number(cooldown.remaining_seconds || 0) <= 0) return;
+  entries.push({
+    key,
+    label,
+    kind,
+    expires_at: cooldown.expires_at,
+    remaining_seconds: Math.max(0, Math.ceil(Number(cooldown.remaining_seconds) || 0)),
+    server_time: cooldown.server_time || null,
+  });
+}
+
+async function getPetSpecialActionCooldownEntries(db, telegramId, now = new Date()) {
+  return getPetSpecialActionCooldownEntriesFromState(await getPetSpecialActionGuidanceState(db, telegramId, now));
+}
+
+function getPetSpecialActionCooldownEntriesFromState(state = {}) {
+  return Object.entries(state || {}).flatMap(([action, actionState]) => {
+    const policy = PET_SPECIAL_ACTION_POLICIES[action];
+    const cooldown = actionState?.cooldown || null;
+    if (!policy || Number(cooldown?.remaining_seconds || 0) <= 0) return [];
+    return [{
+      action,
+      cooldown,
+      used_today: Math.max(0, Number(actionState.used_today || 0)),
+      daily_limit: policy.daily_limit,
+    }];
+  });
+}
+
+async function getPetSpecialActionGuidanceState(db, telegramId, now = new Date()) {
+  const dayKey = getPetDayKey(now);
+  const rows = await db.prepare(`SELECT event_type, MAX(created_at) AS last_created_at,
+      SUM(CASE WHEN day_key = ? THEN 1 ELSE 0 END) AS used_today
+    FROM telegram_pet_events
+    WHERE telegram_id = ? AND status IN ('pending','accepted') AND event_type IN ('energy_drink','dance','cuddles')
+    GROUP BY event_type`).bind(dayKey, String(telegramId)).all().then(requirePetReadResult);
+  const byAction = new Map((rows.results || []).map((row) => [String(row.event_type || ''), row]));
+  const state = {};
+  for (const [action, policy] of Object.entries(PET_SPECIAL_ACTION_POLICIES)) {
+    const row = byAction.get(action) || null;
+    const usedToday = Math.max(0, Number(row?.used_today || 0));
+    const dailyLimited = usedToday >= policy.daily_limit;
+    const cooldown = dailyLimited
+      ? normalizePetCooldownWindow(new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1)), now)
+      : buildPetCooldownFromStart(row?.last_created_at, policy.cooldown_seconds, now);
+    const blocked = dailyLimited || Number(cooldown?.remaining_seconds || 0) > 0;
+    state[action] = {
+      available: !blocked,
+      reason: dailyLimited ? 'daily_limit' : blocked ? 'cooldown' : null,
+      used_today: usedToday,
+      daily_limit: policy.daily_limit,
+      cooldown: blocked ? cooldown : null,
+      expires_at: blocked ? cooldown?.expires_at || null : null,
+      remaining_seconds: blocked ? Math.max(0, Number(cooldown?.remaining_seconds || 0)) : 0,
+    };
+  }
+  return state;
+}
+
+function buildPetMiniAppCooldownSummary({ journeySummary = null, guidance = null, liveSystems = null, seasonSlots = null, actionCooldowns = [], adventureCooldown = null, workCooldown = null, tradeCooldown = null, now = new Date() } = {}) {
+  const entries = [];
+  addPetCooldownEntry(entries, 'adventure', 'Adventure ready', adventureCooldown, 'action');
+  addPetCooldownEntry(entries, 'work', 'Jobs ready', workCooldown, 'action');
+  addPetCooldownEntry(entries, 'trade', 'Moon Gold trade ready', tradeCooldown, 'action');
+  addPetCooldownEntry(entries, 'expedition_reset', 'Expedition attempts reset', guidance?.economy?.expedition_cooldown, 'daily');
+  addPetCooldownEntry(entries, 'daily_journey_reset', 'Daily Journey reset', journeySummary?.daily?.cooldown, 'daily');
+  addPetCooldownEntry(entries, 'daily_cache_reset', 'Daily Cache reset', guidance?.daily_cache?.cooldown, 'daily');
+  addPetCooldownEntry(entries, 'weekly_journey_reset', 'Weekly Journey reset', journeySummary?.weekly?.cooldown, 'weekly');
+  addPetCooldownEntry(entries, 'timed_activity_claim', 'Timed activity claim', guidance?.activity?.cooldown, 'action');
+  addPetCooldownEntry(entries, 'timed_activity_checkpoint', 'Timed activity preview', guidance?.activity?.next_checkpoint?.cooldown, 'preview');
+  addPetCooldownEntry(entries, 'weekly_boss_attempt', 'Weekly Boss daily attempt', guidance?.weekly_boss?.defeated ? null : guidance?.weekly_boss?.cooldown, 'daily');
+  addPetCooldownEntry(entries, 'weekly_boss_rotation', 'Weekly Boss rotation', guidance?.weekly_boss?.rotation_cooldown, 'weekly');
+  for (const region of liveSystems?.regions || []) {
+    addPetCooldownEntry(entries, `district:${region.key}`, `${region.title || region.key} district reset`, region.cooldown, 'daily');
+  }
+  for (const chain of liveSystems?.chains || []) {
+    addPetCooldownEntry(entries, `story:${chain.key}`, `${chain.title || chain.key} story reset`, chain.cooldown, 'daily');
+  }
+  addPetCooldownEntry(entries, 'seasonal_boss_attempt', 'Seasonal Raid daily attempt', liveSystems?.seasonal_boss?.defeated_at ? null : liveSystems?.seasonal_boss?.cooldown, 'daily');
+  for (const entry of actionCooldowns || []) {
+    addPetCooldownEntry(entries, `action:${entry.action}`, `${String(entry.action).replaceAll('_', ' ')} cooldown`, entry.cooldown, 'action');
+  }
+  addPetCooldownEntry(entries, 'season_end', 'Moonpet season ends', normalizePetCooldownWindow(seasonSlots?.season?.end_at, now), 'seasonal');
+  entries.sort((left, right) => Date.parse(left.expires_at) - Date.parse(right.expires_at) || left.key.localeCompare(right.key));
+  return {
+    server_time: (now instanceof Date ? now : new Date(now)).toISOString(),
+    next_expires_at: entries[0]?.expires_at || null,
+    entries,
+  };
+}
+
+async function buildPetMiniAppState(db, telegramId, botToken) {
+  const now = new Date();
+  // State preparation owns current-season initialization. Roster projection
+  // remains read-only and assumes this authoritative bootstrap already ran.
+  await preparePetMiniAppState(db, telegramId, now);
+  await recoverPetStandardRunEndings(db, telegramId, '', PET_STATE_RECOVERY_LIMITS.standard_endings).catch((error) => {
+    logApiFailure('pet_standard_run_recovery_failed', { message: error?.message || String(error) });
+  });
+  const recoveredEndings = await recoverDailyMoonRunEndings(db, telegramId, now, { endings: PET_STATE_RECOVERY_LIMITS.daily_endings, records: PET_STATE_RECOVERY_LIMITS.daily_records });
+  for (const ending of recoveredEndings) if (ending.accepted) {
+    await recordWeeklyJourneyFromDailyMoonRunTerminal(db, telegramId, ending.daily_run.run_id, ending.daily_run.status);
+  }
+  await recoverPetEquipmentRows(db, telegramId).catch(error => {
+    logApiFailure('equipment_ownership_recovery_pending', { telegramId, message: error?.message || String(error) });
+  });
+  await recoverPetLiveSystemEndings(db, telegramId, (args) => awardPetReward(db, args), PET_STATE_RECOVERY_LIMITS.live_endings).catch(error => {
+    logApiFailure('pet_live_ending_recovery_failed', { message: error?.message || String(error) });
+  });
+  const combatRecovery = await recoverPetCombatProgress(db, telegramId).catch(error => {
+    logApiFailure('pet_combat_recovery_failed', { message: error?.message || String(error) });
+    return true; // Reserve the same budget after an interrupted combat repair.
+  });
+  await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward, { limit: combatRecovery ? PET_STATE_RECOVERY_LIMITS.runtime_after_combat : PET_STATE_RECOVERY_LIMITS.runtime }).catch((error) => {
+    logApiFailure('pet_runtime_recovery_failed', { message: error?.message || String(error) });
+  });
+  await recoverPetWeeklyBossVictories(db, telegramId, finishPetWeeklyBossVictory, PET_STATE_RECOVERY_LIMITS.weekly_bosses).catch((error) => {
+    logApiFailure('pet_weekly_boss_recovery_failed', { message: error?.message || String(error) });
+  });
+  await recoverPetJourneyAwards(db, telegramId, { source_limit: PET_STATE_RECOVERY_LIMITS.journey_sources, award_limit: PET_STATE_RECOVERY_LIMITS.journey_awards }).catch((error) => {
+    logApiFailure('pet_journey_recovery_failed', { message: error?.message || String(error) });
+  });
+  const petRaw = await getPetProfile(db, telegramId, true);
+  if (!petRaw) {
+    return {
+      adopted: false,
+      pet: null,
+      capabilities_version: 1,
+      next: { key: 'adopt', title: 'Activate EGGYONE', detail: 'Awaken your first Secret Bot to begin.', action: 'adopt' },
+      jobs: Object.values(PET_JOBS),
+      shop_items: [],
+      inventory: [],
+      missions: [],
+      season_slots: null,
+      capabilities: buildPetMiniAppCapabilities({ has_completed_season_pet: false, combat_unlocked: false, arena_unlocked: false, kaiju_unlocked: false, reason: 'pet_not_adopted' }),
+    };
+  }
+
+  const pet = serializePet(petRaw);
+  const lifecycle = await getMoonpetLifecycle(db, telegramId);
+  const runtimePromise = getOrCreatePetRuntimeState(db, telegramId, getPetDayKey(now), activePetRewardAuthority(petRaw));
+  const [guidance, inventory, runtime, gear, materials, relics, arena, arenaQueue, recentArena, kaiju, kaijuQueue, recentKaiju, leaderboard, notifications, seasonSlots, recentActions] = await Promise.all([
+    buildPetGuidanceState(db, telegramId, petRaw, { runtime: runtimePromise }),
+    getPetInventory(db, telegramId),
+    runtimePromise,
+    db.prepare(`SELECT item_key, slot, item_level, item_xp, mastery_xp, mastery_tier
+      FROM telegram_pet_equipment_progression WHERE telegram_id = ?
+      ORDER BY slot, item_level DESC, item_key`).bind(telegramId).all().then(requirePetReadResult),
+    db.prepare(`SELECT material_key, quantity FROM telegram_pet_material_balances
+      WHERE telegram_id = ? AND quantity > 0 ORDER BY material_key`).bind(telegramId).all().then(requirePetReadResult),
+    db.prepare(`SELECT relic_id, unlocked_at AS acquired_at FROM telegram_pet_relics
+      WHERE telegram_id = ? ORDER BY unlocked_at DESC, relic_id`).bind(telegramId).all().then(requirePetReadResult).catch((error) => {
+        logApiFailure('pet_relic_vault_unavailable', { message: error?.message || String(error) });
+        return { results: [], available: false };
+      }),
+    getPetArenaBattleForPlayer(db, PET_MINI_APP_ARENA_LOBBY, telegramId)
+      .then((battle) => battle || getPetArenaBattleForPlayer(db, `mini:${telegramId}`, telegramId)),
+    getPetArenaQueueState(db, PET_MINI_APP_ARENA_LOBBY, telegramId),
+    db.prepare(`SELECT * FROM telegram_pet_arena_battles WHERE status='completed'
+      AND (player1_telegram_id=? OR player2_telegram_id=?) ORDER BY completed_at DESC LIMIT 1`)
+      .bind(String(telegramId), String(telegramId)).first(),
+    getPetKaijuMatchForPlayer(db, telegramId).then((match) => match || getActivePetKaijuMatch(db, `mini:kaiju:${telegramId}`)),
+    getPetKaijuQueueState(db, telegramId),
+    db.prepare(`SELECT * FROM telegram_pet_kaiju_matches WHERE status='completed'
+      AND (player1_telegram_id=? OR player2_telegram_id=?) ORDER BY completed_at DESC LIMIT 1`)
+      .bind(String(telegramId), String(telegramId)).first(),
+    readPetLeaderboard(db, { period: 'seasonal', limit: 10, now }).catch((error) => {
+      logApiFailure('pet_mini_app_initial_leaderboard_failed', {
+        telegramId: String(telegramId),
+        message: error?.message || String(error),
+      });
+      throw error;
+    }),
+    getPetNotificationPreference(db, telegramId),
+    buildPetSeasonSlotSummary(db, telegramId),
+    db.prepare("SELECT event_type, MAX(created_at) AS created_at FROM telegram_pet_events WHERE telegram_id=? AND event_type IN ('adventure','work','trade','feed','play','clean','sleep','train') AND status='accepted' GROUP BY event_type").bind(telegramId).all().then(requirePetReadResult),
+  ]);
+  const leaderboardRows = leaderboard.rows;
+  const [journeySummary, hydratedKaiju, seasonFinales] = await Promise.all([
+    buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now),
+    ensurePetKaijuMatchCategory(db, kaiju).catch(() => kaiju),
+    getSeasonFinales(db, telegramId, petRaw.pet_id),
+  ]);
+  const finaleAchievement = seasonFinales.pets.find(entry => entry.pet_id === petRaw.pet_id && entry.season_key === petRaw.season_key);
+  if (guidance && finaleAchievement) guidance.achievements.push({ achievement_id: 'finale_victor', title: 'Finale Victor', description: 'Defeat Signal Sovereign with this season pet.', target: 1, progress: finaleAchievement.status === 'won' ? 1 : 0, unlocked_at: finaleAchievement.defeated_at || null });
+  const combatEligibility = await getPetMiniAppCombatEligibility(db, telegramId, lifecycle);
+  const encounter = selectPetRandomEncounter(guidance?.identity || {});
+  const adventureBase = selectPetAdventureEncounter(petRaw);
+  const adventure = adventureBase ? {
+    ...adventureBase,
+    event_key: `${adventureBase.key}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`.slice(0, 120),
+  } : null;
+  const adventureEntry = adventure ? petAdventuresForPet(petRaw).find((entry) => entry.key === adventure.key) : null;
+  const lastAdventure = (recentActions.results || []).find((entry) => entry.event_type === 'adventure');
+  const lastWork = (recentActions.results || []).find((entry) => entry.event_type === 'work');
+  const lastTrade = (recentActions.results || []).find((entry) => entry.event_type === 'trade');
+  const adventureCooldown = lastAdventure ? buildPetCooldownFromStart(lastAdventure.created_at, PET_ADVENTURE_COOLDOWN_SECONDS, now) : null;
+  const workCooldown = lastWork ? buildPetCooldownFromStart(lastWork.created_at, PET_JOB_COOLDOWN_SECONDS, now) : null;
+  const tradeCooldown = lastTrade ? buildPetCooldownFromStart(lastTrade.created_at, PET_TRADE_COOLDOWN_SECONDS, now) : null;
+  // Match processPetAction's account-wide, per-action accepted-event cooldowns.
+  // Include every care action so subsequent responses and reloads retain them all.
+  const careActionCooldowns = (recentActions.results || [])
+    .filter((entry) => ['feed', 'play', 'clean', 'sleep', 'train'].includes(entry.event_type))
+    .map((entry) => ({ action: entry.event_type, cooldown: buildPetCooldownFromStart(entry.created_at, PETS_ACTION_COOLDOWN_SECONDS, now) }));
+  if (guidance && workCooldown?.remaining_seconds > 0) guidance.jobs = (guidance.jobs || []).map((job) => ({ ...job, available: false, cooldown: job.available ? workCooldown : null }));
+  const [encounterToken, adventureToken] = await Promise.all([
+    encounter ? issuePetMiniAppChallenge({ type: 'event', telegram_id: telegramId, encounter_key: encounter.key, event_key: encounter.event_key }, botToken) : null,
+    adventure ? issuePetMiniAppChallenge({ type: 'adventure', telegram_id: telegramId, encounter_key: adventure.key, event_key: adventure.event_key }, botToken) : null,
+  ]);
+  const serializedLifecycle = publicMoonpetLifecycle(lifecycle, { include_art_identity: true });
+  const canonicalPet = serializePet(petRaw, guidance?.identity, { include_art_identity: true, include_callsign: true });
+  canonicalPet.display_name = resolveMoonpetDisplayName(serializedLifecycle || lifecycle || {}, guidance?.identity || {});
+  canonicalPet.art_identity_id = serializedLifecycle?.identity_revealed ? serializedLifecycle.art_identity_id : canonicalPet.art_identity_id;
+  canonicalPet.species = serializedLifecycle?.identity_revealed ? serializedLifecycle.species_id : null;
+  if (guidance) {
+    guidance.pet = canonicalPet;
+    if (guidance.identity) guidance.identity.lifecycle = serializedLifecycle;
+  }
+  const liveSystems = await buildPetLiveSystemsState(db, telegramId, canonicalPet, runtime, gear.results || [], materials.results || [], now);
+  const guidedNext = guidance ? choosePetNextAction(guidance) : null;
+  const affordableUpgrade = liveSystems.upgrades.find((item) => item.affordable && !item.maxed);
+  const availableDistrict = liveSystems.regions.find((region) => region.available && !region.completed);
+  const affordableCosmetic = liveSystems.cosmetics.find((item) => item.affordable && (!item.unlocked || item.repeatable));
+  const activeChain = liveSystems.chains.find((chain) => chain.available);
+  const liveNext = affordableUpgrade
+      ? { key: 'gear_upgrade', title: `Upgrade ${String(affordableUpgrade.item_key).replaceAll('_', ' ')}`, detail: `Cost: ${Object.entries(affordableUpgrade.cost).map(([key, value]) => `${value} ${key.replaceAll('_', ' ')}`).join(' + ')}. Reward: gear level ${affordableUpgrade.target_level}.`, action: 'gear_upgrade', destination: 'economy' }
+      : liveSystems.seasonal_boss.available
+        ? { key: 'seasonal_boss', title: `Raid ${liveSystems.seasonal_boss.title}`, detail: `Requires Level ${liveSystems.seasonal_boss.min_level}. Cost: 18 Energy. Defeat reward: 150 XP, 250 Gold, 8 Gems, 8 ${String(liveSystems.seasonal_boss.reward).replaceAll('_', ' ')} and 1 Mastery Token.`, action: 'seasonal_boss', destination: 'explore' }
+        : availableDistrict
+          ? { key: 'district_mission', title: `Build ${availableDistrict.title} mastery`, detail: `Cost: 10 Energy. Choose safe, balanced or bold: the server previews clear odds, mastery and reward ceiling. Setbacks bank partial mastery; crossing each 100-mastery line requires a district boss clear.`, action: 'district_mission', destination: 'explore' }
+          : affordableCosmetic
+            ? { key: 'cosmetic_unlock', title: `Unlock ${String(affordableCosmetic.key).replaceAll('_', ' ')}`, detail: `Cost: ${Object.entries(affordableCosmetic.cost).map(([key, value]) => `${value} ${key.replaceAll('_', ' ')}`).join(' + ')}. Reward: permanent Style Lab unlock${affordableCosmetic.repeatable ? ' that may be collected again' : ''}.`, action: 'cosmetic_unlock', destination: 'economy' }
+            : activeChain
+              ? { key: 'event_chain', title: `Continue ${String(activeChain.key).replaceAll('_', ' ')}`, detail: `Current step ${activeChain.step_index + 1}/${activeChain.steps.length}: ${String(activeChain.current_step).replaceAll('_', ' ')}. Choose one of two authored routes; each choice adds its shown bonus to the protected base reward.`, action: 'event_chain', destination: 'explore' }
+              : null;
+  let next = lifecycle?.phase === 'egg'
+    ? { key: 'incubate', title: lifecycle.incubation.ready ? 'Start EGGYONE BREAKOUT' : 'Awaken EGGYONE', detail: lifecycle.incubation.ready ? 'The Secret Bot is answering. Start BREAKOUT when ready.' : `Build ${lifecycle.incubation.target} signal with at least three kinds of care.`, action: lifecycle.incubation.ready ? 'hatch' : 'incubate', destination: 'home' }
+    : lifecycle?.rare?.ready
+      ? { key: 'rare_morph', title: 'Answer the hidden signal', detail: 'Your companion history has opened a one-of-one morph path.', action: 'rare_morph', destination: 'profile' }
+      : guidedNext?.key && guidedNext.key !== 'maintain' ? guidedNext : liveNext || guidedNext;
+  const guidanceNotices = guidance
+    ? await persistPetGuidanceNotices(db, telegramId, buildPetGuidanceCandidates(guidance)).catch(() => [])
+    : [];
+  const activeRun = guidance?.active_run || null;
+  const runPet = !activeRun || activeRun.pet_id === petRaw.pet_id ? petRaw
+    : await getPetInstanceWithAtomicDecay(db, activeRun.pet_id);
+  const runPetAvailable = Boolean(activeRun?.pet_id && runPet?.pet_id === activeRun.pet_id && runPet?.telegram_id === telegramId);
+  const practice = await getPracticeBoard(db, telegramId, petRaw, now);
+  const styleLoadout = await getStyleLoadout(db, telegramId, petRaw.pet_id);
+  const contracts = await getContractBoard(db, telegramId, petRaw, now);
+  if (next?.key === 'activity_running' && contracts.available) next = {
+    key: 'contract', title: contracts.run?.status === 'active' ? 'Continue your saved contract' : 'Choose another contract',
+    detail: 'Your timed activity keeps accumulating. Contracts have no pet energy cost or cooldown.',
+    action: 'contract', destination: 'missions',
+  };
+  const dailyReservation = activeRun
+    ? await getDailyMoonRunReservation(db, { telegram_id: telegramId, run_id: activeRun.run_id })
+    : null;
+  const dailyRunSummary = await getDailyMoonRunSummary(db, { telegram_id: telegramId, now, active_run: activeRun, hatched: Boolean(lifecycle && lifecycle.phase !== 'egg') });
+  const dailyEndingPending = Boolean(dailyReservation && Number(dailyReservation.current_room) >= Number(dailyReservation.max_room));
+  let dailyRoom = null;
+  if (dailyReservation) {
+    const roomNumber = dailyEndingPending ? Number(dailyReservation.max_room) : Math.max(1, Number(dailyReservation.current_room || 0) + 1);
+    const roomQuery = db.prepare(`SELECT room_number, room_type, status, generated_data
+      FROM telegram_pet_run_rooms
+      WHERE telegram_id = ? AND run_id = ? AND room_number = ? LIMIT 1`)
+      .bind(telegramId, activeRun.run_id, roomNumber);
+    let row = await roomQuery.first();
+    // A saved reservation/advance can outlive an interrupted room insert.
+    // Restore only a genuinely missing next room from the original seed; a
+    // failed read must propagate and an existing outcome is never regenerated.
+    if (!row && !dailyEndingPending && runPetAvailable) {
+      await createPetRunRoom(db, { ...dailyReservation, seed: dailyReservation.run_seed,
+        status: dailyReservation.authoritative_status, depth: dailyReservation.authoritative_depth,
+        score: dailyReservation.authoritative_score });
+      row = await roomQuery.first();
+    }
+    if (row) {
+      const persistedRoom = { ...safeJsonParse(row.generated_data, {}), room: row.room_number, room_type: row.room_type, status: row.status };
+      const roomDefinition = PET_ROGUELITE_ROOMS[persistedRoom.content_id] || null;
+      const authoredRoom = serializePetRunRoom(
+        { ...activeRun, depth: Number(dailyReservation.current_room || 0) },
+        roomDefinition,
+        persistedRoom.boss_id || persistedRoom.enemy_id || null,
+      );
+      dailyRoom = authoredRoom ? { ...persistedRoom, ...authoredRoom, choices: persistedRoom.choices || [] } : persistedRoom;
+    }
+  }
+  const dailyModifiers = dailyReservation ? await readDailyModifiers(db, activeRun) : [];
+  const runChoices = activeRun && runPetAvailable && !dailyEndingPending
+    ? (dailyReservation
+      ? (dailyRoom?.choices || []).map((choice) => ({
+        key: choice.choice_id,
+        label: choice.label || choice.title || choice.copy || String(choice.choice_id || '').replaceAll('_', ' '),
+        type: dailyRoom.room_type,
+        ...previewDailyChoice(runPet, dailyRoom, choice.choice_id, dailyModifiers),
+      }))
+      : getPetRunStepChoices(activeRun).map((choice) => serializePetRunChoicePreview(activeRun, choice, runPet, inventory, petRaw)))
+    : [];
+  const specialActionCooldowns = getPetSpecialActionCooldownEntriesFromState(guidance?.special_actions);
+  return {
+    adopted: true,
+    pet: canonicalPet,
+    lifecycle: serializedLifecycle,
+    next,
+    guidance,
+    notices: guidanceNotices,
+    progress: runtime,
+    season_slots: seasonSlots,
+    season_finales: seasonFinales,
+    capabilities_version: 1,
+    capabilities: buildPetMiniAppCapabilities(combatEligibility, journeySummary?.weekly || null),
+    daily_journey: journeySummary?.daily || null,
+    weekly_journey: isPetMiniAppWeeklyJourneySummaryLive(journeySummary?.weekly) ? {
+      state: PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE,
+      active: true,
+      ...journeySummary.weekly,
+    } : {
+      state: PET_MINI_APP_FUTURE_SYSTEM_STATUS.LOCKED,
+      active: false,
+      qualification_week: null,
+      week_reset_at: journeySummary?.weekly?.week_reset_at || null,
+      completed_objectives: 0,
+      required_objectives: WEEKLY_JOURNEY_REQUIRED_OBJECTIVES,
+      objectives: [],
+      reason: journeySummary?.weekly?.reason || 'weekly_journey_authority_syncing',
+    },
+    gear: gear.results || [],
+    materials: Object.entries(PET_CRAFTING_MATERIALS).map(([key, definition]) => ({
+      key,
+      label: definition.label,
+      quantity: Math.max(0, Number((materials.results || []).find((row) => row.material_key === key)?.quantity || 0)),
+      sources: [...definition.sources, ...getPetRuntimeMaterialSources(key)],
+    })),
+    relics: (relics.results || []).map(row => ({ ...row, route_effect: RELIC_ROUTE_DETAILS[row.relic_id] || null })),
+    relics_available: relics.available !== false,
+    regions: liveSystems.regions,
+    live_systems: liveSystems,
+    inventory,
+    daily_run: dailyRunSummary,
+    contracts,
+    practice,
+    style_loadout: styleLoadout,
+    trade: {
+      cooldown: tradeCooldown?.remaining_seconds > 0 ? tradeCooldown : null,
+      offers: [10, 25, 50].map((wager) => ({ wager, affordable: Number(petRaw.moon_gold) >= wager,
+        available: lifecycle?.phase !== 'egg' && Number(petRaw.moon_gold) >= wager && !(tradeCooldown?.remaining_seconds > 0) })),
+    },
+    run: activeRun ? {
+      ...activeRun,
+      daily: Boolean(dailyReservation),
+      source_available: runPetAvailable,
+      source_pet: runPetAvailable ? { pet_id: runPet.pet_id, callsign: runPet.callsign || '', energy: runPet.energy, active: runPet.pet_id === petRaw.pet_id } : null,
+      tactics: dailyReservation && runPetAvailable ? dailyTacticalBoard({ ...activeRun, current_room: dailyReservation.current_room }, dailyModifiers) : null,
+      current_room: Number(dailyReservation?.current_room ?? activeRun.current_room ?? activeRun.depth ?? 0),
+      max_room: Number(dailyReservation?.max_room ?? activeRun.max_room ?? activeRun.max_depth ?? 0),
+      expected_step_index: Number(dailyReservation ? dailyReservation.current_room : Number(activeRun.depth || 0) + 1),
+      room: dailyRoom || activeRun.room || null,
+      choices: runChoices,
+      settlement_pending: dailyEndingPending,
+    } : null,
+    encounter: encounter ? {
+      key: encounter.key,
+      event_key: encounter.event_key,
+      challenge_token: encounterToken,
+      title: encounter.title,
+      intro: encounter.intro,
+      choices: encounter.choices.map((choice) => ({ key: choice.key, label: choice.label, preview: previewEncounterChoice(choice, petRaw) })),
+    } : null,
+    adventure: adventure ? {
+      key: adventure.key,
+      event_key: adventure.event_key,
+      challenge_token: adventureToken,
+      title: adventure.title,
+      intro: adventure.intro,
+      minimum_energy: adventureEntry?.energy_cost || 0,
+      available: Boolean(adventureEntry?.unlocked && clampPetStat(petRaw.energy) >= adventureEntry.energy_cost && !(adventureCooldown?.remaining_seconds > 0)),
+      cooldown: adventureCooldown?.remaining_seconds > 0 ? adventureCooldown : null,
+      choices: adventure.choices.map((choice) => ({ key: choice.key, label: choice.label, preview: previewEncounterChoice(choice, petRaw) })),
+    } : null,
+    arena: serializePetMiniAppArenaBattle(arena, telegramId),
+    arena_queue: arenaQueue,
+    arena_result: serializePetMiniAppArenaBattle(recentArena, telegramId),
+    kaiju: {
+      match: serializePetMiniAppKaijuMatch(hydratedKaiju, telegramId),
+      queue: kaijuQueue,
+      result: serializePetMiniAppKaijuMatch(recentKaiju, telegramId),
+      cards: PET_KAIJU_CARDS.map((card) => serializePetKaijuCardPreview(card, hydratedKaiju?.category_key)),
+      categories: PET_KAIJU_CATEGORIES,
+    },
+    leaderboard: leaderboardRows.map((entry, index) => serializePetLeaderboardEntry(entry, index)),
+    notifications: {
+      enabled: Boolean(notifications?.enabled),
+      last_notified_at: notifications?.last_notified_at || null,
+      last_reason: notifications?.last_reason || null,
+    },
+    cooldowns: buildPetMiniAppCooldownSummary({ journeySummary, guidance, liveSystems, seasonSlots, actionCooldowns: [...careActionCooldowns, ...specialActionCooldowns], adventureCooldown, workCooldown, tradeCooldown, now }),
+    server_time: now.toISOString(),
+  };
+}
+
+function petMiniAppEventKey(telegramId, action, requestId) {
+  const suffix = String(requestId || crypto.randomUUID()).replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 72);
+  return buildStablePetEventKey(['mini', telegramId, action, suffix]);
+}
+
+const PET_MINI_APP_FUTURE_COMBAT_ACTIONS = new Set([
+  'arena_start', 'arena_matchmake', 'arena_ready', 'arena_move',
+  'kaiju_start', 'kaiju_matchmake', 'kaiju_card', 'weekly_boss',
+]);
+const PET_MINI_APP_COMBAT_CLEANUP_ACTIONS = new Set([
+  'arena_queue_cancel', 'arena_forfeit', 'kaiju_queue_cancel', 'kaiju_match_cancel',
+]);
+
+async function hasCompletedPetMiniAppSeasonPet(db, telegramId) {
+  const row = await db.prepare(`SELECT 1 AS completed
+    FROM telegram_pet_season_completions
+    WHERE telegram_id=?
+    LIMIT 1`)
+    .bind(String(telegramId)).first();
+  return Boolean(row?.completed);
+}
+
+async function getPetMiniAppCombatEligibility(db, telegramId, lifecycle = null) {
+  let activePet;
+  let activeLifecycle;
+  let hasCompletedSeasonPet;
+  try {
+    hasCompletedSeasonPet = await hasCompletedPetMiniAppSeasonPet(db, telegramId);
+    activePet = await db.prepare('SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id=? LIMIT 1')
+      .bind(String(telegramId)).first();
+    activeLifecycle = lifecycle || await getMoonpetLifecycle(db, telegramId);
+  } catch (error) {
+    return {
+      has_completed_season_pet: hasCompletedSeasonPet,
+      combat_authority_available: false,
+      active_pet_exists: false,
+      active_pet_lifecycle_known: false,
+      active_pet_combat_eligible: false,
+      active_pet_level: 0,
+      arena_level_met: false,
+      weekly_boss_level_met: false,
+      combat_unlocked: false,
+      arena_unlocked: false,
+      kaiju_unlocked: false,
+      weekly_boss_unlocked: false,
+      reason: 'combat_authority_unavailable',
+      arena_reason: 'combat_authority_unavailable',
+      kaiju_reason: 'combat_authority_unavailable',
+      weekly_boss_reason: 'combat_authority_unavailable',
+      error: error?.message || String(error),
+    };
+  }
+  const activePetExists = Boolean(activePet);
+  const activePetLevel = activePetExists ? getPetLevel(activePet.pet_xp) : 0;
+  const activePetCombatEligible = Boolean(activePetExists && activeLifecycle && activeLifecycle.phase !== 'egg');
+  const eligibility = getCombatEligibility({
+    activePetExists,
+    lifecycleKnown: Boolean(activeLifecycle),
+    hatched: activePetCombatEligible,
+    level: activePetLevel,
+  });
+  const baseReason = !activePetExists ? 'pet_not_adopted'
+    : !activeLifecycle ? 'moonpet_lifecycle_required'
+      : !activePetCombatEligible ? 'moon_egg_must_hatch' : 'combat_unlocked';
+  return {
+    has_completed_season_pet: hasCompletedSeasonPet,
+    active_pet_exists: activePetExists,
+    active_pet_lifecycle_known: Boolean(activeLifecycle),
+    ...eligibility,
+    arena_level_met: eligibility.arena_level_met,
+  };
+}
+
+async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
+  const action = String(body?.action || '').trim().toLowerCase();
+  const eventKey = petMiniAppEventKey(telegramId, action, body?.request_id);
+  const source = 'telegram_mini_app';
+  if (action === 'adopt') return processPetAction(db, telegramId, 'adopt', { event_key: eventKey, source });
+  if (action === 'incubate') return incubateMoonEgg(db, telegramId, body.care_type, eventKey);
+  if (action === 'hatch') return hatchMoonpet(db, telegramId, eventKey);
+  if (action === 'rare_morph') return morphMoonpetRare(db, telegramId, eventKey);
+  const lifecycle = await getMoonpetLifecycle(db, telegramId).catch(error => {
+    // Combat already exposes a closed lifecycle-unavailable capability state.
+    // Other gameplay must not interpret an outage as permission to skip hatch.
+    if (PET_MINI_APP_FUTURE_COMBAT_ACTIONS.has(action) || PET_MINI_APP_COMBAT_CLEANUP_ACTIONS.has(action)) return null;
+    throw error;
+  });
+  const eggAllowedActions = ['guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim', 'contract_claim', 'practice_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim'];
+  if (lifecycle?.phase === 'egg' && !eggAllowedActions.includes(action)) {
+    if (PET_MINI_APP_COMBAT_CLEANUP_ACTIONS.has(action) || PET_MINI_APP_FUTURE_COMBAT_ACTIONS.has(action)) {
+      // fall through; locked cleanup must remain available for stale combat state.
+    } else {
+      return { accepted: false, reason: 'moon_egg_must_hatch', lifecycle };
+    }
+  }
+  if (PET_MINI_APP_FUTURE_COMBAT_ACTIONS.has(action)) {
+    const combatEligibility = await getPetMiniAppCombatEligibility(db, telegramId, lifecycle);
+    const actionUnlocked = action.startsWith('arena_')
+      ? combatEligibility.arena_unlocked === true
+      : action.startsWith('kaiju_')
+        ? combatEligibility.kaiju_unlocked === true
+        : action === 'weekly_boss'
+          ? combatEligibility.weekly_boss_unlocked === true
+        : combatEligibility.combat_unlocked === true;
+    if (!actionUnlocked) {
+      const reason = action.startsWith('arena_')
+        ? (combatEligibility.arena_reason || combatEligibility.reason)
+        : action.startsWith('kaiju_')
+          ? (combatEligibility.kaiju_reason || combatEligibility.reason)
+            : action === 'weekly_boss'
+              ? (combatEligibility.weekly_boss_reason || combatEligibility.reason)
+            : combatEligibility.reason;
+      return {
+        accepted: false,
+        reason,
+        capabilities_version: 1,
+        capabilities: buildPetMiniAppCapabilities(combatEligibility),
+      };
+    }
+  }
+  if (action === 'daily_completion_claim') return claimDailyCompletion(db, telegramId, await getPetProfile(db, telegramId), body, awardPetReward);
+  if (['finale_start', 'finale_retry', 'finale_step', 'finale_claim'].includes(action)) return processSeasonFinale(db, telegramId, body, awardPetReward);
+  if (action === 'season_slots') return { accepted: true, reason: 'season_slots', season_slots: await buildPetSeasonSlotSummary(db, telegramId) };
+  if (action === 'buy_pet_slot') return buyPetSeasonSlot(db, telegramId, body.slot_number, { event_key: eventKey, switch_active: body.switch_active });
+  if (action === 'switch_pet_slot') return switchActivePetSeasonSlot(db, telegramId, body.pet_id || body.slot_number);
+  if (['feed', 'play', 'clean', 'sleep', 'train', 'energy_drink', 'dance', 'cuddles'].includes(action)) {
+    const result = await processPetAction(db, telegramId, action, { event_key: eventKey, source });
+    if (result.accepted) await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward, { action });
+    return result;
+  }
+  if (action === 'rename') return processPetAction(db, telegramId, 'rename', { event_key: eventKey, pet_name: body.pet_name, source });
+  if (action === 'buy') return processPetShopPurchase(db, telegramId, body.item_key, { event_key: eventKey, source });
+  if (action === 'equip') return processPetEquipmentEquip(db, telegramId, body.item_key, { event_key: eventKey, source, pet_id: body.pet_id });
+  if (action === 'use_item') return processPetUseItem(db, telegramId, body.item_key, { event_key: eventKey, source });
+  if (action === 'trade') return processPetGoldTrade(db, telegramId, body.wager, { event_key: eventKey, source });
+  if (action === 'work') {
+    const result = await processPetJob(db, telegramId, body.job_key, { event_key: eventKey, source });
+    if (result.accepted) await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward, { action: 'job' });
+    return result;
+  }
+  if (action === 'daily_chest') {
+    const result = await processPetDailyChest(db, telegramId, { event_key: eventKey, source });
+    if (result.accepted) await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward, { action: 'daily_chest' });
+    return result;
+  }
+  if (action === 'random_event') {
+    const challenge = await verifyPetMiniAppChallenge(body.challenge_token, botToken, { type: 'event', telegram_id: telegramId });
+    if (!challenge.ok) return { accepted: false, reason: challenge.reason };
+    const displayedEventKey = String(challenge.payload.event_key || '').slice(0, 120);
+    const encounter = resolvePetRandomEncounter(displayedEventKey);
+    if (!encounter || encounter.key !== challenge.payload.encounter_key) return { accepted: false, reason: 'invalid_event_key' };
+    return processPetRandomEvent(db, telegramId, body.choice, { event_key: displayedEventKey, encounter, source });
+  }
+  if (action === 'adventure') {
+    const challenge = await verifyPetMiniAppChallenge(body.challenge_token, botToken, { type: 'adventure', telegram_id: telegramId });
+    if (!challenge.ok) return { accepted: false, reason: challenge.reason };
+    const displayedEventKey = String(challenge.payload.event_key || '').slice(0, 120);
+    const encounter = resolvePetAdventureEncounter(displayedEventKey);
+    if (!encounter || encounter.key !== challenge.payload.encounter_key) return { accepted: false, reason: 'invalid_adventure_key' };
+    const result = await processPetAdventure(db, telegramId, body.adventure_key, { event_key: displayedEventKey, encounter, source });
+    if (result.accepted) await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward, { action: 'explore' });
+    return result;
+  }
+  if (action === 'run_start') return startOrResumePetRun(db, telegramId, { run_id: body.run_id, source });
+  if (action === 'daily_run_start') return createDailyMoonRun(db, { telegram_id: telegramId });
+  if (action === 'daily_run_tactic') return chooseDailyRunTactic(db, telegramId, body);
+  if (action === 'run_step') {
+    const reservation = await getDailyMoonRunReservation(db, { telegram_id: telegramId, run_id: body.run_id });
+    const result = reservation
+      ? processDailyMoonRunStepWithWeeklyJourney(db, { telegram_id: telegramId, run_id: reservation.run_id, choice_key: body.choice_key, expected_step_index: body.expected_step_index })
+      : processPetRunStep(db, telegramId, body.run_id, body.choice_key, { event_key: eventKey, expected_step_index: body.expected_step_index, source });
+    const resolved = await result;
+    return resolved;
+  }
+  if (action === 'style_equip') return equipPetStyle(db, telegramId, await getPetProfile(db, telegramId), body);
+  if (['practice_start', 'practice_step', 'practice_claim'].includes(action)) return processPracticeAction(db, telegramId, await getPetProfile(db, telegramId), body, awardPetReward);
+  if (['contract_start', 'contract_step', 'contract_claim'].includes(action)) {
+    const contractPet = await getPetProfile(db, telegramId);
+    try { return await processContractAction(db, telegramId, contractPet, body, awardPetReward); }
+    catch (error) {
+      if (/no such table: telegram_pet_contracts/.test(String(error?.message))) return { accepted: false, reason: 'contracts_unavailable' };
+      throw error;
+    }
+  }
+  if (action === 'run_extract') {
+    const reservation = await getDailyMoonRunReservation(db, { telegram_id: telegramId, run_id: body.run_id });
+    const result = reservation
+      ? extractDailyMoonRunWithWeeklyJourney(db, { telegram_id: telegramId, run_id: reservation.run_id })
+      : processPetRunExtract(db, telegramId, body.run_id, { event_key: eventKey, source });
+    const resolved = await result;
+    return resolved;
+  }
+  if (action === 'activity_start') return startPetActivitySession(db, telegramId, body.activity_type, { source });
+  if (action === 'activity_claim') return claimPetActivitySession(db, telegramId, { source });
+  if (action === 'activity_cancel') return cancelPetActivitySession(db, telegramId);
+  if (action === 'notification_set') {
+    const preference = await setPetNotificationPreference(db, telegramId, body.enabled === true);
+    return { accepted: true, reason: preference.enabled ? 'notifications_enabled' : 'notifications_disabled', preference };
+  }
+  if (action === 'guidance_ack') {
+    const keys = [...new Set((Array.isArray(body.notice_keys) ? body.notice_keys : [])
+      .map((key) => String(key || '').trim().slice(0, 180)).filter(Boolean))].slice(0, 50);
+    await markPetGuidanceNoticesShown(db, telegramId, keys.map((key) => ({ key })));
+    return { accepted: true, reason: 'guidance_acknowledged', acknowledged: keys.length };
+  }
+  if (action === 'bounty_claim') return claimPetEconomyBounty(db, telegramId, body.bounty_key);
+  if (action === 'expedition') return runPetCrystalExpedition(db, telegramId, new Date(), eventKey, body.expedition_key, body.pet_id);
+  if (action === 'market_buy') return buyPetMarketOffer(db, telegramId, body.offer_key);
+  if (action === 'district_mission') {
+    const petRaw = await getPetProfileWithAtomicDecay(db, telegramId, new Date());
+    if (!petRaw) return { accepted: false, reason: 'pet_not_adopted' };
+    const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
+    const runtime = await getOrCreatePetRuntimeState(db, telegramId, getPetDayKey(new Date()), activePetRewardAuthority(petRaw));
+    const faction = await db.prepare('SELECT faction FROM blocktopia_progression WHERE telegram_id=?').bind(telegramId).first();
+    const result = await processPetDistrictMission(db, telegramId, body.region_key, serializePet(petRaw, identity), runtime, (args) => awardPetReward(db, args), faction?.faction, body.approach_key, `runtime:mini:${eventKey}`);
+    if (result.accepted) await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward, { action: 'explore' });
+    return result;
+  }
+  if (action === 'event_chain') {
+    const petRaw = await getPetProfile(db, telegramId);
+    if (!petRaw) return { accepted: false, reason: 'pet_not_adopted' };
+    const faction = await db.prepare('SELECT faction FROM blocktopia_progression WHERE telegram_id=?').bind(telegramId).first();
+    const result = await processPetEventChain(db, telegramId, body.chain_key, (args) => awardPetReward(db, args), faction?.faction, body.choice_key, petRaw, `runtime:mini:${eventKey}`);
+    if (result.accepted) await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward, { action: 'explore' });
+    return result;
+  }
+  if (action === 'seasonal_boss') {
+    const petRaw = await getPetProfileWithAtomicDecay(db, telegramId, new Date());
+    if (!petRaw) return { accepted: false, reason: 'pet_not_adopted' };
+    if (body.pet_id && body.pet_id !== petRaw.pet_id) return { accepted: false, reason: 'source_pet_changed' };
+    const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
+    const result = await processPetSeasonalBoss(db, telegramId, serializePet(petRaw, identity), (args) => awardPetReward(db, args), body.move);
+    if (result.accepted) await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward, { action: 'run_boss' });
+    return result;
+  }
+  if (action === 'seasonal_boss_claim') {
+    const pet = await getPetProfile(db, telegramId);
+    const result = await claimPetSeasonalBossReward(db, telegramId, pet, (args) => awardPetReward(db, args), body);
+    if (result.accepted) await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward, { action: 'run_boss' });
+    return result;
+  }
+  if (action === 'gear_upgrade') return processPetEquipmentUpgrade(db, telegramId, body.item_key, eventKey);
+  if (action === 'craft') return processPetCraftRecipe(db, telegramId, body.recipe_key, eventKey);
+  if (action === 'cosmetic_unlock') return processPetCosmeticUnlock(db, telegramId, body.cosmetic_key, eventKey);
+  if (action === 'prestige') return { accepted: false, reason: 'feature_not_available' };
+  if (action === 'weekly_boss') return processPetWeeklyBoss(db, telegramId, body.move, eventKey, body.pet_id);
+  if (action === 'weekly_boss_claim') return claimPetWeeklyBossReward(db, telegramId, body);
+  if (action === 'season_claim') return claimPetSeasonReward(db, telegramId, body.tier_id, eventKey);
+  if (action === 'evolve') {
+    const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
+    const next = Object.values(MOONPET_EVOLUTIONS).find((entry) => entry.stage === Number(identity?.current_stage?.stage || 0) + 1);
+    if (!next) return { accepted: false, reason: 'final_evolution_reached' };
+    const result = await evolveMoonpet(db, { telegram_id: telegramId, evolution_id: body.evolution_id || next.evolution_id, event_key: eventKey });
+    if (result.accepted && !result.duplicate) result.lifecycle = await syncMoonpetLifecycleStage(db, telegramId, next.stage);
+    if (result.accepted) await finalizeActivePetEvolutionProgress(db, telegramId);
+    return result;
+  }
+  if (action === 'arena_start') {
+    const eligible = await ensurePetArenaEligible(db, telegramId);
+    if (!eligible.ok) return { accepted: false, reason: eligible.reason };
+    const miniChatId = `mini:${telegramId}`;
+    const active = await getPetArenaBattleForPlayer(db, PET_MINI_APP_ARENA_LOBBY, telegramId)
+      || await getPetArenaBattleForPlayer(db, miniChatId, telegramId);
+    if (active) return { accepted: false, reason: 'arena_battle_active' };
+    const appPet = { ...eligible.pet, telegram_id: 'app', pet_name: 'CRT-9 Rival', pet_xp: Math.max(0, Number(eligible.pet.pet_xp || 0) + 80), energy: 82, health: 88, happiness: 80, cleanliness: 80 };
+    const battle = await createPetArenaBattle(db, miniChatId, eligible.pet, appPet, 'app', { mini_app_solo_guard: true });
+    if (!battle) return { accepted: false, reason: 'arena_queue_active' };
+    return { accepted: true, reason: 'arena_started', battle };
+  }
+  if (action === 'arena_matchmake') return queuePetArenaMiniApp(db, telegramId, body.accept_any_rank === true);
+  if (action === 'arena_queue_cancel') return cancelPetArenaMiniAppQueue(db, telegramId);
+  if (action === 'arena_ready') {
+    const battle = await getPetArenaBattle(db, body.battle_id);
+    if (!battle || ![battle.player1_telegram_id, battle.player2_telegram_id].map(String).includes(String(telegramId))) {
+      return { accepted: false, reason: 'arena_battle_not_found' };
+    }
+    return readyPetArenaBattle(db, battle, telegramId);
+  }
+  if (action === 'arena_move') {
+    const move = String(body.move || '').trim().toLowerCase();
+    if (!Object.prototype.hasOwnProperty.call(PET_ARENA_MOVES, move)) return { accepted: false, reason: 'arena_move_invalid' };
+    const battle = await getPetArenaBattle(db, body.battle_id);
+    if (!battle || ![battle.player1_telegram_id, battle.player2_telegram_id].map(String).includes(String(telegramId))) return { accepted: false, reason: 'arena_battle_not_found' };
+    return applyPetArenaMove(db, battle, telegramId, body.expected_round, move);
+  }
+  if (action === 'arena_forfeit') {
+    const battle = await getPetArenaBattle(db, body.battle_id);
+    if (!battle || ![battle.player1_telegram_id, battle.player2_telegram_id].map(String).includes(String(telegramId))) return { accepted: false, reason: 'arena_battle_not_found' };
+    return forfeitPetArenaBattle(db, battle, telegramId);
+  }
+  if (action === 'kaiju_start') {
+    const pet = await getPetProfile(db, telegramId);
+    if (!pet) return { accepted: false, reason: 'pet_not_adopted' };
+    const miniChatId = `mini:kaiju:${telegramId}`;
+    const active = await getPetKaijuMatchForPlayer(db, telegramId) || await getActivePetKaijuMatch(db, miniChatId);
+    if (active) return { accepted: true, reason: active.mode === 'solo' ? 'kaiju_resumed' : 'kaiju_match_active', match: active };
+    const match = await createPetKaijuMatch(db, miniChatId, telegramId, 'solo', { mini_app_solo_guard: true });
+    if (!match) return { accepted: false, reason: 'kaiju_queue_active' };
+    return { accepted: true, reason: 'kaiju_started', match };
+  }
+  if (action === 'kaiju_matchmake') return matchmakePetKaijuMiniApp(db, telegramId);
+  if (action === 'kaiju_queue_cancel') return cancelPetKaijuMiniAppQueue(db, telegramId);
+  if (action === 'kaiju_match_cancel') return cancelPetKaijuMiniAppMatch(db, telegramId, body.match_id);
+  if (action === 'kaiju_card') {
+    const fresh = await getFreshPetKaijuMatch(db, body.match_id);
+    const match = fresh.match;
+    const cardKey = normalizePetKaijuCardKey(body.card_key);
+    if (fresh.expired) return { accepted: false, reason: 'kaiju_expired' };
+    const participant = match && [match.player1_telegram_id, match.player2_telegram_id].map(String).includes(String(telegramId));
+    const validMiniMatch = match && (String(match.chat_id) === `mini:kaiju:${telegramId}` || String(match.chat_id).startsWith('mini:kaiju:match:'));
+    if (!match || !participant || !validMiniMatch) {
+      return { accepted: false, reason: 'kaiju_match_not_found' };
+    }
+    if (!cardKey) return { accepted: false, reason: 'kaiju_card_invalid' };
+    if (match.status === 'completed') return finishPetKaijuMatch(db, match);
+    return applyPetKaijuCard(db, match, telegramId, cardKey);
+  }
+  return { accepted: false, reason: 'mini_app_action_invalid' };
+}
+
+function serializePetMiniAppActionResult(result = {}, identity = null, telegramId = '') {
+  const output = {
+    accepted: Boolean(result.accepted),
+    duplicate: Boolean(result.duplicate),
+    reason: String(result.reason || (result.accepted ? 'accepted' : 'rejected')),
+  };
+  for (const key of ['pet_xp_awarded', 'xp_awarded', 'damage', 'action', 'attempt', 'retry_after_seconds', 'remaining_seconds', 'server_time', 'gold_delta', 'crystal_delta', 'daily_limit', 'used_today', 'won', 'reward_pending']) {
+    if (result[key] !== undefined) output[key] = result[key];
+  }
+  for (const key of ['rewards', 'applied', 'job', 'item', 'recipe', 'encounter', 'choice', 'result_copy', 'reaction', 'boss', 'progress', 'tier', 'expedition', 'offer', 'bounty', 'queue', 'run', 'room', 'session', 'pending', 'computed', 'resolved', 'match', 'reward_results', 'region', 'chain_key', 'step', 'final', 'cosmetic', 'cost', 'faction_bonus', 'prestige_count', 'acknowledged', 'rare_morph', 'care_type', 'season_slots', 'capabilities_version', 'capabilities', 'cooldown', 'expires_at']) {
+    if (result[key] !== undefined) output[key] = result[key];
+  }
+  if (output.result_copy === undefined && result.outcome?.copy) {
+    output.result_copy = clampText(result.outcome.copy, 500, 'run_outcome');
+  }
+  if (result.pet) output.pet = serializePet(result.pet, identity);
+  const resultLifecycle = result.lifecycle ? publicMoonpetLifecycle(result.lifecycle) : null;
+  if (resultLifecycle) output.lifecycle = resultLifecycle;
+  if (result.species !== undefined) {
+    output.species = resultLifecycle?.identity_revealed
+      ? resultLifecycle.display_name
+      : resolveMoonpetDisplayName({ evolution_stage: identity?.current_stage?.stage, art_identity_id: identity?.lifecycle?.art_identity_id }, identity || {});
+  }
+  if (result.battle) output.battle = serializePetMiniAppArenaBattle(result.battle, telegramId);
+  if (result.match) output.match = serializePetMiniAppKaijuMatch(result.match, telegramId);
+  return output;
+}
+
+async function recordPetMiniAppPerformance(db, telegramId, body = {}) {
+  const qualityTier = ['low', 'medium', 'high'].includes(String(body.quality_tier || '')) ? String(body.quality_tier) : null;
+  const averageFps = Math.max(0, Math.min(240, Number(body.average_fps) || 0));
+  const slowFramePct = Math.max(0, Math.min(100, Number(body.slow_frame_pct) || 0));
+  const reducedMotion = Boolean(body.reduced_motion);
+  const renderDurationMs = body.render_duration_ms == null || body.render_duration_ms === '' ? null : Number.isFinite(Number(body.render_duration_ms)) ? Math.max(0.01, Math.min(10000, Number(body.render_duration_ms))) : null;
+  const viewportWidth = Math.max(1, Math.min(10000, Math.floor(Number(body.viewport_width) || 0)));
+  const viewportHeight = Math.max(1, Math.min(10000, Math.floor(Number(body.viewport_height) || 0)));
+  if (!qualityTier || viewportWidth <= 1 || viewportHeight <= 1 || (reducedMotion ? renderDurationMs == null : averageFps <= 0)) return { accepted: false, reason: 'performance_sample_invalid' };
+  const deviceMemory = body.device_memory == null || body.device_memory === '' ? null : Number.isFinite(Number(body.device_memory)) ? Math.max(0, Math.min(64, Number(body.device_memory))) : null;
+  const hardwareConcurrency = body.hardware_concurrency == null || body.hardware_concurrency === '' ? null : Number.isFinite(Number(body.hardware_concurrency)) ? Math.max(1, Math.min(128, Math.floor(Number(body.hardware_concurrency)))) : null;
+  await db.batch([
+    db.prepare(`INSERT INTO telegram_pet_client_performance
+      (sample_id, telegram_id, quality_tier, average_fps, slow_frame_pct, render_duration_ms, device_memory, hardware_concurrency, viewport_width, viewport_height, reduced_motion)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+      .bind(crypto.randomUUID(), telegramId, qualityTier, averageFps, slowFramePct, renderDurationMs, deviceMemory, hardwareConcurrency, viewportWidth, viewportHeight, reducedMotion ? 1 : 0),
+    db.prepare("DELETE FROM telegram_pet_client_performance WHERE sampled_at < datetime('now','-90 days')"),
+  ]);
+  return { accepted: true };
+}
+
+function getPetMiniAppReactionContext(action, result = {}) {
+  if (action === 'work') return 'job';
+  if (action === 'random_event' || action === 'event_chain') return 'event';
+  if (action === 'run_start' || action === 'daily_run_start' || action === 'adventure') return 'adventure';
+  if (action === 'run_step') return 'run';
+  if (action === 'run_extract') return 'extract';
+  if (action.startsWith('arena_')) return 'arena';
+  if (action.startsWith('kaiju_')) return 'kaiju';
+  if (action === 'weekly_boss' || action === 'seasonal_boss') return 'boss';
+  if (action === 'season_claim') return 'season';
+  if (action === 'evolve') return 'evolution';
+  if (action === 'buy' || action === 'market_buy' || action === 'cosmetic_unlock' || action === 'gear_upgrade' || action === 'craft') return 'purchase';
+  if (action === 'use_item') return 'item';
+  if (action === 'daily_chest' || action === 'bounty_claim') return 'daily';
+  if (action.startsWith('activity_')) return action;
+  return result.action || action;
+}
+
+async function attachPetMiniAppReaction(db, telegramId, action, result, state) {
+  if (!result?.accepted || result.duplicate || !state?.pet || ['guidance_ack', 'notification_set', 'arena_queue_cancel', 'kaiju_queue_cancel', 'kaiju_match_cancel'].includes(action)) return result;
+  const context = getPetMiniAppReactionContext(action, result);
+  const activityLabel = result.job?.title || result.item?.title || result.encounter?.title || result.boss?.title
+    || result.region?.title || result.tier?.title || String(action || '').replaceAll('_', ' ');
+  const reaction = await selectMoonpetReaction(db, telegramId, context, state.guidance?.identity || {}, {
+    pet: state.pet,
+    activity_label: activityLabel,
+  }).catch(() => buildMoonpetReaction(context, state.guidance?.identity || {}, { pet: state.pet, activity_label: activityLabel }));
+  return { ...result, reaction };
+}
+
+async function getTelegramGroupAnnouncementLog(db, announcementKey) {
+  return db.prepare(`
+    SELECT announcement_key, status, sent_at, updated_at
+    FROM telegram_group_announcement_log
+    WHERE announcement_key = ?
+    LIMIT 1
+  `).bind(announcementKey).first().catch(() => null);
+}
+
+async function claimTelegramGroupAnnouncement(db, candidate, options = {}) {
+  const nowMs = Number.isFinite(Number(options.nowMs)) ? Number(options.nowMs) : Date.now();
+  const nowIso = new Date(nowMs).toISOString();
+  const staleBeforeIso = new Date(nowMs - TELEGRAM_GROUP_RETRY_PENDING_AFTER_MS).toISOString();
+  const insertResult = await db.prepare(`
+    INSERT OR IGNORE INTO telegram_group_announcement_log
+      (announcement_key, utc_day, event_id, announcement_type, scheduled_for, status, metadata_json, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, 'sending', ?, ?, ?)
+  `).bind(
+    candidate.announcement_key,
+    candidate.utc_day,
+    candidate.event_id || null,
+    candidate.announcement_type,
+    candidate.scheduled_for,
+    JSON.stringify(candidate.metadata || {}),
+    nowIso,
+    nowIso,
+  ).run();
+  if (Number(insertResult?.meta?.changes || 0) === 1) return { claimed: true, reason: 'new' };
+
+  const updateResult = await db.prepare(`
+    UPDATE telegram_group_announcement_log
+    SET utc_day = ?, event_id = ?, announcement_type = ?, scheduled_for = ?, status = 'sending', error_message = NULL, metadata_json = ?, updated_at = ?
+    WHERE announcement_key = ?
+      AND (
+        status = 'failed'
+        OR (status IN ('pending', 'sending') AND updated_at <= ?)
+      )
+  `).bind(
+    candidate.utc_day,
+    candidate.event_id || null,
+    candidate.announcement_type,
+    candidate.scheduled_for,
+    JSON.stringify(candidate.metadata || {}),
+    nowIso,
+    candidate.announcement_key,
+    staleBeforeIso,
+  ).run();
+  if (Number(updateResult?.meta?.changes || 0) === 1) return { claimed: true, reason: 'retry' };
+
+  const existing = await getTelegramGroupAnnouncementLog(db, candidate.announcement_key);
+  if (existing?.status === 'sent') return { claimed: false, reason: 'already_sent' };
+  if (existing?.status === 'pending' || existing?.status === 'sending') return { claimed: false, reason: 'already_claimed' };
+  return { claimed: false, reason: 'duplicate' };
+}
+
+async function finalizeTelegramGroupAnnouncement(db, candidate, status, payload = {}) {
+  const nowIso = new Date().toISOString();
+  const sentAt = status === 'sent' ? nowIso : null;
+  await db.prepare(`
+    UPDATE telegram_group_announcement_log
+    SET sent_at = COALESCE(?, sent_at), status = ?, error_message = ?, metadata_json = ?, updated_at = ?
+    WHERE announcement_key = ?
+  `).bind(
+    sentAt,
+    status,
+    payload.error ? clampText(payload.error, 500, 'telegram_group_send_failed') : null,
+    JSON.stringify({ ...(candidate.metadata || {}), ...(payload.metadata || {}) }),
+    nowIso,
+    candidate.announcement_key,
+  ).run().catch((error) => {
+    logApiFailure('telegram_group_announcement_finalize_failed', {
+      announcement_key: candidate.announcement_key,
+      message: error?.message || String(error),
+    });
+  });
+}
+
+async function sendTelegramGroupAnnouncement(env, candidate) {
+  const groupConfig = getTelegramGroupConfig(env);
+  if (!groupConfig.configured) {
+    console.log('telegram_group_not_configured', JSON.stringify({ announcement_key: candidate?.announcement_key || null }));
+    return { ok: false, skipped: true, error: 'telegram_group_not_configured' };
+  }
+  const extra = { disable_web_page_preview: true };
+  if (groupConfig.message_thread_id) extra.message_thread_id = Number(groupConfig.message_thread_id) || groupConfig.message_thread_id;
+  const result = await sendTelegramMessage(env.TELEGRAM_BOT_TOKEN, groupConfig.chat_id, candidate.message, extra);
+  if (!result?.ok) {
+    logApiFailure('telegram_group_send_failed', {
+      announcement_key: candidate.announcement_key,
+      status: result?.status || null,
+      response: clampText(result?.response || result?.error || 'telegram_send_failed', 500, 'telegram_send_failed'),
+    });
+  }
+  return result;
+}
+
+async function runTelegramGroupAnnouncements(env, options = {}) {
+  const nowMs = Number.isFinite(Date.parse(options.now || '')) ? Date.parse(options.now) : Date.now();
+  const type = options.type || TELEGRAM_GROUP_ANNOUNCEMENT_TYPES.ALL;
+  const dryRun = options.dry_run === true || options.dryRun === true;
+  const force = options.force === true;
+  const groupConfig = getTelegramGroupConfig(env);
+  const dueAnnouncements = getTelegramGroupAnnouncementCandidates(type, nowMs, {
+    force,
+    announcementKey: options.announcement_key || options.announcementKey || null,
+    eventId: options.event_id || options.eventId || null,
+    utcDay: options.utc_day || options.utcDay || null,
+  });
+  const summary = {
+    ok: true,
+    group_configured: groupConfig.configured,
+    group_thread_configured: !!groupConfig.message_thread_id,
+    type,
+    now: new Date(nowMs).toISOString(),
+    due_announcements: dueAnnouncements.map((candidate) => ({
+      announcement_key: candidate.announcement_key,
+      utc_day: candidate.utc_day,
+      event_id: candidate.event_id,
+      announcement_type: candidate.announcement_type,
+      scheduled_for: candidate.scheduled_for,
+    })),
+    sent_count: 0,
+    skipped_count: 0,
+    failed_count: 0,
+    dry_run: dryRun,
+    errors: [],
+  };
+  if (!groupConfig.configured) {
+    if (dueAnnouncements.length > 0) console.log('telegram_group_not_configured');
+    summary.skipped_count = dueAnnouncements.length;
+    return summary;
+  }
+  if (dryRun) {
+    summary.skipped_count = dueAnnouncements.length;
+    return summary;
+  }
+  const dbCheck = await ensureTelegramGroupAnnouncementTables(env.DB);
+  if (dbCheck) {
+    summary.ok = false;
+    summary.failed_count = dueAnnouncements.length;
+    summary.errors.push(dbCheck.tableName || 'telegram_group_announcement_log');
+    return summary;
+  }
+  for (const candidate of dueAnnouncements) {
+    const claim = await claimTelegramGroupAnnouncement(env.DB, candidate, { force });
+    if (!claim?.claimed) {
+      summary.skipped_count += 1;
+      continue;
+    }
+    const result = await sendTelegramGroupAnnouncement(env, candidate).catch((error) => ({ ok: false, error: error?.message || String(error) }));
+    if (result?.ok) {
+      await finalizeTelegramGroupAnnouncement(env.DB, candidate, 'sent', { metadata: { telegram_status: result.status || null } });
+      summary.sent_count += 1;
+      continue;
+    }
+    const errorMessage = result?.response || result?.error || 'telegram_group_send_failed';
+    await finalizeTelegramGroupAnnouncement(env.DB, candidate, 'failed', { error: errorMessage });
+    summary.failed_count += 1;
+    summary.errors.push({ announcement_key: candidate.announcement_key, error: clampText(errorMessage, 500, 'telegram_group_send_failed') });
+  }
+  return summary;
+}
+
+// ── Main fetch handler ────────────────────────────────────────────────────────
+
+export default {
+  async fetch(request, env) {
+    const url  = new URL(request.url);
+    const path = url.pathname === '/' ? '/' : url.pathname.replace(/\/$/, '');
+    const corsHeaders = buildCorsHeaders(request, env);
+    const json = makeJsonResponder(corsHeaders);
+    const err = makeErrorResponder(corsHeaders);
+
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { status: 204, headers: corsHeaders });
+    }
+
+    // ── GET /health ────────────────────────────────────────────────────────
+    if (path === '/health' && request.method === 'GET') {
+      return json({ ok: true });
+    }
+
+    if (path === '/radio/stream') {
+      return handleRadioStream(request, corsHeaders);
+    }
+
+    // ── GET /sam/status ────────────────────────────────────────────────────
+    if (path === '/sam/status' && request.method === 'GET') {
+      return json({ ok: true, message: 'SAM active and monitoring the wiki.' });
+    }
+
+    if (path === '/api/wax' || path.startsWith('/api/wax/')) {
+      return handleWaxBridgeRoute(request, env, corsHeaders);
+    }
+
+    if (path === '/daily-loop/state') {
+      const dailyLoopResponse = await handleDailyLoopStateRoute(request, env, {
+        json,
+        err,
+        verifyTelegramAuth,
+        upsertTelegramUser,
+        logApiFailure,
+      });
+      if (dailyLoopResponse) return dailyLoopResponse;
+    }
+
+    // ── POST /admin/blocktopia/access ─────────────────────────────────────
+    // Admin access probe for hidden tooling UIs.
+    // Requires verified Telegram auth payload and returns only coarse capability flags.
+    if (path === '/admin/blocktopia/access' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+
+      return json({
+        ok: true,
+        telegram_id: verified.telegramId,
+        admin_allowlisted: isAdminTelegramUser(verified.telegramId, env),
+        admin_secret_configured: !!String(env.ADMIN_SECRET || '').trim(),
+      });
+    }
+
+    // ── POST /admin/blocktopia/grant-xp ───────────────────────────────────
+    // Admin-only tooling endpoint for Block Topia test/ops XP + gems grants.
+    if (path === '/admin/blocktopia/grant-xp' && request.method === 'POST') {
+      const missingAdminConfig = ensureAdminGrantConfigured(env);
+      if (missingAdminConfig.length) {
+        logApiFailure('admin_blocktopia_grant_xp_not_configured', { missing: missingAdminConfig });
+        return err('Admin grant route is not configured', 503);
+      }
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+
+      const telegramId = String(body?.telegram_id || '').trim();
+      const adminTelegramId = String(verified.telegramId || '').trim();
+      const hasXpInput = body && Object.prototype.hasOwnProperty.call(body, 'xp');
+      const hasGemsInput = body && Object.prototype.hasOwnProperty.call(body, 'gems');
+      const rawXp = hasXpInput ? Number(body?.xp) : null;
+      const rawGems = hasGemsInput ? Number(body?.gems) : null;
+      const reason = String(body?.reason || '').trim().slice(0, 280);
+
+      if (!telegramId || !/^\d{5,20}$/.test(telegramId)) {
+        return err('Valid target telegram_id is required', 400);
+      }
+      if (!isAdminTelegramUser(adminTelegramId, env)) {
+        return err('Forbidden: admin not allowed', 403);
+      }
+      if (!hasXpInput && !hasGemsInput) {
+        return err('At least one of xp or gems must be provided', 400);
+      }
+      if (hasXpInput && (!Number.isInteger(rawXp) || rawXp <= 0)) {
+        return err('xp must be a positive integer', 400);
+      }
+      if (hasGemsInput && (!Number.isInteger(rawGems) || rawGems <= 0)) {
+        return err('gems must be a positive integer', 400);
+      }
+      const grantXp = hasXpInput ? Math.min(rawXp, BLOCKTOPIA_ADMIN_XP_GRANT_MAX) : 0;
+      const grantGems = hasGemsInput ? Math.min(rawGems, BLOCKTOPIA_ADMIN_GEMS_GRANT_MAX) : 0;
+
+      try {
+        const row = await getOrCreateBlockTopiaProgression(env.DB, telegramId);
+        // Admin grants are trusted tooling actions and must stay outside Phase 4
+        // player enforcement. Do not clamp through reward caps or mutate
+        // pressure/cooldown-adjacent activity state here.
+        const currentXp = Math.max(XP_MIN, Math.floor(Number(row?.xp) || 0));
+        const currentGems = Math.max(GEMS_MIN, Math.floor(Number(row?.gems) || 0));
+        const nextXp = currentXp + grantXp;
+        const nextGems = currentGems + grantGems;
+        const appliedXpDelta = nextXp - currentXp;
+        const appliedGemsDelta = nextGems - currentGems;
+        if (appliedXpDelta <= 0 && appliedGemsDelta <= 0) {
+          return err('Grant cannot be applied at current cap', 409);
+        }
+
+        await env.DB.prepare(`
+          UPDATE blocktopia_progression
+          SET xp = ?, gems = ?, updated_at = CURRENT_TIMESTAMP
+          WHERE telegram_id = ?
+        `).bind(nextXp, nextGems, telegramId).run();
+
+        await writeBlockTopiaAdminGrantAudit(env.DB, {
+          telegramId,
+          adminTelegramId,
+          xpChange: appliedXpDelta,
+          gemsChange: appliedGemsDelta,
+          reason,
+        });
+
+        return json({
+          ok: true,
+          target_telegram_id: telegramId,
+          admin_telegram_id: adminTelegramId,
+          requested_xp: hasXpInput ? rawXp : null,
+          requested_gems: hasGemsInput ? rawGems : null,
+          granted_xp: grantXp,
+          granted_gems: grantGems,
+          applied_xp: appliedXpDelta,
+          applied_gems: appliedGemsDelta,
+          progression: {
+            telegram_id: telegramId,
+            xp_before: currentXp,
+            xp_after: nextXp,
+            gems_before: currentGems,
+            gems_after: nextGems,
+          },
+        });
+      } catch (error) {
+        logApiFailure('admin_blocktopia_grant_xp_failed', {
+          telegramId,
+          adminTelegramId,
+          xp: rawXp,
+          gems: rawGems,
+          message: error?.message || String(error),
+        });
+        return err('Failed to grant Block Topia progression resources', 500);
+      }
+    }
+
+    // ── POST /admin/arcade/grant-xp ───────────────────────────────────────
+    // Admin-only tooling endpoint to grant Arcade XP (arcade_progression_state.arcade_xp_total).
+    // This is the value checked by the Block Topia multiplayer gate.
+    if (path === '/admin/arcade/grant-xp' && request.method === 'POST') {
+      const missingAdminConfig = ensureAdminGrantConfigured(env);
+      if (missingAdminConfig.length) {
+        logApiFailure('admin_arcade_grant_xp_not_configured', { missing: missingAdminConfig });
+        return err('Admin grant route is not configured', 503);
+      }
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+
+      const telegramId = String(body?.telegram_id || '').trim();
+      const adminTelegramId = String(verified.telegramId || '').trim();
+      const rawXp = body && Object.prototype.hasOwnProperty.call(body, 'xp') ? Number(body.xp) : null;
+      const reason = String(body?.reason || '').trim().slice(0, 280);
+
+      if (!telegramId || !/^\d{5,20}$/.test(telegramId)) {
+        return err('Valid target telegram_id is required', 400);
+      }
+      if (!isAdminTelegramUser(adminTelegramId, env)) {
+        return err('Forbidden: admin not allowed', 403);
+      }
+      if (rawXp === null) {
+        return err('xp is required', 400);
+      }
+      if (!Number.isInteger(rawXp) || rawXp <= 0) {
+        return err('xp must be a positive integer', 400);
+      }
+      const grantXp = Math.min(rawXp, ARCADE_ADMIN_XP_GRANT_MAX);
+
+      try {
+        const currentArcadeDailyKey = new Date().toISOString().slice(0, 10);
+
+        const rowBefore = await env.DB.prepare(`
+          SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id = ? LIMIT 1
+        `).bind(telegramId).first();
+        const xpBefore = Math.max(0, Math.floor(Number(rowBefore?.arcade_xp_total) || 0));
+
+        await env.DB.prepare(`
+          INSERT INTO arcade_progression_state
+            (telegram_id, arcade_xp_total, arcade_daily_xp, arcade_daily_key, arcade_restriction_level, restricted_until, updated_at)
+          VALUES (?, ?, 0, ?, 0, NULL, CURRENT_TIMESTAMP)
+          ON CONFLICT(telegram_id)
+          DO UPDATE SET
+            arcade_xp_total = arcade_progression_state.arcade_xp_total + excluded.arcade_xp_total,
+            updated_at = CURRENT_TIMESTAMP
+        `).bind(telegramId, grantXp, currentArcadeDailyKey).run();
+        await creditArcadeXpWallet(env.DB, telegramId, grantXp);
+
+        const rowAfter = await env.DB.prepare(`
+          SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id = ? LIMIT 1
+        `).bind(telegramId).first();
+        const xpAfter = Math.max(0, Math.floor(Number(rowAfter?.arcade_xp_total) || 0));
+
+        const auditReason = reason
+          ? `arcade_xp_admin_grant: ${reason}`
+          : 'arcade_xp_admin_grant';
+
+        // Reuse the shared Block Topia audit log for arcade admin grants to avoid schema duplication.
+        // The reason field (prefixed 'arcade_xp_admin_grant') distinguishes these entries from BT grants.
+        await writeBlockTopiaAdminGrantAudit(env.DB, {
+          telegramId,
+          adminTelegramId,
+          xpChange: grantXp,
+          gemsChange: 0,
+          reason: auditReason,
+        });
+
+        return json({
+          ok: true,
+          target_telegram_id: telegramId,
+          admin_telegram_id: adminTelegramId,
+          requested_xp: rawXp,
+          granted_xp: grantXp,
+          arcade_progression: {
+            telegram_id: telegramId,
+            arcade_xp_total_before: xpBefore,
+            arcade_xp_total_after: xpAfter,
+          },
+        });
+      } catch (error) {
+        logApiFailure('admin_arcade_grant_xp_failed', {
+          telegramId,
+          adminTelegramId,
+          xp: rawXp,
+          message: error?.message || String(error),
+        });
+        return err('Failed to grant Arcade XP', 500);
+      }
+    }
+
+    // ── POST /telegram/auth ────────────────────────────────────────────────
+    // Accepts the Telegram Login Widget payload, verifies the HMAC signature,
+    // and returns a normalised identity object (never exposes the bot token).
+    if (path === '/telegram/auth' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON'); }
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/telegram/auth', body, corsHeaders); if (_rateLimit) return _rateLimit; }
+      const { id, first_name, last_name, username, photo_url, auth_date, hash } = body || {};
+
+      if (!id || !auth_date || !hash) {
+        return err('Missing required Telegram auth fields');
+      }
+
+      const now = Math.floor(Date.now() / 1000);
+      if (now - parseInt(auth_date, 10) > TELEGRAM_AUTH_MAX_AGE) {
+        logApiFailure('telegram_auth_expired', { telegramId: String(id) });
+        return err('Telegram auth data has expired', 401);
+      }
+
+      const valid = await verifyTelegramAuth(
+        { id, first_name, last_name, username, photo_url, auth_date, hash },
+        env.TELEGRAM_BOT_TOKEN,
+      );
+      if (!valid) {
+        logApiFailure('telegram_auth_verification_failed', { telegramId: String(id) });
+        return err('Telegram auth verification failed', 401);
+      }
+
+      const displayName = [first_name, last_name].filter(Boolean).join(' ') || username || String(id);
+      const signedAuthPayload = await buildSignedTelegramAuthPayload({
+        id: String(id),
+        first_name,
+        last_name,
+        username,
+        photo_url,
+      }, env.TELEGRAM_BOT_TOKEN, auth_date);
+      if (!signedAuthPayload || !signedAuthPayload.hash || !signedAuthPayload.auth_date) {
+        logApiFailure('telegram_auth_payload_sign_failed', { telegramId: String(id) });
+        return err('Failed to generate signed Telegram auth payload', 500);
+      }
+      return json({
+        ok: true,
+        identity: {
+          telegram_id:       String(id),
+          telegram_username: username  || null,
+          display_name:      displayName,
+          avatar_url:        photo_url || null,
+        },
+        telegram_auth: signedAuthPayload,
+      });
+    }
+
+    // ── POST /telegram/webhook ─────────────────────────────────────────────
+    // Always returns 200 OK so Telegram stops retrying regardless of errors.
+    if (path === '/telegram/webhook' && request.method === 'POST') {
+      let update;
+      try {
+        update = await request.json();
+      } catch (e) {
+        console.log('webhook parse failure:', e?.message || String(e));
+        return json({ ok: true });
+      }
+      if (update) {
+        await handleTelegramUpdate(update, env).catch((e) => {
+          console.log('handleTelegramUpdate error:', e?.message || String(e));
+          if (e?.stack) console.log(e.stack);
+        });
+      }
+      return json({ ok: true });
+    }
+
+    // ── Crypto Moonboys Pets Mini App API ─────────────────────────────────
+    // Auth is accepted only in the POST body. Telegram Mini App initData is
+    // verified against the bot token on every request and never echoed back.
+    if (path === '/telegram-pets/app/state' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('invalid json', 400); }
+      { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/state', body, corsHeaders, { ipLimit: 90 }); if (limited) return limited; }
+      const verified = await authenticatePetMiniApp(body, env);
+      if (verified.error || !verified.ok) return err(verified.error || 'mini app auth required', verified.status || 401);
+      { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/state', null, corsHeaders, { includeIp: false, telegramId: verified.telegramId }); if (limited) return limited; }
+      await upsertTelegramUser(env.DB, verified.user).catch(() => {});
+      try {
+        const state = await buildPetMiniAppState(env.DB, verified.telegramId, env.TELEGRAM_BOT_TOKEN);
+        return json({ ok: true, state });
+      } catch (error) {
+        logApiFailure('pet_mini_app_state_failed', {
+          telegramId: verified.telegramId,
+          message: error?.message || String(error),
+          cause: error?.cause?.message || null,
+        });
+        return err('mini_app_state_failed', 503);
+      }
+    }
+
+    if (path === '/telegram-pets/app/leaderboard' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('invalid json', 400); }
+      { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/leaderboard', body, corsHeaders, { ipLimit: 90 }); if (limited) return limited; }
+      const verified = await authenticatePetMiniApp(body, env);
+      if (verified.error || !verified.ok) return err(verified.error || 'mini app auth required', verified.status || 401);
+      { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/leaderboard', null, corsHeaders, { includeIp: false, telegramId: verified.telegramId }); if (limited) return limited; }
+      try {
+        return json(await buildPetMiniAppLeaderboard(env.DB, verified.telegramId, body.period, body.limit));
+      } catch (error) {
+        logApiFailure('pet_mini_app_leaderboard_failed', { telegramId: verified.telegramId, message: error?.message || String(error) });
+        return err('mini_app_leaderboard_failed', 500);
+      }
+    }
+
+    if (path === '/telegram-pets/app/sanctuary' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('invalid json', 400); }
+      { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/sanctuary', body, corsHeaders, { ipLimit: 90 }); if (limited) return limited; }
+      const verified = await authenticatePetMiniApp(body, env);
+      if (verified.error || !verified.ok) return err(verified.error || 'mini app auth required', verified.status || 401);
+      { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/sanctuary', null, corsHeaders, { includeIp: false, telegramId: verified.telegramId }); if (limited) return limited; }
+      try {
+        const combatEligibility = await getPetMiniAppCombatEligibility(env.DB, verified.telegramId);
+        return json({
+          accepted: false,
+          reason: 'feature_not_available',
+          capabilities_version: 1,
+          capabilities: buildPetMiniAppCapabilities(combatEligibility),
+        });
+      } catch (error) {
+        logApiFailure('pet_mini_app_sanctuary_capabilities_failed', { telegramId: verified.telegramId, message: error?.message || String(error) });
+        return json({ accepted: false, reason: 'feature_not_available' });
+      }
+    }
+
+    if (path === '/telegram-pets/app/performance' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('invalid json', 400); }
+      { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/performance', body, corsHeaders, { ipLimit: 20 }); if (limited) return limited; }
+      const verified = await authenticatePetMiniApp(body, env);
+      if (verified.error || !verified.ok) return err(verified.error || 'mini app auth required', verified.status || 401);
+      { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/performance', null, corsHeaders, { includeIp: false, telegramId: verified.telegramId, telegramLimit: 6 }); if (limited) return limited; }
+      try {
+        return json({ ok: true, result: await recordPetMiniAppPerformance(env.DB, verified.telegramId, body) });
+      } catch (error) {
+        logApiFailure('pet_mini_app_performance_failed', { telegramId: verified.telegramId, message: error?.message || String(error) });
+        return err('performance_sample_failed', 500);
+      }
+    }
+
+    if (path === '/telegram-pets/app/action' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('invalid json', 400); }
+      { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/action', body, corsHeaders, { ipLimit: 120 }); if (limited) return limited; }
+      const verified = await authenticatePetMiniApp(body, env);
+      if (verified.error || !verified.ok) return err(verified.error || 'mini app auth required', verified.status || 401);
+      { const limited = await enforcePublicRateLimit(request, env, '/telegram-pets/app/action', null, corsHeaders, { includeIp: false, telegramId: verified.telegramId }); if (limited) return limited; }
+      await upsertTelegramUser(env.DB, verified.user).catch(() => {});
+      let result;
+      try {
+        await getPetProfile(env.DB, verified.telegramId);
+        result = await processPetMiniAppAction(env.DB, verified.telegramId, verified.user, body, env.TELEGRAM_BOT_TOKEN);
+        // Reconcile in the authoritative direction selected by getPetProfile.
+        // Instance-owned rewards (Contracts, Practice, Runs, bosses, etc.) set
+        // the instance authority marker and must never be overwritten by the
+        // compatibility profile snapshot that preceded this action.
+        await getPetProfile(env.DB, verified.telegramId);
+      } catch (error) {
+        logApiFailure('mini_app_action_failed', { telegramId: verified.telegramId, action: String(body.action || ''), message: error?.message || String(error) });
+        return err('mini_app_action_failed', /D1|read|unavailable/i.test(String(error?.message || '')) ? 503 : 500);
+      }
+      const state = await buildPetMiniAppState(env.DB, verified.telegramId, env.TELEGRAM_BOT_TOKEN).catch((error) => {
+        logApiFailure('pet_mini_app_action_state_failed', {
+          telegramId: verified.telegramId,
+          action: String(body.action || ''),
+          message: error?.message || String(error),
+          cause: error?.cause?.message || null,
+        });
+        return null;
+      });
+      result = await attachPetMiniAppReaction(env.DB, verified.telegramId, String(body.action || ''), result, state);
+      return json({ ok: Boolean(result.accepted), result: serializePetMiniAppActionResult(result, state?.guidance?.identity, verified.telegramId), state }, result.accepted ? 200 : 409);
+    }
+
+    // ── Crypto Moonboys Pets API ──────────────────────────────────────────
+    if (path === '/telegram-pets/season/current' && request.method === 'GET') {
+      return json({ season: getPetSeasonInfo(new Date()) });
+    }
+
+    // Public collection projection: ownership is selected by the server query,
+    // never by client-side filtering. Mutations are deliberately unavailable.
+    if (path === '/telegram/pets/sanctuary' && request.method === 'GET') {
+      const telegramId = String(url.searchParams.get('telegram_id') || '').trim();
+      if (!/^\d{1,20}$/.test(telegramId)) return err('telegram_id required');
+      return json({ pets: await listSanctuaryPets(env.DB, telegramId) });
+    }
+
+    if (path === '/api/telegram/pets/identity/audit' && request.method === 'GET') {
+      const auditHeaders = { ...corsHeaders, 'Cache-Control': 'no-store' };
+      const auditJson = (data, status = 200) => new Response(JSON.stringify(data), {
+        status,
+        headers: { 'Content-Type': 'application/json', ...auditHeaders },
+      });
+      const auditErr = (message, status = 400) => auditJson({ error: message }, status);
+      { const limited = await enforcePublicRateLimit(request, env, '/api/telegram/pets/identity/audit:preauth', null, auditHeaders, { includeIp: true }); if (limited) return limited; }
+      if (url.searchParams.has('telegram_auth') || url.searchParams.has('auth_evidence')) return auditErr('telegram_auth_url_credentials_rejected', 400);
+      const rawAuth = readTelegramAuthEvidenceFromAuthorization(request);
+      if (!rawAuth) return auditErr('authorization required', 401);
+      const body = { telegram_auth: parseTelegramAuthEvidence(rawAuth) };
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified?.error || !verified?.telegramId) return auditErr(verified?.error || 'telegram_auth invalid', verified?.status || 401);
+      { const limited = await enforcePublicRateLimit(request, env, '/api/telegram/pets/identity/audit', null, auditHeaders, { includeIp: false, telegramId: verified.telegramId }); if (limited) return limited; }
+      let audit;
+      try {
+        audit = await buildMoonpetIdentityAuthorityAudit(env.DB, verified.telegramId, {
+          pet_id: url.searchParams.get('pet_id'),
+          season_key: url.searchParams.get('season_key'),
+        });
+      } catch (error) {
+        logApiFailure('identity_authority_audit_failed', {
+          telegramId: verified.telegramId,
+          message: error?.message || String(error),
+        });
+        return auditErr('identity_authority_audit_failed', 500);
+      }
+      if (!audit) {
+        const requestedPetId = String(url.searchParams.get('pet_id') || '').trim();
+        const requestedSeasonKey = String(url.searchParams.get('season_key') || '').trim();
+        return auditErr('identity_authority_scope_not_found', requestedPetId && requestedSeasonKey ? 403 : 404);
+      }
+      return auditJson(audit);
+    }
+
+    if (path === '/telegram-pets/state' && request.method === 'GET') {
+      const telegramId = String(url.searchParams.get('telegram_id') || '').trim();
+      if (!/^\d{1,20}$/.test(telegramId)) return err('telegram_id required');
+      try {
+        const pet = await getPetProfile(env.DB, telegramId);
+        if (!pet) return err('Pet profile not found', 404);
+        const identity = await getMoonpetIdentitySummary(env.DB, telegramId);
+        return json({ pet: serializePet(pet, identity), missions: await buildPetMissions(env.DB, telegramId) });
+      } catch (error) {
+        logApiFailure('pet_legacy_state_failed', { telegramId, message: error?.message || String(error) });
+        return err('pet_state_unavailable', 503);
+      }
+    }
+
+    if (path === '/telegram-pets/inventory' && request.method === 'GET') {
+      const telegramId = String(url.searchParams.get('telegram_id') || '').trim();
+      if (!/^\d{1,20}$/.test(telegramId)) return err('telegram_id required');
+      try {
+        const pet = await getPetProfile(env.DB, telegramId, true);
+        if (!pet) return err('Pet profile not found', 404);
+        const identity = await getMoonpetIdentitySummary(env.DB, telegramId);
+        return json({ pet: serializePet(pet, identity), inventory: await getPetInventory(env.DB, telegramId) });
+      } catch (error) {
+        logApiFailure('pet_legacy_inventory_failed', { telegramId, message: error?.message || String(error) });
+        return err('pet_inventory_unavailable', 503);
+      }
+    }
+
+    if (path === '/telegram-pets/missions' && request.method === 'GET') {
+      const telegramId = String(url.searchParams.get('telegram_id') || '').trim();
+      if (!/^\d{1,20}$/.test(telegramId)) return err('telegram_id required');
+      try {
+        return json({ missions: await buildPetMissions(env.DB, telegramId) });
+      } catch (error) {
+        logApiFailure('pet_legacy_missions_failed', { telegramId, message: error?.message || String(error) });
+        return err('pet_missions_unavailable', 503);
+      }
+    }
+
+    if (path === '/telegram-pets/shop' && request.method === 'GET') {
+      const telegramId = String(url.searchParams.get('telegram_id') || '').trim();
+      let pet = null;
+      let identity = null;
+      if (/^\d{1,20}$/.test(telegramId)) {
+        try {
+          pet = await getPetProfile(env.DB, telegramId);
+          identity = pet ? await getMoonpetIdentitySummary(env.DB, telegramId) : null;
+        } catch (error) {
+          logApiFailure('pet_legacy_shop_failed', { telegramId, message: error?.message || String(error) });
+          return err('pet_shop_unavailable', 503);
+        }
+      }
+      return json({
+        currencies: ['moon_gold', 'moon_crystals', 'style_tokens'],
+        pet: serializePet(pet, identity),
+        items: petShopItemsForPet(pet),
+        usable_items: Object.values(PET_INVENTORY_ITEMS),
+        jobs: Object.values(PET_JOBS),
+      });
+    }
+
+    if (path === '/telegram-pets/activity' && request.method === 'GET') {
+      const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '20', 10), 1), 50);
+      let activityRows;
+      try { activityRows = await readPetActivity(env.DB, limit); }
+      catch (error) {
+        logApiFailure('pet_public_activity_failed', { message: error?.message || String(error) });
+        return err('pet_activity_unavailable', 503);
+      }
+      const response = json({ items: activityRows.map((row) => {
+        const petIdentity = serializePetLeaderboardEntry(row);
+        const playerDisplayName = [row.first_name, row.last_name].filter(Boolean).join(' ') || row.username || 'Anonymous';
+        return {
+        text: row.event_type === 'equip'
+          ? `${playerDisplayName} switched ${petIdentity.display_name}'s equipment for free`
+          : row.event_type === 'equipment_upgrade'
+          ? `${playerDisplayName} upgraded ${PET_SHOP_ITEMS[row.reason]?.title || 'equipment'}`
+          : row.event_type === 'crafting'
+            ? `${playerDisplayName} crafted ${PET_CRAFTING_RECIPES[row.reason]?.title || 'an item'}`
+          : row.event_type === 'cosmetic_unlock'
+            ? `${playerDisplayName} collected ${String(row.reason || 'a Style Lab unlock').replaceAll('_', ' ')}`
+          : row.event_type === 'daily_completion'
+            ? `${playerDisplayName} claimed the 7/7 daily bonus with ${petIdentity.display_name} (+${row.pet_xp_awarded || 0} pet XP)`
+          : row.event_type === 'season_finale'
+            ? `${playerDisplayName} defeated Signal Sovereign with ${petIdentity.display_name} (+${row.pet_xp_awarded || 0} pet XP)`
+          : `${playerDisplayName} ${row.event_type} ${petIdentity.display_name} (+${row.pet_xp_awarded || 0} pet XP, +${row.xp_awarded || 0} XP)`,
+        event_type: row.event_type,
+        name: petIdentity.display_name,
+        pet_name: petIdentity.display_name,
+        display_name: petIdentity.display_name,
+        stage: petIdentity.stage,
+        xp_awarded: Number(row.xp_awarded || 0),
+        pet_xp_awarded: Number(row.pet_xp_awarded || 0),
+        created_at: row.created_at,
+        time_ago: timeAgo(row.created_at),
+      }}) });
+      response.headers.set('Cache-Control', 'no-store');
+      return response;
+    }
+
+    if (path === '/telegram-pets/leaderboard' && request.method === 'GET') {
+      try {
+        const board = await readPetLeaderboard(env.DB, { period: url.searchParams.get('period') || 'seasonal', limit: url.searchParams.get('limit') || 25 });
+        const response = json({
+          period: board.period,
+          season: board.season,
+          entries: board.rows.map((row, index) => ({
+            ...serializePetLeaderboardEntry(row, index),
+            player_display_name: [row.first_name, row.last_name].filter(Boolean).join(' ') || row.username || 'Anonymous',
+            username: row.username || null,
+            last_active_label: timeAgo(row.updated_at),
+          })),
+        });
+        response.headers.set('Cache-Control', 'no-store');
+        return response;
+      } catch (error) {
+        logApiFailure('pet_public_leaderboard_failed', { message: error?.message || String(error) });
+        return err('pet_leaderboard_unavailable', 503);
+      }
+    }
+
+    if (path === '/telegram-pets/action' && request.method === 'POST') {
+      if (!verifyPetsBotSecret(request, env)) {
+        return err('pet bot secret required', 401);
+      }
+      let body;
+      try {
+        body = await request.json();
+      } catch {
+        return err('invalid json', 400);
+      }
+      const user = body?.user || {};
+      const telegramId = String(body?.telegram_id || user.id || '').trim();
+      if (!/^\d{1,20}$/.test(telegramId)) return err('telegram_id required');
+      await upsertTelegramUser(env.DB, {
+        id: telegramId,
+        username: user.username || body.username || null,
+        first_name: user.first_name || body.first_name || null,
+        last_name: user.last_name || body.last_name || null,
+      });
+      let result;
+      await getPetProfile(env.DB, telegramId);
+      const lifecycleBeforeAction = await getMoonpetLifecycle(env.DB, telegramId);
+      const eggAllowedActions = ['adopt', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'energy_drink', 'dance', 'cuddles'];
+      if (lifecycleBeforeAction?.phase === 'egg' && !eggAllowedActions.includes(String(body.action || ''))) {
+        result = { accepted: false, reason: 'moon_egg_must_hatch', lifecycle: lifecycleBeforeAction };
+      } else if (body.action === 'season_slots') {
+        result = { accepted: true, reason: 'season_slots', season_slots: await buildPetSeasonSlotSummary(env.DB, telegramId) };
+      } else if (body.action === 'buy_pet_slot') {
+        result = await buyPetSeasonSlot(env.DB, telegramId, body.slot_number, {
+          event_key: body.event_key,
+          switch_active: body.switch_active,
+        });
+      } else if (body.action === 'switch_pet_slot') {
+        result = await switchActivePetSeasonSlot(env.DB, telegramId, body.pet_id || body.slot_number);
+      } else if (body.action === 'equip') {
+        result = await processPetEquipmentEquip(env.DB, telegramId, body.item_key, { event_key: body.event_key, source: 'telegram_pets_api', pet_id: body.pet_id });
+      } else if (body.action === 'buy') {
+        result = await processPetShopPurchase(env.DB, telegramId, body.item_key, {
+          event_key: body.event_key,
+          source: 'telegram_pets_api',
+        });
+      } else if (body.action === 'trade') {
+        result = await processPetGoldTrade(env.DB, telegramId, body.wager, {
+          event_key: body.event_key,
+          source: 'telegram_pets_api',
+        });
+      } else if (body.action === 'adventure') {
+        result = await processPetAdventure(env.DB, telegramId, body.adventure_key, {
+          event_key: body.event_key,
+          source: 'telegram_pets_api',
+        });
+      } else if (body.action === 'run') {
+        result = await startOrResumePetRun(env.DB, telegramId, {
+          run_id: body.run_id,
+          source: 'telegram_pets_api',
+        });
+      } else if (body.action === 'run_step') {
+        const dailyReservation = await getDailyMoonRunReservation(env.DB, { telegram_id: telegramId, run_id: body.run_id });
+        result = dailyReservation
+          ? await processDailyMoonRunStepWithWeeklyJourney(env.DB, {
+            telegram_id: telegramId,
+            run_id: dailyReservation.run_id,
+            choice_key: body.choice_key,
+            expected_step_index: body.expected_step_index,
+          })
+          : await processPetRunStep(env.DB, telegramId, body.run_id, body.choice_key, {
+            event_key: body.event_key,
+            expected_step_index: body.expected_step_index,
+            source: 'telegram_pets_api',
+          });
+      } else if (body.action === 'run_extract') {
+        const dailyReservation = await getDailyMoonRunReservation(env.DB, { telegram_id: telegramId, run_id: body.run_id });
+        result = dailyReservation
+          ? await extractDailyMoonRunWithWeeklyJourney(env.DB, { telegram_id: telegramId, run_id: dailyReservation.run_id })
+          : await processPetRunExtract(env.DB, telegramId, body.run_id, {
+            event_key: body.event_key,
+            source: 'telegram_pets_api',
+          });
+      } else if (body.action === 'use_item') {
+        result = await processPetUseItem(env.DB, telegramId, body.item_key, {
+          event_key: body.event_key,
+          source: 'telegram_pets_api',
+        });
+      } else if (body.action === 'work') {
+        result = await processPetJob(env.DB, telegramId, body.job_key, {
+          event_key: body.event_key,
+          source: 'telegram_pets_api',
+        });
+      } else if (body.action === 'daily_chest') {
+        result = await processPetDailyChest(env.DB, telegramId, {
+          event_key: body.event_key,
+          source: 'telegram_pets_api',
+        });
+      } else if (body.action === 'random_event') {
+        result = await processPetRandomEvent(env.DB, telegramId, body.choice, {
+          event_key: body.event_key,
+          source: 'telegram_pets_api',
+        });
+      } else if (body.action === 'daily_run') {
+        result = await createDailyMoonRun(env.DB, { telegram_id: telegramId });
+      } else if (body.action === 'daily_run_sync') {
+        result = await syncDailyMoonRun(env.DB, { telegram_id: telegramId, utc_day: body.utc_day, run_id: body.run_id });
+      } else if (body.action === 'evolve') {
+        result = await evolveMoonpet(env.DB, { telegram_id: telegramId, evolution_id: body.evolution_id, event_key: body.event_key });
+        if (result.accepted && !result.duplicate) {
+          const identity = await getMoonpetIdentitySummary(env.DB, telegramId).catch(() => null);
+          result.lifecycle = await syncMoonpetLifecycleStage(env.DB, telegramId, identity?.current_stage?.stage || 0);
+        }
+        if (result.accepted) await finalizeActivePetEvolutionProgress(env.DB, telegramId);
+      } else {
+        result = await processPetAction(env.DB, telegramId, body.action, {
+          event_key: body.event_key,
+          pet_name: body.pet_name,
+          species: body.species,
+          source: 'telegram_pets_api',
+        });
+      }
+      const apiRuntimeAction = {
+        feed: 'feed',
+        play: 'play',
+        clean: 'clean',
+        sleep: 'sleep',
+        train: 'train',
+        energy_drink: 'energy_drink',
+        dance: 'dance',
+        cuddles: 'cuddles',
+        work: 'job',
+        daily_chest: 'daily_chest',
+        adventure: 'explore',
+        run_step: 'run_step',
+        run_extract: 'run_extract',
+      }[String(body.action || '').trim().toLowerCase()];
+      // Read the primary receipt, including its original equipment and runtime key.
+      // Standard/Daily Run paths already recover their own committed room records.
+      if (result?.accepted && apiRuntimeAction && !['run_step', 'run_extract'].includes(apiRuntimeAction)) {
+        await recoverPetRuntimeAwards(env.DB, telegramId, applyPetRuntimeCommandAward, { action: apiRuntimeAction });
+      }
+      // Legacy profile writes and per-pet instance writes share this endpoint.
+      // Let the authority-aware reconciler select the newer source instead of
+      // blindly copying a stale profile over an accepted per-pet reward.
+      await getPetProfile(env.DB, telegramId);
+      if (result.pet) result.pet = await getPetProfile(env.DB, telegramId);
+      const identity = await getMoonpetIdentitySummary(env.DB, telegramId).catch(() => null);
+      const displayName = resolveMoonpetDisplayName({
+        evolution_stage: identity?.current_stage?.stage,
+        art_identity_id: identity?.lifecycle?.art_identity_id,
+      }, identity || {});
+      const responseResult = { ...result, pet: serializePet(result.pet, identity) };
+      for (const key of ['name', 'pet_name', 'display_name', 'species_name']) {
+        if (Object.hasOwn(responseResult, key)) responseResult[key] = displayName;
+      }
+      if (Object.hasOwn(responseResult, 'species')) responseResult.species = displayName;
+      if (result.lifecycle) responseResult.lifecycle = publicMoonpetLifecycle(result.lifecycle);
+      return json(responseResult, result.accepted ? 200 : 409);
+    }
+
+    // ── GET /telegram/profile?telegram_id= ────────────────────────────────
+    // Reads from telegram_users; includes faction via telegram_faction_members.
+    if (path === '/telegram/profile' && request.method === 'GET') {
+      const telegramId = url.searchParams.get('telegram_id');
+      if (!telegramId) return err('telegram_id required');
+      try {
+        const [user, faction] = await Promise.all([
+          env.DB.prepare(
+            `SELECT telegram_id, username, first_name, last_name,
+                    wallet_address, xp, level, created_at, updated_at
+             FROM telegram_users WHERE telegram_id = ?`
+          ).bind(telegramId).first(),
+          getUserFaction(env.DB, telegramId),
+        ]);
+        if (!user) return err('Profile not found', 404);
+        return json({ profile: { ...user, faction: faction || null } });
+      } catch {
+        return err('Failed to load profile', 500);
+      }
+    }
+
+    // ── GET /telegram/leaderboard?limit= ──────────────────────────────────
+    // Uses the Community season; all-time is used only when no season exists.
+    if (path === '/telegram/leaderboard' && request.method === 'GET') {
+      try {
+        const { season, score_basis, rows } = await readCommunityLeaderboard(env.DB, url.searchParams.get('limit') || 10);
+        const entries = rows.map((r, i) => ({
+          rank: i + 1,
+          telegram_id: r.telegram_id,
+          username: r.username || null,
+          display_name: displayNameFromRow(r),
+          xp: r.xp || 0,
+        }));
+        const response = json({ type: 'community_xp', season, score_basis, entries });
+        response.headers.set('Cache-Control', 'no-store');
+        return response;
+      } catch {
+        const response = err('Failed to load leaderboard. Please retry.', 503);
+        response.headers.set('Cache-Control', 'no-store');
+        return response;
+      }
+    }
+
+    // ── GET /telegram/quests ──────────────────────────────────────────────
+    // Returns active quests filtered by start_date / end_date.
+    if (path === '/telegram/quests' && request.method === 'GET') {
+      try {
+        const now = new Date().toISOString();
+        const rows = await env.DB.prepare(
+          `SELECT id, title, description, xp_reward, start_date, end_date
+           FROM telegram_quests
+           WHERE is_active = 1
+             AND (start_date IS NULL OR start_date <= ?)
+             AND (end_date IS NULL OR end_date >= ?)
+           ORDER BY created_at DESC`
+        ).bind(now, now).all();
+        return json({ quests: rows.results || [] });
+      } catch {
+        return err('Failed to load quests', 500);
+      }
+    }
+
+    // ── POST /telegram/link ────────────────────────────────────────────────
+    // Internal/admin only. Body: { telegram_id }
+    // Invalidates outstanding tokens and generates a new one-time token
+    // stored in telegram_link_tokens (15-minute TTL).
+    // Rejects if the user's anti-cheat state is blocked.
+    if (path === '/telegram/link' && request.method === 'POST') {
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/telegram/link', null, corsHeaders, { includeTelegram: false }); if (_rateLimit) return _rateLimit; }
+      if (!(await isAuthorizedByAdminSecret(request, env))) {
+        logApiFailure('telegram_link_token_mint_denied', {
+          hasAdminSecret: !!String(env.ADMIN_SECRET || '').trim(),
+          hasHeaderSecret: !!readAdminSecret(request),
+        });
+        return err('Unauthorized', 401);
+      }
+
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON'); }
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/telegram/link', body, corsHeaders, { includeIp: false }); if (_rateLimit) return _rateLimit; }
+      const { telegram_id } = body || {};
+      const telegramId = String(telegram_id || '').trim();
+      if (!/^\d{1,20}$/.test(telegramId)) return err('telegram_id invalid');
+
+      // Anti-cheat gate: reject competitive link action if account is blocked.
+      try {
+        const acState = await env.DB.prepare(
+          `SELECT is_blocked FROM telegram_anticheat_state WHERE telegram_id = ?`
+        ).bind(telegramId).first();
+        if (acState && acState.is_blocked === 1) {
+          return err('Account is blocked from competitive actions. Contact the Moonboys community on Telegram to appeal.', 403);
+        }
+      } catch (error) {
+        logApiFailure('telegram_link_anticheat_check_failed', {
+          telegramId,
+          message: error?.message || String(error),
+        });
+      }
+
+      try {
+        const linkToken = await createTelegramLinkToken(env.DB, telegramId);
+        return json({ ok: true, ...linkToken });
+      } catch (error) {
+        logApiFailure('telegram_link_token_create_failed', {
+          telegramId,
+          message: error?.message || String(error),
+        });
+        return err('Failed to generate link token', 500);
+      }
+    }
+
+    // ── GET /telegram/link/confirm?token= ─────────────────────────────────
+    // Validates a one-time token from telegram_link_tokens.
+    // Checks is_used = 0 and expires_at; marks is_used = 1 on success.
+    if (path === '/telegram/link/confirm' && request.method === 'GET') {
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/telegram/link/confirm', null, corsHeaders); if (_rateLimit) return _rateLimit; }
+      const token = url.searchParams.get('token');
+      if (!token || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token)) {
+        return err('token required');
+      }
+      const now = new Date().toISOString();
+      try {
+        const row = await env.DB.prepare(
+          `SELECT telegram_id FROM telegram_link_tokens
+           WHERE token = ? AND is_used = 0 AND expires_at > ?`
+        ).bind(token, now).first();
+        if (!row) return err('Invalid or expired link token', 410);
+
+        await env.DB.prepare(
+          `UPDATE telegram_link_tokens SET is_used = 1 WHERE token = ?`
+        ).bind(token).run();
+
+        const user = await env.DB.prepare(
+          `SELECT telegram_id, username, first_name, last_name
+           FROM telegram_users WHERE telegram_id = ?`
+        ).bind(String(row.telegram_id)).first().catch(() => null);
+
+        const signedAuthPayload = await buildSignedTelegramAuthPayload({
+          id: String(row.telegram_id),
+          username: user?.username || null,
+          first_name: user?.first_name || null,
+          last_name: user?.last_name || null,
+          photo_url: null,
+        }, env.TELEGRAM_BOT_TOKEN);
+        if (!signedAuthPayload || !signedAuthPayload.hash || !signedAuthPayload.auth_date) {
+          logApiFailure('telegram_link_confirm_auth_payload_sign_failed', { telegramId: String(row.telegram_id) });
+          return err('Failed to generate signed Telegram auth payload', 500);
+        }
+
+        return json({
+          ok: true,
+          telegram_id: row.telegram_id,
+          telegram_name: displayNameFromRow(user || { telegram_id: row.telegram_id }),
+          telegram_auth: signedAuthPayload,
+        });
+      } catch {
+        return err('Failed to confirm link token', 500);
+      }
+    }
+
+    // ── POST /telegram/link/confirm ────────────────────────────────────────
+    // Body: { telegram_auth }
+    // Verifies a signed Telegram auth payload directly from the /gklink URL.
+    if (path === '/telegram/link/confirm' && request.method === 'POST') {
+      let body;
+      try {
+        body = await request.json();
+      } catch {
+        console.log('[telegram_link_confirm]', JSON.stringify({
+          event: 'invalid_json',
+          timestamp: new Date().toISOString(),
+        }));
+        return err('Invalid JSON');
+      }
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/telegram/link/confirm', body, corsHeaders); if (_rateLimit) return _rateLimit; }
+
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      console.log('[telegram_link_confirm]', JSON.stringify({
+        event: 'payload_received',
+        hasTelegramAuth: !!verified?.authPayload,
+        telegramId: verified?.authPayload?.id ? String(verified.authPayload.id) : null,
+        timestamp: new Date().toISOString(),
+      }));
+      if (verified?.error) {
+        console.log('[telegram_link_confirm]', JSON.stringify({
+          event: 'verification_failed',
+          telegramId: verified?.authPayload?.id ? String(verified.authPayload.id) : null,
+          reason: verified.error,
+          status: verified.status || 401,
+          timestamp: new Date().toISOString(),
+        }));
+        return err(verified.error, verified.status || 401);
+      }
+
+      try {
+        const acState = await env.DB.prepare(
+          `SELECT is_blocked FROM telegram_anticheat_state WHERE telegram_id = ?`
+        ).bind(String(verified.telegramId)).first().catch(() => null);
+        if (acState && acState.is_blocked === 1) {
+          return err('Account is blocked from competitive actions. Contact the Moonboys community on Telegram to appeal.', 403);
+        }
+
+        await upsertTelegramUser(env.DB, verified.user);
+        try {
+          await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+        } catch (error) {
+          logApiFailure('telegram_link_confirm_progression_create_failed', {
+            telegramId: verified.telegramId,
+            message: error?.message || String(error),
+          });
+        }
+        await logTelegramActivity(env.DB, verified.telegramId, 'link_confirmed', JSON.stringify({
+          source: 'signed_payload',
+          linked_at: new Date().toISOString(),
+        })).catch((error) => {
+          logApiFailure('telegram_link_confirm_activity_log_failed', {
+            telegramId: verified.telegramId,
+            message: error?.message || String(error),
+          });
+        });
+
+        const user = await env.DB.prepare(
+          `SELECT telegram_id, username, first_name, last_name
+           FROM telegram_users WHERE telegram_id = ?`
+        ).bind(String(verified.telegramId)).first().catch(() => null);
+
+        console.log('[telegram_link_confirm]', JSON.stringify({
+          event: 'verification_succeeded',
+          telegramId: verified.telegramId,
+          timestamp: new Date().toISOString(),
+        }));
+
+        return json({
+          ok: true,
+          telegram_id: verified.telegramId,
+          telegram_name: displayNameFromRow(user || { telegram_id: verified.telegramId }),
+          telegram_auth: verified.authPayload,
+        });
+      } catch (error) {
+        console.log('[telegram_link_confirm]', JSON.stringify({
+          event: 'confirm_exception',
+          telegramId: verified.telegramId,
+          reason: error?.message || String(error),
+          timestamp: new Date().toISOString(),
+        }));
+        return err('Failed to confirm Telegram link', 500);
+      }
+    }
+
+    // ── GET /telegram/activity?limit= ─────────────────────────────────────
+    // Reads from telegram_activity_log joined to telegram_users for display name.
+    if (path === '/telegram/activity' && request.method === 'GET') {
+      const limit = Math.min(parseInt(url.searchParams.get('limit') || '10', 10), 50);
+      try {
+        const rows = await env.DB.prepare(
+          `SELECT al.telegram_id, al.action, al.metadata, al.created_at,
+                  tu.username, tu.first_name, tu.last_name
+           FROM telegram_activity_log al
+           LEFT JOIN telegram_users tu ON tu.telegram_id = al.telegram_id
+           ORDER BY al.created_at DESC
+           LIMIT ?`
+        ).bind(limit).all();
+
+        const items = (rows.results || []).map(r => ({
+          icon:     '⚡',
+          text:     `${displayNameFromRow(r)}: ${r.action}`,
+          time_ago: timeAgo(r.created_at),
+        }));
+        return json({ items });
+      } catch {
+        return err('Failed to load activity', 500);
+      }
+    }
+
+    // ── GET /telegram/daily-status?telegram_id= ───────────────────────────
+    // Determines daily claim status from telegram_xp_log where action='daily_claim'
+    // and created_at falls within today UTC.
+    if (path === '/telegram/daily-status' && request.method === 'GET') {
+      const telegramId = url.searchParams.get('telegram_id');
+      if (!telegramId) return err('telegram_id required');
+      const today = getTodayUtcDate();
+      try {
+        const claimed = await hasDailyClaimToday(env.DB, telegramId);
+        return json({ claimed, date: today });
+      } catch {
+        return err('Failed to check daily status', 500);
+      }
+    }
+
+    // ── GET /telegram/season/current ──────────────────────────────────────
+    // Uses telegram_seasons if present; returns a safe fallback without crashing.
+    if (path === '/telegram/season/current' && request.method === 'GET') {
+      try {
+        const season = await getCurrentSeason(env.DB);
+        if (!season) {
+          return json({
+            season:  null,
+            message: 'No active season found',
+            year:    new Date().getUTCFullYear(),
+          });
+        }
+        return json({ season, year: new Date().getUTCFullYear() });
+      } catch {
+        return json({
+          season:  null,
+          message: 'Season info temporarily unavailable',
+          year:    new Date().getUTCFullYear(),
+        });
+      }
+    }
+
+    // ── GET/POST /telegram/user/status ─────────────────────────────────────
+    // GET keeps the direct telegram_id status lookup for existing pages.
+    // POST additionally accepts signed browser auth evidence so the frontend
+    // can restore a linked identity without already knowing telegram_id.
+    if (path === '/telegram/user/status' && (request.method === 'GET' || request.method === 'POST')) {
+      let requestBody = null;
+      if (request.method === 'POST') {
+        try {
+          requestBody = await request.json();
+        } catch {
+          requestBody = {};
+        }
+      }
+      const restoreEvidence = request.method === 'POST'
+        ? await verifyTelegramAuthEvidenceForRestore(requestBody, env)
+        : null;
+      const requestedTelegramId = String(
+        url.searchParams.get('telegram_id')
+        || requestBody?.telegram_id
+        || ''
+      ).trim();
+      if (
+        restoreEvidence?.telegramId
+        && requestedTelegramId
+        && String(restoreEvidence.telegramId) !== requestedTelegramId
+      ) {
+        return err('Telegram auth does not match requested user', 401);
+      }
+      const telegramId = String(
+        restoreEvidence?.telegramId
+        || requestedTelegramId
+        || ''
+      ).trim();
+      if (!telegramId) {
+        return json({
+          ok: true,
+          linked: false,
+          link_confirmed: false,
+          recovery: {
+            attempted: request.method === 'POST',
+            restored_from: null,
+          },
+          error: 'not_linked',
+        });
+      }
+
+      try {
+        // Fetch user profile, anti-cheat state, and server-side linked evidence in parallel.
+        const [user, acState, linkEvent, blockTopiaProgression] = await Promise.all([
+          env.DB.prepare(
+            `SELECT telegram_id, username, first_name, last_name, xp, level, created_at
+             FROM telegram_users WHERE telegram_id = ?`
+          ).bind(telegramId).first().catch(() => null),
+          env.DB.prepare(
+            `SELECT is_blocked, block_type, blocked_reason, lifetime_strikes,
+                    season_risk_score, year_risk_score, last_scan_at
+             FROM telegram_anticheat_state WHERE telegram_id = ?`
+          ).bind(telegramId).first().catch(() => null),
+          env.DB.prepare(
+            `SELECT action, created_at
+             FROM telegram_activity_log
+             WHERE telegram_id = ? AND action = 'link_confirmed'
+             ORDER BY created_at DESC
+             LIMIT 1`
+          ).bind(telegramId).first().catch(() => null),
+          env.DB.prepare(
+            `SELECT telegram_id, xp, gems, tier, rpg_mode_active, updated_at
+             FROM blocktopia_progression
+             WHERE telegram_id = ?
+             LIMIT 1`
+          ).bind(telegramId).first().catch(() => null),
+        ]);
+
+        if (!user) {
+          return json({
+            ok: true,
+            linked: false,
+            link_confirmed: false,
+            recovery: {
+              attempted: request.method === 'POST',
+              restored_from: restoreEvidence ? 'signed_browser_auth' : (url.searchParams.get('telegram_id') ? 'telegram_id' : null),
+            },
+            error: 'not_linked',
+          });
+        }
+
+        const linked = Boolean(linkEvent || blockTopiaProgression);
+        const canRestoreSignedAuth = request.method === 'POST'
+          && !!restoreEvidence
+          && String(restoreEvidence.telegramId || '') === String(user.telegram_id || '');
+        const signedAuthPayload = (linked && canRestoreSignedAuth)
+          ? await buildSignedTelegramAuthPayload({
+            id: String(user.telegram_id),
+            username: user.username || null,
+            first_name: user.first_name || null,
+            last_name: user.last_name || null,
+            photo_url: null,
+          }, env.TELEGRAM_BOT_TOKEN, restoreEvidence?.authPayload?.auth_date)
+          : null;
+
+        return json({
+          telegram_id:      user.telegram_id,
+          username:         user.username    || null,
+          display_name:     displayNameFromRow(user),
+          xp:               user.xp          || 0,
+          level:            user.level        || 1,
+          member_since:     (user.created_at || '').slice(0, 10),
+          linked,
+          link_confirmed: linked,
+          ok: true,
+          link_source: linkEvent ? 'telegram_activity_log' : (blockTopiaProgression ? 'blocktopia_progression' : null),
+          ...(signedAuthPayload ? { telegram_auth: signedAuthPayload } : {}),
+          recovery: {
+            attempted: request.method === 'POST',
+            restored_from: restoreEvidence ? 'signed_browser_auth' : (url.searchParams.get('telegram_id') ? 'telegram_id' : null),
+          },
+          blocktopia_progression: blockTopiaProgression ? {
+            xp: Number(blockTopiaProgression.xp || 0),
+            gems: Number(blockTopiaProgression.gems || 0),
+            tier: Number(blockTopiaProgression.tier || 1),
+            rpg_mode_active: Number(blockTopiaProgression.rpg_mode_active || 0) === 1,
+            updated_at: blockTopiaProgression.updated_at || null,
+          } : null,
+          anticheat: acState ? {
+            is_blocked:       acState.is_blocked       === 1,
+            block_type:       acState.block_type        || null,
+            blocked_reason:   acState.blocked_reason    || null,
+            lifetime_strikes: acState.lifetime_strikes  || 0,
+            season_risk_score: acState.season_risk_score || 0,
+            year_risk_score:   acState.year_risk_score   || 0,
+            last_scan_at:      acState.last_scan_at      || null,
+          } : {
+            is_blocked: false,
+            block_type: null,
+            blocked_reason: null,
+            lifetime_strikes: 0,
+            season_risk_score: 0,
+            year_risk_score: 0,
+            last_scan_at: null,
+          },
+        });
+      } catch {
+        return err('Failed to load user status', 500);
+      }
+    }
+
+    // ── GET /roguelite/daily-state (legacy) OR POST JSON { telegram_auth }
+    const isRogueliteDailyRoute =
+      path === '/roguelite/daily-state' ||
+      path === '/roguelite/missed-history' ||
+      path === '/roguelite/mark-missed' ||
+      path === '/telegram/daily-digest/run';
+
+    if (isRogueliteDailyRoute) {
+      const rogueliteDailyResponse = await handleRogueliteDailyRoutes(request, env, url, {
+        path,
+        json,
+        err,
+        verifyTelegramAuth,
+        upsertTelegramUser,
+        logApiFailure,
+        readAdminSecret,
+        isAdminTelegramUser,
+        runTelegramDailyDigest,
+      });
+      if (rogueliteDailyResponse) return rogueliteDailyResponse;
+    }
+
+    if (path === '/wtf/events/today' && (request.method === 'GET' || request.method === 'POST')) {
+      let body = {};
+      if (request.method === 'POST') {
+        try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      }
+      const wtfCheck = await ensureDailyWtfTables(env.DB);
+      if (wtfCheck) return wtfCheck.response;
+      const utcDay = getTodayUtcDate();
+      await ensureWtfEventsForDay(env.DB, utcDay);
+      const nowMs = Date.now();
+      const events = await env.DB.prepare(`SELECT * FROM daily_wtf_events WHERE utc_day = ? ORDER BY starts_at ASC`).bind(utcDay).all().catch(() => ({ results: [] }));
+      const officialEventIds = new Set(getWtfDailySchedule(utcDay).map((event) => event.event_id));
+      const officialRows = (events?.results || []).filter((row) => officialEventIds.has(String(row.event_id)));
+
+      if (request.method === 'GET') {
+        const normalizedPublic = officialRows.map((row) => ({
+          event_id: row.event_id,
+          utc_day: row.utc_day,
+          start_at: row.starts_at,
+          end_at: row.ends_at,
+          event_type: row.event_type,
+          title: row.title,
+          description: row.description,
+          required_action: row.required_action,
+          reward_preview: row.reward_key,
+          multiplier_display: row.xp_multiplier_display || '5x XP opportunity',
+          visual_theme: row.theme || 'neon-signal',
+          status: getWtfEventStatus(nowMs, row.starts_at, row.ends_at, 'upcoming'),
+        }));
+        const activeEvent = normalizedPublic.find((row) => row.status === 'active') || null;
+        let upcomingEvents = normalizedPublic.filter((row) => row.status === 'upcoming');
+        let nextEvent = upcomingEvents[0] || null;
+        if (!activeEvent && !nextEvent) {
+          nextEvent = await getNextDailyWtfEvent(env.DB, utcDay, (row) => ({
+            event_id: row.event_id,
+            utc_day: row.utc_day,
+            start_at: row.starts_at,
+            end_at: row.ends_at,
+            event_type: row.event_type,
+            title: row.title,
+            description: row.description,
+            required_action: row.required_action,
+            reward_preview: row.reward_key,
+            multiplier_display: row.xp_multiplier_display || '5x XP opportunity',
+            visual_theme: row.theme || 'neon-signal',
+            status: 'upcoming',
+          }));
+          if (nextEvent) upcomingEvents = [nextEvent];
+        }
+        const countdownTarget = activeEvent ? activeEvent.end_at : nextEvent ? nextEvent.start_at : null;
+        return json({
+          ok: true,
+          auth_mode: 'public_schedule',
+          utc_day: utcDay,
+          active_event: activeEvent,
+          upcoming_events: upcomingEvents,
+          next_event: nextEvent,
+          countdown_seconds: countdownTarget ? Math.max(0, Math.floor((Date.parse(countdownTarget) - nowMs) / 1000)) : 0,
+        });
+      }
+
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      await upsertTelegramUser(env.DB, verified.user);
+      await reconcileWtfExpiryForUser(env.DB, verified.telegramId, utcDay, nowMs);
+
+      const playerRows = await env.DB.prepare(`
+        SELECT event_id, status, checked_in_at, completed_at, missed_at, chain_depth, reward_status
+        FROM daily_wtf_player_events
+        WHERE telegram_id = ? AND utc_day = ?
+      `).bind(verified.telegramId, utcDay).all().catch(() => ({ results: [] }));
+      const byEvent = new Map((playerRows?.results || []).map((row) => [String(row.event_id), row]));
+      const chainOptions = await env.DB.prepare(`
+        SELECT event_id, option_id, option_type, status, reward_key, display_title, display_text
+        FROM daily_wtf_chain_options
+        WHERE telegram_id = ? AND utc_day = ? AND status = 'available'
+        ORDER BY created_at DESC
+      `).bind(verified.telegramId, utcDay).all().catch(() => ({ results: [] }));
+      const availableByEvent = {};
+      for (const opt of (chainOptions?.results || [])) {
+        const key = String(opt.event_id);
+        if (!availableByEvent[key]) availableByEvent[key] = [];
+        availableByEvent[key].push(opt);
+      }
+
+      const normalized = officialRows.map((row) => {
+        const player = byEvent.get(String(row.event_id)) || null;
+        const scheduleStatus = getWtfEventStatus(nowMs, row.starts_at, row.ends_at, player?.status || 'upcoming');
+        let playerStatus = 'not_checked_in';
+        if (player?.completed_at) playerStatus = 'completed';
+        else if (player?.status === 'missed') playerStatus = 'missed';
+        else if (player?.checked_in_at && scheduleStatus === 'active') playerStatus = 'checked_in';
+        else if (scheduleStatus === 'expired') playerStatus = (player?.status === 'missed' ? 'missed' : 'expired');
+        return {
+          event_id: row.event_id,
+          utc_day: row.utc_day,
+          start_at: row.starts_at,
+          end_at: row.ends_at,
+          event_type: row.event_type,
+          title: row.title,
+          description: row.description,
+          required_action: row.required_action,
+          reward_preview: row.reward_key,
+          multiplier_display: row.xp_multiplier_display || '5x XP opportunity',
+          visual_theme: row.theme || 'neon-signal',
+          status: scheduleStatus,
+          player_status: playerStatus,
+          checked_in_at: player?.checked_in_at || null,
+          completed_at: player?.completed_at || null,
+          chain_depth: Math.max(0, Math.floor(Number(player?.chain_depth) || 0)),
+          chain_options: availableByEvent[String(row.event_id)] || [],
+        };
+      });
+      const activeEvent = normalized.find((row) => row.status === 'active') || null;
+      let upcomingEvents = normalized.filter((row) => row.status === 'upcoming');
+      let nextEvent = upcomingEvents[0] || null;
+      if (!activeEvent && !nextEvent) {
+        nextEvent = await getNextDailyWtfEvent(env.DB, utcDay, (row) => ({
+          event_id: row.event_id,
+          utc_day: row.utc_day,
+          start_at: row.starts_at,
+          end_at: row.ends_at,
+          event_type: row.event_type,
+          title: row.title,
+          description: row.description,
+          required_action: row.required_action,
+          reward_preview: row.reward_key,
+          multiplier_display: row.xp_multiplier_display || '5x XP opportunity',
+          visual_theme: row.theme || 'neon-signal',
+          status: 'upcoming',
+          player_status: 'not_checked_in',
+          checked_in_at: null,
+          completed_at: null,
+          chain_depth: 0,
+          chain_options: [],
+        }));
+        if (nextEvent) upcomingEvents = [nextEvent];
+      }
+      const countdownTarget = activeEvent ? activeEvent.end_at : nextEvent ? nextEvent.start_at : null;
+      const missedXpValueAvailable = await hasDailyMissedXpValueColumn(env.DB);
+      const [allTimeMissedTotals, todayMissedTotals] = await Promise.all([
+        getMissedPerkTotals(env.DB, verified.telegramId, null, missedXpValueAvailable),
+        getMissedPerkTotals(env.DB, verified.telegramId, utcDay, missedXpValueAvailable),
+      ]);
+      return json({
+        ok: true,
+        auth_mode: 'telegram_verified',
+        telegram_id: verified.telegramId,
+        utc_day: utcDay,
+        active_event: activeEvent,
+        upcoming_events: upcomingEvents,
+        next_event: nextEvent,
+        countdown_seconds: countdownTarget ? Math.max(0, Math.floor((Date.parse(countdownTarget) - nowMs) / 1000)) : 0,
+        checked_in: !!(activeEvent && activeEvent.player_status === 'checked_in'),
+        current_task: activeEvent ? activeEvent.required_action : null,
+        completed_today: normalized.filter((row) => row.player_status === 'completed').length,
+        missed_today: normalized.filter((row) => row.player_status === 'missed' || row.player_status === 'expired').length,
+        missed_history_count: allTimeMissedTotals.events_total,
+        missed_events_all_time: allTimeMissedTotals.events_total,
+        missed_xp_all_time: allTimeMissedTotals.xp_total,
+        missed_events_today: todayMissedTotals.events_total,
+        missed_xp_today: todayMissedTotals.xp_total,
+        chain_options: activeEvent ? (activeEvent.chain_options || []) : ((chainOptions?.results || []).slice(0, 3)),
+      });
+    }
+
+    if (path === '/wtf/events/check-in' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      const wtfCheck = await ensureDailyWtfTables(env.DB);
+      if (wtfCheck) return wtfCheck.response;
+      await upsertTelegramUser(env.DB, verified.user);
+      const utcDay = getTodayUtcDate();
+      const eventId = clampText(body?.event_id, 80, '');
+      const event = await env.DB.prepare(`SELECT event_id, starts_at, ends_at, required_action FROM daily_wtf_events WHERE utc_day = ? AND event_id = ? LIMIT 1`).bind(utcDay, eventId).first().catch(() => null);
+      if (!event) return err('event_id not found for UTC day', 404);
+      const nowMs = Date.now();
+      if (nowMs < Date.parse(event.starts_at) || nowMs >= Date.parse(event.ends_at)) return err('Event is not active', 409);
+      const existing = await env.DB.prepare(`SELECT status, checked_in_at, completed_at FROM daily_wtf_player_events WHERE telegram_id = ? AND event_id = ? AND utc_day = ? LIMIT 1`).bind(verified.telegramId, eventId, utcDay).first().catch(() => null);
+      if (existing?.completed_at) {
+        return json({ ok: true, event_id: eventId, status: 'completed', already_completed: true, current_task: event.required_action });
+      }
+      const nowIso = new Date().toISOString();
+      await env.DB.prepare(`
+        INSERT INTO daily_wtf_player_events
+          (telegram_id, event_id, utc_day, status, checked_in_at, completed_at, chain_depth, reward_status, metadata_json, created_at, updated_at)
+        VALUES (?, ?, ?, 'checked_in', ?, NULL, 0, 'none', ?, ?, ?)
+        ON CONFLICT(telegram_id, event_id, utc_day) DO UPDATE SET
+          status = CASE WHEN daily_wtf_player_events.completed_at IS NOT NULL THEN 'completed' ELSE 'checked_in' END,
+          checked_in_at = COALESCE(daily_wtf_player_events.checked_in_at, excluded.checked_in_at),
+          updated_at = excluded.updated_at
+      `).bind(verified.telegramId, eventId, utcDay, nowIso, JSON.stringify({ source: 'daily_wtf_checkin' }), nowIso, nowIso).run();
+      return json({ ok: true, event_id: eventId, status: 'checked_in', current_task: event.required_action });
+    }
+
+    if (path === '/wtf/events/complete' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      const wtfCheck = await ensureDailyWtfTables(env.DB);
+      if (wtfCheck) return wtfCheck.response;
+      const utcDay = getTodayUtcDate();
+      const eventId = clampText(body?.event_id, 80, '');
+      const source = clampText(body?.completion_source, 80, '');
+      if (!WTF_ALLOWED_COMPLETION_SOURCES.has(source)) {
+        return json({
+          error: 'proof_required',
+          message: 'Completion proof is required before this WTF signal can be cleared.',
+        }, 409);
+      }
+      const event = await env.DB.prepare(`SELECT * FROM daily_wtf_events WHERE utc_day = ? AND event_id = ? LIMIT 1`).bind(utcDay, eventId).first().catch(() => null);
+      if (!event) return err('event not found', 404);
+      const nowMs = Date.now();
+      const startsAtMs = Date.parse(event.starts_at);
+      const endsAtMs = Date.parse(event.ends_at);
+      if (Number.isFinite(startsAtMs) && nowMs < startsAtMs) return err('event_inactive', 409);
+      if (Number.isFinite(endsAtMs) && nowMs >= endsAtMs) {
+        await upsertWtfMissedEntry(env.DB, { telegramId: verified.telegramId, utcDay, eventRow: event, reason: 'attempted_completion_after_expiry' });
+        return err('event_expired', 409);
+      }
+      const allowedForEvent = getAllowedSourcesForWtfEvent(event);
+      if (!allowedForEvent.includes(source)) {
+        return json({
+          error: 'proof_required',
+          message: 'Completion proof source does not match this WTF objective.',
+        }, 409);
+      }
+      const proofResult = await verifyWtfCompletionProof(env.DB, {
+        telegramId: verified.telegramId,
+        source,
+        sourceId: clampText(body?.source_id, 120, ''),
+        event,
+        utcDay,
+      });
+      if (!proofResult?.ok) {
+        return json({
+          error: 'proof_required',
+          message: proofResult?.message || 'Completion proof is required before this WTF signal can be cleared.',
+        }, 409);
+      }
+      const player = await env.DB.prepare(`SELECT * FROM daily_wtf_player_events WHERE telegram_id = ? AND event_id = ? AND utc_day = ? LIMIT 1`).bind(verified.telegramId, eventId, utcDay).first().catch(() => null);
+      if (!player || !player.checked_in_at) return err('check-in required', 409);
+      if (player.completed_at) return json({ ok: true, event_id: eventId, already_completed: true });
+      const dailyTriggers = await env.DB.prepare(`SELECT COUNT(*) AS total FROM daily_wtf_player_events WHERE telegram_id = ? AND utc_day = ? AND completed_at IS NOT NULL`).bind(verified.telegramId, utcDay).first().catch(() => ({ total: 0 }));
+      if (Number(dailyTriggers?.total || 0) >= WTF_MAX_CHAIN_TRIGGERS_PER_DAY) return err('daily chain cap reached', 429);
+      const completedToday = Math.max(0, Math.floor(Number(dailyTriggers?.total || 0)));
+      const chainDepth = Math.min(WTF_MAX_CHAIN_DEPTH, completedToday + 1);
+      const nowIso = new Date().toISOString();
+      const bonusXp = Math.min(WTF_MAX_BONUS_XP_PER_EVENT, 100 * chainDepth);
+      await env.DB.prepare(`UPDATE daily_wtf_player_events SET status='completed', completed_at=?, chain_depth=?, reward_status='previewed', updated_at=?, metadata_json=? WHERE telegram_id=? AND event_id=? AND utc_day=?`)
+        .bind(nowIso, chainDepth, nowIso, JSON.stringify({
+          completion_source: source,
+          source_id: clampText(body?.source_id, 120, ''),
+          proof: proofResult?.proof || null,
+          bonus_xp_preview: bonusXp,
+          persisted_xp_awarded: false,
+        }), verified.telegramId, eventId, utcDay).run();
+      const options = ['comeback', 'chaos', 'faction'].map((type, idx) => ({
+        option_id: `${eventId}-o${idx + 1}`,
+        option_type: type,
+        reward_key: `${event.reward_key}:${type}`,
+        display_title: type === 'comeback' ? 'Comeback Route' : (type === 'chaos' ? 'Chaos Route' : 'Faction Route'),
+        display_text: 'Choose one path to unlock the next objective.',
+      }));
+      for (const option of options) {
+        await env.DB.prepare(`
+          INSERT INTO daily_wtf_chain_options
+            (telegram_id, event_id, utc_day, option_id, option_type, status, reward_key, display_title, display_text, created_at)
+          VALUES (?, ?, ?, ?, ?, 'available', ?, ?, ?, ?)
+          ON CONFLICT(telegram_id, event_id, utc_day, option_id) DO NOTHING
+        `).bind(verified.telegramId, eventId, utcDay, option.option_id, option.option_type, option.reward_key, option.display_title, option.display_text, nowIso).run();
+      }
+      return json({
+        ok: true,
+        event_id: eventId,
+        status: 'completed',
+        xp_burst: {
+          title: 'WTF BONUS PREVIEW',
+          base_xp: 0,
+          bonus_xp: bonusXp,
+          total_xp: bonusXp,
+          milestones: [100, 250, 500],
+          event_id: eventId,
+          chain_options: options,
+          reduced_motion_fallback: true,
+          persisted_xp_awarded: false,
+          reward_status: 'previewed',
+          message: 'XP opportunity preview only. Persistent XP award is server-authority gated.',
+        },
+        reward_status: 'previewed',
+        chain_options: options,
+      });
+    }
+
+    if (path === '/wtf/events/choose-option' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      const wtfCheck = await ensureDailyWtfTables(env.DB);
+      if (wtfCheck) return wtfCheck.response;
+      const utcDay = getTodayUtcDate();
+      const eventId = clampText(body?.event_id, 80, '');
+      const optionId = clampText(body?.option_id, 120, '');
+      const option = await env.DB.prepare(`SELECT * FROM daily_wtf_chain_options WHERE telegram_id = ? AND event_id = ? AND utc_day = ? AND option_id = ? LIMIT 1`).bind(verified.telegramId, eventId, utcDay, optionId).first().catch(() => null);
+      if (!option) return err('option not found', 404);
+      if (option.status !== 'available') return err('option already claimed', 409);
+      const nowIso = new Date().toISOString();
+      await env.DB.prepare(`UPDATE daily_wtf_chain_options SET status='chosen', chosen_at=? WHERE telegram_id = ? AND event_id = ? AND utc_day = ? AND option_id = ?`)
+        .bind(nowIso, verified.telegramId, eventId, utcDay, optionId).run();
+      return json({
+        ok: true,
+        event_id: eventId,
+        option_id: optionId,
+        status: 'chosen',
+        next_objective: `Complete the ${option.display_title.toLowerCase()} objective before the next signal window.`,
+      });
+    }
+    if (path === '/telegram/group-announcements/run' && request.method === 'POST') {
+      let body = {};
+      try { body = await request.json(); } catch { body = {}; }
+      const configuredSecret = String(env.ADMIN_SECRET || '').trim();
+      const headerSecret = readAdminSecret(request);
+      let allowed = false;
+      let authMode = null;
+      if (configuredSecret && headerSecret === configuredSecret) {
+        allowed = true;
+        authMode = 'admin_secret';
+      } else if (body && body.telegram_auth) {
+        const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+        if (!verified.error && isAdminTelegramUser(verified.telegramId, env)) {
+          allowed = true;
+          authMode = 'admin_telegram_auth';
+        }
+      }
+      if (!allowed) return err('Unauthorized', 401);
+      const type = ['timed_events', 'daily_summary', 'all'].includes(String(body?.type || 'all')) ? String(body?.type || 'all') : 'all';
+      const summary = await runTelegramGroupAnnouncements(env, {
+        trigger: 'manual_route',
+        dry_run: body?.dry_run === true,
+        force: body?.force === true,
+        now: body?.now ? String(body.now) : undefined,
+        type,
+        announcement_key: body?.announcement_key ? String(body.announcement_key) : null,
+        event_id: body?.event_id ? String(body.event_id) : null,
+        utc_day: body?.utc_day ? String(body.utc_day) : null,
+      });
+      return json({
+        ok: !!summary?.ok,
+        auth_mode: authMode,
+        ...summary,
+      }, summary?.ok ? 200 : 503);
+    }
+
+    // ── GET /faction/status with telegram_auth query payload ──────────────
+    // Shared arcade progression sync endpoint.
+    if (path === '/arcade/progression/sync' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+
+      const entries = Array.isArray(body?.entries) ? body.entries.slice(0, ARCADE_MAX_BATCH_ENTRIES) : [];
+      if (!entries.length) return json({ ok: true, results: [], synced: { accepted: 0, duplicate: 0, rejected: 0 } });
+
+      try {
+        await ensureArcadeProgressionTables(env.DB);
+        await upsertTelegramUser(env.DB, verified.user);
+
+        const nowMs = Date.now();
+        let state = await getOrCreateArcadeProgressionState(env.DB, verified.telegramId, nowMs);
+        const nowSql = sqliteNowFromMs(nowMs);
+        const restrictedUntilMs = parseSqliteTs(state.restricted_until);
+        if (restrictedUntilMs && restrictedUntilMs > nowMs) {
+          return json({
+            ok: false,
+            error: 'Arcade progression is temporarily restricted',
+            restricted_until: new Date(restrictedUntilMs).toISOString(),
+          }, 429);
+        }
+
+        const results = [];
+        let acceptedCount = 0;
+        let duplicateCount = 0;
+        let rejectedCount = 0;
+        let xpBatchAwarded = 0;
+
+        for (const input of entries) {
+          const clientRunId = String(input?.client_run_id || '').trim().slice(0, 128);
+          if (!clientRunId) {
+            rejectedCount += 1;
+            results.push({ client_run_id: null, status: 'rejected', reason: 'missing_client_run_id', xp_awarded: 0 });
+            continue;
+          }
+
+          const game = normalizeArcadeGameKey(input?.game);
+          const rawScore = normalizeScore(input?.raw_score);
+          const localMetaPoints = normalizeMetaPoints(input?.meta_points);
+          const normalizedPoints = computeNormalizedArcadePoints(game, rawScore, localMetaPoints);
+
+          const claimed = await env.DB.prepare(`
+            INSERT INTO arcade_progression_events
+              (id, telegram_id, client_run_id, game, raw_score, local_meta_points, normalized_points, xp_awarded, status, reason, processed_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'processing', 'claim_pending', CURRENT_TIMESTAMP)
+            ON CONFLICT(telegram_id, client_run_id) DO NOTHING
+          `).bind(
+            crypto.randomUUID(),
+            verified.telegramId,
+            clientRunId,
+            game,
+            rawScore,
+            localMetaPoints,
+            normalizedPoints,
+          ).run();
+          const claimChanges = Number(claimed?.meta?.changes ?? claimed?.changes ?? 0);
+          if (claimChanges !== 1) {
+            duplicateCount += 1;
+            results.push({
+              client_run_id: clientRunId,
+              status: 'duplicate',
+              reason: 'already_processed',
+              xp_awarded: 0,
+            });
+            continue;
+          }
+
+          const perGameCeiling = Math.max(200, Math.floor(6000 * (game === 'invaders' ? 1.2 : 1)));
+          let enforcement = await getOrCreateGameEnforcementState(env.DB, verified.telegramId, game);
+          const lockoutUntilMs = parseSqliteTs(enforcement.lockout_until);
+          const cooldownUntilMs = parseSqliteTs(enforcement.cooldown_until);
+          const repeatWindowUntilMs = parseSqliteTs(enforcement.repeat_window_expires_at);
+
+          if (lockoutUntilMs && lockoutUntilMs > nowMs) {
+            rejectedCount += 1;
+            await env.DB.prepare(`
+              UPDATE arcade_progression_events
+              SET status = 'rejected', reason = ?, xp_awarded = 0, processed_at = CURRENT_TIMESTAMP
+              WHERE telegram_id = ? AND client_run_id = ?
+            `).bind(
+              'game_lockout_active',
+              verified.telegramId,
+              clientRunId,
+            ).run();
+            results.push({ client_run_id: clientRunId, status: 'rejected', reason: 'game_lockout_active', xp_awarded: 0 });
+            continue;
+          }
+
+          if (cooldownUntilMs && cooldownUntilMs > nowMs) {
+            rejectedCount += 1;
+            await env.DB.prepare(`
+              UPDATE arcade_progression_events
+              SET status = 'rejected', reason = ?, xp_awarded = 0, processed_at = CURRENT_TIMESTAMP
+              WHERE telegram_id = ? AND client_run_id = ?
+            `).bind(
+              'game_cooldown_active',
+              verified.telegramId,
+              clientRunId,
+            ).run();
+            results.push({ client_run_id: clientRunId, status: 'rejected', reason: 'game_cooldown_active', xp_awarded: 0 });
+            continue;
+          }
+
+          let xpWeight = Math.max(0.2, Math.min(1, Number(enforcement.xp_weight) || 1));
+          let ceilingHits = Math.max(0, Math.floor(Number(enforcement.ceiling_hits) || 0));
+          let cooldownLevel = Math.max(0, Math.floor(Number(enforcement.cooldown_level) || 0));
+          let nextCooldownUntil = null;
+          let nextRepeatWindow = null;
+          let lockoutUntil = null;
+          let lockoutCount = Math.max(0, Math.floor(Number(enforcement.lockout_count) || 0));
+          let reason = 'accepted';
+
+          const hitCeiling = normalizedPoints >= perGameCeiling;
+          if (hitCeiling) {
+            ceilingHits += 1;
+            const repeatedHit = repeatWindowUntilMs && repeatWindowUntilMs > nowMs;
+            cooldownLevel = Math.min(5, repeatedHit ? cooldownLevel + 1 : Math.max(1, cooldownLevel));
+            const cooldownMins = [0, 5, 12, 30, 90, 360][cooldownLevel] || 360;
+            nextCooldownUntil = new Date(nowMs + cooldownMins * 60 * 1000).toISOString();
+            nextRepeatWindow = new Date(nowMs + ARCADE_REPEAT_COOLDOWN_MINUTES * 60 * 1000 + ARCADE_REPEAT_WINDOW_MINUTES * 60 * 1000).toISOString();
+            xpWeight = Math.max(0.2, Number((xpWeight - 0.08).toFixed(4)));
+            reason = repeatedHit ? 'repeat_window_ceiling_hit' : 'per_game_ceiling_hit';
+            if (ceilingHits >= 8 || xpWeight <= 0.2) {
+              lockoutCount += 1;
+              lockoutUntil = new Date(nowMs + Math.min(7, lockoutCount) * 60 * 60 * 1000).toISOString();
+              reason = 'game_lockout_triggered';
+            }
+          } else if (xpWeight < 1) {
+            xpWeight = Math.min(1, Number((xpWeight + 0.01).toFixed(4)));
+          }
+
+          const baseXp = Math.min(ARCADE_XP_MAX_PER_RUN, Math.floor(normalizedPoints * ARCADE_XP_PER_POINT));
+          let xpAwarded = Math.floor(baseXp * xpWeight);
+          if (state.arcade_daily_xp >= ARCADE_XP_DAILY_CAP) {
+            xpAwarded = 0;
+            reason = 'daily_cap_reached';
+          } else if (state.arcade_daily_xp + xpAwarded > ARCADE_XP_DAILY_CAP) {
+            xpAwarded = Math.max(0, ARCADE_XP_DAILY_CAP - state.arcade_daily_xp);
+            reason = 'daily_cap_clamped';
+          }
+
+          await env.DB.prepare(`
+            UPDATE arcade_game_enforcement_state
+            SET ceiling_hits = ?, cooldown_level = ?, cooldown_until = ?, last_ceiling_hit_at = ?,
+                repeat_window_expires_at = ?, xp_weight = ?, lockout_until = ?, lockout_count = ?,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE telegram_id = ? AND game = ?
+          `).bind(
+            ceilingHits,
+            cooldownLevel,
+            nextCooldownUntil,
+            hitCeiling ? nowSql : enforcement.last_ceiling_hit_at || null,
+            nextRepeatWindow,
+            xpWeight,
+            lockoutUntil,
+            lockoutCount,
+            verified.telegramId,
+            game,
+          ).run();
+
+          if (xpAwarded > 0) {
+            await awardXp(env.DB, verified.telegramId, xpAwarded, 'arcade_progress_sync', `${game}:${clientRunId}`);
+            xpBatchAwarded += xpAwarded;
+          }
+
+          await env.DB.prepare(`
+            UPDATE arcade_progression_events
+            SET game = ?, raw_score = ?, local_meta_points = ?, normalized_points = ?,
+                xp_awarded = ?, status = 'accepted', reason = ?, processed_at = CURRENT_TIMESTAMP
+            WHERE telegram_id = ? AND client_run_id = ?
+          `).bind(
+            game,
+            rawScore,
+            localMetaPoints,
+            normalizedPoints,
+            xpAwarded,
+            reason,
+            verified.telegramId,
+            clientRunId,
+          ).run();
+
+          acceptedCount += 1;
+          state.arcade_xp_total = Math.max(0, Math.floor(Number(state.arcade_xp_total) || 0) + xpAwarded);
+          state.arcade_daily_xp = Math.max(0, Math.floor(Number(state.arcade_daily_xp) || 0) + xpAwarded);
+          results.push({
+            client_run_id: clientRunId,
+            status: 'accepted',
+            reason,
+            game,
+            xp_awarded: xpAwarded,
+            normalized_points: normalizedPoints,
+            xp_weight: xpWeight,
+            cooldown_until: nextCooldownUntil,
+            lockout_until: lockoutUntil,
+          });
+        }
+
+        await env.DB.prepare(`
+          UPDATE arcade_progression_state
+          SET arcade_xp_total = ?, arcade_daily_xp = ?, arcade_daily_key = ?, updated_at = CURRENT_TIMESTAMP
+          WHERE telegram_id = ?
+        `).bind(
+          Math.max(0, Math.floor(Number(state.arcade_xp_total) || 0)),
+          Math.max(0, Math.floor(Number(state.arcade_daily_xp) || 0)),
+          isoDayFromMs(nowMs),
+          verified.telegramId,
+        ).run();
+
+        const walletRecoveredXp = await reconcileArcadeXpWalletFromEvents(env.DB, verified.telegramId);
+        if (xpBatchAwarded > 0 || walletRecoveredXp > 0) {
+          await logTelegramActivity(env.DB, verified.telegramId, 'arcade_progress_sync', JSON.stringify({
+            runs_synced: acceptedCount,
+            xp_awarded: xpBatchAwarded,
+            wallet_recovered_xp: walletRecoveredXp,
+            at: new Date(nowMs).toISOString(),
+          }));
+        }
+
+        return json({
+          ok: true,
+          telegram_id: verified.telegramId,
+          results,
+          synced: {
+            accepted: acceptedCount,
+            duplicate: duplicateCount,
+            rejected: rejectedCount,
+            xp_awarded: xpBatchAwarded,
+          },
+        });
+      } catch (syncError) {
+        logApiFailure('arcade_progression_sync_failed', {
+          telegramId: verified.telegramId,
+          message: syncError?.message || String(syncError),
+        });
+        return err('Failed to sync arcade progression', 500);
+      }
+    }
+
+    if (path === '/faction/status' && request.method === 'GET') {
+      const rawAuth = url.searchParams.get('telegram_auth');
+      if (!rawAuth) return err('verified telegram_auth payload required', 401);
+      let tgBody;
+      try {
+        tgBody = { telegram_auth: JSON.parse(rawAuth) };
+      } catch {
+        return err('Invalid telegram_auth payload', 400);
+      }
+      const verified = await verifyTelegramIdentityFromBody(tgBody, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      try {
+        await upsertTelegramUser(env.DB, verified.user);
+        if (!(await hasBlockTopiaFactionColumns(env.DB))) {
+          const fallback = factionMeta(FACTION_UNALIGNED);
+          return json({
+            ok: true,
+            schema_pending: true,
+            faction: fallback.key,
+            faction_label: fallback.label,
+            faction_xp: 0,
+            bonuses: {
+              label: fallback.label,
+              icon: fallback.icon,
+              color: fallback.color,
+              bonus: fallback.bonus,
+              xp_multiplier: fallback.xp_multiplier,
+            },
+            cooldown_ms_remaining: 0,
+          });
+        }
+        const progression = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+        const faction = factionMeta(progression?.faction || FACTION_UNALIGNED);
+        return json({
+          ok: true,
+          faction: faction.key,
+          faction_label: faction.label,
+          faction_xp: Math.max(0, Math.floor(Number(progression?.faction_xp) || 0)),
+          bonuses: {
+            label: faction.label,
+            icon: faction.icon,
+            color: faction.color,
+            bonus: faction.bonus,
+            xp_multiplier: faction.xp_multiplier,
+          },
+          cooldown_ms_remaining: Math.max(
+            0,
+            (Number(progression?.faction_last_switch) || 0) + FACTION_SWITCH_COOLDOWN_MS - Date.now(),
+          ),
+        });
+      } catch {
+        return err('Failed to load faction status', 500);
+      }
+    }
+
+    // ── POST /faction/join ─────────────────────────────────────────────────
+    if (path === '/faction/join' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON'); }
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      const requestedFaction = normalizeFaction(body?.faction);
+      if (!requestedFaction || requestedFaction === FACTION_UNALIGNED) {
+        return err('Invalid faction selection', 400);
+      }
+      try {
+        await upsertTelegramUser(env.DB, verified.user);
+        if (!(await hasBlockTopiaFactionColumns(env.DB))) {
+          return json({
+            ok: false,
+            error: 'missing_required_table',
+            reason: 'migration_pending:blocktopia_progression_faction_columns',
+            message: 'Faction progression schema is pending migration. Apply required D1 migrations before joining.',
+          }, 503);
+        }
+
+        // ── Season lock check + backfill ──────────────────────────────────
+        const seasonKey = await getBattleSeasonKey(env.DB);
+        const lockTableRow = await env.DB.prepare(
+          `SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'telegram_faction_season_locks' LIMIT 1`
+        ).first().catch(() => null);
+        const lockTableExists = !!(lockTableRow?.name);
+
+        // Read existing progression first — needed for both cooldown logic and backfill.
+        const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+        const existingFaction = normalizeFaction(row?.faction) || FACTION_UNALIGNED;
+
+        if (lockTableExists) {
+          const existingLock = await env.DB.prepare(
+            `SELECT faction_id FROM telegram_faction_season_locks WHERE telegram_id = ? AND season_key = ?`
+          ).bind(verified.telegramId, seasonKey).first();
+
+          if (existingLock) {
+            if (existingLock.faction_id === requestedFaction) {
+              // Same faction — idempotent OK
+              const meta = factionMeta(requestedFaction);
+              return json({
+                ok: true,
+                faction: meta.key,
+                faction_label: meta.label,
+                faction_xp: Math.max(0, Math.floor(Number(row?.faction_xp) || 0)),
+                bonuses: { icon: meta.icon, color: meta.color, bonus: meta.bonus, xp_multiplier: meta.xp_multiplier },
+                first_join: false,
+                switched: false,
+                cooldown_ms: 0,
+                season_key: seasonKey,
+                locked_until: 'next season reset',
+              });
+            }
+            // Different faction — blocked for this season
+            const lockedMeta = factionMeta(existingLock.faction_id);
+            return json({
+              ok: false,
+              error: 'faction_locked_for_season',
+              faction: existingLock.faction_id,
+              faction_label: lockedMeta.label,
+              season_key: seasonKey,
+              locked_until: 'next season reset',
+              message: `You are locked to ${lockedMeta.label} for this season. Faction switch blocked until the next season resets.`,
+            }, 409);
+          }
+
+          // No lock row yet. If the user already has a non-unaligned faction from before
+          // migration 017 deployed, backfill a lock for that faction before allowing any change.
+          if (existingFaction !== FACTION_UNALIGNED) {
+            const nowIso = new Date().toISOString();
+            // Backfill: INSERT ... DO NOTHING — first writer wins (race-safe).
+            await env.DB.prepare(`
+              INSERT INTO telegram_faction_season_locks (telegram_id, season_key, faction_id, locked_at, updated_at)
+              VALUES (?, ?, ?, ?, ?)
+              ON CONFLICT(telegram_id, season_key) DO NOTHING
+            `).bind(verified.telegramId, seasonKey, existingFaction, nowIso, nowIso).run();
+
+            // Re-read the authoritative stored lock.
+            const backfilledLock = await env.DB.prepare(
+              `SELECT faction_id FROM telegram_faction_season_locks WHERE telegram_id = ? AND season_key = ?`
+            ).bind(verified.telegramId, seasonKey).first();
+            // After INSERT DO NOTHING the row must exist (either we wrote it or it already existed).
+            // If re-read returns null something is seriously wrong with the DB — surface as 500.
+            if (!backfilledLock?.faction_id) throw new Error('season_lock_reread_failed');
+            const storedFaction = backfilledLock.faction_id;
+
+            if (storedFaction === requestedFaction) {
+              // Idempotent — same faction as what is stored
+              const meta = factionMeta(requestedFaction);
+              return json({
+                ok: true,
+                faction: meta.key,
+                faction_label: meta.label,
+                faction_xp: Math.max(0, Math.floor(Number(row?.faction_xp) || 0)),
+                bonuses: { icon: meta.icon, color: meta.color, bonus: meta.bonus, xp_multiplier: meta.xp_multiplier },
+                first_join: false,
+                switched: false,
+                cooldown_ms: 0,
+                season_key: seasonKey,
+                locked_until: 'next season reset',
+              });
+            }
+            // Attempting to switch away from backfilled faction — reject
+            const lockedMeta = factionMeta(storedFaction);
+            return json({
+              ok: false,
+              error: 'faction_locked_for_season',
+              faction: storedFaction,
+              faction_label: lockedMeta.label,
+              season_key: seasonKey,
+              locked_until: 'next season reset',
+              message: `You are locked to ${lockedMeta.label} for this season. Faction switch blocked until the next season resets.`,
+            }, 409);
+          }
+        }
+
+        // ── No lock, no existing faction (fresh user) ──────────────────────
+        // Cooldown check (legacy guard, kept intact).
+        const lastSwitch = Number(row?.faction_last_switch) || 0;
+        const now = Date.now();
+        const firstJoin = existingFaction === FACTION_UNALIGNED;
+        const isSwitching = existingFaction !== requestedFaction;
+        if (!firstJoin && isSwitching && lastSwitch > 0 && now - lastSwitch < FACTION_SWITCH_COOLDOWN_MS) {
+          const retryAt = lastSwitch + FACTION_SWITCH_COOLDOWN_MS;
+          return json({
+            error: 'Faction switch cooldown active',
+            retry_at: retryAt,
+            cooldown_ms_remaining: retryAt - now,
+          }, 429);
+        }
+
+        // ── Atomic season lock insert (race-safe) ──────────────────────────
+        // DO NOTHING: the first concurrent writer wins; subsequent writers for a
+        // different faction will be rejected in the re-read below.
+        if (lockTableExists) {
+          const nowIso = new Date().toISOString();
+          await env.DB.prepare(`
+            INSERT INTO telegram_faction_season_locks (telegram_id, season_key, faction_id, locked_at, updated_at)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT(telegram_id, season_key) DO NOTHING
+          `).bind(verified.telegramId, seasonKey, requestedFaction, nowIso, nowIso).run();
+
+          // Re-read: if another concurrent request won the INSERT race for a different
+          // faction, this request loses and must return 409.
+          const storedLock = await env.DB.prepare(
+            `SELECT faction_id FROM telegram_faction_season_locks WHERE telegram_id = ? AND season_key = ?`
+          ).bind(verified.telegramId, seasonKey).first();
+
+          if (storedLock && storedLock.faction_id !== requestedFaction) {
+            const lockedMeta = factionMeta(storedLock.faction_id);
+            return json({
+              ok: false,
+              error: 'faction_locked_for_season',
+              faction: storedLock.faction_id,
+              faction_label: lockedMeta.label,
+              season_key: seasonKey,
+              locked_until: 'next season reset',
+              message: `You are locked to ${lockedMeta.label} for this season. Faction switch blocked until the next season resets.`,
+            }, 409);
+          }
+        }
+
+        // ── Update progression (only reached when lock is confirmed) ───────
+        const shouldStampSwitch = isSwitching || firstJoin;
+        await env.DB.prepare(`
+          UPDATE blocktopia_progression
+          SET faction = ?, faction_last_switch = ?, updated_at = CURRENT_TIMESTAMP
+          WHERE telegram_id = ?
+        `).bind(
+          requestedFaction,
+          shouldStampSwitch ? now : lastSwitch || null,
+          verified.telegramId,
+        ).run();
+
+        const meta = factionMeta(requestedFaction);
+        return json({
+          ok: true,
+          faction: meta.key,
+          faction_label: meta.label,
+          faction_xp: Math.max(0, Math.floor(Number(row?.faction_xp) || 0)),
+          bonuses: {
+            icon: meta.icon,
+            color: meta.color,
+            bonus: meta.bonus,
+            xp_multiplier: meta.xp_multiplier,
+          },
+          first_join: firstJoin,
+          switched: isSwitching,
+          cooldown_ms: FACTION_SWITCH_COOLDOWN_MS,
+          season_key: seasonKey,
+          locked_until: 'next season reset',
+        });
+      } catch {
+        return err('Failed to join faction', 500);
+      }
+    }
+
+    // ── POST /faction/earn ─────────────────────────────────────────────────
+    if (path === '/faction/earn' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON'); }
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      try {
+        await upsertTelegramUser(env.DB, verified.user);
+        const source = String(body?.source || body?.action || 'score_accept').trim().toLowerCase();
+        const baseXpInput = Math.max(0, Math.floor(Number(body?.base_xp) || Number(body?.xp) || 0));
+        const fallbackBase = source === 'mission_complete' ? 60 : (source === 'blocktopia_action' ? 30 : 25);
+        const baseXp = baseXpInput > 0 ? baseXpInput : fallbackBase;
+        if (!(await hasBlockTopiaFactionColumns(env.DB))) {
+          const fallbackFaction = factionMeta(FACTION_UNALIGNED);
+          return json({
+            ok: true,
+            skipped: true,
+            source,
+            reason: 'faction_progression_schema_pending',
+            faction: fallbackFaction.key,
+            faction_label: fallbackFaction.label,
+            base_xp: baseXp,
+            multiplier: 1,
+            faction_xp_awarded: 0,
+            faction_xp_delta: 0,
+            faction_xp_earned: 0,
+            faction_xp_total: 0,
+            xp_awarded: 0,
+            xp_delta: 0,
+            bonuses: {
+              icon: fallbackFaction.icon,
+              color: fallbackFaction.color,
+              bonus: fallbackFaction.bonus,
+            },
+          });
+        }
+        const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+        const faction = factionMeta(row?.faction || FACTION_UNALIGNED);
+        const multiplier = faction.xp_multiplier || 1;
+        const awardedFactionXp = faction.key === FACTION_UNALIGNED
+          ? 0
+          : Math.max(1, Math.floor(baseXp * multiplier));
+        const nextFactionXp = Math.max(0, Math.floor(Number(row?.faction_xp) || 0) + awardedFactionXp);
+
+        await env.DB.prepare(`
+          UPDATE blocktopia_progression
+          SET faction_xp = ?, updated_at = CURRENT_TIMESTAMP
+          WHERE telegram_id = ?
+        `).bind(nextFactionXp, verified.telegramId).run();
+
+        return json({
+          ok: true,
+          source,
+          faction: faction.key,
+          faction_label: faction.label,
+          base_xp: baseXp,
+          multiplier,
+          faction_xp_earned: awardedFactionXp,
+          faction_xp_total: nextFactionXp,
+          bonuses: {
+            icon: faction.icon,
+            color: faction.color,
+            bonus: faction.bonus,
+          },
+        });
+      } catch {
+        return err('Failed to award faction XP', 500);
+      }
+    }
+
+    // ── GET /player/state ─────────────────────────────────────────────────
+    // Returns full server-backed player state for a Telegram-linked user.
+    // Requires a signed telegram_auth payload in the query string or POST body.
+    if (path === '/comments' && request.method === 'GET') {
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/comments', null, corsHeaders); if (_rateLimit) return _rateLimit; }
+      const pageId = normalizeWikiPageId(url.searchParams.get('page_id'));
+      if (!pageId) return err('page_id required', 400);
+      const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '20', 10) || 20, 1), 50);
+      try {
+        { const _wikiCheck = await ensureWikiEngagementTables(env.DB, corsHeaders); if (_wikiCheck) return _wikiCheck.response; }
+        const rows = await env.DB.prepare(`
+          SELECT id, page_id, telegram_id, name, email_hash, avatar_url, telegram_username,
+                 discord_username, text, status, votes_up, votes_down, created_at
+          FROM wiki_comments
+          WHERE page_id = ? AND status = 'approved'
+          ORDER BY created_at DESC
+          LIMIT ?
+        `).bind(pageId, limit).all();
+        return json({
+          ok: true,
+          page_id: pageId,
+          comments: (rows.results || []).map((comment) => ({
+            ...comment,
+            time_ago: timeAgo(comment.created_at),
+          })),
+        });
+      } catch (error) {
+        logApiFailure('wiki_comments_get_failed', { pageId, message: error?.message || String(error) });
+        return err('Failed to load comments', 500);
+      }
+    }
+
+    if (path === '/comments' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/comments', body, corsHeaders); if (_rateLimit) return _rateLimit; }
+      const pageId = normalizeWikiPageId(body?.page_id);
+      const name = normalizeTextField(body?.name, 60);
+      const text = normalizeTextField(body?.text, 1000);
+      if (!pageId) return err('page_id required', 400);
+      if (!name) return err('name required', 400);
+      if (!text) return err('text required', 400);
+      try {
+        { const _wikiCheck = await ensureWikiEngagementTables(env.DB, corsHeaders); if (_wikiCheck) return _wikiCheck.response; }
+        const auth = await verifyOptionalWikiTelegram(body, env);
+        if (auth.error) return err(auth.error, auth.status || 401);
+        const emailHash = await hashEmail(body?.email);
+        const commentIdentityHash = emailHash || await hashTelegramCommentIdentity(auth.verified?.telegramId);
+        if (!commentIdentityHash) return err('valid email or linked Telegram auth required', 400);
+        const avatarUrl = normalizeTextField(body?.avatar_url, 500)
+          || normalizeTextField(auth.verified?.user?.photo_url, 500)
+          || null;
+        const commentId = crypto.randomUUID();
+        await env.DB.prepare(`
+          INSERT INTO wiki_comments
+            (id, page_id, telegram_id, name, email_hash, avatar_url, telegram_username, discord_username, text, status)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+        `).bind(
+          commentId,
+          pageId,
+          auth.verified?.telegramId || null,
+          name,
+          commentIdentityHash,
+          avatarUrl,
+          normalizeTextField(body?.telegram_username, 60) || null,
+          normalizeTextField(body?.discord_username, 60) || null,
+          text,
+        ).run();
+        const mission = await completeWikiMission(env.DB, {
+          verified: auth.verified,
+          pageId,
+          missionId: 'engage',
+          source: 'comments',
+          sourceId: commentId,
+        });
+        let finalModerationStatus = auth.verified?.telegramId ? 'approved' : 'pending';
+        if (finalModerationStatus === 'approved') {
+          try {
+            await env.DB.prepare(`
+              UPDATE wiki_comments
+              SET status = ?
+              WHERE id = ?
+            `).bind(finalModerationStatus, commentId).run();
+          } catch (error) {
+            logApiFailure('wiki_comment_auto_approval_status_update_failed', {
+              comment_id: commentId,
+              page_id: pageId,
+              target_status: 'approved',
+              error_type: 'd1_update_failed',
+            });
+            finalModerationStatus = 'pending';
+          }
+        }
+        return json({
+          ok: true,
+          page_id: pageId,
+          comment_id: commentId,
+          status: finalModerationStatus,
+          moderation: finalModerationStatus,
+          message: getWikiCommentModerationMessage(finalModerationStatus),
+          mission,
+        }, 201);
+      } catch (error) {
+        logApiFailure('wiki_comments_post_failed', { pageId, message: error?.message || String(error) });
+        return err('Failed to post comment', 500);
+      }
+    }
+
+    const commentVoteMatch = path.match(/^\/comments\/([^/]+)\/vote$/);
+    if (commentVoteMatch && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/comments', body, corsHeaders); if (_rateLimit) return _rateLimit; }
+      const commentId = normalizeTextField(decodeURIComponent(commentVoteMatch[1]), 80);
+      const vote = normalizeWikiVote(body?.vote);
+      if (!commentId) return err('comment_id required', 400);
+      if (!vote) return err('vote must be up or down', 400);
+      try {
+        { const _wikiCheck = await ensureWikiEngagementTables(env.DB, corsHeaders); if (_wikiCheck) return _wikiCheck.response; }
+        const auth = await verifyRequiredWikiTelegram(body, env);
+        if (auth.error) return err(auth.error, auth.status || 401);
+        const comment = await env.DB.prepare(`SELECT id FROM wiki_comments WHERE id = ? LIMIT 1`).bind(commentId).first();
+        if (!comment) return err('Comment not found', 404);
+        const existing = await env.DB.prepare(`
+          SELECT vote FROM wiki_comment_votes WHERE comment_id = ? AND telegram_id = ? LIMIT 1
+        `).bind(commentId, auth.verified.telegramId).first().catch(() => null);
+        if (!existing) {
+          await env.DB.prepare(`
+            INSERT INTO wiki_comment_votes (comment_id, telegram_id, vote) VALUES (?, ?, ?)
+          `).bind(commentId, auth.verified.telegramId, vote).run();
+          await env.DB.prepare(`
+            UPDATE wiki_comments
+            SET votes_up = votes_up + CASE WHEN ? = 'up' THEN 1 ELSE 0 END,
+                votes_down = votes_down + CASE WHEN ? = 'down' THEN 1 ELSE 0 END
+            WHERE id = ?
+          `).bind(vote, vote, commentId).run();
+        }
+        const counts = await env.DB.prepare(`
+          SELECT votes_up, votes_down FROM wiki_comments WHERE id = ? LIMIT 1
+        `).bind(commentId).first();
+        return json({
+          ok: true,
+          comment_id: commentId,
+          vote,
+          already_voted: !!existing,
+          votes_up: Number(counts?.votes_up || 0),
+          votes_down: Number(counts?.votes_down || 0),
+        });
+      } catch (error) {
+        logApiFailure('wiki_comment_vote_failed', { commentId, message: error?.message || String(error) });
+        return err('Failed to vote on comment', 500);
+      }
+    }
+
+    if (path === '/likes' && request.method === 'GET') {
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/likes', null, corsHeaders); if (_rateLimit) return _rateLimit; }
+      const pageId = normalizeWikiPageId(url.searchParams.get('page_id'));
+      if (!pageId) return err('page_id required', 400);
+      try {
+        { const _wikiCheck = await ensureWikiEngagementTables(env.DB, corsHeaders); if (_wikiCheck) return _wikiCheck.response; }
+        const row = await env.DB.prepare(`SELECT COUNT(*) AS count FROM wiki_page_likes WHERE page_id = ?`).bind(pageId).first();
+        return json({ ok: true, page_id: pageId, count: Number(row?.count || 0) });
+      } catch (error) {
+        logApiFailure('wiki_likes_get_failed', { pageId, message: error?.message || String(error) });
+        return err('Failed to load likes', 500);
+      }
+    }
+
+    if (path === '/likes' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/likes', body, corsHeaders); if (_rateLimit) return _rateLimit; }
+      const pageId = normalizeWikiPageId(body?.page_id);
+      if (!pageId) return err('page_id required', 400);
+      try {
+        { const _wikiCheck = await ensureWikiEngagementTables(env.DB, corsHeaders); if (_wikiCheck) return _wikiCheck.response; }
+        const auth = await verifyRequiredWikiTelegram(body, env);
+        if (auth.error) return err(auth.error, auth.status || 401);
+        const insertResult = await env.DB.prepare(`
+          INSERT OR IGNORE INTO wiki_page_likes (page_id, telegram_id) VALUES (?, ?)
+        `).bind(pageId, auth.verified.telegramId).run();
+        const row = await env.DB.prepare(`SELECT COUNT(*) AS count FROM wiki_page_likes WHERE page_id = ?`).bind(pageId).first();
+        const mission = await completeWikiMission(env.DB, {
+          verified: auth.verified,
+          pageId,
+          missionId: 'signal',
+          source: 'likes',
+          sourceId: pageId,
+        });
+        return json({
+          ok: true,
+          page_id: pageId,
+          count: Number(row?.count || 0),
+          already_liked: Number(insertResult?.meta?.changes || 0) === 0,
+          mission,
+        });
+      } catch (error) {
+        logApiFailure('wiki_likes_post_failed', { pageId, message: error?.message || String(error) });
+        return err('Failed to like page', 500);
+      }
+    }
+
+    if (path === '/citation-votes' && request.method === 'GET') {
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/citation-votes', null, corsHeaders); if (_rateLimit) return _rateLimit; }
+      const pageId = normalizeWikiPageId(url.searchParams.get('page_id'));
+      const citeId = normalizeWikiId(url.searchParams.get('cite_id'), 80);
+      if (!pageId) return err('page_id required', 400);
+      if (!citeId) return err('cite_id required', 400);
+      try {
+        { const _wikiCheck = await ensureWikiEngagementTables(env.DB, corsHeaders); if (_wikiCheck) return _wikiCheck.response; }
+        const row = await env.DB.prepare(`
+          SELECT
+            SUM(CASE WHEN vote = 'up' THEN 1 WHEN vote = 'down' THEN -1 ELSE 0 END) AS score,
+            SUM(CASE WHEN vote = 'up' THEN 1 ELSE 0 END) AS up,
+            SUM(CASE WHEN vote = 'down' THEN 1 ELSE 0 END) AS down
+          FROM wiki_citation_votes
+          WHERE page_id = ? AND cite_id = ?
+        `).bind(pageId, citeId).first();
+        return json({
+          ok: true,
+          page_id: pageId,
+          cite_id: citeId,
+          score: Number(row?.score || 0),
+          up: Number(row?.up || 0),
+          down: Number(row?.down || 0),
+        });
+      } catch (error) {
+        logApiFailure('wiki_citation_votes_get_failed', { pageId, citeId, message: error?.message || String(error) });
+        return err('Failed to load citation votes', 500);
+      }
+    }
+
+    if (path === '/citation-votes' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      { const _rateLimit = await enforcePublicRateLimit(request, env, '/citation-votes', body, corsHeaders); if (_rateLimit) return _rateLimit; }
+      const pageId = normalizeWikiPageId(body?.page_id);
+      const citeId = normalizeWikiId(body?.cite_id, 80);
+      const vote = normalizeWikiVote(body?.vote);
+      if (!pageId) return err('page_id required', 400);
+      if (!citeId) return err('cite_id required', 400);
+      if (!vote) return err('vote must be up or down', 400);
+      try {
+        { const _wikiCheck = await ensureWikiEngagementTables(env.DB, corsHeaders); if (_wikiCheck) return _wikiCheck.response; }
+        const auth = await verifyRequiredWikiTelegram(body, env);
+        if (auth.error) return err(auth.error, auth.status || 401);
+        const existing = await env.DB.prepare(`
+          SELECT vote FROM wiki_citation_votes
+          WHERE page_id = ? AND cite_id = ? AND telegram_id = ?
+          LIMIT 1
+        `).bind(pageId, citeId, auth.verified.telegramId).first().catch(() => null);
+        if (!existing) {
+          await env.DB.prepare(`
+            INSERT INTO wiki_citation_votes (page_id, cite_id, telegram_id, vote)
+            VALUES (?, ?, ?, ?)
+          `).bind(pageId, citeId, auth.verified.telegramId, vote).run();
+        }
+        const row = await env.DB.prepare(`
+          SELECT
+            SUM(CASE WHEN vote = 'up' THEN 1 WHEN vote = 'down' THEN -1 ELSE 0 END) AS score,
+            SUM(CASE WHEN vote = 'up' THEN 1 ELSE 0 END) AS up,
+            SUM(CASE WHEN vote = 'down' THEN 1 ELSE 0 END) AS down
+          FROM wiki_citation_votes
+          WHERE page_id = ? AND cite_id = ?
+        `).bind(pageId, citeId).first();
+        const mission = await completeWikiMission(env.DB, {
+          verified: auth.verified,
+          pageId,
+          missionId: 'cite',
+          source: 'citation-votes',
+          sourceId: citeId,
         });
         return json({
           ok: true,
