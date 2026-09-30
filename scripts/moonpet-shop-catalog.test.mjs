@@ -302,6 +302,12 @@ test('post-reward overwrite rebaseline repairs only newly impossible season coun
   for(const period of ['seasonal','all_time']) assert.equal((await f.get('/telegram-pets/leaderboard?period='+period)).entries[0].pet_xp,2198);
   f.sql.exec(postRewardRebaselineSql);
   assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM moonpet_beta_xp_rebaseline_v2').get().n,1,'migration must be idempotent');
+  f.sql.prepare('UPDATE telegram_pet_season_state SET season_xp=2258 WHERE telegram_id=? AND season_key=?').run(f.owner,currentSeason);
+  f.sql.exec(postRewardRebaselineSql);
+  assert.equal(f.sql.prepare('SELECT season_xp FROM telegram_pet_season_state WHERE telegram_id=? AND season_key=?').get(f.owner,currentSeason).season_xp,2198,
+    'a post-migration recurrence must be repairable after the Worker rollout');
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM moonpet_beta_xp_rebaseline_v2').get().n,2,
+    'each repeated correction must retain its own audit row');
 });
 
 for (const failure of ['ownership read','legacy recovery']) test(`resolved ${failure} failure cannot charge again for owned gear`,async()=>{
