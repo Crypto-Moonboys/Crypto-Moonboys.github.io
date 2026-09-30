@@ -10676,6 +10676,7 @@ export default {
         logApiFailure('pet_mini_app_state_failed', {
           telegramId: verified.telegramId,
           message: error?.message || String(error),
+          cause: error?.cause?.message || null,
         });
         return err('mini_app_state_failed', 503);
       }
@@ -10754,6 +10755,7 @@ export default {
           telegramId: verified.telegramId,
           action: String(body.action || ''),
           message: error?.message || String(error),
+          cause: error?.cause?.message || null,
         });
         return null;
       });
@@ -13850,7 +13852,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260929-training-style-v1`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260930-state-retry-v1`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',

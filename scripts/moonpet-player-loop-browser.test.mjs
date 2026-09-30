@@ -110,6 +110,7 @@ try {
     let currentUser = 'browser-egg';
     let dailyOverride = null;
     let oldExpeditionState = false;
+    let startupStateFailures = 2;
     page.on('pageerror', (error) => errors.push(error.message));
     await page.route('**/*', async (route) => {
       const url = new URL(route.request().url());
@@ -117,6 +118,10 @@ try {
       if (url.pathname.includes('/telegram-pets/app/')) {
         const body = route.request().postDataJSON() || {};
         if (url.pathname.endsWith('/performance')) return route.fulfill({ json: { ok: true } });
+        if (url.pathname.endsWith('/state') && startupStateFailures > 0) {
+          startupStateFailures--;
+          return route.fulfill({ status: 503, json: { error: 'mini_app_state_failed' } });
+        }
         let result;
         if (url.pathname.endsWith('/action')) {
           actions.push(body.action);
@@ -164,6 +169,7 @@ try {
     });
     await page.goto(url);
     await page.waitForSelector('[data-panel="care"]');
+    assert.equal(startupStateFailures, 0, 'startup must recover from two transient state failures');
     assert.equal(await page.evaluate(() => window.MoonpetBetaAppearance.getBackgroundArtState().mode), 'stage0_secret_bot', 'egg keeps its existing background');
     // Check the real collapsed UX before expanding the older gameplay matrix.
     const beforeDisclosures = actions.length;
@@ -622,9 +628,11 @@ try {
       const longButtons = page.locator('[data-action="contract_step"]');
       const choiceIndex = await longButtons.evaluateAll((buttons, key) => buttons.findIndex((b) => JSON.parse(b.dataset.payload).choice === key), choice);
       assert.ok(choiceIndex >= 0);
+      const chosenButton = longButtons.nth(choiceIndex);
+      await chosenButton.click({ trial: true });
       const [response] = await Promise.all([
         page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'contract_step'),
-        longButtons.nth(choiceIndex).click(),
+        chosenButton.click(),
       ]);
       const result = await response.json(); assert.equal(result.result.accepted, true);
       longAfter = result.state;
