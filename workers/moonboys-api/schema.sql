@@ -2121,3 +2121,16 @@ CREATE TABLE IF NOT EXISTS telegram_pet_style_loadouts (
   PRIMARY KEY(pet_id,cosmetic_key),
   FOREIGN KEY(pet_id) REFERENCES telegram_pet_instances(pet_id)
 );
+
+-- Audit-preserving quarantine for unverifiable pre-launch Pet XP receipts.
+CREATE TABLE IF NOT EXISTS moonpet_beta_xp_quarantine (
+  event_id TEXT PRIMARY KEY,
+  telegram_id TEXT NOT NULL,
+  pet_id TEXT,
+  season_key TEXT NOT NULL,
+  pet_xp_awarded INTEGER NOT NULL,
+  reason TEXT NOT NULL CHECK (reason IN ('missing_pet_authority','receipt_total_exceeds_retained_pet_xp')),
+  quarantined_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_moonpet_beta_xp_quarantine_owner
+  ON moonpet_beta_xp_quarantine(telegram_id,season_key,reason);

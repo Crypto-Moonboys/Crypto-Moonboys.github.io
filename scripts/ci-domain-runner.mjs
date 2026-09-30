@@ -116,6 +116,7 @@ const GROUPS = {
     ['node', 'scripts/worker-deploy-readiness-audit.test.mjs'],
     ['node', 'scripts/worker-deploy-readiness-audit.mjs'],
     ['node', '--test', 'scripts/moonpet-production-canary.test.mjs'],
+    ['node', '--test', 'scripts/moonpet-beta-xp-quarantine.test.mjs'],
   ],
   arcade: [
     ['npm', 'run', 'test:btqm-runtime-assets'],

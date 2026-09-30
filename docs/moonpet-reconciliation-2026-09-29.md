@@ -131,14 +131,18 @@ leaderboard formula or future-feature availability.
 - No schema, balance, reward, cooldown, XP, ranking or historical-data change is
   included. See `moonpet-production-canary-and-performance-2026-09-30.md`.
 
-## Batch 5 — historical evidence and final documentation reconciliation
+## Batch 5 — historical evidence quarantine and final reconciliation
 
-- Reconcile private ledger evidence before any historical counter repair. The
-  supplied migration checks proved three seasonal corrections applied, not full
-  reconstruction of every old reward. Missing source pet/time/receipt fields
-  must not be guessed. No users or historical records are reset by this batch.
-- Define an explicit repair/quarantine decision for unverifiable beta history,
-  with a dry-run report, before a separately reviewed migration.
+- Migration 080 records unverifiable beta Pet XP receipts without deleting or
+  modifying their audit rows. It quarantines missing per-pet authority and whole
+  pet/season tuples whose accepted receipt sum exceeds retained Pet XP; it never
+  guesses which partial receipt was wrong.
+- Daily/weekly Pet rankings and public Pet activity exclude those recorded rows.
+  Seasonal/all-time authority, retained pet state, wallets, rewards and
+  Community XP remain unchanged. Accounts with no per-pet authority keep their
+  legacy profile fallback and account-scoped receipts.
+- The counts-only post-migration check reports quarantine reasons and verifies
+  that no visible historical weekly window exceeds retained all-time Pet XP.
 - A Community XP history/source breakdown still requires complete event evidence.
   The new chart compares current player totals; it does not invent historical
   points. Wiki relationship graphs and Arcade score charts remain separate.
@@ -153,7 +157,8 @@ season changes and all three D1 failure forms; existing real pet settlement to
 Community/Pet leaderboard parity; browser chart/list parity, empty/zero results,
 outage/retry and escaping at 360, 390 and 1280 pixels.
 
-No schema migration or asset regeneration is needed for the gameplay changes.
+Migration 080 is required before the matching Worker deploy. No asset
+regeneration is needed.
 Regenerate the standard wiki publishing surfaces after editing the wiki. After
 merge, deploy `moonboys-api` with the repository's provenance script; the website
 ships through GitHub Pages. Deploy the Worker first for explicit chart period
