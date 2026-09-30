@@ -417,6 +417,8 @@ var window = {
   setTimeout: function (fn, delay) { scheduled.push({ fn: fn, delay: delay }); return scheduled.length; },
 };
 function beginStateRequest() { generation += 1; return generation; }
+function stateNeedsFullHydration(snapshot) { return Boolean(snapshot && snapshot.hydration && snapshot.hydration.full === false); }
+function stateRefreshPayload(snapshot) { return stateNeedsFullHydration(snapshot) ? { mode: 'core' } : {}; }
 function setStateSnapshot(nextState) { state = nextState; return true; }
 function render() { renderCalls += 1; }
 function tell() {}
