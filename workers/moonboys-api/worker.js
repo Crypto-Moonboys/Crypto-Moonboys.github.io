@@ -10788,6 +10788,20 @@ export default {
         logApiFailure('mini_app_action_failed', { telegramId: verified.telegramId, action: String(body.action || ''), message: error?.message || String(error) });
         return err('mini_app_action_failed', /D1|read|unavailable/i.test(String(error?.message || '')) ? 503 : 500);
       }
+      // Fast-path clients can acknowledge the committed mutation immediately and
+      // reconcile the expensive whole-app projection separately. This keeps a
+      // FEED/PLAY/etc. response from paying for the ~150-statement state read.
+      // The default remains the legacy full-state contract for older clients,
+      // canaries and callers that need an atomic result+projection response.
+      if (body.response_mode === 'result_only') {
+        return json({
+          ok: Boolean(result.accepted),
+          result: serializePetMiniAppActionResult(result, null, verified.telegramId),
+          state: null,
+          state_pending: true,
+          server_time: new Date().toISOString(),
+        }, result.accepted ? 200 : 409);
+      }
       const state = await buildPetMiniAppState(env.DB, verified.telegramId, env.TELEGRAM_BOT_TOKEN).catch((error) => {
         logApiFailure('pet_mini_app_action_state_failed', {
           telegramId: verified.telegramId,
