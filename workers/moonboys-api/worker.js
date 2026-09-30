@@ -9821,16 +9821,21 @@ async function getPetMiniAppCombatEligibility(db, telegramId, lifecycle = null, 
   let activePet;
   let activeLifecycle;
   let hasCompletedSeasonPet;
-  try {
-    [hasCompletedSeasonPet, activePet, activeLifecycle] = await Promise.all([
-      hasCompletedPetMiniAppSeasonPet(db, telegramId),
-      activePetAuthority
-        ? Promise.resolve(activePetAuthority)
-        : db.prepare('SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id=? LIMIT 1')
-          .bind(String(telegramId)).first(),
-      lifecycle ? Promise.resolve(lifecycle) : getMoonpetLifecycle(db, telegramId),
-    ]);
-  } catch (error) {
+  const [completionResult, activePetResult, lifecycleResult] = await Promise.allSettled([
+    hasCompletedPetMiniAppSeasonPet(db, telegramId),
+    activePetAuthority
+      ? Promise.resolve(activePetAuthority)
+      : db.prepare('SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id=? LIMIT 1')
+        .bind(String(telegramId)).first(),
+    lifecycle ? Promise.resolve(lifecycle) : getMoonpetLifecycle(db, telegramId),
+  ]);
+  if (completionResult.status === 'fulfilled') hasCompletedSeasonPet = completionResult.value;
+  if (activePetResult.status === 'fulfilled') activePet = activePetResult.value;
+  if (lifecycleResult.status === 'fulfilled') activeLifecycle = lifecycleResult.value;
+  const authorityFailure = [completionResult, activePetResult, lifecycleResult]
+    .find((result) => result.status === 'rejected');
+  if (authorityFailure) {
+    const error = authorityFailure.reason;
     return {
       has_completed_season_pet: hasCompletedSeasonPet,
       combat_authority_available: false,
