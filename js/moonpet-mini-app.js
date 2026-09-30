@@ -34,6 +34,7 @@
   var fastActionStateDirty = false;
   var fastActionStateRefreshTimer = 0;
   var fastActionStateRefreshInFlight = false;
+  var fullStateHydrationPromise = null;
   var FAST_ACTION_RESPONSE_ACTIONS = new Set(['feed', 'play', 'clean', 'sleep', 'train', 'energy_drink', 'dance', 'cuddles']);
   var typingToken = 0;
   var animationMode = 'idle';
@@ -976,7 +977,7 @@
     tell('REFRESHING LIVE SAVE...');
     try {
       var requestGeneration = beginStateRequest();
-      var data = await post('/telegram-pets/app/state');
+      var data = await post('/telegram-pets/app/state', stateRefreshPayload(state));
       if (!setStateSnapshot(data.state, requestGeneration)) return;
       fastActionStateDirty = false;
       render();
@@ -1339,6 +1340,13 @@
   function activePetSummary() {
     if (!state || !state.pet) return '';
     var pet = state.pet;
+    if (stateNeedsFullHydration(state)) {
+      var coreSlot = activeSeasonSlot();
+      return panel('ACTIVE PET // SLOT ' + number(coreSlot.slot_number || 1),
+        '<div class="season-identity"><strong>' + escapeHtml(resolveMoonpetDisplayName(state.lifecycle || {}, state.guidance && state.guidance.identity)) + '</strong><span>' + escapeHtml(coreSlot.season_key || state.season_slots && state.season_slots.season && state.season_slots.season.key || 'CURRENT') + '</span></div>' +
+        '<div class="season-status-grid"><div><span>STAGE</span><strong>' + escapeHtml(moonpetStageLabel(state.lifecycle || {}, pet)) + '</strong></div><div><span>LEVEL</span><strong>' + number(pet.level) + '</strong></div><div><span>HEALTH</span><strong>' + number(pet.health) + '</strong></div><div><span>ENERGY</span><strong>' + number(pet.energy) + '</strong></div></div>' +
+        '<div class="line muted">MISSION, GROWTH MARK AND WEEKLY CREST DETAIL LOADS ONLY WHEN YOU OPEN A GAME MODULE.</div>', 'active-pet');
+    }
     var summary = state.season_slots || {};
     var slot = activeSeasonSlot();
     var progression = activePetProgression();
@@ -1528,6 +1536,44 @@
     return stateRequestGate.begin();
   }
 
+  // TEST-EXPORT: coreStateHydration:start
+  function stateNeedsFullHydration(snapshot) {
+    return Boolean(snapshot && snapshot.hydration && snapshot.hydration.full === false);
+  }
+
+  function stateRefreshPayload(snapshot) {
+    return stateNeedsFullHydration(snapshot) ? { mode: 'core' } : {};
+  }
+
+  async function hydrateFullState(reason) {
+    if (!stateNeedsFullHydration(state)) return state;
+    if (fullStateHydrationPromise) return fullStateHydrationPromise;
+    fullStateHydrationPromise = (async function () {
+      tell('LOADING ' + words(reason || activeScreen) + ' MODULE...');
+      var requestGeneration = beginStateRequest();
+      try {
+        var data = await post('/telegram-pets/app/state');
+        if (!setStateSnapshot(data.state, requestGeneration)) return null;
+        fastActionStateDirty = false;
+        var scrollTop = screen.scrollTop;
+        render();
+        screen.scrollTop = scrollTop;
+        await showPendingNotices();
+        return state;
+      } catch (error) {
+        tell(error.message || 'MODULE STATE FAILED', 'danger');
+        return null;
+      } finally {
+        fullStateHydrationPromise = null;
+        if (stateNeedsFullHydration(state) && activeScreen !== 'home') {
+          window.setTimeout(function () { hydrateFullState(activeScreen); }, 750);
+        }
+      }
+    }());
+    return fullStateHydrationPromise;
+  }
+  // TEST-EXPORT: coreStateHydration:end
+
   function setStateSnapshot(nextState, requestGeneration, options) {
     if (!nextState || !stateRequestGate.isCurrent(requestGeneration)) return false;
     var serverTime = Date.parse(nextState.server_time || nextState.cooldowns && nextState.cooldowns.server_time || '');
@@ -1704,7 +1750,7 @@
     fastActionStateRefreshInFlight = true;
     try {
       var requestGeneration = beginStateRequest();
-      var data = await post('/telegram-pets/app/state');
+      var data = await post('/telegram-pets/app/state', stateRefreshPayload(state));
       if (!setStateSnapshot(data.state, requestGeneration)) return;
       fastActionStateDirty = false;
       var scrollTop = screen.scrollTop;
@@ -1774,6 +1820,19 @@
     var summary = state.season_slots || {};
     var season = summary.season || {};
     var timing = seasonTiming(season, seasonSnapshotElapsed());
+    if (summary.hydrated === false || stateNeedsFullHydration(state)) {
+      var providedCore = Array.isArray(summary.slots) ? summary.slots : [];
+      var activeCore = providedCore.find(function (slot) { return slot && slot.active; }) || {};
+      var timingCore = timing.status === 'UNAVAILABLE'
+        ? '<div class="line muted">RUNTIME SEASON TIMING UNAVAILABLE.</div>'
+        : '<div class="season-status-grid"><div><span>PHASE</span><strong>' + timing.status + '</strong></div><div><span>POSITION</span><strong>DAY ' + number(timing.day) + ' / ' + number(timing.totalDays) + '</strong></div><div><span>REMAINING</span><strong>' + countdownMarkup({ expires_at: season.end_at }, '') + '</strong></div><div><span>ACTIVE SLOT</span><strong>' + number(activeCore.slot_number || 1) + '</strong></div></div>' + meter('SEASON', timing.percent);
+      return panel('SEASON STATUS // CORE',
+        '<div class="season-identity"><strong>SEASON ' + number(season.season_number || 1) + ' // ' + escapeHtml(season.key || 'CURRENT') + '</strong><span>LIGHTWEIGHT HOME SNAPSHOT</span></div>' +
+        timingCore +
+        '<div class="line muted">Detailed pet progression, Growth Marks, Weekly Crests and season reward tiers load when you open Missions or Profile.</div>' +
+        '<div class="season-slot-balance"><strong>CURRENT ARCADE XP</strong><span>' + number(summary.arcade_xp_available || 0) + '</span></div>' +
+        '<div class="button-grid">' + routeButton('LOAD MISSIONS', { screen: 'missions', focus: 'daily-journey' }, 'Load Journey progress.') + routeButton('LOAD PROFILE', { screen: 'profile', focus: 'season-slots' }, 'Load full pet-slot progression.') + '</div>', 'season-slots');
+    }
     var accountSeason = state.guidance && state.guidance.season || {};
     var tiers = Array.isArray(accountSeason.tiers) ? accountSeason.tiers : [];
     var unlockedTiers = tiers.filter(function (tier) { return tier.unlocked || tier.claimed_at; }).length;
@@ -1845,6 +1904,14 @@
   }
 
   function renderRecommended() {
+    if (stateNeedsFullHydration(state)) {
+      var coreRoutes = [
+        { title: 'MISSIONS', screen: 'missions', focus: 'missions', detail: 'Load Daily/Weekly Journey, Contracts and achievements.' },
+        { title: 'EXPLORE', screen: 'explore', focus: 'moon-run', detail: 'Load runs, districts, bosses, Arena and Kaiju.' },
+        { title: 'WORK', screen: 'work', focus: 'timed-activity', detail: 'Load jobs and full background activity detail.' },
+      ];
+      return panel('RECOMMENDED NEXT', '<div class="line muted">HOME stays lightweight. Open a module only when you need its live data.</div><div class="button-grid one">' + coreRoutes.map(function (route) { return routeButton(route.title, route, route.detail); }).join('') + '</div>', 'recommended');
+    }
     if (!window.MoonpetPlayOptions || !window.MoonpetPlayOptions.recommendations) return '';
     var choices = window.MoonpetPlayOptions.recommendations(state, { crafting_goal: selectedCraftingGoal() });
     if (!choices.length) return '';
@@ -1857,6 +1924,16 @@
   }
 
   function renderPlayNow() {
+    if (stateNeedsFullHydration(state)) {
+      var routes = [
+        { title: 'MISSIONS', screen: 'missions', focus: 'missions' },
+        { title: 'EXPLORE', screen: 'explore', focus: 'moon-run' },
+        { title: 'WORK', screen: 'work', focus: 'timed-activity' },
+        { title: 'ECONOMY', screen: 'economy', focus: 'shop' },
+        { title: 'PROFILE', screen: 'profile', focus: 'season-slots' },
+      ];
+      return panel('PLAY NOW // LOAD A MODULE', '<div class="line muted">Care works from the lightweight HOME snapshot. Other systems load on demand instead of slowing every startup.</div><div class="button-grid">' + routes.map(function (route) { return routeButton(route.title, route, 'Load live ' + route.title.toLowerCase() + ' state.'); }).join('') + '</div>', 'play-now');
+    }
     if (!window.MoonpetPlayOptions) return '';
     var choices = window.MoonpetPlayOptions.options(state, { crafting_goal: selectedCraftingGoal() });
     if (!choices.length) return '';
@@ -2592,7 +2669,11 @@
     renderHud();
     renderNav();
     renderCanvasTools();
-    screen.innerHTML = state ? renderRecommended() + screens[activeScreen]() : '';
+    var waitingForModule = stateNeedsFullHydration(state) && activeScreen !== 'home';
+    screen.innerHTML = !state ? ''
+      : waitingForModule
+        ? panel('LOADING // ' + activeScreen.toUpperCase(), '<div class="line signal">FETCHING SERVER-AUTHORITATIVE MODULE STATE...</div><div class="line muted">HOME remains usable while the full game snapshot loads only when requested.</div>', 'module-loading')
+        : renderRecommended() + screens[activeScreen]();
     restoreEditableState(editableState);
     if (draftPetId === (state && state.pet && state.pet.pet_id)) Object.keys(routeDraft).forEach(function (id) {
       var input = document.getElementById(id);
@@ -3146,7 +3227,8 @@
     if (!SCREEN_ORDER.includes(nextScreen) || nextScreen === activeScreen) return false;
     activeScreen = nextScreen;
     render();
-    if (fastActionStateDirty) scheduleFastActionStateRefresh(0);
+    if (stateNeedsFullHydration(state) && nextScreen !== 'home') hydrateFullState(nextScreen);
+    else if (fastActionStateDirty) scheduleFastActionStateRefresh(0);
     return true;
   }
 
@@ -3353,6 +3435,7 @@
   }
 
   async function refreshLiveState() {
+    if (stateNeedsFullHydration(state)) return;
     var multiplayerActive = state && (state.arena || state.arena_queue || state.kaiju && (state.kaiju.match || state.kaiju.queue));
     var activityActive = state && state.guidance && state.guidance.activity;
     var relevant = activeScreen === 'explore' && multiplayerActive || activeScreen === 'work' && activityActive;
@@ -3385,7 +3468,7 @@
     seasonRefreshBusy = true;
     try {
       var requestGeneration = beginStateRequest();
-      var data = await post('/telegram-pets/app/state');
+      var data = await post('/telegram-pets/app/state', stateRefreshPayload(state));
       if (!setStateSnapshot(data.state, requestGeneration)) return;
       var scrollTop = screen.scrollTop;
       render();
@@ -3963,7 +4046,7 @@
     }
     try {
       var requestGeneration = beginStateRequest();
-      var initialStateRequest = post('/telegram-pets/app/state');
+      var initialStateRequest = post('/telegram-pets/app/state', { mode: 'core' });
       await startupBoot;
       var data = await initialStateRequest;
       if (!setStateSnapshot(data.state, requestGeneration)) throw new Error('STALE INITIAL STATE RESPONSE');
@@ -3979,8 +4062,9 @@
       if (radioRequestedOn) setRadioEnabled(true, false);
       tell(state.adopted ? 'LIVE SAVE LOADED. CHOOSE A ROUTINE.' : 'SECRET BOT READY FOR INITIALISATION.');
       await typeBoot(['SIGNATURE VERIFIED', 'PLAYER SAVE LOADED', 'MOONPET OS READY'], { speed: 8, hold: 320 });
-      await showPendingNotices();
+      if (!stateNeedsFullHydration(state)) await showPendingNotices();
       applyRequestedFocus();
+      if (stateNeedsFullHydration(state) && activeScreen !== 'home') hydrateFullState(activeScreen);
       window.setInterval(refreshLiveState, 5000);
       window.setInterval(tickCooldownDom, 1000);
       window.setInterval(tickSeasonDisplay, 30000);
