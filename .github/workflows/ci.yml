@@ -174,3 +174,12 @@ jobs:
         if: steps.visual_changes.outputs.should_run == 'true'
         timeout-minutes: 20
         run: npm run ci:visual
+
+      - name: Upload visual failure artifacts
+        if: failure() && steps.visual_changes.outputs.should_run == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-visual-failure-${{ github.run_id }}
+          path: test-artifacts/
+          if-no-files-found: ignore
+          retention-days: 14
