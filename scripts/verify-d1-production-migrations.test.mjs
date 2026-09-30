@@ -13,7 +13,12 @@ const workflow = fs.readFileSync(new URL('../.github/workflows/d1-production-mig
 const remoteQueryStep = workflow.match(/- name: Query production migration records[\s\S]*?(?=\n\s+- name: Report sanitised query failure)/)?.[0] || '';
 const remoteIdentityAuditStep = workflow.match(/- name: Query production identity authority violations[\s\S]*?(?=\n\s+- name: Upload sanitised evidence)/)?.[0] || '';
 const pullRequestPaths = workflow.match(/pull_request:\s*\n\s*paths:([\s\S]*?)\n\s*workflow_dispatch:/)?.[1] || '';
-for (const name of ['077_moonpet_completion_rewards.sql', '078_moonpet_beta_season_xp_rebaseline.sql']) {
+for (const name of [
+  '077_moonpet_completion_rewards.sql',
+  '078_moonpet_beta_season_xp_rebaseline.sql',
+  '079_moonpet_training_and_style.sql',
+  '080_moonpet_beta_xp_quarantine.sql',
+]) {
   assert.ok(pullRequestPaths.includes('workers/moonboys-api/migrations/' + name));
   assert.ok(remoteQueryStep.includes(name));
 }
@@ -135,6 +140,14 @@ assert.ok(
   'migration 075 must be detected by the production migration verification script',
 );
 assert.ok(
+  REQUIRED_D1_MIGRATIONS.includes('079_moonpet_training_and_style.sql'),
+  'migration 079 must be detected by the production migration verification script',
+);
+assert.ok(
+  REQUIRED_D1_MIGRATIONS.includes('080_moonpet_beta_xp_quarantine.sql'),
+  'migration 080 must be detected by the production migration verification script',
+);
+assert.ok(
   request.required_migrations.includes('069_moonpet_breeding_authority.sql'),
   'migration 069 must be included in the checked-in D1 evidence request',
 );
@@ -161,6 +174,14 @@ assert.ok(
 assert.ok(
   request.required_migrations.includes('075_dead_run_gps_survival.sql'),
   'migration 075 must be included in the checked-in D1 evidence request',
+);
+assert.ok(
+  request.required_migrations.includes('079_moonpet_training_and_style.sql'),
+  'migration 079 must be included in the checked-in D1 evidence request',
+);
+assert.ok(
+  request.required_migrations.includes('080_moonpet_beta_xp_quarantine.sql'),
+  'migration 080 must be included in the checked-in D1 evidence request',
 );
 assert.deepEqual(
   [...request.required_migrations].sort(),
