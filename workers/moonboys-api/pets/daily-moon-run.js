@@ -870,7 +870,7 @@ async function reconcileRunChallenges(db, daily) {
   const results = [];
   const rooms = await db.prepare(`SELECT room_id, room_number, room_type, status, generated_data, outcome_data
     FROM telegram_pet_run_rooms WHERE run_id = ? AND telegram_id = ? ORDER BY room_number`)
-    .bind(daily.run_id, daily.telegram_id).all();
+    .bind(daily.run_id, daily.telegram_id).all().then(requirePetReadResult);
   for (const room of rooms.results || []) {
     if (room.status !== 'resolved') continue;
     if (['battle', 'elite'].includes(room.room_type)) results.push(await recordChallengeEvidence(db, {

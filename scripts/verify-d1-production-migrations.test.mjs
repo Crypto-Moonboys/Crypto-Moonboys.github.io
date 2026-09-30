@@ -22,6 +22,7 @@ for (const name of [
   '080_moonpet_beta_xp_quarantine.sql',
   '081_moonpet_recovery_cursors.sql',
   '082_moonpet_post_reward_overwrite_rebaseline.sql',
+  '083_moonpet_daily_run_completion_credit.sql',
 ]) {
   assert.ok(pullRequestPaths.includes('workers/moonboys-api/migrations/' + name));
   assert.ok(remoteQueryStep.includes(name));
@@ -162,6 +163,10 @@ assert.ok(
   'migration 082 must be detected by the production migration verification script',
 );
 assert.ok(
+  REQUIRED_D1_MIGRATIONS.includes('083_moonpet_daily_run_completion_credit.sql'),
+  'migration 083 must be detected by the production migration verification script',
+);
+assert.ok(
   request.required_migrations.includes('069_moonpet_breeding_authority.sql'),
   'migration 069 must be included in the checked-in D1 evidence request',
 );
@@ -206,12 +211,20 @@ assert.ok(
   'migration 082 must be included in the checked-in D1 evidence request',
 );
 assert.ok(
+  request.required_migrations.includes('083_moonpet_daily_run_completion_credit.sql'),
+  'migration 083 must be included in the checked-in D1 evidence request',
+);
+assert.ok(
   production.d1_databases.wikicoms.required_migrations.includes('081_moonpet_recovery_cursors.sql'),
   'migration 081 must be included in the production deployment manifest',
 );
 assert.ok(
   production.d1_databases.wikicoms.required_migrations.includes('082_moonpet_post_reward_overwrite_rebaseline.sql'),
   'migration 082 must be included in the production deployment manifest',
+);
+assert.ok(
+  production.d1_databases.wikicoms.required_migrations.includes('083_moonpet_daily_run_completion_credit.sql'),
+  'migration 083 must be included in the production deployment manifest',
 );
 assert.deepEqual(
   [...request.required_migrations].sort(),

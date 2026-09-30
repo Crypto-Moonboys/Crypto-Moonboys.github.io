@@ -50,6 +50,7 @@ class Statement {
     return { results: [], meta: { changes: Number(result.changes || 0) } };
   }
   async all() {
+    if (this.adapter.failAll?.(this.sql, this.args)) return { success: false, error: 'injected_daily_read_failure' };
     const result = { results: this.adapter.database.prepare(this.sql).all(...this.args) };
     await this.adapter.afterAll?.(this.sql);
     return result;
@@ -1354,6 +1355,25 @@ async function endingFixture(owner, options = {}) {
   const room = await createPetRunRoom(adapter, run);
   await persistPetRunRoomOutcome(adapter, run, room, { success: true, score: 100, choice_id: room.choices[0].choice_id });
   return { adapter, owner, now, run, room, request: { telegram_id: owner, run_id: run.run_id, choice_key: room.choices[0].choice_id, expected_step_index: 9, now } };
+}
+
+// A resolved D1 read failure is not an empty room ledger. Finalization must
+// stay retryable so daily objectives and terminal records cannot be lost.
+{
+  const f = await endingFixture('daily-room-read-retry');
+  f.adapter.database.prepare("UPDATE telegram_pet_runs SET status='completed',current_room=10,depth=10,score=223,completed_at=CURRENT_TIMESTAMP WHERE run_id=?").run(f.run.run_id);
+  f.adapter.failAll = sql => sql.includes('FROM telegram_pet_run_rooms WHERE run_id = ?');
+  await assert.rejects(syncDailyMoonRun(f.adapter, f.request), /pet_state_read_unavailable/);
+  assert.equal(f.adapter.database.prepare("SELECT COUNT(*) AS n FROM telegram_pet_daily_analytics WHERE event_type='run_terminal' AND telegram_id=?").get(f.owner).n, 0,
+    'a failed room ledger read must not finalize Daily Run records');
+  assert.equal(f.adapter.database.prepare("SELECT COUNT(*) AS n FROM telegram_pet_daily_journey_objectives WHERE challenge_id='daily_explorer' AND telegram_id=?").get(f.owner).n, 0);
+  f.adapter.failAll = null;
+  await syncDailyMoonRun(f.adapter, f.request);
+  await syncDailyMoonRun(f.adapter, f.request);
+  assert.equal(f.adapter.database.prepare("SELECT COUNT(*) AS n FROM telegram_pet_daily_analytics WHERE event_type='run_terminal' AND telegram_id=?").get(f.owner).n, 1,
+    'retry finalizes Daily Run records exactly once');
+  assert.equal(f.adapter.database.prepare("SELECT COUNT(*) AS n FROM telegram_pet_daily_journey_objectives WHERE challenge_id='daily_explorer' AND telegram_id=? AND status='accepted'").get(f.owner).n, 1,
+    'retry restores official Daily Journey objective credit exactly once');
 }
 
 // Finish Saved Daily Run is settlement recovery, just like refresh. It must

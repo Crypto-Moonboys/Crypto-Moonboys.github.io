@@ -2054,7 +2054,7 @@ CREATE TABLE IF NOT EXISTS telegram_pet_daily_completion (
 
 CREATE TRIGGER IF NOT EXISTS pet_daily_completion_event_insert
 AFTER INSERT ON telegram_pet_events
-WHEN NEW.status='accepted' AND NEW.event_type IN ('feed','play','clean','train','trade','buy','adventure','run_extract','run_complete','district_mission','event_chain','seasonal_boss')
+WHEN NEW.status='accepted' AND NEW.event_type IN ('feed','play','clean','train','trade','buy','adventure','run_extract','run_complete','daily_moon_run','district_mission','event_chain','seasonal_boss')
   AND NEW.event_key NOT LIKE 'moonpet_wallet_reconcile:%'
 BEGIN
   INSERT INTO telegram_pet_daily_completion (telegram_id,utc_day,progress_bits)
@@ -2065,7 +2065,7 @@ END;
 CREATE TRIGGER IF NOT EXISTS pet_daily_completion_event_accept
 AFTER UPDATE OF status ON telegram_pet_events
 WHEN NEW.status='accepted' AND OLD.status<>'accepted'
-  AND NEW.event_type IN ('feed','play','clean','train','trade','buy','adventure','run_extract','run_complete','district_mission','event_chain','seasonal_boss')
+  AND NEW.event_type IN ('feed','play','clean','train','trade','buy','adventure','run_extract','run_complete','daily_moon_run','district_mission','event_chain','seasonal_boss')
   AND NEW.event_key NOT LIKE 'moonpet_wallet_reconcile:%'
 BEGIN
   INSERT INTO telegram_pet_daily_completion (telegram_id,utc_day,progress_bits)

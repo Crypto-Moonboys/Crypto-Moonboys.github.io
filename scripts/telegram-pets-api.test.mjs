@@ -83,6 +83,8 @@ const {
   buildMoonpetIdentityAuthorityAudit,
   PET_SEASON_EXTRA_SLOT_COSTS,
   buildPetSeasonSlotSummary,
+  buyPetSeasonSlot,
+  switchActivePetSeasonSlot,
   processPetMiniAppAction,
   buildPetMiniAppState,
   normalizePetCooldownWindow,
@@ -418,6 +420,9 @@ const miniAppStateBuilder = asyncBlock('buildPetMiniAppState');
 assert.match(miniAppStateBuilder, /readPetLeaderboard\(db, \{ period: 'seasonal', limit: 10, now \}\)/, 'initial Mini App ranks must use the shared current-season query');
 assert.match(miniAppStateBuilder, /pet_mini_app_initial_leaderboard_failed[\s\S]*throw error/, 'Mini App state must propagate ranking query errors');
 assert.match(miniAppStateBuilder, /season_slots: seasonSlots/, 'Mini App state must expose current-season pet slots');
+const petMissionsBuilder = asyncBlock('buildPetMissions');
+assert.match(petMissionsBuilder, /telegram_pet_system_events[\s\S]*\.first\(\)\.then\(requirePetFirstReadResult\)/,
+  'daily Shop-goal upgrade evidence must fail closed instead of becoming zero progress');
 const miniAppActionProcessor = asyncBlock('processPetMiniAppAction');
 assert.match(miniAppActionProcessor, /action === 'season_slots'/, 'Mini App action handler must expose season slot summary reads');
 assert.match(miniAppActionProcessor, /buyPetSeasonSlot\(db, telegramId/, 'Mini App action handler must sell slots through the authenticated action flow');
@@ -2551,6 +2556,50 @@ const serializedSlotSummaryAction = serializePetMiniAppActionResult(slotSummaryA
 assert.equal(serializedSlotSummaryAction.season_slots.slots.length, 3, 'serialized Mini App slot action must include the slot summary payload');
 assert.equal(seasonSlotRuntimeDb.database.prepare("SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id='season-slot-runtime'").get().arcade_xp_total, 1400, 'read-only slot summary must not spend Arcade XP');
 assert.equal(seasonSlotRuntimeDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_season_slots WHERE telegram_id='season-slot-runtime'").get().count, 1, 'read-only slot summary must not create paid slots before per-pet state exists');
+
+const slotPurchaseReadFailureDb = seedRepeatRewardPlayer('slot-purchase-read-failure');
+await ensurePetStarterSeasonSlot(slotPurchaseReadFailureDb, 'slot-purchase-read-failure', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(slotPurchaseReadFailureDb, 'slot-purchase-read-failure');
+slotPurchaseReadFailureDb.database.prepare(`INSERT INTO arcade_xp_wallets
+  (telegram_id,arcade_xp_earned,arcade_xp_spendable,arcade_xp_spent) VALUES ('slot-purchase-read-failure',500,500,0)`).run();
+slotPurchaseReadFailureDb.failReadOnSql(/SELECT telegram_id FROM telegram_pet_profiles/);
+await assert.rejects(
+  buyPetSeasonSlot(slotPurchaseReadFailureDb, 'slot-purchase-read-failure', 2, { now: new Date('2026-08-15T00:00:00Z') }),
+  /pet_state_read_unavailable/,
+  'a failed adoption authority read must not be reported as not adopted',
+);
+assert.equal(slotPurchaseReadFailureDb.database.prepare("SELECT arcade_xp_spendable FROM arcade_xp_wallets WHERE telegram_id='slot-purchase-read-failure'").get().arcade_xp_spendable, 500);
+assert.equal(slotPurchaseReadFailureDb.database.prepare("SELECT COUNT(*) AS n FROM telegram_pet_season_slots WHERE telegram_id='slot-purchase-read-failure'").get().n, 1);
+
+const slotSwitchReadFailureDb = seedRepeatRewardPlayer('slot-switch-read-failure');
+await ensurePetStarterSeasonSlot(slotSwitchReadFailureDb, 'slot-switch-read-failure', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(slotSwitchReadFailureDb, 'slot-switch-read-failure');
+slotSwitchReadFailureDb.database.prepare(`INSERT INTO telegram_pet_season_slots
+  (pet_id,telegram_id,season_key,slot_number,acquisition_type) VALUES ('slot-switch-target','slot-switch-read-failure','pet-s2026-003',2,'arcade_xp')`).run();
+slotSwitchReadFailureDb.database.prepare(`INSERT INTO telegram_pet_instances
+  (pet_id,telegram_id,season_key,slot_number,source_profile_updated_at) VALUES ('slot-switch-target','slot-switch-read-failure','pet-s2026-003',2,CURRENT_TIMESTAMP)`).run();
+const activePetBeforeFailedSwitch = slotSwitchReadFailureDb.database.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='slot-switch-read-failure'").get().pet_id;
+slotSwitchReadFailureDb.failReadOnSql(/SELECT run_id AS id FROM telegram_pet_runs/);
+await assert.rejects(
+  switchActivePetSeasonSlot(slotSwitchReadFailureDb, 'slot-switch-read-failure', 'slot-switch-target', { now: new Date('2026-08-15T00:00:00Z') }),
+  /pet_state_read_unavailable/,
+  'a failed pending-work authority read must not be treated as permission to switch pets',
+);
+assert.equal(slotSwitchReadFailureDb.database.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='slot-switch-read-failure'").get().pet_id, activePetBeforeFailedSwitch);
+slotSwitchReadFailureDb.failReadOnSql(/SELECT s\.pet_id FROM telegram_pet_season_slots s/);
+await assert.rejects(
+  switchActivePetSeasonSlot(slotSwitchReadFailureDb, 'slot-switch-read-failure', 'slot-switch-target', { now: new Date('2026-08-15T00:00:00Z') }),
+  /pet_state_read_unavailable/,
+  'a failed owned-slot authority read must not be reported as an unowned slot',
+);
+assert.notEqual(slotSwitchReadFailureDb.database.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='slot-switch-read-failure'").get().pet_id, 'slot-switch-target');
+slotSwitchReadFailureDb.failReadOnSql(/SELECT \* FROM telegram_pet_instances WHERE pet_id=\? AND telegram_id=\?/);
+await assert.rejects(
+  switchActivePetSeasonSlot(slotSwitchReadFailureDb, 'slot-switch-read-failure', 'slot-switch-target', { now: new Date('2026-08-15T00:00:00Z') }),
+  /pet_state_read_unavailable/,
+  'a failed target-instance read must leave the active pointer unchanged',
+);
+assert.equal(slotSwitchReadFailureDb.database.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='slot-switch-read-failure'").get().pet_id, activePetBeforeFailedSwitch);
 
 const legacyLifecycleStateDb = seedRepeatRewardPlayer('legacy-lifecycle-state');
 const legacyLifecycleBefore = legacyLifecycleStateDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_by_pet').get().count;
