@@ -9625,7 +9625,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       ? { key: 'rare_morph', title: 'Answer the hidden signal', detail: 'Your companion history has opened a one-of-one morph path.', action: 'rare_morph', destination: 'profile' }
       : guidedNext?.key && guidedNext.key !== 'maintain' ? guidedNext : liveNext || guidedNext;
   const activeRun = guidance?.active_run || null;
-  const [runPet, practice, styleLoadout, contracts, dailyReservation, dailyRunSummary] = await Promise.all([
+  const [runPet, practice, styleLoadout, contracts, dailyReservation] = await Promise.all([
     !activeRun || activeRun.pet_id === petRaw.pet_id
       ? Promise.resolve(petRaw)
       : getPetInstanceWithAtomicDecay(db, activeRun.pet_id),
@@ -9635,11 +9635,17 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
     activeRun
       ? getDailyMoonRunReservation(db, { telegram_id: telegramId, run_id: activeRun.run_id })
       : Promise.resolve(null),
-    getDailyMoonRunSummary(db, { telegram_id: telegramId, now, active_run: activeRun, hatched: Boolean(lifecycle && lifecycle.phase !== 'egg') }),
   ]);
-  const guidanceNotices = guidance
-    ? await persistPetGuidanceNotices(db, telegramId, buildPetGuidanceCandidates(guidance)).catch(() => [])
-    : [];
+  // Daily summary may repair an interrupted reservation. Do not race it with
+  // the reservation read/repair path; only unrelated presentation work overlaps.
+  const dailyRunSummaryPromise = getDailyMoonRunSummary(db, {
+    telegram_id: telegramId, now, active_run: activeRun,
+    hatched: Boolean(lifecycle && lifecycle.phase !== 'egg'),
+  });
+  const guidanceNoticesPromise = guidance
+    ? persistPetGuidanceNotices(db, telegramId, buildPetGuidanceCandidates(guidance)).catch(() => [])
+    : Promise.resolve([]);
+  const [dailyRunSummary, guidanceNotices] = await Promise.all([dailyRunSummaryPromise, guidanceNoticesPromise]);
   const runPetAvailable = Boolean(activeRun?.pet_id && runPet?.pet_id === activeRun.pet_id && runPet?.telegram_id === telegramId);
   if (next?.key === 'activity_running' && contracts.available) next = {
     key: 'contract', title: contracts.run?.status === 'active' ? 'Continue your saved contract' : 'Choose another contract',
