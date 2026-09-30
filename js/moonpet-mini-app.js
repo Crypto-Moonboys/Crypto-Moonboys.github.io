@@ -3069,9 +3069,10 @@
     if (buttonElement) buttonElement.classList.add('is-active');
     haptic('medium');
     var fastResponse = shouldUseFastActionResponse(action);
-    var waitForAcceptedAnimation = !fastResponse && ['energy_drink', 'dance', 'cuddles'].includes(String(action || '').toLowerCase());
+    var authoritativeSleepClear = ['energy_drink', 'dance', 'cuddles'].includes(String(action || '').toLowerCase());
+    var waitForAcceptedAnimation = !fastResponse && authoritativeSleepClear;
     var actionFamily = actionAnimationFamily(action, payload);
-    if (sleepLatched && actionFamily !== 'sleep' && !waitForAcceptedAnimation) setSleepLatch(false);
+    if (sleepLatched && actionFamily !== 'sleep' && !authoritativeSleepClear) setSleepLatch(false);
     if (!waitForAcceptedAnimation) animateAction(action, true, fastResponse ? (actionFamily === 'dance' ? 3600 : 2800) : 8000, payload);
     tell(words(action) + ' in progress...');
     try {
@@ -3088,7 +3089,7 @@
           var fastServerTime = Date.parse(data.server_time || data.result && data.result.server_time || '');
           if (Number.isFinite(fastServerTime)) serverClockOffsetMs = fastServerTime - Date.now();
           if (actionFamily === 'sleep') setSleepLatch(actionAccepted);
-          else if (actionAccepted && sleepLatched) setSleepLatch(false);
+          else if (authoritativeSleepClear && actionAccepted && sleepLatched) setSleepLatch(false);
           if (!actionAccepted) animateAction('blocked', false, 2800, payload);
           var message = resultMessage(data.result, stateBeforeAction, state);
           tell(message + (actionAccepted ? ' // SAVE CONFIRMED' : ''), actionAccepted ? '' : 'danger');
