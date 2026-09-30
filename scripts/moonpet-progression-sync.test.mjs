@@ -1526,7 +1526,7 @@ for (const [label, method, match] of [
   ['rare morph memory', 'beforeFirst', q=>q==='SELECT * FROM telegram_pet_memories WHERE pet_id=? AND telegram_id=? AND season_key=?'],
   ['rare morph stage', 'beforeFirst', q=>q==='SELECT MAX(stage) AS stage FROM telegram_pet_evolutions_by_pet WHERE pet_id=?'],
   ['rare morph traits', 'beforeAll', q=>q.includes('SELECT trait_id FROM telegram_pet_personality_traits WHERE pet_id=? AND telegram_id=? AND season_key=? AND unlocked_at IS NOT NULL')],
-  ['pet age', 'beforeFirst', q=>q.includes('SELECT created_at FROM telegram_pet_season_slots WHERE pet_id=? AND season_key=?')],
+  ['pet age', 'beforeFirst', q=>q.includes('SELECT s.pet_id, s.telegram_id, s.season_key, i.level, i.pet_xp, s.created_at AS season_slot_created_at') && q.includes('WHERE s.pet_id=? AND s.season_key=?')],
   ['identity scope', 'beforeFirst', q=>q.includes('SELECT s.pet_id, s.season_key, s.slot_number, s.acquisition_type') && q.includes('FROM telegram_pet_active_slots')],
   ['identity stage', 'beforeFirst', q=>q.includes('SELECT e.evolution_id, e.stage, e.unlocked_at')],
   ['identity memories', 'beforeFirst', q=>q==='SELECT * FROM telegram_pet_memories WHERE pet_id = ? AND telegram_id = ? AND season_key = ?'],
