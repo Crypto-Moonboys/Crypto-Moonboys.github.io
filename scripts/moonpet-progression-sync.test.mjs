@@ -185,6 +185,36 @@ test('core Mini App bootstrap stays below its SQL budget and omits heavy modules
   console.log(`Core-state budget: ${coreStatements}/${MOONPET_D1_PERFORMANCE_BUDGETS.core_bootstrap_max_statements} SQL statements`);
 });
 
+test('Missions uses less SQL, preserves its panels and never loads unrelated module projections', async () => {
+  const f = fixture('missions-state-budget');
+  const full = await f.state();
+  const queries = [];
+  f.db.beforeFirst = statement => { queries.push(statement.query); };
+  f.db.beforeAll = statement => { queries.push(statement.query); };
+  f.db.statementCount = 0;
+  const missions = await hooks.buildPetMiniAppState(f.db, f.owner, 'fixture-token', { mode: 'missions' });
+  const count = f.db.statementCount;
+  assert.ok(count <= MOONPET_D1_PERFORMANCE_BUDGETS.missions_state_max_statements, `Missions executed ${count} statements`);
+  console.log(`Missions-state budget: ${count}/${MOONPET_D1_PERFORMANCE_BUDGETS.missions_state_max_statements} SQL statements`);
+  const stable = value => JSON.parse(JSON.stringify(value, (key, entry) => ['server_time', 'remaining_seconds'].includes(key) ? undefined : entry));
+  assert.equal(missions.hydration.mode, 'missions');
+  assert.deepEqual(missions.hydration.modules, ['missions']);
+  for (const key of ['contracts', 'season_finales', 'daily_journey', 'weekly_journey']) {
+    assert.deepEqual(stable(missions[key]), stable(full[key]), `Missions preserves ${key}`);
+  }
+  for (const key of ['missions', 'daily_completion', 'achievements']) {
+    assert.deepEqual(stable(missions.guidance[key]), stable(full.guidance[key]), `Missions preserves guidance.${key}`);
+  }
+  assert.deepEqual(missions.season_slots.slots.find(slot => slot.active).pet.progression,
+    full.season_slots.slots.find(slot => slot.active).pet.progression);
+  for (const key of ['practice', 'live_systems', 'leaderboard', 'arena', 'kaiju', 'inventory', 'gear', 'run', 'style_loadout']) {
+    assert.equal(missions[key], undefined, `Missions defers ${key}`);
+  }
+  assert.ok(!queries.some(query => /ORDER BY slot, item_level DESC, item_key|SELECT material_key, quantity[\s\S]*ORDER BY material_key|SELECT relic_id, unlocked_at|SELECT \* FROM telegram_pet_arena_battles WHERE status='completed'|SELECT \* FROM telegram_pet_kaiju_matches WHERE status='completed'/.test(query)));
+  f.db.beforeAll = statement => { if (/SELECT event_type, COUNT\(\*\) AS count/.test(statement.query)) throw new Error('missions_read_outage'); };
+  await assert.rejects(hooks.buildPetMiniAppState(f.db, f.owner, 'fixture-token', { mode: 'missions' }), /missions_read_outage/);
+});
+
 test('warm state stays below its SQL budget and does not rewrite unchanged achievements', async () => {
   const f=fixture('state-budget'); await f.state();
   f.sql.prepare("UPDATE telegram_pet_achievements SET updated_at='2000-01-01 00:00:00' WHERE telegram_id=?").run(f.owner);

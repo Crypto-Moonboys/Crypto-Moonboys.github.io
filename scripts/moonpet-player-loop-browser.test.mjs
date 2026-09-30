@@ -84,6 +84,7 @@ async function seed(id, phase) {
 }
 await seed('browser-egg', 'egg');
 await seed('browser-young', 'young');
+await seed('browser-missions', 'young');
 const token = 'local-browser-test-token';
 const realCrypto = globalThis.crypto;
 let contractTestRoll = 0;
@@ -103,6 +104,51 @@ if (process.env.CHROMIUM_EXECUTABLE_PATH) launch.executablePath = process.env.CH
 let browser;
 try {
   browser = await chromium.launch(launch);
+  // Exercise the partial response with the real renderer, including a delayed
+  // Missions deep link and subsequent navigation to a full-state screen.
+  {
+    const context = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+    const page = await context.newPage();
+    const modes = [], errors = [];
+    let releaseMissions;
+    const missionsGate = new Promise(resolve => { releaseMissions = resolve; });
+    page.on('pageerror', error => errors.push(error.message));
+    await page.addInitScript(() => localStorage.setItem('moonpet-radio-preference', 'off'));
+    await page.route('**/*', async route => {
+      const url = new URL(route.request().url());
+      if (url.hostname === 'telegram.org') return route.fulfill({ contentType: 'text/javascript', body: "window.Telegram={WebApp:{initData:'fixture',ready(){},expand(){},onEvent(){},setHeaderColor(){},setBackgroundColor(){}}};" });
+      if (url.pathname.endsWith('/telegram-pets/app/state')) {
+        const body = route.request().postDataJSON();
+        modes.push(body.mode || 'full');
+        if (body.mode === 'missions') await missionsGate;
+        const state = body.mode === 'core'
+          ? await hooks.buildPetMiniAppCoreState(db, 'browser-missions')
+          : await hooks.buildPetMiniAppState(db, 'browser-missions', token, { mode: body.mode });
+        return route.fulfill({ json: { ok: true, state } });
+      }
+      if (url.pathname.endsWith('/telegram-pets/app/performance')) return route.fulfill({ json: { ok: true } });
+      if (url.hostname === '127.0.0.1') return route.continue();
+      return route.abort();
+    });
+    await page.goto(`http://127.0.0.1:${server.address().port}/moonpet-game.html?screen=missions&focus=contracts`);
+    await page.waitForSelector('[data-panel="module-loading"]');
+    releaseMissions();
+    await page.waitForSelector('[data-panel="contracts"][open]');
+    assert.deepEqual(modes, ['core', 'missions'], 'Missions deep link does not request full state');
+    for (const panel of ['missions','daily-journey','weekly-journey','daily-completion','season-finale','achievements']) {
+      assert.equal(await page.locator(`[data-panel="${panel}"]`).count(), 1, `${panel} renders from Missions-only data`);
+    }
+    await page.screenshot({ path: '/tmp/moonpet-missions-partial.png' });
+    await page.locator('[data-screen="home"]').click();
+    await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-screen="missions"]').click();
+    assert.deepEqual(modes, ['core', 'missions'], 'reopening Missions reuses its ready projection');
+    await page.locator('[data-screen="explore"]').click();
+    await page.waitForSelector('[data-panel="moon-run"]');
+    assert.deepEqual(modes, ['core', 'missions', 'full'], 'Explore hydrates full state after Missions');
+    assert.deepEqual(errors, [], 'partial-state navigation has no runtime exceptions');
+    await context.close();
+  }
   for (const viewport of [{ width: 390, height: 844 }, { width: 360, height: 640 }]) {
     const context = await browser.newContext({ viewport, reducedMotion: 'reduce' });
     const page = await context.newPage();
