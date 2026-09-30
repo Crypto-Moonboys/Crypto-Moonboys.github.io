@@ -111,6 +111,10 @@ checklist bits; an account wallet crossing or holding 50 Gold latches the bank
 goal. Spending cannot erase earned progress. Complete unclaimed days remain
 claimable after midnight. The first claim freezes its selected hatched source
 pet/season; duplicate or interrupted delivery uses that same reward key.
+An accepted official Daily Moon Run satisfies the Adventure checklist goal.
+Migration `083_moonpet_daily_run_completion_credit.sql` adds that run type to
+the durable insert/accept triggers so the credit survives a failed refresh and
+UTC rollover.
 
 Signal Sovereign is an additional season finale. Eligibility is final evolution
 plus 60 distinct-day Marks and 10 distinct-week Crests, or an existing season
@@ -172,12 +176,12 @@ from `pets/recovery-limits.js`; larger backlogs drain across later refreshes.
 Journey source evidence, daily Mark awards and weekly Crest awards rotate past
 their last attempted batch. A persistently failing batch cannot hold later
 eligible quests at the back of the queue. Each queue saves one scheduling cursor
-in existing account settings before processing a nonempty batch; an overlapping
+in `telegram_pet_recovery_cursors` before processing a nonempty batch; an overlapping
 refresh must still match the cursor it read. The cursor grants no quest credit.
 Failures remain pending and are revisited on wraparound. Award/source limits,
 qualification rules, original pet/season attribution and reward keys still apply.
 Daily final-ending and early-ending queues rotate through pending sources using
-separate account cursors in `telegram_settings`. A turn is saved before repair,
+separate account cursors in `telegram_pet_recovery_cursors`. A turn is saved before repair,
 so failed sources yield to newer work and remain eligible after wraparound.
 Overlapping refreshes compare the saved cursor before advancing it. Cursors are
 scheduling data only; existing source and receipt checks still decide rewards.

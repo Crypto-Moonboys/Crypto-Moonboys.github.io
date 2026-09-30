@@ -4759,16 +4759,17 @@ async function buyPetSeasonSlot(db, telegramId, requestedSlot, options = {}) {
   const season = getPetSeasonInfo(options.now || new Date());
   const cost = PET_SEASON_EXTRA_SLOT_COSTS[slotNumber];
   const petId = `pet:${owner}:${season.key}:${slotNumber}`;
-  const profile = await db.prepare(`SELECT telegram_id FROM telegram_pet_profiles WHERE telegram_id=? LIMIT 1`).bind(owner).first().catch(() => null);
+  const profile = await db.prepare(`SELECT telegram_id FROM telegram_pet_profiles WHERE telegram_id=? LIMIT 1`)
+    .bind(owner).first().then(requirePetFirstReadResult);
   if (!profile) return { accepted: false, reason: 'pet_not_adopted' };
   await ensurePetStarterSeasonSlot(db, owner, options.now || new Date());
   await getOrCreateArcadeProgressionState(db, owner);
   const existing = await db.prepare(`SELECT pet_id FROM telegram_pet_season_slots WHERE telegram_id=? AND season_key=? AND slot_number=? LIMIT 1`)
-    .bind(owner, season.key, slotNumber).first();
+    .bind(owner, season.key, slotNumber).first().then(requirePetFirstReadResult);
   if (existing) return { accepted: false, reason: 'pet_slot_already_owned', season_slots: await buildPetSeasonSlotSummary(db, owner, options.now) };
 
   const previous = await db.prepare(`SELECT 1 AS owned FROM telegram_pet_season_slots WHERE telegram_id=? AND season_key=? AND slot_number=?`)
-    .bind(owner, season.key, slotNumber - 1).first();
+    .bind(owner, season.key, slotNumber - 1).first().then(requirePetFirstReadResult);
   if (!previous) return { accepted: false, reason: 'previous_pet_slot_required', season_slots: await buildPetSeasonSlotSummary(db, owner, options.now) };
 
   const eventKey = `pet_slot:${season.key}:${slotNumber}`;
@@ -4792,10 +4793,13 @@ async function buyPetSeasonSlot(db, telegramId, requestedSlot, options = {}) {
       .bind(petId, owner, crypto.randomUUID()),
   ];
   await db.batch(statements);
-  const created = await db.prepare(`SELECT pet_id FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=? LIMIT 1`).bind(petId, owner).first();
+  const created = await db.prepare(`SELECT pet_id FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=? LIMIT 1`)
+    .bind(petId, owner).first().then(requirePetFirstReadResult);
   if (!created) {
-    const wallet = await db.prepare(`SELECT arcade_xp_spendable FROM arcade_xp_wallets WHERE telegram_id=?`).bind(owner).first().catch(() => null);
-    const duplicate = await db.prepare(`SELECT 1 AS owned FROM telegram_pet_season_slots WHERE telegram_id=? AND season_key=? AND slot_number=?`).bind(owner, season.key, slotNumber).first();
+    const wallet = await db.prepare(`SELECT arcade_xp_spendable FROM arcade_xp_wallets WHERE telegram_id=?`)
+      .bind(owner).first().then(requirePetFirstReadResult);
+    const duplicate = await db.prepare(`SELECT 1 AS owned FROM telegram_pet_season_slots WHERE telegram_id=? AND season_key=? AND slot_number=?`)
+      .bind(owner, season.key, slotNumber).first().then(requirePetFirstReadResult);
     return { accepted: false, reason: duplicate ? 'pet_slot_creation_incomplete' : (Number(wallet?.arcade_xp_spendable || 0) < cost ? 'insufficient_arcade_xp' : 'pet_slot_purchase_conflict'), season_slots: await buildPetSeasonSlotSummary(db, owner, options.now) };
   }
   if (options.switch_active) return switchActivePetSeasonSlot(db, owner, petId, { now: options.now });
@@ -4813,7 +4817,7 @@ async function switchActivePetSeasonSlot(db, telegramId, requestedPetId, options
   const slot = await db.prepare(`SELECT s.pet_id FROM telegram_pet_season_slots s
     JOIN telegram_pet_instances i ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id AND i.season_key=s.season_key AND i.slot_number=s.slot_number
     WHERE s.pet_id=? AND s.telegram_id=? AND s.season_key=? AND s.status='active' AND i.status='active' LIMIT 1`)
-    .bind(requested, owner, season.key).first().catch(() => null);
+    .bind(requested, owner, season.key).first().then(requirePetFirstReadResult);
   if (!slot) return { accepted: false, reason: 'pet_slot_not_switchable', season_slots: await buildPetSeasonSlotSummary(db, owner, options.now) };
   // Reconcile any newer compatibility-profile write onto the currently active
   // instance before moving the pointer. Otherwise selecting another pet could
@@ -4824,7 +4828,8 @@ async function switchActivePetSeasonSlot(db, telegramId, requestedPetId, options
   if (Number(switched?.meta?.changes || 0) !== 1) {
     return { accepted: false, reason: 'active_pet_pointer_missing', season_slots: await buildPetSeasonSlotSummary(db, owner, options.now) };
   }
-  const pet = await db.prepare(`SELECT * FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=?`).bind(slot.pet_id, owner).first();
+  const pet = await db.prepare(`SELECT * FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=?`)
+    .bind(slot.pet_id, owner).first().then(requirePetFirstReadResult);
   await mirrorActivePetInstanceToProfile(db, pet);
   return { accepted: true, reason: 'pet_slot_switched', pet: await getPetProfile(db, owner), season_slots: await buildPetSeasonSlotSummary(db, owner, options.now) };
 }
@@ -7091,7 +7096,7 @@ async function buildPetMissions(db, telegramId, petRaw = null) {
       FROM telegram_pet_system_events
       WHERE telegram_id = ? AND system_key = 'equipment_upgrade' AND status = 'completed'
         AND updated_at >= ? AND updated_at < ?
-    `).bind(telegramId, dayKey, nextDayKey).first(),
+    `).bind(telegramId, dayKey, nextDayKey).first().then(requirePetFirstReadResult),
     petRaw || getPetProfile(db, telegramId, true),
   ]);
   const counts = Object.fromEntries((events.results || []).map((row) => [row.event_type, Number(row.count || 0)]));

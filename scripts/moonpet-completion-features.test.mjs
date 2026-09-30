@@ -89,6 +89,17 @@ test('daily checklist latches every accepted goal, ignores pending actions, and 
   assert.equal(snapshot.guidance.daily_completion.claimed, true);
 });
 
+test('an accepted official Daily Moon Run supplies durable Adventure checklist credit', async () => {
+  const f = fixture('daily-run-adventure');
+  f.sql.prepare('UPDATE telegram_pet_profiles SET moon_gold=50 WHERE telegram_id=?').run(f.owner);
+  for (const type of ['feed','play','clean','train','trade','buy']) f.event(type);
+  f.event('daily_moon_run');
+  const completion = await readDailyCompletion(f.db, f.owner, today, { daily_moon_run: 1 }, 0, 0);
+  assert.equal(completion.progress_bits, 255);
+  assert.equal(completion.ready, true);
+  assert.equal((await f.act(dailyClaim(f))).accepted, true);
+});
+
 test('concurrent daily claims pay once, survive midnight, and match every public leaderboard period', async () => {
   const f = fixture('daily-once'); f.completeDaily();
   const rewards = await Promise.all([f.act(dailyClaim(f)), f.act(dailyClaim(f))]);
@@ -216,6 +227,23 @@ test('migration 077 upgrades a pre-feature database and is safely re-runnable', 
   assert.equal(sql.prepare('SELECT progress_bits FROM telegram_pet_daily_completion').get().progress_bits,128);
   assert.equal(sql.prepare('SELECT moon_gold FROM telegram_pet_profiles').get().moon_gold,0);
   assert.deepEqual(sql.prepare('PRAGMA foreign_key_check').all(),[]);
+});
+
+test('migration 083 adds durable Daily Moon Run checklist credit and is safely re-runnable', () => {
+  const sql = new DatabaseSync(':memory:');
+  const pre083 = file('schema.sql').replaceAll(",'daily_moon_run'", '');
+  sql.exec(pre083);
+  sql.exec("INSERT INTO telegram_users(telegram_id) VALUES ('migration-083'); INSERT INTO telegram_pet_profiles(telegram_id) VALUES ('migration-083')");
+  const insertEvent = (id, day) => sql.prepare(`INSERT INTO telegram_pet_events
+    (id,telegram_id,event_type,event_key,day_key,week_key,season_key,status) VALUES (?,?,'daily_moon_run',?,?,?,'pet-s2026-003','accepted')`)
+    .run(id, 'migration-083', id, day, '2026-W40');
+  insertEvent('before-083', '2026-09-29');
+  assert.equal(sql.prepare("SELECT COUNT(*) AS n FROM telegram_pet_daily_completion WHERE telegram_id='migration-083'").get().n, 0);
+  const migration = file('migrations/083_moonpet_daily_run_completion_credit.sql');
+  sql.exec(migration); sql.exec(migration);
+  insertEvent('after-083', '2026-09-30');
+  assert.equal(sql.prepare("SELECT progress_bits FROM telegram_pet_daily_completion WHERE telegram_id='migration-083' AND utc_day='2026-09-30'").get().progress_bits, 64);
+  assert.deepEqual(sql.prepare('PRAGMA foreign_key_check').all(), []);
 });
 
 test('finale qualification counts distinct days and weeks before a completion marker exists', async () => {
