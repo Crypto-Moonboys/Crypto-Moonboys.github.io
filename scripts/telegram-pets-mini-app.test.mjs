@@ -115,9 +115,9 @@ assert.match(client, /function stateNeedsFullHydration\(snapshot\)[\s\S]*snapsho
   'client must distinguish lightweight HOME state from fully hydrated module state');
 assert.match(client, /var initialStateRequest = post\('\/telegram-pets\/app\/state', \{ mode: 'core' \}\);/,
   'startup must request only the lightweight core state');
-assert.match(client, /stateNeedsFullHydration\(state\) && nextScreen !== 'home'[\s\S]*hydrateFullState\(nextScreen\)/,
+assert.match(client, /stateNeedsScreenHydration\(state, nextScreen\)[\s\S]*hydrateFullState\(nextScreen\)/,
   'opening a non-HOME screen must lazy-load the full server state');
-assert.match(client, /stateRefreshPayload\(state\)[\s\S]*\{ mode: 'core' \}/,
+assert.match(client, /stateRefreshPayload\(state, activeScreen\)[\s\S]*\{ mode: 'core' \}/,
   'care and cooldown reconciliation must stay on the lightweight core path until a module is opened');
 assert.match(client, /summary\.hydrated === false \|\| stateNeedsFullHydration\(state\)[\s\S]*Detailed pet progression, Growth Marks, Weekly Crests/,
   'core HOME must not render missing progression as fake zero progress');
@@ -129,10 +129,62 @@ assert.match(client, /fullStateHydrationFailures < FULL_STATE_HYDRATION_MAX_AUTO
   'failed module hydration must stop automatic retries at the configured ceiling');
 assert.match(client, /data-utility="module-retry"/,
   'exhausted automatic hydration must expose a manual retry control');
-assert.match(client, /function applyRequestedFocus\(\) \{[\s\S]*stateNeedsFullHydration\(state\) && activeScreen !== 'home'\) return;[\s\S]*requestedFocus = ''/,
+assert.match(client, /function applyRequestedFocus\(\) \{[\s\S]*stateNeedsScreenHydration\(state, activeScreen\)\) return;[\s\S]*requestedFocus = ''/,
   'deep-link focus must remain pending until the requested module is fully hydrated');
 assert.match(client, /await showPendingNotices\(\);[\s\S]*applyRequestedFocus\(\);/,
   'successful full hydration must apply any deferred launch focus');
+
+const moduleRuntime = new Function(extractModuleSource() + `
+var state = { hydration: { full: false, mode: 'core' } };
+var activeScreen = 'missions';
+var fullStateHydrationPromise = null, fullStateHydrationRetryTimer = 0;
+var fullStateHydrationFailures = 0, fullStateHydrationRetryDelayMs = 0;
+var FULL_STATE_HYDRATION_MAX_AUTO_RETRIES = 3;
+var fastActionStateDirty = false;
+var screen = { scrollTop: 0 }, requests = [], timers = [];
+var window = { clearTimeout() {}, setTimeout(fn, delay) { timers.push({ fn, delay }); return timers.length; } };
+var failure = false;
+function words(s) { return s; } function tell() {} function render() {}
+function beginStateRequest() { return 1; }
+function setStateSnapshot(s) { state = s; return true; }
+async function showPendingNotices() {} function applyRequestedFocus() {}
+async function post(path, payload) {
+  requests.push(payload);
+  if (failure) throw new Error('offline');
+  return { state: payload.mode === 'missions'
+    ? { hydration: { full: false, mode: 'missions', modules: ['missions'] } }
+    : { adopted: true } };
+}
+return { hydrateFullState, stateNeedsScreenHydration, stateRefreshPayload,
+  requests, timers, fail() { failure = true; },
+  reset() { state = { hydration: { full: false } }; fullStateHydrationFailures = 0; },
+  screen(key) { activeScreen = key; }, snapshot() { return state; } };
+`)();
+function extractModuleSource() {
+  return client.split('// TEST-EXPORT: coreStateHydration:start')[1].split('// TEST-EXPORT: coreStateHydration:end')[0];
+}
+await moduleRuntime.hydrateFullState('missions');
+assert.deepEqual(moduleRuntime.requests, [{ mode: 'missions' }], 'Missions requests only its own projection');
+assert.equal(moduleRuntime.stateNeedsScreenHydration(moduleRuntime.snapshot(), 'missions'), false);
+assert.equal(moduleRuntime.stateNeedsScreenHydration(moduleRuntime.snapshot(), 'explore'), true);
+assert.deepEqual(moduleRuntime.stateRefreshPayload(moduleRuntime.snapshot(), 'missions'), { mode: 'missions' });
+assert.deepEqual(moduleRuntime.stateRefreshPayload(moduleRuntime.snapshot(), 'home'), { mode: 'core' });
+await moduleRuntime.hydrateFullState('missions');
+assert.equal(moduleRuntime.requests.length, 1, 'reopening hydrated Missions does not fetch the full game');
+moduleRuntime.screen('explore');
+await moduleRuntime.hydrateFullState('explore');
+assert.deepEqual(moduleRuntime.requests[1], {}, 'Explore still requests complete authority after Missions');
+moduleRuntime.reset(); moduleRuntime.screen('missions'); moduleRuntime.fail();
+await moduleRuntime.hydrateFullState('missions');
+assert.equal(moduleRuntime.timers.at(-1).delay, 750);
+await moduleRuntime.timers.at(-1).fn();
+// The timer callback intentionally does not return the hydration promise.
+await new Promise(resolve => setTimeout(resolve, 0));
+assert.equal(moduleRuntime.timers.at(-1).delay, 1500);
+const retryCount = moduleRuntime.timers.length;
+moduleRuntime.timers.at(-1).fn();
+await new Promise(resolve => setTimeout(resolve, 0));
+assert.equal(moduleRuntime.timers.length, retryCount, 'Missions stops automatic retries at the same ceiling');
 
 const startupStateRequestIndex = client.indexOf("var initialStateRequest = post('/telegram-pets/app/state', { mode: 'core' })");
 const startupBootAwaitIndex = client.indexOf('await startupBoot;', startupStateRequestIndex);
@@ -413,6 +465,7 @@ assert.match(mergedActionCooldownState.cooldowns.entries[0].expires_at, /^2026-0
 const cooldownRefreshRuntime = new Function(
   countdownComponentSource + `
 var state = null;
+var activeScreen = 'home';
 var cooldownRefreshTimer = 0;
 var cooldownRefreshInFlight = false;
 var lastCooldownRefreshKey = '';
@@ -1392,7 +1445,7 @@ assert.match(worker, /const \[journeySummary, hydratedKaiju, seasonFinales\] = a
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
-assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260930-core-bootstrap-v1`/);
+assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260930-missions-state-v1`/);
 assert.match(worker, /const TELEGRAM_GAMES_MENU_URL = `\$\{SITE_URL\}\/games\/telegram\/\?v=20260903-games-shell-v8`/,
   'default Telegram games menu must point at the current shell release');
 assert.match(worker, /const TELEGRAM_GAMES_MENU_TEXT = 'Games'/);
@@ -1495,7 +1548,7 @@ assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260928-sections-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20260926-front-actions-v1/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20260926-front-actions-v1/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260930-core-bootstrap-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260930-missions-state-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1679,7 +1732,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260930-core-bootstrap-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260930-missions-state-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -2231,7 +2284,7 @@ assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Numbe
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
 assert.match(html, /20260926-front-actions-v1/);
-assert.match(worker, /20260930-core-bootstrap-v1/);
+assert.match(worker, /20260930-missions-state-v1/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');
 assert.match(client, /renderQuality = reducedMotion/, 'canvas quality must start from device capability');

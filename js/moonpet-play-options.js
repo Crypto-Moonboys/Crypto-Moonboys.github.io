@@ -41,6 +41,19 @@
   function objectiveRoutes(key, snapshot) {
     var id = String(key || '').replace(/^mission:/, '').split(':')[0];
     var s = snapshot || {}, g = s.guidance || {};
+    // Omitted Explore data is deferred authority, not evidence of a lock or
+    // an available run. These buttons only navigate; Explore resolves the gates.
+    var partial = Boolean(s.hydration && s.hydration.full === false);
+    var deferredDaily = partial && !Object.prototype.hasOwnProperty.call(s, 'daily_run') && !Object.prototype.hasOwnProperty.call(s, 'run');
+    if (deferredDaily && /^daily_(combat|explorer|extraction|boss)$/.test(id)) {
+      return [Object.assign({ title: 'OPEN OFFICIAL DAILY RUN', detail: 'Open Explore to check today’s official attempt, saved run and requirements for this pet. Only the official Daily Run advances this goal; Contracts and Practice do not.' }, route({ key: id }))];
+    }
+    if (deferredDaily && id === 'weekly_run') {
+      return [Object.assign({ title: 'OPEN MOON RUNS', detail: 'Open Explore to check saved runs, energy and official Daily Run availability. Standard run completions/extractions and official Daily Run finishes count; Contracts and Practice do not.' }, route({ key: id }))];
+    }
+    if (partial && id === 'weekly_boss_attempt' && !Object.prototype.hasOwnProperty.call(g, 'weekly_boss')) {
+      return [Object.assign({ title: 'OPEN WEEKLY BOSS', detail: 'Open Explore to check the boss’s level, energy, daily attack and weekly reset requirements. Seasonal raids are separate.' }, route({ key: id }))];
+    }
     if (snapshot && /^daily_(combat|explorer|extraction|boss)$/.test(id)) {
       var daily = s.daily_run || {}, currentPet = s.pet && s.pet.pet_id;
       var ownRun = daily.pet_id && daily.pet_id === currentPet;

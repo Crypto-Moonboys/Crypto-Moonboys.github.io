@@ -137,6 +137,19 @@ for (const objective of ['daily_combat', 'daily_explorer', 'daily_extraction', '
 assert.equal(options.objectiveRoutes('weekly_check_in', { ...snapshot, guidance: { daily_cache: { available: false } } })[0].available, false);
 assert.match(options.objectiveRoutes('weekly_check_in', snapshot)[0].detail, /two UTC days/);
 assert.equal(options.objectiveRoutes('weekly_check_in', { ...snapshot, guidance: { daily_cache: { available: true } } })[0].available, true);
+const partialMissions = { ...snapshot, hydration: { mode: 'missions', full: false, modules: ['missions'] } };
+delete partialMissions.daily_run;
+delete partialMissions.run;
+for (const objective of ['daily_combat','daily_explorer','daily_extraction','daily_boss','weekly_run','weekly_boss_attempt']) {
+  const target = options.objectiveRoutes(objective, partialMissions)[0];
+  assert.equal(target.screen, 'explore');
+  assert.equal(target.available, undefined, `${objective} must not invent availability from omitted Explore authority`);
+  assert.match(target.title, /^OPEN /);
+  assert.match(target.detail, /Open Explore to check/);
+  assert.doesNotMatch(target.detail, /No Weekly Boss attack is available now/);
+}
+assert.equal(options.objectiveRoutes('weekly_boss_attempt', { ...partialMissions, guidance: { weekly_boss: { available: false } } })[0].available, false, 'known authority remains locked even in a partial snapshot');
+assert.equal(options.objectiveRoutes('daily_boss', { ...partialMissions, daily_run: { available: true } })[0].available, true, 'known official-run authority remains available');
 assert.equal(options.objectiveRoutes('weekly_boss_attempt', snapshot)[0].available, false);
 assert.equal(options.objectiveRoutes('weekly_run', { ...snapshot, run: { depth: 2, source_pet: { pet_id: 'pet-b', energy: 100 } } })[0].available, false);
 assert.equal(options.objectiveRoutes('weekly_run', { ...snapshot, run: { depth: 2, source_pet: { pet_id: 'pet-a', energy: 0 } } })[0].available, true);

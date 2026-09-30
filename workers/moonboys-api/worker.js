@@ -9527,10 +9527,10 @@ function buildPetMiniAppCooldownSummary({ journeySummary = null, guidance = null
   };
 }
 
-async function buildPetMiniAppCoreState(db, telegramId) {
-  const now = new Date();
-  await preparePetMiniAppState(db, telegramId, now);
-  const petRaw = await getPetProfile(db, telegramId, false);
+async function buildPetMiniAppCoreState(db, telegramId, options = {}) {
+  const now = options.now || new Date();
+  if (!options.prepared) await preparePetMiniAppState(db, telegramId, now);
+  const petRaw = options.petRaw || await getPetProfile(db, telegramId, false);
   if (!petRaw) {
     return {
       adopted: false,
@@ -9644,7 +9644,54 @@ async function buildPetMiniAppCoreState(db, telegramId) {
   };
 }
 
-async function buildPetMiniAppState(db, telegramId, botToken) {
+// Missions reuses HOME authority and only projects the systems its panels need.
+// The caller has already run the same ordered recovery passes as full state.
+async function buildPetMiniAppMissionsState(db, telegramId, petRaw, now) {
+  const corePromise = buildPetMiniAppCoreState(db, telegramId, { prepared: true, petRaw, now });
+  const [core, missions, achievements, contracts, seasonFinales, progression] = await Promise.all([
+    corePromise,
+    buildPetMissions(db, telegramId, petRaw),
+    syncPetAchievements(db, telegramId, true),
+    getContractBoard(db, telegramId, petRaw, now),
+    getSeasonFinales(db, telegramId, petRaw.pet_id),
+    evaluatePetSeasonCompletion(db, petRaw.pet_id, petRaw.season_key, now, {
+      telegram_id: telegramId, season_week: getPetSeasonWeek(getPetSeasonInfo(now), now),
+    }),
+  ]);
+  // Other slots stay deferred. Missions displays progression for the active pet;
+  // Profile still obtains the full roster when opened.
+  const seasonSlots = { ...core.season_slots, slots: core.season_slots.slots.map(slot =>
+    slot.active && slot.pet ? { ...slot, pet: { ...slot.pet, progression } } : slot) };
+  const journey = await buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now);
+  const finaleAchievement = seasonFinales.pets.find(entry => entry.pet_id === petRaw.pet_id && entry.season_key === petRaw.season_key);
+  if (finaleAchievement) achievements.push({ achievement_id: 'finale_victor', title: 'Finale Victor', description: 'Defeat Signal Sovereign with this season pet.', target: 1, progress: finaleAchievement.status === 'won' ? 1 : 0, unlocked_at: finaleAchievement.defeated_at || null });
+  // Reuse active-pet progression for generic reaction metadata without loading
+  // private identity detail or adding another evolution read.
+  const currentEvolution = MOONPET_EVOLUTIONS[progression.lifecycle.current_evolution];
+  const identity = { ...core.guidance.identity, current_stage: {
+    evolution_id: currentEvolution.evolution_id, name: currentEvolution.name, stage: currentEvolution.stage,
+  } };
+  const guidance = { ...core.guidance, day_key: missions.day_key, week_key: missions.week_key,
+    identity, missions: missions.daily || [], daily_completion: missions.completion || null, achievements };
+  return {
+    ...core,
+    hydration: { mode: 'missions', full: false, modules: ['missions'] },
+    guidance,
+    season_slots: seasonSlots,
+    contracts,
+    season_finales: seasonFinales,
+    daily_journey: journey.daily,
+    weekly_journey: isPetMiniAppWeeklyJourneySummaryLive(journey.weekly)
+      ? { state: PET_MINI_APP_FUTURE_SYSTEM_STATUS.AVAILABLE, active: true, ...journey.weekly }
+      : { ...journey.weekly, state: PET_MINI_APP_FUTURE_SYSTEM_STATUS.LOCKED, active: false,
+          reason: journey.weekly?.reason || 'weekly_journey_authority_syncing' },
+    cooldowns: buildPetMiniAppCooldownSummary({ journeySummary: journey, guidance, seasonSlots,
+      actionCooldowns: core.cooldowns.entries.filter(entry => entry.key.startsWith('action:')).map(entry =>
+        ({ action: entry.key.slice(7), cooldown: entry })), now }),
+  };
+}
+
+async function buildPetMiniAppState(db, telegramId, botToken, options = {}) {
   const now = new Date();
   // State preparation owns current-season initialization. Roster projection
   // remains read-only and assumes this authoritative bootstrap already ran.
@@ -9690,6 +9737,8 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       capabilities: buildPetMiniAppCapabilities({ has_completed_season_pet: false, combat_unlocked: false, arena_unlocked: false, kaiju_unlocked: false, reason: 'pet_not_adopted' }),
     };
   }
+
+  if (options.mode === 'missions') return buildPetMiniAppMissionsState(db, telegramId, petRaw, now);
 
   const pet = serializePet(petRaw);
   const identityPromise = getMoonpetIdentityWithLifecycle(db, telegramId, { required: true });
@@ -10882,7 +10931,7 @@ export default {
       try {
         const state = body.mode === 'core'
           ? await buildPetMiniAppCoreState(env.DB, verified.telegramId)
-          : await buildPetMiniAppState(env.DB, verified.telegramId, env.TELEGRAM_BOT_TOKEN);
+          : await buildPetMiniAppState(env.DB, verified.telegramId, env.TELEGRAM_BOT_TOKEN, { mode: body.mode });
         return json({ ok: true, state });
       } catch (error) {
         logApiFailure('pet_mini_app_state_failed', {
@@ -10980,7 +11029,7 @@ export default {
           server_time: new Date().toISOString(),
         }, result.accepted ? 200 : 409);
       }
-      const state = await buildPetMiniAppState(env.DB, verified.telegramId, env.TELEGRAM_BOT_TOKEN).catch((error) => {
+      const state = await buildPetMiniAppState(env.DB, verified.telegramId, env.TELEGRAM_BOT_TOKEN, { mode: body.state_mode }).catch((error) => {
         logApiFailure('pet_mini_app_action_state_failed', {
           telegramId: verified.telegramId,
           action: String(body.action || ''),
@@ -14085,7 +14134,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260930-core-bootstrap-v1`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20260930-missions-state-v1`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',

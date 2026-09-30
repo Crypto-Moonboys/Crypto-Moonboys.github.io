@@ -418,6 +418,21 @@ for (const heavy of ['practice','contracts','live_systems','leaderboard','arena'
 const directCore = await buildPetMiniAppCoreState(routeDb, '200004');
 assert.equal(directCore.pet.pet_id, coreStateSmoke.body.state.pet.pet_id, 'route core state matches direct core authority');
 
+const missionsSmoke = await postAppRoute('/telegram-pets/app/state', routeDb, '200004', { mode: 'missions' });
+assert.equal(missionsSmoke.status, 200);
+assert.equal(missionsSmoke.body.state.hydration.mode, 'missions');
+assert.deepEqual(missionsSmoke.body.state.hydration.modules, ['missions']);
+assert.ok(missionsSmoke.body.state.contracts);
+assert.ok(missionsSmoke.body.state.daily_journey);
+assert.ok(missionsSmoke.body.state.guidance.missions.length);
+assert.equal(missionsSmoke.body.state.live_systems, undefined);
+assert.equal(missionsSmoke.body.state.lifecycle.species_id, null, 'Missions retains egg identity privacy');
+const missionActionSmoke = await postAppRoute('/telegram-pets/app/action', routeDb, '200004', {
+  action: 'contract_start', request_id: 'missions:egg-contract', state_mode: 'missions',
+});
+assert.equal(missionActionSmoke.status, 409, 'Missions action keeps the server hatch gate');
+assert.equal(missionActionSmoke.body.state.hydration.mode, 'missions', 'Missions mutation refresh avoids the full projection');
+
 
 const sanctuarySmoke = await postAppRoute('/telegram-pets/app/sanctuary', routeDb, '200004');
 assert.equal(sanctuarySmoke.status, 200, '/telegram-pets/app/sanctuary unavailable smoke route returns 200');
@@ -472,6 +487,27 @@ assert.equal(stageOneCore.body.state.pet.art_identity_id, null,
   'core HOME pet projection must not leak Stage-1 future identity');
 assert.equal(stageOneCore.body.state.pet.display_name, 'UNKNOWN',
   'core HOME Stage-1 display name remains hidden');
+
+const stageOneMissions = await postAppRoute('/telegram-pets/app/state', routeDb, '200005', { mode: 'missions' });
+assert.equal(stageOneMissions.status, 200);
+assert.equal(stageOneMissions.body.state.lifecycle.art_identity_id, null);
+assert.equal(stageOneMissions.body.state.pet.art_identity_id, null);
+assert.equal(stageOneMissions.body.state.pet.display_name, 'UNKNOWN');
+assert.equal(stageOneMissions.body.state.guidance.daily_cache.syncing, false);
+assert.equal(stageOneMissions.body.state.guidance.identity.current_stage.evolution_id, 'street_moonpet');
+
+const missionsContract = await postAppRoute('/telegram-pets/app/action', routeDb, '200005', {
+  action: 'contract_start', request_id: 'route:missions-contract', state_mode: 'missions',
+  pet_id: fastCarePet.pet_id, sequence: stageOneMissions.body.state.contracts.next_sequence,
+  goal: 'escort', build: 'bruiser', tier: 1,
+});
+assert.equal(missionsContract.status, 200, JSON.stringify(missionsContract.body.result));
+assert.equal(missionsContract.body.result.accepted, true);
+assert.equal(missionsContract.body.state.hydration.mode, 'missions');
+assert.equal(missionsContract.body.state.guidance.identity.current_stage.evolution_id, 'street_moonpet');
+assert.ok(missionsContract.body.result.reaction, 'Missions Contract action attaches a reaction');
+assert.doesNotMatch(missionsContract.body.result.reaction, /EGGYONE|Secret Bot/);
+assert.equal(missionsContract.body.state.pet.art_identity_id, null, 'reaction metadata preserves Stage-1 privacy');
 
 const fastCareSmoke = await postAppRoute('/telegram-pets/app/action', routeDb, '200005', {
   action: 'feed',

@@ -986,7 +986,7 @@
     tell('REFRESHING LIVE SAVE...');
     try {
       var requestGeneration = beginStateRequest();
-      var data = await post('/telegram-pets/app/state', stateRefreshPayload(state));
+      var data = await post('/telegram-pets/app/state', stateRefreshPayload(state, activeScreen));
       if (!setStateSnapshot(data.state, requestGeneration)) return;
       fastActionStateDirty = false;
       render();
@@ -1000,7 +1000,7 @@
 
   function applyRequestedFocus() {
     if (!requestedFocus) return;
-    if (stateNeedsFullHydration(state) && activeScreen !== 'home') return;
+    if (stateNeedsScreenHydration(state, activeScreen)) return;
     var focus = requestedFocus;
     requestedFocus = '';
     if (focus === 'leaderboard') openUtility('leaderboard');
@@ -1350,7 +1350,7 @@
   function activePetSummary() {
     if (!state || !state.pet) return '';
     var pet = state.pet;
-    if (stateNeedsFullHydration(state)) {
+    if (!activePetProgression().lifecycle) {
       var coreSlot = activeSeasonSlot();
       return panel('ACTIVE PET // SLOT ' + number(coreSlot.slot_number || 1),
         '<div class="season-identity"><strong>' + escapeHtml(resolveMoonpetDisplayName(state.lifecycle || {}, state.guidance && state.guidance.identity)) + '</strong><span>' + escapeHtml(coreSlot.season_key || state.season_slots && state.season_slots.season && state.season_slots.season.key || 'CURRENT') + '</span></div>' +
@@ -1551,12 +1551,18 @@
     return Boolean(snapshot && snapshot.hydration && snapshot.hydration.full === false);
   }
 
-  function stateRefreshPayload(snapshot) {
+  function stateNeedsScreenHydration(snapshot, screenKey) {
+    if (!stateNeedsFullHydration(snapshot) || screenKey === 'home') return false;
+    return !(snapshot.hydration.modules || []).includes(screenKey);
+  }
+
+  function stateRefreshPayload(snapshot, screenKey) {
+    if (screenKey === 'missions') return { mode: 'missions' };
     return stateNeedsFullHydration(snapshot) ? { mode: 'core' } : {};
   }
 
   async function hydrateFullState(reason, options) {
-    if (!stateNeedsFullHydration(state)) return state;
+    if (!stateNeedsScreenHydration(state, reason || activeScreen)) return state;
     if (fullStateHydrationPromise) return fullStateHydrationPromise;
     window.clearTimeout(fullStateHydrationRetryTimer);
     fullStateHydrationRetryTimer = 0;
@@ -1569,7 +1575,7 @@
       tell('LOADING ' + words(reason || activeScreen) + ' MODULE...');
       var requestGeneration = beginStateRequest();
       try {
-        var data = await post('/telegram-pets/app/state');
+        var data = await post('/telegram-pets/app/state', reason === 'missions' ? { mode: 'missions' } : {});
         if (!setStateSnapshot(data.state, requestGeneration)) return null;
         fastActionStateDirty = false;
         fullStateHydrationFailures = 0;
@@ -1589,7 +1595,7 @@
         return null;
       } finally {
         fullStateHydrationPromise = null;
-        var retryableScreen = stateNeedsFullHydration(state) && activeScreen !== 'home';
+        var retryableScreen = stateNeedsScreenHydration(state, activeScreen);
         if (retryableScreen && fullStateHydrationFailures < FULL_STATE_HYDRATION_MAX_AUTO_RETRIES) {
           fullStateHydrationRetryTimer = window.setTimeout(function () {
             fullStateHydrationRetryTimer = 0;
@@ -1678,7 +1684,7 @@
     if (refreshKey) lastCooldownRefreshKey = refreshKey;
     try {
       var requestGeneration = beginStateRequest();
-      var data = await post('/telegram-pets/app/state', stateRefreshPayload(state));
+      var data = await post('/telegram-pets/app/state', stateRefreshPayload(state, activeScreen));
       if (!setStateSnapshot(data.state, requestGeneration)) return;
       var scrollTop = screen.scrollTop;
       render();
@@ -1783,7 +1789,7 @@
     fastActionStateRefreshInFlight = true;
     try {
       var requestGeneration = beginStateRequest();
-      var data = await post('/telegram-pets/app/state', stateRefreshPayload(state));
+      var data = await post('/telegram-pets/app/state', stateRefreshPayload(state, activeScreen));
       if (!setStateSnapshot(data.state, requestGeneration)) return;
       fastActionStateDirty = false;
       var scrollTop = screen.scrollTop;
@@ -2702,14 +2708,14 @@
     renderHud();
     renderNav();
     renderCanvasTools();
-    var waitingForModule = stateNeedsFullHydration(state) && activeScreen !== 'home';
+    var waitingForModule = stateNeedsScreenHydration(state, activeScreen);
     var hydrationStopped = waitingForModule && fullStateHydrationFailures >= FULL_STATE_HYDRATION_MAX_AUTO_RETRIES && !fullStateHydrationPromise;
     screen.innerHTML = !state ? ''
       : waitingForModule
         ? panel('LOADING // ' + activeScreen.toUpperCase(),
           hydrationStopped
             ? '<div class="line danger">MODULE STATE COULD NOT LOAD.</div><div class="line muted">Automatic retries stopped to protect the API. HOME is still available.</div><div class="button-grid"><button type="button" class="terminal-button" data-utility="module-retry">RETRY MODULE</button>' + routeButton('RETURN HOME', { screen: 'home', focus: 'care' }, 'Use lightweight care while the module is unavailable.') + '</div>'
-            : '<div class="line signal">FETCHING SERVER-AUTHORITATIVE MODULE STATE...</div><div class="line muted">HOME remains usable while the full game snapshot loads only when requested.</div>',
+            : '<div class="line signal">FETCHING SERVER-AUTHORITATIVE MODULE STATE...</div><div class="line muted">HOME remains usable while this module loads.</div>',
           'module-loading')
         : renderRecommended() + screens[activeScreen]();
     restoreEditableState(editableState);
@@ -3199,6 +3205,7 @@
       var requestGeneration = beginStateRequest();
       var requestPayload = Object.assign({ action: action, request_id: crypto.randomUUID() }, payload || {});
       if (fastResponse) requestPayload.response_mode = 'result_only';
+      else if (activeScreen === 'missions') requestPayload.state_mode = 'missions';
       var data = await post('/telegram-pets/app/action', requestPayload);
       var actionAccepted = Boolean(data.result && data.result.accepted);
 
@@ -3265,7 +3272,7 @@
     if (!SCREEN_ORDER.includes(nextScreen) || nextScreen === activeScreen) return false;
     activeScreen = nextScreen;
     render();
-    if (stateNeedsFullHydration(state) && nextScreen !== 'home') hydrateFullState(nextScreen);
+    if (stateNeedsScreenHydration(state, nextScreen)) hydrateFullState(nextScreen);
     else if (fastActionStateDirty) scheduleFastActionStateRefresh(0);
     return true;
   }
@@ -3329,7 +3336,7 @@
         haptic('error');
         return;
       }
-      var needsModuleHydration = stateNeedsFullHydration(state) && jump.dataset.jump !== 'home';
+      var needsModuleHydration = stateNeedsScreenHydration(state, jump.dataset.jump);
       switchScreen(jump.dataset.jump);
       if (needsModuleHydration) {
         hydrateFullState(jump.dataset.jump).then(function () { scrollToPanel(jump.dataset.focus); });
@@ -3512,7 +3519,7 @@
     seasonRefreshBusy = true;
     try {
       var requestGeneration = beginStateRequest();
-      var data = await post('/telegram-pets/app/state', stateRefreshPayload(state));
+      var data = await post('/telegram-pets/app/state', stateRefreshPayload(state, activeScreen));
       if (!setStateSnapshot(data.state, requestGeneration)) return;
       var scrollTop = screen.scrollTop;
       render();
@@ -4108,7 +4115,7 @@
       await typeBoot(['SIGNATURE VERIFIED', 'PLAYER SAVE LOADED', 'MOONPET OS READY'], { speed: 8, hold: 320 });
       if (!stateNeedsFullHydration(state)) await showPendingNotices();
       applyRequestedFocus();
-      if (stateNeedsFullHydration(state) && activeScreen !== 'home') hydrateFullState(activeScreen);
+      if (stateNeedsScreenHydration(state, activeScreen)) hydrateFullState(activeScreen);
       window.setInterval(refreshLiveState, 5000);
       window.setInterval(tickCooldownDom, 1000);
       window.setInterval(tickSeasonDisplay, 30000);
