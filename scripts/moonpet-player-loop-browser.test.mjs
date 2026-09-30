@@ -106,12 +106,20 @@ try {
   for (const viewport of [{ width: 390, height: 844 }, { width: 360, height: 640 }]) {
     const context = await browser.newContext({ viewport, reducedMotion: 'reduce' });
     const page = await context.newPage();
-    const errors = [], actions = [], unexpected = [];
+    const errors = [], actions = [], unexpected = [], failedResponses = [];
     let currentUser = 'browser-egg';
     let dailyOverride = null;
     let oldExpeditionState = false;
     let startupStateFailures = 2;
     page.on('pageerror', (error) => errors.push(error.message));
+    page.on('response', (response) => {
+      if (response.url().includes('/telegram-pets/app/') && !response.ok()) {
+        failedResponses.push(`${response.status()} ${response.request().method()} ${new URL(response.url()).pathname}`);
+      }
+    });
+    page.on('requestfailed', (request) => {
+      failedResponses.push(`REQUEST FAILED ${request.method()} ${new URL(request.url()).pathname}: ${request.failure()?.errorText || 'unknown error'}`);
+    });
     await page.route('**/*', async (route) => {
       const url = new URL(route.request().url());
       if (url.hostname === 'telegram.org') return route.fulfill({ contentType: 'text/javascript', body: `window.Telegram={WebApp:{initData:'local-fixture',viewportHeight:${viewport.height},viewportStableHeight:${viewport.height},ready(){},expand(){},onEvent(){},setHeaderColor(){},setBackgroundColor(){}}};` });
@@ -313,9 +321,34 @@ try {
     // Existing collection purchases become visible without another charge.
     const styleWallet = sqlite.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(currentUser);
     for (const key of ['rename_badge','profile_frame','victory_pose','run_trail']) sqlite.prepare('INSERT OR IGNORE INTO telegram_pet_cosmetic_unlocks(telegram_id,cosmetic_key,quantity)VALUES(?,?,1)').run(currentUser,key);
+    const styleStateResponse = page.waitForResponse((response) =>
+      response.url().endsWith('/telegram-pets/app/state') &&
+      response.request().method() === 'POST' &&
+      response.ok()
+    );
     await page.locator('[data-utility="sync"]').click();
+    await styleStateResponse;
     await page.locator('[data-screen="economy"]').click();
-    await page.waitForSelector('[data-action="style_equip"]');
+    const styleLab = page.locator('[data-panel="style-lab"]');
+    try {
+      await styleLab.waitFor({ state: 'attached', timeout: 10000 });
+      if (!(await styleLab.evaluate((panel) => panel.open))) {
+        await styleLab.locator(':scope > summary').click();
+      }
+      await page.waitForFunction(() => document.querySelector('[data-panel="style-lab"]')?.open === true);
+      const styleButtons = styleLab.locator('[data-action="style_equip"]');
+      await styleButtons.first().waitFor({ state: 'visible', timeout: 10000 });
+      assert.ok(await styleButtons.count() >= 4, 'Style Lab must render the four owned cosmetic controls');
+    } catch (error) {
+      await page.screenshot({ path: `/tmp/moonpet-style-lab-failure-${viewport.width}.png`, fullPage: true });
+      const styleMarkup = await styleLab.evaluate((panel) => panel.outerHTML).catch(() => 'STYLE LAB PANEL MISSING');
+      throw new Error([
+        error.message,
+        `Page errors: ${errors.join(' | ') || 'none'}`,
+        `Failed API responses: ${failedResponses.join(' | ') || 'none'}`,
+        `Style Lab: ${styleMarkup.slice(0, 2000)}`,
+      ].join('\n'));
+    }
     for (const key of ['rename_badge','profile_frame','victory_pose','run_trail']) {
       const selector = '[data-action="style_equip"][data-payload*="' + key + '"]';
       const response = page.waitForResponse(r => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'style_equip');
