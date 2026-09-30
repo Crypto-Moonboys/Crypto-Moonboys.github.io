@@ -6,6 +6,8 @@ import { readPetActivity, readPetLeaderboard } from '../workers/moonboys-api/pet
 
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/080_moonpet_beta_xp_quarantine.sql', import.meta.url), 'utf8');
+const auditSql = fs.readFileSync(new URL('./check-moonpet-beta-xp-quarantine.sql', import.meta.url), 'utf8');
+const auditQuery = auditSql.slice(auditSql.indexOf('WITH owned_totals')).trim().replace(/;$/, '');
 
 function fixture() {
   const sql = new DatabaseSync(':memory:');
@@ -60,4 +62,17 @@ test('beta quarantine preserves valid and legacy receipts while hiding unverifia
     .map(row => [row.telegram_id, row.pet_xp]), [['valid', 100], ['missing', 90], ['legacy', 80], ['archived', 70], ['excess', 30]]);
   assert.deepEqual((await readPetActivity(f.db, 20)).map(row => row.telegram_id).sort(), ['archived', 'legacy', 'valid']);
   assert.equal(f.sql.prepare('SELECT COUNT(*) AS n FROM telegram_pet_events').get().n, 6, 'audit events are preserved');
+});
+
+test('post-migration audit compares legacy weekly receipts with profile XP fallback', () => {
+  const f = fixture();
+  f.addOwner('legacy-overrun', 15);
+  f.addEvent({ id: 'legacy-overrun-event', owner: 'legacy-overrun', xp: 20 });
+  f.sql.exec(migration);
+
+  assert.equal(
+    f.sql.prepare(auditQuery).get().visible_week_windows_above_retained_all_time,
+    1,
+    'legacy weekly XP above profile fallback must be reported',
+  );
 });

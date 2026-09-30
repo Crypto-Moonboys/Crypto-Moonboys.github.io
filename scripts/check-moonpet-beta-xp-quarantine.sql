@@ -16,7 +16,12 @@ WITH owned_totals AS (
     AND e.event_key<>'moonpet_wallet_reconcile:v1'
     AND NOT EXISTS (SELECT 1 FROM moonpet_beta_xp_quarantine q WHERE q.event_id=e.id)
   GROUP BY e.telegram_id,e.week_key
+), all_time_totals AS (
+  SELECT p.telegram_id,COALESCE(t.all_time_xp,CASE WHEN NOT EXISTS (
+    SELECT 1 FROM telegram_pet_instances i WHERE i.telegram_id=p.telegram_id
+  ) THEN p.pet_xp ELSE 0 END) AS all_time_xp
+  FROM telegram_pet_profiles p LEFT JOIN owned_totals t ON t.telegram_id=p.telegram_id
 )
 SELECT COUNT(*) AS visible_week_windows_above_retained_all_time
-FROM visible_weeks w JOIN owned_totals t ON t.telegram_id=w.telegram_id
+FROM visible_weeks w JOIN all_time_totals t ON t.telegram_id=w.telegram_id
 WHERE w.weekly_xp>t.all_time_xp;
