@@ -120,7 +120,7 @@ test('overlapping specialist recovery cannot rewind scheduling and targeted repa
   const paused=new Promise(resolve=>{entered=resolve;}),resume=new Promise(resolve=>{release=resolve;});
   let first=true;
   f.db.beforeRun=async statement=>{
-    if(first && statement.query.startsWith('INSERT INTO telegram_settings') && statement.args.includes('moonpet:recovery:runtime')) {
+    if(first && statement.query.startsWith('INSERT INTO telegram_pet_recovery_cursors') && statement.args.includes('moonpet:recovery:runtime')) {
       first=false;entered();await resume;
     }
   };
@@ -131,7 +131,7 @@ test('overlapping specialist recovery cannot rewind scheduling and targeted repa
   await recoverPetRuntimeAwards(f.db,f.owner,fail,{limit:1});
   await recoverPetRuntimeAwards(f.db,f.owner,fail,{limit:1});
   release(); await stale;
-  const cursor=()=>f.sql.prepare("SELECT setting_value FROM telegram_settings WHERE telegram_id=? AND setting_key='moonpet:recovery:runtime'").get(f.owner).setting_value;
+  const cursor=()=>f.sql.prepare("SELECT setting_value FROM telegram_pet_recovery_cursors WHERE telegram_id=? AND setting_key='moonpet:recovery:runtime'").get(f.owner).setting_value;
   assert.match(cursor(),/overlap-b$/);
   assert.deepEqual(attempted,['runtime:mini:overlap-a','runtime:mini:overlap-b'],'stale reader must not retry or rewind its old batch');
   const before=cursor();
