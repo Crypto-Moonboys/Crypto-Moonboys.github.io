@@ -273,18 +273,60 @@ test('shared accepted-event outage stops timed work before reward settlement',as
 for(const [name,act] of [
  ['care',f=>hooks.processPetAction(f.db,f.owner,'feed',{event_key:'care-cooldown-outage'})],
  ['timed work',f=>hooks.processPetJob(f.db,f.owner,'street_artist',{event_key:'work-cooldown-outage'})],
+ ['trade',f=>hooks.processPetGoldTrade(f.db,f.owner,'50',{event_key:'trade-cooldown-outage'})],
 ]) test(`${name} cannot treat an unavailable cooldown read as ready`,async()=>{
  const f=await savedFixture('cooldown-'+name.replaceAll(' ','-'));
  const before=durableSnapshot(f);
  let hit=false;
  f.db.beforeFirst=s=>{
   if(s.query.includes('SELECT created_at FROM telegram_pet_events') && s.query.includes("status = 'accepted'")){
-   hit=true;throw Error('cooldown_read_unavailable');
+   hit=true;return {success:false,error:'private cooldown failure'};
   }
  };
- await assert.rejects(act(f),/cooldown_read_unavailable/);
+ await assert.rejects(act(f),/pet_state_read_unavailable/);
  assert.equal(hit,true);
  assert.deepEqual(durableSnapshot(f),before);
+});
+test('special-care limit lookup rejects a resolved D1 failure after the atomic guard blocks a repeat',async()=>{
+ const f=await savedFixture('special-limit-outage');
+ const now=new Date();
+ f.sql.prepare(`INSERT INTO telegram_pet_events
+  (id,pet_id,telegram_id,event_type,event_key,season_key,day_key,week_key,status,created_at)
+  VALUES ('existing-dance',?,?,?,?,?,?,?,'accepted',?)`)
+  .run('current-'+f.owner,f.owner,'dance','existing-dance',currentSeason,now.toISOString().slice(0,10),'test-week',now.toISOString());
+ let hit=false;
+ f.db.beforeFirst=s=>{
+  if(s.query.includes('SUM(CASE WHEN day_key = ? THEN 1 ELSE 0 END)')){
+   hit=true;return {success:false,error:'private special-limit failure'};
+  }
+ };
+ await assert.rejects(hooks.processPetAction(f.db,f.owner,'dance',{event_key:'new-dance'}),/pet_state_read_unavailable/);
+ assert.equal(hit,true);
+ assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='dance'").get().n,1);
+});
+test('adventure replay authority rejects a resolved D1 failure before rewards or costs',async()=>{
+ const f=await savedFixture('adventure-replay-outage');
+ const before=durableSnapshot(f);let hit=false;
+ f.db.beforeFirst=s=>{
+  if(s.query.startsWith('SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?')){
+   hit=true;return {success:false,error:'private adventure replay failure'};
+  }
+ };
+ await assert.rejects(hooks.processPetAdventure(f.db,f.owner,'push_forward',{
+  encounter_key:'moon_alley',event_key:'adventure-replay-outage',source:'test',
+ }),/pet_state_read_unavailable/);
+ assert.equal(hit,true);assert.deepEqual(durableSnapshot(f),before);
+});
+test('resolved Daily Journey receipt failure cannot publish false incomplete progress',async()=>{
+ const f=await savedFixture('daily-journey-receipt-outage');
+ let hit=false;
+ f.db.beforeFirst=s=>{
+  if(s.query.includes('FROM telegram_pet_daily_journey_receipts')){
+   hit=true;return {success:false,error:'private Daily Journey receipt failure'};
+  }
+ };
+ await assert.rejects(hooks.buildPetMiniAppState(f.db,f.owner,'fixture-token'),/pet_state_read_unavailable/);
+ assert.equal(hit,true);
 });
 test('Daily Cache cannot treat an unavailable same-day receipt as unclaimed',async()=>{
  const f=await savedFixture('daily-cache-receipt');
