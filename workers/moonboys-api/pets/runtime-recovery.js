@@ -104,7 +104,7 @@ export async function recoverPetRuntimeAwards(db, owner, award, filter = {}) {
     JOIN telegram_pet_instances p ON p.pet_id=c.pet_id AND p.telegram_id=? AND p.season_key=c.season_key
     JOIN telegram_pet_season_slots slot ON slot.pet_id=p.pet_id AND slot.telegram_id=p.telegram_id
       AND slot.season_key=p.season_key AND slot.slot_number=p.slot_number
-    ${rotate ? "LEFT JOIN telegram_settings recovery_state ON recovery_state.telegram_id=p.telegram_id AND recovery_state.setting_key='moonpet:recovery:runtime'" : ''}
+    ${rotate ? "LEFT JOIN telegram_pet_recovery_cursors recovery_state ON recovery_state.telegram_id=p.telegram_id AND recovery_state.setting_key='moonpet:recovery:runtime'" : ''}
     WHERE c.event_key<>'' AND c.day_key IS NOT NULL
       AND (?='' OR c.run_id=?) AND (?='' OR c.action=?)
       AND NOT EXISTS (SELECT 1 FROM telegram_pet_specialist_events e WHERE e.telegram_id=p.telegram_id
