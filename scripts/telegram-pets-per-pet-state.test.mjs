@@ -121,6 +121,13 @@ const switchActivePetSource = worker.slice(worker.indexOf('async function switch
 assert.match(worker, /async function getPetActiveSlotPendingWork/, 'pending active-slot guard helper must exist');
 assert.match(prepareMiniAppStateSource, /await getPetActiveSlotPendingWork\(db, owner, now\)/, 'automatic season rollover must use the shared pending-work guard before advancing the active pointer');
 assert.match(switchActivePetSource, /await getPetActiveSlotPendingWork\(db, owner, options\.now \|\| new Date\(\)\)/, 'explicit pet switching must use the same pending-work guard helper');
+assert.match(pendingWorkSource, /\.first\(\)\.then\(requirePetFirstReadResult\)/,
+  'pending active-slot reads must reject resolved D1 failures instead of treating them as safe to switch');
+assert.ok(
+  switchActivePetSource.indexOf('SELECT * FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=?')
+    < switchActivePetSource.indexOf('UPDATE telegram_pet_active_slots SET pet_id=?'),
+  'the complete target instance must be read before the active pointer mutates',
+);
 assert.match(pendingWorkSource, /telegram_pet_kaiju_matches WHERE \(player1_telegram_id=\? OR player2_telegram_id=\?\)/,
   'active pet switching must guard Kaiju pending work through participant columns');
 assert.doesNotMatch(pendingWorkSource, /telegram_pet_kaiju_matches WHERE telegram_id=\?/,

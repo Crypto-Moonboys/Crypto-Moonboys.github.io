@@ -238,9 +238,13 @@ test('migration 083 adds durable Daily Moon Run checklist credit and is safely r
     (id,telegram_id,event_type,event_key,day_key,week_key,season_key,status) VALUES (?,?,'daily_moon_run',?,?,?,'pet-s2026-003','accepted')`)
     .run(id, 'migration-083', id, day, '2026-W40');
   insertEvent('before-083', '2026-09-29');
-  assert.equal(sql.prepare("SELECT COUNT(*) AS n FROM telegram_pet_daily_completion WHERE telegram_id='migration-083'").get().n, 0);
+  sql.prepare(`INSERT INTO telegram_pet_daily_completion (telegram_id,utc_day,progress_bits)
+    VALUES ('migration-083','2026-09-29',191)`).run();
+  assert.equal(sql.prepare("SELECT progress_bits FROM telegram_pet_daily_completion WHERE telegram_id='migration-083' AND utc_day='2026-09-29'").get().progress_bits, 191);
   const migration = file('migrations/083_moonpet_daily_run_completion_credit.sql');
   sql.exec(migration); sql.exec(migration);
+  assert.equal(sql.prepare("SELECT progress_bits FROM telegram_pet_daily_completion WHERE telegram_id='migration-083' AND utc_day='2026-09-29'").get().progress_bits, 255,
+    'migration 083 must backfill the Adventure bit for accepted Daily Runs written before trigger installation');
   insertEvent('after-083', '2026-09-30');
   assert.equal(sql.prepare("SELECT progress_bits FROM telegram_pet_daily_completion WHERE telegram_id='migration-083' AND utc_day='2026-09-30'").get().progress_bits, 64);
   assert.deepEqual(sql.prepare('PRAGMA foreign_key_check').all(), []);

@@ -2578,6 +2578,14 @@ slotSwitchReadFailureDb.database.prepare(`INSERT INTO telegram_pet_season_slots
   (pet_id,telegram_id,season_key,slot_number,acquisition_type) VALUES ('slot-switch-target','slot-switch-read-failure','pet-s2026-003',2,'arcade_xp')`).run();
 slotSwitchReadFailureDb.database.prepare(`INSERT INTO telegram_pet_instances
   (pet_id,telegram_id,season_key,slot_number,source_profile_updated_at) VALUES ('slot-switch-target','slot-switch-read-failure','pet-s2026-003',2,CURRENT_TIMESTAMP)`).run();
+const activePetBeforeFailedSwitch = slotSwitchReadFailureDb.database.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='slot-switch-read-failure'").get().pet_id;
+slotSwitchReadFailureDb.failReadOnSql(/SELECT run_id AS id FROM telegram_pet_runs/);
+await assert.rejects(
+  switchActivePetSeasonSlot(slotSwitchReadFailureDb, 'slot-switch-read-failure', 'slot-switch-target', { now: new Date('2026-08-15T00:00:00Z') }),
+  /pet_state_read_unavailable/,
+  'a failed pending-work authority read must not be treated as permission to switch pets',
+);
+assert.equal(slotSwitchReadFailureDb.database.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='slot-switch-read-failure'").get().pet_id, activePetBeforeFailedSwitch);
 slotSwitchReadFailureDb.failReadOnSql(/SELECT s\.pet_id FROM telegram_pet_season_slots s/);
 await assert.rejects(
   switchActivePetSeasonSlot(slotSwitchReadFailureDb, 'slot-switch-read-failure', 'slot-switch-target', { now: new Date('2026-08-15T00:00:00Z') }),
@@ -2585,6 +2593,13 @@ await assert.rejects(
   'a failed owned-slot authority read must not be reported as an unowned slot',
 );
 assert.notEqual(slotSwitchReadFailureDb.database.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='slot-switch-read-failure'").get().pet_id, 'slot-switch-target');
+slotSwitchReadFailureDb.failReadOnSql(/SELECT \* FROM telegram_pet_instances WHERE pet_id=\? AND telegram_id=\?/);
+await assert.rejects(
+  switchActivePetSeasonSlot(slotSwitchReadFailureDb, 'slot-switch-read-failure', 'slot-switch-target', { now: new Date('2026-08-15T00:00:00Z') }),
+  /pet_state_read_unavailable/,
+  'a failed target-instance read must leave the active pointer unchanged',
+);
+assert.equal(slotSwitchReadFailureDb.database.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='slot-switch-read-failure'").get().pet_id, activePetBeforeFailedSwitch);
 
 const legacyLifecycleStateDb = seedRepeatRewardPlayer('legacy-lifecycle-state');
 const legacyLifecycleBefore = legacyLifecycleStateDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_by_pet').get().count;

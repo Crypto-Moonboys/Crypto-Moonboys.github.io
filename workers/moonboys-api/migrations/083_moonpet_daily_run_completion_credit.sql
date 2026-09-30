@@ -26,3 +26,19 @@ BEGIN
   ON CONFLICT (telegram_id,utc_day) DO UPDATE SET progress_bits=progress_bits|excluded.progress_bits
   WHERE (progress_bits|excluded.progress_bits)<>progress_bits;
 END;
+
+-- Triggers only protect future writes. Credit accepted Daily Run receipts that
+-- already exist so deployment timing or a UTC rollover cannot strand a fully
+-- earned checklist before the Worker gets a chance to reconcile that day.
+INSERT INTO telegram_pet_daily_completion (telegram_id,utc_day,progress_bits)
+SELECT e.telegram_id,e.day_key,64
+FROM telegram_pet_events e
+JOIN telegram_pet_profiles p ON p.telegram_id=e.telegram_id
+WHERE e.status='accepted'
+  AND e.event_type='daily_moon_run'
+  AND e.day_key IS NOT NULL
+  AND length(trim(e.day_key))>0
+  AND e.event_key NOT LIKE 'moonpet_wallet_reconcile:%'
+GROUP BY e.telegram_id,e.day_key
+ON CONFLICT (telegram_id,utc_day) DO UPDATE SET progress_bits=progress_bits|excluded.progress_bits
+WHERE (progress_bits|excluded.progress_bits)<>progress_bits;
