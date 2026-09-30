@@ -123,8 +123,10 @@ assert.match(client, /summary\.hydrated === false \|\| stateNeedsFullHydration\(
   'core HOME must not render missing progression as fake zero progress');
 assert.match(client, /FULL_STATE_HYDRATION_MAX_AUTO_RETRIES = 3/,
   'full-module hydration must have a bounded automatic retry ceiling');
-assert.match(client, /fullStateHydrationFailures < FULL_STATE_HYDRATION_MAX_AUTO_RETRIES[\s\S]*Math\.pow\(2/,
-  'failed module hydration must use bounded exponential backoff instead of a 750ms infinite loop');
+assert.match(client, /Math\.min\(8000, 750 \* Math\.pow\(2, Math\.max\(0, fullStateHydrationFailures - 1\)\)\)/,
+  'failed module hydration must use exponential backoff');
+assert.match(client, /fullStateHydrationFailures < FULL_STATE_HYDRATION_MAX_AUTO_RETRIES/,
+  'failed module hydration must stop automatic retries at the configured ceiling');
 assert.match(client, /data-utility="module-retry"/,
   'exhausted automatic hydration must expose a manual retry control');
 assert.match(client, /function applyRequestedFocus\(\) \{[\s\S]*stateNeedsFullHydration\(state\) && activeScreen !== 'home'\) return;[\s\S]*requestedFocus = ''/,
