@@ -116,6 +116,21 @@ Implemented after the source-evidence batch:
 This batch changes no schema, balances, cooldowns, rewards, XP caps,
 leaderboard formula or future-feature availability.
 
+## Operational follow-up — authenticated production canary and D1 budget
+
+- Added a manual-only, commit-aware production canary for authenticated state,
+  authenticated leaderboard and public leaderboard paths. It requires a
+  dedicated adopted canary pet and explicit acknowledgment that state refresh
+  can write initialization or recovery rows.
+- Optional care actions are separately guarded, allowlisted and use a
+  commit-stable idempotency key. Credentials stay in POST bodies and are never
+  logged.
+- Shared runtime, identity and special-action reads within one state response.
+  The warm-state fixture now executes 164 statements and the 50-source recovery
+  fixture peaks at 560, against centralized ceilings of 180 and 600.
+- No schema, balance, reward, cooldown, XP, ranking or historical-data change is
+  included. See `moonpet-production-canary-and-performance-2026-09-30.md`.
+
 ## Batch 5 — historical evidence and final documentation reconciliation
 
 - Reconcile private ledger evidence before any historical counter repair. The

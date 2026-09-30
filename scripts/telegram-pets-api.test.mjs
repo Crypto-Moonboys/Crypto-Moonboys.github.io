@@ -81,6 +81,7 @@ const {
   buildPetCooldownFromSeconds,
   buildPetMiniAppCooldownSummary,
   getPetSpecialActionCooldownEntries,
+  getPetSpecialActionCooldownEntriesFromState,
   sumPetArenaGearPower,
   scalePetArenaRewardsForPlayer,
   getPetArenaBucketDistance,
@@ -241,6 +242,19 @@ const specialActionCooldownSummary = buildPetMiniAppCooldownSummary({
 });
 assert.equal(specialActionCooldownSummary.entries[0].key, 'action:energy_drink',
   'special action cooldowns must be exposed to the Mini App as independent action timers');
+assert.deepEqual(getPetSpecialActionCooldownEntriesFromState({
+  energy_drink: {
+    used_today: 1,
+    daily_limit: 3,
+    cooldown: normalizePetCooldownWindow('2026-08-22T12:10:00.000Z', cooldownNow),
+  },
+  dance: { used_today: 0, daily_limit: 5, cooldown: null },
+}), [{
+  action: 'energy_drink',
+  used_today: 1,
+  daily_limit: 3,
+  cooldown: normalizePetCooldownWindow('2026-08-22T12:10:00.000Z', cooldownNow),
+}], 'state refresh must reuse the authoritative special-action guidance without another D1 read');
 assert.deepEqual(PET_SPECIAL_ACTION_POLICIES, {
   energy_drink: { cooldown_seconds: 600, daily_limit: 3 },
   dance: { cooldown_seconds: 300, daily_limit: 5 },

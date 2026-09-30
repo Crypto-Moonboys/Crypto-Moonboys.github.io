@@ -9381,27 +9381,21 @@ function addPetCooldownEntry(entries, key, label, cooldown, kind = 'action') {
 }
 
 async function getPetSpecialActionCooldownEntries(db, telegramId, now = new Date()) {
-  const dayKey = getPetDayKey(now);
-  const rows = await db.prepare(`SELECT event_type, MAX(created_at) AS last_created_at,
-      SUM(CASE WHEN day_key = ? THEN 1 ELSE 0 END) AS used_today
-    FROM telegram_pet_events
-    WHERE telegram_id = ? AND status IN ('pending','accepted') AND event_type IN ('energy_drink','dance','cuddles')
-    GROUP BY event_type`).bind(dayKey, String(telegramId)).all().then(requirePetReadResult);
-  const entries = [];
-  for (const row of rows.results || []) {
-    const action = String(row.event_type || '');
-    const policy = PET_SPECIAL_ACTION_POLICIES[action];
-    if (!policy) continue;
-    const usedToday = Math.max(0, Number(row.used_today || 0));
-    const cooldown = usedToday >= policy.daily_limit
-      ? normalizePetCooldownWindow(new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1)), now)
-      : buildPetCooldownFromStart(row.last_created_at, policy.cooldown_seconds, now);
-    if (cooldown?.remaining_seconds > 0) {
-      entries.push({ action, cooldown, used_today: usedToday, daily_limit: policy.daily_limit });
-    }
-  }
+  return getPetSpecialActionCooldownEntriesFromState(await getPetSpecialActionGuidanceState(db, telegramId, now));
+}
 
-  return entries;
+function getPetSpecialActionCooldownEntriesFromState(state = {}) {
+  return Object.entries(state || {}).flatMap(([action, actionState]) => {
+    const policy = PET_SPECIAL_ACTION_POLICIES[action];
+    const cooldown = actionState?.cooldown || null;
+    if (!policy || Number(cooldown?.remaining_seconds || 0) <= 0) return [];
+    return [{
+      action,
+      cooldown,
+      used_today: Math.max(0, Number(actionState.used_today || 0)),
+      daily_limit: policy.daily_limit,
+    }];
+  });
 }
 
 async function getPetSpecialActionGuidanceState(db, telegramId, now = new Date()) {
@@ -9515,10 +9509,11 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
 
   const pet = serializePet(petRaw);
   const lifecycle = await getMoonpetLifecycle(db, telegramId);
+  const runtimePromise = getOrCreatePetRuntimeState(db, telegramId, getPetDayKey(now), activePetRewardAuthority(petRaw));
   const [guidance, inventory, runtime, gear, materials, relics, arena, arenaQueue, recentArena, kaiju, kaijuQueue, recentKaiju, leaderboard, notifications, seasonSlots, recentActions] = await Promise.all([
-    buildPetGuidanceState(db, telegramId, petRaw),
+    buildPetGuidanceState(db, telegramId, petRaw, { runtime: runtimePromise }),
     getPetInventory(db, telegramId),
-    getOrCreatePetRuntimeState(db, telegramId, getPetDayKey(now), activePetRewardAuthority(petRaw)),
+    runtimePromise,
     db.prepare(`SELECT item_key, slot, item_level, item_xp, mastery_xp, mastery_tier
       FROM telegram_pet_equipment_progression WHERE telegram_id = ?
       ORDER BY slot, item_level DESC, item_key`).bind(telegramId).all().then(requirePetReadResult),
@@ -9675,7 +9670,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
       }))
       : getPetRunStepChoices(activeRun).map((choice) => serializePetRunChoicePreview(activeRun, choice, runPet, inventory, petRaw)))
     : [];
-  const specialActionCooldowns = await getPetSpecialActionCooldownEntries(db, telegramId, now);
+  const specialActionCooldowns = getPetSpecialActionCooldownEntriesFromState(guidance?.special_actions);
   return {
     adopted: true,
     pet: canonicalPet,
@@ -14724,6 +14719,7 @@ export const __petMediaTestHooks = Object.freeze({
   buildPetCooldownFromSeconds,
   buildPetMiniAppCooldownSummary,
   getPetSpecialActionCooldownEntries,
+  getPetSpecialActionCooldownEntriesFromState,
   ensurePetStarterSeasonSlot,
   preparePetMiniAppState,
   findActivePetSlot,
@@ -15963,7 +15959,7 @@ async function getPendingPetWeeklyBossRewards(db, telegramId) {
     .map((row) => ({ ...row, title: getPetWeeklyBoss(row.week_key).title, reward: getPetWeeklyBoss(row.week_key).reward }));
 }
 
-async function buildPetGuidanceState(db, telegramId, petRaw = null) {
+async function buildPetGuidanceState(db, telegramId, petRaw = null, options = {}) {
   let sourcePet = petRaw || await getPetProfile(db, telegramId, true);
   if (sourcePet && !sourcePet.owned_equipment) sourcePet = await withPetEquipmentProgression(db, sourcePet, true);
   const pet = serializePet(sourcePet);
@@ -15971,18 +15967,24 @@ async function buildPetGuidanceState(db, telegramId, petRaw = null) {
   const now = new Date();
   const dayKey = getPetDayKey(now);
   const weekKey = getPetWeekKey(now);
+  const identityPromise = Object.hasOwn(options, 'identity')
+    ? Promise.resolve(options.identity)
+    : getMoonpetIdentityWithLifecycle(db, telegramId, { required: true });
+  const runtimePromise = Object.hasOwn(options, 'runtime')
+    ? Promise.resolve(options.runtime)
+    : getOrCreatePetRuntimeState(db, telegramId, dayKey, activePetRewardAuthority(sourcePet));
   const [identity, activity, activeRun, missions, seasonState, achievements, weeklyProgress, weeklyAttempt, runtime, specialActions, weeklyPending, dailyCache, dailyTotals] = await Promise.all([
-    getMoonpetIdentityWithLifecycle(db, telegramId, { required: true }),
+    identityPromise,
     getActivePetActivitySession(db, telegramId, now).then((active) => active || getRecoverablePetActivitySession(db, telegramId)),
     getActivePetRun(db, telegramId),
     buildPetMissions(db, telegramId, sourcePet),
-    getPetSeasonRewardState(db, telegramId),
+    getPetSeasonRewardState(db, telegramId, { identity: identityPromise }),
     syncPetAchievements(db, telegramId, true),
     db.prepare(`SELECT boss_id, attempts, damage, defeated_at, reward_claimed_at FROM telegram_pet_weekly_boss_progress WHERE telegram_id = ? AND week_key = ?`)
       .bind(telegramId, weekKey).first(),
     db.prepare(`SELECT action, damage, event_key FROM telegram_pet_weekly_boss_events WHERE telegram_id = ? AND week_key = ? AND day_key = ?`)
       .bind(telegramId, weekKey, dayKey).first(),
-    getOrCreatePetRuntimeState(db, telegramId, dayKey, activePetRewardAuthority(sourcePet)),
+    runtimePromise,
     getPetSpecialActionGuidanceState(db, telegramId, now),
     getPendingPetWeeklyBossRewards(db, telegramId),
     readAcceptedDailyChestPetEventForDay(db, telegramId, dayKey),
@@ -16538,13 +16540,16 @@ async function processPetWeeklyBoss(db, telegramId, actionRaw, eventKeyRaw = '',
     reward_pending: newlyDefeated && !reward?.accepted, week_key: weekKey, pet: await getPetInstanceWithAtomicDecay(db, bossPetAuthority.pet_id) };
 }
 
-async function getPetSeasonRewardState(db, telegramId) {
+async function getPetSeasonRewardState(db, telegramId, options = {}) {
   const season = getPetSeasonInfo(new Date());
+  const identityPromise = Object.hasOwn(options, 'identity')
+    ? Promise.resolve(options.identity)
+    : getMoonpetIdentityWithLifecycle(db, telegramId, { required: true });
   const [state, claims, identity] = await Promise.all([
     db.prepare(`SELECT season_xp FROM telegram_pet_season_state WHERE telegram_id = ? AND season_key = ?`).bind(telegramId, season.key).first().then(requirePetFirstReadResult),
     db.prepare(`SELECT idempotency_key, COALESCE(awarded_at,created_at) AS claimed_at FROM telegram_pet_reward_claims
       WHERE telegram_id=? AND source='pet_season_reward' AND status='awarded'`).bind(telegramId).all().then(requirePetReadResult),
-    getMoonpetIdentityWithLifecycle(db, telegramId, { required: true }),
+    identityPromise,
   ]);
   const claimed = new Map((claims.results || []).map((row) => [row.idempotency_key, row.claimed_at]));
   const seasonXp = Math.max(0, Math.floor(Number(state?.season_xp) || 0));
