@@ -8,6 +8,7 @@ import { getPracticeBoard, processPracticeAction, advancePractice } from '../wor
 import { awardPetReward } from '../workers/moonboys-api/pets/roguelite-foundation.js';
 import { readOwnedRelics, initializeRelicRoute, relicRouteChoices, relicRouteSuccess, relicSearchSalvage } from '../workers/moonboys-api/pets/relic-passives.js';
 import { createContractState, contractChoices, advanceContract } from '../workers/moonboys-api/pets/continuing-contracts.js';
+import { equipPetStyle } from '../workers/moonboys-api/pets/style-loadout.js';
 import worker, { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 
 const now = new Date();
@@ -21,7 +22,13 @@ function fixture(owner) {
   class Statement {
     constructor(query, args = []) { this.query = query; this.args = args; }
     bind(...args) { return new Statement(this.query, args); }
-    async first() { if (db.beforeFirst) await db.beforeFirst(this); return sql.prepare(this.query).get(...this.args) || null; }
+    async first() {
+      if (db.beforeFirst) {
+        const injected = await db.beforeFirst(this);
+        if (injected !== undefined) return injected;
+      }
+      return sql.prepare(this.query).get(...this.args) || null;
+    }
     async all() { if (db.beforeAll) return db.beforeAll(this); return { results: sql.prepare(this.query).all(...this.args) }; }
     exec() {
       if (/\bRETURNING\b/i.test(this.query)) { const results = sql.prepare(this.query).all(...this.args); return { results, meta: { changes: results.length } }; }
@@ -29,7 +36,7 @@ function fixture(owner) {
     }
     async run() { if (db.beforeRun) await db.beforeRun(this); return this.exec(); }
   }
-  const db = { beforeBatch: null, beforeRun: null, failReward: false, rejectReward: false, prepare(query) { return new Statement(query); }, async batch(statements) {
+  const db = { beforeBatch: null, beforeFirst: null, beforeRun: null, failReward: false, rejectReward: false, prepare(query) { return new Statement(query); }, async batch(statements) {
     if (this.failReward && statements.some(s => /INSERT OR IGNORE INTO telegram_pet_reward_claims/.test(s.query))) {
       this.failReward = false;
       throw Error('interrupted_terminal_reward');
@@ -178,6 +185,37 @@ test('all four styles equip and remove free, persist per pet, reject unowned/for
   assert.deepEqual((await f.state()).style_loadout.equipped,[]);
   assert.equal((await f.act({action:'style_equip',pet_id:petRow(f).pet_id,cosmetic_key:'profile_frame',enabled:true})).accepted,false);
   assert.equal((await f.act({action:'style_equip',pet_id:'foreign',cosmetic_key:'profile_frame',enabled:true})).accepted,false);
+});
+
+test('Practice and Style mutations fail closed on resolved D1 read failures',async()=>{
+  const f=fixture('training-fail-closed'),pet=petRow(f);
+  const failFirst=pattern=>{
+    f.db.beforeFirst=statement=>{
+      if(!pattern.test(statement.query))return undefined;
+      f.db.beforeFirst=null;
+      return {success:false,error:'simulated D1 outage'};
+    };
+  };
+  failFirst(/SELECT 1 WHERE EXISTS/);
+  await assert.rejects(()=>act(f,{action:'practice_start',sequence:1,goal:'survivor',build:'bruiser'}),/pet_state_read_unavailable/);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_practice').get().n,0);
+
+  failFirst(/INSERT OR IGNORE INTO telegram_pet_practice/);
+  await assert.rejects(()=>act(f,{action:'practice_start',sequence:1,goal:'survivor',build:'bruiser'}),/pet_state_read_unavailable/);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_practice').get().n,0,'failed RETURNING result cannot be advertised as a saved run');
+
+  f.sql.prepare(`INSERT INTO telegram_pet_practice
+    (run_id,pet_id,telegram_id,season_key,sequence,status,state_json,reward_xp,reward_day)
+    VALUES ('saved-practice',?,?,?,?, 'completed',?,10,?)`)
+    .run(pet.pet_id,f.owner,pet.season_key,1,JSON.stringify(engine.create('saved','bruiser','survivor')),now.toISOString().slice(0,10));
+  failFirst(/SELECT c\.\* FROM telegram_pet_practice/);
+  await assert.rejects(()=>act(f,{action:'practice_claim',run_id:'saved-practice'}),/pet_state_read_unavailable/);
+  assert.equal(f.sql.prepare("SELECT reward_settled FROM telegram_pet_practice WHERE run_id='saved-practice'").get().reward_settled,0);
+
+  f.sql.prepare("INSERT INTO telegram_pet_cosmetic_unlocks(telegram_id,cosmetic_key,quantity)VALUES(?,'profile_frame',1)").run(f.owner);
+  failFirst(/INSERT INTO telegram_pet_style_loadouts/);
+  await assert.rejects(()=>equipPetStyle(f.db,f.owner,pet,{pet_id:pet.pet_id,cosmetic_key:'profile_frame',enabled:true}),/pet_state_read_unavailable/);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_style_loadouts').get().n,0,'failed style write cannot be reported as equipped');
 });
 
 test('all ten relics have effective route mechanics, while empty loadouts preserve old choices',()=>{

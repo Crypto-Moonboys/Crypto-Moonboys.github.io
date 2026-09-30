@@ -61,7 +61,10 @@ class Statement {
   constructor(adapter, sql, args = []) { this.adapter = adapter; this.sql = sql; this.args = args; }
   bind(...args) { return new Statement(this.adapter, this.sql, args); }
   async first() {
-    if (this.adapter.beforeFirst) await this.adapter.beforeFirst(this);
+    if (this.adapter.beforeFirst) {
+      const injected = await this.adapter.beforeFirst(this);
+      if (injected !== undefined) return injected;
+    }
     return this.adapter.database.prepare(this.sql).get(...this.args) || null;
   }
   async run() {
@@ -380,6 +383,50 @@ await assert.rejects(rewardPetRogueliteBoss(bossRoomReadDb, {
 }, 'alley_king'), /boss_room_read_unavailable/);
 assert.equal(bossRoomReadDb.database.prepare("SELECT COUNT(*) count FROM telegram_pet_reward_claims WHERE telegram_id='boss-room-read'").get().count, 0);
 assert.equal(bossRoomReadDb.database.prepare("SELECT COUNT(*) count FROM telegram_pet_run_analytics WHERE telegram_id='boss-room-read'").get().count, 0);
+
+const resolvedFailure = { success:false, error:'simulated resolved D1 failure' };
+const resolvedRunAuthorityDb = seedPlayer('resolved-run-authority');
+resolvedRunAuthorityDb.beforeFirst = (statement) => statement.sql.includes('FROM telegram_pet_active_slots a') ? resolvedFailure : undefined;
+await assert.rejects(startPetRogueliteRun(resolvedRunAuthorityDb, {
+  telegram_id:'resolved-run-authority', run_id:'resolved-run-authority-run',
+}), /pet_state_read_unavailable/);
+assert.equal(resolvedRunAuthorityDb.database.prepare('SELECT COUNT(*) count FROM telegram_pet_runs').get().count,0,
+  'resolved authority failures cannot create a run');
+
+const resolvedRoomDb = seedPlayer('resolved-room-write');
+resolvedRoomDb.database.prepare(`INSERT INTO telegram_pet_runs
+  (id,pet_id,telegram_id,run_id,season_key,status,current_room,max_room)
+  VALUES ('resolved-room-run-row','pet-resolved-room-write','resolved-room-write','resolved-room-run','pet-s2026-001','active',0,10)`).run();
+resolvedRoomDb.database.prepare(`INSERT INTO telegram_pet_run_rooms
+  (room_id,pet_id,run_id,telegram_id,room_number,room_type,status)
+  VALUES ('resolved-room','pet-resolved-room-write','resolved-room-run','resolved-room-write',1,'battle','pending')`).run();
+resolvedRoomDb.beforeFirst = (statement) => statement.sql.startsWith('UPDATE telegram_pet_run_rooms SET status') ? resolvedFailure : undefined;
+await assert.rejects(persistPetRunRoomOutcome(resolvedRoomDb,
+  { run_id:'resolved-room-run', telegram_id:'resolved-room-write', pet_id:'pet-resolved-room-write', season_key:'pet-s2026-001' },
+  { room_id:'resolved-room', room:1, room_type:'battle', status:'pending' }, { success:true, score:50 }), /pet_state_read_unavailable/);
+assert.equal(resolvedRoomDb.database.prepare("SELECT status FROM telegram_pet_run_rooms WHERE room_id='resolved-room'").get().status,'pending',
+  'a failed room CAS receipt cannot be advertised as resolved');
+assert.equal(resolvedRoomDb.database.prepare("SELECT COUNT(*) count FROM telegram_pet_run_analytics WHERE event_type='room_resolved'").get().count,0);
+
+const resolvedRewardDb = seedPlayer('resolved-reward-receipt');
+await awardPetReward(resolvedRewardDb, {
+  telegram_id:'resolved-reward-receipt', source:'pet_job', idempotency_key:'resolved-reward', rewards:{ moon_gold:9 },
+});
+const resolvedRewardBalance = resolvedRewardDb.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='resolved-reward-receipt'").get().moon_gold;
+resolvedRewardDb.beforeFirst = (statement) => statement.sql.includes('SELECT claim_id FROM telegram_pet_reward_claims') ? resolvedFailure : undefined;
+await assert.rejects(awardPetReward(resolvedRewardDb, {
+  telegram_id:'resolved-reward-receipt', source:'pet_job', idempotency_key:'resolved-reward', rewards:{ moon_gold:9 },
+}), /pet_state_read_unavailable/);
+assert.equal(resolvedRewardDb.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='resolved-reward-receipt'").get().moon_gold,resolvedRewardBalance,
+  'a failed duplicate receipt read cannot pay twice or return a false duplicate');
+
+const resolvedBossRoomDb = seedPlayer('resolved-boss-room');
+resolvedBossRoomDb.beforeFirst = (statement) => statement.sql.includes("room_type = 'boss' AND status = 'resolved'") ? resolvedFailure : undefined;
+await assert.rejects(rewardPetRogueliteBoss(resolvedBossRoomDb, {
+  run_id:'resolved-boss-run', telegram_id:'resolved-boss-room', pet_id:'pet-resolved-boss-room', season_key:'pet-s2026-001',
+}, 'alley_king'), /pet_state_read_unavailable/);
+assert.equal(resolvedBossRoomDb.database.prepare("SELECT COUNT(*) count FROM telegram_pet_reward_claims WHERE telegram_id='resolved-boss-room'").get().count,0,
+  'a resolved boss-room read failure cannot become a normal unresolved boss result');
 
 
 

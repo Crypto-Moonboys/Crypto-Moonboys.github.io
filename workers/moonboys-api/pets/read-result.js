@@ -17,3 +17,14 @@ export function requirePetFirstReadResult(result) {
   }
   return result;
 }
+
+// D1 mutations can use the same resolved-failure shape as reads. A failed
+// write is not a duplicate, stale request or successful no-op.
+export function requirePetMutationResult(result) {
+  if (result?.success === false) {
+    throw new Error('pet_state_write_unavailable', {
+      cause: typeof result?.error === 'string' ? new Error(result.error) : undefined,
+    });
+  }
+  return result;
+}

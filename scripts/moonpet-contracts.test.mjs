@@ -20,7 +20,13 @@ let batchQueue = Promise.resolve();
 class Statement {
   constructor(sql, args = []) { this.sql = sql; this.args = args; }
   bind(...args) { return new Statement(this.sql, args); }
-  async first() { if (beforeStatement) beforeStatement(this.sql, this.args); return sqlite.prepare(this.sql).get(...this.args) || null; }
+  async first() {
+    if (beforeStatement) {
+      const injected = beforeStatement(this.sql, this.args);
+      if (injected !== undefined) return injected;
+    }
+    return sqlite.prepare(this.sql).get(...this.args) || null;
+  }
   async all() { return { results: sqlite.prepare(this.sql).all(...this.args) }; }
   async run() {
     if (/\bRETURNING\b/i.test(this.sql)) { const results = sqlite.prepare(this.sql).all(...this.args); return { results, meta: { changes: results.length } }; }
@@ -729,6 +735,38 @@ try {
   assert.equal(longBoard.collection.records.find((r) => r.key === 'recon:scavenger:1').completed, 1);
   assert.equal(longBoard.bonus_remaining, 1, 'formats share the same existing daily bonus budget');
   assert.equal(sqlite.prepare('SELECT energy FROM telegram_pet_instances WHERE pet_id=?').get(longPet.pet_id).energy, 0);
+
+  // Resolved D1 failures are not valid authority, saved state or mutation
+  // receipts. They must abort instead of becoming false rejects/successes.
+  const failFirst = (pattern) => {
+    beforeStatement = (sql) => {
+      if (!pattern.test(sql)) return undefined;
+      beforeStatement = null;
+      return { success:false, error:'simulated D1 outage' };
+    };
+  };
+  const failClosedPet = await seed('contract-fail-closed');
+  failFirst(/SELECT p\.pet_id FROM telegram_pet_instances p JOIN telegram_pet_active_slots/);
+  await assert.rejects(() => act(failClosedPet, { action:'contract_start', sequence:1, goal:'escort', build:'bruiser', tier:1 }), /pet_state_read_unavailable/);
+  assert.equal(sqlite.prepare('SELECT COUNT(*) n FROM telegram_pet_contracts WHERE telegram_id=?').get(failClosedPet.telegram_id).n, 0);
+
+  failFirst(/INSERT OR IGNORE INTO telegram_pet_contracts/);
+  await assert.rejects(() => act(failClosedPet, { action:'contract_start', sequence:1, goal:'escort', build:'bruiser', tier:1 }), /pet_state_read_unavailable/);
+  assert.equal(sqlite.prepare('SELECT COUNT(*) n FROM telegram_pet_contracts WHERE telegram_id=?').get(failClosedPet.telegram_id).n, 0,'failed RETURNING result cannot be advertised as a saved contract');
+
+  await start(failClosedPet);
+  const failClosedRun = (await board(failClosedPet)).run;
+  failFirst(/^SELECT \* FROM telegram_pet_contracts WHERE contract_id=/);
+  await assert.rejects(() => act(failClosedPet, { action:'contract_step', contract_id:failClosedRun.contract_id, revision:failClosedRun.revision, choice:'cover' }), /pet_state_read_unavailable/);
+  assert.equal(sqlite.prepare('SELECT revision FROM telegram_pet_contracts WHERE contract_id=?').get(failClosedRun.contract_id).revision,0);
+
+  failFirst(/^UPDATE telegram_pet_contracts SET state_json=/);
+  await assert.rejects(() => act(failClosedPet, { action:'contract_step', contract_id:failClosedRun.contract_id, revision:failClosedRun.revision, choice:'cover' }), /pet_state_read_unavailable/);
+  assert.equal(sqlite.prepare('SELECT revision FROM telegram_pet_contracts WHERE contract_id=?').get(failClosedRun.contract_id).revision,0,'failed CAS receipt cannot advance the contract');
+
+  failFirst(/SELECT c\.\* FROM telegram_pet_contracts/);
+  await assert.rejects(() => act(longPet, { action:'contract_claim', contract_id:longFinished.contract_id }), /pet_state_read_unavailable/);
+
   sqlite.exec('DROP TABLE telegram_pet_contracts');
   await assert.rejects(hooks.buildPetMiniAppState(db, b.telegram_id, 'fixture-token'), /no such table: telegram_pet_contracts/,
     'a missing live Contract authority table must fail the state refresh instead of publishing false unavailability');

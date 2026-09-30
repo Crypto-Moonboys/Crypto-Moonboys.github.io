@@ -11,15 +11,18 @@ class Statement {
   constructor(adapter, sql, args = []) { this.adapter = adapter; this.sql = sql; this.args = args; }
   bind(...args) { return new Statement(this.adapter, this.sql, args); }
   async first() {
-    this.adapter.beforeFirst?.(this.sql, this.args);
+    const injected = this.adapter.beforeFirst?.(this.sql, this.args);
+    if (injected !== undefined) return injected;
     return this.adapter.db.prepare(this.sql).get(...this.args) || null;
   }
   async all() {
-    this.adapter.beforeAll?.(this.sql, this.args);
+    const injected = this.adapter.beforeAll?.(this.sql, this.args);
+    if (injected !== undefined) return injected;
     return { results: this.adapter.db.prepare(this.sql).all(...this.args) };
   }
   async run() {
-    this.adapter.beforeRun?.(this.sql, this.args);
+    const injected = this.adapter.beforeRun?.(this.sql, this.args);
+    if (injected !== undefined) return injected;
     const result = this.adapter.db.prepare(this.sql).run(...this.args);
     return { meta: { changes: result.changes } };
   }
@@ -100,6 +103,29 @@ await assert.rejects(awardPetGrowthMark(db, {
 db.beforeFirst = null;
 assert.equal(sqlite.prepare("SELECT COUNT(*) AS count FROM telegram_pet_growth_marks WHERE pet_id='pet-a' AND earned_day='2026-03-15'").get().count, 1,
   'duplicate authority read outages cannot create an extra daily Growth Mark');
+db.beforeFirst = (sql) => /FROM telegram_pet_season_slots s/.test(sql)
+  ? { success:false, error:'resolved ownership outage' } : undefined;
+await assert.rejects(isPetLegendary(db, 'pet-a', 's1'), /pet_state_read_unavailable/,
+  'a resolved ownership read failure is not evidence that the pet is missing');
+db.beforeFirst = (sql) => /COUNT\(DISTINCT earned_day\)/.test(sql)
+  ? { success:false, error:'resolved completion outage' } : undefined;
+await assert.rejects(evaluatePetSeasonCompletion(db, 'pet-a', 's1'), /pet_state_read_unavailable/,
+  'a resolved completion aggregate failure cannot publish zero progress');
+db.beforeFirst = null;
+db.beforeAll = (sql) => /FROM telegram_pet_evolutions_by_pet/.test(sql)
+  ? { success:false, error:'resolved evolution outage' } : undefined;
+await assert.rejects(reconcileEvolutionGrowthMarks(db, 'pet-a', 's1'), /pet_state_read_unavailable/,
+  'a resolved evolution read failure cannot silently skip growth reconciliation');
+db.beforeAll = null;
+db.beforeRun = (sql) => /INSERT OR IGNORE INTO telegram_pet_weekly_crests/.test(sql)
+  ? { success:false, error:'resolved crest write outage' } : undefined;
+await assert.rejects(awardPetWeeklyCrest(db, {
+  pet_id:'pet-b', telegram_id:'owner', season_key:'s1', season_week:12,
+  objective:'weekly_journey', evidence_key:'weekly-journey:s1:12',
+}), /pet_state_write_unavailable/,
+  'a resolved Crest write failure cannot be reported as a duplicate');
+db.beforeRun = null;
+assert.equal(sqlite.prepare("SELECT COUNT(*) AS count FROM telegram_pet_weekly_crests WHERE pet_id='pet-b'").get().count,0);
 assert.equal((await awardPetGrowthMark(db, { ...mark, pet_id: 'forged' })).accepted, false, 'foreign pet IDs are rejected');
 const malformedTimestampMark = await awardPetGrowthMark(db, {
   ...mark, pet_id: 'forged', telegram_id: 'attacker', milestone: 'evolution', evidence_key: 'evolution:street:malformed', earned_at: 'not-a-persisted-date',

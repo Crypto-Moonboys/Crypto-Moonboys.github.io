@@ -2356,7 +2356,7 @@ async function getPetSpecialActionLimitState(db, telegramId, action, policy, day
     FROM telegram_pet_events
     WHERE telegram_id = ? AND event_type = ? AND status IN ('pending','accepted')`)
     .bind(dayKey, telegramId, action)
-    .first();
+    .first().then(requirePetFirstReadResult);
   const usedToday = Math.max(0, Number(row?.used_today || 0));
   if (usedToday >= policy.daily_limit) {
     const cooldown = normalizePetCooldownWindow(getNextPetUtcDayResetAt(now), now);
@@ -3517,7 +3517,7 @@ async function processPetJob(db, telegramId, jobKeyRaw, options = {}) {
   }
   const sourceAuthority = activePetRewardAuthority(pet);
   if (!sourceAuthority) return { accepted: false, reason: 'source_pet_authority_required', xp_awarded: 0, pet_xp_awarded: 0, pet };
-  const factionRow = await db.prepare('SELECT faction FROM blocktopia_progression WHERE telegram_id = ?').bind(telegramId).first();
+  const factionRow = await db.prepare('SELECT faction FROM blocktopia_progression WHERE telegram_id = ?').bind(telegramId).first().then(requirePetFirstReadResult);
   const adjusted = applyPetFactionBonus(job, factionRow?.faction, 'jobs');
   const setEffects = getPetActiveSetEffects(pet);
   const jobSetPct = Math.max(0, Number(setEffects.job_reward_pct) || 0);
@@ -6429,7 +6429,7 @@ async function processPetAction(db, telegramId, action, options = {}) {
     SELECT created_at FROM telegram_pet_events
     WHERE telegram_id = ? AND event_type = ? AND status = 'accepted'
     ORDER BY created_at DESC LIMIT 1
-  `).bind(telegramId, normalizedAction).first();
+  `).bind(telegramId, normalizedAction).first().then(requirePetFirstReadResult);
   if (lastAction?.created_at && !specialPolicy) {
     const elapsedSeconds = (now.getTime() - (parseSqliteTs(lastAction.created_at) ?? now.getTime())) / 1000;
     const cooldownSeconds = specialPolicy?.cooldown_seconds || PETS_ACTION_COOLDOWN_SECONDS;
@@ -6780,7 +6780,7 @@ async function processPetGoldTrade(db, telegramId, wagerRaw, options = {}) {
     SELECT created_at FROM telegram_pet_events
     WHERE telegram_id = ? AND event_type = 'trade' AND status = 'accepted'
     ORDER BY created_at DESC LIMIT 1
-  `).bind(telegramId).first();
+  `).bind(telegramId).first().then(requirePetFirstReadResult);
   if (lastTrade?.created_at) {
     const elapsedSeconds = (now.getTime() - (parseSqliteTs(lastTrade.created_at) ?? now.getTime())) / 1000;
     if (elapsedSeconds < PET_TRADE_COOLDOWN_SECONDS) {
@@ -6879,7 +6879,7 @@ async function processPetGoldTrade(db, telegramId, wagerRaw, options = {}) {
   if (!tradeResults?.[5]?.results?.[0]) {
     const acceptedDuplicate = await buildAcceptedPetEventDuplicate(db, telegramId, eventKey, pet, { wager });
     if (acceptedDuplicate) return acceptedDuplicate;
-    const recent = await db.prepare("SELECT created_at FROM telegram_pet_events WHERE telegram_id=? AND event_type='trade' AND status IN ('pending','accepted') ORDER BY created_at DESC LIMIT 1").bind(telegramId).first();
+    const recent = await db.prepare("SELECT created_at FROM telegram_pet_events WHERE telegram_id=? AND event_type='trade' AND status IN ('pending','accepted') ORDER BY created_at DESC LIMIT 1").bind(telegramId).first().then(requirePetFirstReadResult);
     const cooldown = recent ? buildPetCooldownFromStart(recent.created_at, PET_TRADE_COOLDOWN_SECONDS, new Date()) : null;
     const currentPet = await getPetProfile(db, telegramId);
     if (cooldown?.remaining_seconds > 0) return attachPetCooldown({ accepted: false, reason: 'trade_cooldown', pet: currentPet }, cooldown);
@@ -6902,7 +6902,7 @@ async function processPetAdventure(db, telegramId, adventureKeyRaw, options = {}
     : null;
   if (!choice) return { accepted: false, reason: 'invalid_adventure_choice', encounter, xp_awarded: 0, pet_xp_awarded: 0 };
   const eventKey = String(options.event_key || `pet:adventure:${telegramId}:${encounter.key}:${choice.key}:${Date.now()}`).slice(0, 120);
-  const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first();
+  const duplicate = await db.prepare(`SELECT id FROM telegram_pet_events WHERE telegram_id = ? AND event_key = ?`).bind(telegramId, eventKey).first().then(requirePetFirstReadResult);
   if (duplicate) return { accepted: true, duplicate: true, reason: 'duplicate', xp_awarded: 0, pet_xp_awarded: 0, encounter, choice };
   const pet = await getPetProfile(db, telegramId);
   if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0, encounter, choice };
@@ -9021,7 +9021,7 @@ function buildPetCooldownFromStart(startedAtRaw, cooldownSeconds, now = new Date
 async function getPetAcceptedActionCooldown(db, telegramId, eventType, seconds, now = new Date()) {
   const last = await db.prepare(`SELECT created_at FROM telegram_pet_events
     WHERE telegram_id = ? AND event_type = ? AND status = 'accepted'
-    ORDER BY created_at DESC LIMIT 1`).bind(telegramId, eventType).first();
+    ORDER BY created_at DESC LIMIT 1`).bind(telegramId, eventType).first().then(requirePetFirstReadResult);
   const cooldown = last ? buildPetCooldownFromStart(last.created_at, seconds, now) : null;
   return cooldown?.remaining_seconds > 0 ? cooldown : null;
 }
@@ -9131,12 +9131,12 @@ async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = 
       FROM telegram_pet_daily_journey_receipts
       WHERE pet_id=? AND telegram_id=? AND season_key=? AND utc_day=?
       ORDER BY created_at DESC LIMIT 1`)
-      .bind(petId, telegramId, seasonKey, dayKey).first(),
+      .bind(petId, telegramId, seasonKey, dayKey).first().then(requirePetFirstReadResult),
     db.prepare(`SELECT status, reason, growth_mark_id, completed_objectives
       FROM telegram_pet_daily_journey_receipts
       WHERE pet_id=? AND telegram_id=? AND season_key=? AND utc_day=? AND status='accepted' AND growth_mark_id IS NOT NULL
       ORDER BY created_at ASC LIMIT 1`)
-      .bind(petId, telegramId, seasonKey, dayKey).first(),
+      .bind(petId, telegramId, seasonKey, dayKey).first().then(requirePetFirstReadResult),
   ]);
   let weeklyObjectives = 0;
   let weeklyObjectiveList = null;
@@ -9151,12 +9151,12 @@ async function buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now = 
       FROM telegram_pet_weekly_journey_receipts
       WHERE pet_id=? AND telegram_id=? AND season_key=? AND qualification_week=?
       ORDER BY created_at DESC LIMIT 1`)
-      .bind(petId, telegramId, seasonKey, week).first(),
+      .bind(petId, telegramId, seasonKey, week).first().then(requirePetFirstReadResult),
     db.prepare(`SELECT status, reason, crest_id, completed_objectives
       FROM telegram_pet_weekly_journey_receipts
       WHERE pet_id=? AND telegram_id=? AND season_key=? AND qualification_week=? AND status='accepted' AND crest_id IS NOT NULL
       ORDER BY created_at ASC LIMIT 1`)
-      .bind(petId, telegramId, seasonKey, week).first(),
+      .bind(petId, telegramId, seasonKey, week).first().then(requirePetFirstReadResult),
     ]);
   } catch {
     weeklyAuthorityAvailable = false;

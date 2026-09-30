@@ -306,7 +306,7 @@ async function authority(db, owner, petId, seasonKey) {
   return db.prepare(`SELECT p.pet_id FROM telegram_pet_instances p JOIN telegram_pet_active_slots a
     ON a.pet_id=p.pet_id AND a.telegram_id=p.telegram_id AND a.season_key=p.season_key
     JOIN telegram_pet_lifecycle_by_pet l ON l.pet_id=p.pet_id AND l.telegram_id=p.telegram_id
-    WHERE p.telegram_id=? AND p.pet_id=? AND p.season_key=? AND p.status='active' AND l.phase<>'egg'`).bind(owner, petId, seasonKey).first();
+    WHERE p.telegram_id=? AND p.pet_id=? AND p.season_key=? AND p.status='active' AND l.phase<>'egg'`).bind(owner, petId, seasonKey).first().then(requirePetFirstReadResult);
 }
 const ACTIVE_GUARD = `EXISTS (SELECT 1 FROM telegram_pet_active_slots a JOIN telegram_pet_instances p
   ON p.pet_id=a.pet_id AND p.telegram_id=a.telegram_id AND p.season_key=a.season_key
@@ -368,7 +368,7 @@ async function settleBonus(db, owner, row, award, now) {
     context: { contract_id: row.contract_id, pet_id: row.pet_id, season_key: row.season_key } });
   const receipt = await db.prepare(`SELECT applied_rewards FROM telegram_pet_reward_claims
     WHERE telegram_id=? AND pet_id=? AND source='pet_contract' AND idempotency_key=? AND status='awarded'`)
-    .bind(owner, row.pet_id, row.contract_id).first();
+    .bind(owner, row.pet_id, row.contract_id).first().then(requirePetFirstReadResult);
   if (receipt) {
     const credited = Math.min(CONTRACT_BONUS_XP, integer(JSON.parse(receipt.applied_rewards).pet_xp));
     await db.prepare(`UPDATE telegram_pet_contracts SET reward_settled=1, xp_awarded=? WHERE contract_id=? AND telegram_id=? AND pet_id=? AND season_key=? AND reward_settled=0`)
@@ -381,7 +381,7 @@ export async function processContractAction(db, owner, pet, request, award, now 
   const reject = (reason) => ({ accepted: false, reason, pet_xp_awarded: 0 });
   if (request.action === 'contract_claim') {
     const saved = await db.prepare(`SELECT c.* ${SAVED_BONUS_FROM} AND c.contract_id=? AND c.pet_id=?`)
-      .bind(owner, String(request.contract_id || ''), String(request.pet_id || '')).first();
+      .bind(owner, String(request.contract_id || ''), String(request.pet_id || '')).first().then(requirePetFirstReadResult);
     if (!saved) return reject('contract_not_found');
     try { return { accepted: true, reason: 'contract_bonus_checked', ...await settleBonus(db, owner, saved, award, now) }; }
     catch { return { accepted: true, reason: 'contract_bonus_pending', reward_pending: true, pet_xp_awarded: 0 }; }
@@ -399,10 +399,10 @@ export async function processContractAction(db, owner, pet, request, award, now 
       (contract_id,pet_id,telegram_id,season_key,sequence,status,state_json)
       SELECT ?,?,?,?,?,'active',? WHERE ${ACTIVE_GUARD}
       AND ?=(SELECT COALESCE(MAX(sequence),0)+1 FROM telegram_pet_contracts WHERE telegram_id=? AND pet_id=? AND season_key=?) RETURNING *`)
-      .bind(crypto.randomUUID(), petId, owner, seasonKey, request.sequence, JSON.stringify(s), owner, petId, seasonKey, request.sequence, owner, petId, seasonKey).first();
+      .bind(crypto.randomUUID(), petId, owner, seasonKey, request.sequence, JSON.stringify(s), owner, petId, seasonKey, request.sequence, owner, petId, seasonKey).first().then(requirePetFirstReadResult);
     return row ? { accepted: true, reason: 'contract_started', result_copy: s.last } : reject('contract_stale');
   }
-  row = await db.prepare('SELECT * FROM telegram_pet_contracts WHERE contract_id=? AND telegram_id=? AND pet_id=? AND season_key=?').bind(String(request.contract_id || ''), owner, petId, seasonKey).first();
+  row = await db.prepare('SELECT * FROM telegram_pet_contracts WHERE contract_id=? AND telegram_id=? AND pet_id=? AND season_key=?').bind(String(request.contract_id || ''), owner, petId, seasonKey).first().then(requirePetFirstReadResult);
   if (!row) return reject('contract_not_found');
   if (request.action !== 'contract_step' || row.status !== 'active' || request.revision !== row.revision) return reject('contract_stale');
   const roll = crypto.getRandomValues(new Uint32Array(1))[0] % 100;
@@ -415,7 +415,7 @@ export async function processContractAction(db, owner, pet, request, award, now 
     reward_xp=CASE WHEN ?=1 AND (SELECT COUNT(*) FROM telegram_pet_contracts WHERE telegram_id=? AND reward_day=? AND reward_xp>0) < 3 THEN 20 ELSE 0 END,
     reward_day=CASE WHEN ?=1 THEN ? ELSE NULL END, updated_at=CURRENT_TIMESTAMP
     WHERE contract_id=? AND telegram_id=? AND pet_id=? AND season_key=? AND revision=? AND status='active' AND ${ACTIVE_GUARD} RETURNING *`)
-    .bind(JSON.stringify(next.state), next.status, next.rank_points, completed ? 1 : 0, owner, day(now), completed ? 1 : 0, day(now), row.contract_id, owner, petId, seasonKey, request.revision, owner, petId, seasonKey).first();
+    .bind(JSON.stringify(next.state), next.status, next.rank_points, completed ? 1 : 0, owner, day(now), completed ? 1 : 0, day(now), row.contract_id, owner, petId, seasonKey, request.revision, owner, petId, seasonKey).first().then(requirePetFirstReadResult);
   if (!changed) return reject('contract_stale');
   let bonus = {};
   try { bonus = await settleBonus(db, owner, changed, award, now); }

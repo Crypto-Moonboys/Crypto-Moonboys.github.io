@@ -44,7 +44,7 @@ async function settle(db,owner,row,award,now) {
   const result=await award(db,{telegram_id:owner,pet_id:row.pet_id,season_key:row.season_key,source:'pet_practice',idempotency_key:row.run_id,
     event_key:`practice:${row.run_id}`,event_type:'practice_complete',reason:'practice_bonus',rewards:{pet_xp:10},now,
     context:{run_id:row.run_id,pet_id:row.pet_id,season_key:row.season_key}});
-  const receipt=await db.prepare("SELECT applied_rewards FROM telegram_pet_reward_claims WHERE telegram_id=? AND pet_id=? AND source='pet_practice' AND idempotency_key=? AND status='awarded'").bind(owner,row.pet_id,row.run_id).first();
+  const receipt=requirePetFirstReadResult(await db.prepare("SELECT applied_rewards FROM telegram_pet_reward_claims WHERE telegram_id=? AND pet_id=? AND source='pet_practice' AND idempotency_key=? AND status='awarded'").bind(owner,row.pet_id,row.run_id).first());
   if(receipt)await db.prepare('UPDATE telegram_pet_practice SET reward_settled=1,xp_awarded=? WHERE run_id=? AND telegram_id=? AND reward_settled=0').bind(Math.min(10,Number(JSON.parse(receipt.applied_rewards).pet_xp)||0),row.run_id,owner).run();
   return {pet_xp_awarded:Number(result.pet_xp_awarded)||0,reward_pending:!receipt};
 }
@@ -52,12 +52,12 @@ export async function processPracticeAction(db,owner,pet,request,award,now=new D
   const reject=reason=>({accepted:false,reason,pet_xp_awarded:0});
   let row;
   if(request.action==='practice_claim') {
-    row=await db.prepare(`SELECT c.* ${OWNED} AND c.run_id=? AND c.pet_id=? AND c.reward_xp=10 AND c.status='completed'`).bind(owner,String(request.run_id||''),String(request.pet_id||'')).first();
+    row=requirePetFirstReadResult(await db.prepare(`SELECT c.* ${OWNED} AND c.run_id=? AND c.pet_id=? AND c.reward_xp=10 AND c.status='completed'`).bind(owner,String(request.run_id||''),String(request.pet_id||'')).first());
     if(!row)return reject('practice_not_found');
   } else {
     if(!pet?.pet_id||pet.pet_id!==request.pet_id)return reject('practice_pet_changed');
     const args=[pet.pet_id,owner,pet.season_key];
-    if(!await db.prepare(`SELECT 1 WHERE ${GUARD}`).bind(...args).first())return reject('practice_pet_changed');
+    if(!requirePetFirstReadResult(await db.prepare(`SELECT 1 WHERE ${GUARD}`).bind(...args).first()))return reject('practice_pet_changed');
     if(request.action==='practice_start') {
       if(!Number.isSafeInteger(request.sequence)||request.sequence<1)return reject('practice_stale');
       if (typeof request.build !== 'string' || typeof request.goal !== 'string') return reject('practice_invalid_choice');
@@ -68,10 +68,10 @@ export async function processPracticeAction(db,owner,pet,request,award,now=new D
         SELECT ?,?,?,?,?,'active',? WHERE ${GUARD}
         AND ?=(SELECT COALESCE(MAX(sequence),0)+1 FROM telegram_pet_practice WHERE telegram_id=? AND pet_id=?)
         AND NOT EXISTS(SELECT 1 FROM telegram_pet_practice WHERE telegram_id=? AND pet_id=? AND status='active') RETURNING *`)
-        .bind(crypto.randomUUID(),pet.pet_id,owner,pet.season_key,request.sequence,JSON.stringify(s),...args,request.sequence,owner,pet.pet_id,owner,pet.pet_id).first();
+        .bind(crypto.randomUUID(),pet.pet_id,owner,pet.season_key,request.sequence,JSON.stringify(s),...args,request.sequence,owner,pet.pet_id,owner,pet.pet_id).first().then(requirePetFirstReadResult);
       return row?{accepted:true,reason:'practice_started',result_copy:'Training saved. Clear 12 rooms and your goal to earn progress.'}:reject('practice_stale');
     }
-    row=await db.prepare('SELECT * FROM telegram_pet_practice WHERE run_id=? AND telegram_id=? AND pet_id=? AND season_key=?').bind(String(request.run_id||''),owner,pet.pet_id,pet.season_key).first();
+    row=requirePetFirstReadResult(await db.prepare('SELECT * FROM telegram_pet_practice WHERE run_id=? AND telegram_id=? AND pet_id=? AND season_key=?').bind(String(request.run_id||''),owner,pet.pet_id,pet.season_key).first());
     if(!row||request.action!=='practice_step'||row.status!=='active'||request.revision!==row.revision)return reject('practice_stale');
     const s=JSON.parse(row.state_json),random=crypto.getRandomValues(new Uint32Array(2));
     const next=advancePractice(s,request.choice,s.turn,random[0]%100,random[1]%10000);
@@ -85,7 +85,7 @@ export async function processPracticeAction(db,owner,pet,request,award,now=new D
       reward_xp=CASE WHEN ?=1 AND (SELECT COUNT(*) FROM telegram_pet_practice WHERE telegram_id=? AND reward_day=? AND reward_xp>0)<3 THEN 10 ELSE 0 END,
       reward_day=CASE WHEN ?=1 THEN ? ELSE NULL END
       WHERE run_id=? AND telegram_id=? AND pet_id=? AND revision=? AND status='active' AND ${GUARD} RETURNING *`)
-      .bind(JSON.stringify(next),next.status,complete?Math.max(1,next.score):0,complete?1:0,owner,day(now),complete?1:0,day(now),row.run_id,owner,pet.pet_id,request.revision,...args).first();
+      .bind(JSON.stringify(next),next.status,complete?Math.max(1,next.score):0,complete?1:0,owner,day(now),complete?1:0,day(now),row.run_id,owner,pet.pet_id,request.revision,...args).first().then(requirePetFirstReadResult);
     if(!row)return reject('practice_stale');
   }
   try{return {accepted:true,reason:'practice_saved',result_copy:JSON.parse(row.state_json).last,...await settle(db,owner,row,award,now)};}

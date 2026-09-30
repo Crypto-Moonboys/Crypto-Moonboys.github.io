@@ -1,5 +1,5 @@
 import { PET_COSMETIC_SINKS } from './economy-phase-3.js';
-import { requirePetReadResult } from './read-result.js';
+import { requirePetFirstReadResult, requirePetReadResult } from './read-result.js';
 export const STYLE_DETAILS = Object.freeze({
   rename_badge:'Neon nameplate and badge on the game canvas. Callsign editing stays free.',
   profile_frame:'Neon border around your game canvas.',
@@ -20,6 +20,6 @@ export async function equipPetStyle(db, owner, pet, request) {
     JOIN telegram_pet_cosmetic_unlocks u ON u.telegram_id=p.telegram_id AND u.cosmetic_key=? AND u.quantity>0
     WHERE p.pet_id=? AND p.telegram_id=? AND p.status='active'
     ON CONFLICT(pet_id,cosmetic_key) DO UPDATE SET enabled=excluded.enabled
-    RETURNING cosmetic_key`).bind(request.cosmetic_key,request.enabled?1:0,request.cosmetic_key,pet.pet_id,owner).first();
+    RETURNING cosmetic_key`).bind(request.cosmetic_key,request.enabled?1:0,request.cosmetic_key,pet.pet_id,owner).first().then(requirePetFirstReadResult);
   return {accepted:!!row,reason:row?'style_equipped':'style_not_owned',result_copy:row?(request.enabled?'Style equipped.':'Style removed.')+' No currency cost.':undefined};
 }
