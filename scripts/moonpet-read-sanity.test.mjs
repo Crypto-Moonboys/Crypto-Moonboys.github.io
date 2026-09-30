@@ -17,7 +17,7 @@ function fixture(owner) {
   class Statement {
     constructor(query, args = []) { this.query = query; this.args = args; }
     bind(...args) { return new Statement(this.query, args); }
-    async first() { db.statementCount++; if (db.beforeFirst) await db.beforeFirst(this); return sql.prepare(this.query).get(...this.args) || null; }
+    async first() { db.statementCount++; if (db.beforeFirst) { const reply = await db.beforeFirst(this); if (reply !== undefined) return reply; } return sql.prepare(this.query).get(...this.args) || null; }
     async all() { db.statementCount++; if (db.beforeAll) { const reply = await db.beforeAll(this); if (reply !== undefined) return reply; } return { results: sql.prepare(this.query).all(...this.args) }; }
     exec() {
       db.statementCount++;
@@ -119,6 +119,25 @@ test('failed Daily Run summary read cannot publish not-started authority',async(
   };
   await assert.rejects(hooks.buildPetMiniAppState(f.db,f.owner,'fixture-token'),/daily_summary_read_unavailable/);
   assert.equal(hit,true);
+});
+const firstReadTargets = {
+ practice_authority: /SELECT 1 WHERE EXISTS[\s\S]*telegram_pet_instances p[\s\S]*telegram_pet_active_slots/,
+ practice_stats: /SELECT COALESCE\(MAX\(sequence\),0\)\+1 next_sequence[\s\S]*FROM telegram_pet_practice/,
+ contract_authority: /SELECT p\.pet_id FROM telegram_pet_instances p JOIN telegram_pet_active_slots/,
+ contract_stats: /SELECT COALESCE\(MAX\(sequence\),0\)\+1 AS next_sequence[\s\S]*FROM telegram_pet_contracts/,
+ daily_summary: /SELECT d\.run_id, d\.pet_id, r\.status, r\.current_room, r\.score[\s\S]*FROM telegram_pet_daily_runs d/,
+};
+for (const [name,query] of Object.entries(firstReadTargets)) test(`resolved failed ${name} first read cannot publish a normal Mini App snapshot`,async()=>{
+  const f=await savedFixture('first-read-'+name);
+  let hit=false;
+  f.db.beforeFirst=s=>{
+    if(query.test(s.query)){
+      hit=true;
+      return {success:false,error:'injected_private_d1_details'};
+    }
+  };
+  await assert.rejects(hooks.buildPetMiniAppState(f.db,f.owner,'fixture-token'),/pet_state_read_unavailable/);
+  assert.equal(hit,true,'fault must reach the target');
 });
 for(const payload of [{success:false,results:[]},{success:false},{success:true},{success:true,results:{}},null]) {
  test(`Relic Vault reports unavailable for ${JSON.stringify(payload)} instead of empty ownership`,async()=>{

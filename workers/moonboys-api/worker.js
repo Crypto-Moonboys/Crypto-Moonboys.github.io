@@ -1,7 +1,7 @@
 import { getPracticeBoard, processPracticeAction } from './pets/practice-progression.js';
 import { getStyleLoadout, equipPetStyle } from './pets/style-loadout.js';
 import { RELIC_ROUTE_DETAILS } from './pets/relic-passives.js';
-import { requirePetReadResult } from './pets/read-result.js';
+import { requirePetFirstReadResult, requirePetReadResult } from './pets/read-result.js';
 import { readCommunityLeaderboard } from './community-leaderboard.js';
 import { selectCommunitySeason, communitySeasonSql } from './community-season-authority.js';
 import { getCombatEligibility, PET_ARENA_MIN_LEVEL as COMBAT_ARENA_MIN_LEVEL, PET_WEEKLY_BOSS_MIN_LEVEL } from './pets/combat-eligibility.js';
@@ -16293,11 +16293,6 @@ async function syncActivePetAchievements(db, telegramId, requiredReads = false) 
 
 async function syncPetAchievements(db, telegramId, requiredReads = false) {
   return syncActivePetAchievements(db, telegramId, requiredReads);
-}
-
-function requirePetFirstReadResult(result) {
-  if (result?.success === false) throw new Error('pet_state_read_unavailable');
-  return result;
 }
 
 async function settlePetWeeklyBossReward(db, telegramId, weekKey, boss, progress) {

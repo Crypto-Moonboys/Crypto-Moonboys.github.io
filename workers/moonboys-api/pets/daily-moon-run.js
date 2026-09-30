@@ -1,5 +1,5 @@
 import { boundedRecoveryLimit } from './recovery-limits.js';
-import { requirePetReadResult } from './read-result.js';
+import { requirePetFirstReadResult, requirePetReadResult } from './read-result.js';
 import { withPetEquipmentProgression } from './equipment-progression.js';
 import dailyChallenges from './content/daily-challenges.json' with { type: 'json' };
 import {
@@ -129,7 +129,7 @@ export async function getDailyMoonRunReservation(db, request = {}) {
   if (!runId) {
     const active = await db.prepare(`SELECT run_id FROM telegram_pet_runs
       WHERE telegram_id=? AND status IN ('active','extractable') ORDER BY updated_at DESC LIMIT 1`)
-      .bind(telegramId).first();
+      .bind(telegramId).first().then(requirePetFirstReadResult);
     runId = active?.run_id || '';
   }
   if (!runId) return null;
@@ -140,12 +140,12 @@ export async function getDailyMoonRunReservation(db, request = {}) {
           AND m.modifier_id IN (${Object.keys(PET_RUN_MODIFIERS).map(id => `'${id}'`).join(',')}))) AS initialization_pending
     FROM telegram_pet_daily_runs d JOIN telegram_pet_runs r ON r.run_id = d.run_id AND r.telegram_id = d.telegram_id
     WHERE d.telegram_id = ? AND d.run_id = ? LIMIT 1`).bind(telegramId, runId);
-  const reservation = await query.first();
+  const reservation = requirePetFirstReadResult(await query.first());
   if (reservation && !reservation.initialization_pending) return reservation;
   const utcDay = runId.slice(6, 16);
   if (!validUtcDay(utcDay) || dailyRunId(telegramId, utcDay) !== runId) return reservation;
   if (!await recoverDailyMoonRunStart(db, telegramId, runId)) return null;
-  const restored = await query.first();
+  const restored = requirePetFirstReadResult(await query.first());
   if (!restored || restored.initialization_pending) throw new Error('daily_run_start_unavailable');
   return restored;
 }
@@ -156,10 +156,10 @@ export async function getDailyMoonRunSummary(db, request = {}) {
   const telegramId = String(request.telegram_id || '').trim();
   const now = request.now instanceof Date ? request.now : new Date(request.now || Date.now());
   const utcDay = utcDayFromNow(now);
-  const row = await db.prepare(`SELECT d.run_id, d.pet_id, r.status, r.current_room, r.score
+  const row = requirePetFirstReadResult(await db.prepare(`SELECT d.run_id, d.pet_id, r.status, r.current_room, r.score
     FROM telegram_pet_daily_runs d JOIN telegram_pet_runs r
       ON r.run_id=d.run_id AND r.telegram_id=d.telegram_id
-    WHERE d.telegram_id=? AND d.utc_day=? LIMIT 1`).bind(telegramId, utcDay).first();
+    WHERE d.telegram_id=? AND d.utc_day=? LIMIT 1`).bind(telegramId, utcDay).first());
   const active = row && ['active', 'extractable'].includes(row.status);
   const expiresAt = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1)).toISOString();
   return {

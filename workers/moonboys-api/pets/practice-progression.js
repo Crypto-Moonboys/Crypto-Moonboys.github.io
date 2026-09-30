@@ -1,5 +1,5 @@
 import engine from '../../../js/moonpet-practice.js';
-import { requirePetReadResult } from './read-result.js';
+import { requirePetFirstReadResult, requirePetReadResult } from './read-result.js';
 import { readOwnedRelics, initializeRelicRoute, relicNames, relicRouteChoices, relicRouteSuccess, relicSearchSalvage } from './relic-passives.js';
 export const PRACTICE_BONUS_XP=10;
 export const PRACTICE_BONUS_LIMIT=3;
@@ -31,11 +31,11 @@ function project(row) {
 }
 export async function getPracticeBoard(db,owner,pet,now=new Date()) {
   const pending=requirePetReadResult(await db.prepare(`SELECT c.run_id,c.pet_id,c.reward_day ${OWNED} AND c.reward_xp=10 AND c.reward_settled=0 ORDER BY c.created_at,c.run_id LIMIT 10`).bind(owner).all()).results;
-  if(!pet?.pet_id||!await db.prepare(`SELECT 1 WHERE ${GUARD}`).bind(pet.pet_id,owner,pet.season_key).first()) return {available:false,reason:'hatch_required',pending_rewards:pending};
+  if(!pet?.pet_id||!requirePetFirstReadResult(await db.prepare(`SELECT 1 WHERE ${GUARD}`).bind(pet.pet_id,owner,pet.season_key).first())) return {available:false,reason:'hatch_required',pending_rewards:pending};
   const [stats,row,bonuses]=await Promise.all([
-    db.prepare('SELECT COALESCE(MAX(sequence),0)+1 next_sequence,COALESCE(SUM(rank_points),0) rank_points,COALESCE(SUM(CASE WHEN rank_points>0 THEN 1 ELSE 0 END),0) completed FROM telegram_pet_practice WHERE telegram_id=? AND pet_id=? AND season_key=?').bind(owner,pet.pet_id,pet.season_key).first(),
-    db.prepare('SELECT * FROM telegram_pet_practice WHERE telegram_id=? AND pet_id=? AND season_key=? ORDER BY sequence DESC LIMIT 1').bind(owner,pet.pet_id,pet.season_key).first(),
-    db.prepare('SELECT COUNT(*) used FROM telegram_pet_practice WHERE telegram_id=? AND reward_day=? AND reward_xp>0').bind(owner,day(now)).first(),
+    db.prepare('SELECT COALESCE(MAX(sequence),0)+1 next_sequence,COALESCE(SUM(rank_points),0) rank_points,COALESCE(SUM(CASE WHEN rank_points>0 THEN 1 ELSE 0 END),0) completed FROM telegram_pet_practice WHERE telegram_id=? AND pet_id=? AND season_key=?').bind(owner,pet.pet_id,pet.season_key).first().then(requirePetFirstReadResult),
+    db.prepare('SELECT * FROM telegram_pet_practice WHERE telegram_id=? AND pet_id=? AND season_key=? ORDER BY sequence DESC LIMIT 1').bind(owner,pet.pet_id,pet.season_key).first().then(requirePetFirstReadResult),
+    db.prepare('SELECT COUNT(*) used FROM telegram_pet_practice WHERE telegram_id=? AND reward_day=? AND reward_xp>0').bind(owner,day(now)).first().then(requirePetFirstReadResult),
   ]);
   return {available:true,pet_id:pet.pet_id,...stats,run:project(row),builds:engine.builds,goals:engine.goals,bonus_remaining:Math.max(0,3-bonuses.used),bonus_xp:10,bonus_limit:3,pending_rewards:pending};
 }
