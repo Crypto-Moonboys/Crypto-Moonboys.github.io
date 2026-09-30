@@ -9520,6 +9520,10 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
   const lifecyclePromise = identityPromise.then((identity) => identity?.lifecycle || null);
   const runtimePromise = getOrCreatePetRuntimeState(db, telegramId, getPetDayKey(now), activePetRewardAuthority(petRaw));
   const combatEligibilityPromise = lifecyclePromise.then((lifecycle) => getPetMiniAppCombatEligibility(db, telegramId, lifecycle, petRaw));
+  // Guidance may fail on the shared identity authority before it reaches its
+  // combat await. Observe the derived rejection immediately so fail-closed
+  // propagation never creates an unhandled sibling promise.
+  combatEligibilityPromise.catch(() => {});
   const [lifecycle, guidance, inventory, runtime, gear, materials, relics, arena, arenaQueue, recentArena, kaiju, kaijuQueue, recentKaiju, leaderboard, notifications, seasonSlots, recentActions] = await Promise.all([
     lifecyclePromise,
     buildPetGuidanceState(db, telegramId, petRaw, { identity: identityPromise, runtime: runtimePromise, combatEligibility: combatEligibilityPromise }),
