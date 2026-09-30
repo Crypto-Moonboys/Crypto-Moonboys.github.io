@@ -1753,15 +1753,20 @@ for (const [action, role] of [['energy_drink', 'fight'], ['dance', 'dance'], ['c
   assert.match(client, new RegExp(`key === '${action}'\\) return '${role}'`), `${action} must use the ${role} animation role`);
   assert.match(client, new RegExp(`button\\('[^']+', '${action}'\\)`), `${action} must be available in the Care Console`);
 }
-assert.match(client, /var waitForAcceptedAnimation = \['energy_drink', 'dance', 'cuddles'\]\.includes/,
-  'new special actions must wait for an authoritative accepted response before animating');
-assert.match(client, /sleepLatched && actionAnimationFamily\(action, payload\) !== 'sleep' && !waitForAcceptedAnimation/,
-  'rejected special actions must preserve the existing sleep latch');
-assert.match(client, /waitForAcceptedAnimation && actionAccepted && sleepLatched/,
+assert.match(client, /var authoritativeSleepClear = \['energy_drink', 'dance', 'cuddles'\]\.includes/,
+  'special care actions must preserve sleep authority until the mutation result is known');
+assert.match(client, /var waitForAcceptedAnimation = !fastResponse && authoritativeSleepClear/,
+  'legacy full-state clients may still wait, while fast-response clients animate immediately');
+assert.match(client, /sleepLatched && actionFamily !== 'sleep' && !authoritativeSleepClear/,
+  'optimistic special-action animation must not clear a sleeping pet before server acceptance');
+assert.match(client, /authoritativeSleepClear && actionAccepted && sleepLatched/,
   'an accepted special action may clear a stale sleep latch only after server authority responds');
-assert.match(client, /if \(!waitForAcceptedAnimation\) animateAction\(action, true, 8000, payload\)/);
+assert.match(client, /if \(!waitForAcceptedAnimation\) animateAction\(action, true, fastResponse \? \(actionFamily === 'dance' \? 3600 : 2800\) : 8000, payload\)/,
+  'fast care animation must begin before the mutation response while preserving bounded action timing');
+assert.match(client, /if \(fastResponse && data\.state_pending === true\)[\s\S]*if \(!actionAccepted\) animateAction\('blocked', false, 2800, payload\)/,
+  'a rejected optimistic care action must switch to the blocked animation without faking success');
 assert.match(client, /var actionAccepted = Boolean\(data\.result && data\.result\.accepted\);[\s\S]*if \(!isHatchReveal\) animateAction\(action, actionAccepted, actionFamily === 'dance' \? 3600 : 2800, payload\)/,
-  'accepted DANCE must use a bounded loop while fight and victory return to idle after one-shot timing');
+  'legacy full-state DANCE must retain bounded accepted-response animation timing');
 assert.match(client, /var actionResultHoldMs = 3600/);
 assert.doesNotMatch(client, /createPetPalette|PET_APPEARANCE_PALETTES|PET_SPECIES_PALETTES|DEFAULT_PET_PALETTE/,
   'retired procedural animal palettes must stay removed');
