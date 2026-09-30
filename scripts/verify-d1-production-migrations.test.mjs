@@ -9,6 +9,7 @@ import {
 import { verifyD1IdentityAuthorityAuditPayload } from './verify-d1-identity-authority-audit.mjs';
 
 const request = JSON.parse(fs.readFileSync(new URL('../deployments/d1-evidence-request.json', import.meta.url), 'utf8'));
+const production = JSON.parse(fs.readFileSync(new URL('../deployments/production.json', import.meta.url), 'utf8'));
 const workflow = fs.readFileSync(new URL('../.github/workflows/d1-production-migration-verify.yml', import.meta.url), 'utf8');
 const remoteQueryStep = workflow.match(/- name: Query production migration records[\s\S]*?(?=\n\s+- name: Report sanitised query failure)/)?.[0] || '';
 const remoteIdentityAuditStep = workflow.match(/- name: Query production identity authority violations[\s\S]*?(?=\n\s+- name: Upload sanitised evidence)/)?.[0] || '';
@@ -18,6 +19,7 @@ for (const name of [
   '078_moonpet_beta_season_xp_rebaseline.sql',
   '079_moonpet_training_and_style.sql',
   '080_moonpet_beta_xp_quarantine.sql',
+  '081_moonpet_recovery_cursors.sql',
 ]) {
   assert.ok(pullRequestPaths.includes('workers/moonboys-api/migrations/' + name));
   assert.ok(remoteQueryStep.includes(name));
@@ -148,6 +150,10 @@ assert.ok(
   'migration 080 must be detected by the production migration verification script',
 );
 assert.ok(
+  REQUIRED_D1_MIGRATIONS.includes('081_moonpet_recovery_cursors.sql'),
+  'migration 081 must be detected by the production migration verification script',
+);
+assert.ok(
   request.required_migrations.includes('069_moonpet_breeding_authority.sql'),
   'migration 069 must be included in the checked-in D1 evidence request',
 );
@@ -182,6 +188,14 @@ assert.ok(
 assert.ok(
   request.required_migrations.includes('080_moonpet_beta_xp_quarantine.sql'),
   'migration 080 must be included in the checked-in D1 evidence request',
+);
+assert.ok(
+  request.required_migrations.includes('081_moonpet_recovery_cursors.sql'),
+  'migration 081 must be included in the checked-in D1 evidence request',
+);
+assert.ok(
+  production.d1_databases.wikicoms.required_migrations.includes('081_moonpet_recovery_cursors.sql'),
+  'migration 081 must be included in the production deployment manifest',
 );
 assert.deepEqual(
   [...request.required_migrations].sort(),
