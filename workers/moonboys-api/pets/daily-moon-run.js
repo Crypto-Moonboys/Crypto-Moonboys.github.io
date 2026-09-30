@@ -476,7 +476,7 @@ export async function recoverDailyMoonRunEndings(db, telegramId, now = new Date(
     JOIN telegram_pet_instances i ON i.pet_id=r.pet_id AND i.telegram_id=r.telegram_id AND i.season_key=r.season_key
     JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id AND s.season_key=i.season_key AND s.slot_number=i.slot_number
     JOIN telegram_pet_run_rooms f ON f.run_id=r.run_id AND f.telegram_id=r.telegram_id AND f.pet_id=r.pet_id AND f.room_number=r.max_room
-    LEFT JOIN telegram_settings recovery_state ON recovery_state.telegram_id=d.telegram_id AND cursor.setting_key='moonpet:daily-recovery:endings'
+    LEFT JOIN telegram_settings recovery_state ON recovery_state.telegram_id=d.telegram_id AND recovery_state.setting_key='moonpet:daily-recovery:endings'
     WHERE d.telegram_id=? AND r.max_room>0 AND r.current_room>=r.max_room
       AND r.status IN ('active','extractable','completed','extracted') AND f.status='resolved' AND f.room_type='boss'
       AND json_valid(f.generated_data) AND json_extract(f.generated_data,'$.boss_id') IN (${bossIds})
@@ -504,7 +504,7 @@ export async function recoverDailyMoonRunEndings(db, telegramId, now = new Date(
     JOIN telegram_pet_runs r ON r.run_id=d.run_id AND r.telegram_id=d.telegram_id AND r.pet_id=d.pet_id
     JOIN telegram_pet_instances i ON i.pet_id=r.pet_id AND i.telegram_id=r.telegram_id AND i.season_key=r.season_key
     JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id AND s.season_key=i.season_key AND s.slot_number=i.slot_number
-    LEFT JOIN telegram_settings recovery_state ON recovery_state.telegram_id=d.telegram_id AND cursor.setting_key='moonpet:daily-recovery:records'
+    LEFT JOIN telegram_settings recovery_state ON recovery_state.telegram_id=d.telegram_id AND recovery_state.setting_key='moonpet:daily-recovery:records'
     WHERE d.telegram_id=? AND r.max_room>0 AND r.current_room<r.max_room AND r.status IN ('extracted','failed','abandoned')
       AND EXISTS (SELECT 1 FROM telegram_pet_run_rooms f WHERE f.run_id=r.run_id AND f.telegram_id=r.telegram_id
         AND f.pet_id=r.pet_id AND f.room_number<=r.current_room+1 AND f.status IN ('resolved','failed'))
