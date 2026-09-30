@@ -63,8 +63,18 @@ async function withServer(handler, callback) {
 test('canary workflow is manual-only and keeps credentials in secrets and POST bodies', () => {
   assert.match(WORKFLOW, /^\s*workflow_dispatch:/m);
   assert.doesNotMatch(WORKFLOW, /^\s*(pull_request|push|schedule|workflow_run):/m);
+  assert.match(WORKFLOW, /^\s+if: github\.ref == 'refs\/heads\/main'$/m);
   assert.match(WORKFLOW, /secrets\.MOONPET_CANARY_BOT_TOKEN/);
   assert.match(WORKFLOW, /secrets\.MOONPET_CANARY_TELEGRAM_ID/);
+  const provenanceStep = WORKFLOW.indexOf('- name: Require expected commit to be merged into main');
+  const secretStep = WORKFLOW.indexOf('- name: Verify live Moonpet state and leaderboards');
+  const expectedCheckout = WORKFLOW.indexOf('- name: Checkout verified expected revision');
+  assert.ok(provenanceStep >= 0 && provenanceStep < secretStep);
+  assert.ok(expectedCheckout > provenanceStep && expectedCheckout < secretStep);
+  const provenanceSource = WORKFLOW.slice(provenanceStep, secretStep);
+  assert.match(provenanceSource, /git fetch --no-tags origin main/);
+  assert.match(provenanceSource, /git merge-base --is-ancestor "\$EXPECTED_COMMIT" origin\/main/);
+  assert.doesNotMatch(provenanceSource, /secrets\./);
   const source = readFileSync(SCRIPT, 'utf8');
   assert.doesNotMatch(source, /searchParams\.(?:set|append)\([^\n]*init_data/);
   assert.match(source, /MOONPET_CANARY_ALLOW_WRITES/);
