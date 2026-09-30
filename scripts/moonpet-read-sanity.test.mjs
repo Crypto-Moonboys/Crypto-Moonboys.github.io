@@ -75,6 +75,10 @@ const targets = {
   economy_materials: /SELECT material_key,quantity FROM telegram_pet_material_balances/,
   achievements: /SELECT achievement_id, progress, target, unlocked_at/,
   season_claims: /SELECT idempotency_key, COALESCE\(awarded_at,created_at\)/,
+  practice: /SELECT c\.run_id,c\.pet_id,c\.reward_day[\s\S]*telegram_pet_practice/,
+  style_loadout: /SELECT s\.cosmetic_key FROM telegram_pet_style_loadouts/,
+  contracts: /SELECT c\.contract_id,c\.pet_id,c\.season_key,c\.reward_day/,
+  daily_run_recovery: /SELECT d\.run_id,d\.utc_day,cursor\.setting_value AS recovery_cursor FROM telegram_pet_daily_runs d/,
 };
 function durableSnapshot(f) {
   return ['telegram_pet_instances','telegram_pet_profiles','telegram_pet_equipment_progression','telegram_pet_material_balances','telegram_pet_inventory','telegram_pet_reward_claims','telegram_pet_events','telegram_pet_system_events','telegram_pet_daily_completion']
@@ -103,6 +107,18 @@ for (const [name,query] of Object.entries(targets)) test(`resolved failed ${name
   for(const key of ['inventory','gear','materials'])assert.deepEqual(restored[key],baseline[key],key);
   assert.equal(restored.guidance.daily_completion.ready,true);
   assert.deepEqual(durableSnapshot(f),before,'read outages cannot consume inventory or rewards');
+});
+test('failed Daily Run summary read cannot publish not-started authority',async()=>{
+  const f=await savedFixture('daily-summary-read');
+  let hit=false;
+  f.db.beforeFirst=s=>{
+    if(s.query.includes('FROM telegram_pet_daily_runs d JOIN telegram_pet_runs r')){
+      hit=true;
+      throw Error('daily_summary_read_unavailable');
+    }
+  };
+  await assert.rejects(hooks.buildPetMiniAppState(f.db,f.owner,'fixture-token'),/daily_summary_read_unavailable/);
+  assert.equal(hit,true);
 });
 for(const payload of [{success:false,results:[]},{success:false},{success:true},{success:true,results:{}},null]) {
  test(`Relic Vault reports unavailable for ${JSON.stringify(payload)} instead of empty ownership`,async()=>{

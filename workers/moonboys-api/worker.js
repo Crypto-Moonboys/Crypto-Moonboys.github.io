@@ -9468,7 +9468,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
   await recoverPetStandardRunEndings(db, telegramId, '', PET_STATE_RECOVERY_LIMITS.standard_endings).catch((error) => {
     logApiFailure('pet_standard_run_recovery_failed', { message: error?.message || String(error) });
   });
-  const recoveredEndings = await recoverDailyMoonRunEndings(db, telegramId, now, { endings: PET_STATE_RECOVERY_LIMITS.daily_endings, records: PET_STATE_RECOVERY_LIMITS.daily_records }).catch(() => []);
+  const recoveredEndings = await recoverDailyMoonRunEndings(db, telegramId, now, { endings: PET_STATE_RECOVERY_LIMITS.daily_endings, records: PET_STATE_RECOVERY_LIMITS.daily_records });
   for (const ending of recoveredEndings) if (ending.accepted) {
     await recordWeeklyJourneyFromDailyMoonRunTerminal(db, telegramId, ending.daily_run.run_id, ending.daily_run.status);
   }
@@ -9616,10 +9616,9 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
   const runPet = !activeRun || activeRun.pet_id === petRaw.pet_id ? petRaw
     : await getPetInstanceWithAtomicDecay(db, activeRun.pet_id);
   const runPetAvailable = Boolean(activeRun?.pet_id && runPet?.pet_id === activeRun.pet_id && runPet?.telegram_id === telegramId);
-  const practice = await getPracticeBoard(db, telegramId, petRaw, now).catch(() => ({ available: false, reason: 'practice_unavailable' }));
-  const styleLoadout = await getStyleLoadout(db, telegramId, petRaw.pet_id).catch(() => ({ available: false, equipped: [] }));
-  const contracts = await getContractBoard(db, telegramId, petRaw, now)
-    .catch(() => ({ available: false, reason: 'contracts_unavailable' }));
+  const practice = await getPracticeBoard(db, telegramId, petRaw, now);
+  const styleLoadout = await getStyleLoadout(db, telegramId, petRaw.pet_id);
+  const contracts = await getContractBoard(db, telegramId, petRaw, now);
   if (next?.key === 'activity_running' && contracts.available) next = {
     key: 'contract', title: contracts.run?.status === 'active' ? 'Continue your saved contract' : 'Choose another contract',
     detail: 'Your timed activity keeps accumulating. Contracts have no pet energy cost or cooldown.',
@@ -9628,8 +9627,7 @@ async function buildPetMiniAppState(db, telegramId, botToken) {
   const dailyReservation = activeRun
     ? await getDailyMoonRunReservation(db, { telegram_id: telegramId, run_id: activeRun.run_id })
     : null;
-  const dailyRunSummary = await getDailyMoonRunSummary(db, { telegram_id: telegramId, now, active_run: activeRun, hatched: Boolean(lifecycle && lifecycle.phase !== 'egg') })
-    .catch(() => ({ available: false, attempted: false, status: 'authority_unavailable' }));
+  const dailyRunSummary = await getDailyMoonRunSummary(db, { telegram_id: telegramId, now, active_run: activeRun, hatched: Boolean(lifecycle && lifecycle.phase !== 'egg') });
   const dailyEndingPending = Boolean(dailyReservation && Number(dailyReservation.current_room) >= Number(dailyReservation.max_room));
   let dailyRoom = null;
   if (dailyReservation) {

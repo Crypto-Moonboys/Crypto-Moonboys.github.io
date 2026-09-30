@@ -1,4 +1,5 @@
 import { readOwnedRelics, initializeRelicRoute, relicRouteChoices, relicRouteSuccess, relicSearchSalvage, relicNames } from './relic-passives.js';
+import { requirePetReadResult } from './read-result.js';
 // Authenticated, server-owned quests. Never accept a client's state, seed, roll or reward.
 export const CONTRACT_BONUS_LIMIT = 3;
 export const CONTRACT_BONUS_XP = 20;
@@ -319,9 +320,9 @@ const SAVED_BONUS_FROM = `FROM telegram_pet_contracts c
   WHERE c.telegram_id=? AND c.status='completed' AND c.reward_xp=20`;
 export async function getContractBoard(db, owner, pet, now = new Date()) {
   const petId = pet?.pet_id, seasonKey = pet?.season_key;
-  const pending = await db.prepare(`SELECT c.contract_id,c.pet_id,c.season_key,c.reward_day,s.slot_number
+  const pending = requirePetReadResult(await db.prepare(`SELECT c.contract_id,c.pet_id,c.season_key,c.reward_day,s.slot_number
     ${SAVED_BONUS_FROM} AND c.reward_settled=0
-    ORDER BY c.reward_day,c.created_at,c.contract_id LIMIT 10`).bind(owner).all();
+    ORDER BY c.reward_day,c.created_at,c.contract_id LIMIT 10`).bind(owner).all());
   const pendingRewards = pending.results || [];
   if (!petId || !seasonKey || !await authority(db, owner, petId, seasonKey)) return { available: false, reason: 'hatch_required', pending_rewards: pendingRewards };
   const [stats, rows, bonuses, mastery] = await Promise.all([
@@ -333,7 +334,7 @@ export async function getContractBoard(db, owner, pet, now = new Date()) {
       CASE WHEN json_extract(state_json,'$.version') IN (6,7,8,9) AND json_extract(state_json,'$.format')='extended' THEN 'extended' ELSE 'standard' END AS format,
       json_extract(state_json,'$.tier') AS tier, COUNT(*) AS completed, MAX(rank_points) AS best_rank_points
       FROM telegram_pet_contracts WHERE telegram_id=? AND pet_id=? AND season_key=? AND status='completed'
-      GROUP BY goal, build, tier, format`).bind(owner, petId, seasonKey).all(),
+      GROUP BY goal, build, tier, format`).bind(owner, petId, seasonKey).all().then(requirePetReadResult),
   ]);
   const completed = integer(stats?.completed), points = integer(stats?.rank_points);
   const maxTier = completed >= 15 ? 3 : completed >= 5 ? 2 : 1;

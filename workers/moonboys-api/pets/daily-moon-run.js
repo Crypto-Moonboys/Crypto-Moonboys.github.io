@@ -1,4 +1,5 @@
 import { boundedRecoveryLimit } from './recovery-limits.js';
+import { requirePetReadResult } from './read-result.js';
 import { withPetEquipmentProgression } from './equipment-progression.js';
 import dailyChallenges from './content/daily-challenges.json' with { type: 'json' };
 import {
@@ -470,7 +471,7 @@ export async function recoverDailyMoonRunEndings(db, telegramId, now = new Date(
   const bossIds = Object.keys(PET_ROGUELITE_BOSSES).map((id) => `'${id}'`).join(',');
   // Filter source-backed endings before bounding the queue. Failed/unowned or
   // malformed rows cannot strand another player's valid final-room settlement.
-  const candidates = await db.prepare(`SELECT d.run_id,d.utc_day,cursor.setting_value AS recovery_cursor FROM telegram_pet_daily_runs d
+  const candidates = requirePetReadResult(await db.prepare(`SELECT d.run_id,d.utc_day,cursor.setting_value AS recovery_cursor FROM telegram_pet_daily_runs d
     JOIN telegram_pet_runs r ON r.run_id=d.run_id AND r.telegram_id=d.telegram_id AND r.pet_id=d.pet_id
     JOIN telegram_pet_instances i ON i.pet_id=r.pet_id AND i.telegram_id=r.telegram_id AND i.season_key=r.season_key
     JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id AND s.season_key=i.season_key AND s.slot_number=i.slot_number
@@ -486,7 +487,7 @@ export async function recoverDailyMoonRunEndings(db, telegramId, now = new Date(
           AND json_valid(a.event_data) AND json_extract(a.event_data,'$.boss_defeated')=1)
         OR NOT EXISTS (SELECT 1 FROM telegram_pet_events e WHERE e.telegram_id=d.telegram_id AND e.pet_id=d.pet_id AND e.season_key=r.season_key AND e.status='accepted' AND e.event_key='daily-moon-run:'||d.telegram_id||':'||d.run_id||':'||r.status))
     ORDER BY CASE WHEN d.utc_day||':'||d.run_id>COALESCE(cursor.setting_value,'') THEN 0 ELSE 1 END,
-      d.utc_day,d.run_id LIMIT ?`).bind(String(telegramId), boundedRecoveryLimit(limits.endings, 5)).all();
+      d.utc_day,d.run_id LIMIT ?`).bind(String(telegramId), boundedRecoveryLimit(limits.endings, 5)).all());
   const results = [];
   let endingCursor = candidates.results?.[0]?.recovery_cursor ?? null;
   for (const candidate of candidates.results || []) {
@@ -499,7 +500,7 @@ export async function recoverDailyMoonRunEndings(db, telegramId, now = new Date(
   }
   // An early terminal transition can also precede its quest/record writes.
   // These runs have no won final boss to settle and must never receive one.
-  const terminalRecords = await db.prepare(`SELECT d.run_id,d.utc_day,cursor.setting_value AS recovery_cursor FROM telegram_pet_daily_runs d
+  const terminalRecords = requirePetReadResult(await db.prepare(`SELECT d.run_id,d.utc_day,cursor.setting_value AS recovery_cursor FROM telegram_pet_daily_runs d
     JOIN telegram_pet_runs r ON r.run_id=d.run_id AND r.telegram_id=d.telegram_id AND r.pet_id=d.pet_id
     JOIN telegram_pet_instances i ON i.pet_id=r.pet_id AND i.telegram_id=r.telegram_id AND i.season_key=r.season_key
     JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id AND s.season_key=i.season_key AND s.slot_number=i.slot_number
@@ -513,7 +514,7 @@ export async function recoverDailyMoonRunEndings(db, telegramId, now = new Date(
           WHERE e.telegram_id=d.telegram_id AND e.pet_id=d.pet_id AND e.season_key=r.season_key
             AND e.status='accepted' AND e.event_key='daily-moon-run:'||d.telegram_id||':'||d.run_id||':extracted'))
     ORDER BY CASE WHEN d.utc_day||':'||d.run_id>COALESCE(cursor.setting_value,'') THEN 0 ELSE 1 END,
-      d.utc_day,d.run_id LIMIT ?`).bind(String(telegramId), boundedRecoveryLimit(limits.records, 5)).all();
+      d.utc_day,d.run_id LIMIT ?`).bind(String(telegramId), boundedRecoveryLimit(limits.records, 5)).all());
   let recordCursor = terminalRecords.results?.[0]?.recovery_cursor ?? null;
   for (const candidate of terminalRecords.results || []) {
     try {
