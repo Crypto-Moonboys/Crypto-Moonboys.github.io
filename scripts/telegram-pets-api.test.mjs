@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 91027)
-Total output lines: 5012
-
 import assert from 'node:assert/strict';
 import { createHash, createHmac } from 'node:crypto';
 import fs from 'node:fs';
@@ -1436,7 +1433,2254 @@ await assert.rejects(getPetEvolutionGuidance(failedPresentationReadDb, 'presenta
     return new Response(JSON.stringify({ ok: true, result: { message_id: 1 } }), { status: 200, headers: { 'content-type': 'application/json' } });
   };
   try {
-    const unavailable = await readTelegramPetPresentation('fixture-token', 'fixture-chat', '…41027 tokens truncated…rds');
+    const unavailable = await readTelegramPetPresentation('fixture-token', 'fixture-chat', 'presentation-outage', 'fixture', async () => {
+      throw new Error('presentation_read_unavailable');
+    });
+    assert.equal(unavailable.ok, false);
+    assert.match(sent.at(-1), /temporarily unavailable/i,
+      'Telegram presentation outages must tell the player to retry instead of claiming the pet or progress is missing');
+    const beforeMissing = sent.length;
+    const missing = await readTelegramPetPresentation('fixture-token', 'fixture-chat', 'presentation-missing', 'fixture', async () => null);
+    assert.deepEqual(missing, { ok: true, value: null }, 'a successful missing-row read must remain distinct from an outage');
+    assert.equal(sent.length, beforeMissing, 'a successful missing-row read must not emit an outage warning');
+    await sendTelegramPetReply('fixture-token', 'fixture-chat', '<b>Saved action result</b>', {}, null, {
+      db: failedPresentationReadDb,
+      telegram_id: 'presentation-outage',
+      pet: { pet_id: 'pet-presentation', telegram_id: 'presentation-outage', season_key: 'pet-s2026-001', pet_xp: 0, owned_equipment: {} },
+    });
+    assert.match(sent.at(-1), /Saved action result/, 'a guidance outage must not hide an already-authoritative action result');
+    assert.match(sent.at(-1), /recommendations are temporarily unavailable/i,
+      'a guidance outage must be disclosed without turning a saved action into a false failure');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}
+
+const petStatus = asyncBlock('cmdPetStatus');
+assert.ok(petStatus.includes('getPetProfile(db, telegramId)'), '/pet status command must use read-only pet lookup');
+assert.ok(!petStatus.includes('getOrCreatePetProfile'), '/pet status command must not create pets');
+assert.ok(worker.includes('function formatPetStatus(pet, identity = null'), 'formatPetStatus must exist');
+const statusFormatter = worker.slice(worker.indexOf('function formatPetStatus(pet, identity = null'), worker.indexOf('function formatPetDetails'));
+const redesignedStatus = formatPetStatus({ ...baseArenaPet, pet_name: 'Moonpet', pet_xp: 3887, health: 9, hunger: 100, happiness: 4, cleanliness: 32, energy: 0 }, {
+  current_stage: { name: 'Legendary Companion' },
+  personalities: [{ name: 'Curious' }, { name: 'Explorer' }],
+  memories: { favourite_activity: 'Adventure' },
+});
+for (const label of ['Moonpet', 'Legendary Companion', 'Health', 'Hunger', 'Happiness', 'Cleanliness', 'Energy', 'Needs attention', 'Curious', 'Explorer', 'Adventure']) {
+  assert.ok(redesignedStatus.includes(label), `/pet default response must include ${label}`);
+}
+for (const removed of ['Wallet', 'Equipment', 'Daily Missions', 'Low health: urgent care needed']) {
+  assert.ok(!redesignedStatus.includes(removed), `/pet default response must move ${removed} into Details`);
+}
+assert.match(redesignedStatus, /❤️ Health\n█░{9} 9%/, 'health must use a compact Telegram block bar');
+assert.match(redesignedStatus, /🍖 Hunger\n█{10} 100%/, 'hunger must use a compact Telegram block bar');
+assert.match(redesignedStatus, /⚡ Energy\n░{10} 0%/, 'zero energy must render an empty block bar');
+assert.ok(redesignedStatus.length < 800, '/pet default response must fit comfortably in one mobile viewport');
+
+assert.ok(worker.includes('formatPetBlockedCopy(kind, reason, extra = {})'), 'blocked copy helper must exist');
+for (const message of ['Moonpet is too tired for a', 'Moonpet needs a short break before another', 'You need a Moonpet first', 'not available right now']) {
+  assert.ok(worker.includes(message), `blocked copy helper must include ${message}`);
+}
+
+const petUse = asyncBlock('cmdPetUse');
+assert.ok(petUse.includes('processPetUseItem'), '/petuse command must route to processPetUseItem');
+assert.ok(petUse.includes('eventKey = null'), '/petuse command must accept optional eventKey');
+assert.ok(petUse.includes("event_key: eventKey || buildStablePetEventKey(['tg', telegramId, 'petuse'"), '/petuse command must use stable text keys');
+assert.ok(petUse.includes('formatPetBlockedCopy('), '/petuse command must use friendly blocked copy');
+assert.ok(petUse.includes('if (result.duplicate)'), '/petuse command must guard duplicate button taps');
+assert.ok(petUse.includes('buildPetBagReplyMarkup(inventory)'), '/petuse command must keep bag item buttons after item use');
+
+const petWork = asyncBlock('cmdPetWork');
+assert.ok(petWork.includes('processPetJob'), '/petwork command must route to processPetJob');
+assert.ok(petWork.includes('callback_data: `pet:work:${job.key}`'), '/petwork menu buttons must remain interactive');
+assert.ok(petWork.includes('eventKey = null'), '/petwork command must accept optional eventKey');
+assert.ok(petWork.includes("event_key: eventKey || buildStablePetEventKey(['tg', telegramId, 'petwork', jobKey])"), '/petwork command must use stable text keys');
+assert.ok(petWork.includes('formatPetBlockedCopy('), '/petwork command must use friendly blocked copy');
+
+const petDaily = asyncBlock('cmdPetDaily');
+assert.ok(petDaily.includes('processPetDailyChest'), '/petdaily command must route to processPetDailyChest');
+assert.ok(petDaily.includes('eventKey = null'), '/petdaily command must accept optional eventKey');
+assert.ok(petDaily.includes('dayKey = getPetDayKey(new Date())'), '/petdaily command must include the UTC day in the fallback key');
+assert.ok(petDaily.includes("event_key: eventKey || buildStablePetEventKey(['tg', telegramId, 'daily', dayKey])"), '/petdaily command must day-scope text retries');
+assert.ok(petDaily.includes('formatPetBlockedCopy('), '/petdaily command must use friendly blocked copy');
+
+for (const [command, label] of [
+  ['cmdPetStatus', '/pet'],
+  ['cmdPetAction', 'Feed and care actions'],
+  ['cmdPetWork', 'Work'],
+  ['cmdPetEvent', 'Event'],
+  ['cmdPetRun', 'Run'],
+]) {
+  assert.ok(asyncBlock(command).includes('getMoonpetIdentityWithLifecycle(db, telegramId'), `${label} status must retain stored Moonpet identity`);
+}
+for (const command of ['cmdPetUse', 'cmdPetDaily', 'cmdPetClaim', 'cmdPetTrade', 'cmdPetExtract']) {
+  assert.ok(asyncBlock(command).includes('getMoonpetIdentityWithLifecycle(db, telegramId'), `${command} status must pass identity instead of missions`);
+}
+assert.ok(!worker.includes('formatPetStatus(result.pet, await buildPetMissions(db, telegramId))'), 'missions must never be passed into the formatPetStatus identity parameter');
+assert.ok(asyncBlock('cmdPetDetails').includes('buildPetMissions(db, telegramId)'), 'missions must remain available in the separate Details response');
+const petMissionsCommand = asyncBlock('cmdPetMissions');
+assert.ok(petMissionsCommand.includes('buildPetMissions(db, telegramId)'), '/petmissions functionality must remain intact');
+assert.ok(petMissionsCommand.includes('buildPetProgressMenuReplyMarkup()'), '/petmissions must return players to Progress');
+const petActivityCommand = asyncBlock('cmdPetActivity');
+assert.ok(petActivityCommand.includes("callback_data: 'pet:start:sleep'"), '/petactivity must expose timed activity choices');
+assert.ok(petActivityCommand.includes("callback_data: 'pet:back'"), '/petactivity must provide Back navigation');
+assert.ok(asyncBlock('cmdPetStart').includes("callback_data: 'pet:back'"), 'started activities must allow navigation back without cancelling');
+assert.ok(asyncBlock('cmdPetCancel').includes('petReplyMarkup()'), 'activity cancellation must return the main dashboard');
+
+const petEvent = asyncBlock('cmdPetEvent');
+assert.ok(petEvent.includes('selectPetRandomEncounter'), '/petevent command must show a random encounter');
+assert.ok(petEvent.includes('buildPetRandomEventReplyMarkup'), '/petevent command must render encounter buttons');
+assert.ok(petEvent.includes('formatPetRandomEventSummary'), '/petevent command must render encounter results');
+assert.ok(petEvent.includes('processPetRandomEvent'), '/petevent command must still resolve encounter choices');
+assert.ok(!petEvent.includes('Event resolved:'), '/petevent command must not use the old single-step result copy');
+
+const petAdventure = asyncBlock('cmdPetAdventure');
+assert.ok(petAdventure.includes('eventKey = null'), '/petadventure command must accept an optional eventKey');
+assert.ok(petAdventure.includes('cmdPetRun'), '/petadventure command must alias into Pet Run Engine');
+assert.ok(petAdventure.includes('void argStr;'), '/petadventure must not treat legacy adventure args as run ids');
+assert.ok(petAdventure.includes("cmdPetRun(db, tok, chatId, telegramId, '', eventKey)"), '/petadventure must open or resume the Pet Run Engine');
+assert.ok(!petAdventure.includes('Adventure Complete'), '/petadventure command must not emit the old instant-complete copy');
+assert.ok(worker.includes('callback_data: `pet:adventure:${encounter.key}:${choice.key}`'), 'legacy adventure buttons must carry encounter and choice keys');
+assert.ok(worker.includes('callback_data: `pet:run:${run.run_id}:step:${Math.max(0, Number(run.depth || 0)) + 1}:${choice.key}`'), 'run buttons must carry run id, step, and choice keys');
+
+const petRun = asyncBlock('cmdPetRun');
+assert.ok(petRun.includes('startOrResumePetRun'), '/petrun command must start or resume runs');
+assert.ok(petRun.includes('processPetRunStep'), '/petrun command must resolve run choices');
+assert.ok(petRun.includes('buildPetRunChoiceReplyMarkup'), '/petrun command must render 3-choice run buttons');
+assert.ok(petRun.includes('buildPetRunAfterStepReplyMarkup'), '/petrun command must render Extract and Push Deeper after a step');
+assert.ok(petRun.includes('buildPetRunStepEventKey'), '/petrun command must use stable run step keys');
+assert.ok(petRun.includes('expectedStepIndex = null'), 'text /petrun path must keep callback step enforcement optional');
+assert.ok(petRun.includes('expected_step_index: expectedStepIndex'), '/petrun callback path must pass expected step index into run step processing');
+assert.ok(petRun.includes('That run button was already handled'), '/petrun command must guard duplicate taps');
+
+const petExtract = asyncBlock('cmdPetExtract');
+assert.ok(petExtract.includes('processPetRunExtract'), '/petextract command must route to run extract banking');
+assert.ok(petExtract.includes('formatPetRunBankSummary'), '/petextract command must render banked rewards');
+assert.ok(petExtract.includes('That extract was already banked'), '/petextract command must guard duplicate extracts');
+
+const petShop = asyncBlock('cmdPetShop');
+assert.ok(petShop.includes('buildPetShopReplyMarkup(items)'), '/petshop command must render clickable shop buttons');
+assert.ok(worker.includes('function buildPetShopReplyMarkup'), 'shop must have a dedicated reply markup builder');
+assert.ok(worker.includes('callback_data: `pet:buy:${item.key}`'), 'shop item buttons must carry item buy callbacks');
+
+const petBuy = asyncBlock('cmdPetBuy');
+assert.ok(petBuy.includes('eventKey = null'), '/petbuy command must accept an optional eventKey');
+assert.ok(petBuy.includes("event_key: eventKey || buildStablePetEventKey(['tg', telegramId, 'buy', itemKey, 'msg'])"), '/petbuy command must use callback/message event keys before fallback keys');
+assert.ok(petBuy.includes('if (result.duplicate)'), '/petbuy command must guard duplicate button taps');
+assert.ok(petBuy.includes('Next upgrade run'), '/petbuy command must present post-purchase roguelite options');
+assert.ok(petBuy.includes('buildPetPurchaseNextReplyMarkup(result.pet)'), '/petbuy command must keep chaining upgrade/grind choices after purchase');
+
+const petBagCommand = asyncBlock('cmdPetBag');
+assert.ok(petBagCommand.includes('getPetInventory(db, telegramId)'), '/petbag command must show the inventory');
+assert.ok(petBagCommand.includes('buildPetBagReplyMarkup(inventory)'), '/petbag command must render clickable bag buttons');
+assert.ok(worker.includes('function buildPetBagReplyMarkup'), 'bag must have a dedicated reply markup builder');
+assert.ok(worker.includes('callback_data: `pet:use:${item.key}`'), 'bag item buttons must carry item use callbacks');
+assert.ok(worker.includes('function buildPetPurchaseNextReplyMarkup'), 'purchase complete must have a dedicated next-choice builder');
+
+for (const command of [
+  'cmdPetStatus', 'cmdPetDetails', 'cmdPetCoach', 'cmdPetIdentity', 'cmdPetAchievements', 'cmdPetSeason',
+  'cmdPetEvolve', 'cmdPetStreak', 'cmdPetProgress', 'cmdPetGear', 'cmdPetMissions', 'cmdPetBag',
+  'cmdPetEconomy', 'cmdPetBounties', 'cmdPetExpedition', 'cmdPetMarket', 'cmdPetShop',
+]) {
+  assert.ok(asyncBlock(command).includes('readTelegramPetPresentation('),
+    `${command} must preserve unavailable vs missing player state and expose a retry message`);
+}
+
+const mainButtons = petReplyMarkup().inline_keyboard.flat();
+assert.deepEqual(mainButtons.map((button) => button.text), ['🍖 Feed', '🎮 Play', '🧼 Clean', '😴 Sleep', '🏋️ Train', '⚔️ Adventure', '⏱ Activities', '⚙️ Management', '🧭 Coach', '📋 Details'], '/pet must expose care actions, guidance and the three primary navigation areas');
+assert.equal(mainButtons.find((button) => button.text.includes('Train'))?.callback_data, 'pet:train', 'Train must invoke the existing pet action callback');
+assert.equal(mainButtons.find((button) => button.text.includes('Activities'))?.callback_data, 'pet:activity', 'Activities must open timed activities');
+assert.equal(mainButtons.find((button) => button.text.includes('Management'))?.callback_data, 'pet:menu:management', 'Management must be reachable from /pet');
+for (const removed of ['Work', 'Events', 'Daily', 'Kaiju', 'Arena', 'Run', 'Claim', 'Cancel', 'How To Play', 'Leaderboard', 'Bag', 'Shop']) assert.ok(!mainButtons.some((button) => button.text.includes(removed)), `/pet main buttons must hide ${removed}`);
+
+const menuCases = [
+  ['Adventure', buildPetAdventureMenuReplyMarkup(), ['Moon Run', 'Pet Jobs', 'Random Events', 'Kaiju', 'Arena', 'Daily']],
+  ['Management', buildPetManagementMenuReplyMarkup(), ['Bag', 'Shop', 'Equipment', 'Trade']],
+  ['Progress', buildPetProgressMenuReplyMarkup(), ['Recommended Next Move', 'Details', 'Missions', 'Evolution', 'Personality', 'Memories', 'Achievements', 'Season Rewards', 'Leaderboard', 'Streak']],
+];
+for (const [name, markup, labels] of menuCases) {
+  const buttons = markup.inline_keyboard.flat();
+  for (const label of labels) assert.ok(buttons.some((button) => button.text.includes(label)), `${name} submenu must include ${label}`);
+  assert.ok(buttons.some((button) => button.callback_data === 'pet:back'), `${name} submenu must include Back navigation`);
+  for (const button of buttons.filter((entry) => entry.callback_data)) assert.ok(Buffer.byteLength(button.callback_data, 'utf8') <= 64, `${name} callback too long: ${button.callback_data}`);
+}
+for (const callback of ['pet:activity', 'pet:missions', 'pet:work', 'pet:event', 'pet:daily', 'pet:kaiju', 'pet:arena', 'pet:run', 'pet:shop', 'pet:bag']) assert.ok(worker.includes(callback), `existing command must remain reachable through ${callback}`);
+for (const obsolete of [
+  "text: '🌕 Pet Menu', callback_data: 'pet:bag'",
+  "text: 'Pet Menu', callback_data: 'pet:bag'",
+  "text: 'Back', callback_data: 'pet:bag'",
+  "text: 'Pet Status', callback_data: 'pet:bag'",
+  "text: 'Boss Cleared', callback_data: 'pet:bag'",
+]) assert.ok(!worker.includes(obsolete), `misleading navigation must be removed: ${obsolete}`);
+assert.ok(worker.includes("text: '🌕 Pet Status', callback_data: 'pet:back'"), 'Moon Run Pet Status must return to /pet');
+assert.ok(worker.includes("text: '⬅️ Adventure', callback_data: 'pet:menu:adventure'"), 'adventure features must navigate back to Adventure');
+const petReply = worker.slice(worker.indexOf('function petReplyMarkup()'), worker.indexOf('async function cmdPetMenu'));
+assert.ok(!statusFormatter.includes('??'), 'formatPetStatus must not contain placeholder question marks');
+assert.ok(!petReply.includes('??'), 'petReplyMarkup must not contain placeholder question marks');
+assert.ok(!worker.includes('??? Train'), 'telegram pet UI must not contain the old Train placeholder');
+
+const callbackBranch = worker.slice(worker.indexOf('if (update.callback_query)'), worker.indexOf('// Group-level events'));
+assert.ok(callbackBranch.includes("if (payload === 'back')") && callbackBranch.includes('cmdPetStatus(db, tok, chatId, telegramId)'), 'Back callbacks must return to the simplified /pet screen');
+for (const route of ["payload === 'menu:adventure'", "payload === 'menu:management'", "payload === 'menu:progress'", "payload === 'details'", "payload === 'missions'", "payload === 'activity'", "payload === 'equipment'", "payload === 'trade'", "payload.startsWith('identity:')", "payload === 'leaderboard'", "payload === 'streak'"]) {
+  assert.ok(callbackBranch.includes(route), `callback router must preserve grouped navigation route: ${route}`);
+}
+assert.ok(
+  callbackBranch.includes("const telegramId = String(query.from?.id || '');"),
+  'pet:adventure callback must use callback_query.from.id as telegramId'
+);
+assert.ok(
+  callbackBranch.includes("const chatId = String(query.message?.chat?.id || '');"),
+  'callback chat id must only be used for reply targeting'
+);
+assert.ok(
+  !callbackBranch.includes('query.message?.chat?.id || telegramId'),
+  'pet:adventure callback must not fall back to chat id when resolving telegram identity'
+);
+assert.ok(
+  callbackBranch.includes("await cmdPetRun(db, tok, chatId, telegramId, '', eventKey);"),
+  'pet:adventure callback must open the Pet Run Engine'
+);
+assert.ok(callbackBranch.includes("if (payload.startsWith('adventure:'))"), 'legacy adventure choice callbacks must still be recognized');
+assert.ok(!callbackBranch.includes('const adventureParts = adventurePayload.split(\':\');'), 'legacy adventure callbacks must not parse encounter keys into run ids');
+assert.ok(!callbackBranch.includes('await cmdPetAdventure(db, tok, chatId, telegramId, `${encounterKey}:${choice}`, eventKey);'), 'legacy adventure callbacks must not pass encounter keys to cmdPetRun');
+assert.ok(callbackBranch.includes("await cmdPetRun(db, tok, chatId, telegramId, '', eventKey);"), 'pet:run callback must open the run loop');
+assert.ok(callbackBranch.includes("if (payload === 'kaiju')"), 'pet:kaiju callback must open Kaiju Sticker Battle');
+assert.ok(callbackBranch.includes("if (payload.startsWith('kaiju:'))"), 'pet:kaiju:* callbacks must route Kaiju actions');
+assert.ok(callbackBranch.includes("await cmdPetKaiju(db, tok, chatId, telegramId, kaijuPayload, chatType, fromUser, eventKey);"), 'Kaiju callbacks must forward stable callback event keys and chat type');
+assert.ok(worker.includes('Card locked for <code>${escapeHtml(telegramId)}</code>. Waiting for the other player.'), 'Kaiju card lock waiting message must not reveal card names before both players lock');
+assert.ok(!worker.includes('Card locked: ${escapeHtml(getPetKaijuCard(cardKey)?.name || cardKey)}'), 'Kaiju waiting message must not leak selected card names');
+// Immutable choices and locked-card recovery are exercised with real SQLite
+// in moonpet-combat-sanity.test.mjs for both Mini App and Telegram entry points.
+assert.ok(worker.includes("score?.result === 'player2_win' && opponent.telegram_id === 'app'"), 'Kaiju solo app wins must render as an app win instead of a draw');
+assert.ok(worker.includes('roll=CASE WHEN roll IS NULL OR roll=0 THEN ? ELSE roll END'), 'Kaiju rolled category number must persist even when the default roll is 0');
+assert.ok(worker.includes("joinResult?.meta?.changes"), 'Kaiju join race handling must check update changes before announcing players');
+assert.ok(worker.includes('async function getFreshPetKaijuMatch'), 'Kaiju callbacks must expire stale matches before acting');
+assert.ok(worker.includes("WHERE match_id = ? AND status IN ('open', 'selecting') AND updated_at < datetime('now', ?)"), 'Kaiju stale callback handling must cancel expired open/selecting matches by match id');
+assert.ok(worker.includes('This Kaiju table expired. Tap Kaiju or run /petkaiju to start a fresh battle.'), 'Kaiju stale Join/Start/Card callbacks must return a clear expired-table message');
+assert.ok(worker.includes('const freshMatch = await getFreshPetKaijuMatch(db, args[0]);'), 'Kaiju join/cpu/card actions must read through the fresh match helper');
+assert.ok(worker.includes('const completionResult = await db.prepare'), 'Kaiju completion must capture the status update result before awarding');
+assert.ok(worker.includes("reason: duplicate ? 'already_completed'"), 'Kaiju duplicate finish attempts must return an already-completed result');
+assert.ok(worker.includes("if (saved?.status !== 'completed' ||"), 'Kaiju no-op completion must confirm persisted completed status before awarding');
+assert.ok(callbackBranch.includes('const stableRunEventKey = buildPetRunExtractEventKey(telegramId, runId);'), 'run extract callbacks must use stable run extract keys');
+assert.ok(callbackBranch.includes('const stableRunEventKey = buildPetRunStepEventKey(telegramId, runId, stepIndex, choiceKey);'), 'run step callbacks must use stable run step keys');
+assert.ok(callbackBranch.includes('await cmdPetRun(db, tok, chatId, telegramId, `${runId}:${choiceKey}`, stableRunEventKey, stepIndex);'), 'run step callbacks must pass the callback step index through to cmdPetRun');
+for (const call of [
+  "await cmdPetWork(db, tok, chatId, telegramId, '', eventKey);",
+  "await cmdPetWork(db, tok, chatId, telegramId, jobKey, eventKey);",
+  "await cmdPetBuy(db, tok, chatId, telegramId, itemKey, eventKey);",
+  "await cmdPetUse(db, tok, chatId, telegramId, itemKey, eventKey);",
+  "await cmdPetDaily(db, tok, chatId, telegramId, eventKey);",
+  "await cmdPetEvent(db, tok, chatId, telegramId, '', eventKey);",
+  "const eventParts = eventPayload.split(':');",
+  "const encounterKey = eventParts.join(':');",
+  "await cmdPetEvent(db, tok, chatId, telegramId, choice, encounterKey);",
+  "if (payload.startsWith('adventure:')) {",
+  "await cmdPetRun(db, tok, chatId, telegramId, '', eventKey);",
+  "await cmdPetExtract(db, tok, chatId, telegramId, runId, stableRunEventKey);",
+  "await cmdPetRun(db, tok, chatId, telegramId, runId, buildStablePetEventKey(['pet_run_push', telegramId, runId]));",
+  "await cmdPetRun(db, tok, chatId, telegramId, `${runId}:${choiceKey}`, stableRunEventKey, stepIndex);",
+]) {
+  assert.ok(callbackBranch.includes(call), `callback branch must include ${call}`);
+}
+
+const commandSwitch = worker.slice(worker.indexOf('switch (cmdBase)'), worker.indexOf('async function cmdGkStart'));
+assert.ok(
+  commandSwitch.includes("case 'petbuy':       await cmdPetBuy(db, tok, chatId, telegramId, argStr, stableEventKey); break;"),
+  '/petbuy text command must pass the Telegram message stableEventKey'
+);
+assert.ok(
+  commandSwitch.includes("case 'kaiju':        await cmdPetKaiju(db, tok, chatId, telegramId, argStr, chatType, fromUser, stableEventKey); break;"),
+  '/kaiju text command must open Telegram Kaiju battle with chat type'
+);
+
+const streakHelper = worker.slice(worker.indexOf('function updatePetStreakForAction'), worker.indexOf('async function savePetProfile'));
+assert.ok(streakHelper.includes('getPreviousPetDayKey(dayKey)'), 'pet streak helper must compare against yesterday');
+assert.ok(streakHelper.includes('pet.streak_days = currentStreak + 1'), 'pet streak helper must increment consecutive-day streaks');
+assert.ok(streakHelper.includes('pet.streak_days = 1'), 'pet streak helper must reset after missed days');
+
+
+assert.equal(normalizePetActivityType('sleep'), 'sleep', 'pet activities must normalize sleep');
+assert.equal(computePetActivityRewards('train', 8 * 3600).seconds, 2 * 3600, 'train activity rewards must cap at 2 hours');
+assert.ok(computePetActivityRewards('work', 30 * 60).rewards.moon_gold > computePetActivityRewards('work', 5 * 60).rewards.moon_gold, 'work rewards must scale by duration');
+assert.ok(formatPetActivityLine({ activity_type: 'sleep', started_at: new Date(Date.now() - 42 * 60 * 1000).toISOString() }).includes('sleep'), '/pet status must format active activity');
+for (const token of ['telegram_pet_activity_sessions', 'activity_type', 'started_at', 'ends_at', 'claimed_at', "status IN ('active', 'completed', 'cancelled', 'expired')", 'metadata', 'idx_telegram_pet_activity_one_active']) {
+  assert.ok(activityMigration.includes(token), `activity migration must include ${token}`);
+  assert.ok(schema.includes(token), `schema.sql must include ${token}`);
+}
+const activityStart = worker.slice(worker.indexOf('async function startPetActivitySession'), worker.indexOf('async function claimPetActivitySession'));
+assert.ok(activityStart.includes('getActivePetActivitySession'), 'start session must block a second active session');
+assert.ok(activityStart.includes('already_busy'), 'start session must return already_busy');
+assert.ok(activityStart.includes('getRecoverablePetActivitySession') && activityStart.includes('activity_claim_pending'), 'start session must not bypass an unsettled activity claim');
+const activityClaim = worker.slice(worker.indexOf('async function claimPetActivitySession'), worker.indexOf('async function cancelPetActivitySession'));
+assert.ok(activityClaim.includes("buildStablePetEventKey(['pet_activity_claim', telegramId, session.id])"), 'claim must use stable idempotency event key');
+assert.ok(activityClaim.includes("source: 'pet_activity'") && activityClaim.includes('awardPetReward(db'), 'activity claims must apply both XP caps through the unified authority');
+assert.ok(activityClaim.includes("event_type: 'activity_claim'"), 'claim must audit rewards in telegram_pet_events');
+assert.ok(activityClaim.includes('duplicate'), 'duplicate claim must not double-award');
+assert.ok(activityClaim.includes('const claimResult = await db.prepare'), 'activity claim must capture the session completion update');
+assert.ok(activityClaim.includes('if (!awarded.accepted)'), 'activity claims must return reward-authority rejection safely');
+assert.ok(activityClaim.includes("Number(claimResult?.meta?.changes || 0) !== 1"), 'activity rewards must require exactly one atomic session claim');
+assert.ok(activityClaim.includes("AND ends_at >= datetime(?, ?)"), 'activity session claims must reject rows that crossed the expiry boundary');
+assert.ok(activityClaim.indexOf('const claimResult = await db.prepare') < activityClaim.indexOf('awardPetReward(db'), 'activity session state must be atomically claimed before rewards are awarded');
+assert.ok(activityClaim.includes("claim_state: 'claiming'") && activityClaim.includes("claim_state: 'settled'"), 'activity claims must remain recoverable until reward settlement succeeds');
+assert.ok(activityClaim.includes('getRecoverablePetActivitySession'), 'activity claim retries must resume the persisted reward snapshot');
+assert.ok(activityClaim.indexOf('awardPetReward(db') < activityClaim.indexOf("claim_state: 'settled'"), 'activity claims must only become settled after reward issuance succeeds');
+assert.ok(activityClaim.includes('getPersistedPetActivityAward'), 'duplicate activity settlements must recover the original authoritative award');
+assert.ok(activityClaim.includes('authoritativeAward.rewards'), 'duplicate placeholders must not overwrite applied reward metadata');
+const activityCancel = worker.slice(worker.indexOf('async function cancelPetActivitySession'), worker.indexOf('async function processPetAction'));
+assert.ok(activityCancel.includes("SET status = 'cancelled'"), 'cancel must mark the session cancelled');
+assert.ok(!activityCancel.includes('telegram_pet_events'), 'cancel must not award rewards');
+assert.ok(callbackBranch.includes("payload === 'activity'"), 'Activity callback button must route');
+assert.ok(callbackBranch.includes("payload === 'claim'"), 'Claim callback button must route');
+assert.ok(callbackBranch.includes("payload === 'cancel'"), 'Cancel callback button must route');
+assert.ok(callbackBranch.includes("payload.startsWith('start:')"), 'activity start callback buttons must route');
+assert.ok(commandSwitch.includes("case 'petstart':"), '/petstart command must exist');
+assert.ok(commandSwitch.includes("case 'petclaim':"), '/petclaim command must exist');
+assert.ok(commandSwitch.includes("case 'petcancel':"), '/petcancel command must exist');
+assert.ok(commandSwitch.includes("case 'petactivity':"), '/petactivity command must exist');
+
+for (const table of ['telegram_pet_profiles', 'telegram_pet_events', 'telegram_pet_season_state', 'telegram_pet_mission_completions']) {
+  assert.ok(schema.includes(`CREATE TABLE IF NOT EXISTS ${table}`), `${table} must be in schema.sql`);
+  assert.ok(migration.includes(`CREATE TABLE IF NOT EXISTS ${table}`), `${table} must be in migration`);
+}
+
+for (const table of ['telegram_pet_runs', 'telegram_pet_run_steps', 'telegram_pet_effects']) {
+  assert.ok(schema.includes(`CREATE TABLE IF NOT EXISTS ${table}`), `${table} must be in schema.sql`);
+  assert.ok(runMigration.includes(`CREATE TABLE IF NOT EXISTS ${table}`), `${table} must be in Pet Run Engine migration`);
+}
+for (const table of ['telegram_pet_kaiju_matches', 'telegram_pet_kaiju_queue']) {
+  assert.ok(schema.includes(`CREATE TABLE IF NOT EXISTS ${table}`), `${table} must be in schema.sql`);
+  assert.ok(kaijuMigration.includes(`CREATE TABLE IF NOT EXISTS ${table}`), `${table} must be in Kaiju pet migration`);
+}
+assert.ok(kaijuMigration.includes('idx_telegram_pet_kaiju_one_open_chat'), 'Kaiju migration must enforce one active table per chat');
+assert.ok(kaijuMigration.includes('idx_telegram_pet_kaiju_queue_chat'), 'Kaiju migration must index the group queue');
+assert.ok(kaijuMigration.includes('idx_telegram_pet_kaiju_queue_one_waiting'), 'Kaiju migration must only enforce one waiting queue row per user/chat');
+assert.ok(!kaijuMigration.includes('UNIQUE(chat_id, telegram_id, status)'), 'Kaiju queue migration must not block repeat played history rows');
+assert.ok(worker.includes('INSERT OR IGNORE INTO telegram_pet_kaiju_queue'), 'Kaiju queue enqueue must remain compatible with a partial unique waiting index');
+for (const column of ['telegram_id', 'run_id', 'season_key', 'status', 'depth', 'max_depth', 'risk_level', 'unbanked_pet_xp', 'unbanked_moon_gold', 'unbanked_moon_crystals', 'unbanked_style_tokens', 'started_at', 'completed_at', 'updated_at']) {
+  assert.ok(runMigration.includes(column), `Pet Run Engine migration must include ${column}`);
+}
+assert.ok(runMigration.includes('idx_telegram_pet_runs_one_open'), 'Pet Run Engine migration must enforce one open run per user');
+assert.ok(runMigration.includes('UNIQUE(telegram_id, event_key)'), 'Pet Run Engine steps must dedupe callback event keys');
+assert.ok(runMigration.includes('UNIQUE(run_id, step_index)'), 'Pet Run Engine steps must dedupe each run step');
+
+assert.ok(schema.includes('telegram_pet_notification_settings'), 'schema.sql must include telegram_pet_notification_settings');
+assert.ok(notificationsMigration.includes('telegram_pet_notification_settings'), 'notifications migration must create telegram_pet_notification_settings');
+assert.ok(notificationsMigration.includes('idx_telegram_pet_notification_settings_due'), 'notifications migration must add the notification index');
+
+for (const column of ['moon_gold', 'moon_crystals', 'style_tokens', 'equipped_food', 'equipped_toy', 'equipped_outfit']) {
+  assert.ok(schema.includes(column), `schema.sql must include ${column}`);
+  assert.ok(economyMigration.includes(`ADD COLUMN ${column}`), `economy migration must add ${column}`);
+}
+
+for (const command of ["case 'pet':", "case 'adopt':", "case 'feed':", "case 'play':", "case 'clean':", "case 'sleep':", "case 'train':", "case 'petshop':", "case 'petbag':", "case 'petbuy':", "case 'petuse':", "case 'petwork':", "case 'petdaily':", "case 'petevent':", "case 'pettrade':", "case 'petkaiju':", "case 'kaiju':", "case 'petrun':", "case 'petextract':", "case 'petadventure':", "case 'petnotify':", "case 'petleaderboard':"]) {
+  assert.ok(worker.includes(command), `Telegram bot command ${command} must exist`);
+}
+
+assert.deepEqual(PET_REPEAT_REWARD_RULES.event, { full_rewarded: 6, reduced_rewarded: 10, reduced_multiplier: 0.5 }, 'Event repeat budget must remain 6 full and 4 half rewards');
+assert.deepEqual(PET_REPEAT_REWARD_RULES.kaiju, { full_rewarded: 5, reduced_rewarded: 10, reduced_multiplier: 0.5 }, 'Kaiju repeat budget must remain 5 full and 5 half rewards');
+for (const [mode, slot, expected] of [
+  ['event', 1, 1], ['event', 6, 1], ['event', 7, 0.5], ['event', 10, 0.5], ['event', 11, 0],
+  ['kaiju', 1, 1], ['kaiju', 5, 1], ['kaiju', 6, 0.5], ['kaiju', 10, 0.5], ['kaiju', 11, 0],
+]) {
+  assert.equal(getPetRepeatRewardMultiplier(mode, slot), expected, `${mode} slot ${slot} must use the correct reward tier`);
+}
+assert.deepEqual(scalePetRewards({ pet_xp: 21, moon_gold: 9, style_tokens: 1, happiness: 5 }, 0.5), { pet_xp: 10, moon_gold: 4, style_tokens: 0, happiness: 2 }, 'half rewards must floor every progression/currency reward');
+assert.deepEqual(scalePetRewards({ pet_xp: 21, moon_gold: 9, style_tokens: 1, happiness: 5 }, 0), { pet_xp: 0, moon_gold: 0, style_tokens: 0, happiness: 0 }, 'zero-tier repeat play must award no progression or currency');
+
+assert.equal(getPetHighLevelGearXpMultiplier({ pet_xp: 46240 }), 1, 'level 35 gear XP stays at 100%');
+assert.equal(getPetHighLevelGearXpMultiplier({ pet_xp: 49000 }), 0.6, 'level 36 gear XP tapers to 60%');
+assert.equal(getPetHighLevelGearXpMultiplier({ pet_xp: 96040 }), 0.6, 'level 50 gear XP stays at 60%');
+assert.equal(getPetHighLevelGearXpMultiplier({ pet_xp: 100000 }), 0.35, 'level 51 gear XP tapers to 35%');
+const highLevelGearRewards = { pet_xp: 6, moon_gold: 0, moon_crystals: 0, style_tokens: 0 };
+applyPetItemActionBonuses({ pet_xp: 49000, equipped_outfit: 'moon_armor' }, 'feed', { hunger: -28, energy: 4 }, highLevelGearRewards);
+assert.equal(highLevelGearRewards.pet_xp, 9, 'only the +5 gear bonus is tapered at level 36; base action XP remains 6');
+assert.equal(highLevelGearRewards.moon_gold, 1, 'gear currency utility must not be tapered');
+
+for (const token of ['telegram_pet_repeat_reward_slots', 'telegram_id', 'day_key', 'mode', 'claimed_count', 'PRIMARY KEY (telegram_id, day_key, mode)']) {
+  assert.ok(repeatRewardMigration.includes(token), `repeat reward migration must include ${token}`);
+  assert.ok(schema.includes(token), `schema.sql must include ${token}`);
+}
+
+class RepeatReservationDb {
+  constructor(energy = {}) {
+    this.energy = new Map(Object.entries(energy));
+    this.events = new Map();
+    this.counters = new Map();
+    this.transaction = Promise.resolve();
+  }
+
+  prepare(sql) {
+    return {
+      bind: (...args) => ({
+        sql,
+        args,
+        first: async () => {
+          const row = this.events.get(`${args[0]}:${args[1]}`);
+          return row ? {
+            id: row.id,
+            pet_id: row.pet_id,
+            status: row.status,
+            reason: row.reason,
+            day_key: row.day_key,
+            week_key: row.week_key,
+            season_key: row.season_key,
+          } : null;
+        },
+      }),
+    };
+  }
+
+  async batch(statements) {
+    const execute = async () => {
+      const results = [];
+      for (const statement of statements) {
+        const { sql, args } = statement;
+        if (sql.includes('INSERT OR IGNORE INTO telegram_pet_events')) {
+          const [id, petId, telegramId, , eventKey, seasonKey, dayKey, weekKey] = args;
+          const eventMapKey = `${telegramId}:${eventKey}`;
+          const kaiju = sql.includes('WHERE EXISTS (SELECT 1 FROM telegram_pet_profiles');
+          const energyCost = kaiju ? Number(args[10]) : 0;
+          if (!this.events.has(eventMapKey) && (!kaiju || Number(this.energy.get(String(telegramId)) || 0) >= energyCost)) {
+            this.events.set(eventMapKey, {
+              id,
+              pet_id: String(petId || '') || null,
+              telegram_id: String(telegramId),
+              status: 'pending',
+              reason: 'repeat_reward_pending',
+              day_key: dayKey,
+              week_key: weekKey,
+              season_key: seasonKey,
+            });
+            results.push({ meta: { changes: 1 }, results: [] });
+          } else {
+            results.push({ meta: { changes: 0 }, results: [] });
+          }
+        } else if (sql.includes('SET energy = energy - ?')) {
+          const [cost, telegramId, minimum, reservationId] = args;
+          const event = [...this.events.values()].find((row) => row.id === reservationId && row.status === 'pending');
+          const current = Number(this.energy.get(String(telegramId)) || 0);
+          const changed = Boolean(event && current >= Number(minimum));
+          if (changed) this.energy.set(String(telegramId), current - Number(cost));
+          results.push({ meta: { changes: changed ? 1 : 0 }, results: [] });
+        } else if (sql.includes('INSERT INTO telegram_pet_repeat_reward_slots')) {
+          const [telegramId, dayKey, mode, reservationId] = args;
+          const event = [...this.events.values()].find((row) => row.id === reservationId && row.status === 'pending');
+          if (!event) {
+            results.push({ meta: { changes: 0 }, results: [] });
+          } else {
+            const counterKey = `${telegramId}:${dayKey}:${mode}`;
+            const count = Number(this.counters.get(counterKey) || 0) + 1;
+            this.counters.set(counterKey, count);
+            results.push({ meta: { changes: 1 }, results: [{ claimed_count: count }] });
+          }
+        } else if (sql.includes("SET reason = 'repeat_reward_slot:'")) {
+          const [telegramId, dayKey, mode, suffix, reservationId] = args;
+          const event = [...this.events.values()].find((row) => row.id === reservationId && row.status === 'pending');
+          if (!event) {
+            results.push({ meta: { changes: 0 }, results: [] });
+          } else {
+            event.reason = `repeat_reward_slot:${this.counters.get(`${telegramId}:${dayKey}:${mode}`)}${suffix}`;
+            results.push({
+              meta: { changes: 1 },
+              results: [{
+                id: event.id,
+                pet_id: event.pet_id,
+                status: event.status,
+                reason: event.reason,
+                day_key: event.day_key,
+                week_key: event.week_key,
+                season_key: event.season_key,
+              }],
+            });
+          }
+        } else {
+          throw new Error(`Unexpected reservation SQL in test: ${sql}`);
+        }
+      }
+      return results;
+    };
+    const result = this.transaction.then(execute);
+    this.transaction = result.catch(() => {});
+    return result;
+  }
+}
+
+function reserveFixture(db, player, mode, eventKey, energyCost = 0) {
+  return reservePetRepeatRewardEvent(db, {
+    telegram_id: player,
+    pet_id: mode === 'event' ? `pet:${player}:season:1` : undefined,
+    event_type: mode === 'kaiju' ? 'kaiju_battle' : 'random_event',
+    event_key: eventKey,
+    season_key: 'season',
+    day_key: '2026-08-10',
+    week_key: '2026-W33',
+    mode,
+    energy_cost: energyCost,
+  });
+}
+
+const eventReservationDb = new RepeatReservationDb();
+const concurrentEventReservations = await Promise.all(Array.from({ length: 12 }, (_, index) => reserveFixture(eventReservationDb, 'event-player', 'event', `event-${index}`)));
+assert.deepEqual(concurrentEventReservations.map((claim) => claim.claimed_slot).sort((a, b) => a - b), Array.from({ length: 12 }, (_, index) => index + 1), 'concurrent Event reservations must receive unique atomic slots');
+await assert.rejects(
+  reservePetRepeatRewardEvent(new RepeatReservationDb(), {
+    telegram_id: 'missing-authority',
+    event_type: 'random_event',
+    event_key: 'missing-authority-event',
+    season_key: 'season',
+    day_key: '2026-08-10',
+    week_key: '2026-W33',
+    mode: 'event',
+  }),
+  /pet_repeat_reward_authority_required/,
+  'new Event reservations must not be created without pet authority',
+);
+
+const kaijuReservationDb = new RepeatReservationDb({ 'kaiju-player': 20 });
+const concurrentKaijuReservations = await Promise.all(Array.from({ length: 12 }, (_, index) => reserveFixture(kaijuReservationDb, 'kaiju-player', 'kaiju', `kaiju-${index}`, 1)));
+assert.deepEqual(concurrentKaijuReservations.map((claim) => claim.claimed_slot).sort((a, b) => a - b), Array.from({ length: 12 }, (_, index) => index + 1), 'concurrent Kaiju reservations must receive unique atomic slots');
+assert.equal(kaijuReservationDb.energy.get('kaiju-player'), 8, 'each successful Kaiju reservation must atomically pay exactly one Energy cost');
+
+const duplicateKaijuDb = new RepeatReservationDb({ duplicate: 10 });
+const duplicateKaijuClaims = await Promise.all(Array.from({ length: 8 }, () => reserveFixture(duplicateKaijuDb, 'duplicate', 'kaiju', 'same-result', 4)));
+assert.equal(duplicateKaijuDb.counters.get('duplicate:2026-08-10:kaiju'), 1, 'duplicate Kaiju callbacks must consume only one reward slot');
+assert.equal(duplicateKaijuDb.energy.get('duplicate'), 6, 'duplicate Kaiju callbacks must pay Energy only once');
+assert.equal(duplicateKaijuClaims.filter((claim) => claim.resumed === false).length, 1, 'only one duplicate Kaiju callback may create the reservation');
+assert.ok(duplicateKaijuClaims.every((claim) => claim.claimed_slot === 1), 'duplicate Kaiju callbacks must resume the same persisted reward slot');
+
+const insufficientKaijuDb = new RepeatReservationDb({ broke: 3 });
+const insufficientKaiju = await reserveFixture(insufficientKaijuDb, 'broke', 'kaiju', 'unaffordable', 4);
+assert.deepEqual(insufficientKaiju, { claimed: false, reason: 'insufficient_energy', reservation_id: null }, 'Kaiju must reserve no slot and authorize no rewards when Energy cannot be claimed');
+assert.equal(insufficientKaijuDb.counters.size, 0, 'an unaffordable Kaiju result must not consume a reward slot');
+
+class SqliteD1Statement {
+  constructor(adapter, sql, args = []) {
+    this.adapter = adapter;
+    this.sql = sql;
+    this.args = args;
+  }
+
+  bind(...args) {
+    return new SqliteD1Statement(this.adapter, this.sql, args);
+  }
+
+  async first() {
+    if (this.adapter.failReadSqlPattern && this.adapter.failReadSqlPattern.test(this.sql)) {
+      this.adapter.failReadSqlPattern = null;
+      return { success: false, error: 'simulated_d1_read_failure' };
+    }
+    const row = this.adapter.database.prepare(this.sql).get(...this.args) || null;
+    if (this.adapter.afterFirst) await this.adapter.afterFirst(this.sql, this.args, row);
+    return row;
+  }
+
+  async all() {
+    if (this.adapter.failReadSqlPattern && this.adapter.failReadSqlPattern.test(this.sql)) {
+      this.adapter.failReadSqlPattern = null;
+      return { success: false, error: 'simulated_d1_read_failure' };
+    }
+    return { results: this.adapter.database.prepare(this.sql).all(...this.args) };
+  }
+
+  async run() {
+    if (typeof this.adapter.beforeRun === 'function') await this.adapter.beforeRun(this.sql, this.args);
+    const result = this.adapter.database.prepare(this.sql).run(...this.args);
+    return { results: [], meta: { changes: Number(result.changes || 0) } };
+  }
+}
+
+class SqliteD1 {
+  constructor() {
+    this.database = new DatabaseSync(':memory:');
+    this.database.exec(schema);
+    this.database.exec(fs.readFileSync(new URL('../workers/moonboys-api/migrations/048_telegram_pet_player_expansion.sql', import.meta.url), 'utf8'));
+    for (const migration of ['058_telegram_pet_season_completion.sql', '061_moonpet_season_economy_calibration.sql']) {
+      this.database.exec(fs.readFileSync(new URL('../workers/moonboys-api/migrations/' + migration, import.meta.url), 'utf8'));
+    }
+    this.batchCount = 0;
+    this.failBatchNumber = null;
+    this.failBatchSqlPattern = null;
+    this.beforeBatchSqlPattern = null;
+    this.beforeBatchSqlCallback = null;
+    this.beforeRun = null;
+    this.failReadSqlPattern = null;
+  }
+
+  prepare(sql) {
+    return new SqliteD1Statement(this, sql);
+  }
+
+  failOnBatch(batchNumber) {
+    this.failBatchNumber = batchNumber;
+  }
+
+  failBatchOnSql(pattern) {
+    this.failBatchSqlPattern = pattern;
+  }
+
+  beforeBatchSql(pattern, callback) {
+    this.beforeBatchSqlPattern = pattern;
+    this.beforeBatchSqlCallback = callback;
+  }
+
+  failReadOnSql(pattern) {
+    this.failReadSqlPattern = pattern;
+  }
+
+  async batch(statements) {
+    this.batchCount += 1;
+    if (this.batchCount === this.failBatchNumber) {
+      this.failBatchNumber = null;
+      throw new Error('simulated_d1_batch_failure');
+    }
+    this.database.exec('BEGIN IMMEDIATE');
+    try {
+      const results = statements.map((statement) => {
+        const prepared = this.database.prepare(statement.sql);
+        if (this.beforeBatchSqlPattern && this.beforeBatchSqlPattern.test(statement.sql)) {
+          const callback = this.beforeBatchSqlCallback;
+          this.beforeBatchSqlPattern = null;
+          this.beforeBatchSqlCallback = null;
+          if (typeof callback === 'function') callback(statement.sql, statement.args);
+        }
+        if (this.failBatchSqlPattern && this.failBatchSqlPattern.test(statement.sql)) {
+          this.failBatchSqlPattern = null;
+          throw new Error('simulated_d1_batch_failure');
+        }
+        if (/\bRETURNING\b/i.test(statement.sql)) {
+          const rows = prepared.all(...statement.args);
+          return { results: rows, meta: { changes: rows.length } };
+        }
+        const result = prepared.run(...statement.args);
+        return { results: [], meta: { changes: Number(result.changes || 0) } };
+      });
+      this.database.exec('COMMIT');
+      return results;
+    } catch (error) {
+      this.database.exec('ROLLBACK');
+      throw error;
+    }
+  }
+}
+
+function seedRepeatRewardPlayer(telegramId, energy = 70, lastDecayAt = new Date().toISOString(), options = {}) {
+  const db = new SqliteD1();
+  const petId = `pet:${telegramId}:pet-s2026-003:1`;
+  db.database.prepare('INSERT INTO telegram_users (telegram_id, xp, level) VALUES (?, 0, 1)').run(telegramId);
+  db.database.prepare(`
+    INSERT INTO telegram_pet_profiles
+      (telegram_id, pet_xp, level, happiness, energy, last_decay_at)
+    VALUES (?, 0, 1, 70, ?, ?)
+  `).run(telegramId, energy, lastDecayAt);
+  db.database.prepare(`
+    INSERT INTO telegram_seasons (name, start_date, end_date, is_active)
+    VALUES ('Repeat recovery test', '2026-01-01T00:00:00.000Z', '2027-01-01T00:00:00.000Z', 1)
+  `).run();
+  if (options.seedAuthority !== false) {
+    db.database.prepare(`INSERT INTO telegram_pet_season_slots
+      (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status)
+      VALUES (?, ?, 'pet-s2026-003', 1, 'free', 'profile_insert', 0, 'active')`).run(petId, telegramId);
+    db.database.prepare(`INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key)
+      VALUES (?, ?, 'pet-s2026-003')`).run(telegramId, petId);
+    db.database.prepare(`INSERT INTO telegram_pet_instances
+      (pet_id, telegram_id, season_key, slot_number, pet_xp, level, happiness, energy, last_decay_at, source_profile_updated_at, status)
+      VALUES (?, ?, 'pet-s2026-003', 1, 0, 1, 70, ?, ?, 'fixture', 'active')`).run(petId, telegramId, energy, lastDecayAt);
+  }
+  return db;
+}
+
+for (const [label, query] of [
+  ['scope', /FROM telegram_pet_active_slots a/],
+  ['evolution', /FROM telegram_pet_evolutions_by_pet e/],
+  ['season XP', /SELECT season_xp FROM telegram_pet_season_state/],
+]) {
+  const db = seedRepeatRewardPlayer(`season-identity-${label}`);
+  db.failReadOnSql(query);
+  await assert.rejects(__petMediaTestHooks.getPetSeasonRewardState(db, `season-identity-${label}`),
+    /(?:moonpet_identity|pet_state)_read_unavailable/,
+    `a failed ${label} read must not turn the Season evolution bonus into zero`);
+  db.failReadOnSql(query);
+  await assert.rejects(__petMediaTestHooks.claimPetSeasonReward(db, `season-identity-${label}`, 'street'),
+    /(?:moonpet_identity|pet_state)_read_unavailable/,
+    `a failed ${label} read must prevent a Season reward from using a zero evolution bonus`);
+}
+
+{
+  const telegramId = 'season-saved-reward';
+  const db = seedRepeatRewardPlayer(telegramId);
+  const season = (await __petMediaTestHooks.getPetSeasonRewardState(db, telegramId)).season;
+  db.database.prepare('INSERT INTO telegram_pet_season_state (telegram_id, season_key, season_xp) VALUES (?, ?, 250)')
+    .run(telegramId, season.key);
+  db.beforeRun = (sql) => {
+    if (sql.includes('INSERT OR IGNORE INTO telegram_pet_season_reward_claims')) {
+      db.failReadOnSql(/FROM telegram_pet_active_slots a/);
+    }
+  };
+  const result = await __petMediaTestHooks.claimPetSeasonReward(db, telegramId, 'street', 'season-saved-reward:street');
+  assert.equal(result.accepted, true, 'a failed post-award read must not conceal a saved Season reward');
+  assert.ok(result.state.tiers.find((tier) => tier.tier_id === 'street').claimed_at,
+    'the fallback claim view must not offer an already-awarded tier again');
+}
+
+const bossCommand = asyncBlock('cmdPetWeeklyBoss');
+assert.ok(bossCommand.includes('telegram_pet_boss_guidance_read_failed') &&
+  bossCommand.includes('await sendTelegramPetReply(tok, chatId, bossText'),
+  'a completed boss attack must retain its result when guidance cannot be read');
+
+function seedAndSwitchRepeatRewardPet(db, telegramId, slotNumber = 2, energy = 70) {
+  const petId = `pet:${telegramId}:pet-s2026-003:${slotNumber}`;
+  db.database.prepare(`INSERT INTO telegram_pet_season_slots
+    (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status)
+    VALUES (?, ?, 'pet-s2026-003', ?, 'arcade_xp', ?, 500, 'active')`).run(petId, telegramId, slotNumber, `fixture:slot:${slotNumber}`);
+  db.database.prepare(`INSERT INTO telegram_pet_instances
+    (pet_id, telegram_id, season_key, slot_number, pet_xp, level, happiness, energy, last_decay_at, source_profile_updated_at, status)
+    VALUES (?, ?, 'pet-s2026-003', ?, 0, 1, 70, ?, CURRENT_TIMESTAMP, 'fixture', 'active')`).run(petId, telegramId, slotNumber, energy);
+  db.database.prepare(`INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key)
+    VALUES (?, ?, 'pet-s2026-003')
+    ON CONFLICT(telegram_id) DO UPDATE SET pet_id=excluded.pet_id, season_key=excluded.season_key, updated_at=CURRENT_TIMESTAMP`)
+    .run(telegramId, petId);
+  return petId;
+}
+
+async function seedMiniAppIdentityPlayer(telegramId, { petName = 'Cipher', evolutionStage = 1, speciesId = 'neon_raccoon' } = {}) {
+  const db = seedRepeatRewardPlayer(telegramId, 100, '2026-08-15T00:00:00.000Z');
+  const phase = evolutionStage >= 2 ? 'adult' : 'young';
+  const stageLabel = evolutionStage >= 2 ? 'cyber_moonpet' : 'street_moonpet';
+  await __petMediaTestHooks.createMoonEggLifecycle(db, telegramId, `fixture:${telegramId}:egg`);
+  db.database.prepare(`UPDATE telegram_pet_profiles
+    SET pet_name=?, species=?, stage=?, updated_at=CURRENT_TIMESTAMP
+    WHERE telegram_id=?`).run(petName, speciesId, phase, telegramId);
+  db.database.prepare(`UPDATE telegram_pet_instances
+    SET pet_name=?, species=?, stage=?, source_profile_updated_at='fixture', updated_at=CURRENT_TIMESTAMP
+    WHERE telegram_id=?`).run(petName, speciesId, stageLabel, telegramId);
+  db.database.prepare(`UPDATE telegram_pet_lifecycle_by_pet
+    SET phase=?, species_id=?, palette_id='fixture_palette', marking_id='spray_mask', eye_style='signal_glow',
+        temperament='bold', innate_traits_json='["collector"]', incubation_progress=12,
+        incubation_json='{"play":1,"care":1,"music":1}', hatched_at=CURRENT_TIMESTAMP,
+        adult_at=CASE WHEN ? >= 2 THEN CURRENT_TIMESTAMP ELSE adult_at END,
+        updated_at=CURRENT_TIMESTAMP
+    WHERE telegram_id=?`).run(phase, speciesId, evolutionStage, telegramId);
+  for (const [evolutionId, stage] of [['moon_egg', 0], ['street_moonpet', 1], ...(evolutionStage >= 2 ? [['cyber_moonpet', 2]] : [])]) {
+    db.database.prepare(`INSERT INTO telegram_pet_evolutions
+      (telegram_id, evolution_id, stage, unlock_event_key, materials_consumed)
+      VALUES (?, ?, ?, ?, 1)`).run(telegramId, evolutionId, stage, `fixture:${telegramId}:${evolutionId}`);
+  }
+  return db;
+}
+
+function buildSignedTelegramAuth(telegramId, botToken = '123456:test-token') {
+  const auth = {
+    id: String(telegramId),
+    first_name: 'Audit',
+    username: `audit_${telegramId}`,
+    auth_date: String(Math.floor(Date.now() / 1000)),
+  };
+  const checkString = Object.entries(auth)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => `${key}=${value}`)
+    .join('\n');
+  const secret = createHash('sha256').update(botToken).digest();
+  return {
+    ...auth,
+    hash: createHmac('sha256', secret).update(checkString).digest('hex'),
+  };
+}
+
+function seedIdentityAuditPet(db, telegramId, slotNumber = 1) {
+  const petId = `pet:${telegramId}:pet-s2026-003:${slotNumber}`;
+  db.database.prepare('INSERT INTO telegram_users (telegram_id, xp, level) VALUES (?, 0, 1)').run(telegramId);
+  db.database.prepare(`INSERT INTO telegram_pet_profiles
+    (telegram_id, pet_name, pet_xp, level, energy, hunger, happiness, cleanliness, health)
+    VALUES (?, 'Audit Pet', 100, 2, 80, 0, 80, 80, 100)`).run(telegramId);
+  db.database.prepare(`INSERT INTO telegram_pet_season_slots
+    (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status)
+    VALUES (?, ?, 'pet-s2026-003', ?, 'free', ?, 0, 'active')`).run(petId, telegramId, slotNumber, `audit:${slotNumber}`);
+  db.database.prepare(`INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key)
+    VALUES (?, ?, 'pet-s2026-003')`).run(telegramId, petId);
+  db.database.prepare(`INSERT INTO telegram_pet_instances
+    (pet_id, telegram_id, season_key, slot_number, pet_name, pet_xp, level, energy, hunger, happiness, cleanliness, health, source_profile_updated_at, status)
+    VALUES (?, ?, 'pet-s2026-003', ?, 'Audit Pet', 100, 2, 80, 0, 80, 80, 100, 'fixture', 'active')`).run(petId, telegramId, slotNumber);
+  return petId;
+}
+
+function identityAuditCounts(db) {
+  const counts = {};
+  for (const table of [
+    'telegram_pet_memories',
+    'telegram_pet_personality_traits',
+    'telegram_pet_boss_victories',
+    'telegram_pet_identity_events',
+    'telegram_pet_identity_analytics',
+    'telegram_pet_achievements',
+  ]) {
+    counts[table] = db.database.prepare(`SELECT COUNT(*) AS count FROM ${table}`).get().count;
+  }
+  return counts;
+}
+
+const stageOneMiniAppDb = await seedMiniAppIdentityPlayer('mini-stage-one', { petName: 'Cipher', evolutionStage: 1 });
+const stageOneMiniAppState = await buildPetMiniAppState(stageOneMiniAppDb, 'mini-stage-one', '123456:test-token');
+assert.equal(stageOneMiniAppState.pet.pet_name, 'UNKNOWN', 'Mini App state must keep player-facing pet_name masked before Stage 3');
+assert.equal(stageOneMiniAppState.pet.display_name, 'UNKNOWN', 'Mini App state must still mask the unrevealed identity text');
+assert.equal(stageOneMiniAppState.pet.callsign, null, 'Mini App state must keep the stored callsign internal before Stage 3');
+assert.equal(stageOneMiniAppState.pet.art_identity_id, null, 'Mini App state must not expose the internal art identity before Stage 2');
+assert.equal(stageOneMiniAppState.lifecycle.art_identity_id, null, 'Mini App lifecycle must not expose the internal art identity before Stage 2');
+
+const stageTwoMiniAppDb = await seedMiniAppIdentityPlayer('mini-stage-two', { petName: 'Nova', evolutionStage: 2 });
+const stageTwoMiniAppState = await buildPetMiniAppState(stageTwoMiniAppDb, 'mini-stage-two', '123456:test-token');
+assert.equal(stageTwoMiniAppState.pet.pet_name, 'UNKNOWN', 'Stage-2 Mini App state must keep player-facing pet_name masked');
+assert.equal(stageTwoMiniAppState.pet.display_name, 'UNKNOWN', 'Stage-2 Mini App state must still mask the identity text');
+assert.equal(stageTwoMiniAppState.pet.callsign, null, 'Stage-2 Mini App state must keep the stored callsign internal');
+assert.equal(stageTwoMiniAppState.pet.art_identity_id, 'neon_raccoon', 'Stage-2 Mini App state must expose the internal art identity needed for art routing');
+assert.equal(stageTwoMiniAppState.lifecycle.art_identity_id, 'neon_raccoon', 'Stage-2 lifecycle state must expose the internal art identity needed for art routing');
+
+const stageThreeMiniAppDb = await seedMiniAppIdentityPlayer('mini-stage-three', { petName: 'Nova', evolutionStage: 2 });
+stageThreeMiniAppDb.database.prepare(`INSERT INTO telegram_pet_evolutions
+  (telegram_id, evolution_id, stage, unlock_event_key, materials_consumed)
+  VALUES ('mini-stage-three', 'elite_moonpet', 3, 'fixture:mini-stage-three:elite_moonpet', 1)`).run();
+const stageThreeMiniAppState = await buildPetMiniAppState(stageThreeMiniAppDb, 'mini-stage-three', '123456:test-token');
+assert.equal(stageThreeMiniAppState.pet.pet_name, 'F1 EDDY', 'Stage-3 Mini App state must reveal canonical identity in pet_name');
+assert.equal(stageThreeMiniAppState.pet.display_name, 'F1 EDDY', 'Stage-3 Mini App state must reveal canonical identity text');
+assert.equal(stageThreeMiniAppState.pet.callsign, 'Nova', 'Stage-3 Mini App state must expose the stored callsign separately from canonical identity');
+
+const activityIdentityDb = await seedMiniAppIdentityPlayer('activity-identity', { petName: 'Activity Cipher', evolutionStage: 2 });
+seedAcceptedDailyPetEvent(activityIdentityDb, 'activity-identity', 'activity-identity:train', 18, 4, '2026-08-15');
+const activityIdentityResponse = await moonboysApiWorker.fetch(
+  new Request('https://example.com/telegram-pets/activity?limit=5'),
+  { DB: activityIdentityDb, TELEGRAM_BOT_TOKEN: '123456:test-token' },
+);
+assert.equal(activityIdentityResponse.status, 200, 'activity route must return successfully for seeded regression coverage');
+const activityIdentityBody = await activityIdentityResponse.json();
+assert.equal(activityIdentityBody.items[0].stage, 'secret_bot', 'an unattributed legacy event must not inherit the current pet evolution');
+assert.equal(activityIdentityBody.items[0].display_name, 'UNKNOWN', 'activity route must keep the Stage-2 identity text masked');
+
+const identityAuditDb = new SqliteD1();
+const identityAuditPet = seedIdentityAuditPet(identityAuditDb, '9001001', 1);
+const otherAuditPet = seedIdentityAuditPet(identityAuditDb, '9002002', 1);
+const switchedIdentityAuditPet = 'pet:9001001:pet-s2026-003:3';
+const archivedIdentityAuditPet = 'pet:9001001:pet-s2026-002:2';
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_season_slots
+  (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status)
+  VALUES (?, '9001001', 'pet-s2026-003', 3, 'arcade_xp', 'switch-fixture', 0, 'active')`).run(switchedIdentityAuditPet);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_instances
+  (pet_id, telegram_id, season_key, slot_number, pet_name, pet_xp, level, energy, hunger, happiness, cleanliness, health, source_profile_updated_at, status)
+  VALUES (?, '9001001', 'pet-s2026-003', 3, 'Switched Audit Pet', 360, 4, 85, 4, 84, 84, 96, 'fixture', 'active')`).run(switchedIdentityAuditPet);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_season_slots
+  (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status)
+  VALUES (?, '9001001', 'pet-s2026-002', 2, 'free', 'archived-fixture', 0, 'archived')`).run(archivedIdentityAuditPet);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_instances
+  (pet_id, telegram_id, season_key, slot_number, pet_name, pet_xp, level, energy, hunger, happiness, cleanliness, health, source_profile_updated_at, status)
+  VALUES (?, '9001001', 'pet-s2026-002', 2, 'Archived Audit Pet', 240, 3, 70, 5, 75, 75, 95, 'fixture', 'archived')`).run(archivedIdentityAuditPet);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_memories
+  (pet_id, telegram_id, season_key, first_run_at, total_bosses_defeated, milestones)
+  VALUES (?, '9001001', 'pet-s2026-003', '2026-08-21T00:00:00Z', 1, '["first_run"]')`).run(identityAuditPet);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_memories
+  (pet_id, telegram_id, season_key, first_run_at, first_boss_id, favourite_activity, total_bosses_defeated, milestones)
+  VALUES (?, '9001001', 'pet-s2026-003', '2026-08-22T00:00:00Z', 'switch_boss', 'Care', 4, '["switched_first_run"]')`).run(switchedIdentityAuditPet);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_memories
+  (pet_id, telegram_id, season_key, first_run_at, first_boss_id, favourite_activity, total_bosses_defeated, milestones)
+  VALUES (?, '9001001', 'pet-s2026-002', '2026-07-21T00:00:00Z', 'archive_boss', 'Exploration', 2, '["archived_first_run"]')`).run(archivedIdentityAuditPet);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_personality_traits
+  (pet_id, telegram_id, season_key, trait_id, progress)
+  VALUES (?, '9001001', 'pet-s2026-003', 'curious', 2)`).run(identityAuditPet);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_personality_traits
+  (pet_id, telegram_id, season_key, trait_id, progress)
+  VALUES (?, '9001001', 'pet-s2026-003', 'loyal', 18)`).run(switchedIdentityAuditPet);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_personality_traits
+  (pet_id, telegram_id, season_key, trait_id, progress)
+  VALUES (?, '9001001', 'pet-s2026-002', 'explorer', 16)`).run(archivedIdentityAuditPet);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_boss_victories
+  (pet_id, telegram_id, season_key, boss_id, victories)
+  VALUES (?, '9001001', 'pet-s2026-003', 'alley_king', 1)`).run(identityAuditPet);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_boss_victories
+  (pet_id, telegram_id, season_key, boss_id, victories)
+  VALUES (?, '9001001', 'pet-s2026-003', 'switch_boss', 4)`).run(switchedIdentityAuditPet);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_boss_victories
+  (pet_id, telegram_id, season_key, boss_id, victories)
+  VALUES (?, '9001001', 'pet-s2026-002', 'archive_boss', 2)`).run(archivedIdentityAuditPet);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_identity_events
+  (event_id, pet_id, telegram_id, season_key, event_key, event_kind)
+  VALUES ('identity-audit-event', ?, '9001001', 'pet-s2026-003', 'identity:audit:event', 'memory')`).run(identityAuditPet);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_identity_analytics
+  (analytics_id, pet_id, telegram_id, season_key, event_type, milestone_id)
+  VALUES ('identity-audit-analytics', ?, '9001001', 'pet-s2026-003', 'memory_milestone', 'first_run')`).run(identityAuditPet);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_achievements
+  (pet_id, telegram_id, season_key, achievement_id, progress, target)
+  VALUES (?, '9001001', 'pet-s2026-003', 'boss_breaker', 1, 5)`).run(identityAuditPet);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_achievements
+  (pet_id, telegram_id, season_key, achievement_id, progress, target)
+  VALUES (?, '9001001', 'pet-s2026-003', 'social_butterfly', 4, 5)`).run(switchedIdentityAuditPet);
+identityAuditDb.database.prepare(`INSERT INTO telegram_pet_achievements
+  (pet_id, telegram_id, season_key, achievement_id, progress, target)
+  VALUES (?, '9001001', 'pet-s2026-002', 'memory_keeper', 2, 5)`).run(archivedIdentityAuditPet);
+
+const identityAuditEnv = { DB: identityAuditDb, TELEGRAM_BOT_TOKEN: '123456:test-token' };
+const identityAuditAuth = JSON.stringify(buildSignedTelegramAuth('9001001'));
+const identityAuditAuthorization = { Authorization: `Bearer ${identityAuditAuth}` };
+const identityAuditBefore = identityAuditCounts(identityAuditDb);
+const activeIdentityAuditResponse = await moonboysApiWorker.fetch(new Request(
+  'https://moonboys.test/api/telegram/pets/identity/audit',
+  { headers: identityAuditAuthorization },
+), identityAuditEnv);
+assert.equal(activeIdentityAuditResponse.status, 200, 'identity audit endpoint defaults to active Pet A');
+const activeIdentityAuditPayload = await activeIdentityAuditResponse.json();
+assert.equal(activeIdentityAuditPayload.pet_id, identityAuditPet, 'active identity audit must use active Pet A');
+assert.deepEqual(activeIdentityAuditPayload.personality_traits.map((row) => row.trait_id), ['curious'],
+  'active Pet A audit must not include archived Pet B personality');
+assert.deepEqual(activeIdentityAuditPayload.boss_victories.map((row) => row.boss_id), ['alley_king'],
+  'active Pet A audit must not include archived Pet B boss history');
+
+const identityAuditResponse = await moonboysApiWorker.fetch(new Request(
+  `https://moonboys.test/api/telegram/pets/identity/audit?pet_id=${encodeURIComponent(identityAuditPet)}&season_key=pet-s2026-003`,
+  { headers: identityAuditAuthorization },
+), identityAuditEnv);
+assert.equal(identityAuditResponse.status, 200, 'identity audit endpoint accepts an authenticated owner pet request');
+assert.equal(identityAuditResponse.headers.get('Cache-Control'), 'no-store', 'identity audit endpoint must not cache diagnostics');
+const identityAuditPayload = await identityAuditResponse.json();
+assert.equal(identityAuditPayload.pet_id, identityAuditPet, 'identity audit endpoint returns the requested owned pet');
+assert.equal(identityAuditPayload.telegram_id, '9001001', 'identity audit endpoint is scoped to the authenticated Telegram owner');
+assert.equal(identityAuditPayload.memories_count, 1, 'identity audit endpoint returns owned memory diagnostics');
+assert.deepEqual(identityAuditPayload.personality_traits.map((row) => row.trait_id), ['curious'],
+  'identity audit endpoint returns only owned personality rows');
+assert.deepEqual(identityAuditPayload.achievements.map((row) => row.achievement_id), ['boss_breaker'],
+  'identity audit endpoint returns only owned achievement rows');
+assert.deepEqual(identityAuditPayload.boss_victories.map((row) => row.boss_id), ['alley_king'],
+  'identity audit endpoint returns only owned boss victory rows');
+assert.equal(identityAuditPayload.identity_events.length, 1, 'identity audit endpoint returns bounded owned identity history');
+assert.deepEqual(identityAuditPayload.identity_analytics.map((row) => row.analytics_id), ['identity-audit-analytics'],
+  'identity audit endpoint returns owned identity analytics rows');
+assert.equal(identityAuditPayload.invalid_authority_rows.length, 0, 'identity audit endpoint reports zero invalid rows for owned fixture');
+assert.deepEqual(identityAuditCounts(identityAuditDb), identityAuditBefore,
+  'identity audit GET must not mutate memories, personality, achievements, boss victories, or identity events');
+
+const archivedIdentityAuditResponse = await moonboysApiWorker.fetch(new Request(
+  `https://moonboys.test/api/telegram/pets/identity/audit?pet_id=${encodeURIComponent(archivedIdentityAuditPet)}&season_key=pet-s2026-002`,
+  { headers: identityAuditAuthorization },
+), identityAuditEnv);
+assert.equal(archivedIdentityAuditResponse.status, 200, 'identity audit endpoint supports archived Pet B while Pet A remains active');
+const archivedIdentityAuditPayload = await archivedIdentityAuditResponse.json();
+assert.equal(archivedIdentityAuditPayload.pet_id, archivedIdentityAuditPet, 'archived Pet B audit must return the explicit archived pet');
+assert.deepEqual(archivedIdentityAuditPayload.personality_traits.map((row) => row.trait_id), ['explorer'],
+  'archived Pet B audit must not include active Pet A personality');
+assert.deepEqual(archivedIdentityAuditPayload.achievements.map((row) => row.achievement_id), ['memory_keeper'],
+  'archived Pet B audit must not include active Pet A achievements');
+assert.deepEqual(archivedIdentityAuditPayload.boss_victories.map((row) => row.boss_id), ['archive_boss'],
+  'archived Pet B audit must not include active Pet A boss history');
+assert.equal(archivedIdentityAuditPayload.memories_count, 1, 'archived Pet B audit must read archived pet memories by full tuple');
+
+identityAuditDb.database.prepare(`UPDATE telegram_pet_active_slots
+  SET pet_id = ?, season_key = 'pet-s2026-003'
+  WHERE telegram_id = '9001001'`).run(switchedIdentityAuditPet);
+const switchedActiveIdentityAuditResponse = await moonboysApiWorker.fetch(new Request(
+  'https://moonboys.test/api/telegram/pets/identity/audit',
+  { headers: identityAuditAuthorization },
+), identityAuditEnv);
+assert.equal(switchedActiveIdentityAuditResponse.status, 200, 'identity audit endpoint follows an active-pet switch');
+const switchedActiveIdentityAuditPayload = await switchedActiveIdentityAuditResponse.json();
+assert.equal(switchedActiveIdentityAuditPayload.pet_id, switchedIdentityAuditPet, 'current profile audit must use switched active Pet C');
+assert.deepEqual(switchedActiveIdentityAuditPayload.personality_traits.map((row) => row.trait_id), ['loyal'],
+  'switched active Pet C audit must not include active Pet A or archived Pet B personality');
+assert.deepEqual(switchedActiveIdentityAuditPayload.achievements.map((row) => row.achievement_id), ['social_butterfly'],
+  'switched active Pet C audit must not include active Pet A or archived Pet B achievements');
+assert.deepEqual(switchedActiveIdentityAuditPayload.boss_victories.map((row) => row.boss_id), ['switch_boss'],
+  'switched active Pet C audit must not include active Pet A or archived Pet B boss history');
+assert.equal(switchedActiveIdentityAuditPayload.memories_count, 1, 'switched active Pet C audit must read only Pet C memories');
+
+const petIdOnlyAudit = await buildMoonpetIdentityAuthorityAudit(identityAuditDb, '9001001', { pet_id: archivedIdentityAuditPet });
+assert.equal(petIdOnlyAudit, null, 'API audit helper must reject pet_id without season_key instead of falling back to active Pet A');
+const petIdOnlyAuditResponse = await moonboysApiWorker.fetch(new Request(
+  `https://moonboys.test/api/telegram/pets/identity/audit?pet_id=${encodeURIComponent(archivedIdentityAuditPet)}`,
+  { headers: identityAuditAuthorization },
+), identityAuditEnv);
+assert.equal(petIdOnlyAuditResponse.status, 404, 'API audit endpoint must reject pet_id-only explicit reads');
+assert.equal((await petIdOnlyAuditResponse.json()).error, 'identity_authority_scope_not_found');
+const wrongSeasonAudit = await buildMoonpetIdentityAuthorityAudit(identityAuditDb, '9001001', {
+  pet_id: archivedIdentityAuditPet,
+  season_key: 'pet-s2026-003',
+});
+assert.equal(wrongSeasonAudit, null, 'API audit helper must reject a wrong season tuple instead of leaking archived Pet B');
+const wrongSeasonAuditResponse = await moonboysApiWorker.fetch(new Request(
+  `https://moonboys.test/api/telegram/pets/identity/audit?pet_id=${encodeURIComponent(archivedIdentityAuditPet)}&season_key=pet-s2026-003`,
+  { headers: identityAuditAuthorization },
+), identityAuditEnv);
+assert.equal(wrongSeasonAuditResponse.status, 403, 'API audit endpoint must reject wrong season explicit reads');
+assert.equal((await wrongSeasonAuditResponse.json()).error, 'identity_authority_scope_not_found');
+
+const urlCredentialAuditResponse = await moonboysApiWorker.fetch(new Request(
+  `https://moonboys.test/api/telegram/pets/identity/audit?telegram_auth=${encodeURIComponent(identityAuditAuth)}&pet_id=${encodeURIComponent(identityAuditPet)}&season_key=pet-s2026-003`,
+), identityAuditEnv);
+assert.equal(urlCredentialAuditResponse.status, 400, 'identity audit endpoint rejects URL Telegram credentials');
+assert.equal((await urlCredentialAuditResponse.json()).error, 'telegram_auth_url_credentials_rejected');
+
+const crossOwnerResponse = await moonboysApiWorker.fetch(new Request(
+  `https://moonboys.test/api/telegram/pets/identity/audit?pet_id=${encodeURIComponent(otherAuditPet)}&season_key=pet-s2026-003`,
+  { headers: identityAuditAuthorization },
+), identityAuditEnv);
+assert.equal(crossOwnerResponse.status, 403, 'identity audit endpoint rejects another player pet_id');
+const crossOwnerPayload = await crossOwnerResponse.json();
+assert.equal(crossOwnerPayload.error, 'identity_authority_scope_not_found');
+assert.equal(Object.prototype.hasOwnProperty.call(crossOwnerPayload, 'pet_id'), false,
+  'cross-owner identity audit rejection must not return another player pet payload');
+assert.deepEqual(identityAuditCounts(identityAuditDb), identityAuditBefore,
+  'rejected identity audit GET must not mutate identity ledgers');
+
+identityAuditDb.database.prepare("UPDATE telegram_pet_season_slots SET status='archived' WHERE pet_id=?").run(identityAuditPet);
+identityAuditDb.database.prepare("UPDATE telegram_pet_instances SET status='archived' WHERE pet_id=?").run(identityAuditPet);
+const archivedAuditResponse = await moonboysApiWorker.fetch(new Request(
+  `https://moonboys.test/api/telegram/pets/identity/audit?pet_id=${encodeURIComponent(identityAuditPet)}&season_key=pet-s2026-003`,
+  { headers: identityAuditAuthorization },
+), identityAuditEnv);
+assert.equal(archivedAuditResponse.status, 200, 'identity audit endpoint supports explicit owned archived pet audits');
+const archivedAuditPayload = await archivedAuditResponse.json();
+assert.equal(archivedAuditPayload.pet_id, identityAuditPet);
+assert.equal(archivedAuditPayload.identity_analytics.length, 1, 'archived pet audit still returns owned identity analytics');
+
+const invalidDiagnosticDb = new SqliteD1();
+const invalidDiagnosticPet = seedIdentityAuditPet(invalidDiagnosticDb, '9004004', 1);
+invalidDiagnosticDb.database.exec('PRAGMA foreign_keys=OFF');
+invalidDiagnosticDb.database.prepare(`INSERT INTO telegram_pet_identity_analytics
+  (analytics_id, pet_id, telegram_id, season_key, event_type)
+  VALUES ('invalid-owned-pet-analytics', ?, '9004999', 'wrong-season', 'memory_milestone')`).run(invalidDiagnosticPet);
+const invalidDiagnosticAuth = JSON.stringify(buildSignedTelegramAuth('9004004'));
+const invalidDiagnosticResponse = await moonboysApiWorker.fetch(new Request(
+  `https://moonboys.test/api/telegram/pets/identity/audit?pet_id=${encodeURIComponent(invalidDiagnosticPet)}&season_key=pet-s2026-003`,
+  { headers: { Authorization: `Telegram ${invalidDiagnosticAuth}` } },
+), { DB: invalidDiagnosticDb, TELEGRAM_BOT_TOKEN: '123456:test-token' });
+assert.equal(invalidDiagnosticResponse.status, 200, 'identity audit endpoint can report invalid rows for an authorized pet');
+const invalidDiagnosticPayload = await invalidDiagnosticResponse.json();
+assert.deepEqual(
+  invalidDiagnosticPayload.invalid_authority_rows.map((row) => ({ table_name: row.table_name, row_key: row.row_key, reason: row.reason })),
+  [{ table_name: 'telegram_pet_identity_analytics', row_key: 'invalid-owned-pet-analytics', reason: 'season_slot_tuple_missing' }],
+  'identity audit endpoint must not silently hide invalid rows attached to an authorized pet',
+);
+assert.equal(Object.prototype.hasOwnProperty.call(invalidDiagnosticPayload.invalid_authority_rows[0], 'telegram_id'), false,
+  'identity audit endpoint must redact mismatched telegram_id from invalid authority rows');
+assert.equal(Object.prototype.hasOwnProperty.call(invalidDiagnosticPayload.invalid_authority_rows[0], 'season_key'), false,
+  'identity audit endpoint must redact mismatched season_key from invalid authority rows');
+
+const brokenAuditDb = new SqliteD1();
+const brokenAuditPet = seedIdentityAuditPet(brokenAuditDb, '9003003', 1);
+brokenAuditDb.database.exec('DROP VIEW moonpet_invalid_identity_authority_rows');
+const brokenAuditAuth = JSON.stringify(buildSignedTelegramAuth('9003003'));
+const brokenAuditResponse = await moonboysApiWorker.fetch(new Request(
+  `https://moonboys.test/api/telegram/pets/identity/audit?pet_id=${encodeURIComponent(brokenAuditPet)}&season_key=pet-s2026-003`,
+  { headers: { Authorization: `Bearer ${brokenAuditAuth}` } },
+), { DB: brokenAuditDb, TELEGRAM_BOT_TOKEN: '123456:test-token' });
+assert.equal(brokenAuditResponse.status, 500, 'identity audit endpoint must fail closed when verifier view is unavailable');
+assert.equal(brokenAuditResponse.headers.get('Cache-Control'), 'no-store', 'failed identity audit diagnostics must not be cached');
+assert.equal((await brokenAuditResponse.json()).error, 'identity_authority_audit_failed');
+
+const failedReadAuditDb = new SqliteD1();
+const failedReadAuditPet = seedIdentityAuditPet(failedReadAuditDb, '9005005', 1);
+failedReadAuditDb.failReadOnSql(/FROM telegram_pet_identity_analytics/i);
+const failedReadAuditAuth = JSON.stringify(buildSignedTelegramAuth('9005005'));
+const failedReadAuditResponse = await moonboysApiWorker.fetch(new Request(
+  `https://moonboys.test/api/telegram/pets/identity/audit?pet_id=${encodeURIComponent(failedReadAuditPet)}&season_key=pet-s2026-003`,
+  { headers: { Authorization: `Bearer ${failedReadAuditAuth}` } },
+), { DB: failedReadAuditDb, TELEGRAM_BOT_TOKEN: '123456:test-token' });
+assert.equal(failedReadAuditResponse.status, 500, 'identity audit endpoint must reject D1 success:false reads');
+assert.equal((await failedReadAuditResponse.json()).error, 'identity_authority_audit_failed');
+
+function insertWalletRecoveryRequired(db, telegramId) {
+  db.database.prepare(`
+    INSERT INTO telegram_pet_reward_claims
+      (claim_id, pet_id, telegram_id, source, idempotency_key, day_key, status, requested_rewards, applied_rewards, metadata)
+    VALUES (?, NULL, ?, 'wallet_reconciliation_recovery_required', 'moonpet_wallet_reconcile_recovery_required:v1', '2026-08-18', 'pending', '{}', '{}', ?)
+  `).run(`recovery-required:${telegramId}`, telegramId, JSON.stringify({ outcome: 'recovery_required', reason: 'missing_wallet_snapshot' }));
+}
+
+function insertWalletReconciled(db, telegramId) {
+  db.database.prepare(`
+    INSERT INTO telegram_pet_reward_claims
+      (claim_id, pet_id, telegram_id, source, idempotency_key, day_key, status, requested_rewards, applied_rewards, metadata, awarded_at)
+    VALUES (?, NULL, ?, 'wallet_reconciliation', 'moonpet_wallet_reconcile:v1', '2026-08-18', 'awarded', '{}', '{}', ?, CURRENT_TIMESTAMP)
+  `).run(`wallet-reconciled:${telegramId}`, telegramId, JSON.stringify({ outcome: 'reconciled' }));
+}
+
+const seasonSlotRuntimeDb = seedRepeatRewardPlayer('season-slot-runtime');
+await ensurePetStarterSeasonSlot(seasonSlotRuntimeDb, 'season-slot-runtime', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(seasonSlotRuntimeDb, 'season-slot-runtime');
+seasonSlotRuntimeDb.database.prepare(`
+  INSERT INTO arcade_progression_state
+    (telegram_id, arcade_xp_total, arcade_daily_xp, arcade_daily_key, arcade_restriction_level, restricted_until, updated_at)
+  VALUES ('season-slot-runtime', 1400, 0, '2026-08-15', 0, NULL, CURRENT_TIMESTAMP)
+  ON CONFLICT(telegram_id) DO UPDATE SET arcade_xp_total = excluded.arcade_xp_total
+`).run();
+seasonSlotRuntimeDb.database.prepare(`INSERT INTO arcade_xp_wallets
+  (telegram_id, arcade_xp_earned, arcade_xp_spendable, arcade_xp_spent)
+  VALUES ('season-slot-runtime', 1400, 1400, 0)`).run();
+assert.equal(PET_SEASON_EXTRA_SLOT_COSTS[2], 500, 'second seasonal pet slot must cost Arcade XP');
+assert.equal(PET_SEASON_EXTRA_SLOT_COSTS[3], 1000, 'third seasonal pet slot must cost Arcade XP');
+const initialSeasonSlots = await buildPetSeasonSlotSummary(seasonSlotRuntimeDb, 'season-slot-runtime', new Date('2026-08-15T00:00:00Z'));
+assert.equal(initialSeasonSlots.season.current_at, '2026-08-15T00:00:00.000Z', 'season summary must include the authoritative server timestamp used by the UI');
+assert.equal(initialSeasonSlots.slots.length, 3, 'season slot summary must always expose the three season slots');
+assert.equal(initialSeasonSlots.slots[0].unlocked, true, 'starter slot must be unlocked for existing pet profiles');
+assert.deepEqual(
+  Object.keys(initialSeasonSlots.slots[0].pet).sort(),
+  ['art_identity_id', 'cleanliness', 'display_name', 'energy', 'happiness', 'health', 'hunger', 'level', 'name', 'pet_name', 'pet_xp', 'progression', 'species', 'stage', 'variant'].sort(),
+  'owned slot summaries must expose only the pet-instance fields required by the roster card',
+);
+assert.equal(initialSeasonSlots.slots[0].pet.art_identity_id, null, 'slot summaries must not leak hidden art identities before Stage 3');
+assert.equal(initialSeasonSlots.slots[0].pet.level >= 1, true, 'owned slot cards must include a valid level');
+assert.equal(initialSeasonSlots.slots[0].pet.pet_xp >= 0, true, 'owned slot cards must include pet-instance XP');
+assert.equal(typeof initialSeasonSlots.slots[0].pet_id, 'string', 'owned slot summaries must identify the authoritative pet instance');
+assert.equal(initialSeasonSlots.purchase_enabled, true, 'season slot purchases must be enabled with per-pet state available');
+assert.equal(initialSeasonSlots.purchase_disabled_reason, null);
+assert.equal(initialSeasonSlots.slots[1].unlock_cost_arcade_xp, 500, 'slot 2 must show its Arcade XP cost');
+assert.equal(initialSeasonSlots.slots[1].affordable, true, 'slot 2 must be marked affordable when Arcade XP covers its cost');
+assert.equal(initialSeasonSlots.arcade_xp_lifetime, 1400, 'slot payload must preserve lifetime XP');
+assert.equal(initialSeasonSlots.arcade_xp_spendable, 1400, 'slot payload must expose spend authority separately');
+assert.equal(initialSeasonSlots.arcade_xp_spent, 0, 'slot payload must expose spent XP');
+assert.equal(initialSeasonSlots.next_slot_cost, 500, 'slot payload must expose the next sequential cost');
+assert.equal(initialSeasonSlots.can_buy_next_slot, true, 'slot payload must expose wallet affordability');
+assert.equal(initialSeasonSlots.slots[2].unlocked, false, 'slot 3 must start locked');
+assert.equal(initialSeasonSlots.slots[2].purchase_enabled, false, 'slot 3 must remain disabled until slot 2 is owned');
+assert.equal(initialSeasonSlots.slots[2].purchase_disabled_reason, 'previous_pet_slot_required', 'slot 3 must advertise the sequential purchase requirement');
+assert.equal(initialSeasonSlots.slots[2].affordable, false, 'slot 3 must not be affordable before slot 2 is owned');
+const slotSummaryAction = await processPetMiniAppAction(seasonSlotRuntimeDb, 'season-slot-runtime', { id: 'season-slot-runtime' }, {
+  action: 'season_slots',
+  request_id: 'slot-summary',
+}, 'bot-token');
+assert.equal(slotSummaryAction.accepted, true, 'Mini App slot action must return the read-only slot summary');
+assert.equal(slotSummaryAction.season_slots.slots.length, 3, 'Mini App slot summary must include all three slots');
+const serializedSlotSummaryAction = serializePetMiniAppActionResult(slotSummaryAction);
+assert.equal(serializedSlotSummaryAction.season_slots.slots.length, 3, 'serialized Mini App slot action must include the slot summary payload');
+assert.equal(seasonSlotRuntimeDb.database.prepare("SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id='season-slot-runtime'").get().arcade_xp_total, 1400, 'read-only slot summary must not spend Arcade XP');
+assert.equal(seasonSlotRuntimeDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_season_slots WHERE telegram_id='season-slot-runtime'").get().count, 1, 'read-only slot summary must not create paid slots before per-pet state exists');
+
+const legacyLifecycleStateDb = seedRepeatRewardPlayer('legacy-lifecycle-state');
+const legacyLifecycleBefore = legacyLifecycleStateDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_by_pet').get().count;
+await buildPetMiniAppLeaderboard(legacyLifecycleStateDb, 'legacy-lifecycle-state', 'all_time');
+assert.equal(legacyLifecycleStateDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_by_pet').get().count, legacyLifecycleBefore,
+  'reading rankings must not create another player lifecycle');
+
+const repeatTradeDb = seedRepeatRewardPlayer('trade-repeat', 70);
+repeatTradeDb.database.prepare("UPDATE telegram_pet_profiles SET moon_gold = 200, happiness = 90, cleanliness = 90, hunger = 10 WHERE telegram_id = 'trade-repeat'").run();
+const originalTradeRandom = Math.random;
+const originalTimezone = process.env.TZ;
+process.env.TZ = 'America/New_York';
+Math.random = () => 0.9;
+try {
+  const firstTrade = await processPetGoldTrade(repeatTradeDb, 'trade-repeat', '50', { event_key: 'callback:trade:first', source: 'telegram_callback' });
+  assert.equal(firstTrade.accepted, true, 'first 50-gold callback trade must execute');
+  repeatTradeDb.database.prepare("UPDATE telegram_pet_events SET created_at = datetime('now', '-10 minutes') WHERE telegram_id = 'trade-repeat' AND event_key = 'callback:trade:first'").run();
+  const secondTrade = await processPetGoldTrade(repeatTradeDb, 'trade-repeat', '50', { event_key: 'callback:trade:second', source: 'telegram_callback' });
+  assert.equal(secondTrade.accepted, true, 'same 50-gold wager must execute again after cooldown with a new callback key');
+  assert.equal(secondTrade.duplicate, undefined, 'new callback identity must not be mistaken for the prior wager');
+  const goldAfterSecondTrade = repeatTradeDb.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id = 'trade-repeat'").get().moon_gold;
+  const duplicateSecondTrade = await processPetGoldTrade(repeatTradeDb, 'trade-repeat', '50', { event_key: 'callback:trade:second', source: 'telegram_callback' });
+  assert.equal(duplicateSecondTrade.duplicate, true, 'repeated delivery of the same trade callback must resolve as a duplicate');
+  assert.equal(repeatTradeDb.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id = 'trade-repeat'").get().moon_gold, goldAfterSecondTrade, 'duplicate callback must not apply gold twice');
+  assert.equal(repeatTradeDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id = 'trade-repeat' AND event_type = 'trade'").get().count, 2, 'two unique callbacks must create exactly two trade settlements');
+} finally {
+  Math.random = originalTradeRandom;
+  if (originalTimezone == null) delete process.env.TZ;
+  else process.env.TZ = originalTimezone;
+}
+const tradeCommand = asyncBlock('cmdPetTrade');
+assert.ok(tradeCommand.includes('eventKey = null') && tradeCommand.includes('event_key: eventKey ||'), 'trade command must accept and prioritize the unique Telegram event key');
+assert.ok(tradeCommand.includes('if (result.duplicate)') && !tradeCommand.includes('Trade lost: undefined gold'), 'duplicate trade callbacks must return safe copy without undefined losses');
+assert.ok(callbackBranch.includes('cmdPetTrade(db, tok, chatId, telegramId, wager, eventKey)'), 'trade callback router must pass callback_query identity into settlement');
+
+const repeatPurchaseDb = seedRepeatRewardPlayer('purchase-repeat', 70);
+repeatPurchaseDb.database.prepare("UPDATE telegram_pet_profiles SET moon_gold = 100 WHERE telegram_id = 'purchase-repeat'").run();
+await ensurePetStarterSeasonSlot(repeatPurchaseDb, 'purchase-repeat', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(repeatPurchaseDb, 'purchase-repeat');
+const firstPurchase = await processPetShopPurchase(repeatPurchaseDb, 'purchase-repeat', 'moon_kibble', { event_key: 'callback:buy:moon-kibble', source: 'telegram_callback' });
+assert.equal(firstPurchase.accepted, true, 'first shop purchase must execute');
+assert.equal(repeatPurchaseDb.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id = 'purchase-repeat'").get().moon_gold, 55,
+  'shop purchase must debit account wallet authority once');
+const duplicatePurchase = await processPetShopPurchase(repeatPurchaseDb, 'purchase-repeat', 'moon_kibble', { event_key: 'callback:buy:moon-kibble', source: 'telegram_callback' });
+assert.equal(duplicatePurchase.duplicate, true, 'duplicate shop purchase event key must resolve as duplicate');
+assert.equal(repeatPurchaseDb.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id = 'purchase-repeat'").get().moon_gold, 55,
+  'duplicate shop purchase event key must not double-debit the account wallet');
+assert.equal(repeatPurchaseDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id = 'purchase-repeat' AND event_type = 'buy' AND status = 'accepted'").get().count, 1,
+  'duplicate shop purchase event key must create exactly one accepted receipt');
+
+const insufficientPurchaseDb = seedRepeatRewardPlayer('purchase-insufficient', 70);
+insufficientPurchaseDb.database.prepare("UPDATE telegram_pet_profiles SET moon_gold = 40 WHERE telegram_id = 'purchase-insufficient'").run();
+await ensurePetStarterSeasonSlot(insufficientPurchaseDb, 'purchase-insufficient', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(insufficientPurchaseDb, 'purchase-insufficient');
+insufficientPurchaseDb.database.prepare("UPDATE telegram_pet_instances SET moon_gold = 999 WHERE telegram_id = 'purchase-insufficient'").run();
+const insufficientPurchase = await processPetShopPurchase(insufficientPurchaseDb, 'purchase-insufficient', 'moon_kibble', { event_key: 'callback:buy:insufficient', source: 'telegram_callback' });
+assert.equal(insufficientPurchase.accepted, false, 'insufficient account wallet must block shop purchase');
+assert.equal(insufficientPurchaseDb.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id = 'purchase-insufficient'").get().moon_gold, 40,
+  'insufficient shop purchase must not debit the account wallet');
+assert.equal(insufficientPurchaseDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id = 'purchase-insufficient' AND event_key = 'callback:buy:insufficient' AND status = 'accepted'").get().count, 0,
+  'insufficient shop purchase must not create an accepted receipt');
+
+const staleExpeditionDb = seedRepeatRewardPlayer('expedition-stale-level', 20);
+staleExpeditionDb.database.prepare(`UPDATE telegram_pet_profiles
+  SET pet_xp=5000, level=51, energy=20
+  WHERE telegram_id='expedition-stale-level'`).run();
+staleExpeditionDb.database.prepare(`UPDATE telegram_pet_instances
+  SET pet_xp=5000, level=51, energy=20
+  WHERE telegram_id='expedition-stale-level'`).run();
+const staleExpeditionNow = new Date('2026-08-19T12:00:00Z');
+staleExpeditionDb.database.prepare(`INSERT INTO telegram_pet_lifecycle_by_pet
+  (pet_id,telegram_id,identity_seed,phase,incubation_json,innate_traits_json)
+  VALUES ('pet:expedition-stale-level:pet-s2026-003:1','expedition-stale-level','expedition-fixture','young','{}','[]')`).run();
+const staleExpeditionState = await getPetEconomyState(staleExpeditionDb, 'expedition-stale-level', null, staleExpeditionNow);
+assert.equal(staleExpeditionState.expedition.key, 'crystal_caves',
+  'Crystal Expedition selection must use XP-derived visible level for stale stored-level pets');
+assert.equal(staleExpeditionState.expedition.energy, 18);
+const staleExpeditionResult = await runPetCrystalExpedition(staleExpeditionDb, 'expedition-stale-level', staleExpeditionNow, 'stale-level-expedition');
+assert.equal(staleExpeditionResult.accepted, true, staleExpeditionResult.reason);
+assert.equal(staleExpeditionResult.expedition.key, 'crystal_caves',
+  'Crystal Expedition settlement must use the same XP-derived tier as selection');
+assert.equal(staleExpeditionDb.database.prepare("SELECT energy FROM telegram_pet_instances WHERE pet_id='pet:expedition-stale-level:pet-s2026-003:1'").get().energy, 2,
+  'Crystal Expedition settlement must charge the selected XP-derived tier energy cost');
+const staleExpeditionClaim = staleExpeditionDb.database.prepare(`SELECT metadata FROM telegram_pet_reward_claims
+  WHERE telegram_id='expedition-stale-level' AND source='pet_expedition'`).get();
+assert.equal(JSON.parse(staleExpeditionClaim.metadata).context.expedition_key, 'crystal_caves',
+  'Crystal Expedition reward claim reason must match the XP-derived reward tier');
+assert.equal(JSON.parse(staleExpeditionClaim.metadata).context.energy_cost, 18,
+  'Crystal Expedition claim metadata must record the selected XP-derived tier cost');
+
+const recoveryFreezePurchaseDb = seedRepeatRewardPlayer('purchase-recovery-freeze', 70);
+recoveryFreezePurchaseDb.database.prepare("UPDATE telegram_pet_profiles SET moon_gold = 100 WHERE telegram_id = 'purchase-recovery-freeze'").run();
+await ensurePetStarterSeasonSlot(recoveryFreezePurchaseDb, 'purchase-recovery-freeze', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(recoveryFreezePurchaseDb, 'purchase-recovery-freeze');
+insertWalletRecoveryRequired(recoveryFreezePurchaseDb, 'purchase-recovery-freeze');
+const frozenPurchase = await processPetShopPurchase(recoveryFreezePurchaseDb, 'purchase-recovery-freeze', 'moon_kibble', { event_key: 'callback:buy:recovery-freeze', source: 'telegram_callback' });
+assert.equal(frozenPurchase.accepted, false, 'pending historical recovery must freeze shop wallet spends');
+assert.equal(frozenPurchase.reason, 'wallet_reconciliation_recovery_pending');
+assert.deepEqual(
+  { ...recoveryFreezePurchaseDb.database.prepare("SELECT moon_gold, equipped_food FROM telegram_pet_profiles WHERE telegram_id='purchase-recovery-freeze'").get() },
+  { moon_gold: 100, equipped_food: null },
+  'frozen shop spend must not mutate account wallet or equipment state',
+);
+assert.equal(
+  recoveryFreezePurchaseDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id='purchase-recovery-freeze' AND event_key='callback:buy:recovery-freeze'").get().count,
+  0,
+  'frozen shop spend must not create a receipt before recovery completes',
+);
+insertWalletReconciled(recoveryFreezePurchaseDb, 'purchase-recovery-freeze');
+const thawedPurchase = await processPetShopPurchase(recoveryFreezePurchaseDb, 'purchase-recovery-freeze', 'moon_kibble', { event_key: 'callback:buy:recovery-freeze', source: 'telegram_callback' });
+assert.equal(thawedPurchase.accepted, true, 'completed wallet reconciliation marker must unfreeze shop wallet spends');
+assert.equal(recoveryFreezePurchaseDb.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='purchase-recovery-freeze'").get().moon_gold, 55,
+  'unfrozen shop spend must debit account wallet exactly once');
+assert.deepEqual(
+  { moon_gold: thawedPurchase.pet.moon_gold, equipped_food: thawedPurchase.pet.equipped_food },
+  { moon_gold: 55, equipped_food: 'moon_kibble' },
+  'unfrozen shop response must return persisted wallet and equipment state',
+);
+
+function installAcceptedEventInsertRace(db, {
+  telegramId,
+  eventKey,
+  eventType,
+  reason,
+  petXpAwarded = 0,
+  xpAwarded = 0,
+  profileUpdates = '',
+  instanceUpdates = '',
+  metadata = {},
+}) {
+  db.beforeBatchSql(/INSERT OR IGNORE INTO telegram_pet_events/, () => {
+    const now = new Date().toISOString();
+    const petId = db.database.prepare('SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id = ?').get(telegramId)?.pet_id || null;
+    db.database.prepare(`
+      INSERT INTO telegram_pet_events
+        (id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'pet-s2026-003', ?, ?, 'accepted', ?, ?, ?)
+    `).run(
+      `race:${eventKey}`,
+      petId,
+      telegramId,
+      eventType,
+      eventKey,
+      xpAwarded,
+      petXpAwarded,
+      new Date().toISOString().slice(0, 10),
+      '2026-W33',
+      reason,
+      JSON.stringify(metadata),
+      now,
+    );
+    if (profileUpdates) db.database.prepare(`UPDATE telegram_pet_profiles SET ${profileUpdates} WHERE telegram_id = ?`).run(telegramId);
+    if (instanceUpdates && petId) db.database.prepare(`UPDATE telegram_pet_instances SET ${instanceUpdates} WHERE telegram_id = ? AND pet_id = ?`).run(telegramId, petId);
+  });
+}
+
+const dailyRaceDb = seedRepeatRewardPlayer('daily-race', 70);
+await ensurePetStarterSeasonSlot(dailyRaceDb, 'daily-race', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(dailyRaceDb, 'daily-race');
+installAcceptedEventInsertRace(dailyRaceDb, {
+  telegramId: 'daily-race',
+  eventKey: 'callback:daily:race',
+  eventType: 'daily_chest',
+  reason: 'daily_chest',
+  petXpAwarded: 40,
+  profileUpdates: 'moon_gold = 40, style_tokens = 2, pet_xp = 40',
+  instanceUpdates: 'pet_xp = 40',
+  metadata: { source: 'race_fixture' },
+});
+const dailyRace = await processPetDailyChest(dailyRaceDb, 'daily-race', { event_key: 'callback:daily:race', source: 'telegram_callback' });
+assert.equal(dailyRace.duplicate, true, 'daily chest INSERT OR IGNORE race must return the accepted idempotent result');
+assert.deepEqual(
+  { moon_gold: dailyRace.pet.moon_gold, style_tokens: dailyRace.pet.style_tokens, pet_xp: dailyRace.pet.pet_xp },
+  { moon_gold: 40, style_tokens: 2, pet_xp: 40 },
+  'daily chest duplicate race result must include the persisted account wallet and pet state',
+);
+
+const actionRaceDb = seedRepeatRewardPlayer('action-race', 70);
+await ensurePetStarterSeasonSlot(actionRaceDb, 'action-race', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(actionRaceDb, 'action-race');
+installAcceptedEventInsertRace(actionRaceDb, {
+  telegramId: 'action-race',
+  eventKey: 'callback:feed:race',
+  eventType: 'feed',
+  reason: 'accepted',
+  petXpAwarded: 6,
+  profileUpdates: 'moon_gold = 5, pet_xp = 6, hunger = 5',
+  instanceUpdates: 'pet_xp = 6, hunger = 5',
+  metadata: { source: 'race_fixture' },
+});
+const actionRace = await processPetAction(actionRaceDb, 'action-race', 'feed', { event_key: 'callback:feed:race', source: 'telegram_callback' });
+assert.equal(actionRace.duplicate, true, 'pet action INSERT OR IGNORE race must return the accepted idempotent result');
+assert.deepEqual(
+  { moon_gold: actionRace.pet.moon_gold, pet_xp: actionRace.pet.pet_xp, hunger: actionRace.pet.hunger },
+  { moon_gold: 5, pet_xp: 6, hunger: 5 },
+  'pet action duplicate race result must include the persisted wallet and pet state',
+);
+
+const specialActionNow = new Date();
+const energyDrinkDb = seedRepeatRewardPlayer('special-energy', 90, specialActionNow.toISOString());
+energyDrinkDb.database.prepare("UPDATE telegram_pet_profiles SET happiness=92 WHERE telegram_id='special-energy'").run();
+energyDrinkDb.database.prepare("UPDATE telegram_pet_instances SET happiness=92 WHERE telegram_id='special-energy'").run();
+const energyDrink = await processPetAction(energyDrinkDb, 'special-energy', 'energy_drink', {
+  event_key: 'mini:special-energy:energy_drink:first', source: 'telegram_mini_app', now: specialActionNow,
+});
+assert.equal(energyDrink.accepted, true);
+assert.deepEqual(
+  { energy: energyDrink.pet.energy, happiness: energyDrink.pet.happiness, pet_xp: energyDrink.pet.pet_xp,
+    moon_gold: energyDrink.pet.moon_gold, moon_crystals: energyDrink.pet.moon_crystals, style_tokens: energyDrink.pet.style_tokens },
+  { energy: 100, happiness: 92, pet_xp: 0, moon_gold: 0, moon_crystals: 0, style_tokens: 0 },
+  'ENERGY DRINK must restore only bounded Energy and award no XP or currency',
+);
+const duplicateEnergyDrink = await processPetAction(energyDrinkDb, 'special-energy', 'energy_drink', {
+  event_key: 'mini:special-energy:energy_drink:first', source: 'telegram_mini_app', now: new Date(specialActionNow.getTime() + 30_000),
+});
+assert.equal(duplicateEnergyDrink.duplicate, true, 'duplicate ENERGY DRINK requests must resolve idempotently');
+assert.equal(duplicateEnergyDrink.pet.energy, 100, 'duplicate ENERGY DRINK requests must not apply Energy twice');
+const cooldownEnergyDrink = await processPetAction(energyDrinkDb, 'special-energy', 'energy_drink', {
+  event_key: 'mini:special-energy:energy_drink:cooldown', source: 'telegram_mini_app', now: new Date(specialActionNow.getTime() + 60_000),
+});
+assert.equal(cooldownEnergyDrink.accepted, false);
+assert.equal(cooldownEnergyDrink.reason, 'cooldown');
+assert.equal(energyDrinkDb.database.prepare("SELECT energy FROM telegram_pet_profiles WHERE telegram_id='special-energy'").get().energy, 100,
+  'cooldown rejection must not mutate Energy');
+
+for (const [action, startingHappiness, expectedHappiness] of [['dance', 90, 100], ['cuddles', 96, 100]]) {
+  const telegramId = `special-${action}`;
+  const db = seedRepeatRewardPlayer(telegramId, 80, specialActionNow.toISOString());
+  db.database.prepare('UPDATE telegram_pet_profiles SET happiness=? WHERE telegram_id=?').run(startingHappiness, telegramId);
+  db.database.prepare('UPDATE telegram_pet_instances SET happiness=? WHERE telegram_id=?').run(startingHappiness, telegramId);
+  const result = await processPetAction(db, telegramId, action, {
+    event_key: `mini:${telegramId}:${action}:first`, source: 'telegram_mini_app', now: specialActionNow,
+  });
+  assert.equal(result.accepted, true, `${action} must be accepted for an idle active pet`);
+  assert.equal(result.pet.happiness, expectedHappiness, `${action} must cap Happiness at 100`);
+  assert.deepEqual(
+    { energy: result.pet.energy, pet_xp: result.pet.pet_xp, moon_gold: result.pet.moon_gold,
+      moon_crystals: result.pet.moon_crystals, style_tokens: result.pet.style_tokens },
+    { energy: 80, pet_xp: 0, moon_gold: 0, moon_crystals: 0, style_tokens: 0 },
+    `${action} must not alter Energy, XP, or currency`,
+  );
+}
+
+for (const equippedOutfit of [null, 'street_hoodie', 'moon_armor']) {
+  for (const action of ['energy_drink', 'dance', 'cuddles']) {
+    const telegramId = `special-zero-${action}-${equippedOutfit || 'none'}`;
+    const db = seedRepeatRewardPlayer(telegramId, 80, specialActionNow.toISOString());
+    db.database.prepare('UPDATE telegram_pet_profiles SET happiness=20, energy=20, equipped_outfit=COALESCE(?, equipped_outfit) WHERE telegram_id=?')
+      .run(equippedOutfit, telegramId);
+    db.database.prepare('UPDATE telegram_pet_instances SET happiness=20, energy=20, equipped_outfit=COALESCE(?, equipped_outfit) WHERE telegram_id=?')
+      .run(equippedOutfit, telegramId);
+    const result = await processPetAction(db, telegramId, action, {
+      event_key: `mini:${telegramId}:${action}:first`, source: 'telegram_mini_app', now: specialActionNow,
+    });
+    assert.equal(result.accepted, true, `${action} must accept with ${equippedOutfit || 'no outfit'}`);
+    assert.equal(result.pet.pet_xp, 0, `${action} must persist zero pet XP with ${equippedOutfit || 'no outfit'}`);
+    assert.deepEqual(
+      {
+        moon_gold: result.pet.moon_gold,
+        moon_crystals: result.pet.moon_crystals,
+        style_tokens: result.pet.style_tokens,
+      },
+      { moon_gold: 0, moon_crystals: 0, style_tokens: 0 },
+      `${action} must persist zero currency with ${equippedOutfit || 'no outfit'}`,
+    );
+    const accepted = db.database.prepare(`SELECT xp_awarded, pet_xp_awarded, metadata
+      FROM telegram_pet_events WHERE telegram_id=? AND event_key=? AND status='accepted'`)
+      .get(telegramId, `mini:${telegramId}:${action}:first`);
+    const eventRewards = JSON.parse(String(accepted?.metadata || '{}')).rewards || {};
+    assert.equal(Number(accepted?.xp_awarded || 0), 0, `${action} source event must persist zero Community XP`);
+    assert.equal(Number(accepted?.pet_xp_awarded || 0), 0, `${action} source event must persist zero Pet XP`);
+    assert.deepEqual(
+      {
+        moon_gold: Number(eventRewards.moon_gold || 0),
+        moon_crystals: Number(eventRewards.moon_crystals || 0),
+        style_tokens: Number(eventRewards.style_tokens || 0),
+      },
+      { moon_gold: 0, moon_crystals: 0, style_tokens: 0 },
+      `${action} event metadata rewards must stay wallet-neutral`,
+    );
+  }
+}
+
+for (const [action, expectedField] of [['energy_drink', 'energy'], ['dance', 'happiness'], ['cuddles', 'happiness']]) {
+  const telegramId = `egg-mini-${action}`;
+  const db = seedRepeatRewardPlayer(telegramId, 72, specialActionNow.toISOString());
+  await __petMediaTestHooks.createMoonEggLifecycle(db, telegramId, `fixture:${telegramId}:egg`);
+  db.database.prepare('UPDATE telegram_pet_profiles SET happiness=40, energy=72 WHERE telegram_id=?').run(telegramId);
+  db.database.prepare('UPDATE telegram_pet_instances SET happiness=40, energy=72 WHERE telegram_id=?').run(telegramId);
+  const first = await processPetMiniAppAction(db, telegramId, { id: telegramId }, {
+    action,
+    request_id: `${action}:first`,
+  }, '123456:test-token');
+  assert.equal(first.accepted, true, `${action} must be accepted in egg lifecycle when eligible`);
+  assert.equal(first.pet.pet_xp, 0, `${action} egg acceptance must remain pet-XP neutral`);
+  assert.deepEqual(
+    { moon_gold: first.pet.moon_gold, moon_crystals: first.pet.moon_crystals, style_tokens: first.pet.style_tokens },
+    { moon_gold: 0, moon_crystals: 0, style_tokens: 0 },
+    `${action} egg acceptance must remain wallet-neutral`,
+  );
+  const duplicate = await processPetMiniAppAction(db, telegramId, { id: telegramId }, {
+    action,
+    request_id: `${action}:first`,
+  }, '123456:test-token');
+  assert.equal(duplicate.duplicate, true, `${action} egg duplicate request must resolve idempotently`);
+  assert.equal(duplicate.pet[expectedField], first.pet[expectedField], `${action} duplicate must not apply ${expectedField} twice`);
+}
+
+const eggMiniBlocked = seedRepeatRewardPlayer('egg-mini-blocked', 72, specialActionNow.toISOString());
+await __petMediaTestHooks.createMoonEggLifecycle(eggMiniBlocked, 'egg-mini-blocked', 'fixture:egg-mini-blocked:egg');
+const blockedTrain = await processPetMiniAppAction(eggMiniBlocked, 'egg-mini-blocked', { id: 'egg-mini-blocked' }, {
+  action: 'train',
+  request_id: 'train:blocked',
+}, '123456:test-token');
+assert.equal(blockedTrain.accepted, false, 'combat/training actions must remain blocked while lifecycle phase is egg');
+assert.equal(blockedTrain.reason, 'moon_egg_must_hatch');
+
+const eggMiniCooldown = seedRepeatRewardPlayer('egg-mini-cooldown', 72, specialActionNow.toISOString());
+await __petMediaTestHooks.createMoonEggLifecycle(eggMiniCooldown, 'egg-mini-cooldown', 'fixture:egg-mini-cooldown:egg');
+const firstEggDrink = await processPetMiniAppAction(eggMiniCooldown, 'egg-mini-cooldown', { id: 'egg-mini-cooldown' }, {
+  action: 'energy_drink',
+  request_id: 'energy:first',
+}, '123456:test-token');
+assert.equal(firstEggDrink.accepted, true);
+const cooldownEggDrink = await processPetMiniAppAction(eggMiniCooldown, 'egg-mini-cooldown', { id: 'egg-mini-cooldown' }, {
+  action: 'energy_drink',
+  request_id: 'energy:cooldown',
+}, '123456:test-token');
+assert.equal(cooldownEggDrink.accepted, false);
+assert.equal(cooldownEggDrink.reason, 'cooldown', 'eligible egg special actions must reject for real cooldowns, not hatch gate');
+
+const eggMiniBusy = seedPetActivitySession('egg-mini-busy', { now: specialActionNow, elapsed_seconds: 120 });
+await __petMediaTestHooks.createMoonEggLifecycle(eggMiniBusy.db, 'egg-mini-busy', 'fixture:egg-mini-busy:egg');
+const busyDance = await processPetMiniAppAction(eggMiniBusy.db, 'egg-mini-busy', { id: 'egg-mini-busy' }, {
+  action: 'dance',
+  request_id: 'dance:busy',
+}, '123456:test-token');
+assert.equal(busyDance.accepted, false);
+assert.ok(['pet_busy', 'pet_activity_active'].includes(busyDance.reason),
+  'eligible egg special actions must preserve pending-work rejections');
+
+const eggRouteTelegramId = '9007771';
+const eggRouteDb = seedRepeatRewardPlayer(eggRouteTelegramId, 72, specialActionNow.toISOString());
+await __petMediaTestHooks.createMoonEggLifecycle(eggRouteDb, eggRouteTelegramId, `fixture:${eggRouteTelegramId}:egg`);
+const eggRouteEnv = {
+  DB: eggRouteDb,
+  TELEGRAM_BOT_TOKEN: '123456:test-token',
+  TELEGRAM_PETS_BOT_SECRET: 'pet-secret',
+};
+const routeAccepted = await moonboysApiWorker.fetch(new Request('https://moonboys.test/telegram-pets/action', {
+  method: 'POST',
+  headers: {
+    'content-type': 'application/json',
+    'x-pets-bot-secret': 'pet-secret',
+  },
+  body: JSON.stringify({
+    telegram_id: eggRouteTelegramId,
+    action: 'dance',
+    event_key: `api:${eggRouteTelegramId}:dance:first`,
+  }),
+}), eggRouteEnv);
+assert.equal(routeAccepted.status, 200);
+const routeAcceptedBody = await routeAccepted.json();
+assert.equal(routeAcceptedBody.accepted, true, '/telegram-pets/action must allow egg dance when eligible');
+const routeBlocked = await moonboysApiWorker.fetch(new Request('https://moonboys.test/telegram-pets/action', {
+  method: 'POST',
+  headers: {
+    'content-type': 'application/json',
+    'x-pets-bot-secret': 'pet-secret',
+  },
+  body: JSON.stringify({
+    telegram_id: eggRouteTelegramId,
+    action: 'train',
+    event_key: `api:${eggRouteTelegramId}:train:blocked`,
+  }),
+}), eggRouteEnv);
+assert.ok([200, 409].includes(routeBlocked.status));
+const routeBlockedBody = await routeBlocked.json();
+assert.equal(routeBlockedBody.accepted, false);
+assert.equal(routeBlockedBody.reason, 'moon_egg_must_hatch',
+  '/telegram-pets/action must continue blocking hatch-restricted actions');
+
+// Keep the simulated five-cooldown sequence within one UTC day, even near midnight.
+const dailyLimitNow = new Date(specialActionNow);
+dailyLimitNow.setUTCHours(12, 0, 0, 0);
+const dailyLimitDb = seedRepeatRewardPlayer('special-daily-limit', 80, dailyLimitNow.toISOString());
+dailyLimitDb.database.prepare("UPDATE telegram_pet_profiles SET happiness=0 WHERE telegram_id='special-daily-limit'").run();
+dailyLimitDb.database.prepare("UPDATE telegram_pet_instances SET happiness=0 WHERE telegram_id='special-daily-limit'").run();
+for (let index = 0; index < PET_SPECIAL_ACTION_POLICIES.dance.daily_limit; index += 1) {
+  const result = await processPetAction(dailyLimitDb, 'special-daily-limit', 'dance', {
+    event_key: `mini:special-daily-limit:dance:${index}`,
+    source: 'telegram_mini_app',
+    now: new Date(dailyLimitNow.getTime() + index * 301_000),
+  });
+  dailyLimitDb.database.prepare("UPDATE telegram_pet_events SET created_at=? WHERE event_key=?").run(new Date(dailyLimitNow.getTime() + index * 301_000).toISOString(), `mini:special-daily-limit:dance:${index}`);
+  assert.equal(result.accepted, true, `DANCE use ${index + 1} must remain inside the daily limit`);
+}
+const beforeDailyLimit = dailyLimitDb.database.prepare("SELECT happiness FROM telegram_pet_profiles WHERE telegram_id='special-daily-limit'").get().happiness;
+const dailyLimitDance = await processPetAction(dailyLimitDb, 'special-daily-limit', 'dance', {
+  event_key: 'mini:special-daily-limit:dance:blocked',
+  source: 'telegram_mini_app',
+  now: new Date(dailyLimitNow.getTime() + PET_SPECIAL_ACTION_POLICIES.dance.daily_limit * 301_000),
+});
+assert.equal(dailyLimitDance.accepted, false);
+assert.equal(dailyLimitDance.reason, 'daily_limit');
+assert.equal(dailyLimitDance.used_today, 5);
+assert.equal(dailyLimitDb.database.prepare("SELECT happiness FROM telegram_pet_profiles WHERE telegram_id='special-daily-limit'").get().happiness, beforeDailyLimit,
+  'daily-limit rejection must not mutate Happiness');
+const specialCooldownEntries = await getPetSpecialActionCooldownEntries(dailyLimitDb, 'special-daily-limit',
+  new Date(dailyLimitNow.getTime() + PET_SPECIAL_ACTION_POLICIES.dance.daily_limit * 301_000));
+assert.equal(specialCooldownEntries.find((entry) => entry.action === 'dance')?.daily_limit, 5,
+  'state cooldown authority must advertise the exhausted DANCE daily limit');
+
+const specialConcurrentDb = seedRepeatRewardPlayer('special-concurrent', 80, specialActionNow.toISOString());
+specialConcurrentDb.database.prepare("UPDATE telegram_pet_profiles SET happiness=0 WHERE telegram_id='special-concurrent'").run();
+specialConcurrentDb.database.prepare("UPDATE telegram_pet_instances SET happiness=0 WHERE telegram_id='special-concurrent'").run();
+const concurrentAttempts = await Promise.all(Array.from({ length: 6 }, (_, index) =>
+  processPetAction(specialConcurrentDb, 'special-concurrent', 'dance', {
+    event_key: `mini:special-concurrent:dance:${index}`,
+    source: 'telegram_mini_app',
+    now: specialActionNow,
+  }),
+));
+assert.equal(concurrentAttempts.filter((entry) => entry.accepted).length, 1,
+  'concurrent DANCE requests must accept exactly one reservation');
+assert.ok(concurrentAttempts.filter((entry) => !entry.accepted)
+  .every((entry) => ['cooldown', 'daily_limit'].includes(entry.reason)),
+  'concurrent DANCE losers must receive cooldown/daily-limit rejection reasons');
+assert.equal(specialConcurrentDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
+  WHERE telegram_id='special-concurrent' AND event_type='dance' AND status='accepted'`).get().count, 1,
+  'concurrent DANCE requests must persist one accepted source event');
+assert.equal(specialConcurrentDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
+  WHERE telegram_id='special-concurrent' AND event_type='dance' AND status='pending'`).get().count, 0,
+  'concurrent DANCE requests must not leave pending reservations behind');
+assert.equal(specialConcurrentDb.database.prepare(`SELECT happiness FROM telegram_pet_profiles
+  WHERE telegram_id='special-concurrent'`).get().happiness, 18,
+  'concurrent DANCE requests must apply one stat mutation');
+
+const purchaseRaceDb = seedRepeatRewardPlayer('purchase-race', 70);
+purchaseRaceDb.database.prepare("UPDATE telegram_pet_profiles SET moon_gold = 100 WHERE telegram_id = 'purchase-race'").run();
+await ensurePetStarterSeasonSlot(purchaseRaceDb, 'purchase-race', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(purchaseRaceDb, 'purchase-race');
+installAcceptedEventInsertRace(purchaseRaceDb, {
+  telegramId: 'purchase-race',
+  eventKey: 'callback:buy:race',
+  eventType: 'buy',
+  reason: 'shop_purchase',
+  profileUpdates: "moon_gold = 55, equipped_food = 'moon_kibble'",
+  instanceUpdates: "equipped_food = 'moon_kibble'",
+  metadata: { source: 'race_fixture', item_key: 'moon_kibble' },
+});
+const purchaseRace = await processPetShopPurchase(purchaseRaceDb, 'purchase-race', 'moon_kibble', { event_key: 'callback:buy:race', source: 'telegram_callback' });
+assert.equal(purchaseRace.duplicate, true, 'shop purchase INSERT OR IGNORE race must return the accepted idempotent result');
+assert.deepEqual(
+  { moon_gold: purchaseRace.pet.moon_gold, equipped_food: purchaseRace.pet.equipped_food },
+  { moon_gold: 55, equipped_food: 'moon_kibble' },
+  'shop purchase duplicate race result must include the persisted debit and equipment state',
+);
+
+const tradeRaceDb = seedRepeatRewardPlayer('trade-race', 70);
+tradeRaceDb.database.prepare("UPDATE telegram_pet_profiles SET moon_gold = 200 WHERE telegram_id = 'trade-race'").run();
+await ensurePetStarterSeasonSlot(tradeRaceDb, 'trade-race', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(tradeRaceDb, 'trade-race');
+installAcceptedEventInsertRace(tradeRaceDb, {
+  telegramId: 'trade-race',
+  eventKey: 'callback:trade:race',
+  eventType: 'trade',
+  reason: 'trade_lost',
+  petXpAwarded: 1,
+  profileUpdates: 'moon_gold = 150, pet_xp = 1',
+  instanceUpdates: 'pet_xp = 1',
+  metadata: { source: 'race_fixture', wager: 50, won: false },
+});
+const tradeRace = await processPetGoldTrade(tradeRaceDb, 'trade-race', '50', { event_key: 'callback:trade:race', source: 'telegram_callback' });
+assert.equal(tradeRace.duplicate, true, 'gold trade INSERT OR IGNORE race must return the accepted idempotent result');
+assert.deepEqual(
+  { moon_gold: tradeRace.pet.moon_gold, pet_xp: tradeRace.pet.pet_xp },
+  { moon_gold: 150, pet_xp: 1 },
+  'gold trade duplicate race result must include the persisted account-wallet debit and pet state',
+);
+
+const recoveryFreezeDailyDb = seedRepeatRewardPlayer('daily-recovery-freeze', 70);
+await ensurePetStarterSeasonSlot(recoveryFreezeDailyDb, 'daily-recovery-freeze', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(recoveryFreezeDailyDb, 'daily-recovery-freeze');
+insertWalletRecoveryRequired(recoveryFreezeDailyDb, 'daily-recovery-freeze');
+const frozenDaily = await processPetDailyChest(recoveryFreezeDailyDb, 'daily-recovery-freeze', { event_key: 'callback:daily:recovery-freeze', source: 'telegram_callback' });
+assert.equal(frozenDaily.accepted, false, 'pending historical recovery must freeze daily wallet credits');
+assert.equal(frozenDaily.reason, 'wallet_reconciliation_recovery_pending');
+assert.deepEqual(
+  { ...recoveryFreezeDailyDb.database.prepare("SELECT moon_gold, style_tokens, pet_xp FROM telegram_pet_profiles WHERE telegram_id='daily-recovery-freeze'").get() },
+  { moon_gold: 0, style_tokens: 0, pet_xp: 0 },
+  'frozen daily chest must not mutate account wallet or Pet XP state',
+);
+assert.equal(
+  recoveryFreezeDailyDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id='daily-recovery-freeze' AND event_key='callback:daily:recovery-freeze'").get().count,
+  0,
+  'frozen daily chest must not create a receipt before recovery completes',
+);
+
+const recoveryFreezeActionDb = seedRepeatRewardPlayer('action-recovery-freeze', 70);
+await ensurePetStarterSeasonSlot(recoveryFreezeActionDb, 'action-recovery-freeze', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(recoveryFreezeActionDb, 'action-recovery-freeze');
+insertWalletRecoveryRequired(recoveryFreezeActionDb, 'action-recovery-freeze');
+const frozenAction = await processPetAction(recoveryFreezeActionDb, 'action-recovery-freeze', 'feed', { event_key: 'callback:feed:recovery-freeze', source: 'telegram_callback' });
+assert.equal(frozenAction.accepted, false, 'pending historical recovery must freeze pet-action wallet credits');
+assert.equal(frozenAction.reason, 'wallet_reconciliation_recovery_pending');
+assert.deepEqual(
+  { ...recoveryFreezeActionDb.database.prepare("SELECT moon_gold, pet_xp, hunger FROM telegram_pet_profiles WHERE telegram_id='action-recovery-freeze'").get() },
+  { moon_gold: 0, pet_xp: 0, hunger: 25 },
+  'frozen pet action must not mutate account wallet or pet-owned state',
+);
+assert.equal(
+  recoveryFreezeActionDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id='action-recovery-freeze' AND event_key='callback:feed:recovery-freeze'").get().count,
+  0,
+  'frozen pet action must not create a receipt before recovery completes',
+);
+
+const recoveryFreezeRewardDb = seedRepeatRewardPlayer('reward-recovery-freeze', 70);
+await ensurePetStarterSeasonSlot(recoveryFreezeRewardDb, 'reward-recovery-freeze', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(recoveryFreezeRewardDb, 'reward-recovery-freeze');
+const recoveryFreezePetId = recoveryFreezeRewardDb.database.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='reward-recovery-freeze'").get().pet_id;
+insertWalletRecoveryRequired(recoveryFreezeRewardDb, 'reward-recovery-freeze');
+const frozenPetIdReward = await awardPetReward(recoveryFreezeRewardDb, {
+  telegram_id: 'reward-recovery-freeze',
+  pet_id: recoveryFreezePetId,
+  source: 'pet_action',
+  idempotency_key: 'reward-recovery-freeze',
+  event_key: 'reward-recovery-freeze',
+  event_type: 'feed',
+  rewards: { moon_gold: 7, pet_xp: 5 },
+});
+assert.equal(frozenPetIdReward.accepted, false, 'pending historical recovery must freeze pet_id account-wallet rewards');
+assert.equal(frozenPetIdReward.reason, 'wallet_reconciliation_recovery_pending');
+assert.deepEqual(
+  { ...recoveryFreezeRewardDb.database.prepare("SELECT moon_gold, pet_xp FROM telegram_pet_profiles WHERE telegram_id='reward-recovery-freeze'").get() },
+  { moon_gold: 0, pet_xp: 0 },
+  'frozen pet_id reward must not mutate account wallet or compatibility profile Pet XP',
+);
+assert.equal(
+  recoveryFreezeRewardDb.database.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id = ?').get(recoveryFreezePetId).pet_xp,
+  0,
+  'frozen pet_id reward must not mutate pet-owned Pet XP',
+);
+insertWalletReconciled(recoveryFreezeRewardDb, 'reward-recovery-freeze');
+const thawedPetIdReward = await awardPetReward(recoveryFreezeRewardDb, {
+  telegram_id: 'reward-recovery-freeze',
+  pet_id: recoveryFreezePetId,
+  source: 'pet_action',
+  idempotency_key: 'reward-recovery-freeze',
+  event_key: 'reward-recovery-freeze',
+  event_type: 'feed',
+  rewards: { moon_gold: 7, pet_xp: 5 },
+});
+assert.equal(thawedPetIdReward.accepted, true, 'completed wallet reconciliation marker must unfreeze pet_id account-wallet rewards');
+assert.equal(recoveryFreezeRewardDb.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='reward-recovery-freeze'").get().moon_gold, 7,
+  'unfrozen pet_id reward must apply the account wallet credit exactly once');
+assert.equal(recoveryFreezeRewardDb.database.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id = ?').get(recoveryFreezePetId).pet_xp, 5,
+  'unfrozen pet_id reward must still apply Pet XP to the pet-owned instance');
+
+const purchaseRecoveryDb = seedRepeatRewardPlayer('purchase-recovery', 70);
+purchaseRecoveryDb.database.prepare("UPDATE telegram_pet_profiles SET moon_gold = 100 WHERE telegram_id = 'purchase-recovery'").run();
+await ensurePetStarterSeasonSlot(purchaseRecoveryDb, 'purchase-recovery', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(purchaseRecoveryDb, 'purchase-recovery');
+purchaseRecoveryDb.failBatchOnSql(/UPDATE telegram_pet_profiles\s+SET equipped_food = \?/);
+await assert.rejects(
+  processPetShopPurchase(purchaseRecoveryDb, 'purchase-recovery', 'moon_kibble', { event_key: 'callback:buy:failure', source: 'telegram_callback' }),
+  /simulated_d1_batch_failure/,
+  'shop purchase persistence failure must surface so the callback can retry',
+);
+assert.deepEqual(
+  { ...purchaseRecoveryDb.database.prepare("SELECT moon_gold, equipped_food FROM telegram_pet_profiles WHERE telegram_id='purchase-recovery'").get() },
+  { moon_gold: 100, equipped_food: null },
+  'failed shop purchase batch must roll back the wallet debit and profile equipment',
+);
+assert.equal(
+  purchaseRecoveryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id='purchase-recovery' AND event_key='callback:buy:failure' AND status='accepted'").get().count,
+  0,
+  'shop purchase must not commit an accepted receipt before wallet/profile persistence succeeds',
+);
+const recoveredPurchase = await processPetShopPurchase(purchaseRecoveryDb, 'purchase-recovery', 'moon_kibble', { event_key: 'callback:buy:failure', source: 'telegram_callback' });
+assert.equal(recoveredPurchase.accepted, true, 'shop purchase retry should settle after failed persistence rolls back');
+assert.deepEqual(
+  { ...purchaseRecoveryDb.database.prepare("SELECT moon_gold, equipped_food FROM telegram_pet_profiles WHERE telegram_id='purchase-recovery'").get() },
+  { moon_gold: 55, equipped_food: 'moon_kibble' },
+  'retried shop purchase must persist the debit and equipment exactly once',
+);
+const duplicateRecoveredPurchase = await processPetShopPurchase(purchaseRecoveryDb, 'purchase-recovery', 'moon_kibble', { event_key: 'callback:buy:failure', source: 'telegram_callback' });
+assert.equal(duplicateRecoveredPurchase.duplicate, true, 'shop purchase duplicate after recovered failure must return the accepted receipt');
+assert.deepEqual(
+  { ...purchaseRecoveryDb.database.prepare("SELECT moon_gold, equipped_food FROM telegram_pet_profiles WHERE telegram_id='purchase-recovery'").get() },
+  { moon_gold: 55, equipped_food: 'moon_kibble' },
+  'shop purchase duplicate after recovery must not debit the account wallet again',
+);
+
+const tradeRecoveryDb = seedRepeatRewardPlayer('trade-recovery', 70);
+tradeRecoveryDb.database.prepare("UPDATE telegram_pet_profiles SET moon_gold = 200, happiness = 90, cleanliness = 90, hunger = 10 WHERE telegram_id = 'trade-recovery'").run();
+await ensurePetStarterSeasonSlot(tradeRecoveryDb, 'trade-recovery', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(tradeRecoveryDb, 'trade-recovery');
+tradeRecoveryDb.failBatchOnSql(/UPDATE telegram_pet_profiles\s+SET\s+\(pet_xp,level,stage,streak_days,last_active_day,last_decay_at\)=/);
+const tradeRecoveryRandom = Math.random;
+Math.random = () => 0.9;
+try {
+  await assert.rejects(
+    processPetGoldTrade(tradeRecoveryDb, 'trade-recovery', '50', { event_key: 'callback:trade:failure', source: 'telegram_callback' }),
+    /simulated_d1_batch_failure/,
+    'gold trade persistence failure must surface so the callback can retry',
+  );
+  assert.deepEqual(
+    { ...tradeRecoveryDb.database.prepare("SELECT moon_gold, moon_crystals, pet_xp FROM telegram_pet_profiles WHERE telegram_id='trade-recovery'").get() },
+    { moon_gold: 200, moon_crystals: 0, pet_xp: 0 },
+    'failed gold trade batch must roll back wallet credits and profile Pet XP',
+  );
+  assert.equal(
+    tradeRecoveryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id='trade-recovery' AND event_key='callback:trade:failure' AND status='accepted'").get().count,
+    0,
+    'gold trade must not commit an accepted receipt before wallet/profile persistence succeeds',
+  );
+  const recoveredTrade = await processPetGoldTrade(tradeRecoveryDb, 'trade-recovery', '50', { event_key: 'callback:trade:failure', source: 'telegram_callback' });
+  assert.equal(recoveredTrade.accepted, true, 'gold trade retry should settle after failed persistence rolls back');
+  assert.deepEqual(
+    { ...tradeRecoveryDb.database.prepare("SELECT moon_gold, moon_crystals, pet_xp FROM telegram_pet_profiles WHERE telegram_id='trade-recovery'").get() },
+    { moon_gold: 237, moon_crystals: 1, pet_xp: 6 },
+    'retried gold trade must persist wallet credits and Pet XP exactly once',
+  );
+  assert.deepEqual(
+    { moon_gold: recoveredTrade.pet.moon_gold, moon_crystals: recoveredTrade.pet.moon_crystals, pet_xp: recoveredTrade.pet.pet_xp },
+    { moon_gold: 237, moon_crystals: 1, pet_xp: 6 },
+    'retried gold trade response must return persisted wallet and pet state',
+  );
+  const duplicateRecoveredTrade = await processPetGoldTrade(tradeRecoveryDb, 'trade-recovery', '50', { event_key: 'callback:trade:failure', source: 'telegram_callback' });
+  assert.equal(duplicateRecoveredTrade.duplicate, true, 'gold trade duplicate after recovered failure must return the accepted receipt');
+  assert.deepEqual(
+    { ...tradeRecoveryDb.database.prepare("SELECT moon_gold, moon_crystals, pet_xp FROM telegram_pet_profiles WHERE telegram_id='trade-recovery'").get() },
+    { moon_gold: 237, moon_crystals: 1, pet_xp: 6 },
+    'gold trade duplicate after recovery must not mutate wallet or pet state again',
+  );
+} finally {
+  Math.random = tradeRecoveryRandom;
+}
+
+const dailyChestRecoveryDb = seedRepeatRewardPlayer('daily-chest-recovery', 70);
+await ensurePetStarterSeasonSlot(dailyChestRecoveryDb, 'daily-chest-recovery', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(dailyChestRecoveryDb, 'daily-chest-recovery');
+dailyChestRecoveryDb.failBatchOnSql(/UPDATE telegram_pet_profiles SET\s+\(pet_xp,level,stage/);
+await assert.rejects(
+  processPetDailyChest(dailyChestRecoveryDb, 'daily-chest-recovery', { event_key: 'callback:daily:failure', source: 'telegram_callback' }),
+  /simulated_d1_batch_failure/,
+  'daily chest persistence failure must surface so the same receipt can retry',
+);
+assert.deepEqual(
+  { ...dailyChestRecoveryDb.database.prepare("SELECT moon_gold, style_tokens, pet_xp FROM telegram_pet_profiles WHERE telegram_id='daily-chest-recovery'").get() },
+  { moon_gold: 0, style_tokens: 0, pet_xp: 0 },
+  'failed daily chest batch must not leave wallet credits or profile Pet XP behind',
+);
+assert.equal(
+  dailyChestRecoveryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id='daily-chest-recovery' AND event_type='daily_chest' AND status='accepted'").get().count,
+  0,
+  'daily chest must not commit an accepted receipt before wallet/profile persistence succeeds',
+);
+const recoveredDailyChest = await processPetDailyChest(dailyChestRecoveryDb, 'daily-chest-recovery', { event_key: 'callback:daily:failure', source: 'telegram_callback' });
+assert.equal(recoveredDailyChest.accepted, true, 'daily chest retry should settle after the failed batch rolls back');
+assert.deepEqual(
+  { ...dailyChestRecoveryDb.database.prepare("SELECT moon_gold, style_tokens, pet_xp FROM telegram_pet_profiles WHERE telegram_id='daily-chest-recovery'").get() },
+  { moon_gold: 40, style_tokens: 2, pet_xp: 40 },
+  'retried daily chest must persist wallet credits and profile Pet XP exactly once',
+);
+assert.deepEqual(
+  { moon_gold: recoveredDailyChest.pet.moon_gold, style_tokens: recoveredDailyChest.pet.style_tokens, pet_xp: recoveredDailyChest.pet.pet_xp },
+  { moon_gold: 40, style_tokens: 2, pet_xp: 40 },
+  'retried daily chest response must return persisted wallet and pet state',
+);
+assert.deepEqual(
+  { ...dailyChestRecoveryDb.database.prepare("SELECT pet_id, status, pet_xp_awarded FROM telegram_pet_events WHERE telegram_id='daily-chest-recovery' AND event_type='daily_chest'").get() },
+  { pet_id: 'pet:daily-chest-recovery:pet-s2026-003:1', status: 'accepted', pet_xp_awarded: 40 },
+  'daily chest accepted receipt must be tied to the active pet after persistence succeeds',
+);
+const duplicateDailyChest = await processPetDailyChest(dailyChestRecoveryDb, 'daily-chest-recovery', { event_key: 'callback:daily:failure', source: 'telegram_callback' });
+assert.equal(duplicateDailyChest.duplicate, true, 'daily chest duplicate callback must resolve from the accepted receipt');
+assert.deepEqual(
+  { ...dailyChestRecoveryDb.database.prepare("SELECT moon_gold, style_tokens, pet_xp FROM telegram_pet_profiles WHERE telegram_id='daily-chest-recovery'").get() },
+  { moon_gold: 40, style_tokens: 2, pet_xp: 40 },
+  'duplicate daily chest callback must not reapply wallet or Pet XP rewards',
+);
+
+const actionRecoveryDb = seedRepeatRewardPlayer('pet-action-recovery', 70);
+await ensurePetStarterSeasonSlot(actionRecoveryDb, 'pet-action-recovery', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(actionRecoveryDb, 'pet-action-recovery');
+actionRecoveryDb.failBatchOnSql(/UPDATE telegram_pet_profiles SET\s+\(pet_xp,level,stage/);
+await assert.rejects(
+  processPetAction(actionRecoveryDb, 'pet-action-recovery', 'feed', { event_key: 'callback:feed:failure', source: 'telegram_callback' }),
+  /simulated_d1_batch_failure/,
+  'pet action persistence failure must surface so the same receipt can retry',
+);
+assert.deepEqual(
+  { ...actionRecoveryDb.database.prepare("SELECT moon_gold, style_tokens, pet_xp FROM telegram_pet_profiles WHERE telegram_id='pet-action-recovery'").get() },
+  { moon_gold: 0, style_tokens: 0, pet_xp: 0 },
+  'failed pet action batch must not leave wallet credits or profile Pet XP behind',
+);
+assert.equal(
+  actionRecoveryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id='pet-action-recovery' AND event_key='callback:feed:failure' AND status='accepted'").get().count,
+  0,
+  'pet actions must not commit accepted receipts before wallet/profile persistence succeeds',
+);
+const recoveredAction = await processPetAction(actionRecoveryDb, 'pet-action-recovery', 'feed', { event_key: 'callback:feed:failure', source: 'telegram_callback' });
+assert.equal(recoveredAction.accepted, true, 'pet action retry should settle after the failed batch rolls back');
+assert.deepEqual(
+  { ...actionRecoveryDb.database.prepare("SELECT moon_gold, pet_xp FROM telegram_pet_profiles WHERE telegram_id='pet-action-recovery'").get() },
+  { moon_gold: 5, pet_xp: 6 },
+  'retried pet action must persist wallet credits and profile Pet XP exactly once',
+);
+assert.deepEqual(
+  { moon_gold: recoveredAction.pet.moon_gold, pet_xp: recoveredAction.pet.pet_xp },
+  { moon_gold: 5, pet_xp: 6 },
+  'retried pet action response must return persisted wallet and pet state',
+);
+assert.deepEqual(
+  { ...actionRecoveryDb.database.prepare("SELECT pet_id, status, pet_xp_awarded FROM telegram_pet_events WHERE telegram_id='pet-action-recovery' AND event_key='callback:feed:failure'").get() },
+  { pet_id: 'pet:pet-action-recovery:pet-s2026-003:1', status: 'accepted', pet_xp_awarded: 6 },
+  'pet action accepted receipt must be tied to the active pet after persistence succeeds',
+);
+const duplicateAction = await processPetAction(actionRecoveryDb, 'pet-action-recovery', 'feed', { event_key: 'callback:feed:failure', source: 'telegram_callback' });
+assert.equal(duplicateAction.duplicate, true, 'pet action duplicate callback must resolve from the accepted receipt');
+assert.deepEqual(
+  { ...actionRecoveryDb.database.prepare("SELECT moon_gold, pet_xp FROM telegram_pet_profiles WHERE telegram_id='pet-action-recovery'").get() },
+  { moon_gold: 5, pet_xp: 6 },
+  'duplicate pet action callback must not reapply wallet or Pet XP rewards',
+);
+
+function seedPetActivitySession(telegramId, options = {}) {
+  const now = options.now instanceof Date ? options.now : new Date(options.now || Date.now());
+  const elapsedSeconds = Number(options.elapsed_seconds || 1800);
+  const startedAt = new Date(now.getTime() - elapsedSeconds * 1000).toISOString();
+  const endsAt = new Date(options.ends_at || now.getTime() + 3600 * 1000).toISOString().replace('T', ' ').replace('.000Z', '');
+  const sessionId = options.session_id || `activity-${telegramId}`;
+  const db = seedRepeatRewardPlayer(telegramId, 70, now.toISOString());
+  db.database.prepare(`
+    INSERT INTO telegram_pet_activity_sessions
+      (id, telegram_id, activity_type, started_at, ends_at, status, metadata)
+    VALUES (?, ?, ?, ?, ?, 'active', '{}')
+  `).run(sessionId, telegramId, options.activity_type || 'train', startedAt, endsAt);
+  return { db, sessionId, now };
+}
+
+const activityNow = new Date('2026-08-10T16:00:00.000Z');
+const normalActivity = seedPetActivitySession('activity-normal', { now: activityNow, elapsed_seconds: 1800 });
+const normalActivityClaim = await claimPetActivitySession(normalActivity.db, 'activity-normal', { now: activityNow, source: 'activity_claim_regression' });
+assert.equal(normalActivityClaim.accepted, true, 'an active activity past the minimum duration must claim successfully');
+assert.equal(normalActivityClaim.reason, 'claimed', 'the winning activity claim must report claimed');
+assert.deepEqual(
+  { ...normalActivity.db.database.prepare("SELECT status, claimed_at FROM telegram_pet_activity_sessions WHERE id = 'activity-activity-normal'").get() },
+  { status: 'completed', claimed_at: activityNow.toISOString() },
+  'the session must reach its claimed terminal state before rewards are returned',
+);
+assert.deepEqual(
+  { ...normalActivity.db.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id = 'activity-normal'").get(),
+    ...normalActivity.db.database.prepare("SELECT xp AS community_xp FROM telegram_users WHERE telegram_id = 'activity-normal'").get() },
+  { pet_xp: 26, community_xp: 2 },
+  'a normal activity claim must grant its Pet XP and Community XP exactly once',
+);
+const duplicateActivityClaim = await claimPetActivitySession(normalActivity.db, 'activity-normal', { now: activityNow, source: 'activity_claim_regression' });
+assert.equal(duplicateActivityClaim.accepted, false, 'a duplicate activity claim must lose after the session is terminal');
+assert.equal(duplicateActivityClaim.reason, 'no_active_activity', 'a duplicate activity claim must return safely');
+assert.equal(normalActivity.db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id = 'activity-normal' AND event_type = 'activity_claim'").get().count, 1,
+  'a duplicate activity claim must not create a second reward event');
+assert.equal(normalActivity.db.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id = 'activity-normal'").get().pet_xp, 26,
+  'a duplicate activity claim must not grant Pet XP twice');
+
+const recoverableActivity = seedPetActivitySession('activity-reward-retry', { now: activityNow, elapsed_seconds: 1800 });
+await __petMediaTestHooks.getPetProfile(recoverableActivity.db, 'activity-reward-retry');
+recoverableActivity.db.failBatchOnSql(/INSERT OR IGNORE INTO telegram_pet_reward_claims/);
+await assert.rejects(
+  claimPetActivitySession(recoverableActivity.db, 'activity-reward-retry', { now: activityNow, source: 'activity_claim_regression' }),
+  /simulated_d1_batch_failure/,
+  'a transient reward settlement failure must propagate so the caller can retry',
+);
+const interruptedActivitySession = recoverableActivity.db.database.prepare(
+  "SELECT status, metadata FROM telegram_pet_activity_sessions WHERE id = 'activity-activity-reward-retry'",
+).get();
+assert.equal(interruptedActivitySession.status, 'completed', 'a reserved claim must remain closed to cancel and expiry callbacks');
+assert.equal(JSON.parse(interruptedActivitySession.metadata).claim_state, 'claiming', 'a failed reward settlement must leave a recoverable claim checkpoint');
+assert.equal(recoverableActivity.db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id = 'activity-reward-retry'").get().count, 0,
+  'a failed transactional reward settlement must not leave partial rewards');
+const retriedActivityClaim = await claimPetActivitySession(recoverableActivity.db, 'activity-reward-retry', {
+  now: new Date(activityNow.getTime() + 60_000), source: 'activity_claim_regression',
+});
+assert.equal(retriedActivityClaim.accepted, true, 'retrying a recoverable activity claim must settle the original reward');
+assert.equal(retriedActivityClaim.reason, 'claimed', 'a successful recovery must report a claimed activity');
+assert.equal(JSON.parse(recoverableActivity.db.database.prepare(
+  "SELECT metadata FROM telegram_pet_activity_sessions WHERE id = 'activity-activity-reward-retry'",
+).get().metadata).claim_state, 'settled', 'the session must become settled only after reward issuance succeeds');
+assert.equal(recoverableActivity.db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id = 'activity-reward-retry' AND event_type = 'activity_claim'").get().count, 1,
+  'a reward failure followed by retry must create exactly one reward event');
+assert.equal(recoverableActivity.db.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id = 'activity-reward-retry'").get().pet_xp, 26,
+  'a reward failure followed by retry must grant the earned Pet XP exactly once');
+
+const committedActivity = seedPetActivitySession('activity-committed-retry', {
+  now: activityNow,
+  elapsed_seconds: 7200,
+  activity_type: 'explore',
+  ends_at: new Date(activityNow.getTime() + 6 * 3600 * 1000).toISOString(),
+});
+let failCommittedSettlement = true;
+committedActivity.db.beforeRun = async (sql) => {
+  if (failCommittedSettlement && sql.includes('UPDATE telegram_pet_activity_sessions') && sql.includes('SET metadata = ?')) {
+    failCommittedSettlement = false;
+    throw new Error('simulated_activity_settlement_failure');
+  }
+};
+await assert.rejects(
+  claimPetActivitySession(committedActivity.db, 'activity-committed-retry', { now: activityNow, source: 'activity_claim_regression' }),
+  /simulated_activity_settlement_failure/,
+  'a caller failure after reward commit must leave the committed award recoverable',
+);
+committedActivity.db.beforeRun = null;
+assert.equal(committedActivity.db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id = 'activity-committed-retry' AND event_type = 'activity_claim'").get().count, 1,
+  'the interrupted caller must have exactly one committed reward event');
+assert.equal(committedActivity.db.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id = 'activity-committed-retry' AND asset_type = 'item' AND asset_key = 'adventure_map'").get().quantity, 1,
+  'the interrupted caller must retain its committed authority-backed item');
+const committedActivityRetry = await claimPetActivitySession(committedActivity.db, 'activity-committed-retry', {
+  now: new Date(activityNow.getTime() + 60_000), source: 'activity_claim_regression',
+});
+assert.equal(committedActivityRetry.accepted, true, 'retry after a committed reward must settle successfully');
+assert.equal(committedActivityRetry.duplicate, true, 'retry after a committed reward must reuse the original claim');
+assert.equal(committedActivityRetry.pet_xp_awarded, 36, 'retry must recover the original awarded Pet XP');
+assert.equal(committedActivityRetry.rewards.moon_gold, 32, 'retry must recover the original awarded currency');
+assert.equal(committedActivityRetry.rewards.items.adventure_map, 1, 'retry must recover the original applied item');
+assert.equal(committedActivityRetry.pet.telegram_id, 'activity-committed-retry', 'retry must recover the authoritative Pet state for user-facing output');
+const committedSettlementMetadata = JSON.parse(committedActivity.db.database.prepare(
+  "SELECT metadata FROM telegram_pet_activity_sessions WHERE id = 'activity-activity-committed-retry'",
+).get().metadata);
+assert.equal(committedSettlementMetadata.claim_state, 'settled', 'the recovered committed reward must settle the session');
+assert.equal(committedSettlementMetadata.applied_rewards.pet_xp, 36, 'settlement metadata must preserve original awarded Pet XP');
+assert.equal(committedSettlementMetadata.applied_rewards.moon_gold, 32, 'settlement metadata must preserve original awarded currency');
+assert.equal(committedSettlementMetadata.applied_rewards.items.adventure_map, 1, 'settlement metadata must preserve original applied items');
+const committedActivityDuplicate = await claimPetActivitySession(committedActivity.db, 'activity-committed-retry', {
+  now: new Date(activityNow.getTime() + 120_000), source: 'activity_claim_regression',
+});
+assert.equal(committedActivityDuplicate.accepted, false, 'a retry after settlement must not award again');
+assert.equal(committedActivity.db.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id = 'activity-committed-retry'").get().pet_xp, 36,
+  'duplicate retry must not add Pet XP');
+assert.equal(committedActivity.db.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id = 'activity-committed-retry' AND asset_type = 'item' AND asset_key = 'adventure_map'").get().quantity, 1,
+  'duplicate retry must not add items');
+assert.deepEqual(JSON.parse(committedActivity.db.database.prepare(
+  "SELECT metadata FROM telegram_pet_activity_sessions WHERE id = 'activity-activity-committed-retry'",
+).get().metadata), committedSettlementMetadata, 'duplicate retry must not corrupt settled metadata');
+
+const concurrentActivity = seedPetActivitySession('activity-concurrent', { now: activityNow, elapsed_seconds: 1800 });
+let concurrentClaimReservations = 0;
+let releaseConcurrentClaims;
+let markConcurrentClaimsReached;
+const concurrentClaimsReached = new Promise((resolve) => { markConcurrentClaimsReached = resolve; });
+const continueConcurrentClaims = new Promise((resolve) => { releaseConcurrentClaims = resolve; });
+concurrentActivity.db.beforeRun = async (sql) => {
+  if (sql.includes('UPDATE telegram_pet_activity_sessions') && sql.includes("SET status = 'completed'")) {
+    concurrentClaimReservations += 1;
+    if (concurrentClaimReservations === 2) markConcurrentClaimsReached();
+    await continueConcurrentClaims;
+  }
+};
+const concurrentActivityClaimPromises = [
+  claimPetActivitySession(concurrentActivity.db, 'activity-concurrent', { now: activityNow, source: 'activity_claim_regression' }),
+  claimPetActivitySession(concurrentActivity.db, 'activity-concurrent', { now: activityNow, source: 'activity_claim_regression' }),
+];
+await concurrentClaimsReached;
+concurrentActivity.db.beforeRun = null;
+releaseConcurrentClaims();
+const concurrentActivityClaims = await Promise.all(concurrentActivityClaimPromises);
+assert.ok(concurrentActivityClaims.every((claim) => claim.accepted), 'both concurrent callers must receive the settled reward result');
+assert.deepEqual(concurrentActivityClaims.map((claim) => claim.pet_xp_awarded), [26, 26], 'concurrent callers must receive consistent awarded Pet XP');
+assert.deepEqual(concurrentActivityClaims.map((claim) => claim.xp_awarded), [2, 2], 'concurrent callers must receive consistent awarded Community XP');
+assert.ok(concurrentActivityClaims.every((claim) => claim.pet?.telegram_id === 'activity-concurrent'), 'concurrent callers must receive the authoritative Pet state');
+assert.equal(concurrentActivity.db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id = 'activity-concurrent' AND event_type = 'activity_claim'").get().count, 1,
+  'two simultaneous activity claims must create exactly one reward event');
+assert.equal(concurrentActivity.db.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id = 'activity-concurrent'").get().pet_xp, 26,
+  'two simultaneous activity claims must grant Pet XP exactly once');
+
+const cancelRaceActivity = seedPetActivitySession('activity-cancel-race', {
+  now: activityNow,
+  elapsed_seconds: 1800,
+  // Keep this claim/cancel fixture independent from the wall clock. Expiry has
+  // its own dedicated race test below.
+  ends_at: '2099-01-01T00:00:00.000Z',
+});
+let releaseCancelRaceClaim;
+let markCancelRaceClaimReached;
+const cancelRaceClaimReached = new Promise((resolve) => { markCancelRaceClaimReached = resolve; });
+const continueCancelRaceClaim = new Promise((resolve) => { releaseCancelRaceClaim = resolve; });
+cancelRaceActivity.db.beforeRun = async (sql) => {
+  if (sql.includes('UPDATE telegram_pet_activity_sessions') && sql.includes("SET status = 'completed'")) {
+    markCancelRaceClaimReached();
+    await continueCancelRaceClaim;
+  }
+};
+const racingActivityClaim = claimPetActivitySession(cancelRaceActivity.db, 'activity-cancel-race', { now: activityNow, source: 'activity_claim_regression' });
+await cancelRaceClaimReached;
+const racingActivityCancel = await cancelPetActivitySession(cancelRaceActivity.db, 'activity-cancel-race');
+cancelRaceActivity.db.beforeRun = null;
+releaseCancelRaceClaim();
+const losingActivityClaim = await racingActivityClaim;
+assert.equal(racingActivityCancel.accepted, true, 'cancellation must win when it atomically closes the active session first');
+assert.equal(losingActivityClaim.accepted, false, 'a claim callback that loses to cancellation must not award rewards');
+assert.equal(losingActivityClaim.reason, 'activity_already_closed', 'a claim callback that loses the terminal race must return safely');
+assert.equal(cancelRaceActivity.db.database.prepare("SELECT status FROM telegram_pet_activity_sessions WHERE id = 'activity-activity-cancel-race'").get().status, 'cancelled',
+  'the claim/cancel race must preserve the winning cancellation state');
+assert.equal(cancelRaceActivity.db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id = 'activity-cancel-race'").get().count, 0,
+  'a claim callback that loses to cancellation must not create a reward event');
+assert.equal(cancelRaceActivity.db.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id = 'activity-cancel-race'").get().pet_xp, 0,
+  'a claim callback that loses to cancellation must not grant Pet XP');
+
+const expiryEndsAt = new Date(activityNow.getTime() - 23 * 3600 * 1000).toISOString();
+const expiryRaceActivity = seedPetActivitySession('activity-expiry-race', {
+  now: activityNow, elapsed_seconds: 25 * 3600, ends_at: expiryEndsAt,
+});
+let releaseExpiryRaceClaim;
+let markExpiryRaceClaimReached;
+const expiryRaceClaimReached = new Promise((resolve) => { markExpiryRaceClaimReached = resolve; });
+const continueExpiryRaceClaim = new Promise((resolve) => { releaseExpiryRaceClaim = resolve; });
+expiryRaceActivity.db.beforeRun = async (sql) => {
+  if (sql.includes('UPDATE telegram_pet_activity_sessions') && sql.includes("SET status = 'completed'")) {
+    markExpiryRaceClaimReached();
+    await continueExpiryRaceClaim;
+  }
+};
+const racingExpiryClaim = claimPetActivitySession(expiryRaceActivity.db, 'activity-expiry-race', { now: activityNow, source: 'activity_claim_regression' });
+await expiryRaceClaimReached;
+await expireOldPetActivitySessions(expiryRaceActivity.db, 'activity-expiry-race', new Date(activityNow.getTime() + 2 * 3600 * 1000));
+expiryRaceActivity.db.beforeRun = null;
+releaseExpiryRaceClaim();
+const losingExpiryClaim = await racingExpiryClaim;
+assert.equal(losingExpiryClaim.accepted, false, 'a claim callback that loses to expiry must not award rewards');
+assert.equal(losingExpiryClaim.reason, 'activity_already_closed', 'an expiry-race loser must return safely');
+assert.equal(expiryRaceActivity.db.database.prepare("SELECT status FROM telegram_pet_activity_sessions WHERE id = 'activity-activity-expiry-race'").get().status, 'expired',
+  'the claim/expiry race must preserve the winning expired state');
+assert.equal(expiryRaceActivity.db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id = 'activity-expiry-race'").get().count, 0,
+  'an expired session must not create a reward event');
+
+const cappedActivity = seedPetActivitySession('activity-caps', { now: activityNow, elapsed_seconds: 1800 });
+seedAcceptedDailyPetEvent(cappedActivity.db, 'activity-caps', 'activity-caps-prior', 1199, 249, '2026-08-10', { petScoped: true });
+const cappedActivityClaim = await claimPetActivitySession(cappedActivity.db, 'activity-caps', { now: activityNow, source: 'activity_claim_regression' });
+assert.equal(cappedActivityClaim.pet_xp_awarded, 1, 'activity claims must preserve the 1,200/day Pet XP cap');
+assert.equal(cappedActivityClaim.xp_awarded, 1, 'activity claims must preserve the 250/day Community XP cap');
+
+const itemActivity = seedPetActivitySession('activity-item', {
+  now: activityNow, elapsed_seconds: 7200, activity_type: 'explore',
+  ends_at: new Date(activityNow.getTime() + 6 * 3600 * 1000).toISOString(),
+});
+const itemActivityClaim = await claimPetActivitySession(itemActivity.db, 'activity-item', { now: activityNow, source: 'activity_claim_regression' });
+assert.equal(itemActivityClaim.accepted, true, 'an eligible explore activity item claim must succeed');
+assert.equal(itemActivity.db.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id = 'activity-item' AND asset_type = 'item' AND asset_key = 'adventure_map'").get().quantity, 1,
+  'activity item rewards must use telegram_pet_inventory as their balance authority');
+await claimPetActivitySession(itemActivity.db, 'activity-item', { now: activityNow, source: 'activity_claim_regression' });
+assert.equal((await getPetInventory(itemActivity.db, 'activity-item')).find((item) => item.key === 'adventure_map').count, 1,
+  'duplicate activity callbacks must not duplicate authority-backed item rewards');
+
+const inventoryAuthorityDb = seedRepeatRewardPlayer('inventory-authority', 70);
+const inventoryAwardRequest = {
+  telegram_id: 'inventory-authority', source: 'pet_action', idempotency_key: 'inventory-authority-award',
+  event_key: 'inventory-authority-award', rewards: { items: { moon_snack: 1 } },
+};
+const [inventoryAward, duplicateInventoryAward] = await Promise.all([
+  awardPetReward(inventoryAuthorityDb, inventoryAwardRequest),
+  awardPetReward(inventoryAuthorityDb, inventoryAwardRequest),
+]);
+assert.equal(inventoryAward.accepted, true, 'awardPetReward item claims must succeed');
+assert.equal(duplicateInventoryAward.accepted, true, 'duplicate item reward callbacks must remain idempotently accepted');
+assert.equal(inventoryAuthorityDb.database.prepare(`SELECT quantity FROM telegram_pet_inventory
+  WHERE telegram_id = 'inventory-authority' AND asset_type = 'item' AND asset_key = 'moon_snack'`).get().quantity, 1,
+  'duplicate reward callbacks must write an item exactly once');
+assert.equal((await getPetInventory(inventoryAuthorityDb, 'inventory-authority')).find((item) => item.key === 'moon_snack').count, 1,
+  'awardPetReward items must appear through getPetInventory');
+const usedAuthorityItem = await processPetUseItem(inventoryAuthorityDb, 'inventory-authority', 'moon_snack', {
+  event_key: 'inventory-authority-use', source: 'inventory_authority_regression',
+});
+assert.equal(usedAuthorityItem.accepted, true, 'an authority-awarded item must be usable');
+assert.equal((await getPetInventory(inventoryAuthorityDb, 'inventory-authority')).find((item) => item.key === 'moon_snack').count, 0,
+  'using an item must decrement the authoritative inventory balance');
+const duplicateAuthorityUse = await processPetUseItem(inventoryAuthorityDb, 'inventory-authority', 'moon_snack', {
+  event_key: 'inventory-authority-use', source: 'inventory_authority_regression',
+});
+assert.equal(duplicateAuthorityUse.duplicate, true, 'duplicate use callbacks must not consume or reward an item twice');
+assert.equal(inventoryAuthorityDb.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id = 'inventory-authority'").get().pet_xp, 4,
+  'duplicate item-use callbacks must award their capped effect exactly once');
+
+// Mixed-version cutover: the legacy Worker writes only audit events, migration
+// 045 checkpoints them, and the new Worker closes any late-write gap before it
+// reads or mutates authoritative inventory.
+const cutoverDb = seedRepeatRewardPlayer('inventory-cutover', 70);
+const insertLegacyItemEvent = cutoverDb.database.prepare(`INSERT OR IGNORE INTO telegram_pet_events
+  (id, telegram_id, event_type, event_key, season_key, day_key, week_key, status, reason, metadata)
+  VALUES (?, 'inventory-cutover', ?, ?, 'pet-s2026-003', '2026-08-11', '2026-W33', 'accepted', ?, ?)`);
+insertLegacyItemEvent.run('cutover-before-045', 'daily_chest', 'cutover:grant:before-045', 'daily_chest', '{"item_key":"moon_snack","count":2}');
+cutoverDb.database.exec(inventoryReconciliationMigration);
+assert.equal(cutoverDb.database.prepare(`SELECT quantity FROM telegram_pet_inventory
+  WHERE telegram_id = 'inventory-cutover' AND asset_type = 'item' AND asset_key = 'moon_snack'`).get().quantity, 2,
+  'migration 045 must reconcile the legacy grant visible at migration time');
+
+insertLegacyItemEvent.run('cutover-after-045-grant', 'daily_chest', 'cutover:grant:after-045', 'daily_chest', '{"item_key":"moon_snack","count":2}');
+insertLegacyItemEvent.run('cutover-after-045-consume', 'use_item', 'cutover:consume:after-045', 'item_used', '{"consumed_item_key":"moon_snack"}');
+insertLegacyItemEvent.run('cutover-after-045-grant-duplicate', 'daily_chest', 'cutover:grant:after-045', 'daily_chest', '{"item_key":"moon_snack","count":2}');
+insertLegacyItemEvent.run('cutover-after-045-consume-duplicate', 'use_item', 'cutover:consume:after-045', 'item_used', '{"consumed_item_key":"moon_snack"}');
+
+assert.equal((await getPetInventory(cutoverDb, 'inventory-cutover')).find((item) => item.key === 'moon_snack').count, 3,
+  'the new Worker must reconcile late legacy grants and consumption exactly once at cutover');
+const cutoverAuthorityAward = {
+  telegram_id: 'inventory-cutover', source: 'pet_action', idempotency_key: 'cutover-authority-award',
+  event_key: 'cutover-authority-award', rewards: { items: { moon_snack: 1 } },
+};
+await awardPetReward(cutoverDb, cutoverAuthorityAward);
+await awardPetReward(cutoverDb, cutoverAuthorityAward);
+assert.equal((await getPetInventory(cutoverDb, 'inventory-cutover')).find((item) => item.key === 'moon_snack').count, 4,
+  'new-authority grants and duplicate callbacks must preserve the reconciled balance');
+await processPetUseItem(cutoverDb, 'inventory-cutover', 'moon_snack', {
+  event_key: 'cutover-authority-consume', source: 'inventory_cutover_regression',
+});
+await processPetUseItem(cutoverDb, 'inventory-cutover', 'moon_snack', {
+  event_key: 'cutover-authority-consume', source: 'inventory_cutover_regression',
+});
+assert.equal((await getPetInventory(cutoverDb, 'inventory-cutover')).find((item) => item.key === 'moon_snack').count, 3,
+  'new-authority consumption and duplicate callbacks must decrement exactly once');
+
+const bankedItemDb = seedRepeatRewardPlayer('banked-item', 70);
+await ensurePetStarterSeasonSlot(bankedItemDb, 'banked-item', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(bankedItemDb, 'banked-item');
+const bankedItemPet = bankedItemDb.database.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='banked-item'").get();
+bankedItemDb.database.prepare(`INSERT INTO telegram_pet_runs
+  (id, pet_id, telegram_id, run_id, season_key, status, depth, max_depth, risk_level, unbanked_items)
+  VALUES ('banked-item-row', ?, 'banked-item', 'banked-item-run', 'pet-s2026-003', 'active', 1, 5, 1, '{"energy_drink":1}')`).run(bankedItemPet.pet_id);
+const bankedItemResult = await processPetRunExtract(bankedItemDb, 'banked-item', 'banked-item-run', { source: 'inventory_authority_regression' });
+assert.equal(bankedItemResult.accepted, true, 'run extraction with an item must bank successfully');
+assert.equal((await getPetInventory(bankedItemDb, 'banked-item')).find((item) => item.key === 'energy_drink').count, 1,
+  'a banked run item must appear in the authoritative bag');
+const usedBankedItem = await processPetUseItem(bankedItemDb, 'banked-item', 'energy_drink', {
+  event_key: 'banked-item-use', source: 'inventory_authority_regression',
+});
+assert.equal(usedBankedItem.accepted, true, 'a banked run item must be usable');
+assert.equal((await getPetInventory(bankedItemDb, 'banked-item')).find((item) => item.key === 'energy_drink').count, 0,
+  'using a banked run item must consume its authoritative balance');
+
+const recoveryStylePatchDb = seedRepeatRewardPlayer('use-item-recovery-style', 70);
+await ensurePetStarterSeasonSlot(recoveryStylePatchDb, 'use-item-recovery-style', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(recoveryStylePatchDb, 'use-item-recovery-style');
+recoveryStylePatchDb.database.prepare(`INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity)
+  VALUES ('use-item-recovery-style', 'item', 'style_patch', 1)`).run();
+insertWalletRecoveryRequired(recoveryStylePatchDb, 'use-item-recovery-style');
+const frozenStylePatch = await processPetUseItem(recoveryStylePatchDb, 'use-item-recovery-style', 'style_patch', {
+  event_key: 'use-item-recovery-style', source: 'inventory_authority_regression',
+});
+assert.equal(frozenStylePatch.accepted, false, 'pending wallet recovery must block style_patch before item consumption');
+assert.equal(frozenStylePatch.reason, 'wallet_reconciliation_recovery_pending');
+assert.deepEqual(
+  { ...recoveryStylePatchDb.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id='use-item-recovery-style' AND asset_key='style_patch'").get() },
+  { quantity: 1 },
+  'recovery-pending style_patch must leave inventory untouched',
+);
+assert.deepEqual(
+  { ...recoveryStylePatchDb.database.prepare("SELECT style_tokens, pet_xp FROM telegram_pet_profiles WHERE telegram_id='use-item-recovery-style'").get() },
+  { style_tokens: 0, pet_xp: 0 },
+  'recovery-pending style_patch must not grant wallet or Pet XP rewards',
+);
+assert.equal(recoveryStylePatchDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id='use-item-recovery-style'").get().count, 0,
+  'recovery-pending style_patch must not write settlement events');
+insertWalletReconciled(recoveryStylePatchDb, 'use-item-recovery-style');
+const recoveredStylePatch = await processPetUseItem(recoveryStylePatchDb, 'use-item-recovery-style', 'style_patch', {
+  event_key: 'use-item-recovery-style', source: 'inventory_authority_regression',
+});
+assert.equal(recoveredStylePatch.accepted, true, 'style_patch retry must succeed after wallet recovery completes');
+assert.deepEqual(
+  { ...recoveryStylePatchDb.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id='use-item-recovery-style' AND asset_key='style_patch'").get() },
+  { quantity: 0 },
+  'recovered style_patch retry must consume the item exactly once',
+);
+assert.deepEqual(
+  { ...recoveryStylePatchDb.database.prepare("SELECT style_tokens, pet_xp FROM telegram_pet_profiles WHERE telegram_id='use-item-recovery-style'").get() },
+  { style_tokens: 2, pet_xp: 5 },
+  'recovered style_patch retry must grant wallet and Pet XP rewards once',
+);
+
+const recoveryOtherItemDb = seedRepeatRewardPlayer('use-item-recovery-other', 70);
+await ensurePetStarterSeasonSlot(recoveryOtherItemDb, 'use-item-recovery-other', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(recoveryOtherItemDb, 'use-item-recovery-other');
+recoveryOtherItemDb.database.prepare(`INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity)
+  VALUES ('use-item-recovery-other', 'item', 'energy_drink', 1)`).run();
+insertWalletRecoveryRequired(recoveryOtherItemDb, 'use-item-recovery-other');
+const frozenOtherItem = await processPetUseItem(recoveryOtherItemDb, 'use-item-recovery-other', 'energy_drink', {
+  event_key: 'use-item-recovery-other', source: 'inventory_authority_regression',
+});
+assert.equal(frozenOtherItem.accepted, true, 'pending wallet recovery must allow pet-only energy_drink item use');
+assert.equal(recoveryOtherItemDb.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id='use-item-recovery-other' AND asset_key='energy_drink'").get().quantity, 0,
+  'recovery-pending pet-only item must consume inventory when it settles');
+assert.equal(recoveryOtherItemDb.database.prepare("SELECT pet_xp FROM telegram_pet_profiles WHERE telegram_id='use-item-recovery-other'").get().pet_xp, 6,
+  'recovery-pending pet-only item must grant Pet XP');
+assert.equal(recoveryOtherItemDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id='use-item-recovery-other' AND status='accepted'").get().count, 1,
+  'recovery-pending pet-only item must write its accepted settlement event');
+
+const recoverySnackItemDb = seedRepeatRewardPlayer('use-item-recovery-snack', 70);
+await ensurePetStarterSeasonSlot(recoverySnackItemDb, 'use-item-recovery-snack', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(recoverySnackItemDb, 'use-item-recovery-snack');
+recoverySnackItemDb.database.prepare(`INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity)
+  VALUES ('use-item-recovery-snack', 'item', 'moon_snack', 1)`).run();
+insertWalletRecoveryRequired(recoverySnackItemDb, 'use-item-recovery-snack');
+const recoverySnackItem = await processPetUseItem(recoverySnackItemDb, 'use-item-recovery-snack', 'moon_snack', {
+  event_key: 'use-item-recovery-snack', source: 'inventory_authority_regression',
+});
+assert.equal(recoverySnackItem.accepted, true, 'pending wallet recovery must allow pet-only moon_snack item use');
+assert.deepEqual(
+  { ...recoverySnackItemDb.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id='use-item-recovery-snack' AND asset_key='moon_snack'").get() },
+  { quantity: 0 },
+  'recovery-pending moon_snack must consume inventory exactly once',
+);
+assert.deepEqual(
+  { ...recoverySnackItemDb.database.prepare("SELECT pet_xp, hunger, energy, style_tokens FROM telegram_pet_profiles WHERE telegram_id='use-item-recovery-snack'").get() },
+  { pet_xp: 4, hunger: 7, energy: 78, style_tokens: 0 },
+  'recovery-pending moon_snack must apply pet-only XP/stat effects without wallet drift',
+);
+
+const rollbackUseItemDb = seedRepeatRewardPlayer('use-item-rollback', 70);
+await ensurePetStarterSeasonSlot(rollbackUseItemDb, 'use-item-rollback', new Date('2026-08-15T00:00:00Z'));
+await __petMediaTestHooks.ensureActivePetInstance(rollbackUseItemDb, 'use-item-rollback');
+rollbackUseItemDb.database.prepare(`INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity)
+  VALUES ('use-item-rollback', 'item', 'style_patch', 1)`).run();
+rollbackUseItemDb.failBatchOnSql(/UPDATE telegram_pet_profiles SET\s+\(pet_xp,level,stage/);
+await assert.rejects(
+  processPetUseItem(rollbackUseItemDb, 'use-item-rollback', 'style_patch', {
+    event_key: 'use-item-rollback', source: 'inventory_authority_regression',
+  }),
+  /simulated_d1_batch_failure/,
+  'item-use persistence failure must surface so the callback can retry',
+);
+assert.equal(rollbackUseItemDb.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id='use-item-rollback' AND asset_key='style_patch'").get().quantity, 1,
+  'failed item-use batch must roll back inventory consumption');
+assert.deepEqual(
+  { ...rollbackUseItemDb.database.prepare("SELECT style_tokens, pet_xp FROM telegram_pet_profiles WHERE telegram_id='use-item-rollback'").get() },
+  { style_tokens: 0, pet_xp: 0 },
+  'failed item-use batch must roll back wallet and Pet XP rewards');
 assert.equal(rollbackUseItemDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id='use-item-rollback' AND status='accepted'").get().count, 0,
   'failed item-use batch must not leave an accepted receipt');
 const recoveredRollbackUse = await processPetUseItem(rollbackUseItemDb, 'use-item-rollback', 'style_patch', {
