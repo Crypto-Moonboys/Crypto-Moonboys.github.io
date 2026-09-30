@@ -571,14 +571,26 @@
   }
 
   async function post(path, payload) {
-    var response = await fetch(apiBase + path, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(Object.assign({}, authBody(), payload || {})),
-    });
-    var data = await response.json().catch(function () { return {}; });
-    if (!response.ok && response.status !== 409) throw new Error(data.error || 'NETWORK HANDSHAKE FAILED');
-    return data;
+    // State is read-only and safe to retry on a fresh request context. A
+    // transient D1 read must not strand the whole game on its startup screen.
+    // Never retry /action here: mutations own their idempotency and response.
+    var stateAttempts = path === '/telegram-pets/app/state' ? 3 : 1;
+    for (var attempt = 0; attempt < stateAttempts; attempt += 1) {
+      var response = await fetch(apiBase + path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(Object.assign({}, authBody(), payload || {})),
+      });
+      var data = await response.json().catch(function () { return {}; });
+      var retryableStateFailure = response.status === 503 && data.error === 'mini_app_state_failed' && attempt + 1 < stateAttempts;
+      if (retryableStateFailure) {
+        await new Promise(function (resolve) { setTimeout(resolve, attempt ? 700 : 250); });
+        continue;
+      }
+      if (!response.ok && response.status !== 409) throw new Error(data.error || 'NETWORK HANDSHAKE FAILED');
+      return data;
+    }
+    throw new Error('mini_app_state_failed');
   }
 
   async function typeBoot(lines, options) {
