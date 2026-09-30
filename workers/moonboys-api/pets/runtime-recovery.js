@@ -100,11 +100,11 @@ export async function recoverPetRuntimeAwards(db, owner, award, filter = {}) {
     SELECT pet_id,season_key,run_id,action,day_key,
       TRIM(event_key, char(9,10,11,12,13,32,160,5760,8192,8193,8194,8195,8196,8197,8198,8199,8200,8201,8202,8232,8233,8239,8287,12288,65279)) AS event_key, equipment_snapshot, equipment_action, source_event_id
     FROM raw_candidates
-  ) SELECT c.*,${recoveryKey} AS recovery_key${rotate ? ',cursor.setting_value AS recovery_cursor' : ''} FROM candidates c
+  ) SELECT c.*,${recoveryKey} AS recovery_key${rotate ? ',recovery_state.setting_value AS recovery_cursor' : ''} FROM candidates c
     JOIN telegram_pet_instances p ON p.pet_id=c.pet_id AND p.telegram_id=? AND p.season_key=c.season_key
     JOIN telegram_pet_season_slots slot ON slot.pet_id=p.pet_id AND slot.telegram_id=p.telegram_id
       AND slot.season_key=p.season_key AND slot.slot_number=p.slot_number
-    ${rotate ? "LEFT JOIN telegram_settings cursor ON cursor.telegram_id=p.telegram_id AND cursor.setting_key='moonpet:recovery:runtime'" : ''}
+    ${rotate ? "LEFT JOIN telegram_settings recovery_state ON recovery_state.telegram_id=p.telegram_id AND cursor.setting_key='moonpet:recovery:runtime'" : ''}
     WHERE c.event_key<>'' AND c.day_key IS NOT NULL
       AND (?='' OR c.run_id=?) AND (?='' OR c.action=?)
       AND NOT EXISTS (SELECT 1 FROM telegram_pet_specialist_events e WHERE e.telegram_id=p.telegram_id
@@ -112,7 +112,7 @@ export async function recoverPetRuntimeAwards(db, owner, award, filter = {}) {
         (e.event_key=c.event_key OR (c.event_key LIKE 'runtime:api:%' AND length(c.event_key)=132
           AND substr(e.event_key,1,132)=c.event_key)))
     GROUP BY c.pet_id,c.season_key,c.event_key
-    ORDER BY ${rotate ? `CASE WHEN ${recoveryKey}>COALESCE(cursor.setting_value,'') THEN 0 ELSE 1 END,` : ''}
+    ORDER BY ${rotate ? `CASE WHEN ${recoveryKey}>COALESCE(recovery_state.setting_value,'') THEN 0 ELSE 1 END,` : ''}
       ${recoveryKey} LIMIT ?`)
     .bind(owner, filter.event_key || '', filter.event_key || '', owner, owner, owner, owner, owner, owner, owner,
       ...Object.keys(PET_SEASONAL_BOSSES), owner, filter.run_id || '', filter.run_id || '', filter.action || '', filter.action || '', boundedRecoveryLimit(filter.limit, 20)).all();
