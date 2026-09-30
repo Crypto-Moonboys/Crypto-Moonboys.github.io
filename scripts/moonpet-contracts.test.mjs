@@ -730,7 +730,8 @@ try {
   assert.equal(longBoard.bonus_remaining, 1, 'formats share the same existing daily bonus budget');
   assert.equal(sqlite.prepare('SELECT energy FROM telegram_pet_instances WHERE pet_id=?').get(longPet.pet_id).energy, 0);
   sqlite.exec('DROP TABLE telegram_pet_contracts');
-  assert.equal((await hooks.buildPetMiniAppState(db, b.telegram_id, 'fixture-token')).contracts.available, false);
+  await assert.rejects(hooks.buildPetMiniAppState(db, b.telegram_id, 'fixture-token'), /no such table: telegram_pet_contracts/,
+    'a missing live Contract authority table must fail the state refresh instead of publishing false unavailability');
   const blocked = await hooks.processPetMiniAppAction(db, b.telegram_id, { id:b.telegram_id }, { action:'contract_start',pet_id:b.pet_id,sequence:1,goal:'escort',build:'bruiser',tier:1,request_id:realCrypto.randomUUID() }, 'fixture-token');
   assert.equal(blocked.reason, 'contracts_unavailable');
   sqlite.exec(migration); sqlite.exec(migration);

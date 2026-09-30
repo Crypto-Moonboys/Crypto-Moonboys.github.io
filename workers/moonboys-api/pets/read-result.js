@@ -8,3 +8,8 @@ export function requirePetReadResult(result) {
   }
   return result;
 }
+
+export function requirePetFirstReadResult(result) {
+  if (result?.success === false) throw new Error('pet_state_read_unavailable');
+  return result;
+}

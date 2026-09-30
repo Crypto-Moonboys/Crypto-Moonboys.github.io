@@ -17,7 +17,7 @@ function fixture(owner) {
   class Statement {
     constructor(query, args = []) { this.query = query; this.args = args; }
     bind(...args) { return new Statement(this.query, args); }
-    async first() { db.statementCount++; if (db.beforeFirst) await db.beforeFirst(this); return sql.prepare(this.query).get(...this.args) || null; }
+    async first() { db.statementCount++; if (db.beforeFirst) { const reply = await db.beforeFirst(this); if (reply !== undefined) return reply; } return sql.prepare(this.query).get(...this.args) || null; }
     async all() { db.statementCount++; if (db.beforeAll) { const reply = await db.beforeAll(this); if (reply !== undefined) return reply; } return { results: sql.prepare(this.query).all(...this.args) }; }
     exec() {
       db.statementCount++;
@@ -75,6 +75,10 @@ const targets = {
   economy_materials: /SELECT material_key,quantity FROM telegram_pet_material_balances/,
   achievements: /SELECT achievement_id, progress, target, unlocked_at/,
   season_claims: /SELECT idempotency_key, COALESCE\(awarded_at,created_at\)/,
+  practice: /SELECT c\.run_id,c\.pet_id,c\.reward_day[\s\S]*telegram_pet_practice/,
+  style_loadout: /SELECT s\.cosmetic_key FROM telegram_pet_style_loadouts/,
+  contracts: /SELECT c\.contract_id,c\.pet_id,c\.season_key,c\.reward_day/,
+  daily_run_recovery: /SELECT d\.run_id,d\.utc_day,cursor\.setting_value AS recovery_cursor FROM telegram_pet_daily_runs d/,
 };
 function durableSnapshot(f) {
   return ['telegram_pet_instances','telegram_pet_profiles','telegram_pet_equipment_progression','telegram_pet_material_balances','telegram_pet_inventory','telegram_pet_reward_claims','telegram_pet_events','telegram_pet_system_events','telegram_pet_daily_completion']
@@ -103,6 +107,37 @@ for (const [name,query] of Object.entries(targets)) test(`resolved failed ${name
   for(const key of ['inventory','gear','materials'])assert.deepEqual(restored[key],baseline[key],key);
   assert.equal(restored.guidance.daily_completion.ready,true);
   assert.deepEqual(durableSnapshot(f),before,'read outages cannot consume inventory or rewards');
+});
+test('failed Daily Run summary read cannot publish not-started authority',async()=>{
+  const f=await savedFixture('daily-summary-read');
+  let hit=false;
+  f.db.beforeFirst=s=>{
+    if(s.query.includes('FROM telegram_pet_daily_runs d JOIN telegram_pet_runs r')){
+      hit=true;
+      throw Error('daily_summary_read_unavailable');
+    }
+  };
+  await assert.rejects(hooks.buildPetMiniAppState(f.db,f.owner,'fixture-token'),/daily_summary_read_unavailable/);
+  assert.equal(hit,true);
+});
+const firstReadTargets = {
+ practice_authority: /SELECT 1 WHERE EXISTS[\s\S]*telegram_pet_instances p[\s\S]*telegram_pet_active_slots/,
+ practice_stats: /SELECT COALESCE\(MAX\(sequence\),0\)\+1 next_sequence[\s\S]*FROM telegram_pet_practice/,
+ contract_authority: /SELECT p\.pet_id FROM telegram_pet_instances p JOIN telegram_pet_active_slots/,
+ contract_stats: /SELECT COALESCE\(MAX\(sequence\),0\)\+1 AS next_sequence[\s\S]*FROM telegram_pet_contracts/,
+ daily_summary: /SELECT d\.run_id, d\.pet_id, r\.status, r\.current_room, r\.score[\s\S]*FROM telegram_pet_daily_runs d/,
+};
+for (const [name,query] of Object.entries(firstReadTargets)) test(`resolved failed ${name} first read cannot publish a normal Mini App snapshot`,async()=>{
+  const f=await savedFixture('first-read-'+name);
+  let hit=false;
+  f.db.beforeFirst=s=>{
+    if(query.test(s.query)){
+      hit=true;
+      return {success:false,error:'injected_private_d1_details'};
+    }
+  };
+  await assert.rejects(hooks.buildPetMiniAppState(f.db,f.owner,'fixture-token'),/pet_state_read_unavailable/);
+  assert.equal(hit,true,'fault must reach the target');
 });
 for(const payload of [{success:false,results:[]},{success:false},{success:true},{success:true,results:{}},null]) {
  test(`Relic Vault reports unavailable for ${JSON.stringify(payload)} instead of empty ownership`,async()=>{
