@@ -99,6 +99,20 @@ const client = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.
 const botArtRegistry = JSON.parse(fs.readFileSync(new URL('../data/moonpet-bot-art-registry.json', import.meta.url), 'utf8'));
 const rareBackgroundRegistry = JSON.parse(fs.readFileSync(new URL('../data/moonpet-rare-background-registry.json', import.meta.url), 'utf8'));
 const itemArtRegistry = JSON.parse(fs.readFileSync(new URL('../data/moonpet-item-art-registry.json', import.meta.url), 'utf8'));
+assert.match(worker, /body\.response_mode === 'result_only'[\s\S]*state_pending: true[\s\S]*const state = await buildPetMiniAppState/,
+  'action endpoint must support mutation-only acknowledgement before the legacy whole-state rebuild');
+assert.match(client, /FAST_ACTION_RESPONSE_ACTIONS = new Set\(\['feed', 'play', 'clean', 'sleep', 'train', 'energy_drink', 'dance', 'cuddles'\]\)/,
+  'care actions must use the low-latency response path');
+assert.match(client, /if \(fastResponse\) requestPayload\.response_mode = 'result_only';/,
+  'fast care requests must opt into the mutation-only server contract');
+assert.match(client, /if \(fastResponse && data\.state_pending === true\)[\s\S]*patchFastActionState[\s\S]*scheduleFastActionStateRefresh\(4000\)/,
+  'fast care must patch authoritative result data locally and debounce the expensive state projection');
+assert.match(client, /if \(fastActionStateDirty\) scheduleFastActionStateRefresh\(0\);/,
+  'screen navigation must force reconciliation when a fast action left deferred state work');
+const startupStateRequestIndex = client.indexOf("var initialStateRequest = post('/telegram-pets/app/state')");
+const startupBootAwaitIndex = client.indexOf('await startupBoot;', startupStateRequestIndex);
+assert.ok(startupStateRequestIndex !== -1 && startupBootAwaitIndex > startupStateRequestIndex,
+  'startup must begin the authoritative state request before waiting for the decorative boot sequence');
 assert.doesNotMatch(client, /drawEmergencyMoonpetFallback|drawSpeciesSilhouette|drawEquipmentLayers|drawActionEffects|drawCompanionHabitEffects/,
   'retired procedural pet/equipment/action renderers must not return');
 assert.doesNotMatch(client, /WEARABLE_LOADOUT_STORAGE_KEY|WEARABLE_SLOT_ORDER|wearableTraitDebug/,
@@ -1351,7 +1365,7 @@ assert.match(worker, /const \[journeySummary, hydratedKaiju, seasonFinales\] = a
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
-assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260930-state-retry-v1`/);
+assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260930-fast-actions-v1`/);
 assert.match(worker, /const TELEGRAM_GAMES_MENU_URL = `\$\{SITE_URL\}\/games\/telegram\/\?v=20260903-games-shell-v8`/,
   'default Telegram games menu must point at the current shell release');
 assert.match(worker, /const TELEGRAM_GAMES_MENU_TEXT = 'Games'/);
@@ -1454,7 +1468,7 @@ assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260928-sections-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20260926-front-actions-v1/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20260926-front-actions-v1/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260930-state-retry-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260930-fast-actions-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1638,7 +1652,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260930-state-retry-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260930-fast-actions-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -1739,15 +1753,20 @@ for (const [action, role] of [['energy_drink', 'fight'], ['dance', 'dance'], ['c
   assert.match(client, new RegExp(`key === '${action}'\\) return '${role}'`), `${action} must use the ${role} animation role`);
   assert.match(client, new RegExp(`button\\('[^']+', '${action}'\\)`), `${action} must be available in the Care Console`);
 }
-assert.match(client, /var waitForAcceptedAnimation = \['energy_drink', 'dance', 'cuddles'\]\.includes/,
-  'new special actions must wait for an authoritative accepted response before animating');
-assert.match(client, /sleepLatched && actionAnimationFamily\(action, payload\) !== 'sleep' && !waitForAcceptedAnimation/,
-  'rejected special actions must preserve the existing sleep latch');
-assert.match(client, /waitForAcceptedAnimation && actionAccepted && sleepLatched/,
+assert.match(client, /var authoritativeSleepClear = \['energy_drink', 'dance', 'cuddles'\]\.includes/,
+  'special care actions must preserve sleep authority until the mutation result is known');
+assert.match(client, /var waitForAcceptedAnimation = !fastResponse && authoritativeSleepClear/,
+  'legacy full-state clients may still wait, while fast-response clients animate immediately');
+assert.match(client, /sleepLatched && actionFamily !== 'sleep' && !authoritativeSleepClear/,
+  'optimistic special-action animation must not clear a sleeping pet before server acceptance');
+assert.match(client, /authoritativeSleepClear && actionAccepted && sleepLatched/,
   'an accepted special action may clear a stale sleep latch only after server authority responds');
-assert.match(client, /if \(!waitForAcceptedAnimation\) animateAction\(action, true, 8000, payload\)/);
+assert.match(client, /if \(!waitForAcceptedAnimation\) animateAction\(action, true, fastResponse \? \(actionFamily === 'dance' \? 3600 : 2800\) : 8000, payload\)/,
+  'fast care animation must begin before the mutation response while preserving bounded action timing');
+assert.match(client, /if \(fastResponse && data\.state_pending === true\)[\s\S]*if \(!actionAccepted\) animateAction\('blocked', false, 2800, payload\)/,
+  'a rejected optimistic care action must switch to the blocked animation without faking success');
 assert.match(client, /var actionAccepted = Boolean\(data\.result && data\.result\.accepted\);[\s\S]*if \(!isHatchReveal\) animateAction\(action, actionAccepted, actionFamily === 'dance' \? 3600 : 2800, payload\)/,
-  'accepted DANCE must use a bounded loop while fight and victory return to idle after one-shot timing');
+  'legacy full-state DANCE must retain bounded accepted-response animation timing');
 assert.match(client, /var actionResultHoldMs = 3600/);
 assert.doesNotMatch(client, /createPetPalette|PET_APPEARANCE_PALETTES|PET_SPECIES_PALETTES|DEFAULT_PET_PALETTE/,
   'retired procedural animal palettes must stay removed');
@@ -2185,7 +2204,7 @@ assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Numbe
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
 assert.match(html, /20260926-front-actions-v1/);
-assert.match(worker, /20260930-state-retry-v1/);
+assert.match(worker, /20260930-fast-actions-v1/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');
 assert.match(client, /renderQuality = reducedMotion/, 'canvas quality must start from device capability');
