@@ -121,6 +121,17 @@ assert.match(client, /stateRefreshPayload\(state\)[\s\S]*\{ mode: 'core' \}/,
   'care and cooldown reconciliation must stay on the lightweight core path until a module is opened');
 assert.match(client, /summary\.hydrated === false \|\| stateNeedsFullHydration\(state\)[\s\S]*Detailed pet progression, Growth Marks, Weekly Crests/,
   'core HOME must not render missing progression as fake zero progress');
+assert.match(client, /FULL_STATE_HYDRATION_MAX_AUTO_RETRIES = 3/,
+  'full-module hydration must have a bounded automatic retry ceiling');
+assert.match(client, /fullStateHydrationFailures < FULL_STATE_HYDRATION_MAX_AUTO_RETRIES[\s\S]*Math\.pow\(2/,
+  'failed module hydration must use bounded exponential backoff instead of a 750ms infinite loop');
+assert.match(client, /data-utility="module-retry"/,
+  'exhausted automatic hydration must expose a manual retry control');
+assert.match(client, /function applyRequestedFocus\(\) \{[\s\S]*stateNeedsFullHydration\(state\) && activeScreen !== 'home'\) return;[\s\S]*requestedFocus = ''/,
+  'deep-link focus must remain pending until the requested module is fully hydrated');
+assert.match(client, /await showPendingNotices\(\);[\s\S]*applyRequestedFocus\(\);/,
+  'successful full hydration must apply any deferred launch focus');
+
 const startupStateRequestIndex = client.indexOf("var initialStateRequest = post('/telegram-pets/app/state', { mode: 'core' })");
 const startupBootAwaitIndex = client.indexOf('await startupBoot;', startupStateRequestIndex);
 assert.ok(startupStateRequestIndex !== -1 && startupBootAwaitIndex > startupStateRequestIndex,
