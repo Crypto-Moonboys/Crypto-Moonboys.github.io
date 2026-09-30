@@ -109,10 +109,22 @@ assert.match(client, /if \(fastResponse && data\.state_pending === true\)[\s\S]*
   'fast care must patch authoritative result data locally and debounce the expensive state projection');
 assert.match(client, /if \(fastActionStateDirty\) scheduleFastActionStateRefresh\(0\);/,
   'screen navigation must force reconciliation when a fast action left deferred state work');
-const startupStateRequestIndex = client.indexOf("var initialStateRequest = post('/telegram-pets/app/state')");
+assert.match(worker, /body\.mode === 'core'[\s\S]*buildPetMiniAppCoreState\(env\.DB, verified\.telegramId\)[\s\S]*buildPetMiniAppState/,
+  'state endpoint must expose lightweight core bootstrap without removing the legacy full projection');
+assert.match(client, /function stateNeedsFullHydration\(snapshot\)[\s\S]*snapshot\.hydration\.full === false/,
+  'client must distinguish lightweight HOME state from fully hydrated module state');
+assert.match(client, /var initialStateRequest = post\('\/telegram-pets\/app\/state', \{ mode: 'core' \}\);/,
+  'startup must request only the lightweight core state');
+assert.match(client, /stateNeedsFullHydration\(state\) && nextScreen !== 'home'[\s\S]*hydrateFullState\(nextScreen\)/,
+  'opening a non-HOME screen must lazy-load the full server state');
+assert.match(client, /stateRefreshPayload\(state\)[\s\S]*\{ mode: 'core' \}/,
+  'care and cooldown reconciliation must stay on the lightweight core path until a module is opened');
+assert.match(client, /summary\.hydrated === false \|\| stateNeedsFullHydration\(state\)[\s\S]*Detailed pet progression, Growth Marks, Weekly Crests/,
+  'core HOME must not render missing progression as fake zero progress');
+const startupStateRequestIndex = client.indexOf("var initialStateRequest = post('/telegram-pets/app/state', { mode: 'core' })");
 const startupBootAwaitIndex = client.indexOf('await startupBoot;', startupStateRequestIndex);
 assert.ok(startupStateRequestIndex !== -1 && startupBootAwaitIndex > startupStateRequestIndex,
-  'startup must begin the authoritative state request before waiting for the decorative boot sequence');
+  'startup must begin the core authority request before waiting for the decorative boot sequence');
 assert.doesNotMatch(client, /drawEmergencyMoonpetFallback|drawSpeciesSilhouette|drawEquipmentLayers|drawActionEffects|drawCompanionHabitEffects/,
   'retired procedural pet/equipment/action renderers must not return');
 assert.doesNotMatch(client, /WEARABLE_LOADOUT_STORAGE_KEY|WEARABLE_SLOT_ORDER|wearableTraitDebug/,
