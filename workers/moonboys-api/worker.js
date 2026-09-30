@@ -9545,11 +9545,12 @@ async function buildPetMiniAppCoreState(db, telegramId) {
     };
   }
 
+  const dayKey = getPetDayKey(now);
   const lifecyclePromise = getExistingMoonpetLifecycle(db, telegramId)
     .then((lifecycle) => lifecycle || getMoonpetLifecycle(db, telegramId));
   const activityPromise = getActivePetActivitySession(db, telegramId, now)
     .then((active) => active || getRecoverablePetActivitySession(db, telegramId));
-  const [lifecycle, activity, seasonSlots, specialActions, recentCare] = await Promise.all([
+  const [rawLifecycle, activity, seasonSlots, specialActions, recentCare, dailyCache, dailyPetXpRow] = await Promise.all([
     lifecyclePromise,
     activityPromise,
     buildPetSeasonSlotCoreSummary(db, telegramId, now),
@@ -9558,7 +9559,16 @@ async function buildPetMiniAppCoreState(db, telegramId) {
       FROM telegram_pet_events
       WHERE telegram_id=? AND event_type IN ('feed','play','clean','sleep','train') AND status='accepted'
       GROUP BY event_type`).bind(String(telegramId)).all().then(requirePetReadResult),
+    readAcceptedDailyChestPetEventForDay(db, telegramId, dayKey),
+    db.prepare(`SELECT COALESCE(SUM(pet_xp_awarded), 0) AS pet_xp
+      FROM telegram_pet_events
+      WHERE telegram_id=? AND day_key=? AND status='accepted'`)
+      .bind(String(telegramId), dayKey).first().then(requirePetFirstReadResult),
   ]);
+  // Match the full-state privacy contract: stage-1 identity stays hidden, while
+  // the internal stage-2 art handoff may be exposed only through the existing
+  // include_art_identity rule.
+  const lifecycle = publicMoonpetLifecycle(rawLifecycle, { include_art_identity: true });
 
   const identityProxy = {
     current_stage: {
@@ -9588,7 +9598,19 @@ async function buildPetMiniAppCoreState(db, telegramId) {
     identity: identityProxy,
     activity: activitySummary,
     special_actions: specialActions,
-    daily_cache: { available: false, claimed: false, syncing: true, cooldown: null },
+    daily_cache: {
+      available: !dailyCache && Boolean(lifecycle && lifecycle.phase !== 'egg'),
+      claimed: Boolean(dailyCache),
+      syncing: false,
+      rewards: { pet_xp: 40, moon_gold: 40, style_tokens: 2 },
+      available_pet_xp: Math.min(40, Math.max(0, PETS_DAILY_PET_XP_CAP - Math.max(0, Number(dailyPetXpRow?.pet_xp || 0)))),
+      receipt: dailyCache ? {
+        pet_id: dailyCache.pet_id,
+        event_key: dailyCache.event_key,
+        pet_xp_awarded: dailyCache.pet_xp_awarded,
+      } : null,
+      cooldown: normalizePetCooldownWindow(getNextPetUtcDayResetAt(now), now),
+    },
   };
   const next = lifecycle?.phase === 'egg'
     ? {
