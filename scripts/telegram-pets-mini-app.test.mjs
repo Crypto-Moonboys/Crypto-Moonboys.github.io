@@ -99,6 +99,20 @@ const client = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.
 const botArtRegistry = JSON.parse(fs.readFileSync(new URL('../data/moonpet-bot-art-registry.json', import.meta.url), 'utf8'));
 const rareBackgroundRegistry = JSON.parse(fs.readFileSync(new URL('../data/moonpet-rare-background-registry.json', import.meta.url), 'utf8'));
 const itemArtRegistry = JSON.parse(fs.readFileSync(new URL('../data/moonpet-item-art-registry.json', import.meta.url), 'utf8'));
+assert.match(worker, /body\.response_mode === 'result_only'[\s\S]*state_pending: true[\s\S]*const state = await buildPetMiniAppState/,
+  'action endpoint must support mutation-only acknowledgement before the legacy whole-state rebuild');
+assert.match(client, /FAST_ACTION_RESPONSE_ACTIONS = new Set\(\['feed', 'play', 'clean', 'sleep', 'train', 'energy_drink', 'dance', 'cuddles'\]\)/,
+  'care actions must use the low-latency response path');
+assert.match(client, /if \(fastResponse\) requestPayload\.response_mode = 'result_only';/,
+  'fast care requests must opt into the mutation-only server contract');
+assert.match(client, /if \(fastResponse && data\.state_pending === true\)[\s\S]*patchFastActionState[\s\S]*scheduleFastActionStateRefresh\(4000\)/,
+  'fast care must patch authoritative result data locally and debounce the expensive state projection');
+assert.match(client, /if \(fastActionStateDirty\) scheduleFastActionStateRefresh\(0\);/,
+  'screen navigation must force reconciliation when a fast action left deferred state work');
+const startupStateRequestIndex = client.indexOf("var initialStateRequest = post('/telegram-pets/app/state')");
+const startupBootAwaitIndex = client.indexOf('await startupBoot;', startupStateRequestIndex);
+assert.ok(startupStateRequestIndex !== -1 && startupBootAwaitIndex > startupStateRequestIndex,
+  'startup must begin the authoritative state request before waiting for the decorative boot sequence');
 assert.doesNotMatch(client, /drawEmergencyMoonpetFallback|drawSpeciesSilhouette|drawEquipmentLayers|drawActionEffects|drawCompanionHabitEffects/,
   'retired procedural pet/equipment/action renderers must not return');
 assert.doesNotMatch(client, /WEARABLE_LOADOUT_STORAGE_KEY|WEARABLE_SLOT_ORDER|wearableTraitDebug/,
