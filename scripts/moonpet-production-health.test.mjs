@@ -61,6 +61,9 @@ async function withServer(handler, callback) {
 test('scheduled workflow probes twice, deduplicates incidents and alerts only on state changes', () => {
   assert.match(WORKFLOW, /cron: "\*\/15 \* \* \* \*"/);
   assert.match(WORKFLOW, /^\s+workflow_dispatch:/m);
+  assert.match(WORKFLOW, /notification_test:/);
+  assert.match(WORKFLOW, /github\.event_name == 'workflow_dispatch' && inputs\.notification_test && steps\.probe\.outputs\.result == 'healthy'/);
+  assert.match(WORKFLOW, /MOONPET_ALERT_STATE: test/);
   assert.match(WORKFLOW, /permissions:[\s\S]*contents: read[\s\S]*issues: write/);
   assert.match(WORKFLOW, /environment: production/);
   assert.equal((WORKFLOW.match(/node scripts\/moonpet-production-health-probe\.mjs/g) || []).length, 2);
@@ -148,6 +151,21 @@ test('Telegram alert sends the configured chat and optional topic without loggin
     assert.equal(received.body.message_thread_id, 42);
     assert.match(received.body.text, /MOONPET PRODUCTION ALERT/);
     assert.doesNotMatch(result.stdout + result.stderr, /alert-secret/);
+
+    const testResult = await run(ALERT, {
+      TELEGRAM_API_BASE_URL: apiBase,
+      TELEGRAM_BOT_TOKEN: '999:alert-secret',
+      TELEGRAM_GROUP_CHAT_ID: '-1001234567890',
+      TELEGRAM_GROUP_THREAD_ID: '42',
+      MOONPET_ALERT_STATE: 'test',
+      MOONPET_ALERT_RUN_URL: 'https://github.com/example/actions/runs/2',
+      MOONPET_HEALTH_REPORT: 'report.json',
+    }, directory);
+    assert.equal(testResult.status, 0, testResult.stderr);
+    assert.match(received.body.text, /MOONPET MONITOR TEST/);
+    assert.match(received.body.text, /Manual monitor test completed after two healthy production probes/);
+    assert.doesNotMatch(received.body.text, /PRODUCTION ALERT/);
+    assert.doesNotMatch(testResult.stdout + testResult.stderr, /alert-secret/);
   });
 });
 
