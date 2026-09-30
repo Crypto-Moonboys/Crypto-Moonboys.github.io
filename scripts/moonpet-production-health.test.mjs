@@ -73,6 +73,7 @@ test('scheduled workflow probes twice, deduplicates incidents and alerts only on
 
 test('health probe verifies health, provenance, authenticated state and both leaderboards without gameplay actions', async () => {
   const requests = [];
+  let invalidLeaderboardPeriod = false;
   await withServer(async (request, response) => {
     let body = '';
     for await (const chunk of request) body += chunk;
@@ -86,9 +87,11 @@ test('health probe verifies health, provenance, authenticated state and both lea
     }
     if (request.url === '/telegram-pets/app/leaderboard') {
       verifyInitData(JSON.parse(body).init_data);
-      return response.end(JSON.stringify({ period: 'seasonal', entries: [] }));
+      return response.end(JSON.stringify(invalidLeaderboardPeriod ? { entries: [] } : { period: 'seasonal', entries: [] }));
     }
-    if (request.url.startsWith('/telegram-pets/leaderboard?')) return response.end(JSON.stringify({ period: 'seasonal', entries: [] }));
+    if (request.url.startsWith('/telegram-pets/leaderboard?')) {
+      return response.end(JSON.stringify(invalidLeaderboardPeriod ? { entries: [] } : { period: 'seasonal', entries: [] }));
+    }
     response.statusCode = 404; response.end('{}');
   }, async (baseUrl) => {
     const result = await run(PROBE, {
@@ -101,6 +104,16 @@ test('health probe verifies health, provenance, authenticated state and both lea
     assert.equal(JSON.parse(result.stdout).deployed_commit, COMMIT);
     assert.equal(requests.some(([, url]) => url === '/telegram-pets/app/action'), false);
     assert.doesNotMatch(result.stdout + result.stderr, /canary-secret|init_data/);
+
+    invalidLeaderboardPeriod = true;
+    const invalidResult = await run(PROBE, {
+      MOONPET_CANARY_BASE_URL: baseUrl,
+      MOONPET_CANARY_BOT_TOKEN: BOT_TOKEN,
+      MOONPET_CANARY_TELEGRAM_ID: TELEGRAM_ID,
+      MOONPET_HEALTH_SKIP_GIT_CHECK: '1',
+    });
+    assert.notEqual(invalidResult.status, 0);
+    assert.match(invalidResult.stderr, /did not report the seasonal period/);
   });
 });
 
