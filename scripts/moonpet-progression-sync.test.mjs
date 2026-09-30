@@ -9,6 +9,7 @@ import { resolvePetRareDrop } from '../workers/moonboys-api/pets/economy-phase-3
 import deployedWorker from '../workers/moonboys-api/deployment-entry.js';
 import worker, { applyPetRuntimeCommandAward, __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 import { recoverPetRuntimeAwards } from '../workers/moonboys-api/pets/runtime-recovery.js';
+import { MOONPET_D1_PERFORMANCE_BUDGETS } from './moonpet-d1-performance-budget.mjs';
 
 const now = new Date();
 const currentSeason = hooks.getPetSeasonInfo(now).key;
@@ -171,7 +172,9 @@ test('warm state stays below its SQL budget and does not rewrite unchanged achie
   const before=f.sql.prepare('SELECT * FROM telegram_pet_achievements WHERE telegram_id=? ORDER BY achievement_id').all(f.owner);
   f.db.statementCount=0;
   await f.state();
-  assert.ok(f.db.statementCount<=180,`warm state executed ${f.db.statementCount} statements`);
+  const warmStateStatements=f.db.statementCount;
+  assert.ok(warmStateStatements<=MOONPET_D1_PERFORMANCE_BUDGETS.warm_state_max_statements,`warm state executed ${warmStateStatements} statements`);
+  console.log(`Warm-state budget: ${warmStateStatements}/${MOONPET_D1_PERFORMANCE_BUDGETS.warm_state_max_statements} SQL statements`);
   assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_achievements WHERE telegram_id=? ORDER BY achievement_id').all(f.owner),before);
   await f.act({action:'feed',request_id:'budget-feed'});
   await f.state();
@@ -218,7 +221,7 @@ test('large recovery backlog drains within per-refresh SQL budget across failure
     const state=await f.state();
     assert.equal(state.adopted,true);
     peak=Math.max(peak,f.db.statementCount);
-    assert.ok(f.db.statementCount<=600,`refresh ${pass} executed ${f.db.statementCount} statements`);
+    assert.ok(f.db.statementCount<=MOONPET_D1_PERFORMANCE_BUDGETS.recovery_refresh_max_statements,`refresh ${pass} executed ${f.db.statementCount} statements`);
     if(pass===0) {
       assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_specialist_events').get().n,20);
       assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_daily_journey_objectives').get().n,20);
