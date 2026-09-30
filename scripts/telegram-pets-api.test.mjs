@@ -1323,6 +1323,10 @@ assert.ok(runExtract.includes('event_key: buildPetRunExtractEventKey(telegramId,
 
 const actionRoute = routeBlock('/telegram-pets/action');
 assert.ok(actionRoute.includes('expected_step_index: body.expected_step_index'), '/telegram-pets/action run_step must carry expected callback step index');
+assert.doesNotMatch(actionRoute, /mirrorPetProfileToActiveInstance/,
+  '/telegram-pets/action must not overwrite accepted instance-owned rewards with a stale profile snapshot');
+assert.match(actionRoute, /const\s+apiRuntimeAction[\s\S]*await\s+getPetProfile\(env\.DB,\s*telegramId\)[\s\S]*if\s*\(result\.pet\)/,
+  '/telegram-pets/action must reconcile legacy profile and per-pet instance writes after action processing');
 
 assert.deepEqual(
   getUnaffordablePetRunCosts({}, { moon_gold: 4, moon_crystals: 1, style_tokens: 2 }, { moon_gold: 3, moon_crystals: 1, style_tokens: 0 }),

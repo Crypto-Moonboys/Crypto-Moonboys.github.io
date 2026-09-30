@@ -3,7 +3,7 @@ import { webcrypto } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
 import {
   MOONPET_SPECIES, createMoonEggLifecycle, getMoonpetLifecycle, hatchMoonpet, incubateMoonEgg, incubationAgeDays, morphMoonpetRare,
-  resolveMoonpetDisplayName,
+  resolveMoonpetDisplayName, syncMoonpetLifecycleStage,
 } from '../workers/moonboys-api/pets/species-lifecycle.js';
 
 if (!globalThis.crypto) globalThis.crypto = webcrypto;
@@ -52,7 +52,9 @@ class D1 {
 }
 function provisionActivePet(database, telegramId) {
   database.exec(`
-    CREATE TABLE telegram_pet_instances (pet_id TEXT PRIMARY KEY, telegram_id TEXT, season_key TEXT, slot_number INTEGER DEFAULT 1, level INTEGER DEFAULT 1, pet_xp INTEGER DEFAULT 0, status TEXT DEFAULT 'active');
+    CREATE TABLE telegram_pet_instances (pet_id TEXT PRIMARY KEY, telegram_id TEXT, season_key TEXT, slot_number INTEGER DEFAULT 1,
+      species TEXT DEFAULT '', stage TEXT DEFAULT 'egg', source_profile_updated_at TEXT,
+      level INTEGER DEFAULT 1, pet_xp INTEGER DEFAULT 0, status TEXT DEFAULT 'active', updated_at TEXT DEFAULT CURRENT_TIMESTAMP);
     CREATE TABLE telegram_pet_season_slots (pet_id TEXT PRIMARY KEY, telegram_id TEXT, season_key TEXT, slot_number INTEGER DEFAULT 1, status TEXT DEFAULT 'active', created_at TEXT DEFAULT CURRENT_TIMESTAMP, updated_at TEXT DEFAULT CURRENT_TIMESTAMP);
     CREATE TABLE telegram_pet_active_slots (telegram_id TEXT PRIMARY KEY, pet_id TEXT, season_key TEXT);
     CREATE TABLE telegram_pet_growth_marks (mark_id TEXT PRIMARY KEY, pet_id TEXT, telegram_id TEXT, season_key TEXT, milestone_type TEXT, evidence_key TEXT, earned_day TEXT, earned_at TEXT, UNIQUE(pet_id,season_key,earned_day));
@@ -134,6 +136,9 @@ assert.equal(hatched.lifecycle.innate_traits.length, 2);
 assert.ok(hatched.lifecycle.preferences.length >= 1, 'identity must expose stable behaviour preferences');
 assert.equal(db.database.prepare('SELECT species FROM telegram_pet_profiles WHERE telegram_id=?').get('new-player').species, hatched.lifecycle.art_identity_id,
   'the server-owned identity remains assigned even while its display name is masked');
+assert.deepEqual({ ...db.database.prepare('SELECT species,stage,source_profile_updated_at FROM telegram_pet_instances WHERE pet_id=?').get('pet:new-player:test:1') },
+  { species: hatched.lifecycle.art_identity_id, stage: 'young', source_profile_updated_at: '0001-01-01 00:00:00' },
+  'hatching must persist lifecycle state to the authoritative pet instance before route reconciliation');
 for (const [speciesId, speciesName] of Object.entries(SPECIES_LABELS)) {
   db.database.prepare(`UPDATE telegram_pet_lifecycle_by_pet
     SET phase='young', species_id=?, temperament='bold', innate_traits_json='[]'
@@ -147,6 +152,9 @@ for (const [speciesId, speciesName] of Object.entries(SPECIES_LABELS)) {
       `${speciesName} must follow the Stage-3 reveal boundary at stage ${stage}`);
   }
 }
+await syncMoonpetLifecycleStage(db, 'new-player', 2);
+assert.equal(db.database.prepare("SELECT stage FROM telegram_pet_instances WHERE pet_id='pet:new-player:test:1'").get().stage, 'adult',
+  'evolution lifecycle synchronization must update the authoritative pet instance');
 db.database.prepare(`INSERT INTO telegram_pet_evolutions_by_pet VALUES ('pet:new-player:test:1','new-player','elite_moonpet',3)`).run();
 const revealedLifecycle = await getMoonpetLifecycle(db, 'new-player');
 assert.equal(revealedLifecycle.species_id, revealedLifecycle.art_identity_id);
@@ -166,6 +174,11 @@ for (const trait of ['explorer', 'curious', 'street_fighter', 'loyal']) db.datab
 db.database.prepare(`INSERT INTO telegram_pet_evolutions_by_pet VALUES ('pet:new-player:test:1','new-player','moon_guardian',4)`).run();
 assert.equal((await morphMoonpetRare(db, 'new-player', 'rare:before-legendary')).reason, 'rare_signal_not_ready',
   'rare morph cannot trigger at the former final stage before Legendary stage 5');
+db.database.prepare(`INSERT INTO telegram_pet_evolutions_by_pet VALUES ('pet:new-player:test:1','new-player','legendary_moon_guardian',5)`).run();
+const rareMorph = await morphMoonpetRare(db, 'new-player', 'rare:legendary');
+assert.equal(rareMorph.accepted, true);
+assert.equal(db.database.prepare("SELECT stage FROM telegram_pet_instances WHERE pet_id='pet:new-player:test:1'").get().stage, 'rare',
+  'rare morph must persist to the authoritative pet instance before route reconciliation');
 db.database.prepare(`INSERT INTO telegram_pet_instances (pet_id, telegram_id, season_key, slot_number) VALUES ('pet:new-player:test:2', 'new-player', 'test', 2)`).run();
 db.database.prepare(`INSERT INTO telegram_pet_season_slots (pet_id, telegram_id, season_key, slot_number) VALUES ('pet:new-player:test:2', 'new-player', 'test', 2)`).run();
 db.database.prepare(`INSERT INTO telegram_pet_lifecycle_by_pet

@@ -10745,7 +10745,11 @@ export default {
       try {
         await getPetProfile(env.DB, verified.telegramId);
         result = await processPetMiniAppAction(env.DB, verified.telegramId, verified.user, body, env.TELEGRAM_BOT_TOKEN);
-        await mirrorPetProfileToActiveInstance(env.DB, verified.telegramId);
+        // Reconcile in the authoritative direction selected by getPetProfile.
+        // Instance-owned rewards (Contracts, Practice, Runs, bosses, etc.) set
+        // the instance authority marker and must never be overwritten by the
+        // compatibility profile snapshot that preceded this action.
+        await getPetProfile(env.DB, verified.telegramId);
       } catch (error) {
         logApiFailure('mini_app_action_failed', { telegramId: verified.telegramId, action: String(body.action || ''), message: error?.message || String(error) });
         return err('mini_app_action_failed', /D1|read|unavailable/i.test(String(error?.message || '')) ? 503 : 500);
@@ -11070,7 +11074,10 @@ export default {
       if (result?.accepted && apiRuntimeAction && !['run_step', 'run_extract'].includes(apiRuntimeAction)) {
         await recoverPetRuntimeAwards(env.DB, telegramId, applyPetRuntimeCommandAward, { action: apiRuntimeAction });
       }
-      await mirrorPetProfileToActiveInstance(env.DB, telegramId);
+      // Legacy profile writes and per-pet instance writes share this endpoint.
+      // Let the authority-aware reconciler select the newer source instead of
+      // blindly copying a stale profile over an accepted per-pet reward.
+      await getPetProfile(env.DB, telegramId);
       if (result.pet) result.pet = await getPetProfile(env.DB, telegramId);
       const identity = await getMoonpetIdentitySummary(env.DB, telegramId).catch(() => null);
       const displayName = resolveMoonpetDisplayName({

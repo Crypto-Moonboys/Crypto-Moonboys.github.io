@@ -48,6 +48,7 @@ export const REQUIRED_D1_MIGRATIONS = Object.freeze([
   '079_moonpet_training_and_style.sql',
   '080_moonpet_beta_xp_quarantine.sql',
   '081_moonpet_recovery_cursors.sql',
+  '082_moonpet_post_reward_overwrite_rebaseline.sql',
 ]);
 
 function readJson(filePath, label) {

@@ -368,6 +368,16 @@ assert.match(
   /const\s+state\s*=\s*await\s+buildPetMiniAppState/,
   '/telegram-pets/app/action must refresh state after mutations/rejections',
 );
+assert.doesNotMatch(
+  actionRoute,
+  /mirrorPetProfileToActiveInstance/,
+  '/telegram-pets/app/action must not overwrite instance-owned rewards from a stale compatibility profile',
+);
+assert.match(
+  actionRoute,
+  /result\s*=\s*await\s+processPetMiniAppAction[\s\S]*await\s+getPetProfile\(env\.DB,\s*verified\.telegramId\)/,
+  '/telegram-pets/app/action must run authority-aware reconciliation after an action',
+);
 const sanctuaryRoute = routeBlock('/telegram-pets/app/sanctuary');
 assert.match(sanctuaryRoute, /reason: 'feature_not_available'/, '/telegram-pets/app/sanctuary must stay unavailable');
 assert.match(sanctuaryRoute, /capabilities_version: 1/, '/telegram-pets/app/sanctuary must include capability contract version');

@@ -292,6 +292,20 @@ CREATE TABLE IF NOT EXISTS telegram_pet_recovery_cursors (
   PRIMARY KEY (telegram_id, setting_key)
 );
 
+-- Beta correction history for impossible seasonal Pet XP surplus. This table
+-- intentionally permits multiple corrections for one player/season so a
+-- post-deployment rerun can record and repair drift recreated before rollout.
+CREATE TABLE IF NOT EXISTS moonpet_beta_xp_rebaseline_v2 (
+  correction_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  telegram_id TEXT NOT NULL,
+  season_key TEXT NOT NULL,
+  previous_season_xp INTEGER NOT NULL,
+  retained_season_xp INTEGER NOT NULL,
+  difference INTEGER NOT NULL,
+  recorded_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  applied_at TEXT
+);
+
 INSERT OR IGNORE INTO telegram_factions (name, description, icon) VALUES
   ('diamond-hands', 'Long-term holders with conviction.', '💎'),
   ('hodl-warriors', 'Battle-hardened holders in the trenches.', '⚔️'),

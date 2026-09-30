@@ -11,6 +11,7 @@ import { verifyD1IdentityAuthorityAuditPayload } from './verify-d1-identity-auth
 const request = JSON.parse(fs.readFileSync(new URL('../deployments/d1-evidence-request.json', import.meta.url), 'utf8'));
 const production = JSON.parse(fs.readFileSync(new URL('../deployments/production.json', import.meta.url), 'utf8'));
 const workflow = fs.readFileSync(new URL('../.github/workflows/d1-production-migration-verify.yml', import.meta.url), 'utf8');
+const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 const remoteQueryStep = workflow.match(/- name: Query production migration records[\s\S]*?(?=\n\s+- name: Report sanitised query failure)/)?.[0] || '';
 const remoteIdentityAuditStep = workflow.match(/- name: Query production identity authority violations[\s\S]*?(?=\n\s+- name: Upload sanitised evidence)/)?.[0] || '';
 const pullRequestPaths = workflow.match(/pull_request:\s*\n\s*paths:([\s\S]*?)\n\s*workflow_dispatch:/)?.[1] || '';
@@ -20,10 +21,13 @@ for (const name of [
   '079_moonpet_training_and_style.sql',
   '080_moonpet_beta_xp_quarantine.sql',
   '081_moonpet_recovery_cursors.sql',
+  '082_moonpet_post_reward_overwrite_rebaseline.sql',
 ]) {
   assert.ok(pullRequestPaths.includes('workers/moonboys-api/migrations/' + name));
   assert.ok(remoteQueryStep.includes(name));
 }
+assert.match(schema, /CREATE TABLE IF NOT EXISTS moonpet_beta_xp_rebaseline_v2[\s\S]*correction_id INTEGER PRIMARY KEY AUTOINCREMENT/,
+  'canonical schema must include the repeatable migration 082 correction audit table');
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/058_telegram_pet_season_completion\.sql/, 'migration 058 changes must trigger production migration verification');
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/059_telegram_pet_sanctuary\.sql/, 'migration 059 changes must trigger production migration verification');
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/060_telegram_pet_sanctuary_indexes\.sql/, 'migration 060 changes must trigger production migration verification');
@@ -154,6 +158,10 @@ assert.ok(
   'migration 081 must be detected by the production migration verification script',
 );
 assert.ok(
+  REQUIRED_D1_MIGRATIONS.includes('082_moonpet_post_reward_overwrite_rebaseline.sql'),
+  'migration 082 must be detected by the production migration verification script',
+);
+assert.ok(
   request.required_migrations.includes('069_moonpet_breeding_authority.sql'),
   'migration 069 must be included in the checked-in D1 evidence request',
 );
@@ -194,8 +202,16 @@ assert.ok(
   'migration 081 must be included in the checked-in D1 evidence request',
 );
 assert.ok(
+  request.required_migrations.includes('082_moonpet_post_reward_overwrite_rebaseline.sql'),
+  'migration 082 must be included in the checked-in D1 evidence request',
+);
+assert.ok(
   production.d1_databases.wikicoms.required_migrations.includes('081_moonpet_recovery_cursors.sql'),
   'migration 081 must be included in the production deployment manifest',
+);
+assert.ok(
+  production.d1_databases.wikicoms.required_migrations.includes('082_moonpet_post_reward_overwrite_rebaseline.sql'),
+  'migration 082 must be included in the production deployment manifest',
 );
 assert.deepEqual(
   [...request.required_migrations].sort(),

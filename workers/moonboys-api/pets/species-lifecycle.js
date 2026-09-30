@@ -1,5 +1,6 @@
 import { awardPetGrowthMark } from './season-completion.js';
 import { requirePetReadResult } from './read-result.js';
+import { PET_INSTANCE_AUTHORITY_VERSION } from './wallet-reconciliation.js';
 
 const CARE_TYPES = Object.freeze({
   warm: { progress: 2, affinity: 'bold' },
@@ -416,6 +417,14 @@ export async function hatchMoonpet(db, telegramId, eventKey, now = new Date()) {
         JOIN telegram_pet_lifecycle_events_by_pet e ON e.pet_id=l.pet_id
         WHERE l.pet_id=? AND l.phase='young' AND l.species_id=? AND e.event_id=? AND e.applied_at IS NULL)`)
       .bind(identity.species_id, id, row.pet_id, identity.species_id, eventId),
+    db.prepare(`UPDATE telegram_pet_instances SET species=?, stage='young',
+      source_profile_updated_at=?, updated_at=CURRENT_TIMESTAMP
+      WHERE pet_id=? AND telegram_id=? AND EXISTS (
+        SELECT 1 FROM telegram_pet_lifecycle_by_pet l
+        JOIN telegram_pet_lifecycle_events_by_pet e ON e.pet_id=l.pet_id
+        WHERE l.pet_id=? AND l.phase='young' AND l.species_id=? AND e.event_id=? AND e.applied_at IS NULL)`)
+      .bind(identity.species_id, PET_INSTANCE_AUTHORITY_VERSION, row.pet_id, id,
+        row.pet_id, identity.species_id, eventId),
     db.prepare(`UPDATE telegram_pet_lifecycle_events_by_pet SET applied_at=CURRENT_TIMESTAMP
       WHERE event_id=? AND applied_at IS NULL AND EXISTS (
         SELECT 1 FROM telegram_pet_lifecycle_by_pet WHERE pet_id=? AND phase='young' AND species_id=?)`)
@@ -423,7 +432,9 @@ export async function hatchMoonpet(db, telegramId, eventKey, now = new Date()) {
   ]);
   const won = Number(results?.[0]?.meta?.changes || 0) === 1
     && Number(results?.[1]?.meta?.changes || 0) === 1
-    && Number(results?.[3]?.meta?.changes || 0) === 1;
+    && Number(results?.[2]?.meta?.changes || 0) === 1
+    && Number(results?.[3]?.meta?.changes || 0) === 1
+    && Number(results?.[4]?.meta?.changes || 0) === 1;
   if (!won) return { accepted: false, reason: 'hatch_conflict', lifecycle: await getMoonpetLifecycle(db, id) };
   return { accepted: true, reason: 'moonpet_hatched', species: MOONPET_UNKNOWN_NAME, lifecycle: await getMoonpetLifecycle(db, id) };
 }
@@ -433,9 +444,15 @@ export async function syncMoonpetLifecycleStage(db, telegramId, stage) {
   if (Number(stage) < 2) return getMoonpetLifecycle(db, id);
   const row = await ensureMoonpetLifecycle(db, id);
   if (!row) return null;
-  await db.prepare(`UPDATE telegram_pet_lifecycle_by_pet SET phase='adult', adult_at=COALESCE(adult_at, CURRENT_TIMESTAMP), updated_at=CURRENT_TIMESTAMP
-    WHERE pet_id=? AND phase='young'`).bind(row.pet_id).run();
-  await db.prepare(`UPDATE telegram_pet_profiles SET stage='adult', updated_at=CURRENT_TIMESTAMP WHERE telegram_id=? AND stage='young'`).bind(id).run();
+  await db.batch([
+    db.prepare(`UPDATE telegram_pet_lifecycle_by_pet SET phase='adult', adult_at=COALESCE(adult_at, CURRENT_TIMESTAMP), updated_at=CURRENT_TIMESTAMP
+      WHERE pet_id=? AND phase='young'`).bind(row.pet_id),
+    db.prepare(`UPDATE telegram_pet_profiles SET stage='adult', updated_at=CURRENT_TIMESTAMP WHERE telegram_id=? AND stage='young'`).bind(id),
+    db.prepare(`UPDATE telegram_pet_instances SET stage='adult', source_profile_updated_at=?, updated_at=CURRENT_TIMESTAMP
+      WHERE pet_id=? AND telegram_id=? AND EXISTS (
+        SELECT 1 FROM telegram_pet_lifecycle_by_pet WHERE pet_id=? AND telegram_id=? AND phase='adult')`)
+      .bind(PET_INSTANCE_AUTHORITY_VERSION, row.pet_id, id, row.pet_id, id),
+  ]);
   return getMoonpetLifecycle(db, id);
 }
 
@@ -469,6 +486,12 @@ export async function morphMoonpetRare(db, telegramId, eventKey) {
         JOIN telegram_pet_lifecycle_events_by_pet e ON e.pet_id=l.pet_id
         WHERE l.pet_id=? AND l.phase='rare' AND l.rare_morph_id=? AND e.event_id=? AND e.applied_at IS NULL)`)
       .bind(id, row.pet_id, route.id, eventId),
+    db.prepare(`UPDATE telegram_pet_instances SET stage='rare', source_profile_updated_at=?, updated_at=CURRENT_TIMESTAMP
+      WHERE pet_id=? AND telegram_id=? AND EXISTS (
+        SELECT 1 FROM telegram_pet_lifecycle_by_pet l
+        JOIN telegram_pet_lifecycle_events_by_pet e ON e.pet_id=l.pet_id
+        WHERE l.pet_id=? AND l.phase='rare' AND l.rare_morph_id=? AND e.event_id=? AND e.applied_at IS NULL)`)
+      .bind(PET_INSTANCE_AUTHORITY_VERSION, row.pet_id, id, row.pet_id, route.id, eventId),
     db.prepare(`UPDATE telegram_pet_lifecycle_events_by_pet SET applied_at=CURRENT_TIMESTAMP
       WHERE event_id=? AND applied_at IS NULL AND EXISTS (
         SELECT 1 FROM telegram_pet_lifecycle_by_pet WHERE pet_id=? AND phase='rare' AND rare_morph_id=?)`)
@@ -476,7 +499,9 @@ export async function morphMoonpetRare(db, telegramId, eventKey) {
   ]);
   const won = Number(results?.[0]?.meta?.changes || 0) === 1
     && Number(results?.[1]?.meta?.changes || 0) === 1
-    && Number(results?.[3]?.meta?.changes || 0) === 1;
+    && Number(results?.[2]?.meta?.changes || 0) === 1
+    && Number(results?.[3]?.meta?.changes || 0) === 1
+    && Number(results?.[4]?.meta?.changes || 0) === 1;
   if (!won) return { accepted: false, reason: 'rare_morph_conflict', lifecycle: await getMoonpetLifecycle(db, id) };
   return { accepted: true, reason: 'rare_morph_revealed', rare_morph: route.name, lifecycle: await getMoonpetLifecycle(db, id) };
 }
