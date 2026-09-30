@@ -36,7 +36,9 @@ export async function readPetLeaderboard(db, { period = 'seasonal', limit = 25, 
   let scores, bindings = [];
   if (period === 'daily' || period === 'weekly') {
     scores = `SELECT telegram_id,SUM(pet_xp_awarded) AS pet_xp FROM telegram_pet_events
-      WHERE ${period === 'daily' ? 'day_key' : 'week_key'}=? AND status='accepted' AND event_key<>? GROUP BY telegram_id`;
+      WHERE ${period === 'daily' ? 'day_key' : 'week_key'}=? AND status='accepted' AND event_key<>?
+        AND NOT EXISTS (SELECT 1 FROM moonpet_beta_xp_quarantine q WHERE q.event_id=telegram_pet_events.id)
+      GROUP BY telegram_id`;
     bindings = [period === 'daily' ? now.toISOString().slice(0, 10) : weekKey(now), PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY];
   } else if (period === 'all_time') {
     scores = `SELECT p.telegram_id,COALESCE(t.pet_xp,CASE WHEN NOT EXISTS
@@ -67,6 +69,7 @@ export async function readPetActivity(db, limit = 20) {
   const rows = await db.prepare(`WITH ${DISPLAY_CTES}, activity_events AS (
     SELECT id,telegram_id,pet_id,season_key,event_type,xp_awarded,pet_xp_awarded,reason,created_at
     FROM telegram_pet_events e WHERE e.status='accepted' AND e.event_key<>?
+      AND NOT EXISTS (SELECT 1 FROM moonpet_beta_xp_quarantine q WHERE q.event_id=e.id)
     UNION ALL
     SELECT id,telegram_id,NULL,NULL,
       CASE system_key WHEN 'cosmetic' THEN 'cosmetic_unlock' ELSE system_key END,0,0,action_key,updated_at

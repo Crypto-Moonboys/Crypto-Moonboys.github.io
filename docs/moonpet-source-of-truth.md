@@ -67,8 +67,11 @@ See [the read-integrity audit](moonpet-read-integrity-audit-2026-09-29.md).
 The operator's migration 078 check confirmed three seasonal corrections and no
 pending correction. Public seasonal/all-time pairs now agree, but the audit
 still observes a historical weekly receipt total above retained all-time XP.
-The beta rebaseline preserved daily/weekly receipts; it was not a reconstruction
-of all old earning history. Do not describe that remaining discrepancy as fixed.
+The beta rebaseline preserved daily/weekly receipts; migration 080 then records
+unverifiable pre-launch receipts in an audit-preserving quarantine. Quarantined
+rows are excluded from daily/weekly ranks and public Pet activity without being
+deleted or used to rewrite retained Pet XP. See
+[the beta XP quarantine decision](moonpet-beta-xp-quarantine-2026-09-30.md).
 
 The following systems are considered live gameplay systems.
 
