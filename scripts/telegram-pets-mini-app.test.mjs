@@ -81,8 +81,13 @@ assert.equal(
 );
 assert.match(
   miniAppStateSource,
-  /const \[runPet, practice, styleLoadout, contracts, dailyReservation, dailyRunSummary\] = await Promise\.all\(\[/,
-  'independent Practice, Style, Contract and Daily Run state reads must execute concurrently',
+  /const \[runPet, practice, styleLoadout, contracts, dailyReservation\] = await Promise\.all\(\[/,
+  'independent Practice, Style, Contract and Daily reservation reads must execute concurrently',
+);
+assert.match(
+  miniAppStateSource,
+  /const dailyRunSummaryPromise = getDailyMoonRunSummary\([\s\S]*const \[dailyRunSummary, guidanceNotices\] = await Promise\.all\(\[dailyRunSummaryPromise, guidanceNoticesPromise\]\);/,
+  'Daily summary must start after reservation repair while overlapping only unrelated guidance-notice persistence',
 );
 assert.match(
   miniAppStateSource,
