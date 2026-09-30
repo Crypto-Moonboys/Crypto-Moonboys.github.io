@@ -1,4 +1,4 @@
-import { requirePetReadResult } from './read-result.js';
+import { requirePetFirstReadResult, requirePetReadResult } from './read-result.js';
 import { PET_DISTRICT_APPROACHES, PET_DISTRICT_COMPLICATIONS, PET_DISTRICT_ENCOUNTERS, PET_EVENT_CHAINS, PET_FACTION_BONUSES, PET_REGION_CONTENT, PET_SEASONAL_BOSSES } from './content-phase-4.js';
 import { PET_COSMETIC_SINKS, PET_CRAFTING_RECIPES, PET_EQUIPMENT_SETS, PET_PRESTIGE_REQUIREMENTS, getPetCraftingRecipe, getPetEquipmentUpgradeCost } from './economy-phase-3.js';
 import { buildPetRegionDirectory } from './game-content.js';
@@ -76,7 +76,7 @@ async function resolveLivePetAuthority(db, telegramId, pet = {}) {
   if (!authority) return null;
   // A failed lookup is not evidence that this pet has no saved authority.
   const row = await db.prepare('SELECT 1 AS ok FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=? AND season_key=? LIMIT 1')
-    .bind(authority.pet_id, authority.telegram_id, authority.season_key).first();
+    .bind(authority.pet_id, authority.telegram_id, authority.season_key).first().then(requirePetFirstReadResult);
   return row ? authority : null;
 }
 
@@ -99,7 +99,7 @@ async function getPetLiveProgressionState(db, telegramId, pet, runtime = {}, res
     ).run();
   const row = await db.prepare(`SELECT * FROM telegram_pet_live_progression_state
     WHERE pet_id=? AND telegram_id=? AND season_key=?`)
-    .bind(authority.pet_id, authority.telegram_id, authority.season_key).first();
+    .bind(authority.pet_id, authority.telegram_id, authority.season_key).first().then(requirePetFirstReadResult);
   if (!row) throw new Error('pet_live_progression_unavailable');
   return row;
 }
@@ -162,7 +162,7 @@ export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gea
       ? db.prepare('SELECT season_key, boss_key, damage, defeated_at, reward_claimed_at FROM telegram_pet_seasonal_boss_progress WHERE pet_id=? AND telegram_id=? AND pet_season_key=?').bind(authority.pet_id, telegramId, authority.season_key).all().then(requirePetReadResult)
       : db.prepare("SELECT season_key, boss_key, damage, defeated_at, reward_claimed_at FROM telegram_pet_seasonal_boss_progress WHERE pet_id='' AND telegram_id = ? AND pet_season_key=''").bind(telegramId).all().then(requirePetReadResult),
     db.prepare('SELECT cosmetic_key, quantity, unlocked_at FROM telegram_pet_cosmetic_unlocks WHERE telegram_id = ?').bind(telegramId).all().then(requirePetReadResult),
-    db.prepare('SELECT faction FROM blocktopia_progression WHERE telegram_id = ?').bind(telegramId).first(),
+    db.prepare('SELECT faction FROM blocktopia_progression WHERE telegram_id = ?').bind(telegramId).first().then(requirePetFirstReadResult),
     db.prepare(`SELECT system_key, action_key, period_key, status, payload_json, updated_at FROM telegram_pet_system_events
       WHERE pet_id=? AND telegram_id=? AND season_key=? AND status IN ('pending','rejected','settling','completed')
         AND ((system_key IN ('district','event_chain') AND (period_key=? OR status IN ('pending','rejected','settling')))
@@ -265,13 +265,13 @@ export async function processPetCraftRecipe(db, telegramId, recipeKey, requestKe
   if (!recipe) return { accepted: false, reason: 'crafting_recipe_invalid' };
   const replay = await getCompletedRequest(db, telegramId, 'crafting', recipe.key, requestKey);
   if (replay) return { accepted: true, duplicate: true, reason: 'crafting_already_completed', recipe: parse(replay.payload_json, {}) };
-  const pet = await db.prepare('SELECT pet_xp, level FROM telegram_pet_profiles WHERE telegram_id=?').bind(telegramId).first();
+  const pet = await db.prepare('SELECT pet_xp, level FROM telegram_pet_profiles WHERE telegram_id=?').bind(telegramId).first().then(requirePetFirstReadResult);
   if (!pet) return { accepted: false, reason: 'pet_not_adopted' };
   if (getRuntimePetLevel(pet) < recipe.min_level) return { accepted: false, reason: 'crafting_locked', required_level: recipe.min_level };
   const balances = await db.prepare('SELECT material_key, quantity FROM telegram_pet_material_balances WHERE telegram_id=?').bind(telegramId).all().then(requirePetReadResult);
   const wallet = Object.fromEntries((balances.results || []).map((row) => [row.material_key, integer(row.quantity)]));
   if (!Object.entries(recipe.cost).every(([key, amount]) => integer(wallet[key]) >= amount)) return { accepted: false, reason: 'crafting_materials_missing', cost: recipe.cost };
-  const outputBalance = await db.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item' AND asset_key=?").bind(telegramId, recipe.output.item_key).first();
+  const outputBalance = await db.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item' AND asset_key=?").bind(telegramId, recipe.output.item_key).first().then(requirePetFirstReadResult);
   if (integer(outputBalance?.quantity) > 999999 - integer(recipe.output.quantity)) return { accepted: false, reason: 'crafting_inventory_full', recipe: { key: recipe.key, output: recipe.output } };
   const reservation = await reserveSystemEvent(db, telegramId, 'crafting', recipe.key, String(requestKey || crypto.randomUUID()), { cost: recipe.cost, output: recipe.output });
   if (reservation.status === 'completed') return { accepted: true, duplicate: true, reason: 'crafting_already_completed', recipe };
@@ -308,7 +308,7 @@ async function reserveSystemEvent(db, telegramId, system, action, period, payloa
   if (Number(result?.meta?.changes || 0) > 0) return { id, fresh: true, status: 'pending', payload_json: JSON.stringify(payload) };
   const existing = await db.prepare(`SELECT id, status, payload_json FROM telegram_pet_system_events
     WHERE pet_id = ? AND telegram_id = ? AND season_key = ? AND system_key = ? AND action_key = ? AND period_key = ?`)
-    .bind(petId, telegramId, seasonKey, system, action, period).first();
+    .bind(petId, telegramId, seasonKey, system, action, period).first().then(requirePetFirstReadResult);
   return { ...existing, fresh: false };
 }
 
@@ -319,14 +319,14 @@ async function readSystemEvent(db, authority, system, action, period) {
     WHERE pet_id=? AND telegram_id=? AND season_key=? AND system_key=? AND action_key=?
       AND (period_key=? OR (?=1 AND period_key<? AND status IN ('pending','rejected','settling')))
     ORDER BY period_key, id LIMIT 1`)
-    .bind(authority.pet_id, authority.telegram_id, authority.season_key, system, action, period, system === 'seasonal_boss' ? 0 : 1, period).first();
+    .bind(authority.pet_id, authority.telegram_id, authority.season_key, system, action, period, system === 'seasonal_boss' ? 0 : 1, period).first().then(requirePetFirstReadResult);
 }
 
 // Freeze the decision before awarding. Retries retain the first choice, odds,
 // rewards and progression even if the client submits another choice or levels up.
 async function frozenSystemDecision(db, reservation, token, create) {
   const read = () => db.prepare(`SELECT payload_json FROM telegram_pet_system_events
-    WHERE id=? AND status='settling' AND json_extract(payload_json, '$.claim_token')=?`).bind(reservation.id, token).first();
+    WHERE id=? AND status='settling' AND json_extract(payload_json, '$.claim_token')=?`).bind(reservation.id, token).first().then(requirePetFirstReadResult);
   const row = await read();
   if (!row) return null;
   const payload = parse(row.payload_json, {});
@@ -344,7 +344,7 @@ async function getCompletedRequest(db, telegramId, system, action, requestKey, a
   // action route return a retryable outage before it reserves or spends.
   return db.prepare(`SELECT id, status, payload_json FROM telegram_pet_system_events
     WHERE pet_id=? AND telegram_id=? AND season_key=? AND system_key=? AND action_key=? AND period_key=? AND status='completed'`)
-    .bind(authority?.pet_id || '', telegramId, authority?.season_key || '', system, action, String(requestKey)).first();
+    .bind(authority?.pet_id || '', telegramId, authority?.season_key || '', system, action, String(requestKey)).first().then(requirePetFirstReadResult);
 }
 
 async function claimEnergySettlement(db, reservation, telegramId, energyCost, authority = null) {
@@ -491,7 +491,7 @@ export async function processPetEventChain(db, telegramId, chainKey, awardReward
   const period = saved?.period_key || dayKey(now);
   if (saved?.status === 'completed') return { accepted: true, duplicate: true, reason: 'event_chain_step_used_today' };
   const savedPayload = parse(saved?.payload_json, {});
-  const row = await db.prepare('SELECT step_index, completed_cycles FROM telegram_pet_event_chain_progress WHERE pet_id=? AND telegram_id=? AND season_key=? AND chain_key=?').bind(authority.pet_id, telegramId, authority.season_key, chainKey).first();
+  const row = await db.prepare('SELECT step_index, completed_cycles FROM telegram_pet_event_chain_progress WHERE pet_id=? AND telegram_id=? AND season_key=? AND chain_key=?').bind(authority.pet_id, telegramId, authority.season_key, chainKey).first().then(requirePetFirstReadResult);
   let stepIndex = integer(saved ? savedPayload.step_index : row?.step_index);
   let scene = getEventChainScene(chain, stepIndex);
   const explicitChoice = String((saved ? savedPayload.choice_key : choiceKey) || '');
@@ -543,14 +543,14 @@ export async function claimPetSeasonalBossReward(db, telegramId, pet, awardRewar
   // companion's level, phase and active slot cannot redirect an earned reward.
   const authority = typeof request?.pet_id === 'string' ? await db.prepare(`SELECT p.pet_id,p.season_key FROM telegram_pet_instances p
     JOIN telegram_pet_season_slots s ON s.pet_id=p.pet_id AND s.telegram_id=p.telegram_id AND s.season_key=p.season_key AND s.slot_number=p.slot_number
-    WHERE p.pet_id=? AND p.telegram_id=?`).bind(request.pet_id,telegramId).first() : null;
+    WHERE p.pet_id=? AND p.telegram_id=?`).bind(request.pet_id,telegramId).first().then(requirePetFirstReadResult) : null;
   if (!authority) return { accepted: false, reason: 'source_pet_authority_required' };
   const key = request.boss_key, seasonInstance = request.season_instance;
   if (typeof key !== 'string' || !Object.hasOwn(PET_SEASONAL_BOSSES, key) || typeof seasonInstance !== 'string') return { accepted: false, reason: 'seasonal_boss_reward_invalid' };
   const boss = PET_SEASONAL_BOSSES[key];
   const row = await db.prepare(`SELECT defeated_at, reward_claimed_at FROM telegram_pet_seasonal_boss_progress
     WHERE pet_id=? AND telegram_id=? AND pet_season_key=? AND season_key=? AND boss_key=?`)
-    .bind(authority.pet_id, telegramId, authority.season_key, seasonInstance, key).first();
+    .bind(authority.pet_id, telegramId, authority.season_key, seasonInstance, key).first().then(requirePetFirstReadResult);
   if (!row?.defeated_at) return { accepted: false, reason: 'seasonal_boss_not_defeated' };
   if (row.reward_claimed_at) return { accepted: true, duplicate: true, reason: 'seasonal_boss_reward_claimed' };
   const reward = await awardReward({ telegram_id: telegramId, pet_id: authority.pet_id, season_key: authority.season_key,
@@ -571,7 +571,7 @@ export async function processPetSeasonalBoss(db, telegramId, pet, awardReward, m
   const period = `${boss.season_instance}:${dayKey(now)}`;
   const saved = await readSystemEvent(db, authority, 'seasonal_boss', boss.key, period);
   const charged = Boolean(parse(saved?.payload_json, {}).energy_charged);
-  const existing = await db.prepare('SELECT damage, defeated_at, reward_claimed_at FROM telegram_pet_seasonal_boss_progress WHERE pet_id=? AND telegram_id=? AND pet_season_key=? AND season_key=? AND boss_key=?').bind(authority.pet_id, telegramId, authority.season_key, boss.season_instance, boss.key).first();
+  const existing = await db.prepare('SELECT damage, defeated_at, reward_claimed_at FROM telegram_pet_seasonal_boss_progress WHERE pet_id=? AND telegram_id=? AND pet_season_key=? AND season_key=? AND boss_key=?').bind(authority.pet_id, telegramId, authority.season_key, boss.season_instance, boss.key).first().then(requirePetFirstReadResult);
   const settleReward = () => claimPetSeasonalBossReward(db, telegramId, pet, awardReward, { pet_id: authority.pet_id, boss_key: boss.key, season_instance: boss.season_instance });
   if (existing?.defeated_at && !charged) {
     if (existing.reward_claimed_at) return { accepted: false, reason: 'seasonal_boss_defeated', boss };
@@ -604,7 +604,7 @@ export async function processPetSeasonalBoss(db, telegramId, pet, awardReward, m
   ]);
   if (Number(settlement?.[1]?.meta?.changes || 0) < 1) return { accepted: false, reason: 'seasonal_boss_busy' };
   const progress = await db.prepare('SELECT damage, defeated_at FROM telegram_pet_seasonal_boss_progress WHERE pet_id=? AND telegram_id=? AND pet_season_key=? AND season_key=? AND boss_key=?')
-    .bind(authority.pet_id, telegramId, authority.season_key, boss.season_instance, boss.key).first();
+    .bind(authority.pet_id, telegramId, authority.season_key, boss.season_instance, boss.key).first().then(requirePetFirstReadResult);
   const total = integer(progress?.damage), defeated = Boolean(progress?.defeated_at);
   let reward = null;
   if (defeated) {
@@ -640,7 +640,7 @@ export async function recoverPetLiveSystemEndings(db, telegramId, awardReward, l
           AND earlier.system_key=e.system_key AND earlier.action_key=e.action_key AND earlier.period_key<e.period_key
           AND earlier.status IN ('pending','rejected','settling'))
     ORDER BY e.updated_at,e.period_key,e.id LIMIT ?`)
-    .bind(String(telegramId), dayKey(), ...Object.keys(PET_REGION_CONTENT), ...Object.keys(PET_EVENT_CHAINS), ...Object.keys(PET_SEASONAL_BOSSES), boundedRecoveryLimit(limit, 2)).all();
+    .bind(String(telegramId), dayKey(), ...Object.keys(PET_REGION_CONTENT), ...Object.keys(PET_EVENT_CHAINS), ...Object.keys(PET_SEASONAL_BOSSES), boundedRecoveryLimit(limit, 2)).all().then(requirePetReadResult);
   for (const row of rows.results || []) {
     try {
       const now = new Date(`${row.period_key.slice(-10)}T12:00:00.000Z`);
@@ -669,18 +669,18 @@ export async function recoverPetLiveSystemEndings(db, telegramId, awardReward, l
 export async function processPetEquipmentUpgrade(db, telegramId, itemKey, requestKey) {
   const replay = await getCompletedRequest(db, telegramId, 'equipment_upgrade', itemKey, requestKey);
   if (replay) return { accepted: true, duplicate: true, reason: 'equipment_already_upgraded', item: parse(replay.payload_json, {}) };
-  const item = await db.prepare('SELECT item_key, item_level FROM telegram_pet_equipment_progression WHERE telegram_id=? AND item_key=?').bind(telegramId, itemKey).first();
+  const item = await db.prepare('SELECT item_key, item_level FROM telegram_pet_equipment_progression WHERE telegram_id=? AND item_key=?').bind(telegramId, itemKey).first().then(requirePetFirstReadResult);
   if (!item) return { accepted: false, reason: 'equipment_not_owned' };
   const target = integer(item.item_level) + 1;
   const cost = getPetEquipmentUpgradeCost(target);
   if (!cost) return { accepted: false, reason: 'equipment_max_level' };
-  const pet = await db.prepare('SELECT pet_xp, moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').bind(telegramId).first();
+  const pet = await db.prepare('SELECT pet_xp, moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').bind(telegramId).first().then(requirePetFirstReadResult);
   if (getPetVisibleLevel(pet?.pet_xp) < 15) return { accepted: false, reason: 'equipment_upgrades_locked' };
   if (integer(cost.moon_gold) > 0 && !(await ensurePetAccountWalletReadyForMutation(db, telegramId))) {
     return { accepted: false, reason: 'wallet_reconciliation_recovery_pending', cost };
   }
   const walletRow = integer(cost.moon_gold) > 0
-    ? await db.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').bind(telegramId).first()
+    ? await db.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').bind(telegramId).first().then(requirePetFirstReadResult)
     : pet;
   const balances = await db.prepare('SELECT material_key, quantity FROM telegram_pet_material_balances WHERE telegram_id=?').bind(telegramId).all().then(requirePetReadResult);
   const wallet = { moon_gold: integer(walletRow?.moon_gold), ...Object.fromEntries((balances.results || []).map((row) => [row.material_key, integer(row.quantity)])) };
@@ -715,7 +715,7 @@ export async function processPetCosmeticUnlock(db, telegramId, cosmeticKey, requ
   if (!sink) return { accepted: false, reason: 'cosmetic_invalid' };
   const replay = await getCompletedRequest(db, telegramId, 'cosmetic', cosmeticKey, requestKey);
   if (replay) return { accepted: true, duplicate: true, reason: 'cosmetic_already_unlocked', cosmetic: parse(replay.payload_json, {}) };
-  const owned = await db.prepare('SELECT quantity FROM telegram_pet_cosmetic_unlocks WHERE telegram_id=? AND cosmetic_key=?').bind(telegramId, cosmeticKey).first();
+  const owned = await db.prepare('SELECT quantity FROM telegram_pet_cosmetic_unlocks WHERE telegram_id=? AND cosmetic_key=?').bind(telegramId, cosmeticKey).first().then(requirePetFirstReadResult);
   if (owned && !sink.repeatable) return { accepted: false, reason: 'cosmetic_owned' };
   const profileKeys = ['moon_gold', 'moon_crystals', 'style_tokens'];
   const profileCosts = Object.fromEntries(Object.entries(sink.cost).filter(([key]) => profileKeys.includes(key)));
@@ -723,7 +723,7 @@ export async function processPetCosmeticUnlock(db, telegramId, cosmeticKey, requ
   if (Object.values(profileCosts).some((amount) => integer(amount) > 0) && !(await ensurePetAccountWalletReadyForMutation(db, telegramId))) {
     return { accepted: false, reason: 'wallet_reconciliation_recovery_pending', cost: sink.cost };
   }
-  const pet = await db.prepare('SELECT moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').bind(telegramId).first();
+  const pet = await db.prepare('SELECT moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').bind(telegramId).first().then(requirePetFirstReadResult);
   const mats = await db.prepare('SELECT material_key, quantity FROM telegram_pet_material_balances WHERE telegram_id=?').bind(telegramId).all().then(requirePetReadResult);
   const wallet = { ...pet, ...Object.fromEntries((mats.results || []).map((row) => [row.material_key, row.quantity])) };
   if (!Object.entries(sink.cost).every(([key, amount]) => integer(wallet[key]) >= amount)) return { accepted: false, reason: 'cosmetic_cost_missing', cost: sink.cost };
@@ -749,7 +749,7 @@ export async function processPetCosmeticUnlock(db, telegramId, cosmeticKey, requ
     await db.prepare("UPDATE telegram_pet_system_events SET status='rejected', updated_at=CURRENT_TIMESTAMP WHERE id=? AND status<>'completed'").bind(reservation.id).run();
     return { accepted: false, reason: 'cosmetic_settlement_conflict', cost: sink.cost };
   }
-  const settled = await db.prepare('SELECT quantity FROM telegram_pet_cosmetic_unlocks WHERE telegram_id=? AND cosmetic_key=?').bind(telegramId, cosmeticKey).first();
+  const settled = await db.prepare('SELECT quantity FROM telegram_pet_cosmetic_unlocks WHERE telegram_id=? AND cosmetic_key=?').bind(telegramId, cosmeticKey).first().then(requirePetFirstReadResult);
   return { accepted: true, reason: 'cosmetic_unlocked', cosmetic: { key: cosmeticKey, quantity: integer(settled?.quantity) }, cost: sink.cost };
 }
 

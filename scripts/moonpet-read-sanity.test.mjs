@@ -4,9 +4,9 @@ import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import worker, { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 
-import { processPetCraftRecipe, processPetEquipmentUpgrade, processPetCosmeticUnlock } from '../workers/moonboys-api/pets/live-systems.js';
+import { claimPetSeasonalBossReward, processPetCraftRecipe, processPetEquipmentUpgrade, processPetCosmeticUnlock } from '../workers/moonboys-api/pets/live-systems.js';
 import { PET_COSMETIC_SINKS } from '../workers/moonboys-api/pets/economy-phase-3.js';
-import { readDailyCompletion, getSeasonFinales } from '../workers/moonboys-api/pets/completion-features.js';
+import { claimDailyCompletion, getSeasonFinales, processSeasonFinale, readDailyCompletion } from '../workers/moonboys-api/pets/completion-features.js';
 
 const currentSeason = hooks.getPetSeasonInfo(new Date()).key;
 function fixture(owner) {
@@ -121,11 +121,19 @@ test('failed Daily Run summary read cannot publish not-started authority',async(
   assert.equal(hit,true);
 });
 const firstReadTargets = {
+ active_pet_authority: /SELECT s\.pet_id, s\.telegram_id, s\.season_key, s\.slot_number,[\s\S]*FROM telegram_pet_active_slots a/,
  practice_authority: /SELECT 1 WHERE EXISTS[\s\S]*telegram_pet_instances p[\s\S]*telegram_pet_active_slots/,
  practice_stats: /SELECT COALESCE\(MAX\(sequence\),0\)\+1 next_sequence[\s\S]*FROM telegram_pet_practice/,
  contract_authority: /SELECT p\.pet_id FROM telegram_pet_instances p JOIN telegram_pet_active_slots/,
  contract_stats: /SELECT COALESCE\(MAX\(sequence\),0\)\+1 AS next_sequence[\s\S]*FROM telegram_pet_contracts/,
  daily_summary: /SELECT d\.run_id, d\.pet_id, r\.status, r\.current_room, r\.score[\s\S]*FROM telegram_pet_daily_runs d/,
+ live_pet_authority: /SELECT 1 AS ok FROM telegram_pet_instances WHERE pet_id=/,
+ live_progression: /SELECT \* FROM telegram_pet_live_progression_state/,
+ faction: /SELECT faction FROM blocktopia_progression/,
+ economy_pet_authority: /SELECT p\.status,l\.phase FROM telegram_pet_instances p JOIN telegram_pet_lifecycle_by_pet/,
+ weekly_boss_progress: /SELECT boss_id, attempts, damage, defeated_at, reward_claimed_at FROM telegram_pet_weekly_boss_progress/,
+ weekly_boss_attempt: /SELECT action, damage, event_key FROM telegram_pet_weekly_boss_events/,
+ daily_window_totals: /SELECT COALESCE\(SUM\(xp_awarded\), 0\) AS community_xp,[\s\S]*day_key = \?/,
 };
 for (const [name,query] of Object.entries(firstReadTargets)) test(`resolved failed ${name} first read cannot publish a normal Mini App snapshot`,async()=>{
   const f=await savedFixture('first-read-'+name);
@@ -138,6 +146,23 @@ for (const [name,query] of Object.entries(firstReadTargets)) test(`resolved fail
   };
   await assert.rejects(hooks.buildPetMiniAppState(f.db,f.owner,'fixture-token'),/pet_state_read_unavailable/);
   assert.equal(hit,true,'fault must reach the target');
+});
+test('active pet lookup preserves the migration fallback for a resolved missing-schema read',async()=>{
+ const db={prepare(){return {bind(){return this;},async first(){return {success:false,error:'no such table: telegram_pet_active_slots'};}};}};
+ assert.equal(await hooks.findActivePetSlot(db,'legacy-owner'),null);
+});
+for(const [name,query] of [
+ ['expedition receipt',/SELECT pet_id, day_key, metadata, applied_rewards FROM telegram_pet_reward_claims/],
+ ['expedition lifecycle',/SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id=/],
+]) test(`${name} read failure cannot claim or start an expedition`,async()=>{
+ const f=await savedFixture('first-expedition-'+name.replaceAll(' ','-'));
+ const before=durableSnapshot(f); let hit=false;
+ f.db.beforeFirst=s=>{
+  if(query.test(s.query)){hit=true;return {success:false,error:'private expedition read failure'};}
+ };
+ await assert.rejects(hooks.runPetCrystalExpedition(f.db,f.owner,new Date(),'expedition-outage'),/pet_state_read_unavailable/);
+ assert.equal(hit,true);
+ assert.deepEqual(durableSnapshot(f),before);
 });
 for(const payload of [{success:false,results:[]},{success:false},{success:true},{success:true,results:{}},null]) {
  test(`Relic Vault reports unavailable for ${JSON.stringify(payload)} instead of empty ownership`,async()=>{
@@ -182,6 +207,36 @@ for(const [name,act] of [
  await assert.rejects(act(f),/pet_state_read_unavailable/);
  assert.deepEqual(durableSnapshot(f),before);
  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_system_events').get().n,0);
+});
+for(const [name,query,act,prepare] of [
+ ['craft profile',/SELECT pet_xp, level FROM telegram_pet_profiles/,f=>processPetCraftRecipe(f.db,f.owner,'street_rations','first-outage'),f=>f.sql.prepare("INSERT INTO telegram_pet_material_balances (telegram_id,material_key,quantity) VALUES (?,'moon_fabric',30)").run(f.owner)],
+ ['craft capacity',/SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=\? AND asset_type='item'/,f=>processPetCraftRecipe(f.db,f.owner,'street_rations','capacity-outage'),f=>f.sql.prepare("INSERT INTO telegram_pet_material_balances (telegram_id,material_key,quantity) VALUES (?,'moon_fabric',30)").run(f.owner)],
+ ['upgrade ownership',/SELECT item_key, item_level FROM telegram_pet_equipment_progression/,f=>processPetEquipmentUpgrade(f.db,f.owner,'moon_kibble','ownership-outage')],
+ ['upgrade profile',/SELECT pet_xp, moon_gold FROM telegram_pet_profiles/,f=>processPetEquipmentUpgrade(f.db,f.owner,'moon_kibble','profile-outage')],
+ ['cosmetic ownership',/SELECT quantity FROM telegram_pet_cosmetic_unlocks/,f=>processPetCosmeticUnlock(f.db,f.owner,Object.keys(PET_COSMETIC_SINKS)[0],'owned-outage')],
+ ['cosmetic wallet',/SELECT moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles/,f=>processPetCosmeticUnlock(f.db,f.owner,Object.keys(PET_COSMETIC_SINKS)[0],'wallet-outage')],
+]) test(`${name} cannot convert a resolved failed first read into a normal purchase result`,async()=>{
+ const f=await savedFixture('first-action-'+name.replaceAll(' ','-'));
+ f.sql.prepare('UPDATE telegram_pet_profiles SET pet_xp=500000 WHERE telegram_id=?').run(f.owner);
+ if(prepare) prepare(f);
+ const before=durableSnapshot(f); let hit=false;
+ f.db.beforeFirst=s=>{if(query.test(s.query)){hit=true;return {success:false,error:'private first-read failure'};}};
+ await assert.rejects(act(f),/pet_state_read_unavailable/);
+ assert.equal(hit,true);
+ assert.deepEqual(durableSnapshot(f),before);
+ assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_system_events').get().n,0);
+});
+for(const [name,query,act] of [
+ ['daily completion claim',/SELECT \* FROM telegram_pet_daily_completion WHERE telegram_id=/,async f=>claimDailyCompletion(f.db,f.owner,f.sql.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=?').get('current-'+f.owner),{utc_day:new Date().toISOString().slice(0,10),pet_id:'current-'+f.owner},async()=>({accepted:true}))],
+ ['season finale',/SELECT f\.\* FROM telegram_pet_season_finales/,f=>processSeasonFinale(f.db,f.owner,{action:'finale_start',pet_id:'current-'+f.owner,season_key:currentSeason,build:'striker'},async()=>({accepted:true}))],
+ ['weekly boss claim',/SELECT \* FROM telegram_pet_weekly_boss_progress WHERE telegram_id=\? AND week_key=\? AND boss_id=/,f=>{const week='2026-W40';return hooks.claimPetWeeklyBossReward(f.db,f.owner,{week_key:week,boss_id:hooks.getPetWeeklyBoss(week).boss_id,pet_id:'current-'+f.owner});}],
+ ['seasonal boss claim authority',/SELECT p\.pet_id,p\.season_key FROM telegram_pet_instances p/,f=>claimPetSeasonalBossReward(f.db,f.owner,{},async()=>({accepted:true}),{pet_id:'current-'+f.owner,boss_key:'null_prophet',season_instance:'test'} )],
+]) test(`${name} cannot report a false not-ready result from a resolved failed read`,async()=>{
+ const f=await savedFixture('first-reward-'+name.replaceAll(' ','-')); const before=durableSnapshot(f); let hit=false;
+ f.db.beforeFirst=s=>{if(query.test(s.query)){hit=true;return {success:false,error:'private reward read failure'};}};
+ await assert.rejects(act(f),/pet_state_read_unavailable/);
+ assert.equal(hit,true);
+ assert.deepEqual(durableSnapshot(f),before);
 });
 for(const [name,act] of [
  ['craft',f=>processPetCraftRecipe(f.db,f.owner,'street_rations','replay-outage')],

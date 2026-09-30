@@ -10,6 +10,10 @@ export function requirePetReadResult(result) {
 }
 
 export function requirePetFirstReadResult(result) {
-  if (result?.success === false) throw new Error('pet_state_read_unavailable');
+  if (result?.success === false) {
+    throw new Error('pet_state_read_unavailable', {
+      cause: typeof result?.error === 'string' ? new Error(result.error) : undefined,
+    });
+  }
   return result;
 }

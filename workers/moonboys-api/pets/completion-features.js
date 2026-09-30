@@ -1,4 +1,4 @@
-import { requirePetReadResult } from './read-result.js';
+import { requirePetFirstReadResult, requirePetReadResult } from './read-result.js';
 import evolutions from './content/evolutions.json' with { type: 'json' };
 import { PET_SEASON_COMPLETION_CONFIG } from './season-completion.js';
 import { DAILY_COMPLETION_REWARD, SEASON_FINALE_REWARD, dailyCompletionKey, seasonFinaleKey } from './completion-policy.js';
@@ -83,7 +83,7 @@ export async function readDailyCompletion(db, owner, date, counts, upgrades, gol
 export async function claimDailyCompletion(db, owner, pet, body, award) {
   const date = String(body.utc_day || '');
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { accepted: false, reason: 'daily_completion_not_ready' };
-  let row = await db.prepare('SELECT * FROM telegram_pet_daily_completion WHERE telegram_id=? AND utc_day=?').bind(owner, date).first();
+  let row = await db.prepare('SELECT * FROM telegram_pet_daily_completion WHERE telegram_id=? AND utc_day=?').bind(owner, date).first().then(requirePetFirstReadResult);
   if (!row || row.progress_bits !== 255) return { accepted: false, reason: 'daily_completion_not_ready' };
   if (!row.pet_id) {
     if (!pet?.pet_id || body.pet_id !== pet.pet_id) return { accepted: false, reason: 'source_pet_changed' };
@@ -94,7 +94,7 @@ export async function claimDailyCompletion(db, owner, pet, body, award) {
           JOIN telegram_pet_lifecycle_by_pet l ON l.pet_id=i.pet_id AND l.telegram_id=i.telegram_id
           WHERE i.pet_id=? AND i.telegram_id=? AND i.season_key=? AND l.phase<>'egg')`)
       .bind(pet.pet_id, pet.season_key, owner, date, pet.pet_id, owner, pet.season_key).run();
-    row = await db.prepare('SELECT * FROM telegram_pet_daily_completion WHERE telegram_id=? AND utc_day=?').bind(owner, date).first();
+    row = await db.prepare('SELECT * FROM telegram_pet_daily_completion WHERE telegram_id=? AND utc_day=?').bind(owner, date).first().then(requirePetFirstReadResult);
     if (!row.pet_id) return { accepted: false, reason: 'active_pet_required' };
   }
   const key = dailyCompletionKey(owner, date);
@@ -132,7 +132,7 @@ export async function getSeasonFinales(db, owner, activePetId) {
 async function readFinale(db, owner, pet, season) {
   return db.prepare(`SELECT f.* FROM telegram_pet_season_finales f
     JOIN telegram_pet_instances i ON i.pet_id=f.pet_id AND i.telegram_id=f.telegram_id AND i.season_key=f.season_key ${ownedSlots}
-    WHERE f.telegram_id=? AND f.pet_id=? AND f.season_key=?`).bind(owner, pet, season).first();
+    WHERE f.telegram_id=? AND f.pet_id=? AND f.season_key=?`).bind(owner, pet, season).first().then(requirePetFirstReadResult);
 }
 async function claimFinale(db, owner, row, award) {
   if (row?.status !== 'won') return { accepted: false, reason: 'finale_victory_required' };
