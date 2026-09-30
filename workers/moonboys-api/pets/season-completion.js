@@ -46,7 +46,7 @@ export function getPetSeasonWeek(season, now = new Date()) {
 async function ownedPet(db, petId, seasonKey, telegramId = null) {
   const ownerClause = telegramId == null ? '' : ' AND s.telegram_id=?';
   const args = telegramId == null ? [petId, seasonKey] : [petId, seasonKey, String(telegramId)];
-  return db.prepare(`SELECT s.pet_id, s.telegram_id, s.season_key, s.created_at AS season_slot_created_at, i.level, i.pet_xp
+  return db.prepare(`SELECT s.pet_id, s.telegram_id, s.season_key, i.level, i.pet_xp, s.created_at AS season_slot_created_at
     FROM telegram_pet_season_slots s
     JOIN telegram_pet_instances i
       ON i.pet_id=s.pet_id
