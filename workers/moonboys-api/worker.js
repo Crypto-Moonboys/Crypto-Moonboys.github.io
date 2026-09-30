@@ -2886,7 +2886,7 @@ async function recoverPetStandardRunEndings(db, telegramId, runIdRaw = '', limit
   const candidates = await db.prepare(`SELECT r.*,${recoveryKey} AS recovery_key,recovery_state.setting_value AS recovery_cursor FROM telegram_pet_runs r
     JOIN telegram_pet_instances i ON i.pet_id=r.pet_id AND i.telegram_id=r.telegram_id AND i.season_key=r.season_key
     JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id AND s.season_key=i.season_key AND s.slot_number=i.slot_number
-    LEFT JOIN telegram_settings recovery_state ON recovery_state.telegram_id=r.telegram_id AND cursor.setting_key='moonpet:recovery:standard-endings'
+    LEFT JOIN telegram_settings recovery_state ON recovery_state.telegram_id=r.telegram_id AND recovery_state.setting_key='moonpet:recovery:standard-endings'
     WHERE r.telegram_id=? AND r.depth>0 AND (?='' OR r.run_id=?)
       AND (r.status='extracted' OR r.status='completed' AND r.depth>=r.max_depth
         OR r.status IN ('active','extractable') AND r.depth>=MAX(?,r.max_depth,r.max_room))
@@ -5839,8 +5839,8 @@ async function recoverPetCombatProgress(db, telegramId) {
           OR EXISTS (SELECT 1 FROM telegram_pet_events e WHERE e.telegram_id=? AND e.status='pending' AND e.pet_id IS NOT NULL
             AND e.event_type='kaiju_battle' AND e.event_key=SUBSTR('pet_kaiju:'||b.match_id||':'||?,1,120)))))
   ) SELECT c.*,recovery_state.setting_value AS recovery_cursor,kind_recovery_state.setting_value AS kind_cursor FROM candidates c
-    LEFT JOIN telegram_settings recovery_state ON recovery_state.telegram_id=? AND cursor.setting_key='moonpet:recovery:combat'
-    LEFT JOIN telegram_settings kind_recovery_state ON kind_recovery_state.telegram_id=? AND kind_cursor.setting_key='moonpet:recovery:combat:'||c.kind
+    LEFT JOIN telegram_settings recovery_state ON recovery_state.telegram_id=? AND recovery_state.setting_key='moonpet:recovery:combat'
+    LEFT JOIN telegram_settings kind_recovery_state ON kind_recovery_state.telegram_id=? AND kind_recovery_state.setting_key='moonpet:recovery:combat:'||c.kind
     ORDER BY CASE WHEN recovery_state.setting_value LIKE c.kind||':%' THEN 1 ELSE 0 END,
       CASE WHEN c.recovery_key>COALESCE(kind_recovery_state.setting_value,'') THEN 0 ELSE 1 END,c.recovery_key LIMIT 1`)
     .bind(owner,owner,owner,owner,owner,owner,owner,owner,`$.reward_sources."${owner}".pet_id`,owner,owner,owner,owner).all();
