@@ -3897,7 +3897,7 @@ const PET_INSTANCE_STATE_COLUMNS = Object.freeze([
 ]);
 const PET_ACCOUNT_WALLET_COLUMNS = Object.freeze(['moon_gold', 'moon_crystals', 'style_tokens']);
 function isPetInstanceSchemaUnavailable(error) {
-  return /no such table: telegram_pet_(instances|season_slots|active_slots)/i.test(String(error?.message || error));
+  return /no such table: telegram_pet_(instances|season_slots|active_slots)/i.test(String(error?.cause?.message || error?.message || error));
 }
 
 function petStateTimestamp(value) {
@@ -15871,7 +15871,7 @@ async function readPetExpeditionReceipt(db, telegramId, key) {
   if (!key) return null;
   const receipt = await db.prepare(`SELECT pet_id, day_key, metadata, applied_rewards FROM telegram_pet_reward_claims
     WHERE telegram_id=? AND source='pet_expedition' AND idempotency_key=? AND status='awarded'`)
-    .bind(telegramId, key).first();
+    .bind(telegramId, key).first().then(requirePetFirstReadResult);
   if (!receipt) return null;
   const context = safeJsonParse(receipt.metadata, {}).context || {};
   return { accepted: true, duplicate: true, reason: 'expedition_complete', pet_xp_awarded: 0, xp_awarded: 0, rewards: {},
@@ -15888,7 +15888,8 @@ async function runPetCrystalExpedition(db, telegramId, now = new Date(), request
   const sourceAuthority = activePetRewardAuthority(state.pet);
   if (!sourceAuthority) return { accepted: false, reason: 'source_pet_authority_required' };
   if (expectedPetId && expectedPetId !== sourceAuthority.pet_id) return { accepted: false, reason: 'expedition_pet_changed' };
-  const lifecycle = await db.prepare('SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id=? AND telegram_id=?').bind(sourceAuthority.pet_id, telegramId).first();
+  const lifecycle = await db.prepare('SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id=? AND telegram_id=?')
+    .bind(sourceAuthority.pet_id, telegramId).first().then(requirePetFirstReadResult);
   if (!lifecycle || lifecycle.phase === 'egg') return { accepted: false, reason: 'moon_egg_must_hatch' };
   if (!state.expedition_attempts_left) return { accepted: false, reason: 'expedition_daily_limit', state };
   const attempt = state.expedition_attempts + 1;

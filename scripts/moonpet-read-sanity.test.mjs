@@ -147,6 +147,23 @@ for (const [name,query] of Object.entries(firstReadTargets)) test(`resolved fail
   await assert.rejects(hooks.buildPetMiniAppState(f.db,f.owner,'fixture-token'),/pet_state_read_unavailable/);
   assert.equal(hit,true,'fault must reach the target');
 });
+test('active pet lookup preserves the migration fallback for a resolved missing-schema read',async()=>{
+ const db={prepare(){return {bind(){return this;},async first(){return {success:false,error:'no such table: telegram_pet_active_slots'};}};}};
+ assert.equal(await hooks.findActivePetSlot(db,'legacy-owner'),null);
+});
+for(const [name,query] of [
+ ['expedition receipt',/SELECT pet_id, day_key, metadata, applied_rewards FROM telegram_pet_reward_claims/],
+ ['expedition lifecycle',/SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id=/],
+]) test(`${name} read failure cannot claim or start an expedition`,async()=>{
+ const f=await savedFixture('first-expedition-'+name.replaceAll(' ','-'));
+ const before=durableSnapshot(f); let hit=false;
+ f.db.beforeFirst=s=>{
+  if(query.test(s.query)){hit=true;return {success:false,error:'private expedition read failure'};}
+ };
+ await assert.rejects(hooks.runPetCrystalExpedition(f.db,f.owner,new Date(),'expedition-outage'),/pet_state_read_unavailable/);
+ assert.equal(hit,true);
+ assert.deepEqual(durableSnapshot(f),before);
+});
 for(const payload of [{success:false,results:[]},{success:false},{success:true},{success:true,results:{}},null]) {
  test(`Relic Vault reports unavailable for ${JSON.stringify(payload)} instead of empty ownership`,async()=>{
   const f=await savedFixture('relic-'+JSON.stringify(payload));
