@@ -368,6 +368,11 @@ assert.match(
   /const\s+state\s*=\s*await\s+buildPetMiniAppState/,
   '/telegram-pets/app/action must refresh state after mutations/rejections',
 );
+assert.match(
+  actionRoute,
+  /body\.response_mode === 'result_only'[\s\S]*state:\s*null[\s\S]*state_pending:\s*true/,
+  '/telegram-pets/app/action must expose an opt-in mutation-only response before full state hydration',
+);
 assert.doesNotMatch(
   actionRoute,
   /mirrorPetProfileToActiveInstance/,
@@ -424,5 +429,18 @@ for (const duplicateField of ['has_completed_season_pet', 'combat_unlocked', 'co
   );
 }
 assert.deepEqual(countCombatRows(routeDb, '200004'), actionSmokeBefore, 'locked route-level combat action creates no queue/match/battle writes');
+
+seedUser(routeDb, '200005', 'Fast Care Player');
+await setActivePetLifecyclePhase(routeDb, '200005', 'adult');
+const fastCareSmoke = await postAppRoute('/telegram-pets/app/action', routeDb, '200005', {
+  action: 'feed',
+  request_id: 'route:fast-feed',
+  response_mode: 'result_only',
+});
+assert.equal(fastCareSmoke.status, 200, 'fast care mutation returns immediately after authority settles');
+assert.equal(fastCareSmoke.body.result.accepted, true, 'fast care response preserves accepted result authority');
+assert.equal(fastCareSmoke.body.state, null, 'fast care response does not build the whole Mini App projection');
+assert.equal(fastCareSmoke.body.state_pending, true, 'fast care response tells the client to reconcile state separately');
+assert.ok(fastCareSmoke.body.result.pet, 'fast care response includes the updated authoritative pet patch');
 
 console.log('telegram-pets-season-1-production-readiness.test.mjs passed');
