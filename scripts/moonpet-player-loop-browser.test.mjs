@@ -321,26 +321,36 @@ try {
     // Existing collection purchases become visible without another charge.
     const styleWallet = sqlite.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(currentUser);
     for (const key of ['rename_badge','profile_frame','victory_pose','run_trail']) sqlite.prepare('INSERT OR IGNORE INTO telegram_pet_cosmetic_unlocks(telegram_id,cosmetic_key,quantity)VALUES(?,?,1)').run(currentUser,key);
-    const styleStateResponse = page.waitForResponse((response) =>
-      response.url().endsWith('/telegram-pets/app/state') &&
-      response.request().method() === 'POST' &&
-      response.ok()
-    );
-    await page.locator('[data-utility="sync"]').click();
-    await styleStateResponse;
-    await page.locator('[data-screen="economy"]').click();
     const styleLab = page.locator('[data-panel="style-lab"]');
     try {
+      const styleStateResponse = page.waitForResponse((response) =>
+        response.url().endsWith('/telegram-pets/app/state') &&
+        response.request().method() === 'POST',
+      { timeout: 10000 });
+      await page.locator('[data-utility="sync"]').click();
+      const refreshedState = await styleStateResponse;
+      assert.equal(refreshedState.ok(), true, `Style Lab sync returned HTTP ${refreshedState.status()}`);
+      await page.waitForFunction(
+        () => document.querySelector('.terminal-output-text')?.textContent === 'LIVE SAVE REFRESHED.',
+        undefined,
+        { timeout: 10000 },
+      );
+      await page.locator('[data-screen="economy"]').click();
       await styleLab.waitFor({ state: 'attached', timeout: 10000 });
       if (!(await styleLab.evaluate((panel) => panel.open))) {
         await styleLab.locator(':scope > summary').click();
       }
-      await page.waitForFunction(() => document.querySelector('[data-panel="style-lab"]')?.open === true);
+      await page.waitForFunction(
+        () => document.querySelector('[data-panel="style-lab"]')?.open === true,
+        undefined,
+        { timeout: 10000 },
+      );
       const styleButtons = styleLab.locator('[data-action="style_equip"]');
       await styleButtons.first().waitFor({ state: 'visible', timeout: 10000 });
       assert.ok(await styleButtons.count() >= 4, 'Style Lab must render the four owned cosmetic controls');
     } catch (error) {
-      await page.screenshot({ path: `/tmp/moonpet-style-lab-failure-${viewport.width}.png`, fullPage: true });
+      await fs.mkdir(path.join(root, 'test-artifacts'), { recursive: true });
+      await page.screenshot({ path: path.join(root, 'test-artifacts', `moonpet-style-lab-failure-${viewport.width}.png`), fullPage: true });
       const styleMarkup = await styleLab.evaluate((panel) => panel.outerHTML).catch(() => 'STYLE LAB PANEL MISSING');
       throw new Error([
         error.message,
