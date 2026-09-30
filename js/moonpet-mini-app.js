@@ -35,6 +35,10 @@
   var fastActionStateRefreshTimer = 0;
   var fastActionStateRefreshInFlight = false;
   var fullStateHydrationPromise = null;
+  var fullStateHydrationFailures = 0;
+  var fullStateHydrationRetryTimer = 0;
+  var fullStateHydrationRetryDelayMs = 0;
+  var FULL_STATE_HYDRATION_MAX_AUTO_RETRIES = 3;
   var FAST_ACTION_RESPONSE_ACTIONS = new Set(['feed', 'play', 'clean', 'sleep', 'train', 'energy_drink', 'dance', 'cuddles']);
   var typingToken = 0;
   var animationMode = 'idle';
@@ -592,7 +596,12 @@
         await new Promise(function (resolve) { setTimeout(resolve, attempt ? 700 : 250); });
         continue;
       }
-      if (!response.ok && response.status !== 409) throw new Error(data.error || 'NETWORK HANDSHAKE FAILED');
+      if (!response.ok && response.status !== 409) {
+        var requestError = new Error(data.error || 'NETWORK HANDSHAKE FAILED');
+        requestError.status = response.status;
+        requestError.retryAfterSeconds = Math.max(0, Number(data.retry_after_seconds || 0));
+        throw requestError;
+      }
       return data;
     }
     throw new Error('mini_app_state_failed');
@@ -991,6 +1000,7 @@
 
   function applyRequestedFocus() {
     if (!requestedFocus) return;
+    if (stateNeedsFullHydration(state) && activeScreen !== 'home') return;
     var focus = requestedFocus;
     requestedFocus = '';
     if (focus === 'leaderboard') openUtility('leaderboard');
@@ -1545,9 +1555,16 @@
     return stateNeedsFullHydration(snapshot) ? { mode: 'core' } : {};
   }
 
-  async function hydrateFullState(reason) {
+  async function hydrateFullState(reason, options) {
     if (!stateNeedsFullHydration(state)) return state;
     if (fullStateHydrationPromise) return fullStateHydrationPromise;
+    window.clearTimeout(fullStateHydrationRetryTimer);
+    fullStateHydrationRetryTimer = 0;
+    var manualRetry = Boolean(options && options.manual);
+    if (manualRetry) {
+      fullStateHydrationFailures = 0;
+      fullStateHydrationRetryDelayMs = 0;
+    }
     fullStateHydrationPromise = (async function () {
       tell('LOADING ' + words(reason || activeScreen) + ' MODULE...');
       var requestGeneration = beginStateRequest();
@@ -1555,23 +1572,35 @@
         var data = await post('/telegram-pets/app/state');
         if (!setStateSnapshot(data.state, requestGeneration)) return null;
         fastActionStateDirty = false;
+        fullStateHydrationFailures = 0;
+        fullStateHydrationRetryDelayMs = 0;
         var scrollTop = screen.scrollTop;
         render();
         screen.scrollTop = scrollTop;
         await showPendingNotices();
+        applyRequestedFocus();
         return state;
       } catch (error) {
+        fullStateHydrationFailures += 1;
+        var retryAfter = Math.max(0, Number(error && error.retryAfterSeconds || 0) * 1000);
+        fullStateHydrationRetryDelayMs = retryAfter || Math.min(8000, 750 * Math.pow(2, Math.max(0, fullStateHydrationFailures - 1)));
         tell(error.message || 'MODULE STATE FAILED', 'danger');
+        render();
         return null;
       } finally {
         fullStateHydrationPromise = null;
-        if (stateNeedsFullHydration(state) && activeScreen !== 'home') {
-          window.setTimeout(function () { hydrateFullState(activeScreen); }, 750);
+        var retryableScreen = stateNeedsFullHydration(state) && activeScreen !== 'home';
+        if (retryableScreen && fullStateHydrationFailures < FULL_STATE_HYDRATION_MAX_AUTO_RETRIES) {
+          fullStateHydrationRetryTimer = window.setTimeout(function () {
+            fullStateHydrationRetryTimer = 0;
+            hydrateFullState(activeScreen);
+          }, fullStateHydrationRetryDelayMs);
         }
       }
     }());
     return fullStateHydrationPromise;
   }
+
   // TEST-EXPORT: coreStateHydration:end
 
   function setStateSnapshot(nextState, requestGeneration, options) {
@@ -2674,9 +2703,14 @@
     renderNav();
     renderCanvasTools();
     var waitingForModule = stateNeedsFullHydration(state) && activeScreen !== 'home';
+    var hydrationStopped = waitingForModule && fullStateHydrationFailures >= FULL_STATE_HYDRATION_MAX_AUTO_RETRIES && !fullStateHydrationPromise;
     screen.innerHTML = !state ? ''
       : waitingForModule
-        ? panel('LOADING // ' + activeScreen.toUpperCase(), '<div class="line signal">FETCHING SERVER-AUTHORITATIVE MODULE STATE...</div><div class="line muted">HOME remains usable while the full game snapshot loads only when requested.</div>', 'module-loading')
+        ? panel('LOADING // ' + activeScreen.toUpperCase(),
+          hydrationStopped
+            ? '<div class="line danger">MODULE STATE COULD NOT LOAD.</div><div class="line muted">Automatic retries stopped to protect the API. HOME is still available.</div><div class="button-grid"><button type="button" class="terminal-button" data-utility="module-retry">RETRY MODULE</button>' + routeButton('RETURN HOME', { screen: 'home', focus: 'care' }, 'Use lightweight care while the module is unavailable.') + '</div>'
+            : '<div class="line signal">FETCHING SERVER-AUTHORITATIVE MODULE STATE...</div><div class="line muted">HOME remains usable while the full game snapshot loads only when requested.</div>',
+          'module-loading')
         : renderRecommended() + screens[activeScreen]();
     restoreEditableState(editableState);
     if (draftPetId === (state && state.pet && state.pet.pet_id)) Object.keys(routeDraft).forEach(function (id) {
@@ -3263,6 +3297,7 @@
     if (utility) {
       if (utility.dataset.utility === 'guide' || utility.dataset.utility === 'leaderboard') openUtility(utility.dataset.utility);
       else if (utility.dataset.utility === 'retry') window.location.reload();
+      else if (utility.dataset.utility === 'module-retry') hydrateFullState(activeScreen, { manual: true });
       return;
     }
     var petGreeting = event.target.closest('[data-pet-greet]');
