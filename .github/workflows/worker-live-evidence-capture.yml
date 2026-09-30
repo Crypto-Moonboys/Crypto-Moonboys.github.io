@@ -36,13 +36,51 @@ jobs:
       - name: Test evidence comparison contract
         run: node scripts/worker-live-evidence-compare.test.mjs
 
+      - name: Detect Worker provenance changes
+        id: worker_scope
+        shell: bash
+        run: |
+          node <<'NODE'
+          const { execFileSync } = require('node:child_process');
+          const fs = require('node:fs');
+
+          const baseRef = process.env.eventName === 'pull_request'
+            ? 'origin/main'
+            : null;
+          let required = process.env.eventName !== 'pull_request';
+
+          if (baseRef) {
+            const changed = execFileSync('git', ['diff', '--name-only', `${baseRef}...HEAD`], { encoding: 'utf8' })
+              .trim().split('\n').filter(Boolean);
+            required = changed.some((file) =>
+              file === 'deployments/worker-evidence-request.json' ||
+              file.startsWith('deployments/evidence/worker-provenance-')
+            );
+
+            if (!required && changed.includes('deployments/production.json')) {
+              const base = JSON.parse(execFileSync('git', ['show', `${baseRef}:deployments/production.json`], { encoding: 'utf8' }));
+              const head = JSON.parse(fs.readFileSync('deployments/production.json', 'utf8'));
+              required = JSON.stringify(base.workers || {}) !== JSON.stringify(head.workers || {});
+            }
+          }
+
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `required=${required}\n`);
+          console.log(required
+            ? 'Live Worker capture required.'
+            : 'Worker provenance is unchanged; contract tests are sufficient for this D1-only manifest update.');
+          NODE
+        env:
+          eventName: ${{ github.event_name }}
+
       - name: Capture live Worker provenance
+        if: steps.worker_scope.outputs.required == 'true'
         shell: bash
         run: |
           node scripts/live-worker-provenance-verify.mjs deployments/worker-evidence-request.json \
             | tee worker-provenance-evidence.json
 
       - name: Validate capture against committed evidence
+        if: steps.worker_scope.outputs.required == 'true'
         shell: bash
         run: |
           committed_evidence="$(node -p "require('./deployments/worker-evidence-request.json').retained_evidence")"
@@ -52,6 +90,7 @@ jobs:
             deployments/worker-evidence-request.json
 
       - name: Upload retained evidence
+        if: steps.worker_scope.outputs.required == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: worker-provenance-evidence
