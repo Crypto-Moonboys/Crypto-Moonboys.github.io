@@ -69,6 +69,7 @@ test('scheduled workflow probes twice, deduplicates incidents and alerts only on
   assert.equal((WORKFLOW.match(/node scripts\/moonpet-production-health-probe\.mjs/g) || []).length, 2);
   assert.match(PROBE_SOURCE, /MOONPET_CANARY_ACTION: 'none'/);
   assert.match(PROBE_SOURCE, /MOONPET_CANARY_ALLOW_ACTION: '0'/);
+  assert.match(WORKFLOW, /- name: Send retryable incident notifications\n\s+if: github\.event_name != 'workflow_dispatch' \|\| inputs\.notification_test != true/);
   assert.match(WORKFLOW, /node scripts\/moonpet-production-health-incident\.mjs/);
   assert.match(INCIDENT_SOURCE, /alert-pending/);
   assert.match(INCIDENT_SOURCE, /notify\(notification\);\s*if \(notification === 'failed'\)/);
