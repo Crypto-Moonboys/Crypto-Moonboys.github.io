@@ -31,6 +31,10 @@
   var requestedFocus = launchParameter('focus');
   var activeScreen = SCREEN_ORDER.includes(requestedScreen) ? requestedScreen : 'home';
   var busy = false;
+  var fastActionStateDirty = false;
+  var fastActionStateRefreshTimer = 0;
+  var fastActionStateRefreshInFlight = false;
+  var FAST_ACTION_RESPONSE_ACTIONS = new Set(['feed', 'play', 'clean', 'sleep', 'train', 'energy_drink', 'dance', 'cuddles']);
   var typingToken = 0;
   var animationMode = 'idle';
   var animationUntil = 0;
@@ -974,6 +978,7 @@
       var requestGeneration = beginStateRequest();
       var data = await post('/telegram-pets/app/state');
       if (!setStateSnapshot(data.state, requestGeneration)) return;
+      fastActionStateDirty = false;
       render();
       tell('LIVE SAVE REFRESHED.');
       haptic('success');
@@ -1652,6 +1657,68 @@
     return output;
   }
   // TEST-EXPORT: actionCooldownMerge:end
+
+  // TEST-EXPORT: fastActionResponse:start
+  function shouldUseFastActionResponse(action) {
+    return FAST_ACTION_RESPONSE_ACTIONS.has(String(action || '').toLowerCase());
+  }
+
+  function patchFastActionState(snapshot, result, action) {
+    if (!snapshot || !result) return snapshot;
+    var next = Object.assign({}, snapshot);
+    if (result.pet) {
+      next.pet = Object.assign({}, snapshot.pet || {}, result.pet);
+      if (snapshot.season_slots && Array.isArray(snapshot.season_slots.slots)) {
+        next.season_slots = Object.assign({}, snapshot.season_slots, {
+          slots: snapshot.season_slots.slots.map(function (slot) {
+            if (!slot || !slot.active || !slot.pet) return slot;
+            return Object.assign({}, slot, { pet: Object.assign({}, slot.pet, result.pet) });
+          }),
+        });
+      }
+    }
+    if (result.lifecycle) next.lifecycle = Object.assign({}, snapshot.lifecycle || {}, result.lifecycle);
+    if (result.season_slots) next.season_slots = result.season_slots;
+    if (result.capabilities) {
+      next.capabilities = result.capabilities;
+      if (result.capabilities_version != null) next.capabilities_version = result.capabilities_version;
+    }
+    next = mergeActionResultCooldown(next, result, action);
+    return next;
+  }
+
+  function scheduleFastActionStateRefresh(delayMs) {
+    fastActionStateDirty = true;
+    window.clearTimeout(fastActionStateRefreshTimer);
+    fastActionStateRefreshTimer = window.setTimeout(refreshFastActionState, Math.max(0, Number(delayMs == null ? 4000 : delayMs) || 0));
+  }
+
+  async function refreshFastActionState() {
+    window.clearTimeout(fastActionStateRefreshTimer);
+    fastActionStateRefreshTimer = 0;
+    if (!fastActionStateDirty || fastActionStateRefreshInFlight) return;
+    if (busy || noticesBusy) {
+      scheduleFastActionStateRefresh(500);
+      return;
+    }
+    fastActionStateRefreshInFlight = true;
+    try {
+      var requestGeneration = beginStateRequest();
+      var data = await post('/telegram-pets/app/state');
+      if (!setStateSnapshot(data.state, requestGeneration)) return;
+      fastActionStateDirty = false;
+      var scrollTop = screen.scrollTop;
+      render();
+      screen.scrollTop = scrollTop;
+      await showPendingNotices();
+    } catch (_) {
+      scheduleFastActionStateRefresh(2000);
+    } finally {
+      fastActionStateRefreshInFlight = false;
+      if (fastActionStateDirty && !fastActionStateRefreshTimer) scheduleFastActionStateRefresh(1000);
+    }
+  }
+  // TEST-EXPORT: fastActionResponse:end
 
   function seasonSnapshotElapsed() {
     return seasonSnapshotReceivedAt > 0 ? Math.max(0, performance.now() - seasonSnapshotReceivedAt) : 0;
@@ -3001,18 +3068,38 @@
     busy = true;
     if (buttonElement) buttonElement.classList.add('is-active');
     haptic('medium');
-    var waitForAcceptedAnimation = ['energy_drink', 'dance', 'cuddles'].includes(String(action || '').toLowerCase());
-    if (sleepLatched && actionAnimationFamily(action, payload) !== 'sleep' && !waitForAcceptedAnimation) {
-      setSleepLatch(false);
-    }
-    if (!waitForAcceptedAnimation) animateAction(action, true, 8000, payload);
+    var fastResponse = shouldUseFastActionResponse(action);
+    var waitForAcceptedAnimation = !fastResponse && ['energy_drink', 'dance', 'cuddles'].includes(String(action || '').toLowerCase());
+    var actionFamily = actionAnimationFamily(action, payload);
+    if (sleepLatched && actionFamily !== 'sleep' && !waitForAcceptedAnimation) setSleepLatch(false);
+    if (!waitForAcceptedAnimation) animateAction(action, true, fastResponse ? (actionFamily === 'dance' ? 3600 : 2800) : 8000, payload);
     tell(words(action) + ' in progress...');
     try {
       var stateBeforeAction = state;
       var requestGeneration = beginStateRequest();
-      var data = await post('/telegram-pets/app/action', Object.assign({ action: action, request_id: crypto.randomUUID() }, payload || {}));
-      var responseState = mergeActionResultCooldown(data.state, data.result, action);
+      var requestPayload = Object.assign({ action: action, request_id: crypto.randomUUID() }, payload || {});
+      if (fastResponse) requestPayload.response_mode = 'result_only';
+      var data = await post('/telegram-pets/app/action', requestPayload);
       var actionAccepted = Boolean(data.result && data.result.accepted);
+
+      if (fastResponse && data.state_pending === true) {
+        if (stateRequestGate.isCurrent(requestGeneration)) {
+          state = patchFastActionState(state, data.result, action);
+          var fastServerTime = Date.parse(data.server_time || data.result && data.result.server_time || '');
+          if (Number.isFinite(fastServerTime)) serverClockOffsetMs = fastServerTime - Date.now();
+          if (actionFamily === 'sleep') setSleepLatch(actionAccepted);
+          else if (actionAccepted && sleepLatched) setSleepLatch(false);
+          if (!actionAccepted) animateAction('blocked', false, 2800, payload);
+          var message = resultMessage(data.result, stateBeforeAction, state);
+          tell(message + (actionAccepted ? ' // SAVE CONFIRMED' : ''), actionAccepted ? '' : 'danger');
+          haptic(actionAccepted ? 'success' : 'error');
+          render();
+          scheduleFastActionStateRefresh(4000);
+        }
+        return;
+      }
+
+      var responseState = mergeActionResultCooldown(data.state, data.result, action);
       // The action may have committed before its separate state read failed.
       // Preserve that result and the last valid view; Refresh retries only the
       // read, without submitting the paid action a second time.
@@ -3040,7 +3127,6 @@
       // Keep the rejection and retry instructions visible. Queued unlock notices
       // remain unacknowledged until the next successful action or refresh.
       if (actionAccepted) await showPendingNotices();
-      var actionFamily = actionAnimationFamily(action, payload);
       if (actionFamily === 'sleep') setSleepLatch(actionAccepted);
       else if (waitForAcceptedAnimation && actionAccepted && sleepLatched) setSleepLatch(false);
       if (!isHatchReveal) animateAction(action, actionAccepted, actionFamily === 'dance' ? 3600 : 2800, payload);
@@ -3059,6 +3145,7 @@
     if (!SCREEN_ORDER.includes(nextScreen) || nextScreen === activeScreen) return false;
     activeScreen = nextScreen;
     render();
+    if (fastActionStateDirty) scheduleFastActionStateRefresh(0);
     return true;
   }
 
@@ -3857,12 +3944,13 @@
     // the background and keep drawPet in its safe loading state until bot art is ready.
     var spriteStartup = Promise.allSettled([initBotArtMode()]);
     requestAnimationFrame(frame);
-    await typeBoot(['MOONPET BIOS 0.9', 'CHECKING TELEGRAM SIGNATURE...', 'CONNECTING TO D1 MEMORY CORE...'], { speed: 10, hold: 180 });
+    var startupBoot = typeBoot(['MOONPET BIOS 0.9', 'CHECKING TELEGRAM SIGNATURE...', 'CONNECTING TO D1 MEMORY CORE...'], { speed: 10, hold: 180 });
     spriteStartup.then(function () {
       if (state) drawWorld(performance.now());
     });
     await restoreBrowserAuth();
     if (!initData && !telegramAuth) {
+      await startupBoot;
       tell('OPEN THIS GAME FROM @WIKICOMSBOT.', 'danger');
       screen.innerHTML = panel('TELEGRAM SIGNATURE REQUIRED',
         '<div class="line">MOONPET OS READS YOUR LIVE SAVE ONLY AFTER TELEGRAM VERIFIES YOUR IDENTITY.</div>' +
@@ -3874,7 +3962,9 @@
     }
     try {
       var requestGeneration = beginStateRequest();
-      var data = await post('/telegram-pets/app/state');
+      var initialStateRequest = post('/telegram-pets/app/state');
+      await startupBoot;
+      var data = await initialStateRequest;
       if (!setStateSnapshot(data.state, requestGeneration)) throw new Error('STALE INITIAL STATE RESPONSE');
       if (reducedMotion) {
         var reducedMotionStartedAt = performance.now();
