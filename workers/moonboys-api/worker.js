@@ -3,7 +3,7 @@ import { RELIC_ROUTE_DETAILS } from './pets/relic-passives.js';
 import { requirePetFirstReadResult, requirePetReadResult, requirePetMutationResult } from './pets/read-result.js';
 import { getPetEntryRequirement, petEntryNext, PET_ENTRY_ARCADE_XP } from './pets/entry-requirement.js';
 import { buildPetLifetimeProgression } from './pets/lifetime-progression.js';
-import { completePetOnboarding } from './pets/onboarding.js';
+import { buildPetOnboardingStatements, completePetOnboarding } from './pets/onboarding.js';
 import { readCommunityLeaderboard } from './community-leaderboard.js';
 import { selectCommunitySeason, communitySeasonSql } from './community-season-authority.js';
 import { getCombatEligibility, PET_ARENA_MIN_LEVEL as COMBAT_ARENA_MIN_LEVEL, PET_WEEKLY_BOSS_MIN_LEVEL } from './pets/combat-eligibility.js';
@@ -4920,15 +4920,15 @@ async function switchActivePetSeasonSlot(db, telegramId, requestedPetId, options
 
 async function getOrCreatePetProfile(db, telegramId, options = {}) {
   let pet = await getPetProfile(db, telegramId);
-  // Profile and creation-clock ownership commit together. Onboarding itself
-  // uses one canonical atomic claim shared with the existing-owner repair path.
+  // Profile, ownership and onboarding become visible in one transaction.
+  // Existing-owner repair shares the same canonical claim and effect statements.
   if (pet) return null;
   if (!pet) {
     const petName = normalizePetName(options.pet_name) || 'Moonpet';
     const species = normalizePetName(options.species) || '';
     const seasonKey = getPetSeasonInfo(options.now || new Date()).key;
     const petId = `pet:${telegramId}:${seasonKey}:1`;
-    const results = await db.batch([db.prepare(`
+    const statements = [db.prepare(`
       INSERT OR IGNORE INTO telegram_pet_profiles (telegram_id, pet_name, species)
       SELECT ?, ?, ? WHERE EXISTS (
         SELECT 1 FROM arcade_progression_state WHERE telegram_id=? AND arcade_xp_total>=?
@@ -4938,20 +4938,20 @@ async function getOrCreatePetProfile(db, telegramId, options = {}) {
         (pet_id,telegram_id,season_key,slot_number,acquisition_type,source_event_key,journey_clock)
         SELECT ?,?,?,1,'free','profile_insert','created_at' WHERE changes()=1`)
         .bind(petId, telegramId, seasonKey),
-    ]);
-    if (!Array.isArray(results) || results.length !== 2) throw new Error('pet_state_write_unavailable');
+      db.prepare(`INSERT INTO telegram_pet_instances
+        (pet_id,telegram_id,season_key,slot_number,pet_name,species,source_profile_updated_at,created_at)
+        SELECT ?,telegram_id,?,1,pet_name,species,updated_at,created_at FROM telegram_pet_profiles
+        WHERE telegram_id=? AND changes()=1`).bind(petId, seasonKey, telegramId),
+      db.prepare(`INSERT INTO telegram_pet_active_slots (telegram_id,pet_id,season_key)
+        SELECT ?,?,? WHERE changes()=1`).bind(telegramId, petId, seasonKey),
+      ...buildPetOnboardingStatements(db, { pet_id: petId, telegram_id: telegramId, season_key: seasonKey }),
+    ];
+    const results = await db.batch(statements);
+    if (!Array.isArray(results) || results.length !== statements.length) throw new Error('pet_state_write_unavailable');
     results.forEach(requirePetMutationResult);
     const created = results[0];
     if (Number(created?.meta?.changes || 0) !== 1) return null;
-    pet = await db.prepare(`SELECT * FROM telegram_pet_profiles WHERE telegram_id=?`)
-      .bind(telegramId).first().then(requirePetFirstReadResult);
-    if (!pet) return null;
-    await ensurePetStarterSeasonSlot(db, telegramId, options.now || new Date());
-    await ensureActivePetInstance(db, telegramId);
-    await completePetOnboarding(db, telegramId, petId);
-    pet = await db.prepare(`
-      SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?
-    `).bind(telegramId).first().then(requirePetFirstReadResult);
+    pet = await getPetProfile(db, telegramId);
   }
   return applyPetDecay(pet);
 }

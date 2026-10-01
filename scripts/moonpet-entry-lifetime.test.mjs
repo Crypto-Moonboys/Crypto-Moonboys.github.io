@@ -107,20 +107,27 @@ assert.equal(ignored.reason, 'pet_already_adopted');
 assert.equal(sqlite.prepare('SELECT total_changes() AS n').get().n, changesAfterWinner, 'a concurrent losing insert creates no onboarding events or other writes');
 assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM telegram_pet_instances WHERE telegram_id='concurrent'").get().n, 1);
 
-// Pause the winner before setup, rather than after it has already completed.
-for (const checkpoint of ['after-profile', 'before-onboarding-claim']) {
-  player(checkpoint, 1000);
+// New adoption has no externally visible half-profile. Legacy partial saves
+// still race through one canonical repair claim before lifecycle creation.
+for (const checkpoint of ['after-commit', 'legacy-partial-repair']) {
+  const repairOnly = checkpoint === 'legacy-partial-repair';
+  player(checkpoint, repairOnly ? 0 : 1000);
+  if (repairOnly) {
+    sqlite.prepare('INSERT INTO telegram_pet_profiles (telegram_id) VALUES (?)').run(checkpoint);
+    await hooks.ensurePetStarterSeasonSlot(db, checkpoint);
+    await hooks.ensureActivePetInstance(db, checkpoint);
+  }
   const duringSetup = async () => {
     assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_pet_profiles WHERE telegram_id=?').get(checkpoint).n, 1);
-    assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_pet_lifecycle_by_pet WHERE telegram_id=?').get(checkpoint).n, 0);
+    assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_pet_lifecycle_by_pet WHERE telegram_id=?').get(checkpoint).n, repairOnly ? 0 : 1);
     assert.equal((await adopt(checkpoint, { event_key: checkpoint + ':repair-racer' })).accepted, false);
     sqlite.prepare('UPDATE telegram_pet_instances SET pet_xp=2345 WHERE telegram_id=?').run(checkpoint);
     sqlite.prepare('UPDATE telegram_pet_profiles SET pet_xp=2345 WHERE telegram_id=?').run(checkpoint);
     sqlite.prepare('UPDATE telegram_pet_lifecycle_by_pet SET incubation_progress=5 WHERE telegram_id=?').run(checkpoint);
   };
-  if (checkpoint === 'after-profile') afterCreation = duringSetup;
+  if (checkpoint === 'after-commit') afterCreation = duringSetup;
   else beforeOnboarding = duringSetup;
-  assert.equal((await adopt(checkpoint, { event_key: checkpoint + ':profile-winner' })).accepted, true);
+  assert.equal((await adopt(checkpoint, { event_key: checkpoint + ':profile-winner' })).accepted, !repairOnly);
   for (const table of ['telegram_pet_season_slots', 'telegram_pet_instances', 'telegram_pet_lifecycle_by_pet',
     'telegram_pet_lifecycle_events_by_pet', 'telegram_pet_identity_events', 'telegram_pet_memories', 'telegram_pet_evolutions_by_pet']) {
     assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM ' + table + ' WHERE telegram_id=?').get(checkpoint).n, 1, checkpoint + ': ' + table);
@@ -135,17 +142,31 @@ for (const checkpoint of ['after-profile', 'before-onboarding-claim']) {
   assert.deepEqual(sqlite.prepare('SELECT * FROM telegram_pet_lifecycle_by_pet WHERE telegram_id=?').get(checkpoint), snapshot);
 }
 
-// A failure after lifecycle insertion rolls back the claim and every effect.
+// A failure after lifecycle insertion rolls back the entire new adoption.
 player('onboarding-retry', 1000);
 failOnboarding = true;
 await assert.rejects(adopt('onboarding-retry'), /onboarding batch unavailable/);
 failOnboarding = false;
+noPet('onboarding-retry');
 for (const table of ['telegram_pet_lifecycle_by_pet', 'telegram_pet_identity_events', 'telegram_pet_memories', 'telegram_pet_evolutions_by_pet']) {
   assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM ' + table + ' WHERE telegram_id=?').get('onboarding-retry').n, 0, 'rollback: ' + table);
 }
 sqlite.prepare("UPDATE arcade_progression_state SET arcade_xp_total=0 WHERE telegram_id='onboarding-retry'").run();
-assert.equal((await adopt('onboarding-retry', { event_key: 'different-retry-key' })).reason, 'pet_already_adopted');
+assert.equal((await adopt('onboarding-retry')).reason, 'arcade_xp_entry_required');
+noPet('onboarding-retry');
+sqlite.prepare("UPDATE arcade_progression_state SET arcade_xp_total=1000 WHERE telegram_id='onboarding-retry'").run();
+assert.equal((await adopt('onboarding-retry', { event_key: 'different-retry-key' })).accepted, true);
 assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM telegram_pet_identity_events WHERE telegram_id='onboarding-retry' AND applied_at IS NOT NULL").get().n, 1);
+player('onboarding-repair-retry', 0);
+sqlite.prepare("INSERT INTO telegram_pet_profiles (telegram_id) VALUES ('onboarding-repair-retry')").run();
+await hooks.ensurePetStarterSeasonSlot(db, 'onboarding-repair-retry');
+await hooks.ensureActivePetInstance(db, 'onboarding-repair-retry');
+failOnboarding = true;
+await assert.rejects(adopt('onboarding-repair-retry'), /onboarding batch unavailable/);
+failOnboarding = false;
+assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM telegram_pet_identity_events WHERE telegram_id='onboarding-repair-retry'").get().n, 0);
+assert.equal((await adopt('onboarding-repair-retry', { event_key: 'legacy:repair:retry' })).reason, 'pet_already_adopted');
+assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM telegram_pet_identity_events WHERE telegram_id='onboarding-repair-retry' AND applied_at IS NOT NULL").get().n, 1);
 const recoveredLifecycle = sqlite.prepare("SELECT * FROM telegram_pet_lifecycle_by_pet WHERE telegram_id='onboarding-retry'").get();
 failOnboardingRead = true;
 await assert.rejects(adopt('onboarding-retry'), /pet_state_read_unavailable/, 'a failed repair read cannot become empty ownership');
