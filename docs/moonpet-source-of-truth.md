@@ -52,6 +52,10 @@ not the current competition period. Core loads defer completion detail; Missions
 and Profile hydrate it without resetting progression. Competition XP for new
 awards uses the earning day's calendar quarter, including delayed reserved
 rewards. Existing competition rows are not rewritten.
+Standard Run endings use their saved terminal timestamp for competition XP
+even when payout recovery happens in a later quarter; daily/weekly settlement
+windows keep their existing behavior. Concurrent first-adoption requests run
+onboarding only for the profile insert winner.
 
 ## XP and score ownership
 

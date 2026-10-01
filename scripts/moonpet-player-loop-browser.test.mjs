@@ -132,22 +132,16 @@ try {
     });
     const url = `http://127.0.0.1:${server.address().port}/moonpet-game.html`;
     await page.goto(url);
-    await page.waitForSelector('#screen > details.panel');
-    if (await page.locator('#screen > details.panel').getAttribute('open') === null) {
-      await page.locator('#screen > details.panel > summary').click();
-    }
-    const initialise = page.locator('[data-action="adopt"]');
+    await page.waitForSelector('[data-panel="entry"]');
+    const initialise = page.locator('[data-panel="entry"] [data-action="adopt"]');
     await initialise.waitFor();
     assert.equal(await initialise.isDisabled(), true);
     assert.match(await page.locator('#screen').innerText(), /999 \/ 1,000 LIFETIME ARCADE XP/);
     assert.equal(await page.locator('a:has-text("PLAY WEBSITE ARCADE")').getAttribute('href'), '/games/');
     sqlite.prepare('UPDATE arcade_progression_state SET arcade_xp_total=1000 WHERE telegram_id=?').run(id);
     await page.reload();
-    await page.waitForSelector('#screen > details.panel');
-    if (await page.locator('#screen > details.panel').getAttribute('open') === null) {
-      await page.locator('#screen > details.panel > summary').click();
-    }
-    await page.waitForSelector('[data-action="adopt"]:enabled');
+    await page.waitForSelector('[data-panel="entry"]');
+    await page.waitForSelector('[data-panel="entry"] [data-action="adopt"]:enabled');
     await initialise.click();
     await page.waitForSelector('[data-panel="incubation"]');
     assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_pet_instances WHERE telegram_id=?').get(id).n, 1);

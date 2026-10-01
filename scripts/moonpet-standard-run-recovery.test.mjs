@@ -103,6 +103,25 @@ for (const kind of ['personality','memory']) test(`paid Standard ending repairs 
   assert.equal(f.sql.prepare('SELECT total_runs FROM telegram_pet_memories WHERE pet_id=?').get(source).total_runs,1);
 });
 
+test('a saved terminal payout recovered after a quarter boundary keeps its earning competition', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: Date.UTC(2026, 9, 1, 12) });
+  const f = fixture('terminal-quarter');
+  await f.state();
+  f.run('quarter-ending');
+  f.db.failReward = true;
+  await assert.rejects(hooks.processPetRunExtract(f.db, f.owner, 'quarter-ending'), /interrupted_terminal_reward/);
+  f.sql.prepare("UPDATE telegram_pet_runs SET completed_at='2026-09-30 23:59:00' WHERE run_id='quarter-ending'").run();
+  const result = (await hooks.recoverPetStandardRunEndings(f.db, f.owner, 'quarter-ending'))[0];
+  assert.equal(result.accepted, true);
+  assert.equal(f.sql.prepare('SELECT season_xp FROM telegram_pet_season_state WHERE telegram_id=? AND season_key=?')
+    .get(f.owner, 'pet-s2026-003').season_xp, result.pet_xp_awarded);
+  assert.equal(f.sql.prepare('SELECT season_xp FROM telegram_pet_season_state WHERE telegram_id=? AND season_key=?')
+    .get(f.owner, 'pet-s2026-004'), undefined);
+  await hooks.recoverPetStandardRunEndings(f.db, f.owner, 'quarter-ending');
+  assert.equal(f.sql.prepare("SELECT COUNT(*) AS n FROM telegram_pet_events WHERE event_type='run_extract'").get().n, 1);
+  assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get('current-' + f.owner).pet_xp, 224);
+});
+
 test('paid ending identity recovery retains the original day and archived pet', async t => {
   t.mock.timers.enable({apis:['Date'],now:Date.UTC(2026,8,27,12)});
   const f=fixture('historic-identity');

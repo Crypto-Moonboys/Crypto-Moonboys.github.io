@@ -22,7 +22,7 @@ class Statement {
   async run() {
     if (this.sql.includes('INSERT OR IGNORE INTO telegram_pet_profiles')) {
       if (failCreation) return { success: false, error: 'unavailable' };
-      if (beforeCreation) { const callback = beforeCreation; beforeCreation = null; callback(); }
+      if (beforeCreation) { const callback = beforeCreation; beforeCreation = null; await callback(); }
     }
     if (/RETURNING/i.test(this.sql)) {
       const results = sqlite.prepare(this.sql).all(...this.args);
@@ -79,6 +79,17 @@ player('race', 1000);
 beforeCreation = () => sqlite.prepare("UPDATE arcade_progression_state SET arcade_xp_total=999 WHERE telegram_id='race'").run();
 assert.equal((await adopt('race')).reason, 'arcade_xp_entry_required', 'the write rechecks XP after the eligibility read');
 noPet('race');
+player('concurrent', 1000);
+let changesAfterWinner;
+beforeCreation = async () => {
+  assert.equal((await adopt('concurrent', { event_key: 'concurrent:winner' })).accepted, true);
+  changesAfterWinner = sqlite.prepare('SELECT total_changes() AS n').get().n;
+};
+const ignored = await adopt('concurrent', { event_key: 'concurrent:loser' });
+assert.equal(ignored.accepted, false);
+assert.equal(ignored.reason, 'pet_already_adopted');
+assert.equal(sqlite.prepare('SELECT total_changes() AS n').get().n, changesAfterWinner, 'a concurrent losing insert creates no onboarding events or other writes');
+assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM telegram_pet_instances WHERE telegram_id='concurrent'").get().n, 1);
 player('failed-read', 1000);
 failEntryRead = true;
 await assert.rejects(adopt('failed-read'), /pet_state_read_unavailable/);

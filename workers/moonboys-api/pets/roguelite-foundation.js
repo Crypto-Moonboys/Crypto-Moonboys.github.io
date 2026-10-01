@@ -236,7 +236,8 @@ function getRewardAuthorization(source, telegramId, context = {}, now = new Date
   }
   if (source === 'pet_run_legacy') {
     if (!runId) throw new Error('invalid_pet_reward_context');
-    return { sql: "AND EXISTS (SELECT 1 FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ? AND status IN ('active', 'extractable', 'completed', 'extracted'))", args: [runId, telegramId] };
+    const earnedAt = String(context.competition_earned_at || '');
+    return { sql: "AND EXISTS (SELECT 1 FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ? AND status IN ('active', 'extractable', 'completed', 'extracted') AND (?='' OR julianday(completed_at)=julianday(?)))", args: [runId, telegramId, earnedAt, earnedAt] };
   }
   if (source === 'roguelite_room' || source === 'roguelite_boss') {
     if (!runId || !roomId) throw new Error('invalid_pet_reward_context');
@@ -297,7 +298,9 @@ export async function awardPetReward(db, request = {}) {
   const seasonKey = String(request.season_key || getMoonpetSeasonKey(now));
   // Pet ownership and event receipts retain their original source season.
   // Reserved rewards retain their earning day even when recovered later.
-  const competitionSeasonKey = getMoonpetSeasonKey(`${dayKey}T00:00:00.000Z`);
+  const terminalEarnedAt = source === 'pet_run_legacy' ? request.context?.competition_earned_at : null;
+  if (terminalEarnedAt && !Number.isFinite(Date.parse(terminalEarnedAt))) throw new Error('invalid_pet_reward_context');
+  const competitionSeasonKey = getMoonpetSeasonKey(terminalEarnedAt || `${dayKey}T00:00:00.000Z`);
   const authorization = getRewardAuthorization(source, telegramId, request.context, now, petId);
   const claimId = crypto.randomUUID();
   const eventId = reservationId || crypto.randomUUID();

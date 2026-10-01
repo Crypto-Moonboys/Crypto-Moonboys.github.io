@@ -731,6 +731,9 @@
 
   function button(label, action, payload, options) {
     options = careActionButtonOptions(action, actionCooldownButtonOptions(action, options));
+    if (action === 'adopt' && !(state && state.entry_requirement && state.entry_requirement.eligible === true)) {
+      options = Object.assign({}, options, { disabled: true, statusLabel: 'ARCADE XP REQUIRED' });
+    }
     var accountActions = ['adopt', 'guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'arena_queue_cancel', 'arena_forfeit', 'kaiju_queue_cancel', 'kaiju_match_cancel'];
     var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim', 'contract_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim']);
     if (state && state.lifecycle && state.lifecycle.phase === 'egg' && !eggActions.includes(action)) {
@@ -1437,7 +1440,7 @@
       var entryCopy = entry.required_arcade_xp != null
         ? number(entry.arcade_xp_lifetime) + ' / ' + number(entry.required_arcade_xp) + ' LIFETIME ARCADE XP // ' + (entryReady ? 'ENTRY UNLOCKED' : number(entry.remaining_arcade_xp) + ' XP TO GO')
         : 'CHECKING ARCADE XP';
-      return panel('DORMANT SECRET BOT', '<div class="line">NO COMPANION RECORD FOUND.</div><div class="line complete">' + entryCopy + '</div><div class="line muted">NEXT // ' + escapeHtml(homeNextLine()) + '</div><div class="line muted">First-pet entry keeps your Arcade XP. Use the same Telegram account on the website and here.</div><div class="button-grid one">' + button('INITIALISE MOONPET', 'adopt', {}, { disabled: !entryReady }) + '<a class="terminal-button" href="/games/" target="_blank" rel="noopener">PLAY WEBSITE ARCADE</a></div>');
+      return panel('DORMANT SECRET BOT', '<div class="line">NO COMPANION RECORD FOUND.</div><div class="line complete">' + entryCopy + '</div><div class="line muted">NEXT // ' + escapeHtml(homeNextLine()) + '</div><div class="line muted">First-pet entry keeps your Arcade XP. Use the same Telegram account on the website and here.</div><div class="button-grid one">' + button('INITIALISE MOONPET', 'adopt', {}, { disabled: !entryReady }) + '<a class="terminal-button" href="/games/" target="_blank" rel="noopener">PLAY WEBSITE ARCADE</a></div>', 'entry');
     }
     var pet = state.pet;
     var dailyCache = state.guidance && state.guidance.daily_cache || {};

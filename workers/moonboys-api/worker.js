@@ -2516,6 +2516,7 @@ function serializePetRun(run) {
     season_key: String(run.season_key || ''), status: String(run.status || 'active'), region: String(run.region || 'moon_alley'),
     difficulty: Math.max(1, Math.floor(Number(run.difficulty || 1)), Math.floor(depth / PET_RUN_BOSS_INTERVAL) + 1),
     seed: run.seed == null ? null : Number(run.seed), depth, current_room: depth,
+    completed_at: run.completed_at || null,
     max_depth: Math.max(PET_RUN_MAX_DEPTH, Math.floor(Number(run.max_depth || run.max_room || 0))),
     max_room: Math.max(PET_RUN_MAX_DEPTH, Math.floor(Number(run.max_room || run.max_depth || 0))),
     score: Math.max(0, Math.floor(Number(run.score || 0))), rooms_completed: Math.max(depth, Math.floor(Number(run.rooms_completed || 0))),
@@ -2826,6 +2827,7 @@ async function recordPetRunBankedEvent(db, telegramId, run, pet, options = {}) {
     return { accepted: false, reason: 'run_closed', run: rewardRun || run, pet, xp_awarded: 0, pet_xp_awarded: 0 };
   }
   const bankedItemsAuthority = parsePetRunItems(rewardRun.unbanked_items);
+  const terminalEarnedAt = parseSqliteTs(rewardRun.completed_at);
   const requestedCommunityXpAuthority = Math.max(0, Math.min(80,
     Math.floor(Math.max(0, Number(rewardRun.unbanked_pet_xp || 0)) / 3) + Math.max(0, Number(rewardRun.depth || 0)) * 4));
   const awardedAuthority = await awardPetReward(db, {
@@ -2837,6 +2839,7 @@ async function recordPetRunBankedEvent(db, telegramId, run, pet, options = {}) {
       style_tokens: rewardRun.unbanked_style_tokens, items: bankedItemsAuthority },
     touch_streak: true, now,
     context: { source: options.source || 'telegram_command', run_id: rewardRun.run_id, depth: rewardRun.depth, max_depth: rewardRun.max_depth,
+      competition_earned_at: terminalEarnedAt == null ? null : new Date(terminalEarnedAt).toISOString(),
       equipment_snapshot: pet.equipment_progression || {}, ...(runtimeEventKey ? { runtime_event_key: runtimeEventKey } : {}) },
   });
   if (awardedAuthority.accepted || awardedAuthority.duplicate) {
@@ -4914,15 +4917,18 @@ async function switchActivePetSeasonSlot(db, telegramId, requestedPetId, options
 
 async function getOrCreatePetProfile(db, telegramId, options = {}) {
   let pet = await getPetProfile(db, telegramId);
+  // Only the request that creates the profile owns onboarding side effects.
+  if (pet) return null;
   if (!pet) {
     const petName = normalizePetName(options.pet_name) || 'Moonpet';
     const species = normalizePetName(options.species) || '';
-    await db.prepare(`
+    const created = await db.prepare(`
       INSERT OR IGNORE INTO telegram_pet_profiles (telegram_id, pet_name, species)
       SELECT ?, ?, ? WHERE EXISTS (
         SELECT 1 FROM arcade_progression_state WHERE telegram_id=? AND arcade_xp_total>=?
       )
     `).bind(telegramId, petName, species, telegramId, PET_ENTRY_ARCADE_XP).run().then(requirePetMutationResult);
+    if (Number(created?.meta?.changes || 0) !== 1) return null;
     pet = await db.prepare(`SELECT * FROM telegram_pet_profiles WHERE telegram_id=?`)
       .bind(telegramId).first().then(requirePetFirstReadResult);
     if (!pet) return null;
@@ -6429,7 +6435,8 @@ async function processPetAction(db, telegramId, action, options = {}) {
     }
     const pet = await getOrCreatePetProfile(db, telegramId, options);
     if (!pet) {
-      return { accepted: false, reason: 'arcade_xp_entry_required', entry_requirement: await getPetEntryRequirement(db, telegramId), xp_awarded: 0, pet_xp_awarded: 0 };
+      const currentEntry = await getPetEntryRequirement(db, telegramId);
+      return { accepted: false, reason: currentEntry.existing_owner ? 'pet_already_adopted' : 'arcade_xp_entry_required', entry_requirement: currentEntry, xp_awarded: 0, pet_xp_awarded: 0 };
     }
     await savePetProfile(db, pet);
     await createMoonEggLifecycle(db, telegramId, `${eventKey}:lifecycle`);
