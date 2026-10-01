@@ -81,6 +81,39 @@ assert.equal((await hooks.switchActivePetSeasonSlot(db,'recovered','original',{n
 assert.equal((await hooks.buildPetSeasonSlotSummary(db,'recovered',now)).current_season_week,14);
 assert.equal((await hooks.switchActivePetSeasonSlot(db,'recovered',0,{now})).reason,'invalid_pet_slot');
 
+// Pointer repair must skip missing paid instances and prefer intact pets over
+// missing free starters. Preserve every ownership row without inventing XP.
+for (const pointer of ['absent','invalid']) {
+  const user=`repair-${pointer}`;
+  owner(user);
+  sql.prepare(`INSERT INTO telegram_pet_season_slots
+    (pet_id,telegram_id,season_key,slot_number,acquisition_type,arcade_xp_spent,created_at)
+    VALUES (?,?,'pet-s2026-002',2,'arcade_xp',500,'2026-04-01')`).run(`${user}:missing-paid`,user);
+  sql.prepare(`INSERT INTO telegram_pet_season_slots
+    (pet_id,telegram_id,season_key,slot_number,acquisition_type,created_at)
+    VALUES (?,?,'pet-s2026-002',1,'free','2026-04-02')`).run(`${user}:missing-free`,user);
+  pet(`${user}:intact`,user,'pet-s2026-003',2,'2026-07-01',7654);
+  if (pointer==='invalid') sql.prepare(`INSERT INTO telegram_pet_active_slots
+    (telegram_id,pet_id,season_key) VALUES (?,?,'pet-s2026-002')`).run(user,`${user}:missing-paid`);
+  assert.equal(await hooks.preparePetMiniAppState(db,user,now),true,'an intact owned pet remains accessible');
+  assert.equal(sql.prepare('SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id=?').get(user).pet_id,`${user}:intact`);
+  assert.equal((await hooks.getPetProfile(db,user)).pet_xp,7654);
+  assert.equal(sql.prepare('SELECT COUNT(*) AS n FROM telegram_pet_instances WHERE telegram_id=?').get(user).n,1,'no missing instance is synthesized when an intact pet exists');
+  assert.equal(sql.prepare('SELECT COUNT(*) AS n FROM telegram_pet_season_slots WHERE telegram_id=?').get(user).n,3,'paid ownership and free starter are retained');
+  assert.equal(sql.prepare('SELECT arcade_xp_spendable FROM arcade_xp_wallets WHERE telegram_id=?').get(user).arcade_xp_spendable,5000);
+}
+owner('repair-free');
+sql.exec(`INSERT INTO telegram_pet_season_slots (pet_id,telegram_id,season_key,slot_number,acquisition_type)
+  VALUES ('repair-free:starter','repair-free','pet-s2026-002',1,'free')`);
+assert.equal(await hooks.preparePetMiniAppState(db,'repair-free',now),true,'a missing free starter can still be repaired');
+assert.equal(sql.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='repair-free'").get().pet_id,'repair-free:starter');
+owner('repair-paid-only');
+sql.exec(`INSERT INTO telegram_pet_season_slots (pet_id,telegram_id,season_key,slot_number,acquisition_type,arcade_xp_spent)
+  VALUES ('repair-paid-only:paid','repair-paid-only','pet-s2026-002',2,'arcade_xp',500)`);
+assert.equal(await hooks.preparePetMiniAppState(db,'repair-paid-only',now),false,'missing paid saves require recovery instead of a replacement egg');
+assert.equal(sql.prepare("SELECT COUNT(*) AS n FROM telegram_pet_season_slots WHERE telegram_id='repair-paid-only'").get().n,1);
+assert.equal(sql.prepare("SELECT COUNT(*) AS n FROM telegram_pet_instances WHERE telegram_id='repair-paid-only'").get().n,0);
+
 // Legacy recovery may reveal more saves than capacity. Preserve all; never sell more.
 pet('extra-history','recovered','pet-s2026-002',1,'2026-04-01',17);
 const overflow=await hooks.buildPetSeasonSlotSummary(db,'recovered',now);

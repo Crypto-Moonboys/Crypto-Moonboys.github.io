@@ -335,6 +335,7 @@ try {
     }
     await page.reload(); await page.waitForSelector('[data-panel="incubation"]');
     await page.locator('[data-screen="profile"]').click();
+    await page.locator('[data-panel="season-slots"] > summary').click();
     await page.waitForSelector('[data-season-slot="3"]');
     assert.equal(await page.locator('[data-season-slot].is-owned,[data-season-slot].is-active').count(),3,'Profile retains old pets and rollover egg');
     assert.ok((await page.locator('[data-panel="season-slots"]').textContent()).includes('PETS AND PURCHASED SPACES DO NOT RESET'));
@@ -343,6 +344,9 @@ try {
     const restored = await (await recoveredSwitch).json();
     assert.equal(restored.state.pet.pet_id,`${currentUser}:purchased`);
     assert.equal(restored.state.pet.pet_xp,9876,'switching restores purchased pet progression');
+    // Panel preferences belong to each pet, so the restored pet starts collapsed.
+    await page.locator('[data-season-slot="2"].is-active').waitFor({ state: 'attached' });
+    await page.locator('[data-panel="season-slots"] > summary').click();
     await page.waitForSelector('[data-season-slot="2"].is-active');
     assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_pet_season_slots WHERE telegram_id=?').get(currentUser).n,3,'Profile and switching never create replacement eggs');
     currentUser = 'browser-young';

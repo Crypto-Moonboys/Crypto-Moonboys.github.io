@@ -4501,8 +4501,15 @@ async function ensurePetStarterSeasonSlot(db, telegramId, now = new Date()) {
   let created = false;
   try {
     // A calendar season is only creation provenance. Ownership never rolls over.
-    let starter = await db.prepare(`SELECT pet_id, season_key FROM telegram_pet_season_slots
-      WHERE telegram_id=? AND status='active' ORDER BY created_at, pet_id LIMIT 1`)
+    // Prefer intact instances. Only a missing free starter can be repaired from
+    // the legacy profile; missing paid instances keep their ownership records.
+    const selectableSlotSql = `SELECT s.pet_id, s.season_key FROM telegram_pet_season_slots s
+      LEFT JOIN telegram_pet_instances i ON i.pet_id=s.pet_id
+      WHERE s.telegram_id=? AND s.status='active' AND (
+        (i.telegram_id=s.telegram_id AND i.season_key=s.season_key AND i.slot_number=s.slot_number AND i.status='active')
+        OR (i.pet_id IS NULL AND s.slot_number=1 AND s.acquisition_type='free'))
+      ORDER BY CASE WHEN i.pet_id IS NULL THEN 1 ELSE 0 END, s.created_at, s.pet_id LIMIT 1`;
+    let starter = await db.prepare(selectableSlotSql)
       .bind(owner).first().then(requirePetFirstReadResult);
     if (!starter) {
       const seasonKey = getPetSeasonInfo(now).key;
@@ -4513,8 +4520,7 @@ async function ensurePetStarterSeasonSlot(db, telegramId, now = new Date()) {
         WHERE telegram_id=? AND NOT EXISTS (SELECT 1 FROM telegram_pet_season_slots WHERE telegram_id=?)`)
         .bind(petId,seasonKey,owner,owner).run());
       created = Number(inserted.meta?.changes || 0) === 1;
-      starter = await db.prepare(`SELECT pet_id, season_key FROM telegram_pet_season_slots
-        WHERE telegram_id=? AND status='active' ORDER BY created_at, pet_id LIMIT 1`)
+      starter = await db.prepare(selectableSlotSql)
         .bind(owner).first().then(requirePetFirstReadResult);
     }
     if (!starter) return { ok: false, reason: 'pet_ownership_recovery_required' };
