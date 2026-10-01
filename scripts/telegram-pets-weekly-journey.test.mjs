@@ -1504,12 +1504,12 @@ for (const [failWrite, earnedAt] of [
   const petId = seedPlayer(db, owner);
   db.database.prepare(`INSERT INTO telegram_pet_evolutions_by_pet (pet_id,telegram_id,evolution_id,stage,unlock_event_key,unlocked_at)
     VALUES (?,?,'legendary_moon_guardian',5,'fixture-legendary','2026-03-03T00:00:00Z')`).run(petId, owner);
-  for (let day = 0; day < 60; day++) {
+  for (let day = 0; day < 240; day++) {
     const earned = new Date(Date.UTC(2026, 0, 1 + day)).toISOString();
     db.database.prepare(`INSERT INTO telegram_pet_growth_marks (mark_id,pet_id,telegram_id,season_key,milestone_type,evidence_key,earned_day,earned_at)
       VALUES (?,?,?,'pet-s2026-001','care_milestone',?,?,?)`).run(`fixture-mark:${day}`, petId, owner, `care:${day}`, earned.slice(0,10), earned);
   }
-  for (let week = 1; week < 10; week++) db.database.prepare(`INSERT INTO telegram_pet_weekly_crests
+  for (let week = 1; week <= 44; week++) if (week !== 10) db.database.prepare(`INSERT INTO telegram_pet_weekly_crests
     (crest_id,pet_id,telegram_id,season_key,season_week,qualification_week,objective_id,evidence_key)
     VALUES (?,?,?,'pet-s2026-001',?,?,'weekly_journey',?)`).run(`fixture-crest:${week}`, petId, owner, week, week, `weekly-journey:fixture:${week}`);
   const request = { telegramId: owner, petId, qualificationWeek: 10, day: '2026-03-05' };
@@ -1517,7 +1517,7 @@ for (const [failWrite, earnedAt] of [
   db.failWrite = /INSERT OR IGNORE INTO telegram_pet_season_completions/;
   await assert.rejects(completeObjective(db, { ...request, objectiveId: 'weekly_check_in' }), /injected_journey_write_failure/);
   db.failWrite = null;
-  assert.equal(db.database.prepare('SELECT COUNT(*) AS n FROM telegram_pet_weekly_crests').get().n, 10);
+  assert.equal(db.database.prepare('SELECT COUNT(*) AS n FROM telegram_pet_weekly_crests').get().n, 44);
   await __petMediaTestHooks.buildPetMiniAppState(db, owner, 'fixture-token');
   assert.equal(db.database.prepare('SELECT COUNT(*) AS n FROM telegram_pet_season_completions WHERE pet_id=?').get(petId).n, 1,
     'recovering the final earned Crest must also repair interrupted season completion');

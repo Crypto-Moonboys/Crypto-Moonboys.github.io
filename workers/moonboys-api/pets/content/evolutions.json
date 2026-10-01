@@ -29,7 +29,7 @@
           "scrap_metal": 5
         }
       },
-      "min_age_days": 14,
+      "min_age_days": 7,
       "growth_marks": 7,
       "weekly_crests": 1
     },
@@ -58,7 +58,7 @@
         }
       },
       "min_age_days": 28,
-      "growth_marks": 20,
+      "growth_marks": 21,
       "weekly_crests": 3
     },
     "cosmetic_unlocks": [
@@ -85,9 +85,9 @@
           "evolution_fragment": 8
         }
       },
-      "min_age_days": 49,
-      "growth_marks": 35,
-      "weekly_crests": 6
+      "min_age_days": 84,
+      "growth_marks": 60,
+      "weekly_crests": 10
     },
     "cosmetic_unlocks": [
       "elite_moonpet_identity",
@@ -103,17 +103,17 @@
     "stage": 4,
     "requirements": {
       "pet_level": 45,
-      "min_age_days": 64,
-      "growth_marks": 48,
-      "weekly_crests": 8,
+      "min_age_days": 182,
+      "growth_marks": 120,
+      "weekly_crests": 22,
       "boss_victories": {
         "alley_king": 12
       },
       "relics_owned": 8,
       "inventory": {
         "material": {
-          "scrap_metal": 32,
-          "evolution_fragment": 12
+          "scrap_metal": 36,
+          "evolution_fragment": 20
         }
       }
     },
@@ -136,13 +136,13 @@
       "relics_owned": 10,
       "inventory": {
         "material": {
-          "scrap_metal": 40,
-          "evolution_fragment": 15
+          "scrap_metal": 60,
+          "evolution_fragment": 40
         }
       },
-      "min_age_days": 78,
-      "growth_marks": 60,
-      "weekly_crests": 10
+      "min_age_days": 365,
+      "growth_marks": 240,
+      "weekly_crests": 44
     },
     "cosmetic_unlocks": [
       "legendary_moon_guardian_identity",

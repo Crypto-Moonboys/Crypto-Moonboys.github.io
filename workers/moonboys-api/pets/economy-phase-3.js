@@ -22,6 +22,7 @@ export const PET_CRAFTING_RECIPES = deepFreeze({
   battery_pack: { title: 'Battery Pack', detail: 'An Energy Drink for demanding runs and boss fights.', min_level: 6, cost: { battery_cell: 3, crystal_shard: 1 }, output: { item_key: 'energy_drink', quantity: 1 } },
   style_patch: { title: 'Style Patch', detail: 'A consumable patch that converts into Style Tokens and Pet XP when used.', min_level: 8, cost: { moon_fabric: 3, spray_core: 2 }, output: { item_key: 'style_patch', quantity: 1 } },
   route_map: { title: 'Route Map', detail: 'Keep the Adventure Map for standard Moon Run gold and sneak-risk bonuses, or consume it for energy and Pet XP.', min_level: 10, cost: { scrap_metal: 4, crystal_shard: 2 }, output: { item_key: 'adventure_map', quantity: 1 } },
+  kaiju_field_kit: { title: 'Kaiju Field Kit', detail: 'Convert eight Kaiju Fragments and two Battery Cells into two Energy Drinks for demanding battles and runs.', min_level: 20, cost: { kaiju_fragment: 8, battery_cell: 2 }, output: { item_key: 'energy_drink', quantity: 2 } },
 });
 
 export const PET_EQUIPMENT_UPGRADE_COSTS = deepFreeze({

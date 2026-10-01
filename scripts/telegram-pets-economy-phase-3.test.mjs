@@ -36,7 +36,7 @@ assert.equal(clampPetMaterialStack('scrap_metal', 9998, 10), 9999, 'material sta
 assert.equal(clampPetMaterialStack('scrap_metal', 2, -10), 0, 'material stacks cannot become negative');
 assert.equal(clampPetMaterialStack('constructor', 2, 10), 0, 'invalid materials must not produce balances');
 assert.throws(() => { PET_CRAFTING_MATERIALS.scrap_metal.sources.push('tamper'); }, TypeError, 'material source arrays must reject mutation');
-assert.equal(Object.keys(PET_CRAFTING_RECIPES).length, 5, 'the workshop needs a useful launch recipe set');
+assert.equal(Object.keys(PET_CRAFTING_RECIPES).length, 6, 'the workshop needs a useful recipe set including the Kaiju sink');
 for (const [key, recipe] of Object.entries(PET_CRAFTING_RECIPES)) {
   assert.ok(recipe.title && recipe.detail && recipe.min_level > 0, `${key} needs player-facing recipe metadata`);
   assert.ok(Object.keys(recipe.cost).every((material) => normalizePetMaterial(material)), `${key} may only consume canonical materials`);
@@ -44,6 +44,8 @@ for (const [key, recipe] of Object.entries(PET_CRAFTING_RECIPES)) {
   assert.ok(Object.isFrozen(recipe.cost) && Object.isFrozen(recipe.output), `${key} economy rules must be immutable`);
 }
 assert.equal(getPetCraftingRecipe('BATTERY_PACK').output.item_key, 'energy_drink');
+assert.deepEqual(getPetCraftingRecipe('KAIJU_FIELD_KIT').cost, { kaiju_fragment: 8, battery_cell: 2 });
+assert.deepEqual(getPetCraftingRecipe('KAIJU_FIELD_KIT').output, { item_key: 'energy_drink', quantity: 2 });
 assert.equal(getPetCraftingRecipe('constructor'), null, 'prototype keys must not resolve recipes');
 
 assert.equal(Object.keys(PET_EQUIPMENT_UPGRADE_COSTS).length, 9, 'levels 2-10 must have upgrade costs');
@@ -112,12 +114,12 @@ for (const [key, material] of Object.entries(PET_CRAFTING_MATERIALS)) {
     assert.equal(surface.classification, PET_ECONOMY_REACHABILITY_CLASSIFICATIONS.LIVE_REACHABLE);
   }
 }
-assert.equal(audit.surfaces.find((entry) => entry.kind === 'material' && entry.key === 'kaiju_fragment').safe_accumulation_only, true,
-  'Kaiju Fragments are currently reachable but intentionally accumulation-only');
+assert.equal(audit.surfaces.find((entry) => entry.kind === 'material' && entry.key === 'kaiju_fragment').safe_accumulation_only, false,
+  'Kaiju Fragments have a live sink and are no longer accumulation-only');
 assert.ok(audit.surfaces.find((entry) => entry.kind === 'material' && entry.key === 'kaiju_fragment').sources.length > 0,
   'Kaiju Fragment safe accumulation-only classification still requires a verified source');
-assert.equal(audit.surfaces.find((entry) => entry.kind === 'material' && entry.key === 'kaiju_fragment').sinks.length, 0,
-  'Kaiju Fragment must only be safe accumulation-only while it has no current sink');
+assert.deepEqual(audit.surfaces.find((entry) => entry.kind === 'material' && entry.key === 'kaiju_fragment').sinks, ['recipe:kaiju_field_kit'],
+  'Kaiju Fragment must expose its live crafting sink');
 for (const item of audit.canonical_items) {
   assert.equal(item.classification, PET_ECONOMY_REACHABILITY_CLASSIFICATIONS.LIVE_REACHABLE, `${item.key} must have a current beta source`);
   assert.equal(item.account_owned, true, `${item.key} inventory must remain account-owned`);

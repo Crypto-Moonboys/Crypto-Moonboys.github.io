@@ -102,9 +102,10 @@ INSERT INTO telegram_pet_memories VALUES('complete','owner','s1','["first_boss"]
 INSERT INTO telegram_pet_inventory VALUES('owner','cosmetic','crown',1);
 INSERT INTO telegram_pet_equipment_progression VALUES('owner','laser','weapon',5,2);
 INSERT INTO telegram_pet_progression_state VALUES('owner','{"brave":100}');
-WITH RECURSIVE days(value) AS (SELECT 1 UNION ALL SELECT value+1 FROM days WHERE value<60)
+WITH RECURSIVE days(value) AS (SELECT 1 UNION ALL SELECT value+1 FROM days WHERE value<240)
 INSERT INTO telegram_pet_growth_marks SELECT 'auto','auto-owner','s2',date('2026-01-01','+' || (value-1) || ' days') FROM days;
-INSERT INTO telegram_pet_weekly_crests SELECT 'auto','auto-owner','s2',value,value FROM json_each('[1,2,3,4,5,6,7,8,9,10]');`);
+WITH RECURSIVE weeks(value) AS (SELECT 1 UNION ALL SELECT value+1 FROM weeks WHERE value<44)
+INSERT INTO telegram_pet_weekly_crests SELECT 'auto','auto-owner','s2',value,value FROM weeks;`);
 
 const autoState = await finalizePetSeasonCompletionIfEligible(db, 'auto', 's2', { telegram_id: 'auto-owner', now: '2026-03-31T00:00:00Z' });
 assert.equal(autoState.season_complete, true, 'completion is still recorded');

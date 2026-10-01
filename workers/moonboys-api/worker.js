@@ -3337,6 +3337,7 @@ async function processPetUseItem(db, telegramId, itemKeyRaw, options = {}) {
   const eventKey = String(options.event_key || `pet:use_item:${telegramId}:${key}:${Date.now()}`).slice(0, 120);
   let pet = await getPetProfile(db, telegramId);
   if (!pet) return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
+  if (options.pet_id && options.pet_id !== pet.pet_id) return { accepted: false, reason: 'displayed_pet_changed', pet, xp_awarded: 0, pet_xp_awarded: 0 };
   const item = PET_INVENTORY_ITEMS[key];
   const existing = await readAcceptedPetEventByKey(db, telegramId, eventKey);
   if (existing) {
@@ -3393,7 +3394,8 @@ async function processPetUseItem(db, telegramId, itemKeyRaw, options = {}) {
       WHERE EXISTS (SELECT 1 FROM telegram_pet_inventory
         WHERE telegram_id = ? AND asset_type = 'item' AND asset_key = ? AND quantity > 0)
         ${itemHasWalletReward ? `AND ${accountWalletRecoveryResolvedSql('?')}` : ''}
-        AND EXISTS (SELECT 1 FROM telegram_pet_instances p
+        AND EXISTS (SELECT 1 FROM telegram_pet_instances p JOIN telegram_pet_active_slots a
+          ON a.pet_id=p.pet_id AND a.telegram_id=p.telegram_id AND a.season_key=p.season_key
           WHERE p.pet_id=? AND p.telegram_id=? AND p.season_key=? AND p.status='active')
       RETURNING id`).bind(consumeEventId, pet.pet_id || null, telegramId, eventKey, petXp, PETS_DAILY_PET_XP_CAP, telegramId, dayKey, pet.season_key, dayKey, weekKey, rewardMetadata,
         telegramId, key, ...(itemHasWalletReward ? [telegramId] : []), pet.pet_id, telegramId, pet.season_key),
@@ -6464,6 +6466,9 @@ async function processPetAction(db, telegramId, action, options = {}) {
   let pet = await getPetProfile(db, telegramId);
   if (!pet) {
     return { accepted: false, reason: 'pet_not_adopted', xp_awarded: 0, pet_xp_awarded: 0 };
+  }
+  if (options.pet_id && options.pet_id !== pet.pet_id) {
+    return { accepted: false, reason: 'displayed_pet_changed', pet, xp_awarded: 0, pet_xp_awarded: 0 };
   }
 
   if (action === 'rename') {
@@ -10091,6 +10096,23 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   const action = String(body?.action || '').trim().toLowerCase();
   const eventKey = petMiniAppEventKey(telegramId, action, body?.request_id);
   const source = 'telegram_mini_app';
+  const displayedPetId = String(body?.displayed_pet_id || '').trim();
+  // Saved-run and saved-reward recovery routes intentionally use the source
+  // pet recorded on their receipt. Roster/account controls do not mutate a
+  // displayed pet. Every other Mini App action is bound to its rendered pet.
+  const displayedPetExemptActions = new Set([
+    'adopt', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'delete_pet_slot',
+    'guidance_ack', 'notification_set',
+    'run_step', 'run_extract', 'daily_run_tactic',
+    'weekly_boss_claim', 'seasonal_boss_claim', 'daily_completion_claim',
+    'contract_step', 'contract_claim', 'finale_retry', 'finale_step', 'finale_claim',
+  ]);
+  if (displayedPetId && !displayedPetExemptActions.has(action)) {
+    const active = await findActivePetSlot(db, telegramId);
+    if (!active || active.pet_id !== displayedPetId) {
+      return { accepted: false, reason: 'displayed_pet_changed', pet: await getPetProfile(db, telegramId), refresh_state: true };
+    }
+  }
   if (action === 'adopt') return processPetAction(db, telegramId, 'adopt', { event_key: eventKey, source });
   if (action === 'delete_pet_slot') return deletePetSlot(db, telegramId, body);
   if (action === 'incubate') return incubateMoonEgg(db, telegramId, body.care_type, eventKey);
@@ -10141,14 +10163,14 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   if (action === 'buy_pet_slot') return buyPetSeasonSlot(db, telegramId, body.slot_number, { event_key: eventKey, switch_active: body.switch_active });
   if (action === 'switch_pet_slot') return switchActivePetSeasonSlot(db, telegramId, body.pet_id || body.slot_number);
   if (['feed', 'play', 'clean', 'sleep', 'train', 'energy_drink', 'dance', 'cuddles'].includes(action)) {
-    const result = await processPetAction(db, telegramId, action, { event_key: eventKey, source });
+    const result = await processPetAction(db, telegramId, action, { event_key: eventKey, source, pet_id: displayedPetId });
     if (result.accepted) await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward, { action });
     return result;
   }
-  if (action === 'rename') return processPetAction(db, telegramId, 'rename', { event_key: eventKey, pet_name: body.pet_name, source });
+  if (action === 'rename') return processPetAction(db, telegramId, 'rename', { event_key: eventKey, pet_name: body.pet_name, source, pet_id: displayedPetId });
   if (action === 'buy') return processPetShopPurchase(db, telegramId, body.item_key, { event_key: eventKey, source });
   if (action === 'equip') return processPetEquipmentEquip(db, telegramId, body.item_key, { event_key: eventKey, source, pet_id: body.pet_id });
-  if (action === 'use_item') return processPetUseItem(db, telegramId, body.item_key, { event_key: eventKey, source });
+  if (action === 'use_item') return processPetUseItem(db, telegramId, body.item_key, { event_key: eventKey, source, pet_id: displayedPetId });
   if (action === 'trade') return processPetGoldTrade(db, telegramId, body.wager, { event_key: eventKey, source });
   if (action === 'work') {
     const result = await processPetJob(db, telegramId, body.job_key, { event_key: eventKey, source });

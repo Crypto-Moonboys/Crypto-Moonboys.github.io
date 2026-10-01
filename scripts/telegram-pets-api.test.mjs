@@ -3838,15 +3838,18 @@ switchItemDb.beforeBatchSql(/INSERT OR IGNORE INTO telegram_pet_events/, () => {
   switchItemDb.database.prepare("UPDATE telegram_pet_active_slots SET pet_id='use-item-switch-b' WHERE telegram_id='use-item-switch'").run();
 });
 const switchedUse = await processPetUseItem(switchItemDb, 'use-item-switch', 'moon_snack', {
-  event_key: 'use-item-switch:snack', source: 'inventory_concurrency_regression',
+  event_key: 'use-item-switch:snack', source: 'inventory_concurrency_regression', pet_id: switchPetA,
 });
-assert.equal(switchedUse.accepted, true, 'active pet switching during item use must not block the claimed pet authority');
-assert.equal(switchItemDb.database.prepare('SELECT pet_id FROM telegram_pet_events WHERE event_key=?').get('use-item-switch:snack').pet_id, switchPetA,
-  'item-use receipt must keep the pet_id read before active-pet switching');
-assert.equal(switchItemDb.database.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(switchPetA).pet_xp, 104,
-  'item-use reward must apply to the originally claimed active pet');
+assert.equal(switchedUse.accepted, false, 'active pet switching during item settlement must reject the stale target');
+assert.equal(switchedUse.reason, 'pet_action_state_changed');
+assert.equal(switchItemDb.database.prepare('SELECT pet_id FROM telegram_pet_events WHERE event_key=?').get('use-item-switch:snack'), undefined,
+  'stale item use must not create a receipt');
+assert.equal(switchItemDb.database.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(switchPetA).pet_xp, 100,
+  'stale item use must not award the previously displayed pet');
 assert.equal(switchItemDb.database.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id='use-item-switch-b'").get().pet_xp, 0,
   'active pet switching must not redirect item-use rewards to the new active pet');
+assert.equal(switchItemDb.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id='use-item-switch' AND asset_key='moon_snack'").get().quantity, 1,
+  'stale item use must not consume inventory');
 
 const legacyBossDb = seedRepeatRewardPlayer('legacy-boss-gate', 100, new Date().toISOString(), { seedAuthority: false });
 legacyBossDb.database.prepare(`UPDATE telegram_pet_profiles SET pet_xp=100000, level=51, stage='street_moonpet'

@@ -2,13 +2,13 @@ import evolutions from './content/evolutions.json' with { type: 'json' };
 import { getPetVisibleLevel } from './progression-phase-2.js';
 import { requirePetFirstReadResult, requirePetMutationResult, requirePetReadResult } from './read-result.js';
 
-// Product balancing assumptions: five post-egg evolution milestones and ten
-// qualifying weeks. Named here so balancing never hides in route/UI code.
+// Lifetime completion follows the year-long final evolution. Daily and weekly
+// competitions reset independently; these retained evidence totals do not.
 export const PET_SEASON_COMPLETION_CONFIG = Object.freeze({
-  authority_version: 2,
-  required_growth_marks: 60,
-  required_weekly_crests: 10,
-  season_days: 90,
+  authority_version: 3,
+  required_growth_marks: 240,
+  required_weekly_crests: 44,
+  season_days: 365,
 });
 
 export const PET_GROWTH_MILESTONES = Object.freeze({
@@ -266,9 +266,7 @@ export async function finalizePetSeasonCompletionIfEligible(db, petId, seasonKey
     petId, pet.telegram_id, seasonKey, now.toISOString(), FINAL_EVOLUTION.evolution_id,
     state.growth_marks.earned, state.weekly_crests.earned, PET_SEASON_COMPLETION_CONFIG.authority_version,
   ).run());
-  // Season completion is now only the authority marker. Moving the pet into
-  // Sanctuary is deliberately deferred until explicit season settlement so the
-  // current-season slot remains stable and a completed active pet does not lose
-  // its active pointer or collide with a same-season successor egg.
+  // Completion is a permanent achievement marker. It never retires, replaces,
+  // archives or moves the pet, and never changes the active owned-space pointer.
   return evaluatePetSeasonCompletion(db, petId, seasonKey, now, options);
 }

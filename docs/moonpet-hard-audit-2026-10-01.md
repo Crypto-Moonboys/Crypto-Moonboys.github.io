@@ -32,7 +32,7 @@ Historical SQL migrations, retired schema columns/tables and immutable snapshots
 
 ## Remaining work and limits
 
-**Year-long evolution pacing is not implemented.** Existing evolution minimum ages are 14, 28, 49, 64 and 78 days, with additional XP, item and achievement gates. The requested one-week egg, three-week second stage and later stages across roughly a year need a separate balance change and migration-safe plan.
+**Year-long evolution pacing is implemented by the follow-up audit fix.** Lifetime minimum ages are 7, 28, 84, 182 and 365 days, paired with progressive Pet XP/level, Growth Mark, Weekly Crest, boss, relic and material gates. Existing unlocked stages and all partial progress remain preserved.
 
 The read-only production probe confirmed the deployed Worker commit matched audited main, but failed the launch-URL parity check. The branch fixes that mismatch; it is not deployed. Private production pet state was not inspected or modified. Local Chromium was unavailable; mobile/browser validation runs in GitHub CI before release.
 

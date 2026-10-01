@@ -34,9 +34,7 @@ const VERIFIED_CURRENCY_SOURCES = Object.freeze({
   moon_crystals: Object.freeze(['jobs', 'run_rewards', 'bounties', 'expeditions', 'market_exchange', 'seasonal_boss', 'trade']),
   style_tokens: Object.freeze(['care', 'jobs', 'daily_chest', 'run_rewards', 'event_chains', 'bounties', 'expeditions', 'market_exchange', 'item_use']),
 });
-const SAFE_ACCUMULATION_ONLY_MATERIALS = Object.freeze({
-  kaiju_fragment: 'Current beta Kaiju and boss routes can award fragments before their late-beta sink is enabled; keeping the balance is safe account-owned accumulation.',
-});
+const SAFE_ACCUMULATION_ONLY_MATERIALS = Object.freeze({});
 
 function positiveEntries(value = {}) {
   return Object.entries(value || {}).filter(([, amount]) => Math.max(0, Math.floor(Number(amount) || 0)) > 0);

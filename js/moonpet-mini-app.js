@@ -2721,9 +2721,11 @@
       pet_busy: 'a background activity is running. Open Work to review it; other care and Contracts are available.',
       pet_tired: 'not enough energy for this action. Review its displayed requirement or use care to recover.',
       pet_action_state_changed: 'your pet or equipment changed while care was loading. No care reward or cooldown was applied; try again with the refreshed pet.',
+      displayed_pet_changed: 'another session selected a different Moonpet. Nothing was spent or awarded; this screen has been refreshed.',
+      source_pet_changed: 'another session selected a different Moonpet. Nothing was spent or awarded; this screen has been refreshed.',
       daily_completion_not_ready: 'finish all seven daily missions before claiming.',
       daily_completion_pending: 'your daily bonus is saved. Retry the claim.',
-      finale_requirements_not_met: 'reach final evolution, 60 daily Marks and 10 weekly Crests.',
+      finale_requirements_not_met: 'reach final evolution, 240 distinct-day Growth Marks and 44 distinct-week Crests.',
       finale_stale_turn: 'this battle changed. Use the refreshed moves.',
       finale_invalid_move: 'check your charge or repair kits and choose an available move.',
       finale_reward_pending: 'your victory is saved. Retry the reward claim.',
@@ -3037,7 +3039,13 @@
     try {
       var stateBeforeAction = state;
       var requestGeneration = beginStateRequest();
-      var requestPayload = Object.assign({ action: action, request_id: crypto.randomUUID() }, payload || {});
+      // Bind controls to the pet actually rendered at click time. The Worker
+      // validates this identity before and during transactional settlement.
+      var requestPayload = Object.assign({
+        action: action,
+        request_id: crypto.randomUUID(),
+        displayed_pet_id: stateBeforeAction && stateBeforeAction.pet && stateBeforeAction.pet.pet_id || null
+      }, payload || {});
       if (fastResponse) requestPayload.response_mode = 'result_only';
       else if (activeScreen === 'missions') requestPayload.state_mode = 'missions';
       var data = await post('/telegram-pets/app/action', requestPayload);

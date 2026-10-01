@@ -83,6 +83,25 @@ test('shop and trade receipts identify the earning pet after switching, with con
   assert.deepEqual((await f.get('/telegram/leaderboard')).entries,[],'zero Community XP actions leave the Community season empty, without all-time fallback');
 });
 
+test('cross-session stale care, callsign and item controls reject without mutation', async () => {
+  const f=fixture('82011'), displayed='current-'+f.owner;
+  f.pet('other-session-pet',currentSeason,300,2);
+  f.sql.prepare("INSERT INTO telegram_pet_inventory (telegram_id,asset_type,asset_key,quantity) VALUES (?,'item','moon_snack',1)").run(f.owner);
+  f.active('other-session-pet');
+  const before=f.sql.prepare('SELECT pet_xp,pet_name FROM telegram_pet_instances WHERE pet_id=?').get('other-session-pet');
+  for (const body of [
+    {action:'feed'},
+    {action:'rename',pet_name:'WRONG PET'},
+    {action:'use_item',item_key:'moon_snack'},
+  ]) {
+    const result=await f.act({...body,displayed_pet_id:displayed,request_id:'stale-'+body.action});
+    assert.equal(result.accepted,false); assert.equal(result.reason,'displayed_pet_changed');
+  }
+  assert.deepEqual(f.sql.prepare('SELECT pet_xp,pet_name FROM telegram_pet_instances WHERE pet_id=?').get('other-session-pet'),before);
+  assert.equal(f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_key='moon_snack'").get(f.owner).quantity,1);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_events').get().n,0);
+});
+
 test('overlapping purchases charge once for the same equipped item', async () => {
   const f=fixture('82002');
   const results=await Promise.all([1,2].map(i=>hooks.processPetShopPurchase(f.db,f.owner,'moon_kibble',{event_key:'buy-'+i})));
