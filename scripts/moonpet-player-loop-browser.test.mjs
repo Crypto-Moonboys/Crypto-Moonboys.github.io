@@ -132,6 +132,8 @@ try {
     });
     const url = `http://127.0.0.1:${server.address().port}/moonpet-game.html`;
     await page.goto(url);
+    await page.waitForSelector('#screen > details.panel');
+    await page.locator('#screen > details.panel > summary').click();
     const initialise = page.locator('[data-action="adopt"]');
     await initialise.waitFor();
     assert.equal(await initialise.isDisabled(), true);
@@ -139,6 +141,8 @@ try {
     assert.equal(await page.locator('a:has-text("PLAY WEBSITE ARCADE")').getAttribute('href'), '/games/');
     sqlite.prepare('UPDATE arcade_progression_state SET arcade_xp_total=1000 WHERE telegram_id=?').run(id);
     await page.reload();
+    await page.waitForSelector('#screen > details.panel');
+    await page.locator('#screen > details.panel > summary').click();
     await page.waitForSelector('[data-action="adopt"]:enabled');
     await initialise.click();
     await page.waitForSelector('[data-panel="incubation"]');
