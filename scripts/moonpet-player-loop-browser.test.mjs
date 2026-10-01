@@ -349,6 +349,18 @@ try {
     await page.locator('[data-panel="season-slots"] > summary').click();
     await page.waitForSelector('[data-season-slot="2"].is-active');
     assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_pet_season_slots WHERE telegram_id=?').get(currentUser).n,3,'Profile and switching never create replacement eggs');
+    const missingPaidId = `${currentUser}:missing-paid`;
+    sqlite.prepare(`INSERT INTO telegram_pet_season_slots
+      (pet_id,telegram_id,season_key,slot_number,acquisition_type,arcade_xp_spent,created_at)
+      VALUES (?,?,'pet-s2026-002',2,'arcade_xp',500,'2026-09-15')`).run(missingPaidId,currentUser);
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-screen="profile"]').click();
+    await page.locator('[data-panel="season-slots"] > summary').click();
+    const missingCard = page.locator('[data-season-slot="3"]');
+    await missingCard.waitFor();
+    assert.ok((await missingCard.textContent()).includes('OWNED SPACE PRESERVED'));
+    assert.equal(await missingCard.locator('[data-action="switch_pet_slot"], [data-action="buy_pet_slot"]').count(),0,'missing paid pet is owned but never advertised as switchable or repurchasable');
+    assert.ok((await page.locator('[data-season-slot="2"]').textContent()).includes('9,876'),'intact purchased pet remains playable beside the preserved space');
     currentUser = 'browser-young';
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
     const gameplayCount = () => actions.filter((action) => action !== 'guidance_ack').length;

@@ -4566,10 +4566,13 @@ const PET_SEASON_EXTRA_SLOT_COSTS = Object.freeze({
 });
 const PET_SEASON_MAX_SLOTS = 3;
 
-function serializePetSeasonSlot(row, slotNumber, activePetId, arcadeXpAvailable = 0, previousSlotOwned = true) {
+function serializePetSeasonSlot(row, slotNumber, activePetId, arcadeXpAvailable = 0, previousSlotOwned = true, ownershipRecoveryRequired = false) {
   const cost = Number(PET_SEASON_EXTRA_SLOT_COSTS[slotNumber] || 0);
   const unlocked = Boolean(row);
+  const instancePresent = Boolean(row?.instance_pet_id);
+  const selectable = unlocked && instancePresent && row.instance_status === 'active';
   const lockedByPrevious = !unlocked && slotNumber > 1 && !previousSlotOwned;
+  const purchaseDisabledReason = ownershipRecoveryRequired ? 'pet_ownership_recovery_required' : lockedByPrevious ? 'previous_pet_slot_required' : null;
   const evolutionStage = Math.max(0, Number(row?.evolution_stage) || 0);
   const artIdentityId = row?.lifecycle_species_id || row?.species || null;
   const displayName = resolveMoonpetDisplayName({ evolution_stage: evolutionStage, art_identity_id: artIdentityId });
@@ -4581,14 +4584,17 @@ function serializePetSeasonSlot(row, slotNumber, activePetId, arcadeXpAvailable 
     acquisition_type: row?.acquisition_type || null,
     source_event_key: row?.source_event_key || null,
     arcade_xp_spent: Number(row?.arcade_xp_spent || 0),
-    active: unlocked && String(row.pet_id) === String(activePetId || ''),
+    active: selectable && String(row.pet_id) === String(activePetId || ''),
     unlocked,
+    instance_present: instancePresent,
+    selectable,
+    selection_disabled_reason: unlocked && !selectable ? instancePresent ? 'pet_instance_inactive' : 'pet_instance_missing' : null,
     unlock_cost_arcade_xp: unlocked ? 0 : cost,
     arcade_xp_available: Math.max(0, Number(arcadeXpAvailable || 0)),
-    purchase_enabled: !unlocked && slotNumber > 1 && !lockedByPrevious,
-    purchase_disabled_reason: lockedByPrevious ? 'previous_pet_slot_required' : null,
-    affordable: !unlocked && slotNumber > 1 && !lockedByPrevious && arcadeXpAvailable >= cost,
-    pet: unlocked ? {
+    purchase_enabled: !unlocked && slotNumber > 1 && !purchaseDisabledReason,
+    purchase_disabled_reason: purchaseDisabledReason,
+    affordable: !unlocked && slotNumber > 1 && !purchaseDisabledReason && arcadeXpAvailable >= cost,
+    pet: unlocked && instancePresent ? {
       name: displayName,
       pet_name: displayName,
       display_name: displayName,
@@ -4656,6 +4662,7 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
         SELECT s.pet_id, s.telegram_id, s.season_key, s.slot_number AS source_slot_number,
           ROW_NUMBER() OVER (ORDER BY s.created_at, s.pet_id) AS slot_number, s.acquisition_type,
           s.source_event_key, s.arcade_xp_spent, s.status, s.created_at, s.updated_at,
+          i.pet_id AS instance_pet_id, i.status AS instance_status,
           i.pet_name, i.species, i.stage, i.level, i.pet_xp, i.health, i.energy,
           i.hunger, i.happiness, i.cleanliness, i.last_decay_at, l.phase AS lifecycle_phase,
           l.species_id AS lifecycle_species_id, l.rare_morph_id,
@@ -4679,16 +4686,17 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
     ]);
     const rawRows = slotRows.results || [];
     const rawRowsBySlot = new Map(rawRows.map((row) => [Number(row.slot_number), row]));
-    const activePetId = rawRows.some((row) => row.pet_id === activeSlot?.pet_id && row.season_key === activeSlot?.season_key) ? activeSlot.pet_id : rawRowsBySlot.get(1)?.pet_id || null;
+    const activePetId = rawRows.some((row) => row.instance_status === 'active' && row.pet_id === activeSlot?.pet_id && row.season_key === activeSlot?.season_key) ? activeSlot.pet_id : rawRows.find(row => row.instance_status === 'active')?.pet_id || null;
+    const ownershipRecoveryRequired = rawRows.length > 0 && !rawRows.some(row => row.instance_status === 'active' || (!row.instance_pet_id && Number(row.source_slot_number) === 1 && row.acquisition_type === 'free'));
     const activeRow = rawRows.find(row => row.pet_id === activePetId);
     const journeyPeriod = activeRow ? getPetOwnershipPeriod(activeRow.season_key, activeRow.created_at) : null;
     // This endpoint is a read-only display projection. Preview canonical decay
     // in memory; gameplay/switch paths persist decay against the pet instance.
     const progressionRows = await Promise.all(rawRows.map(async (row) => ({
       ...row,
-      progression: await evaluatePetSeasonCompletion(db, row.pet_id, row.season_key, now, { telegram_id: normalizedTelegramId, season_week: getPetJourneyWeek(getPetOwnershipPeriod(row.season_key, row.created_at), now) }).catch(() => null),
+      progression: row.instance_pet_id ? await evaluatePetSeasonCompletion(db, row.pet_id, row.season_key, now, { telegram_id: normalizedTelegramId, season_week: getPetJourneyWeek(getPetOwnershipPeriod(row.season_key, row.created_at), now) }).catch(() => null) : null,
     })));
-    const currentRows = progressionRows.map((row) => mergePetInstanceDisplayFields(row, applyPetDecay({ ...row }, now)));
+    const currentRows = progressionRows.map((row) => row.instance_pet_id ? mergePetInstanceDisplayFields(row, applyPetDecay({ ...row }, now)) : row);
     const rowsBySlot = new Map(currentRows.map((row) => [Number(row.slot_number), row]));
     const arcadeXpLifetime = Math.max(0, Number(arcade?.arcade_xp_total || 0));
     const arcadeXpAvailable = Math.max(0, Number(wallet?.arcade_xp_spendable || 0));
@@ -4709,13 +4717,13 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
       arcade_xp_spendable: arcadeXpAvailable,
       arcade_xp_spent: arcadeXpSpent,
       next_slot_cost: nextSlotCost,
-      can_buy_next_slot: nextSlotNumber <= PET_SEASON_MAX_SLOTS && previousSlotOwned && arcadeXpAvailable >= nextSlotCost,
-      purchase_enabled: true,
-      purchase_disabled_reason: null,
+      can_buy_next_slot: !ownershipRecoveryRequired && nextSlotNumber <= PET_SEASON_MAX_SLOTS && previousSlotOwned && arcadeXpAvailable >= nextSlotCost,
+      purchase_enabled: !ownershipRecoveryRequired,
+      purchase_disabled_reason: ownershipRecoveryRequired ? 'pet_ownership_recovery_required' : null,
       slots: Array.from({ length: Math.max(PET_SEASON_MAX_SLOTS, rawRows.length) }, (_, index) => {
         const slotNumber = index + 1;
         const previousOwned = slotNumber <= 1 ? true : rowsBySlot.has(slotNumber - 1);
-        return serializePetSeasonSlot(rowsBySlot.get(slotNumber), slotNumber, activePetId, arcadeXpAvailable, previousOwned);
+        return serializePetSeasonSlot(rowsBySlot.get(slotNumber), slotNumber, activePetId, arcadeXpAvailable, previousOwned, ownershipRecoveryRequired);
       }),
     };
   } catch (error) {
@@ -4750,6 +4758,7 @@ async function buildPetSeasonSlotCoreSummary(db, telegramId, now = new Date()) {
       SELECT s.pet_id, s.telegram_id, s.season_key, s.slot_number AS source_slot_number,
         ROW_NUMBER() OVER (ORDER BY s.created_at, s.pet_id) AS slot_number, s.acquisition_type,
         s.source_event_key, s.arcade_xp_spent, s.status, s.created_at, s.updated_at,
+        i.pet_id AS instance_pet_id, i.status AS instance_status,
         i.pet_name, i.species, i.stage, i.level, i.pet_xp, i.health, i.energy,
         i.hunger, i.happiness, i.cleanliness, i.last_decay_at, l.phase AS lifecycle_phase,
         l.species_id AS lifecycle_species_id, l.rare_morph_id,
@@ -4770,8 +4779,9 @@ async function buildPetSeasonSlotCoreSummary(db, telegramId, now = new Date()) {
       .bind(owner).first().then(requirePetFirstReadResult),
   ]);
   const rawRows = slotRows.results || [];
-  const rowsBySlot = new Map(rawRows.map((row) => [Number(row.slot_number), applyPetDecay({ ...row }, now)]));
-  const activePetId = rawRows.some((row) => row.pet_id === activeSlot?.pet_id && row.season_key === activeSlot?.season_key) ? activeSlot.pet_id : rowsBySlot.get(1)?.pet_id || null;
+  const rowsBySlot = new Map(rawRows.map((row) => [Number(row.slot_number), row.instance_pet_id ? applyPetDecay({ ...row }, now) : row]));
+  const activePetId = rawRows.some((row) => row.instance_status === 'active' && row.pet_id === activeSlot?.pet_id && row.season_key === activeSlot?.season_key) ? activeSlot.pet_id : rawRows.find(row => row.instance_status === 'active')?.pet_id || null;
+  const ownershipRecoveryRequired = rawRows.length > 0 && !rawRows.some(row => row.instance_status === 'active' || (!row.instance_pet_id && Number(row.source_slot_number) === 1 && row.acquisition_type === 'free'));
   const activeRow = rawRows.find(row => row.pet_id === activePetId);
   const journeyPeriod = activeRow ? getPetOwnershipPeriod(activeRow.season_key, activeRow.created_at) : null;
   const arcadeXpLifetime = Math.max(0, Number(arcade?.arcade_xp_total || 0));
@@ -4794,13 +4804,13 @@ async function buildPetSeasonSlotCoreSummary(db, telegramId, now = new Date()) {
     arcade_xp_spendable: arcadeXpAvailable,
     arcade_xp_spent: arcadeXpSpent,
     next_slot_cost: nextSlotCost,
-    can_buy_next_slot: nextSlotNumber <= PET_SEASON_MAX_SLOTS && previousSlotOwned && arcadeXpAvailable >= nextSlotCost,
-    purchase_enabled: true,
-    purchase_disabled_reason: null,
+    can_buy_next_slot: !ownershipRecoveryRequired && nextSlotNumber <= PET_SEASON_MAX_SLOTS && previousSlotOwned && arcadeXpAvailable >= nextSlotCost,
+    purchase_enabled: !ownershipRecoveryRequired,
+    purchase_disabled_reason: ownershipRecoveryRequired ? 'pet_ownership_recovery_required' : null,
     slots: Array.from({ length: Math.max(PET_SEASON_MAX_SLOTS, rawRows.length) }, (_, index) => {
       const slotNumber = index + 1;
       const previousOwned = slotNumber <= 1 ? true : rowsBySlot.has(slotNumber - 1);
-      return serializePetSeasonSlot(rowsBySlot.get(slotNumber), slotNumber, activePetId, arcadeXpAvailable, previousOwned);
+      return serializePetSeasonSlot(rowsBySlot.get(slotNumber), slotNumber, activePetId, arcadeXpAvailable, previousOwned, ownershipRecoveryRequired);
     }),
   };
 }
@@ -4817,7 +4827,8 @@ async function buyPetSeasonSlot(db, telegramId, requestedSlot, options = {}) {
   const profile = await db.prepare(`SELECT telegram_id FROM telegram_pet_profiles WHERE telegram_id=? LIMIT 1`)
     .bind(owner).first().then(requirePetFirstReadResult);
   if (!profile) return { accepted: false, reason: 'pet_not_adopted' };
-  await ensurePetStarterSeasonSlot(db, owner, options.now || new Date());
+  const starter = await ensurePetStarterSeasonSlot(db, owner, options.now || new Date());
+  if (!starter.ok) return { accepted: false, reason: starter.reason, season_slots: await buildPetSeasonSlotSummary(db, owner, options.now) };
   await getOrCreateArcadeProgressionState(db, owner);
   const existing = await db.prepare(`SELECT pet_id FROM telegram_pet_season_slots WHERE telegram_id=? AND status='active'
     ORDER BY created_at,pet_id LIMIT 1 OFFSET ?`)
@@ -15134,6 +15145,7 @@ export const __petMediaTestHooks = Object.freeze({
   WEEKLY_JOURNEY_REQUIRED_OBJECTIVES,
   PET_SEASON_EXTRA_SLOT_COSTS,
   buildPetSeasonSlotSummary,
+  buildPetSeasonSlotCoreSummary,
   buyPetSeasonSlot,
   switchActivePetSeasonSlot,
   serializePetMiniAppActionResult,

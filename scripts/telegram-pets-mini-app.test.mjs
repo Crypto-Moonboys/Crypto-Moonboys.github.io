@@ -1750,7 +1750,7 @@ assert.match(client, /disabled: !affordable/, 'unaffordable slot unlocks must be
 assert.match(client, /NEED ' \+ number\(Math\.max\(0, cost - available\)\) \+ ' MORE ARCADE XP'/, 'disabled unlocks must explain the XP shortfall');
 assert.match(client, /You have earned Arcade XP from community play/, 'locked slots must explain the earned community progression model');
 assert.doesNotMatch(client, /BUY SLOT|PURCHASE OFFLINE/, 'player-facing slot UI must not use payment language');
-assert.match(client, /owned \? button\('SWITCH TO SLOT ' \+ slotNumber, 'switch_pet_slot', \{ pet_id: slot\.pet_id, slot_number: slotNumber \}\)/, 'owned inactive slots must dispatch switch_pet_slot');
+assert.match(client, /owned \? selectable \? button\('SWITCH TO SLOT ' \+ slotNumber, 'switch_pet_slot', \{ pet_id: slot\.pet_id, slot_number: slotNumber \}\)/, 'only selectable owned inactive slots dispatch switch_pet_slot');
 assert.match(client, /active \? '<strong class="slot-active-marker"/, 'active slots must show a marker instead of a switch control');
 assert.match(client, /function renderPetInstanceCard\(slot\)/, 'owned slots must use a reusable pet-instance card');
 for (const field of ['IDENTITY', 'VARIANT', 'LIFECYCLE', 'LEVEL', 'PET XP', 'HEALTH', 'ENERGY']) {
@@ -1760,7 +1760,7 @@ for (const reason of ['insufficient_arcade_xp', 'pet_slot_already_owned', 'pet_s
   assert.match(client, new RegExp(`${reason}:`), `Mini App must explain ${reason}`);
 }
 assert.match(worker, /LEFT JOIN telegram_pet_instances i[\s\S]*lifecycle_species_id/, 'slot summaries must include owned pet identity details');
-assert.match(worker, /pet: unlocked \? \{[\s\S]*name:[\s\S]*species:[\s\S]*variant:[\s\S]*stage:[\s\S]*level:[\s\S]*pet_xp:[\s\S]*health:[\s\S]*energy:/, 'serialized owned slots must expose complete pet-card fields');
+assert.match(worker, /pet: unlocked && instancePresent \? \{[\s\S]*name:[\s\S]*species:[\s\S]*variant:[\s\S]*stage:[\s\S]*level:[\s\S]*pet_xp:[\s\S]*health:[\s\S]*energy:/, 'only existing pet instances expose complete pet-card fields');
 // Season slots panel must be reachable during egg phase (slot controls cannot be hidden behind the egg early-return).
 assert.match(client, /phase === 'egg'[\s\S]{1,3000}renderSeasonSlots\(\)/, 'season slot panel must render during egg phase so players can view and switch slots');
 // Arcade XP zero must not be treated as missing — nullish checks are required.

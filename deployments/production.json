@@ -134,7 +134,9 @@
         "081_moonpet_recovery_cursors.sql",
         "082_moonpet_post_reward_overwrite_rebaseline.sql",
         "083_moonpet_daily_run_completion_credit.sql",
-        "084_moonpet_state_hot_path_indexes.sql"
+        "084_moonpet_state_hot_path_indexes.sql",
+        "085_permanent_pet_weekly_evidence.sql",
+        "086_restore_permanent_pet_ownership.sql"
       ],
       "verified_migrations": [],
       "evidence": [],

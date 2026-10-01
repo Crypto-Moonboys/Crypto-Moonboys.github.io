@@ -1832,14 +1832,15 @@
       var slot = byNumber[slotNumber] || { slot_number: slotNumber, unlocked: false, purchase_enabled: false };
       var owned = Boolean(slot.unlocked);
       var active = Boolean(slot.active);
+      var selectable = owned && slot.selectable === true;
       var cost = Number(slot.unlock_cost_arcade_xp || 0);
       var unlockEnabled = !owned && Boolean(slot.purchase_enabled);
       var affordable = unlockEnabled && Boolean(slot.affordable);
-      var status = active ? 'ACTIVE' : owned ? 'OWNED' : 'LOCKED';
-      var details = owned ? renderPetInstanceCard(slot)
+      var status = active ? 'ACTIVE' : owned ? selectable ? 'OWNED' : 'OWNED // RECOVERY REQUIRED' : 'LOCKED';
+      var details = owned && !selectable ? '<div class="line muted">OWNED SPACE PRESERVED // Saved pet is unavailable. Recovery is required before play.</div>' : owned ? renderPetInstanceCard(slot)
         : '<div class="slot-unlock-copy"><strong>COMMUNITY XP UNLOCK</strong><span>You have earned Arcade XP from community play.</span><span>CURRENT ARCADE XP // ' + number(available) + ' / ' + number(cost) + ' REQUIRED</span></div>';
       var control = active ? '<strong class="slot-active-marker" aria-label="Active pet">◆ ACTIVE</strong>'
-        : owned ? button('SWITCH TO SLOT ' + slotNumber, 'switch_pet_slot', { pet_id: slot.pet_id, slot_number: slotNumber })
+        : owned ? selectable ? button('SWITCH TO SLOT ' + slotNumber, 'switch_pet_slot', { pet_id: slot.pet_id, slot_number: slotNumber }) : '<div class="line locked">PET UNAVAILABLE // ' + escapeHtml(words(slot.selection_disabled_reason || 'pet recovery required')) + '</div>'
           : unlockEnabled ? button('UNLOCK SLOT ' + slotNumber, 'buy_pet_slot', { slot_number: slotNumber }, {
             disabled: !affordable,
             resourceRequired: !affordable,
@@ -2776,6 +2777,7 @@
       pet_arena_active: 'FINISH THE ACTIVE ARENA BATTLE BEFORE SWITCHING',
       pet_kaiju_active: 'FINISH THE ACTIVE KAIJU MATCH BEFORE SWITCHING',
       season_slots_unavailable: 'SEASON SLOTS ARE TEMPORARILY UNAVAILABLE',
+      pet_ownership_recovery_required: 'YOUR OWNED PET NEEDS RECOVERY // PET SPACES AND ARCADE XP ARE PRESERVED',
     };
     return messages[String(reason || '')] || words(reason);
   }

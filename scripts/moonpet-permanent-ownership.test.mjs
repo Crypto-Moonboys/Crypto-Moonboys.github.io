@@ -113,6 +113,31 @@ sql.exec(`INSERT INTO telegram_pet_season_slots (pet_id,telegram_id,season_key,s
 assert.equal(await hooks.preparePetMiniAppState(db,'repair-paid-only',now),false,'missing paid saves require recovery instead of a replacement egg');
 assert.equal(sql.prepare("SELECT COUNT(*) AS n FROM telegram_pet_season_slots WHERE telegram_id='repair-paid-only'").get().n,1);
 assert.equal(sql.prepare("SELECT COUNT(*) AS n FROM telegram_pet_instances WHERE telegram_id='repair-paid-only'").get().n,0);
+const missingWallet = sql.prepare("SELECT * FROM arcade_xp_wallets WHERE telegram_id='repair-paid-only'").get();
+const missingOwnership = sql.prepare("SELECT * FROM telegram_pet_season_slots WHERE telegram_id='repair-paid-only'").all();
+for (const slot of [2,3]) {
+  const blocked = await hooks.buyPetSeasonSlot(db,'repair-paid-only',slot,{now});
+  assert.equal(blocked.accepted,false);
+  assert.equal(blocked.reason,'pet_ownership_recovery_required','missing paid ownership never causes another purchase charge');
+}
+assert.deepEqual(sql.prepare("SELECT * FROM arcade_xp_wallets WHERE telegram_id='repair-paid-only'").get(),missingWallet);
+assert.deepEqual(sql.prepare("SELECT * FROM telegram_pet_season_slots WHERE telegram_id='repair-paid-only'").all(),missingOwnership);
+assert.equal(sql.prepare("SELECT COUNT(*) AS n FROM telegram_pet_instances WHERE telegram_id='repair-paid-only'").get().n,0);
+for (const summary of [await hooks.buildPetSeasonSlotSummary(db,'repair-paid-only',now), await hooks.buildPetSeasonSlotCoreSummary(db,'repair-paid-only',now)]) {
+  const missing = summary.slots[0];
+  assert.equal(missing.pet_id,'repair-paid-only:paid');
+  assert.equal(missing.unlocked,true,'the purchased space remains owned');
+  assert.equal(missing.arcade_xp_spent,500);
+  assert.equal(missing.instance_present,false);
+  assert.equal(missing.selectable,false);
+  assert.equal(missing.selection_disabled_reason,'pet_instance_missing');
+  assert.equal(missing.pet,null,'no default pet or XP is fabricated');
+  assert.equal(missing.active,false);
+  assert.equal(summary.active_pet_id,null);
+  assert.equal(summary.can_buy_next_slot,false);
+  assert.equal(summary.purchase_disabled_reason,'pet_ownership_recovery_required');
+  assert.equal(summary.slots[1].purchase_enabled,false);
+}
 
 // Legacy recovery may reveal more saves than capacity. Preserve all; never sell more.
 pet('extra-history','recovered','pet-s2026-002',1,'2026-04-01',17);
