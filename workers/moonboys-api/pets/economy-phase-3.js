@@ -50,17 +50,9 @@ export const PET_RARE_DROP_TABLES = deepFreeze({
 });
 
 export const PET_COSMETIC_SINKS = deepFreeze({
-  rename_badge: { cost: { style_tokens: 25 }, repeatable: true },
   profile_frame: { cost: { style_tokens: 80, moon_crystals: 4 }, repeatable: false },
   victory_pose: { cost: { style_tokens: 120, arena_token: 15 }, repeatable: false },
   run_trail: { cost: { style_tokens: 100, spray_core: 5 }, repeatable: false },
-});
-
-export const PET_PRESTIGE_REQUIREMENTS = deepFreeze({
-  min_level: 100,
-  min_mastered_items: 3,
-  min_completed_regions: 4,
-  cost: { moon_gold: 5000, moon_crystals: 50 },
 });
 
 function hasOwn(object, key) {
@@ -120,11 +112,4 @@ export function resolvePetRareDrop(tableKey, roll) {
     cursor -= entry.weight;
   }
   return table.at(-1)?.item || null;
-}
-
-export function canPetPrestige(state = {}) {
-  return Math.max(1, Math.floor(Number(state.level) || 1)) >= PET_PRESTIGE_REQUIREMENTS.min_level
-    && Math.max(0, Math.floor(Number(state.mastered_items) || 0)) >= PET_PRESTIGE_REQUIREMENTS.min_mastered_items
-    && Math.max(0, Math.floor(Number(state.completed_regions) || 0)) >= PET_PRESTIGE_REQUIREMENTS.min_completed_regions
-    && canAffordPetEconomyCost(state, PET_PRESTIGE_REQUIREMENTS.cost);
 }

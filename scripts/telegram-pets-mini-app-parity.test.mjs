@@ -9,7 +9,6 @@ const {
   processPetMiniAppAction,
   buildPetMiniAppState,
   buildPetMiniAppJourneySummary,
-  buildPetMiniAppFutureSystemState,
   buildPetMiniAppCapabilities,
   getPetMiniAppCombatEligibility,
   getPetGuidanceFeatures,
@@ -197,44 +196,11 @@ assert.equal(lockedCombatDb.database.prepare("SELECT COUNT(*) AS count FROM tele
   'locked Kaiju queue cleanup must clear waiting queue state');
 assert.equal(lockedCombatDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_kaiju_matches WHERE (player1_telegram_id='future-locked' OR player2_telegram_id='future-locked') AND status IN ('open','selecting')").get().count, 0,
   'locked Kaiju cleanup must clear active stale match rows');
-const lockedPrestigeBefore = lockedCombatDb.database.prepare("SELECT prestige_count FROM telegram_pet_progression_state WHERE telegram_id='future-locked'").get()?.prestige_count || 0;
-const lockedPrestigeResult = await processPetMiniAppAction(lockedCombatDb, 'future-locked', { id: 'future-locked' }, {
-  action: 'prestige',
-  request_id: 'locked:prestige',
-}, '123456:test-token');
-assert.equal(lockedPrestigeResult.accepted, false, 'early Season 1 users must not be able to prestige from crafted Mini App requests');
-assert.equal(lockedPrestigeResult.reason, 'feature_not_available', 'locked Prestige must remain unavailable during early Season 1');
-assert.equal(lockedCombatDb.database.prepare("SELECT prestige_count FROM telegram_pet_progression_state WHERE telegram_id='future-locked'").get()?.prestige_count || 0, lockedPrestigeBefore,
-  'locked Prestige must not mutate progression state');
-assert.equal(lockedCombatDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_system_events WHERE telegram_id='future-locked' AND system_key='prestige'").get().count, 0,
-  'locked Prestige must not reserve system events');
-
 const completedCombatDb = new D1();
 installSeasonCompletionMarkerTable(completedCombatDb);
 seedPlayer(completedCombatDb, 'future-complete', 'Complete Cat', 3240);
 markSeasonComplete(completedCombatDb, 'future-complete');
 await setActivePetLifecyclePhase(completedCombatDb, 'future-complete', 'adult');
-const completedPrestigeResult = await processPetMiniAppAction(completedCombatDb, 'future-complete', { id: 'future-complete' }, {
-  action: 'prestige',
-  request_id: 'completed:prestige',
-}, '123456:test-token');
-assert.equal(completedPrestigeResult.accepted, false, 'completed Season users must still be blocked from unavailable Prestige');
-assert.equal(completedPrestigeResult.reason, 'feature_not_available', 'Prestige must use the future-feature lock even after completion eligibility');
-assert.equal(completedCombatDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_system_events WHERE telegram_id='future-complete' AND system_key='prestige'").get().count, 0,
-  'completed-user locked Prestige must not reserve system events');
-const completedSanctuaryEligibility = await getPetMiniAppCombatEligibility(completedCombatDb, 'future-complete');
-const completedSanctuaryUnavailable = {
-  accepted: false,
-  reason: 'feature_not_available',
-  capabilities_version: 1,
-  capabilities: buildPetMiniAppCapabilities(completedSanctuaryEligibility),
-};
-assert.equal(completedSanctuaryUnavailable.reason, 'feature_not_available',
-  'completed-user Sanctuary response must remain unavailable while Sanctuary is future content');
-assert.equal(completedSanctuaryUnavailable.capabilities?.combat?.requirements?.completed_season_pet, true,
-  'completed-user Sanctuary unavailable response must not lie about completed-season authority');
-assert.equal(completedSanctuaryUnavailable.capabilities?.systems?.sanctuary?.state, 'COMING_SOON',
-  'completed-user Sanctuary unavailable response must keep Sanctuary status-only');
 assert.notEqual((await processPetMiniAppAction(completedCombatDb, 'future-complete', { id: 'future-complete' }, {
   action: 'arena_matchmake',
   request_id: 'completed:arena_matchmake',
@@ -257,44 +223,31 @@ await setActivePetLifecyclePhase(combatAuthorityDb, 'combat-egg', 'egg');
 await setActivePetLifecyclePhase(combatAuthorityDb, 'combat-adult', 'adult');
 await setActivePetLifecyclePhase(combatAuthorityDb, 'combat-new', 'adult');
 const combatEggEligibility = await getPetMiniAppCombatEligibility(combatAuthorityDb, 'combat-egg');
-assert.equal(combatEggEligibility.has_completed_season_pet, true, 'combat authority must expose completed-season state for completed egg users');
 assert.equal(combatEggEligibility.combat_unlocked, false, 'completed users with an active egg must not see combat as unlocked');
 assert.equal(combatEggEligibility.reason, 'moon_egg_must_hatch');
 const combatEggCapabilities = buildPetMiniAppCapabilities(combatEggEligibility);
 assert.equal(combatEggCapabilities.capabilities_version, 1, 'capability authority must expose a stable contract version');
-for (const key of ['arena', 'kaiju', 'prestige', 'breeding', 'traits', 'sanctuary', 'lineage', 'fusion', 'weekly_journey']) {
+for (const key of ['arena', 'kaiju', 'weekly_journey']) {
   assert.ok(combatEggCapabilities.systems?.[key], `${key} must be present in the central capability systems map`);
-  assert.equal(['LOCKED', 'COMING_SOON', 'AVAILABLE'].includes(combatEggCapabilities.systems[key].state), true,
+  assert.equal(['LOCKED', 'AVAILABLE'].includes(combatEggCapabilities.systems[key].state), true,
     `${key} must use a valid future-system state`);
 }
 assert.equal(combatEggCapabilities.combat.unlocked, false, 'player capabilities must mirror locked combat authority for active eggs');
 assert.equal(combatEggCapabilities.combat.state, 'LOCKED', 'combat capability state must lock active eggs');
 assert.equal(combatEggCapabilities.combat.active, false, 'locked combat capability must be inactive');
-assert.equal(combatEggCapabilities.combat.requirements.completed_season_pet, true, 'player capabilities must preserve completed-season authority');
 assert.equal(combatEggCapabilities.combat.requirements.active_pet_hatched, false, 'player capabilities must expose active egg requirement state');
 assert.equal(combatEggCapabilities.combat.requirements.arena_level_met, true, 'capabilities must expose Arena level authority separately from hatch state');
 assert.equal(combatEggCapabilities.systems.arena.state, 'LOCKED', 'central systems map must lock Arena for active eggs');
 assert.equal(combatEggCapabilities.systems.kaiju.state, 'LOCKED', 'central systems map must lock Kaiju for active eggs');
-assert.equal(combatEggCapabilities.systems.prestige.state, 'COMING_SOON', 'central systems map must keep Prestige coming soon');
 assert.equal(combatEggCapabilities.weekly_journey.state, 'LOCKED', 'Weekly Journey capability must fail closed until authority summary exists');
 assert.equal(combatEggCapabilities.weekly_journey.active, false, 'Weekly Journey capability must be inactive while authority is syncing');
 assert.equal(combatEggCapabilities.systems.weekly_journey.active, false, 'central systems map must keep Weekly Journey inactive while syncing');
 assert.equal(combatEggCapabilities.weekly_journey.message, 'Weekly Journey authority is syncing.',
   'Weekly Journey capability must explain missing authority state');
-for (const key of ['breeding', 'sanctuary', 'fusion', 'prestige']) {
-  const system = combatEggCapabilities.systems[key];
-  assert.equal(system.state, 'COMING_SOON', `${key} must be represented as coming soon when unavailable after completion`);
-  assert.equal(system.active, false, `${key} must remain inactive while unavailable`);
-  assert.equal(system.unlocked, false, `${key} must remain locked while unavailable`);
-  for (const field of ['progress', 'completion', 'completed', 'rewards', 'reward', 'readiness', 'eligible', 'weekly_crest_awarded', 'growth_mark_awarded']) {
-    assert.equal(Object.prototype.hasOwnProperty.call(system, field), false,
-      `${key} capability must not expose live-looking ${field} data while inactive`);
-  }
+for (const key of ['breeding','traits','sanctuary','lineage','fusion','prestige','future_systems']) {
+  assert.equal(key in combatEggCapabilities,false,`${key} is absent from the capability response`);
+  assert.equal(key in combatEggCapabilities.systems,false,`${key} is absent from the live system map`);
 }
-assert.equal(combatEggCapabilities.systems.weekly_journey.state, 'LOCKED',
-  'Weekly Journey must not be represented as coming soon once live tracking exists');
-assert.equal(combatEggCapabilities.systems.weekly_journey.reason, 'weekly_journey_authority_syncing',
-  'Weekly Journey missing authority must fail closed as syncing');
 const combatEggAction = await processPetMiniAppAction(combatAuthorityDb, 'combat-egg', { id: 'combat-egg' }, {
   action: 'kaiju_matchmake',
   request_id: 'combat-egg:kaiju_matchmake',
@@ -305,7 +258,6 @@ assert.equal(combatEggAction.capabilities_version, 1, 'stale-client combat rejec
 assert.equal(combatEggAction.capabilities?.combat?.state, 'LOCKED', 'API must return the shared combat capability state for active-egg rejection');
 assert.equal(combatEggAction.capabilities?.combat?.unlocked, false, 'stale-client combat rejection must return nested combat capability authority');
 const combatAdultEligibility = await getPetMiniAppCombatEligibility(combatAuthorityDb, 'combat-adult');
-assert.equal(combatAdultEligibility.has_completed_season_pet, true, 'combat authority must expose completed-season state for completed adult users');
 assert.equal(combatAdultEligibility.combat_unlocked, true, 'completed users with an eligible active pet must see combat unlocked');
 assert.equal(buildPetMiniAppCapabilities(combatAdultEligibility).combat.unlocked, true,
   'player capabilities must mirror unlocked combat authority for completed adult users');
@@ -326,10 +278,6 @@ assert.deepEqual(combatAdultCapabilities.arena, combatAdultCapabilities.systems.
   'Arena compatibility capability must mirror the central systems map');
 assert.deepEqual(combatAdultCapabilities.kaiju, combatAdultCapabilities.systems.kaiju,
   'Kaiju compatibility capability must mirror the central systems map');
-assert.deepEqual(combatAdultCapabilities.prestige, combatAdultCapabilities.systems.prestige,
-  'Prestige compatibility capability must mirror the central systems map');
-assert.equal(combatAdultCapabilities.prestige?.state, 'COMING_SOON', 'Prestige must remain coming soon in the single capability object');
-assert.equal(combatAdultCapabilities.prestige?.active, false, 'Prestige must remain inactive even for combat-available users');
 assert.equal(combatAdultCapabilities.weekly_journey?.state, 'LOCKED', 'Weekly Journey must fail closed without an authority summary in the single capability object');
 const weeklyLiveCapabilities = buildPetMiniAppCapabilities(combatAdultEligibility, {
   pet_id: 'pet-combat-adult',
@@ -357,7 +305,6 @@ assert.equal(Object.prototype.hasOwnProperty.call(combatAdultCapabilities, 'has_
 assert.equal(Object.prototype.hasOwnProperty.call(combatAdultCapabilities, 'combat_unlocked'), false,
   'capabilities must not serialize duplicate top-level combat authority');
 const combatNewEligibility = await getPetMiniAppCombatEligibility(combatAuthorityDb, 'combat-new');
-assert.equal(combatNewEligibility.has_completed_season_pet, false, 'combat authority must expose missing completion state for new users');
 assert.equal(combatNewEligibility.combat_unlocked, true, 'hatched active users can unlock current beta combat without completed-season authority');
 const combatNewAction = await processPetMiniAppAction(combatAuthorityDb, 'combat-new', { id: 'combat-new' }, {
   action: 'kaiju_matchmake',
@@ -368,12 +315,10 @@ assert.equal((await getPetMiniAppCombatEligibility(combatAuthorityDb, 'combat-ad
   'shared combat eligibility helper must unlock eligible active pets');
 seedPlayer(combatAuthorityDb, 'combat-missing-lifecycle', 'Missing Lifecycle Cat', 3240);
 const combatMissingLifecycleEligibility = await getPetMiniAppCombatEligibility(combatAuthorityDb, 'combat-missing-lifecycle');
-assert.equal(combatMissingLifecycleEligibility.has_completed_season_pet, true, 'combat authority must preserve completed-season state with missing lifecycle data');
 assert.equal(combatMissingLifecycleEligibility.active_pet_lifecycle_known, false, 'combat authority must expose missing lifecycle data');
 assert.equal(combatMissingLifecycleEligibility.combat_unlocked, false, 'missing lifecycle data must fail closed for combat');
 assert.equal(combatMissingLifecycleEligibility.reason, 'moonpet_lifecycle_required');
 const combatNoPetEligibility = await getPetMiniAppCombatEligibility(combatAuthorityDb, 'combat-no-pet');
-assert.equal(combatNoPetEligibility.has_completed_season_pet, true, 'combat authority must preserve completed-season state without an active pet');
 assert.equal(combatNoPetEligibility.active_pet_exists, false, 'combat authority must explicitly track active pet existence');
 assert.equal(combatNoPetEligibility.combat_unlocked, false, 'completed users without an active pet must not unlock combat');
 assert.equal(combatNoPetEligibility.reason, 'pet_not_adopted');
@@ -382,35 +327,11 @@ assert.equal(lockedGuidanceFeatures.find((feature) => feature.key === 'kaiju_car
   'guidance must not recommend Kaiju when combat authority is locked');
 assert.equal(lockedGuidanceFeatures.find((feature) => feature.key === 'pet_arena')?.available, false,
   'guidance must not recommend Arena when combat authority is locked');
-assert.equal(lockedGuidanceFeatures.find((feature) => feature.key === 'prestige')?.available, false,
-  'guidance must not recommend Prestige while it is future content');
 const unlockedGuidanceFeatures = getPetGuidanceFeatures(100, combatAdultEligibility);
 assert.equal(unlockedGuidanceFeatures.find((feature) => feature.key === 'kaiju_cards')?.available, true,
   'guidance may show Kaiju only when shared combat authority is unlocked');
 assert.equal(unlockedGuidanceFeatures.find((feature) => feature.key === 'pet_arena')?.available, true,
   'guidance may show Arena only when shared combat authority is unlocked');
-assert.equal(unlockedGuidanceFeatures.find((feature) => feature.key === 'prestige')?.available, false,
-  'guidance must keep Prestige unavailable even for combat-unlocked users');
-const lockedFutureSystems = buildPetMiniAppFutureSystemState(combatNewEligibility);
-assert.equal(lockedFutureSystems.find((system) => system.key === 'breeding')?.status, 'LOCKED',
-  'future system authority must lock completion-gated expansion systems before completed-season authority');
-assert.equal(lockedFutureSystems.find((system) => system.key === 'arena')?.status, 'AVAILABLE',
-  'Arena current beta authority must not wait for completed-season authority');
-assert.equal(buildPetMiniAppCapabilities(combatNewEligibility).systems.breeding.reason, 'completed_season_pet_required',
-  'post-season systems must keep completed-season reason while current combat is available');
-const comingSoonFutureSystems = buildPetMiniAppFutureSystemState(combatEggEligibility);
-assert.equal(comingSoonFutureSystems.find((system) => system.key === 'breeding')?.status, 'COMING_SOON',
-  'completed-season users must see unavailable expansion systems as coming soon');
-assert.equal(comingSoonFutureSystems.find((system) => system.key === 'arena')?.status, 'LOCKED',
-  'completed-season users with an active egg must still see Arena locked');
-const availableFutureSystems = buildPetMiniAppFutureSystemState(combatAdultEligibility);
-assert.equal(availableFutureSystems.find((system) => system.key === 'arena')?.status, 'AVAILABLE',
-  'Arena future-system authority must reflect shared combat unlock');
-assert.equal(availableFutureSystems.find((system) => system.key === 'kaiju')?.status, 'AVAILABLE',
-  'Kaiju future-system authority must reflect shared combat unlock');
-assert.equal(availableFutureSystems.find((system) => system.key === 'prestige')?.status, 'COMING_SOON',
-  'Prestige must remain coming soon even when combat is available');
-
 const transitionDb = new D1();
 installSeasonCompletionMarkerTable(transitionDb);
 seedPlayer(transitionDb, 'combat-transition', 'Transition Cat', 3240);

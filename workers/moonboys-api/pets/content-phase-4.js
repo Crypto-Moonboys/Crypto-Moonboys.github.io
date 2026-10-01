@@ -286,11 +286,6 @@ export const PET_EVENT_CHAINS = deepFreeze({
       "trace_owner",
       "return_or_salvage"
     ],
-    "final_outcomes": [
-      "bond_reward",
-      "material_reward",
-      "job_unlock"
-    ],
     "step_content": {
       "inspect_wreckage": {
         "title": "Sparks In The Rain",
@@ -375,11 +370,6 @@ export const PET_EVENT_CHAINS = deepFreeze({
       "find_transmitter",
       "decode_signal",
       "broadcast_or_block"
-    ],
-    "final_outcomes": [
-      "arena_buff",
-      "faction_reputation",
-      "event_cache"
     ],
     "step_content": {
       "find_transmitter": {
@@ -466,11 +456,6 @@ export const PET_EVENT_CHAINS = deepFreeze({
       "stabilize_tunnel",
       "escort_team"
     ],
-    "final_outcomes": [
-      "job_xp",
-      "crystal_reward",
-      "loyal_trait"
-    ],
     "step_content": {
       "locate_survivors": {
         "title": "Helmet Signals",
@@ -555,11 +540,6 @@ export const PET_EVENT_CHAINS = deepFreeze({
       "open_archive",
       "solve_cipher",
       "choose_legacy"
-    ],
-    "final_outcomes": [
-      "prestige_progress",
-      "rare_cosmetic",
-      "bond_xp"
     ],
     "step_content": {
       "open_archive": {

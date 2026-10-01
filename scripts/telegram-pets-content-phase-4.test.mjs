@@ -30,7 +30,7 @@ assert.throws(() => { PET_DISTRICT_COMPLICATIONS.push({}); }, TypeError);
 assert.ok(Object.keys(PET_EVENT_CHAINS).length >= 4);
 for (const chain of Object.values(PET_EVENT_CHAINS)) {
   assert.equal(chain.steps.length, 3);
-  assert.ok(chain.final_outcomes.length >= 3);
+  assert.equal(Object.hasOwn(chain, 'final_outcomes'), false, 'story definitions expose actual scene rewards rather than unwired outcomes');
 }
 assert.equal(getPetEventChain('__proto__'), null);
 

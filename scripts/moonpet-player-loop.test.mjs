@@ -43,7 +43,7 @@ assert.ok(recommended.some(x => x.key === 'evolution_ready' && x.focus === 'evol
 const shoppingState = { adopted: true, lifecycle: { phase: 'young' },
   inventory: [{ quantity: 1, kind: 'usable_item' }],
   guidance: { shop_items: [{ unlocked: true, affordable: true }], economy: { market_offers: [{ unlocked: true, affordable: true, capacity: { available: true } }] } },
-  live_systems: { cosmetics: [{ affordable: true, unlocked: false }] } };
+  live_systems: { cosmetics: [{ key: 'profile_frame', affordable: true, unlocked: false }] } };
 for (const key of ['inventory', 'market', 'shop', 'cosmetic']) assert.ok(options.recommendations(shoppingState).some(x => x.key === key), key);
 for (const unlocked of [false, true]) {
   const badgeOnly = { ...shoppingState, live_systems: { cosmetics: [

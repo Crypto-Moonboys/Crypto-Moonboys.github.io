@@ -16,6 +16,8 @@ Any gameplay, documentation, or UI change affecting Moonpet status should refere
 
 ## Current rules and historical audits
 
+The [1 October hard audit](moonpet-hard-audit-2026-10-01.md) records the live-surface cleanup, transactional deletion protections and remaining year-long pacing work.
+
 This reference and the seasonal model describe current rules. Dated audits are
 evidence for their reviewed commit and must not override later shipped behavior.
 In particular, old “no completion bonus/finale” and “Style/relics inactive”
@@ -575,7 +577,7 @@ bag for a standard Moon Run bonus. Style Patch is a consumable, not clothing;
 Adventure Map does not improve expedition outcomes or job luck. Care's Energy
 Drink button and the consumable Energy Drink remain separate actions. Style Lab
 uses account-owned unlocks and per-pet visual loadouts. Equip/remove is free;
-frames, nameplates, Explore trails and idle victory poses render on the canvas.
+frames, Explore trails and idle victory poses render on the canvas.
 Existing ownership works without repurchasing. Callsign editing remains free.
 The styles do not change stats; reduced-motion mode keeps decorative trails still.
 
@@ -785,70 +787,9 @@ Current progression systems include:
 
 ---
 
-# Future Roadmap Systems
+# Historical Records
 
-The following systems are not considered live gameplay.
-
-## Advanced Traits
-
-Future expansion of trait depth, unlocks, and gameplay effects.
-
-Current Personality and Aptitude systems remain separate.
-
----
-
-## Breeding
-
-Future system.
-
-Planned requirements:
-
-- Completed Moonpets
-- Trait foundation
-- Breeding rules
-
----
-
-## Lineage
-
-Future ancestry system.
-
-Planned features:
-
-- Parent records
-- Generations
-- Inherited identity
-
----
-
-## Fusion
-
-Future combination system.
-
-Depends on:
-
-- Traits
-- Lineage
-- Balancing rules
-
----
-
-## Sanctuary
-
-Historical Sanctuary snapshots remain immutable and readable. Automatic retirement
-and settlement reconciliation are removed. Completed pets stay active. Migration
-086 restores only matching automatically archived ownership records; retired or
-unproven records are never reactivated. Expanded Sanctuary gameplay remains future work.
-
----
-
-## Prestige
-
-Future endgame progression system.
-
-Prestige is not currently a live progression loop.
-
----
+Retired Breeding and Sanctuary tables and migrations remain as historical storage and safe ownership recovery evidence. No gameplay module, launcher or API exposes those systems. Pets never retire automatically. Historical nameplate ownership remains saved, but the removed badge cannot be bought or equipped.
 
 # Authority Rules
 

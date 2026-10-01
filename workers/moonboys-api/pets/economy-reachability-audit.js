@@ -6,7 +6,6 @@ import {
   PET_CRAFTING_MATERIALS,
   PET_CRAFTING_RECIPES,
   PET_EQUIPMENT_UPGRADE_COSTS,
-  PET_PRESTIGE_REQUIREMENTS,
   PET_RARE_DROP_TABLES,
   normalizePetMaterial,
 } from './economy-phase-3.js';
@@ -111,7 +110,6 @@ export function buildPetEconomyReachabilityAudit(definitions = {}) {
     }
   }
 
-  for (const [costKey] of positiveEntries(PET_PRESTIGE_REQUIREMENTS.cost)) addSink(currencySinks, costKey, 'prestige:future_locked');
 
   for (const evolution of evolutionDefinitions) {
     invalidMaterialReferencesFrom(evolution.requirements?.inventory?.material, `evolution:${evolution.evolution_id}`, invalidMaterialReferences);

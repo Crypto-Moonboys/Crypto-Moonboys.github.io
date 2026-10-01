@@ -2,10 +2,10 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import { PET_DISTRICT_APPROACHES, PET_DISTRICT_ENCOUNTERS, PET_EVENT_CHAINS, PET_FACTION_BONUSES, PET_REGION_CONTENT, PET_SEASONAL_BOSSES } from '../workers/moonboys-api/pets/content-phase-4.js';
-import { PET_COSMETIC_SINKS, PET_EQUIPMENT_UPGRADE_COSTS, PET_PRESTIGE_REQUIREMENTS } from '../workers/moonboys-api/pets/economy-phase-3.js';
+import { PET_COSMETIC_SINKS, PET_EQUIPMENT_UPGRADE_COSTS } from '../workers/moonboys-api/pets/economy-phase-3.js';
 import {
   applyPetFactionBonus, buildPetLiveSystemsState, getActiveSeasonalBoss, processPetCosmeticUnlock, processPetDistrictMission,
-  processPetCraftRecipe, processPetEquipmentUpgrade, processPetEventChain, processPetPrestige, processPetSeasonalBoss, claimPetSeasonalBossReward,
+  processPetCraftRecipe, processPetEquipmentUpgrade, processPetEventChain, processPetSeasonalBoss, claimPetSeasonalBossReward,
 } from '../workers/moonboys-api/pets/live-systems.js';
 import { seasonalRaidChoices, resolveSeasonalRaidAttack } from '../workers/moonboys-api/pets/seasonal-raid-tactics.js';
 import {
@@ -66,15 +66,14 @@ for (const [faction, definition] of Object.entries(PET_FACTION_BONUSES)) {
 assert.match(workerSource, /track_multiplier: 1 \+ Number\(factionBonus/, 'training faction bonus must change runtime Training XP');
 assert.match(workerSource, /applyPetFactionBonus\(scaled\.rewards/, 'Arena faction bonuses must be applied before settlement');
 assert.equal(Object.keys(PET_EQUIPMENT_UPGRADE_COSTS).length, 9);
-assert.equal(Object.keys(PET_COSMETIC_SINKS).length, 4);
-assert.equal(PET_PRESTIGE_REQUIREMENTS.min_level, 100);
+assert.equal(Object.keys(PET_COSMETIC_SINKS).length, 3);
 assert.equal(validateMoonpetLiveSystemOwnershipClassification(), true, 'live ownership classification must be deterministic and complete');
 for (const key of [
   'care_actions', 'timed_activities', 'daily_chest', 'jobs', 'daily_journey', 'weekly_journey',
   'standard_moon_run', 'daily_moon_run', 'arena', 'kaiju', 'district_story_missions', 'seasonal_boss',
   'weekly_boss', 'achievements_identity_memories_personality', 'specialist_progression', 'equipment_progression',
   'crafting_material_inventory_market_bounties_expedition_cosmetics', 'mini_app_state_payload',
-  'telegram_commands_api_actions_reward_helpers', 'prestige_breeding_lineage_fusion_sanctuary_advanced_traits',
+  'telegram_commands_api_actions_reward_helpers',
 ]) {
   assert.ok(MOONPET_LIVE_SYSTEM_OWNERSHIP_CLASSIFICATION.some((row) => row.system_key === key), `${key} must be classified`);
 }
@@ -90,7 +89,7 @@ const kaijuClassification = MOONPET_LIVE_SYSTEM_OWNERSHIP_CLASSIFICATION.find((r
 assert.equal(kaijuClassification.authority_owner, 'account',
   'Kaiju classification must match the current account-scoped reward settlement runtime until a pet-authority migration exists');
 
-for (const action of ['district_mission', 'event_chain', 'seasonal_boss', 'gear_upgrade', 'craft', 'cosmetic_unlock', 'prestige']) {
+for (const action of ['district_mission', 'event_chain', 'seasonal_boss', 'gear_upgrade', 'craft', 'cosmetic_unlock']) {
   assert.match(workerSource, new RegExp(`action === '${action}'`), `${action} needs a server action`);
   assert.ok(client.includes(`'${action}'`), `${action} needs a Mini App control`);
 }
@@ -103,7 +102,7 @@ assert.match(normalizeSourceWhitespace(liveSystemsSource), /ensurePetAccountWall
   'live-system account-wallet sinks must use the shared reconcile-first guard and return the structured pending reason');
 assert.match(normalizeSourceWhitespace(liveSystemsSource), /const authority = await resolveLivePetAuthority\(db, telegramId, pet\); if \(!authority\) return \{ accepted: false, reason: 'source_pet_authority_required' \}; const liveProgression = await getPetLiveProgressionState\(db, telegramId, pet, runtime, authority\);/,
   'district missions must reuse the already-resolved pet authority tuple for progression state');
-assert.match(normalizeSourceWhitespace(liveSystemsSource), /INSERT OR IGNORE INTO telegram_pet_live_progression_state[\s\S]*SELECT \?, \?, \?, '\{\}', '\[\]', 0/,
+assert.match(normalizeSourceWhitespace(liveSystemsSource), /INSERT OR IGNORE INTO telegram_pet_live_progression_state[\s\S]*SELECT \?, \?, \?, '\{\}', '\[\]'/,
   'live progression lazy creation must initialize empty rows instead of copying legacy account progress');
 assert.match(normalizeSourceWhitespace(liveSystemsSource), /UPDATE telegram_pet_instances SET energy=energy-\?/,
   'pet action Energy settlement must debit the authoritative pet instance');
@@ -111,8 +110,6 @@ assert.match(normalizeSourceWhitespace(liveSystemsSource), /telegram_pet_active_
   'profile Energy mirror must only update when the charged pet remains active');
 assert.match(normalizeSourceWhitespace(liveSystemsSource), /if \(reservation\.status === 'completed'\) return \{ state: 'completed', token: null \};/,
   'Energy settlement completed reservations must keep the structured object return contract');
-assert.match(normalizeSourceWhitespace(liveSystemsSource), /UPDATE telegram_pet_live_progression_state SET prestige_count=prestige_count\+1/,
-  'prestige settlement must write the live progression authority table');
 assert.match(normalizeSourceWhitespace(rewardSource), /telegram_pet_system_events WHERE id = \? AND telegram_id = \? AND pet_id = \? AND season_key = \?/,
   'district and event-chain reward authorization must match the stored pet-scoped system event tuple');
 assert.match(normalizeSourceWhitespace(rewardSource), /if \(\(petId && !petSeasonKey\) \|\| \(!petId && petSeasonKey\)\) throw new Error\('invalid_pet_reward_context'\)/,
@@ -501,13 +498,9 @@ const migrationRuntime = runtimeDb.prepare("SELECT * FROM telegram_pet_progressi
 const petBState = await buildPetLiveSystemsState(d1, 'live-migration', migratedPetB, migrationRuntime, [], []);
 assert.equal(petBState.regions.find((region) => region.key === 'moon_alley').mastery_xp, 0,
   'new pet live progression must start empty instead of lazily inheriting legacy mastery');
-assert.equal(petBState.prestige.count, 0,
-  'new pet live progression must start with zero prestige');
 const petAState = await buildPetLiveSystemsState(d1, 'live-migration', migratedPetA, migrationRuntime, [], []);
 assert.equal(petAState.regions.find((region) => region.key === 'moon_alley').mastery_xp, 100,
   'migration-designated pet must retain migrated mastery');
-assert.equal(petAState.prestige.count, 2,
-  'migration-designated pet must retain migrated prestige');
 
 seedPlayer('chain-recovery');
 let chainFailure = true;
@@ -656,29 +649,11 @@ assert.equal(thawedLiveCosmetic.accepted, true, 'backfilled reconciliation proof
 assert.equal(runtimeDb.prepare("SELECT COUNT(*) AS count FROM telegram_pet_cosmetic_unlocks WHERE telegram_id='live-cosmetic-recovery-freeze' AND cosmetic_key='profile_frame'").get().count, 1,
   'thawed live cosmetic spend must unlock once after recovery');
 
-const renameBefore = runtimeDb.prepare("SELECT COUNT(*) AS count FROM telegram_pet_cosmetic_unlocks WHERE telegram_id='live-1' AND cosmetic_key='rename_badge'").get().count;
-d1.afterReservation = () => { d1.afterReservation = null; runtimeDb.prepare("UPDATE telegram_pet_profiles SET style_tokens=0 WHERE telegram_id='live-1'").run(); };
-assert.equal((await processPetCosmeticUnlock(d1, 'live-1', 'rename_badge', 'request-cosmetic-race')).accepted, false);
-assert.equal(runtimeDb.prepare("SELECT COUNT(*) AS count FROM telegram_pet_cosmetic_unlocks WHERE telegram_id='live-1' AND cosmetic_key='rename_badge'").get().count, renameBefore, 'stale cosmetic affordability must not grant an unlock');
-
-const liveState = { prestige: { ready: true, count: 0 } };
-const prestige = await processPetPrestige(d1, 'live-1', liveState, 'request-prestige-1', livePet('live-1'));
-assert.equal(prestige.accepted, true);
-assert.equal((await processPetPrestige(d1, 'live-1', { prestige: { ready: false, count: 1 } }, 'request-prestige-1', livePet('live-1'))).duplicate, true);
-assert.equal(runtimeDb.prepare("SELECT prestige_count FROM telegram_pet_live_progression_state WHERE pet_id=? AND telegram_id='live-1' AND season_key=?").get(livePet('live-1').pet_id, livePet('live-1').season_key).prestige_count, 1);
-assert.equal(runtimeDb.prepare("SELECT prestige_count FROM telegram_pet_progression_state WHERE telegram_id='live-1'").get().prestige_count, 0,
-  'legacy progression table must not own current prestige writes');
-
-seedPlayer('prestige-race');
-seedLiveProgression('prestige-race', {
-  completed_regions_json: ['moon_alley', 'neon_rooftops', 'rugpull_mines', 'blockchain_sewers'],
-});
-for (let index = 0; index < 3; index += 1) runtimeDb.prepare('INSERT INTO telegram_pet_equipment_progression (telegram_id, item_key, slot, mastery_tier) VALUES (?, ?, ?, 5)').run('prestige-race', `race_mastered_${index}`, `slot_${index}`);
-d1.afterReservation = () => { d1.afterReservation = null; runtimeDb.prepare("UPDATE telegram_pet_profiles SET moon_gold=0 WHERE telegram_id='prestige-race'").run(); };
-assert.equal((await processPetPrestige(d1, 'prestige-race', { prestige: { ready: true, count: 0 } }, 'request-prestige-race', livePet('prestige-race'))).accepted, false);
-assert.equal(runtimeDb.prepare("SELECT prestige_count FROM telegram_pet_live_progression_state WHERE pet_id=? AND telegram_id='prestige-race' AND season_key=?").get(livePet('prestige-race').pet_id, livePet('prestige-race').season_key).prestige_count, 0, 'stale prestige affordability must not grant rank');
-assert.equal(runtimeDb.prepare("SELECT COUNT(*) AS count FROM telegram_pet_material_balances WHERE telegram_id='prestige-race' AND material_key='mastery_token'").get().count, 0);
-
+seedPlayer('cosmetic-race');
+const cosmeticRaceBefore=runtimeDb.prepare("SELECT COUNT(*) AS count FROM telegram_pet_cosmetic_unlocks WHERE telegram_id='cosmetic-race'").get().count;
+d1.afterReservation=()=>{ d1.afterReservation=null;runtimeDb.prepare("UPDATE telegram_pet_profiles SET style_tokens=0 WHERE telegram_id='cosmetic-race'").run(); };
+assert.equal((await processPetCosmeticUnlock(d1,'cosmetic-race','profile_frame','request-cosmetic-race')).accepted,false);
+assert.equal(runtimeDb.prepare("SELECT COUNT(*) AS count FROM telegram_pet_cosmetic_unlocks WHERE telegram_id='cosmetic-race'").get().count,cosmeticRaceBefore,'stale cosmetic affordability must not grant an unlock');
 seedPlayer('energy-retry', { energy: 0 });
 const tiredRuntime = runtimeDb.prepare("SELECT * FROM telegram_pet_progression_state WHERE telegram_id='energy-retry'").get();
 assert.equal((await processPetDistrictMission(d1, 'energy-retry', 'moon_alley', livePet('energy-retry'), tiredRuntime, reward, null)).reason, 'pet_tired');

@@ -1,7 +1,6 @@
 import { PET_COSMETIC_SINKS } from './economy-phase-3.js';
 import { requirePetFirstReadResult, requirePetReadResult } from './read-result.js';
 export const STYLE_DETAILS = Object.freeze({
-  rename_badge:'Neon nameplate and badge on the game canvas. Callsign editing stays free.',
   profile_frame:'Neon border around your game canvas.',
   victory_pose:'Idle victory pose using your bot’s existing victory animation.',
   run_trail:'Pixel trail behind your bot on the Explore screen.',
@@ -10,7 +9,7 @@ export async function getStyleLoadout(db, owner, petId) {
   const rows = requirePetReadResult(await db.prepare(`SELECT s.cosmetic_key FROM telegram_pet_style_loadouts s
     JOIN telegram_pet_cosmetic_unlocks u ON u.telegram_id=s.telegram_id AND u.cosmetic_key=s.cosmetic_key AND u.quantity>0
     WHERE s.telegram_id=? AND s.pet_id=? AND s.enabled=1`).bind(owner,petId).all());
-  return { available:true, equipped:rows.results.map(row=>row.cosmetic_key), details:STYLE_DETAILS };
+  return { available:true, equipped:rows.results.map(row=>row.cosmetic_key).filter(key=>Object.hasOwn(STYLE_DETAILS,key)), details:STYLE_DETAILS };
 }
 export async function equipPetStyle(db, owner, pet, request) {
   if (!pet?.pet_id || request.pet_id!==pet.pet_id || !Object.hasOwn(PET_COSMETIC_SINKS,request.cosmetic_key) || typeof request.enabled!=='boolean') return {accepted:false,reason:'style_invalid'};

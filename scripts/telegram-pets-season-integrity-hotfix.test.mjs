@@ -1,17 +1,13 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 
 const source = readFileSync(new URL('../workers/moonboys-api/pets/season-completion.js', import.meta.url), 'utf8');
 const seasonAuthoritySource = readFileSync(new URL('../workers/moonboys-api/pets/season-authority.js', import.meta.url), 'utf8');
-const sanctuarySource = readFileSync(new URL('../workers/moonboys-api/pets/sanctuary.js', import.meta.url), 'utf8');
+assert.equal(existsSync(new URL('../workers/moonboys-api/pets/sanctuary.js', import.meta.url)), false, 'retired Sanctuary gameplay module is removed');
 const workerSource = readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
 const walletMigration = readFileSync(new URL('../workers/moonboys-api/migrations/063_arcade_xp_spendable_wallet.sql', import.meta.url), 'utf8');
 
-assert.match(
-  source,
-  /sanctuary_transition:\s*'never'/,
-  'Completed pets must remain playable indefinitely.',
-);
+assert.doesNotMatch(source, /sanctuary_eligible|sanctuary_transition|movePetToSanctuaryIfEligible/, 'retired Sanctuary gameplay is absent from completion');
 
 assert.doesNotMatch(
   source,
@@ -88,7 +84,6 @@ assert.doesNotMatch(
   'Lifecycle readiness must not call the active-pet evolution validator for inactive pet progress cards.',
 );
 
-assert.doesNotMatch(sanctuarySource, /isSeasonSettlementReconciliation|movePetToSanctuaryIfEligible|reconcileCompletedPetsToSanctuary|UPDATE|INSERT|DELETE/, 'Sanctuary is immutable history with no retirement path.');
 
 assert.match(
   workerSource,
@@ -102,17 +97,14 @@ assert.match(
   'Canonical Moonpet season authority must use calendar-quarter pet season keys.',
 );
 
-assert.doesNotMatch(sanctuarySource, /isSeasonSettlementReconciliation|movePetToSanctuaryIfEligible|reconcileCompletedPetsToSanctuary|UPDATE|INSERT|DELETE/, 'Sanctuary is immutable history with no retirement path.');
 
 assert.doesNotMatch(
-  `${seasonAuthoritySource}\n${sanctuarySource}`,
+  `${seasonAuthoritySource}`,
   /dayOfYear|Math\.floor\(dayOfYear \/ 90\)/,
   'Moonpet season authority must not use an independent 90-day key while slot creation uses quarters.',
 );
 
-assert.doesNotMatch(sanctuarySource, /isSeasonSettlementReconciliation|movePetToSanctuaryIfEligible|reconcileCompletedPetsToSanctuary|UPDATE|INSERT|DELETE/, 'Sanctuary is immutable history with no retirement path.');
 
-assert.doesNotMatch(sanctuarySource, /isSeasonSettlementReconciliation|movePetToSanctuaryIfEligible|reconcileCompletedPetsToSanctuary|UPDATE|INSERT|DELETE/, 'Sanctuary is immutable history with no retirement path.');
 
 for (const requiredField of ['current_evolution', 'min_age_days', 'growth_marks', 'weekly_crests']) {
   assert.match(

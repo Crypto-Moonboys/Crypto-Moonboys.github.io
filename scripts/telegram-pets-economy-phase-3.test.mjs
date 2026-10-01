@@ -5,10 +5,8 @@ import {
   PET_CRAFTING_RECIPES,
   PET_EQUIPMENT_SETS,
   PET_EQUIPMENT_UPGRADE_COSTS,
-  PET_PRESTIGE_REQUIREMENTS,
   PET_RARE_DROP_TABLES,
   canAffordPetEconomyCost,
-  canPetPrestige,
   clampPetMaterialStack,
   getActivePetSetBonuses,
   getPetCraftingRecipe,
@@ -84,18 +82,11 @@ assert.equal(resolvePetRareDrop('missing', 0.5), null);
 assert.throws(() => { PET_RARE_DROP_TABLES.job[0].weight = 0; }, TypeError, 'drop weights must reject mutation');
 assert.equal(resolvePetRareDrop('job', 0), 'scrap_metal', 'failed mutation must not alter deterministic drop resolution');
 
-assert.ok(Object.keys(PET_COSMETIC_SINKS).length >= 4, 'phase 3 must include repeatable and permanent cosmetic sinks');
-assert.equal(PET_COSMETIC_SINKS.rename_badge.repeatable, true);
+assert.ok(Object.keys(PET_COSMETIC_SINKS).length === 3, 'only the three working cosmetics remain');
 assert.equal(PET_COSMETIC_SINKS.profile_frame.repeatable, false);
 assert.ok(Object.isFrozen(PET_COSMETIC_SINKS.profile_frame.cost), 'cosmetic cost objects must be frozen');
 assert.throws(() => { PET_COSMETIC_SINKS.profile_frame.cost.style_tokens = 0; }, TypeError, 'cosmetic costs must reject mutation');
 
-assert.equal(PET_PRESTIGE_REQUIREMENTS.min_level, 100);
-assert.ok(Object.isFrozen(PET_PRESTIGE_REQUIREMENTS.cost), 'prestige costs must be frozen');
-assert.equal(canPetPrestige({ level: 100, mastered_items: 3, completed_regions: 4, moon_gold: 5000, moon_crystals: 50 }), true);
-assert.equal(canPetPrestige({ level: 99, mastered_items: 10, completed_regions: 6, moon_gold: 99999, moon_crystals: 999 }), false);
-assert.equal(canPetPrestige({ level: 100, mastered_items: 2, completed_regions: 6, moon_gold: 99999, moon_crystals: 999 }), false);
-assert.equal(canPetPrestige({ level: 100, mastered_items: 3, completed_regions: 4, moon_gold: 4999, moon_crystals: 50 }), false);
 
 const audit = buildPetEconomyReachabilityAudit();
 assert.equal(audit.invalid_material_references.length, 0, 'audit must reject stale or invalid material keys');
@@ -164,3 +155,5 @@ assert.ok(invalidOwners.has('seasonal_boss:bad_boss'), 'invalid material keys in
 assert.ok(invalidOwners.has('evolution:bad_evolution'), 'invalid material keys in evolution requirements must be detected');
 
 console.log('telegram-pets-economy-phase-3.test.mjs passed');
+
+assert.equal(Object.hasOwn(PET_COSMETIC_SINKS,"rename_badge"),false,"removed nameplate cannot be sold");

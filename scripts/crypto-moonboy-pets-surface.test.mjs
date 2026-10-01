@@ -32,13 +32,7 @@ assert.match(miniAppHtml, /moonpet-mini-app\.js/, 'the live Moonpet URL must ret
 assert.ok(wikiPage.includes('/how-to-play-crypto-moonboy-pets.html'), 'wiki page must link How To Play page');
 assert.ok(wikiPage.includes('/crypto-moonboy-pets-leaderboard.html'), 'wiki page must link pet leaderboard');
 assert.ok(wikiPage.includes('Community XP'), 'wiki page must explain Community XP sync');
-assert.ok(wikiPage.includes('Coming Soon Roadmap'), 'wiki page must highlight roadmap systems');
-const wikiRoadmapSection = sectionByHeading(wikiPage, 'Coming Soon Roadmap');
-assert.ok(wikiRoadmapSection, 'wiki page must include a Coming Soon Roadmap section');
-for (const futureSystem of ['Advanced Traits', 'Breeding', 'Lineage', 'Fusion', 'Sanctuary', 'Prestige']) {
-  assert.ok(wikiRoadmapSection.includes(futureSystem), `wiki roadmap section must list future system ${futureSystem}`);
-}
-assert.ok(wikiRoadmapSection.includes('issue #1256'), 'wiki roadmap section must link the detailed roadmap issue');
+assert.doesNotMatch(wikiPage, /Coming Soon Roadmap|Prestige|Breeding|Sanctuary gameplay|nameplate badge/, 'wiki describes shipped gameplay only');
 
 for (const command of ['/adopt', '/feed', '/train', '/petrun', '/petextract', '/petadventure', '/petbag', '/petuse moon_snack', '/petwork courier', '/petdaily', '/petevent', '/petnotify on', '/petarena', '/petstart train', '/petactivity', '/petclaim', '/petcancel']) {
   assert.ok(howTo.includes(command), `How To Play must explain ${command}`);
@@ -56,15 +50,10 @@ assert.ok(howTo.includes('Pet Arena equipment') || howTo.includes('Gear Shop'), 
 assert.ok(howTo.includes('Pet XP'), 'How To Play must explain pet XP');
 assert.ok(howTo.includes('Community XP'), 'How To Play must explain Community XP');
 assert.ok(howTo.includes('Current Build In Moonpet OS'), 'How To Play must show the current build section');
-assert.ok(howTo.includes('Coming Soon Roadmap'), 'How To Play must show the roadmap section');
+assert.doesNotMatch(howTo, /Coming Soon Roadmap|Prestige|Breeding|Advanced Traits|nameplate badge/, 'guide has no retired gameplay promises');
 const currentBuildSection = sectionByHeading(howTo, 'Current Build In Moonpet OS');
 assert.ok(currentBuildSection, 'How To Play must include the current-build section body');
 assert.ok(currentBuildSection.includes('Pet, Care, Daily Journey, Weekly Journey, Jobs, Runs, Equipment, Arena, Kaiju and Progression'), 'How To Play current-build section must name the current gameplay priorities');
-const comingSoonSection = sectionByHeading(howTo, 'Coming Soon Roadmap');
-assert.ok(comingSoonSection, 'How To Play must include the coming-soon roadmap section body');
-for (const futureSystem of ['Advanced Traits', 'Breeding', 'Lineage', 'Fusion', 'Sanctuary', 'Prestige']) {
-  assert.ok(comingSoonSection.includes(futureSystem), `How To Play coming-soon section must keep ${futureSystem} in the roadmap list`);
-}
 assert.ok(howTo.includes('lucky_charm') && howTo.includes('consumed when it boosts a run'), 'How To Play must explain lucky_charm run consumption');
 assert.ok(howTo.includes('game-only rewards') && howTo.includes('game currencies'), 'How To Play must keep rewards framed as game progression');
 assert.ok(!howTo.toLowerCase().includes('financial'), 'How To Play must avoid financial wording');

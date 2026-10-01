@@ -757,7 +757,7 @@
     vitals: ['♥', 'Check health, energy, hunger, fun and cleanliness.'],
     care: ['♥', 'Feed, play, rest, train and collect Daily Cache.'],
     details: ['◉', 'Companion stats, personality and equipped items.'],
-    'season-slots': ['◈', 'Check the season clock and manage your pets.'],
+    'season-slots': ['◈', 'Manage permanent pet spaces and competition progress.'],
     contracts: ['↻', 'Saved quests with builds, bosses and repeatable play.'],
     'daily-journey': ['☀', 'Complete daily goals to earn a Growth Mark.'],
     'daily-objectives': ['☀', 'Track care and official Daily Run objectives.'],
@@ -866,7 +866,7 @@
       '<div class="guide-step"><strong>3 // KEEP NEEDS STABLE</strong>Feed, play, clean and rest. Check energy, hunger and cooldowns before training or starting a demanding route. A timed activity can lock some actions until you claim or cancel it. Care and daily routines build Pet XP, specialist XP, personality, aptitudes and equipment mastery. Use Play Now to find an available route while care cools down.</div>' +
       '<div class="guide-step"><strong>4 // FOLLOW THE ROUTE</strong>HOME recommends the next move. In MISSIONS, complete the official daily objectives to earn a Growth Mark at the displayed target. Finish every Weekly Journey objective to earn a Weekly Crest. Keep claiming completed missions, achievements and the Daily Cache; the all-missions daily bonus is a separate claim. Daily resets use UTC. Each panel shows its own reset and requirements.</div>' +
       '<div class="guide-step"><strong>5 // BUILD YOUR LOADOUT</strong>ECONOMY contains equipment, materials, bounties, market offers, inventory and upgrades. Equip an item to use its bonus; eligible actions build mastery. Set a crafting goal, follow its material routes and craft or use the result. Check storage space before buying a bundle. Districts show an objective, opponent and route before you commit. ' + combatGuideCopy + ' Moon Run reaches 100 rooms—extract to bank unbanked rewards.</div>' +
-      '<div class="guide-step"><strong>6 // IDENTITY AND PROGRESSION</strong>The canonical identity name is revealed when server-authoritative Stage 3 begins. PROFILE tracks evolution and season rewards. Growth Marks, Weekly Crests and the displayed season-age requirements advance your Season Journey. Pet level and evolution are separate; use the live requirements shown for your selected pet.</div>' +
+      '<div class="guide-step"><strong>6 // IDENTITY AND PROGRESSION</strong>The canonical identity name is revealed when server-authoritative Stage 3 begins. PROFILE tracks evolution and season rewards. Growth Marks, Weekly Crests and the displayed pet-age requirements advance your lifetime Journey. Pet level and evolution are separate; use the live requirements shown for your selected pet.</div>' +
       '<div class="guide-step"><strong>CANVAS CONTROLS</strong>The cyan speaker toggles game audio, the purple radio plays or stops GraffPUNKS Radio, and the amber arrows refresh your live save. They sit at the top right of the canvas. Radio starts from your tap; tap it again to stop, or retry after a connection error. Reduced-motion mode keeps the buttons steady.</div>' +
       '<div class="guide-step"><strong>CURRENCIES</strong>Pet XP raises level. Moon Gold buys common upgrades. Gems unlock premium routes. Style unlocks cosmetics. Energy powers demanding actions.</div>' +
       '<div class="guide-step"><strong>CONTINUING CONTRACTS</strong>After hatching, open MISSIONS or Play Now. Pick a quest, build, difficulty and route length. Standard routes have six rooms and two upgrade drafts; long routes have ten rooms and four drafts. Later rooms get harder, and long routes have higher targets. Complete the whole route to earn rank. New quests continue without cooldowns or pet energy costs. The first three successful contracts per account each UTC day qualify for up to 20 Pet XP each, within your normal XP cap, for either length. Every choice is saved online. Contract rank is separate from pet level, Daily Journey and leaderboards.</div>' +
@@ -1039,10 +1039,10 @@
     if (version !== 1 || !system || typeof system !== 'object') return { state: 'LOCKED', unlocked: false, active: false, reason: 'capability_unavailable' };
     var stateLabel = String(system.state || '').toUpperCase();
     return {
-      state: stateLabel === 'AVAILABLE' ? 'AVAILABLE' : stateLabel === 'COMING_SOON' ? 'COMING_SOON' : 'LOCKED',
+      state: stateLabel === 'AVAILABLE' ? 'AVAILABLE' : 'LOCKED',
       unlocked: system.unlocked === true,
       active: system.active === true,
-      reason: system.reason || (stateLabel === 'COMING_SOON' ? 'feature_not_available' : 'capability_unavailable'),
+      reason: system.reason || 'capability_unavailable',
       message: system.message || '',
     };
   }
@@ -1157,7 +1157,7 @@
         meter('GROWTH MARK', dailyPercent) +
         '<div class="line muted">' + dailyStatus + ' // ' + escapeHtml(words(dailyAuthority.reason || 'daily journey in progress')) + '</div>' +
         '<div class="line muted">NEXT // ' + escapeHtml(dailyJourneyNextAction(dailyAuthority, completedMissions, guidance, stateValue)) + '</div>' +
-        '<div class="line muted">Growth Marks // ' + number(growth.earned) + '/' + number(growth.required) + ' earned by this pet this season. Duplicate Growth Marks for the same UTC day are blocked by authority.</div>'
+        '<div class="line muted">Growth Marks // ' + number(growth.earned) + '/' + number(growth.required) + ' earned by this pet over its lifetime. Duplicate Growth Marks for the same UTC day are blocked by authority.</div>'
       : '<div class="line locked">DAILY JOURNEY // SYNCING</div><div class="line muted">' + escapeHtml(dailyJourneyNextAction(dailyAuthority, completedMissions, guidance, stateValue)) + '</div>';
   }
   // TEST-EXPORT: dailyJourneyMarkup:end
@@ -1193,7 +1193,6 @@
     var objectives = Array.isArray(weeklyAuthority.objectives) ? weeklyAuthority.objectives
       : Array.isArray(weeklyCapability.objectives) ? weeklyCapability.objectives : [];
     if (weeklyReason === 'active_pet_required') return 'Initialise, incubate, hatch, or select an active Moonpet before Weekly Journey progress starts.';
-    if (weeklyState === 'COMING_SOON') return 'Weekly Journey is planned expansion.';
     if (weeklyState !== 'AVAILABLE' || weeklyRequired <= 0) return 'Weekly Journey authority is syncing. Progress display will refresh when server authority is available.';
     var weeklyCrestAwarded = weeklyAuthority.weekly_crest_awarded != null
       ? Boolean(weeklyAuthority.weekly_crest_awarded)
@@ -1233,17 +1232,11 @@
         '<div class="line muted">No Daily or Weekly objective progress is shown until you have an active hatched Moonpet.</div>';
     }
     if (!weeklyReady) {
-      var waitingTitle = weeklyState === 'COMING_SOON'
-        ? 'WEEKLY JOURNEY // PLANNED EXPANSION'
-        : weeklyReason === 'active_pet_required' ? 'WEEKLY JOURNEY // ACTIVE PET REQUIRED' : 'WEEKLY JOURNEY // SYNCING';
-      var waitingCopy = weeklyState === 'COMING_SOON'
-        ? (weeklyCapability.message || weeklyAuthority.reason || 'Weekly Journey is planned expansion.')
-        : weeklyReason === 'active_pet_required'
+      var waitingTitle = weeklyReason === 'active_pet_required' ? 'WEEKLY JOURNEY // ACTIVE PET REQUIRED' : 'WEEKLY JOURNEY // SYNCING';
+      var waitingCopy = weeklyReason === 'active_pet_required'
           ? 'Journey progress starts after you have a hatched active Moonpet.'
           : (weeklyCapability.message || weeklyAuthority.reason || 'Weekly Journey authority is syncing. Progress display will refresh when server authority is available.');
-      var waitingDetail = weeklyState === 'COMING_SOON'
-        ? 'Weekly Journey objectives will appear when this system is available.'
-        : weeklyReason === 'active_pet_required'
+      var waitingDetail = weeklyReason === 'active_pet_required'
           ? 'No Daily or Weekly objective progress is shown until you have an active hatched Moonpet.'
           : 'Complete objectives to qualify for server settlement once authority returns objective evidence.';
       return '<div class="line locked">' + waitingTitle + '</div>' +
@@ -1870,8 +1863,7 @@
       '<div class="line muted">NEW PLAYER ENTRY // 1,000 LIFETIME ARCADE XP, KEPT // PET 1 IS FREE // PET 2 COSTS 500 SPENDABLE XP // PET 3 COSTS 1,000 SPENDABLE XP</div><div class="season-slot-grid">' + rows + '</div>' +
       (Array.isArray(summary.deleted_pet_history) && summary.deleted_pet_history.length ? '<div class="line muted"><strong>DELETED PET HISTORY // LATEST 20</strong><br>Account rewards stay yours. Saved pets below cannot return to play.</div>' + summary.deleted_pet_history.map(function (entry) {
         return '<div class="line muted">DELETED PET // ' + number(entry.pet_xp) + ' SAVED PET XP // ' + number(entry.awarded_receipts) + ' AWARDED REWARD RECEIPTS // ' + escapeHtml(entry.deleted_at) + '</div>';
-      }).join('') : '') +
-      '<div class="line muted">IN DEVELOPMENT // DIMINISHING-RETURN BALANCING · FUTURE // CATCH-UP SYSTEMS</div>', 'season-slots');
+      }).join('') : ''), 'season-slots');
   }
 
   function routeButton(label, route, detail) {
@@ -2065,6 +2057,7 @@
       if (pet.status === 'won') return section + '<div class="line complete">FINALE VICTOR // ACHIEVEMENT SAVED</div>' + (pet.claimed
         ? '<div class="line complete">VICTORY REWARD CLAIMED</div>'
         : '<div class="button-grid one">' + button('CLAIM FINALE REWARD', 'finale_claim', payload, { detail: 'Your victory is saved. Retry this claim without fighting again.' }) + '</div>');
+      if (pet.playable === false) return section + '<div class="line muted">DELETED PET // SAVED BATTLE HISTORY. This pet cannot resume play.</div>';
       if (pet.status === 'active') return section + '<div class="combat-intent"><strong>NEXT // ' + escapeHtml(pet.intent.title) + (pet.intent.enraged ? ' // ENRAGED' : '') + '</strong><span>' + number(pet.intent.damage) + ' base incoming damage. ' + (pet.intent.multiplier > 1 ? 'Strike and Surge deal double damage this turn.' : 'Guard reduces damage and builds charge.') + '</span></div><div class="button-grid">' + pet.choices.map(function (choice) {
         return button(choice.title, 'finale_step', Object.assign({}, payload, { move: choice.key }), { disabled: choice.disabled, detail: choice.detail });
       }).join('') + '</div>';
@@ -2072,7 +2065,7 @@
         return button((pet.status === 'failed' ? 'RETRY // ' : 'START // ') + build.title, pet.status === 'failed' ? 'finale_retry' : 'finale_start', Object.assign({}, payload, { build: build.key }), { detail: build.detail + ' No pet energy cost.' });
       }).join('') + '</div>';
     }).join('');
-    body += '<div class="line muted">First victory: Finale Victor achievement, up to ' + number(board.reward.pet_xp) + ' Pet XP, ' + number(board.reward.moon_gold) + ' Gold and ' + number(board.reward.style_tokens) + ' Style. One reward per pet / season; normal daily XP cap. This additional challenge preserves existing season-completion status. Completed season pets can also enter.</div>';
+    body += '<div class="line muted">First victory: Finale Victor achievement, up to ' + number(board.reward.pet_xp) + ' Pet XP, ' + number(board.reward.moon_gold) + ' Gold and ' + number(board.reward.style_tokens) + ' Style. One reward per pet / season; normal daily XP cap. This additional challenge preserves existing season-completion status. Completed owned pets can also enter.</div>';
     if (state.contracts && state.contracts.available) body += '<div class="button-grid one">' + routeButton('CONTINUE WITH CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'Repeatable routes with rank and limited daily Pet XP bonuses.') + '</div>';
     return panel('SEASON FINALE // ' + board.title, body, 'season-finale');
   }
@@ -2104,7 +2097,7 @@
       ? 'WEEKLY JOURNEY // HATCH REQUIRED'
       : weeklyState === 'AVAILABLE'
       ? 'WEEKLY JOURNEY // LIVE'
-      : weeklyState === 'COMING_SOON' ? 'WEEKLY JOURNEY // PLANNED EXPANSION' : 'WEEKLY JOURNEY // SYNCING';
+      : 'WEEKLY JOURNEY // SYNCING';
     var weeklyJourney = weeklyJourneyMarkup(weeklyAuthority, weeklyCapability, state);
     return activePetSummary() +
       renderPlayNow() +
@@ -2503,7 +2496,7 @@
     ].filter(Boolean).map(function (line) { return '<div class="line">' + escapeHtml(line) + '</div>'; }).join('');
     var milestones = (memory.milestones || []).map(function (milestone) { return '<div class="line complete">◆ ' + escapeHtml(words(milestone)) + '</div>'; }).join('');
     var featureRows = (guidance.features || []).filter(function (feature) {
-      return !['breeding', 'traits', 'sanctuary', 'lineage', 'fusion', 'prestige'].includes(feature.key);
+      return ['care_console','daily_missions','timed_activities','moon_runs','street_events','kaiju_cards','weekly_boss','pet_arena','moon_economy','equipment_upgrades'].includes(feature.key);
     }).map(function (feature) {
       var available = feature.available === true;
       var detail = feature.detail || '';
@@ -2746,7 +2739,6 @@
       contract_not_found: 'contract unavailable for this pet.',
       contract_bonus_pending: 'bonus saved; retry its delivery from the contract board.',
       active_pet_required: 'active Moonpet required.',
-      completed_season_pet_required: 'completed Season pet required.',
       weekly_journey_authority_syncing: 'Weekly Journey authority syncing.',
       daily_journey_authority_syncing: 'Daily Journey authority syncing.',
       cooldown: 'wait for cooldown.',

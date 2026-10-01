@@ -246,7 +246,6 @@ seedUser(db, '100004', 'Completed Egg');
 markSeasonComplete(db, '100004');
 await setActivePetLifecyclePhase(db, '100004', 'egg');
 const completedEggEligibility = await getPetMiniAppCombatEligibility(db, '100004');
-assert.equal(completedEggEligibility.has_completed_season_pet, true, 'completed egg keeps completed-season authority');
 assert.equal(completedEggEligibility.combat_unlocked, false, 'completed Season pet plus active egg remains locked');
 assert.equal(completedEggEligibility.reason, 'moon_egg_must_hatch');
 assert.equal((await act(db, '100004', 'kaiju_matchmake')).reason, 'moon_egg_must_hatch',
@@ -262,10 +261,8 @@ assert.notEqual((await act(db, '100005', 'arena_matchmake')).reason, 'completed_
   'completed hatched users are not blocked by any completed-season combat gate');
 db.blockSeasonCompletionAuthority = true;
 const completionAuthorityFailure = await getPetMiniAppCombatEligibility(db, '100005');
-assert.equal(completionAuthorityFailure.reason, 'combat_authority_unavailable',
-  'failed completion-authority reads must not become an incomplete pet');
-assert.equal((await act(db, '100005', 'arena_matchmake')).reason, 'combat_authority_unavailable',
-  'Arena rejects direct actions when completion authority is unavailable');
+assert.equal(completionAuthorityFailure.arena_unlocked, true,
+  'current combat has no dependency on retired post-season completion gates');
 db.blockSeasonCompletionAuthority = false;
 
 seedUser(db, '100006', 'Missing Lifecycle');
@@ -276,7 +273,6 @@ db.database.prepare('DELETE FROM telegram_pet_lifecycle_by_pet WHERE pet_id=? AN
   .run(missingLifecyclePet.pet_id, '100006');
 db.blockLifecycleMaterializationForTelegramId = '100006';
 const missingLifecycleEligibility = await getPetMiniAppCombatEligibility(db, '100006');
-assert.equal(missingLifecycleEligibility.has_completed_season_pet, true, 'missing-lifecycle player keeps completed-season authority');
 assert.equal(missingLifecycleEligibility.combat_authority_available, false, 'failed lifecycle reads must be unavailable, not a normal combat lock');
 assert.equal(missingLifecycleEligibility.reason, 'combat_authority_unavailable');
 const missingLifecycleCountsBefore = countCombatRows(db, '100006');
@@ -296,7 +292,7 @@ db.blockLifecycleMaterializationForTelegramId = null;
 
 const prestigeResult = await act(db, '100005', 'prestige');
 assert.equal(prestigeResult.accepted, false, 'Prestige cannot be invoked from crafted Mini App actions');
-assert.equal(prestigeResult.reason, 'feature_not_available', 'Prestige always returns feature_not_available');
+assert.equal(prestigeResult.reason, 'mini_app_action_invalid', 'removed Prestige has no action handler');
 const weeklyJourney = buildPetMiniAppCapabilities(completedAdultEligibility).weekly_journey;
 assert.equal(weeklyJourney.reason, 'weekly_journey_authority_syncing', 'Weekly Journey fails closed until authority summary is present');
 assert.equal(weeklyJourney.active, false, 'Weekly Journey remains inactive without authority data');
@@ -389,13 +385,7 @@ assert.match(
   /result\s*=\s*await\s+processPetMiniAppAction[\s\S]*await\s+getPetProfile\(env\.DB,\s*verified\.telegramId\)/,
   '/telegram-pets/app/action must run authority-aware reconciliation after an action',
 );
-const sanctuaryRoute = routeBlock('/telegram-pets/app/sanctuary');
-assert.match(sanctuaryRoute, /reason: 'feature_not_available'/, '/telegram-pets/app/sanctuary must stay unavailable');
-assert.match(sanctuaryRoute, /capabilities_version: 1/, '/telegram-pets/app/sanctuary must include capability contract version');
-assert.match(sanctuaryRoute, /buildPetMiniAppCapabilities\(combatEligibility\)/,
-  'Sanctuary unavailable response must not fake completed-season capability state');
-assert.doesNotMatch(sanctuaryRoute, /has_completed_season_pet:\s*false/,
-  'Sanctuary unavailable response must not overwrite completed-season capability authority');
+assert.doesNotMatch(workerSource, /path === '\/telegram-pets\/app\/sanctuary'/, 'retired Sanctuary route is removed');
 
 const routeDb = new D1();
 seedUser(routeDb, '200004', 'Route Egg');
@@ -434,11 +424,8 @@ assert.equal(missionActionSmoke.status, 409, 'Missions action keeps the server h
 assert.equal(missionActionSmoke.body.state.hydration.mode, 'missions', 'Missions mutation refresh avoids the full projection');
 
 
-const sanctuarySmoke = await postAppRoute('/telegram-pets/app/sanctuary', routeDb, '200004');
-assert.equal(sanctuarySmoke.status, 200, '/telegram-pets/app/sanctuary unavailable smoke route returns 200');
-assert.equal(sanctuarySmoke.body.reason, 'feature_not_available', 'unavailable Sanctuary route returns feature_not_available');
-assert.equal(sanctuarySmoke.body.capabilities?.combat?.requirements?.completed_season_pet, true,
-  'Sanctuary unavailable response does not fake completed-season capability state');
+const retiredRoute = await postAppRoute('/telegram-pets/app/sanctuary', routeDb, '200004');
+assert.equal(retiredRoute.status, 404, 'retired route is absent rather than an unwired success stub');
 
 const actionSmokeBefore = countCombatRows(routeDb, '200004');
 const actionSmoke = await postAppRoute('/telegram-pets/app/action', routeDb, '200004', { action: 'kaiju_matchmake', request_id: 'route:locked-kaiju' });

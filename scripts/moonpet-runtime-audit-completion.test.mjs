@@ -11,8 +11,6 @@ const rogueliteFoundation = read('workers/moonboys-api/pets/roguelite-foundation
 const runtimePhase5a = read('workers/moonboys-api/pets/runtime-phase-5a.js');
 const liveSystems = read('workers/moonboys-api/pets/live-systems.js');
 const specialistMigration = read('workers/moonboys-api/migrations/073_moonpet_per_pet_specialist_progression.sql');
-const breedingAuthority = read('workers/moonboys-api/pets/breeding-authority.js');
-const sanctuary = read('workers/moonboys-api/pets/sanctuary.js');
 const worker = read('workers/moonboys-api/worker.js');
 const rewardAuthorityRegression = read('scripts/moonpet-reward-pet-id-authority.test.mjs');
 const identityIsolationRegression = read('scripts/telegram-pets-identity-expansion.test.mjs');
@@ -91,11 +89,7 @@ assert.match(rogueliteFoundation, /telegram_pet_seasonal_boss_progress WHERE pet
 assert.match(liveSystems, /INSERT OR IGNORE INTO telegram_pet_system_events[\s\S]*authority\.pet_id, telegramId, authority\.season_key/,
   'Live-system event reservations must persist pet-owned authority tuples.');
 
-assert.match(breedingAuthority, /JOIN telegram_pet_season_completions c[\s\S]*WHERE i\.pet_id=\? AND i\.telegram_id=\? AND i\.season_key=\?/,
-  'Future parent systems must remain locked behind completed pets in the same season.');
-assert.match(breedingAuthority, /breeding_season_authority_mismatch/,
-  'Future parent systems must reject stale season authority.');
-assert.doesNotMatch(sanctuary + worker, /movePetToSanctuaryIfEligible|reconcileCompletedPetsToSanctuary/,
+assert.doesNotMatch(worker, /movePetToSanctuaryIfEligible|reconcileCompletedPetsToSanctuary/,
   'No runtime can automatically retire completed pets.');
 assert.doesNotMatch(seasonCompletion, /movePetToSanctuaryIfEligible/,
   'Adult/season completion must not immediately move active pets into later systems.');

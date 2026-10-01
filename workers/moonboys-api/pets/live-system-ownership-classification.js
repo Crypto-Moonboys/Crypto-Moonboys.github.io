@@ -207,16 +207,6 @@ export const MOONPET_LIVE_SYSTEM_OWNERSHIP_CLASSIFICATION = Object.freeze([
     risk_notes: 'Command/API paths are the highest drift risk because they bridge active pet, run pet and match pet authorities.',
     expected_ownership_rule: 'Every pet-affecting command/API settlement passes the source pet authority into reward helpers.',
   },
-  {
-    system_key: 'prestige_breeding_lineage_fusion_sanctuary_advanced_traits',
-    status: 'future/post-season',
-    authority_owner: 'future/post-season',
-    required_authority_keys: ['telegram_id', 'pet_id', 'season_key'],
-    write_tables: ['telegram_pet_breeding_receipts', 'telegram_pet_breeding_cooldowns', 'telegram_pet_sanctuary_residents'],
-    read_tables: ['telegram_pet_season_completion', 'telegram_pet_legendary_completion'],
-    risk_notes: 'Completed-season authority is reserved here and must not leak into normal current-game systems.',
-    expected_ownership_rule: 'No current beta system requires completed-season authority; post-season systems stay disabled/future.',
-  },
 ]);
 
 export function validateMoonpetLiveSystemOwnershipClassification(rows = MOONPET_LIVE_SYSTEM_OWNERSHIP_CLASSIFICATION) {
@@ -224,8 +214,8 @@ export function validateMoonpetLiveSystemOwnershipClassification(rows = MOONPET_
   for (const row of rows) {
     if (!row.system_key || keys.has(row.system_key)) return false;
     keys.add(row.system_key);
-    if (!['live', 'future/post-season'].includes(row.status)) return false;
-    if (!['pet', 'account', 'mixed', 'future/post-season'].includes(row.authority_owner)) return false;
+    if (!['live'].includes(row.status)) return false;
+    if (!['pet', 'account', 'mixed'].includes(row.authority_owner)) return false;
     for (const field of ['required_authority_keys', 'write_tables', 'read_tables']) {
       if (!Array.isArray(row[field])) return false;
     }
