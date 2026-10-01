@@ -43,7 +43,10 @@ const challenges = JSON.parse(fs.readFileSync(new URL('../workers/moonboys-api/p
 class Statement {
   constructor(adapter, sql, args = []) { this.adapter = adapter; this.sql = sql; this.args = args; }
   bind(...args) { return new Statement(this.adapter, this.sql, args); }
-  async first() { return this.adapter.database.prepare(this.sql).get(...this.args) || null; }
+  async first() {
+    if (this.adapter.failFirst?.test(this.sql)) return { success: false, error: 'injected_daily_first_failure' };
+    return this.adapter.database.prepare(this.sql).get(...this.args) || null;
+  }
   async run() {
     if (this.adapter.failEndingWrite?.(this.sql, this.args)) throw new Error('injected_ending_write_failure');
     if (this.adapter.failWrite?.test(this.sql)) throw new Error('injected_journey_write_failure');
@@ -101,6 +104,30 @@ function seedPlayer(db, telegramId, seasonKey = 'pet-s2026-003') {
   db.database.prepare(`INSERT INTO telegram_pet_season_slots (pet_id, telegram_id, season_key, slot_number, acquisition_type) VALUES (?, ?, ?, 1, 'free')`).run(petId, telegramId, seasonKey);
   db.database.prepare(`INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key) VALUES (?, ?, ?)`).run(telegramId, petId, seasonKey);
   db.database.prepare(`INSERT INTO telegram_pet_instances (pet_id, telegram_id, season_key, slot_number, source_profile_updated_at) VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)`).run(petId, telegramId, seasonKey);
+}
+
+// Resolved D1 failures in each ownership read must stop before run/evidence writes.
+for (const [kind, query] of [
+  ['active', /SELECT a.pet_id, a.season_key/],
+  ['fallback', /SELECT s.pet_id, s.season_key/],
+  ['explicit-evidence', /SELECT s.pet_id,s.telegram_id,s.season_key/],
+  ['daily-evidence', /SELECT r.pet_id,r.telegram_id,i.season_key/],
+]) {
+  const failedDb = new D1(), owner = `read-failure-${kind}`;
+  seedPlayer(failedDb, owner);
+  if (kind === 'fallback') failedDb.database.prepare('DELETE FROM telegram_pet_active_slots WHERE telegram_id=?').run(owner);
+  failedDb.failFirst = query;
+  const operation = kind.endsWith('evidence')
+    ? __dailyMoonRunTestHooks.recordChallengeEvidence(failedDb, {
+      telegram_id: owner, utc_day: '2026-08-11', event_key: `failed:${kind}`,
+      challenge_id: Object.keys(PET_DAILY_CHALLENGES)[0], progress_value: 1,
+      ...(kind === 'explicit-evidence' ? { pet_id: `pet-${owner}` } : {}),
+    })
+    : createDailyMoonRun(failedDb, { telegram_id: owner, now: new Date('2026-08-11T12:00:00Z') });
+  await assert.rejects(operation, /pet_state_read_unavailable/, kind + ' must fail safely');
+  for (const table of ['telegram_pet_runs', 'telegram_pet_daily_runs', 'telegram_pet_daily_journey_objectives', 'telegram_pet_daily_challenge_events', 'telegram_pet_daily_challenge_progress', 'telegram_pet_daily_analytics']) {
+    assert.equal(failedDb.database.prepare('SELECT COUNT(*) AS n FROM ' + table).get().n, 0, kind + ' leaves ' + table + ' unchanged');
+  }
 }
 
 function seedAdditionalPet(db, telegramId, petId, slotNumber = 2, seasonKey = 'pet-s2026-003') {

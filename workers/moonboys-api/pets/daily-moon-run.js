@@ -253,14 +253,14 @@ async function resolveDailyRunSeasonPet(db, telegramId, seasonKey) {
     JOIN telegram_pet_instances i ON i.pet_id = s.pet_id AND i.telegram_id = s.telegram_id
       AND i.season_key = s.season_key AND i.slot_number = s.slot_number
     WHERE a.telegram_id = ? AND s.status = 'active' AND i.status = 'active' LIMIT 1`)
-    .bind(telegramId).first();
+    .bind(telegramId).first().then(requirePetFirstReadResult);
   if (active) return { accepted: true, pet_id: active.pet_id, season_key: active.season_key };
   const currentSeasonPet = await db.prepare(`SELECT s.pet_id, s.season_key FROM telegram_pet_season_slots s
     JOIN telegram_pet_instances i ON i.pet_id = s.pet_id AND i.telegram_id = s.telegram_id
       AND i.season_key = s.season_key AND i.slot_number = s.slot_number
     WHERE s.telegram_id = ? AND s.status = 'active' AND i.status = 'active'
     ORDER BY s.created_at, s.pet_id LIMIT 1`)
-    .bind(telegramId).first();
+    .bind(telegramId).first().then(requirePetFirstReadResult);
   if (!currentSeasonPet) return { accepted: false, reason: 'daily_run_current_season_pet_required' };
   return { accepted: true, pet_id: currentSeasonPet.pet_id, season_key: currentSeasonPet.season_key, recovered: true };
 }
@@ -647,11 +647,11 @@ async function recordChallengeEvidence(db, request, options = {}) {
   const participatingPet = requestedPetId
     ? await db.prepare(`SELECT s.pet_id,s.telegram_id,s.season_key FROM telegram_pet_season_slots s
       JOIN telegram_pet_instances i ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id AND i.season_key=s.season_key AND i.slot_number=s.slot_number
-      WHERE s.pet_id=? AND s.telegram_id=? LIMIT 1`).bind(requestedPetId,telegramId).first()
+      WHERE s.pet_id=? AND s.telegram_id=? LIMIT 1`).bind(requestedPetId,telegramId).first().then(requirePetFirstReadResult)
     : await db.prepare(`SELECT r.pet_id,r.telegram_id,i.season_key FROM telegram_pet_daily_runs r
       JOIN telegram_pet_instances i ON i.pet_id=r.pet_id AND i.telegram_id=r.telegram_id
       JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id AND s.season_key=i.season_key AND s.slot_number=i.slot_number
-      WHERE r.telegram_id=? AND r.utc_day=? LIMIT 1`).bind(telegramId,utcDay).first();
+      WHERE r.telegram_id=? AND r.utc_day=? LIMIT 1`).bind(telegramId,utcDay).first().then(requirePetFirstReadResult);
   const petId = String(participatingPet?.pet_id || '').trim();
   const analyticsId = `daily:challenge:${telegramId}:${utcDay}:${challenge.challenge_id}`;
   const nextProgressSql = challenge.validation_rules.progress_mode === 'max'
