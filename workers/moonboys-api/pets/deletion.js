@@ -1,6 +1,58 @@
 import { requirePetFirstReadResult, requirePetMutationResult, requirePetReadResult } from './read-result.js';
 import { buildPetOnboardingStatements } from './onboarding.js';
 import { PET_RECOVERABLE_ACTIVITY_PREDICATE } from './sanctuary.js';
+import { petRecoverableLiveDecisionSql } from './live-system-recovery-proof.js';
+import { petSpaceValueSql } from './space-order.js';
+import { PET_ROGUELITE_BOSSES } from './roguelite-foundation.js';
+
+const bossKeysSql = Object.keys(PET_ROGUELITE_BOSSES).map(key => `'${key.replaceAll("'", "''")}'`).join(',');
+
+// Source records commit before their claim rows. Check the saved source pet,
+// never the currently selected pet, inside the same transaction as archiving.
+// `s` is the intact ownership row being claimed for deletion.
+const SOURCE_REWARD_BLOCKERS_SQL = `
+  EXISTS (SELECT 1 FROM telegram_pet_events e WHERE e.telegram_id=s.telegram_id AND e.pet_id=s.pet_id AND e.status='pending')
+  OR EXISTS (SELECT 1 FROM telegram_pet_system_events e WHERE e.telegram_id=s.telegram_id AND e.pet_id=s.pet_id
+    AND e.season_key=s.season_key AND e.status='rejected' AND ${petRecoverableLiveDecisionSql('e')})
+  OR EXISTS (SELECT 1 FROM telegram_pet_seasonal_boss_progress b WHERE b.telegram_id=s.telegram_id AND b.pet_id=s.pet_id
+    AND b.pet_season_key=s.season_key AND b.defeated_at IS NOT NULL AND b.reward_claimed_at IS NULL)
+  OR EXISTS (SELECT 1 FROM telegram_pet_arena_battles b WHERE b.status='completed'
+    AND ((b.player1_telegram_id=s.telegram_id AND b.player1_pet_id=s.pet_id AND b.player1_season_key=s.season_key)
+      OR (b.player2_telegram_id=s.telegram_id AND b.player2_pet_id=s.pet_id AND b.player2_season_key=s.season_key))
+    AND NOT EXISTS (SELECT 1 FROM telegram_pet_events e WHERE e.telegram_id=s.telegram_id AND e.pet_id=s.pet_id
+      AND e.season_key=s.season_key AND e.status='accepted' AND e.event_type='arena_battle'
+      AND e.event_key=SUBSTR('pet_arena:'||b.battle_id||':'||s.telegram_id,1,120)))
+  OR EXISTS (SELECT 1 FROM telegram_pet_kaiju_matches b WHERE b.status='completed' AND b.result IN ('player1_win','player2_win','draw')
+    AND (b.player1_telegram_id=s.telegram_id OR b.player2_telegram_id=s.telegram_id)
+    AND b.player1_card_key IS NOT NULL AND (CASE WHEN b.mode='solo' THEN b.cpu_card_key ELSE b.player2_card_key END) IS NOT NULL
+    AND json_extract(CASE WHEN json_valid(b.score_json) THEN b.score_json ELSE '{}' END,'$.reward_sources.'||json_quote(s.telegram_id)||'.pet_id')=s.pet_id
+    AND json_extract(CASE WHEN json_valid(b.score_json) THEN b.score_json ELSE '{}' END,'$.reward_sources.'||json_quote(s.telegram_id)||'.season_key')=s.season_key
+    AND NOT EXISTS (SELECT 1 FROM telegram_pet_events e WHERE e.telegram_id=s.telegram_id AND e.pet_id=s.pet_id
+      AND e.season_key=s.season_key AND e.status='accepted' AND e.event_type='kaiju_battle'
+      AND e.event_key=SUBSTR('pet_kaiju:'||b.match_id||':'||s.telegram_id,1,120)))
+  OR EXISTS (SELECT 1 FROM telegram_pet_runs r JOIN telegram_pet_run_rooms f
+      ON f.run_id=r.run_id AND f.telegram_id=r.telegram_id AND f.pet_id=r.pet_id
+    WHERE r.telegram_id=s.telegram_id AND r.pet_id=s.pet_id AND r.season_key=s.season_key
+      AND f.status='resolved' AND f.room_type='boss' AND json_valid(f.generated_data) AND json_valid(f.outcome_data)
+      AND json_extract(f.generated_data,'$.boss_id') IN (${bossKeysSql}) AND COALESCE(json_extract(f.outcome_data,'$.success'),1)<>0
+      AND NOT EXISTS (SELECT 1 FROM telegram_pet_reward_claims c WHERE c.telegram_id=r.telegram_id AND c.pet_id=r.pet_id
+        AND c.source='roguelite_boss' AND c.idempotency_key=f.room_id||':'||json_extract(f.generated_data,'$.boss_id') AND c.status='awarded'))
+  OR EXISTS (SELECT 1 FROM telegram_pet_daily_runs d JOIN telegram_pet_runs r
+      ON r.run_id=d.run_id AND r.telegram_id=d.telegram_id AND r.pet_id=d.pet_id
+    WHERE r.telegram_id=s.telegram_id AND r.pet_id=s.pet_id AND r.season_key=s.season_key AND r.max_room>0
+      AND ((r.current_room>=r.max_room AND r.status IN ('completed','extracted') AND EXISTS (
+        SELECT 1 FROM telegram_pet_run_rooms f WHERE f.run_id=r.run_id AND f.telegram_id=r.telegram_id AND f.pet_id=r.pet_id
+          AND f.room_number=r.max_room AND f.status='resolved' AND f.room_type='boss'
+          AND json_valid(f.generated_data) AND json_extract(f.generated_data,'$.boss_id') IN (${bossKeysSql})
+          AND json_valid(f.outcome_data) AND COALESCE(json_extract(f.outcome_data,'$.success'),1)<>0))
+        OR (r.current_room<r.max_room AND r.status IN ('extracted','failed','abandoned') AND EXISTS (
+          SELECT 1 FROM telegram_pet_run_rooms f WHERE f.run_id=r.run_id AND f.telegram_id=r.telegram_id AND f.pet_id=r.pet_id
+            AND f.room_number<=r.current_room+1 AND f.status IN ('resolved','failed'))))
+      AND (d.status<>r.status OR NOT EXISTS (SELECT 1 FROM telegram_pet_daily_analytics a
+        WHERE a.analytics_id=r.run_id||':daily:terminal' AND a.applied_at IS NOT NULL)
+        OR r.status IN ('completed','extracted') AND NOT EXISTS (SELECT 1 FROM telegram_pet_events e
+          WHERE e.telegram_id=r.telegram_id AND e.pet_id=r.pet_id AND e.season_key=r.season_key AND e.status='accepted'
+            AND e.event_key='daily-moon-run:'||r.telegram_id||':'||r.run_id||':'||r.status)))`;
 
 // Recheck in the transaction: work can start after the UI confirmation.
 export const PET_DELETION_BLOCKERS_SQL = `
@@ -39,7 +91,8 @@ export async function readDeletedPetHistory(db, owner) {
 export async function deleteOwnedPet(db, telegramId, body, stateColumns) {
   const owner = String(telegramId), petId = String(body?.pet_id || '').trim();
   if (!petId || body?.confirmed !== true || body?.confirm_pet_id !== petId) return { accepted:false, reason:'pet_delete_confirmation_required' };
-  const old = await db.prepare(`SELECT s.* FROM telegram_pet_season_slots s
+  const old = await db.prepare(`SELECT s.*,${petSpaceValueSql('s','created_at')} AS space_created_at,
+      ${petSpaceValueSql('s','pet_id')} AS space_pet_id FROM telegram_pet_season_slots s
     JOIN telegram_pet_instances i ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id AND i.season_key=s.season_key AND i.slot_number=s.slot_number
     WHERE s.pet_id=? AND s.telegram_id=? AND s.status='active' AND i.status='active'`)
     .bind(petId,owner).first().then(requirePetFirstReadResult);
@@ -54,8 +107,10 @@ export async function deleteOwnedPet(db, telegramId, body, stateColumns) {
       SELECT ?,?,?,?,?,'memory',? WHERE EXISTS (
         SELECT 1 FROM telegram_pet_season_slots s JOIN telegram_pet_instances i
           ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id AND i.season_key=s.season_key AND i.slot_number=s.slot_number
-        WHERE s.pet_id=? AND s.telegram_id=? AND s.status='active' AND i.status='active') AND NOT (${PET_DELETION_BLOCKERS_SQL})`)
-      .bind(claimId,petId,owner,old.season_key,claimKey,JSON.stringify({type:'pet_deleted',replacement_pet_id:replacementId,replacement_period:period}),petId,owner,...blockerArgs(owner,petId)),
+        WHERE s.pet_id=? AND s.telegram_id=? AND s.status='active' AND i.status='active'
+          AND NOT (${PET_DELETION_BLOCKERS_SQL} OR ${SOURCE_REWARD_BLOCKERS_SQL}))`)
+      .bind(claimId,petId,owner,old.season_key,claimKey,JSON.stringify({type:'pet_deleted',replacement_pet_id:replacementId,replacement_period:period,
+        space_created_at:old.space_created_at,space_pet_id:old.space_pet_id}),petId,owner,...blockerArgs(owner,petId)),
     db.prepare(`UPDATE telegram_pet_instances SET status='archived',updated_at=CURRENT_TIMESTAMP WHERE pet_id=? AND telegram_id=? AND ${claim}`).bind(petId,owner,...args),
     db.prepare(`UPDATE telegram_pet_season_slots SET status='archived',updated_at=CURRENT_TIMESTAMP WHERE pet_id=? AND telegram_id=? AND ${claim}`).bind(petId,owner,...args),
     db.prepare(`INSERT INTO telegram_pet_season_slots

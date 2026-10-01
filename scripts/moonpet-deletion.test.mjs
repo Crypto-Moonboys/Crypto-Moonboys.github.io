@@ -4,6 +4,8 @@ import { DatabaseSync } from 'node:sqlite';
 import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 import { readPetLeaderboard } from '../workers/moonboys-api/pets/leaderboard.js';
 import { awardPetReward } from '../workers/moonboys-api/pets/roguelite-foundation.js';
+import { PET_REGION_CONTENT, PET_EVENT_CHAINS, PET_SEASONAL_BOSSES } from '../workers/moonboys-api/pets/content-phase-4.js';
+import { PET_ROGUELITE_BOSSES } from '../workers/moonboys-api/pets/roguelite-foundation.js';
 import { PET_WEEKLY_BOSSES } from '../workers/moonboys-api/pets/player-expansion.js';
 import { recoverPetWeeklyBossVictories } from '../workers/moonboys-api/pets/weekly-boss-recovery.js';
 
@@ -147,5 +149,145 @@ assert.equal((await hooks.deletePetSlot(db,'terminal',confirm(terminalId))).acce
 sql.prepare(`INSERT INTO telegram_pet_reward_claims(claim_id,pet_id,telegram_id,source,idempotency_key,day_key,status)
   VALUES ('settled-terminal',?,'terminal','pet_run_legacy','pet_run_complete:terminal:saved-terminal',?,'awarded')`).run(terminalId,day);
 assert.equal((await hooks.deletePetSlot(db,'terminal',confirm(terminalId))).accepted,true);
+
+// Preserve all three visible/numeric space positions through repeated deletion.
+const spaceOwner='space-order', spaceIds=[await player(spaceOwner)];
+for (const ordinal of [2,3]) {
+  assert.equal((await hooks.buyPetSeasonSlot(db,spaceOwner,ordinal)).accepted,true);
+  spaceIds.push((await hooks.buildPetSeasonSlotSummary(db,spaceOwner)).slots.find(s=>s.slot_number===ordinal).pet_id);
+}
+for (const [index,id] of spaceIds.entries()) {
+  sql.prepare('UPDATE telegram_pet_season_slots SET created_at=? WHERE pet_id=?').run(`2025-01-0${index+1} 00:00:00`,id);
+}
+const spaceWallet=sql.prepare('SELECT * FROM arcade_xp_wallets WHERE telegram_id=?').get(spaceOwner);
+for (const index of [0,1,2,0,2,1]) {
+  const result=await hooks.deletePetSlot(db,spaceOwner,confirm(spaceIds[index]));
+  assert.equal(result.accepted,true);
+  spaceIds[index]=result.replacement_pet_id;
+  assert.deepEqual(result.season_slots.slots.map(s=>s.pet_id),spaceIds,'full roster retains the original space order');
+  assert.deepEqual((await hooks.buildPetSeasonSlotCoreSummary(db,spaceOwner)).slots.map(s=>s.pet_id),spaceIds,'core roster uses the same immutable order');
+  assert.equal(result.season_slots.slots[index].pet.lifetime_progression.current_week,1,'new pet age does not inherit space age');
+  for (const ordinal of [1,2,3]) {
+    const switched=await hooks.switchActivePetSeasonSlot(db,spaceOwner,String(ordinal));
+    assert.equal(switched.accepted,true);
+    assert.equal(switched.pet.pet_id,spaceIds[ordinal-1],'numeric switching resolves the preserved space');
+  }
+}
+assert.equal((await hooks.buyPetSeasonSlot(db,spaceOwner,3)).reason,'pet_slot_already_owned');
+assert.deepEqual(sql.prepare('SELECT * FROM arcade_xp_wallets WHERE telegram_id=?').get(spaceOwner),spaceWallet);
+
+const rowFor=id=>sql.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=?').get(id);
+async function expectBlocked(owner,id,message) {
+  assert.equal((await hooks.deletePetSlot(db,owner,confirm(id))).reason,'pet_delete_blocked',message);
+  assert.equal(rowFor(id).status,'active');
+  assert.equal(sql.prepare("SELECT COUNT(*) n FROM telegram_pet_identity_events WHERE pet_id=? AND event_key='pet:delete:'||pet_id").get(id).n,0,'no deletion claim survives a blocker');
+}
+async function settle(owner,id,type,key,source=type) {
+  const pet=rowFor(id),context={pet_id:id,season_key:pet.season_key,pet_season_key:pet.season_key};
+  if (source==='pet_district' || source==='pet_event_chain') {
+    context.system_event_id=owner;
+    sql.prepare("UPDATE telegram_pet_system_events SET status='settling' WHERE id=?").run(owner);
+  }
+  if (source==='pet_seasonal_boss') {
+    const boss=sql.prepare('SELECT * FROM telegram_pet_seasonal_boss_progress WHERE pet_id=?').get(id);
+    context.season_key=boss.season_key; context.boss_key=boss.boss_key;
+  }
+  if (source.startsWith('roguelite_')) {
+    context.run_id=sql.prepare('SELECT run_id FROM telegram_pet_runs WHERE pet_id=?').get(id).run_id;
+    if (source==='roguelite_boss') { context.room_id='daily-boss';context.boss_id=Object.keys(PET_ROGUELITE_BOSSES)[0]; }
+  }
+  assert.equal((await awardPetReward(db,{telegram_id:owner,pet_id:id,season_key:pet.season_key,source,idempotency_key:key,
+    event_key:key,event_type:type,rewards:{pet_xp:12,moon_gold:7},context})).accepted,true);
+}
+
+// A rejected reservation is recoverable only with a saved charged/frozen decision.
+for (const [system,content,payload] of [
+  ['district',PET_REGION_CONTENT,{energy_charged:1,decision:{success:true}}],
+  ['event_chain',PET_EVENT_CHAINS,{decision:{step:1}}],
+  ['seasonal_boss',PET_SEASONAL_BOSSES,{energy_charged:1,decision:{attack:{damage:10}}}],
+]) {
+  const owner='rejected-'+system,id=await player(owner),pet=rowFor(id),action=Object.keys(content)[0];
+  // Create the source after the pre-read, proving the guard is transactional.
+  beforeBatch=()=>sql.prepare(`INSERT INTO telegram_pet_system_events(id,pet_id,telegram_id,season_key,system_key,action_key,period_key,status,payload_json)
+    VALUES (?,?,?,?,?,?,?,'rejected',?)`).run(owner,id,owner,pet.season_key,system,action,day,JSON.stringify(payload));
+  await expectBlocked(owner,id,'recoverable rejected '+system+' blocks without a claim row');
+  assert.equal(sql.prepare('SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE pet_id=?').get(id).n,0);
+  await settle(owner,id,system,owner+':reward',({district:'pet_district',event_chain:'pet_event_chain',seasonal_boss:'pet_event'})[system]);
+  sql.prepare("UPDATE telegram_pet_system_events SET status='completed' WHERE id=?").run(owner);
+  const result=await hooks.deletePetSlot(db,owner,confirm(id));
+  assert.equal(result.accepted,true);
+  assert.equal(rowFor(id).pet_xp,12,'settlement occurs before archiving');
+}
+for (const payload of [{}, {energy_charged:0,decision:{}}, 'malformed']) {
+  const owner='uncharged-'+crypto.randomUUID(),id=await player(owner),pet=rowFor(id);
+  sql.prepare(`INSERT INTO telegram_pet_system_events(id,pet_id,telegram_id,season_key,system_key,action_key,period_key,status,payload_json)
+    VALUES (?,?,?,?, 'district',?,?,'rejected',?)`).run(owner,id,owner,pet.season_key,Object.keys(PET_REGION_CONTENT)[0],day,typeof payload==='string'?payload:JSON.stringify(payload));
+  assert.equal((await hooks.deletePetSlot(db,owner,confirm(id))).accepted,true,'uncharged/malformed rejected reservations do not lock deletion forever');
+}
+
+// Completed system event, saved defeat, no claim: this is the pre-payout window.
+const raidOwner='raid-preclaim',raidId=await player(raidOwner),raidPet=rowFor(raidId),raidKey=Object.keys(PET_SEASONAL_BOSSES)[0];
+sql.prepare(`INSERT INTO telegram_pet_seasonal_boss_progress(pet_id,telegram_id,pet_season_key,season_key,boss_key,defeated_at)
+  VALUES (?,?,?,'saved-raid',?,CURRENT_TIMESTAMP)`).run(raidId,raidOwner,raidPet.season_key,raidKey);
+sql.prepare(`INSERT INTO telegram_pet_system_events(id,pet_id,telegram_id,season_key,system_key,action_key,period_key,status)
+  VALUES (?,?,?,?, 'seasonal_boss',?,'saved-raid','completed')`).run(raidOwner,raidId,raidOwner,raidPet.season_key,raidKey);
+await expectBlocked(raidOwner,raidId,'defeated seasonal boss remains claimable');
+await settle(raidOwner,raidId,'seasonal_boss',`seasonal:saved-raid:${raidOwner}:${raidId}`,'pet_seasonal_boss');
+sql.prepare('UPDATE telegram_pet_seasonal_boss_progress SET reward_claimed_at=CURRENT_TIMESTAMP WHERE pet_id=?').run(raidId);
+assert.equal((await hooks.deletePetSlot(db,raidOwner,confirm(raidId))).accepted,true);
+
+// Each Arena participant's saved pet is independently protected before payout.
+const arenaOwners=['arena-p1','arena-p2'],arenaIds=[];
+for (const owner of arenaOwners) arenaIds.push(await player(owner));
+sql.prepare(`INSERT INTO telegram_pet_arena_battles(id,battle_id,chat_id,player1_telegram_id,player2_telegram_id,
+  player1_pet_id,player1_season_key,player2_pet_id,player2_season_key,player1_pet_snapshot_json,player2_pet_snapshot_json,status,result)
+  VALUES ('arena-preclaim','arena-preclaim','test',?,?,?,?,?,?,'{}','{}','completed','draw')`)
+  .run(arenaOwners[0],arenaOwners[1],arenaIds[0],rowFor(arenaIds[0]).season_key,arenaIds[1],rowFor(arenaIds[1]).season_key);
+for (const [index,owner] of arenaOwners.entries()) {
+  await expectBlocked(owner,arenaIds[index],'completed Arena source precedes participant award');
+  await settle(owner,arenaIds[index],'arena_battle',`pet_arena:arena-preclaim:${owner}`,'pet_arena');
+  assert.equal((await hooks.deletePetSlot(db,owner,confirm(arenaIds[index]))).accepted,true,'the other participant payout does not block a settled pet');
+}
+
+// Kaiju has JSON reward-source tuples rather than dedicated pet columns.
+for (const mode of ['solo','group']) {
+  const owners=mode==='solo'?['kaiju-solo']:['kaiju-p1','kaiju-p2'],ids=[];
+  for (const owner of owners) ids.push(await player(owner));
+  const sources=Object.fromEntries(owners.map((owner,index)=>[owner,{pet_id:ids[index],season_key:rowFor(ids[index]).season_key}]));
+  const match='preclaim-'+mode;
+  sql.prepare(`INSERT INTO telegram_pet_kaiju_matches(id,match_id,chat_id,mode,status,player1_telegram_id,player2_telegram_id,
+    player1_card_key,player2_card_key,cpu_card_key,result,score_json) VALUES (?,?,?,?,'completed',?,?,'card','card','cpu','draw',?)`)
+    .run(match,match,match,mode,owners[0],owners[1]||null,JSON.stringify({reward_sources:sources}));
+  for (const [index,owner] of owners.entries()) {
+    await expectBlocked(owner,ids[index],'completed '+mode+' Kaiju outcome cannot archive an unpaid source pet');
+    await settle(owner,ids[index],'kaiju_battle',`pet_kaiju:${match}:${owner}`,'pet_kaiju');
+    assert.equal((await hooks.deletePetSlot(db,owner,confirm(ids[index]))).accepted,true);
+  }
+}
+
+// A pending event reservation alone also protects its original pet.
+const pendingOwner='event-pending',pendingId=await player(pendingOwner),pendingPet=rowFor(pendingId);
+sql.prepare(`INSERT INTO telegram_pet_events(id,pet_id,telegram_id,event_type,event_key,season_key,day_key,status)
+  VALUES (?,?,?,'train','saved-pending',?,?,'pending')`).run(pendingOwner,pendingId,pendingOwner,pendingPet.season_key,day);
+await expectBlocked(pendingOwner,pendingId,'pre-claim event reservations block deletion');
+sql.prepare("UPDATE telegram_pet_events SET status='rejected' WHERE id=?").run(pendingOwner);
+assert.equal((await hooks.deletePetSlot(db,pendingOwner,confirm(pendingId))).accepted,true);
+
+// Even a settled terminal run may still have an unpaid won boss and daily records.
+const dailyOwner='daily-preclaim',dailyId=await player(dailyOwner),dailyPet=rowFor(dailyId),bossKey=Object.keys(PET_ROGUELITE_BOSSES)[0];
+sql.prepare(`INSERT INTO telegram_pet_runs(id,pet_id,telegram_id,run_id,season_key,status,depth,max_depth,current_room,max_room)
+  VALUES ('daily-source',?,?,'daily-source',?,'completed',1,1,1,1)`).run(dailyId,dailyOwner,dailyPet.season_key);
+sql.prepare(`INSERT INTO telegram_pet_daily_runs(telegram_id,pet_id,utc_day,seed,run_id,status) VALUES (?,?,?,'seed','daily-source','active')`).run(dailyOwner,dailyId,day);
+sql.prepare(`INSERT INTO telegram_pet_run_rooms(room_id,pet_id,run_id,telegram_id,room_number,room_type,status,generated_data,outcome_data)
+  VALUES ('daily-boss',?,'daily-source',?,1,'boss','resolved',?,'{"success":true}')`).run(dailyId,dailyOwner,JSON.stringify({boss_id:bossKey}));
+await settle(dailyOwner,dailyId,'roguelite_completion','daily-source');
+await expectBlocked(dailyOwner,dailyId,'settled completion does not hide an unpaid boss');
+await settle(dailyOwner,dailyId,'roguelite_boss','daily-boss:'+bossKey);
+await expectBlocked(dailyOwner,dailyId,'boss payout does not hide unapplied daily records');
+sql.exec("UPDATE telegram_pet_daily_runs SET status='completed' WHERE run_id='daily-source'");
+sql.prepare(`INSERT INTO telegram_pet_daily_analytics(analytics_id,pet_id,telegram_id,utc_day,run_id,event_type,event_data,applied_at)
+  VALUES ('daily-source:daily:terminal',?,?,?,'daily-source','run_terminal','{"boss_defeated":true}',CURRENT_TIMESTAMP)`).run(dailyId,dailyOwner,day);
+await settle(dailyOwner,dailyId,'daily_moon_run',`daily-moon-run:${dailyOwner}:daily-source:completed`,'pet_event');
+assert.equal((await hooks.deletePetSlot(db,dailyOwner,confirm(dailyId))).accepted,true);
 assert.deepEqual(sql.prepare('PRAGMA foreign_key_check').all(),[]);
 console.log('Confirmed Moonpet deletion, reward retention, replacement and concurrency tests passed');

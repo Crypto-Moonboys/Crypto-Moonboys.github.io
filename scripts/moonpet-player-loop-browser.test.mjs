@@ -1656,6 +1656,11 @@ try {
     // The native confirmation must cancel cleanly and bind acceptance to one pet.
     currentUser = 'browser-delete-' + viewport.width;
     await seed(currentUser, 'egg');
+    sqlite.prepare('INSERT INTO arcade_progression_state(telegram_id,arcade_xp_total) VALUES (?,5000)').run(currentUser);
+    sqlite.prepare('INSERT INTO arcade_xp_wallets(telegram_id,arcade_xp_earned,arcade_xp_spendable) VALUES (?,5000,5000)').run(currentUser);
+    for (const ordinal of [2,3]) assert.equal((await hooks.buyPetSeasonSlot(db,currentUser,ordinal)).accepted,true);
+    const deletionSpaces=(await hooks.buildPetSeasonSlotSummary(db,currentUser)).slots.map(slot=>slot.pet_id);
+    for (const [index,id] of deletionSpaces.entries()) sqlite.prepare('UPDATE telegram_pet_season_slots SET created_at=? WHERE pet_id=?').run(`2025-01-0${index+1} 00:00:00`,id);
     const deletionPet = await hooks.getPetProfile(db, currentUser);
     const deletionWallet = sqlite.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(currentUser);
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
@@ -1669,22 +1674,29 @@ try {
       assert.match(dialog.message(), /reward history are kept/);
       await dialog.dismiss(); resolve();
     }));
-    await page.locator('[data-action="delete_pet_slot"]').click(); await cancelledDialog;
+    await page.locator('[data-season-slot="1"] [data-action="delete_pet_slot"]').click(); await cancelledDialog;
     assert.equal(actions.filter(action => action === 'delete_pet_slot').length, deleteRequests, 'Cancel sends no deletion request');
     assert.equal(sqlite.prepare('SELECT status FROM telegram_pet_instances WHERE pet_id=?').get(deletionPet.pet_id).status, 'active');
     page.once('dialog', dialog => dialog.accept());
     const deletionResponse = page.waitForResponse(r => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'delete_pet_slot');
-    await page.locator('[data-action="delete_pet_slot"]').click();
+    await page.locator('[data-season-slot="1"] [data-action="delete_pet_slot"]').click();
     const deletionData = await (await deletionResponse).json();
     assert.equal(deletionData.result.accepted, true, JSON.stringify(deletionData.result));
     assert.equal(deletionData.result.deleted_pet_id, deletionPet.pet_id);
+    deletionSpaces[0]=deletionData.result.replacement_pet_id;
+    assert.deepEqual(deletionData.result.season_slots.slots.map(slot=>slot.pet_id),deletionSpaces,'replacement stays in PET 1 while PET 2/3 stay in place');
     await page.waitForFunction(() => document.querySelector('[data-panel="season-slots"]').textContent.includes('DELETED PET HISTORY'));
     assert.deepEqual(sqlite.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(currentUser), deletionWallet);
     assert.equal(sqlite.prepare('SELECT status FROM telegram_pet_instances WHERE pet_id=?').get(deletionPet.pet_id).status, 'archived');
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
     assert.notEqual((await hooks.getPetProfile(db, currentUser)).pet_id, deletionPet.pet_id, 'fresh egg persists after reload');
+    await page.locator('[data-screen="profile"]').click();
+    await page.waitForSelector('[data-action="delete_pet_slot"]', {state:'attached'});
+    for (const [index,id] of deletionSpaces.entries()) {
+      assert.equal(JSON.parse(await page.locator(`[data-season-slot="${index+1}"] [data-action="delete_pet_slot"]`).getAttribute('data-payload')).pet_id,id,'visible space keeps its pet after reload');
+    }
     assert.deepEqual(errors, []);
-    console.log('Confirmed pet deletion browser flow passed at ' + viewport.width + 'x' + viewport.height);
+    console.log('Confirmed pet deletion and stable three-space order browser flow passed at ' + viewport.width + 'x' + viewport.height);
     await context.close();
   }
 } finally {

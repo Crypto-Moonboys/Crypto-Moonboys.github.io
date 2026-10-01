@@ -1,3 +1,4 @@
+import { petRecoverableLiveDecisionSql } from './live-system-recovery-proof.js';
 import { requirePetFirstReadResult, requirePetReadResult } from './read-result.js';
 import { PET_DISTRICT_APPROACHES, PET_DISTRICT_COMPLICATIONS, PET_DISTRICT_ENCOUNTERS, PET_EVENT_CHAINS, PET_FACTION_BONUSES, PET_REGION_CONTENT, PET_SEASONAL_BOSSES } from './content-phase-4.js';
 import { PET_COSMETIC_SINKS, PET_CRAFTING_RECIPES, PET_EQUIPMENT_SETS, PET_PRESTIGE_REQUIREMENTS, getPetCraftingRecipe, getPetEquipmentUpgradeCost } from './economy-phase-3.js';
@@ -620,7 +621,6 @@ export async function processPetSeasonalBoss(db, telegramId, pet, awardReward, m
 // Recover only persisted decisions for the authenticated owner's original pet.
 // A state read never starts an uncharged energy action or rerolls a choice.
 export async function recoverPetLiveSystemEndings(db, telegramId, awardReward, limit = 2) {
-  const payload = "CASE WHEN json_valid(e.payload_json) THEN e.payload_json ELSE '{}' END";
   const rows = await db.prepare(`SELECT p.*, e.id AS ending_id, e.system_key, e.action_key, e.period_key
     FROM telegram_pet_system_events e
     JOIN telegram_pet_instances p ON p.pet_id=e.pet_id AND p.telegram_id=e.telegram_id AND p.season_key=e.season_key
@@ -629,19 +629,13 @@ export async function recoverPetLiveSystemEndings(db, telegramId, awardReward, l
       AND e.updated_at < datetime('now','-2 minutes')
       AND date(substr(e.period_key,-10),'+0 days')=substr(e.period_key,-10)
       AND substr(e.period_key,-10)<=?
-      AND ((e.system_key='district' AND e.action_key IN (${Object.keys(PET_REGION_CONTENT).map(() => '?').join(',')})
-          AND json_extract(${payload},'$.energy_charged')=1 AND json_type(${payload},'$.decision')='object')
-        OR (e.system_key='event_chain' AND e.action_key IN (${Object.keys(PET_EVENT_CHAINS).map(() => '?').join(',')})
-          AND json_type(${payload},'$.decision')='object')
-        OR (e.system_key='seasonal_boss' AND e.action_key IN (${Object.keys(PET_SEASONAL_BOSSES).map(() => '?').join(',')})
-          AND json_extract(${payload},'$.energy_charged')=1
-          AND (json_type(${payload},'$.attack')='object' OR json_type(${payload},'$.decision.attack')='object')))
+      AND ${petRecoverableLiveDecisionSql('e')}
       AND NOT EXISTS (SELECT 1 FROM telegram_pet_system_events earlier
         WHERE earlier.pet_id=e.pet_id AND earlier.telegram_id=e.telegram_id AND earlier.season_key=e.season_key
           AND earlier.system_key=e.system_key AND earlier.action_key=e.action_key AND earlier.period_key<e.period_key
           AND earlier.status IN ('pending','rejected','settling'))
     ORDER BY e.updated_at,e.period_key,e.id LIMIT ?`)
-    .bind(String(telegramId), dayKey(), ...Object.keys(PET_REGION_CONTENT), ...Object.keys(PET_EVENT_CHAINS), ...Object.keys(PET_SEASONAL_BOSSES), boundedRecoveryLimit(limit, 2)).all().then(requirePetReadResult);
+    .bind(String(telegramId), dayKey(), boundedRecoveryLimit(limit, 2)).all().then(requirePetReadResult);
   for (const row of rows.results || []) {
     try {
       const now = new Date(`${row.period_key.slice(-10)}T12:00:00.000Z`);
