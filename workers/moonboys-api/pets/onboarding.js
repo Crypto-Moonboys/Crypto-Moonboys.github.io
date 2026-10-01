@@ -5,7 +5,7 @@ const egg = evolutions.find(entry => entry.evolution_id === 'moon_egg');
 
 // One canonical claim and all of its effects commit together. A request that
 // loses the claim cannot write onboarding events, and a failed batch can retry.
-export function buildPetOnboardingStatements(db, pet) {
+export function buildPetOnboardingStatements(db, pet, options = {}) {
   const telegramId = pet.telegram_id;
   const eventId = crypto.randomUUID();
   const eventKey = `pet:onboarding:${pet.pet_id}`;
@@ -15,6 +15,10 @@ export function buildPetOnboardingStatements(db, pet) {
   const milestone = 'evolution_moon_egg';
   const createdAt = '(SELECT created_at FROM telegram_pet_season_slots WHERE pet_id=? AND telegram_id=? AND season_key=?)';
   const creationArgs = [pet.pet_id, telegramId, pet.season_key];
+  const ownershipRule = options.replacementOf
+    ? `EXISTS (SELECT 1 FROM telegram_pet_identity_events d WHERE d.pet_id=? AND d.telegram_id=? AND d.event_key=? AND d.applied_at IS NULL AND json_extract(d.payload,'$.replacement_pet_id')=s.pet_id)`
+    : `s.slot_number=1 AND s.acquisition_type='free'`;
+  const ownershipArgs = options.replacementOf ? [options.replacementOf,telegramId,`pet:delete:${options.replacementOf}`] : [];
   return [
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_identity_events
       (event_id,pet_id,telegram_id,season_key,event_key,event_kind,payload)
@@ -22,14 +26,14 @@ export function buildPetOnboardingStatements(db, pet) {
         SELECT 1 FROM telegram_pet_season_slots s JOIN telegram_pet_instances i
           ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id AND i.season_key=s.season_key AND i.slot_number=s.slot_number
         WHERE s.pet_id=? AND s.telegram_id=? AND s.season_key=? AND s.status='active' AND i.status='active'
-          AND s.slot_number=1 AND s.acquisition_type='free') AND
+          AND ${ownershipRule}) AND
         (NOT EXISTS (SELECT 1 FROM telegram_pet_lifecycle_by_pet WHERE pet_id=?)
          OR NOT EXISTS (SELECT 1 FROM telegram_pet_memories WHERE pet_id=? AND first_adoption_at IS NOT NULL)
          OR NOT EXISTS (SELECT 1 FROM telegram_pet_evolutions_by_pet WHERE pet_id=? AND evolution_id='moon_egg'))
         AND NOT EXISTS (SELECT 1 FROM telegram_pet_lifecycle_by_pet WHERE pet_id=? AND telegram_id<>?)
         AND NOT EXISTS (SELECT 1 FROM telegram_pet_memories WHERE pet_id=? AND NOT (telegram_id=? AND season_key=?))`)
       .bind(...claimArgs, eventKey, JSON.stringify({ type: 'first_adoption', milestone: 'first_adoption', authority: 'atomic_onboarding' }),
-        pet.pet_id, telegramId, pet.season_key,
+        pet.pet_id, telegramId, pet.season_key, ...ownershipArgs,
         pet.pet_id, pet.pet_id, pet.pet_id, pet.pet_id, telegramId, pet.pet_id, telegramId, pet.season_key),
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_lifecycle_by_pet
       (pet_id,telegram_id,identity_seed,phase,incubation_json,innate_traits_json,created_at)

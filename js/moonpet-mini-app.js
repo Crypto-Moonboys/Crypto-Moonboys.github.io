@@ -734,7 +734,7 @@
     if (action === 'adopt' && !(state && state.entry_requirement && state.entry_requirement.eligible === true)) {
       options = Object.assign({}, options, { disabled: true, statusLabel: 'ARCADE XP REQUIRED' });
     }
-    var accountActions = ['adopt', 'guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'arena_queue_cancel', 'arena_forfeit', 'kaiju_queue_cancel', 'kaiju_match_cancel'];
+    var accountActions = ['adopt', 'guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'delete_pet_slot', 'arena_queue_cancel', 'arena_forfeit', 'kaiju_queue_cancel', 'kaiju_match_cancel'];
     var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim', 'contract_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim']);
     if (state && state.lifecycle && state.lifecycle.phase === 'egg' && !eggActions.includes(action)) {
       options = Object.assign({}, options, { disabled: true, cooldown: null, statusLabel: 'HATCH REQUIRED' });
@@ -1853,6 +1853,7 @@
             resourceRequired: !affordable,
             detail: affordable ? 'SPEND ' + number(cost) + ' ARCADE XP' : 'NEED ' + number(Math.max(0, cost - available)) + ' MORE ARCADE XP',
           }) : '<div class="line muted">UNLOCK UNAVAILABLE // ' + escapeHtml(words(slot.purchase_disabled_reason || summary.purchase_disabled_reason || 'season slots unavailable')) + '</div>';
+      if (selectable) control += button('DELETE PET', 'delete_pet_slot', { pet_id: slot.pet_id, pet_label: 'PET ' + slotNumber + ' // ' + (slot.pet && slot.pet.display_name || 'MOONPET') }, { danger: true, detail: 'CONFIRM BEFORE DELETION // NEW EGG IN THIS OWNED SPACE // REWARD HISTORY KEPT' });
       return '<article class="season-slot ' + (active ? 'is-active' : owned ? 'is-owned' : 'is-locked') + '" data-season-slot="' + slotNumber + '">' +
         '<header><strong>PET ' + slotNumber + ' // SLOT ' + slotNumber + '</strong><span>' + status + '</span></header>' + details + '<div class="slot-control">' + control + '</div></article>';
     }).join('');
@@ -1867,6 +1868,9 @@
       (summary.recovery_over_capacity ? '<div class="line locked">RECOVERED PETS EXCEED THREE SPACES // All saves are retained. New purchases are blocked; ownership needs review.</div>' : '') +
       '<div class="season-slot-balance"><strong>CURRENT ARCADE XP</strong><span>' + number(available) + '</span></div>' +
       '<div class="line muted">NEW PLAYER ENTRY // 1,000 LIFETIME ARCADE XP, KEPT // PET 1 IS FREE // PET 2 COSTS 500 SPENDABLE XP // PET 3 COSTS 1,000 SPENDABLE XP</div><div class="season-slot-grid">' + rows + '</div>' +
+      (Array.isArray(summary.deleted_pet_history) && summary.deleted_pet_history.length ? '<div class="line muted"><strong>DELETED PET HISTORY // LATEST 20</strong><br>Account rewards stay yours. Saved pets below cannot return to play.</div>' + summary.deleted_pet_history.map(function (entry) {
+        return '<div class="line muted">DELETED PET // ' + number(entry.pet_xp) + ' SAVED PET XP // ' + number(entry.awarded_receipts) + ' AWARDED REWARD RECEIPTS // ' + escapeHtml(entry.deleted_at) + '</div>';
+      }).join('') : '') +
       '<div class="line muted">IN DEVELOPMENT // DIMINISHING-RETURN BALANCING · FUTURE // CATCH-UP SYSTEMS</div>', 'season-slots');
   }
 
@@ -2775,6 +2779,10 @@
       arcade_xp_entry_required: 'EARN 1,000 LIFETIME ARCADE XP ON THE WEBSITE TO UNLOCK YOUR FIRST PET. YOUR XP IS KEPT.',
       pet_slot_purchased: 'PET SLOT UNLOCKED',
       pet_slot_switched: 'ACTIVE MOONPET SWITCHED',
+      pet_deleted: 'PET DELETED // FRESH EGG SAVED // REWARDS AND HISTORY KEPT',
+      pet_delete_confirmation_required: 'CONFIRM THE EXACT PET BEFORE DELETION',
+      pet_delete_not_available: 'THAT PET IS NO LONGER AVAILABLE FOR DELETION // REFRESH',
+      pet_delete_blocked: 'FINISH ACTIVE GAMES, LEAVE QUEUES AND CLAIM PENDING REWARDS BEFORE DELETING',
       pet_slot_already_owned: 'THAT PET SLOT IS ALREADY UNLOCKED',
       invalid_pet_slot: 'THAT PET SLOT IS INVALID',
       pet_slot_purchase_conflict: 'PET SLOT UNLOCK COULD NOT BE COMPLETED',
@@ -3018,6 +3026,11 @@
       tell('LIFECYCLE REVEAL IN PROGRESS.');
       haptic('light');
       return;
+    }
+    if (action === 'delete_pet_slot') {
+      var petToDelete = String(payload && payload.pet_id || '');
+      if (!petToDelete || !window.confirm('Delete ' + (payload.pet_label || 'this pet') + '?\n\nThis pet cannot return to play. A fresh egg will use the same owned space at no XP cost.\n\nAccount XP, currencies, items, competition scores and reward history are kept. This pet\'s training will not transfer.')) return;
+      payload = { pet_id: petToDelete, confirm_pet_id: petToDelete, confirmed: true };
     }
     busy = true;
     if (buttonElement) buttonElement.classList.add('is-active');
