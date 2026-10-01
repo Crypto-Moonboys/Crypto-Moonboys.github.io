@@ -16,8 +16,14 @@ function sectionByHeading(html, heading) {
 }
 
 assert.ok(wikiPage.includes('Crypto Moonboy Pets'), 'wiki page must name Crypto Moonboy Pets');
+const retiredGameplay = /\b(?:Practice|Prestige|Breeding|Sanctuary|Lineage|Fusion)\b|Advanced[\s-]+Traits|nameplate[\s-]+badge|Coming[\s-]+Soon[\s-]+Roadmap/i;
 for (const page of [wikiPage, howTo, leaderboard]) {
-  assert.doesNotMatch(page, /\bPractice\b/i, 'public pet pages must not promise retired Practice gameplay or rewards');
+  assert.doesNotMatch(page, retiredGameplay, 'public pet pages describe shipped gameplay without retired roadmap promises');
+}
+// Mixed case and alternate spacing must not let retired copy re-enter a public page.
+for (const retiredCopy of ['ADVANCED TRAITS', 'advanced-traits', 'pReStIgE', 'BREEDING', 'Sanctuary', 'LINEAGE', 'Fusion', 'NAMEPLATE BADGE', 'coming soon roadmap', 'PRACTICE']) {
+  assert.throws(() => assert.doesNotMatch(wikiPage + '<p>' + retiredCopy + '</p>', retiredGameplay),
+    { code: 'ERR_ASSERTION' }, 'public-copy guard rejects injected retired promise: ' + retiredCopy);
 }
 
 assert.ok(wikiPage.includes('UNKNOWN') && wikiPage.includes('Stage 3'), 'wiki page must document the identity reveal boundary');
@@ -32,7 +38,6 @@ assert.match(miniAppHtml, /moonpet-mini-app\.js/, 'the live Moonpet URL must ret
 assert.ok(wikiPage.includes('/how-to-play-crypto-moonboy-pets.html'), 'wiki page must link How To Play page');
 assert.ok(wikiPage.includes('/crypto-moonboy-pets-leaderboard.html'), 'wiki page must link pet leaderboard');
 assert.ok(wikiPage.includes('Community XP'), 'wiki page must explain Community XP sync');
-assert.doesNotMatch(wikiPage, /Coming Soon Roadmap|Prestige|Breeding|Sanctuary gameplay|nameplate badge/, 'wiki describes shipped gameplay only');
 
 for (const command of ['/adopt', '/feed', '/train', '/petrun', '/petextract', '/petadventure', '/petbag', '/petuse moon_snack', '/petwork courier', '/petdaily', '/petevent', '/petnotify on', '/petarena', '/petstart train', '/petactivity', '/petclaim', '/petcancel']) {
   assert.ok(howTo.includes(command), `How To Play must explain ${command}`);
@@ -50,7 +55,6 @@ assert.ok(howTo.includes('Pet Arena equipment') || howTo.includes('Gear Shop'), 
 assert.ok(howTo.includes('Pet XP'), 'How To Play must explain pet XP');
 assert.ok(howTo.includes('Community XP'), 'How To Play must explain Community XP');
 assert.ok(howTo.includes('Current Build In Moonpet OS'), 'How To Play must show the current build section');
-assert.doesNotMatch(howTo, /Coming Soon Roadmap|Prestige|Breeding|Advanced Traits|nameplate badge/, 'guide has no retired gameplay promises');
 const currentBuildSection = sectionByHeading(howTo, 'Current Build In Moonpet OS');
 assert.ok(currentBuildSection, 'How To Play must include the current-build section body');
 assert.ok(currentBuildSection.includes('Pet, Care, Daily Journey, Weekly Journey, Jobs, Runs, Equipment, Arena, Kaiju and Progression'), 'How To Play current-build section must name the current gameplay priorities');
