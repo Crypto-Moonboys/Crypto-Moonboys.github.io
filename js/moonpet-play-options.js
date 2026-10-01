@@ -19,7 +19,7 @@
       [/random.event|pet:event/, 'explore', 'street-event'],
       [/arena/, 'explore', 'arena'], [/kaiju/, 'explore', 'kaiju'],
       [/activity|timed/, 'work', 'timed-activity'],
-      [/practice/, 'explore', 'practice'], [/run/, 'explore', 'moon-run'],
+      [/run/, 'explore', 'moon-run'],
       [/job|work|bank/, 'work', 'jobs'],
       [/bount/, 'economy', 'bounties'], [/expedition/, 'economy', 'expedition'],
       [/craft/, 'economy', 'crafting'], [/material/, 'economy', 'materials'],
@@ -46,10 +46,10 @@
     var partial = Boolean(s.hydration && s.hydration.full === false);
     var deferredDaily = partial && !Object.prototype.hasOwnProperty.call(s, 'daily_run') && !Object.prototype.hasOwnProperty.call(s, 'run');
     if (deferredDaily && /^daily_(combat|explorer|extraction|boss)$/.test(id)) {
-      return [Object.assign({ title: 'OPEN OFFICIAL DAILY RUN', detail: 'Open Explore to check today’s official attempt, saved run and requirements for this pet. Only the official Daily Run advances this goal; Contracts and Practice do not.' }, route({ key: id }))];
+      return [Object.assign({ title: 'OPEN OFFICIAL DAILY RUN', detail: 'Open Explore to check today’s official attempt, saved run and requirements for this pet. Only the official Daily Run advances this goal; Contracts do not.' }, route({ key: id }))];
     }
     if (deferredDaily && id === 'weekly_run') {
-      return [Object.assign({ title: 'OPEN MOON RUNS', detail: 'Open Explore to check saved runs, energy and official Daily Run availability. Standard run completions/extractions and official Daily Run finishes count; Contracts and Practice do not.' }, route({ key: id }))];
+      return [Object.assign({ title: 'OPEN MOON RUNS', detail: 'Open Explore to check saved runs, energy and official Daily Run availability. Standard run completions/extractions and official Daily Run finishes count; Contracts do not.' }, route({ key: id }))];
     }
     if (partial && id === 'weekly_boss_attempt' && !Object.prototype.hasOwnProperty.call(g, 'weekly_boss')) {
       return [Object.assign({ title: 'OPEN WEEKLY BOSS', detail: 'Open Explore to check the boss’s level, energy, daily attack and weekly reset requirements. Seasonal raids are separate.' }, route({ key: id }))];
@@ -59,10 +59,10 @@
       var ownRun = daily.pet_id && daily.pet_id === currentPet;
       var playable = Boolean(daily.available || daily.resumable && ownRun && s.run && s.run.run_id === daily.run_id && (runAvailability(s).step || s.run.settlement_pending && runAvailability(s).extract));
       var title = daily.available ? 'OPEN OFFICIAL DAILY RUN' : playable ? s.run.settlement_pending ? 'FINISH SAVED DAILY RUN' : 'CONTINUE OFFICIAL DAILY RUN' : 'CHECK OFFICIAL DAILY RUN';
-      var detail = 'Only today’s official Daily Run for this pet advances this goal. Contracts, Practice and standard Moon Runs do not.';
+      var detail = 'Only today’s official Daily Run for this pet advances this goal. Contracts and standard Moon Runs do not.';
       if (daily.attempted && !daily.resumable) {
         title = 'DAILY ATTEMPT USED';
-        detail = 'Unfinished official run goals wait until the next UTC day. Continue Contracts or Practice for repeatable play; they do not advance this goal.';
+        detail = 'Unfinished official run goals wait until the next UTC day. Continue Contracts for repeatable play; they do not advance this goal.';
       } else if (daily.pet_id && !ownRun) {
         detail = 'This account’s official attempt belongs to another pet. Its progress stays with that source pet; switching pets does not grant another attempt.';
       } else if (s.run && !playable) {
@@ -73,7 +73,7 @@
     var targets = {
       weekly_care: [['CARE', 'care', 'Accepted Feed, Play, Clean or Sleep actions count.']],
       weekly_training: [['TRAINING', 'train', 'Use the Train care action. A timed activity is a separate action.']],
-      weekly_run: [['MOON RUNS', 'run', 'Accepted standard run completions/extractions and official Daily Run finishes count. Contracts and Practice do not.']],
+      weekly_run: [['MOON RUNS', 'run', 'Accepted standard run completions/extractions and official Daily Run finishes count. Contracts do not.']],
       weekly_boss_attempt: [['WEEKLY BOSS', 'weekly_boss', 'Use an available Weekly Boss attack. Seasonal raids are separate.']],
       weekly_check_in: [['DAILY CACHE', 'daily_chest', 'Collect Daily Cache on two UTC days. One account cache is available each day.']],
       'pet-daily-shop': [['SHOP', 'shop', 'Buy new permanent gear. Market, crafting and free switches do not count.'], ['EQUIPMENT', 'gear_upgrade', 'An accepted equipment upgrade also counts.']],
@@ -88,7 +88,7 @@
     var available, waiting;
     if (Object.prototype.hasOwnProperty.call(careEvents, id)) {
       available = bountyRouteOptions({ event_types: careEvents[id] }, s).some(function (entry) { return entry.available; });
-      waiting = 'Qualifying care is waiting on cooldowns, energy or a background activity. Open care to check; Contracts and Practice remain replayable.';
+      waiting = 'Qualifying care is waiting on cooldowns, energy or a background activity. Open care to check; Contracts remain replayable.';
     } else if (id === 'weekly_check_in') {
       available = Boolean(g.daily_cache && g.daily_cache.available);
       waiting = 'Daily Cache is not available now. This target needs cache claims on two UTC days; switching pets cannot claim another account cache today.';
@@ -99,7 +99,7 @@
       var sourceMatches = !s.run || !s.run.pet_id && !(s.run.source_pet && s.run.source_pet.pet_id)
         || (s.run.source_pet && s.run.source_pet.pet_id || s.run.pet_id) === (s.pet && s.pet.pet_id);
       available = sourceMatches && (s.run ? runAvailability(s).step || runAvailability(s).extract : Number(s.pet && s.pet.energy) >= 12 || Boolean(s.daily_run && s.daily_run.available));
-      waiting = sourceMatches ? 'Restore run energy or check the official Daily Run availability. Contracts and Practice do not count toward this target.' : 'The saved run credits its original pet. Finish it before starting a qualifying run for this pet.';
+      waiting = sourceMatches ? 'Restore run energy or check the official Daily Run availability. Contracts do not count toward this target.' : 'The saved run credits its original pet. Finish it before starting a qualifying run for this pet.';
     }
     if (available !== undefined) routes = routes.map(function (entry) {
       return Object.assign({}, entry, { available: Boolean(available), title: available ? entry.title : entry.title.replace(/^OPEN /, 'CHECK '), detail: available ? entry.detail : waiting });
@@ -164,7 +164,7 @@
         return destination.screen === target.screen && destination.focus === target.focus && ready(event);
       });
       return Object.assign({}, target, { available: available,
-        detail: available ? 'A qualifying action is available in the latest game state. Review its costs before playing.' : 'No qualifying action is ready here now. Open to review its unlocks, cooldowns or resources; Contracts and Practice remain available.' });
+        detail: available ? 'A qualifying action is available in the latest game state. Review its costs before playing.' : 'No qualifying action is ready here now. Open to review its unlocks, cooldowns or resources; Contracts remain available.' });
     });
   }
 
@@ -244,9 +244,8 @@
       if (nextBounty) add('bounty_target', 'NEXT BOUNTY // ' + nextBounty.bounty.title, nextBounty.bounty.progress + '/' + nextBounty.bounty.required + ' // ' + (nextBounty.bounty.detail || '') + ' A qualifying route is ready; review its costs.', nextBounty.routes[0]);
     }
     if (s.contracts && s.contracts.available) add('contract', s.contracts.run && s.contracts.run.status === 'active' ? 'CONTINUE CONTRACT' : 'CONTINUING CONTRACTS', 'Choose a quest, build and route length. Saved rank and upgrade drafts. New quests after every finish; no pet energy cost.');
-    add('practice', 'PRACTICE ROGUELITE', egg ? 'Hatch to unlock saved training and daily XP bonuses.' : 'Saved training rank on qualifying clears; three daily XP bonuses. No pet costs.');
     if (egg) {
-      add('incubate', 'SECRET BOT CARE', 'Care and reveal remain server-controlled. Hatch to unlock official training.');
+      add('incubate', 'SECRET BOT CARE', 'Care and reveal remain server-controlled. Hatch to unlock Contracts.');
       return choices;
     }
     if (!g.activity && (g.activity_options || []).length) add('activity', 'CHOOSE A BACKGROUND ACTIVITY', 'Compare four activities and duration rewards. Keep playing contracts while it accumulates.');
@@ -282,7 +281,7 @@
     add('bounty', 'BOUNTY BOARD', 'Check server-tracked targets and claim only completed bounties.');
     if (g.season && (g.season.tiers || []).length && !seasonClaims.length) {
       var nextTier = g.season.tiers.find(function (tier) { return !tier.unlocked; });
-      add('season', nextTier ? 'NEXT SEASON REWARD // ' + nextTier.title : 'SEASON REWARDS COMPLETE', nextTier ? Math.max(0, Number(nextTier.required_xp) - Number(g.season.xp || 0)) + ' more season XP to unlock. Rewarded routes keep their daily XP caps.' : 'All current tiers collected. Contracts, Practice and pet progression remain available.');
+      add('season', nextTier ? 'NEXT SEASON REWARD // ' + nextTier.title : 'SEASON REWARDS COMPLETE', nextTier ? Math.max(0, Number(nextTier.required_xp) - Number(g.season.xp || 0)) + ' more season XP to unlock. Rewarded routes keep their daily XP caps.' : 'All current tiers collected. Contracts and pet progression remain available.');
     }
     return choices;
   }
@@ -306,7 +305,6 @@
       else if (entry.key === 'daily_run' || entry.key === 'weekly_boss') rank = 45;
       else if (['daily_journey', 'weekly_journey', 'mission', 'bounty', 'season'].includes(entry.key)) rank = 85;
       else if (entry.key === 'activity' && g.activity && !g.activity.ready) rank = 90;
-      else if (entry.key === 'practice') rank = 100;
       return Object.assign({}, entry, { rank: rank, order: index });
     });
     function add(key, title, detail, destination, rank) {

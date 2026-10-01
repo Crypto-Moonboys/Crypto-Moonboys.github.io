@@ -51,7 +51,7 @@ export const PET_RUN_STATUSES = Object.freeze(['active', 'completed', 'failed', 
 export const PET_ROOM_TYPES = Object.freeze(['battle', 'choice_event', 'loot', 'elite', 'boss']);
 export const PET_REWARD_SOURCES = Object.freeze([
   'pet_event', 'pet_kaiju', 'pet_job', 'pet_activity', 'pet_adventure', 'pet_arena', 'pet_run_legacy', 'pet_action', 'pet_item_use',
-  'pet_weekly_boss', 'pet_season_reward', 'pet_contract', 'pet_practice', 'pet_daily_completion', 'pet_season_finale',
+  'pet_weekly_boss', 'pet_season_reward', 'pet_contract', 'pet_daily_completion', 'pet_season_finale',
   'pet_bounty', 'pet_expedition', 'pet_market',
   'pet_district', 'pet_event_chain', 'pet_seasonal_boss',
   'roguelite_room', 'roguelite_boss', 'roguelite_completion',
@@ -224,14 +224,6 @@ function getRewardAuthorization(source, telegramId, context = {}, now = new Date
     if (!runId) throw new Error('invalid_pet_reward_context');
     return { sql: "AND EXISTS (SELECT 1 FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ? AND status IN ('completed', 'extracted'))", args: [runId, telegramId] };
   }
-  if (source === 'pet_practice') {
-    if (!context.run_id || context.pet_id !== petId || !context.season_key) throw Error('invalid_pet_reward_context');
-    return { sql: `AND EXISTS (SELECT 1 FROM telegram_pet_practice c
-      JOIN telegram_pet_instances p ON p.pet_id=c.pet_id AND p.telegram_id=c.telegram_id AND p.season_key=c.season_key
-      JOIN telegram_pet_season_slots s ON s.pet_id=p.pet_id AND s.telegram_id=p.telegram_id AND s.season_key=p.season_key AND s.slot_number=p.slot_number
-      WHERE c.run_id=? AND c.telegram_id=? AND c.pet_id=? AND c.season_key=? AND c.status='completed' AND c.reward_xp=10)`,
-      args: [context.run_id,telegramId,petId,context.season_key] };
-  }
   if (source === 'pet_contract') {
     const contractId = String(context.contract_id || '');
     const petId = String(context.pet_id || '');
@@ -284,11 +276,6 @@ export async function awardPetReward(db, request = {}) {
     if (!petId || request.context?.season_key !== request.season_key || idempotencyKey !== key || request.event_key !== key
       || request.event_type !== (daily ? 'daily_completion' : 'season_finale')) throw Error('invalid_pet_reward_context');
     rewards = normalizePetReward(daily ? DAILY_COMPLETION_REWARD : SEASON_FINALE_REWARD);
-  }
-  if (source === 'pet_practice') {
-    if (!petId || petId !== request.context?.pet_id || request.season_key !== request.context?.season_key || idempotencyKey !== request.context?.run_id
-      || request.event_key !== `practice:${idempotencyKey}` || request.event_type !== 'practice_complete') throw Error('invalid_pet_reward_context');
-    rewards = normalizePetReward({ pet_xp: 10 });
   }
   if (source === 'pet_contract') {
     if (!petId || petId !== request.context?.pet_id || request.season_key !== request.context?.season_key || idempotencyKey !== request.context?.contract_id) throw new Error('invalid_pet_reward_context');

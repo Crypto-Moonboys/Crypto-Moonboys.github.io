@@ -18,8 +18,8 @@ Any gameplay, documentation, or UI change affecting Moonpet status should refere
 
 This reference and the seasonal model describe current rules. Dated audits are
 evidence for their reviewed commit and must not override later shipped behavior.
-In particular, old “no completion bonus/finale” and “Practice/Style/relics inactive”
-findings were superseded by completion rewards and the training/style/relic release.
+In particular, old “no completion bonus/finale” and “Style/relics inactive”
+findings were superseded by completion rewards and the style/relic release.
 See [the September 29 reconciliation tracker](moonpet-reconciliation-2026-09-29.md)
 for verified fixes and work still outstanding.
 
@@ -132,8 +132,7 @@ Both rewards use the existing atomic ledger, fixed server reward values and
 1200 daily Pet XP cap. Daily/weekly leaderboards count settlement-time Pet XP;
 seasonal XP stays with the source season and all-time includes retained pets.
 Public activity names the two rewards. These payouts add no Journey objectives
-or specialist/material bonuses. Practice has its own server-saved training rank and bounded daily XP bonuses
-(see Play Now and practice below).
+or specialist/material bonuses.
 
 Missing feature tables during rollout show the additions as unavailable while
 retaining the existing checklist. Other database errors follow the retry path.
@@ -167,7 +166,7 @@ Worker deploy only; no new migration, frontend deployment or assets are needed.
 Relic Vault projects the account's stored relics using their `unlocked_at`
 timestamp. A failed vault read is labelled temporarily unavailable, not empty;
 it never clears ownership. All ten relics have active, snapshotted adaptations in
-new Practice and Contract runs. Standard and official Daily Runs retain their
+new Contract runs. Standard and official Daily Runs retain their
 separate rules, and earlier saved runs retain their original rules.
 
 State refreshes batch notice/achievement writes and do not rewrite unchanged
@@ -267,7 +266,7 @@ Daily mission shortcuts show qualifying alternatives for the adventure, shopping
 and bank targets. Weekly objective routes lead directly to care, training, runs,
 Weekly Boss and Daily Cache. The weekly run label includes standard as well as
 official runs; standard completion/extraction and official Daily Run finishes
-use the existing accepted-event authority. Contracts and Practice remain excluded.
+use the existing accepted-event authority. Contracts remain excluded.
 The links are navigation only and never spend resources or submit progress.
 
 Play Now's next bounty chooses only currently available qualifying routes,
@@ -275,7 +274,7 @@ ranked by existing progress. It checks care/work cooldowns, active activities,
 run-source energy and availability, Adventure readiness, cache status, usable
 inventory and Kaiju capability gates. A blocked Moon Run may route to an
 available Adventure. Official Daily Runs are not suggested for a bounty that
-counts standard run events. When all targets are blocked, Contracts, Practice
+counts standard run events. When all targets are blocked, Contracts
 and the bounty board remain accessible. Board links explain that a route is not
 ready without hiding the target or granting progress. All checks are navigation
 hints from the latest state; the server still validates gameplay and rewards.
@@ -320,14 +319,14 @@ from thirty minutes until two hours; the Adventure Map replaces that crystal
 at two hours. Previews remain subject to reward caps and stat limits.
 
 One background activity continues while other routes are played. The Work
-screen links directly to Contracts and Practice. Ready claims and recoverable
+screen links directly to Contracts. Ready claims and recoverable
 interrupted claims appear in Play Now. Recovery uses the stored reward snapshot,
 does not accumulate a new reward and cannot be cancelled or paid twice. Active
 sessions expire twenty-four hours after their duration cap if left unclaimed.
 
 Egg and unadopted players see clear action locks across Work, Economy and other
 panels. Egg care, incubation, hatching, account controls and stale-combat cleanup
-retain their existing rules. Official Practice unlocks after hatching.
+retain their existing rules.
 
 ---
 
@@ -483,7 +482,7 @@ so distinct simultaneous requests cannot both award. Adventure settlement
 rechecks the captured pet's entry energy. Rejections preserve the real cooldown
 or energy reason and never report an unawarded rolled outcome as a success.
 Play Now links to available Adventures, Street Events and unlocked jobs whose
-cooldown has elapsed, alongside Contracts, Practice and other existing routes.
+cooldown has elapsed, alongside Contracts and other existing routes.
 
 The first three successful contracts per account per UTC day reserve a bonus
 of up to 20 Pet XP each, subject to the existing 1,200 daily Pet XP cap. The
@@ -569,11 +568,11 @@ Accepted request keys replay their original destination, cost and saved receipt,
 including after the last attempt, a pet switch or UTC rollover. Historical
 account-only receipts remain account-only. Replay grants no further rewards.
 The Mini App shows today's receipts, the UTC reset, and available destinations
-in Play Now. Contracts and Practice are linked from the board for continued
+in Play Now. Contracts are linked from the board for continued
 play after energy or attempts run out. A frontend awaiting the updated Worker
 shows a syncing message instead of submitting destination choices it cannot honour.
 
-### Play Now and practice
+### Play Now
 
 Play Now links the current snapshot to available live routes. Navigation does
 not submit an action; each destination still enforces its server requirements.
@@ -591,25 +590,7 @@ account/day attempt status and its UTC reset; switching pets does not grant a
 second attempt. The standard Moon Run and official Daily Moon Run retain their
 separate reward and completion rules.
 
-Practice Roguelite is authenticated, server-saved training for hatched pets.
-Three builds and three goals span 12 rooms, three upgrade drafts and a final
-checkpoint boss. Full circuit + goal + successful final tactic earns repeatable
-training rank. The first three qualifying clears per account/UTC day reserve
-10 Pet XP each under the usual 1,200 daily cap. Rank continues after bonuses.
-There is no pet energy/currency cost. Extraction, failure and a missed goal pay
-nothing. Rest cannot clear the boss. It grants no Community XP, materials,
-Growth Marks, Weekly Crests or official Daily Run objective credit.
-
-Server state and random rolls are authoritative; browser seeds/scores/rewards
-are ignored. Turns use revision checks. Reward claims use fixed values and the
-original pet/season; failed payouts appear as recoverable claims across pet
-switches and season changes. The normal four XP periods count applied rewards;
-training rank is a separate per-pet record. Old local runs remain unrewarded.
-Apply migration 079 before deploying this Worker/frontend revision.
-
-Existing story-chain, district, raid and reward limits remain in force. No
-future system is unlocked by practice. The player can leave and resume play;
-there is no penalty for closing the app.
+The player can leave and resume saved routes without a penalty for closing the app.
 
 ### Telegram presentation read authority
 
@@ -706,9 +687,8 @@ victory day/week. Old recovery cannot rewind care clocks, reset a newer streak
 or fabricate this week's Journey evidence.
 
 Play Now and Coach surface pending rewards. After an attack, the board links
-to server-saved Contracts and Practice. Their existing rules remain:
+to server-saved Contracts. Their existing rules remain:
 contracts continue without energy or cooldowns, with bounded daily bonuses;
-practice is unlimited with saved training rank and three daily XP bonus slots.
 
 ## Equipment
 
@@ -886,7 +866,7 @@ clear odds only; reward authority, daily limits and economic caps are unchanged.
 
 Existing runs retain their earlier rules and condition. New runs select only
 implemented conditions. All ten relics now have active, documented adaptations
-in new Practice and Contract runs: health, odds, hidden routes, damage reduction,
+in new Contract runs: health, odds, hidden routes, damage reduction,
 rest, a once-per-run escape and rare salvage. Their canonical IDs are read from
 owned relics and snapshotted at start; database reads must succeed. Stored
 effects JSON cannot inject a bonus. Old saved runs retain their rules.
