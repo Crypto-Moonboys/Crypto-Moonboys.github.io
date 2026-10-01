@@ -56,7 +56,7 @@ assert.match(progressText, /PET PROGRESSION/);
 assert.match(progressText, /Care XP: 800/);
 assert.match(progressText, /Job rank: crew_member/);
 assert.match(progressText, /Traits: loyal/);
-assert.match(progressText, /Prestige: 2/);
+assert.doesNotMatch(progressText, /Prestige:/, 'retired Prestige is absent from live progression summaries');
 
 const gearText = buildPetGearSummary([{ item_key: 'hoverboard', item_level: 4, mastery_xp: 1000 }]);
 assert.match(gearText, /PET GEAR/);
