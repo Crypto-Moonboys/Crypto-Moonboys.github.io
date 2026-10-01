@@ -254,15 +254,15 @@ async function resolveDailyRunSeasonPet(db, telegramId, seasonKey) {
       AND i.season_key = s.season_key AND i.slot_number = s.slot_number
     WHERE a.telegram_id = ? AND s.status = 'active' AND i.status = 'active' LIMIT 1`)
     .bind(telegramId).first();
-  if (active?.season_key === seasonKey) return { accepted: true, pet_id: active.pet_id, season_key: seasonKey };
+  if (active) return { accepted: true, pet_id: active.pet_id, season_key: active.season_key };
   const currentSeasonPet = await db.prepare(`SELECT s.pet_id, s.season_key FROM telegram_pet_season_slots s
     JOIN telegram_pet_instances i ON i.pet_id = s.pet_id AND i.telegram_id = s.telegram_id
       AND i.season_key = s.season_key AND i.slot_number = s.slot_number
-    WHERE s.telegram_id = ? AND s.season_key = ? AND s.status = 'active' AND i.status = 'active'
-    ORDER BY CASE WHEN s.slot_number = 1 THEN 0 ELSE 1 END, s.slot_number, s.created_at LIMIT 1`)
-    .bind(telegramId, seasonKey).first();
+    WHERE s.telegram_id = ? AND s.status = 'active' AND i.status = 'active'
+    ORDER BY s.created_at, s.pet_id LIMIT 1`)
+    .bind(telegramId).first();
   if (!currentSeasonPet) return { accepted: false, reason: 'daily_run_current_season_pet_required' };
-  return { accepted: true, pet_id: currentSeasonPet.pet_id, season_key: seasonKey, recovered: true };
+  return { accepted: true, pet_id: currentSeasonPet.pet_id, season_key: currentSeasonPet.season_key, recovered: true };
 }
 
 export async function createDailyMoonRun(db, request = {}) {
@@ -287,7 +287,7 @@ export async function createDailyMoonRun(db, request = {}) {
       region: 'moon_alley',
       seed: generated.run_seed,
       max_room: region.max_rooms,
-      season_key: seasonId,
+      season_key: seasonPet.season_key,
       pet_id: seasonPet.pet_id,
     });
     if (!started.accepted && !started.duplicate) {
@@ -301,7 +301,7 @@ export async function createDailyMoonRun(db, request = {}) {
     requestedSeasonPet = seasonPet;
     if (
       String(existingDaily.pet_id || '') !== String(seasonPet.pet_id || '') ||
-      String(existingDaily.season_key || '') !== String(seasonId)
+      String(existingDaily.season_key || '') !== String(seasonPet.season_key)
     ) {
       return {
         accepted: false,
@@ -317,7 +317,7 @@ export async function createDailyMoonRun(db, request = {}) {
   if (!String(authoritativeRun.pet_id || '').trim()) {
     return { accepted: false, duplicate: false, reason: 'run_pet_authority_required', utc_day: utcDay, run_id: runId, seed: generated.seed };
   }
-  if (String(authoritativeRun.pet_id) !== String(requestedSeasonPet.pet_id) || authoritativeRun.season_key !== seasonId) {
+  if (String(authoritativeRun.pet_id) !== String(requestedSeasonPet.pet_id) || authoritativeRun.season_key !== requestedSeasonPet.season_key) {
     return { accepted: false, reason: 'daily_run_pet_authority_mismatch', utc_day: utcDay };
   }
   return initializeDailyMoonRun(db, authoritativeRun, generated);
@@ -342,7 +342,7 @@ async function recoverDailyMoonRunStart(db, telegramId, runId) {
   if (!run) return false;
   if (!run.source_owned || !run.source_started || run.source_resolved
     || !['active','extractable'].includes(run.status) || run.current_room !== 0 || run.depth !== 0 || run.rooms_completed !== 0
-    || Number(run.seed) !== generated.run_seed || run.season_key !== getDailySeasonId(utcDay)
+    || Number(run.seed) !== generated.run_seed
     || run.region !== 'moon_alley' || Number(run.max_room) !== PET_ROGUELITE_REGIONS.moon_alley.max_rooms) {
     throw new Error('daily_run_start_unavailable');
   }
@@ -645,12 +645,13 @@ async function recordChallengeEvidence(db, request, options = {}) {
   const seasonId = getDailySeasonId(utcDay);
   const requestedPetId = String(request.pet_id || request.evidence?.pet_id || '').trim();
   const participatingPet = requestedPetId
-    ? await db.prepare(`SELECT pet_id, telegram_id, season_key FROM telegram_pet_season_slots
-      WHERE pet_id = ? AND telegram_id = ? AND season_key = ? LIMIT 1`)
-      .bind(requestedPetId, telegramId, seasonId).first()
-    : await db.prepare(`SELECT pet_id, telegram_id, ? AS season_key FROM telegram_pet_daily_runs
-      WHERE telegram_id = ? AND utc_day = ? AND pet_id IS NOT NULL LIMIT 1`)
-      .bind(seasonId, telegramId, utcDay).first();
+    ? await db.prepare(`SELECT s.pet_id,s.telegram_id,s.season_key FROM telegram_pet_season_slots s
+      JOIN telegram_pet_instances i ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id AND i.season_key=s.season_key AND i.slot_number=s.slot_number
+      WHERE s.pet_id=? AND s.telegram_id=? LIMIT 1`).bind(requestedPetId,telegramId).first()
+    : await db.prepare(`SELECT r.pet_id,r.telegram_id,i.season_key FROM telegram_pet_daily_runs r
+      JOIN telegram_pet_instances i ON i.pet_id=r.pet_id AND i.telegram_id=r.telegram_id
+      JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id AND s.season_key=i.season_key AND s.slot_number=i.slot_number
+      WHERE r.telegram_id=? AND r.utc_day=? LIMIT 1`).bind(telegramId,utcDay).first();
   const petId = String(participatingPet?.pet_id || '').trim();
   const analyticsId = `daily:challenge:${telegramId}:${utcDay}:${challenge.challenge_id}`;
   const nextProgressSql = challenge.validation_rules.progress_mode === 'max'
@@ -661,7 +662,7 @@ async function recordChallengeEvidence(db, request, options = {}) {
       (event_id, telegram_id, pet_id, season_key, utc_day, challenge_id, event_key, progress_value, status, evidence)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'accepted', ?)`)
       .bind(`daily-journey:objective:${petId}:${utcDay}:${challenge.challenge_id}:${eventKey}`,
-        telegramId, petId, seasonId, utcDay, challenge.challenge_id, eventKey, value, safeJson(request.evidence))] : []),
+        telegramId, petId, participatingPet.season_key, utcDay, challenge.challenge_id, eventKey, value, safeJson(request.evidence))] : []),
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_daily_challenge_events
       (event_id, telegram_id, utc_day, challenge_id, event_key, progress_value, evidence)
       VALUES (?, ?, ?, ?, ?, ?, ?)`)
@@ -699,7 +700,7 @@ async function recordChallengeEvidence(db, request, options = {}) {
   const dailyJourney = petId && !options.defer_award ? await finalizeDailyJourneyGrowthMark(db, {
     telegram_id: telegramId,
     pet_id: petId,
-    season_key: seasonId,
+    season_key: participatingPet.season_key,
     utc_day: utcDay,
   }) : null;
   return {
@@ -849,8 +850,10 @@ export async function recordDailyCareChallenge(db, request = {}, options = {}) {
   const telegramId = String(request.telegram_id || '').trim();
   const eventKey = String(request.event_key || '').trim();
   if (!telegramId || !eventKey) throw new Error('invalid_daily_care_evidence');
-  const evidence = await db.prepare(`SELECT pet_id, event_type, event_key, day_key FROM telegram_pet_events
-    WHERE telegram_id = ? AND event_key = ? AND status = 'accepted' LIMIT 1`)
+  const evidence = await db.prepare(`SELECT e.pet_id,e.event_type,e.event_key,e.day_key FROM telegram_pet_events e
+    LEFT JOIN telegram_pet_instances i ON i.pet_id=e.pet_id AND i.telegram_id=e.telegram_id AND i.season_key=e.season_key
+    LEFT JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id AND s.season_key=i.season_key AND s.slot_number=i.slot_number
+    WHERE e.telegram_id = ? AND e.event_key = ? AND e.status = 'accepted' AND (e.pet_id IS NULL OR s.pet_id IS NOT NULL) LIMIT 1`)
     .bind(telegramId, eventKey).first();
   if (!evidence || !CARE_ACTIONS.has(String(evidence.event_type))) return { accepted: false, duplicate: false, reason: 'care_evidence_not_authorized' };
   const utcDay = String(evidence.day_key || '');

@@ -1189,7 +1189,7 @@
     var weeklyCompleted = Math.max(0, Number(weeklyAuthority.completed_objectives != null ? weeklyAuthority.completed_objectives : weeklyCapability.completed_objectives) || 0);
     var objectives = Array.isArray(weeklyAuthority.objectives) ? weeklyAuthority.objectives
       : Array.isArray(weeklyCapability.objectives) ? weeklyCapability.objectives : [];
-    if (weeklyReason === 'active_pet_required') return 'Initialise, incubate, hatch, or select an active seasonal Moonpet before Weekly Journey progress starts.';
+    if (weeklyReason === 'active_pet_required') return 'Initialise, incubate, hatch, or select an active Moonpet before Weekly Journey progress starts.';
     if (weeklyState === 'COMING_SOON') return 'Weekly Journey is planned expansion.';
     if (weeklyState !== 'AVAILABLE' || weeklyRequired <= 0) return 'Weekly Journey authority is syncing. Progress display will refresh when server authority is available.';
     var weeklyCrestAwarded = weeklyAuthority.weekly_crest_awarded != null
@@ -1227,7 +1227,7 @@
       return '<div class="line locked">WEEKLY JOURNEY // HATCH REQUIRED</div>' +
         '<div class="line muted">Weekly Journey progress starts after HATCH MOONPET creates an active companion.</div>' +
         '<div class="line muted">NEXT // Incubate or HATCH MOONPET before Weekly Journey progress starts.</div>' +
-        '<div class="line muted">No Daily or Weekly objective progress is shown until you have an active hatched seasonal Moonpet.</div>';
+        '<div class="line muted">No Daily or Weekly objective progress is shown until you have an active hatched Moonpet.</div>';
     }
     if (!weeklyReady) {
       var waitingTitle = weeklyState === 'COMING_SOON'
@@ -1241,7 +1241,7 @@
       var waitingDetail = weeklyState === 'COMING_SOON'
         ? 'Weekly Journey objectives will appear when this system is available.'
         : weeklyReason === 'active_pet_required'
-          ? 'No Daily or Weekly objective progress is shown until you have an active hatched seasonal Moonpet.'
+          ? 'No Daily or Weekly objective progress is shown until you have an active hatched Moonpet.'
           : 'Complete objectives to qualify for server settlement once authority returns objective evidence.';
       return '<div class="line locked">' + waitingTitle + '</div>' +
         '<div class="line muted">' + escapeHtml(waitingCopy) + '</div>' +
@@ -1321,10 +1321,10 @@
     if (!state || !state.adopted || !state.pet) return 'Initialise a Secret Bot to begin.';
     if (phase === 'egg') return authoritativeLifecycle.incubation && authoritativeLifecycle.incubation.ready ? 'REVEAL BOT to wake your first companion.' : 'Care for your Secret Bot until the breakout signal is ready.';
     if (seasonSlots.unavailable) return 'Season slot authority is syncing. Active Moonpet guidance will refresh when server authority is available.';
-    if (!slot.pet_id) return 'Pick an active seasonal Moonpet before journey progress starts.';
+    if (!slot.pet_id) return 'Pick an active Moonpet before journey progress starts.';
     if (evolutionReady) return 'Evolve your active Moonpet when you are ready.';
     if (isNewlyHatchedFirstSessionPet(phase, progression)) return 'Start with first care, then follow the first server-authoritative Journey objective when it appears.';
-    return 'Keep the active seasonal Moonpet moving through Daily and Weekly Journey objectives.';
+    return 'Keep the active Moonpet moving through Daily and Weekly Journey objectives.';
   }
 
   function isNewlyHatchedFirstSessionPet(phase, progression) {
@@ -1803,7 +1803,7 @@
       var timingCore = timing.status === 'UNAVAILABLE'
         ? '<div class="line muted">RUNTIME SEASON TIMING UNAVAILABLE.</div>'
         : '<div class="season-status-grid"><div><span>PHASE</span><strong>' + timing.status + '</strong></div><div><span>POSITION</span><strong>DAY ' + number(timing.day) + ' / ' + number(timing.totalDays) + '</strong></div><div><span>REMAINING</span><strong>' + countdownMarkup({ expires_at: season.end_at }, '') + '</strong></div><div><span>ACTIVE SLOT</span><strong>' + number(activeCore.slot_number || 1) + '</strong></div></div>' + meter('SEASON', timing.percent);
-      return panel('SEASON STATUS // CORE',
+      return panel('COMPETITION SEASON // CORE',
         '<div class="season-identity"><strong>SEASON ' + number(season.season_number || 1) + ' // ' + escapeHtml(season.key || 'CURRENT') + '</strong><span>LIGHTWEIGHT HOME SNAPSHOT</span></div>' +
         timingCore +
         '<div class="line muted">Detailed pet progression, Growth Marks, Weekly Crests and season reward tiers load when you open Missions or Profile.</div>' +
@@ -1826,9 +1826,9 @@
     var journeyStatus = journey.season_complete ? 'SEASON COMPLETE'
       : journey.legendary ? 'LEGENDARY // SEASON JOURNEY STILL INCOMPLETE' : 'ROAD TO LEGENDARY';
     var lifecycleRequirement = journeyLifecycle.next_evolution ? 'LEVEL // ' + number(levelRequirement.current) + '/' + number(levelRequirement.required) + ' // EVOLUTION READY ' + (journeyLifecycle.evolution_ready ? 'YES' : 'NO // ' + words(journeyLifecycle.authority_reason || 'requirements not met')) : 'FINAL FORM REACHED';
-    var journeyPanel = journey.pet_id ? '<div class="progression-split"><div><strong>LIFECYCLE // STAGE ' + number(journeyLifecycle.current_stage) + '/' + number(journeyLifecycle.total_stages) + '</strong><span>NEXT // ' + escapeHtml(nextEvolution.name || 'FINAL FORM REACHED') + '</span><span>' + lifecycleRequirement + '</span></div><div><strong>SEASON JOURNEY // WEEK ' + number(summary.current_season_week) + '</strong><span>GROWTH MARKS // ' + number(journeyGrowth.earned) + '/' + number(journeyGrowth.required) + '</span><span>WEEKLY CRESTS // ' + number(journeyCrests.earned) + '/' + number(journeyCrests.required) + '</span><span>' + journeyStatus + '</span></div></div>' : '<div class="line muted"><strong>PROGRESSION UNAVAILABLE</strong></div>';
+    var journeyPanel = journey.pet_id ? '<div class="progression-split"><div><strong>LIFECYCLE // STAGE ' + number(journeyLifecycle.current_stage) + '/' + number(journeyLifecycle.total_stages) + '</strong><span>NEXT // ' + escapeHtml(nextEvolution.name || 'FINAL FORM REACHED') + '</span><span>' + lifecycleRequirement + '</span></div><div><strong>PET JOURNEY // WEEK ' + number(summary.current_season_week) + '</strong><span>GROWTH MARKS // ' + number(journeyGrowth.earned) + '/' + number(journeyGrowth.required) + '</span><span>WEEKLY CRESTS // ' + number(journeyCrests.earned) + '/' + number(journeyCrests.required) + '</span><span>' + journeyStatus + '</span></div></div>' : '<div class="line muted"><strong>PROGRESSION UNAVAILABLE</strong></div>';
     var available = Number(summary.arcade_xp_available != null ? summary.arcade_xp_available : (provided[0] && provided[0].arcade_xp_available != null ? provided[0].arcade_xp_available : 0));
-    var rows = [1, 2, 3].map(function (slotNumber) {
+    var rows = Array.from({ length: Math.max(3, provided.length) }, function (_, index) { return index + 1; }).map(function (slotNumber) {
       var slot = byNumber[slotNumber] || { slot_number: slotNumber, unlocked: false, purchase_enabled: false };
       var owned = Boolean(slot.unlocked);
       var active = Boolean(slot.active);
@@ -1850,11 +1850,13 @@
     }).join('');
     var timingCopy = timing.status === 'UNAVAILABLE'
       ? '<div class="line muted">RUNTIME SEASON TIMING UNAVAILABLE.</div>'
-      : '<div class="season-status-grid"><div><span>PHASE</span><strong>' + timing.status + '</strong></div><div><span>POSITION</span><strong>DAY ' + number(timing.day) + ' / ' + number(timing.totalDays) + '</strong></div><div><span>REMAINING</span><strong>' + countdownMarkup({ expires_at: season.end_at }, '') + '</strong></div><div><span>CYCLE</span><strong>' + (timing.partial ? 'YEAR-END PARTIAL' : '90-DAY TARGET') + '</strong></div></div>' + meter('SEASON', timing.percent);
-    return panel('SEASON STATUS // LIVE',
+      : '<div class="season-status-grid"><div><span>PHASE</span><strong>' + timing.status + '</strong></div><div><span>POSITION</span><strong>DAY ' + number(timing.day) + ' / ' + number(timing.totalDays) + '</strong></div><div><span>REMAINING</span><strong>' + countdownMarkup({ expires_at: season.end_at }, '') + '</strong></div><div><span>CYCLE</span><strong>' + 'CALENDAR QUARTER' + '</strong></div></div>' + meter('SEASON', timing.percent);
+    return panel('COMPETITION SEASON // LIVE',
       '<div class="season-identity"><strong>SEASON ' + number(season.season_number || 1) + ' // ' + escapeHtml(season.key || 'CURRENT') + '</strong><span>SERVER-AUTHORITATIVE CALENDAR</span></div>' + timingCopy +
       journeyPanel + '<div class="progression-split"><div><strong>PET PROGRESSION</strong><span>Identity // stats // lifecycle // Pet XP stay with each pet instance.</span></div><div><strong>ACCOUNT SEASON XP</strong><span>' + number(accountSeason.xp) + ' XP across your pets for this season // ' + number(unlockedTiers) + '/' + number(tiers.length) + ' tiers // shared seasonal rank</span></div></div>' +
       '<div class="line muted">NEXT // ' + escapeHtml(profileNextLine()) + '</div>' +
+      '<div class="line complete">PETS AND PURCHASED SPACES DO NOT RESET WITH COMPETITION SEASONS.</div>' +
+      (summary.recovery_over_capacity ? '<div class="line locked">RECOVERED PETS EXCEED THREE SPACES // All saves are retained. New purchases are blocked; ownership needs review.</div>' : '') +
       '<div class="season-slot-balance"><strong>CURRENT ARCADE XP</strong><span>' + number(available) + '</span></div>' +
       '<div class="line muted">PET 1 IS FREE // PET 2 REQUIRES 500 XP // PET 3 REQUIRES 1,000 XP // EARNED COMMUNITY PROGRESSION</div><div class="season-slot-grid">' + rows + '</div>' +
       '<div class="line muted">IN DEVELOPMENT // DIMINISHING-RETURN BALANCING · FUTURE // CATCH-UP SYSTEMS</div>', 'season-slots');
@@ -2731,7 +2733,7 @@
       market_pet_unavailable: 'select a hatched active pet before buying.',
       contract_not_found: 'contract unavailable for this pet.',
       contract_bonus_pending: 'bonus saved; retry its delivery from the contract board.',
-      active_pet_required: 'active seasonal Moonpet required.',
+      active_pet_required: 'active Moonpet required.',
       completed_season_pet_required: 'completed Season pet required.',
       weekly_journey_authority_syncing: 'Weekly Journey authority syncing.',
       daily_journey_authority_syncing: 'Daily Journey authority syncing.',

@@ -20,6 +20,7 @@ sqlite.exec(await fs.readFile(path.join(root, 'workers/moonboys-api/schema.sql')
 sqlite.exec(await fs.readFile(path.join(root, 'workers/moonboys-api/migrations/048_telegram_pet_player_expansion.sql'), 'utf8'));
 sqlite.exec(await fs.readFile(path.join(root, 'workers/moonboys-api/migrations/058_telegram_pet_season_completion.sql'), 'utf8'));
 sqlite.exec(await fs.readFile(path.join(root, 'workers/moonboys-api/migrations/061_moonpet_season_economy_calibration.sql'), 'utf8'));
+sqlite.exec(await fs.readFile(path.join(root, 'workers/moonboys-api/migrations/085_permanent_pet_weekly_evidence.sql'), 'utf8'));
 let failActivitySettlement = false;
 let failFinaleReward = false;
 let failWeeklyReward = false;
@@ -321,6 +322,29 @@ try {
     }
     await page.locator('[data-screen="home"]').click();
     assert.equal(await page.locator('[data-panel="practice"], [data-focus="practice"], [data-practice-action]').count(), 0);
+    currentUser = `browser-permanent-${viewport.width}`;
+    await seed(currentUser,'egg');
+    const savedPets = [['original',1,4321,'2026-07-01'],['purchased',2,9876,'2026-08-15']];
+    for (const [label,slot,xp,created] of savedPets) {
+      const petId = `${currentUser}:${label}`;
+      sqlite.prepare(`INSERT INTO telegram_pet_season_slots (pet_id,telegram_id,season_key,slot_number,acquisition_type,arcade_xp_spent,created_at)
+        VALUES (?,?,'pet-s2025-004',?,?,?,?)`).run(petId,currentUser,slot,slot===1?'free':'arcade_xp',slot===1?0:500,created);
+      sqlite.prepare(`INSERT INTO telegram_pet_instances (pet_id,telegram_id,season_key,slot_number,pet_xp,source_profile_updated_at)
+        VALUES (?,?,'pet-s2025-004',?,?,'0001-01-01 00:00:00')`).run(petId,currentUser,slot,xp);
+      sqlite.prepare(`INSERT INTO telegram_pet_lifecycle_by_pet (pet_id,telegram_id,identity_seed,phase) VALUES (?,?,?,'young')`).run(petId,currentUser,petId);
+    }
+    await page.reload(); await page.waitForSelector('[data-panel="incubation"]');
+    await page.locator('[data-screen="profile"]').click();
+    await page.waitForSelector('[data-season-slot="3"]');
+    assert.equal(await page.locator('[data-season-slot].is-owned,[data-season-slot].is-active').count(),3,'Profile retains old pets and rollover egg');
+    assert.ok((await page.locator('[data-panel="season-slots"]').textContent()).includes('PETS AND PURCHASED SPACES DO NOT RESET'));
+    const recoveredSwitch = page.waitForResponse(r=>r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action==='switch_pet_slot');
+    await page.locator('[data-season-slot="2"] [data-action="switch_pet_slot"]').click();
+    const restored = await (await recoveredSwitch).json();
+    assert.equal(restored.state.pet.pet_id,`${currentUser}:purchased`);
+    assert.equal(restored.state.pet.pet_xp,9876,'switching restores purchased pet progression');
+    await page.waitForSelector('[data-season-slot="2"].is-active');
+    assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_pet_season_slots WHERE telegram_id=?').get(currentUser).n,3,'Profile and switching never create replacement eggs');
     currentUser = 'browser-young';
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
     const gameplayCount = () => actions.filter((action) => action !== 'guidance_ack').length;

@@ -1,8 +1,6 @@
 import { requirePetReadResult } from './read-result.js';
-import { awardPetWeeklyCrest, getPetSeasonWeek } from './season-completion.js';
-import { getMoonpetSeasonInfo, getMoonpetSeasonKey } from './season-authority.js';
-
-const MS_PER_DAY = 86400000;
+import { awardPetWeeklyCrest } from './season-completion.js';
+import { getPetOwnershipPeriod, getPetJourneyWeek, getPetJourneyWeekBounds } from './ownership-period.js';
 
 export const WEEKLY_JOURNEY_REQUIRED_OBJECTIVES = 5;
 
@@ -51,8 +49,8 @@ function normalizeTimestamp(value, fallback = new Date()) {
 }
 
 function validQualificationWeek(value) {
-  const week = integer(value);
-  return week >= 1 && week <= 13 ? week : 0;
+  const week = Number(value);
+  return Number.isSafeInteger(week) && week >= 1 ? week : 0;
 }
 
 function validUtcDay(day) {
@@ -61,15 +59,10 @@ function validUtcDay(day) {
   return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === day;
 }
 
-function dayBelongsToQualificationWeek(day, season, qualificationWeek) {
+function dayBelongsToQualificationWeek(day, period, qualificationWeek) {
   const eventTime = Date.parse(`${day}T00:00:00.000Z`);
-  const seasonStart = Date.parse(season?.start_at || '');
-  const seasonEnd = Date.parse(season?.end_at || '');
-  if (!Number.isFinite(eventTime) || !Number.isFinite(seasonStart) || !Number.isFinite(seasonEnd)) return false;
-  if (eventTime < seasonStart || eventTime >= seasonEnd) return false;
-  const weekStart = seasonStart + ((qualificationWeek - 1) * 7 * MS_PER_DAY);
-  const weekEnd = qualificationWeek === 13 ? seasonEnd : Math.min(seasonEnd, weekStart + (7 * MS_PER_DAY));
-  return eventTime >= weekStart && eventTime < weekEnd;
+  const bounds = getPetJourneyWeekBounds(period, qualificationWeek);
+  return eventTime >= Date.parse(bounds.start_at) && eventTime < Date.parse(bounds.end_at);
 }
 
 function sourceMatchesObjective(objectiveId, sourceEvent) {
@@ -78,7 +71,7 @@ function sourceMatchesObjective(objectiveId, sourceEvent) {
 }
 
 async function ownedPet(db, petId, telegramId, seasonKey) {
-  return db.prepare(`SELECT s.pet_id, s.telegram_id, s.season_key
+  return db.prepare(`SELECT s.pet_id, s.telegram_id, s.season_key, s.created_at
     FROM telegram_pet_season_slots s JOIN telegram_pet_instances i
       ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id AND i.season_key=s.season_key AND i.slot_number=s.slot_number
     WHERE s.pet_id=? AND s.telegram_id=? AND s.season_key=? LIMIT 1`)
@@ -113,9 +106,8 @@ async function validateWeeklyEvidenceAuthority(db, request) {
   }
   const day = String(sourceEvent.day_key || '');
   if (!validUtcDay(day)) return { accepted: false, reason: 'weekly_journey_invalid_source_window' };
-  if (getMoonpetSeasonKey(`${day}T00:00:00.000Z`) !== seasonKey) return { accepted: false, reason: 'weekly_journey_season_authority_mismatch' };
-  const season = getMoonpetSeasonInfo(`${day}T00:00:00.000Z`);
-  if (getPetSeasonWeek(season, new Date(`${day}T00:00:00.000Z`)) !== qualificationWeek) {
+  const season = getPetOwnershipPeriod(seasonKey, pet.created_at);
+  if (getPetJourneyWeek(season, new Date(`${day}T00:00:00.000Z`)) !== qualificationWeek) {
     return { accepted: false, reason: 'weekly_journey_invalid_source_window' };
   }
   if (!dayBelongsToQualificationWeek(day, season, qualificationWeek)) {

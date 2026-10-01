@@ -9,7 +9,7 @@ export const PET_SEASON_COMPLETION_CONFIG = Object.freeze({
   required_growth_marks: 60,
   required_weekly_crests: 10,
   season_days: 90,
-  sanctuary_transition: 'season_settlement',
+  sanctuary_transition: 'never',
 });
 
 export const PET_GROWTH_MILESTONES = Object.freeze({
@@ -110,7 +110,7 @@ export async function awardPetWeeklyCrest(db, award) {
   const seasonKey = String(award?.season_key || '');
   const evidenceKey = String(award?.evidence_key || '');
   const week = integer(award?.season_week);
-  const pet = objective && week >= 1 && week <= 13 && evidenceKey.startsWith(objective.evidence_prefix)
+  const pet = objective && Number.isSafeInteger(week) && week >= 1 && evidenceKey.startsWith(objective.evidence_prefix)
     ? await ownedPet(db, petId, seasonKey, award.telegram_id) : null;
   if (!pet) return { accepted: false, duplicate: false, reason: 'invalid_weekly_crest_authority' };
   const crestId = `crest:${petId}:${seasonKey}:${week}:${objective.objective_id}`;
@@ -228,7 +228,7 @@ export async function buildPetLifecycleProgress(db, petId, seasonKey, now = new 
 export async function evaluatePetSeasonCompletion(db, petId, seasonKey, now = new Date(), options = {}) {
   const pet = await ownedPet(db, petId, seasonKey, options.telegram_id);
   if (!pet) return null;
-  const seasonWeek = Math.min(13, Math.max(1, integer(options.season_week || 1)));
+  const seasonWeek = Math.max(1, integer(options.season_week || 1));
   const growthPromise = db.prepare(`SELECT COUNT(DISTINCT earned_day) AS earned FROM telegram_pet_growth_marks WHERE pet_id=? AND telegram_id=? AND season_key=? AND earned_day IS NOT NULL`)
     .bind(petId, pet.telegram_id, seasonKey).first().then(requirePetFirstReadResult);
   const crestPromise = db.prepare(`SELECT COUNT(*) AS evidence_rows, COUNT(DISTINCT qualification_week) AS earned FROM telegram_pet_weekly_crests WHERE pet_id=? AND telegram_id=? AND season_key=? AND qualification_week IS NOT NULL`)

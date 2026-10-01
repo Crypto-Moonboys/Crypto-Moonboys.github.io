@@ -9,8 +9,8 @@ const walletMigration = readFileSync(new URL('../workers/moonboys-api/migrations
 
 assert.match(
   source,
-  /sanctuary_transition:\s*'season_settlement'/,
-  'Season completion must defer Sanctuary transition until season settlement.',
+  /sanctuary_transition:\s*'never'/,
+  'Completed pets must remain playable indefinitely.',
 );
 
 assert.doesNotMatch(
@@ -88,11 +88,7 @@ assert.doesNotMatch(
   'Lifecycle readiness must not call the active-pet evolution validator for inactive pet progress cards.',
 );
 
-assert.match(
-  sanctuarySource,
-  /isSeasonSettlementReconciliation/,
-  'Sanctuary reconciliation must expose an explicit season-settlement gate.',
-);
+assert.doesNotMatch(sanctuarySource, /isSeasonSettlementReconciliation|movePetToSanctuaryIfEligible|reconcileCompletedPetsToSanctuary|UPDATE|INSERT|DELETE/, 'Sanctuary is immutable history with no retirement path.');
 
 assert.match(
   workerSource,
@@ -106,11 +102,7 @@ assert.match(
   'Canonical Moonpet season authority must use calendar-quarter pet season keys.',
 );
 
-assert.match(
-  sanctuarySource,
-  /getMoonpetSeasonKey/,
-  'Sanctuary current season filtering must use the shared slot season authority.',
-);
+assert.doesNotMatch(sanctuarySource, /isSeasonSettlementReconciliation|movePetToSanctuaryIfEligible|reconcileCompletedPetsToSanctuary|UPDATE|INSERT|DELETE/, 'Sanctuary is immutable history with no retirement path.');
 
 assert.doesNotMatch(
   `${seasonAuthoritySource}\n${sanctuarySource}`,
@@ -118,17 +110,9 @@ assert.doesNotMatch(
   'Moonpet season authority must not use an independent 90-day key while slot creation uses quarters.',
 );
 
-assert.match(
-  sanctuarySource,
-  /const seasonFilter = explicitSettlement \? '' : ' AND c\.season_key<>\?';/,
-  'Default reconciliation must skip the current season while keeping completed past seasons reachable.',
-);
+assert.doesNotMatch(sanctuarySource, /isSeasonSettlementReconciliation|movePetToSanctuaryIfEligible|reconcileCompletedPetsToSanctuary|UPDATE|INSERT|DELETE/, 'Sanctuary is immutable history with no retirement path.');
 
-assert.match(
-  sanctuarySource,
-  /WHERE c\.telegram_id=\? AND s\.pet_id IS NULL\$\{seasonFilter\}/,
-  'Completed-pet reconciliation must apply the season filter before moving pets to Sanctuary.',
-);
+assert.doesNotMatch(sanctuarySource, /isSeasonSettlementReconciliation|movePetToSanctuaryIfEligible|reconcileCompletedPetsToSanctuary|UPDATE|INSERT|DELETE/, 'Sanctuary is immutable history with no retirement path.');
 
 for (const requiredField of ['current_evolution', 'min_age_days', 'growth_marks', 'weekly_crests']) {
   assert.match(

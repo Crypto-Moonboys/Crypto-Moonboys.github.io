@@ -23,6 +23,23 @@ findings were superseded by completion rewards and the style/relic release.
 See [the September 29 reconciliation tracker](moonpet-reconciliation-2026-09-29.md)
 for verified fixes and work still outstanding.
 
+## Permanent pet ownership
+
+Pets and purchased spaces persist across calendar seasons. State preparation never
+creates a replacement for an owner with saved ownership. Profile lists active pets
+across all creation seasons, and switching uses the saved pet/owner/source tuple.
+New purchases are limited to three active pets across all seasons. If safe recovery
+finds more than three saved pets, every record stays visible and new purchases are
+blocked for review. Recovery does not erase the rollout egg or choose which pet to lose.
+
+Creation season keys, pet IDs, XP, lifecycle, identity, source events and wallet
+receipts remain unchanged. Weekly evidence keeps historical weeks 1–13 and then
+continues at week 14 after the creation quarter, with no end date. Migration 085
+retains historical nullable qualification keys and every existing receipt while
+lifting the database week limit; migration 086 restores proven Sanctuary archives.
+Competition calendars, existing prices and evolution thresholds remain unchanged.
+The proposed 1,000 XP entry gate and year-long progression are separate work.
+
 ## XP and score ownership
 
 | Value | Owner and meaning |
@@ -118,7 +135,7 @@ UTC rollover.
 
 Signal Sovereign is an additional season finale. Eligibility is final evolution
 plus 60 distinct-day Marks and 10 distinct-week Crests, or an existing season
-completion marker. It never removes completion, changes Sanctuary gates or
+completion marker. It never removes completion, retires the pet or
 makes boss victory a new mandatory requirement. Retained qualified/complete
 pets, including earlier seasons, can play. Striker, Guardian and Tactician have
 separate battle HP, charge and repair kits. Boss intents and exact move effects
@@ -149,7 +166,7 @@ Growth Mark. The existing Weekly Journey syncing state also covers a failed
 latest-receipt read. Successfully empty results remain valid empty state.
 
 Pending run/Arena/Kaiju reads must succeed before switching the active pet or
-moving its pointer during season preparation. Standard Run resolution also
+repairing an invalid active pointer. Calendar changes never switch a valid pointer. Standard Run resolution also
 requires readable source-pet, inventory, account-wallet and daily XP-cap evidence.
 Its transaction verifies every pet-owned field and the equipped progression rows
 (including missing rows) captured before resolving the choice. Concurrent care,
@@ -291,7 +308,7 @@ Rules:
 
 The five objectives require five care actions, three training actions, three
 qualifying run finishes, one Weekly Boss attempt and check-ins on two distinct
-UTC days in the same season-relative week. Mini App progress, live Crest
+UTC days in the same pet journey week. Mini App progress, live Crest
 qualification and historical recovery use accepted source events for the same
 owner, pet and season. Multiple check-in aliases on one day count as one day.
 Recovery preserves the first day all five targets were met; extra later actions
@@ -793,7 +810,10 @@ Depends on:
 
 ## Sanctuary
 
-Future long-term Moonpet progression/home system.
+Historical Sanctuary snapshots remain immutable and readable. Automatic retirement
+and settlement reconciliation are removed. Completed pets stay active. Migration
+086 restores only matching automatically archived ownership records; retired or
+unproven records are never reactivated. Expanded Sanctuary gameplay remains future work.
 
 ---
 

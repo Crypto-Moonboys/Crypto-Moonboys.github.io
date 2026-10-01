@@ -648,8 +648,8 @@ assert.match(adoptedEggWeeklyMarkup, /WEEKLY JOURNEY \/\/ HATCH REQUIRED/,
   'adopted egg Weekly Journey must render hatch-required locked copy');
 assert.match(adoptedEggWeeklyMarkup, /NEXT \/\/ Incubate or HATCH MOONPET before Weekly Journey progress starts\./,
   'adopted egg Weekly Journey must guide incubation or hatch before progress');
-assert.match(adoptedEggWeeklyMarkup, /No Daily or Weekly objective progress is shown until you have an active hatched seasonal Moonpet\./,
-  'adopted egg Weekly Journey must keep active hatched seasonal Moonpet detail');
+assert.match(adoptedEggWeeklyMarkup, /No Daily or Weekly objective progress is shown until you have an active hatched Moonpet\./,
+  'adopted egg Weekly Journey must keep active hatched Moonpet detail');
 assert.doesNotMatch(adoptedEggWeeklyMarkup, /0\/5 OBJECTIVES|Weekly Crest ready|Weekly Crest already settled|Weekly care actions|qualification|qualify/i,
   'adopted egg Weekly Journey must not render objective progress, Crest, objective list, or qualification copy');
 assert.doesNotMatch(adoptedEggDailyMarkup + adoptedEggWeeklyMarkup, /Growth Mark awarded|Weekly Crest ready|0\/3|0\/5|qualify/i,
@@ -743,12 +743,12 @@ const noActivePetWeeklyMarkup = weeklyJourneyRuntime({
 assert.match(noActivePetWeeklyMarkup, /WEEKLY JOURNEY \/\/ ACTIVE PET REQUIRED/, 'no active pet state must be clear and safe');
 assert.match(noActivePetWeeklyMarkup, /Journey progress starts after you have a hatched active Moonpet/,
   'Weekly Journey must guide players without an active seasonal pet');
-assert.match(noActivePetWeeklyMarkup, /NEXT \/\/ Initialise, incubate, hatch, or select an active seasonal Moonpet before Weekly Journey progress starts\./,
+assert.match(noActivePetWeeklyMarkup, /NEXT \/\/ Initialise, incubate, hatch, or select an active Moonpet before Weekly Journey progress starts\./,
   'Weekly Journey active-pet-required NEXT copy must be distinct and actionable');
 assert.equal((noActivePetWeeklyMarkup.match(/Journey progress starts after you have a hatched active Moonpet/g) || []).length, 1,
   'Weekly Journey active-pet-required markup must not duplicate the same guidance sentence');
-assert.match(noActivePetWeeklyMarkup, /No Daily or Weekly objective progress is shown until you have an active hatched seasonal Moonpet\./,
-  'Weekly Journey active-pet-required detail must name the active hatched seasonal Moonpet requirement');
+assert.match(noActivePetWeeklyMarkup, /No Daily or Weekly objective progress is shown until you have an active hatched Moonpet\./,
+  'Weekly Journey active-pet-required detail must name the active hatched Moonpet requirement');
 const comingSoonWeeklyMarkup = weeklyJourneyRuntime({
   state: 'COMING_SOON',
   completed_objectives: 0,
@@ -813,7 +813,7 @@ const unavailableSlotGuidance = nextGuidanceRuntime({
 }).profileNextLine();
 assert.equal(unavailableSlotGuidance, 'Season slot authority is syncing. Active Moonpet guidance will refresh when server authority is available.',
   'adopted state with unavailable season-slot authority must show syncing guidance');
-assert.notEqual(unavailableSlotGuidance, 'Pick an active seasonal Moonpet before journey progress starts.',
+assert.notEqual(unavailableSlotGuidance, 'Pick an active Moonpet before journey progress starts.',
   'unavailable season-slot authority must not be confused with a genuinely empty active slot');
 assert.equal(nextGuidanceRuntime({
   adopted: true,
@@ -943,21 +943,21 @@ assert.equal(nextGuidanceRuntime({
   season_slots: { slots: [{ pet_id: 'pet-a', active: true, pet: { progression: { lifecycle: { evolution_ready: false }, growth_marks: { earned: 0 }, weekly_crests: { earned: 0 } } } }] },
   daily_journey: { completed_objectives: 0 },
   weekly_journey: { completed_objectives: 0 },
-}).profileNextLine(), 'Keep the active seasonal Moonpet moving through Daily and Weekly Journey objectives.',
+}).profileNextLine(), 'Keep the active Moonpet moving through Daily and Weekly Journey objectives.',
   'established young pet guidance must keep general Daily/Weekly Journey copy');
 assert.equal(nextGuidanceRuntime({
   adopted: true,
   pet: { pet_id: 'pet-a', level: 8, pet_xp: 600, energy: 20 },
   lifecycle: { phase: 'adult' },
   season_slots: { slots: [{ pet_id: 'pet-a', active: true, pet: { progression: { lifecycle: { evolution_ready: false }, growth_marks: { earned: 1 }, weekly_crests: { earned: 0 } } } }] },
-}).profileNextLine(), 'Keep the active seasonal Moonpet moving through Daily and Weekly Journey objectives.',
+}).profileNextLine(), 'Keep the active Moonpet moving through Daily and Weekly Journey objectives.',
   'adult pet guidance must keep general Daily/Weekly Journey copy');
 assert.equal(nextGuidanceRuntime({
   adopted: true,
   pet: { pet_id: 'pet-a', level: 12, pet_xp: 1000, energy: 20 },
   lifecycle: { phase: 'rare' },
   season_slots: { slots: [{ pet_id: 'pet-a', active: true, pet: { progression: { lifecycle: { evolution_ready: false }, growth_marks: { earned: 2 }, weekly_crests: { earned: 1 } } } }] },
-}).profileNextLine(), 'Keep the active seasonal Moonpet moving through Daily and Weekly Journey objectives.',
+}).profileNextLine(), 'Keep the active Moonpet moving through Daily and Weekly Journey objectives.',
   'rare pet guidance must keep general Daily/Weekly Journey copy');
 assert.equal(nextGuidanceRuntime({
   adopted: true,
@@ -1096,7 +1096,7 @@ assert.doesNotMatch(unadoptedBlock, /hatch your Moonpet first/,
 const completedSeasonBlock = actionResultFeedbackRuntime({ accepted: false, reason: 'completed_season_pet_required' }, {}, {}).resultMessage;
 assert.match(completedSeasonBlock, /Action unavailable - completed Season pet required\./,
   'completed-season rejection copy must name the completed pet requirement');
-assert.doesNotMatch(completedSeasonBlock, /active seasonal Moonpet required/,
+assert.doesNotMatch(completedSeasonBlock, /active Moonpet required/,
   'completed-season rejection copy must not be confused with active-pet gating');
 
 // Keep every executable client-source test on marker boundaries so merges and
@@ -1532,7 +1532,7 @@ assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261001-remove-practice-v1/
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20260926-front-actions-v1/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20260926-front-actions-v1/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261001-remove-practice-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261001-permanent-pets-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1710,7 +1710,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261001-remove-practice-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261001-permanent-pets-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -1737,11 +1737,11 @@ assert.match(client, /seasonSnapshotReceivedAt = performance\.now\(\)/, 'client 
 assert.match(client, /seasonTiming\(season, seasonSnapshotElapsed\(\)\)/, 'season rendering must advance from the server snapshot using monotonic elapsed time');
 assert.match(client, /setInterval\(tickSeasonDisplay, 30000\)/, 'open apps must periodically advance and refresh season presentation');
 assert.match(client, /visibilitychange[\s\S]*refreshSeasonSnapshot\(true\)/, 'returning to the app must refresh the authoritative season snapshot');
-assert.match(client, /YEAR-END PARTIAL.*90-DAY TARGET/, 'season status must distinguish a shortened runtime season from the target cycle');
-assert.match(client, /SEASON STATUS \/\/ LIVE/, 'season panel must label current runtime timing as live');
+assert.match(client, /CALENDAR QUARTER/, 'competition status names the calendar without implying pet expiry');
+assert.match(client, /COMPETITION SEASON \/\/ LIVE/, 'season panel must label current runtime timing as live');
 assert.match(client, /PET PROGRESSION[\s\S]*ACCOUNT SEASON XP/, 'season UI must separate pet-instance progression from the named account aggregate');
 assert.match(client, /XP across your pets for this season[\s\S]*tiers[\s\S]*shared seasonal rank/, 'account seasonal values must not be presented as pet-instance fields');
-assert.match(client, /\[1, 2, 3\]\.map/, 'slot summary must always materialize all three seasonal slots');
+assert.match(client, /Math\.max\(3, provided\.length\)/, 'slot summary must always materialize all three seasonal slots');
 assert.match(client, /CURRENT ARCADE XP/, 'slot summary must display the shared Arcade XP balance');
 assert.match(client, /PET 1 IS FREE \/\/ PET 2 REQUIRES 500 XP \/\/ PET 3 REQUIRES 1,000 XP/, 'slot costs must match live community XP unlock rules');
 assert.match(client, /data-season-slot=/, 'each rendered slot must expose its slot number');
