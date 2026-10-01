@@ -21,6 +21,7 @@ function fixture(owner) {
     async first() { if (db.beforeFirst) await db.beforeFirst(this); return sql.prepare(this.query).get(...this.args) || null; }
     async all() { return { results: sql.prepare(this.query).all(...this.args) }; }
     exec() {
+      if (sql.prepare(this.query).columns().length && !/\bRETURNING\b/i.test(this.query)) return { results: sql.prepare(this.query).all(...this.args), meta: { changes: 0 } };
       if (/\bRETURNING\b/i.test(this.query)) { const results = sql.prepare(this.query).all(...this.args); return { results, meta: { changes: results.length } }; }
       return { results: [], meta: { changes: Number(sql.prepare(this.query).run(...this.args).changes) } };
     }
@@ -34,6 +35,12 @@ function fixture(owner) {
     if (this.rejectReward && statements.some(s => /INSERT OR IGNORE INTO telegram_pet_reward_claims/.test(s.query))) {
       this.rejectReward = false;
       return statements.map(() => ({ results: [], meta: { changes: 0 } }));
+    }
+    for (const statement of statements) {
+      if (/^\s*SELECT\b/i.test(statement.query)) {
+        if (this.beforeFirst) { const reply = await this.beforeFirst(statement); if (reply?.success === false) throw Error('pet_state_read_unavailable'); }
+        if (this.beforeAll) { const reply = await this.beforeAll(statement); if (reply?.success === false) throw Error('pet_state_read_unavailable'); }
+      } else if (this.beforeRun) await this.beforeRun(statement);
     }
     if (this.beforeBatch) await this.beforeBatch(statements);
     sql.exec('BEGIN');

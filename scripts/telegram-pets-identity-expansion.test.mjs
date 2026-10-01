@@ -89,6 +89,7 @@ class D1 {
       try {
         const results = statements.map((statement) => {
           const prepared = this.database.prepare(statement.sql);
+          if (/^\s*SELECT\b/i.test(statement.sql)) return { results: prepared.all(...statement.args), meta: { changes: 0 } };
           if (/\bRETURNING\b/i.test(statement.sql)) {
             const rows = prepared.all(...statement.args);
             return { results: rows, meta: { changes: rows.length } };

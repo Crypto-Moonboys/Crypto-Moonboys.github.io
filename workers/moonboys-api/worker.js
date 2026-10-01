@@ -1,4 +1,5 @@
 import { getStyleLoadout, equipPetStyle } from './pets/style-loadout.js';
+import { createDisplayedPetScope } from './pets/displayed-pet-scope.js';
 import { RELIC_ROUTE_DETAILS } from './pets/relic-passives.js';
 import { requirePetFirstReadResult, requirePetReadResult, requirePetMutationResult } from './pets/read-result.js';
 import { getPetEntryRequirement, petEntryNext, PET_ENTRY_ARCADE_XP } from './pets/entry-requirement.js';
@@ -10092,7 +10093,37 @@ async function getPetMiniAppCombatEligibility(db, telegramId, lifecycle = null, 
   };
 }
 
-async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
+const PET_MINI_APP_DISPLAYED_PET_EXEMPT_ACTIONS = new Set([
+  'adopt', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'delete_pet_slot',
+  'guidance_ack', 'notification_set',
+  ...PET_MINI_APP_COMBAT_CLEANUP_ACTIONS,
+  'run_step', 'run_extract', 'daily_run_tactic', 'activity_claim', 'activity_cancel',
+  'weekly_boss_claim', 'seasonal_boss_claim', 'daily_completion_claim',
+  'contract_step', 'contract_claim', 'finale_retry', 'finale_step', 'finale_claim',
+]);
+
+async function processPetMiniAppAction(database, telegramId, user, body, botToken) {
+  const action = String(body?.action || '').trim().toLowerCase();
+  if (PET_MINI_APP_DISPLAYED_PET_EXEMPT_ACTIONS.has(action)) {
+    return dispatchPetMiniAppAction(database, telegramId, user, body, botToken);
+  }
+  const petId = String(body?.displayed_pet_id || '').trim();
+  if (!petId) return { accepted: false, reason: 'displayed_pet_required', refresh_state: true };
+  const scope = createDisplayedPetScope(database, telegramId, petId);
+  try {
+    // Every handler and its nested helpers receives the same immutable pet
+    // authority. Do not pass the unscoped database into this dispatch path.
+    const result = await dispatchPetMiniAppAction(scope.db, telegramId, user, body, botToken);
+    if (!scope.changed) return result;
+  } catch (error) {
+    if (!scope.changed) throw error;
+  }
+  // Helpers may deliberately catch outages for optional projections. A stale
+  // scope stays closed even if such a catch swallowed the SQL assertion.
+  return { accepted: false, reason: 'displayed_pet_changed', refresh_state: true };
+}
+
+async function dispatchPetMiniAppAction(db, telegramId, user, body, botToken) {
   const action = String(body?.action || '').trim().toLowerCase();
   const eventKey = petMiniAppEventKey(telegramId, action, body?.request_id);
   const source = 'telegram_mini_app';
@@ -10100,15 +10131,7 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   // Saved-run and saved-reward recovery routes intentionally use the source
   // pet recorded on their receipt. Roster/account controls do not mutate a
   // displayed pet. Every other Mini App action is bound to its rendered pet.
-  const displayedPetExemptActions = new Set([
-    'adopt', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'delete_pet_slot',
-    'guidance_ack', 'notification_set',
-    ...PET_MINI_APP_COMBAT_CLEANUP_ACTIONS,
-    'run_step', 'run_extract', 'daily_run_tactic',
-    'weekly_boss_claim', 'seasonal_boss_claim', 'daily_completion_claim',
-    'contract_step', 'contract_claim', 'finale_retry', 'finale_step', 'finale_claim',
-  ]);
-  if (!displayedPetExemptActions.has(action)) {
+  if (!PET_MINI_APP_DISPLAYED_PET_EXEMPT_ACTIONS.has(action)) {
     if (!displayedPetId) {
       return { accepted: false, reason: 'displayed_pet_required', refresh_state: true };
     }

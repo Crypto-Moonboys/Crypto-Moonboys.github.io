@@ -56,6 +56,7 @@ class D1 {
     try {
       const results = [];
       for (const statement of statements) {
+        if (/^\s*SELECT\b/i.test(statement.sql)) { results.push({ results: this.database.prepare(statement.sql).all(...statement.args), meta: { changes: 0 } }); continue; }
         const result = this.database.prepare(statement.sql).run(...statement.args);
         results.push({ results: [], meta: { changes: Number(result.changes || 0) } });
       }

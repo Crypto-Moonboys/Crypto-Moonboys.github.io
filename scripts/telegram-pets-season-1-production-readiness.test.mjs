@@ -59,6 +59,10 @@ class D1 {
     ) {
       throw new Error('simulated_missing_lifecycle_authority');
     }
+    if (this.database.prepare(sql).columns().length) {
+      const results = this.database.prepare(sql).all(...args);
+      return { results, meta: { changes: /\bRETURNING\b/i.test(sql) ? results.length : 0 } };
+    }
     const result = this.database.prepare(sql).run(...args);
     return { results: [], meta: { changes: Number(result.changes || 0) } };
   }

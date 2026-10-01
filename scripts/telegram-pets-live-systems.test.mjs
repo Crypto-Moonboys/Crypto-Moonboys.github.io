@@ -148,6 +148,7 @@ class D1Database {
     this.raw.exec('BEGIN');
     try {
       const output = statements.map((entry) => {
+        if (this.raw.prepare(entry.sql).columns().length && !/\bRETURNING\b/i.test(entry.sql)) return { results: this.raw.prepare(entry.sql).all(...entry.args), meta: { changes: 0 } };
         if (/\bRETURNING\b/i.test(entry.sql)) {
           const rows = this.raw.prepare(entry.sql).all(...entry.args);
           return { results: rows, meta: { changes: rows.length } };

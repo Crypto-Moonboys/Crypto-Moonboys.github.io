@@ -426,7 +426,7 @@ assert.match(miniAppStateBuilder, /season_slots: seasonSlots/, 'Mini App state m
 const petMissionsBuilder = asyncBlock('buildPetMissions');
 assert.match(petMissionsBuilder, /telegram_pet_system_events[\s\S]*\.first\(\)\.then\(requirePetFirstReadResult\)/,
   'daily Shop-goal upgrade evidence must fail closed instead of becoming zero progress');
-const miniAppActionProcessor = asyncBlock('processPetMiniAppAction');
+const miniAppActionProcessor = asyncBlock('dispatchPetMiniAppAction');
 assert.match(miniAppActionProcessor, /action === 'season_slots'/, 'Mini App action handler must expose season slot summary reads');
 assert.match(miniAppActionProcessor, /buyPetSeasonSlot\(db, telegramId/, 'Mini App action handler must sell slots through the authenticated action flow');
 assert.match(miniAppActionProcessor, /switchActivePetSeasonSlot\(db, telegramId/, 'Mini App action handler must switch owned slots through the authenticated action flow');
@@ -2059,6 +2059,7 @@ class SqliteD1 {
           this.failBatchSqlPattern = null;
           throw new Error('simulated_d1_batch_failure');
         }
+        if (/^\s*SELECT\b/i.test(statement.sql)) return { results: prepared.all(...statement.args), meta: { changes: 0 } };
         if (/\bRETURNING\b/i.test(statement.sql)) {
           const rows = prepared.all(...statement.args);
           return { results: rows, meta: { changes: rows.length } };
