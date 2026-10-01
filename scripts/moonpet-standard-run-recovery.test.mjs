@@ -103,6 +103,25 @@ for (const kind of ['personality','memory']) test(`paid Standard ending repairs 
   assert.equal(f.sql.prepare('SELECT total_runs FROM telegram_pet_memories WHERE pet_id=?').get(source).total_runs,1);
 });
 
+test('a saved terminal payout recovered after a quarter boundary keeps its earning competition', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: Date.UTC(2026, 9, 1, 12) });
+  const f = fixture('terminal-quarter');
+  await f.state();
+  f.run('quarter-ending');
+  f.db.failReward = true;
+  await assert.rejects(hooks.processPetRunExtract(f.db, f.owner, 'quarter-ending'), /interrupted_terminal_reward/);
+  f.sql.prepare("UPDATE telegram_pet_runs SET completed_at='2026-09-30 23:59:00' WHERE run_id='quarter-ending'").run();
+  const result = (await hooks.recoverPetStandardRunEndings(f.db, f.owner, 'quarter-ending'))[0];
+  assert.equal(result.accepted, true);
+  assert.equal(f.sql.prepare('SELECT season_xp FROM telegram_pet_season_state WHERE telegram_id=? AND season_key=?')
+    .get(f.owner, 'pet-s2026-003').season_xp, result.pet_xp_awarded);
+  assert.equal(f.sql.prepare('SELECT season_xp FROM telegram_pet_season_state WHERE telegram_id=? AND season_key=?')
+    .get(f.owner, 'pet-s2026-004'), undefined);
+  await hooks.recoverPetStandardRunEndings(f.db, f.owner, 'quarter-ending');
+  assert.equal(f.sql.prepare("SELECT COUNT(*) AS n FROM telegram_pet_events WHERE event_type='run_extract'").get().n, 1);
+  assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get('current-' + f.owner).pet_xp, 224);
+});
+
 test('paid ending identity recovery retains the original day and archived pet', async t => {
   t.mock.timers.enable({apis:['Date'],now:Date.UTC(2026,8,27,12)});
   const f=fixture('historic-identity');
@@ -144,14 +163,14 @@ test('failed saved run XP and item activity keep the original pet and season', a
   assert.equal(result.reason, 'run_failed');
   assert.ok(result.pet_xp_awarded > 0);
   const event = f.sql.prepare("SELECT * FROM telegram_pet_events WHERE event_type='run_fail'").get();
-  assert.equal(event.season_key, oldSeason, 'failure XP belongs to the run season, not the refresh season');
-  assert.equal(f.sql.prepare('SELECT season_xp FROM telegram_pet_season_state WHERE season_key=?').get(oldSeason).season_xp, result.pet_xp_awarded);
-  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_season_state WHERE season_key=?').get(currentSeason).n, 0);
+  assert.equal(event.season_key, oldSeason, 'failure receipt keeps the original run pet provenance');
+  assert.equal(f.sql.prepare('SELECT season_xp FROM telegram_pet_season_state WHERE season_key=?').get(currentSeason).season_xp, result.pet_xp_awarded);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_season_state WHERE season_key=?').get(oldSeason).n, 0);
   const item = f.sql.prepare("SELECT pet_id,season_key FROM telegram_pet_events WHERE event_type='run_item_use'").get();
   assert.equal(item.pet_id, 'old-run-pet'); assert.equal(item.season_key, oldSeason);
   const activity = await f.get('/telegram-pets/activity');
   for (const entry of activity.items.filter(e => ['run_fail','run_item_use'].includes(e.event_type))) assert.equal(entry.display_name, 'BOTTY');
-  assert.deepEqual((await f.get('/telegram-pets/leaderboard?period=seasonal')).entries, []);
+  assert.equal((await f.get('/telegram-pets/leaderboard?period=seasonal')).entries[0].pet_xp, result.pet_xp_awarded);
   assert.equal((await f.get('/telegram-pets/leaderboard?period=daily')).entries[0].pet_xp, result.pet_xp_awarded);
   assert.equal((await f.get('/telegram-pets/leaderboard?period=all_time')).entries[0].pet_xp, 300 + result.pet_xp_awarded);
   await hooks.processPetRunStep(f.db, f.owner, 'old-failure', choice, { event_key: 'old-failure-step', expected_step_index: 1 });
@@ -201,8 +220,8 @@ test('old-pet completion recovery updates original-season rewards and all public
   assert.equal(claim.pet_id, 'archived-run-pet'); assert.equal(claim.season_key, oldSeason);
   assert.equal(claim.pet_xp_awarded, 24); assert.equal(claim.xp_awarded, 80);
   assert.equal(f.sql.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?").get('current-' + f.owner).pet_xp, 200);
-  assert.equal(f.sql.prepare('SELECT season_xp FROM telegram_pet_season_state WHERE season_key=?').get(oldSeason).season_xp, 24);
-  assert.deepEqual((await f.get('/telegram-pets/leaderboard?period=seasonal')).entries, []);
+  assert.equal(f.sql.prepare('SELECT season_xp FROM telegram_pet_season_state WHERE season_key=?').get(currentSeason).season_xp, 24);
+  assert.equal((await f.get('/telegram-pets/leaderboard?period=seasonal')).entries[0].pet_xp, 24);
   for (const period of ['daily','weekly']) assert.equal((await f.get('/telegram-pets/leaderboard?period=' + period)).entries[0].pet_xp, 24);
   assert.equal((await f.get('/telegram-pets/leaderboard?period=all_time')).entries[0].pet_xp, 324);
   assert.equal((await f.get('/telegram/leaderboard')).entries[0].xp, 80);

@@ -731,6 +731,9 @@
 
   function button(label, action, payload, options) {
     options = careActionButtonOptions(action, actionCooldownButtonOptions(action, options));
+    if (action === 'adopt' && !(state && state.entry_requirement && state.entry_requirement.eligible === true)) {
+      options = Object.assign({}, options, { disabled: true, statusLabel: 'ARCADE XP REQUIRED' });
+    }
     var accountActions = ['adopt', 'guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'arena_queue_cancel', 'arena_forfeit', 'kaiju_queue_cancel', 'kaiju_match_cancel'];
     var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim', 'contract_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim']);
     if (state && state.lifecycle && state.lifecycle.phase === 'egg' && !eggActions.includes(action)) {
@@ -1291,23 +1294,21 @@
     if (!activePetProgression().lifecycle) {
       var coreSlot = activeSeasonSlot();
       return panel('ACTIVE PET // SLOT ' + number(coreSlot.slot_number || 1),
-        '<div class="season-identity"><strong>' + escapeHtml(resolveMoonpetDisplayName(state.lifecycle || {}, state.guidance && state.guidance.identity)) + '</strong><span>' + escapeHtml(coreSlot.season_key || state.season_slots && state.season_slots.season && state.season_slots.season.key || 'CURRENT') + '</span></div>' +
+        '<div class="season-identity"><strong>' + escapeHtml(resolveMoonpetDisplayName(state.lifecycle || {}, state.guidance && state.guidance.identity)) + '</strong><span>LIFETIME PROGRESSION</span></div>' +
         '<div class="season-status-grid"><div><span>STAGE</span><strong>' + escapeHtml(moonpetStageLabel(state.lifecycle || {}, pet)) + '</strong></div><div><span>LEVEL</span><strong>' + number(pet.level) + '</strong></div><div><span>HEALTH</span><strong>' + number(pet.health) + '</strong></div><div><span>ENERGY</span><strong>' + number(pet.energy) + '</strong></div></div>' +
         '<div class="line muted">MISSION, GROWTH MARK AND WEEKLY CREST DETAIL LOADS ONLY WHEN YOU OPEN A GAME MODULE.</div>', 'active-pet');
     }
-    var summary = state.season_slots || {};
     var slot = activeSeasonSlot();
     var progression = activePetProgression();
     var lifecycle = progression.lifecycle || {};
     var growth = progression.growth_marks || {};
     var crests = progression.weekly_crests || {};
-    var seasonKey = slot.season_key || summary.season && summary.season.key || 'CURRENT';
     var status = progression.season_complete ? 'COMPLETED ADULT PET'
       : lifecycle.evolution_ready ? 'ELIGIBLE TO EVOLVE' : 'KEEP DAILY AND WEEKLY ROUTINES MOVING';
     return panel('ACTIVE PET // SLOT ' + number(slot.slot_number || 1),
-      '<div class="season-identity"><strong>' + escapeHtml(resolveMoonpetDisplayName(state.lifecycle, state.guidance && state.guidance.identity)) + '</strong><span>' + escapeHtml(seasonKey) + '</span></div>' +
+      '<div class="season-identity"><strong>' + escapeHtml(resolveMoonpetDisplayName(state.lifecycle, state.guidance && state.guidance.identity)) + '</strong><span>LIFETIME PROGRESSION</span></div>' +
       '<div class="season-status-grid"><div><span>STAGE</span><strong>' + escapeHtml(moonpetStageLabel(lifecycle, pet)) + '</strong></div><div><span>LEVEL</span><strong>' + number(pet.level) + '</strong></div><div><span>GROWTH MARKS</span><strong>' + number(growth.earned) + '/' + number(growth.required) + '</strong></div><div><span>WEEKLY CRESTS</span><strong>' + number(crests.earned) + '/' + number(crests.required) + '</strong></div></div>' +
-      '<div class="line complete">' + status + '</div><div class="line muted">NEXT // ' + escapeHtml(profileNextLine()) + '</div><div class="line muted">Progress is per pet. Switching slots changes which Moonpet earns lifecycle, Daily Journey and Weekly Journey progress.</div>', 'active-pet');
+      '<div class="line complete">' + status + '</div><div class="line muted">NEXT // ' + escapeHtml(profileNextLine()) + '</div><div class="line muted">Pet XP, Growth Marks and Weekly Crests last for the pet’s lifetime. Competition seasons refresh separately. Switching slots changes which pet earns progress.</div>', 'active-pet');
   }
 
   function profileNextLine() {
@@ -1318,7 +1319,7 @@
     var progressionLifecycle = progression.lifecycle || {};
     var phase = String(authoritativeLifecycle.phase || progressionLifecycle.phase || '').toLowerCase();
     var evolutionReady = Boolean(authoritativeLifecycle.evolution_ready || progressionLifecycle.evolution_ready);
-    if (!state || !state.adopted || !state.pet) return 'Initialise a Secret Bot to begin.';
+    if (!state || !state.adopted || !state.pet) return homeNextLine();
     if (phase === 'egg') return authoritativeLifecycle.incubation && authoritativeLifecycle.incubation.ready ? 'REVEAL BOT to wake your first companion.' : 'Care for your Secret Bot until the breakout signal is ready.';
     if (seasonSlots.unavailable) return 'Season slot authority is syncing. Active Moonpet guidance will refresh when server authority is available.';
     if (!slot.pet_id) return 'Pick an active Moonpet before journey progress starts.';
@@ -1348,7 +1349,7 @@
   function homeNextLine(next) {
     var lifecycle = state && state.lifecycle || {};
     var incubation = lifecycle.incubation || {};
-    if (!state || !state.adopted) return 'Initialise a Secret Bot to begin.';
+    if (!state || !state.adopted) return state && state.next && state.next.detail || 'Checking your Arcade XP entry requirement.';
     if (lifecycle.phase === 'egg') {
       return incubation.ready ? 'REVEAL BOT to wake your first companion.' : 'Build care signals until the breakout signal is ready.';
     }
@@ -1357,7 +1358,7 @@
 
   function exploreNextLine() {
     var firstSession = firstSessionPhase();
-    if (firstSession === 'unadopted') return 'Initialise a Secret Bot to begin.';
+    if (firstSession === 'unadopted') return homeNextLine();
     var boss = state && state.guidance && state.guidance.weekly_boss || {};
     if ((boss.pending_rewards || []).length) return 'Recover your saved Weekly Boss reward. No energy or new attack needed.';
     if (firstSession === 'egg') return 'Care for or REVEAL BOT before Explore actions open.';
@@ -1434,7 +1435,12 @@
 
   function renderHome() {
     if (!state.adopted) {
-      return panel('DORMANT SECRET BOT', '<div class="line">NO COMPANION RECORD FOUND.</div><div class="line muted">NEXT // ' + escapeHtml(homeNextLine()) + '</div><div class="button-grid one">' + button('INITIALISE MOONPET', 'adopt') + '</div>');
+      var entry = state.entry_requirement || {};
+      var entryReady = entry.eligible === true;
+      var entryCopy = entry.required_arcade_xp != null
+        ? number(entry.arcade_xp_lifetime) + ' / ' + number(entry.required_arcade_xp) + ' LIFETIME ARCADE XP // ' + (entryReady ? 'ENTRY UNLOCKED' : number(entry.remaining_arcade_xp) + ' XP TO GO')
+        : 'CHECKING ARCADE XP';
+      return panel('DORMANT SECRET BOT', '<div class="line">NO COMPANION RECORD FOUND.</div><div class="line complete">' + entryCopy + '</div><div class="line muted">NEXT // ' + escapeHtml(homeNextLine()) + '</div><div class="line muted">First-pet entry keeps your Arcade XP. Use the same Telegram account on the website and here.</div><div class="button-grid one">' + button('INITIALISE MOONPET', 'adopt', {}, { disabled: !entryReady }) + '<a class="terminal-button" href="/games/" target="_blank" rel="noopener">PLAY WEBSITE ARCADE</a></div>', 'entry');
     }
     var pet = state.pet;
     var dailyCache = state.guidance && state.guidance.daily_cache || {};
@@ -1778,9 +1784,9 @@
     var lifecycle = progression.lifecycle || {};
     var growth = progression.growth_marks || {};
     var crests = progression.weekly_crests || {};
-    var completion = progression.season_complete
-      ? '<div class="line complete"><strong>SEASON COMPLETE</strong></div>'
-      : progression.legendary ? '<div class="line complete"><strong>LEGENDARY</strong> // SEASON JOURNEY STILL INCOMPLETE</div>'
+    var completion = progression.lifetime_complete || progression.season_complete
+      ? '<div class="line complete"><strong>LIFETIME JOURNEY COMPLETE</strong></div>'
+      : progression.legendary ? '<div class="line complete"><strong>LEGENDARY</strong> // JOURNEY STILL INCOMPLETE</div>'
         : '<div class="line muted"><strong>ROAD TO LEGENDARY</strong></div>';
     var variant = pet.variant ? '<div><span>VARIANT</span><strong>' + escapeHtml(words(pet.variant)) + '</strong></div>' : '';
     return '<div class="pet-instance-card" data-pet-id="' + escapeHtml(slot.pet_id || '') + '">' +
@@ -1795,7 +1801,7 @@
 
   function renderSeasonSlots() {
     var summary = state.season_slots || {};
-    var season = summary.season || {};
+    var season = summary.competition_season || summary.season || {};
     var timing = seasonTiming(season, seasonSnapshotElapsed());
     if (summary.hydrated === false || stateNeedsFullHydration(state)) {
       var providedCore = Array.isArray(summary.slots) ? summary.slots : [];
@@ -1823,10 +1829,11 @@
     var journeyCrests = journey.weekly_crests || {};
     var nextEvolution = journeyLifecycle.next_evolution || {};
     var levelRequirement = journeyLifecycle.requirements && journeyLifecycle.requirements.pet_level || {};
-    var journeyStatus = journey.season_complete ? 'SEASON COMPLETE'
-      : journey.legendary ? 'LEGENDARY // SEASON JOURNEY STILL INCOMPLETE' : 'ROAD TO LEGENDARY';
+    var lifetime = activeSlot.pet && activeSlot.pet.lifetime_progression || {};
+    var journeyStatus = journey.lifetime_complete || journey.season_complete ? 'LIFETIME JOURNEY COMPLETE'
+      : journey.legendary ? 'LEGENDARY // JOURNEY STILL INCOMPLETE' : 'ROAD TO LEGENDARY';
     var lifecycleRequirement = journeyLifecycle.next_evolution ? 'LEVEL // ' + number(levelRequirement.current) + '/' + number(levelRequirement.required) + ' // EVOLUTION READY ' + (journeyLifecycle.evolution_ready ? 'YES' : 'NO // ' + words(journeyLifecycle.authority_reason || 'requirements not met')) : 'FINAL FORM REACHED';
-    var journeyPanel = journey.pet_id ? '<div class="progression-split"><div><strong>LIFECYCLE // STAGE ' + number(journeyLifecycle.current_stage) + '/' + number(journeyLifecycle.total_stages) + '</strong><span>NEXT // ' + escapeHtml(nextEvolution.name || 'FINAL FORM REACHED') + '</span><span>' + lifecycleRequirement + '</span></div><div><strong>PET JOURNEY // WEEK ' + number(summary.current_season_week) + '</strong><span>GROWTH MARKS // ' + number(journeyGrowth.earned) + '/' + number(journeyGrowth.required) + '</span><span>WEEKLY CRESTS // ' + number(journeyCrests.earned) + '/' + number(journeyCrests.required) + '</span><span>' + journeyStatus + '</span></div></div>' : '<div class="line muted"><strong>PROGRESSION UNAVAILABLE</strong></div>';
+    var journeyPanel = journey.pet_id ? '<div class="progression-split"><div><strong>LIFECYCLE // STAGE ' + number(journeyLifecycle.current_stage) + '/' + number(journeyLifecycle.total_stages) + '</strong><span>NEXT // ' + escapeHtml(nextEvolution.name || 'FINAL FORM REACHED') + '</span><span>' + lifecycleRequirement + '</span></div><div><strong>LIFETIME PET JOURNEY // WEEK ' + (lifetime.current_week == null ? '?' : number(lifetime.current_week)) + '</strong><span>GROWTH MARKS // ' + number(journeyGrowth.earned) + '/' + number(journeyGrowth.required) + '</span><span>WEEKLY CRESTS // ' + number(journeyCrests.earned) + '/' + number(journeyCrests.required) + '</span><span>' + journeyStatus + '</span></div></div>' : '<div class="line muted"><strong>PROGRESSION UNAVAILABLE</strong></div>';
     var available = Number(summary.arcade_xp_available != null ? summary.arcade_xp_available : (provided[0] && provided[0].arcade_xp_available != null ? provided[0].arcade_xp_available : 0));
     var rows = Array.from({ length: Math.max(3, provided.length) }, function (_, index) { return index + 1; }).map(function (slotNumber) {
       var slot = byNumber[slotNumber] || { slot_number: slotNumber, unlocked: false, purchase_enabled: false };
@@ -1859,7 +1866,7 @@
       '<div class="line complete">PETS AND PURCHASED SPACES DO NOT RESET WITH COMPETITION SEASONS.</div>' +
       (summary.recovery_over_capacity ? '<div class="line locked">RECOVERED PETS EXCEED THREE SPACES // All saves are retained. New purchases are blocked; ownership needs review.</div>' : '') +
       '<div class="season-slot-balance"><strong>CURRENT ARCADE XP</strong><span>' + number(available) + '</span></div>' +
-      '<div class="line muted">PET 1 IS FREE // PET 2 REQUIRES 500 XP // PET 3 REQUIRES 1,000 XP // EARNED COMMUNITY PROGRESSION</div><div class="season-slot-grid">' + rows + '</div>' +
+      '<div class="line muted">NEW PLAYER ENTRY // 1,000 LIFETIME ARCADE XP, KEPT // PET 1 IS FREE // PET 2 COSTS 500 SPENDABLE XP // PET 3 COSTS 1,000 SPENDABLE XP</div><div class="season-slot-grid">' + rows + '</div>' +
       '<div class="line muted">IN DEVELOPMENT // DIMINISHING-RETURN BALANCING · FUTURE // CATCH-UP SYSTEMS</div>', 'season-slots');
   }
 
@@ -2765,10 +2772,11 @@
       insufficient_crystals: 'not enough Moon Crystals.',
       insufficient_style: 'not enough Style Tokens.',
       insufficient_arcade_xp: 'NOT ENOUGH ARCADE XP FOR THIS SLOT',
-      pet_slot_purchased: 'SEASONAL PET SLOT UNLOCKED',
+      arcade_xp_entry_required: 'EARN 1,000 LIFETIME ARCADE XP ON THE WEBSITE TO UNLOCK YOUR FIRST PET. YOUR XP IS KEPT.',
+      pet_slot_purchased: 'PET SLOT UNLOCKED',
       pet_slot_switched: 'ACTIVE MOONPET SWITCHED',
       pet_slot_already_owned: 'THAT PET SLOT IS ALREADY UNLOCKED',
-      invalid_pet_slot: 'THAT SEASONAL PET SLOT IS INVALID',
+      invalid_pet_slot: 'THAT PET SLOT IS INVALID',
       pet_slot_purchase_conflict: 'PET SLOT UNLOCK COULD NOT BE COMPLETED',
       pet_slot_creation_incomplete: 'PET SLOT UNLOCK NEEDS A SAFE RETRY',
       pet_slot_not_switchable: 'THAT PET SLOT CANNOT BE SWITCHED TO',
@@ -3669,7 +3677,7 @@
         render();
       }
       if (radioRequestedOn) setRadioEnabled(true, false);
-      tell(state.adopted ? 'LIVE SAVE LOADED. CHOOSE A ROUTINE.' : 'SECRET BOT READY FOR INITIALISATION.');
+      tell(state.adopted ? 'LIVE SAVE LOADED. CHOOSE A ROUTINE.' : homeNextLine());
       await typeBoot(['SIGNATURE VERIFIED', 'PLAYER SAVE LOADED', 'MOONPET OS READY'], { speed: 8, hold: 320 });
       if (!stateNeedsFullHydration(state)) await showPendingNotices();
       applyRequestedFocus();

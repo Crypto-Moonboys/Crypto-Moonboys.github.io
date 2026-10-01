@@ -238,8 +238,8 @@ test('a charged raid attack survives rotation and credits the original boss and 
   assert.equal(event.length, 1); assert.equal(event[0].pet_id, sourcePet); assert.equal(event[0].season_key, currentSeason);
   assert.equal(event[0].day_key, '2026-10-03'); assert.equal(event[0].pet_xp_awarded, 150);
   assert.equal((await f.get('/telegram-pets/leaderboard?period=all_time')).entries[0].pet_xp, 400450);
-  assert.equal(f.sql.prepare('SELECT season_xp FROM telegram_pet_season_state WHERE telegram_id=? AND season_key=?').get(f.owner,currentSeason).season_xp, 150);
-  assert.equal((await f.get('/telegram-pets/leaderboard?period=seasonal')).entries[0]?.pet_xp || 0, 0);
+  assert.equal(f.sql.prepare('SELECT season_xp FROM telegram_pet_season_state WHERE telegram_id=? AND season_key=?').get(f.owner,'pet-s2026-004').season_xp, 150);
+  assert.equal((await f.get('/telegram-pets/leaderboard?period=seasonal')).entries[0]?.pet_xp || 0, 150);
   assert.equal(f.sql.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id='new-raid-pet'").get().pet_xp, 300);
 });
 

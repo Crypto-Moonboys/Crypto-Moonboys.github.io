@@ -428,7 +428,7 @@ assert.match(miniAppActionProcessor, /action === 'season_slots'/, 'Mini App acti
 assert.match(miniAppActionProcessor, /buyPetSeasonSlot\(db, telegramId/, 'Mini App action handler must sell slots through the authenticated action flow');
 assert.match(miniAppActionProcessor, /switchActivePetSeasonSlot\(db, telegramId/, 'Mini App action handler must switch owned slots through the authenticated action flow');
 assert.doesNotMatch(String(serializePetLeaderboardEntry({ telegram_id: 'private-id' })), /private-id/, 'serialized leaderboard entries must not expose internal Telegram owner IDs');
-assert.match(worker, /if \(!lifecycleRow\)[\s\S]*createMoonEggLifecycle/, 'adoption retries must repair a missing lifecycle as an egg');
+assert.match(worker, /await completePetOnboarding\(db, telegramId, starter\.pet_id\)/, 'adoption retries must share canonical atomic onboarding');
 assert.match(worker, /const callbackLifecycle = await getMoonpetLifecycle/, 'legacy pet callbacks must enforce the egg-stage gate');
 assert.match(worker, /await syncMoonpetLifecycleStage\(db, telegramId, next\.stage\)/, 'legacy evolve command must synchronize lifecycle adulthood');
 assert.match(worker, /async function getMoonpetIdentityWithLifecycle/, 'Telegram reactions must receive lifecycle temperament and traits');
@@ -2527,7 +2527,7 @@ assert.equal(initialSeasonSlots.slots.length, 3, 'season slot summary must alway
 assert.equal(initialSeasonSlots.slots[0].unlocked, true, 'starter slot must be unlocked for existing pet profiles');
 assert.deepEqual(
   Object.keys(initialSeasonSlots.slots[0].pet).sort(),
-  ['art_identity_id', 'cleanliness', 'display_name', 'energy', 'happiness', 'health', 'hunger', 'level', 'name', 'pet_name', 'pet_xp', 'progression', 'species', 'stage', 'variant'].sort(),
+  ['art_identity_id', 'cleanliness', 'display_name', 'energy', 'happiness', 'health', 'hunger', 'level', 'lifetime_progression', 'name', 'pet_name', 'pet_xp', 'progression', 'species', 'stage', 'variant'].sort(),
   'owned slot summaries must expose only the pet-instance fields required by the roster card',
 );
 assert.equal(initialSeasonSlots.slots[0].pet.art_identity_id, null, 'slot summaries must not leak hidden art identities before Stage 3');
@@ -4304,6 +4304,9 @@ const failedStepLedger = failedStepEventDb.database.prepare("SELECT pet_id, pet_
 assert.equal(failedStepLedger.pet_id, failedStepPet.pet_id, 'failed-step consolation XP must be visible in the run pet ledger');
 assert.equal(failedStepLedger.pet_xp_awarded, failedStepResult.pet_xp_awarded);
 assert.ok(failedStepLedger.pet_xp_awarded > 0, 'another pet consuming its cap cannot suppress this run pet consolation XP');
+assert.equal(failedStepEventDb.database.prepare('SELECT season_xp FROM telegram_pet_season_state WHERE telegram_id=? AND season_key=?')
+  .get('failed-step-event', __petMediaTestHooks.getPetSeasonInfo(new Date()).key).season_xp, failedStepLedger.pet_xp_awarded,
+  'failed-run XP counts in the award competition period while remaining on the original pet');
 
 const terminalRaceDb = seedRepeatRewardPlayer('terminal-race', 90);
 await ensurePetStarterSeasonSlot(terminalRaceDb, 'terminal-race', new Date('2026-08-15T00:00:00Z'));

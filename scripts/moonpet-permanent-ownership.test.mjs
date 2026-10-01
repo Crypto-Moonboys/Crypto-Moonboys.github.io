@@ -31,7 +31,8 @@ const sql=new DatabaseSync(':memory:');
 sql.exec('PRAGMA foreign_keys=ON');
 const read=path=>readFile(new URL('../workers/moonboys-api/'+path,import.meta.url),'utf8');
 // Rehearse the old deployed CHECK constraints, then migrate real saved rows.
-sql.exec((await read('schema.sql')).replaceAll('qualification_week >= 1','qualification_week BETWEEN 1 AND 13'));
+sql.exec((await read('schema.sql')).replaceAll('qualification_week >= 1','qualification_week BETWEEN 1 AND 13')
+  .replace("  journey_clock TEXT NOT NULL DEFAULT 'legacy_quarter' CHECK (journey_clock IN ('legacy_quarter', 'created_at')),\n", ''));
 sql.exec(await read('migrations/058_telegram_pet_season_completion.sql'));
 sql.exec(await read('migrations/061_moonpet_season_economy_calibration.sql'));
 const db=new D1(sql), now=new Date('2026-10-01T12:00:00Z');
@@ -61,6 +62,14 @@ const leafTables=['telegram_pet_weekly_crests','telegram_pet_weekly_journey_obje
 const saved=new Map(leafTables.map(table=>[table,sql.prepare('SELECT * FROM '+table).all()]));
 sql.exec(await read('migrations/085_permanent_pet_weekly_evidence.sql'));
 for (const table of leafTables) assert.deepEqual(sql.prepare('SELECT * FROM '+table).all(),saved.get(table),'migration preserves every historical field and receipt');
+const savedOwnership=sql.prepare('SELECT * FROM telegram_pet_season_slots').all();
+sql.exec(await read('migrations/087_pet_journey_creation_clock.sql'));
+for (const row of sql.prepare('SELECT * FROM telegram_pet_season_slots').all()) {
+  const { journey_clock, ...ownership }=row;
+  assert.equal(journey_clock,'legacy_quarter');
+  assert.deepEqual(ownership,{...savedOwnership.find(saved=>saved.pet_id===row.pet_id)},'clock migration never rewrites ownership');
+}
+for (const table of leafTables) assert.deepEqual(sql.prepare('SELECT * FROM '+table).all(),saved.get(table),'clock migration preserves every historical evidence field');
 assert.equal(sql.prepare('PRAGMA foreign_key_check').all().length,0);
 // Both qualified and unqualified beta evidence are preserved; new week 14 is valid.
 sql.exec(`INSERT INTO telegram_pet_weekly_crests VALUES ('future','original','recovered','pet-s2026-003',14,'weekly_journey','weekly-journey:future','2026-10-06',14)`);
@@ -77,6 +86,11 @@ assert.equal(sql.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE tel
 assert.equal(sql.prepare("SELECT COUNT(*) AS n FROM telegram_pet_season_slots WHERE telegram_id='recovered'").get().n,3);
 assert.equal((await hooks.switchActivePetSeasonSlot(db,'recovered','purchased',{now})).accepted,true,'paid pet from an earlier quarter is selectable');
 assert.equal((await hooks.getPetProfile(db,'recovered')).pet_xp,9876,'switching uses the original saved progression');
+const legacySummary=await hooks.buildPetSeasonSlotCoreSummary(db,'recovered',now);
+const legacyLifetime=legacySummary.slots.find(slot=>slot.active).pet.lifetime_progression;
+assert.equal(legacyLifetime.journey_clock,'legacy_quarter');
+assert.equal(legacyLifetime.current_week,14,'the existing paid pet keeps its recorded quarter week numbering');
+assert.equal(legacyLifetime.current_week,legacySummary.current_season_week,'legacy display and qualification authority also agree');
 assert.equal((await hooks.switchActivePetSeasonSlot(db,'recovered','original',{now})).accepted,true);
 assert.equal((await hooks.buildPetSeasonSlotSummary(db,'recovered',now)).current_season_week,14);
 assert.equal((await hooks.switchActivePetSeasonSlot(db,'recovered',0,{now})).reason,'invalid_pet_slot');
@@ -162,7 +176,7 @@ assert.equal(sql.prepare('PRAGMA foreign_key_check').all().length,0);
 
 // Calendar quarter boundaries keep historical week numbers and extend indefinitely.
 for (const key of ['pet-s2026-003','2026-q3']) {
-  const period=getPetOwnershipPeriod(key);
+  const period=getPetOwnershipPeriod(key,'2026-08-15','legacy_quarter');
   assert.equal(getPetJourneyWeek(period,'2026-09-30T23:59:59Z'),13);
   assert.equal(getPetJourneyWeek(period,'2026-10-01T00:00:00Z'),14);
   assert.equal(getPetJourneyWeek(period,'2026-10-08T00:00:00Z'),15);

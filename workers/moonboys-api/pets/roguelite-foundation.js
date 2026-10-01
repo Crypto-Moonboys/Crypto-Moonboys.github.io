@@ -236,7 +236,8 @@ function getRewardAuthorization(source, telegramId, context = {}, now = new Date
   }
   if (source === 'pet_run_legacy') {
     if (!runId) throw new Error('invalid_pet_reward_context');
-    return { sql: "AND EXISTS (SELECT 1 FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ? AND status IN ('active', 'extractable', 'completed', 'extracted'))", args: [runId, telegramId] };
+    const earnedAt = String(context.competition_earned_at || '');
+    return { sql: "AND EXISTS (SELECT 1 FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ? AND status IN ('active', 'extractable', 'completed', 'extracted') AND (?='' OR julianday(completed_at)=julianday(?)))", args: [runId, telegramId, earnedAt, earnedAt] };
   }
   if (source === 'roguelite_room' || source === 'roguelite_boss') {
     if (!runId || !roomId) throw new Error('invalid_pet_reward_context');
@@ -295,6 +296,11 @@ export async function awardPetReward(db, request = {}) {
   const week = Math.ceil((((weekDate - weekYearStart) / 86400000) + 1) / 7);
   const weekKey = String((reservationId && request.week_key) || `${weekDate.getUTCFullYear()}-W${String(week).padStart(2, '0')}`);
   const seasonKey = String(request.season_key || getMoonpetSeasonKey(now));
+  // Pet ownership and event receipts retain their original source season.
+  // Reserved rewards retain their earning day even when recovered later.
+  const terminalEarnedAt = source === 'pet_run_legacy' ? request.context?.competition_earned_at : null;
+  if (terminalEarnedAt && !Number.isFinite(Date.parse(terminalEarnedAt))) throw new Error('invalid_pet_reward_context');
+  const competitionSeasonKey = getMoonpetSeasonKey(terminalEarnedAt || `${dayKey}T00:00:00.000Z`);
   const authorization = getRewardAuthorization(source, telegramId, request.context, now, petId);
   const claimId = crypto.randomUUID();
   const eventId = reservationId || crypto.randomUUID();
@@ -432,7 +438,7 @@ export async function awardPetReward(db, request = {}) {
         weekly_xp = CASE WHEN weekly_key = excluded.weekly_key THEN weekly_xp + excluded.weekly_xp ELSE excluded.weekly_xp END,
         daily_xp = CASE WHEN daily_key = excluded.daily_key THEN daily_xp + excluded.daily_xp ELSE excluded.daily_xp END,
         daily_key = excluded.daily_key, weekly_key = excluded.weekly_key, updated_at = CURRENT_TIMESTAMP`)
-      .bind(telegramId, seasonKey, dayKey, weekKey, eventId, metadata),
+      .bind(telegramId, competitionSeasonKey, dayKey, weekKey, eventId, metadata),
   ];
   const rogueliteAsset = source.startsWith('roguelite_');
   for (const [kind, collection, dailyCap] of [['material', rewards.materials, DAILY_ROGUELITE_MATERIAL_CAP], ['item', rewards.items, DAILY_ROGUELITE_ITEM_CAP]]) {

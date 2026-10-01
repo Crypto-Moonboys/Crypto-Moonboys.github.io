@@ -855,7 +855,7 @@ test('an earlier season raid stays visible and claimable while the selected pet 
   assert.equal((await f.get('/telegram-pets/leaderboard?period=daily')).entries[0].pet_xp,150);
   assert.equal((await f.get('/telegram-pets/leaderboard?period=weekly')).entries[0].pet_xp,150);
   assert.equal((await f.get('/telegram-pets/leaderboard?period=all_time')).entries[0].pet_xp,5350);
-  assert.equal(f.sql.prepare("SELECT season_xp FROM telegram_pet_season_state WHERE season_key='pet-s2026-002'").get().season_xp,150);
+  assert.equal(f.sql.prepare('SELECT season_xp FROM telegram_pet_season_state WHERE season_key=?').get(currentSeason).season_xp,150);
   assert.equal((await f.get('/telegram-pets/activity')).items.find(e=>e.event_type==='seasonal_boss').display_name,'BOTTY');
 
   const total=f.sql.prepare('SELECT SUM(pet_xp) xp FROM telegram_pet_instances').get().xp;

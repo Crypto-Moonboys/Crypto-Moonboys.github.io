@@ -49,6 +49,7 @@ INSERT INTO telegram_pet_season_slots (pet_id,telegram_id,season_key,slot_number
 INSERT INTO telegram_pet_instances VALUES ('pet-a','owner','s1',1,50,4900,'active'), ('pet-b','owner','s1',2,1,0,'active'), ('forged','attacker','s1',1,50,4900,'active'), ('production-pet','production-owner','pet-s2026-001',1,5,400,'active'), ('production-pet-b','production-owner','pet-s2026-001',2,5,400,'active');`);
 sqlite.exec(await readFile(new URL('../workers/moonboys-api/migrations/058_telegram_pet_season_completion.sql', import.meta.url), 'utf8'));
 sqlite.exec(await readFile(new URL('../workers/moonboys-api/migrations/061_moonpet_season_economy_calibration.sql', import.meta.url), 'utf8'));
+sqlite.exec(await readFile(new URL('../workers/moonboys-api/migrations/087_pet_journey_creation_clock.sql', import.meta.url), 'utf8'));
 const db = new D1(sqlite);
 
 assert.equal(getPetSeasonWeek({ start_at: '2026-01-01T00:00:00Z' }, new Date('2026-01-08T00:00:00Z')), 2);
