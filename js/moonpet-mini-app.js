@@ -2505,7 +2505,7 @@
     var callsignPanel = callsignUnlocked
       ? '<label class="line" for="pet-name-input">CUSTOM CALLSIGN</label><input id="pet-name-input" class="terminal-input" maxlength="32" value="' + escapeHtml(state.pet.callsign || '') + '"><div class="button-grid one">' + button('SAVE CALLSIGN', 'rename') + '</div><div class="line muted">CANONICAL IDENTITY STAYS SEPARATE FROM ANY CUSTOM CALLSIGN.</div>'
       : '<div class="line complete">UNKNOWN</div><div class="line muted">CALLSIGN LOCKED UNTIL STAGE 3.</div>';
-    return activePetSummary() + helpPanel +
+    return activePetSummary() + helpPanel + renderSeasonSlots() +
       panel('IDENTITY CORE', '<div class="line complete">' + escapeHtml(resolveMoonpetDisplayName(lifecycle, identity)) + ' // ' + escapeHtml(moonpetStageLabel(lifecycle, state.pet || {})) + '</div><div class="line muted">' + escapeHtml(words(lifecycle.temperament || 'forming')) + ' TEMPERAMENT</div>' + innate + '<div class="line muted">PERSONALITY</div>' + (traits || '<div class="line muted">TRAITS STILL FORMING. Personality develops through play.</div>')) + panel('HIDDEN MORPH SIGNAL', rarePanel, 'rare-morph') +
       panel('APTITUDES', aptitudeRows) +
       panel('MEMORY ARCHIVE', memoryRows + (milestones || '<div class="line muted">NO MILESTONES RECORDED YET.</div>'), 'memories') +
