@@ -1,7 +1,7 @@
 # Equipped styles and relic routes
 
-This addition to PR #1380 replaces the three limitations identified in the
-faction-reward audit. It does not change that PR's faction-read fix.
+This document covers the surviving Style Lab and Contract relic effects from
+PR #1380. Practice is retired by PR #1408. The faction-read fix is unchanged.
 
 ## Style Lab
 
@@ -52,3 +52,29 @@ retired game tables. Existing production tables and reward history are preserved
 The style and relic regression suite covers per-pet ownership, stale/foreign pets,
 read failures, free equip/remove, all ten relic mechanics, contract snapshots and
 idempotent style schema setup. Browser checks cover the three visible cosmetics.
+
+## Retirement release blocker
+
+Before merging/deploying the retirement, inspect the production D1 database for
+completed Practice rewards that have no awarded receipt:
+
+```sql
+SELECT COUNT(*) AS pending_rewards
+FROM telegram_pet_practice p
+WHERE p.status = 'completed' AND p.reward_xp = 10 AND p.reward_settled = 0
+  AND NOT EXISTS (
+    SELECT 1 FROM telegram_pet_reward_claims c
+    WHERE c.telegram_id = p.telegram_id AND c.pet_id = p.pet_id
+      AND c.source = 'pet_practice' AND c.idempotency_key = p.run_id
+      AND c.status = 'awarded'
+  );
+```
+
+This is a read-only check against the existing production table. Fresh installs
+have no retired table. An awarded receipt already proves payment even if the
+old run's settlement marker was not updated. If unpaid rows exist, keep this PR
+blocked and recover them through the currently deployed authenticated claim
+path before retirement. Do not reset rewards, fabricate receipts, or restore the
+retired game code. Record production evidence and account for runs completing
+between the audit and deployment; a one-off zero count alone is not proof that
+all obligations are settled. Production access is needed to clear this blocker.
