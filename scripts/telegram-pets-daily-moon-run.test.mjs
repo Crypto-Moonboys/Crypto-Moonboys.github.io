@@ -1,3 +1,4 @@
+import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
@@ -1320,7 +1321,7 @@ for (let seed = 1; seed <= 100; seed++) {
 }
 assert.equal(poorRun.choices.find((choice) => choice.key === 'trade')?.available, false);
 assert.ok(poorRun.choices.some((choice) => choice.available), 'free run alternatives remain playable');
-const rejectedTrade = await __petMediaTestHooks.processPetMiniAppAction(previewDb, previewOwner, { id: previewOwner }, { action: 'run_step', run_id: poorRun.run_id, choice_key: 'trade', expected_step_index: poorRun.expected_step_index }, 'fixture-token');
+const rejectedTrade = await dispatchRenderedPetAction(previewDb, previewOwner, { id: previewOwner }, { action: 'run_step', run_id: poorRun.run_id, choice_key: 'trade', expected_step_index: poorRun.expected_step_index }, 'fixture-token');
 assert.equal(rejectedTrade.reason, 'insufficient_run_cost', 'projection matches the authoritative rejection');
 previewDb.database.prepare('UPDATE telegram_pet_profiles SET moon_gold=12 WHERE telegram_id=?').run(previewOwner);
 const fundedRun = (await __petMediaTestHooks.buildPetMiniAppState(previewDb, previewOwner, 'fixture-token')).run;
@@ -1413,7 +1414,7 @@ async function endingFixture(owner, options = {}) {
 let endingAwardOwner = 9342000;
 async function invokeEndingAction(f, surface, action, suffix = 'first') {
   const body = { ...f.request, action, event_key: `ending-award:${suffix}`, request_id: `ending-award:${suffix}` };
-  if (surface === 'mini') return __petMediaTestHooks.processPetMiniAppAction(f.adapter, f.owner, { id: f.owner }, body, 'fixture-token');
+  if (surface === 'mini') return dispatchRenderedPetAction(f.adapter, f.owner, { id: f.owner }, body, 'fixture-token');
   const response = await moonboysApiWorker.fetch(new Request('https://moonboys.test/telegram-pets/action', {
     method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Pets-Bot-Secret': 'fixture-secret' }, body: JSON.stringify(body),
   }), { DB: f.adapter, TELEGRAM_PETS_BOT_SECRET: 'fixture-secret' });
@@ -1489,7 +1490,7 @@ assert.equal(interruptedEnding.adapter.database.prepare('SELECT COUNT(*) AS coun
   await persistPetRunRoomOutcome(f.adapter, run, room, { success: true, score: 25, choice_id: room.choices[0].choice_id });
   f.adapter.database.prepare('UPDATE telegram_pet_runs SET current_room=1,depth=1,score=25 WHERE run_id=?').run(f.run.run_id);
   f.adapter.failWrite = /UPDATE telegram_pet_daily_runs SET status =/;
-  await assert.rejects(__petMediaTestHooks.processPetMiniAppAction(f.adapter, f.owner, { id: f.owner }, {
+  await assert.rejects(dispatchRenderedPetAction(f.adapter, f.owner, { id: f.owner }, {
     action: 'run_extract', run_id: run.run_id,
   }, 'fixture-token'), /injected_journey_write_failure/);
   f.adapter.failWrite = null;
@@ -1564,7 +1565,7 @@ for (const fault of ['reward', 'win', 'terminal', 'sync', 'rejected', 'legacy-co
   f.adapter.database.prepare('UPDATE telegram_pet_active_slots SET pet_id=? WHERE telegram_id=?').run('other-' + f.owner, f.owner);
   const before = f.adapter.database.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get('other-' + f.owner);
   if (fault === 'rejected') {
-    const finished = await __petMediaTestHooks.processPetMiniAppAction(f.adapter, f.owner, { id: f.owner }, { action: 'run_extract', run_id: f.run.run_id }, 'fixture-token');
+    const finished = await dispatchRenderedPetAction(f.adapter, f.owner, { id: f.owner }, { action: 'run_extract', run_id: f.run.run_id }, 'fixture-token');
     assert.equal(finished.reason, 'daily_run_completed', 'Finish Saved Daily Run must preserve a completed boss ending');
   }
   await __petMediaTestHooks.buildPetMiniAppState(f.adapter, f.owner, 'fixture-token');

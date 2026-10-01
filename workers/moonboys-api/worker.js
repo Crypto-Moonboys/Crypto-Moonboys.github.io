@@ -10103,11 +10103,15 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   const displayedPetExemptActions = new Set([
     'adopt', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'delete_pet_slot',
     'guidance_ack', 'notification_set',
+    ...PET_MINI_APP_COMBAT_CLEANUP_ACTIONS,
     'run_step', 'run_extract', 'daily_run_tactic',
     'weekly_boss_claim', 'seasonal_boss_claim', 'daily_completion_claim',
     'contract_step', 'contract_claim', 'finale_retry', 'finale_step', 'finale_claim',
   ]);
-  if (displayedPetId && !displayedPetExemptActions.has(action)) {
+  if (!displayedPetExemptActions.has(action)) {
+    if (!displayedPetId) {
+      return { accepted: false, reason: 'displayed_pet_required', refresh_state: true };
+    }
     const active = await findActivePetSlot(db, telegramId);
     if (!active || active.pet_id !== displayedPetId) {
       return { accepted: false, reason: 'displayed_pet_changed', pet: await getPetProfile(db, telegramId), refresh_state: true };

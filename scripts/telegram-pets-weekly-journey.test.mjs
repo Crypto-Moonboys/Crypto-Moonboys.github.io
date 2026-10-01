@@ -1,3 +1,4 @@
+import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { DatabaseSync } from 'node:sqlite';
@@ -799,7 +800,7 @@ seedTerminalDailyMoonRun(dailyMoonRunDb, {
   runId: dailyMoonRunId,
   status: 'extracted',
 });
-const dailyMoonRunReplay = await processPetMiniAppAction(dailyMoonRunDb, dailyMoonRunTelegramId, { id: dailyMoonRunTelegramId }, {
+const dailyMoonRunReplay = await dispatchRenderedPetAction(dailyMoonRunDb, dailyMoonRunTelegramId, { id: dailyMoonRunTelegramId }, {
   action: 'run_extract',
   run_id: dailyMoonRunId,
   request_id: 'daily-moon-run-retry-one',
@@ -811,7 +812,7 @@ assert.equal(dailyMoonRunDb.database.prepare(`SELECT COUNT(*) AS count FROM tele
 assert.equal(dailyMoonRunDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
   WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_run' AND status='accepted'`).get(dailyMoonRunTelegramId, dailyMoonRunPet).count, 1,
   'Test 5h: Daily Moon Run terminal replay counts once toward weekly_run');
-await processPetMiniAppAction(dailyMoonRunDb, dailyMoonRunTelegramId, { id: dailyMoonRunTelegramId }, {
+await dispatchRenderedPetAction(dailyMoonRunDb, dailyMoonRunTelegramId, { id: dailyMoonRunTelegramId }, {
   action: 'run_extract',
   run_id: dailyMoonRunId,
   request_id: 'daily-moon-run-retry-two',
@@ -841,7 +842,7 @@ seedTerminalDailyMoonRun(dailyMoonRunFailureDb, {
 dailyMoonRunFailureDb.beforeDailyMoonRunEventInsert = () => {
   throw new Error('injected daily moon run weekly journey failure');
 };
-const dailyMoonRunFailureResult = await processPetMiniAppAction(dailyMoonRunFailureDb, dailyMoonRunFailureTelegramId, { id: dailyMoonRunFailureTelegramId }, {
+const dailyMoonRunFailureResult = await dispatchRenderedPetAction(dailyMoonRunFailureDb, dailyMoonRunFailureTelegramId, { id: dailyMoonRunFailureTelegramId }, {
   action: 'run_extract',
   run_id: dailyMoonRunFailureId,
   request_id: 'daily-moon-run-best-effort-one',
@@ -855,7 +856,7 @@ assert.equal(dailyMoonRunFailureDb.database.prepare(`SELECT COUNT(*) AS count FR
   WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_run'`).get(dailyMoonRunFailureTelegramId, dailyMoonRunFailurePet).count, 0,
   'Test 5i: failed auxiliary bookkeeping writes no Weekly Journey objective');
 dailyMoonRunFailureDb.beforeDailyMoonRunEventInsert = null;
-const dailyMoonRunFailureRetry = await processPetMiniAppAction(dailyMoonRunFailureDb, dailyMoonRunFailureTelegramId, { id: dailyMoonRunFailureTelegramId }, {
+const dailyMoonRunFailureRetry = await dispatchRenderedPetAction(dailyMoonRunFailureDb, dailyMoonRunFailureTelegramId, { id: dailyMoonRunFailureTelegramId }, {
   action: 'run_extract',
   run_id: dailyMoonRunFailureId,
   request_id: 'daily-moon-run-best-effort-two',
@@ -867,7 +868,7 @@ assert.equal(dailyMoonRunFailureDb.database.prepare(`SELECT COUNT(*) AS count FR
 assert.equal(dailyMoonRunFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
   WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_run' AND status='accepted'`).get(dailyMoonRunFailureTelegramId, dailyMoonRunFailurePet).count, 1,
   'Test 5i: retry records weekly_run exactly once');
-await processPetMiniAppAction(dailyMoonRunFailureDb, dailyMoonRunFailureTelegramId, { id: dailyMoonRunFailureTelegramId }, {
+await dispatchRenderedPetAction(dailyMoonRunFailureDb, dailyMoonRunFailureTelegramId, { id: dailyMoonRunFailureTelegramId }, {
   action: 'run_extract',
   run_id: dailyMoonRunFailureId,
   request_id: 'daily-moon-run-best-effort-three',

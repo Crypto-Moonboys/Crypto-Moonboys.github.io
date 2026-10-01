@@ -1,3 +1,4 @@
+import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import fs from 'node:fs';
@@ -53,7 +54,7 @@ function fixture(owner) {
     const p = sql.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=?').get(id);
     sql.prepare('UPDATE telegram_pet_profiles SET pet_xp=?,equipped_food=?,level=? WHERE telegram_id=?').run(p.pet_xp, p.equipped_food, p.level, owner);
   };
-  const act = body => hooks.processPetMiniAppAction(db,owner,{id:owner},body,'fixture-token');
+  const act = body => dispatchRenderedPetAction(db,owner,{id:owner},body,'fixture-token');
   const reveal = id => sql.prepare("INSERT INTO telegram_pet_evolutions_by_pet (pet_id,telegram_id,evolution_id,stage,unlock_event_key) VALUES (?,?,'elite_moonpet',3,'reveal')").run(id,owner);
   const state = () => hooks.buildPetMiniAppState(db, owner, 'fixture-token');
   const get = async path => { const response = await worker.fetch(new Request('https://moonboys-api.test' + path), { DB: db }); assert.equal(response.status, 200); return response.json(); };
@@ -1541,7 +1542,7 @@ test('full Mini App actions for two equipped pets compile under the production c
   async function request(path, body = {}) {
     const response = await deployedWorker.fetch(new Request(`https://moonboys.test/telegram-pets/app/${path}`, {
       method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ init_data: auth.toString(), ...body }),
+      body: JSON.stringify({ init_data: auth.toString(), displayed_pet_id: f.sql.prepare('SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id=?').get(f.owner)?.pet_id, ...body }),
     }), { DB: f.db, TELEGRAM_BOT_TOKEN: token });
     const data = await response.json();
     assert.equal(response.status, 200, JSON.stringify(data));

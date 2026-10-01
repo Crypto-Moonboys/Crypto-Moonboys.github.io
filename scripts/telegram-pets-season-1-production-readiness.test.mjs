@@ -1,3 +1,4 @@
+import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { webcrypto, randomUUID } from 'node:crypto';
@@ -130,7 +131,7 @@ async function setActivePetLifecyclePhase(db, telegramId, phase) {
 }
 
 async function act(db, telegramId, action, payload = {}) {
-  return processPetMiniAppAction(db, telegramId, { id: telegramId, first_name: telegramId }, {
+  return dispatchRenderedPetAction(db, telegramId, { id: telegramId, first_name: telegramId }, {
     action,
     request_id: `readiness:${telegramId}:${action}:${randomUUID()}`,
     ...payload,
@@ -193,7 +194,8 @@ async function postAppRoute(path, db, telegramId, body = {}) {
   const response = await worker.fetch(new Request(`https://moonboys-api.test${path}`, {
     method: 'POST',
     headers: { 'content-type': 'application/json', 'cf-connecting-ip': `127.0.0.${String(telegramId).slice(-1) || '1'}` },
-    body: JSON.stringify({ init_data: await buildInitData(BOT_TOKEN, telegramId), ...body }),
+    body: JSON.stringify({ init_data: await buildInitData(BOT_TOKEN, telegramId),
+      displayed_pet_id: path.endsWith('/action') ? db.database.prepare('SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id=?').get(telegramId)?.pet_id : undefined, ...body }),
   }), { DB: db, TELEGRAM_BOT_TOKEN: BOT_TOKEN, RATE_LIMIT_PUBLIC_PER_MINUTE: '1000', RATE_LIMIT_TELEGRAM_PER_MINUTE: '1000' });
   return { status: response.status, body: await response.json() };
 }
@@ -508,3 +510,12 @@ assert.equal(fastCareSmoke.body.state_pending, true, 'fast care response tells t
 assert.ok(fastCareSmoke.body.result.pet, 'fast care response includes the updated authoritative pet patch');
 
 console.log('telegram-pets-season-1-production-readiness.test.mjs passed');
+
+const missingIdentitySmoke = await postAppRoute('/telegram-pets/app/action', routeDb, '200004', {
+  action:'feed', displayed_pet_id:null, response_mode:'result_only', request_id:'route:missing-identity',
+});
+assert.equal(missingIdentitySmoke.status,409);
+assert.equal(missingIdentitySmoke.body.result.reason,'displayed_pet_required');
+assert.equal(missingIdentitySmoke.body.result.refresh_state,true,'the HTTP serializer preserves the immediate refresh instruction');
+assert.equal(missingIdentitySmoke.body.state,null);
+assert.deepEqual(countCombatRows(routeDb,'200004'),actionSmokeBefore);

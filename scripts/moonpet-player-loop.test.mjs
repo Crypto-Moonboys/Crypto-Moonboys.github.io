@@ -361,4 +361,44 @@ const eggHome = client.slice(client.indexOf("if (lifecycle.phase === 'egg') {", 
 for (const action of ['energy_drink', 'dance', 'cuddles']) assert.ok(eggHome.includes("'" + action + "'"));
 const html = read('moonpet-game.html');
 assert.ok(html.indexOf('/js/moonpet-play-options.js') < html.indexOf('/js/moonpet-mini-app.js'));
+
+// Execute the shipped fast-path handler with the refresh response held open.
+// A transaction race must refresh immediately and block a second mutation.
+const runActionSource = client.slice(client.indexOf('  async function runAction('), client.indexOf('  function switchScreen(', client.indexOf('  async function runAction(')));
+for (const reason of ['displayed_pet_required','displayed_pet_changed','source_pet_changed','pet_action_state_changed']) {
+  const calls=[];
+  let resolveRefresh;
+  const refresh = new Promise(resolve => {resolveRefresh=resolve;});
+  let refreshStarted;
+  const started = new Promise(resolve => {refreshStarted=resolve;});
+  const actionContext=vm.createContext({
+    busy:false, state:{pet:{pet_id:'shown-pet'}}, activeScreen:'home', fastActionStateDirty:true,
+    sleepLatched:false, crypto:{randomUUID:()=> 'request'},
+    words:value=>value, lifecycleCeremonyActive:()=>false, shouldUseFastActionResponse:()=>true,
+    actionAnimationFamily:()=> 'care', animateAction:()=>{}, tell:()=>{}, haptic:()=>{},
+    beginStateRequest:()=> calls.length, stateRequestGate:{isCurrent:()=>true},
+    resultMessage:()=>reason, stateRefreshPayload:()=>({mode:'core'}), render:()=>{},
+    patchFastActionState:()=>{assert.fail('stale state must never be patched');},
+    scheduleFastActionStateRefresh:()=>{assert.fail('stale refresh must not wait four seconds');},
+    async post(path,body) {
+      calls.push({path,body});
+      if(path.endsWith('/action'))return {state_pending:true,result:{accepted:false,reason}};
+      refreshStarted();return refresh;
+    },
+  });
+  actionContext.setStateSnapshot=(next)=>{actionContext.state=next;return true;};
+  vm.runInContext(runActionSource,actionContext);
+  const pending=actionContext.runAction('feed',{});
+  await started;
+  assert.equal(actionContext.busy,true,'controls remain blocked until refresh finishes');
+  assert.equal(calls[0].body.displayed_pet_id,'shown-pet');
+  await actionContext.runAction('feed',{});
+  assert.equal(calls.length,2,'no second action can run during the authoritative refresh');
+  resolveRefresh({state:{pet:{pet_id:'fresh-pet'}}});
+  await pending;
+  assert.equal(actionContext.state.pet.pet_id,'fresh-pet');
+  assert.equal(actionContext.busy,false);
+  assert.equal(actionContext.fastActionStateDirty,false);
+}
+
 console.log(`Moonpet player loop tests passed: ${new Set(actionButtons).size} literal action buttons.`);

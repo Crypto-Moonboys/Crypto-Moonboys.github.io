@@ -1,3 +1,4 @@
+import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import fs from 'node:fs';
@@ -53,7 +54,7 @@ function fixture(owner) {
     const p = sql.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=?').get(id);
     sql.prepare('UPDATE telegram_pet_profiles SET pet_xp=?,equipped_food=?,level=? WHERE telegram_id=?').run(p.pet_xp, p.equipped_food, p.level, owner);
   };
-  const act = body => hooks.processPetMiniAppAction(db,owner,{id:owner},body,'fixture-token');
+  const act = body => dispatchRenderedPetAction(db,owner,{id:owner},body,'fixture-token');
   const reveal = id => sql.prepare("INSERT INTO telegram_pet_evolutions_by_pet (pet_id,telegram_id,evolution_id,stage,unlock_event_key) VALUES (?,?,'elite_moonpet',3,'reveal')").run(id,owner);
   const state = () => hooks.buildPetMiniAppState(db, owner, 'fixture-token');
   const get = async path => { const response = await worker.fetch(new Request('https://moonboys-api.test' + path), { DB: db }); assert.equal(response.status, 200); return response.json(); };
@@ -100,6 +101,24 @@ test('cross-session stale care, callsign and item controls reject without mutati
   assert.deepEqual(f.sql.prepare('SELECT pet_xp,pet_name FROM telegram_pet_instances WHERE pet_id=?').get('other-session-pet'),before);
   assert.equal(f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_key='moon_snack'").get(f.owner).quantity,1);
   assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_events').get().n,0);
+});
+
+test('missing and empty displayed identity cannot bypass care, rename or item validation', async () => {
+  const f=fixture('82012');
+  f.sql.prepare("INSERT INTO telegram_pet_inventory (telegram_id,asset_type,asset_key,quantity) VALUES (?,'item','moon_snack',1)").run(f.owner);
+  const before=f.sql.prepare('SELECT * FROM telegram_pet_instances WHERE telegram_id=?').all(f.owner);
+  for (const displayed of [{}, {displayed_pet_id:null}, {displayed_pet_id:''}, {displayed_pet_id:'   '}]) {
+    for (const body of [{action:'feed'}, {action:'rename',pet_name:'WRONG'}, {action:'use_item',item_key:'moon_snack'}]) {
+      const result=await hooks.processPetMiniAppAction(f.db,f.owner,{id:f.owner},{...body,...displayed,request_id:crypto.randomUUID()},'fixture-token');
+      assert.equal(result.accepted,false);
+      assert.equal(result.reason,'displayed_pet_required');
+      assert.equal(result.refresh_state,true);
+    }
+  }
+  assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_instances WHERE telegram_id=?').all(f.owner),before);
+  assert.equal(f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_key='moon_snack'").get(f.owner).quantity,1);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_events').get().n,0);
+  assert.equal((await f.act({action:'season_slots',displayed_pet_id:null})).accepted,true,'read-only roster remains available without displayed identity');
 });
 
 test('overlapping purchases charge once for the same equipped item', async () => {

@@ -1,3 +1,4 @@
+import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 import assert from 'node:assert/strict';
 import { createHash, createHmac } from 'node:crypto';
 import fs from 'node:fs';
@@ -2549,7 +2550,7 @@ assert.equal(initialSeasonSlots.slots[2].unlocked, false, 'slot 3 must start loc
 assert.equal(initialSeasonSlots.slots[2].purchase_enabled, false, 'slot 3 must remain disabled until slot 2 is owned');
 assert.equal(initialSeasonSlots.slots[2].purchase_disabled_reason, 'previous_pet_slot_required', 'slot 3 must advertise the sequential purchase requirement');
 assert.equal(initialSeasonSlots.slots[2].affordable, false, 'slot 3 must not be affordable before slot 2 is owned');
-const slotSummaryAction = await processPetMiniAppAction(seasonSlotRuntimeDb, 'season-slot-runtime', { id: 'season-slot-runtime' }, {
+const slotSummaryAction = await dispatchRenderedPetAction(seasonSlotRuntimeDb, 'season-slot-runtime', { id: 'season-slot-runtime' }, {
   action: 'season_slots',
   request_id: 'slot-summary',
 }, 'bot-token');
@@ -2892,7 +2893,7 @@ for (const [action, expectedField] of [['energy_drink', 'energy'], ['dance', 'ha
   await __petMediaTestHooks.createMoonEggLifecycle(db, telegramId, `fixture:${telegramId}:egg`);
   db.database.prepare('UPDATE telegram_pet_profiles SET happiness=40, energy=72 WHERE telegram_id=?').run(telegramId);
   db.database.prepare('UPDATE telegram_pet_instances SET happiness=40, energy=72 WHERE telegram_id=?').run(telegramId);
-  const first = await processPetMiniAppAction(db, telegramId, { id: telegramId }, {
+  const first = await dispatchRenderedPetAction(db, telegramId, { id: telegramId }, {
     action,
     request_id: `${action}:first`,
   }, '123456:test-token');
@@ -2903,7 +2904,7 @@ for (const [action, expectedField] of [['energy_drink', 'energy'], ['dance', 'ha
     { moon_gold: 0, moon_crystals: 0, style_tokens: 0 },
     `${action} egg acceptance must remain wallet-neutral`,
   );
-  const duplicate = await processPetMiniAppAction(db, telegramId, { id: telegramId }, {
+  const duplicate = await dispatchRenderedPetAction(db, telegramId, { id: telegramId }, {
     action,
     request_id: `${action}:first`,
   }, '123456:test-token');
@@ -2913,7 +2914,7 @@ for (const [action, expectedField] of [['energy_drink', 'energy'], ['dance', 'ha
 
 const eggMiniBlocked = seedRepeatRewardPlayer('egg-mini-blocked', 72, specialActionNow.toISOString(), { currentSeason: true });
 await __petMediaTestHooks.createMoonEggLifecycle(eggMiniBlocked, 'egg-mini-blocked', 'fixture:egg-mini-blocked:egg');
-const blockedTrain = await processPetMiniAppAction(eggMiniBlocked, 'egg-mini-blocked', { id: 'egg-mini-blocked' }, {
+const blockedTrain = await dispatchRenderedPetAction(eggMiniBlocked, 'egg-mini-blocked', { id: 'egg-mini-blocked' }, {
   action: 'train',
   request_id: 'train:blocked',
 }, '123456:test-token');
@@ -2922,12 +2923,12 @@ assert.equal(blockedTrain.reason, 'moon_egg_must_hatch');
 
 const eggMiniCooldown = seedRepeatRewardPlayer('egg-mini-cooldown', 72, specialActionNow.toISOString(), { currentSeason: true });
 await __petMediaTestHooks.createMoonEggLifecycle(eggMiniCooldown, 'egg-mini-cooldown', 'fixture:egg-mini-cooldown:egg');
-const firstEggDrink = await processPetMiniAppAction(eggMiniCooldown, 'egg-mini-cooldown', { id: 'egg-mini-cooldown' }, {
+const firstEggDrink = await dispatchRenderedPetAction(eggMiniCooldown, 'egg-mini-cooldown', { id: 'egg-mini-cooldown' }, {
   action: 'energy_drink',
   request_id: 'energy:first',
 }, '123456:test-token');
 assert.equal(firstEggDrink.accepted, true);
-const cooldownEggDrink = await processPetMiniAppAction(eggMiniCooldown, 'egg-mini-cooldown', { id: 'egg-mini-cooldown' }, {
+const cooldownEggDrink = await dispatchRenderedPetAction(eggMiniCooldown, 'egg-mini-cooldown', { id: 'egg-mini-cooldown' }, {
   action: 'energy_drink',
   request_id: 'energy:cooldown',
 }, '123456:test-token');
@@ -2936,7 +2937,7 @@ assert.equal(cooldownEggDrink.reason, 'cooldown', 'eligible egg special actions 
 
 const eggMiniBusy = seedPetActivitySession('egg-mini-busy', { now: specialActionNow, elapsed_seconds: 120, currentSeason: true });
 await __petMediaTestHooks.createMoonEggLifecycle(eggMiniBusy.db, 'egg-mini-busy', 'fixture:egg-mini-busy:egg');
-const busyDance = await processPetMiniAppAction(eggMiniBusy.db, 'egg-mini-busy', { id: 'egg-mini-busy' }, {
+const busyDance = await dispatchRenderedPetAction(eggMiniBusy.db, 'egg-mini-busy', { id: 'egg-mini-busy' }, {
   action: 'dance',
   request_id: 'dance:busy',
 }, '123456:test-token');

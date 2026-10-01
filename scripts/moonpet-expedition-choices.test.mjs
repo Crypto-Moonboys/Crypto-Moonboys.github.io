@@ -1,3 +1,4 @@
+import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
@@ -82,7 +83,7 @@ assert.equal(getPetExpedition(25).key, 'guardian_rift', 'older clients retain th
 for (const destination of PET_EXPEDITION_TIERS) {
   const id = 'destination-' + destination.key;
   const target = await seed(id);
-  const result = await hooks.processPetMiniAppAction(db, id, { id }, { action: 'expedition', request_id: 'chosen-destination',
+  const result = await dispatchRenderedPetAction(db, id, { id }, { action: 'expedition', request_id: 'chosen-destination',
     pet_id: target.pet_id, expedition_key: destination.key, rewards: { moon_gold: 999999 }, energy_cost: 0 }, 'test-token');
   assert.equal(result.accepted, true);
   assert.equal(result.expedition.key, destination.key);

@@ -1,3 +1,4 @@
+import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
@@ -596,7 +597,7 @@ try {
   const originalXp = sqlite.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(sourcePet.pet_id).pet_xp;
   const eggXp = sqlite.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(eggId).pet_xp;
   const savedClaim = { action:'contract_claim',pet_id:sourcePet.pet_id,contract_id:savedBonus.contract_id };
-  const dispatchClaim = () => hooks.processPetMiniAppAction(db,sourcePet.telegram_id,{id:sourcePet.telegram_id},{...savedClaim,request_id:realCrypto.randomUUID()},'fixture-token');
+  const dispatchClaim = () => dispatchRenderedPetAction(db,sourcePet.telegram_id,{id:sourcePet.telegram_id},{...savedClaim,request_id:realCrypto.randomUUID()},'fixture-token');
   assert.equal((await dispatchClaim()).pet_xp_awarded,20);
   assert.equal((await dispatchClaim()).pet_xp_awarded,0);
   assert.equal(sqlite.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(sourcePet.pet_id).pet_xp,originalXp+20);
@@ -688,7 +689,7 @@ try {
   // API dispatch accepts only server-owned state, and pre-migration availability fails closed.
   const s = await hooks.buildPetMiniAppState(db, b.telegram_id, 'fixture-token');
   assert.equal(s.contracts.available, true);
-  assert.equal((await hooks.processPetMiniAppAction(db, b.telegram_id, { id:b.telegram_id }, { action:'contract_start',pet_id:b.pet_id,sequence:1,goal:'escort',build:'bruiser',tier:1,side_goal:'versatile',state_json:'{}',route_wins:{cover:99,bold:99,search:99},reward_xp:9999,request_id:realCrypto.randomUUID() }, 'fixture-token')).accepted, true);
+  assert.equal((await dispatchRenderedPetAction(db, b.telegram_id, { id:b.telegram_id }, { action:'contract_start',pet_id:b.pet_id,sequence:1,goal:'escort',build:'bruiser',tier:1,side_goal:'versatile',state_json:'{}',route_wins:{cover:99,bold:99,search:99},reward_xp:9999,request_id:realCrypto.randomUUID() }, 'fixture-token')).accepted, true);
   const sideRun = (await board(b)).run;
   assert.equal(sideRun.side_goal.key, 'versatile'); assert.equal(sideRun.side_goal.progress, 0);
   assert.ok(sideRun.room.effect);
@@ -718,7 +719,7 @@ try {
   // Format and progress are saved by the dispatcher, never accepted from moves.
   const longPet = await seed('long-contract');
   const longStart = { action: 'contract_start', pet_id: longPet.pet_id, sequence: 1, goal: 'recon', build: 'scavenger', tier: 1, format: 'extended', max_depth: 1, target: 0, version: 1 };
-  assert.equal((await hooks.processPetMiniAppAction(db, longPet.telegram_id, { id:longPet.telegram_id }, { ...longStart, request_id:realCrypto.randomUUID() }, 'fixture-token')).accepted, true);
+  assert.equal((await dispatchRenderedPetAction(db, longPet.telegram_id, { id:longPet.telegram_id }, { ...longStart, request_id:realCrypto.randomUUID() }, 'fixture-token')).accepted, true);
   let longRun = (await board(longPet)).run;
   assert.equal(longRun.max_depth, 10); assert.equal(longRun.target, 5); assert.equal(longRun.format, 'extended');
   while (longRun.depth < 6) {
@@ -778,7 +779,7 @@ try {
   sqlite.exec('DROP TABLE telegram_pet_contracts');
   await assert.rejects(hooks.buildPetMiniAppState(db, b.telegram_id, 'fixture-token'), /no such table: telegram_pet_contracts/,
     'a missing live Contract authority table must fail the state refresh instead of publishing false unavailability');
-  const blocked = await hooks.processPetMiniAppAction(db, b.telegram_id, { id:b.telegram_id }, { action:'contract_start',pet_id:b.pet_id,sequence:1,goal:'escort',build:'bruiser',tier:1,request_id:realCrypto.randomUUID() }, 'fixture-token');
+  const blocked = await dispatchRenderedPetAction(db, b.telegram_id, { id:b.telegram_id }, { action:'contract_start',pet_id:b.pet_id,sequence:1,goal:'escort',build:'bruiser',tier:1,request_id:realCrypto.randomUUID() }, 'fixture-token');
   assert.equal(blocked.reason, 'contracts_unavailable');
   sqlite.exec(migration); sqlite.exec(migration);
 } finally { Object.defineProperty(globalThis, 'crypto', { configurable: true, value: realCrypto }); sqlite.close(); }

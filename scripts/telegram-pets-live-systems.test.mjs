@@ -1,3 +1,4 @@
+import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
@@ -809,7 +810,7 @@ runtimeDb.prepare(`INSERT INTO telegram_pet_lifecycle_by_pet (pet_id,telegram_id
 runtimeDb.prepare("UPDATE telegram_pet_instances SET stage='young' WHERE pet_id=?").run(racePet.pet_id);
 runtimeDb.prepare('INSERT INTO telegram_pet_seasonal_boss_progress (pet_id,telegram_id,pet_season_key,season_key,boss_key,damage) VALUES (?,?,?,?,?,?)')
   .run(racePet.pet_id, 'raid-victory-race', racePet.season_key, boss.season_instance, boss.key, boss.hp - 1);
-const raidAction = () => __petMediaTestHooks.processPetMiniAppAction(d1, 'raid-victory-race', { id: 'raid-victory-race' }, { action: 'seasonal_boss', pet_id: racePet.pet_id, move: 'strike' }, 'local-test-token');
+const raidAction = () => dispatchRenderedPetAction(d1, 'raid-victory-race', { id: 'raid-victory-race' }, { action: 'seasonal_boss', pet_id: racePet.pet_id, move: 'strike' }, 'local-test-token');
 let overlappingVictory;
 d1.batch = async function (statements) {
   if (!overlappingVictory && statements.some((entry) => entry.sql.includes('INSERT INTO telegram_pet_seasonal_boss_progress'))) {

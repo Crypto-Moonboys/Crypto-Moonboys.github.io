@@ -1,3 +1,4 @@
+import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import fs from 'node:fs';
@@ -45,7 +46,7 @@ function fixture(owner) {
     const p = sql.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=?').get(id);
     sql.prepare('UPDATE telegram_pet_profiles SET pet_xp=?,equipped_food=?,level=? WHERE telegram_id=?').run(p.pet_xp, p.equipped_food, p.level, owner);
   };
-  const act = body => hooks.processPetMiniAppAction(db,owner,{id:owner},body,'fixture-token');
+  const act = body => dispatchRenderedPetAction(db,owner,{id:owner},body,'fixture-token');
   const reveal = id => sql.prepare("INSERT INTO telegram_pet_evolutions_by_pet (pet_id,telegram_id,evolution_id,stage,unlock_event_key) VALUES (?,?,'elite_moonpet',3,'reveal')").run(id,owner);
   const state = () => hooks.buildPetMiniAppState(db, owner, 'fixture-token');
   const get = async path => { const response = await worker.fetch(new Request('https://moonboys-api.test' + path), { DB: db }); assert.equal(response.status, 200); return response.json(); };
@@ -144,7 +145,7 @@ test('a delayed Arena round cannot overwrite a concurrently committed forfeit',a
 
 test('another owner cannot replay an Arena ending or receive its reward',async()=>{
   const f=await arenaFixture('arena-owner');
-  const result=await hooks.processPetMiniAppAction(f.db,'intruder',{id:'intruder'},
+  const result=await dispatchRenderedPetAction(f.db,'intruder',{id:'intruder'},
     {action:'arena_forfeit',battle_id:f.id},'fixture-token');
   assert.equal(result.accepted,false);
   assert.equal(f.battle().status,'active');
@@ -207,7 +208,7 @@ for (const system of ['arena','kaiju']) test(`${system}: a committed match survi
   await hooks.preparePetMiniAppState(f.db,opponent,new Date());
   const pet=f.sql.prepare('SELECT * FROM telegram_pet_instances WHERE telegram_id=?').get(opponent);
   f.sql.prepare("UPDATE telegram_pet_lifecycle_by_pet SET phase='young' WHERE pet_id=?").run(pet.pet_id);
-  await hooks.processPetMiniAppAction(f.db,opponent,{id:opponent},{action:`${system}_matchmake`},'fixture-token');
+  await dispatchRenderedPetAction(f.db,opponent,{id:opponent},{action:`${system}_matchmake`},'fixture-token');
   const table=`telegram_pet_${system}_${system==='arena'?'battles':'matches'}`;
   f.db.beforeFirst=s=>{if(s.query.includes(`SELECT * FROM ${table}`)&&s.query.includes(system==='arena'?'battle_id = ?':'match_id = ?'))throw Error('created_match_read_unavailable');};
   await assert.rejects(f.act({action:`${system}_matchmake`}),/created_match_read_unavailable/);
@@ -225,7 +226,7 @@ test(`${system}: ${failure} restores the Mini App queue despite an unrelated Tel
   f.sql.prepare('INSERT INTO telegram_pet_profiles (telegram_id,pet_xp,health,energy) VALUES (?,10000,100,100)').run(rival);
   await hooks.preparePetMiniAppState(f.db,rival,new Date());
   f.sql.prepare("UPDATE telegram_pet_lifecycle_by_pet SET phase='young' WHERE telegram_id=?").run(rival);
-  const queued=await hooks.processPetMiniAppAction(f.db,rival,{id:rival},{action:`${system}_matchmake`},'fixture-token');
+  const queued=await dispatchRenderedPetAction(f.db,rival,{id:rival},{action:`${system}_matchmake`},'fixture-token');
   assert.equal(queued.reason,`${system}_queued`);
   const table=`telegram_pet_${system}_${system==='arena'?'battles':'matches'}`;
   if(system==='arena') f.sql.prepare(`INSERT INTO telegram_pet_arena_battles
@@ -369,7 +370,7 @@ async function addRival(f) {
 
 test('Kaiju group retries keep both immutable cards and settle each player once',async()=>{
   const f=fixture('kaiju-group'),rival=await addRival(f);
-  const act=(owner,body)=>hooks.processPetMiniAppAction(f.db,owner,{id:owner},body,'fixture-token');
+  const act=(owner,body)=>dispatchRenderedPetAction(f.db,owner,{id:owner},body,'fixture-token');
   assert.equal((await f.act({action:'kaiju_matchmake'})).reason,'kaiju_queued');
   const joined=await act(rival,{action:'kaiju_matchmake'}),id=joined.match.match_id;
   const pick=(owner,index)=>act(owner,{action:'kaiju_card',match_id:id,card_key:hooks.PET_KAIJU_CARDS[index].id});
@@ -523,11 +524,11 @@ test('mixed Kaiju, Arena and care recovery stays bounded and makes progress in b
   const f=fixture('combined-budget'),rival=await addRival(f);
   await f.state();
   await f.act({action:'kaiju_matchmake'});
-  const joined=await hooks.processPetMiniAppAction(f.db,rival,{id:rival},{action:'kaiju_matchmake'},'fixture-token');
+  const joined=await dispatchRenderedPetAction(f.db,rival,{id:rival},{action:'kaiju_matchmake'},'fixture-token');
   const id=joined.match.match_id;
   await f.act({action:'kaiju_card',match_id:id,card_key:hooks.PET_KAIJU_CARDS[0].id});
   f.sql.exec("CREATE TRIGGER fail_budget_ending BEFORE UPDATE OF status ON telegram_pet_kaiju_matches WHEN NEW.status='completed' BEGIN SELECT RAISE(ABORT,'ending_unavailable'); END");
-  await assert.rejects(hooks.processPetMiniAppAction(f.db,rival,{id:rival},{action:'kaiju_card',match_id:id,card_key:hooks.PET_KAIJU_CARDS[1].id},'fixture-token'),/ending_unavailable/);
+  await assert.rejects(dispatchRenderedPetAction(f.db,rival,{id:rival},{action:'kaiju_card',match_id:id,card_key:hooks.PET_KAIJU_CARDS[1].id},'fixture-token'),/ending_unavailable/);
   f.sql.exec('DROP TRIGGER fail_budget_ending');
   f.sql.prepare(`INSERT INTO telegram_pet_arena_battles
     (id,battle_id,chat_id,player1_telegram_id,player1_pet_id,player1_season_key,player1_pet_snapshot_json,player2_pet_snapshot_json,status,result)

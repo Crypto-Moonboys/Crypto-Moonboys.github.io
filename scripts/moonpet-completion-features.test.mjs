@@ -1,3 +1,4 @@
+import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import fs from 'node:fs';
@@ -53,7 +54,7 @@ function fixture(owner) {
   };
   const completeSeason = (id = petId, sourceSeason = season) => sql.prepare(`INSERT INTO telegram_pet_season_completions
     (pet_id,telegram_id,season_key,legendary_evolution_id,growth_marks_earned,weekly_crests_earned) VALUES (?,?,?,'legendary_moon_guardian',60,10)`).run(id, owner, sourceSeason);
-  const act = body => hooks.processPetMiniAppAction(db, owner, { id: owner }, body, 'test-token');
+  const act = body => dispatchRenderedPetAction(db, owner, { id: owner }, body, 'test-token');
   const board = () => getSeasonFinales(db, owner, petId);
   const battle = () => sql.prepare('SELECT * FROM telegram_pet_season_finales WHERE pet_id=?').get(petId);
   const get = async path => { const response = await worker.fetch(new Request('https://test.local' + path), { DB: db }); assert.equal(response.status, 200); return response.json(); };

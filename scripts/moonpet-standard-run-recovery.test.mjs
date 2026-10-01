@@ -1,3 +1,4 @@
+import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import fs from 'node:fs';
@@ -305,7 +306,7 @@ for (const [index, action] of ['run_step', 'run_extract'].entries()) test(action
   const f = fixture('8101' + index);
   await f.state();
   f.run('saved-ending-action', { depth: 100, status: 'extractable' });
-  const result = await hooks.processPetMiniAppAction(f.db, f.owner, { id: f.owner }, {
+  const result = await dispatchRenderedPetAction(f.db, f.owner, { id: f.owner }, {
     action, run_id: 'saved-ending-action', choice_key: 'boss', expected_step_index: 101, event_key: 'new-request',
   }, 'fixture-token');
   assert.equal(result.accepted, true); assert.equal(result.reason, 'run_completed');

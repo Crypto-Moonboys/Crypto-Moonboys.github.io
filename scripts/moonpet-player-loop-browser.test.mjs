@@ -1,3 +1,4 @@
+import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import http from 'node:http';
@@ -854,12 +855,12 @@ try {
     await seed(currentUser,'young');
     const sourceState = await hooks.buildPetMiniAppState(db,currentUser,token);
     const sourcePetId = sourceState.pet.pet_id;
-    await hooks.processPetMiniAppAction(db,currentUser,{id:currentUser},{action:'contract_start',pet_id:sourcePetId,sequence:1,goal:'escort',build:'bruiser',tier:1},token);
+    await dispatchRenderedPetAction(db,currentUser,{id:currentUser},{action:'contract_start',pet_id:sourcePetId,sequence:1,goal:'escort',build:'bruiser',tier:1},token);
     const savedContract = sqlite.prepare('SELECT * FROM telegram_pet_contracts WHERE telegram_id=?').get(currentUser);
     const savedFinale = { ...createContractState('escort','bruiser',1,'browser-saved-bonus'),depth:5,health:110,wins:5 };
     sqlite.prepare('UPDATE telegram_pet_contracts SET state_json=? WHERE contract_id=?').run(JSON.stringify(savedFinale),savedContract.contract_id);
     failContractReward = true;
-    const savedFinish = await hooks.processPetMiniAppAction(db,currentUser,{id:currentUser},{action:'contract_step',pet_id:sourcePetId,contract_id:savedContract.contract_id,revision:0,choice:'cover'},token);
+    const savedFinish = await dispatchRenderedPetAction(db,currentUser,{id:currentUser},{action:'contract_step',pet_id:sourcePetId,contract_id:savedContract.contract_id,revision:0,choice:'cover'},token);
     assert.equal(savedFinish.reward_pending,true);
     const recoveryEgg = sourcePetId+':egg';
     sqlite.prepare(`INSERT INTO telegram_pet_season_slots (pet_id,telegram_id,season_key,slot_number,acquisition_type,source_event_key,arcade_xp_spent,status) VALUES (?,?,?,2,'arcade_xp','browser-saved-bonus',0,'active')`).run(recoveryEgg,currentUser,savedContract.season_key);
@@ -887,7 +888,7 @@ try {
     assert.equal(savedPaid.state.contracts.available,false); assert.deepEqual(savedPaid.state.contracts.pending_rewards,[]);
     assert.equal(sqlite.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(sourcePetId).pet_xp,sourceXp+20);
     await savedButton.waitFor({state:'detached'});
-    assert.equal((await hooks.processPetMiniAppAction(db,currentUser,{id:currentUser},{action:'contract_claim',...savedPayload,request_id:realCrypto.randomUUID()},token)).pet_xp_awarded,0);
+    assert.equal((await dispatchRenderedPetAction(db,currentUser,{id:currentUser},{action:'contract_claim',...savedPayload,request_id:realCrypto.randomUUID()},token)).pet_xp_awarded,0);
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
     assert.equal(await page.locator('[data-panel="play-now"] [data-focus="contracts"]').count(),0);
 
@@ -895,7 +896,7 @@ try {
     currentUser = `browser-boss-failure-${viewport.width}`;
     await seed(currentUser, 'young');
     const bossStartState = await hooks.buildPetMiniAppState(db, currentUser, token);
-    const bossStart = await hooks.processPetMiniAppAction(db, currentUser, { id: currentUser }, { action: 'contract_start', pet_id: bossStartState.pet.pet_id, sequence: 1, goal: 'salvage', build: 'scavenger', tier: 1 }, token);
+    const bossStart = await dispatchRenderedPetAction(db, currentUser, { id: currentUser }, { action: 'contract_start', pet_id: bossStartState.pet.pet_id, sequence: 1, goal: 'salvage', build: 'scavenger', tier: 1 }, token);
     assert.equal(bossStart.accepted, true);
     const beforeBoss = await hooks.buildPetMiniAppState(db, currentUser, token);
     const finale = { ...createContractState('salvage', 'scavenger', 1, 'browser-boss-fail'), depth: 5, salvage: 200, wins: 5, health: 90 };
@@ -925,14 +926,14 @@ try {
     currentUser = `browser-ending-${viewport.width}`;
     await seed(currentUser, 'young');
     dailyOverride = null;
-    const endingStart = await hooks.processPetMiniAppAction(db, currentUser, { id: currentUser }, { action: 'daily_run_start' }, token);
+    const endingStart = await dispatchRenderedPetAction(db, currentUser, { id: currentUser }, { action: 'daily_run_start' }, token);
     const endingId = endingStart.daily_run.run_id;
     sqlite.prepare('UPDATE telegram_pet_runs SET current_room=9,depth=9,score=123 WHERE run_id=?').run(endingId);
     const endingRun = sqlite.prepare('SELECT * FROM telegram_pet_runs WHERE run_id=?').get(endingId);
     const endingRoom = await hooks.createPetRunRoom(db, endingRun);
     await persistPetRunRoomOutcome(db, endingRun, endingRoom, { success: true, score: 100, choice_id: endingRoom.choices[0].choice_id });
     failDailyEnding = true;
-    await assert.rejects(hooks.processPetMiniAppAction(db, currentUser, { id: currentUser }, { action: 'run_step', run_id: endingId, choice_key: endingRoom.choices[0].choice_id, expected_step_index: 9 }, token), /interrupted_daily_ending/);
+    await assert.rejects(dispatchRenderedPetAction(db, currentUser, { id: currentUser }, { action: 'run_step', run_id: endingId, choice_key: endingRoom.choices[0].choice_id, expected_step_index: 9 }, token), /interrupted_daily_ending/);
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
     await page.locator('[data-panel="play-now"] [data-focus="moon-run"]').filter({ hasText: 'FINISH SAVED DAILY RUN' }).click();
     const savedEndingText = await page.locator('[data-panel="moon-run"]').textContent();
@@ -992,7 +993,7 @@ try {
     currentUser = `browser-daily-${viewport.width}`;
     await seed(currentUser, 'young');
     dailyOverride = null;
-    const startedDaily = await hooks.processPetMiniAppAction(db, currentUser, { id: currentUser }, { action: 'daily_run_start' }, token);
+    const startedDaily = await dispatchRenderedPetAction(db, currentUser, { id: currentUser }, { action: 'daily_run_start' }, token);
     assert.equal(startedDaily.accepted, true);
     const dailyId = startedDaily.daily_run.run_id;
     sqlite.prepare('UPDATE telegram_pet_runs SET current_room=3,depth=3,rooms_completed=3 WHERE run_id=?').run(dailyId);
@@ -1030,7 +1031,7 @@ try {
     assert.equal(dailyResult.state.run.score, dailyBefore.run.score + dailyBefore.run.choices.find((choice) => choice.key === winningDailyChoice.choice_id).score);
     assert.equal(dailyResult.state.pet.pet_xp, dailyBefore.pet.pet_xp, 'daily tactics change score, not Pet XP');
     if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-tactics-${viewport.width}.png`) });
-    const extractedDaily = await hooks.processPetMiniAppAction(db, currentUser, { id: currentUser }, { action: 'run_extract' }, token);
+    const extractedDaily = await dispatchRenderedPetAction(db, currentUser, { id: currentUser }, { action: 'run_extract' }, token);
     assert.equal(extractedDaily.accepted, true);
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
     await page.locator('[data-screen="missions"]').click();
@@ -1122,7 +1123,7 @@ try {
     // extract at zero energy, while a missing source pet cannot perform either move.
     currentUser = `browser-run-gates-${viewport.width}`;
     await seed(currentUser, 'young');
-    assert.equal((await hooks.processPetMiniAppAction(db, currentUser, { id: currentUser }, { action: 'run_start' }, token)).accepted, true);
+    assert.equal((await dispatchRenderedPetAction(db, currentUser, { id: currentUser }, { action: 'run_start' }, token)).accepted, true);
     // Real Worker projections: a paid choice is blocked with no currency,
     // conditional at the minimum roll, and fully funded at the maximum roll.
     sqlite.prepare('UPDATE telegram_pet_profiles SET moon_gold=0 WHERE telegram_id=?').run(currentUser);
@@ -1167,7 +1168,7 @@ try {
     setRunEnergy(0);
     const tiredRun = (await hooks.buildPetMiniAppState(db, currentUser, token)).run;
     assert.equal(tiredRun.source_pet.energy, 0); assert.equal(tiredRun.depth, 0);
-    assert.equal((await hooks.processPetMiniAppAction(db, currentUser, { id: currentUser }, { action: 'run_step', run_id: tiredRun.run_id, choice_key: tiredRun.choices[0].key, expected_step_index: tiredRun.expected_step_index }, token)).reason, 'pet_tired');
+    assert.equal((await dispatchRenderedPetAction(db, currentUser, { id: currentUser }, { action: 'run_step', run_id: tiredRun.run_id, choice_key: tiredRun.choices[0].key, expected_step_index: tiredRun.expected_step_index }, token)).reason, 'pet_tired');
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
     assert.equal(await page.locator('[data-panel="play-now"] [data-focus="moon-run"]').count(), 0);
     await page.locator('[data-screen="explore"]').click();
@@ -1180,7 +1181,7 @@ try {
     const realRandom = Math.random;
     try {
       Math.random = () => 0.99; // deterministic success for this test-only standard room
-      assert.equal((await hooks.processPetMiniAppAction(db, currentUser, { id: currentUser }, { action: 'run_step', run_id: restedRun.run_id, choice_key: restedRun.choices[0].key, expected_step_index: restedRun.expected_step_index }, token)).accepted, true);
+      assert.equal((await dispatchRenderedPetAction(db, currentUser, { id: currentUser }, { action: 'run_step', run_id: restedRun.run_id, choice_key: restedRun.choices[0].key, expected_step_index: restedRun.expected_step_index }, token)).accepted, true);
     } finally { Math.random = realRandom; }
     setRunEnergy(0);
     const bankable = (await hooks.buildPetMiniAppState(db, currentUser, token)).run;
@@ -1199,7 +1200,7 @@ try {
     assert.equal(extractedRun.result.accepted, true); assert.equal(extractedRun.state.run, null);
     await page.waitForSelector('[data-action="run_start"]');
     setRunEnergy(80);
-    assert.equal((await hooks.processPetMiniAppAction(db, currentUser, { id: currentUser }, { action: 'run_start' }, token)).accepted, true);
+    assert.equal((await dispatchRenderedPetAction(db, currentUser, { id: currentUser }, { action: 'run_start' }, token)).accepted, true);
     sqlite.prepare("UPDATE telegram_pet_runs SET pet_id=NULL WHERE telegram_id=? AND status IN ('active','extractable')").run(currentUser);
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
     assert.equal(await page.locator('[data-panel="play-now"] [data-focus="moon-run"]').count(), 0);
@@ -1267,7 +1268,7 @@ try {
     assert.ok(activityText.includes('1 Moon Crystals') && activityText.includes('Adventure Map replaces'));
     const beforeFailedClaim = await hooks.buildPetMiniAppState(db, currentUser, token);
     failActivitySettlement = true;
-    await assert.rejects(hooks.processPetMiniAppAction(db, currentUser, { id: currentUser }, { action: 'activity_claim' }, token), /interrupted_activity_settlement/);
+    await assert.rejects(dispatchRenderedPetAction(db, currentUser, { id: currentUser }, { action: 'activity_claim' }, token), /interrupted_activity_settlement/);
     const paidBeforeRetry = await hooks.buildPetMiniAppState(db, currentUser, token);
     assert.equal(paidBeforeRetry.pet.moon_crystals, beforeFailedClaim.pet.moon_crystals + 1);
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
@@ -1442,7 +1443,7 @@ try {
     await seed(currentUser, 'young');
     sqlite.prepare('UPDATE telegram_pet_profiles SET moon_gold=1000,moon_crystals=10 WHERE telegram_id=?').run(currentUser);
     for (const key of ['moon_kibble','nebula_snack']) {
-      const bought = await hooks.processPetMiniAppAction(db,currentUser,{id:currentUser},{action:'buy',item_key:key,request_id:key},token);
+      const bought = await dispatchRenderedPetAction(db,currentUser,{id:currentUser},{action:'buy',item_key:key,request_id:key},token);
       assert.equal(bought.accepted,true,bought.reason);
     }
     sqlite.prepare('UPDATE telegram_pet_profiles SET moon_gold=0 WHERE telegram_id=?').run(currentUser);

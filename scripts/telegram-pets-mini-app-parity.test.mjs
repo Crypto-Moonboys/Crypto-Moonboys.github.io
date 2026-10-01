@@ -1,3 +1,4 @@
+import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
@@ -141,7 +142,7 @@ for (const telegramId of ['arena-one', 'arena-two', 'kaiju-one', 'kaiju-two', 'a
   await setActivePetLifecyclePhase(db, telegramId, 'adult');
 }
 
-const act = (telegramId, action, payload = {}) => processPetMiniAppAction(db, telegramId, { id: telegramId }, {
+const act = (telegramId, action, payload = {}) => dispatchRenderedPetAction(db, telegramId, { id: telegramId }, {
   action,
   request_id: `${action}:${telegramId}:${crypto.randomUUID()}`,
   ...payload,
@@ -151,13 +152,13 @@ const lockedCombatDb = new D1();
 installSeasonCompletionMarkerTable(lockedCombatDb);
 seedPlayer(lockedCombatDb, 'future-locked', 'Locked Cat', 3240);
 for (const action of ['arena_start', 'arena_matchmake', 'kaiju_start', 'kaiju_matchmake', 'kaiju_card']) {
-  const result = await processPetMiniAppAction(lockedCombatDb, 'future-locked', { id: 'future-locked' }, {
+  const result = await dispatchRenderedPetAction(lockedCombatDb, 'future-locked', { id: 'future-locked' }, {
     action,
     match_id: 'locked-kaiju-match',
     request_id: `locked:${action}`,
   }, '123456:test-token');
   assert.equal(result.accepted, false, `${action} must reject players without synced active pet lifecycle`);
-  assert.equal(result.reason, 'moonpet_lifecycle_required', `${action} must explain the current active-pet requirement`);
+  assert.equal(result.reason, 'displayed_pet_required', `${action} must require a rendered active pet before checking lifecycle`);
 }
 assert.equal(lockedCombatDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_arena_queue WHERE telegram_id='future-locked'").get().count, 0,
   'locked Arena matchmaking must not create queue rows');
@@ -172,17 +173,17 @@ lockedCombatDb.database.prepare(`INSERT INTO telegram_pet_kaiju_queue
 lockedCombatDb.database.prepare(`INSERT INTO telegram_pet_kaiju_matches
   (id, match_id, chat_id, mode, status, player1_telegram_id)
   VALUES ('locked-kaiju-match-row', 'locked-kaiju-match', 'mini:kaiju:future-locked', 'solo', 'selecting', 'future-locked')`).run();
-const lockedArenaCancel = await processPetMiniAppAction(lockedCombatDb, 'future-locked', { id: 'future-locked' }, {
+const lockedArenaCancel = await dispatchRenderedPetAction(lockedCombatDb, 'future-locked', { id: 'future-locked' }, {
   action: 'arena_queue_cancel',
   request_id: 'locked:arena_queue_cancel',
 }, '123456:test-token');
 assert.equal(lockedArenaCancel.reason, 'arena_queue_cancelled', 'early Season 1 users must be able to cancel stale Arena queue state');
-const lockedKaijuCancel = await processPetMiniAppAction(lockedCombatDb, 'future-locked', { id: 'future-locked' }, {
+const lockedKaijuCancel = await dispatchRenderedPetAction(lockedCombatDb, 'future-locked', { id: 'future-locked' }, {
   action: 'kaiju_queue_cancel',
   request_id: 'locked:kaiju_queue_cancel',
 }, '123456:test-token');
 assert.equal(lockedKaijuCancel.reason, 'kaiju_queue_cancelled', 'early Season 1 users must be able to cancel stale Kaiju queue state');
-const lockedKaijuMatchCancel = await processPetMiniAppAction(lockedCombatDb, 'future-locked', { id: 'future-locked' }, {
+const lockedKaijuMatchCancel = await dispatchRenderedPetAction(lockedCombatDb, 'future-locked', { id: 'future-locked' }, {
   action: 'kaiju_match_cancel',
   match_id: 'locked-kaiju-match',
   request_id: 'locked:kaiju_match_cancel',
@@ -201,11 +202,11 @@ installSeasonCompletionMarkerTable(completedCombatDb);
 seedPlayer(completedCombatDb, 'future-complete', 'Complete Cat', 3240);
 markSeasonComplete(completedCombatDb, 'future-complete');
 await setActivePetLifecyclePhase(completedCombatDb, 'future-complete', 'adult');
-assert.notEqual((await processPetMiniAppAction(completedCombatDb, 'future-complete', { id: 'future-complete' }, {
+assert.notEqual((await dispatchRenderedPetAction(completedCombatDb, 'future-complete', { id: 'future-complete' }, {
   action: 'arena_matchmake',
   request_id: 'completed:arena_matchmake',
 }, '123456:test-token')).reason, 'completed_season_pet_required', 'Arena must not use a completed-season beta-combat gate');
-assert.notEqual((await processPetMiniAppAction(completedCombatDb, 'future-complete', { id: 'future-complete' }, {
+assert.notEqual((await dispatchRenderedPetAction(completedCombatDb, 'future-complete', { id: 'future-complete' }, {
   action: 'kaiju_matchmake',
   request_id: 'completed:kaiju_matchmake',
 }, '123456:test-token')).reason, 'completed_season_pet_required', 'Kaiju must not use a completed-season beta-combat gate');
@@ -248,7 +249,7 @@ for (const key of ['breeding','traits','sanctuary','lineage','fusion','prestige'
   assert.equal(key in combatEggCapabilities,false,`${key} is absent from the capability response`);
   assert.equal(key in combatEggCapabilities.systems,false,`${key} is absent from the live system map`);
 }
-const combatEggAction = await processPetMiniAppAction(combatAuthorityDb, 'combat-egg', { id: 'combat-egg' }, {
+const combatEggAction = await dispatchRenderedPetAction(combatAuthorityDb, 'combat-egg', { id: 'combat-egg' }, {
   action: 'kaiju_matchmake',
   request_id: 'combat-egg:kaiju_matchmake',
 }, '123456:test-token');
@@ -261,7 +262,7 @@ const combatAdultEligibility = await getPetMiniAppCombatEligibility(combatAuthor
 assert.equal(combatAdultEligibility.combat_unlocked, true, 'completed users with an eligible active pet must see combat unlocked');
 assert.equal(buildPetMiniAppCapabilities(combatAdultEligibility).combat.unlocked, true,
   'player capabilities must mirror unlocked combat authority for completed adult users');
-const combatAdultAction = await processPetMiniAppAction(combatAuthorityDb, 'combat-adult', { id: 'combat-adult' }, {
+const combatAdultAction = await dispatchRenderedPetAction(combatAuthorityDb, 'combat-adult', { id: 'combat-adult' }, {
   action: 'kaiju_matchmake',
   request_id: 'combat-adult:kaiju_matchmake',
 }, '123456:test-token');
@@ -306,7 +307,7 @@ assert.equal(Object.prototype.hasOwnProperty.call(combatAdultCapabilities, 'comb
   'capabilities must not serialize duplicate top-level combat authority');
 const combatNewEligibility = await getPetMiniAppCombatEligibility(combatAuthorityDb, 'combat-new');
 assert.equal(combatNewEligibility.combat_unlocked, true, 'hatched active users can unlock current beta combat without completed-season authority');
-const combatNewAction = await processPetMiniAppAction(combatAuthorityDb, 'combat-new', { id: 'combat-new' }, {
+const combatNewAction = await dispatchRenderedPetAction(combatAuthorityDb, 'combat-new', { id: 'combat-new' }, {
   action: 'kaiju_matchmake',
   request_id: 'combat-new:kaiju_matchmake',
 }, '123456:test-token');
@@ -342,7 +343,7 @@ assert.equal(transitionBeforeCapabilities.systems.arena.state, 'AVAILABLE', 'Are
 assert.equal(transitionBeforeCapabilities.systems.kaiju.state, 'AVAILABLE', 'Kaiju must unlock from current active-pet authority');
 assert.equal(getPetGuidanceFeatures(100, transitionBeforeEligibility).find((feature) => feature.key === 'pet_arena')?.available, true,
   'guidance may recommend Arena before completed-season authority exists');
-const transitionBeforeAction = await processPetMiniAppAction(transitionDb, 'combat-transition', { id: 'combat-transition' }, {
+const transitionBeforeAction = await dispatchRenderedPetAction(transitionDb, 'combat-transition', { id: 'combat-transition' }, {
   action: 'arena_matchmake',
   request_id: 'transition:before:arena_matchmake',
 }, '123456:test-token');
@@ -355,7 +356,7 @@ assert.equal(transitionAfterCapabilities.systems.arena.state, 'AVAILABLE', 'Aren
 assert.equal(transitionAfterCapabilities.systems.kaiju.state, 'AVAILABLE', 'Kaiju capability must update after completed-season authority exists');
 assert.equal(getPetGuidanceFeatures(100, transitionAfterEligibility).find((feature) => feature.key === 'pet_arena')?.available, true,
   'guidance may recommend Arena only after the shared capability unlocks');
-const transitionAfterAction = await processPetMiniAppAction(transitionDb, 'combat-transition', { id: 'combat-transition' }, {
+const transitionAfterAction = await dispatchRenderedPetAction(transitionDb, 'combat-transition', { id: 'combat-transition' }, {
   action: 'arena_matchmake',
   request_id: 'transition:after:arena_matchmake',
 }, '123456:test-token');
@@ -368,7 +369,7 @@ seedPlayer(priorSeasonCombatDb, 'prior-complete', 'Prior Cat', 3240);
 markSeasonComplete(priorSeasonCombatDb, 'prior-complete', 'pet-s2025-013');
 await setActivePetLifecyclePhase(priorSeasonCombatDb, 'prior-complete', 'adult');
 for (const action of ['arena_start', 'arena_matchmake', 'kaiju_start', 'kaiju_matchmake']) {
-  const result = await processPetMiniAppAction(priorSeasonCombatDb, 'prior-complete', { id: 'prior-complete' }, {
+  const result = await dispatchRenderedPetAction(priorSeasonCombatDb, 'prior-complete', { id: 'prior-complete' }, {
     action,
     request_id: `prior:${action}:${crypto.randomUUID()}`,
   }, '123456:test-token');
@@ -475,7 +476,7 @@ assert.equal(weekFourteenSummary.weekly.week_reset_at,'2026-10-08T00:00:00.000Z'
 const postActionWeeklyDb = new D1();
 seedPlayer(postActionWeeklyDb, 'weekly-post-action', 'Refresh Cat', 1200);
 await ensurePetStarterSeasonSlot(postActionWeeklyDb, 'weekly-post-action', new Date());
-await processPetMiniAppAction(postActionWeeklyDb, 'weekly-post-action', { id: 'weekly-post-action' }, {
+await dispatchRenderedPetAction(postActionWeeklyDb, 'weekly-post-action', { id: 'weekly-post-action' }, {
   action: 'feed',
   request_id: 'weekly-post-action:feed',
 }, '123456:test-token');

@@ -2721,6 +2721,7 @@
       pet_busy: 'a background activity is running. Open Work to review it; other care and Contracts are available.',
       pet_tired: 'not enough energy for this action. Review its displayed requirement or use care to recover.',
       pet_action_state_changed: 'your pet or equipment changed while care was loading. No care reward or cooldown was applied; try again with the refreshed pet.',
+      displayed_pet_required: 'the displayed Moonpet identity is missing. Refresh the game before trying again. Nothing was spent or awarded.',
       displayed_pet_changed: 'another session selected a different Moonpet. Nothing was spent or awarded; this screen has been refreshed.',
       source_pet_changed: 'another session selected a different Moonpet. Nothing was spent or awarded; this screen has been refreshed.',
       daily_completion_not_ready: 'finish all seven daily missions before claiming.',
@@ -3053,7 +3054,7 @@
 
       if (fastResponse && data.state_pending === true) {
         if (stateRequestGate.isCurrent(requestGeneration)) {
-          var staleDisplayedPet = !actionAccepted && Boolean(data.result && (data.result.refresh_state === true || ['displayed_pet_changed', 'source_pet_changed'].includes(data.result.reason)));
+          var staleDisplayedPet = !actionAccepted && Boolean(data.result && (data.result.refresh_state === true || ['displayed_pet_required', 'displayed_pet_changed', 'source_pet_changed', 'pet_action_state_changed'].includes(data.result.reason)));
           if (staleDisplayedPet) {
             // Never merge Pet B into Pet A's old snapshot. Block further clicks
             // until a complete authoritative projection has replaced the view.

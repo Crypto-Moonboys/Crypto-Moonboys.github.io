@@ -1,3 +1,4 @@
+import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
@@ -820,7 +821,7 @@ assert.equal(arenaProducer.db.database.prepare('SELECT COUNT(*) AS count FROM te
 const queuedArena = seedArenaPlayer('arena-queue-authority');
 const queuedArenaPetB = seedPetSlot(queuedArena.db, 'arena-queue-authority', 2, 'arcade_xp', false);
 copyArenaPlayerInto(queuedArena.db, 'arena-queue-opponent');
-const queueAct = (telegramId, action, payload = {}) => workerHooks.processPetMiniAppAction(queuedArena.db, telegramId, { id: telegramId }, {
+const queueAct = (telegramId, action, payload = {}) => dispatchRenderedPetAction(queuedArena.db, telegramId, { id: telegramId }, {
   action,
   request_id: `${action}:${telegramId}:${crypto.randomUUID()}`,
   ...payload,
@@ -857,7 +858,7 @@ assert.equal(queuedArena.db.database.prepare('SELECT COUNT(*) AS count FROM tele
 
 const rolloverArena = seedArenaPlayer('arena-rollover-authority', 'pet-s2026-002');
 copyArenaPlayerInto(rolloverArena.db, 'arena-rollover-opponent', 'pet-s2026-002');
-const rolloverAct = (telegramId, action, payload = {}) => workerHooks.processPetMiniAppAction(rolloverArena.db, telegramId, { id: telegramId }, {
+const rolloverAct = (telegramId, action, payload = {}) => dispatchRenderedPetAction(rolloverArena.db, telegramId, { id: telegramId }, {
   action,
   request_id: `${action}:${telegramId}:${crypto.randomUUID()}`,
   ...payload,

@@ -1,3 +1,4 @@
+import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
@@ -62,7 +63,7 @@ const pet = await hooks.ensureActivePetInstance(db, id);
 sqlite.prepare(`INSERT INTO telegram_pet_lifecycle_by_pet (pet_id, telegram_id, identity_seed, phase, incubation_json, innate_traits_json)
   VALUES (?, ?, 'activity-test', 'young', '{"progress":0,"target":12,"signals":{}}', '[]')`).run(pet.pet_id, id);
 const now = new Date();
-const act = (action, payload = {}) => hooks.processPetMiniAppAction(db, id, { id }, { action, ...payload }, 'test-token');
+const act = (action, payload = {}) => dispatchRenderedPetAction(db, id, { id }, { action, ...payload }, 'test-token');
 const careActions = ['feed', 'play', 'clean', 'sleep', 'train'];
 const assertCareCooldowns = (state, expected) => {
   const entries = state.cooldowns.entries.filter((entry) => careActions.some((action) => entry.key === 'action:' + action));
@@ -127,11 +128,11 @@ assert.equal(pending.activity.preview.rewards.item_key, 'adventure_map');
 assert.equal(pending.activity.next_checkpoint, null, 'recovery must not promise newly accumulating rewards');
 const balanceBefore = sqlite.prepare('SELECT pet_xp, moon_gold, energy FROM telegram_pet_profiles WHERE telegram_id=?').get(id);
 assert.equal((await act('activity_start', { activity_type: 'sleep' })).reason, 'activity_claim_pending');
-const claimed = await hooks.processPetMiniAppAction(db, id, { id }, { action: 'activity_claim' }, 'test-token');
+const claimed = await dispatchRenderedPetAction(db, id, { id }, { action: 'activity_claim' }, 'test-token');
 assert.equal(claimed.accepted, true);
 assert.deepEqual(sqlite.prepare('SELECT pet_xp, moon_gold, energy FROM telegram_pet_profiles WHERE telegram_id=?').get(id), balanceBefore, 'recovery after committed reward must never pay twice');
 assert.equal((await hooks.buildPetGuidanceState(db, id)).activity, null);
-assert.equal((await hooks.processPetMiniAppAction(db, id, { id }, { action: 'activity_claim' }, 'test-token')).accepted, false);
+assert.equal((await dispatchRenderedPetAction(db, id, { id }, { action: 'activity_claim' }, 'test-token')).accepted, false);
 assert.equal(sqlite.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id=? AND event_type='activity_claim' AND status='accepted'").get(id).count, 1);
 for (const action of ['sleep', 'train']) assert.equal((await act(action)).accepted, true);
 assert.equal((await act('dance')).accepted, true);
