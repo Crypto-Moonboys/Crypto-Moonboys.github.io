@@ -372,6 +372,14 @@ assert.equal(aliasState.faction.key, 'graffpunks', 'live state must serialize ca
 assert.equal(aliasState.upgrades[0].unlocked, false);
 assert.equal(aliasState.upgrades[0].affordable, false, 'Level 15 server gate must be reflected in upgrade availability');
 
+seedPlayer('retired-style');
+runtimeDb.prepare("UPDATE telegram_pet_profiles SET moon_gold=0,moon_crystals=0,style_tokens=25 WHERE telegram_id='retired-style'").run();
+runtimeDb.prepare("INSERT INTO telegram_pet_cosmetic_unlocks(telegram_id,cosmetic_key,quantity) VALUES ('retired-style','rename_badge',1)").run();
+const retiredStyleState = await buildPetLiveSystemsState(d1, 'retired-style', livePet('retired-style', { moon_gold: 0, moon_crystals: 0, style_tokens: 25 }), {}, [], []);
+assert.deepEqual(retiredStyleState.cosmetics.map(item => item.key), ['profile_frame', 'victory_pose', 'run_trail']);
+assert.ok(!retiredStyleState.cosmetics.some(item => item.affordable), '25 Style Tokens cannot recommend the retired badge');
+assert.equal(runtimeDb.prepare("SELECT quantity FROM telegram_pet_cosmetic_unlocks WHERE telegram_id='retired-style' AND cosmetic_key='rename_badge'").get().quantity, 1, 'catalog retirement preserves saved ownership');
+
 const chain = await processPetEventChain(d1, 'live-1', 'lost_delivery_drone', reward, 'graffpunks', null, livePet('live-1'));
 assert.equal(chain.accepted, true);
 assert.ok(chain.choice.key);

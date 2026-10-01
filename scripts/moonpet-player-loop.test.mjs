@@ -46,6 +46,15 @@ const shoppingState = { adopted: true, lifecycle: { phase: 'young' },
   guidance: { shop_items: [{ unlocked: true, affordable: true }], economy: { market_offers: [{ unlocked: true, affordable: true, capacity: { available: true } }] } },
   live_systems: { cosmetics: [{ affordable: true, unlocked: false }] } };
 for (const key of ['inventory', 'market', 'shop', 'cosmetic']) assert.ok(options.recommendations(shoppingState).some(x => x.key === key), key);
+for (const unlocked of [false, true]) {
+  const badgeOnly = { ...shoppingState, live_systems: { cosmetics: [
+    { key: 'rename_badge', affordable: true, unlocked, repeatable: true },
+    { key: 'profile_frame', affordable: false, unlocked: false },
+  ] } };
+  assert.ok(!options.recommendations(badgeOnly).some(x => x.key === 'cosmetic'), 'retired badge cannot recommend an empty Style Lab');
+  badgeOnly.live_systems.cosmetics.push({ key: 'run_trail', affordable: true, unlocked: false });
+  assert.ok(options.recommendations(badgeOnly).some(x => x.key === 'cosmetic'), 'a working affordable style remains recommended');
+}
 const unavailableShopping = structuredClone(shoppingState);
 unavailableShopping.inventory[0].quantity = 0;
 unavailableShopping.guidance.shop_items[0].equipped = true;

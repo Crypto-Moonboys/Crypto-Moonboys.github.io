@@ -352,7 +352,7 @@
       if ((g.shop_items || []).some(function (item) { return item.unlocked && item.affordable && !item.equipped; })) {
         add('shop', 'COMPARE AFFORDABLE SHOP ITEMS', 'Optional gear choices are within your budget. Review bonuses and costs before buying.', route({ key: 'shop' }), 79);
       }
-      if ((s.live_systems && s.live_systems.cosmetics || []).some(function (item) { return item.affordable && (!item.unlocked || item.repeatable); })) {
+      if ((s.live_systems && s.live_systems.cosmetics || []).some(function (item) { return item.key !== 'rename_badge' && item.affordable && (!item.unlocked || item.repeatable); })) {
         add('cosmetic', 'EXPLORE AVAILABLE STYLES', 'Optional cosmetic collection. Review the game-currency cost before choosing a style.', route({ key: 'cosmetic' }), 80);
       }
       // Preserve server guidance only where it agrees with a currently available route.

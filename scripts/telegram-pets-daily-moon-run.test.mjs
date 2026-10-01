@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
+import { mock } from 'node:test';
 import {
   PET_DAILY_CHALLENGES,
   __dailyMoonRunTestHooks,
@@ -1340,6 +1341,9 @@ assert.deepEqual(orphanPreview.run.choices, []);
 
 // An interruption after saving the final room must resume settlement, not
 // generate an eleventh boss or require the player to win the ending twice.
+// Completed-run refreshes must use the same Q3 server clock as their fixtures.
+mock.timers.enable({ apis: ['Date'], now: Date.parse('2026-08-20T12:00:00Z') });
+
 async function endingFixture(owner, options = {}) {
   const adapter = options.adapter || new D1();
   const now = options.now || new Date('2026-08-20T12:00:00Z');
@@ -1690,4 +1694,5 @@ for (const kind of ['endings', 'records']) {
   assert.equal(adapter.database.prepare('SELECT setting_value FROM telegram_pet_recovery_cursors WHERE telegram_id=?').get(`other-${owner}`).setting_value, 'untouched');
 }
 
+mock.timers.reset();
 console.log('Telegram Pets Daily Moon Run tests passed (10,000-run economy simulation; versioned tactics, risk/score previews, concurrent outcome authority and fair recovery included).');

@@ -59,7 +59,8 @@ for (const [label, match] of [
   ['owned cosmetics', q => q.startsWith('SELECT cosmetic_key, quantity, unlocked_at')],
   ['used daily attempts', q => q.startsWith('SELECT system_key, action_key, period_key')],
   ['saved raid rewards', q => q.startsWith('SELECT b.pet_id,b.season_key,b.boss_key')],
-]) test(`${label} read failures must not replace saved state with an empty board`, async () => {
+]) test(`${label} read failures must not replace saved state with an empty board`, async (t) => {
+  t.mock.timers.enable({ apis: ['Date'], now: Date.UTC(2026, 8, 26, 12) });
   const f=fixture('read-'+label.replaceAll(' ','-')), petId='current-'+f.owner;
   await f.act({action:'event_chain',chain_key:'lost_delivery_drone',request_id:'saved-story'});
   const boss=getActiveSeasonalBoss();
@@ -98,7 +99,8 @@ for (const [label, method, match] of [
   ['daily mission sources','beforeAll',q=>q.includes('SELECT event_type, COUNT(*) AS count') && q.includes('FROM telegram_pet_events')],
   ['active run','beforeFirst',q=>q.includes('SELECT * FROM telegram_pet_runs') && q.includes("status IN ('active', 'extractable')")],
   ['timed activity','beforeFirst',q=>q.includes('SELECT * FROM telegram_pet_activity_sessions') && q.includes("status = 'active'")],
-]) test(`${label} outages must not advertise missing items or fresh action allowances`, async () => {
+]) test(`${label} outages must not advertise missing items or fresh action allowances`, async (t) => {
+  t.mock.timers.enable({ apis: ['Date'], now: Date.UTC(2026, 8, 26, 12) });
   const f=fixture('state-'+label.replaceAll(' ','-'));
   await f.state();
   f.sql.prepare('UPDATE telegram_pet_instances SET happiness=40 WHERE telegram_id=?').run(f.owner);
@@ -156,7 +158,8 @@ for (const fault of ['initialize', 'read', 'authority']) test(`district ${fault}
   assert.equal(f.sql.prepare('SELECT region_mastery_json FROM telegram_pet_live_progression_state WHERE pet_id=?').get(petId).region_mastery_json, progress.region_mastery_json);
 });
 
-test('a successful missing-pet authority lookup remains a normal action rejection', async () => {
+test('a successful missing-pet authority lookup remains a normal action rejection', async (t) => {
+  t.mock.timers.enable({ apis: ['Date'], now: Date.UTC(2026, 8, 26, 12) });
   const f = fixture('missing-district-pet');
   const result = await processPetDistrictMission(f.db, f.owner, 'moon_alley',
     { pet_id: 'missing-pet', season_key: currentSeason, pet_xp: 200, energy: 100 }, {},

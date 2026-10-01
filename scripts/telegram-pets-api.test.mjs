@@ -2074,7 +2074,8 @@ class SqliteD1 {
 
 function seedRepeatRewardPlayer(telegramId, energy = 70, lastDecayAt = new Date().toISOString(), options = {}) {
   const db = new SqliteD1();
-  const petId = `pet:${telegramId}:pet-s2026-003:1`;
+  const seasonKey = options.currentSeason ? __petMediaTestHooks.getPetSeasonInfo(new Date()).key : 'pet-s2026-003';
+  const petId = `pet:${telegramId}:${seasonKey}:1`;
   db.database.prepare('INSERT INTO telegram_users (telegram_id, xp, level) VALUES (?, 0, 1)').run(telegramId);
   db.database.prepare(`
     INSERT INTO telegram_pet_profiles
@@ -2088,12 +2089,12 @@ function seedRepeatRewardPlayer(telegramId, energy = 70, lastDecayAt = new Date(
   if (options.seedAuthority !== false) {
     db.database.prepare(`INSERT INTO telegram_pet_season_slots
       (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status)
-      VALUES (?, ?, 'pet-s2026-003', 1, 'free', 'profile_insert', 0, 'active')`).run(petId, telegramId);
+      VALUES (?, ?, ?, 1, 'free', 'profile_insert', 0, 'active')`).run(petId, telegramId, seasonKey);
     db.database.prepare(`INSERT INTO telegram_pet_active_slots (telegram_id, pet_id, season_key)
-      VALUES (?, ?, 'pet-s2026-003')`).run(telegramId, petId);
+      VALUES (?, ?, ?)`).run(telegramId, petId, seasonKey);
     db.database.prepare(`INSERT INTO telegram_pet_instances
       (pet_id, telegram_id, season_key, slot_number, pet_xp, level, happiness, energy, last_decay_at, source_profile_updated_at, status)
-      VALUES (?, ?, 'pet-s2026-003', 1, 0, 1, 70, ?, ?, 'fixture', 'active')`).run(petId, telegramId, energy, lastDecayAt);
+      VALUES (?, ?, ?, 1, 0, 1, 70, ?, ?, 'fixture', 'active')`).run(petId, telegramId, seasonKey, energy, lastDecayAt);
   }
   return db;
 }
@@ -2152,7 +2153,7 @@ function seedAndSwitchRepeatRewardPet(db, telegramId, slotNumber = 2, energy = 7
 }
 
 async function seedMiniAppIdentityPlayer(telegramId, { petName = 'Cipher', evolutionStage = 1, speciesId = 'neon_raccoon' } = {}) {
-  const db = seedRepeatRewardPlayer(telegramId, 100, '2026-08-15T00:00:00.000Z');
+  const db = seedRepeatRewardPlayer(telegramId, 100, new Date().toISOString(), { currentSeason: true });
   const phase = evolutionStage >= 2 ? 'adult' : 'young';
   const stageLabel = evolutionStage >= 2 ? 'cyber_moonpet' : 'street_moonpet';
   await __petMediaTestHooks.createMoonEggLifecycle(db, telegramId, `fixture:${telegramId}:egg`);
@@ -2799,7 +2800,7 @@ assert.deepEqual(
 );
 
 const specialActionNow = new Date();
-const energyDrinkDb = seedRepeatRewardPlayer('special-energy', 90, specialActionNow.toISOString());
+const energyDrinkDb = seedRepeatRewardPlayer('special-energy', 90, specialActionNow.toISOString(), { currentSeason: true });
 energyDrinkDb.database.prepare("UPDATE telegram_pet_profiles SET happiness=92 WHERE telegram_id='special-energy'").run();
 energyDrinkDb.database.prepare("UPDATE telegram_pet_instances SET happiness=92 WHERE telegram_id='special-energy'").run();
 const energyDrink = await processPetAction(energyDrinkDb, 'special-energy', 'energy_drink', {
@@ -2827,7 +2828,7 @@ assert.equal(energyDrinkDb.database.prepare("SELECT energy FROM telegram_pet_pro
 
 for (const [action, startingHappiness, expectedHappiness] of [['dance', 90, 100], ['cuddles', 96, 100]]) {
   const telegramId = `special-${action}`;
-  const db = seedRepeatRewardPlayer(telegramId, 80, specialActionNow.toISOString());
+  const db = seedRepeatRewardPlayer(telegramId, 80, specialActionNow.toISOString(), { currentSeason: true });
   db.database.prepare('UPDATE telegram_pet_profiles SET happiness=? WHERE telegram_id=?').run(startingHappiness, telegramId);
   db.database.prepare('UPDATE telegram_pet_instances SET happiness=? WHERE telegram_id=?').run(startingHappiness, telegramId);
   const result = await processPetAction(db, telegramId, action, {
@@ -2846,7 +2847,7 @@ for (const [action, startingHappiness, expectedHappiness] of [['dance', 90, 100]
 for (const equippedOutfit of [null, 'street_hoodie', 'moon_armor']) {
   for (const action of ['energy_drink', 'dance', 'cuddles']) {
     const telegramId = `special-zero-${action}-${equippedOutfit || 'none'}`;
-    const db = seedRepeatRewardPlayer(telegramId, 80, specialActionNow.toISOString());
+    const db = seedRepeatRewardPlayer(telegramId, 80, specialActionNow.toISOString(), { currentSeason: true });
     db.database.prepare('UPDATE telegram_pet_profiles SET happiness=20, energy=20, equipped_outfit=COALESCE(?, equipped_outfit) WHERE telegram_id=?')
       .run(equippedOutfit, telegramId);
     db.database.prepare('UPDATE telegram_pet_instances SET happiness=20, energy=20, equipped_outfit=COALESCE(?, equipped_outfit) WHERE telegram_id=?')
@@ -2885,7 +2886,7 @@ for (const equippedOutfit of [null, 'street_hoodie', 'moon_armor']) {
 
 for (const [action, expectedField] of [['energy_drink', 'energy'], ['dance', 'happiness'], ['cuddles', 'happiness']]) {
   const telegramId = `egg-mini-${action}`;
-  const db = seedRepeatRewardPlayer(telegramId, 72, specialActionNow.toISOString());
+  const db = seedRepeatRewardPlayer(telegramId, 72, specialActionNow.toISOString(), { currentSeason: true });
   await __petMediaTestHooks.createMoonEggLifecycle(db, telegramId, `fixture:${telegramId}:egg`);
   db.database.prepare('UPDATE telegram_pet_profiles SET happiness=40, energy=72 WHERE telegram_id=?').run(telegramId);
   db.database.prepare('UPDATE telegram_pet_instances SET happiness=40, energy=72 WHERE telegram_id=?').run(telegramId);
@@ -2908,7 +2909,7 @@ for (const [action, expectedField] of [['energy_drink', 'energy'], ['dance', 'ha
   assert.equal(duplicate.pet[expectedField], first.pet[expectedField], `${action} duplicate must not apply ${expectedField} twice`);
 }
 
-const eggMiniBlocked = seedRepeatRewardPlayer('egg-mini-blocked', 72, specialActionNow.toISOString());
+const eggMiniBlocked = seedRepeatRewardPlayer('egg-mini-blocked', 72, specialActionNow.toISOString(), { currentSeason: true });
 await __petMediaTestHooks.createMoonEggLifecycle(eggMiniBlocked, 'egg-mini-blocked', 'fixture:egg-mini-blocked:egg');
 const blockedTrain = await processPetMiniAppAction(eggMiniBlocked, 'egg-mini-blocked', { id: 'egg-mini-blocked' }, {
   action: 'train',
@@ -2917,7 +2918,7 @@ const blockedTrain = await processPetMiniAppAction(eggMiniBlocked, 'egg-mini-blo
 assert.equal(blockedTrain.accepted, false, 'combat/training actions must remain blocked while lifecycle phase is egg');
 assert.equal(blockedTrain.reason, 'moon_egg_must_hatch');
 
-const eggMiniCooldown = seedRepeatRewardPlayer('egg-mini-cooldown', 72, specialActionNow.toISOString());
+const eggMiniCooldown = seedRepeatRewardPlayer('egg-mini-cooldown', 72, specialActionNow.toISOString(), { currentSeason: true });
 await __petMediaTestHooks.createMoonEggLifecycle(eggMiniCooldown, 'egg-mini-cooldown', 'fixture:egg-mini-cooldown:egg');
 const firstEggDrink = await processPetMiniAppAction(eggMiniCooldown, 'egg-mini-cooldown', { id: 'egg-mini-cooldown' }, {
   action: 'energy_drink',
@@ -2931,7 +2932,7 @@ const cooldownEggDrink = await processPetMiniAppAction(eggMiniCooldown, 'egg-min
 assert.equal(cooldownEggDrink.accepted, false);
 assert.equal(cooldownEggDrink.reason, 'cooldown', 'eligible egg special actions must reject for real cooldowns, not hatch gate');
 
-const eggMiniBusy = seedPetActivitySession('egg-mini-busy', { now: specialActionNow, elapsed_seconds: 120 });
+const eggMiniBusy = seedPetActivitySession('egg-mini-busy', { now: specialActionNow, elapsed_seconds: 120, currentSeason: true });
 await __petMediaTestHooks.createMoonEggLifecycle(eggMiniBusy.db, 'egg-mini-busy', 'fixture:egg-mini-busy:egg');
 const busyDance = await processPetMiniAppAction(eggMiniBusy.db, 'egg-mini-busy', { id: 'egg-mini-busy' }, {
   action: 'dance',
@@ -2942,7 +2943,7 @@ assert.ok(['pet_busy', 'pet_activity_active'].includes(busyDance.reason),
   'eligible egg special actions must preserve pending-work rejections');
 
 const eggRouteTelegramId = '9007771';
-const eggRouteDb = seedRepeatRewardPlayer(eggRouteTelegramId, 72, specialActionNow.toISOString());
+const eggRouteDb = seedRepeatRewardPlayer(eggRouteTelegramId, 72, specialActionNow.toISOString(), { currentSeason: true });
 await __petMediaTestHooks.createMoonEggLifecycle(eggRouteDb, eggRouteTelegramId, `fixture:${eggRouteTelegramId}:egg`);
 const eggRouteEnv = {
   DB: eggRouteDb,
@@ -2985,7 +2986,7 @@ assert.equal(routeBlockedBody.reason, 'moon_egg_must_hatch',
 // Keep the simulated five-cooldown sequence within one UTC day, even near midnight.
 const dailyLimitNow = new Date(specialActionNow);
 dailyLimitNow.setUTCHours(12, 0, 0, 0);
-const dailyLimitDb = seedRepeatRewardPlayer('special-daily-limit', 80, dailyLimitNow.toISOString());
+const dailyLimitDb = seedRepeatRewardPlayer('special-daily-limit', 80, dailyLimitNow.toISOString(), { currentSeason: true });
 dailyLimitDb.database.prepare("UPDATE telegram_pet_profiles SET happiness=0 WHERE telegram_id='special-daily-limit'").run();
 dailyLimitDb.database.prepare("UPDATE telegram_pet_instances SET happiness=0 WHERE telegram_id='special-daily-limit'").run();
 for (let index = 0; index < PET_SPECIAL_ACTION_POLICIES.dance.daily_limit; index += 1) {
@@ -3013,7 +3014,7 @@ const specialCooldownEntries = await getPetSpecialActionCooldownEntries(dailyLim
 assert.equal(specialCooldownEntries.find((entry) => entry.action === 'dance')?.daily_limit, 5,
   'state cooldown authority must advertise the exhausted DANCE daily limit');
 
-const specialConcurrentDb = seedRepeatRewardPlayer('special-concurrent', 80, specialActionNow.toISOString());
+const specialConcurrentDb = seedRepeatRewardPlayer('special-concurrent', 80, specialActionNow.toISOString(), { currentSeason: true });
 specialConcurrentDb.database.prepare("UPDATE telegram_pet_profiles SET happiness=0 WHERE telegram_id='special-concurrent'").run();
 specialConcurrentDb.database.prepare("UPDATE telegram_pet_instances SET happiness=0 WHERE telegram_id='special-concurrent'").run();
 const concurrentAttempts = await Promise.all(Array.from({ length: 6 }, (_, index) =>
@@ -3117,8 +3118,8 @@ assert.equal(
   'frozen pet action must not create a receipt before recovery completes',
 );
 
-const recoveryFreezeRewardDb = seedRepeatRewardPlayer('reward-recovery-freeze', 70);
-await ensurePetStarterSeasonSlot(recoveryFreezeRewardDb, 'reward-recovery-freeze', new Date('2026-08-15T00:00:00Z'));
+const recoveryFreezeRewardDb = seedRepeatRewardPlayer('reward-recovery-freeze', 70, new Date().toISOString(), { currentSeason: true });
+await ensurePetStarterSeasonSlot(recoveryFreezeRewardDb, 'reward-recovery-freeze', new Date());
 await __petMediaTestHooks.ensureActivePetInstance(recoveryFreezeRewardDb, 'reward-recovery-freeze');
 const recoveryFreezePetId = recoveryFreezeRewardDb.database.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='reward-recovery-freeze'").get().pet_id;
 insertWalletRecoveryRequired(recoveryFreezeRewardDb, 'reward-recovery-freeze');
@@ -3240,8 +3241,8 @@ try {
   Math.random = tradeRecoveryRandom;
 }
 
-const dailyChestRecoveryDb = seedRepeatRewardPlayer('daily-chest-recovery', 70);
-await ensurePetStarterSeasonSlot(dailyChestRecoveryDb, 'daily-chest-recovery', new Date('2026-08-15T00:00:00Z'));
+const dailyChestRecoveryDb = seedRepeatRewardPlayer('daily-chest-recovery', 70, new Date().toISOString(), { currentSeason: true });
+await ensurePetStarterSeasonSlot(dailyChestRecoveryDb, 'daily-chest-recovery', new Date());
 await __petMediaTestHooks.ensureActivePetInstance(dailyChestRecoveryDb, 'daily-chest-recovery');
 dailyChestRecoveryDb.failBatchOnSql(/UPDATE telegram_pet_profiles SET\s+\(pet_xp,level,stage/);
 await assert.rejects(
@@ -3273,7 +3274,7 @@ assert.deepEqual(
 );
 assert.deepEqual(
   { ...dailyChestRecoveryDb.database.prepare("SELECT pet_id, status, pet_xp_awarded FROM telegram_pet_events WHERE telegram_id='daily-chest-recovery' AND event_type='daily_chest'").get() },
-  { pet_id: 'pet:daily-chest-recovery:pet-s2026-003:1', status: 'accepted', pet_xp_awarded: 40 },
+  { pet_id: `pet:daily-chest-recovery:${__petMediaTestHooks.getPetSeasonInfo(new Date()).key}:1`, status: 'accepted', pet_xp_awarded: 40 },
   'daily chest accepted receipt must be tied to the active pet after persistence succeeds',
 );
 const duplicateDailyChest = await processPetDailyChest(dailyChestRecoveryDb, 'daily-chest-recovery', { event_key: 'callback:daily:failure', source: 'telegram_callback' });
@@ -3284,8 +3285,8 @@ assert.deepEqual(
   'duplicate daily chest callback must not reapply wallet or Pet XP rewards',
 );
 
-const actionRecoveryDb = seedRepeatRewardPlayer('pet-action-recovery', 70);
-await ensurePetStarterSeasonSlot(actionRecoveryDb, 'pet-action-recovery', new Date('2026-08-15T00:00:00Z'));
+const actionRecoveryDb = seedRepeatRewardPlayer('pet-action-recovery', 70, new Date().toISOString(), { currentSeason: true });
+await ensurePetStarterSeasonSlot(actionRecoveryDb, 'pet-action-recovery', new Date());
 await __petMediaTestHooks.ensureActivePetInstance(actionRecoveryDb, 'pet-action-recovery');
 actionRecoveryDb.failBatchOnSql(/UPDATE telegram_pet_profiles SET\s+\(pet_xp,level,stage/);
 await assert.rejects(
@@ -3317,7 +3318,7 @@ assert.deepEqual(
 );
 assert.deepEqual(
   { ...actionRecoveryDb.database.prepare("SELECT pet_id, status, pet_xp_awarded FROM telegram_pet_events WHERE telegram_id='pet-action-recovery' AND event_key='callback:feed:failure'").get() },
-  { pet_id: 'pet:pet-action-recovery:pet-s2026-003:1', status: 'accepted', pet_xp_awarded: 6 },
+  { pet_id: `pet:pet-action-recovery:${__petMediaTestHooks.getPetSeasonInfo(new Date()).key}:1`, status: 'accepted', pet_xp_awarded: 6 },
   'pet action accepted receipt must be tied to the active pet after persistence succeeds',
 );
 const duplicateAction = await processPetAction(actionRecoveryDb, 'pet-action-recovery', 'feed', { event_key: 'callback:feed:failure', source: 'telegram_callback' });
@@ -3334,7 +3335,7 @@ function seedPetActivitySession(telegramId, options = {}) {
   const startedAt = new Date(now.getTime() - elapsedSeconds * 1000).toISOString();
   const endsAt = new Date(options.ends_at || now.getTime() + 3600 * 1000).toISOString().replace('T', ' ').replace('.000Z', '');
   const sessionId = options.session_id || `activity-${telegramId}`;
-  const db = seedRepeatRewardPlayer(telegramId, 70, now.toISOString());
+  const db = seedRepeatRewardPlayer(telegramId, 70, now.toISOString(), { currentSeason: options.currentSeason });
   db.database.prepare(`
     INSERT INTO telegram_pet_activity_sessions
       (id, telegram_id, activity_type, started_at, ends_at, status, metadata)
@@ -3757,8 +3758,8 @@ assert.deepEqual(
 assert.equal(rollbackUseItemDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='use-item-rollback' AND source='pet_item_use' AND status='awarded'").get().count, 1,
   'successful item-use must create exactly one awarded item-use reward claim');
 
-const concurrentSnackDb = seedRepeatRewardPlayer('use-item-concurrent-snack', 70);
-await ensurePetStarterSeasonSlot(concurrentSnackDb, 'use-item-concurrent-snack', new Date('2026-08-15T00:00:00Z'));
+const concurrentSnackDb = seedRepeatRewardPlayer('use-item-concurrent-snack', 70, new Date().toISOString(), { currentSeason: true });
+await ensurePetStarterSeasonSlot(concurrentSnackDb, 'use-item-concurrent-snack', new Date());
 await __petMediaTestHooks.ensureActivePetInstance(concurrentSnackDb, 'use-item-concurrent-snack');
 concurrentSnackDb.database.prepare("UPDATE telegram_pet_profiles SET pet_xp=100, hunger=50, happiness=70, cleanliness=70, energy=70, health=70 WHERE telegram_id='use-item-concurrent-snack'").run();
 concurrentSnackDb.database.prepare("UPDATE telegram_pet_instances SET pet_xp=100, hunger=50, happiness=70, cleanliness=70, energy=70, health=70 WHERE telegram_id='use-item-concurrent-snack'").run();
@@ -3791,8 +3792,8 @@ assert.equal(concurrentSnackDb.database.prepare("SELECT COUNT(*) AS count FROM t
 assert.equal(concurrentSnackDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='use-item-concurrent-snack' AND source='pet_item_use' AND status='awarded'").get().count, 2,
   'two concurrent moon snack uses must create two awarded reward-claim receipts');
 
-const concurrentMixedDb = seedRepeatRewardPlayer('use-item-concurrent-mixed', 70);
-await ensurePetStarterSeasonSlot(concurrentMixedDb, 'use-item-concurrent-mixed', new Date('2026-08-15T00:00:00Z'));
+const concurrentMixedDb = seedRepeatRewardPlayer('use-item-concurrent-mixed', 70, new Date().toISOString(), { currentSeason: true });
+await ensurePetStarterSeasonSlot(concurrentMixedDb, 'use-item-concurrent-mixed', new Date());
 await __petMediaTestHooks.ensureActivePetInstance(concurrentMixedDb, 'use-item-concurrent-mixed');
 concurrentMixedDb.database.prepare("UPDATE telegram_pet_profiles SET pet_xp=100, hunger=50, happiness=70, cleanliness=70, energy=70, health=70 WHERE telegram_id='use-item-concurrent-mixed'").run();
 concurrentMixedDb.database.prepare("UPDATE telegram_pet_instances SET pet_xp=100, hunger=50, happiness=70, cleanliness=70, energy=70, health=70 WHERE telegram_id='use-item-concurrent-mixed'").run();
@@ -3824,12 +3825,12 @@ assert.equal(concurrentMixedDb.database.prepare("SELECT COUNT(*) AS count FROM t
 assert.equal(concurrentMixedDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='use-item-concurrent-mixed' AND source='pet_item_use' AND status='awarded'").get().count, 2,
   'two concurrent conflicting item uses must create two awarded reward-claim receipts');
 
-const switchItemDb = seedRepeatRewardPlayer('use-item-switch', 70);
-await ensurePetStarterSeasonSlot(switchItemDb, 'use-item-switch', new Date('2026-08-15T00:00:00Z'));
+const switchItemDb = seedRepeatRewardPlayer('use-item-switch', 70, new Date().toISOString(), { currentSeason: true });
+await ensurePetStarterSeasonSlot(switchItemDb, 'use-item-switch', new Date());
 await __petMediaTestHooks.ensureActivePetInstance(switchItemDb, 'use-item-switch');
 const switchPetA = switchItemDb.database.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='use-item-switch'").get().pet_id;
-switchItemDb.database.prepare("INSERT INTO telegram_pet_season_slots (pet_id,telegram_id,season_key,slot_number,acquisition_type) VALUES ('use-item-switch-b','use-item-switch','pet-s2026-003',2,'arcade_xp')").run();
-switchItemDb.database.prepare("INSERT INTO telegram_pet_instances (pet_id,telegram_id,season_key,slot_number,pet_xp,hunger,energy,health,source_profile_updated_at) VALUES ('use-item-switch-b','use-item-switch','pet-s2026-003',2,0,50,70,70,CURRENT_TIMESTAMP)").run();
+switchItemDb.database.prepare("INSERT INTO telegram_pet_season_slots (pet_id,telegram_id,season_key,slot_number,acquisition_type) VALUES ('use-item-switch-b','use-item-switch',?,2,'arcade_xp')").run(__petMediaTestHooks.getPetSeasonInfo(new Date()).key);
+switchItemDb.database.prepare("INSERT INTO telegram_pet_instances (pet_id,telegram_id,season_key,slot_number,pet_xp,hunger,energy,health,source_profile_updated_at) VALUES ('use-item-switch-b','use-item-switch',?,2,0,50,70,70,CURRENT_TIMESTAMP)").run(__petMediaTestHooks.getPetSeasonInfo(new Date()).key);
 switchItemDb.database.prepare("UPDATE telegram_pet_profiles SET pet_xp=100, hunger=50, energy=70, health=70 WHERE telegram_id='use-item-switch'").run();
 switchItemDb.database.prepare("UPDATE telegram_pet_instances SET pet_xp=100, hunger=50, energy=70, health=70 WHERE pet_id=?").run(switchPetA);
 switchItemDb.database.prepare("INSERT INTO telegram_pet_inventory (telegram_id, asset_type, asset_key, quantity) VALUES ('use-item-switch', 'item', 'moon_snack', 1)").run();

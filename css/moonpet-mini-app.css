@@ -539,7 +539,6 @@ button, input, select, textarea {
 
 .terminal-button,
 .terminal-link-button,
-.jump-button,
 .utility-close,
 .period-button {
   min-height: 42px;
@@ -572,8 +571,6 @@ button, input, select, textarea {
 .terminal-button:focus-visible,
 .terminal-link-button:hover,
 .terminal-link-button:focus-visible,
-.jump-button:hover,
-.jump-button:focus-visible,
 .utility-close:hover,
 .utility-close:focus-visible,
 .period-button:hover,
@@ -585,7 +582,6 @@ button, input, select, textarea {
 .terminal-button:active,
 .terminal-button.is-active,
 .terminal-link-button:active,
-.jump-button:active,
 .utility-close:active,
 .period-button:active,
 .period-button[aria-pressed="true"] {
@@ -767,7 +763,6 @@ button, input, select, textarea {
   50% { filter: brightness(1.2); box-shadow: inset 0 0 14px rgba(var(--tool-rgb), .3), 0 0 10px rgba(var(--tool-rgb), .4); }
 }
 
-.jump-button,
 .utility-close,
 .period-button {
   min-height: 36px;
@@ -775,7 +770,6 @@ button, input, select, textarea {
   font-size: 10px;
 }
 
-.jump-button:focus-visible,
 .utility-close:focus-visible,
 .period-button:focus-visible,
 .terminal-button:focus-visible,
@@ -785,25 +779,6 @@ button, input, select, textarea {
 .dock button:focus-visible {
   outline: 2px solid rgba(255,255,255,.22);
   outline-offset: 2px;
-}
-
-.section-jumps {
-  display: flex;
-  gap: 6px;
-  margin: 0 0 12px;
-  padding: 2px 0 4px;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.section-jumps::-webkit-scrollbar { display: none; }
-
-.jump-button {
-  flex: 0 0 auto;
-  min-height: 32px;
-  padding-inline: 10px;
-  white-space: nowrap;
-  color: var(--ui-text-secondary);
 }
 
 .utility-layer {
@@ -1005,10 +980,7 @@ button, input, select, textarea {
 [data-panel="callsign"],
 [data-panel="evolution"],
 [data-panel="faction"],
-[data-panel="prestige"],
-[data-panel="sanctuary"],
 [data-panel="tracks"],
-[data-panel="future-systems"],
 [data-panel="features"],
 [data-panel="alerts"],
 [data-panel="season"],

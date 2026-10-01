@@ -130,14 +130,8 @@ for (const [label, pattern] of [
 ]) {
   assert.match(lockedGuideMarkup, pattern, `Mini App guide must include current-build vocabulary for ${label}`);
 }
-const roadmapStepBody = lockedGuideMarkup.match(/<strong>6 \/\/ IDENTITY AND ROADMAP<\/strong>([\s\S]*?)<\/div>/)?.[1] || '';
-assert.ok(roadmapStepBody, 'Mini App guide must include the identity and roadmap step');
-assert.ok(roadmapStepBody.includes('remain coming soon'), 'Mini App guide future systems must be marked as coming soon');
-const guideOutsideRoadmap = lockedGuideMarkup.replace(roadmapStepBody, '');
-for (const futureSystem of ['Advanced Traits', 'Breeding', 'Lineage', 'Fusion', 'Sanctuary', 'Prestige']) {
-  assert.ok(roadmapStepBody.includes(futureSystem), `Mini App roadmap step must list ${futureSystem}`);
-  assert.ok(!guideOutsideRoadmap.includes(futureSystem), `Mini App guide must only mention ${futureSystem} in the coming-soon roadmap step`);
-}
+assert.match(lockedGuideMarkup, /6 \/\/ IDENTITY AND PROGRESSION/);
+assert.doesNotMatch(lockedGuideMarkup, /Advanced Traits|Breeding|Lineage|Fusion|Sanctuary|Prestige|coming soon/, 'in-app guide omits unwired roadmap content');
 
 const entry = index.find((item) => item.url === '/wiki/crypto-moonboy-pets.html');
 assert.ok(entry, 'Crypto Moonboy Pets must be present in js/wiki-index.json');
