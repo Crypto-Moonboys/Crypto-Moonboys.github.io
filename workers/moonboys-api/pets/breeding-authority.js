@@ -279,8 +279,8 @@ function buildOffspringStatements(db, authority, receipt, offspringTraits, slotN
   const offspringInsertVerb = options.strictSlot === false ? 'INSERT OR IGNORE' : 'INSERT';
   return [
     db.prepare(`${slotInsertVerb} INTO telegram_pet_season_slots
-    (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status)
-    SELECT ?, ?, ?, ?, 'breeding', ?, 0, 'active'
+    (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status, journey_clock)
+    SELECT ?, ?, ?, ?, 'breeding', ?, 0, 'active', 'created_at'
     WHERE EXISTS (SELECT 1 FROM telegram_pet_breeding_receipts WHERE receipt_id=? AND status='accepted')`)
       .bind(receipt.offspring_pet_id, authority.owner_id, authority.season_key, slotNumber, receipt.event_key, receipt.receipt_id),
     db.prepare(`${offspringInsertVerb} INTO telegram_pet_instances

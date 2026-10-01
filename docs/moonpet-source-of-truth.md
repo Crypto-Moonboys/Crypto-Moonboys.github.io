@@ -33,7 +33,7 @@ finds more than three saved pets, every record stays visible and new purchases a
 blocked for review. Recovery does not erase the rollout egg or choose which pet to lose.
 
 Creation season keys, pet IDs, XP, lifecycle, identity, source events and wallet
-receipts remain unchanged. Weekly evidence keeps historical weeks 1–13 and then
+receipts remain unchanged. Existing pets' weekly evidence keeps historical weeks 1–13 and then
 continues at week 14 after the creation quarter, with no end date. Migration 085
 retains historical nullable qualification keys and every existing receipt while
 lifting the database week limit; migration 086 restores proven Sanctuary archives.
@@ -45,7 +45,12 @@ satisfy this gate. Existing pet profiles retain access, including safe starter
 recovery. The proposed year-long evolution pacing remains separate work.
 
 State projects `lifetime_progression` separately from `competition_season`.
-Pet age and displayed lifetime week start at the saved ownership creation date;
+Pet age starts at the saved ownership creation date. Migration 087 marks existing
+pets with `journey_clock=legacy_quarter`, preserving their recorded week numbering.
+New adoptions, purchases and offspring explicitly use `journey_clock=created_at`:
+week 1 starts on the saved creation UTC day and advances every seven days without
+a quarter boundary or week cap. Displayed `lifetime_progression.current_week`,
+Journey validation, recovery and boss Crest qualification use the same saved clock;
 Growth Marks, Weekly Crests, Pet XP and completion stay with the pet. Historical
 source season keys and qualification-week numbering remain receipt provenance,
 not the current competition period. Core loads defer completion detail; Missions
@@ -54,8 +59,11 @@ awards uses the earning day's calendar quarter, including delayed reserved
 rewards. Existing competition rows are not rewritten.
 Standard Run endings use their saved terminal timestamp for competition XP
 even when payout recovery happens in a later quarter; daily/weekly settlement
-windows keep their existing behavior. Concurrent first-adoption requests run
-onboarding only for the profile insert winner.
+windows keep their existing behavior. Profile insertion and creation-clock
+ownership commit together. Creation and repair share a canonical per-pet onboarding
+claim; its lifecycle, first-adoption memory, egg evolution and analytics commit in
+one D1 batch. Concurrent requests cannot duplicate these effects. A failed batch
+rolls back the claim and retries safely without spending XP or overwriting pet stats.
 
 ## XP and score ownership
 

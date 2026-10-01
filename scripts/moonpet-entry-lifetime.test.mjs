@@ -4,26 +4,31 @@ import { DatabaseSync } from 'node:sqlite';
 import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 import { getPetEntryRequirement } from '../workers/moonboys-api/pets/entry-requirement.js';
 import { awardPetReward } from '../workers/moonboys-api/pets/roguelite-foundation.js';
+import { getPetOwnershipPeriod, getPetJourneyWeek, getPetJourneyWeekBounds } from '../workers/moonboys-api/pets/ownership-period.js';
+import { recordWeeklyJourneyObjectiveEvidence } from '../workers/moonboys-api/pets/weekly-journey.js';
+import { recoverPetJourneyAwards } from '../workers/moonboys-api/pets/journey-recovery.js';
 
 const sqlite = new DatabaseSync(':memory:');
 sqlite.exec('PRAGMA foreign_keys=ON');
 for (const path of ['schema.sql', 'migrations/048_telegram_pet_player_expansion.sql', 'migrations/058_telegram_pet_season_completion.sql', 'migrations/061_moonpet_season_economy_calibration.sql']) {
   sqlite.exec(await readFile(new URL('../workers/moonboys-api/' + path, import.meta.url), 'utf8'));
 }
-let failEntryRead = false, failCreation = false, beforeCreation = null;
+let failEntryRead = false, failCreation = false, failOnboarding = false, failOnboardingRead = false;
+let beforeCreation = null, afterCreation = null, beforeOnboarding = null;
 class Statement {
   constructor(sql, args = []) { Object.assign(this, { sql, args }); }
   bind(...args) { return new Statement(this.sql, args); }
   async first() {
     if (failEntryRead && this.sql.includes('AS lifetime_xp')) return { success: false, error: 'unavailable' };
+    if (failOnboardingRead && this.sql.includes("AND s.slot_number=1 AND s.acquisition_type='free' LIMIT 1")) return { success: false, error: 'unavailable' };
     return sqlite.prepare(this.sql).get(...this.args) || null;
   }
   async all() { return { results: sqlite.prepare(this.sql).all(...this.args) }; }
   async run() {
     if (this.sql.includes('INSERT OR IGNORE INTO telegram_pet_profiles')) {
       if (failCreation) return { success: false, error: 'unavailable' };
-      if (beforeCreation) { const callback = beforeCreation; beforeCreation = null; await callback(); }
     }
+    if (failOnboarding && this.sql.includes('INSERT INTO telegram_pet_memories')) throw new Error('onboarding batch unavailable');
     if (/RETURNING/i.test(this.sql)) {
       const results = sqlite.prepare(this.sql).all(...this.args);
       return { results, meta: { changes: results.length } };
@@ -34,11 +39,22 @@ class Statement {
 const db = {
   prepare: sql => new Statement(sql),
   async batch(statements) {
+    const createsProfile = statements[0]?.sql.includes('INSERT OR IGNORE INTO telegram_pet_profiles');
+    if (createsProfile && beforeCreation) { const callback = beforeCreation; beforeCreation = null; await callback(); }
+    if (statements[0]?.sql.includes('NOT EXISTS (SELECT 1 FROM telegram_pet_lifecycle_by_pet') && beforeOnboarding) {
+      const callback = beforeOnboarding; beforeOnboarding = null; await callback();
+    }
     sqlite.exec('BEGIN');
     try {
       const results = [];
-      for (const statement of statements) results.push(await statement.run());
-      sqlite.exec('COMMIT'); return results;
+      for (const statement of statements) {
+        const result = await statement.run();
+        if (result.success === false) throw new Error('pet_state_write_unavailable');
+        results.push(result);
+      }
+      sqlite.exec('COMMIT');
+      if (createsProfile && afterCreation) { const callback = afterCreation; afterCreation = null; await callback(); }
+      return results;
     } catch (error) { sqlite.exec('ROLLBACK'); throw error; }
   },
 };
@@ -90,6 +106,51 @@ assert.equal(ignored.accepted, false);
 assert.equal(ignored.reason, 'pet_already_adopted');
 assert.equal(sqlite.prepare('SELECT total_changes() AS n').get().n, changesAfterWinner, 'a concurrent losing insert creates no onboarding events or other writes');
 assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM telegram_pet_instances WHERE telegram_id='concurrent'").get().n, 1);
+
+// Pause the winner before setup, rather than after it has already completed.
+for (const checkpoint of ['after-profile', 'before-onboarding-claim']) {
+  player(checkpoint, 1000);
+  const duringSetup = async () => {
+    assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_pet_profiles WHERE telegram_id=?').get(checkpoint).n, 1);
+    assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_pet_lifecycle_by_pet WHERE telegram_id=?').get(checkpoint).n, 0);
+    assert.equal((await adopt(checkpoint, { event_key: checkpoint + ':repair-racer' })).accepted, false);
+    sqlite.prepare('UPDATE telegram_pet_instances SET pet_xp=2345 WHERE telegram_id=?').run(checkpoint);
+    sqlite.prepare('UPDATE telegram_pet_profiles SET pet_xp=2345 WHERE telegram_id=?').run(checkpoint);
+    sqlite.prepare('UPDATE telegram_pet_lifecycle_by_pet SET incubation_progress=5 WHERE telegram_id=?').run(checkpoint);
+  };
+  if (checkpoint === 'after-profile') afterCreation = duringSetup;
+  else beforeOnboarding = duringSetup;
+  assert.equal((await adopt(checkpoint, { event_key: checkpoint + ':profile-winner' })).accepted, true);
+  for (const table of ['telegram_pet_season_slots', 'telegram_pet_instances', 'telegram_pet_lifecycle_by_pet',
+    'telegram_pet_lifecycle_events_by_pet', 'telegram_pet_identity_events', 'telegram_pet_memories', 'telegram_pet_evolutions_by_pet']) {
+    assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM ' + table + ' WHERE telegram_id=?').get(checkpoint).n, 1, checkpoint + ': ' + table);
+  }
+  const events = sqlite.prepare('SELECT event_key,applied_at FROM telegram_pet_identity_events WHERE telegram_id=?').all(checkpoint);
+  assert.match(events[0].event_key, /^pet:onboarding:/);
+  assert.ok(events[0].applied_at);
+  assert.equal(sqlite.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE telegram_id=?').get(checkpoint).pet_xp, 2345, 'resuming onboarding never saves stale pet stats');
+  const snapshot = sqlite.prepare('SELECT * FROM telegram_pet_lifecycle_by_pet WHERE telegram_id=?').get(checkpoint);
+  assert.equal(snapshot.incubation_progress, 5);
+  await adopt(checkpoint, { event_key: checkpoint + ':retry' });
+  assert.deepEqual(sqlite.prepare('SELECT * FROM telegram_pet_lifecycle_by_pet WHERE telegram_id=?').get(checkpoint), snapshot);
+}
+
+// A failure after lifecycle insertion rolls back the claim and every effect.
+player('onboarding-retry', 1000);
+failOnboarding = true;
+await assert.rejects(adopt('onboarding-retry'), /onboarding batch unavailable/);
+failOnboarding = false;
+for (const table of ['telegram_pet_lifecycle_by_pet', 'telegram_pet_identity_events', 'telegram_pet_memories', 'telegram_pet_evolutions_by_pet']) {
+  assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM ' + table + ' WHERE telegram_id=?').get('onboarding-retry').n, 0, 'rollback: ' + table);
+}
+sqlite.prepare("UPDATE arcade_progression_state SET arcade_xp_total=0 WHERE telegram_id='onboarding-retry'").run();
+assert.equal((await adopt('onboarding-retry', { event_key: 'different-retry-key' })).reason, 'pet_already_adopted');
+assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM telegram_pet_identity_events WHERE telegram_id='onboarding-retry' AND applied_at IS NOT NULL").get().n, 1);
+const recoveredLifecycle = sqlite.prepare("SELECT * FROM telegram_pet_lifecycle_by_pet WHERE telegram_id='onboarding-retry'").get();
+failOnboardingRead = true;
+await assert.rejects(adopt('onboarding-retry'), /pet_state_read_unavailable/, 'a failed repair read cannot become empty ownership');
+failOnboardingRead = false;
+assert.deepEqual(sqlite.prepare("SELECT * FROM telegram_pet_lifecycle_by_pet WHERE telegram_id='onboarding-retry'").get(), recoveredLifecycle);
 player('failed-read', 1000);
 failEntryRead = true;
 await assert.rejects(adopt('failed-read'), /pet_state_read_unavailable/);
@@ -112,6 +173,43 @@ await hooks.preparePetMiniAppState(db, 'legacy');
 const legacy = await hooks.getPetProfile(db, 'legacy');
 assert.equal(legacy.pet_xp, 4321);
 assert.equal((await adopt('legacy')).reason, 'pet_already_adopted');
+
+// A newly created late-joiner has one creation-day clock for display, validation,
+// recovery and weekly award authority, even after its birth quarter ends.
+player('late-joiner', 1000);
+await adopt('late-joiner', { now: new Date('2026-12-15T15:00:00Z') });
+sqlite.prepare("UPDATE telegram_pet_season_slots SET created_at='2026-12-15 15:00:00' WHERE telegram_id='late-joiner'").run();
+const lateSlot = sqlite.prepare("SELECT * FROM telegram_pet_season_slots WHERE telegram_id='late-joiner'").get();
+assert.equal(lateSlot.journey_clock, 'created_at');
+const period = getPetOwnershipPeriod(lateSlot.season_key, lateSlot.created_at, lateSlot.journey_clock);
+assert.equal(period.start_at, '2026-12-15T00:00:00.000Z');
+assert.equal(getPetJourneyWeek(period, '2026-12-21T23:59:59Z'), 1);
+assert.equal(getPetJourneyWeek(period, '2026-12-22T00:00:00Z'), 2);
+assert.equal(getPetJourneyWeek(period, '2027-01-01T00:00:00Z'), 3);
+assert.equal(getPetJourneyWeekBounds(period, 3).start_at, '2026-12-29T00:00:00.000Z');
+for (const [at, week] of [['2026-12-15T18:00:00Z', 1], ['2026-12-22T00:00:00Z', 2], ['2027-01-01T00:00:00Z', 3]]) {
+  for (const summary of [await hooks.buildPetSeasonSlotSummary(db, 'late-joiner', new Date(at)), await hooks.buildPetSeasonSlotCoreSummary(db, 'late-joiner', new Date(at))]) {
+    assert.equal(summary.current_season_week, week);
+    assert.equal(summary.slots[0].pet.lifetime_progression.current_week, week);
+    assert.equal(summary.slots[0].pet.lifetime_progression.journey_clock, 'created_at');
+  }
+}
+for (const [day, week] of [['2026-12-15', 1], ['2026-12-22', 2], ['2027-01-01', 3]]) {
+  const key = 'late-care:' + day;
+  sqlite.prepare(`INSERT INTO telegram_pet_events (id,telegram_id,pet_id,event_type,event_key,season_key,day_key,week_key,status,reason)
+    VALUES (?, 'late-joiner', ?, 'feed', ?, ?, ?, 'calendar-week', 'accepted', 'fed')`).run(key, lateSlot.pet_id, key, lateSlot.season_key, day);
+  const request = { telegram_id: 'late-joiner', pet_id: lateSlot.pet_id, season_key: lateSlot.season_key,
+    qualification_week: week, objective_id: 'weekly_care', source_event_key: key };
+  assert.equal((await recordWeeklyJourneyObjectiveEvidence(db, { ...request, qualification_week: 11 })).accepted, false, 'quarter week cannot bypass creation-day authority');
+  if (week === 1) assert.equal((await recordWeeklyJourneyObjectiveEvidence(db, request)).accepted, true);
+}
+await recoverPetJourneyAwards(db, 'late-joiner');
+assert.deepEqual(sqlite.prepare("SELECT qualification_week FROM telegram_pet_weekly_journey_objectives WHERE telegram_id='late-joiner' ORDER BY qualification_week").all().map(row => row.qualification_week), [1, 2, 3]);
+sqlite.prepare(`INSERT INTO telegram_pet_weekly_boss_victories_by_pet
+  (telegram_id,week_key,boss_id,pet_id,season_key,victory_event_key,defeated_at)
+  VALUES ('late-joiner','2026-W51','neon_kaiju',?,?, 'late-boss','2026-12-15T18:00:00Z')`).run(lateSlot.pet_id, lateSlot.season_key);
+assert.equal((await hooks.awardStoredWeeklyBossVictoryCrest(db, 'late-joiner', '2026-W51', 'neon_kaiju', new Date('2027-01-01'))).accepted, true);
+assert.equal(sqlite.prepare("SELECT qualification_week FROM telegram_pet_weekly_crests WHERE telegram_id='late-joiner'").get().qualification_week, 1, 'boss recovery uses the saved victory date and the same creation clock');
 
 // A late-joining pet starts at lifetime week one, rather than quarter week 13.
 sqlite.prepare("UPDATE telegram_pet_season_slots SET created_at='2026-09-30T12:00:00Z' WHERE telegram_id='legacy'").run();

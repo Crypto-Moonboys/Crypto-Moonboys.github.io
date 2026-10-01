@@ -8,13 +8,14 @@ const types = Object.keys(WEEKLY_JOURNEY_SOURCE_OBJECTIVES).map((type) => `'${ty
 const objectives = Object.entries(WEEKLY_JOURNEY_SOURCE_OBJECTIVES).map(([type, objective]) => `WHEN '${type}' THEN '${objective}'`).join(' ');
 // Match the ownership-period helper, including historical 13-week receipts.
 const sourceStart = `CASE
+  WHEN s.journey_clock='created_at' THEN date(s.created_at)
   WHEN s.season_key GLOB 'pet-s[0-9][0-9][0-9][0-9]-00[1-4]'
     THEN printf('%s-%02d-01',substr(s.season_key,6,4),(CAST(substr(s.season_key,13,1) AS INTEGER)-1)*3+1)
   WHEN s.season_key GLOB '[0-9][0-9][0-9][0-9]-q[1-4]'
     THEN printf('%s-%02d-01',substr(s.season_key,1,4),(CAST(substr(s.season_key,7,1) AS INTEGER)-1)*3+1)
   ELSE date(s.created_at) END`;
-const legacyEnd = `CASE WHEN s.season_key GLOB 'pet-s[0-9][0-9][0-9][0-9]-00[1-4]'
-  OR s.season_key GLOB '[0-9][0-9][0-9][0-9]-q[1-4]' THEN date(${sourceStart},'+3 months') END`;
+const legacyEnd = `CASE WHEN s.journey_clock='legacy_quarter' AND (s.season_key GLOB 'pet-s[0-9][0-9][0-9][0-9]-00[1-4]'
+  OR s.season_key GLOB '[0-9][0-9][0-9][0-9]-q[1-4]') THEN date(${sourceStart},'+3 months') END`;
 const sourceWeek = `CASE WHEN ${legacyEnd} IS NOT NULL AND e.day_key>=${legacyEnd}
   THEN 14+CAST((julianday(e.day_key)-julianday(${legacyEnd}))/7 AS INTEGER)
   WHEN ${legacyEnd} IS NOT NULL THEN MIN(13,1+CAST((julianday(e.day_key)-julianday(${sourceStart}))/7 AS INTEGER))
@@ -50,7 +51,7 @@ async function recoverJourneySourceEvidence(db, owner, limit) {
   // Validate source ownership and its persisted ownership period before the limit.
   // Older malformed/unowned events must not repeatedly consume the budget.
   const recoveryKey = "e.day_key||':'||e.id";
-  const rows = await db.prepare(`SELECT e.event_key,e.event_type,e.pet_id,e.season_key,e.day_key,s.created_at AS ownership_created_at,
+  const rows = await db.prepare(`SELECT e.event_key,e.event_type,e.pet_id,e.season_key,e.day_key,s.created_at AS ownership_created_at,s.journey_clock,
       ${recoveryKey} AS recovery_key,recovery_state.setting_value AS recovery_cursor,
       (${missingWeekly}) AS missing_weekly, (${missingDaily}) AS missing_daily
     FROM telegram_pet_events e ${sourceJoins}
@@ -66,7 +67,7 @@ async function recoverJourneySourceEvidence(db, owner, limit) {
         const at = new Date(`${event.day_key}T00:00:00.000Z`);
         await recordWeeklyJourneyObjectiveEvidence(db, {
           telegram_id: owner, pet_id: event.pet_id, season_key: event.season_key,
-          qualification_week: getPetJourneyWeek(getPetOwnershipPeriod(event.season_key,event.ownership_created_at),at),
+          qualification_week: getPetJourneyWeek(getPetOwnershipPeriod(event.season_key,event.ownership_created_at,event.journey_clock),at),
           objective_id: WEEKLY_JOURNEY_SOURCE_OBJECTIVES[event.event_type], source_event_key: event.event_key,
           evidence: { authority: 'live_weekly_journey_source_event', source_event_type: event.event_type, source_event_key: event.event_key },
         }, { defer_award: true });

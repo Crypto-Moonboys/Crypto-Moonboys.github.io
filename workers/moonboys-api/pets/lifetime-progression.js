@@ -1,7 +1,8 @@
 // Ownership dates measure a pet's age. Source season keys remain immutable
 // receipt provenance; the current competition calendar never measures age.
+import { getPetOwnershipPeriod, getPetJourneyWeek, parsePetOwnershipTimestamp } from './ownership-period.js';
 export function buildPetLifetimeProgression(pet, completion = null, now = new Date()) {
-  const createdAt = Date.parse(pet.created_at || '');
+  const createdAt = parsePetOwnershipTimestamp(pet.created_at);
   const current = new Date(now).getTime();
   const ageDays = Number.isFinite(createdAt) && Number.isFinite(current)
     ? Math.max(0, Math.floor((current - createdAt) / 86400000)) : null;
@@ -11,7 +12,8 @@ export function buildPetLifetimeProgression(pet, completion = null, now = new Da
     pet_xp: Math.max(0, Number(pet.pet_xp) || 0),
     created_at: pet.created_at || null,
     age_days: ageDays,
-    current_week: ageDays == null ? null : Math.floor(ageDays / 7) + 1,
+    current_week: ageDays == null ? null : getPetJourneyWeek(getPetOwnershipPeriod(pet.season_key, pet.created_at, pet.journey_clock), now),
+    journey_clock: pet.journey_clock || 'created_at',
     detail_hydrated: Boolean(completion),
     completion,
   };

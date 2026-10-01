@@ -71,7 +71,7 @@ function sourceMatchesObjective(objectiveId, sourceEvent) {
 }
 
 async function ownedPet(db, petId, telegramId, seasonKey) {
-  return db.prepare(`SELECT s.pet_id, s.telegram_id, s.season_key, s.created_at
+  return db.prepare(`SELECT s.pet_id, s.telegram_id, s.season_key, s.created_at, s.journey_clock
     FROM telegram_pet_season_slots s JOIN telegram_pet_instances i
       ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id AND i.season_key=s.season_key AND i.slot_number=s.slot_number
     WHERE s.pet_id=? AND s.telegram_id=? AND s.season_key=? LIMIT 1`)
@@ -106,7 +106,7 @@ async function validateWeeklyEvidenceAuthority(db, request) {
   }
   const day = String(sourceEvent.day_key || '');
   if (!validUtcDay(day)) return { accepted: false, reason: 'weekly_journey_invalid_source_window' };
-  const season = getPetOwnershipPeriod(seasonKey, pet.created_at);
+  const season = getPetOwnershipPeriod(seasonKey, pet.created_at, pet.journey_clock);
   if (getPetJourneyWeek(season, new Date(`${day}T00:00:00.000Z`)) !== qualificationWeek) {
     return { accepted: false, reason: 'weekly_journey_invalid_source_window' };
   }

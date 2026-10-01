@@ -51,6 +51,7 @@
     "083_moonpet_daily_run_completion_credit.sql",
     "084_moonpet_state_hot_path_indexes.sql",
     "085_permanent_pet_weekly_evidence.sql",
-    "086_restore_permanent_pet_ownership.sql"
+    "086_restore_permanent_pet_ownership.sql",
+    "087_pet_journey_creation_clock.sql"
   ]
 }

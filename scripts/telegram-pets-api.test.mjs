@@ -428,7 +428,7 @@ assert.match(miniAppActionProcessor, /action === 'season_slots'/, 'Mini App acti
 assert.match(miniAppActionProcessor, /buyPetSeasonSlot\(db, telegramId/, 'Mini App action handler must sell slots through the authenticated action flow');
 assert.match(miniAppActionProcessor, /switchActivePetSeasonSlot\(db, telegramId/, 'Mini App action handler must switch owned slots through the authenticated action flow');
 assert.doesNotMatch(String(serializePetLeaderboardEntry({ telegram_id: 'private-id' })), /private-id/, 'serialized leaderboard entries must not expose internal Telegram owner IDs');
-assert.match(worker, /if \(!lifecycleRow\)[\s\S]*createMoonEggLifecycle/, 'adoption retries must repair a missing lifecycle as an egg');
+assert.match(worker, /await completePetOnboarding\(db, telegramId, starter\.pet_id\)/, 'adoption retries must share canonical atomic onboarding');
 assert.match(worker, /const callbackLifecycle = await getMoonpetLifecycle/, 'legacy pet callbacks must enforce the egg-stage gate');
 assert.match(worker, /await syncMoonpetLifecycleStage\(db, telegramId, next\.stage\)/, 'legacy evolve command must synchronize lifecycle adulthood');
 assert.match(worker, /async function getMoonpetIdentityWithLifecycle/, 'Telegram reactions must receive lifecycle temperament and traits');

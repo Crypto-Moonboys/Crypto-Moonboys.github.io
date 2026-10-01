@@ -53,6 +53,7 @@ export const REQUIRED_D1_MIGRATIONS = Object.freeze([
   '084_moonpet_state_hot_path_indexes.sql',
   '085_permanent_pet_weekly_evidence.sql',
   '086_restore_permanent_pet_ownership.sql',
+  '087_pet_journey_creation_clock.sql',
 ]);
 
 function readJson(filePath, label) {

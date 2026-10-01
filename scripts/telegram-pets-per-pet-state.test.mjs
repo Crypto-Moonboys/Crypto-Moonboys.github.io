@@ -49,6 +49,7 @@ const migration058 = await readFile(new URL('../workers/moonboys-api/migrations/
 const migration061 = await readFile(new URL('../workers/moonboys-api/migrations/061_moonpet_season_economy_calibration.sql', import.meta.url), 'utf8');
 const migration039 = await readFile(new URL('../workers/moonboys-api/migrations/039_telegram_pet_runtime_progression.sql', import.meta.url), 'utf8');
 const migration073 = await readFile(new URL('../workers/moonboys-api/migrations/073_moonpet_per_pet_specialist_progression.sql', import.meta.url), 'utf8');
+const migration087 = await readFile(new URL('../workers/moonboys-api/migrations/087_pet_journey_creation_clock.sql', import.meta.url), 'utf8');
 const worker = await readFile(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
 const rogueliteFoundation = await readFile(new URL('../workers/moonboys-api/pets/roguelite-foundation.js', import.meta.url), 'utf8');
 const walletReconciliation = await readFile(new URL('../workers/moonboys-api/pets/wallet-reconciliation.js', import.meta.url), 'utf8');
@@ -226,6 +227,7 @@ db.prepare(`INSERT INTO telegram_pet_evolutions
 
 db.exec(await readFile(new URL('../workers/moonboys-api/migrations/038_telegram_pet_equipment_progression.sql', import.meta.url), 'utf8'));
 db.exec(migration055);
+db.exec(migration087);
 db.exec(migration056);
 db.exec(migration056);
 db.exec(migration053);
@@ -692,6 +694,7 @@ legacySpecialistDb.prepare(`INSERT INTO telegram_pet_profiles (telegram_id, pet_
 legacySpecialistDb.prepare(`INSERT INTO telegram_pet_season_state (telegram_id, season_key)
   VALUES ('legacy-specialist-owner', '2026-q3')`).run();
 legacySpecialistDb.exec(migration055);
+legacySpecialistDb.exec(migration087);
 legacySpecialistDb.exec(migration056);
 legacySpecialistDb.exec(migration039);
 legacySpecialistDb.prepare(`INSERT INTO telegram_pet_season_slots
@@ -808,6 +811,7 @@ specialistDb.prepare(`INSERT INTO telegram_pet_profiles (telegram_id, pet_name, 
 specialistDb.prepare(`INSERT INTO telegram_pet_season_state (telegram_id, season_key)
   VALUES ('specialist-owner', '2026-q3')`).run();
 specialistDb.exec(migration055);
+specialistDb.exec(migration087);
 specialistDb.exec(migration056);
 specialistDb.exec(migration039);
 specialistDb.exec(migration073);
