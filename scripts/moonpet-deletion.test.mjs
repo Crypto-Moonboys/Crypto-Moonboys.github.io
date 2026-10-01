@@ -7,6 +7,7 @@ import { awardPetReward } from '../workers/moonboys-api/pets/roguelite-foundatio
 import { PET_REGION_CONTENT, PET_EVENT_CHAINS, PET_SEASONAL_BOSSES } from '../workers/moonboys-api/pets/content-phase-4.js';
 import { PET_ROGUELITE_BOSSES } from '../workers/moonboys-api/pets/roguelite-foundation.js';
 import { PET_WEEKLY_BOSSES } from '../workers/moonboys-api/pets/player-expansion.js';
+import { claimDailyCompletion, getSeasonFinales, processSeasonFinale, newFinale } from '../workers/moonboys-api/pets/completion-features.js';
 import { recoverPetWeeklyBossVictories } from '../workers/moonboys-api/pets/weekly-boss-recovery.js';
 
 const sql = new DatabaseSync(':memory:');
@@ -289,5 +290,35 @@ sql.prepare(`INSERT INTO telegram_pet_daily_analytics(analytics_id,pet_id,telegr
   VALUES ('daily-source:daily:terminal',?,?,?,'daily-source','run_terminal','{"boss_defeated":true}',CURRENT_TIMESTAMP)`).run(dailyId,dailyOwner,day);
 await settle(dailyOwner,dailyId,'daily_moon_run',`daily-moon-run:${dailyOwner}:daily-source:completed`,'pet_event');
 assert.equal((await hooks.deletePetSlot(db,dailyOwner,confirm(dailyId))).accepted,true);
+// Binding the original pet is durable before the claim ledger is created.
+const bonusOwner='bonus-preclaim',bonusId=await player(bonusOwner),bonusPet=rowFor(bonusId);
+beforeBatch=()=>sql.prepare(`INSERT INTO telegram_pet_daily_completion(telegram_id,utc_day,progress_bits,pet_id,season_key)
+  VALUES (?,?,255,?,?)`).run(bonusOwner,day,bonusId,bonusPet.season_key);
+await expectBlocked(bonusOwner,bonusId,'a bound unpaid 7/7 bonus blocks deletion transactionally');
+assert.equal(sql.prepare('SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE pet_id=?').get(bonusId).n,0);
+await assert.rejects(()=>claimDailyCompletion(db,bonusOwner,bonusPet,{utc_day:day},async()=>{throw Error('interrupted bonus');}),/interrupted bonus/);
+await expectBlocked(bonusOwner,bonusId,'an interrupted pre-claim bonus remains protected');
+assert.equal((await claimDailyCompletion(db,bonusOwner,bonusPet,{utc_day:day},awardPetReward)).accepted,true);
+assert.equal((await hooks.deletePetSlot(db,bonusOwner,confirm(bonusId))).accepted,true);
+assert.equal(rowFor(bonusId).pet_xp,25,'the old pet receives earned XP before archiving');
+
+// Deletion must revoke new gameplay permission without removing qualification history.
+const archivedOwner='archived-finalist',archivedId=await player(archivedOwner),archivedPet=rowFor(archivedId);
+sql.prepare(`INSERT INTO telegram_pet_season_completions(pet_id,telegram_id,season_key,legendary_evolution_id,growth_marks_earned,weekly_crests_earned)
+  VALUES (?,?,?,'legendary_guardian',60,10)`).run(archivedId,archivedOwner,archivedPet.season_key);
+assert.equal((await hooks.deletePetSlot(db,archivedOwner,confirm(archivedId))).accepted,true);
+assert.equal((await getSeasonFinales(db,archivedOwner,archivedId)).pets.some(p=>p.pet_id===archivedId&&p.eligible),false);
+const finaleRequest={pet_id:archivedId,season_key:archivedPet.season_key,build:'guardian'};
+assert.equal((await processSeasonFinale(db,archivedOwner,{...finaleRequest,action:'finale_start'},awardPetReward)).accepted,false);
+sql.prepare(`INSERT INTO telegram_pet_season_finales(pet_id,telegram_id,season_key,status,state_json)
+  VALUES (?,?,?,'failed',?)`).run(archivedId,archivedOwner,archivedPet.season_key,JSON.stringify(newFinale('guardian')));
+assert.equal((await processSeasonFinale(db,archivedOwner,{...finaleRequest,action:'finale_retry',revision:0},awardPetReward)).accepted,false);
+sql.prepare("UPDATE telegram_pet_season_finales SET status='active' WHERE pet_id=?").run(archivedId);
+assert.equal((await processSeasonFinale(db,archivedOwner,{...finaleRequest,action:'finale_step',revision:0,move:'guard'},awardPetReward)).accepted,false);
+const archivedFinale=(await getSeasonFinales(db,archivedOwner,archivedId)).pets.find(p=>p.pet_id===archivedId);
+assert.equal(archivedFinale.playable,false);
+assert.deepEqual(archivedFinale.choices,[]);
+assert.equal(archivedFinale.intent,null);
+assert.equal(sql.prepare('SELECT COUNT(*) n FROM telegram_pet_season_completions WHERE pet_id=?').get(archivedId).n,1);
 assert.deepEqual(sql.prepare('PRAGMA foreign_key_check').all(),[]);
 console.log('Confirmed Moonpet deletion, reward retention, replacement and concurrency tests passed');

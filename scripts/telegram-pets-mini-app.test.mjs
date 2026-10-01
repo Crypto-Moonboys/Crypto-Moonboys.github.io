@@ -749,20 +749,6 @@ assert.equal((noActivePetWeeklyMarkup.match(/Journey progress starts after you h
   'Weekly Journey active-pet-required markup must not duplicate the same guidance sentence');
 assert.match(noActivePetWeeklyMarkup, /No Daily or Weekly objective progress is shown until you have an active hatched Moonpet\./,
   'Weekly Journey active-pet-required detail must name the active hatched Moonpet requirement');
-const comingSoonWeeklyMarkup = weeklyJourneyRuntime({
-  state: 'COMING_SOON',
-  completed_objectives: 0,
-  required_objectives: 5,
-}, {});
-assert.match(comingSoonWeeklyMarkup, /WEEKLY JOURNEY \/\/ PLANNED EXPANSION/,
-  'COMING_SOON Weekly Journey must render planned expansion title');
-assert.match(comingSoonWeeklyMarkup, /NEXT \/\/ Weekly Journey is planned expansion\./,
-  'COMING_SOON Weekly Journey guidance must use planned expansion copy');
-assert.doesNotMatch(comingSoonWeeklyMarkup, /authority is syncing/i,
-  'COMING_SOON Weekly Journey must not say authority is syncing');
-assert.doesNotMatch(comingSoonWeeklyMarkup, /Complete objectives to qualify/,
-  'COMING_SOON Weekly Journey must not ask players to complete objectives');
-
 const nextGuidanceSource = extractTestExport(client, 'nextGuidance');
 assert.ok(nextGuidanceSource, 'NEXT guidance helpers must be extractable for runtime coverage');
 function nextGuidanceRuntime(stateValue) {
@@ -1093,12 +1079,6 @@ assert.match(unadoptedBlock, /Action unavailable - initialise your Moonpet first
   'unadopted rejection copy must tell players to initialise first');
 assert.doesNotMatch(unadoptedBlock, /hatch your Moonpet first/,
   'unadopted rejection copy must not tell players to hatch before they have a Moonpet');
-const completedSeasonBlock = actionResultFeedbackRuntime({ accepted: false, reason: 'completed_season_pet_required' }, {}, {}).resultMessage;
-assert.match(completedSeasonBlock, /Action unavailable - completed Season pet required\./,
-  'completed-season rejection copy must name the completed pet requirement');
-assert.doesNotMatch(completedSeasonBlock, /active Moonpet required/,
-  'completed-season rejection copy must not be confused with active-pet gating');
-
 // Keep every executable client-source test on marker boundaries so merges and
 // Windows checkouts cannot reintroduce indentation/newline-sensitive regexes.
 const TEST_EXPORT_NAMES = [
@@ -1293,10 +1273,6 @@ assert.match(client, /DAILY JOURNEY \/\/ GROWTH MARK/, 'Daily Journey Growth Mar
 assert.match(client, /function weeklyJourneyMarkup\(weeklyAuthority, weeklyCapability, stateValue\)/, 'Weekly Journey must render from server authority and lifecycle phase');
 assert.match(client, /WEEKLY JOURNEY \/\/ LIVE/, 'Weekly Journey must present live progress when authority is available');
 assert.match(client, /WEEKLY JOURNEY \/\/ SYNCING/, 'Weekly Journey must fail closed while authority is unavailable');
-assert.match(client, /var waitingTitle = weeklyState === 'COMING_SOON'[\s\S]*'WEEKLY JOURNEY \/\/ PLANNED EXPANSION'[\s\S]*'WEEKLY JOURNEY \/\/ SYNCING'/,
-  'Weekly Journey panel title must show syncing for locked authority and planned expansion only for explicit COMING_SOON');
-assert.match(client, /var waitingCopy = weeklyState === 'COMING_SOON'[\s\S]*Weekly Journey is planned expansion\.[\s\S]*Weekly Journey authority is syncing\./,
-  'Weekly Journey panel body copy must keep COMING_SOON planned copy separate from syncing authority copy');
 assert.match(client, /WEEKLY CREST ALREADY SETTLED|DUPLICATE WEEKLY CREST BLOCKED|WEEKLY CREST READY FOR SERVER SETTLEMENT/, 'Weekly Journey live UI must surface Crest settlement states');
 assert.doesNotMatch(client, /Growth Mark[^.!?'\n]*(?:claim|claimable)|Weekly Crest[^.!?'\n]*(?:claim|claimable)/i,
   'Journey reward copy must avoid claim language when no claim action exists');
@@ -1342,38 +1318,30 @@ assert.doesNotMatch(client, /futureLocked = \/kaiju\|arena\|prestige/, 'Mini App
 assert.doesNotMatch(client, /state\.player_capabilities|state\.has_completed_season_pet|state\.combat_unlocked|state\.combat_eligibility|state\.future_systems/, 'Mini App client must consume the single worker capabilities object');
 assert.doesNotMatch(client, /state\.sanctuary|sanctuaryRows/, 'Mini App client must not render inactive Sanctuary state as live gameplay');
 assert.match(worker, /daily_journey: journeySummary\?\.daily/, 'Mini App state must serialize Daily Journey authority summaries');
-assert.match(worker, /weekly_journey: isPetMiniAppWeeklyJourneySummaryLive\(journeySummary\?\.weekly\) \? \{[\s\S]*state: PET_MINI_APP_FUTURE_SYSTEM_STATUS\.AVAILABLE[\s\S]*\.\.\.journeySummary\.weekly/, 'Mini App state must serialize live Weekly Journey authority summaries only when pet-bound authority exists');
+assert.match(worker, /weekly_journey: isPetMiniAppWeeklyJourneySummaryLive\(journeySummary\?\.weekly\) \? \{[\s\S]*state: PET_MINI_APP_SYSTEM_STATUS\.AVAILABLE[\s\S]*\.\.\.journeySummary\.weekly/, 'Mini App state must serialize live Weekly Journey authority summaries only when pet-bound authority exists');
 assert.match(worker, /capabilities: buildPetMiniAppCapabilities\(combatEligibility, journeySummary\?\.weekly \|\| null\)/, 'Mini App state must serialize capability authority from the worker');
 assert.match(worker, /pet: null,[\s\S]*capabilities_version: 1,[\s\S]*capabilities: buildPetMiniAppCapabilities/, 'unadopted Mini App state must serialize the top-level capability contract version');
 assert.match(worker, /season_slots: seasonSlots,[\s\S]*capabilities_version: 1,[\s\S]*capabilities: buildPetMiniAppCapabilities\(combatEligibility, journeySummary\?\.weekly \|\| null\)/, 'adopted Mini App state must serialize the top-level capability contract version');
-assert.match(worker, /combat: \{[\s\S]*state:[\s\S]*combatEligibility\.combat_unlocked === true[\s\S]*unlocked:[\s\S]*combatEligibility\.combat_unlocked === true[\s\S]*requirements: \{[\s\S]*completed_season_pet:[\s\S]*active_pet_hatched:/, 'capabilities must expose one nested combat authority object');
 assert.doesNotMatch(worker, /\n\s+has_completed_season_pet: combatEligibility\.has_completed_season_pet,/, 'Mini App state must not serialize duplicate top-level completed-season authority');
 assert.doesNotMatch(worker, /\n\s+combat_unlocked: combatEligibility\.combat_unlocked,/, 'Mini App state must not serialize duplicate top-level combat authority');
 assert.doesNotMatch(worker, /\n\s+combat_eligibility: combatEligibility,/, 'Mini App state must not serialize duplicate top-level combat eligibility authority');
 assert.doesNotMatch(worker, /\n\s+future_systems: buildPetMiniAppFutureSystemState\(combatEligibility\),/, 'Mini App state must keep future-system authority inside capabilities');
 assert.doesNotMatch(worker, /\n\s+sanctuary,/, 'Mini App state must not serialize inactive Sanctuary rows as live gameplay');
-assert.match(worker, /path === '\/telegram-pets\/app\/sanctuary'[\s\S]*const combatEligibility = await getPetMiniAppCombatEligibility\(env\.DB, verified\.telegramId\)[\s\S]*reason: 'feature_not_available'[\s\S]*capabilities_version: 1[\s\S]*capabilities: buildPetMiniAppCapabilities\(combatEligibility\)/,
-  'Mini App Sanctuary endpoint must return unavailable with real worker capability authority');
 assert.doesNotMatch(worker, /path === '\/telegram-pets\/app\/sanctuary'[\s\S]*buildPetMiniAppCapabilities\(\{ has_completed_season_pet: false, combat_unlocked: false, reason: 'feature_not_available' \}\)/,
   'Mini App Sanctuary endpoint must not fabricate missing completed-season authority for unavailable responses');
 assert.doesNotMatch(worker, /listSanctuaryPetsPrivate/, 'Mini App server must not expose private Sanctuary gameplay rows while Sanctuary is future content');
 assert.match(worker, /async function getPetMiniAppCombatEligibility/, 'Mini App worker must centralize current beta combat eligibility');
-assert.match(worker, /function buildPetMiniAppFutureSystemState\(combatEligibility = \{\}\)/, 'Mini App worker must centralize future-system display state');
 assert.match(worker, /const systems = \{[\s\S]*\.\.\.systemByKey[\s\S]*weekly_journey: weeklyJourneyCapability[\s\S]*\}/, 'Mini App capability contract must expose all future systems through one systems map');
-for (const key of ['breeding', 'traits', 'sanctuary', 'lineage', 'fusion', 'arena', 'kaiju', 'prestige']) {
+for (const key of ['arena', 'kaiju']) {
   assert.match(worker, new RegExp(`${key}: systemByKey\\.${key}`), `${key} compatibility capability must come from the centralized system map`);
 }
-assert.match(worker, /future_systems: futureSystems/, 'Mini App capabilities must serialize future-system authority inside the single capability object');
-assert.match(worker, /active: system\.status === PET_MINI_APP_FUTURE_SYSTEM_STATUS\.AVAILABLE/, 'future-system capabilities must expose inactive systems as status-only active=false');
-assert.match(worker, /weeklyJourneyLive \? \{[\s\S]*state: PET_MINI_APP_FUTURE_SYSTEM_STATUS\.AVAILABLE[\s\S]*active: true/, 'Weekly Journey capability must become active when authority summary exists');
+assert.match(worker, /weeklyJourneyLive \? \{[\s\S]*state: PET_MINI_APP_SYSTEM_STATUS\.AVAILABLE[\s\S]*active: true/, 'Weekly Journey capability must become active when authority summary exists');
 assert.match(worker, /reason: 'weekly_journey_authority_syncing'[\s\S]*objectives: \[\]/, 'Weekly Journey capability must fail closed while authority is unavailable');
-assert.match(worker, /PET_MINI_APP_FUTURE_SYSTEM_STATUS[\s\S]*LOCKED[\s\S]*COMING_SOON[\s\S]*AVAILABLE/, 'future-system authority must use one LOCKED/COMING_SOON/AVAILABLE status model');
 assert.match(worker, /active_pet_lifecycle_known: Boolean\(activeLifecycle\)/, 'combat eligibility must expose missing lifecycle data');
 assert.match(worker, /!activeLifecycle \? 'moonpet_lifecycle_required'/, 'missing lifecycle data must fail closed for combat');
 assert.match(worker, /features: getPetGuidanceFeatures\(level, combatEligibility\)/, 'guidance feature availability must consume shared combat authority');
 assert.match(worker, /kaiju_cards'[\s\S]*available: level >= 1 && kaijuUnlocked/, 'Kaiju guidance feature must require current Kaiju unlock');
 assert.match(worker, /pet_arena'[\s\S]*available: level >= PET_ARENA_MIN_LEVEL && arenaUnlocked/, 'Arena guidance feature must require current Arena unlock');
-assert.match(worker, /key: 'prestige'[\s\S]*available: false[\s\S]*Future expansion content\. Not available yet\./, 'Prestige guidance feature must remain permanently unavailable in this PR');
 assert.doesNotMatch(worker, /const liveNext = liveSystems\.prestige\.ready/, 'Mini App recommendations must not suggest Prestige while the feature is unavailable');
 assert.doesNotMatch(worker, /action: 'prestige', destination: 'profile'/, 'Mini App recommendations must not expose Prestige actions');
 assert.doesNotMatch(client, /button\('ASCEND PRESTIGE'/, 'Prestige must render status-only without an action-looking CTA');
@@ -1400,11 +1368,10 @@ assert.match(worker, /weeklyAcceptedReceipt[\s\S]*status='accepted' AND crest_id
 assert.match(worker, /dailyReceipt\?\.reason === 'daily_journey_growth_mark_duplicate'/, 'Daily Journey summary must track duplicate state separately from awarded state');
 assert.match(worker, /weeklyReceipt\?\.reason === 'weekly_journey_crest_duplicate'/, 'Weekly Journey summary must track duplicate state separately from awarded state');
 const miniAppActionSource = worker.slice(worker.indexOf('async function processPetMiniAppAction'), worker.indexOf('function serializePetMiniAppActionResult'));
-const futureCombatGateIndex = miniAppActionSource.indexOf('PET_MINI_APP_FUTURE_COMBAT_ACTIONS.has(action)');
+const futureCombatGateIndex = miniAppActionSource.indexOf('PET_MINI_APP_COMBAT_ENTRY_ACTIONS.has(action)');
 assert.ok(futureCombatGateIndex !== -1, 'Mini App action handler must gate future combat actions server-side');
-assert.match(worker, /SELECT 1 AS completed\s+FROM telegram_pet_season_completions\s+WHERE telegram_id=\?\s+LIMIT 1/, 'server-side completed-season authority must accept any completion row for the user');
 assert.doesNotMatch(worker, /hasCompletedPetMiniAppSeasonPet[\s\S]{0,500}season_key=\?/, 'server-side completed-season authority must not restrict eligibility to the current season');
-const futureCombatGateSource = worker.slice(worker.indexOf('const PET_MINI_APP_FUTURE_COMBAT_ACTIONS'), worker.indexOf('const PET_MINI_APP_COMBAT_CLEANUP_ACTIONS'));
+const futureCombatGateSource = worker.slice(worker.indexOf('const PET_MINI_APP_COMBAT_ENTRY_ACTIONS'), worker.indexOf('const PET_MINI_APP_COMBAT_CLEANUP_ACTIONS'));
 for (const action of ['arena_start', 'arena_matchmake', 'arena_ready', 'arena_move', 'kaiju_start', 'kaiju_matchmake', 'kaiju_card']) {
   assert.ok(worker.includes(`'${action}'`), `future combat action gate must name ${action}`);
   assert.ok(futureCombatGateIndex < miniAppActionSource.indexOf(`action === '${action}'`), `${action} must be locked before dispatch`);
@@ -1414,9 +1381,6 @@ for (const cleanupAction of ['arena_queue_cancel', 'arena_forfeit', 'kaiju_queue
 }
 assert.match(miniAppActionSource, /getPetMiniAppCombatEligibility\(db, telegramId, lifecycle\)/, 'server-side future combat lock must use shared combat eligibility authority');
 assert.match(miniAppActionSource, /const reason = action\.startsWith\('arena_'\)[\s\S]*combatEligibility\.arena_reason[\s\S]*combatEligibility\.kaiju_reason/, 'server-side combat lock must return per-system eligibility reasons');
-const prestigeGateIndex = miniAppActionSource.indexOf("if (action === 'prestige')");
-assert.ok(prestigeGateIndex !== -1, 'Mini App prestige action must have an explicit feature lock');
-assert.match(miniAppActionSource, /if \(action === 'prestige'\) return \{ accepted: false, reason: 'feature_not_available' \}/, 'locked Prestige must remain unavailable before mutation authority runs');
 assert.doesNotMatch(miniAppActionSource, /processPetPrestige/, 'Mini App action handler must not call Prestige mutation while the feature is unavailable');
 assert.match(miniAppActionSource, /if \(action === 'kaiju_match_cancel'\) return cancelPetKaijuMiniAppMatch\(db, telegramId, body\.match_id\)/, 'Mini App must expose owned stale Kaiju match cleanup');
 assert.match(worker, /WHERE match_id=\? AND chat_id LIKE 'mini:kaiju:%' AND mode='solo' AND status IN \('open','selecting'\)\s+AND player1_telegram_id=\? AND player2_telegram_id IS NULL/,
@@ -1429,7 +1393,7 @@ assert.match(worker, /const \[journeySummary, hydratedKaiju, seasonFinales\] = a
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
-assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20260930-missions-state-v1`/);
+assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20261001-live-pets-v1`/);
 assert.match(worker, /const TELEGRAM_GAMES_MENU_URL = `\$\{SITE_URL\}\/games\/telegram\/\?v=20260903-games-shell-v8`/,
   'default Telegram games menu must point at the current shell release');
 assert.match(worker, /const TELEGRAM_GAMES_MENU_TEXT = 'Games'/);
@@ -1528,11 +1492,11 @@ statusFrames.shift()();
 assert.equal(testStatusOutput.dataset.tone, 'danger');
 assert.equal(testStatusClasses.has('is-scrolling'), true, 'overflowing updates must activate the scrolling text track');
 assert.match(testStatusProperties['--status-scroll-duration'], /s$/, 'overflowing updates must receive a readable duration');
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261001-remove-practice-v1/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261001-live-pets-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20260926-front-actions-v1/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20260926-front-actions-v1/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261001-confirmed-deletion-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261001-live-pets-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1710,7 +1674,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261001-confirmed-deletion-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261001-live-pets-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -2152,7 +2116,7 @@ assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Numbe
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
 assert.match(html, /20260926-front-actions-v1/);
-assert.match(worker, /20260930-missions-state-v1/);
+assert.match(worker, /20261001-live-pets-v1/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');
 assert.match(client, /renderQuality = reducedMotion/, 'canvas quality must start from device capability');
@@ -2230,3 +2194,6 @@ const eggSavedBossMarkup = nextGuidanceRuntime({ adopted: true, pet: {}, lifecyc
 assert.match(eggSavedBossMarkup, /data-action="weekly_boss_claim"/);
 assert.match(eggSavedBossMarkup, /data-action="seasonal_boss_claim"/);
 assert.doesNotMatch(eggSavedBossMarkup, /data-action="(?:weekly_boss|seasonal_boss)"/);
+
+assert.doesNotMatch(worker, /buildPetMiniAppFutureSystemState|future_systems:|processPetPrestige|path === '\/telegram-pets\/app\/sanctuary'/, "retired runtime and routes are removed");
+assert.doesNotMatch(client, /COMING_SOON|PLANNED EXPANSION|Season Journey/, "client guidance has no dormant roadmap or reset-era copy");

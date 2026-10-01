@@ -197,7 +197,7 @@ assert.equal(state.season_complete, false);
 await awardPetWeeklyCrest(db, { ...crest, season_week: 10, evidence_key: 'weekly-boss:s1:10' });
 state = await evaluatePetSeasonCompletion(db, 'pet-a', 's1', new Date('2026-02-28'), { telegram_id: 'owner' });
 assert.equal(state.season_complete, true);
-assert.equal(state.sanctuary_eligible, true);
+assert.equal(state.lifetime_complete, true);
 assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_season_completions WHERE pet_id='pet-a'`).get().count, 1, 'authoritative awards finalize completion without opening the Mini App');
 const completedAt = state.completed_at;
 state = await evaluatePetSeasonCompletion(db, 'pet-a', 's1', new Date('2026-03-01'), { telegram_id: 'owner' });
@@ -208,7 +208,7 @@ assert.equal(sqlite.prepare('SELECT COUNT(*) count FROM telegram_pet_growth_mark
 sqlite.prepare(`INSERT INTO telegram_pet_season_slots (pet_id,telegram_id,season_key,slot_number,status,acquisition_type) VALUES ('pet-next','owner','pet-s2026-002',1,'active','free')`).run();
 sqlite.prepare(`INSERT INTO telegram_pet_instances VALUES ('pet-next','owner','pet-s2026-002',1,1,0,'active')`).run();
 sqlite.prepare(`INSERT INTO telegram_pet_active_slots VALUES ('owner','pet-next','pet-s2026-002')`).run();
-assert.equal((await evaluatePetSeasonCompletion(db, 'pet-a', 's1', new Date(), { telegram_id: 'owner' })).sanctuary_eligible, true, 'rollover does not erase persisted completion eligibility');
+assert.equal((await evaluatePetSeasonCompletion(db, 'pet-a', 's1', new Date(), { telegram_id: 'owner' })).lifetime_complete, true, 'rollover does not erase persisted completion eligibility');
 
 sqlite.prepare(`INSERT INTO telegram_pet_active_slots VALUES ('production-owner','production-pet','pet-s2026-001')`).run();
 for (let day = 0; day < 60; day += 1) {

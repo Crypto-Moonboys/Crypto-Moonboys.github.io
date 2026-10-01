@@ -28,7 +28,6 @@ const identitySource = fs.readFileSync(new URL('../workers/moonboys-api/pets/moo
 const identityRuntimeSources = new Map([
   ['moonpet-identity.js', identitySource],
   ['worker.js', fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8')],
-  ['sanctuary.js', fs.readFileSync(new URL('../workers/moonboys-api/pets/sanctuary.js', import.meta.url), 'utf8')],
   ['species-lifecycle.js', fs.readFileSync(new URL('../workers/moonboys-api/pets/species-lifecycle.js', import.meta.url), 'utf8')],
   ['season-completion.js', fs.readFileSync(new URL('../workers/moonboys-api/pets/season-completion.js', import.meta.url), 'utf8')],
 ]);

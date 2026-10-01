@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-01T12:02:34.459Z",
-  "verified_at": "2026-10-01T12:02:34.459Z",
+  "generated_at": "2026-10-01T20:14:15.023Z",
+  "verified_at": "2026-10-01T20:14:15.023Z",
   "lite": true,
   "nodes": [
     {
@@ -1010,8 +1010,8 @@
     {
       "source": "/wiki/bitcoin.html",
       "target": "/wiki/crypto-moonboy-pets.html",
-      "score": 57,
-      "weight": 0.57
+      "score": 56,
+      "weight": 0.56
     },
     {
       "source": "/wiki/crypto-moonboy-pets.html",

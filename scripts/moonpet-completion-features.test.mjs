@@ -269,12 +269,10 @@ test('finale qualification counts distinct days and weeks before a completion ma
   assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_season_completions').get().n,0,'the extra boss never rewrites season completion');
 });
 
-test('an archived completed pet keeps its finale while new rewards count in the current competition', async () => {
+test('a retained completed pet keeps its finale while new rewards count in the current competition', async () => {
   const f=fixture('finale-archived');
   const old='pet-s2025-001',id='archived-finalist';
   f.pet(id,1,old);f.completeSeason(id,old);
-  f.sql.prepare("UPDATE telegram_pet_instances SET status='archived' WHERE pet_id=?").run(id);
-  f.sql.prepare("UPDATE telegram_pet_season_slots SET status='archived' WHERE pet_id=?").run(id);
   const original={...f,petId:id,sourceSeason:old,battle:()=>f.sql.prepare('SELECT * FROM telegram_pet_season_finales WHERE pet_id=?').get(id)};
   assert.equal((await f.act(finaleBody(original,'finale_start',{build:'guardian'}))).accepted,true);
   assert.equal((await win(original)).status,'won');

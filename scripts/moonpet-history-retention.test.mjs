@@ -1,9 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { DatabaseSync } from 'node:sqlite';
-import {
-  listSanctuaryPetsPrivate,
-} from '../workers/moonboys-api/pets/sanctuary.js';
 import { finalizePetSeasonCompletionIfEligible } from '../workers/moonboys-api/pets/season-completion.js';
 
 class Statement {
@@ -78,7 +75,7 @@ assert.doesNotMatch(
   /finalizePetSeasonCompletionIfEligible[\s\S]*movePetToSanctuaryIfEligible\(db,/,
   'authoritative completion is decoupled from immediate Sanctuary transition',
 );
-assert.match(completionSource, /sanctuary_transition:\s*'never'/, 'completion advertises season-settlement Sanctuary policy');
+assert.doesNotMatch(completionSource, /sanctuary_eligible|sanctuary_transition|movePetToSanctuaryIfEligible/, 'retired Sanctuary gameplay is absent from completion');
 
 sqlite.exec(`INSERT INTO telegram_pet_profiles(telegram_id,pet_name,moon_gold,moon_crystals,style_tokens) VALUES('owner','Nova',888,77,66),('attacker','Bad',0,0,0),('auto-owner','Auto',0,0,0),('reconcile-owner','Reconcile',0,0,0),('settlement-owner','Settlement',0,0,0),('year-end-owner','Year End',0,0,0);
 INSERT INTO telegram_pet_season_slots(pet_id,telegram_id,season_key,slot_number,status,created_at,updated_at) VALUES
@@ -116,9 +113,8 @@ assert.equal(sqlite.prepare("SELECT status FROM telegram_pet_instances WHERE pet
 assert.equal(sqlite.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='auto-owner'").get().pet_id, 'auto');
 
 // Immutable historical snapshots are readable after recovery; no new retirement API remains.
-const sanctuarySource = await readFile(new URL('../workers/moonboys-api/pets/sanctuary.js', import.meta.url), 'utf8');
 const workerSource = await readFile(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
-assert.doesNotMatch(sanctuarySource + workerSource, /movePetToSanctuaryIfEligible|reconcileCompletedPetsToSanctuary|reconcileSanctuaryBestEffort/);
+assert.doesNotMatch(workerSource, /movePetToSanctuaryIfEligible|reconcileCompletedPetsToSanctuary|reconcileSanctuaryBestEffort/);
 function archive(petId, owner, seasonKey, { paid = false, completion = true, historyOwner = owner, historySeason = seasonKey, retired = false } = {}) {
   sqlite.prepare("UPDATE telegram_pet_season_slots SET status=?,acquisition_type=?,arcade_xp_spent=?,source_event_key=? WHERE pet_id=?").run(retired ? 'retired' : 'archived',paid ? 'arcade_xp' : 'free',paid ? 500 : 0,paid ? 'original-purchase' : 'profile_insert',petId);
   sqlite.prepare('UPDATE telegram_pet_instances SET status=? WHERE pet_id=?').run(retired ? 'retired' : 'archived',petId);
@@ -154,10 +150,10 @@ assert.deepEqual(withoutStatus(sqlite.prepare("SELECT * FROM telegram_pet_season
 assert.deepEqual(sqlite.prepare('SELECT * FROM telegram_pet_profiles ORDER BY telegram_id').all(),profilesBefore,'account balances are never replaced by pet balances');
 assert.deepEqual(sqlite.prepare('SELECT * FROM telegram_pet_active_slots ORDER BY telegram_id').all(),pointersBefore,'recovery never redirects the active pet');
 assert.deepEqual(sqlite.prepare('SELECT * FROM telegram_pet_sanctuary ORDER BY pet_id').all(),historiesBefore);
-const snapshots = await listSanctuaryPetsPrivate(db,'owner');
-assert.equal(snapshots.find(pet => pet.pet_id==='complete').cosmetics.equipment.equipped_outfit,'crown');
+const savedSnapshot=sqlite.prepare("SELECT cosmetic_snapshot_json FROM telegram_pet_sanctuary WHERE pet_id='complete'").get();
+assert.equal(JSON.parse(savedSnapshot.cosmetic_snapshot_json).equipment.equipped_outfit,'crown');
 sqlite.prepare("UPDATE telegram_pet_instances SET equipped_outfit='changed' WHERE pet_id='complete'").run();
-assert.equal((await listSanctuaryPetsPrivate(db,'owner')).find(pet => pet.pet_id==='complete').cosmetics.equipment.equipped_outfit,'crown','historical snapshots remain immutable');
+assert.deepEqual(sqlite.prepare("SELECT cosmetic_snapshot_json FROM telegram_pet_sanctuary WHERE pet_id='complete'").get(),savedSnapshot,'historical snapshots remain immutable');
 const changes = sqlite.prepare('SELECT total_changes() AS n').get().n;
 sqlite.exec(recovery);
 assert.equal(sqlite.prepare('SELECT total_changes() AS n').get().n,changes,'ownership recovery is safe to retry');

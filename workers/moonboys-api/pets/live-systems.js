@@ -1,7 +1,7 @@
 import { petRecoverableLiveDecisionSql } from './live-system-recovery-proof.js';
 import { requirePetFirstReadResult, requirePetReadResult } from './read-result.js';
 import { PET_DISTRICT_APPROACHES, PET_DISTRICT_COMPLICATIONS, PET_DISTRICT_ENCOUNTERS, PET_EVENT_CHAINS, PET_FACTION_BONUSES, PET_REGION_CONTENT, PET_SEASONAL_BOSSES } from './content-phase-4.js';
-import { PET_COSMETIC_SINKS, PET_CRAFTING_RECIPES, PET_EQUIPMENT_SETS, PET_PRESTIGE_REQUIREMENTS, getPetCraftingRecipe, getPetEquipmentUpgradeCost } from './economy-phase-3.js';
+import { PET_COSMETIC_SINKS, PET_CRAFTING_RECIPES, PET_EQUIPMENT_SETS, getPetCraftingRecipe, getPetEquipmentUpgradeCost } from './economy-phase-3.js';
 import { buildPetRegionDirectory } from './game-content.js';
 import { getPetVisibleLevel, getPetVisibleLevelSql } from './progression-phase-2.js';
 import { seasonalRaidChoices, resolveSeasonalRaidAttack } from './seasonal-raid-tactics.js';
@@ -87,8 +87,8 @@ async function getPetLiveProgressionState(db, telegramId, pet, runtime = {}, res
   // This row determines the next mission, checkpoint and payout. A database
   // failure must not turn an owned pet's saved mastery into a fresh zero state.
   await db.prepare(`INSERT OR IGNORE INTO telegram_pet_live_progression_state
-    (pet_id, telegram_id, season_key, region_mastery_json, completed_regions_json, prestige_count)
-    SELECT ?, ?, ?, '{}', '[]', 0
+    (pet_id, telegram_id, season_key, region_mastery_json, completed_regions_json)
+    SELECT ?, ?, ?, '{}', '[]'
     WHERE EXISTS (SELECT 1 FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=? AND season_key=?)`)
     .bind(
       authority.pet_id,
@@ -194,7 +194,7 @@ export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gea
     const row = chainRows.get(key) || { step_index: 0, completed_cycles: 0 };
     const dailyUsed = usedToday.has(`event_chain:${key}`);
     const stepIndex = integer(row.step_index);
-    return { key, title: chain.title || words(key), steps: [...chain.steps], current_step: chain.steps[stepIndex] || chain.steps[0], step_index: stepIndex, completed_cycles: integer(row.completed_cycles), final_outcomes: [...chain.final_outcomes], scene: getEventChainScene(chain, stepIndex), used_today: dailyUsed, settling: busyToday.has(`event_chain:${key}`), available: !dailyUsed && !busyToday.has(`event_chain:${key}`), pending_choice_key: pendingDecision('event_chain', key)?.choice_key || null };
+    return { key, title: chain.title || words(key), steps: [...chain.steps], current_step: chain.steps[stepIndex] || chain.steps[0], step_index: stepIndex, completed_cycles: integer(row.completed_cycles), scene: getEventChainScene(chain, stepIndex), used_today: dailyUsed, settling: busyToday.has(`event_chain:${key}`), available: !dailyUsed && !busyToday.has(`event_chain:${key}`), pending_choice_key: pendingDecision('event_chain', key)?.choice_key || null };
   });
   const boss = getActiveSeasonalBoss(now);
   const bossRow = (bossProgress.results || []).find((row) => row.boss_key === boss.key && row.season_key === boss.season_instance) || {};
@@ -225,15 +225,6 @@ export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gea
     const activeBonuses = Object.entries(set.bonuses).filter(([required]) => equipped.length >= Number(required)).map(([required, effects]) => ({ required: Number(required), effects }));
     return { key, pieces: equipped.length, owned_pieces: owned.length, total_pieces: set.items.length, owned, equipped, missing: set.items.filter((item) => !ownedGear.has(item)), active_bonuses: activeBonuses };
   });
-  const masteredItems = gear.filter((item) => integer(item.mastery_tier) >= 5).length;
-  const prestige = {
-    requirements: PET_PRESTIGE_REQUIREMENTS,
-    mastered_items: masteredItems,
-    completed_regions: completed.length,
-    count: integer(liveProgression?.prestige_count),
-    ready: visibleLevel >= PET_PRESTIGE_REQUIREMENTS.min_level && masteredItems >= 3 && completed.length >= 4
-      && integer(pet.moon_gold) >= 5000 && integer(pet.moon_crystals) >= 50,
-  };
   const faction = normalizeFaction(factionRow?.faction);
   const bossUsedToday = usedToday.has(`seasonal_boss:${boss.key}`);
   const bossDefeated = Boolean(bossRow.defeated_at);
@@ -257,7 +248,6 @@ export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gea
     cosmetics: cosmeticState,
     crafting,
     equipment_sets: equipmentSets,
-    prestige,
     faction: { key: faction, bonus: PET_FACTION_BONUSES[faction] || null },
   };
 }
@@ -746,36 +736,4 @@ export async function processPetCosmeticUnlock(db, telegramId, cosmeticKey, requ
   }
   const settled = await db.prepare('SELECT quantity FROM telegram_pet_cosmetic_unlocks WHERE telegram_id=? AND cosmetic_key=?').bind(telegramId, cosmeticKey).first().then(requirePetFirstReadResult);
   return { accepted: true, reason: 'cosmetic_unlocked', cosmetic: { key: cosmeticKey, quantity: integer(settled?.quantity) }, cost: sink.cost };
-}
-
-export async function processPetPrestige(db, telegramId, liveState, requestKey, pet = null) {
-  const authority = await resolveLivePetAuthority(db, telegramId, pet || liveState?.authority || {});
-  if (!authority) return { accepted: false, reason: 'source_pet_authority_required' };
-  const replay = await getCompletedRequest(db, telegramId, 'prestige', 'ascend', requestKey, authority);
-  if (replay) return { accepted: true, duplicate: true, reason: 'prestige_already_applied', prestige: parse(replay.payload_json, {}) };
-  if (!liveState?.prestige?.ready) return { accepted: false, reason: 'prestige_requirements_missing', prestige: liveState?.prestige };
-  const target = integer(liveState.prestige.count) + 1;
-  const reservation = await reserveSystemEvent(db, telegramId, 'prestige', 'ascend', String(requestKey || `rank:${target}`), { target }, authority);
-  if (reservation.status === 'completed') return { accepted: true, duplicate: true, reason: 'prestige_already_applied', prestige_count: target };
-  const results = await db.batch([
-    db.prepare(`UPDATE telegram_pet_system_events SET status='settling', updated_at=CURRENT_TIMESTAMP WHERE id=? AND status IN ('pending','rejected')
-      AND EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id=? AND ${getPetVisibleLevelSql('pet_xp')}>=100 AND moon_gold>=5000 AND moon_crystals>=50)
-      AND EXISTS (SELECT 1 FROM telegram_pet_live_progression_state WHERE pet_id=? AND telegram_id=? AND season_key=? AND prestige_count=? AND json_array_length(completed_regions_json)>=4)
-      AND (SELECT COUNT(*) FROM telegram_pet_equipment_progression WHERE telegram_id=? AND mastery_tier>=5)>=3`)
-      .bind(reservation.id, telegramId, authority.pet_id, telegramId, authority.season_key, target - 1, telegramId),
-    db.prepare("UPDATE telegram_pet_profiles SET moon_gold=moon_gold-5000, moon_crystals=moon_crystals-50, updated_at=CURRENT_TIMESTAMP WHERE telegram_id=? AND EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling')").bind(telegramId, reservation.id),
-    db.prepare(`UPDATE telegram_pet_live_progression_state SET prestige_count=prestige_count+1, updated_at=CURRENT_TIMESTAMP
-      WHERE pet_id=? AND telegram_id=? AND season_key=? AND prestige_count=?
-        AND EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling')`)
-      .bind(authority.pet_id, telegramId, authority.season_key, target - 1, reservation.id),
-    db.prepare(`INSERT INTO telegram_pet_material_balances (telegram_id, material_key, quantity)
-      SELECT ?, 'mastery_token', 3 WHERE EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling')
-      ON CONFLICT(telegram_id, material_key) DO UPDATE SET quantity=MIN(9999, quantity+3), updated_at=CURRENT_TIMESTAMP`).bind(telegramId, reservation.id),
-    db.prepare("UPDATE telegram_pet_system_events SET status='completed', payload_json=?, updated_at=CURRENT_TIMESTAMP WHERE id=? AND status='settling'").bind(JSON.stringify({ prestige_count: target, rewards: { mastery_token: 3 } }), reservation.id),
-  ]);
-  if (Number(results[0]?.meta?.changes || 0) < 1 || Number(results[2]?.meta?.changes || 0) < 1) {
-    await db.prepare("UPDATE telegram_pet_system_events SET status='rejected', updated_at=CURRENT_TIMESTAMP WHERE id=? AND status<>'completed'").bind(reservation.id).run();
-    return { accepted: false, reason: 'prestige_settlement_conflict', prestige: liveState.prestige };
-  }
-  return { accepted: true, reason: 'prestige_complete', prestige_count: target, rewards: { mastery_token: 3 } };
 }

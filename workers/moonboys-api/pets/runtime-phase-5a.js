@@ -236,7 +236,6 @@ export function buildPetProgressSummary(state = {}) {
   lines.push(`Job rank: ${getPetJobRank(state.job_xp)}`);
   const traits = getUnlockedPetTraits(parseJsonObject(state.traits_json));
   lines.push(`Traits: ${traits.length ? traits.join(', ') : 'none unlocked'}`);
-  lines.push(`Prestige: ${Math.max(0, Math.floor(Number(state.prestige_count) || 0))}`);
   return lines.join('\n');
 }
 

@@ -18,7 +18,6 @@ export const PET_LEVEL_MILESTONES = Object.freeze([
   Object.freeze({ level: 30, unlock: 'gear_mastery_abilities' }),
   Object.freeze({ level: 40, unlock: 'elite_arena' }),
   Object.freeze({ level: 50, unlock: 'pet_evolution_choice' }),
-  Object.freeze({ level: 70, unlock: 'prestige_challenges' }),
   Object.freeze({ level: 100, unlock: 'legendary_pet_status' }),
 ]);
 
@@ -30,7 +29,7 @@ export const PET_JOB_RANKS = Object.freeze([
   'legendary_contractor',
 ]);
 
-// Visible Moonpet level is paced for a 90-day beta season. The curve keeps
+// Visible Moonpet level retains the shipped beta XP curve; pet life has no expiry. The curve keeps
 // Level 10 reachable for active beta players while preventing the daily Pet XP
 // cap from trivializing Level 30/50/100 in the opening weeks.
 export const PET_VISIBLE_LEVEL_CURVE = Object.freeze({

@@ -59,10 +59,10 @@ function fixture(owner) {
   return { sql, db, owner, pet, active, act, state };
 }
 const petRow=f=>f.sql.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=?').get('current-'+f.owner);
-test('all four styles equip and remove free, persist per pet, reject unowned/foreign/stale pets',async()=>{
+test('all three styles equip and remove free, persist per pet, reject unowned/foreign/stale pets',async()=>{
   const f=fixture('style-controls');await f.state();const before=f.sql.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles').get();
   assert.equal((await f.act({action:'style_equip',pet_id:petRow(f).pet_id,cosmetic_key:'profile_frame',enabled:true})).accepted,false);
-  for(const key of ['rename_badge','profile_frame','victory_pose','run_trail']) {
+  for(const key of ['profile_frame','victory_pose','run_trail']) {
     f.sql.prepare('INSERT INTO telegram_pet_cosmetic_unlocks(telegram_id,cosmetic_key,quantity)VALUES(?,?,1)').run(f.owner,key);
     const req={action:'style_equip',pet_id:petRow(f).pet_id,cosmetic_key:key,enabled:true};
     assert.equal((await f.act(req)).accepted,true);assert.equal((await f.act(req)).accepted,true);
@@ -144,4 +144,17 @@ test('removed mode has no engine, board, table or accepted action',async()=>{
     const result=await f.act({action});assert.equal(result.accepted,false);assert.equal(result.reason,'mini_app_action_invalid');
   }
   assert.equal(f.sql.prepare('SELECT total_changes() n').get().n,before,'retired actions cannot mutate saves or rewards');
+});
+
+test('retired nameplate cannot be bought or equipped and saved history is kept',async()=>{
+  const f=fixture('retired-nameplate');await f.state();const pet=petRow(f);
+  f.sql.prepare("INSERT INTO telegram_pet_cosmetic_unlocks(telegram_id,cosmetic_key,quantity)VALUES(?,'rename_badge',1)").run(f.owner);
+  f.sql.prepare("INSERT INTO telegram_pet_style_loadouts(pet_id,telegram_id,cosmetic_key,enabled)VALUES(?,?,'rename_badge',1)").run(pet.pet_id,f.owner);
+  const before=f.sql.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner);
+  assert.ok(!(await f.state()).style_loadout.equipped.includes('rename_badge'));
+  assert.equal((await f.act({action:'style_equip',pet_id:pet.pet_id,cosmetic_key:'rename_badge',enabled:true})).accepted,false);
+  assert.equal((await f.act({action:'cosmetic_unlock',cosmetic_key:'rename_badge'})).accepted,false);
+  assert.deepEqual(f.sql.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner),before);
+  assert.equal(f.sql.prepare("SELECT quantity FROM telegram_pet_cosmetic_unlocks WHERE telegram_id=? AND cosmetic_key='rename_badge'").get(f.owner).quantity,1);
+  assert.equal(f.sql.prepare("SELECT enabled FROM telegram_pet_style_loadouts WHERE pet_id=? AND cosmetic_key='rename_badge'").get(pet.pet_id).enabled,1);
 });

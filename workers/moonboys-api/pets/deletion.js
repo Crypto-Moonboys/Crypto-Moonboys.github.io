@@ -1,6 +1,6 @@
 import { requirePetFirstReadResult, requirePetMutationResult, requirePetReadResult } from './read-result.js';
 import { buildPetOnboardingStatements } from './onboarding.js';
-import { PET_RECOVERABLE_ACTIVITY_PREDICATE } from './sanctuary.js';
+import { PET_RECOVERABLE_ACTIVITY_PREDICATE } from './activity-recovery.js';
 import { petRecoverableLiveDecisionSql } from './live-system-recovery-proof.js';
 import { petSpaceValueSql } from './space-order.js';
 import { PET_ROGUELITE_BOSSES } from './roguelite-foundation.js';
@@ -11,7 +11,9 @@ const bossKeysSql = Object.keys(PET_ROGUELITE_BOSSES).map(key => `'${key.replace
 // never the currently selected pet, inside the same transaction as archiving.
 // `s` is the intact ownership row being claimed for deletion.
 const SOURCE_REWARD_BLOCKERS_SQL = `
-  EXISTS (SELECT 1 FROM telegram_pet_events e WHERE e.telegram_id=s.telegram_id AND e.pet_id=s.pet_id AND e.status='pending')
+  EXISTS (SELECT 1 FROM telegram_pet_daily_completion d WHERE d.telegram_id=s.telegram_id AND d.pet_id=s.pet_id
+    AND d.season_key=s.season_key AND d.progress_bits=255 AND d.claimed_at IS NULL)
+  OR EXISTS (SELECT 1 FROM telegram_pet_events e WHERE e.telegram_id=s.telegram_id AND e.pet_id=s.pet_id AND e.status='pending')
   OR EXISTS (SELECT 1 FROM telegram_pet_system_events e WHERE e.telegram_id=s.telegram_id AND e.pet_id=s.pet_id
     AND e.season_key=s.season_key AND e.status='rejected' AND ${petRecoverableLiveDecisionSql('e')})
   OR EXISTS (SELECT 1 FROM telegram_pet_seasonal_boss_progress b WHERE b.telegram_id=s.telegram_id AND b.pet_id=s.pet_id
