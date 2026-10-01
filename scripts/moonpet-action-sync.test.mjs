@@ -194,6 +194,53 @@ test('a switch after care settlement preserves the committed result and requests
     'later source-bound recovery must award against the recorded pet');
 });
 
+test('a switch after item-use settlement preserves the spend and award with an immediate refresh', async () => {
+  const f = fixture('82016'), displayed = 'current-' + f.owner;
+  f.pet('item-use-race-other', currentSeason, 300, 2);
+  f.sql.prepare("INSERT INTO telegram_pet_inventory (telegram_id,asset_type,asset_key,quantity) VALUES (?,'item','moon_snack',2)").run(f.owner);
+  let switched = false;
+  f.db.afterBatch = statements => {
+    if (!statements.some(s => /UPDATE telegram_pet_events\s+SET status\s*=\s*'accepted'/i.test(s.query))) return;
+    f.db.afterBatch = null;
+    f.active('item-use-race-other');
+    switched = true;
+  };
+
+  const result = await f.act({ action: 'use_item', item_key: 'moon_snack', displayed_pet_id: displayed, request_id: 'item-use-after-commit' });
+  assert.equal(switched, true);
+  assert.equal(result.accepted, true);
+  assert.equal(result.refresh_state, true);
+  assert.equal(result.pet.pet_id, displayed);
+  assert.equal(result.pet_xp_awarded, 4);
+  assert.equal(f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_key='moon_snack'").get(f.owner).quantity, 1);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='use_item' AND pet_id=? AND status='accepted'").get(displayed).n, 1);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE source='pet_item_use' AND status='awarded'").get().n, 1);
+  assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(displayed).pet_xp, 204);
+  assert.equal(f.sql.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id='item-use-race-other'").get().pet_xp, 300);
+});
+
+test('a switch after shop settlement preserves the purchase and charge with an immediate refresh', async () => {
+  const f = fixture('82017'), displayed = 'current-' + f.owner;
+  f.pet('shop-race-other', currentSeason, 300, 2);
+  let switched = false;
+  f.db.afterBatch = statements => {
+    if (!statements.some(s => /UPDATE telegram_pet_events\s+SET status\s*=\s*'accepted'/i.test(s.query))) return;
+    f.db.afterBatch = null;
+    f.active('shop-race-other');
+    switched = true;
+  };
+
+  const result = await f.act({ action: 'buy', item_key: 'moon_kibble', displayed_pet_id: displayed, request_id: 'shop-after-commit' });
+  assert.equal(switched, true);
+  assert.equal(result.accepted, true);
+  assert.equal(result.refresh_state, true);
+  assert.equal(result.pet.pet_id, displayed);
+  assert.equal(f.sql.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner).moon_gold, 955);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='buy' AND pet_id=? AND status='accepted'").get(displayed).n, 1);
+  assert.equal(f.sql.prepare("SELECT equipped_food FROM telegram_pet_instances WHERE pet_id=?").get(displayed).equipped_food, 'moon_kibble');
+  assert.equal(f.sql.prepare("SELECT equipped_food FROM telegram_pet_instances WHERE pet_id='shop-race-other'").get().equipped_food, null);
+});
+
 test('every displayed-pet handler rejects a switch immediately after initial validation', async () => {
   const actions = ['incubate','hatch','rare_morph','feed','play','clean','sleep','train',
     'energy_drink','dance','cuddles','rename','buy','equip','use_item','trade','work',

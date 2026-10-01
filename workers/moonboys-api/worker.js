@@ -3327,6 +3327,15 @@ async function getPetInventory(db, telegramId) {
   return Object.entries(PET_INVENTORY_ITEMS).map(([key, item]) => ({ ...item, count: Math.max(0, inventory[key] || 0) }));
 }
 
+async function preserveCommittedPetActionResult(result, project) {
+  try {
+    return await project();
+  } catch (error) {
+    if (isDisplayedPetScopeStaleError(error)) return { ...result, refresh_state: true };
+    throw error;
+  }
+}
+
 async function processPetUseItem(db, telegramId, itemKeyRaw, options = {}) {
   const key = normalizePetInventoryItemKey(itemKeyRaw);
   if (!key) return { accepted: false, reason: 'invalid_item', xp_awarded: 0, pet_xp_awarded: 0 };
@@ -3467,16 +3476,29 @@ async function processPetUseItem(db, telegramId, itemKeyRaw, options = {}) {
     const inventory = await getPetInventory(db, telegramId);
     return { accepted: false, reason: inventory.some(entry=>entry.key===key && entry.count>0) ? 'pet_action_state_changed' : 'item_not_found', pet };
   }
-  const inventory = await getPetInventory(db, telegramId);
-  const updatedPet = pet.pet_id ? await getPetInstanceWithAtomicDecay(db, pet.pet_id).catch(() => null) : await getPetProfile(db, telegramId);
-  if (updatedPet) Object.assign(updatedPet, await readPetAccountWallet(db, telegramId) || {});
-  return { accepted: true, reason: 'item_used', xp_awarded: 0, pet_xp_awarded: Number(consumeResults.at(-2).results[0].pet_xp_awarded), item: { ...item, count: inventory.find((entry) => entry.key === key)?.count || 0 }, pet: updatedPet };
+  const committedResult = {
+    accepted: true,
+    reason: 'item_used',
+    xp_awarded: 0,
+    pet_xp_awarded: Number(consumeResults.at(-2).results[0].pet_xp_awarded),
+    item: { ...item },
+    pet,
+  };
+  return preserveCommittedPetActionResult(committedResult, async () => {
+    const inventory = await getPetInventory(db, telegramId);
+    const updatedPet = pet.pet_id ? await getPetInstanceWithAtomicDecay(db, pet.pet_id).catch(() => null) : await getPetProfile(db, telegramId);
+    if (updatedPet) Object.assign(updatedPet, await readPetAccountWallet(db, telegramId) || {});
+    committedResult.item.count = inventory.find((entry) => entry.key === key)?.count || 0;
+    committedResult.pet = updatedPet || pet;
+    return committedResult;
+  });
 }
 
 async function processPetJob(db, telegramId, jobKeyRaw, options = {}) {
   const key = normalizePetJobKey(jobKeyRaw);
   if (!key) return { accepted: false, reason: 'invalid_job', xp_awarded: 0, pet_xp_awarded: 0 };
   const now = new Date();
+  const dayKey = getPetDayKey(now);
   const eventKey = String(options.event_key || `pet:work:${telegramId}:${key}:${Date.now()}`).slice(0, 120);
   const duplicate = await readAcceptedPetEventByKey(db, telegramId, eventKey);
   if (duplicate) {
@@ -3532,16 +3554,21 @@ async function processPetJob(db, telegramId, jobKeyRaw, options = {}) {
       ? attachPetCooldown({ ...awarded, reason: 'cooldown', retry_after_seconds: cooldown.remaining_seconds, cooldown }, cooldown)
       : awarded;
   }
-  if (awarded.accepted) {
-    await runPetIdentityWriteHook(options, { event_key: eventKey, ...sourceAuthority, event_type: 'work' });
-    await syncPetAchievementsForPet(db, telegramId, sourceAuthority.pet_id, sourceAuthority.season_key).catch(() => []);
-  }
-  const receipt = await readAcceptedPetEventByKey(db, telegramId, eventKey);
-  // A competing request may have committed this key for another pet first.
-  const receiptPet = receipt?.pet_id ? await getPetInstanceWithAtomicDecay(db, receipt.pet_id) : null;
-  if (receiptPet) Object.assign(receiptPet, await readPetAccountWallet(db, telegramId) || {});
-  return { ...awarded, pet: receiptPet, accounting_window: { day_key: receipt?.day_key },
+  const committedResult = { ...awarded, pet, accounting_window: { day_key: dayKey },
     reason: awarded.duplicate ? 'duplicate' : key, job: rewards, faction_bonus: adjusted.bonus };
+  return preserveCommittedPetActionResult(committedResult, async () => {
+    if (awarded.accepted) {
+      await runPetIdentityWriteHook(options, { event_key: eventKey, ...sourceAuthority, event_type: 'work' });
+      await syncPetAchievementsForPet(db, telegramId, sourceAuthority.pet_id, sourceAuthority.season_key).catch(() => []);
+    }
+    const receipt = await readAcceptedPetEventByKey(db, telegramId, eventKey);
+    // A competing request may have committed this key for another pet first.
+    const receiptPet = receipt?.pet_id ? await getPetInstanceWithAtomicDecay(db, receipt.pet_id) : null;
+    if (receiptPet) Object.assign(receiptPet, await readPetAccountWallet(db, telegramId) || {});
+    committedResult.pet = receiptPet || pet;
+    committedResult.accounting_window = { day_key: receipt?.day_key || dayKey };
+    return committedResult;
+  });
 }
 
 async function processPetDailyChest(db, telegramId, options = {}) {
@@ -3618,10 +3645,15 @@ async function processPetDailyChest(db, telegramId, options = {}) {
     }
     return { accepted: false, reason: previous ? 'daily_claimed' : 'daily_cache_state_changed', xp_awarded: 0, pet_xp_awarded: 0, pet };
   }
-  const persistedPet = await getPetInstanceWithAtomicDecay(db, pet.pet_id);
-  if (persistedPet) Object.assign(persistedPet, await readPetAccountWallet(db, telegramId) || {});
-  await recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, eventKey);
-  return { accepted: true, reason: 'daily_chest', xp_awarded: 0, pet_xp_awarded: accepted.pet_xp_awarded, pet: persistedPet, accounting_window: { day_key: dayKey } };
+  const committedResult = { accepted: true, reason: 'daily_chest', xp_awarded: 0,
+    pet_xp_awarded: accepted.pet_xp_awarded, pet, accounting_window: { day_key: dayKey } };
+  return preserveCommittedPetActionResult(committedResult, async () => {
+    const persistedPet = await getPetInstanceWithAtomicDecay(db, pet.pet_id);
+    if (persistedPet) Object.assign(persistedPet, await readPetAccountWallet(db, telegramId) || {});
+    await recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, eventKey);
+    committedResult.pet = persistedPet || pet;
+    return committedResult;
+  });
 }
 
 async function processPetRandomEvent(db, telegramId, choiceRaw, options = {}) {
@@ -3715,7 +3747,8 @@ async function processPetRandomEvent(db, telegramId, choiceRaw, options = {}) {
     profile_deltas: profileDeltas, touch_streak: true, now, day_key: accountingDayKey, week_key: accountingWeekKey, season_key: accountingSeasonKey,
     context: { source: options.source || 'telegram_bot', encounter_key: encounter.key, choice_key: choice.key, result_kind: outcome.kind, reward_slot: rewardSlot.claimed_slot, reward_multiplier: rewardSlot.multiplier, copy: outcome.copy },
   });
-  if (awarded.accepted) {
+  const recoverEventFollowups = async () => {
+    if (!awarded.accepted) return;
     await runPetIdentityWriteHook(options, { event_key: eventKey, ...rewardAuthority, event_type: 'random_event' });
     await recordMoonpetBehaviour(db, {
       pet_id: rewardAuthority.pet_id, season_key: rewardAuthority.season_key,
@@ -3727,8 +3760,14 @@ async function processPetRandomEvent(db, telegramId, choiceRaw, options = {}) {
       telegram_id: telegramId, event_key: `${eventKey}:biggest-reward`, source_event_key: eventKey, source_event_type: 'random_event',
       reward_amount: awarded.rewards?.moon_gold, reward_currency: 'moon_gold',
     });
+  };
+  if (awarded.duplicate) {
+    const duplicateResult = { ...awarded, reason: 'duplicate', encounter, choice, pet };
+    return preserveCommittedPetActionResult(duplicateResult, async () => {
+      await recoverEventFollowups();
+      return duplicateResult;
+    });
   }
-  if (awarded.duplicate) return { ...awarded, reason: 'duplicate', encounter, choice };
   const petXpAwarded = awarded.pet_xp_awarded;
   rewardsApplied.pet_xp = petXpAwarded;
   const deltas = {};
@@ -3737,8 +3776,7 @@ async function processPetRandomEvent(db, telegramId, choiceRaw, options = {}) {
   }
   deltas.pet_xp = petXpAwarded;
   const applied = { rewardsApplied, costsApplied, deltas };
-  const updatedPet = await getPetProfile(db, telegramId);
-  return {
+  const committedResult = {
     ...awarded,
     reason: `${encounter.key}:${choice.key}`,
     encounter,
@@ -3748,8 +3786,13 @@ async function processPetRandomEvent(db, telegramId, choiceRaw, options = {}) {
     reward_slot: rewardSlot.claimed_slot,
     reward_multiplier: rewardSlot.multiplier,
     accounting_window: { day_key: accountingDayKey, week_key: accountingWeekKey, season_key: accountingSeasonKey },
-    pet: updatedPet,
+    pet,
   };
+  return preserveCommittedPetActionResult(committedResult, async () => {
+    await recoverEventFollowups();
+    committedResult.pet = await getPetProfile(db, telegramId) || pet;
+    return committedResult;
+  });
 }
 
 function canAffordPetItem(pet, item) {
@@ -5498,12 +5541,16 @@ async function awardPetKaijuPlayerResult(db, telegramId, match, outcome, rewards
     touch_streak: true, now, day_key: rewardSlotAuthority.day_key, week_key: rewardSlotAuthority.week_key, season_key: rewardSlotAuthority.season_key,
     context: { source: 'telegram_kaiju', equipment_snapshot: equipmentSnapshot, match_id: match.match_id, mode: match.mode, reward_slot: rewardSlotAuthority.claimed_slot, reward_multiplier: rewardSlotAuthority.multiplier, energy_cost: energyCost },
   });
-  await getPetProfile(db, telegramId);
-  if (awardedAuthority.accepted && outcome === 'kaiju_win') {
-    await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward, { action: 'kaiju_win' });
-  }
-  return { ...awardedAuthority, reward_slot: rewardSlotAuthority.claimed_slot, reward_multiplier: rewardSlotAuthority.multiplier,
-    accounting_window: { day_key: rewardSlotAuthority.day_key, week_key: rewardSlotAuthority.week_key, season_key: rewardSlotAuthority.season_key } };
+  const committedResult = { ...awardedAuthority, reward_slot: rewardSlotAuthority.claimed_slot, reward_multiplier: rewardSlotAuthority.multiplier,
+    accounting_window: { day_key: rewardSlotAuthority.day_key, week_key: rewardSlotAuthority.week_key, season_key: rewardSlotAuthority.season_key },
+    pet };
+  return preserveCommittedPetActionResult(committedResult, async () => {
+    await getPetProfile(db, telegramId);
+    if (awardedAuthority.accepted && outcome === 'kaiju_win') {
+      await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward, { action: 'kaiju_win' });
+    }
+    return committedResult;
+  });
 }
 
 const PET_KAIJU_RESULT_REWARDS = Object.freeze({
@@ -6828,9 +6875,13 @@ async function processPetShopPurchase(db, telegramId, itemKey, options = {}) {
       : currentPet && !canAffordPetItem(currentPet, item) ? 'not_enough_pet_currency' : 'shop_state_changed';
     return { accepted: false, reason, item, pet: currentPet };
   }
-  const persistedPet = await getPetProfile(db, telegramId);
-  if (persistedPet) Object.assign(persistedPet, await readPetAccountWallet(db, telegramId) || {});
-  return { accepted: true, reason: 'shop_purchase', item, pet: persistedPet || pet, xp_awarded: 0, pet_xp_awarded: 0 };
+  const committedResult = { accepted: true, reason: 'shop_purchase', item, pet, xp_awarded: 0, pet_xp_awarded: 0 };
+  return preserveCommittedPetActionResult(committedResult, async () => {
+    const persistedPet = await getPetProfile(db, telegramId);
+    if (persistedPet) Object.assign(persistedPet, await readPetAccountWallet(db, telegramId) || {});
+    committedResult.pet = persistedPet || pet;
+    return committedResult;
+  });
 }
 
 async function processPetEquipmentEquip(db, telegramId, itemKey, options = {}) {
@@ -6874,7 +6925,11 @@ async function processPetEquipmentEquip(db, telegramId, itemKey, options = {}) {
     const replay = await buildAcceptedPetEventDuplicate(db, telegramId, eventKey, pet, { item });
     return replay || { accepted: false, reason: 'equipment_state_changed', item };
   }
-  return { accepted: true, reason: 'equipment_equipped', item, pet: await getPetProfile(db, telegramId), xp_awarded: 0, pet_xp_awarded: 0 };
+  const committedResult = { accepted: true, reason: 'equipment_equipped', item, pet, xp_awarded: 0, pet_xp_awarded: 0 };
+  return preserveCommittedPetActionResult(committedResult, async () => {
+    committedResult.pet = await getPetProfile(db, telegramId) || pet;
+    return committedResult;
+  });
 }
 
 async function processPetGoldTrade(db, telegramId, wagerRaw, options = {}) {
@@ -7011,10 +7066,14 @@ async function processPetGoldTrade(db, telegramId, wagerRaw, options = {}) {
     if (cooldown?.remaining_seconds > 0) return attachPetCooldown({ accepted: false, reason: 'trade_cooldown', pet: currentPet }, cooldown);
     return { accepted: false, reason: Number(currentPet?.moon_gold || 0) < wager ? 'not_enough_moon_gold' : 'trade_state_changed', pet: currentPet };
   }
-  const persistedPet = await getPetProfile(db, telegramId);
-  if (persistedPet) Object.assign(persistedPet, await readPetAccountWallet(db, telegramId) || {});
-
-  return { accepted: true, reason: won ? 'trade_won' : 'trade_lost', wager, won, gold_delta: goldDelta, crystal_delta: crystalDelta, xp_awarded: 0, pet_xp_awarded: petXp, pet: persistedPet || pet };
+  const committedResult = { accepted: true, reason: won ? 'trade_won' : 'trade_lost', wager, won,
+    gold_delta: goldDelta, crystal_delta: crystalDelta, xp_awarded: 0, pet_xp_awarded: petXp, pet };
+  return preserveCommittedPetActionResult(committedResult, async () => {
+    const persistedPet = await getPetProfile(db, telegramId);
+    if (persistedPet) Object.assign(persistedPet, await readPetAccountWallet(db, telegramId) || {});
+    committedResult.pet = persistedPet || pet;
+    return committedResult;
+  });
 }
 
 async function processPetAdventure(db, telegramId, adventureKeyRaw, options = {}) {
@@ -7072,28 +7131,31 @@ async function processPetAdventure(db, telegramId, adventureKeyRaw, options = {}
   }
   applied.rewardsApplied = awarded.rewards;
   applied.deltas.pet_xp = awarded.pet_xp_awarded;
-  if (awarded.accepted) {
-    await runPetIdentityWriteHook(options, { event_key: eventKey, ...sourceAuthority, event_type: 'adventure' });
-    await recordMoonpetBehaviour(db, {
-      pet_id: sourceAuthority.pet_id, season_key: sourceAuthority.season_key,
-      telegram_id: telegramId, event_key: `${eventKey}:personality`, source_event_key: eventKey, source_event_type: 'adventure',
-      behaviour: 'exploration', activity: 'adventure',
-    });
-    await recordMoonpetBiggestReward(db, {
-      pet_id: sourceAuthority.pet_id, season_key: sourceAuthority.season_key,
-      telegram_id: telegramId, event_key: `${eventKey}:biggest-reward`, source_event_key: eventKey, source_event_type: 'adventure',
-      reward_amount: awarded.rewards?.moon_gold, reward_currency: 'moon_gold',
-    });
-  }
-
-  return {
+  const committedResult = {
     ...awarded,
     reason: awarded.duplicate ? 'duplicate' : `${encounter.key}:${choice.key}`,
     encounter,
     choice,
     result_copy: outcome.copy,
     applied,
+    pet,
   };
+  return preserveCommittedPetActionResult(committedResult, async () => {
+    if (awarded.accepted) {
+      await runPetIdentityWriteHook(options, { event_key: eventKey, ...sourceAuthority, event_type: 'adventure' });
+      await recordMoonpetBehaviour(db, {
+        pet_id: sourceAuthority.pet_id, season_key: sourceAuthority.season_key,
+        telegram_id: telegramId, event_key: `${eventKey}:personality`, source_event_key: eventKey, source_event_type: 'adventure',
+        behaviour: 'exploration', activity: 'adventure',
+      });
+      await recordMoonpetBiggestReward(db, {
+        pet_id: sourceAuthority.pet_id, season_key: sourceAuthority.season_key,
+        telegram_id: telegramId, event_key: `${eventKey}:biggest-reward`, source_event_key: eventKey, source_event_type: 'adventure',
+        reward_amount: awarded.rewards?.moon_gold, reward_currency: 'moon_gold',
+      });
+    }
+    return committedResult;
+  });
 }
 
 function serializePetLeaderboardEntry(row, index = 0) {
@@ -10117,6 +10179,17 @@ const PET_MINI_APP_DISPLAYED_PET_EXEMPT_ACTIONS = new Set([
   'contract_step', 'contract_claim', 'finale_retry', 'finale_step', 'finale_claim',
 ]);
 
+async function recoverPetMiniAppRuntimeAwards(db, telegramId, result, action) {
+  if (!result?.accepted || result.refresh_state) return result;
+  try {
+    await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward, { action });
+    return result;
+  } catch (error) {
+    if (isDisplayedPetScopeStaleError(error)) return { ...result, refresh_state: true };
+    throw error;
+  }
+}
+
 async function processPetMiniAppAction(database, telegramId, user, body, botToken) {
   const action = String(body?.action || '').trim().toLowerCase();
   if (PET_MINI_APP_DISPLAYED_PET_EXEMPT_ACTIONS.has(action)) {
@@ -10207,15 +10280,7 @@ async function dispatchPetMiniAppAction(db, telegramId, user, body, botToken) {
   if (action === 'switch_pet_slot') return switchActivePetSeasonSlot(db, telegramId, body.pet_id || body.slot_number);
   if (['feed', 'play', 'clean', 'sleep', 'train', 'energy_drink', 'dance', 'cuddles'].includes(action)) {
     const result = await processPetAction(db, telegramId, action, { event_key: eventKey, source, pet_id: displayedPetId });
-    if (result.accepted) {
-      try {
-        await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward, { action });
-      } catch (error) {
-        if (isDisplayedPetScopeStaleError(error)) return { ...result, refresh_state: true };
-        throw error;
-      }
-    }
-    return result;
+    return recoverPetMiniAppRuntimeAwards(db, telegramId, result, action);
   }
   if (action === 'rename') return processPetAction(db, telegramId, 'rename', { event_key: eventKey, pet_name: body.pet_name, source, pet_id: displayedPetId });
   if (action === 'buy') return processPetShopPurchase(db, telegramId, body.item_key, { event_key: eventKey, source });
@@ -10224,13 +10289,11 @@ async function dispatchPetMiniAppAction(db, telegramId, user, body, botToken) {
   if (action === 'trade') return processPetGoldTrade(db, telegramId, body.wager, { event_key: eventKey, source });
   if (action === 'work') {
     const result = await processPetJob(db, telegramId, body.job_key, { event_key: eventKey, source });
-    if (result.accepted) await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward, { action: 'job' });
-    return result;
+    return recoverPetMiniAppRuntimeAwards(db, telegramId, result, 'job');
   }
   if (action === 'daily_chest') {
     const result = await processPetDailyChest(db, telegramId, { event_key: eventKey, source });
-    if (result.accepted) await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward, { action: 'daily_chest' });
-    return result;
+    return recoverPetMiniAppRuntimeAwards(db, telegramId, result, 'daily_chest');
   }
   if (action === 'random_event') {
     const challenge = await verifyPetMiniAppChallenge(body.challenge_token, botToken, { type: 'event', telegram_id: telegramId });
@@ -10247,8 +10310,7 @@ async function dispatchPetMiniAppAction(db, telegramId, user, body, botToken) {
     const encounter = resolvePetAdventureEncounter(displayedEventKey);
     if (!encounter || encounter.key !== challenge.payload.encounter_key) return { accepted: false, reason: 'invalid_adventure_key' };
     const result = await processPetAdventure(db, telegramId, body.adventure_key, { event_key: displayedEventKey, encounter, source });
-    if (result.accepted) await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward, { action: 'explore' });
-    return result;
+    return recoverPetMiniAppRuntimeAwards(db, telegramId, result, 'explore');
   }
   if (action === 'run_start') return startOrResumePetRun(db, telegramId, { run_id: body.run_id, source });
   if (action === 'daily_run_start') return createDailyMoonRun(db, { telegram_id: telegramId });
@@ -10301,16 +10363,14 @@ async function dispatchPetMiniAppAction(db, telegramId, user, body, botToken) {
     const runtime = await getOrCreatePetRuntimeState(db, telegramId, getPetDayKey(new Date()), activePetRewardAuthority(petRaw));
     const faction = await db.prepare('SELECT faction FROM blocktopia_progression WHERE telegram_id=?').bind(telegramId).first();
     const result = await processPetDistrictMission(db, telegramId, body.region_key, serializePet(petRaw, identity), runtime, (args) => awardPetReward(db, args), faction?.faction, body.approach_key, `runtime:mini:${eventKey}`);
-    if (result.accepted) await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward, { action: 'explore' });
-    return result;
+    return recoverPetMiniAppRuntimeAwards(db, telegramId, result, 'explore');
   }
   if (action === 'event_chain') {
     const petRaw = await getPetProfile(db, telegramId);
     if (!petRaw) return { accepted: false, reason: 'pet_not_adopted' };
     const faction = await db.prepare('SELECT faction FROM blocktopia_progression WHERE telegram_id=?').bind(telegramId).first();
     const result = await processPetEventChain(db, telegramId, body.chain_key, (args) => awardPetReward(db, args), faction?.faction, body.choice_key, petRaw, `runtime:mini:${eventKey}`);
-    if (result.accepted) await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward, { action: 'explore' });
-    return result;
+    return recoverPetMiniAppRuntimeAwards(db, telegramId, result, 'explore');
   }
   if (action === 'seasonal_boss') {
     const petRaw = await getPetProfileWithAtomicDecay(db, telegramId, new Date());
@@ -10318,14 +10378,12 @@ async function dispatchPetMiniAppAction(db, telegramId, user, body, botToken) {
     if (body.pet_id && body.pet_id !== petRaw.pet_id) return { accepted: false, reason: 'source_pet_changed' };
     const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
     const result = await processPetSeasonalBoss(db, telegramId, serializePet(petRaw, identity), (args) => awardPetReward(db, args), body.move);
-    if (result.accepted) await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward, { action: 'run_boss' });
-    return result;
+    return recoverPetMiniAppRuntimeAwards(db, telegramId, result, 'run_boss');
   }
   if (action === 'seasonal_boss_claim') {
     const pet = await getPetProfile(db, telegramId);
     const result = await claimPetSeasonalBossReward(db, telegramId, pet, (args) => awardPetReward(db, args), body);
-    if (result.accepted) await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward, { action: 'run_boss' });
-    return result;
+    return recoverPetMiniAppRuntimeAwards(db, telegramId, result, 'run_boss');
   }
   if (action === 'gear_upgrade') return processPetEquipmentUpgrade(db, telegramId, body.item_key, eventKey);
   if (action === 'craft') return processPetCraftRecipe(db, telegramId, body.recipe_key, eventKey);
@@ -10338,9 +10396,12 @@ async function dispatchPetMiniAppAction(db, telegramId, user, body, botToken) {
     const next = Object.values(MOONPET_EVOLUTIONS).find((entry) => entry.stage === Number(identity?.current_stage?.stage || 0) + 1);
     if (!next) return { accepted: false, reason: 'final_evolution_reached' };
     const result = await evolveMoonpet(db, { telegram_id: telegramId, evolution_id: body.evolution_id || next.evolution_id, event_key: eventKey });
-    if (result.accepted && !result.duplicate) result.lifecycle = await syncMoonpetLifecycleStage(db, telegramId, next.stage);
-    if (result.accepted) await finalizeActivePetEvolutionProgress(db, telegramId);
-    return result;
+    if (!result.accepted) return result;
+    return preserveCommittedPetActionResult(result, async () => {
+      if (result.accepted && !result.duplicate) result.lifecycle = await syncMoonpetLifecycleStage(db, telegramId, next.stage);
+      if (result.accepted) await finalizeActivePetEvolutionProgress(db, telegramId);
+      return result;
+    });
   }
   if (action === 'arena_start') {
     const eligible = await ensurePetArenaEligible(db, telegramId);
