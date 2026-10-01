@@ -662,7 +662,14 @@
         "run modifiers",
         "Daily Journey",
         "Weekly Journey",
-        "coming soon roadmap"
+        "tamagotchi",
+        "pet leaderboard",
+        "pet adventure",
+        "pet notifications",
+        "Moon Gold",
+        "pet bag",
+        "daily chest",
+        "random event"
       ]
     },
     "crypto_moonboys": {
@@ -6884,5 +6891,5 @@
       ]
     }
   },
-  "updated_at": "2026-09-17T18:34:31Z"
+  "updated_at": "2026-10-01T19:38:29Z"
 }

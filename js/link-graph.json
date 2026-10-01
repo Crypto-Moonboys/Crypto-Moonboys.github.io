@@ -1383,7 +1383,7 @@
     "inbound_from": []
   },
   "/wiki/crypto-moonboy-pets.html": {
-    "outbound_count": 7,
+    "outbound_count": 9,
     "inbound_count": 0,
     "existing_outbound": [
       "/wiki/block-topia.html",
@@ -1393,8 +1393,10 @@
     "suggested_outbound": [
       "/wiki/games4punks-telegram.html",
       "/wiki/gang-signs-card-game.html",
+      "/wiki/moon-mission.html",
       "/wiki/pixel-journey.html",
-      "/wiki/rave-relics.html"
+      "/wiki/rave-relics.html",
+      "/wiki/triple-fork-event.html"
     ],
     "inbound_from": []
   },

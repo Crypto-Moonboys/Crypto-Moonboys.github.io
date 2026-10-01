@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-01T19:28:33.912Z",
-  "verified_at": "2026-10-01T19:28:33.912Z",
+  "generated_at": "2026-10-01T19:39:04.218Z",
+  "verified_at": "2026-10-01T19:39:04.218Z",
   "lite": true,
   "nodes": [
     {
@@ -128,7 +128,7 @@
       "title": "Crypto Moonboy Pets",
       "url": "/wiki/crypto-moonboy-pets.html",
       "category": "tokens",
-      "rank_score": 421,
+      "rank_score": 417,
       "authority_score": 22
     },
     {
@@ -1010,8 +1010,8 @@
     {
       "source": "/wiki/bitcoin.html",
       "target": "/wiki/crypto-moonboy-pets.html",
-      "score": 57,
-      "weight": 0.57
+      "score": 56,
+      "weight": 0.56
     },
     {
       "source": "/wiki/crypto-moonboy-pets.html",
