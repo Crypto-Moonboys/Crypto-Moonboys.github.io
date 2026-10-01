@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { DatabaseSync } from 'node:sqlite';
+import { mock } from 'node:test';
 import { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
 import {
   applyPetRuntimeAward,
@@ -541,7 +542,8 @@ assert.equal(db.prepare(`SELECT arcade_xp_total FROM arcade_progression_state WH
 assert.deepEqual({ ...db.prepare(`SELECT arcade_xp_spendable, arcade_xp_spent FROM arcade_xp_wallets WHERE telegram_id='state-player'`).get() }, { arcade_xp_spendable: 0, arcade_xp_spent: 1500 }, 'paid slots must debit only the spendable wallet exactly once');
 assert.deepEqual({ ...db.prepare(`SELECT pet_name, pet_xp, energy FROM telegram_pet_instances WHERE season_key='pet-s2026-003' AND slot_number=3 AND telegram_id='state-player'`).get() }, { pet_name: 'Moonpet', pet_xp: 0, energy: 70 }, 'a purchased pet must be a fresh instance');
 
-const rosterNow = new Date();
+// Preview the Q3 fixture roster within its ownership season.
+const rosterNow = new Date('2026-08-16T12:00:00Z');
 const dormantDecayStart = new Date(rosterNow.getTime() - (2 * 60 * 60 * 1000)).toISOString();
 db.prepare(`UPDATE telegram_pet_instances SET hunger=20, happiness=80, cleanliness=70,
   energy=60, health=75, pet_xp=345, last_decay_at=?
@@ -550,6 +552,7 @@ db.prepare(`UPDATE telegram_pet_instances SET last_decay_at=?
   WHERE telegram_id='state-player' AND slot_number=1`).run(rosterNow.toISOString());
 const starterBeforeRoster = { ...db.prepare(`SELECT pet_xp, hunger, happiness, cleanliness, energy, health
   FROM telegram_pet_instances WHERE telegram_id='state-player' AND slot_number=1`).get() };
+mock.timers.enable({ apis: ['Date'], now: rosterNow.getTime() });
 const decayAwareRoster = await buildPetSeasonSlotSummary(d1, 'state-player', rosterNow);
 const dormantSlot = decayAwareRoster.slots[1];
 assert.deepEqual(
@@ -621,6 +624,8 @@ assert.equal((await buyPetSeasonSlot(d1, 'state-player', 3, { now: new Date('202
 assert.deepEqual({ ...db.prepare(`SELECT arcade_xp_spendable, arcade_xp_spent FROM arcade_xp_wallets WHERE telegram_id='state-player'`).get() }, { arcade_xp_spendable: 0, arcade_xp_spent: 1500 }, 'a duplicate purchase retry must not debit the wallet twice');
 assert.equal((await buyPetSeasonSlot(d1, 'state-player', 4, { now: new Date('2026-08-16T12:00:00Z') })).reason, 'invalid_pet_slot', 'slot 4 must be rejected');
 assert.equal((await switchActivePetSeasonSlot(d1, 'other-player', 'pet:state-player:2026-q3:3', { now: new Date('2026-08-16T12:00:00Z') })).accepted, false, 'another owner cannot switch to the player pet');
+
+mock.timers.reset();
 
 db.prepare(`INSERT INTO telegram_pet_profiles (telegram_id, pet_name) VALUES ('poor-player', 'Poor starter')`).run();
 db.prepare(`INSERT INTO arcade_progression_state (telegram_id, arcade_xp_total) VALUES ('poor-player', 499)`).run();

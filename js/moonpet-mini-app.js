@@ -48,38 +48,17 @@
   var hatchArtTransitionUntil = 0;
   var hatchArtTransitionTimer = 0;
   var hatchStageOnePreloadPromise = null;
-  var actionResultHoldMs = 3600;
   var actionStartedAt = 0;
   var sleepLatched = false;
   var SLEEP_LATCH_STORAGE_KEY = 'moonpet-botty-sleep-latch-v1';
   var stageZeroBackgroundImage = null;
   var stageZeroBackgroundReady = false;
   var STAGE_ZERO_BACKGROUND_URL = '/games/assets/BITTY BACKGROUND.jpg';
-  var cameraImpactUntil = 0;
-  var cameraImpactStrength = 0;
   var lifecycleCeremony = null;
   var lifecycleCeremonyStartedAt = 0;
   var lifecycleCeremonyUntil = 0;
   var lifecycleCeremonyTimer = 0;
-  var utcHour = new Date().getUTCHours();
-  var companionGreeting = '';
-  var companionGreetingUntil = 0;
-  var companionGreetingTimer = 0;
   var companionTapSequence = 0;
-  var companionSeedSpecies = null;
-  var companionSeedTemperament = null;
-  var companionSeedMarking = null;
-  var companionSeedName = null;
-  var companionSeedValue = 0;
-  var combatSnapshot = null;
-  var combatScreen = '';
-  var COMBAT_RIVAL_COLORS = ['#ff6d6d', '#ff954f', '#f6a7ff', '#61f5ff', '#f4ff65', '#c99cff'];
-  var COMBAT_ARENA_SPECIAL_MAX = 3;
-  var COMBAT_PRESENTATION_FRAME = {
-    active: false, mode: '', title: '', status: '', opponentName: '', round: 0, maxRounds: 0,
-    playerValue: 0, opponentValue: 0, maxValue: 100, playerSpecial: 0, opponentSpecial: 0,
-    playerCardKey: '', opponentCardKey: '', rivalColor: '#ff6d6d', source: null,
-  };
   var noticesBusy = false;
   var lastPassiveRefreshAt = 0;
   var reducedMotion = Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -673,16 +652,8 @@
     if (options.activePetRequired) return 'ACTIVE PET REQUIRED';
     if (options.resourceRequired) return 'NOT ENOUGH RESOURCE';
     if (options.cooldown) return cooldownDisplay(options.cooldown);
-    if (options.futureExpansion) return 'FUTURE EXPANSION';
     if (options.disabled) return 'LOCKED';
     return 'Ready now';
-  }
-
-  function availabilityDetail(options) {
-    options = options || {};
-    var label = availabilityLabel(options);
-    var detail = options.detail ? String(options.detail) : '';
-    return detail ? label + ' // ' + detail : label;
   }
 
   function availabilityDetailMarkup(options) {
@@ -697,7 +668,6 @@
     return Boolean(
       options.detail
       || options.disabled
-      || options.futureExpansion
       || options.authoritySyncing
       || options.activePetRequired
       || options.eggRequired
@@ -824,11 +794,8 @@
     evolution: ['✦', 'Check requirements and evolve when you are ready.'],
     'rare-morph': ['✧', 'Inspect your hidden signal and morph eligibility.'],
     faction: ['⚑', 'View your faction and its gameplay perk.'],
-    prestige: ['◇', 'Planned for a future season; not available now.'],
-    sanctuary: ['◈', 'Check sanctuary information and future availability.'],
     tracks: ['▥', 'Follow specialist XP and progression.'],
-    'future-systems': ['⌁', 'Preview planned systems; these are not playable yet.'],
-    features: ['▦', 'Check which features are open, locked or planned.'],
+    features: ['▦', 'Check which playable features are open or locked.'],
     alerts: ['◌', 'Choose which game notifications you receive.'],
     season: ['★', 'Track season XP and collect unlocked tier rewards.'],
     leaderboard: ['♜', 'See current season rankings and the full leaderboard.'],
@@ -846,32 +813,6 @@
 
   function rememberPanels() {
     screen.querySelectorAll('details[data-panel-key]').forEach(function (entry) { panelOpenState[entry.dataset.panelKey] = entry.open; });
-  }
-
-  function recommendedFocus(next) {
-    if (window.MoonpetPlayOptions) return window.MoonpetPlayOptions.route(next).focus;
-    var key = String(next && next.key || '') + ' ' + String(next && next.action || '') + ' ' + String(next && next.callback_data || '');
-    if (/feed|sleep|clean|play|health/.test(key)) return 'care';
-    if (/activity/.test(key)) return 'timed-activity';
-    if (/mission/.test(key)) return 'missions';
-    if (/evol/.test(key)) return 'evolution';
-    if (/season/.test(key)) return 'season';
-    if (/achievement|trait/.test(key)) return 'achievements';
-    if (/weekly.boss/.test(key)) return 'weekly-boss';
-    if (/seasonal.boss/.test(key)) return 'seasonal-boss';
-    if (/district/.test(key)) return 'districts';
-    if (/event.chain/.test(key)) return 'story-chains';
-    if (/arena/.test(key)) return 'arena';
-    if (/kaiju/.test(key)) return 'kaiju';
-    if (/run|adventure/.test(key)) return 'moon-run';
-    if (/job|work/.test(key)) return 'jobs';
-    if (/bount/.test(key)) return 'bounties';
-    if (/expedition/.test(key)) return 'expedition';
-    if (/market/.test(key)) return 'market';
-    if (/cosmetic/.test(key)) return 'style-lab';
-    if (/gear|upgrade/.test(key)) return 'equipment';
-    if (/shop|buy/.test(key)) return 'shop';
-    return 'care';
   }
 
   function meter(label, value, invert) {
@@ -923,7 +864,7 @@
       '<div class="guide-step"><strong>3 // KEEP NEEDS STABLE</strong>Feed, play, clean and rest. Check energy, hunger and cooldowns before training or starting a demanding route. A timed activity can lock some actions until you claim or cancel it. Care and daily routines build Pet XP, specialist XP, personality, aptitudes and equipment mastery. Use Play Now to find an available route while care cools down.</div>' +
       '<div class="guide-step"><strong>4 // FOLLOW THE ROUTE</strong>HOME recommends the next move. In MISSIONS, complete the official daily objectives to earn a Growth Mark at the displayed target. Finish every Weekly Journey objective to earn a Weekly Crest. Keep claiming completed missions, achievements and the Daily Cache; the all-missions daily bonus is a separate claim. Daily resets use UTC. Each panel shows its own reset and requirements.</div>' +
       '<div class="guide-step"><strong>5 // BUILD YOUR LOADOUT</strong>ECONOMY contains equipment, materials, bounties, market offers, inventory and upgrades. Equip an item to use its bonus; eligible actions build mastery. Set a crafting goal, follow its material routes and craft or use the result. Check storage space before buying a bundle. Districts show an objective, opponent and route before you commit. ' + combatGuideCopy + ' Moon Run reaches 100 rooms—extract to bank unbanked rewards.</div>' +
-      '<div class="guide-step"><strong>6 // IDENTITY AND ROADMAP</strong>The canonical identity name is revealed when server-authoritative Stage 3 begins. PROFILE tracks evolution and season rewards. Growth Marks, Weekly Crests and the displayed season-age requirements advance your Season Journey. Pet level and evolution are separate; use the live requirements shown for your selected pet. Advanced Traits, Breeding, Lineage, Fusion, Sanctuary and Prestige remain coming soon.</div>' +
+      '<div class="guide-step"><strong>6 // IDENTITY AND PROGRESSION</strong>The canonical identity name is revealed when server-authoritative Stage 3 begins. PROFILE tracks evolution and season rewards. Growth Marks, Weekly Crests and the displayed season-age requirements advance your Season Journey. Pet level and evolution are separate; use the live requirements shown for your selected pet.</div>' +
       '<div class="guide-step"><strong>CANVAS CONTROLS</strong>The cyan speaker toggles game audio, the purple radio plays or stops GraffPUNKS Radio, and the amber arrows refresh your live save. They sit at the top right of the canvas. Radio starts from your tap; tap it again to stop, or retry after a connection error. Reduced-motion mode keeps the buttons steady.</div>' +
       '<div class="guide-step"><strong>CURRENCIES</strong>Pet XP raises level. Moon Gold buys common upgrades. Gems unlock premium routes. Style unlocks cosmetics. Energy powers demanding actions.</div>' +
       '<div class="guide-step"><strong>CONTINUING CONTRACTS</strong>After hatching, open MISSIONS or Play Now. Pick a quest, build, difficulty and route length. Standard routes have six rooms and two upgrade drafts; long routes have ten rooms and four drafts. Later rooms get harder, and long routes have higher targets. Complete the whole route to earn rank. New quests continue without cooldowns or pet energy costs. The first three successful contracts per account each UTC day qualify for up to 20 Pet XP each, within your normal XP cap, for either length. Every choice is saved online. Contract rank is separate from pet level, Daily Journey and leaderboards.</div>' +
@@ -1158,7 +1099,6 @@
     entryDetail = String(entryDetail || '');
     return {
       disabled: true,
-      futureExpansion: true,
       eggRequired: entryDetail.indexOf('HATCHED') >= 0,
       activePetRequired: entryDetail.indexOf('ACTIVE') >= 0,
       authoritySyncing: entryDetail.indexOf('SYNC') >= 0,
@@ -2517,7 +2457,9 @@
       return '<div class="line ' + (set.pieces >= 2 ? 'complete' : '') + '">' + escapeHtml(words(set.key)) + ' // EQUIPPED ' + number(set.pieces) + '/' + number(set.total_pieces) + ' // OWNED ' + number(set.owned_pieces) + '</div>' +
         '<div class="line muted">' + (bonuses ? 'ACTIVE ' + escapeHtml(bonuses) : 'MISSING ' + escapeHtml((set.missing || []).map(words).join(' / ') || 'EQUIP OWNED SET PIECES')) + '</div>';
     }).join('');
-    var cosmetics = (live.cosmetics || []).map(function (item) {
+    var cosmetics = (live.cosmetics || []).filter(function (item) {
+      return ['profile_frame', 'victory_pose', 'run_trail'].includes(item.key);
+    }).map(function (item) {
       var loadout = state.style_loadout || {}, equipped = (loadout.equipped || []).includes(item.key);
       return '<div class="line">' + escapeHtml(words(item.key)) + '</div><div class="line muted">' + escapeHtml((loadout.details || {})[item.key] || '') + '</div>' + (item.unlocked
         ? button(equipped ? 'UNEQUIP FREE' : 'EQUIP FREE', 'style_equip', { pet_id: state.pet.pet_id, cosmetic_key: item.key, enabled: !equipped }, { disabled: loadout.available !== true, detail: loadout.available ? 'Owned. No currency cost.' : 'Style state unavailable. Refresh before switching.' })
@@ -2531,7 +2473,7 @@
       panel('DAILY BOUNTIES', '<div class="line muted">Four account-wide targets per UTC day. Only accepted actions count. The Energy Drink, Dance and Cuddles care buttons do not count. New targets arrive at 00:00 UTC. Contracts remain available between resets.</div>' + (bounties || '<div class="line muted">NO BOUNTIES.</div>'), 'bounties') +
       panel('CRYSTAL EXPEDITIONS // CHOOSE A DESTINATION', expeditionBody, 'expedition') +
       panel('MOON MARKET', '<div class="line muted">Paid bundles must fit in full. Use items or spend materials before buying when storage is full.</div><div class="button-grid one">' + offers + '</div><div class="button-grid">' + routeButton('OPEN BAG', { screen: 'economy', focus: 'inventory' }) + routeButton('OPEN CRAFTING', { screen: 'economy', focus: 'crafting' }) + '</div>', 'market') +
-      panel('PERMANENT SHOP', '<div class="button-grid">' + shop + '</div>', 'shop') + panel('STYLE LAB // EQUIP YOUR LOOK', '<div class="line muted">Unlock once, then equip or remove each style free for this pet. Cosmetics change the canvas presentation, not stats. Existing owned styles work immediately. A Rename Badge adds a nameplate; callsign editing stays free.</div><div class="button-grid one">' + routeButton('EDIT CALLSIGN', { screen: 'profile', focus: 'callsign' }, 'Use the existing name control; no badge purchase is required.') + '</div><div class="button-grid">' + cosmetics + '</div>', 'style-lab') +
+      panel('PERMANENT SHOP', '<div class="button-grid">' + shop + '</div>', 'shop') + panel('STYLE LAB // EQUIP YOUR LOOK', '<div class="line muted">Unlock once, then equip or remove each style free for this pet. Cosmetics change the canvas presentation, not stats. Existing owned styles work immediately. Callsign editing stays free in Profile.</div><div class="button-grid one">' + routeButton('EDIT CALLSIGN', { screen: 'profile', focus: 'callsign' }, 'Use the existing name control; no badge purchase is required.') + '</div><div class="button-grid">' + cosmetics + '</div>', 'style-lab') +
       panel('INVENTORY', inventory || '<div class="line muted">BAG EMPTY.</div>', 'inventory') +
       panel('MOON GOLD TRADE', '<div class="line muted">Game currency only. A loss spends the selected stake. Trades share a five-minute account cooldown.</div><div class="button-grid three">' + (state.trade && state.trade.offers || []).map(function (offer) { return button(offer.wager + ' GOLD', 'trade', { wager: offer.wager }, { disabled: !offer.available, cooldown: state.trade.cooldown, resourceRequired: !offer.affordable, detail: offer.affordable ? '' : 'Requires ' + number(offer.wager) + ' Moon Gold.' }); }).join('') + '</div>', 'trade');
   }
@@ -2588,55 +2530,13 @@
       'CARE / EVENT / ADVENTURE / COMBAT // ' + number(memory.care_actions) + ' / ' + number(memory.event_actions) + ' / ' + number(memory.adventure_actions) + ' / ' + number(memory.combat_actions),
     ].filter(Boolean).map(function (line) { return '<div class="line">' + escapeHtml(line) + '</div>'; }).join('');
     var milestones = (memory.milestones || []).map(function (milestone) { return '<div class="line complete">◆ ' + escapeHtml(words(milestone)) + '</div>'; }).join('');
-    // TEST-EXPORT: futureSystemTitles:start
-    var futureSystemTitles = {
-      breeding: 'Breeding',
-      traits: 'Advanced Traits',
-      sanctuary: 'Sanctuary',
-      lineage: 'Lineage',
-      fusion: 'Fusion',
-      prestige: 'Prestige',
-    };
-    // TEST-EXPORT: futureSystemTitles:end
-    var capabilitySystems = state.capabilities_version === 1 && state.capabilities && state.capabilities.systems && typeof state.capabilities.systems === 'object'
-      ? state.capabilities.systems
-      : {};
-    var futureSystems = Object.keys(futureSystemTitles).map(function (key) {
-      var system = capabilitySystems[key] || {};
-      var status = String(system.state || 'COMING_SOON').toUpperCase();
-      var message = system.message || 'Future expansion content. Not available yet.';
-      return {
-        key: key,
-        title: futureSystemTitles[key],
-        status: ['LOCKED', 'COMING_SOON', 'AVAILABLE'].includes(status) ? status : 'COMING_SOON',
-        detail: message,
-      };
-    });
-    var futureSystemRows = futureSystems.filter(function (system) {
-      return system.key !== 'sanctuary' && system.key !== 'prestige';
-    }).map(function (system) {
-      return '<div class="line locked">[ROADMAP] ' + escapeHtml(system.title || system.key || 'Future System') + '</div><div class="line muted">' + escapeHtml(system.detail || '') + '</div>';
-    }).join('');
-    function futureSystemByKey(key, fallbackStatus) {
-      return futureSystems.find(function (system) { return system.key === key; }) || {
-        key: key,
-        status: fallbackStatus || 'LOCKED',
-        detail: fallbackStatus === 'COMING_SOON' ? 'Future expansion content. Not available yet.' : 'Current beta requirements not met.',
-      };
-    }
-    function futureSystemPanelCopy(system) {
-      var status = String(system.status || 'LOCKED').toUpperCase();
-      if (status === 'COMING_SOON') return '<div class="line locked">FUTURE EXPANSION CONTENT.</div><div class="line muted">NOT AVAILABLE YET.</div>';
-      if (status === 'AVAILABLE') return '<div class="line complete">AVAILABLE.</div><div class="line muted">' + escapeHtml(system.detail || '') + '</div>';
-      return '<div class="line locked">LOCKED.</div><div class="line muted">' + escapeHtml(system.detail || 'Current beta requirements not met.') + '</div>';
-    }
-    var featureRows = (guidance.features || []).map(function (feature) {
+    var featureRows = (guidance.features || []).filter(function (feature) {
+      return !['breeding', 'traits', 'sanctuary', 'lineage', 'fusion', 'prestige'].includes(feature.key);
+    }).map(function (feature) {
       var available = feature.available === true;
       var detail = feature.detail || '';
       return '<div class="line ' + (available ? 'complete' : 'locked') + '">' + (available ? '[ONLINE] ' : '[LOCKED] ') + escapeHtml(feature.title) + '</div><div class="line muted">' + escapeHtml(detail) + '</div>';
     }).join('');
-    var sanctuarySystem = futureSystemByKey('sanctuary');
-    var sanctuaryPanel = futureSystemPanelCopy(sanctuarySystem);
     var lifecycle = state.lifecycle || {};
     var rare = lifecycle.rare || {};
     var innate = (lifecycle.innate_traits || []).map(function (trait) { return '<div class="line complete">◆ ' + escapeHtml(words(trait)) + '</div>'; }).join('');
@@ -2652,8 +2552,7 @@
       panel('CALLSIGN', callsignPanel, 'callsign') +
       panel('SEASON FINALE', '<div class="button-grid one">' + routeButton('OPEN SEASON FINALE', { screen: 'missions', focus: 'season-finale' }, 'Check your unlocks, resume a saved fight or collect a victory reward.') + '</div>', 'finale-link') +
       panel('EVOLUTION', evoHtml, 'evolution') + panel('FACTION PERK', '<div class="line complete">' + escapeHtml(words(faction.key || 'unaligned')) + '</div><div class="line muted">' + escapeHtml(faction.bonus ? words(faction.bonus.system) + ' // ' + costText(faction.bonus.effect) : 'JOIN A FACTION TO ACTIVATE A GAMEPLAY BONUS') + '</div>', 'faction') +
-      panel('PRESTIGE // FUTURE SEASON', futureSystemPanelCopy(futureSystemByKey('prestige', 'COMING_SOON')), 'prestige') +
-      panel('MOONPET SANCTUARY // FUTURE SEASON', sanctuaryPanel, 'sanctuary') + panel('SPECIALIST TRACKS', tracks, 'tracks') + panel('ROADMAP // FUTURE SEASONS', futureSystemRows, 'future-systems') + panel('UNLOCK DIRECTORY', featureRows, 'features') + panel('ALERT CONTROL', notificationPanel, 'alerts') + panel('SEASON // ' + (season.key || ''), '<div class="line">' + number(season.xp) + ' SEASON XP</div>' + tiers, 'season') + panel('TOP MOONPETS // CURRENT SEASON', (leaders || '<div class="line muted">NO RANKS LOADED.</div>') + '<div class="button-grid one"><button type="button" class="terminal-button" data-utility="leaderboard">OPEN FULL LEADERBOARD</button></div>', 'leaderboard');
+      panel('SPECIALIST TRACKS', tracks, 'tracks') + panel('UNLOCK DIRECTORY', featureRows, 'features') + panel('ALERT CONTROL', notificationPanel, 'alerts') + panel('SEASON // ' + (season.key || ''), '<div class="line">' + number(season.xp) + ' SEASON XP</div>' + tiers, 'season') + panel('TOP MOONPETS // CURRENT SEASON', (leaders || '<div class="line muted">NO RANKS LOADED.</div>') + '<div class="button-grid one"><button type="button" class="terminal-button" data-utility="leaderboard">OPEN FULL LEADERBOARD</button></div>', 'leaderboard');
   }
 
   var screens = { home: renderHome, missions: renderMissions, explore: renderExplore, work: renderWork, economy: renderEconomy, profile: renderProfile };
@@ -2921,39 +2820,6 @@
     return messages[String(reason || '')] || words(reason);
   }
 
-  function compactFeedback(value, limit) {
-    var text = String(value == null ? '' : value).replace(/\s+/g, ' ').trim();
-    return text.length > limit ? text.slice(0, Math.max(0, limit - 3)).trim() + '...' : text;
-  }
-
-  function actionFeedback(result, beforeState, afterState) {
-    if (!result) return { tone: 'danger', lines: ['Response unavailable'], reaction: '' };
-    var lines = [result.accepted ? 'Complete' : 'Not available'];
-    if (!result.accepted) {
-      var feedbackReasonCopy = rejectionMessage(result.reason);
-      if (feedbackReasonCopy) lines.push(compactFeedback(feedbackReasonCopy, 34));
-      if (result.duplicate && lines.length < 3) lines.push('DUPLICATE BLOCKED');
-      return { tone: 'danger', lines: lines.slice(0, 3), reaction: compactFeedback(result.reaction, 24) };
-    }
-    journeyActionProgressLines(beforeState, afterState, result).some(function (line) {
-      if (lines.length >= 3) return true;
-      lines.push(compactFeedback(line, 34));
-      return lines.length >= 3;
-    });
-    var terminalResult = result.battle && (result.battle.outcome || result.battle.result) || result.match && (result.match.outcome || result.match.result) || result.resolved && result.resolved.result;
-    if (terminalResult) lines.push('OUTCOME ' + words(String(terminalResult).replace('player1', 'you').replace('player2', 'opponent')));
-    if (result.damage) lines.push('DAMAGE ' + number(result.damage));
-    if (result.pet_xp_awarded) lines.push('+' + number(result.pet_xp_awarded) + ' PET XP');
-    var reward = resultRewardMap(result);
-    Object.entries(reward).some(function (entry) {
-      if (lines.length >= 3) return true;
-      if (Number(entry[1]) > 0 && typeof entry[1] !== 'object' && !(entry[0] === 'pet_xp' && result.pet_xp_awarded != null)) lines.push('+' + number(entry[1]) + ' ' + words(entry[0]));
-      return lines.length >= 3;
-    });
-    var resultCopy = result.result_copy || result.outcome && result.outcome.copy;
-    if (lines.length < 3 && resultCopy) lines.push(compactFeedback(resultCopy, 34));
-    return { tone: 'success', lines: lines.slice(0, 3), reaction: compactFeedback(result.reaction, 24) };
-  }
   // TEST-EXPORT: actionResultFeedback:end
 
   // TEST-EXPORT: lifecycleDirector:start
@@ -3115,25 +2981,18 @@
     if (/run|adventure|expedition|explore|district/.test(key)) return 'travel';
     if (/job|activity|work/.test(key)) return 'work';
     if (/buy|market|equipment|cosmetic|gear/.test(key)) return 'equip';
-    if (/evolve|prestige/.test(key)) return 'evolve';
+    if (/evolve/.test(key)) return 'evolve';
     if (/trade/.test(key)) return 'trade';
     if (/claim|chest|bounty|season|reward|achievement|win/.test(key)) return 'celebrate';
     if (/talk|interact/.test(key)) return 'interact';
     return 'interact';
   }
 
-  var CAMERA_IMPACT_STRENGTH = {
-    feed: 1, play: 2, clean: 1, sleep: 0, train: 3, fight: 3, dance: 2, victory: 2, battle: 6, travel: 2,
-    work: 2, equip: 2, evolve: 5, trade: 2, celebrate: 4, interact: 1, greet: 1, blocked: 4,
-  };
-
   function animateAction(action, accepted, duration, payload) {
     animationMode = accepted === false ? 'blocked' : actionAnimationFamily(action, payload);
     actionSequence += 1;
     var animationDuration = duration || 2400;
     actionStartedAt = performance.now();
-    cameraImpactStrength = reducedMotion ? 0 : CAMERA_IMPACT_STRENGTH[animationMode] || 0;
-    cameraImpactUntil = actionStartedAt + Math.min(animationDuration, 900);
     animationUntil = sleepLatched && animationMode === 'sleep' ? Number.POSITIVE_INFINITY : actionStartedAt + animationDuration;
     if (reducedMotion) {
       window.clearTimeout(reducedMotionAnimationTimer);
@@ -3365,38 +3224,18 @@
     runAction(target.dataset.action, payload, target);
   });
 
-  function companionGreetingCopy(pet, lifecycle) {
-    var mood = petMood(pet);
-    if (lifecycle && lifecycle.phase === 'egg') return 'SIGNAL RECEIVED';
-    if (mood === 'hurt') return 'STAY WITH ME';
-    if (mood === 'tired') return 'FIVE MORE MINUTES';
-    if (mood === 'hungry') return 'YOU BROUGHT SNACKS?';
-    if (mood === 'scruffy') return 'DO NOT JUDGE';
-    if (mood === 'happy') return 'WE RUN THIS CITY';
-    return temperamentCompanionHabit(lifecycle && lifecycle.temperament) === 'swagger' ? 'WHAT IS THE MOVE?' : 'GOOD TO SEE YOU';
-  }
-
   function companionGreetingVariant(pet) {
     return pet ? 'front_wave' : 'basic';
   }
 
   function greetCompanion() {
     var now = performance.now();
-    if (busy || !state || !state.adopted || animationUntil > now || COMBAT_PRESENTATION_FRAME.active || lifecycleCeremonyActive(now)) return;
+    if (busy || !state || !state.adopted || animationUntil > now || companionCombatActive(state, activeScreen) || lifecycleCeremonyActive(now)) return;
     companionTapSequence += 1;
-    companionGreeting = compactFeedback(companionGreetingCopy(state.pet, state.lifecycle || {}), 24);
-    companionGreetingUntil = now + 2600;
-    window.clearTimeout(companionGreetingTimer);
     var greetingVariant = companionGreetingVariant(state.pet);
     animateAction('greet', true, greetingVariant === 'front_wave' ? 2200 : 1400, { source: 'pet_tap', sequence: companionTapSequence, variant: greetingVariant });
     haptic('light');
-    if (reducedMotion) {
-      companionGreetingTimer = window.setTimeout(function () {
-        companionGreeting = '';
-        companionGreetingUntil = 0;
-        drawWorld(performance.now());
-      }, 2620);
-    }
+
   }
 
   canvas.addEventListener('moonpet:greet', greetCompanion);
@@ -3545,126 +3384,17 @@
     ctx.fillRect(Math.round(x), Math.round(y), Math.round(width), Math.round(height));
   }
 
-  function petMood(pet) {
-    if (!pet) return 'curious';
-    if (Number(pet.health) < 35) return 'hurt';
-    if (Number(pet.energy) < 20) return 'tired';
-    if (Number(pet.hunger) > 78) return 'hungry';
-    if (Number(pet.cleanliness) < 30) return 'scruffy';
-    if (Number(pet.happiness) > 78) return 'happy';
-    return 'curious';
-  }
-
-  function temperamentCompanionHabit(temperament) {
-    var key = String(temperament || '').toLowerCase();
-    if (/bold|brave|fierce|confident/.test(key)) return 'swagger';
-    if (/rhythmic|play|wild|chaos|energetic/.test(key)) return 'fidget';
-    if (/calm|soft|patient|loyal/.test(key)) return 'chill';
-    if (/social|curious|alert|observant/.test(key)) return 'listen';
-    return 'listen';
-  }
-
-  // TEST-EXPORT: combatDirector:start
-  function clearCombatPresentation() {
-    COMBAT_PRESENTATION_FRAME.active = false;
-    COMBAT_PRESENTATION_FRAME.mode = '';
-    COMBAT_PRESENTATION_FRAME.title = '';
-    COMBAT_PRESENTATION_FRAME.status = '';
-    COMBAT_PRESENTATION_FRAME.opponentName = '';
-    COMBAT_PRESENTATION_FRAME.round = 0;
-    COMBAT_PRESENTATION_FRAME.maxRounds = 0;
-    COMBAT_PRESENTATION_FRAME.playerValue = 0;
-    COMBAT_PRESENTATION_FRAME.opponentValue = 0;
-    COMBAT_PRESENTATION_FRAME.maxValue = 100;
-    COMBAT_PRESENTATION_FRAME.playerSpecial = 0;
-    COMBAT_PRESENTATION_FRAME.opponentSpecial = 0;
-    COMBAT_PRESENTATION_FRAME.playerCardKey = '';
-    COMBAT_PRESENTATION_FRAME.opponentCardKey = '';
-    COMBAT_PRESENTATION_FRAME.rivalColor = '#ff6d6d';
-    COMBAT_PRESENTATION_FRAME.source = null;
-    return COMBAT_PRESENTATION_FRAME;
-  }
-
-  function snapshotHasCombatUnlocked(snapshot) {
-    var combat = combatCapability(snapshot);
-    return combat.state === 'AVAILABLE' && combat.unlocked === true;
-  }
-
-  function snapshotHasSystemUnlocked(snapshot, key) {
-    return hasSystemUnlocked(key, snapshot);
-  }
-
-  function updateCombatPresentation(snapshot) {
-    if (snapshot === combatSnapshot && activeScreen === combatScreen) return COMBAT_PRESENTATION_FRAME;
-    combatSnapshot = snapshot;
-    combatScreen = activeScreen;
-    clearCombatPresentation();
-    if (activeScreen !== 'explore' || !snapshot || !snapshot.adopted) return COMBAT_PRESENTATION_FRAME;
+  // TEST-EXPORT: companionCombatActive:start
+  function companionCombatActive(snapshot, screenKey) {
+    if (screenKey !== 'explore' || !snapshot || !snapshot.adopted) return false;
     var arena = snapshot.arena;
-    if (arena && snapshotHasSystemUnlocked(snapshot, 'arena') && arena.status !== 'completed' && !arena.outcome) {
-      COMBAT_PRESENTATION_FRAME.active = true;
-      COMBAT_PRESENTATION_FRAME.mode = 'arena';
-      COMBAT_PRESENTATION_FRAME.title = arena.mode === 'multiplayer' ? 'PLAYER ARENA' : 'CRT ARENA';
-      COMBAT_PRESENTATION_FRAME.status = arena.status === 'readying'
-        ? arena.ready ? 'LOCKED IN // WAITING' : 'MATCH FOUND // READY UP'
-        : 'ROUND ' + Number(arena.current_round || 1) + '/' + Number(arena.max_rounds || 5) + ' LIVE';
-      COMBAT_PRESENTATION_FRAME.opponentName = String(arena.opponent && arena.opponent.pet_name || 'RIVAL');
-      COMBAT_PRESENTATION_FRAME.rivalColor = combatRivalColor(COMBAT_PRESENTATION_FRAME);
-      COMBAT_PRESENTATION_FRAME.round = Number(arena.current_round || 1);
-      COMBAT_PRESENTATION_FRAME.maxRounds = Number(arena.max_rounds || 5);
-      COMBAT_PRESENTATION_FRAME.playerValue = Math.max(0, Number(arena.player_hp || 0));
-      COMBAT_PRESENTATION_FRAME.opponentValue = Math.max(0, Number(arena.opponent_hp || 0));
-      COMBAT_PRESENTATION_FRAME.maxValue = Math.max(100, COMBAT_PRESENTATION_FRAME.playerValue, COMBAT_PRESENTATION_FRAME.opponentValue);
-      COMBAT_PRESENTATION_FRAME.playerSpecial = Math.max(0, Number(arena.player_special || 0));
-      COMBAT_PRESENTATION_FRAME.opponentSpecial = Math.max(0, Number(arena.opponent_special || 0));
-      COMBAT_PRESENTATION_FRAME.source = arena;
-      return COMBAT_PRESENTATION_FRAME;
-    }
+    if (arena && hasSystemUnlocked('arena', snapshot) && arena.status !== 'completed' && !arena.outcome) return true;
     var kaiju = snapshot.kaiju && snapshot.kaiju.match;
-    if (kaiju && snapshotHasSystemUnlocked(snapshot, 'kaiju') && kaiju.status !== 'completed' && !kaiju.outcome) {
-      COMBAT_PRESENTATION_FRAME.active = true;
-      COMBAT_PRESENTATION_FRAME.mode = 'kaiju';
-      COMBAT_PRESENTATION_FRAME.title = kaiju.mode === 'group' ? 'PLAYER KAIJU DUEL' : 'CRT KAIJU DUEL';
-      COMBAT_PRESENTATION_FRAME.status = kaiju.own_card_locked
-        ? kaiju.opponent_card_locked ? 'BOTH CARDS LOCKED' : 'YOUR CARD LOCKED // WAIT'
-        : 'SELECT YOUR CODE CARD';
-      COMBAT_PRESENTATION_FRAME.opponentName = kaiju.mode === 'group' ? 'RIVAL CARD' : 'CRT CARD';
-      COMBAT_PRESENTATION_FRAME.rivalColor = combatRivalColor(COMBAT_PRESENTATION_FRAME);
-      COMBAT_PRESENTATION_FRAME.playerValue = kaiju.own_card_locked ? 1 : 0;
-      COMBAT_PRESENTATION_FRAME.opponentValue = kaiju.opponent_card_locked ? 1 : 0;
-      COMBAT_PRESENTATION_FRAME.maxValue = 1;
-      COMBAT_PRESENTATION_FRAME.playerCardKey = String(kaiju.own_card_key || '');
-      COMBAT_PRESENTATION_FRAME.opponentCardKey = String(kaiju.opponent_card_key || '');
-      COMBAT_PRESENTATION_FRAME.source = kaiju;
-      return COMBAT_PRESENTATION_FRAME;
-    }
+    if (kaiju && hasSystemUnlocked('kaiju', snapshot) && kaiju.status !== 'completed' && !kaiju.outcome) return true;
     var run = snapshot.run;
-    if (run && ['active', 'extractable'].includes(String(run.status || 'active'))) {
-      var depth = Number(run.current_room != null ? run.current_room : run.depth || 0);
-      var maxDepth = Math.max(1, Number(run.max_room || run.max_depth || 1));
-      COMBAT_PRESENTATION_FRAME.active = true;
-      COMBAT_PRESENTATION_FRAME.mode = 'run';
-      COMBAT_PRESENTATION_FRAME.title = String(run.daily ? 'DAILY MOON RUN' : 'MOON RUN');
-      COMBAT_PRESENTATION_FRAME.status = 'DEPTH ' + depth + '/' + maxDepth + ' // RISK ' + Number(run.risk_level || 1);
-      COMBAT_PRESENTATION_FRAME.opponentName = 'ALLEY THREAT';
-      COMBAT_PRESENTATION_FRAME.rivalColor = combatRivalColor(COMBAT_PRESENTATION_FRAME);
-      COMBAT_PRESENTATION_FRAME.playerValue = depth;
-      COMBAT_PRESENTATION_FRAME.opponentValue = Math.max(0, maxDepth - depth);
-      COMBAT_PRESENTATION_FRAME.maxValue = maxDepth;
-      COMBAT_PRESENTATION_FRAME.source = run;
-    }
-    return COMBAT_PRESENTATION_FRAME;
+    return Boolean(run && ['active', 'extractable'].includes(String(run.status || 'active')));
   }
-
-  // TEST-EXPORT: combatDirector:end
-  function drawPixelText(text, x, y, color, align) {
-    ctx.save();
-    ctx.shadowColor = color; ctx.shadowBlur = 4;
-    ctx.fillStyle = color; ctx.font = 'bold 8px "Courier New", monospace'; ctx.textAlign = align || 'left';
-    ctx.fillText(String(text), x, y);
-    ctx.restore();
-  }
-
+  // TEST-EXPORT: companionCombatActive:end
   function drawSelectedBotSprite(time, mode, active, x, y, scale) {
     if (!botArtModeEnabled || !botArtRendererReady || !window.MoonpetBotArtRenderer) return false;
     var drew = window.MoonpetBotArtRenderer.renderMoonpetBot(ctx, mode, x, y, scale, time, {
@@ -3694,118 +3424,7 @@
     }
   }
 
-  var WORLD_SCENES = {
-    home: { label: 'MOONBLOCK ROOFTOP', sky: '#03060b', haze: '#10251c', wall: '#102117', mortar: '#285b36', neon: '#a9ff9a', accent: '#61f5ff', leftTag: 'MOON', rightTag: 'HOME' },
-    missions: { label: 'QUEST UNDERPASS', sky: '#090516', haze: '#241137', wall: '#21152c', mortar: '#5f3473', neon: '#f6a7ff', accent: '#f4ff65', leftTag: 'QUEST', rightTag: 'XP' },
-    explore: { label: 'NEON RUN ALLEY', sky: '#02081a', haze: '#092b42', wall: '#0d2631', mortar: '#17607a', neon: '#61f5ff', accent: '#ff6d6d', leftTag: 'RUN', rightTag: 'BOSS' },
-    work: { label: 'SCRAP YARD 85', sky: '#100805', haze: '#34200d', wall: '#2a2014', mortar: '#70522b', neon: '#ffcf68', accent: '#a9ff9a', leftTag: 'WORK', rightTag: '85' },
-    economy: { label: 'CHAIN MARKET', sky: '#080414', haze: '#22103d', wall: '#211433', mortar: '#603d80', neon: '#f4ff65', accent: '#61f5ff', leftTag: 'GEMS', rightTag: 'TRADE' },
-    profile: { label: 'ALL-CITY HEIGHTS', sky: '#08030d', haze: '#32102a', wall: '#271325', mortar: '#6d315e', neon: '#ff8bbd', accent: '#f4ff65', leftTag: 'RARE', rightTag: 'CORE' },
-  };
 
-  function companionAmbienceMode(hour) {
-    if (hour < 6) return 'NIGHT SHIFT';
-    if (hour < 9) return 'DAWN SHIFT';
-    if (hour < 18) return 'DAY SHIFT';
-    if (hour < 21) return 'DUSK SHIFT';
-    return 'NIGHT SHIFT';
-  }
-
-  function drawUtcAmbience(scene) {
-    var mode = companionAmbienceMode(utcHour);
-    var tint = mode === 'DAY SHIFT' ? '#f4ff65' : mode === 'DAWN SHIFT' ? '#ff954f' : mode === 'DUSK SHIFT' ? '#f6a7ff' : '#61a8ff';
-    ctx.save();
-    ctx.globalAlpha = mode === 'DAY SHIFT' ? 0.025 : 0.055;
-    ctx.fillStyle = tint;
-    ctx.fillRect(0, 0, 320, 220);
-    ctx.restore();
-    drawPixelText(mode, 314, 11, tint, 'right');
-  }
-
-  function combatRivalColor(combat) {
-    var source = String(combat && combat.opponentName || combat && combat.mode || 'rival');
-    var hash = 0;
-    for (var index = 0; index < source.length; index += 1) hash = (hash * 33 + source.charCodeAt(index)) | 0;
-    return COMBAT_RIVAL_COLORS[Math.abs(hash) % COMBAT_RIVAL_COLORS.length];
-  }
-
-  function drawCombatOpponent(time, scene, combat) {
-    if (!combat || !combat.active) return;
-    var rivalColor = combat.rivalColor || '#ff6d6d';
-    var pulse = reducedMotion ? 0 : Math.round(Math.sin(time / 260) * 2);
-    var x = 235;
-    var y = 160 + pulse;
-    if (combat.mode === 'kaiju') {
-      drawPixelRect(202, 94, 66, 74, '#020704');
-      drawPixelRect(202, 94, 66, 3, rivalColor);
-      drawPixelRect(205, 100, 60, 43, scene.haze);
-      drawPixelRect(218, 111, 34, 27, rivalColor);
-      drawPixelRect(224, 105, 8, 8, rivalColor); drawPixelRect(242, 105, 8, 8, rivalColor);
-      drawPixelRect(225, 119, 5, 7, '#020704'); drawPixelRect(241, 119, 5, 7, '#020704');
-      drawPixelRect(228, 133, 18, 3, '#020704');
-      drawPixelText(combat.opponentValue ? 'LOCKED' : 'HIDDEN', 235, 157, combat.opponentValue ? '#f4ff65' : '#aab5ae', 'center');
-      drawPixelText('VS', 160, 136, '#ff6d6d', 'center');
-      return;
-    }
-    if (combat.mode === 'run') {
-      drawPixelRect(x - 25, y - 43, 50, 48, '#020704');
-      drawPixelRect(x - 19, y - 55, 38, 25, rivalColor);
-      drawPixelRect(x - 25, y - 42, 7, 36, rivalColor); drawPixelRect(x + 18, y - 42, 7, 36, rivalColor);
-      drawPixelRect(x - 14, y - 49, 7, 5, '#f4ff65'); drawPixelRect(x + 7, y - 49, 7, 5, '#f4ff65');
-      drawPixelRect(x - 17, y + 5, 13, 8, '#020704'); drawPixelRect(x + 4, y + 5, 13, 8, '#020704');
-      drawPixelText('THREAT', x, y - 67, rivalColor, 'center');
-      return;
-    }
-    drawPixelRect(x - 27, y - 39, 54, 39, rivalColor);
-    drawPixelRect(x - 21, y - 62, 42, 31, rivalColor);
-    drawPixelRect(x - 25, y - 68, 12, 12, rivalColor); drawPixelRect(x + 13, y - 68, 12, 12, rivalColor);
-    drawPixelRect(x - 13, y - 53, 8, 7, '#020704'); drawPixelRect(x + 5, y - 53, 8, 7, '#020704');
-    drawPixelRect(x - 7, y - 41, 14, 4, '#020704');
-    drawPixelRect(x - 38, y - 31, 11, 8, rivalColor); drawPixelRect(x + 27, y - 31, 11, 8, rivalColor);
-    drawPixelRect(x - 20, y, 14, 10, '#020704'); drawPixelRect(x + 6, y, 14, 10, '#020704');
-    drawPixelText(compactFeedback(combat.opponentName, 15), x, y - 77, rivalColor, 'center');
-  }
-
-  function drawCombatMeter(x, y, width, value, maximum, color, reverse) {
-    var safeMax = Math.max(1, Number(maximum || 1));
-    var fill = Math.round(Math.max(0, Math.min(1, Number(value || 0) / safeMax)) * (width - 4));
-    drawPixelRect(x, y, width, 7, '#020704');
-    drawPixelRect(x, y, width, 1, color);
-    if (fill > 0) drawPixelRect(reverse ? x + width - 2 - fill : x + 2, y + 2, fill, 3, color);
-  }
-
-  var WORLD_BUILDING_HEIGHTS = [32, 51, 39, 66, 44, 58, 35, 70, 48, 61];
-
-  function worldScene() {
-    return WORLD_SCENES[activeScreen] || WORLD_SCENES.home;
-  }
-
-  function drawGraffitiTag(text, x, y, color, align) {
-    ctx.save();
-    ctx.globalAlpha = 0.88;
-    ctx.shadowColor = color;
-    ctx.shadowBlur = 6;
-    ctx.fillStyle = color;
-    ctx.font = 'bold italic 13px "Courier New", monospace';
-    ctx.textAlign = align || 'left';
-    ctx.fillText(text, x, y);
-    ctx.fillRect(align === 'right' ? x - 42 : x, y + 3, 42, 2);
-    ctx.restore();
-  }
-
-  var CAMERA_FRAME = { x: 0, y: 0, zoom: 1 };
-
-  function updateCameraFrame(time) {
-    CAMERA_FRAME.x = 0; CAMERA_FRAME.y = 0; CAMERA_FRAME.zoom = 1;
-    if (botArtModeEnabled) return CAMERA_FRAME;
-    if (reducedMotion || cameraImpactUntil <= time || cameraImpactStrength <= 0) return CAMERA_FRAME;
-    var falloff = Math.max(0, Math.min(1, (cameraImpactUntil - time) / 900));
-    var impact = cameraImpactStrength * falloff;
-    CAMERA_FRAME.x = Math.round(Math.sin((time + actionSequence * 37) / 17) * impact);
-    CAMERA_FRAME.y = Math.round(Math.cos((time + actionSequence * 23) / 23) * impact * 0.55);
-    CAMERA_FRAME.zoom = 1 + Math.min(0.035, impact * 0.004);
-    return CAMERA_FRAME;
-  }
 
   var RETRO_SPACE_LOOP_MS = 20000;
   var RETRO_SPACE_TAU = Math.PI * 2;
@@ -3985,18 +3604,12 @@
       ctx.strokeStyle = '#f6a7ff'; ctx.lineWidth = 2; ctx.strokeRect(3, 3, 314, 214);
       ctx.strokeStyle = '#61f5ff'; ctx.strokeRect(6, 6, 308, 208);
     }
-    if (foreground && equipped.includes('rename_badge')) {
-      ctx.fillStyle = '#081b28'; ctx.fillRect(65, 199, 190, 14);
-      drawPixelText('◆ ' + String(state.pet.callsign || state.pet.pet_name || 'MOONPET').slice(0, 24), 160, 209, '#61f5ff', 'center');
-    }
     ctx.restore();
   }
 
   // TEST-EXPORT: drawWorld:start
   function drawWorld(time) {
     var renderTime = reducedMotion ? performance.now() : time;
-    var camera = updateCameraFrame(renderTime);
-    updateCombatPresentation(state);
 
     if (stageZeroPresentationActive(renderTime)) {
       backgroundArtState = { mode: 'stage0_secret_bot', source: STAGE_ZERO_BACKGROUND_URL };
@@ -4008,9 +3621,6 @@
 
     ctx.save();
     drawEquippedStyles(renderTime, false);
-    ctx.translate(160 + camera.x, 110 + camera.y);
-    ctx.scale(camera.zoom, camera.zoom);
-    ctx.translate(-160, -110);
     drawPet(renderTime);
     ctx.restore();
     drawEquippedStyles(renderTime, true);
@@ -4042,10 +3652,6 @@
     if (animationUntil <= time) {
       animationMode = sleepLatched ? 'sleep' : 'idle';
     }
-    if (companionGreetingUntil > 0 && companionGreetingUntil <= time) {
-      companionGreeting = '';
-      companionGreetingUntil = 0;
-    }
     if (lifecycleCeremony && lifecycleCeremonyUntil <= time) clearLifecycleCeremony(false);
     if (reducedMotion) return;
     if (!skipLowFrame && performanceFrames === 300) {
@@ -4067,14 +3673,6 @@
       try { tg.ready(); tg.expand(); tg.setHeaderColor('#070707'); tg.setBackgroundColor('#070707'); if (tg.disableVerticalSwipes) tg.disableVerticalSwipes(); } catch (_) {}
       syncViewportHeight();
     }
-    setInterval(function () {
-      var now = new Date();
-      var nextUtcHour = now.getUTCHours();
-      if (nextUtcHour !== utcHour) {
-        utcHour = nextUtcHour;
-        if (reducedMotion) drawWorld(performance.now());
-      }
-    }, 1000);
     // Sprite loading must never block the game boot/auth path. Start all renderers in
     // the background and keep drawPet in its safe loading state until bot art is ready.
     var spriteStartup = Promise.allSettled([initBotArtMode()]);

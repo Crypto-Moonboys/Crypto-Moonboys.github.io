@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { DatabaseSync } from 'node:sqlite';
+import { mock } from 'node:test';
 import {
   generateBreedingSeed,
   generateOffspringTraits,
@@ -195,6 +196,8 @@ function baseRequest(pair, requestKey = 'breed-1') {
 }
 
 const TEST_CLOCK = Object.freeze({ now: '2026-08-19T12:00:00.000Z' });
+// Keep the server clock in the fixtures' season, independently of request.now.
+mock.timers.enable({ apis: ['Date'], now: Date.parse(TEST_CLOCK.now) });
 
 const ownershipDb = createDb();
 seedPlayer(ownershipDb, 'owner-a');
@@ -606,4 +609,5 @@ assert.equal(seasonRejected.reason, 'breeding_season_authority_mismatch');
 assert.equal(seasonDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_breeding_receipts`).get().count, 0,
   'Test 6: rejected season authority mismatch writes no receipt');
 
+mock.timers.reset();
 console.log('telegram-pets-breeding-authority.test.mjs passed');

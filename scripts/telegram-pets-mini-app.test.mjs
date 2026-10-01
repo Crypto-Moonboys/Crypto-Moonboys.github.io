@@ -287,17 +287,15 @@ function button(label, action, payload, options) {
     : '';
   return '<button class="terminal-button' + (options && options.danger ? ' danger' : '') + '" type="button" data-action="' + escapeHtml(action) + '" data-payload="' + escapeHtml(JSON.stringify(payload || {})) + '"' + (disabled ? ' disabled' : '') + '>' + escapeHtml(label) + detail + '</button>';
 }
-return { cooldownDisplay, availabilityLabel, availabilityDetail, shouldShowAvailability, cooldownMetadata, activityClaimButtonOptions, button, cooldownRemainingSeconds, cooldownExpiresAt, formatCountdownSeconds, countdownText, countdownMarkup, actionCooldownButtonOptions, setOffset: function (value) { serverClockOffsetMs = value; }, setState: function (value) { state = value; } };`,
+return { cooldownDisplay, availabilityLabel, shouldShowAvailability, cooldownMetadata, activityClaimButtonOptions, button, cooldownRemainingSeconds, cooldownExpiresAt, formatCountdownSeconds, countdownText, countdownMarkup, actionCooldownButtonOptions, setOffset: function (value) { serverClockOffsetMs = value; }, setState: function (value) { state = value; } };`,
 )({});
-assert.equal(actionAvailabilityRuntime.availabilityDetail({ detail: 'CARE ACTION' }), 'Ready now // CARE ACTION',
-  'available action buttons must not show locked copy');
 assert.doesNotMatch(actionAvailabilityRuntime.button('FEED', 'feed'), /Ready now|<small>/,
   'ordinary enabled buttons with no detail must not render noisy Ready now copy');
 assert.match(actionAvailabilityRuntime.button('BUY', 'buy', {}, { disabled: true, resourceRequired: true }), /NOT ENOUGH RESOURCE/,
   'resource-gated buttons must keep explicit not-enough-resource copy');
 assert.match(actionAvailabilityRuntime.button('WAIT', 'wait', {}, { cooldown: { retry_after_seconds: 720 } }), /Available in 12m/,
   'cooldown buttons must keep existing-state cooldown copy');
-assert.match(actionAvailabilityRuntime.button('ARENA', 'arena_start', {}, { disabled: true, futureExpansion: true }), /FUTURE EXPANSION/,
+assert.match(actionAvailabilityRuntime.button('ARENA', 'arena_start', {}, { disabled: true }), /LOCKED/,
   'future expansion buttons must keep future expansion copy');
 assert.match(actionAvailabilityRuntime.button('LOCKED ACTION', 'locked', {}, { disabled: true }), /LOCKED/,
   'generic disabled buttons must keep locked copy');
@@ -328,21 +326,21 @@ assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, eggRe
   'egg/incubation gates must distinguish hatch/incubation state');
 assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, authoritySyncing: true }), 'AUTHORITY SYNCING',
   'authority-syncing buttons must not fake availability');
-assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true, authoritySyncing: true }), 'AUTHORITY SYNCING',
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, authoritySyncing: true }), 'AUTHORITY SYNCING',
   'authority-syncing labels must outrank future-expansion labels when both apply');
-assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true, activePetRequired: true }), 'ACTIVE PET REQUIRED',
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, activePetRequired: true }), 'ACTIVE PET REQUIRED',
   'active-pet gates must outrank future-expansion labels');
-assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true, eggRequired: true }), 'EGG / INCUBATION REQUIRED',
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, eggRequired: true }), 'EGG / INCUBATION REQUIRED',
   'egg/incubation gates must outrank future-expansion labels');
-assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true, activePetRequired: true, eggRequired: true }), 'EGG / INCUBATION REQUIRED',
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, activePetRequired: true, eggRequired: true }), 'EGG / INCUBATION REQUIRED',
   'egg/incubation gates must outrank active-pet gates when both apply');
-assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true, activePetRequired: true }), 'ACTIVE PET REQUIRED',
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, activePetRequired: true }), 'ACTIVE PET REQUIRED',
   'active-pet gates must remain explicit without egg/incubation gating');
-assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true, resourceRequired: true }), 'NOT ENOUGH RESOURCE',
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, resourceRequired: true }), 'NOT ENOUGH RESOURCE',
   'resource gates must outrank future-expansion labels');
-assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true, cooldown: { retry_after_seconds: 720 } }), 'Available in 12m 00s',
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, cooldown: { retry_after_seconds: 720 } }), 'Available in 12m 00s',
   'cooldown labels must outrank future-expansion labels');
-assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true, futureExpansion: true }), 'FUTURE EXPANSION',
+assert.equal(actionAvailabilityRuntime.availabilityLabel({ disabled: true }), 'LOCKED',
   'future expansion copy must not imply live gameplay');
 assert.equal(actionAvailabilityRuntime.cooldownDisplay({ retry_after_seconds: 720 }), 'Available in 12m 00s',
   'cooldown display must use existing retry_after_seconds safely');
@@ -1033,11 +1031,10 @@ const actionResultFeedbackRuntime = new Function(
 function words(value) { return String(value == null ? '' : value).replace(/_/g, ' ').replace(/\\b\\w/g, (letter) => letter.toUpperCase()); }
 ${weeklyJourneyMarkupSource}
 ${journeyActionProgressSource}
-${actionResultFeedbackSource}; return { resultMessage: resultMessage(result, beforeState, afterState), actionFeedback: actionFeedback(result, beforeState, afterState) };`,
+${actionResultFeedbackSource}; return { resultMessage: resultMessage(result, beforeState, afterState) };`,
 );
 const completionFeedback = actionResultFeedbackRuntime({ accepted: true, pet_xp_awarded: 25, rewards: { pet_xp: 25, moon_gold: 50, style_tokens: 1 } }, {}, {});
 assert.equal((completionFeedback.resultMessage.match(/25 pet xp/gi) || []).length, 1, 'daily/finale reward text must not duplicate the actual Pet XP payout');
-assert.equal(completionFeedback.actionFeedback.lines.filter(line => /25 pet xp/i.test(line)).length, 1, 'the compact reward panel must show Pet XP once');
 const cappedCompletionFeedback = actionResultFeedbackRuntime({ accepted: true, pet_xp_awarded: 0, rewards: { pet_xp: 25, moon_gold: 50 } }, {}, {});
 assert.doesNotMatch(cappedCompletionFeedback.resultMessage, /25 pet xp/i, 'actual zero XP must override a nominal reward value');
 const blockedResultFeedback = actionResultFeedbackRuntime({
@@ -1057,18 +1054,12 @@ assert.match(blockedResultFeedback.resultMessage, /Action unavailable - hatch yo
   'blocked action result must show useful reason copy');
 assert.doesNotMatch(blockedResultFeedback.resultMessage, /Daily Journey|GROWTH MARK|\+99|\+50/,
   'rejected action result must not show journey progress or reward language');
-assert.deepEqual(blockedResultFeedback.actionFeedback.lines, ['Not available', 'hatch your Moonpet first.'],
-  'blocked canvas feedback must keep reason-only copy');
 const blockedWithoutReason = actionResultFeedbackRuntime({ accepted: false }, {}, {});
 assert.equal(blockedWithoutReason.resultMessage, 'Action unavailable',
   'rejected action without reason must not render a dangling hyphen');
-assert.deepEqual(blockedWithoutReason.actionFeedback.lines, ['Not available'],
-  'rejected action without reason must not add a blank canvas feedback line');
 const duplicateWithoutReason = actionResultFeedbackRuntime({ accepted: false, duplicate: true }, {}, {});
 assert.equal(duplicateWithoutReason.resultMessage, 'Action unavailable - Duplicate blocked by authority.',
   'rejected duplicate without reason must still show duplicate terminal copy');
-assert.deepEqual(duplicateWithoutReason.actionFeedback.lines, ['Not available', 'DUPLICATE BLOCKED'],
-  'rejected duplicate without reason must still show duplicate canvas copy');
 const acceptedWithoutReason = actionResultFeedbackRuntime({
   accepted: true,
   result_copy: 'Moonpet settled in.',
@@ -1112,7 +1103,7 @@ assert.doesNotMatch(completedSeasonBlock, /active seasonal Moonpet required/,
 // Windows checkouts cannot reintroduce indentation/newline-sensitive regexes.
 const TEST_EXPORT_NAMES = [
   'seasonTiming', 'callsignDraft', 'capabilityCombatHelper', 'actionAvailability', 'dailyJourneyMarkup', 'weeklyJourneyMarkup', 'nextGuidance', 'journeyActionProgress', 'actionResultFeedback', 'stateRequestGate',
-  'combatDirector', 'lifecycleCeremonyStarter', 'lifecycleDirector', 'retroSpaceLoop',
+  'companionCombatActive', 'lifecycleCeremonyStarter', 'lifecycleDirector', 'retroSpaceLoop',
 ];
 for (const name of TEST_EXPORT_NAMES) {
   for (const newline of ['\n', '\r\n']) {
@@ -1312,8 +1303,8 @@ assert.doesNotMatch(client, /Growth Mark[^.!?'\n]*(?:claim|claimable)|Weekly Cre
 assert.doesNotMatch(client, /Gameplay integration not active yet\./, 'Weekly Journey must no longer use inactive integration copy');
 assert.match(client, /Personality develops through play/, 'traits-still-forming fallback must use current-beta-safe copy');
 assert.match(client, /function combatLockCopy\(reasonOverride\)[\s\S]*reasonOverride \|\| combatCapability\(state\)\.reason[\s\S]*moon_egg_must_hatch[\s\S]*COMBAT LOCKED UNTIL YOUR ACTIVE MOONPET HATCHES/, 'Arena and Kaiju locked panels must render worker combat authority reasons instead of only completed-season copy');
-assert.match(client, /function combatLockedButtonOptions\(entryDetail\)[\s\S]*disabled: true[\s\S]*futureExpansion: true[\s\S]*eggRequired: entryDetail\.indexOf\('HATCHED'\) >= 0[\s\S]*activePetRequired: entryDetail\.indexOf\('ACTIVE'\) >= 0[\s\S]*authoritySyncing: entryDetail\.indexOf\('SYNC'\) >= 0/,
-  'Arena and Kaiju locked buttons must share the same future-expansion availability options');
+assert.match(client, /function combatLockedButtonOptions\(entryDetail\)[\s\S]*disabled: true[\s\S]*eggRequired: entryDetail\.indexOf\('HATCHED'\) >= 0[\s\S]*activePetRequired: entryDetail\.indexOf\('ACTIVE'\) >= 0[\s\S]*authoritySyncing: entryDetail\.indexOf\('SYNC'\) >= 0/,
+  'Arena and Kaiju locked buttons must share the same current gameplay availability options');
 const renderExploreSource = client.slice(client.indexOf('  function renderExplore()'), client.indexOf('  function renderWork()', client.indexOf('  function renderExplore()')));
 assert.match(renderExploreSource, /button\('ACCEPT ANY RANK'[\s\S]*statusLabel: arenaQueue\.accept_any_rank \? 'CURRENT' : ''/,
   'ACCEPT ANY RANK current queue state must use an explicit CURRENT status label');
@@ -1345,15 +1336,8 @@ assert.match(renderExploreSource, /kaijuMatch && !kaijuSoloCleanup[\s\S]*MULTIPL
 assert.match(renderExploreSource, /if \(!hasSystemUnlocked\('kaiju'\)\) \{[\s\S]*var kaijuLock = combatLockCopy\(systemCapability\(state, 'kaiju'\)\.reason\)[\s\S]*var kaijuEntryOptions = combatLockedButtonOptions\(kaijuLock\.entryDetail\)[\s\S]*button\('CANCEL QUEUE', 'kaiju_queue_cancel'[\s\S]*kaiju_matchmake'[\s\S]*kaijuEntryOptions[\s\S]*kaiju_start'[\s\S]*kaijuEntryOptions[\s\S]*\} else \{[\s\S]*kaijuBody = kaijuMatch[\s\S]*: kaijuQueue[\s\S]*kaiju\.result/,
   'Kaiju queue, match, result, and entry controls must be behind Kaiju capability gating while stale solo cleanup remains available');
 assert.match(client, /Requires current beta combat authority\./, 'current combat lock copy must remain explicit');
-assert.match(client, /var capabilitySystems = state\.capabilities_version === 1 && state\.capabilities && state\.capabilities\.systems[\s\S]*: \{\}/, 'future-system directory must consume the versioned worker systems capability map');
-assert.match(client, /Object\.keys\(futureSystemTitles\)\.map[\s\S]*var system = capabilitySystems\[key\] \|\| \{\}[\s\S]*status: \['LOCKED', 'COMING_SOON', 'AVAILABLE'\]\.includes\(status\) \? status : 'COMING_SOON'/, 'future-system directory must fail closed to COMING_SOON from the systems capability map');
-assert.match(client, /futureSystemRows[\s\S]*\.filter\(function[^)]*\)[\s\S]*key !== 'sanctuary'[\s\S]*key !== 'prestige'/, 'roadmap rows must exclude sanctuary and prestige which have dedicated future-season panels');
-assert.match(client, /futureSystemRows[\s\S]*\[ROADMAP\][\s\S]*system\.title \|\| system\.key \|\| 'Future System'/,
-  'future-system roadmap rows must uniformly label all items as ROADMAP');
-assert.match(client, /function futureSystemPanelCopy\(system\)[\s\S]*COMING_SOON[\s\S]*FUTURE EXPANSION CONTENT\.[\s\S]*AVAILABLE[\s\S]*LOCKED\./, 'future-system panels must render from the shared LOCKED/COMING_SOON/AVAILABLE model');
-assert.match(client, /var sanctuarySystem = futureSystemByKey\('sanctuary'\)[\s\S]*var sanctuaryPanel = futureSystemPanelCopy\(sanctuarySystem\)/, 'Sanctuary panel must consume shared future-system status only');
-assert.match(client, /panel\('PRESTIGE \/\/ FUTURE SEASON', futureSystemPanelCopy\(futureSystemByKey\('prestige', 'COMING_SOON'\)\)/, 'Prestige panel must be labelled as future season content');
-assert.match(client, /var featureRows = \(guidance\.features \|\| \[\]\)\.map[\s\S]*var available = feature\.available === true/, 'Mini App feature directory must render worker-authoritative availability without duplicating combat logic');
+assert.doesNotMatch(client, /futureSystemTitles|futureSystemRows|futureSystemPanelCopy|PRESTIGE \/\/ FUTURE SEASON|MOONPET SANCTUARY|ROADMAP \/\/ FUTURE SEASONS/, 'the Mini App must omit unwired Profile sections');
+assert.match(client, /var featureRows = \(guidance\.features \|\| \[\]\)\.filter[\s\S]*var available = feature\.available === true/, 'playable feature availability remains worker-authoritative');
 assert.doesNotMatch(client, /futureLocked = \/kaiju\|arena\|prestige/, 'Mini App feature directory must not re-derive future-system lock state in the frontend');
 assert.doesNotMatch(client, /state\.player_capabilities|state\.has_completed_season_pet|state\.combat_unlocked|state\.combat_eligibility|state\.future_systems/, 'Mini App client must consume the single worker capabilities object');
 assert.doesNotMatch(client, /state\.sanctuary|sanctuaryRows/, 'Mini App client must not render inactive Sanctuary state as live gameplay');
@@ -1544,11 +1528,11 @@ statusFrames.shift()();
 assert.equal(testStatusOutput.dataset.tone, 'danger');
 assert.equal(testStatusClasses.has('is-scrolling'), true, 'overflowing updates must activate the scrolling text track');
 assert.match(testStatusProperties['--status-scroll-duration'], /s$/, 'overflowing updates must receive a readable duration');
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20260928-sections-v1/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261001-ui-cleanup-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20260926-front-actions-v1/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20260926-front-actions-v1/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260930-missions-state-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261001-ui-cleanup-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1577,14 +1561,8 @@ for (const [label, pattern] of [
 ]) {
   assert.match(lockedGuideMarkup, pattern, `guideMarkup must include current-build vocabulary for ${label}`);
 }
-const roadmapStepBody = lockedGuideMarkup.match(/<strong>6 \/\/ IDENTITY AND ROADMAP<\/strong>([\s\S]*?)<\/div>/)?.[1] || '';
-assert.ok(roadmapStepBody, 'guideMarkup must include the identity and roadmap step');
-assert.match(roadmapStepBody, /remain coming soon/, 'future systems must be marked as coming soon');
-const guideOutsideRoadmap = lockedGuideMarkup.replace(roadmapStepBody, '');
-for (const futureSystem of ['Advanced Traits', 'Breeding', 'Lineage', 'Fusion', 'Sanctuary', 'Prestige']) {
-  assert.ok(roadmapStepBody.includes(futureSystem), `guide roadmap step must list ${futureSystem}`);
-  assert.ok(!guideOutsideRoadmap.includes(futureSystem), `guideMarkup must only mention ${futureSystem} in the coming-soon roadmap step`);
-}
+assert.match(lockedGuideMarkup, /6 \/\/ IDENTITY AND PROGRESSION/);
+assert.doesNotMatch(lockedGuideMarkup, /Advanced Traits|Breeding|Lineage|Fusion|Sanctuary|Prestige|coming soon/, 'the in-app guide covers playable systems only');
 assert.match(client, /data-utility="leaderboard">OPEN FULL LEADERBOARD/);
 assert.match(html, /id="canvas-tools"[\s\S]*data-utility="audio"[\s\S]*data-utility="radio"[\s\S]*data-utility="sync"/);
 assert.match(html, /data-utility="sync" aria-label="Refresh live save"/);
@@ -1732,7 +1710,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20260930-missions-state-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261001-ui-cleanup-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -1847,7 +1825,6 @@ assert.match(client, /if \(fastResponse && data\.state_pending === true\)[\s\S]*
   'a rejected optimistic care action must switch to the blocked animation without faking success');
 assert.match(client, /var actionAccepted = Boolean\(data\.result && data\.result\.accepted\);[\s\S]*if \(!isHatchReveal\) animateAction\(action, actionAccepted, actionFamily === 'dance' \? 3600 : 2800, payload\)/,
   'legacy full-state DANCE must retain bounded accepted-response animation timing');
-assert.match(client, /var actionResultHoldMs = 3600/);
 assert.doesNotMatch(client, /createPetPalette|PET_APPEARANCE_PALETTES|PET_SPECIES_PALETTES|DEFAULT_PET_PALETTE/,
   'retired procedural animal palettes must stay removed');
 assert.doesNotMatch(client, /function petPalette|function petPose/, 'retired procedural palette and pose helpers must stay removed');
@@ -1994,16 +1971,7 @@ for (const [botName, bot] of Object.entries(rareBackgroundRegistry.bots)) {
 }
 assert.equal(itemArtRegistry.policy.character_attachment, 'never', 'item art must remain independent from character sprites');
 assert.ok(Object.keys(itemArtRegistry.items).length > 0, 'item art requirements must cover current gameplay objects');
-assert.match(client, /var WORLD_SCENES =/);
-for (const scene of ['home', 'missions', 'explore', 'work', 'economy', 'profile']) {
-  assert.match(client, new RegExp(scene + ": \\{ label:"), `the current build must retain the ${scene} world scene`);
-}
-assert.match(client, /MOONBLOCK ROOFTOP/);
-assert.match(client, /QUEST UNDERPASS/);
-assert.match(client, /NEON RUN ALLEY/);
-assert.match(client, /SCRAP YARD 85/);
-assert.match(client, /CHAIN MARKET/);
-assert.match(client, /ALL-CITY HEIGHTS/);
+assert.doesNotMatch(client, /WORLD_SCENES|WORLD_BUILDING_HEIGHTS|drawGraffitiTag|drawUtcAmbience/, 'retired scene code stays removed');
 assert.match(client, /function drawRetroSpaceBackground\(time\)/, 'the canvas must render the animated retro space battle');
 assert.match(client, /drawRetroSpaceBackground\(renderTime\)/, 'the space battle must render behind the selected bot');
 assert.match(client, /var RETRO_SPACE_LOOP_MS = 20000;/, 'the space battle must use a perfect 20-second timeline');
@@ -2018,10 +1986,7 @@ assert.match(client, /var BOT_RENDER_FIT_HEIGHT = 184/);
 assert.match(client, /var BOT_RENDER_PIVOT_Y = 1/);
 assert.match(client, /animateAction\('greet', true, greetingVariant === 'front_wave' \? 2200 : 1400/);
 assert.doesNotMatch(client, /greetCompanion[\s\S]{0,1200}(?:post\(|runAction\()/, 'pet taps must remain cosmetic and server-neutral');
-assert.match(client, /companionGreetingTimer = window\.setTimeout/);
 assert.match(client, /drawPet\(renderTime\)/);
-assert.match(client, /if \(companionGreetingUntil > 0 && companionGreetingUntil <= time\)/);
-assert.match(client, /companionGreeting = '';\s*companionGreetingUntil = 0;/s);
 assert.doesNotMatch(drawWorldSource, /drawCombatHud|drawLifecycleCeremony|drawCinematicFeedback/,
   'no pet slot may draw transient update panels on the game canvas');
 assert.doesNotMatch(drawWorldSource, /drawActionInfo\(/, 'routine bot activation must not draw popup text over the canvas');
@@ -2029,121 +1994,24 @@ assert.doesNotMatch(client, /drawPixelText\('SIGNAL!'/, 'egg activation must not
 assert.doesNotMatch(css, /\.terminal-output\s*\{[^}]*animation:/s, 'the status bar itself must remain fixed');
 assert.doesNotMatch(client, /Math\.random\(\)[^\n]*(?:presence|habit|greeting)|(?:presence|habit|greeting)[^\n]*Math\.random\(\)/i, 'living companion behavior must be deterministic');
 
-assert.match(client, /var COMBAT_PRESENTATION_FRAME =/);
-assert.match(client, /var COMBAT_RIVAL_COLORS =/);
-assert.match(client, /var COMBAT_ARENA_SPECIAL_MAX = 3;/);
-assert.match(worker, /const PET_ARENA_SPECIAL_COST = 3;/, 'Phase 5 special presentation must match the authoritative Arena charge cost');
-assert.match(client, /function clearCombatPresentation\(\)/);
-assert.match(client, /function updateCombatPresentation\(snapshot\)/);
-assert.doesNotMatch(client, /function snapshotHasCompletedSeasonPet\(snapshot\)/, 'client must not keep a duplicate completed-season snapshot helper');
-const snapshotCombatHelperSource = client.slice(client.indexOf('function snapshotHasCombatUnlocked'), client.indexOf('function updateCombatPresentation'));
-assert.match(snapshotCombatHelperSource, /combatCapability\(snapshot\)[\s\S]*combat\.state === 'AVAILABLE' && combat\.unlocked === true/, 'combat snapshot helper must consume the shared fail-closed capability accessor');
-assert.match(snapshotCombatHelperSource, /function snapshotHasSystemUnlocked\(snapshot, key\)[\s\S]*hasSystemUnlocked\(key, snapshot\)/, 'combat presentation must support per-system capability gates');
-assert.match(client, /snapshot === combatSnapshot && activeScreen === combatScreen/);
-assert.match(client, /var arena = snapshot\.arena/);
-assert.match(client, /arena && snapshotHasSystemUnlocked\(snapshot, 'arena'\) && arena\.status !== 'completed'/, 'Arena combat presentation must respect Arena capability gating');
-assert.match(client, /COMBAT_PRESENTATION_FRAME\.mode = 'arena'/);
-assert.match(client, /arena\.player_hp/);
-assert.match(client, /arena\.opponent_hp/);
-assert.match(client, /arena\.player_special/);
-assert.match(client, /arena\.opponent_special/);
-assert.match(client, /'ROUND ' \+ Number\(arena\.current_round \|\| 1\) \+ '\/' \+ Number\(arena\.max_rounds \|\| 5\) \+ ' LIVE'/);
-assert.match(client, /var kaiju = snapshot\.kaiju && snapshot\.kaiju\.match/);
-assert.match(client, /kaiju && snapshotHasSystemUnlocked\(snapshot, 'kaiju'\) && kaiju\.status !== 'completed'/, 'Kaiju combat presentation must respect Kaiju capability gating');
-assert.match(client, /COMBAT_PRESENTATION_FRAME\.mode = 'kaiju'/);
-assert.match(client, /kaiju\.own_card_locked/);
-assert.match(client, /kaiju\.opponent_card_locked/);
-assert.match(client, /var run = snapshot\.run/);
-assert.match(client, /COMBAT_PRESENTATION_FRAME\.mode = 'run'/);
-assert.match(client, /run\.current_room != null \? run\.current_room : run\.depth/);
-assert.doesNotMatch(client, /function drawCombatHud|drawActionInfoPanel/,
-  'combat updates must stay in the controls and scrolling status bar, not the canvas');
-assert.match(client, /if \(!combat \|\| !combat\.active\)/);
-assert.match(client, /var x = BOT_RENDER_CENTER_X/);
-assert.doesNotMatch(drawWorldSource, /drawCombatHud/);
-assert.match(client, /COMBAT_PRESENTATION_FRAME\.active \|\| lifecycleCeremonyActive\(now\)\) return;/);
-assert.doesNotMatch(client, /Math\.random\(\)[^\n]*(?:combat|rival)|(?:combat|rival)[^\n]*Math\.random\(\)/i, 'Phase 5 combat presentation must remain deterministic');
-
-const combatDirectorSource = extractTestExport(client, 'combatDirector');
-assert.ok(combatDirectorSource, 'Phase 5 combat director must be extractable for runtime smoke coverage');
-const runtimeCombatFrame = {
-  active: false, mode: '', title: '', status: '', opponentName: '', round: 0, maxRounds: 0,
-  playerValue: 0, opponentValue: 0, maxValue: 100, playerSpecial: 0, opponentSpecial: 0,
-  playerCardKey: '', opponentCardKey: '', rivalColor: '#ff6d6d', source: null,
+assert.doesNotMatch(client, /COMBAT_PRESENTATION_FRAME|updateCombatPresentation|drawCombatOpponent|drawCombatMeter/, 'retired canvas combat code stays removed');
+assert.doesNotMatch(drawWorldSource, /companionCombatActive|updateCombatPresentation/, 'the frame loop must not calculate unused combat presentation');
+const companionCombatSource = extractTestExport(client, 'companionCombatActive');
+const companionCombatRuntime = new Function(capabilityCombatHelperSource + companionCombatSource + '; return companionCombatActive;')();
+const liveCombatSnapshot = {
+  adopted: true, capabilities_version: 1,
+  capabilities: { systems: {
+    arena: { state: 'AVAILABLE', unlocked: true, active: true },
+    kaiju: { state: 'AVAILABLE', unlocked: true, active: true },
+  } },
 };
-const combatRuntime = new Function(
-  'COMBAT_PRESENTATION_FRAME', 'activeScreen', 'combatSnapshot', 'combatScreen', 'combatRivalColor',
-  capabilityCombatHelperSource + combatDirectorSource + '; return { update: updateCombatPresentation, screen: function (value) { activeScreen = value; } };',
-)(
-  runtimeCombatFrame,
-  'explore',
-  null,
-  '',
-  () => '#61f5ff',
-);
-assert.doesNotThrow(() => combatRuntime.update({
-  adopted: true,
-  arena: { status: 'active', player_hp: 74, opponent_hp: 38 },
-  kaiju: { match: { status: 'selecting', mode: 'solo', own_card_locked: false, opponent_card_locked: false } },
-}), 'Phase 5 combat director must tolerate stale future-system state for early Season 1 users');
-assert.equal(runtimeCombatFrame.active, false, 'early Season 1 users must not see stale Arena or Kaiju combat presentation');
-assert.doesNotThrow(() => combatRuntime.update({
-  adopted: true,
-  capabilities_version: 1,
-  capabilities: {
-    combat: { state: 'AVAILABLE', unlocked: true, active: true, requirements: { completed_season_pet: false, active_pet_exists: true, active_pet_lifecycle_known: true, active_pet_hatched: true, active_pet_level: 10, arena_level_met: true } },
-    systems: { arena: { state: 'AVAILABLE', unlocked: true, active: true }, kaiju: { state: 'AVAILABLE', unlocked: true, active: true } },
-  },
-  arena: { status: 'active', player_hp: 74, opponent_hp: 38 },
-}), 'Phase 5 combat director must recognize worker combat authority');
-assert.equal(runtimeCombatFrame.mode, 'arena', 'worker combat authority must satisfy Arena combat presentation gating');
-assert.doesNotThrow(() => combatRuntime.update({
-  adopted: true,
-  capabilities_version: 1,
-  capabilities: {
-    combat: { state: 'AVAILABLE', unlocked: true, active: true, requirements: { completed_season_pet: false, active_pet_exists: true, active_pet_lifecycle_known: true, active_pet_hatched: true, active_pet_level: 10, arena_level_met: true } },
-    systems: { arena: { state: 'AVAILABLE', unlocked: true, active: true }, kaiju: { state: 'AVAILABLE', unlocked: true, active: true } },
-  },
-  arena: {
-    status: 'active', mode: 'multiplayer', current_round: 3, max_rounds: 5,
-    player_hp: 74, opponent_hp: 38, player_special: 2, opponent_special: 1,
-    opponent: { pet_name: 'Rival Smoke' },
-  },
-}), 'Phase 5 Arena director must execute from server-returned battle state');
-assert.equal(runtimeCombatFrame.mode, 'arena');
-assert.equal(runtimeCombatFrame.playerValue, 74);
-assert.equal(runtimeCombatFrame.opponentValue, 38);
-assert.equal(runtimeCombatFrame.round, 3);
-assert.equal(runtimeCombatFrame.maxRounds, 5);
-assert.equal(runtimeCombatFrame.status, 'ROUND 3/5 LIVE');
-assert.equal(runtimeCombatFrame.playerSpecial, 2);
-assert.equal(runtimeCombatFrame.opponentSpecial, 1);
-assert.equal(runtimeCombatFrame.rivalColor, '#61f5ff');
-assert.doesNotThrow(() => combatRuntime.update({
-  adopted: true,
-  capabilities_version: 1,
-  capabilities: {
-    combat: { state: 'AVAILABLE', unlocked: true, active: true, requirements: { completed_season_pet: false, active_pet_exists: true, active_pet_lifecycle_known: true, active_pet_hatched: true, active_pet_level: 1, arena_level_met: false } },
-    systems: { arena: { state: 'LOCKED', unlocked: false, active: false, reason: 'arena_level_locked' }, kaiju: { state: 'AVAILABLE', unlocked: true, active: true } },
-  },
-  kaiju: { match: { status: 'selecting', mode: 'solo', own_card_locked: true, opponent_card_locked: false, own_card_key: 'neon-claw' } },
-}), 'Phase 5 Kaiju director must execute from live card-lock state');
-assert.equal(runtimeCombatFrame.mode, 'kaiju');
-assert.equal(runtimeCombatFrame.playerValue, 1);
-assert.equal(runtimeCombatFrame.opponentValue, 0);
-assert.equal(runtimeCombatFrame.playerCardKey, 'neon-claw');
-assert.doesNotThrow(() => combatRuntime.update({
-  adopted: true,
-  run: { status: 'active', daily: true, current_room: 4, max_room: 8, risk_level: 3 },
-}), 'Phase 5 Moon Run director must execute from persisted run state');
-assert.equal(runtimeCombatFrame.mode, 'run');
-assert.equal(runtimeCombatFrame.title, 'DAILY MOON RUN');
-assert.equal(runtimeCombatFrame.playerValue, 4);
-assert.equal(runtimeCombatFrame.opponentValue, 4);
-combatRuntime.screen('home');
-combatRuntime.update({ adopted: true, arena: { status: 'active', player_hp: 10, opponent_hp: 10 } });
-assert.equal(runtimeCombatFrame.active, false, 'combat presentation must remain scoped to the Explore module');
-
+assert.equal(companionCombatRuntime({ adopted: true, arena: { status: 'active' } }, 'explore'), false, 'stale Arena cannot block cosmetic taps');
+for (const [key, value] of [['arena', { status: 'active' }], ['kaiju', { match: { status: 'selecting' } }], ['run', { status: 'extractable' }]]) {
+  const snapshot = { ...liveCombatSnapshot, [key]: value };
+  assert.equal(companionCombatRuntime(snapshot, 'explore'), true, key + ' keeps the combat tap guard');
+  assert.equal(companionCombatRuntime(snapshot, 'home'), false, 'the tap guard stays scoped to Explore');
+}
+assert.equal(companionCombatRuntime({ ...liveCombatSnapshot, arena: { status: 'completed' }, kaiju: { match: { outcome: 'win' } }, run: { status: 'cleared' } }, 'explore'), false, 'finished combat releases cosmetic taps');
 
 assert.match(client, /var lifecycleCeremony = null/);
 assert.match(client, /function lifecycleStateSnapshot\(snapshot\)/);
@@ -2186,7 +2054,7 @@ assert.doesNotMatch(client, /TRANSMITTING|EXEC |STATE CACHE REFRESHED|FAULT DETE
 assert.match(client, /if \(lifecycleCeremonyActive\(\)\) \{\s*tell\('LIFECYCLE REVEAL IN PROGRESS\.'/s);
 assert.match(client, /screen\.addEventListener\('click'[\s\S]*?if \(lifecycleCeremonyActive\(\)\)[\s\S]*?LIFECYCLE REVEAL IN PROGRESS/s);
 assert.match(client, /nav\.addEventListener\('click'[\s\S]*?if \(lifecycleCeremonyActive\(\)\)[\s\S]*?LIFECYCLE REVEAL IN PROGRESS/s);
-assert.match(client, /COMBAT_PRESENTATION_FRAME\.active \|\| lifecycleCeremonyActive\(now\)/);
+assert.match(client, /companionCombatActive\(state, activeScreen\) \|\| lifecycleCeremonyActive\(now\)/);
 assert.doesNotMatch(client, /Math\.random\(\)[^\n]*(?:ceremony|lifecycle)|(?:ceremony|lifecycle)[^\n]*Math\.random\(\)/i, 'Phase 6 lifecycle presentation must remain deterministic');
 
 const lifecycleDirectorSource = extractTestExport(client, 'lifecycleDirector');

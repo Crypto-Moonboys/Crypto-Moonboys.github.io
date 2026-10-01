@@ -201,6 +201,12 @@ try {
     await page.addInitScript(() => {
       // Gameplay matrix keeps radio manually off; native autoplay has its own browser test.
       localStorage.setItem('moonpet-radio-preference', 'off');
+      window.petCanvasTextDraws = [];
+      const originalFillText = CanvasRenderingContext2D.prototype.fillText;
+      CanvasRenderingContext2D.prototype.fillText = function (text, ...args) {
+        if (this.canvas.id === 'moonpet-canvas') window.petCanvasTextDraws.push(String(text));
+        return originalFillText.call(this, text, ...args);
+      };
       // Model WebViews that require play() in the actual click task, not after await/import.
       window.radioTapChecks = [];
       let inRadioTap = false;
@@ -363,6 +369,11 @@ try {
     for (const screen of ['missions', 'explore', 'work', 'economy', 'profile', 'home']) {
       await page.locator(`[data-screen="${screen}"]`).click();
       assert.ok(await page.locator('#screen [data-panel]').count(), 'screen must render: ' + screen);
+      if (screen === 'profile') {
+        assert.equal(await page.locator('[data-panel="prestige"], [data-panel="sanctuary"], [data-panel="future-systems"]').count(), 0, 'Profile omits unwired panels');
+        assert.doesNotMatch(await page.locator('[data-panel="features"]').textContent(), /Breeding|Advanced Traits|Lineage|Fusion|Sanctuary|Prestige/);
+        assert.ok(await page.locator('[data-panel="evolution"], [data-panel="season"], [data-panel="tracks"]').count() === 3, 'playable Profile panels remain');
+      }
       assert.ok(await page.locator('#screen [data-panel]').evaluateAll((panels) => panels.every((panel) => panel.getBoundingClientRect().right <= window.innerWidth)), 'no clipped panel on ' + screen);
       const jumps = await page.locator('#screen [data-jump]').evaluateAll((buttons) => buttons.map((b) => ({ screen: b.dataset.jump, focus: b.dataset.focus })));
       for (const jump of jumps) assert.ok(['home', 'missions', 'explore', 'work', 'economy', 'profile'].includes(jump.screen));
@@ -370,6 +381,8 @@ try {
     // Existing collection purchases become visible without another charge.
     const styleWallet = sqlite.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(currentUser);
     for (const key of ['rename_badge','profile_frame','victory_pose','run_trail']) sqlite.prepare('INSERT OR IGNORE INTO telegram_pet_cosmetic_unlocks(telegram_id,cosmetic_key,quantity)VALUES(?,?,1)').run(currentUser,key);
+    const stylePet = sqlite.prepare('SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id=?').get(currentUser);
+    sqlite.prepare('INSERT OR REPLACE INTO telegram_pet_style_loadouts(pet_id,telegram_id,cosmetic_key,enabled)VALUES(?,?,?,1)').run(stylePet.pet_id,currentUser,'rename_badge');
     const styleLab = page.locator('[data-panel="style-lab"]');
     try {
       const styleStateResponse = page.waitForResponse((response) =>
@@ -396,7 +409,8 @@ try {
       );
       const styleButtons = styleLab.locator('[data-action="style_equip"]');
       await styleButtons.first().waitFor({ state: 'visible', timeout: 10000 });
-      assert.ok(await styleButtons.count() >= 4, 'Style Lab must render the four owned cosmetic controls');
+      assert.equal(await styleButtons.count(), 3, 'Style Lab renders only the three working cosmetic controls');
+      assert.equal(await styleLab.locator('[data-payload*="rename_badge"]').count(), 0, 'retired nameplate is not sold or equipped');
     } catch (error) {
       await fs.mkdir(path.join(root, 'test-artifacts'), { recursive: true });
       await page.screenshot({ path: path.join(root, 'test-artifacts', `moonpet-style-lab-failure-${viewport.width}.png`), fullPage: true });
@@ -408,7 +422,7 @@ try {
         `Style Lab: ${styleMarkup.slice(0, 2000)}`,
       ].join('\n'));
     }
-    for (const key of ['rename_badge','profile_frame','victory_pose','run_trail']) {
+    for (const key of ['profile_frame','victory_pose','run_trail']) {
       const selector = '[data-action="style_equip"][data-payload*="' + key + '"]';
       const response = page.waitForResponse(r => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'style_equip');
       await page.locator(selector).click();
@@ -420,9 +434,11 @@ try {
     await page.waitForFunction(() => window.MoonpetBetaAppearance.getBotArtState()?.lastRender?.animationMode === 'victory');
     await page.locator('[data-screen="explore"]').click();
     await page.screenshot({ path: '/tmp/moonpet-equipped-styles-' + viewport.width + '.png' });
+    assert.deepEqual(await page.evaluate(() => window.petCanvasTextDraws), [], 'canvas has no floating pet name or text overlay even with a saved Rename Badge');
+    assert.equal(sqlite.prepare('SELECT enabled FROM telegram_pet_style_loadouts WHERE pet_id=? AND cosmetic_key=?').get(stylePet.pet_id,'rename_badge').enabled, 1, 'cleanup keeps existing saved ownership intact');
     await page.locator('[data-screen="economy"]').click();
-    assert.equal(await page.locator('[data-action="style_equip"]').filter({hasText:'UNEQUIP FREE'}).count(),4);
-    for (const key of ['rename_badge','profile_frame','victory_pose','run_trail']) {
+    assert.equal(await page.locator('[data-action="style_equip"]').filter({hasText:'UNEQUIP FREE'}).count(),3);
+    for (const key of ['profile_frame','victory_pose','run_trail']) {
       const selector = '[data-action="style_equip"][data-payload*="' + key + '"]';
       await page.locator(selector).click();
       await page.waitForFunction(sel => document.querySelector(sel).textContent.startsWith('EQUIP FREE'), selector);
