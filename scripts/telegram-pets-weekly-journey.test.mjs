@@ -97,6 +97,7 @@ const playerExpansionMigration = await readFile(new URL('../workers/moonboys-api
 const seasonCompletionMigration = await readFile(new URL('../workers/moonboys-api/migrations/058_telegram_pet_season_completion.sql', import.meta.url), 'utf8');
 const seasonEconomyMigration = await readFile(new URL('../workers/moonboys-api/migrations/061_moonpet_season_economy_calibration.sql', import.meta.url), 'utf8');
 const weeklyJourneyMigration = await readFile(new URL('../workers/moonboys-api/migrations/068_moonpet_weekly_journey_authority.sql', import.meta.url), 'utf8');
+const permanentWeeklyMigration = await readFile(new URL('../workers/moonboys-api/migrations/085_permanent_pet_weekly_evidence.sql', import.meta.url), 'utf8');
 const workerSource = await readFile(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
 const weeklyJourneySource = await readFile(new URL('../workers/moonboys-api/pets/weekly-journey.js', import.meta.url), 'utf8');
 const TEST_WEEKLY_SOURCE_TYPES = Object.freeze({
@@ -181,6 +182,7 @@ function createDb() {
   db.database.exec(seasonEconomyMigration);
   db.database.exec(weeklyJourneyMigration);
   db.database.exec(weeklyJourneyMigration);
+  db.database.exec(permanentWeeklyMigration);
   assert.equal(db.database.prepare('PRAGMA foreign_key_check').all().length, 0, 'weekly journey migrations must be D1/sqlite-clean');
   return db;
 }
@@ -640,7 +642,7 @@ async function assertDirectActionPreparesCurrentSeason({ action, objectiveId, te
   const db = createDb();
   const now = new Date();
   const currentSeasonKey = getPetSeasonInfo(now).key;
-  const oldSeasonKey = `${currentSeasonKey}:previous`;
+  const oldSeasonKey = 'pet-s2025-004';
   const oldPet = seedPlayer(db, telegramId, oldSeasonKey);
   const eventKey = `weekly-rollover-direct:${telegramId}:${action}`;
   const result = await processPetAction(db, telegramId, action, {
@@ -651,18 +653,18 @@ async function assertDirectActionPreparesCurrentSeason({ action, objectiveId, te
   assert.equal(result.accepted, true, `Test 5g: ${action} direct action is accepted after season rollover without Mini App state load`);
   const event = db.database.prepare(`SELECT pet_id, season_key, event_key, event_type, status FROM telegram_pet_events
     WHERE telegram_id=? AND event_key=? AND status='accepted'`).get(telegramId, eventKey);
-  assert.equal(event?.season_key, currentSeasonKey, `Test 5g: ${action} source event uses the current season key`);
-  assert.notEqual(event?.pet_id, oldPet, `Test 5g: ${action} source event does not use the previous-season active pet`);
+  assert.equal(event?.season_key, oldSeasonKey, `Test 5g: ${action} source event keeps its creation season key`);
+  assert.equal(event?.pet_id, oldPet, `Test 5g: ${action} source event does not use the original active pet`);
   assert.equal(db.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_season_slots
-    WHERE telegram_id=? AND pet_id=? AND season_key=?`).get(telegramId, event.pet_id, currentSeasonKey).count, 1,
-    `Test 5g: ${action} source event pet belongs to the current season slot`);
+    WHERE telegram_id=? AND pet_id=? AND season_key=?`).get(telegramId, event.pet_id, oldSeasonKey).count, 1,
+    `Test 5g: ${action} source event pet belongs to its original ownership slot`);
   assert.equal(db.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
     WHERE telegram_id=? AND pet_id=? AND season_key=? AND status='accepted'`).get(telegramId, oldPet, currentSeasonKey).count, 0,
     `Test 5g: ${action} writes no old-pet/new-season mismatched accepted event`);
   assert.equal(db.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
     WHERE telegram_id=? AND pet_id=? AND season_key=? AND objective_id=? AND source_event_key=? AND status='accepted'`)
-    .get(telegramId, event.pet_id, currentSeasonKey, objectiveId, eventKey).count, 1,
-    `Test 5g: ${action} records current-season Weekly Journey evidence`);
+    .get(telegramId, event.pet_id, oldSeasonKey, objectiveId, eventKey).count, 1,
+    `Test 5g: ${action} records ongoing Weekly Journey evidence`);
   const replay = await processPetAction(db, telegramId, action, {
     event_key: eventKey,
     source: 'telegram_bot',
@@ -690,8 +692,8 @@ await assertDirectActionPreparesCurrentSeason({
 
 const dailyChestRolloverDb = createDb();
 const dailyChestRolloverTelegramId = 'weekly-rollover-daily-chest';
-const dailyChestRolloverSeasonKey = getPetSeasonInfo(new Date()).key;
-const dailyChestRolloverOldPet = seedPlayer(dailyChestRolloverDb, dailyChestRolloverTelegramId, `${dailyChestRolloverSeasonKey}:previous`);
+const dailyChestRolloverSeasonKey = 'pet-s2025-004';
+const dailyChestRolloverOldPet = seedPlayer(dailyChestRolloverDb, dailyChestRolloverTelegramId, dailyChestRolloverSeasonKey);
 const dailyChestRolloverEventKey = 'weekly-rollover-daily-chest-source';
 const dailyChestRollover = await processPetDailyChest(dailyChestRolloverDb, dailyChestRolloverTelegramId, {
   event_key: dailyChestRolloverEventKey,
@@ -703,15 +705,15 @@ const dailyChestRolloverEvent = dailyChestRolloverDb.database.prepare(`SELECT pe
   WHERE telegram_id=? AND event_key=? AND event_type='daily_chest' AND status='accepted'`)
   .get(dailyChestRolloverTelegramId, dailyChestRolloverEventKey);
 assert.equal(dailyChestRolloverEvent?.season_key, dailyChestRolloverSeasonKey,
-  'Test 5g2: Daily Chest source event uses the current season key');
-assert.notEqual(dailyChestRolloverEvent?.pet_id, dailyChestRolloverOldPet,
-  'Test 5g2: Daily Chest source event does not use the previous-season active pet');
+  'Test 5g2: Daily Chest source event keeps its creation season key');
+assert.equal(dailyChestRolloverEvent?.pet_id, dailyChestRolloverOldPet,
+  'Test 5g2: Daily Chest source event does not use the original active pet');
 assert.equal(dailyChestRolloverDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_season_slots
   WHERE telegram_id=? AND pet_id=? AND season_key=?`).get(dailyChestRolloverTelegramId, dailyChestRolloverEvent.pet_id, dailyChestRolloverSeasonKey).count, 1,
-  'Test 5g2: Daily Chest source event pet belongs to the current season slot');
+  'Test 5g2: Daily Chest source event pet belongs to its original ownership slot');
 assert.equal(dailyChestRolloverDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
   WHERE telegram_id=? AND pet_id=? AND season_key=? AND event_type='daily_chest' AND status='accepted'`)
-  .get(dailyChestRolloverTelegramId, dailyChestRolloverOldPet, dailyChestRolloverSeasonKey).count, 0,
+  .get(dailyChestRolloverTelegramId, dailyChestRolloverOldPet, getPetSeasonInfo(new Date()).key).count, 0,
   'Test 5g2: Daily Chest writes no old-pet/new-season mismatched accepted event');
 assert.equal(dailyChestRolloverDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
   WHERE telegram_id=? AND pet_id=? AND season_key=? AND objective_id='weekly_check_in' AND source_event_key=? AND status='accepted'`)
@@ -1326,7 +1328,7 @@ for (const missing of ['all', 'earlier-care']) {
   });
   assert.equal(db.database.prepare('SELECT COUNT(*) AS n FROM telegram_pet_weekly_crests').get().n, 0);
   assert.equal(db.database.prepare('SELECT COUNT(*) AS n FROM telegram_pet_growth_marks').get().n, 0);
-  // State initialization switches to the current season; recovery must not.
+  // State initialization and evidence recovery both preserve the original pet.
   const sourceEvents = db.database.prepare('SELECT * FROM telegram_pet_events ORDER BY id').all();
   const sourceXp = db.database.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(petId).pet_xp;
   await __petMediaTestHooks.buildPetMiniAppState(db, owner, 'fixture-token');

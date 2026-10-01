@@ -1,13 +1,24 @@
 import { boundedRecoveryLimit } from './recovery-limits.js';
 import { PET_DAILY_CHALLENGES, DAILY_JOURNEY_REQUIRED_OBJECTIVES, finalizeDailyJourneyGrowthMark, recordDailyCareChallenge } from './daily-moon-run.js';
 import { PET_WEEKLY_JOURNEY_OBJECTIVES, WEEKLY_JOURNEY_REQUIRED_OBJECTIVES, WEEKLY_JOURNEY_SOURCE_OBJECTIVES, finalizeWeeklyJourneyCrest, recordWeeklyJourneyObjectiveEvidence } from './weekly-journey.js';
-import { finalizePetSeasonCompletionIfEligible, getPetSeasonWeek } from './season-completion.js';
-import { getMoonpetSeasonInfo } from './season-authority.js';
+import { finalizePetSeasonCompletionIfEligible } from './season-completion.js';
+import { getPetOwnershipPeriod, getPetJourneyWeek } from './ownership-period.js';
 
 const types = Object.keys(WEEKLY_JOURNEY_SOURCE_OBJECTIVES).map((type) => `'${type}'`).join(',');
 const objectives = Object.entries(WEEKLY_JOURNEY_SOURCE_OBJECTIVES).map(([type, objective]) => `WHEN '${type}' THEN '${objective}'`).join(' ');
-const sourceWeek = `MIN(13,1+CAST((julianday(e.day_key)-julianday(date(e.day_key,'start of month',
-  printf('-%d months',(CAST(strftime('%m',e.day_key) AS INTEGER)-1)%3))))/7 AS INTEGER))`;
+// Match the ownership-period helper, including historical 13-week receipts.
+const sourceStart = `CASE
+  WHEN s.season_key GLOB 'pet-s[0-9][0-9][0-9][0-9]-00[1-4]'
+    THEN printf('%s-%02d-01',substr(s.season_key,6,4),(CAST(substr(s.season_key,13,1) AS INTEGER)-1)*3+1)
+  WHEN s.season_key GLOB '[0-9][0-9][0-9][0-9]-q[1-4]'
+    THEN printf('%s-%02d-01',substr(s.season_key,1,4),(CAST(substr(s.season_key,7,1) AS INTEGER)-1)*3+1)
+  ELSE date(s.created_at) END`;
+const legacyEnd = `CASE WHEN s.season_key GLOB 'pet-s[0-9][0-9][0-9][0-9]-00[1-4]'
+  OR s.season_key GLOB '[0-9][0-9][0-9][0-9]-q[1-4]' THEN date(${sourceStart},'+3 months') END`;
+const sourceWeek = `CASE WHEN ${legacyEnd} IS NOT NULL AND e.day_key>=${legacyEnd}
+  THEN 14+CAST((julianday(e.day_key)-julianday(${legacyEnd}))/7 AS INTEGER)
+  WHEN ${legacyEnd} IS NOT NULL THEN MIN(13,1+CAST((julianday(e.day_key)-julianday(${sourceStart}))/7 AS INTEGER))
+  ELSE 1+CAST((julianday(e.day_key)-julianday(${sourceStart}))/7 AS INTEGER) END`;
 const missingWeekly = `NOT EXISTS (SELECT 1 FROM telegram_pet_weekly_journey_objectives o
     WHERE o.telegram_id=e.telegram_id AND o.pet_id=e.pet_id AND o.season_key=e.season_key
       AND o.qualification_week=${sourceWeek}
@@ -20,7 +31,7 @@ const sourceJoins = `JOIN telegram_pet_instances i ON i.pet_id=e.pet_id AND i.te
   JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id AND s.season_key=i.season_key AND s.slot_number=i.slot_number`;
 const validSource = `e.status='accepted' AND e.event_key<>'' AND e.event_key=trim(e.event_key) AND length(e.event_key)<=180
   AND e.event_type IN (${types}) AND length(e.day_key)=10 AND date(e.day_key,'+0 days')=e.day_key
-  AND e.season_key=printf('pet-s%s-%03d',strftime('%Y',e.day_key),1+(CAST(strftime('%m',e.day_key) AS INTEGER)-1)/3)`;
+  AND e.day_key>=${sourceStart}`;
 
 async function claimJourneyRecoveryBatch(db, owner, queue, candidates) {
   if (!candidates.length) return false;
@@ -36,10 +47,10 @@ async function claimJourneyRecoveryBatch(db, owner, queue, candidates) {
 }
 
 async function recoverJourneySourceEvidence(db, owner, limit) {
-  // Validate source ownership and its canonical UTC season before the limit.
+  // Validate source ownership and its persisted ownership period before the limit.
   // Older malformed/unowned events must not repeatedly consume the budget.
   const recoveryKey = "e.day_key||':'||e.id";
-  const rows = await db.prepare(`SELECT e.event_key,e.event_type,e.pet_id,e.season_key,e.day_key,
+  const rows = await db.prepare(`SELECT e.event_key,e.event_type,e.pet_id,e.season_key,e.day_key,s.created_at AS ownership_created_at,
       ${recoveryKey} AS recovery_key,recovery_state.setting_value AS recovery_cursor,
       (${missingWeekly}) AS missing_weekly, (${missingDaily}) AS missing_daily
     FROM telegram_pet_events e ${sourceJoins}
@@ -55,7 +66,7 @@ async function recoverJourneySourceEvidence(db, owner, limit) {
         const at = new Date(`${event.day_key}T00:00:00.000Z`);
         await recordWeeklyJourneyObjectiveEvidence(db, {
           telegram_id: owner, pet_id: event.pet_id, season_key: event.season_key,
-          qualification_week: getPetSeasonWeek(getMoonpetSeasonInfo(at), at),
+          qualification_week: getPetJourneyWeek(getPetOwnershipPeriod(event.season_key,event.ownership_created_at),at),
           objective_id: WEEKLY_JOURNEY_SOURCE_OBJECTIVES[event.event_type], source_event_key: event.event_key,
           evidence: { authority: 'live_weekly_journey_source_event', source_event_type: event.event_type, source_event_key: event.event_key },
         }, { defer_award: true });

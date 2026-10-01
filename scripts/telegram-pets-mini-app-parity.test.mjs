@@ -528,20 +528,28 @@ assert.ok(zeroWeeklyState.weekly_journey.week_reset_at,
   'zero-progress Weekly Journey must expose server-derived reset timing when season timing is available');
 
 const weekThirteenSeason = {
-  key: 'season-92-day-week-13',
-  start_at: '2026-01-01T00:00:00.000Z',
-  end_at: '2026-04-03T00:00:00.000Z',
+  key: 'pet-s2026-003',
+  start_at: '2026-07-01T00:00:00.000Z',
+  end_at: '2026-10-01T00:00:00.000Z',
 };
 const weekThirteenResetDb = new D1();
 seedPlayer(weekThirteenResetDb, 'weekly-week-13-reset', 'Reset Cat', 1200);
-await ensurePetStarterSeasonSlot(weekThirteenResetDb, 'weekly-week-13-reset', new Date('2026-03-31T12:00:00.000Z'));
+await ensurePetStarterSeasonSlot(weekThirteenResetDb, 'weekly-week-13-reset', new Date('2026-09-30T12:00:00.000Z'));
 const weekThirteenSummary = await buildPetMiniAppJourneySummary(weekThirteenResetDb, 'weekly-week-13-reset', {
   season: weekThirteenSeason,
   current_season_week: 13,
-  slots: [{ active: true, pet_id: 'pet:weekly-week-13-reset:season-92-day-week-13:1', season_key: weekThirteenSeason.key }],
-}, new Date('2026-04-02T12:00:00.000Z'));
+  slots: [{ active: true, pet_id: 'pet:weekly-week-13-reset:pet-s2026-003:1', season_key: weekThirteenSeason.key }],
+}, new Date('2026-09-30T12:00:00.000Z'));
 assert.equal(weekThirteenSummary.weekly.week_reset_at, weekThirteenSeason.end_at,
   'Week 13 Weekly Journey reset must stay at season end for a 92-day season');
+
+const weekFourteenSummary = await buildPetMiniAppJourneySummary(weekThirteenResetDb, 'weekly-week-13-reset', {
+  season: getPetSeasonInfo(new Date('2026-10-02')),
+  current_season_week: 14,
+  slots: [{ active:true,pet_id:'pet:weekly-week-13-reset:pet-s2026-003:1',season_key:weekThirteenSeason.key }],
+},new Date('2026-10-02T12:00:00Z'));
+assert.equal(weekFourteenSummary.weekly.qualification_week,14,'saved pet journey continues past its creation quarter');
+assert.equal(weekFourteenSummary.weekly.week_reset_at,'2026-10-08T00:00:00.000Z');
 
 const postActionWeeklyDb = new D1();
 seedPlayer(postActionWeeklyDb, 'weekly-post-action', 'Refresh Cat', 1200);

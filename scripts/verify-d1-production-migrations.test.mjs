@@ -24,9 +24,20 @@ for (const name of [
   '082_moonpet_post_reward_overwrite_rebaseline.sql',
   '083_moonpet_daily_run_completion_credit.sql',
   '084_moonpet_state_hot_path_indexes.sql',
+  '085_permanent_pet_weekly_evidence.sql',
+  '086_restore_permanent_pet_ownership.sql',
 ]) {
   assert.ok(pullRequestPaths.includes('workers/moonboys-api/migrations/' + name));
   assert.ok(remoteQueryStep.includes(name));
+}
+for (const name of ['085_permanent_pet_weekly_evidence.sql', '086_restore_permanent_pet_ownership.sql']) {
+  assert.ok(REQUIRED_D1_MIGRATIONS.includes(name), 'recovery migration belongs to the verification gate');
+  assert.ok(request.required_migrations.includes(name), 'recovery migration belongs to the evidence request');
+  assert.ok(production.d1_databases.wikicoms.required_migrations.includes(name), 'recovery migration belongs to the production manifest');
+  assert.throws(() => validateRequest({ ...request, required_migrations: request.required_migrations.filter(n => n !== name) }),
+    error => error.message.includes('missing required migrations: ' + name), 'omitting a recovery migration from the request fails verification');
+  assert.throws(() => verifyD1MigrationPayload([{ success: true, results: request.required_migrations.filter(n => n !== name).map(n => ({ name: n })) }], request),
+    error => error.message.includes('missing migrations: ' + name), 'production without a recovery migration fails verification');
 }
 assert.match(schema, /CREATE TABLE IF NOT EXISTS moonpet_beta_xp_rebaseline_v2[\s\S]*correction_id INTEGER PRIMARY KEY AUTOINCREMENT/,
   'canonical schema must include the repeatable migration 082 correction audit table');

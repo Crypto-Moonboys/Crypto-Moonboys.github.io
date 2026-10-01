@@ -1636,7 +1636,7 @@ for (const [label, method, match] of [
   ['roster active pointer', 'beforeFirst', q=>q.includes('SELECT pet_id, season_key FROM telegram_pet_active_slots')],
   ['Arcade lifetime XP', 'beforeFirst', q=>q.includes('SELECT arcade_xp_total FROM arcade_progression_state')],
   ['Arcade spendable XP', 'beforeFirst', q=>q.includes('SELECT arcade_xp_spendable, arcade_xp_spent FROM arcade_xp_wallets')],
-  ['roster owned pets', 'beforeAll', q=>q.includes('SELECT s.pet_id, s.telegram_id, s.season_key, s.slot_number, s.acquisition_type,')],
+  ['roster owned pets', 'beforeAll', q=>q.includes('FROM telegram_pet_season_slots s') && q.includes('AS source_slot_number')],
 ]) test(`account audit: ${label} outage cannot reset roster or hide earned purchasing options`, async()=>{
   const f=fixture('roster-'+label.replaceAll(' ','-'));
   f.pet('selected-roster-pet',currentSeason,300,2); f.active('selected-roster-pet');

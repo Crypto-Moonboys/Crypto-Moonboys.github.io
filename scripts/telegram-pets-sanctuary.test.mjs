@@ -3,8 +3,6 @@ import { readFile } from 'node:fs/promises';
 import { DatabaseSync } from 'node:sqlite';
 import {
   listSanctuaryPetsPrivate,
-  movePetToSanctuaryIfEligible,
-  reconcileCompletedPetsToSanctuary,
 } from '../workers/moonboys-api/pets/sanctuary.js';
 import { finalizePetSeasonCompletionIfEligible } from '../workers/moonboys-api/pets/season-completion.js';
 
@@ -80,7 +78,7 @@ assert.doesNotMatch(
   /finalizePetSeasonCompletionIfEligible[\s\S]*movePetToSanctuaryIfEligible\(db,/,
   'authoritative completion is decoupled from immediate Sanctuary transition',
 );
-assert.match(completionSource, /sanctuary_transition:\s*'season_settlement'/, 'completion advertises season-settlement Sanctuary policy');
+assert.match(completionSource, /sanctuary_transition:\s*'never'/, 'completion advertises season-settlement Sanctuary policy');
 
 sqlite.exec(`INSERT INTO telegram_pet_profiles(telegram_id,pet_name,moon_gold,moon_crystals,style_tokens) VALUES('owner','Nova',888,77,66),('attacker','Bad',0,0,0),('auto-owner','Auto',0,0,0),('reconcile-owner','Reconcile',0,0,0),('settlement-owner','Settlement',0,0,0),('year-end-owner','Year End',0,0,0);
 INSERT INTO telegram_pet_season_slots(pet_id,telegram_id,season_key,slot_number,status,created_at,updated_at) VALUES
@@ -111,64 +109,57 @@ WITH RECURSIVE days(value) AS (SELECT 1 UNION ALL SELECT value+1 FROM days WHERE
 INSERT INTO telegram_pet_growth_marks SELECT 'auto','auto-owner','s2',date('2026-01-01','+' || (value-1) || ' days') FROM days;
 INSERT INTO telegram_pet_weekly_crests SELECT 'auto','auto-owner','s2',value,value FROM json_each('[1,2,3,4,5,6,7,8,9,10]');`);
 
-const input = { pet_id: 'complete', telegram_id: 'owner', season_key: 's1' };
-assert.equal((await movePetToSanctuaryIfEligible(db, { ...input, telegram_id: 'attacker' })).reason, 'pet_not_owned', 'ownership is authoritative');
-assert.equal((await movePetToSanctuaryIfEligible(db, { pet_id: 'legendary-only', telegram_id: 'owner', season_key: 's1' })).reason, 'season_not_complete', 'Legendary alone is rejected');
-
 const autoState = await finalizePetSeasonCompletionIfEligible(db, 'auto', 's2', { telegram_id: 'auto-owner', now: '2026-03-31T00:00:00Z' });
-assert.equal(autoState.season_complete, true, 'completion authority still records season completion');
-assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_sanctuary WHERE pet_id='auto'`).get().count, 0, 'completion does not immediately enter Sanctuary');
-assert.equal(sqlite.prepare(`SELECT status FROM telegram_pet_instances WHERE pet_id='auto'`).get().status, 'active', 'completion leaves active seasonal pet state intact');
-assert.equal(sqlite.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='auto-owner'`).get().pet_id, 'auto', 'completion leaves active pointer intact');
+assert.equal(autoState.season_complete, true, 'completion is still recorded');
+assert.equal(sqlite.prepare("SELECT COUNT(*) count FROM telegram_pet_sanctuary WHERE pet_id='auto'").get().count, 0);
+assert.equal(sqlite.prepare("SELECT status FROM telegram_pet_instances WHERE pet_id='auto'").get().status, 'active');
+assert.equal(sqlite.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='auto-owner'").get().pet_id, 'auto');
 
-const move = await movePetToSanctuaryIfEligible(db, input);
-assert.equal(move.accepted, true, 'explicit Sanctuary movement accepts completed pet');
-assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_sanctuary WHERE pet_id='complete'`).get().count, 1, 'explicit move writes one Sanctuary resident');
-assert.equal(sqlite.prepare(`SELECT status FROM telegram_pet_instances WHERE pet_id='complete'`).get().status, 'archived', 'explicit move archives seasonal pet');
-assert.equal(sqlite.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='owner'`).get().pet_id, 'replacement', 'explicit move assigns another active seasonal pet');
-assert.equal(sqlite.prepare(`SELECT pet_name FROM telegram_pet_profiles WHERE telegram_id='owner'`).get().pet_name, 'Other', 'replacement instance is mirrored to the profile');
-assert.deepEqual(
-  { ...sqlite.prepare(`SELECT moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id='owner'`).get() },
-  { moon_gold: 888, moon_crystals: 77, style_tokens: 66 },
-  'Sanctuary archival/replacement mirroring must preserve account wallet authority independently from pet instance wallet fields',
-);
-
-const snapshotBefore = (await listSanctuaryPetsPrivate(db, 'owner'))[0];
-sqlite.prepare(`UPDATE telegram_pet_instances SET equipped_outfit='changed' WHERE pet_id='complete'`).run();
-assert.equal(
-  (await listSanctuaryPetsPrivate(db, 'owner'))[0].cosmetics.equipment.equipped_outfit,
-  snapshotBefore.cosmetics.equipment.equipped_outfit,
-  'Sanctuary snapshot is immutable when live state changes',
-);
-
-assert.equal((await movePetToSanctuaryIfEligible(db, input)).duplicate, true, 'duplicate retry succeeds idempotently');
-assert.deepEqual(await movePetToSanctuaryIfEligible(db, { ...input, operation: 'update' }), { accepted: false, reason: 'sanctuary_snapshot_is_immutable' }, 'Sanctuary updates are rejected');
-assert.deepEqual(await movePetToSanctuaryIfEligible(db, { ...input, operation: 'delete' }), { accepted: false, reason: 'sanctuary_history_is_append_only' }, 'Sanctuary deletes are rejected');
-sqlite.prepare(`INSERT INTO telegram_pet_season_completions
-  (pet_id,telegram_id,season_key,completed_at,legendary_evolution_id,growth_marks_earned,weekly_crests_earned,authority_version)
-  VALUES('replacement','owner','s1','2026-03-31','legendary_moon_guardian',60,10,2)`).run();
-sqlite.prepare(`INSERT INTO telegram_pet_lifecycle_by_pet(pet_id,telegram_id,species_id,palette_id,created_at)
-  VALUES('replacement','owner','lunar_fox','plain','2026-01-01')`).run();
-const replacementMove = await movePetToSanctuaryIfEligible(db, { pet_id: 'replacement', telegram_id: 'owner', season_key: 's1' });
-assert.equal(replacementMove.accepted, true, 'Pet B can enter Sanctuary without inheriting Pet A identity rows');
-const replacementSnapshot = (await listSanctuaryPetsPrivate(db, 'owner')).find((entry) => entry.pet_id === 'replacement');
-assert.deepEqual(replacementSnapshot.traits, [], 'Sanctuary snapshot for Pet B must not include Pet A personality traits');
-assert.deepEqual(replacementSnapshot.memories, {}, 'Sanctuary snapshot for Pet B must not include Pet A memories');
-
-sqlite.prepare(`INSERT INTO telegram_pet_activity_sessions(id,telegram_id,status) VALUES('reconcile-activity','reconcile-owner','active')`).run();
-await reconcileCompletedPetsToSanctuary(db, 'reconcile-owner', { season_settlement: true });
-assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_sanctuary WHERE pet_id='reconcile'`).get().count, 0, 'pending activity blocks season-settlement reconciliation');
-sqlite.prepare(`DELETE FROM telegram_pet_activity_sessions WHERE id='reconcile-activity'`).run();
-await reconcileCompletedPetsToSanctuary(db, 'reconcile-owner', { now: '2026-08-17T00:00:00Z' });
-assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_sanctuary WHERE pet_id='reconcile'`).get().count, 0, 'ordinary Worker reconciliation skips the active slot-authority current season');
-const settlementTransitions = await reconcileCompletedPetsToSanctuary(db, 'settlement-owner', { season_settlement: true, now: '2026-08-17T00:00:00Z' });
-assert.equal(settlementTransitions[0]?.accepted, true, 'explicit season-settlement reconciliation moves an eligible completed current-season pet');
-assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_sanctuary WHERE pet_id='settlement'`).get().count, 1, 'valid season-settlement reconciliation writes the Sanctuary resident');
-assert.equal(sqlite.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='settlement-owner'`).get().pet_id, 'settlement-b', 'season-settlement reconciliation assigns the replacement active pet');
-await reconcileCompletedPetsToSanctuary(db, 'reconcile-owner', { now: '2026-10-01T00:00:00Z' });
-assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_sanctuary WHERE pet_id='reconcile'`).get().count, 1, 'ordinary Worker reconciliation can move completed past-season pets after slot-season rollover');
-assert.equal(sqlite.prepare(`SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='reconcile-owner'`).get().pet_id, 'reconcile-b', 'reconciliation assigns replacement pet');
-await reconcileCompletedPetsToSanctuary(db, 'year-end-owner', { now: '2026-12-31T00:00:00Z' });
-assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_sanctuary WHERE pet_id='year-end'`).get().count, 0, 'ordinary Worker reconciliation treats year-end pet-s2026-004 as the current slot-authority season, not a past 90-day segment');
-
-console.log('telegram pets sanctuary tests passed');
+// Immutable historical snapshots are readable after recovery; no new retirement API remains.
+const sanctuarySource = await readFile(new URL('../workers/moonboys-api/pets/sanctuary.js', import.meta.url), 'utf8');
+const workerSource = await readFile(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
+assert.doesNotMatch(sanctuarySource + workerSource, /movePetToSanctuaryIfEligible|reconcileCompletedPetsToSanctuary|reconcileSanctuaryBestEffort/);
+function archive(petId, owner, seasonKey, { paid = false, completion = true, historyOwner = owner, historySeason = seasonKey, retired = false } = {}) {
+  sqlite.prepare("UPDATE telegram_pet_season_slots SET status=?,acquisition_type=?,arcade_xp_spent=?,source_event_key=? WHERE pet_id=?").run(retired ? 'retired' : 'archived',paid ? 'arcade_xp' : 'free',paid ? 500 : 0,paid ? 'original-purchase' : 'profile_insert',petId);
+  sqlite.prepare('UPDATE telegram_pet_instances SET status=? WHERE pet_id=?').run(retired ? 'retired' : 'archived',petId);
+  if (completion) sqlite.prepare(`INSERT OR IGNORE INTO telegram_pet_season_completions VALUES (?,?,?,'2026-03-31','legendary_moon_guardian',60,10,2)`).run(petId,owner,seasonKey);
+  sqlite.prepare(`INSERT INTO telegram_pet_sanctuary (sanctuary_id,pet_id,telegram_id,original_season_key,completed_at,species,stage,legendary_evolution_id,identity_snapshot_json,cosmetic_snapshot_json,trait_snapshot_json,memory_snapshot_json)
+    VALUES (?,?,?,?,'2026-03-31','fox','legendary','legendary_moon_guardian','{"pet_name":"Nova"}','{"equipment":{"equipped_outfit":"crown"}}','["brave"]','{"first_boss":true}')`).run('history:'+petId,petId,historyOwner,historySeason);
+}
+archive('auto-b','auto-owner','s2');
+sqlite.prepare("UPDATE telegram_pet_season_slots SET status='active' WHERE pet_id='auto-b'").run();
+archive('reconcile-b','reconcile-owner','pet-s2026-003');
+sqlite.prepare("UPDATE telegram_pet_instances SET status='active' WHERE pet_id='reconcile-b'").run();
+archive('complete','owner','s1');
+archive('replacement','owner','s1',{paid:true});
+archive('legendary-only','owner','s1',{completion:false});
+archive('reconcile','reconcile-owner','pet-s2026-003',{historyOwner:'attacker'});
+archive('settlement','settlement-owner','pet-s2026-003',{historySeason:'wrong-season'});
+archive('year-end','year-end-owner','pet-s2026-004',{retired:true});
+const historiesBefore = sqlite.prepare('SELECT * FROM telegram_pet_sanctuary ORDER BY pet_id').all();
+const profilesBefore = sqlite.prepare('SELECT * FROM telegram_pet_profiles ORDER BY telegram_id').all();
+const instancesBefore = sqlite.prepare("SELECT * FROM telegram_pet_instances WHERE pet_id IN ('complete','replacement') ORDER BY pet_id").all();
+const slotsBefore = sqlite.prepare("SELECT * FROM telegram_pet_season_slots WHERE pet_id IN ('complete','replacement') ORDER BY pet_id").all();
+const pointersBefore = sqlite.prepare('SELECT * FROM telegram_pet_active_slots ORDER BY telegram_id').all();
+const recovery = await readFile(new URL('../workers/moonboys-api/migrations/086_restore_permanent_pet_ownership.sql', import.meta.url), 'utf8');
+sqlite.exec(recovery);
+for (const table of ['telegram_pet_instances','telegram_pet_season_slots']) {
+  for (const petId of ['complete','replacement','auto-b','reconcile-b']) assert.equal(sqlite.prepare(`SELECT status FROM ${table} WHERE pet_id=?`).get(petId).status,'active');
+  for (const petId of ['legendary-only','reconcile','settlement']) assert.equal(sqlite.prepare(`SELECT status FROM ${table} WHERE pet_id=?`).get(petId).status,'archived','unproven archives are untouched');
+  assert.equal(sqlite.prepare(`SELECT status FROM ${table} WHERE pet_id='year-end'`).get().status,'retired','explicitly retired pets stay retired');
+}
+const withoutStatus = rows => rows.map(({status,...row}) => ({...row}));
+assert.deepEqual(withoutStatus(sqlite.prepare("SELECT * FROM telegram_pet_instances WHERE pet_id IN ('complete','replacement') ORDER BY pet_id").all()),withoutStatus(instancesBefore),'XP, stats, equipment, identity and timestamps survive recovery');
+assert.deepEqual(withoutStatus(sqlite.prepare("SELECT * FROM telegram_pet_season_slots WHERE pet_id IN ('complete','replacement') ORDER BY pet_id").all()),withoutStatus(slotsBefore),'purchase costs, event keys and source tuples survive recovery');
+assert.deepEqual(sqlite.prepare('SELECT * FROM telegram_pet_profiles ORDER BY telegram_id').all(),profilesBefore,'account balances are never replaced by pet balances');
+assert.deepEqual(sqlite.prepare('SELECT * FROM telegram_pet_active_slots ORDER BY telegram_id').all(),pointersBefore,'recovery never redirects the active pet');
+assert.deepEqual(sqlite.prepare('SELECT * FROM telegram_pet_sanctuary ORDER BY pet_id').all(),historiesBefore);
+const snapshots = await listSanctuaryPetsPrivate(db,'owner');
+assert.equal(snapshots.find(pet => pet.pet_id==='complete').cosmetics.equipment.equipped_outfit,'crown');
+sqlite.prepare("UPDATE telegram_pet_instances SET equipped_outfit='changed' WHERE pet_id='complete'").run();
+assert.equal((await listSanctuaryPetsPrivate(db,'owner')).find(pet => pet.pet_id==='complete').cosmetics.equipment.equipped_outfit,'crown','historical snapshots remain immutable');
+const changes = sqlite.prepare('SELECT total_changes() AS n').get().n;
+sqlite.exec(recovery);
+assert.equal(sqlite.prepare('SELECT total_changes() AS n').get().n,changes,'ownership recovery is safe to retry');
+assert.equal(sqlite.prepare('PRAGMA foreign_key_check').all().length,0);
+console.log('telegram pets sanctuary history and safe recovery tests passed');

@@ -43,7 +43,10 @@ const challenges = JSON.parse(fs.readFileSync(new URL('../workers/moonboys-api/p
 class Statement {
   constructor(adapter, sql, args = []) { this.adapter = adapter; this.sql = sql; this.args = args; }
   bind(...args) { return new Statement(this.adapter, this.sql, args); }
-  async first() { return this.adapter.database.prepare(this.sql).get(...this.args) || null; }
+  async first() {
+    if (this.adapter.failFirst?.test(this.sql)) return { success: false, error: 'injected_daily_first_failure' };
+    return this.adapter.database.prepare(this.sql).get(...this.args) || null;
+  }
   async run() {
     if (this.adapter.failEndingWrite?.(this.sql, this.args)) throw new Error('injected_ending_write_failure');
     if (this.adapter.failWrite?.test(this.sql)) throw new Error('injected_journey_write_failure');
@@ -103,6 +106,30 @@ function seedPlayer(db, telegramId, seasonKey = 'pet-s2026-003') {
   db.database.prepare(`INSERT INTO telegram_pet_instances (pet_id, telegram_id, season_key, slot_number, source_profile_updated_at) VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)`).run(petId, telegramId, seasonKey);
 }
 
+// Resolved D1 failures in each ownership read must stop before run/evidence writes.
+for (const [kind, query] of [
+  ['active', /SELECT a.pet_id, a.season_key/],
+  ['fallback', /SELECT s.pet_id, s.season_key/],
+  ['explicit-evidence', /SELECT s.pet_id,s.telegram_id,s.season_key/],
+  ['daily-evidence', /SELECT r.pet_id,r.telegram_id,i.season_key/],
+]) {
+  const failedDb = new D1(), owner = `read-failure-${kind}`;
+  seedPlayer(failedDb, owner);
+  if (kind === 'fallback') failedDb.database.prepare('DELETE FROM telegram_pet_active_slots WHERE telegram_id=?').run(owner);
+  failedDb.failFirst = query;
+  const operation = kind.endsWith('evidence')
+    ? __dailyMoonRunTestHooks.recordChallengeEvidence(failedDb, {
+      telegram_id: owner, utc_day: '2026-08-11', event_key: `failed:${kind}`,
+      challenge_id: Object.keys(PET_DAILY_CHALLENGES)[0], progress_value: 1,
+      ...(kind === 'explicit-evidence' ? { pet_id: `pet-${owner}` } : {}),
+    })
+    : createDailyMoonRun(failedDb, { telegram_id: owner, now: new Date('2026-08-11T12:00:00Z') });
+  await assert.rejects(operation, /pet_state_read_unavailable/, kind + ' must fail safely');
+  for (const table of ['telegram_pet_runs', 'telegram_pet_daily_runs', 'telegram_pet_daily_journey_objectives', 'telegram_pet_daily_challenge_events', 'telegram_pet_daily_challenge_progress', 'telegram_pet_daily_analytics']) {
+    assert.equal(failedDb.database.prepare('SELECT COUNT(*) AS n FROM ' + table).get().n, 0, kind + ' leaves ' + table + ' unchanged');
+  }
+}
+
 function seedAdditionalPet(db, telegramId, petId, slotNumber = 2, seasonKey = 'pet-s2026-003') {
   db.database.prepare(`INSERT INTO telegram_pet_season_slots (pet_id, telegram_id, season_key, slot_number, acquisition_type)
     VALUES (?, ?, ?, ?, 'free')`).run(petId, telegramId, seasonKey, slotNumber);
@@ -111,9 +138,10 @@ function seedAdditionalPet(db, telegramId, petId, slotNumber = 2, seasonKey = 'p
 }
 
 function insertCareEvent(db, telegramId, eventKey, day, action = 'feed', petId = null) {
+  const sourceSeason = petId ? db.database.prepare('SELECT season_key FROM telegram_pet_season_slots WHERE pet_id=?').get(petId)?.season_key || 'season' : 'season';
   db.database.prepare(`INSERT INTO telegram_pet_events
     (id, pet_id, telegram_id, event_type, event_key, season_key, day_key, week_key, status)
-    VALUES (?, ?, ?, ?, ?, 'season', ?, 'week', 'accepted')`).run(`id:${eventKey}`, petId, telegramId, action, eventKey, day);
+    VALUES (?, ?, ?, ?, ?, ?, ?, 'week', 'accepted')`).run(`id:${eventKey}`, petId, telegramId, action, eventKey, sourceSeason, day);
 }
 
 function resolveDailyRun(db, telegramId, runId, { status = 'completed', score = 900, boss = true } = {}) {
@@ -222,9 +250,9 @@ const rolloverOldPetId = `pet-${rolloverTelegramId}`;
 const rolloverCurrentPetId = 'pet-rollover-player-current';
 seedAdditionalPet(rolloverDb, rolloverTelegramId, rolloverCurrentPetId, 1, rolloverSeasonKey);
 const rolloverRun = await createDailyMoonRun(rolloverDb, { telegram_id: rolloverTelegramId, now: rolloverNow });
-assert.equal(rolloverRun.accepted, true, 'season rollover should recover to an already-owned current-season pet');
-assert.equal(rolloverRun.daily_run.pet_id, rolloverCurrentPetId,
-  'Daily Moon Run must not reserve the previous-season active pet after UTC quarter rollover');
+assert.equal(rolloverRun.accepted, true, 'season rollover keeps the selected owned pet');
+assert.equal(rolloverRun.daily_run.pet_id, rolloverOldPetId,
+  'Daily Moon Run reserves the selected pet using its original ownership');
 assert.equal(rolloverDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_runs
   WHERE telegram_id=? AND season_key=? AND pet_id=?`).get(rolloverTelegramId, rolloverSeasonKey, rolloverOldPetId).count, 0,
   'season rollover must never persist a Daily Run with mismatched old-season pet_id and new season_key');
@@ -240,11 +268,11 @@ const rolloverSync = await syncDailyMoonRun(rolloverDb, {
 assert.equal(rolloverSync.challenge_results.some((result) => result.daily_journey?.accepted), true,
   'valid current-season Daily Run authority must preserve Daily Journey qualification after rollover');
 assert.equal(rolloverDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
-  WHERE pet_id=? AND season_key=? AND earned_day='2026-07-01'`).get(rolloverCurrentPetId, rolloverSeasonKey).count, 1,
-  'rollover Daily Journey Growth Mark must settle to the current-season pet');
+  WHERE pet_id=? AND season_key=? AND earned_day='2026-07-01'`).get(rolloverOldPetId, previousSeasonKey).count, 1,
+  'Daily Journey Growth Mark stays with the selected original pet');
 assert.equal(rolloverDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
-  WHERE pet_id=? AND earned_day='2026-07-01'`).get(rolloverOldPetId).count, 0,
-  'rollover Daily Journey Growth Mark must not settle to the old-season pet');
+  WHERE pet_id=? AND earned_day='2026-07-01'`).get(rolloverCurrentPetId).count, 0,
+  'Daily Journey Growth Mark cannot move to an unselected new pet');
 
 const rolloverDuplicateDb = new D1();
 const rolloverDuplicateTelegramId = 'rollover-duplicate-player';
@@ -310,11 +338,11 @@ raceReservationDb.batch = async (statements) => {
   if (!injectedRaceReservation && statements.some((statement) => /INSERT OR IGNORE INTO telegram_pet_daily_runs/.test(statement.sql))) {
     injectedRaceReservation = true;
     raceReservationDb.database.prepare(`UPDATE telegram_pet_runs SET pet_id=?, season_key=? WHERE telegram_id=? AND run_id=?`)
-      .run(raceReservationOldPetId, previousSeasonKey, raceReservationTelegramId, raceReservationRunId);
+      .run(raceReservationCurrentPetId, rolloverSeasonKey, raceReservationTelegramId, raceReservationRunId);
     raceReservationDb.database.prepare(`INSERT INTO telegram_pet_daily_runs
       (telegram_id, pet_id, utc_day, seed, run_id, status, score, depth, boss_defeated)
       VALUES (?, ?, '2026-07-01', '2026-07-01-12345', ?, 'active', 0, 0, 0)`)
-      .run(raceReservationTelegramId, raceReservationOldPetId, raceReservationRunId);
+      .run(raceReservationTelegramId, raceReservationCurrentPetId, raceReservationRunId);
   }
   return originalRaceReservationBatch(statements);
 };
@@ -323,7 +351,7 @@ assert.equal(refusedRaceReservation.accepted, false,
   'losing a Daily Run reservation race must not return the persisted stale authority as valid');
 assert.equal(refusedRaceReservation.reason, 'daily_run_pet_authority_mismatch');
 assert.equal(raceReservationDb.database.prepare(`SELECT pet_id FROM telegram_pet_daily_runs
-  WHERE telegram_id=? AND utc_day='2026-07-01'`).get(raceReservationTelegramId).pet_id, raceReservationOldPetId,
+  WHERE telegram_id=? AND utc_day='2026-07-01'`).get(raceReservationTelegramId).pet_id, raceReservationCurrentPetId,
   'race regression fixture must leave the wrong pet reservation persisted for validation');
 assert.equal(raceReservationDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_daily_analytics
   WHERE telegram_id=? AND utc_day='2026-07-01'`).get(raceReservationTelegramId).count, 0,

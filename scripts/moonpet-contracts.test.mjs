@@ -607,14 +607,22 @@ try {
   assert.equal((await act(b,savedClaim)).accepted,false,'another owner cannot claim a saved bonus');
   assert.equal((await start(sourcePet)).accepted,false,'recovery does not reopen old-pet gameplay');
 
-  // Real season rollover: old earned XP remains recoverable with a fresh egg.
+  // Calendar rollover preserves the pet; an existing rollout egg cannot redirect old rewards.
   const oldTime = new Date(Date.UTC(now.getUTCFullYear()-1,0,15));
   const oldPet = await seed('contract-rollover','young',oldTime);
   await start(oldPet,'escort',oldTime);
   const oldBonus = await complete(oldPet,async () => { throw Error('delivery offline'); },oldTime);
   assert.equal(await hooks.preparePetMiniAppState(db,oldPet.telegram_id,now),true);
+  assert.equal((await hooks.ensureActivePetInstance(db,oldPet.telegram_id)).pet_id,oldPet.pet_id,'quarter changes no longer replace the earning pet');
+  const rolloutEggId = oldPet.pet_id + ':retained-rollout-egg';
+  const rolloutSeason = hooks.getPetSeasonInfo(now).key;
+  sqlite.prepare(`INSERT INTO telegram_pet_season_slots (pet_id,telegram_id,season_key,slot_number,acquisition_type)
+    VALUES (?,?,?,1,'free')`).run(rolloutEggId,oldPet.telegram_id,rolloutSeason);
+  sqlite.prepare(`INSERT INTO telegram_pet_instances (pet_id,telegram_id,season_key,slot_number,source_profile_updated_at)
+    VALUES (?,?,?,1,CURRENT_TIMESTAMP)`).run(rolloutEggId,oldPet.telegram_id,rolloutSeason);
+  sqlite.prepare(`INSERT INTO telegram_pet_lifecycle_by_pet (pet_id,telegram_id,identity_seed,phase) VALUES (?,?,?,'egg')`).run(rolloutEggId,oldPet.telegram_id,rolloutEggId);
+  assert.equal((await hooks.switchActivePetSeasonSlot(db,oldPet.telegram_id,rolloutEggId)).accepted,true);
   const newPet = await hooks.ensureActivePetInstance(db,oldPet.telegram_id);
-  assert.notEqual(newPet.pet_id,oldPet.pet_id);
   sqlite.prepare("UPDATE telegram_pet_instances SET status='archived' WHERE pet_id=?").run(oldPet.pet_id);
   sqlite.prepare("UPDATE telegram_pet_season_slots SET status='archived' WHERE pet_id=?").run(oldPet.pet_id);
   const oldClaim = { action:'contract_claim',pet_id:oldPet.pet_id,contract_id:oldBonus.contract_id,season_key:newPet.season_key,reward_xp:999999 };

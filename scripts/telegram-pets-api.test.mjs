@@ -2587,7 +2587,7 @@ await assert.rejects(
   'a failed pending-work authority read must not be treated as permission to switch pets',
 );
 assert.equal(slotSwitchReadFailureDb.database.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='slot-switch-read-failure'").get().pet_id, activePetBeforeFailedSwitch);
-slotSwitchReadFailureDb.failReadOnSql(/SELECT s\.pet_id FROM telegram_pet_season_slots s/);
+slotSwitchReadFailureDb.failReadOnSql(/SELECT s\.pet_id, s\.season_key FROM telegram_pet_season_slots s/);
 await assert.rejects(
   switchActivePetSeasonSlot(slotSwitchReadFailureDb, 'slot-switch-read-failure', 'slot-switch-target', { now: new Date('2026-08-15T00:00:00Z') }),
   /pet_state_read_unavailable/,

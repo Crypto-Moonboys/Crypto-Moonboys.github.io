@@ -964,6 +964,8 @@ CREATE TABLE IF NOT EXISTS telegram_pet_active_slots (
   FOREIGN KEY (pet_id) REFERENCES telegram_pet_season_slots(pet_id) ON DELETE CASCADE
 );
 
+CREATE INDEX IF NOT EXISTS idx_pet_slots_owner_active_order
+  ON telegram_pet_season_slots(telegram_id, status, created_at, pet_id);
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_season_slots_owner_season
   ON telegram_pet_season_slots(telegram_id, season_key, slot_number);
 CREATE INDEX IF NOT EXISTS idx_telegram_pet_season_slots_season_rank
@@ -1671,7 +1673,7 @@ CREATE TABLE IF NOT EXISTS telegram_pet_weekly_journey_objectives (
   telegram_id TEXT NOT NULL,
   pet_id TEXT NOT NULL,
   season_key TEXT NOT NULL,
-  qualification_week INTEGER NOT NULL CHECK (qualification_week BETWEEN 1 AND 13),
+  qualification_week INTEGER NOT NULL CHECK (qualification_week >= 1),
   objective_id TEXT NOT NULL,
   source_event_key TEXT NOT NULL,
   source_event_type TEXT NOT NULL,
@@ -1692,7 +1694,7 @@ CREATE TABLE IF NOT EXISTS telegram_pet_weekly_journey_receipts (
   telegram_id TEXT NOT NULL,
   pet_id TEXT NOT NULL,
   season_key TEXT NOT NULL,
-  qualification_week INTEGER NOT NULL CHECK (qualification_week BETWEEN 1 AND 13),
+  qualification_week INTEGER NOT NULL CHECK (qualification_week >= 1),
   completed_objectives INTEGER NOT NULL CHECK (completed_objectives >= 0),
   status TEXT NOT NULL CHECK (status IN ('accepted', 'rejected')),
   reason TEXT NOT NULL,
