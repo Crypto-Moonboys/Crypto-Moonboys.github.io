@@ -2986,7 +2986,7 @@ assert.equal(routeBlockedBody.reason, 'moon_egg_must_hatch',
 // Keep the simulated five-cooldown sequence within one UTC day, even near midnight.
 const dailyLimitNow = new Date(specialActionNow);
 dailyLimitNow.setUTCHours(12, 0, 0, 0);
-const dailyLimitDb = seedRepeatRewardPlayer('special-daily-limit', 80, dailyLimitNow.toISOString());
+const dailyLimitDb = seedRepeatRewardPlayer('special-daily-limit', 80, dailyLimitNow.toISOString(), { currentSeason: true });
 dailyLimitDb.database.prepare("UPDATE telegram_pet_profiles SET happiness=0 WHERE telegram_id='special-daily-limit'").run();
 dailyLimitDb.database.prepare("UPDATE telegram_pet_instances SET happiness=0 WHERE telegram_id='special-daily-limit'").run();
 for (let index = 0; index < PET_SPECIAL_ACTION_POLICIES.dance.daily_limit; index += 1) {

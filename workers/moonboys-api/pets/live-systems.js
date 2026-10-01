@@ -207,7 +207,8 @@ export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gea
   });
   const unlockedCosmetics = new Map((cosmetics.results || []).map((row) => [row.cosmetic_key, row]));
   const economyWallet = { moon_gold: integer(pet.moon_gold), moon_crystals: integer(pet.moon_crystals), style_tokens: integer(pet.style_tokens), ...materialMap };
-  const cosmeticState = Object.entries(PET_COSMETIC_SINKS).map(([key, sink]) => ({
+  // Keep legacy badge ownership and receipts, but retire its visible catalog offer.
+  const cosmeticState = Object.entries(PET_COSMETIC_SINKS).filter(([key]) => key !== 'rename_badge').map(([key, sink]) => ({
     key, ...sink, unlocked: unlockedCosmetics.has(key), quantity: integer(unlockedCosmetics.get(key)?.quantity),
     affordable: Object.entries(sink.cost).every(([costKey, amount]) => integer(economyWallet[costKey]) >= amount),
   }));
