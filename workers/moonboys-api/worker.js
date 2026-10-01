@@ -1,5 +1,5 @@
 import { getStyleLoadout, equipPetStyle } from './pets/style-loadout.js';
-import { createDisplayedPetScope } from './pets/displayed-pet-scope.js';
+import { createDisplayedPetScope, isDisplayedPetScopeStaleError } from './pets/displayed-pet-scope.js';
 import { RELIC_ROUTE_DETAILS } from './pets/relic-passives.js';
 import { requirePetFirstReadResult, requirePetReadResult, requirePetMutationResult } from './pets/read-result.js';
 import { getPetEntryRequirement, petEntryNext, PET_ENTRY_ARCADE_XP } from './pets/entry-requirement.js';
@@ -6704,31 +6704,46 @@ async function processPetAction(db, telegramId, action, options = {}) {
   communityXp = Number(committedAction.xp_awarded);
   petXp = Number(committedAction.pet_xp_awarded);
   const reason = committedAction.reason;
-  const persistedPet = await getPetInstanceWithAtomicDecay(db, pet.pet_id, now);
-  if (persistedPet) Object.assign(persistedPet, await readPetAccountWallet(db, telegramId) || {});
+  const committedResult = {
+    accepted: true,
+    reason,
+    action: normalizedAction,
+    xp_awarded: communityXp,
+    pet_xp_awarded: petXp,
+    accounting_window: { day_key: dayKey, week_key: weekKey, season_key: pet.season_key },
+    ...(specialPolicy ? { daily_limit: specialPolicy.daily_limit } : {}),
+    pet,
+    season,
+  };
+  try {
+    const persistedPet = await getPetInstanceWithAtomicDecay(db, pet.pet_id, now);
+    if (persistedPet) Object.assign(persistedPet, await readPetAccountWallet(db, telegramId) || {});
 
-  const careBehaviour = PET_CARE_BEHAVIOUR_ACTIONS.has(normalizedAction) ? 'care' : 'combat';
-  const acceptedSourceEvent = await readAcceptedPetEventByKey(db, telegramId, eventKey);
-  await recordPetActionBehaviourFromAcceptedEvent(db, {
-    telegram_id: telegramId,
-    event_key: eventKey,
-    action: acceptedSourceEvent?.event_type || normalizedAction,
-    behaviour: careBehaviour, activity: careBehaviour,
-    pet: persistedPet || pet,
-  });
-  if (PET_DAILY_CHALLENGE_ACTIONS.has(normalizedAction)) {
-    await recordDailyCareChallenge(db, {
+    const careBehaviour = PET_CARE_BEHAVIOUR_ACTIONS.has(normalizedAction) ? 'care' : 'combat';
+    const acceptedSourceEvent = await readAcceptedPetEventByKey(db, telegramId, eventKey);
+    await recordPetActionBehaviourFromAcceptedEvent(db, {
       telegram_id: telegramId,
       event_key: eventKey,
-      utc_day: acceptedSourceEvent?.day_key,
-      now,
+      action: acceptedSourceEvent?.event_type || normalizedAction,
+      behaviour: careBehaviour, activity: careBehaviour,
+      pet: persistedPet || pet,
     });
+    if (PET_DAILY_CHALLENGE_ACTIONS.has(normalizedAction)) {
+      await recordDailyCareChallenge(db, {
+        telegram_id: telegramId,
+        event_key: eventKey,
+        utc_day: acceptedSourceEvent?.day_key,
+        now,
+      });
+    }
+    await recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, eventKey, { accepted_event: acceptedSourceEvent });
+    committedResult.pet = persistedPet || pet;
+  } catch (error) {
+    if (isDisplayedPetScopeStaleError(error)) return { ...committedResult, refresh_state: true };
+    throw error;
   }
-  await recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, eventKey, { accepted_event: acceptedSourceEvent });
 
-  return { accepted: true, reason, action: normalizedAction, xp_awarded: communityXp, pet_xp_awarded: petXp,
-    accounting_window: { day_key: dayKey, week_key: weekKey, season_key: pet.season_key },
-    ...(specialPolicy ? { daily_limit: specialPolicy.daily_limit } : {}), pet: persistedPet || pet, season };
+  return committedResult;
 }
 
 async function processPetShopPurchase(db, telegramId, itemKey, options = {}) {
@@ -10114,6 +10129,7 @@ async function processPetMiniAppAction(database, telegramId, user, body, botToke
     // Every handler and its nested helpers receives the same immutable pet
     // authority. Do not pass the unscoped database into this dispatch path.
     const result = await dispatchPetMiniAppAction(scope.db, telegramId, user, body, botToken);
+    if (scope.changed && result?.accepted === true) return { ...result, refresh_state: true };
     if (!scope.changed) return result;
   } catch (error) {
     if (!scope.changed) throw error;
@@ -10191,7 +10207,14 @@ async function dispatchPetMiniAppAction(db, telegramId, user, body, botToken) {
   if (action === 'switch_pet_slot') return switchActivePetSeasonSlot(db, telegramId, body.pet_id || body.slot_number);
   if (['feed', 'play', 'clean', 'sleep', 'train', 'energy_drink', 'dance', 'cuddles'].includes(action)) {
     const result = await processPetAction(db, telegramId, action, { event_key: eventKey, source, pet_id: displayedPetId });
-    if (result.accepted) await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward, { action });
+    if (result.accepted) {
+      try {
+        await recoverPetRuntimeAwards(db, telegramId, applyPetRuntimeCommandAward, { action });
+      } catch (error) {
+        if (isDisplayedPetScopeStaleError(error)) return { ...result, refresh_state: true };
+        throw error;
+      }
+    }
     return result;
   }
   if (action === 'rename') return processPetAction(db, telegramId, 'rename', { event_key: eventKey, pet_name: body.pet_name, source, pet_id: displayedPetId });

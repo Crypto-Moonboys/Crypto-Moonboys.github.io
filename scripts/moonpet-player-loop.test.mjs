@@ -365,7 +365,11 @@ assert.ok(html.indexOf('/js/moonpet-play-options.js') < html.indexOf('/js/moonpe
 // Execute the shipped fast-path handler with the refresh response held open.
 // A transaction race must refresh immediately and block a second mutation.
 const runActionSource = client.slice(client.indexOf('  async function runAction('), client.indexOf('  function switchScreen(', client.indexOf('  async function runAction(')));
-for (const reason of ['displayed_pet_required','displayed_pet_changed','source_pet_changed','pet_action_state_changed']) {
+for (const { reason, accepted, refreshState } of [
+  ...['displayed_pet_required','displayed_pet_changed','source_pet_changed','pet_action_state_changed']
+    .map(reason => ({ reason, accepted: false, refreshState: false })),
+  { reason: 'accepted', accepted: true, refreshState: true },
+]) {
   const calls=[];
   let resolveRefresh;
   const refresh = new Promise(resolve => {resolveRefresh=resolve;});
@@ -382,7 +386,7 @@ for (const reason of ['displayed_pet_required','displayed_pet_changed','source_p
     scheduleFastActionStateRefresh:()=>{assert.fail('stale refresh must not wait four seconds');},
     async post(path,body) {
       calls.push({path,body});
-      if(path.endsWith('/action'))return {state_pending:true,result:{accepted:false,reason}};
+      if(path.endsWith('/action'))return {state_pending:true,result:{accepted,reason,refresh_state:refreshState}};
       refreshStarted();return refresh;
     },
   });

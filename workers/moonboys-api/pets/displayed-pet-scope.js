@@ -5,6 +5,10 @@
 // No SQL is rewritten and callers retain their original batch result indexes.
 const STALE_PATH = 'moonpet_displayed_pet_changed';
 
+export function isDisplayedPetScopeStaleError(error) {
+  return String(error?.message || error).includes(STALE_PATH);
+}
+
 export function createDisplayedPetScope(database, owner, petId) {
   let changed = false;
   let pending = Promise.resolve();
@@ -34,7 +38,7 @@ export function createDisplayedPetScope(database, owner, petId) {
       if (results.at(-1)?.success === false) throw new Error(results.at(-1).error || 'pet_state_read_unavailable');
       return results.slice(0, -1);
     } catch (error) {
-      if (String(error?.message).includes(STALE_PATH)) changed = true;
+      if (isDisplayedPetScopeStaleError(error)) changed = true;
       throw error;
     }
   }

@@ -170,6 +170,30 @@ test('a switch immediately before the random-event reservation rejects without a
   assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='random_event'").get().n, 0);
 });
 
+test('a switch after care settlement preserves the committed result and requests an immediate refresh', async () => {
+  const f = fixture('82015'), displayed = 'current-' + f.owner;
+  f.pet('care-race-other', currentSeason, 300, 2);
+  let switched = false;
+  f.db.afterBatch = statements => {
+    if (!statements.some(s => /UPDATE telegram_pet_events SET status='accepted'/.test(s.query))) return;
+    f.db.afterBatch = null;
+    f.active('care-race-other');
+    switched = true;
+  };
+
+  const result = await f.act({ action: 'feed', displayed_pet_id: displayed, request_id: 'care-race-after-commit' });
+  assert.equal(switched, true);
+  assert.equal(result.accepted, true);
+  assert.equal(result.refresh_state, true);
+  assert.equal(result.pet.pet_id, displayed);
+  assert.equal(result.reason, 'accepted');
+  assert.equal(f.sql.prepare("SELECT status FROM telegram_pet_events WHERE event_type='feed' AND pet_id=?").get(displayed).status, 'accepted');
+  assert.equal(f.sql.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id='care-race-other'").get().pet_xp, 300);
+  await f.state();
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_specialist_events WHERE pet_id=? AND action='feed'").get(displayed).n, 1,
+    'later source-bound recovery must award against the recorded pet');
+});
+
 test('every displayed-pet handler rejects a switch immediately after initial validation', async () => {
   const actions = ['incubate','hatch','rare_morph','feed','play','clean','sleep','train',
     'energy_drink','dance','cuddles','rename','buy','equip','use_item','trade','work',
