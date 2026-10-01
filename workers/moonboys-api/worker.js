@@ -1,6 +1,8 @@
 import { getStyleLoadout, equipPetStyle } from './pets/style-loadout.js';
 import { RELIC_ROUTE_DETAILS } from './pets/relic-passives.js';
 import { requirePetFirstReadResult, requirePetReadResult, requirePetMutationResult } from './pets/read-result.js';
+import { getPetEntryRequirement, petEntryNext, PET_ENTRY_ARCADE_XP } from './pets/entry-requirement.js';
+import { buildPetLifetimeProgression } from './pets/lifetime-progression.js';
 import { readCommunityLeaderboard } from './community-leaderboard.js';
 import { selectCommunitySeason, communitySeasonSql } from './community-season-authority.js';
 import { getCombatEligibility, PET_ARENA_MIN_LEVEL as COMBAT_ARENA_MIN_LEVEL, PET_WEEKLY_BOSS_MIN_LEVEL } from './pets/combat-eligibility.js';
@@ -3221,7 +3223,7 @@ async function processPetRunStepResult(db, telegramId, runIdRaw, choiceKeyRaw, o
         daily_key = excluded.daily_key,
         weekly_key = excluded.weekly_key,
         updated_at = CURRENT_TIMESTAMP
-    `).bind(telegramId, season.key, consolationXp, consolationXp, consolationXp, dayKey, weekKey, runFailEventId),
+    `).bind(telegramId, getPetSeasonInfo(`${dayKey}T00:00:00.000Z`).key, consolationXp, consolationXp, consolationXp, dayKey, weekKey, runFailEventId),
     ...consumedItemStatements];
     const terminalResults = await db.batch(terminalStatements);
     if (!terminalResults?.[2]?.results?.[0] || Number(terminalResults?.[3]?.meta?.changes || 0) !== 1 || Number(terminalResults?.[4]?.meta?.changes || 0) !== 1) {
@@ -4566,7 +4568,7 @@ const PET_SEASON_EXTRA_SLOT_COSTS = Object.freeze({
 });
 const PET_SEASON_MAX_SLOTS = 3;
 
-function serializePetSeasonSlot(row, slotNumber, activePetId, arcadeXpAvailable = 0, previousSlotOwned = true, ownershipRecoveryRequired = false) {
+function serializePetSeasonSlot(row, slotNumber, activePetId, arcadeXpAvailable = 0, previousSlotOwned = true, ownershipRecoveryRequired = false, now = new Date()) {
   const cost = Number(PET_SEASON_EXTRA_SLOT_COSTS[slotNumber] || 0);
   const unlocked = Boolean(row);
   const instancePresent = Boolean(row?.instance_pet_id);
@@ -4610,6 +4612,7 @@ function serializePetSeasonSlot(row, slotNumber, activePetId, arcadeXpAvailable 
       happiness: clampPetStat(Number(row?.happiness == null ? 70 : row.happiness)),
       cleanliness: clampPetStat(Number(row?.cleanliness == null ? 70 : row.cleanliness)),
       progression: row?.progression || null,
+      lifetime_progression: buildPetLifetimeProgression(row, row?.progression, now),
     } : null,
   };
 }
@@ -4707,6 +4710,7 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
     return {
       adopted: true,
       season,
+      competition_season: season,
       current_season_week: journeyPeriod ? getPetJourneyWeek(journeyPeriod, now) : getPetSeasonWeek(season, now),
       journey_period: journeyPeriod,
       max_slots: PET_SEASON_MAX_SLOTS,
@@ -4723,7 +4727,7 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
       slots: Array.from({ length: Math.max(PET_SEASON_MAX_SLOTS, rawRows.length) }, (_, index) => {
         const slotNumber = index + 1;
         const previousOwned = slotNumber <= 1 ? true : rowsBySlot.has(slotNumber - 1);
-        return serializePetSeasonSlot(rowsBySlot.get(slotNumber), slotNumber, activePetId, arcadeXpAvailable, previousOwned, ownershipRecoveryRequired);
+        return serializePetSeasonSlot(rowsBySlot.get(slotNumber), slotNumber, activePetId, arcadeXpAvailable, previousOwned, ownershipRecoveryRequired, now);
       }),
     };
   } catch (error) {
@@ -4794,6 +4798,7 @@ async function buildPetSeasonSlotCoreSummary(db, telegramId, now = new Date()) {
     adopted: true,
     hydrated: false,
     season,
+    competition_season: season,
     current_season_week: journeyPeriod ? getPetJourneyWeek(journeyPeriod, now) : getPetSeasonWeek(season, now),
     journey_period: journeyPeriod,
     max_slots: PET_SEASON_MAX_SLOTS,
@@ -4810,7 +4815,7 @@ async function buildPetSeasonSlotCoreSummary(db, telegramId, now = new Date()) {
     slots: Array.from({ length: Math.max(PET_SEASON_MAX_SLOTS, rawRows.length) }, (_, index) => {
       const slotNumber = index + 1;
       const previousOwned = slotNumber <= 1 ? true : rowsBySlot.has(slotNumber - 1);
-      return serializePetSeasonSlot(rowsBySlot.get(slotNumber), slotNumber, activePetId, arcadeXpAvailable, previousOwned, ownershipRecoveryRequired);
+      return serializePetSeasonSlot(rowsBySlot.get(slotNumber), slotNumber, activePetId, arcadeXpAvailable, previousOwned, ownershipRecoveryRequired, now);
     }),
   };
 }
@@ -4913,14 +4918,19 @@ async function getOrCreatePetProfile(db, telegramId, options = {}) {
     const petName = normalizePetName(options.pet_name) || 'Moonpet';
     const species = normalizePetName(options.species) || '';
     await db.prepare(`
-      INSERT INTO telegram_pet_profiles (telegram_id, pet_name, species)
-      VALUES (?, ?, ?)
-    `).bind(telegramId, petName, species).run();
-    await ensurePetStarterSeasonSlot(db, telegramId);
+      INSERT OR IGNORE INTO telegram_pet_profiles (telegram_id, pet_name, species)
+      SELECT ?, ?, ? WHERE EXISTS (
+        SELECT 1 FROM arcade_progression_state WHERE telegram_id=? AND arcade_xp_total>=?
+      )
+    `).bind(telegramId, petName, species, telegramId, PET_ENTRY_ARCADE_XP).run().then(requirePetMutationResult);
+    pet = await db.prepare(`SELECT * FROM telegram_pet_profiles WHERE telegram_id=?`)
+      .bind(telegramId).first().then(requirePetFirstReadResult);
+    if (!pet) return null;
+    await ensurePetStarterSeasonSlot(db, telegramId, options.now || new Date());
     await ensureActivePetInstance(db, telegramId);
     pet = await db.prepare(`
       SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?
-    `).bind(telegramId).first();
+    `).bind(telegramId).first().then(requirePetFirstReadResult);
   }
   return applyPetDecay(pet);
 }
@@ -6413,7 +6423,14 @@ async function processPetAction(db, telegramId, action, options = {}) {
       }
       return { accepted: false, reason: 'pet_already_adopted', xp_awarded: 0, pet_xp_awarded: 0, pet: existingPet };
     }
+    const entryRequirement = await getPetEntryRequirement(db, telegramId);
+    if (!entryRequirement.eligible) {
+      return { accepted: false, reason: 'arcade_xp_entry_required', entry_requirement: entryRequirement, xp_awarded: 0, pet_xp_awarded: 0 };
+    }
     const pet = await getOrCreatePetProfile(db, telegramId, options);
+    if (!pet) {
+      return { accepted: false, reason: 'arcade_xp_entry_required', entry_requirement: await getPetEntryRequirement(db, telegramId), xp_awarded: 0, pet_xp_awarded: 0 };
+    }
     await savePetProfile(db, pet);
     await createMoonEggLifecycle(db, telegramId, `${eventKey}:lifecycle`);
     await recordMoonpetMemory(db, { telegram_id: telegramId, event_key: `${eventKey}:memory`, memory_type: 'first_adoption', milestone: 'first_adoption' });
@@ -6933,7 +6950,7 @@ async function processPetGoldTrade(db, telegramId, wagerRaw, options = {}) {
         daily_key = excluded.daily_key,
         weekly_key = excluded.weekly_key,
         updated_at = CURRENT_TIMESTAMP
-    `).bind(telegramId, sourceAuthority.season_key, petXp, petXp, petXp, dayKey, weekKey, eventId),
+    `).bind(telegramId, getPetSeasonInfo(now).key, petXp, petXp, petXp, dayKey, weekKey, eventId),
     db.prepare(`
       UPDATE telegram_pet_events
       SET status = 'accepted', reason = ?
@@ -9536,12 +9553,14 @@ async function buildPetMiniAppCoreState(db, telegramId, options = {}) {
   if (!options.prepared) await preparePetMiniAppState(db, telegramId, now);
   const petRaw = options.petRaw || await getPetProfile(db, telegramId, false);
   if (!petRaw) {
+    const entryRequirement = await getPetEntryRequirement(db, telegramId);
     return {
       adopted: false,
+      entry_requirement: entryRequirement,
       hydration: { mode: 'core', full: false },
       pet: null,
       lifecycle: null,
-      next: { key: 'adopt', title: 'Activate EGGYONE', detail: 'Awaken your first Secret Bot to begin.', action: 'adopt', destination: 'home' },
+      next: petEntryNext(entryRequirement),
       guidance: null,
       season_slots: { adopted: false, hydrated: false, season: getPetSeasonInfo(now), slots: [] },
       cooldowns: { server_time: now.toISOString(), next_expires_at: null, entries: [] },
@@ -9637,6 +9656,8 @@ async function buildPetMiniAppCoreState(db, telegramId, options = {}) {
     lifecycle,
     next,
     guidance,
+    lifetime_progression: seasonSlots.slots.find(slot => slot.active)?.pet?.lifetime_progression || null,
+    competition_season: seasonSlots.competition_season,
     season_slots: seasonSlots,
     cooldowns: buildPetMiniAppCooldownSummary({
       guidance,
@@ -9665,7 +9686,8 @@ async function buildPetMiniAppMissionsState(db, telegramId, petRaw, now) {
   // Other slots stay deferred. Missions displays progression for the active pet;
   // Profile still obtains the full roster when opened.
   const seasonSlots = { ...core.season_slots, slots: core.season_slots.slots.map(slot =>
-    slot.active && slot.pet ? { ...slot, pet: { ...slot.pet, progression } } : slot) };
+    slot.active && slot.pet ? { ...slot, pet: { ...slot.pet, progression,
+      lifetime_progression: { ...slot.pet.lifetime_progression, completion: progression, detail_hydrated: true } } } : slot) };
   const journey = await buildPetMiniAppJourneySummary(db, telegramId, seasonSlots, now);
   const finaleAchievement = seasonFinales.pets.find(entry => entry.pet_id === petRaw.pet_id && entry.season_key === petRaw.season_key);
   if (finaleAchievement) achievements.push({ achievement_id: 'finale_victor', title: 'Finale Victor', description: 'Defeat Signal Sovereign with this season pet.', target: 1, progress: finaleAchievement.status === 'won' ? 1 : 0, unlocked_at: finaleAchievement.defeated_at || null });
@@ -9682,6 +9704,7 @@ async function buildPetMiniAppMissionsState(db, telegramId, petRaw, now) {
     hydration: { mode: 'missions', full: false, modules: ['missions'] },
     guidance,
     season_slots: seasonSlots,
+    lifetime_progression: seasonSlots.slots.find(slot => slot.active)?.pet?.lifetime_progression || null,
     contracts,
     season_finales: seasonFinales,
     daily_journey: journey.daily,
@@ -9728,11 +9751,13 @@ async function buildPetMiniAppState(db, telegramId, botToken, options = {}) {
   });
   const petRaw = await getPetProfile(db, telegramId, true);
   if (!petRaw) {
+    const entryRequirement = await getPetEntryRequirement(db, telegramId);
     return {
       adopted: false,
+      entry_requirement: entryRequirement,
       pet: null,
       capabilities_version: 1,
-      next: { key: 'adopt', title: 'Activate EGGYONE', detail: 'Awaken your first Secret Bot to begin.', action: 'adopt' },
+      next: petEntryNext(entryRequirement),
       jobs: Object.values(PET_JOBS),
       shop_items: [],
       inventory: [],
@@ -9931,6 +9956,8 @@ async function buildPetMiniAppState(db, telegramId, botToken, options = {}) {
     notices: guidanceNotices,
     progress: runtime,
     season_slots: seasonSlots,
+    lifetime_progression: seasonSlots.slots.find(slot => slot.active)?.pet?.lifetime_progression || null,
+    competition_season: seasonSlots.competition_season,
     season_finales: seasonFinales,
     capabilities_version: 1,
     capabilities: buildPetMiniAppCapabilities(combatEligibility, journeySummary?.weekly || null),
@@ -10359,7 +10386,7 @@ function serializePetMiniAppActionResult(result = {}, identity = null, telegramI
   for (const key of ['pet_xp_awarded', 'xp_awarded', 'damage', 'action', 'attempt', 'retry_after_seconds', 'remaining_seconds', 'server_time', 'gold_delta', 'crystal_delta', 'daily_limit', 'used_today', 'won', 'reward_pending']) {
     if (result[key] !== undefined) output[key] = result[key];
   }
-  for (const key of ['rewards', 'applied', 'job', 'item', 'recipe', 'encounter', 'choice', 'result_copy', 'reaction', 'boss', 'progress', 'tier', 'expedition', 'offer', 'bounty', 'queue', 'run', 'room', 'session', 'pending', 'computed', 'resolved', 'match', 'reward_results', 'region', 'chain_key', 'step', 'final', 'cosmetic', 'cost', 'faction_bonus', 'prestige_count', 'acknowledged', 'rare_morph', 'care_type', 'season_slots', 'capabilities_version', 'capabilities', 'cooldown', 'expires_at']) {
+  for (const key of ['rewards', 'applied', 'job', 'item', 'recipe', 'encounter', 'choice', 'result_copy', 'reaction', 'boss', 'progress', 'tier', 'expedition', 'offer', 'bounty', 'queue', 'run', 'room', 'session', 'pending', 'computed', 'resolved', 'match', 'reward_results', 'region', 'chain_key', 'step', 'final', 'cosmetic', 'cost', 'faction_bonus', 'prestige_count', 'acknowledged', 'rare_morph', 'care_type', 'season_slots', 'entry_requirement', 'capabilities_version', 'capabilities', 'cooldown', 'expires_at']) {
     if (result[key] !== undefined) output[key] = result[key];
   }
   if (output.result_copy === undefined && result.outcome?.copy) {
@@ -17494,6 +17521,7 @@ function formatPetBlockedCopy(kind, reason, extra = {}) {
   if (code === 'stale_run_step') return `That run button is from an older step. Use /petrun to see the current choice.`;
   if (code === 'insufficient_run_cost') return `Moonpet cannot afford that run choice cost. Try another route or extract first.`;
   if (code === 'pet_not_adopted') return `You need a Moonpet first. Use /adopt to start.`;
+  if (code === 'arcade_xp_entry_required') return `Your first Moonpet unlocks at ${PET_ENTRY_ARCADE_XP.toLocaleString('en-US')} lifetime Arcade XP. You have ${Number(extra.entry_requirement?.arcade_xp_lifetime || 0).toLocaleString('en-US')}. Earn Arcade XP at https://crypto-moonboys.github.io/games/ using this Telegram account, then use /adopt. Entry keeps your XP.`;
   if (code === 'equipment_not_owned') return 'Buy this permanent gear once in Shop before equipping it for free.';
   if (code === 'equipment_state_changed') return 'Your active pet or equipment changed. Refresh and choose again. Nothing was charged.';
   if (code === 'already_equipped') return `That ${kind} is already equipped.`;

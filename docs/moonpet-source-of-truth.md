@@ -38,7 +38,20 @@ continues at week 14 after the creation quarter, with no end date. Migration 085
 retains historical nullable qualification keys and every existing receipt while
 lifting the database week limit; migration 086 restores proven Sanctuary archives.
 Competition calendars, existing prices and evolution thresholds remain unchanged.
-The proposed 1,000 XP entry gate and year-long progression are separate work.
+First-pet entry requires 1,000 lifetime Arcade XP from the server-owned
+`arcade_progression_state.arcade_xp_total`. Entry does not spend XP. Community XP,
+Telegram profile levels, spendable-wallet balances and client payloads cannot
+satisfy this gate. Existing pet profiles retain access, including safe starter
+recovery. The proposed year-long evolution pacing remains separate work.
+
+State projects `lifetime_progression` separately from `competition_season`.
+Pet age and displayed lifetime week start at the saved ownership creation date;
+Growth Marks, Weekly Crests, Pet XP and completion stay with the pet. Historical
+source season keys and qualification-week numbering remain receipt provenance,
+not the current competition period. Core loads defer completion detail; Missions
+and Profile hydrate it without resetting progression. Competition XP for new
+awards uses the earning day's calendar quarter, including delayed reserved
+rewards. Existing competition rows are not rewritten.
 
 ## XP and score ownership
 
@@ -46,7 +59,7 @@ The proposed 1,000 XP entry gate and year-long progression are separate work.
 | --- | --- |
 | Pet XP | Original earning pet; controls its level and unlocks. |
 | Specialist XP | Original pet's Care, Training, Adventure, Arena, Job and Bond tracks. |
-| Account Season XP | Aggregate awarded Pet XP for the player and source pet season; drives shared tier claims and seasonal ranks. Not spendable. |
+| Account Season XP | Aggregate awarded Pet XP for the player and earning competition quarter; drives shared tier claims and seasonal ranks. Not spendable. |
 | Daily / weekly pet ranks | Accepted Pet XP receipts in the settlement UTC day / week. |
 | All-time pet ranks | Sum of retained owned pets' XP, including earlier seasons; legacy profile fallback only before per-pet authority exists. |
 | Community XP | Separate account score; only the Community XP portion of accepted pet rewards feeds this board and its chart. Community and pet seasons are independent. |
@@ -147,7 +160,7 @@ victory saved with an explicit claim button, even after changing the active pet.
 
 Both rewards use the existing atomic ledger, fixed server reward values and
 1200 daily Pet XP cap. Daily/weekly leaderboards count settlement-time Pet XP;
-seasonal XP stays with the source season and all-time includes retained pets.
+seasonal XP follows the award-day competition quarter and all-time includes retained pets. Reserved awards keep their saved earning day.
 Public activity names the two rewards. These payouts add no Journey objectives
 or specialist/material bonuses.
 
@@ -643,7 +656,7 @@ whose existing two-minute lease has elapsed. Recovery uses the original owned
 pet and season, including archived pets, and a raid's original boss rotation.
 It never charges an unstarted energy action. Already paid XP stays on its
 original receipt; a newly delivered reward enters the current daily/weekly
-settlement window and its source season. Failed repairs back off so other
+settlement window and competition quarter, unless a reservation froze its earning day. Source pet/season receipt provenance stays unchanged. Failed repairs back off so other
 quests can proceed. Missing ownership or decision evidence is not invented.
 
 District approaches all use their advertised risk, including the default

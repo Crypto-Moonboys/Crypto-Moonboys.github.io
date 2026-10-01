@@ -269,7 +269,7 @@ test('finale qualification counts distinct days and weeks before a completion ma
   assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_season_completions').get().n,0,'the extra boss never rewrites season completion');
 });
 
-test('an archived completed pet keeps its finale and source-season reward after rollover', async () => {
+test('an archived completed pet keeps its finale while new rewards count in the current competition', async () => {
   const f=fixture('finale-archived');
   const old='pet-s2025-001',id='archived-finalist';
   f.pet(id,1,old);f.completeSeason(id,old);
@@ -279,8 +279,8 @@ test('an archived completed pet keeps its finale and source-season reward after 
   assert.equal((await f.act(finaleBody(original,'finale_start',{build:'guardian'}))).accepted,true);
   assert.equal((await win(original)).status,'won');
   assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(f.petId).pet_xp,200);
-  assert.equal(f.sql.prepare('SELECT season_xp FROM telegram_pet_season_state WHERE telegram_id=? AND season_key=?').get(f.owner,old).season_xp,100);
-  assert.deepEqual((await f.get('/telegram-pets/leaderboard?period=seasonal')).entries,[]);
+  assert.equal(f.sql.prepare('SELECT season_xp FROM telegram_pet_season_state WHERE telegram_id=? AND season_key=?').get(f.owner,season).season_xp,100);
+  assert.equal((await f.get('/telegram-pets/leaderboard?period=seasonal')).entries[0].pet_xp,100);
   assert.equal((await f.get('/telegram-pets/leaderboard?period=daily')).entries[0].pet_xp,100);
 });
 

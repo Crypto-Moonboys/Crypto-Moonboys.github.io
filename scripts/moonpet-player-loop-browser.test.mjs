@@ -105,6 +105,48 @@ if (process.env.CHROMIUM_EXECUTABLE_PATH) launch.executablePath = process.env.CH
 let browser;
 try {
   browser = await chromium.launch(launch);
+  // New players see the verified entry threshold; existing beta fixtures below
+  // keep their pets even though they have never earned Arcade XP.
+  {
+    const id = 'browser-entry';
+    sqlite.prepare('INSERT INTO telegram_users (telegram_id) VALUES (?)').run(id);
+    sqlite.prepare('INSERT INTO arcade_progression_state (telegram_id,arcade_xp_total) VALUES (?,999)').run(id);
+    const context = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+    const page = await context.newPage(), errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await page.addInitScript(() => localStorage.setItem('moonpet-radio-preference', 'off'));
+    await page.route('**/*', async route => {
+      const url = new URL(route.request().url());
+      if (url.hostname === 'telegram.org') return route.fulfill({ contentType: 'text/javascript', body: "window.Telegram={WebApp:{initData:'fixture',ready(){},expand(){},onEvent(){},setHeaderColor(){},setBackgroundColor(){}}};" });
+      if (url.pathname.endsWith('/telegram-pets/app/performance')) return route.fulfill({ json: { ok: true } });
+      if (url.pathname.includes('/telegram-pets/app/')) {
+        const body = route.request().postDataJSON();
+        const result = url.pathname.endsWith('/action')
+          ? await hooks.processPetMiniAppAction(db, id, { id }, body, token) : undefined;
+        const state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(db, id)
+          : await hooks.buildPetMiniAppState(db, id, token);
+        return route.fulfill({ json: { ok: true, state, result } });
+      }
+      if (url.hostname === '127.0.0.1') return route.continue();
+      return route.abort();
+    });
+    const url = `http://127.0.0.1:${server.address().port}/moonpet-game.html`;
+    await page.goto(url);
+    const initialise = page.locator('[data-action="adopt"]');
+    await initialise.waitFor();
+    assert.equal(await initialise.isDisabled(), true);
+    assert.match(await page.locator('#screen').innerText(), /999 \/ 1,000 LIFETIME ARCADE XP/);
+    assert.equal(await page.locator('a:has-text("PLAY WEBSITE ARCADE")').getAttribute('href'), '/games/');
+    sqlite.prepare('UPDATE arcade_progression_state SET arcade_xp_total=1000 WHERE telegram_id=?').run(id);
+    await page.reload();
+    await page.waitForSelector('[data-action="adopt"]:enabled');
+    await initialise.click();
+    await page.waitForSelector('[data-panel="incubation"]');
+    assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM telegram_pet_instances WHERE telegram_id=?').get(id).n, 1);
+    assert.equal(sqlite.prepare('SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id=?').get(id).arcade_xp_total, 1000);
+    assert.deepEqual(errors, []);
+    await context.close();
+  }
   // Exercise the partial response with the real renderer, including a delayed
   // Missions deep link and subsequent navigation to a full-state screen.
   {

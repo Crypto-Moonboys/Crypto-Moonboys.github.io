@@ -246,11 +246,11 @@ export async function evaluatePetSeasonCompletion(db, petId, seasonKey, now = ne
   const requirementsMet = legendary && growthEarned >= PET_SEASON_COMPLETION_CONFIG.required_growth_marks && crestEarned >= PET_SEASON_COMPLETION_CONFIG.required_weekly_crests;
   const completion = existing;
   return {
-    pet_id: petId, lifecycle, legendary,
+    pet_id: petId, scope: 'pet_lifetime', source_season_key: seasonKey, lifecycle, legendary,
     state: completion ? 'season_complete' : legendary ? 'legendary' : 'not_legendary',
     growth_marks: { earned: growthEarned, required: PET_SEASON_COMPLETION_CONFIG.required_growth_marks },
     weekly_crests: { earned: crestEarned, required: PET_SEASON_COMPLETION_CONFIG.required_weekly_crests, weeks_completed: crestEarned, evidence_rows: integer(crests?.evidence_rows), current_season_week: seasonWeek, current_week_crest_earned: Boolean(currentCrest?.earned) },
-    requirements_met: requirementsMet, season_complete: Boolean(completion), completed_at: completion?.completed_at || null,
+    requirements_met: requirementsMet, lifetime_complete: Boolean(completion), season_complete: Boolean(completion), completed_at: completion?.completed_at || null,
     completion_season: completion ? seasonKey : null, sanctuary_eligible: Boolean(completion),
     sanctuary_transition: PET_SEASON_COMPLETION_CONFIG.sanctuary_transition,
   };

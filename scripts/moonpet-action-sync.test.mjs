@@ -192,7 +192,7 @@ test('an old-season activity settles its saved source while another pet is curre
   assert.equal(f.sql.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?").get('current-'+f.owner).pet_xp,200);
   assert.equal(f.sql.prepare('SELECT season_key FROM telegram_pet_events').get().season_key,oldSeason);
   assert.equal(f.sql.prepare('SELECT pet_id,season_key FROM telegram_pet_growth_marks').get().pet_id,'old-activity');
-  assert.deepEqual((await f.get('/telegram-pets/leaderboard?period=seasonal')).entries,[]);
+  assert.equal((await f.get('/telegram-pets/leaderboard?period=seasonal')).entries[0].pet_xp,result.pet_xp_awarded);
   assert.equal((await f.get('/telegram-pets/leaderboard?period=daily')).entries[0].pet_xp,result.pet_xp_awarded);
 });
 

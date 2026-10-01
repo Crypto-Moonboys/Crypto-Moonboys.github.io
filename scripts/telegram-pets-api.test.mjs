@@ -2527,7 +2527,7 @@ assert.equal(initialSeasonSlots.slots.length, 3, 'season slot summary must alway
 assert.equal(initialSeasonSlots.slots[0].unlocked, true, 'starter slot must be unlocked for existing pet profiles');
 assert.deepEqual(
   Object.keys(initialSeasonSlots.slots[0].pet).sort(),
-  ['art_identity_id', 'cleanliness', 'display_name', 'energy', 'happiness', 'health', 'hunger', 'level', 'name', 'pet_name', 'pet_xp', 'progression', 'species', 'stage', 'variant'].sort(),
+  ['art_identity_id', 'cleanliness', 'display_name', 'energy', 'happiness', 'health', 'hunger', 'level', 'lifetime_progression', 'name', 'pet_name', 'pet_xp', 'progression', 'species', 'stage', 'variant'].sort(),
   'owned slot summaries must expose only the pet-instance fields required by the roster card',
 );
 assert.equal(initialSeasonSlots.slots[0].pet.art_identity_id, null, 'slot summaries must not leak hidden art identities before Stage 3');
@@ -4304,6 +4304,9 @@ const failedStepLedger = failedStepEventDb.database.prepare("SELECT pet_id, pet_
 assert.equal(failedStepLedger.pet_id, failedStepPet.pet_id, 'failed-step consolation XP must be visible in the run pet ledger');
 assert.equal(failedStepLedger.pet_xp_awarded, failedStepResult.pet_xp_awarded);
 assert.ok(failedStepLedger.pet_xp_awarded > 0, 'another pet consuming its cap cannot suppress this run pet consolation XP');
+assert.equal(failedStepEventDb.database.prepare('SELECT season_xp FROM telegram_pet_season_state WHERE telegram_id=? AND season_key=?')
+  .get('failed-step-event', __petMediaTestHooks.getPetSeasonInfo(new Date()).key).season_xp, failedStepLedger.pet_xp_awarded,
+  'failed-run XP counts in the award competition period while remaining on the original pet');
 
 const terminalRaceDb = seedRepeatRewardPlayer('terminal-race', 90);
 await ensurePetStarterSeasonSlot(terminalRaceDb, 'terminal-race', new Date('2026-08-15T00:00:00Z'));

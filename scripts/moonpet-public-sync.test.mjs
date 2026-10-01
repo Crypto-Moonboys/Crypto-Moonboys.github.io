@@ -52,8 +52,8 @@ sql.prepare('UPDATE telegram_pet_profiles SET pet_xp=200 WHERE telegram_id=?').r
 board=await get('/telegram-pets/leaderboard?period=all_time');
 assert.equal(board.entries[0].pet_xp,300,'switching pets cannot replace the all-time total');
 
-// Old-season recovery counts for its source season and account all-time, while
-// daily/weekly count the actual settlement. The current pet keeps its own XP.
+// An award today counts in today's competition while its pet/source provenance
+// remains permanent. Reserved awards keep their saved earning day separately.
 const previousSeason=hooks.getPetSeasonInfo(new Date(Date.UTC(now.getUTCFullYear()-1,0,15))).key;
 pet('70001','archived-pet',1,400,previousSeason);
 sql.prepare("UPDATE telegram_pet_instances SET status='archived' WHERE pet_id='archived-pet'").run();
@@ -66,8 +66,10 @@ assert.equal((await awardPetReward(db,reward)).pet_xp_awarded,0);
 assert.equal(sql.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id='second-pet'").get().pet_xp,200);
 assert.equal((await get('/telegram-pets/leaderboard?period=all_time')).entries[0].pet_xp,720);
 for(const period of ['daily','weekly']) assert.equal((await get('/telegram-pets/leaderboard?period='+period)).entries[0].pet_xp,20);
-assert.deepEqual((await get('/telegram-pets/leaderboard?period=seasonal')).entries,[],'old recovery cannot inflate current-season ranks');
-assert.equal(sql.prepare('SELECT season_xp FROM telegram_pet_season_state WHERE telegram_id=? AND season_key=?').get('70001',previousSeason).season_xp,20);
+assert.equal((await get('/telegram-pets/leaderboard?period=seasonal')).entries[0].pet_xp,20,'competition scores follow the award period rather than pet birth');
+assert.equal(sql.prepare('SELECT season_xp FROM telegram_pet_season_state WHERE telegram_id=? AND season_key=?').get('70001',season).season_xp,20);
+assert.equal(sql.prepare('SELECT season_xp FROM telegram_pet_season_state WHERE telegram_id=? AND season_key=?').get('70001',previousSeason),undefined);
+assert.equal(sql.prepare("SELECT season_key FROM telegram_pet_events WHERE event_key='sync-reward'").get().season_key,previousSeason,'public activity retains the source pet identity');
 let activity=await get('/telegram-pets/activity');
 assert.equal(activity.items[0].display_name,'BOTTY','activity identifies the archived earning pet, not the active hidden pet');
 assert.equal(activity.items[0].pet_xp_awarded,20);
@@ -82,7 +84,7 @@ assert.equal(community.entries.find((entry)=>entry.telegram_id==='70001').rank,1
 seed('70002',720);seed('70003',720);seed('70004',30);
 pet('70004','fourth-pet',1,30);active('70004','archived-pet',previousSeason);
 for(const [owner,xp] of [['70001',8],['70002',8],['70003',9],['70004',1]]) {
-  sql.prepare('INSERT INTO telegram_pet_season_state (telegram_id,season_key,season_xp) VALUES (?,?,?)').run(owner,season,xp);
+  sql.prepare('INSERT INTO telegram_pet_season_state (telegram_id,season_key,season_xp) VALUES (?,?,?) ON CONFLICT(telegram_id,season_key) DO UPDATE SET season_xp=excluded.season_xp').run(owner,season,xp);
 }
 const changes=()=>sql.prepare('SELECT total_changes() n').get().n;
 const beforeReads=changes();

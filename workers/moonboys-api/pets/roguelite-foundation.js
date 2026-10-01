@@ -295,6 +295,9 @@ export async function awardPetReward(db, request = {}) {
   const week = Math.ceil((((weekDate - weekYearStart) / 86400000) + 1) / 7);
   const weekKey = String((reservationId && request.week_key) || `${weekDate.getUTCFullYear()}-W${String(week).padStart(2, '0')}`);
   const seasonKey = String(request.season_key || getMoonpetSeasonKey(now));
+  // Pet ownership and event receipts retain their original source season.
+  // Reserved rewards retain their earning day even when recovered later.
+  const competitionSeasonKey = getMoonpetSeasonKey(`${dayKey}T00:00:00.000Z`);
   const authorization = getRewardAuthorization(source, telegramId, request.context, now, petId);
   const claimId = crypto.randomUUID();
   const eventId = reservationId || crypto.randomUUID();
@@ -432,7 +435,7 @@ export async function awardPetReward(db, request = {}) {
         weekly_xp = CASE WHEN weekly_key = excluded.weekly_key THEN weekly_xp + excluded.weekly_xp ELSE excluded.weekly_xp END,
         daily_xp = CASE WHEN daily_key = excluded.daily_key THEN daily_xp + excluded.daily_xp ELSE excluded.daily_xp END,
         daily_key = excluded.daily_key, weekly_key = excluded.weekly_key, updated_at = CURRENT_TIMESTAMP`)
-      .bind(telegramId, seasonKey, dayKey, weekKey, eventId, metadata),
+      .bind(telegramId, competitionSeasonKey, dayKey, weekKey, eventId, metadata),
   ];
   const rogueliteAsset = source.startsWith('roguelite_');
   for (const [kind, collection, dailyCap] of [['material', rewards.materials, DAILY_ROGUELITE_MATERIAL_CAP], ['item', rewards.items, DAILY_ROGUELITE_ITEM_CAP]]) {

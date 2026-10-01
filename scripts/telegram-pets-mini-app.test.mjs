@@ -781,12 +781,12 @@ ${nextGuidanceSource}; return { homeNextLine, profileNextLine, exploreNextLine, 
 assert.equal(nextGuidanceRuntime({
   adopted: false,
   pet: null,
-}).homeNextLine(), 'Initialise a Secret Bot to begin.',
+}).homeNextLine(), 'Checking your Arcade XP entry requirement.',
   'unadopted Home guidance must point to Secret Bot initialisation');
 assert.equal(nextGuidanceRuntime({
   adopted: false,
   pet: null,
-}).profileNextLine(), 'Initialise a Secret Bot to begin.',
+}).profileNextLine(), 'Checking your Arcade XP entry requirement.',
   'unadopted Profile guidance must say initialise first instead of missing progression');
 const unadoptedExploreMarkup = nextGuidanceRuntime({
   adopted: false,
@@ -895,7 +895,7 @@ assert.equal(nextGuidanceRuntime({
   adopted: false,
   pet: null,
   weekly_journey: { objectives: [] },
-}).exploreNextLine(), 'Initialise a Secret Bot to begin.',
+}).exploreNextLine(), 'Checking your Arcade XP entry requirement.',
   'unadopted players with no pet must be guided to initialise before energy recovery');
 assert.equal(nextGuidanceRuntime({
   adopted: true,
@@ -1532,7 +1532,7 @@ assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261001-remove-practice-v1/
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20260926-front-actions-v1/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20260926-front-actions-v1/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261001-permanent-pets-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261001-entry-lifetime-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1710,7 +1710,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261001-permanent-pets-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261001-entry-lifetime-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -1743,7 +1743,7 @@ assert.match(client, /PET PROGRESSION[\s\S]*ACCOUNT SEASON XP/, 'season UI must 
 assert.match(client, /XP across your pets for this season[\s\S]*tiers[\s\S]*shared seasonal rank/, 'account seasonal values must not be presented as pet-instance fields');
 assert.match(client, /Math\.max\(3, provided\.length\)/, 'slot summary must always materialize all three seasonal slots');
 assert.match(client, /CURRENT ARCADE XP/, 'slot summary must display the shared Arcade XP balance');
-assert.match(client, /PET 1 IS FREE \/\/ PET 2 REQUIRES 500 XP \/\/ PET 3 REQUIRES 1,000 XP/, 'slot costs must match live community XP unlock rules');
+assert.match(client, /NEW PLAYER ENTRY \/\/ 1,000 LIFETIME ARCADE XP, KEPT \/\/ PET 1 IS FREE \/\/ PET 2 COSTS 500 SPENDABLE XP \/\/ PET 3 COSTS 1,000 SPENDABLE XP/, 'entry eligibility must be distinct from extra-space spending');
 assert.match(client, /data-season-slot=/, 'each rendered slot must expose its slot number');
 assert.match(client, /unlockEnabled \? button\('UNLOCK SLOT ' \+ slotNumber, 'buy_pet_slot', \{ slot_number: slotNumber \}/, 'unlock controls must use the existing authenticated slot action');
 assert.match(client, /disabled: !affordable/, 'unaffordable slot unlocks must be disabled');
