@@ -115,8 +115,9 @@ test('audit every permanent Shop item, each upgrade level, and replay',async()=>
 test('audit all recipes and consumable use',async()=>{
  const f=funded('recipes');
  for(const [key,recipe] of Object.entries(PET_CRAFTING_RECIPES)){
+  const before=f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item' AND asset_key=?").get(f.owner,recipe.output.item_key)?.quantity||0;
   const r=await processPetCraftRecipe(f.db,f.owner,key,key);assert.equal(r.accepted,true,key);
-  assert.equal(f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item' AND asset_key=?").get(f.owner,recipe.output.item_key).quantity,recipe.output.quantity);
+  assert.equal(f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item' AND asset_key=?").get(f.owner,recipe.output.item_key).quantity,before+recipe.output.quantity);
   assert.equal((await processPetCraftRecipe(f.db,f.owner,key,key)).duplicate,true);
  }
  for(const key of ['moon_snack','energy_drink','clean_wipe','lucky_charm','style_patch','adventure_map']){
@@ -131,7 +132,7 @@ test('audit all recipes and consumable use',async()=>{
    assert.equal(board.entries[0].pet_xp,r.pet_xp_awarded+(period==='all_time'?500000:0),key+period);
   }
  }
- console.log('5 recipes and 6 consumables verified with single use and four-period XP parity');
+ console.log('6 recipes and 6 consumables verified with single use and four-period XP parity');
 });
 
 test('all twelve market offers deliver their full bundle exactly once', async () => {

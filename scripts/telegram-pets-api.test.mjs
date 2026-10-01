@@ -196,6 +196,8 @@ assert.equal(serializedCooldownAction.expires_at, '2026-08-22T12:02:00.000Z',
   'rejected action expires_at must not be dropped from the Mini App result payload');
 assert.equal(serializedCooldownAction.server_time, '2026-08-22T12:00:00.000Z',
   'rejected action server_time must not be dropped from the Mini App result payload');
+assert.equal(serializePetMiniAppActionResult({ accepted: false, reason: 'displayed_pet_changed', refresh_state: true }).refresh_state, true,
+  'stale-target refresh authority must reach result-only Mini App clients');
 const simultaneousCooldowns = buildPetMiniAppCooldownSummary({
   now: cooldownNow,
   journeySummary: {

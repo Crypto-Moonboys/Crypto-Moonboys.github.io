@@ -220,7 +220,7 @@ test('overlapping consumables share the remaining Pet XP allowance', async()=>{
   for (const claim of f.sql.prepare("SELECT applied_rewards FROM telegram_pet_reward_claims WHERE source='pet_item_use'").all()) assert.ok(JSON.parse(claim.applied_rewards).pet_xp<=2);
 });
 
-test('switching pets during item use preserves the original reward and the new pet mirror', async()=>{
+test('switching pets during item use rejects without consuming or rewarding either pet', async()=>{
   const f=fixture('83007'); items(f,'moon_snack'); f.pet('other',currentSeason,300,2);
   f.db.beforeBatch=async statements=>{
     if(!statements[0].query.includes('item_use_pending')) return;
@@ -228,10 +228,10 @@ test('switching pets during item use preserves the original reward and the new p
     assert.equal((await hooks.switchActivePetSeasonSlot(f.db,f.owner,'other')).accepted,true);
   };
   const r=await hooks.processPetUseItem(f.db,f.owner,'moon_snack',{event_key:'switch-item'});
-  assert.equal(r.accepted,true);
-  assert.equal(r.pet.pet_id,'current-'+f.owner);
-  assert.equal(f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE asset_key='moon_snack'").get().quantity,1);
-  assert.equal(xp(f),204);
+  assert.equal(r.accepted,false);
+  assert.equal(r.reason,'pet_action_state_changed');
+  assert.equal(f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE asset_key='moon_snack'").get().quantity,2);
+  assert.equal(xp(f),200);
   assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_profiles').get().pet_xp,300);
   assert.equal(f.sql.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id='other'").get().pet_xp,300);
 });

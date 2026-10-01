@@ -3053,6 +3053,23 @@
 
       if (fastResponse && data.state_pending === true) {
         if (stateRequestGate.isCurrent(requestGeneration)) {
+          var staleDisplayedPet = !actionAccepted && Boolean(data.result && (data.result.refresh_state === true || ['displayed_pet_changed', 'source_pet_changed'].includes(data.result.reason)));
+          if (staleDisplayedPet) {
+            // Never merge Pet B into Pet A's old snapshot. Block further clicks
+            // until a complete authoritative projection has replaced the view.
+            animateAction('blocked', false, 2800, payload);
+            var staleMessage = resultMessage(data.result, stateBeforeAction, stateBeforeAction);
+            tell(staleMessage + ' // REFRESHING LIVE SAVE...', 'danger');
+            haptic('error');
+            var staleGeneration = beginStateRequest();
+            var refreshed = await post('/telegram-pets/app/state', stateRefreshPayload(stateBeforeAction, activeScreen));
+            if (setStateSnapshot(refreshed.state, staleGeneration)) {
+              fastActionStateDirty = false;
+              render();
+              tell(staleMessage, 'danger');
+            }
+            return;
+          }
           state = patchFastActionState(state, data.result, action);
           var fastServerTime = Date.parse(data.server_time || data.result && data.result.server_time || '');
           if (Number.isFinite(fastServerTime)) serverClockOffsetMs = fastServerTime - Date.now();
