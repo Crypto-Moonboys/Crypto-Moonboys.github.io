@@ -47,9 +47,10 @@ const oldId=await player('owner');
 await player('stranger');
 // Bank a real reward and snapshot its complete receipt, asset and account rows.
 const source = sql.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=?').get(oldId);
-assert.equal((await awardPetReward(db,{telegram_id:'owner',pet_id:oldId,season_key:source.season_key,source:'pet_event',idempotency_key:'kept-reward',rewards:{pet_xp:100,moon_gold:40,moon_crystals:2,style_tokens:3},context:{pet_id:oldId,season_key:source.season_key}})).accepted,true);
+assert.equal((await awardPetReward(db,{telegram_id:'owner',pet_id:oldId,season_key:source.season_key,source:'pet_event',idempotency_key:'kept-reward',rewards:{pet_xp:100,community_xp:25,moon_gold:40,moon_crystals:2,style_tokens:3,items:{moon_kibble:2},materials:{moon_scrap:3},relics:{alley_crown:{rarity:'rare',effects:{health:2}}}},context:{pet_id:oldId,season_key:source.season_key}})).accepted,true);
 await hooks.getPetProfile(db,'owner');
-const saved = new Map(['telegram_pet_reward_claims','telegram_pet_reward_assets','telegram_pet_events','telegram_pet_season_state','arcade_xp_wallets','arcade_progression_state','telegram_users'].map(table=>[table,sql.prepare('SELECT * FROM '+table).all()]));
+const saved = new Map(['telegram_pet_reward_claims','telegram_pet_reward_assets','telegram_pet_inventory','telegram_pet_relics','telegram_pet_material_balances','telegram_pet_events','telegram_pet_season_state','arcade_xp_wallets','arcade_progression_state','telegram_users'].map(table=>[table,sql.prepare('SELECT * FROM '+table).all()]));
+assert.ok(sql.prepare("SELECT COUNT(*) AS n FROM telegram_pet_reward_assets WHERE amount>0").get().n>=3,'banked item, material and relic receipts are exercised');
 const balances = sql.prepare("SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id='owner'").get();
 const allTimeBefore=(await readPetLeaderboard(db,{period:'all_time',owner:'owner'})).rows.find(row=>row.telegram_id==='owner').pet_xp;
 assert.equal((await hooks.deletePetSlot(db,'owner',{pet_id:oldId})).reason,'pet_delete_confirmation_required');

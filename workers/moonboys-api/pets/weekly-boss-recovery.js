@@ -3,6 +3,8 @@ import { PET_WEEKLY_BOSSES } from './player-expansion.js';
 
 // Currency settlement is separate from victory progression. Its paid marker
 // cannot prove that the memory, specialist award, Crest and completion finished.
+// The joined saved tuple authorizes lifetime periods and retained older pets;
+// ownership keys do not have to equal the quarter when the victory was earned.
 export async function recoverPetWeeklyBossVictories(db, owner, finish, limit) {
   const recoveryKey = "v.defeated_at||':'||v.week_key||':'||v.pet_id";
   const rows = await db.prepare(`SELECT v.*,${recoveryKey} AS recovery_key,recovery_state.setting_value AS recovery_cursor FROM telegram_pet_weekly_boss_victories_by_pet v
