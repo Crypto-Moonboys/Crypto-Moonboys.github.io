@@ -81,8 +81,8 @@ assert.equal(
 );
 assert.match(
   miniAppStateSource,
-  /const \[runPet, practice, styleLoadout, contracts, dailyReservation\] = await Promise\.all\(\[/,
-  'independent Practice, Style, Contract and Daily reservation reads must execute concurrently',
+  /const \[runPet, styleLoadout, contracts, dailyReservation\] = await Promise\.all\(\[/,
+  'independent Style, Contract and Daily reservation reads must execute concurrently',
 );
 assert.match(
   miniAppStateSource,
@@ -1528,11 +1528,11 @@ statusFrames.shift()();
 assert.equal(testStatusOutput.dataset.tone, 'danger');
 assert.equal(testStatusClasses.has('is-scrolling'), true, 'overflowing updates must activate the scrolling text track');
 assert.match(testStatusProperties['--status-scroll-duration'], /s$/, 'overflowing updates must receive a readable duration');
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261001-ui-cleanup-v1/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261001-remove-practice-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20260926-front-actions-v1/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20260926-front-actions-v1/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261001-ui-cleanup-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261001-remove-practice-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1710,7 +1710,7 @@ assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/j
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261001-ui-cleanup-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261001-remove-practice-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');

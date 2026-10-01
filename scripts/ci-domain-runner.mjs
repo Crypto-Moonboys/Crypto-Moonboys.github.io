@@ -84,7 +84,7 @@ const GROUPS = {
     ['node', 'scripts/moonpet-completion-features.test.mjs'],
     ['node', 'scripts/moonpet-action-sync.test.mjs'],
     ['node', 'scripts/moonpet-care-integrity.test.mjs'],
-    ['node', 'scripts/moonpet-training-style.test.mjs'],
+    ['node', 'scripts/moonpet-style-relics.test.mjs'],
     ['node', 'scripts/moonpet-progression-sync.test.mjs'],
     ['node', 'scripts/moonpet-standard-run-recovery.test.mjs'],
     ['node', 'scripts/moonpet-run-authority-sanity.test.mjs'],

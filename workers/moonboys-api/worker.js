@@ -1,4 +1,3 @@
-import { getPracticeBoard, processPracticeAction } from './pets/practice-progression.js';
 import { getStyleLoadout, equipPetStyle } from './pets/style-loadout.js';
 import { RELIC_ROUTE_DETAILS } from './pets/relic-passives.js';
 import { requirePetFirstReadResult, requirePetReadResult } from './pets/read-result.js';
@@ -9850,11 +9849,10 @@ async function buildPetMiniAppState(db, telegramId, botToken, options = {}) {
       ? { key: 'rare_morph', title: 'Answer the hidden signal', detail: 'Your companion history has opened a one-of-one morph path.', action: 'rare_morph', destination: 'profile' }
       : guidedNext?.key && guidedNext.key !== 'maintain' ? guidedNext : liveNext || guidedNext;
   const activeRun = guidance?.active_run || null;
-  const [runPet, practice, styleLoadout, contracts, dailyReservation] = await Promise.all([
+  const [runPet, styleLoadout, contracts, dailyReservation] = await Promise.all([
     !activeRun || activeRun.pet_id === petRaw.pet_id
       ? Promise.resolve(petRaw)
       : getPetInstanceWithAtomicDecay(db, activeRun.pet_id),
-    getPracticeBoard(db, telegramId, petRaw, now),
     getStyleLoadout(db, telegramId, petRaw.pet_id),
     getContractBoard(db, telegramId, petRaw, now),
     activeRun
@@ -9960,7 +9958,6 @@ async function buildPetMiniAppState(db, telegramId, botToken, options = {}) {
     inventory,
     daily_run: dailyRunSummary,
     contracts,
-    practice,
     style_loadout: styleLoadout,
     trade: {
       cooldown: tradeCooldown?.remaining_seconds > 0 ? tradeCooldown : null,
@@ -10116,7 +10113,7 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
     if (PET_MINI_APP_FUTURE_COMBAT_ACTIONS.has(action) || PET_MINI_APP_COMBAT_CLEANUP_ACTIONS.has(action)) return null;
     throw error;
   });
-  const eggAllowedActions = ['guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim', 'contract_claim', 'practice_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim'];
+  const eggAllowedActions = ['guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim', 'contract_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim'];
   if (lifecycle?.phase === 'egg' && !eggAllowedActions.includes(action)) {
     if (PET_MINI_APP_COMBAT_CLEANUP_ACTIONS.has(action) || PET_MINI_APP_FUTURE_COMBAT_ACTIONS.has(action)) {
       // fall through; locked cleanup must remain available for stale combat state.
@@ -10204,7 +10201,6 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
     return resolved;
   }
   if (action === 'style_equip') return equipPetStyle(db, telegramId, await getPetProfile(db, telegramId), body);
-  if (['practice_start', 'practice_step', 'practice_claim'].includes(action)) return processPracticeAction(db, telegramId, await getPetProfile(db, telegramId), body, awardPetReward);
   if (['contract_start', 'contract_step', 'contract_claim'].includes(action)) {
     const contractPet = await getPetProfile(db, telegramId);
     try { return await processContractAction(db, telegramId, contractPet, body, awardPetReward); }
@@ -11007,7 +11003,7 @@ export default {
         await getPetProfile(env.DB, verified.telegramId);
         result = await processPetMiniAppAction(env.DB, verified.telegramId, verified.user, body, env.TELEGRAM_BOT_TOKEN);
         // Reconcile in the authoritative direction selected by getPetProfile.
-        // Instance-owned rewards (Contracts, Practice, Runs, bosses, etc.) set
+        // Instance-owned rewards (Contracts, Runs, bosses, etc.) set
         // the instance authority marker and must never be overwritten by the
         // compatibility profile snapshot that preceded this action.
         await getPetProfile(env.DB, verified.telegramId);
@@ -15563,7 +15559,7 @@ function isPetMiniAppCommand(command) {
 }
 
 const PET_MINI_APP_SCREENS = new Set(['home', 'missions', 'explore', 'work', 'economy', 'profile']);
-const PET_MINI_APP_FOCUSES = new Set(['contracts', 'play-now', 'practice', 'daily-journey', 'weekly-journey', 'daily-objectives', 'recommended', 'vitals', 'care', 'details', 'missions', 'achievements', 'districts', 'moon-run', 'adventure', 'street-event', 'weekly-boss', 'story-chains', 'seasonal-boss', 'arena', 'kaiju', 'timed-activity', 'jobs', 'equipment', 'materials', 'crafting', 'relics', 'bounties', 'expedition', 'market', 'shop', 'style-lab', 'inventory', 'trade', 'rare-morph', 'memories', 'callsign', 'evolution', 'faction', 'prestige', 'tracks', 'features', 'alerts', 'season', 'leaderboard']);
+const PET_MINI_APP_FOCUSES = new Set(['contracts', 'play-now', 'daily-journey', 'weekly-journey', 'daily-objectives', 'recommended', 'vitals', 'care', 'details', 'missions', 'achievements', 'districts', 'moon-run', 'adventure', 'street-event', 'weekly-boss', 'story-chains', 'seasonal-boss', 'arena', 'kaiju', 'timed-activity', 'jobs', 'equipment', 'materials', 'crafting', 'relics', 'bounties', 'expedition', 'market', 'shop', 'style-lab', 'inventory', 'trade', 'rare-morph', 'memories', 'callsign', 'evolution', 'faction', 'prestige', 'tracks', 'features', 'alerts', 'season', 'leaderboard']);
 const PET_MINI_APP_COMMAND_FOCUSES = Object.freeze({
   petcoach: 'recommended',
   adopt: 'care', feed: 'care', play: 'care', clean: 'care', sleep: 'care', train: 'care', petdaily: 'care',

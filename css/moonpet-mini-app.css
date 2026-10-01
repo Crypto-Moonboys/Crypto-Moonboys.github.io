@@ -1044,12 +1044,11 @@ button, input, select, textarea {
     scroll-behavior: auto !important;
   }
 }
-/* The practice lab remains usable in the narrow Telegram control pane. */
+/* Keep the dock usable in the narrow Telegram control pane. */
 @media (max-width: 420px) {
   .dock button { font-size: 8px; letter-spacing: .05em; padding-inline: 2px; }
 }
 
-[data-panel="practice"] select,
 [data-panel="contracts"] select,
 [data-panel="crafting"] select {
   display: block;

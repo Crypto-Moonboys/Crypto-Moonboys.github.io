@@ -16,6 +16,10 @@ function sectionByHeading(html, heading) {
 }
 
 assert.ok(wikiPage.includes('Crypto Moonboy Pets'), 'wiki page must name Crypto Moonboy Pets');
+for (const page of [wikiPage, howTo, leaderboard]) {
+  assert.doesNotMatch(page, /\bPractice\b/i, 'public pet pages must not promise retired Practice gameplay or rewards');
+}
+
 assert.ok(wikiPage.includes('UNKNOWN') && wikiPage.includes('Stage 3'), 'wiki page must document the identity reveal boundary');
 assert.ok(howTo.includes('UNKNOWN') && howTo.includes('Stage 3'), 'How To Play must document the identity reveal boundary');
 assert.doesNotMatch(wikiPage, /\.jpe?g/i, 'Moonpet wiki content and metadata must not render obsolete JPEG pet art');

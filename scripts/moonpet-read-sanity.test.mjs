@@ -75,7 +75,6 @@ const targets = {
   economy_materials: /SELECT material_key,quantity FROM telegram_pet_material_balances/,
   achievements: /SELECT achievement_id, progress, target, unlocked_at/,
   season_claims: /SELECT idempotency_key, COALESCE\(awarded_at,created_at\)/,
-  practice: /SELECT c\.run_id,c\.pet_id,c\.reward_day[\s\S]*telegram_pet_practice/,
   style_loadout: /SELECT s\.cosmetic_key FROM telegram_pet_style_loadouts/,
   contracts: /SELECT c\.contract_id,c\.pet_id,c\.season_key,c\.reward_day/,
   daily_run_recovery: /SELECT d\.run_id,d\.utc_day,recovery_state\.setting_value AS recovery_cursor FROM telegram_pet_daily_runs d/,
@@ -122,8 +121,6 @@ test('failed Daily Run summary read cannot publish not-started authority',async(
 });
 const firstReadTargets = {
  active_pet_authority: /SELECT s\.pet_id, s\.telegram_id, s\.season_key, s\.slot_number,[\s\S]*FROM telegram_pet_active_slots a/,
- practice_authority: /SELECT 1 WHERE EXISTS[\s\S]*telegram_pet_instances p[\s\S]*telegram_pet_active_slots/,
- practice_stats: /SELECT COALESCE\(MAX\(sequence\),0\)\+1 next_sequence[\s\S]*FROM telegram_pet_practice/,
  contract_authority: /SELECT p\.pet_id FROM telegram_pet_instances p JOIN telegram_pet_active_slots/,
  contract_stats: /SELECT COALESCE\(MAX\(sequence\),0\)\+1 AS next_sequence[\s\S]*FROM telegram_pet_contracts/,
  daily_summary: /SELECT d\.run_id, d\.pet_id, r\.status, r\.current_room, r\.score[\s\S]*FROM telegram_pet_daily_runs d/,

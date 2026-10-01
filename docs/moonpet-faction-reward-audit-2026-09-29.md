@@ -59,7 +59,7 @@ private production accounts.
 
 The initial audit found local-only Practice, collection-only Style Lab and inactive
 relic powers. The pre-merge follow-up replaces these limitations; see
-[Practice, styles and relic routes](moonpet-training-style-relics-2026-09-29.md). Breeding,
+[Styles and relic routes](moonpet-style-relics.md). Breeding,
 Traits, Sanctuary, Lineage, Fusion and Prestige remain unavailable in the Mini
 App. These are existing explicit limitations, not newly activated functionality.
 

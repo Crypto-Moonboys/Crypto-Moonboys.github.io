@@ -412,7 +412,7 @@ assert.equal(coreStateSmoke.body.state.hydration?.mode, 'core', 'core state iden
 assert.equal(coreStateSmoke.body.state.season_slots?.hydrated, false, 'core state exposes lightweight slot ownership only');
 assert.ok(coreStateSmoke.body.state.pet, 'core state includes the active pet');
 assert.ok(coreStateSmoke.body.state.lifecycle, 'core state includes lifecycle authority');
-for (const heavy of ['practice','contracts','live_systems','leaderboard','arena','kaiju','daily_journey','weekly_journey','season_finales']) {
+for (const heavy of ['contracts','live_systems','leaderboard','arena','kaiju','daily_journey','weekly_journey','season_finales']) {
   assert.equal(coreStateSmoke.body.state[heavy], undefined, `core route must not hydrate ${heavy}`);
 }
 const directCore = await buildPetMiniAppCoreState(routeDb, '200004');

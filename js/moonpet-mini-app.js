@@ -732,7 +732,7 @@
   function button(label, action, payload, options) {
     options = careActionButtonOptions(action, actionCooldownButtonOptions(action, options));
     var accountActions = ['adopt', 'guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'arena_queue_cancel', 'arena_forfeit', 'kaiju_queue_cancel', 'kaiju_match_cancel'];
-    var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim', 'contract_claim', 'practice_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim']);
+    var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim', 'contract_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim']);
     if (state && state.lifecycle && state.lifecycle.phase === 'egg' && !eggActions.includes(action)) {
       options = Object.assign({}, options, { disabled: true, cooldown: null, statusLabel: 'HATCH REQUIRED' });
     } else if (state && state.adopted === false && !accountActions.includes(action)) {
@@ -762,7 +762,6 @@
     'daily-completion': ['★', 'Check and collect your daily 7/7 bonus.'],
     missions: ['☷', 'Today’s missions, progress and qualifying routes.'],
     achievements: ['★', 'View milestones and unlocked achievements.'],
-    practice: ['↻', 'Train with saved runs, repeatable rank and limited daily XP; no pet costs.'],
     districts: ['⌖', 'Choose district routes and clear mastery bosses.'],
     'moon-run': ['☾', 'Start or resume a run; survive, extract or face the boss.'],
     adventure: ['⌖', 'Choose an adventure and compare risks and rewards.'],
@@ -869,9 +868,8 @@
       '<div class="guide-step"><strong>CURRENCIES</strong>Pet XP raises level. Moon Gold buys common upgrades. Gems unlock premium routes. Style unlocks cosmetics. Energy powers demanding actions.</div>' +
       '<div class="guide-step"><strong>CONTINUING CONTRACTS</strong>After hatching, open MISSIONS or Play Now. Pick a quest, build, difficulty and route length. Standard routes have six rooms and two upgrade drafts; long routes have ten rooms and four drafts. Later rooms get harder, and long routes have higher targets. Complete the whole route to earn rank. New quests continue without cooldowns or pet energy costs. The first three successful contracts per account each UTC day qualify for up to 20 Pet XP each, within your normal XP cap, for either length. Every choice is saved online. Contract rank is separate from pet level, Daily Journey and leaderboards.</div>' +
       '<div class="guide-step"><strong>DAILY RUN TACTICS</strong>New official attempts show clear chance and score for each approach. Safe routes trade score for better odds; bold routes offer more score at higher risk. After rooms 3 and 6, choose Guardian, Striker or Scavenger, or continue without an upgrade. Tactics change later odds and run score only. One official attempt per account each UTC day still applies. Reach the final room and defeat its boss to finish. Extracting ends that day’s attempt early. If a saved ending needs settlement, use FINISH SAVED DAILY RUN to recover it without spending a new attempt.</div>' +
-      '<div class="guide-step"><strong>BOSSES AND SEASON FINALE</strong>EXPLORE holds the weekly boss and seasonal raid; read the current requirements, choose an approach and claim any saved victory reward. In MISSIONS, the Season Finale unlocks when your pet meets the final evolution, Growth Mark and Weekly Crest requirements shown. Pick a build, read the boss intent, then Strike, Guard or use your special options. The battle saves between turns, uses separate battle health and supplies, and allows free retries after defeat. Win and claim its reward once per pet per season; completing the season does not stop repeatable contracts or practice.</div>' +
-      '<div class="guide-step"><strong>SAVES, PETS AND RANKS</strong>Each pet keeps its own progression and loadout. Switching pets does not reset account-wide cooldowns or official daily attempts. Saved runs and rewards stay with their source pet. Use Refresh after a connection interruption. PROFILE opens daily, weekly, seasonal, all-time and run-depth leaderboards; practice and contract rank are separate from Pet XP ranks.</div>' +
-      '<div class="guide-step"><strong>PLAY BETWEEN COOLDOWNS</strong>Play Now links to your available routes. Practice Roguelite in EXPLORE offers three builds, risk choices and upgrade drafts with unlimited replays. It uses separate route health and salvage, costs no pet energy and saves each turn on the server. Clear the circuit and goal for training rank; the first three clears per UTC day can award 10 Pet XP each. It does not grant Growth Marks or weekly boss credit.</div>' +
+      '<div class="guide-step"><strong>BOSSES AND SEASON FINALE</strong>EXPLORE holds the weekly boss and seasonal raid; read the current requirements, choose an approach and claim any saved victory reward. In MISSIONS, the Season Finale unlocks when your pet meets the final evolution, Growth Mark and Weekly Crest requirements shown. Pick a build, read the boss intent, then Strike, Guard or use your special options. The battle saves between turns, uses separate battle health and supplies, and allows free retries after defeat. Win and claim its reward once per pet per season; completing the season does not stop repeatable contracts.</div>' +
+      '<div class="guide-step"><strong>SAVES, PETS AND RANKS</strong>Each pet keeps its own progression and loadout. Switching pets does not reset account-wide cooldowns or official daily attempts. Saved runs and rewards stay with their source pet. Use Refresh after a connection interruption. PROFILE opens daily, weekly, seasonal, all-time and run-depth leaderboards; contract rank is separate from Pet XP ranks.</div>' +
       '<div class="button-grid one"><button type="button" class="terminal-button" data-open-full-guide>OPEN COMPLETE WEBSITE GUIDE</button></div>';
   }
   // TEST-EXPORT: guideMarkup:end
@@ -1877,7 +1875,7 @@
   function dailyObjectiveMarkup() {
     var objectives = state && state.daily_journey && state.daily_journey.objectives;
     if (!Array.isArray(objectives) || !objectives.length) return '<div class="line muted">Objective details unavailable. Refresh after the Worker update.</div>';
-    return '<div class="line muted">These are the server-tracked Growth Mark goals, separate from the seven daily missions. Official run goals do not count contracts, practice or endless runs.</div>' + objectives.map(function (goal) {
+    return '<div class="line muted">These are the server-tracked Growth Mark goals, separate from the seven daily missions. Official run goals do not count contracts or endless runs.</div>' + objectives.map(function (goal) {
       return '<div class="line ' + (goal.completed ? 'complete' : '') + '">' + (goal.completed ? '[OK] ' : '[ ] ') + escapeHtml(goal.description || words(goal.challenge_id)) + ' // ' + number(goal.progress) + '/' + number(goal.target) + '</div>' + (goal.completed ? '' : objectiveRouteButton(goal.challenge_id));
     }).join('');
   }
@@ -1916,7 +1914,7 @@
     if (!window.MoonpetPlayOptions) return '';
     var choices = window.MoonpetPlayOptions.options(state, { crafting_goal: selectedCraftingGoal() });
     if (!choices.length) return '';
-    return panel('PLAY NOW // YOUR CHOICE', '<div class="line muted">Pick a route. Rewarded actions keep their normal gates and limits; practice has no cooldown or pet cost. Progress is saved—you can leave and return.</div><div class="button-grid">' + choices.map(function (choice) { return routeButton(choice.title, choice, choice.detail); }).join('') + '</div>', 'play-now');
+    return panel('PLAY NOW // YOUR CHOICE', '<div class="line muted">Pick a route. Rewarded actions keep their normal gates and limits. Progress is saved—you can leave and return.</div><div class="button-grid">' + choices.map(function (choice) { return routeButton(choice.title, choice, choice.detail); }).join('') + '</div>', 'play-now');
   }
 
   var craftingGoalMemory = Object.create(null);
@@ -1954,51 +1952,12 @@
     return body;
   }
 
-  function practiceButton(label, action, run, detail, disabled) {
-    return '<button class="terminal-button" type="button" data-practice-action="' + escapeHtml(action) + '" data-practice-turn="' + (run ? run.revision : -1) + '"' + (disabled ? ' disabled' : '') + '>' + escapeHtml(label) + (detail ? '<small>' + escapeHtml(detail) + '</small>' : '') + '</button>';
-  }
-  function renderPractice() {
-    var board = state && state.practice;
-    var pending = (board && board.pending_rewards || []).map(function (entry) { return button('RECOVER TRAINING XP', 'practice_claim', { run_id: entry.run_id, pet_id: entry.pet_id }, { detail: 'Credits the original pet once. No replay required.' }); }).join('');
-    if (!board || !board.available) return panel('PRACTICE ROGUELITE', '<div class="line muted">' + (board && board.reason === 'hatch_required' ? 'Hatch your pet to start official training.' : 'Training is temporarily unavailable. Refresh to retry.') + '</div><div class="button-grid">' + pending + '</div>', 'practice');
-    var run = board.run;
-    var body = '<div class="line muted">SERVER-SAVED TRAINING // Clear all 12 rooms, beat the checkpoint boss and meet your goal. No pet energy cost. Training rank continues on every qualifying clear. First 3 clears per account / UTC day can each earn 10 Pet XP, subject to the normal XP cap. No Growth Marks or weekly boss credit.</div>';
-    body += '<div class="line">TRAINING RANK POINTS ' + number(board.rank_points) + ' // CLEARS ' + number(board.completed) + ' // XP BONUSES LEFT ' + number(board.bonus_remaining) + '/3</div><div class="button-grid">' + pending + '</div>';
-    if (run) {
-      body += '<div class="line complete">' + escapeHtml(words(run.build)) + ' // ' + escapeHtml(words(run.status)) + ' // ROOMS ' + number(run.depth) + '/12</div><div class="line">HP ' + number(run.health) + '/' + number(run.max_health) + ' // SUPPLIES ' + number(run.supplies) + ' // ROUTE SALVAGE ' + number(run.salvage) + ' // SCORE ' + number(run.score) + '</div><div class="line">GOAL // ' + escapeHtml(board.goals[run.goal].title) + ' // ' + number(run.goal_progress.progress) + '/' + number(run.goal_progress.target) + '</div><div class="line signal">' + escapeHtml(run.last) + '</div>';
-      body += (run.relics || []).map(function (relic) { return '<div class="line muted">◆ ' + escapeHtml(relic.title + ': ' + relic.detail) + '</div>'; }).join('');
-      if (run.status !== 'active') body += '<div class="line">THIS RUN // TRAINING POINTS ' + number(run.rank_points) + ' // PET XP ' + number(run.xp_awarded) + (run.reward_pending ? ' // SAVED XP PENDING' : '') + '</div>';
-    }
-    if (!run || run.status !== 'active') {
-      body += '<label class="line">BUILD <select id="practice-build" aria-label="Practice build">' + Object.keys(board.builds).map(function (key) { return '<option value="' + key + '">' + escapeHtml(board.builds[key].title + ' — ' + board.builds[key].detail) + '</option>'; }).join('') + '</select></label><label class="line">GOAL <select id="practice-goal" aria-label="Practice goal">' + Object.keys(board.goals).map(function (key) { return '<option value="' + key + '">' + escapeHtml(board.goals[key].title) + '</option>'; }).join('') + '</select></label><div class="button-grid one">' + practiceButton('START NEW PRACTICE RUN', 'start', run, 'Three builds, three goals. Relics are locked in when the run starts.') + '</div>';
-    } else {
-      body += '<div class="line"><strong>' + escapeHtml(run.room.title) + '</strong></div><div class="line muted">' + escapeHtml(run.room.detail) + '</div><div class="button-grid">' + run.choices.map(function (choice) { return practiceButton(choice.title, choice.key, run, (choice.upgrade ? '' : choice.odds + '% CLEAR // +' + choice.salvage + ' SALVAGE // FAILURE -' + choice.damage + ' HP. ') + choice.detail, choice.disabled); }).join('') + practiceButton('EXTRACT PRACTICE', 'extract', run, 'Finish without rank or XP. Leaving the app preserves the run.') + '</div>';
-    }
-    body += '<div class="button-grid one">' + routeButton('PLAY CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'More saved goals and a separate daily XP allowance.') + '</div>';
-    return panel('PRACTICE ROGUELITE // TRAINING PROGRESS', body, 'practice');
-  }
-  function handlePractice(buttonElement) {
-    var board = state && state.practice;
-    if (!board || !board.available || busy || lifecycleCeremonyActive()) return;
-    var action = buttonElement.dataset.practiceAction;
-    var payload = { pet_id: board.pet_id };
-    if (action === 'start') {
-      var build = document.getElementById('practice-build'), goal = document.getElementById('practice-goal');
-      if (!build || !goal) return;
-      Object.assign(payload, { build: build.value, goal: goal.value, sequence: board.next_sequence });
-    } else {
-      if (!board.run) return;
-      Object.assign(payload, { run_id: board.run.run_id, revision: Number(buttonElement.dataset.practiceTurn), choice: action });
-    }
-    runAction(action === 'start' ? 'practice_start' : 'practice_step', payload, buttonElement);
-  }
-
   function renderContracts() {
     var board = state && state.contracts;
     var savedBonuses = (board && board.pending_rewards || []).map(function (pending) {
       return '<div class="line">SAVED BONUS' + (pending.slot_number ? ' // SLOT ' + number(pending.slot_number) : '') + (pending.reward_day ? ' // ' + escapeHtml(pending.reward_day) : '') + '</div><div class="button-grid one">' + button('RETRY SAVED XP BONUS', 'contract_claim', { pet_id: pending.pet_id || board.pet_id, contract_id: pending.contract_id }, { detail: 'Credits the pet that completed this contract, including earlier seasons. No new run or energy cost. Normal Pet XP caps still apply.' }) + '</div>';
     }).join('');
-    if (!board || !board.available) return panel('CONTINUING CONTRACTS', savedBonuses + '<div class="line muted">' + (state && state.lifecycle && state.lifecycle.phase === 'egg' ? 'Hatch your Secret Bot to start new contracts and official training.' : 'Contracts are syncing. Refresh once the game update is complete.') + '</div>', 'contracts');
+    if (!board || !board.available) return panel('CONTINUING CONTRACTS', savedBonuses + '<div class="line muted">' + (state && state.lifecycle && state.lifecycle.phase === 'egg' ? 'Hatch your Secret Bot to start new contracts.' : 'Contracts are syncing. Refresh once the game update is complete.') + '</div>', 'contracts');
     var run = board.run;
     var body = '<div class="line complete">CONTRACT RANK ' + number(board.rank) + ' // ' + number(board.completed) + ' COMPLETED</div><div class="line">' + number(board.rank_points) + ' RANK POINTS // NEXT RANK ' + number(board.next_rank_at) + '</div>' +
       '<div class="line muted">Play as many contracts as you like. No pet energy cost or cooldown. Route health and salvage belong to this contract; salvage becomes rank points, not Moon Gold. Saved after every choice; leave and resume anytime.</div>' +
@@ -2147,7 +2106,7 @@
 
   function renderExplore() {
     var firstSessionExplore = firstSessionExploreMarkup();
-    if (firstSessionExplore) return renderPlayNow() + renderPractice() + firstSessionExplore;
+    if (firstSessionExplore) return renderPlayNow() + firstSessionExplore;
     var guidance = state.guidance || {};
     var encounter = state.encounter;
     var eventButtons = encounter ? encounter.choices.map(function (choice) {
@@ -2184,7 +2143,7 @@
       var runPetCopy = run.source_pet && !run.source_pet.active ? '<div class="line signal">RUN BELONGS TO ' + escapeHtml(run.source_pet.callsign || 'YOUR ORIGINAL RUN PET') + ' // ENERGY ' + number(run.source_pet.energy) + '</div><div class="line muted">Choices and rewards use this saved pet, even while another pet is selected.</div>' : '';
       if (run.source_available === false) runPetCopy = '<div class="line locked">This saved run has no available source pet. Contact support to recover it. Other game panels remain available.</div>';
       else if (run.settlement_pending) runPetCopy += '<div class="line complete">FINAL BOSS ROOM SAVED</div><div class="line muted">Reward delivery or completion is pending. Refresh or finish below to retry the saved result without another fight.</div>';
-      else if (!playableRun.step) runPetCopy += '<div class="line locked">Your original run pet has no energy for another room. ' + (playableRun.extract ? 'Extract below to bank this run, or recover that pet first.' : 'Recover that pet to continue. Contracts and Practice remain available while you wait.') + '</div>';
+      else if (!playableRun.step) runPetCopy += '<div class="line locked">Your original run pet has no energy for another room. ' + (playableRun.extract ? 'Extract below to bank this run, or recover that pet first.' : 'Recover that pet to continue. Contracts remain available while you wait.') + '</div>';
       runBody = '<div class="line complete">' + (run.daily ? 'OFFICIAL DAILY MOON RUN' : 'ENDLESS MOON RUN // DISTRICT TIER ' + number(run.difficulty)) + '</div><div class="line">ROOM ' + number(run.settlement_pending ? run.max_room : Number(run.current_room != null ? run.current_room : run.depth || 0) + 1) + '/' + number(run.max_room || run.max_depth) + ' // SCORE ' + number(run.score) + (run.daily ? '' : ' // NEXT CHECKPOINT ' + number(run.next_checkpoint)) + '</div>' +
         runPetCopy + roomBrief + tacticCopy +
         (run.settlement_pending ? '<div class="run-stakes"><strong>FINAL RESULT SAVED</strong> <span>Finish delivery of the saved boss reward and completion. No second fight, extra room or new daily attempt.</span></div>' : run.daily ? '<div class="run-stakes"><strong>ONE OFFICIAL ATTEMPT / UTC DAY</strong><span>Choices change run score and clear chance; they do not buy items, heal or spend pet currency. Room progress counts toward Daily Journey. Extraction ends this attempt; it does not bank the endless-run XP bag. Boss drops settle separately through the server.</span></div>' : '<div class="run-stakes"><strong>UNBANKED // ' + escapeHtml(unbankedSummary) + '</strong><span>EXTRACT TO SECURE IT. A FAILED ROOM LOSES THE BAG.</span></div>') +
@@ -2236,7 +2195,7 @@
         arenaBody = '<div class="line">MATCHMAKING QUEUE // POSITION ' + number(arenaQueue.position) + ' // ' + escapeHtml(words(arenaQueue.rank_bucket)) + '</div><div class="button-grid">' +
           button('ACCEPT ANY RANK', 'arena_matchmake', { accept_any_rank: true }, { disabled: arenaQueue.accept_any_rank, statusLabel: arenaQueue.accept_any_rank ? 'CURRENT' : '' }) + button('CANCEL QUEUE', 'arena_queue_cancel', {}, { danger: true }) + '</div>';
       } else {
-        arenaBody = (arenaResult ? '<div class="line complete">LAST RESULT // ' + escapeHtml(words(arenaResult.outcome || arenaResult.result)) + ' // ' + escapeHtml(arenaResult.opponent && arenaResult.opponent.pet_name || 'RIVAL') + '</div>' : '') + '<div class="line muted">RANKED PLAYER MATCHMAKING OR SOLO PRACTICE.</div><div class="button-grid">' + button('FIND PLAYER BATTLE', 'arena_matchmake') + button('ENTER SOLO ARENA', 'arena_start') + '</div>';
+        arenaBody = (arenaResult ? '<div class="line complete">LAST RESULT // ' + escapeHtml(words(arenaResult.outcome || arenaResult.result)) + ' // ' + escapeHtml(arenaResult.opponent && arenaResult.opponent.pet_name || 'RIVAL') + '</div>' : '') + '<div class="line muted">RANKED PLAYER MATCHMAKING OR SOLO BATTLES.</div><div class="button-grid">' + button('FIND PLAYER BATTLE', 'arena_matchmake') + button('ENTER SOLO ARENA', 'arena_start') + '</div>';
       }
     }
     var kaiju = state.kaiju || {};
@@ -2263,7 +2222,7 @@
         }).join('') + '</div>')
         : kaijuQueue
           ? '<div class="line">KAIJU MATCHMAKING // POSITION ' + number(kaijuQueue.position) + '</div><div class="button-grid one">' + button('CANCEL QUEUE', 'kaiju_queue_cancel', {}, { danger: true }) + '</div>'
-          : (kaiju.result ? '<div class="combat-recap"><strong>LAST KAIJU RESULT // ' + escapeHtml(words(kaiju.result.outcome || kaiju.result.result)) + '</strong><span>CATEGORY // ' + escapeHtml(kaiju.result.category ? kaiju.result.category.name : words(kaiju.result.category_key)) + '</span>' + (kaiju.result.score ? '<span>SCORE // ' + number(kaiju.result.score.player) + ' : ' + number(kaiju.result.score.opponent) + '</span>' : '') + '</div>' : '') + '<div class="line">PLAYER MATCHMAKING OR CRT PRACTICE.</div><div class="button-grid">' + button('FIND KAIJU PLAYER', 'kaiju_matchmake') + button('START SOLO KAIJU', 'kaiju_start') + '</div>';
+          : (kaiju.result ? '<div class="combat-recap"><strong>LAST KAIJU RESULT // ' + escapeHtml(words(kaiju.result.outcome || kaiju.result.result)) + '</strong><span>CATEGORY // ' + escapeHtml(kaiju.result.category ? kaiju.result.category.name : words(kaiju.result.category_key)) + '</span>' + (kaiju.result.score ? '<span>SCORE // ' + number(kaiju.result.score.player) + ' : ' + number(kaiju.result.score.opponent) + '</span>' : '') + '</div>' : '') + '<div class="line">PLAYER MATCHMAKING OR SOLO CRT BATTLES.</div><div class="button-grid">' + button('FIND KAIJU PLAYER', 'kaiju_matchmake') + button('START SOLO KAIJU', 'kaiju_start') + '</div>';
     }
     var regions = (state.regions || []).map(function (region) {
       var mission = region.mission || {};
@@ -2320,8 +2279,8 @@
       (boss.last_attempt ? '<div class="line complete">TODAY’S SAVED ATTACK // ' + escapeHtml(words(boss.last_attempt.action)) + ' // ' + number(boss.last_attempt.damage) + ' DAMAGE</div>' : '') +
       (boss.defeated ? '<div class="line">' + (boss.reward_claimed ? 'VICTORY REWARD COLLECTED.' : 'VICTORY RECORDED. CHECK SAVED REWARDS.') + '</div>' : '') +
       (boss.rotation_cooldown ? '<div class="line muted">NEXT WEEKLY BOSS ' + countdownMarkup(boss.rotation_cooldown, 'in ') + '</div>' : '') +
-      '<div class="button-grid">' + (state.contracts && state.contracts.available ? routeButton('CONTINUE WITH CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'Saved quests without pet energy costs or cooldowns.') : '') + routeButton('PLAY PRACTICE', { screen: 'explore', focus: 'practice' }, 'Saved training with repeatable rank and limited daily XP.') + '</div>';
-    return renderPlayNow() + renderPractice() + panel('DISTRICT NETWORK', '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + regions, 'districts') + panel('MOON RUN', '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + runBody, 'moon-run') +
+      '<div class="button-grid">' + (state.contracts && state.contracts.available ? routeButton('CONTINUE WITH CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'Saved quests without pet energy costs or cooldowns.') : '') + '</div>';
+    return renderPlayNow() + panel('DISTRICT NETWORK', '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + regions, 'districts') + panel('MOON RUN', '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + runBody, 'moon-run') +
       panel(adventure ? adventure.title : 'PET ADVENTURE', '<div class="line">' + escapeHtml(adventure ? adventure.intro : 'NO ADVENTURE SIGNAL.') + '</div><div class="line muted">One adventure every 30 minutes. Entry energy is a requirement; actual costs depend on the outcome below. Base rewards remain subject to caps. Hunger costs increase hunger.</div><div class="button-grid">' + adventureButtons + '</div>', 'adventure') +
       panel(encounter ? encounter.title : 'STREET EVENT', '<div class="line">' + escapeHtml(encounter ? encounter.intro : 'NO EVENT SIGNAL.') + '</div><div class="line muted">Compare both outcomes before choosing. Base rewards are reduced by repeated-play scaling and daily caps; stat changes stop at their limits. Hunger costs increase hunger.</div><div class="button-grid">' + eventButtons + '</div>', 'street-event') +
       panel('WEEKLY BOSS // ' + (boss.title || 'LOCKED'), '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + bossBody, 'weekly-boss') +
@@ -2357,7 +2316,6 @@
       }).join('') : '<div class="button-grid">' + ['sleep', 'train', 'work', 'explore'].map(function (kind) { return button(kind, 'activity_start', { activity_type: kind }); }).join('') + '</div>';
     }
     if (state.contracts && state.contracts.available) activityHtml += '<div class="button-grid one">' + routeButton('PLAY CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'No pet energy cost or cooldown. The activity keeps accumulating.') + '</div>';
-    activityHtml += '<div class="button-grid one">' + routeButton('PLAY PRACTICE', { screen: 'explore', focus: 'practice' }, 'Saved training with repeatable rank and limited daily XP.') + '</div>';
     return panel('TIMED ACTIVITY', activityHtml, 'timed-activity') + panel('JOB TERMINAL', '<div class="button-grid">' + jobsHtml + '</div>', 'jobs');
   }
 
@@ -2432,7 +2390,7 @@
         return '<div class="line">' + escapeHtml(receipt.title) + ' // ' + number(receipt.energy_cost) + ' ENERGY // ' + (receipt.pet_id === state.pet.pet_id ? 'THIS PET' : receipt.pet_id ? 'OTHER PET' : 'EARLIER ACCOUNT RECEIPT') + '</div><div class="line muted">RECEIVED ' + escapeHtml(valueText(receipt.rewards)) + '</div>';
       }).join('') + '</details>';
     }
-    expeditionBody += '<div class="button-grid">' + (state.contracts && state.contracts.available ? routeButton('CONTINUE WITH CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'Saved quests without pet energy costs or cooldowns.') : '') + routeButton('PLAY PRACTICE', { screen: 'explore', focus: 'practice' }, 'Saved training with repeatable rank and limited daily XP.') + '</div>';
+    expeditionBody += '<div class="button-grid">' + (state.contracts && state.contracts.available ? routeButton('CONTINUE WITH CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'Saved quests without pet energy costs or cooldowns.') : '') + '</div>';
     var live = state.live_systems || {};
     var upgrades = new Map((live.upgrades || []).map(function (item) { return [item.item_key, item]; }));
     var gear = (state.gear || []).map(function (item) {
@@ -2469,7 +2427,7 @@
       panel('LOADOUT SYNERGIES', equipmentSets || '<div class="line muted">NO SET DATA.</div>', 'equipment-sets') +
       panel('CRAFTING MATERIALS', materials || '<div class="line muted">NO MATERIAL DATA.</div>', 'materials') +
       panel('CRAFTING WORKSHOP', craftingGoalMarkup() + '<div class="line signal">RECIPES // CHOOSE TO SPEND MATERIALS</div><div class="button-grid">' + crafting + '</div>', 'crafting') +
-      panel('RELIC VAULT', '<div class="line muted">Owned relics activate automatically in new Practice and Contract runs. Their route effects are listed below and saved at run start; new drops apply on the next run. Standard Moon Run and Daily Run keep their separate rules.</div>' + (state.relics_available === false ? '<div class="line danger">RELIC VAULT TEMPORARILY UNAVAILABLE. Refresh to try again. Your collection has not been cleared.</div>' : relics || '<div class="line muted">NO RELICS RECOVERED.</div>'), 'relics') +
+      panel('RELIC VAULT', '<div class="line muted">Owned relics activate automatically in new Contract runs. Their route effects are listed below and saved at run start; new drops apply on the next run. Standard Moon Run and Daily Run keep their separate rules.</div>' + (state.relics_available === false ? '<div class="line danger">RELIC VAULT TEMPORARILY UNAVAILABLE. Refresh to try again. Your collection has not been cleared.</div>' : relics || '<div class="line muted">NO RELICS RECOVERED.</div>'), 'relics') +
       panel('DAILY BOUNTIES', '<div class="line muted">Four account-wide targets per UTC day. Only accepted actions count. The Energy Drink, Dance and Cuddles care buttons do not count. New targets arrive at 00:00 UTC. Contracts remain available between resets.</div>' + (bounties || '<div class="line muted">NO BOUNTIES.</div>'), 'bounties') +
       panel('CRYSTAL EXPEDITIONS // CHOOSE A DESTINATION', expeditionBody, 'expedition') +
       panel('MOON MARKET', '<div class="line muted">Paid bundles must fit in full. Use items or spend materials before buying when storage is full.</div><div class="button-grid one">' + offers + '</div><div class="button-grid">' + routeButton('OPEN BAG', { screen: 'economy', focus: 'inventory' }) + routeButton('OPEN CRAFTING', { screen: 'economy', focus: 'crafting' }) + '</div>', 'market') +
@@ -2601,7 +2559,7 @@
     rememberPanels();
     var routeDraft = {};
     var draftPetId = renderedPetId;
-    ['contract-format', 'contract-build', 'contract-tier', 'contract-side-goal', 'practice-build', 'practice-goal'].forEach(function (id) {
+    ['contract-format', 'contract-build', 'contract-tier', 'contract-side-goal'].forEach(function (id) {
       var input = document.getElementById(id); if (input) routeDraft[id] = input.value;
     });
     renderHud();
@@ -2784,7 +2742,7 @@
       expedition_locked: 'choose an expedition your pet has unlocked.',
       expedition_pet_changed: 'your active pet changed; review its expedition choices.',
       expedition_state_changed: 'another action changed your expedition state; review the refreshed choices before trying again.',
-      expedition_daily_limit: 'all three account attempts are used today. Contracts and practice remain available.',
+      expedition_daily_limit: 'all three account attempts are used today. Contracts remain available.',
       weekly_boss_pet_changed: 'your active pet changed; review its boss choices.',
       weekly_boss_state_changed: 'your pet or boss state changed; review the refreshed choices.',
       daily_cache_state_changed: 'your pet changed before the cache could settle; refresh and try again.',
@@ -3157,8 +3115,6 @@
   });
 
   screen.addEventListener('click', function (event) {
-    var practiceAction = event.target.closest('[data-practice-action]');
-    if (practiceAction && !practiceAction.disabled) { handlePractice(practiceAction); return; }
     var utility = event.target.closest('[data-utility]');
     if (utility) {
       if (utility.dataset.utility === 'guide' || utility.dataset.utility === 'leaderboard') openUtility(utility.dataset.utility);

@@ -180,7 +180,7 @@ test('core Mini App bootstrap stays below its SQL budget and omits heavy modules
   assert.equal(core.season_slots?.hydrated,false);
   assert.ok(core.pet?.pet_id);
   assert.ok(core.lifecycle);
-  for(const heavy of ['practice','contracts','live_systems','leaderboard','arena','kaiju','daily_journey','weekly_journey','season_finales']) {
+  for(const heavy of ['contracts','live_systems','leaderboard','arena','kaiju','daily_journey','weekly_journey','season_finales']) {
     assert.equal(core[heavy],undefined,`core bootstrap must not hydrate ${heavy}`);
   }
   console.log(`Core-state budget: ${coreStatements}/${MOONPET_D1_PERFORMANCE_BUDGETS.core_bootstrap_max_statements} SQL statements`);
@@ -208,7 +208,7 @@ test('Missions uses less SQL, preserves its panels and never loads unrelated mod
   }
   assert.deepEqual(missions.season_slots.slots.find(slot => slot.active).pet.progression,
     full.season_slots.slots.find(slot => slot.active).pet.progression);
-  for (const key of ['practice', 'live_systems', 'leaderboard', 'arena', 'kaiju', 'inventory', 'gear', 'run', 'style_loadout']) {
+  for (const key of [ 'live_systems', 'leaderboard', 'arena', 'kaiju', 'inventory', 'gear', 'run', 'style_loadout']) {
     assert.equal(missions[key], undefined, `Missions defers ${key}`);
   }
   assert.ok(!queries.some(query => /ORDER BY slot, item_level DESC, item_key|SELECT material_key, quantity[\s\S]*ORDER BY material_key|SELECT relic_id, unlocked_at|SELECT \* FROM telegram_pet_arena_battles WHERE status='completed'|SELECT \* FROM telegram_pet_kaiju_matches WHERE status='completed'/.test(query)));

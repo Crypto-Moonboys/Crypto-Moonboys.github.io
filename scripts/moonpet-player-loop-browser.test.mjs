@@ -320,39 +320,12 @@ try {
       assert.ok((await page.locator('#screen').textContent()).includes('HATCH REQUIRED'));
     }
     await page.locator('[data-screen="home"]').click();
-    await page.locator('[data-panel="play-now"] [data-focus="practice"]').click();
-    assert.match(await page.locator('[data-panel="practice"]').textContent(), /Hatch your pet/);
+    assert.equal(await page.locator('[data-panel="practice"], [data-focus="practice"], [data-practice-action]').count(), 0);
     currentUser = 'browser-young';
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
-    await page.locator('[data-panel="play-now"] [data-focus="practice"]').click();
-    await page.waitForSelector('#practice-build');
     const gameplayCount = () => actions.filter((action) => action !== 'guidance_ack').length;
-    const beforeActions = gameplayCount();
-    await page.locator('#practice-build').selectOption('scavenger');
-    await page.locator('#practice-goal').selectOption('collector');
-    await page.locator('[data-practice-action="start"]').click();
-    await page.waitForSelector('[data-practice-action="safe"]');
-    for (let i = 0; i < 3; i++) {
-      await page.locator('[data-practice-action="safe"]').click();
-      await page.waitForFunction(depth => document.querySelector('[data-panel="practice"]').textContent.includes('ROOMS ' + depth + '/12'), i + 1);
-    }
-    assert.equal(await page.locator('[data-panel="practice"] [data-practice-action]:not([data-practice-action="extract"])').count(), 3, 'third room must offer three upgrade choices');
-    const draft = page.locator('[data-panel="practice"] [data-practice-action]:not([data-practice-action="extract"])').first();
-    await draft.click();
-    await page.waitForSelector('[data-practice-action="safe"]');
-    const storedBefore = sqlite.prepare('SELECT state_json FROM telegram_pet_practice WHERE telegram_id=? ORDER BY sequence DESC LIMIT 1').get(currentUser).state_json;
-    await page.reload();
-    await page.waitForSelector('[data-panel="care"]');
-    await page.locator('[data-panel="play-now"] [data-focus="practice"]').click();
-    assert.equal(sqlite.prepare('SELECT state_json FROM telegram_pet_practice WHERE telegram_id=? ORDER BY sequence DESC LIMIT 1').get(currentUser).state_json, storedBefore, 'refresh preserves server-owned practice');
-    assert.equal(await page.evaluate(() => localStorage.getItem('moonpet-practice-v1')), null, 'official runs never trust local records');
-    assert.equal(gameplayCount(), beforeActions + 5, 'start, three turns and draft use authenticated server actions');
-    const practiceBounds = await page.locator('[data-panel="practice"]').evaluate((panel) => ({ right: panel.getBoundingClientRect().right, width: panel.getBoundingClientRect().width, viewport: window.innerWidth, screenWidth: document.getElementById('screen').clientWidth }));
-    assert.ok(practiceBounds.right <= viewport.width, JSON.stringify(practiceBounds));
-    if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-practice-${viewport.width}.png`) });
-    await page.locator('[data-practice-action="extract"]').click();
-    await page.waitForSelector('[data-practice-action="start"]');
-    assert.equal(await page.locator('[data-practice-action="start"]').count(), 1);
+    await page.locator('[data-screen="explore"]').click();
+    assert.equal(await page.locator('[data-panel="practice"], [data-focus="practice"], [data-practice-action]').count(), 0);
     currentUser = 'browser-young';
     await page.reload();
     await page.waitForSelector('[data-panel="care"]');
@@ -488,7 +461,6 @@ try {
     await page.locator('[data-screen="explore"]').click();
     const districtText = await page.locator('[data-panel="districts"]').textContent();
     assert.ok(!districtText.includes('// 0% REWARD'), 'fractional reward preview must not round to zero');
-    assert.equal(await page.locator('[data-practice-action="start"]').count(), 1, 'another pet must not inherit the prior practice run');
     // Verify daily run mode and first-room numbering independently of the real
     // endless-run fixture. Request index stays zero-based; screen is one-based.
     dailyOverride = { run_id: 'daily-fixture', daily: true, current_room: 0, expected_step_index: 0, max_room: 10, score: 0, choices: [{ key: 'explore', label: 'Explore' }], room: { title: 'Alley Entrance', threat: 1 } };
@@ -514,7 +486,7 @@ try {
     }
     assert.equal(gameplayCount(), beforeWeeklyNavigation, 'weekly navigation must not issue gameplay actions');
     await page.locator('[data-screen="missions"]').click();
-    // These are real server-backed contract actions, alongside server-owned practice.
+    // These are real server-backed contract actions, with saved server-owned progress.
     const youngBefore = await hooks.buildPetMiniAppState(db, currentUser, token);
     await page.locator('#contract-build').selectOption('scavenger');
     await page.locator('#contract-side-goal').selectOption('versatile');
@@ -904,7 +876,7 @@ try {
     await page.waitForSelector('[data-action="run_start"]');
     assert.equal(await page.locator('[data-action="daily_run_start"]').isDisabled(), true);
     assert.ok(await page.locator('[data-panel="play-now"] [data-focus="contracts"]').count());
-    assert.ok(await page.locator('[data-panel="play-now"] [data-focus="practice"]').count());
+    assert.ok(await page.locator('[data-panel="play-now"] [data-focus="contracts"]').count());
 
     // Standard extraction can close before settlement. Reload must restore
     // the hidden payout and display the updated pet without a second action.
@@ -1151,7 +1123,7 @@ try {
     assert.equal(await page.locator('[data-action="run_step"]:not([disabled])').count(), 0);
     assert.equal(await page.locator('[data-action="run_extract"]').isDisabled(), true);
     assert.ok(await page.locator('[data-panel="play-now"] [data-focus="contracts"]').count());
-    assert.ok(await page.locator('[data-panel="play-now"] [data-focus="practice"]').count());
+    assert.ok(await page.locator('[data-panel="play-now"] [data-focus="contracts"]').count());
 
     // Background activities expose real duration choices and survive interrupted claims.
     currentUser = `browser-activity-${viewport.width}`;
@@ -1583,7 +1555,7 @@ try {
     assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE telegram_id=? AND event_type='season_finale'").get(currentUser).n,1);
     assert.match(await page.locator('[data-panel="achievements"]').textContent(),/UNLOCKED.*Finale Victor/);
     await page.locator('[data-screen="explore"]').click();
-    await page.locator('[data-panel="practice"] [data-focus="contracts"]').click();
+    await page.locator('[data-panel="play-now"] [data-focus="contracts"]').click();
     assert.equal(await page.locator('[data-panel="contracts"]').count(),1);
     await page.evaluate(() => window.stopPanelExpansion());
     for (const section of ['home', 'missions', 'explore', 'work', 'economy', 'profile']) {
@@ -1596,7 +1568,7 @@ try {
     assert.equal(overflow, false, 'mobile viewport must not overflow horizontally');
     assert.deepEqual(errors, [], 'no runtime errors across all six screens');
     if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-${viewport.width}.png`) });
-    console.log(`Moonpet browser loop passed at ${viewport.width}x${viewport.height}; all six screens; daily 7/7 bonus; season finale builds, failure/retry, saved reload, victory and payout recovery; bounties; practice; contracts and records; daily tactics; raids; timed recovery; Trade; expeditions; weekly boss recovery; Daily Cache claimed/reset state; season reward rejection/recovery; supply drafts; crafting goals, material routes, craft/use and goal isolation; paid-bundle capacity and exact-fit purchase; persisted draft redraw; weekly objective routes; six goals and saved ten-room Contracts with four drafts and separate records; saved checkpoint paths, care busy/energy gates and recovery unlock; boss tactic previews, saved final-room reload, clear/failure and immediate replay.`);
+    console.log(`Moonpet browser loop passed at ${viewport.width}x${viewport.height}; all six screens; daily 7/7 bonus; season finale builds, failure/retry, saved reload, victory and payout recovery; bounties; contracts and records; daily tactics; raids; timed recovery; Trade; expeditions; weekly boss recovery; Daily Cache claimed/reset state; season reward rejection/recovery; supply drafts; crafting goals, material routes, craft/use and goal isolation; paid-bundle capacity and exact-fit purchase; persisted draft redraw; weekly objective routes; six goals and saved ten-room Contracts with four drafts and separate records; saved checkpoint paths, care busy/energy gates and recovery unlock; boss tactic previews, saved final-room reload, clear/failure and immediate replay.`);
     await context.close();
   }
 } finally {

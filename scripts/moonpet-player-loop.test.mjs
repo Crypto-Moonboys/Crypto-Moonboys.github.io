@@ -10,7 +10,6 @@ import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js'
 
 const require = createRequire(import.meta.url);
 const options = require('../js/moonpet-play-options.js');
-const practice = require('../js/moonpet-practice.js');
 const read = (path) => fs.readFileSync(new URL('../' + path, import.meta.url), 'utf8');
 const client = read('js/moonpet-mini-app.js');
 const worker = read('workers/moonboys-api/worker.js');
@@ -171,7 +170,7 @@ assert.ok(options.options(snapshot).some((x) => x.key === 'daily_run'));
 assert.ok(options.options(snapshot).some((x) => x.key === 'event_chain'));
 assert.ok(!options.options({ ...snapshot, run: { daily: true } }).some((x) => x.key === 'daily_run'));
 assert.ok(!options.options({ ...snapshot, daily_run: { available: false } }).some((x) => x.key === 'daily_run'));
-assert.deepEqual(options.options({ ...snapshot, lifecycle: { phase: 'egg' } }).map((x) => x.key), ['practice', 'incubate']);
+assert.deepEqual(options.options({ ...snapshot, lifecycle: { phase: 'egg' } }).map((x) => x.key), ['incubate']);
 assert.ok(!options.options({ ...snapshot, pet: { energy: 0 } }).some((x) => x.key === 'run'));
 const exhaustedRun = { ...snapshot, run: { daily: false, depth: 0, source_available: true, source_pet: { energy: 0 } } };
 assert.deepEqual(options.runAvailability(exhaustedRun), { step: false, extract: false });
@@ -234,10 +233,10 @@ assert.equal(choices[0].key, 'bounty_claims'); assert.equal(choices[0].focus, 'b
 assert.equal(choices[1].key, 'activity');
 assert.equal(choices.find((c) => c.key === 'bounty_target').focus, 'care');
 assert.match(choices.find((c) => c.key === 'bounty_target').title, /Care Pair/);
-assert.deepEqual(options.options({ ...targeted, lifecycle: { phase: 'egg' } }).map((c) => c.key), ['practice', 'incubate']);
+assert.deepEqual(options.options({ ...targeted, lifecycle: { phase: 'egg' } }).map((c) => c.key), ['incubate']);
 const finishedChoices = options.options({ ...snapshot, guidance: { economy: { bounties: [{ ...claimTarget, claimed: true }] } }, contracts: { available: true } });
 assert.ok(!finishedChoices.some((c) => ['bounty_claims', 'bounty_target'].includes(c.key)));
-assert.ok(finishedChoices.some((c) => c.key === 'contract') && finishedChoices.some((c) => c.key === 'practice'));
+assert.ok(finishedChoices.some((c) => c.key === 'contract'));
 // Prefer currently playable qualifying bounty routes, not locked/cooling options.
 const bountyByKey = Object.fromEntries(PET_DAILY_BOUNTIES.map((b) => [b.key, { ...b, complete: false, claimed: false, progress: 0 }]));
 const selectBounty = (extra, keys) => options.options({ ...snapshot, ...extra, guidance: { ...(extra.guidance || {}), economy: { bounties: keys.map((key) => bountyByKey[key]) } } }).find((c) => c.key === 'bounty_target');
@@ -261,7 +260,7 @@ const blockedCare = { ...snapshot, pet: { energy: 0 }, cooldowns: { entries: ['f
 assert.equal(options.bountyRouteOptions(bountyByKey.care_pair, blockedCare)[0].available, false);
 const boardOnly = options.options({ ...blockedCare, contracts: { available: true }, guidance: { ...blockedCare.guidance, economy: { bounties: [bountyByKey.care_pair, bountyByKey.kaiju_watch] } } });
 assert.ok(!boardOnly.some((r) => r.key === 'bounty_target'));
-assert.ok(boardOnly.some((r) => r.key === 'contract') && boardOnly.some((r) => r.key === 'practice') && boardOnly.some((r) => r.key === 'bounty'));
+assert.ok(boardOnly.some((r) => r.key === 'contract') && boardOnly.some((r) => r.key === 'bounty'));
 
 const raidAtTwelve = { ...snapshot, pet: { energy: 12 }, live_systems: { seasonal_boss: { available: true, choices: [{ energy: 12 }, { energy: 18 }] } } };
 assert.ok(options.options(raidAtTwelve).some((c) => c.key === 'seasonal_boss'));
@@ -324,59 +323,9 @@ assert.deepEqual(fullOutputWithMissingMaterials.routes.filter((r) => r.focus ===
   'material-only offers remain available without recommending overflowing finished items');
 assert.equal(options.craftingGoal({ ...readyCraft, live_systems: { crafting: [{ ...craftRecipe, affordable: true, unlocked: false }] } }, 'battery_pack').ready, false);
 
-assert.equal(practice.create('x', '__proto__', 'explorer'), null);
-assert.equal(practice.restore({ version: 1 }), null);
-let first = practice.create('fixed-seed', 'scout', 'explorer');
-assert.deepEqual(practice.restore(first), first);
-const firstBefore = structuredClone(first);
-const second = practice.step(first, 'safe', 0);
-assert.deepEqual(first, firstBefore, 'engine must not mutate its input');
-assert.deepEqual(second, practice.step(first, 'safe', 0), 'same seed and choice resolve deterministically');
-assert.equal(practice.step(second, 'safe', 0), second, 'stale callbacks cannot advance a second room');
-assert.equal(practice.step(second, 'not-a-choice', second.turn), second);
-assert.equal(practice.step(first, 'rest', first.turn), first, 'cannot spend supplies resting at full health');
-assert.equal(practice.restore({ ...first, health: Infinity }), null);
-assert.equal(practice.restore({ ...first, perks: ['injected'] }), null);
-assert.equal(practice.restore({ ...first, depth: 99 }), null);
-assert.equal(practice.restore({ ...first, turn: -1 }), null);
-
-let drafts = 0, completed = 0, failed = 0;
-for (let seed = 0; seed < 300; seed++) {
-  for (const build of Object.keys(practice.builds)) {
-    let run = practice.create('simulation-' + seed, build, ['explorer', 'collector', 'survivor'][seed % 3]);
-    let turns = 0;
-    while (run.status === 'active') {
-      assert.ok(turns++ < 18, 'bounded run must terminate');
-      let action;
-      if (run.draft.length) { drafts++; action = run.draft[(seed + turns) % run.draft.length]; }
-      else {
-        const choices = practice.choices(run).filter((x) => !x.disabled);
-        assert.ok(choices.every((x) => x.odds >= 25 && x.odds <= 100));
-        action = choices[(seed + turns) % choices.length].key;
-      }
-      run = practice.step(run, action, run.turn);
-      assert.ok(practice.restore(run));
-      assert.ok(run.health >= 0 && run.supplies >= 0 && run.depth <= 12);
-    }
-    if (run.status === 'completed') completed++; else failed++;
-    assert.equal(practice.step(run, 'safe', run.turn), run, 'terminal state is immutable');
-    if (run.status === 'failed') assert.equal(run.salvage, 0);
-  }
-}
-assert.ok(drafts > 0 && completed > 0 && failed > 0, 'simulation must exercise builds, drafts, clears and failures');
-let collector = { ...practice.create('collector', 'scavenger', 'collector'), salvage: 125, score: 400 };
-assert.equal(practice.goalProgress(collector).completed, false, 'collector must extract before goal credit');
-collector = practice.step(collector, 'extract', collector.turn);
-assert.equal(practice.goalProgress(collector).completed, true);
-assert.equal(collector.score, 400);
-assert.doesNotMatch(read('js/moonpet-practice.js'), /\bfetch\s*\(|XMLHttpRequest|post\s*\(|awardPetReward|telegram-pets/,
-  'practice engine must not touch server/reward paths');
-
 // Exercise the deployed classic scripts, not an ESM-only approximation.
 const context = vm.createContext({ window: {}, Object, Math, JSON, Number, Set });
-vm.runInContext(read('js/moonpet-practice.js'), context);
 vm.runInContext(read('js/moonpet-play-options.js'), context);
-assert.equal(context.window.MoonpetPractice.create('browser', 'scout', 'explorer').status, 'active');
 assert.equal(context.window.MoonpetPlayOptions.route({ key: 'district_mission' }).focus, 'districts');
 
 // Read-only official attempt status: reset, another pet, open-run conflicts and
@@ -411,6 +360,5 @@ assert.match(client, /run\.daily \? 'OFFICIAL DAILY MOON RUN'/);
 const eggHome = client.slice(client.indexOf("if (lifecycle.phase === 'egg') {", client.indexOf('function renderHome')), client.indexOf('var next = state.next', client.indexOf('function renderHome')));
 for (const action of ['energy_drink', 'dance', 'cuddles']) assert.ok(eggHome.includes("'" + action + "'"));
 const html = read('moonpet-game.html');
-assert.ok(html.indexOf('/js/moonpet-practice.js') < html.indexOf('/js/moonpet-mini-app.js'));
 assert.ok(html.indexOf('/js/moonpet-play-options.js') < html.indexOf('/js/moonpet-mini-app.js'));
-console.log(`Moonpet player loop tests passed: ${new Set(actionButtons).size} literal action buttons; 900 simulated runs (${completed} clears, ${failed} failures, ${drafts} drafts).`);
+console.log(`Moonpet player loop tests passed: ${new Set(actionButtons).size} literal action buttons.`);
