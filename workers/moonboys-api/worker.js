@@ -4,6 +4,7 @@ import { requirePetFirstReadResult, requirePetReadResult, requirePetMutationResu
 import { getPetEntryRequirement, petEntryNext, PET_ENTRY_ARCADE_XP } from './pets/entry-requirement.js';
 import { buildPetLifetimeProgression } from './pets/lifetime-progression.js';
 import { buildPetOnboardingStatements, completePetOnboarding } from './pets/onboarding.js';
+import { deleteOwnedPet, readDeletedPetHistory } from './pets/deletion.js';
 import { readCommunityLeaderboard } from './community-leaderboard.js';
 import { selectCommunitySeason, communitySeasonSql } from './community-season-authority.js';
 import { getCombatEligibility, PET_ARENA_MIN_LEVEL as COMBAT_ARENA_MIN_LEVEL, PET_WEEKLY_BOSS_MIN_LEVEL } from './pets/combat-eligibility.js';
@@ -2517,7 +2518,6 @@ function serializePetRun(run) {
     season_key: String(run.season_key || ''), status: String(run.status || 'active'), region: String(run.region || 'moon_alley'),
     difficulty: Math.max(1, Math.floor(Number(run.difficulty || 1)), Math.floor(depth / PET_RUN_BOSS_INTERVAL) + 1),
     seed: run.seed == null ? null : Number(run.seed), depth, current_room: depth,
-    completed_at: run.completed_at || null,
     max_depth: Math.max(PET_RUN_MAX_DEPTH, Math.floor(Number(run.max_depth || run.max_room || 0))),
     max_room: Math.max(PET_RUN_MAX_DEPTH, Math.floor(Number(run.max_room || run.max_depth || 0))),
     score: Math.max(0, Math.floor(Number(run.score || 0))), rooms_completed: Math.max(depth, Math.floor(Number(run.rooms_completed || 0))),
@@ -4713,8 +4713,10 @@ async function buildPetSeasonSlotSummary(db, telegramId, now = new Date()) {
     const nextSlotNumber = Math.min(PET_SEASON_MAX_SLOTS + 1, rawRows.length + 1);
     const nextSlotCost = Number(PET_SEASON_EXTRA_SLOT_COSTS[nextSlotNumber] || 0);
     const previousSlotOwned = nextSlotNumber <= 1 ? true : rawRowsBySlot.has(nextSlotNumber - 1);
+    const deletedPetHistory = await readDeletedPetHistory(db, normalizedTelegramId);
     return {
       adopted: true,
+      deleted_pet_history: deletedPetHistory,
       season,
       competition_season: season,
       current_season_week: journeyPeriod ? getPetJourneyWeek(journeyPeriod, now) : getPetSeasonWeek(season, now),
@@ -4916,6 +4918,12 @@ async function switchActivePetSeasonSlot(db, telegramId, requestedPetId, options
   }
   await mirrorActivePetInstanceToProfile(db, pet);
   return { accepted: true, reason: 'pet_slot_switched', pet: await getPetProfile(db, owner), season_slots: await buildPetSeasonSlotSummary(db, owner, options.now) };
+}
+
+async function deletePetSlot(db, telegramId, body) {
+  await getPetProfile(db, telegramId);
+  const result = await deleteOwnedPet(db, telegramId, body, PET_INSTANCE_STATE_COLUMNS);
+  return { ...result, season_slots: await buildPetSeasonSlotSummary(db, telegramId) };
 }
 
 async function getOrCreatePetProfile(db, telegramId, options = {}) {
@@ -10151,6 +10159,7 @@ async function processPetMiniAppAction(db, telegramId, user, body, botToken) {
   const eventKey = petMiniAppEventKey(telegramId, action, body?.request_id);
   const source = 'telegram_mini_app';
   if (action === 'adopt') return processPetAction(db, telegramId, 'adopt', { event_key: eventKey, source });
+  if (action === 'delete_pet_slot') return deletePetSlot(db, telegramId, body);
   if (action === 'incubate') return incubateMoonEgg(db, telegramId, body.care_type, eventKey);
   if (action === 'hatch') return hatchMoonpet(db, telegramId, eventKey);
   if (action === 'rare_morph') return morphMoonpetRare(db, telegramId, eventKey);
@@ -10401,7 +10410,7 @@ function serializePetMiniAppActionResult(result = {}, identity = null, telegramI
   for (const key of ['pet_xp_awarded', 'xp_awarded', 'damage', 'action', 'attempt', 'retry_after_seconds', 'remaining_seconds', 'server_time', 'gold_delta', 'crystal_delta', 'daily_limit', 'used_today', 'won', 'reward_pending']) {
     if (result[key] !== undefined) output[key] = result[key];
   }
-  for (const key of ['rewards', 'applied', 'job', 'item', 'recipe', 'encounter', 'choice', 'result_copy', 'reaction', 'boss', 'progress', 'tier', 'expedition', 'offer', 'bounty', 'queue', 'run', 'room', 'session', 'pending', 'computed', 'resolved', 'match', 'reward_results', 'region', 'chain_key', 'step', 'final', 'cosmetic', 'cost', 'faction_bonus', 'prestige_count', 'acknowledged', 'rare_morph', 'care_type', 'season_slots', 'entry_requirement', 'capabilities_version', 'capabilities', 'cooldown', 'expires_at']) {
+  for (const key of ['rewards', 'applied', 'job', 'item', 'recipe', 'encounter', 'choice', 'result_copy', 'reaction', 'boss', 'progress', 'tier', 'expedition', 'offer', 'bounty', 'queue', 'run', 'room', 'session', 'pending', 'computed', 'resolved', 'match', 'reward_results', 'region', 'chain_key', 'step', 'final', 'cosmetic', 'cost', 'faction_bonus', 'prestige_count', 'acknowledged', 'rare_morph', 'care_type', 'deleted_pet_id', 'replacement_pet_id', 'reward_history_preserved', 'season_slots', 'entry_requirement', 'capabilities_version', 'capabilities', 'cooldown', 'expires_at']) {
     if (result[key] !== undefined) output[key] = result[key];
   }
   if (output.result_copy === undefined && result.outcome?.copy) {
@@ -11277,7 +11286,7 @@ export default {
       let result;
       await getPetProfile(env.DB, telegramId);
       const lifecycleBeforeAction = await getMoonpetLifecycle(env.DB, telegramId);
-      const eggAllowedActions = ['adopt', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'energy_drink', 'dance', 'cuddles'];
+      const eggAllowedActions = ['adopt', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'delete_pet_slot', 'energy_drink', 'dance', 'cuddles'];
       if (lifecycleBeforeAction?.phase === 'egg' && !eggAllowedActions.includes(String(body.action || ''))) {
         result = { accepted: false, reason: 'moon_egg_must_hatch', lifecycle: lifecycleBeforeAction };
       } else if (body.action === 'season_slots') {
@@ -11289,6 +11298,8 @@ export default {
         });
       } else if (body.action === 'switch_pet_slot') {
         result = await switchActivePetSeasonSlot(env.DB, telegramId, body.pet_id || body.slot_number);
+      } else if (body.action === 'delete_pet_slot') {
+        result = await deletePetSlot(env.DB, telegramId, body);
       } else if (body.action === 'equip') {
         result = await processPetEquipmentEquip(env.DB, telegramId, body.item_key, { event_key: body.event_key, source: 'telegram_pets_api', pet_id: body.pet_id });
       } else if (body.action === 'buy') {
@@ -15190,6 +15201,7 @@ export const __petMediaTestHooks = Object.freeze({
   buildPetSeasonSlotCoreSummary,
   buyPetSeasonSlot,
   switchActivePetSeasonSlot,
+  deletePetSlot,
   serializePetMiniAppActionResult,
   serializePetMiniAppArenaBattle,
   serializePetMiniAppKaijuMatch,

@@ -19,7 +19,6 @@ export async function recoverPetWeeklyBossVictories(db, owner, finish, limit) {
       AND e.event_key<>'' AND e.event_key=trim(e.event_key) AND length(e.event_key)<=180
       AND json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.source')='pet_weekly_boss'
       AND json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.boss_id')=v.boss_id
-      AND v.season_key=printf('pet-s%s-%03d',strftime('%Y',v.defeated_at),1+(CAST(strftime('%m',v.defeated_at) AS INTEGER)-1)/3)
       AND NOT EXISTS (SELECT 1 FROM telegram_pet_system_events done WHERE done.telegram_id=v.telegram_id
         AND done.pet_id=v.pet_id AND done.season_key=v.season_key AND done.system_key='weekly_boss_finish'
         AND done.action_key=v.victory_event_key AND done.period_key=v.week_key AND done.status='completed')

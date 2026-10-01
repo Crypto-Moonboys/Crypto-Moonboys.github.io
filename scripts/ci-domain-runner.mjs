@@ -60,6 +60,7 @@ const GROUPS = {
     ['node', 'scripts/telegram-pets-sanctuary.test.mjs'],
     ['node', 'scripts/moonpet-permanent-ownership.test.mjs'],
     ['node', 'scripts/moonpet-entry-lifetime.test.mjs'],
+    ['node', 'scripts/moonpet-deletion.test.mjs'],
     ['node', 'scripts/telegram-pets-per-pet-state.test.mjs'],
     ['node', 'scripts/telegram-pets-breeding-authority.test.mjs'],
     ['node', 'scripts/telegram-pets-daily-moon-run.test.mjs'],

@@ -1653,6 +1653,38 @@ try {
     assert.deepEqual(errors, [], 'no runtime errors across all six screens');
     if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-${viewport.width}.png`) });
     console.log(`Moonpet browser loop passed at ${viewport.width}x${viewport.height}; all six screens; daily 7/7 bonus; season finale builds, failure/retry, saved reload, victory and payout recovery; bounties; contracts and records; daily tactics; raids; timed recovery; Trade; expeditions; weekly boss recovery; Daily Cache claimed/reset state; season reward rejection/recovery; supply drafts; crafting goals, material routes, craft/use and goal isolation; paid-bundle capacity and exact-fit purchase; persisted draft redraw; weekly objective routes; six goals and saved ten-room Contracts with four drafts and separate records; saved checkpoint paths, care busy/energy gates and recovery unlock; boss tactic previews, saved final-room reload, clear/failure and immediate replay.`);
+    // The native confirmation must cancel cleanly and bind acceptance to one pet.
+    currentUser = 'browser-delete-' + viewport.width;
+    await seed(currentUser, 'egg');
+    const deletionPet = await hooks.getPetProfile(db, currentUser);
+    const deletionWallet = sqlite.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(currentUser);
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-screen="profile"]').click();
+    await page.waitForSelector('[data-action="delete_pet_slot"]', { state: 'attached' });
+    await page.locator('[data-panel="season-slots"]').evaluate(node => { node.open = true; });
+    const deleteRequests = actions.filter(action => action === 'delete_pet_slot').length;
+    const cancelledDialog = new Promise(resolve => page.once('dialog', async dialog => {
+      assert.equal(dialog.type(), 'confirm');
+      assert.match(dialog.message(), /cannot return to play/);
+      assert.match(dialog.message(), /reward history are kept/);
+      await dialog.dismiss(); resolve();
+    }));
+    await page.locator('[data-action="delete_pet_slot"]').click(); await cancelledDialog;
+    assert.equal(actions.filter(action => action === 'delete_pet_slot').length, deleteRequests, 'Cancel sends no deletion request');
+    assert.equal(sqlite.prepare('SELECT status FROM telegram_pet_instances WHERE pet_id=?').get(deletionPet.pet_id).status, 'active');
+    page.once('dialog', dialog => dialog.accept());
+    const deletionResponse = page.waitForResponse(r => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'delete_pet_slot');
+    await page.locator('[data-action="delete_pet_slot"]').click();
+    const deletionData = await (await deletionResponse).json();
+    assert.equal(deletionData.result.accepted, true, JSON.stringify(deletionData.result));
+    assert.equal(deletionData.result.deleted_pet_id, deletionPet.pet_id);
+    await page.waitForFunction(() => document.querySelector('[data-panel="season-slots"]').textContent.includes('DELETED PET HISTORY'));
+    assert.deepEqual(sqlite.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(currentUser), deletionWallet);
+    assert.equal(sqlite.prepare('SELECT status FROM telegram_pet_instances WHERE pet_id=?').get(deletionPet.pet_id).status, 'archived');
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    assert.notEqual((await hooks.getPetProfile(db, currentUser)).pet_id, deletionPet.pet_id, 'fresh egg persists after reload');
+    assert.deepEqual(errors, []);
+    console.log('Confirmed pet deletion browser flow passed at ' + viewport.width + 'x' + viewport.height);
     await context.close();
   }
 } finally {
