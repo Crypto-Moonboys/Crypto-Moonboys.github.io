@@ -170,10 +170,10 @@ try {
     const page = await context.newPage();
     const modes = [], errors = [];
     let holdFullResponse = false, releaseFullResponse, fullRequestStarted;
-    const fullResponseGate = new Promise(resolve => { releaseFullResponse = resolve; });
-    const fullRequestGate = new Promise(resolve => { fullRequestStarted = resolve; });
+    let fullResponseGate = new Promise(resolve => { releaseFullResponse = resolve; });
+    let fullRequestGate = new Promise(resolve => { fullRequestStarted = resolve; });
     let releaseMissions;
-    const missionsGate = new Promise(resolve => { releaseMissions = resolve; });
+    let missionsGate = new Promise(resolve => { releaseMissions = resolve; });
     page.on('pageerror', error => errors.push(error.message));
     await page.addInitScript(() => localStorage.setItem('moonpet-radio-preference', 'off'));
     await page.route('**/*', async route => {
@@ -218,7 +218,91 @@ try {
     await page.waitForSelector('[data-panel="moon-run"]');
     assert.deepEqual(modes, ['core', 'missions', 'full', 'full'], 'Refresh while Explore is loading requests its full projection, not another core snapshot');
     releaseFullResponse();
+    // A shared request for a different module must not consume the new route's
+    // panel focus before its own module exists.
+    for (const leaveWhileLoading of [false, true]) {
+      missionsGate = new Promise(resolve => { releaseMissions = resolve; });
+      fullResponseGate = new Promise(resolve => { releaseFullResponse = resolve; });
+      fullRequestGate = new Promise(resolve => { fullRequestStarted = resolve; });
+      holdFullResponse = true;
+      await page.goto(`${fixtureOrigin}/moonpet-game.html`);
+      await page.waitForSelector('[data-panel="care"]');
+      await page.locator('[data-panel="recommended"] [data-jump="missions"]').click();
+      await page.waitForSelector('[data-panel="module-loading"]');
+      await page.locator('[data-screen="home"]').click();
+      await page.locator('[data-panel="recommended"] [data-jump="explore"]').click();
+      releaseMissions();
+      await fullRequestGate;
+      await page.waitForSelector('[data-panel="module-loading"]');
+      if (leaveWhileLoading) await page.locator('[data-screen="home"]').click();
+      const hydrated = page.waitForResponse(response => response.url().endsWith('/telegram-pets/app/state') && !response.request().postDataJSON().mode);
+      releaseFullResponse();
+      await hydrated;
+      if (leaveWhileLoading) {
+        await page.waitForSelector('[data-panel="care"]');
+        assert.equal(await page.locator('[data-screen="home"]').getAttribute('aria-current'), 'page');
+        await page.locator('[data-screen="explore"]').click();
+        await page.waitForSelector('[data-panel="moon-run"]');
+        assert.equal(await page.locator('[data-panel="moon-run"]').getAttribute('open'), null, 'leaving the route cancels its deferred focus');
+      } else {
+        await page.waitForSelector('[data-panel="moon-run"][open]', { timeout: 2000 });
+      }
+    }
     assert.deepEqual(errors, [], 'partial-state navigation has no runtime exceptions');
+    await context.close();
+  }
+  // A locked PvP move is immutable while waiting for the opponent. Reloading
+  // must preserve that waiting state instead of offering ineffective new moves.
+  {
+    const id = 'browser-arena-locked', rival = 'browser-arena-rival';
+    await seed(id, 'young'); await seed(rival, 'young');
+    const act = async (owner, body) => hooks.processPetMiniAppAction(db, owner, { id: owner }, {
+      displayed_pet_id: (await hooks.getPetProfile(db, owner)).pet_id,
+      request_id: crypto.randomUUID(), ...body,
+    }, token);
+    assert.equal((await act(id, { action: 'arena_matchmake' })).reason, 'arena_queued');
+    const matched = await act(rival, { action: 'arena_matchmake' });
+    assert.equal(matched.reason, 'arena_match_found');
+    const battleId = matched.battle.battle_id;
+    await act(id, { action: 'arena_ready', battle_id: battleId });
+    await act(rival, { action: 'arena_ready', battle_id: battleId });
+    const context = await createFixtureContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+    const page = await context.newPage(), errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await page.addInitScript(() => localStorage.setItem('moonpet-radio-preference', 'off'));
+    await page.route('**/*', async route => {
+      const url = new URL(route.request().url());
+      if (url.hostname === 'telegram.org') return route.fulfill({ contentType: 'text/javascript', body: "window.Telegram={WebApp:{initData:'fixture',ready(){},expand(){},onEvent(){},setHeaderColor(){},setBackgroundColor(){}}};" });
+      if (url.pathname.endsWith('/telegram-pets/app/performance')) return route.fulfill({ json: { ok: true } });
+      if (url.pathname.includes('/telegram-pets/app/')) {
+        const body = route.request().postDataJSON();
+        const result = url.pathname.endsWith('/action') ? await act(id, body) : undefined;
+        const state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(db, id) : await hooks.buildPetMiniAppState(db, id, token);
+        return route.fulfill({ json: { state, result: result && hooks.serializePetMiniAppActionResult(result, state.guidance?.identity, id) } });
+      }
+      if (url.hostname === '127.0.0.1') return route.continue();
+      return route.abort();
+    });
+    await page.goto(`${fixtureOrigin}/moonpet-game.html?screen=explore&focus=arena`);
+    const moves = page.locator('[data-panel="arena"] [data-action="arena_move"]:enabled');
+    await moves.first().waitFor();
+    const lockedResponse = page.waitForResponse(response => response.url().endsWith('/action') && response.request().postDataJSON().action === 'arena_move');
+    await moves.first().click();
+    assert.equal((await (await lockedResponse).json()).result.reason, 'waiting_for_opponent');
+    const saved = sqlite.prepare('SELECT player1_move,player2_move FROM telegram_pet_arena_rounds WHERE battle_id=? AND round_number=1').get(battleId);
+    assert.equal([saved.player1_move, saved.player2_move].filter(Boolean).length, 1);
+    await page.waitForFunction(() => !document.querySelector('[data-panel="arena"] [data-action="arena_move"]:enabled'), undefined, { timeout: 2000 });
+    assert.match(await page.locator('[data-panel="arena"]').textContent(), /YOUR MOVE LOCKED/);
+    await page.screenshot({ path: path.join(screenshotDirectory, 'moonpet-arena-move-locked-390.png') });
+    await page.reload();
+    await page.waitForSelector('[data-panel="arena"]');
+    assert.equal(await moves.count(), 0, 'the saved lock survives reload');
+    assert.match(await page.locator('[data-panel="arena"]').textContent(), /YOUR MOVE LOCKED/);
+    assert.equal((await act(rival, { action: 'arena_move', battle_id: battleId, expected_round: 1, move: 'bb' })).reason, 'round_resolved');
+    await page.locator('[data-utility="sync"]').click();
+    await moves.first().waitFor();
+    assert.equal(JSON.parse(await moves.first().getAttribute('data-payload')).expected_round, 2, 'the next round unlocks choices again');
+    assert.deepEqual(errors, []);
     await context.close();
   }
   // Lose the response after a real server commitment. The rendered controls
@@ -468,6 +552,27 @@ try {
     }
     await page.locator('[data-screen="home"]').click();
     assert.equal(await page.locator('[data-panel="practice"], [data-focus="practice"], [data-practice-action]').count(), 0);
+    currentUser = `browser-hatch-age-${viewport.width}`;
+    await seed(currentUser, 'egg');
+    sqlite.prepare(`UPDATE telegram_pet_lifecycle_by_pet SET incubation_progress=12, incubation_json='{"warm":1,"talk":1,"music":1}' WHERE telegram_id=?`).run(currentUser);
+    const hatchTiming = (await hooks.buildPetMiniAppCoreState(db, currentUser)).lifecycle.incubation;
+    assert.equal(hatchTiming.ready, false, 'a full care signal cannot skip the hatch age requirement');
+    await page.reload(); await page.waitForSelector('[data-panel="incubation"]');
+    const incubationPanel = page.locator('[data-panel="incubation"]');
+    const incubationText = await incubationPanel.textContent();
+    assert.ok(incubationText.includes(`Age ${hatchTiming.age_days} days.`), 'the rendered chamber explains the current hatch age');
+    assert.ok(incubationText.includes(`Earliest reveal: day ${hatchTiming.earliest_hatch_days}`), 'the rendered chamber shows the authoritative earliest hatch day');
+    assert.ok(incubationText.includes(`guaranteed reveal: day ${hatchTiming.guaranteed_hatch_days}`), 'the rendered chamber shows the authoritative guaranteed hatch day');
+    assert.equal(await incubationPanel.locator('[data-action="hatch"]').isDisabled(), true);
+    for (const [ageDays, careSignals] of [[hatchTiming.earliest_hatch_days, true], [hatchTiming.guaranteed_hatch_days, false]]) {
+      sqlite.prepare(`UPDATE telegram_pet_lifecycle_by_pet SET created_at=?, incubation_progress=?, incubation_json=? WHERE telegram_id=?`)
+        .run(new Date(Date.now() - ageDays * 86400000 - 1000).toISOString(), careSignals ? 12 : 0, careSignals ? '{"warm":1,"talk":1,"music":1}' : '{}', currentUser);
+      const readyTiming = (await hooks.buildPetMiniAppCoreState(db, currentUser)).lifecycle.incubation;
+      assert.equal(readyTiming.ready, true);
+      await page.reload(); await page.waitForSelector('[data-panel="incubation"]');
+      assert.equal(await incubationPanel.locator('[data-action="hatch"]').isDisabled(), false, 'server hatch readiness remains authoritative');
+      assert.ok((await incubationPanel.textContent()).includes('REVEAL BOT to wake your first companion.'));
+    }
     currentUser = `browser-permanent-${viewport.width}`;
     await seed(currentUser,'egg');
     const savedPets = [['original',1,4321,'2026-07-01'],['purchased',2,9876,'2026-08-15']];

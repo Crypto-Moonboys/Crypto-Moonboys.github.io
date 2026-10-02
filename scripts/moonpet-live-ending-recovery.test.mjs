@@ -375,6 +375,76 @@ test('recovery does not charge an unstarted district reservation, and its later 
   assert.equal(f.sql.prepare('SELECT energy FROM telegram_pet_instances WHERE pet_id=?').get(sourcePet).energy, 90);
 });
 
+for (const legacy of [false, true]) test(`an uncharged older ${legacy ? 'pre-tactics' : 'current'} raid cannot strand a later saved hit`, async (t) => {
+  t.mock.timers.enable({ apis: ['Date'], now: Date.UTC(2026, 8, 25, 12) });
+  const f = fixture('raid-uncharged-predecessor-' + legacy), sourcePet = 'current-' + f.owner;
+  f.sql.prepare('UPDATE telegram_pet_instances SET pet_xp=400000 WHERE pet_id=?').run(sourcePet);
+  const pet = () => f.sql.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=?').get(sourcePet);
+  const award = args => hooks.awardPetReward(f.db, args);
+  f.db.beforeBatch = statements => {
+    if (statements.some(s => s.query.includes("SET status='settling', payload_json=json_set"))) throw Error('before_raid_charge');
+  };
+  await assert.rejects(processPetSeasonalBoss(f.db, f.owner, pet(), award, 'strike'), /before_raid_charge/);
+  const older = f.sql.prepare("SELECT * FROM telegram_pet_system_events WHERE system_key='seasonal_boss'").get();
+  assert.equal(JSON.parse(older.payload_json).energy_charged, undefined);
+  if (legacy) {
+    // Before raid tactics, the reservation saved its authority but no attack;
+    // the old 18-energy strike was only created after the charge succeeded.
+    f.sql.prepare('UPDATE telegram_pet_system_events SET payload_json=? WHERE id=?')
+      .run(JSON.stringify({ pet_id: sourcePet, season_key: currentSeason }), older.id);
+  }
+  t.mock.timers.tick(86400000);
+  f.db.beforeBatch = statements => {
+    if (statements.some(s => s.query.includes('INSERT INTO telegram_pet_seasonal_boss_progress'))) throw Error('saved_raid_hit_pending');
+  };
+  const pending = await processPetSeasonalBoss(f.db, f.owner, pet(), award, 'conserve');
+  assert.equal(pending.accepted, true); assert.equal(pending.reward_pending, true);
+  const newer = f.sql.prepare("SELECT * FROM telegram_pet_system_events WHERE system_key='seasonal_boss' AND id<>?").get(older.id);
+  assert.equal(newer.action_key, older.action_key, 'exercise independent daily attempts for the same boss');
+  const savedAttack = JSON.parse(newer.payload_json).attack;
+  const energy = pet().energy;
+  f.db.beforeBatch = null;
+  f.sql.prepare("UPDATE telegram_pet_system_events SET updated_at='2000-01-01 00:00:00'").run();
+  f.pet('other-' + f.owner, currentSeason, 200, 2);
+  f.active('other-' + f.owner);
+  await recoverPetLiveSystemEndings(f.db, f.owner, award);
+  assert.equal(f.sql.prepare('SELECT status FROM telegram_pet_system_events WHERE id=?').get(newer.id).status, 'completed',
+    'the older uncharged row is not recoverable and must not exclude this paid hit');
+  const expired = f.sql.prepare('SELECT status,payload_json FROM telegram_pet_system_events WHERE id=?').get(older.id);
+  assert.equal(expired.status, 'rejected');
+  assert.equal(JSON.parse(expired.payload_json).expired_uncharged, 1);
+  assert.equal(f.sql.prepare('SELECT damage FROM telegram_pet_seasonal_boss_progress WHERE pet_id=?').get(sourcePet).damage, savedAttack.damage);
+  assert.equal(pet().energy, energy, 'recovery does not charge either daily attempt again');
+  await recoverPetLiveSystemEndings(f.db, f.owner, award);
+  assert.equal(f.sql.prepare('SELECT damage FROM telegram_pet_seasonal_boss_progress WHERE pet_id=?').get(sourcePet).damage, savedAttack.damage);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_seasonal_boss_progress WHERE pet_id=?').get('other-' + f.owner).n, 0);
+  const deleted = await hooks.deletePetSlot(f.db, f.owner, { pet_id: sourcePet, confirm_pet_id: sourcePet, confirmed: true });
+  assert.equal(deleted.accepted, true, 'the expired unpaid reservation no longer blocks deletion');
+});
+
+test('an old paused raid cannot charge after expiry releases deletion', async (t) => {
+  t.mock.timers.enable({ apis: ['Date'], now: Date.UTC(2026, 8, 25, 12) });
+  const f = fixture('raid-expiry-delete-race'), sourcePet = 'current-' + f.owner;
+  f.sql.prepare('UPDATE telegram_pet_instances SET pet_xp=400000 WHERE pet_id=?').run(sourcePet);
+  const source = f.sql.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=?').get(sourcePet);
+  let expired = false;
+  f.db.beforeBatch = async statements => {
+    if (expired || !statements.some(s => s.query.includes("SET status='settling', payload_json=json_set"))) return;
+    expired = true;
+    t.mock.timers.tick(86400000);
+    await recoverPetLiveSystemEndings(f.db, f.owner, () => assert.fail('an uncharged raid cannot pay'));
+    const deleted = await hooks.deletePetSlot(f.db, f.owner, { pet_id: sourcePet, confirm_pet_id: sourcePet, confirmed: true });
+    assert.equal(deleted.accepted, true, 'expired uncharged raid no longer blocks deletion');
+  };
+  const result = await processPetSeasonalBoss(f.db, f.owner, source, () => assert.fail('expired raid cannot pay'), 'strike');
+  assert.equal(expired, true);
+  assert.equal(result.accepted, false);
+  assert.equal(f.sql.prepare('SELECT energy,status FROM telegram_pet_instances WHERE pet_id=?').get(sourcePet).energy, source.energy);
+  assert.equal(f.sql.prepare('SELECT status FROM telegram_pet_instances WHERE pet_id=?').get(sourcePet).status, 'archived');
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_seasonal_boss_progress').get().n, 0);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_seasonal_boss'").get(f.owner).n, 0);
+});
+
 test('bounded recovery skips a failing source on the next refresh and does not block other stories', async (t) => {
   t.mock.timers.enable({ apis: ['Date'], now: Date.UTC(2026, 8, 26, 12) });
   const f = fixture('bounded-stories');

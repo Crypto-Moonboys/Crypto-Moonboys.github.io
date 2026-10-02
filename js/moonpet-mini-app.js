@@ -32,6 +32,7 @@
   var requestedScreen = launchParameter('screen');
   var requestedFocus = launchParameter('focus');
   var activeScreen = SCREEN_ORDER.includes(requestedScreen) ? requestedScreen : 'home';
+  var requestedFocusScreen = activeScreen;
   var busy = false;
   var petActionRefreshRequired = false;
   var fastActionStateDirty = false;
@@ -975,7 +976,7 @@
   }
 
   function applyRequestedFocus() {
-    if (!requestedFocus) return;
+    if (!requestedFocus || requestedFocusScreen !== activeScreen) return;
     if (stateNeedsScreenHydration(state, activeScreen)) return;
     var focus = requestedFocus;
     requestedFocus = '';
@@ -1347,7 +1348,7 @@
     var phase = String(authoritativeLifecycle.phase || progressionLifecycle.phase || '').toLowerCase();
     var evolutionReady = Boolean(authoritativeLifecycle.evolution_ready || progressionLifecycle.evolution_ready);
     if (!state || !state.adopted || !state.pet) return homeNextLine();
-    if (phase === 'egg') return authoritativeLifecycle.incubation && authoritativeLifecycle.incubation.ready ? 'REVEAL BOT to wake your first companion.' : 'Care for your Secret Bot until the breakout signal is ready.';
+    if (phase === 'egg') return authoritativeLifecycle.incubation && authoritativeLifecycle.incubation.ready ? 'REVEAL BOT to wake your first companion.' : incubationTimingDetail(authoritativeLifecycle.incubation) || 'Care for your Secret Bot until the breakout signal is ready.';
     if (seasonSlots.unavailable) return 'Season slot authority is syncing. Active Moonpet guidance will refresh when server authority is available.';
     if (!slot.pet_id) return 'Pick an active Moonpet before journey progress starts.';
     if (evolutionReady) return 'Evolve your active Moonpet when you are ready.';
@@ -1373,12 +1374,19 @@
       && Math.max(0, Number(weekly.completed_objectives) || 0) === 0;
   }
 
+  function incubationTimingDetail(incubation) {
+    incubation = incubation || {};
+    var timing = [incubation.age_days, incubation.earliest_hatch_days, incubation.guaranteed_hatch_days];
+    if (timing.some(function (value) { return value == null || !Number.isFinite(Number(value)) || Number(value) < 0; })) return '';
+    return 'Age ' + Number(incubation.age_days) + ' days. Earliest reveal: day ' + Number(incubation.earliest_hatch_days) + ' with a full signal and at least three care types; guaranteed reveal: day ' + Number(incubation.guaranteed_hatch_days) + '.';
+  }
+
   function homeNextLine(next) {
     var lifecycle = state && state.lifecycle || {};
     var incubation = lifecycle.incubation || {};
     if (!state || !state.adopted) return state && state.next && state.next.detail || 'Checking your Arcade XP entry requirement.';
     if (lifecycle.phase === 'egg') {
-      return incubation.ready ? 'REVEAL BOT to wake your first companion.' : 'Build care signals until the breakout signal is ready.';
+      return incubation.ready ? 'REVEAL BOT to wake your first companion.' : incubationTimingDetail(incubation) || 'Build care signals until the breakout signal is ready.';
     }
     return next && next.title ? String(next.title) : 'Keep needs stable and follow the recommended route.';
   }
@@ -1476,7 +1484,7 @@
     if (lifecycle.phase === 'egg') {
       var signals = incubation.signals || {};
       return '<div class="ticker"><span>SECRET BOT // SIGNAL ' + number(incubation.progress) + '/' + number(incubation.target) + ' // IDENTITY FORMING //</span></div>' +
-        panel('SECRET BOT CHAMBER', '<div class="line complete">THE SECRET BOT REMEMBERS HOW YOU TREAT IT.</div><div class="line muted">NEXT // ' + escapeHtml(homeNextLine()) + '</div><div class="line muted">Use at least three types of care. Your pattern shapes the reveal; no species odds are exposed.</div>' + meter('BREAKOUT SIGNAL', Number(incubation.progress || 0) / Math.max(1, Number(incubation.target || 12)) * 100) + '<div class="line">WARM ' + number(signals.warm) + ' // TALK ' + number(signals.talk) + ' // MUSIC ' + number(signals.music) + ' // REST ' + number(signals.rest) + '</div><div class="button-grid">' + button('WARM BOT', 'incubate', { care_type: 'warm' }) + button('TALK TO BOT', 'incubate', { care_type: 'talk' }) + button('PLAY A BEAT', 'incubate', { care_type: 'music' }) + button('LET IT REST', 'incubate', { care_type: 'rest' }) + '</div><div class="button-grid one">' + button('REVEAL BOT', 'hatch', {}, { disabled: !incubation.ready, eggRequired: !incubation.ready }) + '</div><div class="line muted">DAILY SIGNALS ' + number(incubation.actions_today) + '/' + number(incubation.daily_cap) + '</div>', 'incubation') +
+        panel('SECRET BOT CHAMBER', '<div class="line complete">THE SECRET BOT REMEMBERS HOW YOU TREAT IT.</div><div class="line muted">NEXT // ' + escapeHtml(homeNextLine()) + '</div><div class="line muted">Use at least three types of care. Your pattern shapes the reveal; no species odds are exposed.</div>' + meter('BREAKOUT SIGNAL', Number(incubation.progress || 0) / Math.max(1, Number(incubation.target || 12)) * 100) + '<div class="line">WARM ' + number(signals.warm) + ' // TALK ' + number(signals.talk) + ' // MUSIC ' + number(signals.music) + ' // REST ' + number(signals.rest) + '</div><div class="button-grid">' + button('WARM BOT', 'incubate', { care_type: 'warm' }) + button('TALK TO BOT', 'incubate', { care_type: 'talk' }) + button('PLAY A BEAT', 'incubate', { care_type: 'music' }) + button('LET IT REST', 'incubate', { care_type: 'rest' }) + '</div><div class="button-grid one">' + button('REVEAL BOT', 'hatch', {}, { disabled: !incubation.ready, statusLabel: incubation.ready ? '' : 'REVEAL NOT READY' }) + '</div><div class="line muted">DAILY SIGNALS ' + number(incubation.actions_today) + '/' + number(incubation.daily_cap) + '</div>', 'incubation') +
         panel('SECRET BOT ACTIONS', '<div class="button-grid">' + button('ENERGY DRINK', 'energy_drink') + button('DANCE', 'dance') + button('CUDDLES', 'cuddles') + '</div><div class="line muted">Stat-only care. Does not advance incubation or award XP.</div>', 'care') +
         renderPlayNow() + renderSeasonSlots();
     }
@@ -2237,7 +2245,7 @@
         }).join('');
         arenaBody = arenaHeader + intent + recap + (arena.status === 'readying'
           ? '<div class="line muted">' + (arena.ready ? 'YOU ARE READY. WAITING FOR RIVAL.' : 'MATCH FOUND. LOCK IN WHEN READY.') + '</div><div class="button-grid">' + button('READY', 'arena_ready', { battle_id: arena.battle_id }, { disabled: arena.ready, statusLabel: arena.ready ? 'READY' : '' }) + button('FORFEIT MATCH', 'arena_forfeit', { battle_id: arena.battle_id }, { danger: true }) + '</div>'
-          : '<div class="button-grid arena-decisions">' + arenaMoves + '</div><div class="button-grid one">' + button('FORFEIT BATTLE', 'arena_forfeit', { battle_id: arena.battle_id }, { danger: true }) + '</div>');
+          : (arena.own_move_locked ? '<div class="line signal">YOUR MOVE LOCKED. ' + (arena.mode === 'multiplayer' ? 'WAITING FOR RIVAL.' : 'WAITING FOR ROUND RESOLUTION.') + '</div>' : '<div class="button-grid arena-decisions">' + arenaMoves + '</div>') + '<div class="button-grid one">' + button('FORFEIT BATTLE', 'arena_forfeit', { battle_id: arena.battle_id }, { danger: true }) + '</div>');
       } else if (arenaQueue) {
         arenaBody = '<div class="line">MATCHMAKING QUEUE // POSITION ' + number(arenaQueue.position) + ' // ' + escapeHtml(words(arenaQueue.rank_bucket)) + '</div><div class="button-grid">' +
           button('ACCEPT ANY RANK', 'arena_matchmake', { accept_any_rank: true }, { disabled: arenaQueue.accept_any_rank, statusLabel: arenaQueue.accept_any_rank ? 'CURRENT' : '' }) + button('CANCEL QUEUE', 'arena_queue_cancel', {}, { danger: true }) + '</div>';
@@ -2632,6 +2640,7 @@
     renderedPetId = state && state.pet && state.pet.pet_id || null;
     renderedPetName = String(state && state.pet && state.pet.callsign || '');
     if (reducedMotion) drawWorld(0);
+    applyRequestedFocus();
   }
 
   // TEST-EXPORT: actionResultFeedback:start
@@ -2946,7 +2955,9 @@
 
   function scrollToPanel(panelId) {
     if (!panelId) return;
+    var focusScreen = activeScreen;
     window.setTimeout(function () {
+      if (focusScreen !== activeScreen) return;
       var target = screen.querySelector('[data-panel="' + CSS.escape(panelId) + '"]');
       if (target) {
         if (target.tagName === 'DETAILS') target.open = true;
@@ -3213,6 +3224,7 @@
 
   function switchScreen(nextScreen) {
     if (!SCREEN_ORDER.includes(nextScreen) || nextScreen === activeScreen) return false;
+    if (requestedFocusScreen !== nextScreen) requestedFocus = '';
     activeScreen = nextScreen;
     render();
     if (stateNeedsScreenHydration(state, nextScreen)) hydrateFullState(nextScreen);
@@ -3278,11 +3290,13 @@
         return;
       }
       var needsModuleHydration = stateNeedsScreenHydration(state, jump.dataset.jump);
+      requestedFocus = jump.dataset.focus || '';
+      requestedFocusScreen = jump.dataset.jump;
       switchScreen(jump.dataset.jump);
       if (needsModuleHydration) {
-        hydrateFullState(jump.dataset.jump).then(function () { scrollToPanel(jump.dataset.focus); });
+        hydrateFullState(jump.dataset.jump);
       } else {
-        scrollToPanel(jump.dataset.focus);
+        applyRequestedFocus();
       }
       haptic('light');
       return;

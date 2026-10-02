@@ -10,13 +10,14 @@ const sqlite = new DatabaseSync(':memory:');
 for (const file of ['schema.sql', 'migrations/048_telegram_pet_player_expansion.sql', 'migrations/058_telegram_pet_season_completion.sql']) {
   sqlite.exec(fs.readFileSync(new URL('../workers/moonboys-api/' + file, import.meta.url), 'utf8'));
 }
-let beforeBatch = null, beforeFirst = null, tail = Promise.resolve();
+let beforeBatch = null, beforeFirst = null, beforeRun = null, tail = Promise.resolve();
 class Statement {
   constructor(sql, args = []) { this.sql = sql; this.args = args; }
   bind(...args) { return new Statement(this.sql, args); }
   async first() { if (beforeFirst) await beforeFirst(this); return sqlite.prepare(this.sql).get(...this.args) || null; }
   async all() { return { results: sqlite.prepare(this.sql).all(...this.args) }; }
   async run() {
+    if (beforeRun) await beforeRun(this);
     if (sqlite.prepare(this.sql).columns().length && !/\bRETURNING\b/i.test(this.sql)) return { results: sqlite.prepare(this.sql).all(...this.args), meta: { changes: 0 } };
     if (/\bRETURNING\b/i.test(this.sql)) { const results = sqlite.prepare(this.sql).all(...this.args); return { results, meta: { changes: results.length } }; }
     const result = sqlite.prepare(this.sql).run(...this.args); return { results: [], meta: { changes: Number(result.changes) } };
@@ -199,6 +200,48 @@ assert.deepEqual(sqlite.prepare('SELECT last_decay_at,last_active_day,streak_day
 const oldEvent = sqlite.prepare("SELECT week_key,day_key FROM telegram_pet_events WHERE telegram_id=? AND event_type='weekly_boss_reward' AND reason=? ORDER BY created_at DESC").all(recoveryOwner, oldBoss.boss_id).find((row) => row.day_key === '2026-09-20');
 assert.equal(oldEvent.week_key, oldWeek);
 assert.equal(sqlite.prepare('SELECT COUNT(*) n FROM telegram_pet_weekly_boss_events WHERE telegram_id=?').get(recoveryOwner).n, 1, 'recovery must not spend a fresh attack');
+
+for (const failure of ['acknowledgement', 'victory progression']) {
+  const id = `weekly-paid-claim-${failure}`, source = await seed(id), selected = secondPet(id, source);
+  sqlite.prepare(`INSERT INTO telegram_pet_weekly_boss_progress (telegram_id,week_key,boss_id,damage,attempts)
+    VALUES (?,?,?,?,1)`).run(id, ready.week_key, ready.boss_id, ready.hp - 1);
+  beforeBatch = statements => {
+    if (!statements[0].sql.includes('INSERT OR IGNORE INTO telegram_pet_reward_claims') || !statements[0].args.includes('pet_weekly_boss')) return;
+    beforeBatch = null; throw Error('defer_weekly_reward');
+  };
+  const won = await hooks.processPetWeeklyBoss(db, id, 'strike', `saved-victory-${failure}`);
+  assert.equal(won.reward_pending, true);
+  switchTo(id, selected);
+  let injected = false;
+  if (failure === 'acknowledgement') beforeRun = statement => {
+    if (statement.sql.includes('UPDATE telegram_pet_weekly_boss_progress SET reward_claimed_at')) {
+      injected = true; throw Error('weekly_paid_claim_acknowledgement_failed');
+    }
+  };
+  else beforeFirst = statement => {
+    if (statement.sql.includes('SELECT id, event_key, day_key, metadata FROM telegram_pet_events')) {
+      injected = true; throw Error('weekly_paid_claim_progression_failed');
+    }
+  };
+  const request = { action: 'weekly_boss_claim', pet_id: source.pet_id, week_key: ready.week_key, boss_id: ready.boss_id };
+  let paid;
+  try { paid = await dispatchRenderedPetAction(db, id, { id }, request, 'test-token'); }
+  finally { beforeRun = null; beforeFirst = null; }
+  assert.equal(injected, true);
+  const receipt = sqlite.prepare("SELECT applied_rewards FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_weekly_boss'").get(id);
+  assert.ok(receipt, 'the payout is already durable before its follow-up fails');
+  assert.equal(paid.accepted, true, `${failure} cannot revoke a durably paid weekly claim`);
+  assert.equal(paid.refresh_state, true);
+  assert.equal(paid.pet_xp_awarded, JSON.parse(receipt.applied_rewards).pet_xp);
+  const sourceXp = sqlite.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(source.pet_id).pet_xp;
+  const wallet = sqlite.prepare('SELECT moon_gold,moon_crystals FROM telegram_pet_profiles WHERE telegram_id=?').get(id);
+  const repeated = await dispatchRenderedPetAction(db, id, { id }, request, 'test-token');
+  assert.equal(repeated.accepted, true); assert.equal(repeated.duplicate, true); assert.equal(repeated.pet_xp_awarded, 0);
+  assert.deepEqual(sqlite.prepare('SELECT moon_gold,moon_crystals FROM telegram_pet_profiles WHERE telegram_id=?').get(id), wallet);
+  assert.equal(sqlite.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(source.pet_id).pet_xp, sourceXp);
+  assert.equal(sqlite.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(selected).pet_xp, 0);
+  assert.ok(sqlite.prepare('SELECT reward_claimed_at FROM telegram_pet_weekly_boss_progress WHERE telegram_id=? AND week_key=?').get(id, ready.week_key).reward_claimed_at);
+}
 
 sqlite.close();
 console.log('Moonpet weekly boss choices and authority tests passed.');

@@ -209,6 +209,208 @@ test('all twelve market offers deliver their full bundle exactly once', async ()
   }
 });
 
+test('a Market request retried after UTC midnight cannot buy the next day stock', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: Date.UTC(2026, 9, 1, 23, 59, 59) });
+  const f = funded('market-midnight-replay');
+  const request = { action: 'market_buy', offer_key: 'snack_crate', request_id: 'saved-market-click' };
+  for (const day of ['2026-10-01', '2026-10-02']) assert.ok(getPetMarketOffers(day).some(offer => offer.key === request.offer_key));
+  assert.equal((await f.act(request)).accepted, true);
+  const snapshot = () => ({ wallet: wallet(f),
+    items: f.sql.prepare('SELECT * FROM telegram_pet_inventory WHERE telegram_id=?').all(f.owner),
+    receipts: f.sql.prepare("SELECT * FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_market'").all(f.owner) });
+  const saved = snapshot();
+  t.mock.timers.tick(2000);
+  const retry = await f.act(request);
+  assert.equal(retry.accepted, true);
+  assert.equal(retry.duplicate, true, 'the saved request remains the original purchase across the UTC reset');
+  assert.deepEqual(snapshot(), saved, 'retry cannot debit currency, grant goods or consume the next day stock');
+  const fresh = await f.act({ ...request, request_id: 'new-market-click' });
+  assert.equal(fresh.accepted, true, 'a new request can buy the new daily stock');
+  assert.equal(fresh.duplicate, false);
+  assert.equal(f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_key='moon_snack'").get(f.owner).quantity, 6);
+});
+
+test('a Market retry keeps its receipt when season rollover removes the offer', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: Date.UTC(2026, 8, 30, 23, 59, 59) });
+  const f = funded('market-season-replay');
+  const request = { action: 'market_buy', offer_key: 'clean_kit', request_id: 'saved-old-season-market-click' };
+  assert.ok(getPetMarketOffers('2026-09-30').some(offer => offer.key === request.offer_key));
+  assert.ok(!getPetMarketOffers('2026-10-01').some(offer => offer.key === request.offer_key));
+  assert.equal((await f.act(request)).accepted, true);
+  const saved = wallet(f);
+  t.mock.timers.tick(2000);
+  const retry = await f.act(request);
+  assert.equal(retry.accepted, true, 'a committed purchase remains acknowledged after its offer rotates away');
+  assert.equal(retry.duplicate, true);
+  assert.deepEqual(wallet(f), saved);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_market'").get(f.owner).n, 1);
+});
+
+test('overlapping Market requests across midnight reserve the same click once', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: Date.UTC(2026, 9, 1, 23, 59, 59) });
+  const f = funded('market-midnight-race');
+  const request = { action: 'market_buy', offer_key: 'snack_crate', request_id: 'racing-market-click' };
+  const before = wallet(f);
+  let concurrent;
+  f.db.beforeBatch = async statements => {
+    if (!statements.some(statement => statement.query.includes('INSERT OR IGNORE INTO telegram_pet_reward_claims') && statement.args.includes('pet_market'))) return;
+    f.db.beforeBatch = null;
+    t.mock.timers.tick(2000);
+    concurrent = await f.act(request);
+    assert.equal(concurrent.accepted, true);
+  };
+  const first = await f.act(request);
+  assert.ok(concurrent, 'the next-day request commits after the first receipt read and before reservation');
+  assert.equal(first.accepted, true);
+  assert.equal(first.duplicate, true, 'the losing request acknowledges the already committed purchase');
+  assert.equal(wallet(f).moon_gold, before.moon_gold - 70);
+  assert.equal(f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_key='moon_snack'").get(f.owner).quantity, 3);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_market'").get(f.owner).n, 1);
+});
+
+test('Market request tracking preserves daily stock from older receipts without a request key', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: Date.UTC(2026, 9, 1, 12) });
+  const f = funded('market-legacy-daily-stock');
+  assert.equal((await hooks.buyPetMarketOffer(f.db, f.owner, 'snack_crate')).accepted, true);
+  const savedWallet = wallet(f);
+  const saved = f.sql.prepare("SELECT * FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_market'").all(f.owner);
+  assert.equal(JSON.parse(saved[0].metadata).context.request_key, undefined);
+  const result = await f.act({ action: 'market_buy', offer_key: 'snack_crate', request_id: 'new-client-old-stock' });
+  assert.equal(result.accepted, true);
+  assert.equal(result.duplicate, true);
+  assert.deepEqual(wallet(f), savedWallet);
+  assert.deepEqual(f.sql.prepare("SELECT * FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_market'").all(f.owner), saved);
+});
+
+test('a stale-tab Market duplicate stays free when its response is retried after midnight', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: Date.UTC(2026, 9, 1, 23, 59, 59) });
+  const f = funded('market-duplicate-request-alias');
+  assert.equal((await f.act({ action: 'market_buy', offer_key: 'snack_crate', request_id: 'first-tab-click' })).accepted, true);
+  const request = { action: 'market_buy', offer_key: 'snack_crate', request_id: 'stale-second-tab-click' };
+  const second = await f.act(request);
+  assert.equal(second.accepted, true);
+  assert.equal(second.duplicate, true);
+  const saved = { wallet: wallet(f), items: f.sql.prepare('SELECT * FROM telegram_pet_inventory WHERE telegram_id=?').all(f.owner) };
+  t.mock.timers.tick(2000);
+  const retry = await f.act(request);
+  assert.equal(retry.accepted, true);
+  assert.equal(retry.duplicate, true, 'an acknowledged duplicate cannot become a paid purchase on retry');
+  assert.deepEqual({ wallet: wallet(f), items: f.sql.prepare('SELECT * FROM telegram_pet_inventory WHERE telegram_id=?').all(f.owner) }, saved);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_market'").get(f.owner).n, 1,
+    'duplicate acknowledgement needs no extra reward claim');
+});
+
+test('a delayed Market duplicate cannot replace a next-day paid request receipt', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: Date.UTC(2026, 9, 1, 23, 59, 59) });
+  const f = funded('market-alias-loses-race');
+  await f.act({ action: 'market_buy', offer_key: 'snack_crate', request_id: 'first-tab-click' });
+  const request = { action: 'market_buy', offer_key: 'snack_crate', request_id: 'racing-stale-tab-click' };
+  let injected = false;
+  f.db.beforeRun = async statement => {
+    if (injected || !statement.query.includes('INSERT OR IGNORE INTO telegram_pet_system_events')
+      || !statement.query.includes('market_request')) return;
+    injected = true;
+    t.mock.timers.tick(2000);
+    const paid = await f.act(request);
+    assert.equal(paid.accepted, true);
+    assert.equal(paid.duplicate, false);
+  };
+  const delayed = await f.act(request);
+  assert.equal(injected, true, 'pause duplicate acknowledgement before its durable request alias');
+  assert.equal(delayed.accepted, true);
+  assert.equal(delayed.duplicate, true);
+  const saved = wallet(f);
+  const replay = await f.act(request);
+  assert.equal(replay.duplicate, true);
+  assert.equal(replay.receipt.day_key, '2026-10-02', 'the paid request must remain the authoritative receipt');
+  assert.deepEqual(wallet(f), saved);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_market'").get(f.owner).n, 2);
+});
+
+test('a prior-day Market duplicate wins atomically against a next-day spend already in flight', async t => {
+  const originalNow = new Date(Date.UTC(2026, 9, 1, 23, 59, 59));
+  t.mock.timers.enable({ apis: ['Date'], now: originalNow.getTime() });
+  const f = funded('market-alias-wins-race');
+  await f.act({ action: 'market_buy', offer_key: 'snack_crate', request_id: 'first-tab-click' });
+  const saved = wallet(f);
+  const request = { action: 'market_buy', offer_key: 'snack_crate', request_id: 'racing-stale-tab-click' };
+  t.mock.timers.tick(2000);
+  let injected = false;
+  f.db.beforeBatch = async statements => {
+    const claim = statements.find(statement => statement.query.includes('INSERT OR IGNORE INTO telegram_pet_reward_claims') && statement.args.includes('pet_market'));
+    if (injected || !claim) return;
+    injected = true;
+    const metadata = claim.args.map(value => {
+      try { return typeof value === 'string' ? JSON.parse(value) : null; } catch { return null; }
+    }).find(value => value?.context?.request_key);
+    assert.ok(metadata?.context.request_key);
+    // This earlier request captured its board time before midnight and resumes
+    // its duplicate acknowledgement before the next-day reservation commits.
+    const duplicate = await hooks.buyPetMarketOffer(f.db, f.owner, 'snack_crate', originalNow, metadata.context.request_key);
+    assert.equal(duplicate.accepted, true);
+    assert.equal(duplicate.duplicate, true);
+  };
+  const result = await f.act(request);
+  assert.equal(injected, true);
+  assert.equal(result.accepted, true);
+  assert.equal(result.duplicate, true, 'reservation must recheck the newly committed duplicate alias');
+  assert.deepEqual(wallet(f), saved);
+  assert.equal(f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_key='moon_snack'").get(f.owner).quantity, 3);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_market'").get(f.owner).n, 1);
+});
+
+test('a failed Market duplicate alias write cannot acknowledge an unremembered request', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: Date.UTC(2026, 9, 1, 23, 59, 59) });
+  const f = funded('market-alias-write-failure');
+  await f.act({ action: 'market_buy', offer_key: 'snack_crate', request_id: 'first-tab-click' });
+  const saved = wallet(f), prepare = f.db.prepare.bind(f.db);
+  let injected = false;
+  f.db.prepare = query => {
+    const statement = prepare(query), bind = statement.bind.bind(statement);
+    if (query.includes('INSERT OR IGNORE INTO telegram_pet_system_events') && query.includes('market_request')) {
+      statement.bind = (...args) => {
+        const bound = bind(...args);
+        bound.run = async () => { injected = true; return { success: false, error: 'alias_storage_offline', meta: { changes: 1 } }; };
+        return bound;
+      };
+    }
+    return statement;
+  };
+  const acknowledge = () => hooks.buyPetMarketOffer(f.db, f.owner, 'snack_crate', new Date(), 'unremembered-request');
+  await assert.rejects(acknowledge(), /pet_state_write_unavailable/);
+  assert.equal(injected, true);
+  assert.deepEqual(wallet(f), saved);
+  f.db.prepare = prepare;
+  assert.equal((await acknowledge()).duplicate, true, 'recovery must durably acknowledge the duplicate');
+  t.mock.timers.tick(2000);
+  assert.equal((await acknowledge()).duplicate, true);
+  assert.deepEqual(wallet(f), saved);
+});
+
+test('a same-day Market reservation loser remembers its duplicate request across midnight', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: Date.UTC(2026, 9, 1, 23, 59, 59) });
+  const f = funded('market-alias-reservation-loser');
+  const request = { action: 'market_buy', offer_key: 'snack_crate', request_id: 'losing-tab-click' };
+  let injected = false;
+  f.db.beforeBatch = async statements => {
+    if (injected || !statements.some(statement => statement.query.includes('INSERT OR IGNORE INTO telegram_pet_reward_claims') && statement.args.includes('pet_market'))) return;
+    injected = true;
+    const winner = await f.act({ ...request, request_id: 'winning-tab-click' });
+    assert.equal(winner.accepted, true);
+    assert.equal(winner.duplicate, false);
+  };
+  const duplicate = await f.act(request);
+  assert.equal(injected, true);
+  assert.equal(duplicate.accepted, true);
+  assert.equal(duplicate.duplicate, true);
+  const saved = wallet(f);
+  t.mock.timers.tick(2000);
+  const retry = await f.act(request);
+  assert.equal(retry.duplicate, true, 'losing stock reservation must remember the same acknowledgement as an already-sold board');
+  assert.deepEqual(wallet(f), saved);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_market'").get(f.owner).n, 1);
+});
+
 const wallet = f => f.sql.prepare('SELECT moon_gold,moon_crystals,style_tokens,pet_xp FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner);
 const shopMission = state => state.guidance.missions.find(m => m.key.startsWith('pet-daily-shop:'));
 for (const operation of ['purchase','equip']) test(`direct ${operation} cannot acknowledge a failed peer write`, async () => {

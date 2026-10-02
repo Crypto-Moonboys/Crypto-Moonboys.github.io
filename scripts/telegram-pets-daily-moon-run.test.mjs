@@ -45,6 +45,7 @@ class Statement {
   constructor(adapter, sql, args = []) { this.adapter = adapter; this.sql = sql; this.args = args; }
   bind(...args) { return new Statement(this.adapter, this.sql, args); }
   async first() {
+    await this.adapter.beforeFirst?.(this.sql, this.args);
     if (this.adapter.failFirst?.test(this.sql)) return { success: false, error: 'injected_daily_first_failure' };
     return this.adapter.database.prepare(this.sql).get(...this.args) || null;
   }
@@ -1529,6 +1530,95 @@ const resumedEnding = await processDailyMoonRunStep(interruptedEnding.adapter, i
 assert.equal(resumedEnding.reason, 'daily_run_completed', 'saved final-room retry must complete instead of returning stale_daily_room');
 assert.equal(interruptedEnding.adapter.database.prepare('SELECT current_room FROM telegram_pet_runs WHERE run_id=?').get(interruptedEnding.run.run_id).current_room, 10);
 assert.equal(interruptedEnding.adapter.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_run_rooms WHERE run_id=? AND room_number>10').get(interruptedEnding.run.run_id).count, 0);
+
+// A saved room result owns the next transition even when its score/death write
+// failed. Extracting on retry cannot discard it or convert a death into a win.
+for (const failed of [true, false]) {
+  const f = await endingFixture(`extract-saved-room-${failed}`);
+  f.adapter.database.prepare('DELETE FROM telegram_pet_run_rooms WHERE run_id=?').run(f.run.run_id);
+  f.adapter.database.prepare('UPDATE telegram_pet_runs SET current_room=1,depth=1,score=25 WHERE run_id=?').run(f.run.run_id);
+  const run = f.adapter.database.prepare('SELECT * FROM telegram_pet_runs WHERE run_id=?').get(f.run.run_id);
+  const room = await createPetRunRoom(f.adapter, run);
+  await persistPetRunRoomOutcome(f.adapter, run, room, { success: !failed, score: failed ? 0 : 37, choice_id: room.choices[0].choice_id });
+  const batch = f.adapter.batch.bind(f.adapter);
+  if (failed) f.adapter.batch = async statements => {
+    if (statements[0].sql.includes('UPDATE telegram_pet_runs SET status =')) throw Error('saved_room_terminal_offline');
+    return batch(statements);
+  };
+  else f.adapter.failWrite = /UPDATE telegram_pet_runs SET current_room/;
+  await assert.rejects(processDailyMoonRunStep(f.adapter, { telegram_id: f.owner, run_id: run.run_id, choice_key: room.choices[0].choice_id, expected_step_index: 1, now: f.now }), /saved_room_terminal_offline|injected_journey_write_failure/);
+  f.adapter.batch = batch; f.adapter.failWrite = null;
+  await extractDailyMoonRun(f.adapter, { telegram_id: f.owner, run_id: run.run_id, now: f.now });
+  const ended = f.adapter.database.prepare('SELECT status,current_room,depth,score FROM telegram_pet_runs WHERE run_id=?').get(run.run_id);
+  assert.equal(ended.status, failed ? 'failed' : 'extracted', 'extraction must honor the saved room outcome');
+  assert.equal(ended.current_room, failed ? 1 : 2);
+  assert.equal(ended.depth, failed ? 1 : 2);
+  assert.equal(ended.score, failed ? 25 : 62, 'a resolved room keeps its score before extraction');
+  assert.equal(f.adapter.database.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='roguelite_completion'").get(f.owner).n, failed ? 0 : 1);
+}
+
+{
+  const f = await endingFixture('extract-unadvanced-final-boss');
+  const ended = await extractDailyMoonRun(f.adapter, { telegram_id: f.owner, run_id: f.run.run_id, now: f.now });
+  assert.equal(ended.reason, 'daily_run_completed', 'a saved final victory must finish rather than become an early extraction');
+  assert.equal(f.adapter.database.prepare('SELECT current_room FROM telegram_pet_runs WHERE run_id=?').get(f.run.run_id).current_room, 10);
+  assert.equal(f.adapter.database.prepare('SELECT score FROM telegram_pet_runs WHERE run_id=?').get(f.run.run_id).score, 223);
+  assert.equal(f.adapter.database.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='roguelite_boss'").get(f.owner).n, 1);
+  assert.equal(f.adapter.database.prepare("SELECT idempotency_key FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='roguelite_completion'").get(f.owner).idempotency_key, f.run.run_id);
+}
+for (const failed of [true, false]) {
+  const f = await endingFixture(`extract-concurrent-room-${failed}`);
+  f.adapter.database.prepare('DELETE FROM telegram_pet_run_rooms WHERE run_id=?').run(f.run.run_id);
+  f.adapter.database.prepare('UPDATE telegram_pet_runs SET current_room=1,depth=1,score=25 WHERE run_id=?').run(f.run.run_id);
+  const run = f.adapter.database.prepare('SELECT * FROM telegram_pet_runs WHERE run_id=?').get(f.run.run_id);
+  const room = await createPetRunRoom(f.adapter, run);
+  const batch = f.adapter.batch.bind(f.adapter);
+  let injected = false;
+  f.adapter.batch = async statements => {
+    if (!injected && statements[0].sql.includes('UPDATE telegram_pet_runs SET status =')) {
+      injected = true;
+      await persistPetRunRoomOutcome(f.adapter, run, room, { success: !failed, score: failed ? 0 : 37, choice_id: room.choices[0].choice_id });
+    }
+    return batch(statements);
+  };
+  const request = { telegram_id: f.owner, run_id: run.run_id, now: f.now };
+  const result = await extractDailyMoonRun(f.adapter, request);
+  assert.equal(injected, true);
+  if (!failed) {
+    assert.equal(result.reason, 'daily_run_room_settlement_pending', 'continued contention produces a bounded retry');
+    assert.equal(result.refresh_state, true);
+    assert.equal(f.adapter.database.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='roguelite_completion'").get(f.owner).n, 0);
+    await extractDailyMoonRun(f.adapter, request);
+  }
+  const ended = f.adapter.database.prepare('SELECT status,current_room,score FROM telegram_pet_runs WHERE run_id=?').get(run.run_id);
+  assert.equal(ended.status, failed ? 'failed' : 'extracted', 'the terminal transaction must recheck newly saved room evidence');
+  assert.equal(ended.current_room, failed ? 1 : 2);
+  assert.equal(ended.score, failed ? 25 : 62);
+  assert.equal(f.adapter.database.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='roguelite_completion'").get(f.owner).n, failed ? 0 : 1);
+}
+
+for (const legacy of [true, false]) {
+  const f = await endingFixture(`extract-wins-room-race-${legacy}`);
+  f.adapter.database.prepare('DELETE FROM telegram_pet_run_rooms WHERE run_id=?').run(f.run.run_id);
+  f.adapter.database.prepare('UPDATE telegram_pet_runs SET current_room=1,depth=1,score=25 WHERE run_id=?').run(f.run.run_id);
+  if (legacy) f.adapter.database.prepare('DELETE FROM telegram_pet_run_modifiers WHERE run_id=? AND modifier_id=?').run(f.run.run_id, DAILY_RUN_RULES_ID);
+  const run = f.adapter.database.prepare('SELECT * FROM telegram_pet_runs WHERE run_id=?').get(f.run.run_id);
+  const room = await createPetRunRoom(f.adapter, run);
+  let injected = false;
+  f.adapter.beforeFirst = async sql => {
+    if (injected || !sql.includes('UPDATE telegram_pet_run_rooms SET status =')) return;
+    injected = true;
+    const extracted = await extractDailyMoonRun(f.adapter, { telegram_id: f.owner, run_id: run.run_id, now: f.now });
+    assert.equal(extracted.accepted, true);
+  };
+  await processDailyMoonRunStep(f.adapter, { telegram_id: f.owner, run_id: run.run_id, choice_key: room.choices[0].choice_id, expected_step_index: 1, now: f.now });
+  assert.equal(injected, true);
+  assert.equal(f.adapter.database.prepare('SELECT status FROM telegram_pet_run_rooms WHERE room_id=?').get(room.room_id).status, 'pending',
+    'a room cannot resolve after extraction wins, including retained v1 Daily runs');
+  assert.equal(f.adapter.database.prepare('SELECT COUNT(*) n FROM telegram_pet_run_rooms WHERE run_id=? AND room_number>2').get(run.run_id).n, 0);
+  assert.equal(f.adapter.database.prepare('SELECT status FROM telegram_pet_runs WHERE run_id=?').get(run.run_id).status, 'extracted');
+  assert.equal(f.adapter.database.prepare('SELECT score FROM telegram_pet_runs WHERE run_id=?').get(run.run_id).score, 25);
+}
 
 // Early extraction can commit before daily/weekly records. It is no longer an
 // active run and has no final boss, so the final-boss recovery queue misses it.

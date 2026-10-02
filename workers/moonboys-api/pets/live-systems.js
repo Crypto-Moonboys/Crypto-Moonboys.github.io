@@ -365,6 +365,7 @@ async function claimEnergySettlement(db, reservation, telegramId, energyCost, au
         updated_at=CURRENT_TIMESTAMP
       WHERE id=? AND pet_id=? AND telegram_id=? AND season_key=?
         AND (status IN ('pending','rejected') OR (status='settling' AND updated_at < datetime('now','-2 minutes')))
+        AND COALESCE(json_extract(payload_json, '$.expired_uncharged'), 0)<>1
         AND (COALESCE(json_extract(payload_json, '$.energy_charged'), 0)=1
           OR EXISTS (SELECT 1 FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=? AND season_key=? AND energy>=?))`)
       .bind(token, token, reservation.id, authority.pet_id, telegramId, authority.season_key, authority.pet_id, telegramId, authority.season_key, energyCost),
@@ -386,6 +387,7 @@ async function claimEnergySettlement(db, reservation, telegramId, energyCost, au
         '$.energy_charge_token', CASE WHEN COALESCE(json_extract(payload_json, '$.energy_charged'), 0)=1 THEN COALESCE(json_extract(payload_json, '$.energy_charge_token'), '') ELSE ? END),
         updated_at=CURRENT_TIMESTAMP
       WHERE id=? AND (status IN ('pending','rejected') OR (status='settling' AND updated_at < datetime('now','-2 minutes')))
+        AND COALESCE(json_extract(payload_json, '$.expired_uncharged'), 0)<>1
         AND (COALESCE(json_extract(payload_json, '$.energy_charged'), 0)=1
           OR EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id=? AND energy>=?))`)
       .bind(token, token, reservation.id, telegramId, energyCost),
@@ -681,6 +683,20 @@ export async function processPetSeasonalBoss(db, telegramId, pet, awardReward, m
 // Recover only persisted decisions for the authenticated owner's original pet.
 // A state read never starts an uncharged energy action or rerolls a choice.
 export async function recoverPetLiveSystemEndings(db, telegramId, awardReward, limit = 2) {
+  // A raid can only be started on its own day. An outage before its energy
+  // charge must not leave an unreachable reservation blocking pet deletion.
+  // The same row guards the debit, so a concurrent charge either wins first
+  // and remains recoverable, or sees this expiry marker and cannot spend.
+  await db.prepare(`UPDATE telegram_pet_system_events AS e
+    SET status='rejected', payload_json=json_set(payload_json,'$.expired_uncharged',1), updated_at=CURRENT_TIMESTAMP
+    WHERE e.telegram_id=? AND e.system_key='seasonal_boss' AND e.status='pending'
+      AND e.action_key IN (${Object.keys(PET_SEASONAL_BOSSES).map(() => '?').join(',')})
+      AND json_valid(e.payload_json) AND COALESCE(json_extract(e.payload_json,'$.energy_charged'),0)=0
+      AND date(substr(e.period_key,-10),'+0 days')=substr(e.period_key,-10) AND substr(e.period_key,-10)<?
+      AND EXISTS (SELECT 1 FROM telegram_pet_instances i JOIN telegram_pet_season_slots s
+        ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id AND s.season_key=i.season_key AND s.slot_number=i.slot_number
+        WHERE i.pet_id=e.pet_id AND i.telegram_id=e.telegram_id AND i.season_key=e.season_key)`)
+    .bind(String(telegramId), ...Object.keys(PET_SEASONAL_BOSSES), dayKey()).run().then(requireLiveMutationResult);
   const rows = await db.prepare(`SELECT p.*, e.id AS ending_id, e.system_key, e.action_key, e.period_key
     FROM telegram_pet_system_events e
     JOIN telegram_pet_instances p ON p.pet_id=e.pet_id AND p.telegram_id=e.telegram_id AND p.season_key=e.season_key
@@ -690,10 +706,10 @@ export async function recoverPetLiveSystemEndings(db, telegramId, awardReward, l
       AND date(substr(e.period_key,-10),'+0 days')=substr(e.period_key,-10)
       AND substr(e.period_key,-10)<=?
       AND ${petRecoverableLiveDecisionSql('e')}
-      AND NOT EXISTS (SELECT 1 FROM telegram_pet_system_events earlier
+      AND (e.system_key='seasonal_boss' OR NOT EXISTS (SELECT 1 FROM telegram_pet_system_events earlier
         WHERE earlier.pet_id=e.pet_id AND earlier.telegram_id=e.telegram_id AND earlier.season_key=e.season_key
           AND earlier.system_key=e.system_key AND earlier.action_key=e.action_key AND earlier.period_key<e.period_key
-          AND earlier.status IN ('pending','rejected','settling'))
+          AND earlier.status IN ('pending','rejected','settling')))
     ORDER BY e.updated_at,e.period_key,e.id LIMIT ?`)
     .bind(String(telegramId), dayKey(), boundedRecoveryLimit(limit, 2)).all().then(requirePetReadResult);
   for (const row of rows.results || []) {

@@ -149,8 +149,16 @@ function getRewardAuthorization(source, telegramId, context = {}, now = new Date
       JOIN telegram_pet_active_slots a ON a.pet_id=p.pet_id AND a.telegram_id=p.telegram_id AND a.season_key=p.season_key
       JOIN telegram_pet_lifecycle_by_pet l ON l.pet_id=p.pet_id AND l.telegram_id=p.telegram_id
       WHERE p.pet_id=? AND p.telegram_id=? AND p.season_key=? AND p.status='active' AND l.phase<>'egg'
-        AND ${getPetVisibleLevelSql('p.pet_xp')} >= ?)`,
-    args: [context.pet_id, telegramId, context.season_key, context.min_level] };
+        AND ${getPetVisibleLevelSql('p.pet_xp')} >= ?)
+      ${context.request_key ? `AND NOT EXISTS (SELECT 1 FROM telegram_pet_reward_claims previous
+        WHERE previous.telegram_id=? AND previous.source='pet_market' AND previous.status IN ('pending','awarded')
+          AND json_extract(CASE WHEN json_valid(previous.metadata) THEN previous.metadata ELSE '{}' END,'$.context.request_key')=?)
+        AND NOT EXISTS (SELECT 1 FROM telegram_pet_system_events acknowledged
+          WHERE acknowledged.pet_id='' AND acknowledged.telegram_id=? AND acknowledged.season_key=''
+            AND acknowledged.system_key='market_request' AND acknowledged.action_key='purchase'
+            AND acknowledged.period_key=? AND acknowledged.status='completed')` : ''}`,
+    args: [context.pet_id, telegramId, context.season_key, context.min_level,
+      ...(context.request_key ? [telegramId, context.request_key, telegramId, context.request_key] : [])] };
   }
   if (source === 'pet_job' || source === 'pet_adventure') {
     const adventure = source === 'pet_adventure';
@@ -766,13 +774,16 @@ export async function createPetRunRoom(db, run) {
 export async function persistPetRunRoomOutcome(db, run, room, outcome = {}) {
   const resolved = resolvePetRunRoom(room, outcome);
   const tacticCount = Number.isSafeInteger(outcome.daily_tactic_count) ? outcome.daily_tactic_count : null;
+  const dailyOutcome = tacticCount !== null || ['daily_moon_run_server_outcome_v1', 'daily_moon_run_server_outcome_v2'].includes(outcome.authority);
   const tacticGuard = tacticCount === null ? '' : ` AND
-    (SELECT COUNT(*) FROM telegram_pet_run_modifiers WHERE run_id=? AND modifier_id IN ('daily_tactic_3','daily_tactic_6'))=?
-    AND EXISTS (SELECT 1 FROM telegram_pet_runs WHERE run_id=? AND telegram_id=? AND current_room=? AND status IN ('active','extractable'))`;
+    (SELECT COUNT(*) FROM telegram_pet_run_modifiers WHERE run_id=? AND modifier_id IN ('daily_tactic_3','daily_tactic_6'))=?`;
+  const dailyRunGuard = dailyOutcome ? ` AND EXISTS (SELECT 1 FROM telegram_pet_runs
+    WHERE run_id=? AND telegram_id=? AND current_room=? AND status IN ('active','extractable'))` : '';
   const result = await db.prepare(`UPDATE telegram_pet_run_rooms SET status = ?, outcome_data = ?, resolved_at = CURRENT_TIMESTAMP
-    WHERE room_id = ? AND run_id = ? AND telegram_id=? AND status = 'pending'${tacticGuard} RETURNING room_id`)
+    WHERE room_id = ? AND run_id = ? AND telegram_id=? AND status = 'pending'${tacticGuard}${dailyRunGuard} RETURNING room_id`)
     .bind(resolved.status, safeJson(resolved.outcome), room.room_id, run.run_id, run.telegram_id,
-      ...(tacticCount === null ? [] : [run.run_id, tacticCount, run.run_id, run.telegram_id, room.room - 1])).first().then(requirePetFirstReadResult);
+      ...(tacticCount === null ? [] : [run.run_id, tacticCount]),
+      ...(dailyOutcome ? [run.run_id, run.telegram_id, room.room - 1] : [])).first().then(requirePetFirstReadResult);
   if (!result) {
     const persisted = await db.prepare(`SELECT status, outcome_data FROM telegram_pet_run_rooms WHERE room_id=? AND run_id=? AND telegram_id=?`)
       .bind(room.room_id, run.run_id, run.telegram_id).first().then(requirePetFirstReadResult);
@@ -892,10 +903,16 @@ export async function rewardPetRogueliteBoss(db, run, bossId, room = null) {
   return awarded;
 }
 
-export async function finishPetRogueliteRun(db, run, status, analytics = {}) {
+export async function finishPetRogueliteRun(db, run, status, analytics = {}, options = {}) {
   if (!PET_RUN_STATUSES.includes(status) || status === 'active') throw new Error('invalid_terminal_run_status');
   const durationSeconds = Math.max(0, Math.floor((Date.now() - parsePersistedTimestamp(run.started_at)) / 1000));
   const finalizationId = `${run.run_id}:end`;
+  const dailyExpectedRoom = options.daily_expected_room;
+  const dailyExtractionGuard = status === 'extracted' && Number.isSafeInteger(dailyExpectedRoom)
+    ? ` AND current_room=? AND NOT EXISTS (SELECT 1 FROM telegram_pet_run_rooms pending
+        WHERE pending.run_id=telegram_pet_runs.run_id AND pending.telegram_id=telegram_pet_runs.telegram_id
+          AND pending.pet_id=telegram_pet_runs.pet_id AND pending.room_number=telegram_pet_runs.current_room+1
+          AND pending.status IN ('resolved','failed'))` : '';
   const roomsCompleted = positiveInteger(analytics.rooms_completed ?? run.current_room);
   const terminalAnalytics = {
     status,
@@ -907,8 +924,9 @@ export async function finishPetRogueliteRun(db, run, status, analytics = {}) {
   const results = await db.batch([
     db.prepare(`UPDATE telegram_pet_runs SET status = ?, ended_at = CURRENT_TIMESTAMP, completed_at = CURRENT_TIMESTAMP,
         death_reason = ?, rewards_earned = ?, rooms_completed = ?, modifiers_chosen = ?, boss_fought = ?, updated_at = CURRENT_TIMESTAMP
-        WHERE run_id = ? AND telegram_id = ? AND status IN ('active', 'extractable') RETURNING run_id`)
-      .bind(status, analytics.death_reason || null, safeJson(analytics.rewards_earned || {}), roomsCompleted, safeJson(analytics.modifiers_chosen || []), analytics.boss_fought || null, run.run_id, run.telegram_id),
+        WHERE run_id = ? AND telegram_id = ? AND status IN ('active', 'extractable')${dailyExtractionGuard} RETURNING run_id`)
+      .bind(status, analytics.death_reason || null, safeJson(analytics.rewards_earned || {}), roomsCompleted, safeJson(analytics.modifiers_chosen || []), analytics.boss_fought || null, run.run_id, run.telegram_id,
+        ...(dailyExtractionGuard ? [dailyExpectedRoom] : [])),
     db.prepare(`DELETE FROM telegram_pet_run_modifiers WHERE run_id = ?
       AND EXISTS (SELECT 1 FROM telegram_pet_runs WHERE run_id = ? AND telegram_id = ? AND status = ?)`)
       .bind(run.run_id, run.run_id, run.telegram_id, status),
@@ -990,9 +1008,9 @@ export async function completePetRun(db, run, completionRewards = {}, analytics 
   }
   return { ...terminal, reward };
 }
-export async function extractPetRogueliteRun(db, run, extractionRewards = {}, analytics = {}) {
+export async function extractPetRogueliteRun(db, run, extractionRewards = {}, analytics = {}, options = {}) {
   if (!String(run?.pet_id || '').trim()) return { accepted: false, duplicate: false, reason: 'run_pet_authority_required', status: run?.status || null, reward: null };
-  const terminal = await finishPetRogueliteRun(db, run, 'extracted', { ...analytics, extracted: true });
+  const terminal = await finishPetRogueliteRun(db, run, 'extracted', { ...analytics, extracted: true }, options);
   if (terminal.status !== 'extracted') return { ...terminal, reward: null };
   const reward = await awardPetReward(db, {
     telegram_id: run.telegram_id,
