@@ -541,6 +541,25 @@ assert.equal(revealedIdentityPet.callsign, 'Cipher', 'authenticated Stage-3 stat
 assert.equal(revealedIdentityPet.species, 'neon_raccoon', 'serialized pets must expose species at Stage 3');
 assert.equal(revealedIdentityPet.art_identity_id, 'neon_raccoon', 'serialized pets may expose the art identity once revealed');
 const serializedAuthorityPet = serializePet({ ...baseArenaPet, telegram_id: 'serialize-owner', pet_id: 'pet:serialize-owner:pet-s2026-003:1', season_key: 'pet-s2026-003' });
+const fastActionPet = { ...baseArenaPet, pet_id: 'source-pet', season_key: 'pet-s2026-003', species: 'neon_raccoon' };
+const otherPetIdentity = { scope: { pet_id: 'other-pet', season_key: 'pet-s2026-003' }, current_stage: { stage: 3, name: 'Elite Moonpet' } };
+assert.equal(serializePetMiniAppActionResult({ accepted: true, reason: 'moonpet_hatched', species: 'UNKNOWN' }, {
+  ...otherPetIdentity, lifecycle: { art_identity_id: 'neon_raccoon' },
+}).species, 'UNKNOWN', 'a saved hatch without its lifecycle projection cannot reveal another selected pet');
+for (const identity of [null, otherPetIdentity]) {
+  const patch = serializePetMiniAppActionResult({ accepted: true, pet: fastActionPet }, identity, '1').pet;
+  for (const field of ['evolution_stage', 'stage', 'evolution_id', 'name', 'pet_name', 'display_name', 'species', 'art_identity_id']) {
+    assert.equal(Object.hasOwn(patch, field), false, `a stats patch without matching identity cannot reset or reveal ${field}`);
+  }
+  assert.equal(patch.pet_id, 'source-pet');
+  assert.equal(patch.pet_xp, fastActionPet.pet_xp);
+}
+const matchingActionIdentity = { ...otherPetIdentity, scope: { ...otherPetIdentity.scope, pet_id: fastActionPet.pet_id } };
+assert.equal(serializePetMiniAppActionResult({ accepted: true, pet: fastActionPet }, matchingActionIdentity, '1').pet.display_name, 'F1 EDDY');
+for (const verifiedOwner of ['', 'another-owner']) {
+  assert.equal(Object.hasOwn(serializePetMiniAppActionResult({ accepted: true, pet: fastActionPet }, matchingActionIdentity, verifiedOwner).pet, 'display_name'), false,
+    'identity must not be applied without the matching authenticated owner');
+}
 assert.equal(serializedAuthorityPet.telegram_id, 'serialize-owner', 'serialized pet authority must include telegram_id');
 assert.equal(serializedAuthorityPet.pet_id, 'pet:serialize-owner:pet-s2026-003:1', 'serialized pet authority must include pet_id');
 assert.equal(serializedAuthorityPet.season_key, 'pet-s2026-003', 'serialized pet authority must include season_key');
@@ -974,7 +993,7 @@ assert.equal(petArenaCommand.includes('sendTelegramPetReply'), false, 'Pet Arena
 }
 
 const verifierStart = worker.indexOf('function verifyPetsBotSecret');
-const verifierEnd = worker.indexOf('async function getOrCreatePetProfile');
+const verifierEnd = worker.indexOf('async function adoptPetProfile');
 const secretVerifier = worker.slice(verifierStart, verifierEnd);
 assert.ok(secretVerifier.includes('TELEGRAM_PETS_BOT_SECRET'), 'pet secret verifier must read the pet-only secret');
 assert.ok(secretVerifier.includes('X-Pets-Bot-Secret'), 'pet secret verifier must read only pet header');
@@ -1008,7 +1027,7 @@ assert.ok(petAction.includes("${actionHasWalletReward ? accountWalletRecoveryRes
 assert.ok(petAction.includes('const persistedPet = await getPetInstanceWithAtomicDecay(db, pet.pet_id, now)'),
   'pet action success responses must reload persisted state');
 assert.ok(petAction.includes("if (action === 'adopt')"), 'adopt branch must be explicit');
-assert.ok(petAction.includes('const pet = await getOrCreatePetProfile(db, telegramId, options)'), 'adopt branch must create the pet profile');
+assert.ok(petAction.includes('const result = await adoptPetProfile(db, telegramId, options)'), 'adopt branch must preserve the committed onboarding result');
 assert.ok(petAction.includes('let pet = await getPetProfile(db, telegramId)'), 'non-adopt actions must use read-only pet lookup first');
 assert.ok(petAction.includes("reason: 'pet_not_adopted'"), 'non-adopt actions must fail when the pet was not adopted');
 assert.ok(
@@ -1375,7 +1394,7 @@ assert.ok(worker.includes('buildTelegramCallbackPetEventKey'), 'callback event k
 const stateRoute = routeBlock('/telegram-pets/state');
 assert.ok(stateRoute.includes('getPetProfile(env.DB, telegramId)'), 'GET /telegram-pets/state must use read-only pet lookup');
 assert.ok(stateRoute.includes('getMoonpetIdentitySummary(env.DB, telegramId)'), 'GET /telegram-pets/state must derive evolution stage from stored identity');
-assert.ok(!stateRoute.includes('getOrCreatePetProfile'), 'GET /telegram-pets/state must not create pets');
+assert.ok(!stateRoute.includes('adoptPetProfile'), 'GET /telegram-pets/state must not create pets');
 assert.ok(stateRoute.includes("return err('pet_state_unavailable', 503)"), 'GET /telegram-pets/state must expose a retryable read failure');
 assert.ok(!stateRoute.includes('.catch(() => null)'), 'GET /telegram-pets/state must not turn failed reads into a missing pet');
 
@@ -1470,7 +1489,7 @@ await assert.rejects(getPetEvolutionGuidance(failedPresentationReadDb, 'presenta
 
 const petStatus = asyncBlock('cmdPetStatus');
 assert.ok(petStatus.includes('getPetProfile(db, telegramId)'), '/pet status command must use read-only pet lookup');
-assert.ok(!petStatus.includes('getOrCreatePetProfile'), '/pet status command must not create pets');
+assert.ok(!petStatus.includes('adoptPetProfile'), '/pet status command must not create pets');
 assert.ok(worker.includes('function formatPetStatus(pet, identity = null'), 'formatPetStatus must exist');
 const statusFormatter = worker.slice(worker.indexOf('function formatPetStatus(pet, identity = null'), worker.indexOf('function formatPetDetails'));
 const redesignedStatus = formatPetStatus({ ...baseArenaPet, pet_name: 'Moonpet', pet_xp: 3887, health: 9, hunger: 100, happiness: 4, cleanliness: 32, energy: 0 }, {

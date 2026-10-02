@@ -366,7 +366,8 @@ async function settleBonus(db, owner, row, award, now) {
   const result = await award(db, { telegram_id: owner, pet_id: row.pet_id, season_key: row.season_key,
     source: 'pet_contract', idempotency_key: row.contract_id, event_key: `contract:${row.contract_id}`,
     event_type: 'contract_complete', reason: 'contract_bonus', rewards: { pet_xp: CONTRACT_BONUS_XP }, now,
-    context: { contract_id: row.contract_id, pet_id: row.pet_id, season_key: row.season_key } });
+    context: { contract_id: row.contract_id, pet_id: row.pet_id, season_key: row.season_key,
+      competition_earned_at: row.reward_day ? `${row.reward_day}T00:00:00.000Z` : null } });
   const committed = { accepted: result.accepted === true, pet_xp_awarded: integer(result.pet_xp_awarded), reward_pending: true,
     ...(result.refresh_state ? { refresh_state: true } : {}) };
   const settled = await projectCommittedPetResult(committed, async () => {
@@ -375,8 +376,9 @@ async function settleBonus(db, owner, row, award, now) {
       .bind(owner, row.pet_id, row.contract_id).first().then(requirePetFirstReadResult);
     if (receipt) {
       const credited = Math.min(CONTRACT_BONUS_XP, integer(JSON.parse(receipt.applied_rewards).pet_xp));
-      await db.prepare(`UPDATE telegram_pet_contracts SET reward_settled=1, xp_awarded=? WHERE contract_id=? AND telegram_id=? AND pet_id=? AND season_key=? AND reward_settled=0`)
+      const acknowledged = await db.prepare(`UPDATE telegram_pet_contracts SET reward_settled=1, xp_awarded=? WHERE contract_id=? AND telegram_id=? AND pet_id=? AND season_key=? AND reward_settled=0`)
         .bind(credited, row.contract_id, owner, row.pet_id, row.season_key).run().then(requirePetMutationResult);
+      if (!Number.isSafeInteger(acknowledged?.meta?.changes) || acknowledged.meta.changes < 0) throw new Error('pet_state_write_unavailable');
     }
     return { ...committed, reward_pending: !receipt };
   });

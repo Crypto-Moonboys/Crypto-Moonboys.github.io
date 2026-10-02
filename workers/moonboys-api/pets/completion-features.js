@@ -12,6 +12,12 @@ const qualified = `(i.status='active' AND s.status='active' AND (EXISTS (SELECT 
     AND (SELECT COUNT(DISTINCT earned_day) FROM telegram_pet_growth_marks g WHERE g.pet_id=i.pet_id AND g.telegram_id=i.telegram_id AND g.season_key=i.season_key)>=${PET_SEASON_COMPLETION_CONFIG.required_growth_marks}
     AND (SELECT COUNT(DISTINCT qualification_week) FROM telegram_pet_weekly_crests w WHERE w.pet_id=i.pet_id AND w.telegram_id=i.telegram_id AND w.season_key=i.season_key)>=${PET_SEASON_COMPLETION_CONFIG.required_weekly_crests})))`;
 
+function requireCompletionMutationResult(result) {
+  requirePetMutationResult(result);
+  if (!Number.isSafeInteger(result?.meta?.changes) || result.meta.changes < 0) throw new Error('pet_state_write_unavailable');
+  return result;
+}
+
 export const FINALE_BUILDS = Object.freeze({
   striker: { title: 'STRIKER', health: 125, power: 32, guard: 8, surge_cost: 2, detail: '125 battle HP. 32 strike damage. Surge costs 2 charge.' },
   guardian: { title: 'GUARDIAN', health: 170, power: 23, guard: 13, surge_cost: 2, detail: '170 battle HP. 23 strike damage. Guard deals 13. Surge costs 2 charge.' },
@@ -68,7 +74,7 @@ export async function readDailyCompletion(db, owner, date, counts, upgrades, gol
   try {
     if (bits) await db.prepare(`INSERT INTO telegram_pet_daily_completion (telegram_id,utc_day,progress_bits) VALUES (?,?,?)
       ON CONFLICT (telegram_id,utc_day) DO UPDATE SET progress_bits=progress_bits|excluded.progress_bits
-      WHERE (progress_bits|excluded.progress_bits)<>progress_bits`).bind(owner, date, bits).run();
+      WHERE (progress_bits|excluded.progress_bits)<>progress_bits`).bind(owner, date, bits).run().then(requireCompletionMutationResult);
     const rows = await db.prepare(`SELECT * FROM telegram_pet_daily_completion WHERE telegram_id=?
       AND (utc_day=? OR (progress_bits=255 AND claimed_at IS NULL)) ORDER BY utc_day`).bind(owner, date).all().then(requirePetReadResult);
     const today = rows.results.find(row => row.utc_day === date) || { utc_day: date, progress_bits: 0 };
@@ -94,7 +100,7 @@ export async function claimDailyCompletion(db, owner, pet, body, award) {
           JOIN telegram_pet_active_slots a ON a.pet_id=i.pet_id AND a.telegram_id=i.telegram_id AND a.season_key=i.season_key
           JOIN telegram_pet_lifecycle_by_pet l ON l.pet_id=i.pet_id AND l.telegram_id=i.telegram_id
           WHERE i.pet_id=? AND i.telegram_id=? AND i.season_key=? AND l.phase<>'egg')`)
-      .bind(pet.pet_id, pet.season_key, owner, date, pet.pet_id, owner, pet.season_key).run();
+      .bind(pet.pet_id, pet.season_key, owner, date, pet.pet_id, owner, pet.season_key).run().then(requireCompletionMutationResult);
     row = await db.prepare('SELECT * FROM telegram_pet_daily_completion WHERE telegram_id=? AND utc_day=?').bind(owner, date).first().then(requirePetFirstReadResult);
     if (!row.pet_id) return { accepted: false, reason: 'active_pet_required' };
   }
@@ -107,7 +113,7 @@ export async function claimDailyCompletion(db, owner, pet, body, award) {
   return projectCommittedPetResult(committed, async () => {
     await db.prepare(`UPDATE telegram_pet_daily_completion SET claimed_at=COALESCE(claimed_at,CURRENT_TIMESTAMP)
       WHERE telegram_id=? AND utc_day=? AND EXISTS (SELECT 1 FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_daily_completion' AND idempotency_key=? AND status='awarded')`)
-      .bind(owner, date, owner, key).run().then(requirePetMutationResult);
+      .bind(owner, date, owner, key).run().then(requireCompletionMutationResult);
     return { ...committed, reward_pending: false };
   });
 }
@@ -150,7 +156,7 @@ async function claimFinale(db, owner, row, award) {
   return projectCommittedPetResult(committed, async () => {
     await db.prepare(`UPDATE telegram_pet_season_finales SET claimed_at=COALESCE(claimed_at,CURRENT_TIMESTAMP)
       WHERE telegram_id=? AND pet_id=? AND season_key=? AND EXISTS (SELECT 1 FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_season_finale' AND idempotency_key=? AND status='awarded')`)
-      .bind(owner, row.pet_id, row.season_key, owner, key).run().then(requirePetMutationResult);
+      .bind(owner, row.pet_id, row.season_key, owner, key).run().then(requireCompletionMutationResult);
     return { ...committed, reward_pending: false };
   });
 }
@@ -166,13 +172,13 @@ export async function processSeasonFinale(db, owner, body, award) {
       const result = await db.prepare(`INSERT OR IGNORE INTO telegram_pet_season_finales (pet_id,telegram_id,season_key,status,state_json)
         SELECT i.pet_id,i.telegram_id,i.season_key,'active',? FROM telegram_pet_instances i ${ownedSlots}
         WHERE i.pet_id=? AND i.telegram_id=? AND i.season_key=? AND ${qualified}`)
-        .bind(JSON.stringify(state), petId, owner, season).run();
+        .bind(JSON.stringify(state), petId, owner, season).run().then(requireCompletionMutationResult);
       return { accepted: Number(result.meta?.changes) === 1, reason: Number(result.meta?.changes) === 1 ? 'finale_started' : 'finale_requirements_not_met' };
     }
     if (row?.status !== 'failed' || !Number.isInteger(body.revision) || body.revision !== row.revision) return { accepted: false, reason: 'finale_stale_turn' };
     const result = await db.prepare(`UPDATE telegram_pet_season_finales SET state_json=?,status='active',attempt=attempt+1,revision=revision+1,updated_at=CURRENT_TIMESTAMP
       WHERE pet_id=? AND telegram_id=? AND season_key=? AND status='failed' AND revision=? AND EXISTS (SELECT 1 FROM telegram_pet_instances i ${ownedSlots} WHERE i.pet_id=telegram_pet_season_finales.pet_id AND i.telegram_id=telegram_pet_season_finales.telegram_id AND i.season_key=telegram_pet_season_finales.season_key AND i.status='active' AND s.status='active')`)
-      .bind(JSON.stringify(state), petId, owner, season, body.revision).run();
+      .bind(JSON.stringify(state), petId, owner, season, body.revision).run().then(requireCompletionMutationResult);
     return { accepted: Number(result.meta?.changes) === 1, reason: Number(result.meta?.changes) === 1 ? 'finale_started' : 'finale_stale_turn' };
   }
   if (body.action !== 'finale_step' || row?.status !== 'active' || !Number.isInteger(body.revision) || body.revision !== row.revision) return { accepted: false, reason: 'finale_stale_turn' };
@@ -181,7 +187,7 @@ export async function processSeasonFinale(db, owner, body, award) {
   const result = await db.prepare(`UPDATE telegram_pet_season_finales SET state_json=?,status=?,revision=revision+1,
     defeated_at=CASE WHEN ?='won' THEN CURRENT_TIMESTAMP ELSE NULL END,updated_at=CURRENT_TIMESTAMP
     WHERE pet_id=? AND telegram_id=? AND season_key=? AND revision=? AND status='active' AND EXISTS (SELECT 1 FROM telegram_pet_instances i ${ownedSlots} WHERE i.pet_id=telegram_pet_season_finales.pet_id AND i.telegram_id=telegram_pet_season_finales.telegram_id AND i.season_key=telegram_pet_season_finales.season_key AND i.status='active' AND s.status='active')`)
-    .bind(JSON.stringify(next.state), next.status, next.status, petId, owner, season, body.revision).run();
+    .bind(JSON.stringify(next.state), next.status, next.status, petId, owner, season, body.revision).run().then(requireCompletionMutationResult);
   if (Number(result.meta?.changes) !== 1) return { accepted: false, reason: 'finale_stale_turn' };
   // Victory is durable before payout. A failed payout remains explicitly claimable.
   if (next.status === 'won') {

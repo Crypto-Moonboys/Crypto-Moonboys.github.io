@@ -6,6 +6,7 @@ import {
   awardPetReward as awardRoguelitePetReward,
   __rogueliteFoundationTestHooks,
 } from '../workers/moonboys-api/pets/roguelite-foundation.js';
+import { reconcilePetInstanceWalletToProfile, ensurePetAccountWalletReadyForMutation } from '../workers/moonboys-api/pets/wallet-reconciliation.js';
 
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/065_moonpet_reward_pet_id_authority.sql', import.meta.url), 'utf8');
@@ -28,9 +29,21 @@ assert.match(walletReconciliationSource, /wallet_reconciliation_recovery_require
 class Statement {
   constructor(adapter, sql, args = []) { this.adapter = adapter; this.sql = sql; this.args = args; }
   bind(...args) { return new Statement(this.adapter, this.sql, args); }
-  async first() { return this.adapter.database.prepare(this.sql).get(...this.args) || null; }
-  async all() { return { results: this.adapter.database.prepare(this.sql).all(...this.args) }; }
-  async run() { const result = this.adapter.database.prepare(this.sql).run(...this.args); return { results: [], meta: { changes: Number(result.changes || 0) } }; }
+  async first() {
+    const injected = this.adapter.beforeFirst?.(this);
+    if (injected !== undefined) return injected;
+    return this.adapter.database.prepare(this.sql).get(...this.args) || null;
+  }
+  async all() {
+    const injected = this.adapter.beforeAll?.(this);
+    if (injected !== undefined) return injected;
+    return { results: this.adapter.database.prepare(this.sql).all(...this.args) };
+  }
+  async run() {
+    const injected = this.adapter.beforeRun?.(this);
+    if (injected !== undefined) return injected;
+    const result = this.adapter.database.prepare(this.sql).run(...this.args); return { results: [], meta: { changes: Number(result.changes || 0) } };
+  }
 }
 class D1 {
   constructor() { this.database = new DatabaseSync(':memory:'); this.database.exec(schema); }
@@ -511,6 +524,73 @@ assert.equal(db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_rew
   'one-shot private reconciliation marker must not commit when wallet reconciliation cannot safely complete');
 assert.equal(db.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='failed-reconcile'").get().moon_gold, 100,
   'failed reconciliation must leave the account wallet unchanged for retry');
+
+// A resolved D1 failure is never an empty legacy ledger or a completed repair.
+// Otherwise one failed read can permanently mark an unpaid wallet delta paid.
+for (const boundary of ['ledger_failed','ledger_missing','success_marker','recovery_marker','ambiguity']) {
+  const owner=`wallet-read-${boundary}`, petId=`${owner}-pet`;
+  db.database.prepare('INSERT INTO telegram_users (telegram_id,xp,level) VALUES (?,0,1)').run(owner);
+  db.database.prepare('INSERT INTO telegram_pet_profiles (telegram_id,moon_gold) VALUES (?,100)').run(owner);
+  seedPet(owner,petId,1);
+  seedHistoricalPetIdWalletReward(owner,petId,owner,{moon_gold:7});
+  db.beforeAll=statement=>statement.sql.includes('c.rowid AS settlement_sequence') && boundary.startsWith('ledger_')
+    ? boundary==='ledger_failed' ? {success:false,error:'ledger_unavailable'} : {} : undefined;
+  db.beforeFirst=statement=> {
+    const matches=boundary==='success_marker' ? statement.args[1]==='wallet_reconciliation' && statement.sql.includes('SELECT claim_id FROM')
+      : boundary==='recovery_marker' ? statement.args[1]==='wallet_reconciliation_recovery_required'
+        : boundary==='ambiguity' && statement.sql.includes('SELECT c.claim_id');
+    return matches ? {success:false,error:'wallet_authority_unavailable'} : undefined;
+  };
+  await assert.rejects(ensurePetAccountWalletReadyForMutation(db,owner),/pet_state_read_unavailable/,boundary);
+  assert.equal(db.database.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(owner).moon_gold,100);
+  assert.equal(db.database.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='wallet_reconciliation'").get(owner).n,0,'failed reads cannot seal the one-shot wallet repair');
+  db.beforeFirst=null; db.beforeAll=null;
+  assert.equal(await ensurePetAccountWalletReadyForMutation(db,owner),true);
+  assert.equal(db.database.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(owner).moon_gold,107);
+  assert.equal(await reconcilePetInstanceWalletToProfile(db,owner),false);
+  assert.equal(db.database.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(owner).moon_gold,107,'retry must not replay historical balances');
+}
+
+for (const mode of ['failed','missing','malformed']) {
+  const owner=`wallet-write-${mode}`, petId=`${owner}-pet`;
+  db.database.prepare('INSERT INTO telegram_users (telegram_id,xp,level) VALUES (?,0,1)').run(owner);
+  db.database.prepare('INSERT INTO telegram_pet_profiles (telegram_id,moon_gold) VALUES (?,100)').run(owner);
+  seedPet(owner,petId,1);
+  seedHistoricalPetIdWalletReward(owner,petId,owner,{moon_gold:7});
+  const unavailableDb={prepare:sql=>db.prepare(sql),batch:async()=>mode==='missing' ? [] : mode==='malformed' ? [{},{}]
+    : [{success:false,error:'wallet_write_unavailable'},{meta:{changes:0}}]};
+  await assert.rejects(ensurePetAccountWalletReadyForMutation(unavailableDb,owner),/pet_state_write_unavailable/);
+  assert.equal(db.database.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(owner).moon_gold,100);
+  assert.equal(db.database.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='wallet_reconciliation'").get(owner).n,0);
+  assert.equal(await ensurePetAccountWalletReadyForMutation(db,owner),true);
+  assert.equal(db.database.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(owner).moon_gold,107);
+}
+
+const markerOwner='wallet-pending-write', markerPet=`${markerOwner}-pet`;
+db.database.prepare('INSERT INTO telegram_users (telegram_id,xp,level) VALUES (?,0,1)').run(markerOwner);
+db.database.prepare('INSERT INTO telegram_pet_profiles (telegram_id,moon_gold) VALUES (?,100)').run(markerOwner);
+seedPet(markerOwner,markerPet,1);
+seedHistoricalPetIdWalletRewardWithoutSnapshot(markerOwner,markerPet,markerOwner,{moon_gold:7});
+db.beforeRun=statement=>statement.args.includes('wallet_reconciliation_recovery_required') ? {success:false,error:'pending_marker_unavailable'} : undefined;
+await assert.rejects(ensurePetAccountWalletReadyForMutation(db,markerOwner),/pet_state_write_unavailable/);
+db.beforeRun=null;
+assert.equal(await ensurePetAccountWalletReadyForMutation(db,markerOwner),false,'retry saves the recovery freeze while historical evidence remains incomplete');
+assert.equal(db.database.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(markerOwner).moon_gold,100);
+
+for (const failureIndex of [0,1,2,3]) {
+  const owner=`inventory-cutover-failed-${failureIndex}`, petId=`${owner}-pet`;
+  db.database.prepare('INSERT INTO telegram_users (telegram_id,xp,level) VALUES (?,0,1)').run(owner);
+  db.database.prepare('INSERT INTO telegram_pet_profiles (telegram_id,moon_gold) VALUES (?,100)').run(owner);
+  seedPet(owner,petId,1);
+  const unavailableDb={prepare:sql=>db.prepare(sql),batch:async statements=>statements.length===4 && statements[0].sql.includes('telegram_pet_legacy_item_balances_042')
+    ? statements.map((_,index)=>index===failureIndex ? {success:false,error:'inventory_bridge_unavailable'} : {meta:{changes:0}}) : db.batch(statements)};
+  const request={telegram_id:owner,pet_id:petId,season_key:'pet-s2026-003',source:'pet_item_use',idempotency_key:owner,rewards:{moon_gold:7},now:'2026-08-17T12:00:00Z'};
+  await assert.rejects(awardRoguelitePetReward(unavailableDb,request),/pet_state_write_unavailable/,'a failed inventory bridge must stop before a new reward');
+  assert.equal(db.database.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(owner).moon_gold,100);
+  assert.equal(db.database.prepare('SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=?').get(owner).n,0);
+  assert.equal((await awardRoguelitePetReward(db,request)).accepted,true);
+  assert.equal(db.database.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(owner).moon_gold,107);
+}
 
 db.database.prepare("INSERT INTO telegram_users (telegram_id,xp,level) VALUES ('ambiguous-reconcile',0,1)").run();
 db.database.prepare("INSERT INTO telegram_pet_profiles (telegram_id,pet_xp,level,moon_gold) VALUES ('ambiguous-reconcile',0,1,100)").run();

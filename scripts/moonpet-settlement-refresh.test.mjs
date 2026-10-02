@@ -284,7 +284,7 @@ test('a seasonal boss claim acknowledgement outage retains its paid receipt and 
 });
 
 for (const action of ['arena_matchmake', 'kaiju_matchmake']) {
-  test(`${action}: a switch after joining the queue preserves the accepted queue entry`, async () => {
+  test(`${action}: a switch after joining the queue is blocked and preserves the accepted queue entry`, async () => {
     const f = fixture(action), beforeOther = f.readOther();
     const table = action === 'arena_matchmake' ? 'telegram_pet_arena_queue' : 'telegram_pet_kaiju_queue';
     f.sql.prepare('UPDATE telegram_pet_instances SET pet_xp=10000 WHERE pet_id=?').run(f.source);
@@ -296,9 +296,11 @@ for (const action of ['arena_matchmake', 'kaiju_matchmake']) {
       switched = await hooks.switchActivePetSeasonSlot(f.db, f.owner, f.other);
     };
     const result = await f.act();
-    assert.equal(switched?.accepted, true);
+    assert.equal(switched?.accepted, false);
+    assert.equal(switched.reason, action === 'arena_matchmake' ? 'pet_arena_queue_active' : 'pet_kaiju_queue_active');
     assert.equal(result.accepted, true, JSON.stringify(result));
-    assert.equal(result.refresh_state, true);
+    assert.equal(result.queue.waiting, true);
+    assert.equal(f.sql.prepare('SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id=?').get(f.owner).pet_id, f.source);
     assert.equal(f.sql.prepare(`SELECT COUNT(*) n FROM ${table} WHERE telegram_id=? AND status='waiting'`).get(f.owner).n, 1);
     assert.deepEqual(f.readOther(), beforeOther);
   });

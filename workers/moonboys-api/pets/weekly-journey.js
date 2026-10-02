@@ -36,6 +36,9 @@ if (WEEKLY_JOURNEY_REQUIRED_OBJECTIVES !== WEEKLY_JOURNEY_TOTAL_OBJECTIVES) {
 
 const integer = (value, fallback = 0) => Math.max(0, Math.floor(Number(value ?? fallback) || 0));
 const safeText = (value, max = 180) => String(value || '').trim().slice(0, max);
+const sourceTypesSql = Object.keys(WEEKLY_JOURNEY_SOURCE_OBJECTIVES).map(type => `'${type}'`).join(',');
+const sourceObjectivesSql = Object.entries(WEEKLY_JOURNEY_SOURCE_OBJECTIVES)
+  .map(([type, objective]) => `WHEN '${type}' THEN '${objective}'`).join(' ');
 
 function safeJson(value) {
   try { return JSON.stringify(value ?? {}); }
@@ -178,6 +181,26 @@ export async function readWeeklyJourneyQualificationDay(db, request) {
   return validUtcDay(source?.day) ? source.day : null;
 }
 
+async function hasPendingWeeklyJourneyEvidence(db, request) {
+  const pet = await ownedPet(db, request.pet_id, request.telegram_id, request.season_key);
+  if (!pet) throw new Error('weekly_journey_pet_authority_mismatch');
+  const period = getPetOwnershipPeriod(pet.season_key, pet.created_at, pet.journey_clock);
+  const bounds = getPetJourneyWeekBounds(period, request.qualification_week);
+  const pending = await db.prepare(`SELECT 1 AS pending FROM telegram_pet_events e
+    WHERE e.telegram_id=? AND e.pet_id=? AND e.season_key=? AND e.status='accepted'
+      AND e.event_key<>'' AND e.event_key=trim(e.event_key) AND length(e.event_key)<=180
+      AND e.event_type IN (${sourceTypesSql}) AND length(e.day_key)=10 AND date(e.day_key,'+0 days')=e.day_key
+      AND e.day_key>=? AND e.day_key<?
+      AND NOT EXISTS (SELECT 1 FROM telegram_pet_weekly_journey_objectives o
+        WHERE o.telegram_id=e.telegram_id AND o.pet_id=e.pet_id AND o.season_key=e.season_key
+          AND o.qualification_week=? AND o.source_event_key=e.event_key
+          AND o.objective_id=CASE e.event_type ${sourceObjectivesSql} END AND o.status='accepted')
+    LIMIT 1`).bind(request.telegram_id, request.pet_id, request.season_key,
+      bounds.start_at.slice(0, 10), bounds.end_at.slice(0, 10), request.qualification_week)
+    .first().then(requirePetFirstReadResult);
+  return Boolean(pending);
+}
+
 export async function finalizeWeeklyJourneyCrest(db, request) {
   const telegramId = safeText(request.telegram_id);
   const petId = safeText(request.pet_id);
@@ -279,6 +302,13 @@ export async function finalizeWeeklyJourneyCrest(db, request) {
       event_key: eventKey,
     };
   }
+
+  // A live action can finish the visible objectives before older accepted
+  // actions have repaired their objective rows. Match background recovery:
+  // do not permanently stamp a later day from an incomplete evidence history.
+  if (await hasPendingWeeklyJourneyEvidence(db, {
+    telegram_id: telegramId, pet_id: petId, season_key: seasonKey, qualification_week: qualificationWeek,
+  })) return { accepted: false, duplicate: false, reason: 'weekly_journey_evidence_pending', event_key: eventKey };
 
   const qualifiedDay = await readWeeklyJourneyQualificationDay(db, {
     telegram_id: telegramId, pet_id: petId, season_key: seasonKey, qualification_week: qualificationWeek,

@@ -117,7 +117,7 @@ async function getDailyRunRow(db, telegramId, utcDay) {
   return db.prepare(`SELECT d.*, r.season_key, r.status AS authoritative_status, r.region, r.difficulty, r.current_room, r.max_room, r.started_at, r.ended_at,
       r.completed_at AS run_completed_at, r.rooms_completed, r.score AS authoritative_score, r.depth AS authoritative_depth
     FROM telegram_pet_daily_runs d JOIN telegram_pet_runs r ON r.run_id = d.run_id AND r.telegram_id = d.telegram_id
-    WHERE d.telegram_id = ? AND d.utc_day = ?`).bind(telegramId, utcDay).first();
+    WHERE d.telegram_id = ? AND d.utc_day = ?`).bind(telegramId, utcDay).first().then(requirePetFirstReadResult);
 }
 
 export async function getDailyMoonRunReservation(db, request = {}) {
@@ -190,7 +190,7 @@ async function resolveAuthoritativeDailyRoomOutcome(db, run, room, choiceId) {
   if (!petId) throw new Error('run_pet_authority_required');
   const [pet, modifiers] = await Promise.all([
     db.prepare(`SELECT pet_xp, level, health, energy, happiness, cleanliness
-      FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ? LIMIT 1`).bind(petId, run.telegram_id).first(),
+      FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ? LIMIT 1`).bind(petId, run.telegram_id).first().then(requirePetFirstReadResult),
     readDailyModifiers(db, run),
   ]);
   if (!pet) throw new Error('daily_run_pet_not_found');
@@ -224,7 +224,7 @@ async function resolveAuthoritativeDailyRoomOutcome(db, run, room, choiceId) {
 async function getPersistedDailyRoom(db, run, roomNumber) {
   const row = await db.prepare(`SELECT room_id, pet_id, run_id, telegram_id, room_number, room_type, status, generated_data, outcome_data
     FROM telegram_pet_run_rooms WHERE run_id = ? AND telegram_id = ? AND room_number = ? LIMIT 1`)
-    .bind(run.run_id, run.telegram_id, roomNumber).first();
+    .bind(run.run_id, run.telegram_id, roomNumber).first().then(requirePetFirstReadResult);
   if (!row) return null;
   const generated = parseJsonObject(row.generated_data);
   return {
@@ -312,7 +312,7 @@ export async function createDailyMoonRun(db, request = {}) {
     }
   }
   const authoritativeRun = await db.prepare(`SELECT * FROM telegram_pet_runs WHERE telegram_id = ? AND run_id = ?`)
-    .bind(telegramId, runId).first();
+    .bind(telegramId, runId).first().then(requirePetFirstReadResult);
   if (!authoritativeRun) return { accepted: false, duplicate: false, reason: 'active_run_exists', utc_day: utcDay, seed: generated.seed };
   if (!String(authoritativeRun.pet_id || '').trim()) {
     return { accepted: false, duplicate: false, reason: 'run_pet_authority_required', utc_day: utcDay, run_id: runId, seed: generated.seed };
@@ -338,7 +338,7 @@ async function recoverDailyMoonRunStart(db, telegramId, runId) {
     LEFT JOIN telegram_pet_run_analytics a ON a.analytics_id=r.run_id||':start' AND a.run_id=r.run_id
       AND a.telegram_id=r.telegram_id AND a.pet_id=r.pet_id AND a.event_type='run_start'
     WHERE r.run_id=? AND r.telegram_id=?`)
-    .bind(runId, telegramId).first();
+    .bind(runId, telegramId).first().then(requirePetFirstReadResult);
   if (!run) return false;
   if (!run.source_owned || !run.source_started || run.source_resolved
     || !['active','extractable'].includes(run.status) || run.current_room !== 0 || run.depth !== 0 || run.rooms_completed !== 0
@@ -359,7 +359,7 @@ async function initializeDailyMoonRun(db, authoritativeRun, generated) {
   const storedModifiers = await readDailyModifiers(db, authoritativeRun);
   const creation = await db.prepare(`SELECT event_data FROM telegram_pet_daily_analytics
     WHERE analytics_id=? AND telegram_id=? AND pet_id=? AND event_type='run_created'`)
-    .bind(`${runId}:daily:created`, telegramId, authoritativeRun.pet_id).first();
+    .bind(`${runId}:daily:created`, telegramId, authoritativeRun.pet_id).first().then(requirePetFirstReadResult);
   const savedModifier = parseJsonObject(creation?.event_data).modifier_id;
   if (savedModifier && !Object.hasOwn(PET_RUN_MODIFIERS, savedModifier)) throw new Error('daily_run_condition_unavailable');
   const modifierId = storedModifiers.find((row) => Object.hasOwn(PET_RUN_MODIFIERS, row.modifier_id))?.modifier_id
@@ -439,7 +439,7 @@ export async function recoverDailyMoonRunEnding(db, request = {}) {
   const owned = await db.prepare(`SELECT 1 AS valid FROM telegram_pet_runs r
     JOIN telegram_pet_instances i ON i.pet_id=r.pet_id AND i.telegram_id=r.telegram_id AND i.season_key=r.season_key
     JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id AND s.season_key=i.season_key AND s.slot_number=i.slot_number
-    WHERE r.run_id=? AND r.telegram_id=? AND r.pet_id=?`).bind(daily.run_id, daily.telegram_id, daily.pet_id).first();
+    WHERE r.run_id=? AND r.telegram_id=? AND r.pet_id=?`).bind(daily.run_id, daily.telegram_id, daily.pet_id).first().then(requirePetFirstReadResult);
   if (!owned) return null;
   const run = { ...daily, seed: daily.run_seed, score: daily.authoritative_score, depth: daily.authoritative_depth, status: daily.authoritative_status };
   const room = await getPersistedDailyRoom(db, run, positiveInteger(run.max_room));
@@ -500,7 +500,7 @@ export async function recoverDailyMoonRunEndings(db, telegramId, now = new Date(
   }
   // An early terminal transition can also precede its quest/record writes.
   // These runs have no won final boss to settle and must never receive one.
-  const terminalRecords = requirePetReadResult(await db.prepare(`SELECT d.run_id,d.utc_day,recovery_state.setting_value AS recovery_cursor FROM telegram_pet_daily_runs d
+  const terminalRecords = requirePetReadResult(await db.prepare(`SELECT d.run_id,d.utc_day,r.status,recovery_state.setting_value AS recovery_cursor FROM telegram_pet_daily_runs d
     JOIN telegram_pet_runs r ON r.run_id=d.run_id AND r.telegram_id=d.telegram_id AND r.pet_id=d.pet_id
     JOIN telegram_pet_instances i ON i.pet_id=r.pet_id AND i.telegram_id=r.telegram_id AND i.season_key=r.season_key
     JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id AND s.season_key=i.season_key AND s.slot_number=i.slot_number
@@ -508,7 +508,10 @@ export async function recoverDailyMoonRunEndings(db, telegramId, now = new Date(
     WHERE d.telegram_id=? AND r.max_room>0 AND r.current_room<r.max_room AND r.status IN ('extracted','failed','abandoned')
       AND EXISTS (SELECT 1 FROM telegram_pet_run_rooms f WHERE f.run_id=r.run_id AND f.telegram_id=r.telegram_id
         AND f.pet_id=r.pet_id AND f.room_number<=r.current_room+1 AND f.status IN ('resolved','failed'))
-      AND (d.status<>r.status OR NOT EXISTS (SELECT 1 FROM telegram_pet_daily_analytics a
+      AND (d.status<>r.status OR r.status='extracted' AND NOT EXISTS (SELECT 1 FROM telegram_pet_reward_claims c
+        WHERE c.telegram_id=r.telegram_id AND c.pet_id=r.pet_id AND c.source='roguelite_completion'
+          AND c.idempotency_key=r.run_id||':extract' AND c.status='awarded')
+        OR NOT EXISTS (SELECT 1 FROM telegram_pet_daily_analytics a
         WHERE a.analytics_id=r.run_id||':daily:terminal' AND a.applied_at IS NOT NULL)
         OR r.status='extracted' AND NOT EXISTS (SELECT 1 FROM telegram_pet_events e
           WHERE e.telegram_id=d.telegram_id AND e.pet_id=d.pet_id AND e.season_key=r.season_key
@@ -520,7 +523,13 @@ export async function recoverDailyMoonRunEndings(db, telegramId, now = new Date(
     try {
       recordCursor = await advanceDailyRecoveryCursor(db, telegramId, 'records', candidate, recordCursor);
       if (recordCursor === null) break;
-      results.push(await syncDailyMoonRun(db, { telegram_id: String(telegramId), run_id: candidate.run_id, now }));
+      const request = { telegram_id: String(telegramId), run_id: candidate.run_id, now };
+      // Extraction commits its terminal state before identity and the zero-value
+      // completion receipt. Replay that saved source before sealing its records;
+      // otherwise an interrupted receipt permanently blocks safe pet deletion.
+      results.push(candidate.status === 'extracted'
+        ? await extractDailyMoonRun(db, request)
+        : await syncDailyMoonRun(db, request));
     } catch (error) { console.error('daily_run_records_pending', error?.message || String(error)); }
   }
   return results;
@@ -563,7 +572,7 @@ export async function processDailyMoonRunStep(db, request = {}) {
   let resolved = room;
   if (room.status === 'pending') {
     const outcome = await resolveAuthoritativeDailyRoomOutcome(db, run, room, choiceId);
-    const equipped = await withPetEquipmentProgression(db, await db.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=? AND season_key=?').bind(run.pet_id, run.telegram_id, run.season_key).first());
+    const equipped = await withPetEquipmentProgression(db, await db.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=? AND season_key=?').bind(run.pet_id, run.telegram_id, run.season_key).first().then(requirePetFirstReadResult));
     const authoritativeResolution = resolvePetRunRoom(room, { ...outcome, equipment_snapshot: equipped?.equipment_progression || {}, runtime_event_key: `runtime:daily-step:${room.room_id}` });
     resolved = await persistPetRunRoomOutcome(db, run, room, authoritativeResolution.outcome);
   }
@@ -605,7 +614,7 @@ export async function extractDailyMoonRun(db, request = {}) {
   const completedRoom = positiveInteger(daily.authoritative_depth) > 0
     ? { count: 1 }
     : await db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_run_rooms
-      WHERE run_id = ? AND telegram_id = ? AND status = 'resolved'`).bind(daily.run_id, daily.telegram_id).first();
+      WHERE run_id = ? AND telegram_id = ? AND status = 'resolved'`).bind(daily.run_id, daily.telegram_id).first().then(requirePetFirstReadResult);
   if (positiveInteger(daily.authoritative_depth) <= 0 && positiveInteger(completedRoom?.count) <= 0) {
     return { accepted: false, duplicate: false, reason: 'daily_run_empty', daily_run: daily, extraction: null };
   }
@@ -620,7 +629,7 @@ export async function extractDailyMoonRun(db, request = {}) {
   };
   // The terminal analytics row and status commit together. Closed legacy runs
   // keep their existing identity; a retry cannot invent a second award key.
-  const equipped = await withPetEquipmentProgression(db, await db.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=? AND season_key=?').bind(run.pet_id, run.telegram_id, run.season_key).first());
+  const equipped = await withPetEquipmentProgression(db, await db.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=? AND season_key=?').bind(run.pet_id, run.telegram_id, run.season_key).first().then(requirePetFirstReadResult));
   const extraction = await extractPetRogueliteRun(db, run, {}, {
     equipment_snapshot: equipped?.equipment_progression || {},
     rooms_completed: positiveInteger(run.current_room),
@@ -696,7 +705,7 @@ async function recordChallengeEvidence(db, request, options = {}) {
   ]);
   const legacyResultOffset = petId ? 1 : 0;
   const progress = await db.prepare(`SELECT progress, completed_at FROM telegram_pet_daily_challenge_progress
-    WHERE telegram_id = ? AND utc_day = ? AND challenge_id = ?`).bind(telegramId, utcDay, challenge.challenge_id).first();
+    WHERE telegram_id = ? AND utc_day = ? AND challenge_id = ?`).bind(telegramId, utcDay, challenge.challenge_id).first().then(requirePetFirstReadResult);
   const dailyJourney = petId && !options.defer_award ? await finalizeDailyJourneyGrowthMark(db, {
     telegram_id: telegramId,
     pet_id: petId,
@@ -735,7 +744,7 @@ export async function finalizeDailyJourneyGrowthMark(db, request) {
     FROM telegram_pet_daily_journey_objectives
     WHERE telegram_id = ? AND pet_id = ? AND season_key = ? AND utc_day = ? AND status = 'accepted'
     GROUP BY challenge_id`)
-    .bind(request.telegram_id, request.pet_id, request.season_key, request.utc_day).all();
+    .bind(request.telegram_id, request.pet_id, request.season_key, request.utc_day).all().then(requirePetReadResult);
   const completedObjectives = (progressRows.results || []).reduce((count, row) => {
     const challenge = PET_DAILY_CHALLENGES[String(row.challenge_id || '')];
     if (!challenge) return count;
@@ -756,7 +765,7 @@ export async function finalizeDailyJourneyGrowthMark(db, request) {
     };
   }
   const existing = await db.prepare(`SELECT status, growth_mark_id FROM telegram_pet_daily_journey_receipts
-    WHERE event_key = ? AND status = 'accepted' LIMIT 1`).bind(eventKey).first();
+    WHERE event_key = ? AND status = 'accepted' LIMIT 1`).bind(eventKey).first().then(requirePetFirstReadResult);
   if (existing?.growth_mark_id) {
     await insertDailyJourneyReceipt(db, {
       receipt_id: `${eventKey}:rejected:duplicate`,
@@ -793,7 +802,7 @@ export async function finalizeDailyJourneyGrowthMark(db, request) {
   });
   const authoritativeMark = mark.mark_id ? await db.prepare(`SELECT mark_id FROM telegram_pet_growth_marks
     WHERE mark_id=? AND pet_id=? AND telegram_id=? AND season_key=? AND earned_day=? LIMIT 1`)
-    .bind(mark.mark_id, request.pet_id, request.telegram_id, request.season_key, request.utc_day).first() : null;
+    .bind(mark.mark_id, request.pet_id, request.telegram_id, request.season_key, request.utc_day).first().then(requirePetFirstReadResult) : null;
   if ((mark.accepted || mark.duplicate) && !authoritativeMark) throw new Error('daily_journey_growth_mark_pending');
   if (!mark.accepted && mark.duplicate && authoritativeMark?.mark_id === expectedMarkId) {
     await insertDailyJourneyReceipt(db, {
@@ -854,7 +863,7 @@ export async function recordDailyCareChallenge(db, request = {}, options = {}) {
     LEFT JOIN telegram_pet_instances i ON i.pet_id=e.pet_id AND i.telegram_id=e.telegram_id AND i.season_key=e.season_key
     LEFT JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id AND s.season_key=i.season_key AND s.slot_number=i.slot_number
     WHERE e.telegram_id = ? AND e.event_key = ? AND e.status = 'accepted' AND (e.pet_id IS NULL OR s.pet_id IS NOT NULL) LIMIT 1`)
-    .bind(telegramId, eventKey).first();
+    .bind(telegramId, eventKey).first().then(requirePetFirstReadResult);
   if (!evidence || !CARE_ACTIONS.has(String(evidence.event_type))) return { accepted: false, duplicate: false, reason: 'care_evidence_not_authorized' };
   const utcDay = String(evidence.day_key || '');
   if (!validUtcDay(utcDay)) return { accepted: false, duplicate: false, reason: 'care_evidence_not_authorized' };
@@ -934,10 +943,10 @@ function calculateStreaks(rows = [], referenceDayRaw = null) {
 async function finalizeDailyRecords(db, daily, referenceDay) {
   const analyticsId = `${daily.run_id}:daily:terminal`;
   const previous = await db.prepare(`SELECT * FROM telegram_pet_daily_leaderboard_records WHERE telegram_id = ?`)
-    .bind(daily.telegram_id).first();
+    .bind(daily.telegram_id).first().then(requirePetFirstReadResult);
   const dailyHistory = await db.prepare(`SELECT utc_day, status FROM telegram_pet_daily_runs
     WHERE telegram_id = ? AND utc_day <= ? ORDER BY utc_day`)
-    .bind(daily.telegram_id, referenceDay).all();
+    .bind(daily.telegram_id, referenceDay).all().then(requirePetReadResult);
   const streaks = calculateStreaks(dailyHistory.results || [], referenceDay);
   const startedAt = parseSqliteDate(daily.started_at);
   const completedAt = parseSqliteDate(daily.completed_at);
@@ -1044,7 +1053,7 @@ export async function syncDailyMoonRun(db, request = {}) {
   if (!utcDay) {
     const reservation = await db.prepare(`SELECT utc_day FROM telegram_pet_daily_runs
       WHERE telegram_id = ? ORDER BY CASE WHEN status = 'active' THEN 0 ELSE 1 END, utc_day DESC LIMIT 1`)
-      .bind(telegramId).first();
+      .bind(telegramId).first().then(requirePetFirstReadResult);
     utcDay = String(reservation?.utc_day || utcDayFromNow(request.now));
   }
   if (!telegramId || !validUtcDay(utcDay)) throw new Error('invalid_daily_run_sync');
@@ -1053,7 +1062,7 @@ export async function syncDailyMoonRun(db, request = {}) {
   const boss = await db.prepare(`SELECT 1 AS defeated FROM telegram_pet_run_analytics
     WHERE run_id = ? AND telegram_id = ? AND event_type = 'boss_fought'
       AND json_valid(event_data) AND json_extract(event_data, '$.boss_id') = 'alley_king'
-      AND json_extract(event_data, '$.outcome') = 'win' LIMIT 1`).bind(daily.run_id, telegramId).first();
+      AND json_extract(event_data, '$.outcome') = 'win' LIMIT 1`).bind(daily.run_id, telegramId).first().then(requirePetFirstReadResult);
   const authoritativeStatus = String(daily.authoritative_status || 'active');
   const status = ['completed', 'failed', 'abandoned', 'extracted'].includes(authoritativeStatus) ? authoritativeStatus : 'active';
   const score = positiveInteger(daily.authoritative_score);
@@ -1085,7 +1094,7 @@ export async function getDailyMoonRunLeaderboard(db, request = {}) {
     WHERE d.utc_day = ?
     ORDER BY d.score DESC, d.boss_defeated DESC, d.depth DESC,
       CASE WHEN d.status IN ('completed', 'extracted') THEN completion_seconds ELSE NULL END ASC, d.created_at ASC
-    LIMIT ?`).bind(utcDay, limit).all();
+    LIMIT ?`).bind(utcDay, limit).all().then(requirePetReadResult);
   return { utc_day: utcDay, entries: (rows.results || []).map((row, index) => ({ rank: index + 1, ...row })) };
 }
 
@@ -1094,18 +1103,18 @@ export async function getDailyMoonRunAnalytics(db, request = {}) {
   if (!validUtcDay(utcDay)) throw new Error('invalid_daily_analytics_day');
   const [runs, failures, boss, challenges, streaks] = await Promise.all([
     db.prepare(`SELECT COUNT(*) AS participation, SUM(CASE WHEN status IN ('completed','extracted') THEN 1 ELSE 0 END) AS completions,
-      AVG(depth) AS average_depth FROM telegram_pet_daily_runs WHERE utc_day = ?`).bind(utcDay).first(),
+      AVG(depth) AS average_depth FROM telegram_pet_daily_runs WHERE utc_day = ?`).bind(utcDay).first().then(requirePetFirstReadResult),
     db.prepare(`SELECT json_extract(rr.generated_data, '$.content_id') AS room_id, rr.room_number, COUNT(*) AS failures
       FROM telegram_pet_run_rooms rr JOIN telegram_pet_daily_runs d ON d.run_id = rr.run_id
-      WHERE d.utc_day = ? AND rr.status = 'failed' GROUP BY room_id, rr.room_number ORDER BY failures DESC, rr.room_number`).bind(utcDay).all(),
+      WHERE d.utc_day = ? AND rr.status = 'failed' GROUP BY room_id, rr.room_number ORDER BY failures DESC, rr.room_number`).bind(utcDay).all().then(requirePetReadResult),
     db.prepare(`SELECT COUNT(DISTINCT CASE WHEN a.event_type='boss_fought' THEN d.run_id END) AS attempts,
       COUNT(DISTINCT CASE WHEN a.event_type='boss_fought' AND json_valid(a.event_data) AND json_extract(a.event_data,'$.outcome')='win' THEN d.run_id END) AS wins
-      FROM telegram_pet_daily_runs d LEFT JOIN telegram_pet_run_analytics a ON a.run_id=d.run_id WHERE d.utc_day=?`).bind(utcDay).first(),
+      FROM telegram_pet_daily_runs d LEFT JOIN telegram_pet_run_analytics a ON a.run_id=d.run_id WHERE d.utc_day=?`).bind(utcDay).first().then(requirePetFirstReadResult),
     db.prepare(`SELECT challenge_id, COUNT(*) AS participants, SUM(CASE WHEN completed_at IS NOT NULL THEN 1 ELSE 0 END) AS completions
-      FROM telegram_pet_daily_challenge_progress WHERE utc_day = ? GROUP BY challenge_id ORDER BY challenge_id`).bind(utcDay).all(),
+      FROM telegram_pet_daily_challenge_progress WHERE utc_day = ? GROUP BY challenge_id ORDER BY challenge_id`).bind(utcDay).all().then(requirePetReadResult),
     db.prepare(`SELECT AVG(r.streak_length) AS average_streak, MAX(r.longest_streak) AS longest_streak
       FROM telegram_pet_daily_leaderboard_records r WHERE EXISTS
-        (SELECT 1 FROM telegram_pet_daily_runs d WHERE d.telegram_id=r.telegram_id AND d.utc_day=?)`).bind(utcDay).first(),
+        (SELECT 1 FROM telegram_pet_daily_runs d WHERE d.telegram_id=r.telegram_id AND d.utc_day=?)`).bind(utcDay).first().then(requirePetFirstReadResult),
   ]);
   const participation = positiveInteger(runs?.participation);
   const attempts = positiveInteger(boss?.attempts);

@@ -93,6 +93,37 @@ async function ownedPets(owner) {
   return f;
 }
 
+test('first adoption remains accepted when the post-commit profile refresh fails', async () => {
+  const f = fixture('adoption-refresh-failure');
+  f.sql.prepare('INSERT INTO telegram_users(telegram_id) VALUES (?)').run(f.owner);
+  f.sql.prepare('INSERT INTO arcade_progression_state(telegram_id,arcade_xp_total) VALUES (?,1000)').run(f.owner);
+  const request = { action: 'adopt', request_id: 'adoption-refresh-failure' };
+  let committed = false;
+  f.db.afterWrite = statements => {
+    if (!statements.some(s => s.query.includes('INSERT OR IGNORE INTO telegram_pet_profiles'))) return;
+    f.db.afterWrite = null;
+    committed = true;
+    f.db.failRead = /SELECT \* FROM telegram_pet_instances/;
+  };
+  const result = await hooks.processPetMiniAppAction(f.db, f.owner, {}, request, '');
+  assert.equal(committed, true);
+  assert.equal(result.accepted, true);
+  assert.equal(result.reason, 'adopted');
+  assert.equal(result.refresh_state, true);
+  assert.equal(result.pet, undefined, 'a failed refresh must not invent the pet display');
+  const savedPet = f.instance(f.active());
+  const savedLifecycle = f.sql.prepare('SELECT * FROM telegram_pet_lifecycle_by_pet WHERE pet_id=?').get(savedPet.pet_id);
+  assert.equal(savedLifecycle.phase, 'egg');
+  assert.equal(f.sql.prepare('SELECT arcade_xp_total FROM arcade_progression_state WHERE telegram_id=?').get(f.owner).arcade_xp_total, 1000);
+  const retry = await hooks.processPetMiniAppAction(f.db, f.owner, {}, request, '');
+  assert.equal(retry.reason, 'pet_already_adopted');
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_instances WHERE telegram_id=?').get(f.owner).n, 1);
+  assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_lifecycle_by_pet WHERE pet_id=?').get(savedPet.pet_id), savedLifecycle);
+  const recovered = await hooks.buildPetMiniAppCoreState(f.db, f.owner);
+  assert.equal(recovered.adopted, true);
+  assert.equal(recovered.pet.pet_id, savedPet.pet_id);
+});
+
 test('missing starter recovery reloads a paid pet selected by concurrent preparation without cloning its XP', async () => {
   const f = await ownedPets('missing-starter-selection');
   assert.equal(f.profile().pet_xp, 200);

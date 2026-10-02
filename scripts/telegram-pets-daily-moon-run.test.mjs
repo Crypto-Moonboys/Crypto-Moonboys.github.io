@@ -138,6 +138,29 @@ function seedAdditionalPet(db, telegramId, petId, slotNumber = 2, seasonKey = 'p
     VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`).run(petId, telegramId, seasonKey, slotNumber);
 }
 
+for (const [label,query] of [
+  ['outcome stats',/SELECT pet_xp, level, health, energy, happiness, cleanliness/],
+  ['equipment snapshot',/SELECT \* FROM telegram_pet_instances WHERE pet_id=\?/],
+]) {
+  const adapter=new D1(), owner=`daily-required-${label}`, now=new Date('2026-08-11T12:00:00Z');
+  seedPlayer(adapter,owner);
+  const started=await createDailyMoonRun(adapter,{telegram_id:owner,now});
+  adapter.failFirst=query;
+  await assert.rejects(processDailyMoonRunStep(adapter,{telegram_id:owner,run_id:started.daily_run.run_id,choice_key:started.room.choices[0].choice_id,expected_step_index:0,now}),/pet_state_read_unavailable/,label);
+  assert.equal(adapter.database.prepare('SELECT status FROM telegram_pet_run_rooms WHERE room_id=?').get(started.room.room_id).status,'pending','an unavailable pet cannot consume its official room');
+  assert.equal(adapter.database.prepare('SELECT current_room FROM telegram_pet_runs WHERE run_id=?').get(started.daily_run.run_id).current_room,0);
+}
+
+{
+  const adapter=new D1(), request={utc_day:'2026-08-11'};
+  assert.deepEqual((await getDailyMoonRunLeaderboard(adapter,request)).entries,[],'a successful empty leaderboard stays valid');
+  adapter.failAll=()=>true;
+  await assert.rejects(getDailyMoonRunLeaderboard(adapter,request),/pet_state_read_unavailable/);
+  await assert.rejects(getDailyMoonRunAnalytics(adapter,request),/pet_state_read_unavailable/);
+  adapter.failAll=null; adapter.failFirst=/SELECT COUNT\(\*\) AS participation/;
+  await assert.rejects(getDailyMoonRunAnalytics(adapter,request),/pet_state_read_unavailable/);
+}
+
 function insertCareEvent(db, telegramId, eventKey, day, action = 'feed', petId = null) {
   const sourceSeason = petId ? db.database.prepare('SELECT season_key FROM telegram_pet_season_slots WHERE pet_id=?').get(petId)?.season_key || 'season' : 'season';
   db.database.prepare(`INSERT INTO telegram_pet_events
@@ -1390,6 +1413,34 @@ async function endingFixture(owner, options = {}) {
   return { adapter, owner, now, run, room, request: { telegram_id: owner, run_id: run.run_id, choice_key: room.choices[0].choice_id, expected_step_index: 9, now } };
 }
 
+for (const boundary of ['boss','history','records','saved run']) {
+  const f=await endingFixture(`daily-final-read-${boundary}`);
+  f.adapter.database.prepare("UPDATE telegram_pet_runs SET status='completed',current_room=10,depth=10,score=223,completed_at=CURRENT_TIMESTAMP WHERE run_id=?").run(f.run.run_id);
+  if (boundary==='history') f.adapter.failAll=sql=>sql.includes('SELECT utc_day, status FROM telegram_pet_daily_runs');
+  else f.adapter.failFirst=boundary==='boss' ? /SELECT 1 AS defeated FROM telegram_pet_run_analytics/
+    : boundary==='records' ? /SELECT \* FROM telegram_pet_daily_leaderboard_records/ : /SELECT d\.\*, r\.season_key, r\.status AS authoritative_status, r\.region/;
+  await assert.rejects(syncDailyMoonRun(f.adapter,f.request),/pet_state_read_unavailable/,boundary);
+  assert.equal(f.adapter.database.prepare("SELECT COUNT(*) n FROM telegram_pet_daily_analytics WHERE telegram_id=? AND event_type='run_terminal'").get(f.owner).n,0,'unavailable evidence cannot seal terminal records');
+  assert.equal(f.adapter.database.prepare('SELECT boss_defeated FROM telegram_pet_daily_runs WHERE telegram_id=?').get(f.owner).boss_defeated,0,'failed evidence cannot fabricate a boss victory');
+  f.adapter.failFirst=null; f.adapter.failAll=null;
+  await syncDailyMoonRun(f.adapter,f.request);
+  const records=f.adapter.database.prepare('SELECT streak_length,longest_streak,boss_completions,runs_recorded FROM telegram_pet_daily_leaderboard_records WHERE telegram_id=?').get(f.owner);
+  assert.deepEqual({...records},{streak_length:1,longest_streak:1,boss_completions:0,runs_recorded:1});
+  await syncDailyMoonRun(f.adapter,f.request);
+  assert.equal(f.adapter.database.prepare('SELECT runs_recorded FROM telegram_pet_daily_leaderboard_records WHERE telegram_id=?').get(f.owner).runs_recorded,1);
+}
+
+for (const [boundary,query] of [['ownership',/SELECT 1 AS valid FROM telegram_pet_runs/],['saved room',/SELECT room_id, pet_id, run_id, telegram_id, room_number/]]) {
+  const f=await endingFixture(`daily-recovery-read-${boundary}`);
+  f.adapter.database.prepare('UPDATE telegram_pet_runs SET current_room=10,depth=10 WHERE run_id=?').run(f.run.run_id);
+  f.adapter.failFirst=query;
+  await assert.rejects(recoverDailyMoonRunEnding(f.adapter,f.request),/pet_state_read_unavailable/,boundary);
+  assert.equal(f.adapter.database.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='roguelite_boss'").get(f.owner).n,0,'unavailable source evidence cannot pay a boss');
+  assert.equal(f.adapter.database.prepare('SELECT status FROM telegram_pet_runs WHERE run_id=?').get(f.run.run_id).status,'active');
+  f.adapter.failFirst=null;
+  assert.equal((await recoverDailyMoonRunEnding(f.adapter,f.request)).accepted,true);
+}
+
 // A resolved D1 read failure is not an empty room ledger. Finalization must
 // stay retryable so daily objectives and terminal records cannot be lost.
 {
@@ -1508,6 +1559,45 @@ assert.equal(interruptedEnding.adapter.database.prepare('SELECT COUNT(*) AS coun
   assert.equal(f.adapter.database.prepare('SELECT COUNT(*) AS n FROM telegram_pet_specialist_events WHERE telegram_id=?').get(f.owner).n, 1);
   assert.equal(f.adapter.database.prepare('SELECT adventure_xp FROM telegram_pet_specialist_progression WHERE pet_id=?').get(run.pet_id).adventure_xp, 24,
     'refresh repairs the saved extraction award once after terminal synchronization failed');
+}
+
+// A terminal commit can precede both identity and the canonical completion
+// receipt. Refresh must repair that source before sealing early Daily records.
+for (const sealedRecords of [false, true]) {
+  const f = await endingFixture(`early-extraction-before-receipt-${sealedRecords}`);
+  f.adapter.database.prepare('DELETE FROM telegram_pet_run_rooms WHERE run_id=?').run(f.run.run_id);
+  f.adapter.database.prepare('UPDATE telegram_pet_runs SET current_room=0,depth=0,score=0 WHERE run_id=?').run(f.run.run_id);
+  const run = f.adapter.database.prepare('SELECT * FROM telegram_pet_runs WHERE run_id=?').get(f.run.run_id);
+  const room = await createPetRunRoom(f.adapter, run);
+  await persistPetRunRoomOutcome(f.adapter, run, room, { success: true, score: 25, choice_id: room.choices[0].choice_id });
+  f.adapter.database.prepare('UPDATE telegram_pet_runs SET current_room=1,depth=1,score=25 WHERE run_id=?').run(f.run.run_id);
+  f.adapter.failFirst = /SELECT 1 AS corrupt FROM telegram_pet_personality_traits/;
+  await assert.rejects(extractDailyMoonRun(f.adapter, { telegram_id: f.owner, run_id: run.run_id, now: f.now }), /moonpet_identity_authority_tuple_mismatch/);
+  f.adapter.failFirst = null;
+  assert.equal(f.adapter.database.prepare('SELECT status FROM telegram_pet_runs WHERE run_id=?').get(run.run_id).status, 'extracted');
+  assert.equal(f.adapter.database.prepare("SELECT COUNT(*) AS n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='roguelite_completion'").get(f.owner).n, 0);
+  if (sealedRecords) {
+    // Previous refreshes finalized Daily records and accepted the source event
+    // without retrying extraction, hiding this run from every later refresh.
+    await syncDailyMoonRun(f.adapter, { telegram_id: f.owner, run_id: run.run_id, now: f.now });
+    f.adapter.database.prepare(`INSERT INTO telegram_pet_events
+      (id,pet_id,telegram_id,event_type,event_key,season_key,day_key,week_key,status)
+      VALUES (?,?,?,'daily_moon_run',?,?,'2026-08-20','2026-W34','accepted')`)
+      .run(`old-terminal-${f.owner}`,run.pet_id,f.owner,`daily-moon-run:${f.owner}:${run.run_id}:extracted`,run.season_key);
+  }
+  const otherPet = `${run.pet_id}-other`;
+  seedAdditionalPet(f.adapter, f.owner, otherPet);
+  f.adapter.database.prepare('UPDATE telegram_pet_active_slots SET pet_id=? WHERE telegram_id=?').run(otherPet, f.owner);
+  await __petMediaTestHooks.buildPetMiniAppState(f.adapter, f.owner, 'fixture-token');
+  assert.equal(f.adapter.database.prepare("SELECT COUNT(*) AS n FROM telegram_pet_reward_claims WHERE telegram_id=? AND pet_id=? AND source='roguelite_completion' AND idempotency_key=? AND status='awarded'").get(f.owner, run.pet_id, `${run.run_id}:extract`).n, 1,
+    'early terminal recovery must restore the completion receipt required by safe deletion');
+  assert.equal(f.adapter.database.prepare("SELECT COUNT(*) AS n FROM telegram_pet_identity_events WHERE pet_id=? AND event_key=?").get(run.pet_id, `${run.run_id}:terminal:memory`).n, 1);
+  assert.equal(f.adapter.database.prepare("SELECT COUNT(*) AS n FROM telegram_pet_identity_events WHERE pet_id=? AND event_key=?").get(otherPet, `${run.run_id}:terminal:memory`).n, 0);
+  assert.equal(f.adapter.database.prepare('SELECT status FROM telegram_pet_daily_runs WHERE run_id=?').get(run.run_id).status, 'extracted');
+  const wallet = f.adapter.database.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner);
+  await __petMediaTestHooks.buildPetMiniAppState(f.adapter, f.owner, 'fixture-token');
+  assert.deepEqual(f.adapter.database.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner), wallet);
+  assert.equal(f.adapter.database.prepare('SELECT runs_recorded FROM telegram_pet_daily_leaderboard_records WHERE telegram_id=?').get(f.owner).runs_recorded, 1);
 }
 
 // Exercise both sides of each non-atomic boundary, then recover through the

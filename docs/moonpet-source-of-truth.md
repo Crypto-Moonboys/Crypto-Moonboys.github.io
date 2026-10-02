@@ -61,11 +61,28 @@ awards uses the earning day's calendar quarter, including delayed reserved
 rewards. Existing competition rows are not rewritten.
 Standard Run endings use their saved terminal timestamp for competition XP
 even when payout recovery happens in a later quarter; daily/weekly settlement
-windows keep their existing behavior. Profile insertion, creation-clock
+windows keep their existing behavior. Contract bonuses use their saved completion
+day for competition XP while retaining their existing settlement-day cap and
+daily/weekly ranking rules. Profile insertion, creation-clock
 ownership, the pet instance and all onboarding effects commit together. Creation
 and repair share a canonical per-pet onboarding claim; its lifecycle, first-adoption memory, egg evolution and analytics commit in
 one D1 batch. Concurrent requests cannot duplicate these effects. A failed batch
 rolls back the claim and retries safely without spending XP or overwriting pet stats.
+
+After onboarding commits, a failed display refresh preserves the accepted adoption
+and requests a fresh read. A missing or malformed action response likewise blocks
+further Mini App mutations until Refresh reads the authoritative save. Refreshing
+Missions requests its Missions projection; Explore, Work, Economy and Profile
+request the full projection so they cannot become stuck with HOME-only data.
+Earned account bounties remain visible in Coach and Play Now after pet replacement.
+
+Evolution checks use the requested pet instance's XP in both the preview and the
+unlock transaction, never the selected pet's compatibility profile. Ownership age
+and earned-evidence timestamps use UTC consistently. Inline Weekly Crest awards
+wait for earlier accepted sources in the same ownership week to finish evidence
+recovery before freezing their original qualification date; existing Crests remain
+unchanged. Retried run history records the exact saved reward receipt without
+granting its assets again.
 
 ## Long-term evolution and Kaiju materials
 
@@ -997,3 +1014,19 @@ Timed work, Standard and Daily Run follow-ups, Daily Completion, Finale and cont
 Inline and queued Weekly Journey repair derive the same Crest date: the first UTC day every objective reached its source-backed threshold. Later surplus actions and repair order cannot move that date. Previously awarded Crests retain their saved timestamps.
 
 An already earned account bounty remains claimable when deletion replaces the last hatched pet with an egg. The claim pays its existing currencies once without changing the egg's XP, streak, needs, health, lifecycle or identity. Settlement rechecks intact active ownership and the egg phase in the transaction; a concurrent hatch, switch or deletion rejects the stale claim. Hatched-pet bounty behavior is unchanged. After module loading exhausts automatic retries, the finished request exposes manual RETRY MODULE while retaining any mutation lock. Direct inherited Telegram launch data is filtered for freshness so an expired handoff does not suppress fresh linked website authentication. Nonempty SDK identity retains Telegram launch intent; an expired or rejected Telegram session offers a fresh Telegram launch instead of silently selecting a website account or repeatedly reloading expired data. All signatures remain server-verified. An explicitly disabled API endpoint stays disabled.
+
+### Second pre-merge audit (2 October 2026)
+
+Fast care responses carry only identity fields verified for the result pet. A stats-only response cannot reset a grown pet to an egg or borrow another selected pet's identity. A changed pet ID forces a full refresh before further actions. Switching to an already hatched or evolved pet does not replay its lifecycle ceremony. Session expiry during play uses the same fresh Telegram launch flow as startup expiry. Failed art requests remain retryable through Refresh, including partially loaded action animations.
+
+Arena and Kaiju queues keep the selected pet stable, including the brief claimed interval before a match is created. Both switching and deletion recheck that interval inside their transactions. Interrupted Mini App claims remain visible and cancellable; match insertion verifies both claims are still held, so a cancelled player cannot be pulled into a late match. Finished queue history does not prevent switching or deletion.
+
+Hatch, Rare Morph and Finale transitions validate every required mutation result before acknowledging progress or attempting dependent rewards. District, story and raid settlement validate their complete claim and ending batches; post-payment failures retain accepted receipts and recover pending progress without a second charge. Daily Run reads distinguish unavailable data from empty results before saving room outcomes, boss wins or terminal streak records. Wallet and inventory reconciliation validate their evidence reads and all required writes before later rewards proceed; an unavailable historical balance cannot be sealed as a successful zero-credit repair. These checks preserve existing payouts and receipt identities and require no migration.
+
+### Saved decisions and legacy equipment (third pre-merge audit, 2 October 2026)
+
+Arena timeouts leave a recoverable locked round intact, including a solo player's saved move awaiting its CPU choice. A later refresh settles that round and its reward once. Rounds still awaiting player input retain normal expiry. Every displayed-pet database call rejects failed batch members even when the ownership assertion succeeds; a failed queue write cannot report that the player joined.
+
+Early Daily Run extraction recovery replays its saved canonical ending before finalizing records, including the completion receipt needed by safe deletion. Existing account-owned equipment purchases with historical nullable pet IDs restore shared gear ownership from their accepted receipts, so selecting that gear cannot charge for it again. Modern pet-bound purchase receipts still require their intact owned tuple. Crafting, upgrading, Style Lab and Contract acknowledgment validate their required write results before claiming progress is complete.
+
+Lifecycle ceremonies remain bound to the pet whose action earned them. A later notice acknowledgment or passive refresh selecting another pet ends the old visual lock and cannot start the first pet's reveal on the second.

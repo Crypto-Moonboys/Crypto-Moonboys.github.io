@@ -119,7 +119,7 @@ assert.ok(
 );
 const prepareMiniAppStateSource = worker.slice(worker.indexOf('async function preparePetMiniAppState'), worker.indexOf('const PET_SEASON_EXTRA_SLOT_COSTS'));
 const pendingWorkSource = worker.slice(worker.indexOf('async function getPetActiveSlotPendingWork'), worker.indexOf('async function ensurePetStarterSeasonSlot'));
-const switchActivePetSource = worker.slice(worker.indexOf('async function switchActivePetSeasonSlot'), worker.indexOf('async function getOrCreatePetProfile'));
+const switchActivePetSource = worker.slice(worker.indexOf('async function switchActivePetSeasonSlot'), worker.indexOf('async function adoptPetProfile'));
 assert.match(worker, /async function getPetActiveSlotPendingWork/, 'pending active-slot guard helper must exist');
 assert.doesNotMatch(prepareMiniAppStateSource, /getPetSeasonInfo|season_settlement|rollover/, 'state preparation must never replace a pet when the calendar changes');
 assert.match(switchActivePetSource, /await getPetActiveSlotPendingWork\(db, owner, options\.now \|\| new Date\(\)\)/, 'explicit pet switching must use the same pending-work guard helper');
@@ -238,7 +238,7 @@ db.exec(migration061);
 // Current identity reads must distinguish empty tables from a schema/read outage.
 db.exec('CREATE UNIQUE INDEX identity_test_owner_tuple ON telegram_pet_season_slots(pet_id,telegram_id,season_key)');
 const currentSchema = await readFile(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
-for (const table of ['telegram_pet_personality_traits', 'telegram_pet_memories', 'telegram_pet_boss_victories', 'telegram_pet_identity_events', 'telegram_pet_identity_analytics', 'telegram_pet_reward_claims']) {
+for (const table of ['telegram_pet_personality_traits', 'telegram_pet_memories', 'telegram_pet_boss_victories', 'telegram_pet_identity_events', 'telegram_pet_identity_analytics', 'telegram_pet_reward_claims', 'telegram_pet_arena_queue', 'telegram_pet_kaiju_queue']) {
   const start = currentSchema.indexOf(`CREATE TABLE IF NOT EXISTS ${table} (`);
   assert.ok(start >= 0, table);
   db.exec(currentSchema.slice(start, currentSchema.indexOf('\n);', start) + 4));

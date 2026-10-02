@@ -1,3 +1,5 @@
+import { requirePetFirstReadResult, requirePetReadResult, requirePetMutationResult } from './read-result.js';
+
 export const PET_INSTANCE_AUTHORITY_VERSION = '0001-01-01 00:00:00';
 export const PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY = 'moonpet_wallet_reconcile:v1';
 export const PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE = 'wallet_reconciliation';
@@ -6,6 +8,12 @@ const PET_ACCOUNT_WALLET_MAX = 999999;
 export const PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE = 'wallet_reconciliation_recovery_required';
 export const PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_EVENT_KEY = 'moonpet_wallet_reconcile_recovery_required:v1';
 const PET_ACCOUNT_WALLET_CURRENCIES = Object.freeze(['moon_gold', 'moon_crystals', 'style_tokens']);
+
+function requireWalletMutationResult(result) {
+  requirePetMutationResult(result);
+  if (!Number.isSafeInteger(result?.meta?.changes) || result.meta.changes < 0) throw new Error('pet_state_write_unavailable');
+  return result;
+}
 
 export function accountWalletRecoveryResolvedSql(ownerSql = 'telegram_pet_profiles.telegram_id') {
   return `NOT EXISTS (
@@ -180,8 +188,8 @@ async function readHistoricalWalletRows(db, owner) {
     ORDER BY c.pet_id, c.rowid
   `).bind(owner, PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE);
   if (typeof statement.all === 'function') {
-    const rows = await statement.all();
-    return rows.results || [];
+    const rows = requirePetReadResult(await statement.all());
+    return rows.results;
   }
   if (db.database && statement.sql && Array.isArray(statement.args)) {
     return db.database.prepare(statement.sql).all(...statement.args);
@@ -216,7 +224,7 @@ async function assertReconciliationLedgerIsSafe(db, owner) {
         )
       )
     LIMIT 1
-  `).bind(owner, PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE).first();
+  `).bind(owner, PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE).first().then(requirePetFirstReadResult);
   if (ambiguous) throw new Error('moonpet_wallet_reconciliation_ambiguous_ledger');
 }
 
@@ -256,7 +264,7 @@ async function hasPetAccountWalletReconciliationMarker(db, owner) {
     SELECT claim_id FROM telegram_pet_reward_claims
     WHERE telegram_id = ? AND source = ? AND idempotency_key = ? AND status = 'awarded'
     LIMIT 1
-  `).bind(owner, PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE, PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY).first();
+  `).bind(owner, PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE, PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY).first().then(requirePetFirstReadResult);
   return Boolean(marker);
 }
 
@@ -265,7 +273,7 @@ async function hasPetAccountWalletRecoveryRequiredMarker(db, owner) {
     SELECT claim_id FROM telegram_pet_reward_claims
     WHERE telegram_id = ? AND source = ? AND idempotency_key = ? AND status = 'pending'
     LIMIT 1
-  `).bind(owner, PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE, PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_EVENT_KEY).first();
+  `).bind(owner, PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE, PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_EVENT_KEY).first().then(requirePetFirstReadResult);
   return Boolean(marker);
 }
 
@@ -306,7 +314,7 @@ async function markPetAccountWalletRecoveryRequired(db, owner, reason, now = new
       )`)
     .bind(markerId, owner, PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE, PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_EVENT_KEY,
       getPetDayKey(now), metadata, owner, owner, PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE, PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_EVENT_KEY)
-    .run();
+    .run().then(requireWalletMutationResult);
 }
 
 // No migration is required for the PR #1224 -> #1228 wallet repair. The
@@ -376,6 +384,8 @@ export async function reconcilePetInstanceWalletToProfile(db, telegramId, now = 
           owner, markerId, PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE, PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY,
         ),
     ]);
+    if (!Array.isArray(results) || results.length !== 2) throw new Error('pet_state_write_unavailable');
+    for (const result of results) requireWalletMutationResult(result);
     return Number(results?.[0]?.meta?.changes || 0) === 1;
   } catch (error) {
     if (/no such table: telegram_pet_(events|instances|profiles|reward_claims)/i.test(String(error?.message || error))) return false;

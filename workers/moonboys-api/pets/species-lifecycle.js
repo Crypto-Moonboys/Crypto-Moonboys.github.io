@@ -45,6 +45,15 @@ function cleanId(value) {
   return String(value || '').trim();
 }
 
+function requireLifecycleBatch(results, expectedLength) {
+  if (!Array.isArray(results) || results.length !== expectedLength) throw new Error('pet_state_write_unavailable');
+  for (const result of results) {
+    requirePetMutationResult(result);
+    if (!Number.isSafeInteger(result?.meta?.changes) || result.meta.changes < 0) throw new Error('pet_state_write_unavailable');
+  }
+  return results;
+}
+
 function validUtcDay(value) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value || ''))) return false;
   const date = new Date(`${value}T00:00:00.000Z`);
@@ -390,13 +399,7 @@ export async function incubateMoonEgg(db, telegramId, careType, eventKey, now = 
   ]);
   // A resolved D1 error is still a failed transaction. Validate the complete
   // care/receipt/Mark response before acknowledging any of its saved changes.
-  if (!Array.isArray(results) || results.length !== 4) throw new Error('pet_state_write_unavailable');
-  for (const result of results) {
-    requirePetMutationResult(result);
-    if (!Number.isSafeInteger(result?.meta?.changes) || result.meta.changes < 0) {
-      throw new Error('pet_state_write_unavailable');
-    }
-  }
+  requireLifecycleBatch(results, 4);
   const inserted = Number(results?.[0]?.meta?.changes || 0) === 1;
   const progressed = Number(results?.[1]?.meta?.changes || 0) === 1;
   const applied = Number(results?.[2]?.meta?.changes || 0) === 1;
@@ -462,6 +465,7 @@ export async function hatchMoonpet(db, telegramId, eventKey, now = new Date()) {
         SELECT 1 FROM telegram_pet_lifecycle_by_pet WHERE pet_id=? AND phase='young' AND species_id=?)`)
       .bind(eventId, row.pet_id, identity.species_id),
   ]);
+  requireLifecycleBatch(results, 5);
   const won = Number(results?.[0]?.meta?.changes || 0) === 1
     && Number(results?.[1]?.meta?.changes || 0) === 1
     && Number(results?.[2]?.meta?.changes || 0) === 1
@@ -477,7 +481,7 @@ export async function syncMoonpetLifecycleStage(db, telegramId, stage) {
   if (Number(stage) < 2) return getMoonpetLifecycle(db, id);
   const row = await ensureMoonpetLifecycle(db, id);
   if (!row) return null;
-  await db.batch([
+  const results = await db.batch([
     db.prepare(`UPDATE telegram_pet_lifecycle_by_pet SET phase='adult', adult_at=COALESCE(adult_at, CURRENT_TIMESTAMP), updated_at=CURRENT_TIMESTAMP
       WHERE pet_id=? AND phase='young'`).bind(row.pet_id),
     db.prepare(`UPDATE telegram_pet_profiles SET stage='adult', updated_at=CURRENT_TIMESTAMP WHERE telegram_id=? AND stage='young'`).bind(id),
@@ -486,6 +490,7 @@ export async function syncMoonpetLifecycleStage(db, telegramId, stage) {
         SELECT 1 FROM telegram_pet_lifecycle_by_pet WHERE pet_id=? AND telegram_id=? AND phase='adult')`)
       .bind(PET_INSTANCE_AUTHORITY_VERSION, row.pet_id, id, row.pet_id, id),
   ]);
+  requireLifecycleBatch(results, 3);
   return getMoonpetLifecycle(db, id);
 }
 
@@ -533,6 +538,7 @@ export async function morphMoonpetRare(db, telegramId, eventKey) {
         SELECT 1 FROM telegram_pet_lifecycle_by_pet WHERE pet_id=? AND phase='rare' AND rare_morph_id=?)`)
       .bind(eventId, row.pet_id, route.id),
   ]);
+  requireLifecycleBatch(results, 5);
   const won = Number(results?.[0]?.meta?.changes || 0) === 1
     && Number(results?.[1]?.meta?.changes || 0) === 1
     && Number(results?.[2]?.meta?.changes || 0) === 1

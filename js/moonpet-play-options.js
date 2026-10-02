@@ -228,13 +228,13 @@
     if (s.contracts && (s.contracts.pending_rewards || []).length) add('contract_claim', 'RECOVER SAVED CONTRACT XP', 'Collect saved bonuses for the pets that earned them, including earlier seasons. No new run or energy cost.');
     if (!egg && g.daily_cache && g.daily_cache.available) add('daily_chest', 'OPEN DAILY CACHE', 'One account cache per UTC day. Check the current XP allowance before claiming.', { screen: 'home', focus: 'care' });
     var bounties = g.economy && g.economy.bounties || [];
+    var ready = bounties.filter(function (b) { return b.complete && !b.claimed; });
+    if (ready.length) add('bounty_claims', 'CLAIM READY BOUNTIES // ' + ready.length, 'Open the board to collect verified account rewards. Already earned rewards remain claimable with an egg.');
     if (live.seasonal_boss && (live.seasonal_boss.pending_rewards || []).length) add('seasonal_boss_claim', 'CLAIM SAVED RAID REWARDS', 'Collect saved victories for the pets that earned them, including earlier seasons. No energy cost.');
     if (!egg) {
       var seasonClaims = (g.season && g.season.tiers || []).filter(function (tier) { return tier.unlocked && !tier.claimed_at; });
       if (seasonClaims.length) add('season_claims', 'CLAIM SEASON REWARDS // ' + seasonClaims.length, 'Open your unlocked season tiers and choose which rewards to collect. Each tier can be claimed once.');
       if ((s.regions || []).some(function (region) { return region.available && region.pending_choice_key && (region.retry_energy_charged || Number(s.pet && s.pet.energy) >= 10); })) add('district_retry', 'RESUME SAVED DISTRICT CHOICE', 'Finish an interrupted decision without changing its reward or charging energy twice.');
-      var ready = bounties.filter(function (b) { return b.complete && !b.claimed; });
-      if (ready.length) add('bounty_claims', 'CLAIM READY BOUNTIES // ' + ready.length, 'Open the board to collect verified rewards.');
       if (g.activity && g.activity.ready) add('activity', g.activity.recovery_pending ? 'RECOVER SAVED ACTIVITY REWARD' : 'CLAIM OR CONTINUE ACTIVITY', g.activity.recovery_pending ? 'Retry the interrupted claim. Its saved reward is protected against duplicate payment.' : 'Compare the current reward with the next duration checkpoint before claiming.');
       var nextBounty = bounties.filter(function (b) { return !b.complete && !b.claimed; }).map(function (b) {
         return { bounty: b, routes: bountyRouteOptions(b, s).filter(function (r) { return r.available; }) };

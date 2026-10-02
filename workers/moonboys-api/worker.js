@@ -4655,9 +4655,11 @@ async function getPetActiveSlotPendingWork(db, telegramId, now = new Date()) {
   // Keep the selected pet stable while these owner-scoped sessions are pending.
   // A failed lookup must not clear the switch/rollover guard.
   const pendingSystems = [
-    ['pet_run_active', `SELECT run_id AS id FROM telegram_pet_runs WHERE telegram_id=? AND status='active' LIMIT 1`],
+    ['pet_run_active', `SELECT run_id AS id FROM telegram_pet_runs WHERE telegram_id=? AND status IN ('active','extractable') LIMIT 1`],
     ['pet_arena_active', `SELECT battle_id AS id FROM telegram_pet_arena_battles WHERE (player1_telegram_id=? OR player2_telegram_id=?) AND status NOT IN ('completed','cancelled','expired') LIMIT 1`],
     ['pet_kaiju_active', `SELECT match_id AS id FROM telegram_pet_kaiju_matches WHERE (player1_telegram_id=? OR player2_telegram_id=?) AND status NOT IN ('completed','cancelled','expired') LIMIT 1`],
+    ['pet_arena_queue_active', `SELECT id FROM telegram_pet_arena_queue WHERE telegram_id=? AND (status='waiting' OR updated_at LIKE 'claim:%') LIMIT 1`],
+    ['pet_kaiju_queue_active', `SELECT id FROM telegram_pet_kaiju_queue WHERE telegram_id=? AND (status='waiting' OR updated_at LIKE 'claim:%') LIMIT 1`],
   ];
   for (const [reason, sql] of pendingSystems) {
     const bindings = (reason === 'pet_arena_active' || reason === 'pet_kaiju_active') ? [owner, owner] : [owner];
@@ -5118,10 +5120,12 @@ async function switchActivePetSeasonSlot(db, telegramId, requestedPetId, options
         AND NOT EXISTS (SELECT 1 FROM telegram_pet_activity_sessions WHERE telegram_id=? AND (status='active' OR (${PET_RECOVERABLE_ACTIVITY_PREDICATE})))
         AND NOT EXISTS (SELECT 1 FROM telegram_pet_runs WHERE telegram_id=? AND status IN ('active','extractable'))
         AND NOT EXISTS (SELECT 1 FROM telegram_pet_arena_battles WHERE (player1_telegram_id=? OR player2_telegram_id=?) AND status NOT IN ('completed','cancelled','expired'))
-        AND NOT EXISTS (SELECT 1 FROM telegram_pet_kaiju_matches WHERE (player1_telegram_id=? OR player2_telegram_id=?) AND status NOT IN ('completed','cancelled','expired'))`)
+        AND NOT EXISTS (SELECT 1 FROM telegram_pet_kaiju_matches WHERE (player1_telegram_id=? OR player2_telegram_id=?) AND status NOT IN ('completed','cancelled','expired'))
+        AND NOT EXISTS (SELECT 1 FROM telegram_pet_arena_queue WHERE telegram_id=? AND (status='waiting' OR updated_at LIKE 'claim:%'))
+        AND NOT EXISTS (SELECT 1 FROM telegram_pet_kaiju_queue WHERE telegram_id=? AND (status='waiting' OR updated_at LIKE 'claim:%'))`)
       .bind(slot.pet_id, slot.season_key, owner, previous.pet_id, previous.season_key,
         slot.pet_id, owner, slot.season_key, owner, ...mirror.args, previous.pet_id, owner, ...previousSnapshot.args,
-        owner, owner, owner, owner, owner, owner),
+        owner, owner, owner, owner, owner, owner, owner, owner),
     db.prepare(`UPDATE telegram_pet_profiles SET (${columns})=(SELECT ${columns} FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=?),
         updated_at=(SELECT updated_at FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=?)
       WHERE telegram_id=? AND changes()=1`)
@@ -5147,7 +5151,7 @@ async function deletePetSlot(db, telegramId, body) {
   return preserveCommittedPetActionResult(result, async () => ({ ...result, season_slots: await buildPetSeasonSlotSummary(db, telegramId) }));
 }
 
-async function getOrCreatePetProfile(db, telegramId, options = {}) {
+async function adoptPetProfile(db, telegramId, options = {}) {
   let pet = await getPetProfile(db, telegramId);
   // Profile, ownership and onboarding become visible in one transaction.
   // Existing-owner repair shares the same canonical claim and effect statements.
@@ -5180,9 +5184,12 @@ async function getOrCreatePetProfile(db, telegramId, options = {}) {
     results.forEach(requirePetMutationResult);
     const created = results[0];
     if (Number(created?.meta?.changes || 0) !== 1) return null;
-    pet = await getPetProfile(db, telegramId);
+    const committed = { accepted: true, reason: 'adopted', xp_awarded: 0, pet_xp_awarded: 0 };
+    return preserveCommittedPetActionResult(committed, async () => ({
+      ...committed, pet: applyPetDecay(await getPetProfile(db, telegramId)),
+    }));
   }
-  return applyPetDecay(pet);
+  return null;
 }
 
 function updatePetStreakForAction(pet, dayKey) {
@@ -5431,6 +5438,14 @@ async function createPetKaijuMatch(db, chatId, telegramId, mode = 'solo', option
     )
   `).bind(crypto.randomUUID(), matchId, String(chatId), mode, status, String(telegramId), player2, category.key, category.roll,
       PET_MINI_APP_KAIJU_LOBBY, String(telegramId)).run()
+    : options.mini_app_queue_claim
+    ? await db.prepare(`INSERT INTO telegram_pet_kaiju_matches
+        (id, match_id, chat_id, mode, status, player1_telegram_id, player2_telegram_id, category_key, roll)
+        SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?
+        WHERE (SELECT COUNT(*) FROM telegram_pet_kaiju_queue
+          WHERE chat_id=? AND telegram_id IN (?,?) AND status='played' AND updated_at=?)=2`)
+        .bind(crypto.randomUUID(), matchId, String(chatId), mode, status, String(telegramId), player2, category.key, category.roll,
+          PET_MINI_APP_KAIJU_LOBBY, String(telegramId), player2, options.mini_app_queue_claim).run()
     : await db.prepare(`
     INSERT INTO telegram_pet_kaiju_matches
       (id, match_id, chat_id, mode, status, player1_telegram_id, player2_telegram_id, category_key, roll)
@@ -5508,7 +5523,7 @@ async function getPetKaijuQueueState(db, telegramId) {
     WHERE chat_id=? AND status='waiting' AND updated_at < datetime('now', ?)`)
     .bind(PET_MINI_APP_KAIJU_LOBBY, `-${PET_KAIJU_MATCH_TTL_MINUTES} minutes`).run();
   const row = await db.prepare(`SELECT queued_at FROM telegram_pet_kaiju_queue
-    WHERE chat_id=? AND telegram_id=? AND status='waiting' LIMIT 1`)
+    WHERE chat_id=? AND telegram_id=? AND (status='waiting' OR updated_at LIKE 'claim:%') LIMIT 1`)
     .bind(PET_MINI_APP_KAIJU_LOBBY, String(telegramId)).first();
   if (!row) return null;
   const position = await db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_kaiju_queue
@@ -5551,7 +5566,8 @@ async function matchmakePetKaijuMiniApp(db, telegramId) {
     }
     try {
       const room = `mini:kaiju:match:${crypto.randomUUID().replaceAll('-', '').slice(0, 12)}`;
-      const created = await createPetKaijuMatch(db, room, opponent.telegram_id, 'group', { player2_telegram_id: telegramId });
+      const created = await createPetKaijuMatch(db, room, opponent.telegram_id, 'group', { player2_telegram_id: telegramId, mini_app_queue_claim: claimToken });
+      if (!created) throw new Error('pet_matchmaking_changed');
       await db.prepare(`UPDATE telegram_pet_kaiju_queue SET updated_at=CURRENT_TIMESTAMP
         WHERE chat_id=? AND status='played' AND updated_at=?`).bind(PET_MINI_APP_KAIJU_LOBBY, claimToken).run();
       return { accepted: true, reason: 'kaiju_match_found', match: await getPetKaijuMatch(db, created.match_id) };
@@ -5570,7 +5586,8 @@ async function matchmakePetKaijuMiniApp(db, telegramId) {
 
 async function cancelPetKaijuMiniAppQueue(db, telegramId) {
   const cancelled = await db.prepare(`UPDATE telegram_pet_kaiju_queue SET status='left', updated_at=CURRENT_TIMESTAMP
-    WHERE chat_id=? AND telegram_id=? AND status='waiting'`).bind(PET_MINI_APP_KAIJU_LOBBY, String(telegramId)).run();
+    WHERE chat_id=? AND telegram_id=? AND (status='waiting' OR updated_at LIKE 'claim:%')`).bind(PET_MINI_APP_KAIJU_LOBBY, String(telegramId)).run();
+  requirePetMutationResult(cancelled);
   return { accepted: true, duplicate: Number(cancelled?.meta?.changes || 0) === 0, reason: 'kaiju_queue_cancelled' };
 }
 
@@ -5952,10 +5969,19 @@ async function hasActivePetArenaBattle(db, chatId, telegramId) {
   const row = await db.prepare(`SELECT battle_id FROM telegram_pet_arena_battles WHERE chat_id = ? AND status IN ('readying', 'active') AND (player1_telegram_id = ? OR player2_telegram_id = ?) LIMIT 1`).bind(String(chatId), String(telegramId), String(telegramId)).first();
   return Boolean(row?.battle_id);
 }
-async function getPetArenaBattleForPlayer(db, chatId, telegramId) {
+async function expirePetArenaBattles(db, chatId) {
+  // The timer may abandon a round awaiting a player, but not a committed
+  // decision awaiting CPU/settlement recovery after an outage.
   await db.prepare(`UPDATE telegram_pet_arena_battles SET status='expired', completed_at=CURRENT_TIMESTAMP
-    WHERE chat_id=? AND status IN ('readying','active') AND COALESCE(expires_at, created_at) < ?`)
+    WHERE chat_id=? AND status IN ('readying','active') AND COALESCE(expires_at, created_at) < ?
+      AND NOT EXISTS (SELECT 1 FROM telegram_pet_arena_rounds r
+        WHERE r.battle_id=telegram_pet_arena_battles.battle_id AND r.round_number=telegram_pet_arena_battles.current_round
+          AND telegram_pet_arena_battles.status='active' AND r.player1_move IS NOT NULL
+          AND (r.player2_move IS NOT NULL OR telegram_pet_arena_battles.player2_telegram_id='app'))`)
     .bind(String(chatId), new Date().toISOString()).run();
+}
+async function getPetArenaBattleForPlayer(db, chatId, telegramId) {
+  await expirePetArenaBattles(db, chatId);
   return db.prepare(`SELECT * FROM telegram_pet_arena_battles
     WHERE chat_id=? AND status IN ('readying','active') AND (player1_telegram_id=? OR player2_telegram_id=?)
     ORDER BY created_at DESC LIMIT 1`).bind(String(chatId), String(telegramId), String(telegramId)).first();
@@ -5965,7 +5991,7 @@ async function getPetArenaQueueState(db, chatId, telegramId) {
     WHERE chat_id=? AND status='waiting' AND updated_at < datetime('now', ?)`)
     .bind(String(chatId), `-${PET_ARENA_QUEUE_TTL_MINUTES} minutes`).run();
   const row = await db.prepare(`SELECT rank_bucket, accept_any_rank, created_at FROM telegram_pet_arena_queue
-    WHERE chat_id=? AND telegram_id=? AND status='waiting' LIMIT 1`)
+    WHERE chat_id=? AND telegram_id=? AND (status='waiting' OR updated_at LIKE 'claim:%') LIMIT 1`)
     .bind(String(chatId), String(telegramId)).first();
   if (!row) return null;
   const position = await db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_arena_queue
@@ -6031,7 +6057,8 @@ async function queuePetArenaMiniApp(db, telegramId, acceptAnyRank = false) {
         pet_id: opponent.pet_id,
         season_key: opponent.season_key,
       };
-      const battle = await createPetArenaBattle(db, PET_MINI_APP_ARENA_LOBBY, pet, opponentPet, 'group');
+      const battle = await createPetArenaBattle(db, PET_MINI_APP_ARENA_LOBBY, pet, opponentPet, 'group', { mini_app_queue_claim: claimToken });
+      if (!battle) throw new Error('pet_matchmaking_changed');
       await db.prepare(`UPDATE telegram_pet_arena_queue SET updated_at=CURRENT_TIMESTAMP
         WHERE chat_id=? AND status='matched' AND updated_at=?`).bind(PET_MINI_APP_ARENA_LOBBY, claimToken).run();
       return { accepted: true, reason: 'arena_match_found', battle };
@@ -6049,7 +6076,8 @@ async function queuePetArenaMiniApp(db, telegramId, acceptAnyRank = false) {
 }
 async function cancelPetArenaMiniAppQueue(db, telegramId) {
   const cancelled = await db.prepare(`UPDATE telegram_pet_arena_queue SET status='cancelled', updated_at=CURRENT_TIMESTAMP
-    WHERE chat_id=? AND telegram_id=? AND status='waiting'`).bind(PET_MINI_APP_ARENA_LOBBY, String(telegramId)).run();
+    WHERE chat_id=? AND telegram_id=? AND (status='waiting' OR updated_at LIKE 'claim:%')`).bind(PET_MINI_APP_ARENA_LOBBY, String(telegramId)).run();
+  requirePetMutationResult(cancelled);
   return { accepted: true, duplicate: Number(cancelled?.meta?.changes || 0) === 0, reason: 'arena_queue_cancelled' };
 }
 async function createPetArenaBattle(db, chatId, p1, p2, mode='group', options = {}) {
@@ -6075,6 +6103,12 @@ async function createPetArenaBattle(db, chatId, p1, p2, mode='group', options = 
           WHERE chat_id=? AND telegram_id=?
             AND (status='waiting' OR updated_at LIKE 'claim:%')
         )`).bind(...values, PET_MINI_APP_ARENA_LOBBY, String(p1.telegram_id)).run()
+    : options.mini_app_queue_claim
+    ? await db.prepare(`INSERT INTO telegram_pet_arena_battles ${columns}
+        SELECT ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?
+        WHERE (SELECT COUNT(*) FROM telegram_pet_arena_queue
+          WHERE chat_id=? AND telegram_id IN (?,?) AND status='matched' AND updated_at=?)=2`)
+        .bind(...values, PET_MINI_APP_ARENA_LOBBY, String(p1.telegram_id), String(p2.telegram_id), options.mini_app_queue_claim).run()
     : await db.prepare(`INSERT INTO telegram_pet_arena_battles ${columns} VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).bind(...values).run();
   if (Number(inserted?.meta?.changes || 0) !== 1) return null;
   await ensurePetArenaRound(db, battleId, 1);
@@ -6330,7 +6364,7 @@ async function applyPetArenaMove(db, battle, telegramId, expectedRound, move) {
 }
 async function cmdPetArena(db, tok, chatId, telegramId, argStr = '', chatType = '') {
   await db.prepare(`UPDATE telegram_pet_arena_queue SET status='expired', updated_at=CURRENT_TIMESTAMP WHERE chat_id=? AND status='waiting' AND updated_at < datetime('now', ?)`).bind(String(chatId), `-${PET_ARENA_QUEUE_TTL_MINUTES} minutes`).run().catch(() => {});
-  await db.prepare(`UPDATE telegram_pet_arena_battles SET status='expired', completed_at=CURRENT_TIMESTAMP WHERE chat_id=? AND status IN ('readying','active') AND COALESCE(expires_at, created_at) < ?`).bind(String(chatId), new Date().toISOString()).run().catch(() => {});
+  await expirePetArenaBattles(db, chatId).catch(() => {});
   const arg = String(argStr || '').trim();
   if (arg.startsWith('ff:')) { const battleId = arg.slice(3); const battle = await getPetArenaBattle(db, battleId); if (!battle || String(battle.chat_id) !== String(chatId)) { await sendTelegramMessage(tok, chatId, 'That Pet Arena battle expired. Run /petarena for a fresh match.'); return; } const done = await forfeitPetArenaBattle(db, battle, telegramId); const copy = await appendMoonpetReaction(db, telegramId, 'arena', formatPetArenaResult(done.battle || battle), null, { activity_label: 'the arena result' }); await sendTelegramMessage(tok, chatId, copy); return; }
   if (arg.startsWith('mv:')) { const [, battleId, roundText, move] = arg.match(/^mv:(a-[a-f0-9]{10}):(\d{1,2}):(ah|ab|bh|bb|ch|sp)$/) || []; const battle = await getPetArenaBattle(db, battleId); if (!battle || String(battle.chat_id) !== String(chatId) || Number(battle.current_round || 1) < 1 || !['active','completed'].includes(String(battle.status))) { await sendTelegramMessage(tok, chatId, 'Stale Pet Arena move. Choose from the latest round prompt.'); return; } const applied = await applyPetArenaMove(db, battle, telegramId, Number(roundText), move); if (applied.reason === 'stale_arena_round') { await sendTelegramMessage(tok, chatId, 'Stale Pet Arena move. Choose from the latest round prompt.'); return; } if (applied.reason === 'waiting_for_opponent') { await sendTelegramMessage(tok, chatId, 'Move locked. Waiting for opponent.'); return; } if (applied.reason === 'move_already_locked') { await sendTelegramMessage(tok, chatId, 'Move already locked for this round. Waiting for the next round.'); return; } const latestBattle = applied.battle || battle; const prompt = formatPetArenaRoundPrompt(latestBattle); const copy = latestBattle.status === 'completed' ? await appendMoonpetReaction(db, telegramId, 'arena', prompt, null, { activity_label: 'the arena result' }) : prompt; await sendTelegramMessage(tok, chatId, copy, { reply_markup: (latestBattle.status === 'active') ? buildPetArenaMoveReplyMarkup(battleId, latestBattle.current_round) : undefined }); return; }
@@ -6743,12 +6777,12 @@ async function processPetAction(db, telegramId, action, options = {}) {
     if (!entryRequirement.eligible) {
       return { accepted: false, reason: 'arcade_xp_entry_required', entry_requirement: entryRequirement, xp_awarded: 0, pet_xp_awarded: 0 };
     }
-    const pet = await getOrCreatePetProfile(db, telegramId, options);
-    if (!pet) {
+    const result = await adoptPetProfile(db, telegramId, options);
+    if (!result) {
       const currentEntry = await getPetEntryRequirement(db, telegramId);
       return { accepted: false, reason: currentEntry.existing_owner ? 'pet_already_adopted' : 'arcade_xp_entry_required', entry_requirement: currentEntry, xp_awarded: 0, pet_xp_awarded: 0 };
     }
-    return { accepted: true, reason: 'adopted', xp_awarded: 0, pet_xp_awarded: 0, pet };
+    return result;
   }
 
   let pet = await getPetProfile(db, telegramId);
@@ -7029,6 +7063,14 @@ async function processPetAction(db, telegramId, action, options = {}) {
   });
 }
 
+function requirePetShopMutationBatch(results, expectedLength) {
+  if (!Array.isArray(results) || results.length !== expectedLength) throw new Error('pet_state_write_unavailable');
+  for (const result of results) {
+    requirePetMutationResult(result);
+    if (!Number.isSafeInteger(result?.meta?.changes) || result.meta.changes < 0) throw new Error('pet_state_write_unavailable');
+  }
+}
+
 async function processPetShopPurchase(db, telegramId, itemKey, options = {}) {
   const key = normalizePetShopItemKey(itemKey);
   if (!key) return { accepted: false, reason: 'invalid_shop_item', xp_awarded: 0, pet_xp_awarded: 0 };
@@ -7102,7 +7144,8 @@ async function processPetShopPurchase(db, telegramId, itemKey, options = {}) {
       SELECT ?,?,? WHERE EXISTS (SELECT 1 FROM telegram_pet_events WHERE id=? AND status='accepted')`)
       .bind(telegramId, item.key, item.slot, eventId),
   ]);
-  if (!purchaseResults?.[4]?.results?.[0]) {
+  requirePetShopMutationBatch(purchaseResults, 6);
+  if (!purchaseResults[4]?.results?.[0]) {
     const acceptedDuplicate = await buildAcceptedPetEventDuplicate(db, telegramId, eventKey, pet, { item });
     if (acceptedDuplicate) return acceptedDuplicate;
     const currentPet = await getPetProfile(db, telegramId);
@@ -7157,7 +7200,8 @@ async function processPetEquipmentEquip(db, telegramId, itemKey, options = {}) {
     db.prepare(`UPDATE telegram_pet_events SET status='accepted',reason='equipment_equipped'
       WHERE id=? AND status='pending' RETURNING id`).bind(id),
   ]);
-  if (!results?.[3]?.results?.length) {
+  requirePetShopMutationBatch(results, 4);
+  if (!results[3]?.results?.length) {
     const replay = await buildAcceptedPetEventDuplicate(db, telegramId, eventKey, pet, { item });
     return replay || { accepted: false, reason: 'equipment_state_changed', item };
   }
@@ -9828,7 +9872,7 @@ function buildPetMiniAppCooldownSummary({ journeySummary = null, guidance = null
   for (const entry of actionCooldowns || []) {
     addPetCooldownEntry(entries, `action:${entry.action}`, `${String(entry.action).replaceAll('_', ' ')} cooldown`, entry.cooldown, 'action');
   }
-  addPetCooldownEntry(entries, 'season_end', 'Moonpet season ends', normalizePetCooldownWindow(seasonSlots?.season?.end_at, now), 'seasonal');
+  addPetCooldownEntry(entries, 'season_end', 'Competition season ends', normalizePetCooldownWindow(seasonSlots?.season?.end_at, now), 'seasonal');
   entries.sort((left, right) => Date.parse(left.expires_at) - Date.parse(right.expires_at) || left.key.localeCompare(right.key));
   return {
     server_time: (now instanceof Date ? now : new Date(now)).toISOString(),
@@ -10736,13 +10780,26 @@ function serializePetMiniAppActionResult(result = {}, identity = null, telegramI
   if (output.result_copy === undefined && result.outcome?.copy) {
     output.result_copy = clampText(result.outcome.copy, 500, 'run_outcome');
   }
-  if (result.pet) output.pet = serializePet(result.pet, identity);
+  if (result.pet) {
+    // A result-only response has no identity projection; a full refresh can
+    // also belong to another pet selected after this action was committed.
+    // Send only known stats in those cases, never synthetic egg/name defaults.
+    const scope = identity?.scope;
+    // Identity scopes omit the owner; both route reads use this verified ID.
+    const matchingIdentity = scope?.pet_id && scope.pet_id === result.pet.pet_id
+      && telegramId && String(telegramId) === String(result.pet.telegram_id)
+      && scope.season_key === result.pet.season_key ? identity : null;
+    output.pet = serializePet(result.pet, matchingIdentity);
+    if (!matchingIdentity) {
+      for (const key of ['name', 'pet_name', 'display_name', 'species', 'art_identity_id', 'stage', 'evolution_id', 'evolution_stage']) delete output.pet[key];
+    }
+  }
   const resultLifecycle = result.lifecycle ? publicMoonpetLifecycle(result.lifecycle) : null;
   if (resultLifecycle) output.lifecycle = resultLifecycle;
   if (result.species !== undefined) {
     output.species = resultLifecycle?.identity_revealed
       ? resultLifecycle.display_name
-      : resolveMoonpetDisplayName({ evolution_stage: identity?.current_stage?.stage, art_identity_id: identity?.lifecycle?.art_identity_id }, identity || {});
+      : MOONPET_UNKNOWN_NAME;
   }
   if (result.battle) output.battle = serializePetMiniAppArenaBattle(result.battle, telegramId);
   if (result.match) output.match = serializePetMiniAppKaijuMatch(result.match, telegramId);
@@ -14486,7 +14543,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20261002-premerge-audit-v2`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20261002-direction-fixes-v3`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',

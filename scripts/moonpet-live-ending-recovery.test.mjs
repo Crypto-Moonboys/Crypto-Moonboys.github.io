@@ -4,7 +4,7 @@ import test from 'node:test';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import worker, { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
-import { getActiveSeasonalBoss, recoverPetLiveSystemEndings, buildPetLiveSystemsState, processPetDistrictMission } from '../workers/moonboys-api/pets/live-systems.js';
+import { getActiveSeasonalBoss, recoverPetLiveSystemEndings, buildPetLiveSystemsState, processPetDistrictMission, processPetEventChain, processPetSeasonalBoss } from '../workers/moonboys-api/pets/live-systems.js';
 import { PET_EVENT_CHAINS } from '../workers/moonboys-api/pets/content-phase-4.js';
 
 const currentSeason = 'pet-s2026-003';
@@ -24,7 +24,7 @@ function fixture(owner) {
       if (/\bRETURNING\b/i.test(this.query)) { const results = sql.prepare(this.query).all(...this.args); return { results, meta: { changes: results.length } }; }
       return { results: [], meta: { changes: Number(sql.prepare(this.query).run(...this.args).changes) } };
     }
-    async run() { if (db.beforeRun) await db.beforeRun(this); return this.exec(); }
+    async run() { if (db.beforeRun) { const override = await db.beforeRun(this); if (override !== undefined) return override; } return this.exec(); }
   }
   const db = { statementCount: 0, beforeBatch: null, beforeRun: null, prepare(query) { return new Statement(query); }, async batch(statements) {
     for (const statement of statements) {
@@ -33,7 +33,7 @@ function fixture(owner) {
         if (this.beforeAll) { const reply = await this.beforeAll(statement); if (reply?.success === false) throw Error('pet_state_read_unavailable'); }
       } else if (this.beforeRun) await this.beforeRun(statement);
     }
-    if (this.beforeBatch) await this.beforeBatch(statements);
+    if (this.beforeBatch) { const override = await this.beforeBatch(statements); if (override !== undefined) return override; }
     sql.exec('BEGIN');
     try { const results = []; for (const s of statements) results.push(s.exec()); sql.exec('COMMIT'); return results; }
     catch (error) { sql.exec('ROLLBACK'); throw error; }
@@ -60,6 +60,80 @@ function fixture(owner) {
   const get = async path => { const response = await worker.fetch(new Request('https://moonboys-api.test' + path), { DB: db }); assert.equal(response.status, 200); return response.json(); };
   return { sql, db, owner, pet, active, act, reveal, state, get };
 }
+
+for (const action of ['district', 'event_chain', 'seasonal_boss']) test(`${action} requires verified settlement claims before acknowledging a saved action`, async (t) => {
+  t.mock.timers.enable({ apis: ['Date'], now: Date.UTC(2026, 8, 26, 12) });
+  const count = action === 'event_chain' ? 1 : 3;
+  for (const [failure, failedResults] of [
+    ...Array.from({ length: count }, (_, index) => [`failed-${index}`, () => Array.from({ length: count }, (_, position) => position === index
+      ? { success: false, error: 'claim_write_failed', meta: { changes: 1 } } : { meta: { changes: 1 } })]),
+    ['missing-metadata', () => Array.from({ length: count }, () => ({}))],
+    ['string-count', () => Array.from({ length: count }, () => ({ meta: { changes: '1' } }))],
+    ...(count > 1 ? [['short', () => Array.from({ length: count - 1 }, () => ({ meta: { changes: 1 } }))]] : []),
+  ]) {
+    const f = fixture(`claim-result-${action}-${failure}`), petId = 'current-' + f.owner;
+    const pet = { pet_id: petId, season_key: currentSeason, pet_xp: action === 'seasonal_boss' ? 400000 : 200, energy: 100 };
+    let injected = false;
+    const match = statement => statement.query.includes("SET status='settling', payload_json=json_set");
+    if (action === 'event_chain') f.db.beforeRun = statement => {
+      if (match(statement)) { injected = true; return failedResults()[0]; }
+    };
+    else f.db.beforeBatch = statements => {
+      if (statements.length === 3 && match(statements[0])) { injected = true; return failedResults(); }
+    };
+    const award = () => assert.fail('unverified action claim cannot reach payout');
+    const act = () => action === 'district' ? processPetDistrictMission(f.db, f.owner, 'moon_alley', pet, {}, award, null, 'careful')
+      : action === 'event_chain' ? processPetEventChain(f.db, f.owner, 'lost_delivery_drone', award, null, undefined, pet)
+        : processPetSeasonalBoss(f.db, f.owner, pet, award, 'strike');
+    await assert.rejects(act(), /pet_state_write_unavailable/, failure + ' must be retryable rather than a gameplay result');
+    assert.equal(injected, true);
+    assert.equal(f.sql.prepare('SELECT energy FROM telegram_pet_instances WHERE pet_id=?').get(petId).energy, 100);
+    assert.equal(f.sql.prepare('SELECT status FROM telegram_pet_system_events WHERE system_key=?').get(action).status, 'pending');
+  }
+});
+
+for (const action of ['district', 'event_chain', 'seasonal_boss']) test(`${action} does not acknowledge failed or malformed ending writes`, async (t) => {
+  t.mock.timers.enable({ apis: ['Date'], now: Date.UTC(2026, 8, 26, 12) });
+  for (const [failure, failedResults] of [
+    ...[0, 1].map(index => [`failed-${index}`, () => Array.from({ length: 2 }, (_, position) => position === index
+      ? { success: false, error: 'ending_write_failed', meta: { changes: 1 } } : { meta: { changes: 1 } })]),
+    ['missing-metadata', () => [{}, { meta: { changes: 1 } }]],
+    ['string-count', () => [{ meta: { changes: '1' } }, { meta: { changes: 1 } }]],
+    ['short', () => [{ meta: { changes: 1 } }]],
+  ]) {
+    const f = fixture(`ending-result-${action}-${failure}`), petId = 'current-' + f.owner;
+    const xp = action === 'seasonal_boss' ? 400000 : 200;
+    f.sql.prepare('UPDATE telegram_pet_instances SET pet_xp=? WHERE pet_id=?').run(xp, petId);
+    const pet = { pet_id: petId, season_key: currentSeason, pet_xp: xp, energy: 100 };
+    const award = args => hooks.awardPetReward(f.db, args);
+    const act = () => action === 'district' ? processPetDistrictMission(f.db, f.owner, 'moon_alley', pet, {}, award, null, 'careful')
+      : action === 'event_chain' ? processPetEventChain(f.db, f.owner, 'lost_delivery_drone', award, null, undefined, pet)
+        : processPetSeasonalBoss(f.db, f.owner, pet, award, 'strike');
+    let injected = false;
+    f.db.beforeBatch = statements => {
+      if (statements.length === 2 && statements[1].query.includes("SET status='completed', payload_json=?")) {
+        injected = true;
+        return failedResults();
+      }
+    };
+    const pending = await act();
+    assert.equal(injected, true);
+    assert.equal(pending.accepted, true, 'the saved choice remains recoverable');
+    assert.equal(pending.reward_pending, true, failure + ' must not report a completed ending');
+    assert.equal(pending.refresh_state, true);
+    const event = f.sql.prepare('SELECT * FROM telegram_pet_system_events WHERE system_key=?').get(action);
+    assert.equal(event.status, 'settling');
+    const snapshot = f.sql.prepare('SELECT pet_xp,energy FROM telegram_pet_instances WHERE pet_id=?').get(petId);
+    f.db.beforeBatch = null;
+    f.sql.prepare("UPDATE telegram_pet_system_events SET updated_at='2000-01-01 00:00:00' WHERE id=?").run(event.id);
+    const recovered = await act();
+    assert.equal(recovered.accepted, true);
+    assert.equal(recovered.reward_pending, false);
+    assert.equal(f.sql.prepare('SELECT status FROM telegram_pet_system_events WHERE id=?').get(event.id).status, 'completed');
+    assert.deepEqual(f.sql.prepare('SELECT pet_xp,energy FROM telegram_pet_instances WHERE pet_id=?').get(petId), snapshot,
+      'ending recovery cannot duplicate the saved reward or energy charge');
+  }
+});
 
 for (const [label, match] of [
   ['story progress', q => q.startsWith('SELECT chain_key, step_index, completed_cycles')],

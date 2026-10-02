@@ -229,11 +229,13 @@ function getRewardAuthorization(source, telegramId, context = {}, now = new Date
     const contractId = String(context.contract_id || '');
     const petId = String(context.pet_id || '');
     const seasonKey = String(context.season_key || '');
+    const earnedAt = String(context.competition_earned_at || '');
     if (!contractId || !petId || !seasonKey) throw new Error('invalid_pet_reward_context');
     return { sql: `AND EXISTS (SELECT 1 FROM telegram_pet_contracts c
       JOIN telegram_pet_instances p ON p.pet_id=c.pet_id AND p.telegram_id=c.telegram_id AND p.season_key=c.season_key
       JOIN telegram_pet_season_slots s ON s.pet_id=p.pet_id AND s.telegram_id=p.telegram_id AND s.season_key=p.season_key AND s.slot_number=p.slot_number
-      WHERE c.contract_id=? AND c.telegram_id=? AND c.pet_id=? AND c.season_key=? AND c.status='completed' AND c.reward_xp=20)`, args: [contractId, telegramId, petId, seasonKey] };
+      WHERE c.contract_id=? AND c.telegram_id=? AND c.pet_id=? AND c.season_key=? AND c.status='completed' AND c.reward_xp=20
+        AND (?='' OR c.reward_day=date(?)))`, args: [contractId, telegramId, petId, seasonKey, earnedAt, earnedAt] };
   }
   if (source === 'pet_run_legacy') {
     if (!runId) throw new Error('invalid_pet_reward_context');
@@ -302,9 +304,9 @@ export async function awardPetReward(db, request = {}) {
   const seasonKey = String(request.season_key || getMoonpetSeasonKey(now));
   // Pet ownership and event receipts retain their original source season.
   // Reserved rewards retain their earning day even when recovered later.
-  const terminalEarnedAt = source === 'pet_run_legacy' ? request.context?.competition_earned_at : null;
-  if (terminalEarnedAt && !Number.isFinite(Date.parse(terminalEarnedAt))) throw new Error('invalid_pet_reward_context');
-  const competitionSeasonKey = getMoonpetSeasonKey(terminalEarnedAt || `${dayKey}T00:00:00.000Z`);
+  const competitionEarnedAt = ['pet_run_legacy', 'pet_contract'].includes(source) ? request.context?.competition_earned_at : null;
+  if (competitionEarnedAt && !Number.isFinite(Date.parse(competitionEarnedAt))) throw new Error('invalid_pet_reward_context');
+  const competitionSeasonKey = getMoonpetSeasonKey(competitionEarnedAt || `${dayKey}T00:00:00.000Z`);
   const authorization = getRewardAuthorization(source, telegramId, request.context, now, petId);
   const claimId = crypto.randomUUID();
   const eventId = reservationId || crypto.randomUUID();
@@ -662,8 +664,24 @@ function runIdentityAuthority(run, extra = {}) {
     telegram_id: run.telegram_id,
     pet_id: requireRunPetId(run),
     season_key: requireRunSeasonKey(run),
+    // A paid source may need identity repair after the original pet is archived.
+    ...(extra.source_event_key ? { recover_source_event: true } : {}),
     ...extra,
   };
+}
+
+async function runAwardedRewards(db, run, source, idempotencyKey, result) {
+  if (!result.duplicate) return result.rewards;
+  // Duplicate callbacks grant no new assets. Identity repair still needs the
+  // exact original payout, scoped to the saved run pet and reward key.
+  const receipt = await db.prepare(`SELECT applied_rewards FROM telegram_pet_reward_claims
+    WHERE telegram_id=? AND pet_id=? AND source=? AND idempotency_key=? AND status='awarded'`)
+    .bind(run.telegram_id, requireRunPetId(run), source, idempotencyKey).first().then(requirePetFirstReadResult);
+  let rewards;
+  try { rewards = JSON.parse(receipt?.applied_rewards); } catch {}
+  if (!rewards || typeof rewards !== 'object' || Array.isArray(rewards)
+    || !Number.isSafeInteger(rewards.moon_gold) || rewards.moon_gold < 0) throw new Error('pet_reward_receipt_unavailable');
+  return rewards;
 }
 
 export async function startPetRogueliteRun(db, request = {}) {
@@ -802,12 +820,13 @@ export async function rewardPetRunRoom(db, run, room, rewards = {}, costs = {}) 
       .bind(safeJson(awarded.rewards), safeJson(Object.keys(awarded.rewards?.relics || {})), `${room.room_id}:resolved`).run();
   }
   if (awarded.accepted) {
+    const earnedRewards = await runAwardedRewards(db, run, 'roguelite_room', room.room_id, awarded);
     const behaviour = ['battle', 'elite', 'boss'].includes(String(room.room_type)) ? 'combat' : 'exploration';
     await recordMoonpetBehaviour(db, runIdentityAuthority(run, { event_key: `${room.room_id}:personality`, source_event_key: eventKey, source_event_type: 'roguelite_room', behaviour,
       activity: behaviour === 'exploration' ? 'adventure' : 'combat' }));
     await recordMoonpetBiggestReward(db, runIdentityAuthority(run, {
       event_key: `${room.room_id}:biggest-reward`, source_event_key: eventKey, source_event_type: 'roguelite_room',
-      reward_amount: awarded.rewards?.moon_gold, reward_currency: 'moon_gold',
+      reward_amount: earnedRewards?.moon_gold, reward_currency: 'moon_gold',
     }));
   }
   return awarded;
@@ -839,6 +858,8 @@ export async function rewardPetRogueliteBoss(db, run, bossId, room = null) {
     profile_deltas: buildPetProfileDeltas(rewards, boss.costs),
     context: { run_id: run.run_id, room_id: persistedRoom.room_id, boss_id: bossId },
   });
+  const earnedRewards = awarded.accepted
+    ? await runAwardedRewards(db, run, 'roguelite_boss', `${persistedRoom.room_id}:${bossId}`, awarded) : null;
   if (awarded.accepted && !awarded.duplicate) {
     await db.prepare(`INSERT OR IGNORE INTO telegram_pet_run_analytics (analytics_id, pet_id, run_id, telegram_id, event_type, event_data)
       VALUES (?, ?, ?, ?, 'boss_fought', ?)`).bind(`${run.run_id}:boss:${persistedRoom.room_id}:${bossId}:win`, requireRunPetId(run), run.run_id, run.telegram_id,
@@ -851,16 +872,10 @@ export async function rewardPetRogueliteBoss(db, run, bossId, room = null) {
     if (!existing) {
       // Duplicate results deliberately contain zero rewards. Recover the win
       // from the awarded receipt, never from that empty callback payload.
-      const receipt = await db.prepare(`SELECT applied_rewards FROM telegram_pet_reward_claims
-        WHERE telegram_id=? AND pet_id=? AND source='roguelite_boss' AND idempotency_key=? AND status='awarded'`)
-        .bind(run.telegram_id, requireRunPetId(run), `${persistedRoom.room_id}:${bossId}`).first().then(requirePetFirstReadResult);
-      if (receipt) {
-        const credited = JSON.parse(receipt.applied_rewards);
-        await db.prepare(`INSERT OR IGNORE INTO telegram_pet_run_analytics (analytics_id, pet_id, run_id, telegram_id, event_type, event_data)
-          VALUES (?, ?, ?, ?, 'boss_fought', ?)`).bind(analyticsId, requireRunPetId(run), run.run_id, run.telegram_id,
-            safeJson({ boss_id: bossId, room_id: persistedRoom.room_id, outcome: 'win', rewards: credited,
-              relics_discovered: Object.keys(credited.relics || {}), achievement_id: boss.achievement_id || null })).run();
-      }
+      await db.prepare(`INSERT OR IGNORE INTO telegram_pet_run_analytics (analytics_id, pet_id, run_id, telegram_id, event_type, event_data)
+        VALUES (?, ?, ?, ?, 'boss_fought', ?)`).bind(analyticsId, requireRunPetId(run), run.run_id, run.telegram_id,
+          safeJson({ boss_id: bossId, room_id: persistedRoom.room_id, outcome: 'win', rewards: earnedRewards,
+            relics_discovered: Object.keys(earnedRewards.relics || {}), achievement_id: boss.achievement_id || null })).run();
     }
   }
   if (awarded.accepted) {
@@ -871,7 +886,7 @@ export async function rewardPetRogueliteBoss(db, run, bossId, room = null) {
     await recordMoonpetMemory(db, runIdentityAuthority(run, {
       event_key: `${persistedRoom.room_id}:${bossId}:memory`, source_event_key: eventKey, source_event_type: 'roguelite_boss',
       memory_type: 'boss_victory', boss_id: bossId, milestone: 'first_boss_victory',
-      reward_amount: awarded.rewards?.moon_gold, reward_currency: 'moon_gold',
+      reward_amount: earnedRewards?.moon_gold, reward_currency: 'moon_gold',
     }));
   }
   return awarded;
@@ -964,12 +979,15 @@ export async function completePetRun(db, run, completionRewards = {}, analytics 
       '$.rewards', json(?), '$.relics_discovered', json(?)) WHERE analytics_id = ?`)
       .bind(safeJson(reward.rewards), safeJson(Object.keys(reward.rewards?.relics || {})), `${run.run_id}:end`).run();
   }
-  if (reward.accepted) await recordMoonpetBiggestReward(db, runIdentityAuthority(run, {
-    event_key: `${run.run_id}:completion:biggest-reward`,
-    source_event_key: `pet_reward:roguelite_completion:${run.run_id}`,
-    source_event_type: 'roguelite_completion',
-    reward_amount: reward.rewards?.moon_gold, reward_currency: 'moon_gold',
-  }));
+  if (reward.accepted) {
+    const earnedRewards = await runAwardedRewards(db, run, 'roguelite_completion', run.run_id, reward);
+    await recordMoonpetBiggestReward(db, runIdentityAuthority(run, {
+      event_key: `${run.run_id}:completion:biggest-reward`,
+      source_event_key: `pet_reward:roguelite_completion:${run.run_id}`,
+      source_event_type: 'roguelite_completion',
+      reward_amount: earnedRewards?.moon_gold, reward_currency: 'moon_gold',
+    }));
+  }
   return { ...terminal, reward };
 }
 export async function extractPetRogueliteRun(db, run, extractionRewards = {}, analytics = {}) {
@@ -992,12 +1010,15 @@ export async function extractPetRogueliteRun(db, run, extractionRewards = {}, an
       '$.rewards', json(?), '$.relics_discovered', json(?)) WHERE analytics_id = ?`)
       .bind(safeJson(reward.rewards), safeJson(Object.keys(reward.rewards?.relics || {})), `${run.run_id}:end`).run();
   }
-  if (reward.accepted) await recordMoonpetBiggestReward(db, runIdentityAuthority(run, {
-    event_key: `${run.run_id}:extraction:biggest-reward`,
-    source_event_key: `pet_reward:roguelite_completion:${run.run_id}:extract`,
-    source_event_type: 'roguelite_completion',
-    reward_amount: reward.rewards?.moon_gold, reward_currency: 'moon_gold',
-  }));
+  if (reward.accepted) {
+    const earnedRewards = await runAwardedRewards(db, run, 'roguelite_completion', `${run.run_id}:extract`, reward);
+    await recordMoonpetBiggestReward(db, runIdentityAuthority(run, {
+      event_key: `${run.run_id}:extraction:biggest-reward`,
+      source_event_key: `pet_reward:roguelite_completion:${run.run_id}:extract`,
+      source_event_type: 'roguelite_completion',
+      reward_amount: earnedRewards?.moon_gold, reward_currency: 'moon_gold',
+    }));
+  }
   return { ...terminal, reward };
 }
 export const failPetRun = (db, run, analytics = {}) => finishPetRogueliteRun(db, run, 'failed', analytics);

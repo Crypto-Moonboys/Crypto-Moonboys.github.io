@@ -68,7 +68,10 @@
   }
 
   async function loadRegistry() {
-    if (!registryPromise) registryPromise = fetchJson(REGISTRY_PATH, FALLBACK_CACHE_VERSION);
+    if (!registryPromise) registryPromise = fetchJson(REGISTRY_PATH, FALLBACK_CACHE_VERSION).catch((error) => {
+      registryPromise = null;
+      throw error;
+    });
     return registryPromise;
   }
 
@@ -178,13 +181,18 @@
       const remaining = assets.filter((asset) => asset.role !== idleRole);
       const preload = Promise.all(remaining.map((asset) => loadAsset(asset, manifest, errors))).then((loaded) => {
         for (const entry of loaded) if (entry) assetsByRole[entry.role] = entry.asset;
+        if (errors.length && packCache.get(cacheKey) === promise) packCache.delete(cacheKey);
         return { assetsByRole, errors };
       });
+      if (!assetsByRole[idleRole] && packCache.get(cacheKey) === promise) packCache.delete(cacheKey);
       return {
         ready: Boolean(assetsByRole[idleRole]), manifest, assetsByRole, errors, preload,
         roleMap: manifest.runtime_role_map || {}, display: config.display || {},
         botKey, pendingRoles: remaining.map((asset) => asset.role)
       };
+    }).catch((error) => {
+      if (packCache.get(cacheKey) === promise) packCache.delete(cacheKey);
+      throw error;
     });
     packCache.set(cacheKey, promise);
     return promise;

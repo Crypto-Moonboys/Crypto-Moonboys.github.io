@@ -7,6 +7,7 @@
   apiBase = apiBase ? String(apiBase).replace(/\/$/, '') : '';
   var initData = '';
   var telegramAuth = null;
+  var authenticationFailure = false;
   var state = null;
   var renderedPetId = null;
   var renderedPetName = '';
@@ -128,18 +129,19 @@
     }
   }
 
-  function setSleepLatch(value) {
-    sleepLatched = Boolean(value);
-    var petKey = currentPetSleepKey(state);
-    if (!petKey) return sleepLatched;
+  function setSleepLatch(value, snapshot) {
+    var latched = Boolean(value);
+    var petKey = currentPetSleepKey(snapshot || state);
+    if (petKey === currentPetSleepKey(state)) sleepLatched = latched;
+    if (!petKey) return latched;
     try {
       var saved = JSON.parse(window.localStorage.getItem(SLEEP_LATCH_STORAGE_KEY) || '{}');
       if (!saved || typeof saved !== 'object' || Array.isArray(saved)) saved = {};
-      if (sleepLatched) saved[petKey] = true;
+      if (latched) saved[petKey] = true;
       else delete saved[petKey];
       window.localStorage.setItem(SLEEP_LATCH_STORAGE_KEY, JSON.stringify(saved));
     } catch (_) {}
-    return sleepLatched;
+    return latched;
   }
 
   function launchParameter(name) {
@@ -574,6 +576,11 @@
 
   async function post(path, payload) {
     if (!apiBase) throw new Error('API ENDPOINT DISABLED FOR THIS CONTEXT');
+    if (authenticationFailure) {
+      var expiredError = new Error('TELEGRAM SESSION EXPIRED. OPEN A FRESH SESSION FROM @WIKICOMSBOT.');
+      expiredError.status = 401;
+      throw expiredError;
+    }
     // State is read-only and safe to retry on a fresh request context. A
     // transient D1 read must not strand the whole game on its startup screen.
     // Never retry /action here: mutations own their idempotency and response.
@@ -594,6 +601,11 @@
         var requestError = new Error(data.error || 'NETWORK HANDSHAKE FAILED');
         requestError.status = response.status;
         requestError.retryAfterSeconds = Math.max(0, Number(data.retry_after_seconds || 0));
+        if (response.status === 401) {
+          authenticationFailure = true;
+          petActionRefreshRequired = true;
+          if (state) render();
+        }
         throw requestError;
       }
       return data;
@@ -827,7 +839,7 @@
       : /APTITUDES/.test(name) ? ['▥', 'Compare your companion’s natural strengths.']
       : /DORMANT/.test(name) ? ['◉', 'Initialise your first Secret Bot.'] : ['◈', 'Open to view details and available options.']);
     if (panelId === 'care' && state && state.lifecycle && state.lifecycle.phase === 'egg') copy = ['♥', 'Energy Drink, Dance and Cuddles; stat-only care.'];
-    var expanded = Object.prototype.hasOwnProperty.call(panelOpenState, key) ? panelOpenState[key] : panelId === 'recommended' && activeScreen === 'home' || /DORMANT/.test(name);
+    var expanded = Object.prototype.hasOwnProperty.call(panelOpenState, key) ? panelOpenState[key] : panelId === 'telegram-auth' || panelId === 'recommended' && activeScreen === 'home' || /DORMANT/.test(name);
     return '<details class="panel" data-panel-key="' + escapeHtml(key) + '"' + (panelId ? ' data-panel="' + escapeHtml(panelId) + '"' : '') + (expanded ? ' open' : '') + '><summary class="panel-summary"><span class="panel-icon" aria-hidden="true">' + copy[0] + '</span><span class="panel-caption"><span class="panel-title">' + escapeHtml(name) + '</span><span class="panel-description">' + escapeHtml(description || copy[1]) + '</span></span><span class="panel-chevron" aria-hidden="true">⌄</span></summary><div class="panel-body">' + body + '</div></details>';
   }
 
@@ -942,6 +954,10 @@
 
   async function syncState() {
     if (busy) return;
+    if (authenticationFailure) {
+      tell('TELEGRAM SESSION EXPIRED. OPEN A FRESH SESSION FROM @WIKICOMSBOT.', 'danger');
+      return;
+    }
     busy = true;
     tell('REFRESHING LIVE SAVE...');
     try {
@@ -1513,6 +1529,7 @@
 
   function stateRefreshPayload(snapshot, screenKey) {
     if (screenKey === 'missions') return { mode: 'missions' };
+    if (screenKey && screenKey !== 'home') return {};
     return stateNeedsFullHydration(snapshot) ? { mode: 'core' } : {};
   }
 
@@ -1569,7 +1586,7 @@
   // TEST-EXPORT: coreStateHydration:end
 
   function setStateSnapshot(nextState, requestGeneration, options) {
-    if (!nextState || !stateRequestGate.isCurrent(requestGeneration)) return false;
+    if (authenticationFailure || !nextState || !stateRequestGate.isCurrent(requestGeneration)) return false;
     var serverTime = Date.parse(nextState.server_time || nextState.cooldowns && nextState.cooldowns.server_time || '');
     if (Number.isFinite(serverTime)) serverClockOffsetMs = serverTime - Date.now();
     state = nextState;
@@ -1861,7 +1878,7 @@
       var affordable = unlockEnabled && Boolean(slot.affordable);
       var status = active ? 'ACTIVE' : owned ? selectable ? 'OWNED' : 'OWNED // RECOVERY REQUIRED' : 'LOCKED';
       var details = owned && !selectable ? '<div class="line muted">OWNED SPACE PRESERVED // Saved pet is unavailable. Recovery is required before play.</div>' : owned ? renderPetInstanceCard(slot)
-        : '<div class="slot-unlock-copy"><strong>COMMUNITY XP UNLOCK</strong><span>You have earned Arcade XP from community play.</span><span>CURRENT ARCADE XP // ' + number(available) + ' / ' + number(cost) + ' REQUIRED</span></div>';
+        : '<div class="slot-unlock-copy"><strong>ARCADE XP UNLOCK</strong><span>Spendable Arcade XP unlocks an additional permanent pet space.</span><span>CURRENT ARCADE XP // ' + number(available) + ' / ' + number(cost) + ' REQUIRED</span></div>';
       var control = active ? '<strong class="slot-active-marker" aria-label="Active pet">◆ ACTIVE</strong>'
         : owned ? selectable ? button('SWITCH TO SLOT ' + slotNumber, 'switch_pet_slot', { pet_id: slot.pet_id, slot_number: slotNumber }) : '<div class="line locked">PET UNAVAILABLE // ' + escapeHtml(words(slot.selection_disabled_reason || 'pet recovery required')) + '</div>'
           : unlockEnabled ? button('UNLOCK SLOT ' + slotNumber, 'buy_pet_slot', { slot_number: slotNumber }, {
@@ -2597,7 +2614,9 @@
     renderCanvasTools();
     var waitingForModule = stateNeedsScreenHydration(state, activeScreen);
     var hydrationStopped = waitingForModule && fullStateHydrationFailures >= FULL_STATE_HYDRATION_MAX_AUTO_RETRIES && !fullStateHydrationPromise;
-    screen.innerHTML = !state ? ''
+    screen.innerHTML = authenticationFailure
+      ? panel('TELEGRAM SESSION EXPIRED', '<div class="line muted">Close this game and reopen Moonpet OS from the bot to get a fresh signed Telegram session. Your saved progress is kept.</div><div class="button-grid one"><a class="terminal-link-button" href="https://t.me/WIKICOMSBOT?start=moonpet" target="_blank" rel="noopener noreferrer">OPEN FRESH TELEGRAM SESSION</a></div>', 'telegram-auth')
+      : !state ? ''
       : waitingForModule
         ? panel('LOADING // ' + activeScreen.toUpperCase(),
           hydrationStopped
@@ -2809,7 +2828,9 @@
       pet_activity_active: 'FINISH OR CLAIM THE ACTIVE PET ACTIVITY FIRST',
       pet_run_active: 'FINISH THE ACTIVE MOON RUN BEFORE SWITCHING',
       pet_arena_active: 'FINISH THE ACTIVE ARENA BATTLE BEFORE SWITCHING',
+      pet_arena_queue_active: 'LEAVE THE ARENA QUEUE BEFORE SWITCHING',
       pet_kaiju_active: 'FINISH THE ACTIVE KAIJU MATCH BEFORE SWITCHING',
+      pet_kaiju_queue_active: 'LEAVE THE KAIJU QUEUE BEFORE SWITCHING',
       season_slots_unavailable: 'SEASON SLOTS ARE TEMPORARILY UNAVAILABLE',
       pet_ownership_recovery_required: 'YOUR OWNED PET NEEDS RECOVERY // PET SPACES AND ARCADE XP ARE PRESERVED',
     };
@@ -2842,6 +2863,10 @@
 
   function planLifecycleCeremony(beforeState, afterState, action, result) {
     if (!result || !result.accepted || result.duplicate || !afterState) return null;
+    // Selecting an older companion does not hatch or evolve the previous pet.
+    if (beforeState && beforeState.pet && afterState.pet
+      && beforeState.pet.pet_id && afterState.pet.pet_id
+      && beforeState.pet.pet_id !== afterState.pet.pet_id) return null;
     var before = lifecycleStateSnapshot(beforeState);
     var after = lifecycleStateSnapshot(afterState);
     var actionKey = String(action || '').toLowerCase();
@@ -2888,7 +2913,8 @@
   // TEST-EXPORT: lifecycleDirector:end
 
   function lifecycleCeremonyActive(time) {
-    return Boolean(lifecycleCeremony && lifecycleCeremonyUntil > Number(time == null ? performance.now() : time));
+    return Boolean(lifecycleCeremony && (!lifecycleCeremony.pet_id || lifecycleCeremony.pet_id === (state && state.pet && state.pet.pet_id))
+      && lifecycleCeremonyUntil > Number(time == null ? performance.now() : time));
   }
 
   function clearLifecycleCeremony(redraw) {
@@ -3077,11 +3103,18 @@
       if (fastResponse) requestPayload.response_mode = 'result_only';
       else if (activeScreen === 'missions') requestPayload.state_mode = 'missions';
       var data = await post('/telegram-pets/app/action', requestPayload);
+      if (!data || !data.result || typeof data.result.accepted !== 'boolean') throw new Error('ACTION RESPONSE UNCONFIRMED');
       var actionAccepted = Boolean(data.result && data.result.accepted);
+      // Record a confirmed sleep/wake preference on the pet that took the
+      // action, before a newer projection can select a different companion.
+      if (actionAccepted && actionFamily === 'sleep') setSleepLatch(true, stateBeforeAction);
+      else if (authoritativeSleepClear && actionAccepted) setSleepLatch(false, stateBeforeAction);
 
       if (fastResponse && data.state_pending === true) {
         if (stateRequestGate.isCurrent(requestGeneration)) {
-          var staleDisplayedPet = Boolean(data.result && (data.result.refresh_state === true || (!actionAccepted && ['displayed_pet_required', 'displayed_pet_changed', 'source_pet_changed', 'pet_action_state_changed'].includes(data.result.reason))));
+          var staleDisplayedPet = Boolean(data.result && (data.result.refresh_state === true
+            || data.result.pet && data.result.pet.pet_id && data.result.pet.pet_id !== (stateBeforeAction && stateBeforeAction.pet && stateBeforeAction.pet.pet_id)
+            || (!actionAccepted && ['displayed_pet_required', 'displayed_pet_changed', 'source_pet_changed', 'pet_action_state_changed'].includes(data.result.reason))));
           if (staleDisplayedPet) {
             // Never merge Pet B into Pet A's old snapshot. Block further clicks
             // until a complete authoritative projection has replaced the view.
@@ -3107,8 +3140,6 @@
           state = patchFastActionState(state, data.result, action);
           var fastServerTime = Date.parse(data.server_time || data.result && data.result.server_time || '');
           if (Number.isFinite(fastServerTime)) serverClockOffsetMs = fastServerTime - Date.now();
-          if (actionFamily === 'sleep') setSleepLatch(actionAccepted);
-          else if (authoritativeSleepClear && actionAccepted && sleepLatched) setSleepLatch(false);
           if (!actionAccepted) animateAction('blocked', false, 2800, payload);
           var message = resultMessage(data.result, stateBeforeAction, state);
           tell(message + (actionAccepted ? ' // SAVE CONFIRMED' : ''), actionAccepted ? '' : 'danger');
@@ -3133,7 +3164,9 @@
       }
       var beforePhase = String(stateBeforeAction && stateBeforeAction.lifecycle && stateBeforeAction.lifecycle.phase || '');
       var afterPhase = String(responseState && responseState.lifecycle && responseState.lifecycle.phase || '');
-      var isHatchReveal = actionAccepted && beforePhase === 'egg' && afterPhase !== 'egg' && actionAnimationFamily(action, payload) === 'hatch';
+      var isHatchReveal = actionAccepted && beforePhase === 'egg' && afterPhase !== 'egg'
+        && stateBeforeAction.pet && responseState.pet && stateBeforeAction.pet.pet_id === responseState.pet.pet_id
+        && actionAnimationFamily(action, payload) === 'hatch';
       var hatchDuration = isHatchReveal ? startHatchArtTransition(hatchAnimationDuration(), responseState) : 0;
       if (!setStateSnapshot(responseState, requestGeneration, { deferBotArtSelection: isHatchReveal })) return;
       if (isHatchReveal) {
@@ -3142,6 +3175,7 @@
       }
       var nextState = state;
       var plannedCeremony = planLifecycleCeremony(stateBeforeAction, nextState, action, data.result);
+      if (plannedCeremony) plannedCeremony.pet_id = nextState.pet && nextState.pet.pet_id;
       var message = resultMessage(data.result, stateBeforeAction, nextState);
       tell(message, data.result && data.result.accepted ? '' : 'danger');
       haptic(data.result && data.result.accepted ? 'success' : 'error');
@@ -3149,14 +3183,28 @@
       // Keep the rejection and retry instructions visible. Queued unlock notices
       // remain unacknowledged until the next successful action or refresh.
       if (actionAccepted) await showPendingNotices();
-      if (actionFamily === 'sleep') setSleepLatch(actionAccepted);
-      else if (waitForAcceptedAnimation && actionAccepted && sleepLatched) setSleepLatch(false);
+      // Notice acknowledgement can return a newer pet selected in another
+      // session. Its companion must not inherit the original action's reveal.
+      if ((nextState.pet && nextState.pet.pet_id) !== (state && state.pet && state.pet.pet_id)) return;
       if (!isHatchReveal) animateAction(action, actionAccepted, actionFamily === 'dance' ? 3600 : 2800, payload);
       startLifecycleCeremony(plannedCeremony);
     } catch (error) {
-      animateAction('blocked', false, 2800);
-      tell(error.message || 'CONNECTION FAILED', 'danger');
-      haptic('error');
+      if (authenticationFailure) {
+        tell('TELEGRAM SESSION EXPIRED. OPEN A FRESH SESSION FROM @WIKICOMSBOT.', 'danger');
+        haptic('error');
+        return;
+      }
+      // A lost response is not proof that the server rejected the mutation.
+      // Require an authoritative read before another click can spend again.
+      petActionRefreshRequired = true;
+      render();
+      var savedResult = data && data.result && typeof data.result.accepted === 'boolean';
+      var failureMessage = savedResult
+        ? resultMessage(data.result, stateBeforeAction, stateBeforeAction) + (data.result.accepted ? ' // SAVE CONFIRMED' : '')
+        : 'ACTION RESPONSE UNCONFIRMED. YOUR SAVE MAY HAVE UPDATED.';
+      tell(failureMessage + ' // DISPLAY SYNC FAILED. TAP REFRESH.', actionAccepted ? '' : 'danger');
+      animateAction(action, actionAccepted === true, 2800, payload);
+      haptic(actionAccepted ? 'success' : 'error');
     } finally {
       busy = false;
       if (buttonElement) buttonElement.classList.remove('is-active');

@@ -389,4 +389,34 @@ recoveryDb.beforeFirst = null;
 assert.equal(recoveryDb.database.prepare("SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE telegram_id='recovery-player'").get().phase, 'adult');
 assert.equal(recoveryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_events_by_pet WHERE event_key='recovery:rare'").get().count, 0);
 
+// Hatch and Rare Morph are five-statement identity transactions. One failed
+// result cannot be masked by positive changes in its peers and acknowledged.
+for (const action of ['hatch', 'rare_morph']) {
+  recoveryDb.database.prepare('UPDATE telegram_pet_lifecycle_by_pet SET phase=? WHERE pet_id=?')
+    .run(action === 'hatch' ? 'egg' : 'adult', 'pet:recovery-player:test:1');
+  for (const [failure, badBatch] of [
+    ...[0, 1, 2, 3, 4].map(index => [`failed-${index}`, () => Array.from({ length: 5 }, (_, position) => position === index
+      ? { success: false, error: 'lifecycle_write_failed', meta: { changes: 1 } } : { meta: { changes: 1 } })]),
+    ['short', () => Array.from({ length: 4 }, () => ({ meta: { changes: 1 } }))],
+    ['missing-metadata', () => [{}, ...Array.from({ length: 4 }, () => ({ meta: { changes: 1 } }))]],
+  ]) {
+    const lifecycleBefore = recoveryDb.database.prepare('SELECT * FROM telegram_pet_lifecycle_by_pet').all();
+    let injected = false, followUps = 0;
+    recoveryDb.beforeFirst = () => { if (injected) followUps++; };
+    recoveryDb.beforeAll = () => { if (injected) followUps++; };
+    recoveryDb.beforeBatch = statements => {
+      if (statements.length !== 5 || !statements[0].sql.includes(`'${action}'`)) return;
+      injected = true;
+      return badBatch();
+    };
+    const request = action === 'hatch' ? hatchMoonpet : morphMoonpetRare;
+    await assert.rejects(request(recoveryDb, 'recovery-player', `integrity:${action}:${failure}`), /pet_state_write_unavailable/,
+      'failed lifecycle transaction must reject before reporting or projecting a new identity');
+    assert.equal(injected, true);
+    assert.equal(followUps, 0, 'unverified identity writes cannot run post-commit projections');
+    assert.deepEqual(recoveryDb.database.prepare('SELECT * FROM telegram_pet_lifecycle_by_pet').all(), lifecycleBefore);
+    recoveryDb.beforeFirst = null; recoveryDb.beforeAll = null; recoveryDb.beforeBatch = null;
+  }
+}
+
 console.log('telegram-pets-species-lifecycle.test.mjs passed');

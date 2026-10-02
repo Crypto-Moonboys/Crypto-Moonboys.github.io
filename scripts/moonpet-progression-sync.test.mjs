@@ -1594,7 +1594,7 @@ test('full Mini App actions for two equipped pets compile under the production c
   // SQLite compiler limit, unlike counting UNION tokens (which misses nesting).
   const schema = f.sql.prepare("SELECT sql FROM sqlite_schema WHERE sql IS NOT NULL AND name NOT LIKE 'sqlite_%' ORDER BY CASE type WHEN 'table' THEN 0 ELSE 1 END").all().map(row => row.sql + ';').join('\n');
   assert.ok(statements.size > 100, 'compile all SQL reached by full HTTP state, care, switch and combat flows');
-  const compiled = spawnSync('python3', ['-c', `
+  const compiled = spawnSync(process.env.PYTHON || (process.platform === 'win32' ? 'python' : 'python3'), ['-c', `
 import json, sqlite3, sys
 payload = json.load(sys.stdin)
 db = sqlite3.connect(':memory:')

@@ -103,6 +103,56 @@ async function arenaFixture(owner) {
   return f;
 }
 
+for (const system of ['arena', 'kaiju']) for (const timing of ['waiting', 'claim', 'concurrent'])
+test(`${system}: ${timing} matchmaking keeps its pet selected until the queue is cancelled`, async () => {
+  const f = fixture(`switch-queue-${system}-${timing}`);
+  f.pet('replacement-' + f.owner, currentSeason, 200, 2);
+  const enqueue = async () => {
+    assert.equal((await f.act({ action: `${system}_matchmake` })).reason, `${system}_queued`);
+    if (timing === 'claim') f.sql.prepare(`UPDATE telegram_pet_${system}_queue SET status=?, updated_at='claim:test' WHERE telegram_id=?`)
+      .run(system === 'arena' ? 'matched' : 'played', f.owner);
+  };
+  if (timing === 'concurrent') {
+    f.db.beforeBatch = async statements => {
+      if (!statements.some(s => s.query.includes('UPDATE telegram_pet_active_slots SET pet_id=?'))) return;
+      f.db.beforeBatch = null;
+      await enqueue();
+    };
+  } else await enqueue();
+  const result = await hooks.switchActivePetSeasonSlot(f.db, f.owner, 'replacement-' + f.owner);
+  assert.equal(result.accepted, false);
+  assert.equal(result.reason, `pet_${system}_queue_active`);
+  assert.equal(f.sql.prepare('SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id=?').get(f.owner).pet_id, 'current-' + f.owner);
+  const state = await f.state();
+  assert.equal((system === 'arena' ? state.arena_queue : state.kaiju.queue).waiting, true, 'an interrupted claim remains visible with its cancellation control');
+  assert.equal((await f.act({ action: `${system}_queue_cancel` })).accepted, true);
+  assert.equal((await hooks.switchActivePetSeasonSlot(f.db, f.owner, 'replacement-' + f.owner)).accepted, true);
+});
+
+for (const system of ['arena', 'kaiju']) test(`${system}: cancelling a claimed opponent prevents a late match insert`, async () => {
+  const f = fixture('claim-cancel-' + system), rival = 'rival-' + f.owner;
+  f.sql.prepare('INSERT INTO telegram_users (telegram_id,first_name) VALUES (?,?)').run(rival, 'Rival');
+  f.sql.prepare('INSERT INTO telegram_pet_profiles (telegram_id,pet_xp,health,energy) VALUES (?,10000,100,100)').run(rival);
+  await hooks.preparePetMiniAppState(f.db, rival, new Date());
+  f.sql.prepare("UPDATE telegram_pet_lifecycle_by_pet SET phase='young' WHERE telegram_id=?").run(rival);
+  await dispatchRenderedPetAction(f.db, rival, { id: rival }, { action: `${system}_matchmake` }, 'fixture-token');
+  const table = `telegram_pet_${system}_${system === 'arena' ? 'battles' : 'matches'}`;
+  let cancelled = false;
+  f.db.beforeRun = async s => {
+    if (!s.query.includes(`INSERT INTO ${table}`)) return;
+    f.db.beforeRun = null;
+    const result = await dispatchRenderedPetAction(f.db, rival, { id: rival }, { action: `${system}_queue_cancel` }, 'fixture-token');
+    assert.equal(result.accepted, true);
+    cancelled = true;
+  };
+  const result = await f.act({ action: `${system}_matchmake` });
+  assert.equal(cancelled, true);
+  assert.equal(result.reason, `${system}_queued`);
+  assert.equal(f.sql.prepare(`SELECT COUNT(*) n FROM ${table}`).get().n, 0, 'the cancelled claim cannot admit either pet to a match');
+  assert.equal(f.sql.prepare(`SELECT COUNT(*) n FROM telegram_pet_${system}_queue WHERE telegram_id=? AND status='waiting'`).get(f.owner).n, 1);
+  assert.equal(f.sql.prepare(`SELECT COUNT(*) n FROM telegram_pet_${system}_queue WHERE telegram_id=? AND (status='waiting' OR updated_at LIKE 'claim:%')`).get(rival).n, 0);
+});
+
 for (const missing of ['personality','biggest_reward']) test(`paid Arena ${missing} history recovers once for the original pet after confirmed deletion`, async () => {
   const f = await arenaFixture(`arena-paid-${missing}`);
   const sourcePet = `current-${f.owner}`;
@@ -209,6 +259,33 @@ test('refresh repairs a locked Arena move so the UI can offer the next round', a
   await f.state();
   assert.equal(f.battle().current_round,2);
   assert.equal(f.round().status,'resolved');
+});
+
+for (const surface of ['refresh', 'start']) test(`Arena ${surface} cannot expire an unfinished saved move during an outage`, async () => {
+  const f = await arenaFixture('arena-timeout-' + surface);
+  f.sql.prepare('UPDATE telegram_pet_arena_battles SET max_rounds=1 WHERE battle_id=?').run(f.id);
+  f.db.beforeRun = s => { if (s.query.includes('SET player2_move=?')) throw Error('cpu_move_unavailable'); };
+  await assert.rejects(f.move(), /cpu_move_unavailable/);
+  f.sql.prepare("UPDATE telegram_pet_arena_battles SET expires_at='2000-01-01T00:00:00.000Z' WHERE battle_id=?").run(f.id);
+  if (surface === 'refresh') await f.state();
+  else assert.equal((await f.act({ action: 'arena_start' })).reason, 'arena_battle_active');
+  assert.equal(f.battle().status, 'active', 'timeout cannot discard a committed move awaiting recovery');
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_arena_battles').get().n, 1);
+  f.db.beforeRun = null;
+  await f.state();
+  assert.equal(f.battle().status, 'completed');
+  const paid = f.sql.prepare("SELECT pet_xp,moon_gold FROM telegram_pet_profiles WHERE telegram_id=?").get(f.owner);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='arena_battle' AND status='accepted'").get().n, 1);
+  await f.state();
+  assert.deepEqual(f.sql.prepare("SELECT pet_xp,moon_gold FROM telegram_pet_profiles WHERE telegram_id=?").get(f.owner), paid);
+});
+
+test('Arena still expires an abandoned round that has no recoverable move', async () => {
+  const f = await arenaFixture('arena-abandoned-timeout');
+  f.sql.prepare("UPDATE telegram_pet_arena_battles SET expires_at='2000-01-01T00:00:00.000Z' WHERE battle_id=?").run(f.id);
+  await f.state();
+  assert.equal(f.battle().status, 'expired');
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='arena_battle'").get().n, 0);
 });
 
 test('Arena round and battle progress commit together and retry exactly once', async () => {

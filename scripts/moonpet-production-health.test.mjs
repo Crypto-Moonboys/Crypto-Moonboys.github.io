@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
-import { chmodSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 
 const PROBE = new URL('./moonpet-production-health-probe.mjs', import.meta.url);
 const ALERT = new URL('./moonpet-production-health-alert.mjs', import.meta.url);
@@ -17,9 +18,9 @@ const COMMIT = 'a'.repeat(40);
 const BOT_TOKEN = '123456:canary-secret';
 const TELEGRAM_ID = '9007199254740993';
 
-function run(script, env = {}, cwd) {
+function run(script, env = {}, cwd, nodeArgs = []) {
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, [script.pathname], {
+    const child = spawn(process.execPath, [...nodeArgs, fileURLToPath(script)], {
       cwd,
       env: { ...process.env, ...env },
       stdio: ['ignore', 'pipe', 'pipe'],
@@ -69,7 +70,7 @@ test('scheduled workflow probes twice, deduplicates incidents and alerts only on
   assert.equal((WORKFLOW.match(/node scripts\/moonpet-production-health-probe\.mjs/g) || []).length, 2);
   assert.match(PROBE_SOURCE, /MOONPET_CANARY_ACTION: 'none'/);
   assert.match(PROBE_SOURCE, /MOONPET_CANARY_ALLOW_ACTION: '0'/);
-  assert.match(WORKFLOW, /- name: Send retryable incident notifications\n\s+if: github\.event_name != 'workflow_dispatch' \|\| inputs\.notification_test != true/);
+  assert.match(WORKFLOW, /- name: Send retryable incident notifications\r?\n\s+if: github\.event_name != 'workflow_dispatch' \|\| inputs\.notification_test != true/);
   assert.match(WORKFLOW, /node scripts\/moonpet-production-health-incident\.mjs/);
   assert.match(INCIDENT_SOURCE, /alert-pending/);
   assert.match(INCIDENT_SOURCE, /notify\(notification\);\s*if \(notification === 'failed'\)/);
@@ -172,7 +173,8 @@ test('Telegram alert sends the configured chat and optional topic without loggin
 
 async function withIncidentHarness(initialIssue, callback) {
   const directory = mkdtempSync(path.join(tmpdir(), 'moonpet-health-incident-'));
-  const ghPath = path.join(directory, 'gh');
+  const ghPath = path.join(directory, 'mock-gh.cjs');
+  const loaderPath = path.join(directory, 'mock-gh-loader.cjs');
   const statePath = path.join(directory, 'state.json');
   const reportPath = path.join(directory, 'report.json');
   writeFileSync(statePath, JSON.stringify({ issue: initialIssue, nextNumber: 42 }));
@@ -181,7 +183,7 @@ async function withIncidentHarness(initialIssue, callback) {
     deployed_commit: COMMIT,
     summary: 'Two consecutive production probes failed.',
   }));
-  writeFileSync(ghPath, `#!/usr/bin/env node
+  writeFileSync(ghPath, `
 const fs = require('node:fs');
 const statePath = process.env.MOCK_GH_STATE_FILE;
 const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
@@ -214,7 +216,17 @@ if (args[0] === 'issue' && args[1] === 'close') {
 }
 process.exit(2);
 `);
-  chmodSync(ghPath, 0o755);
+  // Run the same CLI fixture through Node on every platform. A Unix shebang
+  // executable on PATH does not intercept gh.exe on Windows.
+  writeFileSync(loaderPath, `
+const childProcess = require('node:child_process');
+const { syncBuiltinESMExports } = require('node:module');
+const originalExecFileSync = childProcess.execFileSync;
+childProcess.execFileSync = (file, args, options) => file === 'gh'
+  ? originalExecFileSync(process.execPath, [${JSON.stringify(ghPath)}, ...args], options)
+  : originalExecFileSync(file, args, options);
+syncBuiltinESMExports();
+`);
   await withServer(async (request, response) => {
     response.setHeader('content-type', 'application/json');
     if (request.method !== 'POST' || !request.url.endsWith('/sendMessage')) {
@@ -237,7 +249,6 @@ process.exit(2);
       statePath,
       apiBase,
       runIncident: (result) => run(INCIDENT, {
-        PATH: `${directory}${path.delimiter}${process.env.PATH}`,
         MOCK_GH_STATE_FILE: statePath,
         GH_TOKEN: 'test-token',
         RESULT: result,
@@ -246,7 +257,7 @@ process.exit(2);
         TELEGRAM_API_BASE_URL: apiBase,
         TELEGRAM_BOT_TOKEN: '999:alert-secret',
         TELEGRAM_GROUP_CHAT_ID: '-1001234567890',
-      }, directory),
+      }, directory, ['--require', loaderPath]),
     });
   });
 }

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { execFileSync, spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
 const TITLE = '[Production alert] Moonpet health check failed';
 const RESULT = String(process.env.RESULT || '');
@@ -24,7 +25,7 @@ function hasLabel(issue, name) {
 }
 
 function notify(state) {
-  const result = spawnSync(process.execPath, [ALERT.pathname], {
+  const result = spawnSync(process.execPath, [fileURLToPath(ALERT)], {
     env: { ...process.env, MOONPET_ALERT_STATE: state },
     stdio: 'inherit',
   });
