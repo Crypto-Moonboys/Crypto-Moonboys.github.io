@@ -1242,7 +1242,7 @@ try {
     sqlite.prepare("UPDATE telegram_pet_profiles SET equipped_food='moon_kibble' WHERE telegram_id=?").run(currentUser);
     sqlite.prepare("UPDATE telegram_pet_instances SET equipped_food='moon_kibble' WHERE telegram_id=?").run(currentUser);
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
-    await page.locator('[data-panel="play-now"] [data-focus="timed-activity"]').click();
+    await page.locator('[data-panel="play-now"] [data-focus="timed-activity"]').filter({ hasText: /^CHOOSE A BACKGROUND ACTIVITY/ }).click();
     await page.waitForFunction(() => {
       const panel = document.querySelector('[data-panel="timed-activity"]');
       const controls = document.getElementById('screen');
@@ -1288,7 +1288,8 @@ try {
     assert.ok((await hooks.buildPetMiniAppState(db, currentUser, token)).guidance.activity, 'navigating to contracts must leave the activity running');
     sqlite.prepare("UPDATE telegram_pet_activity_sessions SET started_at=datetime('now','-30 minutes') WHERE telegram_id=? AND status='active'").run(currentUser);
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
-    await page.locator('[data-panel="play-now"] [data-focus="timed-activity"]').click();
+    // A rotating bounty can offer the same destination; choose the activity's primary route.
+    await page.locator('[data-panel="play-now"] [data-focus="timed-activity"]').filter({ hasText: /^CLAIM OR CONTINUE ACTIVITY/ }).click();
     assert.equal(await page.locator('[data-action="activity_claim"]').isEnabled(), true);
     const activityText = await page.locator('[data-panel="timed-activity"]').textContent();
     assert.ok(activityText.includes('1 Moon Crystals') && activityText.includes('Adventure Map replaces'));

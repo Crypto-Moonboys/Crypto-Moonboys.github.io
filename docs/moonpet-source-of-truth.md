@@ -87,6 +87,10 @@ Kaiju Fragments have a live repeatable sink in Crafting: a level-20 Kaiju Field 
 Moon Gold, Moon Crystals, Style Tokens, materials, consumables, gear/cosmetic
 ownership and spendable Arcade XP belong to the account. Equipped gear and cosmetic
 selection belong to the pet. Switching pets never redirects a saved reward.
+Pre-upgrade Kaiju reservations with a nullable pet retain their original receipt
+and earning period. Recovery preserves the exact capped XP in account competition
+evidence, Community XP and wallet rewards without assigning ambiguous lifetime XP,
+stats or streaks to the currently selected pet. Retries retain that nullable history.
 The lifecycle name **Egg**, Stage-0 display name **Secret Bot**, and art identity
 **EGGYONE** refer to different aspects of the same starting pet.
 

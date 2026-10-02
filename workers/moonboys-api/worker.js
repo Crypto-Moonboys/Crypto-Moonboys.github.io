@@ -4477,6 +4477,22 @@ async function mirrorPetProfileToActiveInstance(db, telegramId) {
 
 async function awardPetReward(db, options) {
   const owner = String(options?.telegram_id || '').trim();
+  if (owner && options?.preserve_petless_reservation === true && options?.reservation_id && !String(options?.pet_id || '').trim()) {
+    const reservation = await db.prepare(`SELECT pet_id, day_key, week_key, season_key
+      FROM telegram_pet_events WHERE id=? AND telegram_id=?`)
+      .bind(String(options.reservation_id), owner).first().then(requirePetFirstReadResult);
+    if (reservation && reservation.pet_id === null) {
+      // A saved pre-upgrade receipt deliberately has no source pet. Its
+      // account rewards and history can recover, but selection cannot supply
+      // missing lifetime authority or replace the original earning period.
+      const result = await awardLegacyPetReward(db, {
+        ...options, pet_id: null, day_key: reservation.day_key, week_key: reservation.week_key,
+        season_key: reservation.season_key, preserve_petless_reservation: true,
+      });
+      return preserveCommittedPetActionResult(result, async () => ({ ...result, pet: await getPetProfile(db, owner) }));
+    }
+    return { accepted: false, reason: 'source_pet_authority_required', xp_awarded: 0, pet_xp_awarded: 0 };
+  }
   if (owner && options?.pet_id && options?.season_key && !Object.hasOwn(options.context || {}, 'equipment_snapshot')) {
     const source = await db.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=? AND season_key=?')
       .bind(options.pet_id, owner, options.season_key).first().then(requirePetFirstReadResult);
@@ -5648,6 +5664,7 @@ async function awardPetKaijuPlayerResult(db, telegramId, match, outcome, rewards
     // Pre-upgrade reservations without a pet retain their existing legacy path.
     // Never stamp a guessed current pet onto a previously paid/held receipt.
     ...(reservation.pet_id ? { pet_id: reservation.pet_id } : {}),
+    preserve_petless_reservation: reservation.pet_id === null,
     event_type: 'kaiju_battle', xp_action: 'pet_kaiju_battle', reason: outcome, reservation_id: reservation.reservation_id,
     rewards: scaledRewardsAuthority, profile_deltas: { happiness: scaledRewardsAuthority.happiness },
     touch_streak: true, now, day_key: rewardSlotAuthority.day_key, week_key: rewardSlotAuthority.week_key, season_key: rewardSlotAuthority.season_key,

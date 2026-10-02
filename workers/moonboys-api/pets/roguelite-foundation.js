@@ -271,6 +271,9 @@ export async function awardPetReward(db, request = {}) {
   await reconcileLegacyPetInventory(db, telegramId);
   const now = request.now instanceof Date ? request.now : new Date(request.now || Date.now());
   const reservationId = String(request.reservation_id || '').trim();
+  // Old nullable receipts retain account reward evidence, but do not identify
+  // any lifetime owner. Recovery must not credit whichever pet is selected.
+  const petlessReservation = Boolean(reservationId && !petId && request.preserve_petless_reservation === true);
   let rewards = normalizePetReward(request.rewards);
   if (source === 'pet_daily_completion' || source === 'pet_season_finale') {
     const daily = source === 'pet_daily_completion';
@@ -310,7 +313,7 @@ export async function awardPetReward(db, request = {}) {
   const eventType = String(request.event_type || 'unified_reward').trim().toLowerCase().slice(0, 80);
   const xpAction = String(request.xp_action || `pet_${source}`).trim().toLowerCase().slice(0, 80);
   const reason = String(request.reason || 'reward_awarded').trim().slice(0, 120);
-  const profileDeltas = normalizeProfileDeltas(request.profile_deltas);
+  const profileDeltas = normalizeProfileDeltas(petlessReservation ? {} : request.profile_deltas);
   const currencyCosts = normalizeCurrencyCosts(request.currency_costs);
   // Paid market bundles are all-or-nothing. Guard every included asset in the
   // same transaction as stock reservation and debit, before any capped writes.
@@ -338,7 +341,8 @@ export async function awardPetReward(db, request = {}) {
   previousDay.setUTCDate(previousDay.getUTCDate() - 1);
   const previousDayKey = previousDay.toISOString().slice(0, 10);
   const reservationGuard = reservationId
-    ? 'AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND telegram_id = ? AND status = \'pending\')'
+    ? `AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND telegram_id = ? AND status = 'pending'
+        ${petlessReservation ? 'AND pet_id IS NULL AND season_key=? AND day_key=? AND week_key=?' : ''})`
     : '';
   // A supplied pet_id is the immutable Pet XP/stat settlement target. Wallet
   // currencies remain account-owned on the compatibility profile row until a
@@ -363,7 +367,8 @@ export async function awardPetReward(db, request = {}) {
       .bind(claimId, petId || null, telegramId, source, idempotencyKey, dayKey, safeJson(rewards), metadata, telegramId,
         currencyCosts.moon_gold, currencyCosts.moon_crystals, currencyCosts.style_tokens,
         ...(petAuthority ? [petId, telegramId, seasonKey] : []),
-        ...authorization.args, ...(reservationId ? [reservationId, telegramId] : []), ...capacity.args),
+        ...authorization.args, ...(reservationId ? [reservationId, telegramId] : []),
+        ...(petlessReservation ? [seasonKey, dayKey, weekKey] : []), ...capacity.args),
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_events
       (id, pet_id, telegram_id, event_type, event_key, xp_awarded, pet_xp_awarded, season_key, day_key, week_key, status, reason, metadata)
       SELECT ?, ?, ?, ?, ?, 0, 0, ?, ?, ?, 'pending', 'reward_pending', ?
@@ -382,7 +387,9 @@ export async function awardPetReward(db, request = {}) {
         ${petAuthority ? 'AND pet_id = ?' : 'AND pet_id IS NULL'}
       RETURNING pet_xp_awarded, xp_awarded`)
       .bind(rewards.pet_xp, DAILY_PET_XP_CAP, telegramId, dayKey, ...(petAuthority ? [petId] : []), rewards.community_xp, DAILY_COMMUNITY_XP_CAP, telegramId, dayKey, reason, metadata, eventId, claimId, ...(petAuthority ? [petId] : [])),
-    db.prepare(`UPDATE ${petAuthority ? 'telegram_pet_instances' : 'telegram_pet_profiles'} SET
+    petlessReservation
+      ? db.prepare('SELECT 1')
+      : db.prepare(`UPDATE ${petAuthority ? 'telegram_pet_instances' : 'telegram_pet_profiles'} SET
         pet_xp = pet_xp + COALESCE((SELECT pet_xp_awarded FROM telegram_pet_events WHERE id = ? AND metadata = ? AND status = 'accepted'), 0),
         ${petAuthority ? '' : 'moon_gold = MIN(?, MAX(0, moon_gold + ? - ?)), moon_crystals = MIN(?, MAX(0, moon_crystals + ? - ?)), style_tokens = MIN(?, MAX(0, style_tokens + ? - ?)),'}
         health = MIN(100, MAX(0, health + ?)), hunger = MIN(100, MAX(0, hunger + ?)),
@@ -400,7 +407,7 @@ export async function awardPetReward(db, request = {}) {
         profileDeltas.health, profileDeltas.hunger, profileDeltas.cleanliness, profileDeltas.energy, profileDeltas.happiness,
         touchStreak, dayKey, dayKey, previousDayKey, touchStreak, dayKey, dayKey, touchStreak, now.toISOString(), now.toISOString(),
         ...(petAuthority ? [petId, telegramId] : [telegramId]), eventId, metadata),
-    petAuthority
+    petAuthority || petlessReservation
       ? db.prepare(`UPDATE telegram_pet_profiles SET
           moon_gold = MIN(?, MAX(0, moon_gold + ? - ?)),
           moon_crystals = MIN(?, MAX(0, moon_crystals + ? - ?)),
@@ -412,7 +419,9 @@ export async function awardPetReward(db, request = {}) {
           telegramId, eventId, metadata)
       : db.prepare(`SELECT 1 WHERE EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND metadata = ? AND status = 'accepted')`)
         .bind(eventId, metadata),
-    db.prepare(`UPDATE ${petAuthority ? 'telegram_pet_instances' : 'telegram_pet_profiles'} SET
+    petlessReservation
+      ? db.prepare('SELECT 1')
+      : db.prepare(`UPDATE ${petAuthority ? 'telegram_pet_instances' : 'telegram_pet_profiles'} SET
         stage = CASE WHEN pet_xp >= 1800 THEN 'legendary companion' WHEN pet_xp >= 900 THEN 'moon guardian'
           WHEN pet_xp >= 360 THEN 'street scout' WHEN pet_xp >= 120 THEN 'runner' WHEN pet_xp >= 25 THEN 'hatchling' ELSE 'egg' END,
         level = ${getPetVisibleLevelSql('pet_xp')},
