@@ -779,6 +779,23 @@ test('Mini App explicit final evolution retry reaches its saved lifecycle repair
   assert.equal(f.sql.prepare('SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id=?').get(source).phase,'adult');
   assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_material_balances WHERE telegram_id=?').get(f.owner).n,0,
     'repair of a saved final evolution cannot charge materials again');
+  const normalized=await f.act({action:'evolve',evolution_id:' LEGENDARY_MOON_GUARDIAN ',request_id:'retry-final-normalized'});
+  assert.equal(normalized.accepted,true);assert.equal(normalized.duplicate,true);
+});
+
+test('a migrated final pet rejects unrelated evolution IDs without creating lower stages', async () => {
+  const f=fixture('82024'),source='current-'+f.owner;
+  f.sql.prepare(`INSERT INTO telegram_pet_evolutions_by_pet (pet_id,telegram_id,evolution_id,stage,unlock_event_key)
+    VALUES (?,?,'legendary_moon_guardian',5,'migrated-final')`).run(source,f.owner);
+  const saved=f.sql.prepare('SELECT * FROM telegram_pet_evolutions_by_pet WHERE pet_id=?').all(source);
+  for (const evolutionId of ['moon_egg','street_moonpet','cyber_moonpet','moon_guardian','not_real','','   ',null,undefined]) {
+    const result=await f.act({action:'evolve',...(evolutionId === undefined ? {} : {evolution_id:evolutionId}),request_id:'wrong-final-'+evolutionId});
+    assert.equal(result.accepted,false,`${evolutionId} cannot become a new unlock on a final pet`);
+    assert.equal(result.reason,'final_evolution_reached');
+    assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_evolutions_by_pet WHERE pet_id=?').all(source),saved);
+  }
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_identity_analytics WHERE pet_id=?').get(source).n,0);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_material_balances WHERE telegram_id=?').get(f.owner).n,0);
 });
 
 test('a scoped Mini App evolution repairs its original pet on core refresh after a selection change', async () => {
@@ -799,7 +816,7 @@ test('a scoped Mini App evolution repairs its original pet on core refresh after
   assert.deepEqual(paid.map(row=>row.quantity),[7,10]);
   assert.equal((await hooks.switchActivePetSeasonSlot(f.db,f.owner,f.source)).accepted,true);
   assert.equal(f.sql.prepare('SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id=?').get(f.source).phase,'young',
-    'the ordinary core read must repair the stranded lifecycle without retrying evolution');
+    'selecting the pet alone leaves repair pending until the following core read');
   const refreshed=await hooks.buildPetMiniAppCoreState(f.db,f.owner);
   assert.equal(refreshed.pet.pet_id,f.source);
   assert.equal(refreshed.lifecycle.phase,'adult');

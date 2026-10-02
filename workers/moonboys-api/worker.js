@@ -10739,8 +10739,11 @@ async function dispatchPetMiniAppAction(db, telegramId, user, body, botToken) {
   if (action === 'evolve') {
     const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
     const next = Object.values(MOONPET_EVOLUTIONS).find((entry) => entry.stage === Number(identity?.current_stage?.stage || 0) + 1);
-    if (!next && !body.evolution_id) return { accepted: false, reason: 'final_evolution_reached' };
-    const result = await evolveMoonpet(db, { telegram_id: telegramId, evolution_id: body.evolution_id || next.evolution_id, event_key: eventKey });
+    const requestedEvolutionId = String(body.evolution_id || next?.evolution_id || '').trim().toLowerCase();
+    if (!next && (!requestedEvolutionId || requestedEvolutionId !== identity?.current_stage?.evolution_id)) {
+      return { accepted: false, reason: 'final_evolution_reached' };
+    }
+    const result = await evolveMoonpet(db, { telegram_id: telegramId, evolution_id: requestedEvolutionId, event_key: eventKey });
     if (!result.accepted) return result;
     return preserveCommittedPetActionResult(result, async () => {
       result.lifecycle = await syncMoonpetLifecycleStage(db, telegramId, result);
