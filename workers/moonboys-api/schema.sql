@@ -80,6 +80,21 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_telegram_xp_log_first_start_once
   ON telegram_xp_log(telegram_id, action)
   WHERE action = 'first_start';
 
+-- Atomic Community awards; legacy XP logs remain immutable.
+CREATE TABLE IF NOT EXISTS telegram_community_xp_awards (
+  telegram_id TEXT NOT NULL,
+  action TEXT NOT NULL,
+  claim_key TEXT NOT NULL,
+  reference_id TEXT,
+  xp_change INTEGER NOT NULL CHECK (xp_change >= 0),
+  season_id INTEGER,
+  earned_at TEXT NOT NULL,
+  settlement_token TEXT NOT NULL,
+  PRIMARY KEY (telegram_id, action, claim_key),
+  FOREIGN KEY (telegram_id) REFERENCES telegram_users(telegram_id),
+  FOREIGN KEY (season_id) REFERENCES telegram_seasons(id)
+);
+
 -- ── Activity log ─────────────────────────────────────────────────────────────
 -- General audit trail for bot/user actions.
 

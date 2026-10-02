@@ -55,6 +55,7 @@ export const REQUIRED_D1_MIGRATIONS = Object.freeze([
   '086_restore_permanent_pet_ownership.sql',
   '087_pet_journey_creation_clock.sql',
   '088_moonpet_finale_competition_quarters.sql',
+  '089_community_xp_award_receipts.sql',
 ]);
 
 function readJson(filePath, label) {

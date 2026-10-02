@@ -10,7 +10,8 @@ import {
   validatePetRunModifierContent,
 } from './content/index.js';
 import { SELECTED_RUN_PET_SQL, requireRunMutationResults, recoverDeletedPetRunStarts, isDeletedRunPet } from './run-ownership.js';
-import { communitySeasonSql } from '../community-season-authority.js';
+import { PET_CARE_SNAPSHOT_COLUMNS } from './care-decay.js';
+import { communitySeasonSql, communityReceiptTimestampSql } from '../community-season-authority.js';
 import { getPetSeasonRewardTier } from './player-expansion.js';
 import { recordMoonpetBehaviour, recordMoonpetBiggestReward, recordMoonpetMemory } from './moonpet-identity.js';
 import { reconcileLegacyPetInventory } from './inventory-cutover.js';
@@ -348,6 +349,11 @@ export async function awardPetReward(db, request = {}) {
   const competitionEarnedAt = ['pet_run_legacy', 'pet_contract', 'pet_arena'].includes(source) ? request.context?.competition_earned_at : null;
   if (competitionEarnedAt && !Number.isFinite(Date.parse(competitionEarnedAt))) throw new Error('invalid_pet_reward_context');
   const competitionSeasonKey = source === 'pet_season_finale' ? request.context.competition_season_key : getMoonpetSeasonKey(competitionEarnedAt || `${dayKey}T00:00:00.000Z`);
+  // Community seasons can change within a UTC day. New rewards retain the
+  // server's full source time; existing reservations use their saved receipt
+  // time/day without substituting the recovery time or active pet's season.
+  const communityEarnedAt = competitionEarnedAt || now.toISOString();
+  const communityTimestampSql = reservationId ? communityReceiptTimestampSql('event') : '?';
   const authorization = getRewardAuthorization(source, telegramId, request.context, now, petId);
   const claimId = crypto.randomUUID();
   const eventId = reservationId || crypto.randomUUID();
@@ -506,11 +512,11 @@ export async function awardPetReward(db, request = {}) {
       .bind(eventId, metadata, eventId, metadata, telegramId, eventId, metadata),
     db.prepare(`INSERT INTO telegram_leaderboard (telegram_id, season_id, xp)
       SELECT ?, season.id, event.xp_awarded FROM telegram_seasons AS season, telegram_pet_events AS event
-      WHERE ${communitySeasonSql('season')}
+      WHERE ${communitySeasonSql('season', communityTimestampSql)}
         AND event.id = ? AND event.metadata = ? AND event.status = 'accepted' AND event.xp_awarded > 0
-      ORDER BY season.start_date DESC, season.id DESC LIMIT 1
+      ORDER BY julianday(season.start_date) DESC, season.id DESC LIMIT 1
       ON CONFLICT(telegram_id, season_id) DO UPDATE SET xp = xp + excluded.xp, updated_at = CURRENT_TIMESTAMP`)
-      .bind(telegramId, dayKey, dayKey, eventId, metadata),
+      .bind(telegramId, ...(reservationId ? [] : [communityEarnedAt, communityEarnedAt]), eventId, metadata),
     db.prepare(`INSERT INTO telegram_pet_season_state (telegram_id, season_key, season_xp, weekly_xp, daily_xp, daily_key, weekly_key)
       SELECT ?, ?, pet_xp_awarded, pet_xp_awarded, pet_xp_awarded, ?, ? FROM telegram_pet_events WHERE id = ? AND metadata = ? AND status = 'accepted'
       ON CONFLICT(telegram_id, season_key) DO UPDATE SET season_xp = season_xp + excluded.season_xp,
@@ -825,7 +831,7 @@ export async function createPetRunRoom(db, run) {
   return { ...room, duplicate: !results?.[0]?.meta?.changes };
 }
 
-export async function persistPetRunRoomOutcome(db, run, room, outcome = {}) {
+export async function persistPetRunRoomOutcome(db, run, room, outcome = {}, options = {}) {
   const resolved = resolvePetRunRoom(room, outcome);
   const tacticCount = Number.isSafeInteger(outcome.daily_tactic_count) ? outcome.daily_tactic_count : null;
   const dailyOutcome = tacticCount !== null || ['daily_moon_run_server_outcome_v1', 'daily_moon_run_server_outcome_v2'].includes(outcome.authority);
@@ -833,11 +839,17 @@ export async function persistPetRunRoomOutcome(db, run, room, outcome = {}) {
     (SELECT COUNT(*) FROM telegram_pet_run_modifiers WHERE run_id=? AND modifier_id IN ('daily_tactic_3','daily_tactic_6'))=?`;
   const dailyRunGuard = dailyOutcome ? ` AND EXISTS (SELECT 1 FROM telegram_pet_runs
     WHERE run_id=? AND telegram_id=? AND current_room=? AND status IN ('active','extractable'))` : '';
+  const source = options.source_pet;
+  const sourceGuard = source ? ` AND pet_id=? AND EXISTS (SELECT 1 FROM telegram_pet_instances p
+    WHERE p.pet_id=? AND p.telegram_id=? AND p.season_key=?
+      AND ${PET_CARE_SNAPSHOT_COLUMNS.map(column => `p.${column} IS ?`).join(' AND ')})` : '';
   const result = await db.prepare(`UPDATE telegram_pet_run_rooms SET status = ?, outcome_data = ?, resolved_at = CURRENT_TIMESTAMP
-    WHERE room_id = ? AND run_id = ? AND telegram_id=? AND status = 'pending'${tacticGuard}${dailyRunGuard} RETURNING room_id`)
+    WHERE room_id = ? AND run_id = ? AND telegram_id=? AND status = 'pending'${tacticGuard}${dailyRunGuard}${sourceGuard} RETURNING room_id`)
     .bind(resolved.status, safeJson(resolved.outcome), room.room_id, run.run_id, run.telegram_id,
       ...(tacticCount === null ? [] : [run.run_id, tacticCount]),
-      ...(dailyOutcome ? [run.run_id, run.telegram_id, room.room - 1] : [])).first().then(requirePetFirstReadResult);
+      ...(dailyOutcome ? [run.run_id, run.telegram_id, room.room - 1] : []),
+      ...(source ? [run.pet_id, run.pet_id, run.telegram_id, run.season_key,
+        ...PET_CARE_SNAPSHOT_COLUMNS.map(column => source[column] ?? null)] : [])).first().then(requirePetFirstReadResult);
   if (!result) {
     const persisted = await db.prepare(`SELECT status, outcome_data FROM telegram_pet_run_rooms WHERE room_id=? AND run_id=? AND telegram_id=?`)
       .bind(room.room_id, run.run_id, run.telegram_id).first().then(requirePetFirstReadResult);

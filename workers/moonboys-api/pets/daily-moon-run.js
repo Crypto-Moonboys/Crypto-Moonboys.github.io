@@ -1,4 +1,6 @@
 import { requireRunMutationResults, recoverDeletedPetRunStarts, isDeletedRunPet } from './run-ownership.js';
+import { readPetInstanceWithAtomicCareDecay } from './care-decay.js';
+import { isDailyEnemyCombatChoice, hasDailyEnemyDefeatEvidence } from './daily-combat-evidence.js';
 import { boundedRecoveryLimit } from './recovery-limits.js';
 import { requirePetFirstReadResult, requirePetReadResult, requirePetMutationResult } from './read-result.js';
 import { withPetEquipmentProgression } from './equipment-progression.js';
@@ -194,12 +196,12 @@ function stableDailyOutcomeRoll(value) {
   return hash >>> 0;
 }
 
-async function resolveAuthoritativeDailyRoomOutcome(db, run, room, choiceId) {
+async function resolveAuthoritativeDailyRoomOutcome(db, run, room, choiceId, now = new Date()) {
+  now = now instanceof Date ? now : new Date(now);
   const petId = String(run?.pet_id || '').trim();
   if (!petId) throw new Error('run_pet_authority_required');
   const [pet, modifiers] = await Promise.all([
-    db.prepare(`SELECT pet_xp, level, health, energy, happiness, cleanliness
-      FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ? LIMIT 1`).bind(petId, run.telegram_id).first().then(requirePetFirstReadResult),
+    readPetInstanceWithAtomicCareDecay(db, { pet_id: petId, telegram_id: run.telegram_id, season_key: run.season_key }, now),
     readDailyModifiers(db, run),
   ]);
   if (!pet) throw new Error('daily_run_pet_not_found');
@@ -210,9 +212,10 @@ async function resolveAuthoritativeDailyRoomOutcome(db, run, room, choiceId) {
     ...modifiers.map((modifier) => modifier.modifier_id)].join(':');
   const riskRollBps = stableDailyOutcomeRoll(rollKey) % 10000;
   const success = riskRollBps < preview.success_chance_bps;
-  return {
+  return { pet, outcome: {
     success,
     choice_id: choiceId,
+    enemy_defeated: success && isDailyEnemyCombatChoice(room, choiceId),
     score: success ? preview.score : 0,
     risk_roll_bps: riskRollBps,
     success_chance_bps: preview.success_chance_bps,
@@ -220,6 +223,8 @@ async function resolveAuthoritativeDailyRoomOutcome(db, run, room, choiceId) {
     ...(usesDailyTactics(modifiers) ? { daily_tactic_count: tactical.selected.length, daily_tactics: tactical.selected } : {}),
     modifier_ids: modifiers.map((modifier) => modifier.modifier_id),
     player_state: {
+      pet_id: petId,
+      season_key: run.season_key,
       level: authoritativeLevel,
       health: positiveInteger(pet.health, 100),
       energy: positiveInteger(pet.energy, 100),
@@ -227,7 +232,7 @@ async function resolveAuthoritativeDailyRoomOutcome(db, run, room, choiceId) {
       cleanliness: positiveInteger(pet.cleanliness, 100),
     },
     authority: usesDailyTactics(modifiers) ? 'daily_moon_run_server_outcome_v2' : 'daily_moon_run_server_outcome_v1',
-  };
+  } };
 }
 
 async function getPersistedDailyRoom(db, run, roomNumber) {
@@ -586,10 +591,11 @@ export async function processDailyMoonRunStep(db, request = {}) {
   }
   let resolved = room;
   if (room.status === 'pending') {
-    const outcome = await resolveAuthoritativeDailyRoomOutcome(db, run, room, choiceId);
-    const equipped = await withPetEquipmentProgression(db, await db.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=? AND season_key=?').bind(run.pet_id, run.telegram_id, run.season_key).first().then(requirePetFirstReadResult));
+    const { pet, outcome } = await resolveAuthoritativeDailyRoomOutcome(db, run, room, choiceId, request.now || new Date());
+    const equipped = await withPetEquipmentProgression(db, pet);
     const authoritativeResolution = resolvePetRunRoom(room, { ...outcome, equipment_snapshot: equipped?.equipment_progression || {}, runtime_event_key: `runtime:daily-step:${room.room_id}` });
-    resolved = await persistPetRunRoomOutcome(db, run, room, authoritativeResolution.outcome);
+    resolved = await persistPetRunRoomOutcome(db, run, room, authoritativeResolution.outcome, { source_pet: pet });
+    if (resolved.status === 'pending') return { accepted: false, reason: 'daily_run_pet_state_changed', refresh_state: true, room: resolved };
   }
   if (resolved.status === 'failed') {
     await failPetRun(db, run, { rooms_completed: positiveInteger(run.current_room), death_reason: 'daily_room_failed' });
@@ -940,15 +946,18 @@ export async function recordDailyCareChallenge(db, request = {}, options = {}) {
 
 async function reconcileRunChallenges(db, daily) {
   const results = [];
-  const rooms = await db.prepare(`SELECT room_id, room_number, room_type, status, generated_data, outcome_data
+  const rooms = await db.prepare(`SELECT room_id, pet_id, room_number, room_type, status, generated_data, outcome_data
     FROM telegram_pet_run_rooms WHERE run_id = ? AND telegram_id = ? ORDER BY room_number`)
     .bind(daily.run_id, daily.telegram_id).all().then(requirePetReadResult);
   for (const room of rooms.results || []) {
     if (room.status !== 'resolved') continue;
-    if (['battle', 'elite'].includes(room.room_type)) results.push(await recordChallengeEvidence(db, {
+    const generated = { ...parseJsonObject(room.generated_data), room_type: room.room_type };
+    const outcome = parseJsonObject(room.outcome_data);
+    if (room.pet_id === daily.pet_id && hasDailyEnemyDefeatEvidence(generated, outcome)) results.push(await recordChallengeEvidence(db, {
       telegram_id: daily.telegram_id, pet_id: daily.pet_id, utc_day: daily.utc_day, challenge_id: 'daily_combat',
       event_key: `room:${room.room_id}:enemy`, progress_value: 1,
-      evidence: { authority: 'telegram_pet_run_rooms', pet_id: daily.pet_id, run_id: daily.run_id, room_id: room.room_id },
+      evidence: { authority: 'telegram_pet_run_rooms', pet_id: daily.pet_id, run_id: daily.run_id, room_id: room.room_id,
+        enemy_id: generated.enemy_id, choice_id: outcome.choice_id, enemy_defeated: true },
     }));
     results.push(await recordChallengeEvidence(db, {
       telegram_id: daily.telegram_id, pet_id: daily.pet_id, utc_day: daily.utc_day, challenge_id: 'daily_explorer',

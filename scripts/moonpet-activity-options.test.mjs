@@ -14,7 +14,9 @@ for (const offer of hooks.buildPetActivityOptions()) {
   assert.equal(offer.checkpoints.at(-1).seconds, offer.cap_seconds);
   for (const checkpoint of offer.checkpoints) assert.deepEqual(checkpoint, hooks.computePetActivityRewards(offer.key, checkpoint.seconds));
   for (const elapsed of [0, 299, 300, 1799, 1800, 7199, 7200, offer.cap_seconds, offer.cap_seconds + 1000]) {
-    const summary = hooks.buildPetActivitySummary({ activity_type: offer.key, status: 'active', started_at: new Date(fixedNow - elapsed * 1000).toISOString() }, fixedNow);
+    const summary = hooks.buildPetActivitySummary({ activity_type: offer.key, status: 'active',
+      started_at: new Date(fixedNow - elapsed * 1000).toISOString(),
+      ends_at: new Date(fixedNow - elapsed * 1000 + offer.cap_seconds * 1000).toISOString() }, fixedNow);
     assert.equal(summary.ready, elapsed >= 300);
     assert.equal(Boolean(summary.cooldown), elapsed < 300);
     if (elapsed >= 300) assert.deepEqual(summary.preview, hooks.computePetActivityRewards(offer.key, elapsed));

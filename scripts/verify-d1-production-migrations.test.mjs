@@ -28,11 +28,12 @@ for (const name of [
   '086_restore_permanent_pet_ownership.sql',
   '087_pet_journey_creation_clock.sql',
   '088_moonpet_finale_competition_quarters.sql',
+  '089_community_xp_award_receipts.sql',
 ]) {
   assert.ok(pullRequestPaths.includes('workers/moonboys-api/migrations/' + name));
   assert.ok(remoteQueryStep.includes(name));
 }
-for (const name of ['085_permanent_pet_weekly_evidence.sql', '086_restore_permanent_pet_ownership.sql', '087_pet_journey_creation_clock.sql', '088_moonpet_finale_competition_quarters.sql']) {
+for (const name of ['085_permanent_pet_weekly_evidence.sql', '086_restore_permanent_pet_ownership.sql', '087_pet_journey_creation_clock.sql', '088_moonpet_finale_competition_quarters.sql', '089_community_xp_award_receipts.sql']) {
   assert.ok(REQUIRED_D1_MIGRATIONS.includes(name), 'recovery migration belongs to the verification gate');
   assert.ok(request.required_migrations.includes(name), 'recovery migration belongs to the evidence request');
   assert.ok(production.d1_databases.wikicoms.required_migrations.includes(name), 'recovery migration belongs to the production manifest');
@@ -43,6 +44,8 @@ for (const name of ['085_permanent_pet_weekly_evidence.sql', '086_restore_perman
 }
 assert.match(schema, /CREATE TABLE IF NOT EXISTS moonpet_beta_xp_rebaseline_v2[\s\S]*correction_id INTEGER PRIMARY KEY AUTOINCREMENT/,
   'canonical schema must include the repeatable migration 082 correction audit table');
+assert.match(schema, /CREATE TABLE IF NOT EXISTS telegram_community_xp_awards[\s\S]*PRIMARY KEY \(telegram_id, action, claim_key\)/,
+  'canonical schema must retain the account/action/source identity used by atomic Community XP awards');
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/058_telegram_pet_season_completion\.sql/, 'migration 058 changes must trigger production migration verification');
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/059_telegram_pet_sanctuary\.sql/, 'migration 059 changes must trigger production migration verification');
 assert.match(pullRequestPaths, /workers\/moonboys-api\/migrations\/060_telegram_pet_sanctuary_indexes\.sql/, 'migration 060 changes must trigger production migration verification');

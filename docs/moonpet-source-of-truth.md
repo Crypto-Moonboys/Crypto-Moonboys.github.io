@@ -121,6 +121,16 @@ never zero ranks.
 This chart compares player totals; it is not a historical/source breakdown or the
 wiki relationship graph. Pet XP is not added to Community XP or Arcade scores.
 
+New Community rewards use the full authoritative earning timestamp when choosing
+their independent Community season, including intraday season boundaries. Saved
+Pet reservations keep their original source time; older day-only reservations
+retain that day without an invented recovery-time attribution. Migration 089
+adds durable Community award receipts for the shared command/Wiki/Arcade writer.
+The receipt, XP log, account XP, Community season credit and applicable source
+bookkeeping commit together. `/daily` is unique per account/UTC day; failed
+evidence reads are unavailable, and retries do not pay again. Historical logs
+remain unchanged and do not authorize guessed repairs of old partial awards.
+
 ---
 
 # Current Live Build
@@ -1152,3 +1162,37 @@ audit and approved repair. This release does not fabricate historical bonuses
 or rewrite uncertain records.
 
 See the [finding-by-finding audit and deployment handoff](moonpet-audit-1419-2026-10-02.md).
+
+## Post-deployment score and action consistency (2 October 2026)
+
+Daily Run choices apply the same elapsed care decay used by the displayed pet,
+bound to the run's original owner, pet and ownership season. Saving the outcome
+rechecks its XP/care snapshot; a concurrent change requires refresh instead of
+publishing a mixed result. Persisted decay saves its instance-authority marker
+in the same guarded update and retains it through profile mirroring. A stale
+compatibility profile, including one with an equal-second timestamp, cannot
+restore pre-decay care values. Concurrent synchronization metadata changes force
+a reread before decay commits. The Daily Journey enemy objective requires successful
+authored combat: Sneak past, Escape and Trade do not defeat an enemy. Existing
+objective and reward history is retained.
+
+New Arena readiness, moves and forfeits enforce the saved deadline inside their
+mutations. Previously locked decisions awaiting CPU/round/reward settlement
+remain recoverable. Failed writes cannot be acknowledged as a completed forfeit;
+a duplicate requires authoritative saved completion evidence.
+
+Notification preparation does not consume later pets' delivery leases. Each
+source acquires its fenced lease when ready for delivery, with preference,
+cooldown and ownership checks preserved. Alert labels use the same current
+permanent-space ordinal as the roster, not the immutable historical source slot.
+
+Rooftop Courier consistently displays and enforces its existing Level 20 gate.
+Timed activities cannot display an expired session as claimable when expiration
+cannot be saved; the current state is unavailable or requires refresh. Saved
+completed reward recovery remains distinct from an expired active session.
+
+This release requires additive migration 089 before the Worker deployment and
+adds no secret. The existing webhook secret/setup checks remain mandatory.
+No ownership or historical reward data is deleted, and no production deployment
+was performed during implementation. See the
+[eleven-finding fix and deployment report](moonpet-post1420-audit-fixes-2026-10-02.md).

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { createHmac, createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
 import worker from '../workers/moonboys-api/worker.js';
 
@@ -44,240 +45,70 @@ function telegramCommentHash(id) {
   return `tg:${createHash('sha256').update(String(id)).digest('hex')}`;
 }
 
+// Execute real SQL so receipt, wallet, leaderboard and source atomicity are tested
+// together; the old string-matching mock could acknowledge writes it never saved.
 class MockStatement {
-  constructor(db, sql) {
-    this.db = db;
-    this.sql = sql;
-    this.args = [];
+  constructor(db, sql, args = []) { this.db = db; this.sql = sql; this.args = args; }
+  bind(...args) { return new MockStatement(this.db, this.sql, args); }
+  exec() {
+    if (this.db.failCommentStatusUpdates && /UPDATE wiki_comments\s+SET status/.test(this.sql)) throw Error('simulated_status_update_failure');
+    if (this.db.failSql && this.db.failSql(this.sql)) throw Error('simulated_atomic_award_failure');
+    const statement = this.db.sqlite.prepare(this.sql);
+    if (statement.columns().length) {
+      const results = statement.all(...this.args);
+      return { success: true, results, meta: { changes: /\bRETURNING\b/i.test(this.sql) ? results.length : 0 } };
+    }
+    return { success: true, results: [], meta: { changes: Number(statement.run(...this.args).changes) } };
   }
-
-  bind(...args) {
-    this.args = args;
-    return this;
+  readFailure() {
+    if (!this.db.readFailure || !this.sql.includes('FROM ' + this.db.readFailure.table)) return null;
+    if (this.db.readFailure.kind === 'thrown') throw Error('simulated_award_read_failure');
+    return this.db.readFailure.kind === 'resolved' ? { success: false, error: 'simulated_award_read_failure' } : {};
   }
-
-  normalizedSql() {
-    return this.sql.replace(/\s+/g, ' ').trim();
-  }
-
-  async first() {
-    const sql = this.normalizedSql();
-    const [a0, a1, a2, a3] = this.args.map((arg) => String(arg));
-
-    if (sql.includes("FROM sqlite_master WHERE type = 'table' AND name = ?")) {
-      return this.db.missingTables.has(a0) ? null : { name: a0 };
-    }
-    if (sql.includes('SELECT u.telegram_id FROM telegram_users u') && sql.includes("al.action = 'link_confirmed'")) {
-      return this.db.telegramUsers.has(a0) && this.db.linkConfirmed.has(a0)
-        ? { telegram_id: a0 }
-        : null;
-    }
-    if (sql.includes('SELECT xp_awarded, source, source_id, created_at FROM wiki_mission_completions')) {
-      return this.db.missionCompletions.get(`${a0}:${a1}:${a2}:${a3}`) || null;
-    }
-    if (sql.includes('SELECT COUNT(*) AS count FROM wiki_page_likes WHERE page_id = ?')) {
-      let count = 0;
-      for (const like of this.db.pageLikes.values()) {
-        if (like.page_id === a0) count += 1;
-      }
-      return { count };
-    }
-    if (sql.includes('SELECT vote FROM wiki_citation_votes')) {
-      return this.db.citationVotes.get(`${a0}:${a1}:${a2}`) || null;
-    }
-    if (sql.includes('FROM wiki_citation_votes') && sql.includes('SUM(CASE WHEN vote')) {
-      let score = 0;
-      let up = 0;
-      let down = 0;
-      for (const row of this.db.citationVotes.values()) {
-        if (row.page_id !== a0 || row.cite_id !== a1) continue;
-        if (row.vote === 'up') { score += 1; up += 1; }
-        if (row.vote === 'down') { score -= 1; down += 1; }
-      }
-      return { score, up, down };
-    }
-    if (sql.includes('SELECT id FROM wiki_comments WHERE id = ? AND page_id = ? AND telegram_id = ?')) {
-      const row = this.db.comments.get(a0);
-      return row && row.page_id === a1 && row.telegram_id === a2 ? { id: row.id } : null;
-    }
-    if (sql.includes('SELECT page_id FROM wiki_page_likes WHERE page_id = ? AND telegram_id = ?')) {
-      const row = this.db.pageLikes.get(`${a0}:${a1}`);
-      return row ? { page_id: row.page_id } : null;
-    }
-    if (sql.includes('SELECT cite_id FROM wiki_citation_votes WHERE page_id = ? AND cite_id = ? AND telegram_id = ?')) {
-      const row = this.db.citationVotes.get(`${a0}:${a1}:${a2}`);
-      return row ? { cite_id: row.cite_id } : null;
-    }
-    if (sql.includes('SELECT id FROM wiki_comments WHERE id = ? LIMIT 1')) {
-      return this.db.comments.has(a0) ? { id: a0 } : null;
-    }
-    if (sql.includes('SELECT votes_up, votes_down FROM wiki_comments WHERE id = ? LIMIT 1')) {
-      const row = this.db.comments.get(a0);
-      return row ? { votes_up: row.votes_up || 0, votes_down: row.votes_down || 0 } : null;
-    }
-    if (sql.includes('SELECT vote FROM wiki_comment_votes WHERE comment_id = ? AND telegram_id = ?')) {
-      return this.db.commentVotes.get(`${a0}:${a1}`) || null;
-    }
-    if (sql.includes('FROM telegram_users WHERE telegram_id = ?')) {
-      return this.db.telegramUsers.get(a0) || null;
-    }
-    throw new Error(`Unhandled first SQL: ${sql}`);
-  }
-
-  async all() {
-    const sql = this.normalizedSql();
-    if (sql.includes('FROM telegram_seasons')) return { results: [] };
-    if (sql.includes('FROM wiki_comments') && sql.includes("status = 'approved'")) {
-      const [pageId, limit] = this.args;
-      const results = [...this.db.comments.values()]
-        .filter((row) => row.page_id === String(pageId) && row.status === 'approved')
-        .slice(0, Number(limit) || 20);
-      return { results };
-    }
-    if (sql.includes('FROM wiki_mission_completions') && sql.includes('WHERE page_id = ?')) {
-      const [pageId, missionWindow, telegramId] = this.args.map((arg) => String(arg));
-      const results = [];
-      for (const row of this.db.missionCompletions.values()) {
-        if (row.page_id === pageId && row.mission_window === missionWindow && row.telegram_id === telegramId) {
-          results.push(row);
-        }
-      }
-      return { results };
-    }
-    throw new Error(`Unhandled all SQL: ${sql}`);
-  }
-
-  async run() {
-    const sql = this.normalizedSql();
-    const args = this.args;
-
-    if (sql.startsWith('INSERT INTO telegram_users')) {
-      const telegramId = String(args[0]);
-      const existing = this.db.telegramUsers.get(telegramId) || { telegram_id: telegramId, xp: 0, level: 1 };
-      this.db.telegramUsers.set(telegramId, {
-        ...existing,
-        telegram_id: telegramId,
-        username: args[1] || null,
-        first_name: args[2] || null,
-        last_name: args[3] || null,
-      });
-      return { success: true, meta: { changes: 1 } };
-    }
-    if (sql.startsWith('INSERT INTO wiki_comments')) {
-      const row = {
-        id: String(args[0]),
-        page_id: String(args[1]),
-        telegram_id: args[2] == null ? null : String(args[2]),
-        name: String(args[3]),
-        email_hash: String(args[4]),
-        avatar_url: args[5] == null ? null : String(args[5]),
-        text: String(args[8]),
-        status: 'pending',
-        votes_up: 0,
-        votes_down: 0,
-      };
-      this.db.comments.set(row.id, row);
-      return { success: true, meta: { changes: 1 } };
-    }
-    if (sql.startsWith('UPDATE wiki_comments SET status = ? WHERE id = ?')) {
-      if (this.db.failCommentStatusUpdates) throw new Error('simulated_status_update_failure');
-      const status = String(args[0]);
-      const commentId = String(args[1]);
-      const row = this.db.comments.get(commentId);
-      if (row) row.status = status;
-      return { success: true, meta: { changes: row ? 1 : 0 } };
-    }
-    if (sql.startsWith('INSERT OR IGNORE INTO wiki_page_likes')) {
-      const key = `${args[0]}:${args[1]}`;
-      if (this.db.pageLikes.has(key)) return { success: true, meta: { changes: 0 } };
-      this.db.pageLikes.set(key, { page_id: String(args[0]), telegram_id: String(args[1]) });
-      return { success: true, meta: { changes: 1 } };
-    }
-    if (sql.startsWith('INSERT INTO wiki_citation_votes')) {
-      const key = `${args[0]}:${args[1]}:${args[2]}`;
-      this.db.citationVotes.set(key, {
-        page_id: String(args[0]),
-        cite_id: String(args[1]),
-        telegram_id: String(args[2]),
-        vote: String(args[3]),
-      });
-      return { success: true, meta: { changes: 1 } };
-    }
-    if (sql.startsWith('INSERT OR IGNORE INTO wiki_mission_completions')) {
-      const key = `${args[0]}:${args[1]}:${args[2]}:${args[3]}`;
-      if (this.db.missionCompletions.has(key)) return { success: true, meta: { changes: 0 } };
-      this.db.missionCompletions.set(key, {
-        page_id: String(args[0]),
-        mission_id: String(args[1]),
-        mission_window: String(args[2]),
-        telegram_id: String(args[3]),
-        source: args[4] == null ? null : String(args[4]),
-        source_id: args[5] == null ? null : String(args[5]),
-        xp_awarded: Number(args[6]) || 0,
-        created_at: new Date().toISOString(),
-      });
-      return { success: true, meta: { changes: 1 } };
-    }
-    if (sql.startsWith('INSERT INTO telegram_xp_log')) {
-      this.db.xpLog.push({
-        telegram_id: String(args[0]),
-        action: String(args[1]),
-        xp_change: Number(args[2]) || 0,
-        reference_id: args[3] == null ? null : String(args[3]),
-      });
-      return { success: true, meta: { changes: 1 } };
-    }
-    if (sql.startsWith('UPDATE telegram_users SET xp')) {
-      const telegramId = String(args[2]);
-      const row = this.db.telegramUsers.get(telegramId) || { telegram_id: telegramId, xp: 0, level: 1 };
-      row.xp = Number(row.xp || 0) + Number(args[0] || 0);
-      row.level = Math.floor(row.xp / 100) + 1;
-      this.db.telegramUsers.set(telegramId, row);
-      return { success: true, meta: { changes: 1 } };
-    }
-    if (sql.startsWith('INSERT INTO telegram_activity_log')) {
-      this.db.activityLog.push({
-        telegram_id: String(args[0]),
-        action: String(args[1]),
-        metadata: args[2],
-      });
-      return { success: true, meta: { changes: 1 } };
-    }
-    if (sql.startsWith('INSERT INTO wiki_comment_votes')) {
-      const key = `${args[0]}:${args[1]}`;
-      this.db.commentVotes.set(key, { comment_id: String(args[0]), telegram_id: String(args[1]), vote: String(args[2]) });
-      return { success: true, meta: { changes: 1 } };
-    }
-    if (sql.startsWith('UPDATE wiki_comments SET votes_up')) {
-      const vote = String(args[0]);
-      const commentId = String(args[2]);
-      const row = this.db.comments.get(commentId);
-      if (row && vote === 'up') row.votes_up = (row.votes_up || 0) + 1;
-      if (row && vote === 'down') row.votes_down = (row.votes_down || 0) + 1;
-      return { success: true, meta: { changes: row ? 1 : 0 } };
-    }
-    throw new Error(`Unhandled run SQL: ${sql}`);
-  }
+  async first() { return this.readFailure() || this.exec().results[0] || null; }
+  async all() { return this.readFailure() || this.exec(); }
+  async run() { return this.exec(); }
 }
 
+let fixtureNumber = 0;
 class MockD1 {
   constructor({ missingTables = [], failCommentStatusUpdates = false } = {}) {
-    this.missingTables = new Set(missingTables);
+    this.clientIp = '192.0.2.' + ++fixtureNumber;
+    this.sqlite = new DatabaseSync(':memory:');
+    this.sqlite.exec(read('workers/moonboys-api/schema.sql'));
+    this.sqlite.exec(read('workers/moonboys-api/migrations/029_wiki_engagement.sql'));
+    for (const table of missingTables) {
+      assert.ok(REQUIRED_TABLES.includes(table));
+      this.sqlite.exec(`DROP TABLE ${table}`);
+    }
     this.failCommentStatusUpdates = failCommentStatusUpdates;
-    this.telegramUsers = new Map();
-    this.linkConfirmed = new Map();
-    this.blocktopiaProgression = new Map();
-    this.comments = new Map();
-    this.commentVotes = new Map();
-    this.pageLikes = new Map();
-    this.citationVotes = new Map();
-    this.missionCompletions = new Map();
-    this.xpLog = [];
-    this.activityLog = [];
+    this.failSql = null;
+    this.readFailure = null;
+    const sql = this.sqlite;
+    this.comments = {
+      get(id) { return sql.prepare('SELECT * FROM wiki_comments WHERE id=?').get(String(id)); },
+      get size() { return sql.prepare('SELECT COUNT(*) count FROM wiki_comments').get().count; },
+    };
+    this.linkConfirmed = { set(id) {
+      sql.prepare('INSERT OR IGNORE INTO telegram_users (telegram_id) VALUES (?)').run(String(id));
+      sql.prepare("INSERT INTO telegram_activity_log (telegram_id,action) VALUES (?,'link_confirmed')").run(String(id));
+    } };
+    this.blocktopiaProgression = { set(id, row) {
+      sql.prepare('INSERT INTO blocktopia_progression (telegram_id,xp) VALUES (?,?)').run(String(id), row.xp);
+    } };
   }
-
-  prepare(sql) {
-    return new MockStatement(this, sql);
+  get xpLog() { return this.sqlite.prepare('SELECT * FROM telegram_xp_log ORDER BY id').all(); }
+  prepare(sql) { return new MockStatement(this, sql); }
+  async batch(statements) {
+    this.sqlite.exec('BEGIN');
+    try {
+      const results = statements.map(statement => statement.exec());
+      this.sqlite.exec('COMMIT');
+      return results;
+    } catch (error) {
+      this.sqlite.exec('ROLLBACK');
+      throw error;
+    }
   }
 }
 
@@ -286,9 +117,10 @@ function makeEnv(db, overrides = {}) {
 }
 
 async function api(db, pathName, body, method = 'POST', envOverrides = {}) {
+  const headers = { 'Content-Type': 'application/json', 'CF-Connecting-IP': db.clientIp };
   const init = method === 'GET'
-    ? { method }
-    : { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}) };
+    ? { method, headers }
+    : { method, headers, body: JSON.stringify(body || {}) };
   const response = await worker.fetch(new Request(`${BASE_URL}${pathName}`, init), makeEnv(db, envOverrides), {});
   const json = await response.json().catch(() => ({}));
   return { response, json };
@@ -451,6 +283,66 @@ async function run() {
   });
   assert.equal(forged.response.status, 409, '/wiki-missions/complete without matching source action is rejected');
   assert.equal(db.xpLog.length, 3, 'forged direct completion does not award XP');
+
+  // The durable Like survives an XP outage, while all award projections and
+  // mission completion roll back together. Retrying the same Like recovers it.
+  for (const failedWrite of ['telegram_xp_log', 'telegram_users', 'telegram_leaderboard', 'wiki_mission_completions']) {
+    const recoveryDb = new MockD1();
+    recoveryDb.linkConfirmed.set(LINKED_ID);
+    recoveryDb.sqlite.prepare("INSERT INTO telegram_seasons (name,start_date,end_date) VALUES ('Wiki rewards','2000-01-01','2999-01-01')").run();
+    let failureInjected = false;
+    recoveryDb.failSql = sql => {
+      const fails = failedWrite === 'telegram_users'
+        ? /UPDATE telegram_users SET xp/.test(sql)
+        : new RegExp('INSERT(?: OR IGNORE)? INTO ' + failedWrite).test(sql);
+      failureInjected ||= fails;
+      return fails;
+    };
+    const failed = await api(recoveryDb, '/likes', { page_id: 'wuffi', telegram_auth: linkedAuth });
+    assert.equal(failed.response.status, 500, failedWrite + ' failure cannot acknowledge an unsaved reward');
+    assert.equal(failureInjected, true, failedWrite + ' failure must be exercised');
+    for (const table of ['telegram_community_xp_awards', 'telegram_xp_log', 'telegram_leaderboard', 'wiki_mission_completions']) {
+      assert.equal(recoveryDb.sqlite.prepare(`SELECT COUNT(*) count FROM ${table}`).get().count, 0, failedWrite + ': ' + table + ' rolls back');
+    }
+    assert.equal(recoveryDb.sqlite.prepare('SELECT xp FROM telegram_users WHERE telegram_id=?').get(LINKED_ID).xp, 0);
+    assert.equal(recoveryDb.sqlite.prepare('SELECT COUNT(*) count FROM wiki_page_likes').get().count, 1, 'verified source Like is retained');
+    recoveryDb.failSql = null;
+    const recovered = await api(recoveryDb, '/likes', { page_id: 'wuffi', telegram_auth: linkedAuth });
+    assert.equal(recovered.response.status, 200);
+    assert.equal(recovered.json.already_liked, true);
+    assert.equal(recovered.json.mission.reward_status, 'xp_synced');
+    assert.equal(recovered.json.mission.xp_awarded, 10);
+    const replay = await api(recoveryDb, '/likes', { page_id: 'wuffi', telegram_auth: linkedAuth });
+    assert.equal(replay.json.mission.reward_status, 'already_completed');
+    assert.equal(replay.json.mission.xp_awarded, 0);
+    assert.equal(recoveryDb.xpLog.length, 1);
+    assert.equal(recoveryDb.sqlite.prepare('SELECT xp FROM telegram_users WHERE telegram_id=?').get(LINKED_ID).xp, 10);
+    assert.equal(recoveryDb.sqlite.prepare('SELECT xp FROM telegram_leaderboard WHERE telegram_id=?').get(LINKED_ID).xp, 10);
+    assert.equal(recoveryDb.sqlite.prepare('SELECT COUNT(*) count FROM wiki_mission_completions').get().count, 1);
+    assert.equal(recoveryDb.sqlite.prepare('SELECT COUNT(*) count FROM telegram_community_xp_awards').get().count, 1);
+    recoveryDb.sqlite.close();
+  }
+
+  for (const table of ['wiki_mission_completions', 'telegram_community_xp_awards', 'telegram_xp_log', 'telegram_seasons']) {
+    for (const kind of ['thrown', 'resolved', 'malformed']) {
+      const unreadableDb = new MockD1();
+      const unreadableId = String(30000 + fixtureNumber), unreadableAuth = signTelegramAuth(unreadableId);
+      unreadableDb.linkConfirmed.set(unreadableId);
+      unreadableDb.readFailure = { table, kind };
+      const failed = await api(unreadableDb, '/likes', { page_id: 'wuffi', telegram_auth: unreadableAuth });
+      assert.equal(failed.response.status, 500, table + ': ' + kind + ' cannot acknowledge a completion or empty award history');
+      assert.equal(unreadableDb.xpLog.length, 0);
+      assert.equal(unreadableDb.sqlite.prepare('SELECT COUNT(*) count FROM telegram_community_xp_awards').get().count, 0);
+      assert.equal(unreadableDb.sqlite.prepare('SELECT COUNT(*) count FROM wiki_mission_completions').get().count, 0);
+      unreadableDb.readFailure = null;
+      const recovered = await api(unreadableDb, '/likes', { page_id: 'wuffi', telegram_auth: unreadableAuth });
+      assert.equal(recovered.response.status, 200);
+      assert.equal(recovered.json.already_liked, true);
+      assert.equal(recovered.json.mission.xp_awarded, 10);
+      assert.equal(unreadableDb.xpLog.length, 1);
+      unreadableDb.sqlite.close();
+    }
+  }
 
   const apiConfig = read('js/api-config.js');
   assert(apiConfig.includes('COMMENTS:           true'), 'comments feature flag is enabled after migration/deploy verification');
