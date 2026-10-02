@@ -5517,9 +5517,10 @@ async function getPetKaijuQueue(db, chatId, excluded = []) {
 
 async function getPetKaijuMatchForPlayer(db, telegramId) {
   await db.prepare(`UPDATE telegram_pet_kaiju_matches SET status='cancelled', updated_at=CURRENT_TIMESTAMP
-    WHERE chat_id LIKE 'mini:kaiju:match:%' AND status IN ('open','selecting') AND updated_at < datetime('now', ?)
+    WHERE (chat_id LIKE 'mini:kaiju:match:%' OR player1_telegram_id=? OR player2_telegram_id=?)
+      AND status IN ('open','selecting') AND updated_at < datetime('now', ?)
       AND NOT (player1_card_key IS NOT NULL AND (CASE WHEN mode='solo' THEN cpu_card_key ELSE player2_card_key END) IS NOT NULL)`)
-    .bind(`-${PET_KAIJU_MATCH_TTL_MINUTES} minutes`).run();
+    .bind(String(telegramId), String(telegramId), `-${PET_KAIJU_MATCH_TTL_MINUTES} minutes`).run();
   const row = await db.prepare(`SELECT * FROM telegram_pet_kaiju_matches
     WHERE chat_id LIKE 'mini:kaiju:match:%' AND status IN ('open','selecting')
       AND (player1_telegram_id=? OR player2_telegram_id=?)
@@ -5529,8 +5530,8 @@ async function getPetKaijuMatchForPlayer(db, telegramId) {
 
 async function getPetKaijuQueueState(db, telegramId) {
   await db.prepare(`UPDATE telegram_pet_kaiju_queue SET status='expired', updated_at=CURRENT_TIMESTAMP
-    WHERE chat_id=? AND status='waiting' AND updated_at < datetime('now', ?)`)
-    .bind(PET_MINI_APP_KAIJU_LOBBY, `-${PET_KAIJU_MATCH_TTL_MINUTES} minutes`).run();
+    WHERE (chat_id=? OR telegram_id=?) AND status='waiting' AND updated_at < datetime('now', ?)`)
+    .bind(PET_MINI_APP_KAIJU_LOBBY, String(telegramId), `-${PET_KAIJU_MATCH_TTL_MINUTES} minutes`).run();
   const row = await db.prepare(`SELECT queued_at FROM telegram_pet_kaiju_queue
     WHERE chat_id=? AND telegram_id=? AND (status='waiting' OR updated_at LIKE 'claim:%') LIMIT 1`)
     .bind(PET_MINI_APP_KAIJU_LOBBY, String(telegramId)).first();
@@ -5973,32 +5974,45 @@ async function ensurePetArenaEligible(db, telegramId) {
   if (clampPetStat(pet.health) < 15) return { ok:false, reason:'health_low', pet: safePet };
   return { ok:true, pet: safePet };
 }
-async function getPetArenaBattle(db, battleId) { return db.prepare(`SELECT * FROM telegram_pet_arena_battles WHERE battle_id = ? LIMIT 1`).bind(String(battleId || '')).first(); }
+async function withPetArenaRoundLocks(db, battle) {
+  if (!battle || battle.status !== 'active') return battle;
+  const round = await db.prepare(`SELECT player1_move IS NOT NULL AS player1_move_locked,
+    player2_move IS NOT NULL AS player2_move_locked FROM telegram_pet_arena_rounds
+    WHERE battle_id=? AND round_number=? LIMIT 1`)
+    .bind(battle.battle_id, Number(battle.current_round || 1)).first().then(requirePetFirstReadResult);
+  return { ...battle, player1_move_locked: Boolean(round?.player1_move_locked), player2_move_locked: Boolean(round?.player2_move_locked) };
+}
+async function getPetArenaBattle(db, battleId) {
+  const battle = await db.prepare(`SELECT * FROM telegram_pet_arena_battles WHERE battle_id = ? LIMIT 1`).bind(String(battleId || '')).first();
+  return withPetArenaRoundLocks(db, battle);
+}
 async function hasActivePetArenaBattle(db, chatId, telegramId) {
   const row = await db.prepare(`SELECT battle_id FROM telegram_pet_arena_battles WHERE chat_id = ? AND status IN ('readying', 'active') AND (player1_telegram_id = ? OR player2_telegram_id = ?) LIMIT 1`).bind(String(chatId), String(telegramId), String(telegramId)).first();
   return Boolean(row?.battle_id);
 }
-async function expirePetArenaBattles(db, chatId) {
+async function expirePetArenaBattles(db, chatId, telegramId = '') {
   // The timer may abandon a round awaiting a player, but not a committed
   // decision awaiting CPU/settlement recovery after an outage.
   await db.prepare(`UPDATE telegram_pet_arena_battles SET status='expired', completed_at=CURRENT_TIMESTAMP
-    WHERE chat_id=? AND status IN ('readying','active') AND COALESCE(expires_at, created_at) < ?
+    WHERE (chat_id=? OR (?<>'' AND (player1_telegram_id=? OR player2_telegram_id=?)))
+      AND status IN ('readying','active') AND COALESCE(expires_at, created_at) < ?
       AND NOT EXISTS (SELECT 1 FROM telegram_pet_arena_rounds r
         WHERE r.battle_id=telegram_pet_arena_battles.battle_id AND r.round_number=telegram_pet_arena_battles.current_round
           AND telegram_pet_arena_battles.status='active' AND r.player1_move IS NOT NULL
           AND (r.player2_move IS NOT NULL OR telegram_pet_arena_battles.player2_telegram_id='app'))`)
-    .bind(String(chatId), new Date().toISOString()).run();
+    .bind(String(chatId), String(telegramId), String(telegramId), String(telegramId), new Date().toISOString()).run();
 }
 async function getPetArenaBattleForPlayer(db, chatId, telegramId) {
-  await expirePetArenaBattles(db, chatId);
-  return db.prepare(`SELECT * FROM telegram_pet_arena_battles
+  await expirePetArenaBattles(db, chatId, telegramId);
+  const battle = await db.prepare(`SELECT * FROM telegram_pet_arena_battles
     WHERE chat_id=? AND status IN ('readying','active') AND (player1_telegram_id=? OR player2_telegram_id=?)
     ORDER BY created_at DESC LIMIT 1`).bind(String(chatId), String(telegramId), String(telegramId)).first();
+  return withPetArenaRoundLocks(db, battle);
 }
 async function getPetArenaQueueState(db, chatId, telegramId) {
   await db.prepare(`UPDATE telegram_pet_arena_queue SET status='expired', updated_at=CURRENT_TIMESTAMP
-    WHERE chat_id=? AND status='waiting' AND updated_at < datetime('now', ?)`)
-    .bind(String(chatId), `-${PET_ARENA_QUEUE_TTL_MINUTES} minutes`).run();
+    WHERE (chat_id=? OR telegram_id=?) AND status='waiting' AND updated_at < datetime('now', ?)`)
+    .bind(String(chatId), String(telegramId), `-${PET_ARENA_QUEUE_TTL_MINUTES} minutes`).run();
   const row = await db.prepare(`SELECT rank_bucket, accept_any_rank, created_at FROM telegram_pet_arena_queue
     WHERE chat_id=? AND telegram_id=? AND (status='waiting' OR updated_at LIKE 'claim:%') LIMIT 1`)
     .bind(String(chatId), String(telegramId)).first();
@@ -9427,6 +9441,7 @@ function serializePetMiniAppArenaBattle(battle, telegramId = '') {
     mode,
     ready: Boolean(isPlayer2 ? battle.player2_ready_at : battle.player1_ready_at),
     opponent_ready: Boolean(isPlayer2 ? battle.player1_ready_at : battle.player2_ready_at),
+    own_move_locked: battle.status === 'active' && Boolean(isPlayer2 ? battle.player2_move_locked : battle.player1_move_locked),
   };
 }
 
@@ -10673,7 +10688,7 @@ async function dispatchPetMiniAppAction(db, telegramId, user, body, botToken) {
   }
   if (action === 'bounty_claim') return claimPetEconomyBounty(db, telegramId, body.bounty_key);
   if (action === 'expedition') return runPetCrystalExpedition(db, telegramId, new Date(), eventKey, body.expedition_key, body.pet_id);
-  if (action === 'market_buy') return buyPetMarketOffer(db, telegramId, body.offer_key);
+  if (action === 'market_buy') return buyPetMarketOffer(db, telegramId, body.offer_key, new Date(), eventKey);
   if (action === 'district_mission') {
     const petRaw = await getPetProfileWithAtomicDecay(db, telegramId, new Date());
     if (!petRaw) return { accepted: false, reason: 'pet_not_adopted' };
@@ -14571,7 +14586,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20261002-postmerge-audit-v1`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20261002-postmerge-audit-v2`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',
@@ -16644,12 +16659,52 @@ async function runPetCrystalExpedition(db, telegramId, now = new Date(), request
   return { ...awarded, reason: awarded.accepted ? 'expedition_complete' : awarded.reason, attempt, expedition: resolved.expedition };
 }
 
-async function buyPetMarketOffer(db, telegramId, offerKey, now = new Date()) {
+async function readPetMarketRequestReceipt(db, telegramId, requestKey) {
+  if (!requestKey) return null;
+  const receipt = await db.prepare(`SELECT pet_id,day_key,metadata,applied_rewards FROM telegram_pet_reward_claims
+    WHERE telegram_id=? AND source='pet_market' AND status='awarded' AND (
+      json_extract(CASE WHEN json_valid(metadata) THEN metadata ELSE '{}' END,'$.context.request_key')=?
+      OR claim_id=(SELECT json_extract(CASE WHEN json_valid(payload_json) THEN payload_json ELSE '{}' END,'$.claim_id')
+        FROM telegram_pet_system_events WHERE pet_id='' AND telegram_id=? AND season_key=''
+          AND system_key='market_request' AND action_key='purchase' AND period_key=? AND status='completed')) LIMIT 1`)
+    .bind(telegramId, requestKey, telegramId, requestKey).first().then(requirePetFirstReadResult);
+  if (!receipt) return null;
+  const metadata = safeJsonParse(receipt.metadata, {});
+  return { accepted: true, duplicate: true, reason: 'market_offer_sold', pet_xp_awarded: 0, xp_awarded: 0, rewards: {},
+    offer: getPetMarketOffers(receipt.day_key).find(offer => offer.key === metadata.context?.offer_key) || null,
+    receipt: { pet_id: receipt.pet_id, day_key: receipt.day_key, cost: metadata.currency_costs || {}, rewards: safeJsonParse(receipt.applied_rewards, {}) } };
+}
+
+async function acknowledgePetMarketRequest(db, telegramId, requestKey, stockKey) {
+  // A stale tab can acknowledge stock bought by another request. Give that
+  // no-op its own immutable lookup key without rewriting the paid receipt.
+  // The paid-request predicate and reward reservation guard exclude each other
+  // atomically when acknowledgement races a purchase after the UTC reset.
+  await db.prepare(`INSERT OR IGNORE INTO telegram_pet_system_events
+    (id,pet_id,telegram_id,season_key,system_key,action_key,period_key,status,payload_json)
+    SELECT ?, '', ?, '', 'market_request', 'purchase', ?, 'completed', json_object('claim_id',paid.claim_id)
+    FROM telegram_pet_reward_claims paid WHERE paid.telegram_id=? AND paid.source='pet_market'
+      AND paid.idempotency_key=? AND paid.status='awarded'
+      AND NOT EXISTS (SELECT 1 FROM telegram_pet_reward_claims previous
+        WHERE previous.telegram_id=? AND previous.source='pet_market' AND previous.status IN ('pending','awarded')
+          AND json_extract(CASE WHEN json_valid(previous.metadata) THEN previous.metadata ELSE '{}' END,'$.context.request_key')=?)`)
+    .bind(crypto.randomUUID(), telegramId, requestKey, telegramId, stockKey, telegramId, requestKey).run().then(requirePetMutationResult);
+  const receipt = await readPetMarketRequestReceipt(db, telegramId, requestKey);
+  if (!receipt) throw new Error('market_request_receipt_unavailable');
+  return receipt;
+}
+
+async function buyPetMarketOffer(db, telegramId, offerKey, now = new Date(), requestKey = '') {
+  const requestedKey = String(requestKey || '').slice(0, 120);
+  const duplicate = await readPetMarketRequestReceipt(db, telegramId, requestedKey);
+  if (duplicate) return duplicate;
   const state = await getPetEconomyState(db, telegramId, null, now);
   if (!state) return { accepted: false, reason: 'pet_not_adopted' };
   const offer = state.market_offers.find((entry) => entry.key === String(offerKey || ''));
   if (!offer) return { accepted: false, reason: 'market_offer_not_available', state };
-  if (offer.purchased) return { accepted: true, duplicate: true, reason: 'market_offer_sold', offer, state };
+  if (offer.purchased) return requestedKey
+    ? acknowledgePetMarketRequest(db, telegramId, requestedKey, `${state.day_key}:${offer.key}`)
+    : { accepted: true, duplicate: true, reason: 'market_offer_sold', offer, state };
   if (!offer.unlocked) return { accepted: false, reason: 'market_offer_locked', offer, state };
   if (!offer.capacity.available) return { accepted: false, reason: 'market_capacity_full', offer, state };
   if (!offer.affordable) return { accepted: false, reason: 'not_enough_pet_currency', offer, state };
@@ -16659,9 +16714,17 @@ async function buyPetMarketOffer(db, telegramId, offerKey, now = new Date()) {
     telegram_id: telegramId, source: 'pet_market', idempotency_key: `${state.day_key}:${offer.key}`,
     event_key: `pet:economy:market:${telegramId}:${state.day_key}:${offer.key}`,
     event_type: 'economy_market', reason: offer.key, rewards: offer.reward, currency_costs: offer.cost,
-    touch_streak: false, now, context: { offer_key: offer.key, pet_id: state.pet.pet_id, season_key: state.pet.season_key, min_level: offer.min_level },
+    touch_streak: false, now, context: { offer_key: offer.key, pet_id: state.pet.pet_id, season_key: state.pet.season_key, min_level: offer.min_level,
+      ...(requestedKey ? { request_key: requestedKey } : {}) },
   });
+  if (awarded.accepted && awarded.duplicate && requestedKey) {
+    return acknowledgePetMarketRequest(db, telegramId, requestedKey, `${state.day_key}:${offer.key}`);
+  }
   if (!awarded.accepted && awarded.reason === 'reward_not_authorized') {
+    // An overlapping request may have committed across midnight after this
+    // call read its board. Keep the first purchase's receipt and daily stock.
+    const racedReceipt = await readPetMarketRequestReceipt(db, telegramId, requestedKey);
+    if (racedReceipt) return racedReceipt;
     const refreshed = await getPetEconomyState(db, telegramId, null, now);
     const current = refreshed?.market_offers.find((entry) => entry.key === offer.key);
     return { ...awarded, reason: current?.capacity.available === false ? 'market_capacity_full' : 'market_state_changed', offer: current || offer };

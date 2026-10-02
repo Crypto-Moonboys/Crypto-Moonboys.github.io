@@ -63,6 +63,24 @@ function fixture(owner) {
 
 for (const system of ['arena','kaiju']) {
   const table = system === 'arena' ? 'telegram_pet_arena_battles' : 'telegram_pet_kaiju_matches';
+  for (const kind of ['queue', 'match']) test(`${system}: expired Telegram ${kind} cannot strand Mini App ownership controls`, async () => {
+    const f = fixture(`legacy-expiry-${system}-${kind}`);
+    const source = 'current-' + f.owner, replacement = 'replacement-' + f.owner;
+    f.pet(replacement, currentSeason, 200, 2);
+    const started = await f.act({ action: `${system}_${kind === 'queue' ? 'matchmake' : 'start'}` });
+    assert.equal(started.accepted, true);
+    const savedTable = kind === 'queue' ? `telegram_pet_${system}_queue` : table;
+    if (kind === 'match' && system === 'arena') f.sql.prepare(`UPDATE ${savedTable} SET chat_id='old-telegram-group',expires_at='2000-01-01T00:00:00.000Z'`).run();
+    else f.sql.prepare(`UPDATE ${savedTable} SET chat_id='old-telegram-group',updated_at='2000-01-01 00:00:00'`).run();
+    await f.state();
+    const switched = await hooks.switchActivePetSeasonSlot(f.db, f.owner, replacement);
+    assert.equal(switched.accepted, true, 'Refresh must release expired records that the Mini App cannot display or cancel');
+    const row = f.sql.prepare(`SELECT status FROM ${savedTable}`).get();
+    assert.ok(['expired', 'cancelled'].includes(row.status));
+    assert.equal(f.sql.prepare('SELECT status FROM telegram_pet_instances WHERE pet_id=?').get(source).status, 'active');
+    assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE source IN ('pet_arena','pet_kaiju')").get().n, 0);
+    f.sql.close();
+  });
   for (const competing of ['solo', 'matchmaking']) test(`${system}: concurrent ${competing} keeps one recoverable match`, async () => {
     const f = fixture(`simultaneous-${competing}-${system}`);
     if (competing === 'matchmaking') {
@@ -621,6 +639,34 @@ async function addRival(f) {
   return rival;
 }
 
+for (const role of ['player1', 'player2']) test(`Arena ${role} sees its saved move lock without exposing either choice`, async () => {
+  const f = fixture('arena-lock-view-' + role), rival = await addRival(f);
+  const act = (owner, body) => dispatchRenderedPetAction(f.db, owner, { id: owner }, body, 'fixture-token');
+  await f.act({ action: 'arena_matchmake' });
+  const joined = await act(rival, { action: 'arena_matchmake' }), battle = joined.battle;
+  const lockingOwner = battle[role + '_telegram_id'];
+  const waitingOwner = lockingOwner === f.owner ? rival : f.owner;
+  await act(f.owner, { action: 'arena_ready', battle_id: battle.battle_id });
+  await act(rival, { action: 'arena_ready', battle_id: battle.battle_id });
+  const result = await act(lockingOwner, { action: 'arena_move', battle_id: battle.battle_id, expected_round: 1, move: 'ah' });
+  assert.equal(result.reason, 'waiting_for_opponent');
+  const actionView = hooks.serializePetMiniAppActionResult(result, null, lockingOwner).battle;
+  assert.equal(actionView.own_move_locked, true, 'the action response immediately preserves its committed lock');
+  const lockedView = (await hooks.buildPetMiniAppState(f.db, lockingOwner, 'fixture-token')).arena;
+  const waitingView = (await hooks.buildPetMiniAppState(f.db, waitingOwner, 'fixture-token')).arena;
+  assert.equal(lockedView.own_move_locked, true);
+  assert.equal(waitingView.own_move_locked, false, 'the opponent remains free to choose');
+  for (const view of [actionView, lockedView, waitingView]) {
+    for (const key of ['player1_move', 'player2_move', 'opponent_move', 'player1_move_locked', 'player2_move_locked']) assert.equal(Object.hasOwn(view, key), false);
+    assert.equal(view.opponent_intent, null, 'PvP never reveals the rival move');
+  }
+  await act(waitingOwner, { action: 'arena_move', battle_id: battle.battle_id, expected_round: 1, move: 'bb' });
+  const next = (await hooks.buildPetMiniAppState(f.db, lockingOwner, 'fixture-token')).arena;
+  assert.equal(next.current_round, 2);
+  assert.equal(next.own_move_locked, false);
+  f.sql.close();
+});
+
 test('Kaiju group retries keep both immutable cards and settle each player once',async()=>{
   const f=fixture('kaiju-group'),rival=await addRival(f);
   const act=(owner,body)=>dispatchRenderedPetAction(f.db,owner,{id:owner},body,'fixture-token');
@@ -874,4 +920,63 @@ test('Kaiju gets the next recovery turn despite new Arena arrivals, while Arena 
   for(let i=0;i<3;i++)await f.state();
   assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='arena_battle' AND status='accepted'").get().n,1,
     'returning to Arena must continue beyond its earlier broken scopes');
+});
+
+for (const system of ['arena', 'kaiju']) for (const kind of ['queue', 'match'])
+test(`${system}: legacy ${kind} expiry preserves current owner work and unrelated old work`, async () => {
+  const f = fixture(`legacy-protected-${system}-${kind}`);
+  const table = kind === 'queue' ? `telegram_pet_${system}_queue`
+    : system === 'arena' ? 'telegram_pet_arena_battles' : 'telegram_pet_kaiju_matches';
+  const ownerColumn = kind === 'queue' ? 'telegram_id' : 'player1_telegram_id';
+  const action = `${system}_${kind === 'queue' ? 'matchmake' : 'start'}`;
+  assert.equal((await f.act({ action })).accepted, true);
+  f.sql.prepare(`UPDATE ${table} SET chat_id='current-legacy-room' WHERE ${ownerColumn}=?`).run(f.owner);
+  const rival = await addRival(f);
+  assert.equal((await dispatchRenderedPetAction(f.db, rival, { id: rival }, { action }, 'fixture-token')).accepted, true);
+  if (kind === 'match' && system === 'arena') f.sql.prepare(`UPDATE ${table}
+    SET chat_id='unrelated-legacy-room',expires_at='2000-01-01T00:00:00.000Z' WHERE ${ownerColumn}=?`).run(rival);
+  else f.sql.prepare(`UPDATE ${table} SET chat_id='unrelated-legacy-room',updated_at='2000-01-01 00:00:00' WHERE ${ownerColumn}=?`).run(rival);
+  const rows = () => f.sql.prepare(`SELECT * FROM ${table} ORDER BY id`).all();
+  const before = rows();
+  await f.state();
+  assert.deepEqual(rows(), before, 'owner refresh cannot expire current work or another owner’s legacy records');
+  f.sql.close();
+});
+
+test('legacy Telegram Arena saved moves survive expiry and settle once on Mini App refresh', async () => {
+  const f = await arenaFixture('legacy-arena-saved-move');
+  f.sql.prepare('UPDATE telegram_pet_arena_battles SET max_rounds=1 WHERE battle_id=?').run(f.id);
+  f.db.beforeRun = s => { if (s.query.includes('SET player2_move=?')) throw Error('legacy_cpu_outage'); };
+  await assert.rejects(f.move(), /legacy_cpu_outage/);
+  f.sql.prepare("UPDATE telegram_pet_arena_battles SET chat_id='legacy-saved-arena',expires_at='2000-01-01T00:00:00.000Z' WHERE battle_id=?").run(f.id);
+  await f.state();
+  assert.equal(f.battle().status, 'active');
+  assert.equal(f.round().player1_move, 'ab');
+  f.db.beforeRun = null;
+  await f.state();
+  assert.equal(f.battle().status, 'completed');
+  const paid = f.sql.prepare("SELECT * FROM telegram_pet_reward_claims WHERE source='pet_arena'").all();
+  assert.equal(paid.length, 1);
+  await f.state();
+  assert.deepEqual(f.sql.prepare("SELECT * FROM telegram_pet_reward_claims WHERE source='pet_arena'").all(), paid);
+  f.sql.close();
+});
+
+test('legacy Telegram Kaiju saved cards survive expiry and settle once on Mini App refresh', async () => {
+  const f = await kaijuFixture('legacy-kaiju-saved-cards');
+  f.sql.exec("CREATE TRIGGER fail_legacy_kaiju BEFORE UPDATE OF status ON telegram_pet_kaiju_matches WHEN NEW.status='completed' BEGIN SELECT RAISE(ABORT,'legacy_kaiju_outage'); END");
+  await assert.rejects(f.card(), /legacy_kaiju_outage/);
+  f.sql.prepare("UPDATE telegram_pet_kaiju_matches SET chat_id='legacy-saved-kaiju',updated_at='2000-01-01 00:00:00' WHERE match_id=?").run(f.id);
+  const cards = [f.match().player1_card_key, f.match().cpu_card_key];
+  await f.state();
+  assert.equal(f.match().status, 'selecting');
+  f.sql.exec('DROP TRIGGER fail_legacy_kaiju');
+  await f.state();
+  assert.equal(f.match().status, 'completed');
+  assert.deepEqual([f.match().player1_card_key, f.match().cpu_card_key], cards);
+  const paid = f.sql.prepare("SELECT * FROM telegram_pet_reward_claims WHERE source='pet_kaiju'").all();
+  assert.equal(paid.length, 1);
+  await f.state();
+  assert.deepEqual(f.sql.prepare("SELECT * FROM telegram_pet_reward_claims WHERE source='pet_kaiju'").all(), paid);
+  f.sql.close();
 });

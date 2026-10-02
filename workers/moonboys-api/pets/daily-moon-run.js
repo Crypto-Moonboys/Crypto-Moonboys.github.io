@@ -1,5 +1,5 @@
 import { boundedRecoveryLimit } from './recovery-limits.js';
-import { requirePetFirstReadResult, requirePetReadResult } from './read-result.js';
+import { requirePetFirstReadResult, requirePetReadResult, requirePetMutationResult } from './read-result.js';
 import { withPetEquipmentProgression } from './equipment-progression.js';
 import dailyChallenges from './content/daily-challenges.json' with { type: 'json' };
 import {
@@ -244,7 +244,7 @@ async function persistDailyRunAdvance(db, run, advanced) {
   await db.prepare(`UPDATE telegram_pet_runs SET current_room = MAX(current_room, ?), depth = MAX(depth, ?),
       rooms_completed = MAX(rooms_completed, ?), score = MAX(score, ?), updated_at = CURRENT_TIMESTAMP
     WHERE run_id = ? AND telegram_id = ? AND status IN ('active', 'extractable')`)
-    .bind(advanced.current_room, advanced.current_room, advanced.current_room, advanced.score, run.run_id, run.telegram_id).run();
+    .bind(advanced.current_room, advanced.current_room, advanced.current_room, advanced.score, run.run_id, run.telegram_id).run().then(requirePetMutationResult);
 }
 
 async function resolveDailyRunSeasonPet(db, telegramId, seasonKey) {
@@ -604,12 +604,32 @@ export async function processDailyMoonRunStep(db, request = {}) {
 }
 
 export async function extractDailyMoonRun(db, request = {}) {
+  // Bound recovery to two attempts. Continued contention remains a visible
+  // retry, rather than an unbounded recovery loop.
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const result = await extractDailyMoonRunAttempt(db, request);
+    if (result.reason !== 'daily_run_room_settlement_pending') return result;
+  }
+  return { accepted: false, duplicate: false, reason: 'daily_run_room_settlement_pending', refresh_state: true };
+}
+
+async function extractDailyMoonRunAttempt(db, request) {
   const daily = await getDailyMoonRunReservation(db, request);
   if (!daily) return { accepted: false, duplicate: false, reason: 'daily_run_not_found' };
   if (!String(daily.pet_id || '').trim()) return { accepted: false, duplicate: false, reason: 'run_pet_authority_required', daily_run: daily, extraction: null };
   if (positiveInteger(daily.current_room) >= positiveInteger(daily.max_room) && ['active', 'extractable', 'completed', 'extracted'].includes(daily.authoritative_status)) {
     return await recoverDailyMoonRunEnding(db, request)
       || { accepted: false, reason: 'daily_run_ending_unavailable', daily_run: daily };
+  }
+  if (['active', 'extractable'].includes(daily.authoritative_status)) {
+    const savedRoom = await getPersistedDailyRoom(db, daily, positiveInteger(daily.current_room) + 1);
+    if (savedRoom?.pet_id === daily.pet_id && ['resolved', 'failed'].includes(savedRoom?.status)) {
+      const resumed = await processDailyMoonRunStep(db, { ...request,
+        telegram_id: daily.telegram_id, run_id: daily.run_id, expected_step_index: daily.current_room,
+        choice_key: savedRoom.outcome?.choice_id || savedRoom.choices?.[0]?.choice_id });
+      if (resumed.reason !== 'daily_room_resolved') return resumed;
+      return { accepted: false, reason: 'daily_run_room_settlement_pending' };
+    }
   }
   const completedRoom = positiveInteger(daily.authoritative_depth) > 0
     ? { count: 1 }
@@ -634,7 +654,8 @@ export async function extractDailyMoonRun(db, request = {}) {
     equipment_snapshot: equipped?.equipment_progression || {},
     rooms_completed: positiveInteger(run.current_room),
     ...(['active','extractable'].includes(run.status) ? { runtime_event_key: `runtime:daily-extract:${run.run_id}` } : {}),
-  });
+  }, { daily_expected_room: positiveInteger(run.current_room) });
+  if (['active', 'extractable'].includes(extraction.status)) return { accepted: false, reason: 'daily_run_room_settlement_pending' };
   const synchronized = await syncDailyMoonRun(db, {
     telegram_id: daily.telegram_id, utc_day: daily.utc_day, run_id: daily.run_id, now: request.now,
   });

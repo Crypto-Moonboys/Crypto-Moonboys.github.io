@@ -2245,7 +2245,7 @@
         }).join('');
         arenaBody = arenaHeader + intent + recap + (arena.status === 'readying'
           ? '<div class="line muted">' + (arena.ready ? 'YOU ARE READY. WAITING FOR RIVAL.' : 'MATCH FOUND. LOCK IN WHEN READY.') + '</div><div class="button-grid">' + button('READY', 'arena_ready', { battle_id: arena.battle_id }, { disabled: arena.ready, statusLabel: arena.ready ? 'READY' : '' }) + button('FORFEIT MATCH', 'arena_forfeit', { battle_id: arena.battle_id }, { danger: true }) + '</div>'
-          : '<div class="button-grid arena-decisions">' + arenaMoves + '</div><div class="button-grid one">' + button('FORFEIT BATTLE', 'arena_forfeit', { battle_id: arena.battle_id }, { danger: true }) + '</div>');
+          : (arena.own_move_locked ? '<div class="line signal">YOUR MOVE LOCKED. ' + (arena.mode === 'multiplayer' ? 'WAITING FOR RIVAL.' : 'WAITING FOR ROUND RESOLUTION.') + '</div>' : '<div class="button-grid arena-decisions">' + arenaMoves + '</div>') + '<div class="button-grid one">' + button('FORFEIT BATTLE', 'arena_forfeit', { battle_id: arena.battle_id }, { danger: true }) + '</div>');
       } else if (arenaQueue) {
         arenaBody = '<div class="line">MATCHMAKING QUEUE // POSITION ' + number(arenaQueue.position) + ' // ' + escapeHtml(words(arenaQueue.rank_bucket)) + '</div><div class="button-grid">' +
           button('ACCEPT ANY RANK', 'arena_matchmake', { accept_any_rank: true }, { disabled: arenaQueue.accept_any_rank, statusLabel: arenaQueue.accept_any_rank ? 'CURRENT' : '' }) + button('CANCEL QUEUE', 'arena_queue_cancel', {}, { danger: true }) + '</div>';
