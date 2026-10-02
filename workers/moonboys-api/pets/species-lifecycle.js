@@ -1,5 +1,5 @@
 import { awardPetGrowthMark } from './season-completion.js';
-import { requirePetReadResult, requirePetMutationResult } from './read-result.js';
+import { requirePetReadResult, requirePetMutationResult, requirePetFirstReadResult } from './read-result.js';
 import { PET_INSTANCE_AUTHORITY_VERSION } from './wallet-reconciliation.js';
 import { projectCommittedPetResult } from './committed-result.js';
 
@@ -171,11 +171,23 @@ async function readLifecycle(db, telegramId) {
 async function readEvolutionStage(db, row) {
   if (!row?.pet_id) return 0;
   const current = await db.prepare('SELECT MAX(stage) AS stage FROM telegram_pet_evolutions_by_pet WHERE pet_id=? AND telegram_id=?')
-    .bind(row.pet_id, row.telegram_id).first();
+    .bind(row.pet_id, row.telegram_id).first().then(requirePetFirstReadResult);
   if (current?.stage != null) return Math.max(0, Number(current.stage) || 0);
   const legacy = await db.prepare('SELECT MAX(stage) AS stage FROM telegram_pet_evolutions WHERE telegram_id=?')
-    .bind(row.telegram_id).first();
+    .bind(row.telegram_id).first().then(requirePetFirstReadResult);
   return Math.max(0, Number(legacy?.stage) || 0);
+}
+
+async function readCommittedPetLifecycle(db, telegramId, source) {
+  const petId = cleanId(source?.pet_id), seasonKey = cleanId(source?.season_key);
+  if (!petId || !seasonKey) return null;
+  return db.prepare(`SELECT l.*, s.season_key
+    FROM telegram_pet_season_slots s
+    JOIN telegram_pet_instances i ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id
+      AND i.season_key=s.season_key AND i.slot_number=s.slot_number
+    JOIN telegram_pet_lifecycle_by_pet l ON l.pet_id=s.pet_id AND l.telegram_id=s.telegram_id
+    WHERE s.pet_id=? AND s.telegram_id=? AND s.season_key=? AND s.status='active' AND i.status='active'
+    LIMIT 1`).bind(petId, telegramId, seasonKey).first().then(requirePetFirstReadResult);
 }
 
 export function resolveMoonpetDisplayName(lifecycle = {}, identity = {}) {
@@ -314,29 +326,34 @@ function publicLifecycle(row, rare, now = new Date(), evolutionStage = 0) {
   };
 }
 
-export async function getExistingMoonpetLifecycle(db, telegramId) {
-  const id = cleanId(telegramId);
-  if (!id) return null;
-  const row = await readLifecycle(db, id);
+async function projectMoonpetLifecycle(db, id, row, appliedOnly = false) {
   if (!row) return null;
   const dayKey = new Date().toISOString().slice(0, 10);
   const daily = await db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_events_by_pet
-    WHERE pet_id=? AND action LIKE 'incubate_%' AND day_key=? AND applied_at IS NOT NULL`).bind(row.pet_id, dayKey).first();
+    WHERE pet_id=? AND action LIKE 'incubate_%' AND day_key=?${appliedOnly ? ' AND applied_at IS NOT NULL' : ''}`).bind(row.pet_id, dayKey).first();
+  const evolutionStage = await readEvolutionStage(db, row);
+  // Repair a committed evolution whose follow-up was interrupted or blocked by
+  // a pet switch. The mutation verifies this pet's own persisted evolution;
+  // legacy account-level display fallback cannot authorize adulthood.
+  if (row.phase === 'young' && evolutionStage >= 2) {
+    await reconcileMoonpetLifecycleStage(db, id, row);
+    row = await readCommittedPetLifecycle(db, id, row);
+    if (!row) return null;
+  }
   row.actions_today = Number(daily?.count || 0);
-  const [rare, evolutionStage] = await Promise.all([rareProgress(db, id, row), readEvolutionStage(db, row)]);
+  const rare = await rareProgress(db, id, row);
   return publicLifecycle(row, rare, new Date(), evolutionStage);
+}
+
+export async function getExistingMoonpetLifecycle(db, telegramId) {
+  const id = cleanId(telegramId);
+  if (!id) return null;
+  return projectMoonpetLifecycle(db, id, await readLifecycle(db, id), true);
 }
 
 export async function getMoonpetLifecycle(db, telegramId) {
   const id = cleanId(telegramId);
-  const row = await ensureMoonpetLifecycle(db, id);
-  if (!row) return null;
-  const dayKey = new Date().toISOString().slice(0, 10);
-  const daily = await db.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_events_by_pet
-    WHERE pet_id=? AND action LIKE 'incubate_%' AND day_key=?`).bind(row.pet_id, dayKey).first();
-  row.actions_today = Number(daily?.count || 0);
-  const [rare, evolutionStage] = await Promise.all([rareProgress(db, id, row), readEvolutionStage(db, row)]);
-  return publicLifecycle(row, rare, new Date(), evolutionStage);
+  return projectMoonpetLifecycle(db, id, await ensureMoonpetLifecycle(db, id));
 }
 
 export async function incubateMoonEgg(db, telegramId, careType, eventKey, now = new Date()) {
@@ -476,13 +493,7 @@ export async function hatchMoonpet(db, telegramId, eventKey, now = new Date()) {
   return projectCommittedPetResult(result, async () => ({ ...result, lifecycle: await getMoonpetLifecycle(db, id) }));
 }
 
-export async function syncMoonpetLifecycleStage(db, telegramId, stage) {
-  const id = cleanId(telegramId);
-  if (Number(stage) < 2) return getMoonpetLifecycle(db, id);
-  const row = await ensureMoonpetLifecycle(db, id);
-  if (!row) return null;
-  // Legacy API follow-ups can outlive a pet switch. The supplied stage is only
-  // a hint; this pet's committed evolution must authorize its own adulthood.
+async function reconcileMoonpetLifecycleStage(db, id, row) {
   const results = await db.batch([
     db.prepare(`UPDATE telegram_pet_lifecycle_by_pet SET phase='adult', adult_at=COALESCE(adult_at, CURRENT_TIMESTAMP), updated_at=CURRENT_TIMESTAMP
       WHERE pet_id=? AND telegram_id=? AND phase='young'
@@ -508,7 +519,13 @@ export async function syncMoonpetLifecycleStage(db, telegramId, stage) {
       .bind(PET_INSTANCE_AUTHORITY_VERSION, row.pet_id, id, row.pet_id, id),
   ]);
   requireLifecycleBatch(results, 3);
-  return getMoonpetLifecycle(db, id);
+}
+
+export async function syncMoonpetLifecycleStage(db, telegramId, source) {
+  const id = cleanId(telegramId);
+  if (!id) return null;
+  const row = await readCommittedPetLifecycle(db, id, source);
+  return projectMoonpetLifecycle(db, id, row);
 }
 
 export async function morphMoonpetRare(db, telegramId, eventKey) {

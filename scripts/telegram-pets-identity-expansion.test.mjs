@@ -182,6 +182,8 @@ assert.deepEqual({
   accepted: true,
   duplicate: true,
   reason: 'already_evolved',
+  pet_id: stage5PetId,
+  season_key: TEST_SEASON_KEY,
   evolution: {
     evolution_id: 'legendary_moon_guardian',
     stage: 5,

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { webcrypto } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
 import {
-  MOONPET_SPECIES, createMoonEggLifecycle, getMoonpetLifecycle, hatchMoonpet, incubateMoonEgg, incubationAgeDays, morphMoonpetRare,
+  MOONPET_SPECIES, createMoonEggLifecycle, getExistingMoonpetLifecycle, getMoonpetLifecycle, hatchMoonpet, incubateMoonEgg, incubationAgeDays, morphMoonpetRare,
   resolveMoonpetDisplayName, syncMoonpetLifecycleStage,
 } from '../workers/moonboys-api/pets/species-lifecycle.js';
 
@@ -155,7 +155,7 @@ for (const [speciesId, speciesName] of Object.entries(SPECIES_LABELS)) {
   }
 }
 db.database.prepare(`INSERT INTO telegram_pet_evolutions_by_pet VALUES ('pet:new-player:test:1','new-player','cyber_moonpet',2)`).run();
-await syncMoonpetLifecycleStage(db, 'new-player', 2);
+await syncMoonpetLifecycleStage(db, 'new-player', { pet_id: 'pet:new-player:test:1', season_key: 'test' });
 assert.equal(db.database.prepare("SELECT stage FROM telegram_pet_instances WHERE pet_id='pet:new-player:test:1'").get().stage, 'adult',
   'evolution lifecycle synchronization must update the authoritative pet instance');
 db.database.prepare(`INSERT INTO telegram_pet_evolutions_by_pet VALUES ('pet:new-player:test:1','new-player','elite_moonpet',3)`).run();
@@ -421,7 +421,7 @@ for (const action of ['hatch', 'rare_morph']) {
 }
 
 // The legacy action API can commit A's evolution, then resolve its follow-up
-// after another request selects B. The stage argument is only a stale hint.
+// after another request selects B. It must retain the committed source tuple.
 for (const switchPoint of ['before-lifecycle-read', 'before-lifecycle-write']) {
   const switched = new D1();
   switched.database.exec(await (await import('node:fs/promises')).readFile(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8'));
@@ -452,18 +452,42 @@ for (const switchPoint of ['before-lifecycle-read', 'before-lifecycle-write']) {
   else switched.beforeBatch = statements => {
     if (!switchedOnce && statements[0].sql.includes("SET phase='adult'")) selectB();
   };
-  await syncMoonpetLifecycleStage(switched, 'evolution-owner', 2);
+  const synced = await syncMoonpetLifecycleStage(switched, 'evolution-owner', { pet_id: 'evolved-a', season_key: '2026-q3' });
+  assert.equal(synced.phase, 'adult', 'the returned lifecycle belongs to committed A, not selected B');
   assert.equal(switchedOnce, true);
   assert.equal(switched.database.prepare("SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id='young-b'").get().phase, 'young',
     'A saved Stage 2 follow-up cannot promote selected B with only Stage 1');
   assert.equal(switched.database.prepare("SELECT stage FROM telegram_pet_profiles WHERE telegram_id='evolution-owner'").get().stage, 'young',
     'A lifecycle write cannot overwrite the compatibility profile after B becomes selected');
   assert.equal(switched.database.prepare("SELECT stage FROM telegram_pet_instances WHERE pet_id='young-b'").get().stage, 'young');
+  assert.equal(switched.database.prepare("SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id='evolved-a'").get().phase, 'adult',
+    'The committed pet finishes adulthood while B remains selected');
+  assert.equal(switched.database.prepare("SELECT stage FROM telegram_pet_instances WHERE pet_id='evolved-a'").get().stage, 'adult');
   switched.beforeFirst = null; switched.beforeBatch = null;
   switched.database.exec("UPDATE telegram_pet_active_slots SET pet_id='evolved-a' WHERE telegram_id='evolution-owner'");
-  await syncMoonpetLifecycleStage(switched, 'evolution-owner', 2);
+  await syncMoonpetLifecycleStage(switched, 'evolution-owner', { pet_id: 'evolved-a', season_key: '2026-q3' });
   assert.equal(switched.database.prepare("SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id='evolved-a'").get().phase, 'adult',
     'The original pet can still finish its committed Stage 2 follow-up');
+  for (const read of [getExistingMoonpetLifecycle, getMoonpetLifecycle]) {
+    switched.database.exec("UPDATE telegram_pet_lifecycle_by_pet SET phase='young' WHERE pet_id='evolved-a'; UPDATE telegram_pet_instances SET stage='young' WHERE pet_id='evolved-a'");
+    assert.equal((await read(switched, 'evolution-owner')).phase, 'adult', 'ordinary reads repair an interrupted source follow-up');
+    assert.equal(switched.database.prepare("SELECT stage FROM telegram_pet_instances WHERE pet_id='evolved-a'").get().stage, 'adult');
+  }
+  switched.database.exec("UPDATE telegram_pet_lifecycle_by_pet SET phase='young' WHERE pet_id='evolved-a'; UPDATE telegram_pet_instances SET stage='young' WHERE pet_id='evolved-a'");
+  assert.equal(await syncMoonpetLifecycleStage(switched, 'other-owner', { pet_id: 'evolved-a', season_key: '2026-q3' }), null);
+  assert.equal(await syncMoonpetLifecycleStage(switched, 'evolution-owner', { pet_id: 'evolved-a', season_key: 'wrong-season' }), null);
+  assert.equal(await syncMoonpetLifecycleStage(switched, 'evolution-owner', {}), null);
+  assert.equal(switched.database.prepare("SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id='evolved-a'").get().phase, 'young');
+  switched.database.exec("UPDATE telegram_pet_season_slots SET status='retired' WHERE pet_id='evolved-a'");
+  assert.equal(await syncMoonpetLifecycleStage(switched, 'evolution-owner', { pet_id: 'evolved-a', season_key: '2026-q3' }), null);
+  assert.equal(switched.database.prepare("SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id='evolved-a'").get().phase, 'young');
+  // The account's legacy evolution display fallback is not B's saved proof.
+  selectB();
+  switched.database.exec(`DELETE FROM telegram_pet_evolutions_by_pet WHERE pet_id='young-b';
+    INSERT INTO telegram_pet_evolutions (telegram_id,evolution_id,stage,unlock_event_key)
+      VALUES ('evolution-owner','cyber_moonpet',2,'legacy-owner-stage')`);
+  assert.equal((await getExistingMoonpetLifecycle(switched, 'evolution-owner')).phase, 'young');
+  assert.equal(switched.database.prepare("SELECT stage FROM telegram_pet_instances WHERE pet_id='young-b'").get().stage, 'young');
   switched.database.close();
 }
 

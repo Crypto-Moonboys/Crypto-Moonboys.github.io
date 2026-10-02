@@ -94,7 +94,7 @@ assert.doesNotMatch(worker, /movePetToSanctuaryIfEligible|reconcileCompletedPets
 assert.doesNotMatch(seasonCompletion, /movePetToSanctuaryIfEligible/,
   'Adult/season completion must not immediately move active pets into later systems.');
 
-assert.match(worker, /if \(result\.accepted && !result\.duplicate\) result\.lifecycle = await syncMoonpetLifecycleStage\(db, telegramId, next\.stage\);/,
-  'API evolution handling must sync lifecycle only after a newly accepted unlock.');
+assert.match(worker, /if \(!result\.accepted\) return result;\s+return preserveCommittedPetActionResult\(result, async \(\) => \{\s+result\.lifecycle = await syncMoonpetLifecycleStage\(db, telegramId, result\);/,
+  'Mini App evolution handling must sync the committed source for every accepted result, including duplicate recovery.');
 
 console.log('moonpet-runtime-audit-completion.test.mjs passed');

@@ -4378,11 +4378,10 @@ async function findActivePetSlot(db, telegramId) {
   }
 }
 
-async function finalizeActivePetEvolutionProgress(db, telegramId) {
+async function finalizeActivePetEvolutionProgress(db, telegramId, source) {
   try {
-    const active = await findActivePetSlot(db, telegramId);
-    if (!active) return null;
-    await reconcileEvolutionGrowthMarks(db, active.pet_id, active.season_key);
+    if (!source?.pet_id || !source?.season_key) return null;
+    await reconcileEvolutionGrowthMarks(db, source.pet_id, source.season_key);
     return true;
   } catch (error) {
     return null;
@@ -10740,12 +10739,12 @@ async function dispatchPetMiniAppAction(db, telegramId, user, body, botToken) {
   if (action === 'evolve') {
     const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
     const next = Object.values(MOONPET_EVOLUTIONS).find((entry) => entry.stage === Number(identity?.current_stage?.stage || 0) + 1);
-    if (!next) return { accepted: false, reason: 'final_evolution_reached' };
+    if (!next && !body.evolution_id) return { accepted: false, reason: 'final_evolution_reached' };
     const result = await evolveMoonpet(db, { telegram_id: telegramId, evolution_id: body.evolution_id || next.evolution_id, event_key: eventKey });
     if (!result.accepted) return result;
     return preserveCommittedPetActionResult(result, async () => {
-      if (result.accepted && !result.duplicate) result.lifecycle = await syncMoonpetLifecycleStage(db, telegramId, next.stage);
-      if (result.accepted) await finalizeActivePetEvolutionProgress(db, telegramId);
+      result.lifecycle = await syncMoonpetLifecycleStage(db, telegramId, result);
+      await finalizeActivePetEvolutionProgress(db, telegramId, result);
       return result;
     });
   }
@@ -11778,11 +11777,10 @@ export default {
       } else if (body.action === 'evolve') {
         result = await evolveMoonpet(env.DB, { telegram_id: telegramId, evolution_id: body.evolution_id, event_key: body.event_key });
         result = await preserveCommittedPetActionResult(result, async () => {
-          if (result.accepted && !result.duplicate) {
-            const identity = await getMoonpetIdentitySummary(env.DB, telegramId);
-            result.lifecycle = await syncMoonpetLifecycleStage(env.DB, telegramId, identity?.current_stage?.stage || 0);
+          if (result.accepted) {
+            result.lifecycle = await syncMoonpetLifecycleStage(env.DB, telegramId, result);
+            await finalizeActivePetEvolutionProgress(env.DB, telegramId, result);
           }
-          if (result.accepted) await finalizeActivePetEvolutionProgress(env.DB, telegramId);
           return result;
         });
       } else {
@@ -17656,8 +17654,8 @@ async function cmdPetEvolve(db, tok, chatId, telegramId, evolutionIdRaw = '', ev
     await sendTelegramMessage(tok, chatId, `<b>🧬 ${escapeHtml(next.name)} is not ready</b>\n${missing}\n\n${escapeHtml(getPetEvolutionPerk(next.stage).perk)}`, { reply_markup: evolveMarkup });
     return;
   }
-  if (!result.duplicate) await syncMoonpetLifecycleStage(db, telegramId, next.stage);
-  await finalizeActivePetEvolutionProgress(db, telegramId);
+  await syncMoonpetLifecycleStage(db, telegramId, result);
+  await finalizeActivePetEvolutionProgress(db, telegramId, result);
   await mirrorPetProfileToActiveInstance(db, telegramId);
   const updated = await getMoonpetIdentityWithLifecycle(db, telegramId);
   await syncPetAchievements(db, telegramId).catch(() => []);

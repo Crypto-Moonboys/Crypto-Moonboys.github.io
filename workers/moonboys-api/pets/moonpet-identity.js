@@ -557,7 +557,7 @@ export async function evolveMoonpet(db, request = {}) {
   const existing = await db.prepare(`SELECT evolution_id, stage, unlocked_at FROM telegram_pet_evolutions_by_pet
     WHERE pet_id = ? AND telegram_id = ? AND evolution_id = ?`)
     .bind(petId, telegramId, evolutionId).first();
-  if (existing) return { accepted: true, duplicate: true, reason: 'already_evolved', evolution: existing };
+  if (existing) return { accepted: true, duplicate: true, reason: 'already_evolved', pet_id: petId, season_key: scope.season_key, evolution: existing };
   const requirements = evolutionRequirementSql(definition, telegramId, petId, scope.season_key);
   const evolutionMilestone = `evolution_${evolutionId}`;
   const corruptMemory = await db.prepare(`SELECT 1 AS corrupt FROM telegram_pet_memories
@@ -621,10 +621,10 @@ export async function evolveMoonpet(db, request = {}) {
     const concurrent = await db.prepare(`SELECT evolution_id, stage, unlocked_at FROM telegram_pet_evolutions_by_pet
       WHERE pet_id = ? AND telegram_id = ? AND evolution_id = ?`)
       .bind(petId, telegramId, evolutionId).first();
-    if (concurrent) return { accepted: true, duplicate: true, reason: 'already_evolved', evolution: concurrent };
+    if (concurrent) return { accepted: true, duplicate: true, reason: 'already_evolved', pet_id: petId, season_key: scope.season_key, evolution: concurrent };
     return { accepted: false, duplicate: false, reason: 'requirements_not_met' };
   }
-  return { accepted: true, duplicate: false, reason: 'evolved', evolution: definition };
+  return { accepted: true, duplicate: false, reason: 'evolved', pet_id: petId, season_key: scope.season_key, evolution: definition };
 }
 
 export async function getMoonpetIdentitySummary(db, telegramIdRaw, request = {}) {

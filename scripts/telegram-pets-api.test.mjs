@@ -433,7 +433,8 @@ assert.match(miniAppActionProcessor, /switchActivePetSeasonSlot\(db, telegramId/
 assert.doesNotMatch(String(serializePetLeaderboardEntry({ telegram_id: 'private-id' })), /private-id/, 'serialized leaderboard entries must not expose internal Telegram owner IDs');
 assert.match(worker, /await completePetOnboarding\(db, telegramId, starter\.pet_id\)/, 'adoption retries must share canonical atomic onboarding');
 assert.match(worker, /const callbackLifecycle = await getMoonpetLifecycle/, 'legacy pet callbacks must enforce the egg-stage gate');
-assert.match(worker, /await syncMoonpetLifecycleStage\(db, telegramId, next\.stage\)/, 'legacy evolve command must synchronize lifecycle adulthood');
+assert.match(asyncBlock('cmdPetEvolve'), /await syncMoonpetLifecycleStage\(db, telegramId, result\);\s+await finalizeActivePetEvolutionProgress\(db, telegramId, result\);/, 'legacy evolve command must synchronize the committed source lifecycle and progress');
+assert.doesNotMatch(asyncBlock('cmdPetEvolve'), /!result\.duplicate/, 'accepted duplicate evolution results must remain eligible for lifecycle recovery');
 assert.match(worker, /async function getMoonpetIdentityWithLifecycle/, 'Telegram reactions must receive lifecycle temperament and traits');
 assert.match(worker, /getExistingMoonpetLifecycle\(db, telegramId\)/, 'reaction reads must not materialize lifecycle rows or mutate state');
 const petLeaderboardRoute = routeBlock('/telegram-pets/leaderboard');
