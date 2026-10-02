@@ -64,6 +64,44 @@ function fixture(owner) {
   return { sql, db, owner, pet, active, act, reveal, state, get };
 }
 
+test('action serialization uses the real projected identity and verified route owner', async () => {
+  const f = fixture('82000'), petId = 'current-' + f.owner;
+  f.reveal(petId);
+  // Normal hatch settlement stores the species in both saved pet rows.
+  f.sql.prepare("UPDATE telegram_pet_instances SET species='vinyl_crab' WHERE pet_id=?").run(petId);
+  f.sql.prepare("UPDATE telegram_pet_profiles SET species='vinyl_crab' WHERE telegram_id=?").run(f.owner);
+  const result = await f.act({ action: 'feed', displayed_pet_id: petId, request_id: 'real-identity-result' });
+  assert.equal(result.accepted, true);
+  const snapshot = await f.state(), identity = snapshot.guidance.identity;
+  assert.equal(identity.scope.pet_id, petId);
+  assert.equal(identity.scope.season_key, currentSeason);
+  assert.equal(Object.hasOwn(identity.scope, 'telegram_id'), false, 'use the shipped identity shape, without inventing an owner field');
+  const identityFields = ['name', 'pet_name', 'display_name', 'species', 'art_identity_id', 'stage', 'evolution_id', 'evolution_stage'];
+  const fullResult = hooks.serializePetMiniAppActionResult(result, identity, f.owner).pet;
+  assert.equal(fullResult.display_name, 'BOTTY', 'a matching real projection retains the revealed canonical name');
+  assert.equal(fullResult.evolution_stage, 3);
+  for (const field of identityFields) assert.equal(fullResult[field], snapshot.pet[field], 'matching projection retains ' + field);
+
+  f.pet('other-projected-pet', currentSeason, 300, 2);
+  f.reveal('other-projected-pet');
+  f.active('other-projected-pet');
+  const otherIdentity = (await f.state()).guidance.identity;
+  for (const [label, actionResult, projection, owner] of [
+    ['other selected pet', result, otherIdentity, f.owner],
+    ['other source season', { ...result, pet: { ...result.pet, season_key: oldSeason } }, identity, f.owner],
+    ['other action owner', { ...result, pet: { ...result.pet, telegram_id: 'different-owner' } }, identity, f.owner],
+    ['other verified owner', result, identity, 'different-owner'],
+    ['missing verified owner', result, identity, ''],
+    ['result-only response', result, null, f.owner],
+  ]) {
+    const patch = hooks.serializePetMiniAppActionResult(actionResult, projection, owner).pet;
+    for (const field of identityFields) assert.equal(Object.hasOwn(patch, field), false, label + ' cannot apply ' + field);
+    assert.equal(patch.pet_id, petId, label + ' retains the action source');
+    assert.equal(patch.pet_xp, result.pet.pet_xp, label + ' retains confirmed stats');
+  }
+  f.sql.close();
+});
+
 test('shop and trade receipts identify the earning pet after switching, with consistent boards', async () => {
   const f = fixture('82001'), petId = 'current-' + f.owner;
   f.reveal(petId);

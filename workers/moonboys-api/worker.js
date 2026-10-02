@@ -10785,8 +10785,9 @@ function serializePetMiniAppActionResult(result = {}, identity = null, telegramI
     // also belong to another pet selected after this action was committed.
     // Send only known stats in those cases, never synthetic egg/name defaults.
     const scope = identity?.scope;
+    // Identity scopes omit the owner; both route reads use this verified ID.
     const matchingIdentity = scope?.pet_id && scope.pet_id === result.pet.pet_id
-      && scope.telegram_id === String(result.pet.telegram_id)
+      && telegramId && String(telegramId) === String(result.pet.telegram_id)
       && scope.season_key === result.pet.season_key ? identity : null;
     output.pet = serializePet(result.pet, matchingIdentity);
     if (!matchingIdentity) {
