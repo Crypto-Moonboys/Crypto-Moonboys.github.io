@@ -136,4 +136,10 @@ const searchText = JSON.stringify(entry).toLowerCase();
 for (const term of ['crypto moonboy pets', 'telegram', 'pet game', 'tamagotchi', 'roguelite', 'pet leaderboard', 'pet adventure', 'pet notifications', 'moon gold', 'pet bag', 'pet jobs', 'daily chest', 'random event']) assert.ok(searchText.includes(term), `wiki index entry must include search term: ${term}`);
 assert.ok(wikiPage.includes('armor, weapon and charm'), 'wiki explains Pet Arena gear slots');
 
+
+for (const page of [wikiPage, howTo]) {
+  assert.match(page, /240 distinct-day(?: Growth)? Marks and 44 distinct-week Crests/, 'public guides must publish the current lifetime completion requirements');
+  assert.doesNotMatch(page, /60 distinct-day(?: Growth)? Marks and 10 distinct-week Crests/, 'public guides must remove short-cycle completion requirements');
+}
+
 console.log('crypto-moonboy-pets-surface.test.mjs passed');

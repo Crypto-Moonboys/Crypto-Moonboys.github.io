@@ -15,9 +15,9 @@ const worker = read('workers/moonboys-api/worker.js');
 const rewardAuthorityRegression = read('scripts/moonpet-reward-pet-id-authority.test.mjs');
 const identityIsolationRegression = read('scripts/telegram-pets-identity-expansion.test.mjs');
 
-assert.match(seasonCompletion, /required_growth_marks:\s*60/, 'Season completion must keep the 60 Growth Mark target.');
-assert.match(seasonCompletion, /required_weekly_crests:\s*10/, 'Season completion must keep the 10 Weekly Crest target.');
-assert.match(seasonCompletion, /season_days:\s*90/, 'Season completion must keep the 90-day Season 1 target.');
+assert.match(seasonCompletion, /required_growth_marks:\s*240/, 'Season completion must keep the 240 Growth Mark target.');
+assert.match(seasonCompletion, /required_weekly_crests:\s*44/, 'Season completion must keep the 44 Weekly Crest target.');
+assert.match(seasonCompletion, /season_days:\s*365/, 'Season completion must keep the 365-day lifetime target.');
 assert.match(seasonAuthority, /Math\.floor\(date\.getUTCMonth\(\) \/ 3\)/,
   'Moonpet season keys must stay on the shared quarter authority.');
 assert.doesNotMatch(`${seasonAuthority}\n${dailyMoonRun}\n${rogueliteFoundation}`, /dayOfYear|Math\.floor\(dayOfYear \/ 90\)/,

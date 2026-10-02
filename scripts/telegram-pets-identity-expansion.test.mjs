@@ -1,3 +1,4 @@
+import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
@@ -88,6 +89,7 @@ class D1 {
       try {
         const results = statements.map((statement) => {
           const prepared = this.database.prepare(statement.sql);
+          if (/^\s*SELECT\b/i.test(statement.sql)) return { results: prepared.all(...statement.args), meta: { changes: 0 } };
           if (/\bRETURNING\b/i.test(statement.sql)) {
             const rows = prepared.all(...statement.args);
             return { results: rows, meta: { changes: rows.length } };
@@ -114,15 +116,15 @@ function seedPetSlot(db, telegramId, slotNumber, acquisitionType = 'free', seedC
     (pet_id, telegram_id, season_key, slot_number, acquisition_type, source_event_key, arcade_xp_spent, status)
     VALUES (?, ?, ?, ?, ?, ?, ?, 'active')`)
     .run(petId, telegramId, TEST_SEASON_KEY, slotNumber, acquisitionType, slotNumber > 1 ? `fixture:slot:${slotNumber}` : null, slotNumber > 1 ? 500 : 0);
-  db.database.prepare(`UPDATE telegram_pet_season_slots SET created_at='2026-01-01T00:00:00Z' WHERE pet_id=?`).run(petId);
+  db.database.prepare(`UPDATE telegram_pet_season_slots SET created_at='2025-09-01T00:00:00Z' WHERE pet_id=?`).run(petId);
   db.database.prepare(`INSERT INTO telegram_pet_instances
     (pet_id, telegram_id, season_key, slot_number, pet_name, source_profile_updated_at, status)
     VALUES (?, ?, ?, ?, 'Moonpet', '2026-08-16T00:00:00Z', 'active')`)
     .run(petId, telegramId, TEST_SEASON_KEY, slotNumber);
   if (seedCalendar) {
-    for (let day = 1; day <= 60; day += 1) db.database.prepare(`INSERT INTO telegram_pet_growth_marks VALUES (?,?,?,?,?,?,?,?)`)
+    for (let day = 1; day <= 240; day += 1) db.database.prepare(`INSERT INTO telegram_pet_growth_marks VALUES (?,?,?,?,?,?,?,?)`)
       .run(`mark:${petId}:${day}`, petId, telegramId, TEST_SEASON_KEY, 'fixture', `fixture:${day}`, new Date(Date.UTC(2026, 0, day)).toISOString().slice(0, 10), new Date(Date.UTC(2026, 0, day)).toISOString());
-    for (let week = 1; week <= 10; week += 1) db.database.prepare(`INSERT INTO telegram_pet_weekly_crests VALUES (?,?,?,?,?,?,?,?,?)`)
+    for (let week = 1; week <= 44; week += 1) db.database.prepare(`INSERT INTO telegram_pet_weekly_crests VALUES (?,?,?,?,?,?,?,?,?)`)
       .run(`crest:${petId}:${week}`, petId, telegramId, TEST_SEASON_KEY, week, week, 'fixture', `fixture:${week}`, new Date(Date.UTC(2026, 0, week * 7)).toISOString());
   }
   return petId;
@@ -192,7 +194,7 @@ assert.equal(stage5Db.database.prepare(`SELECT stage FROM telegram_pet_evolution
 
 const freshDb = seedPlayer('fresh-progression', false);
 freshDb.database.prepare(`UPDATE telegram_pet_profiles SET pet_xp=640,level=5 WHERE telegram_id='fresh-progression'`).run();
-freshDb.database.prepare(`UPDATE telegram_pet_season_slots SET created_at='2026-01-01T00:00:00Z' WHERE telegram_id='fresh-progression'`).run();
+freshDb.database.prepare(`UPDATE telegram_pet_season_slots SET created_at='2025-09-01T00:00:00Z' WHERE telegram_id='fresh-progression'`).run();
 freshDb.database.prepare(`INSERT INTO telegram_pet_material_balances (telegram_id,material_key,quantity) VALUES ('fresh-progression','scrap_metal',5)`).run();
 assert.equal((await evolveMoonpet(freshDb, { telegram_id: 'fresh-progression', evolution_id: 'moon_egg', event_key: 'fresh:egg' })).accepted, true);
 const freshPetId = `pet:fresh-progression:${TEST_SEASON_KEY}:1`;
@@ -393,7 +395,7 @@ assert.equal(evolutionDb.database.prepare("SELECT COUNT(*) AS count FROM telegra
 
 evolutionDb.database.prepare("UPDATE telegram_pet_profiles SET pet_xp=96040,level=50 WHERE telegram_id='identity-player'").run();
 evolutionDb.database.prepare("UPDATE telegram_pet_boss_victories SET victories=15 WHERE pet_id=? AND telegram_id='identity-player' AND boss_id='alley_king'").run(identityPetId);
-evolutionDb.database.prepare("UPDATE telegram_pet_material_balances SET quantity=CASE material_key WHEN 'scrap_metal' THEN 40 ELSE 15 END WHERE telegram_id='identity-player'").run();
+evolutionDb.database.prepare("UPDATE telegram_pet_material_balances SET quantity=CASE material_key WHEN 'scrap_metal' THEN 60 ELSE 40 END WHERE telegram_id='identity-player'").run();
 for (let index = 3; index <= 10; index += 1) evolutionDb.database.prepare(
   "INSERT INTO telegram_pet_relics (telegram_id,relic_id,rarity,effects_json) VALUES ('identity-player',?,'rare','{}')",
 ).run(`legendary-relic-${index}`);
@@ -820,7 +822,7 @@ assert.equal(arenaProducer.db.database.prepare('SELECT COUNT(*) AS count FROM te
 const queuedArena = seedArenaPlayer('arena-queue-authority');
 const queuedArenaPetB = seedPetSlot(queuedArena.db, 'arena-queue-authority', 2, 'arcade_xp', false);
 copyArenaPlayerInto(queuedArena.db, 'arena-queue-opponent');
-const queueAct = (telegramId, action, payload = {}) => workerHooks.processPetMiniAppAction(queuedArena.db, telegramId, { id: telegramId }, {
+const queueAct = (telegramId, action, payload = {}) => dispatchRenderedPetAction(queuedArena.db, telegramId, { id: telegramId }, {
   action,
   request_id: `${action}:${telegramId}:${crypto.randomUUID()}`,
   ...payload,
@@ -857,7 +859,7 @@ assert.equal(queuedArena.db.database.prepare('SELECT COUNT(*) AS count FROM tele
 
 const rolloverArena = seedArenaPlayer('arena-rollover-authority', 'pet-s2026-002');
 copyArenaPlayerInto(rolloverArena.db, 'arena-rollover-opponent', 'pet-s2026-002');
-const rolloverAct = (telegramId, action, payload = {}) => workerHooks.processPetMiniAppAction(rolloverArena.db, telegramId, { id: telegramId }, {
+const rolloverAct = (telegramId, action, payload = {}) => dispatchRenderedPetAction(rolloverArena.db, telegramId, { id: telegramId }, {
   action,
   request_id: `${action}:${telegramId}:${crypto.randomUUID()}`,
   ...payload,

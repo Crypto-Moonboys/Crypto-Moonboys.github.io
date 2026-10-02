@@ -1,3 +1,4 @@
+import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { DatabaseSync } from 'node:sqlite';
@@ -60,7 +61,7 @@ assert.equal((await hooks.deletePetSlot(db,'owner',{pet_id:oldId})).reason,'pet_
 assert.equal((await hooks.deletePetSlot(db,'owner',{...confirm(oldId),confirm_pet_id:'other'})).accepted,false);
 assert.equal((await hooks.deletePetSlot(db,'stranger',confirm(oldId))).reason,'pet_delete_not_available');
 assert.equal(sql.prepare('SELECT status FROM telegram_pet_instances WHERE pet_id=?').get(oldId).status,'active');
-const deletion = await hooks.processPetMiniAppAction(db,'owner',{},confirm(oldId),'');
+const deletion = await dispatchRenderedPetAction(db,'owner',{},confirm(oldId),'');
 assert.equal(deletion.accepted,true,'egg deletion bypasses hatch requirements');
 assert.equal(hooks.serializePetMiniAppActionResult(deletion).reward_history_preserved,true);
 assert.equal(sql.prepare('SELECT status FROM telegram_pet_instances WHERE pet_id=?').get(oldId).status,'archived');

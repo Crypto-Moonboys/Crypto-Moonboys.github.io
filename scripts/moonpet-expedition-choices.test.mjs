@@ -1,3 +1,4 @@
+import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
@@ -18,6 +19,7 @@ class Statement {
   async first() { return sqlite.prepare(this.sql).get(...this.args) || null; }
   async all() { return { results: sqlite.prepare(this.sql).all(...this.args) }; }
   async run() {
+    if (sqlite.prepare(this.sql).columns().length && !/\bRETURNING\b/i.test(this.sql)) return { results: sqlite.prepare(this.sql).all(...this.args), meta: { changes: 0 } };
     if (/\bRETURNING\b/i.test(this.sql)) { const results = sqlite.prepare(this.sql).all(...this.args); return { results, meta: { changes: results.length } }; }
     const result = sqlite.prepare(this.sql).run(...this.args); return { results: [], meta: { changes: Number(result.changes) } };
   }
@@ -82,7 +84,7 @@ assert.equal(getPetExpedition(25).key, 'guardian_rift', 'older clients retain th
 for (const destination of PET_EXPEDITION_TIERS) {
   const id = 'destination-' + destination.key;
   const target = await seed(id);
-  const result = await hooks.processPetMiniAppAction(db, id, { id }, { action: 'expedition', request_id: 'chosen-destination',
+  const result = await dispatchRenderedPetAction(db, id, { id }, { action: 'expedition', request_id: 'chosen-destination',
     pet_id: target.pet_id, expedition_key: destination.key, rewards: { moon_gold: 999999 }, energy_cost: 0 }, 'test-token');
   assert.equal(result.accepted, true);
   assert.equal(result.expedition.key, destination.key);

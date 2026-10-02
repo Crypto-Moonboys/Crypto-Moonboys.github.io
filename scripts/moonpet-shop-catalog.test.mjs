@@ -1,3 +1,4 @@
+import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import fs from 'node:fs';
@@ -18,15 +19,22 @@ function fixture(owner) {
     async all() { db.statementCount++; if (db.beforeAll) await db.beforeAll(this); return { results: sql.prepare(this.query).all(...this.args) }; }
     exec() {
       db.statementCount++;
+      if (sql.prepare(this.query).columns().length && !/\bRETURNING\b/i.test(this.query)) return { results: sql.prepare(this.query).all(...this.args), meta: { changes: 0 } };
       if (/\bRETURNING\b/i.test(this.query)) { const results = sql.prepare(this.query).all(...this.args); return { results, meta: { changes: results.length } }; }
       return { results: [], meta: { changes: Number(sql.prepare(this.query).run(...this.args).changes) } };
     }
     async run() { if (db.beforeRun) await db.beforeRun(this); return this.exec(); }
   }
   const db = { statementCount: 0, beforeBatch: null, beforeRun: null, prepare(query) { return new Statement(query); }, async batch(statements) {
+    for (const statement of statements) {
+      if (/^\s*SELECT\b/i.test(statement.query)) {
+        if (this.beforeFirst) { const reply = await this.beforeFirst(statement); if (reply?.success === false) throw Error('pet_state_read_unavailable'); }
+        if (this.beforeAll) { const reply = await this.beforeAll(statement); if (reply?.success === false) throw Error('pet_state_read_unavailable'); }
+      } else if (this.beforeRun) await this.beforeRun(statement);
+    }
     if (this.beforeBatch) await this.beforeBatch(statements);
     sql.exec('BEGIN');
-    try { const results = []; for (const s of statements) results.push(s.exec()); sql.exec('COMMIT'); return results; }
+    try { const results = []; for (const s of statements) results.push(Object.hasOwn(s,'run') ? await s.run() : Object.hasOwn(s,'all') ? await s.all() : s.exec()); sql.exec('COMMIT'); return results; }
     catch (error) { sql.exec('ROLLBACK'); throw error; }
   } };
   sql.prepare('INSERT INTO telegram_users (telegram_id,first_name) VALUES (?,?)').run(owner, 'Test player');
@@ -46,7 +54,7 @@ function fixture(owner) {
     const p = sql.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=?').get(id);
     sql.prepare('UPDATE telegram_pet_profiles SET pet_xp=?,equipped_food=?,level=? WHERE telegram_id=?').run(p.pet_xp, p.equipped_food, p.level, owner);
   };
-  const act = body => hooks.processPetMiniAppAction(db,owner,{id:owner},body,'fixture-token');
+  const act = body => dispatchRenderedPetAction(db,owner,{id:owner},body,'fixture-token');
   const get = async path => { const response = await worker.fetch(new Request('https://moonboys-api.test' + path), { DB: db }); assert.equal(response.status, 200); return response.json(); };
   return { sql, db, owner, pet, active, act, get };
 }
@@ -115,8 +123,9 @@ test('audit every permanent Shop item, each upgrade level, and replay',async()=>
 test('audit all recipes and consumable use',async()=>{
  const f=funded('recipes');
  for(const [key,recipe] of Object.entries(PET_CRAFTING_RECIPES)){
+  const before=f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item' AND asset_key=?").get(f.owner,recipe.output.item_key)?.quantity||0;
   const r=await processPetCraftRecipe(f.db,f.owner,key,key);assert.equal(r.accepted,true,key);
-  assert.equal(f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item' AND asset_key=?").get(f.owner,recipe.output.item_key).quantity,recipe.output.quantity);
+  assert.equal(f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=? AND asset_type='item' AND asset_key=?").get(f.owner,recipe.output.item_key).quantity,before+recipe.output.quantity);
   assert.equal((await processPetCraftRecipe(f.db,f.owner,key,key)).duplicate,true);
  }
  for(const key of ['moon_snack','energy_drink','clean_wipe','lucky_charm','style_patch','adventure_map']){
@@ -131,7 +140,7 @@ test('audit all recipes and consumable use',async()=>{
    assert.equal(board.entries[0].pet_xp,r.pet_xp_awarded+(period==='all_time'?500000:0),key+period);
   }
  }
- console.log('5 recipes and 6 consumables verified with single use and four-period XP parity');
+ console.log('6 recipes and 6 consumables verified with single use and four-period XP parity');
 });
 
 test('all twelve market offers deliver their full bundle exactly once', async () => {
@@ -210,7 +219,7 @@ for(const conflict of ['active pet','ownership','loadout']) test(`equipment rese
     if(conflict==='loadout')f.sql.prepare("UPDATE telegram_pet_instances SET equipped_food='crystal_bowl' WHERE telegram_id=?").run(f.owner);
   };
   const r=await f.act({action:'equip',item_key:'moon_kibble',request_id:'race'});
-  assert.equal(injected,true);assert.equal(r.accepted,false);assert.equal(r.reason,'equipment_state_changed');
+  assert.equal(injected,true);assert.equal(r.accepted,false);assert.equal(r.reason,conflict==='active pet'?'displayed_pet_changed':'equipment_state_changed');
   assert.deepEqual(wallet(f),before);
   assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='equip'").get().n,0);
 });

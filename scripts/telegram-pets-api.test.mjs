@@ -1,3 +1,4 @@
+import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 import assert from 'node:assert/strict';
 import { createHash, createHmac } from 'node:crypto';
 import fs from 'node:fs';
@@ -196,6 +197,8 @@ assert.equal(serializedCooldownAction.expires_at, '2026-08-22T12:02:00.000Z',
   'rejected action expires_at must not be dropped from the Mini App result payload');
 assert.equal(serializedCooldownAction.server_time, '2026-08-22T12:00:00.000Z',
   'rejected action server_time must not be dropped from the Mini App result payload');
+assert.equal(serializePetMiniAppActionResult({ accepted: false, reason: 'displayed_pet_changed', refresh_state: true }).refresh_state, true,
+  'stale-target refresh authority must reach result-only Mini App clients');
 const simultaneousCooldowns = buildPetMiniAppCooldownSummary({
   now: cooldownNow,
   journeySummary: {
@@ -423,7 +426,7 @@ assert.match(miniAppStateBuilder, /season_slots: seasonSlots/, 'Mini App state m
 const petMissionsBuilder = asyncBlock('buildPetMissions');
 assert.match(petMissionsBuilder, /telegram_pet_system_events[\s\S]*\.first\(\)\.then\(requirePetFirstReadResult\)/,
   'daily Shop-goal upgrade evidence must fail closed instead of becoming zero progress');
-const miniAppActionProcessor = asyncBlock('processPetMiniAppAction');
+const miniAppActionProcessor = asyncBlock('dispatchPetMiniAppAction');
 assert.match(miniAppActionProcessor, /action === 'season_slots'/, 'Mini App action handler must expose season slot summary reads');
 assert.match(miniAppActionProcessor, /buyPetSeasonSlot\(db, telegramId/, 'Mini App action handler must sell slots through the authenticated action flow');
 assert.match(miniAppActionProcessor, /switchActivePetSeasonSlot\(db, telegramId/, 'Mini App action handler must switch owned slots through the authenticated action flow');
@@ -2056,6 +2059,7 @@ class SqliteD1 {
           this.failBatchSqlPattern = null;
           throw new Error('simulated_d1_batch_failure');
         }
+        if (/^\s*SELECT\b/i.test(statement.sql)) return { results: prepared.all(...statement.args), meta: { changes: 0 } };
         if (/\bRETURNING\b/i.test(statement.sql)) {
           const rows = prepared.all(...statement.args);
           return { results: rows, meta: { changes: rows.length } };
@@ -2547,7 +2551,7 @@ assert.equal(initialSeasonSlots.slots[2].unlocked, false, 'slot 3 must start loc
 assert.equal(initialSeasonSlots.slots[2].purchase_enabled, false, 'slot 3 must remain disabled until slot 2 is owned');
 assert.equal(initialSeasonSlots.slots[2].purchase_disabled_reason, 'previous_pet_slot_required', 'slot 3 must advertise the sequential purchase requirement');
 assert.equal(initialSeasonSlots.slots[2].affordable, false, 'slot 3 must not be affordable before slot 2 is owned');
-const slotSummaryAction = await processPetMiniAppAction(seasonSlotRuntimeDb, 'season-slot-runtime', { id: 'season-slot-runtime' }, {
+const slotSummaryAction = await dispatchRenderedPetAction(seasonSlotRuntimeDb, 'season-slot-runtime', { id: 'season-slot-runtime' }, {
   action: 'season_slots',
   request_id: 'slot-summary',
 }, 'bot-token');
@@ -2890,7 +2894,7 @@ for (const [action, expectedField] of [['energy_drink', 'energy'], ['dance', 'ha
   await __petMediaTestHooks.createMoonEggLifecycle(db, telegramId, `fixture:${telegramId}:egg`);
   db.database.prepare('UPDATE telegram_pet_profiles SET happiness=40, energy=72 WHERE telegram_id=?').run(telegramId);
   db.database.prepare('UPDATE telegram_pet_instances SET happiness=40, energy=72 WHERE telegram_id=?').run(telegramId);
-  const first = await processPetMiniAppAction(db, telegramId, { id: telegramId }, {
+  const first = await dispatchRenderedPetAction(db, telegramId, { id: telegramId }, {
     action,
     request_id: `${action}:first`,
   }, '123456:test-token');
@@ -2901,7 +2905,7 @@ for (const [action, expectedField] of [['energy_drink', 'energy'], ['dance', 'ha
     { moon_gold: 0, moon_crystals: 0, style_tokens: 0 },
     `${action} egg acceptance must remain wallet-neutral`,
   );
-  const duplicate = await processPetMiniAppAction(db, telegramId, { id: telegramId }, {
+  const duplicate = await dispatchRenderedPetAction(db, telegramId, { id: telegramId }, {
     action,
     request_id: `${action}:first`,
   }, '123456:test-token');
@@ -2911,7 +2915,7 @@ for (const [action, expectedField] of [['energy_drink', 'energy'], ['dance', 'ha
 
 const eggMiniBlocked = seedRepeatRewardPlayer('egg-mini-blocked', 72, specialActionNow.toISOString(), { currentSeason: true });
 await __petMediaTestHooks.createMoonEggLifecycle(eggMiniBlocked, 'egg-mini-blocked', 'fixture:egg-mini-blocked:egg');
-const blockedTrain = await processPetMiniAppAction(eggMiniBlocked, 'egg-mini-blocked', { id: 'egg-mini-blocked' }, {
+const blockedTrain = await dispatchRenderedPetAction(eggMiniBlocked, 'egg-mini-blocked', { id: 'egg-mini-blocked' }, {
   action: 'train',
   request_id: 'train:blocked',
 }, '123456:test-token');
@@ -2920,12 +2924,12 @@ assert.equal(blockedTrain.reason, 'moon_egg_must_hatch');
 
 const eggMiniCooldown = seedRepeatRewardPlayer('egg-mini-cooldown', 72, specialActionNow.toISOString(), { currentSeason: true });
 await __petMediaTestHooks.createMoonEggLifecycle(eggMiniCooldown, 'egg-mini-cooldown', 'fixture:egg-mini-cooldown:egg');
-const firstEggDrink = await processPetMiniAppAction(eggMiniCooldown, 'egg-mini-cooldown', { id: 'egg-mini-cooldown' }, {
+const firstEggDrink = await dispatchRenderedPetAction(eggMiniCooldown, 'egg-mini-cooldown', { id: 'egg-mini-cooldown' }, {
   action: 'energy_drink',
   request_id: 'energy:first',
 }, '123456:test-token');
 assert.equal(firstEggDrink.accepted, true);
-const cooldownEggDrink = await processPetMiniAppAction(eggMiniCooldown, 'egg-mini-cooldown', { id: 'egg-mini-cooldown' }, {
+const cooldownEggDrink = await dispatchRenderedPetAction(eggMiniCooldown, 'egg-mini-cooldown', { id: 'egg-mini-cooldown' }, {
   action: 'energy_drink',
   request_id: 'energy:cooldown',
 }, '123456:test-token');
@@ -2934,7 +2938,7 @@ assert.equal(cooldownEggDrink.reason, 'cooldown', 'eligible egg special actions 
 
 const eggMiniBusy = seedPetActivitySession('egg-mini-busy', { now: specialActionNow, elapsed_seconds: 120, currentSeason: true });
 await __petMediaTestHooks.createMoonEggLifecycle(eggMiniBusy.db, 'egg-mini-busy', 'fixture:egg-mini-busy:egg');
-const busyDance = await processPetMiniAppAction(eggMiniBusy.db, 'egg-mini-busy', { id: 'egg-mini-busy' }, {
+const busyDance = await dispatchRenderedPetAction(eggMiniBusy.db, 'egg-mini-busy', { id: 'egg-mini-busy' }, {
   action: 'dance',
   request_id: 'dance:busy',
 }, '123456:test-token');
@@ -3838,15 +3842,18 @@ switchItemDb.beforeBatchSql(/INSERT OR IGNORE INTO telegram_pet_events/, () => {
   switchItemDb.database.prepare("UPDATE telegram_pet_active_slots SET pet_id='use-item-switch-b' WHERE telegram_id='use-item-switch'").run();
 });
 const switchedUse = await processPetUseItem(switchItemDb, 'use-item-switch', 'moon_snack', {
-  event_key: 'use-item-switch:snack', source: 'inventory_concurrency_regression',
+  event_key: 'use-item-switch:snack', source: 'inventory_concurrency_regression', pet_id: switchPetA,
 });
-assert.equal(switchedUse.accepted, true, 'active pet switching during item use must not block the claimed pet authority');
-assert.equal(switchItemDb.database.prepare('SELECT pet_id FROM telegram_pet_events WHERE event_key=?').get('use-item-switch:snack').pet_id, switchPetA,
-  'item-use receipt must keep the pet_id read before active-pet switching');
-assert.equal(switchItemDb.database.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(switchPetA).pet_xp, 104,
-  'item-use reward must apply to the originally claimed active pet');
+assert.equal(switchedUse.accepted, false, 'active pet switching during item settlement must reject the stale target');
+assert.equal(switchedUse.reason, 'pet_action_state_changed');
+assert.equal(switchItemDb.database.prepare('SELECT pet_id FROM telegram_pet_events WHERE event_key=?').get('use-item-switch:snack'), undefined,
+  'stale item use must not create a receipt');
+assert.equal(switchItemDb.database.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(switchPetA).pet_xp, 100,
+  'stale item use must not award the previously displayed pet');
 assert.equal(switchItemDb.database.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id='use-item-switch-b'").get().pet_xp, 0,
   'active pet switching must not redirect item-use rewards to the new active pet');
+assert.equal(switchItemDb.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id='use-item-switch' AND asset_key='moon_snack'").get().quantity, 1,
+  'stale item use must not consume inventory');
 
 const legacyBossDb = seedRepeatRewardPlayer('legacy-boss-gate', 100, new Date().toISOString(), { seedAuthority: false });
 legacyBossDb.database.prepare(`UPDATE telegram_pet_profiles SET pet_xp=100000, level=51, stage='street_moonpet'

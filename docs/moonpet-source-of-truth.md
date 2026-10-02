@@ -39,12 +39,12 @@ receipts remain unchanged. Existing pets' weekly evidence keeps historical weeks
 continues at week 14 after the creation quarter, with no end date. Migration 085
 retains historical nullable qualification keys and every existing receipt while
 lifting the database week limit; migration 086 restores proven Sanctuary archives.
-Competition calendars, existing prices and evolution thresholds remain unchanged.
+Competition calendars and existing extra-space prices remain unchanged.
 First-pet entry requires 1,000 lifetime Arcade XP from the server-owned
 `arcade_progression_state.arcade_xp_total`. Entry does not spend XP. Community XP,
 Telegram profile levels, spendable-wallet balances and client payloads cannot
 satisfy this gate. Existing pet profiles retain access, including safe starter
-recovery. The proposed year-long evolution pacing remains separate work.
+recovery. Evolution now follows lifetime gates at 7, 28, 84, 182 and 365 ownership days, paired with progressively higher Pet level, Growth Mark, Weekly Crest, boss, relic and material requirements. Existing unlocked stages remain unlocked; partially progressed pets keep every earned balance and evidence row and continue toward the new next-stage gate.
 
 State projects `lifetime_progression` separately from `competition_season`.
 Pet age starts at the saved ownership creation date. Migration 087 marks existing
@@ -66,6 +66,12 @@ ownership, the pet instance and all onboarding effects commit together. Creation
 and repair share a canonical per-pet onboarding claim; its lifecycle, first-adoption memory, egg evolution and analytics commit in
 one D1 batch. Concurrent requests cannot duplicate these effects. A failed batch
 rolls back the claim and retries safely without spending XP or overwriting pet stats.
+
+## Long-term evolution and Kaiju materials
+
+The six-stage path targets roughly one year of consistent play. Egg care lasts at least one week; Stage 2 arrives no earlier than day 28; the remaining gates are days 84, 182 and 365. Their distinct-day Growth Mark requirements are 7, 21, 60, 120 and 240, while distinct-week Crest requirements are 1, 3, 10, 22 and 44. Pet levels, boss victories, relics and materials remain cumulative lifetime checks. These clocks do not use or reset daily, weekly or quarterly competition scores.
+
+Kaiju Fragments have a live repeatable sink in Crafting: a level-20 Kaiju Field Kit costs 8 Kaiju Fragments and 2 Battery Cells and produces 2 Energy Drinks. The existing crafting receipt atomically validates level, capacity and current material balances, debits materials, credits inventory and makes retries idempotent. Existing fragment balances are unchanged.
 
 ## XP and score ownership
 
@@ -161,7 +167,7 @@ the durable insert/accept triggers so the credit survives a failed refresh and
 UTC rollover.
 
 Signal Sovereign is an additional season finale. Eligibility is final evolution
-plus 60 distinct-day Marks and 10 distinct-week Crests, or an existing season
+plus 240 distinct-day Marks and 44 distinct-week Crests, or an existing season
 completion marker. It never removes completion, retires the pet or
 makes boss victory a new mandatory requirement. Retained qualified/complete
 pets, including earlier seasons, can play. Striker, Guardian and Tactician have
@@ -961,3 +967,9 @@ The Worker archives the old ownership and instance, retains their immutable IDs 
 Account XP, currencies, inventory, seasonal scores, all-time totals, achievements, reward receipts and linked evidence are retained. The old pet remains unavailable for switching or ownership repair. Profile lists the latest 20 deleted pets with their saved Pet XP and awarded receipt counts; older history remains stored.
 
 Deletion is blocked during active or recoverable timed work, runs, queued/active combat, active quests/finales and unsettled reward claims. Saved source records also block deletion before a claim exists: pending pet events, recoverable rejected district/story/raid decisions, defeated but unclaimed seasonal bosses, unpaid completed Arena/Kaiju participants, won run bosses and unapplied Daily Run terminal records. Uncharged or malformed rejected decisions do not permanently lock deletion. These guards are rechecked in the deletion transaction. Failed batches roll back; concurrent or repeated requests cannot create a second egg or delete the replacement. Deploy the Worker and updated Mini App together. No new D1 migration is required beyond the existing 085–087 prerequisites.
+
+### Displayed-pet action authority (1 October 2026)
+
+Every non-exempt Mini App action carries the pet rendered when the player clicked. The dispatcher passes a request-local database scope into every handler and nested helper. Each read or mutation runs in a D1 transaction with an assertion that the same owned pet is still active; a switch aborts that transaction, including standalone writes. The scope remains closed after a stale assertion even if an optional projection catches the error. The response requests immediate authoritative refresh. One assertion statement is added per database call; SQL and original batch result ordering remain unchanged.
+
+Roster/account controls and saved-source recovery use their existing authority. Timed activity claim/cancel, like saved runs, bosses and finales, retain the recorded session pet rather than acquiring a newly selected pet. A transaction committed before a later switch remains valid for its recorded source; normal recovery completes its saved side effects without replaying rewards. No migration is required.

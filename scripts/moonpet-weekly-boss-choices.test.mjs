@@ -1,3 +1,4 @@
+import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
@@ -16,6 +17,7 @@ class Statement {
   async first() { if (beforeFirst) await beforeFirst(this); return sqlite.prepare(this.sql).get(...this.args) || null; }
   async all() { return { results: sqlite.prepare(this.sql).all(...this.args) }; }
   async run() {
+    if (sqlite.prepare(this.sql).columns().length && !/\bRETURNING\b/i.test(this.sql)) return { results: sqlite.prepare(this.sql).all(...this.args), meta: { changes: 0 } };
     if (/\bRETURNING\b/i.test(this.sql)) { const results = sqlite.prepare(this.sql).all(...this.args); return { results, meta: { changes: results.length } }; }
     const result = sqlite.prepare(this.sql).run(...this.args); return { results: [], meta: { changes: Number(result.changes) } };
   }
@@ -77,7 +79,7 @@ for (const action of ['strike', 'outsmart', 'endure']) {
   const id = 'weekly-preview-' + action, pet = await seed(id);
   const before = await hooks.buildPetMiniAppState(db, id, 'test-token');
   const choice = before.guidance.weekly_boss.choices.find((entry) => entry.key === action);
-  const result = await hooks.processPetMiniAppAction(db, id, { id }, { action: 'weekly_boss', move: action, pet_id: pet.pet_id, request_id: action, damage: 999999, energy_cost: 0 }, 'test-token');
+  const result = await dispatchRenderedPetAction(db, id, { id }, { action: 'weekly_boss', move: action, pet_id: pet.pet_id, request_id: action, damage: 999999, energy_cost: 0 }, 'test-token');
   assert.equal(result.accepted, true);
   assert.ok(result.damage >= choice.minimum_damage && result.damage <= choice.maximum_damage, 'actual damage must stay within the displayed range');
   assert.equal(sqlite.prepare('SELECT energy FROM telegram_pet_instances WHERE pet_id=?').get(pet.pet_id).energy, 68);
@@ -172,13 +174,13 @@ assert.equal(pending.length, 1); assert.equal(pending[0].pet_id, winner.pet_id);
 const body = { action: 'weekly_boss_claim', pet_id: winner.pet_id, week_key: ready.week_key, boss_id: ready.boss_id };
 assert.equal((await hooks.claimPetWeeklyBossReward(db, recoveryOwner, { ...body, pet_id: replacement })).accepted, false);
 assert.equal((await hooks.claimPetWeeklyBossReward(db, 'weekly-low', body)).accepted, false);
-const recovered = await hooks.processPetMiniAppAction(db, recoveryOwner, { id: recoveryOwner }, body, 'test-token');
+const recovered = await dispatchRenderedPetAction(db, recoveryOwner, { id: recoveryOwner }, body, 'test-token');
 assert.equal(recovered.accepted, true, recovered.reason);
 assert.equal(sqlite.prepare('SELECT energy FROM telegram_pet_instances WHERE pet_id=?').get(winner.pet_id).energy, 68);
 assert.equal(sqlite.prepare('SELECT energy FROM telegram_pet_instances WHERE pet_id=?').get(replacement).energy, 30);
 assert.equal(sqlite.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(recoveryOwner).moon_gold, 100 + ready.reward.moon_gold);
 assert.equal(sqlite.prepare("SELECT pet_id FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_weekly_boss'").get(recoveryOwner).pet_id, winner.pet_id);
-assert.equal((await hooks.processPetMiniAppAction(db, recoveryOwner, { id: recoveryOwner }, body, 'test-token')).duplicate, true);
+assert.equal((await dispatchRenderedPetAction(db, recoveryOwner, { id: recoveryOwner }, body, 'test-token')).duplicate, true);
 assert.equal((await hooks.buildPetMiniAppState(db, recoveryOwner, 'test-token')).guidance.weekly_boss.pending_rewards.length, 0);
 assert.equal(sqlite.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(recoveryOwner).moon_gold, 100 + ready.reward.moon_gold);
 

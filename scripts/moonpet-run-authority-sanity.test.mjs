@@ -1,3 +1,4 @@
+import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import fs from 'node:fs';
@@ -19,12 +20,19 @@ function fixture(owner) {
     async all() { db.statementCount++; if (db.beforeAll) await db.beforeAll(this); return { results: sql.prepare(this.query).all(...this.args) }; }
     exec() {
       db.statementCount++;
+      if (sql.prepare(this.query).columns().length && !/\bRETURNING\b/i.test(this.query)) return { results: sql.prepare(this.query).all(...this.args), meta: { changes: 0 } };
       if (/\bRETURNING\b/i.test(this.query)) { const results = sql.prepare(this.query).all(...this.args); return { results, meta: { changes: results.length } }; }
       return { results: [], meta: { changes: Number(sql.prepare(this.query).run(...this.args).changes) } };
     }
     async run() { if (db.beforeRun) await db.beforeRun(this); return this.exec(); }
   }
   const db = { statementCount: 0, beforeBatch: null, beforeRun: null, prepare(query) { return new Statement(query); }, async batch(statements) {
+    for (const statement of statements) {
+      if (/^\s*SELECT\b/i.test(statement.query)) {
+        if (this.beforeFirst) { const reply = await this.beforeFirst(statement); if (reply?.success === false) throw Error('pet_state_read_unavailable'); }
+        if (this.beforeAll) { const reply = await this.beforeAll(statement); if (reply?.success === false) throw Error('pet_state_read_unavailable'); }
+      } else if (this.beforeRun) await this.beforeRun(statement);
+    }
     if (this.beforeBatch) await this.beforeBatch(statements);
     sql.exec('BEGIN');
     try { const results = []; for (const s of statements) results.push(s.exec()); sql.exec('COMMIT'); return results; }
@@ -46,7 +54,7 @@ function fixture(owner) {
     const p = sql.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=?').get(id);
     sql.prepare('UPDATE telegram_pet_profiles SET pet_xp=?,equipped_food=?,level=? WHERE telegram_id=?').run(p.pet_xp, p.equipped_food, p.level, owner);
   };
-  const act = body => hooks.processPetMiniAppAction(db,owner,{id:owner},body,'fixture-token');
+  const act = body => dispatchRenderedPetAction(db,owner,{id:owner},body,'fixture-token');
   const reveal = id => sql.prepare("INSERT INTO telegram_pet_evolutions_by_pet (pet_id,telegram_id,evolution_id,stage,unlock_event_key) VALUES (?,?,'elite_moonpet',3,'reveal')").run(id,owner);
   const state = () => hooks.buildPetMiniAppState(db, owner, 'fixture-token');
   const get = async path => { const response = await worker.fetch(new Request('https://moonboys-api.test' + path), { DB: db }); assert.equal(response.status, 200); return response.json(); };

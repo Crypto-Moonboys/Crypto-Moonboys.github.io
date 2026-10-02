@@ -1,3 +1,4 @@
+import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import fs from 'node:fs';
@@ -12,13 +13,14 @@ const file = name => fs.readFileSync(new URL('../workers/moonboys-api/' + name, 
 function fixture(owner) {
   const sql = new DatabaseSync(':memory:');
   sql.exec(file('schema.sql'));
-  for (const migration of ['048_telegram_pet_player_expansion.sql', '058_telegram_pet_season_completion.sql', '061_moonpet_season_economy_calibration.sql']) sql.exec(file('migrations/' + migration));
+  for (const migration of ['048_telegram_pet_player_expansion.sql', '058_telegram_pet_season_completion.sql', '061_moonpet_season_economy_calibration.sql', '085_permanent_pet_weekly_evidence.sql']) sql.exec(file('migrations/' + migration));
   class Statement {
     constructor(query, args = []) { this.query = query; this.args = args; }
     bind(...args) { return new Statement(this.query, args); }
     async first() { return sql.prepare(this.query).get(...this.args) || null; }
     async all() { return { results: sql.prepare(this.query).all(...this.args) }; }
     exec() {
+      if (sql.prepare(this.query).columns().length && !/\bRETURNING\b/i.test(this.query)) return { results: sql.prepare(this.query).all(...this.args), meta: { changes: 0 } };
       if (/\bRETURNING\b/i.test(this.query)) { const results = sql.prepare(this.query).all(...this.args); return { results, meta: { changes: results.length } }; }
       return { results: [], meta: { changes: Number(sql.prepare(this.query).run(...this.args).changes) } };
     }
@@ -53,7 +55,7 @@ function fixture(owner) {
   };
   const completeSeason = (id = petId, sourceSeason = season) => sql.prepare(`INSERT INTO telegram_pet_season_completions
     (pet_id,telegram_id,season_key,legendary_evolution_id,growth_marks_earned,weekly_crests_earned) VALUES (?,?,?,'legendary_moon_guardian',60,10)`).run(id, owner, sourceSeason);
-  const act = body => hooks.processPetMiniAppAction(db, owner, { id: owner }, body, 'test-token');
+  const act = body => dispatchRenderedPetAction(db, owner, { id: owner }, body, 'test-token');
   const board = () => getSeasonFinales(db, owner, petId);
   const battle = () => sql.prepare('SELECT * FROM telegram_pet_season_finales WHERE pet_id=?').get(petId);
   const get = async path => { const response = await worker.fetch(new Request('https://test.local' + path), { DB: db }); assert.equal(response.status, 200); return response.json(); };
@@ -252,18 +254,18 @@ test('migration 083 adds durable Daily Moon Run checklist credit and is safely r
 
 test('finale qualification counts distinct days and weeks before a completion marker exists', async () => {
   const f=fixture('finale-qualified');
-  for(let n=0;n<60;n++) {
+  for(let n=0;n<240;n++) {
     const date=new Date(Date.UTC(2026,0,1+n)).toISOString().slice(0,10);
     f.sql.prepare(`INSERT INTO telegram_pet_growth_marks (mark_id,pet_id,telegram_id,season_key,milestone_type,evidence_key,earned_day)
       VALUES (?,?,?,?,'care_milestone',?,?)`).run('mark-'+n,f.petId,f.owner,season,'care:'+n,date);
   }
-  for(let n=1;n<=9;n++) f.sql.prepare(`INSERT INTO telegram_pet_weekly_crests
+  for(let n=1;n<=43;n++) f.sql.prepare(`INSERT INTO telegram_pet_weekly_crests
     (crest_id,pet_id,telegram_id,season_key,season_week,qualification_week,objective_id,evidence_key)
     VALUES (?,?,?,?,?,?,'weekly_journey',?)`).run('crest-'+n,f.petId,f.owner,season,n,n,'weekly:'+n);
   assert.equal((await f.act(finaleBody(f,'finale_start',{build:'guardian'}))).accepted,false);
   f.sql.prepare(`INSERT INTO telegram_pet_weekly_crests
     (crest_id,pet_id,telegram_id,season_key,season_week,qualification_week,objective_id,evidence_key)
-    VALUES ('last',?,?,?,10,10,'weekly_journey','weekly:last')`).run(f.petId,f.owner,season);
+    VALUES ('last',?,?,?,44,44,'weekly_journey','weekly:last')`).run(f.petId,f.owner,season);
   assert.equal((await f.board()).pets[0].eligible,true);
   assert.equal((await f.act(finaleBody(f,'finale_start',{build:'guardian'}))).accepted,true);
   assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_season_completions').get().n,0,'the extra boss never rewrites season completion');

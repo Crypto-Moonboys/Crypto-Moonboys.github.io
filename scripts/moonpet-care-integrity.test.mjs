@@ -1,3 +1,4 @@
+import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import fs from 'node:fs';
@@ -20,6 +21,7 @@ function fixture(owner) {
     async first() { if (db.beforeFirst) await db.beforeFirst(this); return sql.prepare(this.query).get(...this.args) || null; }
     async all() { return { results: sql.prepare(this.query).all(...this.args) }; }
     exec() {
+      if (sql.prepare(this.query).columns().length && !/\bRETURNING\b/i.test(this.query)) return { results: sql.prepare(this.query).all(...this.args), meta: { changes: 0 } };
       if (/\bRETURNING\b/i.test(this.query)) { const results = sql.prepare(this.query).all(...this.args); return { results, meta: { changes: results.length } }; }
       return { results: [], meta: { changes: Number(sql.prepare(this.query).run(...this.args).changes) } };
     }
@@ -33,6 +35,12 @@ function fixture(owner) {
     if (this.rejectReward && statements.some(s => /INSERT OR IGNORE INTO telegram_pet_reward_claims/.test(s.query))) {
       this.rejectReward = false;
       return statements.map(() => ({ results: [], meta: { changes: 0 } }));
+    }
+    for (const statement of statements) {
+      if (/^\s*SELECT\b/i.test(statement.query)) {
+        if (this.beforeFirst) { const reply = await this.beforeFirst(statement); if (reply?.success === false) throw Error('pet_state_read_unavailable'); }
+        if (this.beforeAll) { const reply = await this.beforeAll(statement); if (reply?.success === false) throw Error('pet_state_read_unavailable'); }
+      } else if (this.beforeRun) await this.beforeRun(statement);
     }
     if (this.beforeBatch) await this.beforeBatch(statements);
     sql.exec('BEGIN');
@@ -55,7 +63,7 @@ function fixture(owner) {
     const p = sql.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=?').get(id);
     sql.prepare('UPDATE telegram_pet_profiles SET pet_xp=?,equipped_food=?,level=? WHERE telegram_id=?').run(p.pet_xp, p.equipped_food, p.level, owner);
   };
-  const act = body => hooks.processPetMiniAppAction(db,owner,{id:owner},body,'fixture-token');
+  const act = body => dispatchRenderedPetAction(db,owner,{id:owner},body,'fixture-token');
   const reveal = id => sql.prepare("INSERT INTO telegram_pet_evolutions_by_pet (pet_id,telegram_id,evolution_id,stage,unlock_event_key) VALUES (?,?,'elite_moonpet',3,'reveal')").run(id,owner);
   const state = () => hooks.buildPetMiniAppState(db, owner, 'fixture-token');
   const get = async path => { const response = await worker.fetch(new Request('https://moonboys-api.test' + path), { DB: db }); assert.equal(response.status, 200); return response.json(); };
@@ -220,7 +228,7 @@ test('overlapping consumables share the remaining Pet XP allowance', async()=>{
   for (const claim of f.sql.prepare("SELECT applied_rewards FROM telegram_pet_reward_claims WHERE source='pet_item_use'").all()) assert.ok(JSON.parse(claim.applied_rewards).pet_xp<=2);
 });
 
-test('switching pets during item use preserves the original reward and the new pet mirror', async()=>{
+test('switching pets during item use rejects without consuming or rewarding either pet', async()=>{
   const f=fixture('83007'); items(f,'moon_snack'); f.pet('other',currentSeason,300,2);
   f.db.beforeBatch=async statements=>{
     if(!statements[0].query.includes('item_use_pending')) return;
@@ -228,10 +236,10 @@ test('switching pets during item use preserves the original reward and the new p
     assert.equal((await hooks.switchActivePetSeasonSlot(f.db,f.owner,'other')).accepted,true);
   };
   const r=await hooks.processPetUseItem(f.db,f.owner,'moon_snack',{event_key:'switch-item'});
-  assert.equal(r.accepted,true);
-  assert.equal(r.pet.pet_id,'current-'+f.owner);
-  assert.equal(f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE asset_key='moon_snack'").get().quantity,1);
-  assert.equal(xp(f),204);
+  assert.equal(r.accepted,false);
+  assert.equal(r.reason,'pet_action_state_changed');
+  assert.equal(f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE asset_key='moon_snack'").get().quantity,2);
+  assert.equal(xp(f),200);
   assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_profiles').get().pet_xp,300);
   assert.equal(f.sql.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id='other'").get().pet_xp,300);
 });

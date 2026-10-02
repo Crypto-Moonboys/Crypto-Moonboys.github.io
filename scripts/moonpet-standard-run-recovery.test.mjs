@@ -1,3 +1,4 @@
+import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import fs from 'node:fs';
@@ -21,6 +22,7 @@ function fixture(owner) {
     async first() { if (db.beforeFirst) await db.beforeFirst(this); return sql.prepare(this.query).get(...this.args) || null; }
     async all() { if (db.beforeAll) await db.beforeAll(this); return { results: sql.prepare(this.query).all(...this.args) }; }
     exec() {
+      if (sql.prepare(this.query).columns().length && !/\bRETURNING\b/i.test(this.query)) return { results: sql.prepare(this.query).all(...this.args), meta: { changes: 0 } };
       if (/\bRETURNING\b/i.test(this.query)) { const results = sql.prepare(this.query).all(...this.args); return { results, meta: { changes: results.length } }; }
       return { results: [], meta: { changes: Number(sql.prepare(this.query).run(...this.args).changes) } };
     }
@@ -305,7 +307,7 @@ for (const [index, action] of ['run_step', 'run_extract'].entries()) test(action
   const f = fixture('8101' + index);
   await f.state();
   f.run('saved-ending-action', { depth: 100, status: 'extractable' });
-  const result = await hooks.processPetMiniAppAction(f.db, f.owner, { id: f.owner }, {
+  const result = await dispatchRenderedPetAction(f.db, f.owner, { id: f.owner }, {
     action, run_id: 'saved-ending-action', choice_key: 'boss', expected_step_index: 101, event_key: 'new-request',
   }, 'fixture-token');
   assert.equal(result.accepted, true); assert.equal(result.reason, 'run_completed');

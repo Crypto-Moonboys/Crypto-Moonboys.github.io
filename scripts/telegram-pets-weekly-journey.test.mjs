@@ -1,3 +1,4 @@
+import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { DatabaseSync } from 'node:sqlite';
@@ -799,7 +800,7 @@ seedTerminalDailyMoonRun(dailyMoonRunDb, {
   runId: dailyMoonRunId,
   status: 'extracted',
 });
-const dailyMoonRunReplay = await processPetMiniAppAction(dailyMoonRunDb, dailyMoonRunTelegramId, { id: dailyMoonRunTelegramId }, {
+const dailyMoonRunReplay = await dispatchRenderedPetAction(dailyMoonRunDb, dailyMoonRunTelegramId, { id: dailyMoonRunTelegramId }, {
   action: 'run_extract',
   run_id: dailyMoonRunId,
   request_id: 'daily-moon-run-retry-one',
@@ -811,7 +812,7 @@ assert.equal(dailyMoonRunDb.database.prepare(`SELECT COUNT(*) AS count FROM tele
 assert.equal(dailyMoonRunDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
   WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_run' AND status='accepted'`).get(dailyMoonRunTelegramId, dailyMoonRunPet).count, 1,
   'Test 5h: Daily Moon Run terminal replay counts once toward weekly_run');
-await processPetMiniAppAction(dailyMoonRunDb, dailyMoonRunTelegramId, { id: dailyMoonRunTelegramId }, {
+await dispatchRenderedPetAction(dailyMoonRunDb, dailyMoonRunTelegramId, { id: dailyMoonRunTelegramId }, {
   action: 'run_extract',
   run_id: dailyMoonRunId,
   request_id: 'daily-moon-run-retry-two',
@@ -841,7 +842,7 @@ seedTerminalDailyMoonRun(dailyMoonRunFailureDb, {
 dailyMoonRunFailureDb.beforeDailyMoonRunEventInsert = () => {
   throw new Error('injected daily moon run weekly journey failure');
 };
-const dailyMoonRunFailureResult = await processPetMiniAppAction(dailyMoonRunFailureDb, dailyMoonRunFailureTelegramId, { id: dailyMoonRunFailureTelegramId }, {
+const dailyMoonRunFailureResult = await dispatchRenderedPetAction(dailyMoonRunFailureDb, dailyMoonRunFailureTelegramId, { id: dailyMoonRunFailureTelegramId }, {
   action: 'run_extract',
   run_id: dailyMoonRunFailureId,
   request_id: 'daily-moon-run-best-effort-one',
@@ -855,7 +856,7 @@ assert.equal(dailyMoonRunFailureDb.database.prepare(`SELECT COUNT(*) AS count FR
   WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_run'`).get(dailyMoonRunFailureTelegramId, dailyMoonRunFailurePet).count, 0,
   'Test 5i: failed auxiliary bookkeeping writes no Weekly Journey objective');
 dailyMoonRunFailureDb.beforeDailyMoonRunEventInsert = null;
-const dailyMoonRunFailureRetry = await processPetMiniAppAction(dailyMoonRunFailureDb, dailyMoonRunFailureTelegramId, { id: dailyMoonRunFailureTelegramId }, {
+const dailyMoonRunFailureRetry = await dispatchRenderedPetAction(dailyMoonRunFailureDb, dailyMoonRunFailureTelegramId, { id: dailyMoonRunFailureTelegramId }, {
   action: 'run_extract',
   run_id: dailyMoonRunFailureId,
   request_id: 'daily-moon-run-best-effort-two',
@@ -867,7 +868,7 @@ assert.equal(dailyMoonRunFailureDb.database.prepare(`SELECT COUNT(*) AS count FR
 assert.equal(dailyMoonRunFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
   WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_run' AND status='accepted'`).get(dailyMoonRunFailureTelegramId, dailyMoonRunFailurePet).count, 1,
   'Test 5i: retry records weekly_run exactly once');
-await processPetMiniAppAction(dailyMoonRunFailureDb, dailyMoonRunFailureTelegramId, { id: dailyMoonRunFailureTelegramId }, {
+await dispatchRenderedPetAction(dailyMoonRunFailureDb, dailyMoonRunFailureTelegramId, { id: dailyMoonRunFailureTelegramId }, {
   action: 'run_extract',
   run_id: dailyMoonRunFailureId,
   request_id: 'daily-moon-run-best-effort-three',
@@ -1504,12 +1505,12 @@ for (const [failWrite, earnedAt] of [
   const petId = seedPlayer(db, owner);
   db.database.prepare(`INSERT INTO telegram_pet_evolutions_by_pet (pet_id,telegram_id,evolution_id,stage,unlock_event_key,unlocked_at)
     VALUES (?,?,'legendary_moon_guardian',5,'fixture-legendary','2026-03-03T00:00:00Z')`).run(petId, owner);
-  for (let day = 0; day < 60; day++) {
+  for (let day = 0; day < 240; day++) {
     const earned = new Date(Date.UTC(2026, 0, 1 + day)).toISOString();
     db.database.prepare(`INSERT INTO telegram_pet_growth_marks (mark_id,pet_id,telegram_id,season_key,milestone_type,evidence_key,earned_day,earned_at)
       VALUES (?,?,?,'pet-s2026-001','care_milestone',?,?,?)`).run(`fixture-mark:${day}`, petId, owner, `care:${day}`, earned.slice(0,10), earned);
   }
-  for (let week = 1; week < 10; week++) db.database.prepare(`INSERT INTO telegram_pet_weekly_crests
+  for (let week = 1; week <= 44; week++) if (week !== 10) db.database.prepare(`INSERT INTO telegram_pet_weekly_crests
     (crest_id,pet_id,telegram_id,season_key,season_week,qualification_week,objective_id,evidence_key)
     VALUES (?,?,?,'pet-s2026-001',?,?,'weekly_journey',?)`).run(`fixture-crest:${week}`, petId, owner, week, week, `weekly-journey:fixture:${week}`);
   const request = { telegramId: owner, petId, qualificationWeek: 10, day: '2026-03-05' };
@@ -1517,7 +1518,7 @@ for (const [failWrite, earnedAt] of [
   db.failWrite = /INSERT OR IGNORE INTO telegram_pet_season_completions/;
   await assert.rejects(completeObjective(db, { ...request, objectiveId: 'weekly_check_in' }), /injected_journey_write_failure/);
   db.failWrite = null;
-  assert.equal(db.database.prepare('SELECT COUNT(*) AS n FROM telegram_pet_weekly_crests').get().n, 10);
+  assert.equal(db.database.prepare('SELECT COUNT(*) AS n FROM telegram_pet_weekly_crests').get().n, 44);
   await __petMediaTestHooks.buildPetMiniAppState(db, owner, 'fixture-token');
   assert.equal(db.database.prepare('SELECT COUNT(*) AS n FROM telegram_pet_season_completions WHERE pet_id=?').get(petId).n, 1,
     'recovering the final earned Crest must also repair interrupted season completion');

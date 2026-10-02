@@ -49,6 +49,8 @@ INSERT INTO telegram_pet_season_slots (pet_id,telegram_id,season_key,slot_number
 INSERT INTO telegram_pet_instances VALUES ('pet-a','owner','s1',1,50,4900,'active'), ('pet-b','owner','s1',2,1,0,'active'), ('forged','attacker','s1',1,50,4900,'active'), ('production-pet','production-owner','pet-s2026-001',1,5,400,'active'), ('production-pet-b','production-owner','pet-s2026-001',2,5,400,'active');`);
 sqlite.exec(await readFile(new URL('../workers/moonboys-api/migrations/058_telegram_pet_season_completion.sql', import.meta.url), 'utf8'));
 sqlite.exec(await readFile(new URL('../workers/moonboys-api/migrations/061_moonpet_season_economy_calibration.sql', import.meta.url), 'utf8'));
+sqlite.exec(await readFile(new URL('../workers/moonboys-api/migrations/068_moonpet_weekly_journey_authority.sql', import.meta.url), 'utf8'));
+sqlite.exec(await readFile(new URL('../workers/moonboys-api/migrations/085_permanent_pet_weekly_evidence.sql', import.meta.url), 'utf8'));
 sqlite.exec(await readFile(new URL('../workers/moonboys-api/migrations/087_pet_journey_creation_clock.sql', import.meta.url), 'utf8'));
 const db = new D1(sqlite);
 
@@ -182,8 +184,8 @@ for (let day = 6; day <= PET_SEASON_COMPLETION_CONFIG.required_growth_marks; day
 });
 for (let week = 2; week < PET_SEASON_COMPLETION_CONFIG.required_weekly_crests; week += 1) await awardPetWeeklyCrest(db, { ...crest, season_week: week, evidence_key: `weekly-boss:s1:${week}` });
 state = await evaluatePetSeasonCompletion(db, 'pet-a', 's1', new Date('2026-02-21'), { telegram_id: 'owner' });
-assert.equal(state.weekly_crests.earned, 9);
-assert.equal(state.season_complete, false, 'nine distinct qualifying weeks remain incomplete');
+assert.equal(state.weekly_crests.earned, PET_SEASON_COMPLETION_CONFIG.required_weekly_crests - 1);
+assert.equal(state.season_complete, false, 'one missing distinct qualifying week remains incomplete');
 sqlite.prepare(`INSERT INTO telegram_pet_growth_marks
   (mark_id,pet_id,telegram_id,season_key,milestone_type,evidence_key,earned_day,earned_at)
   VALUES ('historical-unqualified','pet-a','owner','s1','care_milestone','care:historical',NULL,'2025-01-01')`).run();
@@ -191,10 +193,11 @@ sqlite.prepare(`INSERT INTO telegram_pet_weekly_crests
   (crest_id,pet_id,telegram_id,season_key,season_week,qualification_week,objective_id,evidence_key,earned_at)
   VALUES ('historical-crest','pet-a','owner','s1',10,NULL,'weekly_journey','weekly-journey:historical','2025-01-01')`).run();
 state = await evaluatePetSeasonCompletion(db, 'pet-a', 's1', new Date('2026-02-21'), { telegram_id: 'owner' });
-assert.equal(state.growth_marks.earned, 60, 'unqualified historical duplicate Marks cannot bypass calendar pacing');
-assert.equal(state.weekly_crests.earned, 9, 'unqualified historical Crests cannot bypass calendar pacing');
+assert.equal(state.growth_marks.earned, PET_SEASON_COMPLETION_CONFIG.required_growth_marks - 1, 'unqualified historical duplicate Marks cannot bypass lifetime pacing');
+assert.equal(state.weekly_crests.earned, PET_SEASON_COMPLETION_CONFIG.required_weekly_crests - 1, 'unqualified historical Crests cannot bypass lifetime pacing');
 assert.equal(state.season_complete, false);
-await awardPetWeeklyCrest(db, { ...crest, season_week: 10, evidence_key: 'weekly-boss:s1:10' });
+await awardPetGrowthMark(db, { ...mark, milestone: 'care', evidence_key: 'care:final-day', earned_at: new Date(Date.UTC(2026, 8, 1, 12)).toISOString() });
+await awardPetWeeklyCrest(db, { ...crest, season_week: PET_SEASON_COMPLETION_CONFIG.required_weekly_crests, evidence_key: `weekly-boss:s1:${PET_SEASON_COMPLETION_CONFIG.required_weekly_crests}` });
 state = await evaluatePetSeasonCompletion(db, 'pet-a', 's1', new Date('2026-02-28'), { telegram_id: 'owner' });
 assert.equal(state.season_complete, true);
 assert.equal(state.lifetime_complete, true);

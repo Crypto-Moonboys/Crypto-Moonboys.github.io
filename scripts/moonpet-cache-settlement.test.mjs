@@ -1,3 +1,4 @@
+import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
@@ -16,6 +17,7 @@ class Statement {
   async all() { return { results: sqlite.prepare(this.sql).all(...this.args) }; }
   async run() {
     if (failSql && failSql.test(this.sql)) { failSql = null; throw Error('simulated cache transaction failure'); }
+    if (sqlite.prepare(this.sql).columns().length && !/\bRETURNING\b/i.test(this.sql)) return { results: sqlite.prepare(this.sql).all(...this.args), meta: { changes: 0 } };
     if (/\bRETURNING\b/i.test(this.sql)) { const results = sqlite.prepare(this.sql).all(...this.args); return { results, meta: { changes: results.length } }; }
     const result = sqlite.prepare(this.sql).run(...this.args); return { results: [], meta: { changes: Number(result.changes) } };
   }
@@ -95,14 +97,14 @@ beforeBatch = (statements) => {
   if (!statements.some((s) => s.sql.includes('INSERT INTO telegram_pet_specialist_events') && s.args.includes('daily_chest'))) return;
   beforeBatch = null; throw Error('interrupted Bond delivery after cache settlement');
 };
-assert.equal((await hooks.processPetMiniAppAction(db, replayOwner, { id: replayOwner }, miniRequest, 'test-token')).accepted, true);
+assert.equal((await dispatchRenderedPetAction(db, replayOwner, { id: replayOwner }, miniRequest, 'test-token')).accepted, true);
 switchTo(replayOwner, replayOther);
-assert.equal((await hooks.processPetMiniAppAction(db, replayOwner, { id: replayOwner }, miniRequest, 'test-token')).duplicate, true);
+assert.equal((await dispatchRenderedPetAction(db, replayOwner, { id: replayOwner }, miniRequest, 'test-token')).duplicate, true);
 assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM telegram_pet_specialist_events WHERE pet_id=? AND action='daily_chest'").get(replayOther).n, 0,
   'replaying a cache receipt must not award Bond progression to the newly selected pet');
 assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM telegram_pet_specialist_events WHERE pet_id=? AND action='daily_chest'").get(replayPet.pet_id).n, 1,
   'a retry can finish interrupted Bond delivery for the original pet');
-await hooks.processPetMiniAppAction(db, replayOwner, { id: replayOwner }, miniRequest, 'test-token');
+await dispatchRenderedPetAction(db, replayOwner, { id: replayOwner }, miniRequest, 'test-token');
 assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM telegram_pet_specialist_events WHERE pet_id=? AND action='daily_chest'").get(replayPet.pet_id).n, 1);
 
 for (const xp of [1190, 1200, 1250]) {

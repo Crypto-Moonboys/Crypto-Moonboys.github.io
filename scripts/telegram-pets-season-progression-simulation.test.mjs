@@ -6,7 +6,7 @@ import {
   getPetVisibleLevel,
 } from '../workers/moonboys-api/pets/progression-phase-2.js';
 
-const CHECKPOINT_DAYS = [1, 7, 14, 30, 60, 78, 90];
+const CHECKPOINT_DAYS = [1, 7, 14, 28, 30, 60, 84, 90, 182, 365];
 const PET_DAILY_XP_CAP = 1200;
 const ARENA_LEVEL = 10;
 
@@ -169,7 +169,7 @@ function simulateProfile(profile) {
   const reached = new Map([[0, 0]]);
   const checkpoints = new Map();
 
-  for (let day = 1; day <= 90; day += 1) {
+  for (let day = 1; day <= 365; day += 1) {
     const active = activeOnDay(profile, day);
     if (active) {
       petXp += Math.min(PET_DAILY_XP_CAP, profile.dailyPetXp);
@@ -254,14 +254,16 @@ assert.ok(strongDay90.visible_level < 50, 'strong daily play still leaves Level 
 const heavyDay1 = simulations.heavy_beta_grinder.checkpoints.get(1);
 const heavyDay7 = simulations.heavy_beta_grinder.checkpoints.get(7);
 const heavyDay90 = simulations.heavy_beta_grinder.checkpoints.get(90);
+const heavyDay365 = simulations.heavy_beta_grinder.checkpoints.get(365);
 assert.ok(heavyDay1.visible_level < 10, 'heavy beta grinder cannot reach Level 10 on Day 1 through capped Pet XP');
 assert.ok(heavyDay7.visible_level >= 10, 'heavy beta grinder can be ahead once hatch timing allows Arena');
 assert.ok(heavyDay90.visible_level >= 50 && heavyDay90.visible_level < 60, 'heavy beta grinder reaches Level 50 late without approaching Level 100');
-assert.ok(simulations.heavy_beta_grinder.reached.get(5) >= 78 && simulations.heavy_beta_grinder.reached.get(5) <= 90,
-  'heavy capped play reaches Legendary only inside the intended Day 78-90 window');
+assert.equal(simulations.heavy_beta_grinder.reached.get(5), 365,
+  'even heavy capped play reaches Legendary no earlier than the one-year lifetime gate');
+assert.equal(heavyDay365.legendary_day, 365);
 
 for (const snapshot of Object.values(simulations).flatMap((simulation) => [...simulation.checkpoints.values()])) {
-  assert.ok(snapshot.visible_level < 100, `Day ${snapshot.day} profile remains below Level 100`);
+  assert.ok(snapshot.visible_level <= 100, `Day ${snapshot.day} profile remains within the Level 100 cap`);
   for (const [track, total] of Object.entries(snapshot.specialist_totals)) {
     assert.ok(total >= 0, `${track} specialist XP is tracked`);
     assert.ok(snapshot.specialist_levels[track] <= snapshot.visible_level,
