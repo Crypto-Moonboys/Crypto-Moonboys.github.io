@@ -8,6 +8,7 @@ import {
   __dailyMoonRunTestHooks,
   createDailyMoonRun,
   extractDailyMoonRun,
+  finalizeDailyJourneyGrowthMark,
   generateDailyMoonRunSeed,
   getDailyMoonRunAnalytics,
   getDailyMoonRunLeaderboard,
@@ -15,6 +16,7 @@ import {
   processDailyMoonRunStep,
   recoverDailyMoonRunEnding,
   recordDailyCareChallenge,
+  readDailyCareRecoveryState,
   syncDailyMoonRun,
   validateDailyChallengeContent,
 } from '../workers/moonboys-api/pets/daily-moon-run.js';
@@ -27,6 +29,7 @@ import {
   startPetRogueliteRun,
 } from '../workers/moonboys-api/pets/roguelite-foundation.js';
 import { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
+import { recoverPetJourneyAwards } from '../workers/moonboys-api/pets/journey-recovery.js';
 import moonboysApiWorker from '../workers/moonboys-api/deployment-entry.js';
 import { DAILY_RUN_CONDITIONS, DAILY_RUN_RULES_ID, DAILY_RUN_TACTICS, chooseDailyRunTactic, dailyTacticalBoard, previewDailyChoice, readDailyModifiers } from '../workers/moonboys-api/pets/daily-run-tactics.js';
 
@@ -79,9 +82,9 @@ class D1 {
       try {
         const results = statements.map((statement) => {
           const prepared = this.database.prepare(statement.sql);
-          if (/\bRETURNING\b/i.test(statement.sql)) {
+          if (prepared.columns().length) {
             const rows = prepared.all(...statement.args);
-            return { results: rows, meta: { changes: rows.length } };
+            return { results: rows, meta: { changes: /\bRETURNING\b/i.test(statement.sql) ? rows.length : 0 } };
           }
           const result = prepared.run(...statement.args);
           return { results: [], meta: { changes: Number(result.changes || 0) } };
@@ -113,7 +116,6 @@ for (const [kind, query] of [
   ['active', /SELECT a.pet_id, a.season_key/],
   ['fallback', /SELECT s.pet_id, s.season_key/],
   ['explicit-evidence', /SELECT s.pet_id,s.telegram_id,s.season_key/],
-  ['daily-evidence', /SELECT r.pet_id,r.telegram_id,i.season_key/],
 ]) {
   const failedDb = new D1(), owner = `read-failure-${kind}`;
   seedPlayer(failedDb, owner);
@@ -162,7 +164,7 @@ for (const [label,query] of [
   await assert.rejects(getDailyMoonRunAnalytics(adapter,request),/pet_state_read_unavailable/);
 }
 
-function insertCareEvent(db, telegramId, eventKey, day, action = 'feed', petId = null) {
+function insertCareEvent(db, telegramId, eventKey, day, action = 'feed', petId = `pet-${telegramId}`) {
   const sourceSeason = petId ? db.database.prepare('SELECT season_key FROM telegram_pet_season_slots WHERE pet_id=?').get(petId)?.season_key || 'season' : 'season';
   db.database.prepare(`INSERT INTO telegram_pet_events
     (id, pet_id, telegram_id, event_type, event_key, season_key, day_key, week_key, status)
@@ -843,6 +845,134 @@ assert.equal(perPetIsolationDb.database.prepare(`SELECT COUNT(*) AS count FROM t
 assert.equal(perPetIsolationDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_growth_marks
   WHERE telegram_id=? AND pet_id=?`).get(perPetIsolationTelegramId, perPetIsolationPetB).count, 0,
   'per-pet isolation: Pet B remains unchanged by Pet A duplicate recovery');
+
+// Legacy receipts prove an accepted account action, but cannot identify its
+// earning pet merely because that day has an official Run or a selected pet.
+const legacyCareDb = new D1();
+const legacyCareOwner = 'legacy-care-unassigned';
+const legacyCareDay = '2026-08-11';
+const legacyCareNow = new Date(`${legacyCareDay}T12:00:00.000Z`);
+seedPlayer(legacyCareDb, legacyCareOwner);
+const legacyCarePetA = `pet-${legacyCareOwner}`;
+const legacyCarePetB = `${legacyCarePetA}-other`;
+seedAdditionalPet(legacyCareDb, legacyCareOwner, legacyCarePetB);
+await createDailyMoonRun(legacyCareDb, { telegram_id: legacyCareOwner, now: legacyCareNow });
+for (const action of ['feed', 'play', 'clean']) insertCareEvent(legacyCareDb, legacyCareOwner, `legacy-unassigned:${action}`, legacyCareDay, action, null);
+const savedLegacyCare = legacyCareDb.database.prepare('SELECT * FROM telegram_pet_events WHERE telegram_id=? ORDER BY id').all(legacyCareOwner);
+const savedLegacyIdentity = legacyCareDb.database.prepare('SELECT * FROM telegram_pet_identity_events WHERE telegram_id=? ORDER BY event_id').all(legacyCareOwner);
+for (const selectedPet of [legacyCarePetA, legacyCarePetB, legacyCarePetA]) {
+  legacyCareDb.database.prepare('UPDATE telegram_pet_active_slots SET pet_id=? WHERE telegram_id=?').run(selectedPet, legacyCareOwner);
+  for (const action of ['feed', 'play', 'clean']) {
+    const recovered = await recordDailyCareChallenge(legacyCareDb, {
+      telegram_id: legacyCareOwner, event_key: `legacy-unassigned:${action}`,
+      pet_id: selectedPet, season_key: 'pet-s2026-003', now: legacyCareNow,
+    });
+    assert.equal(recovered.accepted, false, 'a caller cannot supply the missing legacy source pet');
+    assert.equal(recovered.pending, true);
+    assert.equal(recovered.reason, 'care_evidence_pet_unassigned');
+    assert.equal(recovered.recovery.pet_id, null);
+    assert.equal(recovered.recovery.history_preserved, true);
+  }
+}
+const genericPetless = await __dailyMoonRunTestHooks.recordChallengeEvidence(legacyCareDb, {
+  telegram_id: legacyCareOwner, utc_day: legacyCareDay, challenge_id: 'daily_care',
+  event_key: 'care:legacy-unassigned:feed', progress_value: 1, evidence: { pet_id: null },
+});
+assert.equal(genericPetless.reason, 'daily_journey_pet_attribution_required', 'generic evidence cannot fall back to the day Run pet');
+const legacyCareRetry = await __petMediaTestHooks.processPetAction(legacyCareDb, legacyCareOwner, 'feed', {
+  event_key: 'legacy-unassigned:feed', source: 'telegram_callback', now: legacyCareNow,
+});
+assert.equal(legacyCareRetry.duplicate, true, 'the already accepted care action stays an idempotent duplicate');
+assert.equal(legacyCareRetry.daily_journey_recovery.status, 'audit_required', 'the action fast path exposes unassigned recovery');
+for (const table of ['telegram_pet_daily_journey_objectives', 'telegram_pet_daily_journey_receipts', 'telegram_pet_daily_challenge_events', 'telegram_pet_daily_challenge_progress', 'telegram_pet_growth_marks']) {
+  assert.equal(legacyCareDb.database.prepare(`SELECT COUNT(*) AS count FROM ${table} WHERE telegram_id=?`).get(legacyCareOwner).count, 0,
+    `unassigned legacy retries cannot invent ${table} for either owned pet`);
+}
+assert.deepEqual(legacyCareDb.database.prepare('SELECT * FROM telegram_pet_identity_events WHERE telegram_id=? ORDER BY event_id').all(legacyCareOwner), savedLegacyIdentity,
+  'legacy petless care cannot be assigned to the current pet as personality evidence');
+assert.deepEqual(legacyCareDb.database.prepare('SELECT * FROM telegram_pet_events WHERE telegram_id=? ORDER BY id').all(legacyCareOwner), savedLegacyCare,
+  'legacy receipt contents and reward history are never rewritten by recovery');
+assert.deepEqual(await readDailyCareRecoveryState(legacyCareDb, legacyCareOwner), {
+  status: 'audit_required', reason: 'care_evidence_pet_unassigned', unassigned_receipts: 3, has_more: false, history_preserved: true,
+});
+const legacyJourneyProjection = await __petMediaTestHooks.buildPetMiniAppJourneySummary(legacyCareDb, legacyCareOwner, {
+  season: { key: 'pet-s2026-003' }, current_season_week: 6,
+  slots: [{ active: true, pet_id: legacyCarePetA, season_key: 'pet-s2026-003' }],
+}, legacyCareNow);
+assert.equal(legacyJourneyProjection.daily.recovery.status, 'audit_required', 'state, Missions and Profile share the visible audit state');
+assert.equal(legacyJourneyProjection.daily.recovery.unassigned_receipts, 3);
+assert.equal(legacyJourneyProjection.daily.completed_objectives, 0);
+assert.equal((await readDailyCareRecoveryState(legacyCareDb, 'other-owner')).status, 'clear', 'the audit cannot expose another account history');
+legacyCareDb.failAll = (sql) => /SELECT event_key FROM telegram_pet_events/.test(sql);
+await assert.rejects(readDailyCareRecoveryState(legacyCareDb, legacyCareOwner), /pet_state_read_unavailable/,
+  'audit read failures cannot hide retained unassigned evidence');
+legacyCareDb.failAll = null;
+for (let index = 0; index < 99; index++) insertCareEvent(legacyCareDb, legacyCareOwner, `legacy-backlog:${index}`, legacyCareDay, 'feed', null);
+const boundedCareAudit = await readDailyCareRecoveryState(legacyCareDb, legacyCareOwner);
+assert.equal(boundedCareAudit.unassigned_receipts, 100);
+assert.equal(boundedCareAudit.has_more, true, 'larger historical backlogs use a bounded audit summary');
+legacyCareDb.database.prepare('UPDATE telegram_pet_active_slots SET pet_id=? WHERE telegram_id=?').run(legacyCarePetB, legacyCareOwner);
+insertCareEvent(legacyCareDb, legacyCareOwner, 'owned-care-after-switch', legacyCareDay, 'feed', legacyCarePetA);
+const ownedCareResults = await Promise.all([0, 1].map(() => recordDailyCareChallenge(legacyCareDb, {
+  telegram_id: legacyCareOwner, event_key: 'owned-care-after-switch', pet_id: legacyCarePetB, now: legacyCareNow,
+})));
+assert.equal(ownedCareResults.filter(result => result.accepted).length, 1, 'owned receipt duplicate recovery applies once');
+assert.deepEqual(legacyCareDb.database.prepare(`SELECT pet_id,season_key,event_key FROM telegram_pet_daily_journey_objectives WHERE telegram_id=?`).all(legacyCareOwner)
+  .map(row => ({ ...row })), [{ pet_id: legacyCarePetA, season_key: 'pet-s2026-003', event_key: 'care:owned-care-after-switch' }],
+  'the persisted source pet owns valid care evidence after selection switches');
+for (const challengeId of ['daily_combat', 'daily_explorer']) await recordFullJourneyObjective(legacyCareDb, {
+  telegramId: legacyCareOwner, petId: legacyCarePetA, day: legacyCareDay, challengeId,
+});
+for (const action of ['feed', 'play', 'clean']) legacyCareDb.database.prepare(`INSERT INTO telegram_pet_daily_journey_objectives
+  (event_id,telegram_id,pet_id,season_key,utc_day,challenge_id,event_key,progress_value,status,evidence)
+  VALUES (?,?,?,'pet-s2026-003',?,'daily_care',?,1,'accepted','{}')`)
+  .run(`old-misattributed:${action}`, legacyCareOwner, legacyCarePetA, legacyCareDay, `care:legacy-unassigned:${action}`);
+const oldCareObjectives = legacyCareDb.database.prepare(`SELECT * FROM telegram_pet_daily_journey_objectives WHERE event_id LIKE 'old-misattributed:%' ORDER BY event_id`).all();
+legacyCareDb.database.prepare(`INSERT INTO telegram_pet_daily_journey_receipts
+  (receipt_id,event_key,telegram_id,pet_id,season_key,utc_day,completed_objectives,status,reason)
+  VALUES ('unproven-old-rejection','old-misattributed-reward',?,?,'pet-s2026-003',?,3,'rejected','daily_journey_growth_mark_rejected')`)
+  .run(legacyCareOwner, legacyCarePetA, legacyCareDay);
+const unprovenOldReceipt = legacyCareDb.database.prepare("SELECT * FROM telegram_pet_daily_journey_receipts WHERE receipt_id='unproven-old-rejection'").get();
+for (let retry = 0; retry < 2; retry++) {
+  const award = await finalizeDailyJourneyGrowthMark(legacyCareDb, {
+    telegram_id: legacyCareOwner, pet_id: legacyCarePetA, season_key: 'pet-s2026-003', utc_day: legacyCareDay,
+  });
+  assert.equal(award.accepted, false, 'previously misassigned legacy care cannot create a new Growth Mark');
+  assert.equal(award.completed_objectives, 2);
+  await recoverPetJourneyAwards(legacyCareDb, legacyCareOwner);
+}
+const auditedProjection = await __petMediaTestHooks.buildPetMiniAppJourneySummary(legacyCareDb, legacyCareOwner, {
+  season: { key: 'pet-s2026-003' }, current_season_week: 6,
+  slots: [{ active: true, pet_id: legacyCarePetA, season_key: 'pet-s2026-003' }],
+}, legacyCareNow);
+assert.equal(auditedProjection.daily.completed_objectives, 2, 'projection excludes unproven care without masking proven objectives');
+assert.deepEqual(legacyCareDb.database.prepare("SELECT * FROM telegram_pet_daily_journey_receipts WHERE receipt_id='unproven-old-rejection'").get(), unprovenOldReceipt,
+  'unawarded historical receipt stays intact but cannot override source-backed objective counts');
+assert.equal(auditedProjection.daily.objectives.find(row => row.challenge_id === 'daily_care').progress, 1,
+  'only the correctly owned care event contributes progress');
+assert.equal(auditedProjection.daily.recovery.status, 'audit_required');
+assert.equal(legacyCareDb.database.prepare('SELECT COUNT(*) AS count FROM telegram_pet_growth_marks WHERE telegram_id=?').get(legacyCareOwner).count, 0,
+  'background recovery also leaves ambiguous legacy evidence unrewarded');
+assert.deepEqual(legacyCareDb.database.prepare(`SELECT * FROM telegram_pet_daily_journey_objectives WHERE event_id LIKE 'old-misattributed:%' ORDER BY event_id`).all(), oldCareObjectives,
+  'audit filtering never deletes or rewrites historical objective evidence');
+legacyCareDb.database.prepare(`INSERT INTO telegram_pet_growth_marks
+  (mark_id,pet_id,telegram_id,season_key,milestone_type,evidence_key,earned_day,earned_at)
+  VALUES ('preserved-legacy-mark',?,?,'pet-s2026-003','daily_moon_run_milestone','historical-earned-reward',?,?)`)
+  .run(legacyCarePetA, legacyCareOwner, legacyCareDay, `${legacyCareDay}T12:00:00.000Z`);
+legacyCareDb.database.prepare(`INSERT INTO telegram_pet_daily_journey_receipts
+  (receipt_id,event_key,telegram_id,pet_id,season_key,utc_day,completed_objectives,status,reason,growth_mark_id)
+  VALUES ('preserved-legacy-receipt','historical-earned-reward',?,?,'pet-s2026-003',?,3,'accepted','daily_journey_qualified','preserved-legacy-mark')`)
+  .run(legacyCareOwner, legacyCarePetA, legacyCareDay);
+const historicalMark = legacyCareDb.database.prepare("SELECT * FROM telegram_pet_growth_marks WHERE mark_id='preserved-legacy-mark'").get();
+const historicalReceipt = legacyCareDb.database.prepare("SELECT * FROM telegram_pet_daily_journey_receipts WHERE receipt_id='preserved-legacy-receipt'").get();
+await recoverPetJourneyAwards(legacyCareDb, legacyCareOwner);
+assert.deepEqual(legacyCareDb.database.prepare("SELECT * FROM telegram_pet_growth_marks WHERE mark_id='preserved-legacy-mark'").get(), historicalMark);
+assert.deepEqual(legacyCareDb.database.prepare("SELECT * FROM telegram_pet_daily_journey_receipts WHERE receipt_id='preserved-legacy-receipt'").get(), historicalReceipt);
+const preservedRewardProjection = await __petMediaTestHooks.buildPetMiniAppJourneySummary(legacyCareDb, legacyCareOwner, {
+  season: { key: 'pet-s2026-003' }, current_season_week: 6,
+  slots: [{ active: true, pet_id: legacyCarePetA, season_key: 'pet-s2026-003' }],
+}, legacyCareNow);
+assert.equal(preservedRewardProjection.daily.growth_mark_awarded, true, 'audit does not hide an already awarded historical Growth Mark');
 
 const seasonRolloverReplayDb = new D1();
 const seasonRolloverReplayTelegramId = 'care-season-rollover-replay';

@@ -465,10 +465,10 @@ sql.prepare(`INSERT INTO telegram_pet_season_completions(pet_id,telegram_id,seas
   VALUES (?,?,?,'legendary_guardian',60,10)`).run(archivedId,archivedOwner,archivedPet.season_key);
 assert.equal((await hooks.deletePetSlot(db,archivedOwner,confirm(archivedId))).accepted,true);
 assert.equal((await getSeasonFinales(db,archivedOwner,archivedId)).pets.some(p=>p.pet_id===archivedId&&p.eligible),false);
-const finaleRequest={pet_id:archivedId,season_key:archivedPet.season_key,build:'guardian'};
+const finaleRequest={pet_id:archivedId,season_key:archivedPet.season_key,competition_season_key:hooks.getPetSeasonInfo(new Date()).key,build:'guardian'};
 assert.equal((await processSeasonFinale(db,archivedOwner,{...finaleRequest,action:'finale_start'},awardPetReward)).accepted,false);
-sql.prepare(`INSERT INTO telegram_pet_season_finales(pet_id,telegram_id,season_key,status,state_json)
-  VALUES (?,?,?,'failed',?)`).run(archivedId,archivedOwner,archivedPet.season_key,JSON.stringify(newFinale('guardian')));
+sql.prepare(`INSERT INTO telegram_pet_season_finales(pet_id,telegram_id,season_key,competition_season_key,reward_key,status,state_json)
+  VALUES (?,?,?,?,?,'failed',?)`).run(archivedId,archivedOwner,archivedPet.season_key,finaleRequest.competition_season_key,`season-finale-quarter:${archivedId}:${finaleRequest.competition_season_key}`,JSON.stringify(newFinale('guardian')));
 assert.equal((await processSeasonFinale(db,archivedOwner,{...finaleRequest,action:'finale_retry',revision:0},awardPetReward)).accepted,false);
 sql.prepare("UPDATE telegram_pet_season_finales SET status='active' WHERE pet_id=?").run(archivedId);
 assert.equal((await processSeasonFinale(db,archivedOwner,{...finaleRequest,action:'finale_step',revision:0,move:'guard'},awardPetReward)).accepted,false);

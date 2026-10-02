@@ -72,10 +72,10 @@ assert.match(
 );
 assert.match(
   miniAppStateSource,
-  /const identityScope = createDisplayedPetScope\(db, telegramId, petRaw\.pet_id\);[\s\S]*const identityPromise = getMoonpetIdentityWithLifecycle\(identityScope\.db, telegramId, \{ required: true \}\)[\s\S]*catch\(error => \{ throw normalizePetProjectionError\(error\); \}\);[\s\S]*const lifecyclePromise = identityPromise\.then\([\s\S]*buildPetGuidanceState\(db, telegramId, petRaw, \{ identity: identityPromise, runtime: runtimePromise, combatEligibility: combatEligibilityPromise \}\)/,
+  /const identityScope = createDisplayedPetScope\(db, telegramId, petRaw\.pet_id, petRaw\.season_key\);[\s\S]*const identityPromise = getMoonpetIdentityWithLifecycle\(identityScope\.db, telegramId, \{ required: true \}\)[\s\S]*catch\(error => \{ throw normalizePetProjectionError\(error\); \}\);[\s\S]*const lifecyclePromise = identityPromise\.then\([\s\S]*buildPetGuidanceState\(db, telegramId, petRaw, \{ identity: identityPromise, runtime: runtimePromise, combatEligibility: combatEligibilityPromise, projectionScope: identityScope \}\)/,
   'Mini App state must share one source-guarded identity/lifecycle authority result with guidance and combat eligibility',
 );
-assert.match(miniAppStateSource, /await assertPetProjectionSource\(db, telegramId, petRaw, seasonSlots, identityScope\)/,
+assert.match(miniAppStateSource, /await assertPetProjectionSource\(db, telegramId, petRaw, seasonSlots, identityScope, guidance\)/,
   'Mini App state must validate the selected pointer and projected roster before publishing');
 assert.equal(
   (miniAppStateSource.match(/getPetMiniAppCombatEligibility\(db, telegramId, lifecycle, petRaw\)/g) || []).length,
@@ -570,6 +570,9 @@ assert.doesNotMatch(dailyJourneyRuntime({}, 2, {}, {}), /\d+\/0 OBJECTIVES/,
   'missing Daily Journey authority must not render an X/0 objective counter');
 assert.match(dailyJourneyRuntime({ completed_objectives: 2, required_objectives: 3 }, 0, {}, {}), /DAILY JOURNEY \/\/ 2\/3 OBJECTIVES/,
   'complete Daily Journey authority must still render objective progress');
+assert.match(dailyJourneyRuntime({ completed_objectives: 0, required_objectives: 3, recovery: { status: 'audit_required', unassigned_receipts: 3 } }, 0, {}, {}),
+  /CARE HISTORY \/\/ Some saved care receipts have no verified pet\. Their history is preserved for review; they do not add Journey progress\./,
+  'unassigned historical care must expose an audit notice without inventing objective progress');
 assert.match(dailyJourneyRuntime({ completed_objectives: 2, required_objectives: 3 }, 0, {}, {}, { lifecycle: { phase: 'young' } }), /DAILY JOURNEY \/\/ 2\/3 OBJECTIVES/,
   'hatched young pet must still render normal Daily Journey progress when authority is available');
 assert.match(dailyJourneyRuntime({ completed_objectives: 2, required_objectives: 3 }, 0, {}, {}), /NEXT \/\/ Daily Journey: 2\/3 complete - finish 1 more daily objective for Growth Mark eligibility/,
@@ -1398,7 +1401,7 @@ assert.match(worker, /const \[journeySummary, hydratedKaiju, seasonFinales\] = a
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
-assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20261002-postmerge-audit-v3`/);
+assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20261002-authority-rollover-v1`/);
 assert.match(worker, /const TELEGRAM_GAMES_MENU_URL = `\$\{SITE_URL\}\/games\/telegram\/\?v=20260903-games-shell-v8`/,
   'default Telegram games menu must point at the current shell release');
 assert.match(worker, /const TELEGRAM_GAMES_MENU_TEXT = 'Games'/);
@@ -1497,11 +1500,11 @@ statusFrames.shift()();
 assert.equal(testStatusOutput.dataset.tone, 'danger');
 assert.equal(testStatusClasses.has('is-scrolling'), true, 'overflowing updates must activate the scrolling text track');
 assert.match(testStatusProperties['--status-scroll-duration'], /s$/, 'overflowing updates must receive a readable duration');
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261002-postmerge-audit-v3/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261002-authority-rollover-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
-assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20261002-postmerge-audit-v3/);
-assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20261002-postmerge-audit-v3/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261002-postmerge-audit-v3/);
+assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20261002-authority-rollover-v1/);
+assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20261002-authority-rollover-v1/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261002-authority-rollover-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1792,7 +1795,7 @@ for (const sdkInitData of [expired, tampered, 'auth_date=invalid&hash=' + 'a'.re
   assert.equal(entry.requests.length, 3, 'Read-only startup state requests retain their transient retry policy');
 }
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261002-postmerge-audit-v3/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261002-authority-rollover-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -2241,8 +2244,8 @@ assert.match(worker, /Math\.floor\(stepIndex \/ PET_RUN_BOSS_INTERVAL\) \+ 1/);
 assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Number\(activeRun\.depth \|\| 0\) \+ 1/);
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
-assert.match(html, /20261002-postmerge-audit-v3/);
-assert.match(worker, /20261002-postmerge-audit-v3/);
+assert.match(html, /20261002-authority-rollover-v1/);
+assert.match(worker, /20261002-authority-rollover-v1/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');
 assert.match(client, /renderQuality = reducedMotion/, 'canvas quality must start from device capability');

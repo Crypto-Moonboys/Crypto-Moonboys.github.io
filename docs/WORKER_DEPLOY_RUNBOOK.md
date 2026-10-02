@@ -42,12 +42,20 @@ Required secrets:
 
 ```sh
 wrangler secret put TELEGRAM_BOT_TOKEN
+wrangler secret put TELEGRAM_WEBHOOK_SECRET
 wrangler secret put TELEGRAM_BOT_USERNAME
 wrangler secret put ADMIN_TELEGRAM_IDS
 wrangler secret put ADMIN_SECRET
 wrangler secret put TELEGRAM_GROUP_CHAT_ID
 wrangler secret put SWARMSY_BRIDGE_TOKEN
 ```
+
+Before deploying the webhook authentication update, follow the exact
+[Telegram webhook setup process](telegram-webhook-security.md). The dedicated
+Cloudflare secret and Telegram `setWebhook.secret_token` must match. The production
+wrapper checks Cloudflare's secret-name list and blocks deployment when the
+required webhook secret is absent or cannot be verified. The static readiness
+audit checks its manifest entry and rejects a plaintext Wrangler variable.
 
 ### moonboys-anti-cheat
 
@@ -103,6 +111,7 @@ Before running an approved production deployment:
 - [ ] `npm test` passes
 - [ ] Worker is listed as `"deploy": true` in `workers/DEPLOY_STATUS.json`
 - [ ] All required secrets are set in Cloudflare
+- [ ] Telegram `setWebhook` was registered with the matching `TELEGRAM_WEBHOOK_SECRET`; retain the successful setup result without retaining the token
 - [ ] D1/KV IDs in `wrangler.toml` match the live Cloudflare account
 - [ ] Local branch is `main` with a clean working tree
 - [ ] The provenance wrapper successfully refreshes and matches `origin/main`

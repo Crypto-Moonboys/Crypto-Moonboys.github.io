@@ -19,7 +19,7 @@
 
 | Worker | Folder | Status | Required bindings | Required secrets | Approved production command | Deploy now? | Notes |
 |---|---|---|---|---|---|---|---|
-| moonboys-api | `workers/moonboys-api` | ✅ `live-deployable` | D1: wikicoms | TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_USERNAME, ADMIN_TELEGRAM_IDS, ADMIN_SECRET, TELEGRAM_GROUP_CHAT_ID, SWARMSY_BRIDGE_TOKEN | `node scripts/deploy-worker-with-provenance.mjs moonboys-api` | Yes | Production API. The wrapper refreshes `origin/main` and tags the Worker Version with the repository commit. |
+| moonboys-api | `workers/moonboys-api` | ✅ `live-deployable` | D1: wikicoms | TELEGRAM_BOT_TOKEN, TELEGRAM_WEBHOOK_SECRET, TELEGRAM_BOT_USERNAME, ADMIN_TELEGRAM_IDS, ADMIN_SECRET, TELEGRAM_GROUP_CHAT_ID, SWARMSY_BRIDGE_TOKEN | `node scripts/deploy-worker-with-provenance.mjs moonboys-api` | Yes | Production API. The wrapper refreshes `origin/main`, verifies the webhook secret binding, and tags the Worker Version with the repository commit. Complete [Telegram webhook registration](telegram-webhook-security.md) first. |
 | moonboys-anti-cheat | `workers/anti-cheat` | ✅ `live-deployable` | KV: LEADERBOARD, D1: wikicoms | ADMIN_SECRET | `node scripts/deploy-worker-with-provenance.mjs anti-cheat` | Yes | ADMIN_SECRET must match moonboys-api. KV ID must stay aligned with leaderboard. |
 | moonboys-leaderboard | `workers/leaderboard` | ✅ `live-deployable` | KV: LEADERBOARD, D1: wikicoms | TELEGRAM_BOT_TOKEN | `node scripts/deploy-worker-with-provenance.mjs leaderboard` | Yes | Shares the LEADERBOARD namespace with anti-cheat. |
 | block-topia-score | `workers/block-topia` | ⚠️ `needs-binding-setup` | R2: R2_BUCKET | — | Not approved | No | Confirm the live R2 bucket and approve a provenance-capable deployment process first. |

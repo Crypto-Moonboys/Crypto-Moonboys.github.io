@@ -6,6 +6,10 @@ checklist goals had no combined payout and season completion had no extra boss.
 They require the migration and deployment below; this document does not claim
 that production has already been updated.
 
+The current once-per-competition-quarter rules and migration 088 are documented
+in [the 2 October Finale update](moonpet-finale-competition-quarters-2026-10-02.md).
+The original rollout record below retains its historical thresholds and schema.
+
 ## Player behavior
 
 | Feature | Rule |

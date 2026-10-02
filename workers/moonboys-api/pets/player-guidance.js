@@ -33,11 +33,11 @@ export function buildPetGuidanceCandidates(state = {}) {
   for (const tier of state.season?.tiers || []) {
     if (!tier.unlocked || tier.claimed_at) continue;
     candidates.push({
-      key: `season-ready:${state.season.key}:${tier.tier_id}`,
+      key: `season-ready:${tier.season_key || state.season.key}:${tier.tier_id}`,
       type: 'season_reward',
       title: `${tier.title} is ready to claim`,
       detail: `${positiveInteger(tier.required_xp)} season XP milestone reached.`,
-      callback_data: `pet:season:claim:${tier.tier_id}`,
+      callback_data: `pet:season:claim:${tier.tier_id}:${tier.season_key || state.season.key}`,
     });
   }
   for (const trait of state.personalities || []) {
@@ -155,7 +155,7 @@ export function choosePetNextAction(state = {}) {
     return { key: 'play', title: 'Raise happiness with play', detail: 'DANCE and CUDDLES are blocked right now, so play to recover happiness.', label: '🎮 Play Now', callback_data: 'pet:play' };
   }
   const readyTier = (state.season?.tiers || []).find((tier) => tier.unlocked && !tier.claimed_at);
-  if (readyTier) return { key: `season:${readyTier.tier_id}`, title: `Claim ${readyTier.title}`, detail: 'This reward is unlocked and waiting.', label: '🎁 Claim Reward', callback_data: `pet:season:claim:${readyTier.tier_id}` };
+  if (readyTier) return { key: `season:${readyTier.tier_id}`, title: `Claim ${readyTier.title}`, detail: 'This reward is unlocked and waiting.', label: '🎁 Claim Reward', callback_data: `pet:season:claim:${readyTier.tier_id}:${readyTier.season_key || state.season.key}` };
   if (state.evolution?.ready) return { key: 'evolve', title: `Evolve into ${state.evolution.name}`, detail: 'Every requirement is complete; this unlocks the next content tier.', label: '🧬 Evolve Now', callback_data: 'pet:evolve' };
   if (state.evolution && Array.isArray(state.evolution.missing) && state.evolution.missing.length) {
     const missing = state.evolution.missing[0];

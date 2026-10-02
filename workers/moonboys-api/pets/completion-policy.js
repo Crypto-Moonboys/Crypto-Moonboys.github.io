@@ -1,7 +1,7 @@
 export const DAILY_COMPLETION_REWARD = Object.freeze({ pet_xp: 25, moon_gold: 50, style_tokens: 1 });
 export const SEASON_FINALE_REWARD = Object.freeze({ pet_xp: 100, moon_gold: 200, style_tokens: 5 });
 export const dailyCompletionKey = (owner, date) => `daily-completion:${owner}:${date}`;
-export const seasonFinaleKey = (pet, season) => `season-finale:${pet}:${season}`;
+export const seasonFinaleKey = (pet, season) => `season-finale-quarter:${pet}:${season}`;
 
 // Used both before dispatch and inside the atomic reward transaction.
 export function completionRewardAuthorization(source, owner, pet, context) {
@@ -15,7 +15,7 @@ export function completionRewardAuthorization(source, owner, pet, context) {
   };
   return {
     sql: `AND EXISTS (SELECT 1 FROM telegram_pet_season_finales r ${authority}
-      WHERE r.telegram_id=? AND r.pet_id=? AND r.season_key=? AND r.status='won' AND r.defeated_at IS NOT NULL)`,
-    args: [owner, pet, context.season_key],
+      WHERE r.telegram_id=? AND r.pet_id=? AND r.season_key=? AND r.competition_season_key=? AND r.reward_key=? AND r.status='won' AND r.defeated_at IS NOT NULL)`,
+    args: [owner, pet, context.season_key, String(context.competition_season_key || ''), String(context.reward_key || '')],
   };
 }

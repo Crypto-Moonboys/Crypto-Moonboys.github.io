@@ -16,7 +16,7 @@ class Statement {
   async first() { return sqlite.prepare(this.sql).get(...this.args) || null; }
   async all() { return { results: sqlite.prepare(this.sql).all(...this.args) }; }
   async run() {
-    if (/\bRETURNING\b/i.test(this.sql)) { const results = sqlite.prepare(this.sql).all(...this.args); return { results, meta: { changes: results.length } }; }
+    if (sqlite.prepare(this.sql).columns().length) { const results = sqlite.prepare(this.sql).all(...this.args); return { results, meta: { changes: /\bRETURNING\b/i.test(this.sql) ? results.length : 0 } }; }
     const result = sqlite.prepare(this.sql).run(...this.args); return { results: [], meta: { changes: Number(result.changes) } };
   }
 }

@@ -24,6 +24,7 @@ import { readFile, readdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parse as parseToml } from 'smol-toml';
 
 const ROOT = process.env.WORKER_AUDIT_ROOT
   ? path.resolve(process.env.WORKER_AUDIT_ROOT)
@@ -129,6 +130,14 @@ function detectDocumentedRequiredSecrets(tomlContent) {
   return found;
 }
 
+// Inspect the parsed keys, not their source spelling. Wrangler accepts inline
+// tables, dotted keys and quoted/escaped keys in root and named environments.
+// Strings and comments containing an example assignment are not bindings.
+function containsConfigurationKey(value, key) {
+  return value !== null && typeof value === 'object'
+    && (Object.hasOwn(value, key) || Object.values(value).some(child => containsConfigurationKey(child, key)));
+}
+
 // ── load DEPLOY_STATUS.json ───────────────────────────────────────────────────
 
 let deployStatus;
@@ -178,6 +187,24 @@ for (const folder of workerFolders) {
     const missingRequiredSecrets = documentedRequiredSecrets
       .filter(secret => !deployStatusRequiredSecrets.includes(secret));
 
+    // Keep this security prerequisite explicit even if both its documentation
+    // and manifest entry are accidentally removed in the same change.
+    if (folder === 'workers/moonboys-api') {
+      if (!deployStatusRequiredSecrets.includes('TELEGRAM_WEBHOOK_SECRET')) {
+        failures.push({ folder, reason: 'TELEGRAM_WEBHOOK_SECRET is required for authenticated Telegram webhook delivery' });
+      }
+      try {
+        const configuration = parseToml(tomlContent);
+        if (containsConfigurationKey(configuration, 'TELEGRAM_WEBHOOK_SECRET')) {
+          failures.push({ folder, reason: 'TELEGRAM_WEBHOOK_SECRET must be a Cloudflare secret, never a Wrangler variable' });
+        }
+      } catch {
+        // Parser diagnostics can include source snippets containing secrets.
+        // Unreadable configuration cannot establish that plaintext is absent.
+        failures.push({ folder, reason: 'Cannot parse wrangler.toml; TELEGRAM_WEBHOOK_SECRET configuration could not be verified' });
+      }
+    }
+
     if (placeholders.length > 0) {
       failures.push({
         folder,
@@ -190,7 +217,7 @@ for (const folder of workerFolders) {
         reason: `wrangler.toml documents required secrets missing from DEPLOY_STATUS.json required_secrets: ${missingRequiredSecrets.join(', ')}`,
       });
     }
-    if (placeholders.length === 0 && missingRequiredSecrets.length === 0) {
+    if (!failures.some((failure) => failure.folder === folder)) {
       deployable.push({ folder, command: entry.deploy_command || `cd ${folder} && npx wrangler deploy` });
     }
   } else if (status === 'stub-blocked') {

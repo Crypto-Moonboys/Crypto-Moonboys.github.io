@@ -2111,11 +2111,13 @@ BEGIN
   ON CONFLICT (telegram_id,utc_day) DO UPDATE SET progress_bits=progress_bits|32 WHERE (progress_bits&32)=0;
 END;
 
--- One saved finale per owned pet/season. Revision stays monotonic across retries.
+-- One saved finale per pet/competition quarter; season_key remains ownership provenance. Revision stays monotonic across retries.
 CREATE TABLE IF NOT EXISTS telegram_pet_season_finales (
   pet_id TEXT NOT NULL,
   telegram_id TEXT NOT NULL,
   season_key TEXT NOT NULL,
+  competition_season_key TEXT NOT NULL,
+  reward_key TEXT NOT NULL UNIQUE,
   status TEXT NOT NULL CHECK (status IN ('active','failed','won')),
   attempt INTEGER NOT NULL DEFAULT 1 CHECK (attempt>0),
   revision INTEGER NOT NULL DEFAULT 0 CHECK (revision>=0),
@@ -2123,11 +2125,11 @@ CREATE TABLE IF NOT EXISTS telegram_pet_season_finales (
   defeated_at TEXT,
   claimed_at TEXT,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (pet_id,season_key),
+  PRIMARY KEY (pet_id,competition_season_key),
   FOREIGN KEY (pet_id) REFERENCES telegram_pet_instances(pet_id) ON DELETE CASCADE,
   FOREIGN KEY (pet_id,telegram_id,season_key) REFERENCES telegram_pet_season_slots(pet_id,telegram_id,season_key) ON DELETE CASCADE
 );
-CREATE INDEX IF NOT EXISTS idx_pet_finales_owner ON telegram_pet_season_finales(telegram_id,season_key);
+CREATE INDEX IF NOT EXISTS idx_pet_finales_owner ON telegram_pet_season_finales(telegram_id,competition_season_key);
 -- Per-pet equipped cosmetic styles.
 CREATE TABLE IF NOT EXISTS telegram_pet_style_loadouts (
   pet_id TEXT NOT NULL,

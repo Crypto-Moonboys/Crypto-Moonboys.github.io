@@ -27,6 +27,9 @@ jobs:
         with:
           node-version: 22
 
+      - name: Install audit dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
       - name: Test Worker provenance contract
         run: node scripts/worker-deployment-provenance.test.mjs
 
@@ -35,6 +38,11 @@ jobs:
 
       - name: Audit Worker deploy readiness
         run: node scripts/worker-deploy-readiness-audit.mjs
+
+      - name: Test webhook authentication and required production configuration
+        run: |
+          node scripts/telegram-webhook-auth.test.mjs
+          node scripts/telegram-webhook-deployment.test.mjs
 
       - name: Audit production truth claims
         run: node scripts/production-deployment-truth-audit.mjs

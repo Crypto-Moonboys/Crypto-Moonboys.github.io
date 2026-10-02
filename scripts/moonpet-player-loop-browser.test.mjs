@@ -1743,6 +1743,21 @@ try {
     assert.equal(paid.state.pet.moon_gold, 220); assert.ok(paid.state.guidance.season.tiers.find((tier) => tier.tier_id === 'street').claimed_at);
     await page.waitForFunction(() => ![...document.querySelectorAll('[data-action="season_claim"]')].some((button) => button.textContent.includes('Street Cache')));
 
+    const previousSeason = hooks.getPetSeasonInfo(new Date(Date.parse(hooks.getPetSeasonInfo().start_at) - 1)).key;
+    sqlite.prepare(`INSERT INTO telegram_pet_season_state (telegram_id,season_key,season_xp) VALUES (?,?,250)`).run(currentUser, previousSeason);
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-panel="play-now"] [data-focus="season"]').filter({ hasText: 'CLAIM SEASON REWARDS' }).click();
+    const savedSeasonButton = page.locator('[data-action="season_claim"]').filter({ hasText: 'Street Cache' });
+    const savedSeasonResponse = page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'season_claim');
+    await savedSeasonButton.click();
+    const savedSeasonHttp = await savedSeasonResponse;
+    assert.equal(savedSeasonHttp.request().postDataJSON().season_key, previousSeason, 'the actual claim request must retain the displayed historical source');
+    const savedSeasonResult = await savedSeasonHttp.json();
+    assert.equal(savedSeasonResult.result.accepted, true); assert.equal(savedSeasonResult.result.season_key, previousSeason);
+    assert.equal(savedSeasonResult.state.pet.moon_gold, 300);
+    assert.ok(savedSeasonResult.state.guidance.season.tiers.find((tier) => tier.tier_id === 'street' && tier.season_key === previousSeason).claimed_at);
+    await page.waitForFunction(() => ![...document.querySelectorAll('[data-action="season_claim"]')].some((button) => button.textContent.includes('Street Cache')));
+
     currentUser = 'browser-owned-gear-' + viewport.width;
     await seed(currentUser, 'young');
     sqlite.prepare('UPDATE telegram_pet_profiles SET moon_gold=1000,moon_crystals=10 WHERE telegram_id=?').run(currentUser);

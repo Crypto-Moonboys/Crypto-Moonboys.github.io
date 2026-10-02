@@ -72,7 +72,8 @@ for (const mode of ['core', 'full', 'missions']) for (const returnToOriginal of 
   const petStats = () => f.sql.prepare(`SELECT pet_id,pet_xp,level,health,hunger,happiness,cleanliness,energy
     FROM telegram_pet_instances WHERE telegram_id=? ORDER BY pet_id`).all(f.owner);
   const before = petStats();
-  let switched = false, returned = false;
+  let switched = false, returned = false, finishInterleaving;
+  const interleavingFinished = new Promise(resolve => { finishInterleaving = resolve; });
   const lifecycleRead = statement => statement.query.includes('SELECT l.*, s.season_key');
   const restoreOriginal = async () => {
     if (!returnToOriginal || !switched || returned) return;
@@ -98,7 +99,7 @@ for (const mode of ['core', 'full', 'missions']) for (const returnToOriginal of 
         bind(...args) { return wrap(statement.bind(...args)); },
         async first(...args) {
           try { return await statement.first(...args); }
-          finally { if (lifecycleRead(statement)) await restoreOriginal(); }
+          finally { if (lifecycleRead(statement)) { await restoreOriginal(); finishInterleaving(); } }
         },
         all() { return statement.all(); }, run() { return statement.run(); }, exec() { return statement.exec(); },
       });
@@ -106,13 +107,16 @@ for (const mode of ['core', 'full', 'missions']) for (const returnToOriginal of 
     },
     async batch(statements) {
       try { return await f.db.batch(statements); }
-      finally { if (statements.some(lifecycleRead)) await restoreOriginal(); }
+      finally { if (statements.some(lifecycleRead)) { await restoreOriginal(); finishInterleaving(); } }
     },
   };
   const projection = mode === 'core'
     ? hooks.buildPetMiniAppCoreState(readDb, f.owner, { prepared: true, petRaw: original })
     : hooks.buildPetMiniAppState(readDb, f.owner, 'fixture-token', mode === 'missions' ? { mode: 'missions' } : {});
   await assert.rejects(projection, /pet_state_source_changed/, 'A stats and B lifecycle must never publish as one save');
+  // Another source-bound projection may detect B first. Wait for the actual
+  // lifecycle transaction and restore before checking the interleaving result.
+  if (returnToOriginal) await interleavingFinished;
   assert.equal(switched, true, 'the interleaving must reach the actual lifecycle read');
   assert.equal(returned, returnToOriginal);
   const selectedId = returnToOriginal ? original.pet_id : replacementId;
@@ -160,6 +164,82 @@ for (const mode of ['core', 'full', 'missions']) test(`${mode} state rejects a l
   await assert.rejects(project(), /pet_state_source_changed/);
   assert.equal(switched, true, 'the switch occurs after earlier source-sensitive reads have completed');
   assert.deepEqual(petStats(), before, 'a late projection conflict preserves both pets');
+});
+
+for (const mode of ['full', 'missions', 'guidance', 'achievements']) test(`${mode} binds achievements to captured A across an A to B to A switch`, async () => {
+  const f = fixture('achievement-switch-' + mode);
+  const original = await hooks.getPetProfile(f.db, f.owner);
+  const otherId = 'other-' + f.owner;
+  const otherSeason = hooks.getPetSeasonInfo(new Date(Date.UTC(new Date().getUTCFullYear() - 1, 0, 15))).key;
+  f.pet(otherId, otherSeason, 300, 2);
+  f.sql.prepare(`INSERT INTO telegram_pet_achievements
+    (pet_id,telegram_id,season_key,achievement_id,progress,target,unlocked_at)
+    VALUES (?,?,?,'boss_breaker',7,1,'2001-01-01 00:00:00')`).run(otherId, f.owner, otherSeason);
+  await hooks.buildPetMiniAppState(f.db, f.owner, 'fixture-token');
+  const before = f.sql.prepare('SELECT * FROM telegram_pet_achievements ORDER BY pet_id,achievement_id').all();
+  const sourceRead = statement => /WHERE s.pet_id = \? AND s.telegram_id = \? AND s.season_key = \?/.test(statement.query)
+    && statement.query.includes('SELECT s.pet_id, s.telegram_id, s.season_key, s.slot_number');
+  let switched = false, returned = false;
+  f.db.beforeFirst = async statement => {
+    if (!sourceRead(statement)) return;
+    f.db.beforeFirst = null;
+    assert.equal((await hooks.switchActivePetSeasonSlot(f.db, f.owner, otherId)).accepted, true);
+    switched = true;
+  };
+  const restoreOriginal = async () => {
+    if (!switched || returned) return;
+    returned = true;
+    assert.equal((await hooks.switchActivePetSeasonSlot(f.db, f.owner, original.pet_id)).accepted, true);
+  };
+  const readDb = {
+    prepare(query) {
+      const wrap = statement => ({
+        query: statement.query, args: statement.args,
+        bind(...args) { return wrap(statement.bind(...args)); },
+        async first(...args) {
+          try { return await statement.first(...args); }
+          finally { if (sourceRead(statement)) await restoreOriginal(); }
+        },
+        all() { return statement.all(); }, run() { return statement.run(); }, exec() { return statement.exec(); },
+      });
+      return wrap(f.db.prepare(query));
+    },
+    async batch(statements) {
+      try { return await f.db.batch(statements); }
+      finally { if (statements.some(sourceRead)) await restoreOriginal(); }
+    },
+  };
+  const project = database => mode === 'guidance'
+    ? hooks.buildPetGuidanceState(database, f.owner, original)
+    : mode === 'achievements' ? hooks.syncPetAchievements(database, f.owner, true)
+      : hooks.buildPetMiniAppState(database, f.owner, 'fixture-token', mode === 'missions' ? { mode } : {});
+  await assert.rejects(project(readDb), /pet_state_source_changed/,
+    'returning to A cannot hide the switch observed while loading its achievements');
+  assert.equal(switched, true);
+  assert.equal(returned, true);
+  assert.equal(f.sql.prepare('SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id=?').get(f.owner).pet_id, original.pet_id);
+  assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_achievements ORDER BY pet_id,achievement_id').all(), before,
+    'a rejected achievement projection preserves both pets’ saved achievements');
+  const fresh = await project(f.db);
+  const achievements = mode === 'achievements' ? fresh : mode === 'guidance' ? fresh.achievements : fresh.guidance.achievements;
+  assert.ok(achievements.length);
+  assert.ok(achievements.every(entry => entry.pet_id === original.pet_id && entry.season_key === original.season_key));
+  assert.equal(achievements.find(entry => entry.achievement_id === 'boss_breaker').progress, 0,
+    'B’s seven boss victories never appear in A’s refreshed state');
+});
+
+for (const field of ['pet_id', 'season_key']) test(`achievement projection rejects inconsistent ${field} provenance while A stays selected`, async () => {
+  const f = fixture('achievement-provenance-' + field);
+  const original = await hooks.getPetProfile(f.db, f.owner);
+  await hooks.buildPetMiniAppState(f.db, f.owner, 'fixture-token');
+  const batch = f.db.batch.bind(f.db);
+  f.db.batch = async statements => {
+    const result = await batch(statements);
+    const index = statements.findIndex(statement => /SELECT achievement_id, progress, target, unlocked_at/.test(statement.query));
+    if (index >= 0) result[index].results[0][field] = 'wrong-source';
+    return result;
+  };
+  await assert.rejects(hooks.buildPetGuidanceState(f.db, f.owner, original), /pet_state_source_changed/);
 });
 
 const targets = {
@@ -333,7 +413,7 @@ for(const [name,query,act,prepare] of [
 });
 for(const [name,query,act] of [
  ['daily completion claim',/SELECT \* FROM telegram_pet_daily_completion WHERE telegram_id=/,async f=>claimDailyCompletion(f.db,f.owner,f.sql.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=?').get('current-'+f.owner),{utc_day:new Date().toISOString().slice(0,10),pet_id:'current-'+f.owner},async()=>({accepted:true}))],
- ['season finale',/SELECT f\.\* FROM telegram_pet_season_finales/,f=>processSeasonFinale(f.db,f.owner,{action:'finale_start',pet_id:'current-'+f.owner,season_key:currentSeason,build:'striker'},async()=>({accepted:true}))],
+ ['season finale',/SELECT f\.\* FROM telegram_pet_season_finales/,f=>processSeasonFinale(f.db,f.owner,{action:'finale_start',pet_id:'current-'+f.owner,season_key:currentSeason,competition_season_key:currentSeason,build:'striker'},async()=>({accepted:true}))],
  ['weekly boss claim',/SELECT \* FROM telegram_pet_weekly_boss_progress WHERE telegram_id=\? AND week_key=\? AND boss_id=/,f=>{const week='2026-W40';return hooks.claimPetWeeklyBossReward(f.db,f.owner,{week_key:week,boss_id:hooks.getPetWeeklyBoss(week).boss_id,pet_id:'current-'+f.owner});}],
  ['seasonal boss claim authority',/SELECT p\.pet_id,p\.season_key FROM telegram_pet_instances p/,f=>claimPetSeasonalBossReward(f.db,f.owner,{},async()=>({accepted:true}),{pet_id:'current-'+f.owner,boss_key:'null_prophet',season_instance:'test'} )],
 ]) test(`${name} cannot report a false not-ready result from a resolved failed read`,async()=>{

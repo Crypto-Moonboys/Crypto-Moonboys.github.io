@@ -1,4 +1,5 @@
 import baseWorker from './worker.js';
+import { verifyTelegramWebhookSecret } from './telegram-webhook-auth.js';
 import { applyPetRuntimeCommandAward } from './worker.js';
 import { recoverPetRuntimeAwards } from './pets/runtime-recovery.js';
 import { handleDeadRunRequest, cleanupExpiredSessions } from './routes/dead-run.js';
@@ -263,12 +264,19 @@ async function repairTelegramRunRuntimeAward(env, update) {
 
 export default {
   async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+    const path = url.pathname.replace(/\/$/, '');
+    const isTelegramWebhook = path === '/telegram/webhook' && request.method === 'POST';
+    // This wrapper reads gear and repairs rewards around the base handler.
+    // Its own gate must precede even cloning/parsing the request body.
+    if (isTelegramWebhook) {
+      const verification = await verifyTelegramWebhookSecret(request, env);
+      if (!verification.ok) return jsonError(request, verification.error, verification.status);
+    }
     const deadRunResponse = await handleDeadRunRequest(request, env, ctx);
     if (deadRunResponse) return deadRunResponse;
 
-    const url = new URL(request.url);
     const isPetAction = url.pathname === '/telegram-pets/action' && request.method === 'POST';
-    const isTelegramWebhook = url.pathname === '/telegram/webhook' && request.method === 'POST';
     const body = (isPetAction || isTelegramWebhook) ? await readJsonSafe(request) : null;
 
     if (isPetAction && body) {

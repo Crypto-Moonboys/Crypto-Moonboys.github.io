@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
+import { recordDailyCareChallenge } from '../workers/moonboys-api/pets/daily-moon-run.js';
 
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 const playerExpansionMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/048_telegram_pet_player_expansion.sql', import.meta.url), 'utf8');
@@ -386,6 +387,17 @@ const journeyPet = await ensureActivePetInstance(journeySummaryDb, 'journey-summ
 const journeySeasonKey = journeyPet.season_key;
 const journeyPetId = journeyPet.pet_id;
 for (const [challengeId, challenge] of Object.entries(PET_DAILY_CHALLENGES)) {
+  if (challengeId === 'daily_care') {
+    for (let index = 0; index < challenge.target - 1; index++) {
+      const eventKey = `daily-summary:care:${index}`;
+      journeySummaryDb.database.prepare(`INSERT INTO telegram_pet_events
+        (id,telegram_id,pet_id,season_key,event_type,event_key,day_key,week_key,status)
+        VALUES (?,'journey-summary',?,?,'feed',?,?,'2026-W33','accepted')`)
+        .run(eventKey, journeyPetId, journeySeasonKey, eventKey, journeyDay);
+      await recordDailyCareChallenge(journeySummaryDb, { telegram_id: 'journey-summary', event_key: eventKey });
+    }
+    continue;
+  }
   journeySummaryDb.database.prepare(`INSERT INTO telegram_pet_daily_journey_objectives
     (event_id, telegram_id, pet_id, season_key, utc_day, challenge_id, event_key, progress_value, status, evidence)
     VALUES (?, 'journey-summary', ?, ?, ?, ?, ?, ?, 'accepted', '{}')`)
