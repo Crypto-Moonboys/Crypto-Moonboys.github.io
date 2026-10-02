@@ -550,7 +550,9 @@ try {
     // Verify daily run mode and first-room numbering independently of the real
     // endless-run fixture. Request index stays zero-based; screen is one-based.
     dailyOverride = { run_id: 'daily-fixture', daily: true, current_room: 0, expected_step_index: 0, max_room: 10, score: 0, choices: [{ key: 'explore', label: 'Explore' }], room: { title: 'Alley Entrance', threat: 1 } };
+    const dailyStateResponse = page.waitForResponse(response => response.url().endsWith('/telegram-pets/app/state') && response.request().method() === 'POST');
     await page.locator('[data-utility="sync"]').click();
+    const journeyState = (await (await dailyStateResponse).json()).state;
     await page.waitForSelector('[data-action="run_extract"]');
     const dailyText = await page.locator('[data-panel="moon-run"]').textContent();
     assert.ok(dailyText.includes('OFFICIAL DAILY MOON RUN') && dailyText.includes('ROOM 1/10'));
@@ -558,9 +560,32 @@ try {
     assert.equal(await page.locator('[data-action="run_step"]').getAttribute('data-payload').then(JSON.parse).then((x) => x.expected_step_index), 0);
     assert.equal(await page.locator('[data-action="run_extract"]').isDisabled(), true, 'empty run extraction must explain its lock');
     await page.locator('[data-screen="missions"]').click();
-    assert.equal(await page.locator('[data-panel="daily-objectives"] [data-jump]').count(), 5);
-    const weeklyState = await hooks.buildPetMiniAppState(db, currentUser, token);
-    const unfinishedWeekly = weeklyState.weekly_journey.objectives.filter((goal) => !goal.completed && goal.progress < goal.target);
+    // Earlier accepted bounty evidence can already finish daily_care. Match
+    // every server-projected goal and its remaining routes instead of assuming
+    // all five objectives still need a navigation control.
+    const navigationDailyGoals = journeyState.daily_journey.objectives;
+    assert.ok(navigationDailyGoals.length > 0, 'the authoritative Daily Journey exposes its objective list');
+    const expectedDailyRoutes = navigationDailyGoals.map(goal => {
+      if (goal.completed) return [];
+      if (goal.challenge_id === 'daily_care') return [{ screen: 'home', focus: 'care' }];
+      assert.match(goal.challenge_id, /^daily_(combat|explorer|extraction|boss)$/, 'every official Daily Run goal has a known qualifying destination');
+      return [{ screen: 'explore', focus: 'moon-run' }];
+    });
+    assert.equal(await page.locator('[data-panel="daily-objectives"] [data-jump]').count(), expectedDailyRoutes.flat().length);
+    const renderedDailyGoals = await page.locator('[data-panel="daily-objectives"] .line').evaluateAll(lines => lines.filter(line => /^\[(?:OK| )\]/.test(line.textContent)).map(line => {
+      const routes = [];
+      for (let sibling = line.nextElementSibling; sibling && !sibling.classList.contains('line'); sibling = sibling.nextElementSibling) {
+        routes.push(...Array.from(sibling.querySelectorAll('[data-jump]'), button => ({ screen: button.dataset.jump, focus: button.dataset.focus })));
+      }
+      return { text: line.textContent, routes };
+    }));
+    assert.equal(renderedDailyGoals.length, navigationDailyGoals.length, 'completed and unfinished daily goals both remain visible');
+    navigationDailyGoals.forEach((goal, index) => {
+      assert.ok(renderedDailyGoals[index].text.includes(goal.description), 'the daily goal row matches its authoritative description');
+      assert.deepEqual(renderedDailyGoals[index].routes, expectedDailyRoutes[index].map(route => ({ screen: route.screen, focus: route.focus })),
+        `${goal.challenge_id}: every unfinished goal has its qualifying route, and completed goals need no route`);
+    });
+    const unfinishedWeekly = journeyState.weekly_journey.objectives.filter((goal) => !goal.completed && goal.progress < goal.target);
     assert.equal(await page.locator('[data-panel="weekly-journey"] [data-jump]').count(), unfinishedWeekly.length);
     assert.ok(!(await page.locator('[data-panel="weekly-journey"]').textContent()).includes('Daily Moon Runs'));
     const weeklyRoutes = await page.locator('[data-panel="weekly-journey"] [data-jump]').evaluateAll((buttons) => buttons.map((b) => ({ screen:b.dataset.jump, focus:b.dataset.focus })));
