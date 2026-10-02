@@ -1,5 +1,6 @@
 import { PET_RUN_MODIFIERS, PET_ROGUELITE_BOSSES, PET_ROGUELITE_ENEMIES } from './content/index.js';
 import { getPetVisibleLevel } from './progression-phase-2.js';
+import { requirePetFirstReadResult, requirePetReadResult } from './read-result.js';
 
 // Only conditions with implemented daily-room mechanics can enter new runs.
 export const DAILY_RUN_CONDITIONS = Object.freeze({
@@ -38,7 +39,7 @@ function selectedTactics(rows) {
 }
 export async function readDailyModifiers(db, run) {
   return (await db.prepare(`SELECT modifier_id, effects_json FROM telegram_pet_run_modifiers
-    WHERE run_id=? AND telegram_id=? ORDER BY modifier_id`).bind(run.run_id, run.telegram_id).all()).results || [];
+    WHERE run_id=? AND telegram_id=? ORDER BY modifier_id`).bind(run.run_id, run.telegram_id).all().then(requirePetReadResult)).results;
 }
 export function dailyTacticalBoard(run, rows) {
   const enabled = usesDailyTactics(rows);
@@ -110,7 +111,7 @@ export async function chooseDailyRunTactic(db, owner, request = {}) {
       AND EXISTS (SELECT 1 FROM telegram_pet_run_modifiers m WHERE m.run_id=r.run_id AND m.telegram_id=r.telegram_id AND m.modifier_id=?)
       AND NOT EXISTS (SELECT 1 FROM telegram_pet_run_rooms rr WHERE rr.run_id=r.run_id AND rr.room_number=r.current_room+1 AND rr.status<>'pending')
     RETURNING modifier_id`).bind(tacticSlot(checkpoint), JSON.stringify({ tactic_id: key, checkpoint }),
-      request.run_id, owner, checkpoint, DAILY_RUN_RULES_ID).first();
+      request.run_id, owner, checkpoint, DAILY_RUN_RULES_ID).first().then(requirePetFirstReadResult);
   if (!row) return rejected('daily_tactic_stale');
   return { accepted: true, reason: 'daily_tactic_chosen', pet_xp_awarded: 0,
     result_copy: `${DAILY_RUN_TACTICS[key].title} selected. It affects the remaining rooms only.` };

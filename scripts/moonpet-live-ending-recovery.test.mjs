@@ -494,3 +494,65 @@ test('repairing an older paid story cannot rewind a later completed step', async
   const progress = f.sql.prepare('SELECT step_index,completed_cycles FROM telegram_pet_event_chain_progress WHERE pet_id=?').get(petId);
   assert.equal(progress.step_index, 2); assert.equal(progress.completed_cycles, 3);
 });
+
+test('a story request delayed across midnight cannot pay a step already advanced by the next day', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: Date.UTC(2026, 8, 26, 23, 59, 59) });
+  const f = fixture('story-midnight-reservation-race'), petId = 'current-' + f.owner;
+  let injected = false;
+  f.db.beforeRun = async statement => {
+    if (injected || !statement.query.includes('INSERT OR IGNORE INTO telegram_pet_system_events') || !statement.args.includes('event_chain')) return;
+    injected = true;
+    t.mock.timers.tick(2000);
+    const nextDay = await f.act({ action: 'event_chain', chain_key: 'lost_delivery_drone', request_id: 'next-day-story-click' });
+    assert.equal(nextDay.accepted, true);
+    assert.equal(nextDay.reason, 'event_chain_advanced');
+  };
+  const delayed = await f.act({ action: 'event_chain', chain_key: 'lost_delivery_drone', request_id: 'previous-day-story-click' });
+  assert.equal(injected, true);
+  assert.equal(delayed.accepted, false, 'a stale unsaved choice must not become a second paid copy of the same scene');
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_event_chain'").get(f.owner).n, 1);
+  assert.equal(f.sql.prepare('SELECT step_index FROM telegram_pet_event_chain_progress WHERE pet_id=?').get(petId).step_index, 1);
+});
+
+test('a delayed District checkpoint cannot award the same boss twice across midnight', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: Date.UTC(2026, 8, 26, 23, 59, 59) });
+  const f = fixture('district-midnight-reservation-race-3'), petId = 'current-' + f.owner;
+  f.sql.prepare(`INSERT INTO telegram_pet_live_progression_state (pet_id,telegram_id,season_key,region_mastery_json)
+    VALUES (?,?,?,'{"moon_alley":90}')`).run(petId, f.owner, currentSeason);
+  let injected = false;
+  f.db.beforeRun = async statement => {
+    if (injected || !statement.query.includes('INSERT OR IGNORE INTO telegram_pet_system_events') || !statement.args.includes('district')) return;
+    injected = true;
+    t.mock.timers.tick(2000);
+    const nextDay = await f.act({ action: 'district_mission', region_key: 'moon_alley', approach_key: 'careful', request_id: 'next-day-checkpoint' });
+    assert.equal(nextDay.reason, 'district_boss_defeated');
+  };
+  const delayed = await f.act({ action: 'district_mission', region_key: 'moon_alley', approach_key: 'careful', request_id: 'previous-day-checkpoint' });
+  assert.equal(injected, true);
+  assert.equal(delayed.accepted, false, 'the already crossed mastery checkpoint cannot pay another frozen boss reward');
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_district'").get(f.owner).n, 1);
+  assert.equal(f.sql.prepare('SELECT energy FROM telegram_pet_instances WHERE pet_id=?').get(petId).energy, 90);
+  assert.equal(JSON.parse(f.sql.prepare('SELECT region_mastery_json FROM telegram_pet_live_progression_state WHERE pet_id=?').get(petId).region_mastery_json).moon_alley, 110);
+});
+
+for (const pending of [false, true]) test(`a next-day story reservation rechecks an earlier ${pending ? 'pending' : 'completed'} scene`, async t => {
+  const oldNow = new Date(Date.UTC(2026, 8, 26, 23, 59, 59));
+  t.mock.timers.enable({ apis: ['Date'], now: oldNow.getTime() + 2000 });
+  const f = fixture('story-earlier-reservation-' + pending), petId = 'current-' + f.owner;
+  const pet = f.sql.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=?').get(petId);
+  let injected = false;
+  f.db.beforeRun = async statement => {
+    if (injected || !statement.query.includes('INSERT OR IGNORE INTO telegram_pet_system_events') || !statement.args.includes('event_chain')) return;
+    injected = true;
+    const earlier = await processPetEventChain(f.db, f.owner, 'lost_delivery_drone',
+      pending ? () => ({ accepted: false, reason: 'reward_offline' }) : args => hooks.awardPetReward(f.db, args),
+      null, undefined, pet, null, oldNow);
+    assert.equal(earlier.accepted, true);
+    assert.equal(Boolean(earlier.reward_pending), pending);
+  };
+  const later = await f.act({ action: 'event_chain', chain_key: 'lost_delivery_drone', request_id: 'next-day-choice' });
+  assert.equal(injected, true);
+  assert.equal(later.accepted, false, 'a fresh reservation must recheck saved source order and current scene');
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_system_events WHERE system_key='event_chain'").get().n, 1);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_event_chain'").get(f.owner).n, pending ? 0 : 1);
+});

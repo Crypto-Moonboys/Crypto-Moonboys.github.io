@@ -147,6 +147,30 @@ function seedPlayer(telegramId = 'identity-player', seedCalendar = true) {
 }
 
 const stage5Db = seedPlayer('stage5-migration');
+// A different request may restore a migrated final evolution after the initial
+// duplicate read. The shared reservation must still reject a lower new stage.
+const advancedBeforeReservation = seedPlayer('advanced-before-reservation', false);
+const advancedPetId = `pet:advanced-before-reservation:${TEST_SEASON_KEY}:1`;
+const reserveEvolutionBatch = advancedBeforeReservation.batch.bind(advancedBeforeReservation);
+let advancedBeforeWrite = false;
+advancedBeforeReservation.batch = async statements => {
+  if (!advancedBeforeWrite && statements[0]?.sql.includes('INSERT OR IGNORE INTO telegram_pet_evolutions_by_pet')) {
+    advancedBeforeWrite = true;
+    advancedBeforeReservation.database.prepare(`INSERT INTO telegram_pet_evolutions_by_pet
+      (pet_id,telegram_id,evolution_id,stage,unlock_event_key,materials_consumed)
+      VALUES (?,'advanced-before-reservation','legendary_moon_guardian',5,'restored-final',1)`).run(advancedPetId);
+  }
+  return reserveEvolutionBatch(statements);
+};
+const staleLowerEvolution = await evolveMoonpet(advancedBeforeReservation, {
+  telegram_id: 'advanced-before-reservation', evolution_id: 'moon_egg', event_key: 'stale-lower-stage',
+});
+assert.equal(advancedBeforeWrite, true);
+assert.equal(staleLowerEvolution.accepted, false, 'the shared evolution reservation must atomically reject a lower stage');
+assert.deepEqual(advancedBeforeReservation.database.prepare('SELECT evolution_id,stage FROM telegram_pet_evolutions_by_pet WHERE pet_id=?')
+  .all(advancedPetId).map(row => ({...row})), [{evolution_id:'legendary_moon_guardian',stage:5}]);
+assert.equal(advancedBeforeReservation.database.prepare('SELECT COUNT(*) n FROM telegram_pet_identity_analytics WHERE pet_id=?').get(advancedPetId).n, 0);
+
 const stage5PetId = `pet:stage5-migration:${TEST_SEASON_KEY}:1`;
 stage5Db.database.prepare(`INSERT INTO telegram_pet_evolutions
   (telegram_id,evolution_id,stage,unlock_event_key,unlocked_at) VALUES ('stage5-migration','legendary_moon_guardian',4,'legacy:legendary','2026-01-04T05:06:07Z')`).run();
@@ -182,6 +206,8 @@ assert.deepEqual({
   accepted: true,
   duplicate: true,
   reason: 'already_evolved',
+  pet_id: stage5PetId,
+  season_key: TEST_SEASON_KEY,
   evolution: {
     evolution_id: 'legendary_moon_guardian',
     stage: 5,

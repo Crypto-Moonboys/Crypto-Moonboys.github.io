@@ -1,7 +1,7 @@
 import evolutions from './content/evolutions.json' with { type: 'json' };
 import { getPetVisibleLevelSql } from './progression-phase-2.js';
 import { reconcileLegacyPetInventory } from './inventory-cutover.js';
-import { requirePetReadResult } from './read-result.js';
+import { requirePetReadResult, requirePetFirstReadResult } from './read-result.js';
 
 const ID_PATTERN = /^[a-z0-9][a-z0-9_-]*$/;
 const FORBIDDEN_EVOLUTION_KEYS = /(?:^|_)(?:xp|reward)_multiplier$|cap_(?:increase|bonus)$|(?:pet|community)_xp_cap/i;
@@ -556,14 +556,17 @@ export async function evolveMoonpet(db, request = {}) {
   if (!petId || !scope?.season_key) return { accepted: false, duplicate: false, reason: 'evolution_authority_unavailable' };
   const existing = await db.prepare(`SELECT evolution_id, stage, unlocked_at FROM telegram_pet_evolutions_by_pet
     WHERE pet_id = ? AND telegram_id = ? AND evolution_id = ?`)
-    .bind(petId, telegramId, evolutionId).first();
-  if (existing) return { accepted: true, duplicate: true, reason: 'already_evolved', evolution: existing };
+    .bind(petId, telegramId, evolutionId).first().then(requirePetFirstReadResult);
+  if (existing) return { accepted: true, duplicate: true, reason: 'already_evolved', pet_id: petId, season_key: scope.season_key, evolution: existing };
   const requirements = evolutionRequirementSql(definition, telegramId, petId, scope.season_key);
   const evolutionMilestone = `evolution_${evolutionId}`;
   const corruptMemory = await db.prepare(`SELECT 1 AS corrupt FROM telegram_pet_memories
     WHERE pet_id = ? AND NOT (telegram_id = ? AND season_key = ?) LIMIT 1`)
     .bind(petId, telegramId, scope.season_key).first();
   if (corruptMemory) throw new Error('moonpet_identity_authority_tuple_mismatch');
+  // Every entry point shares this atomic order check, including legacy bot
+  // requests and a stage change after the duplicate read. Existing receipts
+  // remain replayable, but a higher saved stage cannot gain a new lower one.
   const statements = [db.prepare(`INSERT OR IGNORE INTO telegram_pet_evolutions_by_pet
       (pet_id, telegram_id, evolution_id, stage, unlock_event_key, cosmetic_unlocks, achievement_unlocks, materials_consumed)
       SELECT ?, ?, ?, ?, ?, ?, ?, 0
@@ -571,9 +574,12 @@ export async function evolveMoonpet(db, request = {}) {
         WHERE pet_id=? AND telegram_id=? AND season_key=? AND status='active')
         AND NOT EXISTS (SELECT 1 FROM telegram_pet_memories
           WHERE pet_id = ? AND NOT (telegram_id = ? AND season_key = ?))
+        AND NOT EXISTS (SELECT 1 FROM telegram_pet_evolutions_by_pet
+          WHERE pet_id=? AND telegram_id=? AND stage>=?)
         AND ${requirements.sql}`)
       .bind(petId, telegramId, evolutionId, definition.stage, eventKey, safeJson(definition.cosmetic_unlocks),
-        safeJson(definition.achievement_unlocks), petId, telegramId, scope.season_key, petId, telegramId, scope.season_key, ...requirements.args)];
+        safeJson(definition.achievement_unlocks), petId, telegramId, scope.season_key, petId, telegramId, scope.season_key,
+        petId, telegramId, definition.stage, ...requirements.args)];
   for (const [assetType, assets] of Object.entries(definition.requirements.inventory || {})) for (const [assetKey, quantity] of Object.entries(assets)) {
     if (assetType === 'material') {
       statements.push(db.prepare(`UPDATE telegram_pet_material_balances SET quantity = quantity - ?, updated_at = CURRENT_TIMESTAMP
@@ -620,11 +626,11 @@ export async function evolveMoonpet(db, request = {}) {
   if (!results?.[0]?.meta?.changes) {
     const concurrent = await db.prepare(`SELECT evolution_id, stage, unlocked_at FROM telegram_pet_evolutions_by_pet
       WHERE pet_id = ? AND telegram_id = ? AND evolution_id = ?`)
-      .bind(petId, telegramId, evolutionId).first();
-    if (concurrent) return { accepted: true, duplicate: true, reason: 'already_evolved', evolution: concurrent };
+      .bind(petId, telegramId, evolutionId).first().then(requirePetFirstReadResult);
+    if (concurrent) return { accepted: true, duplicate: true, reason: 'already_evolved', pet_id: petId, season_key: scope.season_key, evolution: concurrent };
     return { accepted: false, duplicate: false, reason: 'requirements_not_met' };
   }
-  return { accepted: true, duplicate: false, reason: 'evolved', evolution: definition };
+  return { accepted: true, duplicate: false, reason: 'evolved', pet_id: petId, season_key: scope.season_key, evolution: definition };
 }
 
 export async function getMoonpetIdentitySummary(db, telegramIdRaw, request = {}) {

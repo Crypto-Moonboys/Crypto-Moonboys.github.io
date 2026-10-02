@@ -100,9 +100,12 @@ assert.doesNotMatch(weeklyBoss, /mirrorPetProfileToActiveInstance|UPDATE telegra
   'weekly boss must not route its energy debit through the mutable active profile');
 assert.match(weeklyBoss, /pet: await getPetInstanceWithAtomicDecay\(db, bossPetAuthority\.pet_id\)/,
   'weekly boss must return the pet that paid for the attack');
-assert.match(worker, /if \(result\.accepted && !result\.duplicate\) result\.lifecycle = await syncMoonpetLifecycleStage\(db, telegramId, next\.stage\);/, 'runtime evolve handling must only sync lifecycle on a newly unlocked evolution');
-assert.match(worker, /result = await preserveCommittedPetActionResult\(result, async \(\) => \{\s+if \(result\.accepted && !result\.duplicate\) \{\s+const identity = await getMoonpetIdentitySummary\(env\.DB, telegramId\);\s+result\.lifecycle = await syncMoonpetLifecycleStage\(env\.DB, telegramId, identity\?\.current_stage\?\.stage \|\| 0\);\s+\}/, 'API evolve handling must preserve saved evolution success and only advance lifecycle for a new unlock');
-assert.match(worker, /if \(!result\.duplicate\) await syncMoonpetLifecycleStage\(db, telegramId, next\.stage\);/, 'command evolve handling must not advance lifecycle for duplicate owner-level evolution unlocks');
+assert.match(worker, /if \(!result\.accepted\) return result;\s+return preserveCommittedPetActionResult\(result, async \(\) => \{\s+result\.lifecycle = await syncMoonpetLifecycleStage\(db, telegramId, result\);/, 'runtime evolve handling must sync the committed source for accepted unlocks and duplicate recovery');
+assert.match(worker, /result = await preserveCommittedPetActionResult\(result, async \(\) => \{\s+if \(result\.accepted\) \{\s+result\.lifecycle = await syncMoonpetLifecycleStage\(env\.DB, telegramId, result\);\s+await finalizeActivePetEvolutionProgress\(env\.DB, telegramId, result\);\s+\}/, 'API evolve handling must preserve saved evolution success and recover the committed source without rereading the selected pet');
+const commandEvolutionStart = worker.indexOf('async function cmdPetEvolve(');
+const commandEvolution = worker.slice(commandEvolutionStart, worker.indexOf('\nasync function ', commandEvolutionStart + 1));
+assert.match(commandEvolution, /await syncMoonpetLifecycleStage\(db, telegramId, result\);/, 'command evolve handling must synchronize the committed source lifecycle');
+assert.doesNotMatch(commandEvolution, /!result\.duplicate/, 'command evolution retries must permit lifecycle recovery for accepted duplicate results');
 const rosterSummarySource = worker.slice(
   worker.indexOf('async function buildPetSeasonSlotSummary'),
   worker.indexOf('async function buyPetSeasonSlot'),

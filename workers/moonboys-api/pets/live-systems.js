@@ -304,18 +304,27 @@ export async function processPetCraftRecipe(db, telegramId, recipeKey, requestKe
   return { accepted: true, reason: 'crafting_complete', recipe: { key: recipe.key, title: recipe.title, output: recipe.output }, cost: recipe.cost, rewards: { items: { [recipe.output.item_key]: recipe.output.quantity } } };
 }
 
-async function reserveSystemEvent(db, telegramId, system, action, period, payload = {}, authority = null) {
+async function reserveSystemEvent(db, telegramId, system, action, period, payload = {}, authority = null, progressGuard = null) {
   const id = crypto.randomUUID();
   const petId = authority?.pet_id || '';
   const seasonKey = authority?.season_key || '';
+  // District checkpoints and story scenes advance in order. Across midnight,
+  // another request can change their source after the preview read. Freeze a
+  // new choice only while that progress and its unfinished predecessor agree.
+  const sequenceGuard = progressGuard ? `${progressGuard.sql} AND NOT EXISTS (
+    SELECT 1 FROM telegram_pet_system_events previous WHERE previous.pet_id=? AND previous.telegram_id=?
+      AND previous.season_key=? AND previous.system_key=? AND previous.action_key=? AND previous.period_key<>?
+      AND (previous.period_key>? OR previous.status IN ('pending','rejected','settling')))` : '';
   const result = await db.prepare(`INSERT OR IGNORE INTO telegram_pet_system_events
-    (id, pet_id, telegram_id, season_key, system_key, action_key, period_key, payload_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
-    .bind(id, petId, telegramId, seasonKey, system, action, period, JSON.stringify({ ...payload, pet_id: petId || null, season_key: seasonKey || null })).run().then(requireLiveMutationResult);
+    (id, pet_id, telegram_id, season_key, system_key, action_key, period_key, payload_json)
+    SELECT ?, ?, ?, ?, ?, ?, ?, ? WHERE 1=1 ${sequenceGuard}`)
+    .bind(id, petId, telegramId, seasonKey, system, action, period, JSON.stringify({ ...payload, pet_id: petId || null, season_key: seasonKey || null }),
+      ...(progressGuard ? [...progressGuard.args, petId, telegramId, seasonKey, system, action, period, period] : [])).run().then(requireLiveMutationResult);
   if (Number(result?.meta?.changes || 0) > 0) return { id, fresh: true, status: 'pending', payload_json: JSON.stringify(payload) };
   const existing = await db.prepare(`SELECT id, status, payload_json FROM telegram_pet_system_events
     WHERE pet_id = ? AND telegram_id = ? AND season_key = ? AND system_key = ? AND action_key = ? AND period_key = ?`)
     .bind(petId, telegramId, seasonKey, system, action, period).first().then(requirePetFirstReadResult);
-  return { ...existing, fresh: false };
+  return { ...existing, fresh: false, ...(!existing && progressGuard ? { status: 'stale' } : {}) };
 }
 
 async function readSystemEvent(db, authority, system, action, period) {
@@ -458,7 +467,12 @@ export async function processPetDistrictMission(db, telegramId, regionKey, pet, 
   const reservation = saved || await reserveSystemEvent(db, telegramId, 'district', region.key, period, {
     region_key: region.key, mission_key: mission.key, approach_key: choice.key, runtime_event_key: runtimeEventKey,
     decision: decide({ approach_key: choice.key }),
-  }, authority);
+  }, authority, {
+    sql: `AND EXISTS (SELECT 1 FROM telegram_pet_live_progression_state WHERE pet_id=? AND telegram_id=? AND season_key=?
+      AND COALESCE(json_extract(region_mastery_json,'$.'||?),0)=?)`,
+    args: [authority.pet_id, telegramId, authority.season_key, region.key, integer(parse(liveProgression?.region_mastery_json, {})[region.key])],
+  });
+  if (reservation.status === 'stale') return { accepted: false, reason: 'district_state_changed', refresh_state: true };
   if (reservation.status === 'completed') return { accepted: true, duplicate: true, reason: 'district_completed_today', region };
   const claim = await claimEnergySettlement(db, reservation, telegramId, 10, authority);
   if (claim.state !== 'settling') return { accepted: false, reason: claim.state === 'busy' ? 'district_busy' : 'pet_tired' };
@@ -540,7 +554,13 @@ export async function processPetEventChain(db, telegramId, chainKey, awardReward
     return { stepIndex, scene, selectedChoice, final, completedCycles: integer(payload.completed_cycles ?? row?.completed_cycles) + (final ? 1 : 0), reward: applyPetFactionBonus(baseRewards, factionKey, 'events') };
   };
   const initial = { step_index: stepIndex, step: scene.key, choice_key: selectedChoice.key, completed_cycles: integer(row?.completed_cycles), runtime_event_key: runtimeEventKey };
-  const reservation = saved || await reserveSystemEvent(db, telegramId, 'event_chain', chainKey, period, { ...initial, decision: decide(initial) }, authority);
+  const reservation = saved || await reserveSystemEvent(db, telegramId, 'event_chain', chainKey, period, { ...initial, decision: decide(initial) }, authority, {
+    sql: `AND COALESCE((SELECT step_index FROM telegram_pet_event_chain_progress WHERE pet_id=? AND telegram_id=? AND season_key=? AND chain_key=?),0)=?
+      AND COALESCE((SELECT completed_cycles FROM telegram_pet_event_chain_progress WHERE pet_id=? AND telegram_id=? AND season_key=? AND chain_key=?),0)=?`,
+    args: [authority.pet_id, telegramId, authority.season_key, chainKey, stepIndex,
+      authority.pet_id, telegramId, authority.season_key, chainKey, integer(row?.completed_cycles)],
+  });
+  if (reservation.status === 'stale') return { accepted: false, reason: 'event_chain_state_changed', refresh_state: true };
   if (reservation.status === 'completed') return { accepted: true, duplicate: true, reason: 'event_chain_step_used_today' };
   const claim = await claimNoCostSettlement(db, reservation);
   if (claim.state !== 'settling') return { accepted: false, reason: 'event_chain_busy' };

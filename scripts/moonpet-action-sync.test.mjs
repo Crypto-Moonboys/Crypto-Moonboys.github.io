@@ -443,6 +443,46 @@ test('a pet switch during checkout cannot equip or debit either pet', async () =
   assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_instances WHERE equipped_food='moon_kibble'").get().n,0);
 });
 
+for (const action of ['activity_claim', 'activity_cancel']) {
+  test(`stale ${action} cannot close a newer activity session`, async () => {
+    const f = fixture(`stale-${action}`);
+    const first = await f.act({ action: 'activity_start', activity_type: 'train' });
+    assert.equal(first.accepted, true);
+    assert.equal((await hooks.cancelPetActivitySession(f.db, f.owner)).accepted, true);
+    const second = await f.act({ action: 'activity_start', activity_type: 'work' });
+    assert.equal(second.accepted, true);
+    f.sql.prepare("UPDATE telegram_pet_activity_sessions SET started_at=datetime('now','-30 minutes') WHERE id=?").run(second.session.id);
+    const before = f.sql.prepare('SELECT pet_xp,moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner);
+    const result = await hooks.processPetMiniAppAction(f.db, f.owner, { id: f.owner }, {
+      action, session_id: first.session.id,
+    }, 'fixture-token');
+    assert.equal(result.accepted, false, 'a button rendered for the first session must not affect the second');
+    assert.equal(result.reason, 'activity_state_changed');
+    assert.equal(result.refresh_state, true);
+    assert.equal(f.sql.prepare('SELECT status FROM telegram_pet_activity_sessions WHERE id=?').get(second.session.id).status, 'active');
+    assert.deepEqual(f.sql.prepare('SELECT pet_xp,moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner), before);
+    assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='activity_claim'").get().n, 0);
+    const current = await f.act({ action, session_id: second.session.id });
+    assert.equal(current.accepted, true, 'a fresh button still acts on its own session');
+    assert.equal(current.session.id, second.session.id);
+  });
+
+  test(`${action} requires the rendered session ID`, async () => {
+    const f = fixture(`missing-${action}`);
+    const started = await f.act({ action: 'activity_start', activity_type: 'train' });
+    f.sql.prepare("UPDATE telegram_pet_activity_sessions SET started_at=datetime('now','-30 minutes') WHERE id=?").run(started.session.id);
+    for (const sessionId of [undefined, null, '', '  ', { id: started.session.id }]) {
+      const result = await hooks.processPetMiniAppAction(f.db, f.owner, { id: f.owner }, {
+        action, ...(sessionId === undefined ? {} : { session_id: sessionId }),
+      }, 'fixture-token');
+      assert.equal(result.accepted, false);
+      assert.equal(result.reason, 'activity_session_required');
+      assert.equal(result.refresh_state, true);
+      assert.equal(f.sql.prepare('SELECT status FROM telegram_pet_activity_sessions WHERE id=?').get(started.session.id).status, 'active');
+    }
+  });
+}
+
 test('timed claim and Growth Mark stay on the session pet across settlement and switching', async () => {
   const f=fixture('82004'), petId='current-'+f.owner;
   f.pet('activity-second',currentSeason,300,2); f.reveal(petId);
@@ -652,4 +692,180 @@ test('an activity reward transaction failure stays retryable before any payout',
   f.db.beforeBatch=null;
   assert.equal((await f.act({action:'activity_claim'})).accepted,true);
   assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='activity_claim'").get().n,1);
+});
+
+function evolutionFixture(owner) {
+  const f = fixture(owner), source = 'current-' + owner;
+  f.sql.prepare("UPDATE telegram_pet_instances SET pet_xp=16000,stage='young',species='vinyl_crab' WHERE pet_id=?").run(source);
+  f.sql.prepare("UPDATE telegram_pet_profiles SET pet_xp=16000,stage='young',species='vinyl_crab' WHERE telegram_id=?").run(owner);
+  f.sql.prepare("UPDATE telegram_pet_season_slots SET created_at=datetime('now','-35 days') WHERE pet_id=?").run(source);
+  for (const [id, stage] of [['moon_egg',0], ['street_moonpet',1]]) f.sql.prepare(`INSERT INTO telegram_pet_evolutions_by_pet
+    (pet_id,telegram_id,evolution_id,stage,unlock_event_key) VALUES (?,?,?,?,?)`).run(source,owner,id,stage,'saved:'+id);
+  for (let index=0;index<21;index++) {
+    const day = new Date(now.getTime()-(index+1)*86400000).toISOString().slice(0,10);
+    f.sql.prepare(`INSERT INTO telegram_pet_growth_marks
+      (mark_id,pet_id,telegram_id,season_key,milestone_type,evidence_key,earned_day) VALUES (?,?,?,?,?,?,?)`)
+      .run('growth:'+index,source,owner,currentSeason,'care_milestone','care:'+index,day);
+  }
+  for (let week=1;week<=3;week++) f.sql.prepare(`INSERT INTO telegram_pet_weekly_crests
+    (crest_id,pet_id,telegram_id,season_key,season_week,qualification_week,objective_id,evidence_key)
+    VALUES (?,?,?,?,?,?,'weekly_journey',?)`).run('crest:'+week,source,owner,currentSeason,week,week,'weekly-journey:'+week);
+  f.sql.prepare(`INSERT INTO telegram_pet_boss_victories (pet_id,telegram_id,season_key,boss_id,victories)
+    VALUES (?,?,?,'alley_king',3)`).run(source,owner,currentSeason);
+  for (const key of ['alley_crown','neon_shard']) f.sql.prepare('INSERT INTO telegram_pet_relics (telegram_id,relic_id,rarity) VALUES (?,?,?)').run(owner,key,'rare');
+  for (const [key, quantity] of [['scrap_metal',20],['evolution_fragment',10]]) f.sql.prepare(
+    'INSERT INTO telegram_pet_material_balances (telegram_id,material_key,quantity) VALUES (?,?,?)').run(owner,key,quantity);
+  f.pet('evolution-b',currentSeason,200,2);
+  f.sql.prepare("UPDATE telegram_pet_instances SET stage='young',species='vinyl_crab' WHERE pet_id='evolution-b'").run();
+  f.sql.prepare(`INSERT INTO telegram_pet_evolutions_by_pet (pet_id,telegram_id,evolution_id,stage,unlock_event_key)
+    VALUES ('evolution-b',?,'street_moonpet',1,'saved-b')`).run(owner);
+  const api = async () => {
+    const response = await worker.fetch(new Request('https://moonboys-api.test/telegram-pets/action', {
+      method:'POST',headers:{'content-type':'application/json','x-pets-bot-secret':'evolve-test'},
+      body:JSON.stringify({telegram_id:owner,action:'evolve',evolution_id:'cyber_moonpet',event_key:'evolve-source-a'}),
+    }),{DB:f.db,TELEGRAM_PETS_BOT_SECRET:'evolve-test'});
+    return {http_status:response.status,...await response.json()};
+  };
+  return {...f,source,api};
+}
+
+test('legacy evolution follow-up finishes its committed pet after selection switches', async () => {
+  const f=evolutionFixture('82020');
+  let switched=false;
+  f.db.afterBatch=async statements=>{
+    if (!statements[0].query.includes('INSERT OR IGNORE INTO telegram_pet_evolutions_by_pet')) return;
+    f.db.afterBatch=null;
+    assert.equal(f.sql.prepare("SELECT stage FROM telegram_pet_evolutions_by_pet WHERE pet_id=? AND evolution_id='cyber_moonpet'").get(f.source).stage,2);
+    switched=(await hooks.switchActivePetSeasonSlot(f.db,f.owner,'evolution-b')).accepted;
+  };
+  const result=await f.api();
+  assert.equal(result.accepted,true,JSON.stringify(result));
+  assert.equal(switched,true,'B becomes selected after A commits and before its lifecycle follow-up');
+  assert.equal(f.sql.prepare('SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id=?').get(f.source).phase,'adult',
+    'the committed source must finish without selecting A again');
+  assert.equal(f.sql.prepare("SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id='evolution-b'").get().phase,'young');
+  assert.equal(f.sql.prepare("SELECT stage FROM telegram_pet_instances WHERE pet_id='evolution-b'").get().stage,'young');
+  assert.equal(f.sql.prepare('SELECT stage FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner).stage,'young');
+  assert.equal(f.sql.prepare("SELECT quantity FROM telegram_pet_material_balances WHERE telegram_id=? AND material_key='scrap_metal'").get(f.owner).quantity,10);
+});
+
+test('a failed evolution lifecycle follow-up repairs on duplicate retry without spending twice', async () => {
+  const f=evolutionFixture('82021');
+  f.db.beforeBatch=statements=>{
+    if (statements.some(statement=>statement.query.includes("SET phase='adult'"))) throw Error('interrupted_evolution_lifecycle');
+  };
+  const first=await f.api();
+  assert.equal(first.accepted,true,JSON.stringify(first));
+  assert.equal(first.refresh_state,true);
+  assert.equal(f.sql.prepare('SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id=?').get(f.source).phase,'young');
+  const paid=f.sql.prepare('SELECT material_key,quantity FROM telegram_pet_material_balances WHERE telegram_id=? ORDER BY material_key').all(f.owner);
+  assert.deepEqual(paid.map(row=>row.quantity),[7,10]);
+  assert.equal((await hooks.switchActivePetSeasonSlot(f.db,f.owner,'evolution-b')).accepted,true);
+  assert.equal((await hooks.switchActivePetSeasonSlot(f.db,f.owner,f.source)).accepted,true);
+  f.db.beforeBatch=null;
+  const retry=await f.api();
+  assert.equal(retry.accepted,true,JSON.stringify(retry));assert.equal(retry.duplicate,true);
+  assert.equal(f.sql.prepare('SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id=?').get(f.source).phase,'adult');
+  assert.deepEqual(f.sql.prepare('SELECT material_key,quantity FROM telegram_pet_material_balances WHERE telegram_id=? ORDER BY material_key').all(f.owner),paid);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_evolutions_by_pet WHERE pet_id=? AND evolution_id='cyber_moonpet'").get(f.source).n,1);
+});
+
+test('Mini App explicit final evolution retry reaches its saved lifecycle repair', async () => {
+  const f=fixture('82022'),source='current-'+f.owner;
+  f.sql.prepare(`INSERT INTO telegram_pet_evolutions_by_pet (pet_id,telegram_id,evolution_id,stage,unlock_event_key)
+    VALUES (?,?,'legendary_moon_guardian',5,'saved-final')`).run(source,f.owner);
+  const result=await f.act({action:'evolve',evolution_id:'legendary_moon_guardian',request_id:'retry-final'});
+  assert.equal(result.accepted,true,JSON.stringify(result));assert.equal(result.duplicate,true);
+  assert.equal(f.sql.prepare('SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id=?').get(source).phase,'adult');
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_material_balances WHERE telegram_id=?').get(f.owner).n,0,
+    'repair of a saved final evolution cannot charge materials again');
+  const normalized=await f.act({action:'evolve',evolution_id:' LEGENDARY_MOON_GUARDIAN ',request_id:'retry-final-normalized'});
+  assert.equal(normalized.accepted,true);assert.equal(normalized.duplicate,true);
+});
+
+test('a migrated final pet rejects unrelated evolution IDs without creating lower stages', async () => {
+  const f=fixture('82024'),source='current-'+f.owner;
+  f.sql.prepare(`INSERT INTO telegram_pet_evolutions_by_pet (pet_id,telegram_id,evolution_id,stage,unlock_event_key)
+    VALUES (?,?,'legendary_moon_guardian',5,'migrated-final')`).run(source,f.owner);
+  const saved=f.sql.prepare('SELECT * FROM telegram_pet_evolutions_by_pet WHERE pet_id=?').all(source);
+  for (const evolutionId of ['moon_egg','street_moonpet','cyber_moonpet','moon_guardian','not_real','','   ',null,undefined]) {
+    const result=await f.act({action:'evolve',...(evolutionId === undefined ? {} : {evolution_id:evolutionId}),request_id:'wrong-final-'+evolutionId});
+    assert.equal(result.accepted,false,`${evolutionId} cannot become a new unlock on a final pet`);
+    assert.equal(result.reason,'final_evolution_reached');
+    assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_evolutions_by_pet WHERE pet_id=?').all(source),saved);
+  }
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_identity_analytics WHERE pet_id=?').get(source).n,0);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_material_balances WHERE telegram_id=?').get(f.owner).n,0);
+});
+
+test('a scoped Mini App evolution repairs its original pet on core refresh after a selection change', async () => {
+  const f=evolutionFixture('82023');
+  let switched=false;
+  f.db.afterBatch=async statements=>{
+    if (!statements[0].query.includes('INSERT OR IGNORE INTO telegram_pet_evolutions_by_pet')) return;
+    f.db.afterBatch=null;
+    assert.equal(f.sql.prepare("SELECT stage FROM telegram_pet_evolutions_by_pet WHERE pet_id=? AND evolution_id='cyber_moonpet'").get(f.source).stage,2);
+    switched=(await hooks.switchActivePetSeasonSlot(f.db,f.owner,'evolution-b')).accepted;
+  };
+  const result=await f.act({action:'evolve',evolution_id:'cyber_moonpet',request_id:'scoped-source-a'});
+  assert.equal(result.accepted,true,JSON.stringify(result));
+  assert.equal(result.refresh_state,true,'the committed action defers its closed-scope follow-up to refresh');
+  assert.equal(switched,true);
+  assert.equal(f.sql.prepare('SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id=?').get(f.source).phase,'young');
+  const paid=f.sql.prepare('SELECT material_key,quantity FROM telegram_pet_material_balances WHERE telegram_id=? ORDER BY material_key').all(f.owner);
+  assert.deepEqual(paid.map(row=>row.quantity),[7,10]);
+  assert.equal((await hooks.switchActivePetSeasonSlot(f.db,f.owner,f.source)).accepted,true);
+  assert.equal(f.sql.prepare('SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id=?').get(f.source).phase,'young',
+    'selecting the pet alone leaves repair pending until the following core read');
+  const refreshed=await hooks.buildPetMiniAppCoreState(f.db,f.owner);
+  assert.equal(refreshed.pet.pet_id,f.source);
+  assert.equal(refreshed.lifecycle.phase,'adult');
+  assert.equal(refreshed.lifecycle.evolution_stage,2);
+  assert.equal(f.sql.prepare('SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id=?').get(f.source).phase,'adult');
+  assert.equal(f.sql.prepare('SELECT stage FROM telegram_pet_instances WHERE pet_id=?').get(f.source).stage,'adult');
+  assert.equal(f.sql.prepare("SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id='evolution-b'").get().phase,'young');
+  assert.equal(f.sql.prepare("SELECT stage FROM telegram_pet_instances WHERE pet_id='evolution-b'").get().stage,'young');
+  assert.deepEqual(f.sql.prepare('SELECT material_key,quantity FROM telegram_pet_material_balances WHERE telegram_id=? ORDER BY material_key').all(f.owner),paid);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_evolutions_by_pet WHERE pet_id=? AND evolution_id='cyber_moonpet'").get(f.source).n,1);
+});
+
+test('a failed Mini App identity read cannot create a lower evolution on a migrated final pet', async () => {
+  const f=fixture('82025'),source='current-'+f.owner;
+  f.sql.prepare(`INSERT INTO telegram_pet_evolutions_by_pet (pet_id,telegram_id,evolution_id,stage,unlock_event_key)
+    VALUES (?,?,'legendary_moon_guardian',5,'migrated-final')`).run(source,f.owner);
+  f.sql.prepare("UPDATE telegram_pet_lifecycle_by_pet SET phase='adult' WHERE pet_id=?").run(source);
+  const saved=f.sql.prepare('SELECT * FROM telegram_pet_evolutions_by_pet WHERE pet_id=?').all(source);
+  f.db.beforeRead=statement=>{
+    if (/SELECT e\.evolution_id, e\.stage, e\.unlocked_at/.test(statement.query)) throw Error('identity_projection_unavailable');
+  };
+  await assert.rejects(f.act({action:'evolve',evolution_id:'moon_egg',request_id:'unavailable-final-identity'}),/identity_projection_unavailable/);
+  assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_evolutions_by_pet WHERE pet_id=?').all(source),saved);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_identity_analytics WHERE pet_id=?').get(source).n,0);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_memories WHERE pet_id=?').get(source).n,0);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_material_balances WHERE telegram_id=?').get(f.owner).n,0);
+});
+
+test('the legacy bot action rejects missing lower evolutions while preserving saved final retries', async () => {
+  const f=fixture('82026'),source='current-'+f.owner;
+  f.sql.prepare(`INSERT INTO telegram_pet_evolutions_by_pet (pet_id,telegram_id,evolution_id,stage,unlock_event_key)
+    VALUES (?,?,'legendary_moon_guardian',5,'migrated-final')`).run(source,f.owner);
+  const saved=f.sql.prepare('SELECT * FROM telegram_pet_evolutions_by_pet WHERE pet_id=?').all(source);
+  const api=async evolutionId=>{
+    const response=await worker.fetch(new Request('https://moonboys-api.test/telegram-pets/action',{
+      method:'POST',headers:{'content-type':'application/json','x-pets-bot-secret':'evolve-test'},
+      body:JSON.stringify({telegram_id:f.owner,action:'evolve',evolution_id:evolutionId,event_key:'legacy-final:'+evolutionId}),
+    }),{DB:f.db,TELEGRAM_PETS_BOT_SECRET:'evolve-test'});
+    return {http_status:response.status,...await response.json()};
+  };
+  const lower=await api('moon_egg');
+  assert.equal(lower.accepted,false,JSON.stringify(lower));
+  assert.equal(lower.http_status,409);
+  assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_evolutions_by_pet WHERE pet_id=?').all(source),saved);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_identity_analytics WHERE pet_id=?').get(source).n,0);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_memories WHERE pet_id=?').get(source).n,0);
+  const retry=await api(' LEGENDARY_MOON_GUARDIAN ');
+  assert.equal(retry.http_status,200);assert.equal(retry.accepted,true);assert.equal(retry.duplicate,true);
+  assert.equal(f.sql.prepare('SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id=?').get(source).phase,'adult');
+  assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_evolutions_by_pet WHERE pet_id=?').all(source),saved);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_material_balances WHERE telegram_id=?').get(f.owner).n,0);
 });
