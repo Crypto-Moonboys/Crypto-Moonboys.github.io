@@ -763,7 +763,7 @@ for (const extract of [false,true]) test(`Official Daily ${extract?'extraction':
   let choice;
   for(let seed=1;seed<=100 && !choice;seed++) {
     run.seed=seed;
-    for(const option of room.choices) if((await daily.resolveAuthoritativeDailyRoomOutcome(f.db,run,room,option.choice_id)).success) { choice=option.choice_id; break; }
+    for(const option of room.choices) if((await daily.resolveAuthoritativeDailyRoomOutcome(f.db,run,room,option.choice_id)).outcome.success) { choice=option.choice_id; break; }
   }
   assert.ok(choice);
   f.sql.prepare('UPDATE telegram_pet_runs SET seed=? WHERE run_id=?').run(run.seed,run.run_id);

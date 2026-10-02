@@ -153,7 +153,7 @@ for(const path of ['resume','step','extract']) for(const explicit of [true,false
 
 for(const [label,method,match] of [
   ['boss victory','beforeFirst',q=>q.includes('SELECT 1 AS defeated FROM telegram_pet_run_analytics')],
-  ['resolved rooms','beforeAll',q=>q.includes('SELECT room_id, room_number, room_type, status, generated_data, outcome_data')],
+  ['resolved rooms','beforeAll',q=>q.includes('FROM telegram_pet_run_rooms') && q.includes('generated_data') && q.includes('outcome_data') && q.includes('ORDER BY room_number')],
   ['leaderboard record','beforeFirst',q=>q.includes('SELECT * FROM telegram_pet_daily_leaderboard_records')],
   ['streak history','beforeAll',q=>q.includes('SELECT utc_day, status FROM telegram_pet_daily_runs')],
 ]) test(`failed ${label} lookup cannot permanently finalize incomplete Daily records`,async()=>{
@@ -162,8 +162,10 @@ for(const [label,method,match] of [
   f.sql.prepare("INSERT INTO telegram_pet_run_analytics (analytics_id,run_id,telegram_id,event_type,event_data) VALUES (?,?,?,'boss_fought',?)")
     .run(f.runId+':boss:win',f.runId,f.owner,JSON.stringify({boss_id:'alley_king',outcome:'win'}));
   f.sql.prepare("UPDATE telegram_pet_run_rooms SET status='resolved',outcome_data=? WHERE run_id=?").run(JSON.stringify({success:true}),f.runId);
-  f.db[method]=s=>{if(match(s.query))throw Error('daily_evidence_unavailable');};
+  let injected = false;
+  f.db[method]=s=>{if(match(s.query)){injected=true;throw Error('daily_evidence_unavailable');}};
   await assert.rejects(syncDailyMoonRun(f.db,{telegram_id:f.owner,run_id:f.runId}),/daily_evidence_unavailable/);
+  assert.equal(injected,true,`${label} failure must exercise the authoritative evidence query`);
   assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_daily_analytics WHERE event_type='run_terminal'").get().n,0);
   f.db[method]=null;
   await syncDailyMoonRun(f.db,{telegram_id:f.owner,run_id:f.runId});

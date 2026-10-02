@@ -71,7 +71,8 @@ assert.match(builder, /return\s+buildDailyLoopState\(env,\s*verified\s*\?\s*\{\s
 assert.ok(verifiedIdentity.includes('telegramId: id'), 'Linked Telegram user state must pass the bot update Telegram id as the verified identity');
 assert.ok(builder.includes(': {}'), 'Anonymous/public command paths must fall back to public builder state without pretending to be linked');
 
-assert.ok(daily.includes('const today = loop.utc_day || getTodayUtcDate();'), '/daily must use the builder utc_day for the command readout and daily claim date');
+assert.ok(daily.includes('const today = now.toISOString().slice(0, 10);'), '/daily must derive its claim date from one captured UTC timestamp');
+assert.ok(daily.indexOf('const now = new Date();') < daily.indexOf('await buildTelegramCommandDailyLoopState'), '/daily must capture its claim date before asynchronous reads can cross midnight');
 assert.ok(dailyReadout.includes('formatLoopResetLine(loop)'), '/daily readout must use the builder reset/countdown fields');
 assert.ok(dailyReadout.includes('<b>Daily Loop</b>'), '/daily output must include the daily-loop readout');
 assert.ok(dailyReadout.includes('formatDailyLoopSourceSummary(loop'), '/daily output must include source truth');
@@ -97,8 +98,9 @@ assert.ok(faction.includes('Source: ${factionSource}'), '/gkfaction output must 
 assert.ok(faction.includes("formatSourceStatusForTelegram(loop.source_status?.faction_state"), '/gkfaction must expose faction source_status');
 assert.ok(faction.includes('FACTION_UNALIGNED'), '/gkfaction must keep unaligned state explicit when no faction is selected');
 
-assert.ok(daily.includes('hasDailyClaimToday(db, telegramId)'), 'Existing /daily claim check must remain in place');
-assert.ok(daily.includes("awardXp(db, telegramId, XP_DAILY_CLAIM, 'daily_claim', today)"), 'Existing /daily XP award behavior must remain in place');
+assert.ok(daily.includes('hasDailyClaimToday(db, telegramId, now)'), '/daily claim check must use the captured award date');
+assert.ok(daily.includes("awardXp(db, telegramId, XP_DAILY_CLAIM, 'daily_claim', today, { now })"), '/daily must pass the same earning timestamp to its atomic award');
+assert.ok(daily.includes('if (award.duplicate)') && daily.includes('Daily XP could not be confirmed'), '/daily must distinguish an existing claim from unavailable state');
 assert.ok(daily.includes("logTelegramActivity(db, telegramId, 'daily_claim')"), 'Existing /daily activity logging must remain in place');
 
 assert.ok(

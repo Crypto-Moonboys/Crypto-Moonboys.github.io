@@ -1,6 +1,6 @@
 import { getPetVisibleLevelSql } from './progression-phase-2.js';
 import { PET_INSTANCE_AUTHORITY_VERSION } from './wallet-reconciliation.js';
-import { communitySeasonSql } from '../community-season-authority.js';
+import { communitySeasonSql, communityReceiptTimestampSql } from '../community-season-authority.js';
 
 // These statements belong in the same D1 batch as a fresh pending event.
 // Read the applied XP from that receipt; never apply an earlier JS snapshot.
@@ -51,13 +51,13 @@ export function petCareCommunityStatements(db, eventId) {
       SET xp=xp+(SELECT xp_awarded FROM receipt),
         level=CAST((xp+(SELECT xp_awarded FROM receipt))/100 AS INTEGER)+1,updated_at=CURRENT_TIMESTAMP
       WHERE telegram_id=(SELECT telegram_id FROM receipt)`).bind(eventId),
-    // Select the active Community season for the receipt's authoritative day.
+    // Select the active Community season at the receipt's full earning time.
     // No active season means no new Community reward row; never write to an
     // expired or future period.
     db.prepare(`INSERT INTO telegram_leaderboard (telegram_id,season_id,xp)
       SELECT r.telegram_id,s.id,r.xp_awarded FROM (${receipt}) r
-      JOIN telegram_seasons s ON ${communitySeasonSql('s', "COALESCE(r.day_key, date('now'))")}
-      ORDER BY s.start_date DESC, s.id DESC LIMIT 1
+      JOIN telegram_seasons s ON ${communitySeasonSql('s', communityReceiptTimestampSql('r'))}
+      ORDER BY julianday(s.start_date) DESC, s.id DESC LIMIT 1
       ON CONFLICT(telegram_id,season_id) DO UPDATE SET xp=xp+excluded.xp,updated_at=CURRENT_TIMESTAMP`).bind(eventId),
   ];
 }

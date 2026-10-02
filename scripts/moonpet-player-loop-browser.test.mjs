@@ -1315,7 +1315,7 @@ try {
     const dailyBefore = await hooks.buildPetMiniAppState(db, currentUser, token);
     let winningDailyChoice = null;
     for (const choice of checkpointRoom.choices) {
-      const outcome = await dailyHooks.resolveAuthoritativeDailyRoomOutcome(db, dailyStored, checkpointRoom, choice.choice_id);
+      const { outcome } = await dailyHooks.resolveAuthoritativeDailyRoomOutcome(db, dailyStored, checkpointRoom, choice.choice_id);
       if (outcome.success) { winningDailyChoice = choice; break; }
     }
     assert.ok(winningDailyChoice, 'daily browser fixture needs a valid successful route');

@@ -143,14 +143,17 @@ function seedAdditionalPet(db, telegramId, petId, slotNumber = 2, seasonKey = 'p
 }
 
 for (const [label,query] of [
-  ['outcome stats',/SELECT pet_xp, level, health, energy, happiness, cleanliness/],
-  ['equipment snapshot',/SELECT \* FROM telegram_pet_instances WHERE pet_id=\?/],
+  ['outcome stats',/SELECT \* FROM telegram_pet_instances WHERE pet_id = \? LIMIT 1/],
+  ['equipment snapshot',/FROM telegram_pet_equipment_progression/],
 ]) {
   const adapter=new D1(), owner=`daily-required-${label}`, now=new Date('2026-08-11T12:00:00Z');
   seedPlayer(adapter,owner);
   const started=await createDailyMoonRun(adapter,{telegram_id:owner,now});
-  adapter.failFirst=query;
-  await assert.rejects(processDailyMoonRunStep(adapter,{telegram_id:owner,run_id:started.daily_run.run_id,choice_key:started.room.choices[0].choice_id,expected_step_index:0,now}),/pet_state_read_unavailable/,label);
+  if (label === 'equipment snapshot') {
+    adapter.database.prepare("UPDATE telegram_pet_instances SET equipped_food='moon_kibble' WHERE telegram_id=?").run(owner);
+    adapter.failAll=sql=>query.test(sql);
+  } else adapter.failFirst=query;
+  await assert.rejects(processDailyMoonRunStep(adapter,{telegram_id:owner,run_id:started.daily_run.run_id,choice_key:started.room.choices[0].choice_id,expected_step_index:0,now}),/pet_state_read_unavailable|equipment_ownership_unavailable/,label);
   assert.equal(adapter.database.prepare('SELECT status FROM telegram_pet_run_rooms WHERE room_id=?').get(started.room.room_id).status,'pending','an unavailable pet cannot consume its official room');
   assert.equal(adapter.database.prepare('SELECT current_room FROM telegram_pet_runs WHERE run_id=?').get(started.daily_run.run_id).current_room,0);
 }
@@ -173,6 +176,7 @@ function insertCareEvent(db, telegramId, eventKey, day, action = 'feed', petId =
 }
 
 function resolveDailyRun(db, telegramId, runId, { status = 'completed', score = 900, boss = true } = {}) {
+  const sourcePet = db.database.prepare('SELECT pet_id FROM telegram_pet_runs WHERE telegram_id=? AND run_id=?').get(telegramId, runId).pet_id;
   db.database.prepare(`UPDATE telegram_pet_runs SET status=?, current_room=10, depth=10, rooms_completed=10, score=?,
     boss_fought=?, completed_at='2026-08-11 00:10:00', ended_at='2026-08-11 00:10:00' WHERE telegram_id=? AND run_id=?`)
     .run(status, score, boss ? 'alley_king' : null, telegramId, runId);
@@ -180,9 +184,12 @@ function resolveDailyRun(db, telegramId, runId, { status = 'completed', score = 
   for (let index = 0; index < types.length; index += 1) {
     const roomNumber = index + 1;
     db.database.prepare(`INSERT OR REPLACE INTO telegram_pet_run_rooms
-      (room_id, run_id, telegram_id, room_number, room_type, status, generated_data, outcome_data)
-      VALUES (?, ?, ?, ?, ?, 'resolved', ?, '{"success":true}')`)
-      .run(`${runId}:${roomNumber}`, runId, telegramId, roomNumber, types[index], JSON.stringify({ content_id: `room_${roomNumber}` }));
+      (room_id, pet_id, run_id, telegram_id, room_number, room_type, status, generated_data, outcome_data)
+      VALUES (?, ?, ?, ?, ?, ?, 'resolved', ?, ?)`)
+      .run(`${runId}:${roomNumber}`, sourcePet, runId, telegramId, roomNumber, types[index], JSON.stringify({
+        content_id: types[index] === 'elite' ? 'elite_encounter' : types[index] === 'battle' ? 'rival_encounter' : `room_${roomNumber}`,
+        enemy_id: types[index] === 'elite' ? 'cyber_guard' : 'rival_moonpet', choices: [{ choice_id: types[index] === 'elite' ? 'fight' : 'challenge' }],
+      }), JSON.stringify({ success: true, choice_id: types[index] === 'elite' ? 'fight' : 'challenge' }));
   }
   if (boss) db.database.prepare(`INSERT INTO telegram_pet_run_analytics
     (analytics_id, run_id, telegram_id, event_type, event_data) VALUES (?, ?, ?, 'boss_fought', ?)`)
@@ -423,10 +430,10 @@ freshExtractionDb.database.prepare("UPDATE telegram_pet_active_slots SET pet_id=
 freshExtractionDb.database.prepare("UPDATE telegram_pet_profiles SET pet_xp=0, level=1, health=1, energy=1, happiness=1, cleanliness=1 WHERE telegram_id='fresh-extraction-player'").run();
 freshExtractionDb.database.prepare("UPDATE telegram_pet_instances SET pet_xp=900, level=10, health=99, energy=98, happiness=97, cleanliness=96 WHERE pet_id='pet-fresh-extraction-player'").run();
 freshExtractionDb.database.prepare("UPDATE telegram_pet_instances SET pet_xp=0, level=1, health=2, energy=2, happiness=2, cleanliness=2 WHERE pet_id='pet-fresh-extraction-player-second'").run();
-const storedPetOutcome = await __dailyMoonRunTestHooks.resolveAuthoritativeDailyRoomOutcome(freshExtractionDb,
+const { outcome: storedPetOutcome } = await __dailyMoonRunTestHooks.resolveAuthoritativeDailyRoomOutcome(freshExtractionDb,
   { ...freshExtractionRun.daily_run, telegram_id: 'fresh-extraction-player', seed: 7 },
   { room: 1, content_id: 'authority-room', room_type: 'choice_event' }, 'safe');
-assert.deepEqual(storedPetOutcome.player_state, { level: 5, health: 99, energy: 98, happiness: 97, cleanliness: 96 },
+assert.deepEqual(storedPetOutcome.player_state, { pet_id: 'pet-fresh-extraction-player', season_key: 'pet-s2026-003', level: 5, health: 99, energy: 98, happiness: 97, cleanliness: 96 },
   'Daily outcome authority must use the stored run pet rather than stale profile or active-pet state');
 
 const freshExtraction = await extractDailyMoonRun(freshExtractionDb, {
@@ -1088,7 +1095,7 @@ for (const telegramId of ['engine-player-a', 'engine-player-b']) {
     fingerprints.push(`${room.content_id}:${room.enemy_id || room.boss_id || ''}`);
     const storedRun = engineDb.database.prepare('SELECT * FROM telegram_pet_runs WHERE run_id=?').get(created.daily_run.run_id);
     const fixtureOutcomes = await Promise.all(room.choices.map((choice) => __dailyMoonRunTestHooks.resolveAuthoritativeDailyRoomOutcome(engineDb, storedRun, room, choice.choice_id)));
-    const winningChoice = room.choices.find((choice, index) => fixtureOutcomes[index].success);
+    const winningChoice = room.choices.find((choice, index) => fixtureOutcomes[index].outcome.success);
     assert.ok(winningChoice, `completion fixture needs a server-valid winning choice in room ${roomIndex + 1}`);
     const result = await processDailyMoonRunStep(engineDb, {
       telegram_id: telegramId,
@@ -1451,11 +1458,11 @@ const race = await tacticFixture('tactic-race-player');
 race.adapter.database.prepare('UPDATE telegram_pet_runs SET current_room=3,depth=3 WHERE run_id=?').run(race.run.run_id);
 race.run.current_room = 3; race.run.depth = 3;
 const raceRoom = await createPetRunRoom(race.adapter, race.run);
-const staleOutcome = await __dailyMoonRunTestHooks.resolveAuthoritativeDailyRoomOutcome(race.adapter, race.run, raceRoom, raceRoom.choices[0].choice_id);
+const { outcome: staleOutcome } = await __dailyMoonRunTestHooks.resolveAuthoritativeDailyRoomOutcome(race.adapter, race.run, raceRoom, raceRoom.choices[0].choice_id);
 assert.equal((await chooseDailyRunTactic(race.adapter, race.run.telegram_id, { run_id: race.run.run_id, checkpoint: 3, tactic_id: 'striker' })).accepted, true);
 const staleCommit = await persistPetRunRoomOutcome(race.adapter, race.run, raceRoom, staleOutcome);
 assert.equal(staleCommit.status, 'pending', 'no outcome may commit with an outdated build');
-const freshOutcome = await __dailyMoonRunTestHooks.resolveAuthoritativeDailyRoomOutcome(race.adapter, race.run, raceRoom, raceRoom.choices[0].choice_id);
+const { outcome: freshOutcome } = await __dailyMoonRunTestHooks.resolveAuthoritativeDailyRoomOutcome(race.adapter, race.run, raceRoom, raceRoom.choices[0].choice_id);
 assert.equal(freshOutcome.daily_tactics[0].key, 'striker');
 const actualPet = race.adapter.database.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=?').get(race.run.pet_id);
 const actualPreview = previewDailyChoice(actualPet, raceRoom, raceRoom.choices[0].choice_id, await readDailyModifiers(race.adapter, race.run));

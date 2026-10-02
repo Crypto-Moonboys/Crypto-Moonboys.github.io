@@ -461,15 +461,20 @@ assert.ok(worker.includes("'move_already_locked'"), 'A locked move still waiting
 assert.ok(worker.includes('forfeitPetArenaBattle'), 'Forfeit resolves safely.');
 assert.ok(worker.includes("!['readying','active'].includes(String(battle.status))"), 'stale forfeit after completed battle is rejected before mutation.');
 assert.ok(worker.includes("WHERE battle_id=? AND status IN ('readying','active')"), 'forfeit update only claims live battles and cannot rewrite completed winner/result/HP.');
-assert.ok(worker.includes("Number(claim?.meta?.changes || 0) <= 0) return { accepted:true, duplicate:true, reason:'already_completed'"), 'stale forfeit with zero changed rows is treated as duplicate and does not award again.');
-assert.ok(worker.indexOf("Number(claim?.meta?.changes || 0) <= 0") < worker.indexOf('return completePetArenaBattle(db, await getPetArenaBattle(db, battle.battle_id), true);', worker.indexOf('async function forfeitPetArenaBattle')), 'forfeit calls completePetArenaBattle only after claiming a live battle.');
+// Resolved failures, zero-change writes, expiry races and true terminal retries
+// are exercised through signed HTTP + SQLite in moonpet-arena-mutation-integrity.test.mjs.
+const arenaForfeitSource = worker.slice(worker.indexOf('async function forfeitPetArenaBattle'), worker.indexOf('async function applyPetArenaMove'));
+assert.ok(arenaForfeitSource.includes('requirePetArenaMutationResult(await db.prepare'), 'forfeit must validate a resolved D1 mutation result.');
+assert.ok(arenaForfeitSource.includes("julianday(COALESCE(expires_at,created_at))>=julianday('now')"), 'forfeit must check the deadline inside its mutation.');
+assert.ok(arenaForfeitSource.includes("if (saved?.status !== 'completed') return { accepted:false"), 'a zero-change forfeit cannot report a duplicate without a saved terminal battle.');
+assert.ok(arenaForfeitSource.indexOf("if (saved?.status !== 'completed')") < arenaForfeitSource.indexOf('return completePetArenaBattle(db, saved'), 'forfeit rechecks the authoritative saved ending before payout.');
 assert.ok(worker.includes('telegram_pet_arena_queue'), 'group queue works');
 assert.ok(worker.includes('ORDER BY CASE WHEN rank_bucket=? THEN 0'), 'same-rank match preferred');
 assert.ok(worker.includes('Accept Any Rank'), 'mismatch fallback works');
 assert.ok(worker.includes('telegram_id<>?'), 'user cannot battle themselves');
 assert.ok(worker.includes('Finish your current Pet Arena battle first.'), 'active arena battle guard must use exact blocked copy');
 assert.ok(worker.includes('player1_telegram_id = ? OR player2_telegram_id = ?'), 'active battle guard must check both player roles');
-assert.ok(worker.includes("reason:'already_completed'"), 'duplicate callbacks do not double-award');
+assert.ok(worker.includes("reason:duplicate ? 'already_completed' : 'arena_completed'"), 'only verified duplicate Arena awards report already completed');
 assert.ok(worker.includes("UPDATE telegram_pet_arena_battles SET status='completed'"), 'completion claim-before-award');
 assert.ok(worker.includes('const claimRows = await db.prepare'), 'queue claim must capture update result before battle creation');
 assert.ok(worker.includes('Number(claimRows?.meta?.changes || 0) !== 2'), 'queue claim race must require exactly two claimed rows');
@@ -1001,11 +1006,14 @@ assert.ok(secretVerifier.includes('X-Pets-Bot-Secret'), 'pet secret verifier mus
 assert.ok(!secretVerifier.includes('ADMIN_SECRET'), 'pet secret verifier must not read ADMIN_SECRET');
 assert.ok(!secretVerifier.includes('X-Admin-Secret'), 'pet secret verifier must not read X-Admin-Secret');
 
-const award = asyncBlock('awardCommunityXp');
+const award = fs.readFileSync(new URL('../workers/moonboys-api/community-xp-awards.js', import.meta.url), 'utf8');
+assert.ok(worker.includes("import { awardCommunityXp, hasDailyCommunityClaim } from './community-xp-awards.js'"), 'Community XP callers must share the atomic award implementation');
 assert.ok(award.includes('INSERT INTO telegram_xp_log'), 'Community XP helper must write telegram_xp_log');
 assert.ok(award.includes('UPDATE telegram_users'), 'Community XP helper must update telegram_users');
 assert.ok(award.includes('INSERT INTO telegram_leaderboard'), 'Community XP helper must upsert active leaderboard rows');
 assert.ok(award.includes('ON CONFLICT(telegram_id, season_id)'), 'leaderboard write must be idempotent per user/season');
+assert.ok(award.includes('INSERT OR IGNORE INTO telegram_community_xp_awards') && award.includes('settlement_token'), 'Community awards must reserve one durable source receipt');
+assert.ok(award.includes('await db.batch(statements)') && award.includes('options.sourceStatements'), 'Community projections and caller source must commit in one batch');
 assert.ok(worker.includes('accountWalletRecoveryResolvedSql') && !worker.includes('function accountWalletRecoveryResolvedSql'),
   'account wallet writes must import the shared recovery-pending freeze predicate');
 assert.ok(walletReconciliation.includes('export function accountWalletRecoveryResolvedSql') && walletReconciliation.includes('PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE') && walletReconciliation.includes('PET_ACCOUNT_WALLET_RECONCILIATION_SOURCE'),
@@ -1751,7 +1759,7 @@ assert.ok(activityClaim.includes('duplicate'), 'duplicate claim must not double-
 assert.ok(activityClaim.includes('const claimResult = await db.prepare'), 'activity claim must capture the session completion update');
 assert.ok(activityClaim.includes('if (!awarded.accepted)'), 'activity claims must return reward-authority rejection safely');
 assert.ok(activityClaim.includes("Number(claimResult?.meta?.changes || 0) !== 1"), 'activity rewards must require exactly one atomic session claim');
-assert.ok(activityClaim.includes("AND ends_at >= datetime(?, ?)"), 'activity session claims must reject rows that crossed the expiry boundary');
+assert.ok(activityClaim.includes("AND datetime(ends_at) >= datetime(?, ?)"), 'activity session claims must reject rows that crossed the expiry boundary');
 assert.ok(activityClaim.indexOf('const claimResult = await db.prepare') < activityClaim.indexOf('awardPetReward(db'), 'activity session state must be atomically claimed before rewards are awarded');
 assert.ok(activityClaim.includes("claim_state: 'claiming'") && activityClaim.includes("claim_state: 'settled'"), 'activity claims must remain recoverable until reward settlement succeeds');
 assert.ok(activityClaim.includes('getRecoverablePetActivitySession'), 'activity claim retries must resume the persisted reward snapshot');
@@ -1868,10 +1876,10 @@ class RepeatReservationDb {
       for (const statement of statements) {
         const { sql, args } = statement;
         if (sql.includes('INSERT OR IGNORE INTO telegram_pet_events')) {
-          const [id, petId, telegramId, , eventKey, seasonKey, dayKey, weekKey] = args;
+          const [id, petId, telegramId, , eventKey, seasonKey, dayKey, weekKey, metadata, createdAt, ...authorization] = args;
           const eventMapKey = `${telegramId}:${eventKey}`;
           const kaiju = sql.includes('WHERE EXISTS (SELECT 1 FROM telegram_pet_profiles');
-          const energyCost = kaiju ? Number(args[10]) : 0;
+          const energyCost = kaiju ? Number(authorization[1]) : 0;
           if (!this.events.has(eventMapKey) && (!kaiju || Number(this.energy.get(String(telegramId)) || 0) >= energyCost)) {
             this.events.set(eventMapKey, {
               id,
@@ -1882,6 +1890,8 @@ class RepeatReservationDb {
               day_key: dayKey,
               week_key: weekKey,
               season_key: seasonKey,
+              metadata,
+              created_at: createdAt,
             });
             results.push({ meta: { changes: 1 }, results: [] });
           } else {
