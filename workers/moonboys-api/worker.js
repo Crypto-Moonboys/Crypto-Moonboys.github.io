@@ -5436,16 +5436,25 @@ async function createPetKaijuMatch(db, chatId, telegramId, mode = 'solo', option
       WHERE chat_id = ? AND telegram_id = ?
         AND (status = 'waiting' OR updated_at LIKE 'claim:%')
     )
+    AND NOT EXISTS (
+      SELECT 1 FROM telegram_pet_kaiju_matches
+      WHERE (chat_id=? OR chat_id LIKE 'mini:kaiju:match:%') AND status IN ('open','selecting')
+        AND (player1_telegram_id=? OR player2_telegram_id=?)
+    )
   `).bind(crypto.randomUUID(), matchId, String(chatId), mode, status, String(telegramId), player2, category.key, category.roll,
-      PET_MINI_APP_KAIJU_LOBBY, String(telegramId)).run()
+      PET_MINI_APP_KAIJU_LOBBY, String(telegramId), String(chatId), String(telegramId), String(telegramId)).run()
     : options.mini_app_queue_claim
     ? await db.prepare(`INSERT INTO telegram_pet_kaiju_matches
         (id, match_id, chat_id, mode, status, player1_telegram_id, player2_telegram_id, category_key, roll)
         SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?
         WHERE (SELECT COUNT(*) FROM telegram_pet_kaiju_queue
-          WHERE chat_id=? AND telegram_id IN (?,?) AND status='played' AND updated_at=?)=2`)
+          WHERE chat_id=? AND telegram_id IN (?,?) AND status='played' AND updated_at=?)=2
+          AND NOT EXISTS (SELECT 1 FROM telegram_pet_kaiju_matches
+            WHERE (chat_id IN (?,?) OR chat_id LIKE 'mini:kaiju:match:%') AND status IN ('open','selecting')
+              AND (player1_telegram_id IN (?,?) OR player2_telegram_id IN (?,?)))`)
         .bind(crypto.randomUUID(), matchId, String(chatId), mode, status, String(telegramId), player2, category.key, category.roll,
-          PET_MINI_APP_KAIJU_LOBBY, String(telegramId), player2, options.mini_app_queue_claim).run()
+          PET_MINI_APP_KAIJU_LOBBY, String(telegramId), player2, options.mini_app_queue_claim,
+          `mini:kaiju:${telegramId}`, `mini:kaiju:${player2}`, String(telegramId), player2, String(telegramId), player2).run()
     : await db.prepare(`
     INSERT INTO telegram_pet_kaiju_matches
       (id, match_id, chat_id, mode, status, player1_telegram_id, player2_telegram_id, category_key, roll)
@@ -6102,13 +6111,23 @@ async function createPetArenaBattle(db, chatId, p1, p2, mode='group', options = 
           SELECT 1 FROM telegram_pet_arena_queue
           WHERE chat_id=? AND telegram_id=?
             AND (status='waiting' OR updated_at LIKE 'claim:%')
-        )`).bind(...values, PET_MINI_APP_ARENA_LOBBY, String(p1.telegram_id)).run()
+        ) AND NOT EXISTS (
+          SELECT 1 FROM telegram_pet_arena_battles
+          WHERE chat_id IN (?,?) AND status IN ('readying','active')
+            AND (player1_telegram_id=? OR player2_telegram_id=?)
+        )`).bind(...values, PET_MINI_APP_ARENA_LOBBY, String(p1.telegram_id),
+          PET_MINI_APP_ARENA_LOBBY, String(chatId), String(p1.telegram_id), String(p1.telegram_id)).run()
     : options.mini_app_queue_claim
     ? await db.prepare(`INSERT INTO telegram_pet_arena_battles ${columns}
         SELECT ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?
         WHERE (SELECT COUNT(*) FROM telegram_pet_arena_queue
-          WHERE chat_id=? AND telegram_id IN (?,?) AND status='matched' AND updated_at=?)=2`)
-        .bind(...values, PET_MINI_APP_ARENA_LOBBY, String(p1.telegram_id), String(p2.telegram_id), options.mini_app_queue_claim).run()
+          WHERE chat_id=? AND telegram_id IN (?,?) AND status='matched' AND updated_at=?)=2
+          AND NOT EXISTS (SELECT 1 FROM telegram_pet_arena_battles
+            WHERE chat_id IN (?,?,?) AND status IN ('readying','active')
+              AND (player1_telegram_id IN (?,?) OR player2_telegram_id IN (?,?)))`)
+        .bind(...values, PET_MINI_APP_ARENA_LOBBY, String(p1.telegram_id), String(p2.telegram_id), options.mini_app_queue_claim,
+          PET_MINI_APP_ARENA_LOBBY, `mini:${p1.telegram_id}`, `mini:${p2.telegram_id}`,
+          String(p1.telegram_id), String(p2.telegram_id), String(p1.telegram_id), String(p2.telegram_id)).run()
     : await db.prepare(`INSERT INTO telegram_pet_arena_battles ${columns} VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).bind(...values).run();
   if (Number(inserted?.meta?.changes || 0) !== 1) return null;
   await ensurePetArenaRound(db, battleId, 1);
@@ -10711,7 +10730,12 @@ async function dispatchPetMiniAppAction(db, telegramId, user, body, botToken) {
     if (active) return { accepted: false, reason: 'arena_battle_active' };
     const appPet = { ...eligible.pet, telegram_id: 'app', pet_name: 'CRT-9 Rival', pet_xp: Math.max(0, Number(eligible.pet.pet_xp || 0) + 80), energy: 82, health: 88, happiness: 80, cleanliness: 80 };
     const battle = await createPetArenaBattle(db, miniChatId, eligible.pet, appPet, 'app', { mini_app_solo_guard: true });
-    if (!battle) return { accepted: false, reason: 'arena_queue_active' };
+    if (!battle) {
+      const saved = await getPetArenaBattleForPlayer(db, PET_MINI_APP_ARENA_LOBBY, telegramId)
+        || await getPetArenaBattleForPlayer(db, miniChatId, telegramId);
+      return saved ? { accepted: true, reason: 'arena_match_active', battle: saved }
+        : { accepted: false, reason: 'arena_queue_active' };
+    }
     return { accepted: true, reason: 'arena_started', battle };
   }
   if (action === 'arena_matchmake') return queuePetArenaMiniApp(db, telegramId, body.accept_any_rank === true);
@@ -10742,7 +10766,11 @@ async function dispatchPetMiniAppAction(db, telegramId, user, body, botToken) {
     const active = await getPetKaijuMatchForPlayer(db, telegramId) || await getActivePetKaijuMatch(db, miniChatId);
     if (active) return { accepted: true, reason: active.mode === 'solo' ? 'kaiju_resumed' : 'kaiju_match_active', match: active };
     const match = await createPetKaijuMatch(db, miniChatId, telegramId, 'solo', { mini_app_solo_guard: true });
-    if (!match) return { accepted: false, reason: 'kaiju_queue_active' };
+    if (!match) {
+      const saved = await getPetKaijuMatchForPlayer(db, telegramId) || await getActivePetKaijuMatch(db, miniChatId);
+      return saved ? { accepted: true, reason: saved.mode === 'solo' ? 'kaiju_resumed' : 'kaiju_match_active', match: saved }
+        : { accepted: false, reason: 'kaiju_queue_active' };
+    }
     return { accepted: true, reason: 'kaiju_started', match };
   }
   if (action === 'kaiju_matchmake') return matchmakePetKaijuMiniApp(db, telegramId);
@@ -14543,7 +14571,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20261002-direction-fixes-v3`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20261002-postmerge-audit-v1`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',
@@ -17009,12 +17037,15 @@ async function settlePetWeeklyBossReward(db, telegramId, weekKey, boss, progress
     now: new Date(normalizeServerTimestamp(victory.defeated_at)),
     context: { week_key: weekKey, boss_id: boss.boss_id },
   });
-  if (award.accepted || award.duplicate) {
-    await db.prepare(`UPDATE telegram_pet_weekly_boss_progress SET reward_claimed_at = COALESCE(reward_claimed_at, CURRENT_TIMESTAMP), updated_at = CURRENT_TIMESTAMP
+  if (!award.accepted) return award;
+  return preserveCommittedPetActionResult(award, async () => {
+    const marked = await db.prepare(`UPDATE telegram_pet_weekly_boss_progress SET reward_claimed_at = COALESCE(reward_claimed_at, CURRENT_TIMESTAMP), updated_at = CURRENT_TIMESTAMP
       WHERE telegram_id = ? AND week_key = ? AND defeated_at IS NOT NULL`).bind(telegramId, weekKey).run();
+    requirePetMutationResult(marked);
+    if (Number(marked.meta.changes) !== 1) throw new Error('weekly_boss_reward_acknowledgement_pending');
     await recordWeeklyJourneyFromAcceptedPetEvent(db, telegramId, rewardKey);
-  }
-  return award;
+    return award;
+  });
 }
 
 async function claimPetWeeklyBossReward(db, telegramId, request = {}) {
@@ -17030,8 +17061,11 @@ async function claimPetWeeklyBossReward(db, telegramId, request = {}) {
   try {
     const reward = await settlePetWeeklyBossReward(db, telegramId, weekKey, boss, progress);
     if (!reward?.accepted) return { ...reward, accepted: false, reason: reward?.reason || 'weekly_boss_reward_pending' };
-    await finishPetWeeklyBossVictory(db, telegramId, weekKey, boss, victory);
-    return { ...reward, reason: 'weekly_boss_reward_claimed', boss, week_key: weekKey };
+    const committedResult = { ...reward, reason: 'weekly_boss_reward_claimed', boss, week_key: weekKey };
+    return preserveCommittedPetActionResult(committedResult, async () => {
+      await finishPetWeeklyBossVictory(db, telegramId, weekKey, boss, victory);
+      return committedResult;
+    });
   } catch {
     return { accepted: false, reason: 'weekly_boss_reward_pending' };
   }

@@ -63,6 +63,33 @@ function fixture(owner) {
 
 for (const system of ['arena','kaiju']) {
   const table = system === 'arena' ? 'telegram_pet_arena_battles' : 'telegram_pet_kaiju_matches';
+  for (const competing of ['solo', 'matchmaking']) test(`${system}: concurrent ${competing} keeps one recoverable match`, async () => {
+    const f = fixture(`simultaneous-${competing}-${system}`);
+    if (competing === 'matchmaking') {
+      const rival = 'rival-' + f.owner;
+      f.sql.prepare('INSERT INTO telegram_users (telegram_id,first_name) VALUES (?,?)').run(rival, 'Rival');
+      f.sql.prepare('INSERT INTO telegram_pet_profiles (telegram_id,pet_xp,health,energy) VALUES (?,10000,100,100)').run(rival);
+      await hooks.preparePetMiniAppState(f.db, rival, new Date());
+      f.sql.prepare("UPDATE telegram_pet_lifecycle_by_pet SET phase='young' WHERE telegram_id=?").run(rival);
+      assert.equal((await dispatchRenderedPetAction(f.db, rival, { id: rival }, { action: `${system}_matchmake` }, 'fixture-token')).reason, `${system}_queued`);
+    }
+    let concurrent;
+    f.db.beforeRun = async statement => {
+      if (!statement.query.includes(`INSERT INTO ${table}`)) return;
+      f.db.beforeRun = null;
+      concurrent = await f.act({ action: `${system}_${competing === 'solo' ? 'start' : 'matchmake'}` });
+      assert.equal(concurrent.accepted, true);
+    };
+    const result = await f.act({ action: `${system}_start` });
+    assert.ok(concurrent, 'the second start commits after the first checked for active matches');
+    assert.equal(f.sql.prepare(`SELECT COUNT(*) n FROM ${table}`).get().n, 1,
+      'two browser sessions must not create a hidden second match');
+    const idField = system === 'arena' ? 'battle_id' : 'match_id';
+    const matchField = system === 'arena' ? 'battle' : 'match';
+    assert.equal(result[matchField][idField], concurrent[matchField][idField], 'the losing start returns the saved match');
+    assert.equal(result.accepted, true);
+    f.sql.close();
+  });
   test(`${system}: a failed active-match read cannot start a second match`, async () => {
     const f = fixture(`guard-${system}`);
     const started = await f.act({action: `${system}_start`});
@@ -70,6 +97,46 @@ for (const system of ['arena','kaiju']) {
     f.db.beforeFirst = s => { if (s.query.includes(`SELECT * FROM ${table}`)) throw Error('match_read_unavailable'); };
     await assert.rejects(f.act({action: `${system}_start`}), /match_read_unavailable/);
     assert.equal(f.sql.prepare(`SELECT COUNT(*) n FROM ${table}`).get().n, 1);
+  });
+  for (const role of ['same', 'opposite']) test(`${system}: a second matchmaking claim cannot admit the same player twice in ${role} roles`, async () => {
+    const f = fixture(`simultaneous-matches-${system}`);
+    for (const rival of ['first-' + f.owner, 'second-' + f.owner]) {
+      f.sql.prepare('INSERT INTO telegram_users (telegram_id,first_name) VALUES (?,?)').run(rival, 'Rival');
+      f.sql.prepare('INSERT INTO telegram_pet_profiles (telegram_id,pet_xp,health,energy) VALUES (?,10000,100,100)').run(rival);
+      await hooks.preparePetMiniAppState(f.db, rival, new Date());
+      f.sql.prepare("UPDATE telegram_pet_lifecycle_by_pet SET phase='young' WHERE telegram_id=?").run(rival);
+      // Seed separate waiting players, without letting their setup requests match each other.
+      if (system === 'arena') {
+        const pet = await hooks.getPetProfile(f.db, rival);
+        f.sql.prepare(`INSERT INTO telegram_pet_arena_queue
+          (id,chat_id,telegram_id,pet_id,season_key,rank_bucket,pet_snapshot_json,status)
+          VALUES (?, 'mini:arena:global', ?, ?, ?, 'legend', ?, 'waiting')`)
+          .run(rival, rival, pet.pet_id, pet.season_key, JSON.stringify(pet));
+      } else f.sql.prepare(`INSERT INTO telegram_pet_kaiju_queue (id,chat_id,telegram_id,status)
+        VALUES (?, 'mini:kaiju:global', ?, 'waiting')`).run(rival, rival);
+    }
+    if (role === 'opposite') {
+      const pet = await hooks.getPetProfile(f.db, f.owner);
+      if (system === 'arena') f.sql.prepare(`UPDATE telegram_pet_arena_queue
+        SET telegram_id=?,pet_id=?,season_key=?,pet_snapshot_json=? WHERE telegram_id=?`)
+        .run(f.owner, pet.pet_id, pet.season_key, JSON.stringify(pet), 'first-' + f.owner);
+      else f.sql.prepare('UPDATE telegram_pet_kaiju_queue SET telegram_id=? WHERE telegram_id=?').run(f.owner, 'first-' + f.owner);
+    }
+    let concurrent;
+    f.db.beforeRun = async statement => {
+      if (!statement.query.includes(`INSERT INTO ${table}`)) return;
+      f.db.beforeRun = null;
+      concurrent = await f.act({ action: `${system}_matchmake`, accept_any_rank: true });
+      assert.equal(concurrent.reason, `${system}_match_found`);
+    };
+    const caller = role === 'opposite' ? 'first-' + f.owner : f.owner;
+    const result = await dispatchRenderedPetAction(f.db, caller, { id: caller }, { action: `${system}_matchmake`, accept_any_rank: true }, 'fixture-token');
+    assert.ok(concurrent);
+    assert.equal(result.accepted, true, 'the saved queue request remains acknowledged');
+    assert.equal(f.sql.prepare(`SELECT COUNT(*) n FROM ${table}`).get().n, 1,
+      'the two queue claims cannot create separate matches for the same player');
+    assert.equal(f.sql.prepare(`SELECT COUNT(*) n FROM telegram_pet_${system}_queue WHERE updated_at LIKE 'claim:%'`).get().n, 0);
+    f.sql.close();
   });
   for (const kind of ['match','queue','result']) test(`${system}: ${kind} read failures preserve the previous Mini App snapshot`, async () => {
     const f = fixture(`snapshot-${system}-${kind}`);
