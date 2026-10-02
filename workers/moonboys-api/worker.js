@@ -4499,7 +4499,7 @@ async function mirrorActivePetInstanceToProfile(db, pet, expectedProfile = null)
       .bind(...PET_INSTANCE_STATE_COLUMNS.map((column) => pet[column] ?? null), mirroredAt, pet.telegram_id,
         ...mirror.args, pet.pet_id, pet.telegram_id, pet.season_key, ...source.args),
     db.prepare(`UPDATE telegram_pet_instances SET source_profile_updated_at = ? WHERE pet_id = ? AND telegram_id=? AND changes()=1`)
-      .bind(mirroredAt, pet.pet_id, pet.telegram_id),
+      .bind(pet.source_profile_updated_at === PET_INSTANCE_AUTHORITY_VERSION ? PET_INSTANCE_AUTHORITY_VERSION : mirroredAt, pet.pet_id, pet.telegram_id),
   ]);
   if (!Array.isArray(results) || results.length !== 2) throw new Error('pet_state_write_unavailable');
   results.forEach(requirePetMutationResult);

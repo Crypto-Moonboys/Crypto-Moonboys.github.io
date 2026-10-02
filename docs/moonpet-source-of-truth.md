@@ -1168,7 +1168,11 @@ See the [finding-by-finding audit and deployment handoff](moonpet-audit-1419-202
 Daily Run choices apply the same elapsed care decay used by the displayed pet,
 bound to the run's original owner, pet and ownership season. Saving the outcome
 rechecks its XP/care snapshot; a concurrent change requires refresh instead of
-publishing a mixed result. The Daily Journey enemy objective requires successful
+publishing a mixed result. Persisted decay saves its instance-authority marker
+in the same guarded update and retains it through profile mirroring. A stale
+compatibility profile, including one with an equal-second timestamp, cannot
+restore pre-decay care values. Concurrent synchronization metadata changes force
+a reread before decay commits. The Daily Journey enemy objective requires successful
 authored combat: Sneak past, Escape and Trade do not defeat an enemy. Existing
 objective and reward history is retained.
 

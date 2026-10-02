@@ -1,4 +1,5 @@
 import { requirePetFirstReadResult, requirePetMutationResult } from './read-result.js';
+import { PET_INSTANCE_AUTHORITY_VERSION } from './wallet-reconciliation.js';
 
 const clamp = value => Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
 const timestamp = value => {
@@ -34,15 +35,20 @@ export async function readPetInstanceWithAtomicCareDecay(db, source, now = new D
     const decayed = applyPetCareDecay({ ...stored }, now);
     if (decayed.last_decay_at === stored.last_decay_at) return decayed;
     const syncedAt = now.toISOString().slice(0, 19).replace('T', ' ');
+    // Decay is an authoritative instance mutation, like care/reward writes.
+    // Equal-second profile clocks cannot establish a newer care snapshot.
+    const profileVersion = PET_INSTANCE_AUTHORITY_VERSION;
     const result = await db.prepare(`UPDATE telegram_pet_instances
-      SET hunger = ?, happiness = ?, cleanliness = ?, energy = ?, health = ?, last_decay_at = ?, updated_at = ?
+      SET hunger = ?, happiness = ?, cleanliness = ?, energy = ?, health = ?, last_decay_at = ?, source_profile_updated_at = ?, updated_at = ?
       WHERE pet_id = ? AND telegram_id = ? AND season_key = ?
+        AND updated_at IS ? AND source_profile_updated_at IS ?
         AND ${PET_CARE_SNAPSHOT_COLUMNS.map(column => `${column} IS ?`).join(' AND ')}`)
       .bind(decayed.hunger, decayed.happiness, decayed.cleanliness, decayed.energy, decayed.health,
-        decayed.last_decay_at, syncedAt, petId, stored.telegram_id, stored.season_key,
+        decayed.last_decay_at, profileVersion, syncedAt, petId, stored.telegram_id, stored.season_key,
+        stored.updated_at ?? null, stored.source_profile_updated_at ?? null,
         ...PET_CARE_SNAPSHOT_COLUMNS.map(column => stored[column] ?? null)).run().then(requirePetMutationResult);
     if (!Number.isSafeInteger(result?.meta?.changes) || result.meta.changes < 0) throw new Error('pet_state_write_unavailable');
-    if (result.meta.changes === 1) return { ...decayed, updated_at: syncedAt, source_profile_updated_at: syncedAt };
+    if (result.meta.changes === 1) return { ...decayed, updated_at: syncedAt, source_profile_updated_at: profileVersion };
   }
   throw new Error('pet_decay_sync_conflict');
 }

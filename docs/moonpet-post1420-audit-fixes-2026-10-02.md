@@ -82,7 +82,7 @@ Focused regressions passed with Node 24.19.0 and real SQLite-backed D1 fixtures:
 | `node scripts/community-xp-awards.test.mjs` | 32 passed: atomic rollback, concurrent daily/Arcade claims, source recovery, cap/wallet preservation and legacy clocks. |
 | `node scripts/moonpet-community-season-boundaries.test.mjs` | 35 passed: intraday boundaries, saved source times, mixed timestamp formats, offsets and fractional boundaries. |
 | `node scripts/moonpet-arena-mutation-integrity.test.mjs` | 26 passed: expired inputs, failed mutations, locked decisions, round deadlines and retries. |
-| `node scripts/moonpet-daily-outcome-integrity.test.mjs` | 11 passed: decayed source stats, interleaving, rollover, three-pet isolation and genuine combat evidence. |
+| `node scripts/moonpet-daily-outcome-integrity.test.mjs` | 17 passed: decayed source stats, immediate/deferred profile reconciliation, equal-second clocks, metadata conflicts, rollover, three-pet isolation and genuine combat evidence. |
 | `node scripts/moonpet-job-activity-authority.test.mjs` | 25 passed: job prerequisites, failed expiration, retry and saved reward recovery. |
 | `node scripts/moonpet-guidance-notification-scope.test.mjs` | 31 passed: slow/overlapping scans, current roster labels, switches, archives and cooldowns. |
 | `node scripts/moonpet-progression-sync.test.mjs` | 141 passed. |
@@ -111,6 +111,19 @@ the production database. Historical production discrepancies are not repaired by
 these tests. No public application assets changed, so no cache-version bump was
 needed. `node scripts/generate-publishing-surfaces.mjs` completed without any
 generated changes; `node scripts/graph-publishing-integrity.test.mjs` passed.
+
+The PR review follow-up reproduces both the rejected immediate mirror and stale
+care restoration during later reconciliation. Atomic decay now persists the
+existing instance-authority marker with its stats; successful profile mirrors
+preserve that marker. This also handles equal-second profile clocks, for which
+writing a timestamp alone is insufficient. The decay update compares the saved
+update/authority metadata as well as care/XP, retrying on a concurrent change.
+Legacy timestamp reconciliation for instances without a new authoritative
+mutation remains unchanged. This correction needs no additional migration.
+After this correction, `node scripts/moonpet-daily-outcome-integrity.test.mjs`
+passed all 17 tests, `npm run ci:worker-api` passed all 110 commands, and
+`PLAYWRIGHT_BROWSERS_PATH=/tmp/moonpet-playwright CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium node scripts/moonpet-player-loop-browser.test.mjs`
+passed at both 390×844 and 360×640. Syntax checks and `git diff --check` also passed.
 
 `node scripts/verify-d1-production-migrations.test.mjs`,
 `node scripts/worker-deploy-readiness-audit.mjs`, changed JavaScript syntax checks

@@ -7,6 +7,7 @@ import { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js'
 import { syncDailyMoonRun, __dailyMoonRunTestHooks as dailyHooks } from '../workers/moonboys-api/pets/daily-moon-run.js';
 import { previewDailyChoice, readDailyModifiers } from '../workers/moonboys-api/pets/daily-run-tactics.js';
 import { readPetInstanceWithAtomicCareDecay } from '../workers/moonboys-api/pets/care-decay.js';
+import { PET_INSTANCE_AUTHORITY_VERSION } from '../workers/moonboys-api/pets/wallet-reconciliation.js';
 
 const fixedTime = Date.parse('2026-10-02T12:00:00Z');
 const currentSeason = hooks.getPetSeasonInfo(new Date(fixedTime)).key;
@@ -136,6 +137,73 @@ test('atomic care decay cannot erase care committed after its read and cannot us
   assert.equal(changed,true); assert.equal(current.energy,77); assert.equal(current.health,74);
   assert.equal(await readPetInstanceWithAtomicCareDecay(f.db,{pet_id:id,telegram_id:'foreign',season_key:currentSeason}),null);
   assert.equal(await readPetInstanceWithAtomicCareDecay(f.db,{pet_id:id,telegram_id:f.owner,season_key:'pet-s2025-001'}),null);
+});
+
+for (const mirror of ['immediate', 'deferred']) for (const clock of ['older', 'same-second']) test(`atomic decay survives ${mirror} reconciliation with a ${clock} profile clock`, async()=>{
+  const f=fixture('decay-mirror-'+mirror+'-'+clock), id='current-'+f.owner;
+  f.pet('mirror-other-'+mirror,currentSeason,400,2);
+  f.pet('mirror-third-'+mirror,currentSeason,600,3);
+  await hooks.getPetProfile(f.db,f.owner);
+  care(f,id,{last_decay_at:new Date(fixedTime-48*3600000).toISOString()});
+  // A profile clock newer than the last mirrored version cannot supersede
+  // authoritative decay, including when both writes share the same second.
+  f.sql.prepare('UPDATE telegram_pet_instances SET source_profile_updated_at=?,updated_at=? WHERE pet_id=?')
+    .run('2026-10-02 10:00:00','2026-10-02 10:00:00',id);
+  f.sql.prepare('UPDATE telegram_pet_profiles SET updated_at=? WHERE telegram_id=?')
+    .run(clock==='older'?'2026-10-02 11:00:00':'2026-10-02 12:00:00',f.owner);
+  const others=f.sql.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id<>? ORDER BY pet_id').all(id);
+  const source={pet_id:id,telegram_id:f.owner,season_key:currentSeason};
+  const decayed=await readPetInstanceWithAtomicCareDecay(f.db,source);
+  assert.equal(decayed.energy,0);
+  assert.equal(decayed.source_profile_updated_at,PET_INSTANCE_AUTHORITY_VERSION);
+  assert.deepEqual({...f.sql.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=?').get(id)},decayed);
+  if (mirror==='immediate') assert.equal(await hooks.mirrorActivePetInstanceToProfile(f.db,decayed),true,
+    'the returned instance snapshot must match the committed row so its mirror can succeed');
+  for (let retry=0;retry<2;retry++) {
+    const projected=await hooks.getPetProfile(f.db,f.owner);
+    const stored=f.sql.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=?').get(id);
+    const profile=f.sql.prepare('SELECT * FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner);
+    for (const column of ['hunger','health','energy','happiness','cleanliness','last_decay_at','pet_xp']) {
+      assert.equal(stored[column],decayed[column],`reconciliation must preserve saved ${column}`);
+      assert.equal(profile[column],decayed[column],`the profile must mirror authoritative ${column}`);
+      assert.equal(projected[column],decayed[column]);
+    }
+    assert.equal(stored.source_profile_updated_at,decayed.source_profile_updated_at);
+    assert.equal(stored.updated_at,decayed.updated_at);
+    assert.equal(stored.season_key,currentSeason);
+    assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id<>? ORDER BY pet_id').all(id),others);
+  }
+  assert.equal((await readPetInstanceWithAtomicCareDecay(f.db,source)).source_profile_updated_at,decayed.source_profile_updated_at);
+});
+
+for (const column of ['updated_at','source_profile_updated_at']) test(`atomic decay retries a concurrent ${column} change and retains instance authority`, async()=>{
+  const f=fixture('decay-metadata-'+column), id='current-'+f.owner;
+  await hooks.getPetProfile(f.db,f.owner);
+  care(f,id,{last_decay_at:new Date(fixedTime-48*3600000).toISOString()});
+  f.sql.prepare('UPDATE telegram_pet_instances SET source_profile_updated_at=?,updated_at=? WHERE pet_id=?')
+    .run('2026-10-02 10:00:00','2026-10-02 10:00:00',id);
+  let reads=0, changed=false;
+  f.db.beforeFirst=s=>{if(s.query.startsWith('SELECT * FROM telegram_pet_instances WHERE pet_id = ?'))reads++;};
+  f.db.beforeRun=s=>{
+    if(!s.query.startsWith('UPDATE telegram_pet_instances'))return;
+    f.db.beforeRun=null; changed=true;
+    f.sql.prepare(`UPDATE telegram_pet_instances SET ${column}=? WHERE pet_id=?`)
+      .run(column==='source_profile_updated_at'?PET_INSTANCE_AUTHORITY_VERSION:'2026-10-02 11:00:00',id);
+  };
+  const decayed=await readPetInstanceWithAtomicCareDecay(f.db,{pet_id:id,telegram_id:f.owner,season_key:currentSeason});
+  assert.equal(changed,true);
+  assert.equal(reads,2,'a metadata-only conflict must reload the authoritative row before committing');
+  assert.deepEqual({...f.sql.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=?').get(id)},decayed,
+    'every field returned by the successful decay must match its saved instance');
+  if(column==='source_profile_updated_at') {
+    assert.equal(decayed.source_profile_updated_at,PET_INSTANCE_AUTHORITY_VERSION);
+    f.sql.prepare('UPDATE telegram_pet_profiles SET pet_xp=9999,updated_at=? WHERE telegram_id=?')
+      .run('2099-01-01 00:00:00',f.owner);
+  }
+  const projected=await hooks.getPetProfile(f.db,f.owner);
+  assert.equal(projected.pet_xp,decayed.pet_xp,'decay must not downgrade instance authority over legacy profile XP');
+  assert.equal(projected.energy,0);
+  assert.equal(f.sql.prepare('SELECT energy FROM telegram_pet_instances WHERE pet_id=?').get(id).energy,0);
 });
 
 test('a Daily run resumed after quarter rollover decays its saved permanent pet without changing ownership',async()=>{
