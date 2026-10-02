@@ -87,6 +87,10 @@ Kaiju Fragments have a live repeatable sink in Crafting: a level-20 Kaiju Field 
 Moon Gold, Moon Crystals, Style Tokens, materials, consumables, gear/cosmetic
 ownership and spendable Arcade XP belong to the account. Equipped gear and cosmetic
 selection belong to the pet. Switching pets never redirects a saved reward.
+Pre-upgrade Kaiju reservations with a nullable pet retain their original receipt
+and earning period. Recovery preserves the exact capped XP in account competition
+evidence, Community XP and wallet rewards without assigning ambiguous lifetime XP,
+stats or streaks to the currently selected pet. Retries retain that nullable history.
 The lifecycle name **Egg**, Stage-0 display name **Secret Bot**, and art identity
 **EGGYONE** refer to different aspects of the same starting pet.
 
@@ -972,4 +976,24 @@ Deletion is blocked during active or recoverable timed work, runs, queued/active
 
 Every non-exempt Mini App action carries the pet rendered when the player clicked. The dispatcher passes a request-local database scope into every handler and nested helper. Each read or mutation runs in a D1 transaction with an assertion that the same owned pet is still active; a switch aborts that transaction, including standalone writes. The scope remains closed after a stale assertion even if an optional projection catches the error. The response requests immediate authoritative refresh. One assertion statement is added per database call; SQL and original batch result ordering remain unchanged.
 
+### State reconciliation and committed actions (2 October 2026)
+
+Compatibility-profile reconciliation verifies the originally read pet, active ownership and saved state in the mutation itself. A concurrent switch or newer reward causes an authoritative reread instead of copying one pet's cached fields into another pet. Reward callers that omit a pet ID freeze the verified active instance before settlement, preserving its modern XP and the original reward target. Switching rechecks intact target ownership and pending work in the same transaction as the active pointer and profile mirror; a concurrently deleted pet cannot become selected.
+
+Paid spaces receive the canonical starting evolution and onboarding records in their purchase transaction. Normal state preparation safely repairs missing onboarding on intact older paid pets, preserving their creation day, hatch state, XP, equipped items and memories. Repair never charges Arcade XP or restores an archived or missing instance.
+
+A committed action remains accepted if a later projection or recoverable follow-up fails. Shared rewards return their exact capped asset receipt from the settlement transaction. The client retains saved-result feedback and blocks another mutation after a stale refresh fails; Refresh retries only the authoritative read. Incubation saves its distinct-day Growth Mark together with the accepted care receipt, so a subsequent switch cannot strand earned evidence. All four incubation batch results must report valid mutation metadata without a resolved failure before care is acknowledged or follow-up settlement runs. Pre-commit validation and transaction failures still reject without charging or awarding.
+
 Roster/account controls and saved-source recovery use their existing authority. Timed activity claim/cancel, like saved runs, bosses and finales, retain the recorded session pet rather than acquiring a newly selected pet. A transaction committed before a later switch remains valid for its recorded source; normal recovery completes its saved side effects without replaying rewards. No migration is required.
+
+### Pre-merge state and reward audit (2 October 2026)
+
+Core, full and Missions state reject a snapshot if its pet, active roster or final selected pointer disagree. Lifecycle and shared identity reads also assert the captured pet inside their transaction, catching a switch away and back before the response. A rejected read does not mutate either pet; retry loads a coherent authoritative snapshot. Missing free-starter repair checks the selected ownership and every copied compatibility-profile field in its insert, so a concurrent paid-pet selection cannot clone the paid pet into the missing starter.
+
+Every Pet XP payout shares the existing account-wide 1,200 XP limit per UTC day, including legacy nullable receipts, care, items, Cache, trade, unified rewards and Standard Run consolation. The recorded source pet still owns its XP and progression. Settlement and consolation guards enforce the allowance in the write transaction; switching pets does not create another allowance. Existing balances and historical receipts are unchanged.
+
+Timed work, Standard and Daily Run follow-ups, Daily Completion, Finale and contract claims retain their durable accepted result if a later read, identity write or acknowledgment fails. The response keeps the exact first-payment assets and requests refresh; replay grants no new assets. Saved combat and run identity recovery uses the original applied reward receipt, including its Gold amount, rather than a duplicate response's zero new payout. Recovery may finish source-backed history for an owned archived pet without allowing it to resume play.
+
+Inline and queued Weekly Journey repair derive the same Crest date: the first UTC day every objective reached its source-backed threshold. Later surplus actions and repair order cannot move that date. Previously awarded Crests retain their saved timestamps.
+
+An already earned account bounty remains claimable when deletion replaces the last hatched pet with an egg. The claim pays its existing currencies once without changing the egg's XP, streak, needs, health, lifecycle or identity. Settlement rechecks intact active ownership and the egg phase in the transaction; a concurrent hatch, switch or deletion rejects the stale claim. Hatched-pet bounty behavior is unchanged. After module loading exhausts automatic retries, the finished request exposes manual RETRY MODULE while retaining any mutation lock. Direct inherited Telegram launch data is filtered for freshness so an expired handoff does not suppress fresh linked website authentication. Nonempty SDK identity retains Telegram launch intent; an expired or rejected Telegram session offers a fresh Telegram launch instead of silently selecting a website account or repeatedly reloading expired data. All signatures remain server-verified. An explicitly disabled API endpoint stays disabled.

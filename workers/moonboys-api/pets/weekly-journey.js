@@ -1,4 +1,4 @@
-import { requirePetReadResult } from './read-result.js';
+import { requirePetReadResult, requirePetFirstReadResult } from './read-result.js';
 import { awardPetWeeklyCrest } from './season-completion.js';
 import { getPetOwnershipPeriod, getPetJourneyWeek, getPetJourneyWeekBounds } from './ownership-period.js';
 
@@ -40,12 +40,6 @@ const safeText = (value, max = 180) => String(value || '').trim().slice(0, max);
 function safeJson(value) {
   try { return JSON.stringify(value ?? {}); }
   catch { return '{}'; }
-}
-
-function normalizeTimestamp(value, fallback = new Date()) {
-  const parsed = value == null ? NaN : Date.parse(value);
-  const fallbackTime = new Date(fallback).getTime();
-  return new Date(Number.isFinite(parsed) ? parsed : (Number.isFinite(fallbackTime) ? fallbackTime : Date.now())).toISOString();
 }
 
 function validQualificationWeek(value) {
@@ -147,6 +141,41 @@ export async function readWeeklyJourneyObjectiveProgress(db, request) {
     WHERE o.pet_id=? AND o.telegram_id=? AND o.season_key=? AND o.qualification_week=? AND o.status='accepted'
     GROUP BY o.objective_id`)
     .bind(request.pet_id, request.telegram_id, request.season_key, request.qualification_week).all().then(requirePetReadResult);
+}
+
+// Qualification belongs to the first day all source-backed objective thresholds
+// were met. Repair order and surplus actions cannot move that earning day.
+export async function readWeeklyJourneyQualificationDay(db, request) {
+  const definitions = Object.entries(PET_WEEKLY_JOURNEY_OBJECTIVES);
+  const targets = definitions.map(([id, definition]) => `WHEN '${id}' THEN ${definition.target}`).join(' ');
+  const maxIds = definitions.filter(([, definition]) => definition.progress_mode === 'max').map(([id]) => `'${id}'`).join(',');
+  const source = await db.prepare(`SELECT MAX(day) AS day FROM (
+    SELECT objective_id, MIN(day) AS day FROM (
+      SELECT objective_id, day,
+        CASE WHEN objective_id IN (${maxIds})
+          THEN MAX(day_progress) OVER objective_progress
+          ELSE SUM(day_progress) OVER objective_progress END AS progress
+      FROM (
+        SELECT o.objective_id,e.day_key AS day,
+          CASE WHEN o.objective_id='weekly_check_in' THEN 1
+            WHEN o.objective_id IN (${maxIds}) THEN MAX(o.progress_value)
+            ELSE SUM(o.progress_value) END AS day_progress
+        FROM telegram_pet_weekly_journey_objectives o
+        JOIN telegram_pet_events e ON e.event_key=o.source_event_key AND e.telegram_id=o.telegram_id
+          AND e.pet_id=o.pet_id AND e.season_key=o.season_key AND e.status='accepted' AND e.day_key<>''
+        JOIN telegram_pet_instances i ON i.pet_id=o.pet_id AND i.telegram_id=o.telegram_id AND i.season_key=o.season_key
+        JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id
+          AND s.season_key=i.season_key AND s.slot_number=i.slot_number
+        WHERE o.telegram_id=? AND o.pet_id=? AND o.season_key=? AND o.qualification_week=? AND o.status='accepted'
+        GROUP BY o.objective_id,e.day_key
+      ) WINDOW objective_progress AS (PARTITION BY objective_id ORDER BY day
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)
+    ) WHERE progress >= CASE objective_id ${targets} END
+    GROUP BY objective_id
+  ) HAVING COUNT(*)=?`)
+    .bind(request.telegram_id, request.pet_id, request.season_key, request.qualification_week, WEEKLY_JOURNEY_REQUIRED_OBJECTIVES)
+    .first().then(requirePetFirstReadResult);
+  return validUtcDay(source?.day) ? source.day : null;
 }
 
 export async function finalizeWeeklyJourneyCrest(db, request) {
@@ -251,7 +280,11 @@ export async function finalizeWeeklyJourneyCrest(db, request) {
     };
   }
 
-  const earnedAt = normalizeTimestamp(request.earned_at || request.now);
+  const qualifiedDay = await readWeeklyJourneyQualificationDay(db, {
+    telegram_id: telegramId, pet_id: petId, season_key: seasonKey, qualification_week: qualificationWeek,
+  });
+  if (!qualifiedDay) return { accepted: false, duplicate: false, reason: 'weekly_journey_source_event_missing', event_key: eventKey };
+  const earnedAt = `${qualifiedDay}T00:00:00.000Z`;
   const award = await awardPetWeeklyCrest(db, {
     pet_id: petId,
     telegram_id: telegramId,

@@ -806,7 +806,9 @@ test('story retries retain the first reserved identity when primary settlement f
   const f=fixture('84311');
   const body={action:'event_chain',chain_key:Object.keys(PET_EVENT_CHAINS)[0],request_id:'reserved-story'};
   f.sql.exec("CREATE TRIGGER fail_primary BEFORE INSERT ON telegram_pet_reward_claims WHEN NEW.source='pet_event_chain' BEGIN SELECT RAISE(ABORT,'primary-story-failure'); END");
-  await assert.rejects(f.act(body),/primary-story-failure/);
+  const pending=await f.act(body);
+  assert.equal(pending.accepted,true); assert.equal(pending.reward_pending,true); assert.equal(pending.refresh_state,true);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE source='pet_event_chain'").get().n,0);
   f.sql.exec('DROP TRIGGER fail_primary');
   assert.equal((await f.act({...body,request_id:'different-retry'})).accepted,true);
   assert.equal(progress(f).adventure_xp,14);
@@ -936,10 +938,20 @@ for (const missing of ['memory', 'crest']) test(`Weekly Boss refresh repairs int
   f.sql.prepare(`INSERT INTO telegram_pet_weekly_boss_progress (telegram_id,week_key,boss_id,damage,attempts)
     VALUES (?,?,?,?,1)`).run(f.owner, preview.week_key, preview.boss.boss_id, preview.boss.hp - 1);
   const table = missing === 'memory' ? 'telegram_pet_memories' : 'telegram_pet_weekly_crests';
+  const memoryBefore = f.sql.prepare('SELECT * FROM telegram_pet_memories WHERE pet_id=?').get(authority(f).pet_id);
   f.sql.exec(`CREATE TRIGGER fail_finish BEFORE INSERT ON ${table} BEGIN SELECT RAISE(ABORT,'interrupted_finish'); END`);
-  const attempt = hooks.processPetWeeklyBoss(f.db, f.owner, 'strike', 'weekly-' + missing);
-  if (missing === 'memory') await assert.rejects(attempt, /interrupted_finish/);
-  else assert.equal((await attempt).reason, 'boss_defeated');
+  const attempt = await hooks.processPetWeeklyBoss(f.db, f.owner, 'strike', 'weekly-' + missing);
+  assert.equal(attempt.accepted, true, 'a saved victory must remain accepted after its follow-up fails');
+  assert.equal(attempt.reason, 'boss_defeated');
+  assert.equal(attempt.reward.accepted, true, 'the main reward was already committed');
+  if (missing === 'memory') {
+    assert.equal(attempt.refresh_state, true, 'an interrupted saved-source follow-up requests authoritative refresh');
+    assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_memories WHERE pet_id=?').get(authority(f).pet_id), memoryBefore,
+      'failed memory settlement leaves the saved memory unchanged until recovery');
+  }
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE source='pet_weekly_boss' AND status='awarded'").get().n, 1);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_system_events WHERE system_key='weekly_boss_finish' AND status='completed'").get().n, 0,
+    'the unfinished saved-source bookkeeping must remain recoverable');
   assert.ok(f.sql.prepare('SELECT reward_claimed_at FROM telegram_pet_weekly_boss_progress').get().reward_claimed_at);
   f.sql.exec('DROP TRIGGER fail_finish');
   const gold = f.sql.prepare('SELECT moon_gold FROM telegram_pet_profiles').get().moon_gold;
@@ -1518,7 +1530,10 @@ test('a transient timed-claim receipt lookup cannot settle without its material 
       !f.sql.prepare("SELECT 1 FROM telegram_pet_events WHERE event_type='activity_claim' AND status='accepted'").get()) return;
     f.db.beforeFirst=null; failed=true; throw Error('receipt_read_unavailable');
   };
-  await assert.rejects(f.act({action:'activity_claim'}),/receipt_read_unavailable/);
+  const paid = await f.act({action:'activity_claim'});
+  assert.equal(paid.accepted,true);
+  assert.equal(paid.refresh_state,true);
+  assert.ok(paid.pet_xp_awarded>0,'the durable first payment remains visible while its material draw needs repair');
   assert.equal(failed,true);
   assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_specialist_events').get().n,0);
   const event=f.sql.prepare("SELECT id FROM telegram_pet_events WHERE event_type='activity_claim'").get();

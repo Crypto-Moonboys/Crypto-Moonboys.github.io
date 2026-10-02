@@ -62,6 +62,106 @@ function fixture(owner) {
   return { sql, db, owner, pet, active, act, get };
 }
 
+for (const mode of ['core', 'full', 'missions']) for (const returnToOriginal of [false, true]) test(`${mode} state rejects an active-pet switch between profile and lifecycle reads${returnToOriginal ? ', including A to B to A' : ''}`, async () => {
+  const f = fixture('source-switch-' + mode + (returnToOriginal ? '-aba' : ''));
+  await hooks.buildPetMiniAppState(f.db, f.owner, 'fixture-token');
+  const original = await hooks.getPetProfile(f.db, f.owner);
+  const replacementId = 'egg-' + f.owner;
+  f.pet(replacementId, currentSeason, 0, 2);
+  f.sql.prepare("UPDATE telegram_pet_lifecycle_by_pet SET phase='egg',species_id=NULL WHERE pet_id=?").run(replacementId);
+  const petStats = () => f.sql.prepare(`SELECT pet_id,pet_xp,level,health,hunger,happiness,cleanliness,energy
+    FROM telegram_pet_instances WHERE telegram_id=? ORDER BY pet_id`).all(f.owner);
+  const before = petStats();
+  let switched = false, returned = false;
+  const lifecycleRead = statement => statement.query.includes('SELECT l.*, s.season_key');
+  const restoreOriginal = async () => {
+    if (!returnToOriginal || !switched || returned) return;
+    returned = true;
+    const changed = await hooks.switchActivePetSeasonSlot(f.db, f.owner, original.pet_id);
+    assert.equal(changed.accepted, true, JSON.stringify(changed));
+  };
+  f.db.beforeFirst = async statement => {
+    if (!lifecycleRead(statement)) return;
+    // Run the real switch after the projection has captured A, then allow the
+    // lifecycle query to read B. No mock lifecycle or hand-built state is used.
+    f.db.beforeFirst = null;
+    const changed = await hooks.switchActivePetSeasonSlot(f.db, f.owner, replacementId);
+    assert.equal(changed.accepted, true, JSON.stringify(changed));
+    switched = true;
+  };
+  // Restore A after the real lifecycle read/batch completes. Without an atomic
+  // read guard, an end-of-projection pointer check alone would miss this ABA.
+  const readDb = !returnToOriginal ? f.db : {
+    prepare(query) {
+      const wrap = statement => ({
+        query: statement.query, args: statement.args,
+        bind(...args) { return wrap(statement.bind(...args)); },
+        async first(...args) {
+          try { return await statement.first(...args); }
+          finally { if (lifecycleRead(statement)) await restoreOriginal(); }
+        },
+        all() { return statement.all(); }, run() { return statement.run(); }, exec() { return statement.exec(); },
+      });
+      return wrap(f.db.prepare(query));
+    },
+    async batch(statements) {
+      try { return await f.db.batch(statements); }
+      finally { if (statements.some(lifecycleRead)) await restoreOriginal(); }
+    },
+  };
+  const projection = mode === 'core'
+    ? hooks.buildPetMiniAppCoreState(readDb, f.owner, { prepared: true, petRaw: original })
+    : hooks.buildPetMiniAppState(readDb, f.owner, 'fixture-token', mode === 'missions' ? { mode: 'missions' } : {});
+  await assert.rejects(projection, /pet_state_source_changed/, 'A stats and B lifecycle must never publish as one save');
+  assert.equal(switched, true, 'the interleaving must reach the actual lifecycle read');
+  assert.equal(returned, returnToOriginal);
+  const selectedId = returnToOriginal ? original.pet_id : replacementId;
+  assert.equal(f.sql.prepare('SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id=?').get(f.owner).pet_id, selectedId);
+  assert.deepEqual(petStats(), before, 'projection rejection cannot rewrite either pet’s XP or needs');
+  const restored = mode === 'core'
+    ? await hooks.buildPetMiniAppCoreState(f.db, f.owner)
+    : await hooks.buildPetMiniAppState(f.db, f.owner, 'fixture-token', mode === 'missions' ? { mode: 'missions' } : {});
+  assert.equal(restored.pet.pet_id, selectedId);
+  assert.equal(restored.lifecycle.phase, returnToOriginal ? 'young' : 'egg');
+  assert.equal(restored.season_slots.slots.find(slot => slot.active).pet_id, selectedId);
+});
+
+for (const mode of ['core', 'full', 'missions']) test(`${mode} state rejects a late switch at its final source check`, async () => {
+  const f = fixture('late-source-switch-' + mode);
+  await hooks.buildPetMiniAppState(f.db, f.owner, 'fixture-token');
+  const original = await hooks.getPetProfile(f.db, f.owner);
+  const replacementId = 'egg-' + f.owner;
+  f.pet(replacementId, currentSeason, 0, 2);
+  f.sql.prepare("UPDATE telegram_pet_lifecycle_by_pet SET phase='egg',species_id=NULL WHERE pet_id=?").run(replacementId);
+  const project = () => mode === 'core'
+    ? hooks.buildPetMiniAppCoreState(f.db, f.owner, { prepared: true, petRaw: original })
+    : hooks.buildPetMiniAppState(f.db, f.owner, 'fixture-token', mode === 'missions' ? { mode: 'missions' } : {});
+  const isActivePointer = statement => statement.query.includes('SELECT s.pet_id, s.telegram_id, s.season_key, s.slot_number, s.status, s.acquisition_type');
+  // Calibrate the unchanged fixture's read path rather than coupling this race
+  // to a hard-coded number of preparation or identity queries.
+  let pointerReads = 0;
+  f.db.beforeFirst = statement => { if (isActivePointer(statement)) pointerReads += 1; };
+  const baseline = await project();
+  assert.equal(baseline.pet.pet_id, original.pet_id);
+  assert.ok(pointerReads > 0);
+  const finalPointerRead = pointerReads;
+  const petStats = () => f.sql.prepare(`SELECT pet_id,pet_xp,level,health,hunger,happiness,cleanliness,energy
+    FROM telegram_pet_instances WHERE telegram_id=? ORDER BY pet_id`).all(f.owner);
+  const before = petStats();
+  pointerReads = 0;
+  let switched = false;
+  f.db.beforeFirst = async statement => {
+    if (!isActivePointer(statement) || ++pointerReads !== finalPointerRead) return;
+    f.db.beforeFirst = null;
+    const changed = await hooks.switchActivePetSeasonSlot(f.db, f.owner, replacementId);
+    assert.equal(changed.accepted, true, JSON.stringify(changed));
+    switched = true;
+  };
+  await assert.rejects(project(), /pet_state_source_changed/);
+  assert.equal(switched, true, 'the switch occurs after earlier source-sensitive reads have completed');
+  assert.deepEqual(petStats(), before, 'a late projection conflict preserves both pets');
+});
+
 const targets = {
   inventory: /SELECT asset_key, quantity\s+FROM telegram_pet_inventory/,
   gear: /SELECT item_key, slot, item_level, item_xp, mastery_xp, mastery_tier\s+FROM telegram_pet_equipment_progression[\s\S]*ORDER BY slot/,

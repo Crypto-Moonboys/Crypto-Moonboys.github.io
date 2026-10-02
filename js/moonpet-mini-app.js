@@ -3,7 +3,8 @@
 
   var tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
   var apiConfig = window.MOONBOYS_API || {};
-  var apiBase = apiConfig.BASE_URL || 'https://api.cryptomoonboys.com';
+  var apiBase = typeof apiConfig.getApiBase === 'function' ? apiConfig.getApiBase({ mode: 'write' }) : apiConfig.BASE_URL;
+  apiBase = apiBase ? String(apiBase).replace(/\/$/, '') : '';
   var initData = '';
   var telegramAuth = null;
   var state = null;
@@ -31,6 +32,7 @@
   var requestedFocus = launchParameter('focus');
   var activeScreen = SCREEN_ORDER.includes(requestedScreen) ? requestedScreen : 'home';
   var busy = false;
+  var petActionRefreshRequired = false;
   var fastActionStateDirty = false;
   var fastActionStateRefreshTimer = 0;
   var fastActionStateRefreshInFlight = false;
@@ -243,9 +245,21 @@
     }
   }
 
+  function freshInheritedTelegramInitData(raw) {
+    var value = String(raw || '');
+    if (!value) return '';
+    try {
+      var authDate = Number(new URLSearchParams(value).get('auth_date'));
+      var age = Math.floor(Date.now() / 1000) - authDate;
+      // This is only a freshness filter for inherited launch data. The Worker
+      // still verifies the signature before loading or mutating any player save.
+      return Number.isSafeInteger(authDate) && authDate > 0 && age >= -300 && age <= 3600 ? value : '';
+    } catch (_) { return ''; }
+  }
+
   function refreshTelegramContext() {
     tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : tg;
-    initData = String(tg && tg.initData || launchParameter('tgWebAppData') || '');
+    initData = String(tg && tg.initData || '') || freshInheritedTelegramInitData(launchParameter('tgWebAppData'));
     return Boolean(initData);
   }
 
@@ -559,6 +573,7 @@
   }
 
   async function post(path, payload) {
+    if (!apiBase) throw new Error('API ENDPOINT DISABLED FOR THIS CONTEXT');
     // State is read-only and safe to retry on a fresh request context. A
     // transient D1 read must not strand the whole game on its startup screen.
     // Never retry /action here: mutations own their idempotency and response.
@@ -731,11 +746,14 @@
 
   function button(label, action, payload, options) {
     options = careActionButtonOptions(action, actionCooldownButtonOptions(action, options));
+    if (petActionRefreshRequired) {
+      options = Object.assign({}, options, { disabled: true, statusLabel: 'REFRESH REQUIRED' });
+    }
     if (action === 'adopt' && !(state && state.entry_requirement && state.entry_requirement.eligible === true)) {
       options = Object.assign({}, options, { disabled: true, statusLabel: 'ARCADE XP REQUIRED' });
     }
     var accountActions = ['adopt', 'guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'delete_pet_slot', 'arena_queue_cancel', 'arena_forfeit', 'kaiju_queue_cancel', 'kaiju_match_cancel'];
-    var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim', 'contract_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim']);
+    var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles', 'bounty_claim', 'weekly_boss_claim', 'contract_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim']);
     if (state && state.lifecycle && state.lifecycle.phase === 'egg' && !eggActions.includes(action)) {
       options = Object.assign({}, options, { disabled: true, cooldown: null, statusLabel: 'HATCH REQUIRED' });
     } else if (state && state.adopted === false && !accountActions.includes(action)) {
@@ -1538,6 +1556,10 @@
             fullStateHydrationRetryTimer = 0;
             hydrateFullState(activeScreen);
           }, fullStateHydrationRetryDelayMs);
+        } else if (retryableScreen) {
+          // The catch rendered while this request was still in flight. Show
+          // the manual retry only after that request has finished and stopped.
+          render();
         }
       }
     }());
@@ -1551,6 +1573,7 @@
     var serverTime = Date.parse(nextState.server_time || nextState.cooldowns && nextState.cooldowns.server_time || '');
     if (Number.isFinite(serverTime)) serverClockOffsetMs = serverTime - Date.now();
     state = nextState;
+    petActionRefreshRequired = false;
     sleepLatched = readSleepLatch(state);
     if (!(options && options.deferBotArtSelection) && !hatchArtTransitionActive()) {
       selectBotArtForState(state).catch(function (error) {
@@ -2722,8 +2745,8 @@
       pet_tired: 'not enough energy for this action. Review its displayed requirement or use care to recover.',
       pet_action_state_changed: 'your pet or equipment changed while care was loading. No care reward or cooldown was applied; try again with the refreshed pet.',
       displayed_pet_required: 'the displayed Moonpet identity is missing. Refresh the game before trying again. Nothing was spent or awarded.',
-      displayed_pet_changed: 'another session selected a different Moonpet. Nothing was spent or awarded; this screen has been refreshed.',
-      source_pet_changed: 'another session selected a different Moonpet. Nothing was spent or awarded; this screen has been refreshed.',
+      displayed_pet_changed: 'another session selected a different Moonpet. Nothing was spent or awarded. Refresh to load the active pet.',
+      source_pet_changed: 'another session selected a different Moonpet. Nothing was spent or awarded. Refresh to load the active pet.',
       daily_completion_not_ready: 'finish all seven daily missions before claiming.',
       daily_completion_pending: 'your daily bonus is saved. Retry the claim.',
       finale_requirements_not_met: 'reach final evolution, 240 distinct-day Growth Marks and 44 distinct-week Crests.',
@@ -3017,6 +3040,10 @@
 
   async function runAction(action, payload, buttonElement) {
     if (busy) return;
+    if (petActionRefreshRequired) {
+      tell('LIVE SAVE REFRESH REQUIRED. TAP REFRESH.', 'danger');
+      return;
+    }
     if (lifecycleCeremonyActive()) {
       tell('LIFECYCLE REVEAL IN PROGRESS.');
       haptic('light');
@@ -3060,14 +3087,20 @@
             // until a complete authoritative projection has replaced the view.
             if (!actionAccepted) animateAction('blocked', false, 2800, payload);
             var staleMessage = resultMessage(data.result, stateBeforeAction, stateBeforeAction);
+            petActionRefreshRequired = true;
             tell(staleMessage + (actionAccepted ? ' // SAVE CONFIRMED' : '') + ' // REFRESHING LIVE SAVE...', actionAccepted ? '' : 'danger');
             haptic(actionAccepted ? 'success' : 'error');
             var staleGeneration = beginStateRequest();
-            var refreshed = await post('/telegram-pets/app/state', stateRefreshPayload(stateBeforeAction, activeScreen));
-            if (setStateSnapshot(refreshed.state, staleGeneration)) {
-              fastActionStateDirty = false;
+            try {
+              var refreshed = await post('/telegram-pets/app/state', stateRefreshPayload(stateBeforeAction, activeScreen));
+              if (setStateSnapshot(refreshed.state, staleGeneration)) {
+                fastActionStateDirty = false;
+                render();
+                tell(staleMessage, actionAccepted ? '' : 'danger');
+              }
+            } catch (_) {
               render();
-              tell(staleMessage, actionAccepted ? '' : 'danger');
+              tell(staleMessage + (actionAccepted ? ' // SAVE CONFIRMED' : '') + ' // DISPLAY SYNC FAILED. TAP REFRESH.', actionAccepted ? '' : 'danger');
             }
             return;
           }
@@ -3091,7 +3124,9 @@
       // Preserve that result and the last valid view; Refresh retries only the
       // read, without submitting the paid action a second time.
       if (!responseState && stateRequestGate.isCurrent(requestGeneration)) {
-        tell(resultMessage(data.result, stateBeforeAction, stateBeforeAction) + ' // DISPLAY SYNC FAILED. TAP REFRESH.', actionAccepted ? '' : 'danger');
+        petActionRefreshRequired = true;
+        render();
+        tell(resultMessage(data.result, stateBeforeAction, stateBeforeAction) + (actionAccepted ? ' // SAVE CONFIRMED' : '') + ' // DISPLAY SYNC FAILED. TAP REFRESH.', actionAccepted ? '' : 'danger');
         haptic(actionAccepted ? 'success' : 'error');
         animateAction(action, actionAccepted, 2800, payload);
         return;
@@ -3717,9 +3752,13 @@
       window.setInterval(tickCooldownDom, 1000);
       window.setInterval(tickSeasonDisplay, 30000);
     } catch (error) {
-      tell(error.message || 'STARTUP FAILED', 'danger');
-      screen.innerHTML = '<div class="connection-fault">STARTUP FAULT // ' + escapeHtml(error.message || 'API UNAVAILABLE') + '</div><div class="button-grid one"><button type="button" class="terminal-button" data-utility="retry">RETRY CONNECTION</button></div>';
-      await typeBoot(['STARTUP FAULT', error.message || 'API UNAVAILABLE', 'USE RETRY CONNECTION BELOW'], { speed: 8, hold: 900 });
+      var authenticationFailed = Number(error.status) === 401;
+      var startupFaultMessage = authenticationFailed ? 'TELEGRAM SESSION EXPIRED OR INVALID. OPEN A FRESH SESSION FROM @WIKICOMSBOT.' : error.message || 'STARTUP FAILED';
+      tell(startupFaultMessage, 'danger');
+      screen.innerHTML = '<div class="connection-fault">STARTUP FAULT // ' + escapeHtml(error.message || 'API UNAVAILABLE') + '</div>' + (authenticationFailed
+        ? '<div class="line muted">Close this game and reopen Moonpet OS from the bot to get a fresh signed Telegram session.</div><div class="button-grid one"><a class="terminal-link-button" href="https://t.me/WIKICOMSBOT?start=moonpet" target="_blank" rel="noopener noreferrer">OPEN FRESH TELEGRAM SESSION</a></div>'
+        : '<div class="button-grid one"><button type="button" class="terminal-button" data-utility="retry">RETRY CONNECTION</button></div>');
+      await typeBoot(['STARTUP FAULT', startupFaultMessage, authenticationFailed ? 'REOPEN MOONPET OS FROM THE BOT' : 'USE RETRY CONNECTION BELOW'], { speed: 8, hold: 900 });
     }
   }
 

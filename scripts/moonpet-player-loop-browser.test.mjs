@@ -42,7 +42,7 @@ class Statement {
     if (failLiveStateRead && this.sql.startsWith('SELECT chain_key, step_index')) throw Error('isolated_saved_state_read_failure');
     return { results: sqlite.prepare(this.sql).all(...this.args) };
   }
-  async run() {
+  exec() {
     if (failDailyEnding && this.sql.includes('INSERT OR IGNORE INTO telegram_pet_run_analytics') && this.args.some((value) => String(value).endsWith(':alley_king:win'))) throw Error('interrupted_daily_ending');
     if (failActivitySettlement && this.sql.includes('UPDATE telegram_pet_activity_sessions') && this.sql.includes('SET metadata = ?')) {
       failActivitySettlement = false; throw Error('interrupted_activity_settlement');
@@ -51,6 +51,7 @@ class Statement {
     if (/\bRETURNING\b/i.test(this.sql)) { const results = sqlite.prepare(this.sql).all(...this.args); return { results, meta: { changes: results.length } }; }
     const result = sqlite.prepare(this.sql).run(...this.args); return { results: [], meta: { changes: Number(result.changes) } };
   }
+  async run() { return this.exec(); }
 }
 const db = {
   prepare(sql) { return new Statement(sql); },
@@ -71,7 +72,7 @@ const db = {
     }
     if (failFinaleReward && statements[0].sql.includes('INSERT OR IGNORE INTO telegram_pet_reward_claims') && statements[0].args.includes('pet_season_finale')) { failFinaleReward=false; throw Error('interrupted_finale_reward'); }
     sqlite.exec('BEGIN IMMEDIATE');
-    try { const results = []; for (const statement of statements) results.push(await statement.run()); sqlite.exec('COMMIT'); return results; }
+    try { const results = statements.map(statement => statement.exec()); sqlite.exec('COMMIT'); return results; }
     catch (error) { sqlite.exec('ROLLBACK'); throw error; }
   },
 };
@@ -102,9 +103,18 @@ const server = http.createServer(async (request, response) => {
   } catch { response.writeHead(404).end(); }
 });
 await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+const fixtureOrigin = `http://127.0.0.1:${server.address().port}`;
 const launch = { headless: true, args: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage'] };
 if (process.env.CHROMIUM_EXECUTABLE_PATH) launch.executablePath = process.env.CHROMIUM_EXECUTABLE_PATH;
 let browser;
+async function createFixtureContext(options) {
+  const context = await browser.newContext(options);
+  // Preview pages require an explicit API; every request stays in the local fixture.
+  await context.addInitScript((baseUrl) => {
+    window.MOONBOYS_API = { BASE_URL: baseUrl };
+  }, fixtureOrigin);
+  return context;
+}
 try {
   browser = await chromium.launch(launch);
   // New players see the verified entry threshold; existing beta fixtures below
@@ -113,7 +123,7 @@ try {
     const id = 'browser-entry';
     sqlite.prepare('INSERT INTO telegram_users (telegram_id) VALUES (?)').run(id);
     sqlite.prepare('INSERT INTO arcade_progression_state (telegram_id,arcade_xp_total) VALUES (?,999)').run(id);
-    const context = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+    const context = await createFixtureContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
     const page = await context.newPage(), errors = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.addInitScript(() => localStorage.setItem('moonpet-radio-preference', 'off'));
@@ -154,7 +164,7 @@ try {
   // Exercise the partial response with the real renderer, including a delayed
   // Missions deep link and subsequent navigation to a full-state screen.
   {
-    const context = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+    const context = await createFixtureContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
     const page = await context.newPage();
     const modes = [], errors = [];
     let releaseMissions;
@@ -197,7 +207,7 @@ try {
     await context.close();
   }
   for (const viewport of [{ width: 390, height: 844 }, { width: 360, height: 640 }]) {
-    const context = await browser.newContext({ viewport, reducedMotion: 'reduce' });
+    const context = await createFixtureContext({ viewport, reducedMotion: 'reduce' });
     const page = await context.newPage();
     const errors = [], actions = [], unexpected = [], failedResponses = [];
     let currentUser = 'browser-egg';
@@ -444,6 +454,8 @@ try {
     sqlite.prepare('INSERT OR REPLACE INTO telegram_pet_style_loadouts(pet_id,telegram_id,cosmetic_key,enabled)VALUES(?,?,?,1)').run(stylePet.pet_id,currentUser,'rename_badge');
     const styleLab = page.locator('[data-panel="style-lab"]');
     try {
+      const careBeforeStyleRefresh = await page.locator('[data-panel="care"]').elementHandle();
+      assert.ok(careBeforeStyleRefresh, 'Style Lab refresh starts from the rendered Home save');
       const styleStateResponse = page.waitForResponse((response) =>
         response.url().endsWith('/telegram-pets/app/state') &&
         response.request().method() === 'POST',
@@ -451,9 +463,17 @@ try {
       await page.locator('[data-utility="sync"]').click();
       const refreshedState = await styleStateResponse;
       assert.equal(refreshedState.ok(), true, `Style Lab sync returned HTTP ${refreshedState.status()}`);
+      const refreshedStyleData = await refreshedState.json();
+      assert.equal(refreshedStyleData.state?.pet?.pet_id, stylePet.pet_id);
+      assert.equal(refreshedStyleData.state?.style_loadout?.available, true);
+      for (const key of ['profile_frame','victory_pose','run_trail']) {
+        assert.ok(refreshedStyleData.state.live_systems.cosmetics.some(item => item.key === key && item.unlocked), `refreshed save includes owned ${key}`);
+      }
+      // Startup notices can replace the refresh message after a successful sync.
+      // Require the authoritative response and replacement render instead.
       await page.waitForFunction(
-        () => document.querySelector('.terminal-output-text')?.textContent === 'LIVE SAVE REFRESHED.',
-        undefined,
+        node => !node.isConnected,
+        careBeforeStyleRefresh,
         { timeout: 10000 },
       );
       await page.locator('[data-screen="economy"]').click();
@@ -550,7 +570,9 @@ try {
     // Verify daily run mode and first-room numbering independently of the real
     // endless-run fixture. Request index stays zero-based; screen is one-based.
     dailyOverride = { run_id: 'daily-fixture', daily: true, current_room: 0, expected_step_index: 0, max_room: 10, score: 0, choices: [{ key: 'explore', label: 'Explore' }], room: { title: 'Alley Entrance', threat: 1 } };
+    const dailyStateResponse = page.waitForResponse(response => response.url().endsWith('/telegram-pets/app/state') && response.request().method() === 'POST');
     await page.locator('[data-utility="sync"]').click();
+    const journeyState = (await (await dailyStateResponse).json()).state;
     await page.waitForSelector('[data-action="run_extract"]');
     const dailyText = await page.locator('[data-panel="moon-run"]').textContent();
     assert.ok(dailyText.includes('OFFICIAL DAILY MOON RUN') && dailyText.includes('ROOM 1/10'));
@@ -558,9 +580,32 @@ try {
     assert.equal(await page.locator('[data-action="run_step"]').getAttribute('data-payload').then(JSON.parse).then((x) => x.expected_step_index), 0);
     assert.equal(await page.locator('[data-action="run_extract"]').isDisabled(), true, 'empty run extraction must explain its lock');
     await page.locator('[data-screen="missions"]').click();
-    assert.equal(await page.locator('[data-panel="daily-objectives"] [data-jump]').count(), 5);
-    const weeklyState = await hooks.buildPetMiniAppState(db, currentUser, token);
-    const unfinishedWeekly = weeklyState.weekly_journey.objectives.filter((goal) => !goal.completed && goal.progress < goal.target);
+    // Earlier accepted bounty evidence can already finish daily_care. Match
+    // every server-projected goal and its remaining routes instead of assuming
+    // all five objectives still need a navigation control.
+    const navigationDailyGoals = journeyState.daily_journey.objectives;
+    assert.ok(navigationDailyGoals.length > 0, 'the authoritative Daily Journey exposes its objective list');
+    const expectedDailyRoutes = navigationDailyGoals.map(goal => {
+      if (goal.completed) return [];
+      if (goal.challenge_id === 'daily_care') return [{ screen: 'home', focus: 'care' }];
+      assert.match(goal.challenge_id, /^daily_(combat|explorer|extraction|boss)$/, 'every official Daily Run goal has a known qualifying destination');
+      return [{ screen: 'explore', focus: 'moon-run' }];
+    });
+    assert.equal(await page.locator('[data-panel="daily-objectives"] [data-jump]').count(), expectedDailyRoutes.flat().length);
+    const renderedDailyGoals = await page.locator('[data-panel="daily-objectives"] .line').evaluateAll(lines => lines.filter(line => /^\[(?:OK| )\]/.test(line.textContent)).map(line => {
+      const routes = [];
+      for (let sibling = line.nextElementSibling; sibling && !sibling.classList.contains('line'); sibling = sibling.nextElementSibling) {
+        routes.push(...Array.from(sibling.querySelectorAll('[data-jump]'), button => ({ screen: button.dataset.jump, focus: button.dataset.focus })));
+      }
+      return { text: line.textContent, routes };
+    }));
+    assert.equal(renderedDailyGoals.length, navigationDailyGoals.length, 'completed and unfinished daily goals both remain visible');
+    navigationDailyGoals.forEach((goal, index) => {
+      assert.ok(renderedDailyGoals[index].text.includes(goal.description), 'the daily goal row matches its authoritative description');
+      assert.deepEqual(renderedDailyGoals[index].routes, expectedDailyRoutes[index].map(route => ({ screen: route.screen, focus: route.focus })),
+        `${goal.challenge_id}: every unfinished goal has its qualifying route, and completed goals need no route`);
+    });
+    const unfinishedWeekly = journeyState.weekly_journey.objectives.filter((goal) => !goal.completed && goal.progress < goal.target);
     assert.equal(await page.locator('[data-panel="weekly-journey"] [data-jump]').count(), unfinishedWeekly.length);
     assert.ok(!(await page.locator('[data-panel="weekly-journey"]').textContent()).includes('Daily Moon Runs'));
     const weeklyRoutes = await page.locator('[data-panel="weekly-journey"] [data-jump]').evaluateAll((buttons) => buttons.map((b) => ({ screen:b.dataset.jump, focus:b.dataset.focus })));
@@ -1217,7 +1262,7 @@ try {
     sqlite.prepare("UPDATE telegram_pet_profiles SET equipped_food='moon_kibble' WHERE telegram_id=?").run(currentUser);
     sqlite.prepare("UPDATE telegram_pet_instances SET equipped_food='moon_kibble' WHERE telegram_id=?").run(currentUser);
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
-    await page.locator('[data-panel="play-now"] [data-focus="timed-activity"]').click();
+    await page.locator('[data-panel="play-now"] [data-focus="timed-activity"]').filter({ hasText: /^CHOOSE A BACKGROUND ACTIVITY/ }).click();
     await page.waitForFunction(() => {
       const panel = document.querySelector('[data-panel="timed-activity"]');
       const controls = document.getElementById('screen');
@@ -1263,15 +1308,23 @@ try {
     assert.ok((await hooks.buildPetMiniAppState(db, currentUser, token)).guidance.activity, 'navigating to contracts must leave the activity running');
     sqlite.prepare("UPDATE telegram_pet_activity_sessions SET started_at=datetime('now','-30 minutes') WHERE telegram_id=? AND status='active'").run(currentUser);
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
-    await page.locator('[data-panel="play-now"] [data-focus="timed-activity"]').click();
+    // A rotating bounty can offer the same destination; choose the activity's primary route.
+    await page.locator('[data-panel="play-now"] [data-focus="timed-activity"]').filter({ hasText: /^CLAIM OR CONTINUE ACTIVITY/ }).click();
     assert.equal(await page.locator('[data-action="activity_claim"]').isEnabled(), true);
     const activityText = await page.locator('[data-panel="timed-activity"]').textContent();
     assert.ok(activityText.includes('1 Moon Crystals') && activityText.includes('Adventure Map replaces'));
     const beforeFailedClaim = await hooks.buildPetMiniAppState(db, currentUser, token);
     failActivitySettlement = true;
-    await assert.rejects(dispatchRenderedPetAction(db, currentUser, { id: currentUser }, { action: 'activity_claim' }, token), /interrupted_activity_settlement/);
+    const savedActivityClaim = await dispatchRenderedPetAction(db, currentUser, { id: currentUser }, { action: 'activity_claim' }, token);
+    assert.equal(failActivitySettlement, false, 'the post-payout metadata failure must actually be injected');
+    assert.equal(savedActivityClaim.accepted, true, 'an interrupted settlement follow-up must preserve the saved payout feedback');
+    assert.equal(savedActivityClaim.reason, 'claimed');
+    assert.equal(savedActivityClaim.refresh_state, true);
+    assert.equal(savedActivityClaim.recovery_pending, true);
+    assert.equal(savedActivityClaim.computed.rewards.moon_crystals, 1);
     const paidBeforeRetry = await hooks.buildPetMiniAppState(db, currentUser, token);
     assert.equal(paidBeforeRetry.pet.moon_crystals, beforeFailedClaim.pet.moon_crystals + 1);
+    assert.equal(paidBeforeRetry.pet.pet_xp, beforeFailedClaim.pet.pet_xp + savedActivityClaim.pet_xp_awarded, 'saved feedback must match the actual capped XP receipt');
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
     assert.equal(await page.locator('[data-action="sleep"]').isEnabled(), true, 'completed activity waiting for receipt recovery does not block care');
     await page.locator('[data-panel="play-now"] [data-focus="timed-activity"]').filter({ hasText: 'RECOVER SAVED ACTIVITY REWARD' }).click();

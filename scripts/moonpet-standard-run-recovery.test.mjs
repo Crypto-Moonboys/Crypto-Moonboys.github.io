@@ -28,7 +28,7 @@ function fixture(owner) {
     }
     async run() { return this.exec(); }
   }
-  const db = { failReward: false, rejectReward: false, prepare(query) { return new Statement(query); }, async batch(statements) {
+  const db = { failReward: false, rejectReward: false, invalidRewardReceipt: null, prepare(query) { return new Statement(query); }, async batch(statements) {
     if (this.beforeBatch) await this.beforeBatch(statements);
     if (this.failReward && statements.some(s => /INSERT OR IGNORE INTO telegram_pet_reward_claims/.test(s.query))) {
       this.failReward = false;
@@ -39,8 +39,18 @@ function fixture(owner) {
       return statements.map(() => ({ results: [], meta: { changes: 0 } }));
     }
     sql.exec('BEGIN');
-    try { const results = []; for (const s of statements) results.push(s.exec()); sql.exec('COMMIT'); return results; }
+    let results;
+    try { results = []; for (const s of statements) results.push(s.exec()); sql.exec('COMMIT'); }
     catch (error) { sql.exec('ROLLBACK'); throw error; }
+    if (this.invalidRewardReceipt && statements.at(-1)?.query.includes('RETURNING applied_rewards')) {
+      const mode = this.invalidRewardReceipt;
+      this.invalidRewardReceipt = null;
+      if (mode === 'failed') results[results.length - 1] = { success: false, error: 'receipt_write_failed', results: [] };
+      if (mode === 'missing') results[results.length - 1] = { ...results.at(-1), results: [] };
+      if (mode === 'malformed') results[results.length - 1] = { ...results.at(-1), results: [{ applied_rewards: '{' }] };
+    }
+    if (this.afterBatch) await this.afterBatch(statements);
+    return results;
   } };
   sql.prepare('INSERT INTO telegram_users (telegram_id,first_name) VALUES (?,?)').run(owner, 'Test player');
   sql.prepare('INSERT INTO telegram_pet_profiles (telegram_id,pet_xp,energy) VALUES (?,200,100)').run(owner);
@@ -63,6 +73,117 @@ function fixture(owner) {
   const get = async path => { const response = await worker.fetch(new Request('https://moonboys-api.test' + path), { DB: db }); assert.equal(response.status, 200); return response.json(); };
   return { sql, db, owner, pet, run, state, get };
 }
+
+test('the authenticated extraction API returns its exact paid receipt during an identity outage', async () => {
+  const f=fixture('92031'); await f.state(); f.run('http-paid-ending');
+  f.db.beforeBatch=statements=>{
+    if(statements.some(s=>s.query.includes('INSERT OR IGNORE INTO telegram_pet_identity_events') && s.query.includes("'memory'"))) throw Error('identity_finish_unavailable');
+  };
+  const response=await worker.fetch(new Request('https://moonboys-api.test/telegram-pets/action',{
+    method:'POST',headers:{'content-type':'application/json','x-pets-bot-secret':'pet-secret'},
+    body:JSON.stringify({telegram_id:f.owner,action:'run_extract',run_id:'http-paid-ending',event_key:'http-extract'})
+  }),{DB:f.db,TELEGRAM_PETS_BOT_SECRET:'pet-secret'});
+  assert.equal(response.status,200);
+  const result=await response.json();
+  assert.equal(result.accepted,true); assert.equal(result.refresh_state,true);
+  assert.equal(result.pet_xp_awarded,24); assert.equal(result.rewards.pet_xp,24); assert.equal(result.rewards.moon_gold,9);
+  assert.equal(f.sql.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?").get('current-'+f.owner).pet_xp,224);
+  f.db.beforeBatch=null;
+  await f.state();
+  const retry=await dispatchRenderedPetAction(f.db,f.owner,{id:f.owner},{action:'run_extract',run_id:'http-paid-ending',request_id:'retry'},'fixture-token');
+  assert.equal(retry.accepted,true); assert.equal(retry.duplicate,true);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='run_extract'").get().n,1);
+  assert.equal(f.sql.prepare("SELECT total_runs FROM telegram_pet_memories WHERE pet_id=?").get('current-'+f.owner).total_runs,1);
+  assert.equal(f.sql.prepare("SELECT biggest_reward_amount FROM telegram_pet_memories WHERE pet_id=?").get('current-'+f.owner).biggest_reward_amount,9,
+    'a duplicate repair records the original payout, even though it pays no new gold');
+});
+
+test('the authenticated extraction API preserves success when its final active-profile projection fails', async () => {
+  const f=fixture('92032'); await f.state(); f.run('http-projection-ending');
+  let interrupted=false;
+  f.db.afterBatch=statements=>{
+    if(!statements.some(s=>s.query.includes('INSERT OR IGNORE INTO telegram_pet_identity_events') && s.args.includes('http-projection-ending:terminal:memory'))) return;
+    f.db.afterBatch=null;
+    f.db.beforeFirst=s=>{
+      if(!s.query.includes('FROM telegram_pet_active_slots a')) return;
+      f.db.beforeFirst=null; interrupted=true; throw Error('paid_api_projection_unavailable');
+    };
+  };
+  const response=await worker.fetch(new Request('https://moonboys-api.test/telegram-pets/action',{
+    method:'POST',headers:{'content-type':'application/json','x-pets-bot-secret':'pet-secret'},
+    body:JSON.stringify({telegram_id:f.owner,action:'run_extract',run_id:'http-projection-ending',event_key:'http-projection-extract'})
+  }),{DB:f.db,TELEGRAM_PETS_BOT_SECRET:'pet-secret'});
+  assert.equal(interrupted,true,'fail a real final projection after the terminal memory has committed');
+  assert.equal(response.status,200);
+  const result=await response.json();
+  assert.equal(result.accepted,true); assert.equal(result.refresh_state,true);
+  assert.equal(result.pet_xp_awarded,24); assert.equal(result.rewards.moon_gold,9);
+  const retry=await dispatchRenderedPetAction(f.db,f.owner,{id:f.owner},{action:'run_extract',run_id:'http-projection-ending',request_id:'retry'},'fixture-token');
+  assert.equal(retry.accepted,true); assert.equal(retry.duplicate,true);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='run_extract'").get().n,1);
+  assert.equal(f.sql.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?").get('current-'+f.owner).pet_xp,224);
+});
+
+for (const mode of ['failed', 'missing', 'malformed']) test(`Standard reward settlement rejects a ${mode} applied receipt`, async () => {
+  const f = fixture(`invalid-receipt-${mode}`);
+  await f.state(); f.run(`receipt-${mode}`);
+  f.db.invalidRewardReceipt = mode;
+  await assert.rejects(hooks.processPetRunExtract(f.db, f.owner, `receipt-${mode}`),
+    mode === 'failed' ? /pet_state_write_unavailable/ : /pet_reward_receipt_unavailable/);
+});
+
+for(const win of [true,false]) test(`a ${win?'successful':'failed'} Standard step retains its saved cost through a projection outage`, async () => {
+  const f=fixture('post-step-'+win); await f.state(); f.run('post-step',{depth:0});
+  f.sql.exec('UPDATE telegram_pet_profiles SET moon_gold=1000');
+  const choice=hooks.buildPetRunChoiceReplyMarkup({run_id:'post-step',depth:0,max_depth:100,unbanked_items:'{}'}).inline_keyboard[0][0].callback_data.split(':').at(-1);
+  let interrupted=false;
+  f.db.afterBatch=statements=>{
+    if(!statements.some(s=>s.query.includes('INSERT OR IGNORE INTO telegram_pet_run_steps'))) return;
+    f.db.afterBatch=null;
+    f.db.beforeFirst=s=>{
+      if(!s.query.includes('FROM telegram_pet_runs') || !s.query.includes('run_id = ?')) return;
+      f.db.beforeFirst=null; interrupted=true; throw Error('post_step_projection_unavailable');
+    };
+  };
+  const originalRandom=Math.random; Math.random=()=>win?0.99:0;
+  let result;
+  try { result=await hooks.processPetRunStep(f.db,f.owner,'post-step',choice,{event_key:'saved-cost'}); }
+  finally { Math.random=originalRandom; }
+  assert.equal(interrupted,true); assert.equal(result.accepted,true); assert.equal(result.refresh_state,true);
+  const step=f.sql.prepare('SELECT * FROM telegram_pet_run_steps WHERE event_key=?').get('saved-cost');
+  assert.equal(Boolean(step.success),win);
+  const savedPet=f.sql.prepare('SELECT energy,pet_xp FROM telegram_pet_instances WHERE pet_id=?').get('current-'+f.owner);
+  assert.equal(savedPet.energy,100-JSON.parse(step.metadata).costs.energy);
+  const retry=await hooks.processPetRunStep(f.db,f.owner,'post-step',choice,{event_key:'saved-cost'});
+  assert.equal(retry.accepted,true); assert.equal(retry.duplicate,true);
+  assert.deepEqual(f.sql.prepare('SELECT energy,pet_xp FROM telegram_pet_instances WHERE pet_id=?').get('current-'+f.owner),savedPet);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_run_steps WHERE run_id=?').get('post-step').n,1);
+});
+
+test('a concurrent other-pet payout cannot overrun the account consolation cap or spend a rejected step', async () => {
+  const f=fixture('run-account-cap'); await f.state(); f.run('cap-run',{depth:0});
+  f.pet('cap-other',oldSeason,300);
+  const choice=hooks.buildPetRunChoiceReplyMarkup({run_id:'cap-run',depth:0,max_depth:100,unbanked_items:'{}'}).inline_keyboard[0][0].callback_data.split(':').at(-1);
+  f.db.beforeBatch=statements=>{
+    if(!statements.some(s=>s.query.includes('INSERT OR IGNORE INTO telegram_pet_run_steps'))) return;
+    f.db.beforeBatch=null;
+    f.sql.prepare(`INSERT INTO telegram_pet_events
+      (id,pet_id,telegram_id,event_type,event_key,pet_xp_awarded,season_key,day_key,week_key,status)
+      VALUES ('concurrent-cap','cap-other',?,'test','concurrent-cap',1200,?,?,'test-week','accepted')`).run(f.owner,oldSeason,new Date().toISOString().slice(0,10));
+  };
+  const before=f.sql.prepare('SELECT energy,pet_xp FROM telegram_pet_instances WHERE pet_id=?').get('current-'+f.owner);
+  const originalRandom=Math.random; Math.random=()=>0;
+  try {
+    const changed=await hooks.processPetRunStep(f.db,f.owner,'cap-run',choice,{event_key:'capped-step'});
+    assert.equal(changed.accepted,false); assert.equal(changed.reason,'run_state_changed');
+    assert.deepEqual(f.sql.prepare('SELECT energy,pet_xp FROM telegram_pet_instances WHERE pet_id=?').get('current-'+f.owner),before);
+    assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_run_steps WHERE run_id=?').get('cap-run').n,0);
+    const retry=await hooks.processPetRunStep(f.db,f.owner,'cap-run',choice,{event_key:'capped-step'});
+    assert.equal(retry.accepted,true); assert.equal(retry.reason,'run_failed'); assert.equal(retry.pet_xp_awarded,0);
+    assert.equal(f.sql.prepare('SELECT SUM(pet_xp_awarded) n FROM telegram_pet_events WHERE telegram_id=? AND status=\'accepted\'').get(f.owner).n,1200);
+    assert.equal(f.sql.prepare("SELECT pet_id FROM telegram_pet_events WHERE event_type='run_fail'").get().pet_id,'current-'+f.owner);
+  } finally { Math.random=originalRandom; }
+});
 
 test('two persistently failing Standard endings yield the state budget to later payouts and retry on wraparound', async () => {
   const f = fixture('standard-fair');
@@ -90,7 +211,9 @@ for (const kind of ['personality','memory']) test(`paid Standard ending repairs 
   f.db.beforeBatch=statements=>{
     if(statements.some(s=>s.query.includes('INSERT OR IGNORE INTO telegram_pet_identity_events') && s.query.includes("'"+kind+"'"))) throw Error('identity_finish_unavailable');
   };
-  await assert.rejects(hooks.processPetRunExtract(f.db,f.owner,'paid-ending'),/identity_finish_unavailable/);
+  const result=await hooks.processPetRunExtract(f.db,f.owner,'paid-ending');
+  assert.equal(result.accepted,true); assert.equal(result.refresh_state,true);
+  assert.equal(result.pet_xp_awarded,24);
   const paid=f.sql.prepare("SELECT pet_xp_awarded FROM telegram_pet_events WHERE event_type='run_extract'").get();
   assert.equal(paid.pet_xp_awarded,24);
   f.db.beforeBatch=null;
@@ -98,6 +221,7 @@ for (const kind of ['personality','memory']) test(`paid Standard ending repairs 
   const identities=()=>f.sql.prepare("SELECT event_kind,event_key FROM telegram_pet_identity_events WHERE event_key LIKE 'paid-ending:terminal:%' AND applied_at IS NOT NULL ORDER BY event_kind").all();
   assert.equal(identities().length,2,'payment must not hide an interrupted identity finish from recovery');
   assert.equal(f.sql.prepare('SELECT total_runs FROM telegram_pet_memories WHERE pet_id=?').get(source).total_runs,1);
+  assert.equal(f.sql.prepare('SELECT biggest_reward_amount FROM telegram_pet_memories WHERE pet_id=?').get(source).biggest_reward_amount,9);
   assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(source).pet_xp,224);
   assert.equal((await f.get('/telegram-pets/leaderboard?period=daily')).entries[0].pet_xp,24);
   const before=identities(); await f.state();
@@ -124,6 +248,26 @@ test('a saved terminal payout recovered after a quarter boundary keeps its earni
   assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get('current-' + f.owner).pet_xp, 224);
 });
 
+test('a recovered Standard ending uses its saved day and week for the shared XP cap', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: Date.UTC(2026, 8, 28, 12) });
+  const f = fixture('terminal-day-week');
+  await f.state();
+  f.run('week-ending');
+  f.db.failReward = true;
+  await assert.rejects(hooks.processPetRunExtract(f.db, f.owner, 'week-ending'), /interrupted_terminal_reward/);
+  f.sql.prepare("UPDATE telegram_pet_runs SET completed_at='2026-09-27 23:59:00' WHERE run_id='week-ending'").run();
+  f.sql.prepare(`INSERT INTO telegram_pet_events
+    (id,pet_id,telegram_id,event_type,event_key,pet_xp_awarded,season_key,day_key,week_key,status)
+    VALUES ('prior-day-xp',? ,?,'test','prior-day-xp',1190,?,'2026-09-27','2026-W39','accepted')`)
+    .run('current-' + f.owner, f.owner, currentSeason);
+  const result = (await hooks.recoverPetStandardRunEndings(f.db, f.owner, 'week-ending'))[0];
+  assert.equal(result.accepted, true);
+  assert.equal(result.pet_xp_awarded, 10);
+  const event = { ...f.sql.prepare("SELECT day_key,week_key,pet_xp_awarded FROM telegram_pet_events WHERE event_type='run_extract'").get() };
+  assert.deepEqual(event, { day_key: '2026-09-27', week_key: '2026-W39', pet_xp_awarded: 10 });
+  assert.equal(f.sql.prepare("SELECT SUM(pet_xp_awarded) total FROM telegram_pet_events WHERE telegram_id=? AND day_key='2026-09-27' AND status='accepted'").get(f.owner).total, 1200);
+});
+
 test('paid ending identity recovery retains the original day and archived pet', async t => {
   t.mock.timers.enable({apis:['Date'],now:Date.UTC(2026,8,27,12)});
   const f=fixture('historic-identity');
@@ -132,7 +276,8 @@ test('paid ending identity recovery retains the original day and archived pet', 
   f.db.beforeBatch=statements=>{
     if(statements.some(s=>s.query.includes('INSERT OR IGNORE INTO telegram_pet_identity_events') && s.query.includes("'personality'"))) throw Error('identity_unavailable');
   };
-  await assert.rejects(hooks.processPetRunExtract(f.db,f.owner,'historic-run'),/identity_unavailable/);
+  const result=await hooks.processPetRunExtract(f.db,f.owner,'historic-run');
+  assert.equal(result.accepted,true); assert.equal(result.refresh_state,true);
   const source=f.sql.prepare("SELECT day_key,created_at FROM telegram_pet_events WHERE event_type='run_extract'").get();
   f.sql.prepare("UPDATE telegram_pet_instances SET status='archived' WHERE pet_id='archived-source'").run();
   f.sql.prepare("UPDATE telegram_pet_season_slots SET status='archived' WHERE pet_id='archived-source'").run();
@@ -325,7 +470,7 @@ for(const [label,method,match] of [
   ['source pet','beforeFirst',q=>q==='SELECT * FROM telegram_pet_instances WHERE pet_id = ? LIMIT 1'],
   ['wallet','beforeFirst',q=>q==='SELECT moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id = ?'],
   ['inventory','beforeAll',q=>q.includes('FROM telegram_pet_inventory') && q.includes('quantity > 0')],
-  ['daily XP cap','beforeFirst',q=>q.includes('SELECT COALESCE(SUM(pet_xp_awarded), 0) AS pet_xp') && q.includes('WHERE pet_id = ?')],
+  ['daily XP cap','beforeFirst',q=>q.includes('SELECT COALESCE(SUM(pet_xp_awarded), 0) AS pet_xp') && q.includes('WHERE telegram_id = ?')],
 ]) test(`account audit: Standard Run ${label} outage cannot resolve against missing evidence`,async()=>{
   const f=fixture('run-read-'+label.replaceAll(' ','-')); await f.state(); f.run('read-run',{depth:0});
   f.sql.exec('UPDATE telegram_pet_profiles SET moon_gold=1000');

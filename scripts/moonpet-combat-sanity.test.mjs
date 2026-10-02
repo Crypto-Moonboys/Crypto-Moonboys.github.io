@@ -4,6 +4,7 @@ import test from 'node:test';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import worker, { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
+import { recordMoonpetBiggestReward } from '../workers/moonboys-api/pets/moonpet-identity.js';
 
 const currentSeason = hooks.getPetSeasonInfo(new Date()).key;
 function fixture(owner) {
@@ -101,6 +102,94 @@ async function arenaFixture(owner) {
   f.round = () => f.sql.prepare('SELECT * FROM telegram_pet_arena_rounds WHERE battle_id=? AND round_number=1').get(f.id);
   return f;
 }
+
+for (const missing of ['personality','biggest_reward']) test(`paid Arena ${missing} history recovers once for the original pet after confirmed deletion`, async () => {
+  const f = await arenaFixture(`arena-paid-${missing}`);
+  const sourcePet = `current-${f.owner}`;
+  const identityWrite = missing === 'personality' ? 'INSERT OR IGNORE INTO telegram_pet_identity_events'
+    : 'INSERT INTO telegram_pet_memories (pet_id, telegram_id, season_key, biggest_reward_amount, biggest_reward_currency)';
+  f.db.beforeRun = statement => { if (statement.query.includes(identityWrite)) throw Error('arena_identity_outage'); };
+  const result = await f.act({ action:'arena_forfeit', battle_id:f.id });
+  assert.equal(result.accepted, true, 'a paid ending remains accepted when its history follow-up fails');
+  assert.equal(result.refresh_state, true, 'the nested paid-history repair requirement reaches the action response');
+  const paid = f.sql.prepare("SELECT * FROM telegram_pet_reward_claims WHERE source='pet_arena'").get();
+  const receipt = f.sql.prepare("SELECT * FROM telegram_pet_events WHERE event_type='arena_battle'").get();
+  assert.equal(paid.status, 'awarded');
+  assert.equal(receipt.pet_id, sourcePet);
+  const paidGold = JSON.parse(paid.applied_rewards).moon_gold;
+  assert.ok(paidGold > 0);
+  const sourceXp = f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(sourcePet).pet_xp;
+  f.db.beforeRun = null;
+  const removed = await f.act({ action:'delete_pet_slot', pet_id:sourcePet, confirm_pet_id:sourcePet, confirmed:true });
+  assert.equal(removed.accepted, true);
+  assert.equal(f.sql.prepare('SELECT status FROM telegram_pet_instances WHERE pet_id=?').get(sourcePet).status, 'archived');
+  const replacement = f.sql.prepare('SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id=?').get(f.owner).pet_id;
+  assert.notEqual(replacement, sourcePet);
+  await f.state();
+  const memory = f.sql.prepare('SELECT * FROM telegram_pet_memories WHERE pet_id=?').get(sourcePet);
+  assert.equal(memory.biggest_reward_amount, paidGold, 'a duplicate settlement uses its original applied assets');
+  const personality = f.sql.prepare("SELECT * FROM telegram_pet_identity_events WHERE pet_id=? AND event_kind='personality' AND event_key=?").get(sourcePet, `${receipt.event_key}:personality`);
+  assert.equal(personality.day_key, receipt.day_key);
+  assert.ok(personality.applied_at);
+  const progress = f.sql.prepare("SELECT progress FROM telegram_pet_personality_traits WHERE pet_id=? AND trait_id='street_fighter'").get(sourcePet).progress;
+  let remainingCandidates = null;
+  f.db.beforeAll = statement => {
+    if (statement.query.includes('WITH candidates(kind,id,recovery_key)')) remainingCandidates = f.sql.prepare(statement.query).all(...statement.args);
+  };
+  await f.state();
+  assert.deepEqual(remainingCandidates, [], 'a completely repaired paid source leaves the bounded queue');
+  assert.equal(f.sql.prepare("SELECT progress FROM telegram_pet_personality_traits WHERE pet_id=? AND trait_id='street_fighter'").get(sourcePet).progress, progress);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE source='pet_arena'").get().n, 1);
+  assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(sourcePet).pet_xp, sourceXp);
+  assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(replacement).pet_xp, 0);
+  for (const recoverSource of [false,true]) {
+    const newHistory = await recordMoonpetBiggestReward(f.db, { telegram_id:f.owner, pet_id:sourcePet,
+      season_key:currentSeason, reward_amount:999, reward_currency:'moon_gold', recover_source_event:recoverSource });
+    assert.equal(newHistory.accepted, false, 'normal actions and a recovery flag without accepted source proof cannot authorize an archived pet');
+  }
+  assert.equal(f.sql.prepare('SELECT biggest_reward_amount FROM telegram_pet_memories WHERE pet_id=?').get(sourcePet).biggest_reward_amount, paidGold);
+});
+
+for (const invalid of ['null_receipt_pet','missing_battle_pet','malformed_paid_assets','unapplied_legacy_identity']) test(`paid Arena history recovery excludes ${invalid} source proof`, async () => {
+  const f = await arenaFixture(`arena-history-${invalid}`);
+  f.db.beforeRun = statement => { if (statement.query.includes('INSERT OR IGNORE INTO telegram_pet_identity_events')) throw Error('arena_identity_outage'); };
+  assert.equal((await f.act({ action:'arena_forfeit', battle_id:f.id })).accepted, true);
+  f.db.beforeRun = null;
+  if (invalid === 'null_receipt_pet') f.sql.prepare("UPDATE telegram_pet_events SET pet_id=NULL WHERE event_type='arena_battle'").run();
+  else if (invalid === 'missing_battle_pet') f.sql.prepare('UPDATE telegram_pet_arena_battles SET player1_pet_id=NULL WHERE battle_id=?').run(f.id);
+  else if (invalid === 'malformed_paid_assets') f.sql.prepare("UPDATE telegram_pet_reward_claims SET applied_rewards='not-json' WHERE source='pet_arena'").run();
+  else {
+    const event = f.sql.prepare("SELECT * FROM telegram_pet_events WHERE event_type='arena_battle'").get();
+    f.sql.prepare("INSERT INTO telegram_pet_identity_events (event_id,pet_id,telegram_id,season_key,event_key,event_kind) VALUES ('legacy-unapplied',?,?,?,?,'personality')")
+      .run(event.pet_id,f.owner,event.season_key,`${event.event_key}:personality`);
+  }
+  const candidates = [];
+  f.db.beforeAll = statement => {
+    if (statement.query.includes('WITH candidates(kind,id,recovery_key)')) candidates.push(f.sql.prepare(statement.query).all(...statement.args));
+  };
+  await f.state(); await f.state();
+  assert.deepEqual(candidates, [[],[]], 'an unprovable paid source cannot consume every refresh budget or guess the current pet');
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_identity_events WHERE event_kind='personality' AND applied_at IS NOT NULL").get().n, 0);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE source='pet_arena'").get().n, 1);
+});
+
+test('Arena reports only its exact capped payout and zero new assets on a completed replay', async () => {
+  const f = await arenaFixture('arena-exact-payout');
+  const source = `current-${f.owner}`, today = new Date().toISOString().slice(0,10);
+  f.sql.prepare(`INSERT INTO telegram_pet_events (id,pet_id,telegram_id,event_type,event_key,pet_xp_awarded,season_key,day_key,week_key,status)
+    VALUES ('cap-proof',?,?,'cap_fixture','cap-proof',1197,?,?,'cap-week','accepted')`).run(source,f.owner,currentSeason,today);
+  const paid = await f.act({ action:'arena_forfeit', battle_id:f.id });
+  assert.equal(paid.accepted, true);
+  assert.equal(paid.rewards.player1.rewards.pet_xp, 3, 'the result must report the capped claim, not the configured ten XP');
+  assert.equal(paid.rewards.player1.rewards.moon_gold, 3);
+  const replay = await f.act({ action:'arena_forfeit', battle_id:f.id });
+  assert.equal(replay.accepted, true);
+  assert.equal(replay.duplicate, true);
+  assert.equal(replay.rewards.player1.rewards.pet_xp, 0);
+  assert.equal(replay.rewards.player1.rewards.moon_gold, 0);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE source='pet_arena'").get().n, 1);
+  assert.equal(f.sql.prepare('SELECT biggest_reward_amount FROM telegram_pet_memories WHERE pet_id=?').get(source).biggest_reward_amount, 3);
+});
 
 test('Arena retries a locked move after the CPU move write failed', async () => {
   const f = await arenaFixture('locked-cpu');
@@ -218,7 +307,9 @@ for (const system of ['arena','kaiju']) test(`${system}: a committed match survi
   await dispatchRenderedPetAction(f.db,opponent,{id:opponent},{action:`${system}_matchmake`},'fixture-token');
   const table=`telegram_pet_${system}_${system==='arena'?'battles':'matches'}`;
   f.db.beforeFirst=s=>{if(s.query.includes(`SELECT * FROM ${table}`)&&s.query.includes(system==='arena'?'battle_id = ?':'match_id = ?'))throw Error('created_match_read_unavailable');};
-  await assert.rejects(f.act({action:`${system}_matchmake`}),/created_match_read_unavailable/);
+  const result = await f.act({action:`${system}_matchmake`});
+  assert.equal(result.accepted,true,'the committed queue action survives a failed match projection');
+  assert.equal(result.refresh_state,true);
   assert.equal(f.sql.prepare(`SELECT COUNT(*) n FROM ${table}`).get().n,1);
   assert.equal(f.sql.prepare(`SELECT COUNT(*) n FROM telegram_pet_${system}_queue WHERE status='waiting'`).get().n,0);
   assert.equal(f.sql.prepare(`SELECT COUNT(*) n FROM ${table} WHERE player2_telegram_id IS NULL`).get().n,0);
@@ -241,6 +332,7 @@ test(`${system}: ${failure} restores the Mini App queue despite an unrelated Tel
     VALUES ('other','other','unrelated-telegram-chat',?,'{}','{}','active','2999-01-01')`).run(f.owner);
   else f.sql.prepare(`INSERT INTO telegram_pet_kaiju_matches (id,match_id,chat_id,player1_telegram_id,status)
     VALUES ('other','other','unrelated-telegram-chat',?,'selecting')`).run(f.owner);
+  const unrelated = f.sql.prepare(`SELECT * FROM ${table} WHERE id='other'`).get();
   let injected=false;
   f.db.beforeRun=s=>{
     if(failure==='partial-claim'&&!injected&&s.query.includes(`UPDATE telegram_pet_${system}_queue SET status=`)&&s.query.includes('telegram_id IN (?,?)')) {
@@ -253,10 +345,20 @@ test(`${system}: ${failure} restores the Mini App queue despite an unrelated Tel
     const result=await f.act({action:`${system}_matchmake`});
     assert.equal(result.reason,`${system}_queued`);
     assert.equal(result.queue?.waiting,true,'queued success must include the restored waiting row');
-  } else await assert.rejects(f.act({action:`${system}_matchmake`}),/match_write_unavailable/);
+  } else {
+    const result=await f.act({action:`${system}_matchmake`});
+    assert.equal(result.accepted,true,'a later match-write failure cannot reject the saved queue entry');
+    assert.equal(result.reason,`${system}_queued`);
+    assert.equal(result.refresh_state,true);
+    assert.equal(f.sql.prepare(`SELECT COUNT(*) n FROM telegram_pet_${system}_queue WHERE telegram_id IN (?,?) AND status='waiting'`).get(f.owner,rival).n,2,
+      'both players return to the waiting queue when the match could not be written');
+  }
   assert.equal(injected,true);
   assert.equal(f.sql.prepare(`SELECT COUNT(*) n FROM telegram_pet_${system}_queue WHERE telegram_id=? AND status='waiting'`).get(f.owner).n,1);
   assert.equal(f.sql.prepare(`SELECT COUNT(*) n FROM ${table}`).get().n,1,'unrelated match remains untouched');
+  assert.deepEqual(f.sql.prepare(`SELECT * FROM ${table} WHERE id='other'`).get(),unrelated);
+  assert.equal(f.sql.prepare(`SELECT COUNT(*) n FROM telegram_pet_${system}_queue WHERE updated_at LIKE 'claim:%'`).get().n,0,
+    'failed matchmaking must not leave a dangling queue claim');
 });
 
 test('a broken historical Arena source cannot starve a later recoverable payout',async()=>{
@@ -448,6 +550,64 @@ test('legacy Kaiju pending receipts recover without guessing the current pet',as
   await f.state();
   const receipt=f.sql.prepare("SELECT pet_id,status FROM telegram_pet_events WHERE event_type='kaiju_battle'").get();
   assert.equal(receipt.status,'accepted');assert.equal(receipt.pet_id,'current-'+f.owner);
+});
+
+test('petless legacy Kaiju reservation retains its period, capped history and account rewards across a real switch',async()=>{
+  const f=await kaijuFixture('kaiju-petless-history');
+  const source='current-'+f.owner;
+  f.sql.prepare("UPDATE telegram_pet_kaiju_matches SET category_key='pwr',roll=1,cpu_card_key='mc-rodan' WHERE match_id=?").run(f.id);
+  f.sql.exec("CREATE TRIGGER hold_petless_reward BEFORE INSERT ON telegram_pet_reward_claims WHEN NEW.source='pet_kaiju' BEGIN SELECT RAISE(ABORT,'payout_unavailable'); END");
+  await assert.rejects(f.card(),/payout_unavailable/);
+  f.sql.exec('DROP TRIGGER hold_petless_reward');
+  assert.equal(f.match().result,'draw');
+  const reservation=f.sql.prepare("SELECT * FROM telegram_pet_events WHERE event_type='kaiju_battle'").get();
+  assert.equal(reservation.status,'pending');
+  assert.equal(reservation.pet_id,source);
+  // This is the persisted pre-upgrade shape: the earning window is known,
+  // while the held receipt has no lifetime owner.
+  f.sql.prepare("UPDATE telegram_pet_events SET pet_id=NULL,season_key='pet-s2026-003',day_key='2026-07-18',week_key='2026-W29' WHERE id=?").run(reservation.id);
+  f.sql.prepare(`INSERT INTO telegram_pet_events
+    (id,telegram_id,event_type,event_key,pet_xp_awarded,xp_awarded,season_key,day_key,week_key,status)
+    VALUES ('petless-cap',?,'cap_fixture','petless-cap',1190,248,'pet-s2026-003','2026-07-18','2026-W29','accepted')`).run(f.owner);
+  f.pet('petless-replacement',currentSeason,200,2);
+  assert.equal((await hooks.switchActivePetSeasonSlot(f.db,f.owner,'petless-replacement')).accepted,true);
+  const petColumns='pet_xp,health,hunger,cleanliness,energy,happiness,streak_days,last_active_day,stage,level';
+  const owned=id=>f.sql.prepare(`SELECT ${petColumns} FROM telegram_pet_instances WHERE pet_id=?`).get(id);
+  const mirror=()=>f.sql.prepare(`SELECT ${petColumns} FROM telegram_pet_profiles WHERE telegram_id=?`).get(f.owner);
+  const sourceBefore=owned(source),replacementBefore=owned('petless-replacement'),profileBefore=mirror();
+  const walletBefore=f.sql.prepare('SELECT moon_gold,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner);
+  const communityBefore=f.sql.prepare('SELECT xp FROM telegram_users WHERE telegram_id=?').get(f.owner).xp;
+  const result=await f.card();
+  assert.equal(result.accepted,true);
+  const reward=result.reward_results[0].result;
+  assert.equal(reward.accepted,true);
+  assert.equal(reward.pet_xp_awarded,10);
+  assert.equal(reward.xp_awarded,2);
+  const receipt=f.sql.prepare('SELECT pet_id,status,season_key,day_key,week_key,pet_xp_awarded,xp_awarded FROM telegram_pet_events WHERE id=?').get(reservation.id);
+  assert.deepEqual({...receipt},{pet_id:null,status:'accepted',season_key:'pet-s2026-003',day_key:'2026-07-18',week_key:'2026-W29',pet_xp_awarded:10,xp_awarded:2});
+  const claim=f.sql.prepare("SELECT pet_id,status,day_key,applied_rewards FROM telegram_pet_reward_claims WHERE source='pet_kaiju'").get();
+  assert.equal(claim.pet_id,null);assert.equal(claim.status,'awarded');assert.equal(claim.day_key,'2026-07-18');
+  const applied=JSON.parse(claim.applied_rewards);
+  assert.equal(applied.pet_xp,10);assert.equal(applied.community_xp,2);
+  assert.equal(applied.moon_gold,10);assert.equal(applied.style_tokens,1);
+  const competition=f.sql.prepare("SELECT season_xp,daily_key,weekly_key FROM telegram_pet_season_state WHERE telegram_id=? AND season_key='pet-s2026-003'").get(f.owner);
+  assert.deepEqual({...competition},{season_xp:10,daily_key:'2026-07-18',weekly_key:'2026-W29'});
+  await hooks.getPetProfile(f.db,f.owner);
+  await f.state();
+  assert.deepEqual(owned(source),sourceBefore);assert.deepEqual(owned('petless-replacement'),replacementBefore);
+  assert.deepEqual(mirror(),profileBefore);
+  assert.equal(f.sql.prepare('SELECT xp FROM telegram_users WHERE telegram_id=?').get(f.owner).xp,communityBefore+2);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_xp_log WHERE telegram_id=? AND action='pet_kaiju_battle'").get(f.owner).n,1);
+  assert.deepEqual({...f.sql.prepare('SELECT moon_gold,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner)},
+    {moon_gold:walletBefore.moon_gold+10,style_tokens:walletBefore.style_tokens+1});
+  assert.equal((await f.card()).reward_results[0].result.duplicate,true);
+  await hooks.getPetProfile(f.db,f.owner);
+  assert.deepEqual(owned(source),sourceBefore);assert.deepEqual(owned('petless-replacement'),replacementBefore);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE source='pet_kaiju'").get().n,1);
+  assert.equal(f.sql.prepare('SELECT xp FROM telegram_users WHERE telegram_id=?').get(f.owner).xp,communityBefore+2);
+  assert.equal(f.sql.prepare("SELECT season_xp FROM telegram_pet_season_state WHERE telegram_id=? AND season_key='pet-s2026-003'").get(f.owner).season_xp,10);
+  assert.deepEqual({...f.sql.prepare('SELECT moon_gold,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner)},
+    {moon_gold:walletBefore.moon_gold+10,style_tokens:walletBefore.style_tokens+1});
 });
 
 test('legacy Kaiju without any source proof cannot award the currently selected pet',async()=>{

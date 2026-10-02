@@ -1,4 +1,5 @@
-import { requirePetFirstReadResult, requirePetReadResult } from './read-result.js';
+import { requirePetFirstReadResult, requirePetReadResult, requirePetMutationResult } from './read-result.js';
+import { projectCommittedPetResult } from './committed-result.js';
 import evolutions from './content/evolutions.json' with { type: 'json' };
 import { PET_SEASON_COMPLETION_CONFIG } from './season-completion.js';
 import { DAILY_COMPLETION_REWARD, SEASON_FINALE_REWARD, dailyCompletionKey, seasonFinaleKey } from './completion-policy.js';
@@ -101,10 +102,14 @@ export async function claimDailyCompletion(db, owner, pet, body, award) {
   const result = await award(db, { telegram_id: owner, pet_id: row.pet_id, season_key: row.season_key,
     source: 'pet_daily_completion', idempotency_key: key, event_key: key, event_type: 'daily_completion',
     rewards: DAILY_COMPLETION_REWARD, context: { utc_day: date, pet_id: row.pet_id, season_key: row.season_key } });
-  if (result.accepted) await db.prepare(`UPDATE telegram_pet_daily_completion SET claimed_at=COALESCE(claimed_at,CURRENT_TIMESTAMP)
-    WHERE telegram_id=? AND utc_day=? AND EXISTS (SELECT 1 FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_daily_completion' AND idempotency_key=? AND status='awarded')`)
-    .bind(owner, date, owner, key).run();
-  return { ...result, reason: result.accepted ? 'daily_completion_claimed' : 'daily_completion_pending', utc_day: date };
+  const committed = { ...result, reason: result.accepted ? 'daily_completion_claimed' : 'daily_completion_pending', utc_day: date, reward_pending: true };
+  if (!result.accepted) return committed;
+  return projectCommittedPetResult(committed, async () => {
+    await db.prepare(`UPDATE telegram_pet_daily_completion SET claimed_at=COALESCE(claimed_at,CURRENT_TIMESTAMP)
+      WHERE telegram_id=? AND utc_day=? AND EXISTS (SELECT 1 FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_daily_completion' AND idempotency_key=? AND status='awarded')`)
+      .bind(owner, date, owner, key).run().then(requirePetMutationResult);
+    return { ...committed, reward_pending: false };
+  });
 }
 
 function publicFinale(row) {
@@ -140,10 +145,14 @@ async function claimFinale(db, owner, row, award) {
   const result = await award(db, { telegram_id: owner, pet_id: row.pet_id, season_key: row.season_key,
     source: 'pet_season_finale', idempotency_key: key, event_key: key, event_type: 'season_finale', rewards: SEASON_FINALE_REWARD,
     context: { pet_id: row.pet_id, season_key: row.season_key } });
-  if (result.accepted) await db.prepare(`UPDATE telegram_pet_season_finales SET claimed_at=COALESCE(claimed_at,CURRENT_TIMESTAMP)
-    WHERE telegram_id=? AND pet_id=? AND season_key=? AND EXISTS (SELECT 1 FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_season_finale' AND idempotency_key=? AND status='awarded')`)
-    .bind(owner, row.pet_id, row.season_key, owner, key).run();
-  return { ...result, reason: result.accepted ? 'finale_reward_claimed' : 'finale_reward_pending' };
+  const committed = { ...result, reason: result.accepted ? 'finale_reward_claimed' : 'finale_reward_pending', reward_pending: true };
+  if (!result.accepted) return committed;
+  return projectCommittedPetResult(committed, async () => {
+    await db.prepare(`UPDATE telegram_pet_season_finales SET claimed_at=COALESCE(claimed_at,CURRENT_TIMESTAMP)
+      WHERE telegram_id=? AND pet_id=? AND season_key=? AND EXISTS (SELECT 1 FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_season_finale' AND idempotency_key=? AND status='awarded')`)
+      .bind(owner, row.pet_id, row.season_key, owner, key).run().then(requirePetMutationResult);
+    return { ...committed, reward_pending: false };
+  });
 }
 export async function processSeasonFinale(db, owner, body, award) {
   const petId = String(body.pet_id || ''), season = String(body.season_key || '');
@@ -176,12 +185,15 @@ export async function processSeasonFinale(db, owner, body, award) {
   if (Number(result.meta?.changes) !== 1) return { accepted: false, reason: 'finale_stale_turn' };
   // Victory is durable before payout. A failed payout remains explicitly claimable.
   if (next.status === 'won') {
-    row = await readFinale(db, owner, petId, season);
-    try {
+    const victory = { accepted: true, reason: 'finale_won', result_copy: 'Victory saved. Use Claim Finale Reward to retry the payout.',
+      reward_pending: true, reward: { accepted: false, reason: 'finale_reward_pending' } };
+    return projectCommittedPetResult(victory, async () => {
+      row = await readFinale(db, owner, petId, season);
       const reward = await claimFinale(db, owner, row, award);
-      return { accepted: true, reason: 'finale_won', result_copy: reward.accepted ? 'Signal Sovereign defeated. Victory reward claimed.' : 'Victory saved. Use Claim Finale Reward to retry the payout.',
-        reward, rewards: reward.rewards, pet_xp_awarded: reward.pet_xp_awarded };
-    } catch { return { accepted: true, reason: 'finale_won', result_copy: 'Victory saved. Use Claim Finale Reward to retry the payout.', reward: { accepted: false, reason: 'finale_reward_pending' } }; }
+      return { ...victory, result_copy: reward.accepted ? 'Signal Sovereign defeated. Victory reward claimed.' : victory.result_copy,
+        reward, rewards: reward.rewards, pet_xp_awarded: reward.pet_xp_awarded,
+        reward_pending: Boolean(reward.reward_pending ?? !reward.accepted), ...(reward.refresh_state ? { refresh_state: true } : {}) };
+    });
   }
   return { accepted: true, reason: next.status === 'failed' ? 'finale_failed' : 'finale_turn_saved', result_copy: next.state.last };
 }

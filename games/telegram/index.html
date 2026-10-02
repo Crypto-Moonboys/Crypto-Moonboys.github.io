@@ -331,7 +331,7 @@
     <p class="status-bar"><span class="ok" id="launchStatus" role="status" aria-live="polite">Preparing games...</span><span class="status-lamps" aria-hidden="true"><i></i><i></i><i></i></span></p>
     <p class="screen-copy">Select game cartridge</p>
     <nav aria-label="Crypto Moonboys games">
-      <a href="/moonpet-game.html?v=20261001-audit-fixes-v2" data-icon="PET" aria-disabled="true" tabindex="-1">Moonpet OS</a>
+      <a href="/moonpet-game.html?v=20261002-premerge-audit-v2" data-icon="PET" aria-disabled="true" tabindex="-1">Moonpet OS</a>
       <a href="/games/dead-run/?v=20260902-dead-run-v5" data-icon="RUN" data-tone="red" aria-disabled="true" tabindex="-1">Dead Run</a>
       <a href="/community.html?v=20260903-games-shell-v8" data-icon="PVP" data-tone="purple" aria-disabled="true" tabindex="-1">Battle Chamber</a>
       <a href="/games/nbg-london/?v=20260903-games-shell-v8" data-icon="LDN" data-tone="green" aria-disabled="true" tabindex="-1">NBG London Runner</a>
@@ -403,6 +403,18 @@
         }
       }
 
+      function freshInheritedInitData(raw) {
+        var value = String(raw || '');
+        if (!value) return '';
+        try {
+          var authDate = Number(new URLSearchParams(value).get('auth_date'));
+          var age = Math.floor(Date.now() / 1000) - authDate;
+          // The destination Worker still verifies this signature. Stale saved
+          // launch data must not suppress a fresh linked website sign-in.
+          return Number.isSafeInteger(authDate) && authDate > 0 && age >= -300 && age <= 3600 ? value : '';
+        } catch (_) { return ''; }
+      }
+
       function readTelegramInitData() {
         var initData = '';
         try {
@@ -410,14 +422,15 @@
         } catch (_) {
           initData = '';
         }
-        if (!initData) initData = readHashInitData();
+        if (!initData) initData = freshInheritedInitData(readHashInitData());
         if (initData) {
           try {
             window.sessionStorage.setItem(INIT_DATA_STORAGE_KEY, initData);
           } catch (_) {}
         } else {
           try {
-            initData = window.sessionStorage.getItem(INIT_DATA_STORAGE_KEY) || '';
+            initData = freshInheritedInitData(window.sessionStorage.getItem(INIT_DATA_STORAGE_KEY));
+            if (!initData) window.sessionStorage.removeItem(INIT_DATA_STORAGE_KEY);
           } catch (_) {
             initData = '';
           }

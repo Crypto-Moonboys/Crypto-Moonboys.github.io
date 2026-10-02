@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import vm from 'node:vm';
 import { webcrypto } from 'node:crypto';
 import { issuePetMiniAppChallenge, verifyPetMiniAppChallenge, verifyTelegramMiniAppInitData } from '../workers/moonboys-api/pets/mini-app-auth.js';
 import { resolvePetCallbackRoute } from '../workers/moonboys-api/pets/mini-app-routing.js';
@@ -71,9 +72,11 @@ assert.match(
 );
 assert.match(
   miniAppStateSource,
-  /const identityPromise = getMoonpetIdentityWithLifecycle\(db, telegramId, \{ required: true \}\);[\s\S]*const lifecyclePromise = identityPromise\.then\([\s\S]*buildPetGuidanceState\(db, telegramId, petRaw, \{ identity: identityPromise, runtime: runtimePromise, combatEligibility: combatEligibilityPromise \}\)/,
-  'Mini App state must share one fail-closed identity/lifecycle authority result with guidance and combat eligibility',
+  /const identityScope = createDisplayedPetScope\(db, telegramId, petRaw\.pet_id\);[\s\S]*const identityPromise = getMoonpetIdentityWithLifecycle\(identityScope\.db, telegramId, \{ required: true \}\)[\s\S]*catch\(error => \{ throw normalizePetProjectionError\(error\); \}\);[\s\S]*const lifecyclePromise = identityPromise\.then\([\s\S]*buildPetGuidanceState\(db, telegramId, petRaw, \{ identity: identityPromise, runtime: runtimePromise, combatEligibility: combatEligibilityPromise \}\)/,
+  'Mini App state must share one source-guarded identity/lifecycle authority result with guidance and combat eligibility',
 );
+assert.match(miniAppStateSource, /await assertPetProjectionSource\(db, telegramId, petRaw, seasonSlots, identityScope\)/,
+  'Mini App state must validate the selected pointer and projected roster before publishing');
 assert.equal(
   (miniAppStateSource.match(/getPetMiniAppCombatEligibility\(db, telegramId, lifecycle, petRaw\)/g) || []).length,
   1,
@@ -1395,7 +1398,7 @@ assert.match(worker, /const \[journeySummary, hydratedKaiju, seasonFinales\] = a
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
-assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20261001-audit-fixes-v2`/);
+assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20261002-premerge-audit-v2`/);
 assert.match(worker, /const TELEGRAM_GAMES_MENU_URL = `\$\{SITE_URL\}\/games\/telegram\/\?v=20260903-games-shell-v8`/,
   'default Telegram games menu must point at the current shell release');
 assert.match(worker, /const TELEGRAM_GAMES_MENU_TEXT = 'Games'/);
@@ -1494,11 +1497,11 @@ statusFrames.shift()();
 assert.equal(testStatusOutput.dataset.tone, 'danger');
 assert.equal(testStatusClasses.has('is-scrolling'), true, 'overflowing updates must activate the scrolling text track');
 assert.match(testStatusProperties['--status-scroll-duration'], /s$/, 'overflowing updates must receive a readable duration');
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261001-audit-fixes-v2/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261002-premerge-audit-v2/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20260926-front-actions-v1/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20260926-front-actions-v1/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261001-audit-fixes-v2/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261002-premerge-audit-v2/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1674,9 +1677,122 @@ assert.match(client, /challenge_token: encounter\.challenge_token/);
 assert.match(client, /challenge_token: adventure\.challenge_token/);
 assert.match(html, /<script data-cfasync="false" src="https:\/\/telegram\.org\/js\/telegram-web-app\.js"><\/script>/);
 assert.match(apiConfig, /PRODUCTION_BASE_URL = 'https:\/\/api\.cryptomoonboys\.com'/);
-assert.match(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/);
+assert.match(client, /apiConfig\.getApiBase\(\{ mode: 'write' \}\)/);
+assert.doesNotMatch(client, /apiConfig\.BASE_URL \|\| 'https:\/\/api\.cryptomoonboys\.com'/, 'The game must preserve endpoint-disabled configuration');
+
+// Exercise shipped entry helpers, shared browser identity restoration and the
+// actual signature verifiers without making network requests or loading saves.
+const entryInitializerSource = client.slice(client.indexOf('  var tg ='), client.indexOf('  var state ='));
+const entryLaunchSource = client.slice(client.indexOf('  function launchParameter('), client.indexOf('  function moonpetBotArtRequested('));
+const entryContextSource = client.slice(client.indexOf('  function freshInheritedTelegramInitData('), client.indexOf('  function syncViewportHeight('));
+const entryRequestSource = client.slice(client.indexOf('  function authBody('), client.indexOf('  async function typeBoot('));
+const entryStartSource = client.slice(client.indexOf('  async function start()'), client.indexOf("  window.addEventListener('pagehide'", client.indexOf('  async function start()')));
+const identityGateSource = fs.readFileSync(new URL('../js/identity-gate.js', import.meta.url), 'utf8');
+const authVerifierContext = vm.createContext({ crypto: webcrypto, TextEncoder });
+vm.runInContext(worker.slice(worker.indexOf('async function verifyTelegramAuth('), worker.indexOf('async function signTelegramAuthPayload(')), authVerifierContext);
+const websiteAuthFields = { id: 123456789, first_name: 'Pixel', auth_date: nowSeconds };
+const websiteAuthKey = await crypto.subtle.digest('SHA-256', encoder.encode(token));
+const websiteAuthHash = hex(await sign(websiteAuthKey, Object.keys(websiteAuthFields).sort().map(key => key + '=' + websiteAuthFields[key]).join('\n')));
+
+function browserEntryHarness({ sdkInitData = '', inheritedInitData = '', api = { BASE_URL: 'https://api.cryptomoonboys.com' }, hostname = 'cryptomoonboys.com', failureResponse = null } = {}) {
+  const requests = [];
+  const startupScreen = { innerHTML: '' };
+  const startupMessages = [];
+  const stored = new Map([
+    ['moonboys_tg_id', '123456789'], ['moonboys_tg_linked', 'true'],
+    ['moonboys_tg_auth', JSON.stringify({ ...websiteAuthFields, hash: websiteAuthHash })],
+  ]);
+  const window = {
+    location: { hostname, pathname: '/moonpet-game.html', protocol: 'https:', origin: 'https://' + hostname, search: '', hash: inheritedInitData ? '#tgWebAppData=' + encodeURIComponent(inheritedInitData) : '' },
+    Telegram: { WebApp: { initData: sdkInitData } },
+  };
+  if (api !== undefined) window.MOONBOYS_API = api;
+  class EntryDate extends Date { static now() { return nowSeconds * 1000; } }
+  const fetch = async (url, options) => {
+    const body = JSON.parse(options.body);
+    requests.push({ url, body });
+    if (failureResponse) return { ok: false, status: failureResponse.status, json: async () => ({ error: failureResponse.error }) };
+    const verification = body.init_data
+      ? await verifyTelegramMiniAppInitData(body.init_data, token, { now_ms: nowSeconds * 1000, max_age_seconds: 3600 })
+      : { ok: await vm.runInContext('verifyTelegramAuth', authVerifierContext)(body.telegram_auth, token), reason: 'telegram_auth_invalid' };
+    return { ok: verification.ok, status: verification.ok ? 200 : 401, json: async () => verification.ok ? { state: { adopted: false } } : { error: verification.reason } };
+  };
+  const runtime = vm.createContext({ window, Date: EntryDate, URLSearchParams, fetch, setTimeout: callback => { callback(); return 0; }, localStorage: {
+    getItem: key => stored.get(key) || null, setItem: (key, value) => stored.set(key, String(value)), removeItem: key => stored.delete(key),
+  } });
+  vm.runInContext(apiConfig, runtime);
+  vm.runInContext(identityGateSource, runtime);
+  const restore = window.MOONBOYS_IDENTITY.restoreLinkedTelegramAuth;
+  let restores = 0;
+  window.MOONBOYS_IDENTITY.restoreLinkedTelegramAuth = (...args) => { restores += 1; return restore(...args); };
+  vm.runInContext(entryInitializerSource + entryLaunchSource + entryContextSource + entryRequestSource, runtime);
+  return {
+    requests, configuredApi: window.MOONBOYS_API.BASE_URL,
+    restores: () => restores,
+    start: () => vm.runInContext('(async function () { refreshTelegramContext(); await restoreBrowserAuth(); return post("/telegram-pets/app/state", { mode: "core" }); })()', runtime),
+    startupScreen, startupMessages,
+    runStartup: () => {
+      Object.assign(runtime, {
+        screen: startupScreen, bindViewportSizing() {}, syncViewportHeight() {}, initBotArtMode: async () => {},
+        requestAnimationFrame() {}, frame() {}, typeBoot: async () => {}, beginStateRequest: () => 1,
+        tell: message => startupMessages.push(message), escapeHtml: value => String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'),
+      });
+      vm.runInContext('var state = null; var reducedMotion = false;' + entryStartSource, runtime);
+      return vm.runInContext('start()', runtime);
+    },
+  };
+}
+
+{
+  const entry = browserEntryHarness({ inheritedInitData: expired });
+  assert.equal((await entry.start()).state.adopted, false, 'Expired inherited launch data must allow verified website sign-in');
+  assert.equal(entry.restores(), 1);
+  assert.equal(entry.requests.length, 1, 'Browser fallback uses cached signed identity without an unnecessary bootstrap request');
+  assert.equal(entry.requests[0].body.init_data, undefined);
+  assert.equal(entry.requests[0].body.telegram_auth.id, 123456789);
+}
+{
+  const entry = browserEntryHarness({ sdkInitData: initData, inheritedInitData: expired });
+  await entry.start();
+  assert.equal(entry.restores(), 0, 'Current SDK identity takes priority over the linked website identity');
+  assert.equal(entry.requests[0].body.init_data, initData);
+}
+{
+  const entry = browserEntryHarness({ sdkInitData: expired });
+  await assert.rejects(entry.start(), /mini_app_auth_expired/, 'An active SDK identity must remain subject to backend freshness verification');
+  assert.equal(entry.restores(), 0, 'Expired SDK data must not silently switch to another website identity');
+}
+{
+  const entry = browserEntryHarness({ inheritedInitData: tampered });
+  await assert.rejects(entry.start(), /mini_app_auth_rejected/, 'Fresh inherited data still requires a valid server-verified signature');
+  assert.equal(entry.restores(), 0);
+}
+for (const config of [{ api: { BASE_URL: null } }, { api: {}, hostname: 'localhost' }]) {
+  const entry = browserEntryHarness({ sdkInitData: initData, ...config });
+  assert.equal(entry.configuredApi, null);
+  await assert.rejects(entry.start(), /API ENDPOINT DISABLED FOR THIS CONTEXT/);
+  assert.equal(entry.requests.length, 0, 'Disabled endpoints must make no production or relative API requests');
+}
+for (const sdkInitData of [expired, tampered, 'auth_date=invalid&hash=' + 'a'.repeat(64) + '&user=%7B%22id%22%3A123456789%7D']) {
+  const entry = browserEntryHarness({ sdkInitData });
+  await entry.runStartup();
+  assert.match(entry.startupScreen.innerHTML, /https:\/\/t\.me\/WIKICOMSBOT\?start=moonpet/);
+  assert.match(entry.startupScreen.innerHTML, /OPEN FRESH TELEGRAM SESSION/);
+  assert.match(entry.startupScreen.innerHTML, /Close this game and reopen Moonpet OS from the bot/);
+  assert.doesNotMatch(entry.startupScreen.innerHTML, /data-utility="retry"/, 'Reloading cannot refresh a rejected SDK signature');
+  assert.match(entry.startupMessages.at(-1), /TELEGRAM SESSION EXPIRED OR INVALID/);
+  assert.equal(entry.restores(), 0, 'Authentication recovery must preserve Telegram intent without changing to the website account');
+  assert.equal(entry.requests.length, 1, 'Rejected signatures must not read player state or issue alternate identity requests');
+}
+{
+  const entry = browserEntryHarness({ sdkInitData: initData, failureResponse: { status: 503, error: 'mini_app_state_failed' } });
+  await entry.runStartup();
+  assert.match(entry.startupScreen.innerHTML, /data-utility="retry"/);
+  assert.doesNotMatch(entry.startupScreen.innerHTML, /OPEN FRESH TELEGRAM SESSION/, 'Transient state failures keep normal connection recovery');
+  assert.equal(entry.requests.length, 3, 'Read-only startup state requests retain their transient retry policy');
+}
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261001-audit-fixes-v2/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261002-premerge-audit-v2/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -2118,7 +2234,7 @@ assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Numbe
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
 assert.match(html, /20260926-front-actions-v1/);
-assert.match(worker, /20261001-audit-fixes-v2/);
+assert.match(worker, /20261002-premerge-audit-v2/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');
 assert.match(client, /renderQuality = reducedMotion/, 'canvas quality must start from device capability');

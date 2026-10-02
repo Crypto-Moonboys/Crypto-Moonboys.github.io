@@ -427,15 +427,17 @@ export async function recordMoonpetBiggestReward(db, request = {}) {
   const amount = positiveInteger(request.reward_amount);
   const currency = String(request.reward_currency || 'moon_gold').trim().toLowerCase().slice(0, 40);
   if (!telegramId || amount < 1 || !ID_PATTERN.test(currency)) return { accepted: false, reason: 'invalid_moonpet_reward_memory' };
-  const authority = await resolveMoonpetIdentityAuthority(db, telegramId, request, request.source_event_types || request.source_event_type || []);
+  const authority = await resolveMoonpetIdentityAuthority(db, telegramId, request, request.source_event_types || request.source_event_type || [], request.recover_source_event === true);
   if (!authority.ok) return { accepted: false, reason: authority.reason || 'invalid_moonpet_reward_memory', source_event_key: authority.source_event_key };
   const scope = authority.scope;
+  const recoverSource = request.recover_source_event === true && Boolean(authority.source.source_event_key);
+  const sourceStatus = recoverSource ? "IN ('active','archived')" : "= 'active'";
   const corruptExisting = await db.prepare(`SELECT 1 AS corrupt FROM telegram_pet_memories
     WHERE pet_id = ? AND NOT (telegram_id = ? AND season_key = ?) LIMIT 1`)
     .bind(scope.pet_id, telegramId, scope.season_key).first();
   if (corruptExisting) throw new Error('moonpet_identity_authority_tuple_mismatch');
   const result = await db.prepare(`INSERT INTO telegram_pet_memories (pet_id, telegram_id, season_key, biggest_reward_amount, biggest_reward_currency)
-    SELECT ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ? AND season_key = ? AND status = 'active')
+    SELECT ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ? AND season_key = ? AND status ${sourceStatus})
     ON CONFLICT(pet_id) DO UPDATE SET
       biggest_reward_currency = CASE WHEN excluded.biggest_reward_amount > telegram_pet_memories.biggest_reward_amount THEN excluded.biggest_reward_currency ELSE telegram_pet_memories.biggest_reward_currency END,
       biggest_reward_amount = MAX(telegram_pet_memories.biggest_reward_amount, excluded.biggest_reward_amount),

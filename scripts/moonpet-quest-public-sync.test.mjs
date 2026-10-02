@@ -218,6 +218,36 @@ test('historical Weekly recovery counts distinct days and preserves the true qua
   assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_weekly_crests').get(), crest);
 });
 
+test('inline repair of an earlier source uses the first full Weekly qualification day and preserves existing Crests', async () => {
+  const f=fixture('weekly-inline-date');
+  for(let n=0;n<4;n++)await f.evidence('weekly_care','care:'+n,'2026-07-05',true);
+  // The accepted source survived July 5, while its objective write did not.
+  f.sql.prepare(`INSERT INTO telegram_pet_events
+    (id,pet_id,telegram_id,event_type,event_key,season_key,day_key,week_key,status)
+    VALUES ('care-backlog',?,?,'feed','care-backlog',?,'2026-07-05','2026-W27','accepted')`).run(f.petId,f.owner,seasonKey);
+  for(const [id,goal] of Object.entries(PET_WEEKLY_JOURNEY_OBJECTIVES)){
+    if(['weekly_care','weekly_check_in'].includes(id))continue;
+    for(let n=0;n<goal.target;n++)await f.evidence(id,id+':'+n,'2026-07-06',true);
+  }
+  await f.evidence('weekly_check_in','check:first','2026-07-05',true);
+  await f.evidence('weekly_check_in','check:second','2026-07-06',true);
+  // Later surplus evidence must not move the first threshold crossings.
+  for(const id of Object.keys(PET_WEEKLY_JOURNEY_OBJECTIVES).filter(id=>id!=='weekly_care'))await f.evidence(id,'surplus:'+id,'2026-07-07',true);
+  const repaired=await recordWeeklyJourneyObjectiveEvidence(f.db,{...f.request,objective_id:'weekly_care',source_event_key:'care-backlog',earned_at:'2026-07-05T12:00:00.000Z'});
+  assert.equal(repaired.weekly_journey.accepted,true);
+  let crest=f.sql.prepare('SELECT * FROM telegram_pet_weekly_crests').get();
+  assert.equal(crest.earned_at,'2026-07-06T00:00:00.000Z');
+  assert.equal(crest.qualification_week,1);assert.equal(crest.pet_id,f.petId);
+  await finalizeWeeklyJourneyCrest(f.db,{...f.request,earned_at:'2026-07-07T00:00:00.000Z'});
+  await recoverPetJourneyAwards(f.db,f.owner);
+  assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_weekly_crests').get(),crest);
+  // A timestamp recorded by an earlier Worker remains immutable on repair.
+  f.sql.prepare("UPDATE telegram_pet_weekly_crests SET earned_at='2026-07-06T12:00:00.000Z' WHERE crest_id=?").run(crest.crest_id);
+  crest=f.sql.prepare('SELECT * FROM telegram_pet_weekly_crests').get();
+  await finalizeWeeklyJourneyCrest(f.db,f.request);await recoverPetJourneyAwards(f.db,f.owner);
+  assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_weekly_crests').get(),crest);
+});
+
 test('Weekly evidence rejects mismatched instance owner, season and slot authority', async () => {
   for (const column of ['telegram_id', 'season_key', 'slot_number']) {
     const f = fixture(`authority-${column}`);

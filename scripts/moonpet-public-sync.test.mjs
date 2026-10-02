@@ -15,14 +15,19 @@ class Statement {
   bind(...args) { return new Statement(this.query,args); }
   async first() { return sql.prepare(this.query).get(...this.args)||null; }
   async all() { return {results:sql.prepare(this.query).all(...this.args)}; }
-  async run() {
-    if (/\bRETURNING\b/i.test(this.query)) { const results=sql.prepare(this.query).all(...this.args); return {results,meta:{changes:results.length}}; }
-    return {results:[],meta:{changes:Number(sql.prepare(this.query).run(...this.args).changes)}};
+  exec() {
+    const statement=sql.prepare(this.query);
+    if (statement.columns().length) {
+      const results=statement.all(...this.args);
+      return {results,meta:{changes:/\bRETURNING\b/i.test(this.query)?results.length:0}};
+    }
+    return {results:[],meta:{changes:Number(statement.run(...this.args).changes)}};
   }
+  async run() { return this.exec(); }
 }
 const db={prepare(query){return new Statement(query);},async batch(statements){
   sql.exec('BEGIN');
-  try { const results=[]; for(const s of statements)results.push(await s.run());sql.exec('COMMIT');return results; }
+  try { const results=statements.map(s=>s.exec());sql.exec('COMMIT');return results; }
   catch(error){sql.exec('ROLLBACK');throw error;}
 }};
 const now=new Date(), season=hooks.getPetSeasonInfo(now).key;

@@ -67,7 +67,7 @@ function intercept(f, action, callback) {
   const inject = async () => { if (ran) return; ran = true; await callback(); };
   // Retain the legacy boundary so this regression also fails on pre-fix main.
   f.db.beforeRun = async s => {
-    if (action === 'rename' && /UPDATE telegram_pet_profiles\s+SET pet_name/.test(s.query)) await inject();
+    if (action === 'rename' && /UPDATE telegram_pet_profiles\s+SET pet_name\s*=\s*\?\s*,\s*updated_at/.test(s.query)) await inject();
   };
   f.db.beforeBatch = async statements => {
     if (statements.some(s => action === 'rename'

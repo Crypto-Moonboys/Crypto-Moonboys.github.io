@@ -16,6 +16,7 @@ for (const seasonMigration of ['058_telegram_pet_season_completion.sql', '061_mo
 const migration = read('workers/moonboys-api/migrations/076_moonpet_continuing_contracts.sql');
 sqlite.exec(migration); sqlite.exec(migration);
 let beforeStatement = null;
+let beforeRun = null;
 let beforeBatch = null;
 let batchQueue = Promise.resolve();
 class Statement {
@@ -30,6 +31,7 @@ class Statement {
   }
   async all() { return { results: sqlite.prepare(this.sql).all(...this.args) }; }
   async run() {
+    if (beforeRun) { const injected = beforeRun(this.sql, this.args); if (injected !== undefined) return injected; }
     if (sqlite.prepare(this.sql).columns().length && !/\bRETURNING\b/i.test(this.sql)) return { results: sqlite.prepare(this.sql).all(...this.args), meta: { changes: 0 } };
     if (/\bRETURNING\b/i.test(this.sql)) { const results = sqlite.prepare(this.sql).all(...this.args); return { results, meta: { changes: results.length } }; }
     const r = sqlite.prepare(this.sql).run(...this.args); return { results: [], meta: { changes: Number(r.changes) } };
@@ -574,6 +576,36 @@ try {
   sqlite.prepare('UPDATE telegram_pet_contracts SET reward_settled=0,xp_awarded=0 WHERE contract_id=?').run(pending.contract_id);
   assert.equal((await act(a, claim, awardPetReward, tomorrow)).pet_xp_awarded, 0);
   assert.equal((await board(a, tomorrow)).run.xp_awarded, 20);
+
+  for (const boundary of ['read','ack']) for (const resolved of [false,true]) {
+    const paidPet=await seed(`contract-paid-${boundary}-${resolved}`);
+    await start(paidPet);
+    const saved=await complete(paidPet,async()=>{throw Error('delivery offline');});
+    const sourceBefore=sqlite.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(paidPet.pet_id).pet_xp;
+    sqlite.prepare(`INSERT INTO telegram_pet_events
+      (id,pet_id,telegram_id,event_type,event_key,pet_xp_awarded,season_key,day_key,week_key,status)
+      VALUES (?,?,?,'cap_fixture',?,1190,?,?,'fixture','accepted')`).run(`paid-cap-${boundary}-${resolved}`,paidPet.pet_id,paidPet.telegram_id,`paid-cap-${boundary}-${resolved}`,paidPet.season_key,now.toISOString().slice(0,10));
+    const inject=(sql,args)=>{
+      if(boundary==='read' ? !sql.startsWith('SELECT applied_rewards FROM telegram_pet_reward_claims') || args[0]!==paidPet.telegram_id
+        : !sql.startsWith('UPDATE telegram_pet_contracts SET reward_settled=1') || args[2]!==paidPet.telegram_id)return undefined;
+      if(resolved)return {success:false,error:'receipt_offline'};
+      throw Error('receipt_offline');
+    };
+    if(boundary==='read')beforeStatement=inject;else beforeRun=inject;
+    const claim=()=>dispatchRenderedPetAction(db,paidPet.telegram_id,{id:paidPet.telegram_id},{action:'contract_claim',pet_id:paidPet.pet_id,contract_id:saved.contract_id,request_id:realCrypto.randomUUID()},'fixture-token');
+    const paid=await claim();
+    assert.equal(paid.accepted,true);assert.equal(paid.pet_xp_awarded,10);assert.equal(paid.reward_pending,true);assert.equal(paid.refresh_state,true);
+    assert.equal(sqlite.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(paidPet.pet_id).pet_xp,sourceBefore+10);
+    assert.equal(sqlite.prepare('SELECT reward_settled FROM telegram_pet_contracts WHERE contract_id=?').get(saved.contract_id).reward_settled,0);
+    const receipt=sqlite.prepare("SELECT status,applied_rewards FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_contract'").get(paidPet.telegram_id);
+    assert.equal(receipt.status,'awarded');assert.equal(JSON.parse(receipt.applied_rewards).pet_xp,10);
+    beforeStatement=null;beforeRun=null;
+    const recovered=await claim();assert.equal(recovered.accepted,true);assert.equal(recovered.pet_xp_awarded,0);assert.equal(recovered.reward_pending,false);
+    const contract=sqlite.prepare('SELECT reward_settled,xp_awarded FROM telegram_pet_contracts WHERE contract_id=?').get(saved.contract_id);
+    assert.deepEqual({...contract},{reward_settled:1,xp_awarded:10});
+    assert.equal(sqlite.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(paidPet.pet_id).pet_xp,sourceBefore+10);
+    assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_contract'").get(paidPet.telegram_id).n,1);
+  }
 
   // Full cap yields zero XP, but quest completion/rank still settles.
   const capPet = await seed('contract-cap');

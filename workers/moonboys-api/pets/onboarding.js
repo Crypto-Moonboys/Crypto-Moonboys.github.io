@@ -1,5 +1,5 @@
 import evolutions from './content/evolutions.json' with { type: 'json' };
-import { requirePetFirstReadResult, requirePetMutationResult } from './read-result.js';
+import { requirePetFirstReadResult, requirePetMutationResult, requirePetReadResult } from './read-result.js';
 
 const egg = evolutions.find(entry => entry.evolution_id === 'moon_egg');
 
@@ -17,7 +17,9 @@ export function buildPetOnboardingStatements(db, pet, options = {}) {
   const creationArgs = [pet.pet_id, telegramId, pet.season_key];
   const ownershipRule = options.replacementOf
     ? `EXISTS (SELECT 1 FROM telegram_pet_identity_events d WHERE d.pet_id=? AND d.telegram_id=? AND d.event_key=? AND d.applied_at IS NULL AND json_extract(d.payload,'$.replacement_pet_id')=s.pet_id)`
-    : `s.slot_number=1 AND s.acquisition_type='free'`;
+    : options.paidOwnership
+      ? `s.slot_number IN (2,3) AND s.acquisition_type='arcade_xp'`
+      : `s.slot_number=1 AND s.acquisition_type='free'`;
   const ownershipArgs = options.replacementOf ? [options.replacementOf,telegramId,`pet:delete:${options.replacementOf}`] : [];
   return [
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_identity_events
@@ -78,15 +80,18 @@ export function buildPetOnboardingStatements(db, pet, options = {}) {
   ];
 }
 
-export async function completePetOnboarding(db, telegramId, petId) {
+export async function completePetOnboarding(db, telegramId, petId, options = {}) {
+  const ownershipRule = options.paidOwnership
+    ? `s.slot_number IN (2,3) AND s.acquisition_type='arcade_xp'`
+    : `s.slot_number=1 AND s.acquisition_type='free'`;
   const pet = await db.prepare(`SELECT s.* FROM telegram_pet_season_slots s
     JOIN telegram_pet_instances i ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id
       AND i.season_key=s.season_key AND i.slot_number=s.slot_number
     WHERE s.pet_id=? AND s.telegram_id=? AND s.status='active' AND i.status='active'
-      AND s.slot_number=1 AND s.acquisition_type='free' LIMIT 1`)
+      AND ${ownershipRule} LIMIT 1`)
     .bind(petId, telegramId).first().then(requirePetFirstReadResult);
   if (!pet) return false;
-  const statements = buildPetOnboardingStatements(db, pet);
+  const statements = buildPetOnboardingStatements(db, pet, options);
   const results = await db.batch(statements);
   if (!Array.isArray(results) || results.length !== statements.length) throw new Error('pet_state_write_unavailable');
   results.forEach(requirePetMutationResult);
@@ -97,4 +102,29 @@ export async function completePetOnboarding(db, telegramId, petId) {
     .bind(pet.pet_id, telegramId, pet.season_key).first().then(requirePetFirstReadResult);
   if (!complete) throw new Error('pet_onboarding_recovery_required');
   return Number(results[0]?.meta?.changes || 0) === 1;
+}
+
+// Older paid purchases saved the egg lifecycle but omitted its initial
+// evolution. Repair only the intact owned tuple; never charge, copy another
+// pet's state, or make an archived pet playable again. Complete pets need only
+// this small read, and concurrent repair shares the canonical onboarding claim.
+export async function repairPaidPetOnboarding(db, telegramId) {
+  const owner = String(telegramId || '').trim();
+  if (!owner) throw new Error('missing_telegram_id');
+  const rows = await db.prepare(`SELECT s.pet_id FROM telegram_pet_season_slots s
+    JOIN telegram_pet_instances i ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id
+      AND i.season_key=s.season_key AND i.slot_number=s.slot_number
+    WHERE s.telegram_id=? AND s.status='active' AND i.status='active'
+      AND s.slot_number IN (2,3) AND s.acquisition_type='arcade_xp'
+      AND (NOT EXISTS (SELECT 1 FROM telegram_pet_lifecycle_by_pet l WHERE l.pet_id=s.pet_id AND l.telegram_id=s.telegram_id)
+        OR NOT EXISTS (SELECT 1 FROM telegram_pet_memories m WHERE m.pet_id=s.pet_id AND m.telegram_id=s.telegram_id
+          AND m.season_key=s.season_key AND m.first_adoption_at IS NOT NULL)
+        OR NOT EXISTS (SELECT 1 FROM telegram_pet_evolutions_by_pet e WHERE e.pet_id=s.pet_id
+          AND e.telegram_id=s.telegram_id AND e.evolution_id='moon_egg'))
+    ORDER BY s.created_at,s.pet_id`).bind(owner).all().then(requirePetReadResult);
+  let repaired = 0;
+  for (const row of rows.results) {
+    if (await completePetOnboarding(db, owner, row.pet_id, { paidOwnership: true })) repaired += 1;
+  }
+  return repaired;
 }

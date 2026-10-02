@@ -17,14 +17,14 @@ function fixture(owner) {
   class Statement {
     constructor(query, args = []) { this.query = query; this.args = args; }
     bind(...args) { return new Statement(this.query, args); }
-    async first() { return sql.prepare(this.query).get(...this.args) || null; }
+    async first() { if (db.beforeFirst) await db.beforeFirst(this); return sql.prepare(this.query).get(...this.args) || null; }
     async all() { return { results: sql.prepare(this.query).all(...this.args) }; }
     exec() {
       if (sql.prepare(this.query).columns().length && !/\bRETURNING\b/i.test(this.query)) return { results: sql.prepare(this.query).all(...this.args), meta: { changes: 0 } };
       if (/\bRETURNING\b/i.test(this.query)) { const results = sql.prepare(this.query).all(...this.args); return { results, meta: { changes: results.length } }; }
       return { results: [], meta: { changes: Number(sql.prepare(this.query).run(...this.args).changes) } };
     }
-    async run() { if (db.beforeRun) await db.beforeRun(this); return this.exec(); }
+    async run() { if (db.beforeRun) { const result = await db.beforeRun(this); if (result) return result; } return this.exec(); }
   }
   const db = { prepare: query => new Statement(query), async batch(statements) {
     if (db.beforeBatch) await db.beforeBatch(statements);
@@ -137,12 +137,31 @@ test('a failed daily payout remains assigned to its original pet after switching
 test('daily claim acknowledgement failures recover from the awarded receipt; forged reward amounts and caps cannot inflate XP', async () => {
   const f = fixture('daily-caps'); f.completeDaily(); f.event('test_cap',today,'accepted',1190);
   f.db.beforeRun = statement => { if (statement.query.startsWith('UPDATE telegram_pet_daily_completion SET claimed_at')) throw Error('ack_offline'); };
-  await assert.rejects(f.act({ ...dailyClaim(f), rewards: { pet_xp: 999999 } }), /ack_offline/);
+  const paid = await f.act({ ...dailyClaim(f), rewards: { pet_xp: 999999 } });
+  assert.equal(paid.accepted,true);assert.equal(paid.refresh_state,true);assert.equal(paid.reward_pending,true);
+  assert.equal(paid.pet_xp_awarded,10);assert.equal(paid.rewards.moon_gold,50);
   assert.equal(f.sql.prepare("SELECT pet_xp_awarded FROM telegram_pet_events WHERE event_type='daily_completion'").get().pet_xp_awarded,10);
   f.db.beforeRun = null;
   assert.equal((await f.act(dailyClaim(f))).duplicate,true);
   assert.ok(f.sql.prepare('SELECT claimed_at FROM telegram_pet_daily_completion WHERE telegram_id=? AND utc_day=?').get(f.owner,today).claimed_at);
   await assert.rejects(awardPetReward(f.db,{ telegram_id:f.owner,pet_id:f.petId,season_key:season,source:'pet_daily_completion',idempotency_key:'forged',context:{pet_id:f.petId,season_key:season,utc_day:today},rewards:{pet_xp:99999} }),/invalid_pet_reward_context/);
+});
+
+test('resolved daily acknowledgement errors retain the paid result and exact original pet on retry', async () => {
+  const f=fixture('daily-ack-resolved');f.completeDaily();
+  f.db.beforeRun=s=>s.query.startsWith('UPDATE telegram_pet_daily_completion SET claimed_at') ? {success:false,error:'ack_offline'} : null;
+  const paid=await f.act(dailyClaim(f));
+  assert.equal(paid.accepted,true);assert.equal(paid.refresh_state,true);assert.equal(paid.reward_pending,true);
+  assert.equal(paid.pet_xp_awarded,25);assert.equal(paid.rewards.moon_gold,50);
+  assert.equal(f.sql.prepare('SELECT claimed_at FROM telegram_pet_daily_completion WHERE telegram_id=?').get(f.owner).claimed_at,null);
+  f.pet('daily-ack-egg',2,season,'egg');
+  assert.equal((await hooks.switchActivePetSeasonSlot(f.db,f.owner,'daily-ack-egg')).accepted,true);
+  f.db.beforeRun=null;
+  const recovered=await f.act(dailyClaim(f));
+  assert.equal(recovered.accepted,true);assert.equal(recovered.duplicate,true);assert.equal(recovered.reward_pending,false);
+  assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(f.petId).pet_xp,225);
+  assert.equal(f.sql.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id='daily-ack-egg'").get().pet_xp,200);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE source='pet_daily_completion'").get().n,1);
 });
 
 test('equipment upgrade completion supplies the shop goal without double-counting retries', async () => {
@@ -217,6 +236,66 @@ test('finale payout failure after victory survives an egg switch, pays the earni
   assert.equal(rows.length,1);assert.match(rows[0].text,/defeated Signal Sovereign/);
   assert.equal((await f.get('/telegram-pets/leaderboard?period=all_time')).entries[0].pet_xp,500);
   assert.equal((await f.act(finaleBody(f,'finale_retry',{revision:f.battle().revision,build:'guardian'}))).accepted,false);
+});
+
+for (const resolved of [false,true]) test(`a saved finale claim retains its payment after a ${resolved ? 'resolved' : 'thrown'} acknowledgement failure`, async () => {
+  const f=fixture('finale-ack-'+resolved);f.completeSeason();
+  assert.equal((await f.act(finaleBody(f,'finale_start',{build:'tactician'}))).accepted,true);
+  f.sql.prepare("UPDATE telegram_pet_season_finales SET status='won',defeated_at=CURRENT_TIMESTAMP WHERE pet_id=?").run(f.petId);
+  f.db.beforeRun=s=>{
+    if (!s.query.startsWith('UPDATE telegram_pet_season_finales SET claimed_at')) return;
+    if (resolved) return {success:false,error:'ack_offline'};
+    throw Error('ack_offline');
+  };
+  const paid=await f.act(finaleBody(f,'finale_claim'));
+  assert.equal(paid.accepted,true);assert.equal(paid.refresh_state,true);assert.equal(paid.reward_pending,true);
+  assert.equal(paid.pet_xp_awarded,100);assert.equal(paid.rewards.moon_gold,200);assert.equal(paid.rewards.style_tokens,5);
+  assert.equal(f.battle().claimed_at,null);
+  f.pet('finale-ack-egg-'+resolved,2,season,'egg');
+  assert.equal((await hooks.switchActivePetSeasonSlot(f.db,f.owner,'finale-ack-egg-'+resolved)).accepted,true);
+  f.db.beforeRun=null;
+  const recovered=await f.act(finaleBody(f,'finale_claim'));
+  assert.equal(recovered.accepted,true);assert.equal(recovered.duplicate,true);assert.equal(recovered.reward_pending,false);
+  assert.ok(f.battle().claimed_at);
+  assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(f.petId).pet_xp,300);
+  assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get('finale-ack-egg-'+resolved).pet_xp,200);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE source='pet_season_finale'").get().n,1);
+  assert.equal(f.sql.prepare('SELECT moon_gold,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner).moon_gold,200);
+});
+
+test('a finishing finale move stays accepted when the saved victory read fails before payout', async () => {
+  const f=fixture('finale-victory-read');f.completeSeason();
+  await f.act(finaleBody(f,'finale_start',{build:'tactician'}));
+  const state=JSON.parse(f.battle().state_json);state.boss_health=1;
+  f.sql.prepare('UPDATE telegram_pet_season_finales SET state_json=? WHERE pet_id=?').run(JSON.stringify(state),f.petId);
+  f.db.beforeFirst=s=>{
+    if (s.query.startsWith('SELECT f.* FROM telegram_pet_season_finales') && f.battle().status==='won') throw Error('saved_victory_offline');
+  };
+  const won=await f.act(finaleBody(f,'finale_step',{move:'strike',revision:0}));
+  assert.equal(won.accepted,true);assert.equal(won.reason,'finale_won');assert.equal(won.refresh_state,true);assert.equal(won.reward_pending,true);
+  assert.equal(f.battle().status,'won');assert.equal(f.battle().revision,1);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE source='pet_season_finale'").get().n,0);
+  f.db.beforeFirst=null;
+  assert.equal((await f.act(finaleBody(f,'finale_step',{move:'strike',revision:0}))).accepted,false);
+  assert.equal((await f.act(finaleBody(f,'finale_claim'))).accepted,true);
+  assert.equal((await f.act(finaleBody(f,'finale_claim'))).duplicate,true);
+  assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(f.petId).pet_xp,300);
+});
+
+test('a finishing finale move forwards an already paid reward when its acknowledgement fails', async () => {
+  const f=fixture('finale-win-ack');f.completeSeason();
+  await f.act(finaleBody(f,'finale_start',{build:'tactician'}));
+  const state=JSON.parse(f.battle().state_json);state.boss_health=1;
+  f.sql.prepare('UPDATE telegram_pet_season_finales SET state_json=? WHERE pet_id=?').run(JSON.stringify(state),f.petId);
+  f.db.beforeRun=s=>{if(s.query.startsWith('UPDATE telegram_pet_season_finales SET claimed_at'))throw Error('ack_offline');};
+  const won=await f.act(finaleBody(f,'finale_step',{move:'strike',revision:0}));
+  assert.equal(won.accepted,true);assert.equal(won.reason,'finale_won');assert.equal(won.refresh_state,true);assert.equal(won.reward_pending,true);
+  assert.equal(won.reward.accepted,true);assert.equal(won.pet_xp_awarded,100);assert.equal(won.rewards.moon_gold,200);
+  assert.equal(f.battle().status,'won');assert.equal(f.battle().claimed_at,null);
+  f.db.beforeRun=null;
+  assert.equal((await f.act(finaleBody(f,'finale_claim'))).duplicate,true);
+  assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(f.petId).pet_xp,300);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE source='pet_season_finale'").get().n,1);
 });
 
 test('migration 077 upgrades a pre-feature database and is safely re-runnable', async () => {
