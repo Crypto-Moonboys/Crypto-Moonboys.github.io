@@ -1513,6 +1513,7 @@
 
   function stateRefreshPayload(snapshot, screenKey) {
     if (screenKey === 'missions') return { mode: 'missions' };
+    if (screenKey && screenKey !== 'home') return {};
     return stateNeedsFullHydration(snapshot) ? { mode: 'core' } : {};
   }
 
@@ -1861,7 +1862,7 @@
       var affordable = unlockEnabled && Boolean(slot.affordable);
       var status = active ? 'ACTIVE' : owned ? selectable ? 'OWNED' : 'OWNED // RECOVERY REQUIRED' : 'LOCKED';
       var details = owned && !selectable ? '<div class="line muted">OWNED SPACE PRESERVED // Saved pet is unavailable. Recovery is required before play.</div>' : owned ? renderPetInstanceCard(slot)
-        : '<div class="slot-unlock-copy"><strong>COMMUNITY XP UNLOCK</strong><span>You have earned Arcade XP from community play.</span><span>CURRENT ARCADE XP // ' + number(available) + ' / ' + number(cost) + ' REQUIRED</span></div>';
+        : '<div class="slot-unlock-copy"><strong>ARCADE XP UNLOCK</strong><span>Spendable Arcade XP unlocks an additional permanent pet space.</span><span>CURRENT ARCADE XP // ' + number(available) + ' / ' + number(cost) + ' REQUIRED</span></div>';
       var control = active ? '<strong class="slot-active-marker" aria-label="Active pet">◆ ACTIVE</strong>'
         : owned ? selectable ? button('SWITCH TO SLOT ' + slotNumber, 'switch_pet_slot', { pet_id: slot.pet_id, slot_number: slotNumber }) : '<div class="line locked">PET UNAVAILABLE // ' + escapeHtml(words(slot.selection_disabled_reason || 'pet recovery required')) + '</div>'
           : unlockEnabled ? button('UNLOCK SLOT ' + slotNumber, 'buy_pet_slot', { slot_number: slotNumber }, {
@@ -3077,6 +3078,7 @@
       if (fastResponse) requestPayload.response_mode = 'result_only';
       else if (activeScreen === 'missions') requestPayload.state_mode = 'missions';
       var data = await post('/telegram-pets/app/action', requestPayload);
+      if (!data || !data.result || typeof data.result.accepted !== 'boolean') throw new Error('ACTION RESPONSE UNCONFIRMED');
       var actionAccepted = Boolean(data.result && data.result.accepted);
 
       if (fastResponse && data.state_pending === true) {
@@ -3154,9 +3156,17 @@
       if (!isHatchReveal) animateAction(action, actionAccepted, actionFamily === 'dance' ? 3600 : 2800, payload);
       startLifecycleCeremony(plannedCeremony);
     } catch (error) {
-      animateAction('blocked', false, 2800);
-      tell(error.message || 'CONNECTION FAILED', 'danger');
-      haptic('error');
+      // A lost response is not proof that the server rejected the mutation.
+      // Require an authoritative read before another click can spend again.
+      petActionRefreshRequired = true;
+      render();
+      var savedResult = data && data.result && typeof data.result.accepted === 'boolean';
+      var failureMessage = savedResult
+        ? resultMessage(data.result, stateBeforeAction, stateBeforeAction) + (data.result.accepted ? ' // SAVE CONFIRMED' : '')
+        : 'ACTION RESPONSE UNCONFIRMED. YOUR SAVE MAY HAVE UPDATED.';
+      tell(failureMessage + ' // DISPLAY SYNC FAILED. TAP REFRESH.', actionAccepted ? '' : 'danger');
+      animateAction(action, actionAccepted === true, 2800, payload);
+      haptic(actionAccepted ? 'success' : 'error');
     } finally {
       busy = false;
       if (buttonElement) buttonElement.classList.remove('is-active');

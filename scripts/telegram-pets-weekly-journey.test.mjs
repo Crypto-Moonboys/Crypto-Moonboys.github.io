@@ -1396,6 +1396,40 @@ for (const missing of ['all', 'earlier-care']) {
   assert.equal(db.database.prepare('SELECT earned_at FROM telegram_pet_weekly_crests WHERE qualification_week=1').get().earned_at, '2026-01-05T00:00:00.000Z');
 }
 
+// A live action can overtake source repair. It must not freeze a later Crest
+// date while earlier accepted events for that same ownership week are pending.
+for (const [clock, startDay, week] of [
+  ['legacy_quarter', '2026-01-01', 1],
+  ['created_at', '2026-01-03', 1],
+  ['legacy_quarter', '2026-04-01', 14],
+]) {
+  const db = createDb(), owner = `inline-backlog-${clock}-${week}`;
+  const petId = seedPlayer(db, owner);
+  db.database.prepare('UPDATE telegram_pet_season_slots SET journey_clock=?,created_at=? WHERE pet_id=?').run(clock, startDay, petId);
+  const day = offset => new Date(Date.parse(`${startDay}T00:00:00Z`) + offset * 86400000).toISOString().slice(0, 10);
+  const earlySources = [];
+  for (const [objectiveId, count, offset] of [['weekly_care', 5, 0], ['weekly_training', 3, 1]]) {
+    for (let index = 0; index < count; index++) {
+      const key = `earlier:${objectiveId}:${index}`;
+      insertSourceEvent(db, { telegramId: owner, petId, day: day(offset), eventKey: key, eventType: TEST_WEEKLY_SOURCE_TYPES[objectiveId] });
+      earlySources.push({ objectiveId, key });
+    }
+  }
+  for (const [objectiveId, count, offset] of [['weekly_run', 3, 2], ['weekly_boss_attempt', 1, 3], ['weekly_check_in', 1, 3], ['weekly_check_in', 1, 4], ['weekly_care', 5, 5], ['weekly_training', 3, 5]]) {
+    for (let index = 0; index < count; index++) await completeObjective(db, {
+      telegramId: owner, petId, qualificationWeek: week, objectiveId, day: day(offset), eventKey: `live:${objectiveId}:${offset}:${index}`,
+    });
+  }
+  assert.equal(db.database.prepare('SELECT COUNT(*) AS n FROM telegram_pet_weekly_crests WHERE pet_id=?').get(petId).n, 0,
+    'inline finalization waits for earlier evidence just like background recovery');
+  for (const { objectiveId, key } of earlySources.reverse()) await recordWeeklyJourneyObjectiveEvidence(db, {
+    telegram_id: owner, pet_id: petId, season_key: 'pet-s2026-001', qualification_week: week,
+    objective_id: objectiveId, source_event_key: key,
+  });
+  assert.equal(db.database.prepare('SELECT earned_at FROM telegram_pet_weekly_crests WHERE pet_id=?').get(petId).earned_at, `${day(4)}T00:00:00.000Z`,
+    'repair order preserves the original threshold date for creation and retained legacy clocks');
+}
+
 // Refresh alone recovers both interruptions: before the crest and after the
 // crest but before its receipt. Original periods survive rollover and switching.
 for (const failWrite of [/INSERT OR IGNORE INTO telegram_pet_weekly_crests/, /INSERT OR IGNORE INTO telegram_pet_weekly_journey_receipts/]) {

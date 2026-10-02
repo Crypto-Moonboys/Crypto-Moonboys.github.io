@@ -16,6 +16,8 @@ const { bountyRoutes } = createRequire(import.meta.url)('../js/moonpet-play-opti
 
 // Local SQLite-backed API fixture: no live player account or network mutations.
 const root = process.cwd();
+const screenshotDirectory = path.join(root, 'output', 'moonpet-browser');
+await fs.mkdir(screenshotDirectory, { recursive: true });
 const sqlite = new DatabaseSync(':memory:');
 sqlite.exec(await fs.readFile(path.join(root, 'workers/moonboys-api/schema.sql'), 'utf8'));
 sqlite.exec(await fs.readFile(path.join(root, 'workers/moonboys-api/migrations/048_telegram_pet_player_expansion.sql'), 'utf8'));
@@ -167,6 +169,9 @@ try {
     const context = await createFixtureContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
     const page = await context.newPage();
     const modes = [], errors = [];
+    let holdFullResponse = false, releaseFullResponse, fullRequestStarted;
+    const fullResponseGate = new Promise(resolve => { releaseFullResponse = resolve; });
+    const fullRequestGate = new Promise(resolve => { fullRequestStarted = resolve; });
     let releaseMissions;
     const missionsGate = new Promise(resolve => { releaseMissions = resolve; });
     page.on('pageerror', error => errors.push(error.message));
@@ -181,6 +186,11 @@ try {
         const state = body.mode === 'core'
           ? await hooks.buildPetMiniAppCoreState(db, 'browser-missions')
           : await hooks.buildPetMiniAppState(db, 'browser-missions', token, { mode: body.mode });
+        if (!body.mode && holdFullResponse) {
+          holdFullResponse = false;
+          fullRequestStarted();
+          await fullResponseGate;
+        }
         return route.fulfill({ json: { ok: true, state } });
       }
       if (url.pathname.endsWith('/telegram-pets/app/performance')) return route.fulfill({ json: { ok: true } });
@@ -195,15 +205,73 @@ try {
     for (const panel of ['missions','daily-journey','weekly-journey','daily-completion','season-finale','achievements']) {
       assert.equal(await page.locator(`[data-panel="${panel}"]`).count(), 1, `${panel} renders from Missions-only data`);
     }
-    await page.screenshot({ path: '/tmp/moonpet-missions-partial.png' });
+    await page.screenshot({ path: path.join(screenshotDirectory, 'moonpet-missions-partial.png') });
     await page.locator('[data-screen="home"]').click();
     await page.waitForSelector('[data-panel="care"]');
     await page.locator('[data-screen="missions"]').click();
     assert.deepEqual(modes, ['core', 'missions'], 'reopening Missions reuses its ready projection');
+    holdFullResponse = true;
     await page.locator('[data-screen="explore"]').click();
+    await fullRequestGate;
+    await page.waitForSelector('[data-panel="module-loading"]');
+    await page.locator('[data-utility="sync"]').click();
     await page.waitForSelector('[data-panel="moon-run"]');
-    assert.deepEqual(modes, ['core', 'missions', 'full'], 'Explore hydrates full state after Missions');
+    assert.deepEqual(modes, ['core', 'missions', 'full', 'full'], 'Refresh while Explore is loading requests its full projection, not another core snapshot');
+    releaseFullResponse();
     assert.deepEqual(errors, [], 'partial-state navigation has no runtime exceptions');
+    await context.close();
+  }
+  // Lose the response after a real server commitment. The rendered controls
+  // must lock until Refresh reads that save without submitting another action.
+  {
+    const id = 'browser-unconfirmed-action';
+    await seed(id, 'young');
+    const context = await createFixtureContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+    const page = await context.newPage(), errors = [], actions = [];
+    let faultAction = '', faultResult;
+    page.on('pageerror', error => errors.push(error.message));
+    await page.addInitScript(() => localStorage.setItem('moonpet-radio-preference', 'off'));
+    await page.route('**/*', async route => {
+      const url = new URL(route.request().url());
+      if (url.hostname === 'telegram.org') return route.fulfill({ contentType: 'text/javascript', body: "window.Telegram={WebApp:{initData:'fixture',ready(){},expand(){},onEvent(){},setHeaderColor(){},setBackgroundColor(){}}};" });
+      if (url.pathname.endsWith('/telegram-pets/app/performance')) return route.fulfill({ json: { ok: true } });
+      if (url.pathname.includes('/telegram-pets/app/')) {
+        const body = route.request().postDataJSON();
+        let result;
+        if (url.pathname.endsWith('/action')) {
+          actions.push(body.action);
+          result = await hooks.processPetMiniAppAction(db, id, { id }, body, token);
+          if (body.action === faultAction) {
+            faultResult = result;
+            return faultAction === 'feed' ? route.abort('connectionreset') : route.fulfill({ json: {} });
+          }
+        }
+        const state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(db, id) : await hooks.buildPetMiniAppState(db, id, token);
+        return route.fulfill({ json: { state, result } });
+      }
+      if (url.hostname === '127.0.0.1') return route.continue();
+      return route.abort();
+    });
+    await page.goto(`${fixtureOrigin}/moonpet-game.html`);
+    await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-panel="care"]').evaluate(node => { node.open = true; });
+    for (const action of ['feed', 'play']) {
+      faultAction = action;
+      await page.locator(`[data-action="${action}"]`).click();
+      await page.waitForFunction(() => document.querySelector('#terminal-output').textContent.includes('ACTION RESPONSE UNCONFIRMED'));
+      assert.equal(faultResult.accepted, true, 'the response disappears only after the real care receipt commits');
+      const savedXP = (await hooks.getPetProfile(db, id)).pet_xp;
+      assert.equal(await page.locator('[data-action="train"]').isDisabled(), true, 'unconfirmed save disables other mutations');
+      const sent = actions.length;
+      await page.locator('[data-action="train"]').evaluate(node => node.click());
+      assert.equal(actions.length, sent);
+      await page.locator('[data-utility="sync"]').click();
+      await page.waitForFunction(() => document.querySelector('#terminal-output').textContent.includes('LIVE SAVE REFRESHED'));
+      assert.equal(actions.length, sent, 'Refresh only reads state');
+      assert.equal((await hooks.getPetProfile(db, id)).pet_xp, savedXP, 'Refresh cannot repay the uncertain care action');
+      assert.equal(await page.locator('[data-action="train"]').isDisabled(), false, 'verified state restores eligible controls');
+    }
+    assert.deepEqual(errors, []);
     await context.close();
   }
   for (const viewport of [{ width: 390, height: 844 }, { width: 360, height: 640 }]) {
@@ -303,7 +371,7 @@ try {
         return summary && summary.querySelector('.panel-icon').textContent && summary.querySelector('.panel-description').textContent && node.getBoundingClientRect().right <= innerWidth;
       })), 'all sections have accessible summaries, icons, descriptions and fit mobile');
       assert.equal(await page.locator('#screen > details[open]').count(), section === 'home' ? 1 : 0, 'only Home Recommended starts expanded');
-      if (viewport.width === 390) await page.screenshot({ path: `/tmp/moonpet-sections-${section}.png` });
+      if (viewport.width === 390) await page.screenshot({ path: path.join(screenshotDirectory, `moonpet-sections-${section}.png`) });
     }
     await page.locator('[data-screen="home"]').click();
     const careSummary = page.locator('[data-panel="care"] > summary');
@@ -432,7 +500,7 @@ try {
       await page.reload();
       await page.waitForSelector('[data-panel="care"]');
       await page.waitForFunction(() => window.MoonpetBetaAppearance.getBackgroundArtState().mode === 'bitty_background');
-      await page.screenshot({ path: '/tmp/moonpet-bitty-background-mobile.png' });
+      await page.screenshot({ path: path.join(screenshotDirectory, 'moonpet-bitty-background-mobile.png') });
       await page.emulateMedia({ reducedMotion: 'reduce' });
     }
     for (const screen of ['missions', 'explore', 'work', 'economy', 'profile', 'home']) {
@@ -512,7 +580,7 @@ try {
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
     await page.waitForFunction(() => window.MoonpetBetaAppearance.getBotArtState()?.lastRender?.animationMode === 'victory');
     await page.locator('[data-screen="explore"]').click();
-    await page.screenshot({ path: '/tmp/moonpet-equipped-styles-' + viewport.width + '.png' });
+    await page.screenshot({ path: path.join(screenshotDirectory, 'moonpet-equipped-styles-' + viewport.width + '.png') });
     assert.deepEqual(await page.evaluate(() => window.petCanvasTextDraws), [], 'canvas has no floating pet name or text overlay even with a saved Rename Badge');
     assert.equal(sqlite.prepare('SELECT enabled FROM telegram_pet_style_loadouts WHERE pet_id=? AND cosmetic_key=?').get(stylePet.pet_id,'rename_badge').enabled, 1, 'cleanup keeps existing saved ownership intact');
     await page.locator('[data-screen="economy"]').click();
@@ -1701,7 +1769,7 @@ try {
       await page.locator(`[data-screen="${section}"]`).click();
       await page.evaluate(() => document.querySelectorAll('#screen > details.panel[open] > summary').forEach(summary => summary.click()));
       assert.equal(await page.locator('#screen > details[open]').count(), 0);
-      if (viewport.width === 390) await page.screenshot({ path: `/tmp/moonpet-sections-grown-${section}.png` });
+      if (viewport.width === 390) await page.screenshot({ path: path.join(screenshotDirectory, `moonpet-sections-grown-${section}.png`) });
     }
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
     assert.equal(overflow, false, 'mobile viewport must not overflow horizontally');

@@ -1,6 +1,7 @@
 import evolutions from './content/evolutions.json' with { type: 'json' };
 import { getPetVisibleLevel } from './progression-phase-2.js';
 import { requirePetFirstReadResult, requirePetMutationResult, requirePetReadResult } from './read-result.js';
+import { parsePetOwnershipTimestamp } from './ownership-period.js';
 
 // Lifetime completion follows the year-long final evolution. Daily and weekly
 // competitions reset independently; these retained evidence totals do not.
@@ -30,7 +31,7 @@ const integer = (value) => Math.max(0, Math.floor(Number(value) || 0));
 const allComplete = (items) => items.every((item) => item.complete);
 
 function safeAwardTimestamp(value, fallback = new Date()) {
-  const parsed = value == null ? NaN : Date.parse(value);
+  const parsed = value == null ? NaN : parsePetOwnershipTimestamp(value);
   const fallbackTime = new Date(fallback).getTime();
   return new Date(Number.isFinite(parsed) ? parsed : (Number.isFinite(fallbackTime) ? fallbackTime : Date.now())).toISOString();
 }
@@ -157,7 +158,7 @@ export async function buildPetLifecycleProgress(db, petId, seasonKey, now = new 
     const gatedEvolution = Number(next.stage) > 0;
     const minAgeDays = gatedEvolution ? integer(next.requirements.min_age_days) : 0;
     const createdAtSource = pet.season_slot_created_at || await seasonSlotCreatedAt(db, petId, seasonKey);
-    const createdAt = Date.parse(createdAtSource || '');
+    const createdAt = parsePetOwnershipTimestamp(createdAtSource);
     const currentTime = new Date(now).getTime();
     const computedAgeDays = gatedEvolution && Number.isFinite(createdAt) && Number.isFinite(currentTime)
       ? Math.max(0, Math.floor((currentTime - createdAt) / 86400000))

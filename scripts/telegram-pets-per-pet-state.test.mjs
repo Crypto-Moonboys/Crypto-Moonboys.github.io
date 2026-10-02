@@ -119,7 +119,7 @@ assert.ok(
 );
 const prepareMiniAppStateSource = worker.slice(worker.indexOf('async function preparePetMiniAppState'), worker.indexOf('const PET_SEASON_EXTRA_SLOT_COSTS'));
 const pendingWorkSource = worker.slice(worker.indexOf('async function getPetActiveSlotPendingWork'), worker.indexOf('async function ensurePetStarterSeasonSlot'));
-const switchActivePetSource = worker.slice(worker.indexOf('async function switchActivePetSeasonSlot'), worker.indexOf('async function getOrCreatePetProfile'));
+const switchActivePetSource = worker.slice(worker.indexOf('async function switchActivePetSeasonSlot'), worker.indexOf('async function adoptPetProfile'));
 assert.match(worker, /async function getPetActiveSlotPendingWork/, 'pending active-slot guard helper must exist');
 assert.doesNotMatch(prepareMiniAppStateSource, /getPetSeasonInfo|season_settlement|rollover/, 'state preparation must never replace a pet when the calendar changes');
 assert.match(switchActivePetSource, /await getPetActiveSlotPendingWork\(db, owner, options\.now \|\| new Date\(\)\)/, 'explicit pet switching must use the same pending-work guard helper');

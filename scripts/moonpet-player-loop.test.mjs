@@ -235,7 +235,10 @@ assert.equal(choices[0].key, 'bounty_claims'); assert.equal(choices[0].focus, 'b
 assert.equal(choices[1].key, 'activity');
 assert.equal(choices.find((c) => c.key === 'bounty_target').focus, 'care');
 assert.match(choices.find((c) => c.key === 'bounty_target').title, /Care Pair/);
-assert.deepEqual(options.options({ ...targeted, lifecycle: { phase: 'egg' } }).map((c) => c.key), ['incubate']);
+const replacementEgg = { ...targeted, lifecycle: { phase: 'egg' } };
+assert.deepEqual(options.options(replacementEgg).map((c) => c.key), ['bounty_claims', 'incubate']);
+assert.equal(options.recommendations(replacementEgg)[0].key, 'bounty_claims', 'Coach surfaces earned account rewards before new egg care');
+assert.ok(!options.recommendations(replacementEgg).some(c => c.key === 'bounty_target'), 'egg accounts cannot work on unfinished bounty targets');
 const finishedChoices = options.options({ ...snapshot, guidance: { economy: { bounties: [{ ...claimTarget, claimed: true }] } }, contracts: { available: true } });
 assert.ok(!finishedChoices.some((c) => ['bounty_claims', 'bounty_target'].includes(c.key)));
 assert.ok(finishedChoices.some((c) => c.key === 'contract'));
@@ -501,6 +504,43 @@ for (const accepted of [true, false]) {
   assert.doesNotMatch(actionContext.button('BUY', 'buy'), /disabled/);
 }
 
+// A transport loss can occur after the server commits. A malformed response
+// gives no authority either: never infer rejection or submit a fresh mutation.
+for (const fastResponse of [true, false]) for (const fault of ['transport', 'empty', 'malformed-result']) {
+  const calls = [], messages = [];
+  const actionContext = vm.createContext({
+    busy: false, petActionRefreshRequired: false, state: { adopted: true, pet: { pet_id: 'shown-pet' }, lifecycle: { phase: 'young' } },
+    activeScreen: 'home', fastActionStateDirty: false, sleepLatched: false,
+    crypto: { randomUUID: () => 'unconfirmed-request' }, performance: { now: () => 1 },
+    words: value => value, lifecycleCeremonyActive: () => false, shouldUseFastActionResponse: () => fastResponse,
+    actionAnimationFamily: () => 'care', animateAction: () => {}, tell: message => messages.push(message), haptic: () => {}, render: () => {},
+    beginStateRequest: () => calls.length, stateRequestGate: { isCurrent: () => true },
+    resultMessage: () => assert.fail('an unconfirmed response cannot be described as an accepted or rejected action'),
+    stateRefreshPayload: () => ({ mode: 'core' }), readSleepLatch: () => false,
+    hatchArtTransitionActive: () => false, selectBotArtForState: () => Promise.resolve(), scheduleCooldownRefresh: () => {},
+    async post(path, body) {
+      calls.push({ path, body });
+      if (path.endsWith('/action')) {
+        if (fault === 'transport') throw new Error('connection_reset_after_commit');
+        return fault === 'empty' ? {} : { result: { accepted: 'true' } };
+      }
+      return { state: { adopted: true, pet: { pet_id: 'shown-pet', pet_xp: 106 }, lifecycle: { phase: 'young' } } };
+    },
+  });
+  vm.runInContext(runActionSource + syncStateSource + setStateSnapshotSource, actionContext);
+  await actionContext.runAction(fastResponse ? 'feed' : 'trade', {});
+  assert.match(messages.at(-1), /ACTION RESPONSE UNCONFIRMED.*TAP REFRESH/);
+  assert.doesNotMatch(messages.at(-1), /SAVE CONFIRMED|Nothing was spent|Action unavailable/);
+  assert.equal(actionContext.petActionRefreshRequired, true);
+  assert.equal(actionContext.busy, false);
+  await actionContext.runAction(fastResponse ? 'feed' : 'trade', {});
+  assert.equal(calls.length, 1, 'a lost response cannot immediately replay with a new request ID');
+  await actionContext.syncState();
+  assert.deepEqual(calls.map(call => call.path), ['/telegram-pets/app/action', '/telegram-pets/app/state']);
+  assert.equal(actionContext.state.pet.pet_xp, 106);
+  assert.equal(actionContext.petActionRefreshRequired, false);
+}
+
 // Earned account bounties remain claimable after deleting the only hatched pet.
 // The shipped Economy renderer still offers no claim for unfinished bounties.
 const economySource = client.slice(client.indexOf('  function valueText('), client.indexOf('  function renderProfile('));
@@ -532,6 +572,14 @@ assert.match(bountyContext.renderEconomy().match(/<button\b[^>]*data-action="bou
 // replace the loading screen with the manual retry, without clearing action locks.
 const hydrationSource = client.split('// TEST-EXPORT: coreStateHydration:start')[1].split('// TEST-EXPORT: coreStateHydration:end')[0];
 const renderSource = client.slice(client.indexOf('  function render(options)'), client.indexOf('  // TEST-EXPORT: actionResultFeedback:start'));
+const refreshPayloadContext = vm.createContext({});
+vm.runInContext(hydrationSource, refreshPayloadContext);
+for (const moduleScreen of ['profile', 'economy', 'explore', 'work']) {
+  const payload = refreshPayloadContext.stateRefreshPayload({ hydration: { full: false, modules: ['home'] } }, moduleScreen);
+  assert.equal(payload.mode, undefined, 'Refresh must load the visible full-state module instead of returning another core snapshot');
+}
+assert.equal(refreshPayloadContext.stateRefreshPayload({ hydration: { full: false } }, 'home').mode, 'core');
+assert.equal(refreshPayloadContext.stateRefreshPayload({ hydration: { full: false } }, 'missions').mode, 'missions');
 for (const moduleScreen of ['missions', 'profile']) {
   const calls = [], timers = [];
   let failModule = true;

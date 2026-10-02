@@ -142,6 +142,7 @@ function seedPlayer(telegramId = 'identity-player', seedCalendar = true) {
   db.database.prepare('INSERT INTO telegram_users (telegram_id, xp, level) VALUES (?, 0, 1)').run(telegramId);
   db.database.prepare('INSERT INTO telegram_pet_profiles (telegram_id, pet_xp, level) VALUES (?, 14440, 20)').run(telegramId);
   setActivePetSlot(db, telegramId, seedPetSlot(db, telegramId, 1, 'free', seedCalendar));
+  db.database.prepare('UPDATE telegram_pet_instances SET pet_xp=14440,level=20 WHERE telegram_id=?').run(telegramId);
   return db;
 }
 
@@ -194,6 +195,7 @@ assert.equal(stage5Db.database.prepare(`SELECT stage FROM telegram_pet_evolution
 
 const freshDb = seedPlayer('fresh-progression', false);
 freshDb.database.prepare(`UPDATE telegram_pet_profiles SET pet_xp=640,level=5 WHERE telegram_id='fresh-progression'`).run();
+freshDb.database.prepare(`UPDATE telegram_pet_instances SET pet_xp=640,level=5 WHERE telegram_id='fresh-progression'`).run();
 freshDb.database.prepare(`UPDATE telegram_pet_season_slots SET created_at='2025-09-01T00:00:00Z' WHERE telegram_id='fresh-progression'`).run();
 freshDb.database.prepare(`INSERT INTO telegram_pet_material_balances (telegram_id,material_key,quantity) VALUES ('fresh-progression','scrap_metal',5)`).run();
 assert.equal((await evolveMoonpet(freshDb, { telegram_id: 'fresh-progression', evolution_id: 'moon_egg', event_key: 'fresh:egg' })).accepted, true);
@@ -394,6 +396,7 @@ assert.equal(evolutionDb.database.prepare("SELECT COUNT(*) AS count FROM telegra
 assert.equal(evolutionDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_identity_analytics WHERE event_type='evolution_unlock'").get().count, 3);
 
 evolutionDb.database.prepare("UPDATE telegram_pet_profiles SET pet_xp=96040,level=50 WHERE telegram_id='identity-player'").run();
+evolutionDb.database.prepare("UPDATE telegram_pet_instances SET pet_xp=96040,level=50 WHERE pet_id=?").run(identityPetId);
 evolutionDb.database.prepare("UPDATE telegram_pet_boss_victories SET victories=15 WHERE pet_id=? AND telegram_id='identity-player' AND boss_id='alley_king'").run(identityPetId);
 evolutionDb.database.prepare("UPDATE telegram_pet_material_balances SET quantity=CASE material_key WHEN 'scrap_metal' THEN 60 ELSE 40 END WHERE telegram_id='identity-player'").run();
 for (let index = 3; index <= 10; index += 1) evolutionDb.database.prepare(
@@ -428,7 +431,7 @@ const inactiveQualified = await evaluateMoonpetEvolutionRequirements(evolutionDb
   telegram_id: 'identity-player', pet_id: inactiveQualifiedPetId, season_key: TEST_SEASON_KEY,
   evolution_id: 'legendary_moon_guardian',
 });
-assert.equal(inactiveQualified.ready, true, 'an eligible inactive roster pet is evaluated using its own authority scope');
+assert.equal(inactiveQualified.ready, false, 'an inactive pet cannot borrow the selected pet level to qualify for its next evolution');
 const inactiveQualifiedLifecycle = await buildPetLifecycleProgress(evolutionDb, inactiveQualifiedPetId, TEST_SEASON_KEY);
 assert.equal(inactiveQualifiedLifecycle.evolution_ready, false,
   'inactive roster lifecycle guidance does not infer next Legendary level from migrated zero instance counters');
@@ -436,6 +439,32 @@ assert.equal(inactiveQualifiedLifecycle.requirements.pet_level.current, 45,
   'inactive roster lifecycle guidance only infers the current Moon Guardian level already earned');
 assert.equal(inactiveQualifiedLifecycle.requirements.pet_level.required, 50,
   'inactive roster lifecycle guidance keeps the next Legendary level requirement visible');
+const unqualifiedMaterials = evolutionDb.database.prepare("SELECT material_key,quantity FROM telegram_pet_material_balances WHERE telegram_id='identity-player' ORDER BY material_key").all();
+setActivePetSlot(evolutionDb, 'identity-player', inactiveQualifiedPetId);
+assert.equal((await evolveMoonpet(evolutionDb, {
+  telegram_id: 'identity-player', evolution_id: 'legendary_moon_guardian', event_key: 'inactive:stale-profile',
+})).reason, 'requirements_not_met', 'a stale high-level profile cannot authorize a low-XP instance evolution');
+assert.deepEqual(evolutionDb.database.prepare("SELECT material_key,quantity FROM telegram_pet_material_balances WHERE telegram_id='identity-player' ORDER BY material_key").all(), unqualifiedMaterials,
+  'rejected evolution preserves all materials');
+setActivePetSlot(evolutionDb, 'identity-player', identityPetId);
+evolutionDb.database.prepare('UPDATE telegram_pet_instances SET pet_xp=96040,level=50 WHERE pet_id=?').run(inactiveQualifiedPetId);
+evolutionDb.database.prepare("UPDATE telegram_pet_profiles SET pet_xp=0,level=1 WHERE telegram_id='identity-player'").run();
+assert.equal((await evaluateMoonpetEvolutionRequirements(evolutionDb, {
+  telegram_id: 'identity-player', pet_id: inactiveQualifiedPetId, season_key: TEST_SEASON_KEY,
+  evolution_id: 'legendary_moon_guardian',
+})).ready, true, 'a qualified pet uses its own saved XP even when the selected compatibility profile is an egg');
+assert.equal((await buildPetLifecycleProgress(evolutionDb, inactiveQualifiedPetId, TEST_SEASON_KEY)).evolution_ready, true,
+  'lifecycle projection and evolution SQL agree for the same owned pet');
+evolutionDb.database.exec('PRAGMA foreign_keys=OFF');
+evolutionDb.database.prepare('UPDATE telegram_pet_instances SET slot_number=3 WHERE pet_id=?').run(inactiveQualifiedPetId);
+assert.equal((await evaluateMoonpetEvolutionRequirements(evolutionDb, {
+  telegram_id: 'identity-player', pet_id: inactiveQualifiedPetId, season_key: TEST_SEASON_KEY,
+  evolution_id: 'legendary_moon_guardian',
+})).reason, 'evolution_authority_unavailable', 'a mismatched ownership tuple cannot authorize evolution');
+evolutionDb.database.prepare('UPDATE telegram_pet_instances SET slot_number=2 WHERE pet_id=?').run(inactiveQualifiedPetId);
+evolutionDb.database.exec('PRAGMA foreign_keys=ON');
+assert.equal(evolutionDb.database.prepare('PRAGMA foreign_key_check').all().length, 0);
+evolutionDb.database.prepare("UPDATE telegram_pet_profiles SET pet_xp=96040,level=50 WHERE telegram_id='identity-player'").run();
 const inactiveBlockedPetId = seedPetSlot(evolutionDb, 'identity-player', 3, 'arcade_xp', false);
 evolutionDb.database.prepare(`INSERT INTO telegram_pet_evolutions_by_pet
   (pet_id,telegram_id,evolution_id,stage,unlock_event_key,cosmetic_unlocks,achievement_unlocks,materials_consumed)
@@ -1107,6 +1136,7 @@ await recordMoonpetMemory(multiPetDb, { telegram_id: 'multi-pet-evolution', even
 assert.equal((await evolveMoonpet(multiPetDb, { telegram_id: 'multi-pet-evolution', evolution_id: 'moon_egg', event_key: 'multi-starter-egg' })).accepted, true);
 assert.equal((await evolveMoonpet(multiPetDb, { telegram_id: 'multi-pet-evolution', evolution_id: 'street_moonpet', event_key: 'multi-starter-street' })).accepted, true);
 const paidPetId = seedPetSlot(multiPetDb, 'multi-pet-evolution', 2, 'arcade_xp');
+multiPetDb.database.prepare('UPDATE telegram_pet_instances SET pet_xp=14440,level=20 WHERE pet_id=?').run(paidPetId);
 setActivePetSlot(multiPetDb, 'multi-pet-evolution', paidPetId);
 assert.equal((await getMoonpetIdentitySummary(multiPetDb, 'multi-pet-evolution')).current_stage.evolution_id, 'moon_egg',
   'switching to a paid pet must not inherit the starter evolution rows');

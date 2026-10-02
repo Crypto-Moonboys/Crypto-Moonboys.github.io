@@ -640,6 +640,54 @@ assert.deepEqual(repairedWin.relics_discovered, expectedRelics);
 assert.deepEqual(bossDb.database.prepare("SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id='boss-player'").get(), walletBeforeRepair);
 assert.equal(bossDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE source='roguelite_boss'").get().count, 1);
 
+// A paid reward may lose its following identity write. Recovery must remember
+// the original Gold, even though its public duplicate response pays zero.
+for (const kind of ['room', 'boss', 'completion', 'extraction']) {
+  const owner = `receipt-memory-${kind}`, db = seedPlayer(owner), petId = `pet-${owner}`;
+  const runId = `${owner}-run`, roomId = `${runId}:1`;
+  db.database.prepare(`INSERT INTO telegram_pet_runs (id,pet_id,telegram_id,run_id,season_key,status,current_room,max_room)
+    VALUES (?,?,?,?,'pet-s2026-001','active',1,10)`).run(runId,petId,owner,runId);
+  db.database.prepare(`INSERT INTO telegram_pet_run_rooms (room_id,pet_id,run_id,telegram_id,room_number,room_type,status)
+    VALUES (?,?,?,?,1,?,'resolved')`).run(roomId,petId,runId,owner,kind === 'boss' ? 'boss' : 'loot');
+  const run = db.database.prepare('SELECT * FROM telegram_pet_runs WHERE run_id=?').get(runId);
+  const room = { room_id:roomId,room:1,room_type:kind === 'boss' ? 'boss' : 'loot',status:'resolved' };
+  const claim = () => kind === 'room' ? rewardPetRunRoom(db,run,room,{moon_gold:41})
+    : kind === 'boss' ? rewardPetRogueliteBoss(db,run,'alley_king',room)
+      : kind === 'completion' ? completePetRun(db,run,{moon_gold:43}) : extractPetRogueliteRun(db,run,{moon_gold:47});
+  // Existing receipts retain their actual payout when the current boss catalog
+  // has since changed to materials-only rewards.
+  if (kind === 'boss') await awardPetReward(db,{telegram_id:owner,pet_id:petId,season_key:run.season_key,
+    source:'roguelite_boss',idempotency_key:`${roomId}:alley_king`,event_key:`pet_reward:roguelite_boss:${roomId}:alley_king`,event_type:'roguelite_boss',
+    rewards:{moon_gold:53},context:{run_id:runId,room_id:roomId,boss_id:'alley_king'}});
+  db.beforeFirst = statement => {
+    if (statement.sql.includes('FROM telegram_pet_season_slots')
+      && db.database.prepare("SELECT 1 FROM telegram_pet_reward_claims WHERE telegram_id=? AND source LIKE 'roguelite_%' AND status='awarded'").get(owner)) {
+      throw Error('paid_identity_unavailable');
+    }
+  };
+  await assert.rejects(claim(),/paid_identity_unavailable/);
+  const receipt = JSON.parse(db.database.prepare("SELECT applied_rewards FROM telegram_pet_reward_claims WHERE telegram_id=? AND source LIKE 'roguelite_%'").get(owner).applied_rewards);
+  assert.ok(receipt.moon_gold > 0,`${kind}: ${JSON.stringify(receipt)}`);
+  const wallet = db.database.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(owner);
+  seedAdditionalPet(db,owner,`${petId}:replacement`);
+  db.database.prepare('UPDATE telegram_pet_active_slots SET pet_id=? WHERE telegram_id=?').run(`${petId}:replacement`,owner);
+  db.database.prepare("UPDATE telegram_pet_instances SET status='archived' WHERE pet_id=?").run(petId);
+  db.database.prepare("UPDATE telegram_pet_season_slots SET status='archived' WHERE pet_id=?").run(petId);
+  db.beforeFirst = null;
+  const retry = await claim(), paid = retry.reward || retry;
+  assert.equal(paid.duplicate,true); assert.equal(paid.rewards.moon_gold,0);
+  assert.equal(db.database.prepare('SELECT biggest_reward_amount FROM telegram_pet_memories WHERE pet_id=?').get(petId)?.biggest_reward_amount,receipt.moon_gold,`${kind} repair preserves receipt Gold in memory`);
+  assert.deepEqual(db.database.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(owner),wallet);
+  assert.equal(db.database.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source LIKE 'roguelite_%'").get(owner).n,1);
+  assert.equal(db.database.prepare('SELECT COUNT(*) n FROM telegram_pet_memories WHERE pet_id=?').get(`${petId}:replacement`).n,0,'recovery cannot move source-backed memory onto the replacement egg');
+  for (const malformed of [false,true]) {
+    db.beforeFirst=statement=>statement.sql.startsWith('SELECT applied_rewards FROM telegram_pet_reward_claims')
+      ? malformed ? {applied_rewards:'{}'} : {success:false,error:'reward_receipt_offline'} : undefined;
+    await assert.rejects(claim(),malformed ? /pet_reward_receipt_unavailable/ : /pet_state_read_unavailable/);
+    assert.deepEqual(db.database.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(owner),wallet);
+  }
+}
+
 const bossRetryDb = seedPlayer('boss-retry-player');
 bossRetryDb.database.prepare(`INSERT INTO telegram_pet_runs (id, telegram_id, run_id, season_key, status)
   VALUES ('boss-retry-row', 'boss-retry-player', ?, 'pet-s2026-001', 'active')`).run(bossRunId);

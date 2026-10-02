@@ -61,11 +61,28 @@ awards uses the earning day's calendar quarter, including delayed reserved
 rewards. Existing competition rows are not rewritten.
 Standard Run endings use their saved terminal timestamp for competition XP
 even when payout recovery happens in a later quarter; daily/weekly settlement
-windows keep their existing behavior. Profile insertion, creation-clock
+windows keep their existing behavior. Contract bonuses use their saved completion
+day for competition XP while retaining their existing settlement-day cap and
+daily/weekly ranking rules. Profile insertion, creation-clock
 ownership, the pet instance and all onboarding effects commit together. Creation
 and repair share a canonical per-pet onboarding claim; its lifecycle, first-adoption memory, egg evolution and analytics commit in
 one D1 batch. Concurrent requests cannot duplicate these effects. A failed batch
 rolls back the claim and retries safely without spending XP or overwriting pet stats.
+
+After onboarding commits, a failed display refresh preserves the accepted adoption
+and requests a fresh read. A missing or malformed action response likewise blocks
+further Mini App mutations until Refresh reads the authoritative save. Refreshing
+Missions requests its Missions projection; Explore, Work, Economy and Profile
+request the full projection so they cannot become stuck with HOME-only data.
+Earned account bounties remain visible in Coach and Play Now after pet replacement.
+
+Evolution checks use the requested pet instance's XP in both the preview and the
+unlock transaction, never the selected pet's compatibility profile. Ownership age
+and earned-evidence timestamps use UTC consistently. Inline Weekly Crest awards
+wait for earlier accepted sources in the same ownership week to finish evidence
+recovery before freezing their original qualification date; existing Crests remain
+unchanged. Retried run history records the exact saved reward receipt without
+granting its assets again.
 
 ## Long-term evolution and Kaiju materials
 

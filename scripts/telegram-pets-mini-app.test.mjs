@@ -1398,7 +1398,7 @@ assert.match(worker, /const \[journeySummary, hydratedKaiju, seasonFinales\] = a
 assert.match(worker, /path === '\/telegram-pets\/app\/state'.*request\.method === 'POST'/s);
 assert.match(worker, /path === '\/telegram-pets\/app\/action'.*request\.method === 'POST'/s);
 assert.match(worker, /verifyTelegramMiniAppInitData\(body\.init_data/);
-assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20261002-premerge-audit-v2`/);
+assert.match(worker, /const MOONPET_MINI_APP_URL = `\$\{SITE_URL\}\/moonpet-game\.html\?v=20261002-direction-fixes-v1`/);
 assert.match(worker, /const TELEGRAM_GAMES_MENU_URL = `\$\{SITE_URL\}\/games\/telegram\/\?v=20260903-games-shell-v8`/,
   'default Telegram games menu must point at the current shell release');
 assert.match(worker, /const TELEGRAM_GAMES_MENU_TEXT = 'Games'/);
@@ -1497,11 +1497,11 @@ statusFrames.shift()();
 assert.equal(testStatusOutput.dataset.tone, 'danger');
 assert.equal(testStatusClasses.has('is-scrolling'), true, 'overflowing updates must activate the scrolling text track');
 assert.match(testStatusProperties['--status-scroll-duration'], /s$/, 'overflowing updates must receive a readable duration');
-assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261002-premerge-audit-v2/);
+assert.match(html, /\/css\/moonpet-mini-app\.css\?v=20261002-direction-fixes-v1/);
 assert.doesNotMatch(html, /moonpet-art-resolver\.js/, 'the game must not load the retired static background resolver');
 assert.match(html, /\/js\/moonpet-bot-art-loader\.js\?v=20260926-front-actions-v1/);
 assert.match(html, /\/js\/moonpet-bot-art-renderer\.js\?v=20260926-front-actions-v1/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261002-premerge-audit-v2/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261002-direction-fixes-v1/);
 assert.match(html, /role="button" aria-label="Interact with your animated Moonpet"/);
 assert.match(client, /data-utility="guide">HOW TO PLAY/);
 const guideMarkupSource = extractTestExport(client, 'guideMarkup');
@@ -1792,7 +1792,7 @@ for (const sdkInitData of [expired, tampered, 'auth_date=invalid&hash=' + 'a'.re
   assert.equal(entry.requests.length, 3, 'Read-only startup state requests retain their transient retry policy');
 }
 assert.match(html, /\/js\/api-config\.js\?v=20260813-first-party-api/);
-assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261002-premerge-audit-v2/);
+assert.match(html, /\/js\/moonpet-mini-app\.js\?v=20261002-direction-fixes-v1/);
 // Season slot UI: timing, account/pet separation, unlock affordance, switching, and rejection copy.
 assert.match(client, /function renderSeasonSlots\(\)/, 'Mini App must render a focused season-slot summary');
 assert.match(client, /function render\(options\) \{\s*var editableState = options && options\.discardCallsignDraft \? null : captureEditableState\(\);[\s\S]*restoreEditableState\(editableState\);/, 'render must preserve only drafts that were not explicitly discarded');
@@ -1830,7 +1830,7 @@ assert.match(client, /data-season-slot=/, 'each rendered slot must expose its sl
 assert.match(client, /unlockEnabled \? button\('UNLOCK SLOT ' \+ slotNumber, 'buy_pet_slot', \{ slot_number: slotNumber \}/, 'unlock controls must use the existing authenticated slot action');
 assert.match(client, /disabled: !affordable/, 'unaffordable slot unlocks must be disabled');
 assert.match(client, /NEED ' \+ number\(Math\.max\(0, cost - available\)\) \+ ' MORE ARCADE XP'/, 'disabled unlocks must explain the XP shortfall');
-assert.match(client, /You have earned Arcade XP from community play/, 'locked slots must explain the earned community progression model');
+assert.match(client, /Spendable Arcade XP unlocks an additional permanent pet space/, 'locked spaces must distinguish spendable Arcade XP from the lifetime entry requirement');
 assert.doesNotMatch(client, /BUY SLOT|PURCHASE OFFLINE/, 'player-facing slot UI must not use payment language');
 assert.match(client, /owned \? selectable \? button\('SWITCH TO SLOT ' \+ slotNumber, 'switch_pet_slot', \{ pet_id: slot\.pet_id, slot_number: slotNumber \}\)/, 'only selectable owned inactive slots dispatch switch_pet_slot');
 assert.match(client, /active \? '<strong class="slot-active-marker"/, 'active slots must show a marker instead of a switch control');
@@ -2234,7 +2234,7 @@ assert.match(worker, /dailyReservation \? dailyReservation\.current_room : Numbe
 assert.match(worker, /if \(!pool\.length\) pool = rooms/);
 assert.match(client, /'run_depth'/);
 assert.match(html, /20260926-front-actions-v1/);
-assert.match(worker, /20261002-premerge-audit-v2/);
+assert.match(worker, /20261002-direction-fixes-v1/);
 assert.match(client, /function scoreMotif\(\)/, 'audio must include authored screen motifs');
 assert.match(client, /function syncMoonpetScore\(\)/, 'authored score must follow audio and radio state');
 assert.match(client, /renderQuality = reducedMotion/, 'canvas quality must start from device capability');

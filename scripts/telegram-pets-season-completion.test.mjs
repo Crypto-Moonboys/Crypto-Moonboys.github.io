@@ -54,6 +54,30 @@ sqlite.exec(await readFile(new URL('../workers/moonboys-api/migrations/085_perma
 sqlite.exec(await readFile(new URL('../workers/moonboys-api/migrations/087_pet_journey_creation_clock.sql', import.meta.url), 'utf8'));
 const db = new D1(sqlite);
 
+// D1 timestamps have no timezone suffix but are UTC. Lifetime cards, evolution
+// gates and recovered evidence must agree even on non-UTC runtimes.
+const originalTimezone = process.env.TZ;
+try {
+  process.env.TZ = 'Europe/London';
+  sqlite.prepare("UPDATE telegram_pet_season_slots SET created_at='2026-08-01 00:00:00' WHERE pet_id='production-pet-b'").run();
+  const almostSevenDays = await buildPetLifecycleProgress(db, 'production-pet-b', 'pet-s2026-001', '2026-08-07T23:30:00Z');
+  assert.equal(almostSevenDays.requirements.min_age_days.current, 6, 'local summer time cannot unlock a lifetime gate early');
+  assert.equal(almostSevenDays.requirements.min_age_days.complete, false);
+  const atSevenDays = await buildPetLifecycleProgress(db, 'production-pet-b', 'pet-s2026-001', '2026-08-08T00:00:00Z');
+  assert.equal(atSevenDays.requirements.min_age_days.current, 7);
+  const utcMark = await awardPetGrowthMark(db, {
+    pet_id: 'production-pet-b', telegram_id: 'production-owner', season_key: 'pet-s2026-001',
+    milestone: 'care', evidence_key: 'care:utc-day-boundary', earned_at: '2026-08-01 00:00:00',
+  });
+  assert.equal(sqlite.prepare('SELECT earned_day FROM telegram_pet_growth_marks WHERE mark_id=?').get(utcMark.mark_id).earned_day, '2026-08-01',
+    'recovered D1 evidence stays on its original UTC day');
+  sqlite.prepare('DELETE FROM telegram_pet_growth_marks WHERE mark_id=?').run(utcMark.mark_id);
+  sqlite.prepare("UPDATE telegram_pet_season_slots SET created_at='2026-01-01' WHERE pet_id='production-pet-b'").run();
+} finally {
+  if (originalTimezone == null) delete process.env.TZ;
+  else process.env.TZ = originalTimezone;
+}
+
 assert.equal(getPetSeasonWeek({ start_at: '2026-01-01T00:00:00Z' }, new Date('2026-01-08T00:00:00Z')), 2);
 assert.equal(await isPetLegendary(db, 'pet-a', 's1'), false, 'level alone is never Legendary authority');
 for (const [stage, evolution] of ['moon_egg', 'street_moonpet', 'cyber_moonpet', 'elite_moonpet', 'moon_guardian', 'legendary_moon_guardian'].entries()) {

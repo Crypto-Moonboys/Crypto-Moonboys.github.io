@@ -32,7 +32,9 @@ sql.exec('PRAGMA foreign_keys=ON');
 const read=path=>readFile(new URL('../workers/moonboys-api/'+path,import.meta.url),'utf8');
 // Rehearse the old deployed CHECK constraints, then migrate real saved rows.
 sql.exec((await read('schema.sql')).replaceAll('qualification_week >= 1','qualification_week BETWEEN 1 AND 13')
-  .replace("  journey_clock TEXT NOT NULL DEFAULT 'legacy_quarter' CHECK (journey_clock IN ('legacy_quarter', 'created_at')),\n", ''));
+  .replace(/^  journey_clock TEXT NOT NULL DEFAULT 'legacy_quarter' CHECK \(journey_clock IN \('legacy_quarter', 'created_at'\)\),\r?\n/m, ''));
+assert.equal(sql.prepare('PRAGMA table_info(telegram_pet_season_slots)').all().some(column => column.name === 'journey_clock'), false,
+  'the deployed-schema fixture must predate migration 087 on both LF and CRLF checkouts');
 sql.exec(await read('migrations/058_telegram_pet_season_completion.sql'));
 sql.exec(await read('migrations/061_moonpet_season_economy_calibration.sql'));
 const db=new D1(sql), now=new Date('2026-10-01T12:00:00Z');

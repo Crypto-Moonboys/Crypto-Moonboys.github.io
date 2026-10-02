@@ -5147,7 +5147,7 @@ async function deletePetSlot(db, telegramId, body) {
   return preserveCommittedPetActionResult(result, async () => ({ ...result, season_slots: await buildPetSeasonSlotSummary(db, telegramId) }));
 }
 
-async function getOrCreatePetProfile(db, telegramId, options = {}) {
+async function adoptPetProfile(db, telegramId, options = {}) {
   let pet = await getPetProfile(db, telegramId);
   // Profile, ownership and onboarding become visible in one transaction.
   // Existing-owner repair shares the same canonical claim and effect statements.
@@ -5180,9 +5180,12 @@ async function getOrCreatePetProfile(db, telegramId, options = {}) {
     results.forEach(requirePetMutationResult);
     const created = results[0];
     if (Number(created?.meta?.changes || 0) !== 1) return null;
-    pet = await getPetProfile(db, telegramId);
+    const committed = { accepted: true, reason: 'adopted', xp_awarded: 0, pet_xp_awarded: 0 };
+    return preserveCommittedPetActionResult(committed, async () => ({
+      ...committed, pet: applyPetDecay(await getPetProfile(db, telegramId)),
+    }));
   }
-  return applyPetDecay(pet);
+  return null;
 }
 
 function updatePetStreakForAction(pet, dayKey) {
@@ -6743,12 +6746,12 @@ async function processPetAction(db, telegramId, action, options = {}) {
     if (!entryRequirement.eligible) {
       return { accepted: false, reason: 'arcade_xp_entry_required', entry_requirement: entryRequirement, xp_awarded: 0, pet_xp_awarded: 0 };
     }
-    const pet = await getOrCreatePetProfile(db, telegramId, options);
-    if (!pet) {
+    const result = await adoptPetProfile(db, telegramId, options);
+    if (!result) {
       const currentEntry = await getPetEntryRequirement(db, telegramId);
       return { accepted: false, reason: currentEntry.existing_owner ? 'pet_already_adopted' : 'arcade_xp_entry_required', entry_requirement: currentEntry, xp_awarded: 0, pet_xp_awarded: 0 };
     }
-    return { accepted: true, reason: 'adopted', xp_awarded: 0, pet_xp_awarded: 0, pet };
+    return result;
   }
 
   let pet = await getPetProfile(db, telegramId);
@@ -9828,7 +9831,7 @@ function buildPetMiniAppCooldownSummary({ journeySummary = null, guidance = null
   for (const entry of actionCooldowns || []) {
     addPetCooldownEntry(entries, `action:${entry.action}`, `${String(entry.action).replaceAll('_', ' ')} cooldown`, entry.cooldown, 'action');
   }
-  addPetCooldownEntry(entries, 'season_end', 'Moonpet season ends', normalizePetCooldownWindow(seasonSlots?.season?.end_at, now), 'seasonal');
+  addPetCooldownEntry(entries, 'season_end', 'Competition season ends', normalizePetCooldownWindow(seasonSlots?.season?.end_at, now), 'seasonal');
   entries.sort((left, right) => Date.parse(left.expires_at) - Date.parse(right.expires_at) || left.key.localeCompare(right.key));
   return {
     server_time: (now instanceof Date ? now : new Date(now)).toISOString(),
@@ -14486,7 +14489,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20261002-premerge-audit-v2`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20261002-direction-fixes-v1`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',

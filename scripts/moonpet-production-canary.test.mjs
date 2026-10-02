@@ -4,6 +4,7 @@ import { spawn } from 'node:child_process';
 import { createServer } from 'node:http';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 
 const SCRIPT = new URL('./moonpet-production-canary.mjs', import.meta.url);
 const WORKFLOW = readFileSync(new URL('../.github/workflows/moonpet-production-canary.yml', import.meta.url), 'utf8');
@@ -13,7 +14,7 @@ const TELEGRAM_ID = '9007199254740993';
 
 function runCanary(env = {}) {
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, [SCRIPT.pathname], {
+    const child = spawn(process.execPath, [fileURLToPath(SCRIPT)], {
       env: { ...process.env, MOONPET_EXPECTED_COMMIT: COMMIT, MOONPET_CANARY_BOT_TOKEN: TOKEN,
         MOONPET_CANARY_TELEGRAM_ID: TELEGRAM_ID, ...env },
       stdio: ['ignore', 'pipe', 'pipe'],

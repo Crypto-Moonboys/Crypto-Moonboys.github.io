@@ -127,13 +127,13 @@ db.exec(`
     PRIMARY KEY (telegram_id, relic_id)
   );
   CREATE TABLE telegram_pet_season_slots (pet_id TEXT PRIMARY KEY,telegram_id TEXT,season_key TEXT,slot_number INTEGER,acquisition_type TEXT,status TEXT,created_at TEXT,updated_at TEXT);
-  CREATE TABLE telegram_pet_instances (pet_id TEXT PRIMARY KEY,telegram_id TEXT,season_key TEXT,slot_number INTEGER,status TEXT);
+  CREATE TABLE telegram_pet_instances (pet_id TEXT PRIMARY KEY,telegram_id TEXT,season_key TEXT,slot_number INTEGER,status TEXT,pet_xp INTEGER DEFAULT 0);
   CREATE TABLE telegram_pet_active_slots (telegram_id TEXT PRIMARY KEY,pet_id TEXT,season_key TEXT);
   CREATE TABLE telegram_pet_evolutions_by_pet (pet_id TEXT,telegram_id TEXT,evolution_id TEXT,stage INTEGER);
   CREATE TABLE telegram_pet_growth_marks (pet_id TEXT,telegram_id TEXT,season_key TEXT,earned_day TEXT);
   CREATE TABLE telegram_pet_weekly_crests (pet_id TEXT,telegram_id TEXT,season_key TEXT,qualification_week INTEGER);
   INSERT INTO telegram_pet_season_slots VALUES ('pet-1','player-1','s1',1,'free','active','2026-01-01',CURRENT_TIMESTAMP);
-  INSERT INTO telegram_pet_instances VALUES ('pet-1','player-1','s1',1,'active');
+  INSERT INTO telegram_pet_instances VALUES ('pet-1','player-1','s1',1,'active',4200);
   INSERT INTO telegram_pet_active_slots VALUES ('player-1','pet-1','s1');
   INSERT INTO telegram_pet_evolutions_by_pet VALUES ('pet-1','player-1','moon_egg',0);
   INSERT INTO telegram_pet_growth_marks VALUES

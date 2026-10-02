@@ -77,7 +77,7 @@ assert.ok(!/geolocation|getCurrentPosition|watchPosition/i.test(html), 'Games la
 assert.ok(!/dead-run[^"']*(?:bootstrap|runtime|logic)\.js/i.test(html), 'Games launcher must not start Dead Run logic');
 
 const launcherDestinations = [
-  ['Moonpet OS', '/moonpet-game.html?v=20261002-premerge-audit-v2'],
+  ['Moonpet OS', '/moonpet-game.html?v=20261002-direction-fixes-v1'],
   ['Dead Run', `/games/dead-run/?v=${deadRunRelease}`],
   ['Battle Chamber', `/community.html?v=${launcherRelease}`],
   ['NBG London Runner', `/games/nbg-london/?v=${launcherRelease}`],

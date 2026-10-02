@@ -698,11 +698,33 @@ try {
   const oldEvent = sqlite.prepare("SELECT season_key,pet_id FROM telegram_pet_events WHERE telegram_id=? AND event_type='contract_complete'").get(oldPet.telegram_id);
   assert.equal(oldEvent.season_key,oldPet.season_key); assert.equal(oldEvent.pet_id,oldPet.pet_id);
   assert.equal(sqlite.prepare('SELECT reward_day FROM telegram_pet_contracts WHERE contract_id=?').get(oldBonus.contract_id).reward_day,oldTime.toISOString().slice(0,10));
+  assert.equal(sqlite.prepare('SELECT season_xp FROM telegram_pet_season_state WHERE telegram_id=? AND season_key=?').get(oldPet.telegram_id,hooks.getPetSeasonInfo(oldTime).key)?.season_xp,20,'delayed contract XP stays in its reserved earning quarter');
+  assert.equal(sqlite.prepare('SELECT season_xp FROM telegram_pet_season_state WHERE telegram_id=? AND season_key=?').get(oldPet.telegram_id,hooks.getPetSeasonInfo(now).key)?.season_xp || 0,0,'claiming an older contract cannot increase the current competition');
   sqlite.prepare('UPDATE telegram_pet_contracts SET reward_settled=0,xp_awarded=0 WHERE contract_id=?').run(oldBonus.contract_id);
   assert.equal((await oldRequest()).pet_xp_awarded,0,'post-payment receipt recovery never pays twice');
   assert.equal(sqlite.prepare('SELECT xp_awarded FROM telegram_pet_contracts WHERE contract_id=?').get(oldBonus.contract_id).xp_awarded,20);
   assert.deepEqual((await board(newPet)).pending_rewards,[]);
   assert.equal((await start(oldPet,'escort',oldTime)).accepted,false);
+
+  // Only competition attribution follows the saved bonus day. Settlement-day
+  // daily/weekly receipts and the existing account-wide daily cap stay intact.
+  const delayedPet = await seed('contract-delayed-cap');
+  await start(delayedPet,'escort',oldTime);
+  const delayedBonus = await complete(delayedPet,async () => { throw Error('delivery offline'); },oldTime);
+  for (const [label,date,xp] of [['earning',oldTime,1200],['settlement',now,1190]]) {
+    sqlite.prepare(`INSERT INTO telegram_pet_events (id,pet_id,telegram_id,event_type,event_key,pet_xp_awarded,season_key,day_key,week_key,status)
+      VALUES (?,?,?,'cap_fixture',?,?,?,?,?,'accepted')`).run(`delayed-${label}`,delayedPet.pet_id,delayedPet.telegram_id,`delayed-${label}`,xp,delayedPet.season_key,date.toISOString().slice(0,10),'fixture');
+  }
+  const forgedDay = await awardPetReward(db,{telegram_id:delayedPet.telegram_id,pet_id:delayedPet.pet_id,season_key:delayedPet.season_key,
+    source:'pet_contract',idempotency_key:delayedBonus.contract_id,context:{contract_id:delayedBonus.contract_id,pet_id:delayedPet.pet_id,season_key:delayedPet.season_key,competition_earned_at:now.toISOString()}});
+  assert.equal(forgedDay.accepted,false,'the transaction rejects a competition timestamp that differs from its contract reservation');
+  const delayedClaim=await act(delayedPet,{action:'contract_claim',contract_id:delayedBonus.contract_id});
+  assert.equal(delayedClaim.pet_xp_awarded,10,'claim uses the remaining settlement-day account allowance');
+  const delayedEvent=sqlite.prepare("SELECT day_key,week_key FROM telegram_pet_events WHERE telegram_id=? AND event_type='contract_complete'").get(delayedPet.telegram_id);
+  assert.equal(delayedEvent.day_key,now.toISOString().slice(0,10));
+  assert.equal(delayedEvent.week_key,sqlite.prepare("SELECT week_key FROM telegram_pet_events WHERE telegram_id=? AND event_type='contract_complete' AND day_key=?").get(a.telegram_id,now.toISOString().slice(0,10)).week_key);
+  assert.equal(sqlite.prepare('SELECT season_xp FROM telegram_pet_season_state WHERE telegram_id=? AND season_key=?').get(delayedPet.telegram_id,hooks.getPetSeasonInfo(oldTime).key)?.season_xp,10);
+  assert.equal((await act(delayedPet,{action:'contract_claim',contract_id:delayedBonus.contract_id})).pet_xp_awarded,0,'recovery grants no extra assets');
 
   // Slot switches preserve the original pet record and shared daily bonus budget.
   const altId = a.pet_id + ':alternate';

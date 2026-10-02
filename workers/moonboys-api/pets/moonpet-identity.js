@@ -450,8 +450,14 @@ export async function recordMoonpetBiggestReward(db, request = {}) {
 
 function evolutionRequirementSql(definition, telegramId, petId, seasonKey) {
   const requirements = definition.requirements;
-  const clauses = [`EXISTS (SELECT 1 FROM telegram_pet_profiles p WHERE p.telegram_id = ? AND ${getPetVisibleLevelSql('p.pet_xp')} >= ?)`];
-  const args = [telegramId, requirements.pet_level];
+  // Evolution belongs to this lifetime pet. The compatibility profile may
+  // represent another selected pet, or lag a just-committed XP reward.
+  const clauses = [`EXISTS (SELECT 1 FROM telegram_pet_instances i
+    JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id
+      AND s.season_key=i.season_key AND s.slot_number=i.slot_number
+    WHERE i.pet_id=? AND i.telegram_id=? AND i.season_key=?
+      AND i.status='active' AND s.status='active' AND ${getPetVisibleLevelSql('i.pet_xp')} >= ?)`];
+  const args = [petId, telegramId, seasonKey, requirements.pet_level];
   if (definition.stage > 0) {
     const previous = evolutions[definition.stage - 1];
     clauses.push(`EXISTS (SELECT 1 FROM telegram_pet_evolutions_by_pet
@@ -511,7 +517,7 @@ export async function evaluateMoonpetEvolutionRequirements(db, request = {}) {
     scope = requestedPetId && requestedSeasonKey
       ? await db.prepare(`SELECT s.pet_id, s.season_key, s.slot_number, s.acquisition_type
           FROM telegram_pet_season_slots s JOIN telegram_pet_instances i
-            ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id AND i.season_key=s.season_key
+            ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id AND i.season_key=s.season_key AND i.slot_number=s.slot_number
           WHERE s.pet_id=? AND s.telegram_id=? AND s.season_key=? AND s.status='active' AND i.status='active' LIMIT 1`)
         .bind(requestedPetId, telegramId, requestedSeasonKey).first()
       : await readActivePetIdentityScope(db, telegramId);

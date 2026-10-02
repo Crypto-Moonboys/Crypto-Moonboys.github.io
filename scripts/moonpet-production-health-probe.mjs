@@ -2,6 +2,7 @@
 
 import { spawn } from 'node:child_process';
 import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
 const COMMIT_RE = /^[0-9a-f]{40}$/i;
 const BASE_URL = String(process.env.MOONPET_CANARY_BASE_URL || 'https://moonboys-api.sercullen.workers.dev').replace(/\/$/, '');
@@ -46,7 +47,7 @@ function assertCommitOnMain(commit) {
 
 function runCanary(commit) {
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, [CANARY_SCRIPT.pathname], {
+    const child = spawn(process.execPath, [fileURLToPath(CANARY_SCRIPT)], {
       env: {
         ...process.env,
         MOONPET_EXPECTED_COMMIT: commit,
