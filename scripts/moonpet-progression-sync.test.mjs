@@ -630,7 +630,8 @@ test('historical extraction without a saved runtime identity cannot mint a new a
   f.sql.prepare("UPDATE telegram_pet_specialist_events SET event_key='runtime:api:old-client-key' WHERE action='run_extract'").run();
   assert.equal((await api(f,{action:'run_extract',run_id:'legacy-extract',event_key:'new-client-key'})).accepted,true);
   assert.equal(progress(f).adventure_xp,24);
-  await deployedWorker.fetch(new Request('https://moonboys-api.test/telegram/webhook',{method:'POST',headers:{'content-type':'application/json','X-Telegram-Bot-Api-Secret-Token':'fixture-webhook-secret'},body:JSON.stringify({callback_query:{id:'legacy-retry',from:{id:f.owner},data:'pet:run:legacy-extract:extract'}})}),{DB:f.db,TELEGRAM_WEBHOOK_SECRET:'fixture-webhook-secret'});
+  const response = await deployedWorker.fetch(new Request('https://moonboys-api.test/telegram/webhook',{method:'POST',headers:{'content-type':'application/json','X-Telegram-Bot-Api-Secret-Token':'fixture-webhook-token_0123456789'},body:JSON.stringify({callback_query:{id:'legacy-retry',from:{id:f.owner},data:'pet:run:legacy-extract:extract'}})}),{DB:f.db,TELEGRAM_WEBHOOK_SECRET:'fixture-webhook-token_0123456789'});
+  assert.equal(response.status,200,'the authenticated callback must reach reward recovery');
   assert.equal(progress(f).adventure_xp,24,'a callback cannot reinterpret an old API award as new progress');
 });
 
@@ -1362,10 +1363,10 @@ for(const surface of ['API','Telegram']) for(const action of ['feed','work']) {
     const originalFetch=globalThis.fetch;
     const invoke=surface==='API'?async()=>assert.equal((await api(f,body)).accepted,true):async()=>{
       const response=await worker.fetch(new Request('https://moonboys-api.test/telegram/webhook',{
-        method:'POST',headers:{'content-type':'application/json','X-Telegram-Bot-Api-Secret-Token':'fixture-webhook-secret'},body:JSON.stringify({message:{message_id:1,
+        method:'POST',headers:{'content-type':'application/json','X-Telegram-Bot-Api-Secret-Token':'fixture-webhook-token_0123456789'},body:JSON.stringify({message:{message_id:1,
           chat:{id:Number(f.owner),type:'private'},from:{id:Number(f.owner),first_name:'Test player'},
           text:action==='feed'?'/feed':'/petwork street_artist'}})
-      }),{DB:f.db,TELEGRAM_BOT_TOKEN:'fixture-only-token',TELEGRAM_WEBHOOK_SECRET:'fixture-webhook-secret',PET_MINI_APP_ENABLED:'false'});
+      }),{DB:f.db,TELEGRAM_BOT_TOKEN:'fixture-only-token',TELEGRAM_WEBHOOK_SECRET:'fixture-webhook-token_0123456789',PET_MINI_APP_ENABLED:'false'});
       assert.equal(response.status,200);
     };
     globalThis.fetch=async url=>{

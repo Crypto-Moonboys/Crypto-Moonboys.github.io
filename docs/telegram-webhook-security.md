@@ -2,8 +2,9 @@
 
 `POST /telegram/webhook` requires Telegram's
 `X-Telegram-Bot-Api-Secret-Token` header, matching the Cloudflare Worker secret
-`TELEGRAM_WEBHOOK_SECRET`. This is a new dedicated random secret, separate from
-`TELEGRAM_BOT_TOKEN`, `ADMIN_SECRET` and the pet-only bot API secret.
+`TELEGRAM_WEBHOOK_SECRET`, with 32–256 allowed characters. This is a new dedicated
+random secret, separate from `TELEGRAM_BOT_TOKEN`, `ADMIN_SECRET` and the pet-only
+bot API secret.
 
 The production wrapper verifies the header before cloning/parsing an update,
 repairing equipment or recovering rewards. The base handler independently checks
@@ -23,7 +24,10 @@ authentication.
 
 1. Generate and retain a cryptographically random secret in an approved password
    manager: at least 32 random bytes encoded as hexadecimal or URL-safe base64.
-   Telegram accepts 1–256 characters from `A-Z`, `a-z`, `0-9`, `_` and `-`.
+   The Worker requires 32–256 characters from `A-Z`, `a-z`, `0-9`, `_` and `-`;
+   shorter configured secrets fail closed before any update is parsed. Telegram
+   permits 1–256 characters in its header, so shorter supplied values still take
+   the fixed-size comparison path against a valid configured secret.
    Do not paste values into source, Wrangler `[vars]`, chat, shell command-line
    arguments, recorded terminals or logs. Disable terminal/session recording.
 2. From the repository root, with Cloudflare CLI authentication already available,
@@ -83,9 +87,12 @@ print('Cloudflare secret saved; Telegram accepted matching secret_token and webh
 PY
 ```
 
-3. Run `node scripts/worker-deploy-readiness-audit.mjs`. The required secret name
-   appears in `workers/DEPLOY_STATUS.json`, and the audit forbids storing its
-   value in Wrangler configuration. The approved production wrapper also runs
+3. Install the audit dependencies with `npm ci --ignore-scripts`, then run
+   `node scripts/worker-deploy-readiness-audit.mjs`. The required secret name
+   appears in `workers/DEPLOY_STATUS.json`. The audit checks parsed TOML and
+   forbids this secret in plaintext configuration, including named environment
+   bindings and inline, dotted or quoted keys. Unreadable TOML fails closed
+   without printing its contents. The approved production wrapper also runs
    `npx wrangler secret list --format json` in `workers/moonboys-api` and requires
    a `TELEGRAM_WEBHOOK_SECRET` secret binding before deploying. A failed lookup
    blocks deployment. Secret listing returns names/types, never values.

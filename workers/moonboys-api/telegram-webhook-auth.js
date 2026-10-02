@@ -1,15 +1,18 @@
-const SECRET_FORMAT = /^[A-Za-z0-9_-]{1,256}$/;
+const CONFIGURED_SECRET_FORMAT = /^[A-Za-z0-9_-]{32,256}$/;
+const SUPPLIED_SECRET_FORMAT = /^[A-Za-z0-9_-]{1,256}$/;
 export const TELEGRAM_WEBHOOK_SECRET_HEADER = 'X-Telegram-Bot-Api-Secret-Token';
 
 // Telegram sends this header only when setWebhook was registered with
 // secret_token. Never treat the bot token or request-body identity as proof.
 export async function verifyTelegramWebhookSecret(request, env, webCrypto = globalThis.crypto) {
   const expected = env?.TELEGRAM_WEBHOOK_SECRET;
-  if (typeof expected !== 'string' || !SECRET_FORMAT.test(expected)) {
+  if (typeof expected !== 'string' || !CONFIGURED_SECRET_FORMAT.test(expected)) {
     return { ok: false, status: 503, error: 'telegram_webhook_not_configured' };
   }
   const supplied = request.headers.get(TELEGRAM_WEBHOOK_SECRET_HEADER);
-  if (!supplied || !SECRET_FORMAT.test(supplied)) {
+  // Keep Telegram's wider header format so shorter incorrect tokens still
+  // reach the same fixed-size digest comparison as other valid-format inputs.
+  if (!supplied || !SUPPLIED_SECRET_FORMAT.test(supplied)) {
     return { ok: false, status: 401, error: 'telegram_webhook_unauthorized' };
   }
   try {

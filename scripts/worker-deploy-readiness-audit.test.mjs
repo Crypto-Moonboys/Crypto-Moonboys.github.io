@@ -58,6 +58,57 @@ for (const { requiredSecrets, toml, ok } of [
   });
 }
 
+const plaintextSecret = 'fixture-do-not-print';
+for (const [label, binding] of [
+  ['inline root variables', `vars = { TELEGRAM_WEBHOOK_SECRET = "${plaintextSecret}" }`],
+  ['inline second property', `vars = { PUBLIC_MODE = "live", TELEGRAM_WEBHOOK_SECRET = "${plaintextSecret}" }`],
+  ['dotted root variables', `vars.TELEGRAM_WEBHOOK_SECRET = "${plaintextSecret}"`],
+  ['double-quoted dotted keys', `"vars"."TELEGRAM_WEBHOOK_SECRET" = "${plaintextSecret}"`],
+  ['literal-quoted dotted keys', `'vars'.'TELEGRAM_WEBHOOK_SECRET' = '${plaintextSecret}'`],
+  ['double-quoted key in table', `[vars]\n"TELEGRAM_WEBHOOK_SECRET" = "${plaintextSecret}"`],
+  ['literal-quoted key in table', `[vars]\n'TELEGRAM_WEBHOOK_SECRET' = '${plaintextSecret}'`],
+  ['escaped key', `vars."TELEGRAM_WEBHOOK_\\u0053ECRET" = "${plaintextSecret}"`],
+  ['long Unicode escape key', `vars."TELEGRAM_WEBHOOK_\\U00000053ECRET" = "${plaintextSecret}"`],
+  ['inline quoted key', `vars = { "TELEGRAM_WEBHOOK_SECRET" = "${plaintextSecret}" }`],
+  ['inline escaped key', `vars = { "TELEGRAM_WEBHOOK_\\u0053ECRET" = "${plaintextSecret}" }`],
+  ['named environment table', `[env.production.vars]\nTELEGRAM_WEBHOOK_SECRET = "${plaintextSecret}"`],
+  ['quoted environment table', `[env."production".'vars']\n'TELEGRAM_WEBHOOK_SECRET' = '${plaintextSecret}'`],
+  ['named environment dotted keys', `env.production.vars.TELEGRAM_WEBHOOK_SECRET = "${plaintextSecret}"`],
+  ['named environment inline variables', `[env.production]\nvars = { TELEGRAM_WEBHOOK_SECRET = "${plaintextSecret}" }`],
+  ['nested inline environment', `env = { production = { vars = { TELEGRAM_WEBHOOK_SECRET = "${plaintextSecret}" } } }`],
+  ['object-valued binding', `[vars.TELEGRAM_WEBHOOK_SECRET]\nvalue = "${plaintextSecret}"`],
+  ['array-valued binding', `vars = { TELEGRAM_WEBHOOK_SECRET = ["${plaintextSecret}"] }`],
+  ['multiline value', `[vars]\nTELEGRAM_WEBHOOK_SECRET = """\n${plaintextSecret}\n"""`],
+  ['malformed inline configuration', `vars = { TELEGRAM_WEBHOOK_SECRET = "${plaintextSecret}"`],
+  ['duplicate configuration keys', `vars.TELEGRAM_WEBHOOK_SECRET = "${plaintextSecret}"\nvars.TELEGRAM_WEBHOOK_SECRET = "${plaintextSecret}"`],
+]) {
+  await withFixture({
+    deployStatus: { 'workers/moonboys-api': { status: 'live-deployable', required_secrets: ['TELEGRAM_WEBHOOK_SECRET'] } },
+    workers: { 'moonboys-api': `name = "moonboys-api"\n${binding}` },
+  }, async fixtureRoot => {
+    const result = runAudit(fixtureRoot);
+    assert.equal(result.ok, false, `${label} must reject a plaintext secret or unreadable configuration`);
+    assert.match(result.output, /TELEGRAM_WEBHOOK_SECRET/);
+    assert.ok(!result.output.includes(plaintextSecret), `${label} must not expose a secret in diagnostics`);
+  });
+}
+
+for (const [label, configuration] of [
+  ['commented examples', '# vars = { TELEGRAM_WEBHOOK_SECRET = "example" }\n# vars.TELEGRAM_WEBHOOK_SECRET = "example"'],
+  ['quoted string example', `vars = { HELP = 'TELEGRAM_WEBHOOK_SECRET = "example"' }`],
+  ['multiline string example', `vars = { HELP = '''\nTELEGRAM_WEBHOOK_SECRET = "example"\n# still literal string text\n''' }`],
+  ['normal root variables', 'vars = { PUBLIC_MODE = "live" }'],
+  ['normal named environment', '[env.production.vars]\nPUBLIC_MODE = "live"'],
+]) {
+  await withFixture({
+    deployStatus: { 'workers/moonboys-api': { status: 'live-deployable', required_secrets: ['TELEGRAM_WEBHOOK_SECRET'] } },
+    workers: { 'moonboys-api': `name = "moonboys-api"\n${configuration}` },
+  }, async fixtureRoot => {
+    const result = runAudit(fixtureRoot);
+    assert.equal(result.ok, true, `${label} must not be mistaken for a configured secret: ${result.output}`);
+  });
+}
+
 await withFixture(
   {
     deployStatus: {

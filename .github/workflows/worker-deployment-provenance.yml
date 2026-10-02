@@ -27,6 +27,9 @@ jobs:
         with:
           node-version: 22
 
+      - name: Install audit dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
       - name: Test Worker provenance contract
         run: node scripts/worker-deployment-provenance.test.mjs
 

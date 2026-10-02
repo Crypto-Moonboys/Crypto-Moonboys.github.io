@@ -21,7 +21,10 @@ for (const [name, entry] of [['base', worker], ['production wrapper', deployedWo
     ['same-length incorrect header', SECRET.replace(/^f/, 'x'), SECRET, 401],
     ['missing Worker secret', SECRET, undefined, 503],
     ['empty Worker secret', SECRET, '', 503],
-    ['invalid Worker secret', SECRET, 'invalid value', 503],
+    ['invalid Worker secret characters', SECRET, 'a'.repeat(31) + '!', 503],
+    ['one-character Worker secret', 'a', 'a', 503],
+    ['31-character Worker secret', 'a'.repeat(31), 'a'.repeat(31), 503],
+    ['257-character Worker secret', 'a'.repeat(257), 'a'.repeat(257), 503],
   ]) {
     test(`${name}: ${label} rejects before parsing, profile writes, commands or reward repair`, async () => {
       const originalFetch = globalThis.fetch;
@@ -52,28 +55,31 @@ for (const [name, entry] of [['base', worker], ['production wrapper', deployedWo
     });
   }
 
-  test(`${name}: a correct secret permits the saved profile update and command response`, async () => {
-    const writes = [], sends = [];
-    const originalFetch = globalThis.fetch;
-    globalThis.fetch = async (url, options) => {
-      sends.push({ url: String(url), body: JSON.parse(options.body) });
-      return Response.json({ ok: true, result: { message_id: 10 } });
-    };
-    try {
-      const response = await entry.fetch(requestFor(message('/help'), SECRET), {
-        TELEGRAM_WEBHOOK_SECRET: SECRET, TELEGRAM_BOT_TOKEN: 'fixture-bot-token',
-        DB: { prepare(sql) { return { bind(...args) { return { async run() { writes.push({ sql, args }); return { success: true, meta: { changes: 1 } }; } }; } }; } },
-      });
-      assert.equal(response.status, 200);
-      assert.deepEqual(await response.json(), { ok: true });
-      assert.equal(writes.length, 1);
-      assert.match(writes[0].sql, /INSERT INTO telegram_users/);
-      assert.equal(writes[0].args[0], '876543');
-      assert.equal(sends.length, 1);
-      assert.match(sends[0].url, /\/sendMessage$/);
-      assert.equal(sends[0].body.chat_id, '-100123');
-    } finally { globalThis.fetch = originalFetch; }
-  });
+  for (const length of [32, 256]) {
+    const configured = 'a'.repeat(length);
+    test(`${name}: a correct ${configured.length}-character secret permits the saved profile update and command response`, async () => {
+      const writes = [], sends = [];
+      const originalFetch = globalThis.fetch;
+      globalThis.fetch = async (url, options) => {
+        sends.push({ url: String(url), body: JSON.parse(options.body) });
+        return Response.json({ ok: true, result: { message_id: 10 } });
+      };
+      try {
+        const response = await entry.fetch(requestFor(message('/help'), configured), {
+          TELEGRAM_WEBHOOK_SECRET: configured, TELEGRAM_BOT_TOKEN: 'fixture-bot-token',
+          DB: { prepare(sql) { return { bind(...args) { return { async run() { writes.push({ sql, args }); return { success: true, meta: { changes: 1 } }; } }; } }; } },
+        });
+        assert.equal(response.status, 200);
+        assert.deepEqual(await response.json(), { ok: true });
+        assert.equal(writes.length, 1);
+        assert.match(writes[0].sql, /INSERT INTO telegram_users/);
+        assert.equal(writes[0].args[0], '876543');
+        assert.equal(sends.length, 1);
+        assert.match(sends[0].url, /\/sendMessage$/);
+        assert.equal(sends[0].body.chat_id, '-100123');
+      } finally { globalThis.fetch = originalFetch; }
+    });
+  }
 }
 
 test('Workers native timing-safe comparison receives fixed-size digests for matching and mismatched tokens', async () => {
@@ -88,8 +94,12 @@ test('Workers native timing-safe comparison receives fixed-size digests for matc
     },
   } };
   assert.equal((await verifyTelegramWebhookSecret(requestFor({}, SECRET), { TELEGRAM_WEBHOOK_SECRET: SECRET }, nativeCrypto)).ok, true);
-  assert.equal((await verifyTelegramWebhookSecret(requestFor({}, 'short'), { TELEGRAM_WEBHOOK_SECRET: SECRET }, nativeCrypto)).ok, false);
-  assert.equal(comparisons, 2);
+  for (const supplied of ['a', 'a'.repeat(31)]) {
+    const result = await verifyTelegramWebhookSecret(requestFor({}, supplied), { TELEGRAM_WEBHOOK_SECRET: SECRET }, nativeCrypto);
+    assert.equal(result.ok, false);
+    assert.equal(result.status, 401);
+  }
+  assert.equal(comparisons, 3, 'short supplied tokens must reach the native digest comparison');
 });
 
 test('verification infrastructure failure rejects without exposing the token', async () => {

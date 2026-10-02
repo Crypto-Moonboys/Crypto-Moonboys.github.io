@@ -1046,10 +1046,13 @@ Lifecycle ceremonies remain bound to the pet whose action earned them. A later n
 Both the deployed Worker wrapper and the base Telegram webhook verify
 `X-Telegram-Bot-Api-Secret-Token` against the Cloudflare
 `TELEGRAM_WEBHOOK_SECRET` binding before parsing the update or performing any
-side effect. Missing configuration and invalid headers fail closed. Deployment
+side effect. Configured secrets must contain 32–256 allowed characters. Missing,
+invalid or shorter configuration and invalid headers fail closed. Deployment
 readiness requires the binding; the exact registration process is documented in
 [Telegram webhook security](telegram-webhook-security.md). Secret values belong
 in Cloudflare secrets and Telegram's `secret_token`, never source or Wrangler vars.
+The audit parses TOML keys, including inline tables, dotted/quoted keys and named
+environments, and rejects malformed configuration without printing its contents.
 
 State, Missions, Profile and guidance bind achievements to their captured pet ID
 and immutable ownership season. Achievement rows carry this provenance and the

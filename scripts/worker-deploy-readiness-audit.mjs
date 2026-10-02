@@ -24,6 +24,7 @@ import { readFile, readdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parse as parseToml } from 'smol-toml';
 
 const ROOT = process.env.WORKER_AUDIT_ROOT
   ? path.resolve(process.env.WORKER_AUDIT_ROOT)
@@ -129,6 +130,14 @@ function detectDocumentedRequiredSecrets(tomlContent) {
   return found;
 }
 
+// Inspect the parsed keys, not their source spelling. Wrangler accepts inline
+// tables, dotted keys and quoted/escaped keys in root and named environments.
+// Strings and comments containing an example assignment are not bindings.
+function containsConfigurationKey(value, key) {
+  return value !== null && typeof value === 'object'
+    && (Object.hasOwn(value, key) || Object.values(value).some(child => containsConfigurationKey(child, key)));
+}
+
 // ── load DEPLOY_STATUS.json ───────────────────────────────────────────────────
 
 let deployStatus;
@@ -184,8 +193,15 @@ for (const folder of workerFolders) {
       if (!deployStatusRequiredSecrets.includes('TELEGRAM_WEBHOOK_SECRET')) {
         failures.push({ folder, reason: 'TELEGRAM_WEBHOOK_SECRET is required for authenticated Telegram webhook delivery' });
       }
-      if (tomlContent.split('\n').some((line) => /^\s*TELEGRAM_WEBHOOK_SECRET\s*=/.test(stripTomlComment(line)))) {
-        failures.push({ folder, reason: 'TELEGRAM_WEBHOOK_SECRET must be a Cloudflare secret, never a Wrangler variable' });
+      try {
+        const configuration = parseToml(tomlContent);
+        if (containsConfigurationKey(configuration, 'TELEGRAM_WEBHOOK_SECRET')) {
+          failures.push({ folder, reason: 'TELEGRAM_WEBHOOK_SECRET must be a Cloudflare secret, never a Wrangler variable' });
+        }
+      } catch {
+        // Parser diagnostics can include source snippets containing secrets.
+        // Unreadable configuration cannot establish that plaintext is absent.
+        failures.push({ folder, reason: 'Cannot parse wrangler.toml; TELEGRAM_WEBHOOK_SECRET configuration could not be verified' });
       }
     }
 
