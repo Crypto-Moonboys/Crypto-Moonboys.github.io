@@ -1421,7 +1421,7 @@ for (const failWrite of [/INSERT OR IGNORE INTO telegram_pet_weekly_crests/, /IN
 // day all objectives crossed their individual thresholds.
 for (const [failWrite, earnedAt] of [
   [/INSERT OR IGNORE INTO telegram_pet_weekly_crests/, '2026-01-05T00:00:00.000Z'],
-  [/INSERT OR IGNORE INTO telegram_pet_weekly_journey_receipts/, '2026-01-05T12:00:00.000Z'],
+  [/INSERT OR IGNORE INTO telegram_pet_weekly_journey_receipts/, '2026-01-05T00:00:00.000Z'],
 ]) {
   const db = createDb(), owner = 'weekly-threshold-date';
   const petId = seedPlayer(db, owner);

@@ -77,7 +77,7 @@ assert.ok(!/geolocation|getCurrentPosition|watchPosition/i.test(html), 'Games la
 assert.ok(!/dead-run[^"']*(?:bootstrap|runtime|logic)\.js/i.test(html), 'Games launcher must not start Dead Run logic');
 
 const launcherDestinations = [
-  ['Moonpet OS', '/moonpet-game.html?v=20261002-audit-recovery-v1'],
+  ['Moonpet OS', '/moonpet-game.html?v=20261002-premerge-audit-v2'],
   ['Dead Run', `/games/dead-run/?v=${deadRunRelease}`],
   ['Battle Chamber', `/community.html?v=${launcherRelease}`],
   ['NBG London Runner', `/games/nbg-london/?v=${launcherRelease}`],
@@ -168,7 +168,7 @@ class FakeElement {
   }
 }
 
-function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search = '?v=20260902-games-shell-v6&startapp=arcade' } = {}) {
+function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search = '?v=20260902-games-shell-v6&startapp=arcade', storedInitData = '' } = {}) {
   const calls = [];
   const timers = [];
   const viewportHandlers = [];
@@ -178,7 +178,7 @@ function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search
   const status = new FakeElement({ id: 'launchStatus' });
   const links = launcherDestinations.map(([, href]) => new FakeElement({ href, 'aria-disabled': 'true', tabindex: '-1' }));
   const assigned = [];
-  const storage = new Map();
+  const storage = new Map(storedInitData ? [['moonboys.telegram.initData', storedInitData]] : []);
   const location = {
     origin: 'https://cryptomoonboys.com',
     search,
@@ -224,6 +224,9 @@ function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search
       },
       getItem(key) {
         return storage.get(key) || '';
+      },
+      removeItem(key) {
+        storage.delete(key);
       },
     },
     setTimeout(handler, ms) {
@@ -283,7 +286,7 @@ function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search
 }
 
 {
-  const hashInitData = 'query_id=hash-only&user=%7B%22id%22%3A456%7D';
+  const hashInitData = 'query_id=hash-only&user=%7B%22id%22%3A456%7D&auth_date=' + Math.floor(Date.now() / 1000);
   const harness = runLauncher({ initData: '', hash: `#tgWebAppData=${encodeURIComponent(hashInitData)}` });
   assert.equal(harness.storage.get('moonboys.telegram.initData'), hashInitData, 'Hash tgWebAppData fallback must be stored in sessionStorage');
   harness.timers[0].handler();
@@ -304,6 +307,43 @@ function runLauncher({ initData = 'user=%7B%22id%22%3A123%7D', hash = '', search
   const assignedUrl = new URL(harness.assigned[0]);
   assert.equal(assignedUrl.searchParams.has('tgWebAppData'), false, 'Legacy query tgWebAppData must be stripped from destination query parameters');
   assert.equal(assignedUrl.searchParams.get('startapp'), 'arcade', 'Non-auth launcher query parameters must still be preserved');
+}
+
+for (const storedInitData of [
+  'auth_date=' + (Math.floor(Date.now() / 1000) - 3700),
+  'auth_date=' + (Math.floor(Date.now() / 1000) + 600),
+  'user=%7B%22id%22%3A123%7D',
+]) {
+  const harness = runLauncher({ initData: '', storedInitData });
+  harness.viewportHandlers[0]({ isStateStable: true });
+  harness.links[0].dispatch('click');
+  assert.equal(new URL(harness.assigned[0]).hash, '', 'Stale or undated inherited session data must not override website authentication');
+  assert.equal(harness.storage.has('moonboys.telegram.initData'), false, 'Unusable inherited data must be removed from session storage');
+}
+
+{
+  const storedInitData = 'auth_date=' + Math.floor(Date.now() / 1000) + '&user=%7B%22id%22%3A123%7D';
+  const harness = runLauncher({ initData: '', storedInitData });
+  harness.viewportHandlers[0]({ isStateStable: true });
+  harness.links[0].dispatch('click');
+  assert.equal(new URL(harness.assigned[0]).hash, '#tgWebAppData=' + encodeURIComponent(storedInitData), 'Fresh session data remains available for Worker verification');
+}
+
+{
+  const staleData = 'auth_date=' + (Math.floor(Date.now() / 1000) - 3700);
+  const harness = runLauncher({ initData: '', hash: '#tgWebAppData=' + encodeURIComponent(staleData), storedInitData: staleData });
+  harness.viewportHandlers[0]({ isStateStable: true });
+  harness.links[0].dispatch('click');
+  assert.equal(new URL(harness.assigned[0]).hash, '', 'Stale inherited hash data must not be forwarded');
+}
+
+{
+  const currentSdkData = 'auth_date=' + Math.floor(Date.now() / 1000) + '&user=%7B%22id%22%3A456%7D';
+  const staleData = 'auth_date=' + (Math.floor(Date.now() / 1000) - 3700);
+  const harness = runLauncher({ initData: currentSdkData, hash: '#tgWebAppData=' + encodeURIComponent(staleData), storedInitData: staleData });
+  harness.viewportHandlers[0]({ isStateStable: true });
+  harness.links[0].dispatch('click');
+  assert.equal(new URL(harness.assigned[0]).hash, '#tgWebAppData=' + encodeURIComponent(currentSdkData), 'Current Telegram SDK identity takes priority over inherited browser data');
 }
 
 {

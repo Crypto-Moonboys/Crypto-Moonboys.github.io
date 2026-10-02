@@ -1,5 +1,6 @@
 import { readOwnedRelics, initializeRelicRoute, relicRouteChoices, relicRouteSuccess, relicSearchSalvage, relicNames } from './relic-passives.js';
-import { requirePetFirstReadResult, requirePetReadResult } from './read-result.js';
+import { requirePetFirstReadResult, requirePetReadResult, requirePetMutationResult } from './read-result.js';
+import { projectCommittedPetResult } from './committed-result.js';
 // Authenticated, server-owned quests. Never accept a client's state, seed, roll or reward.
 export const CONTRACT_BONUS_LIMIT = 3;
 export const CONTRACT_BONUS_XP = 20;
@@ -366,15 +367,23 @@ async function settleBonus(db, owner, row, award, now) {
     source: 'pet_contract', idempotency_key: row.contract_id, event_key: `contract:${row.contract_id}`,
     event_type: 'contract_complete', reason: 'contract_bonus', rewards: { pet_xp: CONTRACT_BONUS_XP }, now,
     context: { contract_id: row.contract_id, pet_id: row.pet_id, season_key: row.season_key } });
-  const receipt = await db.prepare(`SELECT applied_rewards FROM telegram_pet_reward_claims
-    WHERE telegram_id=? AND pet_id=? AND source='pet_contract' AND idempotency_key=? AND status='awarded'`)
-    .bind(owner, row.pet_id, row.contract_id).first().then(requirePetFirstReadResult);
-  if (receipt) {
-    const credited = Math.min(CONTRACT_BONUS_XP, integer(JSON.parse(receipt.applied_rewards).pet_xp));
-    await db.prepare(`UPDATE telegram_pet_contracts SET reward_settled=1, xp_awarded=? WHERE contract_id=? AND telegram_id=? AND pet_id=? AND season_key=? AND reward_settled=0`)
-      .bind(credited, row.contract_id, owner, row.pet_id, row.season_key).run();
-  }
-  return { pet_xp_awarded: integer(result.pet_xp_awarded), reward_pending: !receipt };
+  const committed = { accepted: result.accepted === true, pet_xp_awarded: integer(result.pet_xp_awarded), reward_pending: true,
+    ...(result.refresh_state ? { refresh_state: true } : {}) };
+  const settled = await projectCommittedPetResult(committed, async () => {
+    const receipt = await db.prepare(`SELECT applied_rewards FROM telegram_pet_reward_claims
+      WHERE telegram_id=? AND pet_id=? AND source='pet_contract' AND idempotency_key=? AND status='awarded'`)
+      .bind(owner, row.pet_id, row.contract_id).first().then(requirePetFirstReadResult);
+    if (receipt) {
+      const credited = Math.min(CONTRACT_BONUS_XP, integer(JSON.parse(receipt.applied_rewards).pet_xp));
+      await db.prepare(`UPDATE telegram_pet_contracts SET reward_settled=1, xp_awarded=? WHERE contract_id=? AND telegram_id=? AND pet_id=? AND season_key=? AND reward_settled=0`)
+        .bind(credited, row.contract_id, owner, row.pet_id, row.season_key).run().then(requirePetMutationResult);
+    }
+    return { ...committed, reward_pending: !receipt };
+  });
+  // The outer action still owns its saved contract result. Only the accepted
+  // reward supplies a durable proof for preserving paid XP across this repair.
+  const { accepted, ...bonus } = settled;
+  return bonus;
 }
 export async function processContractAction(db, owner, pet, request, award, now = new Date()) {
   const petId = pet?.pet_id, seasonKey = pet?.season_key;

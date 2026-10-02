@@ -4,6 +4,7 @@ import test from 'node:test';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import worker, { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
+import { recordMoonpetBiggestReward } from '../workers/moonboys-api/pets/moonpet-identity.js';
 
 const currentSeason = hooks.getPetSeasonInfo(new Date()).key;
 function fixture(owner) {
@@ -101,6 +102,94 @@ async function arenaFixture(owner) {
   f.round = () => f.sql.prepare('SELECT * FROM telegram_pet_arena_rounds WHERE battle_id=? AND round_number=1').get(f.id);
   return f;
 }
+
+for (const missing of ['personality','biggest_reward']) test(`paid Arena ${missing} history recovers once for the original pet after confirmed deletion`, async () => {
+  const f = await arenaFixture(`arena-paid-${missing}`);
+  const sourcePet = `current-${f.owner}`;
+  const identityWrite = missing === 'personality' ? 'INSERT OR IGNORE INTO telegram_pet_identity_events'
+    : 'INSERT INTO telegram_pet_memories (pet_id, telegram_id, season_key, biggest_reward_amount, biggest_reward_currency)';
+  f.db.beforeRun = statement => { if (statement.query.includes(identityWrite)) throw Error('arena_identity_outage'); };
+  const result = await f.act({ action:'arena_forfeit', battle_id:f.id });
+  assert.equal(result.accepted, true, 'a paid ending remains accepted when its history follow-up fails');
+  assert.equal(result.refresh_state, true, 'the nested paid-history repair requirement reaches the action response');
+  const paid = f.sql.prepare("SELECT * FROM telegram_pet_reward_claims WHERE source='pet_arena'").get();
+  const receipt = f.sql.prepare("SELECT * FROM telegram_pet_events WHERE event_type='arena_battle'").get();
+  assert.equal(paid.status, 'awarded');
+  assert.equal(receipt.pet_id, sourcePet);
+  const paidGold = JSON.parse(paid.applied_rewards).moon_gold;
+  assert.ok(paidGold > 0);
+  const sourceXp = f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(sourcePet).pet_xp;
+  f.db.beforeRun = null;
+  const removed = await f.act({ action:'delete_pet_slot', pet_id:sourcePet, confirm_pet_id:sourcePet, confirmed:true });
+  assert.equal(removed.accepted, true);
+  assert.equal(f.sql.prepare('SELECT status FROM telegram_pet_instances WHERE pet_id=?').get(sourcePet).status, 'archived');
+  const replacement = f.sql.prepare('SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id=?').get(f.owner).pet_id;
+  assert.notEqual(replacement, sourcePet);
+  await f.state();
+  const memory = f.sql.prepare('SELECT * FROM telegram_pet_memories WHERE pet_id=?').get(sourcePet);
+  assert.equal(memory.biggest_reward_amount, paidGold, 'a duplicate settlement uses its original applied assets');
+  const personality = f.sql.prepare("SELECT * FROM telegram_pet_identity_events WHERE pet_id=? AND event_kind='personality' AND event_key=?").get(sourcePet, `${receipt.event_key}:personality`);
+  assert.equal(personality.day_key, receipt.day_key);
+  assert.ok(personality.applied_at);
+  const progress = f.sql.prepare("SELECT progress FROM telegram_pet_personality_traits WHERE pet_id=? AND trait_id='street_fighter'").get(sourcePet).progress;
+  let remainingCandidates = null;
+  f.db.beforeAll = statement => {
+    if (statement.query.includes('WITH candidates(kind,id,recovery_key)')) remainingCandidates = f.sql.prepare(statement.query).all(...statement.args);
+  };
+  await f.state();
+  assert.deepEqual(remainingCandidates, [], 'a completely repaired paid source leaves the bounded queue');
+  assert.equal(f.sql.prepare("SELECT progress FROM telegram_pet_personality_traits WHERE pet_id=? AND trait_id='street_fighter'").get(sourcePet).progress, progress);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE source='pet_arena'").get().n, 1);
+  assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(sourcePet).pet_xp, sourceXp);
+  assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(replacement).pet_xp, 0);
+  for (const recoverSource of [false,true]) {
+    const newHistory = await recordMoonpetBiggestReward(f.db, { telegram_id:f.owner, pet_id:sourcePet,
+      season_key:currentSeason, reward_amount:999, reward_currency:'moon_gold', recover_source_event:recoverSource });
+    assert.equal(newHistory.accepted, false, 'normal actions and a recovery flag without accepted source proof cannot authorize an archived pet');
+  }
+  assert.equal(f.sql.prepare('SELECT biggest_reward_amount FROM telegram_pet_memories WHERE pet_id=?').get(sourcePet).biggest_reward_amount, paidGold);
+});
+
+for (const invalid of ['null_receipt_pet','missing_battle_pet','malformed_paid_assets','unapplied_legacy_identity']) test(`paid Arena history recovery excludes ${invalid} source proof`, async () => {
+  const f = await arenaFixture(`arena-history-${invalid}`);
+  f.db.beforeRun = statement => { if (statement.query.includes('INSERT OR IGNORE INTO telegram_pet_identity_events')) throw Error('arena_identity_outage'); };
+  assert.equal((await f.act({ action:'arena_forfeit', battle_id:f.id })).accepted, true);
+  f.db.beforeRun = null;
+  if (invalid === 'null_receipt_pet') f.sql.prepare("UPDATE telegram_pet_events SET pet_id=NULL WHERE event_type='arena_battle'").run();
+  else if (invalid === 'missing_battle_pet') f.sql.prepare('UPDATE telegram_pet_arena_battles SET player1_pet_id=NULL WHERE battle_id=?').run(f.id);
+  else if (invalid === 'malformed_paid_assets') f.sql.prepare("UPDATE telegram_pet_reward_claims SET applied_rewards='not-json' WHERE source='pet_arena'").run();
+  else {
+    const event = f.sql.prepare("SELECT * FROM telegram_pet_events WHERE event_type='arena_battle'").get();
+    f.sql.prepare("INSERT INTO telegram_pet_identity_events (event_id,pet_id,telegram_id,season_key,event_key,event_kind) VALUES ('legacy-unapplied',?,?,?,?,'personality')")
+      .run(event.pet_id,f.owner,event.season_key,`${event.event_key}:personality`);
+  }
+  const candidates = [];
+  f.db.beforeAll = statement => {
+    if (statement.query.includes('WITH candidates(kind,id,recovery_key)')) candidates.push(f.sql.prepare(statement.query).all(...statement.args));
+  };
+  await f.state(); await f.state();
+  assert.deepEqual(candidates, [[],[]], 'an unprovable paid source cannot consume every refresh budget or guess the current pet');
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_identity_events WHERE event_kind='personality' AND applied_at IS NOT NULL").get().n, 0);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE source='pet_arena'").get().n, 1);
+});
+
+test('Arena reports only its exact capped payout and zero new assets on a completed replay', async () => {
+  const f = await arenaFixture('arena-exact-payout');
+  const source = `current-${f.owner}`, today = new Date().toISOString().slice(0,10);
+  f.sql.prepare(`INSERT INTO telegram_pet_events (id,pet_id,telegram_id,event_type,event_key,pet_xp_awarded,season_key,day_key,week_key,status)
+    VALUES ('cap-proof',?,?,'cap_fixture','cap-proof',1197,?,?,'cap-week','accepted')`).run(source,f.owner,currentSeason,today);
+  const paid = await f.act({ action:'arena_forfeit', battle_id:f.id });
+  assert.equal(paid.accepted, true);
+  assert.equal(paid.rewards.player1.rewards.pet_xp, 3, 'the result must report the capped claim, not the configured ten XP');
+  assert.equal(paid.rewards.player1.rewards.moon_gold, 3);
+  const replay = await f.act({ action:'arena_forfeit', battle_id:f.id });
+  assert.equal(replay.accepted, true);
+  assert.equal(replay.duplicate, true);
+  assert.equal(replay.rewards.player1.rewards.pet_xp, 0);
+  assert.equal(replay.rewards.player1.rewards.moon_gold, 0);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE source='pet_arena'").get().n, 1);
+  assert.equal(f.sql.prepare('SELECT biggest_reward_amount FROM telegram_pet_memories WHERE pet_id=?').get(source).biggest_reward_amount, 3);
+});
 
 test('Arena retries a locked move after the CPU move write failed', async () => {
   const f = await arenaFixture('locked-cpu');

@@ -24,7 +24,7 @@ class Statement {
   async all() { return {results:sql.prepare(this.sql).all(...this.args)}; }
   async run() {
     if (failAt && this.sql.includes(failAt)) throw Error('D1 injected failure');
-    if (/RETURNING/i.test(this.sql)) { const results=sql.prepare(this.sql).all(...this.args); return {results,meta:{changes:results.length}}; }
+    if (/RETURNING|^\s*SELECT/i.test(this.sql)) { const results=sql.prepare(this.sql).all(...this.args); return {results,meta:{changes:results.length}}; }
     return {meta:{changes:sql.prepare(this.sql).run(...this.args).changes}};
   }
 }
@@ -96,6 +96,45 @@ assert.equal(sql.prepare('SELECT acquisition_type FROM telegram_pet_season_slots
 assert.equal((await hooks.buyPetSeasonSlot(db,'owner',3)).accepted,true);
 assert.equal((await hooks.buyPetSeasonSlot(db,'owner',3)).accepted,false);
 assert.equal(sql.prepare("SELECT COUNT(*) AS n FROM telegram_pet_season_slots WHERE telegram_id='owner' AND status='active'").get().n,3);
+
+// Daily bounties reward account currencies. An earned bounty remains claimable
+// when confirmed deletion replaces the only hatched pet with a fresh egg.
+const bountyOwner='bounty-replacement', bountyPetId=await player(bountyOwner);
+sql.prepare("UPDATE telegram_pet_lifecycle_by_pet SET created_at=datetime('now','-15 days') WHERE pet_id=?").run(bountyPetId);
+assert.equal((await hooks.hatchMoonpet(db,bountyOwner,bountyOwner+':hatch')).accepted,true);
+const bountySource=sql.prepare('SELECT * FROM telegram_pet_instances WHERE pet_id=?').get(bountyPetId);
+const bounty=(await hooks.getPetEconomyState(db,bountyOwner)).bounties[0];
+assert.equal((await dispatchRenderedPetAction(db,bountyOwner,{}, {action:'bounty_claim',bounty_key:bounty.key,request_id:'incomplete-bounty'},'')).reason,'bounty_incomplete');
+for (let index=0;index<bounty.required;index+=1) {
+  assert.equal((await awardPetReward(db,{telegram_id:bountyOwner,pet_id:bountyPetId,season_key:bountySource.season_key,
+    source:'pet_event',idempotency_key:bountyOwner+':progress:'+index,event_type:bounty.event_types[0],rewards:{pet_xp:1}})).accepted,true);
+}
+const readyBounty=(await hooks.getPetEconomyState(db,bountyOwner)).bounties.find(entry=>entry.key===bounty.key);
+assert.equal(readyBounty.complete,true);
+assert.equal(readyBounty.claimed,false);
+const bountyDeletion=await dispatchRenderedPetAction(db,bountyOwner,{},confirm(bountyPetId),'');
+assert.equal(bountyDeletion.accepted,true);
+assert.equal((await hooks.getMoonpetLifecycle(db,bountyOwner)).phase,'egg');
+const bountyHistory=sql.prepare('SELECT * FROM telegram_pet_reward_claims WHERE pet_id=? ORDER BY claim_id').all(bountyPetId);
+const bountyWalletBefore=sql.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(bountyOwner);
+const bountyBody={action:'bounty_claim',bounty_key:bounty.key,displayed_pet_id:bountyDeletion.replacement_pet_id,request_id:'earned-bounty'};
+const staleBounty=await hooks.processPetMiniAppAction(db,bountyOwner,{}, {...bountyBody,displayed_pet_id:bountyPetId},'');
+assert.equal(staleBounty.accepted,false);
+assert.equal(staleBounty.reason,'displayed_pet_changed','egg claim permission does not bypass displayed-pet authority');
+const bountyClaim=await hooks.processPetMiniAppAction(db,bountyOwner,{},bountyBody,'');
+assert.equal(bountyClaim.accepted,true,'a ready account bounty can be claimed before the replacement egg hatches');
+assert.equal(bountyClaim.reason,'bounty_claimed');
+const bountyWalletAfter=sql.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(bountyOwner);
+for (const currency of ['moon_gold','moon_crystals','style_tokens']) {
+  assert.equal(bountyWalletAfter[currency],bountyWalletBefore[currency]+Number(bounty.reward[currency]||0));
+}
+const bountyRetry=await hooks.processPetMiniAppAction(db,bountyOwner,{}, {...bountyBody,request_id:'earned-bounty-retry'},'');
+assert.equal(bountyRetry.accepted,true);
+assert.equal(bountyRetry.duplicate,true,'canonical daily bounty identity prevents another reward on a new request');
+assert.deepEqual(sql.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(bountyOwner),bountyWalletAfter);
+assert.equal(sql.prepare("SELECT COUNT(*) AS n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_bounty'").get(bountyOwner).n,1);
+assert.equal(sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(bountyDeletion.replacement_pet_id).pet_xp,0);
+assert.deepEqual(sql.prepare('SELECT * FROM telegram_pet_reward_claims WHERE pet_id=? ORDER BY claim_id').all(bountyPetId),bountyHistory,'archived source reward history stays unchanged');
 
 // Any failed statement rolls back the claim, archive, replacement and pointer.
 const rollbackId=await player('rollback');

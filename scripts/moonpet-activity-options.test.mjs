@@ -39,7 +39,7 @@ class Statement {
   bind(...args) { return new Statement(this.sql, args); }
   async first() { return sqlite.prepare(this.sql).get(...this.args) || null; }
   async all() { return { results: sqlite.prepare(this.sql).all(...this.args) }; }
-  async run() {
+  exec() {
     if (failSettlement && this.sql.includes('UPDATE telegram_pet_activity_sessions') && this.sql.includes('SET metadata = ?')) {
       failSettlement = false; throw Error('interrupted_settlement');
     }
@@ -47,12 +47,13 @@ class Statement {
     if (/\bRETURNING\b/i.test(this.sql)) { const results = sqlite.prepare(this.sql).all(...this.args); return { results, meta: { changes: results.length } }; }
     const result = sqlite.prepare(this.sql).run(...this.args); return { results: [], meta: { changes: Number(result.changes) } };
   }
+  async run() { return this.exec(); }
 }
 const db = {
   prepare(sql) { return new Statement(sql); },
   async batch(statements) {
     sqlite.exec('BEGIN IMMEDIATE');
-    try { const results = []; for (const statement of statements) results.push(await statement.run()); sqlite.exec('COMMIT'); return results; }
+    try { const results = statements.map(statement => statement.exec()); sqlite.exec('COMMIT'); return results; }
     catch (error) { sqlite.exec('ROLLBACK'); throw error; }
   },
 };
@@ -119,8 +120,16 @@ assert.equal((await act('feed')).accepted, true);
 assert.equal((await act('train')).reason, 'pet_busy');
 assert.equal((await hooks.buildPetGuidanceState(db, id)).missions.find((m) => m.title === 'Train once').completed, false);
 sqlite.prepare('UPDATE telegram_pet_activity_sessions SET started_at=? WHERE telegram_id=?').run(new Date(now.getTime() - 7200_000).toISOString(), id);
+const beforeInterruptedClaim = sqlite.prepare('SELECT pet_xp, moon_gold, energy FROM telegram_pet_profiles WHERE telegram_id=?').get(id);
 failSettlement = true;
-await assert.rejects(act('activity_claim'), /interrupted_settlement/);
+const savedClaim = await act('activity_claim');
+assert.equal(failSettlement, false, 'the post-payout metadata failure must actually be injected');
+assert.equal(savedClaim.accepted, true, 'a failed display/settlement follow-up cannot undo the committed reward');
+assert.equal(savedClaim.reason, 'claimed');
+assert.equal(savedClaim.refresh_state, true);
+assert.equal(savedClaim.recovery_pending, true);
+assert.equal(savedClaim.computed.rewards.item_key, 'adventure_map');
+assert.equal(savedClaim.computed.rewards.moon_crystals, 0, 'the two-hour receipt replaces the early crystal with an Adventure Map');
 const pending = await hooks.buildPetGuidanceState(db, id);
 assert.equal(pending.activity?.recovery_pending, true, 'interrupted claims must stay visible to the player');
 assert.equal(pending.activity.ready, true);
@@ -128,6 +137,8 @@ assert.equal(pending.activity.cooldown, null);
 assert.equal(pending.activity.preview.rewards.item_key, 'adventure_map');
 assert.equal(pending.activity.next_checkpoint, null, 'recovery must not promise newly accumulating rewards');
 const balanceBefore = sqlite.prepare('SELECT pet_xp, moon_gold, energy FROM telegram_pet_profiles WHERE telegram_id=?').get(id);
+assert.equal(balanceBefore.pet_xp, beforeInterruptedClaim.pet_xp + savedClaim.pet_xp_awarded, 'saved feedback must report the capped XP that really committed');
+assert.equal(balanceBefore.moon_gold, beforeInterruptedClaim.moon_gold + savedClaim.rewards.moon_gold);
 assert.equal((await act('activity_start', { activity_type: 'sleep' })).reason, 'activity_claim_pending');
 const claimed = await dispatchRenderedPetAction(db, id, { id }, { action: 'activity_claim' }, 'test-token');
 assert.equal(claimed.accepted, true);

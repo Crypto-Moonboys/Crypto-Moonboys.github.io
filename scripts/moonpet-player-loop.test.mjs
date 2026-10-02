@@ -501,4 +501,93 @@ for (const accepted of [true, false]) {
   assert.doesNotMatch(actionContext.button('BUY', 'buy'), /disabled/);
 }
 
+// Earned account bounties remain claimable after deleting the only hatched pet.
+// The shipped Economy renderer still offers no claim for unfinished bounties.
+const economySource = client.slice(client.indexOf('  function valueText('), client.indexOf('  function renderProfile('));
+const bountyContext = vm.createContext({
+  state: { adopted: true, pet: { pet_id: 'replacement-egg' }, lifecycle: { phase: 'egg' }, guidance: { economy: { bounties: [
+    { key: 'triple_care', title: 'Full Care Circuit', progress: 3, required: 3, complete: true, claimed: false, reward: { moon_gold: 45 } },
+    { key: 'job_shift', title: 'Clock In', progress: 0, required: 1, complete: false, claimed: false, reward: { moon_gold: 35 } },
+  ] } } },
+  petActionRefreshRequired: false, window: { MoonpetPlayOptions: options },
+  careActionButtonOptions: (_, value) => value || {}, actionCooldownButtonOptions: (_, value) => value,
+  shouldShowAvailability: value => Boolean(value.disabled), availabilityDetailMarkup: value => value.statusLabel,
+  escapeHtml: value => String(value), words: value => String(value), number: value => Number(value || 0),
+  panel: (_, body) => body, craftingGoalMarkup: () => '',
+  routeButton: (label, route) => '<button data-jump="' + route.screen + '">' + label + '</button>',
+});
+vm.runInContext(economySource + buttonSource, bountyContext);
+const eggEconomy = bountyContext.renderEconomy();
+const readyBountyButtons = eggEconomy.match(/<button\b[^>]*data-action="bounty_claim"[^>]*>/g) || [];
+assert.equal(readyBountyButtons.length, 1);
+assert.match(readyBountyButtons[0], /triple_care/);
+assert.doesNotMatch(readyBountyButtons[0], /\bdisabled\b/, 'already-earned currencies can be claimed by an egg account');
+assert.match(eggEconomy, /HATCH TO WORK ON BOUNTIES/, 'unfinished targets retain their hatch route');
+assert.match(bountyContext.button('FEED', 'feed'), /\bdisabled\b/, 'allowing saved bounty claims does not unlock egg gameplay');
+bountyContext.petActionRefreshRequired = true;
+assert.match(bountyContext.renderEconomy().match(/<button\b[^>]*data-action="bounty_claim"[^>]*>/)[0], /\bdisabled\b/,
+  'saved currency claims still respect the authoritative-refresh lock');
+
+// Execute both shipped hydration and rendering: the last failed request must
+// replace the loading screen with the manual retry, without clearing action locks.
+const hydrationSource = client.split('// TEST-EXPORT: coreStateHydration:start')[1].split('// TEST-EXPORT: coreStateHydration:end')[0];
+const renderSource = client.slice(client.indexOf('  function render(options)'), client.indexOf('  // TEST-EXPORT: actionResultFeedback:start'));
+for (const moduleScreen of ['missions', 'profile']) {
+  const calls = [], timers = [];
+  let failModule = true;
+  const moduleContext = vm.createContext({
+    state: { adopted: true, pet: { pet_id: 'shown-pet' }, lifecycle: { phase: 'young' }, hydration: { full: false, modules: ['home'] } },
+    activeScreen: moduleScreen, screen: { scrollTop: 0, innerHTML: '' },
+    fullStateHydrationPromise: null, fullStateHydrationRetryTimer: 0, fullStateHydrationFailures: 0,
+    fullStateHydrationRetryDelayMs: 0, FULL_STATE_HYDRATION_MAX_AUTO_RETRIES: 3,
+    petActionRefreshRequired: true, fastActionStateDirty: true, reducedMotion: false,
+    renderedPetId: 'shown-pet', renderedPetName: '', performance: { now: () => 1 },
+    document: { getElementById: () => null },
+    window: { clearTimeout() {}, setTimeout(fn, delay) { timers.push({ fn, delay }); return timers.length; } },
+    words: value => value, tell: () => {}, beginStateRequest: () => calls.length,
+    stateRequestGate: { isCurrent: () => true }, readSleepLatch: () => false,
+    hatchArtTransitionActive: () => false, selectBotArtForState: () => Promise.resolve(), scheduleCooldownRefresh: () => {},
+    renderHud: () => {}, renderNav: () => {}, renderCanvasTools: () => {},
+    captureEditableState: () => null, rememberPanels: () => {}, restoreEditableState: () => {},
+    panel: (_, body) => body, routeButton: () => '<button data-jump="home">RETURN HOME</button>', renderRecommended: () => '',
+    showPendingNotices: async () => {}, applyRequestedFocus: () => {},
+    careActionButtonOptions: (_, value) => value || {}, actionCooldownButtonOptions: (_, value) => value,
+    shouldShowAvailability: value => Boolean(value.disabled), availabilityDetailMarkup: value => value.statusLabel,
+    escapeHtml: value => String(value),
+    async post(path, payload) {
+      calls.push({ path, payload });
+      if (failModule) throw Error('mini_app_state_failed');
+      return { state: { adopted: true, pet: { pet_id: 'fresh-pet' }, lifecycle: { phase: 'young' },
+        hydration: { full: moduleScreen === 'profile', modules: ['home', moduleScreen] } } };
+    },
+  });
+  moduleContext.screens = {
+    home: () => 'HOME', missions: () => moduleContext.button('FEED', 'feed'), profile: () => moduleContext.button('FEED', 'feed'),
+  };
+  vm.runInContext(hydrationSource + renderSource + setStateSnapshotSource + buttonSource, moduleContext);
+  await moduleContext.hydrateFullState(moduleScreen);
+  await moduleContext.hydrateFullState(moduleScreen);
+  assert.doesNotMatch(moduleContext.screen.innerHTML, /RETRY MODULE/, 'automatic retries still show a loading screen');
+  await moduleContext.hydrateFullState(moduleScreen);
+  assert.equal(moduleContext.fullStateHydrationPromise, null);
+  assert.equal(timers.length, 2, 'no fourth automatic module request is scheduled');
+  assert.match(moduleContext.screen.innerHTML, /MODULE STATE COULD NOT LOAD/);
+  assert.match(moduleContext.screen.innerHTML, /data-utility="module-retry"/);
+  assert.doesNotMatch(moduleContext.screen.innerHTML, /FETCHING SERVER-AUTHORITATIVE/);
+  assert.equal(moduleContext.petActionRefreshRequired, true, 'failed module reads preserve the mutation lock');
+  assert.match(moduleContext.button('FEED', 'feed'), /disabled/);
+  moduleContext.activeScreen = 'home';
+  await moduleContext.hydrateFullState(moduleScreen);
+  assert.equal(moduleContext.screen.innerHTML, 'HOME', 'a finished request does not restore a module after returning Home');
+  assert.equal(timers.length, 2, 'returning Home leaves automatic module retries stopped');
+  moduleContext.activeScreen = moduleScreen;
+  failModule = false;
+  await moduleContext.hydrateFullState(moduleScreen, { manual: true });
+  assert.equal(moduleContext.fullStateHydrationFailures, 0);
+  assert.equal(moduleContext.state.pet.pet_id, 'fresh-pet');
+  assert.equal(moduleContext.petActionRefreshRequired, false, 'only a valid authoritative snapshot restores actions');
+  assert.doesNotMatch(moduleContext.screen.innerHTML, /RETRY MODULE|disabled/);
+  assert.ok(calls.every(call => call.path.endsWith('/state')), 'manual retry reads state without replaying a mutation');
+}
+
 console.log(`Moonpet player loop tests passed: ${new Set(actionButtons).size} literal action buttons.`);

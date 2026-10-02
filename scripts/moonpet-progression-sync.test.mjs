@@ -1530,7 +1530,10 @@ test('a transient timed-claim receipt lookup cannot settle without its material 
       !f.sql.prepare("SELECT 1 FROM telegram_pet_events WHERE event_type='activity_claim' AND status='accepted'").get()) return;
     f.db.beforeFirst=null; failed=true; throw Error('receipt_read_unavailable');
   };
-  await assert.rejects(f.act({action:'activity_claim'}),/receipt_read_unavailable/);
+  const paid = await f.act({action:'activity_claim'});
+  assert.equal(paid.accepted,true);
+  assert.equal(paid.refresh_state,true);
+  assert.ok(paid.pet_xp_awarded>0,'the durable first payment remains visible while its material draw needs repair');
   assert.equal(failed,true);
   assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_specialist_events').get().n,0);
   const event=f.sql.prepare("SELECT id FROM telegram_pet_events WHERE event_type='activity_claim'").get();

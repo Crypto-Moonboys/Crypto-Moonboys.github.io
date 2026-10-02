@@ -101,7 +101,7 @@ assert.doesNotMatch(weeklyBoss, /mirrorPetProfileToActiveInstance|UPDATE telegra
 assert.match(weeklyBoss, /pet: await getPetInstanceWithAtomicDecay\(db, bossPetAuthority\.pet_id\)/,
   'weekly boss must return the pet that paid for the attack');
 assert.match(worker, /if \(result\.accepted && !result\.duplicate\) result\.lifecycle = await syncMoonpetLifecycleStage\(db, telegramId, next\.stage\);/, 'runtime evolve handling must only sync lifecycle on a newly unlocked evolution');
-assert.match(worker, /if \(result\.accepted && !result\.duplicate\) \{\s+const identity = await getMoonpetIdentitySummary\(env\.DB, telegramId\)\.catch\(\(\) => null\);\s+result\.lifecycle = await syncMoonpetLifecycleStage\(env\.DB, telegramId, identity\?\.current_stage\?\.stage \|\| 0\);\s+\}/, 'API evolve handling must not advance lifecycle for duplicate owner-level evolution unlocks');
+assert.match(worker, /result = await preserveCommittedPetActionResult\(result, async \(\) => \{\s+if \(result\.accepted && !result\.duplicate\) \{\s+const identity = await getMoonpetIdentitySummary\(env\.DB, telegramId\);\s+result\.lifecycle = await syncMoonpetLifecycleStage\(env\.DB, telegramId, identity\?\.current_stage\?\.stage \|\| 0\);\s+\}/, 'API evolve handling must preserve saved evolution success and only advance lifecycle for a new unlock');
 assert.match(worker, /if \(!result\.duplicate\) await syncMoonpetLifecycleStage\(db, telegramId, next\.stage\);/, 'command evolve handling must not advance lifecycle for duplicate owner-level evolution unlocks');
 const rosterSummarySource = worker.slice(
   worker.indexOf('async function buildPetSeasonSlotSummary'),

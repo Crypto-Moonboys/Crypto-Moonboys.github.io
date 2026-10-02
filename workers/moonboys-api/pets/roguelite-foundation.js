@@ -351,10 +351,8 @@ export async function awardPetReward(db, request = {}) {
   const petOwnerGuard = petAuthority
     ? 'AND EXISTS (SELECT 1 FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ? AND season_key = ?)'
     : '';
-  // Implicit-source compatibility callers retain historical nullable evidence
-  // alongside the frozen pet's new receipts. Other pets keep their own cap.
-  const includeLegacyPetXpEvidence = petAuthority && request.include_legacy_pet_xp_evidence === true;
-  const petEventScope = includeLegacyPetXpEvidence ? 'AND (pet_id = ? OR pet_id IS NULL)' : petAuthority ? 'AND pet_id = ?' : 'AND pet_id IS NULL';
+  // The immutable pet owns the reward, while every accepted account receipt
+  // shares the daily allowance, including older nullable source evidence.
   const metadata = safeJson({ finalization_id: finalizationId, source, idempotency_key: idempotencyKey, requested: rewards, currency_costs: currencyCosts, profile_deltas: profileDeltas, context: request.context || {} });
   const statements = [
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_reward_claims
@@ -379,14 +377,14 @@ export async function awardPetReward(db, request = {}) {
         AND EXISTS (SELECT 1 FROM telegram_pet_reward_claims WHERE claim_id = ? AND status = 'pending')`)
       .bind(petId || null, petId, eventId, telegramId, claimId),
     db.prepare(`UPDATE telegram_pet_events
-      SET pet_xp_awarded = MIN(?, MAX(0, ? - (SELECT COALESCE(SUM(pet_xp_awarded), 0) FROM telegram_pet_events WHERE telegram_id = ? AND day_key = ? AND status = 'accepted' ${petEventScope}))),
+      SET pet_xp_awarded = MIN(?, MAX(0, ? - (SELECT COALESCE(SUM(pet_xp_awarded), 0) FROM telegram_pet_events WHERE telegram_id = ? AND day_key = ? AND status = 'accepted'))),
           xp_awarded = MIN(?, MAX(0, ? - (SELECT COALESCE(SUM(xp_awarded), 0) FROM telegram_pet_events WHERE telegram_id = ? AND day_key = ? AND status = 'accepted'))),
           status = 'accepted', reason = ?, metadata = ?
       WHERE id = ? AND status = 'pending'
         AND EXISTS (SELECT 1 FROM telegram_pet_reward_claims WHERE claim_id = ? AND status = 'pending')
         ${petAuthority ? 'AND pet_id = ?' : 'AND pet_id IS NULL'}
       RETURNING pet_xp_awarded, xp_awarded`)
-      .bind(rewards.pet_xp, DAILY_PET_XP_CAP, telegramId, dayKey, ...(petAuthority ? [petId] : []), rewards.community_xp, DAILY_COMMUNITY_XP_CAP, telegramId, dayKey, reason, metadata, eventId, claimId, ...(petAuthority ? [petId] : [])),
+      .bind(rewards.pet_xp, DAILY_PET_XP_CAP, telegramId, dayKey, rewards.community_xp, DAILY_COMMUNITY_XP_CAP, telegramId, dayKey, reason, metadata, eventId, claimId, ...(petAuthority ? [petId] : [])),
     petlessReservation
       ? db.prepare('SELECT 1')
       : db.prepare(`UPDATE ${petAuthority ? 'telegram_pet_instances' : 'telegram_pet_profiles'} SET

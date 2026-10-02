@@ -474,7 +474,8 @@ test('pre-upgrade paid receipts remain replayable without inventing historical a
     if (!s.query.includes('UPDATE telegram_pet_activity_sessions') || !s.query.includes('SET metadata = ?')) return;
     f.db.beforeRun=null; throw Error('interrupted_settlement');
   };
-  await assert.rejects(f.act({action:'activity_claim'}),/interrupted_settlement/);
+  const pending=await f.act({action:'activity_claim'});
+  assert.equal(pending.accepted,true);assert.equal(pending.refresh_state,true);assert.equal(pending.recovery_pending,true);
   // Match a receipt paid by the previous Worker: account receipt, no pet ID.
   f.sql.prepare('UPDATE telegram_pet_events SET pet_id=NULL').run();
   f.sql.prepare('UPDATE telegram_pet_reward_claims SET pet_id=NULL').run();
@@ -511,4 +512,76 @@ test('Kaiju recovery keeps its reservation pet, original accounting and single e
   assert.equal((await f.get('/telegram/leaderboard')).entries[0].xp,8);
   assert.equal((await hooks.awardPetKaijuPlayerResult(f.db,f.owner,match,'kaiju_win',rewards)).duplicate,true);
   assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='kaiju_battle'").get().n,1);
+});
+
+test('care and jobs share the account XP allowance after a real pet switch', async () => {
+  const f=fixture('account-cap-care-work'),source='current-'+f.owner;
+  f.pet('account-cap-replacement',currentSeason,300,2);
+  assert.equal((await hooks.awardPetReward(f.db,{telegram_id:f.owner,pet_id:source,season_key:currentSeason,
+    source:'pet_action',idempotency_key:'account-cap-fill',event_key:'account-cap-fill',rewards:{pet_xp:1199}})).pet_xp_awarded,1199);
+  assert.equal((await hooks.switchActivePetSeasonSlot(f.db,f.owner,'account-cap-replacement')).accepted,true);
+  const feed=await f.act({action:'feed',request_id:'cap-feed'});
+  assert.equal(feed.accepted,true);assert.equal(feed.pet_xp_awarded,1);
+  const work=await f.act({action:'work',job_key:'street_artist',request_id:'cap-work'});
+  assert.equal(work.accepted,true);assert.equal(work.pet_xp_awarded,0);
+  assert.equal(work.rewards.moon_gold,18,'an exhausted XP allowance does not discard another earned asset');
+  assert.equal(f.sql.prepare("SELECT SUM(pet_xp_awarded) xp FROM telegram_pet_events WHERE telegram_id=? AND day_key=? AND status='accepted'")
+    .get(f.owner,new Date().toISOString().slice(0,10)).xp,1200);
+  assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(source).pet_xp,1399);
+  assert.equal(f.sql.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id='account-cap-replacement'").get().pet_xp,301);
+  assert.equal(f.sql.prepare("SELECT pet_id FROM telegram_pet_events WHERE event_type='work'").get().pet_id,'account-cap-replacement');
+});
+
+test('an activity start remains accepted when its saved-session projection fails', async () => {
+  const f=fixture('activity-start-refresh');let started=false;
+  f.db.afterBatch=ss=>{if(ss.some(s=>s.query.includes('INSERT INTO telegram_pet_activity_sessions')))started=true;};
+  f.db.beforeRead=s=>{if(started&&/SELECT \* FROM telegram_pet_activity_sessions/.test(s.query))throw Error('activity_projection_unavailable');};
+  const result=await f.act({action:'activity_start',activity_type:'explore'});
+  assert.equal(result.accepted,true);assert.equal(result.reason,'started');assert.equal(result.refresh_state,true);
+  assert.equal(result.session.id,f.sql.prepare("SELECT id FROM telegram_pet_activity_sessions WHERE status='active'").get().id);
+  f.db.beforeRead=null;f.db.afterBatch=null;
+  assert.equal((await f.act({action:'activity_start',activity_type:'explore'})).reason,'already_busy');
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_activity_sessions').get().n,1);
+});
+
+for(const fault of ['profile-read','settled-marker','settled-marker-resolved']) test(`a paid activity retains its exact reward and recovery after ${fault} fails`,async()=>{
+  const f=fixture('activity-paid-'+fault),source='current-'+f.owner;
+  assert.equal((await f.act({action:'activity_start',activity_type:'explore'})).accepted,true);
+  f.sql.prepare("UPDATE telegram_pet_activity_sessions SET started_at=datetime('now','-2 hours')").run();
+  let paid=false;
+  f.db.afterBatch=ss=>{if(ss.some(s=>/UPDATE telegram_pet_events\s+SET pet_xp_awarded = MIN/.test(s.query)))paid=true;};
+  if(fault==='profile-read')f.db.beforeRead=s=>{if(paid&&/SELECT \* FROM telegram_pet_profiles/.test(s.query))throw Error('activity_postpaid_read_unavailable');};
+  else f.db.beforeRun=s=>{
+    if(!paid||!/UPDATE telegram_pet_activity_sessions\s+SET metadata =/.test(s.query))return;
+    if(fault==='settled-marker-resolved')s.exec=()=>({success:false,error:'activity_marker_unavailable',meta:{changes:0}});
+    else throw Error('activity_settled_marker_unavailable');
+  };
+  const result=await f.act({action:'activity_claim'});
+  assert.equal(result.accepted,true);assert.equal(result.refresh_state,true);assert.equal(result.recovery_pending,true);
+  assert.equal(result.pet_xp_awarded,36);assert.equal(result.rewards.moon_gold,32);
+  const xp=f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(source).pet_xp;
+  const gold=f.sql.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner).moon_gold;
+  assert.equal(xp,236);assert.equal(gold,1032);
+  assert.equal(JSON.parse(f.sql.prepare('SELECT metadata FROM telegram_pet_activity_sessions').get().metadata).claim_state,'claiming');
+  f.db.beforeRead=null;f.db.beforeRun=null;f.db.afterBatch=null;
+  const retry=await f.act({action:'activity_claim'});
+  assert.equal(retry.accepted,true);assert.equal(retry.duplicate,true);assert.equal(retry.pet_xp_awarded,36);
+  assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(source).pet_xp,xp);
+  assert.equal(f.sql.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner).moon_gold,gold);
+  assert.equal(f.sql.prepare("SELECT quantity FROM telegram_pet_inventory WHERE asset_key='adventure_map'").get().quantity,1);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='activity_claim' AND status='accepted'").get().n,1);
+  assert.equal(JSON.parse(f.sql.prepare('SELECT metadata FROM telegram_pet_activity_sessions').get().metadata).claim_state,'settled');
+});
+
+test('an activity reward transaction failure stays retryable before any payout',async()=>{
+  const f=fixture('activity-prepaid-failure');
+  assert.equal((await f.act({action:'activity_start',activity_type:'explore'})).accepted,true);
+  f.sql.prepare("UPDATE telegram_pet_activity_sessions SET started_at=datetime('now','-2 hours')").run();
+  f.db.beforeBatch=ss=>{if(ss.some(s=>/UPDATE telegram_pet_events\s+SET pet_xp_awarded = MIN/.test(s.query)))throw Error('activity_reward_write_unavailable');};
+  await assert.rejects(f.act({action:'activity_claim'}),/activity_reward_write_unavailable/);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='activity_claim'").get().n,0);
+  assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances').get().pet_xp,200);
+  f.db.beforeBatch=null;
+  assert.equal((await f.act({action:'activity_claim'})).accepted,true);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='activity_claim'").get().n,1);
 });

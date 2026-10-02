@@ -676,7 +676,7 @@ const capped = await awardPetReward(db, {
   telegram_id: 'reserved', pet_id: 'pet-reserved', source: 'pet_job', idempotency_key: 'after-reservation',
   rewards: { pet_xp: 20 }, now: '2026-08-17T12:01:00Z',
 });
-assert.equal(capped.pet_xp_awarded, 10, 'reservation settlement must count toward the immutable pet daily cap');
+assert.equal(capped.pet_xp_awarded, 10, 'reservation settlement must count toward the account daily cap while retaining its immutable pet');
 assert.equal(db.database.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id='pet-reserved'").get().pet_xp, 1200);
 
 db.database.prepare(`INSERT INTO telegram_pet_runs

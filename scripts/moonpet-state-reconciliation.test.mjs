@@ -93,6 +93,50 @@ async function ownedPets(owner) {
   return f;
 }
 
+test('missing starter recovery reloads a paid pet selected by concurrent preparation without cloning its XP', async () => {
+  const f = await ownedPets('missing-starter-selection');
+  assert.equal(f.profile().pet_xp, 200);
+  f.sql.prepare('DELETE FROM telegram_pet_instances WHERE pet_id=?').run(f.a);
+  const paidClaims = f.sql.prepare('SELECT * FROM telegram_pet_reward_claims WHERE pet_id=? ORDER BY claim_id').all(f.b);
+  const raced = f.before(s => /INSERT OR IGNORE INTO telegram_pet_instances\s*\(/.test(s.query), async () => {
+    assert.equal(await hooks.preparePetMiniAppState(f.db, f.owner), true);
+    assert.equal(f.active(), f.b);
+    assert.equal(f.profile().pet_xp, 300);
+  });
+  const recovered = await hooks.readActivePetInstance(f.db, f.owner);
+  raced();
+  assert.equal(recovered.pet_id, f.b);
+  assert.equal(recovered.pet_xp, 300);
+  assert.equal(f.instance(f.a), undefined, 'the missing starter remains unavailable rather than copying the selected paid pet');
+  assert.equal(f.instance(f.b).pet_xp, 300);
+  assert.equal(f.profile().pet_xp, 300);
+  assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_reward_claims WHERE pet_id=? ORDER BY claim_id').all(f.b), paidClaims);
+});
+
+test('missing starter recovery retries a changed profile snapshot instead of saving stale training', async () => {
+  const f = await adoptedPlayer('missing-starter-profile');
+  f.sql.prepare('UPDATE telegram_pet_profiles SET pet_xp=200 WHERE telegram_id=?').run(f.owner);
+  f.sql.prepare('DELETE FROM telegram_pet_instances WHERE pet_id=?').run(f.a);
+  const raced = f.before(s => /INSERT OR IGNORE INTO telegram_pet_instances\s*\(/.test(s.query), async () => {
+    f.sql.prepare('UPDATE telegram_pet_profiles SET pet_xp=275 WHERE telegram_id=?').run(f.owner);
+  });
+  const recovered = await hooks.readActivePetInstance(f.db, f.owner);
+  raced();
+  assert.equal(recovered.pet_id, f.a);
+  assert.equal(recovered.pet_xp, 275);
+  assert.equal(f.instance(f.a).pet_xp, 275);
+  assert.equal(f.profile().pet_xp, 275);
+});
+
+test('missing paid instance recovery stays unavailable despite an intact starter', async () => {
+  const f = await ownedPets('missing-paid-instance');
+  assert.equal((await hooks.switchActivePetSeasonSlot(f.db, f.owner, f.b)).accepted, true);
+  f.sql.prepare('DELETE FROM telegram_pet_instances WHERE pet_id=?').run(f.b);
+  assert.equal(await hooks.readActivePetInstance(f.db, f.owner), null);
+  assert.equal(f.instance(f.b), undefined);
+  assert.equal(f.instance(f.a).pet_xp, 200);
+});
+
 test('a stale profile mirror reloads the selected pet without copying another pet state', async () => {
   const f = await ownedPets('mirror-switch');
   assert.equal((await f.award(f.a, 20, 'mirror-switch:late-A')).accepted, true);
@@ -213,7 +257,7 @@ test('a reward caller without pet_id freezes its original active instance across
   assert.equal(f.instance(f.b).pet_xp, 300);
 });
 
-test('concurrent implicit rewards retain legacy nullable cap evidence without reducing explicit per-pet allowances', async () => {
+test('concurrent implicit and explicit rewards retain legacy nullable account cap evidence', async () => {
   const f = await adoptedPlayer('implicit-legacy-cap');
   const day = new Date().toISOString().slice(0, 10);
   f.sql.prepare(`INSERT INTO telegram_pet_events
@@ -234,29 +278,32 @@ test('concurrent implicit rewards retain legacy nullable cap evidence without re
   assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_key LIKE 'implicit-cap:%' AND pet_id=?").get(f.a).n, 2);
   assert.equal((await hooks.buyPetSeasonSlot(f.db, f.owner, 2)).accepted, true);
   const other = f.sql.prepare("SELECT pet_id FROM telegram_pet_season_slots WHERE telegram_id=? AND acquisition_type='arcade_xp'").get(f.owner).pet_id;
-  assert.equal((await f.award(other, 100, 'explicit-pet-cap')).pet_xp_awarded, 100,
-    'a distinct explicitly recorded pet retains its own daily XP allowance');
-  assert.equal(f.instance(other).pet_xp, 100);
+  assert.equal((await f.award(other, 100, 'explicit-pet-cap')).pet_xp_awarded, 0,
+    'selecting or explicitly recording another pet cannot reopen the account daily allowance');
+  assert.equal(f.instance(other).pet_xp, 0);
 });
 
-test('implicit rewards count their frozen pet receipts without consuming another pet daily allowance', async () => {
+test('concurrent rewards share the account daily allowance while retaining each frozen source pet', async () => {
   const f = await adoptedPlayer('implicit-per-pet-cap');
   assert.equal((await hooks.buyPetSeasonSlot(f.db, f.owner, 2)).accepted, true);
   f.b = f.sql.prepare("SELECT pet_id FROM telegram_pet_season_slots WHERE telegram_id=? AND acquisition_type='arcade_xp'").get(f.owner).pet_id;
-  assert.equal((await f.award(f.b, 1200, 'implicit-per-pet-cap:other')).pet_xp_awarded, 1200);
+  assert.equal((await f.award(f.b, 1190, 'implicit-per-pet-cap:other')).pet_xp_awarded, 1190);
   const award = (key, xp) => hooks.awardPetReward(f.db, {
     telegram_id: f.owner, source: 'pet_action', idempotency_key: key,
     event_key: key, rewards: { pet_xp: xp },
   });
-  const first = await Promise.all([1, 2].map(index => award('implicit-per-pet-cap:' + index, 100)));
+  const first = await Promise.all([award('implicit-per-pet-cap:1', 100), f.award(f.b,100,'implicit-per-pet-cap:2')]);
   assert.equal(first.every(result => result.accepted), true);
-  assert.equal(first.reduce((sum, result) => sum + result.pet_xp_awarded, 0), 200,
-    'another pet reaching its cap cannot withhold this pet allowance');
-  assert.equal((await award('implicit-per-pet-cap:fill', 1100)).pet_xp_awarded, 1000,
-    'new attributed implicit receipts participate in the same pet daily cap');
+  assert.equal(first.reduce((sum, result) => sum + result.pet_xp_awarded, 0), 10,
+    'concurrent implicit and explicit pet sources cannot exceed the same owner allowance');
+  assert.equal(f.sql.prepare('SELECT pet_id FROM telegram_pet_events WHERE event_key=?').get('implicit-per-pet-cap:1').pet_id,f.a);
+  assert.equal(f.sql.prepare('SELECT pet_id FROM telegram_pet_events WHERE event_key=?').get('implicit-per-pet-cap:2').pet_id,f.b);
+  assert.equal((await award('implicit-per-pet-cap:fill', 1100)).pet_xp_awarded, 0);
   assert.equal((await award('implicit-per-pet-cap:exhausted', 10)).pet_xp_awarded, 0);
-  assert.equal(f.instance(f.a).pet_xp, 1200);
-  assert.equal(f.instance(f.b).pet_xp, 1200);
+  assert.equal(f.instance(f.a).pet_xp+f.instance(f.b).pet_xp,1200);
+  const otherOwner=await adoptedPlayer('independent-cap-owner');
+  assert.equal((await otherOwner.award(otherOwner.a,100,'independent-owner')).pet_xp_awarded,100,
+    'another owner keeps a separate daily allowance');
 });
 
 test('deleting the target before a switch transaction leaves the current pet and mirror intact', async () => {

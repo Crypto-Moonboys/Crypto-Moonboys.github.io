@@ -3,7 +3,8 @@
 
   var tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
   var apiConfig = window.MOONBOYS_API || {};
-  var apiBase = apiConfig.BASE_URL || 'https://api.cryptomoonboys.com';
+  var apiBase = typeof apiConfig.getApiBase === 'function' ? apiConfig.getApiBase({ mode: 'write' }) : apiConfig.BASE_URL;
+  apiBase = apiBase ? String(apiBase).replace(/\/$/, '') : '';
   var initData = '';
   var telegramAuth = null;
   var state = null;
@@ -244,9 +245,21 @@
     }
   }
 
+  function freshInheritedTelegramInitData(raw) {
+    var value = String(raw || '');
+    if (!value) return '';
+    try {
+      var authDate = Number(new URLSearchParams(value).get('auth_date'));
+      var age = Math.floor(Date.now() / 1000) - authDate;
+      // This is only a freshness filter for inherited launch data. The Worker
+      // still verifies the signature before loading or mutating any player save.
+      return Number.isSafeInteger(authDate) && authDate > 0 && age >= -300 && age <= 3600 ? value : '';
+    } catch (_) { return ''; }
+  }
+
   function refreshTelegramContext() {
     tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : tg;
-    initData = String(tg && tg.initData || launchParameter('tgWebAppData') || '');
+    initData = String(tg && tg.initData || '') || freshInheritedTelegramInitData(launchParameter('tgWebAppData'));
     return Boolean(initData);
   }
 
@@ -560,6 +573,7 @@
   }
 
   async function post(path, payload) {
+    if (!apiBase) throw new Error('API ENDPOINT DISABLED FOR THIS CONTEXT');
     // State is read-only and safe to retry on a fresh request context. A
     // transient D1 read must not strand the whole game on its startup screen.
     // Never retry /action here: mutations own their idempotency and response.
@@ -739,7 +753,7 @@
       options = Object.assign({}, options, { disabled: true, statusLabel: 'ARCADE XP REQUIRED' });
     }
     var accountActions = ['adopt', 'guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'delete_pet_slot', 'arena_queue_cancel', 'arena_forfeit', 'kaiju_queue_cancel', 'kaiju_match_cancel'];
-    var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles', 'weekly_boss_claim', 'contract_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim']);
+    var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles', 'bounty_claim', 'weekly_boss_claim', 'contract_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim']);
     if (state && state.lifecycle && state.lifecycle.phase === 'egg' && !eggActions.includes(action)) {
       options = Object.assign({}, options, { disabled: true, cooldown: null, statusLabel: 'HATCH REQUIRED' });
     } else if (state && state.adopted === false && !accountActions.includes(action)) {
@@ -1542,6 +1556,10 @@
             fullStateHydrationRetryTimer = 0;
             hydrateFullState(activeScreen);
           }, fullStateHydrationRetryDelayMs);
+        } else if (retryableScreen) {
+          // The catch rendered while this request was still in flight. Show
+          // the manual retry only after that request has finished and stopped.
+          render();
         }
       }
     }());
@@ -3734,9 +3752,13 @@
       window.setInterval(tickCooldownDom, 1000);
       window.setInterval(tickSeasonDisplay, 30000);
     } catch (error) {
-      tell(error.message || 'STARTUP FAILED', 'danger');
-      screen.innerHTML = '<div class="connection-fault">STARTUP FAULT // ' + escapeHtml(error.message || 'API UNAVAILABLE') + '</div><div class="button-grid one"><button type="button" class="terminal-button" data-utility="retry">RETRY CONNECTION</button></div>';
-      await typeBoot(['STARTUP FAULT', error.message || 'API UNAVAILABLE', 'USE RETRY CONNECTION BELOW'], { speed: 8, hold: 900 });
+      var authenticationFailed = Number(error.status) === 401;
+      var startupFaultMessage = authenticationFailed ? 'TELEGRAM SESSION EXPIRED OR INVALID. OPEN A FRESH SESSION FROM @WIKICOMSBOT.' : error.message || 'STARTUP FAILED';
+      tell(startupFaultMessage, 'danger');
+      screen.innerHTML = '<div class="connection-fault">STARTUP FAULT // ' + escapeHtml(error.message || 'API UNAVAILABLE') + '</div>' + (authenticationFailed
+        ? '<div class="line muted">Close this game and reopen Moonpet OS from the bot to get a fresh signed Telegram session.</div><div class="button-grid one"><a class="terminal-link-button" href="https://t.me/WIKICOMSBOT?start=moonpet" target="_blank" rel="noopener noreferrer">OPEN FRESH TELEGRAM SESSION</a></div>'
+        : '<div class="button-grid one"><button type="button" class="terminal-button" data-utility="retry">RETRY CONNECTION</button></div>');
+      await typeBoot(['STARTUP FAULT', startupFaultMessage, authenticationFailed ? 'REOPEN MOONPET OS FROM THE BOT' : 'USE RETRY CONNECTION BELOW'], { speed: 8, hold: 900 });
     }
   }
 

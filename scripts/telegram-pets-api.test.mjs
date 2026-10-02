@@ -1190,7 +1190,7 @@ assert.ok(runStep.includes('unbanked_pet_xp = 0'), 'failed runs must lose unbank
 assert.ok(runStep.includes("unbanked_items = '{}'"), 'failed runs must lose unbanked items');
 assert.ok(runStep.includes('PETS_DAILY_PET_XP_CAP'), 'failure consolation XP must respect pet XP cap');
 assert.ok(runStep.includes("'run_fail'"), 'failed runs must audit consolation XP as run_fail');
-assert.ok(runStep.includes('getPetDayXpTotal(db, run.pet_id, dayKey)'), 'failed-run consolation XP caps must use stored run pet authority');
+assert.ok(runStep.includes('getPetDayXpTotal(db, telegramId, dayKey)'), 'failed-run consolation XP uses the account daily cap');
 const startOrResumeRunSource = asyncBlock('startOrResumePetRun');
 assert.ok(startOrResumeRunSource.includes("const petId = String(pet.pet_id || '').trim()"), 'new run pet_id must be normalized once');
 assert.ok(startOrResumeRunSource.includes('.bind(crypto.randomUUID(), petId,'), 'new runs must persist the normalized pet_id');
@@ -1333,8 +1333,8 @@ const actionRoute = routeBlock('/telegram-pets/action');
 assert.ok(actionRoute.includes('expected_step_index: body.expected_step_index'), '/telegram-pets/action run_step must carry expected callback step index');
 assert.doesNotMatch(actionRoute, /mirrorPetProfileToActiveInstance/,
   '/telegram-pets/action must not overwrite accepted instance-owned rewards with a stale profile snapshot');
-assert.match(actionRoute, /const\s+apiRuntimeAction[\s\S]*await\s+getPetProfile\(env\.DB,\s*telegramId\)[\s\S]*if\s*\(result\.pet\)/,
-  '/telegram-pets/action must reconcile legacy profile and per-pet instance writes after action processing');
+assert.match(actionRoute, /const\s+apiRuntimeAction[\s\S]*preserveCommittedPetActionResult\(result,[\s\S]*await\s+getPetProfile\(env\.DB,\s*telegramId\)[\s\S]*return result\.pet \? \{ \.\.\.result, pet: selected \} : result/,
+  '/telegram-pets/action must reconcile the selected profile without revoking a durably saved action');
 
 assert.deepEqual(
   getUnaffordablePetRunCosts({}, { moon_gold: 4, moon_crystals: 1, style_tokens: 2 }, { moon_gold: 3, moon_crystals: 1, style_tokens: 0 }),
@@ -3413,11 +3413,10 @@ committedActivity.db.beforeRun = async (sql) => {
     throw new Error('simulated_activity_settlement_failure');
   }
 };
-await assert.rejects(
-  claimPetActivitySession(committedActivity.db, 'activity-committed-retry', { now: activityNow, source: 'activity_claim_regression' }),
-  /simulated_activity_settlement_failure/,
-  'a caller failure after reward commit must leave the committed award recoverable',
-);
+const committedActivityPending = await claimPetActivitySession(committedActivity.db, 'activity-committed-retry', { now: activityNow, source: 'activity_claim_regression' });
+assert.equal(committedActivityPending.accepted, true, 'a caller failure after reward commit must preserve the accepted payout');
+assert.equal(committedActivityPending.refresh_state, true);
+assert.equal(committedActivityPending.recovery_pending, true, 'the saved activity must remain recoverable until its acknowledgement succeeds');
 committedActivity.db.beforeRun = null;
 assert.equal(committedActivity.db.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_events WHERE telegram_id = 'activity-committed-retry' AND event_type = 'activity_claim'").get().count, 1,
   'the interrupted caller must have exactly one committed reward event');
@@ -4310,7 +4309,7 @@ assert.equal(failedStepResult.reason, 'run_failed');
 const failedStepLedger = failedStepEventDb.database.prepare("SELECT pet_id, pet_xp_awarded FROM telegram_pet_events WHERE event_type='run_fail'").get();
 assert.equal(failedStepLedger.pet_id, failedStepPet.pet_id, 'failed-step consolation XP must be visible in the run pet ledger');
 assert.equal(failedStepLedger.pet_xp_awarded, failedStepResult.pet_xp_awarded);
-assert.ok(failedStepLedger.pet_xp_awarded > 0, 'another pet consuming its cap cannot suppress this run pet consolation XP');
+assert.equal(failedStepLedger.pet_xp_awarded, 0, 'another pet consuming the account cap suppresses new consolation XP while preserving the source pet ledger');
 assert.equal(failedStepEventDb.database.prepare('SELECT season_xp FROM telegram_pet_season_state WHERE telegram_id=? AND season_key=?')
   .get('failed-step-event', __petMediaTestHooks.getPetSeasonInfo(new Date()).key).season_xp, failedStepLedger.pet_xp_awarded,
   'failed-run XP counts in the award competition period while remaining on the original pet');
