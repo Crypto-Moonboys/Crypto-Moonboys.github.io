@@ -42,9 +42,11 @@ class Statement {
   }
 }
 class D1 {
-  constructor() { this.database = new DatabaseSync(':memory:'); this.beforeFirst = null; this.beforeAll = null; this.beforeRun = null; }
+  constructor() { this.database = new DatabaseSync(':memory:'); this.beforeFirst = null; this.beforeAll = null; this.beforeRun = null; this.beforeBatch = null; }
   prepare(sql) { return new Statement(this, sql); }
   async batch(statements) {
+    const override = await this.beforeBatch?.(statements);
+    if (override !== undefined) return override;
     this.database.exec('BEGIN IMMEDIATE');
     try { const results = []; for (const statement of statements) results.push(await statement.run()); this.database.exec('COMMIT'); return results; }
     catch (error) { this.database.exec('ROLLBACK'); throw error; }
@@ -263,6 +265,49 @@ await assert.rejects(
 );
 recoveryDb.beforeAll = null;
 assert.equal(recoveryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_events_by_pet WHERE event_key='recovery:resolved-receipt-read'").get().count, 0);
+
+// These driver-result failures do not execute SQL. They prove fail-closed
+// acknowledgement/follow-up behavior, separately from the real SQL rollback
+// test below. Earlier statements' changes metadata is not commit authority.
+const batchFailures = [
+  ...[0, 1, 2, 3].map(index => [`statement-${index + 1}`, () => Array.from({ length: 4 }, (_, position) =>
+    position === index ? { success: false, error: 'injected_resolved_care_failure', meta: { changes: 1 } }
+      : { success: true, meta: { changes: 1 } })]),
+  ['missing-result', () => Array.from({ length: 3 }, () => ({ meta: { changes: 1 } }))],
+  ['extra-result', () => Array.from({ length: 5 }, () => ({ meta: { changes: 1 } }))],
+  ['missing-changes', () => [{ meta: { changes: 1 } }, { meta: { changes: 1 } }, { meta: { changes: 1 } }, { success: true }]],
+];
+for (const [failure, failedResults] of batchFailures) {
+  const before = {
+    lifecycle: recoveryDb.database.prepare('SELECT * FROM telegram_pet_lifecycle_by_pet').all(),
+    events: recoveryDb.database.prepare('SELECT * FROM telegram_pet_lifecycle_events_by_pet').all(),
+    marks: recoveryDb.database.prepare('SELECT * FROM telegram_pet_growth_marks').all(),
+  };
+  let injected = false, followUps = 0;
+  const observeFollowUp = () => { if (injected) followUps += 1; };
+  recoveryDb.beforeFirst = observeFollowUp;
+  recoveryDb.beforeAll = observeFollowUp;
+  recoveryDb.beforeRun = observeFollowUp;
+  recoveryDb.beforeBatch = statements => {
+    if (injected) { followUps += 1; return; }
+    if (statements.length !== 4 || !statements[0].args.includes('incubate_warm')) return;
+    injected = true;
+    return failedResults();
+  };
+  await assert.rejects(
+    incubateMoonEgg(recoveryDb, 'recovery-player', 'warm', `recovery:care-batch:${failure}`, new Date('2026-08-02T12:00:00Z')),
+    /pet_state_write_unavailable/,
+    `${failure} cannot acknowledge care or continue Growth Mark settlement`,
+  );
+  assert.equal(injected, true, `${failure} must reach the real four-statement care batch`);
+  assert.equal(followUps, 0, `${failure} must stop before projection, settlement or acknowledgement`);
+  assert.deepEqual({
+    lifecycle: recoveryDb.database.prepare('SELECT * FROM telegram_pet_lifecycle_by_pet').all(),
+    events: recoveryDb.database.prepare('SELECT * FROM telegram_pet_lifecycle_events_by_pet').all(),
+    marks: recoveryDb.database.prepare('SELECT * FROM telegram_pet_growth_marks').all(),
+  }, before, `${failure} driver injection performs no SQL writes`);
+  recoveryDb.beforeFirst = null; recoveryDb.beforeAll = null; recoveryDb.beforeRun = null; recoveryDb.beforeBatch = null;
+}
 
 let failGrowthMarkOnce = true;
 recoveryDb.beforeRun = (sql) => {

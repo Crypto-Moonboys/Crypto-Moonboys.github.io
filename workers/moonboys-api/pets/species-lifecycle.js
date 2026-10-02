@@ -1,5 +1,5 @@
 import { awardPetGrowthMark } from './season-completion.js';
-import { requirePetReadResult } from './read-result.js';
+import { requirePetReadResult, requirePetMutationResult } from './read-result.js';
 import { PET_INSTANCE_AUTHORITY_VERSION } from './wallet-reconciliation.js';
 import { projectCommittedPetResult } from './committed-result.js';
 
@@ -388,6 +388,15 @@ export async function incubateMoonEgg(db, telegramId, careType, eventKey, now = 
       .bind(`growth:${row.pet_id}:${row.season_key}:incubation_care:incubation:${key}`, `incubation:${key}`, dayKey,
         new Date(now).toISOString(), row.pet_id, id, row.season_key, eventId),
   ]);
+  // A resolved D1 error is still a failed transaction. Validate the complete
+  // care/receipt/Mark response before acknowledging any of its saved changes.
+  if (!Array.isArray(results) || results.length !== 4) throw new Error('pet_state_write_unavailable');
+  for (const result of results) {
+    requirePetMutationResult(result);
+    if (!Number.isSafeInteger(result?.meta?.changes) || result.meta.changes < 0) {
+      throw new Error('pet_state_write_unavailable');
+    }
+  }
   const inserted = Number(results?.[0]?.meta?.changes || 0) === 1;
   const progressed = Number(results?.[1]?.meta?.changes || 0) === 1;
   const applied = Number(results?.[2]?.meta?.changes || 0) === 1;

@@ -315,6 +315,25 @@ export async function awardPetReward(db, request = {}) {
   const reason = String(request.reason || 'reward_awarded').trim().slice(0, 120);
   const profileDeltas = normalizeProfileDeltas(petlessReservation ? {} : request.profile_deltas);
   const currencyCosts = normalizeCurrencyCosts(request.currency_costs);
+  // Only the server's verified egg-bounty recovery path may skip pet state.
+  // Keep its immutable pet receipt while paying account currencies alone.
+  const eggCurrencyOnly = request.currency_only_egg_bounty === true;
+  if (Object.hasOwn(request, 'currency_only_egg_bounty') && (!eggCurrencyOnly || source !== 'pet_bounty' || !petId || reservationId
+    || rewards.pet_xp || rewards.community_xp || request.touch_streak === true
+    || Object.keys(rewards.items).length || Object.keys(rewards.materials).length || Object.keys(rewards.relics).length
+    || Object.values(profileDeltas).some(Boolean) || Object.values(currencyCosts).some(Boolean))) {
+    throw new Error('invalid_pet_reward_context');
+  }
+  if (eggCurrencyOnly) {
+    // Recheck the read-time egg decision in the settlement transaction. A
+    // concurrent hatch, switch or deletion must not change its payout policy.
+    authorization.sql += ` AND EXISTS (SELECT 1 FROM telegram_pet_instances p
+      JOIN telegram_pet_season_slots s ON s.pet_id=p.pet_id AND s.telegram_id=p.telegram_id AND s.season_key=p.season_key AND s.slot_number=p.slot_number
+      JOIN telegram_pet_active_slots a ON a.pet_id=p.pet_id AND a.telegram_id=p.telegram_id AND a.season_key=p.season_key
+      JOIN telegram_pet_lifecycle_by_pet l ON l.pet_id=p.pet_id AND l.telegram_id=p.telegram_id
+      WHERE p.pet_id=? AND p.telegram_id=? AND p.season_key=? AND p.status='active' AND s.status='active' AND l.phase='egg')`;
+    authorization.args.push(petId, telegramId, seasonKey);
+  }
   // Paid market bundles are all-or-nothing. Guard every included asset in the
   // same transaction as stock reservation and debit, before any capped writes.
   const capacity = { sql: '', args: [] };
@@ -385,7 +404,7 @@ export async function awardPetReward(db, request = {}) {
         ${petAuthority ? 'AND pet_id = ?' : 'AND pet_id IS NULL'}
       RETURNING pet_xp_awarded, xp_awarded`)
       .bind(rewards.pet_xp, DAILY_PET_XP_CAP, telegramId, dayKey, rewards.community_xp, DAILY_COMMUNITY_XP_CAP, telegramId, dayKey, reason, metadata, eventId, claimId, ...(petAuthority ? [petId] : [])),
-    petlessReservation
+    petlessReservation || eggCurrencyOnly
       ? db.prepare('SELECT 1')
       : db.prepare(`UPDATE ${petAuthority ? 'telegram_pet_instances' : 'telegram_pet_profiles'} SET
         pet_xp = pet_xp + COALESCE((SELECT pet_xp_awarded FROM telegram_pet_events WHERE id = ? AND metadata = ? AND status = 'accepted'), 0),
@@ -417,7 +436,7 @@ export async function awardPetReward(db, request = {}) {
           telegramId, eventId, metadata)
       : db.prepare(`SELECT 1 WHERE EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND metadata = ? AND status = 'accepted')`)
         .bind(eventId, metadata),
-    petlessReservation
+    petlessReservation || eggCurrencyOnly
       ? db.prepare('SELECT 1')
       : db.prepare(`UPDATE ${petAuthority ? 'telegram_pet_instances' : 'telegram_pet_profiles'} SET
         stage = CASE WHEN pet_xp >= 1800 THEN 'legendary companion' WHEN pet_xp >= 900 THEN 'moon guardian'

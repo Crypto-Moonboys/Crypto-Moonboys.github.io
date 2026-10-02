@@ -16492,10 +16492,17 @@ async function claimPetEconomyBounty(db, telegramId, bountyKey, now = new Date()
   const bounty = state.bounties.find((entry) => entry.key === String(bountyKey || ''));
   if (!bounty) return { accepted: false, reason: 'bounty_not_available', state };
   if (!bounty.complete) return { accepted: false, reason: 'bounty_incomplete', bounty, state };
-  const awarded = await awardPetReward(db, {
+  const lifecycle = await db.prepare('SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id=? AND telegram_id=?')
+    .bind(sourceAuthority.pet_id, telegramId).first().then(requirePetFirstReadResult);
+  const eggCurrencyOnly = lifecycle?.phase === 'egg';
+  // An account bounty may be recovered by a replacement egg, but it is not
+  // egg care. Skip the wrapper's pet decay and the reward writer's pet touches.
+  const award = eggCurrencyOnly ? awardLegacyPetReward : awardPetReward;
+  const awarded = await award(db, {
     ...sourceAuthority, telegram_id: telegramId, source: 'pet_bounty', idempotency_key: `${state.day_key}:${bounty.key}`,
     event_key: `pet:economy:bounty:${telegramId}:${state.day_key}:${bounty.key}`,
-    event_type: 'economy_bounty', reason: bounty.key, rewards: bounty.reward, touch_streak: true, now,
+    event_type: 'economy_bounty', reason: bounty.key, rewards: bounty.reward, touch_streak: !eggCurrencyOnly, now,
+    ...(eggCurrencyOnly ? { currency_only_egg_bounty: true } : {}),
     context: { bounty_key: bounty.key, verified_progress: bounty.progress },
   });
   return { ...awarded, reason: awarded.accepted ? 'bounty_claimed' : awarded.reason, bounty };
