@@ -573,6 +573,39 @@ for (const selectedSleeping of [false, true]) {
   assert.equal(actionContext.sleepLatched, selectedSleeping, 'a delayed wake preference also stays with its source');
 }
 
+// A notice acknowledgement is another authoritative read. It can select Pet B
+// after Pet A evolved, and must not start A's animation/lock on that companion.
+const noticesSource = client.slice(client.indexOf('  async function showPendingNotices('), client.indexOf('  function actionAnimationFamily('));
+const lifecycleSource = client.slice(client.indexOf('  // TEST-EXPORT: lifecycleDirector:start'), client.indexOf('  function scrollToPanel('));
+for (const changedDuringNotices of [true, false]) {
+  const requests = [], animations = [];
+  const original = { adopted: true, pet: { pet_id: 'evolving-pet', evolution_stage: 1, stage: 'Street Moonpet' }, lifecycle: { phase: 'young' } };
+  const evolved = { ...original, pet: { ...original.pet, evolution_stage: 2, stage: 'Cyber Moonpet' }, lifecycle: { phase: 'adult' }, notices: [{ key: 'evolved', title: 'New progress' }] };
+  const selected = changedDuringNotices ? { adopted: true, pet: { pet_id: 'selected-egg', evolution_stage: 0 }, lifecycle: { phase: 'egg' } } : evolved;
+  const actionContext = vm.createContext({
+    state: original, activeScreen: 'profile', busy: false, noticesBusy: false, petActionRefreshRequired: false, sleepLatched: false,
+    lifecycleCeremony: null, lifecycleCeremonyUntil: 0, lifecycleCeremonyTimer: 0, lifecycleCeremonyStartedAt: 0, reducedMotion: false,
+    window: { clearTimeout: () => {} }, crypto: { randomUUID: () => 'evolve-source-pet' }, performance: { now: () => 1 },
+    words: value => value, resolveMoonpetDisplayName: () => 'UNKNOWN', shouldUseFastActionResponse: () => false,
+    actionAnimationFamily: () => 'evolve', animateAction: (...args) => animations.push(args), tell: () => {}, haptic: () => {}, render: () => {},
+    beginStateRequest: () => requests.length, stateRequestGate: { isCurrent: () => true }, resultMessage: () => 'SAVED',
+    mergeActionResultCooldown: snapshot => snapshot, hatchArtTransitionActive: () => false,
+    readSleepLatch: () => false, selectBotArtForState: () => Promise.resolve(), scheduleCooldownRefresh: () => {},
+    async post(path, body) { requests.push(body.action); return { result: { accepted: true }, state: body.action === 'guidance_ack' ? selected : evolved }; },
+  });
+  vm.runInContext(runActionSource + setStateSnapshotSource + noticesSource + lifecycleSource, actionContext);
+  await actionContext.runAction('evolve', {});
+  assert.deepEqual(requests, ['evolve', 'guidance_ack']);
+  assert.equal(actionContext.state.pet.pet_id, selected.pet.pet_id);
+  assert.equal(actionContext.petActionRefreshRequired, false, 'a valid changed-pet read is not a connection failure');
+  assert.equal(actionContext.lifecycleCeremonyActive(), !changedDuringNotices, 'a notice refresh cannot transfer an evolution lock to another pet');
+  assert.equal(animations.length, changedDuringNotices ? 1 : 2, 'only the original pet receives the confirmed evolution animation');
+  if (!changedDuringNotices) {
+    actionContext.state = { pet: { pet_id: 'later-selected-pet' } };
+    assert.equal(actionContext.lifecycleCeremonyActive(), false, 'a later passive pet switch releases the previous pet ceremony lock');
+  }
+}
+
 // Earned account bounties remain claimable after deleting the only hatched pet.
 // The shipped Economy renderer still offers no claim for unfinished bounties.
 const economySource = client.slice(client.indexOf('  function valueText('), client.indexOf('  function renderProfile('));

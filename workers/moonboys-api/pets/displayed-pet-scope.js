@@ -34,8 +34,12 @@ export function createDisplayedPetScope(database, owner, petId) {
       // the active pet differs. A separate SELECT followed by writes would
       // recreate the race. D1 rolls back all statements on assertion failure.
       const results = await database.batch([...native, guard()]);
-      if (results.length !== entries.length + 1) throw new Error('pet_state_read_unavailable');
+      if (!Array.isArray(results) || results.length !== entries.length + 1) throw new Error('pet_state_read_unavailable');
       if (results.at(-1)?.success === false) throw new Error(results.at(-1).error || 'pet_state_read_unavailable');
+      // Passing the ownership assertion does not make an earlier failed
+      // statement successful. Never let callers treat it as saved progress or
+      // an empty read, even when a failed response carries results/metadata.
+      if (results.some(result => !result || result.success === false)) throw new Error('pet_state_read_unavailable');
       return results.slice(0, -1);
     } catch (error) {
       if (isDisplayedPetScopeStaleError(error)) changed = true;
@@ -56,7 +60,6 @@ export function createDisplayedPetScope(database, owner, petId) {
       bind(...args) { return wrap(native.bind(...args)); },
       async first(column) {
         const result = (await batch([statement]))[0];
-        if (result?.success === false) return result;
         if (!Array.isArray(result?.results)) throw new Error('pet_state_read_unavailable');
         const row = result.results[0] || null;
         return column === undefined ? row : row?.[column] ?? null;

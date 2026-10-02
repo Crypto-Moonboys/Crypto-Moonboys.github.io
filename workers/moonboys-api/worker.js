@@ -5969,10 +5969,19 @@ async function hasActivePetArenaBattle(db, chatId, telegramId) {
   const row = await db.prepare(`SELECT battle_id FROM telegram_pet_arena_battles WHERE chat_id = ? AND status IN ('readying', 'active') AND (player1_telegram_id = ? OR player2_telegram_id = ?) LIMIT 1`).bind(String(chatId), String(telegramId), String(telegramId)).first();
   return Boolean(row?.battle_id);
 }
-async function getPetArenaBattleForPlayer(db, chatId, telegramId) {
+async function expirePetArenaBattles(db, chatId) {
+  // The timer may abandon a round awaiting a player, but not a committed
+  // decision awaiting CPU/settlement recovery after an outage.
   await db.prepare(`UPDATE telegram_pet_arena_battles SET status='expired', completed_at=CURRENT_TIMESTAMP
-    WHERE chat_id=? AND status IN ('readying','active') AND COALESCE(expires_at, created_at) < ?`)
+    WHERE chat_id=? AND status IN ('readying','active') AND COALESCE(expires_at, created_at) < ?
+      AND NOT EXISTS (SELECT 1 FROM telegram_pet_arena_rounds r
+        WHERE r.battle_id=telegram_pet_arena_battles.battle_id AND r.round_number=telegram_pet_arena_battles.current_round
+          AND telegram_pet_arena_battles.status='active' AND r.player1_move IS NOT NULL
+          AND (r.player2_move IS NOT NULL OR telegram_pet_arena_battles.player2_telegram_id='app'))`)
     .bind(String(chatId), new Date().toISOString()).run();
+}
+async function getPetArenaBattleForPlayer(db, chatId, telegramId) {
+  await expirePetArenaBattles(db, chatId);
   return db.prepare(`SELECT * FROM telegram_pet_arena_battles
     WHERE chat_id=? AND status IN ('readying','active') AND (player1_telegram_id=? OR player2_telegram_id=?)
     ORDER BY created_at DESC LIMIT 1`).bind(String(chatId), String(telegramId), String(telegramId)).first();
@@ -6355,7 +6364,7 @@ async function applyPetArenaMove(db, battle, telegramId, expectedRound, move) {
 }
 async function cmdPetArena(db, tok, chatId, telegramId, argStr = '', chatType = '') {
   await db.prepare(`UPDATE telegram_pet_arena_queue SET status='expired', updated_at=CURRENT_TIMESTAMP WHERE chat_id=? AND status='waiting' AND updated_at < datetime('now', ?)`).bind(String(chatId), `-${PET_ARENA_QUEUE_TTL_MINUTES} minutes`).run().catch(() => {});
-  await db.prepare(`UPDATE telegram_pet_arena_battles SET status='expired', completed_at=CURRENT_TIMESTAMP WHERE chat_id=? AND status IN ('readying','active') AND COALESCE(expires_at, created_at) < ?`).bind(String(chatId), new Date().toISOString()).run().catch(() => {});
+  await expirePetArenaBattles(db, chatId).catch(() => {});
   const arg = String(argStr || '').trim();
   if (arg.startsWith('ff:')) { const battleId = arg.slice(3); const battle = await getPetArenaBattle(db, battleId); if (!battle || String(battle.chat_id) !== String(chatId)) { await sendTelegramMessage(tok, chatId, 'That Pet Arena battle expired. Run /petarena for a fresh match.'); return; } const done = await forfeitPetArenaBattle(db, battle, telegramId); const copy = await appendMoonpetReaction(db, telegramId, 'arena', formatPetArenaResult(done.battle || battle), null, { activity_label: 'the arena result' }); await sendTelegramMessage(tok, chatId, copy); return; }
   if (arg.startsWith('mv:')) { const [, battleId, roundText, move] = arg.match(/^mv:(a-[a-f0-9]{10}):(\d{1,2}):(ah|ab|bh|bb|ch|sp)$/) || []; const battle = await getPetArenaBattle(db, battleId); if (!battle || String(battle.chat_id) !== String(chatId) || Number(battle.current_round || 1) < 1 || !['active','completed'].includes(String(battle.status))) { await sendTelegramMessage(tok, chatId, 'Stale Pet Arena move. Choose from the latest round prompt.'); return; } const applied = await applyPetArenaMove(db, battle, telegramId, Number(roundText), move); if (applied.reason === 'stale_arena_round') { await sendTelegramMessage(tok, chatId, 'Stale Pet Arena move. Choose from the latest round prompt.'); return; } if (applied.reason === 'waiting_for_opponent') { await sendTelegramMessage(tok, chatId, 'Move locked. Waiting for opponent.'); return; } if (applied.reason === 'move_already_locked') { await sendTelegramMessage(tok, chatId, 'Move already locked for this round. Waiting for the next round.'); return; } const latestBattle = applied.battle || battle; const prompt = formatPetArenaRoundPrompt(latestBattle); const copy = latestBattle.status === 'completed' ? await appendMoonpetReaction(db, telegramId, 'arena', prompt, null, { activity_label: 'the arena result' }) : prompt; await sendTelegramMessage(tok, chatId, copy, { reply_markup: (latestBattle.status === 'active') ? buildPetArenaMoveReplyMarkup(battleId, latestBattle.current_round) : undefined }); return; }
@@ -7054,6 +7063,14 @@ async function processPetAction(db, telegramId, action, options = {}) {
   });
 }
 
+function requirePetShopMutationBatch(results, expectedLength) {
+  if (!Array.isArray(results) || results.length !== expectedLength) throw new Error('pet_state_write_unavailable');
+  for (const result of results) {
+    requirePetMutationResult(result);
+    if (!Number.isSafeInteger(result?.meta?.changes) || result.meta.changes < 0) throw new Error('pet_state_write_unavailable');
+  }
+}
+
 async function processPetShopPurchase(db, telegramId, itemKey, options = {}) {
   const key = normalizePetShopItemKey(itemKey);
   if (!key) return { accepted: false, reason: 'invalid_shop_item', xp_awarded: 0, pet_xp_awarded: 0 };
@@ -7127,7 +7144,8 @@ async function processPetShopPurchase(db, telegramId, itemKey, options = {}) {
       SELECT ?,?,? WHERE EXISTS (SELECT 1 FROM telegram_pet_events WHERE id=? AND status='accepted')`)
       .bind(telegramId, item.key, item.slot, eventId),
   ]);
-  if (!purchaseResults?.[4]?.results?.[0]) {
+  requirePetShopMutationBatch(purchaseResults, 6);
+  if (!purchaseResults[4]?.results?.[0]) {
     const acceptedDuplicate = await buildAcceptedPetEventDuplicate(db, telegramId, eventKey, pet, { item });
     if (acceptedDuplicate) return acceptedDuplicate;
     const currentPet = await getPetProfile(db, telegramId);
@@ -7182,7 +7200,8 @@ async function processPetEquipmentEquip(db, telegramId, itemKey, options = {}) {
     db.prepare(`UPDATE telegram_pet_events SET status='accepted',reason='equipment_equipped'
       WHERE id=? AND status='pending' RETURNING id`).bind(id),
   ]);
-  if (!results?.[3]?.results?.length) {
+  requirePetShopMutationBatch(results, 4);
+  if (!results[3]?.results?.length) {
     const replay = await buildAcceptedPetEventDuplicate(db, telegramId, eventKey, pet, { item });
     return replay || { accepted: false, reason: 'equipment_state_changed', item };
   }
@@ -14523,7 +14542,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20261002-direction-fixes-v2`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20261002-direction-fixes-v3`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',

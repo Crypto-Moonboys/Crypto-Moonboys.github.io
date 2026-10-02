@@ -115,6 +115,7 @@ export async function withPetEquipmentProgression(db, pet, includeOwned = false)
 
 // Repair previously equipped/purchased inventory without charging again or
 // inventing historical mastery. New purchases create their row atomically.
+// Pre-cutover purchases have no pet ID but still prove account-owned gear.
 export async function recoverPetEquipmentRows(db, owner) {
   const definitions = Object.entries(PET_EQUIPMENT_UTILITY);
   const slots = [...new Set(definitions.map(([, item]) => item.slot))];
@@ -125,8 +126,9 @@ export async function recoverPetEquipmentRows(db, owner) {
       SELECT d.item_key FROM definitions d JOIN owned_pets p
         ON d.item_key IN (${slots.map(slot => `p.equipped_${slot}`).join(',')})
       UNION SELECT json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.item_key')
-        FROM telegram_pet_events e JOIN owned_pets p ON p.pet_id=e.pet_id AND p.season_key=e.season_key
+        FROM telegram_pet_events e
         WHERE e.telegram_id=? AND e.event_type='buy' AND e.status='accepted'
+          AND (e.pet_id IS NULL OR EXISTS (SELECT 1 FROM owned_pets p WHERE p.pet_id=e.pet_id AND p.season_key=e.season_key))
     ) INSERT OR IGNORE INTO telegram_pet_equipment_progression (telegram_id,item_key,slot)
       SELECT ?,d.item_key,d.slot FROM definitions d JOIN ownership o ON o.item_key=d.item_key`)
     .bind(...definitions.flatMap(([key, item]) => [key,item.slot]), owner, owner, owner).run();

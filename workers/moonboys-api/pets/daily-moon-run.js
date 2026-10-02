@@ -500,7 +500,7 @@ export async function recoverDailyMoonRunEndings(db, telegramId, now = new Date(
   }
   // An early terminal transition can also precede its quest/record writes.
   // These runs have no won final boss to settle and must never receive one.
-  const terminalRecords = requirePetReadResult(await db.prepare(`SELECT d.run_id,d.utc_day,recovery_state.setting_value AS recovery_cursor FROM telegram_pet_daily_runs d
+  const terminalRecords = requirePetReadResult(await db.prepare(`SELECT d.run_id,d.utc_day,r.status,recovery_state.setting_value AS recovery_cursor FROM telegram_pet_daily_runs d
     JOIN telegram_pet_runs r ON r.run_id=d.run_id AND r.telegram_id=d.telegram_id AND r.pet_id=d.pet_id
     JOIN telegram_pet_instances i ON i.pet_id=r.pet_id AND i.telegram_id=r.telegram_id AND i.season_key=r.season_key
     JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id AND s.season_key=i.season_key AND s.slot_number=i.slot_number
@@ -508,7 +508,10 @@ export async function recoverDailyMoonRunEndings(db, telegramId, now = new Date(
     WHERE d.telegram_id=? AND r.max_room>0 AND r.current_room<r.max_room AND r.status IN ('extracted','failed','abandoned')
       AND EXISTS (SELECT 1 FROM telegram_pet_run_rooms f WHERE f.run_id=r.run_id AND f.telegram_id=r.telegram_id
         AND f.pet_id=r.pet_id AND f.room_number<=r.current_room+1 AND f.status IN ('resolved','failed'))
-      AND (d.status<>r.status OR NOT EXISTS (SELECT 1 FROM telegram_pet_daily_analytics a
+      AND (d.status<>r.status OR r.status='extracted' AND NOT EXISTS (SELECT 1 FROM telegram_pet_reward_claims c
+        WHERE c.telegram_id=r.telegram_id AND c.pet_id=r.pet_id AND c.source='roguelite_completion'
+          AND c.idempotency_key=r.run_id||':extract' AND c.status='awarded')
+        OR NOT EXISTS (SELECT 1 FROM telegram_pet_daily_analytics a
         WHERE a.analytics_id=r.run_id||':daily:terminal' AND a.applied_at IS NOT NULL)
         OR r.status='extracted' AND NOT EXISTS (SELECT 1 FROM telegram_pet_events e
           WHERE e.telegram_id=d.telegram_id AND e.pet_id=d.pet_id AND e.season_key=r.season_key
@@ -520,7 +523,13 @@ export async function recoverDailyMoonRunEndings(db, telegramId, now = new Date(
     try {
       recordCursor = await advanceDailyRecoveryCursor(db, telegramId, 'records', candidate, recordCursor);
       if (recordCursor === null) break;
-      results.push(await syncDailyMoonRun(db, { telegram_id: String(telegramId), run_id: candidate.run_id, now }));
+      const request = { telegram_id: String(telegramId), run_id: candidate.run_id, now };
+      // Extraction commits its terminal state before identity and the zero-value
+      // completion receipt. Replay that saved source before sealing its records;
+      // otherwise an interrupted receipt permanently blocks safe pet deletion.
+      results.push(candidate.status === 'extracted'
+        ? await extractDailyMoonRun(db, request)
+        : await syncDailyMoonRun(db, request));
     } catch (error) { console.error('daily_run_records_pending', error?.message || String(error)); }
   }
   return results;

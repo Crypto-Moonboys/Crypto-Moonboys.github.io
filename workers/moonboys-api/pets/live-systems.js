@@ -296,6 +296,7 @@ export async function processPetCraftRecipe(db, telegramId, recipeKey, requestKe
     db.prepare("UPDATE telegram_pet_system_events SET status='completed', payload_json=?, updated_at=CURRENT_TIMESTAMP WHERE id=? AND status='settling'")
       .bind(JSON.stringify({ key: recipe.key, title: recipe.title, cost: recipe.cost, output: recipe.output }), reservation.id),
   ]);
+  requireLiveMutationBatch(results, costs.length + 3);
   if (Number(results[0]?.meta?.changes || 0) < 1 || Number(results.at(-2)?.meta?.changes || 0) < 1) {
     await db.prepare("UPDATE telegram_pet_system_events SET status='rejected', updated_at=CURRENT_TIMESTAMP WHERE id=? AND status<>'completed'").bind(reservation.id).run();
     return { accepted: false, reason: 'crafting_settlement_conflict', cost: recipe.cost };
@@ -309,7 +310,7 @@ async function reserveSystemEvent(db, telegramId, system, action, period, payloa
   const seasonKey = authority?.season_key || '';
   const result = await db.prepare(`INSERT OR IGNORE INTO telegram_pet_system_events
     (id, pet_id, telegram_id, season_key, system_key, action_key, period_key, payload_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
-    .bind(id, petId, telegramId, seasonKey, system, action, period, JSON.stringify({ ...payload, pet_id: petId || null, season_key: seasonKey || null })).run();
+    .bind(id, petId, telegramId, seasonKey, system, action, period, JSON.stringify({ ...payload, pet_id: petId || null, season_key: seasonKey || null })).run().then(requireLiveMutationResult);
   if (Number(result?.meta?.changes || 0) > 0) return { id, fresh: true, status: 'pending', payload_json: JSON.stringify(payload) };
   const existing = await db.prepare(`SELECT id, status, payload_json FROM telegram_pet_system_events
     WHERE pet_id = ? AND telegram_id = ? AND season_key = ? AND system_key = ? AND action_key = ? AND period_key = ?`)
@@ -757,6 +758,7 @@ export async function processPetEquipmentUpgrade(db, telegramId, itemKey, reques
     db.prepare("UPDATE telegram_pet_system_events SET status='completed', payload_json=?, updated_at=CURRENT_TIMESTAMP WHERE id=? AND status='settling'").bind(JSON.stringify({ item_key: itemKey, item_level: target, cost }), reservation.id),
   ];
   const results = await db.batch(statements);
+  requireLiveMutationBatch(results, statements.length);
   if (Number(results[0]?.meta?.changes || 0) < 1 || Number(results[results.length - 2]?.meta?.changes || 0) < 1) {
     await db.prepare("UPDATE telegram_pet_system_events SET status='rejected', updated_at=CURRENT_TIMESTAMP WHERE id=? AND status<>'completed'").bind(reservation.id).run();
     return { accepted: false, reason: 'upgrade_conflict', cost };
@@ -799,6 +801,7 @@ export async function processPetCosmeticUnlock(db, telegramId, cosmeticKey, requ
       ON CONFLICT(telegram_id, cosmetic_key) DO UPDATE SET quantity=quantity+1, updated_at=CURRENT_TIMESTAMP`).bind(telegramId, cosmeticKey, reservation.id),
     db.prepare("UPDATE telegram_pet_system_events SET status='completed', payload_json=?, updated_at=CURRENT_TIMESTAMP WHERE id=? AND status='settling'").bind(JSON.stringify({ key: cosmeticKey, quantity: serial, cost: sink.cost }), reservation.id),
   ]);
+  requireLiveMutationBatch(results, Object.keys(profileCosts).length + materialCosts.length + 3);
   if (Number(results[0]?.meta?.changes || 0) < 1) {
     await db.prepare("UPDATE telegram_pet_system_events SET status='rejected', updated_at=CURRENT_TIMESTAMP WHERE id=? AND status<>'completed'").bind(reservation.id).run();
     return { accepted: false, reason: 'cosmetic_settlement_conflict', cost: sink.cost };

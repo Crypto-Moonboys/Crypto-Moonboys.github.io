@@ -62,7 +62,7 @@ function fixture(owner) {
 
 import { PET_MARKET_OFFERS, getPetMarketOffers } from '../workers/moonboys-api/pets/economy-expansion.js';
 import { PET_CRAFTING_RECIPES } from '../workers/moonboys-api/pets/economy-phase-3.js';
-import { processPetCraftRecipe, processPetEquipmentUpgrade } from '../workers/moonboys-api/pets/live-systems.js';
+import { processPetCraftRecipe, processPetEquipmentUpgrade, processPetCosmeticUnlock } from '../workers/moonboys-api/pets/live-systems.js';
 function funded(id) {
   const f=fixture(id);
   f.sql.prepare('UPDATE telegram_pet_instances SET pet_xp=500000 WHERE telegram_id=?').run(f.owner);
@@ -71,6 +71,47 @@ function funded(id) {
     f.sql.prepare('INSERT INTO telegram_pet_material_balances (telegram_id,material_key,quantity) VALUES (?,?,9000)').run(f.owner,key);
   return f;
 }
+
+for (const action of ['craft', 'upgrade', 'cosmetic']) test(`${action} rejects failed or malformed spending transactions`, async () => {
+  for (const failure of ['failed-reservation', 'failed-member', 'missing-member', 'malformed-member']) {
+    const f=funded(`economy-result-${action}-${failure}`);
+    f.sql.prepare("INSERT INTO telegram_pet_equipment_progression (telegram_id,item_key,slot) VALUES (?,'moon_kibble','food')").run(f.owner);
+    const snapshot=()=>({wallet:wallet(f),materials:f.sql.prepare('SELECT * FROM telegram_pet_material_balances').all(),
+      items:f.sql.prepare('SELECT * FROM telegram_pet_inventory').all(),gear:f.sql.prepare('SELECT * FROM telegram_pet_equipment_progression').all(),
+      styles:f.sql.prepare('SELECT * FROM telegram_pet_cosmetic_unlocks').all()});
+    const before=snapshot(), nativeBatch=f.db.batch.bind(f.db), nativePrepare=f.db.prepare.bind(f.db);
+    let injected=false;
+    if(failure==='failed-reservation') f.db.prepare=query=>{
+      const statement=nativePrepare(query), bind=statement.bind.bind(statement);
+      if(query.includes('INSERT OR IGNORE INTO telegram_pet_system_events')) statement.bind=(...args)=>{
+        const bound=bind(...args);
+        bound.run=async()=>{injected=true;return {success:false,error:'reservation_unavailable',meta:{changes:1}};};
+        return bound;
+      };
+      return statement;
+    };
+    else f.db.batch=async statements=>{
+      if(!statements[0]?.query.includes("UPDATE telegram_pet_system_events SET status='settling'")) return nativeBatch(statements);
+      injected=true;
+      const replies=statements.map(()=>({meta:{changes:1}}));
+      if(failure==='failed-member') replies[1]={success:false,error:'spend_unavailable',meta:{changes:1}};
+      if(failure==='missing-member') replies.pop();
+      if(failure==='malformed-member') replies[1]={};
+      return replies;
+    };
+    const request=()=>action==='craft' ? processPetCraftRecipe(f.db,f.owner,'battery_pack','broken-spend')
+      : action==='upgrade' ? processPetEquipmentUpgrade(f.db,f.owner,'moon_kibble','broken-spend')
+        : processPetCosmeticUnlock(f.db,f.owner,'profile_frame','broken-spend');
+    await assert.rejects(request(),/pet_state_write_unavailable/,failure+' cannot acknowledge a purchase or an ordinary cost conflict');
+    assert.equal(injected,true);
+    assert.deepEqual(snapshot(),before,'unverified transactions must not change owned balances or goods');
+    f.db.batch=nativeBatch;f.db.prepare=nativePrepare;
+    const paid=await request();assert.equal(paid.accepted,true,paid.reason);
+    const saved=snapshot();
+    const retry=await request();assert.equal(retry.accepted,true);assert.equal(retry.duplicate,true);
+    assert.deepEqual(snapshot(),saved,'retry settles this request exactly once');
+  }
+});
 
 test('gear summary uses live Shop descriptions without advertising unused utility targets', async () => {
   const f = funded('gear-copy');
@@ -170,6 +211,35 @@ test('all twelve market offers deliver their full bundle exactly once', async ()
 
 const wallet = f => f.sql.prepare('SELECT moon_gold,moon_crystals,style_tokens,pet_xp FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner);
 const shopMission = state => state.guidance.missions.find(m => m.key.startsWith('pet-daily-shop:'));
+for (const operation of ['purchase','equip']) test(`direct ${operation} cannot acknowledge a failed peer write`, async () => {
+  for (const failure of ['failed-peer','malformed-peer','missing-peer']) {
+    const f=funded(`direct-gear-${operation}-${failure}`);
+    if(operation==='equip') for(const key of ['moon_kibble','nebula_snack'])
+      assert.equal((await hooks.processPetShopPurchase(f.db,f.owner,key,{event_key:key})).accepted,true);
+    const before=wallet(f), beforePet=f.sql.prepare('SELECT equipped_food FROM telegram_pet_instances WHERE telegram_id=?').get(f.owner);
+    const nativeBatch=f.db.batch.bind(f.db);let injected=false;
+    f.db.batch=async statements=>{
+      if(!statements[0]?.query.includes(operation==='purchase' ? 'shop_purchase_pending' : 'equipment_switch_pending'))return nativeBatch(statements);
+      injected=true;
+      assert.equal(statements.length,operation==='purchase'?6:4,'exact mutation batch under test');
+      const replies=statements.map(()=>({results:[{id:'unverified-receipt'}],meta:{changes:1}}));
+      if(failure==='failed-peer')replies[1]={success:false,error:'equipment_peer_write_failed',meta:{changes:1}};
+      if(failure==='malformed-peer')replies[1]={};
+      if(failure==='missing-peer')replies.pop();
+      return replies;
+    };
+    const request=()=>hooks.processPetShopPurchase(f.db,f.owner,'moon_kibble',{event_key:'direct-integrity'});
+    await assert.rejects(request(),/pet_state_write_unavailable/,failure+' must not acknowledge unsaved equipment');
+    assert.equal(injected,true);
+    assert.deepEqual(wallet(f),before);
+    assert.deepEqual(f.sql.prepare('SELECT equipped_food FROM telegram_pet_instances WHERE telegram_id=?').get(f.owner),beforePet);
+    f.db.batch=nativeBatch;
+    const saved=await request();assert.equal(saved.accepted,true);
+    assert.equal(saved.reason,operation==='purchase'?'shop_purchase':'equipment_equipped');
+    const after=wallet(f);assert.equal((await request()).duplicate,true);assert.deepEqual(wallet(f),after);
+  }
+});
+
 for (const action of ['equip','buy']) test(`${action} switches owned gear free without shopping or XP credit`, async () => {
   const f=funded('free-'+action);
   for (const key of ['moon_kibble','nebula_snack']) assert.equal((await f.act({action:'buy',item_key:key,request_id:key})).accepted,true);
@@ -319,6 +389,24 @@ test('post-reward overwrite rebaseline repairs only newly impossible season coun
     'each repeated correction must retain its own audit row');
 });
 
+test('legacy account purchase receipts preserve gear ownership without assigning a pet',async()=>{
+  const f=funded('nullable-gear-receipt');
+  for(const item_key of ['moon_kibble','nebula_snack']) await f.act({action:'buy',item_key,request_id:item_key});
+  // Migration 065 added nullable source pets without rewriting older receipts.
+  // The account paid for this item before immutable pet sources were recorded.
+  f.sql.prepare("UPDATE telegram_pet_events SET pet_id=NULL WHERE telegram_id=? AND event_type='buy' AND json_extract(metadata,'$.item_key')='moon_kibble'").run(f.owner);
+  f.sql.prepare("DELETE FROM telegram_pet_equipment_progression WHERE telegram_id=? AND item_key='moon_kibble'").run(f.owner);
+  const receipts=f.sql.prepare("SELECT * FROM telegram_pet_events WHERE telegram_id=? AND event_type='buy' ORDER BY id").all(f.owner);
+  const before=wallet(f);
+  const result=await f.act({action:'buy',item_key:'moon_kibble',request_id:'legacy-free-switch'});
+  assert.equal(result.reason,'equipment_equipped','an older paid item must be recovered before the Buy control can charge again');
+  assert.equal(result.accepted,true);
+  assert.deepEqual(wallet(f),before);
+  assert.deepEqual(f.sql.prepare("SELECT * FROM telegram_pet_events WHERE telegram_id=? AND event_type='buy' ORDER BY id").all(f.owner),receipts,
+    'legacy recovery preserves historical receipts and does not assign their XP or identity to the active pet');
+  assert.equal(f.sql.prepare("SELECT item_level FROM telegram_pet_equipment_progression WHERE telegram_id=? AND item_key='moon_kibble'").get(f.owner).item_level,1);
+});
+
 for (const failure of ['ownership read','legacy recovery']) test(`resolved ${failure} failure cannot charge again for owned gear`,async()=>{
   const f=funded('owned-outage-'+failure);
   for (const key of ['moon_kibble','nebula_snack'])await f.act({action:'buy',item_key:key,request_id:key});
@@ -332,7 +420,7 @@ for (const failure of ['ownership read','legacy recovery']) test(`resolved ${fai
     }
     return statement;
   };
-  await assert.rejects(f.act({action:'buy',item_key:'moon_kibble',request_id:'outage'}),/equipment_ownership_unavailable/);
+  await assert.rejects(f.act({action:'buy',item_key:'moon_kibble',request_id:'outage'}),/equipment_ownership_unavailable|pet_state_read_unavailable/);
   assert.equal(injected,true);assert.deepEqual(wallet(f),before);
   assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='buy'").get().n,2);
 });

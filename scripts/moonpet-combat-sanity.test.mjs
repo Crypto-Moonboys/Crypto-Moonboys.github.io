@@ -261,6 +261,33 @@ test('refresh repairs a locked Arena move so the UI can offer the next round', a
   assert.equal(f.round().status,'resolved');
 });
 
+for (const surface of ['refresh', 'start']) test(`Arena ${surface} cannot expire an unfinished saved move during an outage`, async () => {
+  const f = await arenaFixture('arena-timeout-' + surface);
+  f.sql.prepare('UPDATE telegram_pet_arena_battles SET max_rounds=1 WHERE battle_id=?').run(f.id);
+  f.db.beforeRun = s => { if (s.query.includes('SET player2_move=?')) throw Error('cpu_move_unavailable'); };
+  await assert.rejects(f.move(), /cpu_move_unavailable/);
+  f.sql.prepare("UPDATE telegram_pet_arena_battles SET expires_at='2000-01-01T00:00:00.000Z' WHERE battle_id=?").run(f.id);
+  if (surface === 'refresh') await f.state();
+  else assert.equal((await f.act({ action: 'arena_start' })).reason, 'arena_battle_active');
+  assert.equal(f.battle().status, 'active', 'timeout cannot discard a committed move awaiting recovery');
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_arena_battles').get().n, 1);
+  f.db.beforeRun = null;
+  await f.state();
+  assert.equal(f.battle().status, 'completed');
+  const paid = f.sql.prepare("SELECT pet_xp,moon_gold FROM telegram_pet_profiles WHERE telegram_id=?").get(f.owner);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='arena_battle' AND status='accepted'").get().n, 1);
+  await f.state();
+  assert.deepEqual(f.sql.prepare("SELECT pet_xp,moon_gold FROM telegram_pet_profiles WHERE telegram_id=?").get(f.owner), paid);
+});
+
+test('Arena still expires an abandoned round that has no recoverable move', async () => {
+  const f = await arenaFixture('arena-abandoned-timeout');
+  f.sql.prepare("UPDATE telegram_pet_arena_battles SET expires_at='2000-01-01T00:00:00.000Z' WHERE battle_id=?").run(f.id);
+  await f.state();
+  assert.equal(f.battle().status, 'expired');
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='arena_battle'").get().n, 0);
+});
+
 test('Arena round and battle progress commit together and retry exactly once', async () => {
   const f = await arenaFixture('atomic-round');
   f.sql.exec("CREATE TRIGGER fail_round_progress BEFORE UPDATE OF current_round ON telegram_pet_arena_battles BEGIN SELECT RAISE(ABORT,'round_progress_unavailable'); END");

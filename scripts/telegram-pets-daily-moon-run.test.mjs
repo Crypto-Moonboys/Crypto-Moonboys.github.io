@@ -1561,6 +1561,45 @@ assert.equal(interruptedEnding.adapter.database.prepare('SELECT COUNT(*) AS coun
     'refresh repairs the saved extraction award once after terminal synchronization failed');
 }
 
+// A terminal commit can precede both identity and the canonical completion
+// receipt. Refresh must repair that source before sealing early Daily records.
+for (const sealedRecords of [false, true]) {
+  const f = await endingFixture(`early-extraction-before-receipt-${sealedRecords}`);
+  f.adapter.database.prepare('DELETE FROM telegram_pet_run_rooms WHERE run_id=?').run(f.run.run_id);
+  f.adapter.database.prepare('UPDATE telegram_pet_runs SET current_room=0,depth=0,score=0 WHERE run_id=?').run(f.run.run_id);
+  const run = f.adapter.database.prepare('SELECT * FROM telegram_pet_runs WHERE run_id=?').get(f.run.run_id);
+  const room = await createPetRunRoom(f.adapter, run);
+  await persistPetRunRoomOutcome(f.adapter, run, room, { success: true, score: 25, choice_id: room.choices[0].choice_id });
+  f.adapter.database.prepare('UPDATE telegram_pet_runs SET current_room=1,depth=1,score=25 WHERE run_id=?').run(f.run.run_id);
+  f.adapter.failFirst = /SELECT 1 AS corrupt FROM telegram_pet_personality_traits/;
+  await assert.rejects(extractDailyMoonRun(f.adapter, { telegram_id: f.owner, run_id: run.run_id, now: f.now }), /moonpet_identity_authority_tuple_mismatch/);
+  f.adapter.failFirst = null;
+  assert.equal(f.adapter.database.prepare('SELECT status FROM telegram_pet_runs WHERE run_id=?').get(run.run_id).status, 'extracted');
+  assert.equal(f.adapter.database.prepare("SELECT COUNT(*) AS n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='roguelite_completion'").get(f.owner).n, 0);
+  if (sealedRecords) {
+    // Previous refreshes finalized Daily records and accepted the source event
+    // without retrying extraction, hiding this run from every later refresh.
+    await syncDailyMoonRun(f.adapter, { telegram_id: f.owner, run_id: run.run_id, now: f.now });
+    f.adapter.database.prepare(`INSERT INTO telegram_pet_events
+      (id,pet_id,telegram_id,event_type,event_key,season_key,day_key,week_key,status)
+      VALUES (?,?,?,'daily_moon_run',?,?,'2026-08-20','2026-W34','accepted')`)
+      .run(`old-terminal-${f.owner}`,run.pet_id,f.owner,`daily-moon-run:${f.owner}:${run.run_id}:extracted`,run.season_key);
+  }
+  const otherPet = `${run.pet_id}-other`;
+  seedAdditionalPet(f.adapter, f.owner, otherPet);
+  f.adapter.database.prepare('UPDATE telegram_pet_active_slots SET pet_id=? WHERE telegram_id=?').run(otherPet, f.owner);
+  await __petMediaTestHooks.buildPetMiniAppState(f.adapter, f.owner, 'fixture-token');
+  assert.equal(f.adapter.database.prepare("SELECT COUNT(*) AS n FROM telegram_pet_reward_claims WHERE telegram_id=? AND pet_id=? AND source='roguelite_completion' AND idempotency_key=? AND status='awarded'").get(f.owner, run.pet_id, `${run.run_id}:extract`).n, 1,
+    'early terminal recovery must restore the completion receipt required by safe deletion');
+  assert.equal(f.adapter.database.prepare("SELECT COUNT(*) AS n FROM telegram_pet_identity_events WHERE pet_id=? AND event_key=?").get(run.pet_id, `${run.run_id}:terminal:memory`).n, 1);
+  assert.equal(f.adapter.database.prepare("SELECT COUNT(*) AS n FROM telegram_pet_identity_events WHERE pet_id=? AND event_key=?").get(otherPet, `${run.run_id}:terminal:memory`).n, 0);
+  assert.equal(f.adapter.database.prepare('SELECT status FROM telegram_pet_daily_runs WHERE run_id=?').get(run.run_id).status, 'extracted');
+  const wallet = f.adapter.database.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner);
+  await __petMediaTestHooks.buildPetMiniAppState(f.adapter, f.owner, 'fixture-token');
+  assert.deepEqual(f.adapter.database.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner), wallet);
+  assert.equal(f.adapter.database.prepare('SELECT runs_recorded FROM telegram_pet_daily_leaderboard_records WHERE telegram_id=?').get(f.owner).runs_recorded, 1);
+}
+
 // Exercise both sides of each non-atomic boundary, then recover through the
 // actual state route after switching pets. Persisted evidence owns all credit.
 for (const status of ['failed', 'abandoned']) for (const sourceOwned of [true, false]) {

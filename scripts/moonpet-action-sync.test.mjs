@@ -345,6 +345,36 @@ test('the transaction assertion rolls back all writes and keeps a stale scope cl
   assert.equal(f.sql.prepare('SELECT moon_gold FROM telegram_pet_profiles').get().moon_gold, 1000);
 });
 
+for (const method of ['first', 'all', 'run', 'batch']) test(`displayed-pet ${method} cannot pass a resolved failed statement to its caller`, async () => {
+  const f = fixture('scope-failed-' + method);
+  const scope = createDisplayedPetScope(f.db, f.owner, 'current-' + f.owner);
+  const originalBatch = f.db.batch.bind(f.db);
+  f.db.batch = async statements => statements.map((s, i) => i === statements.length - 1
+    ? { success: true, results: [{ displayed_pet_authority: null }], meta: { changes: 0 } }
+    : { success: false, error: 'statement_unavailable', results: [{ pet_id: 'fabricated' }], meta: { changes: 1 } });
+  const read = scope.db.prepare('SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id=?').bind(f.owner);
+  await assert.rejects(method === 'batch' ? scope.db.batch([read]) : read[method](), /pet_state_read_unavailable/);
+  assert.equal(scope.changed, false, 'an outage is not evidence of a pet switch');
+  f.db.batch = originalBatch;
+  assert.equal((await read.first()).pet_id, 'current-' + f.owner, 'a fresh read can recover after the outage');
+});
+
+test('failed Arena queue insertion cannot acknowledge an unsaved queue entry', async () => {
+  const f = fixture('queue-resolved-failure');
+  f.sql.prepare('UPDATE telegram_pet_instances SET pet_xp=10000 WHERE telegram_id=?').run(f.owner);
+  f.sql.prepare('UPDATE telegram_pet_profiles SET pet_xp=10000 WHERE telegram_id=?').run(f.owner);
+  const originalBatch = f.db.batch.bind(f.db);
+  f.db.batch = async statements => statements.some(s => s.query.includes('INSERT INTO telegram_pet_arena_queue'))
+    ? statements.map((s, i) => i === statements.length - 1
+      ? { success: true, results: [{}], meta: { changes: 0 } }
+      : { success: false, error: 'queue_unavailable', results: [], meta: { changes: 0 } })
+    : originalBatch(statements);
+  await assert.rejects(f.act({ action: 'arena_matchmake' }), /pet_state_read_unavailable/);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_arena_queue').get().n, 0);
+  f.db.batch = originalBatch;
+  assert.equal((await f.act({ action: 'arena_matchmake' })).reason, 'arena_queued');
+});
+
 test('ordinary database failures propagate without becoming a stale-pet response', async () => {
   const f = fixture('scope-outage'), scope = createDisplayedPetScope(f.db, f.owner, 'current-' + f.owner);
   f.db.beforeBatch = () => { f.db.beforeBatch = null; throw Error('database_unavailable'); };

@@ -2913,7 +2913,8 @@
   // TEST-EXPORT: lifecycleDirector:end
 
   function lifecycleCeremonyActive(time) {
-    return Boolean(lifecycleCeremony && lifecycleCeremonyUntil > Number(time == null ? performance.now() : time));
+    return Boolean(lifecycleCeremony && (!lifecycleCeremony.pet_id || lifecycleCeremony.pet_id === (state && state.pet && state.pet.pet_id))
+      && lifecycleCeremonyUntil > Number(time == null ? performance.now() : time));
   }
 
   function clearLifecycleCeremony(redraw) {
@@ -3174,6 +3175,7 @@
       }
       var nextState = state;
       var plannedCeremony = planLifecycleCeremony(stateBeforeAction, nextState, action, data.result);
+      if (plannedCeremony) plannedCeremony.pet_id = nextState.pet && nextState.pet.pet_id;
       var message = resultMessage(data.result, stateBeforeAction, nextState);
       tell(message, data.result && data.result.accepted ? '' : 'danger');
       haptic(data.result && data.result.accepted ? 'success' : 'error');
@@ -3181,6 +3183,9 @@
       // Keep the rejection and retry instructions visible. Queued unlock notices
       // remain unacknowledged until the next successful action or refresh.
       if (actionAccepted) await showPendingNotices();
+      // Notice acknowledgement can return a newer pet selected in another
+      // session. Its companion must not inherit the original action's reveal.
+      if ((nextState.pet && nextState.pet.pet_id) !== (state && state.pet && state.pet.pet_id)) return;
       if (!isHatchReveal) animateAction(action, actionAccepted, actionFamily === 'dance' ? 3600 : 2800, payload);
       startLifecycleCeremony(plannedCeremony);
     } catch (error) {

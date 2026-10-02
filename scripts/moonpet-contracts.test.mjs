@@ -577,7 +577,7 @@ try {
   assert.equal((await act(a, claim, awardPetReward, tomorrow)).pet_xp_awarded, 0);
   assert.equal((await board(a, tomorrow)).run.xp_awarded, 20);
 
-  for (const boundary of ['read','ack']) for (const resolved of [false,true]) {
+  for (const boundary of ['read','ack']) for (const resolved of [false,true,'malformed']) {
     const paidPet=await seed(`contract-paid-${boundary}-${resolved}`);
     await start(paidPet);
     const saved=await complete(paidPet,async()=>{throw Error('delivery offline');});
@@ -588,6 +588,7 @@ try {
     const inject=(sql,args)=>{
       if(boundary==='read' ? !sql.startsWith('SELECT applied_rewards FROM telegram_pet_reward_claims') || args[0]!==paidPet.telegram_id
         : !sql.startsWith('UPDATE telegram_pet_contracts SET reward_settled=1') || args[2]!==paidPet.telegram_id)return undefined;
+      if(resolved==='malformed')return {};
       if(resolved)return {success:false,error:'receipt_offline'};
       throw Error('receipt_offline');
     };
