@@ -1,3 +1,5 @@
+import { requirePetMutationResult } from './read-result.js';
+
 export function prepareLegacyPetInventoryReconciliation(db, telegramIdRaw) {
   const telegramId = String(telegramIdRaw || '').trim();
   if (!telegramId) return [];
@@ -39,5 +41,11 @@ export async function reconcileLegacyPetInventory(db, telegramId) {
   // audit events, so calling this bridge repeatedly cannot duplicate new writes.
   const statements = prepareLegacyPetInventoryReconciliation(db, telegramId);
   if (!statements.length) return [];
-  return db.batch(statements);
+  const results = await db.batch(statements);
+  if (!Array.isArray(results) || results.length !== statements.length) throw new Error('pet_state_write_unavailable');
+  for (const result of results) {
+    requirePetMutationResult(result);
+    if (!Number.isSafeInteger(result?.meta?.changes) || result.meta.changes < 0) throw new Error('pet_state_write_unavailable');
+  }
+  return results;
 }

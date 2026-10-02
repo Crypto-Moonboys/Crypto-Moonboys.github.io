@@ -322,6 +322,24 @@ async function expectBlocked(owner,id,message) {
   assert.equal(rowFor(id).status,'active');
   assert.equal(sql.prepare("SELECT COUNT(*) n FROM telegram_pet_identity_events WHERE pet_id=? AND event_key='pet:delete:'||pet_id").get(id).n,0,'no deletion claim survives a blocker');
 }
+// Matching changes queue status before the battle row exists. The claim token
+// keeps each participant's source pet protected throughout that handoff.
+for (const [mode,status] of [['arena','matched'],['kaiju','played']]) {
+  const owner='queue-claim-'+mode,id=await player(owner),table='telegram_pet_'+mode+'_queue';
+  beforeBatch=()=> {
+    if (mode==='arena') {
+      sql.prepare(`INSERT INTO ${table}(id,chat_id,telegram_id,pet_id,season_key,rank_bucket,status,updated_at)
+        VALUES (?, 'test', ?, ?, ?, 'rookie', ?, 'claim:pending-match')`).run(owner,owner,id,rowFor(id).season_key,status);
+    } else {
+      sql.prepare(`INSERT INTO ${table}(id,chat_id,telegram_id,status,updated_at)
+        VALUES (?, 'test', ?, ?, 'claim:pending-match')`).run(owner,owner,status);
+    }
+  };
+  await expectBlocked(owner,id,mode+' matchmaking claim blocks deletion before the battle insert');
+  sql.prepare(`UPDATE ${table} SET updated_at=CURRENT_TIMESTAMP WHERE id=?`).run(owner);
+  assert.equal((await hooks.deletePetSlot(db,owner,confirm(id))).accepted,true,
+    mode+' historical terminal queue row without a claim does not block deletion');
+}
 async function settle(owner,id,type,key,source=type) {
   const pet=rowFor(id),context={pet_id:id,season_key:pet.season_key,pet_season_key:pet.season_key};
   if (source==='pet_district' || source==='pet_event_chain') {

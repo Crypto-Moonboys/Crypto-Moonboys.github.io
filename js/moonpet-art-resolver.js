@@ -39,13 +39,19 @@
   }
 
   async function loadMoonpetBackground(identity = {}, rareMorphId = null) {
-    if (!backgroundRegistryPromise) backgroundRegistryPromise = fetchRegistry(BACKGROUND_REGISTRY_PATH);
+    if (!backgroundRegistryPromise) backgroundRegistryPromise = fetchRegistry(BACKGROUND_REGISTRY_PATH).catch((error) => {
+      backgroundRegistryPromise = null;
+      throw error;
+    });
     const registry = await backgroundRegistryPromise;
     return { registry, ...resolveMoonpetBackground(registry, identity, rareMorphId) };
   }
 
   async function loadMoonpetItemArtRegistry() {
-    if (!itemRegistryPromise) itemRegistryPromise = fetchRegistry(ITEM_REGISTRY_PATH);
+    if (!itemRegistryPromise) itemRegistryPromise = fetchRegistry(ITEM_REGISTRY_PATH).catch((error) => {
+      itemRegistryPromise = null;
+      throw error;
+    });
     return itemRegistryPromise;
   }
 

@@ -238,7 +238,7 @@ db.exec(migration061);
 // Current identity reads must distinguish empty tables from a schema/read outage.
 db.exec('CREATE UNIQUE INDEX identity_test_owner_tuple ON telegram_pet_season_slots(pet_id,telegram_id,season_key)');
 const currentSchema = await readFile(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
-for (const table of ['telegram_pet_personality_traits', 'telegram_pet_memories', 'telegram_pet_boss_victories', 'telegram_pet_identity_events', 'telegram_pet_identity_analytics', 'telegram_pet_reward_claims']) {
+for (const table of ['telegram_pet_personality_traits', 'telegram_pet_memories', 'telegram_pet_boss_victories', 'telegram_pet_identity_events', 'telegram_pet_identity_analytics', 'telegram_pet_reward_claims', 'telegram_pet_arena_queue', 'telegram_pet_kaiju_queue']) {
   const start = currentSchema.indexOf(`CREATE TABLE IF NOT EXISTS ${table} (`);
   assert.ok(start >= 0, table);
   db.exec(currentSchema.slice(start, currentSchema.indexOf('\n);', start) + 4));

@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import worker, { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 import { awardPetReward } from '../workers/moonboys-api/pets/roguelite-foundation.js';
-import { readDailyCompletion, getSeasonFinales, newFinale, advanceFinale, finaleChoices } from '../workers/moonboys-api/pets/completion-features.js';
+import { readDailyCompletion, getSeasonFinales, newFinale, advanceFinale, finaleChoices, processSeasonFinale } from '../workers/moonboys-api/pets/completion-features.js';
 
 const today = new Date().toISOString().slice(0, 10), season = hooks.getPetSeasonInfo(new Date()).key;
 function weekKey() { const d=new Date(); d.setUTCHours(0,0,0,0); d.setUTCDate(d.getUTCDate()+4-(d.getUTCDay()||7)); return `${d.getUTCFullYear()}-W${String(Math.ceil(((d-new Date(Date.UTC(d.getUTCFullYear(),0,1)))/86400000+1)/7)).padStart(2,'0')}`; }
@@ -63,6 +63,27 @@ function fixture(owner) {
 }
 const dailyClaim = f => ({ action: 'daily_completion_claim', utc_day: today, pet_id: f.petId });
 const finaleBody = (f, action, extra = {}) => ({ action, pet_id: f.petId, season_key: f.sourceSeason || season, ...extra });
+
+for (const action of ['finale_start', 'finale_retry', 'finale_step']) test(`${action} rejects failed or malformed persistence without acknowledging a saved turn`, async () => {
+  const f = fixture(`write-integrity-${action}`);
+  f.completeSeason();
+  let rewards = 0;
+  const award = async () => { rewards++; assert.fail('failed finale mutations cannot pay rewards'); };
+  if (action !== 'finale_start') {
+    assert.equal((await processSeasonFinale(f.db, f.owner, finaleBody(f, 'finale_start', { build: 'guardian' }), award)).accepted, true);
+    if (action === 'finale_retry') f.sql.prepare("UPDATE telegram_pet_season_finales SET status='failed' WHERE pet_id=?").run(f.petId);
+  }
+  const before = f.battle();
+  for (const response of [{ success: false, error: 'write_offline', meta: { changes: 1 } }, {}, { meta: { changes: '1' } }]) {
+    f.db.beforeRun = statement => /(?:INSERT OR IGNORE INTO|UPDATE) telegram_pet_season_finales/.test(statement.query) ? response : undefined;
+    await assert.rejects(processSeasonFinale(f.db, f.owner, finaleBody(f, action, {
+      build: 'guardian', revision: before?.revision ?? 0, move: 'guard',
+    }), award), /pet_state_write_unavailable/);
+    assert.deepEqual(f.battle(), before, 'failed driver response cannot advance the saved battle');
+    assert.equal(rewards, 0);
+  }
+});
+
 async function win(f) {
   for (let turn = 0; turn < 20; turn++) {
     const row = f.battle(); if (row.status !== 'active') return row;

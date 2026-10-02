@@ -227,15 +227,21 @@ try {
     const id = 'browser-unconfirmed-action';
     await seed(id, 'young');
     const context = await createFixtureContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
-    const page = await context.newPage(), errors = [], actions = [];
-    let faultAction = '', faultResult;
+    const page = await context.newPage(), errors = [], actions = [], requests = [];
+    let faultAction = '', faultResult, sessionExpired = false, artOffline = true, artRequests = 0;
     page.on('pageerror', error => errors.push(error.message));
     await page.addInitScript(() => localStorage.setItem('moonpet-radio-preference', 'off'));
     await page.route('**/*', async route => {
       const url = new URL(route.request().url());
       if (url.hostname === 'telegram.org') return route.fulfill({ contentType: 'text/javascript', body: "window.Telegram={WebApp:{initData:'fixture',ready(){},expand(){},onEvent(){},setHeaderColor(){},setBackgroundColor(){}}};" });
+      if (url.pathname === '/data/moonpet-bot-art-registry.json') {
+        artRequests++;
+        if (artOffline) return route.fulfill({ status: 503, json: { error: 'temporary_art_outage' } });
+      }
       if (url.pathname.endsWith('/telegram-pets/app/performance')) return route.fulfill({ json: { ok: true } });
       if (url.pathname.includes('/telegram-pets/app/')) {
+        requests.push(url.pathname);
+        if (sessionExpired) return route.fulfill({ status: 401, json: { error: 'mini_app_auth_expired' } });
         const body = route.request().postDataJSON();
         let result;
         if (url.pathname.endsWith('/action')) {
@@ -254,6 +260,12 @@ try {
     });
     await page.goto(`${fixtureOrigin}/moonpet-game.html`);
     await page.waitForSelector('[data-panel="care"]');
+    assert.ok(artRequests > 0);
+    assert.equal(await page.evaluate(() => window.MoonpetBetaAppearance.isBotArtReady()), false);
+    artOffline = false;
+    await page.locator('[data-utility="sync"]').click();
+    await page.waitForFunction(() => window.MoonpetBetaAppearance.isBotArtReady());
+    assert.ok(artRequests >= 2, 'Refresh recovers a previously rejected art registry without reloading the game');
     await page.locator('[data-panel="care"]').evaluate(node => { node.open = true; });
     for (const action of ['feed', 'play']) {
       faultAction = action;
@@ -271,6 +283,16 @@ try {
       assert.equal((await hooks.getPetProfile(db, id)).pet_xp, savedXP, 'Refresh cannot repay the uncertain care action');
       assert.equal(await page.locator('[data-action="train"]').isDisabled(), false, 'verified state restores eligible controls');
     }
+    sessionExpired = true;
+    await page.locator('[data-utility="sync"]').click();
+    await page.waitForSelector('[data-panel="telegram-auth"]');
+    const freshSession = page.getByRole('link', { name: 'OPEN FRESH TELEGRAM SESSION' });
+    assert.equal(await freshSession.isVisible(), true, 'a session expiring during play offers fresh authentication');
+    assert.equal(await freshSession.getAttribute('href'), 'https://t.me/WIKICOMSBOT?start=moonpet');
+    assert.equal(await page.locator('#screen [data-action]').count(), 0, 'expired sessions cannot submit saved pet controls');
+    const expiredRequests = requests.length;
+    await page.locator('[data-utility="sync"]').click();
+    assert.equal(requests.length, expiredRequests, 'Refresh cannot repeatedly send an expired signature or switch browser accounts');
     assert.deepEqual(errors, []);
     await context.close();
   }

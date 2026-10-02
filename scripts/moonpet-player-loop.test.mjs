@@ -369,11 +369,12 @@ assert.ok(html.indexOf('/js/moonpet-play-options.js') < html.indexOf('/js/moonpe
 
 // Execute the shipped fast-path handler with the refresh response held open.
 // A transaction race must refresh immediately and block a second mutation.
-const runActionSource = client.slice(client.indexOf('  async function runAction('), client.indexOf('  function switchScreen(', client.indexOf('  async function runAction(')));
-for (const { reason, accepted, refreshState } of [
+const runActionSource = 'var authenticationFailure = false;\n' + client.slice(client.indexOf('  async function runAction('), client.indexOf('  function switchScreen(', client.indexOf('  async function runAction(')));
+for (const { reason, accepted, refreshState, pet } of [
   ...['displayed_pet_required','displayed_pet_changed','source_pet_changed','pet_action_state_changed']
     .map(reason => ({ reason, accepted: false, refreshState: false })),
   { reason: 'accepted', accepted: true, refreshState: true },
+  { reason: 'accepted', accepted: true, refreshState: false, pet: { pet_id: 'other-pet', pet_xp: 999 } },
 ]) {
   const calls=[];
   let resolveRefresh;
@@ -391,7 +392,7 @@ for (const { reason, accepted, refreshState } of [
     scheduleFastActionStateRefresh:()=>{assert.fail('stale refresh must not wait four seconds');},
     async post(path,body) {
       calls.push({path,body});
-      if(path.endsWith('/action'))return {state_pending:true,result:{accepted,reason,refresh_state:refreshState}};
+      if(path.endsWith('/action'))return {state_pending:true,result:{accepted,reason,refresh_state:refreshState,pet}};
       refreshStarted();return refresh;
     },
   });
@@ -541,6 +542,37 @@ for (const fastResponse of [true, false]) for (const fault of ['transport', 'emp
   assert.equal(actionContext.petActionRefreshRequired, false);
 }
 
+// An accepted incubation Rest can race another session's pet switch before
+// the full projection returns. Its saved sleep preference belongs to Pet A.
+const sleepLatchSource = client.slice(client.indexOf('  function currentPetSleepKey('), client.indexOf('  function launchParameter('));
+for (const selectedSleeping of [false, true]) {
+  const saved = new Map([['sleep-test', JSON.stringify({ 'selected-pet': selectedSleeping })]]);
+  const source = { adopted: true, pet: { pet_id: 'source-egg' }, lifecycle: { phase: 'egg' } };
+  const actionContext = vm.createContext({
+    state: source, activeScreen: 'home', busy: false, petActionRefreshRequired: false, sleepLatched: false,
+    SLEEP_LATCH_STORAGE_KEY: 'sleep-test', fastActionStateDirty: false,
+    window: { localStorage: { getItem: key => saved.get(key), setItem: (key, value) => saved.set(key, value) } },
+    crypto: { randomUUID: () => 'rest-source-egg' }, performance: { now: () => 1 },
+    words: value => value, lifecycleCeremonyActive: () => false, shouldUseFastActionResponse: () => false,
+    actionAnimationFamily: () => 'sleep', animateAction: () => {}, tell: () => {}, haptic: () => {}, render: () => {},
+    beginStateRequest: () => 1, stateRequestGate: { isCurrent: () => true }, resultMessage: () => 'SAVED',
+    mergeActionResultCooldown: snapshot => snapshot, hatchArtTransitionActive: () => false,
+    selectBotArtForState: () => Promise.resolve(), scheduleCooldownRefresh: () => {},
+    planLifecycleCeremony: () => null, showPendingNotices: async () => {}, startLifecycleCeremony: () => {},
+    async post() { return { result: { accepted: true, refresh_state: true }, state: {
+      adopted: true, pet: { pet_id: 'selected-pet' }, lifecycle: { phase: 'young' },
+    } }; },
+  });
+  vm.runInContext(sleepLatchSource + runActionSource + setStateSnapshotSource, actionContext);
+  await actionContext.runAction('incubate', { care_type: 'rest' });
+  assert.equal(actionContext.state.pet.pet_id, 'selected-pet');
+  assert.equal(actionContext.sleepLatched, selectedSleeping, 'the selected pet keeps its own sleep preference');
+  assert.equal(JSON.parse(saved.get('sleep-test'))['source-egg'], true);
+  assert.equal(JSON.parse(saved.get('sleep-test'))['selected-pet'], selectedSleeping);
+  actionContext.setSleepLatch(false, source);
+  assert.equal(actionContext.sleepLatched, selectedSleeping, 'a delayed wake preference also stays with its source');
+}
+
 // Earned account bounties remain claimable after deleting the only hatched pet.
 // The shipped Economy renderer still offers no claim for unfinished bounties.
 const economySource = client.slice(client.indexOf('  function valueText('), client.indexOf('  function renderProfile('));
@@ -571,7 +603,7 @@ assert.match(bountyContext.renderEconomy().match(/<button\b[^>]*data-action="bou
 // Execute both shipped hydration and rendering: the last failed request must
 // replace the loading screen with the manual retry, without clearing action locks.
 const hydrationSource = client.split('// TEST-EXPORT: coreStateHydration:start')[1].split('// TEST-EXPORT: coreStateHydration:end')[0];
-const renderSource = client.slice(client.indexOf('  function render(options)'), client.indexOf('  // TEST-EXPORT: actionResultFeedback:start'));
+const renderSource = 'var authenticationFailure = false;\n' + client.slice(client.indexOf('  function render(options)'), client.indexOf('  // TEST-EXPORT: actionResultFeedback:start'));
 const refreshPayloadContext = vm.createContext({});
 vm.runInContext(hydrationSource, refreshPayloadContext);
 for (const moduleScreen of ['profile', 'economy', 'explore', 'work']) {
@@ -636,6 +668,64 @@ for (const moduleScreen of ['missions', 'profile']) {
   assert.equal(moduleContext.petActionRefreshRequired, false, 'only a valid authoritative snapshot restores actions');
   assert.doesNotMatch(moduleContext.screen.innerHTML, /RETRY MODULE|disabled/);
   assert.ok(calls.every(call => call.path.endsWith('/state')), 'manual retry reads state without replaying a mutation');
+  moduleContext.authenticationFailure = true;
+  moduleContext.petActionRefreshRequired = true;
+  assert.equal(moduleContext.setStateSnapshot({ adopted: true, pet: { pet_id: 'late-pet' } }, 0), false,
+    'a late successful read cannot restore mutation authority after this session was rejected');
+  assert.equal(moduleContext.state.pet.pet_id, 'fresh-pet');
+  assert.equal(moduleContext.petActionRefreshRequired, true);
+  moduleContext.render();
+  assert.match(moduleContext.screen.innerHTML, /OPEN FRESH TELEGRAM SESSION/);
+  assert.doesNotMatch(moduleContext.screen.innerHTML, /data-action=/);
+}
+
+// A temporary CDN/network fault must not poison an art promise for the whole
+// session. Refresh can recover the registry, manifest, idle and later actions.
+const artRegistry = JSON.parse(read('data/moonpet-bot-art-registry.json'));
+const artManifest = JSON.parse(read(artRegistry.egg_art.manifest_path.slice(1)));
+const idleArt = artManifest.assets.find(asset => asset.role === artManifest.runtime_role_map.idle);
+const actionArt = artManifest.assets.find(asset => asset.role !== idleArt.role && asset.atlas_path);
+for (const failedPath of ['/data/moonpet-bot-art-registry.json', artRegistry.egg_art.manifest_path, idleArt.atlas_path, idleArt.png_path, actionArt.atlas_path]) {
+  let offline = true, failedRequests = 0;
+  const artContext = vm.createContext({ window: { MOONPET_USE_BOT_ART: true },
+    async fetch(url) {
+      const pathname = String(url).split('?')[0];
+      if (pathname === failedPath) { failedRequests++; if (offline) throw Error('temporary_art_outage'); }
+      return { ok: true, json: async () => JSON.parse(read(pathname.slice(1))) };
+    },
+    Image: class {
+      set src(url) {
+        const pathname = String(url).split('?')[0];
+        if (pathname === failedPath) failedRequests++;
+        queueMicrotask(() => pathname === failedPath && offline ? this.onerror() : this.onload());
+      }
+    },
+  });
+  vm.runInContext(read('js/moonpet-bot-art-loader.js') + read('js/moonpet-bot-art-renderer.js'), artContext);
+  const art = artContext.window.MoonpetBotArtRenderer;
+  await art.selectMoonpetBot({ evolutionStage: 0 });
+  // Wait for the finite asset-preload jobs, including a fault after idle loaded.
+  await new Promise(resolve => setImmediate(resolve));
+  assert.ok(failedRequests > 0, failedPath);
+  offline = false;
+  const repaired = await art.selectMoonpetBot({ evolutionStage: 0 });
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(repaired.ready, true, 'art recovers without reloading the game: ' + failedPath);
+  assert.equal(repaired.errors.length, 0, failedPath);
+  assert.ok(repaired.assetsByRole[actionArt.role], 'failed secondary animation can be retried after idle became ready');
+  assert.ok(failedRequests >= 2, 'the failed resource is requested again: ' + failedPath);
+}
+for (const method of ['loadMoonpetBackground', 'loadMoonpetItemArtRegistry']) {
+  let attempts = 0;
+  const artContext = vm.createContext({ window: {}, async fetch() {
+    attempts++;
+    if (attempts === 1) throw Error('temporary_registry_outage');
+    return { ok: true, json: async () => ({ default_background: '/background.png', bots: {} }) };
+  } });
+  vm.runInContext(read('js/moonpet-art-resolver.js'), artContext);
+  await assert.rejects(artContext.window.MoonpetArtResolver[method](), /temporary_registry_outage/);
+  await artContext.window.MoonpetArtResolver[method]();
+  assert.equal(attempts, 2, method + ' retries a failed registry');
 }
 
 console.log(`Moonpet player loop tests passed: ${new Set(actionButtons).size} literal action buttons.`);

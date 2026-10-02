@@ -27,7 +27,7 @@
 
   async function selectMoonpetBot(identity = {}) {
     const identityKey = `${identity.speciesId || identity.species_id || ""}|${identity.speciesName || identity.species_name || identity.displayName || ""}|${identity.evolutionStage ?? identity.evolution_stage ?? identity.stage ?? 1}`;
-    if (state.ready && state.identityKey === identityKey) return snapshot();
+    if (state.ready && state.identityKey === identityKey && !state.errors.length) return snapshot();
     const generation = ++selectionGeneration;
     state.initialized = true;
     state.enabled = enabled();

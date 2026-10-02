@@ -1,5 +1,5 @@
 import { petRecoverableLiveDecisionSql } from './live-system-recovery-proof.js';
-import { requirePetFirstReadResult, requirePetReadResult } from './read-result.js';
+import { requirePetFirstReadResult, requirePetReadResult, requirePetMutationResult } from './read-result.js';
 import { projectCommittedPetResult } from './committed-result.js';
 import { PET_DISTRICT_APPROACHES, PET_DISTRICT_COMPLICATIONS, PET_DISTRICT_ENCOUNTERS, PET_EVENT_CHAINS, PET_FACTION_BONUSES, PET_REGION_CONTENT, PET_SEASONAL_BOSSES } from './content-phase-4.js';
 import { PET_COSMETIC_SINKS, PET_CRAFTING_RECIPES, PET_EQUIPMENT_SETS, getPetCraftingRecipe, getPetEquipmentUpgradeCost } from './economy-phase-3.js';
@@ -17,6 +17,18 @@ const integer = (value) => Math.max(0, Math.floor(Number(value) || 0));
 const parse = (value, fallback) => { try { return JSON.parse(value || ''); } catch { return fallback; } };
 const dayKey = (now = new Date()) => now.toISOString().slice(0, 10);
 const nextUtcDayResetAt = (now = new Date()) => new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1)).toISOString();
+
+function requireLiveMutationResult(result) {
+  requirePetMutationResult(result);
+  if (!Number.isSafeInteger(result?.meta?.changes) || result.meta.changes < 0) throw new Error('pet_state_write_unavailable');
+  return result;
+}
+
+function requireLiveMutationBatch(results, expectedLength) {
+  if (!Array.isArray(results) || results.length !== expectedLength) throw new Error('pet_state_write_unavailable');
+  results.forEach(requireLiveMutationResult);
+  return results;
+}
 
 function cooldownWindow(expiresAtRaw, now = new Date()) {
   const expiresMs = Date.parse(String(expiresAtRaw || ''));
@@ -382,6 +394,7 @@ async function claimEnergySettlement(db, reservation, telegramId, energyCost, au
           AND json_extract(payload_json, '$.claim_token')=? AND json_extract(payload_json, '$.energy_charge_token')=?)`)
       .bind(energyCost, telegramId, energyCost, reservation.id, token, token),
   ]);
+  requireLiveMutationBatch(results, authority ? 3 : 2);
   if (Number(results?.[0]?.meta?.changes || 0) < 1) return { state: reservation.status === 'settling' ? 'busy' : 'rejected', token: null };
   if (!alreadyCharged && Number(results?.[1]?.meta?.changes || 0) < 1) {
     await releaseSettlement(db, reservation.id, token);
@@ -396,7 +409,7 @@ async function claimNoCostSettlement(db, reservation) {
   const result = await db.prepare(`UPDATE telegram_pet_system_events
     SET status='settling', payload_json=json_set(COALESCE(payload_json, '{}'), '$.claim_token', ?), updated_at=CURRENT_TIMESTAMP
     WHERE id=? AND (status IN ('pending','rejected') OR (status='settling' AND updated_at < datetime('now','-2 minutes')))`)
-    .bind(token, reservation.id).run();
+    .bind(token, reservation.id).run().then(requireLiveMutationResult);
   return Number(result?.meta?.changes || 0) > 0 ? { state: 'settling', token } : { state: 'busy', token: null };
 }
 
@@ -479,6 +492,7 @@ export async function processPetDistrictMission(db, telegramId, regionKey, pet, 
           .bind(region.key, region.key, masteryGain, region.key, masteryGain, region.key, region.key, authority.pet_id, telegramId, authority.season_key, reservation.id, claim.token),
         db.prepare("UPDATE telegram_pet_system_events SET status='completed', payload_json=?, updated_at=CURRENT_TIMESTAMP WHERE id=? AND status='settling' AND json_extract(payload_json, '$.claim_token')=?").bind(completionPayload, reservation.id, claim.token),
       ]);
+      requireLiveMutationBatch(results, 2);
       if (Number(results?.[1]?.meta?.changes || 0) < 1) return { ...rewardSaved, refresh_state: true };
       return { ...awarded, reward_pending: false, reason: bossVictory ? 'district_boss_defeated' : succeeded ? 'district_mission_complete' : 'district_mission_setback', region: { ...region, mastery_xp: nextMastery }, mission: { key: mission.key, title: mission.title, boss: mission.boss }, choice: { key: choice.key, label: choice.label }, outcome: { success: succeeded, copy: resultCopy, risk_percent: choice.risk_percent, mastery_gain: masteryGain }, result_copy: resultCopy, boss: bossVictory ? content.boss : null, faction_bonus: adjusted.bonus };
     });
@@ -556,6 +570,7 @@ export async function processPetEventChain(db, telegramId, chainKey, awardReward
             authority.pet_id, telegramId, authority.season_key, chainKey, period),
         db.prepare("UPDATE telegram_pet_system_events SET status='completed', payload_json=?, updated_at=CURRENT_TIMESTAMP WHERE id=? AND status='settling' AND json_extract(payload_json, '$.claim_token')=?").bind(completionPayload, reservation.id, claim.token),
       ]);
+      requireLiveMutationBatch(results, 2);
       if (Number(results?.[1]?.meta?.changes || 0) < 1) return { ...rewardSaved, refresh_state: true };
       return { ...awarded, reward_pending: false, reason: final ? 'event_chain_completed' : 'event_chain_advanced', chain_key: chainKey, step: scene.key, choice: { key: selectedChoice.key, label: selectedChoice.label }, result_copy: resultCopy, final, faction_bonus: reward.bonus };
     });
@@ -640,6 +655,7 @@ export async function processPetSeasonalBoss(db, telegramId, pet, awardReward, m
         .bind(authority.pet_id, telegramId, authority.season_key, boss.season_instance, boss.key, Math.min(boss.hp, damage), damage >= boss.hp ? now.toISOString() : null, reservation.id, claim.token, boss.hp, boss.hp, now.toISOString(), reservation.id, claim.token),
       db.prepare("UPDATE telegram_pet_system_events SET status='completed', payload_json=?, updated_at=CURRENT_TIMESTAMP WHERE id=? AND status='settling' AND json_extract(payload_json, '$.claim_token')=?").bind(JSON.stringify({ damage, attack: decision.attack }), reservation.id, claim.token),
     ]);
+    requireLiveMutationBatch(settlement, 2);
     if (Number(settlement?.[1]?.meta?.changes || 0) < 1) return { ...savedChoice, refresh_state: true };
     const hitSaved = { accepted: true, reason: 'seasonal_boss_hit', damage, choice: decision.attack, boss,
       reward_pending: Boolean(existing?.defeated_at || integer(existing?.damage) + damage >= boss.hp),

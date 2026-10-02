@@ -541,6 +541,21 @@ assert.equal(revealedIdentityPet.callsign, 'Cipher', 'authenticated Stage-3 stat
 assert.equal(revealedIdentityPet.species, 'neon_raccoon', 'serialized pets must expose species at Stage 3');
 assert.equal(revealedIdentityPet.art_identity_id, 'neon_raccoon', 'serialized pets may expose the art identity once revealed');
 const serializedAuthorityPet = serializePet({ ...baseArenaPet, telegram_id: 'serialize-owner', pet_id: 'pet:serialize-owner:pet-s2026-003:1', season_key: 'pet-s2026-003' });
+const fastActionPet = { ...baseArenaPet, pet_id: 'source-pet', season_key: 'pet-s2026-003', species: 'neon_raccoon' };
+const otherPetIdentity = { scope: { pet_id: 'other-pet', telegram_id: '1', season_key: 'pet-s2026-003' }, current_stage: { stage: 3, name: 'Elite Moonpet' } };
+assert.equal(serializePetMiniAppActionResult({ accepted: true, reason: 'moonpet_hatched', species: 'UNKNOWN' }, {
+  ...otherPetIdentity, lifecycle: { art_identity_id: 'neon_raccoon' },
+}).species, 'UNKNOWN', 'a saved hatch without its lifecycle projection cannot reveal another selected pet');
+for (const identity of [null, otherPetIdentity]) {
+  const patch = serializePetMiniAppActionResult({ accepted: true, pet: fastActionPet }, identity).pet;
+  for (const field of ['evolution_stage', 'stage', 'evolution_id', 'name', 'pet_name', 'display_name', 'species', 'art_identity_id']) {
+    assert.equal(Object.hasOwn(patch, field), false, `a stats patch without matching identity cannot reset or reveal ${field}`);
+  }
+  assert.equal(patch.pet_id, 'source-pet');
+  assert.equal(patch.pet_xp, fastActionPet.pet_xp);
+}
+const matchingActionIdentity = { ...otherPetIdentity, scope: { ...otherPetIdentity.scope, pet_id: fastActionPet.pet_id } };
+assert.equal(serializePetMiniAppActionResult({ accepted: true, pet: fastActionPet }, matchingActionIdentity).pet.display_name, 'F1 EDDY');
 assert.equal(serializedAuthorityPet.telegram_id, 'serialize-owner', 'serialized pet authority must include telegram_id');
 assert.equal(serializedAuthorityPet.pet_id, 'pet:serialize-owner:pet-s2026-003:1', 'serialized pet authority must include pet_id');
 assert.equal(serializedAuthorityPet.season_key, 'pet-s2026-003', 'serialized pet authority must include season_key');
