@@ -34,6 +34,8 @@ export function buildPetGuidanceCandidates(state = {}) {
     if (!tier.unlocked || tier.claimed_at) continue;
     candidates.push({
       key: `season-ready:${tier.season_key || state.season.key}:${tier.tier_id}`,
+      scope: 'account',
+      season_key: tier.season_key || state.season.key,
       type: 'season_reward',
       title: `${tier.title} is ready to claim`,
       detail: `${positiveInteger(tier.required_xp)} season XP milestone reached.`,

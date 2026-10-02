@@ -34,10 +34,16 @@ class Statement {
   bind(...args) { return new Statement(this.adapter, this.sql, args); }
   async first() { return this.adapter.database.prepare(this.sql).get(...this.args) || null; }
   async all() { return { results: this.adapter.database.prepare(this.sql).all(...this.args) }; }
-  async run() {
-    const result = this.adapter.database.prepare(this.sql).run(...this.args);
+  execute() {
+    const statement = this.adapter.database.prepare(this.sql);
+    if (statement.columns().length) {
+      const results = statement.all(...this.args);
+      return { results, meta: { changes: /\bRETURNING\b/i.test(this.sql) ? results.length : 0 } };
+    }
+    const result = statement.run(...this.args);
     return { results: [], meta: { changes: Number(result.changes || 0) } };
   }
+  async run() { return this.execute(); }
 }
 
 class D1 {
@@ -57,9 +63,7 @@ class D1 {
     try {
       const results = [];
       for (const statement of statements) {
-        if (/^\s*SELECT\b/i.test(statement.sql)) { results.push({ results: this.database.prepare(statement.sql).all(...statement.args), meta: { changes: 0 } }); continue; }
-        const result = this.database.prepare(statement.sql).run(...statement.args);
-        results.push({ results: [], meta: { changes: Number(result.changes || 0) } });
+        results.push(statement.execute());
       }
       this.database.exec('COMMIT');
       return results;
@@ -715,7 +719,9 @@ assert.match(clientSource, /POSSIBLE FINDS/, 'expeditions must disclose their po
 assert.match(clientSource, /boss\.remaining_hp/, 'weekly boss must expose live remaining HP');
 assert.match(clientSource, /boss\.weakness/, 'weekly boss must expose its weakness');
 assert.match(clientSource, /valueText\(tier\.reward\)/, 'season tiers must disclose their reward');
-assert.match(clientSource, /notice_keys: visible\.map/, 'only milestone notices actually shown may be acknowledged');
+assert.match(clientSource, /var visible = notices\.slice\(0, 1\)/, 'only the one milestone notice actually displayed may be acknowledged');
+assert.match(clientSource, /notices: visible\.map/, 'acknowledgement uses the displayed notices');
+assert.match(clientSource, /key: notice\.key, scope: notice\.scope, pet_id: notice\.pet_id, season_key: notice\.season_key/, 'each acknowledgement retains the original notice owner scope and pet/source season');
 assert.match(clientSource, /activeScreen === 'work' && activityActive/, 'timed activities must refresh while the Work screen is open');
 
 console.log('telegram-pets-mini-app-parity.test.mjs passed');

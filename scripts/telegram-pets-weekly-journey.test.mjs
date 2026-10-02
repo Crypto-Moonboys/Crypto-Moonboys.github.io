@@ -805,18 +805,21 @@ const dailyMoonRunReplay = await dispatchRenderedPetAction(dailyMoonRunDb, daily
   run_id: dailyMoonRunId,
   request_id: 'daily-moon-run-retry-one',
 }, '123456:test-token');
-assert.equal(dailyMoonRunReplay.duplicate, true, 'Test 5h: Daily Moon Run terminal replay uses server duplicate path');
+assert.equal(dailyMoonRunReplay.accepted, true, 'Test 5h: Daily Moon Run terminal replay settles the saved ending');
+assert.equal(dailyMoonRunReplay.duplicate, false, 'Test 5h: first unpaid ending recovery reports its new payment');
+assert.equal(dailyMoonRunReplay.extraction.ending_replayed, true, 'Test 5h: recovery uses the saved terminal source');
 assert.equal(dailyMoonRunDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
   WHERE telegram_id=? AND event_type='daily_moon_run' AND status='accepted'`).get(dailyMoonRunTelegramId).count, 1,
   'Test 5h: Daily Moon Run terminal replay materializes one accepted source event');
 assert.equal(dailyMoonRunDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
   WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_run' AND status='accepted'`).get(dailyMoonRunTelegramId, dailyMoonRunPet).count, 1,
   'Test 5h: Daily Moon Run terminal replay counts once toward weekly_run');
-await dispatchRenderedPetAction(dailyMoonRunDb, dailyMoonRunTelegramId, { id: dailyMoonRunTelegramId }, {
+const dailyMoonRunPaidReplay = await dispatchRenderedPetAction(dailyMoonRunDb, dailyMoonRunTelegramId, { id: dailyMoonRunTelegramId }, {
   action: 'run_extract',
   run_id: dailyMoonRunId,
   request_id: 'daily-moon-run-retry-two',
 }, '123456:test-token');
+assert.equal(dailyMoonRunPaidReplay.duplicate, true, 'Test 5h: replay of the paid ending delivers no further reward');
 assert.equal(dailyMoonRunDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_weekly_journey_objectives
   WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_run' AND status='accepted'`).get(dailyMoonRunTelegramId, dailyMoonRunPet).count, 1,
   'Test 5h: Daily Moon Run repeated terminal replay remains idempotent');
@@ -848,7 +851,8 @@ const dailyMoonRunFailureResult = await dispatchRenderedPetAction(dailyMoonRunFa
   request_id: 'daily-moon-run-best-effort-one',
 }, '123456:test-token');
 assert.equal(dailyMoonRunFailureResult.accepted, true, 'Test 5i: Daily Moon Run terminal result remains accepted when Weekly Journey bookkeeping fails');
-assert.equal(dailyMoonRunFailureResult.duplicate, true, 'Test 5i: Daily Moon Run terminal result returns normally with no uncaught Weekly Journey exception');
+assert.equal(dailyMoonRunFailureResult.duplicate, false, 'Test 5i: the newly committed terminal reward survives a Weekly Journey follow-up failure');
+assert.equal(dailyMoonRunFailureResult.extraction.ending_replayed, true, 'Test 5i: recovery still uses the original saved terminal source');
 assert.equal(dailyMoonRunFailureDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
   WHERE telegram_id=? AND event_type='daily_moon_run' AND status='accepted'`).get(dailyMoonRunFailureTelegramId).count, 0,
   'Test 5i: failed auxiliary bookkeeping does not partially materialize a daily_moon_run source event');
@@ -1012,7 +1016,9 @@ bossDuplicateDb.database.prepare(`INSERT INTO telegram_pet_weekly_boss_victories
   .run(bossDuplicateTelegramId, bossOriginalEvent.week_key, bossOriginalMetadata.boss_id, bossDuplicatePet, bossDuplicateSeasonKey,
     `${bossOriginalEvent.week_key}:${bossOriginalMetadata.boss_id}`);
 switchActivePet(bossDuplicateDb, bossDuplicateTelegramId, bossDuplicatePetB, bossDuplicateSeasonKey);
-const bossDuplicate = await processPetWeeklyBoss(bossDuplicateDb, bossDuplicateTelegramId, 'strike', 'weekly-boss-retry-different-key');
+// Replay the original shared attack after switching. A fresh request from an
+// eligible second pet now starts its own participation challenge instead.
+const bossDuplicate = await processPetWeeklyBoss(bossDuplicateDb, bossDuplicateTelegramId, 'strike', 'weekly-boss-original-key');
 assert.equal(bossDuplicate.accepted, true, 'Test 5g: duplicate weekly boss retry remains accepted as a duplicate path');
 assert.equal(bossDuplicate.duplicate, true, 'Test 5g: duplicate weekly boss retry is idempotent');
 assert.equal(bossDuplicate.reason, 'boss_already_defeated', 'Test 5g: defeated duplicate recovery path is exercised');
@@ -1090,7 +1096,7 @@ bossDefeatedBackfillDb.database.prepare(`DELETE FROM telegram_pet_events
   WHERE telegram_id=? AND event_type='weekly_boss'`).run(bossDefeatedTelegramId);
 bossDefeatedBackfillDb.database.prepare(`DELETE FROM telegram_pet_weekly_journey_objectives
   WHERE telegram_id=? AND pet_id=? AND objective_id='weekly_boss_attempt'`).run(bossDefeatedTelegramId, bossDefeatedPet);
-const bossDefeatedReplay = await processPetWeeklyBoss(bossDefeatedBackfillDb, bossDefeatedTelegramId, 'strike', 'weekly-boss-defeated-retry-key');
+const bossDefeatedReplay = await processPetWeeklyBoss(bossDefeatedBackfillDb, bossDefeatedTelegramId, 'strike', 'weekly-boss-defeated-original-key');
 assert.equal(bossDefeatedReplay.reason, 'boss_already_defeated', 'Test 5i: defeated-boss duplicate path is exercised');
 assert.equal(bossDefeatedBackfillDb.database.prepare(`SELECT COUNT(*) AS count FROM telegram_pet_events
   WHERE telegram_id=? AND event_type='weekly_boss' AND event_key='weekly-boss-defeated-original-key' AND status='accepted'`).get(bossDefeatedTelegramId).count, 1,

@@ -16,6 +16,7 @@ import {
   formatPetEquipmentProgression,
   getPetEquipmentMasteryAward,
 } from './equipment-progression.js';
+import { requirePetFirstReadResult, requirePetReadResult, requirePetMutationResult } from './read-result.js';
 
 const TRACK_COLUMNS = Object.freeze({
   care: Object.freeze({ total: 'care_xp', daily: 'care_daily' }),
@@ -257,22 +258,22 @@ export async function getOrCreatePetRuntimeState(db, telegramId, dayKey, options
   if (authority) {
     await db.prepare(`INSERT OR IGNORE INTO telegram_pet_specialist_progression (pet_id, telegram_id, season_key, daily_key)
       SELECT ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ? AND season_key = ?)`)
-      .bind(authority.pet_id, id, authority.season_key, day, authority.pet_id, id, authority.season_key).run();
+      .bind(authority.pet_id, id, authority.season_key, day, authority.pet_id, id, authority.season_key).run().then(requirePetMutationResult);
     let state = await db.prepare(`SELECT * FROM telegram_pet_specialist_progression WHERE pet_id = ? AND telegram_id = ? AND season_key = ?`)
-      .bind(authority.pet_id, id, authority.season_key).first();
+      .bind(authority.pet_id, id, authority.season_key).first().then(requirePetFirstReadResult);
     if (state && state.daily_key < day) {
       await db.prepare(`UPDATE telegram_pet_specialist_progression SET daily_key = ?, care_daily = 0, training_daily = 0, adventure_daily = 0, arena_daily = 0, job_daily = 0, bond_daily = 0, updated_at = CURRENT_TIMESTAMP WHERE pet_id = ? AND telegram_id = ? AND season_key = ? AND daily_key < ?`)
-        .bind(day, authority.pet_id, id, authority.season_key, day).run();
+        .bind(day, authority.pet_id, id, authority.season_key, day).run().then(requirePetMutationResult);
       state = await db.prepare(`SELECT * FROM telegram_pet_specialist_progression WHERE pet_id = ? AND telegram_id = ? AND season_key = ?`)
-        .bind(authority.pet_id, id, authority.season_key).first();
+        .bind(authority.pet_id, id, authority.season_key).first().then(requirePetFirstReadResult);
     }
     return state;
   }
-  await db.prepare(`INSERT OR IGNORE INTO telegram_pet_progression_state (telegram_id, daily_key) VALUES (?, ?)`).bind(id, day).run();
-  let state = await db.prepare(`SELECT * FROM telegram_pet_progression_state WHERE telegram_id = ?`).bind(id).first();
+  await db.prepare(`INSERT OR IGNORE INTO telegram_pet_progression_state (telegram_id, daily_key) VALUES (?, ?)`).bind(id, day).run().then(requirePetMutationResult);
+  let state = await db.prepare(`SELECT * FROM telegram_pet_progression_state WHERE telegram_id = ?`).bind(id).first().then(requirePetFirstReadResult);
   if (state && state.daily_key < day) {
-    await db.prepare(`UPDATE telegram_pet_progression_state SET daily_key = ?, care_daily = 0, training_daily = 0, adventure_daily = 0, arena_daily = 0, job_daily = 0, bond_daily = 0, updated_at = CURRENT_TIMESTAMP WHERE telegram_id = ? AND daily_key < ?`).bind(day, id, day).run();
-    state = await db.prepare(`SELECT * FROM telegram_pet_progression_state WHERE telegram_id = ?`).bind(id).first();
+    await db.prepare(`UPDATE telegram_pet_progression_state SET daily_key = ?, care_daily = 0, training_daily = 0, adventure_daily = 0, arena_daily = 0, job_daily = 0, bond_daily = 0, updated_at = CURRENT_TIMESTAMP WHERE telegram_id = ? AND daily_key < ?`).bind(day, id, day).run().then(requirePetMutationResult);
+    state = await db.prepare(`SELECT * FROM telegram_pet_progression_state WHERE telegram_id = ?`).bind(id).first().then(requirePetFirstReadResult);
   }
   return state;
 }
@@ -351,9 +352,30 @@ export async function applyPetRuntimeAward(db, telegramId, eventKey, action, opt
 
   // D1 rolls back receipts, tracks, traits, materials and equipment together.
   const results = await db.batch(statements);
-  const priorState = firstBatchRow(results[1]) || {};
+  if (!Array.isArray(results) || results.length !== statements.length) throw new Error('pet_runtime_settlement_unavailable');
+  for (const result of results) {
+    requirePetReadResult(result);
+    requirePetMutationResult(result);
+    if (!Number.isInteger(result.meta?.changes) || result.meta.changes < 0) throw new Error('pet_runtime_settlement_unavailable');
+  }
+  const priorState = firstBatchRow(results[1]);
+  if (!priorState) throw new Error('pet_runtime_state_unavailable');
   const receipt = firstBatchRow(results[2]);
-  if (!receipt || receipt.id !== claimId) return { ok: true, duplicate: true, tracks: {}, traits: {}, material: null, equipment_awards: [] };
+  if (!receipt) {
+    // A missing INSERT result is only a duplicate when the canonical receipt
+    // actually exists. A rejected/empty batch must leave recovery pending.
+    const existing = authority
+      ? await db.prepare(`SELECT id, action, payload_json FROM telegram_pet_specialist_events
+          WHERE pet_id=? AND telegram_id=? AND season_key=? AND event_key=?`)
+        .bind(authority.pet_id, id, authority.season_key, stableEventKey).first().then(requirePetFirstReadResult)
+      : await db.prepare(`SELECT id, action, payload_json FROM telegram_pet_runtime_events WHERE telegram_id=? AND event_key=?`)
+        .bind(id, stableEventKey).first().then(requirePetFirstReadResult);
+    if (!existing?.id || existing.action !== plan.action || !parseJsonObject(existing.payload_json).action) {
+      throw new Error('pet_runtime_receipt_unavailable');
+    }
+    return { ok: true, duplicate: true, tracks: {}, traits: {}, material: null, equipment_awards: [] };
+  }
+  if (receipt.id !== claimId || !firstBatchRow(results[3])) throw new Error('pet_runtime_settlement_unavailable');
 
   const capState = priorState.daily_key === dayKey
     ? priorState

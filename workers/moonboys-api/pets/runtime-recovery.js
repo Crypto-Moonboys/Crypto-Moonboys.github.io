@@ -1,5 +1,6 @@
 import { boundedRecoveryLimit, claimPetRecoveryBatch } from './recovery-limits.js';
 import { PET_SEASONAL_BOSSES } from './content-phase-4.js';
+import { requirePetReadResult } from './read-result.js';
 
 // Keys come from committed game records, never from the current selection or
 // retry request. Keeping the original keys also deduplicates pre-upgrade awards.
@@ -67,8 +68,13 @@ export async function recoverPetRuntimeAwards(db, owner, award, filter = {}) {
     FROM telegram_pet_events e WHERE e.telegram_id=? AND e.status='accepted'
       AND e.event_type IN ('adventure','district_mission','event_chain')
     UNION ALL
-    SELECT e.pet_id,e.season_key,'',CASE e.event_type WHEN 'work' THEN 'job' ELSE e.event_type END,e.day_key,
-      COALESCE(json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.runtime_event_key'),
+    SELECT e.pet_id,e.season_key,'',CASE e.event_type WHEN 'work' THEN 'job' WHEN 'activity_claim' THEN
+        CASE json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.context.activity_type')
+          WHEN 'train' THEN 'timed_train' WHEN 'work' THEN 'timed_work'
+          ELSE json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.context.activity_type') END
+        ELSE e.event_type END,e.day_key,
+      COALESCE(CASE WHEN e.event_type='activity_claim' THEN 'runtime:activity:'||json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.context.session_id') END,
+        json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.runtime_event_key'),
         json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.context.runtime_event_key'),
         CASE COALESCE(json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.context.source'),
           json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.source'))
@@ -77,7 +83,11 @@ export async function recoverPetRuntimeAwards(db, owner, award, filter = {}) {
       COALESCE(json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.equipment_snapshot'),
         json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.context.equipment_snapshot')), NULL, e.id
     FROM telegram_pet_events e WHERE e.telegram_id=? AND e.status='accepted'
-      AND e.event_type IN ('feed','play','clean','sleep','train','energy_drink','dance','cuddles','work','daily_chest')
+      AND (e.event_type IN ('feed','play','clean','sleep','train','energy_drink','dance','cuddles','work','daily_chest')
+        OR e.event_type='activity_claim' AND EXISTS (SELECT 1 FROM telegram_pet_activity_sessions activity
+          WHERE activity.id=json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.context.session_id')
+            AND activity.telegram_id=e.telegram_id AND activity.status='completed'
+            AND activity.activity_type=json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.context.activity_type')))
     UNION ALL
     SELECT e.pet_id,e.season_key,'',CASE e.event_type WHEN 'arena_battle' THEN 'arena_complete' ELSE 'kaiju_win' END,
       e.day_key,'runtime:'||e.event_key,
@@ -89,7 +99,7 @@ export async function recoverPetRuntimeAwards(db, owner, award, filter = {}) {
     SELECT b.pet_id,b.pet_season_key,'','run_boss',date(b.defeated_at),
       'runtime:mini:seasonal-boss:'||b.pet_id||':'||b.season_key,
       json_extract(CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END,'$.context.equipment_snapshot'), NULL, e.id
-    FROM telegram_pet_seasonal_boss_progress b LEFT JOIN telegram_pet_events e
+    FROM telegram_pet_seasonal_boss_progress b JOIN telegram_pet_events e
       ON e.telegram_id=b.telegram_id AND e.pet_id=b.pet_id AND e.season_key=b.pet_season_key
       AND e.event_key='seasonal:'||b.season_key||':'||b.telegram_id||':'||b.pet_id
       AND e.event_type='seasonal_boss' AND e.status='accepted'
@@ -115,7 +125,7 @@ export async function recoverPetRuntimeAwards(db, owner, award, filter = {}) {
     ORDER BY ${rotate ? `CASE WHEN ${recoveryKey}>COALESCE(recovery_state.setting_value,'') THEN 0 ELSE 1 END,` : ''}
       ${recoveryKey} LIMIT ?`)
     .bind(owner, filter.event_key || '', filter.event_key || '', owner, owner, owner, owner, owner, owner, owner,
-      ...Object.keys(PET_SEASONAL_BOSSES), owner, filter.run_id || '', filter.run_id || '', filter.action || '', filter.action || '', boundedRecoveryLimit(filter.limit, 20)).all();
+      ...Object.keys(PET_SEASONAL_BOSSES), owner, filter.run_id || '', filter.run_id || '', filter.action || '', filter.action || '', boundedRecoveryLimit(filter.limit, 20)).all().then(requirePetReadResult);
   if (rotate && !await claimPetRecoveryBatch(db, owner, 'runtime', rows.results || [])) return;
   for (const row of rows.results || []) {
     try { await award(db, owner, row.event_key, row.action, row); }

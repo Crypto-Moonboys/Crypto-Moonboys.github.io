@@ -4,7 +4,7 @@ import test from 'node:test';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import { getPetVisibleLevel } from '../workers/moonboys-api/pets/progression-phase-2.js';
-import { processPetEquipmentUpgrade } from '../workers/moonboys-api/pets/live-systems.js';
+import { getPetEquipmentUpgradeQuote, processPetEquipmentUpgrade } from '../workers/moonboys-api/pets/live-systems.js';
 import worker, { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 
 const now = new Date();
@@ -93,7 +93,7 @@ for (const change of ['upgrade', 'mastery', 'backfill', 'deletion']) test(`care 
     if (!statements[0].query.includes('pet_action_pending')) return;
     f.db.beforeBatch = null; triggered = true;
     if (change === 'upgrade') {
-      const upgrade = await processPetEquipmentUpgrade(f.db, f.owner, 'crystal_bowl', 'concurrent-upgrade');
+      const upgrade = await processPetEquipmentUpgrade(f.db, f.owner, 'crystal_bowl', 'concurrent-upgrade', getPetEquipmentUpgradeQuote('crystal_bowl', 2));
       assert.equal(upgrade.accepted, true, JSON.stringify(upgrade));
     } else if (change === 'mastery') f.sql.exec("UPDATE telegram_pet_equipment_progression SET mastery_xp=300,mastery_tier=2 WHERE item_key='crystal_bowl'");
     else if (change === 'backfill') f.sql.prepare("INSERT INTO telegram_pet_equipment_progression (telegram_id,item_key,slot,item_level) VALUES (?,'crystal_bowl','food',2)").run(f.owner);

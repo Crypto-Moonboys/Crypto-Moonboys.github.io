@@ -1404,6 +1404,7 @@
     var objectives = Array.isArray(weekly.objectives) ? weekly.objectives : [];
     var bossObjective = objectives.find(function (objective) { return String(objective.objective_id || '') === 'weekly_boss_attempt'; });
     if (bossObjective && !bossObjective.completed && Number(bossObjective.progress || 0) < Number(bossObjective.target || 1)) {
+      if (boss.participation_available) return 'Complete this pet’s Weekly Boss participation challenge for its Weekly Journey.';
       return boss.available ? 'Complete Weekly boss attempt to progress Weekly Journey.' : 'Build level and energy before the Weekly boss attempt.';
     }
     var energy = Number(state && state.pet && state.pet.energy);
@@ -2320,18 +2321,21 @@
     var raidClaims = savedRaidButtons(seasonal);
     var seasonalBody = '<div class="line">' + escapeHtml(words(seasonal.title || 'offline')) + ' // ' + number(seasonal.damage) + '/' + number(seasonal.hp) + ' DAMAGE // PHASE ' + number(seasonal.phase || 1) + '/' + number(seasonal.phases) + '</div><div class="line muted">WEAKNESS ' + escapeHtml(words(seasonal.weakness)) + ' // REWARD ' + escapeHtml(words(seasonal.reward)) + '</div><div class="line muted">One attack per pet / UTC day. Counter attacks change this hit’s damage; they do not apply ongoing Arena status effects.</div><div class="button-grid">' + raidButtons + raidClaims + '</div>';
     var bossReward = valueText(boss.reward);
-    var bossStatusLabel = boss.defeated ? 'DEFEATED' : boss.attempt_used ? 'USED TODAY' : Number(state.pet.level) < 5 ? 'LEVEL 5 REQUIRED' : Number(state.pet.energy) < 12 ? '12 ENERGY REQUIRED' : '';
+    var participationChallenge = boss.defeated && !boss.participation_completed;
+    var bossStatusLabel = participationChallenge ? (Number(state.pet.level) < 5 ? 'LEVEL 5 REQUIRED' : Number(state.pet.energy) < 12 ? '12 ENERGY REQUIRED' : '') : boss.defeated ? 'DEFEATED' : boss.attempt_used ? 'USED TODAY' : Number(state.pet.level) < 5 ? 'LEVEL 5 REQUIRED' : Number(state.pet.energy) < 12 ? '12 ENERGY REQUIRED' : '';
     var weeklyChoices = (boss.choices || ['strike', 'outsmart', 'endure'].map(function (key) { return { key: key, title: key.toUpperCase(), energy: 12 }; })).map(function (choice) {
       var detail = number(choice.energy) + ' ENERGY';
-      if (choice.minimum_damage != null) detail += ' // ' + number(choice.minimum_damage) + '–' + number(choice.maximum_damage) + ' DAMAGE' + (choice.weakness_bonus ? ' // WEAKNESS +' + number(choice.weakness_bonus) + ' INCLUDED' : '') + (choice.personality_bonus ? ' // PERSONALITY +' + number(choice.personality_bonus) + ' INCLUDED' : '');
-      return button(choice.title, 'weekly_boss', { move: choice.key, pet_id: state.pet.pet_id }, { disabled: !boss.available, statusLabel: bossStatusLabel, cooldown: boss.defeated ? null : boss.cooldown, detail: detail });
+      if (choice.minimum_damage != null) detail += ' // ' + number(choice.minimum_damage) + '–' + number(choice.maximum_damage) + (participationChallenge ? ' CHALLENGE SCORE' : ' DAMAGE') + (choice.weakness_bonus ? ' // WEAKNESS +' + number(choice.weakness_bonus) + ' INCLUDED' : '') + (choice.personality_bonus ? ' // PERSONALITY +' + number(choice.personality_bonus) + ' INCLUDED' : '');
+      if (participationChallenge) detail += ' // THIS PET’S WEEKLY JOURNEY ATTEMPT ONLY. NO EXTRA VICTORY PAYOUT.';
+      return button((participationChallenge ? 'CHALLENGE // ' : '') + choice.title, 'weekly_boss', { move: choice.key, pet_id: state.pet.pet_id }, { disabled: !boss.available, statusLabel: bossStatusLabel, cooldown: boss.defeated ? null : boss.cooldown, detail: detail });
     }).join('');
     var weeklyClaims = savedWeeklyBossButtons(boss);
-    var bossBody = '<div class="line">' + (boss.defeated ? 'TARGET DEFEATED.' : boss.attempt_used ? 'DAILY ATTEMPT USED.' : 'SELECT AN ATTACK ROUTINE.') + '</div>' +
+    var bossBody = '<div class="line">' + (participationChallenge ? 'TARGET DEFEATED. COMPLETE THIS PET’S PARTICIPATION CHALLENGE.' : boss.defeated ? 'TARGET DEFEATED. THIS PET’S ATTEMPT IS RECORDED.' : boss.attempt_used ? 'DAILY ATTEMPT USED.' : 'SELECT AN ATTACK ROUTINE.') + '</div>' +
       (weeklyClaims ? '<div class="button-grid one">' + weeklyClaims + '</div>' : '') +
       '<div class="line muted">HP ' + number(boss.remaining_hp) + '/' + number(boss.hp) + ' // DAMAGE ' + number(boss.damage) + ' // ATTEMPTS ' + number(boss.attempts) + '/' + number(boss.max_attempts || 7) + '</div>' +
       '<div class="line muted">WEAKNESS ' + escapeHtml(words(boss.weakness || 'unknown')) + ' // REWARD ' + escapeHtml(bossReward) + '</div>' +
       '<div class="line muted">Level 5 after hatching. All moves cost 12 energy and share one account attempt per UTC day. Damage ranges include the listed bonuses; Endure does not heal or apply a defensive buff.</div>' +
+      '<div class="line muted">After the shared victory, a pet missing its own attempt this Journey week can choose a 12-energy participation challenge. This records only its weekly attempt, with no extra victory reward or boss-win credit. Other Crest requirements still apply.</div>' +
       '<div class="button-grid one">' + weeklyChoices + '</div>' +
       (boss.last_attempt ? '<div class="line complete">TODAY’S SAVED ATTACK // ' + escapeHtml(words(boss.last_attempt.action)) + ' // ' + number(boss.last_attempt.damage) + ' DAMAGE</div>' : '') +
       (boss.defeated ? '<div class="line">' + (boss.reward_claimed ? 'VICTORY REWARD COLLECTED.' : 'VICTORY RECORDED. CHECK SAVED REWARDS.') + '</div>' : '') +
@@ -2456,7 +2460,7 @@
       var equip = catalogItem ? '<div class="button-grid one">' + button(catalogItem.equipped ? 'EQUIPPED' : 'EQUIP FREE', 'equip', { item_key: item.item_key, pet_id: state.pet.pet_id }, { disabled: !catalogItem.unlocked || catalogItem.equipped, detail: catalogItem.unlocked ? 'Keeps upgrades and mastery. No currency cost, XP or shopping credit.' : 'REQUIRES LEVEL ' + number(catalogItem.min_level) }) + '</div>' : '';
       return '<div class="line complete">' + escapeHtml(words(item.slot)) + ' // ' + escapeHtml(words(item.item_key)) + '</div>' +
         '<div class="line muted">LEVEL ' + number(item.item_level) + ' // ITEM XP ' + number(item.item_xp) + ' // MASTERY ' + number(item.mastery_tier) + ' (' + number(item.mastery_xp) + ' XP)</div>' + equip +
-        (upgrade.maxed ? '<div class="line complete">MAX LEVEL</div>' : '<div class="button-grid one">' + button('UPGRADE TO LEVEL ' + number(upgrade.target_level), 'gear_upgrade', { item_key: item.item_key }, { disabled: !upgrade.affordable, resourceRequired: upgrade.unlocked && !upgrade.affordable, detail: (upgrade.unlocked ? '' : 'REQUIRES LEVEL ' + number(upgrade.required_level) + ' // ') + costText(upgrade.cost) }) + '</div>');
+        (upgrade.maxed ? '<div class="line complete">MAX LEVEL</div>' : '<div class="button-grid one">' + button('UPGRADE TO LEVEL ' + number(upgrade.target_level), 'gear_upgrade', { item_key: item.item_key, target_level: upgrade.target_level, quote_version: upgrade.quote_version }, { disabled: !upgrade.affordable || !upgrade.quote_version, resourceRequired: upgrade.unlocked && !upgrade.affordable, detail: (upgrade.unlocked ? '' : 'REQUIRES LEVEL ' + number(upgrade.required_level) + ' // ') + costText(upgrade.cost) }) + '</div>');
     }).join('');
     var materials = (state.materials || []).map(function (item) {
       return '<div class="line ' + (item.quantity ? 'complete' : 'locked') + '">' + escapeHtml(item.label) + ' x' + number(item.quantity) + '</div><div class="line muted">SOURCE: ' + escapeHtml((item.sources || []).map(words).join(' / ')) + '</div>';
@@ -2658,6 +2662,7 @@
 
   // TEST-EXPORT: actionResultFeedback:start
   function resultRewardMap(result) {
+    if (result && result.duplicate) return {};
     var applied = result && result.applied;
     var reward = result && result.rewards
       || applied && (applied.rewardsApplied || applied.rewards_applied)
@@ -2756,6 +2761,11 @@
     }
     var reward = resultRewardMap(result);
     var gains = Object.entries(reward).filter(function (entry) { return Number(entry[1]) > 0 && typeof entry[1] !== 'object' && !(entry[0] === 'pet_xp' && result.pet_xp_awarded != null); }).map(function (entry) { return '+' + number(entry[1]) + ' ' + words(entry[0]); });
+    ['materials', 'items', 'relics'].forEach(function (kind) {
+      Object.entries(reward[kind] || {}).forEach(function (entry) {
+        if (Number(entry[1]) > 0) gains.push('+' + number(entry[1]) + ' ' + words(entry[0]));
+      });
+    });
     var parts = ['Action complete'];
     var reasonCopy = rejectionMessage(result.reason);
     if (reasonCopy) parts.push(reasonCopy);
@@ -2763,8 +2773,8 @@
     if (terminalResult) parts.push('OUTCOME ' + words(terminalResult.replace('player1', 'you').replace('player2', 'opponent')));
     var resultCopy = result.result_copy || result.outcome && result.outcome.copy;
     if (resultCopy) parts.push(String(resultCopy));
-    if (result.damage) parts.push('DAMAGE ' + number(result.damage));
-    if (result.pet_xp_awarded) parts.push('+' + number(result.pet_xp_awarded) + ' PET XP');
+    if (result.damage) parts.push((result.participation_only ? 'CHALLENGE SCORE ' : 'DAMAGE ') + number(result.damage));
+    if (!result.duplicate && result.pet_xp_awarded) parts.push('+' + number(result.pet_xp_awarded) + ' PET XP');
     if (gains.length) parts.push(gains.join(' // '));
     if (result.daily_journey) {
       parts.push(result.daily_journey.accepted
@@ -2825,6 +2835,7 @@
       daily_cache_state_changed: 'your pet changed before the cache could settle; refresh and try again.',
       crafting_settlement_conflict: 'your level, materials or bag capacity changed before crafting. Nothing was spent; review the refreshed recipe.',
       upgrade_conflict: 'your level, balance or gear changed before the upgrade, or wallet recovery is pending. Nothing was spent; review the refreshed gear.',
+      upgrade_quote_stale: 'this upgrade quote has changed. Nothing was spent; refresh Equipment and review the level and price before trying again.',
       cosmetic_settlement_conflict: 'your balance or collection changed, or wallet recovery is pending. Nothing was spent; review the refreshed collection.',
       season_reward_pending: 'the season reward has not settled yet; refresh and retry the saved tier.',
       wallet_reconciliation_recovery_pending: 'your saved wallet is waiting for recovery. This transaction was not applied.',
@@ -2989,15 +3000,19 @@
   }
 
   async function showPendingNotices() {
-    var notices = state && Array.isArray(state.notices) ? state.notices : [];
+    var notices = state && Array.isArray(state.notices) ? state.notices.filter(function (notice) {
+      return notice.scope === 'account' || notice.scope === 'pet' && state.pet && notice.pet_id === state.pet.pet_id && notice.season_key === state.pet.season_key;
+    }) : [];
     if (!notices.length || noticesBusy) return;
     noticesBusy = true;
-    var visible = notices.slice(0, 5);
+    var visible = notices.slice(0, 1);
     haptic('success');
     tell(visible[0].title + (visible[0].detail ? ' - ' + visible[0].detail : ''));
     try {
       var requestGeneration = beginStateRequest();
-      var acknowledged = await post('/telegram-pets/app/action', { action: 'guidance_ack', notice_keys: visible.map(function (notice) { return notice.key; }), request_id: crypto.randomUUID() });
+      var acknowledged = await post('/telegram-pets/app/action', { action: 'guidance_ack', notices: visible.map(function (notice) {
+        return { key: notice.key, scope: notice.scope, pet_id: notice.pet_id, season_key: notice.season_key };
+      }), request_id: crypto.randomUUID() });
       if (setStateSnapshot(acknowledged.state, requestGeneration)) render();
     } catch (_) {}
     noticesBusy = false;

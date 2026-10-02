@@ -1,3 +1,4 @@
+import { requireRunMutationResults, recoverDeletedPetRunStarts, isDeletedRunPet } from './run-ownership.js';
 import { boundedRecoveryLimit } from './recovery-limits.js';
 import { requirePetFirstReadResult, requirePetReadResult, requirePetMutationResult } from './read-result.js';
 import { withPetEquipmentProgression } from './equipment-progression.js';
@@ -276,6 +277,7 @@ async function resolveDailyRunSeasonPet(db, telegramId, seasonKey) {
 export async function createDailyMoonRun(db, request = {}) {
   const telegramId = String(request.telegram_id || '').trim();
   if (!telegramId) throw new Error('invalid_daily_run_player');
+  await recoverDeletedPetRunStarts(db, telegramId);
   const utcDay = utcDayFromNow(request.now);
   const generated = await generateDailyMoonRunSeed(utcDay);
   const runId = dailyRunId(telegramId, utcDay);
@@ -348,6 +350,7 @@ async function recoverDailyMoonRunStart(db, telegramId, runId) {
     WHERE r.run_id=? AND r.telegram_id=?`)
     .bind(runId, telegramId).first().then(requirePetFirstReadResult);
   if (!run) return false;
+  if (await isDeletedRunPet(db, run)) throw new Error('daily_run_source_recovery_required');
   if (!run.source_owned || !run.source_started || run.source_resolved
     || !['active','extractable'].includes(run.status) || run.current_room !== 0 || run.depth !== 0 || run.rooms_completed !== 0
     || Number(run.seed) !== generated.run_seed
@@ -361,6 +364,7 @@ async function recoverDailyMoonRunStart(db, telegramId, runId) {
 
 async function initializeDailyMoonRun(db, authoritativeRun, generated) {
   const telegramId = authoritativeRun.telegram_id, runId = authoritativeRun.run_id;
+  if (await isDeletedRunPet(db, authoritativeRun)) return { accepted: false, reason: 'run_source_recovery_required', refresh_state: true };
   const utcDay = generated.utc_day, seasonId = authoritativeRun.season_key;
   const region = PET_ROGUELITE_REGIONS.moon_alley;
   // Preserve an already-started run's condition when deploying a new catalogue.
@@ -385,6 +389,7 @@ async function initializeDailyMoonRun(db, authoritativeRun, generated) {
       AND NOT EXISTS (SELECT 1 FROM telegram_pet_run_rooms rr WHERE rr.run_id=r.run_id)`)
       .bind(DAILY_RUN_RULES_ID, runId, telegramId),
   ]);
+  requireRunMutationResults(reservationWrites, 2);
   const daily = await getDailyRunRow(db, telegramId, utcDay);
   if (
     !daily ||
@@ -442,6 +447,7 @@ async function initializeDailyMoonRun(db, authoritativeRun, generated) {
 // that evidence, never generate another room or add its score a second time.
 export async function recoverDailyMoonRunEnding(db, request = {}) {
   const daily = await getDailyMoonRunReservation(db, request);
+  if (daily && await isDeletedRunPet(db, daily)) return { accepted: false, reason: 'run_source_recovery_required', refresh_state: true };
   if (!daily || !daily.pet_id || !['active', 'extractable', 'completed', 'extracted'].includes(daily.authoritative_status)
     || positiveInteger(daily.max_room) < 1 || positiveInteger(daily.current_room) < positiveInteger(daily.max_room)) return null;
   const owned = await db.prepare(`SELECT 1 AS valid FROM telegram_pet_runs r
@@ -458,7 +464,7 @@ export async function recoverDailyMoonRunEnding(db, request = {}) {
     ? await extractPetRogueliteRun(db, run, {}, { rooms_completed: run.current_room, boss_fought: room.boss_id })
     : await completePetRun(db, run, {}, { rooms_completed: run.current_room, boss_fought: room.boss_id });
   const synchronized = await syncDailyMoonRun(db, { telegram_id: daily.telegram_id, run_id: daily.run_id, now: request.now });
-  return { ...synchronized, accepted: true, duplicate: Boolean(completion.duplicate),
+  return { ...synchronized, accepted: true, duplicate: Boolean(boss_reward.duplicate && completion.reward?.duplicate),
     reason: completion.status === 'completed' ? 'daily_run_completed' : 'daily_run_terminal', room, boss_reward, completion };
 }
 
@@ -549,6 +555,7 @@ export async function processDailyMoonRunStep(db, request = {}) {
   const choiceId = String(request.choice_key || '').trim();
   if (!telegramId || !runId || !choiceId) throw new Error('invalid_daily_run_step');
   const daily = await getDailyMoonRunReservation(db, { telegram_id: telegramId, run_id: runId });
+  if (daily && await isDeletedRunPet(db, daily)) return { accepted: false, reason: 'run_source_recovery_required', refresh_state: true };
   if (!daily) return { accepted: false, duplicate: false, reason: 'daily_run_not_found' };
   if (!String(daily.pet_id || '').trim()) return { accepted: false, duplicate: false, reason: 'run_pet_authority_required', daily_run: daily };
   if (positiveInteger(daily.current_room) >= positiveInteger(daily.max_room) && ['active', 'extractable', 'completed', 'extracted'].includes(daily.authoritative_status)) {
@@ -604,7 +611,7 @@ export async function processDailyMoonRunStep(db, request = {}) {
   return {
     ...synchronized,
     accepted: true,
-    duplicate: Boolean(resolved.duplicate),
+    duplicate: Boolean(boss_reward ? boss_reward.duplicate : resolved.duplicate),
     reason: 'daily_room_resolved',
     room: resolved,
     boss_reward,
@@ -623,6 +630,7 @@ export async function extractDailyMoonRun(db, request = {}) {
 
 async function extractDailyMoonRunAttempt(db, request) {
   const daily = await getDailyMoonRunReservation(db, request);
+  if (daily && await isDeletedRunPet(db, daily)) return { accepted: false, reason: 'run_source_recovery_required', refresh_state: true };
   if (!daily) return { accepted: false, duplicate: false, reason: 'daily_run_not_found' };
   if (!String(daily.pet_id || '').trim()) return { accepted: false, duplicate: false, reason: 'run_pet_authority_required', daily_run: daily, extraction: null };
   if (positiveInteger(daily.current_room) >= positiveInteger(daily.max_room) && ['active', 'extractable', 'completed', 'extracted'].includes(daily.authoritative_status)) {

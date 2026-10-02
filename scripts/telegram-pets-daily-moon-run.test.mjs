@@ -1,6 +1,7 @@
 import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import vm from 'node:vm';
 import { DatabaseSync } from 'node:sqlite';
 import { mock } from 'node:test';
 import {
@@ -2061,6 +2062,40 @@ for (const kind of ['endings', 'records']) {
   assert.deepEqual(adapter.database.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE telegram_id=?').get(owner), xp);
   assert.deepEqual(adapter.database.prepare('SELECT * FROM telegram_pet_recovery_cursors ORDER BY telegram_id,setting_key').all(), cursors, 'empty queues do not write cursors');
   assert.equal(adapter.database.prepare('SELECT setting_value FROM telegram_pet_recovery_cursors WHERE telegram_id=?').get(`other-${owner}`).setting_value, 'untouched');
+}
+
+// A saved ending is a reused action, but its first recovered boss payout is
+// still a newly delivered reward for API and Mini App feedback.
+for (const mode of ['thrown', 'resolved']) {
+  const f = await endingFixture('daily-delivery-' + mode);
+  const originalBatch = f.adapter.batch.bind(f.adapter);
+  let blocked = true;
+  f.adapter.batch = async statements => {
+    if (blocked && statements[0].args.includes('roguelite_boss')) {
+      if (mode === 'thrown') throw Error('daily_payout_whole_rollback');
+      return statements.map(() => ({ success: false, error: 'daily_payout_whole_rollback', results: [], meta: { changes: 0 } }));
+    }
+    return originalBatch(statements);
+  };
+  await assert.rejects(processDailyMoonRunStep(f.adapter, f.request), /whole_rollback|write_unavailable/);
+  assert.equal(f.adapter.database.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE source='roguelite_boss'").get().n, 0);
+  blocked = false;
+  seedAdditionalPet(f.adapter, f.owner, 'other-' + f.owner);
+  f.adapter.database.prepare('UPDATE telegram_pet_active_slots SET pet_id=? WHERE telegram_id=?').run('other-' + f.owner, f.owner);
+  const before = f.adapter.database.prepare("SELECT COALESCE(SUM(quantity),0) n FROM telegram_pet_material_balances WHERE telegram_id=?").get(f.owner).n;
+  const recovered = await recoverDailyMoonRunEnding(f.adapter, f.request);
+  const result = __petMediaTestHooks.serializePetMiniAppActionResult(recovered, null, f.owner);
+  const delta = f.adapter.database.prepare("SELECT COALESCE(SUM(quantity),0) n FROM telegram_pet_material_balances WHERE telegram_id=?").get(f.owner).n - before;
+  assert.ok(delta > 0); assert.equal(result.duplicate, false); assert.equal(Object.values(result.rewards.materials).reduce((sum,n)=>sum+n,0), delta);
+  const client = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
+  const snippet = client.slice(client.indexOf('// TEST-EXPORT: actionResultFeedback:start'), client.indexOf('// TEST-EXPORT: actionResultFeedback:end'));
+  const context = vm.createContext({ number: String, words: value => String(value).replaceAll('_', ' '), result });
+  vm.runInContext(snippet + '; globalThis.feedback=resultMessage(result,null,null);', context);
+  assert.match(context.feedback, /\+3 scrap metal/); assert.doesNotMatch(context.feedback, /DUPLICATE BLOCKED/);
+  const retried = __petMediaTestHooks.serializePetMiniAppActionResult(await recoverDailyMoonRunEnding(f.adapter, f.request), null, f.owner);
+  assert.equal(retried.duplicate, true); assert.deepEqual(retried.rewards, {}); assert.equal(retried.pet_xp_awarded, 0);
+  assert.equal(f.adapter.database.prepare("SELECT COALESCE(SUM(quantity),0) n FROM telegram_pet_material_balances WHERE telegram_id=?").get(f.owner).n, before + delta);
+  assert.equal(f.adapter.database.prepare("SELECT pet_id FROM telegram_pet_reward_claims WHERE source='roguelite_boss'").get().pet_id, f.run.pet_id);
 }
 
 mock.timers.reset();

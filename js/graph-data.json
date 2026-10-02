@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-02T16:53:20.756Z",
-  "verified_at": "2026-10-02T16:53:20.756Z",
+  "generated_at": "2026-10-02T19:50:19.925Z",
+  "verified_at": "2026-10-02T19:50:19.925Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -335,7 +335,7 @@
       "title": "Crypto Moonboy Pets",
       "url": "/wiki/crypto-moonboy-pets.html",
       "category": "tokens",
-      "rank_score": 414,
+      "rank_score": 426,
       "authority_score": 22
     },
     {
@@ -2780,13 +2780,13 @@
     },
     {
       "source": "/wiki/589-xrpl.html",
-      "target": "/wiki/bitcoin.html",
-      "score": 53,
-      "weight": 0.53
+      "target": "/wiki/crypto-moonboy-pets.html",
+      "score": 54,
+      "weight": 0.54
     },
     {
       "source": "/wiki/589-xrpl.html",
-      "target": "/wiki/crypto-moonboy-pets.html",
+      "target": "/wiki/bitcoin.html",
       "score": 53,
       "weight": 0.53
     },
@@ -2810,13 +2810,13 @@
     },
     {
       "source": "/wiki/666-xrpl.html",
-      "target": "/wiki/bitcoin.html",
-      "score": 53,
-      "weight": 0.53
+      "target": "/wiki/crypto-moonboy-pets.html",
+      "score": 54,
+      "weight": 0.54
     },
     {
       "source": "/wiki/666-xrpl.html",
-      "target": "/wiki/crypto-moonboy-pets.html",
+      "target": "/wiki/bitcoin.html",
       "score": 53,
       "weight": 0.53
     },
@@ -2967,8 +2967,8 @@
     {
       "source": "/wiki/altcoins.html",
       "target": "/wiki/crypto-moonboy-pets.html",
-      "score": 53,
-      "weight": 0.53
+      "score": 54,
+      "weight": 0.54
     },
     {
       "source": "/wiki/atomicassets.html",
@@ -3170,13 +3170,13 @@
     },
     {
       "source": "/wiki/bear-xrpl.html",
-      "target": "/wiki/bitcoin.html",
-      "score": 53,
-      "weight": 0.53
+      "target": "/wiki/crypto-moonboy-pets.html",
+      "score": 54,
+      "weight": 0.54
     },
     {
       "source": "/wiki/bear-xrpl.html",
-      "target": "/wiki/crypto-moonboy-pets.html",
+      "target": "/wiki/bitcoin.html",
       "score": 53,
       "weight": 0.53
     },
@@ -3249,8 +3249,8 @@
     {
       "source": "/wiki/bitcoin-btc.html",
       "target": "/wiki/crypto-moonboy-pets.html",
-      "score": 50,
-      "weight": 0.5
+      "score": 51,
+      "weight": 0.51
     },
     {
       "source": "/wiki/bitcoin-btc.html",
@@ -3375,8 +3375,8 @@
     {
       "source": "/wiki/bitcoin.html",
       "target": "/wiki/crypto-moonboy-pets.html",
-      "score": 56,
-      "weight": 0.56
+      "score": 57,
+      "weight": 0.57
     },
     {
       "source": "/wiki/bitcoin.html",
@@ -10976,13 +10976,13 @@
     },
     {
       "source": "/wiki/swap-nefty.html",
-      "target": "/wiki/bitcoin.html",
-      "score": 53,
-      "weight": 0.53
+      "target": "/wiki/crypto-moonboy-pets.html",
+      "score": 54,
+      "weight": 0.54
     },
     {
       "source": "/wiki/swap-nefty.html",
-      "target": "/wiki/crypto-moonboy-pets.html",
+      "target": "/wiki/bitcoin.html",
       "score": 53,
       "weight": 0.53
     },

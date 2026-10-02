@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
-import { processPetEquipmentUpgrade } from '../workers/moonboys-api/pets/live-systems.js';
+import { getPetEquipmentUpgradeQuote, processPetEquipmentUpgrade } from '../workers/moonboys-api/pets/live-systems.js';
 import worker, { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 
 const now = new Date();
@@ -542,7 +542,7 @@ for(const change of ['upgrade','mastery','new row']) test(`account audit: concur
     if(!statements.some(s=>s.query.includes('INSERT OR IGNORE INTO telegram_pet_run_steps')))return;
     f.db.beforeBatch=null; triggered=true;
     if(change==='upgrade') {
-      const result=await processPetEquipmentUpgrade(f.db,f.owner,'hoverboard','upgrade-during-run');
+      const result=await processPetEquipmentUpgrade(f.db, f.owner, 'hoverboard', 'upgrade-during-run', getPetEquipmentUpgradeQuote('hoverboard', 2));
       assert.equal(result.accepted,true,JSON.stringify(result));
     }else if(change==='mastery') f.sql.exec("UPDATE telegram_pet_equipment_progression SET mastery_xp=75,mastery_tier=1 WHERE item_key='hoverboard'");
     else f.sql.prepare("INSERT INTO telegram_pet_equipment_progression (telegram_id,item_key,slot,item_level) VALUES (?,'hoverboard','toy',2)").run(f.owner);

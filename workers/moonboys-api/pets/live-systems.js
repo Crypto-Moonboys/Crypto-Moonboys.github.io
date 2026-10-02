@@ -217,7 +217,7 @@ export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gea
     const cost = getPetEquipmentUpgradeCost(target);
     const levelUnlocked = visibleLevel >= 15;
     const affordable = levelUnlocked && cost && Object.entries(cost).every(([key, amount]) => integer(key === 'moon_gold' ? pet.moon_gold : materialMap[key]) >= amount);
-    return { ...item, target_level: target, cost, maxed: !cost, unlocked: levelUnlocked, required_level: 15, affordable: Boolean(affordable) };
+    return { ...item, ...getPetEquipmentUpgradeQuote(item.item_key, target), maxed: !cost, unlocked: levelUnlocked, required_level: 15, affordable: Boolean(affordable) };
   });
   const unlockedCosmetics = new Map((cosmetics.results || []).map((row) => [row.cosmetic_key, row]));
   const economyWallet = { moon_gold: integer(pet.moon_gold), moon_crystals: integer(pet.moon_crystals), style_tokens: integer(pet.style_tokens), ...materialMap };
@@ -649,7 +649,8 @@ export async function processPetSeasonalBoss(db, telegramId, pet, awardReward, m
   if (existing?.defeated_at && !charged) {
     if (existing.reward_claimed_at) return { accepted: false, reason: 'seasonal_boss_defeated', boss };
     const recovered = await settleReward();
-    return { ...recovered, accepted: Boolean(recovered.accepted), duplicate: true, boss, progress: { damage: boss.hp, hp: boss.hp, defeated: true } };
+    return { ...recovered, accepted: Boolean(recovered.accepted), duplicate: Boolean(recovered.duplicate), attempt_replayed: true,
+      boss, progress: { damage: boss.hp, hp: boss.hp, defeated: true } };
   }
   if (!charged && visibleLevel < boss.min_level) return { accepted: false, reason: 'seasonal_boss_locked', required_level: boss.min_level };
   const choice = seasonalRaidChoices(visibleLevel, boss).find((entry) => entry.key === (move === undefined ? 'strike' : move));
@@ -757,7 +758,16 @@ export async function recoverPetLiveSystemEndings(db, telegramId, awardReward, l
   }
 }
 
-export async function processPetEquipmentUpgrade(db, telegramId, itemKey, requestKey) {
+// This is a price/version identifier, not a credential. The server derives it
+// from the live catalog; clients must return the quote they actually displayed.
+export function getPetEquipmentUpgradeQuote(itemKey, targetLevel) {
+  const cost = getPetEquipmentUpgradeCost(targetLevel);
+  return { target_level: targetLevel, cost, quote_version: cost
+    ? JSON.stringify(['equipment-upgrade-v1', itemKey, targetLevel, Object.entries(cost).sort(([a], [b]) => a.localeCompare(b))])
+    : null };
+}
+
+export async function processPetEquipmentUpgrade(db, telegramId, itemKey, requestKey, displayedQuote = {}) {
   const replay = await getCompletedRequest(db, telegramId, 'equipment_upgrade', itemKey, requestKey);
   if (replay) return { accepted: true, duplicate: true, reason: 'equipment_already_upgraded', item: parse(replay.payload_json, {}) };
   const item = await db.prepare('SELECT item_key, item_level FROM telegram_pet_equipment_progression WHERE telegram_id=? AND item_key=?').bind(telegramId, itemKey).first().then(requirePetFirstReadResult);
@@ -765,6 +775,10 @@ export async function processPetEquipmentUpgrade(db, telegramId, itemKey, reques
   const target = integer(item.item_level) + 1;
   const cost = getPetEquipmentUpgradeCost(target);
   if (!cost) return { accepted: false, reason: 'equipment_max_level' };
+  const quote = getPetEquipmentUpgradeQuote(itemKey, target);
+  if (displayedQuote?.target_level !== target || displayedQuote?.quote_version !== quote.quote_version) {
+    return { accepted: false, reason: 'upgrade_quote_stale', refresh_state: true };
+  }
   const pet = await db.prepare('SELECT pet_xp, moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').bind(telegramId).first().then(requirePetFirstReadResult);
   if (getPetVisibleLevel(pet?.pet_xp) < 15) return { accepted: false, reason: 'equipment_upgrades_locked' };
   if (integer(cost.moon_gold) > 0 && !(await ensurePetAccountWalletReadyForMutation(db, telegramId))) {
@@ -777,17 +791,19 @@ export async function processPetEquipmentUpgrade(db, telegramId, itemKey, reques
   const wallet = { moon_gold: integer(walletRow?.moon_gold), ...Object.fromEntries((balances.results || []).map((row) => [row.material_key, integer(row.quantity)])) };
   if (!Object.entries(cost).every(([key, amount]) => integer(wallet[key]) >= amount)) return { accepted: false, reason: 'upgrade_cost_missing', cost };
   const period = String(requestKey || `level:${target}`);
-  const reservation = await reserveSystemEvent(db, telegramId, 'equipment_upgrade', itemKey, period, { target, cost });
+  const reservation = await reserveSystemEvent(db, telegramId, 'equipment_upgrade', itemKey, period, { target, cost, quote_version: quote.quote_version });
   if (reservation.status === 'completed') return { accepted: true, duplicate: true, reason: 'equipment_already_upgraded' };
   const payableMaterials = Object.entries(cost).filter(([key, amount]) => key !== 'moon_gold' && integer(amount) > 0);
   const materialChecks = payableMaterials.map(() => 'AND EXISTS (SELECT 1 FROM telegram_pet_material_balances WHERE telegram_id=? AND material_key=? AND quantity>=?)').join(' ');
   const materialArgs = payableMaterials.flatMap(([key, amount]) => [telegramId, key, amount]);
   const statements = [
     db.prepare(`UPDATE telegram_pet_system_events SET status='settling', updated_at=CURRENT_TIMESTAMP WHERE id=? AND status IN ('pending','rejected')
+      AND json_valid(payload_json) AND json_extract(payload_json,'$.target')=?
+      AND json_extract(payload_json,'$.quote_version')=?
       AND EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id=? AND moon_gold>=? AND ${getPetVisibleLevelSql('pet_xp')}>=15) ${materialChecks}
       AND ${accountWalletRecoveryResolvedSql('?')}
       AND EXISTS (SELECT 1 FROM telegram_pet_equipment_progression WHERE telegram_id=? AND item_key=? AND item_level=?)`)
-      .bind(reservation.id, telegramId, integer(cost.moon_gold), ...materialArgs, telegramId, telegramId, itemKey, target - 1),
+      .bind(reservation.id, target, quote.quote_version, telegramId, integer(cost.moon_gold), ...materialArgs, telegramId, telegramId, itemKey, target - 1),
     db.prepare("UPDATE telegram_pet_profiles SET moon_gold=moon_gold-?, updated_at=CURRENT_TIMESTAMP WHERE telegram_id=? AND EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling')").bind(integer(cost.moon_gold), telegramId, reservation.id),
     ...payableMaterials.map(([key, amount]) => db.prepare("UPDATE telegram_pet_material_balances SET quantity=quantity-?, updated_at=CURRENT_TIMESTAMP WHERE telegram_id=? AND material_key=? AND EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling')").bind(amount, telegramId, key, reservation.id)),
     db.prepare("UPDATE telegram_pet_equipment_progression SET item_level=?, updated_at=CURRENT_TIMESTAMP WHERE telegram_id=? AND item_key=? AND item_level=? AND EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling')").bind(target, telegramId, itemKey, target - 1, reservation.id),

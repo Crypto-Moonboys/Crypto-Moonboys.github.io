@@ -579,8 +579,8 @@ const noticesSource = client.slice(client.indexOf('  async function showPendingN
 const lifecycleSource = client.slice(client.indexOf('  // TEST-EXPORT: lifecycleDirector:start'), client.indexOf('  function scrollToPanel('));
 for (const changedDuringNotices of [true, false]) {
   const requests = [], animations = [];
-  const original = { adopted: true, pet: { pet_id: 'evolving-pet', evolution_stage: 1, stage: 'Street Moonpet' }, lifecycle: { phase: 'young' } };
-  const evolved = { ...original, pet: { ...original.pet, evolution_stage: 2, stage: 'Cyber Moonpet' }, lifecycle: { phase: 'adult' }, notices: [{ key: 'evolved', title: 'New progress' }] };
+  const original = { adopted: true, pet: { pet_id: 'evolving-pet', season_key: '2026-S4', evolution_stage: 1, stage: 'Street Moonpet' }, lifecycle: { phase: 'young' } };
+  const evolved = { ...original, pet: { ...original.pet, evolution_stage: 2, stage: 'Cyber Moonpet' }, lifecycle: { phase: 'adult' }, notices: [{ key: 'evolved', scope: 'pet', pet_id: 'evolving-pet', season_key: '2026-S4', title: 'New progress' }] };
   const selected = changedDuringNotices ? { adopted: true, pet: { pet_id: 'selected-egg', evolution_stage: 0 }, lifecycle: { phase: 'egg' } } : evolved;
   const actionContext = vm.createContext({
     state: original, activeScreen: 'profile', busy: false, noticesBusy: false, petActionRefreshRequired: false, sleepLatched: false,
@@ -762,3 +762,30 @@ for (const method of ['loadMoonpetBackground', 'loadMoonpetItemArtRegistry']) {
 }
 
 console.log(`Moonpet player loop tests passed: ${new Set(actionButtons).size} literal action buttons.`);
+
+// The actual notice presenter rejects foreign/legacy provenance and acknowledges
+// only the one title the player sees, carrying its immutable source to the server.
+for (const mode of ['foreign-only', 'mixed', 'account']) {
+  const requests = [], displayed = [];
+  const own = { key: 'owned-notice', scope: 'pet', pet_id: 'notice-pet', season_key: '2026-S3', title: 'Own achievement' };
+  const other = { ...own, key: 'other-notice', pet_id: 'other-pet', title: 'Other pet achievement' };
+  const legacy = { key: 'unassigned-old-notice', title: 'Legacy achievement' };
+  const account = { key: 'account-notice', scope: 'account', pet_id: null, season_key: '2026-S2', title: 'Historical season reward' };
+  const notices = mode === 'foreign-only' ? [other, legacy] : mode === 'account' ? [account] : [other, legacy, own, { ...own, key: 'later-owned-notice' }, account];
+  const context = vm.createContext({
+    state: { pet: { pet_id: own.pet_id, season_key: own.season_key }, notices }, noticesBusy: false,
+    haptic: () => {}, tell: text => displayed.push(text), render: () => {},
+    beginStateRequest: () => 1, setStateSnapshot: () => true, crypto: { randomUUID: () => 'notice-request' },
+    post: async (_path, body) => { requests.push(body); return { state: {} }; },
+  });
+  vm.runInContext(noticesSource, context);
+  await context.showPendingNotices();
+  if (mode === 'foreign-only') {
+    assert.equal(requests.length, 0); assert.equal(displayed.length, 0);
+  } else {
+    assert.equal(requests.length, 1); assert.equal(displayed.length, 1);
+    const expected = mode === 'account' ? account : own;
+    assert.equal(displayed[0], expected.title);
+    assert.deepEqual(JSON.parse(JSON.stringify(requests[0].notices)), [{ key: expected.key, scope: expected.scope, pet_id: expected.pet_id, season_key: expected.season_key }]);
+  }
+}
