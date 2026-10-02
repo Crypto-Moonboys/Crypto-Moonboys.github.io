@@ -14,6 +14,12 @@ node scripts/deploy-worker-with-provenance.mjs moonboys-api
 
 Do not bypass the provenance wrapper with a direct Wrangler production deploy. The wrapper refreshes `origin/main`, requires local `HEAD` to match it, and tags the Cloudflare Worker Version with the full repository commit used by `/deployment-info`.
 
+`POST /telegram/webhook` requires `X-Telegram-Bot-Api-Secret-Token` matching the
+Cloudflare `TELEGRAM_WEBHOOK_SECRET` secret. Before deployment, complete
+[the exact secret and Telegram registration process](../../docs/telegram-webhook-security.md).
+The production wrapper verifies that this secret binding exists; a missing or
+unreadable binding blocks deployment. Never store its value in Wrangler variables.
+
 ## D1 migrations
 
 Do not apply D1 migrations as part of an ordinary Worker deployment. Inspect the production migration state separately, apply only reviewed missing migrations, and retain evidence in `deployments/production.json`.

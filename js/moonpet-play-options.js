@@ -220,7 +220,7 @@
     };
     var egg = s.lifecycle && s.lifecycle.phase === 'egg';
     if ((g.daily_completion && g.daily_completion.pending || []).some(function (claim) { return claim.pet_id || !egg; })) add('daily_completion', 'CLAIM DAILY 7/7 BONUS', 'Collect a saved daily checklist reward. One per account / UTC day.');
-    if ((s.season_finales && s.season_finales.pets || []).some(function (pet) { return pet.status === 'active' || pet.status === 'failed' || pet.status === 'won' && !pet.claimed || pet.eligible && pet.status === 'not_started'; })) add('finale', 'SEASON FINALE // SIGNAL SOVEREIGN', 'Choose a build, resume a saved battle or collect your victory reward. No pet energy cost.');
+    if ((s.season_finales && s.season_finales.pets || []).some(function (pet) { return pet.status === 'won' && !pet.claimed || pet.playable !== false && (pet.status === 'active' || pet.status === 'failed' || pet.eligible && pet.status === 'not_started'); })) add('finale', 'SEASON FINALE // SIGNAL SOVEREIGN', 'Choose a build, resume a saved battle or collect your victory reward. No pet energy cost.');
     var goal = craftingGoal(s, preferences && preferences.crafting_goal);
     if (goal && !egg) add('craft_goal', (goal.ready ? 'READY TO CRAFT // ' : 'CRAFTING GOAL // ') + goal.recipe.title,
       goal.ready ? 'Materials are ready. Review the recipe and choose when to craft.' : 'Compare missing materials, district risks, expedition finds and current market alternatives.');

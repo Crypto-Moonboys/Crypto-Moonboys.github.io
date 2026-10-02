@@ -701,10 +701,13 @@ const legacyActionDuplicate = await workerHooks.processPetAction(isolationDb, 'i
   now: '2026-08-02T12:00:00Z',
 });
 assert.equal(legacyActionDuplicate.duplicate, true, 'legacy accepted action callbacks remain idempotent');
-assert.equal(isolationDb.database.prepare("SELECT progress FROM telegram_pet_personality_traits WHERE pet_id=? AND trait_id='loyal'").get(petA).progress, 1,
-  'legacy accepted actions without pet_id explicitly use active pet authority for personality progress');
-assert.equal(isolationDb.database.prepare("SELECT day_key FROM telegram_pet_identity_events WHERE event_key='source:legacy-action:no-pet:personality'").get().day_key, '2026-08-01',
-  'legacy accepted action replay preserves the original accepted action day');
+assert.equal(isolationDb.database.prepare("SELECT progress FROM telegram_pet_personality_traits WHERE pet_id=? AND trait_id='loyal'").get(petA)?.progress || 0, 0,
+  'legacy accepted actions without pet_id cannot credit the active pet personality');
+assert.equal(isolationDb.database.prepare("SELECT day_key FROM telegram_pet_identity_events WHERE event_key='source:legacy-action:no-pet:personality'").get(), undefined,
+  'legacy accepted action replay leaves unproven personality evidence unassigned');
+assert.equal(legacyActionDuplicate.daily_journey_recovery.status, 'audit_required');
+assert.deepEqual({ ...isolationDb.database.prepare("SELECT pet_id,day_key,status FROM telegram_pet_events WHERE event_key='source:legacy-action:no-pet'").get() },
+  { pet_id: null, day_key: '2026-08-01', status: 'accepted' }, 'the historical accepted receipt remains unchanged');
 isolationDb.database.prepare(`INSERT INTO telegram_pet_events
   (id, pet_id, telegram_id, event_type, event_key, season_key, day_key, week_key, status, reason, metadata)
   VALUES ('pet-action-source-a', ?, 'isolation-player', 'feed', 'source:pet-action:a', ?, '2026-08-01', '2026-W31', 'accepted', 'accepted', ?)` )
@@ -716,7 +719,7 @@ const petOwnedActionDuplicate = await workerHooks.processPetAction(isolationDb, 
   now: '2026-08-02T12:00:00Z',
 });
 assert.equal(petOwnedActionDuplicate.duplicate, true, 'pet-owned accepted action callbacks remain idempotent after active switch');
-assert.equal(isolationDb.database.prepare("SELECT progress FROM telegram_pet_personality_traits WHERE pet_id=? AND trait_id='loyal'").get(petA).progress, 2,
+assert.equal(isolationDb.database.prepare("SELECT progress FROM telegram_pet_personality_traits WHERE pet_id=? AND trait_id='loyal'").get(petA).progress, 1,
   'pet-owned action duplicate uses source-event authority instead of the active pet');
 assert.equal(isolationDb.database.prepare("SELECT day_key FROM telegram_pet_identity_events WHERE event_key='source:pet-action:a:personality'").get().day_key, '2026-08-01',
   'pet-owned accepted action replay preserves the original accepted action day');

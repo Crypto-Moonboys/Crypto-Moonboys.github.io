@@ -10,6 +10,7 @@ import {
   validatePetRunModifierContent,
 } from './content/index.js';
 import { communitySeasonSql } from '../community-season-authority.js';
+import { getPetSeasonRewardTier } from './player-expansion.js';
 import { recordMoonpetBehaviour, recordMoonpetBiggestReward, recordMoonpetMemory } from './moonpet-identity.js';
 import { reconcileLegacyPetInventory } from './inventory-cutover.js';
 import { getMoonpetSeasonKey } from './season-authority.js';
@@ -143,6 +144,22 @@ function getRewardAuthorization(source, telegramId, context = {}, now = new Date
   if (source === 'pet_daily_completion' || source === 'pet_season_finale') return completionRewardAuthorization(source, telegramId, petId, context);
   const runId = String(context.run_id || '').trim();
   const roomId = String(context.room_id || '').trim();
+  if (source === 'pet_season_reward') {
+    const tier = getPetSeasonRewardTier(context.tier_id);
+    const seasonKey = String(context.season_key || '');
+    if (!tier || !/^pet-s\d{4}-00[1-4]$/.test(seasonKey) || seasonKey > getMoonpetSeasonKey(now)) throw new Error('invalid_pet_reward_context');
+    return { sql: `AND EXISTS (SELECT 1 FROM telegram_pet_season_state
+      WHERE telegram_id=? AND season_key=? AND season_xp>=?)
+      ${context.request_key ? `AND NOT EXISTS (SELECT 1 FROM telegram_pet_reward_claims previous
+        WHERE previous.telegram_id=? AND previous.source='pet_season_reward' AND previous.status IN ('pending','awarded')
+          AND previous.idempotency_key<>?
+          AND json_extract(CASE WHEN json_valid(previous.metadata) THEN previous.metadata ELSE '{}' END,'$.context.request_key')=?)
+        AND NOT EXISTS (SELECT 1 FROM telegram_pet_season_reward_claims previous
+          WHERE previous.telegram_id=? AND previous.event_key=? AND (previous.season_key<>? OR previous.tier_id<>?))` : ''}`,
+    args: [telegramId, seasonKey, tier.required_xp, ...(context.request_key
+      ? [telegramId, `season_reward:${telegramId}:${seasonKey}:${tier.tier_id}`, context.request_key,
+        telegramId, context.request_key, seasonKey, tier.tier_id] : [])] };
+  }
   if (source === 'pet_market') {
     if (!context.pet_id || !context.season_key || !context.min_level) throw new Error('invalid_pet_reward_context');
     return { sql: `AND EXISTS (SELECT 1 FROM telegram_pet_instances p
@@ -287,10 +304,17 @@ export async function awardPetReward(db, request = {}) {
   let rewards = normalizePetReward(request.rewards);
   if (source === 'pet_daily_completion' || source === 'pet_season_finale') {
     const daily = source === 'pet_daily_completion';
-    const key = daily ? dailyCompletionKey(telegramId, request.context?.utc_day) : seasonFinaleKey(petId, request.season_key);
+    const key = daily ? dailyCompletionKey(telegramId, request.context?.utc_day) : String(request.context?.reward_key || '');
     if (!petId || request.context?.season_key !== request.season_key || idempotencyKey !== key || request.event_key !== key
       || request.event_type !== (daily ? 'daily_completion' : 'season_finale')) throw Error('invalid_pet_reward_context');
+    if (!daily && (!request.context?.competition_season_key || ![seasonFinaleKey(petId, request.context.competition_season_key), `season-finale:${petId}:${request.season_key}`].includes(key))) throw Error('invalid_pet_reward_context');
     rewards = normalizePetReward(daily ? DAILY_COMPLETION_REWARD : SEASON_FINALE_REWARD);
+  }
+  if (source === 'pet_season_reward') {
+    const tier = getPetSeasonRewardTier(request.context?.tier_id);
+    const key = `season_reward:${telegramId}:${request.context?.season_key}:${tier?.tier_id}`;
+    if (!petId || !tier || idempotencyKey !== key || request.event_key !== key || request.event_type !== 'season_reward') throw Error('invalid_pet_reward_context');
+    rewards = normalizePetReward({ ...tier.reward, style_tokens: positiveInteger(tier.reward.style_tokens) + positiveInteger(request.context?.evolution_stage, 5) });
   }
   if (source === 'pet_contract') {
     if (!petId || petId !== request.context?.pet_id || request.season_key !== request.context?.season_key || idempotencyKey !== request.context?.contract_id) throw new Error('invalid_pet_reward_context');
@@ -314,7 +338,7 @@ export async function awardPetReward(db, request = {}) {
   // Reserved rewards retain their earning day even when recovered later.
   const competitionEarnedAt = ['pet_run_legacy', 'pet_contract'].includes(source) ? request.context?.competition_earned_at : null;
   if (competitionEarnedAt && !Number.isFinite(Date.parse(competitionEarnedAt))) throw new Error('invalid_pet_reward_context');
-  const competitionSeasonKey = getMoonpetSeasonKey(competitionEarnedAt || `${dayKey}T00:00:00.000Z`);
+  const competitionSeasonKey = source === 'pet_season_finale' ? request.context.competition_season_key : getMoonpetSeasonKey(competitionEarnedAt || `${dayKey}T00:00:00.000Z`);
   const authorization = getRewardAuthorization(source, telegramId, request.context, now, petId);
   const claimId = crypto.randomUUID();
   const eventId = reservationId || crypto.randomUUID();

@@ -178,6 +178,17 @@ for (const folder of workerFolders) {
     const missingRequiredSecrets = documentedRequiredSecrets
       .filter(secret => !deployStatusRequiredSecrets.includes(secret));
 
+    // Keep this security prerequisite explicit even if both its documentation
+    // and manifest entry are accidentally removed in the same change.
+    if (folder === 'workers/moonboys-api') {
+      if (!deployStatusRequiredSecrets.includes('TELEGRAM_WEBHOOK_SECRET')) {
+        failures.push({ folder, reason: 'TELEGRAM_WEBHOOK_SECRET is required for authenticated Telegram webhook delivery' });
+      }
+      if (tomlContent.split('\n').some((line) => /^\s*TELEGRAM_WEBHOOK_SECRET\s*=/.test(stripTomlComment(line)))) {
+        failures.push({ folder, reason: 'TELEGRAM_WEBHOOK_SECRET must be a Cloudflare secret, never a Wrangler variable' });
+      }
+    }
+
     if (placeholders.length > 0) {
       failures.push({
         folder,
@@ -190,7 +201,7 @@ for (const folder of workerFolders) {
         reason: `wrangler.toml documents required secrets missing from DEPLOY_STATUS.json required_secrets: ${missingRequiredSecrets.join(', ')}`,
       });
     }
-    if (placeholders.length === 0 && missingRequiredSecrets.length === 0) {
+    if (!failures.some((failure) => failure.folder === folder)) {
       deployable.push({ folder, command: entry.deploy_command || `cd ${folder} && npx wrangler deploy` });
     }
   } else if (status === 'stub-blocked') {

@@ -1,5 +1,5 @@
 import { boundedRecoveryLimit } from './recovery-limits.js';
-import { PET_DAILY_CHALLENGES, DAILY_JOURNEY_REQUIRED_OBJECTIVES, finalizeDailyJourneyGrowthMark, recordDailyCareChallenge } from './daily-moon-run.js';
+import { PET_DAILY_CHALLENGES, DAILY_JOURNEY_REQUIRED_OBJECTIVES, DAILY_JOURNEY_CARE_SOURCE_PROOF_SQL, finalizeDailyJourneyGrowthMark, recordDailyCareChallenge } from './daily-moon-run.js';
 import { PET_WEEKLY_JOURNEY_OBJECTIVES, WEEKLY_JOURNEY_REQUIRED_OBJECTIVES, WEEKLY_JOURNEY_SOURCE_OBJECTIVES, finalizeWeeklyJourneyCrest, recordWeeklyJourneyObjectiveEvidence } from './weekly-journey.js';
 import { finalizePetSeasonCompletionIfEligible } from './season-completion.js';
 import { getPetOwnershipPeriod, getPetJourneyWeek } from './ownership-period.js';
@@ -119,7 +119,8 @@ export async function recoverPetJourneyAwards(db, telegramId, options = {}) {
       JOIN telegram_pet_instances i ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id AND i.season_key=s.season_key AND i.slot_number=s.slot_number
       JOIN telegram_pet_${kind}_journey_objectives o ON o.pet_id=s.pet_id AND o.telegram_id=s.telegram_id AND o.season_key=s.season_key
       ${sourceJoin}
-      WHERE s.telegram_id=? AND o.status='accepted' ${evidenceReady} AND NOT EXISTS (
+      WHERE s.telegram_id=? AND o.status='accepted' ${evidenceReady}
+        ${kind === 'daily' ? `AND ${DAILY_JOURNEY_CARE_SOURCE_PROOF_SQL}` : ''} AND NOT EXISTS (
         SELECT 1 FROM telegram_pet_${kind}_journey_receipts r
         WHERE r.telegram_id=o.telegram_id AND r.pet_id=o.pet_id AND r.season_key=o.season_key AND r.${period}=o.${period}
           AND r.${reward} IS NOT NULL AND (r.status='accepted' OR r.reason='${kind}_journey_${kind === 'daily' ? 'growth_mark' : 'crest'}_duplicate'))

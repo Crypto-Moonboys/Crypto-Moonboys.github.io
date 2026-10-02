@@ -76,9 +76,9 @@ class D1 {
           this.beforeWeeklyBossEventInsert?.(statement.args);
         }
         const prepared = this.database.prepare(statement.sql);
-        if (/\bRETURNING\b/i.test(statement.sql)) {
+        if (prepared.columns().length) {
           const rows = prepared.all(...statement.args);
-          results.push({ results: rows, meta: { changes: rows.length } });
+          results.push({ results: rows, meta: { changes: /\bRETURNING\b/i.test(statement.sql) ? rows.length : 0 } });
         } else {
           const result = prepared.run(...statement.args);
           results.push({ results: [], meta: { changes: Number(result.changes || 0) } });

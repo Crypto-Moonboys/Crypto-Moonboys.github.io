@@ -27,11 +27,12 @@ for (const name of [
   '085_permanent_pet_weekly_evidence.sql',
   '086_restore_permanent_pet_ownership.sql',
   '087_pet_journey_creation_clock.sql',
+  '088_moonpet_finale_competition_quarters.sql',
 ]) {
   assert.ok(pullRequestPaths.includes('workers/moonboys-api/migrations/' + name));
   assert.ok(remoteQueryStep.includes(name));
 }
-for (const name of ['085_permanent_pet_weekly_evidence.sql', '086_restore_permanent_pet_ownership.sql', '087_pet_journey_creation_clock.sql']) {
+for (const name of ['085_permanent_pet_weekly_evidence.sql', '086_restore_permanent_pet_ownership.sql', '087_pet_journey_creation_clock.sql', '088_moonpet_finale_competition_quarters.sql']) {
   assert.ok(REQUIRED_D1_MIGRATIONS.includes(name), 'recovery migration belongs to the verification gate');
   assert.ok(request.required_migrations.includes(name), 'recovery migration belongs to the evidence request');
   assert.ok(production.d1_databases.wikicoms.required_migrations.includes(name), 'recovery migration belongs to the production manifest');

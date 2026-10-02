@@ -3,6 +3,8 @@ import fs from 'node:fs';
 
 const client = fs.readFileSync(new URL('../js/moonpet-mini-app.js', import.meta.url), 'utf8');
 const profileSource = client.slice(client.indexOf('  function renderProfile()'), client.indexOf('  var screens ='));
+const notificationControlsSource = client.split('// TEST-EXPORT: notificationControls:start')[1]?.split('// TEST-EXPORT: notificationControls:end')[0];
+assert.ok(notificationControlsSource, 'Profile uses the real server-backed alert control renderer');
 const retiredFeatures = ['breeding', 'traits', 'sanctuary', 'lineage', 'fusion', 'prestige'];
 const panels = new Map();
 const renderProfile = new Function('state', 'panel', `
@@ -17,6 +19,7 @@ const renderProfile = new Function('state', 'panel', `
   function valueText() { return ''; }
   function resolveMoonpetDisplayName() { return 'BOTTY'; }
   function moonpetStageLabel() { return 'Stage 3'; }
+  ${notificationControlsSource}
   ${profileSource}
   return renderProfile();
 `);

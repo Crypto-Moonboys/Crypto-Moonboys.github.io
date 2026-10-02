@@ -196,8 +196,13 @@ separate battle HP, charge and repair kits. Boss intents and exact move effects
 are previewed; choices save online with a monotonic revision, including retries.
 There is no pet energy/stat cost. Defeat allows a free retry with another build.
 First victory records the pet's Finale Victor achievement and pays up to 100
-Pet XP, 200 Gold and 5 Style once per pet/season. A failed payout leaves the
+Pet XP, 200 Gold and 5 Style once per pet per competition quarter. A failed payout leaves the
 victory saved with an explicit claim button, even after changing the active pet.
+The competition quarter is separate from the pet's immutable ownership season.
+Qualified permanent pets can start a fresh Finale each quarter while earlier
+saved fights and unclaimed victories remain recoverable. Migration 088 preserves
+historical Finale rows and their original reward keys while separating these
+identities. No pet ownership, lifetime progress or paid receipt is reset.
 
 Both rewards use the existing atomic ledger, fixed server reward values and
 1200 daily Pet XP cap. Daily/weekly leaderboards count settlement-time Pet XP;
@@ -332,6 +337,11 @@ Season tiers are marked claimed only by an awarded unified reward receipt.
 A rejected payout leaves the tier available; an old unpaid compatibility marker
 cannot hide it. A paid receipt remains claimed even if writing the compatibility
 marker was interrupted. Retries use the same owner/season/tier reward key.
+Earned tiers remain visible and claimable after quarter rollover. The client
+submits each tier's original competition `season_key`; settlement verifies that
+account's saved XP for the same quarter inside the reward transaction. Historical
+receipts remain visible, and changing the requested quarter cannot redirect a
+saved claim. Current-quarter tiers and lifetime Pet XP keep their existing rules.
 
 Daily mission shortcuts show qualifying alternatives for the adventure, shopping
 and bank targets. Weekly objective routes lead directly to care, training, runs,
@@ -1030,3 +1040,32 @@ Arena timeouts leave a recoverable locked round intact, including a solo player'
 Early Daily Run extraction recovery replays its saved canonical ending before finalizing records, including the completion receipt needed by safe deletion. Existing account-owned equipment purchases with historical nullable pet IDs restore shared gear ownership from their accepted receipts, so selecting that gear cannot charge for it again. Modern pet-bound purchase receipts still require their intact owned tuple. Crafting, upgrading, Style Lab and Contract acknowledgment validate their required write results before claiming progress is complete.
 
 Lifecycle ceremonies remain bound to the pet whose action earned them. A later notice acknowledgment or passive refresh selecting another pet ends the old visual lock and cannot start the first pet's reveal on the second.
+
+### Webhook, projection and preference authority (2 October 2026)
+
+Both the deployed Worker wrapper and the base Telegram webhook verify
+`X-Telegram-Bot-Api-Secret-Token` against the Cloudflare
+`TELEGRAM_WEBHOOK_SECRET` binding before parsing the update or performing any
+side effect. Missing configuration and invalid headers fail closed. Deployment
+readiness requires the binding; the exact registration process is documented in
+[Telegram webhook security](telegram-webhook-security.md). Secret values belong
+in Cloudflare secrets and Telegram's `secret_token`, never source or Wrangler vars.
+
+State, Missions, Profile and guidance bind achievements to their captured pet ID
+and immutable ownership season. Achievement rows carry this provenance and the
+final projection checks it alongside the selected pet. A switch observed while
+building the projection returns the existing refresh response, including a switch
+away and back; it cannot publish another pet's achievements.
+
+Server alert preferences acknowledge a save only after D1 reports success and
+one affected row. An unavailable read is distinct from saved OFF. Profile labels
+the preference unavailable and locks the alert control until Refresh restores
+authoritative state; the stored preference remains unchanged. Failed saves offer retry without
+claiming the preference changed. Sound, radio and crafting goals remain local.
+
+Legacy accepted care receipts with no source pet stay unassigned. Daily Journey
+never borrows the Daily Run pet or the current pet to turn them into objective
+progress. Recovery requires intact source-pet ownership; ambiguous evidence stays
+stored and appears as an audit/recovery notice without awarding progress. Replays
+also cannot transfer that care's personality evidence to the selected pet.
+Existing receipts, earned progression and reward history are retained.

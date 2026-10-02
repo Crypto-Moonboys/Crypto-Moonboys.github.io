@@ -10,9 +10,11 @@ import { readDailyCompletion, getSeasonFinales, newFinale, advanceFinale, finale
 const today = new Date().toISOString().slice(0, 10), season = hooks.getPetSeasonInfo(new Date()).key;
 function weekKey() { const d=new Date(); d.setUTCHours(0,0,0,0); d.setUTCDate(d.getUTCDate()+4-(d.getUTCDay()||7)); return `${d.getUTCFullYear()}-W${String(Math.ceil(((d-new Date(Date.UTC(d.getUTCFullYear(),0,1)))/86400000+1)/7)).padStart(2,'0')}`; }
 const file = name => fs.readFileSync(new URL('../workers/moonboys-api/' + name, import.meta.url), 'utf8');
-function fixture(owner) {
+function fixture(owner, legacyFinale = false) {
   const sql = new DatabaseSync(':memory:');
-  sql.exec(file('schema.sql'));
+  const schema = file('schema.sql');
+  const oldFinale = file('migrations/077_moonpet_completion_rewards.sql').split('-- One saved finale')[1];
+  sql.exec(legacyFinale ? schema.replace(/-- One saved finale[\s\S]*?(?=-- Per-pet equipped cosmetic styles\.)/, '-- One saved finale' + oldFinale + '\n') : schema);
   for (const migration of ['048_telegram_pet_player_expansion.sql', '058_telegram_pet_season_completion.sql', '061_moonpet_season_economy_calibration.sql', '085_permanent_pet_weekly_evidence.sql']) sql.exec(file('migrations/' + migration));
   class Statement {
     constructor(query, args = []) { this.query = query; this.args = args; }
@@ -62,7 +64,7 @@ function fixture(owner) {
   return { sql, db, owner, petId, pet, active, event, completeDaily, completeSeason, act, board, battle, get };
 }
 const dailyClaim = f => ({ action: 'daily_completion_claim', utc_day: today, pet_id: f.petId });
-const finaleBody = (f, action, extra = {}) => ({ action, pet_id: f.petId, season_key: f.sourceSeason || season, ...extra });
+const finaleBody = (f, action, extra = {}) => ({ action, pet_id: f.petId, season_key: f.sourceSeason || season, competition_season_key: f.competitionSeason || season, ...extra });
 
 for (const action of ['finale_start', 'finale_retry', 'finale_step']) test(`${action} rejects failed or malformed persistence without acknowledging a saved turn`, async () => {
   const f = fixture(`write-integrity-${action}`);
@@ -393,4 +395,199 @@ test('partial schema rollout shows unavailable features, while ordinary database
   const failing={prepare(){throw Error('storage_unavailable');}};
   await assert.rejects(getSeasonFinales(failing,f.owner,f.petId),/storage_unavailable/);
   await assert.rejects(readDailyCompletion(failing,f.owner,today,{},0,0),/storage_unavailable/);
+});
+
+
+test('quarter-boundary victory remains claimable while the same permanent pet starts and wins its next Finale', async () => {
+  const f = fixture('finale-quarter-boundary'); f.completeSeason();
+  const before = new Date('2030-09-30T23:59:59.999Z'), after = new Date('2030-10-01T00:00:00.001Z');
+  const q3 = hooks.getPetSeasonInfo(before).key, q4 = hooks.getPetSeasonInfo(after).key;
+  let now = before;
+  const act = body => processSeasonFinale(f.db, f.owner, body, (db, request) => awardPetReward(db, { ...request, now }), now);
+  const forQuarter = key => ({ ...f, act, competitionSeason: key,
+    battle: () => f.sql.prepare('SELECT * FROM telegram_pet_season_finales WHERE pet_id=? AND competition_season_key=?').get(f.petId, key) });
+  const previous = forQuarter(q3), current = forQuarter(q4);
+  const ownership = f.sql.prepare('SELECT * FROM telegram_pet_season_slots WHERE pet_id=?').get(f.petId);
+  assert.equal((await act(finaleBody(previous, 'finale_start', { build: 'guardian' }))).accepted, true);
+  f.db.beforeBatch = statements => { if (statements.some(s => s.query.includes('INSERT OR IGNORE INTO telegram_pet_reward_claims'))) throw Error('payout_offline'); };
+  assert.equal((await win(previous)).status, 'won');
+  assert.equal(previous.battle().defeated_at, before.toISOString());
+  assert.equal(previous.battle().claimed_at, null);
+  now = after; f.db.beforeBatch = null;
+  const board = await getSeasonFinales(f.db, f.owner, f.petId, now);
+  assert.equal(board.competition_season_key, q4);
+  assert.deepEqual(board.pets.map(p => [p.competition_season_key, p.status]), [[q4, 'not_started'], [q3, 'won']]);
+  assert.equal(board.pets[0].eligible, true);
+  assert.equal((await act(finaleBody(previous, 'finale_start', { build: 'guardian' }))).reason, 'finale_quarter_changed');
+  assert.equal((await act(finaleBody(current, 'finale_start', { build: 'guardian' }))).accepted, true);
+  assert.equal((await act(finaleBody(current, 'finale_start', { build: 'striker' }))).accepted, false);
+  const currentBefore = current.battle();
+  assert.equal((await act(finaleBody(current, 'finale_claim'))).accepted, false, 'old victory cannot claim this quarter');
+  assert.equal((await act(finaleBody(previous, 'finale_claim', { season_key: 'foreign-ownership' }))).accepted, false);
+  assert.equal((await processSeasonFinale(f.db, 'foreign-owner', finaleBody(previous, 'finale_claim'), awardPetReward, now)).accepted, false);
+  f.pet('quarter-switch-pet', 2); f.active('quarter-switch-pet');
+  const claims = await Promise.all([act(finaleBody(previous, 'finale_claim')), act(finaleBody(previous, 'finale_claim'))]);
+  assert.equal(claims.filter(r => r.pet_xp_awarded === 100).length, 1);
+  assert.equal((await act(finaleBody(previous, 'finale_claim'))).duplicate, true);
+  assert.deepEqual(current.battle(), currentBefore, 'recovering the old reward cannot advance the new battle');
+  assert.equal((await win(current)).status, 'won');
+  assert.equal((await act(finaleBody(current, 'finale_claim'))).duplicate, true);
+  assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(f.petId).pet_xp, 400);
+  assert.equal(f.sql.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id='quarter-switch-pet'").get().pet_xp, 200);
+  assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_season_slots WHERE pet_id=?').get(f.petId), ownership);
+  assert.deepEqual(f.sql.prepare('SELECT season_key,season_xp FROM telegram_pet_season_state WHERE telegram_id=? ORDER BY season_key').all(f.owner).map(r => [r.season_key, r.season_xp]), [[q3,100],[q4,100]]);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE source='pet_season_finale'").get().n, 2);
+  assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='season_finale'").get().n, 2);
+});
+
+test('unfinished and failed previous-quarter Finales resume independently and keep deletion blocked until settled', async () => {
+  const f = fixture('finale-unfinished-rollover'); f.completeSeason();
+  let now = new Date('2030-09-30T23:59:59.999Z');
+  const previousKey = hooks.getPetSeasonInfo(now).key;
+  const act = body => processSeasonFinale(f.db, f.owner, body, (db, request) => awardPetReward(db, { ...request, now }), now);
+  const previous = { ...f, act, competitionSeason: previousKey,
+    battle: () => f.sql.prepare('SELECT * FROM telegram_pet_season_finales WHERE pet_id=? AND competition_season_key=?').get(f.petId, previousKey) };
+  await act(finaleBody(previous, 'finale_start', { build: 'striker' }));
+  now = new Date('2030-10-01T00:00:00.001Z');
+  const currentKey = hooks.getPetSeasonInfo(now).key;
+  assert.equal((await act(finaleBody(f, 'finale_start', { build: 'tactician', competition_season_key: currentKey }))).accepted, true);
+  assert.equal((await hooks.deletePetSlot(f.db, f.owner, { pet_id: f.petId, confirm_pet_id: f.petId, confirmed: true })).reason, 'pet_delete_blocked');
+  while (previous.battle().status === 'active') await act(finaleBody(previous, 'finale_step', { move: 'strike', revision: previous.battle().revision }));
+  assert.equal(previous.battle().status, 'failed');
+  const board = await getSeasonFinales(f.db, f.owner, f.petId, now);
+  assert.equal(board.pets.find(p => p.competition_season_key === previousKey).playable, true);
+  const revision = previous.battle().revision;
+  assert.equal((await act(finaleBody(previous, 'finale_retry', { build: 'guardian', revision }))).accepted, true);
+  assert.equal((await act(finaleBody(previous, 'finale_retry', { build: 'guardian', revision }))).accepted, false);
+  assert.equal((await win(previous)).status, 'won');
+  assert.equal(f.sql.prepare('SELECT revision FROM telegram_pet_season_finales WHERE competition_season_key=?').get(currentKey).revision, 0);
+});
+
+test('migration 088 retains legacy rows, original ownership and exact paid reward keys through rollover recovery', async () => {
+  const f = fixture('finale-migration-088', true); f.completeSeason();
+  await hooks.getPetProfile(f.db, f.owner);
+  f.sql.prepare('UPDATE telegram_pet_instances SET pet_xp=300 WHERE pet_id=?').run(f.petId);
+  f.sql.prepare('UPDATE telegram_pet_profiles SET pet_xp=300,moon_gold=200,style_tokens=5 WHERE telegram_id=?').run(f.owner);
+  const victory = '2030-09-30T23:59:59.999Z', later = '2030-10-01T01:00:00.000Z';
+  const oldQuarter = hooks.getPetSeasonInfo(new Date(victory)).key;
+  const key = `season-finale:${f.petId}:${season}`;
+  f.sql.prepare(`INSERT INTO telegram_pet_season_finales
+    (pet_id,telegram_id,season_key,status,state_json,defeated_at,updated_at)
+    VALUES (?,?,?,'won',?,?,?)`).run(f.petId, f.owner, season, JSON.stringify(newFinale('guardian')), victory, later);
+  f.sql.prepare(`INSERT INTO telegram_pet_reward_claims
+    (claim_id,pet_id,telegram_id,source,idempotency_key,day_key,status,applied_rewards,awarded_at)
+    VALUES ('legacy-paid',?,?,'pet_season_finale',?,'2030-09-30','awarded','{"pet_xp":100,"moon_gold":200,"style_tokens":5}',?)`).run(f.petId, f.owner, key, victory);
+  const before = f.battle(), receipt = f.sql.prepare("SELECT * FROM telegram_pet_reward_claims WHERE claim_id='legacy-paid'").get();
+  const ownership = f.sql.prepare('SELECT * FROM telegram_pet_season_slots').all();
+  assert.equal((await f.board()).available, false, 'pre-migration rollout is explicitly unavailable');
+  f.sql.exec(file('migrations/088_moonpet_finale_competition_quarters.sql'));
+  const migrated = f.battle();
+  for (const field of Object.keys(before)) assert.equal(migrated[field], before[field], field + ' is retained verbatim');
+  assert.equal(migrated.competition_season_key, oldQuarter, 'victory time wins over delayed update/claim time');
+  assert.equal(migrated.reward_key, key);
+  const result = await processSeasonFinale(f.db, f.owner, finaleBody(f, 'finale_claim', { competition_season_key: oldQuarter }), awardPetReward, new Date(later));
+  assert.equal(result.accepted, true); assert.equal(result.duplicate, true); assert.ok(f.battle().claimed_at);
+  assert.deepEqual(f.sql.prepare("SELECT * FROM telegram_pet_reward_claims WHERE claim_id='legacy-paid'").get(), receipt);
+  assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_season_slots').all(), ownership);
+  assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(f.petId).pet_xp, 300, 'already-paid legacy receipt never pays again');
+  assert.equal((await processSeasonFinale(f.db, f.owner, finaleBody(f, 'finale_start', { competition_season_key: hooks.getPetSeasonInfo(new Date(later)).key, build: 'guardian' }), awardPetReward, new Date(later))).accepted, true);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_season_finales').get().n, 2);
+  assert.deepEqual(f.sql.prepare('PRAGMA foreign_key_check').all(), []);
+});
+
+test('Missions and Profile preserve a retained pet’s Finale Victor achievement beside its fresh current-quarter battle', async () => {
+  const f = fixture('finale-achievement-rollover');
+  const sourceSeason = 'pet-s2025-001', petId = 'retained-quarter-victor';
+  f.pet(petId, 1, sourceSeason); f.completeSeason(petId, sourceSeason);
+  f.sql.prepare('UPDATE telegram_pet_active_slots SET pet_id=?,season_key=? WHERE telegram_id=?').run(petId, sourceSeason, f.owner);
+  const date = new Date(), prior = new Date(Date.UTC(date.getUTCFullYear(), Math.floor(date.getUTCMonth() / 3) * 3, 0, 23, 59, 59));
+  const previous = hooks.getPetSeasonInfo(prior).key;
+  f.sql.prepare(`INSERT INTO telegram_pet_season_finales
+    (pet_id,telegram_id,season_key,competition_season_key,reward_key,status,state_json,defeated_at,claimed_at)
+    VALUES (?,?,?,?,?,'won',?,?,?)`).run(petId, f.owner, sourceSeason, previous,
+      `season-finale-quarter:${petId}:${previous}`, JSON.stringify(newFinale('guardian')), prior.toISOString(), prior.toISOString());
+  for (const mode of ['full', 'missions']) {
+    const snapshot = await hooks.buildPetMiniAppState(f.db, f.owner, 'test-token', { mode });
+    const achievement = snapshot.guidance.achievements.find(a => a.achievement_id === 'finale_victor');
+    assert.equal(achievement.pet_id, petId); assert.equal(achievement.season_key, sourceSeason);
+    assert.equal(achievement.progress, 1); assert.equal(achievement.unlocked_at, prior.toISOString());
+    assert.equal(snapshot.season_finales.pets.find(p => p.pet_id === petId && p.competition_season_key === season).status, 'not_started');
+  }
+});
+
+for (const [status, updatedAt] of [['active', '2030-09-30 23:59:59'], ['failed', '2030-09-30 23:59:59'], ['active', 'legacy-unknown-time']]) {
+  test(`migration 088 preserves and resumes legacy ${status} Finale with ${updatedAt.startsWith('2030') ? 'saved battle time' : 'unparseable time'} without replacing ownership`, async () => {
+    const f = fixture('finale-legacy-' + status + '-' + updatedAt, true); f.completeSeason();
+    const now = new Date('2030-10-01T01:00:00.000Z');
+    const oldQuarter = updatedAt.startsWith('2030') ? 'pet-s2030-003' : season;
+    const nextQuarter = hooks.getPetSeasonInfo(now).key;
+    const state = newFinale('guardian');
+    state.round = 3; state.charge = 2; state.last = 'Previously saved battle';
+    if (status === 'failed') state.health = 0;
+    f.sql.prepare(`INSERT INTO telegram_pet_season_finales
+      (pet_id,telegram_id,season_key,status,attempt,revision,state_json,updated_at)
+      VALUES (?,?,?,?,4,8,?,?)`).run(f.petId, f.owner, season, status, JSON.stringify(state), updatedAt);
+    const before = f.battle();
+    const ownership = f.sql.prepare('SELECT * FROM telegram_pet_season_slots').all();
+    const pet = f.sql.prepare('SELECT * FROM telegram_pet_instances').get();
+    f.sql.exec(file('migrations/088_moonpet_finale_competition_quarters.sql'));
+    const migrated = f.battle();
+    for (const key of Object.keys(before)) assert.equal(migrated[key], before[key], key + ' must remain intact');
+    assert.equal(migrated.competition_season_key, oldQuarter);
+    assert.equal(migrated.reward_key, `season-finale:${f.petId}:${season}`);
+    assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_season_slots').all(), ownership);
+    assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_instances').get(), pet);
+    assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_reward_claims').get().n, 0);
+    assert.deepEqual(f.sql.prepare('PRAGMA foreign_key_check').all(), []);
+    const act = body => processSeasonFinale(f.db, f.owner, body, (db, request) => awardPetReward(db, { ...request, now }), now);
+    const old = { ...f, act, competitionSeason: oldQuarter,
+      battle: () => f.sql.prepare('SELECT * FROM telegram_pet_season_finales WHERE pet_id=? AND competition_season_key=?').get(f.petId, oldQuarter) };
+    assert.equal((await act(finaleBody(f, 'finale_start', { competition_season_key: nextQuarter, build: 'striker' }))).accepted, true);
+    if (status === 'failed') {
+      assert.equal((await act(finaleBody(old, 'finale_retry', { build: 'guardian', revision: 8 }))).accepted, true);
+      assert.equal(old.battle().attempt, 5);
+      assert.equal((await act(finaleBody(old, 'finale_retry', { build: 'guardian', revision: 8 }))).accepted, false);
+    }
+    assert.equal((await win(old)).status, 'won');
+    assert.equal((await act(finaleBody(old, 'finale_claim'))).duplicate, true);
+    assert.equal(f.sql.prepare('SELECT revision FROM telegram_pet_season_finales WHERE competition_season_key=?').get(nextQuarter).revision, 0);
+    assert.equal(f.sql.prepare('SELECT idempotency_key FROM telegram_pet_reward_claims').get().idempotency_key, migrated.reward_key);
+    assert.equal(f.sql.prepare('SELECT season_xp FROM telegram_pet_season_state WHERE season_key=?').get(oldQuarter).season_xp, 100);
+    assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_season_slots').all(), ownership);
+  });
+}
+
+test('an archived pet can recover its migrated unpaid Finale once without regaining play or redirecting reward to the replacement', async () => {
+  const f = fixture('finale-archived-unpaid', true); f.completeSeason();
+  await hooks.getPetProfile(f.db, f.owner);
+  const defeatedAt = '2030-09-30T23:59:59.999Z', now = new Date('2030-10-01T01:00:00.000Z');
+  const oldQuarter = hooks.getPetSeasonInfo(new Date(defeatedAt)).key;
+  const nextQuarter = hooks.getPetSeasonInfo(now).key;
+  f.sql.prepare(`INSERT INTO telegram_pet_season_finales
+    (pet_id,telegram_id,season_key,status,state_json,defeated_at,updated_at)
+    VALUES (?,?,?,'won',?,?,?)`).run(f.petId, f.owner, season, JSON.stringify({ ...newFinale('guardian'), boss_health: 0 }), defeatedAt, defeatedAt);
+  f.sql.exec(file('migrations/088_moonpet_finale_competition_quarters.sql'));
+  const originalKey = f.battle().reward_key;
+  f.pet('archived-finale-replacement', 2, season, 'egg');
+  f.active('archived-finale-replacement');
+  f.sql.prepare("UPDATE telegram_pet_instances SET status='archived' WHERE pet_id=?").run(f.petId);
+  f.sql.prepare("UPDATE telegram_pet_season_slots SET status='archived' WHERE pet_id=?").run(f.petId);
+  const ownership = f.sql.prepare('SELECT * FROM telegram_pet_season_slots ORDER BY pet_id').all();
+  const board = await getSeasonFinales(f.db, f.owner, 'archived-finale-replacement', now);
+  const victory = board.pets.find(row => row.pet_id === f.petId && row.competition_season_key === oldQuarter);
+  assert.equal(victory.status, 'won'); assert.equal(victory.claimed, false);
+  assert.equal(victory.playable, false); assert.equal(victory.eligible, false);
+  const claim = finaleBody(f, 'finale_claim', { competition_season_key: oldQuarter });
+  const act = body => processSeasonFinale(f.db, f.owner, body, (db, request) => awardPetReward(db, { ...request, now }), now);
+  assert.equal((await act(claim)).pet_xp_awarded, 100);
+  assert.equal((await act(claim)).duplicate, true);
+  assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(f.petId).pet_xp, 300);
+  assert.equal(f.sql.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id='archived-finale-replacement'").get().pet_xp, 200);
+  assert.equal(f.sql.prepare('SELECT idempotency_key FROM telegram_pet_reward_claims').get().idempotency_key, originalKey);
+  assert.ok(f.battle().claimed_at);
+  assert.equal((await act(finaleBody(f, 'finale_start', { competition_season_key: nextQuarter, build: 'guardian' }))).accepted, false);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_season_finales WHERE pet_id=?').get(f.petId).n, 1);
+  assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_season_slots ORDER BY pet_id').all(), ownership);
+  assert.equal(f.sql.prepare('SELECT status FROM telegram_pet_instances WHERE pet_id=?').get(f.petId).status, 'archived');
+  assert.equal(f.sql.prepare('SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id=?').get(f.owner).pet_id, 'archived-finale-replacement');
 });

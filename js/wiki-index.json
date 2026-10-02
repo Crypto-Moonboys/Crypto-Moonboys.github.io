@@ -1436,7 +1436,7 @@
     ],
     "category": "tokens",
     "aliases": [],
-    "rank_score": 412,
+    "rank_score": 414,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 0,
@@ -1445,7 +1445,7 @@
       "category": "tokens",
       "category_priority": 6,
       "has_description": true,
-      "article_word_count": 3069,
+      "article_word_count": 3090,
       "keyword_bag_size": 58,
       "heading_count": 45,
       "list_count": 3,
@@ -1460,11 +1460,11 @@
       "canonical_points": 20,
       "description_points": 10,
       "category_points": 30,
-      "word_count_points": 153,
+      "word_count_points": 155,
       "keyword_bag_points": 58,
       "content_quality_points": 117,
       "authority_points": 24,
-      "final_rank_score": 412,
+      "final_rank_score": 414,
       "authority_graph_points": 2
     },
     "search_index": {

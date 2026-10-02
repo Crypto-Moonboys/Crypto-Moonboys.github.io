@@ -42,6 +42,22 @@ function runAudit(fixtureRoot) {
   }
 }
 
+for (const { requiredSecrets, toml, ok } of [
+  { requiredSecrets: [], toml: 'name = "moonboys-api"', ok: false },
+  { requiredSecrets: ['TELEGRAM_WEBHOOK_SECRET'], toml: 'name = "moonboys-api"', ok: true },
+  { requiredSecrets: ['TELEGRAM_WEBHOOK_SECRET'], toml: 'name = "moonboys-api"\n[vars]\nTELEGRAM_WEBHOOK_SECRET = "fixture-do-not-print"', ok: false },
+]) {
+  await withFixture({
+    deployStatus: { 'workers/moonboys-api': { status: 'live-deployable', deploy: true, required_secrets: requiredSecrets } },
+    workers: { 'moonboys-api': toml },
+  }, async (fixtureRoot) => {
+    const result = runAudit(fixtureRoot);
+    assert.equal(result.ok, ok, result.output);
+    if (!ok) assert.match(result.output, /TELEGRAM_WEBHOOK_SECRET/);
+    assert.ok(!result.output.includes('fixture-do-not-print'), 'readiness errors must not print a configured secret value');
+  });
+}
+
 await withFixture(
   {
     deployStatus: {

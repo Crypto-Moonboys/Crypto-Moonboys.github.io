@@ -30,6 +30,14 @@ const TERMINAL_DAILY_STATUSES = new Set(['completed', 'failed', 'abandoned', 'ex
 const SUCCESSFUL_DAILY_STATUSES = new Set(['completed', 'extracted']);
 const CARE_ACTIONS = new Set(['feed', 'play', 'clean', 'sleep']);
 export const DAILY_JOURNEY_REQUIRED_OBJECTIVES = 3;
+// Historical objectives stay intact, but a care objective cannot justify a new
+// pet reward unless the accepted source receipt proves this exact ownership.
+// Every caller aliases its objective row as `o`.
+export const DAILY_JOURNEY_CARE_SOURCE_PROOF_SQL = `(o.challenge_id<>'daily_care' OR EXISTS (
+  SELECT 1 FROM telegram_pet_events care WHERE care.telegram_id=o.telegram_id
+    AND care.pet_id=o.pet_id AND care.season_key=o.season_key AND care.day_key=o.utc_day
+    AND care.status='accepted' AND care.event_type IN ('feed','play','clean','sleep')
+    AND o.event_key=substr('care:'||care.event_key,1,180)))`;
 
 function deepFreeze(value) {
   if (!value || typeof value !== 'object' || Object.isFrozen(value)) return value;
@@ -674,15 +682,16 @@ async function recordChallengeEvidence(db, request, options = {}) {
   if (value < 1) return { accepted: false, duplicate: false, completed: false, progress: 0 };
   const seasonId = getDailySeasonId(utcDay);
   const requestedPetId = String(request.pet_id || request.evidence?.pet_id || '').trim();
-  const participatingPet = requestedPetId
-    ? await db.prepare(`SELECT s.pet_id,s.telegram_id,s.season_key FROM telegram_pet_season_slots s
+  // The source must name its earning pet. The day's Run (or the active pet)
+  // proves participation in that Run, never ownership of unrelated care.
+  if (!requestedPetId) return { accepted: false, duplicate: false, pending: true, reason: 'daily_journey_pet_attribution_required' };
+  const sourceSeason = String(request.season_key || request.evidence?.season_key || '').trim();
+  const participatingPet = await db.prepare(`SELECT s.pet_id,s.telegram_id,s.season_key FROM telegram_pet_season_slots s
       JOIN telegram_pet_instances i ON i.pet_id=s.pet_id AND i.telegram_id=s.telegram_id AND i.season_key=s.season_key AND i.slot_number=s.slot_number
-      WHERE s.pet_id=? AND s.telegram_id=? LIMIT 1`).bind(requestedPetId,telegramId).first().then(requirePetFirstReadResult)
-    : await db.prepare(`SELECT r.pet_id,r.telegram_id,i.season_key FROM telegram_pet_daily_runs r
-      JOIN telegram_pet_instances i ON i.pet_id=r.pet_id AND i.telegram_id=r.telegram_id
-      JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id AND s.season_key=i.season_key AND s.slot_number=i.slot_number
-      WHERE r.telegram_id=? AND r.utc_day=? LIMIT 1`).bind(telegramId,utcDay).first().then(requirePetFirstReadResult);
+      WHERE s.pet_id=? AND s.telegram_id=? AND (?='' OR s.season_key=?) LIMIT 1`)
+    .bind(requestedPetId,telegramId,sourceSeason,sourceSeason).first().then(requirePetFirstReadResult);
   const petId = String(participatingPet?.pet_id || '').trim();
+  if (!petId) return { accepted: false, duplicate: false, pending: true, reason: 'daily_journey_pet_attribution_required' };
   const analyticsId = `daily:challenge:${telegramId}:${utcDay}:${challenge.challenge_id}`;
   const nextProgressSql = challenge.validation_rules.progress_mode === 'max'
     ? `MAX(telegram_pet_daily_challenge_progress.progress, excluded.progress)`
@@ -708,9 +717,9 @@ async function recordChallengeEvidence(db, request, options = {}) {
       .bind(telegramId, utcDay, challenge.challenge_id, challenge.target, eventId),
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_daily_analytics
       (analytics_id, pet_id, telegram_id, utc_day, event_type, event_data)
-      SELECT ?, (SELECT pet_id FROM telegram_pet_daily_runs WHERE telegram_id = ? AND utc_day = ?), ?, ?, 'challenge_completed', ? FROM telegram_pet_daily_challenge_progress
+      SELECT ?, ?, ?, ?, 'challenge_completed', ? FROM telegram_pet_daily_challenge_progress
       WHERE telegram_id = ? AND utc_day = ? AND challenge_id = ? AND completed_at IS NOT NULL`)
-      .bind(analyticsId, telegramId, utcDay, telegramId, utcDay, safeJson({ challenge_id: challenge.challenge_id, category: challenge.category, target: challenge.target }),
+      .bind(analyticsId, petId, telegramId, utcDay, safeJson({ challenge_id: challenge.challenge_id, category: challenge.category, target: challenge.target }),
         telegramId, utcDay, challenge.challenge_id),
     db.prepare(`INSERT INTO telegram_pet_seasonal_challenge_state
       (telegram_id, season_id, completed_daily_challenges)
@@ -762,8 +771,9 @@ async function insertDailyJourneyReceipt(db, receipt) {
 
 export async function finalizeDailyJourneyGrowthMark(db, request) {
   const progressRows = await db.prepare(`SELECT challenge_id, SUM(progress_value) AS additive_progress, MAX(progress_value) AS max_progress
-    FROM telegram_pet_daily_journey_objectives
+    FROM telegram_pet_daily_journey_objectives o
     WHERE telegram_id = ? AND pet_id = ? AND season_key = ? AND utc_day = ? AND status = 'accepted'
+      AND ${DAILY_JOURNEY_CARE_SOURCE_PROOF_SQL}
     GROUP BY challenge_id`)
     .bind(request.telegram_id, request.pet_id, request.season_key, request.utc_day).all().then(requirePetReadResult);
   const completedObjectives = (progressRows.results || []).reduce((count, row) => {
@@ -876,11 +886,27 @@ export async function finalizeDailyJourneyGrowthMark(db, request) {
   };
 }
 
+export async function readDailyCareRecoveryState(db, telegramId) {
+  // Audit only: retain every legacy receipt, and bound the display query. These
+  // rows cannot enter a pet's recovery queue without independent attribution.
+  const rows = await db.prepare(`SELECT event_key FROM telegram_pet_events
+    WHERE telegram_id=? AND status='accepted' AND pet_id IS NULL
+      AND event_type IN ('feed','play','clean','sleep') LIMIT 101`)
+    .bind(String(telegramId)).all().then(requirePetReadResult);
+  return {
+    status: rows.results.length ? 'audit_required' : 'clear',
+    reason: rows.results.length ? 'care_evidence_pet_unassigned' : null,
+    unassigned_receipts: Math.min(100, rows.results.length),
+    has_more: rows.results.length > 100,
+    history_preserved: true,
+  };
+}
+
 export async function recordDailyCareChallenge(db, request = {}, options = {}) {
   const telegramId = String(request.telegram_id || '').trim();
   const eventKey = String(request.event_key || '').trim();
   if (!telegramId || !eventKey) throw new Error('invalid_daily_care_evidence');
-  const evidence = await db.prepare(`SELECT e.pet_id,e.event_type,e.event_key,e.day_key FROM telegram_pet_events e
+  const evidence = await db.prepare(`SELECT e.pet_id,e.season_key,e.event_type,e.event_key,e.day_key FROM telegram_pet_events e
     LEFT JOIN telegram_pet_instances i ON i.pet_id=e.pet_id AND i.telegram_id=e.telegram_id AND i.season_key=e.season_key
     LEFT JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id AND s.season_key=i.season_key AND s.slot_number=i.slot_number
     WHERE e.telegram_id = ? AND e.event_key = ? AND e.status = 'accepted' AND (e.pet_id IS NULL OR s.pet_id IS NOT NULL) LIMIT 1`)
@@ -888,14 +914,19 @@ export async function recordDailyCareChallenge(db, request = {}, options = {}) {
   if (!evidence || !CARE_ACTIONS.has(String(evidence.event_type))) return { accepted: false, duplicate: false, reason: 'care_evidence_not_authorized' };
   const utcDay = String(evidence.day_key || '');
   if (!validUtcDay(utcDay)) return { accepted: false, duplicate: false, reason: 'care_evidence_not_authorized' };
+  if (!String(evidence.pet_id || '').trim()) return {
+    accepted: false, duplicate: false, pending: true, reason: 'care_evidence_pet_unassigned',
+    recovery: { status: 'audit_required', pet_id: null, event_key: eventKey, utc_day: utcDay, history_preserved: true },
+  };
   return recordChallengeEvidence(db, {
     telegram_id: telegramId,
     pet_id: evidence.pet_id,
+    season_key: evidence.season_key,
     utc_day: utcDay,
     challenge_id: 'daily_care',
     event_key: `care:${eventKey}`,
     progress_value: 1,
-    evidence: { authority: 'telegram_pet_events', pet_id: evidence.pet_id, event_key: eventKey, action: evidence.event_type },
+    evidence: { authority: 'telegram_pet_events', pet_id: evidence.pet_id, season_key: evidence.season_key, event_key: eventKey, action: evidence.event_type },
   }, options);
 }
 

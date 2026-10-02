@@ -70,6 +70,21 @@ export function buildWranglerProcessInvocation(service, commitSha, options = {})
   };
 }
 
+export function buildWebhookSecretListInvocation(options = {}) {
+  const args = ['wrangler', 'secret', 'list', '--format', 'json'];
+  return (options.platform || process.platform) === 'win32'
+    ? buildWindowsCmdInvocation('npx', args, options)
+    : { command: 'npx', args, windowsVerbatimArguments: false };
+}
+
+export function requireTelegramWebhookSecret(secretListJson) {
+  let secrets;
+  try { secrets = JSON.parse(secretListJson); } catch { /* Fail closed below. */ }
+  if (!Array.isArray(secrets) || !secrets.some((entry) => entry?.name === 'TELEGRAM_WEBHOOK_SECRET' && entry.type === 'secret_text')) {
+    throw new Error('Production moonboys-api requires Cloudflare secret TELEGRAM_WEBHOOK_SECRET. Complete docs/telegram-webhook-security.md before deployment.');
+  }
+}
+
 function run(command, args, options = {}) {
   const result = spawnSync(command, args, {
     cwd: options.cwd || ROOT,
@@ -118,6 +133,15 @@ export function deployWorker(service) {
   }
 
   const commitSha = assertDeployableCheckout();
+  if (service === 'moonboys-api') {
+    // Read names/types only; Cloudflare never returns secret values. A missing
+    // binding or unavailable lookup must block deployment of the closed gate.
+    const secretList = buildWebhookSecretListInvocation();
+    requireTelegramWebhookSecret(run(secretList.command, secretList.args, {
+      cwd: path.join(ROOT, workerPath),
+      windowsVerbatimArguments: secretList.windowsVerbatimArguments,
+    }));
+  }
   const invocation = buildWranglerProcessInvocation(service, commitSha);
 
   console.log(`[worker-deploy] service=${service}`);

@@ -9,7 +9,7 @@ export function isDisplayedPetScopeStaleError(error) {
   return String(error?.message || error).includes(STALE_PATH);
 }
 
-export function createDisplayedPetScope(database, owner, petId) {
+export function createDisplayedPetScope(database, owner, petId, seasonKey = null) {
   let changed = false;
   let pending = Promise.resolve();
   const statements = new WeakMap();
@@ -19,8 +19,9 @@ export function createDisplayedPetScope(database, owner, petId) {
     JOIN telegram_pet_instances p ON p.pet_id=a.pet_id AND p.telegram_id=a.telegram_id AND p.season_key=a.season_key
     JOIN telegram_pet_season_slots s ON s.pet_id=p.pet_id AND s.telegram_id=p.telegram_id AND s.season_key=p.season_key AND s.slot_number=p.slot_number
     WHERE a.telegram_id=? AND a.pet_id=? AND p.status='active' AND s.status='active'
+      AND (? IS NULL OR a.season_key=?)
   ) THEN '$' ELSE '${STALE_PATH}' END) AS displayed_pet_authority`)
-    .bind(String(owner), String(petId));
+    .bind(String(owner), String(petId), seasonKey, seasonKey);
 
   async function execute(entries) {
     if (changed) throw stale();
