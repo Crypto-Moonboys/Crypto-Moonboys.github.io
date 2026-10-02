@@ -15,6 +15,7 @@ import { reconcileLegacyPetInventory } from './inventory-cutover.js';
 import { getMoonpetSeasonKey } from './season-authority.js';
 import { DAILY_COMPLETION_REWARD, SEASON_FINALE_REWARD, dailyCompletionKey, seasonFinaleKey, completionRewardAuthorization } from './completion-policy.js';
 import { requirePetFirstReadResult } from './read-result.js';
+import { projectCommittedPetResult } from './committed-result.js';
 import {
   PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY,
   PET_INSTANCE_AUTHORITY_VERSION,
@@ -346,7 +347,10 @@ export async function awardPetReward(db, request = {}) {
   const petOwnerGuard = petAuthority
     ? 'AND EXISTS (SELECT 1 FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ? AND season_key = ?)'
     : '';
-  const petEventScope = petAuthority ? 'AND pet_id = ?' : 'AND pet_id IS NULL';
+  // Implicit-source compatibility callers retain historical nullable evidence
+  // alongside the frozen pet's new receipts. Other pets keep their own cap.
+  const includeLegacyPetXpEvidence = petAuthority && request.include_legacy_pet_xp_evidence === true;
+  const petEventScope = includeLegacyPetXpEvidence ? 'AND (pet_id = ? OR pet_id IS NULL)' : petAuthority ? 'AND pet_id = ?' : 'AND pet_id IS NULL';
   const metadata = safeJson({ finalization_id: finalizationId, source, idempotency_key: idempotencyKey, requested: rewards, currency_costs: currencyCosts, profile_deltas: profileDeltas, context: request.context || {} });
   const statements = [
     db.prepare(`INSERT OR IGNORE INTO telegram_pet_reward_claims
@@ -483,7 +487,8 @@ export async function awardPetReward(db, request = {}) {
         'materials', json(COALESCE((SELECT json_group_object(asset_key, amount) FROM telegram_pet_reward_assets WHERE claim_id = ? AND asset_type = 'material' AND amount > 0), '{}')),
         'items', json(COALESCE((SELECT json_group_object(asset_key, amount) FROM telegram_pet_reward_assets WHERE claim_id = ? AND asset_type = 'item' AND amount > 0), '{}')),
         'relics', json(COALESCE((SELECT json_group_object(asset_key, amount) FROM telegram_pet_reward_assets WHERE claim_id = ? AND asset_type = 'relic' AND amount > 0), '{}'))), awarded_at = CURRENT_TIMESTAMP
-      WHERE claim_id = ? AND status = 'pending' AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND metadata = ? AND status = 'accepted')`)
+      WHERE claim_id = ? AND status = 'pending' AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND metadata = ? AND status = 'accepted')
+      RETURNING applied_rewards`)
     .bind(eventId, metadata, eventId, metadata, rewards.moon_gold, rewards.moon_crystals, rewards.style_tokens, claimId, claimId, claimId, claimId, eventId, metadata));
   const results = await db.batch(statements);
   const awarded = results?.[3]?.results?.[0];
@@ -495,18 +500,12 @@ export async function awardPetReward(db, request = {}) {
       ? { accepted: true, duplicate: true, pet_xp_awarded: 0, xp_awarded: 0, rewards: normalizePetReward() }
       : { accepted: false, duplicate: false, reason: 'reward_not_authorized', pet_xp_awarded: 0, xp_awarded: 0, rewards: normalizePetReward() };
   }
-  const claim = await db.prepare(`SELECT applied_rewards FROM telegram_pet_reward_claims WHERE claim_id = ?`).bind(claimId).first().then(requirePetFirstReadResult);
+  // Return the exact capped asset receipt from the settlement transaction.
+  // Re-reading it after commit could reject a reward that has already paid.
+  const claim = results.at(-1)?.results?.[0];
   let appliedRewards = rewards;
   try { appliedRewards = { ...rewards, ...JSON.parse(claim?.applied_rewards || '{}') }; } catch {}
-  const pet = await db.prepare(petAuthority
-    ? `SELECT * FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ?`
-    : `SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?`)
-    .bind(...(petAuthority ? [petId, telegramId] : [telegramId])).first().catch(() => null);
-  const wallet = petAuthority
-    ? await db.prepare(`SELECT moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id = ?`)
-      .bind(telegramId).first().catch(() => null)
-    : null;
-  return {
+  const committed = {
     accepted: true,
     duplicate: false,
     claim_id: claimId,
@@ -515,8 +514,19 @@ export async function awardPetReward(db, request = {}) {
     rewards: { ...appliedRewards, pet_xp: positiveInteger(awarded.pet_xp_awarded), community_xp: positiveInteger(awarded.xp_awarded) },
     profile_deltas: profileDeltas,
     currency_costs: currencyCosts,
-    pet: wallet && pet ? { ...pet, moon_gold: wallet.moon_gold, moon_crystals: wallet.moon_crystals, style_tokens: wallet.style_tokens } : pet,
+    pet: null,
   };
+  return projectCommittedPetResult(committed, async () => {
+    const pet = await db.prepare(petAuthority
+      ? `SELECT * FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ?`
+      : `SELECT * FROM telegram_pet_profiles WHERE telegram_id = ?`)
+      .bind(...(petAuthority ? [petId, telegramId] : [telegramId])).first().then(requirePetFirstReadResult);
+    const wallet = petAuthority
+      ? await db.prepare(`SELECT moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles WHERE telegram_id = ?`)
+        .bind(telegramId).first().then(requirePetFirstReadResult)
+      : null;
+    return { ...committed, pet: wallet && pet ? { ...pet, moon_gold: wallet.moon_gold, moon_crystals: wallet.moon_crystals, style_tokens: wallet.style_tokens } : pet };
+  });
 }
 
 function stableContentRoll(value) {

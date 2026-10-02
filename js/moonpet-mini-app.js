@@ -31,6 +31,7 @@
   var requestedFocus = launchParameter('focus');
   var activeScreen = SCREEN_ORDER.includes(requestedScreen) ? requestedScreen : 'home';
   var busy = false;
+  var petActionRefreshRequired = false;
   var fastActionStateDirty = false;
   var fastActionStateRefreshTimer = 0;
   var fastActionStateRefreshInFlight = false;
@@ -731,6 +732,9 @@
 
   function button(label, action, payload, options) {
     options = careActionButtonOptions(action, actionCooldownButtonOptions(action, options));
+    if (petActionRefreshRequired) {
+      options = Object.assign({}, options, { disabled: true, statusLabel: 'REFRESH REQUIRED' });
+    }
     if (action === 'adopt' && !(state && state.entry_requirement && state.entry_requirement.eligible === true)) {
       options = Object.assign({}, options, { disabled: true, statusLabel: 'ARCADE XP REQUIRED' });
     }
@@ -1551,6 +1555,7 @@
     var serverTime = Date.parse(nextState.server_time || nextState.cooldowns && nextState.cooldowns.server_time || '');
     if (Number.isFinite(serverTime)) serverClockOffsetMs = serverTime - Date.now();
     state = nextState;
+    petActionRefreshRequired = false;
     sleepLatched = readSleepLatch(state);
     if (!(options && options.deferBotArtSelection) && !hatchArtTransitionActive()) {
       selectBotArtForState(state).catch(function (error) {
@@ -2722,8 +2727,8 @@
       pet_tired: 'not enough energy for this action. Review its displayed requirement or use care to recover.',
       pet_action_state_changed: 'your pet or equipment changed while care was loading. No care reward or cooldown was applied; try again with the refreshed pet.',
       displayed_pet_required: 'the displayed Moonpet identity is missing. Refresh the game before trying again. Nothing was spent or awarded.',
-      displayed_pet_changed: 'another session selected a different Moonpet. Nothing was spent or awarded; this screen has been refreshed.',
-      source_pet_changed: 'another session selected a different Moonpet. Nothing was spent or awarded; this screen has been refreshed.',
+      displayed_pet_changed: 'another session selected a different Moonpet. Nothing was spent or awarded. Refresh to load the active pet.',
+      source_pet_changed: 'another session selected a different Moonpet. Nothing was spent or awarded. Refresh to load the active pet.',
       daily_completion_not_ready: 'finish all seven daily missions before claiming.',
       daily_completion_pending: 'your daily bonus is saved. Retry the claim.',
       finale_requirements_not_met: 'reach final evolution, 240 distinct-day Growth Marks and 44 distinct-week Crests.',
@@ -3017,6 +3022,10 @@
 
   async function runAction(action, payload, buttonElement) {
     if (busy) return;
+    if (petActionRefreshRequired) {
+      tell('LIVE SAVE REFRESH REQUIRED. TAP REFRESH.', 'danger');
+      return;
+    }
     if (lifecycleCeremonyActive()) {
       tell('LIFECYCLE REVEAL IN PROGRESS.');
       haptic('light');
@@ -3060,14 +3069,20 @@
             // until a complete authoritative projection has replaced the view.
             if (!actionAccepted) animateAction('blocked', false, 2800, payload);
             var staleMessage = resultMessage(data.result, stateBeforeAction, stateBeforeAction);
+            petActionRefreshRequired = true;
             tell(staleMessage + (actionAccepted ? ' // SAVE CONFIRMED' : '') + ' // REFRESHING LIVE SAVE...', actionAccepted ? '' : 'danger');
             haptic(actionAccepted ? 'success' : 'error');
             var staleGeneration = beginStateRequest();
-            var refreshed = await post('/telegram-pets/app/state', stateRefreshPayload(stateBeforeAction, activeScreen));
-            if (setStateSnapshot(refreshed.state, staleGeneration)) {
-              fastActionStateDirty = false;
+            try {
+              var refreshed = await post('/telegram-pets/app/state', stateRefreshPayload(stateBeforeAction, activeScreen));
+              if (setStateSnapshot(refreshed.state, staleGeneration)) {
+                fastActionStateDirty = false;
+                render();
+                tell(staleMessage, actionAccepted ? '' : 'danger');
+              }
+            } catch (_) {
               render();
-              tell(staleMessage, actionAccepted ? '' : 'danger');
+              tell(staleMessage + (actionAccepted ? ' // SAVE CONFIRMED' : '') + ' // DISPLAY SYNC FAILED. TAP REFRESH.', actionAccepted ? '' : 'danger');
             }
             return;
           }
@@ -3091,7 +3106,9 @@
       // Preserve that result and the last valid view; Refresh retries only the
       // read, without submitting the paid action a second time.
       if (!responseState && stateRequestGate.isCurrent(requestGeneration)) {
-        tell(resultMessage(data.result, stateBeforeAction, stateBeforeAction) + ' // DISPLAY SYNC FAILED. TAP REFRESH.', actionAccepted ? '' : 'danger');
+        petActionRefreshRequired = true;
+        render();
+        tell(resultMessage(data.result, stateBeforeAction, stateBeforeAction) + (actionAccepted ? ' // SAVE CONFIRMED' : '') + ' // DISPLAY SYNC FAILED. TAP REFRESH.', actionAccepted ? '' : 'danger');
         haptic(actionAccepted ? 'success' : 'error');
         animateAction(action, actionAccepted, 2800, payload);
         return;

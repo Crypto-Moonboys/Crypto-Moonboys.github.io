@@ -270,6 +270,63 @@ test('every displayed-pet handler rejects a switch immediately after initial val
   }
 });
 
+for (const action of ['market_buy', 'bounty_claim', 'expedition', 'cosmetic_unlock']) {
+  test(action + ' preserves a committed settlement after a real concurrent switch and retries once', async () => {
+    const f = fixture('settled-' + action), displayed = 'current-' + f.owner;
+    f.pet('other-' + action, currentSeason, 300, 2);
+    f.sql.prepare('UPDATE telegram_pet_instances SET pet_xp=100000 WHERE pet_id=?').run(displayed);
+    f.sql.prepare('UPDATE telegram_pet_profiles SET pet_xp=100000 WHERE telegram_id=?').run(f.owner);
+    const day = new Date().toISOString().slice(0, 10);
+    for (const type of ['feed', 'play', 'clean', 'sleep', 'train', 'work', 'random_event', 'activity_claim', 'run_complete', 'daily_chest', 'kaiju_battle', 'use_item']) {
+      for (let i = 0; i < 3; i++) f.sql.prepare(`INSERT INTO telegram_pet_events
+        (id,pet_id,telegram_id,event_type,event_key,day_key,week_key,season_key,status)
+        VALUES (?,?,?,?,?,?,?,?,'accepted')`).run(type+i, displayed, f.owner, type, type+i, day, 'fixture-week', currentSeason);
+    }
+    const economy = await hooks.getPetEconomyState(f.db, f.owner);
+    const body = { action, displayed_pet_id: displayed, request_id: 'saved-' + action };
+    if (action === 'market_buy') body.offer_key = economy.market_offers.find(offer => offer.available).key;
+    if (action === 'bounty_claim') body.bounty_key = economy.bounties.find(bounty => bounty.complete).key;
+    if (action === 'expedition') body.expedition_key = 'dust_tunnels';
+    if (action === 'cosmetic_unlock') body.cosmetic_key = 'profile_frame';
+    let switched = false;
+    f.db.afterBatch = async statements => {
+      const saved = action === 'cosmetic_unlock'
+        ? statements.some(s => s.query.includes("UPDATE telegram_pet_system_events SET status='completed'"))
+        : statements.some(s => s.query.includes("UPDATE telegram_pet_reward_claims SET status = 'awarded'"));
+      if (!saved) return;
+      f.db.afterBatch = null;
+      assert.equal((await hooks.switchActivePetSeasonSlot(f.db, f.owner, 'other-' + action)).accepted, true);
+      switched = true;
+    };
+    const result = await f.act(body);
+    assert.equal(switched, true);
+    assert.equal(result.accepted, true);
+    assert.equal(result.refresh_state, true);
+    assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get('other-' + action).pet_xp, 300);
+    const wallet = () => f.sql.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner);
+    const beforeRetry = wallet();
+    const source = { market_buy: 'pet_market', bounty_claim: 'pet_bounty', expedition: 'pet_expedition' }[action];
+    if (source) {
+      const receipt = f.sql.prepare('SELECT pet_id,status,applied_rewards FROM telegram_pet_reward_claims WHERE source=?').get(source);
+      assert.equal(receipt.pet_id, displayed);
+      assert.equal(receipt.status, 'awarded');
+      assert.deepEqual(result.rewards, JSON.parse(receipt.applied_rewards));
+    } else {
+      assert.equal(beforeRetry.style_tokens, 20);
+      assert.equal(beforeRetry.moon_crystals, 96);
+      assert.equal(f.sql.prepare('SELECT quantity FROM telegram_pet_cosmetic_unlocks WHERE cosmetic_key=?').get('profile_frame').quantity, 1);
+    }
+    const retry = await f.act({ ...body, displayed_pet_id: 'other-' + action });
+    assert.equal(retry.accepted, true);
+    assert.equal(retry.duplicate, true);
+    assert.deepEqual(wallet(), beforeRetry);
+    if (action === 'expedition') {
+      assert.equal(f.sql.prepare('SELECT energy,pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(displayed).energy, 88);
+      assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE source=?').get(source).n, 1);
+    }
+  });
+}
+
 test('the transaction assertion rolls back all writes and keeps a stale scope closed after switching back', async () => {
   const f = fixture('scope-rollback'), displayed = 'current-' + f.owner;
   f.pet('other', currentSeason, 300, 2);

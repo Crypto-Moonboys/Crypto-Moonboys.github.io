@@ -507,7 +507,10 @@ assert.equal(petAState.regions.find((region) => region.key === 'moon_alley').mas
 seedPlayer('chain-recovery');
 let chainFailure = true;
 const recoverableReward = async (request) => { if (chainFailure) { chainFailure = false; throw new Error('simulated interruption'); } return awardPetReward(d1, request); };
-await assert.rejects(() => processPetEventChain(d1, 'chain-recovery', 'signal_hijack', recoverableReward, 'graffpunks', null, livePet('chain-recovery')), /simulated interruption/);
+const pendingChainReward = await processPetEventChain(d1, 'chain-recovery', 'signal_hijack', recoverableReward, 'graffpunks', null, livePet('chain-recovery'));
+assert.equal(pendingChainReward.accepted, true, 'the saved story decision survives a payout interruption');
+assert.equal(pendingChainReward.reward_pending, true);
+assert.equal(pendingChainReward.refresh_state, true);
 assert.equal((await processPetEventChain(d1, 'chain-recovery', 'signal_hijack', recoverableReward, 'graffpunks', null, livePet('chain-recovery'))).accepted, true, 'a settling chain must recover after reward interruption');
 
 const goldBeforeUpgrade = runtimeDb.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='live-1'").get().moon_gold;
@@ -708,7 +711,10 @@ assert.ok(defaultSetbacks > 0 && defaultSetbacks < 32);
 // the exact decision, without spending Energy or paying the receipt twice.
 seedPlayer('district-frozen', { energy: 10 });
 const paidThenInterrupted = async (request) => { await reward(request); throw Error('after reward receipt'); };
-await assert.rejects(() => processPetDistrictMission(d1, 'district-frozen', 'moon_alley', livePet('district-frozen'), {}, paidThenInterrupted, null, 'careful'), /after reward receipt/);
+const pendingDistrictReward = await processPetDistrictMission(d1, 'district-frozen', 'moon_alley', livePet('district-frozen'), {}, paidThenInterrupted, null, 'careful');
+assert.equal(pendingDistrictReward.accepted, true, 'the charged frozen decision stays accepted after its payout receipt commits');
+assert.equal(pendingDistrictReward.reward_pending, true);
+assert.equal(pendingDistrictReward.refresh_state, true);
 const frozenDistrictEvent = runtimeDb.prepare("SELECT payload_json FROM telegram_pet_system_events WHERE telegram_id='district-frozen'").get();
 const frozenDistrict = JSON.parse(frozenDistrictEvent.payload_json).decision;
 const retryState = await buildPetLiveSystemsState(d1, 'district-frozen', livePet('district-frozen'), {});
@@ -726,7 +732,10 @@ assert.equal((await processPetDistrictMission(d1, 'district-frozen', 'moon_alley
 
 seedPlayer('story-frozen');
 const storyChoices = PET_EVENT_CHAINS.lost_delivery_drone.step_content[PET_EVENT_CHAINS.lost_delivery_drone.steps[0]].choices;
-await assert.rejects(() => processPetEventChain(d1, 'story-frozen', 'lost_delivery_drone', paidThenInterrupted, null, storyChoices[0].key, livePet('story-frozen')), /after reward receipt/);
+const pendingStoryReward = await processPetEventChain(d1, 'story-frozen', 'lost_delivery_drone', paidThenInterrupted, null, storyChoices[0].key, livePet('story-frozen'));
+assert.equal(pendingStoryReward.accepted, true, 'the frozen choice stays accepted after its payout receipt commits');
+assert.equal(pendingStoryReward.reward_pending, true);
+assert.equal(pendingStoryReward.refresh_state, true);
 const storyGold = runtimeDb.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='story-frozen'").get().moon_gold;
 const pendingStory = await buildPetLiveSystemsState(d1, 'story-frozen', livePet('story-frozen'), {});
 assert.equal(pendingStory.chains.find((c) => c.key === 'lost_delivery_drone').pending_choice_key, storyChoices[0].key);
@@ -768,7 +777,12 @@ d1.batch = async function (statements) {
   if (statements.some((entry) => entry.sql.includes('INSERT INTO telegram_pet_seasonal_boss_progress'))) throw Error('raid write interrupted');
   return originalBatch.call(this, statements);
 };
-try { await assert.rejects(() => processPetSeasonalBoss(d1, 'raid-frozen', livePet('raid-frozen'), reward, 'counter'), /raid write interrupted/); }
+try {
+  const pendingRaid = await processPetSeasonalBoss(d1, 'raid-frozen', livePet('raid-frozen'), reward, 'counter');
+  assert.equal(pendingRaid.accepted, true, 'the charged saved attack survives a progress-write interruption');
+  assert.equal(pendingRaid.reward_pending, true);
+  assert.equal(pendingRaid.refresh_state, true);
+}
 finally { d1.batch = originalBatch; }
 let interruptedRaid = await buildPetLiveSystemsState(d1, 'raid-frozen', livePet('raid-frozen'), {});
 assert.equal(interruptedRaid.seasonal_boss.settling, true);

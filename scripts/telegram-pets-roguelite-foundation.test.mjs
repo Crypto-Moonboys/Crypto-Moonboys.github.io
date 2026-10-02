@@ -362,7 +362,9 @@ awardedReceiptDb.beforeFirst = (statement) => {
 const receiptRequest = {
   telegram_id: 'awarded-receipt-read', source: 'pet_job', idempotency_key: 'awarded-receipt', rewards: { moon_gold: 9 },
 };
-await assert.rejects(awardPetReward(awardedReceiptDb, receiptRequest), /awarded_receipt_read_unavailable/);
+const committedReceipt = await awardPetReward(awardedReceiptDb, receiptRequest);
+assert.equal(committedReceipt.accepted, true, 'committed receipts return their applied rewards without a second claim read');
+assert.equal(committedReceipt.rewards.moon_gold, 9);
 assert.equal(awardedReceiptDb.database.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='awarded-receipt-read'").get().moon_gold, 9);
 assert.equal(awardedReceiptDb.database.prepare("SELECT COUNT(*) count FROM telegram_pet_reward_claims WHERE idempotency_key='awarded-receipt' AND status='awarded'").get().count, 1);
 awardedReceiptDb.beforeFirst = null;

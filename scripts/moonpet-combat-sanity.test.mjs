@@ -218,7 +218,9 @@ for (const system of ['arena','kaiju']) test(`${system}: a committed match survi
   await dispatchRenderedPetAction(f.db,opponent,{id:opponent},{action:`${system}_matchmake`},'fixture-token');
   const table=`telegram_pet_${system}_${system==='arena'?'battles':'matches'}`;
   f.db.beforeFirst=s=>{if(s.query.includes(`SELECT * FROM ${table}`)&&s.query.includes(system==='arena'?'battle_id = ?':'match_id = ?'))throw Error('created_match_read_unavailable');};
-  await assert.rejects(f.act({action:`${system}_matchmake`}),/created_match_read_unavailable/);
+  const result = await f.act({action:`${system}_matchmake`});
+  assert.equal(result.accepted,true,'the committed queue action survives a failed match projection');
+  assert.equal(result.refresh_state,true);
   assert.equal(f.sql.prepare(`SELECT COUNT(*) n FROM ${table}`).get().n,1);
   assert.equal(f.sql.prepare(`SELECT COUNT(*) n FROM telegram_pet_${system}_queue WHERE status='waiting'`).get().n,0);
   assert.equal(f.sql.prepare(`SELECT COUNT(*) n FROM ${table} WHERE player2_telegram_id IS NULL`).get().n,0);
@@ -241,6 +243,7 @@ test(`${system}: ${failure} restores the Mini App queue despite an unrelated Tel
     VALUES ('other','other','unrelated-telegram-chat',?,'{}','{}','active','2999-01-01')`).run(f.owner);
   else f.sql.prepare(`INSERT INTO telegram_pet_kaiju_matches (id,match_id,chat_id,player1_telegram_id,status)
     VALUES ('other','other','unrelated-telegram-chat',?,'selecting')`).run(f.owner);
+  const unrelated = f.sql.prepare(`SELECT * FROM ${table} WHERE id='other'`).get();
   let injected=false;
   f.db.beforeRun=s=>{
     if(failure==='partial-claim'&&!injected&&s.query.includes(`UPDATE telegram_pet_${system}_queue SET status=`)&&s.query.includes('telegram_id IN (?,?)')) {
@@ -253,10 +256,20 @@ test(`${system}: ${failure} restores the Mini App queue despite an unrelated Tel
     const result=await f.act({action:`${system}_matchmake`});
     assert.equal(result.reason,`${system}_queued`);
     assert.equal(result.queue?.waiting,true,'queued success must include the restored waiting row');
-  } else await assert.rejects(f.act({action:`${system}_matchmake`}),/match_write_unavailable/);
+  } else {
+    const result=await f.act({action:`${system}_matchmake`});
+    assert.equal(result.accepted,true,'a later match-write failure cannot reject the saved queue entry');
+    assert.equal(result.reason,`${system}_queued`);
+    assert.equal(result.refresh_state,true);
+    assert.equal(f.sql.prepare(`SELECT COUNT(*) n FROM telegram_pet_${system}_queue WHERE telegram_id IN (?,?) AND status='waiting'`).get(f.owner,rival).n,2,
+      'both players return to the waiting queue when the match could not be written');
+  }
   assert.equal(injected,true);
   assert.equal(f.sql.prepare(`SELECT COUNT(*) n FROM telegram_pet_${system}_queue WHERE telegram_id=? AND status='waiting'`).get(f.owner).n,1);
   assert.equal(f.sql.prepare(`SELECT COUNT(*) n FROM ${table}`).get().n,1,'unrelated match remains untouched');
+  assert.deepEqual(f.sql.prepare(`SELECT * FROM ${table} WHERE id='other'`).get(),unrelated);
+  assert.equal(f.sql.prepare(`SELECT COUNT(*) n FROM telegram_pet_${system}_queue WHERE updated_at LIKE 'claim:%'`).get().n,0,
+    'failed matchmaking must not leave a dangling queue claim');
 });
 
 test('a broken historical Arena source cannot starve a later recoverable payout',async()=>{

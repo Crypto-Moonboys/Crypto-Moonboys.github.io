@@ -13,6 +13,8 @@ const options = require('../js/moonpet-play-options.js');
 const read = (path) => fs.readFileSync(new URL('../' + path, import.meta.url), 'utf8');
 const client = read('js/moonpet-mini-app.js');
 const worker = read('workers/moonboys-api/worker.js');
+assert.match(options.objectiveRoutes('pet-daily-bank:2026-10-02', {})[0].detail,
+  /goal stays complete if you spend gold later/, 'bank guidance must describe the permanently latched daily goal');
 
 // Ranked guidance keeps recovery ahead of new play and never adds a blocked care route.
 const guideState = { adopted: true, pet: { pet_id: 'p1', energy: 0, hunger: 80, cleanliness: 90, happiness: 90 }, lifecycle: { phase: 'young' },
@@ -376,7 +378,7 @@ for (const { reason, accepted, refreshState } of [
   let refreshStarted;
   const started = new Promise(resolve => {refreshStarted=resolve;});
   const actionContext=vm.createContext({
-    busy:false, state:{pet:{pet_id:'shown-pet'}}, activeScreen:'home', fastActionStateDirty:true,
+    busy:false, petActionRefreshRequired:false, state:{pet:{pet_id:'shown-pet'}}, activeScreen:'home', fastActionStateDirty:true,
     sleepLatched:false, crypto:{randomUUID:()=> 'request'},
     words:value=>value, lifecycleCeremonyActive:()=>false, shouldUseFastActionResponse:()=>true,
     actionAnimationFamily:()=> 'care', animateAction:()=>{}, tell:()=>{}, haptic:()=>{},
@@ -390,7 +392,7 @@ for (const { reason, accepted, refreshState } of [
       refreshStarted();return refresh;
     },
   });
-  actionContext.setStateSnapshot=(next)=>{actionContext.state=next;return true;};
+  actionContext.setStateSnapshot=(next)=>{actionContext.state=next;actionContext.petActionRefreshRequired=false;return true;};
   vm.runInContext(runActionSource,actionContext);
   const pending=actionContext.runAction('feed',{});
   await started;
@@ -403,6 +405,100 @@ for (const { reason, accepted, refreshState } of [
   assert.equal(actionContext.state.pet.pet_id,'fresh-pet');
   assert.equal(actionContext.busy,false);
   assert.equal(actionContext.fastActionStateDirty,false);
+  assert.equal(actionContext.petActionRefreshRequired,false);
+}
+
+// A failed projection cannot turn a committed action into a rejected action or
+// allow another mutation from the stale view. Refresh retries only the read.
+const syncStateSource = client.slice(client.indexOf('  async function syncState('), client.indexOf('  function applyRequestedFocus('));
+const setStateSnapshotSource = client.slice(client.indexOf('  function setStateSnapshot('), client.indexOf('  // TEST-EXPORT: cooldownRefresh:start'));
+const buttonSource = client.slice(client.indexOf('  function button('), client.indexOf('  var panelOpenState'));
+for (const accepted of [true, false]) {
+  const calls = [], messages = [], animations = [];
+  let failRefresh = true;
+  const actionContext = vm.createContext({
+    busy: false, petActionRefreshRequired: false, state: { adopted: true, pet: { pet_id: 'shown-pet' }, lifecycle: { phase: 'young' } },
+    activeScreen: 'home', fastActionStateDirty: true, sleepLatched: false,
+    crypto: { randomUUID: () => 'original-action-request' }, performance: { now: () => 1 },
+    words: value => value, lifecycleCeremonyActive: () => false, shouldUseFastActionResponse: () => true,
+    actionAnimationFamily: () => 'care', animateAction: (...args) => animations.push(args),
+    tell: message => messages.push(message), haptic: () => {}, render: () => {},
+    beginStateRequest: () => calls.length, stateRequestGate: { isCurrent: () => true },
+    resultMessage: result => result.accepted ? 'Action complete // +6 PET XP' : 'Action unavailable // Nothing was spent or awarded.',
+    stateRefreshPayload: () => ({ mode: 'core' }), readSleepLatch: () => false,
+    hatchArtTransitionActive: () => false, selectBotArtForState: () => Promise.resolve(), scheduleCooldownRefresh: () => {},
+    careActionButtonOptions: (_, value) => value || {}, actionCooldownButtonOptions: (_, value) => value,
+    shouldShowAvailability: value => Boolean(value.disabled), availabilityDetailMarkup: value => value.statusLabel,
+    escapeHtml: value => String(value),
+    patchFastActionState: () => assert.fail('a changed pet must never patch the old snapshot'),
+    scheduleFastActionStateRefresh: () => assert.fail('stale reconciliation must begin immediately'),
+    async post(path, body) {
+      calls.push({ path, body });
+      if (path.endsWith('/action')) return { state_pending: true, result: { accepted, reason: accepted ? 'accepted' : 'displayed_pet_changed', refresh_state: true } };
+      if (failRefresh) throw new Error('mini_app_state_failed');
+      return { state: { adopted: true, pet: { pet_id: 'fresh-pet' }, lifecycle: { phase: 'young' } } };
+    },
+  });
+  vm.runInContext(runActionSource + syncStateSource + setStateSnapshotSource + buttonSource, actionContext);
+  await actionContext.runAction('feed', {});
+  assert.match(messages.at(-1), /DISPLAY SYNC FAILED\. TAP REFRESH\./);
+  assert.equal(messages.at(-1).includes('SAVE CONFIRMED'), accepted, 'committed success must remain explicit after projection failure');
+  assert.equal(animations.some(([action, success]) => action === 'blocked' && !success), !accepted,
+    'projection failure must not animate a saved action as rejected');
+  assert.equal(actionContext.state.pet.pet_id, 'shown-pet');
+  assert.equal(actionContext.busy, false, 'read-only Refresh remains usable');
+  assert.equal(actionContext.petActionRefreshRequired, true);
+  assert.match(actionContext.button('FEED', 'feed'), /disabled/);
+  await actionContext.runAction('feed', {});
+  assert.equal(calls.length, 2, 'stale controls cannot submit a second mutation after refresh failure');
+  failRefresh = false;
+  await actionContext.syncState();
+  assert.deepEqual(calls.map(call => call.path), ['/telegram-pets/app/action', '/telegram-pets/app/state', '/telegram-pets/app/state'],
+    'manual Refresh retries only the authoritative read, never the original action');
+  assert.equal(actionContext.state.pet.pet_id, 'fresh-pet');
+  assert.equal(actionContext.petActionRefreshRequired, false);
+  assert.equal(actionContext.fastActionStateDirty, false);
+  assert.doesNotMatch(actionContext.button('FEED', 'feed'), /disabled/);
+}
+
+// Full-state actions have the same boundary: a saved purchase followed by a
+// failed response projection must not let the stale view submit another action.
+for (const accepted of [true, false]) {
+  const calls = [], messages = [];
+  const actionContext = vm.createContext({
+    busy: false, petActionRefreshRequired: false, state: { adopted: true, pet: { pet_id: 'shown-pet' }, lifecycle: { phase: 'young' } },
+    activeScreen: 'economy', fastActionStateDirty: false, sleepLatched: false,
+    crypto: { randomUUID: () => 'original-purchase-request' }, performance: { now: () => 1 },
+    words: value => value, lifecycleCeremonyActive: () => false, shouldUseFastActionResponse: () => false,
+    actionAnimationFamily: () => 'equip', animateAction: () => {}, tell: message => messages.push(message), haptic: () => {}, render: () => {},
+    beginStateRequest: () => calls.length, stateRequestGate: { isCurrent: () => true },
+    resultMessage: result => result.accepted ? 'Action complete // PURCHASE SAVED' : 'Action unavailable // Nothing was spent or awarded.',
+    stateRefreshPayload: () => ({}), readSleepLatch: () => false, mergeActionResultCooldown: next => next,
+    hatchArtTransitionActive: () => false, selectBotArtForState: () => Promise.resolve(), scheduleCooldownRefresh: () => {},
+    careActionButtonOptions: (_, value) => value || {}, actionCooldownButtonOptions: (_, value) => value,
+    shouldShowAvailability: value => Boolean(value.disabled), availabilityDetailMarkup: value => value.statusLabel,
+    escapeHtml: value => String(value),
+    async post(path, body) {
+      calls.push({ path, body });
+      if (path.endsWith('/action')) return { state: null, result: { accepted, reason: accepted ? 'shop_purchase' : 'displayed_pet_changed', refresh_state: true } };
+      return { state: { adopted: true, pet: { pet_id: 'fresh-pet' }, lifecycle: { phase: 'young' } } };
+    },
+  });
+  vm.runInContext(runActionSource + syncStateSource + setStateSnapshotSource + buttonSource, actionContext);
+  await actionContext.runAction('buy', { item_key: 'moon_kibble' });
+  assert.match(messages.at(-1), /DISPLAY SYNC FAILED\. TAP REFRESH\./);
+  assert.equal(messages.at(-1).includes('SAVE CONFIRMED'), accepted);
+  assert.equal(actionContext.state.pet.pet_id, 'shown-pet');
+  assert.equal(actionContext.petActionRefreshRequired, true);
+  assert.equal(actionContext.busy, false);
+  assert.match(actionContext.button('BUY', 'buy'), /disabled/);
+  await actionContext.runAction('buy', { item_key: 'moon_kibble' });
+  assert.equal(calls.length, 1, 'missing full-state projection cannot submit a second purchase');
+  await actionContext.syncState();
+  assert.deepEqual(calls.map(call => call.path), ['/telegram-pets/app/action', '/telegram-pets/app/state']);
+  assert.equal(actionContext.state.pet.pet_id, 'fresh-pet');
+  assert.equal(actionContext.petActionRefreshRequired, false);
+  assert.doesNotMatch(actionContext.button('BUY', 'buy'), /disabled/);
 }
 
 console.log(`Moonpet player loop tests passed: ${new Set(actionButtons).size} literal action buttons.`);

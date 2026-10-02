@@ -274,14 +274,15 @@ recoveryDb.beforeRun = (sql) => {
 await assert.rejects(
   incubateMoonEgg(recoveryDb, 'recovery-player', 'warm', 'recovery:growth-mark', new Date('2026-08-02T12:00:00Z')),
   /injected_growth_mark_write_failure/,
-  'a post-commit Growth Mark failure must be visible to the caller',
+  'a Growth Mark failure rolls back the care transaction and remains visible to the caller',
 );
-assert.equal(recoveryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_events_by_pet WHERE event_key='recovery:growth-mark' AND applied_at IS NOT NULL").get().count, 1,
-  'the lifecycle action stays committed when later reward settlement fails');
+assert.equal(recoveryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_events_by_pet WHERE event_key='recovery:growth-mark'").get().count, 0,
+  'the lifecycle action cannot commit without its earned daily Mark');
 assert.equal(recoveryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_growth_marks WHERE evidence_key='incubation:recovery:growth-mark'").get().count, 0);
 recoveryDb.beforeRun = null;
 const recoveredGrowthMark = await incubateMoonEgg(recoveryDb, 'recovery-player', 'warm', 'recovery:growth-mark', new Date('2026-08-02T12:00:00Z'));
-assert.equal(recoveredGrowthMark.duplicate, true, 'replaying the committed lifecycle key repairs post-commit reward settlement');
+assert.equal(recoveredGrowthMark.accepted, true, 'retrying the rolled-back lifecycle key commits care and its Mark together');
+assert.equal(Boolean(recoveredGrowthMark.duplicate), false);
 assert.equal(recoveryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_growth_marks WHERE evidence_key='incubation:recovery:growth-mark'").get().count, 1,
   'Growth Mark recovery is idempotent and creates exactly one authoritative mark');
 assert.equal(recoveryDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_lifecycle_events_by_pet WHERE event_key='recovery:growth-mark'").get().count, 1,

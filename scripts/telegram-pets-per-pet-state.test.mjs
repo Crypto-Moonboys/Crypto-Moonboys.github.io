@@ -238,7 +238,7 @@ db.exec(migration061);
 // Current identity reads must distinguish empty tables from a schema/read outage.
 db.exec('CREATE UNIQUE INDEX identity_test_owner_tuple ON telegram_pet_season_slots(pet_id,telegram_id,season_key)');
 const currentSchema = await readFile(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
-for (const table of ['telegram_pet_personality_traits', 'telegram_pet_memories', 'telegram_pet_boss_victories', 'telegram_pet_identity_events', 'telegram_pet_reward_claims']) {
+for (const table of ['telegram_pet_personality_traits', 'telegram_pet_memories', 'telegram_pet_boss_victories', 'telegram_pet_identity_events', 'telegram_pet_identity_analytics', 'telegram_pet_reward_claims']) {
   const start = currentSchema.indexOf(`CREATE TABLE IF NOT EXISTS ${table} (`);
   assert.ok(start >= 0, table);
   db.exec(currentSchema.slice(start, currentSchema.indexOf('\n);', start) + 4));
@@ -494,7 +494,24 @@ assert.equal(db.prepare(`SELECT pet_name FROM telegram_pet_profiles WHERE telegr
 const paidIdentity = await getMoonpetIdentitySummary(d1, 'purchase-player');
 assert.equal(paidIdentity.current_stage.evolution_id, 'moon_egg', 'paid pet identity must not reuse the owner-scoped evolution unlocks');
 assert.deepEqual(paidIdentity.personalities, [], 'paid pet identity must not reuse the owner-scoped personality unlocks');
-assert.equal(paidIdentity.memories, null, 'paid pet identity must not reuse the owner-scoped memory payload');
+assert.deepEqual(
+  {
+    pet_id: paidIdentity.memories.pet_id,
+    telegram_id: paidIdentity.memories.telegram_id,
+    season_key: paidIdentity.memories.season_key,
+    first_run_at: paidIdentity.memories.first_run_at,
+    first_boss_victory_at: paidIdentity.memories.first_boss_victory_at,
+    total_runs: paidIdentity.memories.total_runs,
+    total_bosses_defeated: paidIdentity.memories.total_bosses_defeated,
+    milestones: paidIdentity.memories.milestones,
+  },
+  {
+    pet_id: 'pet:purchase-player:pet-s2026-003:2', telegram_id: 'purchase-player', season_key: 'pet-s2026-003',
+    first_run_at: null, first_boss_victory_at: null, total_runs: 0, total_bosses_defeated: 0,
+    milestones: ['first_adoption', 'evolution_moon_egg'],
+  },
+  'paid pets receive their own onboarding memory without inheriting another pet\'s history',
+);
 assert.equal(serializePet(await getPetProfile(d1, 'purchase-player'), paidIdentity).evolution_stage, 0, 'serialized paid pets must not expose starter evolution stage');
 const paidPet = await getPetProfile(d1, 'purchase-player');
 paidPet.energy = 42;

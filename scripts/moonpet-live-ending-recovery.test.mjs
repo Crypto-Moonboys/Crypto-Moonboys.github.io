@@ -186,7 +186,8 @@ for (const action of ['district_mission', 'event_chain']) test(`${action} repair
   f.db.beforeBatch = statements => {
     if (statements.some(s => new RegExp('(?:UPDATE|INSERT INTO) ' + progressTable).test(s.query))) throw Error('interrupted_ending');
   };
-  await assert.rejects(f.act({ action, request_id: 'original-ending', region_key: 'moon_alley', chain_key: 'lost_delivery_drone' }), /interrupted_ending/);
+  const pending = await f.act({ action, request_id: 'original-ending', region_key: 'moon_alley', chain_key: 'lost_delivery_drone' });
+  assert.equal(pending.accepted, true); assert.equal(pending.reward_pending, true); assert.equal(pending.refresh_state, true);
   const saved = f.sql.prepare('SELECT * FROM telegram_pet_system_events WHERE system_key=?').get(system);
   const decision = JSON.parse(saved.payload_json).decision;
   assert.ok(decision, 'the original decision is persisted before payout');
@@ -224,7 +225,8 @@ test('a charged raid attack survives rotation and credits the original boss and 
   f.db.beforeBatch = statements => {
     if (statements.some(s => s.query.includes('INSERT INTO telegram_pet_seasonal_boss_progress'))) throw Error('interrupted_raid');
   };
-  await assert.rejects(f.act({ action: 'seasonal_boss', move: 'strike', request_id: 'saved-raid' }), /interrupted_raid/);
+  const pending = await f.act({ action: 'seasonal_boss', move: 'strike', request_id: 'saved-raid' });
+  assert.equal(pending.accepted, true); assert.equal(pending.reward_pending, true); assert.equal(pending.refresh_state, true);
   const saved = f.sql.prepare("SELECT * FROM telegram_pet_system_events WHERE system_key='seasonal_boss'").get();
   const attack = JSON.parse(saved.payload_json).attack;
   const energy = f.sql.prepare('SELECT energy FROM telegram_pet_instances WHERE pet_id=?').get(sourcePet).energy;
@@ -258,7 +260,8 @@ test('a new-day story click finishes the saved step before starting another one'
     if (statements.some(s => s.query.includes('INSERT INTO telegram_pet_event_chain_progress'))) throw Error('saved_step_pending');
   };
   const body = { action: 'event_chain', chain_key: 'lost_delivery_drone', request_id: 'first-step' };
-  await assert.rejects(f.act(body), /saved_step_pending/);
+  const pending = await f.act(body);
+  assert.equal(pending.accepted, true); assert.equal(pending.reward_pending, true); assert.equal(pending.refresh_state, true);
   const saved = f.sql.prepare("SELECT * FROM telegram_pet_system_events WHERE system_key='event_chain'").get();
   const choice = JSON.parse(saved.payload_json).choice_key;
   const paidXp = f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get(sourcePet).pet_xp;
@@ -305,7 +308,10 @@ test('bounded recovery skips a failing source on the next refresh and does not b
   f.db.beforeBatch = statements => {
     if (statements.some(s => s.query.includes('INSERT INTO telegram_pet_event_chain_progress'))) throw Error('pending_stories');
   };
-  for (const chain of chains) await assert.rejects(f.act({ action: 'event_chain', chain_key: chain, request_id: chain }), /pending_stories/);
+  for (const chain of chains) {
+    const pending = await f.act({ action: 'event_chain', chain_key: chain, request_id: chain });
+    assert.equal(pending.accepted, true); assert.equal(pending.reward_pending, true); assert.equal(pending.refresh_state, true);
+  }
   chains.forEach((chain, i) => f.sql.prepare("UPDATE telegram_pet_system_events SET updated_at=? WHERE system_key='event_chain' AND action_key=?").run(`2000-01-0${i + 1} 00:00:00`, chain));
   t.mock.timers.tick(86400000);
   f.db.beforeBatch = statements => {
@@ -328,7 +334,8 @@ test('repairing an older paid story cannot rewind a later completed step', async
   f.db.beforeBatch = statements => {
     if (statements.some(s => s.query.includes('INSERT INTO telegram_pet_event_chain_progress'))) throw Error('old_step_pending');
   };
-  await assert.rejects(f.act({ action: 'event_chain', chain_key: 'lost_delivery_drone', request_id: 'old-step' }), /old_step_pending/);
+  const pending = await f.act({ action: 'event_chain', chain_key: 'lost_delivery_drone', request_id: 'old-step' });
+  assert.equal(pending.accepted, true); assert.equal(pending.reward_pending, true); assert.equal(pending.refresh_state, true);
   f.db.beforeBatch = null;
   const saved = f.sql.prepare("SELECT * FROM telegram_pet_system_events WHERE system_key='event_chain'").get();
   // Model a pre-fix player who continued the chain on later days.

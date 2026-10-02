@@ -78,7 +78,7 @@
       weekly_check_in: [['DAILY CACHE', 'daily_chest', 'Collect Daily Cache on two UTC days. One account cache is available each day.']],
       'pet-daily-shop': [['SHOP', 'shop', 'Buy new permanent gear. Market, crafting and free switches do not count.'], ['EQUIPMENT', 'gear_upgrade', 'An accepted equipment upgrade also counts.']],
       'pet-daily-adventure': [['ADVENTURE', 'adventure'], ['MOON RUN', 'run'], ['DISTRICTS', 'district'], ['STORY CHOICES', 'story'], ['SEASONAL RAID', 'seasonal_boss']],
-      'pet-daily-bank': [['PET JOBS', 'work', 'Hold at least 50 Moon Gold. Spending gold can make this target incomplete again.'], ['DAILY CACHE', 'daily_chest', 'An unclaimed Daily Cache adds 40 Moon Gold.']],
+      'pet-daily-bank': [['PET JOBS', 'work', 'Reach 50 Moon Gold once today. The goal stays complete if you spend gold later.'], ['DAILY CACHE', 'daily_chest', 'An unclaimed Daily Cache adds 40 Moon Gold.']],
     };
     var routes = !Object.prototype.hasOwnProperty.call(targets, id)
       ? [Object.assign({ title: 'OPEN OBJECTIVE ROUTE' }, route({ key: key }))]

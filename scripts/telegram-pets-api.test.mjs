@@ -4677,7 +4677,7 @@ globalThis.Date = class extends repeatRecoveryRealDate {
 };
 const eventRecoveryDb = seedRepeatRewardPlayer('event-recovery', 70, recoveryDayA.toISOString());
 seedAcceptedDailyPetEvent(eventRecoveryDb, 'event-recovery', 'event-recovery-day-a-cap', 1199, 0, recoveryDayAKey, { petScoped: true });
-eventRecoveryDb.failOnBatch(3);
+eventRecoveryDb.failBatchOnSql(/UPDATE telegram_pet_events\s+SET pet_xp_awarded = MIN/);
 await assert.rejects(
   processPetRandomEvent(eventRecoveryDb, 'event-recovery', 'leave_it', {
     event_key: 'event-recovery-callback',
@@ -4743,7 +4743,7 @@ assert.deepEqual(repeatRewardSnapshot(eventRecoveryDb, 'event-recovery', 'event'
 
 const eventPetSwitchDb = seedRepeatRewardPlayer('event-retry-switch', 70, recoveryDayA.toISOString());
 const eventRetryPetA = eventPetSwitchDb.database.prepare("SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id='event-retry-switch'").get().pet_id;
-eventPetSwitchDb.failOnBatch(3);
+eventPetSwitchDb.failBatchOnSql(/UPDATE telegram_pet_events\s+SET pet_xp_awarded = MIN/);
 await assert.rejects(
   processPetRandomEvent(eventPetSwitchDb, 'event-retry-switch', 'flip_it_fast', {
     event_key: 'moon_crate_found-retry-switch',
@@ -4752,6 +4752,11 @@ await assert.rejects(
   }),
   /simulated_d1_batch_failure/,
   'first Event settlement can fail after creating a pet-owned pending source row',
+);
+assert.deepEqual(
+  { ...eventPetSwitchDb.database.prepare("SELECT pet_id,status FROM telegram_pet_events WHERE event_key='moon_crate_found-retry-switch'").get() },
+  { pet_id: eventRetryPetA, status: 'pending' },
+  'the failure must happen after the original pet reservation commits',
 );
 const eventRetryPetB = seedAndSwitchRepeatRewardPet(eventPetSwitchDb, 'event-retry-switch', 2, 70);
 const switchedRetry = await processPetRandomEvent(eventPetSwitchDb, 'event-retry-switch', 'flip_it_fast', {
@@ -4834,7 +4839,7 @@ kaijuRecoveryDb.database.prepare(`
 seedAcceptedDailyPetEvent(kaijuRecoveryDb, 'kaiju-recovery', 'kaiju-recovery-day-a-cap', 1190, 245, recoveryDayAKey, { petScoped: true });
 const kaijuMatch = kaijuSourceMatch('kaiju-recovery', 'kaiju-recovery-match');
 const kaijuRewards = { pet_xp: 38, community_xp: 8, moon_gold: 18, style_tokens: 1, happiness: 5, energy_cost: 6 };
-kaijuRecoveryDb.failOnBatch(3);
+kaijuRecoveryDb.failBatchOnSql(/UPDATE telegram_pet_events\s+SET pet_xp_awarded = MIN/);
 await assert.rejects(
   awardPetKaijuPlayerResult(kaijuRecoveryDb, 'kaiju-recovery', kaijuMatch, 'kaiju_win', kaijuRewards, { now: recoveryDayA }),
   /simulated_d1_batch_failure/,
@@ -4934,7 +4939,7 @@ function seedSelectableSoloKaijuMatch(db, telegramId, matchId) {
 
 const completedCallbackRecoveryDb = seedRepeatRewardPlayer('completed-callback-recovery', 50);
 const completedCallbackMatch = seedSelectableSoloKaijuMatch(completedCallbackRecoveryDb, 'completed-callback-recovery', 'completed-callback-match');
-completedCallbackRecoveryDb.failOnBatch(3);
+completedCallbackRecoveryDb.failBatchOnSql(/UPDATE telegram_pet_events\s+SET pet_xp_awarded = MIN/);
 await assert.rejects(
   finishPetKaijuMatch(completedCallbackRecoveryDb, completedCallbackMatch),
   /simulated_d1_batch_failure/,
