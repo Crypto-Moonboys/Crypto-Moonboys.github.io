@@ -454,6 +454,8 @@ try {
     sqlite.prepare('INSERT OR REPLACE INTO telegram_pet_style_loadouts(pet_id,telegram_id,cosmetic_key,enabled)VALUES(?,?,?,1)').run(stylePet.pet_id,currentUser,'rename_badge');
     const styleLab = page.locator('[data-panel="style-lab"]');
     try {
+      const careBeforeStyleRefresh = await page.locator('[data-panel="care"]').elementHandle();
+      assert.ok(careBeforeStyleRefresh, 'Style Lab refresh starts from the rendered Home save');
       const styleStateResponse = page.waitForResponse((response) =>
         response.url().endsWith('/telegram-pets/app/state') &&
         response.request().method() === 'POST',
@@ -461,9 +463,17 @@ try {
       await page.locator('[data-utility="sync"]').click();
       const refreshedState = await styleStateResponse;
       assert.equal(refreshedState.ok(), true, `Style Lab sync returned HTTP ${refreshedState.status()}`);
+      const refreshedStyleData = await refreshedState.json();
+      assert.equal(refreshedStyleData.state?.pet?.pet_id, stylePet.pet_id);
+      assert.equal(refreshedStyleData.state?.style_loadout?.available, true);
+      for (const key of ['profile_frame','victory_pose','run_trail']) {
+        assert.ok(refreshedStyleData.state.live_systems.cosmetics.some(item => item.key === key && item.unlocked), `refreshed save includes owned ${key}`);
+      }
+      // Startup notices can replace the refresh message after a successful sync.
+      // Require the authoritative response and replacement render instead.
       await page.waitForFunction(
-        () => document.querySelector('.terminal-output-text')?.textContent === 'LIVE SAVE REFRESHED.',
-        undefined,
+        node => !node.isConnected,
+        careBeforeStyleRefresh,
         { timeout: 10000 },
       );
       await page.locator('[data-screen="economy"]').click();
