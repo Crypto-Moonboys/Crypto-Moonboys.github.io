@@ -100,7 +100,9 @@ export async function awardPetGrowthMark(db, award) {
     mark_id: accepted ? markId : (existing?.mark_id || null),
     reason: accepted ? undefined : 'duplicate_growth_mark',
   };
-  await finalizePetSeasonCompletionIfEligible(db, petId, seasonKey, { telegram_id: pet.telegram_id, now: earnedAt });
+  // The Mark keeps its historical earning date. Completion records when the
+  // retained requirements are observed complete, not this replayed source date.
+  await finalizePetSeasonCompletionIfEligible(db, petId, seasonKey, { telegram_id: pet.telegram_id });
   return response;
 }
 
@@ -120,7 +122,7 @@ export async function awardPetWeeklyCrest(db, award) {
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, COALESCE(?, CURRENT_TIMESTAMP))`)
     .bind(crestId, petId, pet.telegram_id, seasonKey, week, week, objective.objective_id, evidenceKey, earnedAt).run());
   const response = { accepted: Number(result?.meta?.changes || 0) === 1, duplicate: Number(result?.meta?.changes || 0) === 0, crest_id: crestId };
-  await finalizePetSeasonCompletionIfEligible(db, petId, seasonKey, { telegram_id: pet.telegram_id, now: earnedAt });
+  await finalizePetSeasonCompletionIfEligible(db, petId, seasonKey, { telegram_id: pet.telegram_id });
   return response;
 }
 

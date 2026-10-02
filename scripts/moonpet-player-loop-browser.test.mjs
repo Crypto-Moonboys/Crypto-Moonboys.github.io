@@ -881,8 +881,10 @@ try {
     await page.waitForSelector('[data-action="contract_step"]');
     const contractId = await page.locator('[data-action="contract_step"]').first().getAttribute('data-payload').then(JSON.parse).then((x) => x.contract_id);
     const prepButton = page.locator('[data-action="contract_step"]').filter({ hasText: 'SCOUT AHEAD' });
-    await prepButton.scrollIntoViewIfNeeded();
-    if (process.env.MOONPET_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-preparation-${viewport.width}.png`) });
+    if (process.env.MOONPET_BROWSER_SCREENSHOT) {
+      await prepButton.scrollIntoViewIfNeeded();
+      await page.screenshot({ path: process.env.MOONPET_BROWSER_SCREENSHOT.replace('.png', `-preparation-${viewport.width}.png`) });
+    }
     const beforePrep = await hooks.buildPetMiniAppState(db, currentUser, token);
     const prepResponse = page.waitForResponse((r) => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.choice === 'prepare_scout');
     await prepButton.click();
@@ -1696,6 +1698,30 @@ try {
     await page.locator('[data-panel="weekly-boss"] [data-focus="contracts"]').click();
     assert.equal(gameplayCount(), beforeBossContinue);
     assert.equal(await page.locator('[data-panel="contracts"]').count(), 1);
+    // A second permanent pet can earn its own real attempt after the shared
+    // victory, without receiving another victory payment.
+    sqlite.prepare('INSERT INTO arcade_progression_state(telegram_id,arcade_xp_total) VALUES (?,5000)').run(currentUser);
+    sqlite.prepare('INSERT INTO arcade_xp_wallets(telegram_id,arcade_xp_earned,arcade_xp_spendable) VALUES (?,5000,5000)').run(currentUser);
+    assert.equal((await hooks.buyPetSeasonSlot(db, currentUser, 2)).accepted, true);
+    const participationPet = (await hooks.buildPetSeasonSlotSummary(db, currentUser)).slots.find(slot => slot.slot_number === 2).pet_id;
+    sqlite.prepare("UPDATE telegram_pet_instances SET pet_xp=3240,energy=80,stage='young' WHERE pet_id=?").run(participationPet);
+    sqlite.prepare("UPDATE telegram_pet_lifecycle_by_pet SET phase='young',species_id='vinyl_crab' WHERE pet_id=?").run(participationPet);
+    assert.equal((await hooks.switchActivePetSeasonSlot(db, currentUser, participationPet)).accepted, true);
+    const participationWallet = sqlite.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(currentUser);
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-screen="explore"]').click();
+    await page.locator('[data-panel="weekly-boss"]').evaluate(node => { node.open = true; });
+    const challenge = page.locator('[data-action="weekly_boss"]:not([disabled])').first();
+    assert.match(await challenge.textContent(), /CHALLENGE/);
+    const participationResponse = page.waitForResponse(r => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'weekly_boss');
+    await challenge.click();
+    const participated = await (await participationResponse).json();
+    assert.equal(participated.result.accepted, true);
+    assert.equal(participated.result.participation_only, true);
+    assert.equal(participated.state.pet.energy, 68);
+    assert.equal(participated.state.guidance.weekly_boss.participation_completed, true);
+    assert.deepEqual(sqlite.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(currentUser), participationWallet);
+    await page.waitForFunction(() => !document.querySelector('[data-action="weekly_boss"]:not([disabled])'));
     currentUser = 'browser-cache-' + viewport.width;
     await seed(currentUser, 'young');
     await page.reload(); await page.waitForSelector('[data-panel="care"]');
@@ -1785,6 +1811,32 @@ try {
     assert.equal(await page.locator('[data-panel="equipment"] [data-action="equip"]:not([disabled])').count(),1);
     await page.locator('[data-screen="missions"]').click();
     assert.match(await page.locator('[data-panel="missions"]').textContent(),/Market purchases, crafting and free equipment switches do not count/);
+
+    sqlite.prepare('UPDATE telegram_pet_profiles SET moon_gold=1000,pet_xp=100000 WHERE telegram_id=?').run(currentUser);
+    sqlite.prepare('UPDATE telegram_pet_instances SET pet_xp=100000 WHERE telegram_id=?').run(currentUser);
+    for (const key of ['scrap_metal', 'crystal_shard']) sqlite.prepare('INSERT INTO telegram_pet_material_balances(telegram_id,material_key,quantity) VALUES (?,?,20)').run(currentUser,key);
+    await page.reload(); await page.waitForSelector('[data-panel="care"]');
+    await page.locator('[data-screen="economy"]').click();
+    await page.locator('[data-panel="equipment"]').evaluate(node => { node.open = true; });
+    const upgrade = page.locator('[data-action="gear_upgrade"]').filter({ hasText: 'UPGRADE TO LEVEL 2' }).first();
+    const displayedUpgrade = JSON.parse(await upgrade.getAttribute('data-payload'));
+    assert.equal(displayedUpgrade.target_level, 2);
+    assert.equal(typeof displayedUpgrade.quote_version, 'string');
+    const otherUpgrade = await dispatchRenderedPetAction(db,currentUser,{id:currentUser},{action:'gear_upgrade',...displayedUpgrade,request_id:'other-session-gear'},token);
+    assert.equal(otherUpgrade.accepted,true,otherUpgrade.reason);
+    const upgradeResponse = page.waitForResponse(r => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'gear_upgrade');
+    await upgrade.click();
+    const staleUpgradeHttp = await upgradeResponse;
+    assert.equal(staleUpgradeHttp.request().postDataJSON().quote_version, displayedUpgrade.quote_version);
+    assert.equal((await staleUpgradeHttp.json()).result.reason, 'upgrade_quote_stale');
+    assert.equal(sqlite.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(currentUser).moon_gold,920);
+    const revisedUpgrade = page.locator('[data-action="gear_upgrade"]').filter({hasText:'UPGRADE TO LEVEL 3'});
+    await revisedUpgrade.waitFor();
+    assert.equal(JSON.parse(await revisedUpgrade.getAttribute('data-payload')).target_level,3);
+    const revisedResponse = page.waitForResponse(r => r.url().endsWith('/telegram-pets/app/action') && r.request().postDataJSON()?.action === 'gear_upgrade');
+    await revisedUpgrade.click();
+    assert.equal((await (await revisedResponse).json()).result.accepted,true);
+    assert.equal(sqlite.prepare('SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(currentUser).moon_gold,780);
 
     currentUser = 'browser-crafting-' + viewport.width;
     await seed(currentUser, 'young');

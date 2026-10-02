@@ -172,17 +172,20 @@ assert.equal(seasonBlocked.ready, false, 'evidence from another season cannot ma
 assert.equal(seasonBlocked.authority_reason, 'requirements_not_met');
 assert.match(seasonBlocked.missing[0].source, /active pet season/i, 'blocked guidance always explains the season-authority gate');
 db.prepare(`UPDATE telegram_pet_growth_marks SET season_key='s1'`).run();
-const oneTime = await hooks.persistPetGuidanceNotices(d1, 'player-1', [{
+const noticeSource = { pet_id: 'pet-1', season_key: 's1' };
+const earnedNotices = [{
   key: 'evolution-ready:street_moonpet', type: 'evolution_ready', title: 'Street Moonpet evolution is ready', detail: 'Evolve now.', callback_data: 'pet:evolve',
-}]);
+}];
+const oneTime = await hooks.persistPetGuidanceNotices(d1, 'player-1', earnedNotices, noticeSource);
 assert.equal(oneTime.length, 1);
-assert.equal((await hooks.persistPetGuidanceNotices(d1, 'player-1', [{
-  key: 'evolution-ready:street_moonpet', type: 'evolution_ready', title: 'Street Moonpet evolution is ready', detail: 'Evolve now.', callback_data: 'pet:evolve',
-}])).length, 1, 'an undelivered progression notice must remain pending');
+assert.equal(oneTime[0].pet_id, 'pet-1');
+assert.equal(oneTime[0].season_key, 's1');
+assert.equal((await hooks.persistPetGuidanceNotices(d1, 'player-1', earnedNotices, noticeSource)).length, 1, 'an undelivered progression notice must remain pending');
 await hooks.markPetGuidanceAfterDelivery(d1, 'player-1', oneTime, { ok: false });
-assert.equal((await hooks.persistPetGuidanceNotices(d1, 'player-1', [])).length, 1, 'a failed Telegram delivery must not consume the notice');
+assert.equal((await hooks.persistPetGuidanceNotices(d1, 'player-1', earnedNotices, noticeSource)).length, 1, 'a failed Telegram delivery must not consume the notice');
 await hooks.markPetGuidanceAfterDelivery(d1, 'player-1', oneTime, { ok: true });
-assert.equal((await hooks.persistPetGuidanceNotices(d1, 'player-1', [])).length, 0, 'a successfully delivered progression notice must never repeat');
+assert.equal((await hooks.persistPetGuidanceNotices(d1, 'player-1', earnedNotices, noticeSource)).length, 0, 'a successfully delivered progression notice must never repeat');
+
 db.close();
 
 const workerSource = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');

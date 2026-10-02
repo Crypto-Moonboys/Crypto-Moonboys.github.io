@@ -1595,6 +1595,42 @@
         }
       },
       {
+        "target_url": "/wiki/crypto-moonboy-pets.html",
+        "score": 52,
+        "base_score": 43,
+        "reasons": [
+          "same_category:tokens",
+          "link_overlap:1",
+          "rank_score_boost:4",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 54,
+        "score_breakdown": {
+          "base_score": 43,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 54
+        }
+      },
+      {
         "target_url": "/wiki/bitcoin.html",
         "score": 51,
         "base_score": 43,
@@ -1623,42 +1659,6 @@
           "authority_score_boost": 1,
           "graph_centrality_boost": 2,
           "content_depth_boost": 2,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 53
-        }
-      },
-      {
-        "target_url": "/wiki/crypto-moonboy-pets.html",
-        "score": 51,
-        "base_score": 43,
-        "reasons": [
-          "same_category:tokens",
-          "link_overlap:1",
-          "rank_score_boost:4",
-          "content_depth_boost:4"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 4,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 53,
-        "score_breakdown": {
-          "base_score": 43,
-          "rank_score_boost": 4,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 4,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -2334,6 +2334,42 @@
         }
       },
       {
+        "target_url": "/wiki/crypto-moonboy-pets.html",
+        "score": 52,
+        "base_score": 43,
+        "reasons": [
+          "same_category:tokens",
+          "link_overlap:1",
+          "rank_score_boost:4",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 54,
+        "score_breakdown": {
+          "base_score": 43,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 54
+        }
+      },
+      {
         "target_url": "/wiki/bitcoin.html",
         "score": 51,
         "base_score": 43,
@@ -2362,42 +2398,6 @@
           "authority_score_boost": 1,
           "graph_centrality_boost": 2,
           "content_depth_boost": 2,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 53
-        }
-      },
-      {
-        "target_url": "/wiki/crypto-moonboy-pets.html",
-        "score": 51,
-        "base_score": 43,
-        "reasons": [
-          "same_category:tokens",
-          "link_overlap:1",
-          "rank_score_boost:4",
-          "content_depth_boost:4"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 4,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 53,
-        "score_breakdown": {
-          "base_score": 43,
-          "rank_score_boost": 4,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 4,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -6089,38 +6089,38 @@
       },
       {
         "target_url": "/wiki/crypto-moonboy-pets.html",
-        "score": 51,
+        "score": 52,
         "base_score": 43,
         "reasons": [
           "same_category:tokens",
           "link_overlap:1",
           "rank_score_boost:4",
-          "content_depth_boost:4"
+          "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
         "authority_score_boost": 0,
         "graph_centrality_boost": 0,
-        "content_depth_boost": 4,
+        "content_depth_boost": 5,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
         "freshness_boost": 2,
         "decay_penalty": 0,
         "recency_balance": 2,
-        "final_score": 53,
+        "final_score": 54,
         "score_breakdown": {
           "base_score": 43,
           "rank_score_boost": 4,
           "authority_score_boost": 0,
           "graph_centrality_boost": 0,
-          "content_depth_boost": 4,
+          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
           "freshness_boost": 2,
           "decay_penalty": 0,
           "recency_balance": 2,
-          "final_score": 53
+          "final_score": 54
         }
       },
       {
@@ -11235,6 +11235,42 @@
         }
       },
       {
+        "target_url": "/wiki/crypto-moonboy-pets.html",
+        "score": 52,
+        "base_score": 43,
+        "reasons": [
+          "same_category:tokens",
+          "link_overlap:1",
+          "rank_score_boost:4",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 54,
+        "score_breakdown": {
+          "base_score": 43,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 54
+        }
+      },
+      {
         "target_url": "/wiki/bitcoin.html",
         "score": 51,
         "base_score": 43,
@@ -11263,42 +11299,6 @@
           "authority_score_boost": 1,
           "graph_centrality_boost": 2,
           "content_depth_boost": 2,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 53
-        }
-      },
-      {
-        "target_url": "/wiki/crypto-moonboy-pets.html",
-        "score": 51,
-        "base_score": 43,
-        "reasons": [
-          "same_category:tokens",
-          "link_overlap:1",
-          "rank_score_boost:4",
-          "content_depth_boost:4"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 4,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 53,
-        "score_breakdown": {
-          "base_score": 43,
-          "rank_score_boost": 4,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 4,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
@@ -13396,37 +13396,37 @@
       },
       {
         "target_url": "/wiki/crypto-moonboy-pets.html",
-        "score": 48,
+        "score": 49,
         "base_score": 40,
         "reasons": [
           "same_category:tokens",
           "rank_score_boost:4",
-          "content_depth_boost:4"
+          "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
         "authority_score_boost": 0,
         "graph_centrality_boost": 0,
-        "content_depth_boost": 4,
+        "content_depth_boost": 5,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
         "freshness_boost": 2,
         "decay_penalty": 0,
         "recency_balance": 2,
-        "final_score": 50,
+        "final_score": 51,
         "score_breakdown": {
           "base_score": 40,
           "rank_score_boost": 4,
           "authority_score_boost": 0,
           "graph_centrality_boost": 0,
-          "content_depth_boost": 4,
+          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
           "freshness_boost": 2,
           "decay_penalty": 0,
           "recency_balance": 2,
-          "final_score": 50
+          "final_score": 51
         }
       },
       {
@@ -16427,38 +16427,38 @@
       },
       {
         "target_url": "/wiki/crypto-moonboy-pets.html",
-        "score": 54,
+        "score": 55,
         "base_score": 46,
         "reasons": [
           "same_category:tokens",
           "link_overlap:2",
           "rank_score_boost:4",
-          "content_depth_boost:4"
+          "content_depth_boost:5"
         ],
         "rank_score_boost": 4,
         "authority_score_boost": 0,
         "graph_centrality_boost": 0,
-        "content_depth_boost": 4,
+        "content_depth_boost": 5,
         "reinforcement_boost": 0,
         "cluster_support_boost": 0,
         "co_citation_boost": 0,
         "freshness_boost": 2,
         "decay_penalty": 0,
         "recency_balance": 2,
-        "final_score": 56,
+        "final_score": 57,
         "score_breakdown": {
           "base_score": 46,
           "rank_score_boost": 4,
           "authority_score_boost": 0,
           "graph_centrality_boost": 0,
-          "content_depth_boost": 4,
+          "content_depth_boost": 5,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,
           "freshness_boost": 2,
           "decay_penalty": 0,
           "recency_balance": 2,
-          "final_score": 56
+          "final_score": 57
         }
       },
       {
@@ -208605,6 +208605,42 @@
   "/wiki/swap-nefty.html": {
     "related_pages": [
       {
+        "target_url": "/wiki/crypto-moonboy-pets.html",
+        "score": 52,
+        "base_score": 43,
+        "reasons": [
+          "same_category:tokens",
+          "link_overlap:1",
+          "rank_score_boost:4",
+          "content_depth_boost:5"
+        ],
+        "rank_score_boost": 4,
+        "authority_score_boost": 0,
+        "graph_centrality_boost": 0,
+        "content_depth_boost": 5,
+        "reinforcement_boost": 0,
+        "cluster_support_boost": 0,
+        "co_citation_boost": 0,
+        "freshness_boost": 2,
+        "decay_penalty": 0,
+        "recency_balance": 2,
+        "final_score": 54,
+        "score_breakdown": {
+          "base_score": 43,
+          "rank_score_boost": 4,
+          "authority_score_boost": 0,
+          "graph_centrality_boost": 0,
+          "content_depth_boost": 5,
+          "reinforcement_boost": 0,
+          "cluster_support_boost": 0,
+          "co_citation_boost": 0,
+          "freshness_boost": 2,
+          "decay_penalty": 0,
+          "recency_balance": 2,
+          "final_score": 54
+        }
+      },
+      {
         "target_url": "/wiki/bitcoin.html",
         "score": 51,
         "base_score": 43,
@@ -208633,42 +208669,6 @@
           "authority_score_boost": 1,
           "graph_centrality_boost": 2,
           "content_depth_boost": 2,
-          "reinforcement_boost": 0,
-          "cluster_support_boost": 0,
-          "co_citation_boost": 0,
-          "freshness_boost": 2,
-          "decay_penalty": 0,
-          "recency_balance": 2,
-          "final_score": 53
-        }
-      },
-      {
-        "target_url": "/wiki/crypto-moonboy-pets.html",
-        "score": 51,
-        "base_score": 43,
-        "reasons": [
-          "same_category:tokens",
-          "link_overlap:1",
-          "rank_score_boost:4",
-          "content_depth_boost:4"
-        ],
-        "rank_score_boost": 4,
-        "authority_score_boost": 0,
-        "graph_centrality_boost": 0,
-        "content_depth_boost": 4,
-        "reinforcement_boost": 0,
-        "cluster_support_boost": 0,
-        "co_citation_boost": 0,
-        "freshness_boost": 2,
-        "decay_penalty": 0,
-        "recency_balance": 2,
-        "final_score": 53,
-        "score_breakdown": {
-          "base_score": 43,
-          "rank_score_boost": 4,
-          "authority_score_boost": 0,
-          "graph_centrality_boost": 0,
-          "content_depth_boost": 4,
           "reinforcement_boost": 0,
           "cluster_support_boost": 0,
           "co_citation_boost": 0,

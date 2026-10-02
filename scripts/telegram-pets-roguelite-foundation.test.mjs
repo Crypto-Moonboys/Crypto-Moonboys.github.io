@@ -494,10 +494,14 @@ identitySwitchDb.database.prepare(`INSERT INTO telegram_pet_run_rooms
   VALUES (?, ?, ?, ?, 2, 'boss', 'resolved')`).run(identityBossRoom.room_id, identityPetA, identityRun.run_id, 'run-identity-switch');
 await rewardPetRogueliteBoss(identitySwitchDb, identityRun, 'alley_king', identityBossRoom);
 await completePetRun(identitySwitchDb, { ...identityRun, current_room: 3, score: 100 }, { moon_gold: 33 }, { rooms_completed: 3, boss_fought: 'alley_king' });
+identitySwitchDb.database.prepare(`UPDATE telegram_pet_active_slots SET pet_id=? WHERE telegram_id=?`)
+  .run(identityPetA, 'run-identity-switch');
 await startPetRogueliteRun(identitySwitchDb, {
   telegram_id: 'run-identity-switch', run_id: 'identity-extract-run', pet_id: identityPetA, season_key: 'pet-s2026-001', seed: 456, max_room: 3,
 });
 const extractRun = identitySwitchDb.database.prepare(`SELECT * FROM telegram_pet_runs WHERE run_id='identity-extract-run'`).get();
+identitySwitchDb.database.prepare(`UPDATE telegram_pet_active_slots SET pet_id=? WHERE telegram_id=?`)
+  .run(identityPetB, 'run-identity-switch');
 await extractPetRogueliteRun(identitySwitchDb, { ...extractRun, current_room: 2, score: 80 }, { moon_gold: 22 }, { rooms_completed: 2 });
 assert.deepEqual(
   { ...identitySwitchDb.database.prepare(`SELECT pet_id, season_key FROM telegram_pet_events

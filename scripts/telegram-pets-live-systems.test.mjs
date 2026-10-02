@@ -6,7 +6,7 @@ import { PET_DISTRICT_APPROACHES, PET_DISTRICT_ENCOUNTERS, PET_EVENT_CHAINS, PET
 import { PET_COSMETIC_SINKS, PET_EQUIPMENT_UPGRADE_COSTS } from '../workers/moonboys-api/pets/economy-phase-3.js';
 import {
   applyPetFactionBonus, buildPetLiveSystemsState, getActiveSeasonalBoss, processPetCosmeticUnlock, processPetDistrictMission,
-  processPetCraftRecipe, processPetEquipmentUpgrade, processPetEventChain, processPetSeasonalBoss, claimPetSeasonalBossReward,
+  processPetCraftRecipe, getPetEquipmentUpgradeQuote, processPetEquipmentUpgrade, processPetEventChain, processPetSeasonalBoss, claimPetSeasonalBossReward,
 } from '../workers/moonboys-api/pets/live-systems.js';
 import { seasonalRaidChoices, resolveSeasonalRaidAttack } from '../workers/moonboys-api/pets/seasonal-raid-tactics.js';
 import {
@@ -95,7 +95,7 @@ for (const action of ['district_mission', 'event_chain', 'seasonal_boss', 'gear_
   assert.ok(client.includes(`'${action}'`), `${action} needs a Mini App control`);
 }
 for (const source of ['pet_district', 'pet_event_chain', 'pet_seasonal_boss']) assert.ok(PET_REWARD_SOURCES.includes(source), `${source} must be authorized`);
-assert.match(workerSource, /processPetEquipmentUpgrade\(db, telegramId, body\.item_key, eventKey\)/, 'gear upgrades must retain request idempotency');
+assert.match(workerSource, /processPetEquipmentUpgrade\(db, telegramId, body\.item_key, eventKey, body\)/, 'gear upgrades must retain request idempotency');
 assert.match(workerSource, /if \(!petRaw\) return \{ accepted: false, reason: 'pet_not_adopted' \}; const faction = await db\.prepare\('SELECT faction FROM blocktopia_progression/, 'event chains must reject users without a pet before inserting a system event');
 assert.match(workerSource, /destination: 'economy'/, 'recommendations must provide explicit destinations');
 assert.match(clientSource, /button\('UNLOCK ' \+ words\(item\.key\), 'cosmetic_unlock', \{ cosmetic_key: item\.key \}, \{ disabled: !item\.affordable/, 'Style Lab must disable unaffordable purchases');
@@ -514,16 +514,16 @@ assert.equal(pendingChainReward.refresh_state, true);
 assert.equal((await processPetEventChain(d1, 'chain-recovery', 'signal_hijack', recoverableReward, 'graffpunks', null, livePet('chain-recovery'))).accepted, true, 'a settling chain must recover after reward interruption');
 
 const goldBeforeUpgrade = runtimeDb.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='live-1'").get().moon_gold;
-assert.equal((await processPetEquipmentUpgrade(d1, 'live-1', 'hoverboard', 'request-upgrade-1')).accepted, true);
+assert.equal((await processPetEquipmentUpgrade(d1, 'live-1', 'hoverboard', 'request-upgrade-1', getPetEquipmentUpgradeQuote('hoverboard', 2))).accepted, true);
 assert.equal(runtimeDb.prepare("SELECT item_level FROM telegram_pet_equipment_progression WHERE telegram_id='live-1' AND item_key='hoverboard'").get().item_level, 2);
-assert.equal((await processPetEquipmentUpgrade(d1, 'live-1', 'hoverboard', 'request-upgrade-1')).duplicate, true);
+assert.equal((await processPetEquipmentUpgrade(d1, 'live-1', 'hoverboard', 'request-upgrade-1', getPetEquipmentUpgradeQuote('hoverboard', 2))).duplicate, true);
 assert.equal(runtimeDb.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='live-1'").get().moon_gold, goldBeforeUpgrade - 80);
 
 seedPlayer('live-upgrade-first-recovery');
 seedMaterials('live-upgrade-first-recovery');
 runtimeDb.prepare("INSERT INTO telegram_pet_equipment_progression (telegram_id, item_key, slot) VALUES ('live-upgrade-first-recovery', 'hoverboard', 'toy')").run();
 seedUnprovableHistoricalWalletClaim('live-upgrade-first-recovery');
-const firstRecoveryUpgrade = await processPetEquipmentUpgrade(d1, 'live-upgrade-first-recovery', 'hoverboard', 'request-upgrade-first-recovery');
+const firstRecoveryUpgrade = await processPetEquipmentUpgrade(d1, 'live-upgrade-first-recovery', 'hoverboard', 'request-upgrade-first-recovery', getPetEquipmentUpgradeQuote('hoverboard', 2));
 assert.equal(firstRecoveryUpgrade.accepted, false, 'first wallet action after deployment must reconcile before spend');
 assert.equal(firstRecoveryUpgrade.reason, 'wallet_reconciliation_recovery_pending');
 assert.equal(runtimeDb.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='live-upgrade-first-recovery' AND source=? AND idempotency_key=? AND status='pending'").get(PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_SOURCE, PET_ACCOUNT_WALLET_RECOVERY_REQUIRED_EVENT_KEY).count, 1,
@@ -539,7 +539,7 @@ seedPlayer('live-upgrade-recovery-freeze');
 seedMaterials('live-upgrade-recovery-freeze');
 runtimeDb.prepare("INSERT INTO telegram_pet_equipment_progression (telegram_id, item_key, slot) VALUES ('live-upgrade-recovery-freeze', 'hoverboard', 'toy')").run();
 insertWalletRecoveryRequired('live-upgrade-recovery-freeze');
-const frozenLiveUpgrade = await processPetEquipmentUpgrade(d1, 'live-upgrade-recovery-freeze', 'hoverboard', 'request-upgrade-recovery-freeze');
+const frozenLiveUpgrade = await processPetEquipmentUpgrade(d1, 'live-upgrade-recovery-freeze', 'hoverboard', 'request-upgrade-recovery-freeze', getPetEquipmentUpgradeQuote('hoverboard', 2));
 assert.equal(frozenLiveUpgrade.accepted, false, 'pending historical recovery must freeze live equipment wallet spends');
 assert.equal(frozenLiveUpgrade.reason, 'wallet_reconciliation_recovery_pending');
 assert.equal(runtimeDb.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='live-upgrade-recovery-freeze'").get().moon_gold, 10000,
@@ -549,7 +549,7 @@ assert.equal(runtimeDb.prepare("SELECT item_level FROM telegram_pet_equipment_pr
 assert.equal(runtimeDb.prepare("SELECT COUNT(*) AS count FROM telegram_pet_system_events WHERE telegram_id='live-upgrade-recovery-freeze' AND action_key='hoverboard'").get().count, 0,
   'frozen live equipment spend must not reserve a system event');
 insertWalletReconciled('live-upgrade-recovery-freeze');
-const thawedLiveUpgrade = await processPetEquipmentUpgrade(d1, 'live-upgrade-recovery-freeze', 'hoverboard', 'request-upgrade-recovery-freeze');
+const thawedLiveUpgrade = await processPetEquipmentUpgrade(d1, 'live-upgrade-recovery-freeze', 'hoverboard', 'request-upgrade-recovery-freeze', getPetEquipmentUpgradeQuote('hoverboard', 2));
 assert.equal(thawedLiveUpgrade.accepted, true, 'backfilled reconciliation proof must thaw live equipment wallet spends');
 assert.equal(runtimeDb.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='live-upgrade-recovery-freeze'").get().moon_gold, 9920,
   'thawed live equipment spend must debit once after recovery');
@@ -571,7 +571,7 @@ assert.equal(runtimeDb.prepare("SELECT quantity FROM telegram_pet_inventory WHER
 seedPlayer('live-upgrade-level-race'); seedMaterials('live-upgrade-level-race');
 runtimeDb.prepare("INSERT INTO telegram_pet_equipment_progression (telegram_id,item_key,slot) VALUES ('live-upgrade-level-race','hoverboard','toy')").run();
 d1.afterReservation = () => { d1.afterReservation = null; runtimeDb.prepare("UPDATE telegram_pet_profiles SET pet_xp=0 WHERE telegram_id='live-upgrade-level-race'").run(); };
-assert.equal((await processPetEquipmentUpgrade(d1, 'live-upgrade-level-race', 'hoverboard', 'upgrade-level-race')).accepted, false);
+assert.equal((await processPetEquipmentUpgrade(d1, 'live-upgrade-level-race', 'hoverboard', 'upgrade-level-race', getPetEquipmentUpgradeQuote('hoverboard', 2))).accepted, false);
 assert.equal(runtimeDb.prepare("SELECT moon_gold FROM telegram_pet_profiles WHERE telegram_id='live-upgrade-level-race'").get().moon_gold, 10000);
 assert.equal(runtimeDb.prepare("SELECT item_level FROM telegram_pet_equipment_progression WHERE telegram_id='live-upgrade-level-race'").get().item_level, 1);
 
@@ -587,7 +587,7 @@ for (const kind of ['equipment', 'cosmetic']) {
     insertWalletRecoveryRequired(owner);
   };
   const result = kind === 'equipment'
-    ? await processPetEquipmentUpgrade(d1, owner, 'hoverboard', 'late-freeze')
+    ? await processPetEquipmentUpgrade(d1, owner, 'hoverboard', 'late-freeze', getPetEquipmentUpgradeQuote('hoverboard', 2))
     : await processPetCosmeticUnlock(d1, owner, 'profile_frame', 'late-freeze');
   assert.equal(result.accepted, false, kind + ' must not spend after wallet recovery becomes pending');
   assert.deepEqual({ ...runtimeDb.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(owner) },
@@ -596,7 +596,7 @@ for (const kind of ['equipment', 'cosmetic']) {
   assert.equal(runtimeDb.prepare('SELECT COUNT(*) n FROM telegram_pet_cosmetic_unlocks WHERE telegram_id=?').get(owner).n, 0);
   insertWalletReconciled(owner);
   const retry = () => kind === 'equipment'
-    ? processPetEquipmentUpgrade(d1, owner, 'hoverboard', 'late-freeze')
+    ? processPetEquipmentUpgrade(d1, owner, 'hoverboard', 'late-freeze', getPetEquipmentUpgradeQuote('hoverboard', 2))
     : processPetCosmeticUnlock(d1, owner, 'profile_frame', 'late-freeze');
   assert.equal((await retry()).accepted, true);
   assert.equal((await retry()).duplicate, true);
@@ -624,7 +624,7 @@ assert.equal(runtimeDb.prepare("SELECT quantity FROM telegram_pet_material_balan
 
 runtimeDb.prepare("INSERT INTO telegram_pet_equipment_progression (telegram_id, item_key, slot) VALUES ('live-1', 'race_item', 'toy')").run();
 d1.afterReservation = () => { d1.afterReservation = null; runtimeDb.prepare("UPDATE telegram_pet_material_balances SET quantity=0 WHERE telegram_id='live-1' AND material_key='scrap_metal'").run(); };
-const racedUpgrade = await processPetEquipmentUpgrade(d1, 'live-1', 'race_item', 'request-upgrade-race');
+const racedUpgrade = await processPetEquipmentUpgrade(d1, 'live-1', 'race_item', 'request-upgrade-race', getPetEquipmentUpgradeQuote('race_item', 2));
 assert.equal(racedUpgrade.accepted, false);
 assert.equal(runtimeDb.prepare("SELECT item_level FROM telegram_pet_equipment_progression WHERE telegram_id='live-1' AND item_key='race_item'").get().item_level, 1, 'stale affordability must not grant an upgrade');
 

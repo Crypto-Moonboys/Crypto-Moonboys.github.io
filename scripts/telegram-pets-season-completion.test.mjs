@@ -44,6 +44,7 @@ CREATE TABLE telegram_pet_boss_victories (pet_id TEXT, telegram_id TEXT, season_
 CREATE TABLE telegram_pet_material_balances (telegram_id TEXT, material_key TEXT, quantity INTEGER, PRIMARY KEY(telegram_id,material_key));
 CREATE TABLE telegram_pet_inventory (telegram_id TEXT, asset_type TEXT, asset_key TEXT, quantity INTEGER, PRIMARY KEY(telegram_id,asset_type,asset_key));
 CREATE TABLE telegram_pet_relics (telegram_id TEXT, relic_id TEXT);
+CREATE TABLE telegram_pet_events (telegram_id TEXT,pet_id TEXT,season_key TEXT,event_key TEXT,event_type TEXT,status TEXT,reason TEXT,week_key TEXT,day_key TEXT,metadata TEXT);
 INSERT INTO telegram_pet_profiles VALUES ('owner'), ('attacker'), ('production-owner');
 INSERT INTO telegram_pet_season_slots (pet_id,telegram_id,season_key,slot_number,status,acquisition_type) VALUES ('pet-a','owner','s1',1,'active','free'), ('pet-b','owner','s1',2,'active','arcade_xp'), ('forged','attacker','s1',1,'active','free'), ('production-pet','production-owner','pet-s2026-001',1,'active','free'), ('production-pet-b','production-owner','pet-s2026-001',2,'active','arcade_xp');
 INSERT INTO telegram_pet_instances VALUES ('pet-a','owner','s1',1,50,4900,'active'), ('pet-b','owner','s1',2,1,0,'active'), ('forged','attacker','s1',1,50,4900,'active'), ('production-pet','production-owner','pet-s2026-001',1,5,400,'active'), ('production-pet-b','production-owner','pet-s2026-001',2,5,400,'active');`);

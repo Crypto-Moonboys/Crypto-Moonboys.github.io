@@ -1,3 +1,4 @@
+import { getPetEquipmentUpgradeQuote } from '../workers/moonboys-api/pets/live-systems.js';
 import { dispatchRenderedPetAction } from './moonpet-mini-app-action-fixture.mjs';
 import assert from 'node:assert/strict';
 import test from 'node:test';
@@ -276,10 +277,10 @@ test('bulk guidance notices fit D1 parameters and keep shown notices one-time', 
   const f=fixture('notice-budget');
   const notices=Array.from({length:100},(_,i)=>({key:'bulk-'+i,type:'feature',title:'Notice '+i,detail:'Saved notice',callback_data:'pet:coach'}));
   f.db.beforeRun=statement=>assert.ok(statement.args.length<=100,'D1 parameter limit');
-  await hooks.persistPetGuidanceNotices(f.db,f.owner,notices);
+  await hooks.persistPetGuidanceNotices(f.db,f.owner,notices,authority(f));
   assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_guidance_notices').get().n,100);
   f.sql.prepare("UPDATE telegram_pet_guidance_notices SET shown_at='2026-09-01' WHERE telegram_id=?").run(f.owner);
-  assert.deepEqual(await hooks.persistPetGuidanceNotices(f.db,f.owner,notices),[]);
+  assert.deepEqual(await hooks.persistPetGuidanceNotices(f.db,f.owner,notices,authority(f)),[]);
   assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_guidance_notices').get().n,100);
 });
 
@@ -703,6 +704,10 @@ test('a saved raid victory repairs specialist progression on refresh for its ori
     (pet_id,telegram_id,pet_season_key,season_key,boss_key,damage,defeated_at,reward_claimed_at)
     VALUES (?,?,?,'season1:w2959','neon_titan',900,'2026-09-26 12:00:00',CURRENT_TIMESTAMP)`)
     .run(authority(f).pet_id,f.owner,currentSeason);
+  f.sql.prepare(`INSERT INTO telegram_pet_events
+    (id,pet_id,telegram_id,season_key,event_type,event_key,day_key,status,metadata)
+    VALUES ('saved-raid-payout',?,?,?,'seasonal_boss',?,'2026-09-26','accepted','{"context":{"equipment_snapshot":{}}}')`)
+    .run(authority(f).pet_id,f.owner,currentSeason,`seasonal:season1:w2959:${f.owner}:${authority(f).pet_id}`);
   f.pet('raid-second',currentSeason,300,2); f.active('raid-second');
   await f.state();
   assert.equal(progress(f)?.adventure_xp,30);
@@ -1292,7 +1297,7 @@ test('Mini App equipment upgrade spends once, completes its mission and appears 
   for(const material of ['moon_dust','scrap_metal','crystal_shard','mastery_token','battery_cell']) {
     f.sql.prepare('INSERT INTO telegram_pet_material_balances (telegram_id,material_key,quantity) VALUES (?,?,100)').run(f.owner,material);
   }
-  const body={action:'gear_upgrade',item_key:'moon_kibble',request_id:'upgrade-once'};
+  const body={action:'gear_upgrade',item_key:'moon_kibble',request_id:'upgrade-once',...getPetEquipmentUpgradeQuote('moon_kibble',2)};
   const result=await f.act(body);
   assert.equal(result.accepted,true,JSON.stringify(result));
   const gold=f.sql.prepare('SELECT moon_gold FROM telegram_pet_profiles').get().moon_gold;

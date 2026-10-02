@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import worker, { __petMediaTestHooks as hooks } from '../workers/moonboys-api/worker.js';
 
-import { claimPetSeasonalBossReward, processPetCraftRecipe, processPetEquipmentUpgrade, processPetCosmeticUnlock } from '../workers/moonboys-api/pets/live-systems.js';
+import { claimPetSeasonalBossReward, processPetCraftRecipe, getPetEquipmentUpgradeQuote, processPetEquipmentUpgrade, processPetCosmeticUnlock } from '../workers/moonboys-api/pets/live-systems.js';
 import { PET_COSMETIC_SINKS } from '../workers/moonboys-api/pets/economy-phase-3.js';
 import { claimDailyCompletion, getSeasonFinales, processSeasonFinale, readDailyCompletion } from '../workers/moonboys-api/pets/completion-features.js';
 
@@ -382,7 +382,7 @@ test('Weekly Journey marks failed objective reads unavailable and recovers on re
 });
 for(const [name,act] of [
  ['craft',f=>processPetCraftRecipe(f.db,f.owner,'street_rations','outage')],
- ['upgrade',f=>processPetEquipmentUpgrade(f.db,f.owner,'moon_kibble','outage')],
+ ['upgrade',f=>processPetEquipmentUpgrade(f.db, f.owner, 'moon_kibble', 'outage', getPetEquipmentUpgradeQuote('moon_kibble', 5))],
  ['cosmetic',f=>processPetCosmeticUnlock(f.db,f.owner,Object.keys(PET_COSMETIC_SINKS)[0],'outage')],
 ]) test(`${name} cannot interpret an unavailable material read as insufficient funds or spend currency`,async()=>{
  const f=await savedFixture('action-'+name);
@@ -396,8 +396,8 @@ for(const [name,act] of [
 for(const [name,query,act,prepare] of [
  ['craft profile',/SELECT pet_xp, level FROM telegram_pet_profiles/,f=>processPetCraftRecipe(f.db,f.owner,'street_rations','first-outage'),f=>f.sql.prepare("INSERT INTO telegram_pet_material_balances (telegram_id,material_key,quantity) VALUES (?,'moon_fabric',30)").run(f.owner)],
  ['craft capacity',/SELECT quantity FROM telegram_pet_inventory WHERE telegram_id=\? AND asset_type='item'/,f=>processPetCraftRecipe(f.db,f.owner,'street_rations','capacity-outage'),f=>f.sql.prepare("INSERT INTO telegram_pet_material_balances (telegram_id,material_key,quantity) VALUES (?,'moon_fabric',30)").run(f.owner)],
- ['upgrade ownership',/SELECT item_key, item_level FROM telegram_pet_equipment_progression/,f=>processPetEquipmentUpgrade(f.db,f.owner,'moon_kibble','ownership-outage')],
- ['upgrade profile',/SELECT pet_xp, moon_gold FROM telegram_pet_profiles/,f=>processPetEquipmentUpgrade(f.db,f.owner,'moon_kibble','profile-outage')],
+ ['upgrade ownership',/SELECT item_key, item_level FROM telegram_pet_equipment_progression/,f=>processPetEquipmentUpgrade(f.db, f.owner, 'moon_kibble', 'ownership-outage', getPetEquipmentUpgradeQuote('moon_kibble', 5))],
+ ['upgrade profile',/SELECT pet_xp, moon_gold FROM telegram_pet_profiles/,f=>processPetEquipmentUpgrade(f.db, f.owner, 'moon_kibble', 'profile-outage', getPetEquipmentUpgradeQuote('moon_kibble', 5))],
  ['cosmetic ownership',/SELECT quantity FROM telegram_pet_cosmetic_unlocks/,f=>processPetCosmeticUnlock(f.db,f.owner,Object.keys(PET_COSMETIC_SINKS)[0],'owned-outage')],
  ['cosmetic wallet',/SELECT moon_gold, moon_crystals, style_tokens FROM telegram_pet_profiles/,f=>processPetCosmeticUnlock(f.db,f.owner,Object.keys(PET_COSMETIC_SINKS)[0],'wallet-outage')],
 ]) test(`${name} cannot convert a resolved failed first read into a normal purchase result`,async()=>{
@@ -425,7 +425,7 @@ for(const [name,query,act] of [
 });
 for(const [name,act] of [
  ['craft',f=>processPetCraftRecipe(f.db,f.owner,'street_rations','replay-outage')],
- ['upgrade',f=>processPetEquipmentUpgrade(f.db,f.owner,'moon_kibble','replay-outage')],
+ ['upgrade',f=>processPetEquipmentUpgrade(f.db, f.owner, 'moon_kibble', 'replay-outage', getPetEquipmentUpgradeQuote('moon_kibble', 5))],
  ['cosmetic',f=>processPetCosmeticUnlock(f.db,f.owner,Object.keys(PET_COSMETIC_SINKS)[0],'replay-outage')],
 ]) test(`${name} cannot treat an unavailable replay receipt as a new purchase`,async()=>{
  const f=await savedFixture('replay-'+name);

@@ -105,6 +105,10 @@ export async function withPetEquipmentProgression(db, pet, includeOwned = false)
   const rows = await db.prepare(`SELECT item_key, slot, item_level, item_xp, mastery_xp, mastery_tier
     FROM telegram_pet_equipment_progression WHERE telegram_id = ?`).bind(pet.telegram_id).all();
   if (rows?.success === false || !Array.isArray(rows?.results)) throw new Error('equipment_ownership_unavailable');
+  if (rows.results.some(row => !row || typeof row.item_key !== 'string' || typeof row.slot !== 'string'
+    || !['item_level', 'item_xp', 'mastery_xp', 'mastery_tier'].every(key => Number.isInteger(row[key]) && row[key] >= (key === 'item_level' ? 1 : 0)))) {
+    throw new Error('equipment_ownership_unavailable');
+  }
   const owned = rows.results.filter(row => PET_EQUIPMENT_UTILITY[row.item_key]?.slot === row.slot);
   return { ...pet, owned_equipment: owned.map(row => row.item_key),
     equipment_collection_complete: Object.keys(PET_EQUIPMENT_UTILITY).every(key => owned.some(row => row.item_key === key && row.item_level >= PET_EQUIPMENT_MAX_LEVEL)),

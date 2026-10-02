@@ -14,13 +14,15 @@ class SqliteD1Statement {
   async first() { return this.database.prepare(this.sql).get(...this.bindings) || null; }
   async all() { return { results: this.database.prepare(this.sql).all(...this.bindings) }; }
   async run() {
-    if (/\bRETURNING\b/i.test(this.sql)) {
-      const results = this.database.prepare(this.sql).all(...this.bindings);
-      const changes = this.database.prepare('SELECT changes() AS changes').get().changes;
-      return { results, meta: { changes } };
+    const statement = this.database.prepare(this.sql);
+    if (statement.columns().length) {
+      const results = statement.all(...this.bindings);
+      const changes = /\bRETURNING\b/i.test(this.sql)
+        ? this.database.prepare('SELECT changes() AS changes').get().changes : 0;
+      return { success: true, results, meta: { changes } };
     }
-    const result = this.database.prepare(this.sql).run(...this.bindings);
-    return { meta: { changes: result.changes } };
+    const result = statement.run(...this.bindings);
+    return { success: true, results: [], meta: { changes: result.changes } };
   }
 }
 

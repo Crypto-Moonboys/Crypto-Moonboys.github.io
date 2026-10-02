@@ -1318,13 +1318,13 @@ assertOrder(
 assertOrder(
   startRun,
   "if (requestedRun && PET_RUN_COMPLETED_STATUSES.includes(requestedRun.status)) return { accepted: false, reason: 'run_closed'",
-  'INSERT INTO telegram_pet_runs',
+  'INSERT OR IGNORE INTO telegram_pet_runs',
   'closed supplied run ids must be rejected before inserting a duplicate run'
 );
 assertOrder(
   startRun,
   "return { accepted: false, reason: 'run_not_found'",
-  'INSERT INTO telegram_pet_runs',
+  'INSERT OR IGNORE INTO telegram_pet_runs',
   'unknown supplied run ids must be rejected before any run insert'
 );
 
@@ -3928,6 +3928,11 @@ runSeasonRolloverDb.database.prepare(`INSERT INTO telegram_pet_runs
    unbanked_pet_xp, unbanked_moon_gold, unbanked_moon_crystals, unbanked_style_tokens, unbanked_items)
   VALUES ('run-season-rollover-row', ?, 'run-season-rollover', 'run-season-rollover-run',
     'pet-s2026-001', 'active', 5, 5, 1, 24, 19, 0, 0, '{}')`).run(runSeasonRolloverPet);
+// A saved completion must retain its successful terminal step as source proof.
+runSeasonRolloverDb.database.prepare(`INSERT INTO telegram_pet_run_steps
+  (id, pet_id, telegram_id, run_id, step_index, choice_key, choice_type, event_key, success)
+  VALUES ('run-season-rollover-final-step', ?, 'run-season-rollover', 'run-season-rollover-run',
+    5, 'fight', 'fight', 'run-season-rollover-final-step', 1)`).run(runSeasonRolloverPet);
 const runSeasonRolloverRun = runSeasonRolloverDb.database.prepare("SELECT * FROM telegram_pet_runs WHERE run_id='run-season-rollover-run'").get();
 const runSeasonRolloverResult = await recordPetRunBankedEvent(runSeasonRolloverDb, 'run-season-rollover', runSeasonRolloverRun, {
   pet_id: runSeasonRolloverPet,
@@ -4976,7 +4981,8 @@ const recoveredCompletedCallback = await finishPetKaijuMatch(
   completedCallbackRecoveryDb,
   { ...completedCallbackRecoveryDb.database.prepare('SELECT * FROM telegram_pet_kaiju_matches WHERE match_id = ?').get('completed-callback-match') },
 );
-assert.equal(recoveredCompletedCallback.duplicate, true, 'a completed-match retry must use the recovery path');
+assert.equal(recoveredCompletedCallback.ending_replayed, true, 'a completed-match retry must use the saved ending recovery path');
+assert.equal(recoveredCompletedCallback.duplicate, false, 'the first successful recovery must report its newly delivered payment');
 assert.equal(recoveredCompletedCallback.reward_results[0].result.accepted, true, 'completed-match retry must settle the pending player reward');
 const completedCallbackSettled = repeatRewardSnapshot(completedCallbackRecoveryDb, 'completed-callback-recovery', 'kaiju');
 assert.equal(completedCallbackSettled.event.status, 'accepted', 'completed-match callback recovery must finalize the pending reward');

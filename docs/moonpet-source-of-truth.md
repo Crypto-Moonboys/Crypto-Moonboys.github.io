@@ -1072,3 +1072,83 @@ progress. Recovery requires intact source-pet ownership; ambiguous evidence stay
 stored and appears as an audit/recovery notice without awarding progress. Replays
 also cannot transfer that care's personality evidence to the selected pet.
 Existing receipts, earned progression and reward history are retained.
+
+
+## Audit recovery and command consistency (2 October 2026)
+
+Issue #1419 combines the post-deployment audit with the additional command and
+recovery audit. Permanent ownership, three pet spaces, lifetime Pet XP and
+evolution, the 1,000 lifetime Arcade XP entry gate, and independent daily, weekly
+and quarterly competitions remain unchanged. No historical ownership, reward
+receipt, Mark, Crest or wallet balance is deleted or reset by this change.
+
+- Standard terminal-step retries prove the original owner, run, pet, source
+  season and saved step. Room 100 saves its ending timestamp in the same
+  transaction as the terminal step. Recovery retains the original earning
+  quarter and existing saved-day XP allowance; it cannot borrow a later cap.
+- Standard and Daily creation recheck active ownership and selection inside the
+  insert. A previously admitted, provably empty run belonging to an explicitly
+  deleted pet may be marked abandoned without deleting its evidence. Ambiguous
+  progressed runs remain unavailable for audit; no rewards are invented.
+- Equipment upgrades require the displayed target and server catalog quote.
+  Both the immutable request quote and the current gear level are checked in
+  the spending transaction. A stale or missing quote requires refresh and
+  spends nothing. A completed request remains an idempotent replay.
+- All stat rewards persist elapsed care decay before changing needs or the care
+  clock, including currency-free Sleep and timed Train. Required specialist
+  pet/faction/equipment reads and every D1 batch result must succeed. Missing
+  evidence or a failed batch leaves follow-ups pending for healthy recovery;
+  absence of a receipt is never proof of a successful duplicate. Seasonal Raid
+  specialist awards require the accepted original payout/equipment snapshot.
+- New currency and inventory receipts record actual committed deltas separately from
+  nominal awards. API/UI delivery amounts follow those receipts. Historical
+  rewards remain available as recovery evidence, but duplicate responses do not
+  announce another payment. Existing historical receipts are not rewritten.
+- Required Arena/Kaiju match, queue, round and result reads fail closed. The
+  client keeps its last valid snapshot and requests a refresh. Both systems use
+  the saved terminal battle timestamp for competition-quarter XP. Arena keeps
+  settlement-day caps and daily/weekly ranks; Kaiju keeps its original reward-day
+  reservation and corresponding caps/ranks. Previously paid receipts and the
+  documented District, story and Seasonal Raid settlement-time exceptions stay
+  unchanged.
+- Pet notices have owner/pet/source-season provenance for identity, delivery and
+  acknowledgements; season-tier notices use account/competition-season
+  provenance. Legacy unscoped notices stay retained without being assigned to a
+  current pet. Scheduler scanning advances through eligible accounts even when
+  none of the first 35 need alerts. Alert cooldowns belong to the captured source
+  pet, separately from scan position. Needs, identity and guidance use that same
+  captured pet, with selection rechecked before sending and the source named in
+  the message.
+- Lifetime completion records when the complete requirements are observed,
+  rather than inheriting an old replayed Growth Mark's date. Existing Mark dates
+  and already recorded completion history remain unchanged.
+
+No new D1 migration or new secret is required. Deploy the Worker through the
+existing provenance wrapper after review, then publish the matching Mini App
+assets and guides. Existing webhook secret setup/readiness requirements remain
+mandatory; see [Telegram webhook security](telegram-webhook-security.md).
+
+Weekly Boss attacks, victory, reward and follow-up evidence now retain the same
+saved source day across midnight. Recovery also recognises retained historical
+midnight victories from their original accepted attack; it restores missing
+progress without paying again or moving the source day.
+
+The shared Weekly Boss still pays one victory per account per UTC week. Once it
+is defeated, a hatched level-5 pet missing its own accepted attempt in its
+current ownership Journey week may choose Strike, Outsmart or Endure in a
+12-energy participation challenge. Its chosen routine and challenge score are
+saved as a real accepted attempt. This grants that pet's existing weekly
+attempt objective only: no extra shared damage, boss victory, Pet XP, currency,
+material or specialist boss-win award. All other Crest requirements remain.
+An existing attempt in that Journey week prevents extra challenges; retries
+charge no additional energy. The pet's Journey clock may cross its own week
+boundary before the shared boss's Monday reset.
+
+Missing specialist receipts, including old activities incorrectly marked settled,
+can recover from complete accepted source evidence. Already sealed undercredited
+receipts are retained: a current faction or loadout cannot prove its historical
+value. Any correction to those receipts requires a separate, evidence-backed
+audit and approved repair. This release does not fabricate historical bonuses
+or rewrite uncertain records.
+
+See the [finding-by-finding audit and deployment handoff](moonpet-audit-1419-2026-10-02.md).

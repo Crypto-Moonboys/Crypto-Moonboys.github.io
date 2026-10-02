@@ -62,7 +62,7 @@ function fixture(owner) {
 
 import { PET_MARKET_OFFERS, getPetMarketOffers } from '../workers/moonboys-api/pets/economy-expansion.js';
 import { PET_CRAFTING_RECIPES } from '../workers/moonboys-api/pets/economy-phase-3.js';
-import { processPetCraftRecipe, processPetEquipmentUpgrade, processPetCosmeticUnlock } from '../workers/moonboys-api/pets/live-systems.js';
+import { processPetCraftRecipe, getPetEquipmentUpgradeQuote, processPetEquipmentUpgrade, processPetCosmeticUnlock } from '../workers/moonboys-api/pets/live-systems.js';
 function funded(id) {
   const f=fixture(id);
   f.sql.prepare('UPDATE telegram_pet_instances SET pet_xp=500000 WHERE telegram_id=?').run(f.owner);
@@ -71,6 +71,51 @@ function funded(id) {
     f.sql.prepare('INSERT INTO telegram_pet_material_balances (telegram_id,material_key,quantity) VALUES (?,?,9000)').run(f.owner,key);
   return f;
 }
+
+test('rendered upgrade quotes bind target and price across sessions, retries and transaction races', async () => {
+  const f = funded('upgrade-quote-authority');
+  await f.act({ action: 'buy', item_key: 'moon_kibble', request_id: 'own-gear' });
+  const state = await hooks.buildPetMiniAppState(f.db, f.owner, 'fixture-token');
+  const displayed = state.live_systems.upgrades.find(item => item.item_key === 'moon_kibble');
+  assert.equal(displayed.target_level, 2);
+  assert.equal(displayed.cost.moon_gold, 80);
+  const request = { action: 'gear_upgrade', item_key: displayed.item_key, target_level: displayed.target_level,
+    quote_version: displayed.quote_version, displayed_pet_id: state.pet.pet_id };
+  const owned = () => ({ wallet: wallet(f), gear: f.sql.prepare('SELECT item_level FROM telegram_pet_equipment_progression WHERE telegram_id=? AND item_key=?').get(f.owner, 'moon_kibble'),
+    materials: f.sql.prepare('SELECT material_key,quantity FROM telegram_pet_material_balances WHERE telegram_id=? ORDER BY material_key').all(f.owner) });
+  const before = owned();
+  for (const invalid of [{ target_level: undefined }, { quote_version: undefined }, { target_level: 3 }, { quote_version: displayed.quote_version + 'edited' }]) {
+    const rejected = await f.act({ ...request, ...invalid, request_id: 'invalid-quote-' + JSON.stringify(invalid) });
+    assert.equal(rejected.reason, 'upgrade_quote_stale');
+    assert.equal(rejected.refresh_state, true);
+    assert.deepEqual(owned(), before);
+  }
+  let interleaved = false;
+  f.db.beforeBatch = async statements => {
+    if (!statements[0].query.includes("UPDATE telegram_pet_system_events SET status='settling'")) return;
+    f.db.beforeBatch = null;
+    const other = await f.act({ ...request, request_id: 'session-a' });
+    assert.equal(other.accepted, true, other.reason);
+    assert.equal(other.item.item_level, 2);
+    interleaved = true;
+  };
+  const raced = await f.act({ ...request, request_id: 'session-b' });
+  assert.equal(interleaved, true);
+  assert.equal(raced.accepted, false, 'a competing upgrade invalidates the transaction target');
+  const after = owned();
+  assert.equal(before.wallet.moon_gold - after.wallet.moon_gold, 80);
+  assert.equal(after.gear.item_level, 2);
+  assert.equal((await f.act({ ...request, request_id: 'stale-session-c' })).reason, 'upgrade_quote_stale');
+  assert.equal((await f.act({ ...request, request_id: 'session-a' })).duplicate, true);
+  assert.deepEqual(owned(), after, 'stale screens and an accepted retry spend nothing');
+  const refreshed = (await hooks.buildPetMiniAppState(f.db, f.owner, 'fixture-token')).live_systems.upgrades.find(item => item.item_key === 'moon_kibble');
+  assert.equal(refreshed.target_level, 3);
+  assert.equal(refreshed.cost.moon_gold, 140);
+  const next = await f.act({ ...request, target_level: refreshed.target_level, quote_version: refreshed.quote_version, request_id: 'refreshed-session' });
+  assert.equal(next.accepted, true, next.reason);
+  assert.equal(next.item.item_level, 3);
+  assert.equal(after.wallet.moon_gold - owned().wallet.moon_gold, 140);
+});
 
 for (const action of ['craft', 'upgrade', 'cosmetic']) test(`${action} rejects failed or malformed spending transactions`, async () => {
   for (const failure of ['failed-reservation', 'failed-member', 'missing-member', 'malformed-member']) {
@@ -100,7 +145,7 @@ for (const action of ['craft', 'upgrade', 'cosmetic']) test(`${action} rejects f
       return replies;
     };
     const request=()=>action==='craft' ? processPetCraftRecipe(f.db,f.owner,'battery_pack','broken-spend')
-      : action==='upgrade' ? processPetEquipmentUpgrade(f.db,f.owner,'moon_kibble','broken-spend')
+      : action==='upgrade' ? processPetEquipmentUpgrade(f.db, f.owner, 'moon_kibble', 'broken-spend', getPetEquipmentUpgradeQuote('moon_kibble', 2))
         : processPetCosmeticUnlock(f.db,f.owner,'profile_frame','broken-spend');
     await assert.rejects(request(),/pet_state_write_unavailable/,failure+' cannot acknowledge a purchase or an ordinary cost conflict');
     assert.equal(injected,true);
@@ -153,10 +198,10 @@ test('audit every permanent Shop item, each upgrade level, and replay',async()=>
    assert.deepEqual(f.sql.prepare('SELECT moon_gold,moon_crystals,style_tokens FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner),after);
    for(let level=2;level<=10;level++){
      const key=item.key+':level:'+level;
-     const result=await processPetEquipmentUpgrade(f.db,f.owner,item.key,key);
+     const result=await processPetEquipmentUpgrade(f.db, f.owner, item.key, key, getPetEquipmentUpgradeQuote(item.key, level));
      assert.equal(result.accepted,true,item.key+' level '+level+' '+result.reason);
      assert.equal(result.item.item_level,level);
-     assert.equal((await processPetEquipmentUpgrade(f.db,f.owner,item.key,key)).duplicate,true);
+     assert.equal((await processPetEquipmentUpgrade(f.db, f.owner, item.key, key, getPetEquipmentUpgradeQuote(item.key, level))).duplicate,true);
    }
  }
  console.log('17 purchases and 153 upgrades verified; replay did not spend twice');
