@@ -546,10 +546,7 @@ export async function awardPetReward(db, request = {}) {
   if (receiptRelics.some(([key, amount]) => !Object.hasOwn(rewards.relics, key) || positiveInteger(amount) !== 1)) {
     throw new Error('pet_reward_receipt_unavailable');
   }
-  const appliedRewards = normalizePetReward({
-    ...receipt,
-    relics: Object.fromEntries(receiptRelics.map(([key]) => [key, rewards.relics[key]])),
-  });
+  const appliedRewards = { ...normalizePetReward(receipt), relics: receipt.relics };
   const committed = {
     accepted: true,
     duplicate: false,
