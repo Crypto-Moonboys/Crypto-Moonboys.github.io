@@ -103,9 +103,18 @@ const server = http.createServer(async (request, response) => {
   } catch { response.writeHead(404).end(); }
 });
 await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+const fixtureOrigin = `http://127.0.0.1:${server.address().port}`;
 const launch = { headless: true, args: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage'] };
 if (process.env.CHROMIUM_EXECUTABLE_PATH) launch.executablePath = process.env.CHROMIUM_EXECUTABLE_PATH;
 let browser;
+async function createFixtureContext(options) {
+  const context = await browser.newContext(options);
+  // Preview pages require an explicit API; every request stays in the local fixture.
+  await context.addInitScript((baseUrl) => {
+    window.MOONBOYS_API = { BASE_URL: baseUrl };
+  }, fixtureOrigin);
+  return context;
+}
 try {
   browser = await chromium.launch(launch);
   // New players see the verified entry threshold; existing beta fixtures below
@@ -114,7 +123,7 @@ try {
     const id = 'browser-entry';
     sqlite.prepare('INSERT INTO telegram_users (telegram_id) VALUES (?)').run(id);
     sqlite.prepare('INSERT INTO arcade_progression_state (telegram_id,arcade_xp_total) VALUES (?,999)').run(id);
-    const context = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+    const context = await createFixtureContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
     const page = await context.newPage(), errors = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.addInitScript(() => localStorage.setItem('moonpet-radio-preference', 'off'));
@@ -155,7 +164,7 @@ try {
   // Exercise the partial response with the real renderer, including a delayed
   // Missions deep link and subsequent navigation to a full-state screen.
   {
-    const context = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+    const context = await createFixtureContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
     const page = await context.newPage();
     const modes = [], errors = [];
     let releaseMissions;
@@ -198,7 +207,7 @@ try {
     await context.close();
   }
   for (const viewport of [{ width: 390, height: 844 }, { width: 360, height: 640 }]) {
-    const context = await browser.newContext({ viewport, reducedMotion: 'reduce' });
+    const context = await createFixtureContext({ viewport, reducedMotion: 'reduce' });
     const page = await context.newPage();
     const errors = [], actions = [], unexpected = [], failedResponses = [];
     let currentUser = 'browser-egg';
