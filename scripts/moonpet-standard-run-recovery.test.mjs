@@ -28,7 +28,7 @@ function fixture(owner) {
     }
     async run() { return this.exec(); }
   }
-  const db = { failReward: false, rejectReward: false, prepare(query) { return new Statement(query); }, async batch(statements) {
+  const db = { failReward: false, rejectReward: false, invalidRewardReceipt: null, prepare(query) { return new Statement(query); }, async batch(statements) {
     if (this.beforeBatch) await this.beforeBatch(statements);
     if (this.failReward && statements.some(s => /INSERT OR IGNORE INTO telegram_pet_reward_claims/.test(s.query))) {
       this.failReward = false;
@@ -42,6 +42,13 @@ function fixture(owner) {
     let results;
     try { results = []; for (const s of statements) results.push(s.exec()); sql.exec('COMMIT'); }
     catch (error) { sql.exec('ROLLBACK'); throw error; }
+    if (this.invalidRewardReceipt && statements.at(-1)?.query.includes('RETURNING applied_rewards')) {
+      const mode = this.invalidRewardReceipt;
+      this.invalidRewardReceipt = null;
+      if (mode === 'failed') results[results.length - 1] = { success: false, error: 'receipt_write_failed', results: [] };
+      if (mode === 'missing') results[results.length - 1] = { ...results.at(-1), results: [] };
+      if (mode === 'malformed') results[results.length - 1] = { ...results.at(-1), results: [{ applied_rewards: '{' }] };
+    }
     if (this.afterBatch) await this.afterBatch(statements);
     return results;
   } };
@@ -115,6 +122,14 @@ test('the authenticated extraction API preserves success when its final active-p
   assert.equal(retry.accepted,true); assert.equal(retry.duplicate,true);
   assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='run_extract'").get().n,1);
   assert.equal(f.sql.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?").get('current-'+f.owner).pet_xp,224);
+});
+
+for (const mode of ['failed', 'missing', 'malformed']) test(`Standard reward settlement rejects a ${mode} applied receipt`, async () => {
+  const f = fixture(`invalid-receipt-${mode}`);
+  await f.state(); f.run(`receipt-${mode}`);
+  f.db.invalidRewardReceipt = mode;
+  await assert.rejects(hooks.processPetRunExtract(f.db, f.owner, `receipt-${mode}`),
+    mode === 'failed' ? /pet_state_write_unavailable/ : /pet_reward_receipt_unavailable/);
 });
 
 for(const win of [true,false]) test(`a ${win?'successful':'failed'} Standard step retains its saved cost through a projection outage`, async () => {
@@ -231,6 +246,26 @@ test('a saved terminal payout recovered after a quarter boundary keeps its earni
   await hooks.recoverPetStandardRunEndings(f.db, f.owner, 'quarter-ending');
   assert.equal(f.sql.prepare("SELECT COUNT(*) AS n FROM telegram_pet_events WHERE event_type='run_extract'").get().n, 1);
   assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances WHERE pet_id=?').get('current-' + f.owner).pet_xp, 224);
+});
+
+test('a recovered Standard ending uses its saved day and week for the shared XP cap', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: Date.UTC(2026, 8, 28, 12) });
+  const f = fixture('terminal-day-week');
+  await f.state();
+  f.run('week-ending');
+  f.db.failReward = true;
+  await assert.rejects(hooks.processPetRunExtract(f.db, f.owner, 'week-ending'), /interrupted_terminal_reward/);
+  f.sql.prepare("UPDATE telegram_pet_runs SET completed_at='2026-09-27 23:59:00' WHERE run_id='week-ending'").run();
+  f.sql.prepare(`INSERT INTO telegram_pet_events
+    (id,pet_id,telegram_id,event_type,event_key,pet_xp_awarded,season_key,day_key,week_key,status)
+    VALUES ('prior-day-xp',? ,?,'test','prior-day-xp',1190,?,'2026-09-27','2026-W39','accepted')`)
+    .run('current-' + f.owner, f.owner, currentSeason);
+  const result = (await hooks.recoverPetStandardRunEndings(f.db, f.owner, 'week-ending'))[0];
+  assert.equal(result.accepted, true);
+  assert.equal(result.pet_xp_awarded, 10);
+  const event = { ...f.sql.prepare("SELECT day_key,week_key,pet_xp_awarded FROM telegram_pet_events WHERE event_type='run_extract'").get() };
+  assert.deepEqual(event, { day_key: '2026-09-27', week_key: '2026-W39', pet_xp_awarded: 10 });
+  assert.equal(f.sql.prepare("SELECT SUM(pet_xp_awarded) total FROM telegram_pet_events WHERE telegram_id=? AND day_key='2026-09-27' AND status='accepted'").get(f.owner).total, 1200);
 });
 
 test('paid ending identity recovery retains the original day and archived pet', async t => {

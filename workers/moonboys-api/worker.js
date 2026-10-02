@@ -2832,6 +2832,7 @@ async function recordPetRunBankedEvent(db, telegramId, run, pet, options = {}) {
   }
   const bankedItemsAuthority = parsePetRunItems(rewardRun.unbanked_items);
   const terminalEarnedAt = parseSqliteTs(rewardRun.completed_at);
+  const rewardNow = terminalEarnedAt == null ? now : new Date(terminalEarnedAt);
   const requestedCommunityXpAuthority = Math.max(0, Math.min(80,
     Math.floor(Math.max(0, Number(rewardRun.unbanked_pet_xp || 0)) / 3) + Math.max(0, Number(rewardRun.depth || 0)) * 4));
   const awardedAuthority = await awardPetReward(db, {
@@ -2841,7 +2842,7 @@ async function recordPetRunBankedEvent(db, telegramId, run, pet, options = {}) {
     rewards: { pet_xp: rewardRun.unbanked_pet_xp, community_xp: requestedCommunityXpAuthority,
       moon_gold: rewardRun.unbanked_moon_gold, moon_crystals: rewardRun.unbanked_moon_crystals,
       style_tokens: rewardRun.unbanked_style_tokens, items: bankedItemsAuthority },
-    touch_streak: true, now,
+    touch_streak: true, now: rewardNow,
     context: { source: options.source || 'telegram_command', run_id: rewardRun.run_id, depth: rewardRun.depth, max_depth: rewardRun.max_depth,
       competition_earned_at: terminalEarnedAt == null ? null : new Date(terminalEarnedAt).toISOString(),
       equipment_snapshot: pet.equipment_progression || {}, ...(runtimeEventKey ? { runtime_event_key: runtimeEventKey } : {}) },

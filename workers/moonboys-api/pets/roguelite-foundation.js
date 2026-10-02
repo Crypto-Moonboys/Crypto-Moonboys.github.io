@@ -14,7 +14,7 @@ import { recordMoonpetBehaviour, recordMoonpetBiggestReward, recordMoonpetMemory
 import { reconcileLegacyPetInventory } from './inventory-cutover.js';
 import { getMoonpetSeasonKey } from './season-authority.js';
 import { DAILY_COMPLETION_REWARD, SEASON_FINALE_REWARD, dailyCompletionKey, seasonFinaleKey, completionRewardAuthorization } from './completion-policy.js';
-import { requirePetFirstReadResult } from './read-result.js';
+import { requirePetFirstReadResult, requirePetMutationResult } from './read-result.js';
 import { projectCommittedPetResult } from './committed-result.js';
 import {
   PET_ACCOUNT_WALLET_RECONCILIATION_EVENT_KEY,
@@ -528,9 +528,28 @@ export async function awardPetReward(db, request = {}) {
   }
   // Return the exact capped asset receipt from the settlement transaction.
   // Re-reading it after commit could reject a reward that has already paid.
-  const claim = results.at(-1)?.results?.[0];
-  let appliedRewards = rewards;
-  try { appliedRewards = { ...rewards, ...JSON.parse(claim?.applied_rewards || '{}') }; } catch {}
+  const receiptResult = requirePetMutationResult(results.at(-1));
+  const receiptRows = receiptResult?.results;
+  if (!Array.isArray(receiptRows) || receiptRows.length !== 1 || typeof receiptRows[0]?.applied_rewards !== 'string') {
+    throw new Error('pet_reward_receipt_unavailable');
+  }
+  let receipt;
+  try { receipt = JSON.parse(receiptRows[0].applied_rewards); } catch {}
+  const receiptFields = ['pet_xp', 'community_xp', 'moon_gold', 'moon_crystals', 'style_tokens', 'materials', 'items', 'relics'];
+  if (!receipt || typeof receipt !== 'object' || Array.isArray(receipt)
+    || !receiptFields.every((field) => Object.hasOwn(receipt, field))
+    || !receiptFields.slice(0, 5).every((field) => Number.isFinite(Number(receipt[field])))
+    || !receiptFields.slice(5).every((field) => receipt[field] && typeof receipt[field] === 'object' && !Array.isArray(receipt[field]))) {
+    throw new Error('pet_reward_receipt_unavailable');
+  }
+  const receiptRelics = Object.entries(receipt.relics);
+  if (receiptRelics.some(([key, amount]) => !Object.hasOwn(rewards.relics, key) || positiveInteger(amount) !== 1)) {
+    throw new Error('pet_reward_receipt_unavailable');
+  }
+  const appliedRewards = normalizePetReward({
+    ...receipt,
+    relics: Object.fromEntries(receiptRelics.map(([key]) => [key, rewards.relics[key]])),
+  });
   const committed = {
     accepted: true,
     duplicate: false,
