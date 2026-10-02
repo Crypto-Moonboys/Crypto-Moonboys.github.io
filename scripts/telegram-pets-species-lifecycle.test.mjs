@@ -154,6 +154,7 @@ for (const [speciesId, speciesName] of Object.entries(SPECIES_LABELS)) {
       `${speciesName} must follow the Stage-3 reveal boundary at stage ${stage}`);
   }
 }
+db.database.prepare(`INSERT INTO telegram_pet_evolutions_by_pet VALUES ('pet:new-player:test:1','new-player','cyber_moonpet',2)`).run();
 await syncMoonpetLifecycleStage(db, 'new-player', 2);
 assert.equal(db.database.prepare("SELECT stage FROM telegram_pet_instances WHERE pet_id='pet:new-player:test:1'").get().stage, 'adult',
   'evolution lifecycle synchronization must update the authoritative pet instance');
@@ -417,6 +418,53 @@ for (const action of ['hatch', 'rare_morph']) {
     assert.deepEqual(recoveryDb.database.prepare('SELECT * FROM telegram_pet_lifecycle_by_pet').all(), lifecycleBefore);
     recoveryDb.beforeFirst = null; recoveryDb.beforeAll = null; recoveryDb.beforeBatch = null;
   }
+}
+
+// The legacy action API can commit A's evolution, then resolve its follow-up
+// after another request selects B. The stage argument is only a stale hint.
+for (const switchPoint of ['before-lifecycle-read', 'before-lifecycle-write']) {
+  const switched = new D1();
+  switched.database.exec(await (await import('node:fs/promises')).readFile(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8'));
+  switched.database.exec(`INSERT INTO telegram_users (telegram_id) VALUES ('evolution-owner');
+    INSERT INTO telegram_pet_profiles (telegram_id,stage,species) VALUES ('evolution-owner','young','neon_raccoon');`);
+  for (const [petId, slot, stage] of [['evolved-a', 1, 2], ['young-b', 2, 1]]) {
+    switched.database.prepare(`INSERT INTO telegram_pet_season_slots
+      (pet_id,telegram_id,season_key,slot_number,acquisition_type) VALUES (?,'evolution-owner','2026-q3',?,'free')`).run(petId, slot);
+    switched.database.prepare(`INSERT INTO telegram_pet_instances
+      (pet_id,telegram_id,season_key,slot_number,stage,species,source_profile_updated_at) VALUES (?,'evolution-owner','2026-q3',?,'young','neon_raccoon','0001-01-01 00:00:00')`).run(petId, slot);
+    switched.database.prepare(`INSERT INTO telegram_pet_lifecycle_by_pet
+      (pet_id,telegram_id,identity_seed,phase,species_id) VALUES (?,'evolution-owner',?,'young','neon_raccoon')`).run(petId, petId);
+    switched.database.prepare(`INSERT INTO telegram_pet_evolutions_by_pet
+      (pet_id,telegram_id,evolution_id,stage,unlock_event_key) VALUES (?,'evolution-owner',?,?,?)`)
+      .run(petId, stage === 2 ? 'cyber_moonpet' : 'street_moonpet', stage, `saved:${petId}`);
+  }
+  switched.database.exec(`INSERT INTO telegram_pet_active_slots (telegram_id,pet_id,season_key)
+    VALUES ('evolution-owner','evolved-a','2026-q3')`);
+  let switchedOnce = false;
+  const selectB = () => {
+    switchedOnce = true;
+    switched.database.exec(`UPDATE telegram_pet_active_slots SET pet_id='young-b' WHERE telegram_id='evolution-owner';
+      UPDATE telegram_pet_profiles SET stage='young' WHERE telegram_id='evolution-owner'`);
+  };
+  if (switchPoint === 'before-lifecycle-read') switched.beforeFirst = sql => {
+    if (!switchedOnce && sql.includes('SELECT l.*, s.season_key')) selectB();
+  };
+  else switched.beforeBatch = statements => {
+    if (!switchedOnce && statements[0].sql.includes("SET phase='adult'")) selectB();
+  };
+  await syncMoonpetLifecycleStage(switched, 'evolution-owner', 2);
+  assert.equal(switchedOnce, true);
+  assert.equal(switched.database.prepare("SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id='young-b'").get().phase, 'young',
+    'A saved Stage 2 follow-up cannot promote selected B with only Stage 1');
+  assert.equal(switched.database.prepare("SELECT stage FROM telegram_pet_profiles WHERE telegram_id='evolution-owner'").get().stage, 'young',
+    'A lifecycle write cannot overwrite the compatibility profile after B becomes selected');
+  assert.equal(switched.database.prepare("SELECT stage FROM telegram_pet_instances WHERE pet_id='young-b'").get().stage, 'young');
+  switched.beforeFirst = null; switched.beforeBatch = null;
+  switched.database.exec("UPDATE telegram_pet_active_slots SET pet_id='evolved-a' WHERE telegram_id='evolution-owner'");
+  await syncMoonpetLifecycleStage(switched, 'evolution-owner', 2);
+  assert.equal(switched.database.prepare("SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id='evolved-a'").get().phase, 'adult',
+    'The original pet can still finish its committed Stage 2 follow-up');
+  switched.database.close();
 }
 
 console.log('telegram-pets-species-lifecycle.test.mjs passed');

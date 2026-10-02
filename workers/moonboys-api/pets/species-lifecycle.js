@@ -481,12 +481,29 @@ export async function syncMoonpetLifecycleStage(db, telegramId, stage) {
   if (Number(stage) < 2) return getMoonpetLifecycle(db, id);
   const row = await ensureMoonpetLifecycle(db, id);
   if (!row) return null;
+  // Legacy API follow-ups can outlive a pet switch. The supplied stage is only
+  // a hint; this pet's committed evolution must authorize its own adulthood.
   const results = await db.batch([
     db.prepare(`UPDATE telegram_pet_lifecycle_by_pet SET phase='adult', adult_at=COALESCE(adult_at, CURRENT_TIMESTAMP), updated_at=CURRENT_TIMESTAMP
-      WHERE pet_id=? AND phase='young'`).bind(row.pet_id),
-    db.prepare(`UPDATE telegram_pet_profiles SET stage='adult', updated_at=CURRENT_TIMESTAMP WHERE telegram_id=? AND stage='young'`).bind(id),
+      WHERE pet_id=? AND telegram_id=? AND phase='young'
+        AND EXISTS (SELECT 1 FROM telegram_pet_instances i
+          JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id
+            AND s.season_key=i.season_key AND s.slot_number=i.slot_number
+          JOIN telegram_pet_evolutions_by_pet e ON e.pet_id=i.pet_id AND e.telegram_id=i.telegram_id
+          WHERE i.pet_id=? AND i.telegram_id=? AND i.season_key=? AND i.status='active' AND s.status='active' AND e.stage>=2)`)
+      .bind(row.pet_id, id, row.pet_id, id, row.season_key),
+    db.prepare(`UPDATE telegram_pet_profiles SET stage='adult', updated_at=CURRENT_TIMESTAMP
+      WHERE telegram_id=? AND stage='young'
+        AND EXISTS (SELECT 1 FROM telegram_pet_active_slots a JOIN telegram_pet_lifecycle_by_pet l
+          ON l.pet_id=a.pet_id AND l.telegram_id=a.telegram_id
+          WHERE a.telegram_id=? AND a.pet_id=? AND a.season_key=? AND l.phase='adult')`)
+      .bind(id, id, row.pet_id, row.season_key),
     db.prepare(`UPDATE telegram_pet_instances SET stage='adult', source_profile_updated_at=?, updated_at=CURRENT_TIMESTAMP
-      WHERE pet_id=? AND telegram_id=? AND EXISTS (
+      WHERE pet_id=? AND telegram_id=? AND status='active'
+        AND EXISTS (SELECT 1 FROM telegram_pet_season_slots s
+          WHERE s.pet_id=telegram_pet_instances.pet_id AND s.telegram_id=telegram_pet_instances.telegram_id
+            AND s.season_key=telegram_pet_instances.season_key AND s.slot_number=telegram_pet_instances.slot_number AND s.status='active')
+        AND EXISTS (
         SELECT 1 FROM telegram_pet_lifecycle_by_pet WHERE pet_id=? AND telegram_id=? AND phase='adult')`)
       .bind(PET_INSTANCE_AUTHORITY_VERSION, row.pet_id, id, row.pet_id, id),
   ]);
