@@ -828,3 +828,44 @@ test('a scoped Mini App evolution repairs its original pet on core refresh after
   assert.deepEqual(f.sql.prepare('SELECT material_key,quantity FROM telegram_pet_material_balances WHERE telegram_id=? ORDER BY material_key').all(f.owner),paid);
   assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_evolutions_by_pet WHERE pet_id=? AND evolution_id='cyber_moonpet'").get(f.source).n,1);
 });
+
+test('a failed Mini App identity read cannot create a lower evolution on a migrated final pet', async () => {
+  const f=fixture('82025'),source='current-'+f.owner;
+  f.sql.prepare(`INSERT INTO telegram_pet_evolutions_by_pet (pet_id,telegram_id,evolution_id,stage,unlock_event_key)
+    VALUES (?,?,'legendary_moon_guardian',5,'migrated-final')`).run(source,f.owner);
+  f.sql.prepare("UPDATE telegram_pet_lifecycle_by_pet SET phase='adult' WHERE pet_id=?").run(source);
+  const saved=f.sql.prepare('SELECT * FROM telegram_pet_evolutions_by_pet WHERE pet_id=?').all(source);
+  f.db.beforeRead=statement=>{
+    if (/SELECT e\.evolution_id, e\.stage, e\.unlocked_at/.test(statement.query)) throw Error('identity_projection_unavailable');
+  };
+  await assert.rejects(f.act({action:'evolve',evolution_id:'moon_egg',request_id:'unavailable-final-identity'}),/identity_projection_unavailable/);
+  assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_evolutions_by_pet WHERE pet_id=?').all(source),saved);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_identity_analytics WHERE pet_id=?').get(source).n,0);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_memories WHERE pet_id=?').get(source).n,0);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_material_balances WHERE telegram_id=?').get(f.owner).n,0);
+});
+
+test('the legacy bot action rejects missing lower evolutions while preserving saved final retries', async () => {
+  const f=fixture('82026'),source='current-'+f.owner;
+  f.sql.prepare(`INSERT INTO telegram_pet_evolutions_by_pet (pet_id,telegram_id,evolution_id,stage,unlock_event_key)
+    VALUES (?,?,'legendary_moon_guardian',5,'migrated-final')`).run(source,f.owner);
+  const saved=f.sql.prepare('SELECT * FROM telegram_pet_evolutions_by_pet WHERE pet_id=?').all(source);
+  const api=async evolutionId=>{
+    const response=await worker.fetch(new Request('https://moonboys-api.test/telegram-pets/action',{
+      method:'POST',headers:{'content-type':'application/json','x-pets-bot-secret':'evolve-test'},
+      body:JSON.stringify({telegram_id:f.owner,action:'evolve',evolution_id:evolutionId,event_key:'legacy-final:'+evolutionId}),
+    }),{DB:f.db,TELEGRAM_PETS_BOT_SECRET:'evolve-test'});
+    return {http_status:response.status,...await response.json()};
+  };
+  const lower=await api('moon_egg');
+  assert.equal(lower.accepted,false,JSON.stringify(lower));
+  assert.equal(lower.http_status,409);
+  assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_evolutions_by_pet WHERE pet_id=?').all(source),saved);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_identity_analytics WHERE pet_id=?').get(source).n,0);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_memories WHERE pet_id=?').get(source).n,0);
+  const retry=await api(' LEGENDARY_MOON_GUARDIAN ');
+  assert.equal(retry.http_status,200);assert.equal(retry.accepted,true);assert.equal(retry.duplicate,true);
+  assert.equal(f.sql.prepare('SELECT phase FROM telegram_pet_lifecycle_by_pet WHERE pet_id=?').get(source).phase,'adult');
+  assert.deepEqual(f.sql.prepare('SELECT * FROM telegram_pet_evolutions_by_pet WHERE pet_id=?').all(source),saved);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM telegram_pet_material_balances WHERE telegram_id=?').get(f.owner).n,0);
+});

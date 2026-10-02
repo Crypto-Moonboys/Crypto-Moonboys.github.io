@@ -10737,7 +10737,7 @@ async function dispatchPetMiniAppAction(db, telegramId, user, body, botToken) {
   if (action === 'weekly_boss_claim') return claimPetWeeklyBossReward(db, telegramId, body);
   if (action === 'season_claim') return claimPetSeasonReward(db, telegramId, body.tier_id, eventKey);
   if (action === 'evolve') {
-    const identity = await getMoonpetIdentityWithLifecycle(db, telegramId);
+    const identity = await getMoonpetIdentityWithLifecycle(db, telegramId, { required: true });
     const next = Object.values(MOONPET_EVOLUTIONS).find((entry) => entry.stage === Number(identity?.current_stage?.stage || 0) + 1);
     const requestedEvolutionId = String(body.evolution_id || next?.evolution_id || '').trim().toLowerCase();
     if (!next && (!requestedEvolutionId || requestedEvolutionId !== identity?.current_stage?.evolution_id)) {
