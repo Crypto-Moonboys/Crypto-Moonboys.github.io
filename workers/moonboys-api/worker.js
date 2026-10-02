@@ -6624,6 +6624,11 @@ async function claimPetActivitySession(db, telegramId, options = {}) {
     recovery = getRecoverablePetActivityClaim(session);
     if (!session || !recovery) return { accepted: false, reason: 'no_active_activity' };
   }
+  // Mini App buttons retain the session they displayed, even when another tab
+  // closes it and starts a new activity before this request arrives.
+  if (options.session_id && session.id !== options.session_id) {
+    return { accepted: false, reason: 'activity_state_changed', refresh_state: true };
+  }
 
   // New sessions retain their starting pet. Legacy pending sessions cannot be
   // switched, so pin that protected active pointer before the first settlement.
@@ -6775,9 +6780,12 @@ async function awardActivePetActivityGrowthMark(db, telegramId, settlementEventK
   }
 }
 
-async function cancelPetActivitySession(db, telegramId) {
+async function cancelPetActivitySession(db, telegramId, options = {}) {
   const session = await getActivePetActivitySession(db, telegramId);
   if (!session) return { accepted: false, reason: 'no_active_activity' };
+  if (options.session_id && session.id !== options.session_id) {
+    return { accepted: false, reason: 'activity_state_changed', refresh_state: true };
+  }
   const cancelResult = await db.prepare(`UPDATE telegram_pet_activity_sessions SET status = 'cancelled' WHERE id = ? AND telegram_id = ? AND status = 'active'`).bind(session.id, telegramId).run();
   if (Number(cancelResult?.meta?.changes || 0) !== 1) {
     return { accepted: false, reason: 'activity_already_closed', session };
@@ -10674,8 +10682,13 @@ async function dispatchPetMiniAppAction(db, telegramId, user, body, botToken) {
     return resolved;
   }
   if (action === 'activity_start') return startPetActivitySession(db, telegramId, body.activity_type, { source });
-  if (action === 'activity_claim') return claimPetActivitySession(db, telegramId, { source });
-  if (action === 'activity_cancel') return cancelPetActivitySession(db, telegramId);
+  if (action === 'activity_claim' || action === 'activity_cancel') {
+    const sessionId = typeof body.session_id === 'string' ? body.session_id.trim() : '';
+    if (!sessionId) return { accepted: false, reason: 'activity_session_required', refresh_state: true };
+    return action === 'activity_claim'
+      ? claimPetActivitySession(db, telegramId, { source, session_id: sessionId })
+      : cancelPetActivitySession(db, telegramId, { session_id: sessionId });
+  }
   if (action === 'notification_set') {
     const preference = await setPetNotificationPreference(db, telegramId, body.enabled === true);
     return { accepted: true, reason: preference.enabled ? 'notifications_enabled' : 'notifications_disabled', preference };
@@ -14586,7 +14599,7 @@ export default {
 const SITE_URL = 'https://cryptomoonboys.com';
 const TELEGRAM_GAMES_MENU_URL = `${SITE_URL}/games/telegram/?v=20260903-games-shell-v8`;
 const TELEGRAM_GAMES_MENU_TEXT = 'Games';
-const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20261002-postmerge-audit-v2`;
+const MOONPET_MINI_APP_URL = `${SITE_URL}/moonpet-game.html?v=20261002-postmerge-audit-v3`;
 const PET_MEDIA_BASE_URL = `${SITE_URL}/img/pets`;
 const PET_MEDIA_MANIFEST = Object.freeze({
   feed: 'CRYPTO MOONBOYS PET FEED.jpg',

@@ -119,6 +119,61 @@ async function createFixtureContext(options) {
 }
 try {
   browser = await chromium.launch(launch);
+  // Claim/cancel controls stay bound to the activity the player reviewed,
+  // even when another session replaces it before the click reaches the server.
+  for (const action of ['activity_claim', 'activity_cancel']) {
+    const id = 'browser-stale-' + action;
+    await seed(id, 'young');
+    const act = body => dispatchRenderedPetAction(db, id, { id }, body, token);
+    assert.equal((await act({ action: 'activity_start', activity_type: 'explore' })).accepted, true);
+    sqlite.prepare("UPDATE telegram_pet_activity_sessions SET started_at=datetime('now','-30 minutes') WHERE telegram_id=? AND status='active'").run(id);
+    const first = (await hooks.buildPetMiniAppState(db, id, token)).guidance.activity;
+    const context = await createFixtureContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+    const page = await context.newPage(), errors = [], requests = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await page.addInitScript(() => localStorage.setItem('moonpet-radio-preference', 'off'));
+    await page.route('**/*', async route => {
+      const url = new URL(route.request().url());
+      if (url.hostname === 'telegram.org') return route.fulfill({ contentType: 'text/javascript', body: "window.Telegram={WebApp:{initData:'fixture',ready(){},expand(){},onEvent(){},setHeaderColor(){},setBackgroundColor(){}}};" });
+      if (url.pathname.endsWith('/telegram-pets/app/performance')) return route.fulfill({ json: { ok: true } });
+      if (url.pathname.includes('/telegram-pets/app/')) {
+        const body = route.request().postDataJSON();
+        let result;
+        if (url.pathname.endsWith('/action')) {
+          requests.push(body);
+          result = await hooks.processPetMiniAppAction(db, id, { id }, body, token);
+        }
+        const state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(db, id) : await hooks.buildPetMiniAppState(db, id, token);
+        return route.fulfill({ status: result?.accepted === false ? 409 : 200, json: { state, result } });
+      }
+      if (url.hostname === '127.0.0.1') return route.continue();
+      return route.abort();
+    });
+    await page.goto(`${fixtureOrigin}/moonpet-game.html?screen=work&focus=timed-activity`);
+    await page.waitForSelector('[data-action="activity_claim"]:enabled');
+    for (const control of ['activity_claim', 'activity_cancel']) {
+      assert.equal(JSON.parse(await page.locator(`[data-action="${control}"]`).getAttribute('data-payload')).session_id, first.id, control + ' identifies the rendered activity');
+    }
+    assert.equal((await act({ action: 'activity_cancel', session_id: first.id })).accepted, true);
+    assert.equal((await act({ action: 'activity_start', activity_type: 'work' })).accepted, true);
+    sqlite.prepare("UPDATE telegram_pet_activity_sessions SET started_at=datetime('now','-30 minutes') WHERE telegram_id=? AND status='active'").run(id);
+    const second = (await hooks.buildPetMiniAppState(db, id, token)).guidance.activity;
+    assert.notEqual(second.id, first.id);
+    const staleResponse = page.waitForResponse(response => response.url().endsWith('/action') && response.request().postDataJSON().action === action);
+    await page.locator(`[data-action="${action}"]`).click();
+    const stale = await (await staleResponse).json();
+    assert.equal(requests.find(request => request.action === action).session_id, first.id, 'a stale button never retargets the replacement activity');
+    assert.equal(stale.result.accepted, false);
+    assert.equal(stale.result.refresh_state, true);
+    assert.equal(sqlite.prepare('SELECT status FROM telegram_pet_activity_sessions WHERE id=?').get(second.id).status, 'active');
+    await page.waitForFunction(sessionId => JSON.parse(document.querySelector('[data-action="activity_claim"]').dataset.payload).session_id === sessionId, second.id);
+    const freshResponse = page.waitForResponse(response => response.url().endsWith('/action') && response.request().postDataJSON().action === action);
+    await page.locator(`[data-action="${action}"]`).click();
+    assert.equal((await (await freshResponse).json()).result.accepted, true, 'the refreshed activity can be claimed or cancelled normally');
+    assert.equal(requests.filter(request => request.action === action).at(-1).session_id, second.id);
+    assert.deepEqual(errors, []);
+    await context.close();
+  }
   // New players see the verified entry threshold; existing beta fixtures below
   // keep their pets even though they have never earned Arcade XP.
   {

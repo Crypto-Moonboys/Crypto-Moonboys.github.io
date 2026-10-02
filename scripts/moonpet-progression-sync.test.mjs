@@ -386,18 +386,20 @@ test('the deployed API credits only pet-scoped progression and repairs it on ret
 
 test('timed activity retains a recoverable claim until specialist progression commits',async()=>{
   const f=fixture('84005');
-  assert.equal((await f.act({action:'activity_start',activity_type:'train'})).accepted,true);
+  const started=await f.act({action:'activity_start',activity_type:'train'});
+  assert.equal(started.accepted,true);
+  const claim={action:'activity_claim',session_id:started.session.id};
   f.sql.prepare("UPDATE telegram_pet_activity_sessions SET started_at=datetime('now','-30 minutes')").run();
   f.sql.exec("CREATE TRIGGER fail_specialist BEFORE INSERT ON telegram_pet_specialist_events BEGIN SELECT RAISE(ABORT,'interrupted_specialist'); END");
-  const first=await f.act({action:'activity_claim'});
+  const first=await f.act(claim);
   assert.equal(first.reason,'activity_reward_recovery_pending');
   const xpBefore=f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances').get().pet_xp;
   f.sql.exec('DROP TRIGGER fail_specialist');
-  const retry=await f.act({action:'activity_claim'});
+  const retry=await f.act(claim);
   assert.equal(retry.accepted,true,JSON.stringify(retry));
   assert.equal(progress(f).training_xp,18);
   assert.equal(f.sql.prepare('SELECT pet_xp FROM telegram_pet_instances').get().pet_xp,xpBefore);
-  assert.equal((await f.act({action:'activity_claim'})).reason,'no_active_activity');
+  assert.equal((await f.act(claim)).reason,'no_active_activity');
 });
 
 

@@ -1275,6 +1275,36 @@ assert.equal(tacticalDb.database.prepare('SELECT COUNT(*) AS count FROM telegram
 tacticalDb.database.prepare("UPDATE telegram_pet_runs SET status='failed' WHERE run_id=?").run(tacticalRun.run_id);
 assert.equal((await chooseDailyRunTactic(tacticalDb, 'tactical-player', requestTactic('guardian', 6))).accepted, false);
 
+// A failed build read cannot silently turn an official v2 run into a legacy
+// room resolution with different odds and score, or discard its saved tactic.
+{
+  const f = await tacticFixture('daily-modifier-read-failure');
+  f.adapter.database.prepare('UPDATE telegram_pet_runs SET current_room=3,depth=3 WHERE run_id=?').run(f.run.run_id);
+  f.run.current_room = 3; f.run.depth = 3;
+  const room = await createPetRunRoom(f.adapter, f.run);
+  assert.equal((await chooseDailyRunTactic(f.adapter, f.run.telegram_id, { run_id: f.run.run_id, checkpoint: 3, tactic_id: 'guardian' })).accepted, true);
+  f.adapter.failAll = sql => sql.includes('SELECT modifier_id, effects_json FROM telegram_pet_run_modifiers');
+  const request = { telegram_id: f.run.telegram_id, run_id: f.run.run_id, choice_key: room.choices[0].choice_id, expected_step_index: 3, now };
+  await assert.rejects(processDailyMoonRunStep(f.adapter, request), /pet_state_read_unavailable/);
+  assert.equal(f.adapter.database.prepare('SELECT status FROM telegram_pet_run_rooms WHERE room_id=?').get(room.room_id).status, 'pending');
+  assert.equal(f.adapter.database.prepare('SELECT current_room FROM telegram_pet_runs WHERE run_id=?').get(f.run.run_id).current_room, 3);
+  f.adapter.failAll = null;
+  const resumed = await processDailyMoonRunStep(f.adapter, request);
+  assert.equal(resumed.room.outcome.authority, 'daily_moon_run_server_outcome_v2');
+  assert.equal(resumed.room.outcome.daily_tactics[0].key, 'guardian');
+}
+
+{
+  const f = await tacticFixture('daily-tactic-write-failure');
+  f.adapter.database.prepare('UPDATE telegram_pet_runs SET current_room=3,depth=3 WHERE run_id=?').run(f.run.run_id);
+  const request = { run_id: f.run.run_id, checkpoint: 3, tactic_id: 'guardian' };
+  f.adapter.failFirst = /INSERT OR IGNORE INTO telegram_pet_run_modifiers/;
+  await assert.rejects(chooseDailyRunTactic(f.adapter, f.run.telegram_id, request), /pet_state_read_unavailable/);
+  assert.equal(f.adapter.database.prepare("SELECT COUNT(*) n FROM telegram_pet_run_modifiers WHERE run_id=? AND modifier_id='daily_tactic_3'").get(f.run.run_id).n, 0);
+  f.adapter.failFirst = null;
+  assert.equal((await chooseDailyRunTactic(f.adapter, f.run.telegram_id, request)).accepted, true);
+}
+
 // Old pending runs keep the old condition and rules even when resumed.
 const oldFixture = await tacticFixture('old-tactical-player');
 oldFixture.adapter.database.prepare('DELETE FROM telegram_pet_run_modifiers WHERE run_id=?').run(oldFixture.run.run_id);

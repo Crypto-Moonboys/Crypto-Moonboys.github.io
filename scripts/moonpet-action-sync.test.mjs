@@ -443,6 +443,46 @@ test('a pet switch during checkout cannot equip or debit either pet', async () =
   assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_instances WHERE equipped_food='moon_kibble'").get().n,0);
 });
 
+for (const action of ['activity_claim', 'activity_cancel']) {
+  test(`stale ${action} cannot close a newer activity session`, async () => {
+    const f = fixture(`stale-${action}`);
+    const first = await f.act({ action: 'activity_start', activity_type: 'train' });
+    assert.equal(first.accepted, true);
+    assert.equal((await hooks.cancelPetActivitySession(f.db, f.owner)).accepted, true);
+    const second = await f.act({ action: 'activity_start', activity_type: 'work' });
+    assert.equal(second.accepted, true);
+    f.sql.prepare("UPDATE telegram_pet_activity_sessions SET started_at=datetime('now','-30 minutes') WHERE id=?").run(second.session.id);
+    const before = f.sql.prepare('SELECT pet_xp,moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner);
+    const result = await hooks.processPetMiniAppAction(f.db, f.owner, { id: f.owner }, {
+      action, session_id: first.session.id,
+    }, 'fixture-token');
+    assert.equal(result.accepted, false, 'a button rendered for the first session must not affect the second');
+    assert.equal(result.reason, 'activity_state_changed');
+    assert.equal(result.refresh_state, true);
+    assert.equal(f.sql.prepare('SELECT status FROM telegram_pet_activity_sessions WHERE id=?').get(second.session.id).status, 'active');
+    assert.deepEqual(f.sql.prepare('SELECT pet_xp,moon_gold FROM telegram_pet_profiles WHERE telegram_id=?').get(f.owner), before);
+    assert.equal(f.sql.prepare("SELECT COUNT(*) n FROM telegram_pet_events WHERE event_type='activity_claim'").get().n, 0);
+    const current = await f.act({ action, session_id: second.session.id });
+    assert.equal(current.accepted, true, 'a fresh button still acts on its own session');
+    assert.equal(current.session.id, second.session.id);
+  });
+
+  test(`${action} requires the rendered session ID`, async () => {
+    const f = fixture(`missing-${action}`);
+    const started = await f.act({ action: 'activity_start', activity_type: 'train' });
+    f.sql.prepare("UPDATE telegram_pet_activity_sessions SET started_at=datetime('now','-30 minutes') WHERE id=?").run(started.session.id);
+    for (const sessionId of [undefined, null, '', '  ', { id: started.session.id }]) {
+      const result = await hooks.processPetMiniAppAction(f.db, f.owner, { id: f.owner }, {
+        action, ...(sessionId === undefined ? {} : { session_id: sessionId }),
+      }, 'fixture-token');
+      assert.equal(result.accepted, false);
+      assert.equal(result.reason, 'activity_session_required');
+      assert.equal(result.refresh_state, true);
+      assert.equal(f.sql.prepare('SELECT status FROM telegram_pet_activity_sessions WHERE id=?').get(started.session.id).status, 'active');
+    }
+  });
+}
+
 test('timed claim and Growth Mark stay on the session pet across settlement and switching', async () => {
   const f=fixture('82004'), petId='current-'+f.owner;
   f.pet('activity-second',currentSeason,300,2); f.reveal(petId);

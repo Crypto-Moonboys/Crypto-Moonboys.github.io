@@ -2355,7 +2355,7 @@
     var activityHtml = activity ? '' : '<div class="line muted">Choose recovery, training, work or exploration. One activity at a time; it continues while you play other routes or close the app. Claiming ends it. Base previews are subject to reward caps and stat limits; hunger increases are costs.</div>';
     if (activity) {
       activityHtml += '<div class="line">' + (activity.recovery_pending ? 'SAVED CLAIM: ' : 'ACTIVE: ') + escapeHtml(words(activity.activity_type)) + ' // ' + (activity.ready ? escapeHtml(activity.detail) : countdownMarkup(activity.cooldown || activity, 'Claim ready in ')) + '</div>';
-      activityHtml += '<div class="button-grid">' + button(activity.recovery_pending ? 'RECOVER SAVED REWARD' : 'CLAIM NOW', 'activity_claim', {}, activityClaimButtonOptions(activity)) + (activity.recovery_pending ? '' : button('CANCEL ACTIVITY', 'activity_cancel', {}, { danger: true, detail: 'Ends this activity without its rewards.' })) + '</div>';
+      activityHtml += '<div class="button-grid">' + button(activity.recovery_pending ? 'RECOVER SAVED REWARD' : 'CLAIM NOW', 'activity_claim', { session_id: activity.id }, activityClaimButtonOptions(activity)) + (activity.recovery_pending ? '' : button('CANCEL ACTIVITY', 'activity_cancel', { session_id: activity.id }, { danger: true, detail: 'Ends this activity without its rewards.' })) + '</div>';
       if (activity.preview) activityHtml += '<div class="line complete">' + (activity.recovery_pending ? 'SAVED CLAIM PREVIEW' : 'CLAIM PREVIEW AT LAST SYNC') + ' // ' + escapeHtml(activityPreviewText(activity.preview)) + '</div>';
       activityHtml += '<div class="line muted">Base previews; reward caps and stat limits apply. Hunger increases are costs. ' + (activity.recovery_pending ? 'Retry finishes the saved claim without paying twice.' : 'Claiming ends this activity. You can keep playing other routes while it runs.') + '</div>';
       if (activity.next_checkpoint) activityHtml += '<div class="line">NEXT DURATION // ' + escapeHtml(formatCountdownSeconds(activity.next_checkpoint.seconds)) + ' TOTAL // ' + countdownMarkup(activity.next_checkpoint.cooldown, 'in ') + '</div><div class="line muted">' + escapeHtml(activityPreviewText(activity.next_checkpoint)) + '</div>';
@@ -2770,6 +2770,8 @@
       daily_tactic_stale: 'that checkpoint has changed or its tactic is already chosen; use the refreshed run.',
       contracts_unavailable: 'contracts are syncing; refresh after the update.',
       pet_busy: 'a background activity is running. Open Work to review it; other care and Contracts are available.',
+      activity_state_changed: 'that activity changed in another session. Review the refreshed activity before claiming or cancelling.',
+      activity_session_required: 'reload the game before claiming or cancelling this activity.',
       pet_tired: 'not enough energy for this action. Review its displayed requirement or use care to recover.',
       pet_action_state_changed: 'your pet or equipment changed while care was loading. No care reward or cooldown was applied; try again with the refreshed pet.',
       displayed_pet_required: 'the displayed Moonpet identity is missing. Refresh the game before trying again. Nothing was spent or awarded.',
