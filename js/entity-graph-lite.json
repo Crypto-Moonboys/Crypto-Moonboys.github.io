@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-03T03:51:07.860Z",
-  "verified_at": "2026-10-03T03:51:07.860Z",
+  "generated_at": "2026-10-03T04:13:58.895Z",
+  "verified_at": "2026-10-03T04:13:58.895Z",
   "lite": true,
   "nodes": [
     {
@@ -84,6 +84,14 @@
       "authority_score": 24
     },
     {
+      "id": "/wiki/the-first-witness.html",
+      "title": "The First Witness",
+      "url": "/wiki/the-first-witness.html",
+      "category": "factions",
+      "rank_score": 477,
+      "authority_score": 25
+    },
+    {
       "id": "/wiki/gang-signs.html",
       "title": "gang signs",
       "url": "/wiki/gang-signs.html",
@@ -132,6 +140,14 @@
       "authority_score": 22
     },
     {
+      "id": "/wiki/first-witness-life-readings.html",
+      "title": "Life Readings from the First Witness",
+      "url": "/wiki/first-witness-life-readings.html",
+      "category": "characters",
+      "rank_score": 410,
+      "authority_score": 17
+    },
+    {
       "id": "/wiki/midevilpunks.html",
       "title": "MiDEViL PUNKS",
       "url": "/wiki/midevilpunks.html",
@@ -170,14 +186,6 @@
       "category": "factions",
       "rank_score": 378,
       "authority_score": 21
-    },
-    {
-      "id": "/wiki/the-first-witness.html",
-      "title": "The First Witness",
-      "url": "/wiki/the-first-witness.html",
-      "category": "factions",
-      "rank_score": 377,
-      "authority_score": 25
     },
     {
       "id": "/wiki/bitcoin-kids.html",
@@ -250,14 +258,6 @@
       "category": "factions",
       "rank_score": 360,
       "authority_score": 21
-    },
-    {
-      "id": "/wiki/first-witness-life-readings.html",
-      "title": "Life Readings from the First Witness",
-      "url": "/wiki/first-witness-life-readings.html",
-      "category": "characters",
-      "rank_score": 356,
-      "authority_score": 17
     },
     {
       "id": "/wiki/bitcoin.html",
@@ -1012,6 +1012,12 @@
       "target": "/wiki/the-nice-easy-bois.html",
       "score": 73,
       "weight": 0.73
+    },
+    {
+      "source": "/wiki/blockchain.html",
+      "target": "/wiki/the-first-witness.html",
+      "score": 69,
+      "weight": 0.69
     },
     {
       "source": "/wiki/first-witness-life-readings.html",

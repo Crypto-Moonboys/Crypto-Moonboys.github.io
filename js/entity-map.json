@@ -969,6 +969,45 @@
     "brand": null
   },
   {
+    "entity_id": "first_witness_ai_synthetic_minds",
+    "canonical_title": "Technology, AI and Synthetic Minds",
+    "canonical_url": "/wiki/first-witness-ai-synthetic-minds.html",
+    "category": "factions",
+    "aliases": [
+      "first witness ai synthetic minds",
+      "technology ai synthetic minds"
+    ],
+    "tags": [
+      "technology",
+      "ai",
+      "synthetic",
+      "minds"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-ai-synthetic-minds.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_apocrypha_disputed_passages",
+    "canonical_title": "Apocrypha and Disputed Passages",
+    "canonical_url": "/wiki/first-witness-apocrypha-disputed-passages.html",
+    "category": "core",
+    "aliases": [
+      "apocrypha disputed passages",
+      "first witness apocrypha disputed passages"
+    ],
+    "tags": [
+      "apocrypha",
+      "disputed",
+      "passages"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-apocrypha-disputed-passages.html"
+    ],
+    "brand": null
+  },
+  {
     "entity_id": "first_witness_bitcoin_witness",
     "canonical_title": "The Bitcoin Witness",
     "canonical_url": "/wiki/first-witness-bitcoin-witness.html",
@@ -1179,6 +1218,26 @@
     "brand": null
   },
   {
+    "entity_id": "first_witness_calendar_feasts_remembrance",
+    "canonical_title": "Calendar, Feasts and Days of Remembrance",
+    "canonical_url": "/wiki/first-witness-calendar-feasts-remembrance.html",
+    "category": "factions",
+    "aliases": [
+      "calendar feasts days remembrance",
+      "first witness calendar feasts remembrance"
+    ],
+    "tags": [
+      "calendar",
+      "feasts",
+      "days",
+      "remembrance"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-calendar-feasts-remembrance.html"
+    ],
+    "brand": null
+  },
+  {
     "entity_id": "first_witness_child_of_fire",
     "canonical_title": "The Child of Fire Interpretation",
     "canonical_url": "/wiki/first-witness-child-of-fire.html",
@@ -1195,6 +1254,25 @@
     ],
     "source_urls": [
       "/wiki/first-witness-child-of-fire.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_children_first_lessons",
+    "canonical_title": "Children and the First Lessons",
+    "canonical_url": "/wiki/first-witness-children-first-lessons.html",
+    "category": "factions",
+    "aliases": [
+      "children first lessons",
+      "first witness children first lessons"
+    ],
+    "tags": [
+      "children",
+      "first",
+      "lessons"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-children-first-lessons.html"
     ],
     "brand": null
   },
@@ -1218,6 +1296,44 @@
     "brand": null
   },
   {
+    "entity_id": "first_witness_daily_practices_rituals",
+    "canonical_title": "Daily Practices and Rituals",
+    "canonical_url": "/wiki/first-witness-daily-practices-rituals.html",
+    "category": "factions",
+    "aliases": [
+      "daily practices rituals",
+      "first witness daily practices rituals"
+    ],
+    "tags": [
+      "daily",
+      "practices",
+      "rituals"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-daily-practices-rituals.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_death_grief_remembrance",
+    "canonical_title": "Death, Grief and Remembrance",
+    "canonical_url": "/wiki/first-witness-death-grief-remembrance.html",
+    "category": "core",
+    "aliases": [
+      "death grief remembrance",
+      "first witness death grief remembrance"
+    ],
+    "tags": [
+      "death",
+      "grief",
+      "remembrance"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-death-grief-remembrance.html"
+    ],
+    "brand": null
+  },
+  {
     "entity_id": "first_witness_faction_commentaries",
     "canonical_title": "Faction Commentaries on the First Witness",
     "canonical_url": "/wiki/first-witness-faction-commentaries.html",
@@ -1234,6 +1350,67 @@
     ],
     "source_urls": [
       "/wiki/first-witness-faction-commentaries.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_faction_ritual_variations",
+    "canonical_title": "How the Forty Practise the Same Covenant Differently",
+    "canonical_url": "/wiki/first-witness-faction-ritual-variations.html",
+    "category": "factions",
+    "aliases": [
+      "first witness faction ritual variations"
+    ],
+    "tags": [
+      "how",
+      "forty",
+      "practise",
+      "same",
+      "covenant",
+      "differently"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-faction-ritual-variations.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_family_children_elders",
+    "canonical_title": "Love, Family, Children and Elders",
+    "canonical_url": "/wiki/first-witness-family-children-elders.html",
+    "category": "factions",
+    "aliases": [
+      "first witness family children elders",
+      "love family children elders"
+    ],
+    "tags": [
+      "love",
+      "family",
+      "children",
+      "elders"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-family-children-elders.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_food_hospitality_common_table",
+    "canonical_title": "Food, Hospitality and the Common Table",
+    "canonical_url": "/wiki/first-witness-food-hospitality-common-table.html",
+    "category": "factions",
+    "aliases": [
+      "first witness food hospitality common table",
+      "food hospitality common table"
+    ],
+    "tags": [
+      "food",
+      "hospitality",
+      "common",
+      "table"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-food-hospitality-common-table.html"
     ],
     "brand": null
   },
@@ -1292,6 +1469,25 @@
     "brand": null
   },
   {
+    "entity_id": "first_witness_heresies_corruptions_abuses",
+    "canonical_title": "Heresies, Corruptions and Abuses",
+    "canonical_url": "/wiki/first-witness-heresies-corruptions-abuses.html",
+    "category": "factions",
+    "aliases": [
+      "first witness heresies corruptions abuses",
+      "heresies corruptions abuses"
+    ],
+    "tags": [
+      "heresies",
+      "corruptions",
+      "abuses"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-heresies-corruptions-abuses.html"
+    ],
+    "brand": null
+  },
+  {
     "entity_id": "first_witness_hodl_doctrine",
     "canonical_title": "The HODL Doctrine",
     "canonical_url": "/wiki/first-witness-hodl-doctrine.html",
@@ -1306,6 +1502,64 @@
     ],
     "source_urls": [
       "/wiki/first-witness-hodl-doctrine.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_justice_mercy_restitution",
+    "canonical_title": "Justice, Mercy and Restitution",
+    "canonical_url": "/wiki/first-witness-justice-mercy-restitution.html",
+    "category": "core",
+    "aliases": [
+      "first witness justice mercy restitution",
+      "justice mercy restitution"
+    ],
+    "tags": [
+      "justice",
+      "mercy",
+      "restitution"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-justice-mercy-restitution.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_land_water_stewardship",
+    "canonical_title": "Land, Water, Animals and Stewardship",
+    "canonical_url": "/wiki/first-witness-land-water-stewardship.html",
+    "category": "factions",
+    "aliases": [
+      "first witness land water stewardship",
+      "land water animals stewardship"
+    ],
+    "tags": [
+      "land",
+      "water",
+      "animals",
+      "stewardship"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-land-water-stewardship.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_leadership_councils_succession",
+    "canonical_title": "Leadership, Councils and Succession",
+    "canonical_url": "/wiki/first-witness-leadership-councils-succession.html",
+    "category": "core",
+    "aliases": [
+      "first witness leadership councils succession",
+      "leadership councils succession"
+    ],
+    "tags": [
+      "leadership",
+      "councils",
+      "succession"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-leadership-councils-succession.html"
     ],
     "brand": null
   },
@@ -1349,6 +1603,26 @@
     "brand": null
   },
   {
+    "entity_id": "first_witness_marriage_partnership_adoption",
+    "canonical_title": "Marriage, Partnership, Adoption and Leaving",
+    "canonical_url": "/wiki/first-witness-marriage-partnership-adoption.html",
+    "category": "core",
+    "aliases": [
+      "first witness marriage partnership adoption",
+      "marriage partnership adoption leaving"
+    ],
+    "tags": [
+      "marriage",
+      "partnership",
+      "adoption",
+      "leaving"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-marriage-partnership-adoption.html"
+    ],
+    "brand": null
+  },
+  {
     "entity_id": "first_witness_master_chronology",
     "canonical_title": "First Witness Master Chronology",
     "canonical_url": "/wiki/first-witness-master-chronology.html",
@@ -1362,6 +1636,26 @@
     ],
     "source_urls": [
       "/wiki/first-witness-master-chronology.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_money_debt_honest_scales",
+    "canonical_title": "Money, Debt and Honest Scales",
+    "canonical_url": "/wiki/first-witness-money-debt-honest-scales.html",
+    "category": "factions",
+    "aliases": [
+      "first witness money debt honest scales",
+      "money debt honest scales"
+    ],
+    "tags": [
+      "money",
+      "debt",
+      "honest",
+      "scales"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-money-debt-honest-scales.html"
     ],
     "brand": null
   },
@@ -1385,6 +1679,121 @@
     "brand": null
   },
   {
+    "entity_id": "first_witness_oaths_promises_vows",
+    "canonical_title": "Oaths, Promises and Vows",
+    "canonical_url": "/wiki/first-witness-oaths-promises-vows.html",
+    "category": "characters",
+    "aliases": [
+      "first witness oaths promises vows",
+      "oaths promises vows"
+    ],
+    "tags": [
+      "oaths",
+      "promises",
+      "vows"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-oaths-promises-vows.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_parables",
+    "canonical_title": "Parables of the First Witness",
+    "canonical_url": "/wiki/first-witness-parables.html",
+    "category": "core",
+    "aliases": [
+      "first witness parables",
+      "parables first witness"
+    ],
+    "tags": [
+      "parables",
+      "first",
+      "witness"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-parables.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_pride_temptation_false_idols",
+    "canonical_title": "Pride, Temptation and False Idols",
+    "canonical_url": "/wiki/first-witness-pride-temptation-false-idols.html",
+    "category": "factions",
+    "aliases": [
+      "first witness pride temptation false idols",
+      "pride temptation false idols"
+    ],
+    "tags": [
+      "pride",
+      "temptation",
+      "false",
+      "idols"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-pride-temptation-false-idols.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_proverbs_street_sayings",
+    "canonical_title": "Proverbs and Street Sayings",
+    "canonical_url": "/wiki/first-witness-proverbs-street-sayings.html",
+    "category": "core",
+    "aliases": [
+      "first witness proverbs street sayings",
+      "proverbs street sayings"
+    ],
+    "tags": [
+      "proverbs",
+      "street",
+      "sayings"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-proverbs-street-sayings.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_questions_for_the_living",
+    "canonical_title": "Questions for the Living",
+    "canonical_url": "/wiki/first-witness-questions-for-the-living.html",
+    "category": "core",
+    "aliases": [
+      "first witness questions for the living",
+      "questions living"
+    ],
+    "tags": [
+      "questions",
+      "living"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-questions-for-the-living.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_relics_manuscripts_lost_editions",
+    "canonical_title": "Relics, Manuscripts and Lost Editions",
+    "canonical_url": "/wiki/first-witness-relics-manuscripts-lost-editions.html",
+    "category": "core",
+    "aliases": [
+      "first witness relics manuscripts lost editions",
+      "relics manuscripts lost editions"
+    ],
+    "tags": [
+      "relics",
+      "manuscripts",
+      "lost",
+      "editions"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-relics-manuscripts-lost-editions.html"
+    ],
+    "brand": null
+  },
+  {
     "entity_id": "first_witness_sacred_fork",
     "canonical_title": "The Sacred Fork",
     "canonical_url": "/wiki/first-witness-sacred-fork.html",
@@ -1399,6 +1808,65 @@
     ],
     "source_urls": [
       "/wiki/first-witness-sacred-fork.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_sacred_places_walls_pilgrimage",
+    "canonical_title": "Sacred Places, Walls and Pilgrimage",
+    "canonical_url": "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
+    "category": "factions",
+    "aliases": [
+      "first witness sacred places walls pilgrimage",
+      "sacred places walls pilgrimage"
+    ],
+    "tags": [
+      "sacred",
+      "places",
+      "walls",
+      "pilgrimage"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-sacred-places-walls-pilgrimage.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_sects_schools_schisms",
+    "canonical_title": "Sects, Schools and Schisms",
+    "canonical_url": "/wiki/first-witness-sects-schools-schisms.html",
+    "category": "factions",
+    "aliases": [
+      "first witness sects schools schisms",
+      "sects schools schisms"
+    ],
+    "tags": [
+      "sects",
+      "schools",
+      "schisms"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-sects-schools-schisms.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_songs_chants_responses",
+    "canonical_title": "Songs, Chants and Call-and-Response",
+    "canonical_url": "/wiki/first-witness-songs-chants-responses.html",
+    "category": "core",
+    "aliases": [
+      "first witness songs chants responses",
+      "songs chants call response"
+    ],
+    "tags": [
+      "songs",
+      "chants",
+      "call",
+      "response"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-songs-chants-responses.html"
     ],
     "brand": null
   },
@@ -1440,6 +1908,26 @@
     "brand": null
   },
   {
+    "entity_id": "first_witness_symbols_marks_sacred_design",
+    "canonical_title": "Symbols, Marks and Sacred Design",
+    "canonical_url": "/wiki/first-witness-symbols-marks-sacred-design.html",
+    "category": "characters",
+    "aliases": [
+      "first witness symbols marks sacred design",
+      "symbols marks sacred design"
+    ],
+    "tags": [
+      "symbols",
+      "marks",
+      "sacred",
+      "design"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-symbols-marks-sacred-design.html"
+    ],
+    "brand": null
+  },
+  {
     "entity_id": "first_witness_triple_fork_chainfire",
     "canonical_title": "The Triple Fork and Chainfire",
     "canonical_url": "/wiki/first-witness-triple-fork-chainfire.html",
@@ -1456,6 +1944,44 @@
     ],
     "source_urls": [
       "/wiki/first-witness-triple-fork-chainfire.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_war_defence_peacekeeping",
+    "canonical_title": "War, Defence and Peacekeeping",
+    "canonical_url": "/wiki/first-witness-war-defence-peacekeeping.html",
+    "category": "factions",
+    "aliases": [
+      "first witness war defence peacekeeping",
+      "war defence peacekeeping"
+    ],
+    "tags": [
+      "war",
+      "defence",
+      "peacekeeping"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-war-defence-peacekeeping.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_work_craft_service",
+    "canonical_title": "Work, Craft and Service",
+    "canonical_url": "/wiki/first-witness-work-craft-service.html",
+    "category": "core",
+    "aliases": [
+      "first witness work craft service",
+      "work craft service"
+    ],
+    "tags": [
+      "work",
+      "craft",
+      "service"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-work-craft-service.html"
     ],
     "brand": null
   },

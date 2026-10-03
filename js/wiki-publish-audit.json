@@ -1,8 +1,8 @@
 {
-  "_generated": "2026-10-03T03:51:01.663Z",
+  "_generated": "2026-10-03T04:13:53.382Z",
   "summary": {
-    "total": 361,
-    "approved": 361,
+    "total": 388,
+    "approved": 388,
     "blocked": 0,
     "needs_review": 0,
     "blocked_synthetic_slug": 0,
@@ -361,6 +361,20 @@
       "word_count": 1110
     },
     {
+      "slug": "first-witness-ai-synthetic-minds",
+      "file": "first-witness-ai-synthetic-minds.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 382
+    },
+    {
+      "slug": "first-witness-apocrypha-disputed-passages",
+      "file": "first-witness-apocrypha-disputed-passages.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 446
+    },
+    {
       "slug": "first-witness-bitcoin-witness",
       "file": "first-witness-bitcoin-witness.html",
       "status": "APPROVED_CANON_PAGE",
@@ -438,11 +452,25 @@
       "word_count": 610
     },
     {
+      "slug": "first-witness-calendar-feasts-remembrance",
+      "file": "first-witness-calendar-feasts-remembrance.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 403
+    },
+    {
       "slug": "first-witness-child-of-fire",
       "file": "first-witness-child-of-fire.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 525
+    },
+    {
+      "slug": "first-witness-children-first-lessons",
+      "file": "first-witness-children-first-lessons.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 467
     },
     {
       "slug": "first-witness-concordance",
@@ -452,11 +480,46 @@
       "word_count": 719
     },
     {
+      "slug": "first-witness-daily-practices-rituals",
+      "file": "first-witness-daily-practices-rituals.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 573
+    },
+    {
+      "slug": "first-witness-death-grief-remembrance",
+      "file": "first-witness-death-grief-remembrance.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 385
+    },
+    {
       "slug": "first-witness-faction-commentaries",
       "file": "first-witness-faction-commentaries.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1057
+    },
+    {
+      "slug": "first-witness-faction-ritual-variations",
+      "file": "first-witness-faction-ritual-variations.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 387
+    },
+    {
+      "slug": "first-witness-family-children-elders",
+      "file": "first-witness-family-children-elders.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 393
+    },
+    {
+      "slug": "first-witness-food-hospitality-common-table",
+      "file": "first-witness-food-hospitality-common-table.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 398
     },
     {
       "slug": "first-witness-forty-paths",
@@ -480,11 +543,39 @@
       "word_count": 902
     },
     {
+      "slug": "first-witness-heresies-corruptions-abuses",
+      "file": "first-witness-heresies-corruptions-abuses.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 487
+    },
+    {
       "slug": "first-witness-hodl-doctrine",
       "file": "first-witness-hodl-doctrine.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 523
+    },
+    {
+      "slug": "first-witness-justice-mercy-restitution",
+      "file": "first-witness-justice-mercy-restitution.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 433
+    },
+    {
+      "slug": "first-witness-land-water-stewardship",
+      "file": "first-witness-land-water-stewardship.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 336
+    },
+    {
+      "slug": "first-witness-leadership-councils-succession",
+      "file": "first-witness-leadership-councils-succession.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 342
     },
     {
       "slug": "first-witness-life-readings",
@@ -501,11 +592,25 @@
       "word_count": 543
     },
     {
+      "slug": "first-witness-marriage-partnership-adoption",
+      "file": "first-witness-marriage-partnership-adoption.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 387
+    },
+    {
       "slug": "first-witness-master-chronology",
       "file": "first-witness-master-chronology.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 631
+    },
+    {
+      "slug": "first-witness-money-debt-honest-scales",
+      "file": "first-witness-money-debt-honest-scales.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 424
     },
     {
       "slug": "first-witness-null-erasure",
@@ -515,11 +620,74 @@
       "word_count": 496
     },
     {
+      "slug": "first-witness-oaths-promises-vows",
+      "file": "first-witness-oaths-promises-vows.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 431
+    },
+    {
+      "slug": "first-witness-parables",
+      "file": "first-witness-parables.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 684
+    },
+    {
+      "slug": "first-witness-pride-temptation-false-idols",
+      "file": "first-witness-pride-temptation-false-idols.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 426
+    },
+    {
+      "slug": "first-witness-proverbs-street-sayings",
+      "file": "first-witness-proverbs-street-sayings.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 475
+    },
+    {
+      "slug": "first-witness-questions-for-the-living",
+      "file": "first-witness-questions-for-the-living.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 358
+    },
+    {
+      "slug": "first-witness-relics-manuscripts-lost-editions",
+      "file": "first-witness-relics-manuscripts-lost-editions.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 401
+    },
+    {
       "slug": "first-witness-sacred-fork",
       "file": "first-witness-sacred-fork.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 611
+    },
+    {
+      "slug": "first-witness-sacred-places-walls-pilgrimage",
+      "file": "first-witness-sacred-places-walls-pilgrimage.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 378
+    },
+    {
+      "slug": "first-witness-sects-schools-schisms",
+      "file": "first-witness-sects-schools-schisms.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 432
+    },
+    {
+      "slug": "first-witness-songs-chants-responses",
+      "file": "first-witness-songs-chants-responses.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 297
     },
     {
       "slug": "first-witness-source-register",
@@ -536,11 +704,32 @@
       "word_count": 507
     },
     {
+      "slug": "first-witness-symbols-marks-sacred-design",
+      "file": "first-witness-symbols-marks-sacred-design.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 438
+    },
+    {
       "slug": "first-witness-triple-fork-chainfire",
       "file": "first-witness-triple-fork-chainfire.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 597
+    },
+    {
+      "slug": "first-witness-war-defence-peacekeeping",
+      "file": "first-witness-war-defence-peacekeeping.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 403
+    },
+    {
+      "slug": "first-witness-work-craft-service",
+      "file": "first-witness-work-craft-service.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 395
     },
     {
       "slug": "first-witness-world-chain-error",
@@ -2297,7 +2486,7 @@
       "file": "the-first-witness.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1774
+      "word_count": 2240
     },
     {
       "slug": "the-gasless-ghosts",
