@@ -1,0 +1,38 @@
+name: Temporary W81 extract for canon rewrite
+
+on:
+  push:
+    branches:
+      - canon/rewrite-p1-core-lore
+    paths:
+      - ".github/workflows/extract-w81-temp.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout rewrite branch
+        uses: actions/checkout@v4
+        with:
+          ref: canon/rewrite-p1-core-lore
+          fetch-depth: 0
+
+      - name: Extract W81 archive
+        shell: bash
+        run: |
+          rm -rf .tmp-w81
+          mkdir -p .tmp-w81
+          unzip -q about/w81.zip -d .tmp-w81
+          find .tmp-w81 -type f | sort > .tmp-w81/FILE-LIST.txt
+
+      - name: Commit temporary extraction
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .tmp-w81
+          git commit -m "chore(lore): temporarily extract W81 sources for canon rewrite"
+          git push origin HEAD:canon/rewrite-p1-core-lore
