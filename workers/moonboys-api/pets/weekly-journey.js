@@ -19,7 +19,7 @@ const WEEKLY_JOURNEY_OBJECTIVE_SOURCE_TYPES = Object.freeze({
   weekly_care: Object.freeze(new Set(['feed', 'play', 'clean', 'sleep'])),
   weekly_training: Object.freeze(new Set(['train'])),
   weekly_run: Object.freeze(new Set(['run', 'run_complete', 'run_extract', 'daily_run', 'daily_moon_run'])),
-  weekly_boss_attempt: Object.freeze(new Set(['boss_fought', 'weekly_boss', 'weekly_boss_reward'])),
+  weekly_boss_attempt: Object.freeze(new Set(['boss_fought', 'weekly_boss'])),
   weekly_check_in: Object.freeze(new Set(['check_in', 'daily_check_in', 'weekly_check_in', 'daily_chest'])),
 });
 
@@ -143,6 +143,7 @@ export async function readWeeklyJourneyObjectiveProgress(db, request) {
     JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id
       AND s.season_key=i.season_key AND s.slot_number=i.slot_number
     WHERE o.pet_id=? AND o.telegram_id=? AND o.season_key=? AND o.qualification_week=? AND o.status='accepted'
+      AND o.objective_id=CASE e.event_type ${sourceObjectivesSql} END
       AND ${weeklyBossLegacySourceProofSql()}
     GROUP BY o.objective_id`)
     .bind(request.pet_id, request.telegram_id, request.season_key, request.qualification_week).all().then(requirePetReadResult);
@@ -172,6 +173,7 @@ export async function readWeeklyJourneyQualificationDay(db, request) {
         JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id
           AND s.season_key=i.season_key AND s.slot_number=i.slot_number
         WHERE o.telegram_id=? AND o.pet_id=? AND o.season_key=? AND o.qualification_week=? AND o.status='accepted'
+          AND o.objective_id=CASE e.event_type ${sourceObjectivesSql} END
           AND ${weeklyBossLegacySourceProofSql()}
         GROUP BY o.objective_id,e.day_key
       ) WINDOW objective_progress AS (PARTITION BY objective_id ORDER BY day

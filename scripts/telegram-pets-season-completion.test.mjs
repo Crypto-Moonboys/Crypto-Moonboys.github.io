@@ -44,7 +44,8 @@ CREATE TABLE telegram_pet_boss_victories (pet_id TEXT, telegram_id TEXT, season_
 CREATE TABLE telegram_pet_material_balances (telegram_id TEXT, material_key TEXT, quantity INTEGER, PRIMARY KEY(telegram_id,material_key));
 CREATE TABLE telegram_pet_inventory (telegram_id TEXT, asset_type TEXT, asset_key TEXT, quantity INTEGER, PRIMARY KEY(telegram_id,asset_type,asset_key));
 CREATE TABLE telegram_pet_relics (telegram_id TEXT, relic_id TEXT);
-CREATE TABLE telegram_pet_events (telegram_id TEXT,pet_id TEXT,season_key TEXT,event_key TEXT,event_type TEXT,status TEXT,reason TEXT,week_key TEXT,day_key TEXT,metadata TEXT);
+CREATE TABLE telegram_pet_events (telegram_id TEXT,pet_id TEXT,season_key TEXT,event_key TEXT,event_type TEXT,status TEXT,reason TEXT,week_key TEXT,day_key TEXT,metadata TEXT,created_at TEXT);
+CREATE TABLE telegram_pet_weekly_boss_events (telegram_id TEXT,week_key TEXT,boss_id TEXT,event_key TEXT,day_key TEXT,created_at TEXT);
 INSERT INTO telegram_pet_profiles VALUES ('owner'), ('attacker'), ('production-owner');
 INSERT INTO telegram_pet_season_slots (pet_id,telegram_id,season_key,slot_number,status,acquisition_type) VALUES ('pet-a','owner','s1',1,'active','free'), ('pet-b','owner','s1',2,'active','arcade_xp'), ('forged','attacker','s1',1,'active','free'), ('production-pet','production-owner','pet-s2026-001',1,'active','free'), ('production-pet-b','production-owner','pet-s2026-001',2,'active','arcade_xp');
 INSERT INTO telegram_pet_instances VALUES ('pet-a','owner','s1',1,50,4900,'active'), ('pet-b','owner','s1',2,1,0,'active'), ('forged','attacker','s1',1,50,4900,'active'), ('production-pet','production-owner','pet-s2026-001',1,5,400,'active'), ('production-pet-b','production-owner','pet-s2026-001',2,5,400,'active');`);
@@ -249,6 +250,7 @@ for (let day = 0; day < 60; day += 1) {
 assert.equal(sqlite.prepare(`SELECT COUNT(DISTINCT earned_day) count FROM telegram_pet_growth_marks
   WHERE pet_id='production-pet' AND season_key='pet-s2026-001' AND earned_day IS NOT NULL`).get().count, 60,
 'normal post-hatch activity provides the full season Growth Mark path without client authority');
+sqlite.exec("INSERT INTO telegram_pet_weekly_boss_events VALUES ('production-owner','2026-W06','alley_king','persisted-boss-event','2026-02-05','2026-02-05T00:00:00Z')");
 const productionCrest = await hooks.recordWeeklyBossVictoryCrest(db, 'production-owner', '2026-W06', 'alley_king', 'persisted-boss-event', new Date('2026-02-05'));
 assert.equal(productionCrest.accepted || productionCrest.duplicate, true, 'the production weekly boss settlement hook awards an active-pet crest');
 sqlite.prepare(`UPDATE telegram_pet_active_slots SET pet_id='production-pet-b' WHERE telegram_id='production-owner'`).run();
@@ -258,8 +260,9 @@ assert.equal(sqlite.prepare(`SELECT COUNT(*) count FROM telegram_pet_weekly_cres
 sqlite.prepare(`INSERT INTO telegram_pet_weekly_boss_victories_by_pet
   (telegram_id, week_key, boss_id, pet_id, season_key, victory_event_key, defeated_at)
   VALUES ('production-owner','2026-W08','alley_king','production-pet','pet-s2026-001','persisted-boss-event:bad-row','not-a-persisted-date')`).run();
+sqlite.exec("INSERT INTO telegram_pet_weekly_boss_events VALUES ('production-owner','2026-W08','alley_king','persisted-boss-event:bad-row','2026-02-12','2026-02-12T12:00:00Z')");
 const malformedStoredCrest = await hooks.awardStoredWeeklyBossVictoryCrest(db, 'production-owner', '2026-W08', 'alley_king', new Date('2026-02-12T12:00:00Z'));
-assert.equal(malformedStoredCrest.accepted, true, 'stored malformed crest timestamps cannot break recovery settlement');
+assert.equal(malformedStoredCrest.accepted, true, 'the proven attack clock recovers a malformed victory clock');
 assert.match(sqlite.prepare(`SELECT earned_at FROM telegram_pet_weekly_crests WHERE crest_id='crest:production-pet:pet-s2026-001:7:weekly_boss'`).get().earned_at,
   /^\d{4}-\d{2}-\d{2}T/, 'recovered crest settlement writes a valid server ISO timestamp');
 assert.equal((await hooks.awardStoredWeeklyBossVictoryCrest({ prepare() { throw new Error('migration unavailable'); } }, 'production-owner', '2026-W06', 'alley_king')).non_fatal, true, 'crest storage failure cannot break boss settlement');

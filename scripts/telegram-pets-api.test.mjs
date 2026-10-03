@@ -5,6 +5,13 @@ import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import moonboysApiWorker, { __petMediaTestHooks } from '../workers/moonboys-api/worker.js';
 
+// Compare player-facing meters while keeping XP and currency assertions exact.
+// Fractional persistence itself is covered by moonpet-care-frequency.test.mjs.
+function visibleCareRow(row) {
+  return Object.fromEntries(Object.entries(row).map(([key, value]) => [key,
+    ['hunger', 'energy', 'happiness', 'cleanliness'].includes(key) ? Math.round(value) : value]));
+}
+
 const worker = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
 const liveSystemsSource = fs.readFileSync(new URL('../workers/moonboys-api/pets/live-systems.js', import.meta.url), 'utf8');
 const petRecoverySqlSources = [
@@ -1897,7 +1904,7 @@ class RepeatReservationDb {
           } else {
             results.push({ meta: { changes: 0 }, results: [] });
           }
-        } else if (sql.includes('SET energy = energy - ?')) {
+        } else if (sql.includes('SET energy = MAX(0,energy-?)')) {
           const [cost, telegramId, minimum, reservationId] = args;
           const event = [...this.events.values()].find((row) => row.id === reservationId && row.status === 'pending');
           const current = Number(this.energy.get(String(telegramId)) || 0);
@@ -2720,7 +2727,7 @@ const staleExpeditionResult = await runPetCrystalExpedition(staleExpeditionDb, '
 assert.equal(staleExpeditionResult.accepted, true, staleExpeditionResult.reason);
 assert.equal(staleExpeditionResult.expedition.key, 'crystal_caves',
   'Crystal Expedition settlement must use the same XP-derived tier as selection');
-assert.equal(staleExpeditionDb.database.prepare("SELECT energy FROM telegram_pet_instances WHERE pet_id='pet:expedition-stale-level:pet-s2026-003:1'").get().energy, 2,
+assert.equal(Math.round(staleExpeditionDb.database.prepare("SELECT energy FROM telegram_pet_instances WHERE pet_id='pet:expedition-stale-level:pet-s2026-003:1'").get().energy), 2,
   'Crystal Expedition settlement must charge the selected XP-derived tier energy cost');
 const staleExpeditionClaim = staleExpeditionDb.database.prepare(`SELECT metadata FROM telegram_pet_reward_claims
   WHERE telegram_id='expedition-stale-level' AND source='pet_expedition'`).get();
@@ -2832,7 +2839,7 @@ installAcceptedEventInsertRace(actionRaceDb, {
 const actionRace = await processPetAction(actionRaceDb, 'action-race', 'feed', { event_key: 'callback:feed:race', source: 'telegram_callback' });
 assert.equal(actionRace.duplicate, true, 'pet action INSERT OR IGNORE race must return the accepted idempotent result');
 assert.deepEqual(
-  { moon_gold: actionRace.pet.moon_gold, pet_xp: actionRace.pet.pet_xp, hunger: actionRace.pet.hunger },
+  { moon_gold: actionRace.pet.moon_gold, pet_xp: actionRace.pet.pet_xp, hunger: Math.round(actionRace.pet.hunger) },
   { moon_gold: 5, pet_xp: 6, hunger: 5 },
   'pet action duplicate race result must include the persisted wallet and pet state',
 );
@@ -2846,7 +2853,7 @@ const energyDrink = await processPetAction(energyDrinkDb, 'special-energy', 'ene
 });
 assert.equal(energyDrink.accepted, true);
 assert.deepEqual(
-  { energy: energyDrink.pet.energy, happiness: energyDrink.pet.happiness, pet_xp: energyDrink.pet.pet_xp,
+  { energy: Math.round(energyDrink.pet.energy), happiness: Math.round(energyDrink.pet.happiness), pet_xp: energyDrink.pet.pet_xp,
     moon_gold: energyDrink.pet.moon_gold, moon_crystals: energyDrink.pet.moon_crystals, style_tokens: energyDrink.pet.style_tokens },
   { energy: 100, happiness: 92, pet_xp: 0, moon_gold: 0, moon_crystals: 0, style_tokens: 0 },
   'ENERGY DRINK must restore only bounded Energy and award no XP or currency',
@@ -2875,7 +2882,7 @@ for (const [action, startingHappiness, expectedHappiness] of [['dance', 90, 100]
   assert.equal(result.accepted, true, `${action} must be accepted for an idle active pet`);
   assert.equal(result.pet.happiness, expectedHappiness, `${action} must cap Happiness at 100`);
   assert.deepEqual(
-    { energy: result.pet.energy, pet_xp: result.pet.pet_xp, moon_gold: result.pet.moon_gold,
+    { energy: Math.round(result.pet.energy), pet_xp: result.pet.pet_xp, moon_gold: result.pet.moon_gold,
       moon_crystals: result.pet.moon_crystals, style_tokens: result.pet.style_tokens },
     { energy: 80, pet_xp: 0, moon_gold: 0, moon_crystals: 0, style_tokens: 0 },
     `${action} must not alter Energy, XP, or currency`,
@@ -3146,7 +3153,7 @@ const frozenAction = await processPetAction(recoveryFreezeActionDb, 'action-reco
 assert.equal(frozenAction.accepted, false, 'pending historical recovery must freeze pet-action wallet credits');
 assert.equal(frozenAction.reason, 'wallet_reconciliation_recovery_pending');
 assert.deepEqual(
-  { ...recoveryFreezeActionDb.database.prepare("SELECT moon_gold, pet_xp, hunger FROM telegram_pet_profiles WHERE telegram_id='action-recovery-freeze'").get() },
+  visibleCareRow(recoveryFreezeActionDb.database.prepare("SELECT moon_gold, pet_xp, hunger FROM telegram_pet_profiles WHERE telegram_id='action-recovery-freeze'").get()),
   { moon_gold: 0, pet_xp: 0, hunger: 25 },
   'frozen pet action must not mutate account wallet or pet-owned state',
 );
@@ -3748,7 +3755,7 @@ assert.deepEqual(
   'recovery-pending moon_snack must consume inventory exactly once',
 );
 assert.deepEqual(
-  { ...recoverySnackItemDb.database.prepare("SELECT pet_xp, hunger, energy, style_tokens FROM telegram_pet_profiles WHERE telegram_id='use-item-recovery-snack'").get() },
+  visibleCareRow(recoverySnackItemDb.database.prepare("SELECT pet_xp, hunger, energy, style_tokens FROM telegram_pet_profiles WHERE telegram_id='use-item-recovery-snack'").get()),
   { pet_xp: 4, hunger: 7, energy: 78, style_tokens: 0 },
   'recovery-pending moon_snack must apply pet-only XP/stat effects without wallet drift',
 );
@@ -3815,12 +3822,12 @@ assert.equal(snackB.accepted, true, 'second concurrent moon snack use must settl
 assert.equal(concurrentSnackDb.database.prepare("SELECT quantity FROM telegram_pet_inventory WHERE telegram_id='use-item-concurrent-snack' AND asset_key='moon_snack'").get().quantity, 0,
   'two concurrent moon snack uses must consume exactly two items');
 assert.deepEqual(
-  { ...concurrentSnackDb.database.prepare("SELECT pet_xp, hunger, energy FROM telegram_pet_profiles WHERE telegram_id='use-item-concurrent-snack'").get() },
+  visibleCareRow(concurrentSnackDb.database.prepare("SELECT pet_xp, hunger, energy FROM telegram_pet_profiles WHERE telegram_id='use-item-concurrent-snack'").get()),
   { pet_xp: 108, hunger: 14, energy: 86 },
   'two concurrent moon snack uses must apply both XP and stat deltas to the profile',
 );
 assert.deepEqual(
-  { ...concurrentSnackDb.database.prepare("SELECT pet_xp, hunger, energy FROM telegram_pet_instances WHERE telegram_id='use-item-concurrent-snack'").get() },
+  visibleCareRow(concurrentSnackDb.database.prepare("SELECT pet_xp, hunger, energy FROM telegram_pet_instances WHERE telegram_id='use-item-concurrent-snack'").get()),
   { pet_xp: 108, hunger: 14, energy: 86 },
   'two concurrent moon snack uses must apply both XP and stat deltas to the active instance',
 );
@@ -3853,7 +3860,7 @@ assert.deepEqual(
   'concurrent conflicting item uses must consume each item once without duplication',
 );
 assert.deepEqual(
-  { ...concurrentMixedDb.database.prepare("SELECT pet_xp, hunger, energy FROM telegram_pet_profiles WHERE telegram_id='use-item-concurrent-mixed'").get() },
+  visibleCareRow(concurrentMixedDb.database.prepare("SELECT pet_xp, hunger, energy FROM telegram_pet_profiles WHERE telegram_id='use-item-concurrent-mixed'").get()),
   { pet_xp: 110, hunger: 32, energy: 100 },
   'concurrent conflicting item uses must not lose XP or stat deltas',
 );
@@ -4675,8 +4682,8 @@ function repeatRewardSnapshot(db, telegramId, mode) {
   const profile = {
     ...profileRow,
     pet_xp: instanceRow?.pet_xp ?? profileRow.pet_xp,
-    energy: instanceRow?.energy ?? profileRow.energy,
-    happiness: instanceRow?.happiness ?? profileRow.happiness,
+    energy: Math.round(instanceRow?.energy ?? profileRow.energy),
+    happiness: Math.round(instanceRow?.happiness ?? profileRow.happiness),
   };
   const user = { ...userRow };
   const event = eventRow ? { ...eventRow } : null;
@@ -5077,7 +5084,7 @@ assert.deepEqual({ ...kaijuCapTotals }, { pet_xp: 1200, community_xp: 250 }, 'Ka
 const repeatReservation = asyncBlock('reservePetRepeatRewardEvent');
 assert.ok(repeatReservation.includes('const results = await db.batch(statements)'), 'event reservation, slot claim, and Kaiju Energy payment must commit as one D1 batch');
 assert.ok(repeatReservation.includes('ON CONFLICT(telegram_id, day_key, mode) DO UPDATE SET') && repeatReservation.includes('claimed_count = claimed_count + 1') && repeatReservation.includes('RETURNING claimed_count'), 'Event and Kaiju slot claims must atomically increment and return the exact counter value');
-assert.match(repeatReservation, /SET energy = energy - \?, updated_at = CURRENT_TIMESTAMP\s+WHERE telegram_id = \? AND energy >= \?/, 'Kaiju Energy must be claimed with one conditional update');
+assert.match(repeatReservation, /SET energy = MAX\(0,energy-\?\), updated_at = CURRENT_TIMESTAMP\s+WHERE telegram_id = \? AND ROUND\(energy\) >= \?/, 'Kaiju Energy must be claimed with one conditional update');
 assert.ok(repeatReservation.match(/EXISTS \(SELECT 1 FROM telegram_pet_events WHERE id = \? AND status = 'pending'\)/g)?.length >= 2, 'Energy and slot claims must be gated by the newly inserted idempotency reservation');
 assert.ok(repeatReservation.includes("SET reason = 'repeat_reward_slot:'") && repeatReservation.includes('RETURNING id, pet_id, status, reason'), 'the exact reward slot, pet authority, and paid Energy must be persisted for retry recovery');
 assert.ok(repeatReservation.includes('pet_id, status, reason, day_key, week_key, season_key'), 'pending reservations must load and return their stored pet and accounting authority');

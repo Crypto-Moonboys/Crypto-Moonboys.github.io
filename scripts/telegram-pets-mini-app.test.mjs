@@ -72,7 +72,7 @@ assert.match(
 );
 assert.match(
   miniAppStateSource,
-  /const identityScope = createDisplayedPetScope\(db, telegramId, petRaw\.pet_id, petRaw\.season_key\);[\s\S]*const identityPromise = getMoonpetIdentityWithLifecycle\(identityScope\.db, telegramId, \{ required: true \}\)[\s\S]*catch\(error => \{ throw normalizePetProjectionError\(error\); \}\);[\s\S]*const lifecyclePromise = identityPromise\.then\([\s\S]*buildPetGuidanceState\(db, telegramId, petRaw, \{ identity: identityPromise, runtime: runtimePromise, combatEligibility: combatEligibilityPromise, projectionScope: identityScope \}\)/,
+  /const identityScope = createDisplayedPetScope\(db, telegramId, petRaw\.pet_id, petRaw\.season_key\);[\s\S]*const identityPromise = getMoonpetIdentityWithLifecycle\(identityScope\.db, telegramId, \{ required: true \}\)[\s\S]*catch\(error => \{ throw normalizePetProjectionError\(error\); \}\);[\s\S]*const lifecyclePromise = identityPromise\.then\([\s\S]*buildPetGuidanceState\(db, telegramId, petRaw, \{ identity: identityPromise, runtime: runtimePromise, combatEligibility: combatEligibilityPromise, projectionScope: identityScope, now \}\)/,
   'Mini App state must share one source-guarded identity/lifecycle authority result with guidance and combat eligibility',
 );
 assert.match(miniAppStateSource, /await assertPetProjectionSource\(db, telegramId, petRaw, seasonSlots, identityScope, guidance\)/,

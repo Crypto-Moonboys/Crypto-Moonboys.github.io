@@ -3,7 +3,7 @@ import { getPetVisibleLevelSql } from './progression-phase-2.js';
 import { requirePetFirstReadResult, requirePetMutationResult } from './read-result.js';
 import { PET_INSTANCE_AUTHORITY_VERSION } from './wallet-reconciliation.js';
 
-const SOURCE_TYPES = "('weekly_boss','weekly_boss_reward','boss_fought')";
+const SOURCE_TYPES = "('weekly_boss','boss_fought')";
 
 // The shared fight uses UTC weeks; each permanent pet's Journey uses its own
 // retained ownership clock. A rematch is needed only when that pet lacks an
@@ -53,7 +53,7 @@ export async function commitPetWeeklyBossParticipation(db, request) {
         JOIN telegram_pet_active_slots a ON a.pet_id=i.pet_id AND a.telegram_id=i.telegram_id AND a.season_key=i.season_key
         JOIN telegram_pet_lifecycle_by_pet l ON l.pet_id=i.pet_id AND l.telegram_id=i.telegram_id
         WHERE i.pet_id=? AND i.telegram_id=? AND i.season_key=? AND i.status='active' AND s.status='active'
-          AND l.phase<>'egg' AND i.energy>=12 AND ${getPetVisibleLevelSql('i.pet_xp')}>=5
+          AND l.phase<>'egg' AND ROUND(i.energy)>=12 AND ${getPetVisibleLevelSql('i.pet_xp')}>=5
           AND i.pet_xp=? AND i.energy=? AND i.health=?)
       AND EXISTS (SELECT 1 FROM telegram_pet_weekly_boss_progress
         WHERE telegram_id=? AND week_key=? AND boss_id=? AND defeated_at IS NOT NULL)
@@ -69,7 +69,7 @@ export async function commitPetWeeklyBossParticipation(db, request) {
         pet.pet_id, owner, pet.season_key, pet.pet_xp, pet.energy, pet.health, owner, week, boss.boss_id,
         owner, pet.pet_id, pet.season_key, participation.start_day, participation.end_day,
         owner, pet.pet_id, pet.season_key, participation.start_day, participation.end_day),
-    db.prepare(`UPDATE telegram_pet_instances SET energy=energy-12,source_profile_updated_at=?,updated_at=CURRENT_TIMESTAMP
+    db.prepare(`UPDATE telegram_pet_instances SET energy=MAX(0,energy-12),source_profile_updated_at=?,updated_at=CURRENT_TIMESTAMP
       WHERE pet_id=? AND telegram_id=? AND season_key=?
         AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id=? AND reason='weekly_boss_participation')`)
       .bind(PET_INSTANCE_AUTHORITY_VERSION, pet.pet_id, owner, pet.season_key, eventId),

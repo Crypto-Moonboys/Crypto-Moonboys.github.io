@@ -174,7 +174,7 @@ test('different overlapping care actions retain all pet XP and stat changes', as
   for(const {event_type} of f.sql.prepare("SELECT event_type FROM telegram_pet_events WHERE status='accepted' ORDER BY rowid").all()) {
     for(const key of Object.keys(expected)) expected[key]=Math.max(0,Math.min(100,expected[key]+hooks.PET_ACTIONS[event_type][key]));
   }
-  assert.deepEqual({...f.sql.prepare('SELECT hunger,happiness,cleanliness,energy FROM telegram_pet_instances').get()},expected);
+  assert.deepEqual(Object.fromEntries(Object.entries(f.sql.prepare('SELECT hunger,happiness,cleanliness,energy FROM telegram_pet_instances').get()).map(([key,value])=>[key,Math.round(value)])),expected);
 });
 
 test('care rechecks the active pet inside its transaction', async()=>{
@@ -278,7 +278,7 @@ test('training checks energy consumed by an overlapping action', async()=>{
   const r=await care(f,'train','train');
   assert.equal(r.accepted,false);
   assert.equal(xp(f),210);
-  assert.equal(f.sql.prepare('SELECT energy FROM telegram_pet_instances').get().energy,6);
+  assert.equal(Math.round(f.sql.prepare('SELECT energy FROM telegram_pet_instances').get().energy),6);
 });
 
 test('item effects apply elapsed decay and preserve the current visible level curve', async()=>{
@@ -290,7 +290,7 @@ test('item effects apply elapsed decay and preserve the current visible level cu
   const r=await hooks.processPetUseItem(f.db,f.owner,'moon_snack',{event_key:'decay'});
   assert.equal(r.accepted,true);
   const row=f.sql.prepare('SELECT * FROM telegram_pet_instances').get();
-  assert.equal(row.hunger,12); assert.equal(row.happiness,67); assert.equal(row.cleanliness,67); assert.equal(row.energy,76);
+  assert.equal(Math.round(row.hunger),12); assert.equal(Math.round(row.happiness),67); assert.equal(Math.round(row.cleanliness),67); assert.equal(Math.round(row.energy),76);
   assert.equal(row.level,getPetVisibleLevel(10004));
   assert.equal(f.sql.prepare('SELECT level FROM telegram_pet_profiles').get().level,row.level);
 });

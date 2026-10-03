@@ -84,7 +84,7 @@ const rewardFoundation = fs.readFileSync(new URL('../workers/moonboys-api/pets/r
 for (const source of ['pet_bounty', 'pet_expedition', 'pet_market']) assert.match(rewardFoundation, new RegExp(`'${source}'`));
 assert.match(rewardFoundation, /moon_gold >= \? AND moon_crystals >= \? AND style_tokens >= \?/, 'currency exchanges must be authorized before rewards are created');
 assert.match(rewardFoundation, /source = 'pet_expedition'[\s\S]*status IN \('pending', 'awarded'\)\) < 3/, 'the expedition cap must be reserved inside reward settlement');
-assert.match(rewardFoundation, /p\.pet_id = \? AND p\.telegram_id = \?[\s\S]*p\.energy >= \?/, 'the source pet must cover the full expedition Energy cost atomically');
+assert.match(rewardFoundation, /p\.pet_id = \? AND p\.telegram_id = \?[\s\S]*ROUND\(p\.energy\) >= \?/, 'the source pet must cover the full expedition Energy cost atomically');
 
 const worker = fs.readFileSync(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
 for (const command of ['peteconomy', 'petbounties', 'petexpedition', 'petmarket']) assert.match(worker, new RegExp(`case ['"]${command}['"]`));

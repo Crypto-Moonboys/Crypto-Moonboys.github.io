@@ -189,7 +189,7 @@ function getRewardAuthorization(source, telegramId, context = {}, now = new Date
       sql: `AND NOT EXISTS (SELECT 1 FROM telegram_pet_events
         WHERE telegram_id = ? AND event_type = ? AND status IN ('pending', 'accepted')
           AND julianday(created_at) > julianday(?))
-        ${adventure ? 'AND EXISTS (SELECT 1 FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ? AND energy >= ?)' : ''}`,
+        ${adventure ? 'AND EXISTS (SELECT 1 FROM telegram_pet_instances WHERE pet_id = ? AND telegram_id = ? AND ROUND(energy) >= ?)' : ''}`,
       args: [telegramId, adventure ? 'adventure' : 'work', cutoff, ...(adventure ? [petId, telegramId, minimumEnergy] : [])],
     };
   }
@@ -235,7 +235,7 @@ function getRewardAuthorization(source, telegramId, context = {}, now = new Date
         AND EXISTS (SELECT 1 FROM telegram_pet_instances p JOIN telegram_pet_lifecycle_by_pet l
           ON l.pet_id = p.pet_id AND l.telegram_id = p.telegram_id
           WHERE p.pet_id = ? AND p.telegram_id = ? AND p.status = 'active' AND l.phase <> 'egg'
-            AND p.energy >= ? AND ${getPetVisibleLevelSql('p.pet_xp')} >= ?)`,
+            AND ROUND(p.energy) >= ? AND ${getPetVisibleLevelSql('p.pet_xp')} >= ?)`,
       args: [telegramId, dayKey, telegramId, dayKey, attempt - 1, petId, telegramId, energyCost, minimumLevel],
     };
   }
@@ -463,6 +463,8 @@ export async function awardPetReward(db, request = {}) {
         ${petAuthority ? 'AND pet_id = ?' : 'AND pet_id IS NULL'}
       RETURNING pet_xp_awarded, xp_awarded`)
       .bind(rewards.pet_xp, DAILY_PET_XP_CAP, telegramId, dayKey, rewards.community_xp, DAILY_COMMUNITY_XP_CAP, telegramId, dayKey, reason, metadata, eventId, claimId, ...(petAuthority ? [petId] : [])),
+    // The Worker settles elapsed care against its guarded source first. Keep
+    // that clock here, including any short interval still anchored for decay.
     petlessReservation || eggCurrencyOnly
       ? db.prepare('SELECT 1')
       : db.prepare(`UPDATE ${petAuthority ? 'telegram_pet_instances' : 'telegram_pet_profiles'} SET
@@ -472,7 +474,6 @@ export async function awardPetReward(db, request = {}) {
         cleanliness = MIN(100, MAX(0, cleanliness + ?)), energy = MIN(100, MAX(0, energy + ?)), happiness = MIN(100, MAX(0, happiness + ?)),
         streak_days = CASE WHEN ? = 0 THEN streak_days WHEN last_active_day > ? THEN streak_days WHEN last_active_day = ? THEN MAX(1, streak_days) WHEN last_active_day = ? THEN streak_days + 1 ELSE 1 END,
         last_active_day = CASE WHEN ? = 0 THEN last_active_day WHEN last_active_day > ? THEN last_active_day ELSE ? END,
-        last_decay_at = CASE WHEN ? = 0 OR julianday(last_decay_at) > julianday(?) THEN last_decay_at ELSE ? END,
         level = level,
         ${petAuthority ? `source_profile_updated_at = '${PET_INSTANCE_AUTHORITY_VERSION}',` : ''}
         updated_at = CURRENT_TIMESTAMP
@@ -481,7 +482,7 @@ export async function awardPetReward(db, request = {}) {
       .bind(eventId, metadata,
         ...(petAuthority ? [] : [MAX_CURRENCY, rewards.moon_gold, currencyCosts.moon_gold, MAX_CURRENCY, rewards.moon_crystals, currencyCosts.moon_crystals, MAX_CURRENCY, rewards.style_tokens, currencyCosts.style_tokens]),
         profileDeltas.health, profileDeltas.hunger, profileDeltas.cleanliness, profileDeltas.energy, profileDeltas.happiness,
-        touchStreak, dayKey, dayKey, previousDayKey, touchStreak, dayKey, dayKey, touchStreak, now.toISOString(), now.toISOString(),
+        touchStreak, dayKey, dayKey, previousDayKey, touchStreak, dayKey, dayKey,
         ...(petAuthority ? [petId, telegramId] : [telegramId]), eventId, metadata),
     petAuthority || petlessReservation
       ? db.prepare(`UPDATE telegram_pet_profiles SET

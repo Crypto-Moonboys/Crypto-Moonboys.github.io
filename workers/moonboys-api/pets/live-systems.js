@@ -250,7 +250,7 @@ export async function buildPetLiveSystemsState(db, telegramId, pet, runtime, gea
     }),
     chains: chainState.map((chain) => ({ ...chain, cooldown: chain.used_today ? dailyCooldown : null, expires_at: chain.used_today ? dailyCooldown?.expires_at : null, remaining_seconds: chain.used_today ? dailyCooldown?.remaining_seconds || 0 : 0, server_time: chain.used_today ? dailyCooldown?.server_time : null })),
     seasonal_boss: { ...boss, damage: integer(bossRow.damage), defeated_at: bossRow.defeated_at || null, reward_claimed_at: bossRow.reward_claimed_at || null, attempted_today: bossUsedToday, settling: busyToday.has(`seasonal_boss:${boss.key}`), available: visibleLevel >= boss.min_level && !bossDefeated && !bossUsedToday && !busyToday.has(`seasonal_boss:${boss.key}`), cooldown: bossCooldown, expires_at: bossCooldown?.expires_at || null, remaining_seconds: bossCooldown?.remaining_seconds || 0, server_time: bossCooldown?.server_time || null,
-      choices: seasonalRaidChoices(visibleLevel, boss).map((choice) => ({ ...choice, affordable: integer(pet.energy) >= choice.energy })),
+      choices: seasonalRaidChoices(visibleLevel, boss).map((choice) => ({ ...choice, affordable: Math.round(Number(pet.energy) || 0) >= choice.energy })),
       phase: Math.min(boss.phases, 1 + Math.floor(integer(bossRow.damage) / 300)),
       pending_move: pendingDecision('seasonal_boss', boss.key) ? pendingDecision('seasonal_boss', boss.key).attack?.key || 'strike' : null,
       retry_energy_charged: Boolean(pendingDecision('seasonal_boss', boss.key)?.energy_charged),
@@ -376,10 +376,10 @@ async function claimEnergySettlement(db, reservation, telegramId, energyCost, au
         AND (status IN ('pending','rejected') OR (status='settling' AND updated_at < datetime('now','-2 minutes')))
         AND COALESCE(json_extract(payload_json, '$.expired_uncharged'), 0)<>1
         AND (COALESCE(json_extract(payload_json, '$.energy_charged'), 0)=1
-          OR EXISTS (SELECT 1 FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=? AND season_key=? AND energy>=?))`)
+          OR EXISTS (SELECT 1 FROM telegram_pet_instances WHERE pet_id=? AND telegram_id=? AND season_key=? AND ROUND(energy)>=?))`)
       .bind(token, token, reservation.id, authority.pet_id, telegramId, authority.season_key, authority.pet_id, telegramId, authority.season_key, energyCost),
-    db.prepare(`UPDATE telegram_pet_instances SET energy=energy-?, updated_at=CURRENT_TIMESTAMP
-      WHERE pet_id=? AND telegram_id=? AND season_key=? AND energy>=?
+    db.prepare(`UPDATE telegram_pet_instances SET energy=MAX(0,energy-?), updated_at=CURRENT_TIMESTAMP
+      WHERE pet_id=? AND telegram_id=? AND season_key=? AND ROUND(energy)>=?
         AND EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling'
           AND json_extract(payload_json, '$.claim_token')=? AND json_extract(payload_json, '$.energy_charge_token')=?)`)
       .bind(energyCost, authority.pet_id, telegramId, authority.season_key, energyCost, reservation.id, token, token),
@@ -398,10 +398,10 @@ async function claimEnergySettlement(db, reservation, telegramId, energyCost, au
       WHERE id=? AND (status IN ('pending','rejected') OR (status='settling' AND updated_at < datetime('now','-2 minutes')))
         AND COALESCE(json_extract(payload_json, '$.expired_uncharged'), 0)<>1
         AND (COALESCE(json_extract(payload_json, '$.energy_charged'), 0)=1
-          OR EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id=? AND energy>=?))`)
+          OR EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id=? AND ROUND(energy)>=?))`)
       .bind(token, token, reservation.id, telegramId, energyCost),
-    db.prepare(`UPDATE telegram_pet_profiles SET energy=energy-?, updated_at=CURRENT_TIMESTAMP
-      WHERE telegram_id=? AND energy>=?
+    db.prepare(`UPDATE telegram_pet_profiles SET energy=MAX(0,energy-?), updated_at=CURRENT_TIMESTAMP
+      WHERE telegram_id=? AND ROUND(energy)>=?
         AND EXISTS (SELECT 1 FROM telegram_pet_system_events WHERE id=? AND status='settling'
           AND json_extract(payload_json, '$.claim_token')=? AND json_extract(payload_json, '$.energy_charge_token')=?)`)
       .bind(energyCost, telegramId, energyCost, reservation.id, token, token),
@@ -447,7 +447,7 @@ export async function processPetDistrictMission(db, telegramId, regionKey, pet, 
   const explicitApproach = String(savedPayload.approach_key || approachKey || '');
   let choice = mission.choices.find((entry) => entry.key === explicitApproach) || (!explicitApproach ? mission.choices.find((entry) => entry.key === 'tactical') : null);
   if (!choice) return { accepted: false, reason: 'district_approach_invalid', mission };
-  if (!saved && integer(pet.energy) < 10) return { accepted: false, reason: 'pet_tired' };
+  if (!saved && Math.round(Number(pet.energy) || 0) < 10) return { accepted: false, reason: 'pet_tired' };
   const content = PET_REGION_CONTENT[region.key];
   const decide = (payload) => {
     choice = mission.choices.find((entry) => entry.key === (payload.approach_key || 'tactical')) || choice;
@@ -655,7 +655,7 @@ export async function processPetSeasonalBoss(db, telegramId, pet, awardReward, m
   if (!charged && visibleLevel < boss.min_level) return { accepted: false, reason: 'seasonal_boss_locked', required_level: boss.min_level };
   const choice = seasonalRaidChoices(visibleLevel, boss).find((entry) => entry.key === (move === undefined ? 'strike' : move));
   if (!choice) return { accepted: false, reason: 'seasonal_boss_move_invalid' };
-  if (!saved && integer(pet.energy) < choice.energy) return { accepted: false, reason: 'pet_tired' };
+  if (!saved && Math.round(Number(pet.energy) || 0) < choice.energy) return { accepted: false, reason: 'pet_tired' };
   const reservation = saved || await reserveSystemEvent(db, telegramId, 'seasonal_boss', boss.key, period,
     { attack: resolveSeasonalRaidAttack(visibleLevel, boss, choice.key, crypto.getRandomValues(new Uint32Array(1))[0] % 100) }, authority);
   if (reservation.status === 'completed') return { accepted: true, duplicate: true, reason: 'seasonal_boss_attempt_used' };
