@@ -1310,6 +1310,27 @@
     "brand": null
   },
   {
+    "entity_id": "first_witness_life_readings",
+    "canonical_title": "Life Readings from the First Witness",
+    "canonical_url": "/wiki/first-witness-life-readings.html",
+    "category": "characters",
+    "aliases": [
+      "first witness life readings",
+      "life readings from first witness"
+    ],
+    "tags": [
+      "life",
+      "readings",
+      "from",
+      "first",
+      "witness"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-life-readings.html"
+    ],
+    "brand": null
+  },
+  {
     "entity_id": "first_witness_long_transmission",
     "canonical_title": "The Long Transmission",
     "canonical_url": "/wiki/first-witness-long-transmission.html",

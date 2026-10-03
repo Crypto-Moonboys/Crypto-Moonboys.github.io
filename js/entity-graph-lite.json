@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-03T03:25:27.490Z",
-  "verified_at": "2026-10-03T03:25:27.490Z",
+  "generated_at": "2026-10-03T03:51:07.860Z",
+  "verified_at": "2026-10-03T03:51:07.860Z",
   "lite": true,
   "nodes": [
     {
@@ -172,6 +172,14 @@
       "authority_score": 21
     },
     {
+      "id": "/wiki/the-first-witness.html",
+      "title": "The First Witness",
+      "url": "/wiki/the-first-witness.html",
+      "category": "factions",
+      "rank_score": 377,
+      "authority_score": 25
+    },
+    {
       "id": "/wiki/bitcoin-kids.html",
       "title": "Bitcoin Kids",
       "url": "/wiki/bitcoin-kids.html",
@@ -186,14 +194,6 @@
       "category": "factions",
       "rank_score": 374,
       "authority_score": 26
-    },
-    {
-      "id": "/wiki/the-first-witness.html",
-      "title": "The First Witness",
-      "url": "/wiki/the-first-witness.html",
-      "category": "factions",
-      "rank_score": 371,
-      "authority_score": 25
     },
     {
       "id": "/wiki/punk-token.html",
@@ -250,6 +250,14 @@
       "category": "factions",
       "rank_score": 360,
       "authority_score": 21
+    },
+    {
+      "id": "/wiki/first-witness-life-readings.html",
+      "title": "Life Readings from the First Witness",
+      "url": "/wiki/first-witness-life-readings.html",
+      "category": "characters",
+      "rank_score": 356,
+      "authority_score": 17
     },
     {
       "id": "/wiki/bitcoin.html",
@@ -594,14 +602,6 @@
       "category": "factions",
       "rank_score": 290,
       "authority_score": 23
-    },
-    {
-      "id": "/wiki/the-shard-mothers-of-manhattan.html",
-      "title": "The SHARD MOTHERS of MANHATTAN",
-      "url": "/wiki/the-shard-mothers-of-manhattan.html",
-      "category": "factions",
-      "rank_score": 289,
-      "authority_score": 21
     }
   ],
   "edges": [
@@ -1012,6 +1012,12 @@
       "target": "/wiki/the-nice-easy-bois.html",
       "score": 73,
       "weight": 0.73
+    },
+    {
+      "source": "/wiki/first-witness-life-readings.html",
+      "target": "/wiki/block-topia.html",
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/nbg.html",

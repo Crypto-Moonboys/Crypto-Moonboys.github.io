@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-03T03:25:27.490Z",
-  "verified_at": "2026-10-03T03:25:27.490Z",
+  "generated_at": "2026-10-03T03:51:07.860Z",
+  "verified_at": "2026-10-03T03:51:07.860Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -455,15 +455,15 @@
       "title": "The Bitcoin Witness",
       "url": "/wiki/first-witness-bitcoin-witness.html",
       "category": "core",
-      "rank_score": 221,
-      "authority_score": 12
+      "rank_score": 242,
+      "authority_score": 14
     },
     {
       "id": "/wiki/first-witness-block-topia-reading.html",
       "title": "Block Topia and the Controlled Reading",
       "url": "/wiki/first-witness-block-topia-reading.html",
       "category": "factions",
-      "rank_score": 197,
+      "rank_score": 210,
       "authority_score": 12
     },
     {
@@ -471,79 +471,79 @@
       "title": "Book I — The First Witness",
       "url": "/wiki/first-witness-book-1-the-first-witness.html",
       "category": "core",
-      "rank_score": 216,
-      "authority_score": 12
+      "rank_score": 243,
+      "authority_score": 14
     },
     {
       "id": "/wiki/first-witness-book-2-the-common-blood.html",
       "title": "Book II — The Common Blood",
       "url": "/wiki/first-witness-book-2-the-common-blood.html",
       "category": "core",
-      "rank_score": 224,
-      "authority_score": 12
+      "rank_score": 248,
+      "authority_score": 14
     },
     {
       "id": "/wiki/first-witness-book-3-the-keeper.html",
       "title": "Book III — The Keeper",
       "url": "/wiki/first-witness-book-3-the-keeper.html",
       "category": "core",
-      "rank_score": 219,
-      "authority_score": 12
+      "rank_score": 245,
+      "authority_score": 14
     },
     {
       "id": "/wiki/first-witness-book-4-the-wall.html",
       "title": "Book IV — The Wall",
       "url": "/wiki/first-witness-book-4-the-wall.html",
       "category": "core",
-      "rank_score": 220,
-      "authority_score": 12
+      "rank_score": 243,
+      "authority_score": 14
     },
     {
       "id": "/wiki/first-witness-book-5-the-chain.html",
       "title": "Book V — The Chain",
       "url": "/wiki/first-witness-book-5-the-chain.html",
       "category": "core",
-      "rank_score": 218,
-      "authority_score": 12
+      "rank_score": 243,
+      "authority_score": 14
     },
     {
       "id": "/wiki/first-witness-book-6-the-fork.html",
       "title": "Book VI — The Fork",
       "url": "/wiki/first-witness-book-6-the-fork.html",
       "category": "core",
-      "rank_score": 219,
-      "authority_score": 12
+      "rank_score": 242,
+      "authority_score": 14
     },
     {
       "id": "/wiki/first-witness-book-7-the-hold.html",
       "title": "Book VII — The Hold",
       "url": "/wiki/first-witness-book-7-the-hold.html",
       "category": "core",
-      "rank_score": 211,
-      "authority_score": 12
+      "rank_score": 236,
+      "authority_score": 14
     },
     {
       "id": "/wiki/first-witness-book-8-the-fire.html",
       "title": "Book VIII — The Fire",
       "url": "/wiki/first-witness-book-8-the-fire.html",
       "category": "core",
-      "rank_score": 230,
-      "authority_score": 12
+      "rank_score": 253,
+      "authority_score": 14
     },
     {
       "id": "/wiki/first-witness-book-9-the-unwritten-block.html",
       "title": "Book IX — The Unwritten Block",
       "url": "/wiki/first-witness-book-9-the-unwritten-block.html",
       "category": "core",
-      "rank_score": 217,
-      "authority_score": 12
+      "rank_score": 243,
+      "authority_score": 14
     },
     {
       "id": "/wiki/first-witness-child-of-fire.html",
       "title": "The Child of Fire Interpretation",
       "url": "/wiki/first-witness-child-of-fire.html",
       "category": "factions",
-      "rank_score": 207,
+      "rank_score": 220,
       "authority_score": 12
     },
     {
@@ -551,15 +551,15 @@
       "title": "Concordance of Broken Records",
       "url": "/wiki/first-witness-concordance.html",
       "category": "factions",
-      "rank_score": 196,
-      "authority_score": 12
+      "rank_score": 222,
+      "authority_score": 14
     },
     {
       "id": "/wiki/first-witness-faction-commentaries.html",
       "title": "Faction Commentaries on the First Witness",
       "url": "/wiki/first-witness-faction-commentaries.html",
       "category": "factions",
-      "rank_score": 233,
+      "rank_score": 254,
       "authority_score": 14
     },
     {
@@ -567,23 +567,23 @@
       "title": "The Forty Paths",
       "url": "/wiki/first-witness-forty-paths.html",
       "category": "factions",
-      "rank_score": 184,
-      "authority_score": 12
+      "rank_score": 207,
+      "authority_score": 14
     },
     {
       "id": "/wiki/first-witness-glossary.html",
       "title": "First Witness Glossary",
       "url": "/wiki/first-witness-glossary.html",
       "category": "factions",
-      "rank_score": 184,
-      "authority_score": 12
+      "rank_score": 210,
+      "authority_score": 14
     },
     {
       "id": "/wiki/first-witness-great-concord-2030.html",
       "title": "The Great Concord of 2030",
       "url": "/wiki/first-witness-great-concord-2030.html",
       "category": "factions",
-      "rank_score": 224,
+      "rank_score": 236,
       "authority_score": 14
     },
     {
@@ -591,15 +591,23 @@
       "title": "The HODL Doctrine",
       "url": "/wiki/first-witness-hodl-doctrine.html",
       "category": "factions",
-      "rank_score": 188,
+      "rank_score": 200,
       "authority_score": 12
+    },
+    {
+      "id": "/wiki/first-witness-life-readings.html",
+      "title": "Life Readings from the First Witness",
+      "url": "/wiki/first-witness-life-readings.html",
+      "category": "characters",
+      "rank_score": 356,
+      "authority_score": 17
     },
     {
       "id": "/wiki/first-witness-long-transmission.html",
       "title": "The Long Transmission",
       "url": "/wiki/first-witness-long-transmission.html",
       "category": "core",
-      "rank_score": 211,
+      "rank_score": 223,
       "authority_score": 12
     },
     {
@@ -607,15 +615,15 @@
       "title": "First Witness Master Chronology",
       "url": "/wiki/first-witness-master-chronology.html",
       "category": "factions",
-      "rank_score": 183,
-      "authority_score": 12
+      "rank_score": 210,
+      "authority_score": 14
     },
     {
       "id": "/wiki/first-witness-null-erasure.html",
       "title": "NULL and the Theology of Erasure",
       "url": "/wiki/first-witness-null-erasure.html",
       "category": "factions",
-      "rank_score": 197,
+      "rank_score": 209,
       "authority_score": 12
     },
     {
@@ -623,23 +631,23 @@
       "title": "The Sacred Fork",
       "url": "/wiki/first-witness-sacred-fork.html",
       "category": "factions",
-      "rank_score": 197,
-      "authority_score": 12
+      "rank_score": 220,
+      "authority_score": 14
     },
     {
       "id": "/wiki/first-witness-source-register.html",
       "title": "First Witness Source Register",
       "url": "/wiki/first-witness-source-register.html",
       "category": "characters",
-      "rank_score": 205,
-      "authority_score": 16
+      "rank_score": 227,
+      "authority_score": 18
     },
     {
       "id": "/wiki/first-witness-street-kingdoms-reading.html",
       "title": "Street Kingdoms and the Living Reading",
       "url": "/wiki/first-witness-street-kingdoms-reading.html",
       "category": "factions",
-      "rank_score": 205,
+      "rank_score": 217,
       "authority_score": 12
     },
     {
@@ -647,16 +655,16 @@
       "title": "The Triple Fork and Chainfire",
       "url": "/wiki/first-witness-triple-fork-chainfire.html",
       "category": "core",
-      "rank_score": 208,
-      "authority_score": 12
+      "rank_score": 232,
+      "authority_score": 14
     },
     {
       "id": "/wiki/first-witness-world-chain-error.html",
       "title": "The World Chain Error",
       "url": "/wiki/first-witness-world-chain-error.html",
       "category": "core",
-      "rank_score": 211,
-      "authority_score": 12
+      "rank_score": 235,
+      "authority_score": 14
     },
     {
       "id": "/wiki/fomo-plague.html",
@@ -2639,7 +2647,7 @@
       "title": "The First Witness",
       "url": "/wiki/the-first-witness.html",
       "category": "factions",
-      "rank_score": 371,
+      "rank_score": 377,
       "authority_score": 25
     },
     {
@@ -4299,32 +4307,38 @@
     {
       "source": "/wiki/first-witness-bitcoin-witness.html",
       "target": "/wiki/first-witness-book-1-the-first-witness.html",
-      "score": 63,
-      "weight": 0.63
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-bitcoin-witness.html",
       "target": "/wiki/first-witness-book-2-the-common-blood.html",
+      "score": 62,
+      "weight": 0.62
+    },
+    {
+      "source": "/wiki/first-witness-bitcoin-witness.html",
+      "target": "/wiki/first-witness-book-3-the-keeper.html",
       "score": 59,
       "weight": 0.59
     },
     {
       "source": "/wiki/first-witness-bitcoin-witness.html",
-      "target": "/wiki/first-witness-book-3-the-keeper.html",
-      "score": 56,
-      "weight": 0.56
-    },
-    {
-      "source": "/wiki/first-witness-bitcoin-witness.html",
       "target": "/wiki/first-witness-book-4-the-wall.html",
-      "score": 56,
-      "weight": 0.56
+      "score": 59,
+      "weight": 0.59
     },
     {
       "source": "/wiki/first-witness-bitcoin-witness.html",
       "target": "/wiki/first-witness-book-5-the-chain.html",
-      "score": 56,
-      "weight": 0.56
+      "score": 59,
+      "weight": 0.59
+    },
+    {
+      "source": "/wiki/first-witness-block-topia-reading.html",
+      "target": "/wiki/the-first-witness.html",
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/first-witness-block-topia-reading.html",
@@ -4334,9 +4348,9 @@
     },
     {
       "source": "/wiki/first-witness-block-topia-reading.html",
-      "target": "/wiki/the-first-witness.html",
-      "score": 68,
-      "weight": 0.68
+      "target": "/wiki/first-witness-street-kingdoms-reading.html",
+      "score": 67,
+      "weight": 0.67
     },
     {
       "source": "/wiki/first-witness-block-topia-reading.html",
@@ -4351,292 +4365,286 @@
       "weight": 0.64
     },
     {
-      "source": "/wiki/first-witness-block-topia-reading.html",
-      "target": "/wiki/first-witness-street-kingdoms-reading.html",
-      "score": 63,
-      "weight": 0.63
-    },
-    {
       "source": "/wiki/first-witness-book-1-the-first-witness.html",
       "target": "/wiki/first-witness-book-3-the-keeper.html",
-      "score": 68,
-      "weight": 0.68
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/first-witness-book-1-the-first-witness.html",
       "target": "/wiki/first-witness-book-2-the-common-blood.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-book-1-the-first-witness.html",
       "target": "/wiki/first-witness-book-4-the-wall.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-book-1-the-first-witness.html",
       "target": "/wiki/first-witness-book-5-the-chain.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-book-1-the-first-witness.html",
       "target": "/wiki/first-witness-book-6-the-fork.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-book-2-the-common-blood.html",
       "target": "/wiki/first-witness-book-4-the-wall.html",
+      "score": 71,
+      "weight": 0.71
+    },
+    {
+      "source": "/wiki/first-witness-book-2-the-common-blood.html",
+      "target": "/wiki/first-witness-book-1-the-first-witness.html",
       "score": 68,
       "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-book-2-the-common-blood.html",
       "target": "/wiki/first-witness-book-3-the-keeper.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-book-2-the-common-blood.html",
       "target": "/wiki/first-witness-book-5-the-chain.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-book-2-the-common-blood.html",
       "target": "/wiki/first-witness-book-6-the-fork.html",
-      "score": 64,
-      "weight": 0.64
-    },
-    {
-      "source": "/wiki/first-witness-book-2-the-common-blood.html",
-      "target": "/wiki/first-witness-book-8-the-fire.html",
-      "score": 64,
-      "weight": 0.64
-    },
-    {
-      "source": "/wiki/first-witness-book-3-the-keeper.html",
-      "target": "/wiki/first-witness-book-5-the-chain.html",
       "score": 68,
       "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-book-3-the-keeper.html",
       "target": "/wiki/first-witness-book-1-the-first-witness.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 71,
+      "weight": 0.71
+    },
+    {
+      "source": "/wiki/first-witness-book-3-the-keeper.html",
+      "target": "/wiki/first-witness-book-5-the-chain.html",
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/first-witness-book-3-the-keeper.html",
       "target": "/wiki/first-witness-book-2-the-common-blood.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-book-3-the-keeper.html",
       "target": "/wiki/first-witness-book-4-the-wall.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-book-3-the-keeper.html",
       "target": "/wiki/first-witness-book-6-the-fork.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-book-4-the-wall.html",
       "target": "/wiki/first-witness-book-2-the-common-blood.html",
-      "score": 68,
-      "weight": 0.68
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/first-witness-book-4-the-wall.html",
       "target": "/wiki/first-witness-book-6-the-fork.html",
+      "score": 71,
+      "weight": 0.71
+    },
+    {
+      "source": "/wiki/first-witness-book-4-the-wall.html",
+      "target": "/wiki/first-witness-book-1-the-first-witness.html",
       "score": 68,
       "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-book-4-the-wall.html",
       "target": "/wiki/first-witness-book-3-the-keeper.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-book-4-the-wall.html",
       "target": "/wiki/first-witness-book-5-the-chain.html",
-      "score": 64,
-      "weight": 0.64
-    },
-    {
-      "source": "/wiki/first-witness-book-4-the-wall.html",
-      "target": "/wiki/first-witness-book-8-the-fire.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-book-5-the-chain.html",
       "target": "/wiki/first-witness-book-3-the-keeper.html",
-      "score": 68,
-      "weight": 0.68
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/first-witness-book-5-the-chain.html",
       "target": "/wiki/first-witness-book-7-the-hold.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 71,
+      "weight": 0.71
+    },
+    {
+      "source": "/wiki/first-witness-book-5-the-chain.html",
+      "target": "/wiki/first-witness-book-1-the-first-witness.html",
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-book-5-the-chain.html",
       "target": "/wiki/first-witness-book-2-the-common-blood.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-book-5-the-chain.html",
       "target": "/wiki/first-witness-book-4-the-wall.html",
-      "score": 64,
-      "weight": 0.64
-    },
-    {
-      "source": "/wiki/first-witness-book-5-the-chain.html",
-      "target": "/wiki/first-witness-book-6-the-fork.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-book-6-the-fork.html",
       "target": "/wiki/first-witness-triple-fork-chainfire.html",
-      "score": 76,
-      "weight": 0.76
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/first-witness-book-6-the-fork.html",
       "target": "/wiki/first-witness-book-4-the-wall.html",
-      "score": 68,
-      "weight": 0.68
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/first-witness-book-6-the-fork.html",
       "target": "/wiki/first-witness-book-8-the-fire.html",
+      "score": 71,
+      "weight": 0.71
+    },
+    {
+      "source": "/wiki/first-witness-book-6-the-fork.html",
+      "target": "/wiki/first-witness-book-1-the-first-witness.html",
       "score": 68,
       "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-book-6-the-fork.html",
       "target": "/wiki/first-witness-book-2-the-common-blood.html",
-      "score": 64,
-      "weight": 0.64
-    },
-    {
-      "source": "/wiki/first-witness-book-6-the-fork.html",
-      "target": "/wiki/first-witness-book-3-the-keeper.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-book-7-the-hold.html",
       "target": "/wiki/first-witness-book-5-the-chain.html",
+      "score": 71,
+      "weight": 0.71
+    },
+    {
+      "source": "/wiki/first-witness-book-7-the-hold.html",
+      "target": "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "score": 71,
+      "weight": 0.71
+    },
+    {
+      "source": "/wiki/first-witness-book-7-the-hold.html",
+      "target": "/wiki/first-witness-book-1-the-first-witness.html",
       "score": 68,
       "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-book-7-the-hold.html",
-      "target": "/wiki/first-witness-book-9-the-unwritten-block.html",
-      "score": 67,
-      "weight": 0.67
-    },
-    {
-      "source": "/wiki/first-witness-book-7-the-hold.html",
       "target": "/wiki/first-witness-book-2-the-common-blood.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-book-7-the-hold.html",
       "target": "/wiki/first-witness-book-3-the-keeper.html",
-      "score": 64,
-      "weight": 0.64
-    },
-    {
-      "source": "/wiki/first-witness-book-7-the-hold.html",
-      "target": "/wiki/first-witness-book-4-the-wall.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-book-8-the-fire.html",
       "target": "/wiki/first-witness-book-6-the-fork.html",
+      "score": 71,
+      "weight": 0.71
+    },
+    {
+      "source": "/wiki/first-witness-book-8-the-fire.html",
+      "target": "/wiki/first-witness-book-1-the-first-witness.html",
       "score": 68,
       "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-book-8-the-fire.html",
       "target": "/wiki/first-witness-book-2-the-common-blood.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-book-8-the-fire.html",
       "target": "/wiki/first-witness-book-3-the-keeper.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-book-8-the-fire.html",
       "target": "/wiki/first-witness-book-4-the-wall.html",
-      "score": 64,
-      "weight": 0.64
-    },
-    {
-      "source": "/wiki/first-witness-book-8-the-fire.html",
-      "target": "/wiki/first-witness-book-5-the-chain.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-book-9-the-unwritten-block.html",
       "target": "/wiki/first-witness-book-7-the-hold.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 71,
+      "weight": 0.71
+    },
+    {
+      "source": "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "target": "/wiki/first-witness-book-1-the-first-witness.html",
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-book-9-the-unwritten-block.html",
       "target": "/wiki/first-witness-book-2-the-common-blood.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-book-9-the-unwritten-block.html",
       "target": "/wiki/first-witness-book-3-the-keeper.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-book-9-the-unwritten-block.html",
       "target": "/wiki/first-witness-book-4-the-wall.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 68,
+      "weight": 0.68
     },
     {
-      "source": "/wiki/first-witness-book-9-the-unwritten-block.html",
-      "target": "/wiki/first-witness-book-5-the-chain.html",
-      "score": 64,
-      "weight": 0.64
+      "source": "/wiki/first-witness-child-of-fire.html",
+      "target": "/wiki/the-first-witness.html",
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/first-witness-child-of-fire.html",
       "target": "/wiki/pmsl.html",
       "score": 70,
       "weight": 0.7
-    },
-    {
-      "source": "/wiki/first-witness-child-of-fire.html",
-      "target": "/wiki/the-first-witness.html",
-      "score": 68,
-      "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-child-of-fire.html",
@@ -4652,21 +4660,21 @@
     },
     {
       "source": "/wiki/first-witness-child-of-fire.html",
-      "target": "/wiki/midevilpunks.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
       "score": 63,
       "weight": 0.63
+    },
+    {
+      "source": "/wiki/first-witness-concordance.html",
+      "target": "/wiki/the-first-witness.html",
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/first-witness-concordance.html",
       "target": "/wiki/pmsl.html",
       "score": 70,
       "weight": 0.7
-    },
-    {
-      "source": "/wiki/first-witness-concordance.html",
-      "target": "/wiki/the-first-witness.html",
-      "score": 68,
-      "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-concordance.html",
@@ -4689,20 +4697,20 @@
     {
       "source": "/wiki/first-witness-faction-commentaries.html",
       "target": "/wiki/the-first-witness.html",
-      "score": 85,
-      "weight": 0.85
+      "score": 88,
+      "weight": 0.88
     },
     {
       "source": "/wiki/first-witness-faction-commentaries.html",
       "target": "/wiki/first-witness-glossary.html",
-      "score": 70,
-      "weight": 0.7
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/first-witness-faction-commentaries.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 70,
-      "weight": 0.7
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/first-witness-faction-commentaries.html",
@@ -4718,15 +4726,15 @@
     },
     {
       "source": "/wiki/first-witness-forty-paths.html",
-      "target": "/wiki/pmsl.html",
-      "score": 70,
-      "weight": 0.7
+      "target": "/wiki/the-first-witness.html",
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/first-witness-forty-paths.html",
-      "target": "/wiki/the-first-witness.html",
-      "score": 68,
-      "weight": 0.68
+      "target": "/wiki/pmsl.html",
+      "score": 70,
+      "weight": 0.7
     },
     {
       "source": "/wiki/first-witness-forty-paths.html",
@@ -4749,20 +4757,20 @@
     {
       "source": "/wiki/first-witness-glossary.html",
       "target": "/wiki/the-first-witness.html",
-      "score": 85,
-      "weight": 0.85
+      "score": 88,
+      "weight": 0.88
     },
     {
       "source": "/wiki/first-witness-glossary.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 73,
-      "weight": 0.73
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/first-witness-glossary.html",
       "target": "/wiki/first-witness-master-chronology.html",
-      "score": 70,
-      "weight": 0.7
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/first-witness-glossary.html",
@@ -4784,47 +4792,47 @@
     },
     {
       "source": "/wiki/first-witness-great-concord-2030.html",
-      "target": "/wiki/hodl-wars.html",
-      "score": 65,
-      "weight": 0.65
-    },
-    {
-      "source": "/wiki/first-witness-great-concord-2030.html",
-      "target": "/wiki/the-first-witness.html",
-      "score": 65,
-      "weight": 0.65
-    },
-    {
-      "source": "/wiki/first-witness-great-concord-2030.html",
-      "target": "/wiki/hard-fork-games.html",
-      "score": 64,
-      "weight": 0.64
-    },
-    {
-      "source": "/wiki/first-witness-great-concord-2030.html",
-      "target": "/wiki/midevilpunks.html",
-      "score": 63,
-      "weight": 0.63
-    },
-    {
-      "source": "/wiki/first-witness-hodl-doctrine.html",
-      "target": "/wiki/hodl-wars.html",
-      "score": 73,
-      "weight": 0.73
-    },
-    {
-      "source": "/wiki/first-witness-hodl-doctrine.html",
-      "target": "/wiki/pmsl.html",
-      "score": 70,
-      "weight": 0.7
-    },
-    {
-      "source": "/wiki/first-witness-hodl-doctrine.html",
       "target": "/wiki/the-first-witness.html",
       "score": 68,
       "weight": 0.68
     },
     {
+      "source": "/wiki/first-witness-great-concord-2030.html",
+      "target": "/wiki/hodl-wars.html",
+      "score": 65,
+      "weight": 0.65
+    },
+    {
+      "source": "/wiki/first-witness-great-concord-2030.html",
+      "target": "/wiki/hard-fork-games.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-great-concord-2030.html",
+      "target": "/wiki/midevilpunks.html",
+      "score": 63,
+      "weight": 0.63
+    },
+    {
+      "source": "/wiki/first-witness-hodl-doctrine.html",
+      "target": "/wiki/hodl-wars.html",
+      "score": 73,
+      "weight": 0.73
+    },
+    {
+      "source": "/wiki/first-witness-hodl-doctrine.html",
+      "target": "/wiki/the-first-witness.html",
+      "score": 71,
+      "weight": 0.71
+    },
+    {
+      "source": "/wiki/first-witness-hodl-doctrine.html",
+      "target": "/wiki/pmsl.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
       "source": "/wiki/first-witness-hodl-doctrine.html",
       "target": "/wiki/hard-fork-games.html",
       "score": 64,
@@ -4835,54 +4843,84 @@
       "target": "/wiki/midevilpunks.html",
       "score": 63,
       "weight": 0.63
+    },
+    {
+      "source": "/wiki/first-witness-life-readings.html",
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/first-witness-life-readings.html",
+      "target": "/wiki/graffpunks.html",
+      "score": 75,
+      "weight": 0.75
+    },
+    {
+      "source": "/wiki/first-witness-life-readings.html",
+      "target": "/wiki/gkniftyheads.html",
+      "score": 74,
+      "weight": 0.74
+    },
+    {
+      "source": "/wiki/first-witness-life-readings.html",
+      "target": "/wiki/block-topia.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/first-witness-life-readings.html",
+      "target": "/wiki/first-witness-source-register.html",
+      "score": 66,
+      "weight": 0.66
     },
     {
       "source": "/wiki/first-witness-long-transmission.html",
       "target": "/wiki/first-witness-book-9-the-unwritten-block.html",
-      "score": 58,
-      "weight": 0.58
+      "score": 62,
+      "weight": 0.62
     },
     {
       "source": "/wiki/first-witness-long-transmission.html",
       "target": "/wiki/first-witness-triple-fork-chainfire.html",
-      "score": 58,
-      "weight": 0.58
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/first-witness-long-transmission.html",
+      "target": "/wiki/first-witness-book-1-the-first-witness.html",
+      "score": 59,
+      "weight": 0.59
     },
     {
       "source": "/wiki/first-witness-long-transmission.html",
       "target": "/wiki/first-witness-book-2-the-common-blood.html",
-      "score": 56,
-      "weight": 0.56
+      "score": 59,
+      "weight": 0.59
     },
     {
       "source": "/wiki/first-witness-long-transmission.html",
       "target": "/wiki/first-witness-book-3-the-keeper.html",
-      "score": 56,
-      "weight": 0.56
-    },
-    {
-      "source": "/wiki/first-witness-long-transmission.html",
-      "target": "/wiki/first-witness-book-4-the-wall.html",
-      "score": 56,
-      "weight": 0.56
+      "score": 59,
+      "weight": 0.59
     },
     {
       "source": "/wiki/first-witness-master-chronology.html",
       "target": "/wiki/the-first-witness.html",
-      "score": 85,
-      "weight": 0.85
+      "score": 88,
+      "weight": 0.88
     },
     {
       "source": "/wiki/first-witness-master-chronology.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 73,
-      "weight": 0.73
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/first-witness-master-chronology.html",
       "target": "/wiki/first-witness-glossary.html",
-      "score": 70,
-      "weight": 0.7
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/first-witness-master-chronology.html",
@@ -4898,15 +4936,15 @@
     },
     {
       "source": "/wiki/first-witness-null-erasure.html",
-      "target": "/wiki/pmsl.html",
-      "score": 70,
-      "weight": 0.7
+      "target": "/wiki/the-first-witness.html",
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/first-witness-null-erasure.html",
-      "target": "/wiki/the-first-witness.html",
-      "score": 68,
-      "weight": 0.68
+      "target": "/wiki/pmsl.html",
+      "score": 70,
+      "weight": 0.7
     },
     {
       "source": "/wiki/first-witness-null-erasure.html",
@@ -4940,15 +4978,15 @@
     },
     {
       "source": "/wiki/first-witness-sacred-fork.html",
-      "target": "/wiki/pmsl.html",
-      "score": 70,
-      "weight": 0.7
+      "target": "/wiki/the-first-witness.html",
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/first-witness-sacred-fork.html",
-      "target": "/wiki/the-first-witness.html",
-      "score": 68,
-      "weight": 0.68
+      "target": "/wiki/pmsl.html",
+      "score": 70,
+      "weight": 0.7
     },
     {
       "source": "/wiki/first-witness-sacred-fork.html",
@@ -4970,6 +5008,12 @@
     },
     {
       "source": "/wiki/first-witness-source-register.html",
+      "target": "/wiki/first-witness-life-readings.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/first-witness-source-register.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 77,
       "weight": 0.77
@@ -4981,10 +5025,10 @@
       "weight": 0.68
     },
     {
-      "source": "/wiki/first-witness-source-register.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 68,
-      "weight": 0.68
+      "source": "/wiki/first-witness-street-kingdoms-reading.html",
+      "target": "/wiki/the-first-witness.html",
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/first-witness-street-kingdoms-reading.html",
@@ -4994,9 +5038,9 @@
     },
     {
       "source": "/wiki/first-witness-street-kingdoms-reading.html",
-      "target": "/wiki/the-first-witness.html",
-      "score": 68,
-      "weight": 0.68
+      "target": "/wiki/first-witness-block-topia-reading.html",
+      "score": 67,
+      "weight": 0.67
     },
     {
       "source": "/wiki/first-witness-street-kingdoms-reading.html",
@@ -5011,70 +5055,64 @@
       "weight": 0.64
     },
     {
-      "source": "/wiki/first-witness-street-kingdoms-reading.html",
-      "target": "/wiki/midevilpunks.html",
-      "score": 63,
-      "weight": 0.63
-    },
-    {
       "source": "/wiki/first-witness-triple-fork-chainfire.html",
       "target": "/wiki/first-witness-book-6-the-fork.html",
-      "score": 77,
-      "weight": 0.77
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/first-witness-triple-fork-chainfire.html",
       "target": "/wiki/first-witness-long-transmission.html",
-      "score": 58,
-      "weight": 0.58
+      "score": 61,
+      "weight": 0.61
+    },
+    {
+      "source": "/wiki/first-witness-triple-fork-chainfire.html",
+      "target": "/wiki/first-witness-book-1-the-first-witness.html",
+      "score": 59,
+      "weight": 0.59
     },
     {
       "source": "/wiki/first-witness-triple-fork-chainfire.html",
       "target": "/wiki/first-witness-book-2-the-common-blood.html",
-      "score": 56,
-      "weight": 0.56
+      "score": 59,
+      "weight": 0.59
     },
     {
       "source": "/wiki/first-witness-triple-fork-chainfire.html",
       "target": "/wiki/first-witness-book-3-the-keeper.html",
-      "score": 56,
-      "weight": 0.56
-    },
-    {
-      "source": "/wiki/first-witness-triple-fork-chainfire.html",
-      "target": "/wiki/first-witness-book-4-the-wall.html",
-      "score": 56,
-      "weight": 0.56
+      "score": 59,
+      "weight": 0.59
     },
     {
       "source": "/wiki/first-witness-world-chain-error.html",
       "target": "/wiki/first-witness-book-5-the-chain.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/first-witness-world-chain-error.html",
+      "target": "/wiki/first-witness-book-1-the-first-witness.html",
+      "score": 59,
+      "weight": 0.59
     },
     {
       "source": "/wiki/first-witness-world-chain-error.html",
       "target": "/wiki/first-witness-book-2-the-common-blood.html",
-      "score": 56,
-      "weight": 0.56
+      "score": 59,
+      "weight": 0.59
     },
     {
       "source": "/wiki/first-witness-world-chain-error.html",
       "target": "/wiki/first-witness-book-3-the-keeper.html",
-      "score": 56,
-      "weight": 0.56
+      "score": 59,
+      "weight": 0.59
     },
     {
       "source": "/wiki/first-witness-world-chain-error.html",
       "target": "/wiki/first-witness-book-4-the-wall.html",
-      "score": 56,
-      "weight": 0.56
-    },
-    {
-      "source": "/wiki/first-witness-world-chain-error.html",
-      "target": "/wiki/first-witness-book-6-the-fork.html",
-      "score": 56,
-      "weight": 0.56
+      "score": 59,
+      "weight": 0.59
     },
     {
       "source": "/wiki/fomo-plague.html",
@@ -10970,6 +11008,12 @@
     },
     {
       "source": "/wiki/noballgamess-nft-collection.html",
+      "target": "/wiki/first-witness-book-1-the-first-witness.html",
+      "score": 47,
+      "weight": 0.47
+    },
+    {
+      "source": "/wiki/noballgamess-nft-collection.html",
       "target": "/wiki/first-witness-book-2-the-common-blood.html",
       "score": 47,
       "weight": 0.47
@@ -10983,12 +11027,6 @@
     {
       "source": "/wiki/noballgamess-nft-collection.html",
       "target": "/wiki/first-witness-book-4-the-wall.html",
-      "score": 47,
-      "weight": 0.47
-    },
-    {
-      "source": "/wiki/noballgamess-nft-collection.html",
-      "target": "/wiki/first-witness-book-5-the-chain.html",
       "score": 47,
       "weight": 0.47
     },
@@ -12465,26 +12503,26 @@
     {
       "source": "/wiki/the-first-witness.html",
       "target": "/wiki/first-witness-faction-commentaries.html",
-      "score": 76,
-      "weight": 0.76
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/the-first-witness.html",
+      "target": "/wiki/first-witness-glossary.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/the-first-witness.html",
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/the-first-witness.html",
       "target": "/wiki/hodl-wars.html",
       "score": 74,
       "weight": 0.74
-    },
-    {
-      "source": "/wiki/the-first-witness.html",
-      "target": "/wiki/first-witness-glossary.html",
-      "score": 73,
-      "weight": 0.73
-    },
-    {
-      "source": "/wiki/the-first-witness.html",
-      "target": "/wiki/first-witness-master-chronology.html",
-      "score": 73,
-      "weight": 0.73
     },
     {
       "source": "/wiki/the-first-witness.html",

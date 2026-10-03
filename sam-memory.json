@@ -1296,6 +1296,27 @@
         "doctrine"
       ]
     },
+    "first_witness_life_readings": {
+      "alias_candidates": [],
+      "aliases": [
+        "first witness life readings",
+        "life readings from first witness"
+      ],
+      "canonical_title": "Life Readings from the First Witness",
+      "canonical_url": "/wiki/first-witness-life-readings.html",
+      "category": "characters",
+      "source_urls": [
+        "/wiki/first-witness-life-readings.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "life",
+        "readings",
+        "from",
+        "first",
+        "witness"
+      ]
+    },
     "first_witness_long_transmission": {
       "alias_candidates": [],
       "aliases": [
@@ -7397,5 +7418,5 @@
       ]
     }
   },
-  "updated_at": "2026-10-03T03:25:27Z"
+  "updated_at": "2026-10-03T03:51:07Z"
 }

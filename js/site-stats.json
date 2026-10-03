@@ -1,23 +1,23 @@
 {
-  "total_wiki_pages": 360,
-  "total_articles": 209,
+  "total_wiki_pages": 361,
+  "total_articles": 210,
   "nft_template_pages": 143,
   "nft_collection_pages": 2,
-  "indexed_pages": 354,
-  "search_index_pages": 354,
-  "graph_nodes": 354,
-  "sitemap_wiki_urls": 354,
+  "indexed_pages": 355,
+  "search_index_pages": 355,
+  "graph_nodes": 355,
+  "sitemap_wiki_urls": 355,
   "total_categories": 19,
-  "article_count": 360,
-  "totalArticles": 360,
-  "entity_count": 354,
-  "totalEntities": 354,
+  "article_count": 361,
+  "totalArticles": 361,
+  "entity_count": 355,
+  "totalEntities": 355,
   "category_count": 19,
   "totalCategories": 19,
-  "total_entities": 354,
+  "total_entities": 355,
   "canonical_hub": "/search.html",
   "excluded_legacy_paths": [
     "/wiki/index.html"
   ],
-  "last_updated": "2026-10-03T03:25:25.802Z"
+  "last_updated": "2026-10-03T03:51:05.026Z"
 }
