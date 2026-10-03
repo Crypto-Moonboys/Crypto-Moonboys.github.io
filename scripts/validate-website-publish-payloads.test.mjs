@@ -1178,6 +1178,116 @@ assert.deepEqual(
 );
 console.log('PASS sync artifact commits preserve a concurrent wiki-index edit');
 
+const identicalSyncCasFixture = ownershipFixture({
+  automationPolicy: 'metadata-only',
+  payload: {
+    publish_mode: 'metadata_only',
+    article_html: undefined,
+  },
+});
+const identicalSyncCasIndexPath = path.join(identicalSyncCasFixture.rootDir, 'js', 'wiki-index.json');
+fs.mkdirSync(path.dirname(identicalSyncCasIndexPath), { recursive: true });
+fs.writeFileSync(identicalSyncCasIndexPath, '[]\n', 'utf8');
+let identicalSyncCasBytes = null;
+let identicalSyncCasInjected = false;
+const renameSyncBeforeIdenticalSyncCas = fs.renameSync;
+fs.renameSync = function interceptIdenticalWikiIndexDetach(sourcePath, destinationPath) {
+  const normalizedDestination = String(destinationPath).replaceAll('\\', '/');
+  if (
+    !identicalSyncCasInjected &&
+    path.basename(String(sourcePath)) === 'wiki-index.json' &&
+    /\/\.wiki-index\.json\.publish-[^/]+\/detached$/.test(normalizedDestination)
+  ) {
+    identicalSyncCasInjected = true;
+    identicalSyncCasBytes = fs.readFileSync(path.join(path.dirname(String(destinationPath)), 'staged'));
+    fs.writeFileSync(identicalSyncCasIndexPath, identicalSyncCasBytes);
+  }
+  return renameSyncBeforeIdenticalSyncCas.call(fs, sourcePath, destinationPath);
+};
+try {
+  assert.throws(
+    () => runImport({
+      payloadDir: identicalSyncCasFixture.payloadDir,
+      rootDir: identicalSyncCasFixture.rootDir,
+      write: true,
+      logger: () => {},
+      refreshContentStateFn: refreshTestContentState,
+    }),
+    (error) => error instanceof ContentOwnershipError &&
+      error.code === 'PUBLISH_TRANSACTION_ROLLBACK_CONFLICT' &&
+      error.cause?.code === 'STALE_CONTENT_STATE' &&
+      error.rollbackConflicts.some(({ path: conflictPath }) => conflictPath === 'js/wiki-index.json')
+  );
+} finally {
+  fs.renameSync = renameSyncBeforeIdenticalSyncCas;
+}
+assert.equal(identicalSyncCasInjected, true, 'fixture must install bytes identical to the staged artifact before CAS');
+assert.deepEqual(
+  fs.readFileSync(identicalSyncCasIndexPath),
+  identicalSyncCasBytes,
+  'an uncommitted intended postimage must not authorize rollback of identical concurrent bytes'
+);
+console.log('PASS failed artifact CAS cannot bless identical concurrent bytes as importer-owned');
+
+const repeatedArtifactFixture = ownershipFixture();
+const repeatedArtifactPagePath = path.join(
+  repeatedArtifactFixture.rootDir,
+  'wiki',
+  'ownership-case.html'
+);
+const repeatedArtifactPageBefore = fs.readFileSync(repeatedArtifactPagePath);
+const repeatedArtifactCategoryPath = path.join(
+  repeatedArtifactFixture.rootDir,
+  'categories',
+  'lore.html'
+);
+const repeatedArtifactCategoryBefore = Buffer.from(`<!DOCTYPE html><html><body><main>
+<div class="article-list"><a class="article-list-item" href="/wiki/ownership-case.html"><span>OLD CATEGORY ITEM</span></a></div>
+</main></body></html>`, 'utf8');
+fs.mkdirSync(path.dirname(repeatedArtifactCategoryPath), { recursive: true });
+fs.writeFileSync(repeatedArtifactCategoryPath, repeatedArtifactCategoryBefore);
+let repeatedArtifactStageAttempts = 0;
+const mkdtempSyncBeforeRepeatedArtifact = fs.mkdtempSync;
+fs.mkdtempSync = function interceptRepeatedCategoryStage(prefix, ...args) {
+  const normalizedPrefix = String(prefix).replaceAll('\\', '/');
+  if (/\/\.lore\.html\.publish-[^/]*$/.test(normalizedPrefix)) {
+    repeatedArtifactStageAttempts += 1;
+    if (repeatedArtifactStageAttempts === 2) {
+      const error = new Error('injected failure before repeated category install');
+      error.code = 'EACCES';
+      throw error;
+    }
+  }
+  return mkdtempSyncBeforeRepeatedArtifact.call(fs, prefix, ...args);
+};
+try {
+  assert.throws(
+    () => runImport({
+      payloadDir: repeatedArtifactFixture.payloadDir,
+      rootDir: repeatedArtifactFixture.rootDir,
+      write: true,
+      logger: () => {},
+      refreshContentStateFn: refreshTestContentState,
+    }),
+    (error) => error?.code === 'EACCES' &&
+      error.message.includes('injected failure before repeated category install')
+  );
+} finally {
+  fs.mkdtempSync = mkdtempSyncBeforeRepeatedArtifact;
+}
+assert.equal(repeatedArtifactStageAttempts, 2, 'category cleanup and upsert must write the same artifact twice');
+assert.deepEqual(
+  fs.readFileSync(repeatedArtifactPagePath),
+  repeatedArtifactPageBefore,
+  'repeated artifact failure must roll the article write back'
+);
+assert.deepEqual(
+  fs.readFileSync(repeatedArtifactCategoryPath),
+  repeatedArtifactCategoryBefore,
+  'a failed second write must retain the first writer journal so rollback restores the original artifact'
+);
+console.log('PASS failed repeated artifact write restores the prior committed journal postimage');
+
 const registryCasRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'website-importer-registry-cas-'));
 const registryCasPayloadDir = path.join(registryCasRoot, 'website-publish-payloads');
 fs.copyFileSync(path.join(ROOT, '_article-template.html'), path.join(registryCasRoot, '_article-template.html'));
@@ -2441,6 +2551,175 @@ assert.throws(
 assert.deepEqual(fs.readFileSync(partialRefreshPagePath), partialRefreshPageBefore);
 assert.deepEqual(fs.readFileSync(partialRefreshManifestPath), partialRefreshManifestBefore);
 console.log('PASS partial content-state refresh failure rolls back its own output');
+
+const preinstallManifestRevocationFixture = ownershipFixture();
+const preinstallManifestRevocationPagePath = path.join(
+  preinstallManifestRevocationFixture.rootDir,
+  'wiki',
+  'ownership-case.html'
+);
+const preinstallManifestRevocationManifestPath = path.join(
+  preinstallManifestRevocationFixture.rootDir,
+  CONTENT_STATE_MANIFEST_FILE
+);
+const preinstallManifestRevocationPageBefore = fs.readFileSync(
+  preinstallManifestRevocationPagePath
+);
+let preinstallManifestRevocationBytes = null;
+assert.throws(
+  () => runImport({
+    payloadDir: preinstallManifestRevocationFixture.payloadDir,
+    rootDir: preinstallManifestRevocationFixture.rootDir,
+    write: true,
+    logger: () => {},
+    refreshContentStateFn: (isolatedRoot) => {
+      assert.notEqual(
+        path.resolve(isolatedRoot),
+        path.resolve(preinstallManifestRevocationFixture.rootDir)
+      );
+      const liveManifest = JSON.parse(
+        fs.readFileSync(preinstallManifestRevocationManifestPath, 'utf8')
+      );
+      liveManifest.pages[0].automation_policy = 'canon-locked';
+      writeJson(preinstallManifestRevocationManifestPath, liveManifest);
+      preinstallManifestRevocationBytes = fs.readFileSync(
+        preinstallManifestRevocationManifestPath
+      );
+      throw new Error('injected refresh failure before artifact installation');
+    },
+  }),
+  (error) => error instanceof ContentOwnershipError &&
+    error.code === 'PUBLISH_TRANSACTION_ROLLBACK_CONFLICT' &&
+    error.cause?.message === 'injected refresh failure before artifact installation' &&
+    error.rollbackConflicts.some(
+      ({ path: conflictPath }) => conflictPath === CONTENT_STATE_MANIFEST_FILE
+    )
+);
+assert.deepEqual(
+  fs.readFileSync(preinstallManifestRevocationPagePath),
+  preinstallManifestRevocationPageBefore,
+  'pre-install refresh failure must roll the already-written page back'
+);
+assert.deepEqual(
+  fs.readFileSync(preinstallManifestRevocationManifestPath),
+  preinstallManifestRevocationBytes,
+  'rollback must not attribute or overwrite a concurrent pre-install canon-lock revocation'
+);
+console.log('PASS failed pre-install refresh preserves an unjournaled concurrent manifest revocation');
+
+const partialPrefixRefreshFixture = ownershipFixture();
+const partialPrefixRefreshPagePath = path.join(
+  partialPrefixRefreshFixture.rootDir,
+  'wiki',
+  'ownership-case.html'
+);
+const partialPrefixRefreshManifestPath = path.join(
+  partialPrefixRefreshFixture.rootDir,
+  CONTENT_STATE_MANIFEST_FILE
+);
+const partialPrefixRefreshReportPath = path.join(
+  partialPrefixRefreshFixture.rootDir,
+  'brand-canon',
+  'wiki-rewrite-audit.md'
+);
+const partialPrefixRefreshPageBefore = fs.readFileSync(partialPrefixRefreshPagePath);
+const partialPrefixRefreshManifestBefore = fs.readFileSync(partialPrefixRefreshManifestPath);
+const partialPrefixConcurrentReport = Buffer.from('# CONCURRENT REPORT BEFORE SECOND COMMIT\n', 'utf8');
+assert.throws(
+  () => runImport({
+    payloadDir: partialPrefixRefreshFixture.payloadDir,
+    rootDir: partialPrefixRefreshFixture.rootDir,
+    write: true,
+    logger: () => {},
+    refreshContentStateFn: (isolatedRoot) => {
+      const result = refreshTestContentState(isolatedRoot);
+      fs.writeFileSync(partialPrefixRefreshReportPath, partialPrefixConcurrentReport);
+      return result;
+    },
+  }),
+  (error) => error instanceof ContentOwnershipError &&
+    error.code === 'PUBLISH_TRANSACTION_ROLLBACK_CONFLICT' &&
+    error.cause?.code === 'STALE_CONTENT_STATE' &&
+    error.rollbackConflicts.some(
+      ({ path: conflictPath }) => conflictPath === 'brand-canon/wiki-rewrite-audit.md'
+    )
+);
+assert.deepEqual(
+  fs.readFileSync(partialPrefixRefreshPagePath),
+  partialPrefixRefreshPageBefore,
+  'second-output CAS failure must roll the article write back'
+);
+assert.deepEqual(
+  fs.readFileSync(partialPrefixRefreshManifestPath),
+  partialPrefixRefreshManifestBefore,
+  'second-output CAS failure must roll the first committed refresh output back'
+);
+assert.deepEqual(
+  fs.readFileSync(partialPrefixRefreshReportPath),
+  partialPrefixConcurrentReport,
+  'second-output CAS failure must preserve the exact concurrent report bytes'
+);
+console.log('PASS partial-prefix refresh rolls back journaled outputs and preserves the concurrent CAS winner');
+
+const unjournaledReportFixture = ownershipFixture();
+const unjournaledReportPagePath = path.join(
+  unjournaledReportFixture.rootDir,
+  'wiki',
+  'ownership-case.html'
+);
+const unjournaledReportManifestPath = path.join(
+  unjournaledReportFixture.rootDir,
+  CONTENT_STATE_MANIFEST_FILE
+);
+const unjournaledReportPath = path.join(
+  unjournaledReportFixture.rootDir,
+  'brand-canon',
+  'wiki-rewrite-audit.md'
+);
+const unjournaledReportPageBefore = fs.readFileSync(unjournaledReportPagePath);
+const unjournaledReportManifestBefore = fs.readFileSync(unjournaledReportManifestPath);
+const concurrentReportBytes = Buffer.from('# CONCURRENT HUMAN AUDIT\n', 'utf8');
+assert.equal(fs.existsSync(unjournaledReportPath), false);
+assert.throws(
+  () => runImport({
+    payloadDir: unjournaledReportFixture.payloadDir,
+    rootDir: unjournaledReportFixture.rootDir,
+    write: true,
+    logger: () => {},
+    refreshContentStateFn: (isolatedRoot) => {
+      const result = refreshTestContentState(isolatedRoot);
+      fs.unlinkSync(path.join(isolatedRoot, 'brand-canon', 'wiki-rewrite-audit.md'));
+      fs.writeFileSync(unjournaledReportPath, concurrentReportBytes);
+      return result;
+    },
+    syncFeedSurfacesFn: () => {
+      throw new FeedSyncError('graph', 'injected failure after manifest-only refresh');
+    },
+  }),
+  (error) => error instanceof ContentOwnershipError &&
+    error.code === 'PUBLISH_TRANSACTION_ROLLBACK_CONFLICT' &&
+    error.cause instanceof FeedSyncError &&
+    error.cause.message.includes('injected failure after manifest-only refresh') &&
+    error.rollbackConflicts.some(
+      ({ path: conflictPath }) => conflictPath === 'brand-canon/wiki-rewrite-audit.md'
+    )
+);
+assert.deepEqual(
+  fs.readFileSync(unjournaledReportPagePath),
+  unjournaledReportPageBefore,
+  'later failure must roll the planned page write back'
+);
+assert.deepEqual(
+  fs.readFileSync(unjournaledReportManifestPath),
+  unjournaledReportManifestBefore,
+  'later failure must roll the writer-journaled manifest refresh back'
+);
+assert.deepEqual(
+  fs.readFileSync(unjournaledReportPath),
+  concurrentReportBytes,
+  'rollback must preserve a concurrent report that no importer writer journaled'
+);
+console.log('PASS successful refresh cannot bless an unjournaled concurrent report for later rollback');
 
 const refreshManifestRevocationFixture = ownershipFixture();
 const refreshManifestRevocationPagePath = path.join(

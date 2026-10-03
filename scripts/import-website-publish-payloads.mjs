@@ -1569,6 +1569,8 @@ function atomicWriteFilePathSync(
   let stagedDescriptor;
   let stagedExists = false;
   let detachedExists = false;
+  let installCommitted = false;
+  let journalCheckpoint = null;
 
   const staleAtomicWrite = (message) => new ContentOwnershipError(
     'STALE_CONTENT_STATE',
@@ -1595,9 +1597,18 @@ function atomicWriteFilePathSync(
     };
 
     if (journalRelativePath) {
+      journalCheckpoint = {
+        hadMutation: activeTransactionWriteJournal.mutatedFiles.has(journalRelativePath),
+        hadPostimage: activeTransactionWriteJournal.postimages.has(journalRelativePath),
+        postimage: activeTransactionWriteJournal.postimages.get(journalRelativePath),
+        hadExpectedState: activeTransactionWriteJournal.expectedStates.has(journalRelativePath),
+        expectedState: activeTransactionWriteJournal.expectedStates.get(journalRelativePath),
+      };
       // Journal exact intended bytes before the namespace-changing commit. A
       // successful install followed by a cleanup exception can then be rolled
-      // back, while a later concurrent edit will not be mistaken for ours.
+      // back, while a later concurrent edit will not be mistaken for ours. If
+      // this attempt never installs, the catch path restores the prior journal
+      // entry so attempted bytes never become rollback ownership evidence.
       activeTransactionWriteJournal.mutatedFiles.add(journalRelativePath);
       activeTransactionWriteJournal.postimages.set(journalRelativePath, intendedState);
     }
@@ -1626,6 +1637,7 @@ function atomicWriteFilePathSync(
       if (!installPreimageWithoutReplace(stagedPath, anchoredFilePath)) {
         throw staleAtomicWrite('artifact appeared before the conditional create commit');
       }
+      installCommitted = true;
       if (journalRelativePath) {
         activeTransactionWriteJournal.expectedStates.set(journalRelativePath, intendedState);
       }
@@ -1662,6 +1674,7 @@ function atomicWriteFilePathSync(
       detachedExists = false;
       throw staleAtomicWrite('a concurrent artifact appeared before the conditional replace install');
     }
+    installCommitted = true;
     if (journalRelativePath) {
       activeTransactionWriteJournal.expectedStates.set(journalRelativePath, intendedState);
     }
@@ -1678,6 +1691,29 @@ function atomicWriteFilePathSync(
       } catch {
         // Keep the detached inode in its private directory for recovery rather
         // than overwriting a concurrently recreated artifact.
+      }
+    }
+    if (journalRelativePath && !installCommitted && journalCheckpoint) {
+      if (journalCheckpoint.hadMutation) {
+        activeTransactionWriteJournal.mutatedFiles.add(journalRelativePath);
+      } else {
+        activeTransactionWriteJournal.mutatedFiles.delete(journalRelativePath);
+      }
+      if (journalCheckpoint.hadPostimage) {
+        activeTransactionWriteJournal.postimages.set(
+          journalRelativePath,
+          journalCheckpoint.postimage
+        );
+      } else {
+        activeTransactionWriteJournal.postimages.delete(journalRelativePath);
+      }
+      if (journalCheckpoint.hadExpectedState) {
+        activeTransactionWriteJournal.expectedStates.set(
+          journalRelativePath,
+          journalCheckpoint.expectedState
+        );
+      } else {
+        activeTransactionWriteJournal.expectedStates.delete(journalRelativePath);
       }
     }
     throw error;
@@ -1914,39 +1950,6 @@ function captureWorkspaceFileState(rootDir, relativePath) {
     content: null,
     mode: null,
   };
-}
-
-function captureTransactionPostimages(rootDir, relativePaths, postimages) {
-  for (const relativePath of relativePaths) {
-    const normalizedPath = relativePath.replaceAll('\\', '/');
-    // Importer-owned conditional writers journal their exact intended bytes
-    // before commit. Never replace that attribution with a later live read,
-    // which could bless a concurrent post-write edit as transaction-owned.
-    if (postimages.has(normalizedPath)) continue;
-    postimages.set(normalizedPath, captureWorkspaceFileState(rootDir, normalizedPath));
-  }
-}
-
-function captureFailedStepPostimages(rootDir, snapshot, relativePaths, postimages) {
-  for (const relativePath of relativePaths) {
-    const normalizedPath = relativePath.replaceAll('\\', '/');
-    if (postimages.has(normalizedPath)) continue;
-    try {
-      const liveState = captureWorkspaceFileState(rootDir, normalizedPath);
-      const preimage = snapshot.get(normalizedPath);
-      // A synchronous refresh/sync callback can fail after producing only a
-      // prefix of its declared outputs. Capture that failure-boundary state as
-      // the transaction postimage so the normal compare-and-swap rollback can
-      // restore it. A later writer is still protected: restoreSnapshot reads
-      // the path again and restores only while these exact bytes remain live.
-      if (preimage && !workspaceFileStatesEqual(liveState, preimage)) {
-        postimages.set(normalizedPath, liveState);
-      }
-    } catch {
-      // Leave unverifiable paths without a postimage. restoreSnapshot will
-      // preserve them and surface a rollback conflict instead of guessing.
-    }
-  }
 }
 
 function captureDetachedFileState(filePath, relativePath) {
@@ -3583,9 +3586,11 @@ function runImportUnlocked({
         logger(`Wrote page: ${page.relPagePath}`);
       }
       if (renderedPages.length > 0) {
+        // Declared outputs are conservative rollback candidates so concurrent
+        // changes can be reported. Membership alone never authorizes restore:
+        // restoreSnapshot requires an exact writer-journaled postimage.
         for (const relativePath of stubAuthorizationFiles) mutatedFiles.add(relativePath);
         absentStubAuthorizations = consumeAbsentStubAuthorizations(rootDir, renderedPages);
-        captureTransactionPostimages(rootDir, stubAuthorizationFiles, postimages);
         for (const relativePath of contentStateFiles) mutatedFiles.add(relativePath);
         contentStateRefresh = refreshContentStateFn === refreshContentStateArtifacts
           ? refreshContentStateFn(rootDir, logger)
@@ -3596,7 +3601,6 @@ function runImportUnlocked({
               logger,
               'content-state refresh callback'
             );
-        captureTransactionPostimages(rootDir, contentStateFiles, postimages);
         verifyRefreshedContentState(rootDir, renderedPages);
       }
       for (const relativePath of syncFiles) mutatedFiles.add(relativePath);
@@ -3613,7 +3617,6 @@ function runImportUnlocked({
             logger,
             'feed sync callback'
           );
-      captureTransactionPostimages(rootDir, syncFiles, postimages);
       // Root/lock identity is part of the commit condition. A callback that
       // renamed the repository or replaced the lock must enter rollback while
       // the original root descriptor and exact postimages are still live.
@@ -3626,7 +3629,9 @@ function runImportUnlocked({
       if (activeTransactionRootBinding) {
         activeTransactionRootBinding.allowDetachedRoot = true;
       }
-      captureFailedStepPostimages(rootDir, snapshot, mutatedFiles, postimages);
+      // Roll back only paths for which an importer-owned writer journaled an
+      // exact intended postimage. A live read at this failure boundary cannot
+      // prove ownership: it may be a concurrent policy revocation or edit.
       const conflicts = restoreSnapshot(rootDir, snapshot, mutatedFiles, postimages);
       if (conflicts.length > 0) {
         logger(`Write-mode rollback preserved ${conflicts.length} concurrently changed or unverifiable path(s).`);
