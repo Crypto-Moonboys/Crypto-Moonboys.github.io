@@ -762,6 +762,8 @@
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/first-witness-sacred-fork.html",
+      "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
+      "/wiki/first-witness-symbols-marks-sacred-design.html",
       "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
       "/wiki/gkniftyheads-blockchain-belle-783392.html",
       "/wiki/gkniftyheads-blockchain-bombshell-783407.html",
@@ -809,6 +811,7 @@
       "/wiki/bitcoin-kids.html",
       "/wiki/block-topia.html",
       "/wiki/croydon-tower-blocks.html",
+      "/wiki/first-witness-ai-synthetic-minds.html",
       "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
       "/wiki/gkniftyheads-blockchain-belle-783392.html",
       "/wiki/gkniftyheads-blockchain-bombshell-783407.html",
@@ -947,6 +950,7 @@
       "/wiki/stikfamwars.html"
     ],
     "suggested_links": [
+      "/wiki/first-witness-proverbs-street-sayings.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
       "/wiki/graffiti-kings.html",
       "/wiki/graffiti-nexus.html",
@@ -964,6 +968,8 @@
       "/wiki/hodl-wars.html"
     ],
     "suggested_links": [
+      "/wiki/first-witness-daily-practices-rituals.html",
+      "/wiki/first-witness-relics-manuscripts-lost-editions.html",
       "/wiki/games4punks-telegram.html",
       "/wiki/gang-signs-card-game.html",
       "/wiki/moon-mission.html",
@@ -1105,6 +1111,7 @@
       "/wiki/stikfamwars.html"
     ],
     "suggested_links": [
+      "/wiki/first-witness-proverbs-street-sayings.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
       "/wiki/first-witness-world-chain-error.html",
       "/wiki/gkniftyheads-joey-the-juggernaut-jablonski-783383.html",
@@ -1139,6 +1146,8 @@
     "suggested_links": [
       "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/first-witness-sacred-fork.html",
+      "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
+      "/wiki/first-witness-symbols-marks-sacred-design.html",
       "/wiki/grit.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
@@ -1381,6 +1390,50 @@
       "/wiki/web3.html"
     ]
   },
+  "/wiki/first-witness-ai-synthetic-minds.html": {
+    "existing_links": [
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/the-first-witness.html"
+    ],
+    "suggested_links": [
+      "/wiki/blockchain.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-book-5-the-chain.html",
+      "/wiki/first-witness-children-first-lessons.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
+      "/wiki/first-witness-source-register.html",
+      "/wiki/gkniftyheads-free-minds-gk-beats-genesis-776049.html"
+    ]
+  },
+  "/wiki/first-witness-apocrypha-disputed-passages.html": {
+    "existing_links": [
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/first-witness-source-register.html",
+      "/wiki/the-first-witness.html"
+    ],
+    "suggested_links": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-book-5-the-chain.html",
+      "/wiki/first-witness-book-6-the-fork.html",
+      "/wiki/first-witness-book-7-the-hold.html",
+      "/wiki/first-witness-book-8-the-fire.html",
+      "/wiki/first-witness-children-first-lessons.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html"
+    ]
+  },
   "/wiki/first-witness-bitcoin-witness.html": {
     "existing_links": [
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -1398,9 +1451,12 @@
       "/wiki/bitcoin-x-kids.html",
       "/wiki/bitcoin.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-faction-ritual-variations.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
       "/wiki/first-witness-source-register.html",
       "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
       "/wiki/gkniftyheads-bitcoin-kid-infinite-776002.html",
@@ -1434,9 +1490,12 @@
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-faction-ritual-variations.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
       "/wiki/first-witness-source-register.html",
       "/wiki/queen-sarah-p-fly.html",
       "/wiki/street-kingdoms.html"
@@ -1460,9 +1519,12 @@
       "/wiki/first-witness-book-7-the-hold.html",
       "/wiki/first-witness-book-8-the-fire.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-money-debt-honest-scales.html",
+      "/wiki/first-witness-parables.html",
       "/wiki/first-witness-source-register.html"
     ]
   },
@@ -1484,9 +1546,13 @@
       "/wiki/first-witness-book-7-the-hold.html",
       "/wiki/first-witness-book-8-the-fire.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-family-children-elders.html",
+      "/wiki/first-witness-food-hospitality-common-table.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
       "/wiki/first-witness-source-register.html"
     ]
   },
@@ -1508,9 +1574,12 @@
       "/wiki/first-witness-book-7-the-hold.html",
       "/wiki/first-witness-book-8-the-fire.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-land-water-stewardship.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
       "/wiki/first-witness-source-register.html"
     ]
   },
@@ -1532,10 +1601,13 @@
       "/wiki/first-witness-book-7-the-hold.html",
       "/wiki/first-witness-book-8-the-fire.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
       "/wiki/first-witness-source-register.html",
+      "/wiki/first-witness-symbols-marks-sacred-design.html",
       "/wiki/graffpunks.html"
     ]
   },
@@ -1551,6 +1623,7 @@
     "suggested_links": [
       "/wiki/blockchain.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-ai-synthetic-minds.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-book-2-the-common-blood.html",
@@ -1558,10 +1631,12 @@
       "/wiki/first-witness-book-7-the-hold.html",
       "/wiki/first-witness-book-8-the-fire.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
       "/wiki/first-witness-source-register.html",
       "/wiki/first-witness-world-chain-error.html",
       "/wiki/jonny-laurence-nelson-tag-records.html",
@@ -1586,9 +1661,11 @@
       "/wiki/first-witness-book-4-the-wall.html",
       "/wiki/first-witness-book-8-the-fire.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/first-witness-source-register.html",
       "/wiki/first-witness-triple-fork-chainfire.html",
@@ -1614,9 +1691,11 @@
       "/wiki/first-witness-book-4-the-wall.html",
       "/wiki/first-witness-book-5-the-chain.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
       "/wiki/first-witness-source-register.html"
     ]
   },
@@ -1640,10 +1719,12 @@
       "/wiki/first-witness-book-5-the-chain.html",
       "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-child-of-fire.html",
+      "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-master-chronology.html",
       "/wiki/first-witness-null-erasure.html",
+      "/wiki/first-witness-parables.html",
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/first-witness-source-register.html",
       "/wiki/first-witness-triple-fork-chainfire.html",
@@ -1674,10 +1755,34 @@
       "/wiki/first-witness-book-5-the-chain.html",
       "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-book-7-the-hold.html",
+      "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
       "/wiki/first-witness-source-register.html"
+    ]
+  },
+  "/wiki/first-witness-calendar-feasts-remembrance.html": {
+    "existing_links": [
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/first-witness-source-register.html",
+      "/wiki/the-first-witness.html"
+    ],
+    "suggested_links": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/defi.html",
+      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-book-2-the-common-blood.html",
+      "/wiki/first-witness-children-first-lessons.html",
+      "/wiki/first-witness-death-grief-remembrance.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-food-hospitality-common-table.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html"
     ]
   },
   "/wiki/first-witness-child-of-fire.html": {
@@ -1705,12 +1810,34 @@
       "/wiki/first-witness-book-7-the-hold.html",
       "/wiki/first-witness-book-8-the-fire.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
       "/wiki/first-witness-source-register.html",
       "/wiki/graffpunks.html",
       "/wiki/the-bitcoin-kid-army.html"
+    ]
+  },
+  "/wiki/first-witness-children-first-lessons.html": {
+    "existing_links": [
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/first-witness-source-register.html",
+      "/wiki/the-first-witness.html"
+    ],
+    "suggested_links": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-block-topia-reading.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-family-children-elders.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
+      "/wiki/first-witness-street-kingdoms-reading.html"
     ]
   },
   "/wiki/first-witness-concordance.html": {
@@ -1733,8 +1860,10 @@
       "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-book-7-the-hold.html",
       "/wiki/first-witness-book-8-the-fire.html",
+      "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-parables.html",
       "/wiki/first-witness-source-register.html",
       "/wiki/genesis-kernel.html",
       "/wiki/hard-fork-games.html",
@@ -1743,6 +1872,48 @@
       "/wiki/jonny-laurence-nelson-tag-records.html",
       "/wiki/queen-sarah-p-fly.html",
       "/wiki/street-kingdoms.html"
+    ]
+  },
+  "/wiki/first-witness-daily-practices-rituals.html": {
+    "existing_links": [
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/first-witness-source-register.html",
+      "/wiki/the-first-witness.html"
+    ],
+    "suggested_links": [
+      "/wiki/block-topia.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-book-2-the-common-blood.html",
+      "/wiki/first-witness-book-3-the-keeper.html",
+      "/wiki/first-witness-children-first-lessons.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
+      "/wiki/graffpunks.html"
+    ]
+  },
+  "/wiki/first-witness-death-grief-remembrance.html": {
+    "existing_links": [
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/first-witness-source-register.html",
+      "/wiki/the-first-witness.html"
+    ],
+    "suggested_links": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-calendar-feasts-remembrance.html",
+      "/wiki/first-witness-children-first-lessons.html",
+      "/wiki/first-witness-daily-practices-rituals.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html"
     ]
   },
   "/wiki/first-witness-faction-commentaries.html": {
@@ -1763,12 +1934,75 @@
       "/wiki/first-witness-book-3-the-keeper.html",
       "/wiki/first-witness-book-5-the-chain.html",
       "/wiki/first-witness-book-6-the-fork.html",
+      "/wiki/first-witness-children-first-lessons.html",
+      "/wiki/first-witness-faction-ritual-variations.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
       "/wiki/first-witness-source-register.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffpunks.html",
       "/wiki/hodl-warriors.html"
+    ]
+  },
+  "/wiki/first-witness-faction-ritual-variations.html": {
+    "existing_links": [
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/the-first-witness.html"
+    ],
+    "suggested_links": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-children-first-lessons.html",
+      "/wiki/first-witness-daily-practices-rituals.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
+      "/wiki/first-witness-source-register.html",
+      "/wiki/graffpunks.html"
+    ]
+  },
+  "/wiki/first-witness-family-children-elders.html": {
+    "existing_links": [
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/first-witness-source-register.html",
+      "/wiki/the-first-witness.html"
+    ],
+    "suggested_links": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-children-first-lessons.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html"
+    ]
+  },
+  "/wiki/first-witness-food-hospitality-common-table.html": {
+    "existing_links": [
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/the-first-witness.html"
+    ],
+    "suggested_links": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-book-2-the-common-blood.html",
+      "/wiki/first-witness-children-first-lessons.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-long-transmission.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
+      "/wiki/first-witness-source-register.html"
     ]
   },
   "/wiki/first-witness-forty-paths.html": {
@@ -1785,8 +2019,11 @@
       "/wiki/defi.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-children-first-lessons.html",
+      "/wiki/first-witness-faction-ritual-variations.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
       "/wiki/first-witness-source-register.html",
       "/wiki/hard-fork-games.html"
     ]
@@ -1811,8 +2048,12 @@
       "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-book-7-the-hold.html",
       "/wiki/first-witness-book-8-the-fire.html",
+      "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-parables.html",
       "/wiki/first-witness-sacred-fork.html",
+      "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
+      "/wiki/first-witness-symbols-marks-sacred-design.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-x-warriors.html"
     ]
@@ -1829,12 +2070,39 @@
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-faction-ritual-variations.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
       "/wiki/first-witness-source-register.html",
       "/wiki/hodl-warriors.html",
       "/wiki/the-great-dip.html"
+    ]
+  },
+  "/wiki/first-witness-heresies-corruptions-abuses.html": {
+    "existing_links": [
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/the-first-witness.html"
+    ],
+    "suggested_links": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-book-2-the-common-blood.html",
+      "/wiki/first-witness-book-5-the-chain.html",
+      "/wiki/first-witness-book-6-the-fork.html",
+      "/wiki/first-witness-book-7-the-hold.html",
+      "/wiki/first-witness-book-8-the-fire.html",
+      "/wiki/first-witness-children-first-lessons.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
+      "/wiki/first-witness-source-register.html"
     ]
   },
   "/wiki/first-witness-hodl-doctrine.html": {
@@ -1859,14 +2127,77 @@
       "/wiki/first-witness-book-7-the-hold.html",
       "/wiki/first-witness-book-8-the-fire.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
       "/wiki/first-witness-source-register.html",
+      "/wiki/first-witness-war-defence-peacekeeping.html",
       "/wiki/forkborn-collective.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html"
+    ]
+  },
+  "/wiki/first-witness-justice-mercy-restitution.html": {
+    "existing_links": [
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/first-witness-source-register.html",
+      "/wiki/the-first-witness.html"
+    ],
+    "suggested_links": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-children-first-lessons.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html"
+    ]
+  },
+  "/wiki/first-witness-land-water-stewardship.html": {
+    "existing_links": [
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/the-first-witness.html"
+    ],
+    "suggested_links": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-book-2-the-common-blood.html",
+      "/wiki/first-witness-book-3-the-keeper.html",
+      "/wiki/first-witness-children-first-lessons.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
+      "/wiki/first-witness-source-register.html"
+    ]
+  },
+  "/wiki/first-witness-leadership-councils-succession.html": {
+    "existing_links": [
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/the-first-witness.html"
+    ],
+    "suggested_links": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-book-2-the-common-blood.html",
+      "/wiki/first-witness-book-3-the-keeper.html",
+      "/wiki/first-witness-children-first-lessons.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
+      "/wiki/first-witness-source-register.html"
     ]
   },
   "/wiki/first-witness-life-readings.html": {
@@ -1881,14 +2212,21 @@
     "suggested_links": [
       "/wiki/blockchain.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-ai-synthetic-minds.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-book-2-the-common-blood.html",
       "/wiki/first-witness-book-4-the-wall.html",
       "/wiki/first-witness-book-6-the-fork.html",
+      "/wiki/first-witness-children-first-lessons.html",
+      "/wiki/first-witness-death-grief-remembrance.html",
       "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-family-children-elders.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-master-chronology.html",
-      "/wiki/first-witness-source-register.html"
+      "/wiki/first-witness-money-debt-honest-scales.html",
+      "/wiki/first-witness-parables.html",
+      "/wiki/first-witness-source-register.html",
+      "/wiki/first-witness-work-craft-service.html"
     ]
   },
   "/wiki/first-witness-long-transmission.html": {
@@ -1906,11 +2244,35 @@
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-book-4-the-wall.html",
       "/wiki/first-witness-book-5-the-chain.html",
+      "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-faction-ritual-variations.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
       "/wiki/first-witness-source-register.html",
       "/wiki/the-chain-scribes.html"
+    ]
+  },
+  "/wiki/first-witness-marriage-partnership-adoption.html": {
+    "existing_links": [
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/the-first-witness.html"
+    ],
+    "suggested_links": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-children-first-lessons.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-family-children-elders.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-oaths-promises-vows.html",
+      "/wiki/first-witness-parables.html",
+      "/wiki/first-witness-source-register.html"
     ]
   },
   "/wiki/first-witness-master-chronology.html": {
@@ -1933,9 +2295,12 @@
       "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-book-7-the-hold.html",
       "/wiki/first-witness-book-8-the-fire.html",
+      "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-faction-ritual-variations.html",
       "/wiki/first-witness-great-concord-2030.html",
       "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-parables.html",
       "/wiki/first-witness-source-register.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-warriors.html",
@@ -1944,6 +2309,28 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/street-kingdoms.html"
+    ]
+  },
+  "/wiki/first-witness-money-debt-honest-scales.html": {
+    "existing_links": [
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/first-witness-source-register.html",
+      "/wiki/the-first-witness.html"
+    ],
+    "suggested_links": [
+      "/wiki/alcor-exchange.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-book-2-the-common-blood.html",
+      "/wiki/first-witness-book-3-the-keeper.html",
+      "/wiki/first-witness-children-first-lessons.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
+      "/wiki/waxp-exchange.html"
     ]
   },
   "/wiki/first-witness-null-erasure.html": {
@@ -1961,15 +2348,146 @@
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
       "/wiki/first-witness-source-register.html",
       "/wiki/graffpunks.html",
       "/wiki/hodl-wars.html",
       "/wiki/jonny-laurence-nelson-tag-records.html",
       "/wiki/null-the-prophet.html"
+    ]
+  },
+  "/wiki/first-witness-oaths-promises-vows.html": {
+    "existing_links": [
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/first-witness-source-register.html",
+      "/wiki/the-first-witness.html"
+    ],
+    "suggested_links": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-children-first-lessons.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html"
+    ]
+  },
+  "/wiki/first-witness-parables.html": {
+    "existing_links": [
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/first-witness-source-register.html",
+      "/wiki/the-first-witness.html"
+    ],
+    "suggested_links": [
+      "/wiki/block-topia.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/defi.html",
+      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-children-first-lessons.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-justice-mercy-restitution.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/the-chain-scribes.html"
+    ]
+  },
+  "/wiki/first-witness-pride-temptation-false-idols.html": {
+    "existing_links": [
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/first-witness-source-register.html",
+      "/wiki/the-first-witness.html"
+    ],
+    "suggested_links": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-book-2-the-common-blood.html",
+      "/wiki/first-witness-children-first-lessons.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html"
+    ]
+  },
+  "/wiki/first-witness-proverbs-street-sayings.html": {
+    "existing_links": [
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/first-witness-source-register.html",
+      "/wiki/the-first-witness.html"
+    ],
+    "suggested_links": [
+      "/wiki/block-topia.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-book-4-the-wall.html",
+      "/wiki/first-witness-book-5-the-chain.html",
+      "/wiki/first-witness-book-6-the-fork.html",
+      "/wiki/first-witness-children-first-lessons.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
+      "/wiki/first-witness-street-kingdoms-reading.html",
+      "/wiki/street-kingdoms.html"
+    ]
+  },
+  "/wiki/first-witness-questions-for-the-living.html": {
+    "existing_links": [
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/first-witness-source-register.html",
+      "/wiki/the-first-witness.html"
+    ],
+    "suggested_links": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-children-first-lessons.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-leadership-councils-succession.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
+      "/wiki/first-witness-street-kingdoms-reading.html"
+    ]
+  },
+  "/wiki/first-witness-relics-manuscripts-lost-editions.html": {
+    "existing_links": [
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/first-witness-source-register.html",
+      "/wiki/the-first-witness.html"
+    ],
+    "suggested_links": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-apocrypha-disputed-passages.html",
+      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-children-first-lessons.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
+      "/wiki/first-witness-sacred-fork.html",
+      "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
+      "/wiki/first-witness-symbols-marks-sacred-design.html",
+      "/wiki/gkniftyheads-digital-diva-783394.html",
+      "/wiki/gkniftyheads-digital-duchess-783404.html",
+      "/wiki/rave-relics.html",
+      "/wiki/sacred-chain.html"
     ]
   },
   "/wiki/first-witness-sacred-fork.html": {
@@ -1994,10 +2512,15 @@
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-book-5-the-chain.html",
       "/wiki/first-witness-book-6-the-fork.html",
+      "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-faction-ritual-variations.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
+      "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
       "/wiki/first-witness-source-register.html",
+      "/wiki/first-witness-symbols-marks-sacred-design.html",
       "/wiki/first-witness-triple-fork-chainfire.html",
       "/wiki/first-witness-world-chain-error.html",
       "/wiki/genesis-kernel.html",
@@ -2020,6 +2543,81 @@
       "/wiki/the-hard-fork-rockers.html"
     ]
   },
+  "/wiki/first-witness-sacred-places-walls-pilgrimage.html": {
+    "existing_links": [
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/first-witness-source-register.html",
+      "/wiki/the-first-witness.html"
+    ],
+    "suggested_links": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-book-4-the-wall.html",
+      "/wiki/first-witness-children-first-lessons.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
+      "/wiki/first-witness-sacred-fork.html",
+      "/wiki/first-witness-symbols-marks-sacred-design.html",
+      "/wiki/sacred-chain.html"
+    ]
+  },
+  "/wiki/first-witness-sects-schools-schisms.html": {
+    "existing_links": [
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/first-witness-source-register.html",
+      "/wiki/the-first-witness.html"
+    ],
+    "suggested_links": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-book-5-the-chain.html",
+      "/wiki/first-witness-book-6-the-fork.html",
+      "/wiki/first-witness-book-7-the-hold.html",
+      "/wiki/first-witness-book-8-the-fire.html",
+      "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-children-first-lessons.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-faction-ritual-variations.html",
+      "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html"
+    ]
+  },
+  "/wiki/first-witness-songs-chants-responses.html": {
+    "existing_links": [
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/first-witness-source-register.html",
+      "/wiki/the-first-witness.html"
+    ],
+    "suggested_links": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-book-5-the-chain.html",
+      "/wiki/first-witness-book-6-the-fork.html",
+      "/wiki/first-witness-book-7-the-hold.html",
+      "/wiki/first-witness-book-8-the-fire.html",
+      "/wiki/first-witness-children-first-lessons.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
+      "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/hodl-wars.html",
+      "/wiki/hodl-x-warriors.html",
+      "/wiki/hodlmoonboys-nft-collection.html"
+    ]
+  },
   "/wiki/first-witness-source-register.html": {
     "existing_links": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
@@ -2037,8 +2635,10 @@
       "/wiki/crypto-moonboys.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-wars.html",
       "/wiki/hodl-x-warriors.html"
@@ -2059,14 +2659,43 @@
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-book-4-the-wall.html",
+      "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
+      "/wiki/first-witness-proverbs-street-sayings.html",
+      "/wiki/first-witness-questions-for-the-living.html",
+      "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
       "/wiki/first-witness-source-register.html",
       "/wiki/gkniftyheads-paint-patriot-783295.html",
       "/wiki/graffpunks.html",
       "/wiki/jonny-laurence-nelson-tag-records.html",
       "/wiki/street-kingdoms.html"
+    ]
+  },
+  "/wiki/first-witness-symbols-marks-sacred-design.html": {
+    "existing_links": [
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/the-first-witness.html"
+    ],
+    "suggested_links": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-children-first-lessons.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
+      "/wiki/first-witness-sacred-fork.html",
+      "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
+      "/wiki/first-witness-source-register.html",
+      "/wiki/graffpunks.html",
+      "/wiki/sacred-chain.html"
     ]
   },
   "/wiki/first-witness-triple-fork-chainfire.html": {
@@ -2086,15 +2715,61 @@
       "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-book-7-the-hold.html",
       "/wiki/first-witness-book-8-the-fire.html",
+      "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-great-concord-2030.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/first-witness-source-register.html",
       "/wiki/hard-fork-games.html",
       "/wiki/the-great-dip.html",
       "/wiki/the-hard-fork-rockers.html"
+    ]
+  },
+  "/wiki/first-witness-war-defence-peacekeeping.html": {
+    "existing_links": [
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/the-first-witness.html"
+    ],
+    "suggested_links": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-book-5-the-chain.html",
+      "/wiki/first-witness-book-6-the-fork.html",
+      "/wiki/first-witness-children-first-lessons.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
+      "/wiki/first-witness-source-register.html",
+      "/wiki/hodl-warriors.html",
+      "/wiki/hodl-wars.html",
+      "/wiki/hodl-x-warriors.html",
+      "/wiki/hodlmoonboys-nft-collection.html"
+    ]
+  },
+  "/wiki/first-witness-work-craft-service.html": {
+    "existing_links": [
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-life-readings.html",
+      "/wiki/first-witness-source-register.html",
+      "/wiki/the-first-witness.html"
+    ],
+    "suggested_links": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-children-first-lessons.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html"
     ]
   },
   "/wiki/first-witness-world-chain-error.html": {
@@ -2111,9 +2786,12 @@
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-book-5-the-chain.html",
+      "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-faction-ritual-variations.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
       "/wiki/first-witness-source-register.html",
       "/wiki/the-chain-scribes.html"
     ]
@@ -2299,6 +2977,7 @@
       "/wiki/stikfamwars.html"
     ],
     "suggested_links": [
+      "/wiki/first-witness-proverbs-street-sayings.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
       "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
       "/wiki/gkniftyheads-blockchain-belle-783392.html",
@@ -2388,6 +3067,7 @@
     "suggested_links": [
       "/wiki/atomicassets.html",
       "/wiki/atomichub-graffpunks-collection.html",
+      "/wiki/first-witness-symbols-marks-sacred-design.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffiti-nexus.html",
       "/wiki/graffpunks-24-7-radio.html",
@@ -2416,10 +3096,12 @@
       "/wiki/atomichub-graffpunks-collection.html",
       "/wiki/blockchain.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-parables.html",
       "/wiki/first-witness-source-register.html",
       "/wiki/genesis-kernel.html",
       "/wiki/genesis-spray-drop.html",
@@ -4564,6 +5246,7 @@
       "/wiki/atomicassets.html",
       "/wiki/atomichub-graffpunks-collection.html",
       "/wiki/atomichub.html",
+      "/wiki/first-witness-ai-synthetic-minds.html",
       "/wiki/genesis-kernel.html",
       "/wiki/genesis-spray-drop.html",
       "/wiki/genesis-spray.html",
@@ -7931,6 +8614,7 @@
     "suggested_links": [
       "/wiki/atomichub-graffpunks-collection.html",
       "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-proverbs-street-sayings.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
       "/wiki/first-witness-world-chain-error.html",
       "/wiki/forkborn-collective.html",
@@ -7964,6 +8648,8 @@
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/first-witness-sacred-fork.html",
+      "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
+      "/wiki/first-witness-symbols-marks-sacred-design.html",
       "/wiki/genesis-kernel.html",
       "/wiki/gkniftyheads-digital-diva-783394.html",
       "/wiki/gkniftyheads-digital-duchess-783404.html",
@@ -8049,6 +8735,7 @@
       "/wiki/1m-free-nfts-program.html",
       "/wiki/atomichub.html",
       "/wiki/blockchain.html",
+      "/wiki/first-witness-proverbs-street-sayings.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
       "/wiki/gkniftyheads.html",
       "/wiki/grit.html",
@@ -8087,6 +8774,7 @@
       "/wiki/ethereum.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-proverbs-street-sayings.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
       "/wiki/grit.html",
       "/wiki/hard-fork-games.html",
@@ -8114,6 +8802,7 @@
     "suggested_links": [
       "/wiki/atomichub.html",
       "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-proverbs-street-sayings.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
       "/wiki/gkniftyheads-digital-diva-783394.html",
       "/wiki/gkniftyheads-digital-duchess-783404.html",
@@ -8190,6 +8879,7 @@
       "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-proverbs-street-sayings.html",
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
       "/wiki/first-witness-triple-fork-chainfire.html",
@@ -8214,6 +8904,7 @@
       "/wiki/block-topia.html",
       "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-sacred-fork.html",
+      "/wiki/first-witness-symbols-marks-sacred-design.html",
       "/wiki/first-witness-triple-fork-chainfire.html",
       "/wiki/graffpunks.html",
       "/wiki/the-hard-fork-rockers.html",
@@ -8238,6 +8929,7 @@
       "/wiki/atomichub-graffpunks-collection.html",
       "/wiki/block-topia.html",
       "/wiki/blockchain.html",
+      "/wiki/first-witness-proverbs-street-sayings.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
       "/wiki/genesis-kernel.html",
       "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
@@ -8279,6 +8971,7 @@
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-symbols-marks-sacred-design.html",
       "/wiki/gkniftyheads-digital-diva-783394.html",
       "/wiki/gkniftyheads-digital-duchess-783404.html",
       "/wiki/gkniftyheads.html",
@@ -8306,6 +8999,7 @@
     ],
     "suggested_links": [
       "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-war-defence-peacekeeping.html",
       "/wiki/forkborn-collective.html",
       "/wiki/graffiti-kings.html",
       "/wiki/hodl-x-warriors.html",
@@ -8743,6 +9437,8 @@
       "/wiki/the-nice-easy-bois.html"
     ],
     "suggested_links": [
+      "/wiki/first-witness-questions-for-the-living.html",
+      "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
       "/wiki/gkniftyheads-urban-oracle-783306.html",
       "/wiki/street-kingdoms.html",
@@ -8870,6 +9566,7 @@
       "/wiki/block-topia.html",
       "/wiki/charlie-buster.html",
       "/wiki/fgl-token.html",
+      "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
       "/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html",
       "/wiki/gkniftyheads-lotus-luminary-charlie-buster-lancer-783470.html",
       "/wiki/gkniftyheads-matteo-token-tactician-romano-783462.html",
@@ -9295,6 +9992,7 @@
     "suggested_links": [
       "/wiki/atomicassets.html",
       "/wiki/atomichub.html",
+      "/wiki/first-witness-proverbs-street-sayings.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
       "/wiki/gk.html",
       "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
@@ -9516,6 +10214,7 @@
     ],
     "suggested_links": [
       "/wiki/atomichub-graffpunks-collection.html",
+      "/wiki/first-witness-relics-manuscripts-lost-editions.html",
       "/wiki/gkniftyheads-digital-diva-783394.html",
       "/wiki/gkniftyheads-digital-duchess-783404.html",
       "/wiki/graffiti-kings.html",
@@ -9619,6 +10318,8 @@
     "suggested_links": [
       "/wiki/first-witness-book-5-the-chain.html",
       "/wiki/first-witness-sacred-fork.html",
+      "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
+      "/wiki/first-witness-symbols-marks-sacred-design.html",
       "/wiki/first-witness-world-chain-error.html",
       "/wiki/genesis-kernel.html",
       "/wiki/the-chain-scribes.html",
@@ -9697,6 +10398,8 @@
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/first-witness-sacred-fork.html",
+      "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
+      "/wiki/first-witness-symbols-marks-sacred-design.html",
       "/wiki/gkniftyheads-alessandro-satoshi-samurai-ferrari-783442.html",
       "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
       "/wiki/gkniftyheads-bitcoin-kid-infinite-776002.html",
@@ -9763,6 +10466,7 @@
       "/wiki/block-node-defenders.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-relics-manuscripts-lost-editions.html",
       "/wiki/grit.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-wars.html",
@@ -9941,6 +10645,7 @@
       "/wiki/wax-blockchain.html"
     ],
     "suggested_links": [
+      "/wiki/first-witness-work-craft-service.html",
       "/wiki/graffpunks.html",
       "/wiki/nbg.html",
       "/wiki/web3.html"
@@ -9999,6 +10704,7 @@
       "/wiki/block-node-defenders.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-proverbs-street-sayings.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
       "/wiki/graffpunks.html",
       "/wiki/hodl-warriors.html",
@@ -10210,6 +10916,7 @@
       "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-btc.html",
       "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-leadership-councils-succession.html",
       "/wiki/forkborn-collective.html",
       "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
       "/wiki/gkniftyheads-bitcoin-kid-infinite-776002.html",
@@ -10358,6 +11065,7 @@
       "/wiki/block-node-defenders.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-daily-practices-rituals.html",
       "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
       "/wiki/gkniftyheads-blockchain-belle-783392.html",
       "/wiki/gkniftyheads-blockchain-bombshell-783407.html",
@@ -10471,6 +11179,8 @@
       "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin.html",
       "/wiki/block-topia.html",
+      "/wiki/first-witness-ai-synthetic-minds.html",
+      "/wiki/first-witness-apocrypha-disputed-passages.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-1-the-first-witness.html",
@@ -10482,21 +11192,46 @@
       "/wiki/first-witness-book-7-the-hold.html",
       "/wiki/first-witness-book-8-the-fire.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-calendar-feasts-remembrance.html",
       "/wiki/first-witness-child-of-fire.html",
+      "/wiki/first-witness-children-first-lessons.html",
       "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-daily-practices-rituals.html",
+      "/wiki/first-witness-death-grief-remembrance.html",
       "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-faction-ritual-variations.html",
+      "/wiki/first-witness-family-children-elders.html",
+      "/wiki/first-witness-food-hospitality-common-table.html",
       "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-great-concord-2030.html",
+      "/wiki/first-witness-heresies-corruptions-abuses.html",
       "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-justice-mercy-restitution.html",
+      "/wiki/first-witness-land-water-stewardship.html",
+      "/wiki/first-witness-leadership-councils-succession.html",
       "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-long-transmission.html",
+      "/wiki/first-witness-marriage-partnership-adoption.html",
       "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-money-debt-honest-scales.html",
       "/wiki/first-witness-null-erasure.html",
+      "/wiki/first-witness-oaths-promises-vows.html",
+      "/wiki/first-witness-parables.html",
+      "/wiki/first-witness-pride-temptation-false-idols.html",
+      "/wiki/first-witness-proverbs-street-sayings.html",
+      "/wiki/first-witness-questions-for-the-living.html",
+      "/wiki/first-witness-relics-manuscripts-lost-editions.html",
       "/wiki/first-witness-sacred-fork.html",
+      "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
+      "/wiki/first-witness-sects-schools-schisms.html",
+      "/wiki/first-witness-songs-chants-responses.html",
       "/wiki/first-witness-source-register.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
+      "/wiki/first-witness-symbols-marks-sacred-design.html",
       "/wiki/first-witness-triple-fork-chainfire.html",
+      "/wiki/first-witness-war-defence-peacekeeping.html",
+      "/wiki/first-witness-work-craft-service.html",
       "/wiki/first-witness-world-chain-error.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-x-warriors.html",
@@ -10776,6 +11511,8 @@
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-sacred-fork.html",
+      "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
+      "/wiki/first-witness-symbols-marks-sacred-design.html",
       "/wiki/gkniftyheads-digital-diva-783394.html",
       "/wiki/gkniftyheads-digital-duchess-783404.html",
       "/wiki/pixel-journey.html",
@@ -10893,7 +11630,10 @@
       "/wiki/block-node-defenders.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-relics-manuscripts-lost-editions.html",
       "/wiki/first-witness-sacred-fork.html",
+      "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
+      "/wiki/first-witness-symbols-marks-sacred-design.html",
       "/wiki/graffpunks.html",
       "/wiki/rave-relics.html",
       "/wiki/sacred-chain.html"
@@ -10942,6 +11682,7 @@
       "/wiki/block-node-defenders.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-proverbs-street-sayings.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
       "/wiki/gkniftyheads-urban-oracle-783306.html",
       "/wiki/grit.html",
@@ -11080,6 +11821,7 @@
     ],
     "suggested_links": [
       "/wiki/block-topia.html",
+      "/wiki/first-witness-work-craft-service.html",
       "/wiki/graffiti-kings.html",
       "/wiki/web3.html"
     ]
@@ -11414,6 +12156,7 @@
     ],
     "suggested_links": [
       "/wiki/block-topia.html",
+      "/wiki/first-witness-ai-synthetic-minds.html",
       "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
       "/wiki/gkniftyheads-blockchain-belle-783392.html",
       "/wiki/gkniftyheads-blockchain-bombshell-783407.html",
