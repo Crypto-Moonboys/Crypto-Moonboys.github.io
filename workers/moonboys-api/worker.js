@@ -17607,9 +17607,12 @@ async function processPetWeeklyBoss(db, telegramId, actionRaw, eventKeyRaw = '',
   if (clampPetStat(pet.energy) < 12) return { accepted: false, reason: 'pet_tired', boss, progress: progressBefore };
   const random = new Uint8Array(1);
   crypto.getRandomValues(random);
+  // Damage uses the same derived health and rounded energy as guidance;
+  // the guarded mutation below retains the exact fractional source snapshot.
+  const combatPet = serializePet(pet, identity, { now });
   const damage = calculatePetWeeklyBossDamage({
-    action, boss, level: getPetLevel(pet.pet_xp), evolution_stage: identity?.current_stage?.stage,
-    personality_ids: (identity?.personalities || []).map((trait) => trait.trait_id), health: pet.health, energy: pet.energy, roll: random[0] % 13,
+    action, boss, level: combatPet.level, evolution_stage: combatPet.evolution_stage,
+    personality_ids: (identity?.personalities || []).map((trait) => trait.trait_id), health: combatPet.health, energy: combatPet.energy, roll: random[0] % 13,
   });
   if (participationNeeded) {
     const eventKey = String(eventKeyRaw || `pet:weekly_participation:${bossPetAuthority.pet_id}:${participation.qualification_week}`).slice(0, 180);

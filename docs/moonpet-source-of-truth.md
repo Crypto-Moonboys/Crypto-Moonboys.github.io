@@ -1261,6 +1261,11 @@ accounts for elapsed time, and ordinary reward/run writes must not discard an
 unsettled interval by moving `last_decay_at`. Preview, guarded decay, SQL care
 writes and legacy mutators preserve the same accumulation rule.
 
+Weekly Boss damage uses the public pet calculation for health and rounded
+energy, matching guidance's damage preview. Settlement keeps the exact captured
+fractional care snapshot for its guarded write and energy debit; combat input
+normalization never rounds stored care values.
+
 Weekly Boss payout and Crest attribution resolve the exact saved winning
 attempt, owner, permanent pet, source season, boss and original week before
 settlement, whether or not an accepted backfill already exists. The proven day

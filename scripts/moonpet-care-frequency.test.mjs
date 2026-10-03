@@ -30,6 +30,32 @@ for(const step of [10,60,3600]){
 for(const outcome of retries){for(const stat of ['hunger','happiness','cleanliness','energy','health'])assert.ok(Math.abs(outcome[stat]-retries.at(-1)[stat])<1e-8, `${stat} must not depend on duplicate frequency`);}
 console.log('Moonpet care frequency: elapsed care survives sub-minute reads and authenticated duplicate Weekly Boss retries.');
 
+// Fixed-clock attacks must match the preview's public health/energy at both
+// ends of the roll range, retaining fractional storage and the source pet.
+{
+ const realCrypto=globalThis.crypto;
+ try {
+  for(const savedHealth of [80,60])for(const move of ['strike','outsmart','endure'])for(const roll of [0,12]){
+   Object.defineProperty(globalThis,'crypto',{configurable:true,value:{subtle:realCrypto.subtle,randomUUID:()=>realCrypto.randomUUID(),getRandomValues:values=>{values.fill(roll);return values;}}});
+   const f=fixture(String(976800+savedHealth+roll+['strike','outsmart','endure'].indexOf(move)*100)),clock=clockFixture(f);
+   try {
+    f.pet('boss-source','pet-s2026-003',3240,2);f.pet('third-pet','pet-s2026-002',200,3);f.active('boss-source','pet-s2026-003');
+    f.sql.prepare('UPDATE telegram_pet_instances SET hunger=20.2,happiness=80.1,cleanliness=80.1,energy=79.8,health=?,last_decay_at=? WHERE pet_id=?').run(savedHealth,clock.now(),'boss-source');
+    const before=await f.state();assert.equal(before.pet.health,80);assert.equal(before.pet.energy,80);
+    const choice=before.guidance.weekly_boss.choices.find(entry=>entry.key===move);
+    const others=f.sql.prepare("SELECT * FROM telegram_pet_instances WHERE pet_id<>'boss-source' ORDER BY pet_id").all();
+    const response=await httpAction(f,{action:'weekly_boss',move,request_id:'fractional-preview'});
+    assert.equal(response.status,200);const result=response.body.result;assert.equal(result.accepted,true);
+    assert.equal(result.damage,roll===0?choice.minimum_damage:choice.maximum_damage,`${move}: roll ${roll}, saved health ${savedHealth} must match displayed stats`);
+    assert.equal(f.sql.prepare("SELECT damage FROM telegram_pet_weekly_boss_events WHERE telegram_id=?").get(f.owner).damage,result.damage);
+    const stored=f.sql.prepare("SELECT energy,hunger FROM telegram_pet_instances WHERE pet_id='boss-source'").get();
+    assert.ok(Math.abs(stored.energy-67.8)<1e-8);assert.equal(stored.hunger,20.2);
+    assert.deepEqual(f.sql.prepare("SELECT * FROM telegram_pet_instances WHERE pet_id<>'boss-source' ORDER BY pet_id").all(),others);
+   } finally {clock.restore();f.sql.close();}
+  }
+ } finally {Object.defineProperty(globalThis,'crypto',{configurable:true,value:realCrypto});}
+}
+
 // Real care settlement, ownership switches and a concurrent writer preserve
 // fractions in the same existing columns used by Daily Run source reads.
 {

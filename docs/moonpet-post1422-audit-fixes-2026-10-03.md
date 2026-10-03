@@ -4,7 +4,7 @@ Audited base: `45bf372ca130c852911259eab7c7be2bfcf0bc6b` (latest `main` at audit
 
 ## Complete confirmed finding list
 
-Four P2 / Medium defect families were confirmed. No additional High-severity defect was confirmed. These are reproducible source/SQLite/local Worker findings; this report does not claim production database access or exhaustive coverage of every random seed.
+Four P2 / Medium gameplay defect families were confirmed in the audit. PR review additionally identified a High-severity regression-fixture season mismatch and a Medium-severity Weekly Boss preview/settlement mismatch caused by fractional care. Both follow-ups are fixed below. These are reproducible source/SQLite/local Worker findings; this report does not claim production database access or exhaustive coverage of every random seed.
 
 | Defect | Reproduction and impact | Fix |
 | --- | --- | --- |
@@ -14,6 +14,11 @@ Four P2 / Medium defect families were confirmed. No additional High-severity def
 | Daily Completion / Finale acknowledged unsaved claim markers | After durable payment, SQLite `RAISE(IGNORE)` on `claimed_at` returned zero changes. Both handlers still returned `reward_pending: false`, despite the marker remaining null. The resolved no-op acknowledgement case lacked coverage. | Require exactly one acknowledged source-row update before clearing pending. A thrown, failed or ignored acknowledgement preserves the accepted payment with pending/refresh status. Retry uses the original receipt and source day/pet/quarter, repairs only the marker and cannot repay. |
 
 No historical ownership, evidence, objective, victory, payment receipt or reward data is deleted or rewritten. Already awarded Growth Marks and Weekly Crests remain recorded. Wrong payout-based objective rows are retained for audit and excluded from new unawarded qualification; the actual source attempt can recover its original objective. Missing proven legacy attribution remains unavailable instead of using a different pet or a recovery date.
+
+## PR review follow-ups
+
+- **High: acknowledgement tests depended on the real calendar quarter.** The fixture seeded ownership using the real clock, but the test assigned the mocked Q4 competition quarter to the source rows. In other quarters, claims failed before acknowledgement recovery was exercised. Source rows and requests now read the seeded pet's immutable ownership season; Finale competition identity remains independently Q4. The fixture accepts an explicit source season, and all 16 Daily/Finale × ignored/aborted acknowledgement × four ownership-quarter cases pass, including retries after switching pets.
+- **Medium: fractional care made boss damage disagree with guidance.** Settlement used raw health/energy while guidance used derived health and rounded energy. A fixed-clock minimum-roll strike reproduced 39 damage against a 40 minimum preview. Settlement now serializes its already captured source pet using the same clock and identity as public presentation. Exact fractional care remains in the guarded write/debit. Twelve authenticated cases cover all three moves, both roll endpoints, fractional energy, stale stored health versus derived public health, saved attack damage and three-pet isolation.
 
 ## Audit scope and healthy controls
 
