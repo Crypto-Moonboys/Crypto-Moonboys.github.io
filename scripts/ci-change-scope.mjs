@@ -4,6 +4,7 @@ import { appendFileSync } from 'node:fs';
 
 const SCOPES = {
   wiki: [
+    'scripts/resolve-canon-prose-approval*.mjs',
     '**/*.html',
     'about/**',
     'api/**',
@@ -120,6 +121,7 @@ const SCOPES = {
     'playwright.config.*',
   ],
   graph: [
+    'scripts/resolve-canon-prose-approval*.mjs',
     'wiki/**',
     'brand-canon/**',
     'data/**',

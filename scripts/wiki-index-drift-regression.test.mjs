@@ -147,6 +147,17 @@ function runTests() {
   }));
   tests.push(...wikiPageTests);
 
+  // Completed core history rewrites must not inherit stale SAM faction/character categories.
+  for (const slug of ['sacred-chain', 'triple-fork-event', 'genesis-kernel', 'graffiti-nexus', 'hard-fork-games']) {
+    const url = `/wiki/${slug}.html`;
+    const entry = index.find(item => item.url === url);
+    tests.push({
+      name: `Reconciled core history indexed: ${slug}`,
+      description: `${url} remains published and classified as core history`,
+      pass: approvedWikiUrls.has(url) && entry?.category === 'core'
+    });
+  }
+
   const rawUnderscoreTitle = index.find(entry => /\b[a-z0-9]+_[a-z0-9_]+\b/.test(String(entry.title || '')));
   tests.push({
     name: 'Public search titles do not expose raw underscore slugs',
