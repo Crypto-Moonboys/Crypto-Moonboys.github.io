@@ -1786,7 +1786,7 @@ function writeWorkspaceFileConditionally(rootDir, relativePath, content, expecte
   let stagedDescriptor;
   let installCommitted = false;
   let namespaceDetachedByWriter = false;
-  let detachedPreimageMatchedExpected = false;
+  let detachedPreimageState = null;
   let concurrentTargetObserved = false;
   let detachedRecoveryLinkInstalled = false;
   let journalCheckpoint = null;
@@ -1796,6 +1796,22 @@ function writeWorkspaceFileConditionally(rootDir, relativePath, content, expecte
     `${relativePath}: ${message}`,
     { path: relativePath }
   );
+
+  const recoveredTargetMatchesDetachedPreimage = () => {
+    if (!detachedPreimageState) return false;
+    try {
+      const recoveredTargetState = captureDetachedFileState(
+        anchoredTargetPath,
+        relativePath
+      );
+      return detachedFileIdentitiesEqual(
+        recoveredTargetState,
+        detachedPreimageState
+      ) && workspaceFileStatesEqual(recoveredTargetState, detachedPreimageState);
+    } catch {
+      return false;
+    }
+  };
 
   try {
     if (journal) {
@@ -1849,8 +1865,8 @@ function writeWorkspaceFileConditionally(rootDir, relativePath, content, expecte
     }
     detachedExists = true;
     namespaceDetachedByWriter = true;
-    const detachedState = captureDetachedFileState(detachedPath, relativePath);
-    if (!workspaceFileStatesEqual(detachedState, expectedState)) {
+    detachedPreimageState = captureDetachedFileState(detachedPath, relativePath);
+    if (!workspaceFileStatesEqual(detachedPreimageState, expectedState)) {
       const detachedPageRestored = linkDetachedBackWithoutReplace(
         detachedPath,
         anchoredTargetPath,
@@ -1858,7 +1874,9 @@ function writeWorkspaceFileConditionally(rootDir, relativePath, content, expecte
       );
       if (detachedPageRestored) {
         detachedExists = false;
-        namespaceDetachedByWriter = false;
+        if (recoveredTargetMatchesDetachedPreimage()) {
+          namespaceDetachedByWriter = false;
+        }
         throw staleForwardWrite('page changed immediately before the conditional replace commit');
       }
       concurrentTargetObserved = true;
@@ -1866,8 +1884,6 @@ function writeWorkspaceFileConditionally(rootDir, relativePath, content, expecte
         'concurrent page bytes were quarantined because a newer live path appeared during commit'
       );
     }
-    detachedPreimageMatchedExpected = true;
-
     if (!installPreimageWithoutReplace(stagedPath, anchoredTargetPath)) {
       // A concurrent writer won the empty path after detachment. It stays
       // live; the verified old base and uncommitted staged bytes are discarded.
@@ -1885,13 +1901,11 @@ function writeWorkspaceFileConditionally(rootDir, relativePath, content, expecte
   } catch (caughtError) {
     let failure = caughtError;
     let targetAbsent = false;
-    let targetPresenceUncertain = false;
     if (!installCommitted && detachedExists) {
       try {
         targetAbsent = !lstatIfPresent(anchoredTargetPath);
         if (!targetAbsent) concurrentTargetObserved = true;
       } catch (probeError) {
-        targetPresenceUncertain = true;
         failure = probeError;
       }
     }
@@ -1899,7 +1913,6 @@ function writeWorkspaceFileConditionally(rootDir, relativePath, content, expecte
       !installCommitted &&
       detachedExists &&
       targetAbsent &&
-      !targetPresenceUncertain &&
       !concurrentTargetObserved &&
       !detachedRecoveryLinkInstalled
     ) {
@@ -1911,7 +1924,9 @@ function writeWorkspaceFileConditionally(rootDir, relativePath, content, expecte
         );
         if (detachedPageRestored) {
           detachedExists = false;
-          namespaceDetachedByWriter = false;
+          if (recoveredTargetMatchesDetachedPreimage()) {
+            namespaceDetachedByWriter = false;
+          }
         } else {
           concurrentTargetObserved = true;
         }
@@ -1927,58 +1942,39 @@ function writeWorkspaceFileConditionally(rootDir, relativePath, content, expecte
         journal.expectedStates.delete(normalizedRelativePath);
       }
       if (!namespaceDetachedByWriter) {
-        if (journalCheckpoint.hadMutation) {
+        if (detachedRecoveryLinkInstalled) {
+          // Even a verified recovery remains a conservative candidate until
+          // the outer transaction observes the final live state. Without an
+          // earlier mutation there is deliberately no postimage authority:
+          // unchanged snapshot bytes are a no-op, while any later
+          // deletion/replacement is preserved and reported. Repeated writes
+          // restore their prior exact journal entry instead.
           journal.mutatedFiles.add(normalizedRelativePath);
+          if (journalCheckpoint.hadMutation && journalCheckpoint.hadPostimage) {
+            journal.postimages.set(normalizedRelativePath, journalCheckpoint.postimage);
+          } else {
+            journal.postimages.delete(normalizedRelativePath);
+          }
         } else {
-          journal.mutatedFiles.delete(normalizedRelativePath);
-        }
-        if (journalCheckpoint.hadPostimage) {
-          journal.postimages.set(normalizedRelativePath, journalCheckpoint.postimage);
-        } else {
-          journal.postimages.delete(normalizedRelativePath);
-        }
-      } else {
-        // A page left the live namespace and could not be put back. Keep a
-        // conservative rollback candidate, but claim an absent postimage only
-        // when the initial target probe was conclusive, the detached inode
-        // matched our expected preimage both initially and at this attribution
-        // boundary, no concurrent target was ever observed, and no recovery
-        // link was subsequently removed. Otherwise the absence remains
-        // unattributed so rollback reports a conflict and preserves any
-        // quarantined concurrent inode.
-        journal.mutatedFiles.add(normalizedRelativePath);
-        journal.postimages.delete(normalizedRelativePath);
-        let anchoredAbsenceVerified = false;
-        try {
-          anchoredAbsenceVerified = !lstatIfPresent(anchoredTargetPath);
-        } catch (probeError) {
-          failure = probeError;
-        }
-        let detachedPreimageStillMatchesExpected = false;
-        if (
-          anchoredAbsenceVerified &&
-          !targetPresenceUncertain &&
-          detachedPreimageMatchedExpected &&
-          !concurrentTargetObserved &&
-          !detachedRecoveryLinkInstalled
-        ) {
-          try {
-            detachedPreimageStillMatchesExpected = workspaceFileStatesEqual(
-              captureDetachedFileState(detachedPath, relativePath),
-              expectedState
-            );
-          } catch (detachedProbeError) {
-            failure = detachedProbeError;
+          if (journalCheckpoint.hadMutation) {
+            journal.mutatedFiles.add(normalizedRelativePath);
+          } else {
+            journal.mutatedFiles.delete(normalizedRelativePath);
+          }
+          if (journalCheckpoint.hadPostimage) {
+            journal.postimages.set(normalizedRelativePath, journalCheckpoint.postimage);
+          } else {
+            journal.postimages.delete(normalizedRelativePath);
           }
         }
-        if (detachedPreimageStillMatchesExpected) {
-          journal.postimages.set(normalizedRelativePath, {
-            exists: false,
-            content: null,
-            mode: null,
-            rollbackParentIdentity: writerParentIdentity,
-          });
-        }
+      } else {
+        // An unrecovered or unverified detachment can never authorize a
+        // snapshot restore. Keep it as a conservative candidate with no
+        // postimage so rollback preserves and reports the live absence or
+        // replacement while the detached inode remains available in its
+        // private quarantine when cleanup did not complete.
+        journal.mutatedFiles.add(normalizedRelativePath);
+        journal.postimages.delete(normalizedRelativePath);
       }
     }
     throw failure;
@@ -2105,23 +2101,122 @@ function captureWorkspaceFileState(rootDir, relativePath) {
   };
 }
 
+function stableDetachedDescriptorMetadata(stat) {
+  return {
+    dev: stat.dev,
+    ino: stat.ino,
+    size: stat.size,
+    mode: stat.mode,
+    nlink: stat.nlink,
+    uid: stat.uid,
+    gid: stat.gid,
+    mtimeNs: stat.mtimeNs,
+    ctimeNs: stat.ctimeNs,
+  };
+}
+
+function detachedDescriptorMetadataEqual(left, right) {
+  return left.dev === right.dev &&
+    left.ino === right.ino &&
+    left.size === right.size &&
+    left.mode === right.mode &&
+    left.nlink === right.nlink &&
+    left.uid === right.uid &&
+    left.gid === right.gid &&
+    left.mtimeNs === right.mtimeNs &&
+    left.ctimeNs === right.ctimeNs;
+}
+
+function detachedFileIdentitiesEqual(left, right) {
+  if (!left?.fileIdentity || !right?.fileIdentity) return false;
+  return left.fileIdentity.dev === right.fileIdentity.dev &&
+    left.fileIdentity.ino === right.fileIdentity.ino;
+}
+
+function staleDetachedFileState(relativePath, message) {
+  return new ContentOwnershipError(
+    'STALE_CONTENT_STATE',
+    `${relativePath}: ${message}`,
+    { path: relativePath }
+  );
+}
+
 function captureDetachedFileState(filePath, relativePath) {
-  const stat = lstatIfPresent(filePath);
+  const stat = lstatBigIntIfPresent(filePath);
   if (!stat?.isFile() || stat.isSymbolicLink()) {
     throw unsafePublishPath(relativePath, 'detached rollback target must be a regular file');
   }
+  const namedMetadataBefore = stableDetachedDescriptorMetadata(stat);
   const noFollow = fs.constants.O_NOFOLLOW || 0;
   let descriptor;
   try {
     descriptor = fs.openSync(filePath, fs.constants.O_RDONLY | noFollow);
-    const openedStat = fs.fstatSync(descriptor);
-    if (!openedStat.isFile()) {
+    const openedStatBefore = fs.fstatSync(descriptor, { bigint: true });
+    if (!openedStatBefore.isFile()) {
       throw unsafePublishPath(relativePath, 'detached rollback target must remain a regular file');
+    }
+    const metadataBefore = stableDetachedDescriptorMetadata(openedStatBefore);
+    if (!detachedDescriptorMetadataEqual(namedMetadataBefore, metadataBefore)) {
+      throw staleDetachedFileState(
+        relativePath,
+        'detached rollback target changed before its descriptor was opened'
+      );
+    }
+    const content = fs.readFileSync(descriptor);
+    const openedStatAfter = fs.fstatSync(descriptor, { bigint: true });
+    if (!openedStatAfter.isFile()) {
+      throw unsafePublishPath(relativePath, 'detached rollback target must remain a regular file');
+    }
+    const metadataAfter = stableDetachedDescriptorMetadata(openedStatAfter);
+    if (
+      BigInt(content.length) !== metadataBefore.size ||
+      BigInt(content.length) !== metadataAfter.size ||
+      !detachedDescriptorMetadataEqual(metadataBefore, metadataAfter)
+    ) {
+      throw staleDetachedFileState(
+        relativePath,
+        'detached rollback target changed while it was read'
+      );
+    }
+    let namedStatAfter;
+    try {
+      namedStatAfter = fs.lstatSync(filePath, { bigint: true });
+    } catch (error) {
+      throw unsafePublishPath(
+        relativePath,
+        `detached rollback target could not be revalidated after read: ${error.message}`
+      );
+    }
+    if (!namedStatAfter.isFile() || namedStatAfter.isSymbolicLink()) {
+      throw unsafePublishPath(
+        relativePath,
+        'detached rollback target path must remain a regular file'
+      );
+    }
+    if (
+      namedStatAfter.dev !== openedStatAfter.dev ||
+      namedStatAfter.ino !== openedStatAfter.ino
+    ) {
+      throw staleDetachedFileState(
+        relativePath,
+        'detached rollback target path changed identity while it was read'
+      );
+    }
+    const namedMetadataAfter = stableDetachedDescriptorMetadata(namedStatAfter);
+    if (!detachedDescriptorMetadataEqual(namedMetadataAfter, metadataAfter)) {
+      throw staleDetachedFileState(
+        relativePath,
+        'detached rollback target changed after its descriptor read'
+      );
     }
     return {
       exists: true,
-      content: fs.readFileSync(descriptor),
-      mode: openedStat.mode & 0o777,
+      content,
+      mode: Number(openedStatAfter.mode & 0o777n),
+      fileIdentity: {
+        dev: openedStatAfter.dev,
+        ino: openedStatAfter.ino,
+      },
     };
   } finally {
     if (descriptor !== undefined) fs.closeSync(descriptor);

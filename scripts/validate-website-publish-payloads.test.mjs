@@ -1019,7 +1019,14 @@ try {
       logger: () => {},
       refreshContentStateFn: refreshTestContentState,
     }),
-    (error) => error instanceof ContentOwnershipError && error.code === 'STALE_CONTENT_STATE'
+    (error) => error instanceof ContentOwnershipError &&
+      error.code === 'PUBLISH_TRANSACTION_ROLLBACK_CONFLICT' &&
+      error.cause?.code === 'STALE_CONTENT_STATE' &&
+      error.rollbackConflicts.some(
+        ({ path: conflictPath, reason }) =>
+          conflictPath === 'wiki/ownership-case.html' &&
+          reason.includes('transaction postimage was not captured')
+      )
   );
 } finally {
   fs.renameSync = renameSyncBeforeForwardRace;
@@ -1125,25 +1132,53 @@ try {
       logger: () => {},
       refreshContentStateFn: refreshTestContentState,
     }),
-    (error) => error?.code === 'EACCES' &&
-      error.message.includes('injected staged page install failure after detachment')
+    (error) => error instanceof ContentOwnershipError &&
+      error.code === 'PUBLISH_TRANSACTION_ROLLBACK_CONFLICT' &&
+      error.cause?.code === 'EACCES' &&
+      error.cause.message.includes('injected staged page install failure after detachment') &&
+      error.rollbackConflicts.some(
+        ({ path: conflictPath, reason }) =>
+          conflictPath === 'wiki/ownership-case.html' &&
+          reason.includes('transaction postimage was not captured')
+      )
   );
 } finally {
   fs.linkSync = linkSyncBeforeDetachedRecoveryFailure;
 }
 assert.equal(detachedRecoveryInstallFailures, 1, 'fixture must fail the staged page install exactly once');
 assert.equal(detachedRecoveryLinkFailures, 1, 'fixture must fail detached-page link-back exactly once');
+assert.equal(
+  fs.existsSync(detachedRecoveryFailurePagePath),
+  false,
+  'failed recovery must preserve live absence instead of restoring the snapshot'
+);
+const detachedRecoveryFailureQuarantines = fs.readdirSync(
+  path.dirname(detachedRecoveryFailurePagePath),
+  { withFileTypes: true }
+).filter((entry) =>
+  entry.isDirectory() && entry.name.startsWith('.ownership-case.html.forward-')
+);
+assert.equal(detachedRecoveryFailureQuarantines.length, 1);
+const detachedRecoveryFailureQuarantinePath = path.join(
+  path.dirname(detachedRecoveryFailurePagePath),
+  detachedRecoveryFailureQuarantines[0].name
+);
 assert.deepEqual(
-  fs.readFileSync(detachedRecoveryFailurePagePath),
+  fs.readdirSync(detachedRecoveryFailureQuarantinePath).sort(),
+  ['detached'],
+  'failed recovery must retain only the exact detached preimage quarantine'
+);
+assert.deepEqual(
+  fs.readFileSync(path.join(detachedRecoveryFailureQuarantinePath, 'detached')),
   detachedRecoveryFailurePageBefore,
-  'rollback must reinstall the page snapshot after attributable detachment leaves the live path absent'
+  'failed recovery must preserve the detached preimage byte-for-byte'
 );
 assert.equal(
   fs.existsSync(path.join(detachedRecoveryFailureFixture.rootDir, PUBLISH_TRANSACTION_LOCK)),
   false,
   'failed detached-page recovery must release the transaction lock'
 );
-console.log('PASS failed detached-page recovery retains exact absence attribution for rollback');
+console.log('PASS failed detached-page recovery preserves absence and quarantine');
 
 const detachedParentSwapFixture = ownershipFixture();
 const detachedParentSwapWikiPath = path.join(detachedParentSwapFixture.rootDir, 'wiki');
@@ -1563,6 +1598,334 @@ assert.equal(
 );
 console.log('PASS deleted recovery link cannot become importer-owned absence');
 
+const successfulCatchRecoveryDeletionFixture = ownershipFixture();
+const successfulCatchRecoveryDeletionWikiPath = path.join(
+  successfulCatchRecoveryDeletionFixture.rootDir,
+  'wiki'
+);
+const successfulCatchRecoveryDeletionPagePath = path.join(
+  successfulCatchRecoveryDeletionWikiPath,
+  'ownership-case.html'
+);
+const successfulCatchRecoveryDeletionPageBefore = fs.readFileSync(
+  successfulCatchRecoveryDeletionPagePath
+);
+let successfulCatchRecoveryDeletionStageFailures = 0;
+let successfulCatchRecoveryDeletionLinks = 0;
+let successfulCatchRecoveryDeletionCleanups = 0;
+const linkSyncBeforeSuccessfulCatchRecoveryDeletion = fs.linkSync;
+const unlinkSyncBeforeSuccessfulCatchRecoveryDeletion = fs.unlinkSync;
+fs.linkSync = function interceptSuccessfulCatchRecoveryDeletion(sourcePath, targetPath) {
+  const normalizedSource = String(sourcePath).replaceAll('\\', '/');
+  if (/\/\.ownership-case\.html\.forward-[^/]+\/staged$/.test(normalizedSource)) {
+    successfulCatchRecoveryDeletionStageFailures += 1;
+    const error = new Error('injected staged install failure before successful recovery cleanup');
+    error.code = 'EACCES';
+    throw error;
+  }
+  if (/\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedSource)) {
+    successfulCatchRecoveryDeletionLinks += 1;
+  }
+  return linkSyncBeforeSuccessfulCatchRecoveryDeletion.call(fs, sourcePath, targetPath);
+};
+fs.unlinkSync = function interceptSuccessfulCatchRecoveryCleanup(filePath) {
+  const normalizedPath = String(filePath).replaceAll('\\', '/');
+  if (
+    successfulCatchRecoveryDeletionLinks > 0 &&
+    successfulCatchRecoveryDeletionCleanups === 0 &&
+    /\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedPath)
+  ) {
+    successfulCatchRecoveryDeletionCleanups += 1;
+    const result = unlinkSyncBeforeSuccessfulCatchRecoveryDeletion.call(fs, filePath);
+    assert.deepEqual(
+      fs.readFileSync(successfulCatchRecoveryDeletionPagePath),
+      successfulCatchRecoveryDeletionPageBefore,
+      'catch recovery must link the exact detached preimage before cleanup'
+    );
+    unlinkSyncBeforeSuccessfulCatchRecoveryDeletion.call(
+      fs,
+      successfulCatchRecoveryDeletionPagePath
+    );
+    return result;
+  }
+  return unlinkSyncBeforeSuccessfulCatchRecoveryDeletion.call(fs, filePath);
+};
+try {
+  assert.throws(
+    () => runImport({
+      payloadDir: successfulCatchRecoveryDeletionFixture.payloadDir,
+      rootDir: successfulCatchRecoveryDeletionFixture.rootDir,
+      write: true,
+      logger: () => {},
+      refreshContentStateFn: refreshTestContentState,
+    }),
+    (error) => error instanceof ContentOwnershipError &&
+      error.code === 'PUBLISH_TRANSACTION_ROLLBACK_CONFLICT' &&
+      error.cause?.code === 'EACCES' &&
+      error.cause.message.includes('staged install failure before successful recovery cleanup') &&
+      error.rollbackConflicts.some(
+        ({ path: conflictPath, reason }) =>
+          conflictPath === 'wiki/ownership-case.html' &&
+          reason.includes('transaction postimage was not captured')
+      )
+  );
+} finally {
+  fs.linkSync = linkSyncBeforeSuccessfulCatchRecoveryDeletion;
+  fs.unlinkSync = unlinkSyncBeforeSuccessfulCatchRecoveryDeletion;
+}
+assert.equal(successfulCatchRecoveryDeletionStageFailures, 1);
+assert.equal(successfulCatchRecoveryDeletionLinks, 1);
+assert.equal(successfulCatchRecoveryDeletionCleanups, 1);
+assert.equal(
+  fs.existsSync(successfulCatchRecoveryDeletionPagePath),
+  false,
+  'catch recovery revalidation must preserve deletion after successful detached cleanup'
+);
+assert.equal(
+  fs.readdirSync(successfulCatchRecoveryDeletionWikiPath).some(
+    (entry) => entry.startsWith('.ownership-case.html.forward-')
+  ),
+  false,
+  'successful detached cleanup must leave no recovery quarantine'
+);
+assert.equal(
+  fs.existsSync(path.join(
+    successfulCatchRecoveryDeletionFixture.rootDir,
+    PUBLISH_TRANSACTION_LOCK
+  )),
+  false,
+  'catch recovery deletion conflict must release the publish transaction lock'
+);
+console.log('PASS catch recovery revalidation detects deletion after successful cleanup');
+
+const postValidationDeletionFixture = ownershipFixture();
+const postValidationDeletionWikiPath = path.join(
+  postValidationDeletionFixture.rootDir,
+  'wiki'
+);
+const postValidationDeletionPagePath = path.join(
+  postValidationDeletionWikiPath,
+  'ownership-case.html'
+);
+let postValidationDeletionStageFailures = 0;
+let postValidationDeletionRecoveryLinks = 0;
+let postValidationDeletionCleanupCompleted = false;
+let postValidationDeletionLstats = 0;
+const linkSyncBeforePostValidationDeletion = fs.linkSync;
+const unlinkSyncBeforePostValidationDeletion = fs.unlinkSync;
+const lstatSyncBeforePostValidationDeletion = fs.lstatSync;
+fs.linkSync = function interceptPostValidationDeletionLink(sourcePath, targetPath) {
+  const normalizedSource = String(sourcePath).replaceAll('\\', '/');
+  if (/\/\.ownership-case\.html\.forward-[^/]+\/staged$/.test(normalizedSource)) {
+    postValidationDeletionStageFailures += 1;
+    const error = new Error('injected staged install failure before post-validation deletion');
+    error.code = 'EACCES';
+    throw error;
+  }
+  if (/\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedSource)) {
+    postValidationDeletionRecoveryLinks += 1;
+  }
+  return linkSyncBeforePostValidationDeletion.call(fs, sourcePath, targetPath);
+};
+fs.unlinkSync = function interceptPostValidationDetachedCleanup(filePath) {
+  const normalizedPath = String(filePath).replaceAll('\\', '/');
+  const result = unlinkSyncBeforePostValidationDeletion.call(fs, filePath);
+  if (
+    postValidationDeletionRecoveryLinks > 0 &&
+    /\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedPath)
+  ) {
+    postValidationDeletionCleanupCompleted = true;
+  }
+  return result;
+};
+fs.lstatSync = function interceptPostValidationDeletion(filePath, ...args) {
+  const normalizedPath = String(filePath).replaceAll('\\', '/');
+  if (
+    postValidationDeletionCleanupCompleted &&
+    /\/proc\/self\/fd\/\d+\/ownership-case\.html$/.test(normalizedPath)
+  ) {
+    const stat = lstatSyncBeforePostValidationDeletion.call(fs, filePath, ...args);
+    postValidationDeletionLstats += 1;
+    if (postValidationDeletionLstats === 2) {
+      unlinkSyncBeforePostValidationDeletion.call(fs, postValidationDeletionPagePath);
+    }
+    return stat;
+  }
+  return lstatSyncBeforePostValidationDeletion.call(fs, filePath, ...args);
+};
+try {
+  assert.throws(
+    () => runImport({
+      payloadDir: postValidationDeletionFixture.payloadDir,
+      rootDir: postValidationDeletionFixture.rootDir,
+      write: true,
+      logger: () => {},
+      refreshContentStateFn: refreshTestContentState,
+    }),
+    (error) => error instanceof ContentOwnershipError &&
+      error.code === 'PUBLISH_TRANSACTION_ROLLBACK_CONFLICT' &&
+      error.cause?.code === 'EACCES' &&
+      error.cause.message.includes('staged install failure before post-validation deletion') &&
+      error.rollbackConflicts.some(
+        ({ path: conflictPath, reason }) =>
+          conflictPath === 'wiki/ownership-case.html' &&
+          reason.includes('transaction postimage was not captured')
+      )
+  );
+} finally {
+  fs.linkSync = linkSyncBeforePostValidationDeletion;
+  fs.unlinkSync = unlinkSyncBeforePostValidationDeletion;
+  fs.lstatSync = lstatSyncBeforePostValidationDeletion;
+}
+assert.equal(postValidationDeletionStageFailures, 1);
+assert.equal(postValidationDeletionRecoveryLinks, 1);
+assert.equal(postValidationDeletionCleanupCompleted, true);
+assert.equal(
+  postValidationDeletionLstats,
+  2,
+  'fixture must delete the recovered target after its final named-path validation'
+);
+assert.equal(
+  fs.existsSync(postValidationDeletionPagePath),
+  false,
+  'outer rollback must preserve deletion after successful recovery revalidation'
+);
+assert.equal(
+  fs.readdirSync(postValidationDeletionWikiPath).some(
+    (entry) => entry.startsWith('.ownership-case.html.forward-')
+  ),
+  false,
+  'verified recovery cleanup must leave no quarantine'
+);
+assert.equal(
+  fs.existsSync(path.join(postValidationDeletionFixture.rootDir, PUBLISH_TRANSACTION_LOCK)),
+  false,
+  'post-validation deletion conflict must release the publish transaction lock'
+);
+console.log('PASS verified recovery remains a candidate through outer rollback');
+
+const successfulMismatchRecoveryDeletionFixture = ownershipFixture();
+const successfulMismatchRecoveryDeletionWikiPath = path.join(
+  successfulMismatchRecoveryDeletionFixture.rootDir,
+  'wiki'
+);
+const successfulMismatchRecoveryDeletionPagePath = path.join(
+  successfulMismatchRecoveryDeletionWikiPath,
+  'ownership-case.html'
+);
+const successfulMismatchRecoveryDeletionBytes = Buffer.from(
+  '<article class="wiki-content"><p>MISMATCHED PAGE RECOVERED THEN DELETED.</p></article>',
+  'utf8'
+);
+const successfulMismatchRecoveryReplacementBytes = Buffer.from(
+  '<article class="wiki-content"><p>DISTINCT REPLACEMENT AFTER MISMATCH RECOVERY CLEANUP.</p></article>',
+  'utf8'
+);
+let successfulMismatchRecoveryDeletionEdits = 0;
+let successfulMismatchRecoveryDeletionLinks = 0;
+let successfulMismatchRecoveryDeletionCleanups = 0;
+const renameSyncBeforeSuccessfulMismatchRecoveryDeletion = fs.renameSync;
+const linkSyncBeforeSuccessfulMismatchRecoveryDeletion = fs.linkSync;
+const unlinkSyncBeforeSuccessfulMismatchRecoveryDeletion = fs.unlinkSync;
+fs.renameSync = function interceptSuccessfulMismatchRecoveryEdit(sourcePath, destinationPath) {
+  const normalizedDestination = String(destinationPath).replaceAll('\\', '/');
+  if (
+    successfulMismatchRecoveryDeletionEdits === 0 &&
+    /\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedDestination)
+  ) {
+    successfulMismatchRecoveryDeletionEdits += 1;
+    fs.writeFileSync(
+      successfulMismatchRecoveryDeletionPagePath,
+      successfulMismatchRecoveryDeletionBytes
+    );
+  }
+  return renameSyncBeforeSuccessfulMismatchRecoveryDeletion.call(
+    fs,
+    sourcePath,
+    destinationPath
+  );
+};
+fs.linkSync = function interceptSuccessfulMismatchRecoveryLink(sourcePath, targetPath) {
+  const normalizedSource = String(sourcePath).replaceAll('\\', '/');
+  if (/\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedSource)) {
+    successfulMismatchRecoveryDeletionLinks += 1;
+  }
+  return linkSyncBeforeSuccessfulMismatchRecoveryDeletion.call(fs, sourcePath, targetPath);
+};
+fs.unlinkSync = function interceptSuccessfulMismatchRecoveryCleanup(filePath) {
+  const normalizedPath = String(filePath).replaceAll('\\', '/');
+  if (
+    successfulMismatchRecoveryDeletionLinks > 0 &&
+    successfulMismatchRecoveryDeletionCleanups === 0 &&
+    /\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedPath)
+  ) {
+    successfulMismatchRecoveryDeletionCleanups += 1;
+    const result = unlinkSyncBeforeSuccessfulMismatchRecoveryDeletion.call(fs, filePath);
+    assert.deepEqual(
+      fs.readFileSync(successfulMismatchRecoveryDeletionPagePath),
+      successfulMismatchRecoveryDeletionBytes,
+      'mismatch recovery must link the concurrent detached bytes before cleanup'
+    );
+    unlinkSyncBeforeSuccessfulMismatchRecoveryDeletion.call(
+      fs,
+      successfulMismatchRecoveryDeletionPagePath
+    );
+    fs.writeFileSync(
+      successfulMismatchRecoveryDeletionPagePath,
+      successfulMismatchRecoveryReplacementBytes
+    );
+    return result;
+  }
+  return unlinkSyncBeforeSuccessfulMismatchRecoveryDeletion.call(fs, filePath);
+};
+try {
+  assert.throws(
+    () => runImport({
+      payloadDir: successfulMismatchRecoveryDeletionFixture.payloadDir,
+      rootDir: successfulMismatchRecoveryDeletionFixture.rootDir,
+      write: true,
+      logger: () => {},
+      refreshContentStateFn: refreshTestContentState,
+    }),
+    (error) => error instanceof ContentOwnershipError &&
+      error.code === 'PUBLISH_TRANSACTION_ROLLBACK_CONFLICT' &&
+      error.cause?.code === 'STALE_CONTENT_STATE' &&
+      error.rollbackConflicts.some(
+        ({ path: conflictPath, reason }) =>
+          conflictPath === 'wiki/ownership-case.html' &&
+          reason.includes('transaction postimage was not captured')
+      )
+  );
+} finally {
+  fs.renameSync = renameSyncBeforeSuccessfulMismatchRecoveryDeletion;
+  fs.linkSync = linkSyncBeforeSuccessfulMismatchRecoveryDeletion;
+  fs.unlinkSync = unlinkSyncBeforeSuccessfulMismatchRecoveryDeletion;
+}
+assert.equal(successfulMismatchRecoveryDeletionEdits, 1);
+assert.equal(successfulMismatchRecoveryDeletionLinks, 1);
+assert.equal(successfulMismatchRecoveryDeletionCleanups, 1);
+assert.deepEqual(
+  fs.readFileSync(successfulMismatchRecoveryDeletionPagePath),
+  successfulMismatchRecoveryReplacementBytes,
+  'mismatch recovery revalidation must preserve replacement after successful detached cleanup'
+);
+assert.equal(
+  fs.readdirSync(successfulMismatchRecoveryDeletionWikiPath).some(
+    (entry) => entry.startsWith('.ownership-case.html.forward-')
+  ),
+  false,
+  'successful mismatch recovery cleanup must leave no quarantine'
+);
+assert.equal(
+  fs.existsSync(path.join(
+    successfulMismatchRecoveryDeletionFixture.rootDir,
+    PUBLISH_TRANSACTION_LOCK
+  )),
+  false,
+  'mismatch recovery deletion conflict must release the publish transaction lock'
+);
+console.log('PASS mismatch recovery revalidation preserves replacement after successful cleanup');
+
 const recoveryCollisionFixture = ownershipFixture();
 const recoveryCollisionWikiPath = path.join(recoveryCollisionFixture.rootDir, 'wiki');
 const recoveryCollisionPagePath = path.join(
@@ -1973,9 +2336,121 @@ assert.deepEqual(
 assert.equal(
   fs.existsSync(path.join(detachedRecheckFixture.rootDir, PUBLISH_TRANSACTION_LOCK)),
   false,
-  'detached-inode recheck conflict must release the publish transaction lock'
+  'unrecovered detached-inode conflict must release the publish transaction lock'
 );
-console.log('PASS final detached-preimage recheck rejects open-fd mutation');
+console.log('PASS unrecovered detached mutation remains quarantined without rollback authority');
+
+const unstableDetachedReadFixture = ownershipFixture();
+const unstableDetachedReadWikiPath = path.join(
+  unstableDetachedReadFixture.rootDir,
+  'wiki'
+);
+const unstableDetachedReadPagePath = path.join(
+  unstableDetachedReadWikiPath,
+  'ownership-case.html'
+);
+const unstableDetachedReadPageBefore = fs.readFileSync(unstableDetachedReadPagePath);
+const unstableDetachedReadConcurrentBytes = Buffer.from(
+  '<article class="wiki-content"><p>DETACHED INODE MUTATED INSIDE INITIAL READ HOOK WITH A DIFFERENT SIZE.</p></article>',
+  'utf8'
+);
+let unstableDetachedReadMutations = 0;
+let unstableDetachedReadRecoveryLinks = 0;
+let unstableDetachedReadDescriptor;
+let unstableDetachedReadPath = '';
+const openSyncBeforeUnstableDetachedRead = fs.openSync;
+const linkSyncBeforeUnstableDetachedRead = fs.linkSync;
+const readFileSyncBeforeUnstableDetachedRead = fs.readFileSync;
+fs.openSync = function interceptUnstableDetachedReadOpen(filePath, flags, ...args) {
+  const descriptor = openSyncBeforeUnstableDetachedRead.call(fs, filePath, flags, ...args);
+  const normalizedPath = String(filePath).replaceAll('\\', '/');
+  const writeAccess = typeof flags === 'number' &&
+    (flags & (fs.constants.O_WRONLY | fs.constants.O_RDWR)) !== 0;
+  if (
+    unstableDetachedReadDescriptor === undefined &&
+    !writeAccess &&
+    /\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedPath)
+  ) {
+    unstableDetachedReadDescriptor = descriptor;
+    unstableDetachedReadPath = String(filePath);
+  }
+  return descriptor;
+};
+fs.linkSync = function interceptUnstableDetachedRead(sourcePath, targetPath) {
+  const normalizedSource = String(sourcePath).replaceAll('\\', '/');
+  if (/\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedSource)) {
+    unstableDetachedReadRecoveryLinks += 1;
+  }
+  return linkSyncBeforeUnstableDetachedRead.call(fs, sourcePath, targetPath);
+};
+fs.readFileSync = function interceptUnstableDetachedReadContent(filePath, ...args) {
+  const content = readFileSyncBeforeUnstableDetachedRead.call(fs, filePath, ...args);
+  if (
+    unstableDetachedReadMutations === 0 &&
+    filePath === unstableDetachedReadDescriptor
+  ) {
+    assert.deepEqual(
+      content,
+      unstableDetachedReadPageBefore,
+      'the initial detached read must first observe the expected page bytes'
+    );
+    fs.writeFileSync(unstableDetachedReadPath, unstableDetachedReadConcurrentBytes);
+    unstableDetachedReadMutations += 1;
+  }
+  return content;
+};
+try {
+  assert.throws(
+    () => runImport({
+      payloadDir: unstableDetachedReadFixture.payloadDir,
+      rootDir: unstableDetachedReadFixture.rootDir,
+      write: true,
+      logger: () => {},
+      refreshContentStateFn: refreshTestContentState,
+    }),
+    (error) => error instanceof ContentOwnershipError &&
+      error.code === 'PUBLISH_TRANSACTION_ROLLBACK_CONFLICT' &&
+      error.cause?.code === 'STALE_CONTENT_STATE' &&
+      error.cause.message.includes('detached rollback target changed while it was read') &&
+      error.rollbackConflicts.some(
+        ({ path: conflictPath, reason }) =>
+          conflictPath === 'wiki/ownership-case.html' &&
+          reason.includes('transaction postimage was not captured')
+      )
+  );
+} finally {
+  fs.openSync = openSyncBeforeUnstableDetachedRead;
+  fs.linkSync = linkSyncBeforeUnstableDetachedRead;
+  fs.readFileSync = readFileSyncBeforeUnstableDetachedRead;
+}
+assert.equal(
+  unstableDetachedReadMutations,
+  1,
+  'fixture must mutate the detached inode inside its initial descriptor read'
+);
+assert.deepEqual(
+  fs.readFileSync(unstableDetachedReadPagePath),
+  unstableDetachedReadConcurrentBytes,
+  'recovery must preserve the inode bytes that changed during initial capture'
+);
+assert.equal(
+  unstableDetachedReadRecoveryLinks,
+  1,
+  'catch recovery must relink the mutated detached inode exactly once'
+);
+assert.equal(
+  fs.readdirSync(unstableDetachedReadWikiPath).some(
+    (entry) => entry.startsWith('.ownership-case.html.forward-')
+  ),
+  false,
+  'successful recovery cleanup must leave no detached quarantine'
+);
+assert.equal(
+  fs.existsSync(path.join(unstableDetachedReadFixture.rootDir, PUBLISH_TRANSACTION_LOCK)),
+  false,
+  'unstable detached read conflict must release the publish transaction lock'
+);
+console.log('PASS initial detached descriptor capture rejects mutation during read');
 
 const mismatchedDetachedRecoveryFixture = ownershipFixture();
 const mismatchedDetachedRecoveryWikiPath = path.join(
@@ -2143,10 +2618,12 @@ try {
     }),
     (error) => error instanceof ContentOwnershipError &&
       error.code === 'PUBLISH_TRANSACTION_ROLLBACK_CONFLICT' &&
-      error.cause?.code === 'EACCES' &&
-      error.cause.message.includes('injected anchored page probe failure') &&
+      error.cause?.code === 'STALE_CONTENT_STATE' &&
+      error.cause.message.includes('a concurrent page appeared before the conditional replace install') &&
       error.rollbackConflicts.some(
-        ({ path: conflictPath }) => conflictPath === 'wiki/ownership-case.html'
+        ({ path: conflictPath, reason }) =>
+          conflictPath === 'wiki/ownership-case.html' &&
+          reason.includes('injected anchored page probe failure')
       )
   );
 } finally {
