@@ -815,9 +815,11 @@ function duplicateSeverity({ duplicateHeadingCount, exactDuplicateParagraphCount
 function rewriteStatusForPage({
   firstWitness, nftSpecialist, generated, stub, redirect, likelyLore,
   conflictSeverity, duplicateLevel, currentWordCount, cluster, slug,
+  canonicalBlockCount = 0,
 }) {
   if (firstWitness) return 'FIRST_WITNESS_LOCKED';
   if (nftSpecialist) return 'NFT_SPECIALIST';
+  if (canonicalBlockCount === 1 && duplicateLevel === 'NONE') return 'KEEP';
   if (generated || stub || redirect) return 'GENERATED';
   if (FULL_REWRITE_SLUGS.has(slug)) return 'REWRITE_FULL';
   if (conflictSeverity === 'UNKNOWN_REVIEW') return 'NEEDS_HUMAN_REVIEW';
@@ -989,6 +991,7 @@ export function buildWikiAudit() {
     const rewriteStatus = rewriteStatusForPage({
       firstWitness, nftSpecialist, generated, stub, redirect, likelyLore, directBible,
       conflictSeverity, duplicateLevel, currentWordCount, cluster, slug,
+      canonicalBlockCount,
     });
     const automationPolicy = automationPolicyForPage({
       firstWitness, stub, redirect, samBlockCount, legacyUnmarked,
