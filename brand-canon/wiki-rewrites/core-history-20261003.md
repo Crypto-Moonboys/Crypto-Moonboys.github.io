@@ -18,7 +18,8 @@ The source order is the user's current convergence hierarchy: published First Wi
 
 - Each article has one `CANONICAL_CONTENT` block, `data-canon-revision="1"` and `data-canon-source-tier="first-witness+w81"` on its existing article root.
 - The existing content-state generator records `content_owner`, `canon_revision` and `canon_source_tier`, classifies completed rewrites as `KEEP`, and locks automated prose through `canon-locked`. No second manifest or bot-memory approval system is introduced.
-- The existing prose/markup approval ratchet continues to apply. A later changed canonical body must increase its revision; a revision cannot be removed or decreased. An increased revision does not grant approval by itself.
+- The existing prose/markup approval ratchet continues to apply. A later changed canonical body, including link targets and visibility markup, must increase its revision; a revision cannot be removed or decreased. An increased revision does not grant approval by itself.
+- CI carries approval from the explicit PR label through its exact production merge commit. A main push must match the labelled merged PR and its first parent must match the push baseline. Direct pushes, unrelated merged PRs, extra commits in the push range and API failures grant no approval.
 - Explicit `wiki-category: core` metadata supersedes stale SAM category memory, keeping these history/system pages out of incidental character or faction classifications.
 - Search terms remain specific to each subject. Search, publish gate, link map/graph, entity map/graphs, SAM memory, statistics and sitemap are regenerated through the existing publishing pipeline.
 - Legacy `bible-content` mounts are removed from these five articles so older SAM timelines and relationships cannot append to the canonical body. The shared bible-loader script and other pages retain their existing behaviour.

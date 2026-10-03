@@ -320,9 +320,10 @@ function auditBaselineRatchet(currentState, baseline, failures, warnings, canonP
     if (previousExisting && Number.isSafeInteger(previous.canon_revision)) {
       if (!Number.isSafeInteger(page.canon_revision) || page.canon_revision < previous.canon_revision) {
         failures.push(`${page.path}: a completed canon revision cannot be removed or decreased`);
-      } else if (page.article_content_hash !== previous.article_content_hash
+      } else if ((page.article_content_hash !== previous.article_content_hash
+        || page.article_markup_hash !== previous.article_markup_hash)
         && page.canon_revision <= previous.canon_revision) {
-        failures.push(`${page.path}: changed canonical prose must increment canon_revision`);
+        failures.push(`${page.path}: changed canonical prose or markup must increment canon_revision`);
       }
     }
     const protectedExistingPolicy = previousExisting

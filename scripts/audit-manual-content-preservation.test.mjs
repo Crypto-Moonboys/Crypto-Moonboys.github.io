@@ -847,6 +847,21 @@ const unapprovedRevision = runFixture({
   canonProseChangeApproved: false,
 });
 assert.ok(unapprovedRevision.failures.some(failure => failure.includes('Protected article prose changed')));
-console.log('PASS canon revisions cannot be removed, decreased or reused for changed prose; incrementing still requires approval');
+const markupOnlyBaseline = { ...revisedCanonPage, canon_revision: 1, article_markup_hash: `sha256:${'8'.repeat(64)}` };
+const reusedMarkupRevision = runFixture({
+  page: { ...revisedCanonPage, canon_revision: 1 },
+  html: revisedCanonHtml,
+  baseline: { revision: 'base-fixture', manifest: { pages: [markupOnlyBaseline] } },
+  canonProseChangeApproved: true,
+});
+assert.ok(reusedMarkupRevision.failures.some(failure => failure.includes('markup must increment canon_revision')));
+const approvedMarkupRevision = runFixture({
+  page: revisedCanonPage,
+  html: revisedCanonHtml,
+  baseline: { revision: 'base-fixture', manifest: { pages: [markupOnlyBaseline] } },
+  canonProseChangeApproved: true,
+});
+assert.deepEqual(approvedMarkupRevision.failures, []);
+console.log('PASS canon revisions cannot be removed, decreased or reused for changed prose/markup; incrementing still requires approval');
 
 console.log('\naudit-manual-content-preservation.test.mjs passed');

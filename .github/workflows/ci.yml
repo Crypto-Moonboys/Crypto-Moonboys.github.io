@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
   ci-wiki:
@@ -40,12 +41,19 @@ jobs:
             npm install
           fi
 
+      - name: Resolve canon prose approval
+        id: canon_approval
+        if: steps.wiki_changes.outputs.should_run == 'true'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/resolve-canon-prose-approval.mjs
+
       - name: Run wiki tests
         if: steps.wiki_changes.outputs.should_run == 'true'
         env:
           BASE_SHA: ${{ github.event_name == 'push' && github.event.before || github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
-          CANON_PROSE_CHANGE_APPROVED: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'canon-prose-change-approved') && '1' || '0' }}
+          CANON_PROSE_CHANGE_APPROVED: ${{ steps.canon_approval.outputs.approved || '0' }}
         run: npm run ci:wiki
 
   ci-worker-api:

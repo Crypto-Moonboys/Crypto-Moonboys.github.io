@@ -11,7 +11,7 @@ const preparePagesArtifact = await fs.readFile(path.join(ROOT, 'scripts/prepare-
 const changeScope = await fs.readFile(path.join(ROOT, 'scripts/ci-change-scope.mjs'), 'utf8');
 const pkg = JSON.parse(await fs.readFile(path.join(ROOT, 'package.json'), 'utf8'));
 const runner = await fs.readFile(path.join(ROOT, 'scripts/ci-domain-runner.mjs'), 'utf8');
-const canonApprovalExpression = "github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'canon-prose-change-approved') && '1' || '0'";
+const canonApprovalExpression = "steps.canon_approval.outputs.approved || '0'";
 const ownershipBaselineExpression = "github.event_name == 'push' && github.event.before || github.event.pull_request.base.sha";
 
 const expectedJobs = ['ci-wiki', 'ci-worker-api', 'ci-arcade', 'ci-wax', 'ci-visual'];
@@ -49,9 +49,9 @@ const ciRunLines = workflow
 const domainRunLines = ciRunLines.filter((line) => line.startsWith('run: npm run ci:'));
 assert.equal(domainRunLines.length, expectedScripts.length, 'workflow must run one grouped command per CI domain job');
 assert.equal(
-  ciRunLines.some((line) => /^run:\s+npm run test:/.test(line) || /^run:\s+node scripts\/(?!ci-change-scope\.mjs\b)/.test(line)),
+  ciRunLines.some((line) => /^run:\s+npm run test:/.test(line) || /^run:\s+node scripts\/(?!(?:ci-change-scope|resolve-canon-prose-approval)\.mjs\b)/.test(line)),
   false,
-  'workflow must not inline individual test scripts in domain jobs, except shared path-scope classification',
+  'workflow must not inline individual test scripts in domain jobs; shared scope and approval setup are allowed',
 );
 
 for (const group of ['wiki', 'worker-api', 'arcade', 'wax', 'visual']) {
@@ -233,12 +233,14 @@ for (const [name, workflowSource] of [
   );
   assert.ok(
     workflowSource.includes('CANON_PROSE_CHANGE_APPROVED:') && workflowSource.includes(canonApprovalExpression),
-    `${name} workflow must require the maintainer PR label and must not approve ordinary push events`,
+    `${name} workflow must use the exact-PR approval resolver`,
   );
   assert.ok(
     !workflowSource.includes("github.event_name == 'push' ||"),
     `${name} workflow must not treat every push as approved canon prose`,
   );
+  assert.ok(workflowSource.includes('run: node scripts/resolve-canon-prose-approval.mjs')
+    && workflowSource.includes('pull-requests: read'), `${name} must read merged-PR provenance with read-only permission`);
 }
 
 for (const [name, stepBlock] of [
@@ -251,7 +253,7 @@ for (const [name, stepBlock] of [
   );
   assert.ok(
     stepBlock.includes(`CANON_PROSE_CHANGE_APPROVED: \${{ ${canonApprovalExpression} }}`),
-    `${name} ownership audit must only receive canon prose approval from the explicit PR label`,
+    `${name} ownership audit must only receive canon prose approval from the verified PR resolver`,
   );
 }
 

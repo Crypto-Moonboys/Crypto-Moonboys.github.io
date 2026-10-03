@@ -24,7 +24,7 @@
   "audit_scope": "Every top-level wiki/*.html file; nested files are source inputs only.",
   "field_definitions": {
     "content_owner": "Optional canon ownership declaration for a completed, structurally validated canonical rewrite.",
-    "canon_revision": "Optional positive integer revision of a completed canonical rewrite; changed canonical prose must increase this revision without bypassing approval.",
+    "canon_revision": "Optional positive integer revision of a completed canonical rewrite; changed canonical prose or markup must increase this revision without bypassing approval.",
     "canon_source_tier": "Optional declared reconciliation hierarchy for a completed canonical rewrite; currently first-witness+w81.",
     "legacy_unmarked_content": "True when visible article content remains outside all MANUAL_CONTENT, SAM_CONTENT, and CANONICAL_CONTENT blocks, including when an owned block also exists. First Witness ownership is established by canon lock; NFT specialist/template and structurally generated ownership is established by its dedicated workflow.",
     "current_word_count": "Word count of article-text-v1 visible article text; page shell and generated Related Wiki Paths are excluded.",
