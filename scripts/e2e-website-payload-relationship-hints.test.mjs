@@ -1,17 +1,19 @@
 #!/usr/bin/env node
 
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
-  LEGACY_PRESERVED_CONTENT_NOTE,
   MANUAL_CONTENT_BEGIN,
   MANUAL_CONTENT_END,
   SAM_CONTENT_BEGIN,
+  SAM_CONTENT_END,
   runImport,
+  sha256Content,
 } from './import-website-publish-payloads.mjs';
 import { runGenerateRelatedWikiPaths } from './generate-related-wiki-paths.mjs';
 
@@ -31,6 +33,33 @@ function writeJson(relPath, data) {
 
 function read(relPath) {
   return fs.readFileSync(path.join(root, relPath), 'utf8');
+}
+
+function gitBlobOid(bytes) {
+  return createHash('sha1')
+    .update(Buffer.from(`blob ${bytes.length}\0`, 'utf8'))
+    .update(bytes)
+    .digest('hex');
+}
+
+function refreshTestContentState(rootDir) {
+  const manifest = JSON.parse(fs.readFileSync(path.join(rootDir, 'brand-canon', 'wiki-content-state.json'), 'utf8'));
+  for (const page of manifest.pages) {
+    const pagePath = path.join(rootDir, page.path);
+    const bytes = fs.readFileSync(pagePath);
+    page.page_exists = true;
+    page.content_hash = sha256Content(bytes);
+    page.article_content_hash = sha256Content(bytes);
+    page.article_markup_hash = sha256Content(bytes);
+    page.git_blob_oid = gitBlobOid(bytes);
+    const html = bytes.toString('utf8');
+    page.sam_content_block_count = (html.match(/<!-- SAM_CONTENT:BEGIN -->/g) || []).length;
+    page.manual_content_block_count = (html.match(/<!-- MANUAL_CONTENT:BEGIN -->/g) || []).length;
+    page.legacy_unmarked_content = false;
+  }
+  writeJson('brand-canon/wiki-content-state.json', manifest);
+  write('brand-canon/wiki-rewrite-audit.md', '# Refreshed e2e test report\n');
+  return { files: ['brand-canon/wiki-content-state.json', 'brand-canon/wiki-rewrite-audit.md'] };
 }
 
 function articlePage(slug, title, category = 'lore', body = '') {
@@ -94,11 +123,22 @@ ${MANUAL_CONTENT_END}
 </article><div class="category-tags" aria-label="Article categories"><a href="/categories/lore.html">Lore</a></div><div class="wiki-comments" data-page-id="manual-only-e2e"></div></main></body></html>`);
 
 write('wiki/paper-hands.html', `<!DOCTYPE html><html><head><title>Paper Hands - Crypto Moonboys Wiki</title><meta name="description" content="Existing manual page."></head><body><main id="content"><article class="wiki-content">
+${MANUAL_CONTENT_BEGIN}
 <h1>Paper Hands</h1>
 <p>OWNER MANUAL TEXT MUST SURVIVE THE FULL PIPELINE.</p>
+${MANUAL_CONTENT_END}
+${SAM_CONTENT_BEGIN}
+<p>OLD SAM PAPER HANDS CONTENT.</p>
+${SAM_CONTENT_END}
 <!-- RELATED_WIKI_PATHS:BEGIN --><section><p>OLD GENERATED RELATED LINKS MUST NOT BECOME MANUAL TRUTH.</p></section><!-- RELATED_WIKI_PATHS:END -->
 <div id="bible-content"></div>
 </article><div class="category-tags" aria-label="Article categories"><a href="/categories/lore.html">Lore</a></div><div class="wiki-comments" data-page-id="paper-hands"></div></main></body></html>`);
+
+write('wiki/gkniftyheads-nova-shadow-shredder-784419.html', `<!DOCTYPE html><html><head><title>GKniftyHEADS Nova Shadow Shredder - Crypto Moonboys Wiki</title><meta name="description" content="Existing SAM-owned NFT fixture."></head><body><main id="content"><article class="wiki-content">
+${SAM_CONTENT_BEGIN}
+<p>OLD SAM NFT FIXTURE CONTENT.</p>
+${SAM_CONTENT_END}
+</article><div class="category-tags" aria-label="Article categories"><a href="/categories/nfts-digital-art.html">NFTs Digital Art</a></div><div class="wiki-comments" data-page-id="gkniftyheads-nova-shadow-shredder-784419"></div></main></body></html>`);
 
 const lorePayload = {
   slug: 'paper-hands',
@@ -165,14 +205,46 @@ const nftPayload = {
   },
 };
 
+const paperHash = sha256Content(fs.readFileSync(path.join(root, 'wiki', 'paper-hands.html')));
+const nftHash = sha256Content(fs.readFileSync(path.join(root, 'wiki', 'gkniftyheads-nova-shadow-shredder-784419.html')));
+lorePayload.expected_content_hash = paperHash;
+nftPayload.expected_content_hash = nftHash;
 writeJson('website-publish-payloads/paper-hands.json', lorePayload);
 writeJson('website-publish-payloads/gkniftyheads-nova-shadow-shredder-784419.json', nftPayload);
+writeJson('brand-canon/wiki-content-state.json', {
+  schema_version: 1,
+  pages: [
+    {
+      slug: 'gkniftyheads-nova-shadow-shredder-784419',
+      path: 'wiki/gkniftyheads-nova-shadow-shredder-784419.html',
+      page_exists: true,
+      content_hash: nftHash,
+      article_content_hash: nftHash,
+      article_markup_hash: nftHash,
+      git_blob_oid: gitBlobOid(fs.readFileSync(path.join(root, 'wiki', 'gkniftyheads-nova-shadow-shredder-784419.html'))),
+      automation_policy: 'replace-sam-block',
+      legacy_unmarked_content: false,
+    },
+    {
+      slug: 'paper-hands',
+      path: 'wiki/paper-hands.html',
+      page_exists: true,
+      content_hash: paperHash,
+      article_content_hash: paperHash,
+      article_markup_hash: paperHash,
+      git_blob_oid: gitBlobOid(fs.readFileSync(path.join(root, 'wiki', 'paper-hands.html'))),
+      automation_policy: 'replace-sam-block',
+      legacy_unmarked_content: false,
+    },
+  ],
+});
 
 runImport({
   payloadDir,
   rootDir: root,
   write: true,
   logger: () => {},
+  refreshContentStateFn: refreshTestContentState,
 });
 runGenerateRelatedWikiPaths(root);
 
@@ -181,7 +253,6 @@ const manualBegin = paperHtml.indexOf(MANUAL_CONTENT_BEGIN);
 const manualEnd = paperHtml.indexOf(MANUAL_CONTENT_END);
 const samBegin = paperHtml.indexOf(SAM_CONTENT_BEGIN);
 assert.ok(paperHtml.includes('OWNER MANUAL TEXT MUST SURVIVE THE FULL PIPELINE.'), 'existing manual text is preserved');
-assert.ok(paperHtml.includes(LEGACY_PRESERVED_CONTENT_NOTE), 'legacy-preserved note is added to unmarked existing content');
 assert.ok(manualBegin >= 0 && manualEnd > manualBegin, 'manual section is wrapped');
 assert.ok(samBegin > manualEnd, 'SAM_CONTENT is separate and below manual content');
 assert.ok(paperHtml.includes('SAM PAYLOAD TEXT IS SEPARATE FROM MANUAL CONTENT.'), 'SAM content is written');

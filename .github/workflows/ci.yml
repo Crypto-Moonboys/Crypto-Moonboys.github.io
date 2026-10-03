@@ -3,6 +3,7 @@ name: CI
 on:
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened, labeled, unlabeled]
   push:
     branches: [main]
 
@@ -41,6 +42,8 @@ jobs:
 
       - name: Run wiki tests
         if: steps.wiki_changes.outputs.should_run == 'true'
+        env:
+          CANON_PROSE_CHANGE_APPROVED: ${{ (github.event_name == 'push' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'canon-prose-change-approved'))) && '1' || '0' }}
         run: npm run ci:wiki
 
   ci-worker-api:

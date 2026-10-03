@@ -11,6 +11,7 @@ const preparePagesArtifact = await fs.readFile(path.join(ROOT, 'scripts/prepare-
 const changeScope = await fs.readFile(path.join(ROOT, 'scripts/ci-change-scope.mjs'), 'utf8');
 const pkg = JSON.parse(await fs.readFile(path.join(ROOT, 'package.json'), 'utf8'));
 const runner = await fs.readFile(path.join(ROOT, 'scripts/ci-domain-runner.mjs'), 'utf8');
+const canonApprovalExpression = "(github.event_name == 'push' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'canon-prose-change-approved'))) && '1' || '0'";
 
 const expectedJobs = ['ci-wiki', 'ci-worker-api', 'ci-arcade', 'ci-wax', 'ci-visual'];
 const expectedScripts = ['ci:wiki', 'ci:worker-api', 'ci:arcade', 'ci:wax', 'ci:visual'];
@@ -133,6 +134,8 @@ for (const graphPath of [
   '"sitemap.xml"',
   '"index_stats.json"',
   '"sam-memory.json"',
+  '"website-publish-payloads/**"',
+  '"sam-wiki-publisher.py"',
   '"scripts/**"',
 ]) {
   assert.ok(
@@ -144,6 +147,11 @@ for (const graphPath of [
 assert.ok(
   graphWorkflow.includes('git diff --exit-code --') && graphWorkflow.includes('sam-memory.json'),
   'graph publishing integrity workflow must fail when regenerated publishing surfaces drift from committed files',
+);
+
+assert.ok(
+  graphWorkflow.includes('fetch-depth: 0'),
+  'graph publishing integrity workflow must fetch history for baseline content-state comparisons',
 );
 
 assert.ok(
@@ -182,6 +190,35 @@ for (const graphGeneratedSurface of [
   assert.ok(
     changeScope.includes(graphGeneratedSurface),
     `graph CI scope must include generated root surface ${graphGeneratedSurface}`,
+  );
+}
+
+for (const ownershipInput of [
+  "'website-publish-payloads/**'",
+  "'sam-wiki-publisher.py'",
+  "'scripts/wiki-publish-staged-fs.cjs'",
+]) {
+  assert.ok(
+    getScopeBlock('wiki').includes(ownershipInput),
+    `wiki CI scope must include ownership input ${ownershipInput}`,
+  );
+  assert.ok(
+    getScopeBlock('graph').includes(ownershipInput),
+    `graph CI scope must include ownership input ${ownershipInput}`,
+  );
+}
+
+for (const [name, workflowSource] of [
+  ['main CI', workflow],
+  ['graph publishing integrity', graphWorkflow],
+]) {
+  assert.ok(
+    workflowSource.includes('types: [opened, synchronize, reopened, labeled, unlabeled]'),
+    `${name} workflow must rerun ownership checks when canon approval labels are added or removed`,
+  );
+  assert.ok(
+    workflowSource.includes('CANON_PROSE_CHANGE_APPROVED:') && workflowSource.includes(canonApprovalExpression),
+    `${name} workflow must require the maintainer PR label while allowing the already-reviewed main push`,
   );
 }
 
