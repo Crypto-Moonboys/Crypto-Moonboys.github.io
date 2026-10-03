@@ -94,6 +94,7 @@ export async function awardPetGrowthMark(db, award) {
     ORDER BY earned_at, mark_id LIMIT 1`)
     .bind(petId, pet.telegram_id, seasonKey, earnedDay).first().then(requirePetFirstReadResult);
   const existing = exactExisting || sameDayExisting;
+  if (!accepted && !existing) throw new Error('growth_mark_write_unavailable');
   const response = {
     accepted,
     duplicate: !accepted,
@@ -121,7 +122,12 @@ export async function awardPetWeeklyCrest(db, award) {
     (crest_id, pet_id, telegram_id, season_key, season_week, qualification_week, objective_id, evidence_key, earned_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, COALESCE(?, CURRENT_TIMESTAMP))`)
     .bind(crestId, petId, pet.telegram_id, seasonKey, week, week, objective.objective_id, evidenceKey, earnedAt).run());
-  const response = { accepted: Number(result?.meta?.changes || 0) === 1, duplicate: Number(result?.meta?.changes || 0) === 0, crest_id: crestId };
+  const accepted = result?.meta?.changes === 1;
+  const existing = accepted ? null : await db.prepare(`SELECT crest_id FROM telegram_pet_weekly_crests
+    WHERE pet_id=? AND telegram_id=? AND season_key=? AND qualification_week=? LIMIT 1`)
+    .bind(petId, pet.telegram_id, seasonKey, week).first().then(requirePetFirstReadResult);
+  if (!accepted && !existing) throw new Error('weekly_crest_write_unavailable');
+  const response = { accepted, duplicate: !accepted, crest_id: accepted ? crestId : existing.crest_id };
   await finalizePetSeasonCompletionIfEligible(db, petId, seasonKey, { telegram_id: pet.telegram_id });
   return response;
 }

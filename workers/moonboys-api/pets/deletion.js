@@ -36,7 +36,7 @@ const SOURCE_REWARD_BLOCKERS_SQL = `
       ON f.run_id=r.run_id AND f.telegram_id=r.telegram_id AND f.pet_id=r.pet_id
     WHERE r.telegram_id=s.telegram_id AND r.pet_id=s.pet_id AND r.season_key=s.season_key
       AND f.status='resolved' AND f.room_type='boss' AND json_valid(f.generated_data) AND json_valid(f.outcome_data)
-      AND json_extract(f.generated_data,'$.boss_id') IN (${bossKeysSql}) AND COALESCE(json_extract(f.outcome_data,'$.success'),1)<>0
+      AND json_extract(f.generated_data,'$.boss_id') IN (${bossKeysSql}) AND json_type(f.outcome_data,'$.success')='true'
       AND NOT EXISTS (SELECT 1 FROM telegram_pet_reward_claims c WHERE c.telegram_id=r.telegram_id AND c.pet_id=r.pet_id
         AND c.source='roguelite_boss' AND c.idempotency_key=f.room_id||':'||json_extract(f.generated_data,'$.boss_id') AND c.status='awarded'))
   OR EXISTS (SELECT 1 FROM telegram_pet_daily_runs d JOIN telegram_pet_runs r
@@ -46,7 +46,7 @@ const SOURCE_REWARD_BLOCKERS_SQL = `
         SELECT 1 FROM telegram_pet_run_rooms f WHERE f.run_id=r.run_id AND f.telegram_id=r.telegram_id AND f.pet_id=r.pet_id
           AND f.room_number=r.max_room AND f.status='resolved' AND f.room_type='boss'
           AND json_valid(f.generated_data) AND json_extract(f.generated_data,'$.boss_id') IN (${bossKeysSql})
-          AND json_valid(f.outcome_data) AND COALESCE(json_extract(f.outcome_data,'$.success'),1)<>0))
+          AND json_valid(f.outcome_data) AND json_type(f.outcome_data,'$.success')='true'))
         OR (r.current_room<r.max_room AND r.status IN ('extracted','failed','abandoned') AND EXISTS (
           SELECT 1 FROM telegram_pet_run_rooms f WHERE f.run_id=r.run_id AND f.telegram_id=r.telegram_id AND f.pet_id=r.pet_id
             AND f.room_number<=r.current_room+1 AND f.status IN ('resolved','failed'))))

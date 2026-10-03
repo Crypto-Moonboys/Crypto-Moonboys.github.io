@@ -462,7 +462,7 @@ export async function recoverDailyMoonRunEnding(db, request = {}) {
   if (!owned) return null;
   const run = { ...daily, seed: daily.run_seed, score: daily.authoritative_score, depth: daily.authoritative_depth, status: daily.authoritative_status };
   const room = await getPersistedDailyRoom(db, run, positiveInteger(run.max_room));
-  if (!room || room.pet_id !== daily.pet_id || room.status !== 'resolved' || room.room_type !== 'boss' || room.outcome?.success === false || !PET_ROGUELITE_BOSSES[room.boss_id]) return null;
+  if (!room || room.pet_id !== daily.pet_id || room.status !== 'resolved' || room.room_type !== 'boss' || room.outcome?.success !== true || !PET_ROGUELITE_BOSSES[room.boss_id]) return null;
   const boss_reward = await rewardPetRogueliteBoss(db, run, room.boss_id, room);
   if (!boss_reward.accepted) return { accepted: false, reason: 'daily_boss_reward_pending', daily_run: daily, boss_reward };
   const completion = daily.authoritative_status === 'extracted'
@@ -499,7 +499,7 @@ export async function recoverDailyMoonRunEndings(db, telegramId, now = new Date(
     WHERE d.telegram_id=? AND r.max_room>0 AND r.current_room>=r.max_room
       AND r.status IN ('active','extractable','completed','extracted') AND f.status='resolved' AND f.room_type='boss'
       AND json_valid(f.generated_data) AND json_extract(f.generated_data,'$.boss_id') IN (${bossIds})
-      AND json_valid(f.outcome_data) AND COALESCE(json_extract(f.outcome_data,'$.success'),1)<>0
+      AND json_valid(f.outcome_data) AND json_type(f.outcome_data,'$.success')='true'
       AND (r.status IN ('active','extractable') OR d.status<>r.status
         OR NOT EXISTS (SELECT 1 FROM telegram_pet_run_analytics a WHERE a.analytics_id=r.run_id||':boss:'||f.room_id||':'||json_extract(f.generated_data,'$.boss_id')||':win')
         OR NOT EXISTS (SELECT 1 FROM telegram_pet_daily_analytics a WHERE a.analytics_id=r.run_id||':daily:terminal'

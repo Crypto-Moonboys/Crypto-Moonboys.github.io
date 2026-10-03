@@ -212,8 +212,8 @@ function getRewardAuthorization(source, telegramId, context = {}, now = new Date
     if ((petId && !petSeasonKey) || (!petId && petSeasonKey)) throw new Error('invalid_pet_reward_context');
     if (petId && petSeasonKey) {
       return {
-        sql: 'AND EXISTS (SELECT 1 FROM telegram_pet_seasonal_boss_progress WHERE pet_id = ? AND telegram_id = ? AND pet_season_key = ? AND season_key = ? AND boss_key = ? AND defeated_at IS NOT NULL)',
-        args: [petId, telegramId, petSeasonKey, seasonKey, bossKey],
+        sql: 'AND EXISTS (SELECT 1 FROM telegram_pet_seasonal_boss_progress WHERE pet_id = ? AND telegram_id = ? AND pet_season_key = ? AND season_key = ? AND boss_key = ? AND defeated_at IS NOT NULL AND (? IS NULL OR julianday(defeated_at)=julianday(?)))',
+        args: [petId, telegramId, petSeasonKey, seasonKey, bossKey, context.competition_earned_at || null, context.competition_earned_at || null],
       };
     }
     return {
@@ -279,7 +279,9 @@ function getRewardAuthorization(source, telegramId, context = {}, now = new Date
   }
   if (source === 'roguelite_room' || source === 'roguelite_boss') {
     if (!runId || !roomId) throw new Error('invalid_pet_reward_context');
-    const bossGuard = source === 'roguelite_boss' ? "AND room_type = 'boss'" : '';
+    const bossGuard = source === 'roguelite_boss' ? `AND room_type='boss'
+      AND (NOT EXISTS (SELECT 1 FROM telegram_pet_daily_runs d WHERE d.run_id=telegram_pet_run_rooms.run_id AND d.telegram_id=telegram_pet_run_rooms.telegram_id)
+        OR (json_valid(outcome_data) AND json_type(CASE WHEN json_valid(outcome_data) THEN outcome_data ELSE '{}' END,'$.success')='true'))` : '';
     // A saved official final-boss win may outlive a failed payout. Permit only
     // that source-backed ending to settle after completion/extraction.
     const dailyEndingGuard = source === 'roguelite_boss' ? ` OR EXISTS (
@@ -287,7 +289,7 @@ function getRewardAuthorization(source, telegramId, context = {}, now = new Date
       JOIN telegram_pet_run_rooms f ON f.run_id=r.run_id AND f.telegram_id=r.telegram_id AND f.pet_id=r.pet_id AND f.room_number=r.max_room
       WHERE r.run_id=? AND r.telegram_id=? AND r.pet_id=? AND r.status IN ('completed','extracted') AND r.current_room>=r.max_room
         AND f.room_id=? AND f.status='resolved' AND f.room_type='boss' AND r.max_room>0
-        AND json_valid(f.outcome_data) AND COALESCE(json_extract(f.outcome_data,'$.success'),1)<>0
+        AND json_valid(f.outcome_data) AND json_type(f.outcome_data,'$.success')='true'
         AND json_valid(f.generated_data) AND json_extract(f.generated_data,'$.boss_id')=?
     )` : '';
     return {
@@ -346,7 +348,7 @@ export async function awardPetReward(db, request = {}) {
   const seasonKey = String(request.season_key || getMoonpetSeasonKey(now));
   // Pet ownership and event receipts retain their original source season.
   // Reserved rewards retain their earning day even when recovered later.
-  const competitionEarnedAt = ['pet_run_legacy', 'pet_contract', 'pet_arena'].includes(source) ? request.context?.competition_earned_at : null;
+  const competitionEarnedAt = ['pet_run_legacy', 'pet_contract', 'pet_arena', 'pet_seasonal_boss'].includes(source) ? request.context?.competition_earned_at : null;
   if (competitionEarnedAt && !Number.isFinite(Date.parse(competitionEarnedAt))) throw new Error('invalid_pet_reward_context');
   const competitionSeasonKey = source === 'pet_season_finale' ? request.context.competition_season_key : getMoonpetSeasonKey(competitionEarnedAt || `${dayKey}T00:00:00.000Z`);
   // Community seasons can change within a UTC day. New rewards retain the

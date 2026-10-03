@@ -560,7 +560,7 @@ try {
         let state;
         try { state = await hooks.buildPetMiniAppState(db, currentUser, token); }
         catch (error) {
-          if (!['isolated_saved_state_read_failure','pet_state_read_unavailable'].includes(error.message)) throw error;
+          if (!['isolated_saved_state_read_failure','pet_state_read_unavailable','pet_state_source_changed'].includes(error.message)) throw error;
           // Production preserves an action's committed result if only its
           // response-state read fails; the read-only state endpoint returns 500.
           return result ? route.fulfill({ json: { result, state: null } })
