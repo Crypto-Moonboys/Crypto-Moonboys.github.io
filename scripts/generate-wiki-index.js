@@ -22,6 +22,51 @@ const LINK_GRAPH_PATH = path.join(ROOT, 'js', 'link-graph.json');
 const ROOT_PAGES_TO_INDEX = getRootPagePaths();
 const APPROVED_INDEX_CATEGORIES = new Set(Object.keys(CONFIG.CATEGORY_PRIORITY));
 
+const FIRST_WITNESS_COMMON_KEYWORDS = Object.freeze([
+  'first witness',
+  'first witness bible',
+  'crypto moonboys bible',
+  'graffiti kings bible',
+  'GK bible',
+  'covenant',
+  'scripture',
+  'sacred text',
+  'bitcoin witness',
+  'bitcoin provenance',
+  'sacred chain',
+  'aether-chain',
+  'forty paths',
+  '40 GK factions',
+  'HODL WARS',
+  'Block Topia',
+  'Year 3008',
+  '2030 Concord',
+  'no single keeper',
+  'Crypto Moonboys lore',
+  'Graffiti Kings lore'
+]);
+
+function isFirstWitnessSlug(slug) {
+  const normalized = String(slug || '').toLowerCase().trim();
+  return normalized === 'the-first-witness' || normalized.startsWith('first-witness-');
+}
+
+function getFirstWitnessKeywords(slug) {
+  return isFirstWitnessSlug(slug) ? FIRST_WITNESS_COMMON_KEYWORDS : [];
+}
+
+function getFirstWitnessAliases(slug) {
+  if (slug !== 'the-first-witness') return [];
+  return [
+    { title: 'First Witness Bible' },
+    { title: 'Crypto Moonboys Bible' },
+    { title: 'Graffiti Kings Bible' },
+    { title: 'GK Bible' },
+    { title: 'The Covenant' },
+    { title: 'Covenant of the First Witness' }
+  ];
+}
+
 function walk(dir) {
   let results = [];
   const list = fs.readdirSync(dir);
@@ -205,6 +250,12 @@ function buildSearchIndex(title, description, keywords, aliases = []) {
 
 function detectCategory(filePath, html, samEntity) {
   if (isNftTemplateHtml(html)) return 'nfts-digital-art';
+
+  // The First Witness is one core canon/search cluster. Do this before
+  // SAM/body heuristics so prose words such as "faction" or "character"
+  // cannot misclassify scripture, history or lived-tradition pages.
+  const fileSlug = path.basename(filePath, path.extname(filePath)).toLowerCase();
+  if (isFirstWitnessSlug(fileSlug)) return 'core';
 
   if (samEntity && samEntity.category) {
     const category = String(samEntity.category).toLowerCase();
@@ -638,8 +689,16 @@ function run() {
       ? samEntity.tags.filter(Boolean)
       : [];
 
-    const keywords = Array.from(new Set([...htmlKeywords, ...memoryTags]));
-    let aliases = mergeAliases(buildAliases(samEntity, canonicalSlug));
+    const firstWitnessKeywords = getFirstWitnessKeywords(canonicalSlug);
+    const keywords = Array.from(new Set([
+      ...htmlKeywords,
+      ...memoryTags,
+      ...firstWitnessKeywords
+    ]));
+    let aliases = mergeAliases(
+      buildAliases(samEntity, canonicalSlug),
+      getFirstWitnessAliases(canonicalSlug)
+    );
     if (!isNftTemplate && (isAliasSlug(slug) || slug !== canonicalSlug)) {
       aliases = mergeAliases(aliases, [{ title: titleFromSlug(slug), url }]);
     }

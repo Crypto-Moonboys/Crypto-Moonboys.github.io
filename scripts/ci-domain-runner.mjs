@@ -25,6 +25,7 @@ const GROUPS = {
     ['node', 'scripts/crypto-moonboy-pets-surface.test.mjs'],
     ['npm', 'run', 'test:wiki-structure'],
     ['node', 'scripts/wiki-index-drift-regression.test.mjs'],
+    ['node', 'scripts/first-witness-publishing-search.test.mjs'],
     ['node', 'scripts/audit-published-vs-index.js'],
   ],
   'worker-api': [
