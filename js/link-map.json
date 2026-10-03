@@ -1385,6 +1385,7 @@
     "existing_links": [
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-great-concord-2030.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
@@ -1419,6 +1420,7 @@
   },
   "/wiki/first-witness-block-topia-reading.html": {
     "existing_links": [
+      "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-null-erasure.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
       "/wiki/sacred-chain.html",
@@ -1444,6 +1446,7 @@
     "existing_links": [
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-book-2-the-common-blood.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
@@ -1467,6 +1470,7 @@
     "existing_links": [
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-book-3-the-keeper.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
@@ -1490,6 +1494,7 @@
     "existing_links": [
       "/wiki/first-witness-book-2-the-common-blood.html",
       "/wiki/first-witness-book-4-the-wall.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
@@ -1513,6 +1518,7 @@
     "existing_links": [
       "/wiki/first-witness-book-3-the-keeper.html",
       "/wiki/first-witness-book-5-the-chain.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
@@ -1529,13 +1535,15 @@
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-master-chronology.html",
-      "/wiki/first-witness-source-register.html"
+      "/wiki/first-witness-source-register.html",
+      "/wiki/graffpunks.html"
     ]
   },
   "/wiki/first-witness-book-5-the-chain.html": {
     "existing_links": [
       "/wiki/first-witness-book-4-the-wall.html",
       "/wiki/first-witness-book-6-the-fork.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
@@ -1564,6 +1572,7 @@
     "existing_links": [
       "/wiki/first-witness-book-5-the-chain.html",
       "/wiki/first-witness-book-7-the-hold.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
@@ -1591,6 +1600,7 @@
     "existing_links": [
       "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-book-8-the-fire.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
@@ -1614,6 +1624,7 @@
     "existing_links": [
       "/wiki/first-witness-book-7-the-hold.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
@@ -1644,6 +1655,7 @@
   "/wiki/first-witness-book-9-the-unwritten-block.html": {
     "existing_links": [
       "/wiki/first-witness-book-8-the-fire.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
@@ -1671,6 +1683,7 @@
   "/wiki/first-witness-child-of-fire.html": {
     "existing_links": [
       "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-null-erasure.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
@@ -1702,6 +1715,7 @@
   },
   "/wiki/first-witness-concordance.html": {
     "existing_links": [
+      "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-master-chronology.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
       "/wiki/sacred-chain.html",
@@ -1735,6 +1749,7 @@
     "existing_links": [
       "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
@@ -1759,6 +1774,7 @@
   "/wiki/first-witness-forty-paths.html": {
     "existing_links": [
       "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-triple-fork-chainfire.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
@@ -1777,6 +1793,7 @@
   },
   "/wiki/first-witness-glossary.html": {
     "existing_links": [
+      "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-master-chronology.html",
       "/wiki/first-witness-source-register.html",
       "/wiki/sacred-chain.html",
@@ -1803,6 +1820,7 @@
   "/wiki/first-witness-great-concord-2030.html": {
     "existing_links": [
       "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
@@ -1823,6 +1841,7 @@
     "existing_links": [
       "/wiki/first-witness-child-of-fire.html",
       "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
@@ -1850,8 +1869,31 @@
       "/wiki/hodlmoonboys-nft-collection.html"
     ]
   },
+  "/wiki/first-witness-life-readings.html": {
+    "existing_links": [
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-book-3-the-keeper.html",
+      "/wiki/first-witness-book-5-the-chain.html",
+      "/wiki/first-witness-book-7-the-hold.html",
+      "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/the-first-witness.html"
+    ],
+    "suggested_links": [
+      "/wiki/blockchain.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-book-2-the-common-blood.html",
+      "/wiki/first-witness-book-4-the-wall.html",
+      "/wiki/first-witness-book-6-the-fork.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-source-register.html"
+    ]
+  },
   "/wiki/first-witness-long-transmission.html": {
     "existing_links": [
+      "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/first-witness-world-chain-error.html",
       "/wiki/sacred-chain.html",
@@ -1875,6 +1917,7 @@
     "existing_links": [
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
@@ -1907,6 +1950,7 @@
     "existing_links": [
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-child-of-fire.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
@@ -1931,6 +1975,7 @@
   "/wiki/first-witness-sacred-fork.html": {
     "existing_links": [
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-long-transmission.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
@@ -1980,6 +2025,7 @@
       "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/block-topia.html",
       "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/hodl-warriors.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
@@ -2002,6 +2048,7 @@
     "existing_links": [
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
@@ -2025,6 +2072,7 @@
   "/wiki/first-witness-triple-fork-chainfire.html": {
     "existing_links": [
       "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-world-chain-error.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
@@ -2051,6 +2099,7 @@
   },
   "/wiki/first-witness-world-chain-error.html": {
     "existing_links": [
+      "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-long-transmission.html",
       "/wiki/first-witness-triple-fork-chainfire.html",
       "/wiki/sacred-chain.html",
@@ -2369,6 +2418,7 @@
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-master-chronology.html",
       "/wiki/first-witness-source-register.html",
       "/wiki/genesis-kernel.html",
@@ -10439,6 +10489,7 @@
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-great-concord-2030.html",
       "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-long-transmission.html",
       "/wiki/first-witness-master-chronology.html",
       "/wiki/first-witness-null-erasure.html",

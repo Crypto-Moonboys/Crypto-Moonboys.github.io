@@ -2289,11 +2289,12 @@
     ]
   },
   "/wiki/first-witness-bitcoin-witness.html": {
-    "outbound_count": 30,
+    "outbound_count": 31,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-great-concord-2030.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
@@ -2332,9 +2333,10 @@
     ]
   },
   "/wiki/first-witness-block-topia-reading.html": {
-    "outbound_count": 17,
+    "outbound_count": 18,
     "inbound_count": 3,
     "existing_outbound": [
+      "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-null-erasure.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
       "/wiki/sacred-chain.html",
@@ -2362,11 +2364,12 @@
     ]
   },
   "/wiki/first-witness-book-1-the-first-witness.html": {
-    "outbound_count": 17,
-    "inbound_count": 3,
+    "outbound_count": 18,
+    "inbound_count": 4,
     "existing_outbound": [
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-book-2-the-common-blood.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
@@ -2388,15 +2391,17 @@
     "inbound_from": [
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/first-witness-book-2-the-common-blood.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/the-first-witness.html"
     ]
   },
   "/wiki/first-witness-book-2-the-common-blood.html": {
-    "outbound_count": 17,
+    "outbound_count": 18,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-book-3-the-keeper.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
@@ -2422,11 +2427,12 @@
     ]
   },
   "/wiki/first-witness-book-3-the-keeper.html": {
-    "outbound_count": 17,
-    "inbound_count": 3,
+    "outbound_count": 18,
+    "inbound_count": 4,
     "existing_outbound": [
       "/wiki/first-witness-book-2-the-common-blood.html",
       "/wiki/first-witness-book-4-the-wall.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
@@ -2448,15 +2454,17 @@
     "inbound_from": [
       "/wiki/first-witness-book-2-the-common-blood.html",
       "/wiki/first-witness-book-4-the-wall.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/the-first-witness.html"
     ]
   },
   "/wiki/first-witness-book-4-the-wall.html": {
-    "outbound_count": 17,
+    "outbound_count": 19,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/first-witness-book-3-the-keeper.html",
       "/wiki/first-witness-book-5-the-chain.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
@@ -2473,7 +2481,8 @@
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-master-chronology.html",
-      "/wiki/first-witness-source-register.html"
+      "/wiki/first-witness-source-register.html",
+      "/wiki/graffpunks.html"
     ],
     "inbound_from": [
       "/wiki/first-witness-book-3-the-keeper.html",
@@ -2482,11 +2491,12 @@
     ]
   },
   "/wiki/first-witness-book-5-the-chain.html": {
-    "outbound_count": 22,
-    "inbound_count": 3,
+    "outbound_count": 23,
+    "inbound_count": 4,
     "existing_outbound": [
       "/wiki/first-witness-book-4-the-wall.html",
       "/wiki/first-witness-book-6-the-fork.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
@@ -2513,15 +2523,17 @@
     "inbound_from": [
       "/wiki/first-witness-book-4-the-wall.html",
       "/wiki/first-witness-book-6-the-fork.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/the-first-witness.html"
     ]
   },
   "/wiki/first-witness-book-6-the-fork.html": {
-    "outbound_count": 21,
+    "outbound_count": 22,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/first-witness-book-5-the-chain.html",
       "/wiki/first-witness-book-7-the-hold.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
@@ -2551,11 +2563,12 @@
     ]
   },
   "/wiki/first-witness-book-7-the-hold.html": {
-    "outbound_count": 17,
-    "inbound_count": 3,
+    "outbound_count": 18,
+    "inbound_count": 4,
     "existing_outbound": [
       "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-book-8-the-fire.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
@@ -2577,15 +2590,17 @@
     "inbound_from": [
       "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-book-8-the-fire.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/the-first-witness.html"
     ]
   },
   "/wiki/first-witness-book-8-the-fire.html": {
-    "outbound_count": 25,
+    "outbound_count": 26,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/first-witness-book-7-the-hold.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
@@ -2619,10 +2634,11 @@
     ]
   },
   "/wiki/first-witness-book-9-the-unwritten-block.html": {
-    "outbound_count": 21,
-    "inbound_count": 3,
+    "outbound_count": 22,
+    "inbound_count": 4,
     "existing_outbound": [
       "/wiki/first-witness-book-8-the-fire.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
@@ -2648,15 +2664,17 @@
     ],
     "inbound_from": [
       "/wiki/first-witness-book-8-the-fire.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/the-first-witness.html"
     ]
   },
   "/wiki/first-witness-child-of-fire.html": {
-    "outbound_count": 26,
+    "outbound_count": 27,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-null-erasure.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
@@ -2692,9 +2710,10 @@
     ]
   },
   "/wiki/first-witness-concordance.html": {
-    "outbound_count": 25,
+    "outbound_count": 26,
     "inbound_count": 3,
     "existing_outbound": [
+      "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-master-chronology.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
       "/wiki/sacred-chain.html",
@@ -2730,11 +2749,12 @@
     ]
   },
   "/wiki/first-witness-faction-commentaries.html": {
-    "outbound_count": 19,
+    "outbound_count": 20,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
@@ -2762,10 +2782,11 @@
     ]
   },
   "/wiki/first-witness-forty-paths.html": {
-    "outbound_count": 13,
+    "outbound_count": 14,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-triple-fork-chainfire.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
@@ -2788,9 +2809,10 @@
     ]
   },
   "/wiki/first-witness-glossary.html": {
-    "outbound_count": 19,
+    "outbound_count": 20,
     "inbound_count": 3,
     "existing_outbound": [
+      "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-master-chronology.html",
       "/wiki/first-witness-source-register.html",
       "/wiki/sacred-chain.html",
@@ -2820,10 +2842,11 @@
     ]
   },
   "/wiki/first-witness-great-concord-2030.html": {
-    "outbound_count": 13,
+    "outbound_count": 14,
     "inbound_count": 2,
     "existing_outbound": [
       "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
@@ -2845,11 +2868,12 @@
     ]
   },
   "/wiki/first-witness-hodl-doctrine.html": {
-    "outbound_count": 25,
+    "outbound_count": 26,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/first-witness-child-of-fire.html",
       "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
@@ -2882,10 +2906,64 @@
       "/wiki/the-first-witness.html"
     ]
   },
+  "/wiki/first-witness-life-readings.html": {
+    "outbound_count": 16,
+    "inbound_count": 27,
+    "existing_outbound": [
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-book-3-the-keeper.html",
+      "/wiki/first-witness-book-5-the-chain.html",
+      "/wiki/first-witness-book-7-the-hold.html",
+      "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/the-first-witness.html"
+    ],
+    "suggested_outbound": [
+      "/wiki/blockchain.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-book-2-the-common-blood.html",
+      "/wiki/first-witness-book-4-the-wall.html",
+      "/wiki/first-witness-book-6-the-fork.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-source-register.html"
+    ],
+    "inbound_from": [
+      "/wiki/first-witness-bitcoin-witness.html",
+      "/wiki/first-witness-block-topia-reading.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-book-2-the-common-blood.html",
+      "/wiki/first-witness-book-3-the-keeper.html",
+      "/wiki/first-witness-book-4-the-wall.html",
+      "/wiki/first-witness-book-5-the-chain.html",
+      "/wiki/first-witness-book-6-the-fork.html",
+      "/wiki/first-witness-book-7-the-hold.html",
+      "/wiki/first-witness-book-8-the-fire.html",
+      "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-child-of-fire.html",
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-great-concord-2030.html",
+      "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-long-transmission.html",
+      "/wiki/first-witness-master-chronology.html",
+      "/wiki/first-witness-null-erasure.html",
+      "/wiki/first-witness-sacred-fork.html",
+      "/wiki/first-witness-source-register.html",
+      "/wiki/first-witness-street-kingdoms-reading.html",
+      "/wiki/first-witness-triple-fork-chainfire.html",
+      "/wiki/first-witness-world-chain-error.html",
+      "/wiki/the-first-witness.html"
+    ]
+  },
   "/wiki/first-witness-long-transmission.html": {
-    "outbound_count": 15,
+    "outbound_count": 16,
     "inbound_count": 3,
     "existing_outbound": [
+      "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/first-witness-world-chain-error.html",
       "/wiki/sacred-chain.html",
@@ -2911,11 +2989,12 @@
     ]
   },
   "/wiki/first-witness-master-chronology.html": {
-    "outbound_count": 26,
+    "outbound_count": 27,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/first-witness-concordance.html",
       "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
@@ -2950,11 +3029,12 @@
     ]
   },
   "/wiki/first-witness-null-erasure.html": {
-    "outbound_count": 19,
+    "outbound_count": 20,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-child-of-fire.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
@@ -2982,10 +3062,11 @@
     ]
   },
   "/wiki/first-witness-sacred-fork.html": {
-    "outbound_count": 41,
+    "outbound_count": 42,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-long-transmission.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
@@ -3036,12 +3117,13 @@
     ]
   },
   "/wiki/first-witness-source-register.html": {
-    "outbound_count": 17,
+    "outbound_count": 18,
     "inbound_count": 2,
     "existing_outbound": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/block-topia.html",
       "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/hodl-warriors.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
@@ -3065,11 +3147,12 @@
     ]
   },
   "/wiki/first-witness-street-kingdoms-reading.html": {
-    "outbound_count": 18,
+    "outbound_count": 19,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
       "/wiki/triple-fork-event.html"
@@ -3096,10 +3179,11 @@
     ]
   },
   "/wiki/first-witness-triple-fork-chainfire.html": {
-    "outbound_count": 21,
+    "outbound_count": 22,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/first-witness-forty-paths.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-world-chain-error.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-first-witness.html",
@@ -3130,9 +3214,10 @@
     ]
   },
   "/wiki/first-witness-world-chain-error.html": {
-    "outbound_count": 14,
+    "outbound_count": 15,
     "inbound_count": 3,
     "existing_outbound": [
+      "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-long-transmission.html",
       "/wiki/first-witness-triple-fork-chainfire.html",
       "/wiki/sacred-chain.html",
@@ -3539,7 +3624,7 @@
     ]
   },
   "/wiki/genesis-spray.html": {
-    "outbound_count": 36,
+    "outbound_count": 37,
     "inbound_count": 3,
     "existing_outbound": [
       "/wiki/block-topia.html",
@@ -3558,6 +3643,7 @@
       "/wiki/first-witness-book-1-the-first-witness.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-glossary.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-master-chronology.html",
       "/wiki/first-witness-source-register.html",
       "/wiki/genesis-kernel.html",
@@ -15320,8 +15406,8 @@
     ]
   },
   "/wiki/the-first-witness.html": {
-    "outbound_count": 57,
-    "inbound_count": 27,
+    "outbound_count": 58,
+    "inbound_count": 28,
     "existing_outbound": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin.html",
@@ -15344,6 +15430,7 @@
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-great-concord-2030.html",
       "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-long-transmission.html",
       "/wiki/first-witness-master-chronology.html",
       "/wiki/first-witness-null-erasure.html",
@@ -15402,6 +15489,7 @@
       "/wiki/first-witness-glossary.html",
       "/wiki/first-witness-great-concord-2030.html",
       "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-life-readings.html",
       "/wiki/first-witness-long-transmission.html",
       "/wiki/first-witness-master-chronology.html",
       "/wiki/first-witness-null-erasure.html",
