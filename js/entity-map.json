@@ -969,6 +969,44 @@
     "brand": null
   },
   {
+    "entity_id": "first_witness_addiction_intoxication_compulsion",
+    "canonical_title": "Addiction, Intoxication and Compulsion",
+    "canonical_url": "/wiki/first-witness-addiction-intoxication-compulsion.html",
+    "category": "core",
+    "aliases": [
+      "addiction intoxication compulsion",
+      "first witness addiction intoxication compulsion"
+    ],
+    "tags": [
+      "addiction",
+      "intoxication",
+      "compulsion"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-addiction-intoxication-compulsion.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_ageing_retirement_elderhood",
+    "canonical_title": "Ageing, Retirement and Elderhood",
+    "canonical_url": "/wiki/first-witness-ageing-retirement-elderhood.html",
+    "category": "core",
+    "aliases": [
+      "ageing retirement elderhood",
+      "first witness ageing retirement elderhood"
+    ],
+    "tags": [
+      "ageing",
+      "retirement",
+      "elderhood"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-ageing-retirement-elderhood.html"
+    ],
+    "brand": null
+  },
+  {
     "entity_id": "first_witness_ai_synthetic_minds",
     "canonical_title": "Technology, AI and Synthetic Minds",
     "canonical_url": "/wiki/first-witness-ai-synthetic-minds.html",
@@ -989,6 +1027,26 @@
     "brand": null
   },
   {
+    "entity_id": "first_witness_anonymity_pseudonyms_hidden_names",
+    "canonical_title": "Anonymity, Pseudonyms and Hidden Names",
+    "canonical_url": "/wiki/first-witness-anonymity-pseudonyms-hidden-names.html",
+    "category": "core",
+    "aliases": [
+      "anonymity pseudonyms hidden names",
+      "first witness anonymity pseudonyms hidden names"
+    ],
+    "tags": [
+      "anonymity",
+      "pseudonyms",
+      "hidden",
+      "names"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-anonymity-pseudonyms-hidden-names.html"
+    ],
+    "brand": null
+  },
+  {
     "entity_id": "first_witness_apocrypha_disputed_passages",
     "canonical_title": "Apocrypha and Disputed Passages",
     "canonical_url": "/wiki/first-witness-apocrypha-disputed-passages.html",
@@ -1004,6 +1062,46 @@
     ],
     "source_urls": [
       "/wiki/first-witness-apocrypha-disputed-passages.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_beauty_luxury_modesty_status",
+    "canonical_title": "Beauty, Luxury, Modesty and Status",
+    "canonical_url": "/wiki/first-witness-beauty-luxury-modesty-status.html",
+    "category": "core",
+    "aliases": [
+      "beauty luxury modesty status",
+      "first witness beauty luxury modesty status"
+    ],
+    "tags": [
+      "beauty",
+      "luxury",
+      "modesty",
+      "status"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-beauty-luxury-modesty-status.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_birth_naming_coming_of_age",
+    "canonical_title": "Birth, Naming and Coming of Age",
+    "canonical_url": "/wiki/first-witness-birth-naming-coming-of-age.html",
+    "category": "factions",
+    "aliases": [
+      "birth naming coming age",
+      "first witness birth naming coming of age"
+    ],
+    "tags": [
+      "birth",
+      "naming",
+      "coming",
+      "age"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-birth-naming-coming-of-age.html"
     ],
     "brand": null
   },
@@ -1238,6 +1336,66 @@
     "brand": null
   },
   {
+    "entity_id": "first_witness_censorship_offence_public_marks",
+    "canonical_title": "Censorship, Offence and Public Marks",
+    "canonical_url": "/wiki/first-witness-censorship-offence-public-marks.html",
+    "category": "factions",
+    "aliases": [
+      "censorship offence public marks",
+      "first witness censorship offence public marks"
+    ],
+    "tags": [
+      "censorship",
+      "offence",
+      "public",
+      "marks"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-censorship-offence-public-marks.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_chain_archaeology_forensics",
+    "canonical_title": "Chain Archaeology and Historical Forensics",
+    "canonical_url": "/wiki/first-witness-chain-archaeology-forensics.html",
+    "category": "core",
+    "aliases": [
+      "chain archaeology historical forensics",
+      "first witness chain archaeology forensics"
+    ],
+    "tags": [
+      "chain",
+      "archaeology",
+      "historical",
+      "forensics"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-chain-archaeology-forensics.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_charity_mutual_aid_dependence",
+    "canonical_title": "Charity, Mutual Aid and Dependence",
+    "canonical_url": "/wiki/first-witness-charity-mutual-aid-dependence.html",
+    "category": "core",
+    "aliases": [
+      "charity mutual aid dependence",
+      "first witness charity mutual aid dependence"
+    ],
+    "tags": [
+      "charity",
+      "mutual",
+      "aid",
+      "dependence"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-charity-mutual-aid-dependence.html"
+    ],
+    "brand": null
+  },
+  {
     "entity_id": "first_witness_child_of_fire",
     "canonical_title": "The Child of Fire Interpretation",
     "canonical_url": "/wiki/first-witness-child-of-fire.html",
@@ -1296,6 +1454,46 @@
     "brand": null
   },
   {
+    "entity_id": "first_witness_confession_apology_reconciliation",
+    "canonical_title": "Confession, Apology and Reconciliation",
+    "canonical_url": "/wiki/first-witness-confession-apology-reconciliation.html",
+    "category": "core",
+    "aliases": [
+      "confession apology reconciliation",
+      "first witness confession apology reconciliation"
+    ],
+    "tags": [
+      "confession",
+      "apology",
+      "reconciliation"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-confession-apology-reconciliation.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_counterfeit_relics_fraud",
+    "canonical_title": "Counterfeit Relics, Forged Hashes and Sacred Scams",
+    "canonical_url": "/wiki/first-witness-counterfeit-relics-fraud.html",
+    "category": "core",
+    "aliases": [
+      "first witness counterfeit relics fraud"
+    ],
+    "tags": [
+      "counterfeit",
+      "relics",
+      "forged",
+      "hashes",
+      "sacred",
+      "scams"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-counterfeit-relics-fraud.html"
+    ],
+    "brand": null
+  },
+  {
     "entity_id": "first_witness_daily_practices_rituals",
     "canonical_title": "Daily Practices and Rituals",
     "canonical_url": "/wiki/first-witness-daily-practices-rituals.html",
@@ -1330,6 +1528,108 @@
     ],
     "source_urls": [
       "/wiki/first-witness-death-grief-remembrance.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_digital_inheritance_after_death",
+    "canonical_title": "Digital Inheritance and Memory After Death",
+    "canonical_url": "/wiki/first-witness-digital-inheritance-after-death.html",
+    "category": "core",
+    "aliases": [
+      "digital inheritance memory after death",
+      "first witness digital inheritance after death"
+    ],
+    "tags": [
+      "digital",
+      "inheritance",
+      "memory",
+      "after",
+      "death"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-digital-inheritance-after-death.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_disaster_famine_mutual_aid",
+    "canonical_title": "Disaster, Famine and Mutual Aid",
+    "canonical_url": "/wiki/first-witness-disaster-famine-mutual-aid.html",
+    "category": "core",
+    "aliases": [
+      "disaster famine mutual aid",
+      "first witness disaster famine mutual aid"
+    ],
+    "tags": [
+      "disaster",
+      "famine",
+      "mutual",
+      "aid"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-disaster-famine-mutual-aid.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_dreams_omens_coincidence",
+    "canonical_title": "Dreams, Omens, Coincidence and Prophecy Fraud",
+    "canonical_url": "/wiki/first-witness-dreams-omens-coincidence.html",
+    "category": "core",
+    "aliases": [
+      "dreams omens coincidence prophecy fraud",
+      "first witness dreams omens coincidence"
+    ],
+    "tags": [
+      "dreams",
+      "omens",
+      "coincidence",
+      "prophecy",
+      "fraud"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-dreams-omens-coincidence.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_dual_use_tools_weapons",
+    "canonical_title": "Tools, Weapons and Dual-Use Technology",
+    "canonical_url": "/wiki/first-witness-dual-use-tools-weapons.html",
+    "category": "core",
+    "aliases": [
+      "first witness dual use tools weapons",
+      "tools weapons dual use technology"
+    ],
+    "tags": [
+      "tools",
+      "weapons",
+      "dual",
+      "use",
+      "technology"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-dual-use-tools-weapons.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_education_schools_apprenticeship",
+    "canonical_title": "Education, Schools and Apprenticeship",
+    "canonical_url": "/wiki/first-witness-education-schools-apprenticeship.html",
+    "category": "factions",
+    "aliases": [
+      "education schools apprenticeship",
+      "first witness education schools apprenticeship"
+    ],
+    "tags": [
+      "education",
+      "schools",
+      "apprenticeship"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-education-schools-apprenticeship.html"
     ],
     "brand": null
   },
@@ -1469,6 +1769,26 @@
     "brand": null
   },
   {
+    "entity_id": "first_witness_healing_illness_disability_care",
+    "canonical_title": "Healing, Illness, Disability and Care",
+    "canonical_url": "/wiki/first-witness-healing-illness-disability-care.html",
+    "category": "core",
+    "aliases": [
+      "first witness healing illness disability care",
+      "healing illness disability care"
+    ],
+    "tags": [
+      "healing",
+      "illness",
+      "disability",
+      "care"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-healing-illness-disability-care.html"
+    ],
+    "brand": null
+  },
+  {
     "entity_id": "first_witness_heresies_corruptions_abuses",
     "canonical_title": "Heresies, Corruptions and Abuses",
     "canonical_url": "/wiki/first-witness-heresies-corruptions-abuses.html",
@@ -1502,6 +1822,45 @@
     ],
     "source_urls": [
       "/wiki/first-witness-hodl-doctrine.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_humour_satire_sacred_mockery",
+    "canonical_title": "Humour, Satire and Sacred Mockery",
+    "canonical_url": "/wiki/first-witness-humour-satire-sacred-mockery.html",
+    "category": "factions",
+    "aliases": [
+      "first witness humour satire sacred mockery",
+      "humour satire sacred mockery"
+    ],
+    "tags": [
+      "humour",
+      "satire",
+      "sacred",
+      "mockery"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-humour-satire-sacred-mockery.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_intimacy_sexuality_privacy",
+    "canonical_title": "Intimacy, Sexuality and Privacy",
+    "canonical_url": "/wiki/first-witness-intimacy-sexuality-privacy.html",
+    "category": "factions",
+    "aliases": [
+      "first witness intimacy sexuality privacy",
+      "intimacy sexuality privacy"
+    ],
+    "tags": [
+      "intimacy",
+      "sexuality",
+      "privacy"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-intimacy-sexuality-privacy.html"
     ],
     "brand": null
   },
@@ -1545,6 +1904,26 @@
     "brand": null
   },
   {
+    "entity_id": "first_witness_language_translation_sacred_words",
+    "canonical_title": "Language, Translation and Sacred Words",
+    "canonical_url": "/wiki/first-witness-language-translation-sacred-words.html",
+    "category": "core",
+    "aliases": [
+      "first witness language translation sacred words",
+      "language translation sacred words"
+    ],
+    "tags": [
+      "language",
+      "translation",
+      "sacred",
+      "words"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-language-translation-sacred-words.html"
+    ],
+    "brand": null
+  },
+  {
     "entity_id": "first_witness_leadership_councils_succession",
     "canonical_title": "Leadership, Councils and Succession",
     "canonical_url": "/wiki/first-witness-leadership-councils-succession.html",
@@ -1560,6 +1939,27 @@
     ],
     "source_urls": [
       "/wiki/first-witness-leadership-councils-succession.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_libraries_architecture_archive_houses",
+    "canonical_title": "Libraries, Archive Houses and Sacred Architecture",
+    "canonical_url": "/wiki/first-witness-libraries-architecture-archive-houses.html",
+    "category": "core",
+    "aliases": [
+      "first witness libraries architecture archive houses",
+      "libraries archive houses sacred architecture"
+    ],
+    "tags": [
+      "libraries",
+      "archive",
+      "houses",
+      "sacred",
+      "architecture"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-libraries-architecture-archive-houses.html"
     ],
     "brand": null
   },
@@ -1640,6 +2040,45 @@
     "brand": null
   },
   {
+    "entity_id": "first_witness_mediation_witness_circles",
+    "canonical_title": "Mediation and Witness Circles",
+    "canonical_url": "/wiki/first-witness-mediation-witness-circles.html",
+    "category": "factions",
+    "aliases": [
+      "first witness mediation witness circles",
+      "mediation witness circles"
+    ],
+    "tags": [
+      "mediation",
+      "witness",
+      "circles"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-mediation-witness-circles.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_migration_refuge_exile_borders",
+    "canonical_title": "Migration, Refuge, Exile and Borders",
+    "canonical_url": "/wiki/first-witness-migration-refuge-exile-borders.html",
+    "category": "factions",
+    "aliases": [
+      "first witness migration refuge exile borders",
+      "migration refuge exile borders"
+    ],
+    "tags": [
+      "migration",
+      "refuge",
+      "exile",
+      "borders"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-migration-refuge-exile-borders.html"
+    ],
+    "brand": null
+  },
+  {
     "entity_id": "first_witness_money_debt_honest_scales",
     "canonical_title": "Money, Debt and Honest Scales",
     "canonical_url": "/wiki/first-witness-money-debt-honest-scales.html",
@@ -1656,6 +2095,25 @@
     ],
     "source_urls": [
       "/wiki/first-witness-money-debt-honest-scales.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_music_dance_performance",
+    "canonical_title": "Music, Dance and Performance",
+    "canonical_url": "/wiki/first-witness-music-dance-performance.html",
+    "category": "core",
+    "aliases": [
+      "first witness music dance performance",
+      "music dance performance"
+    ],
+    "tags": [
+      "music",
+      "dance",
+      "performance"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-music-dance-performance.html"
     ],
     "brand": null
   },
@@ -1737,6 +2195,25 @@
     "brand": null
   },
   {
+    "entity_id": "first_witness_prisons_punishment_return",
+    "canonical_title": "Prisons, Punishment and Return",
+    "canonical_url": "/wiki/first-witness-prisons-punishment-return.html",
+    "category": "core",
+    "aliases": [
+      "first witness prisons punishment return",
+      "prisons punishment return"
+    ],
+    "tags": [
+      "prisons",
+      "punishment",
+      "return"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-prisons-punishment-return.html"
+    ],
+    "brand": null
+  },
+  {
     "entity_id": "first_witness_proverbs_street_sayings",
     "canonical_title": "Proverbs and Street Sayings",
     "canonical_url": "/wiki/first-witness-proverbs-street-sayings.html",
@@ -1794,6 +2271,27 @@
     "brand": null
   },
   {
+    "entity_id": "first_witness_roles_keepers_witnesses_mediators",
+    "canonical_title": "Keepers, Witnesses, Mediators and Other Roles",
+    "canonical_url": "/wiki/first-witness-roles-keepers-witnesses-mediators.html",
+    "category": "core",
+    "aliases": [
+      "first witness roles keepers witnesses mediators",
+      "keepers witnesses mediators other roles"
+    ],
+    "tags": [
+      "keepers",
+      "witnesses",
+      "mediators",
+      "other",
+      "roles"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-roles-keepers-witnesses-mediators.html"
+    ],
+    "brand": null
+  },
+  {
     "entity_id": "first_witness_sacred_fork",
     "canonical_title": "The Sacred Fork",
     "canonical_url": "/wiki/first-witness-sacred-fork.html",
@@ -1847,6 +2345,25 @@
     ],
     "source_urls": [
       "/wiki/first-witness-sects-schools-schisms.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_silence_solitude_attention",
+    "canonical_title": "Silence, Solitude and Attention",
+    "canonical_url": "/wiki/first-witness-silence-solitude-attention.html",
+    "category": "factions",
+    "aliases": [
+      "first witness silence solitude attention",
+      "silence solitude attention"
+    ],
+    "tags": [
+      "silence",
+      "solitude",
+      "attention"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-silence-solitude-attention.html"
     ],
     "brand": null
   },
@@ -1944,6 +2461,25 @@
     ],
     "source_urls": [
       "/wiki/first-witness-triple-fork-chainfire.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_truth_commissions_after_conflict",
+    "canonical_title": "Truth Commissions After Conflict",
+    "canonical_url": "/wiki/first-witness-truth-commissions-after-conflict.html",
+    "category": "core",
+    "aliases": [
+      "first witness truth commissions after conflict"
+    ],
+    "tags": [
+      "truth",
+      "commissions",
+      "after",
+      "conflict"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-truth-commissions-after-conflict.html"
     ],
     "brand": null
   },
