@@ -129,6 +129,14 @@ assert.ok(
 );
 
 assert.ok(
+  preparePagesArtifact.includes('PRIVATE_PUBLISH_RECOVERY_DIRECTORY_PATTERN') &&
+    preparePagesArtifact.includes('(?:forward|rollback)-[A-Za-z0-9]{6}') &&
+    preparePagesArtifact.includes('publish-\\d+-\\d+-[A-Za-z0-9]{6}') &&
+    preparePagesArtifact.includes('pathSegments.some'),
+  'Pages artifact preparation must exclude private forward, artifact, and rollback recovery directories',
+);
+
+assert.ok(
   preparePagesArtifact.includes("'.git'") && preparePagesArtifact.includes("'.github'") && preparePagesArtifact.includes('isPathInside'),
   'Pages artifact preparation must reject protected repository paths before deleting the artifact target',
 );

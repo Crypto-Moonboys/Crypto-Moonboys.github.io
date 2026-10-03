@@ -7,6 +7,10 @@ output/
 *.log
 .vscode/
 
+# Publish inodes retained for recovery from writers with old open descriptors.
+# These are deliberately manual-cleanup-only; the importer must never reap them.
+/.wiki-content-publish-quarantine-[A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9]/
+
 # Wrangler / Cloudflare
 .wrangler/
 workers/**/.wrangler/

@@ -171,6 +171,12 @@ function ownershipFixture({
   return { rootDir, payloadDir, payload, actualHash };
 }
 
+function isOwnershipPageRecoveryLink(sourcePath, targetPath) {
+  return /\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(
+    String(sourcePath).replaceAll('\\', '/')
+  ) && path.basename(String(targetPath)) === 'ownership-case.html';
+}
+
 function assertValidationFails(payload, expectedMessage) {
   assert.throws(
     () => validatePayload(payload, '<test-payload>'),
@@ -770,6 +776,7 @@ const lockReplacementPagePath = path.join(
 const lockReplacementOriginalPage = fs.readFileSync(lockReplacementPagePath);
 const replacementLockPath = path.join(lockReplacementFixture.rootDir, PUBLISH_TRANSACTION_LOCK);
 let lockReplacementInjected = false;
+let lockReplacementError;
 assert.throws(
   () => runImport({
     payloadDir: lockReplacementFixture.payloadDir,
@@ -789,8 +796,11 @@ assert.throws(
       return result;
     },
   }),
-  (error) => error instanceof ContentOwnershipError &&
-    error.code === 'PUBLISH_TRANSACTION_LOCK_CLEANUP_FAILED'
+  (error) => {
+    lockReplacementError = error;
+    return error instanceof ContentOwnershipError &&
+      error.code === 'PUBLISH_TRANSACTION_LOCK_CLEANUP_FAILED';
+  }
 );
 assert.equal(lockReplacementInjected, true, 'fixture must remove and recreate the held lock path');
 assert.deepEqual(
@@ -802,6 +812,21 @@ assert.equal(
   fs.readFileSync(path.join(replacementLockPath, 'replacement-owner.txt'), 'utf8'),
   'replacement lock must survive\n',
   'cleanup must not remove a lock directory with a different inode'
+);
+assert.ok(
+  lockReplacementError.cause instanceof ContentOwnershipError &&
+    lockReplacementError.cause.code === 'PUBLISH_TRANSACTION_LOCK_LOST',
+  'lock cleanup failure must retain the operation error as its cause'
+);
+assert.ok(
+  Array.isArray(lockReplacementError.durableQuarantines) &&
+    lockReplacementError.durableQuarantines.some(({ phase, sourcePath }) =>
+      phase === 'page-forward' && sourcePath === 'wiki/ownership-case.html'
+    ) &&
+    lockReplacementError.durableQuarantines.some(({ phase, sourcePath }) =>
+      phase === 'conditional-rollback' && sourcePath === 'wiki/ownership-case.html'
+    ),
+  'lock cleanup failure must preserve every durable recovery record from the failed transaction'
 );
 console.log('PASS lock remove/recreate is detected, rolled back, and never removed as ours');
 
@@ -1039,6 +1064,913 @@ assert.equal(
 );
 console.log('PASS forward page commit atomically detaches and preserves a last-moment concurrent edit');
 
+const durableOpenDescriptorFixture = ownershipFixture();
+const durableOpenDescriptorWikiPath = path.join(
+  durableOpenDescriptorFixture.rootDir,
+  'wiki'
+);
+const durableOpenDescriptorPagePath = path.join(
+  durableOpenDescriptorWikiPath,
+  'ownership-case.html'
+);
+const durableOpenDescriptorPageBefore = fs.readFileSync(durableOpenDescriptorPagePath);
+const durableOpenDescriptorConcurrentBytes = Buffer.from(
+  '<article class="wiki-content"><p>OPEN DESCRIPTOR EDIT AFTER DETACHED CAPTURE.</p></article>',
+  'utf8'
+);
+const durableOpenDescriptorLaterBytes = Buffer.from(
+  '<article class="wiki-content"><p>LATER OPEN DESCRIPTOR EDIT AFTER IMPORT RETURNED.</p></article>',
+  'utf8'
+);
+const durableOpenDescriptor = fs.openSync(
+  durableOpenDescriptorPagePath,
+  fs.constants.O_RDWR | (fs.constants.O_NOFOLLOW || 0)
+);
+const linkSyncBeforeDurableOpenDescriptor = fs.linkSync;
+let durableOpenDescriptorMutations = 0;
+fs.linkSync = function interceptDurableOpenDescriptorInstall(sourcePath, targetPath) {
+  const normalizedSource = String(sourcePath).replaceAll('\\', '/');
+  if (
+    durableOpenDescriptorMutations === 0 &&
+    /\/\.ownership-case\.html\.forward-[^/]+\/staged$/.test(normalizedSource)
+  ) {
+    const result = linkSyncBeforeDurableOpenDescriptor.call(fs, sourcePath, targetPath);
+    fs.ftruncateSync(durableOpenDescriptor, 0);
+    fs.writeSync(
+      durableOpenDescriptor,
+      durableOpenDescriptorConcurrentBytes,
+      0,
+      durableOpenDescriptorConcurrentBytes.length,
+      0
+    );
+    fs.fsyncSync(durableOpenDescriptor);
+    durableOpenDescriptorMutations += 1;
+    return result;
+  }
+  return linkSyncBeforeDurableOpenDescriptor.call(fs, sourcePath, targetPath);
+};
+let durableOpenDescriptorError;
+const durableOpenDescriptorLogs = [];
+try {
+  assert.throws(
+    () => runImport({
+      payloadDir: durableOpenDescriptorFixture.payloadDir,
+      rootDir: durableOpenDescriptorFixture.rootDir,
+      write: true,
+      logger: (message) => durableOpenDescriptorLogs.push(message),
+      refreshContentStateFn: refreshTestContentState,
+    }),
+    (error) => {
+      durableOpenDescriptorError = error;
+      return error instanceof ContentOwnershipError &&
+        error.code === 'STALE_CONTENT_STATE' &&
+        error.message.includes('detached inode changed while entering durable page-forward quarantine');
+    }
+  );
+} finally {
+  fs.linkSync = linkSyncBeforeDurableOpenDescriptor;
+}
+assert.equal(
+  durableOpenDescriptorMutations,
+  1,
+  'fixture must mutate the old inode after detached capture and before staged installation'
+);
+assert.deepEqual(
+  fs.readFileSync(durableOpenDescriptorPagePath),
+  durableOpenDescriptorPageBefore,
+  'detached-inode drift must fail the import and roll the live page back'
+);
+const durableOpenDescriptorRecord = durableOpenDescriptorError.durableQuarantines.find(
+  ({ phase, sourcePath }) =>
+    phase === 'page-forward' && sourcePath === 'wiki/ownership-case.html'
+);
+assert.ok(durableOpenDescriptorRecord, 'error must report the retained page-forward inode');
+const durableOpenDescriptorQuarantineRelative =
+  durableOpenDescriptorRecord.quarantinePath;
+const durableOpenDescriptorQuarantinePath = path.join(
+  durableOpenDescriptorFixture.rootDir,
+  durableOpenDescriptorQuarantineRelative
+);
+const durableOpenDescriptorHeldStat = fs.fstatSync(durableOpenDescriptor, { bigint: true });
+const durableOpenDescriptorQuarantineStat = fs.statSync(
+  durableOpenDescriptorQuarantinePath,
+  { bigint: true }
+);
+assert.equal(durableOpenDescriptorHeldStat.dev, durableOpenDescriptorQuarantineStat.dev);
+assert.equal(durableOpenDescriptorHeldStat.ino, durableOpenDescriptorQuarantineStat.ino);
+assert.deepEqual(
+  fs.readFileSync(durableOpenDescriptorQuarantinePath),
+  durableOpenDescriptorConcurrentBytes,
+  'the edit through the pre-open descriptor must remain in a named durable quarantine'
+);
+assert.ok(
+  durableOpenDescriptorLogs.some((message) =>
+    message.includes(durableOpenDescriptorQuarantineRelative)
+  ),
+  'failed import must log the durable recovery path'
+);
+fs.ftruncateSync(durableOpenDescriptor, 0);
+fs.writeSync(
+  durableOpenDescriptor,
+  durableOpenDescriptorLaterBytes,
+  0,
+  durableOpenDescriptorLaterBytes.length,
+  0
+);
+fs.fsyncSync(durableOpenDescriptor);
+assert.deepEqual(
+  fs.readFileSync(durableOpenDescriptorQuarantinePath),
+  durableOpenDescriptorLaterBytes,
+  'the quarantine must retain the same inode after import returns'
+);
+fs.closeSync(durableOpenDescriptor);
+assert.equal(
+  fs.existsSync(path.join(durableOpenDescriptorFixture.rootDir, PUBLISH_TRANSACTION_LOCK)),
+  false,
+  'durable quarantine retention must not retain the transaction lock'
+);
+console.log('PASS pre-open writer inode survives post-install mutation in durable quarantine');
+
+const durableLateDescriptorFixture = ownershipFixture();
+const durableLateDescriptorPagePath = path.join(
+  durableLateDescriptorFixture.rootDir,
+  'wiki',
+  'ownership-case.html'
+);
+const [durableLateDescriptorPlan] = planContentOwnershipUpdates(
+  [durableLateDescriptorFixture.payload],
+  durableLateDescriptorFixture.rootDir
+);
+const durableLateDescriptorBytes = Buffer.from(
+  '<article class="wiki-content"><p>OPEN DESCRIPTOR EDIT AFTER SUCCESSFUL IMPORT.</p></article>',
+  'utf8'
+);
+const durableLateDescriptor = fs.openSync(
+  durableLateDescriptorPagePath,
+  fs.constants.O_RDWR | (fs.constants.O_NOFOLLOW || 0)
+);
+let durableLateDescriptorIsolationChecks = 0;
+const durableLateDescriptorLogs = [];
+const durableLateDescriptorResult = runImport({
+  payloadDir: durableLateDescriptorFixture.payloadDir,
+  rootDir: durableLateDescriptorFixture.rootDir,
+  write: true,
+  logger: (message) => durableLateDescriptorLogs.push(message),
+  refreshContentStateFn: (isolatedRoot) => {
+    durableLateDescriptorIsolationChecks += 1;
+    assert.equal(
+      fs.readdirSync(isolatedRoot).some((entry) =>
+        /^\.wiki-content-publish-quarantine-[A-Za-z0-9]{6}$/.test(entry)
+      ),
+      false,
+      'isolated generator inputs must exclude the root transaction quarantine'
+    );
+    return refreshTestContentState(isolatedRoot);
+  },
+});
+assert.equal(durableLateDescriptorIsolationChecks, 1);
+assert.equal(
+  fs.readFileSync(durableLateDescriptorPagePath, 'utf8'),
+  durableLateDescriptorPlan.html,
+  'stable replacement must install the planned page'
+);
+const durableLateDescriptorRecord = durableLateDescriptorResult.durableQuarantines.find(
+  ({ phase, sourcePath }) =>
+    phase === 'page-forward' && sourcePath === 'wiki/ownership-case.html'
+);
+assert.ok(durableLateDescriptorRecord, 'successful result must report the page quarantine');
+const durableLateDescriptorQuarantinePath = path.join(
+  durableLateDescriptorFixture.rootDir,
+  durableLateDescriptorRecord.quarantinePath
+);
+fs.ftruncateSync(durableLateDescriptor, 0);
+fs.writeSync(
+  durableLateDescriptor,
+  durableLateDescriptorBytes,
+  0,
+  durableLateDescriptorBytes.length,
+  0
+);
+fs.fsyncSync(durableLateDescriptor);
+assert.deepEqual(
+  fs.readFileSync(durableLateDescriptorQuarantinePath),
+  durableLateDescriptorBytes,
+  'a post-return write through the old descriptor must remain named centrally'
+);
+fs.closeSync(durableLateDescriptor);
+assert.ok(
+  durableLateDescriptorLogs.some((message) =>
+    message.includes(durableLateDescriptorRecord.quarantinePath)
+  ),
+  'successful import must log the durable recovery path'
+);
+assert.match(
+  path.basename(durableLateDescriptorRecord.quarantinePath),
+  /^\d{4}-page-forward-wiki_ownership-case_html-[a-f0-9]{12}\.detached$/
+);
+const durableLateDescriptorDirectory =
+  durableLateDescriptorRecord.quarantinePath.split('/')[0];
+const durableInventoryLogs = [];
+const durableInventoryResult = runImport({
+  payloadDir: durableLateDescriptorFixture.payloadDir,
+  rootDir: durableLateDescriptorFixture.rootDir,
+  write: true,
+  logger: (message) => durableInventoryLogs.push(message),
+  refreshContentStateFn: refreshTestContentState,
+});
+assert.ok(
+  durableInventoryResult.existingDurableQuarantines.includes(
+    durableLateDescriptorDirectory
+  ),
+  'the next write-mode run must inventory the prior durable quarantine'
+);
+assert.deepEqual(
+  durableInventoryResult.durableQuarantines,
+  [],
+  'same-hash replay must not create another quarantine'
+);
+assert.ok(durableInventoryLogs.some((message) =>
+  message.includes(durableLateDescriptorDirectory) &&
+  message.includes('manual review')
+));
+console.log('PASS stable replacement remains recoverable after a later open-descriptor edit');
+
+const validQuarantineIgnore = spawnSync(
+  'git',
+  [
+    'check-ignore',
+    '--quiet',
+    '--no-index',
+    '.wiki-content-publish-quarantine-ABC123/retained.detached',
+  ],
+  { cwd: ROOT, encoding: 'utf8' }
+);
+assert.equal(
+  validQuarantineIgnore.status,
+  0,
+  `runtime quarantine names must be ignored by git: ${validQuarantineIgnore.stderr}`
+);
+for (const invalidQuarantineName of [
+  '.wiki-content-publish-quarantine-ABC-12/retained.detached',
+  '.wiki-content-publish-quarantine-....../retained.detached',
+]) {
+  const invalidQuarantineIgnore = spawnSync(
+    'git',
+    ['check-ignore', '--quiet', '--no-index', invalidQuarantineName],
+    { cwd: ROOT, encoding: 'utf8' }
+  );
+  assert.equal(
+    invalidQuarantineIgnore.status,
+    1,
+    `gitignore must not hide a non-runtime quarantine name: ${invalidQuarantineName}`
+  );
+}
+console.log('PASS gitignore covers only the six-alphanumeric durable quarantine namespace');
+
+for (const unsafeQuarantineType of ['file', 'symlink']) {
+  const unsafeQuarantineFixture = ownershipFixture();
+  const unsafeQuarantinePath = path.join(
+    unsafeQuarantineFixture.rootDir,
+    `.wiki-content-publish-quarantine-${unsafeQuarantineType === 'file' ? 'ABC123' : 'XYZ789'}`
+  );
+  if (unsafeQuarantineType === 'file') {
+    fs.writeFileSync(unsafeQuarantinePath, 'not a quarantine directory\n', 'utf8');
+  } else {
+    fs.symlinkSync('wiki', unsafeQuarantinePath, 'dir');
+  }
+  assert.throws(
+    () => runImport({
+      payloadDir: unsafeQuarantineFixture.payloadDir,
+      rootDir: unsafeQuarantineFixture.rootDir,
+      write: true,
+      logger: () => {},
+      refreshContentStateFn: refreshTestContentState,
+    }),
+    (error) => error instanceof ContentOwnershipError &&
+      error.code === 'UNSAFE_PUBLISH_PATH' &&
+      error.message.includes('durable quarantine root entry must be a real directory')
+  );
+  assert.equal(
+    fs.existsSync(path.join(unsafeQuarantineFixture.rootDir, PUBLISH_TRANSACTION_LOCK)),
+    false,
+    `unsafe ${unsafeQuarantineType} inventory rejection must release the transaction lock`
+  );
+}
+console.log('PASS write startup inventories only real anchored durable quarantine directories');
+
+const isolatedQuarantineSwapFixture = ownershipFixture();
+const isolatedQuarantineSwapName = '.wiki-content-publish-quarantine-SWP123';
+const isolatedQuarantineSwapPath = path.join(
+  isolatedQuarantineSwapFixture.rootDir,
+  isolatedQuarantineSwapName
+);
+const isolatedQuarantineSwapBytes = Buffer.from(
+  'reserved quarantine namespace swapped to a regular file\n',
+  'utf8'
+);
+fs.mkdirSync(isolatedQuarantineSwapPath);
+const readdirSyncBeforeIsolatedQuarantineSwap = fs.readdirSync;
+let isolatedQuarantineRootReads = 0;
+let isolatedQuarantineSwaps = 0;
+let isolatedQuarantineCallbackChecks = 0;
+fs.readdirSync = function interceptIsolatedQuarantineSwap(directoryPath, options, ...args) {
+  let realDirectoryPath = null;
+  try {
+    realDirectoryPath = fs.realpathSync.native(String(directoryPath));
+  } catch {
+    // Preserve the underlying readdir error for paths that cannot be resolved.
+  }
+  if (realDirectoryPath === path.resolve(isolatedQuarantineSwapFixture.rootDir)) {
+    isolatedQuarantineRootReads += 1;
+    if (isolatedQuarantineRootReads === 2) {
+      fs.rmdirSync(isolatedQuarantineSwapPath);
+      fs.writeFileSync(isolatedQuarantineSwapPath, isolatedQuarantineSwapBytes);
+      isolatedQuarantineSwaps += 1;
+    }
+  }
+  return readdirSyncBeforeIsolatedQuarantineSwap.call(
+    fs,
+    directoryPath,
+    options,
+    ...args
+  );
+};
+let isolatedQuarantineSwapResult;
+try {
+  isolatedQuarantineSwapResult = runImport({
+    payloadDir: isolatedQuarantineSwapFixture.payloadDir,
+    rootDir: isolatedQuarantineSwapFixture.rootDir,
+    write: true,
+    logger: () => {},
+    refreshContentStateFn: (isolatedRoot) => {
+      isolatedQuarantineCallbackChecks += 1;
+      assert.equal(
+        fs.existsSync(path.join(isolatedRoot, isolatedQuarantineSwapName)),
+        false,
+        'reserved quarantine names must stay outside isolated generator inputs after a type swap'
+      );
+      return refreshTestContentState(isolatedRoot);
+    },
+  });
+} finally {
+  fs.readdirSync = readdirSyncBeforeIsolatedQuarantineSwap;
+}
+assert.equal(isolatedQuarantineRootReads >= 2, true);
+assert.equal(isolatedQuarantineSwaps, 1, 'fixture must swap the inventoried directory before isolation');
+assert.equal(isolatedQuarantineCallbackChecks, 1);
+assert.ok(
+  isolatedQuarantineSwapResult.existingDurableQuarantines.includes(
+    isolatedQuarantineSwapName
+  ),
+  'startup inventory must observe the valid directory before the simulated swap'
+);
+assert.deepEqual(
+  fs.readFileSync(isolatedQuarantineSwapPath),
+  isolatedQuarantineSwapBytes,
+  'isolated-copy exclusion must not consume or rewrite the reserved root entry'
+);
+console.log('PASS isolated callbacks exclude reserved quarantine names after a directory-to-file swap');
+
+const durableArtifactFixture = ownershipFixture();
+const durableArtifactPath = path.join(
+  durableArtifactFixture.rootDir,
+  'js',
+  'wiki-index.json'
+);
+const durableArtifactBefore = Buffer.from('[{"title":"ORIGINAL ARTIFACT"}]\n', 'utf8');
+const durableArtifactPlanned = Buffer.from('[{"title":"PLANNED ARTIFACT"}]\n', 'utf8');
+const durableArtifactConcurrent = Buffer.from(
+  '[{"title":"OPEN FD ARTIFACT EDIT AFTER INSTALL"}]\n',
+  'utf8'
+);
+fs.mkdirSync(path.dirname(durableArtifactPath), { recursive: true });
+fs.writeFileSync(durableArtifactPath, durableArtifactBefore);
+const durableArtifactDescriptor = fs.openSync(
+  durableArtifactPath,
+  fs.constants.O_RDWR | (fs.constants.O_NOFOLLOW || 0)
+);
+const linkSyncBeforeDurableArtifact = fs.linkSync;
+let durableArtifactMutations = 0;
+fs.linkSync = function interceptDurableArtifactInstall(sourcePath, targetPath) {
+  const normalizedSource = String(sourcePath).replaceAll('\\', '/');
+  if (
+    durableArtifactMutations === 0 &&
+    /\/\.wiki-index\.json\.publish-[^/]+\/staged$/.test(normalizedSource)
+  ) {
+    const result = linkSyncBeforeDurableArtifact.call(fs, sourcePath, targetPath);
+    fs.ftruncateSync(durableArtifactDescriptor, 0);
+    fs.writeSync(
+      durableArtifactDescriptor,
+      durableArtifactConcurrent,
+      0,
+      durableArtifactConcurrent.length,
+      0
+    );
+    fs.fsyncSync(durableArtifactDescriptor);
+    durableArtifactMutations += 1;
+    return result;
+  }
+  return linkSyncBeforeDurableArtifact.call(fs, sourcePath, targetPath);
+};
+let durableArtifactError;
+const durableArtifactLogs = [];
+try {
+  assert.throws(
+    () => runImport({
+      payloadDir: durableArtifactFixture.payloadDir,
+      rootDir: durableArtifactFixture.rootDir,
+      write: true,
+      logger: (message) => durableArtifactLogs.push(message),
+      refreshContentStateFn: refreshTestContentState,
+      syncFeedSurfacesFn: (isolatedRoot) => {
+        const isolatedArtifactPath = path.join(isolatedRoot, 'js', 'wiki-index.json');
+        fs.mkdirSync(path.dirname(isolatedArtifactPath), { recursive: true });
+        fs.writeFileSync(isolatedArtifactPath, durableArtifactPlanned);
+        return { updatedSurfaces: ['search'] };
+      },
+    }),
+    (error) => {
+      durableArtifactError = error;
+      return error instanceof ContentOwnershipError &&
+        error.code === 'STALE_CONTENT_STATE' &&
+        error.message.includes('durable artifact-forward quarantine');
+    }
+  );
+} finally {
+  fs.linkSync = linkSyncBeforeDurableArtifact;
+}
+assert.equal(durableArtifactMutations, 1);
+assert.deepEqual(
+  fs.readFileSync(durableArtifactPath),
+  durableArtifactBefore,
+  'artifact drift must fail the transaction and restore the original live artifact'
+);
+const durableArtifactRecord = durableArtifactError.durableQuarantines.find(
+  ({ phase, sourcePath }) =>
+    phase === 'artifact-forward' && sourcePath === 'js/wiki-index.json'
+);
+assert.ok(durableArtifactRecord, 'error must report the retained artifact inode');
+const durableArtifactQuarantinePath = path.join(
+  durableArtifactFixture.rootDir,
+  durableArtifactRecord.quarantinePath
+);
+assert.deepEqual(
+  fs.readFileSync(durableArtifactQuarantinePath),
+  durableArtifactConcurrent,
+  'artifact edit through a pre-open descriptor must remain recoverable'
+);
+const durableArtifactHeldStat = fs.fstatSync(durableArtifactDescriptor, { bigint: true });
+const durableArtifactQuarantineStat = fs.statSync(
+  durableArtifactQuarantinePath,
+  { bigint: true }
+);
+assert.equal(durableArtifactHeldStat.dev, durableArtifactQuarantineStat.dev);
+assert.equal(durableArtifactHeldStat.ino, durableArtifactQuarantineStat.ino);
+fs.closeSync(durableArtifactDescriptor);
+assert.ok(durableArtifactLogs.some((message) =>
+  message.includes(durableArtifactRecord.quarantinePath)
+));
+console.log('PASS pre-open artifact writer survives forward replacement in durable quarantine');
+
+const durableRollbackFixture = ownershipFixture();
+const durableRollbackPagePath = path.join(
+  durableRollbackFixture.rootDir,
+  'wiki',
+  'ownership-case.html'
+);
+const durableRollbackPageBefore = fs.readFileSync(durableRollbackPagePath);
+const durableRollbackConcurrent = Buffer.from(
+  '<article class="wiki-content"><p>OPEN FD EDIT DURING CONDITIONAL ROLLBACK.</p></article>',
+  'utf8'
+);
+let durableRollbackDescriptor;
+let durableRollbackMutations = 0;
+const linkSyncBeforeDurableRollback = fs.linkSync;
+fs.linkSync = function interceptDurableRollbackRetention(sourcePath, targetPath) {
+  const retainedName = path.basename(String(targetPath));
+  if (
+    durableRollbackMutations === 0 &&
+    /^\d{4}-conditional-rollback-wiki_ownership-case_html-[a-f0-9]{12}\.detached$/.test(
+      retainedName
+    )
+  ) {
+    const result = linkSyncBeforeDurableRollback.call(fs, sourcePath, targetPath);
+    fs.ftruncateSync(durableRollbackDescriptor, 0);
+    fs.writeSync(
+      durableRollbackDescriptor,
+      durableRollbackConcurrent,
+      0,
+      durableRollbackConcurrent.length,
+      0
+    );
+    fs.fsyncSync(durableRollbackDescriptor);
+    durableRollbackMutations += 1;
+    return result;
+  }
+  return linkSyncBeforeDurableRollback.call(fs, sourcePath, targetPath);
+};
+let durableRollbackError;
+const durableRollbackLogs = [];
+try {
+  assert.throws(
+    () => runImport({
+      payloadDir: durableRollbackFixture.payloadDir,
+      rootDir: durableRollbackFixture.rootDir,
+      write: true,
+      logger: (message) => durableRollbackLogs.push(message),
+      refreshContentStateFn: () => {
+        durableRollbackDescriptor = fs.openSync(
+          durableRollbackPagePath,
+          fs.constants.O_RDWR | (fs.constants.O_NOFOLLOW || 0)
+        );
+        const error = new Error('injected refresh failure after opening transaction page');
+        error.code = 'EIO';
+        throw error;
+      },
+    }),
+    (error) => {
+      durableRollbackError = error;
+      return error instanceof ContentOwnershipError &&
+        error.code === 'PUBLISH_TRANSACTION_ROLLBACK_CONFLICT' &&
+        error.cause?.code === 'EIO' &&
+        error.rollbackConflicts.some(({ reason }) =>
+          reason.includes('durable conditional-rollback quarantine')
+        );
+    }
+  );
+} finally {
+  fs.linkSync = linkSyncBeforeDurableRollback;
+}
+assert.equal(durableRollbackMutations, 1);
+assert.deepEqual(
+  fs.readFileSync(durableRollbackPagePath),
+  durableRollbackPageBefore,
+  'rollback drift must still restore the original live page'
+);
+const durableRollbackRecord = durableRollbackError.durableQuarantines.find(
+  ({ phase, sourcePath }) =>
+    phase === 'conditional-rollback' && sourcePath === 'wiki/ownership-case.html'
+);
+assert.ok(durableRollbackRecord, 'rollback conflict must report the retained live postimage');
+const durableRollbackQuarantinePath = path.join(
+  durableRollbackFixture.rootDir,
+  durableRollbackRecord.quarantinePath
+);
+assert.deepEqual(
+  fs.readFileSync(durableRollbackQuarantinePath),
+  durableRollbackConcurrent,
+  'edit through the rollback-held descriptor must remain recoverable'
+);
+const durableRollbackHeldStat = fs.fstatSync(durableRollbackDescriptor, { bigint: true });
+const durableRollbackQuarantineStat = fs.statSync(
+  durableRollbackQuarantinePath,
+  { bigint: true }
+);
+assert.equal(durableRollbackHeldStat.dev, durableRollbackQuarantineStat.dev);
+assert.equal(durableRollbackHeldStat.ino, durableRollbackQuarantineStat.ino);
+fs.closeSync(durableRollbackDescriptor);
+assert.ok(durableRollbackLogs.some((message) =>
+  message.includes(durableRollbackRecord.quarantinePath)
+));
+console.log('PASS pre-open writer survives conditional rollback cleanup in durable quarantine');
+
+const privateFallbackFixture = ownershipFixture();
+const privateFallbackPagePath = path.join(
+  privateFallbackFixture.rootDir,
+  'wiki',
+  'ownership-case.html'
+);
+const privateFallbackPageBefore = fs.readFileSync(privateFallbackPagePath);
+const linkSyncBeforePrivateFallback = fs.linkSync;
+let privateFallbackFailures = 0;
+fs.linkSync = function interceptFirstCentralQuarantineLink(sourcePath, targetPath) {
+  if (
+    privateFallbackFailures === 0 &&
+    /^0001-page-forward-.*\.detached$/.test(path.basename(String(targetPath)))
+  ) {
+    privateFallbackFailures += 1;
+    const error = new Error('injected first central quarantine link failure');
+    error.code = 'EACCES';
+    throw error;
+  }
+  return linkSyncBeforePrivateFallback.call(fs, sourcePath, targetPath);
+};
+let privateFallbackError;
+const privateFallbackLogs = [];
+try {
+  assert.throws(
+    () => runImport({
+      payloadDir: privateFallbackFixture.payloadDir,
+      rootDir: privateFallbackFixture.rootDir,
+      write: true,
+      logger: (message) => privateFallbackLogs.push(message),
+      refreshContentStateFn: refreshTestContentState,
+    }),
+    (error) => {
+      privateFallbackError = error;
+      return error?.code === 'EACCES' &&
+        error.message.includes('injected first central quarantine link failure');
+    }
+  );
+} finally {
+  fs.linkSync = linkSyncBeforePrivateFallback;
+}
+assert.equal(privateFallbackFailures, 1);
+assert.deepEqual(
+  fs.readFileSync(privateFallbackPagePath),
+  privateFallbackPageBefore,
+  'a central retention failure must still roll the live page back'
+);
+const privateFallbackRecord = privateFallbackError.durableQuarantines.find(
+  ({ phase, sourcePath, storage }) =>
+    phase === 'page-forward' &&
+    sourcePath === 'wiki/ownership-case.html' &&
+    storage === 'private-staging'
+);
+assert.ok(privateFallbackRecord, 'the error must report the surviving private fallback');
+assert.match(
+  privateFallbackRecord.quarantinePath,
+  /^wiki\/\.ownership-case\.html\.forward-[A-Za-z0-9]{6}\/detached$/
+);
+const privateFallbackPath = path.join(
+  privateFallbackFixture.rootDir,
+  privateFallbackRecord.quarantinePath
+);
+assert.deepEqual(
+  fs.readFileSync(privateFallbackPath),
+  privateFallbackPageBefore,
+  'the reported private fallback must retain the exact detached preimage'
+);
+const privateFallbackRollbackRecord = privateFallbackError.durableQuarantines.find(
+  ({ phase, sourcePath, storage }) =>
+    phase === 'conditional-rollback' &&
+    sourcePath === 'wiki/ownership-case.html' &&
+    storage !== 'private-staging'
+);
+assert.ok(
+  privateFallbackRollbackRecord,
+  'the error must also report the later central rollback quarantine'
+);
+assert.ok(fs.existsSync(path.join(
+  privateFallbackFixture.rootDir,
+  privateFallbackRollbackRecord.quarantinePath
+)));
+assert.ok(
+  privateFallbackLogs.some((message) =>
+    message.includes(privateFallbackRecord.quarantinePath)
+  ),
+  'the private fallback must be logged before the error escapes'
+);
+console.log('PASS failed central retention reports the surviving private fallback path');
+
+const quarantinePostLinkSwapFixture = ownershipFixture();
+const quarantinePostLinkSwapPagePath = path.join(
+  quarantinePostLinkSwapFixture.rootDir,
+  'wiki',
+  'ownership-case.html'
+);
+const quarantinePostLinkSwapPageBefore = fs.readFileSync(quarantinePostLinkSwapPagePath);
+const quarantinePostLinkSwapMovedName = '.attacker-moved-quarantine';
+const quarantinePostLinkSwapMovedPath = path.join(
+  quarantinePostLinkSwapFixture.rootDir,
+  quarantinePostLinkSwapMovedName
+);
+const linkSyncBeforeQuarantinePostLinkSwap = fs.linkSync;
+let quarantinePostLinkSwaps = 0;
+fs.linkSync = function interceptQuarantinePostLinkSwap(sourcePath, targetPath) {
+  if (
+    quarantinePostLinkSwaps === 0 &&
+    /^0001-page-forward-.*\.detached$/.test(path.basename(String(targetPath)))
+  ) {
+    const quarantineName = fs.readdirSync(quarantinePostLinkSwapFixture.rootDir)
+      .find((name) => /^\.wiki-content-publish-quarantine-[A-Za-z0-9]{6}$/.test(name));
+    assert.ok(quarantineName, 'fixture must find the active durable quarantine');
+    const quarantinePath = path.join(quarantinePostLinkSwapFixture.rootDir, quarantineName);
+    fs.renameSync(quarantinePath, quarantinePostLinkSwapMovedPath);
+    fs.mkdirSync(quarantinePath);
+    quarantinePostLinkSwaps += 1;
+  }
+  return linkSyncBeforeQuarantinePostLinkSwap.call(fs, sourcePath, targetPath);
+};
+let quarantinePostLinkSwapError;
+const quarantinePostLinkSwapLogs = [];
+try {
+  assert.throws(
+    () => runImport({
+      payloadDir: quarantinePostLinkSwapFixture.payloadDir,
+      rootDir: quarantinePostLinkSwapFixture.rootDir,
+      write: true,
+      logger: (message) => quarantinePostLinkSwapLogs.push(message),
+      refreshContentStateFn: refreshTestContentState,
+    }),
+    (error) => {
+      quarantinePostLinkSwapError = error;
+      return error instanceof ContentOwnershipError &&
+        (error.code === 'UNSAFE_PUBLISH_PATH' ||
+          error.code === 'PUBLISH_TRANSACTION_ROLLBACK_CONFLICT');
+    }
+  );
+} finally {
+  fs.linkSync = linkSyncBeforeQuarantinePostLinkSwap;
+}
+assert.equal(quarantinePostLinkSwaps, 1);
+assert.deepEqual(
+  fs.readFileSync(quarantinePostLinkSwapPagePath),
+  quarantinePostLinkSwapPageBefore,
+  'a quarantine rename/replacement after central link must roll the page back'
+);
+const quarantinePostLinkPrivateRecord = quarantinePostLinkSwapError.durableQuarantines.find(
+  ({ phase, sourcePath, storage }) =>
+    phase === 'page-forward' &&
+    sourcePath === 'wiki/ownership-case.html' &&
+    storage === 'private-staging'
+);
+assert.ok(
+  quarantinePostLinkPrivateRecord,
+  'the post-link identity failure must report the still-named private fallback'
+);
+assert.ok(fs.existsSync(path.join(
+  quarantinePostLinkSwapFixture.rootDir,
+  quarantinePostLinkPrivateRecord.quarantinePath
+)));
+assert.equal(
+  quarantinePostLinkPrivateRecord.contentHash,
+  sha256Content(quarantinePostLinkSwapPageBefore)
+);
+assert.equal(
+  quarantinePostLinkPrivateRecord.byteLength,
+  quarantinePostLinkSwapPageBefore.length
+);
+assert.match(quarantinePostLinkPrivateRecord.fileIdentity.dev, /^\d+$/);
+assert.match(quarantinePostLinkPrivateRecord.fileIdentity.ino, /^\d+$/);
+assert.ok(quarantinePostLinkSwapLogs.some((message) =>
+  message.includes(quarantinePostLinkPrivateRecord.quarantinePath) &&
+  message.includes(quarantinePostLinkPrivateRecord.contentHash)
+));
+const quarantinePostLinkRelocatedRecord = quarantinePostLinkSwapError.durableQuarantines.find(
+  ({ phase, sourcePath, storage }) =>
+    phase === 'page-forward' &&
+    sourcePath === 'wiki/ownership-case.html' &&
+    storage === 'relocated-root-quarantine'
+);
+assert.ok(
+  quarantinePostLinkRelocatedRecord,
+  'the error must also report the verified root-relative location of the moved directory'
+);
+assert.ok(
+  quarantinePostLinkRelocatedRecord.quarantinePath.startsWith(
+    `${quarantinePostLinkSwapMovedName}/`
+  )
+);
+assert.ok(fs.existsSync(path.join(
+  quarantinePostLinkSwapFixture.rootDir,
+  quarantinePostLinkRelocatedRecord.quarantinePath
+)));
+console.log('PASS post-link quarantine root replacement preserves and reports private recovery bytes');
+
+const quarantineCreationSwapFixture = ownershipFixture();
+const quarantineCreationSwapPagePath = path.join(
+  quarantineCreationSwapFixture.rootDir,
+  'wiki',
+  'ownership-case.html'
+);
+const quarantineCreationSwapPageBefore = fs.readFileSync(quarantineCreationSwapPagePath);
+const openSyncBeforeQuarantineCreationSwap = fs.openSync;
+let quarantineCreationSwaps = 0;
+fs.openSync = function interceptQuarantineCreationOpen(filePath, flags, ...args) {
+  const quarantineName = path.basename(String(filePath));
+  if (
+    quarantineCreationSwaps === 0 &&
+    /^\.wiki-content-publish-quarantine-[A-Za-z0-9]{6}$/.test(quarantineName)
+  ) {
+    const movedPath = path.join(
+      quarantineCreationSwapFixture.rootDir,
+      '.attacker-moved-new-quarantine'
+    );
+    fs.renameSync(String(filePath), movedPath);
+    fs.mkdirSync(String(filePath));
+    quarantineCreationSwaps += 1;
+  }
+  return openSyncBeforeQuarantineCreationSwap.call(fs, filePath, flags, ...args);
+};
+let quarantineCreationSwapError;
+try {
+  assert.throws(
+    () => runImport({
+      payloadDir: quarantineCreationSwapFixture.payloadDir,
+      rootDir: quarantineCreationSwapFixture.rootDir,
+      write: true,
+      logger: () => {},
+      refreshContentStateFn: refreshTestContentState,
+    }),
+    (error) => {
+      quarantineCreationSwapError = error;
+      return error instanceof ContentOwnershipError &&
+        (error.code === 'UNSAFE_PUBLISH_PATH' ||
+          error.code === 'PUBLISH_TRANSACTION_ROLLBACK_CONFLICT');
+    }
+  );
+} finally {
+  fs.openSync = openSyncBeforeQuarantineCreationSwap;
+}
+assert.equal(quarantineCreationSwaps, 1);
+assert.deepEqual(
+  fs.readFileSync(quarantineCreationSwapPagePath),
+  quarantineCreationSwapPageBefore,
+  'a creation-time quarantine replacement must fail closed and roll back the page'
+);
+const quarantineCreationPrivateRecord = quarantineCreationSwapError.durableQuarantines.find(
+  ({ phase, sourcePath, storage }) =>
+    phase === 'page-forward' &&
+    sourcePath === 'wiki/ownership-case.html' &&
+    storage === 'private-staging'
+);
+assert.ok(
+  quarantineCreationPrivateRecord,
+  'creation-time identity rejection must report the private detached inode'
+);
+assert.ok(fs.existsSync(path.join(
+  quarantineCreationSwapFixture.rootDir,
+  quarantineCreationPrivateRecord.quarantinePath
+)));
+console.log('PASS quarantine creation open race rejects a replacement and reports recovery bytes');
+
+const quarantineCloseSwapFixture = ownershipFixture();
+const quarantineCloseSwapPagePath = path.join(
+  quarantineCloseSwapFixture.rootDir,
+  'wiki',
+  'ownership-case.html'
+);
+const quarantineCloseSwapPageBefore = fs.readFileSync(quarantineCloseSwapPagePath);
+const quarantineCloseSwapMovedName = '.attacker-close-moved-quarantine';
+const quarantineCloseSwapMovedPath = path.join(
+  quarantineCloseSwapFixture.rootDir,
+  quarantineCloseSwapMovedName
+);
+let quarantineCloseSwaps = 0;
+let quarantineCloseSwapError;
+assert.throws(
+  () => runImport({
+    payloadDir: quarantineCloseSwapFixture.payloadDir,
+    rootDir: quarantineCloseSwapFixture.rootDir,
+    write: true,
+    logger: (message) => {
+      if (
+        quarantineCloseSwaps === 0 &&
+        message.includes(
+          'Durable quarantine [artifact-forward] brand-canon/wiki-content-state.json'
+        )
+      ) {
+        const quarantineName = fs.readdirSync(quarantineCloseSwapFixture.rootDir)
+          .find((name) => /^\.wiki-content-publish-quarantine-[A-Za-z0-9]{6}$/.test(name));
+        assert.ok(quarantineName, 'fixture must find the accepted quarantine before close');
+        const quarantinePath = path.join(quarantineCloseSwapFixture.rootDir, quarantineName);
+        fs.renameSync(quarantinePath, quarantineCloseSwapMovedPath);
+        fs.mkdirSync(quarantinePath);
+        quarantineCloseSwaps += 1;
+      }
+    },
+    refreshContentStateFn: refreshTestContentState,
+  }),
+  (error) => {
+    quarantineCloseSwapError = error;
+    return error instanceof ContentOwnershipError &&
+      (error.code === 'UNSAFE_PUBLISH_PATH' ||
+        error.code === 'PUBLISH_TRANSACTION_ROLLBACK_CONFLICT');
+  }
+);
+assert.equal(
+  quarantineCloseSwaps,
+  1,
+  'fixture must replace the named quarantine after the final retain validation'
+);
+assert.deepEqual(
+  fs.readFileSync(quarantineCloseSwapPagePath),
+  quarantineCloseSwapPageBefore,
+  'transaction-close quarantine revalidation must fail and roll back the page'
+);
+const relocatedCloseRecords = quarantineCloseSwapError.durableQuarantines.filter(
+  ({ storage }) => storage === 'root-quarantine'
+);
+assert.ok(relocatedCloseRecords.length > 0, 'accepted central records must remain reported');
+for (const record of relocatedCloseRecords) {
+  assert.ok(
+    record.quarantinePath.startsWith(`${quarantineCloseSwapMovedName}/`),
+    `relocated record must report its actual root-relative path: ${record.quarantinePath}`
+  );
+  assert.ok(fs.existsSync(path.join(
+    quarantineCloseSwapFixture.rootDir,
+    record.quarantinePath
+  )));
+}
+assert.ok(
+  quarantineCloseSwapError.durableQuarantines.some(
+    ({ phase, storage }) => phase === 'conditional-rollback' && storage === 'private-staging'
+  ),
+  'rollback against the replaced quarantine must report its private fallback'
+);
+console.log('PASS transaction-close quarantine replacement rewrites recovery paths and fails closed');
+
 const pagePreinstallFailureFixture = ownershipFixture();
 const pagePreinstallFailurePath = path.join(
   pagePreinstallFailureFixture.rootDir,
@@ -1115,7 +2047,7 @@ fs.linkSync = function interceptDetachedPageRecovery(sourcePath, targetPath) {
     error.code = 'EACCES';
     throw error;
   }
-  if (/\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedSource)) {
+  if (isOwnershipPageRecoveryLink(sourcePath, targetPath)) {
     detachedRecoveryLinkFailures += 1;
     const error = new Error('injected detached page recovery failure');
     error.code = 'EACCES';
@@ -1200,7 +2132,7 @@ fs.linkSync = function interceptDetachedParentSwap(sourcePath, targetPath) {
     error.code = 'EACCES';
     throw error;
   }
-  if (/\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedSource)) {
+  if (isOwnershipPageRecoveryLink(sourcePath, targetPath)) {
     detachedParentSwapRecoveryFailures += 1;
     fs.renameSync(detachedParentSwapWikiPath, detachedParentSwapMovedWikiPath);
     fs.mkdirSync(detachedParentSwapWikiPath);
@@ -1402,7 +2334,7 @@ fs.linkSync = function interceptFailedCleanupDeletedWinner(sourcePath, targetPat
       failedCleanupDeletedWinnerPagePath,
       failedCleanupDeletedWinnerBytes
     );
-  } else if (/\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedSource)) {
+  } else if (isOwnershipPageRecoveryLink(sourcePath, targetPath)) {
     failedCleanupDeletedWinnerRecoveryLinks += 1;
   }
   return linkSyncBeforeFailedCleanupDeletedWinner.call(fs, sourcePath, targetPath);
@@ -1506,7 +2438,7 @@ fs.linkSync = function interceptDeletedRecoveryLink(sourcePath, targetPath) {
     error.code = 'EACCES';
     throw error;
   }
-  if (/\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedSource)) {
+  if (isOwnershipPageRecoveryLink(sourcePath, targetPath)) {
     deletedRecoveryLinkInstalls += 1;
   }
   return linkSyncBeforeDeletedRecoveryLink.call(fs, sourcePath, targetPath);
@@ -1623,7 +2555,7 @@ fs.linkSync = function interceptSuccessfulCatchRecoveryDeletion(sourcePath, targ
     error.code = 'EACCES';
     throw error;
   }
-  if (/\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedSource)) {
+  if (isOwnershipPageRecoveryLink(sourcePath, targetPath)) {
     successfulCatchRecoveryDeletionLinks += 1;
   }
   return linkSyncBeforeSuccessfulCatchRecoveryDeletion.call(fs, sourcePath, targetPath);
@@ -1722,7 +2654,7 @@ fs.linkSync = function interceptPostValidationDeletionLink(sourcePath, targetPat
     error.code = 'EACCES';
     throw error;
   }
-  if (/\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedSource)) {
+  if (isOwnershipPageRecoveryLink(sourcePath, targetPath)) {
     postValidationDeletionRecoveryLinks += 1;
   }
   return linkSyncBeforePostValidationDeletion.call(fs, sourcePath, targetPath);
@@ -1847,7 +2779,7 @@ fs.renameSync = function interceptSuccessfulMismatchRecoveryEdit(sourcePath, des
 };
 fs.linkSync = function interceptSuccessfulMismatchRecoveryLink(sourcePath, targetPath) {
   const normalizedSource = String(sourcePath).replaceAll('\\', '/');
-  if (/\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedSource)) {
+  if (isOwnershipPageRecoveryLink(sourcePath, targetPath)) {
     successfulMismatchRecoveryDeletionLinks += 1;
   }
   return linkSyncBeforeSuccessfulMismatchRecoveryDeletion.call(fs, sourcePath, targetPath);
@@ -1948,7 +2880,7 @@ fs.linkSync = function interceptRecoveryCollision(sourcePath, targetPath) {
     error.code = 'EACCES';
     throw error;
   }
-  if (/\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedSource)) {
+  if (isOwnershipPageRecoveryLink(sourcePath, targetPath)) {
     recoveryCollisionAttempts += 1;
     fs.writeFileSync(recoveryCollisionPagePath, recoveryCollisionBytes);
     try {
@@ -2151,7 +3083,7 @@ fs.linkSync = function interceptCatchProbeFailureInstall(sourcePath, targetPath)
     error.code = 'EACCES';
     throw error;
   }
-  if (/\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedSource)) {
+  if (isOwnershipPageRecoveryLink(sourcePath, targetPath)) {
     catchProbeFailureRecoveryLinks += 1;
   }
   return linkSyncBeforeCatchProbeFailure.call(fs, sourcePath, targetPath);
@@ -2270,7 +3202,7 @@ fs.linkSync = function interceptDetachedRecheck(sourcePath, targetPath) {
     error.code = 'EACCES';
     throw error;
   }
-  if (/\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedSource)) {
+  if (isOwnershipPageRecoveryLink(sourcePath, targetPath)) {
     detachedRecheckRecoveryFailures += 1;
     const error = new Error('injected recovery failure for mutated detached inode');
     error.code = 'EPERM';
@@ -2378,7 +3310,7 @@ fs.openSync = function interceptUnstableDetachedReadOpen(filePath, flags, ...arg
 };
 fs.linkSync = function interceptUnstableDetachedRead(sourcePath, targetPath) {
   const normalizedSource = String(sourcePath).replaceAll('\\', '/');
-  if (/\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedSource)) {
+  if (isOwnershipPageRecoveryLink(sourcePath, targetPath)) {
     unstableDetachedReadRecoveryLinks += 1;
   }
   return linkSyncBeforeUnstableDetachedRead.call(fs, sourcePath, targetPath);
@@ -2485,7 +3417,7 @@ fs.renameSync = function interceptMismatchedDetachedPage(sourcePath, destination
 };
 fs.linkSync = function interceptMismatchedDetachedRecovery(sourcePath, targetPath) {
   const normalizedSource = String(sourcePath).replaceAll('\\', '/');
-  if (/\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedSource)) {
+  if (isOwnershipPageRecoveryLink(sourcePath, targetPath)) {
     mismatchedDetachedRecoveryLinkFailures += 1;
     const error = new Error(
       `injected mismatched detached-page link-back failure ${mismatchedDetachedRecoveryLinkFailures}`

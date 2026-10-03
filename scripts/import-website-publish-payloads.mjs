@@ -49,6 +49,14 @@ export const AUTOMATION_POLICIES = [
 ];
 export const MAX_STUB_ARTICLE_WORDS = 250;
 export const PUBLISH_TRANSACTION_LOCK = '.wiki-content-publish.lock';
+const DURABLE_TRANSACTION_QUARANTINE_PREFIX = '.wiki-content-publish-quarantine-';
+const DURABLE_TRANSACTION_QUARANTINE_PATTERN =
+  /^\.wiki-content-publish-quarantine-[A-Za-z0-9]{6}$/;
+const DURABLE_QUARANTINE_PHASES = new Set([
+  'page-forward',
+  'artifact-forward',
+  'conditional-rollback',
+]);
 const SHA256_PATTERN = /^sha256:[a-f0-9]{64}$/;
 export const AFFECTED_SYNC_SURFACES = [
   'categories',
@@ -1553,6 +1561,393 @@ function readWorkspaceFileNoFollow(rootDir, relativePath) {
   return readWorkspaceFileStateNoFollow(rootDir, relativePath)?.content ?? null;
 }
 
+function durableQuarantineFileName(phase, sourcePath, sequence) {
+  const normalizedSourcePath = String(sourcePath).replaceAll('\\', '/');
+  const sourceToken = normalizedSourcePath
+    .replace(/[^A-Za-z0-9_-]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .slice(0, 160) || 'unknown';
+  const sourceDigest = createHash('sha256')
+    .update(normalizedSourcePath)
+    .digest('hex')
+    .slice(0, 12);
+  return `${String(sequence).padStart(4, '0')}-${phase}-${sourceToken}-${sourceDigest}.detached`;
+}
+
+function durableRecoveryEvidence(state) {
+  if (!state?.exists || !Buffer.isBuffer(state.content) || !state.fileIdentity) return {};
+  return {
+    contentHash: sha256Content(state.content),
+    byteLength: state.content.length,
+    mode: state.mode,
+    fileIdentity: {
+      dev: String(state.fileIdentity.dev),
+      ino: String(state.fileIdentity.ino),
+    },
+  };
+}
+
+function registerDurableQuarantineRecord(record) {
+  const journal = activeTransactionWriteJournal;
+  if (!journal || !record) return;
+  if (!journal.durableQuarantines.some(
+    (candidate) => candidate.quarantinePath === record.quarantinePath
+  )) {
+    journal.durableQuarantines.push(record);
+  }
+  journal.reportDurableQuarantine?.(record);
+}
+
+function rootRelativeRecoveryPath(filePath) {
+  const binding = activeTransactionRootBinding;
+  if (!binding) return null;
+  try {
+    const physicalRoot = fs.realpathSync.native(binding.rootAnchor.anchorPath);
+    const physicalPath = fs.realpathSync.native(filePath);
+    const relativePath = path.relative(physicalRoot, physicalPath);
+    if (
+      !relativePath ||
+      relativePath === '..' ||
+      relativePath.startsWith(`..${path.sep}`) ||
+      path.isAbsolute(relativePath)
+    ) return null;
+    return relativePath.replaceAll('\\', '/');
+  } catch {
+    return null;
+  }
+}
+
+function resolveHeldQuarantineDirectory(quarantine) {
+  if (!quarantine) return null;
+  const heldIdentity = directoryIdentityFromDescriptor(quarantine.descriptor);
+  if (
+    heldIdentity.dev !== quarantine.identity.dev ||
+    heldIdentity.ino !== quarantine.identity.ino
+  ) return null;
+  const relativePath = rootRelativeRecoveryPath(quarantine.anchoredPath);
+  if (!relativePath) return null;
+  const namedState = lstatBigIntIfPresent(path.join(
+    activeTransactionRootBinding.rootAnchor.anchorPath,
+    ...relativePath.split('/')
+  ));
+  return directoryIdentityMatches(namedState, quarantine.identity)
+    ? relativePath
+    : null;
+}
+
+function rewriteAcceptedQuarantineLocations(journal, quarantine, directoryPath) {
+  for (const entry of quarantine.acceptedRecords) {
+    const quarantinePath = `${directoryPath}/${entry.retainedName}`;
+    if (entry.record.quarantinePath === quarantinePath) continue;
+    const replacement = Object.freeze({ ...entry.record, quarantinePath });
+    const index = journal.durableQuarantines.indexOf(entry.record);
+    if (index !== -1) journal.durableQuarantines[index] = replacement;
+    entry.record = replacement;
+    journal.reportDurableQuarantine?.(replacement);
+  }
+}
+
+function assertTransactionDurableQuarantineIdentity(context) {
+  const journal = activeTransactionWriteJournal;
+  const quarantine = journal?.durableQuarantine;
+  if (!journal || !quarantine || quarantine.acceptedRecords.length === 0) return;
+  const currentIdentity = directoryIdentityFromDescriptor(quarantine.descriptor);
+  const namedState = lstatBigIntIfPresent(path.join(
+    activeTransactionRootBinding.rootAnchor.anchorPath,
+    quarantine.name
+  ));
+  if (
+    currentIdentity.dev === quarantine.identity.dev &&
+    currentIdentity.ino === quarantine.identity.ino &&
+    directoryIdentityMatches(namedState, quarantine.identity)
+  ) return;
+
+  const actualDirectory = resolveHeldQuarantineDirectory(quarantine);
+  if (actualDirectory) {
+    rewriteAcceptedQuarantineLocations(journal, quarantine, actualDirectory);
+  }
+  const recoveryLocation = actualDirectory ||
+    `unresolved held directory descriptor ${quarantine.descriptor}`;
+  const error = unsafePublishPath(
+    quarantine.name,
+    `durable quarantine directory changed identity during ${context}; recovery location: ${recoveryLocation}`
+  );
+  error.durableQuarantineLocation = recoveryLocation;
+  throw error;
+}
+
+function inspectExistingDurableQuarantines(rootDir) {
+  const binding = activeTransactionRootBinding;
+  if (!binding || path.resolve(rootDir) !== binding.rootPath) return [];
+  assertActiveTransactionBindingIdentity(DURABLE_TRANSACTION_QUARANTINE_PREFIX);
+
+  const existing = [];
+  for (const entry of fs.readdirSync(binding.rootAnchor.anchorPath, { withFileTypes: true })) {
+    if (!DURABLE_TRANSACTION_QUARANTINE_PATTERN.test(entry.name)) continue;
+    const anchoredPath = path.join(binding.rootAnchor.anchorPath, entry.name);
+    const namedState = lstatBigIntIfPresent(anchoredPath);
+    if (
+      !entry.isDirectory() ||
+      !namedState?.isDirectory() ||
+      namedState.isSymbolicLink()
+    ) {
+      throw unsafePublishPath(
+        entry.name,
+        'durable quarantine root entry must be a real directory'
+      );
+    }
+
+    let descriptor;
+    try {
+      const noFollow = fs.constants.O_NOFOLLOW || 0;
+      descriptor = fs.openSync(
+        anchoredPath,
+        fs.constants.O_RDONLY | fs.constants.O_DIRECTORY | noFollow
+      );
+      const openedIdentity = directoryIdentityFromDescriptor(descriptor);
+      if (
+        openedIdentity.dev !== namedState.dev ||
+        openedIdentity.ino !== namedState.ino
+      ) {
+        throw unsafePublishPath(
+          entry.name,
+          'durable quarantine root entry changed identity while inspected'
+        );
+      }
+    } finally {
+      if (descriptor !== undefined) fs.closeSync(descriptor);
+    }
+    existing.push(entry.name);
+  }
+  return existing.sort();
+}
+
+function ensureTransactionDurableQuarantine() {
+  const journal = activeTransactionWriteJournal;
+  const binding = activeTransactionRootBinding;
+  if (!journal || !binding || journal.rootPath !== binding.rootPath) return null;
+  if (journal.durableQuarantine) return journal.durableQuarantine;
+
+  assertActiveTransactionBindingIdentity(DURABLE_TRANSACTION_QUARANTINE_PREFIX);
+  const quarantinePath = fs.mkdtempSync(path.join(
+    binding.rootAnchor.anchorPath,
+    DURABLE_TRANSACTION_QUARANTINE_PREFIX
+  ));
+  const quarantineName = path.basename(quarantinePath);
+  if (!DURABLE_TRANSACTION_QUARANTINE_PATTERN.test(quarantineName)) {
+    throw unsafePublishPath(
+      quarantineName,
+      'durable quarantine directory did not receive the expected private name'
+    );
+  }
+
+  let descriptor;
+  try {
+    const createdNamedState = lstatBigIntIfPresent(quarantinePath);
+    if (
+      !createdNamedState?.isDirectory() ||
+      createdNamedState.isSymbolicLink()
+    ) {
+      throw unsafePublishPath(
+        quarantineName,
+        'new durable quarantine path must remain a real directory before it is opened'
+      );
+    }
+    const noFollow = fs.constants.O_NOFOLLOW || 0;
+    descriptor = fs.openSync(
+      quarantinePath,
+      fs.constants.O_RDONLY | fs.constants.O_DIRECTORY | noFollow
+    );
+    const identity = directoryIdentityFromDescriptor(descriptor);
+    const finalNamedState = lstatBigIntIfPresent(quarantinePath);
+    if (
+      !directoryIdentityMatches(createdNamedState, identity) ||
+      !directoryIdentityMatches(finalNamedState, identity)
+    ) {
+      throw unsafePublishPath(
+        quarantineName,
+        'new durable quarantine directory changed identity while it was opened'
+      );
+    }
+    journal.durableQuarantine = {
+      descriptor,
+      identity,
+      name: quarantineName,
+      anchoredPath: `/proc/self/fd/${descriptor}`,
+      acceptedRecords: [],
+    };
+    return journal.durableQuarantine;
+  } catch (error) {
+    if (descriptor !== undefined) fs.closeSync(descriptor);
+    throw error;
+  }
+}
+
+function retainDetachedInodeForRecovery(detachedPath, sourcePath, phase, initialState) {
+  if (!DURABLE_QUARANTINE_PHASES.has(phase)) {
+    throw new Error(`unsupported durable quarantine phase: ${phase}`);
+  }
+  const normalizedSourcePath = String(sourcePath).replaceAll('\\', '/');
+  const journal = activeTransactionWriteJournal;
+  if (!journal) {
+    // Standalone helpers have no held repository-root descriptor. Retaining
+    // the existing private staging path is safer than unlinking an inode that
+    // another process may still be writing through an old descriptor.
+    return {
+      phase,
+      sourcePath: normalizedSourcePath,
+      quarantinePath: path.join(path.dirname(detachedPath), 'detached'),
+      ...durableRecoveryEvidence(initialState),
+    };
+  }
+
+  let quarantine;
+  let retainedName = '';
+  let retainedPath = '';
+  let centralLinked = false;
+  let localUnlinked = false;
+  let acceptedRecord = null;
+  try {
+    quarantine = ensureTransactionDurableQuarantine();
+    assertTransactionDurableQuarantineIdentity('pre-link validation');
+    journal.durableQuarantineSequence += 1;
+    retainedName = durableQuarantineFileName(
+      phase,
+      normalizedSourcePath,
+      journal.durableQuarantineSequence
+    );
+    retainedPath = path.join(quarantine.anchoredPath, retainedName);
+    fs.linkSync(detachedPath, retainedPath);
+    centralLinked = true;
+
+    // A held descriptor does not prove that the path reported to an operator
+    // still names it. Validate after the link and before removing the private
+    // staging name so a rename/replacement race leaves a usable recovery path.
+    const currentIdentity = directoryIdentityFromDescriptor(quarantine.descriptor);
+    const namedState = lstatBigIntIfPresent(path.join(
+      activeTransactionRootBinding.rootAnchor.anchorPath,
+      quarantine.name
+    ));
+    if (
+      currentIdentity.dev !== quarantine.identity.dev ||
+      currentIdentity.ino !== quarantine.identity.ino ||
+      !directoryIdentityMatches(namedState, quarantine.identity)
+    ) {
+      const actualDirectory = resolveHeldQuarantineDirectory(quarantine);
+      if (actualDirectory) {
+        rewriteAcceptedQuarantineLocations(journal, quarantine, actualDirectory);
+      }
+      throw unsafePublishPath(
+        quarantine.name,
+        'durable quarantine directory changed identity after the recovery link was created'
+      );
+    }
+
+    fs.unlinkSync(detachedPath);
+    localUnlinked = true;
+    const retainedState = captureDetachedFileState(retainedPath, normalizedSourcePath);
+
+    // Validate once more after the private name is gone. On failure the catch
+    // path recreates it from the held central descriptor before reporting it.
+    const finalNamedState = lstatBigIntIfPresent(path.join(
+      activeTransactionRootBinding.rootAnchor.anchorPath,
+      quarantine.name
+    ));
+    if (!directoryIdentityMatches(finalNamedState, quarantine.identity)) {
+      const actualDirectory = resolveHeldQuarantineDirectory(quarantine);
+      if (actualDirectory) {
+        rewriteAcceptedQuarantineLocations(journal, quarantine, actualDirectory);
+      }
+      throw unsafePublishPath(
+        quarantine.name,
+        'durable quarantine directory changed identity after private recovery cleanup'
+      );
+    }
+
+    acceptedRecord = Object.freeze({
+      phase,
+      sourcePath: normalizedSourcePath,
+      quarantinePath: `${quarantine.name}/${retainedName}`,
+      storage: 'root-quarantine',
+      ...durableRecoveryEvidence(retainedState),
+    });
+    quarantine.acceptedRecords.push({ retainedName, record: acceptedRecord });
+    registerDurableQuarantineRecord(acceptedRecord);
+    if (
+      !detachedFileIdentitiesEqual(retainedState, initialState) ||
+      !workspaceFileStatesEqual(retainedState, initialState)
+    ) {
+      throw new ContentOwnershipError(
+        'STALE_CONTENT_STATE',
+        `${normalizedSourcePath}: detached inode changed while entering durable ${phase} quarantine`,
+        { path: normalizedSourcePath }
+      );
+    }
+    return acceptedRecord;
+  } catch (error) {
+    if (!acceptedRecord) {
+      if (localUnlinked && centralLinked && retainedPath) {
+        try {
+          fs.linkSync(retainedPath, detachedPath);
+          localUnlinked = false;
+        } catch {
+          // Preserve the original failure. The held central directory is
+          // inspected below if the private name cannot be recreated.
+        }
+      }
+
+      if (!localUnlinked) {
+        try {
+          const privateState = captureDetachedFileState(detachedPath, normalizedSourcePath);
+          const privatePath = rootRelativeRecoveryPath(detachedPath);
+          if (privatePath) {
+            error.privateDetachedRecoveryRecord = Object.freeze({
+              phase,
+              sourcePath: normalizedSourcePath,
+              quarantinePath: privatePath,
+              storage: 'private-staging',
+              ...durableRecoveryEvidence(privateState),
+            });
+          }
+        } catch {
+          // A verified central path may still be reportable below.
+        }
+      }
+
+      const centralAlreadyReported = journal.durableQuarantines.some((record) =>
+        record.quarantinePath.endsWith(`/${retainedName}`)
+      );
+      if (centralLinked && !centralAlreadyReported) {
+        try {
+          const actualDirectory = resolveHeldQuarantineDirectory(quarantine);
+          const centralState = captureDetachedFileState(retainedPath, normalizedSourcePath);
+          if (actualDirectory) {
+            registerDurableQuarantineRecord(Object.freeze({
+              phase,
+              sourcePath: normalizedSourcePath,
+              quarantinePath: `${actualDirectory}/${retainedName}`,
+              storage: 'relocated-root-quarantine',
+              ...durableRecoveryEvidence(centralState),
+            }));
+          } else {
+            error.durableQuarantineLocation =
+              `unresolved held directory descriptor ${quarantine?.descriptor}`;
+          }
+        } catch {
+          error.durableQuarantineLocation =
+            `unresolved held directory descriptor ${quarantine?.descriptor}`;
+        }
+      }
+    }
+    throw error;
+  }
+}
+
+function closeTransactionDurableQuarantine(journal) {
+  const descriptor = journal?.durableQuarantine?.descriptor;
+  if (descriptor !== undefined) fs.closeSync(descriptor);
+}
+
 function atomicWriteFilePathSync(
   filePath,
   content,
@@ -1684,7 +2079,12 @@ function atomicWriteFilePathSync(
     }
 
     if (!installPreimageWithoutReplace(stagedPath, anchoredFilePath)) {
-      fs.unlinkSync(detachedPath);
+      retainDetachedInodeForRecovery(
+        detachedPath,
+        journalRelativePath || filePath,
+        'artifact-forward',
+        detachedState
+      );
       detachedExists = false;
       throw staleAtomicWrite('a concurrent artifact appeared before the conditional replace install');
     }
@@ -1694,7 +2094,12 @@ function atomicWriteFilePathSync(
     }
     fs.unlinkSync(stagedPath);
     stagedExists = false;
-    fs.unlinkSync(detachedPath);
+    retainDetachedInodeForRecovery(
+      detachedPath,
+      journalRelativePath || filePath,
+      'artifact-forward',
+      detachedState
+    );
     detachedExists = false;
   } catch (error) {
     if (detachedExists && !lstatIfPresent(anchoredFilePath)) {
@@ -1706,6 +2111,9 @@ function atomicWriteFilePathSync(
         // Keep the detached inode in its private directory for recovery rather
         // than overwriting a concurrently recreated artifact.
       }
+    }
+    if (detachedExists && error?.privateDetachedRecoveryRecord) {
+      registerDurableQuarantineRecord(error.privateDetachedRecoveryRecord);
     }
     if (journalRelativePath && !installCommitted && journalCheckpoint) {
       if (journalCheckpoint.hadMutation) {
@@ -1886,9 +2294,15 @@ function writeWorkspaceFileConditionally(rootDir, relativePath, content, expecte
     }
     if (!installPreimageWithoutReplace(stagedPath, anchoredTargetPath)) {
       // A concurrent writer won the empty path after detachment. It stays
-      // live; the verified old base and uncommitted staged bytes are discarded.
+      // live; the verified old base remains recoverable in durable quarantine
+      // and the uncommitted staged bytes are discarded.
       concurrentTargetObserved = true;
-      fs.unlinkSync(detachedPath);
+      retainDetachedInodeForRecovery(
+        detachedPath,
+        normalizedRelativePath,
+        'page-forward',
+        detachedPreimageState
+      );
       detachedExists = false;
       throw staleForwardWrite('a concurrent page appeared before the conditional replace install');
     }
@@ -1896,7 +2310,12 @@ function writeWorkspaceFileConditionally(rootDir, relativePath, content, expecte
     if (journal) journal.expectedStates.set(normalizedRelativePath, intendedState);
     fs.unlinkSync(stagedPath);
     stagedExists = false;
-    fs.unlinkSync(detachedPath);
+    retainDetachedInodeForRecovery(
+      detachedPath,
+      normalizedRelativePath,
+      'page-forward',
+      detachedPreimageState
+    );
     detachedExists = false;
   } catch (caughtError) {
     let failure = caughtError;
@@ -1934,6 +2353,9 @@ function writeWorkspaceFileConditionally(rootDir, relativePath, content, expecte
         // Leave the detached inode in the private staging directory for
         // recovery rather than overwriting a concurrently recreated target.
       }
+    }
+    if (detachedExists && caughtError?.privateDetachedRecoveryRecord) {
+      registerDurableQuarantineRecord(caughtError.privateDetachedRecoveryRecord);
     }
     if (journal && !installCommitted && journalCheckpoint) {
       if (journalCheckpoint.hadExpectedState) {
@@ -2008,7 +2430,11 @@ function copyWorkspaceTreeForIsolatedCallback(sourceRoot, destinationRoot) {
       if (
         relativePath === PUBLISH_TRANSACTION_LOCK ||
         entry.name.startsWith('.wiki-content-state-refresh-') ||
-        entry.name.startsWith('.wiki-feed-refresh-')
+        entry.name.startsWith('.wiki-feed-refresh-') ||
+        (
+          relativeDirectory === '' &&
+          DURABLE_TRANSACTION_QUARANTINE_PATTERN.test(entry.name)
+        )
       ) continue;
 
       const sourcePath = path.join(sourceDirectory, entry.name);
@@ -2343,9 +2769,15 @@ function restoreSnapshotEntryConditionally(rootDir, relativePath, entry, postima
 
     if (!entry.exists) {
       // The pre-transaction state was absence. The matching detached inode is
-      // ours and can be discarded; a writer that creates the target after the
-      // detachment is never touched.
-      fs.unlinkSync(detachedPath);
+      // ours, but a process that opened it before detachment can still write.
+      // Keep that inode recoverable; a writer that creates the target after
+      // the detachment is never touched.
+      retainDetachedInodeForRecovery(
+        detachedPath,
+        relativePath,
+        'conditional-rollback',
+        detachedState
+      );
       detachedExists = false;
       recheckSelectedParentIdentity();
       return;
@@ -2366,8 +2798,13 @@ function restoreSnapshotEntryConditionally(rootDir, relativePath, entry, postima
 
     if (!installPreimageWithoutReplace(preimagePath, anchoredTargetPath)) {
       // A concurrent writer won the now-empty target path. Preserve it and
-      // discard only the verified transaction postimage and our temp file.
-      fs.unlinkSync(detachedPath);
+      // retain the verified transaction postimage in durable quarantine.
+      retainDetachedInodeForRecovery(
+        detachedPath,
+        relativePath,
+        'conditional-rollback',
+        detachedState
+      );
       detachedExists = false;
       fs.unlinkSync(preimagePath);
       preimageExists = false;
@@ -2379,7 +2816,12 @@ function restoreSnapshotEntryConditionally(rootDir, relativePath, entry, postima
     }
     fs.unlinkSync(preimagePath);
     preimageExists = false;
-    fs.unlinkSync(detachedPath);
+    retainDetachedInodeForRecovery(
+      detachedPath,
+      relativePath,
+      'conditional-rollback',
+      detachedState
+    );
     detachedExists = false;
     recheckSelectedParentIdentity();
   } catch (error) {
@@ -2394,6 +2836,9 @@ function restoreSnapshotEntryConditionally(rootDir, relativePath, entry, postima
       } catch {
         // Preserve the quarantine file; the caller reports the conflict.
       }
+    }
+    if (detachedExists && error?.privateDetachedRecoveryRecord) {
+      registerDurableQuarantineRecord(error.privateDetachedRecoveryRecord);
     }
     throw error;
   } finally {
@@ -3786,10 +4231,40 @@ function runImportUnlocked({
   refreshContentStateFn = refreshContentStateArtifacts,
 } = {}) {
   if (write) assertActiveTransactionBindingIdentity(rootDir);
+  const existingDurableQuarantines = write
+    ? inspectExistingDurableQuarantines(rootDir)
+    : [];
+  for (const quarantinePath of existingDurableQuarantines) {
+    logger(`Existing durable publish quarantine requires manual review: ${quarantinePath}`);
+  }
+  const durableQuarantines = [];
+  const loggedDurableQuarantines = new Set();
+  const logDurableQuarantine = (record) => {
+    if (loggedDurableQuarantines.has(record.quarantinePath)) return;
+    const evidence = record.contentHash
+      ? `; ${record.contentHash}; ${record.byteLength} bytes; mode ${record.mode}; ` +
+        `dev ${record.fileIdentity?.dev}; ino ${record.fileIdentity?.ino}`
+      : '';
+    logger(
+      `Durable quarantine [${record.phase}] ${record.sourcePath} -> ` +
+      `${record.quarantinePath} (manual cleanup required${evidence})`
+    );
+    loggedDurableQuarantines.add(record.quarantinePath);
+  };
+  const logDurableQuarantines = () => {
+    for (const record of durableQuarantines) logDurableQuarantine(record);
+  };
   const validation = validatePayloadDirectory(payloadDir);
   if (validation.skipped) {
     logger(validation.message);
-    return { ...validation, write, plannedPages: [], affectedSyncSurfaces: AFFECTED_SYNC_SURFACES };
+    return {
+      ...validation,
+      write,
+      plannedPages: [],
+      affectedSyncSurfaces: AFFECTED_SYNC_SURFACES,
+      existingDurableQuarantines,
+      durableQuarantines,
+    };
   }
 
   logger(`Website publish payload importer running in ${write ? 'write' : 'dry-run'} mode.`);
@@ -3815,6 +4290,12 @@ function runImportUnlocked({
   let sync = null;
   let contentStateRefresh = null;
   let absentStubAuthorizations = null;
+  const attachDurableQuarantines = (error) => {
+    if (error && durableQuarantines.length > 0) {
+      error.durableQuarantines = durableQuarantines.map((record) => ({ ...record }));
+    }
+    return error;
+  };
   if (write) assertLivePlanBases(rootDir, ownershipPlans);
   if (write && syncPlans.length > 0) {
     const createsAbsentStub = renderedPages.some(({ state }) => state.page_exists === false);
@@ -3839,6 +4320,10 @@ function runImportUnlocked({
       expectedStates: new Map(snapshot),
       mutatedFiles,
       postimages,
+      durableQuarantine: null,
+      durableQuarantineSequence: 0,
+      durableQuarantines,
+      reportDurableQuarantine: logDurableQuarantine,
     };
 
     try {
@@ -3890,6 +4375,10 @@ function runImportUnlocked({
       // renamed the repository or replaced the lock must enter rollback while
       // the original root descriptor and exact postimages are still live.
       assertActiveTransactionBindingIdentity(rootDir);
+      // A root-level quarantine name is part of the recovery contract too.
+      // Revalidate immediately before the synchronous transaction closes so
+      // a renamed/replaced directory cannot be returned as a false path.
+      assertTransactionDurableQuarantineIdentity('transaction close');
     } catch (error) {
       if (activeTransactionRootBinding) {
         activeTransactionRootBinding.allowDetachedRoot = true;
@@ -3898,15 +4387,22 @@ function runImportUnlocked({
       // exact intended postimage. A live read at this failure boundary cannot
       // prove ownership: it may be a concurrent policy revocation or edit.
       const conflicts = restoreSnapshot(rootDir, snapshot, mutatedFiles, postimages);
+      logDurableQuarantines();
       if (conflicts.length > 0) {
         logger(`Write-mode rollback preserved ${conflicts.length} concurrently changed or unverifiable path(s).`);
-        throw rollbackConflictError(error, conflicts);
+        throw attachDurableQuarantines(rollbackConflictError(error, conflicts));
       }
       logger('Write-mode import rolled back because the publish transaction failed.');
-      throw error;
+      throw attachDurableQuarantines(error);
     } finally {
-      activeTransactionWriteJournal = previousWriteJournal;
+      const completedWriteJournal = activeTransactionWriteJournal;
+      try {
+        closeTransactionDurableQuarantine(completedWriteJournal);
+      } finally {
+        activeTransactionWriteJournal = previousWriteJournal;
+      }
     }
+    logDurableQuarantines();
   }
 
   return {
@@ -3921,6 +4417,8 @@ function runImportUnlocked({
     })),
     contentStateRefresh,
     absentStubAuthorizations,
+    existingDurableQuarantines,
+    durableQuarantines,
     sync,
   };
 }
@@ -3937,6 +4435,16 @@ export function runImport(options = {}) {
     result = runImportUnlocked(options);
     assertActiveTransactionBindingIdentity(rootDir);
   } catch (error) {
+    // `runImportUnlocked` may have completed and returned recovery records
+    // before the final root/lock identity check failed. Keep those records on
+    // every outward error so the retained inodes remain discoverable.
+    if (
+      !error?.durableQuarantines &&
+      Array.isArray(result?.durableQuarantines) &&
+      result.durableQuarantines.length > 0
+    ) {
+      error.durableQuarantines = result.durableQuarantines.map((record) => ({ ...record }));
+    }
     operationError = error;
   }
   try {
@@ -3944,11 +4452,19 @@ export function runImport(options = {}) {
   } catch (cleanupError) {
     activeTransactionRootBinding = previousRootBinding;
     if (!operationError) throw cleanupError;
-    throw new ContentOwnershipError(
+    const combinedError = new ContentOwnershipError(
       'PUBLISH_TRANSACTION_LOCK_CLEANUP_FAILED',
       `${operationError.message}; additionally failed to release ${PUBLISH_TRANSACTION_LOCK}: ${cleanupError.message}`,
       { path: PUBLISH_TRANSACTION_LOCK }
     );
+    combinedError.cause = operationError;
+    combinedError.cleanupCause = cleanupError;
+    if (Array.isArray(operationError.durableQuarantines)) {
+      combinedError.durableQuarantines = operationError.durableQuarantines.map(
+        (record) => ({ ...record })
+      );
+    }
+    throw combinedError;
   }
   activeTransactionRootBinding = previousRootBinding;
   if (operationError) throw operationError;
