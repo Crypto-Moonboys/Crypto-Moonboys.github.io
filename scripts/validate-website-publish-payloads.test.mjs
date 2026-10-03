@@ -1242,7 +1242,9 @@ try {
       error.code === 'PUBLISH_TRANSACTION_ROLLBACK_CONFLICT' &&
       error.cause?.code === 'STALE_CONTENT_STATE' &&
       error.rollbackConflicts.some(
-        ({ path: conflictPath }) => conflictPath === 'wiki/ownership-case.html'
+        ({ path: conflictPath, reason }) =>
+          conflictPath === 'wiki/ownership-case.html' &&
+          reason.includes('transaction postimage was not captured')
       )
   );
 } finally {
@@ -1255,6 +1257,841 @@ assert.deepEqual(
   'rollback must preserve a concurrent page that wins after the old page is detached'
 );
 console.log('PASS concurrent page winning detached install remains unattributed and preserved');
+
+const deletedConcurrentWinnerFixture = ownershipFixture();
+const deletedConcurrentWinnerPagePath = path.join(
+  deletedConcurrentWinnerFixture.rootDir,
+  'wiki',
+  'ownership-case.html'
+);
+const deletedConcurrentWinnerBytes = Buffer.from(
+  '<article class="wiki-content"><p>CONCURRENT WINNER DELETED DURING DETACHED CLEANUP.</p></article>',
+  'utf8'
+);
+let deletedConcurrentWinnerInstalls = 0;
+let deletedConcurrentWinnerCleanupDeletions = 0;
+const linkSyncBeforeDeletedConcurrentWinner = fs.linkSync;
+const unlinkSyncBeforeDeletedConcurrentWinner = fs.unlinkSync;
+fs.linkSync = function interceptDeletedConcurrentWinner(sourcePath, targetPath) {
+  const normalizedSource = String(sourcePath).replaceAll('\\', '/');
+  if (/\/\.ownership-case\.html\.forward-[^/]+\/staged$/.test(normalizedSource)) {
+    deletedConcurrentWinnerInstalls += 1;
+    fs.writeFileSync(deletedConcurrentWinnerPagePath, deletedConcurrentWinnerBytes);
+  }
+  return linkSyncBeforeDeletedConcurrentWinner.call(fs, sourcePath, targetPath);
+};
+fs.unlinkSync = function interceptDeletedConcurrentWinnerCleanup(filePath) {
+  const normalizedPath = String(filePath).replaceAll('\\', '/');
+  if (
+    deletedConcurrentWinnerInstalls > 0 &&
+    deletedConcurrentWinnerCleanupDeletions === 0 &&
+    /\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedPath)
+  ) {
+    deletedConcurrentWinnerCleanupDeletions += 1;
+    assert.deepEqual(
+      fs.readFileSync(deletedConcurrentWinnerPagePath),
+      deletedConcurrentWinnerBytes,
+      'the concurrent winner must still occupy the live path before detached cleanup'
+    );
+    unlinkSyncBeforeDeletedConcurrentWinner.call(fs, deletedConcurrentWinnerPagePath);
+  }
+  return unlinkSyncBeforeDeletedConcurrentWinner.call(fs, filePath);
+};
+try {
+  assert.throws(
+    () => runImport({
+      payloadDir: deletedConcurrentWinnerFixture.payloadDir,
+      rootDir: deletedConcurrentWinnerFixture.rootDir,
+      write: true,
+      logger: () => {},
+      refreshContentStateFn: refreshTestContentState,
+    }),
+    (error) => error instanceof ContentOwnershipError &&
+      error.code === 'PUBLISH_TRANSACTION_ROLLBACK_CONFLICT' &&
+      error.cause?.code === 'STALE_CONTENT_STATE' &&
+      error.rollbackConflicts.some(
+        ({ path: conflictPath, reason }) =>
+          conflictPath === 'wiki/ownership-case.html' &&
+          reason.includes('transaction postimage was not captured')
+      )
+  );
+} finally {
+  fs.linkSync = linkSyncBeforeDeletedConcurrentWinner;
+  fs.unlinkSync = unlinkSyncBeforeDeletedConcurrentWinner;
+}
+assert.equal(
+  deletedConcurrentWinnerInstalls,
+  1,
+  'fixture must install one concurrent winner before the staged page commit'
+);
+assert.equal(
+  deletedConcurrentWinnerCleanupDeletions,
+  1,
+  'fixture must delete the concurrent winner during detached-preimage cleanup'
+);
+assert.equal(
+  fs.existsSync(deletedConcurrentWinnerPagePath),
+  false,
+  'rollback must preserve absence after a concurrent winner is subsequently deleted'
+);
+assert.equal(
+  fs.existsSync(path.join(deletedConcurrentWinnerFixture.rootDir, PUBLISH_TRANSACTION_LOCK)),
+  false,
+  'deleted-winner conflict must release the publish transaction lock'
+);
+console.log('PASS deleted concurrent install winner cannot become importer-owned absence');
+
+const failedCleanupDeletedWinnerFixture = ownershipFixture();
+const failedCleanupDeletedWinnerWikiPath = path.join(
+  failedCleanupDeletedWinnerFixture.rootDir,
+  'wiki'
+);
+const failedCleanupDeletedWinnerPagePath = path.join(
+  failedCleanupDeletedWinnerWikiPath,
+  'ownership-case.html'
+);
+const failedCleanupDeletedWinnerBytes = Buffer.from(
+  '<article class="wiki-content"><p>CONCURRENT WINNER DELETED BEFORE CLEANUP FAILURE.</p></article>',
+  'utf8'
+);
+let failedCleanupDeletedWinnerInstalls = 0;
+let failedCleanupDeletedWinnerDeletions = 0;
+let failedCleanupDeletedWinnerRecoveryLinks = 0;
+const linkSyncBeforeFailedCleanupDeletedWinner = fs.linkSync;
+const unlinkSyncBeforeFailedCleanupDeletedWinner = fs.unlinkSync;
+fs.linkSync = function interceptFailedCleanupDeletedWinner(sourcePath, targetPath) {
+  const normalizedSource = String(sourcePath).replaceAll('\\', '/');
+  if (/\/\.ownership-case\.html\.forward-[^/]+\/staged$/.test(normalizedSource)) {
+    failedCleanupDeletedWinnerInstalls += 1;
+    fs.writeFileSync(
+      failedCleanupDeletedWinnerPagePath,
+      failedCleanupDeletedWinnerBytes
+    );
+  } else if (/\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedSource)) {
+    failedCleanupDeletedWinnerRecoveryLinks += 1;
+  }
+  return linkSyncBeforeFailedCleanupDeletedWinner.call(fs, sourcePath, targetPath);
+};
+fs.unlinkSync = function interceptFailedDetachedCleanup(filePath) {
+  const normalizedPath = String(filePath).replaceAll('\\', '/');
+  if (
+    failedCleanupDeletedWinnerInstalls > 0 &&
+    failedCleanupDeletedWinnerDeletions === 0 &&
+    /\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedPath)
+  ) {
+    failedCleanupDeletedWinnerDeletions += 1;
+    unlinkSyncBeforeFailedCleanupDeletedWinner.call(
+      fs,
+      failedCleanupDeletedWinnerPagePath
+    );
+    const error = new Error('injected detached cleanup failure after concurrent winner deletion');
+    error.code = 'EACCES';
+    throw error;
+  }
+  return unlinkSyncBeforeFailedCleanupDeletedWinner.call(fs, filePath);
+};
+try {
+  assert.throws(
+    () => runImport({
+      payloadDir: failedCleanupDeletedWinnerFixture.payloadDir,
+      rootDir: failedCleanupDeletedWinnerFixture.rootDir,
+      write: true,
+      logger: () => {},
+      refreshContentStateFn: refreshTestContentState,
+    }),
+    (error) => error instanceof ContentOwnershipError &&
+      error.code === 'PUBLISH_TRANSACTION_ROLLBACK_CONFLICT' &&
+      error.cause?.code === 'EACCES' &&
+      error.cause.message.includes(
+        'injected detached cleanup failure after concurrent winner deletion'
+      ) &&
+      error.rollbackConflicts.some(
+        ({ path: conflictPath, reason }) =>
+          conflictPath === 'wiki/ownership-case.html' &&
+          reason.includes('transaction postimage was not captured')
+      )
+  );
+} finally {
+  fs.linkSync = linkSyncBeforeFailedCleanupDeletedWinner;
+  fs.unlinkSync = unlinkSyncBeforeFailedCleanupDeletedWinner;
+}
+assert.equal(failedCleanupDeletedWinnerInstalls, 1);
+assert.equal(failedCleanupDeletedWinnerDeletions, 1);
+assert.equal(
+  failedCleanupDeletedWinnerRecoveryLinks,
+  0,
+  'catch recovery must not relink the old preimage after a concurrent winner was observed'
+);
+assert.equal(
+  fs.existsSync(failedCleanupDeletedWinnerPagePath),
+  false,
+  'failed cleanup must preserve the concurrent winner deletion'
+);
+const failedCleanupDeletedWinnerQuarantines = fs.readdirSync(
+  failedCleanupDeletedWinnerWikiPath,
+  { withFileTypes: true }
+).filter((entry) =>
+  entry.isDirectory() && entry.name.startsWith('.ownership-case.html.forward-')
+);
+assert.equal(
+  failedCleanupDeletedWinnerQuarantines.length,
+  1,
+  'the detached old preimage must remain quarantined after cleanup fails'
+);
+assert.equal(
+  fs.existsSync(path.join(
+    failedCleanupDeletedWinnerFixture.rootDir,
+    PUBLISH_TRANSACTION_LOCK
+  )),
+  false,
+  'failed detached cleanup conflict must release the publish transaction lock'
+);
+console.log('PASS failed detached cleanup cannot relink after a deleted concurrent winner');
+
+const deletedRecoveryLinkFixture = ownershipFixture();
+const deletedRecoveryLinkWikiPath = path.join(
+  deletedRecoveryLinkFixture.rootDir,
+  'wiki'
+);
+const deletedRecoveryLinkPagePath = path.join(
+  deletedRecoveryLinkWikiPath,
+  'ownership-case.html'
+);
+const deletedRecoveryLinkPageBefore = fs.readFileSync(deletedRecoveryLinkPagePath);
+let deletedRecoveryLinkInstallFailures = 0;
+let deletedRecoveryLinkInstalls = 0;
+let deletedRecoveryLinkCleanupFailures = 0;
+const linkSyncBeforeDeletedRecoveryLink = fs.linkSync;
+const unlinkSyncBeforeDeletedRecoveryLink = fs.unlinkSync;
+fs.linkSync = function interceptDeletedRecoveryLink(sourcePath, targetPath) {
+  const normalizedSource = String(sourcePath).replaceAll('\\', '/');
+  if (/\/\.ownership-case\.html\.forward-[^/]+\/staged$/.test(normalizedSource)) {
+    deletedRecoveryLinkInstallFailures += 1;
+    const error = new Error('injected staged install failure before recovery link');
+    error.code = 'EACCES';
+    throw error;
+  }
+  if (/\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedSource)) {
+    deletedRecoveryLinkInstalls += 1;
+  }
+  return linkSyncBeforeDeletedRecoveryLink.call(fs, sourcePath, targetPath);
+};
+fs.unlinkSync = function interceptDeletedRecoveryLinkCleanup(filePath) {
+  const normalizedPath = String(filePath).replaceAll('\\', '/');
+  if (
+    deletedRecoveryLinkInstalls > 0 &&
+    deletedRecoveryLinkCleanupFailures === 0 &&
+    /\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedPath)
+  ) {
+    deletedRecoveryLinkCleanupFailures += 1;
+    assert.deepEqual(
+      fs.readFileSync(deletedRecoveryLinkPagePath),
+      deletedRecoveryLinkPageBefore,
+      'the exact old preimage must be live before recovery-link cleanup'
+    );
+    unlinkSyncBeforeDeletedRecoveryLink.call(fs, deletedRecoveryLinkPagePath);
+    const error = new Error('injected cleanup failure after recovery link deletion');
+    error.code = 'EIO';
+    throw error;
+  }
+  return unlinkSyncBeforeDeletedRecoveryLink.call(fs, filePath);
+};
+try {
+  assert.throws(
+    () => runImport({
+      payloadDir: deletedRecoveryLinkFixture.payloadDir,
+      rootDir: deletedRecoveryLinkFixture.rootDir,
+      write: true,
+      logger: () => {},
+      refreshContentStateFn: refreshTestContentState,
+    }),
+    (error) => error instanceof ContentOwnershipError &&
+      error.code === 'PUBLISH_TRANSACTION_ROLLBACK_CONFLICT' &&
+      error.cause?.code === 'EACCES' &&
+      error.cause.message.includes('injected staged install failure before recovery link') &&
+      error.rollbackConflicts.some(
+        ({ path: conflictPath, reason }) =>
+          conflictPath === 'wiki/ownership-case.html' &&
+          reason.includes('transaction postimage was not captured')
+      )
+  );
+} finally {
+  fs.linkSync = linkSyncBeforeDeletedRecoveryLink;
+  fs.unlinkSync = unlinkSyncBeforeDeletedRecoveryLink;
+}
+assert.equal(deletedRecoveryLinkInstallFailures, 1);
+assert.equal(
+  deletedRecoveryLinkInstalls,
+  1,
+  'catch recovery must install the detached preimage exactly once'
+);
+assert.equal(
+  deletedRecoveryLinkCleanupFailures,
+  1,
+  'fixture must delete that recovery link before detached cleanup fails'
+);
+assert.equal(
+  fs.existsSync(deletedRecoveryLinkPagePath),
+  false,
+  'rollback must preserve deletion of a successfully installed recovery link'
+);
+const deletedRecoveryLinkQuarantines = fs.readdirSync(
+  deletedRecoveryLinkWikiPath,
+  { withFileTypes: true }
+).filter((entry) =>
+  entry.isDirectory() && entry.name.startsWith('.ownership-case.html.forward-')
+);
+assert.equal(deletedRecoveryLinkQuarantines.length, 1);
+const deletedRecoveryLinkQuarantinePath = path.join(
+  deletedRecoveryLinkWikiPath,
+  deletedRecoveryLinkQuarantines[0].name
+);
+assert.deepEqual(
+  fs.readdirSync(deletedRecoveryLinkQuarantinePath).sort(),
+  ['detached'],
+  'failed recovery cleanup must retain only the detached preimage quarantine'
+);
+assert.deepEqual(
+  fs.readFileSync(path.join(deletedRecoveryLinkQuarantinePath, 'detached')),
+  deletedRecoveryLinkPageBefore,
+  'the detached preimage must remain recoverable after cleanup failure'
+);
+assert.equal(
+  fs.existsSync(path.join(deletedRecoveryLinkFixture.rootDir, PUBLISH_TRANSACTION_LOCK)),
+  false,
+  'recovery-link cleanup conflict must release the publish transaction lock'
+);
+console.log('PASS deleted recovery link cannot become importer-owned absence');
+
+const recoveryCollisionFixture = ownershipFixture();
+const recoveryCollisionWikiPath = path.join(recoveryCollisionFixture.rootDir, 'wiki');
+const recoveryCollisionPagePath = path.join(
+  recoveryCollisionWikiPath,
+  'ownership-case.html'
+);
+const recoveryCollisionPageBefore = fs.readFileSync(recoveryCollisionPagePath);
+const recoveryCollisionBytes = Buffer.from(
+  '<article class="wiki-content"><p>RECOVERY LINK EEXIST COLLISION.</p></article>',
+  'utf8'
+);
+let recoveryCollisionStageFailures = 0;
+let recoveryCollisionAttempts = 0;
+const linkSyncBeforeRecoveryCollision = fs.linkSync;
+fs.linkSync = function interceptRecoveryCollision(sourcePath, targetPath) {
+  const normalizedSource = String(sourcePath).replaceAll('\\', '/');
+  if (/\/\.ownership-case\.html\.forward-[^/]+\/staged$/.test(normalizedSource)) {
+    recoveryCollisionStageFailures += 1;
+    const error = new Error('injected staged install failure before recovery collision');
+    error.code = 'EACCES';
+    throw error;
+  }
+  if (/\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedSource)) {
+    recoveryCollisionAttempts += 1;
+    fs.writeFileSync(recoveryCollisionPagePath, recoveryCollisionBytes);
+    try {
+      return linkSyncBeforeRecoveryCollision.call(fs, sourcePath, targetPath);
+    } finally {
+      fs.unlinkSync(recoveryCollisionPagePath);
+    }
+  }
+  return linkSyncBeforeRecoveryCollision.call(fs, sourcePath, targetPath);
+};
+try {
+  assert.throws(
+    () => runImport({
+      payloadDir: recoveryCollisionFixture.payloadDir,
+      rootDir: recoveryCollisionFixture.rootDir,
+      write: true,
+      logger: () => {},
+      refreshContentStateFn: refreshTestContentState,
+    }),
+    (error) => error instanceof ContentOwnershipError &&
+      error.code === 'PUBLISH_TRANSACTION_ROLLBACK_CONFLICT' &&
+      error.cause?.code === 'EACCES' &&
+      error.cause.message.includes('staged install failure before recovery collision') &&
+      error.rollbackConflicts.some(
+        ({ path: conflictPath, reason }) =>
+          conflictPath === 'wiki/ownership-case.html' &&
+          reason.includes('transaction postimage was not captured')
+      )
+  );
+} finally {
+  fs.linkSync = linkSyncBeforeRecoveryCollision;
+}
+assert.equal(recoveryCollisionStageFailures, 1);
+assert.equal(
+  recoveryCollisionAttempts,
+  1,
+  'detached recovery must observe exactly one EEXIST collision'
+);
+assert.equal(
+  fs.existsSync(recoveryCollisionPagePath),
+  false,
+  'rollback must preserve deletion of the recovery-link collision target'
+);
+const recoveryCollisionQuarantines = fs.readdirSync(
+  recoveryCollisionWikiPath,
+  { withFileTypes: true }
+).filter((entry) =>
+  entry.isDirectory() && entry.name.startsWith('.ownership-case.html.forward-')
+);
+assert.equal(recoveryCollisionQuarantines.length, 1);
+const recoveryCollisionQuarantinePath = path.join(
+  recoveryCollisionWikiPath,
+  recoveryCollisionQuarantines[0].name
+);
+assert.deepEqual(
+  fs.readdirSync(recoveryCollisionQuarantinePath).sort(),
+  ['detached'],
+  'recovery collision must retain only the detached preimage quarantine'
+);
+assert.deepEqual(
+  fs.readFileSync(path.join(recoveryCollisionQuarantinePath, 'detached')),
+  recoveryCollisionPageBefore,
+  'recovery EEXIST must preserve the detached preimage byte-for-byte'
+);
+assert.equal(
+  fs.existsSync(path.join(recoveryCollisionFixture.rootDir, PUBLISH_TRANSACTION_LOCK)),
+  false,
+  'recovery collision conflict must release the publish transaction lock'
+);
+console.log('PASS recovery-link EEXIST provenance survives concurrent target deletion');
+
+const catchProbePresenceFixture = ownershipFixture();
+const catchProbePresenceWikiPath = path.join(catchProbePresenceFixture.rootDir, 'wiki');
+const catchProbePresencePagePath = path.join(
+  catchProbePresenceWikiPath,
+  'ownership-case.html'
+);
+const catchProbePresencePageBefore = fs.readFileSync(catchProbePresencePagePath);
+const catchProbePresenceBytes = Buffer.from(
+  '<article class="wiki-content"><p>CONCURRENT TARGET OBSERVED BY CATCH PROBE.</p></article>',
+  'utf8'
+);
+let catchProbePresenceStageFailures = 0;
+let catchProbePresenceObservations = 0;
+const linkSyncBeforeCatchProbePresence = fs.linkSync;
+const lstatSyncBeforeCatchProbePresence = fs.lstatSync;
+fs.linkSync = function interceptCatchProbePresenceInstall(sourcePath, targetPath) {
+  const normalizedSource = String(sourcePath).replaceAll('\\', '/');
+  if (/\/\.ownership-case\.html\.forward-[^/]+\/staged$/.test(normalizedSource)) {
+    catchProbePresenceStageFailures += 1;
+    fs.writeFileSync(catchProbePresencePagePath, catchProbePresenceBytes);
+    const error = new Error('injected staged install failure with concurrent target');
+    error.code = 'EACCES';
+    throw error;
+  }
+  return linkSyncBeforeCatchProbePresence.call(fs, sourcePath, targetPath);
+};
+fs.lstatSync = function interceptCatchProbePresence(filePath, ...args) {
+  const normalizedPath = String(filePath).replaceAll('\\', '/');
+  if (
+    catchProbePresenceStageFailures > 0 &&
+    catchProbePresenceObservations === 0 &&
+    /\/proc\/self\/fd\/\d+\/ownership-case\.html$/.test(normalizedPath)
+  ) {
+    const stat = lstatSyncBeforeCatchProbePresence.call(fs, filePath, ...args);
+    catchProbePresenceObservations += 1;
+    fs.unlinkSync(catchProbePresencePagePath);
+    return stat;
+  }
+  return lstatSyncBeforeCatchProbePresence.call(fs, filePath, ...args);
+};
+try {
+  assert.throws(
+    () => runImport({
+      payloadDir: catchProbePresenceFixture.payloadDir,
+      rootDir: catchProbePresenceFixture.rootDir,
+      write: true,
+      logger: () => {},
+      refreshContentStateFn: refreshTestContentState,
+    }),
+    (error) => error instanceof ContentOwnershipError &&
+      error.code === 'PUBLISH_TRANSACTION_ROLLBACK_CONFLICT' &&
+      error.cause?.code === 'EACCES' &&
+      error.cause.message.includes('staged install failure with concurrent target') &&
+      error.rollbackConflicts.some(
+        ({ path: conflictPath, reason }) =>
+          conflictPath === 'wiki/ownership-case.html' &&
+          reason.includes('transaction postimage was not captured')
+      )
+  );
+} finally {
+  fs.linkSync = linkSyncBeforeCatchProbePresence;
+  fs.lstatSync = lstatSyncBeforeCatchProbePresence;
+}
+assert.equal(catchProbePresenceStageFailures, 1);
+assert.equal(
+  catchProbePresenceObservations,
+  1,
+  'catch must successfully observe the concurrent target before it is deleted'
+);
+assert.equal(
+  fs.existsSync(catchProbePresencePagePath),
+  false,
+  'rollback must preserve deletion of a target observed by the catch probe'
+);
+const catchProbePresenceQuarantines = fs.readdirSync(
+  catchProbePresenceWikiPath,
+  { withFileTypes: true }
+).filter((entry) =>
+  entry.isDirectory() && entry.name.startsWith('.ownership-case.html.forward-')
+);
+assert.equal(catchProbePresenceQuarantines.length, 1);
+const catchProbePresenceQuarantinePath = path.join(
+  catchProbePresenceWikiPath,
+  catchProbePresenceQuarantines[0].name
+);
+assert.deepEqual(
+  fs.readdirSync(catchProbePresenceQuarantinePath).sort(),
+  ['detached'],
+  'catch-probe race must retain only the detached preimage quarantine'
+);
+assert.deepEqual(
+  fs.readFileSync(path.join(catchProbePresenceQuarantinePath, 'detached')),
+  catchProbePresencePageBefore,
+  'catch-probe race must preserve the detached preimage byte-for-byte'
+);
+assert.equal(
+  fs.existsSync(path.join(catchProbePresenceFixture.rootDir, PUBLISH_TRANSACTION_LOCK)),
+  false,
+  'catch-probe conflict must release the publish transaction lock'
+);
+console.log('PASS catch-probe presence provenance survives concurrent target deletion');
+
+const catchProbeFailureFixture = ownershipFixture();
+const catchProbeFailureWikiPath = path.join(catchProbeFailureFixture.rootDir, 'wiki');
+const catchProbeFailurePagePath = path.join(
+  catchProbeFailureWikiPath,
+  'ownership-case.html'
+);
+const catchProbeFailurePageBefore = fs.readFileSync(catchProbeFailurePagePath);
+const catchProbeFailureConcurrentBytes = Buffer.from(
+  '<article class="wiki-content"><p>TARGET DELETED DURING FAILED CATCH PROBE.</p></article>',
+  'utf8'
+);
+let catchProbeFailureStageFailures = 0;
+let catchProbeFailureProbeErrors = 0;
+let catchProbeFailureRecoveryLinks = 0;
+const linkSyncBeforeCatchProbeFailure = fs.linkSync;
+const lstatSyncBeforeCatchProbeFailure = fs.lstatSync;
+const unlinkSyncBeforeCatchProbeFailure = fs.unlinkSync;
+fs.linkSync = function interceptCatchProbeFailureInstall(sourcePath, targetPath) {
+  const normalizedSource = String(sourcePath).replaceAll('\\', '/');
+  if (/\/\.ownership-case\.html\.forward-[^/]+\/staged$/.test(normalizedSource)) {
+    catchProbeFailureStageFailures += 1;
+    fs.writeFileSync(
+      catchProbeFailurePagePath,
+      catchProbeFailureConcurrentBytes
+    );
+    const error = new Error('injected staged install failure before uncertain probe');
+    error.code = 'EACCES';
+    throw error;
+  }
+  if (/\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedSource)) {
+    catchProbeFailureRecoveryLinks += 1;
+  }
+  return linkSyncBeforeCatchProbeFailure.call(fs, sourcePath, targetPath);
+};
+fs.lstatSync = function interceptCatchProbeFailure(filePath, ...args) {
+  const normalizedPath = String(filePath).replaceAll('\\', '/');
+  if (
+    catchProbeFailureStageFailures > 0 &&
+    catchProbeFailureProbeErrors === 0 &&
+    /\/proc\/self\/fd\/\d+\/ownership-case\.html$/.test(normalizedPath)
+  ) {
+    catchProbeFailureProbeErrors += 1;
+    assert.deepEqual(
+      fs.readFileSync(catchProbeFailurePagePath),
+      catchProbeFailureConcurrentBytes,
+      'the concurrent target must exist when the first catch probe begins'
+    );
+    unlinkSyncBeforeCatchProbeFailure.call(fs, catchProbeFailurePagePath);
+    const error = new Error('injected catch-boundary target probe failure');
+    error.code = 'EIO';
+    throw error;
+  }
+  return lstatSyncBeforeCatchProbeFailure.call(fs, filePath, ...args);
+};
+try {
+  assert.throws(
+    () => runImport({
+      payloadDir: catchProbeFailureFixture.payloadDir,
+      rootDir: catchProbeFailureFixture.rootDir,
+      write: true,
+      logger: () => {},
+      refreshContentStateFn: refreshTestContentState,
+    }),
+    (error) => error instanceof ContentOwnershipError &&
+      error.code === 'PUBLISH_TRANSACTION_ROLLBACK_CONFLICT' &&
+      error.cause?.code === 'EIO' &&
+      error.cause.message.includes('injected catch-boundary target probe failure') &&
+      error.rollbackConflicts.some(
+        ({ path: conflictPath, reason }) =>
+          conflictPath === 'wiki/ownership-case.html' &&
+          reason.includes('transaction postimage was not captured')
+      )
+  );
+} finally {
+  fs.linkSync = linkSyncBeforeCatchProbeFailure;
+  fs.lstatSync = lstatSyncBeforeCatchProbeFailure;
+}
+assert.equal(catchProbeFailureStageFailures, 1);
+assert.equal(catchProbeFailureProbeErrors, 1);
+assert.equal(
+  catchProbeFailureRecoveryLinks,
+  0,
+  'an uncertain catch probe must not authorize detached-page recovery'
+);
+assert.equal(
+  fs.existsSync(catchProbeFailurePagePath),
+  false,
+  'rollback must preserve absence after the failed probe deletes a concurrent target'
+);
+const catchProbeFailureQuarantines = fs.readdirSync(
+  catchProbeFailureWikiPath,
+  { withFileTypes: true }
+).filter((entry) =>
+  entry.isDirectory() && entry.name.startsWith('.ownership-case.html.forward-')
+);
+assert.equal(catchProbeFailureQuarantines.length, 1);
+const catchProbeFailureQuarantinePath = path.join(
+  catchProbeFailureWikiPath,
+  catchProbeFailureQuarantines[0].name
+);
+assert.deepEqual(
+  fs.readdirSync(catchProbeFailureQuarantinePath).sort(),
+  ['detached'],
+  'failed-probe race must retain only the detached preimage quarantine'
+);
+assert.deepEqual(
+  fs.readFileSync(path.join(catchProbeFailureQuarantinePath, 'detached')),
+  catchProbeFailurePageBefore,
+  'failed-probe race must preserve the detached preimage byte-for-byte'
+);
+assert.equal(
+  fs.existsSync(path.join(catchProbeFailureFixture.rootDir, PUBLISH_TRANSACTION_LOCK)),
+  false,
+  'failed catch-probe conflict must release the publish transaction lock'
+);
+console.log('PASS catch-probe uncertainty revokes absence ownership');
+
+const detachedRecheckFixture = ownershipFixture();
+const detachedRecheckWikiPath = path.join(detachedRecheckFixture.rootDir, 'wiki');
+const detachedRecheckPagePath = path.join(
+  detachedRecheckWikiPath,
+  'ownership-case.html'
+);
+const detachedRecheckPageBefore = fs.readFileSync(detachedRecheckPagePath);
+const detachedRecheckConcurrentBytes = Buffer.from(
+  '<article class="wiki-content"><p>OPEN FD MUTATED THE DETACHED INODE.</p></article>',
+  'utf8'
+);
+let detachedRecheckStageFailures = 0;
+let detachedRecheckMutations = 0;
+let detachedRecheckRecoveryFailures = 0;
+const linkSyncBeforeDetachedRecheck = fs.linkSync;
+fs.linkSync = function interceptDetachedRecheck(sourcePath, targetPath) {
+  const normalizedSource = String(sourcePath).replaceAll('\\', '/');
+  if (/\/\.ownership-case\.html\.forward-[^/]+\/staged$/.test(normalizedSource)) {
+    detachedRecheckStageFailures += 1;
+    const siblingDetachedPath = path.join(path.dirname(String(sourcePath)), 'detached');
+    assert.deepEqual(
+      fs.readFileSync(siblingDetachedPath),
+      detachedRecheckPageBefore,
+      'the initially verified detached inode must still contain the expected preimage'
+    );
+    fs.writeFileSync(siblingDetachedPath, detachedRecheckConcurrentBytes);
+    detachedRecheckMutations += 1;
+    const error = new Error('injected staged install failure after detached mutation');
+    error.code = 'EACCES';
+    throw error;
+  }
+  if (/\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedSource)) {
+    detachedRecheckRecoveryFailures += 1;
+    const error = new Error('injected recovery failure for mutated detached inode');
+    error.code = 'EPERM';
+    throw error;
+  }
+  return linkSyncBeforeDetachedRecheck.call(fs, sourcePath, targetPath);
+};
+try {
+  assert.throws(
+    () => runImport({
+      payloadDir: detachedRecheckFixture.payloadDir,
+      rootDir: detachedRecheckFixture.rootDir,
+      write: true,
+      logger: () => {},
+      refreshContentStateFn: refreshTestContentState,
+    }),
+    (error) => error instanceof ContentOwnershipError &&
+      error.code === 'PUBLISH_TRANSACTION_ROLLBACK_CONFLICT' &&
+      error.cause?.code === 'EACCES' &&
+      error.cause.message.includes('staged install failure after detached mutation') &&
+      error.rollbackConflicts.some(
+        ({ path: conflictPath, reason }) =>
+          conflictPath === 'wiki/ownership-case.html' &&
+          reason.includes('transaction postimage was not captured')
+      )
+  );
+} finally {
+  fs.linkSync = linkSyncBeforeDetachedRecheck;
+}
+assert.equal(detachedRecheckStageFailures, 1);
+assert.equal(detachedRecheckMutations, 1);
+assert.equal(
+  detachedRecheckRecoveryFailures,
+  1,
+  'catch recovery must fail once after the detached inode is mutated'
+);
+assert.equal(
+  fs.existsSync(detachedRecheckPagePath),
+  false,
+  'rollback must not resurrect the stale snapshot after detached inode mutation'
+);
+const detachedRecheckQuarantines = fs.readdirSync(
+  detachedRecheckWikiPath,
+  { withFileTypes: true }
+).filter((entry) =>
+  entry.isDirectory() && entry.name.startsWith('.ownership-case.html.forward-')
+);
+assert.equal(detachedRecheckQuarantines.length, 1);
+const detachedRecheckQuarantinePath = path.join(
+  detachedRecheckWikiPath,
+  detachedRecheckQuarantines[0].name
+);
+assert.deepEqual(
+  fs.readdirSync(detachedRecheckQuarantinePath).sort(),
+  ['detached'],
+  'detached-inode race must retain only the quarantined concurrent preimage'
+);
+assert.deepEqual(
+  fs.readFileSync(path.join(detachedRecheckQuarantinePath, 'detached')),
+  detachedRecheckConcurrentBytes,
+  'the newer detached inode bytes must remain recoverable byte-for-byte'
+);
+assert.equal(
+  fs.existsSync(path.join(detachedRecheckFixture.rootDir, PUBLISH_TRANSACTION_LOCK)),
+  false,
+  'detached-inode recheck conflict must release the publish transaction lock'
+);
+console.log('PASS final detached-preimage recheck rejects open-fd mutation');
+
+const mismatchedDetachedRecoveryFixture = ownershipFixture();
+const mismatchedDetachedRecoveryWikiPath = path.join(
+  mismatchedDetachedRecoveryFixture.rootDir,
+  'wiki'
+);
+const mismatchedDetachedRecoveryPagePath = path.join(
+  mismatchedDetachedRecoveryWikiPath,
+  'ownership-case.html'
+);
+const mismatchedDetachedRecoveryBytes = Buffer.from(
+  '<article class="wiki-content"><p>CONCURRENT EDIT DETACHED BEFORE COMMIT.</p></article>',
+  'utf8'
+);
+let mismatchedDetachedRecoveryEdits = 0;
+let mismatchedDetachedRecoveryLinkFailures = 0;
+const renameSyncBeforeMismatchedDetachedRecovery = fs.renameSync;
+const linkSyncBeforeMismatchedDetachedRecovery = fs.linkSync;
+fs.renameSync = function interceptMismatchedDetachedPage(sourcePath, destinationPath) {
+  const normalizedDestination = String(destinationPath).replaceAll('\\', '/');
+  if (
+    mismatchedDetachedRecoveryEdits === 0 &&
+    /\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedDestination)
+  ) {
+    mismatchedDetachedRecoveryEdits += 1;
+    fs.writeFileSync(
+      mismatchedDetachedRecoveryPagePath,
+      mismatchedDetachedRecoveryBytes
+    );
+  }
+  return renameSyncBeforeMismatchedDetachedRecovery.call(fs, sourcePath, destinationPath);
+};
+fs.linkSync = function interceptMismatchedDetachedRecovery(sourcePath, targetPath) {
+  const normalizedSource = String(sourcePath).replaceAll('\\', '/');
+  if (/\/\.ownership-case\.html\.forward-[^/]+\/detached$/.test(normalizedSource)) {
+    mismatchedDetachedRecoveryLinkFailures += 1;
+    const error = new Error(
+      `injected mismatched detached-page link-back failure ${mismatchedDetachedRecoveryLinkFailures}`
+    );
+    error.code = 'EACCES';
+    throw error;
+  }
+  return linkSyncBeforeMismatchedDetachedRecovery.call(fs, sourcePath, targetPath);
+};
+try {
+  assert.throws(
+    () => runImport({
+      payloadDir: mismatchedDetachedRecoveryFixture.payloadDir,
+      rootDir: mismatchedDetachedRecoveryFixture.rootDir,
+      write: true,
+      logger: () => {},
+      refreshContentStateFn: refreshTestContentState,
+    }),
+    (error) => error instanceof ContentOwnershipError &&
+      error.code === 'PUBLISH_TRANSACTION_ROLLBACK_CONFLICT' &&
+      error.cause?.code === 'EACCES' &&
+      error.cause.message.includes('mismatched detached-page link-back failure 1') &&
+      error.rollbackConflicts.some(
+        ({ path: conflictPath, reason }) =>
+          conflictPath === 'wiki/ownership-case.html' &&
+          reason.includes('transaction postimage was not captured')
+      )
+  );
+} finally {
+  fs.renameSync = renameSyncBeforeMismatchedDetachedRecovery;
+  fs.linkSync = linkSyncBeforeMismatchedDetachedRecovery;
+}
+assert.equal(
+  mismatchedDetachedRecoveryEdits,
+  1,
+  'fixture must replace the expected preimage immediately before detachment'
+);
+assert.equal(
+  mismatchedDetachedRecoveryLinkFailures,
+  2,
+  'both immediate and catch-boundary detached link-back attempts must fail'
+);
+assert.equal(
+  fs.existsSync(mismatchedDetachedRecoveryPagePath),
+  false,
+  'rollback must not restore the stale snapshot when the detached preimage was mismatched'
+);
+const mismatchedDetachedRecoveryQuarantines = fs.readdirSync(
+  mismatchedDetachedRecoveryWikiPath,
+  { withFileTypes: true }
+).filter((entry) =>
+  entry.isDirectory() && entry.name.startsWith('.ownership-case.html.forward-')
+);
+assert.equal(
+  mismatchedDetachedRecoveryQuarantines.length,
+  1,
+  'the mismatched detached preimage must remain in one recovery quarantine'
+);
+const mismatchedDetachedRecoveryQuarantinePath = path.join(
+  mismatchedDetachedRecoveryWikiPath,
+  mismatchedDetachedRecoveryQuarantines[0].name
+);
+assert.deepEqual(
+  fs.readdirSync(mismatchedDetachedRecoveryQuarantinePath).sort(),
+  ['detached'],
+  'cleanup must remove the uncommitted staged page and retain only the detached concurrent edit'
+);
+assert.deepEqual(
+  fs.readFileSync(path.join(mismatchedDetachedRecoveryQuarantinePath, 'detached')),
+  mismatchedDetachedRecoveryBytes,
+  'the concurrent detached edit must be preserved byte-for-byte for recovery'
+);
+assert.equal(
+  fs.existsSync(path.join(
+    mismatchedDetachedRecoveryFixture.rootDir,
+    PUBLISH_TRANSACTION_LOCK
+  )),
+  false,
+  'mismatched-preimage conflict must release the publish transaction lock'
+);
+console.log('PASS mismatched detached preimage cannot authorize stale snapshot restoration');
 
 const detachedProbeFailureFixture = ownershipFixture();
 const detachedProbeFailurePagePath = path.join(

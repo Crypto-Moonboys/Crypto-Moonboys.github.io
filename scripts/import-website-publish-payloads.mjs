@@ -1786,6 +1786,9 @@ function writeWorkspaceFileConditionally(rootDir, relativePath, content, expecte
   let stagedDescriptor;
   let installCommitted = false;
   let namespaceDetachedByWriter = false;
+  let detachedPreimageMatchedExpected = false;
+  let concurrentTargetObserved = false;
+  let detachedRecoveryLinkInstalled = false;
   let journalCheckpoint = null;
 
   const staleForwardWrite = (message) => new ContentOwnershipError(
@@ -1848,19 +1851,27 @@ function writeWorkspaceFileConditionally(rootDir, relativePath, content, expecte
     namespaceDetachedByWriter = true;
     const detachedState = captureDetachedFileState(detachedPath, relativePath);
     if (!workspaceFileStatesEqual(detachedState, expectedState)) {
-      if (linkDetachedBackWithoutReplace(detachedPath, anchoredTargetPath)) {
+      const detachedPageRestored = linkDetachedBackWithoutReplace(
+        detachedPath,
+        anchoredTargetPath,
+        () => { detachedRecoveryLinkInstalled = true; }
+      );
+      if (detachedPageRestored) {
         detachedExists = false;
         namespaceDetachedByWriter = false;
         throw staleForwardWrite('page changed immediately before the conditional replace commit');
       }
+      concurrentTargetObserved = true;
       throw staleForwardWrite(
         'concurrent page bytes were quarantined because a newer live path appeared during commit'
       );
     }
+    detachedPreimageMatchedExpected = true;
 
     if (!installPreimageWithoutReplace(stagedPath, anchoredTargetPath)) {
       // A concurrent writer won the empty path after detachment. It stays
       // live; the verified old base and uncommitted staged bytes are discarded.
+      concurrentTargetObserved = true;
       fs.unlinkSync(detachedPath);
       detachedExists = false;
       throw staleForwardWrite('a concurrent page appeared before the conditional replace install');
@@ -1874,18 +1885,35 @@ function writeWorkspaceFileConditionally(rootDir, relativePath, content, expecte
   } catch (caughtError) {
     let failure = caughtError;
     let targetAbsent = false;
+    let targetPresenceUncertain = false;
     if (!installCommitted && detachedExists) {
       try {
         targetAbsent = !lstatIfPresent(anchoredTargetPath);
+        if (!targetAbsent) concurrentTargetObserved = true;
       } catch (probeError) {
+        targetPresenceUncertain = true;
         failure = probeError;
       }
     }
-    if (!installCommitted && detachedExists && targetAbsent) {
+    if (
+      !installCommitted &&
+      detachedExists &&
+      targetAbsent &&
+      !targetPresenceUncertain &&
+      !concurrentTargetObserved &&
+      !detachedRecoveryLinkInstalled
+    ) {
       try {
-        if (linkDetachedBackWithoutReplace(detachedPath, anchoredTargetPath)) {
+        const detachedPageRestored = linkDetachedBackWithoutReplace(
+          detachedPath,
+          anchoredTargetPath,
+          () => { detachedRecoveryLinkInstalled = true; }
+        );
+        if (detachedPageRestored) {
           detachedExists = false;
           namespaceDetachedByWriter = false;
+        } else {
+          concurrentTargetObserved = true;
         }
       } catch {
         // Leave the detached inode in the private staging directory for
@@ -1910,11 +1938,14 @@ function writeWorkspaceFileConditionally(rootDir, relativePath, content, expecte
           journal.postimages.delete(normalizedRelativePath);
         }
       } else {
-        // The old page left the live namespace and could not be put back.
-        // Keep a conservative rollback candidate. Absence is attributable to
-        // our detach and can safely be repaired; any live replacement belongs
-        // to a concurrent writer and must be preserved as an unattributed
-        // conflict.
+        // A page left the live namespace and could not be put back. Keep a
+        // conservative rollback candidate, but claim an absent postimage only
+        // when the initial target probe was conclusive, the detached inode
+        // matched our expected preimage both initially and at this attribution
+        // boundary, no concurrent target was ever observed, and no recovery
+        // link was subsequently removed. Otherwise the absence remains
+        // unattributed so rollback reports a conflict and preserves any
+        // quarantined concurrent inode.
         journal.mutatedFiles.add(normalizedRelativePath);
         journal.postimages.delete(normalizedRelativePath);
         let anchoredAbsenceVerified = false;
@@ -1923,7 +1954,24 @@ function writeWorkspaceFileConditionally(rootDir, relativePath, content, expecte
         } catch (probeError) {
           failure = probeError;
         }
-        if (anchoredAbsenceVerified) {
+        let detachedPreimageStillMatchesExpected = false;
+        if (
+          anchoredAbsenceVerified &&
+          !targetPresenceUncertain &&
+          detachedPreimageMatchedExpected &&
+          !concurrentTargetObserved &&
+          !detachedRecoveryLinkInstalled
+        ) {
+          try {
+            detachedPreimageStillMatchesExpected = workspaceFileStatesEqual(
+              captureDetachedFileState(detachedPath, relativePath),
+              expectedState
+            );
+          } catch (detachedProbeError) {
+            failure = detachedProbeError;
+          }
+        }
+        if (detachedPreimageStillMatchesExpected) {
           journal.postimages.set(normalizedRelativePath, {
             exists: false,
             content: null,
@@ -2080,13 +2128,14 @@ function captureDetachedFileState(filePath, relativePath) {
   }
 }
 
-function linkDetachedBackWithoutReplace(detachedPath, targetPath) {
+function linkDetachedBackWithoutReplace(detachedPath, targetPath, onTargetLinked = () => {}) {
   try {
     fs.linkSync(detachedPath, targetPath);
   } catch (error) {
     if (error?.code === 'EEXIST') return false;
     throw error;
   }
+  onTargetLinked();
   fs.unlinkSync(detachedPath);
   return true;
 }
