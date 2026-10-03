@@ -30619,7 +30619,7 @@
         "title": "The Covenant of the First Witness"
       }
     ],
-    "rank_score": 260,
+    "rank_score": 286,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 2,
@@ -30647,7 +30647,7 @@
       "keyword_bag_points": 25,
       "content_quality_points": 97,
       "authority_points": 48,
-      "final_rank_score": 260,
+      "final_rank_score": 286,
       "authority_graph_points": 0
     },
     "search_index": {
