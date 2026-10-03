@@ -1,0 +1,163 @@
+https://graffpunks.substack.com/p/stake-is-a-community-powered-web3
+
+⚡️⚡️⚡️ $STAKE token is a community-powered Web3 DI$RUPTOR forged through the alliance of WAXP’s most dominant forces— the GKniftyHEADS and NoBallGames ⚡️⚡️⚡️
+👉 It’s built to anchor liquidity, incentivize creative decentralization, and fuel a multi-layered ecosystem spanning DeFi, P2E gaming, and NFT infrastructure ⚡️⚡️⚡️
+GraffPUNKS ⚡⚡⚡
+May 23, 2025
+
+
+
+
+⚡️⚡️⚡️ $STAKE Tokenomics Greypaper (future plans)
+👉 www.waxonedge.app/STAKE_kingsofgraff
+
+Token Name: $TAKE | Ticker: STAKE
+
+Contract name - kingsofgraff
+
+Powered by NoBallGames
+
+Built on the WAX blockchain
+
+
+
+Max Supply = 7,778,742,049-STAKE
+
+Circulating Supply: 100% ⚡️⚡️⚡️
+
+Decimals: 8
+
+Holder count = 61,187
+
+Todays details: 23rd May 2025
+
+Current Price per Stake = 0.0021117986 WAX / $0.000054
+
+Market Cap = 16.427M WAX / $420,535
+
+TVL = 3.203M WAX / $81,986
+
+Pair Liquidity = 6.416M WAX / $164,246
+
+FDV (Fully Diluted Valuation) = 16.427M WAX / $420,535
+
+
+
+
+1. Introduction ⚡️⚡️⚡️
+$STAKE token is top ranked on the WAXP blockchain for total liquidity and nullified LP tokens, making it one of the most secure and overfunded tokens on-chain. ⚡️⚡️⚡️
+
+Core Principles
+
+• Total Transparency via WAX block explorer: (www.waxblock.io)
+
+• R2Rug-Proof Engineering using EOS smart contract nullification.
+
+• Escrow-Enforced Governance ensuring no misuse of tokens.
+
+• Layered Ecosystem powering NFTs, P2E games, partnerships, and community growth.
+
+
+
+
+2. LP Liquidity — 50%
+
+Allocation: 3,889,371,024 STAKE
+
+• 45% (3,500,433,922 STAKE): Distributed across LPs paired with top WAXP tokens
+
+• 5% (388,937,102 STAKE): Reserved for NBG token LP pairing
+
+• Security Feature: 75% of LP is nullified (burned) permanently via eosio.null
+
+• Goal: 100% LP nullification for max anti-rug transparency
+
+
+
+
+3. Future DEX & CEX Listings — 20%
+
+(DEX & CEX allocation - if needed LP funds will be called upon for increase future listing liquidity)
+Allocation: 1,555,748,409 STAKE
+
+• Release Rate: 1% every second financial quarter
+
+• Escrow Model: Unused tokens revert to a 5-year escrow vault
+
+• Purpose: Ensure controlled listing expansion with time-locked trust
+
+
+
+
+4. Token Farming — 10%
+
+Allocation: 777,874,204 STAKE
+
+• Annual Distribution: 1.5% of pool (11,668,113 STAKE/year)
+
+• Function: Fund LP farm rewards across $STAKE, $LFGK, $NBG & $PUNK
+
+• Design: Rewards decrease over time until the pool is exhausted
+
+
+
+
+5. Development Fund — 10%
+
+Allocation: 777,874,204 STAKE
+
+• Annual Distribution: 1.5% of pool (11,668,113 STAKE/year)
+
+• Purpose: Fund ongoing tech, product, and ecosystem upgrades
+
+
+
+
+6. Partnership Grants & Funding — 5%
+
+Allocation: 388,937,102 STAKE
+
+• Annual Distribution: 2.5% of pool (9,723,427 STAKE/year 1)
+
+• Governance: Community voting via social whitelist access to GK/NBG NFT holders
+
+• Sourcing: GKniftyHEADS Guilds present options for community approval
+
+
+
+
+7. Community Incentives — 5%
+
+Allocation: 388,937,102 STAKE
+
+• Annual Distribution: 2.5% of pool (9,723,427 STAKE/year)
+
+• Uses: Airdrops, IRL rewards, P2E tournament prizes, marketing, staking rewards
+
+Security & Governance
+
+• Escrow Safeguard: All project-held tokens locked with strict 48hr use-window
+
+• Return Policy: Any unused tokens revert to escrow
+
+• On-Chain Transparency: All actions verifiable on WAX blockchain
+
+• R2Rug-Proof Design: Via LP token nullification into eosio.null smart contract
+
+
+
+
+Final Summary 🧨💥💥💥
+
+$STAKE is not just a token—it’s a fortified foundation for scalable DeFi and community-centric gamification within WAXP. With unmatched LP nullification, deep multi-ecosystem support, and bulletproof transparency, $STAKE stands as the most trust-built and strategically sound token in the WAX ecosystem.
+
+👉 $take is here to build online empires, not chasing memes, but to build dreams ⚡️⚡️⚡️
+
+
+
+⚠️ NOTE: this token has no intrinsic value or financial promise to anyone with a brain. Theres no formal team, its for pure adult entertainment within the GraffPUNKS community. Greypaper details may change, look out for updates in the GraffPUNKS IncubatorHUB Telegram community…
+
+Please ensure compliance with your local laws regarding digital assets if you are rewarded this token…
+
+DO NOT PURCHASE THIS TOKEN… ITS REWARDED FOR FREE IN OUR COMMUNITY ACTIVITIES 🧨💥💥💥
+2 Likes

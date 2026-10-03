@@ -1,0 +1,189 @@
+https://graffpunks.substack.com/p/lfgk-token-is-a-100-circulating-non
+
+⚡️⚡️⚡️ $LFGK Token is a 100% circulating non-award winning Web3 utility asset created for the WAX blockchain ecosystem - the KiNG of NFT$ ⚡️⚡️⚡️
+👉 It is designed to serve liquidity, staking rewards, DEX/CEX integrations, NFT-driven gamification, and community empowerment through structured allocations and robust anti-R2rug mechanisms ⚡️⚡️⚡️
+GraffPUNKS ⚡⚡⚡
+May 22, 2025
+
+token LFGK_kingsofgraff logo
+
+
+⚡️⚡️⚡️ LFGK Tokenomics Greypaper (future plans)
+👉 www.waxonedge.LFGK_kingsofgraff 👈
+
+Token Name: $LFGK | Ticker: LFGK
+
+Contract name - kingsofgraff
+
+Built on the WAXP Blockchain
+
+Powered by GraffPUNKS Media U$A
+
+
+
+Max Supply: 99,999,999,999 LFGK
+
+Circulating Supply: 100% ⚡️⚡️⚡️
+
+Decimals: 4
+
+Holder Count: 32,087
+
+Current details: 22nd May 2025
+
+Price 0.0000569 WAX ($0.000001)
+
+Market Cap: 5.695M WAX ($144,075)
+
+TVL (Total Value Locked): 29.78B LFGK ($42.9K)
+
+Cumulative LP Liquidity: 3.41M WAX ($86.3K)
+
+
+
+
+1. Introduction ⚡️⚡️⚡️
+The $LFGK Token is a 100% circulating Web3 utility token created on the WAX blockchain ecosystem. It is designed to serve liquidity, staking rewards, DEX/CEX integrations, NFT-driven gamification, and community empowerment through structured allocations and robust anti-R2rug mechanisms.
+
+Core Principles
+
+• Total Transparency via WAX block explorer: (www.waxblock.io)
+
+• R2Rug-Proof Engineering using EOS smart contract nullification.
+
+• Escrow-Enforced Governance ensuring no misuse of tokens.
+
+• Layered Ecosystem powering NFTs, P2E games, partnerships, and community growth.
+
+
+
+
+2. Immutable Liquidity & Security Model
+
+Permanent LP Lock:
+
+Approximately 75% of all LFGK LP tokens will be permanently nullified into the immutable EOS smart contract eosio.null, rendering them unrecoverable and forever locked. Our goal is to nullify 100% of all project-held LP over time, making $LFGK one of the most secure tokens in the WAX ecosystem.
+
+This permanent liquidity burn establishes a powerful multi-layered safety net, reinforced by:
+
+• Escrow-locked reserves
+
+• Scheduled, rule-based token unlocks
+
+• Transparent supply distribution
+
+• No mint/burn admin privileges
+
+• Soon to be a zero centralization of supply
+
+These combined measures ensure long-term stability, antiR2-rug protection, and public trust.
+
+
+3. Token Allocation Breakdown
+
+Category - % of Total Supply - Token Quantity - Status / Notes
+
+LP Liquidity Allocation - 40% = 39,999,999,999 LFGK
+
+75% of LP permanently nullified via eosio.null; 11% more to be added to WAX & NBG pairs.
+
+Staking Rewards - 20% = 19,999,999,999 LFGK
+
+Escrow-based release with annual emissions.
+
+Future DEX & CEX Listings - 20% = 19,999,999,999 LFGK
+
+(DEX & CEX allocation - if needed LP funds will be called upon for increase future listing liquidity)
+Escrow release with 1% allocation every 2nd quarter.
+
+Community Incentives - 5% = 4,999,999,999 LFGK
+
+Partially released in Year 1; remainder held in escrow.
+
+NBG LP Pairing Fund - 5% = 4,999,999,999 LFGK
+
+Held in escrow until NBG token launch.
+
+Public Patron Ownership - ~10% = ~10,000,000,000 LFGK
+
+Bought/held by community supporters.
+
+
+4. Staking Rewards System
+
+• Pool Size: 20% = 19,999,999,999 LFGK
+
+• Annual Emission: 2% of staking pool per year (~400M LFGK)
+
+• Year 1 Breakdown:
+
+• NFT/Project Incentives: 1.5% = ~299,999,999 LFGK
+
+• $LFGK Fun Coupons: 0.5% = ~99,999,999 LFGK
+
+• Security: Unused tokens remain locked in multi-sig controlled escrow.
+
+
+5. Future DEX & CEX Listings
+
+• Pool Size: 20% = 19,999,999,999 LFGK
+
+• Release Rule: 1% of total pool made available every second quarter
+
+• Fail-Safe Lock: Unused allocations are automatically relocked for 5 years.
+
+• Escrow Status: All listing tokens are securely held until release schedule triggers.
+
+
+6. Community Incentive Fund
+
+• Allocation: 5% = 4,999,999,999 LFGK
+
+• Year 1 Use: 0.5% = ~249,999,999 LFGK (~30,000 WAXP equivalent)
+
+• Purpose: Rewards, contests, user incentives, and partnerships
+
+• Lock Status: Remaining balance securely held in escrow.
+
+
+7. NBG Liquidity Pairing Fund
+
+• Allocation: 5% = 4,999,999,999 LFGK
+
+• Purpose: To create liquidity pool pairing between $LFGK and the upcoming $NBG token
+
+• Lock Condition: Fund is escrowed until $NBG Token goes live and LP pool is activated.
+
+
+8. AntiR2-Rug & Transparency Protocol
+
+$LFGK token ecosystem will be built on security-first principles, which include:
+
+• Immutable LP Nullification: 75%+ permanently burned via eosio.null, aiming for 100%
+
+• Multi-Sig Escrows: Major token allocations are controlled via multi-signature wallets
+
+• Timed Releases: Strict rules govern distribution frequency and quantity
+
+• No Minting Powers: Supply is fixed—no admin control over mint or burn
+
+• Full Transparency: On-chain data verifiable at any time on WAX and EOS block explorers
+
+These measures will make $LFGK a decentralized, tamper-resistant, and community-trusted token for long-term Web3 utility.
+
+
+9. Final Summary 🧨💥💥💥
+
+The $LFGK Token is a fully circulating, security-hardened utility token with real use cases in NFT gaming, staking, liquidity mining, and decentralized unofficial finance on the WAX blockchain.
+
+Will have one of the most advanced LP protection systems in the ecosystem—via permanent nullification, escrowed distributions, and transparent rules—$LFGK is engineered for long-term sustainability, fairness, and trust.
+
+👉 $LFGK is here to build online empires, not chasing memes, but to build dreams ⚡️⚡️⚡️
+
+
+
+⚠️ NOTE: this token has no intrinsic value or financial promise to anyone with a brain. Theres no formal team, its for pure adult entertainment within the GraffPUNKS community. Greypaper details may change, look out for updates in the GraffPUNKS IncubatorHUB Telegram community…
+
+Please ensure compliance with your local laws regarding digital assets if you are rewarded this token…
+
+DO NOT PURCHASE THIS TOKEN… ITS REWARDED FOR FREE IN OUR COMMUNITY ACTIVITIES 🧨💥💥💥

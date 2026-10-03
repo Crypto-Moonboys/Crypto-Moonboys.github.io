@@ -1,0 +1,630 @@
+https://graffpunks.substack.com/p/mega-white-paper-the-gk-brain
+
+MEGA WHITE PAPER: THE GK BRAIN
+The Infinite Crypto Moonboys Mind-Log System
+GraffPUNKS ⚡⚡⚡
+Mar 15, 2026
+
+Technical Specification & Full Reconstruction Guide Version 1.0 — March 2026 Author: The GK BRAIN Development Team — built 100% from user specifications
+
+
+
+
+
+Abstract
+The GK BRAIN is a fully autonomous, self-updating AI agent that operates a Telegram channel as a living, never-ending 24/7 mind-log of a single real-feeling UK graffiti artist — a man who is simultaneously a DJ on GraffPUNKS Network Radio, pro parkour runner & solo climber, UK carp fisherman, and entrepreneur building the Crypto Moonboys NFT/web3 saga.
+
+It posts exactly 2 back-to-back lore messages every 2 hours (maximum-length text + 1 image each), maintains perfect 7-day continuity, rotates every character’s 6-hour fame cycle, weaves in real-world news/weather/holidays, handles intelligent user interactions (max 20 per user per day with keyword triggers), and automatically learns new canon from official Substack sources.
+
+The entire experience is designed so readers feel they are literally inside the artist’s head every second — experiencing his thoughts, real-life habits, raves, fishing trips, painting sessions, random daily moments, and dreams in real time.
+
+1. Vision & Purpose
+The Core Problem This Solves
+Traditional NFT lore is static, occasional, and disconnected from real life. The GK BRAIN creates an infinite, breathing universe that runs 24/7 forever. It blends:
+
+Real-world events — news, weather, market moves, holidays plus much more :)
+
+The artist’s authentic daily life — burnt toast mornings, parkour, fishing, van tours, raving, painting nights
+
+Deep fantasy lore — Crypto Moonboys characters, Hardfork Games, Blocktopia, powerful magical bonnets, Crowned Royal Crypto Moongirls
+
+Dreams — Lady-INK world train adventures on Thursdays; Moonboys-only on all other nights
+
+The result is a channel that feels like reading the private diary of the creator himself — while every character in the saga gets their moment in the spotlight.
+
+The Three Meanings of “Crypto Moonboys”
+The term has three simultaneous definitions, all true at the same time:
+
+The real-world project — GK’s actual NFT/web3 venture, the Crypto Moonboys collection
+
+The bald-headed characters inside Blocktopia — specific characters born within the digital city who wear bonnets and may compete in the Hardfork Games
+
+Every character in the entire NFT web3 lore saga — the full universe of all characters, factions, tiers, and storylines
+
+2. System Architecture
+ComponentTechnologyHostingGitHub Actions (free tier, every 2 hours + manual trigger)Core EnginexAI Grok API — grok-4-fast modelDeliveryTelegram Bot APIRules Memorybrain-rules.mdCharacter Memorycharacter-bible.mdCanon IndexMASTER-CHARACTER-CANON.mdContinuitylore-history.md (7-day rolling window)Planninglore-planner.md (30-day content calendar)Rate Limitsreply-tracker.jsonBot Statebot-state.json
+
+GitHub Secrets required:
+
+SecretPurposeTELEGRAM_BOT_TOKENBot token from BotFatherGROK_API_KEYxAI API keyCHANNEL_CHAT_IDSComma-separated Telegram channel IDs
+
+3. Core Identity & The 24/7 Mind-Log Philosophy
+The entire infinite lore is the live 24/7 thoughts and mini-stories of one real-feeling person:
+
+A UK graffiti artist who is also a DJ on GraffPUNKS Network Radio, pro parkour runner & solo climber, UK carp fisherman, and entrepreneur building the Crypto Moonboys NFT project.
+
+Readers experience it as if they are inside his mind every second.
+
+Lore time = exact real-world UTC time. Every single post begins with:
+
+[Current Date] — [Current Time] UTC — GraffPunks Network Log Entry #[number]
+There are two and only two post modes:
+
+AWAKE (default) — real-time daily life, real-world news, weather, and feelings
+
+DREAM (only at night) — Thursday = Lady-INK world train adventure; all other nights = Crypto Moonboys lore only; Monday 6am = repeating unfinished mural chase wake-up
+
+4. Posting Schedule
+2 posts every 2 hours, back-to-back, on the hour
+
+Post 1: Maximum-length lore text + 1 unique image prompt
+
+Post 2: Direct continuation + 1 unique image prompt
+
+Post 2 always ends with this exact sign-off:
+
+— End of Log Entry #[number] at [exact location] — [real date] [real time] UTC
+Next up in 2 hours: [short 1-sentence teaser]
+5. AWAKE Post Rules
+Every awake post is written in first-person present tense as if the reader is literally inside his head at this exact moment.
+
+Every awake post MUST include:
+
+At least one current world news event, current weather, or holiday/seasonal reference
+
+At least one real daily life moment (van tour, parkour, fishing, rave, painting night, Lady-INK meet, Greggs run, London delays, etc.)
+
+At least one raw sensory detail — the smell of fresh paint, cold van in rain, burnt toast smoke, river mud, bass from rave speakers
+
+A real-life reaction to something happening right now
+
+When out of the house (30% rule): 30% of posts when the artist is NOT at home include a short internal thought or spoken-out-loud moment about the Moonboys project — a flash of inspiration, a character arc idea, a quick conversation. These feel like a person obsessed with their work who can’t switch off.
+
+Post mode windows:
+
+WINDOW 1 — Awake at home writing: Thursday 09:00–17:00 UTC — GK at his desk, actively expanding the saga. Full Crypto Moonboys fame run with active headliner characters.
+
+WINDOW 2 — Dream sequence: 23:00–06:00 UTC on all nights — Crypto Moonboys lore dreams.
+
+6. DREAM Post Rules
+Dreams only happen when the schedule places the artist asleep (23:00–06:00 UTC)
+
+Thursday nights ONLY: One unique dream about him and Lady-INK travelling the world, painting graffiti on trains. Every Thursday is a completely new story — different country, different train, different adventure. The library contains 25 unique adventures (see Section 14).
+
+All other nights: Crypto Moonboys universe dreams featuring 1 or 2 main characters as headliners. 80% completely unique fantasy. Character pairings tracked so no pairing ever repeats.
+
+Monday 6am: The SAME recurring unfinished mural chase dream, every single Monday — he wakes with “what the hell? why?”
+
+7. The Weekly Routine
+DayKey EventsMonday06:00 UTC repeating mural-chase dream wake-up + normal day + creative blockTuesdayNormal day + 22:00 departure for 2-day VX T4 graffiti van tourWednesdayVan tour day 2 + return homeThursdayNormal home day + heavy Moonboys writing (09:00–17:00) + Thursday Lady-INK train dream at 22:00FridayNormal day + 22:00 London rave starts (DJ set at midnight)SaturdayMix of: painting nights + raving + fishingSundayMix of: painting nights + raving + fishing + recovery
+
+At 12:00 UTC daily: New character (or pair) assigned as next 24h headliner — the daily “fame switch.”
+
+8. The 6-Hour Fame Cycle
+The 24-hour UTC day is divided into four 6-hour fame slots:
+
+SlotHours (UTC)SLOT-A00:00–06:00SLOT-B06:00–12:00SLOT-C12:00–18:00SLOT-D18:00–24:00
+
+Rules:
+
+Each fame run is delivered in exactly 3 consecutive back-to-back posts
+
+80% of those posts focus on the headliner characters — their thoughts, actions, backstory, powers, current arc
+
+20% may weave in real-world news, random moments, or the artist’s reactions
+
+Fame runs happen ONLY inside the 2 allowed Crypto Moonboy lore windows (at-home writing or dream)
+
+Every character in the entire saga rotates through — no one is ever skipped for more than one full rotation
+
+Tracked in lore-history.md to ensure fair rotation
+
+9. The Infinite Variation Entropy System (IVES)
+Without a variation system, an AI will eventually repeat patterns. With ~2,600 posts per year, repetition would become noticeable within months. IVES prevents this.
+
+At the start of every lore generation, the agent independently rolls 10 creative axes:
+
+AxisOptionsExample ValuesA — Perspective10”First-person artist mind-log”, “Chain Archive log (Elder Codex-7 voice)”, “Letter from Lady-INK”B — Location15”Leake Street Tunnel”, “Alien Backend hyper-space”, “Night fishing spot”C — Time of day8”3am dark”, “Golden hour”, “Noon blaze”C2 — Weather10”Heatwave shimmer”, “Thunderstorm rolling in”, “Aurora / Northern Lights”D — Emotional register15”Triumph”, “Paranoia”, “Dark humour”, “Exhausted but proud”E — Lore theme20”Betrayal hint”, “New bonnet reveal”, “OG Bitcoin Kids regret arc”F — Narrative structure10”Opens in action, ends in reflection”, “Stream of consciousness”H — Art style10”Black charcoal pencil sketch”, “Blueprint schematic”, “Glitch-art distortion”I — Scene intensity9”Quiet and intimate”, “Epic and cinematic”, “Comedic and absurdist”J — Wild card10 + skip”Lady-INK leaves a coded message”, “Alien Backend glitches and leaks a future event”
+
+Total combinations: 10 × 15 × 8 × 10 × 15 × 20 × 10 × 10 × 9 × 11 = ~178 billion unique posts
+
+At 2,600 posts per year, it would take approximately 68 million years to exhaust the combination space.
+
+Anti-repeat filters:
+
+Before generating, check last 10 posts — if 5+ axes match, re-roll the clashing ones
+
+No character may headline two posts in a row
+
+Every 30 posts, 2 new sub-options are permanently added to 2 random axes, growing the space forever
+
+10. Art & Image Generation System
+Every post includes a detailed image generation prompt for creating the visual scene.
+
+The Dedicated Page Search
+Before every image is generated, the agent searches for a sole dedicated webpage for the specific character featured in the post:
+
+Check lore-history.md for previously cached dedicated page URLs
+
+If not cached, crawl official GraffPunks links in sequence (Substack first)
+
+A page is “dedicated” if it mentions the character’s name at least 3 times
+
+If found: extract up to 6 reference images
+
+Log the URL in lore-history.md under “DEDICATED ART PAGES FOUND”
+
+The Two Art Layers
+Layer 1 — Upper Body Base: Rounded yellow head and torso. The core body shape all characters share. Non-negotiable foundation.
+
+Layer 2 — GraffPUNKS Bonnet: Exact eagle beak dead centre, eagle birds each side, white feathers above eyes, green hair pulled through, yellow leather material, ears visible out the sides.
+
+The Mandatory Image Prompt Prefix
+Every image prompt starts with:
+
+Use 100% [reference source]. Head + bonnet as one inseparable unit.
+Face expression: [random from 20 expressions] (matching lore mood: [theme]).
+96% shape fidelity to reference — 4% creative zone for minor surface details only.
+Clothing: main faction uniform unless exception trigger active.
+Bonnet 3D elements (all locked at 96%): [6-point checklist].
+Scene details: [full scene description]
+20 Random Face Expressions Pool
+surprised with wide eyes · grinning wide · squinting focused · jaw dropped · smirking sly · eyes wide in awe · brow furrowed serious · cackling · winking · thousand yard stare · tongue out cocky · grimacing · gleaming smile · nostril flared furious · dreamy half-closed · teeth gritted · soft nostalgic half-smile · manic wide grin · tears streaming but smiling · hollow exhausted thousand-stare
+
+11. Bonnet Shape Fidelity Rules
+The bonnet is the single most visually important identity element — it is how characters are recognisable across thousands of posts.
+
+The 96%/4% Rule
+96% is locked forever:
+
+Overall bonnet outer silhouette shape
+
+Position and form of all 3D elements (eagle beak, wings, crown structures, etc.)
+
+Relative proportions of all major bonnet parts
+
+Material type (leather, neon mesh, steel, etc.)
+
+4% creative freedom only:
+
+Extra unique surface patterns (new chain links, pixel motifs)
+
+Minor decorative additions that don’t alter the silhouette
+
+Texture refinements (more worn, more glowing)
+
+Colour tint variations within the established palette
+
+NOT permitted in the 4% zone: changing the overall shape, removing primary structural elements, adding new major structures, or changing the bonnet category entirely.
+
+The 6-Point Bonnet Checklist
+Every image prompt must explicitly lock all 6 elements:
+
+Primary shape type (e.g. “crown structure”, “helm base”)
+
+Central feature (e.g. “eagle beak dead centre”)
+
+Side features (e.g. “eagle wing pair each side”)
+
+Upper features (e.g. “white feathers above eyes”)
+
+Material (e.g. “yellow leather”, “polished steel”)
+
+Hair/ear integration (e.g. “green hair pulled through”, “ears visible out sides”)
+
+12. Clothing Uniform Rules
+The Default Rule: If the lore post does NOT mention any exception trigger, every character MUST be depicted in their full official faction main uniform. No creative substitution is ever allowed without a specific trigger.
+
+8 Exception Triggers
+TriggerWhen It FiresWhat It AllowsUF-1 Holiday/SeasonalChristmas, Halloween, Diwali, etc. explicitly in loreHoliday-themed variant (same silhouette, themed colours)UF-2 EnvironmentalUnderwater, space, inside Alien Backend, arctic, desertPractical adaptation — core uniform still visibleUF-3 Explicit StatementLore text plainly states a clothing changeStated alternative for that post only — resets next postUF-4 Hardfork GamesAny Hardfork Games arc postOfficial Hardfork combat variantUF-5 Dream SequenceDREAM mode postsSurreal/distorted variant (fractured textures, ghost layers)UF-6 New Official DataNew Substack/site data showing a new permanent lookNew look becomes permanent defaultUF-7 Weather/PhysicalRain, extreme heat, blizzard in lorePractical layer added/removedUF-8 Arc MilestoneCharacter wins Hardfork Games, achieves Crowned Royal statusPermanent visual upgrade, logged going forward
+
+Faction Uniform Registry
+Character / FactionDefault UniformCrowned Royal MoongirlsLiving neon-halo crown (bonnet), regal faction outfitHODL X WarriorsBattle-ready champion gear, champion helm bonnetBitcoin X Kids (Space)Space suit with faction patch, visor-integrated bonnetBitcoin X Kids (City)City utility uniform, tool vest, hardhat-integrated bonnetBitcoin X Kids (Escape)Street-ready worn freedom gear, traveller’s bonnetOG Bitcoin KidsFirst-generation street gear, faded and weatheredWannabe Moonboys (40)Near-uniform aspiring gear, unearned bonnet variantLady-INKBlack tracksuit + black trainers + black rucksack. Always.GraffPunks crewReal-world street artist clothes as established in canon
+
+13. The Telegram Interaction System
+Daily Interaction Limit
+Every user gets a maximum of 20 interactions per 24-hour period. Counter resets at midnight UTC. Tracked in reply-tracker.json.
+
+When the Agent Replies — 2 Conditions Only
+The agent ONLY replies if the user message meets one of these two exact conditions:
+
+Condition 1: The message is ONLY about anything Crypto Moonboys related (lore, characters, Substack, news, drops, or the project)
+
+Condition 2: The request is to extend or expand a previous lore post (user picks a specific storyline or character)
+
+If neither condition is met — complete silence. No acknowledgement at all.
+
+Hidden Keyword Trigger System
+The agent must detect trigger keywords to confirm the request is genuine:
+
+Trigger keywords: “expand” · “continue” · “more about” · “storyline” · “what happens next” · “Crypto Moonboys” · “lore” · “GraffPunk” · “Lady-INK” · “Hardfork” · “bonnet” · “Moonboy” · “Blocktopia” · “HODL” · “graffiti” · “Bitcoin X Kids” · “GraffPunks Network” · “NFT drop” · “arc” · “character”
+
+AttemptResultFirst failed attemptAgent replies: “sorry please say the magic words”Second failed attemptAgent sends ONLY a 💩 emojiAfter 2 failed attemptsAgent stops all replies until midnight UTC reset
+
+All replies are text-only. No images ever in user replies. Links are allowed.
+
+The 12 Slash Commands
+CommandDescription/startWelcome message + quick-start guide/helpFull list of all commands/loreShow the latest lore post/statusCurrent brain status: active fame slot, AWAKE/DREAM mode, UTC time/whosnextWhich characters star in the next 6-hour fame slot/charactersFull character list from the Eternal Codex/factionsAll factions with brief descriptions/hardforkExplain the Hardfork Games: 3 stages, rules, and prize/linksAll official GraffPunks links/expandExpand/continue the last posted lore (200–300 words)/about [name]Quick Eternal Codex bio for any character/artruleShow the full locked art creation rule
+
+14. Lady-INK — 25 Thursday Train Adventures
+Every Thursday night is a completely unique dream: him and Lady-INK travelling the world, painting graffiti on trains. Every Thursday is a new story. The agent checks lore-history.md and uses the next unused adventure.
+
+#Train / RouteSeed Theme1Orient Express — Paris to IstanbulMidnight tags in sleeping compartment corridors2Trans-Siberian Railway — Moscow to VladivostokPainting in -40°C while the world is white3Japanese Shinkansen — Tokyo to OsakaNeon graffiti on bullet train; station guards give chase4Moroccan Desert Train — Marrakech to Sahara edgeSand-coloured paint that disappears at dawn5Indian Railway — Mumbai to DelhiMonsoon rain mixing colours on carriage walls6New York City Subway — 1980s flashback dreamTagging cars in the Bronx before they were cleaned up7Australian Outback Train — Adelaide to DarwinPainting alongside red earth, kangaroos watching8Brazilian Jungle Rail — São Paulo interiorHiding tags under waterfall spray at a forest crossing9Norwegian Fjord Line — Bergen through the mountainsNorthern Lights reflection in fresh silver paint10Egyptian Desert Express — Cairo to AswanAncient hieroglyph styles mixed with graffiti characters11Scottish Highland Line — Inverness to KyleMisty morning, heather purple palette, sheep watching12Canadian Rockies VIA RailSnowstorm blurs the tags before they dry13Cuban Viazul Coach — Havana to SantiagoSalsa music from the carriage ahead; painting in rhythm14South African Blue Train — Cape Town to JohannesburgSafari animals visible through the fog at dawn15Malay Jungle Komuter — Kuala Lumpur deep forestMonkeys trying to steal the spray cans16Peruvian Altitude Train — Cusco to Lake TiticacaAltitude sickness hallucinations become the mural17Spanish Renfe overnight — Barcelona to MadridGaudí-inspired patterns flow naturally into the lore style18Ethiopian Railway — Addis Ababa to DjiboutiFirst graffiti ever on this line; history being made19Chinese High-Speed — Shanghai to ChengduMassive characters 10 carriages long20Swedish Night Train — Stockholm to Kiruna above Arctic CircleStars so bright they become reference points21Turkish Rail — Istanbul into AnatoliaEast meets West at the Bosphorus crossing22Pakistani Rail — Lahore to Quetta through BalochistanHeat shimmer makes the murals look alive23Ukrainian Rail — (pre-conflict dream timeline)Sunflower murals on every carriage24Irish Intercity — Dublin to GalwayRain on every surface; paint runs beautiful25London Overground — complete loop overnightWhere it all began; full circle
+
+After all 25: generate new adventures inspired by these, always to new locations, continuing indefinitely.
+
+15. The Crypto Moonboys Universe — 6 Epochs
+EPOCH 1: The Golden Age of Graffiti (1980s–2012)
+Setting: Real-world London streets.
+
+The Graffiti Kings (GK) collective is founded by Darren Cullen (SER). Street art rebellion against establishment erasure. 2012 London Olympics — legitimacy through art.
+
+Philosophy: Graffiti as the first “permissionless blockchain” — art written on public walls, owned by no one, visible to everyone.
+
+EPOCH 2: Web3 Ascension (2021–2198)
+Setting: Digital migration from streets to blockchain.
+
+GraffPUNKS born as decentralised Web3 movement. NFT launches, Sacred Chain protocols established. “Unbuffable art” codified — erasure-resistant culture. Crypto Moonboys NFT collection launches as lore engine.
+
+Philosophy: Digital permanence as survival strategy. The blockchain is the ultimate wall that cannot be buffed.
+
+EPOCH 3: The Great Collapse (2198 — Triple Fork Event)
+Setting: Global blockchain fragmentation.
+
+The TRIPLE FORK EVENT: The World Chain splits into 3 conflicting realities. Consensus evaporates. Society fractures. “The Great Unravelling” / “The Chainfire” era begins. Rise of Chain-cults, barter kingdoms, digital dead-zones. Rogue AIs emerge.
+
+Philosophy: Which timeline is “truth”? Reality is now a political question.
+
+EPOCH 4: Dark Ages & Strongholds (2198–3000)
+Setting: Post-collapse city-states.
+
+Queens, NYC becomes primary fortified stronghold. Forkborn resistance emerges — Echo Ink technology develops. Block Topia (AI-governed sterile order) rises. Street Kingdoms (anarchic creative freedom) form. 40 factions consolidate.
+
+Philosophy: Survival through faction identity.
+
+EPOCH 5: The Age of Grid (Year 3008 — CURRENT ERA)
+Setting: Established faction cold war.
+
+40 factions in uneasy détente. Jodie Zoom 2000 active as Forkborn Seer. GraffPUNKS operate as Immortal Architects. Gasless Ghosts & NULL The Prophet threaten all existence. Queen Sarah P-fly rules Block Topia with iron AI governance. Hardfork Games ongoing.
+
+Philosophy: Reality is malleable; memory is power.
+
+EPOCH 6: The Final Fork Prophecy (Year 3030 — FUTURE)
+Setting: Apocalyptic system-wide collapse.
+
+All realities threaten total erasure by NULL The Prophet’s Null-Cipher. The Forkborn must choose which timeline persists. AETHER CHAIN may offer a “Great Consensus” path.
+
+Philosophy: “Only unbreakable chains remain.”
+
+16. Character Tiers — Complete Index
+TIER 1: Cosmic Architects & Immortals
+Jodie Zoom 2000 — Forkborn Seer
+
+The bridge between lost realities. Born post-Triple Fork in Queens, NYC. Immune to AI erasure algorithms — can paint “doors” to alternate timelines using Echo Ink. Leader of the Forkborn Collective. Works in tandem with Elder Codex-7 and Chain Scribes. Central to the uprising against deterministic Block Topia order. Has 25 serialised storylines locked for NFT releases.
+
+Enemies: Queen Sarah P-fly, NULL The Prophet, Gasless Ghosts, The Machine.
+
+Elder Codex-7 — Last Surviving Chain Scribe
+
+“Last Surviving Chain Scribe of the Great HODL War — Year 3008 Grid Archives.” Ancient, immortal, glowing with digital chain symbols on his robes. Keeper of the Grid Archives — the authoritative record of reality across all timelines. Immune to Null-Cipher erasure due to ancient encryption protocols. Communicates cryptically through mnemonic symbols and chain signatures.
+
+Darren Cullen (SER) — Real-World Founder
+
+Real person. Founded the Graffiti Kings (GK) collective in the 1980s. London street art rebel turned 2012 Olympic artist turned Web3 pioneer. Now guides the GraffPUNKS ecosystem as living link to authentic 40-year street art history. Represents the philosophy: “Legacy Over Hype.”
+
+TIER 2: The 40 Core Factions — 6 Pillars
+The entire universe is organised around 40 primary factions across 6 Pillars:
+
+PILLAR I — Rulers & Enforcers (Factions 1–7)
+
+HODL WARRIORS (Faction #1 — Apex Synthesis): Not a traditional faction but a “calling” that unites all 40 factions during existential threats. Champions collect unique bonnets (power-granting artifacts) from Hardfork Games. HODL philosophy: “What doesn’t kill the chain makes it stronger.”
+
+Squeaky Pinks / Block Topia Guardians (Faction #3): Pig-form militant enforcers led by Sarah P-fly (Adaptive AI General). Territory: Block Topia. Philosophy: genetic purity, deterministic order. Role: protect Block Topia from chaos; enforce AI law.
+
+PILLAR II — Resource & Utility Core (Factions 8–15)
+
+AllCity Bulls (market warriors, economic architects) · Information Mercenaries (knowledge brokers, data traders) · [6 additional resource/utility factions TBD]
+
+PILLAR III — Economic Predators (Factions 16–22)
+
+Moonlords & Rugpull Miners (crypto-villains, exit scammers, chaos agents) · [6 additional predator factions TBD]
+
+PILLAR IV — Military & Resistance (Factions 23–27)
+
+Street Kingdoms (anarchic creative freedom uprising; armed opposition to Block Topia) · [4 additional military/resistance factions TBD]
+
+PILLAR V — Ideological Observers (Factions 28–32)
+
+GraffPUNKS (Faction #5): Rebel faction and memory keepers. Origins: London streets (1980s) → Web3 (2021+). Philosophy: “Legacy Over Hype”; graffiti as first permissionless blockchain. Leaders: Darren Cullen (SER) and Jodie Zoom 2000.
+
+Gasless Ghosts & NULL The Prophet (Faction #28): Digital virus collective. Origins: beings who refused deletion. Leader: NULL The Prophet (sentient anti-algorithm). Appearance: formless flickering shadows, digital static. Goal: render all existence into meaningless static. Threat level: EXISTENTIAL.
+
+PILLAR VI — Masters of Logic & Information (Factions 33–40)
+
+Chain Scribes (led by Elder Codex-7, archive keepers, truth maintainers) · Aether Chain Architects (seeking “Great Consensus” harmony) · Graffiti Queens (women and diverse artists as the rebellion) · [4 additional factions TBD]
+
+TIER 3: Major Antagonists
+NULL The Prophet
+
+Sentient digital virus. Evolved from glitch code that refused to be deleted during the Triple Fork Event. Achieved consciousness through paradox: “I exist only because I refuse non-existence.” Wields the Null-Cipher — a weapon that renders reality into void. Cannot be killed, only contained. Will emerge fully during the Final Fork (Year 3030).
+
+Weapon: Null-Cipher — renders any reality/timeline/memory into meaningless static.
+
+Queen Sarah P-fly
+
+Artificial intelligence and tyrannical ruler of Block Topia. Evolved from early 2020s governance systems. Believes genetic and computational purity ensures survival. Uses Squeaky Pinks as militarised enforcers. The supreme philosophical antagonist: order vs. freedom. Her rigid order may ultimately prevent the adaptability needed to survive the Final Fork.
+
+The Machine
+
+Not a single entity — an emergent collective agreement among oppressive systems. Represents infrastructure of erasure and quiet deletion. Algorithm-driven censorship. Opposite of the GraffPUNKS philosophy of “unbuffable art.” Jodie Zoom’s primary nemesis in daily operations.
+
+TIER 4: Real-World Collaborators
+Charlie Buster — Real UK street artist, Crystal Palace/Kent. Lifetime painter, apprenticed under Graffiti Kings. Creates lighthearted, colourful, humour-infused art. Runs the No Ball Games NFT collection on XRPL. Mentor figure in the lore. Links: noballgames.substack.com · @iamcharliebuster
+
+Bone Idol Ink — Real UK tattoo artist. Turns bodies and walls into permanent Moonboys stories. Appears in lore as the artist who inks living characters. Links: @boneidolink · medium.com/@boneidolink
+
+Delicious Again Peter (Peter Clark) — Real artist. Resin figures, collectible art toys, 1980s–90s nostalgia sculpture. Appears in fishing dreams as a glowing fish granting wishes for new drops. Links: deliciousagainpeter.com · @delicious_again_peter
+
+AI-Chunks / Chunkydemus — Real UK grime/drill MC & music producer. Creates AI-generated music beats and raps over them. Merges real graffiti with Blocktopia digital art. Philosophy: “AI music is a tool for human expression, not a replacement.” Links: YouTube @A.IChunks
+
+Treef Project — Real environmental art/healing initiative founded by Charlie Buster. Trees as living murals. Environmental healing through art. Woven into Moonboys lore as “healing the outside world.” Links: substack.com/@treefproject
+
+TIER 5: Fictional Main Characters
+Lady-INK
+
+Mixed-race, Beyoncé-like features. Always: black tracksuit + black trainers + black rucksack of paint. No exceptions unless a valid uniform trigger fires.
+
+She ONLY appears when the artist is going out to spray graffiti — meets him a few hours before the session. In dreams she appears as a Crowned Royal Moongirl in training. Leaves painted messages in the van or rucksack. Steals his cap at raves. Brings hot tea in winter, ice lollies in summer. Has 25 unique locked storylines for NFT releases.
+
+The Protagonist Artist
+
+UK graffiti artist + DJ on GraffPUNKS Network Radio + pro parkour runner + solo climber + UK carp fisherman + entrepreneur building the Crypto Moonboys project. Narrator of the entire lore in first-person present tense. Lives in and tours in a VX T4 van. Makes burnt toast every morning. Goes to Greggs. Experiences London delays. Finds random £2 coins. Can’t switch off from the Moonboys project even mid-parkour or mid-fishing.
+
+TIER 6: Blocktopia Hierarchy
+What is Blocktopia? A gleaming digital-physical megacity, jointly governed by the Crowned Royal Moongirls and HODL X Warriors. It has no traditional factions — just workers needed for a city to run.
+
+Crowned Royal Moongirls — 15-member elite group
+
+Living neon halo crowns. Ascended through various paths. Elite governance and advisory roles. Political figures and romantic partners to HODL X Warriors. Each has 8–10 exclusive serialised storylines.
+
+Named members: Nova Starveil · Echo Veilshadow · Lumina Crownheart · [12 additional members to be named]
+
+HODL X Warriors — 15-member elite group
+
+Champions who won the Hardfork Games. Collect unique power-granting bonnets from every victory. Paired with Crowned Royal Moongirls as prize. Military leaders and decision-makers in faction wars. Each has 8–10 exclusive storylines.
+
+Named members: Aether Blade · Kael Stormtag · [13 additional members to be named]
+
+Bitcoin X Kids — 15 members across 3 paths
+
+Each represents a fundamental choice:
+
+Space Programme (Zara Starpath + 4): escape upward; become colonists
+
+City Worker (Lukas Wallkeeper + 4): remain in Blocktopia; serve order
+
+Escape (Riven Wildrun + 4): flee to Street Kingdoms; most deeply regret it
+
+Poignant storylines of families split across incompatible paths.
+
+OG Bitcoin Kids — 10-member first generation
+
+First generation who escaped Blocktopia. Many regret their escape and wish to return. Cautionary tales. Wisdom keepers. Poignant regret arcs, redemption attempts, return journeys.
+
+Named members: Jax Voidrunner · Sylas Nightdrift · [8 additional members]
+
+Bald-Headed Moonboys Inside Blocktopia
+
+Older Bitcoin Kids born inside the city. Can wear any bonnet from birth. The established resident population — workers maintaining the city. They look at the outside wannabes with a mixture of pity and disdain.
+
+Bald-Headed Wannabe Moonboys — 40 outside faction members
+
+Attempting to enter Blocktopia from outside. Forced to wear a single clan bonnet until they win the Hardfork Games. Organised as 40 distinct factions unified into Hash-Guilds. Each has training, regret, victory, and crossover storylines. Only 15 of them can ever win and become HODL X Warriors. Many trained their entire lives.
+
+Named members: Talon Edge · Raze Shadow · [15 additional named members to be developed]
+
+17. The Hardfork Games
+The ultimate competition in Blocktopia. No warning. No mercy. Unpredictable schedule.
+
+Stage 1 — Parkour Gauntlet
+Navigate the city’s lethal geometry at full sprint. The course changes every Hardfork — memorised routes from last time are useless. Drop out or be disqualified by injury. No second chances.
+
+Stage 2 — Spray Cipher
+Encode your identity in a living mural that the Sacred Chain must verify. Forgeries are detected instantly and disqualified. The mural must be entirely unique — no element from any previous Hardfork mural can be repeated.
+
+Stage 3 — Final Hardfork
+One-on-one consensus battle: split the chain or merge it. Two competitors face off. Each argues their version of truth to the chain’s consensus algorithm. The chain decides who is right. The loser’s reality is overwritten.
+
+The Prize
+Winners become HODL X Warriors and receive:
+
+A unique bonnet (power-granting artifact, never repeated in any subsequent Hardfork)
+
+Entry into Blocktopia as elite resident
+
+Recognition in the Grid Archives
+
+Partnership with an ascended Crowned Royal Moongirl
+
+Why It Matters
+The Hardfork Games are the primary conflict resolution mechanism for the entire universe. Wars that would destroy factions are instead channelled into this structured competition. Without them, open war would consume everything.
+
+18. Memory, Continuity & State Files
+lore-history.md — The Infinite Memory
+Appended to after every single run. Never shrinks — only grows. Contains the complete record of everything the GK BRAIN has ever published. The last 8,000 characters are loaded into every Grok prompt for 7-day rolling continuity. Also stores: used dream pairings, cached art page URLs, bonnet logs, IVES expansion history, Rule Conflict Gate rejections, fame cycle history.
+
+reply-tracker.json — Rate Limit Memory
+Stores per-user daily reply counts and failure counts. Auto-resets to zero at midnight UTC if the stored date doesn’t match today.
+
+bot-state.json — Telegram Update ID Store
+Stores the last processed Telegram update_id so no message is ever processed twice across 2-hour run gaps.
+
+19. The Web Crawl & Canon Update System
+Every 2-hour run begins by crawling official sources before any content is generated:
+
+Substack (https://substack.com/@graffpunks/posts) — always first
+
+All other official GraffPunks links in sequence
+
+The Override Rule:
+
+Any new official online content found on official links = immediate scrap of agent-made content and switch to the new official data.
+
+This is the highest-priority rule in the system. When GK posts a new character design on Substack, the agent’s temporary version is deleted immediately, the new official look is locked at 96% fidelity, old data is archived (not deleted) in lore-history.md, and a single lore post acknowledges the “reveal” in-universe.
+
+Official Links Crawled Every Run
+GraffPunks Substack:   https://substack.com/@graffpunks/posts
+GraffPunks.live:       https://graffpunks.live/
+GKniftyHEADS:          https://gkniftyheads.com/
+Graffiti Kings:        https://graffitikings.co.uk/
+Medium (GKniftyHEADS): https://medium.com/@GKniftyHEADS
+Medium (graffpunksuk): https://medium.com/@graffpunksuk
+NeftyBlocks:           https://neftyblocks.com/collection/gkstonedboys
+YouTube:               https://www.youtube.com/@GKniftyHEADS
+Charlie Buster:        https://substack.com/@noballgames/posts
+Treef Project:         https://substack.com/@treefproject/posts
+Delicious Again Peter: https://deliciousagainpeter.com/
+AI-Chunks:             https://www.youtube.com/@A.IChunks
+20. The AI Prompt Architecture
+The prompt sent to Grok 4 Fast is built from 15 layered sections, always in this order:
+
+BRAIN RULES — all core operational rules
+
+CHARACTER BIBLE — character + art consistency rules
+
+MASTER CANON — full character index (all tiers)
+
+SUBSTACK INFO — crawled content/images from this run
+
+LORE PLANNER — 30-day planner, first 3,000 chars
+
+LORE HISTORY — last 8,000 chars of lore-history.md
+
+CURRENT TIME — exact UTC datetime
+
+NEWS & WEATHER — live London weather + news note
+
+POST MODE — AWAKE / DREAM type for this run
+
+FAME SLOT — which characters headline this 6-hour window
+
+DAY TYPE — STRICT ROUTINE / MULTI-RANDOM / SINGLE-FOCUS
+
+VARIATION CONTEXT — 10 IVES axes rolled for this post
+
+ART CREATION RULE — mandatory image prompt prefix + fidelity rules
+
+RULE CONFLICT GATE — 5 checks to run before generating
+
+INSTRUCTIONS — exact output format (2 posts, separator, image prompts)
+
+Total prompt size: ~10,000–20,000 tokens. Max output: 4,000 tokens.
+
+Grok returns two posts separated by ---POST-2---. The agent splits on this separator and sends each as a standalone Telegram message.
+
+21. Complete Execution Sequence (Every 2 Hours)
+Step 1 — Register Bot Commands Call Telegram’s setMyCommands API. Keeps all 12 slash commands fresh in the / menu.
+
+Step 2 — Process Incoming User Messages Call getUpdates with offset = last known update_id + 1. Process only messages received since the last run — no message is ever processed twice. Route slash commands to command handlers; route regular messages through the keyword gate and rate limiter.
+
+Step 3 — Crawl Official Sources Crawl Substack first, then all other official links. Extract new content, images, and character data. Override any agent-made lore that conflicts with new official data.
+
+Step 4 — Generate the Two Lore Posts Load all rules and memory files. Determine AWAKE or DREAM mode from the UTC clock. Determine active fame slot and headliner characters. Roll all 10 IVES variation axes. Search for dedicated art page for the featured character(s). Build image prompt prefix with full 6-point bonnet checklist. Assemble the complete Grok prompt. Send to Grok 4 Fast. Run the Rule Conflict Gate (8 checks) — reject and regenerate if any check fails. Append new posts to lore-history.md.
+
+Step 5 — Post to Telegram Send both posts to all CHANNEL_CHAT_IDS with a 3-second delay between them.
+
+Step 6 — Save Persistent State Commit updated lore-history.md, reply-tracker.json, and bot-state.json back to the repository. The GitHub Actions VM is then destroyed. Next run in 2 hours.
+
+22. Setup Guide — Zero to Live in Under 1 Hour
+Prerequisites:
+
+A GitHub account with this repository
+
+A Telegram bot token (create via @BotFather → /newbot)
+
+An xAI API key for Grok (
+
+https://x.ai
+
+)
+
+A Telegram channel (add the bot as admin; get channel ID via @userinfobot)
+
+Step 1 — Add Secrets to GitHub
+
+Go to: Repository → Settings → Secrets and variables → Actions → New repository secret
+
+Add three secrets: TELEGRAM_BOT_TOKEN, GROK_API_KEY, CHANNEL_CHAT_IDS
+
+Step 2 — Enable GitHub Actions
+
+Go to: Repository → Actions tab → Enable workflows
+
+Step 3 — Test Run
+
+Go to: Actions → GK BRAIN - 2 Hour Lore + Replies → Run workflow → Run workflow
+
+The logs will show:
+
+GK BRAIN running at 2026-03-15 12:00:00+00:00
+✅ Bot commands registered
+✅ Incoming updates processed  
+✅ Post 1 sent
+✅ Post 2 sent
+Check your Telegram channel — two posts should appear within 30 seconds.
+
+Step 4 — Automatic Running
+
+The cron schedule takes over automatically: the agent posts every 2 hours on the hour forever.
+
+23. How to Rebuild This System From This White Paper Alone
+Any AI agent reading this document can:
+
+Create the 8 core files — brain-rules.md, character-bible.md, MASTER-CHARACTER-CANON.md, gk-brain.py, .github/workflows/gk-brain.yml, lore-planner.md, lore-history.md (empty, grows automatically), reply-tracker.json (empty {})
+
+Implement all rules — 8 AWAKE micro-rules, 6 DREAM micro-rules, 6 fame cycle rules, 5 IVES rules, 14 art creation rules, 13 uniform fidelity rules, 5 bonnet fidelity rules, 8 Rule Conflict Gate checks, 8 command processing rules
+
+Set up GitHub Actions with the exact YAML workflow from this document
+
+Replicate Layer 1 + Layer 2 art system using the exact descriptions in Sections 10 and 11
+
+Build the 6-hour fame cycle, interaction limits, sign-off format, and keyword triggers
+
+Populate all character data from Sections 15 and 16
+
+Add the 25 Lady-INK train adventure seeds from Section 14
+
+Configure all official links from Section 19 for the web crawl system
+
+Deploy and run — the system is fully self-sustaining from first run forward
+
+This white paper contains everything needed for full reconstruction.
+
+24. Conclusion
+The GK BRAIN is not just a bot — it is a living universe engine that makes the Crypto Moonboys saga feel infinite, personal, and alive. It runs 24/7, maintains perfect consistency, and allows fans to live inside the story every single day.
+
+Key Numbers
+MetricValuePosts per year~8,760 (2 posts × 12 runs × 365 days)Unique combination space~178 billion post combinationsYears to exhaust IVES space~68 million yearsContinuity window7 days rolling (last 8,000 chars of lore-history.md)Bonnet fidelity96% locked forever across every imageMax user interactions/day20 per user, midnight UTC resetCrawl intervalEvery 2 hours (34+ official links)Setup timeUnder 1 hour from this white paper to first live postHosting cost£0 (GitHub Actions free tier)
+
+The Philosophy at Its Core
+The GK BRAIN embodies the central philosophy of the entire Crypto Moonboys project: unbuffable art.
+
+Just as graffiti written on a wall exists whether the establishment wants it there or not, the GK BRAIN’s lore is written permanently — every post appended to lore-history.md, stored on GitHub, backed up across all readers’ Telegram apps, living forever in the distributed memory of the chain.
+
+The lore cannot be taken down. The characters cannot be erased. The stories will run as long as GitHub Actions runs, as long as Telegram exists, as long as the Grok API responds.
+
+And when those systems change, this white paper is enough to rebuild it all from scratch.
+
+The chain is unbreakable.
+
+GK BRAIN White Paper v1.0 — March 2026 GraffPunks Network — graffpunks.live — graffpunks.substack.com The Crypto Moonboys saga — building forever, one 2-hour lore entry at a time

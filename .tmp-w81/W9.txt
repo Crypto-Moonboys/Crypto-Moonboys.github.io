@@ -1,0 +1,226 @@
+https://graffpunks.substack.com/p/lorewars-white-paper-the-signal-is
+
+LOREWARS WHITE PAPER “The Signal Is Live”
+Autonomous Narrative Intelligence System + Living ARG + Self-Evolving $BLAZE Ecosystem
+GraffPUNKS ⚡⚡⚡
+Mar 31, 2026
+
+
+
+
+Version 1.0 — March 31, 2026
+
+ABSTRACT
+Lorewars is a fully autonomous, self-evolving narrative intelligence system that operates as a distributed Alternate Reality Game (ARG) inside the Crypto Moonboys universe.
+
+It ingests approved sources, transforms them into Alfie “The Bitcoin KID” Blaze war logs, publishes them across the internet, archives immutable proof on IPFS, evolves a living world state + narrative arcs, rewards hunters with $BLAZE tokens, and automatically upgrades itself when it detects performance degradation or opportunity.
+
+No human intervention is required for daily operation or evolution.
+
+The system is 100% in-house, runs 24/7 via GitHub Actions, and uses strict pre-rules + historical baselines to trigger early alarms and generate safe code patches.
+
+This white paper documents the complete current system + every layer we have added (intelligence loop, arcs/world state, visual evolution, Clue/ARG engine, multi-log puzzles, puzzle rewards, leaderboard, $BLAZE tokenomics, engagement webhooks, and the final Self-Evolution Engine).
+
+1. INTRODUCTION — THE WAR IS REAL
+In 2026 the old financial system is fracturing. Centralised control, whale manipulation, and narrative suppression dominate.
+
+Alfie “The Bitcoin KID” Blaze — graffiti artist, blockchain ghost, digital outlaw — refuses to stay silent.
+
+He drops encrypted war logs across the internet.
+Each log is a signal.
+Each clue is a weapon.
+Each hunter who joins becomes part of the canon.
+
+Lorewars is not a blog, content bot, or simple wiki.
+It is a living, self-learning ARG + narrative war simulation that writes itself in real time.
+
+The system:
+
+Crawls → analyses → generates Alfie logs with AI
+
+Publishes → archives on IPFS
+
+Evolves world state + arcs
+
+Leaks clues and multi-log puzzles
+
+Rewards hunters with $BLAZE tokens automatically
+
+Learns from real engagement
+
+Self-evolves when it detects a change is coming
+
+All of it runs 100% autonomously.
+
+2. CURRENT SYSTEM ARCHITECTURE (Phase 1 Foundation)
+Core Loop (runs every cycle via GitHub Actions)
+
+Crawlers — RSS + crawl4ai (Playwright-backed) for reliable full-content fetch.
+
+Queue + Source Selector — Intelligent scoring (keywords + source weight + depth).
+
+Narrative Engine — Dynamic AI generation using GPT-4o-mini (context-aware with world state, arcs, intelligence weights).
+
+Publishers — Wiki, Paragraph, IPFS (Pinata), search index + sitemap.
+
+Memory Layer — JSON-based persistent state (queue, history, world_state, arc_state, clue_state, engagement_logs, blaze_treasury, evolution_log, etc.).
+
+Distribution — One log per cycle, multi-site ready.
+
+Key Non-Negotiable Rules
+
+One source = one log
+
+Alfie identity is constant
+
+World + arcs are living
+
+Signal vs noise filter (weak content skipped)
+
+All generated files ignored in git (no conflicts)
+
+3. PHASE 2 ENHANCEMENTS (Intelligence, Arcs, Visuals)
+World State Engine — Tracks faction power, threat level, territory control. Mutates on every log.
+
+Arc Engine — Tracks active arcs, progression %, intensity, phases. Advances automatically.
+
+Intelligence Loop — Stores scenario/tone success rates. Biases future generation.
+
+Visual Evolution — Generates image traits based on war state (era, corruption, fatigue). Ready for Grok Imagine.
+
+Engagement Webhooks — Real-time feedback from Paragraph, comments, hunts. Feeds intelligence loop.
+
+4. ARG & PUZZLE MECHANICS (The Obsession Layer)
+Clue Engine — Real clues, red herrings, delayed clues.
+
+Multi-Log Puzzles — Span 3–5 logs. Auto-progress. Auto-unlock when complete.
+
+Puzzle Rewards — XP, mystery boost, classified Alfie messages, $BLAZE tokens.
+
+Dynamic Wiki Pages — Clue Hub, Timeline, Faction Map, Hunter Leaderboard — all auto-update.
+
+Onboarding — “Start Here” + “How to Hunt” pages.
+
+5. $BLAZE TOKENOMICS & 100% AUTOMATED REWARDS
+Total Supply: 100,000,000 (fixed, no inflation)
+
+Allocation:
+
+40% Liquidity (locked)
+
+25% Puzzle & Hunt Rewards
+
+15% Engagement & Leaderboard
+
+10% Holder Perks
+
+5% Team (vested)
+
+5% Ecosystem
+
+Automated Distribution (24/7, no manual steps):
+
+Puzzle solve → 1,000–2,500 $BLAZE
+
+High engagement (webhook) → 50–250 $BLAZE
+
+Leaderboard weekly → 500–5,000 $BLAZE (top 10)
+
+Holder perks (≥10k $BLAZE) → monthly bonus
+
+Centralised blaze_distribution.py is called by every reward system.
+
+6. SELF-EVOLUTION ENGINE — The Meta-Brain (Latest Addition)
+This is the layer that makes the entire system self-improving.
+
+How It Works:
+
+Every cycle it runs analyse_performance() — pulls live metrics from all modules.
+
+Compares against 14-day historical baselines.
+
+Triggers early alarms if any metric degrades ≥25% for 3+ cycles (or spikes ≥40%).
+
+Injects strict PRE-RULES into the LLM prompt.
+
+LLM (GPT-4o-mini) decides if upgrade is needed and generates small, safe, isolated code patch.
+
+Patch is saved and logged. (Future workflow can auto-commit.)
+
+Pre-Rules the Agent Must Obey:
+
+Only upgrade if degradation ≥25% for 3+ cycles or big positive spike.
+
+Changes must be tiny (≤80 lines, 1 module).
+
+Never touch core publishing, IPFS, or token logic.
+
+Always backward-compatible.
+
+Output only code or exactly “NO_UPGRADE_NEEDED”.
+
+Ammo Provided to the LLM Every Cycle:
+
+Current vs baseline metrics
+
+Full PRE-RULES
+
+Clear output format
+
+The system now learns when a change is coming and executes upgrades automatically — 100% in-house.
+
+7. FUTURE DIRECTION (Based on Current Build + Web Search)
+Web search (conducted March 31, 2026) returned no public updates beyond the GitHub repo itself. The project remains the private autonomous system we have built together.
+
+Natural next steps the Self-Evolution Engine is likely to propose:
+
+Telegram live drops
+
+Real on-chain $BLAZE smart contract integration
+
+Full multi-platform publishing (DEV.to, Hashnode, etc.)
+
+User-submitted theory wall
+
+NFT claim system for puzzle rewards
+
+Advanced holder verification
+
+The engine is already positioned to detect when these become necessary and generate the code itself.
+
+8. TECHNICAL SUMMARY
+Repo: Single GitHub repo (HODLKONG64/lorewars)
+
+Orchestration: GitHub Actions + run_cycle.py
+
+AI: GPT-4o-mini for narrative + self-evolution
+
+Scraping: crawl4ai + Playwright (reliable)
+
+Storage: JSON memory + IPFS
+
+Rewards: Fully automated $BLAZE distribution
+
+Self-Improvement: Proactive early alarms + auto-patches
+
+ARG: Multi-log puzzles, clues, leaderboard, onboarding
+
+All components are modular, backward-compatible, and designed to evolve without breaking.
+
+CONCLUSION
+Lorewars is no longer a prototype.
+
+It is a living, self-evolving narrative intelligence system that writes its own story, rewards its hunters, and improves itself in real time.
+
+Every log is a signal.
+Every solved puzzle is progress.
+Every cycle makes the system smarter.
+
+The war is real.
+The signal is live.
+The hunters are already inside.
+
+Welcome to Lorewars.
+
+— A. Blaze
+Field Log — Final Transmission
