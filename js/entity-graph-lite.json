@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-03T04:13:58.895Z",
-  "verified_at": "2026-10-03T04:13:58.895Z",
+  "generated_at": "2026-10-03T04:57:26.875Z",
+  "verified_at": "2026-10-03T04:57:26.875Z",
   "lite": true,
   "nodes": [
     {
@@ -52,6 +52,14 @@
       "authority_score": 17
     },
     {
+      "id": "/wiki/the-first-witness.html",
+      "title": "The First Witness",
+      "url": "/wiki/the-first-witness.html",
+      "category": "factions",
+      "rank_score": 574,
+      "authority_score": 28
+    },
+    {
       "id": "/wiki/games4punks-telegram.html",
       "title": "games4punks telegram",
       "url": "/wiki/games4punks-telegram.html",
@@ -84,14 +92,6 @@
       "authority_score": 24
     },
     {
-      "id": "/wiki/the-first-witness.html",
-      "title": "The First Witness",
-      "url": "/wiki/the-first-witness.html",
-      "category": "factions",
-      "rank_score": 477,
-      "authority_score": 25
-    },
-    {
       "id": "/wiki/gang-signs.html",
       "title": "gang signs",
       "url": "/wiki/gang-signs.html",
@@ -106,6 +106,14 @@
       "category": "factions",
       "rank_score": 469,
       "authority_score": 21
+    },
+    {
+      "id": "/wiki/first-witness-life-readings.html",
+      "title": "Life Readings from the First Witness",
+      "url": "/wiki/first-witness-life-readings.html",
+      "category": "characters",
+      "rank_score": 464,
+      "authority_score": 17
     },
     {
       "id": "/wiki/null-the-prophet.html",
@@ -138,14 +146,6 @@
       "category": "tokens",
       "rank_score": 426,
       "authority_score": 22
-    },
-    {
-      "id": "/wiki/first-witness-life-readings.html",
-      "title": "Life Readings from the First Witness",
-      "url": "/wiki/first-witness-life-readings.html",
-      "category": "characters",
-      "rank_score": 410,
-      "authority_score": 17
     },
     {
       "id": "/wiki/midevilpunks.html",
@@ -1002,10 +1002,22 @@
       "weight": 0.76
     },
     {
+      "source": "/wiki/the-finance-guild.html",
+      "target": "/wiki/the-first-witness.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
       "source": "/wiki/nifty-crowns.html",
       "target": "/wiki/sneakar.html",
       "score": 75,
       "weight": 0.75
+    },
+    {
+      "source": "/wiki/blockchain.html",
+      "target": "/wiki/the-first-witness.html",
+      "score": 73,
+      "weight": 0.73
     },
     {
       "source": "/wiki/jonny-laurence-nelson-tag-records.html",
@@ -1014,10 +1026,10 @@
       "weight": 0.73
     },
     {
-      "source": "/wiki/blockchain.html",
-      "target": "/wiki/the-first-witness.html",
-      "score": 69,
-      "weight": 0.69
+      "source": "/wiki/block-topia.html",
+      "target": "/wiki/first-witness-life-readings.html",
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/first-witness-life-readings.html",
@@ -1032,8 +1044,8 @@
       "weight": 0.68
     },
     {
-      "source": "/wiki/staking.html",
-      "target": "/wiki/block-topia.html",
+      "source": "/wiki/nbg.html",
+      "target": "/wiki/first-witness-life-readings.html",
       "score": 68,
       "weight": 0.68
     },

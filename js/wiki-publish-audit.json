@@ -1,8 +1,8 @@
 {
-  "_generated": "2026-10-03T04:13:53.382Z",
+  "_generated": "2026-10-03T04:57:21.986Z",
   "summary": {
-    "total": 388,
-    "approved": 388,
+    "total": 415,
+    "approved": 415,
     "blocked": 0,
     "needs_review": 0,
     "blocked_synthetic_slug": 0,
@@ -361,6 +361,20 @@
       "word_count": 1110
     },
     {
+      "slug": "first-witness-addiction-intoxication-compulsion",
+      "file": "first-witness-addiction-intoxication-compulsion.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 238
+    },
+    {
+      "slug": "first-witness-ageing-retirement-elderhood",
+      "file": "first-witness-ageing-retirement-elderhood.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 231
+    },
+    {
       "slug": "first-witness-ai-synthetic-minds",
       "file": "first-witness-ai-synthetic-minds.html",
       "status": "APPROVED_CANON_PAGE",
@@ -368,11 +382,32 @@
       "word_count": 382
     },
     {
+      "slug": "first-witness-anonymity-pseudonyms-hidden-names",
+      "file": "first-witness-anonymity-pseudonyms-hidden-names.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 257
+    },
+    {
       "slug": "first-witness-apocrypha-disputed-passages",
       "file": "first-witness-apocrypha-disputed-passages.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 446
+    },
+    {
+      "slug": "first-witness-beauty-luxury-modesty-status",
+      "file": "first-witness-beauty-luxury-modesty-status.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 296
+    },
+    {
+      "slug": "first-witness-birth-naming-coming-of-age",
+      "file": "first-witness-birth-naming-coming-of-age.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 423
     },
     {
       "slug": "first-witness-bitcoin-witness",
@@ -459,6 +494,27 @@
       "word_count": 403
     },
     {
+      "slug": "first-witness-censorship-offence-public-marks",
+      "file": "first-witness-censorship-offence-public-marks.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 261
+    },
+    {
+      "slug": "first-witness-chain-archaeology-forensics",
+      "file": "first-witness-chain-archaeology-forensics.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 254
+    },
+    {
+      "slug": "first-witness-charity-mutual-aid-dependence",
+      "file": "first-witness-charity-mutual-aid-dependence.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 262
+    },
+    {
       "slug": "first-witness-child-of-fire",
       "file": "first-witness-child-of-fire.html",
       "status": "APPROVED_CANON_PAGE",
@@ -480,6 +536,20 @@
       "word_count": 719
     },
     {
+      "slug": "first-witness-confession-apology-reconciliation",
+      "file": "first-witness-confession-apology-reconciliation.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 290
+    },
+    {
+      "slug": "first-witness-counterfeit-relics-fraud",
+      "file": "first-witness-counterfeit-relics-fraud.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 285
+    },
+    {
       "slug": "first-witness-daily-practices-rituals",
       "file": "first-witness-daily-practices-rituals.html",
       "status": "APPROVED_CANON_PAGE",
@@ -492,6 +562,41 @@
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 385
+    },
+    {
+      "slug": "first-witness-digital-inheritance-after-death",
+      "file": "first-witness-digital-inheritance-after-death.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 261
+    },
+    {
+      "slug": "first-witness-disaster-famine-mutual-aid",
+      "file": "first-witness-disaster-famine-mutual-aid.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 256
+    },
+    {
+      "slug": "first-witness-dreams-omens-coincidence",
+      "file": "first-witness-dreams-omens-coincidence.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 281
+    },
+    {
+      "slug": "first-witness-dual-use-tools-weapons",
+      "file": "first-witness-dual-use-tools-weapons.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 241
+    },
+    {
+      "slug": "first-witness-education-schools-apprenticeship",
+      "file": "first-witness-education-schools-apprenticeship.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 305
     },
     {
       "slug": "first-witness-faction-commentaries",
@@ -543,6 +648,13 @@
       "word_count": 902
     },
     {
+      "slug": "first-witness-healing-illness-disability-care",
+      "file": "first-witness-healing-illness-disability-care.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 323
+    },
+    {
       "slug": "first-witness-heresies-corruptions-abuses",
       "file": "first-witness-heresies-corruptions-abuses.html",
       "status": "APPROVED_CANON_PAGE",
@@ -555,6 +667,20 @@
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 523
+    },
+    {
+      "slug": "first-witness-humour-satire-sacred-mockery",
+      "file": "first-witness-humour-satire-sacred-mockery.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 304
+    },
+    {
+      "slug": "first-witness-intimacy-sexuality-privacy",
+      "file": "first-witness-intimacy-sexuality-privacy.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 271
     },
     {
       "slug": "first-witness-justice-mercy-restitution",
@@ -571,11 +697,25 @@
       "word_count": 336
     },
     {
+      "slug": "first-witness-language-translation-sacred-words",
+      "file": "first-witness-language-translation-sacred-words.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 248
+    },
+    {
       "slug": "first-witness-leadership-councils-succession",
       "file": "first-witness-leadership-councils-succession.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 342
+    },
+    {
+      "slug": "first-witness-libraries-architecture-archive-houses",
+      "file": "first-witness-libraries-architecture-archive-houses.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 268
     },
     {
       "slug": "first-witness-life-readings",
@@ -606,11 +746,32 @@
       "word_count": 631
     },
     {
+      "slug": "first-witness-mediation-witness-circles",
+      "file": "first-witness-mediation-witness-circles.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 249
+    },
+    {
+      "slug": "first-witness-migration-refuge-exile-borders",
+      "file": "first-witness-migration-refuge-exile-borders.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 297
+    },
+    {
       "slug": "first-witness-money-debt-honest-scales",
       "file": "first-witness-money-debt-honest-scales.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 424
+    },
+    {
+      "slug": "first-witness-music-dance-performance",
+      "file": "first-witness-music-dance-performance.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 251
     },
     {
       "slug": "first-witness-null-erasure",
@@ -641,6 +802,13 @@
       "word_count": 426
     },
     {
+      "slug": "first-witness-prisons-punishment-return",
+      "file": "first-witness-prisons-punishment-return.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 297
+    },
+    {
       "slug": "first-witness-proverbs-street-sayings",
       "file": "first-witness-proverbs-street-sayings.html",
       "status": "APPROVED_CANON_PAGE",
@@ -662,6 +830,13 @@
       "word_count": 401
     },
     {
+      "slug": "first-witness-roles-keepers-witnesses-mediators",
+      "file": "first-witness-roles-keepers-witnesses-mediators.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 273
+    },
+    {
       "slug": "first-witness-sacred-fork",
       "file": "first-witness-sacred-fork.html",
       "status": "APPROVED_CANON_PAGE",
@@ -681,6 +856,13 @@
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 432
+    },
+    {
+      "slug": "first-witness-silence-solitude-attention",
+      "file": "first-witness-silence-solitude-attention.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 290
     },
     {
       "slug": "first-witness-songs-chants-responses",
@@ -716,6 +898,13 @@
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 597
+    },
+    {
+      "slug": "first-witness-truth-commissions-after-conflict",
+      "file": "first-witness-truth-commissions-after-conflict.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 244
     },
     {
       "slug": "first-witness-war-defence-peacekeeping",
@@ -2486,7 +2675,7 @@
       "file": "the-first-witness.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 2240
+      "word_count": 2743
     },
     {
       "slug": "the-gasless-ghosts",

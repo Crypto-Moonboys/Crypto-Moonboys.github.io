@@ -955,6 +955,44 @@
         "wiki"
       ]
     },
+    "first_witness_addiction_intoxication_compulsion": {
+      "alias_candidates": [],
+      "aliases": [
+        "addiction intoxication compulsion",
+        "first witness addiction intoxication compulsion"
+      ],
+      "canonical_title": "Addiction, Intoxication and Compulsion",
+      "canonical_url": "/wiki/first-witness-addiction-intoxication-compulsion.html",
+      "category": "core",
+      "source_urls": [
+        "/wiki/first-witness-addiction-intoxication-compulsion.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "addiction",
+        "intoxication",
+        "compulsion"
+      ]
+    },
+    "first_witness_ageing_retirement_elderhood": {
+      "alias_candidates": [],
+      "aliases": [
+        "ageing retirement elderhood",
+        "first witness ageing retirement elderhood"
+      ],
+      "canonical_title": "Ageing, Retirement and Elderhood",
+      "canonical_url": "/wiki/first-witness-ageing-retirement-elderhood.html",
+      "category": "core",
+      "source_urls": [
+        "/wiki/first-witness-ageing-retirement-elderhood.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "ageing",
+        "retirement",
+        "elderhood"
+      ]
+    },
     "first_witness_ai_synthetic_minds": {
       "alias_candidates": [],
       "aliases": [
@@ -975,6 +1013,26 @@
         "minds"
       ]
     },
+    "first_witness_anonymity_pseudonyms_hidden_names": {
+      "alias_candidates": [],
+      "aliases": [
+        "anonymity pseudonyms hidden names",
+        "first witness anonymity pseudonyms hidden names"
+      ],
+      "canonical_title": "Anonymity, Pseudonyms and Hidden Names",
+      "canonical_url": "/wiki/first-witness-anonymity-pseudonyms-hidden-names.html",
+      "category": "core",
+      "source_urls": [
+        "/wiki/first-witness-anonymity-pseudonyms-hidden-names.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "anonymity",
+        "pseudonyms",
+        "hidden",
+        "names"
+      ]
+    },
     "first_witness_apocrypha_disputed_passages": {
       "alias_candidates": [],
       "aliases": [
@@ -992,6 +1050,46 @@
         "apocrypha",
         "disputed",
         "passages"
+      ]
+    },
+    "first_witness_beauty_luxury_modesty_status": {
+      "alias_candidates": [],
+      "aliases": [
+        "beauty luxury modesty status",
+        "first witness beauty luxury modesty status"
+      ],
+      "canonical_title": "Beauty, Luxury, Modesty and Status",
+      "canonical_url": "/wiki/first-witness-beauty-luxury-modesty-status.html",
+      "category": "core",
+      "source_urls": [
+        "/wiki/first-witness-beauty-luxury-modesty-status.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "beauty",
+        "luxury",
+        "modesty",
+        "status"
+      ]
+    },
+    "first_witness_birth_naming_coming_of_age": {
+      "alias_candidates": [],
+      "aliases": [
+        "birth naming coming age",
+        "first witness birth naming coming of age"
+      ],
+      "canonical_title": "Birth, Naming and Coming of Age",
+      "canonical_url": "/wiki/first-witness-birth-naming-coming-of-age.html",
+      "category": "factions",
+      "source_urls": [
+        "/wiki/first-witness-birth-naming-coming-of-age.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "birth",
+        "naming",
+        "coming",
+        "age"
       ]
     },
     "first_witness_bitcoin_witness": {
@@ -1224,6 +1322,66 @@
         "remembrance"
       ]
     },
+    "first_witness_censorship_offence_public_marks": {
+      "alias_candidates": [],
+      "aliases": [
+        "censorship offence public marks",
+        "first witness censorship offence public marks"
+      ],
+      "canonical_title": "Censorship, Offence and Public Marks",
+      "canonical_url": "/wiki/first-witness-censorship-offence-public-marks.html",
+      "category": "factions",
+      "source_urls": [
+        "/wiki/first-witness-censorship-offence-public-marks.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "censorship",
+        "offence",
+        "public",
+        "marks"
+      ]
+    },
+    "first_witness_chain_archaeology_forensics": {
+      "alias_candidates": [],
+      "aliases": [
+        "chain archaeology historical forensics",
+        "first witness chain archaeology forensics"
+      ],
+      "canonical_title": "Chain Archaeology and Historical Forensics",
+      "canonical_url": "/wiki/first-witness-chain-archaeology-forensics.html",
+      "category": "core",
+      "source_urls": [
+        "/wiki/first-witness-chain-archaeology-forensics.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "chain",
+        "archaeology",
+        "historical",
+        "forensics"
+      ]
+    },
+    "first_witness_charity_mutual_aid_dependence": {
+      "alias_candidates": [],
+      "aliases": [
+        "charity mutual aid dependence",
+        "first witness charity mutual aid dependence"
+      ],
+      "canonical_title": "Charity, Mutual Aid and Dependence",
+      "canonical_url": "/wiki/first-witness-charity-mutual-aid-dependence.html",
+      "category": "core",
+      "source_urls": [
+        "/wiki/first-witness-charity-mutual-aid-dependence.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "charity",
+        "mutual",
+        "aid",
+        "dependence"
+      ]
+    },
     "first_witness_child_of_fire": {
       "alias_candidates": [],
       "aliases": [
@@ -1282,6 +1440,46 @@
         "records"
       ]
     },
+    "first_witness_confession_apology_reconciliation": {
+      "alias_candidates": [],
+      "aliases": [
+        "confession apology reconciliation",
+        "first witness confession apology reconciliation"
+      ],
+      "canonical_title": "Confession, Apology and Reconciliation",
+      "canonical_url": "/wiki/first-witness-confession-apology-reconciliation.html",
+      "category": "core",
+      "source_urls": [
+        "/wiki/first-witness-confession-apology-reconciliation.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "confession",
+        "apology",
+        "reconciliation"
+      ]
+    },
+    "first_witness_counterfeit_relics_fraud": {
+      "alias_candidates": [],
+      "aliases": [
+        "first witness counterfeit relics fraud"
+      ],
+      "canonical_title": "Counterfeit Relics, Forged Hashes and Sacred Scams",
+      "canonical_url": "/wiki/first-witness-counterfeit-relics-fraud.html",
+      "category": "core",
+      "source_urls": [
+        "/wiki/first-witness-counterfeit-relics-fraud.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "counterfeit",
+        "relics",
+        "forged",
+        "hashes",
+        "sacred",
+        "scams"
+      ]
+    },
     "first_witness_daily_practices_rituals": {
       "alias_candidates": [],
       "aliases": [
@@ -1318,6 +1516,108 @@
         "death",
         "grief",
         "remembrance"
+      ]
+    },
+    "first_witness_digital_inheritance_after_death": {
+      "alias_candidates": [],
+      "aliases": [
+        "digital inheritance memory after death",
+        "first witness digital inheritance after death"
+      ],
+      "canonical_title": "Digital Inheritance and Memory After Death",
+      "canonical_url": "/wiki/first-witness-digital-inheritance-after-death.html",
+      "category": "core",
+      "source_urls": [
+        "/wiki/first-witness-digital-inheritance-after-death.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "digital",
+        "inheritance",
+        "memory",
+        "after",
+        "death"
+      ]
+    },
+    "first_witness_disaster_famine_mutual_aid": {
+      "alias_candidates": [],
+      "aliases": [
+        "disaster famine mutual aid",
+        "first witness disaster famine mutual aid"
+      ],
+      "canonical_title": "Disaster, Famine and Mutual Aid",
+      "canonical_url": "/wiki/first-witness-disaster-famine-mutual-aid.html",
+      "category": "core",
+      "source_urls": [
+        "/wiki/first-witness-disaster-famine-mutual-aid.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "disaster",
+        "famine",
+        "mutual",
+        "aid"
+      ]
+    },
+    "first_witness_dreams_omens_coincidence": {
+      "alias_candidates": [],
+      "aliases": [
+        "dreams omens coincidence prophecy fraud",
+        "first witness dreams omens coincidence"
+      ],
+      "canonical_title": "Dreams, Omens, Coincidence and Prophecy Fraud",
+      "canonical_url": "/wiki/first-witness-dreams-omens-coincidence.html",
+      "category": "core",
+      "source_urls": [
+        "/wiki/first-witness-dreams-omens-coincidence.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "dreams",
+        "omens",
+        "coincidence",
+        "prophecy",
+        "fraud"
+      ]
+    },
+    "first_witness_dual_use_tools_weapons": {
+      "alias_candidates": [],
+      "aliases": [
+        "first witness dual use tools weapons",
+        "tools weapons dual use technology"
+      ],
+      "canonical_title": "Tools, Weapons and Dual-Use Technology",
+      "canonical_url": "/wiki/first-witness-dual-use-tools-weapons.html",
+      "category": "core",
+      "source_urls": [
+        "/wiki/first-witness-dual-use-tools-weapons.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "tools",
+        "weapons",
+        "dual",
+        "use",
+        "technology"
+      ]
+    },
+    "first_witness_education_schools_apprenticeship": {
+      "alias_candidates": [],
+      "aliases": [
+        "education schools apprenticeship",
+        "first witness education schools apprenticeship"
+      ],
+      "canonical_title": "Education, Schools and Apprenticeship",
+      "canonical_url": "/wiki/first-witness-education-schools-apprenticeship.html",
+      "category": "factions",
+      "source_urls": [
+        "/wiki/first-witness-education-schools-apprenticeship.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "education",
+        "schools",
+        "apprenticeship"
       ]
     },
     "first_witness_faction_commentaries": {
@@ -1455,6 +1755,26 @@
         "2030"
       ]
     },
+    "first_witness_healing_illness_disability_care": {
+      "alias_candidates": [],
+      "aliases": [
+        "first witness healing illness disability care",
+        "healing illness disability care"
+      ],
+      "canonical_title": "Healing, Illness, Disability and Care",
+      "canonical_url": "/wiki/first-witness-healing-illness-disability-care.html",
+      "category": "core",
+      "source_urls": [
+        "/wiki/first-witness-healing-illness-disability-care.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "healing",
+        "illness",
+        "disability",
+        "care"
+      ]
+    },
     "first_witness_heresies_corruptions_abuses": {
       "alias_candidates": [],
       "aliases": [
@@ -1490,6 +1810,45 @@
       "tags": [
         "hodl",
         "doctrine"
+      ]
+    },
+    "first_witness_humour_satire_sacred_mockery": {
+      "alias_candidates": [],
+      "aliases": [
+        "first witness humour satire sacred mockery",
+        "humour satire sacred mockery"
+      ],
+      "canonical_title": "Humour, Satire and Sacred Mockery",
+      "canonical_url": "/wiki/first-witness-humour-satire-sacred-mockery.html",
+      "category": "factions",
+      "source_urls": [
+        "/wiki/first-witness-humour-satire-sacred-mockery.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "humour",
+        "satire",
+        "sacred",
+        "mockery"
+      ]
+    },
+    "first_witness_intimacy_sexuality_privacy": {
+      "alias_candidates": [],
+      "aliases": [
+        "first witness intimacy sexuality privacy",
+        "intimacy sexuality privacy"
+      ],
+      "canonical_title": "Intimacy, Sexuality and Privacy",
+      "canonical_url": "/wiki/first-witness-intimacy-sexuality-privacy.html",
+      "category": "factions",
+      "source_urls": [
+        "/wiki/first-witness-intimacy-sexuality-privacy.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "intimacy",
+        "sexuality",
+        "privacy"
       ]
     },
     "first_witness_justice_mercy_restitution": {
@@ -1531,6 +1890,26 @@
         "stewardship"
       ]
     },
+    "first_witness_language_translation_sacred_words": {
+      "alias_candidates": [],
+      "aliases": [
+        "first witness language translation sacred words",
+        "language translation sacred words"
+      ],
+      "canonical_title": "Language, Translation and Sacred Words",
+      "canonical_url": "/wiki/first-witness-language-translation-sacred-words.html",
+      "category": "core",
+      "source_urls": [
+        "/wiki/first-witness-language-translation-sacred-words.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "language",
+        "translation",
+        "sacred",
+        "words"
+      ]
+    },
     "first_witness_leadership_councils_succession": {
       "alias_candidates": [],
       "aliases": [
@@ -1548,6 +1927,27 @@
         "leadership",
         "councils",
         "succession"
+      ]
+    },
+    "first_witness_libraries_architecture_archive_houses": {
+      "alias_candidates": [],
+      "aliases": [
+        "first witness libraries architecture archive houses",
+        "libraries archive houses sacred architecture"
+      ],
+      "canonical_title": "Libraries, Archive Houses and Sacred Architecture",
+      "canonical_url": "/wiki/first-witness-libraries-architecture-archive-houses.html",
+      "category": "core",
+      "source_urls": [
+        "/wiki/first-witness-libraries-architecture-archive-houses.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "libraries",
+        "archive",
+        "houses",
+        "sacred",
+        "architecture"
       ]
     },
     "first_witness_life_readings": {
@@ -1626,6 +2026,45 @@
         "chronology"
       ]
     },
+    "first_witness_mediation_witness_circles": {
+      "alias_candidates": [],
+      "aliases": [
+        "first witness mediation witness circles",
+        "mediation witness circles"
+      ],
+      "canonical_title": "Mediation and Witness Circles",
+      "canonical_url": "/wiki/first-witness-mediation-witness-circles.html",
+      "category": "factions",
+      "source_urls": [
+        "/wiki/first-witness-mediation-witness-circles.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "mediation",
+        "witness",
+        "circles"
+      ]
+    },
+    "first_witness_migration_refuge_exile_borders": {
+      "alias_candidates": [],
+      "aliases": [
+        "first witness migration refuge exile borders",
+        "migration refuge exile borders"
+      ],
+      "canonical_title": "Migration, Refuge, Exile and Borders",
+      "canonical_url": "/wiki/first-witness-migration-refuge-exile-borders.html",
+      "category": "factions",
+      "source_urls": [
+        "/wiki/first-witness-migration-refuge-exile-borders.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "migration",
+        "refuge",
+        "exile",
+        "borders"
+      ]
+    },
     "first_witness_money_debt_honest_scales": {
       "alias_candidates": [],
       "aliases": [
@@ -1644,6 +2083,25 @@
         "debt",
         "honest",
         "scales"
+      ]
+    },
+    "first_witness_music_dance_performance": {
+      "alias_candidates": [],
+      "aliases": [
+        "first witness music dance performance",
+        "music dance performance"
+      ],
+      "canonical_title": "Music, Dance and Performance",
+      "canonical_url": "/wiki/first-witness-music-dance-performance.html",
+      "category": "core",
+      "source_urls": [
+        "/wiki/first-witness-music-dance-performance.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "music",
+        "dance",
+        "performance"
       ]
     },
     "first_witness_null_erasure": {
@@ -1723,6 +2181,25 @@
         "idols"
       ]
     },
+    "first_witness_prisons_punishment_return": {
+      "alias_candidates": [],
+      "aliases": [
+        "first witness prisons punishment return",
+        "prisons punishment return"
+      ],
+      "canonical_title": "Prisons, Punishment and Return",
+      "canonical_url": "/wiki/first-witness-prisons-punishment-return.html",
+      "category": "core",
+      "source_urls": [
+        "/wiki/first-witness-prisons-punishment-return.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "prisons",
+        "punishment",
+        "return"
+      ]
+    },
     "first_witness_proverbs_street_sayings": {
       "alias_candidates": [],
       "aliases": [
@@ -1780,6 +2257,27 @@
         "editions"
       ]
     },
+    "first_witness_roles_keepers_witnesses_mediators": {
+      "alias_candidates": [],
+      "aliases": [
+        "first witness roles keepers witnesses mediators",
+        "keepers witnesses mediators other roles"
+      ],
+      "canonical_title": "Keepers, Witnesses, Mediators and Other Roles",
+      "canonical_url": "/wiki/first-witness-roles-keepers-witnesses-mediators.html",
+      "category": "core",
+      "source_urls": [
+        "/wiki/first-witness-roles-keepers-witnesses-mediators.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "keepers",
+        "witnesses",
+        "mediators",
+        "other",
+        "roles"
+      ]
+    },
     "first_witness_sacred_fork": {
       "alias_candidates": [],
       "aliases": [
@@ -1835,6 +2333,25 @@
         "sects",
         "schools",
         "schisms"
+      ]
+    },
+    "first_witness_silence_solitude_attention": {
+      "alias_candidates": [],
+      "aliases": [
+        "first witness silence solitude attention",
+        "silence solitude attention"
+      ],
+      "canonical_title": "Silence, Solitude and Attention",
+      "canonical_url": "/wiki/first-witness-silence-solitude-attention.html",
+      "category": "factions",
+      "source_urls": [
+        "/wiki/first-witness-silence-solitude-attention.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "silence",
+        "solitude",
+        "attention"
       ]
     },
     "first_witness_songs_chants_responses": {
@@ -1932,6 +2449,25 @@
         "triple",
         "fork",
         "chainfire"
+      ]
+    },
+    "first_witness_truth_commissions_after_conflict": {
+      "alias_candidates": [],
+      "aliases": [
+        "first witness truth commissions after conflict"
+      ],
+      "canonical_title": "Truth Commissions After Conflict",
+      "canonical_url": "/wiki/first-witness-truth-commissions-after-conflict.html",
+      "category": "core",
+      "source_urls": [
+        "/wiki/first-witness-truth-commissions-after-conflict.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "truth",
+        "commissions",
+        "after",
+        "conflict"
       ]
     },
     "first_witness_war_defence_peacekeeping": {
@@ -7944,5 +8480,5 @@
       ]
     }
   },
-  "updated_at": "2026-10-03T04:13:58Z"
+  "updated_at": "2026-10-03T04:57:26Z"
 }
