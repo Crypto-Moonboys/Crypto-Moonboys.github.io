@@ -53,15 +53,7 @@ const FIRST_WITNESS_PAGE_KEYWORDS = Object.freeze({
     'First Witness philosophy',
     'Crypto Moonboys religion',
     'Graffiti Kings religion',
-    'GK religion',
-    'Bitcoin witness',
-    'Bitcoin provenance',
-    'Sacred Chain',
-    'Aether-Chain',
-    'Forty Paths',
-    '40 GK factions',
-    'HODL WARS',
-    'Block Topia'
+    'GK religion'
   ],
   'first-witness-bitcoin-witness': [
     'Bitcoin witness',
