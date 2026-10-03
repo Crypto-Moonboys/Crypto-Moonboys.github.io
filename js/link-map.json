@@ -276,8 +276,7 @@
       "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
       "/wiki/gkniftyheads-bitcoin-kid-x-sarahpfly-773225.html",
       "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
-      "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
-      "/wiki/the-bitcoin-kid-army.html"
+      "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html"
     ]
   },
   "/wiki/atomicassets.html": {
@@ -553,8 +552,7 @@
       "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
       "/wiki/gkniftyheads-bitcoin-kid-x-sarahpfly-773225.html",
       "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
-      "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
-      "/wiki/the-bitcoin-kid-army.html"
+      "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html"
     ]
   },
   "/wiki/bitcoin-graffpunks.html": {
@@ -589,15 +587,18 @@
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/bitcoin.html",
-      "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/gkniftyheads-bitcoin-kid-tv-heads-100-776074.html",
       "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
+      "/wiki/graffpunks.html",
+      "/wiki/hard-fork-games.html",
+      "/wiki/hodl-warriors.html",
       "/wiki/the-bitcoin-kid-army.html"
     ],
     "suggested_links": [
       "/wiki/atomicassets.html",
       "/wiki/bitcoin-btc.html",
+      "/wiki/block-topia.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
       "/wiki/gkniftyheads-bitcoin-kid-infinite-776002.html",
@@ -610,30 +611,25 @@
       "/wiki/gkniftyheads-bitcoin-kid-x-sarahpfly-773225.html",
       "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
       "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
-      "/wiki/gkniftyheads-raze-rebel-783250.html",
-      "/wiki/gkniftyheads-rebel-riff-783269.html",
-      "/wiki/gkniftyheads.html",
-      "/wiki/graffpunks.html",
-      "/wiki/metaverse-battles.html",
-      "/wiki/triple-fork-event.html",
-      "/wiki/xrp-kids.html"
+      "/wiki/gkniftyheads.html"
     ]
   },
   "/wiki/bitcoin-kids.html": {
     "existing_links": [
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/alfie-blaze.html",
+      "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/crypto-moongirls.html",
       "/wiki/graffpunks.html",
       "/wiki/hodl-wars.html",
-      "/wiki/null-the-prophet.html"
+      "/wiki/null-the-prophet.html",
+      "/wiki/street-kingdoms.html"
     ],
     "suggested_links": [
-      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-btc.html",
-      "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin.html",
       "/wiki/first-witness-bitcoin-witness.html",
       "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
@@ -649,10 +645,6 @@
       "/wiki/gkniftyheads-bitcoin-kid-x-sarahpfly-773225.html",
       "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
       "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
-      "/wiki/graffiti-kings.html",
-      "/wiki/hard-fork-games.html",
-      "/wiki/street-kingdoms.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/xrp-kids.html"
     ]
   },
@@ -671,18 +663,19 @@
   "/wiki/bitcoin-x-kids.html": {
     "existing_links": [
       "/wiki/alfie-blaze.html",
+      "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/crypto-moongirls.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-warriors.html",
+      "/wiki/hodl-x-warriors.html",
       "/wiki/null-the-prophet.html"
     ],
     "suggested_links": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-btc.html",
-      "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin.html",
       "/wiki/block-node-defenders.html",
       "/wiki/first-witness-bitcoin-witness.html",
@@ -701,10 +694,6 @@
       "/wiki/gkniftyheads-bitcoin-kid-x-sarahpfly-773225.html",
       "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
       "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
-      "/wiki/graffpunks.html",
-      "/wiki/street-kingdoms.html",
-      "/wiki/the-bitcoin-kid-army.html",
-      "/wiki/the-squeaky-pinks.html",
       "/wiki/xrp-kids.html"
     ]
   },
@@ -850,7 +839,6 @@
     ],
     "suggested_links": [
       "/wiki/first-witness-master-chronology.html",
-      "/wiki/gang-signs.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffiti-kings.html",
       "/wiki/graffiti-nexus.html",
@@ -1202,6 +1190,7 @@
   "/wiki/dream-sovereign.html": {
     "existing_links": [
       "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-dreams-omens-coincidence.html",
       "/wiki/games4punks-telegram.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-wars.html",
@@ -1213,12 +1202,22 @@
     ],
     "suggested_links": [
       "/wiki/block-topia.html",
+      "/wiki/first-witness-apocrypha-disputed-passages.html",
+      "/wiki/first-witness-book-5-the-chain.html",
+      "/wiki/first-witness-chain-archaeology-forensics.html",
+      "/wiki/first-witness-counterfeit-relics-fraud.html",
+      "/wiki/first-witness-humour-satire-sacred-mockery.html",
+      "/wiki/first-witness-language-translation-sacred-words.html",
+      "/wiki/first-witness-libraries-architecture-archive-houses.html",
+      "/wiki/first-witness-sacred-fork.html",
+      "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
+      "/wiki/first-witness-symbols-marks-sacred-design.html",
+      "/wiki/first-witness-world-chain-error.html",
       "/wiki/genesis-kernel.html",
       "/wiki/graffpunks.html",
-      "/wiki/hodl-warriors.html",
-      "/wiki/null-the-prophet.html",
       "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
+      "/wiki/the-chain-scribes.html",
       "/wiki/trevor-fung.html"
     ]
   },
@@ -1474,7 +1473,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -1544,7 +1542,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -1618,7 +1615,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -1688,7 +1684,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -1760,7 +1755,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -1829,7 +1823,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -1901,7 +1894,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -1969,7 +1961,6 @@
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -2045,7 +2036,6 @@
       "/wiki/queen-sarah-p-fly.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/street-kingdoms.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-hard-fork-rockers.html"
     ]
@@ -2121,7 +2111,6 @@
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -2197,7 +2186,6 @@
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -2271,7 +2259,6 @@
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -2347,7 +2334,6 @@
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -2425,7 +2411,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/jonny-laurence-nelson-tag-records.html",
       "/wiki/rug-pull-wars.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -2500,7 +2485,6 @@
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-hard-fork-rockers.html"
     ]
@@ -2574,7 +2558,6 @@
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -2652,7 +2635,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/null-the-prophet.html",
       "/wiki/rug-pull-wars.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-hard-fork-rockers.html"
     ]
@@ -2726,7 +2708,6 @@
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -2799,7 +2780,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -2869,7 +2849,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -2941,7 +2920,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -3011,7 +2989,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -3088,7 +3065,6 @@
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/wagmi-prophecy.html"
     ]
@@ -3159,7 +3135,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -3238,7 +3213,6 @@
       "/wiki/queen-sarah-p-fly.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/street-kingdoms.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -3308,7 +3282,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -3380,7 +3353,6 @@
       "/wiki/rave-relics.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/wagmi-prophecy.html"
     ]
@@ -3452,7 +3424,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -3524,7 +3495,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -3597,7 +3567,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -3667,7 +3636,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -3718,7 +3686,6 @@
       "/wiki/first-witness-symbols-marks-sacred-design.html",
       "/wiki/first-witness-world-chain-error.html",
       "/wiki/gang-signs-card-game.html",
-      "/wiki/gang-signs.html",
       "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
       "/wiki/gkniftyheads-bitcoin-kid-infinite-776002.html",
       "/wiki/gkniftyheads-bitcoin-kid-infinite-776003.html",
@@ -3741,7 +3708,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/wagmi-prophecy.html"
     ]
@@ -3813,7 +3779,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -3885,7 +3850,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -3957,7 +3921,6 @@
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -4027,7 +3990,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -4097,7 +4059,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -4168,7 +4129,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -4239,7 +4199,6 @@
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -4310,7 +4269,6 @@
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -4378,7 +4336,6 @@
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-great-dip.html"
     ]
@@ -4449,7 +4406,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -4522,7 +4478,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -4599,7 +4554,6 @@
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -4669,7 +4623,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -4739,7 +4692,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -4809,7 +4761,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -4879,7 +4830,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -4947,7 +4897,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -5017,7 +4966,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -5086,7 +5034,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -5164,7 +5111,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -5236,7 +5182,6 @@
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -5307,7 +5252,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -5381,7 +5325,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/street-kingdoms.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -5449,7 +5392,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -5521,7 +5463,6 @@
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
       "/wiki/seeding-rights.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -5592,7 +5533,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/waxp-exchange.html"
     ]
@@ -5664,7 +5604,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -5738,7 +5677,6 @@
       "/wiki/jonny-laurence-nelson-tag-records.html",
       "/wiki/null-the-prophet.html",
       "/wiki/rug-pull-wars.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -5808,7 +5746,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -5879,7 +5816,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -5951,7 +5887,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -6021,7 +5956,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -6094,7 +6028,6 @@
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
       "/wiki/street-kingdoms.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -6165,7 +6098,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -6239,7 +6171,6 @@
       "/wiki/rave-relics.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -6308,7 +6239,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -6381,7 +6311,6 @@
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-hard-fork-rockers.html"
     ]
@@ -6451,7 +6380,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -6524,7 +6452,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -6593,7 +6520,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -6665,7 +6591,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -6734,7 +6659,6 @@
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -6816,7 +6740,6 @@
       "/wiki/jonny-laurence-nelson-tag-records.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/street-kingdoms.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -6886,7 +6809,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -6959,7 +6881,6 @@
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-great-dip.html",
       "/wiki/the-hard-fork-rockers.html"
@@ -7033,7 +6954,6 @@
       "/wiki/jonny-laurence-nelson-tag-records.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -7103,7 +7023,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -7173,7 +7092,6 @@
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -7244,7 +7162,6 @@
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-chain-scribes.html"
     ]
   },
@@ -7301,7 +7218,6 @@
       "/wiki/gkniftyheads-digital-diva-783394.html",
       "/wiki/gkniftyheads-digital-duchess-783404.html",
       "/wiki/graffpunks.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-blockchain-furies.html",
       "/wiki/trevor-fung.html",
       "/wiki/wax-blockchain.html"
@@ -7403,17 +7319,14 @@
       "/wiki/stikfamwars.html"
     ],
     "suggested_links": [
+      "/wiki/atomichub-graffpunks-collection.html",
       "/wiki/block-topia.html",
-      "/wiki/first-witness-digital-inheritance-after-death.html",
+      "/wiki/first-witness-libraries-architecture-archive-houses.html",
       "/wiki/gang-signs-card-game.html",
-      "/wiki/gkniftyheads-digital-diva-783394.html",
-      "/wiki/gkniftyheads-digital-duchess-783404.html",
-      "/wiki/graffiti-nexus.html",
+      "/wiki/graffpunks-24-7-radio.html",
+      "/wiki/graffpunks-collection.html",
+      "/wiki/graffpunks-ecosystem.html",
       "/wiki/graffpunks.html",
-      "/wiki/grit.html",
-      "/wiki/null-the-prophet.html",
-      "/wiki/punk-token.html",
-      "/wiki/sacred-chain.html",
       "/wiki/trevor-fung.html",
       "/wiki/wax-blockchain.html"
     ]
@@ -7454,56 +7367,33 @@
   },
   "/wiki/gang-signs.html": {
     "existing_links": [
-      "/wiki/bitcoin-kids.html",
-      "/wiki/block-topia.html",
-      "/wiki/burn-to-earn.html",
-      "/wiki/crypto-moonboys.html",
-      "/wiki/gang-signs-card-game.html",
-      "/wiki/graffpunks.html",
-      "/wiki/nbgx-token.html",
-      "/wiki/null-the-prophet.html",
-      "/wiki/punk-token.html"
+      "/wiki/gang-signs-card-game.html"
     ],
-    "suggested_links": [
-      "/wiki/block-node-defenders.html",
-      "/wiki/first-witness-block-topia-reading.html",
-      "/wiki/first-witness-book-9-the-unwritten-block.html",
-      "/wiki/first-witness-digital-inheritance-after-death.html",
-      "/wiki/gkniftyheads-digital-diva-783394.html",
-      "/wiki/gkniftyheads-digital-duchess-783404.html",
-      "/wiki/grit.html",
-      "/wiki/hard-fork-games.html",
-      "/wiki/hodl-wars.html",
-      "/wiki/metropolis.html",
-      "/wiki/nbg-token.html",
-      "/wiki/sacred-chain.html"
-    ]
+    "suggested_links": []
   },
   "/wiki/genesis-kernel.html": {
     "existing_links": [
       "/wiki/bitcoin-kids.html",
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-null-erasure.html",
+      "/wiki/first-witness-relics-manuscripts-lost-editions.html",
       "/wiki/genesis-spray-drop.html",
       "/wiki/genesis-spray.html",
       "/wiki/gkniftyheads-free-minds-gk-beats-genesis-776049.html",
       "/wiki/graffpunks.html",
       "/wiki/null-the-prophet.html",
-      "/wiki/punk-token.html"
+      "/wiki/punk-token.html",
+      "/wiki/sacred-chain.html"
     ],
     "suggested_links": [
       "/wiki/atomicassets.html",
       "/wiki/block-node-defenders.html",
-      "/wiki/blockchain.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/gkniftyheads.html",
       "/wiki/grit.html",
-      "/wiki/hard-fork-games.html",
-      "/wiki/hodl-wars.html",
       "/wiki/metropolis.html",
-      "/wiki/queen-sarah-p-fly.html",
-      "/wiki/sacred-chain.html",
       "/wiki/the-code-alchemists.html",
       "/wiki/triple-fork-event.html",
       "/wiki/wax-blockchain.html"
@@ -7524,8 +7414,7 @@
     "suggested_links": [
       "/wiki/atomicassets.html",
       "/wiki/atomichub-graffpunks-collection.html",
-      "/wiki/first-witness-censorship-offence-public-marks.html",
-      "/wiki/first-witness-symbols-marks-sacred-design.html",
+      "/wiki/first-witness-libraries-architecture-archive-houses.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffiti-nexus.html",
       "/wiki/graffpunks-24-7-radio.html",
@@ -7533,8 +7422,9 @@
       "/wiki/graffpunks-ecosystem.html",
       "/wiki/grit.html",
       "/wiki/hard-fork-games.html",
-      "/wiki/hodl-wars.html",
       "/wiki/metropolis.html",
+      "/wiki/the-first-witness.html",
+      "/wiki/triple-fork-event.html",
       "/wiki/wax-blockchain.html"
     ]
   },
@@ -8086,8 +7976,7 @@
       "/wiki/graffpunks-collection.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/neftyblocks.html",
-      "/wiki/noballgamess-nft-collection.html",
-      "/wiki/the-bitcoin-kid-army.html"
+      "/wiki/noballgamess-nft-collection.html"
     ]
   },
   "/wiki/gkniftyheads-bitcoin-kid-infinite-776002.html": {
@@ -8127,8 +8016,7 @@
       "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
       "/wiki/graffpunks-collection.html",
       "/wiki/hodlmoonboys-nft-collection.html",
-      "/wiki/noballgamess-nft-collection.html",
-      "/wiki/the-bitcoin-kid-army.html"
+      "/wiki/noballgamess-nft-collection.html"
     ]
   },
   "/wiki/gkniftyheads-bitcoin-kid-infinite-776003.html": {
@@ -8167,8 +8055,7 @@
       "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
       "/wiki/graffpunks-collection.html",
       "/wiki/hodlmoonboys-nft-collection.html",
-      "/wiki/noballgamess-nft-collection.html",
-      "/wiki/the-bitcoin-kid-army.html"
+      "/wiki/noballgamess-nft-collection.html"
     ]
   },
   "/wiki/gkniftyheads-bitcoin-kid-infinite-776005.html": {
@@ -8207,8 +8094,7 @@
       "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
       "/wiki/graffpunks-collection.html",
       "/wiki/hodlmoonboys-nft-collection.html",
-      "/wiki/noballgamess-nft-collection.html",
-      "/wiki/the-bitcoin-kid-army.html"
+      "/wiki/noballgamess-nft-collection.html"
     ]
   },
   "/wiki/gkniftyheads-bitcoin-kid-infinite-776056.html": {
@@ -8249,8 +8135,7 @@
       "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
       "/wiki/graffpunks-collection.html",
       "/wiki/hodlmoonboys-nft-collection.html",
-      "/wiki/noballgamess-nft-collection.html",
-      "/wiki/the-bitcoin-kid-army.html"
+      "/wiki/noballgamess-nft-collection.html"
     ]
   },
   "/wiki/gkniftyheads-bitcoin-kid-infinite-776058.html": {
@@ -8291,8 +8176,7 @@
       "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
       "/wiki/graffpunks-collection.html",
       "/wiki/hodlmoonboys-nft-collection.html",
-      "/wiki/noballgamess-nft-collection.html",
-      "/wiki/the-bitcoin-kid-army.html"
+      "/wiki/noballgamess-nft-collection.html"
     ]
   },
   "/wiki/gkniftyheads-bitcoin-kid-infinite-776059.html": {
@@ -8333,8 +8217,7 @@
       "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
       "/wiki/graffpunks-collection.html",
       "/wiki/hodlmoonboys-nft-collection.html",
-      "/wiki/noballgamess-nft-collection.html",
-      "/wiki/the-bitcoin-kid-army.html"
+      "/wiki/noballgamess-nft-collection.html"
     ]
   },
   "/wiki/gkniftyheads-bitcoin-kid-royale-776145.html": {
@@ -8375,8 +8258,7 @@
       "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
       "/wiki/graffpunks-collection.html",
       "/wiki/hodlmoonboys-nft-collection.html",
-      "/wiki/noballgamess-nft-collection.html",
-      "/wiki/the-bitcoin-kid-army.html"
+      "/wiki/noballgamess-nft-collection.html"
     ]
   },
   "/wiki/gkniftyheads-bitcoin-kid-tv-heads-100-776074.html": {
@@ -8418,8 +8300,7 @@
       "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
       "/wiki/graffpunks-collection.html",
       "/wiki/hodlmoonboys-nft-collection.html",
-      "/wiki/noballgamess-nft-collection.html",
-      "/wiki/the-bitcoin-kid-army.html"
+      "/wiki/noballgamess-nft-collection.html"
     ]
   },
   "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html": {
@@ -8465,8 +8346,7 @@
       "/wiki/graffpunks-collection.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/noballgamess-nft-collection.html",
-      "/wiki/queen-sarah-p-fly.html",
-      "/wiki/the-bitcoin-kid-army.html"
+      "/wiki/queen-sarah-p-fly.html"
     ]
   },
   "/wiki/gkniftyheads-bitcoin-kid-x-sarahpfly-773225.html": {
@@ -8504,8 +8384,7 @@
       "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
       "/wiki/graffpunks-collection.html",
       "/wiki/hodlmoonboys-nft-collection.html",
-      "/wiki/noballgamess-nft-collection.html",
-      "/wiki/the-bitcoin-kid-army.html"
+      "/wiki/noballgamess-nft-collection.html"
     ]
   },
   "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html": {
@@ -8551,8 +8430,7 @@
       "/wiki/graffpunks-collection.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/neftyblocks.html",
-      "/wiki/noballgamess-nft-collection.html",
-      "/wiki/the-bitcoin-kid-army.html"
+      "/wiki/noballgamess-nft-collection.html"
     ]
   },
   "/wiki/gkniftyheads-bitman-784220.html": {
@@ -8607,7 +8485,6 @@
       "/wiki/null-the-prophet.html",
       "/wiki/sacred-chain.html",
       "/wiki/street-kingdoms.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-blockchain-furies.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-gasless-ghosts.html",
@@ -10682,8 +10559,7 @@
       "/wiki/graffpunks-collection.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/neftyblocks.html",
-      "/wiki/noballgamess-nft-collection.html",
-      "/wiki/the-bitcoin-kid-army.html"
+      "/wiki/noballgamess-nft-collection.html"
     ]
   },
   "/wiki/gkniftyheads-matteo-cryptocurrency-connoisseur-de-angelis-783457.html": {
@@ -13061,9 +12937,8 @@
   },
   "/wiki/graffiti-kings.html": {
     "existing_links": [
-      "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
-      "/wiki/darren-cullen.html",
+      "/wiki/gk-grid.html",
       "/wiki/graffiti-nexus.html",
       "/wiki/graffiti-queens-in-decentraland.html",
       "/wiki/hard-fork-games.html",
@@ -13071,26 +12946,26 @@
       "/wiki/midevilpunks.html",
       "/wiki/pmsl.html",
       "/wiki/rave-relics.html",
-      "/wiki/stikfamwars.html"
+      "/wiki/stikfamwars.html",
+      "/wiki/the-first-witness.html"
     ],
     "suggested_links": [
       "/wiki/atomichub-graffpunks-collection.html",
-      "/wiki/first-witness-digital-inheritance-after-death.html",
-      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/block-topia.html",
+      "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-proverbs-street-sayings.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
       "/wiki/first-witness-world-chain-error.html",
-      "/wiki/forkborn-collective.html",
-      "/wiki/gkniftyheads-digital-diva-783394.html",
-      "/wiki/gkniftyheads-digital-duchess-783404.html",
+      "/wiki/gkniftyheads-gkniftyheads-fun-coupon-782888.html",
+      "/wiki/gkniftyheads-nft-collection.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffpunks-24-7-radio.html",
       "/wiki/graffpunks-collection.html",
       "/wiki/graffpunks-ecosystem.html",
       "/wiki/graffpunks.html",
-      "/wiki/sacred-chain.html",
       "/wiki/street-kingdoms.html",
-      "/wiki/trevor-fung.html"
+      "/wiki/trevor-fung.html",
+      "/wiki/web3.html"
     ]
   },
   "/wiki/graffiti-nexus.html": {
@@ -13103,11 +12978,11 @@
       "/wiki/graffiti-queens-in-decentraland.html",
       "/wiki/graffpunks.html",
       "/wiki/null-the-prophet.html",
-      "/wiki/punk-token.html"
+      "/wiki/punk-token.html",
+      "/wiki/sacred-chain.html"
     ],
     "suggested_links": [
       "/wiki/block-node-defenders.html",
-      "/wiki/darren-cullen.html",
       "/wiki/first-witness-anonymity-pseudonyms-hidden-names.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
@@ -13123,12 +12998,8 @@
       "/wiki/gkniftyheads-digital-diva-783394.html",
       "/wiki/gkniftyheads-digital-duchess-783404.html",
       "/wiki/grit.html",
-      "/wiki/hard-fork-games.html",
-      "/wiki/head-tags.html",
-      "/wiki/hodl-wars.html",
       "/wiki/metropolis.html",
-      "/wiki/rave-relics.html",
-      "/wiki/sacred-chain.html"
+      "/wiki/rave-relics.html"
     ]
   },
   "/wiki/graffiti-queens-in-decentraland.html": {
@@ -13261,30 +13132,20 @@
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/gkniftyheads.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/graffpunks-24-7-radio.html",
       "/wiki/graffpunks-collection.html",
       "/wiki/graffpunks-ecosystem.html",
       "/wiki/hodl-wars.html",
       "/wiki/null-the-prophet.html",
-      "/wiki/punk-token.html"
+      "/wiki/punk-token.html",
+      "/wiki/street-kingdoms.html"
     ],
     "suggested_links": [
       "/wiki/atomichub.html",
-      "/wiki/first-witness-digital-inheritance-after-death.html",
-      "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/first-witness-music-dance-performance.html",
-      "/wiki/first-witness-proverbs-street-sayings.html",
-      "/wiki/first-witness-street-kingdoms-reading.html",
-      "/wiki/gkniftyheads-digital-diva-783394.html",
-      "/wiki/gkniftyheads-digital-duchess-783404.html",
-      "/wiki/graffiti-kings.html",
       "/wiki/graffiti-nexus.html",
-      "/wiki/graffiti-queens-in-decentraland.html",
-      "/wiki/hodl-warriors.html",
-      "/wiki/hodl-x-warriors.html",
-      "/wiki/hodlmoonboys-nft-collection.html",
-      "/wiki/rug-pull-wars.html",
-      "/wiki/street-kingdoms.html"
+      "/wiki/graffiti-queens-in-decentraland.html"
     ]
   },
   "/wiki/grit.html": {
@@ -13334,29 +13195,31 @@
   },
   "/wiki/hard-fork-games.html": {
     "existing_links": [
+      "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-forty-paths.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffpunks.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
-      "/wiki/null-the-prophet.html"
+      "/wiki/null-the-prophet.html",
+      "/wiki/triple-fork-event.html"
     ],
     "suggested_links": [
       "/wiki/block-node-defenders.html",
       "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-6-the-fork.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
-      "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-proverbs-street-sayings.html",
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/first-witness-street-kingdoms-reading.html",
       "/wiki/first-witness-triple-fork-chainfire.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/street-kingdoms.html",
-      "/wiki/the-hard-fork-rockers.html",
-      "/wiki/triple-fork-event.html"
+      "/wiki/the-hard-fork-rockers.html"
     ]
   },
   "/wiki/harrison-rift.html": {
@@ -13398,31 +13261,16 @@
     ],
     "suggested_links": [
       "/wiki/atomicassets.html",
-      "/wiki/atomichub-graffpunks-collection.html",
-      "/wiki/block-topia.html",
-      "/wiki/blockchain.html",
-      "/wiki/first-witness-proverbs-street-sayings.html",
-      "/wiki/first-witness-street-kingdoms-reading.html",
+      "/wiki/first-witness-libraries-architecture-archive-houses.html",
       "/wiki/genesis-kernel.html",
-      "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
-      "/wiki/gkniftyheads-blockchain-belle-783392.html",
-      "/wiki/gkniftyheads-blockchain-bombshell-783407.html",
-      "/wiki/gkniftyheads-blockchain-furie-infinite-776007.html",
-      "/wiki/gkniftyheads-blockchain-furie-infinite-776055.html",
-      "/wiki/gkniftyheads-blockchain-furie-infinite-776057.html",
       "/wiki/gkniftyheads-gkniftyheads-fun-coupon-782888.html",
       "/wiki/gkniftyheads-nft-collection.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffiti-kings.html",
-      "/wiki/graffpunks-collection.html",
+      "/wiki/graffiti-nexus.html",
+      "/wiki/graffiti-queens-in-decentraland.html",
       "/wiki/graffpunks.html",
-      "/wiki/hard-fork-games.html",
-      "/wiki/hodl-wars.html",
-      "/wiki/hodlmoonboys-nft-collection.html",
-      "/wiki/noballgamess-nft-collection.html",
-      "/wiki/street-kingdoms.html",
-      "/wiki/the-blockchain-furies.html",
-      "/wiki/wax-blockchain.html"
+      "/wiki/hodl-wars.html"
     ]
   },
   "/wiki/hex-tagger-prime.html": {
@@ -13465,24 +13313,32 @@
       "/wiki/bitcoin-kids.html",
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffpunks.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-wars.html",
+      "/wiki/hodl-x-warriors.html",
       "/wiki/null-the-prophet.html"
     ],
     "suggested_links": [
-      "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/bitcoin-kid-army.html",
+      "/wiki/first-witness-book-5-the-chain.html",
+      "/wiki/first-witness-book-6-the-fork.html",
+      "/wiki/first-witness-book-7-the-hold.html",
+      "/wiki/first-witness-book-8-the-fire.html",
+      "/wiki/first-witness-digital-inheritance-after-death.html",
+      "/wiki/first-witness-faction-ritual-variations.html",
+      "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-war-defence-peacekeeping.html",
       "/wiki/forkborn-collective.html",
-      "/wiki/graffiti-kings.html",
-      "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
-      "/wiki/spirit-borns.html"
+      "/wiki/sacred-chain.html"
     ]
   },
   "/wiki/hodl-wars.html": {
     "existing_links": [
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/block-topia.html",
       "/wiki/burn-to-earn.html",
@@ -13491,16 +13347,26 @@
       "/wiki/graffpunks.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-warriors.html",
-      "/wiki/null-the-prophet.html"
+      "/wiki/null-the-prophet.html",
+      "/wiki/queen-sarah-p-fly.html"
     ],
     "suggested_links": [
-      "/wiki/diamond-hands.html",
+      "/wiki/bitcoin-kid-army.html",
+      "/wiki/block-node-defenders.html",
+      "/wiki/first-witness-block-topia-reading.html",
+      "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "/wiki/first-witness-faction-ritual-variations.html",
+      "/wiki/first-witness-forty-paths.html",
       "/wiki/first-witness-hodl-doctrine.html",
+      "/wiki/first-witness-null-erasure.html",
+      "/wiki/first-witness-proverbs-street-sayings.html",
+      "/wiki/first-witness-street-kingdoms-reading.html",
+      "/wiki/first-witness-truth-commissions-after-conflict.html",
       "/wiki/gang-signs-card-game.html",
-      "/wiki/graffiti-kings.html",
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
+      "/wiki/sacred-chain.html",
       "/wiki/street-kingdoms.html"
     ]
   },
@@ -13516,13 +13382,14 @@
       "/wiki/null-the-prophet.html"
     ],
     "suggested_links": [
+      "/wiki/block-node-defenders.html",
+      "/wiki/first-witness-block-topia-reading.html",
       "/wiki/first-witness-book-6-the-fork.html",
-      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/first-witness-hodl-doctrine.html",
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/first-witness-triple-fork-chainfire.html",
       "/wiki/hodlmoonboys-nft-collection.html",
-      "/wiki/street-kingdoms.html",
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/triple-fork-event.html"
     ]
@@ -13815,11 +13682,8 @@
   },
   "/wiki/maidstone-base.html": {
     "existing_links": [
-      "/wiki/1m-free-nfts.html",
-      "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/games4punks-telegram.html",
-      "/wiki/gkniftyheads.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-wars.html",
       "/wiki/midevilpunks.html",
@@ -13829,13 +13693,15 @@
       "/wiki/stikfamwars.html"
     ],
     "suggested_links": [
-      "/wiki/gkniftyheads-gkniftyheads-fun-coupon-782888.html",
-      "/wiki/gkniftyheads-nft-collection.html",
+      "/wiki/block-topia.html",
+      "/wiki/first-witness-libraries-architecture-archive-houses.html",
+      "/wiki/first-witness-world-chain-error.html",
+      "/wiki/gkniftyheads.html",
       "/wiki/graffiti-kings.html",
+      "/wiki/graffiti-nexus.html",
+      "/wiki/graffiti-queens-in-decentraland.html",
       "/wiki/graffpunks.html",
-      "/wiki/metaverse-battles.html",
-      "/wiki/trevor-fung.html",
-      "/wiki/web3.html"
+      "/wiki/trevor-fung.html"
     ]
   },
   "/wiki/memecoins.html": {
@@ -14362,11 +14228,8 @@
   },
   "/wiki/phygital-prints.html": {
     "existing_links": [
-      "/wiki/block-topia.html",
-      "/wiki/blockchain.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/games4punks-telegram.html",
-      "/wiki/gk-tokens.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-wars.html",
       "/wiki/midevilpunks.html",
@@ -14376,23 +14239,15 @@
       "/wiki/stikfamwars.html"
     ],
     "suggested_links": [
-      "/wiki/gk.html",
-      "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
-      "/wiki/gkniftyheads-blockchain-belle-783392.html",
-      "/wiki/gkniftyheads-blockchain-bombshell-783407.html",
-      "/wiki/gkniftyheads-blockchain-furie-infinite-776007.html",
-      "/wiki/gkniftyheads-blockchain-furie-infinite-776055.html",
-      "/wiki/gkniftyheads-blockchain-furie-infinite-776057.html",
-      "/wiki/gkniftyheads.html",
+      "/wiki/block-topia.html",
+      "/wiki/first-witness-digital-inheritance-after-death.html",
+      "/wiki/gkniftyheads-digital-diva-783394.html",
+      "/wiki/gkniftyheads-digital-duchess-783404.html",
       "/wiki/graffiti-kings.html",
       "/wiki/graffiti-nexus.html",
       "/wiki/graffiti-queens-in-decentraland.html",
       "/wiki/graffpunks.html",
-      "/wiki/grit.html",
-      "/wiki/metaverse-battles.html",
-      "/wiki/the-blockchain-furies.html",
-      "/wiki/trevor-fung.html",
-      "/wiki/wax-blockchain.html"
+      "/wiki/trevor-fung.html"
     ]
   },
   "/wiki/pixel-journey.html": {
@@ -14638,26 +14493,32 @@
   },
   "/wiki/queen-sarah-p-fly.html": {
     "existing_links": [
-      "/wiki/block-topia.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/bitcoin-x-kids.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/crypto-moongirls.html",
       "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
       "/wiki/gkniftyheads-sarah-p2fly-784350.html",
       "/wiki/gkniftyheads-sarah-pfly-784349.html",
-      "/wiki/graffpunks.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-wars.html",
       "/wiki/midevilpunks.html",
+      "/wiki/null-the-prophet.html",
       "/wiki/pmsl.html",
-      "/wiki/rave-relics.html"
+      "/wiki/rave-relics.html",
+      "/wiki/sacred-chain.html"
     ],
     "suggested_links": [
       "/wiki/atomicassets.html",
-      "/wiki/atomichub-graffpunks-collection.html",
+      "/wiki/block-node-defenders.html",
+      "/wiki/block-topia.html",
+      "/wiki/dream-sovereign.html",
+      "/wiki/first-witness-block-topia-reading.html",
+      "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/gkniftyheads.html",
-      "/wiki/graffpunks-24-7-radio.html",
-      "/wiki/graffpunks-collection.html",
-      "/wiki/graffpunks-ecosystem.html",
-      "/wiki/sacred-chain.html",
+      "/wiki/graffpunks.html",
+      "/wiki/street-kingdoms.html",
+      "/wiki/the-first-witness.html",
       "/wiki/trevor-fung.html"
     ]
   },
@@ -14802,12 +14663,21 @@
       "/wiki/bitcoin-x-kids.html",
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-block-topia-reading.html",
+      "/wiki/first-witness-concordance.html",
+      "/wiki/first-witness-sacred-fork.html",
+      "/wiki/first-witness-street-kingdoms-reading.html",
+      "/wiki/first-witness-world-chain-error.html",
+      "/wiki/genesis-kernel.html",
+      "/wiki/gk-grid.html",
       "/wiki/graffpunks.html",
       "/wiki/hard-fork-games.html",
+      "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
       "/wiki/metropolis.html",
       "/wiki/null-the-prophet.html",
-      "/wiki/the-first-witness.html"
+      "/wiki/the-first-witness.html",
+      "/wiki/triple-fork-event.html"
     ],
     "suggested_links": [
       "/wiki/first-witness-book-5-the-chain.html",
@@ -14817,11 +14687,8 @@
       "/wiki/first-witness-humour-satire-sacred-mockery.html",
       "/wiki/first-witness-language-translation-sacred-words.html",
       "/wiki/first-witness-libraries-architecture-archive-houses.html",
-      "/wiki/first-witness-sacred-fork.html",
       "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
       "/wiki/first-witness-symbols-marks-sacred-design.html",
-      "/wiki/first-witness-world-chain-error.html",
-      "/wiki/genesis-kernel.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/web3.html"
     ]
@@ -14925,8 +14792,7 @@
       "/wiki/hodl-x-warriors.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/rug-pull-wars.html",
-      "/wiki/sacred-chain.html",
-      "/wiki/the-bitcoin-kid-army.html"
+      "/wiki/sacred-chain.html"
     ]
   },
   "/wiki/seeding-rights.html": {
@@ -14994,12 +14860,15 @@
       "/wiki/stikfamwars.html"
     ],
     "suggested_links": [
-      "/wiki/1m-free-nfts-program.html",
       "/wiki/block-topia.html",
-      "/wiki/gang-signs-card-game.html",
+      "/wiki/first-witness-censorship-offence-public-marks.html",
+      "/wiki/first-witness-digital-inheritance-after-death.html",
+      "/wiki/first-witness-proverbs-street-sayings.html",
+      "/wiki/first-witness-street-kingdoms-reading.html",
+      "/wiki/gkniftyheads-digital-diva-783394.html",
+      "/wiki/gkniftyheads-digital-duchess-783404.html",
       "/wiki/graffpunks.html",
-      "/wiki/grit.html",
-      "/wiki/nfts.html",
+      "/wiki/street-kingdoms.html",
       "/wiki/trevor-fung.html"
     ]
   },
@@ -15065,9 +14934,9 @@
   },
   "/wiki/spirit-borns.html": {
     "existing_links": [
-      "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/games4punks-telegram.html",
+      "/wiki/graffpunks.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-wars.html",
       "/wiki/midevilpunks.html",
@@ -15077,17 +14946,19 @@
       "/wiki/stikfamwars.html"
     ],
     "suggested_links": [
-      "/wiki/block-node-defenders.html",
-      "/wiki/first-witness-block-topia-reading.html",
-      "/wiki/first-witness-book-9-the-unwritten-block.html",
-      "/wiki/first-witness-digital-inheritance-after-death.html",
-      "/wiki/gkniftyheads-digital-diva-783394.html",
-      "/wiki/gkniftyheads-digital-duchess-783404.html",
-      "/wiki/graffpunks.html",
-      "/wiki/grit.html",
-      "/wiki/hodl-warriors.html",
-      "/wiki/hodl-x-warriors.html",
-      "/wiki/trevor-fung.html"
+      "/wiki/block-topia.html",
+      "/wiki/blockchain.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
+      "/wiki/gkniftyheads-blockchain-belle-783392.html",
+      "/wiki/gkniftyheads-blockchain-bombshell-783407.html",
+      "/wiki/gkniftyheads-blockchain-furie-infinite-776007.html",
+      "/wiki/gkniftyheads-blockchain-furie-infinite-776055.html",
+      "/wiki/gkniftyheads-blockchain-furie-infinite-776057.html",
+      "/wiki/the-blockchain-furies.html",
+      "/wiki/the-gasless-ghosts.html",
+      "/wiki/trevor-fung.html",
+      "/wiki/wax-blockchain.html"
     ]
   },
   "/wiki/spraycode-writcode-mechanics.html": {
@@ -15138,7 +15009,6 @@
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/graffpunks.html",
       "/wiki/street-kingdoms.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-gasless-ghosts.html",
       "/wiki/trevor-fung.html"
     ]
@@ -15387,11 +15257,9 @@
   },
   "/wiki/the-bally-boys.html": {
     "existing_links": [
-      "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/null-the-prophet.html",
       "/wiki/the-chain-scribes.html",
-      "/wiki/the-ducky-boys.html",
       "/wiki/the-finance-guild.html",
       "/wiki/the-high-hats.html",
       "/wiki/the-nice-easy-bois.html",
@@ -15400,58 +15268,27 @@
       "/wiki/thorne-the-architect.html"
     ],
     "suggested_links": [
-      "/wiki/block-node-defenders.html",
-      "/wiki/first-witness-block-topia-reading.html",
-      "/wiki/first-witness-book-9-the-unwritten-block.html",
-      "/wiki/gkniftyheads-cyber-shinobi-strike-783757.html",
-      "/wiki/gkniftyheads-urban-oracle-783306.html",
+      "/wiki/bear-market-siege.html",
+      "/wiki/bitcoin-kid-army.html",
+      "/wiki/bitcoin-kids.html",
+      "/wiki/block-topia.html",
+      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/first-witness-proverbs-street-sayings.html",
+      "/wiki/first-witness-street-kingdoms-reading.html",
+      "/wiki/first-witness-world-chain-error.html",
       "/wiki/graffpunks.html",
-      "/wiki/squeaky-pinks-enforcers.html",
-      "/wiki/the-crypto-stoned-boys.html"
+      "/wiki/hard-fork-games.html",
+      "/wiki/street-kingdoms.html",
+      "/wiki/the-crypto-stoned-boys.html",
+      "/wiki/the-ducky-boys.html",
+      "/wiki/the-rugpull-miners.html"
     ]
   },
   "/wiki/the-bitcoin-kid-army.html": {
     "existing_links": [
-      "/wiki/battlemech-blast.html",
-      "/wiki/bitcoin-kid-army.html",
-      "/wiki/bitcoin-kids.html",
-      "/wiki/bitcoin-x-kids.html",
-      "/wiki/bitcoin.html",
-      "/wiki/block-topia.html",
-      "/wiki/crypto-moonboys.html",
-      "/wiki/null-the-prophet.html",
-      "/wiki/the-finance-guild.html",
-      "/wiki/the-nice-easy-bois.html",
-      "/wiki/the-princess.html",
-      "/wiki/the-whitewasher.html"
+      "/wiki/bitcoin-kid-army.html"
     ],
-    "suggested_links": [
-      "/wiki/alfie-bitcoin-kid-blaze.html",
-      "/wiki/bitcoin-btc.html",
-      "/wiki/first-witness-bitcoin-witness.html",
-      "/wiki/first-witness-leadership-councils-succession.html",
-      "/wiki/forkborn-collective.html",
-      "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
-      "/wiki/gkniftyheads-bitcoin-kid-infinite-776002.html",
-      "/wiki/gkniftyheads-bitcoin-kid-infinite-776003.html",
-      "/wiki/gkniftyheads-bitcoin-kid-infinite-776005.html",
-      "/wiki/gkniftyheads-bitcoin-kid-infinite-776056.html",
-      "/wiki/gkniftyheads-bitcoin-kid-infinite-776058.html",
-      "/wiki/gkniftyheads-bitcoin-kid-infinite-776059.html",
-      "/wiki/gkniftyheads-bitcoin-kid-royale-776145.html",
-      "/wiki/gkniftyheads-bitcoin-kid-tv-heads-100-776074.html",
-      "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
-      "/wiki/gkniftyheads-bitcoin-kid-x-sarahpfly-773225.html",
-      "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
-      "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
-      "/wiki/gkniftyheads.html",
-      "/wiki/graffpunks.html",
-      "/wiki/hard-fork-games.html",
-      "/wiki/metaverse-battles.html",
-      "/wiki/queen-sarah-p-fly.html",
-      "/wiki/sacred-chain.html",
-      "/wiki/triple-fork-event.html"
-    ]
+    "suggested_links": []
   },
   "/wiki/the-blockchain-furies.html": {
     "existing_links": [
@@ -15622,7 +15459,6 @@
   },
   "/wiki/the-ducky-boys.html": {
     "existing_links": [
-      "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/null-the-prophet.html",
       "/wiki/the-chain-scribes.html",
@@ -15634,11 +15470,17 @@
       "/wiki/thorne-the-architect.html"
     ],
     "suggested_links": [
-      "/wiki/block-node-defenders.html",
-      "/wiki/first-witness-block-topia-reading.html",
-      "/wiki/first-witness-book-9-the-unwritten-block.html",
-      "/wiki/first-witness-faction-commentaries.html",
+      "/wiki/block-topia.html",
+      "/wiki/first-witness-beauty-luxury-modesty-status.html",
+      "/wiki/first-witness-book-1-the-first-witness.html",
+      "/wiki/first-witness-book-2-the-common-blood.html",
+      "/wiki/first-witness-book-3-the-keeper.html",
+      "/wiki/first-witness-roles-keepers-witnesses-mediators.html",
+      "/wiki/first-witness-truth-commissions-after-conflict.html",
+      "/wiki/first-witness-world-chain-error.html",
       "/wiki/graffpunks.html",
+      "/wiki/hard-fork-games.html",
+      "/wiki/spraycode-writcode-mechanics.html",
       "/wiki/the-bally-boys.html",
       "/wiki/the-crypto-stoned-boys.html"
     ]
@@ -15811,8 +15653,7 @@
       "/wiki/hodl-wars.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/rug-pull-wars.html",
-      "/wiki/the-bitcoin-kid-army.html"
+      "/wiki/rug-pull-wars.html"
     ]
   },
   "/wiki/the-gasless-ghosts.html": {
@@ -15878,38 +15719,26 @@
   },
   "/wiki/the-hard-fork-rockers.html": {
     "existing_links": [
-      "/wiki/block-topia.html",
-      "/wiki/blockchain.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/hard-fork-games.html",
       "/wiki/null-the-prophet.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-finance-guild.html",
-      "/wiki/the-high-hats.html",
-      "/wiki/the-moonlords.html",
       "/wiki/the-nice-easy-bois.html",
       "/wiki/the-princess.html",
       "/wiki/the-whitewasher.html",
       "/wiki/thorne-the-architect.html"
     ],
     "suggested_links": [
-      "/wiki/block-node-defenders.html",
-      "/wiki/first-witness-block-topia-reading.html",
+      "/wiki/bitcoin-kids.html",
+      "/wiki/block-topia.html",
       "/wiki/first-witness-book-6-the-fork.html",
-      "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/first-witness-faction-commentaries.html",
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/first-witness-triple-fork-chainfire.html",
-      "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
-      "/wiki/gkniftyheads-blockchain-belle-783392.html",
-      "/wiki/gkniftyheads-blockchain-bombshell-783407.html",
-      "/wiki/gkniftyheads-blockchain-furie-infinite-776007.html",
-      "/wiki/gkniftyheads-blockchain-furie-infinite-776055.html",
-      "/wiki/gkniftyheads-blockchain-furie-infinite-776057.html",
       "/wiki/graffpunks.html",
-      "/wiki/the-blockchain-furies.html",
-      "/wiki/triple-fork-event.html",
-      "/wiki/wax-blockchain.html"
+      "/wiki/punk-token.html",
+      "/wiki/triple-fork-event.html"
     ]
   },
   "/wiki/the-high-hats.html": {
@@ -15958,13 +15787,10 @@
   },
   "/wiki/the-moonlords.html": {
     "existing_links": [
-      "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/null-the-prophet.html",
       "/wiki/the-chain-scribes.html",
-      "/wiki/the-evm-punks.html",
       "/wiki/the-finance-guild.html",
-      "/wiki/the-hard-fork-rockers.html",
       "/wiki/the-high-hats.html",
       "/wiki/the-nice-easy-bois.html",
       "/wiki/the-princess.html",
@@ -15972,15 +15798,10 @@
       "/wiki/thorne-the-architect.html"
     ],
     "suggested_links": [
-      "/wiki/block-node-defenders.html",
-      "/wiki/first-witness-block-topia-reading.html",
-      "/wiki/first-witness-book-9-the-unwritten-block.html",
-      "/wiki/first-witness-digital-inheritance-after-death.html",
+      "/wiki/block-topia.html",
       "/wiki/first-witness-faction-commentaries.html",
-      "/wiki/gkniftyheads-digital-diva-783394.html",
-      "/wiki/gkniftyheads-digital-duchess-783404.html",
       "/wiki/graffpunks.html",
-      "/wiki/the-nomad-bears.html"
+      "/wiki/hodl-wars.html"
     ]
   },
   "/wiki/the-nice-easy-bois.html": {
@@ -16006,47 +15827,30 @@
       "/wiki/rug-pull-wars.html",
       "/wiki/street-kingdoms.html",
       "/wiki/the-allcity-bulls.html",
-      "/wiki/the-bitcoin-kid-army.html",
       "/wiki/triple-fork-event.html"
     ]
   },
   "/wiki/the-nomad-bears.html": {
     "existing_links": [
-      "/wiki/block-topia.html",
-      "/wiki/blockchain.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/null-the-prophet.html",
-      "/wiki/the-allcity-bulls.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-finance-guild.html",
       "/wiki/the-high-hats.html",
       "/wiki/the-nice-easy-bois.html",
       "/wiki/the-princess.html",
-      "/wiki/the-rugpull-miners.html",
       "/wiki/the-whitewasher.html",
       "/wiki/thorne-the-architect.html"
     ],
     "suggested_links": [
-      "/wiki/block-node-defenders.html",
-      "/wiki/first-witness-block-topia-reading.html",
-      "/wiki/first-witness-book-9-the-unwritten-block.html",
-      "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
-      "/wiki/gkniftyheads-blockchain-belle-783392.html",
-      "/wiki/gkniftyheads-blockchain-bombshell-783407.html",
-      "/wiki/gkniftyheads-blockchain-furie-infinite-776007.html",
-      "/wiki/gkniftyheads-blockchain-furie-infinite-776055.html",
-      "/wiki/gkniftyheads-blockchain-furie-infinite-776057.html",
+      "/wiki/block-topia.html",
       "/wiki/graffpunks.html",
-      "/wiki/the-blockchain-furies.html",
-      "/wiki/the-salvagers.html",
-      "/wiki/wax-blockchain.html"
+      "/wiki/the-ducky-boys.html"
     ]
   },
   "/wiki/the-og-pixel-saints.html": {
     "existing_links": [
-      "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
-      "/wiki/graffpunks.html",
       "/wiki/null-the-prophet.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-finance-guild.html",
@@ -16057,22 +15861,14 @@
       "/wiki/thorne-the-architect.html"
     ],
     "suggested_links": [
-      "/wiki/block-node-defenders.html",
-      "/wiki/first-witness-block-topia-reading.html",
-      "/wiki/first-witness-book-9-the-unwritten-block.html",
-      "/wiki/first-witness-counterfeit-relics-fraud.html",
+      "/wiki/block-topia.html",
       "/wiki/first-witness-digital-inheritance-after-death.html",
-      "/wiki/first-witness-faction-commentaries.html",
-      "/wiki/first-witness-humour-satire-sacred-mockery.html",
       "/wiki/first-witness-language-translation-sacred-words.html",
-      "/wiki/first-witness-libraries-architecture-archive-houses.html",
-      "/wiki/first-witness-sacred-fork.html",
-      "/wiki/first-witness-sacred-places-walls-pilgrimage.html",
-      "/wiki/first-witness-symbols-marks-sacred-design.html",
       "/wiki/gkniftyheads-digital-diva-783394.html",
       "/wiki/gkniftyheads-digital-duchess-783404.html",
-      "/wiki/pixel-journey.html",
-      "/wiki/sacred-chain.html"
+      "/wiki/graffpunks.html",
+      "/wiki/hard-fork-games.html",
+      "/wiki/pixel-journey.html"
     ]
   },
   "/wiki/the-princess.html": {
@@ -16106,10 +15902,7 @@
   },
   "/wiki/the-rugpull-miners.html": {
     "existing_links": [
-      "/wiki/block-topia.html",
-      "/wiki/blockchain.html",
       "/wiki/crypto-moonboys.html",
-      "/wiki/hodl-warriors.html",
       "/wiki/null-the-prophet.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-finance-guild.html",
@@ -16120,53 +15913,28 @@
       "/wiki/thorne-the-architect.html"
     ],
     "suggested_links": [
-      "/wiki/block-node-defenders.html",
-      "/wiki/first-witness-block-topia-reading.html",
-      "/wiki/first-witness-book-9-the-unwritten-block.html",
-      "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
-      "/wiki/gkniftyheads-blockchain-belle-783392.html",
-      "/wiki/gkniftyheads-blockchain-bombshell-783407.html",
-      "/wiki/gkniftyheads-blockchain-furie-infinite-776007.html",
-      "/wiki/gkniftyheads-blockchain-furie-infinite-776055.html",
-      "/wiki/gkniftyheads-blockchain-furie-infinite-776057.html",
+      "/wiki/block-topia.html",
       "/wiki/graffpunks.html",
-      "/wiki/grit.html",
-      "/wiki/the-blockchain-furies.html",
-      "/wiki/the-nomad-bears.html",
-      "/wiki/wax-blockchain.html"
+      "/wiki/the-first-witness.html"
     ]
   },
   "/wiki/the-salvagers.html": {
     "existing_links": [
-      "/wiki/block-topia.html",
-      "/wiki/blockchain.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/null-the-prophet.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-finance-guild.html",
       "/wiki/the-high-hats.html",
       "/wiki/the-nice-easy-bois.html",
-      "/wiki/the-nomad-bears.html",
       "/wiki/the-princess.html",
       "/wiki/the-whitewasher.html",
       "/wiki/thorne-the-architect.html"
     ],
     "suggested_links": [
-      "/wiki/block-node-defenders.html",
-      "/wiki/first-witness-block-topia-reading.html",
-      "/wiki/first-witness-book-9-the-unwritten-block.html",
-      "/wiki/first-witness-digital-inheritance-after-death.html",
-      "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
-      "/wiki/gkniftyheads-blockchain-belle-783392.html",
-      "/wiki/gkniftyheads-blockchain-bombshell-783407.html",
-      "/wiki/gkniftyheads-blockchain-furie-infinite-776007.html",
-      "/wiki/gkniftyheads-blockchain-furie-infinite-776055.html",
-      "/wiki/gkniftyheads-blockchain-furie-infinite-776057.html",
-      "/wiki/gkniftyheads-digital-diva-783394.html",
-      "/wiki/gkniftyheads-digital-duchess-783404.html",
+      "/wiki/block-topia.html",
+      "/wiki/first-witness-world-chain-error.html",
       "/wiki/graffpunks.html",
-      "/wiki/the-blockchain-furies.html",
-      "/wiki/wax-blockchain.html"
+      "/wiki/street-kingdoms.html"
     ]
   },
   "/wiki/the-shard-mothers-of-manhattan.html": {
@@ -16217,7 +15985,6 @@
     ],
     "suggested_links": [
       "/wiki/gang-signs-card-game.html",
-      "/wiki/gang-signs.html",
       "/wiki/gkniftyheads.html",
       "/wiki/hard-fork-games.html",
       "/wiki/metaverse-battles.html",
@@ -16391,25 +16158,27 @@
   },
   "/wiki/triple-fork-event.html": {
     "existing_links": [
-      "/wiki/battlemech-blast.html",
       "/wiki/block-topia.html",
-      "/wiki/blockchain.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/first-witness-world-chain-error.html",
       "/wiki/games4punks-telegram.html",
-      "/wiki/gk-tokens.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-wars.html",
       "/wiki/midevilpunks.html",
       "/wiki/pmsl.html",
       "/wiki/rave-relics.html",
       "/wiki/stikfamwars.html",
+      "/wiki/the-first-witness.html",
       "/wiki/the-hard-fork-rockers.html"
     ],
     "suggested_links": [
       "/wiki/block-node-defenders.html",
-      "/wiki/burn-to-earn.html",
+      "/wiki/blockchain.html",
       "/wiki/first-witness-block-topia-reading.html",
+      "/wiki/first-witness-book-5-the-chain.html",
       "/wiki/first-witness-book-6-the-fork.html",
+      "/wiki/first-witness-book-7-the-hold.html",
+      "/wiki/first-witness-book-8-the-fire.html",
       "/wiki/first-witness-book-9-the-unwritten-block.html",
       "/wiki/first-witness-sacred-fork.html",
       "/wiki/first-witness-triple-fork-chainfire.html",
@@ -16419,9 +16188,7 @@
       "/wiki/gkniftyheads-blockchain-furie-infinite-776007.html",
       "/wiki/gkniftyheads-blockchain-furie-infinite-776055.html",
       "/wiki/gkniftyheads-blockchain-furie-infinite-776057.html",
-      "/wiki/gkniftyheads.html",
       "/wiki/graffpunks.html",
-      "/wiki/hodl-warriors.html",
       "/wiki/street-kingdoms.html",
       "/wiki/the-blockchain-furies.html",
       "/wiki/trevor-fung.html",
@@ -16813,27 +16580,18 @@
       "/wiki/666-xrpl.html",
       "/wiki/atomichub-graffpunks-collection.html",
       "/wiki/bear-xrpl.html",
-      "/wiki/blockchain.html",
-      "/wiki/genesis-kernel.html",
-      "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
-      "/wiki/gkniftyheads-blockchain-belle-783392.html",
-      "/wiki/gkniftyheads-blockchain-bombshell-783407.html",
-      "/wiki/gkniftyheads-blockchain-furie-infinite-776007.html",
-      "/wiki/gkniftyheads-blockchain-furie-infinite-776055.html",
-      "/wiki/gkniftyheads-blockchain-furie-infinite-776057.html",
+      "/wiki/first-witness-digital-inheritance-after-death.html",
+      "/wiki/first-witness-libraries-architecture-archive-houses.html",
+      "/wiki/gkniftyheads-digital-diva-783394.html",
+      "/wiki/gkniftyheads-digital-duchess-783404.html",
       "/wiki/gkniftyheads-nft-collection.html",
-      "/wiki/graffpunks-24-7-radio.html",
       "/wiki/graffpunks-collection.html",
       "/wiki/grit.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-wars.html",
       "/wiki/hodlmoonboys-nft-collection.html",
       "/wiki/metropolis.html",
-      "/wiki/noballgamess-nft-collection.html",
-      "/wiki/sacred-chain.html",
-      "/wiki/spirit-borns.html",
-      "/wiki/the-blockchain-furies.html",
-      "/wiki/wax-blockchain.html"
+      "/wiki/noballgamess-nft-collection.html"
     ]
   },
   "/wiki/xrp-ledger.html": {

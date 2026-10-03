@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/generate-wiki-content-state.mjs",
-  "source_tree_hash": "sha256:40d408efdda4d5e23e9c731d26be557512a1baba59d7faede2486ac4c5fddc44",
+  "source_tree_hash": "sha256:5f63fc65cb5ad85345cfed4a3cdabefac114109c8e0edeb7e72e5b39cd996507",
   "hash_algorithm": "sha256",
   "page_count": 415,
   "manifest_entry_count": 415,
@@ -90,16 +90,16 @@
     "total_manifest_entries": 415,
     "absent_stub_authorizations": 0,
     "rewrite_status_counts": {
-      "KEEP": 40,
-      "REWRITE_FULL": 7,
-      "RECONCILE": 31,
-      "DEDUPE": 20,
+      "KEEP": 71,
+      "REWRITE_FULL": 0,
+      "RECONCILE": 25,
+      "DEDUPE": 10,
       "EXPAND": 0,
       "ARCHIVE_STYLE": 6,
-      "GENERATED": 6,
+      "GENERATED": 8,
       "NFT_SPECIALIST": 159,
       "FIRST_WITNESS_LOCKED": 82,
-      "NEEDS_HUMAN_REVIEW": 64
+      "NEEDS_HUMAN_REVIEW": 54
     },
     "automation_policy_counts": {
       "metadata-only": 331,
@@ -109,11 +109,11 @@
     },
     "pages_with_multiple_sam_blocks": 0,
     "pages_with_multiple_canonical_blocks": 0,
-    "pages_with_legacy_unmarked_content": 168,
+    "pages_with_legacy_unmarked_content": 135,
     "pages_with_exact_duplicate_paragraphs": 142,
     "pages_with_duplicate_headings": 1,
-    "pages_with_likely_near_duplicate_sections": 43,
-    "pages_with_legacy_sam_article_wrapper": 190
+    "pages_with_likely_near_duplicate_sections": 22,
+    "pages_with_legacy_sam_article_wrapper": 189
   },
   "pages": [
     {
@@ -993,54 +993,29 @@
       "title": "Bitcoin Kid Army",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 285,
+      "current_word_count": 626,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": false,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
-      "likely_near_duplicate_sections": [
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 3,
-          "second_paragraph": 6,
-          "similarity": 0.813,
-          "shared_token_count": 13
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 7,
-          "similarity": 0.867,
-          "shared_token_count": 13
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 5,
-          "second_paragraph": 8,
-          "similarity": 0.857,
-          "shared_token_count": 12
-        }
-      ],
-      "content_hash": "sha256:8d98b6bb667d0b8e22d9f1b15ab11bd9fb2d335ebc59465ad92eb397328f1765",
-      "article_content_hash": "sha256:fbde805e7e87905f49b3d6c81c1e136a0d45ec834129ba72f40ec8345bdbf09d",
-      "article_markup_hash": "sha256:5bb05997a89647890b8aaf83bc451cba9401024c55cac5eeedd4369ddcc40158",
-      "git_blob_oid": "8023ec1e2c72386c8316c436c3b4c569af6fe4b1",
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:d7d35c105278477523aa5ac9c0caaf9d0f9f6b88667083cf868e0b23b53cf74b",
+      "article_content_hash": "sha256:492959fad9d7b168a7c06865f8b5a86f74c50b830de1a277787e8be5cd4c3f2c",
+      "article_markup_hash": "sha256:69101ab8772b38c95a1e71fdfde025010f86843a9a0dd42210c54d7a7d039193",
+      "git_blob_oid": "385962c47cc3fc0db70b71943cb89ad8e435e99b",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "REWRITE_FULL",
+      "rewrite_status": "KEEP",
       "automation_policy": "metadata-only",
       "rewrite_cluster": "Bitcoin KiD / Bitcoin Kids / Bitcoin X Kids",
-      "duplicate_severity": "HIGH",
+      "duplicate_severity": "NONE",
       "canon_conflict_severity": "HIGH",
-      "recommended_action": "Queue a full canon rewrite by the later canon-writing AI.",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
       "suggested_priority": "P1",
       "likely_source_family": [
         "wiki/first-witness-child-of-fire.html",
@@ -1051,41 +1026,39 @@
         "wiki/bibles/bitcoin-kid-army.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
         "Specialist archive record found at wiki/bibles/bitcoin-kid-army.json; it is not automatically the unavailable Tier 4 modern bible.",
-        "3 likely near-duplicate section pair(s) reported; no text was removed.",
         "Existing wiki prose is surviving public archive, not automatically current canon."
       ]
     },
     {
       "path": "wiki/bitcoin-kids.html",
       "slug": "bitcoin-kids",
-      "title": "BITCOIN KIDS The children who chose the broken road over the perfect cage",
+      "title": "Bitcoin Kids",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 1677,
+      "current_word_count": 664,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": true,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:1f8a94be2097a6c8a6367bbfb5a1a13cc71c5dec7a1120718877dd5529e7c6b6",
-      "article_content_hash": "sha256:3bc6f4f36da007a1f9d37528dd1a15a297960068ac00810cee29708990202f9a",
-      "article_markup_hash": "sha256:39ead88e5ee371c02f06503a540d93af49138b41742b67011131aa983be240a9",
-      "git_blob_oid": "58e5dfe13292312f8ee34cd8da459fb6a394cdee",
+      "content_hash": "sha256:857200d9f76f9960810d5a5e01bd6cecb85e4cdef8b7517412a9637783675919",
+      "article_content_hash": "sha256:dc3bfa63dbd2755f2d059d8e63e67c7f69eddcf52c9576cb0d73e99e4129107a",
+      "article_markup_hash": "sha256:f27fa47dea58a0d1d856368a558a2fdbc161e11828cee274f49def116a180fd3",
+      "git_blob_oid": "ae5efd2b6b9937ffe6a7319650fac9e6162d61f9",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "REWRITE_FULL",
+      "rewrite_status": "KEEP",
       "automation_policy": "metadata-only",
       "rewrite_cluster": "Bitcoin KiD / Bitcoin Kids / Bitcoin X Kids",
       "duplicate_severity": "NONE",
       "canon_conflict_severity": "HIGH",
-      "recommended_action": "Queue a full canon rewrite by the later canon-writing AI.",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
       "suggested_priority": "P1",
       "likely_source_family": [
         "wiki/first-witness-child-of-fire.html",
@@ -1096,8 +1069,6 @@
         "wiki/bibles/bitcoin-kid-army.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Legacy SAM:BEGIN:article shell marker is provenance evidence, not a current SAM_CONTENT ownership block.",
         "Specialist archive record found at wiki/bibles/bitcoin-kid-army.json; it is not automatically the unavailable Tier 4 modern bible.",
         "Existing wiki prose is surviving public archive, not automatically current canon."
       ]
@@ -1180,32 +1151,32 @@
     {
       "path": "wiki/bitcoin-x-kids.html",
       "slug": "bitcoin-x-kids",
-      "title": "BITCOIN X KIDS The engineered heirs raised inside Queen P-fly's perfect city",
+      "title": "Bitcoin X Kids",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 1742,
+      "current_word_count": 696,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": true,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:2003399703d4d1362037f714de3d085f79d07cec8f5b7ec300097421a71204df",
-      "article_content_hash": "sha256:c5fefa1b54f3736a91306002498b07bfefaf111558eb770aabb9729f79cb6d53",
-      "article_markup_hash": "sha256:73e1c9ec1744061e3ff6912f95a3f99af29846d878e0ad467ba09a2b68d63f1f",
-      "git_blob_oid": "dc46ef495515f26de8e86dca344fb19d59895f82",
+      "content_hash": "sha256:13cfd63c8b5b570bf3e9d949f9e8aade14199ffa68b62a65fbcdd4da7516be95",
+      "article_content_hash": "sha256:e9721133544a0c5893a0119eb07313200bd76d29f8401174230d86df86952262",
+      "article_markup_hash": "sha256:f97b3f9ee2a259657952749f3cb1132ef72e097126cf2ebde42a39cdd152e7b2",
+      "git_blob_oid": "ddda13e1b2052b4626a85fddbb99e78ff1d2eb32",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "REWRITE_FULL",
+      "rewrite_status": "KEEP",
       "automation_policy": "metadata-only",
       "rewrite_cluster": "Bitcoin KiD / Bitcoin Kids / Bitcoin X Kids",
       "duplicate_severity": "NONE",
       "canon_conflict_severity": "HIGH",
-      "recommended_action": "Queue a full canon rewrite by the later canon-writing AI.",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
       "suggested_priority": "P1",
       "likely_source_family": [
         "wiki/first-witness-child-of-fire.html",
@@ -1216,8 +1187,6 @@
         "wiki/bibles/bitcoin-x-kids.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Legacy SAM:BEGIN:article shell marker is provenance evidence, not a current SAM_CONTENT ownership block.",
         "Specialist archive record found at wiki/bibles/bitcoin-x-kids.json; it is not automatically the unavailable Tier 4 modern bible.",
         "Existing wiki prose is surviving public archive, not automatically current canon."
       ]
@@ -1909,262 +1878,35 @@
       "title": "dream_sovereign",
       "page_exists": true,
       "page_type": "project_or_reference",
-      "current_word_count": 1258,
+      "current_word_count": 211,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": true,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
-      "likely_near_duplicate_sections": [
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 10,
-          "second_paragraph": 15,
-          "similarity": 0.906,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 14,
-          "second_paragraph": 16,
-          "similarity": 0.853,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 14,
-          "second_paragraph": 18,
-          "similarity": 0.765,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 15,
-          "second_paragraph": 21,
-          "similarity": 0.757,
-          "shared_token_count": 28
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 16,
-          "second_paragraph": 18,
-          "similarity": 0.897,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 2,
-          "second_paragraph": 4,
-          "similarity": 0.848,
-          "shared_token_count": 28
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 2,
-          "second_paragraph": 7,
-          "similarity": 0.933,
-          "shared_token_count": 28
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 2,
-          "second_paragraph": 9,
-          "similarity": 0.875,
-          "shared_token_count": 28
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 2,
-          "second_paragraph": 14,
-          "similarity": 0.824,
-          "shared_token_count": 28
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 2,
-          "second_paragraph": 16,
-          "similarity": 0.966,
-          "shared_token_count": 28
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 2,
-          "second_paragraph": 18,
-          "similarity": 0.862,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 3,
-          "second_paragraph": 5,
-          "similarity": 0.833,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 3,
-          "second_paragraph": 10,
-          "similarity": 0.806,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 3,
-          "second_paragraph": 15,
-          "similarity": 0.833,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 7,
-          "similarity": 0.853,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 9,
-          "similarity": 0.857,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 14,
-          "similarity": 0.763,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 16,
-          "similarity": 0.824,
-          "shared_token_count": 28
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 18,
-          "similarity": 0.735,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 5,
-          "second_paragraph": 10,
-          "similarity": 0.968,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 5,
-          "second_paragraph": 15,
-          "similarity": 0.875,
-          "shared_token_count": 28
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 7,
-          "second_paragraph": 9,
-          "similarity": 0.879,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 7,
-          "second_paragraph": 14,
-          "similarity": 0.829,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 7,
-          "second_paragraph": 16,
-          "similarity": 0.967,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 7,
-          "second_paragraph": 18,
-          "similarity": 0.867,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 9,
-          "second_paragraph": 14,
-          "similarity": 0.784,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 9,
-          "second_paragraph": 16,
-          "similarity": 0.848,
-          "shared_token_count": 28
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 9,
-          "second_paragraph": 18,
-          "similarity": 0.758,
-          "shared_token_count": 25
-        }
-      ],
-      "content_hash": "sha256:472a7e2f858be80726b3caaf1d9e0be6086abcffaf88405adf04d6cb490bbfa0",
-      "article_content_hash": "sha256:1b2a15ed6771529189a86f6f0b749dfc155555c9593aef2c98517944bab7ab94",
-      "article_markup_hash": "sha256:ab52069170a416ae2074de3a14c1bb21af642c7ab0c798c426e9b0d64f18be7d",
-      "git_blob_oid": "2858f6220938eeeb2d01b2404e1e25805444332e",
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:40802d77a87be3294157c51b6f45fd62b8850c2561a540e5aa755044c30f0e17",
+      "article_content_hash": "sha256:24b1131d06fcbda3a72fc307273acf636957b711b186ab7cce2ffb91aab7ad75",
+      "article_markup_hash": "sha256:16f919fb87003f12d1338c1a5f788e7ffa2899c5afdfaaf7ac3bdf04f86a81b7",
+      "git_blob_oid": "a46f5fdf180a68fe005d91a03de070960068fc16",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": false,
-      "rewrite_status": "DEDUPE",
+      "rewrite_status": "KEEP",
       "automation_policy": "metadata-only",
       "rewrite_cluster": "Generated/non-lore pages",
-      "duplicate_severity": "HIGH",
+      "duplicate_severity": "NONE",
       "canon_conflict_severity": "LOW",
-      "recommended_action": "Review the reported duplication during the later canon rewrite.",
-      "suggested_priority": "P1",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "Existing public/reference source verification"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Legacy SAM:BEGIN:article shell marker is provenance evidence, not a current SAM_CONTENT ownership block.",
-        "28 likely near-duplicate section pair(s) reported; no text was removed."
+        "No article-ownership or duplication issue detected by the deterministic audit."
       ]
     },
     {
@@ -5609,776 +5351,73 @@
       "title": "games4punks_telegram",
       "page_exists": true,
       "page_type": "project_or_reference",
-      "current_word_count": 4662,
+      "current_word_count": 258,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": true,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
-      "likely_near_duplicate_sections": [
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 39,
-          "second_paragraph": 42,
-          "similarity": 0.868,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 39,
-          "second_paragraph": 44,
-          "similarity": 0.821,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 39,
-          "second_paragraph": 48,
-          "similarity": 0.865,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 39,
-          "second_paragraph": 52,
-          "similarity": 0.85,
-          "shared_token_count": 34
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 39,
-          "second_paragraph": 54,
-          "similarity": 0.868,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 39,
-          "second_paragraph": 57,
-          "similarity": 0.865,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 39,
-          "second_paragraph": 60,
-          "similarity": 0.886,
-          "shared_token_count": 31
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 39,
-          "second_paragraph": 62,
-          "similarity": 0.846,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 40,
-          "second_paragraph": 45,
-          "similarity": 0.931,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 42,
-          "second_paragraph": 44,
-          "similarity": 0.895,
-          "shared_token_count": 34
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 42,
-          "second_paragraph": 48,
-          "similarity": 0.842,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 42,
-          "second_paragraph": 52,
-          "similarity": 0.875,
-          "shared_token_count": 35
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 42,
-          "second_paragraph": 54,
-          "similarity": 0.946,
-          "shared_token_count": 35
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 42,
-          "second_paragraph": 57,
-          "similarity": 0.842,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 42,
-          "second_paragraph": 60,
-          "similarity": 0.861,
-          "shared_token_count": 31
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 42,
-          "second_paragraph": 62,
-          "similarity": 0.921,
-          "shared_token_count": 35
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 44,
-          "second_paragraph": 48,
-          "similarity": 0.795,
-          "shared_token_count": 31
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 44,
-          "second_paragraph": 52,
-          "similarity": 0.875,
-          "shared_token_count": 35
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 44,
-          "second_paragraph": 54,
-          "similarity": 0.946,
-          "shared_token_count": 35
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 44,
-          "second_paragraph": 57,
-          "similarity": 0.795,
-          "shared_token_count": 31
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 44,
-          "second_paragraph": 60,
-          "similarity": 0.811,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 44,
-          "second_paragraph": 62,
-          "similarity": 0.921,
-          "shared_token_count": 35
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 45,
-          "second_paragraph": 49,
-          "similarity": 0.931,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 48,
-          "second_paragraph": 52,
-          "similarity": 0.825,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 48,
-          "second_paragraph": 54,
-          "similarity": 0.842,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 48,
-          "second_paragraph": 57,
-          "similarity": 0.889,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 48,
-          "second_paragraph": 60,
-          "similarity": 0.912,
-          "shared_token_count": 31
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 48,
-          "second_paragraph": 62,
-          "similarity": 0.821,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 52,
-          "second_paragraph": 54,
-          "similarity": 0.923,
-          "shared_token_count": 36
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 52,
-          "second_paragraph": 57,
-          "similarity": 0.78,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 52,
-          "second_paragraph": 60,
-          "similarity": 0.795,
-          "shared_token_count": 31
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 52,
-          "second_paragraph": 62,
-          "similarity": 0.9,
-          "shared_token_count": 36
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 53,
-          "second_paragraph": 61,
-          "similarity": 0.806,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 54,
-          "second_paragraph": 57,
-          "similarity": 0.842,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 54,
-          "second_paragraph": 60,
-          "similarity": 0.861,
-          "shared_token_count": 31
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 54,
-          "second_paragraph": 62,
-          "similarity": 0.973,
-          "shared_token_count": 36
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 57,
-          "second_paragraph": 60,
-          "similarity": 0.912,
-          "shared_token_count": 31
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 57,
-          "second_paragraph": 62,
-          "similarity": 0.821,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 60,
-          "second_paragraph": 62,
-          "similarity": 0.838,
-          "shared_token_count": 31
-        }
-      ],
-      "content_hash": "sha256:2ae9589a3fbd9f49602cc90b1a5ab95eb4bc9348b9ba31ac9bcad214a025ca0d",
-      "article_content_hash": "sha256:0da5ed9227ee89f9d10ba6aee70ec70c47c5a0d3d3857d08dcd3bd43c1091b36",
-      "article_markup_hash": "sha256:06d565e4ba3d3a84a0896cbb96067c6ca0e75f25cfec4eb60bacbb87da2d8ed0",
-      "git_blob_oid": "242fedc26bd8f7635223434b1a47669f19dc5672",
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:1e5077ab1687f886ba47592764df2763aadb1dcdc5166782de084db3fe165317",
+      "article_content_hash": "sha256:345ded35887ada475dcd725a1f9fcd9fb3641b0f7a04b8012df22f2a6692e7be",
+      "article_markup_hash": "sha256:78e4bf73caf23a3155e6e790f064ecfb2e666a46da9a8233bf7da895725596d0",
+      "git_blob_oid": "02b0dfed6c6885e32741485e028003a6916f64ec",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": false,
-      "rewrite_status": "DEDUPE",
+      "rewrite_status": "KEEP",
       "automation_policy": "metadata-only",
       "rewrite_cluster": "GraffPUNKS",
-      "duplicate_severity": "HIGH",
+      "duplicate_severity": "NONE",
       "canon_conflict_severity": "MEDIUM",
-      "recommended_action": "Review the reported duplication during the later canon rewrite.",
-      "suggested_priority": "P1",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "wiki/bibles/games4punks-telegram-games.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Legacy SAM:BEGIN:article shell marker is provenance evidence, not a current SAM_CONTENT ownership block.",
-        "Specialist archive record found at wiki/bibles/games4punks-telegram-games.json; it is not automatically the unavailable Tier 4 modern bible.",
-        "39 likely near-duplicate section pair(s) reported; no text was removed."
+        "Specialist archive record found at wiki/bibles/games4punks-telegram-games.json; it is not automatically the unavailable Tier 4 modern bible."
       ]
     },
     {
       "path": "wiki/gang-signs.html",
       "slug": "gang-signs",
-      "title": "gang_signs",
+      "title": "Gang Signs moved",
       "page_exists": true,
-      "page_type": "project_or_reference",
-      "current_word_count": 4392,
+      "page_type": "redirect",
+      "current_word_count": 0,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 0,
-      "legacy_sam_article_wrapper": true,
-      "legacy_unmarked_content": true,
+      "legacy_sam_article_wrapper": false,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
-      "likely_near_duplicate_sections": [
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 1,
-          "second_paragraph": 36,
-          "similarity": 0.939,
-          "shared_token_count": 31
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 1,
-          "second_paragraph": 38,
-          "similarity": 0.806,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 1,
-          "second_paragraph": 40,
-          "similarity": 0.829,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 1,
-          "second_paragraph": 47,
-          "similarity": 0.861,
-          "shared_token_count": 31
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 1,
-          "second_paragraph": 49,
-          "similarity": 0.829,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 1,
-          "second_paragraph": 55,
-          "similarity": 0.906,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 1,
-          "second_paragraph": 56,
-          "similarity": 0.829,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 2,
-          "second_paragraph": 41,
-          "similarity": 0.926,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 2,
-          "second_paragraph": 48,
-          "similarity": 0.765,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 36,
-          "second_paragraph": 38,
-          "similarity": 0.806,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 36,
-          "second_paragraph": 40,
-          "similarity": 0.829,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 36,
-          "second_paragraph": 47,
-          "similarity": 0.861,
-          "shared_token_count": 31
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 36,
-          "second_paragraph": 49,
-          "similarity": 0.829,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 36,
-          "second_paragraph": 55,
-          "similarity": 0.906,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 36,
-          "second_paragraph": 56,
-          "similarity": 0.829,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 37,
-          "second_paragraph": 39,
-          "similarity": 0.75,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 37,
-          "second_paragraph": 42,
-          "similarity": 0.8,
-          "shared_token_count": 28
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 37,
-          "second_paragraph": 45,
-          "similarity": 0.806,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 37,
-          "second_paragraph": 53,
-          "similarity": 0.829,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 37,
-          "second_paragraph": 57,
-          "similarity": 0.857,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 38,
-          "second_paragraph": 40,
-          "similarity": 0.806,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 38,
-          "second_paragraph": 47,
-          "similarity": 0.744,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 38,
-          "second_paragraph": 49,
-          "similarity": 0.806,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 38,
-          "second_paragraph": 55,
-          "similarity": 0.879,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 38,
-          "second_paragraph": 56,
-          "similarity": 0.806,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 39,
-          "second_paragraph": 42,
-          "similarity": 0.722,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 39,
-          "second_paragraph": 45,
-          "similarity": 0.73,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 39,
-          "second_paragraph": 53,
-          "similarity": 0.75,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 39,
-          "second_paragraph": 57,
-          "similarity": 0.73,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 40,
-          "second_paragraph": 47,
-          "similarity": 0.763,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 40,
-          "second_paragraph": 55,
-          "similarity": 0.906,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 40,
-          "second_paragraph": 56,
-          "similarity": 0.829,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 41,
-          "second_paragraph": 44,
-          "similarity": 0.926,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 41,
-          "second_paragraph": 52,
-          "similarity": 0.926,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 42,
-          "second_paragraph": 45,
-          "similarity": 0.882,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 42,
-          "second_paragraph": 53,
-          "similarity": 0.8,
-          "shared_token_count": 28
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 42,
-          "second_paragraph": 57,
-          "similarity": 0.939,
-          "shared_token_count": 31
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 44,
-          "second_paragraph": 48,
-          "similarity": 0.765,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 45,
-          "second_paragraph": 53,
-          "similarity": 0.757,
-          "shared_token_count": 28
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 45,
-          "second_paragraph": 57,
-          "similarity": 0.941,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 47,
-          "second_paragraph": 49,
-          "similarity": 0.763,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 47,
-          "second_paragraph": 55,
-          "similarity": 0.829,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 47,
-          "second_paragraph": 56,
-          "similarity": 0.763,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 48,
-          "second_paragraph": 52,
-          "similarity": 0.765,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 49,
-          "second_paragraph": 55,
-          "similarity": 0.906,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 49,
-          "second_paragraph": 56,
-          "similarity": 0.829,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 53,
-          "second_paragraph": 57,
-          "similarity": 0.806,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 55,
-          "second_paragraph": 56,
-          "similarity": 0.906,
-          "shared_token_count": 29
-        }
-      ],
-      "content_hash": "sha256:197d4beb30d860c35d5fa1ce04498241e4df5efb737ce555686c12cd31448781",
-      "article_content_hash": "sha256:ab2883be472d426d59e5696df95e517227b03a928b28b36c93c9c90bd328ec8a",
-      "article_markup_hash": "sha256:098ec0fa7614c11aa71bd8583539c71eca5eec5f5b397fa64d64a7fd56c9f09d",
-      "git_blob_oid": "930a1950cc4310c05e54b7a0ef5f837b3e6d06c3",
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:a449efc230dbe4f1184a2fdb84134ef6039b64cf911cb961ef7022c2f410acbb",
+      "article_content_hash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "article_markup_hash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "git_blob_oid": "7c5cb0a2d4907e9bdc80e1736bf7447be34d3457",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
-      "nft_template_generated_page": false,
+      "nft_template_generated_page": true,
       "likely_lore_page": false,
-      "rewrite_status": "DEDUPE",
+      "rewrite_status": "GENERATED",
       "automation_policy": "metadata-only",
-      "rewrite_cluster": "GraffPUNKS",
-      "duplicate_severity": "HIGH",
-      "canon_conflict_severity": "MEDIUM",
-      "recommended_action": "Review the reported duplication during the later canon rewrite.",
-      "suggested_priority": "P1",
+      "rewrite_cluster": "Generated/non-lore pages",
+      "duplicate_severity": "NONE",
+      "canon_conflict_severity": "NOT_APPLICABLE",
+      "recommended_action": "Maintain through its generator or stub/redirect workflow, not lore automation.",
+      "suggested_priority": "P4",
       "likely_source_family": [
-        "wiki/bibles/gang-signs.json (specialist public archive; not identified Tier 4 canon)"
+        "Generated page structure"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Legacy SAM:BEGIN:article shell marker is provenance evidence, not a current SAM_CONTENT ownership block.",
-        "Specialist archive record found at wiki/bibles/gang-signs.json; it is not automatically the unavailable Tier 4 modern bible.",
-        "48 likely near-duplicate section pair(s) reported; no text was removed."
+        "Generated, redirect, or stub surface; not a canon-writing target.",
+        "Specialist archive record found at wiki/bibles/gang-signs.json; it is not automatically the unavailable Tier 4 modern bible."
       ]
     },
     {
@@ -6425,182 +5464,29 @@
       "title": "genesis_kernel",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 1191,
+      "current_word_count": 582,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": true,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
-      "likely_near_duplicate_sections": [
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 10,
-          "second_paragraph": 14,
-          "similarity": 0.871,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 11,
-          "second_paragraph": 15,
-          "similarity": 0.879,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 11,
-          "second_paragraph": 18,
-          "similarity": 0.784,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 15,
-          "second_paragraph": 18,
-          "similarity": 0.833,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 3,
-          "second_paragraph": 5,
-          "similarity": 0.9,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 3,
-          "second_paragraph": 9,
-          "similarity": 0.931,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 3,
-          "second_paragraph": 10,
-          "similarity": 0.931,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 3,
-          "second_paragraph": 14,
-          "similarity": 0.931,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 6,
-          "similarity": 0.882,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 11,
-          "similarity": 0.906,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 15,
-          "similarity": 0.968,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 18,
-          "similarity": 0.857,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 5,
-          "second_paragraph": 9,
-          "similarity": 0.903,
-          "shared_token_count": 28
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 5,
-          "second_paragraph": 10,
-          "similarity": 0.844,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 5,
-          "second_paragraph": 14,
-          "similarity": 0.903,
-          "shared_token_count": 28
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 6,
-          "second_paragraph": 11,
-          "similarity": 0.806,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 6,
-          "second_paragraph": 15,
-          "similarity": 0.857,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 6,
-          "second_paragraph": 18,
-          "similarity": 0.865,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 9,
-          "second_paragraph": 10,
-          "similarity": 0.871,
-          "shared_token_count": 27
-        }
-      ],
-      "content_hash": "sha256:e649795e181d59af5e6723e22314930732d74c7e1c97c7637d1cd61febe95722",
-      "article_content_hash": "sha256:02362bf972e29317891485efa780fd586f5efc374fc9396c64737df945ed1832",
-      "article_markup_hash": "sha256:d338b03f595536afe3ba8218efa8cacadf7bfdc43caf9c0ce4a20eca0da78ad9",
-      "git_blob_oid": "c94d18f65f0bb86bca0e2101c16d41a726df9180",
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:1fad289e6a9a0e9331e36c24e936753dd54ffafb645a735138f59e7f15d94097",
+      "article_content_hash": "sha256:638f85c8203219697e0bd4f37eb279a3a7f37e37c0e65a081d255f7bdcc48807",
+      "article_markup_hash": "sha256:80c00f9776b61577b6b5a6945e412457dfccbbf91d0710ee0e9a68fb096d4afc",
+      "git_blob_oid": "d0f2db61dd67075705f65d013e23942e47414c0c",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "DEDUPE",
+      "rewrite_status": "KEEP",
       "automation_policy": "metadata-only",
       "rewrite_cluster": "Core cosmology / history",
-      "duplicate_severity": "HIGH",
+      "duplicate_severity": "NONE",
       "canon_conflict_severity": "HIGH",
-      "recommended_action": "Review the reported duplication during the later canon rewrite.",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
       "suggested_priority": "P1",
       "likely_source_family": [
         "wiki/first-witness-concordance.html",
@@ -6611,9 +5497,6 @@
         "about/w81.zip (major lore/cosmology files)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Legacy SAM:BEGIN:article shell marker is provenance evidence, not a current SAM_CONTENT ownership block.",
-        "19 likely near-duplicate section pair(s) reported; no text was removed.",
         "Existing wiki prose is surviving public archive, not automatically current canon."
       ]
     },
@@ -6664,80 +5547,36 @@
       "title": "genesis_spray_drop",
       "page_exists": true,
       "page_type": "historical_archive",
-      "current_word_count": 845,
+      "current_word_count": 206,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": true,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
-      "likely_near_duplicate_sections": [
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 3,
-          "second_paragraph": 10,
-          "similarity": 0.903,
-          "shared_token_count": 28
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 5,
-          "similarity": 0.793,
-          "shared_token_count": 23
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 8,
-          "similarity": 0.885,
-          "shared_token_count": 23
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 11,
-          "similarity": 0.821,
-          "shared_token_count": 23
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 8,
-          "second_paragraph": 11,
-          "similarity": 0.8,
-          "shared_token_count": 24
-        }
-      ],
-      "content_hash": "sha256:2c24a01e35d03f757c6a83b1f2044dd323d8d3de1c1d92d4270469668df58644",
-      "article_content_hash": "sha256:96356d076d6b0e2a6d07b039bbeec46d49374ea96be57b3697a50ab4ac4d83d4",
-      "article_markup_hash": "sha256:9959fe42b4f16d9d57fa2a0330d5a28ad14469e8152bbaa018adcd941373b489",
-      "git_blob_oid": "bf0d6ff6f5d06d016dcf812a732d370ee290e572",
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:ac5b7e3b6b1647c227f011dfdf834c759f3334c6812ad9bc9a3bbb7b836de205",
+      "article_content_hash": "sha256:d2e7f8d5c4656d37a082bddb3c7182563d92fa313978bf1429b2a61beb3455b9",
+      "article_markup_hash": "sha256:f5c63fb213d418b771a2594e5b6e354e595f40706339179ca4588333156a5c53",
+      "git_blob_oid": "390c6f443505014081e5a2fba5c4b902fdb114a7",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "NEEDS_HUMAN_REVIEW",
+      "rewrite_status": "KEEP",
       "automation_policy": "metadata-only",
       "rewrite_cluster": "Historical/archive pages",
-      "duplicate_severity": "HIGH",
+      "duplicate_severity": "NONE",
       "canon_conflict_severity": "UNKNOWN_REVIEW",
-      "recommended_action": "Resolve classification/source ambiguity before any prose write.",
-      "suggested_priority": "P1",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
         "about/w81.zip (unresolved archive bucket)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Legacy SAM:BEGIN:article shell marker is provenance evidence, not a current SAM_CONTENT ownership block.",
-        "5 likely near-duplicate section pair(s) reported; no text was removed.",
         "Existing wiki prose is surviving public archive, not automatically current canon."
       ]
     },
@@ -10508,7 +9347,7 @@
       "duplicate_severity": "HIGH",
       "canon_conflict_severity": "NOT_APPLICABLE",
       "recommended_action": "Route structured NFT/template maintenance to the NFT specialist workflow.",
-      "suggested_priority": "P1",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "Structured NFT/template metadata"
       ],
@@ -12309,29 +11148,29 @@
       "title": "Graffiti Kings",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 413,
+      "current_word_count": 582,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": false,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:24722241cbef20e1c01721b3c1113b4a8e2aef4ef49efb782cab3e4342a72e82",
-      "article_content_hash": "sha256:1caf4054d49476ccc7a9a07e6e47d7f815cedb8d6d0af7a7cc5f1a178f400072",
-      "article_markup_hash": "sha256:d931d69b266e70612e71b6b8fbd8d42a3e43d115ebadf483d6277feef98cdab1",
-      "git_blob_oid": "949e268cea79103d4294e07b7e5a49a2b10ec93b",
+      "content_hash": "sha256:de7c9c88a6aac485f29f08db04c9866d2ed96f5f30833884c2a58b2533ce46a6",
+      "article_content_hash": "sha256:e11ec57fc78647ff6ec00cb588d3205c9144e8e7834c4efe33fcd75e93e1adec",
+      "article_markup_hash": "sha256:f87bef75ffd592e435ddea0b69a6801cd3123c5e8d97775ec11dfaf1bc8791f9",
+      "git_blob_oid": "c527c2c5d45258d5b76570f82ab650e7a1fe23f3",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "RECONCILE",
+      "rewrite_status": "KEEP",
       "automation_policy": "metadata-only",
       "rewrite_cluster": "GraffPUNKS",
       "duplicate_severity": "NONE",
       "canon_conflict_severity": "HIGH",
-      "recommended_action": "Reconcile against higher-priority sources before replacing prose.",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
       "suggested_priority": "P1",
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
@@ -12340,7 +11179,6 @@
         "wiki/bibles/graffiti-kings.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
         "Specialist archive record found at wiki/bibles/graffiti-kings.json; it is not automatically the unavailable Tier 4 modern bible.",
         "Existing wiki prose is surviving public archive, not automatically current canon."
       ]
@@ -12351,63 +11189,30 @@
       "title": "graffiti_nexus",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 643,
+      "current_word_count": 556,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": true,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
-      "likely_near_duplicate_sections": [
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 2,
-          "second_paragraph": 4,
-          "similarity": 0.926,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 3,
-          "second_paragraph": 5,
-          "similarity": 0.786,
-          "shared_token_count": 22
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 3,
-          "second_paragraph": 6,
-          "similarity": 0.786,
-          "shared_token_count": 22
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 5,
-          "second_paragraph": 6,
-          "similarity": 0.931,
-          "shared_token_count": 27
-        }
-      ],
-      "content_hash": "sha256:1f2c9b977bec797cdfcef3ceae679b78e700997ae3f34c2a69707ce6bfeb9009",
-      "article_content_hash": "sha256:bfa7174d5feec2dc5ff512b6e3b8b7e19180f9208df64b9cfb26215663e2b51a",
-      "article_markup_hash": "sha256:ccb744dbadfe444920a353aedf8d8cbd560fd3e9c9878e4e1cbdd04b88e4ddb2",
-      "git_blob_oid": "ee8c2415f34f88fea8925b5e2de5f27838b65e39",
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:4f17f6e310e261020e961c1e7cfc8b5e38aaa7fd707262004dcc16894f1dc404",
+      "article_content_hash": "sha256:9feca83dad00cb697ea2b77f8c17ebbe1d1a888012f16884d6c62e621ee6de45",
+      "article_markup_hash": "sha256:003dd20342f42c1b91c0635ae4b330c22b74bcc1ce7ec6c0a5942d3e5a285f18",
+      "git_blob_oid": "3436f6154415cf99ad0c77ae69a85df92b173c01",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "DEDUPE",
+      "rewrite_status": "KEEP",
       "automation_policy": "metadata-only",
       "rewrite_cluster": "Core cosmology / history",
-      "duplicate_severity": "HIGH",
+      "duplicate_severity": "NONE",
       "canon_conflict_severity": "MEDIUM",
-      "recommended_action": "Review the reported duplication during the later canon rewrite.",
-      "suggested_priority": "P1",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "wiki/first-witness-concordance.html",
         "wiki/first-witness-master-chronology.html",
@@ -12417,9 +11222,6 @@
         "about/w81.zip (major lore/cosmology files)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Legacy SAM:BEGIN:article shell marker is provenance evidence, not a current SAM_CONTENT ownership block.",
-        "4 likely near-duplicate section pair(s) reported; no text was removed.",
         "Existing wiki prose is surviving public archive, not automatically current canon."
       ]
     },
@@ -12486,32 +11288,32 @@
     {
       "path": "wiki/graffpunks.html",
       "slug": "graffpunks",
-      "title": "GRAFFPUNKS The mark, the message and the frequency behind the Crypto Moonboys movement",
+      "title": "GraffPUNKS",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 1433,
+      "current_word_count": 661,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": true,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:a8ef03a7262bea271f3d24179060ace8d1f847c281ba461c2c4cdbf200713f0d",
-      "article_content_hash": "sha256:c2160dba7c036017cab9597d8f2c3c520d94eeba321c8fae3f82ec96709e6c4e",
-      "article_markup_hash": "sha256:53907b413873120d883a063e6e73b2bdf8f30635aa9cded2cc1b008fbb414812",
-      "git_blob_oid": "4db41b523e0b21eccf1045ed3aa088e753a1fe39",
+      "content_hash": "sha256:4129affcad98e59309e770c0888982f5b5991107d2055952a511fd5b1c5ba7d0",
+      "article_content_hash": "sha256:c06ce891c8c712f1ac6942f0c0dad83f9d70785d0e9e926e391aaff31b608e6f",
+      "article_markup_hash": "sha256:ef403b60163681d6994a81fc26abeeabbe7add236f8d6207b387a61be3b98246",
+      "git_blob_oid": "c1d83a3132638b727eeaaa5718059250d0c598c9",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "RECONCILE",
+      "rewrite_status": "KEEP",
       "automation_policy": "metadata-only",
       "rewrite_cluster": "GraffPUNKS",
       "duplicate_severity": "NONE",
       "canon_conflict_severity": "HIGH",
-      "recommended_action": "Reconcile against higher-priority sources before replacing prose.",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
       "suggested_priority": "P1",
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
@@ -12520,8 +11322,6 @@
         "wiki/bibles/graffpunks.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Legacy SAM:BEGIN:article shell marker is provenance evidence, not a current SAM_CONTENT ownership block.",
         "Specialist archive record found at wiki/bibles/graffpunks.json; it is not automatically the unavailable Tier 4 modern bible.",
         "Existing wiki prose is surviving public archive, not automatically current canon."
       ]
@@ -12731,32 +11531,32 @@
     {
       "path": "wiki/hard-fork-games.html",
       "slug": "hard-fork-games",
-      "title": "HARD FORK GAMES Where every generation is divided into the future it is willing to fight for",
+      "title": "HARD FORK GAMES The institution that turns a shared generation into competing futures",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 1706,
+      "current_word_count": 842,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": true,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:08bb3ce65076ad4b35649e2945991961f28f36e37f5dafdddbf2bd8f77d0546a",
-      "article_content_hash": "sha256:a83f48a583e1c3ffa8a40949e80e8561681b01eec1fb1808e02d56fdce971647",
-      "article_markup_hash": "sha256:ed8e7171d9c501ffa545e94a0b760ec96e550ef69f44accd30ee2ecd40a09a5a",
-      "git_blob_oid": "6e4e1572ca5e7c0440d370d752e69d737ddb5e6b",
+      "content_hash": "sha256:612bfa0b65b74430c8894bce53876de58ea2a8cb3d60e9c71145c9d89287a05d",
+      "article_content_hash": "sha256:49873bfc2426f39e81f9a8dd4bb4b0c44f7fa7c5b38ecf957cd6530d0d79ca78",
+      "article_markup_hash": "sha256:8db0046d974888360c29b0b5cfe97ecb044cd8c1cace8083c66818334be85b6d",
+      "git_blob_oid": "63d6d6463d447ceba9ef682a68f5ea50f5242232",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "RECONCILE",
+      "rewrite_status": "KEEP",
       "automation_policy": "metadata-only",
       "rewrite_cluster": "Core cosmology / history",
       "duplicate_severity": "NONE",
       "canon_conflict_severity": "HIGH",
-      "recommended_action": "Reconcile against higher-priority sources before replacing prose.",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
       "suggested_priority": "P1",
       "likely_source_family": [
         "wiki/first-witness-concordance.html",
@@ -12768,8 +11568,6 @@
         "wiki/bibles/hard-fork-games.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Legacy SAM:BEGIN:article shell marker is provenance evidence, not a current SAM_CONTENT ownership block.",
         "Specialist archive record found at wiki/bibles/hard-fork-games.json; it is not automatically the unavailable Tier 4 modern bible.",
         "Existing wiki prose is surviving public archive, not automatically current canon."
       ]
@@ -12824,166 +11622,35 @@
       "title": "head_tags",
       "page_exists": true,
       "page_type": "project_or_reference",
-      "current_word_count": 889,
+      "current_word_count": 210,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": true,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
-      "likely_near_duplicate_sections": [
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 12,
-          "second_paragraph": 14,
-          "similarity": 0.867,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 12,
-          "second_paragraph": 15,
-          "similarity": 0.813,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 14,
-          "second_paragraph": 15,
-          "similarity": 0.867,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 3,
-          "second_paragraph": 5,
-          "similarity": 0.97,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 6,
-          "similarity": 0.839,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 9,
-          "similarity": 0.839,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 12,
-          "similarity": 0.897,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 14,
-          "similarity": 0.963,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 15,
-          "similarity": 0.897,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 6,
-          "second_paragraph": 9,
-          "similarity": 0.722,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 6,
-          "second_paragraph": 12,
-          "similarity": 0.765,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 6,
-          "second_paragraph": 14,
-          "similarity": 0.813,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 6,
-          "second_paragraph": 15,
-          "similarity": 0.765,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 9,
-          "second_paragraph": 12,
-          "similarity": 0.765,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 9,
-          "second_paragraph": 14,
-          "similarity": 0.813,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 9,
-          "second_paragraph": 15,
-          "similarity": 0.765,
-          "shared_token_count": 26
-        }
-      ],
-      "content_hash": "sha256:819ec339efdf482a0585e8047dd4752fa44f661a7d39c3c7c9f0b52cdbf223f6",
-      "article_content_hash": "sha256:34e0f05ec70e385c57f1eb2180cc5702ebb858cd68e797572d40d447f9cf8b7b",
-      "article_markup_hash": "sha256:520a0b20345625738529e7179344b7f690c82b0a12778dea0bb32ba9b8594617",
-      "git_blob_oid": "78d145f968d27ea11f761c6b4976f0aad3393e93",
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:517dec0c6212452f5c50f293cfc79b29de2554a1307f5a835c299d70fa460108",
+      "article_content_hash": "sha256:dab09994406aad4e00c70a0b01d8847959138b58449245b9e508a84c3ec23506",
+      "article_markup_hash": "sha256:d24887facbbe2af60c9005f61908920b1861f1b80916037c6b0a71d65df8662f",
+      "git_blob_oid": "0725fcb295424903adaf92baf3b7fa4a8895c5c2",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": false,
-      "rewrite_status": "DEDUPE",
+      "rewrite_status": "KEEP",
       "automation_policy": "metadata-only",
       "rewrite_cluster": "GKniftyHEADS",
-      "duplicate_severity": "HIGH",
+      "duplicate_severity": "NONE",
       "canon_conflict_severity": "MEDIUM",
-      "recommended_action": "Review the reported duplication during the later canon rewrite.",
-      "suggested_priority": "P1",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "Existing public/reference source verification"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Legacy SAM:BEGIN:article shell marker is provenance evidence, not a current SAM_CONTENT ownership block.",
-        "16 likely near-duplicate section pair(s) reported; no text was removed."
+        "No article-ownership or duplication issue detected by the deterministic audit."
       ]
     },
     {
@@ -13032,32 +11699,32 @@
     {
       "path": "wiki/hodl-warriors.html",
       "slug": "hodl-warriors",
-      "title": "HODL WARRIORS They are real holders, digital characters and the army that rises when every faction is threatened",
+      "title": "HODL Warriors",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 1641,
+      "current_word_count": 634,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": true,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:762b4109803c362c3ea99a30fd18fc1914225bcea45c661b60dc07127d6a92ed",
-      "article_content_hash": "sha256:2c0db9dfd9420f39501f855b8cc495ee9dea6db9073f885f0fdbd734a6081d33",
-      "article_markup_hash": "sha256:21b0c46f937a476d43d56dced9762269c2106c1f54efa629cf719f2d07dc19e3",
-      "git_blob_oid": "a9bfb74cc8e89842f496fe742375637f2f8b8bf3",
+      "content_hash": "sha256:4de9adccbcd07b0e3025302f609170ece6264a04f6e9a6edbf7f5ca0a979b753",
+      "article_content_hash": "sha256:8ef1f5e6c5241072f7238e529ed342bb9d663629826fffdd41596e1111b0000d",
+      "article_markup_hash": "sha256:529a5f5a36b0fcefaa386fe6227839982cfadf3c814bef7f3b4744a901c02aec",
+      "git_blob_oid": "c17812dce8a6a000c1674d064ce5333e286f450b",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "REWRITE_FULL",
+      "rewrite_status": "KEEP",
       "automation_policy": "metadata-only",
       "rewrite_cluster": "HODL Warriors / HODL X Warriors",
       "duplicate_severity": "NONE",
       "canon_conflict_severity": "HIGH",
-      "recommended_action": "Queue a full canon rewrite by the later canon-writing AI.",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
       "suggested_priority": "P1",
       "likely_source_family": [
         "wiki/first-witness-hodl-doctrine.html",
@@ -13068,8 +11735,6 @@
         "wiki/bibles/hodl-warriors-army.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Legacy SAM:BEGIN:article shell marker is provenance evidence, not a current SAM_CONTENT ownership block.",
         "Specialist archive record found at wiki/bibles/hodl-warriors-army.json; it is not automatically the unavailable Tier 4 modern bible.",
         "Existing wiki prose is surviving public archive, not automatically current canon."
       ]
@@ -13077,32 +11742,32 @@
     {
       "path": "wiki/hodl-wars.html",
       "slug": "hodl-wars",
-      "title": "HODL WARS The hidden game and the war that defines the Crypto Moonboys universe",
+      "title": "HODL WARS",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 1741,
+      "current_word_count": 726,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": true,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:909717585c884d1d363ae1a6b5c3775b166a0bcdb58f9dcbd0617e7eff5b711a",
-      "article_content_hash": "sha256:16fed2a9f63b9fac058096484b7d369752ce9ccceef71c3ab950b715d33d1945",
-      "article_markup_hash": "sha256:28f957332dcfd6e693bdb4bc547cf389a18a6ba5437d6c262b160aa528c3cb50",
-      "git_blob_oid": "f00868b361e07511bbdd3862a0c09f3ef3d98b0c",
+      "content_hash": "sha256:6470a5ca3d95bd934dbd28408cff04ebb3643239f4c3429c0d4bc33c3f34b615",
+      "article_content_hash": "sha256:2df5629820b97344611d2321ca8635cc46714bc1ebb1de8abe65267250294d9a",
+      "article_markup_hash": "sha256:33d9e47679cc8903ad2c4a785448c42ad19b05df722a93eabbc25eb412783395",
+      "git_blob_oid": "e2b9e719c1b23f186f6c0b24af1eb4ed8f1c7048",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "REWRITE_FULL",
+      "rewrite_status": "KEEP",
       "automation_policy": "metadata-only",
       "rewrite_cluster": "HODL Warriors / HODL X Warriors",
       "duplicate_severity": "NONE",
       "canon_conflict_severity": "HIGH",
-      "recommended_action": "Queue a full canon rewrite by the later canon-writing AI.",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
       "suggested_priority": "P1",
       "likely_source_family": [
         "wiki/first-witness-hodl-doctrine.html",
@@ -13113,8 +11778,6 @@
         "wiki/bibles/hodl-wars.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Legacy SAM:BEGIN:article shell marker is provenance evidence, not a current SAM_CONTENT ownership block.",
         "Specialist archive record found at wiki/bibles/hodl-wars.json; it is not automatically the unavailable Tier 4 modern bible.",
         "Existing wiki prose is surviving public archive, not automatically current canon."
       ]
@@ -13122,32 +11785,32 @@
     {
       "path": "wiki/hodl-x-warriors.html",
       "slug": "hodl-x-warriors",
-      "title": "HODL X WARRIORS The perfected combat generation forged for a war that never stops",
+      "title": "HODL X Warriors",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 1447,
+      "current_word_count": 529,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": true,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:14cb2473a0da8ac3fb6c99f457591365e82a7d85624fe41951c30e2471015031",
-      "article_content_hash": "sha256:85a7947a0db1a0ae7f40d5abb8cfcc02df66bee21773b6c156f1d54ea3d8f604",
-      "article_markup_hash": "sha256:4a47e71d6172fa3f9a29b1e9e7fbe26d11706178e701c048dbdc54b2e9c6eb0a",
-      "git_blob_oid": "24c6bb345771ab8b356ccc5ee6dfba6918492496",
+      "content_hash": "sha256:2a923fecd4b9579475e01ca8ae2bfa2e8f4aea097e07322636a039703d0dcbef",
+      "article_content_hash": "sha256:6d486c2b5b8763ca8568a944a494a105873647127952a41d1127bc3ae7f34bdf",
+      "article_markup_hash": "sha256:f5edf7129001280bd3b3f7927407701731cb004c32e235c496ba644f6c37fb0c",
+      "git_blob_oid": "403c72b02fcb37c40aebaf1b467ed816f621ff32",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "REWRITE_FULL",
+      "rewrite_status": "KEEP",
       "automation_policy": "metadata-only",
       "rewrite_cluster": "HODL Warriors / HODL X Warriors",
       "duplicate_severity": "NONE",
       "canon_conflict_severity": "HIGH",
-      "recommended_action": "Queue a full canon rewrite by the later canon-writing AI.",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
       "suggested_priority": "P1",
       "likely_source_family": [
         "wiki/first-witness-hodl-doctrine.html",
@@ -13158,8 +11821,6 @@
         "wiki/bibles/hodl-x-warriors.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Legacy SAM:BEGIN:article shell marker is provenance evidence, not a current SAM_CONTENT ownership block.",
         "Specialist archive record found at wiki/bibles/hodl-x-warriors.json; it is not automatically the unavailable Tier 4 modern bible.",
         "Existing wiki prose is surviving public archive, not automatically current canon."
       ]
@@ -13605,55 +12266,30 @@
       "title": "Maidstone Base",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 268,
+      "current_word_count": 242,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": false,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
-      "likely_near_duplicate_sections": [
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 3,
-          "second_paragraph": 6,
-          "similarity": 0.929,
-          "shared_token_count": 13
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 7,
-          "similarity": 0.786,
-          "shared_token_count": 11
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 5,
-          "second_paragraph": 8,
-          "similarity": 0.857,
-          "shared_token_count": 12
-        }
-      ],
-      "content_hash": "sha256:b9bd59840064fb8cd35915eea739f69cd5a5367a18136b19efdfd069fa38a77e",
-      "article_content_hash": "sha256:b852f128e1ad19e8cf8f2dc9a811a6a99b6b0ec1b3992bb26befdcf7611f8793",
-      "article_markup_hash": "sha256:ba2ba37eddde07789d74089f6c9e74df554d800420eb2ab0db4f91fdf9b5ff53",
-      "git_blob_oid": "dcaff5dbb4f5a78962966d77d8a71193608ee2f1",
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:0d9c91a05a4cb98035ec2aff61e9e08e515088a805c1475285a4df6380b903cd",
+      "article_content_hash": "sha256:e87e7cd57c51f390d639d00b7091a06b7c5bb59d5c3296fb356778b788bd7e72",
+      "article_markup_hash": "sha256:4b53e956705274da141f81629c596bc91f5e3769710cedf40c7659c5050d9007",
+      "git_blob_oid": "d88b371009feb8f178c12d199803f06115010fae",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "DEDUPE",
+      "rewrite_status": "KEEP",
       "automation_policy": "metadata-only",
       "rewrite_cluster": "Block Topia",
-      "duplicate_severity": "HIGH",
+      "duplicate_severity": "NONE",
       "canon_conflict_severity": "MEDIUM",
-      "recommended_action": "Review the reported duplication during the later canon rewrite.",
-      "suggested_priority": "P1",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "wiki/first-witness-block-topia-reading.html",
         "wiki/first-witness-concordance.html",
@@ -13663,9 +12299,7 @@
         "wiki/bibles/maidstone-base.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
         "Specialist archive record found at wiki/bibles/maidstone-base.json; it is not automatically the unavailable Tier 4 modern bible.",
-        "3 likely near-duplicate section pair(s) reported; no text was removed.",
         "Existing wiki prose is surviving public archive, not automatically current canon."
       ]
     },
@@ -14494,7 +13128,7 @@
       "duplicate_severity": "HIGH",
       "canon_conflict_severity": "NOT_APPLICABLE",
       "recommended_action": "Route structured NFT/template maintenance to the NFT specialist workflow.",
-      "suggested_priority": "P1",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "Structured NFT/template metadata"
       ],
@@ -14713,62 +13347,35 @@
       "title": "Phygital Prints",
       "page_exists": true,
       "page_type": "project_or_reference",
-      "current_word_count": 553,
+      "current_word_count": 192,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": false,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
-      "likely_near_duplicate_sections": [
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 2,
-          "second_paragraph": 5,
-          "similarity": 0.923,
-          "shared_token_count": 12
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 3,
-          "second_paragraph": 6,
-          "similarity": 0.857,
-          "shared_token_count": 12
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 7,
-          "similarity": 0.857,
-          "shared_token_count": 12
-        }
-      ],
-      "content_hash": "sha256:e5c739eb109782555bbab0e02bd41aac29b28dc647b243df6f9cab54dc5cb08c",
-      "article_content_hash": "sha256:be5324d482580e43aaffda6519931412698a6dc3154a8973bdf9d7ab488f64ee",
-      "article_markup_hash": "sha256:6bb4afcdede66ae5d0a04a2169f13fcd167225944960db458ea69dc042a264ec",
-      "git_blob_oid": "5ecfc29c2f77f1354013701e79594122cbc0a9ac",
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:5c9d1fe411fba53f35aefb6bdf5d5307da19ae8f7766d731e5e9910636e07c50",
+      "article_content_hash": "sha256:030e732bf2e0bbeeb948120aae49a513786b721e633214de1767ecf107c2a077",
+      "article_markup_hash": "sha256:f0f541a6926c3ca993fab13cdcaade655acc50f7660798882f5076adf3095882",
+      "git_blob_oid": "64a81bf2b0aa24af83979956082574967cd37efa",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": false,
-      "rewrite_status": "DEDUPE",
+      "rewrite_status": "KEEP",
       "automation_policy": "metadata-only",
       "rewrite_cluster": "Generated/non-lore pages",
-      "duplicate_severity": "HIGH",
+      "duplicate_severity": "NONE",
       "canon_conflict_severity": "LOW",
-      "recommended_action": "Review the reported duplication during the later canon rewrite.",
-      "suggested_priority": "P1",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "wiki/bibles/phygital-prints.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Specialist archive record found at wiki/bibles/phygital-prints.json; it is not automatically the unavailable Tier 4 modern bible.",
-        "3 likely near-duplicate section pair(s) reported; no text was removed."
+        "Specialist archive record found at wiki/bibles/phygital-prints.json; it is not automatically the unavailable Tier 4 modern bible."
       ]
     },
     {
@@ -14899,7 +13506,7 @@
       "duplicate_severity": "HIGH",
       "canon_conflict_severity": "NOT_APPLICABLE",
       "recommended_action": "Route structured NFT/template maintenance to the NFT specialist workflow.",
-      "suggested_priority": "P1",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "Structured NFT/template metadata"
       ],
@@ -15075,29 +13682,29 @@
       "title": "Queen Sarah P-fly",
       "page_exists": true,
       "page_type": "character",
-      "current_word_count": 432,
+      "current_word_count": 716,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": false,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:60b786c98a33523a346bffbb5b107e2e37c89b78224cbcaf8d857840f27cc73d",
-      "article_content_hash": "sha256:519ffa3bc6e172f2ffe800699f21952f91308bc5372ca128c8b6b6014caf235c",
-      "article_markup_hash": "sha256:19bba460e2dc90fd6e7fe5b0c1903b4e382ac5afb139992d67956fcbeb24574e",
-      "git_blob_oid": "15e750c01a4196877ee7e0abbfeece5318f5f509",
+      "content_hash": "sha256:9947d26788e4d3d5277707b356da114f29f445814d1c3b5914f990fe404a446d",
+      "article_content_hash": "sha256:b8ef401939217f255f3d07c64ca9b203d9b2438ea5731759579b8538ff286784",
+      "article_markup_hash": "sha256:02902ca4f022617a89404b936d01457340767152001c54351d47300db2fb64d7",
+      "git_blob_oid": "c282703b88d8371b27e55d16164fbdade35aa457",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "RECONCILE",
+      "rewrite_status": "KEEP",
       "automation_policy": "metadata-only",
       "rewrite_cluster": "Characters",
       "duplicate_severity": "NONE",
       "canon_conflict_severity": "HIGH",
-      "recommended_action": "Reconcile against higher-priority sources before replacing prose.",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
       "suggested_priority": "P1",
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
@@ -15106,7 +13713,6 @@
         "wiki/bibles/queen-sarah-p-fly.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
         "Specialist archive record found at wiki/bibles/queen-sarah-p-fly.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item.",
         "Existing wiki prose is surviving public archive, not automatically current canon."
@@ -15321,32 +13927,32 @@
     {
       "path": "wiki/sacred-chain.html",
       "slug": "sacred-chain",
-      "title": "THE SACRED CHAIN The system that remembers everything — and decides what counts as real",
+      "title": "THE SACRED CHAIN The record humanity carried forward when one perfect record proved impossible",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 1756,
+      "current_word_count": 962,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": true,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:c1f10dad7daf09f2e5d00bb06ba101cc863445ad22f427df7816348d42684922",
-      "article_content_hash": "sha256:6babf2ef5a00c135932b93f9774e265d20a8ada03f23ff60bb573333c169cc6e",
-      "article_markup_hash": "sha256:69601e536da55dc9eb343bf2512c4a648caacabef1373d3edbe190d9ff47a09a",
-      "git_blob_oid": "3a42959ecdaf83e3815a1532105c5f08359c1ea9",
+      "content_hash": "sha256:a9271b723183a4363ad6d0e18218e85c84a5addd82ee8a34c5989be1499f138b",
+      "article_content_hash": "sha256:ef27d44a9375956d7cf43bd2b8907fe11ade82e76554bee11648c24f2e2a0da2",
+      "article_markup_hash": "sha256:aa0fb5ca4833e7be8281f9067cf2f4de999035fec36cdc2a205d456f2c5e5bad",
+      "git_blob_oid": "a7b414f5a1f4372b3f341301d4bc792bcf291c85",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "RECONCILE",
+      "rewrite_status": "KEEP",
       "automation_policy": "metadata-only",
       "rewrite_cluster": "Core cosmology / history",
       "duplicate_severity": "NONE",
       "canon_conflict_severity": "HIGH",
-      "recommended_action": "Reconcile against higher-priority sources before replacing prose.",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
       "suggested_priority": "P1",
       "likely_source_family": [
         "wiki/first-witness-concordance.html",
@@ -15358,8 +13964,6 @@
         "wiki/bibles/sacred-chain.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Legacy SAM:BEGIN:article shell marker is provenance evidence, not a current SAM_CONTENT ownership block.",
         "Specialist archive record found at wiki/bibles/sacred-chain.json; it is not automatically the unavailable Tier 4 modern bible.",
         "Existing wiki prose is surviving public archive, not automatically current canon."
       ]
@@ -15598,206 +14202,35 @@
       "title": "sneakar",
       "page_exists": true,
       "page_type": "project_or_reference",
-      "current_word_count": 2540,
+      "current_word_count": 207,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": true,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
-      "likely_near_duplicate_sections": [
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 15,
-          "second_paragraph": 32,
-          "similarity": 0.769,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 16,
-          "second_paragraph": 19,
-          "similarity": 0.833,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 16,
-          "second_paragraph": 24,
-          "similarity": 0.926,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 18,
-          "second_paragraph": 22,
-          "similarity": 0.781,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 19,
-          "second_paragraph": 24,
-          "similarity": 0.897,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 20,
-          "second_paragraph": 22,
-          "similarity": 0.758,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 20,
-          "second_paragraph": 27,
-          "similarity": 0.781,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 20,
-          "second_paragraph": 29,
-          "similarity": 0.897,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 20,
-          "second_paragraph": 32,
-          "similarity": 0.743,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 20,
-          "second_paragraph": 35,
-          "similarity": 0.742,
-          "shared_token_count": 23
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 21,
-          "second_paragraph": 23,
-          "similarity": 0.727,
-          "shared_token_count": 24
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 21,
-          "second_paragraph": 36,
-          "similarity": 0.742,
-          "shared_token_count": 23
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 22,
-          "second_paragraph": 27,
-          "similarity": 0.839,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 22,
-          "second_paragraph": 29,
-          "similarity": 0.833,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 23,
-          "second_paragraph": 36,
-          "similarity": 0.9,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 24,
-          "second_paragraph": 34,
-          "similarity": 0.742,
-          "shared_token_count": 23
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 25,
-          "second_paragraph": 27,
-          "similarity": 0.742,
-          "shared_token_count": 23
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 25,
-          "second_paragraph": 29,
-          "similarity": 0.733,
-          "shared_token_count": 22
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 25,
-          "second_paragraph": 35,
-          "similarity": 0.821,
-          "shared_token_count": 23
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 27,
-          "second_paragraph": 29,
-          "similarity": 0.862,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 29,
-          "second_paragraph": 35,
-          "similarity": 0.821,
-          "shared_token_count": 23
-        }
-      ],
-      "content_hash": "sha256:ea0a7ae7a7abdc47c358738b6857d88cc0df11cb956393bf12e7e8c407e073dd",
-      "article_content_hash": "sha256:219c61a68e8f39c54bcaf361aecdc1010c016fc22f981831d9617559f8ef66ef",
-      "article_markup_hash": "sha256:c9dfa9a3961b8f2d86fa29273e52e0b186ed7f6518437875f60bc0278a6572b9",
-      "git_blob_oid": "2be6f12a60aae8353d95501d9fe855aa743ae745",
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:ec0fce30d4726c833e1f60bf75d1277bc2aff409b29cf0198345114fafe1bd81",
+      "article_content_hash": "sha256:33c60941b11b5ed0f5cc714da19e3fd2ac37534758e407efa143c7e1f3759d6d",
+      "article_markup_hash": "sha256:8e22634bb624df239e300707749c35497e5ae9b5f0a1df0579e9baa42be34ce1",
+      "git_blob_oid": "1f33a8967bbe2a338aab1874d6cf5202caf86355",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": false,
-      "rewrite_status": "DEDUPE",
+      "rewrite_status": "KEEP",
       "automation_policy": "metadata-only",
       "rewrite_cluster": "Generated/non-lore pages",
-      "duplicate_severity": "HIGH",
+      "duplicate_severity": "NONE",
       "canon_conflict_severity": "LOW",
-      "recommended_action": "Review the reported duplication during the later canon rewrite.",
-      "suggested_priority": "P1",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "Existing public/reference source verification"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Legacy SAM:BEGIN:article shell marker is provenance evidence, not a current SAM_CONTENT ownership block.",
-        "21 likely near-duplicate section pair(s) reported; no text was removed."
+        "No article-ownership or duplication issue detected by the deterministic audit."
       ]
     },
     {
@@ -15886,55 +14319,30 @@
       "title": "Spirit Borns",
       "page_exists": true,
       "page_type": "historical_archive",
-      "current_word_count": 878,
+      "current_word_count": 226,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": false,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
-      "likely_near_duplicate_sections": [
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 2,
-          "second_paragraph": 5,
-          "similarity": 0.857,
-          "shared_token_count": 24
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 3,
-          "second_paragraph": 6,
-          "similarity": 0.781,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 4,
-          "second_paragraph": 7,
-          "similarity": 0.731,
-          "shared_token_count": 19
-        }
-      ],
-      "content_hash": "sha256:111697d3a6cf2e224267d74d338ba79414f45282e7a61a180cbd9a1b09b9f442",
-      "article_content_hash": "sha256:36b72b2e2310acadfe9169ab44ec9f24de6a5f2a59f4bc32e3e3377a30862705",
-      "article_markup_hash": "sha256:48b3ea9202fe54c22b8c6532ede0fc285776c7c983188ec1da3e638dcaa8fb9f",
-      "git_blob_oid": "c9bbe71ef6590d678a36e81ed0b5bd09128f79e9",
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:9045bd199e2c55b07f050e3a769c59fef4066298cf548c343216a83c3677fcf1",
+      "article_content_hash": "sha256:d39f70e039d1a09ad2f39ffb43f8628b3cac1f5322688c65b299e0010964d01c",
+      "article_markup_hash": "sha256:22ee7519a85e2eff3f047aeedceca6461759baa7a2854bef65db893aa7536f81",
+      "git_blob_oid": "b965b0813a1a6ca109c62e991f39328461e24cb9",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "NEEDS_HUMAN_REVIEW",
+      "rewrite_status": "KEEP",
       "automation_policy": "metadata-only",
       "rewrite_cluster": "Historical/archive pages",
-      "duplicate_severity": "HIGH",
+      "duplicate_severity": "NONE",
       "canon_conflict_severity": "UNKNOWN_REVIEW",
-      "recommended_action": "Resolve classification/source ambiguity before any prose write.",
-      "suggested_priority": "P1",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "about/latest-canon-and-brand-vision.md",
         "about/w81-condensed-canon-digest.md",
@@ -15942,9 +14350,7 @@
         "wiki/bibles/spirit-borns.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
         "Specialist archive record found at wiki/bibles/spirit-borns.json; it is not automatically the unavailable Tier 4 modern bible.",
-        "3 likely near-duplicate section pair(s) reported; no text was removed.",
         "Existing wiki prose is surviving public archive, not automatically current canon."
       ]
     },
@@ -16449,55 +14855,30 @@
       "title": "The BALLY BOYS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 835,
+      "current_word_count": 456,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": false,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
-      "likely_near_duplicate_sections": [
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 5,
-          "second_paragraph": 9,
-          "similarity": 0.9,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 5,
-          "second_paragraph": 13,
-          "similarity": 0.75,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 9,
-          "second_paragraph": 13,
-          "similarity": 0.771,
-          "shared_token_count": 27
-        }
-      ],
-      "content_hash": "sha256:6739001d4cf1382c1265f149d5e5b6025685a064c332d399601f66484bde09ca",
-      "article_content_hash": "sha256:48213fc7a4132a91fe620a3f5f6c749a968e366b06c2879fbe87052c177d0553",
-      "article_markup_hash": "sha256:1a5b44b61db4e1508761e3b4a20e5296ac87fb873ed8aaaea82338d744a3550c",
-      "git_blob_oid": "79667cbb89627eb0dd22a2016e274827bb167fa9",
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:c3cfc0f1f491c23bd069f02098e1a08a8a12fe356d36ec7bccf73f11a3113678",
+      "article_content_hash": "sha256:c7feb698a3c4ebc54de4a447dee756cb54e4d9290f582494f320d6393b2ec37f",
+      "article_markup_hash": "sha256:5dce145e2d1bbe626c1888ed8f627863f3d00f5717c15636786b60cc057db3f7",
+      "git_blob_oid": "142a81ef7a2a36a3d3f4eea490a8f94543f6c6d9",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "NEEDS_HUMAN_REVIEW",
+      "rewrite_status": "KEEP",
       "automation_policy": "metadata-only",
       "rewrite_cluster": "Forty factions",
-      "duplicate_severity": "HIGH",
+      "duplicate_severity": "NONE",
       "canon_conflict_severity": "UNKNOWN_REVIEW",
-      "recommended_action": "Resolve classification/source ambiguity before any prose write.",
-      "suggested_priority": "P1",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "wiki/first-witness-forty-paths.html",
         "wiki/first-witness-faction-commentaries.html",
@@ -16507,55 +14888,47 @@
         "wiki/bibles/the-bally-boys.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
         "Specialist archive record found at wiki/bibles/the-bally-boys.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item.",
-        "3 likely near-duplicate section pair(s) reported; no text was removed.",
         "Existing wiki prose is surviving public archive, not automatically current canon."
       ]
     },
     {
       "path": "wiki/the-bitcoin-kid-army.html",
       "slug": "the-bitcoin-kid-army",
-      "title": "The Bitcoin Kid Army",
+      "title": "The Bitcoin Kid Army moved",
       "page_exists": true,
-      "page_type": "lore",
-      "current_word_count": 1144,
+      "page_type": "redirect",
+      "current_word_count": 0,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
       "canonical_content_block_count": 0,
       "legacy_sam_article_wrapper": false,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:90272c669a302de3d161b6ab4fa86a62865d205797f25636b50095c5d865e3bf",
-      "article_content_hash": "sha256:c58c8a424b6f069cb36c38ddb531d9addf4e36a0cf6d45d0c5e293ff55d0deb8",
-      "article_markup_hash": "sha256:1e1e855f40d07edc17e4de00aebd28445a38456f2aeb66c9a1318c1175965d66",
-      "git_blob_oid": "33c5111f0aa789dbfedafcca8babe8bad77e2873",
+      "content_hash": "sha256:8f750fd27072fc3b39b8f5ce2cebcd328207a01c7cd0ee57db0c1ed6c0e0b148",
+      "article_content_hash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "article_markup_hash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "git_blob_oid": "b9dafce7fd5287a0d832849223129ada4dbe7911",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
-      "nft_template_generated_page": false,
-      "likely_lore_page": true,
-      "rewrite_status": "REWRITE_FULL",
+      "nft_template_generated_page": true,
+      "likely_lore_page": false,
+      "rewrite_status": "GENERATED",
       "automation_policy": "metadata-only",
-      "rewrite_cluster": "Bitcoin KiD / Bitcoin Kids / Bitcoin X Kids",
+      "rewrite_cluster": "Generated/non-lore pages",
       "duplicate_severity": "NONE",
-      "canon_conflict_severity": "HIGH",
-      "recommended_action": "Queue a full canon rewrite by the later canon-writing AI.",
-      "suggested_priority": "P1",
+      "canon_conflict_severity": "NOT_APPLICABLE",
+      "recommended_action": "Maintain through its generator or stub/redirect workflow, not lore automation.",
+      "suggested_priority": "P4",
       "likely_source_family": [
-        "wiki/first-witness-child-of-fire.html",
-        "wiki/first-witness-concordance.html",
-        "about/latest-canon-and-brand-vision.md",
-        "about/w81-condensed-canon-digest.md",
-        "about/w81.zip (W18, w62, w73, M16)",
-        "wiki/bibles/the-bitcoin-kid-army.json (specialist public archive; not identified Tier 4 canon)"
+        "Generated page structure"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Specialist archive record found at wiki/bibles/the-bitcoin-kid-army.json; it is not automatically the unavailable Tier 4 modern bible.",
-        "Existing wiki prose is surviving public archive, not automatically current canon."
+        "Generated, redirect, or stub surface; not a canon-writing target.",
+        "Specialist archive record found at wiki/bibles/the-bitcoin-kid-army.json; it is not automatically the unavailable Tier 4 modern bible."
       ]
     },
     {
@@ -16846,55 +15219,30 @@
       "title": "The DUCKY BOYS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 963,
+      "current_word_count": 394,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": false,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
-      "likely_near_duplicate_sections": [
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 5,
-          "second_paragraph": 9,
-          "similarity": 0.844,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 5,
-          "second_paragraph": 13,
-          "similarity": 0.935,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 9,
-          "second_paragraph": 13,
-          "similarity": 0.903,
-          "shared_token_count": 28
-        }
-      ],
-      "content_hash": "sha256:bce151f346f6e54f0244c959cc6e48e687b97cbfd10df5d02b7ced60c75be4b1",
-      "article_content_hash": "sha256:bb398d4a259312d1edfaee772536e34f11c87ae78f754831ea7fafb986646040",
-      "article_markup_hash": "sha256:59e8acb4cd4063927555b082ae57381b4ea365cb76d4ee0573c5e680c151ec39",
-      "git_blob_oid": "6423f861834be48d0af3097f59a9c5ff493d244d",
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:ad8556c270e145de2d9a29d7197c43172105b7f4bdb2fff4b4a6ecfc8755b920",
+      "article_content_hash": "sha256:d4b1673dbd17bb0bfba0fb0b4f212ecc7b1049ea2e56cd2630b316b2d6c4c567",
+      "article_markup_hash": "sha256:1f46dcb4070a600e4f2a686d2db8857642a2baa31712d0573ca3604618be641d",
+      "git_blob_oid": "c12025aaa3bfc4491c4611ccb324e6a8080fd61e",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "NEEDS_HUMAN_REVIEW",
+      "rewrite_status": "KEEP",
       "automation_policy": "metadata-only",
       "rewrite_cluster": "Forty factions",
-      "duplicate_severity": "HIGH",
+      "duplicate_severity": "NONE",
       "canon_conflict_severity": "UNKNOWN_REVIEW",
-      "recommended_action": "Resolve classification/source ambiguity before any prose write.",
-      "suggested_priority": "P1",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "wiki/first-witness-forty-paths.html",
         "wiki/first-witness-faction-commentaries.html",
@@ -16904,10 +15252,8 @@
         "wiki/bibles/the-ducky-boys.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
         "Specialist archive record found at wiki/bibles/the-ducky-boys.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item.",
-        "3 likely near-duplicate section pair(s) reported; no text was removed.",
         "Existing wiki prose is surviving public archive, not automatically current canon."
       ]
     },
@@ -17151,55 +15497,30 @@
       "title": "The HARD FORK ROCKERS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 973,
+      "current_word_count": 367,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": false,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
-      "likely_near_duplicate_sections": [
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 5,
-          "second_paragraph": 9,
-          "similarity": 0.828,
-          "shared_token_count": 24
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 5,
-          "second_paragraph": 13,
-          "similarity": 0.862,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 9,
-          "second_paragraph": 13,
-          "similarity": 0.889,
-          "shared_token_count": 24
-        }
-      ],
-      "content_hash": "sha256:b6352c5b58c7947c80325a67946147223464c420bc3bac74e59089f049a67a70",
-      "article_content_hash": "sha256:d21c98edf2d08225ad4b39f37c776bce393efebfa434e85329fd3c6f6a0a9c5c",
-      "article_markup_hash": "sha256:89e0d02844ba3e3ea9ef758ede8d1d17e0ec13fd8a57e006e1c5d2286a0b70d6",
-      "git_blob_oid": "d01466bc23d78983cfde1720abe46794828ded4c",
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:dc1c63ed93de88cf2664874a96357f502fe5fe08fed2a9722542e772f530abee",
+      "article_content_hash": "sha256:584292511a26906c6316efd4c4d6478d61ebc1a250ecdcb2f80dc4db2301f563",
+      "article_markup_hash": "sha256:49ac6bb9da8eea0eca917ccf8327fb49a17a5f88a3e5450754f1ef352a66ab8c",
+      "git_blob_oid": "5b5c1bca0bf6d2ba94ae02b31704cc6d8af85807",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "NEEDS_HUMAN_REVIEW",
+      "rewrite_status": "KEEP",
       "automation_policy": "metadata-only",
       "rewrite_cluster": "Forty factions",
-      "duplicate_severity": "HIGH",
+      "duplicate_severity": "NONE",
       "canon_conflict_severity": "UNKNOWN_REVIEW",
-      "recommended_action": "Resolve classification/source ambiguity before any prose write.",
-      "suggested_priority": "P1",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "wiki/first-witness-forty-paths.html",
         "wiki/first-witness-faction-commentaries.html",
@@ -17209,10 +15530,8 @@
         "wiki/bibles/the-hard-fork-rockers.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
         "Specialist archive record found at wiki/bibles/the-hard-fork-rockers.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item.",
-        "3 likely near-duplicate section pair(s) reported; no text was removed.",
         "Existing wiki prose is surviving public archive, not automatically current canon."
       ]
     },
@@ -17313,55 +15632,30 @@
       "title": "The MOONLORDS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 966,
+      "current_word_count": 348,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": false,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
-      "likely_near_duplicate_sections": [
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 10,
-          "second_paragraph": 14,
-          "similarity": 0.821,
-          "shared_token_count": 23
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 5,
-          "second_paragraph": 10,
-          "similarity": 0.885,
-          "shared_token_count": 23
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 5,
-          "second_paragraph": 14,
-          "similarity": 0.92,
-          "shared_token_count": 23
-        }
-      ],
-      "content_hash": "sha256:2cf41a9d7a22f48853d4b5ff09d64b588b295e72b7a8a317aa0e6887668bf44c",
-      "article_content_hash": "sha256:cf9d8001c4eebb0e742eb83401fa7ffcdf785549fb6dce19def3e124b2ed1268",
-      "article_markup_hash": "sha256:091998d8371cc773e221b8c8ef1f40e73def2a9c61f1a1633aa133640b59e8ec",
-      "git_blob_oid": "dd127f33c863d927b6ecde7070dac635d0416f49",
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:6320dc9ec694807843c78b8f6edb330753b04bcef019c9ff370fbf2b811b9f46",
+      "article_content_hash": "sha256:1def9d16720cda24a2524fd96274acb784a71b63b7099f533a3ca955a3c20d0b",
+      "article_markup_hash": "sha256:014812d5d19b91009b364047c00faeed51dceb2de8711cbd343c11e5bb5b77ca",
+      "git_blob_oid": "19be8c8e0f6baa1dcb6977cd1e24a64ab1d2f073",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "NEEDS_HUMAN_REVIEW",
+      "rewrite_status": "KEEP",
       "automation_policy": "metadata-only",
       "rewrite_cluster": "Forty factions",
-      "duplicate_severity": "HIGH",
+      "duplicate_severity": "NONE",
       "canon_conflict_severity": "UNKNOWN_REVIEW",
-      "recommended_action": "Resolve classification/source ambiguity before any prose write.",
-      "suggested_priority": "P1",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "wiki/first-witness-forty-paths.html",
         "wiki/first-witness-faction-commentaries.html",
@@ -17371,10 +15665,8 @@
         "wiki/bibles/the-moonlords.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
         "Specialist archive record found at wiki/bibles/the-moonlords.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item.",
-        "3 likely near-duplicate section pair(s) reported; no text was removed.",
         "Existing wiki prose is surviving public archive, not automatically current canon."
       ]
     },
@@ -17430,55 +15722,30 @@
       "title": "The Nomad Bears",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 929,
+      "current_word_count": 336,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": false,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
-      "likely_near_duplicate_sections": [
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 10,
-          "second_paragraph": 14,
-          "similarity": 0.9,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 5,
-          "second_paragraph": 10,
-          "similarity": 0.897,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 5,
-          "second_paragraph": 14,
-          "similarity": 0.867,
-          "shared_token_count": 26
-        }
-      ],
-      "content_hash": "sha256:8e66f4c9b51b4797da4e39ebb929500a7c6d88852d91139534d0f176978a58d4",
-      "article_content_hash": "sha256:ad939a4fa9cee9526cdacb9c1114acf2e48cacf5bb27611366d7125f5299a248",
-      "article_markup_hash": "sha256:44da5fb51327c0e5c15cbade9a3ca3cf9d02c4d7620206745d874ab7d8cd26a9",
-      "git_blob_oid": "45785933277bb89fc40eaf18bdb7e5e07b344536",
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:37eee0867051f1a23b411760be5307a0b10a1c5e69cf218b290325d397ebca7e",
+      "article_content_hash": "sha256:2ba74713716377696cc6a970ab168bc6d4db0c1887da55eda22460627a58efac",
+      "article_markup_hash": "sha256:de5c37ce0a19a2c138e56abf7ef0f259822d3c0e92badfc3563ea4cb1ba82a6c",
+      "git_blob_oid": "8c00301015cd1c030c454bc37e2a59214af90d6b",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "NEEDS_HUMAN_REVIEW",
+      "rewrite_status": "KEEP",
       "automation_policy": "metadata-only",
       "rewrite_cluster": "Forty factions",
-      "duplicate_severity": "HIGH",
+      "duplicate_severity": "NONE",
       "canon_conflict_severity": "UNKNOWN_REVIEW",
-      "recommended_action": "Resolve classification/source ambiguity before any prose write.",
-      "suggested_priority": "P1",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "wiki/first-witness-forty-paths.html",
         "wiki/first-witness-faction-commentaries.html",
@@ -17488,10 +15755,8 @@
         "wiki/bibles/the-nomad-bears.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
         "Specialist archive record found at wiki/bibles/the-nomad-bears.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item.",
-        "3 likely near-duplicate section pair(s) reported; no text was removed.",
         "Existing wiki prose is surviving public archive, not automatically current canon."
       ]
     },
@@ -17501,55 +15766,30 @@
       "title": "The OG PIXEL SAINTS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 958,
+      "current_word_count": 335,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": false,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
-      "likely_near_duplicate_sections": [
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 10,
-          "second_paragraph": 14,
-          "similarity": 0.839,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 5,
-          "second_paragraph": 10,
-          "similarity": 0.9,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 5,
-          "second_paragraph": 14,
-          "similarity": 0.929,
-          "shared_token_count": 26
-        }
-      ],
-      "content_hash": "sha256:087af9fcea176494bfd1af5dccd0fef38d7078389de06629b323b83f17b1fce6",
-      "article_content_hash": "sha256:c1c924f275d04ac1a979570a2a4560e073b4b4b36fb8c898c29ad8ecd79faace",
-      "article_markup_hash": "sha256:efc928f91a22bfc24c1390a98285ef06794909081b18c73ae41081dd2596f153",
-      "git_blob_oid": "18f278083b8fcb335b47665ffb1dc6d7a41ac998",
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:5dbfbf85583776d859ee339f2f388621e907786ae053b3baa64982d99c9eb0bb",
+      "article_content_hash": "sha256:8eee3557ca184941e53cf158e7345aceeafc3e06f3de4b7444a32974750f6444",
+      "article_markup_hash": "sha256:eb9a5695465640a7aa1639573ffe8324b7462f9cd33ec1bd503cb27714b3e737",
+      "git_blob_oid": "931041dee571fd928b0534925e57ce277ab993c3",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "NEEDS_HUMAN_REVIEW",
+      "rewrite_status": "KEEP",
       "automation_policy": "metadata-only",
       "rewrite_cluster": "Forty factions",
-      "duplicate_severity": "HIGH",
+      "duplicate_severity": "NONE",
       "canon_conflict_severity": "UNKNOWN_REVIEW",
-      "recommended_action": "Resolve classification/source ambiguity before any prose write.",
-      "suggested_priority": "P1",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "wiki/first-witness-forty-paths.html",
         "wiki/first-witness-faction-commentaries.html",
@@ -17559,10 +15799,8 @@
         "wiki/bibles/the-og-pixel-saints.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
         "Specialist archive record found at wiki/bibles/the-og-pixel-saints.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item.",
-        "3 likely near-duplicate section pair(s) reported; no text was removed.",
         "Existing wiki prose is surviving public archive, not automatically current canon."
       ]
     },
@@ -17614,55 +15852,30 @@
       "title": "The RUGPULL MINERS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 933,
+      "current_word_count": 336,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": false,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
-      "likely_near_duplicate_sections": [
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 10,
-          "second_paragraph": 14,
-          "similarity": 0.781,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 5,
-          "second_paragraph": 10,
-          "similarity": 0.893,
-          "shared_token_count": 25
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 5,
-          "second_paragraph": 14,
-          "similarity": 0.862,
-          "shared_token_count": 25
-        }
-      ],
-      "content_hash": "sha256:ed6084b9d5e043b19a2d2cfa138dfb485719d7de9a92188f9c6ca882d902dda3",
-      "article_content_hash": "sha256:fad694deb03491753a83cf5e0f28ca2436d8a41d5b58da7f8ff7b4c59664468d",
-      "article_markup_hash": "sha256:3c63d204eb00e1b999f3fa7a0ff4e742165b5797e5692f303ac809e90314e674",
-      "git_blob_oid": "88191f39d0978c1823e5f95fe69e9232177608c9",
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:7d83abdfaedd8ea28e770a83e39c48331b60296867a637f3f9228d4af95a4596",
+      "article_content_hash": "sha256:8822342071eec06281d2aec6577cf807030c6e3136f35c3c18f652360369e68f",
+      "article_markup_hash": "sha256:8402a5cfcef5f92ad54719a5d6da41d7d83e0b45e9b50f05b513cd4eca6bedcb",
+      "git_blob_oid": "fef644445d646210e1b8a6916ee45f6d6adfa241",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "NEEDS_HUMAN_REVIEW",
+      "rewrite_status": "KEEP",
       "automation_policy": "metadata-only",
       "rewrite_cluster": "Forty factions",
-      "duplicate_severity": "HIGH",
+      "duplicate_severity": "NONE",
       "canon_conflict_severity": "UNKNOWN_REVIEW",
-      "recommended_action": "Resolve classification/source ambiguity before any prose write.",
-      "suggested_priority": "P1",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "wiki/first-witness-forty-paths.html",
         "wiki/first-witness-faction-commentaries.html",
@@ -17672,10 +15885,8 @@
         "wiki/bibles/the-rugpull-miners.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
         "Specialist archive record found at wiki/bibles/the-rugpull-miners.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item.",
-        "3 likely near-duplicate section pair(s) reported; no text was removed.",
         "Existing wiki prose is surviving public archive, not automatically current canon."
       ]
     },
@@ -17685,55 +15896,30 @@
       "title": "The SALVAGERS",
       "page_exists": true,
       "page_type": "faction",
-      "current_word_count": 957,
+      "current_word_count": 362,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": false,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
-      "likely_near_duplicate_sections": [
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 10,
-          "second_paragraph": 14,
-          "similarity": 0.765,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 5,
-          "second_paragraph": 10,
-          "similarity": 0.828,
-          "shared_token_count": 24
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 5,
-          "second_paragraph": 14,
-          "similarity": 0.774,
-          "shared_token_count": 24
-        }
-      ],
-      "content_hash": "sha256:b08e748d5f4287431e3e5a8dd701cdee60773444619aa35479d60e5bd999b0d8",
-      "article_content_hash": "sha256:75d1dae0c169f5d97b45c011e019b1807bcee8ac3ea51a6b9d98c5c9f1306768",
-      "article_markup_hash": "sha256:af939c5c3849700dc97635a81714aeba2a820d04dbc83fe9af379536fce503d7",
-      "git_blob_oid": "d06ce582600acefa1715e898f644c0eaab52e66e",
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:3e8e368890ca47517607909630266e5b2a3d876e3dda06ef90cbac003f36eb0c",
+      "article_content_hash": "sha256:e73e1458dae3eb11c45fc582dd6e83d8049a10c671c8cec426999879a3ce1e7b",
+      "article_markup_hash": "sha256:7434180fff685eea15edd564f26f4461a6d07d43e928e150b1e1c5b66887aefa",
+      "git_blob_oid": "ce5f1872b25a8e2aa31563b109068ff52fd076e5",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "NEEDS_HUMAN_REVIEW",
+      "rewrite_status": "KEEP",
       "automation_policy": "metadata-only",
       "rewrite_cluster": "Forty factions",
-      "duplicate_severity": "HIGH",
+      "duplicate_severity": "NONE",
       "canon_conflict_severity": "UNKNOWN_REVIEW",
-      "recommended_action": "Resolve classification/source ambiguity before any prose write.",
-      "suggested_priority": "P1",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "wiki/first-witness-forty-paths.html",
         "wiki/first-witness-faction-commentaries.html",
@@ -17743,10 +15929,8 @@
         "wiki/bibles/the-salvagers.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
         "Specialist archive record found at wiki/bibles/the-salvagers.json; it is not automatically the unavailable Tier 4 modern bible.",
         "The requested modern Tier 4 subject bible is not separately identifiable in this checkout; canon classification remains a human-review item.",
-        "3 likely near-duplicate section pair(s) reported; no text was removed.",
         "Existing wiki prose is surviving public archive, not automatically current canon."
       ]
     },
@@ -18117,29 +16301,29 @@
       "title": "Triple Fork Event",
       "page_exists": true,
       "page_type": "lore",
-      "current_word_count": 947,
+      "current_word_count": 640,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": false,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
       "likely_near_duplicate_sections": [],
-      "content_hash": "sha256:4d09f7de4d9abc1e5f17e30265bfb9ac05cb4966d73438da1c6986c0badcfbd1",
-      "article_content_hash": "sha256:c47edcaed1717ae951853f2f19d20b9675762d9d40e16dd71f8c725a2334a878",
-      "article_markup_hash": "sha256:39acf021434b34e707bcd72b7dd816972635742dbfa355694e9012e40359be66",
-      "git_blob_oid": "a6a3b633afe0818d01de40f9d60620105e772254",
+      "content_hash": "sha256:c2785895de7f09fed1be25513d893be85e940bd9bf4c0a8591af08106befc5fe",
+      "article_content_hash": "sha256:c0c7d3fe9a3b0a6147fdcf6da461a7257cf3f8da48b40691f1033e34b8fe09c1",
+      "article_markup_hash": "sha256:13f7e8ecda5532ff9f1faf60d5af1cb23f85a35e951b28c4909383947c3f3319",
+      "git_blob_oid": "a5538a2b97a8f030a40ef6c0e6bb0340776a989d",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": true,
-      "rewrite_status": "RECONCILE",
+      "rewrite_status": "KEEP",
       "automation_policy": "metadata-only",
       "rewrite_cluster": "Core cosmology / history",
       "duplicate_severity": "NONE",
       "canon_conflict_severity": "HIGH",
-      "recommended_action": "Reconcile against higher-priority sources before replacing prose.",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
       "suggested_priority": "P1",
       "likely_source_family": [
         "wiki/first-witness-concordance.html",
@@ -18151,7 +16335,6 @@
         "wiki/bibles/triple-fork-event.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
         "Specialist archive record found at wiki/bibles/triple-fork-event.json; it is not automatically the unavailable Tier 4 modern bible.",
         "Existing wiki prose is surviving public archive, not automatically current canon."
       ]
@@ -18579,431 +16762,35 @@
       "title": "xrp_kids",
       "page_exists": true,
       "page_type": "project_or_reference",
-      "current_word_count": 4737,
+      "current_word_count": 260,
       "manual_content_block_count": 0,
       "sam_content_block_count": 0,
-      "canonical_content_block_count": 0,
+      "canonical_content_block_count": 1,
       "legacy_sam_article_wrapper": true,
-      "legacy_unmarked_content": true,
+      "legacy_unmarked_content": false,
       "duplicate_heading_count": 0,
       "exact_duplicate_paragraph_count": 0,
-      "likely_near_duplicate_sections": [
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 31,
-          "second_paragraph": 34,
-          "similarity": 0.75,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 31,
-          "second_paragraph": 37,
-          "similarity": 0.767,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 31,
-          "second_paragraph": 41,
-          "similarity": 0.821,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 31,
-          "second_paragraph": 47,
-          "similarity": 0.75,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 31,
-          "second_paragraph": 51,
-          "similarity": 0.829,
-          "shared_token_count": 34
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 31,
-          "second_paragraph": 56,
-          "similarity": 0.75,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 32,
-          "second_paragraph": 35,
-          "similarity": 0.938,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 32,
-          "second_paragraph": 38,
-          "similarity": 0.938,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 32,
-          "second_paragraph": 42,
-          "similarity": 0.839,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 32,
-          "second_paragraph": 46,
-          "similarity": 0.882,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 32,
-          "second_paragraph": 48,
-          "similarity": 0.906,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 32,
-          "second_paragraph": 52,
-          "similarity": 0.844,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 32,
-          "second_paragraph": 57,
-          "similarity": 0.829,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 34,
-          "second_paragraph": 37,
-          "similarity": 0.786,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 34,
-          "second_paragraph": 41,
-          "similarity": 0.842,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 34,
-          "second_paragraph": 47,
-          "similarity": 0.767,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 34,
-          "second_paragraph": 51,
-          "similarity": 0.805,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 34,
-          "second_paragraph": 56,
-          "similarity": 0.767,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 35,
-          "second_paragraph": 38,
-          "similarity": 0.938,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 35,
-          "second_paragraph": 42,
-          "similarity": 0.839,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 35,
-          "second_paragraph": 46,
-          "similarity": 0.882,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 35,
-          "second_paragraph": 48,
-          "similarity": 0.906,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 35,
-          "second_paragraph": 52,
-          "similarity": 0.844,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 35,
-          "second_paragraph": 57,
-          "similarity": 0.829,
-          "shared_token_count": 29
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 37,
-          "second_paragraph": 41,
-          "similarity": 0.865,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 37,
-          "second_paragraph": 47,
-          "similarity": 0.875,
-          "shared_token_count": 35
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 37,
-          "second_paragraph": 51,
-          "similarity": 0.825,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 37,
-          "second_paragraph": 56,
-          "similarity": 0.786,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 38,
-          "second_paragraph": 42,
-          "similarity": 0.839,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 38,
-          "second_paragraph": 46,
-          "similarity": 0.939,
-          "shared_token_count": 31
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 38,
-          "second_paragraph": 48,
-          "similarity": 0.968,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 38,
-          "second_paragraph": 52,
-          "similarity": 0.844,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 38,
-          "second_paragraph": 57,
-          "similarity": 0.882,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 41,
-          "second_paragraph": 47,
-          "similarity": 0.842,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 41,
-          "second_paragraph": 51,
-          "similarity": 0.889,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 41,
-          "second_paragraph": 56,
-          "similarity": 0.842,
-          "shared_token_count": 32
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 42,
-          "second_paragraph": 46,
-          "similarity": 0.788,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 42,
-          "second_paragraph": 48,
-          "similarity": 0.867,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 42,
-          "second_paragraph": 52,
-          "similarity": 0.929,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 42,
-          "second_paragraph": 57,
-          "similarity": 0.788,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 46,
-          "second_paragraph": 48,
-          "similarity": 0.909,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 46,
-          "second_paragraph": 52,
-          "similarity": 0.794,
-          "shared_token_count": 27
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 46,
-          "second_paragraph": 57,
-          "similarity": 0.833,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 47,
-          "second_paragraph": 51,
-          "similarity": 0.805,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 47,
-          "second_paragraph": 56,
-          "similarity": 0.767,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 48,
-          "second_paragraph": 52,
-          "similarity": 0.813,
-          "shared_token_count": 26
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 48,
-          "second_paragraph": 57,
-          "similarity": 0.909,
-          "shared_token_count": 30
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 51,
-          "second_paragraph": 56,
-          "similarity": 0.805,
-          "shared_token_count": 33
-        },
-        {
-          "kind": "paragraph_pair",
-          "section_heading": "Known Facts",
-          "first_paragraph": 52,
-          "second_paragraph": 57,
-          "similarity": 0.743,
-          "shared_token_count": 26
-        }
-      ],
-      "content_hash": "sha256:de8d673bcfed42607158dfd62a43cb0df757623cae0c674b99e313af9ac84c59",
-      "article_content_hash": "sha256:dfeb19a413aeabebb472b65b659de2e748f1bf86f41e4e795dfc05051db2bf0a",
-      "article_markup_hash": "sha256:d8539bb263ef6609e5a447ef8ceb771148adb0f4e205def6f5f9489f26d25af8",
-      "git_blob_oid": "4abf6f5db8766511a89e116d8ecf78118bfaaa33",
+      "likely_near_duplicate_sections": [],
+      "content_hash": "sha256:1989a862fdf315e7d6b82a393319eb8a6e2829861f3fbb172f5832ec8af7eed4",
+      "article_content_hash": "sha256:516c3cf8cfef79bdd1310da36380516ead9d6970b332044ba446fd08a9c57496",
+      "article_markup_hash": "sha256:bf7241982aecbcde1afbeaec1864933a232246295f442ef4eeeaa4bf32d42481",
+      "git_blob_oid": "e16cf9b8f8bb197993b6429b8119f19652291afd",
       "wiki_stub_marker_scope": null,
       "first_witness_page": false,
       "nft_template_generated_page": false,
       "likely_lore_page": false,
-      "rewrite_status": "DEDUPE",
+      "rewrite_status": "KEEP",
       "automation_policy": "metadata-only",
       "rewrite_cluster": "Generated/non-lore pages",
-      "duplicate_severity": "HIGH",
+      "duplicate_severity": "NONE",
       "canon_conflict_severity": "LOW",
-      "recommended_action": "Review the reported duplication during the later canon rewrite.",
-      "suggested_priority": "P1",
+      "recommended_action": "Preserve article prose; allow metadata-only maintenance.",
+      "suggested_priority": "P4",
       "likely_source_family": [
         "wiki/bibles/xrp-kids.json (specialist public archive; not identified Tier 4 canon)"
       ],
       "audit_notes": [
-        "Substantive article content has no MANUAL_CONTENT, SAM_CONTENT, or CANONICAL_CONTENT ownership markers.",
-        "Legacy SAM:BEGIN:article shell marker is provenance evidence, not a current SAM_CONTENT ownership block.",
-        "Specialist archive record found at wiki/bibles/xrp-kids.json; it is not automatically the unavailable Tier 4 modern bible.",
-        "49 likely near-duplicate section pair(s) reported; no text was removed."
+        "Specialist archive record found at wiki/bibles/xrp-kids.json; it is not automatically the unavailable Tier 4 modern bible."
       ]
     },
     {

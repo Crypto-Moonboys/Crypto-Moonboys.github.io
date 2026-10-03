@@ -5114,26 +5114,6 @@
         "wiki"
       ]
     },
-    "gang_signs": {
-      "alias_candidates": [],
-      "aliases": [
-        "gang signs crypto moonboys wiki"
-      ],
-      "canonical_title": "gang signs",
-      "canonical_url": "/wiki/gang-signs.html",
-      "category": "characters",
-      "source_urls": [
-        "/wiki/gang-signs.html"
-      ],
-      "status": "canonical",
-      "tags": [
-        "gang",
-        "signs",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ]
-    },
     "gang_signs_card_game": {
       "alias_candidates": [
         "gang signs card game"
@@ -9996,25 +9976,6 @@
         "wiki"
       ]
     },
-    "the_bitcoin_kid_army": {
-      "alias_candidates": [],
-      "aliases": [],
-      "canonical_title": "The Bitcoin Kid Army",
-      "canonical_url": "/wiki/the-bitcoin-kid-army.html",
-      "category": "factions",
-      "source_urls": [
-        "/wiki/the-bitcoin-kid-army.html"
-      ],
-      "status": "canonical",
-      "tags": [
-        "bitcoin",
-        "kid",
-        "army",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ]
-    },
     "the_blockchain_furies": {
       "alias_candidates": [
         "blockchain furies crypto moonboys wiki"
@@ -11011,5 +10972,5 @@
       ]
     }
   },
-  "updated_at": "2026-10-03T07:37:36Z"
+  "updated_at": "2026-10-03T21:16:42Z"
 }

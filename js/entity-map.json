@@ -5129,26 +5129,6 @@
     "brand": null
   },
   {
-    "entity_id": "gang_signs",
-    "canonical_title": "gang signs",
-    "canonical_url": "/wiki/gang-signs.html",
-    "category": "characters",
-    "aliases": [
-      "gang signs crypto moonboys wiki"
-    ],
-    "tags": [
-      "gang",
-      "signs",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "source_urls": [
-      "/wiki/gang-signs.html"
-    ],
-    "brand": null
-  },
-  {
     "entity_id": "gang_signs_card_game",
     "canonical_title": "Gang Signs (Card Game)",
     "canonical_url": "/wiki/gang-signs-card-game.html",
@@ -10083,25 +10063,6 @@
     "alias_candidates": [
       "bally boys crypto moonboys wiki"
     ]
-  },
-  {
-    "entity_id": "the_bitcoin_kid_army",
-    "canonical_title": "The Bitcoin Kid Army",
-    "canonical_url": "/wiki/the-bitcoin-kid-army.html",
-    "category": "factions",
-    "aliases": [],
-    "tags": [
-      "bitcoin",
-      "kid",
-      "army",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "source_urls": [
-      "/wiki/the-bitcoin-kid-army.html"
-    ],
-    "brand": null
   },
   {
     "entity_id": "the_blockchain_furies",
