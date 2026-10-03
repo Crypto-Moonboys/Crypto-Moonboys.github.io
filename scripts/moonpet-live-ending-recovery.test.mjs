@@ -79,7 +79,10 @@ for (const action of ['district', 'event_chain', 'seasonal_boss']) test(`${actio
       if (match(statement)) { injected = true; return failedResults()[0]; }
     };
     else f.db.beforeBatch = statements => {
-      if (statements.length === 3 && match(statements[0])) { injected = true; return failedResults(); }
+      if (match(statements[0])) {
+        injected = true; const failures = failedResults(); let position = 0;
+        return failures.length < count ? failures : statements.map(statement => statement.query.includes('AS mutation_committed') ? { success: true, results: [{}], meta: { changes: 0 } } : failures[position++]);
+      }
     };
     const award = () => assert.fail('unverified action claim cannot reach payout');
     const act = () => action === 'district' ? processPetDistrictMission(f.db, f.owner, 'moon_alley', pet, {}, award, null, 'careful')
@@ -111,9 +114,9 @@ for (const action of ['district', 'event_chain', 'seasonal_boss']) test(`${actio
         : processPetSeasonalBoss(f.db, f.owner, pet, award, 'strike');
     let injected = false;
     f.db.beforeBatch = statements => {
-      if (statements.length === 2 && statements[1].query.includes("SET status='completed', payload_json=?")) {
-        injected = true;
-        return failedResults();
+      if (statements.some(statement => statement.query.includes("SET status='completed', payload_json=?"))) {
+        injected = true; const failures = failedResults(); let position = 0;
+        return failures.length < 2 ? failures : statements.map(statement => statement.query.includes('AS mutation_committed') ? { success: true, results: [{}], meta: { changes: 0 } } : failures[position++]);
       }
     };
     const pending = await act();
@@ -322,8 +325,8 @@ test('a charged raid attack survives rotation and credits the original boss and 
   assert.equal(event.length, 1); assert.equal(event[0].pet_id, sourcePet); assert.equal(event[0].season_key, currentSeason);
   assert.equal(event[0].day_key, '2026-10-03'); assert.equal(event[0].pet_xp_awarded, 150);
   assert.equal((await f.get('/telegram-pets/leaderboard?period=all_time')).entries[0].pet_xp, 400450);
-  assert.equal(f.sql.prepare('SELECT season_xp FROM telegram_pet_season_state WHERE telegram_id=? AND season_key=?').get(f.owner,'pet-s2026-004').season_xp, 150);
-  assert.equal((await f.get('/telegram-pets/leaderboard?period=seasonal')).entries[0]?.pet_xp || 0, 150);
+  assert.equal(f.sql.prepare('SELECT season_xp FROM telegram_pet_season_state WHERE telegram_id=? AND season_key=?').get(f.owner,'pet-s2026-003').season_xp, 150);
+  assert.equal((await f.get('/telegram-pets/leaderboard?period=seasonal')).entries[0]?.pet_xp || 0, 0);
   assert.equal(f.sql.prepare("SELECT pet_xp FROM telegram_pet_instances WHERE pet_id='new-raid-pet'").get().pet_xp, 300);
 });
 

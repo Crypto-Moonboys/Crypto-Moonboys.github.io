@@ -1286,3 +1286,44 @@ No migration or new secret is introduced, no historical ownership or reward
 data is deleted, and no production deployment was performed during this work.
 See the [four-finding audit/fix report](moonpet-post1422-audit-fixes-2026-10-03.md)
 and [audited user option matrix](moonpet-post1422-options-2026-10-03.md).
+
+
+## Consolidated economic and ending authority (3 October 2026)
+
+See the [twelve-family fix report](moonpet-consolidated-audit-fixes-2026-10-03.md)
+and its [historical audit evidence](moonpet-post1423-audit-2026-10-03.md).
+Required care/item/trade writes, crafting/shop cost and delivery writes, and
+live-system progress/ending writes validate affected rows inside their D1 batch.
+A no-op cannot seal acceptance with missing XP, cost, output or progress.
+Legitimate capped or duplicate operations still require saved source evidence.
+
+Full/Profile, Missions, core and independent guidance bind economic projections
+to an account fingerprint as well as their captured pet and calendar identity.
+A concurrent payout or purchase yields unavailable/refresh instead of mixed
+header, shop and ranking values. This adds two economic reads to Missions' SQL
+budget while preserving its partial hydration.
+
+Saved raid victory time determines the competition quarter; payout daily/weekly
+windows keep their existing semantics. Contract and raid claim acknowledgements
+remain pending until stored, without reopening paid rewards. Daily boss recovery
+requires JSON boolean success, including reward-authority and deletion checks.
+Rejected Weekly Journey counts cannot establish readiness; accepted history stays
+preserved. Missing Marks/Crests cannot be reported as duplicates without proof.
+
+New Street Event reservations save the original choice, outcome and range draws.
+Explore exposes `pending_street_events`; `event_recover` authorizes the authenticated
+owner's immutable saved source without a new-action challenge. Fresh actions still
+require an unexpired signed challenge. Provably unpaid unaffordable outcomes cancel
+and release their repeat slot atomically. Repeat counters remain high-water marks;
+released ordinals are retained on the cancelled source and consumed once inside
+the next owner/day/mode reservation transaction. Later assigned ordinals and
+their paid scaling never change. Legacy null-pet cancellation follows the same
+rule and does not authorize payment against another pet. Legacy evidence without a provable outcome
+or pet remains visible for audit and cannot invent progress or a reward.
+
+
+Retained Daily boss proof is inspected with CASE-sanitized JSON in recovery,
+reward authorization and deletion blockers. SQLite AND predicates do not
+promise short-circuit evaluation. Invalid outcome/generated/analytics JSON
+cannot abort another valid source's scan, authorize payment or masquerade as a
+victory. Historical malformed records remain retained without invented proof.

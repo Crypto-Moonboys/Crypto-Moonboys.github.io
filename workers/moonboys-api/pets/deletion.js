@@ -36,17 +36,17 @@ const SOURCE_REWARD_BLOCKERS_SQL = `
       ON f.run_id=r.run_id AND f.telegram_id=r.telegram_id AND f.pet_id=r.pet_id
     WHERE r.telegram_id=s.telegram_id AND r.pet_id=s.pet_id AND r.season_key=s.season_key
       AND f.status='resolved' AND f.room_type='boss' AND json_valid(f.generated_data) AND json_valid(f.outcome_data)
-      AND json_extract(f.generated_data,'$.boss_id') IN (${bossKeysSql}) AND COALESCE(json_extract(f.outcome_data,'$.success'),1)<>0
+      AND json_extract(CASE WHEN json_valid(f.generated_data) THEN f.generated_data ELSE '{}' END,'$.boss_id') IN (${bossKeysSql}) AND json_type(CASE WHEN json_valid(f.outcome_data) THEN f.outcome_data ELSE '{}' END,'$.success')='true'
       AND NOT EXISTS (SELECT 1 FROM telegram_pet_reward_claims c WHERE c.telegram_id=r.telegram_id AND c.pet_id=r.pet_id
-        AND c.source='roguelite_boss' AND c.idempotency_key=f.room_id||':'||json_extract(f.generated_data,'$.boss_id') AND c.status='awarded'))
+        AND c.source='roguelite_boss' AND c.idempotency_key=f.room_id||':'||json_extract(CASE WHEN json_valid(f.generated_data) THEN f.generated_data ELSE '{}' END,'$.boss_id') AND c.status='awarded'))
   OR EXISTS (SELECT 1 FROM telegram_pet_daily_runs d JOIN telegram_pet_runs r
       ON r.run_id=d.run_id AND r.telegram_id=d.telegram_id AND r.pet_id=d.pet_id
     WHERE r.telegram_id=s.telegram_id AND r.pet_id=s.pet_id AND r.season_key=s.season_key AND r.max_room>0
       AND ((r.current_room>=r.max_room AND r.status IN ('completed','extracted') AND EXISTS (
         SELECT 1 FROM telegram_pet_run_rooms f WHERE f.run_id=r.run_id AND f.telegram_id=r.telegram_id AND f.pet_id=r.pet_id
           AND f.room_number=r.max_room AND f.status='resolved' AND f.room_type='boss'
-          AND json_valid(f.generated_data) AND json_extract(f.generated_data,'$.boss_id') IN (${bossKeysSql})
-          AND json_valid(f.outcome_data) AND COALESCE(json_extract(f.outcome_data,'$.success'),1)<>0))
+          AND json_valid(f.generated_data) AND json_extract(CASE WHEN json_valid(f.generated_data) THEN f.generated_data ELSE '{}' END,'$.boss_id') IN (${bossKeysSql})
+          AND json_valid(f.outcome_data) AND json_type(CASE WHEN json_valid(f.outcome_data) THEN f.outcome_data ELSE '{}' END,'$.success')='true'))
         OR (r.current_room<r.max_room AND r.status IN ('extracted','failed','abandoned') AND EXISTS (
           SELECT 1 FROM telegram_pet_run_rooms f WHERE f.run_id=r.run_id AND f.telegram_id=r.telegram_id AND f.pet_id=r.pet_id
             AND f.room_number<=r.current_room+1 AND f.status IN ('resolved','failed'))))
@@ -79,11 +79,11 @@ const blockerArgs = (owner, petId) => [owner,owner,owner,owner,owner,owner,owner
 
 export async function readDeletedPetHistory(db, owner) {
   const rows = await db.prepare(`SELECT d.pet_id,d.applied_at AS deleted_at,i.pet_xp,
-      json_extract(d.payload,'$.replacement_pet_id') AS replacement_pet_id,
+      json_extract(CASE WHEN json_valid(d.payload) THEN d.payload ELSE '{}' END,'$.replacement_pet_id') AS replacement_pet_id,
       (SELECT COUNT(*) FROM telegram_pet_reward_claims r WHERE r.telegram_id=d.telegram_id AND r.pet_id=d.pet_id AND r.status='awarded') AS awarded_receipts
     FROM telegram_pet_instances i JOIN telegram_pet_identity_events d ON i.pet_id=d.pet_id AND i.telegram_id=d.telegram_id AND i.season_key=d.season_key
     WHERE d.telegram_id=? AND d.event_kind='memory' AND d.applied_at IS NOT NULL
-      AND d.event_key='pet:delete:'||d.pet_id AND json_extract(d.payload,'$.type')='pet_deleted'
+      AND d.event_key='pet:delete:'||d.pet_id AND json_extract(CASE WHEN json_valid(d.payload) THEN d.payload ELSE '{}' END,'$.type')='pet_deleted'
     ORDER BY d.applied_at DESC,d.event_id DESC LIMIT 20`).bind(String(owner)).all().then(requirePetReadResult);
   return rows.results;
 }

@@ -1125,14 +1125,14 @@ const randomEvent = asyncBlock('processPetRandomEvent');
 assert.ok(randomEvent.includes('duplicate: true'), 'random event must short-circuit duplicate event keys');
 assertOrder(
   randomEvent,
-  'const duplicate = await db.prepare(`',
-  'const pet = await getPetProfileWithAtomicDecay(db, telegramId, now);',
+  'const duplicate = savedEvent || await db.prepare(`',
+  'const pet = savedEvent ? await getPetInstanceWithAtomicDecay',
   'random event must check duplicate event keys before loading the pet'
 );
 assertOrder(
   randomEvent,
-  'const duplicate = await db.prepare(`',
-  'const outcome = pickPetRandomEventOutcome(choice);',
+  'const duplicate = savedEvent || await db.prepare(`',
+  'const rolledOutcome = pickPetRandomEventOutcome(choice);',
   'random event must check duplicate event keys before the reward roll'
 );
 assert.ok(randomEvent.includes("source: 'pet_event'") && randomEvent.includes('reservation_id: reservation.reservation_id'), 'random events must finalize their protected reservation through the unified reward authority');
@@ -1911,6 +1911,13 @@ class RepeatReservationDb {
           const changed = Boolean(event && current >= Number(minimum));
           if (changed) this.energy.set(String(telegramId), current - Number(cost));
           results.push({ meta: { changes: changed ? 1 : 0 }, results: [] });
+        } else if (sql.includes("SET metadata=json_set(metadata,'$.released_slot_source'")) {
+          const reservationId=args.at(-1);
+          const event=[...this.events.values()].find(row=>row.id===reservationId && row.status==='pending');
+          if (event) event.metadata=JSON.stringify({...JSON.parse(event.metadata),released_slot_source:null});
+          results.push({meta:{changes:event ? 1 : 0},results:[]});
+        } else if (sql.includes("SET metadata=json_set(metadata,'$.released_slot_consumed_by'")) {
+          results.push({meta:{changes:0},results:[]});
         } else if (sql.includes('INSERT INTO telegram_pet_repeat_reward_slots')) {
           const [telegramId, dayKey, mode, reservationId] = args;
           const event = [...this.events.values()].find((row) => row.id === reservationId && row.status === 'pending');
@@ -1942,6 +1949,12 @@ class RepeatReservationDb {
               }],
             });
           }
+        } else if (sql.includes('AS mutation_committed')) {
+          const event = [...this.events.values()].find(row => row.id === args[0] && row.status === 'pending');
+          const released=event && JSON.parse(event.metadata || '{}').released_slot_source;
+          const required=event && (!sql.includes("'$.released_slot_source') IS NOT NULL") || released);
+          if (required && results.at(-1)?.meta?.changes !== args.at(-1)) throw Error('pet_state_write_unavailable');
+          results.push({ success: true, results: [{ mutation_committed: null }], meta: { changes: 0 } });
         } else {
           throw new Error(`Unexpected reservation SQL in test: ${sql}`);
         }
@@ -4849,7 +4862,8 @@ assert.deepEqual(
 assert.equal(legacyPendingEventDb.database.prepare(`
   SELECT claimed_count FROM telegram_pet_repeat_reward_slots
   WHERE telegram_id = 'event-legacy-pending' AND day_key = ? AND mode = 'event'
-`).get(recoveryDayAKey).claimed_count, 0, 'legacy pending Event cancellation must release the consumed reward slot');
+`).get(recoveryDayAKey).claimed_count, 1, 'legacy cancellation preserves the high-water mark and records a reusable slot');
+assert.equal(JSON.parse(legacyPendingEventDb.database.prepare("SELECT metadata FROM telegram_pet_events WHERE id='legacy-pending-random-event'").get().metadata).released_repeat_reward_slot,1);
 assert.equal(legacyPendingEventDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_reward_claims WHERE telegram_id='event-legacy-pending' AND idempotency_key='moon_crate_found-legacy-pending'").get().count, 0,
   'legacy pending Event cancellation must not create a reward claim');
 assert.equal(legacyPendingEventDb.database.prepare("SELECT COUNT(*) AS count FROM telegram_pet_personality_traits WHERE pet_id=?").get(legacyPendingPetB).count, 0,
@@ -5082,10 +5096,10 @@ const kaijuCapTotals = kaijuCapDb.database.prepare(`
 assert.deepEqual({ ...kaijuCapTotals }, { pet_xp: 1200, community_xp: 250 }, 'Kaiju rewards must not bypass either global XP cap');
 
 const repeatReservation = asyncBlock('reservePetRepeatRewardEvent');
-assert.ok(repeatReservation.includes('const results = await db.batch(statements)'), 'event reservation, slot claim, and Kaiju Energy payment must commit as one D1 batch');
+assert.ok(repeatReservation.includes('const results = await atomicPetBatch(db, statements,'), 'event reservation, slot claim, and Kaiju Energy payment must commit as one D1 batch');
 assert.ok(repeatReservation.includes('ON CONFLICT(telegram_id, day_key, mode) DO UPDATE SET') && repeatReservation.includes('claimed_count = claimed_count + 1') && repeatReservation.includes('RETURNING claimed_count'), 'Event and Kaiju slot claims must atomically increment and return the exact counter value');
 assert.match(repeatReservation, /SET energy = MAX\(0,energy-\?\), updated_at = CURRENT_TIMESTAMP\s+WHERE telegram_id = \? AND ROUND\(energy\) >= \?/, 'Kaiju Energy must be claimed with one conditional update');
-assert.ok(repeatReservation.match(/EXISTS \(SELECT 1 FROM telegram_pet_events WHERE id = \? AND status = 'pending'\)/g)?.length >= 2, 'Energy and slot claims must be gated by the newly inserted idempotency reservation');
+assert.ok(repeatReservation.match(/EXISTS \(SELECT 1 FROM telegram_pet_events WHERE id = \? AND status = 'pending'(?:\s+AND json_extract\(CASE WHEN json_valid\(metadata\) THEN metadata ELSE '\{\}' END,'\$\.released_slot_source'\) IS NULL)?\)/g)?.length >= 2, 'Energy and slot claims must be gated by the newly inserted idempotency reservation');
 assert.ok(repeatReservation.includes("SET reason = 'repeat_reward_slot:'") && repeatReservation.includes('RETURNING id, pet_id, status, reason'), 'the exact reward slot, pet authority, and paid Energy must be persisted for retry recovery');
 assert.ok(repeatReservation.includes('pet_id, status, reason, day_key, week_key, season_key'), 'pending reservations must load and return their stored pet and accounting authority');
 assert.ok(repeatReservation.includes("Number(results[1]?.meta?.changes || 0) !== 1"), 'Kaiju reward authorization must require exactly one changed Energy row');
@@ -5093,7 +5107,7 @@ assert.ok(worker.includes("match(/^repeat_reward_slot:") && worker.includes('res
 
 const randomEventHardening = asyncBlock('processPetRandomEvent');
 assert.ok(randomEventHardening.indexOf('getPetProfileWithAtomicDecay') < randomEventHardening.indexOf('reservePetRepeatRewardEvent'), 'Event processing must persist stat decay before reserving or awarding rewards');
-assert.ok(randomEventHardening.indexOf('reservePetRepeatRewardEvent') < randomEventHardening.indexOf('pickPetRandomEventOutcome'), 'Event slot must be transactionally claimed before reward outcome calculation');
+assert.ok(randomEventHardening.indexOf('pickPetRandomEventOutcome') < randomEventHardening.indexOf('reservePetRepeatRewardEvent') && randomEventHardening.includes('saved_event_decision: decision'), 'Event outcome and draws must be persisted in the initial reservation before payout');
 assert.ok(randomEventHardening.includes('existing_event: duplicate') && randomEventHardening.includes("duplicate.status !== 'pending'"), 'Event retries must resume pending reservations while accepted duplicates remain idempotent');
 assert.ok(randomEventHardening.includes('const accountingDayKey = rewardSlot.day_key') && randomEventHardening.includes('accounting_window: { day_key: accountingDayKey'), 'Event recovery must finalize against the stored reservation accounting window');
 assert.ok(randomEventHardening.includes('reservation_id: reservation.reservation_id'), 'Event rewards must finalize only their pending idempotency reservation');

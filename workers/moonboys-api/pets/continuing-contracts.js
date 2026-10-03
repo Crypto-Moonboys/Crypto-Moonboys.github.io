@@ -378,7 +378,11 @@ async function settleBonus(db, owner, row, award, now) {
       const credited = Math.min(CONTRACT_BONUS_XP, integer(JSON.parse(receipt.applied_rewards).pet_xp));
       const acknowledged = await db.prepare(`UPDATE telegram_pet_contracts SET reward_settled=1, xp_awarded=? WHERE contract_id=? AND telegram_id=? AND pet_id=? AND season_key=? AND reward_settled=0`)
         .bind(credited, row.contract_id, owner, row.pet_id, row.season_key).run().then(requirePetMutationResult);
-      if (!Number.isSafeInteger(acknowledged?.meta?.changes) || acknowledged.meta.changes < 0) throw new Error('pet_state_write_unavailable');
+      if (acknowledged?.meta?.changes !== 1) {
+        const saved = await db.prepare('SELECT reward_settled,xp_awarded FROM telegram_pet_contracts WHERE contract_id=? AND telegram_id=? AND pet_id=? AND season_key=?')
+          .bind(row.contract_id, owner, row.pet_id, row.season_key).first().then(requirePetFirstReadResult);
+        if (saved?.reward_settled !== 1 || saved.xp_awarded !== credited) throw new Error('contract_acknowledgement_pending');
+      }
     }
     return { ...committed, reward_pending: !receipt };
   });

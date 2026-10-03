@@ -2212,6 +2212,10 @@
     var eventButtons = encounter ? encounter.choices.map(function (choice) {
       return button(choice.label, 'random_event', { choice: choice.key, challenge_token: encounter.challenge_token }, { disabled: choice.preview && choice.preview.available === false, resourceRequired: choice.preview && choice.preview.available === false, detail: choice.preview && choice.preview.detail || '' });
     }).join('') : '';
+    var savedEvents = (state.pending_street_events || []).map(function (entry) {
+      return entry.recoverable ? button('RECOVER SAVED EVENT', 'event_recover', { event_id: entry.event_id }, { detail: 'Recovers the original outcome for the pet that started it.' })
+        : '<div class="line muted">SAVED EVENT NEEDS REVIEW // Its original outcome could not be verified. Your saved history is preserved.</div>';
+    }).join('');
     var adventure = state.adventure;
     var adventureButtons = adventure ? adventure.choices.map(function (choice) {
       return button(choice.label, 'adventure', { adventure_key: choice.key, challenge_token: adventure.challenge_token }, { disabled: adventure.available === false || choice.preview && choice.preview.available === false, resourceRequired: choice.preview && choice.preview.available === false, cooldown: adventure.cooldown, detail: (adventure.minimum_energy ? 'ENTRY REQUIRES ' + number(adventure.minimum_energy) + ' ENERGY // ' : '') + (choice.preview && choice.preview.detail || '') });
@@ -2389,7 +2393,7 @@
       '<div class="button-grid">' + (state.contracts && state.contracts.available ? routeButton('CONTINUE WITH CONTRACTS', { screen: 'missions', focus: 'contracts' }, 'Saved quests without pet energy costs or cooldowns.') : '') + '</div>';
     return renderPlayNow() + panel('DISTRICT NETWORK', '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + regions, 'districts') + panel('MOON RUN', '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + runBody, 'moon-run') +
       panel(adventure ? adventure.title : 'PET ADVENTURE', '<div class="line">' + escapeHtml(adventure ? adventure.intro : 'NO ADVENTURE SIGNAL.') + '</div><div class="line muted">One adventure every 30 minutes. Entry energy is a requirement; actual costs depend on the outcome below. Base rewards remain subject to caps. Hunger costs increase hunger.</div><div class="button-grid">' + adventureButtons + '</div>', 'adventure') +
-      panel(encounter ? encounter.title : 'STREET EVENT', '<div class="line">' + escapeHtml(encounter ? encounter.intro : 'NO EVENT SIGNAL.') + '</div><div class="line muted">Compare both outcomes before choosing. Base rewards are reduced by repeated-play scaling and daily caps; stat changes stop at their limits. Hunger costs increase hunger.</div><div class="button-grid">' + eventButtons + '</div>', 'street-event') +
+      panel(encounter ? encounter.title : 'STREET EVENT', '<div class="line">' + escapeHtml(encounter ? encounter.intro : 'NO EVENT SIGNAL.') + '</div><div class="line muted">Compare both outcomes before choosing. Base rewards are reduced by repeated-play scaling and daily caps; stat changes stop at their limits. Hunger costs increase hunger.</div><div class="button-grid">' + eventButtons + '</div><div class="button-grid one">' + savedEvents + '</div>', 'street-event') +
       panel('WEEKLY BOSS // ' + (boss.title || 'LOCKED'), '<div class="line muted">NEXT // ' + escapeHtml(exploreNextLine()) + '</div>' + bossBody, 'weekly-boss') +
       panel('STREET STORY CHAINS', chains || '<div class="line muted">NO CHAIN SIGNAL.</div>', 'story-chains') + panel('SEASONAL RAID', seasonalBody, 'seasonal-boss') +
       panel('PET ARENA', arenaBody, 'arena') + panel('KAIJU CODE CARDS', kaijuBody, 'kaiju');
@@ -2878,6 +2882,9 @@
       expedition_daily_limit: 'all three account attempts are used today. Contracts remain available.',
       weekly_boss_pet_changed: 'your active pet changed; review its boss choices.',
       weekly_boss_state_changed: 'your pet or boss state changed; review the refreshed choices.',
+      street_event_audit_required: 'this saved event needs review because its original outcome could not be verified.',
+      street_event_unaffordable: 'the saved outcome was unaffordable. Nothing was spent and its reward slot was released.',
+      street_event_reward_pending: 'your event is saved. Refresh, then use Recover Saved Event.',
       daily_cache_state_changed: 'your pet changed before the cache could settle; refresh and try again.',
       crafting_settlement_conflict: 'your level, materials or bag capacity changed before crafting. Nothing was spent; review the refreshed recipe.',
       upgrade_conflict: 'your level, balance or gear changed before the upgrade, or wallet recovery is pending. Nothing was spent; review the refreshed gear.',

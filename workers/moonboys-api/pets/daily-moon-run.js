@@ -462,7 +462,7 @@ export async function recoverDailyMoonRunEnding(db, request = {}) {
   if (!owned) return null;
   const run = { ...daily, seed: daily.run_seed, score: daily.authoritative_score, depth: daily.authoritative_depth, status: daily.authoritative_status };
   const room = await getPersistedDailyRoom(db, run, positiveInteger(run.max_room));
-  if (!room || room.pet_id !== daily.pet_id || room.status !== 'resolved' || room.room_type !== 'boss' || room.outcome?.success === false || !PET_ROGUELITE_BOSSES[room.boss_id]) return null;
+  if (!room || room.pet_id !== daily.pet_id || room.status !== 'resolved' || room.room_type !== 'boss' || room.outcome?.success !== true || !PET_ROGUELITE_BOSSES[room.boss_id]) return null;
   const boss_reward = await rewardPetRogueliteBoss(db, run, room.boss_id, room);
   if (!boss_reward.accepted) return { accepted: false, reason: 'daily_boss_reward_pending', daily_run: daily, boss_reward };
   const completion = daily.authoritative_status === 'extracted'
@@ -498,12 +498,12 @@ export async function recoverDailyMoonRunEndings(db, telegramId, now = new Date(
     LEFT JOIN telegram_pet_recovery_cursors recovery_state ON recovery_state.telegram_id=d.telegram_id AND recovery_state.setting_key='moonpet:daily-recovery:endings'
     WHERE d.telegram_id=? AND r.max_room>0 AND r.current_room>=r.max_room
       AND r.status IN ('active','extractable','completed','extracted') AND f.status='resolved' AND f.room_type='boss'
-      AND json_valid(f.generated_data) AND json_extract(f.generated_data,'$.boss_id') IN (${bossIds})
-      AND json_valid(f.outcome_data) AND COALESCE(json_extract(f.outcome_data,'$.success'),1)<>0
+      AND json_valid(f.generated_data) AND json_extract(CASE WHEN json_valid(f.generated_data) THEN f.generated_data ELSE '{}' END,'$.boss_id') IN (${bossIds})
+      AND json_valid(f.outcome_data) AND json_type(CASE WHEN json_valid(f.outcome_data) THEN f.outcome_data ELSE '{}' END,'$.success')='true'
       AND (r.status IN ('active','extractable') OR d.status<>r.status
-        OR NOT EXISTS (SELECT 1 FROM telegram_pet_run_analytics a WHERE a.analytics_id=r.run_id||':boss:'||f.room_id||':'||json_extract(f.generated_data,'$.boss_id')||':win')
+        OR NOT EXISTS (SELECT 1 FROM telegram_pet_run_analytics a WHERE a.analytics_id=r.run_id||':boss:'||f.room_id||':'||json_extract(CASE WHEN json_valid(f.generated_data) THEN f.generated_data ELSE '{}' END,'$.boss_id')||':win')
         OR NOT EXISTS (SELECT 1 FROM telegram_pet_daily_analytics a WHERE a.analytics_id=r.run_id||':daily:terminal'
-          AND json_valid(a.event_data) AND json_extract(a.event_data,'$.boss_defeated')=1)
+          AND json_valid(a.event_data) AND json_extract(CASE WHEN json_valid(a.event_data) THEN a.event_data ELSE '{}' END,'$.boss_defeated')=1)
         OR NOT EXISTS (SELECT 1 FROM telegram_pet_events e WHERE e.telegram_id=d.telegram_id AND e.pet_id=d.pet_id AND e.season_key=r.season_key AND e.status='accepted' AND e.event_key='daily-moon-run:'||d.telegram_id||':'||d.run_id||':'||r.status))
     ORDER BY CASE WHEN d.utc_day||':'||d.run_id>COALESCE(recovery_state.setting_value,'') THEN 0 ELSE 1 END,
       d.utc_day,d.run_id LIMIT ?`).bind(String(telegramId), boundedRecoveryLimit(limits.endings, 5)).all());
@@ -1079,7 +1079,7 @@ async function finalizeDailyRecords(db, daily, referenceDay) {
     // terminal records are already applied with boss=false. Repair only this
     // missing contribution, atomically marking the existing evidence true.
     const missingBoss = `EXISTS (SELECT 1 FROM telegram_pet_daily_analytics WHERE analytics_id=?
-      AND applied_at IS NOT NULL AND json_valid(event_data) AND COALESCE(json_extract(event_data,'$.boss_defeated'),0)=0)`;
+      AND applied_at IS NOT NULL AND json_valid(event_data) AND COALESCE(json_extract(CASE WHEN json_valid(event_data) THEN event_data ELSE '{}' END,'$.boss_defeated'),0)=0)`;
     statements.push(
       db.prepare(`UPDATE telegram_pet_daily_leaderboard_records SET boss_completions=boss_completions+1 WHERE telegram_id=? AND ${missingBoss}`).bind(daily.telegram_id, analyticsId),
       db.prepare(`UPDATE telegram_pet_seasonal_challenge_state SET boss_records=boss_records+1 WHERE telegram_id=? AND season_id=? AND ${missingBoss}`).bind(daily.telegram_id, seasonId, analyticsId),
@@ -1088,7 +1088,7 @@ async function finalizeDailyRecords(db, daily, referenceDay) {
       db.prepare(`UPDATE telegram_pet_seasonal_challenge_state SET personal_achievements=(SELECT COUNT(*) FROM telegram_pet_seasonal_achievements WHERE telegram_id=? AND season_id=?)
         WHERE telegram_id=? AND season_id=? AND ${missingBoss}`).bind(daily.telegram_id, seasonId, daily.telegram_id, seasonId, analyticsId),
       db.prepare(`UPDATE telegram_pet_daily_analytics SET event_data=json_set(event_data,'$.boss_defeated',json('true'))
-        WHERE analytics_id=? AND applied_at IS NOT NULL AND json_valid(event_data) AND COALESCE(json_extract(event_data,'$.boss_defeated'),0)=0`).bind(analyticsId),
+        WHERE analytics_id=? AND applied_at IS NOT NULL AND json_valid(event_data) AND COALESCE(json_extract(CASE WHEN json_valid(event_data) THEN event_data ELSE '{}' END,'$.boss_defeated'),0)=0`).bind(analyticsId),
     );
   }
   const results = await db.batch(statements);
@@ -1130,8 +1130,8 @@ export async function syncDailyMoonRun(db, request = {}) {
   if (!daily) return { accepted: false, duplicate: false, reason: 'daily_run_not_found' };
   const boss = await db.prepare(`SELECT 1 AS defeated FROM telegram_pet_run_analytics
     WHERE run_id = ? AND telegram_id = ? AND event_type = 'boss_fought'
-      AND json_valid(event_data) AND json_extract(event_data, '$.boss_id') = 'alley_king'
-      AND json_extract(event_data, '$.outcome') = 'win' LIMIT 1`).bind(daily.run_id, telegramId).first().then(requirePetFirstReadResult);
+      AND json_valid(event_data) AND json_extract(CASE WHEN json_valid(event_data) THEN event_data ELSE '{}' END, '$.boss_id') = 'alley_king'
+      AND json_extract(CASE WHEN json_valid(event_data) THEN event_data ELSE '{}' END, '$.outcome') = 'win' LIMIT 1`).bind(daily.run_id, telegramId).first().then(requirePetFirstReadResult);
   const authoritativeStatus = String(daily.authoritative_status || 'active');
   const status = ['completed', 'failed', 'abandoned', 'extracted'].includes(authoritativeStatus) ? authoritativeStatus : 'active';
   const score = positiveInteger(daily.authoritative_score);
@@ -1173,11 +1173,11 @@ export async function getDailyMoonRunAnalytics(db, request = {}) {
   const [runs, failures, boss, challenges, streaks] = await Promise.all([
     db.prepare(`SELECT COUNT(*) AS participation, SUM(CASE WHEN status IN ('completed','extracted') THEN 1 ELSE 0 END) AS completions,
       AVG(depth) AS average_depth FROM telegram_pet_daily_runs WHERE utc_day = ?`).bind(utcDay).first().then(requirePetFirstReadResult),
-    db.prepare(`SELECT json_extract(rr.generated_data, '$.content_id') AS room_id, rr.room_number, COUNT(*) AS failures
+    db.prepare(`SELECT json_extract(CASE WHEN json_valid(rr.generated_data) THEN rr.generated_data ELSE '{}' END, '$.content_id') AS room_id, rr.room_number, COUNT(*) AS failures
       FROM telegram_pet_run_rooms rr JOIN telegram_pet_daily_runs d ON d.run_id = rr.run_id
       WHERE d.utc_day = ? AND rr.status = 'failed' GROUP BY room_id, rr.room_number ORDER BY failures DESC, rr.room_number`).bind(utcDay).all().then(requirePetReadResult),
     db.prepare(`SELECT COUNT(DISTINCT CASE WHEN a.event_type='boss_fought' THEN d.run_id END) AS attempts,
-      COUNT(DISTINCT CASE WHEN a.event_type='boss_fought' AND json_valid(a.event_data) AND json_extract(a.event_data,'$.outcome')='win' THEN d.run_id END) AS wins
+      COUNT(DISTINCT CASE WHEN a.event_type='boss_fought' AND json_valid(a.event_data) AND json_extract(CASE WHEN json_valid(a.event_data) THEN a.event_data ELSE '{}' END,'$.outcome')='win' THEN d.run_id END) AS wins
       FROM telegram_pet_daily_runs d LEFT JOIN telegram_pet_run_analytics a ON a.run_id=d.run_id WHERE d.utc_day=?`).bind(utcDay).first().then(requirePetFirstReadResult),
     db.prepare(`SELECT challenge_id, COUNT(*) AS participants, SUM(CASE WHEN completed_at IS NOT NULL THEN 1 ELSE 0 END) AS completions
       FROM telegram_pet_daily_challenge_progress WHERE utc_day = ? GROUP BY challenge_id ORDER BY challenge_id`).bind(utcDay).all().then(requirePetReadResult),
