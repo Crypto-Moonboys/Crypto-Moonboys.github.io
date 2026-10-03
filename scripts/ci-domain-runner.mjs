@@ -28,6 +28,7 @@ const GROUPS = {
     ['node', 'scripts/audit-published-vs-index.js'],
   ],
   'worker-api': [
+    ['node', 'scripts/moonpet-retained-proof-slots.test.mjs'],
     ['node', 'scripts/moonpet-consolidated-atomicity.test.mjs'],
     ['node', 'scripts/moonpet-consolidated-endings.test.mjs'],
     ['node', 'scripts/moonpet-consolidated-proofs.test.mjs'],

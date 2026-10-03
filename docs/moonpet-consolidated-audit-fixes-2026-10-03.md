@@ -41,34 +41,64 @@ Pets and purchased spaces remain permanent. Lifetime XP/evolution remains separa
 
 ## Validation
 
-The four new regression suites are registered in the Worker API CI domain. Historical audit diagnostics deliberately describe the old baseline and are not fixed-behavior CI tests.
+The five new regression suites are registered in the Worker API CI domain. Historical audit diagnostics deliberately describe the old baseline and are not fixed-behavior CI tests.
 
-All **201 registered CI commands passed locally**:
+All **202 registered CI commands passed locally**:
 
 | Exact command | Result |
 | --- | --- |
-| `npm run ci:worker-api` | PASS — 121 commands |
+| `npm run ci:worker-api` | PASS — 122 commands |
 | `npm run ci:arcade` | PASS — 24 commands |
 | `npm run ci:wiki` | PASS — 24 commands |
 | `npm run ci:wax` | PASS — 17 commands |
 | `CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium PLAYWRIGHT_BROWSERS_PATH=/tmp/moonpet-playwright npm run ci:visual` | PASS — 15 commands |
 
-Focused regressions passed **219 cases**:
+Focused regressions passed **249 cases**:
 
 ```sh
 node scripts/moonpet-consolidated-atomicity.test.mjs    # 69
 node scripts/moonpet-consolidated-endings.test.mjs      # 88
 node scripts/moonpet-consolidated-proofs.test.mjs       # 52
 node scripts/moonpet-consolidated-projections.test.mjs  # 10
+node scripts/moonpet-retained-proof-slots.test.mjs      # 30
 ```
 
 The Worker domain includes action synchronization, rankings, quests, progression,
 Daily/Weekly Journey and Runs, bosses, combat, completion/Finale, season rewards,
 delete/recovery, webhook authentication, notifications and deployment/migration
 verification. The browser domain includes the full player loop and three-space
-ownership/deletion flow. `git diff --check` and `node --check <file>` for all 27
+ownership/deletion flow. `git diff --check` and `node --check <file>` for all 28
 changed/new JavaScript files passed. Publishing-surface regeneration passed.
 
 These are source, real SQLite, authenticated local Worker and browser checks.
 Production account data and bindings were not inspected; no live deployment is
 claimed.
+
+
+## Copilot review follow-up
+
+All four review findings are addressed in the same PR:
+
+- Daily recovery candidate scans, both deletion blockers and completed-run
+  fallback authorization sanitize outcome and generated JSON before invoking
+  SQLite JSON functions. Related analytics and deleted-history readers use
+  the same rule. Boolean `true` and the original owner/pet/boss proof remain
+  required; malformed retained evidence grants no reward and is not rewritten.
+- Street Event cancellation no longer decrements the repeat high-water mark.
+  A provably unpaid cancellation records its released ordinal in existing
+  event metadata. The next account/day/mode reservation chooses the lowest
+  released ordinal and writes a durable consumed-by marker on that cancelled
+  source inside the reservation transaction. The marker survives replacement
+  of the new event's reservation metadata when it is paid. Later assigned
+  ordinals, receipts, six full/four half reward slots and paid rewards stay
+  unchanged. Legacy null-pet cancellation uses the same release mechanism.
+
+The new registered SQLite suite covers malformed outcome/generated/analytics
+history beside valid recovery, invalid and valid fallback authorization,
+deletion with retained malformed proof versus an unpaid genuine victory,
+late cancellation after slots 2–7 settle, legacy cancellation, concurrent
+reservation and retry, durable reuse after payment, cap boundaries, day/mode
+isolation, two/three-pet switches and ignored/thrown release-consumption writes.
+No schema migration, new secret or public asset change is needed for this
+follow-up. Historical ownership and reward data remain retained; no production
+merge or deployment was performed.

@@ -1314,5 +1314,16 @@ New Street Event reservations save the original choice, outcome and range draws.
 Explore exposes `pending_street_events`; `event_recover` authorizes the authenticated
 owner's immutable saved source without a new-action challenge. Fresh actions still
 require an unexpired signed challenge. Provably unpaid unaffordable outcomes cancel
-and release their repeat slot atomically. Legacy evidence without a provable outcome
+and release their repeat slot atomically. Repeat counters remain high-water marks;
+released ordinals are retained on the cancelled source and consumed once inside
+the next owner/day/mode reservation transaction. Later assigned ordinals and
+their paid scaling never change. Legacy null-pet cancellation follows the same
+rule and does not authorize payment against another pet. Legacy evidence without a provable outcome
 or pet remains visible for audit and cannot invent progress or a reward.
+
+
+Retained Daily boss proof is inspected with CASE-sanitized JSON in recovery,
+reward authorization and deletion blockers. SQLite AND predicates do not
+promise short-circuit evaluation. Invalid outcome/generated/analytics JSON
+cannot abort another valid source's scan, authorize payment or masquerade as a
+victory. Historical malformed records remain retained without invented proof.

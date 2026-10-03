@@ -104,7 +104,7 @@ for (const count of [2, 3]) for (const mode of ['healthy', 'outage', 'conditiona
     }
     if (mode === 'conditional') {
       assert.equal(first.body.result.reason, 'street_event_unaffordable');
-      assert.equal(f.sql.prepare("SELECT claimed_count FROM telegram_pet_repeat_reward_slots WHERE mode='event'").get().claimed_count, 0);
+      assert.equal(f.sql.prepare("SELECT claimed_count FROM telegram_pet_repeat_reward_slots WHERE mode='event'").get().claimed_count, 1);
       assert.equal((await httpAction(f, { action: 'event_recover', event_id: reservation.id })).body.result.accepted, false);
     }
     assert.deepEqual(otherXp(f, source), beforeOthers);

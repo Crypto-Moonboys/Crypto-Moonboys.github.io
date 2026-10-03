@@ -289,8 +289,8 @@ function getRewardAuthorization(source, telegramId, context = {}, now = new Date
       JOIN telegram_pet_run_rooms f ON f.run_id=r.run_id AND f.telegram_id=r.telegram_id AND f.pet_id=r.pet_id AND f.room_number=r.max_room
       WHERE r.run_id=? AND r.telegram_id=? AND r.pet_id=? AND r.status IN ('completed','extracted') AND r.current_room>=r.max_room
         AND f.room_id=? AND f.status='resolved' AND f.room_type='boss' AND r.max_room>0
-        AND json_valid(f.outcome_data) AND json_type(f.outcome_data,'$.success')='true'
-        AND json_valid(f.generated_data) AND json_extract(f.generated_data,'$.boss_id')=?
+        AND json_valid(f.outcome_data) AND json_type(CASE WHEN json_valid(f.outcome_data) THEN f.outcome_data ELSE '{}' END,'$.success')='true'
+        AND json_valid(f.generated_data) AND json_extract(CASE WHEN json_valid(f.generated_data) THEN f.generated_data ELSE '{}' END,'$.boss_id')=?
     )` : '';
     return {
       sql: `AND EXISTS (SELECT 1 FROM telegram_pet_run_rooms WHERE room_id = ? AND run_id = ? AND telegram_id = ? AND status = 'resolved' ${bossGuard})

@@ -2102,29 +2102,19 @@ async function cancelLegacyPendingRepeatRewardReservation(db, details) {
   if (!reservationId || !telegramId || !eventKey || !dayKey || !mode || String(reservation.pet_id || '').trim()) {
     return { cancelled: false, released: false };
   }
-  const results = await db.batch([
-    db.prepare(`
-      UPDATE telegram_pet_events
-      SET status = 'cancelled', reason = 'legacy_repeat_reward_missing_pet_authority'
-      WHERE id = ? AND telegram_id = ? AND event_key = ? AND status = 'pending'
-        AND (pet_id IS NULL OR pet_id = '')
-      RETURNING id
-    `).bind(reservationId, telegramId, eventKey),
-    db.prepare(`
-      UPDATE telegram_pet_repeat_reward_slots
-      SET claimed_count = MAX(0, claimed_count - 1), updated_at = CURRENT_TIMESTAMP
-      WHERE telegram_id = ? AND day_key = ? AND mode = ?
-        AND EXISTS (
-          SELECT 1 FROM telegram_pet_events
-          WHERE id = ? AND status = 'cancelled' AND reason = 'legacy_repeat_reward_missing_pet_authority'
-        )
-      RETURNING claimed_count
-    `).bind(telegramId, dayKey, mode, reservationId),
-  ]);
-  return {
-    cancelled: Boolean(results?.[0]?.results?.[0]),
-    released: Boolean(results?.[1]?.results?.[0]),
-  };
+  const token = crypto.randomUUID();
+  const result = await db.prepare(`
+    UPDATE telegram_pet_events
+    SET status='cancelled', reason='legacy_repeat_reward_missing_pet_authority',
+      metadata=json_set(CASE WHEN json_valid(metadata) THEN metadata ELSE '{}' END,
+        '$.released_repeat_reward_slot',CAST(? AS INTEGER), '$.released_repeat_reward_mode',?, '$.cancel_token',?)
+    WHERE id=? AND telegram_id=? AND event_key=? AND status='pending'
+      AND (pet_id IS NULL OR pet_id='') AND json_valid(metadata) AND xp_awarded=0 AND pet_xp_awarded=0
+      AND NOT EXISTS (SELECT 1 FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_event' AND idempotency_key=?)
+  `).bind(reservation.claimed_slot, mode, token, reservationId, telegramId, eventKey, telegramId, eventKey)
+    .run().then(requirePetMutationResult);
+  if (!Number.isSafeInteger(result?.meta?.changes) || result.meta.changes < 0 || result.meta.changes > 1) throw new Error('pet_state_write_unavailable');
+  return { cancelled: result.meta.changes === 1, released: result.meta.changes === 1 };
 }
 
 async function reservePetRepeatRewardEvent(db, details) {
@@ -2202,11 +2192,31 @@ async function reservePetRepeatRewardEvent(db, details) {
         AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id=? AND status='pending')`)
       .bind(energyCost, PET_INSTANCE_AUTHORITY_VERSION, petId, telegramId, seasonKey, reservationId));
   }
+  statements.push(db.prepare(`UPDATE telegram_pet_events
+    SET metadata=json_set(metadata,'$.released_slot_source',(
+      SELECT c.id FROM telegram_pet_events c
+      WHERE c.telegram_id=? AND c.day_key=? AND c.status='cancelled'
+        AND json_extract(CASE WHEN json_valid(c.metadata) THEN c.metadata ELSE '{}' END,'$.released_repeat_reward_mode')=?
+        AND json_extract(CASE WHEN json_valid(c.metadata) THEN c.metadata ELSE '{}' END,'$.released_slot_consumed_by') IS NULL
+        AND json_type(CASE WHEN json_valid(c.metadata) THEN c.metadata ELSE '{}' END,'$.released_repeat_reward_slot')='integer'
+        AND json_extract(CASE WHEN json_valid(c.metadata) THEN c.metadata ELSE '{}' END,'$.released_repeat_reward_slot')>0
+      ORDER BY json_extract(CASE WHEN json_valid(c.metadata) THEN c.metadata ELSE '{}' END,'$.released_repeat_reward_slot'),c.id LIMIT 1))
+    WHERE id=? AND status='pending'`).bind(telegramId,String(details.day_key),normalizedMode,reservationId));
+  // Paid events replace reservation metadata. Keep the consumption marker on
+  // the retained cancelled source so settlement cannot make its slot reusable.
+  const releaseConsumedIndex = statements.length;
+  statements.push(db.prepare(`UPDATE telegram_pet_events
+    SET metadata=json_set(metadata,'$.released_slot_consumed_by',?)
+    WHERE telegram_id=? AND status='cancelled'
+      AND id=(SELECT json_extract(CASE WHEN json_valid(metadata) THEN metadata ELSE '{}' END,'$.released_slot_source') FROM telegram_pet_events WHERE id=? AND status='pending')
+      AND json_extract(CASE WHEN json_valid(metadata) THEN metadata ELSE '{}' END,'$.released_slot_consumed_by') IS NULL`).bind(reservationId,telegramId,reservationId));
+  const counterIndex = statements.length;
   statements.push(
     db.prepare(`
       INSERT INTO telegram_pet_repeat_reward_slots (telegram_id, day_key, mode, claimed_count, updated_at)
       SELECT ?, ?, ?, 1, CURRENT_TIMESTAMP
-      WHERE EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending')
+      WHERE EXISTS (SELECT 1 FROM telegram_pet_events WHERE id = ? AND status = 'pending'
+        AND json_extract(CASE WHEN json_valid(metadata) THEN metadata ELSE '{}' END,'$.released_slot_source') IS NULL)
       ON CONFLICT(telegram_id, day_key, mode) DO UPDATE SET
         claimed_count = claimed_count + 1,
         updated_at = CURRENT_TIMESTAMP
@@ -2214,10 +2224,13 @@ async function reservePetRepeatRewardEvent(db, details) {
     `).bind(telegramId, String(details.day_key), normalizedMode, reservationId),
     db.prepare(`
       UPDATE telegram_pet_events
-      SET reason = 'repeat_reward_slot:' || CAST((
+      SET reason = 'repeat_reward_slot:' || CAST(COALESCE((
+        SELECT json_extract(CASE WHEN json_valid(c.metadata) THEN c.metadata ELSE '{}' END,'$.released_repeat_reward_slot')
+        FROM telegram_pet_events c WHERE c.id=json_extract(CASE WHEN json_valid(telegram_pet_events.metadata) THEN telegram_pet_events.metadata ELSE '{}' END,'$.released_slot_source')
+      ), (
         SELECT claimed_count FROM telegram_pet_repeat_reward_slots
         WHERE telegram_id = ? AND day_key = ? AND mode = ?
-      ) AS TEXT) || ?
+      )) AS TEXT) || ?
       WHERE id = ? AND status = 'pending'
       RETURNING id, pet_id, status, reason, day_key, week_key, season_key, metadata
     `).bind(
@@ -2231,6 +2244,14 @@ async function reservePetRepeatRewardEvent(db, details) {
   const requiredWrites = statements.slice(1).map((_, offset) => {
     const index = offset + 1;
     const rule = { index, when: "EXISTS (SELECT 1 FROM telegram_pet_events WHERE id=? AND status='pending')", args: [reservationId] };
+    if (index === releaseConsumedIndex) {
+      rule.when += " AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id=? AND json_extract(CASE WHEN json_valid(metadata) THEN metadata ELSE '{}' END,'$.released_slot_source') IS NOT NULL)";
+      rule.args.push(reservationId);
+    }
+    if (index === counterIndex) {
+      rule.when += " AND EXISTS (SELECT 1 FROM telegram_pet_events WHERE id=? AND json_extract(CASE WHEN json_valid(metadata) THEN metadata ELSE '{}' END,'$.released_slot_source') IS NULL)";
+      rule.args.push(reservationId);
+    }
     // A saved Kaiju ending can belong to a pet that is no longer selected.
     // Its authoritative debit is required; the compatibility mirror is optional.
     if (sourceSettlement && index === 2) {
@@ -3739,20 +3760,19 @@ async function readPendingStreetEvents(db, owner) {
 
 async function cancelUnaffordableStreetEvent(db, owner, reservation, costs) {
   const token = crypto.randomUUID();
-  const results = await atomicPetBatch(db, [
-    db.prepare(`UPDATE telegram_pet_events SET status='cancelled',reason='street_event_unaffordable',
-      metadata=json_set(metadata,'$.cancel_token',?) WHERE id=? AND telegram_id=? AND status='pending'
+  // The counter is a high-water mark. Releasing an earlier ordinal must never
+  // rewind later assignments; the allocator consumes this event's release once.
+  const result = await db.prepare(`UPDATE telegram_pet_events SET status='cancelled',reason='street_event_unaffordable',
+      metadata=json_set(metadata,'$.cancel_token',?,'$.released_repeat_reward_slot',CAST(? AS INTEGER),'$.released_repeat_reward_mode','event')
+      WHERE id=? AND telegram_id=? AND status='pending'
       AND event_type='random_event' AND xp_awarded=0 AND pet_xp_awarded=0
       AND NOT EXISTS (SELECT 1 FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_event' AND idempotency_key=?)
       AND EXISTS (SELECT 1 FROM telegram_pet_profiles WHERE telegram_id=? AND (moon_gold<? OR moon_crystals<? OR style_tokens<?))`)
-      .bind(token, reservation.reservation_id, owner, owner, reservation.event_key, owner,
-        costs.moon_gold || 0, costs.moon_crystals || 0, costs.style_tokens || 0),
-    db.prepare(`UPDATE telegram_pet_repeat_reward_slots SET claimed_count=MAX(0,claimed_count-1),updated_at=CURRENT_TIMESTAMP
-      WHERE telegram_id=? AND day_key=? AND mode='event' AND EXISTS (SELECT 1 FROM telegram_pet_events
-        WHERE id=? AND status='cancelled' AND json_extract(metadata,'$.cancel_token')=?)`)
-      .bind(owner, reservation.day_key, reservation.reservation_id, token),
-  ], [{ index: 1, when: "EXISTS (SELECT 1 FROM telegram_pet_events WHERE id=? AND status='cancelled' AND json_extract(metadata,'$.cancel_token')=?)", args: [reservation.reservation_id, token] }]);
-  return results[0]?.meta?.changes === 1;
+      .bind(token,reservation.claimed_slot,reservation.reservation_id,owner,owner,reservation.event_key,owner,
+        costs.moon_gold || 0,costs.moon_crystals || 0,costs.style_tokens || 0)
+      .run().then(requirePetMutationResult);
+  if (!Number.isSafeInteger(result?.meta?.changes) || result.meta.changes < 0 || result.meta.changes > 1) throw new Error('pet_state_write_unavailable');
+  return result.meta.changes === 1;
 }
 
 async function processPetRandomEvent(db, telegramId, choiceRaw, options = {}) {
