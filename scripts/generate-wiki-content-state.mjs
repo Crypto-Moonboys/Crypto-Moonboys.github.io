@@ -868,6 +868,7 @@ function recommendedAction(status) {
 
 function priorityForPage({ status, conflictSeverity, duplicateLevel }) {
   if (status === 'FIRST_WITNESS_LOCKED') return 'LOCKED';
+  if (status === 'NFT_SPECIALIST' || status === 'GENERATED') return 'P4';
   if (status === 'REWRITE_FULL' || conflictSeverity === 'HIGH' || duplicateLevel === 'HIGH') return 'P1';
   if (status === 'RECONCILE' || status === 'DEDUPE' || status === 'NEEDS_HUMAN_REVIEW') return 'P2';
   if (status === 'EXPAND' || status === 'ARCHIVE_STYLE') return 'P3';
