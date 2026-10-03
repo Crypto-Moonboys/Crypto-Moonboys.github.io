@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-03T02:57:44.965Z",
-  "verified_at": "2026-10-03T02:57:44.965Z",
+  "generated_at": "2026-10-03T03:25:27.490Z",
+  "verified_at": "2026-10-03T03:25:27.490Z",
   "nodes": [
     {
       "id": "/about.html",
@@ -135,7 +135,7 @@
       "title": "Alfie 'Bitcoin Kid' Blaze",
       "url": "/wiki/alfie-bitcoin-kid-blaze.html",
       "category": "factions",
-      "rank_score": 203,
+      "rank_score": 205,
       "authority_score": 16
     },
     {
@@ -279,7 +279,7 @@
       "title": "Block Topia",
       "url": "/wiki/block-topia.html",
       "category": "characters",
-      "rank_score": 524,
+      "rank_score": 526,
       "authority_score": 13
     },
     {
@@ -449,6 +449,214 @@
       "category": "factions",
       "rank_score": 258,
       "authority_score": 20
+    },
+    {
+      "id": "/wiki/first-witness-bitcoin-witness.html",
+      "title": "The Bitcoin Witness",
+      "url": "/wiki/first-witness-bitcoin-witness.html",
+      "category": "core",
+      "rank_score": 221,
+      "authority_score": 12
+    },
+    {
+      "id": "/wiki/first-witness-block-topia-reading.html",
+      "title": "Block Topia and the Controlled Reading",
+      "url": "/wiki/first-witness-block-topia-reading.html",
+      "category": "factions",
+      "rank_score": 197,
+      "authority_score": 12
+    },
+    {
+      "id": "/wiki/first-witness-book-1-the-first-witness.html",
+      "title": "Book I — The First Witness",
+      "url": "/wiki/first-witness-book-1-the-first-witness.html",
+      "category": "core",
+      "rank_score": 216,
+      "authority_score": 12
+    },
+    {
+      "id": "/wiki/first-witness-book-2-the-common-blood.html",
+      "title": "Book II — The Common Blood",
+      "url": "/wiki/first-witness-book-2-the-common-blood.html",
+      "category": "core",
+      "rank_score": 224,
+      "authority_score": 12
+    },
+    {
+      "id": "/wiki/first-witness-book-3-the-keeper.html",
+      "title": "Book III — The Keeper",
+      "url": "/wiki/first-witness-book-3-the-keeper.html",
+      "category": "core",
+      "rank_score": 219,
+      "authority_score": 12
+    },
+    {
+      "id": "/wiki/first-witness-book-4-the-wall.html",
+      "title": "Book IV — The Wall",
+      "url": "/wiki/first-witness-book-4-the-wall.html",
+      "category": "core",
+      "rank_score": 220,
+      "authority_score": 12
+    },
+    {
+      "id": "/wiki/first-witness-book-5-the-chain.html",
+      "title": "Book V — The Chain",
+      "url": "/wiki/first-witness-book-5-the-chain.html",
+      "category": "core",
+      "rank_score": 218,
+      "authority_score": 12
+    },
+    {
+      "id": "/wiki/first-witness-book-6-the-fork.html",
+      "title": "Book VI — The Fork",
+      "url": "/wiki/first-witness-book-6-the-fork.html",
+      "category": "core",
+      "rank_score": 219,
+      "authority_score": 12
+    },
+    {
+      "id": "/wiki/first-witness-book-7-the-hold.html",
+      "title": "Book VII — The Hold",
+      "url": "/wiki/first-witness-book-7-the-hold.html",
+      "category": "core",
+      "rank_score": 211,
+      "authority_score": 12
+    },
+    {
+      "id": "/wiki/first-witness-book-8-the-fire.html",
+      "title": "Book VIII — The Fire",
+      "url": "/wiki/first-witness-book-8-the-fire.html",
+      "category": "core",
+      "rank_score": 230,
+      "authority_score": 12
+    },
+    {
+      "id": "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "title": "Book IX — The Unwritten Block",
+      "url": "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "category": "core",
+      "rank_score": 217,
+      "authority_score": 12
+    },
+    {
+      "id": "/wiki/first-witness-child-of-fire.html",
+      "title": "The Child of Fire Interpretation",
+      "url": "/wiki/first-witness-child-of-fire.html",
+      "category": "factions",
+      "rank_score": 207,
+      "authority_score": 12
+    },
+    {
+      "id": "/wiki/first-witness-concordance.html",
+      "title": "Concordance of Broken Records",
+      "url": "/wiki/first-witness-concordance.html",
+      "category": "factions",
+      "rank_score": 196,
+      "authority_score": 12
+    },
+    {
+      "id": "/wiki/first-witness-faction-commentaries.html",
+      "title": "Faction Commentaries on the First Witness",
+      "url": "/wiki/first-witness-faction-commentaries.html",
+      "category": "factions",
+      "rank_score": 233,
+      "authority_score": 14
+    },
+    {
+      "id": "/wiki/first-witness-forty-paths.html",
+      "title": "The Forty Paths",
+      "url": "/wiki/first-witness-forty-paths.html",
+      "category": "factions",
+      "rank_score": 184,
+      "authority_score": 12
+    },
+    {
+      "id": "/wiki/first-witness-glossary.html",
+      "title": "First Witness Glossary",
+      "url": "/wiki/first-witness-glossary.html",
+      "category": "factions",
+      "rank_score": 184,
+      "authority_score": 12
+    },
+    {
+      "id": "/wiki/first-witness-great-concord-2030.html",
+      "title": "The Great Concord of 2030",
+      "url": "/wiki/first-witness-great-concord-2030.html",
+      "category": "factions",
+      "rank_score": 224,
+      "authority_score": 14
+    },
+    {
+      "id": "/wiki/first-witness-hodl-doctrine.html",
+      "title": "The HODL Doctrine",
+      "url": "/wiki/first-witness-hodl-doctrine.html",
+      "category": "factions",
+      "rank_score": 188,
+      "authority_score": 12
+    },
+    {
+      "id": "/wiki/first-witness-long-transmission.html",
+      "title": "The Long Transmission",
+      "url": "/wiki/first-witness-long-transmission.html",
+      "category": "core",
+      "rank_score": 211,
+      "authority_score": 12
+    },
+    {
+      "id": "/wiki/first-witness-master-chronology.html",
+      "title": "First Witness Master Chronology",
+      "url": "/wiki/first-witness-master-chronology.html",
+      "category": "factions",
+      "rank_score": 183,
+      "authority_score": 12
+    },
+    {
+      "id": "/wiki/first-witness-null-erasure.html",
+      "title": "NULL and the Theology of Erasure",
+      "url": "/wiki/first-witness-null-erasure.html",
+      "category": "factions",
+      "rank_score": 197,
+      "authority_score": 12
+    },
+    {
+      "id": "/wiki/first-witness-sacred-fork.html",
+      "title": "The Sacred Fork",
+      "url": "/wiki/first-witness-sacred-fork.html",
+      "category": "factions",
+      "rank_score": 197,
+      "authority_score": 12
+    },
+    {
+      "id": "/wiki/first-witness-source-register.html",
+      "title": "First Witness Source Register",
+      "url": "/wiki/first-witness-source-register.html",
+      "category": "characters",
+      "rank_score": 205,
+      "authority_score": 16
+    },
+    {
+      "id": "/wiki/first-witness-street-kingdoms-reading.html",
+      "title": "Street Kingdoms and the Living Reading",
+      "url": "/wiki/first-witness-street-kingdoms-reading.html",
+      "category": "factions",
+      "rank_score": 205,
+      "authority_score": 12
+    },
+    {
+      "id": "/wiki/first-witness-triple-fork-chainfire.html",
+      "title": "The Triple Fork and Chainfire",
+      "url": "/wiki/first-witness-triple-fork-chainfire.html",
+      "category": "core",
+      "rank_score": 208,
+      "authority_score": 12
+    },
+    {
+      "id": "/wiki/first-witness-world-chain-error.html",
+      "title": "The World Chain Error",
+      "url": "/wiki/first-witness-world-chain-error.html",
+      "category": "core",
+      "rank_score": 211,
+      "authority_score": 12
     },
     {
       "id": "/wiki/fomo-plague.html",
@@ -1807,7 +2015,7 @@
       "title": "HODL Warriors",
       "url": "/wiki/hodl-warriors.html",
       "category": "characters",
-      "rank_score": 335,
+      "rank_score": 337,
       "authority_score": 21
     },
     {
@@ -2175,7 +2383,7 @@
       "title": "The Sacred Chain",
       "url": "/wiki/sacred-chain.html",
       "category": "factions",
-      "rank_score": 310,
+      "rank_score": 362,
       "authority_score": 21
     },
     {
@@ -2431,7 +2639,7 @@
       "title": "The First Witness",
       "url": "/wiki/the-first-witness.html",
       "category": "factions",
-      "rank_score": 295,
+      "rank_score": 371,
       "authority_score": 25
     },
     {
@@ -2599,7 +2807,7 @@
       "title": "Triple Fork Event",
       "url": "/wiki/triple-fork-event.html",
       "category": "factions",
-      "rank_score": 271,
+      "rank_score": 323,
       "authority_score": 21
     },
     {
@@ -2722,6 +2930,12 @@
     },
     {
       "source": "/wiki/1m-free-nfts-program.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/1m-free-nfts-program.html",
       "target": "/wiki/ethereum.html",
       "score": 74,
       "weight": 0.74
@@ -2731,12 +2945,6 @@
       "target": "/wiki/web3.html",
       "score": 74,
       "weight": 0.74
-    },
-    {
-      "source": "/wiki/1m-free-nfts-program.html",
-      "target": "/wiki/gk.html",
-      "score": 72,
-      "weight": 0.72
     },
     {
       "source": "/wiki/2025-metaverse-launch-party.html",
@@ -2758,13 +2966,13 @@
     },
     {
       "source": "/wiki/2025-metaverse-launch-party.html",
-      "target": "/wiki/delicious-again-pete.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/triple-fork-event.html",
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/2025-metaverse-launch-party.html",
-      "target": "/wiki/midevilpunks.html",
+      "target": "/wiki/delicious-again-pete.html",
       "score": 78,
       "weight": 0.78
     },
@@ -2842,6 +3050,12 @@
     },
     {
       "source": "/wiki/alcor-exchange.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/alcor-exchange.html",
       "target": "/wiki/nfthive.html",
       "score": 77,
       "weight": 0.77
@@ -2851,12 +3065,6 @@
       "target": "/wiki/atomichub.html",
       "score": 76,
       "weight": 0.76
-    },
-    {
-      "source": "/wiki/alcor-exchange.html",
-      "target": "/wiki/sneakar.html",
-      "score": 75,
-      "weight": 0.75
     },
     {
       "source": "/wiki/aleema-child-of-the-shard.html",
@@ -3052,6 +3260,12 @@
     },
     {
       "source": "/wiki/atomichub.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/atomichub.html",
       "target": "/wiki/sneakar.html",
       "score": 75,
       "weight": 0.75
@@ -3059,12 +3273,6 @@
     {
       "source": "/wiki/atomichub.html",
       "target": "/wiki/alcor-exchange.html",
-      "score": 74,
-      "weight": 0.74
-    },
-    {
-      "source": "/wiki/atomichub.html",
-      "target": "/wiki/ethereum.html",
       "score": 74,
       "weight": 0.74
     },
@@ -3112,6 +3320,12 @@
     },
     {
       "source": "/wiki/battlemech-blast.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/battlemech-blast.html",
       "target": "/wiki/sneakar.html",
       "score": 78,
       "weight": 0.78
@@ -3121,12 +3335,6 @@
       "target": "/wiki/web3.html",
       "score": 77,
       "weight": 0.77
-    },
-    {
-      "source": "/wiki/battlemech-blast.html",
-      "target": "/wiki/exchanges.html",
-      "score": 76,
-      "weight": 0.76
     },
     {
       "source": "/wiki/bear-market-siege.html",
@@ -3406,6 +3614,12 @@
     },
     {
       "source": "/wiki/block-node-defenders.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 86,
+      "weight": 0.86
+    },
+    {
+      "source": "/wiki/block-node-defenders.html",
       "target": "/wiki/games4punks-telegram.html",
       "score": 84,
       "weight": 0.84
@@ -3419,12 +3633,6 @@
     {
       "source": "/wiki/block-node-defenders.html",
       "target": "/wiki/phygital-prints.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/block-node-defenders.html",
-      "target": "/wiki/triple-fork-event.html",
       "score": 78,
       "weight": 0.78
     },
@@ -3502,6 +3710,12 @@
     },
     {
       "source": "/wiki/bone-idol-ink.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 83,
+      "weight": 0.83
+    },
+    {
+      "source": "/wiki/bone-idol-ink.html",
       "target": "/wiki/maidstone-base.html",
       "score": 76,
       "weight": 0.76
@@ -3511,12 +3725,6 @@
       "target": "/wiki/metaverse-battles.html",
       "score": 76,
       "weight": 0.76
-    },
-    {
-      "source": "/wiki/bone-idol-ink.html",
-      "target": "/wiki/block-node-defenders.html",
-      "score": 75,
-      "weight": 0.75
     },
     {
       "source": "/wiki/burn-to-earn.html",
@@ -3562,6 +3770,12 @@
     },
     {
       "source": "/wiki/canvas-clash.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/canvas-clash.html",
       "target": "/wiki/sneakar.html",
       "score": 78,
       "weight": 0.78
@@ -3571,12 +3785,6 @@
       "target": "/wiki/web3.html",
       "score": 77,
       "weight": 0.77
-    },
-    {
-      "source": "/wiki/canvas-clash.html",
-      "target": "/wiki/battlemech-blast.html",
-      "score": 76,
-      "weight": 0.76
     },
     {
       "source": "/wiki/charlie-buster.html",
@@ -3622,6 +3830,12 @@
     },
     {
       "source": "/wiki/croydon-tower-blocks.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 83,
+      "weight": 0.83
+    },
+    {
+      "source": "/wiki/croydon-tower-blocks.html",
       "target": "/wiki/delicious-again-pete.html",
       "score": 81,
       "weight": 0.81
@@ -3629,12 +3843,6 @@
     {
       "source": "/wiki/croydon-tower-blocks.html",
       "target": "/wiki/seeding-rights.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/croydon-tower-blocks.html",
-      "target": "/wiki/street-kingdoms.html",
       "score": 81,
       "weight": 0.81
     },
@@ -3754,9 +3962,9 @@
     },
     {
       "source": "/wiki/defi-mining.html",
-      "target": "/wiki/midevilpunks.html",
-      "score": 69,
-      "weight": 0.69
+      "target": "/wiki/triple-fork-event.html",
+      "score": 70,
+      "weight": 0.7
     },
     {
       "source": "/wiki/defi.html",
@@ -3802,6 +4010,12 @@
     },
     {
       "source": "/wiki/delicious-again-pete.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 83,
+      "weight": 0.83
+    },
+    {
+      "source": "/wiki/delicious-again-pete.html",
       "target": "/wiki/seeding-rights.html",
       "score": 81,
       "weight": 0.81
@@ -3811,12 +4025,6 @@
       "target": "/wiki/street-kingdoms.html",
       "score": 81,
       "weight": 0.81
-    },
-    {
-      "source": "/wiki/delicious-again-pete.html",
-      "target": "/wiki/lfgk.html",
-      "score": 80,
-      "weight": 0.8
     },
     {
       "source": "/wiki/diamond-hands.html",
@@ -3892,6 +4100,12 @@
     },
     {
       "source": "/wiki/dream-sovereign.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/dream-sovereign.html",
       "target": "/wiki/sneakar.html",
       "score": 78,
       "weight": 0.78
@@ -3901,12 +4115,6 @@
       "target": "/wiki/web3.html",
       "score": 77,
       "weight": 0.77
-    },
-    {
-      "source": "/wiki/dream-sovereign.html",
-      "target": "/wiki/battlemech-blast.html",
-      "score": 76,
-      "weight": 0.76
     },
     {
       "source": "/wiki/elder-codex-7.html",
@@ -4042,6 +4250,12 @@
     },
     {
       "source": "/wiki/exyboy.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/exyboy.html",
       "target": "/wiki/sneakar.html",
       "score": 78,
       "weight": 0.78
@@ -4051,12 +4265,6 @@
       "target": "/wiki/web3.html",
       "score": 77,
       "weight": 0.77
-    },
-    {
-      "source": "/wiki/exyboy.html",
-      "target": "/wiki/battlemech-blast.html",
-      "score": 76,
-      "weight": 0.76
     },
     {
       "source": "/wiki/fgl-token.html",
@@ -4087,6 +4295,786 @@
       "target": "/wiki/games4punks-telegram.html",
       "score": 68,
       "weight": 0.68
+    },
+    {
+      "source": "/wiki/first-witness-bitcoin-witness.html",
+      "target": "/wiki/first-witness-book-1-the-first-witness.html",
+      "score": 63,
+      "weight": 0.63
+    },
+    {
+      "source": "/wiki/first-witness-bitcoin-witness.html",
+      "target": "/wiki/first-witness-book-2-the-common-blood.html",
+      "score": 59,
+      "weight": 0.59
+    },
+    {
+      "source": "/wiki/first-witness-bitcoin-witness.html",
+      "target": "/wiki/first-witness-book-3-the-keeper.html",
+      "score": 56,
+      "weight": 0.56
+    },
+    {
+      "source": "/wiki/first-witness-bitcoin-witness.html",
+      "target": "/wiki/first-witness-book-4-the-wall.html",
+      "score": 56,
+      "weight": 0.56
+    },
+    {
+      "source": "/wiki/first-witness-bitcoin-witness.html",
+      "target": "/wiki/first-witness-book-5-the-chain.html",
+      "score": 56,
+      "weight": 0.56
+    },
+    {
+      "source": "/wiki/first-witness-block-topia-reading.html",
+      "target": "/wiki/pmsl.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
+      "source": "/wiki/first-witness-block-topia-reading.html",
+      "target": "/wiki/the-first-witness.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/first-witness-block-topia-reading.html",
+      "target": "/wiki/hodl-wars.html",
+      "score": 65,
+      "weight": 0.65
+    },
+    {
+      "source": "/wiki/first-witness-block-topia-reading.html",
+      "target": "/wiki/hard-fork-games.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-block-topia-reading.html",
+      "target": "/wiki/first-witness-street-kingdoms-reading.html",
+      "score": 63,
+      "weight": 0.63
+    },
+    {
+      "source": "/wiki/first-witness-book-1-the-first-witness.html",
+      "target": "/wiki/first-witness-book-3-the-keeper.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/first-witness-book-1-the-first-witness.html",
+      "target": "/wiki/first-witness-book-2-the-common-blood.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-book-1-the-first-witness.html",
+      "target": "/wiki/first-witness-book-4-the-wall.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-book-1-the-first-witness.html",
+      "target": "/wiki/first-witness-book-5-the-chain.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-book-1-the-first-witness.html",
+      "target": "/wiki/first-witness-book-6-the-fork.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-book-2-the-common-blood.html",
+      "target": "/wiki/first-witness-book-4-the-wall.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/first-witness-book-2-the-common-blood.html",
+      "target": "/wiki/first-witness-book-3-the-keeper.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-book-2-the-common-blood.html",
+      "target": "/wiki/first-witness-book-5-the-chain.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-book-2-the-common-blood.html",
+      "target": "/wiki/first-witness-book-6-the-fork.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-book-2-the-common-blood.html",
+      "target": "/wiki/first-witness-book-8-the-fire.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-book-3-the-keeper.html",
+      "target": "/wiki/first-witness-book-5-the-chain.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/first-witness-book-3-the-keeper.html",
+      "target": "/wiki/first-witness-book-1-the-first-witness.html",
+      "score": 67,
+      "weight": 0.67
+    },
+    {
+      "source": "/wiki/first-witness-book-3-the-keeper.html",
+      "target": "/wiki/first-witness-book-2-the-common-blood.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-book-3-the-keeper.html",
+      "target": "/wiki/first-witness-book-4-the-wall.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-book-3-the-keeper.html",
+      "target": "/wiki/first-witness-book-6-the-fork.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-book-4-the-wall.html",
+      "target": "/wiki/first-witness-book-2-the-common-blood.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/first-witness-book-4-the-wall.html",
+      "target": "/wiki/first-witness-book-6-the-fork.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/first-witness-book-4-the-wall.html",
+      "target": "/wiki/first-witness-book-3-the-keeper.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-book-4-the-wall.html",
+      "target": "/wiki/first-witness-book-5-the-chain.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-book-4-the-wall.html",
+      "target": "/wiki/first-witness-book-8-the-fire.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-book-5-the-chain.html",
+      "target": "/wiki/first-witness-book-3-the-keeper.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/first-witness-book-5-the-chain.html",
+      "target": "/wiki/first-witness-book-7-the-hold.html",
+      "score": 67,
+      "weight": 0.67
+    },
+    {
+      "source": "/wiki/first-witness-book-5-the-chain.html",
+      "target": "/wiki/first-witness-book-2-the-common-blood.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-book-5-the-chain.html",
+      "target": "/wiki/first-witness-book-4-the-wall.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-book-5-the-chain.html",
+      "target": "/wiki/first-witness-book-6-the-fork.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-book-6-the-fork.html",
+      "target": "/wiki/first-witness-triple-fork-chainfire.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/first-witness-book-6-the-fork.html",
+      "target": "/wiki/first-witness-book-4-the-wall.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/first-witness-book-6-the-fork.html",
+      "target": "/wiki/first-witness-book-8-the-fire.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/first-witness-book-6-the-fork.html",
+      "target": "/wiki/first-witness-book-2-the-common-blood.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-book-6-the-fork.html",
+      "target": "/wiki/first-witness-book-3-the-keeper.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-book-7-the-hold.html",
+      "target": "/wiki/first-witness-book-5-the-chain.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/first-witness-book-7-the-hold.html",
+      "target": "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "score": 67,
+      "weight": 0.67
+    },
+    {
+      "source": "/wiki/first-witness-book-7-the-hold.html",
+      "target": "/wiki/first-witness-book-2-the-common-blood.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-book-7-the-hold.html",
+      "target": "/wiki/first-witness-book-3-the-keeper.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-book-7-the-hold.html",
+      "target": "/wiki/first-witness-book-4-the-wall.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-book-8-the-fire.html",
+      "target": "/wiki/first-witness-book-6-the-fork.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/first-witness-book-8-the-fire.html",
+      "target": "/wiki/first-witness-book-2-the-common-blood.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-book-8-the-fire.html",
+      "target": "/wiki/first-witness-book-3-the-keeper.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-book-8-the-fire.html",
+      "target": "/wiki/first-witness-book-4-the-wall.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-book-8-the-fire.html",
+      "target": "/wiki/first-witness-book-5-the-chain.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "target": "/wiki/first-witness-book-7-the-hold.html",
+      "score": 67,
+      "weight": 0.67
+    },
+    {
+      "source": "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "target": "/wiki/first-witness-book-2-the-common-blood.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "target": "/wiki/first-witness-book-3-the-keeper.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "target": "/wiki/first-witness-book-4-the-wall.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "target": "/wiki/first-witness-book-5-the-chain.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-child-of-fire.html",
+      "target": "/wiki/pmsl.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
+      "source": "/wiki/first-witness-child-of-fire.html",
+      "target": "/wiki/the-first-witness.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/first-witness-child-of-fire.html",
+      "target": "/wiki/hodl-wars.html",
+      "score": 65,
+      "weight": 0.65
+    },
+    {
+      "source": "/wiki/first-witness-child-of-fire.html",
+      "target": "/wiki/hard-fork-games.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-child-of-fire.html",
+      "target": "/wiki/midevilpunks.html",
+      "score": 63,
+      "weight": 0.63
+    },
+    {
+      "source": "/wiki/first-witness-concordance.html",
+      "target": "/wiki/pmsl.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
+      "source": "/wiki/first-witness-concordance.html",
+      "target": "/wiki/the-first-witness.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/first-witness-concordance.html",
+      "target": "/wiki/hodl-wars.html",
+      "score": 65,
+      "weight": 0.65
+    },
+    {
+      "source": "/wiki/first-witness-concordance.html",
+      "target": "/wiki/hard-fork-games.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-concordance.html",
+      "target": "/wiki/midevilpunks.html",
+      "score": 63,
+      "weight": 0.63
+    },
+    {
+      "source": "/wiki/first-witness-faction-commentaries.html",
+      "target": "/wiki/the-first-witness.html",
+      "score": 85,
+      "weight": 0.85
+    },
+    {
+      "source": "/wiki/first-witness-faction-commentaries.html",
+      "target": "/wiki/first-witness-glossary.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
+      "source": "/wiki/first-witness-faction-commentaries.html",
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
+      "source": "/wiki/first-witness-faction-commentaries.html",
+      "target": "/wiki/pmsl.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
+      "source": "/wiki/first-witness-faction-commentaries.html",
+      "target": "/wiki/hodl-wars.html",
+      "score": 65,
+      "weight": 0.65
+    },
+    {
+      "source": "/wiki/first-witness-forty-paths.html",
+      "target": "/wiki/pmsl.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
+      "source": "/wiki/first-witness-forty-paths.html",
+      "target": "/wiki/the-first-witness.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/first-witness-forty-paths.html",
+      "target": "/wiki/hodl-wars.html",
+      "score": 65,
+      "weight": 0.65
+    },
+    {
+      "source": "/wiki/first-witness-forty-paths.html",
+      "target": "/wiki/hard-fork-games.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-forty-paths.html",
+      "target": "/wiki/midevilpunks.html",
+      "score": 63,
+      "weight": 0.63
+    },
+    {
+      "source": "/wiki/first-witness-glossary.html",
+      "target": "/wiki/the-first-witness.html",
+      "score": 85,
+      "weight": 0.85
+    },
+    {
+      "source": "/wiki/first-witness-glossary.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 73,
+      "weight": 0.73
+    },
+    {
+      "source": "/wiki/first-witness-glossary.html",
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
+      "source": "/wiki/first-witness-glossary.html",
+      "target": "/wiki/pmsl.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
+      "source": "/wiki/first-witness-glossary.html",
+      "target": "/wiki/hodl-wars.html",
+      "score": 65,
+      "weight": 0.65
+    },
+    {
+      "source": "/wiki/first-witness-great-concord-2030.html",
+      "target": "/wiki/pmsl.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
+      "source": "/wiki/first-witness-great-concord-2030.html",
+      "target": "/wiki/hodl-wars.html",
+      "score": 65,
+      "weight": 0.65
+    },
+    {
+      "source": "/wiki/first-witness-great-concord-2030.html",
+      "target": "/wiki/the-first-witness.html",
+      "score": 65,
+      "weight": 0.65
+    },
+    {
+      "source": "/wiki/first-witness-great-concord-2030.html",
+      "target": "/wiki/hard-fork-games.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-great-concord-2030.html",
+      "target": "/wiki/midevilpunks.html",
+      "score": 63,
+      "weight": 0.63
+    },
+    {
+      "source": "/wiki/first-witness-hodl-doctrine.html",
+      "target": "/wiki/hodl-wars.html",
+      "score": 73,
+      "weight": 0.73
+    },
+    {
+      "source": "/wiki/first-witness-hodl-doctrine.html",
+      "target": "/wiki/pmsl.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
+      "source": "/wiki/first-witness-hodl-doctrine.html",
+      "target": "/wiki/the-first-witness.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/first-witness-hodl-doctrine.html",
+      "target": "/wiki/hard-fork-games.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-hodl-doctrine.html",
+      "target": "/wiki/midevilpunks.html",
+      "score": 63,
+      "weight": 0.63
+    },
+    {
+      "source": "/wiki/first-witness-long-transmission.html",
+      "target": "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/first-witness-long-transmission.html",
+      "target": "/wiki/first-witness-triple-fork-chainfire.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/first-witness-long-transmission.html",
+      "target": "/wiki/first-witness-book-2-the-common-blood.html",
+      "score": 56,
+      "weight": 0.56
+    },
+    {
+      "source": "/wiki/first-witness-long-transmission.html",
+      "target": "/wiki/first-witness-book-3-the-keeper.html",
+      "score": 56,
+      "weight": 0.56
+    },
+    {
+      "source": "/wiki/first-witness-long-transmission.html",
+      "target": "/wiki/first-witness-book-4-the-wall.html",
+      "score": 56,
+      "weight": 0.56
+    },
+    {
+      "source": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/the-first-witness.html",
+      "score": 85,
+      "weight": 0.85
+    },
+    {
+      "source": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 73,
+      "weight": 0.73
+    },
+    {
+      "source": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/first-witness-glossary.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
+      "source": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/pmsl.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
+      "source": "/wiki/first-witness-master-chronology.html",
+      "target": "/wiki/hodl-wars.html",
+      "score": 65,
+      "weight": 0.65
+    },
+    {
+      "source": "/wiki/first-witness-null-erasure.html",
+      "target": "/wiki/pmsl.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
+      "source": "/wiki/first-witness-null-erasure.html",
+      "target": "/wiki/the-first-witness.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/first-witness-null-erasure.html",
+      "target": "/wiki/hodl-wars.html",
+      "score": 65,
+      "weight": 0.65
+    },
+    {
+      "source": "/wiki/first-witness-null-erasure.html",
+      "target": "/wiki/hard-fork-games.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-null-erasure.html",
+      "target": "/wiki/midevilpunks.html",
+      "score": 63,
+      "weight": 0.63
+    },
+    {
+      "source": "/wiki/first-witness-sacred-fork.html",
+      "target": "/wiki/hard-fork-games.html",
+      "score": 85,
+      "weight": 0.85
+    },
+    {
+      "source": "/wiki/first-witness-sacred-fork.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/first-witness-sacred-fork.html",
+      "target": "/wiki/pmsl.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
+      "source": "/wiki/first-witness-sacred-fork.html",
+      "target": "/wiki/the-first-witness.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/first-witness-sacred-fork.html",
+      "target": "/wiki/the-hard-fork-rockers.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/first-witness-source-register.html",
+      "target": "/wiki/crypto-moonboys.html",
+      "score": 83,
+      "weight": 0.83
+    },
+    {
+      "source": "/wiki/first-witness-source-register.html",
+      "target": "/wiki/graffpunks.html",
+      "score": 78,
+      "weight": 0.78
+    },
+    {
+      "source": "/wiki/first-witness-source-register.html",
+      "target": "/wiki/gkniftyheads.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/first-witness-source-register.html",
+      "target": "/wiki/block-topia.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/first-witness-source-register.html",
+      "target": "/wiki/null-the-prophet.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/first-witness-street-kingdoms-reading.html",
+      "target": "/wiki/pmsl.html",
+      "score": 70,
+      "weight": 0.7
+    },
+    {
+      "source": "/wiki/first-witness-street-kingdoms-reading.html",
+      "target": "/wiki/the-first-witness.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/first-witness-street-kingdoms-reading.html",
+      "target": "/wiki/hodl-wars.html",
+      "score": 65,
+      "weight": 0.65
+    },
+    {
+      "source": "/wiki/first-witness-street-kingdoms-reading.html",
+      "target": "/wiki/hard-fork-games.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-street-kingdoms-reading.html",
+      "target": "/wiki/midevilpunks.html",
+      "score": 63,
+      "weight": 0.63
+    },
+    {
+      "source": "/wiki/first-witness-triple-fork-chainfire.html",
+      "target": "/wiki/first-witness-book-6-the-fork.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/first-witness-triple-fork-chainfire.html",
+      "target": "/wiki/first-witness-long-transmission.html",
+      "score": 58,
+      "weight": 0.58
+    },
+    {
+      "source": "/wiki/first-witness-triple-fork-chainfire.html",
+      "target": "/wiki/first-witness-book-2-the-common-blood.html",
+      "score": 56,
+      "weight": 0.56
+    },
+    {
+      "source": "/wiki/first-witness-triple-fork-chainfire.html",
+      "target": "/wiki/first-witness-book-3-the-keeper.html",
+      "score": 56,
+      "weight": 0.56
+    },
+    {
+      "source": "/wiki/first-witness-triple-fork-chainfire.html",
+      "target": "/wiki/first-witness-book-4-the-wall.html",
+      "score": 56,
+      "weight": 0.56
+    },
+    {
+      "source": "/wiki/first-witness-world-chain-error.html",
+      "target": "/wiki/first-witness-book-5-the-chain.html",
+      "score": 64,
+      "weight": 0.64
+    },
+    {
+      "source": "/wiki/first-witness-world-chain-error.html",
+      "target": "/wiki/first-witness-book-2-the-common-blood.html",
+      "score": 56,
+      "weight": 0.56
+    },
+    {
+      "source": "/wiki/first-witness-world-chain-error.html",
+      "target": "/wiki/first-witness-book-3-the-keeper.html",
+      "score": 56,
+      "weight": 0.56
+    },
+    {
+      "source": "/wiki/first-witness-world-chain-error.html",
+      "target": "/wiki/first-witness-book-4-the-wall.html",
+      "score": 56,
+      "weight": 0.56
+    },
+    {
+      "source": "/wiki/first-witness-world-chain-error.html",
+      "target": "/wiki/first-witness-book-6-the-fork.html",
+      "score": 56,
+      "weight": 0.56
     },
     {
       "source": "/wiki/fomo-plague.html",
@@ -4132,6 +5120,12 @@
     },
     {
       "source": "/wiki/forkborn-collective.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 86,
+      "weight": 0.86
+    },
+    {
+      "source": "/wiki/forkborn-collective.html",
       "target": "/wiki/phygital-prints.html",
       "score": 81,
       "weight": 0.81
@@ -4141,12 +5135,6 @@
       "target": "/wiki/web3.html",
       "score": 80,
       "weight": 0.8
-    },
-    {
-      "source": "/wiki/forkborn-collective.html",
-      "target": "/wiki/block-node-defenders.html",
-      "score": 78,
-      "weight": 0.78
     },
     {
       "source": "/wiki/forklord-you.html",
@@ -4216,6 +5204,12 @@
     },
     {
       "source": "/wiki/games4punks-telegram.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/games4punks-telegram.html",
       "target": "/wiki/sneakar.html",
       "score": 75,
       "weight": 0.75
@@ -4233,16 +5227,16 @@
       "weight": 0.73
     },
     {
-      "source": "/wiki/games4punks-telegram.html",
-      "target": "/wiki/exchanges.html",
-      "score": 73,
-      "weight": 0.73
-    },
-    {
       "source": "/wiki/gang-signs-card-game.html",
       "target": "/wiki/pmsl.html",
       "score": 92,
       "weight": 0.92
+    },
+    {
+      "source": "/wiki/gang-signs-card-game.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 86,
+      "weight": 0.86
     },
     {
       "source": "/wiki/gang-signs-card-game.html",
@@ -4259,12 +5253,6 @@
     {
       "source": "/wiki/gang-signs-card-game.html",
       "target": "/wiki/forkborn-collective.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/gang-signs-card-game.html",
-      "target": "/wiki/phygital-prints.html",
       "score": 78,
       "weight": 0.78
     },
@@ -4396,15 +5384,15 @@
     },
     {
       "source": "/wiki/gk.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 84,
-      "weight": 0.84
+      "target": "/wiki/triple-fork-event.html",
+      "score": 86,
+      "weight": 0.86
     },
     {
       "source": "/wiki/gk.html",
-      "target": "/wiki/triple-fork-event.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/games4punks-telegram.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/gk.html",
@@ -8788,13 +9776,13 @@
     },
     {
       "source": "/wiki/graffiti-kings.html",
-      "target": "/wiki/bone-idol-ink.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/triple-fork-event.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/graffiti-kings.html",
-      "target": "/wiki/midevilpunks.html",
+      "target": "/wiki/bone-idol-ink.html",
       "score": 75,
       "weight": 0.75
     },
@@ -8848,15 +9836,15 @@
     },
     {
       "source": "/wiki/graffiti-queens-in-decentraland.html",
-      "target": "/wiki/midevilpunks.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/triple-fork-event.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/graffiti-queens-in-decentraland.html",
-      "target": "/wiki/hodl-wars.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/midevilpunks.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/graffpunks-24-7-radio.html",
@@ -9052,6 +10040,12 @@
     },
     {
       "source": "/wiki/hard-fork-games.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 85,
+      "weight": 0.85
+    },
+    {
+      "source": "/wiki/hard-fork-games.html",
       "target": "/wiki/midevilpunks.html",
       "score": 81,
       "weight": 0.81
@@ -9061,12 +10055,6 @@
       "target": "/wiki/stikfamwars.html",
       "score": 79,
       "weight": 0.79
-    },
-    {
-      "source": "/wiki/hard-fork-games.html",
-      "target": "/wiki/the-high-hats.html",
-      "score": 77,
-      "weight": 0.77
     },
     {
       "source": "/wiki/harrison-rift.html",
@@ -9082,6 +10070,12 @@
     },
     {
       "source": "/wiki/harrison-rift.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/harrison-rift.html",
       "target": "/wiki/sneakar.html",
       "score": 75,
       "weight": 0.75
@@ -9089,12 +10083,6 @@
     {
       "source": "/wiki/harrison-rift.html",
       "target": "/wiki/ethereum.html",
-      "score": 74,
-      "weight": 0.74
-    },
-    {
-      "source": "/wiki/harrison-rift.html",
-      "target": "/wiki/nifty-crowns.html",
       "score": 74,
       "weight": 0.74
     },
@@ -9328,6 +10316,12 @@
     },
     {
       "source": "/wiki/jillian-godsil.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/jillian-godsil.html",
       "target": "/wiki/sneakar.html",
       "score": 78,
       "weight": 0.78
@@ -9337,12 +10331,6 @@
       "target": "/wiki/web3.html",
       "score": 77,
       "weight": 0.77
-    },
-    {
-      "source": "/wiki/jillian-godsil.html",
-      "target": "/wiki/battlemech-blast.html",
-      "score": 76,
-      "weight": 0.76
     },
     {
       "source": "/wiki/jodie-zoom-2000.html",
@@ -9448,6 +10436,12 @@
     },
     {
       "source": "/wiki/lfgk.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 83,
+      "weight": 0.83
+    },
+    {
+      "source": "/wiki/lfgk.html",
       "target": "/wiki/delicious-again-pete.html",
       "score": 81,
       "weight": 0.81
@@ -9455,12 +10449,6 @@
     {
       "source": "/wiki/lfgk.html",
       "target": "/wiki/midevilpunks.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/lfgk.html",
-      "target": "/wiki/seeding-rights.html",
       "score": 81,
       "weight": 0.81
     },
@@ -9538,6 +10526,12 @@
     },
     {
       "source": "/wiki/maidstone-base.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 83,
+      "weight": 0.83
+    },
+    {
+      "source": "/wiki/maidstone-base.html",
       "target": "/wiki/delicious-again-pete.html",
       "score": 81,
       "weight": 0.81
@@ -9545,12 +10539,6 @@
     {
       "source": "/wiki/maidstone-base.html",
       "target": "/wiki/seeding-rights.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/maidstone-base.html",
-      "target": "/wiki/street-kingdoms.html",
       "score": 81,
       "weight": 0.81
     },
@@ -9598,6 +10586,12 @@
     },
     {
       "source": "/wiki/metaverse-battles.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 86,
+      "weight": 0.86
+    },
+    {
+      "source": "/wiki/metaverse-battles.html",
       "target": "/wiki/games4punks-telegram.html",
       "score": 84,
       "weight": 0.84
@@ -9605,12 +10599,6 @@
     {
       "source": "/wiki/metaverse-battles.html",
       "target": "/wiki/phygital-prints.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/metaverse-battles.html",
-      "target": "/wiki/triple-fork-event.html",
       "score": 78,
       "weight": 0.78
     },
@@ -9808,6 +10796,12 @@
     },
     {
       "source": "/wiki/neftyblocks.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/neftyblocks.html",
       "target": "/wiki/sneakar.html",
       "score": 78,
       "weight": 0.78
@@ -9817,12 +10811,6 @@
       "target": "/wiki/web3.html",
       "score": 77,
       "weight": 0.77
-    },
-    {
-      "source": "/wiki/neftyblocks.html",
-      "target": "/wiki/battlemech-blast.html",
-      "score": 76,
-      "weight": 0.76
     },
     {
       "source": "/wiki/nfthive.html",
@@ -9838,6 +10826,12 @@
     },
     {
       "source": "/wiki/nfthive.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/nfthive.html",
       "target": "/wiki/sneakar.html",
       "score": 78,
       "weight": 0.78
@@ -9845,12 +10839,6 @@
     {
       "source": "/wiki/nfthive.html",
       "target": "/wiki/alcor-exchange.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/nfthive.html",
-      "target": "/wiki/web3.html",
       "score": 77,
       "weight": 0.77
     },
@@ -9928,6 +10916,12 @@
     },
     {
       "source": "/wiki/nifty-crowns.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/nifty-crowns.html",
       "target": "/wiki/nifty-wizards.html",
       "score": 79,
       "weight": 0.79
@@ -9937,12 +10931,6 @@
       "target": "/wiki/sneakar.html",
       "score": 75,
       "weight": 0.75
-    },
-    {
-      "source": "/wiki/nifty-crowns.html",
-      "target": "/wiki/ethereum.html",
-      "score": 74,
-      "weight": 0.74
     },
     {
       "source": "/wiki/nifty-wizards.html",
@@ -9964,15 +10952,15 @@
     },
     {
       "source": "/wiki/nifty-wizards.html",
-      "target": "/wiki/sneakar.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/triple-fork-event.html",
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/nifty-wizards.html",
-      "target": "/wiki/alcor-exchange.html",
-      "score": 74,
-      "weight": 0.74
+      "target": "/wiki/sneakar.html",
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/noballgamess-nft-collection.html",
@@ -9982,15 +10970,27 @@
     },
     {
       "source": "/wiki/noballgamess-nft-collection.html",
-      "target": "/wiki/hodlmoonboys-nft-collection.html",
-      "score": 42,
-      "weight": 0.42
+      "target": "/wiki/first-witness-book-2-the-common-blood.html",
+      "score": 47,
+      "weight": 0.47
     },
     {
       "source": "/wiki/noballgamess-nft-collection.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 41,
-      "weight": 0.41
+      "target": "/wiki/first-witness-book-3-the-keeper.html",
+      "score": 47,
+      "weight": 0.47
+    },
+    {
+      "source": "/wiki/noballgamess-nft-collection.html",
+      "target": "/wiki/first-witness-book-4-the-wall.html",
+      "score": 47,
+      "weight": 0.47
+    },
+    {
+      "source": "/wiki/noballgamess-nft-collection.html",
+      "target": "/wiki/first-witness-book-5-the-chain.html",
+      "score": 47,
+      "weight": 0.47
     },
     {
       "source": "/wiki/null-the-prophet.html",
@@ -10090,6 +11090,12 @@
     },
     {
       "source": "/wiki/phygital-prints.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 89,
+      "weight": 0.89
+    },
+    {
+      "source": "/wiki/phygital-prints.html",
       "target": "/wiki/games4punks-telegram.html",
       "score": 87,
       "weight": 0.87
@@ -10097,12 +11103,6 @@
     {
       "source": "/wiki/phygital-prints.html",
       "target": "/wiki/forkborn-collective.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/phygital-prints.html",
-      "target": "/wiki/triple-fork-event.html",
       "score": 81,
       "weight": 0.81
     },
@@ -10126,6 +11126,12 @@
     },
     {
       "source": "/wiki/pixel-journey.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/pixel-journey.html",
       "target": "/wiki/atomichub.html",
       "score": 76,
       "weight": 0.76
@@ -10135,12 +11141,6 @@
       "target": "/wiki/sneakar.html",
       "score": 75,
       "weight": 0.75
-    },
-    {
-      "source": "/wiki/pixel-journey.html",
-      "target": "/wiki/alcor-exchange.html",
-      "score": 74,
-      "weight": 0.74
     },
     {
       "source": "/wiki/pixil-mini.html",
@@ -10180,6 +11180,12 @@
     },
     {
       "source": "/wiki/playable-nft-murals.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 83,
+      "weight": 0.83
+    },
+    {
+      "source": "/wiki/playable-nft-murals.html",
       "target": "/wiki/games4punks-telegram.html",
       "score": 80,
       "weight": 0.8
@@ -10193,12 +11199,6 @@
     {
       "source": "/wiki/playable-nft-murals.html",
       "target": "/wiki/phygital-prints.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/playable-nft-murals.html",
-      "target": "/wiki/triple-fork-event.html",
       "score": 75,
       "weight": 0.75
     },
@@ -10240,6 +11240,12 @@
     },
     {
       "source": "/wiki/pmsl.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 77,
+      "weight": 0.77
+    },
+    {
+      "source": "/wiki/pmsl.html",
       "target": "/wiki/sneakar.html",
       "score": 75,
       "weight": 0.75
@@ -10253,12 +11259,6 @@
     {
       "source": "/wiki/pmsl.html",
       "target": "/wiki/battlemech-blast.html",
-      "score": 73,
-      "weight": 0.73
-    },
-    {
-      "source": "/wiki/pmsl.html",
-      "target": "/wiki/exchanges.html",
       "score": 73,
       "weight": 0.73
     },
@@ -10348,9 +11348,9 @@
     },
     {
       "source": "/wiki/queen-sarah-p-fly.html",
-      "target": "/wiki/hard-fork-games.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/triple-fork-event.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/quell.html",
@@ -10486,6 +11486,12 @@
     },
     {
       "source": "/wiki/rust2riches.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/rust2riches.html",
       "target": "/wiki/sneakar.html",
       "score": 78,
       "weight": 0.78
@@ -10495,12 +11501,6 @@
       "target": "/wiki/web3.html",
       "score": 77,
       "weight": 0.77
-    },
-    {
-      "source": "/wiki/rust2riches.html",
-      "target": "/wiki/battlemech-blast.html",
-      "score": 76,
-      "weight": 0.76
     },
     {
       "source": "/wiki/sacred-chain.html",
@@ -10636,6 +11636,12 @@
     },
     {
       "source": "/wiki/seeding-rights.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 83,
+      "weight": 0.83
+    },
+    {
+      "source": "/wiki/seeding-rights.html",
       "target": "/wiki/delicious-again-pete.html",
       "score": 81,
       "weight": 0.81
@@ -10645,12 +11651,6 @@
       "target": "/wiki/street-kingdoms.html",
       "score": 81,
       "weight": 0.81
-    },
-    {
-      "source": "/wiki/seeding-rights.html",
-      "target": "/wiki/lfgk.html",
-      "score": 80,
-      "weight": 0.8
     },
     {
       "source": "/wiki/sister-halcyon.html",
@@ -10696,6 +11696,12 @@
     },
     {
       "source": "/wiki/sneakar.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/sneakar.html",
       "target": "/wiki/web3.html",
       "score": 77,
       "weight": 0.77
@@ -10703,12 +11709,6 @@
     {
       "source": "/wiki/sneakar.html",
       "target": "/wiki/battlemech-blast.html",
-      "score": 76,
-      "weight": 0.76
-    },
-    {
-      "source": "/wiki/sneakar.html",
-      "target": "/wiki/exchanges.html",
       "score": 76,
       "weight": 0.76
     },
@@ -10786,6 +11786,12 @@
     },
     {
       "source": "/wiki/spirit-borns.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 83,
+      "weight": 0.83
+    },
+    {
+      "source": "/wiki/spirit-borns.html",
       "target": "/wiki/delicious-again-pete.html",
       "score": 78,
       "weight": 0.78
@@ -10793,12 +11799,6 @@
     {
       "source": "/wiki/spirit-borns.html",
       "target": "/wiki/forkborn-collective.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/spirit-borns.html",
-      "target": "/wiki/phygital-prints.html",
       "score": 78,
       "weight": 0.78
     },
@@ -10846,6 +11846,12 @@
     },
     {
       "source": "/wiki/squeaky-pinks-enforcers.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 83,
+      "weight": 0.83
+    },
+    {
+      "source": "/wiki/squeaky-pinks-enforcers.html",
       "target": "/wiki/metaverse-battles.html",
       "score": 76,
       "weight": 0.76
@@ -10853,12 +11859,6 @@
     {
       "source": "/wiki/squeaky-pinks-enforcers.html",
       "target": "/wiki/block-node-defenders.html",
-      "score": 75,
-      "weight": 0.75
-    },
-    {
-      "source": "/wiki/squeaky-pinks-enforcers.html",
-      "target": "/wiki/bone-idol-ink.html",
       "score": 75,
       "weight": 0.75
     },
@@ -10918,9 +11918,9 @@
     },
     {
       "source": "/wiki/stikfamwars.html",
-      "target": "/wiki/the-high-hats.html",
-      "score": 77,
-      "weight": 0.77
+      "target": "/wiki/sacred-chain.html",
+      "score": 78,
+      "weight": 0.78
     },
     {
       "source": "/wiki/storm-struggle.html",
@@ -10936,6 +11936,12 @@
     },
     {
       "source": "/wiki/storm-struggle.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/storm-struggle.html",
       "target": "/wiki/sneakar.html",
       "score": 75,
       "weight": 0.75
@@ -10943,12 +11949,6 @@
     {
       "source": "/wiki/storm-struggle.html",
       "target": "/wiki/ethereum.html",
-      "score": 74,
-      "weight": 0.74
-    },
-    {
-      "source": "/wiki/storm-struggle.html",
-      "target": "/wiki/nifty-crowns.html",
       "score": 74,
       "weight": 0.74
     },
@@ -10966,6 +11966,12 @@
     },
     {
       "source": "/wiki/street-kingdoms.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 83,
+      "weight": 0.83
+    },
+    {
+      "source": "/wiki/street-kingdoms.html",
       "target": "/wiki/delicious-again-pete.html",
       "score": 81,
       "weight": 0.81
@@ -10975,12 +11981,6 @@
       "target": "/wiki/seeding-rights.html",
       "score": 81,
       "weight": 0.81
-    },
-    {
-      "source": "/wiki/street-kingdoms.html",
-      "target": "/wiki/lfgk.html",
-      "score": 80,
-      "weight": 0.8
     },
     {
       "source": "/wiki/swap-nefty.html",
@@ -11026,6 +12026,12 @@
     },
     {
       "source": "/wiki/tacoswap.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/tacoswap.html",
       "target": "/wiki/sneakar.html",
       "score": 78,
       "weight": 0.78
@@ -11035,12 +12041,6 @@
       "target": "/wiki/web3.html",
       "score": 77,
       "weight": 0.77
-    },
-    {
-      "source": "/wiki/tacoswap.html",
-      "target": "/wiki/battlemech-blast.html",
-      "score": 76,
-      "weight": 0.76
     },
     {
       "source": "/wiki/tagzcoin.html",
@@ -11056,6 +12056,12 @@
     },
     {
       "source": "/wiki/tagzcoin.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/tagzcoin.html",
       "target": "/wiki/sneakar.html",
       "score": 78,
       "weight": 0.78
@@ -11065,12 +12071,6 @@
       "target": "/wiki/web3.html",
       "score": 77,
       "weight": 0.77
-    },
-    {
-      "source": "/wiki/tagzcoin.html",
-      "target": "/wiki/battlemech-blast.html",
-      "score": 76,
-      "weight": 0.76
     },
     {
       "source": "/wiki/the-allcity-bulls.html",
@@ -11464,33 +12464,33 @@
     },
     {
       "source": "/wiki/the-first-witness.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/the-first-witness.html",
       "target": "/wiki/hodl-wars.html",
       "score": 74,
       "weight": 0.74
     },
     {
       "source": "/wiki/the-first-witness.html",
-      "target": "/wiki/hard-fork-games.html",
+      "target": "/wiki/first-witness-glossary.html",
       "score": 73,
       "weight": 0.73
     },
     {
       "source": "/wiki/the-first-witness.html",
-      "target": "/wiki/pmsl.html",
-      "score": 70,
-      "weight": 0.7
+      "target": "/wiki/first-witness-master-chronology.html",
+      "score": 73,
+      "weight": 0.73
     },
     {
       "source": "/wiki/the-first-witness.html",
-      "target": "/wiki/midevilpunks.html",
-      "score": 69,
-      "weight": 0.69
-    },
-    {
-      "source": "/wiki/the-first-witness.html",
-      "target": "/wiki/stikfamwars.html",
-      "score": 67,
-      "weight": 0.67
+      "target": "/wiki/hard-fork-games.html",
+      "score": 73,
+      "weight": 0.73
     },
     {
       "source": "/wiki/the-gasless-ghosts.html",
@@ -11560,6 +12560,12 @@
     },
     {
       "source": "/wiki/the-hard-fork-rockers.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 88,
+      "weight": 0.88
+    },
+    {
+      "source": "/wiki/the-hard-fork-rockers.html",
       "target": "/wiki/the-chain-scribes.html",
       "score": 87,
       "weight": 0.87
@@ -11573,12 +12579,6 @@
     {
       "source": "/wiki/the-hard-fork-rockers.html",
       "target": "/wiki/the-nomad-bears.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/the-hard-fork-rockers.html",
-      "target": "/wiki/the-rugpull-miners.html",
       "score": 81,
       "weight": 0.81
     },
@@ -11602,15 +12602,15 @@
     },
     {
       "source": "/wiki/the-high-hats.html",
-      "target": "/wiki/pmsl.html",
-      "score": 79,
-      "weight": 0.79
+      "target": "/wiki/sacred-chain.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/the-high-hats.html",
-      "target": "/wiki/midevilpunks.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/pmsl.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/the-information-mercenaries.html",
@@ -12286,6 +13286,12 @@
     },
     {
       "source": "/wiki/wax-pepe.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 73,
+      "weight": 0.73
+    },
+    {
+      "source": "/wiki/wax-pepe.html",
       "target": "/wiki/midevilpunks.html",
       "score": 72,
       "weight": 0.72
@@ -12295,12 +13301,6 @@
       "target": "/wiki/wax-nft-marketplaces.html",
       "score": 72,
       "weight": 0.72
-    },
-    {
-      "source": "/wiki/wax-pepe.html",
-      "target": "/wiki/hodl-wars.html",
-      "score": 71,
-      "weight": 0.71
     },
     {
       "source": "/wiki/waxp-exchange.html",
@@ -12436,6 +13436,12 @@
     },
     {
       "source": "/wiki/wuffi.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/wuffi.html",
       "target": "/wiki/sneakar.html",
       "score": 78,
       "weight": 0.78
@@ -12445,12 +13451,6 @@
       "target": "/wiki/web3.html",
       "score": 77,
       "weight": 0.77
-    },
-    {
-      "source": "/wiki/wuffi.html",
-      "target": "/wiki/atomichub.html",
-      "score": 76,
-      "weight": 0.76
     },
     {
       "source": "/wiki/xrp-kids.html",
@@ -12496,6 +13496,12 @@
     },
     {
       "source": "/wiki/xrp-ledger.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/xrp-ledger.html",
       "target": "/wiki/sneakar.html",
       "score": 75,
       "weight": 0.75
@@ -12503,12 +13509,6 @@
     {
       "source": "/wiki/xrp-ledger.html",
       "target": "/wiki/ethereum.html",
-      "score": 74,
-      "weight": 0.74
-    },
-    {
-      "source": "/wiki/xrp-ledger.html",
-      "target": "/wiki/nifty-crowns.html",
       "score": 74,
       "weight": 0.74
     }

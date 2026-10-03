@@ -969,6 +969,495 @@
     "brand": null
   },
   {
+    "entity_id": "first_witness_bitcoin_witness",
+    "canonical_title": "The Bitcoin Witness",
+    "canonical_url": "/wiki/first-witness-bitcoin-witness.html",
+    "category": "core",
+    "aliases": [
+      "Bitcoin Witness",
+      "first witness bitcoin witness"
+    ],
+    "tags": [
+      "bitcoin",
+      "witness"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-bitcoin-witness.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_block_topia_reading",
+    "canonical_title": "Block Topia and the Controlled Reading",
+    "canonical_url": "/wiki/first-witness-block-topia-reading.html",
+    "category": "factions",
+    "aliases": [
+      "block topia controlled reading",
+      "first witness block topia reading"
+    ],
+    "tags": [
+      "block",
+      "topia",
+      "controlled",
+      "reading"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-block-topia-reading.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_book_1_the_first_witness",
+    "canonical_title": "Book I — The First Witness",
+    "canonical_url": "/wiki/first-witness-book-1-the-first-witness.html",
+    "category": "core",
+    "aliases": [
+      "book first witness",
+      "first witness book 1 the first witness"
+    ],
+    "tags": [
+      "book",
+      "first",
+      "witness"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-book-1-the-first-witness.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_book_2_the_common_blood",
+    "canonical_title": "Book II — The Common Blood",
+    "canonical_url": "/wiki/first-witness-book-2-the-common-blood.html",
+    "category": "core",
+    "aliases": [
+      "book ii common blood",
+      "first witness book 2 the common blood"
+    ],
+    "tags": [
+      "book",
+      "ii",
+      "common",
+      "blood"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-book-2-the-common-blood.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_book_3_the_keeper",
+    "canonical_title": "Book III — The Keeper",
+    "canonical_url": "/wiki/first-witness-book-3-the-keeper.html",
+    "category": "core",
+    "aliases": [
+      "book iii keeper",
+      "first witness book 3 the keeper"
+    ],
+    "tags": [
+      "book",
+      "iii",
+      "keeper"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-book-3-the-keeper.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_book_4_the_wall",
+    "canonical_title": "Book IV — The Wall",
+    "canonical_url": "/wiki/first-witness-book-4-the-wall.html",
+    "category": "core",
+    "aliases": [
+      "book iv wall",
+      "first witness book 4 the wall"
+    ],
+    "tags": [
+      "book",
+      "iv",
+      "wall"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-book-4-the-wall.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_book_5_the_chain",
+    "canonical_title": "Book V — The Chain",
+    "canonical_url": "/wiki/first-witness-book-5-the-chain.html",
+    "category": "core",
+    "aliases": [
+      "book chain",
+      "first witness book 5 the chain"
+    ],
+    "tags": [
+      "book",
+      "chain"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-book-5-the-chain.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_book_6_the_fork",
+    "canonical_title": "Book VI — The Fork",
+    "canonical_url": "/wiki/first-witness-book-6-the-fork.html",
+    "category": "core",
+    "aliases": [
+      "book vi fork",
+      "first witness book 6 the fork"
+    ],
+    "tags": [
+      "book",
+      "vi",
+      "fork"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-book-6-the-fork.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_book_7_the_hold",
+    "canonical_title": "Book VII — The Hold",
+    "canonical_url": "/wiki/first-witness-book-7-the-hold.html",
+    "category": "core",
+    "aliases": [
+      "book vii hold",
+      "first witness book 7 the hold"
+    ],
+    "tags": [
+      "book",
+      "vii",
+      "hold"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-book-7-the-hold.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_book_8_the_fire",
+    "canonical_title": "Book VIII — The Fire",
+    "canonical_url": "/wiki/first-witness-book-8-the-fire.html",
+    "category": "core",
+    "aliases": [
+      "book viii fire",
+      "first witness book 8 the fire"
+    ],
+    "tags": [
+      "book",
+      "viii",
+      "fire"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-book-8-the-fire.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_book_9_the_unwritten_block",
+    "canonical_title": "Book IX — The Unwritten Block",
+    "canonical_url": "/wiki/first-witness-book-9-the-unwritten-block.html",
+    "category": "core",
+    "aliases": [
+      "book ix unwritten block",
+      "first witness book 9 the unwritten block"
+    ],
+    "tags": [
+      "book",
+      "ix",
+      "unwritten",
+      "block"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-book-9-the-unwritten-block.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_child_of_fire",
+    "canonical_title": "The Child of Fire Interpretation",
+    "canonical_url": "/wiki/first-witness-child-of-fire.html",
+    "category": "factions",
+    "aliases": [
+      "Child of Fire Interpretation",
+      "child fire interpretation",
+      "first witness child of fire"
+    ],
+    "tags": [
+      "child",
+      "fire",
+      "interpretation"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-child-of-fire.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_concordance",
+    "canonical_title": "Concordance of Broken Records",
+    "canonical_url": "/wiki/first-witness-concordance.html",
+    "category": "factions",
+    "aliases": [
+      "concordance broken records",
+      "first witness concordance"
+    ],
+    "tags": [
+      "concordance",
+      "broken",
+      "records"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-concordance.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_faction_commentaries",
+    "canonical_title": "Faction Commentaries on the First Witness",
+    "canonical_url": "/wiki/first-witness-faction-commentaries.html",
+    "category": "factions",
+    "aliases": [
+      "faction commentaries first witness",
+      "first witness faction commentaries"
+    ],
+    "tags": [
+      "faction",
+      "commentaries",
+      "first",
+      "witness"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-faction-commentaries.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_forty_paths",
+    "canonical_title": "The Forty Paths",
+    "canonical_url": "/wiki/first-witness-forty-paths.html",
+    "category": "factions",
+    "aliases": [
+      "Forty Paths",
+      "first witness forty paths"
+    ],
+    "tags": [
+      "forty",
+      "paths"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-forty-paths.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_glossary",
+    "canonical_title": "First Witness Glossary",
+    "canonical_url": "/wiki/first-witness-glossary.html",
+    "category": "factions",
+    "aliases": [],
+    "tags": [
+      "first",
+      "witness",
+      "glossary"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-glossary.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_great_concord_2030",
+    "canonical_title": "The Great Concord of 2030",
+    "canonical_url": "/wiki/first-witness-great-concord-2030.html",
+    "category": "factions",
+    "aliases": [
+      "Great Concord of 2030",
+      "first witness great concord 2030",
+      "great concord 2030"
+    ],
+    "tags": [
+      "great",
+      "concord",
+      "2030"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-great-concord-2030.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_hodl_doctrine",
+    "canonical_title": "The HODL Doctrine",
+    "canonical_url": "/wiki/first-witness-hodl-doctrine.html",
+    "category": "factions",
+    "aliases": [
+      "HODL Doctrine",
+      "first witness hodl doctrine"
+    ],
+    "tags": [
+      "hodl",
+      "doctrine"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-hodl-doctrine.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_long_transmission",
+    "canonical_title": "The Long Transmission",
+    "canonical_url": "/wiki/first-witness-long-transmission.html",
+    "category": "core",
+    "aliases": [
+      "Long Transmission",
+      "first witness long transmission"
+    ],
+    "tags": [
+      "long",
+      "transmission"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-long-transmission.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_master_chronology",
+    "canonical_title": "First Witness Master Chronology",
+    "canonical_url": "/wiki/first-witness-master-chronology.html",
+    "category": "factions",
+    "aliases": [],
+    "tags": [
+      "first",
+      "witness",
+      "master",
+      "chronology"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-master-chronology.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_null_erasure",
+    "canonical_title": "NULL and the Theology of Erasure",
+    "canonical_url": "/wiki/first-witness-null-erasure.html",
+    "category": "factions",
+    "aliases": [
+      "first witness null erasure",
+      "null theology erasure"
+    ],
+    "tags": [
+      "null",
+      "theology",
+      "erasure"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-null-erasure.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_sacred_fork",
+    "canonical_title": "The Sacred Fork",
+    "canonical_url": "/wiki/first-witness-sacred-fork.html",
+    "category": "factions",
+    "aliases": [
+      "Sacred Fork",
+      "first witness sacred fork"
+    ],
+    "tags": [
+      "sacred",
+      "fork"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-sacred-fork.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_source_register",
+    "canonical_title": "First Witness Source Register",
+    "canonical_url": "/wiki/first-witness-source-register.html",
+    "category": "characters",
+    "aliases": [],
+    "tags": [
+      "first",
+      "witness",
+      "source",
+      "register"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-source-register.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_street_kingdoms_reading",
+    "canonical_title": "Street Kingdoms and the Living Reading",
+    "canonical_url": "/wiki/first-witness-street-kingdoms-reading.html",
+    "category": "factions",
+    "aliases": [
+      "first witness street kingdoms reading",
+      "street kingdoms living reading"
+    ],
+    "tags": [
+      "street",
+      "kingdoms",
+      "living",
+      "reading"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-street-kingdoms-reading.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_triple_fork_chainfire",
+    "canonical_title": "The Triple Fork and Chainfire",
+    "canonical_url": "/wiki/first-witness-triple-fork-chainfire.html",
+    "category": "core",
+    "aliases": [
+      "Triple Fork and Chainfire",
+      "first witness triple fork chainfire",
+      "triple fork chainfire"
+    ],
+    "tags": [
+      "triple",
+      "fork",
+      "chainfire"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-triple-fork-chainfire.html"
+    ],
+    "brand": null
+  },
+  {
+    "entity_id": "first_witness_world_chain_error",
+    "canonical_title": "The World Chain Error",
+    "canonical_url": "/wiki/first-witness-world-chain-error.html",
+    "category": "core",
+    "aliases": [
+      "World Chain Error",
+      "first witness world chain error"
+    ],
+    "tags": [
+      "world",
+      "chain",
+      "error"
+    ],
+    "source_urls": [
+      "/wiki/first-witness-world-chain-error.html"
+    ],
+    "brand": null
+  },
+  {
     "entity_id": "fomo_plague",
     "canonical_title": "The FOMO Plague",
     "canonical_url": "/wiki/fomo-plague.html",
