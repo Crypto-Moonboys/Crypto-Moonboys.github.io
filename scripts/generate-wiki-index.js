@@ -22,6 +22,160 @@ const LINK_GRAPH_PATH = path.join(ROOT, 'js', 'link-graph.json');
 const ROOT_PAGES_TO_INDEX = getRootPagePaths();
 const APPROVED_INDEX_CATEGORIES = new Set(Object.keys(CONFIG.CATEGORY_PRIORITY));
 
+const FIRST_WITNESS_COMMON_KEYWORDS = Object.freeze([
+  'first witness',
+  'first witness bible',
+  'crypto moonboys bible',
+  'graffiti kings bible',
+  'GK bible',
+  'covenant',
+  'scripture',
+  'sacred text',
+  'Year 3008',
+  '2030 Concord',
+  'no single keeper',
+  'Crypto Moonboys lore',
+  'Graffiti Kings lore',
+  'religion',
+  'religious philosophy',
+  'philosophy',
+  'ethics',
+  'moral philosophy',
+  'spirituality',
+  'faith tradition',
+  'theology',
+  'belief system'
+]);
+
+const FIRST_WITNESS_PAGE_KEYWORDS = Object.freeze({
+  'the-first-witness': [
+    'First Witness religion',
+    'First Witness philosophy',
+    'Crypto Moonboys religion',
+    'Graffiti Kings religion',
+    'GK religion'
+  ],
+  'first-witness-bitcoin-witness': [
+    'Bitcoin witness',
+    'Bitcoin provenance',
+    'minted on Bitcoin',
+    'Bitcoin scripture',
+    'Bitcoin bible',
+    'Bitcoin provenance',
+    'First Witness mint'
+  ],
+  'first-witness-sacred-fork': [
+    'Sacred Chain',
+    'Aether-Chain',
+    'Sacred Chain origin',
+    'Aether-Chain origin',
+    'Sacred Fork',
+    'Sacred Chain scripture'
+  ],
+  'first-witness-triple-fork-chainfire': [
+    '2880 Triple Fork',
+    'Chainfire',
+    'Great Unravelling',
+    'World Chain collapse'
+  ],
+  'first-witness-master-chronology': [
+    'First Witness timeline',
+    '2030 2880 2930 3008',
+    'Crypto Moonboys chronology'
+  ],
+  'first-witness-forty-paths': [
+    'Forty Paths',
+    '40 factions',
+    '40 GK factions',
+    'Graffiti Kings factions',
+    'Forty Paths religion'
+  ],
+  'first-witness-faction-commentaries': [
+    'Forty Paths',
+    '40 GK factions',
+    '40 faction interpretations',
+    'GK faction bible commentary',
+    'faction theology'
+  ],
+  'first-witness-hodl-doctrine': [
+    'HODL WARS',
+    'HODL Warriors',
+    'HODL X Warriors',
+    'HODL doctrine',
+    'Hold doctrine'
+  ],
+  'first-witness-child-of-fire': [
+    'HODL WARS',
+    '40 GK factions',
+    'Alfie Blaze',
+    'Bitcoin KiD',
+    'Bitcoin Kid',
+    'Alfie Blaze prophecy',
+    'Bitcoin Kid prophecy',
+    'Child of Fire prophecy',
+    'messiah interpretation'
+  ],
+  'first-witness-null-erasure': [
+    'HODL WARS',
+    'NULL',
+    'NULL THE PROPHET',
+    'Antichain',
+    'NULL erasure',
+    'erasure theology'
+  ],
+  'first-witness-block-topia-reading': [
+    'Block Topia',
+    'Block Topia religion',
+    'Block Topia theology',
+    'Queen Sarah P-fly',
+    'True Bitcoin Fork religion'
+  ],
+  'first-witness-street-kingdoms-reading': [
+    'Street Kingdoms',
+    'Sacred Chain',
+    'Street Kingdoms religion',
+    'GraffPUNKS religion',
+    'Paint Path',
+    'wall memory'
+  ],
+  'first-witness-ai-synthetic-minds': [
+    'AI religion',
+    'synthetic minds',
+    'AI theology',
+    'machine consciousness'
+  ]
+});
+
+function isFirstWitnessSlug(slug) {
+  const normalized = String(slug || '').toLowerCase().trim();
+  return normalized === 'the-first-witness' || normalized.startsWith('first-witness-');
+}
+
+function getFirstWitnessKeywords(slug) {
+  if (!isFirstWitnessSlug(slug)) return [];
+  return [
+    ...FIRST_WITNESS_COMMON_KEYWORDS,
+    ...(FIRST_WITNESS_PAGE_KEYWORDS[slug] || [])
+  ];
+}
+
+function getFirstWitnessAliases(slug) {
+  if (slug !== 'the-first-witness') return [];
+  return [
+    { title: 'First Witness Bible' },
+    { title: 'Crypto Moonboys Bible' },
+    { title: 'Graffiti Kings Bible' },
+    { title: 'GK Bible' },
+    { title: 'The Covenant' },
+    { title: 'Covenant of the First Witness' },
+    { title: 'First Witness Religion' },
+    { title: 'First Witness Philosophy' },
+    { title: 'Crypto Moonboys Religion' },
+    { title: 'Graffiti Kings Religion' },
+    { title: 'GK Religion' }
+  ];
+}
+
 function walk(dir) {
   let results = [];
   const list = fs.readdirSync(dir);
@@ -205,6 +359,12 @@ function buildSearchIndex(title, description, keywords, aliases = []) {
 
 function detectCategory(filePath, html, samEntity) {
   if (isNftTemplateHtml(html)) return 'nfts-digital-art';
+
+  // The First Witness is one core canon/search cluster. Do this before
+  // SAM/body heuristics so prose words such as "faction" or "character"
+  // cannot misclassify scripture, history or lived-tradition pages.
+  const fileSlug = path.basename(filePath, path.extname(filePath)).toLowerCase();
+  if (isFirstWitnessSlug(fileSlug)) return 'core';
 
   if (samEntity && samEntity.category) {
     const category = String(samEntity.category).toLowerCase();
@@ -638,8 +798,16 @@ function run() {
       ? samEntity.tags.filter(Boolean)
       : [];
 
-    const keywords = Array.from(new Set([...htmlKeywords, ...memoryTags]));
-    let aliases = mergeAliases(buildAliases(samEntity, canonicalSlug));
+    const firstWitnessKeywords = getFirstWitnessKeywords(canonicalSlug);
+    const keywords = Array.from(new Set([
+      ...htmlKeywords,
+      ...memoryTags,
+      ...firstWitnessKeywords
+    ]));
+    let aliases = mergeAliases(
+      buildAliases(samEntity, canonicalSlug),
+      getFirstWitnessAliases(canonicalSlug)
+    );
     if (!isNftTemplate && (isAliasSlug(slug) || slug !== canonicalSlug)) {
       aliases = mergeAliases(aliases, [{ title: titleFromSlug(slug), url }]);
     }
