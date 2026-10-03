@@ -4326,82 +4326,100 @@ function runImportUnlocked({
       reportDurableQuarantine: logDurableQuarantine,
     };
 
+    const completedWriteJournal = activeTransactionWriteJournal;
+    let transactionError = null;
+    let quarantineCleanupError = null;
     try {
-      for (const page of renderedPages) {
-        assertLivePlanBases(rootDir, [page]);
-        assertOwnershipMarkerStructure(page.html, page.relPagePath);
-        const pagePreimage = snapshot.get(page.relPagePath);
-        writeWorkspaceFileConditionally(
-          rootDir,
-          page.relPagePath,
-          page.html,
-          pagePreimage
-        );
-        logger(`Wrote page: ${page.relPagePath}`);
-      }
-      if (renderedPages.length > 0) {
-        // Declared outputs are conservative rollback candidates so concurrent
-        // changes can be reported. Membership alone never authorizes restore:
-        // restoreSnapshot requires an exact writer-journaled postimage.
-        for (const relativePath of stubAuthorizationFiles) mutatedFiles.add(relativePath);
-        absentStubAuthorizations = consumeAbsentStubAuthorizations(rootDir, renderedPages);
-        for (const relativePath of contentStateFiles) mutatedFiles.add(relativePath);
-        contentStateRefresh = refreshContentStateFn === refreshContentStateArtifacts
-          ? refreshContentStateFn(rootDir, logger)
+      try {
+        for (const page of renderedPages) {
+          assertLivePlanBases(rootDir, [page]);
+          assertOwnershipMarkerStructure(page.html, page.relPagePath);
+          const pagePreimage = snapshot.get(page.relPagePath);
+          writeWorkspaceFileConditionally(
+            rootDir,
+            page.relPagePath,
+            page.html,
+            pagePreimage
+          );
+          logger(`Wrote page: ${page.relPagePath}`);
+        }
+        if (renderedPages.length > 0) {
+          // Declared outputs are conservative rollback candidates so concurrent
+          // changes can be reported. Membership alone never authorizes restore:
+          // restoreSnapshot requires an exact writer-journaled postimage.
+          for (const relativePath of stubAuthorizationFiles) mutatedFiles.add(relativePath);
+          absentStubAuthorizations = consumeAbsentStubAuthorizations(rootDir, renderedPages);
+          for (const relativePath of contentStateFiles) mutatedFiles.add(relativePath);
+          contentStateRefresh = refreshContentStateFn === refreshContentStateArtifacts
+            ? refreshContentStateFn(rootDir, logger)
+            : runIsolatedMutationCallback(
+                rootDir,
+                contentStateFiles,
+                refreshContentStateFn,
+                logger,
+                'content-state refresh callback'
+              );
+          verifyRefreshedContentState(rootDir, renderedPages);
+        }
+        for (const relativePath of syncFiles) mutatedFiles.add(relativePath);
+        sync = syncFeedSurfacesFn === syncFeedSurfaces
+          ? syncFeedSurfacesFn(rootDir, syncPayloads, logger)
           : runIsolatedMutationCallback(
               rootDir,
-              contentStateFiles,
-              refreshContentStateFn,
+              syncFiles,
+              (isolatedRoot, isolatedLogger) => syncFeedSurfacesFn(
+                isolatedRoot,
+                syncPayloads,
+                isolatedLogger
+              ),
               logger,
-              'content-state refresh callback'
+              'feed sync callback'
             );
-        verifyRefreshedContentState(rootDir, renderedPages);
+        // Root/lock identity is part of the commit condition. A callback that
+        // renamed the repository or replaced the lock must enter rollback while
+        // the original root descriptor and exact postimages are still live.
+        assertActiveTransactionBindingIdentity(rootDir);
+        // A root-level quarantine name is part of the recovery contract too.
+        // Revalidate immediately before the synchronous transaction closes so
+        // a renamed/replaced directory cannot be returned as a false path.
+        assertTransactionDurableQuarantineIdentity('transaction close');
+      } catch (error) {
+        if (activeTransactionRootBinding) {
+          activeTransactionRootBinding.allowDetachedRoot = true;
+        }
+        // Roll back only paths for which an importer-owned writer journaled an
+        // exact intended postimage. A live read at this failure boundary cannot
+        // prove ownership: it may be a concurrent policy revocation or edit.
+        const conflicts = restoreSnapshot(rootDir, snapshot, mutatedFiles, postimages);
+        logDurableQuarantines();
+        if (conflicts.length > 0) {
+          logger(`Write-mode rollback preserved ${conflicts.length} concurrently changed or unverifiable path(s).`);
+          throw rollbackConflictError(error, conflicts);
+        }
+        logger('Write-mode import rolled back because the publish transaction failed.');
+        throw error;
       }
-      for (const relativePath of syncFiles) mutatedFiles.add(relativePath);
-      sync = syncFeedSurfacesFn === syncFeedSurfaces
-        ? syncFeedSurfacesFn(rootDir, syncPayloads, logger)
-        : runIsolatedMutationCallback(
-            rootDir,
-            syncFiles,
-            (isolatedRoot, isolatedLogger) => syncFeedSurfacesFn(
-              isolatedRoot,
-              syncPayloads,
-              isolatedLogger
-            ),
-            logger,
-            'feed sync callback'
-          );
-      // Root/lock identity is part of the commit condition. A callback that
-      // renamed the repository or replaced the lock must enter rollback while
-      // the original root descriptor and exact postimages are still live.
-      assertActiveTransactionBindingIdentity(rootDir);
-      // A root-level quarantine name is part of the recovery contract too.
-      // Revalidate immediately before the synchronous transaction closes so
-      // a renamed/replaced directory cannot be returned as a false path.
-      assertTransactionDurableQuarantineIdentity('transaction close');
     } catch (error) {
-      if (activeTransactionRootBinding) {
-        activeTransactionRootBinding.allowDetachedRoot = true;
-      }
-      // Roll back only paths for which an importer-owned writer journaled an
-      // exact intended postimage. A live read at this failure boundary cannot
-      // prove ownership: it may be a concurrent policy revocation or edit.
-      const conflicts = restoreSnapshot(rootDir, snapshot, mutatedFiles, postimages);
-      logDurableQuarantines();
-      if (conflicts.length > 0) {
-        logger(`Write-mode rollback preserved ${conflicts.length} concurrently changed or unverifiable path(s).`);
-        throw attachDurableQuarantines(rollbackConflictError(error, conflicts));
-      }
-      logger('Write-mode import rolled back because the publish transaction failed.');
-      throw attachDurableQuarantines(error);
+      transactionError = attachDurableQuarantines(error);
     } finally {
-      const completedWriteJournal = activeTransactionWriteJournal;
       try {
         closeTransactionDurableQuarantine(completedWriteJournal);
+      } catch (error) {
+        quarantineCleanupError = attachDurableQuarantines(error);
       } finally {
         activeTransactionWriteJournal = previousWriteJournal;
       }
     }
+    if (quarantineCleanupError) {
+      if (transactionError) {
+        // The descriptor cleanup failure is the outward error, but the
+        // transaction failure remains the causal event operators need when
+        // deciding how to recover the retained bytes.
+        quarantineCleanupError.cause = transactionError;
+      }
+      throw quarantineCleanupError;
+    }
+    if (transactionError) throw transactionError;
     logDurableQuarantines();
   }
 
@@ -4451,7 +4469,15 @@ export function runImport(options = {}) {
     releasePublishTransactionLock(lockHandle);
   } catch (cleanupError) {
     activeTransactionRootBinding = previousRootBinding;
-    if (!operationError) throw cleanupError;
+    const recoveryRecords = Array.isArray(operationError?.durableQuarantines)
+      ? operationError.durableQuarantines
+      : (Array.isArray(result?.durableQuarantines) ? result.durableQuarantines : []);
+    if (!operationError) {
+      if (recoveryRecords.length > 0) {
+        cleanupError.durableQuarantines = recoveryRecords.map((record) => ({ ...record }));
+      }
+      throw cleanupError;
+    }
     const combinedError = new ContentOwnershipError(
       'PUBLISH_TRANSACTION_LOCK_CLEANUP_FAILED',
       `${operationError.message}; additionally failed to release ${PUBLISH_TRANSACTION_LOCK}: ${cleanupError.message}`,
@@ -4459,8 +4485,8 @@ export function runImport(options = {}) {
     );
     combinedError.cause = operationError;
     combinedError.cleanupCause = cleanupError;
-    if (Array.isArray(operationError.durableQuarantines)) {
-      combinedError.durableQuarantines = operationError.durableQuarantines.map(
+    if (recoveryRecords.length > 0) {
+      combinedError.durableQuarantines = recoveryRecords.map(
         (record) => ({ ...record })
       );
     }

@@ -177,6 +177,17 @@ function isOwnershipPageRecoveryLink(sourcePath, targetPath) {
   ) && path.basename(String(targetPath)) === 'ownership-case.html';
 }
 
+function descriptorTargetsDurableQuarantine(descriptor) {
+  if (!Number.isInteger(descriptor)) return false;
+  try {
+    return /^\.wiki-content-publish-quarantine-[A-Za-z0-9]{6}$/.test(
+      path.basename(fs.readlinkSync(`/proc/self/fd/${descriptor}`))
+    );
+  } catch {
+    return false;
+  }
+}
+
 function assertValidationFails(payload, expectedMessage) {
   assert.throws(
     () => validatePayload(payload, '<test-payload>'),
@@ -1294,6 +1305,198 @@ assert.ok(durableInventoryLogs.some((message) =>
   message.includes('manual review')
 ));
 console.log('PASS stable replacement remains recoverable after a later open-descriptor edit');
+
+const successfulLockCleanupFixture = ownershipFixture();
+const successfulLockCleanupPagePath = path.join(
+  successfulLockCleanupFixture.rootDir,
+  'wiki',
+  'ownership-case.html'
+);
+const [successfulLockCleanupPlan] = planContentOwnershipUpdates(
+  [successfulLockCleanupFixture.payload],
+  successfulLockCleanupFixture.rootDir
+);
+const rmdirSyncBeforeSuccessfulLockCleanup = fs.rmdirSync;
+let successfulLockCleanupFailures = 0;
+let successfulLockCleanupError;
+fs.rmdirSync = function interceptSuccessfulLockCleanup(targetPath, ...args) {
+  if (
+    successfulLockCleanupFailures === 0 &&
+    path.basename(String(targetPath)) === PUBLISH_TRANSACTION_LOCK
+  ) {
+    successfulLockCleanupFailures += 1;
+    const error = new Error('injected transaction lock removal failure after successful publish');
+    error.code = 'EACCES';
+    throw error;
+  }
+  return rmdirSyncBeforeSuccessfulLockCleanup.call(fs, targetPath, ...args);
+};
+try {
+  assert.throws(
+    () => runImport({
+      payloadDir: successfulLockCleanupFixture.payloadDir,
+      rootDir: successfulLockCleanupFixture.rootDir,
+      write: true,
+      logger: () => {},
+      refreshContentStateFn: refreshTestContentState,
+    }),
+    (error) => {
+      successfulLockCleanupError = error;
+      return error instanceof ContentOwnershipError &&
+        error.code === 'PUBLISH_TRANSACTION_LOCK_CLEANUP_FAILED';
+    }
+  );
+} finally {
+  fs.rmdirSync = rmdirSyncBeforeSuccessfulLockCleanup;
+}
+assert.equal(successfulLockCleanupFailures, 1, 'fixture must fail only the final lock removal');
+assert.equal(
+  fs.readFileSync(successfulLockCleanupPagePath, 'utf8'),
+  successfulLockCleanupPlan.html,
+  'lock cleanup failure must happen after the successful page commit'
+);
+assert.ok(
+  successfulLockCleanupError.durableQuarantines.some(
+    ({ phase, sourcePath }) =>
+      phase === 'page-forward' && sourcePath === 'wiki/ownership-case.html'
+  ),
+  'successful publish lock cleanup errors must report the accumulated recovery records'
+);
+fs.rmdirSync(path.join(successfulLockCleanupFixture.rootDir, PUBLISH_TRANSACTION_LOCK));
+console.log('PASS successful publish lock cleanup failure retains durable recovery metadata');
+
+const successfulQuarantineCloseFixture = ownershipFixture();
+const successfulQuarantineClosePagePath = path.join(
+  successfulQuarantineCloseFixture.rootDir,
+  'wiki',
+  'ownership-case.html'
+);
+const [successfulQuarantineClosePlan] = planContentOwnershipUpdates(
+  [successfulQuarantineCloseFixture.payload],
+  successfulQuarantineCloseFixture.rootDir
+);
+const closeSyncBeforeSuccessfulQuarantineClose = fs.closeSync;
+let successfulQuarantineCloseFailures = 0;
+let successfulQuarantineCloseError;
+fs.closeSync = function interceptSuccessfulQuarantineClose(descriptor) {
+  if (
+    successfulQuarantineCloseFailures === 0 &&
+    descriptorTargetsDurableQuarantine(descriptor)
+  ) {
+    successfulQuarantineCloseFailures += 1;
+    closeSyncBeforeSuccessfulQuarantineClose.call(fs, descriptor);
+    const error = new Error('injected durable quarantine descriptor close failure');
+    error.code = 'EIO';
+    throw error;
+  }
+  return closeSyncBeforeSuccessfulQuarantineClose.call(fs, descriptor);
+};
+try {
+  assert.throws(
+    () => runImport({
+      payloadDir: successfulQuarantineCloseFixture.payloadDir,
+      rootDir: successfulQuarantineCloseFixture.rootDir,
+      write: true,
+      logger: () => {},
+      refreshContentStateFn: refreshTestContentState,
+    }),
+    (error) => {
+      successfulQuarantineCloseError = error;
+      return error?.code === 'EIO';
+    }
+  );
+} finally {
+  fs.closeSync = closeSyncBeforeSuccessfulQuarantineClose;
+}
+assert.equal(successfulQuarantineCloseFailures, 1, 'fixture must fail the quarantine close once');
+assert.equal(
+  fs.readFileSync(successfulQuarantineClosePagePath, 'utf8'),
+  successfulQuarantineClosePlan.html,
+  'quarantine descriptor cleanup failure must happen after the successful page commit'
+);
+assert.ok(
+  successfulQuarantineCloseError.durableQuarantines.some(
+    ({ phase, sourcePath }) =>
+      phase === 'page-forward' && sourcePath === 'wiki/ownership-case.html'
+  ),
+  'quarantine close errors after success must report the accumulated recovery records'
+);
+assert.equal(
+  fs.existsSync(path.join(successfulQuarantineCloseFixture.rootDir, PUBLISH_TRANSACTION_LOCK)),
+  false,
+  'quarantine close failure must not prevent transaction lock cleanup'
+);
+console.log('PASS successful publish quarantine close failure retains durable recovery metadata');
+
+const failedTransactionQuarantineCloseFixture = ownershipFixture();
+const failedTransactionQuarantineClosePagePath = path.join(
+  failedTransactionQuarantineCloseFixture.rootDir,
+  'wiki',
+  'ownership-case.html'
+);
+const failedTransactionQuarantineClosePageBefore = fs.readFileSync(
+  failedTransactionQuarantineClosePagePath
+);
+const failedTransactionCause = new Error('injected transaction failure before quarantine close');
+failedTransactionCause.code = 'INJECTED_TRANSACTION_FAILURE';
+const closeSyncBeforeFailedTransactionQuarantineClose = fs.closeSync;
+let failedTransactionQuarantineCloseFailures = 0;
+let failedTransactionQuarantineCloseError;
+fs.closeSync = function interceptFailedTransactionQuarantineClose(descriptor) {
+  if (
+    failedTransactionQuarantineCloseFailures === 0 &&
+    descriptorTargetsDurableQuarantine(descriptor)
+  ) {
+    failedTransactionQuarantineCloseFailures += 1;
+    closeSyncBeforeFailedTransactionQuarantineClose.call(fs, descriptor);
+    const error = new Error('injected quarantine close masking transaction failure');
+    error.code = 'EIO';
+    throw error;
+  }
+  return closeSyncBeforeFailedTransactionQuarantineClose.call(fs, descriptor);
+};
+try {
+  assert.throws(
+    () => runImport({
+      payloadDir: failedTransactionQuarantineCloseFixture.payloadDir,
+      rootDir: failedTransactionQuarantineCloseFixture.rootDir,
+      write: true,
+      logger: () => {},
+      refreshContentStateFn: (isolatedRoot) => {
+        refreshTestContentState(isolatedRoot);
+        throw failedTransactionCause;
+      },
+    }),
+    (error) => {
+      failedTransactionQuarantineCloseError = error;
+      return error?.code === 'EIO' && error.cause === failedTransactionCause;
+    }
+  );
+} finally {
+  fs.closeSync = closeSyncBeforeFailedTransactionQuarantineClose;
+}
+assert.equal(
+  failedTransactionQuarantineCloseFailures,
+  1,
+  'fixture must fail the quarantine close after the transaction rollback'
+);
+assert.deepEqual(
+  fs.readFileSync(failedTransactionQuarantineClosePagePath),
+  failedTransactionQuarantineClosePageBefore,
+  'the original transaction failure must still roll the page back'
+);
+assert.ok(
+  failedTransactionQuarantineCloseError.durableQuarantines.some(
+    ({ phase, sourcePath }) =>
+      phase === 'page-forward' && sourcePath === 'wiki/ownership-case.html'
+  ) &&
+    failedTransactionQuarantineCloseError.durableQuarantines.some(
+      ({ phase, sourcePath }) =>
+        phase === 'conditional-rollback' && sourcePath === 'wiki/ownership-case.html'
+    ),
+  'combined transaction and quarantine cleanup failure must report forward and rollback recovery records'
+);
+console.log('PASS quarantine close failure preserves transaction cause and durable recovery metadata');
 
 const validQuarantineIgnore = spawnSync(
   'git',
