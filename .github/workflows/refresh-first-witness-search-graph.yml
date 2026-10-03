@@ -1,5 +1,6 @@
 name: Temporary First Witness search graph sync
 # retry after ranking precision fix
+# retry after hub-authority query contract
 
 on:
   push:
