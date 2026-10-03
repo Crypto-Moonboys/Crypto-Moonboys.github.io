@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-03T04:57:26.875Z",
-  "verified_at": "2026-10-03T04:57:26.875Z",
+  "generated_at": "2026-10-03T07:21:20.971Z",
+  "verified_at": "2026-10-03T07:21:20.971Z",
   "lite": true,
   "nodes": [
     {
@@ -44,20 +44,20 @@
       "authority_score": 26
     },
     {
+      "id": "/wiki/the-first-witness.html",
+      "title": "The First Witness",
+      "url": "/wiki/the-first-witness.html",
+      "category": "core",
+      "rank_score": 651,
+      "authority_score": 28
+    },
+    {
       "id": "/wiki/gkniftyheads.html",
       "title": "GKniftyHEADS",
       "url": "/wiki/gkniftyheads.html",
       "category": "characters",
       "rank_score": 648,
       "authority_score": 17
-    },
-    {
-      "id": "/wiki/the-first-witness.html",
-      "title": "The First Witness",
-      "url": "/wiki/the-first-witness.html",
-      "category": "factions",
-      "rank_score": 574,
-      "authority_score": 28
     },
     {
       "id": "/wiki/games4punks-telegram.html",
@@ -74,6 +74,14 @@
       "category": "factions",
       "rank_score": 537,
       "authority_score": 26
+    },
+    {
+      "id": "/wiki/first-witness-life-readings.html",
+      "title": "Life Readings from the First Witness",
+      "url": "/wiki/first-witness-life-readings.html",
+      "category": "core",
+      "rank_score": 527,
+      "authority_score": 17
     },
     {
       "id": "/wiki/block-topia.html",
@@ -106,14 +114,6 @@
       "category": "factions",
       "rank_score": 469,
       "authority_score": 21
-    },
-    {
-      "id": "/wiki/first-witness-life-readings.html",
-      "title": "Life Readings from the First Witness",
-      "url": "/wiki/first-witness-life-readings.html",
-      "category": "characters",
-      "rank_score": 464,
-      "authority_score": 17
     },
     {
       "id": "/wiki/null-the-prophet.html",
@@ -284,6 +284,22 @@
       "authority_score": 21
     },
     {
+      "id": "/wiki/first-witness-source-register.html",
+      "title": "First Witness Source Register",
+      "url": "/wiki/first-witness-source-register.html",
+      "category": "core",
+      "rank_score": 345,
+      "authority_score": 18
+    },
+    {
+      "id": "/wiki/first-witness-concordance.html",
+      "title": "Concordance of Broken Records",
+      "url": "/wiki/first-witness-concordance.html",
+      "category": "core",
+      "rank_score": 344,
+      "authority_score": 14
+    },
+    {
       "id": "/wiki/the-finance-guild.html",
       "title": "The Finance Guild",
       "url": "/wiki/the-finance-guild.html",
@@ -340,6 +356,14 @@
       "authority_score": 16
     },
     {
+      "id": "/wiki/first-witness-faction-commentaries.html",
+      "title": "Faction Commentaries on the First Witness",
+      "url": "/wiki/first-witness-faction-commentaries.html",
+      "category": "core",
+      "rank_score": 319,
+      "authority_score": 14
+    },
+    {
       "id": "/wiki/solana.html",
       "title": "Solana (SOL)",
       "url": "/wiki/solana.html",
@@ -348,12 +372,36 @@
       "authority_score": 27
     },
     {
+      "id": "/wiki/first-witness-book-3-the-keeper.html",
+      "title": "Book III — The Keeper",
+      "url": "/wiki/first-witness-book-3-the-keeper.html",
+      "category": "core",
+      "rank_score": 315,
+      "authority_score": 14
+    },
+    {
       "id": "/wiki/the-high-hats.html",
       "title": "The High Hats",
       "url": "/wiki/the-high-hats.html",
       "category": "factions",
       "rank_score": 315,
       "authority_score": 17
+    },
+    {
+      "id": "/wiki/first-witness-book-5-the-chain.html",
+      "title": "Book V — The Chain",
+      "url": "/wiki/first-witness-book-5-the-chain.html",
+      "category": "core",
+      "rank_score": 313,
+      "authority_score": 14
+    },
+    {
+      "id": "/wiki/first-witness-book-8-the-fire.html",
+      "title": "Book VIII — The Fire",
+      "url": "/wiki/first-witness-book-8-the-fire.html",
+      "category": "core",
+      "rank_score": 306,
+      "authority_score": 14
     },
     {
       "id": "/wiki/tokenomics.html",
@@ -396,6 +444,30 @@
       "authority_score": 27
     },
     {
+      "id": "/wiki/first-witness-book-2-the-common-blood.html",
+      "title": "Book II — The Common Blood",
+      "url": "/wiki/first-witness-book-2-the-common-blood.html",
+      "category": "core",
+      "rank_score": 301,
+      "authority_score": 14
+    },
+    {
+      "id": "/wiki/first-witness-great-concord-2030.html",
+      "title": "The Great Concord of 2030",
+      "url": "/wiki/first-witness-great-concord-2030.html",
+      "category": "core",
+      "rank_score": 301,
+      "authority_score": 14
+    },
+    {
+      "id": "/wiki/first-witness-book-1-the-first-witness.html",
+      "title": "Book I — The First Witness",
+      "url": "/wiki/first-witness-book-1-the-first-witness.html",
+      "category": "core",
+      "rank_score": 300,
+      "authority_score": 14
+    },
+    {
       "id": "/wiki/jonny-laurence-nelson-tag-records.html",
       "title": "Jonny &amp; Laurence Nelson (TAG Records)",
       "url": "/wiki/jonny-laurence-nelson-tag-records.html",
@@ -410,6 +482,14 @@
       "category": "factions",
       "rank_score": 298,
       "authority_score": 21
+    },
+    {
+      "id": "/wiki/first-witness-parables.html",
+      "title": "Parables of the First Witness",
+      "url": "/wiki/first-witness-parables.html",
+      "category": "core",
+      "rank_score": 298,
+      "authority_score": 14
     },
     {
       "id": "/wiki/the-hard-fork-rockers.html",
@@ -444,6 +524,14 @@
       "authority_score": 21
     },
     {
+      "id": "/wiki/first-witness-book-4-the-wall.html",
+      "title": "Book IV — The Wall",
+      "url": "/wiki/first-witness-book-4-the-wall.html",
+      "category": "core",
+      "rank_score": 296,
+      "authority_score": 14
+    },
+    {
       "id": "/wiki/bitcoin-x-kids.html",
       "title": "Bitcoin X Kids",
       "url": "/wiki/bitcoin-x-kids.html",
@@ -460,12 +548,36 @@
       "authority_score": 23
     },
     {
+      "id": "/wiki/first-witness-book-6-the-fork.html",
+      "title": "Book VI — The Fork",
+      "url": "/wiki/first-witness-book-6-the-fork.html",
+      "category": "core",
+      "rank_score": 295,
+      "authority_score": 14
+    },
+    {
+      "id": "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "title": "Book IX — The Unwritten Block",
+      "url": "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "category": "core",
+      "rank_score": 295,
+      "authority_score": 14
+    },
+    {
       "id": "/wiki/sister-halcyon.html",
       "title": "Sister Halcyon",
       "url": "/wiki/sister-halcyon.html",
       "category": "characters",
       "rank_score": 295,
       "authority_score": 21
+    },
+    {
+      "id": "/wiki/first-witness-forty-paths.html",
+      "title": "The Forty Paths",
+      "url": "/wiki/first-witness-forty-paths.html",
+      "category": "core",
+      "rank_score": 294,
+      "authority_score": 14
     },
     {
       "id": "/wiki/quell.html",
@@ -484,127 +596,123 @@
       "authority_score": 21
     },
     {
-      "id": "/wiki/pyralith.html",
-      "title": "PYRALITH",
-      "url": "/wiki/pyralith.html",
-      "category": "characters",
+      "id": "/wiki/first-witness-book-7-the-hold.html",
+      "title": "Book VII — The Hold",
+      "url": "/wiki/first-witness-book-7-the-hold.html",
+      "category": "core",
       "rank_score": 293,
-      "authority_score": 21
-    },
-    {
-      "id": "/wiki/the-rugpull-miners.html",
-      "title": "The RUGPULL MINERS",
-      "url": "/wiki/the-rugpull-miners.html",
-      "category": "factions",
-      "rank_score": 293,
-      "authority_score": 21
-    },
-    {
-      "id": "/wiki/wallets.html",
-      "title": "Crypto Wallets",
-      "url": "/wiki/wallets.html",
-      "category": "characters",
-      "rank_score": 293,
-      "authority_score": 27
-    },
-    {
-      "id": "/wiki/darren-cullen.html",
-      "title": "Darren Cullen (SER)",
-      "url": "/wiki/darren-cullen.html",
-      "category": "characters",
-      "rank_score": 292,
-      "authority_score": 21
-    },
-    {
-      "id": "/wiki/street-kingdoms.html",
-      "title": "Street Kingdoms",
-      "url": "/wiki/street-kingdoms.html",
-      "category": "factions",
-      "rank_score": 292,
-      "authority_score": 21
-    },
-    {
-      "id": "/wiki/the-bitcoin-kid-army.html",
-      "title": "The Bitcoin Kid Army",
-      "url": "/wiki/the-bitcoin-kid-army.html",
-      "category": "factions",
-      "rank_score": 292,
-      "authority_score": 21
-    },
-    {
-      "id": "/wiki/the-moonlords.html",
-      "title": "The MOONLORDS",
-      "url": "/wiki/the-moonlords.html",
-      "category": "factions",
-      "rank_score": 292,
-      "authority_score": 21
-    },
-    {
-      "id": "/wiki/the-nomad-bears.html",
-      "title": "The Nomad Bears",
-      "url": "/wiki/the-nomad-bears.html",
-      "category": "factions",
-      "rank_score": 292,
-      "authority_score": 21
-    },
-    {
-      "id": "/wiki/the-og-pixel-saints.html",
-      "title": "The OG PIXEL SAINTS",
-      "url": "/wiki/the-og-pixel-saints.html",
-      "category": "factions",
-      "rank_score": 292,
-      "authority_score": 21
-    },
-    {
-      "id": "/wiki/memecoins.html",
-      "title": "Meme Coins",
-      "url": "/wiki/memecoins.html",
-      "category": "factions",
-      "rank_score": 291,
-      "authority_score": 27
-    },
-    {
-      "id": "/wiki/metropolis.html",
-      "title": "Metropolis",
-      "url": "/wiki/metropolis.html",
-      "category": "factions",
-      "rank_score": 291,
-      "authority_score": 21
-    },
-    {
-      "id": "/wiki/nfts.html",
-      "title": "NFTs (Non-Fungible Tokens)",
-      "url": "/wiki/nfts.html",
-      "category": "characters",
-      "rank_score": 291,
-      "authority_score": 27
-    },
-    {
-      "id": "/wiki/nbg.html",
-      "title": "$NBG — NoBallGames Token | Crypto Moonboys Wiki",
-      "url": "/wiki/nbg.html",
-      "category": "characters",
-      "rank_score": 290,
-      "authority_score": 23
-    },
-    {
-      "id": "/wiki/the-evm-punks.html",
-      "title": "The EVM PUNKS",
-      "url": "/wiki/the-evm-punks.html",
-      "category": "factions",
-      "rank_score": 290,
-      "authority_score": 21
-    },
-    {
-      "id": "/wiki/wax-blockchain.html",
-      "title": "WAX Blockchain",
-      "url": "/wiki/wax-blockchain.html",
-      "category": "factions",
-      "rank_score": 290,
-      "authority_score": 23
+      "authority_score": 14
     }
   ],
   "edges": [
+    {
+      "source": "/wiki/first-witness-source-register.html",
+      "target": "/wiki/the-first-witness.html",
+      "score": 276,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/the-first-witness.html",
+      "target": "/wiki/first-witness-life-readings.html",
+      "score": 271,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-book-1-the-first-witness.html",
+      "target": "/wiki/the-first-witness.html",
+      "score": 270,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-book-1-the-first-witness.html",
+      "target": "/wiki/first-witness-life-readings.html",
+      "score": 259,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-faction-commentaries.html",
+      "target": "/wiki/first-witness-life-readings.html",
+      "score": 259,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-book-1-the-first-witness.html",
+      "target": "/wiki/first-witness-source-register.html",
+      "score": 254,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-faction-commentaries.html",
+      "target": "/wiki/first-witness-source-register.html",
+      "score": 254,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-book-3-the-keeper.html",
+      "target": "/wiki/first-witness-book-5-the-chain.html",
+      "score": 244,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-book-5-the-chain.html",
+      "target": "/wiki/first-witness-book-3-the-keeper.html",
+      "score": 244,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-book-7-the-hold.html",
+      "target": "/wiki/first-witness-book-5-the-chain.html",
+      "score": 244,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-book-2-the-common-blood.html",
+      "target": "/wiki/first-witness-book-3-the-keeper.html",
+      "score": 241,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-book-4-the-wall.html",
+      "target": "/wiki/first-witness-book-2-the-common-blood.html",
+      "score": 241,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-parables.html",
+      "target": "/wiki/first-witness-faction-commentaries.html",
+      "score": 241,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-book-2-the-common-blood.html",
+      "target": "/wiki/first-witness-book-4-the-wall.html",
+      "score": 240,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-book-7-the-hold.html",
+      "target": "/wiki/first-witness-book-9-the-unwritten-block.html",
+      "score": 240,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-book-8-the-fire.html",
+      "target": "/wiki/first-witness-book-6-the-fork.html",
+      "score": 240,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-forty-paths.html",
+      "target": "/wiki/first-witness-concordance.html",
+      "score": 237,
+      "weight": 1
+    },
+    {
+      "source": "/wiki/first-witness-great-concord-2030.html",
+      "target": "/wiki/first-witness-concordance.html",
+      "score": 237,
+      "weight": 1
+    },
     {
       "source": "/wiki/nbgx-token.html",
       "target": "/wiki/nbg-token.html",
@@ -660,12 +768,6 @@
       "weight": 0.95
     },
     {
-      "source": "/wiki/darren-cullen.html",
-      "target": "/wiki/crypto-moonboys.html",
-      "score": 95,
-      "weight": 0.95
-    },
-    {
       "source": "/wiki/dream-sovereign.html",
       "target": "/wiki/pmsl.html",
       "score": 95,
@@ -684,7 +786,7 @@
       "weight": 0.95
     },
     {
-      "source": "/wiki/memecoins.html",
+      "source": "/wiki/sneakar.html",
       "target": "/wiki/pmsl.html",
       "score": 95,
       "weight": 0.95
@@ -714,7 +816,7 @@
       "weight": 0.93
     },
     {
-      "source": "/wiki/pyralith.html",
+      "source": "/wiki/quell.html",
       "target": "/wiki/graffpunks.html",
       "score": 93,
       "weight": 0.93
@@ -722,6 +824,12 @@
     {
       "source": "/wiki/bitcoin-x-kids.html",
       "target": "/wiki/bitcoin-kids.html",
+      "score": 92,
+      "weight": 0.92
+    },
+    {
+      "source": "/wiki/punk-token.html",
+      "target": "/wiki/crypto-moonboys.html",
       "score": 92,
       "weight": 0.92
     },
@@ -736,12 +844,6 @@
       "target": "/wiki/web3.html",
       "score": 89,
       "weight": 0.89
-    },
-    {
-      "source": "/wiki/memecoins.html",
-      "target": "/wiki/tokenomics.html",
-      "score": 88,
-      "weight": 0.88
     },
     {
       "source": "/wiki/the-hard-fork-rockers.html",
@@ -762,12 +864,6 @@
       "weight": 0.87
     },
     {
-      "source": "/wiki/memecoins.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 87,
-      "weight": 0.87
-    },
-    {
       "source": "/wiki/midevilpunks.html",
       "target": "/wiki/hodl-wars.html",
       "score": 87,
@@ -780,13 +876,13 @@
       "weight": 0.87
     },
     {
-      "source": "/wiki/the-hard-fork-rockers.html",
-      "target": "/wiki/the-chain-scribes.html",
+      "source": "/wiki/solana.html",
+      "target": "/wiki/games4punks-telegram.html",
       "score": 87,
       "weight": 0.87
     },
     {
-      "source": "/wiki/the-nomad-bears.html",
+      "source": "/wiki/the-hard-fork-rockers.html",
       "target": "/wiki/the-chain-scribes.html",
       "score": 87,
       "weight": 0.87
@@ -794,12 +890,6 @@
     {
       "source": "/wiki/the-princess.html",
       "target": "/wiki/the-whitewasher.html",
-      "score": 87,
-      "weight": 0.87
-    },
-    {
-      "source": "/wiki/the-rugpull-miners.html",
-      "target": "/wiki/the-chain-scribes.html",
       "score": 87,
       "weight": 0.87
     },
@@ -828,10 +918,10 @@
       "weight": 0.86
     },
     {
-      "source": "/wiki/solana.html",
-      "target": "/wiki/ethereum.html",
-      "score": 86,
-      "weight": 0.86
+      "source": "/wiki/the-ducky-boys.html",
+      "target": "/wiki/the-chain-scribes.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/the-princess.html",
@@ -864,20 +954,8 @@
       "weight": 0.83
     },
     {
-      "source": "/wiki/street-kingdoms.html",
-      "target": "/wiki/triple-fork-event.html",
-      "score": 83,
-      "weight": 0.83
-    },
-    {
       "source": "/wiki/the-high-hats.html",
       "target": "/wiki/stikfamwars.html",
-      "score": 83,
-      "weight": 0.83
-    },
-    {
-      "source": "/wiki/wallets.html",
-      "target": "/wiki/gkniftyheads.html",
       "score": 83,
       "weight": 0.83
     },
@@ -894,19 +972,19 @@
       "weight": 0.81
     },
     {
-      "source": "/wiki/the-nomad-bears.html",
-      "target": "/wiki/the-rugpull-miners.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
-      "source": "/wiki/the-rugpull-miners.html",
-      "target": "/wiki/the-nomad-bears.html",
-      "score": 81,
-      "weight": 0.81
-    },
-    {
       "source": "/wiki/bitcoin-x-kids.html",
+      "target": "/wiki/gkniftyheads.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/dream-sovereign.html",
+      "target": "/wiki/triple-fork-event.html",
+      "score": 80,
+      "weight": 0.8
+    },
+    {
+      "source": "/wiki/gang-signs.html",
       "target": "/wiki/gkniftyheads.html",
       "score": 80,
       "weight": 0.8
@@ -918,55 +996,25 @@
       "weight": 0.8
     },
     {
-      "source": "/wiki/metropolis.html",
+      "source": "/wiki/the-finance-guild.html",
       "target": "/wiki/stikfamwars.html",
       "score": 79,
       "weight": 0.79
     },
     {
-      "source": "/wiki/dream-sovereign.html",
-      "target": "/wiki/sneakar.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/nfts.html",
-      "target": "/wiki/wallets.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/patchwork.html",
-      "target": "/wiki/pyralith.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
       "source": "/wiki/patchwork.html",
       "target": "/wiki/quell.html",
       "score": 78,
       "weight": 0.78
     },
     {
-      "source": "/wiki/pyralith.html",
-      "target": "/wiki/quell.html",
-      "score": 78,
-      "weight": 0.78
-    },
-    {
-      "source": "/wiki/wallets.html",
-      "target": "/wiki/nfts.html",
+      "source": "/wiki/quell.html",
+      "target": "/wiki/patchwork.html",
       "score": 78,
       "weight": 0.78
     },
     {
       "source": "/wiki/burn-to-earn.html",
-      "target": "/wiki/null-the-prophet.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/darren-cullen.html",
       "target": "/wiki/null-the-prophet.html",
       "score": 77,
       "weight": 0.77
@@ -978,8 +1026,8 @@
       "weight": 0.77
     },
     {
-      "source": "/wiki/nfts.html",
-      "target": "/wiki/gang-signs.html",
+      "source": "/wiki/gang-signs.html",
+      "target": "/wiki/null-the-prophet.html",
       "score": 77,
       "weight": 0.77
     },
@@ -990,34 +1038,10 @@
       "weight": 0.77
     },
     {
-      "source": "/wiki/sister-halcyon.html",
-      "target": "/wiki/gang-signs.html",
-      "score": 77,
-      "weight": 0.77
-    },
-    {
-      "source": "/wiki/metropolis.html",
-      "target": "/wiki/rave-relics.html",
-      "score": 76,
-      "weight": 0.76
-    },
-    {
-      "source": "/wiki/the-finance-guild.html",
-      "target": "/wiki/the-first-witness.html",
-      "score": 76,
-      "weight": 0.76
-    },
-    {
       "source": "/wiki/nifty-crowns.html",
       "target": "/wiki/sneakar.html",
       "score": 75,
       "weight": 0.75
-    },
-    {
-      "source": "/wiki/blockchain.html",
-      "target": "/wiki/the-first-witness.html",
-      "score": 73,
-      "weight": 0.73
     },
     {
       "source": "/wiki/jonny-laurence-nelson-tag-records.html",
@@ -1026,28 +1050,16 @@
       "weight": 0.73
     },
     {
-      "source": "/wiki/block-topia.html",
-      "target": "/wiki/first-witness-life-readings.html",
-      "score": 68,
-      "weight": 0.68
-    },
-    {
-      "source": "/wiki/first-witness-life-readings.html",
+      "source": "/wiki/staking.html",
       "target": "/wiki/block-topia.html",
       "score": 68,
       "weight": 0.68
     },
     {
-      "source": "/wiki/nbg.html",
-      "target": "/wiki/block-topia.html",
-      "score": 68,
-      "weight": 0.68
-    },
-    {
-      "source": "/wiki/nbg.html",
-      "target": "/wiki/first-witness-life-readings.html",
-      "score": 68,
-      "weight": 0.68
+      "source": "/wiki/blockchain.html",
+      "target": "/wiki/ethereum.html",
+      "score": 67,
+      "weight": 0.67
     },
     {
       "source": "/wiki/bitcoin.html",
