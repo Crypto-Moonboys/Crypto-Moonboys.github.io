@@ -1,8 +1,8 @@
 {
-  "_generated": "2026-10-03T02:57:42.639Z",
+  "_generated": "2026-10-03T03:25:23.455Z",
   "summary": {
-    "total": 334,
-    "approved": 334,
+    "total": 360,
+    "approved": 360,
     "blocked": 0,
     "needs_review": 0,
     "blocked_synthetic_slug": 0,
@@ -359,6 +359,188 @@
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1110
+    },
+    {
+      "slug": "first-witness-bitcoin-witness",
+      "file": "first-witness-bitcoin-witness.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 545
+    },
+    {
+      "slug": "first-witness-block-topia-reading",
+      "file": "first-witness-block-topia-reading.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 353
+    },
+    {
+      "slug": "first-witness-book-1-the-first-witness",
+      "file": "first-witness-book-1-the-first-witness.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 536
+    },
+    {
+      "slug": "first-witness-book-2-the-common-blood",
+      "file": "first-witness-book-2-the-common-blood.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 519
+    },
+    {
+      "slug": "first-witness-book-3-the-keeper",
+      "file": "first-witness-book-3-the-keeper.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 512
+    },
+    {
+      "slug": "first-witness-book-4-the-wall",
+      "file": "first-witness-book-4-the-wall.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 508
+    },
+    {
+      "slug": "first-witness-book-5-the-chain",
+      "file": "first-witness-book-5-the-chain.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 503
+    },
+    {
+      "slug": "first-witness-book-6-the-fork",
+      "file": "first-witness-book-6-the-fork.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 515
+    },
+    {
+      "slug": "first-witness-book-7-the-hold",
+      "file": "first-witness-book-7-the-hold.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 446
+    },
+    {
+      "slug": "first-witness-book-8-the-fire",
+      "file": "first-witness-book-8-the-fire.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 531
+    },
+    {
+      "slug": "first-witness-book-9-the-unwritten-block",
+      "file": "first-witness-book-9-the-unwritten-block.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 425
+    },
+    {
+      "slug": "first-witness-child-of-fire",
+      "file": "first-witness-child-of-fire.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 356
+    },
+    {
+      "slug": "first-witness-concordance",
+      "file": "first-witness-concordance.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 555
+    },
+    {
+      "slug": "first-witness-faction-commentaries",
+      "file": "first-witness-faction-commentaries.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 881
+    },
+    {
+      "slug": "first-witness-forty-paths",
+      "file": "first-witness-forty-paths.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 394
+    },
+    {
+      "slug": "first-witness-glossary",
+      "file": "first-witness-glossary.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 542
+    },
+    {
+      "slug": "first-witness-great-concord-2030",
+      "file": "first-witness-great-concord-2030.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 684
+    },
+    {
+      "slug": "first-witness-hodl-doctrine",
+      "file": "first-witness-hodl-doctrine.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 360
+    },
+    {
+      "slug": "first-witness-long-transmission",
+      "file": "first-witness-long-transmission.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 389
+    },
+    {
+      "slug": "first-witness-master-chronology",
+      "file": "first-witness-master-chronology.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 456
+    },
+    {
+      "slug": "first-witness-null-erasure",
+      "file": "first-witness-null-erasure.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 340
+    },
+    {
+      "slug": "first-witness-sacred-fork",
+      "file": "first-witness-sacred-fork.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 424
+    },
+    {
+      "slug": "first-witness-source-register",
+      "file": "first-witness-source-register.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 431
+    },
+    {
+      "slug": "first-witness-street-kingdoms-reading",
+      "file": "first-witness-street-kingdoms-reading.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 342
+    },
+    {
+      "slug": "first-witness-triple-fork-chainfire",
+      "file": "first-witness-triple-fork-chainfire.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 409
+    },
+    {
+      "slug": "first-witness-world-chain-error",
+      "file": "first-witness-world-chain-error.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 394
     },
     {
       "slug": "fomo-plague",
@@ -2108,7 +2290,7 @@
       "file": "the-first-witness.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1520
+      "word_count": 1725
     },
     {
       "slug": "the-gasless-ghosts",

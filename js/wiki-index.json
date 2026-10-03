@@ -85,9 +85,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 13,
+      "outbound_count": 15,
       "existing_outbound_count": 2,
-      "suggested_outbound_count": 11,
+      "suggested_outbound_count": 13,
       "authority": 1
     },
     "brand": null
@@ -170,9 +170,9 @@
     },
     "link_score": {
       "inbound_count": 153,
-      "outbound_count": 156,
+      "outbound_count": 157,
       "existing_outbound_count": 146,
-      "suggested_outbound_count": 10,
+      "suggested_outbound_count": 11,
       "authority": 379
     },
     "brand": null
@@ -360,9 +360,9 @@
     },
     "link_score": {
       "inbound_count": 221,
-      "outbound_count": 22,
+      "outbound_count": 24,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 11,
+      "suggested_outbound_count": 13,
       "authority": 447.5
     },
     "brand": {
@@ -730,9 +730,9 @@
     },
     "link_score": {
       "inbound_count": 36,
-      "outbound_count": 30,
+      "outbound_count": 34,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 21,
+      "suggested_outbound_count": 25,
       "authority": 76.5
     },
     "brand": {
@@ -760,7 +760,7 @@
         "title": "block topia crypto moonboys wiki"
       }
     ],
-    "rank_score": 524,
+    "rank_score": 526,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 1,
@@ -787,9 +787,9 @@
       "word_count_points": 96,
       "keyword_bag_points": 24,
       "content_quality_points": 89,
-      "authority_points": 245,
-      "final_rank_score": 524,
-      "authority_graph_points": 232
+      "authority_points": 247,
+      "final_rank_score": 526,
+      "authority_graph_points": 234
     },
     "search_index": {
       "normalized_title": "block topia crypto moonboys wiki",
@@ -828,11 +828,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 116,
-      "outbound_count": 6,
+      "inbound_count": 117,
+      "outbound_count": 9,
       "existing_outbound_count": 0,
-      "suggested_outbound_count": 6,
-      "authority": 232
+      "suggested_outbound_count": 9,
+      "authority": 234
     },
     "brand": null
   },
@@ -1018,9 +1018,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 18,
+      "outbound_count": 20,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 9,
+      "suggested_outbound_count": 11,
       "authority": 6.5
     },
     "brand": null
@@ -1109,9 +1109,9 @@
     },
     "link_score": {
       "inbound_count": 88,
-      "outbound_count": 16,
+      "outbound_count": 17,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 7,
+      "suggested_outbound_count": 8,
       "authority": 180.5
     },
     "brand": {
@@ -1208,9 +1208,9 @@
     },
     "link_score": {
       "inbound_count": 86,
-      "outbound_count": 11,
+      "outbound_count": 12,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 5,
+      "suggested_outbound_count": 6,
       "authority": 175
     },
     "brand": null
@@ -1306,9 +1306,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 54,
+      "outbound_count": 55,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 42,
+      "suggested_outbound_count": 43,
       "authority": 8
     },
     "brand": null
@@ -1395,9 +1395,9 @@
     },
     "link_score": {
       "inbound_count": 73,
-      "outbound_count": 13,
+      "outbound_count": 20,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 4,
+      "suggested_outbound_count": 11,
       "authority": 150.5
     },
     "brand": null
@@ -1651,9 +1651,9 @@
     },
     "link_score": {
       "inbound_count": 61,
-      "outbound_count": 20,
+      "outbound_count": 21,
       "existing_outbound_count": 8,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 13,
       "authority": 126
     },
     "brand": {
@@ -2033,9 +2033,9 @@
     },
     "link_score": {
       "inbound_count": 38,
-      "outbound_count": 20,
+      "outbound_count": 21,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 10,
+      "suggested_outbound_count": 11,
       "authority": 81
     },
     "brand": null
@@ -2111,9 +2111,9 @@
     },
     "link_score": {
       "inbound_count": 54,
-      "outbound_count": 30,
+      "outbound_count": 31,
       "existing_outbound_count": 8,
-      "suggested_outbound_count": 22,
+      "suggested_outbound_count": 23,
       "authority": 112
     },
     "brand": null
@@ -2206,6 +2206,94 @@
       "existing_outbound_count": 9,
       "suggested_outbound_count": 7,
       "authority": 4.5
+    },
+    "brand": null
+  },
+  {
+    "title": "The First Witness",
+    "desc": "The First Witness is the sacred-text hub for Crypto Moonboys lore: the 2030 Covenant, Bitcoin provenance, Sacred Chain history and Forty Paths.",
+    "url": "/wiki/the-first-witness.html",
+    "tags": [
+      "first",
+      "witness"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "First Witness"
+      }
+    ],
+    "rank_score": 371,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 2,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 1807,
+      "keyword_bag_size": 21,
+      "heading_count": 14,
+      "list_count": 1,
+      "internal_link_count": 42,
+      "paragraph_count": 29,
+      "section_count": 12,
+      "lore_paragraph_count": 26,
+      "content_quality_score": 93,
+      "authority_score": 25
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 90,
+      "keyword_bag_points": 21,
+      "content_quality_points": 98,
+      "authority_points": 97,
+      "final_rank_score": 371,
+      "authority_graph_points": 72
+    },
+    "search_index": {
+      "normalized_title": "the first witness crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "first",
+        "witness",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "first",
+        "witness",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "is",
+        "sacred",
+        "text",
+        "hub",
+        "for",
+        "lore",
+        "2030",
+        "covenant",
+        "bitcoin",
+        "provenance",
+        "chain",
+        "history",
+        "and",
+        "forty",
+        "paths"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 27,
+      "outbound_count": 57,
+      "existing_outbound_count": 36,
+      "suggested_outbound_count": 21,
+      "authority": 72
     },
     "brand": null
   },
@@ -2572,10 +2660,104 @@
     },
     "link_score": {
       "inbound_count": 33,
-      "outbound_count": 20,
+      "outbound_count": 22,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 9,
+      "suggested_outbound_count": 11,
       "authority": 71.5
+    },
+    "brand": null
+  },
+  {
+    "title": "The Sacred Chain",
+    "desc": "The Sacred Chain is the shared record, identity system and contested memory layer at the centre of Crypto Moonboys Year 3008 lore.",
+    "url": "/wiki/sacred-chain.html",
+    "tags": [
+      "sacred",
+      "chain",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "sacred chain crypto moonboys wiki"
+      },
+      {
+        "title": "Sacred Chain"
+      }
+    ],
+    "rank_score": 362,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 1920,
+      "keyword_bag_size": 21,
+      "heading_count": 16,
+      "list_count": 1,
+      "internal_link_count": 10,
+      "paragraph_count": 38,
+      "section_count": 13,
+      "lore_paragraph_count": 2,
+      "content_quality_score": 81,
+      "authority_score": 21
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 96,
+      "keyword_bag_points": 21,
+      "content_quality_points": 92,
+      "authority_points": 88,
+      "final_rank_score": 362,
+      "authority_graph_points": 67
+    },
+    "search_index": {
+      "normalized_title": "the sacred chain crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "sacred",
+        "chain",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "sacred",
+        "chain",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "is",
+        "shared",
+        "record",
+        "identity",
+        "system",
+        "and",
+        "contested",
+        "memory",
+        "layer",
+        "at",
+        "centre",
+        "of",
+        "year",
+        "3008",
+        "lore"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 31,
+      "outbound_count": 16,
+      "existing_outbound_count": 10,
+      "suggested_outbound_count": 6,
+      "authority": 67
     },
     "brand": null
   },
@@ -2669,9 +2851,9 @@
     },
     "link_score": {
       "inbound_count": 33,
-      "outbound_count": 16,
+      "outbound_count": 19,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 4,
+      "suggested_outbound_count": 7,
       "authority": 72
     },
     "brand": null
@@ -2766,9 +2948,9 @@
     },
     "link_score": {
       "inbound_count": 33,
-      "outbound_count": 23,
+      "outbound_count": 28,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 17,
       "authority": 71.5
     },
     "brand": null
@@ -2845,9 +3027,9 @@
     },
     "link_score": {
       "inbound_count": 14,
-      "outbound_count": 32,
+      "outbound_count": 34,
       "existing_outbound_count": 18,
-      "suggested_outbound_count": 14,
+      "suggested_outbound_count": 16,
       "authority": 37
     },
     "brand": null
@@ -3026,9 +3208,9 @@
     },
     "link_score": {
       "inbound_count": 32,
-      "outbound_count": 20,
+      "outbound_count": 23,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 8,
+      "suggested_outbound_count": 11,
       "authority": 70
     },
     "brand": null
@@ -3108,9 +3290,9 @@
     },
     "link_score": {
       "inbound_count": 36,
-      "outbound_count": 10,
+      "outbound_count": 12,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 1,
+      "suggested_outbound_count": 3,
       "authority": 76.5
     },
     "brand": null
@@ -3135,7 +3317,7 @@
         "title": "Hodl X Warriors"
       }
     ],
-    "rank_score": 335,
+    "rank_score": 337,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 2,
@@ -3162,9 +3344,9 @@
       "word_count_points": 89,
       "keyword_bag_points": 21,
       "content_quality_points": 88,
-      "authority_points": 67,
-      "final_rank_score": 335,
-      "authority_graph_points": 46
+      "authority_points": 69,
+      "final_rank_score": 337,
+      "authority_graph_points": 48
     },
     "search_index": {
       "normalized_title": "hodl warriors crypto moonboys wiki",
@@ -3200,11 +3382,11 @@
       ]
     },
     "link_score": {
-      "inbound_count": 21,
-      "outbound_count": 13,
+      "inbound_count": 22,
+      "outbound_count": 14,
       "existing_outbound_count": 8,
-      "suggested_outbound_count": 5,
-      "authority": 46
+      "suggested_outbound_count": 6,
+      "authority": 48
     },
     "brand": {
       "brand_family": "hodl",
@@ -3386,9 +3568,9 @@
     },
     "link_score": {
       "inbound_count": 5,
-      "outbound_count": 36,
+      "outbound_count": 37,
       "existing_outbound_count": 13,
-      "suggested_outbound_count": 23,
+      "suggested_outbound_count": 24,
       "authority": 16.5
     },
     "brand": null
@@ -3503,6 +3685,96 @@
       "canonical_slug": "graffpunks-24-7-radio",
       "parent_concept": "graffpunks"
     }
+  },
+  {
+    "title": "Triple Fork Event",
+    "desc": "The Triple Fork Event is a monumental narrative milestone in the Crypto Moonboys universe, a cataclysmic blockchain fork that shattered Block Topia into three c",
+    "url": "/wiki/triple-fork-event.html",
+    "tags": [
+      "triple",
+      "fork",
+      "event",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [],
+    "rank_score": 323,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 1243,
+      "keyword_bag_size": 23,
+      "heading_count": 9,
+      "list_count": 1,
+      "internal_link_count": 14,
+      "paragraph_count": 19,
+      "section_count": 6,
+      "lore_paragraph_count": 16,
+      "content_quality_score": 85,
+      "authority_score": 21
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 62,
+      "keyword_bag_points": 23,
+      "content_quality_points": 91,
+      "authority_points": 82,
+      "final_rank_score": 323,
+      "authority_graph_points": 61
+    },
+    "search_index": {
+      "normalized_title": "triple fork event crypto moonboys wiki",
+      "tokens": [
+        "triple",
+        "fork",
+        "event",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "triple",
+        "fork",
+        "event",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "is",
+        "a",
+        "monumental",
+        "narrative",
+        "milestone",
+        "in",
+        "universe",
+        "cataclysmic",
+        "blockchain",
+        "that",
+        "shattered",
+        "block",
+        "topia",
+        "into",
+        "three",
+        "c"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 27,
+      "outbound_count": 33,
+      "existing_outbound_count": 13,
+      "suggested_outbound_count": 20,
+      "authority": 60.5
+    },
+    "brand": null
   },
   {
     "title": "👉 Louie &quot;HAY YOU GUYS&quot; Lupo ⚡️⚡️⚡️",
@@ -3764,104 +4036,10 @@
     },
     "link_score": {
       "inbound_count": 34,
-      "outbound_count": 11,
-      "existing_outbound_count": 10,
-      "suggested_outbound_count": 1,
-      "authority": 73
-    },
-    "brand": null
-  },
-  {
-    "title": "The Sacred Chain",
-    "desc": "The Sacred Chain is the shared record, identity system and contested memory layer at the centre of Crypto Moonboys Year 3008 lore.",
-    "url": "/wiki/sacred-chain.html",
-    "tags": [
-      "sacred",
-      "chain",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "sacred chain crypto moonboys wiki"
-      },
-      {
-        "title": "Sacred Chain"
-      }
-    ],
-    "rank_score": 310,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1920,
-      "keyword_bag_size": 21,
-      "heading_count": 16,
-      "list_count": 1,
-      "internal_link_count": 10,
-      "paragraph_count": 38,
-      "section_count": 13,
-      "lore_paragraph_count": 2,
-      "content_quality_score": 81,
-      "authority_score": 21
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 96,
-      "keyword_bag_points": 21,
-      "content_quality_points": 92,
-      "authority_points": 36,
-      "final_rank_score": 310,
-      "authority_graph_points": 15
-    },
-    "search_index": {
-      "normalized_title": "the sacred chain crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "sacred",
-        "chain",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "sacred",
-        "chain",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "is",
-        "shared",
-        "record",
-        "identity",
-        "system",
-        "and",
-        "contested",
-        "memory",
-        "layer",
-        "at",
-        "centre",
-        "of",
-        "year",
-        "3008",
-        "lore"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 5,
       "outbound_count": 13,
       "existing_outbound_count": 10,
       "suggested_outbound_count": 3,
-      "authority": 15
+      "authority": 73
     },
     "brand": null
   },
@@ -4127,9 +4305,9 @@
     },
     "link_score": {
       "inbound_count": 34,
-      "outbound_count": 25,
+      "outbound_count": 27,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 15,
+      "suggested_outbound_count": 17,
       "authority": 73
     },
     "brand": {
@@ -4231,9 +4409,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 23,
+      "outbound_count": 25,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 13,
+      "suggested_outbound_count": 15,
       "authority": 7
     },
     "brand": null
@@ -4415,9 +4593,9 @@
     },
     "link_score": {
       "inbound_count": 4,
-      "outbound_count": 23,
+      "outbound_count": 24,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 11,
+      "suggested_outbound_count": 12,
       "authority": 14
     },
     "brand": null
@@ -4609,9 +4787,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 24,
+      "outbound_count": 30,
       "existing_outbound_count": 13,
-      "suggested_outbound_count": 11,
+      "suggested_outbound_count": 17,
       "authority": 12.5
     },
     "brand": null
@@ -4700,9 +4878,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 22,
+      "outbound_count": 24,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 13,
+      "suggested_outbound_count": 15,
       "authority": 6.5
     },
     "brand": null
@@ -4793,9 +4971,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 16,
+      "outbound_count": 18,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 6,
+      "suggested_outbound_count": 8,
       "authority": 5
     },
     "brand": null
@@ -4885,9 +5063,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 20,
+      "outbound_count": 22,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 10,
+      "suggested_outbound_count": 12,
       "authority": 5
     },
     "brand": null
@@ -4964,9 +5142,9 @@
     },
     "link_score": {
       "inbound_count": 12,
-      "outbound_count": 31,
+      "outbound_count": 34,
       "existing_outbound_count": 8,
-      "suggested_outbound_count": 23,
+      "suggested_outbound_count": 26,
       "authority": 28
     },
     "brand": null
@@ -5141,98 +5319,10 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 18,
+      "outbound_count": 20,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 7,
+      "suggested_outbound_count": 9,
       "authority": 5.5
-    },
-    "brand": null
-  },
-  {
-    "title": "The First Witness",
-    "desc": "The First Witness is the sacred-text hub for Crypto Moonboys lore: the 2030 Covenant, Bitcoin provenance, Sacred Chain history and Forty Paths.",
-    "url": "/wiki/the-first-witness.html",
-    "tags": [
-      "first",
-      "witness"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "First Witness"
-      }
-    ],
-    "rank_score": 295,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 2,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1574,
-      "keyword_bag_size": 21,
-      "heading_count": 15,
-      "list_count": 1,
-      "internal_link_count": 16,
-      "paragraph_count": 29,
-      "section_count": 12,
-      "lore_paragraph_count": 26,
-      "content_quality_score": 93,
-      "authority_score": 25
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 79,
-      "keyword_bag_points": 21,
-      "content_quality_points": 98,
-      "authority_points": 32,
-      "final_rank_score": 295,
-      "authority_graph_points": 7
-    },
-    "search_index": {
-      "normalized_title": "the first witness crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "first",
-        "witness",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "first",
-        "witness",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "is",
-        "sacred",
-        "text",
-        "hub",
-        "for",
-        "lore",
-        "2030",
-        "covenant",
-        "bitcoin",
-        "provenance",
-        "chain",
-        "history",
-        "and",
-        "forty",
-        "paths"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 1,
-      "outbound_count": 31,
-      "existing_outbound_count": 10,
-      "suggested_outbound_count": 21,
-      "authority": 7
     },
     "brand": null
   },
@@ -5320,9 +5410,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 22,
+      "outbound_count": 24,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 14,
       "authority": 5
     },
     "brand": null
@@ -5420,9 +5510,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 14,
+      "outbound_count": 17,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 4,
+      "suggested_outbound_count": 7,
       "authority": 9
     },
     "brand": null
@@ -5597,9 +5687,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 19,
+      "outbound_count": 23,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 9,
+      "suggested_outbound_count": 13,
       "authority": 5
     },
     "brand": null
@@ -5695,9 +5785,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 24,
+      "outbound_count": 26,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 14,
       "authority": 12
     },
     "brand": null
@@ -5791,9 +5881,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 18,
+      "outbound_count": 19,
       "existing_outbound_count": 6,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 13,
       "authority": 9
     },
     "brand": null
@@ -5884,9 +5974,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 20,
+      "outbound_count": 23,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 9,
+      "suggested_outbound_count": 12,
       "authority": 7.5
     },
     "brand": null
@@ -5973,9 +6063,9 @@
     },
     "link_score": {
       "inbound_count": 6,
-      "outbound_count": 35,
+      "outbound_count": 36,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 23,
+      "suggested_outbound_count": 24,
       "authority": 18
     },
     "brand": null
@@ -6072,9 +6162,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 17,
+      "outbound_count": 20,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 5,
+      "suggested_outbound_count": 8,
       "authority": 8
     },
     "brand": null
@@ -6170,9 +6260,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 24,
+      "outbound_count": 26,
       "existing_outbound_count": 13,
-      "suggested_outbound_count": 11,
+      "suggested_outbound_count": 13,
       "authority": 10.5
     },
     "brand": null
@@ -6271,9 +6361,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 16,
+      "outbound_count": 20,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 5,
+      "suggested_outbound_count": 9,
       "authority": 7.5
     },
     "brand": null
@@ -6450,9 +6540,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 11,
+      "outbound_count": 12,
       "existing_outbound_count": 8,
-      "suggested_outbound_count": 3,
+      "suggested_outbound_count": 4,
       "authority": 6
     },
     "brand": null
@@ -6736,9 +6826,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 20,
+      "outbound_count": 23,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 9,
+      "suggested_outbound_count": 12,
       "authority": 7.5
     },
     "brand": null
@@ -6926,9 +7016,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 16,
+      "outbound_count": 19,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 5,
+      "suggested_outbound_count": 8,
       "authority": 5.5
     },
     "brand": null
@@ -7108,9 +7198,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 26,
+      "outbound_count": 28,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 15,
+      "suggested_outbound_count": 17,
       "authority": 5.5
     },
     "brand": null
@@ -7203,9 +7293,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 24,
+      "outbound_count": 26,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 14,
       "authority": 6
     },
     "brand": null
@@ -7296,9 +7386,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 12,
+      "outbound_count": 17,
       "existing_outbound_count": 8,
-      "suggested_outbound_count": 4,
+      "suggested_outbound_count": 9,
       "authority": 6
     },
     "brand": null
@@ -7386,9 +7476,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 22,
+      "outbound_count": 24,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 11,
+      "suggested_outbound_count": 13,
       "authority": 11.5
     },
     "brand": null
@@ -7577,9 +7667,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 16,
+      "outbound_count": 17,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 5,
+      "suggested_outbound_count": 6,
       "authority": 5.5
     },
     "brand": null
@@ -7672,9 +7762,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 20,
+      "outbound_count": 23,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 8,
+      "suggested_outbound_count": 11,
       "authority": 6
     },
     "brand": null
@@ -7766,9 +7856,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 31,
+      "outbound_count": 36,
       "existing_outbound_count": 8,
-      "suggested_outbound_count": 23,
+      "suggested_outbound_count": 28,
       "authority": 10
     },
     "brand": null
@@ -7863,9 +7953,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 20,
+      "outbound_count": 23,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 9,
+      "suggested_outbound_count": 12,
       "authority": 7.5
     },
     "brand": null
@@ -7964,9 +8054,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 15,
+      "outbound_count": 17,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 4,
+      "suggested_outbound_count": 6,
       "authority": 9.5
     },
     "brand": null
@@ -8069,9 +8159,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 18,
+      "outbound_count": 21,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 7,
+      "suggested_outbound_count": 10,
       "authority": 5.5
     },
     "brand": null
@@ -8160,9 +8250,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 24,
+      "outbound_count": 27,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 14,
+      "suggested_outbound_count": 17,
       "authority": 5
     },
     "brand": null
@@ -8253,9 +8343,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 20,
+      "outbound_count": 22,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 9,
+      "suggested_outbound_count": 11,
       "authority": 7.5
     },
     "brand": null
@@ -8352,9 +8442,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 17,
+      "outbound_count": 19,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 6,
+      "suggested_outbound_count": 8,
       "authority": 5.5
     },
     "brand": null
@@ -8447,9 +8537,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 13,
+      "outbound_count": 14,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 2,
+      "suggested_outbound_count": 3,
       "authority": 5.5
     },
     "brand": null
@@ -8547,9 +8637,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 22,
+      "outbound_count": 24,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 10,
+      "suggested_outbound_count": 12,
       "authority": 6
     },
     "brand": null
@@ -8641,9 +8731,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 33,
+      "outbound_count": 34,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 24,
+      "suggested_outbound_count": 25,
       "authority": 4.5
     },
     "brand": null
@@ -8840,9 +8930,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 17,
+      "outbound_count": 20,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 5,
+      "suggested_outbound_count": 8,
       "authority": 6
     },
     "brand": null
@@ -9018,9 +9108,9 @@
     },
     "link_score": {
       "inbound_count": 19,
-      "outbound_count": 22,
+      "outbound_count": 24,
       "existing_outbound_count": 15,
-      "suggested_outbound_count": 7,
+      "suggested_outbound_count": 9,
       "authority": 45.5
     },
     "brand": null
@@ -9208,9 +9298,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 22,
+      "outbound_count": 24,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 13,
+      "suggested_outbound_count": 15,
       "authority": 6.5
     },
     "brand": null
@@ -9305,9 +9395,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 15,
+      "outbound_count": 17,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 5,
+      "suggested_outbound_count": 7,
       "authority": 5
     },
     "brand": null
@@ -9399,9 +9489,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 18,
+      "outbound_count": 20,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 8,
+      "suggested_outbound_count": 10,
       "authority": 5
     },
     "brand": null
@@ -9782,96 +9872,6 @@
     "brand": null
   },
   {
-    "title": "Triple Fork Event",
-    "desc": "The Triple Fork Event is a monumental narrative milestone in the Crypto Moonboys universe, a cataclysmic blockchain fork that shattered Block Topia into three c",
-    "url": "/wiki/triple-fork-event.html",
-    "tags": [
-      "triple",
-      "fork",
-      "event",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 271,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 6,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1243,
-      "keyword_bag_size": 23,
-      "heading_count": 9,
-      "list_count": 1,
-      "internal_link_count": 14,
-      "paragraph_count": 19,
-      "section_count": 6,
-      "lore_paragraph_count": 16,
-      "content_quality_score": 85,
-      "authority_score": 21
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 62,
-      "keyword_bag_points": 23,
-      "content_quality_points": 91,
-      "authority_points": 30,
-      "final_rank_score": 271,
-      "authority_graph_points": 9
-    },
-    "search_index": {
-      "normalized_title": "triple fork event crypto moonboys wiki",
-      "tokens": [
-        "triple",
-        "fork",
-        "event",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "triple",
-        "fork",
-        "event",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "is",
-        "a",
-        "monumental",
-        "narrative",
-        "milestone",
-        "in",
-        "universe",
-        "cataclysmic",
-        "blockchain",
-        "that",
-        "shattered",
-        "block",
-        "topia",
-        "into",
-        "three",
-        "c"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 1,
-      "outbound_count": 28,
-      "existing_outbound_count": 13,
-      "suggested_outbound_count": 15,
-      "authority": 8.5
-    },
-    "brand": null
-  },
-  {
     "title": "Iris-7",
     "desc": "Iris-7 is a visionary scout in the Crypto Moonboys universe, her keen perception and almost prophetic insight uncovering hidden paths and encrypted truths withi",
     "url": "/wiki/iris-7.html",
@@ -9957,9 +9957,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 16,
+      "outbound_count": 17,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 6,
+      "suggested_outbound_count": 7,
       "authority": 7
     },
     "brand": null
@@ -10239,9 +10239,9 @@
     },
     "link_score": {
       "inbound_count": 5,
-      "outbound_count": 29,
+      "outbound_count": 32,
       "existing_outbound_count": 20,
-      "suggested_outbound_count": 9,
+      "suggested_outbound_count": 12,
       "authority": 20
     },
     "brand": {
@@ -10424,9 +10424,9 @@
     },
     "link_score": {
       "inbound_count": 9,
-      "outbound_count": 35,
+      "outbound_count": 36,
       "existing_outbound_count": 16,
-      "suggested_outbound_count": 19,
+      "suggested_outbound_count": 20,
       "authority": 26
     },
     "brand": null
@@ -10797,9 +10797,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 19,
+      "outbound_count": 21,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 10,
+      "suggested_outbound_count": 12,
       "authority": 4.5
     },
     "brand": null
@@ -10989,9 +10989,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 16,
+      "outbound_count": 19,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 4,
+      "suggested_outbound_count": 7,
       "authority": 6
     },
     "brand": null
@@ -11181,9 +11181,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 14,
+      "outbound_count": 17,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 4,
+      "suggested_outbound_count": 7,
       "authority": 7
     },
     "brand": null
@@ -11366,9 +11366,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 21,
+      "outbound_count": 24,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 15,
       "authority": 8.5
     },
     "brand": null
@@ -11454,9 +11454,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 25,
+      "outbound_count": 27,
       "existing_outbound_count": 13,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 14,
       "authority": 8.5
     },
     "brand": null
@@ -11731,9 +11731,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 16,
+      "outbound_count": 17,
       "existing_outbound_count": 13,
-      "suggested_outbound_count": 3,
+      "suggested_outbound_count": 4,
       "authority": 6.5
     },
     "brand": null
@@ -11914,9 +11914,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 18,
+      "outbound_count": 20,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 9,
+      "suggested_outbound_count": 11,
       "authority": 6.5
     },
     "brand": {
@@ -12103,9 +12103,9 @@
     },
     "link_score": {
       "inbound_count": 8,
-      "outbound_count": 29,
+      "outbound_count": 30,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 18,
+      "suggested_outbound_count": 19,
       "authority": 21.5
     },
     "brand": null
@@ -12197,9 +12197,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 26,
+      "outbound_count": 28,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 16,
+      "suggested_outbound_count": 18,
       "authority": 5
     },
     "brand": null
@@ -12293,9 +12293,9 @@
     },
     "link_score": {
       "inbound_count": 5,
-      "outbound_count": 25,
+      "outbound_count": 26,
       "existing_outbound_count": 18,
-      "suggested_outbound_count": 7,
+      "suggested_outbound_count": 8,
       "authority": 19
     },
     "brand": null
@@ -12477,9 +12477,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 24,
+      "outbound_count": 27,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 15,
       "authority": 6
     },
     "brand": null
@@ -12572,9 +12572,9 @@
     },
     "link_score": {
       "inbound_count": 5,
-      "outbound_count": 34,
+      "outbound_count": 35,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 25,
+      "suggested_outbound_count": 26,
       "authority": 14.5
     },
     "brand": null
@@ -12665,9 +12665,9 @@
     },
     "link_score": {
       "inbound_count": 2,
-      "outbound_count": 15,
+      "outbound_count": 17,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 3,
+      "suggested_outbound_count": 5,
       "authority": 10
     },
     "brand": null
@@ -12848,9 +12848,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 23,
+      "outbound_count": 26,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 14,
+      "suggested_outbound_count": 17,
       "authority": 4.5
     },
     "brand": null
@@ -12942,9 +12942,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 18,
+      "outbound_count": 21,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 8,
+      "suggested_outbound_count": 11,
       "authority": 5
     },
     "brand": null
@@ -13029,9 +13029,9 @@
     },
     "link_score": {
       "inbound_count": 10,
-      "outbound_count": 33,
+      "outbound_count": 34,
       "existing_outbound_count": 17,
-      "suggested_outbound_count": 16,
+      "suggested_outbound_count": 17,
       "authority": 28.5
     },
     "brand": null
@@ -13211,9 +13211,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 34,
+      "outbound_count": 35,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 22,
+      "suggested_outbound_count": 23,
       "authority": 8
     },
     "brand": null
@@ -13299,9 +13299,9 @@
     },
     "link_score": {
       "inbound_count": 9,
-      "outbound_count": 19,
+      "outbound_count": 20,
       "existing_outbound_count": 14,
-      "suggested_outbound_count": 5,
+      "suggested_outbound_count": 6,
       "authority": 25
     },
     "brand": null
@@ -13480,9 +13480,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 28,
+      "outbound_count": 30,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 18,
+      "suggested_outbound_count": 20,
       "authority": 5
     },
     "brand": null
@@ -13573,9 +13573,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 18,
+      "outbound_count": 20,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 8,
+      "suggested_outbound_count": 10,
       "authority": 5
     },
     "brand": null
@@ -13668,9 +13668,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 17,
+      "outbound_count": 20,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 7,
+      "suggested_outbound_count": 10,
       "authority": 5
     },
     "brand": null
@@ -13762,9 +13762,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 19,
+      "outbound_count": 21,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 9,
+      "suggested_outbound_count": 11,
       "authority": 5
     },
     "brand": null
@@ -13856,9 +13856,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 16,
+      "outbound_count": 18,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 6,
+      "suggested_outbound_count": 8,
       "authority": 5
     },
     "brand": null
@@ -13948,9 +13948,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 15,
+      "outbound_count": 17,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 5,
+      "suggested_outbound_count": 7,
       "authority": 5
     },
     "brand": null
@@ -14040,9 +14040,9 @@
     },
     "link_score": {
       "inbound_count": 4,
-      "outbound_count": 24,
+      "outbound_count": 26,
       "existing_outbound_count": 19,
-      "suggested_outbound_count": 5,
+      "suggested_outbound_count": 7,
       "authority": 17.5
     },
     "brand": null
@@ -14133,9 +14133,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 24,
+      "outbound_count": 25,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 14,
+      "suggested_outbound_count": 15,
       "authority": 5
     },
     "brand": null
@@ -14221,9 +14221,9 @@
     },
     "link_score": {
       "inbound_count": 9,
-      "outbound_count": 19,
+      "outbound_count": 20,
       "existing_outbound_count": 14,
-      "suggested_outbound_count": 5,
+      "suggested_outbound_count": 6,
       "authority": 25
     },
     "brand": null
@@ -14310,9 +14310,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 21,
+      "outbound_count": 22,
       "existing_outbound_count": 13,
-      "suggested_outbound_count": 8,
+      "suggested_outbound_count": 9,
       "authority": 8.5
     },
     "brand": null
@@ -14581,9 +14581,9 @@
     },
     "link_score": {
       "inbound_count": 9,
-      "outbound_count": 21,
+      "outbound_count": 23,
       "existing_outbound_count": 14,
-      "suggested_outbound_count": 7,
+      "suggested_outbound_count": 9,
       "authority": 25
     },
     "brand": null
@@ -14768,9 +14768,9 @@
     },
     "link_score": {
       "inbound_count": 5,
-      "outbound_count": 22,
+      "outbound_count": 23,
       "existing_outbound_count": 17,
-      "suggested_outbound_count": 5,
+      "suggested_outbound_count": 6,
       "authority": 18.5
     },
     "brand": null
@@ -14863,9 +14863,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 23,
+      "outbound_count": 25,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 14,
+      "suggested_outbound_count": 16,
       "authority": 4.5
     },
     "brand": null
@@ -14956,9 +14956,9 @@
     },
     "link_score": {
       "inbound_count": 4,
-      "outbound_count": 23,
+      "outbound_count": 26,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 12,
+      "suggested_outbound_count": 15,
       "authority": 13.5
     },
     "brand": null
@@ -15305,9 +15305,9 @@
     },
     "link_score": {
       "inbound_count": 19,
-      "outbound_count": 36,
+      "outbound_count": 37,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 24,
+      "suggested_outbound_count": 25,
       "authority": 44
     },
     "brand": null
@@ -15497,9 +15497,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 26,
+      "outbound_count": 27,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 15,
+      "suggested_outbound_count": 16,
       "authority": 7.5
     },
     "brand": null
@@ -15587,9 +15587,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 14,
+      "outbound_count": 16,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 4,
+      "suggested_outbound_count": 6,
       "authority": 5
     },
     "brand": null
@@ -15767,9 +15767,9 @@
     },
     "link_score": {
       "inbound_count": 7,
-      "outbound_count": 43,
+      "outbound_count": 46,
       "existing_outbound_count": 14,
-      "suggested_outbound_count": 29,
+      "suggested_outbound_count": 32,
       "authority": 21
     },
     "brand": null
@@ -15857,9 +15857,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 23,
+      "outbound_count": 24,
       "existing_outbound_count": 13,
-      "suggested_outbound_count": 10,
+      "suggested_outbound_count": 11,
       "authority": 12.5
     },
     "brand": {
@@ -16045,9 +16045,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 14,
+      "outbound_count": 17,
       "existing_outbound_count": 9,
-      "suggested_outbound_count": 5,
+      "suggested_outbound_count": 8,
       "authority": 6.5
     },
     "brand": null
@@ -16136,6 +16136,97 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 12,
       "authority": 14
+    },
+    "brand": null
+  },
+  {
+    "title": "Faction Commentaries on the First Witness",
+    "desc": "How the currently evidenced GK factions interpret the Covenant.",
+    "url": "/wiki/first-witness-faction-commentaries.html",
+    "tags": [
+      "faction",
+      "commentaries",
+      "first",
+      "witness"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "faction commentaries first witness"
+      },
+      {
+        "title": "first witness faction commentaries"
+      }
+    ],
+    "rank_score": 233,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 896,
+      "keyword_bag_size": 16,
+      "heading_count": 33,
+      "list_count": 0,
+      "internal_link_count": 6,
+      "paragraph_count": 32,
+      "section_count": 3,
+      "lore_paragraph_count": 31,
+      "content_quality_score": 74,
+      "authority_score": 14
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 45,
+      "keyword_bag_points": 16,
+      "content_quality_points": 84,
+      "authority_points": 23,
+      "final_rank_score": 233,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "faction commentaries on the first witness crypto moonboys wiki",
+      "tokens": [
+        "faction",
+        "commentaries",
+        "on",
+        "the",
+        "first",
+        "witness",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "faction",
+        "commentaries",
+        "on",
+        "the",
+        "first",
+        "witness",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "how",
+        "currently",
+        "evidenced",
+        "gk",
+        "factions",
+        "interpret",
+        "covenant"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 19,
+      "existing_outbound_count": 5,
+      "suggested_outbound_count": 14,
+      "authority": 8.5
     },
     "brand": null
   },
@@ -16398,9 +16489,9 @@
     },
     "link_score": {
       "inbound_count": 17,
-      "outbound_count": 35,
+      "outbound_count": 36,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 23,
+      "suggested_outbound_count": 24,
       "authority": 40
     },
     "brand": null
@@ -16578,6 +16669,99 @@
     "brand": null
   },
   {
+    "title": "Book VIII — The Fire",
+    "desc": "Book VIII: cryptic warnings later read through the Triple Fork, NULL and the Child of Fire.",
+    "url": "/wiki/first-witness-book-8-the-fire.html",
+    "tags": [
+      "book",
+      "viii",
+      "fire"
+    ],
+    "category": "core",
+    "aliases": [
+      {
+        "title": "book viii fire"
+      },
+      {
+        "title": "first witness book 8 the fire"
+      }
+    ],
+    "rank_score": 230,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 3,
+      "mention_count": 0,
+      "category": "core",
+      "category_priority": 10,
+      "has_description": true,
+      "article_word_count": 561,
+      "keyword_bag_size": 21,
+      "heading_count": 5,
+      "list_count": 0,
+      "internal_link_count": 6,
+      "paragraph_count": 30,
+      "section_count": 3,
+      "lore_paragraph_count": 29,
+      "content_quality_score": 71,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 50,
+      "word_count_points": 28,
+      "keyword_bag_points": 21,
+      "content_quality_points": 80,
+      "authority_points": 21,
+      "final_rank_score": 230,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "book viii the fire crypto moonboys wiki",
+      "tokens": [
+        "book",
+        "viii",
+        "the",
+        "fire",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "book",
+        "viii",
+        "the",
+        "fire",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "cryptic",
+        "warnings",
+        "later",
+        "read",
+        "through",
+        "triple",
+        "fork",
+        "null",
+        "and",
+        "child",
+        "of",
+        "first",
+        "witness",
+        "8"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 25,
+      "existing_outbound_count": 5,
+      "suggested_outbound_count": 20,
+      "authority": 8.5
+    },
+    "brand": null
+  },
+  {
     "title": "PMSL Token",
     "desc": "PMSL Token circulates as a mysterious yet vital cryptocurrency within the Crypto Moonboys ecosystem, fueling the shadowy transactions and cultural undercurrents",
     "url": "/wiki/pmsl-token.html",
@@ -16747,9 +16931,9 @@
     },
     "link_score": {
       "inbound_count": 3,
-      "outbound_count": 23,
+      "outbound_count": 24,
       "existing_outbound_count": 17,
-      "suggested_outbound_count": 6,
+      "suggested_outbound_count": 7,
       "authority": 14.5
     },
     "brand": null
@@ -16933,9 +17117,9 @@
     },
     "link_score": {
       "inbound_count": 10,
-      "outbound_count": 40,
+      "outbound_count": 41,
       "existing_outbound_count": 14,
-      "suggested_outbound_count": 26,
+      "suggested_outbound_count": 27,
       "authority": 27
     },
     "brand": null
@@ -17112,9 +17296,9 @@
     },
     "link_score": {
       "inbound_count": 15,
-      "outbound_count": 35,
+      "outbound_count": 36,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 23,
+      "suggested_outbound_count": 24,
       "authority": 36
     },
     "brand": null
@@ -17375,9 +17559,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 32,
+      "outbound_count": 33,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 20,
+      "suggested_outbound_count": 21,
       "authority": 6
     },
     "brand": null
@@ -17641,6 +17825,192 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 11,
       "authority": 30
+    },
+    "brand": null
+  },
+  {
+    "title": "Book II — The Common Blood",
+    "desc": "Book II: dignity, difference, family, strangers, enemies and inherited status.",
+    "url": "/wiki/first-witness-book-2-the-common-blood.html",
+    "tags": [
+      "book",
+      "ii",
+      "common",
+      "blood"
+    ],
+    "category": "core",
+    "aliases": [
+      {
+        "title": "book ii common blood"
+      },
+      {
+        "title": "first witness book 2 the common blood"
+      }
+    ],
+    "rank_score": 224,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "core",
+      "category_priority": 10,
+      "has_description": true,
+      "article_word_count": 554,
+      "keyword_bag_size": 19,
+      "heading_count": 5,
+      "list_count": 0,
+      "internal_link_count": 6,
+      "paragraph_count": 29,
+      "section_count": 3,
+      "lore_paragraph_count": 28,
+      "content_quality_score": 66,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 50,
+      "word_count_points": 28,
+      "keyword_bag_points": 19,
+      "content_quality_points": 76,
+      "authority_points": 21,
+      "final_rank_score": 224,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "book ii the common blood crypto moonboys wiki",
+      "tokens": [
+        "book",
+        "ii",
+        "the",
+        "common",
+        "blood",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "book",
+        "ii",
+        "the",
+        "common",
+        "blood",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "dignity",
+        "difference",
+        "family",
+        "strangers",
+        "enemies",
+        "and",
+        "inherited",
+        "status",
+        "first",
+        "witness",
+        "2"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 17,
+      "existing_outbound_count": 5,
+      "suggested_outbound_count": 12,
+      "authority": 8.5
+    },
+    "brand": null
+  },
+  {
+    "title": "The Great Concord of 2030",
+    "desc": "The 2030 Concord that created the shared Covenant later known as the First Witness.",
+    "url": "/wiki/first-witness-great-concord-2030.html",
+    "tags": [
+      "great",
+      "concord",
+      "2030"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "Great Concord of 2030"
+      },
+      {
+        "title": "first witness great concord 2030"
+      },
+      {
+        "title": "great concord 2030"
+      }
+    ],
+    "rank_score": 224,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 3,
+      "tag_count": 3,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 699,
+      "keyword_bag_size": 17,
+      "heading_count": 8,
+      "list_count": 0,
+      "internal_link_count": 5,
+      "paragraph_count": 12,
+      "section_count": 6,
+      "lore_paragraph_count": 11,
+      "content_quality_score": 75,
+      "authority_score": 14
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 35,
+      "keyword_bag_points": 17,
+      "content_quality_points": 87,
+      "authority_points": 20,
+      "final_rank_score": 224,
+      "authority_graph_points": 6
+    },
+    "search_index": {
+      "normalized_title": "the great concord of 2030 crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "great",
+        "concord",
+        "of",
+        "2030",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "great",
+        "concord",
+        "of",
+        "2030",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "that",
+        "created",
+        "shared",
+        "covenant",
+        "later",
+        "known",
+        "as",
+        "first",
+        "witness"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 2,
+      "outbound_count": 13,
+      "existing_outbound_count": 4,
+      "suggested_outbound_count": 9,
+      "authority": 6
     },
     "brand": null
   },
@@ -18181,10 +18551,97 @@
     },
     "link_score": {
       "inbound_count": 12,
-      "outbound_count": 35,
+      "outbound_count": 36,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 23,
+      "suggested_outbound_count": 24,
       "authority": 30
+    },
+    "brand": null
+  },
+  {
+    "title": "The Bitcoin Witness",
+    "desc": "How the 2030 Covenant gained Bitcoin provenance without turning Bitcoin into a religion.",
+    "url": "/wiki/first-witness-bitcoin-witness.html",
+    "tags": [
+      "bitcoin",
+      "witness"
+    ],
+    "category": "core",
+    "aliases": [
+      {
+        "title": "Bitcoin Witness"
+      },
+      {
+        "title": "first witness bitcoin witness"
+      }
+    ],
+    "rank_score": 221,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 2,
+      "mention_count": 0,
+      "category": "core",
+      "category_priority": 10,
+      "has_description": true,
+      "article_word_count": 568,
+      "keyword_bag_size": 17,
+      "heading_count": 8,
+      "list_count": 0,
+      "internal_link_count": 6,
+      "paragraph_count": 11,
+      "section_count": 6,
+      "lore_paragraph_count": 10,
+      "content_quality_score": 67,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 50,
+      "word_count_points": 28,
+      "keyword_bag_points": 17,
+      "content_quality_points": 75,
+      "authority_points": 21,
+      "final_rank_score": 221,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "the bitcoin witness crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "bitcoin",
+        "witness",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "bitcoin",
+        "witness",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "how",
+        "2030",
+        "covenant",
+        "gained",
+        "provenance",
+        "without",
+        "turning",
+        "into",
+        "a",
+        "religion",
+        "first"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 30,
+      "existing_outbound_count": 5,
+      "suggested_outbound_count": 25,
+      "authority": 8.5
     },
     "brand": null
   },
@@ -18277,6 +18734,95 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 13,
       "authority": 24
+    },
+    "brand": null
+  },
+  {
+    "title": "Book IV — The Wall",
+    "desc": "Book IV: creation, public marks, identity and cultural memory.",
+    "url": "/wiki/first-witness-book-4-the-wall.html",
+    "tags": [
+      "book",
+      "iv",
+      "wall"
+    ],
+    "category": "core",
+    "aliases": [
+      {
+        "title": "book iv wall"
+      },
+      {
+        "title": "first witness book 4 the wall"
+      }
+    ],
+    "rank_score": 220,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 3,
+      "mention_count": 0,
+      "category": "core",
+      "category_priority": 10,
+      "has_description": true,
+      "article_word_count": 542,
+      "keyword_bag_size": 17,
+      "heading_count": 5,
+      "list_count": 0,
+      "internal_link_count": 6,
+      "paragraph_count": 29,
+      "section_count": 3,
+      "lore_paragraph_count": 28,
+      "content_quality_score": 66,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 50,
+      "word_count_points": 27,
+      "keyword_bag_points": 17,
+      "content_quality_points": 75,
+      "authority_points": 21,
+      "final_rank_score": 220,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "book iv the wall crypto moonboys wiki",
+      "tokens": [
+        "book",
+        "iv",
+        "the",
+        "wall",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "book",
+        "iv",
+        "the",
+        "wall",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "creation",
+        "public",
+        "marks",
+        "identity",
+        "and",
+        "cultural",
+        "memory",
+        "first",
+        "witness",
+        "4"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 17,
+      "existing_outbound_count": 5,
+      "suggested_outbound_count": 12,
+      "authority": 8.5
     },
     "brand": null
   },
@@ -18459,6 +19005,182 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 15,
       "authority": 48
+    },
+    "brand": null
+  },
+  {
+    "title": "Book III — The Keeper",
+    "desc": "Book III: stewardship, custody, power, property and responsibility.",
+    "url": "/wiki/first-witness-book-3-the-keeper.html",
+    "tags": [
+      "book",
+      "iii",
+      "keeper"
+    ],
+    "category": "core",
+    "aliases": [
+      {
+        "title": "book iii keeper"
+      },
+      {
+        "title": "first witness book 3 the keeper"
+      }
+    ],
+    "rank_score": 219,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 3,
+      "mention_count": 0,
+      "category": "core",
+      "category_priority": 10,
+      "has_description": true,
+      "article_word_count": 542,
+      "keyword_bag_size": 16,
+      "heading_count": 5,
+      "list_count": 0,
+      "internal_link_count": 6,
+      "paragraph_count": 29,
+      "section_count": 3,
+      "lore_paragraph_count": 28,
+      "content_quality_score": 66,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 50,
+      "word_count_points": 27,
+      "keyword_bag_points": 16,
+      "content_quality_points": 75,
+      "authority_points": 21,
+      "final_rank_score": 219,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "book iii the keeper crypto moonboys wiki",
+      "tokens": [
+        "book",
+        "iii",
+        "the",
+        "keeper",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "book",
+        "iii",
+        "the",
+        "keeper",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "stewardship",
+        "custody",
+        "power",
+        "property",
+        "and",
+        "responsibility",
+        "first",
+        "witness",
+        "3"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 17,
+      "existing_outbound_count": 5,
+      "suggested_outbound_count": 12,
+      "authority": 8.5
+    },
+    "brand": null
+  },
+  {
+    "title": "Book VI — The Fork",
+    "desc": "Book VI: conscience, dissent, schism, authority and fragmentation.",
+    "url": "/wiki/first-witness-book-6-the-fork.html",
+    "tags": [
+      "book",
+      "vi",
+      "fork"
+    ],
+    "category": "core",
+    "aliases": [
+      {
+        "title": "book vi fork"
+      },
+      {
+        "title": "first witness book 6 the fork"
+      }
+    ],
+    "rank_score": 219,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 3,
+      "mention_count": 0,
+      "category": "core",
+      "category_priority": 10,
+      "has_description": true,
+      "article_word_count": 541,
+      "keyword_bag_size": 16,
+      "heading_count": 5,
+      "list_count": 0,
+      "internal_link_count": 6,
+      "paragraph_count": 29,
+      "section_count": 3,
+      "lore_paragraph_count": 28,
+      "content_quality_score": 66,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 50,
+      "word_count_points": 27,
+      "keyword_bag_points": 16,
+      "content_quality_points": 75,
+      "authority_points": 21,
+      "final_rank_score": 219,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "book vi the fork crypto moonboys wiki",
+      "tokens": [
+        "book",
+        "vi",
+        "the",
+        "fork",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "book",
+        "vi",
+        "the",
+        "fork",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "conscience",
+        "dissent",
+        "schism",
+        "authority",
+        "and",
+        "fragmentation",
+        "first",
+        "witness",
+        "6"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 21,
+      "existing_outbound_count": 5,
+      "suggested_outbound_count": 16,
+      "authority": 8.5
     },
     "brand": null
   },
@@ -18823,6 +19545,93 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 8,
       "authority": 46
+    },
+    "brand": null
+  },
+  {
+    "title": "Book V — The Chain",
+    "desc": "Book V: continuity, distributed records, technology and dependency.",
+    "url": "/wiki/first-witness-book-5-the-chain.html",
+    "tags": [
+      "book",
+      "chain"
+    ],
+    "category": "core",
+    "aliases": [
+      {
+        "title": "book chain"
+      },
+      {
+        "title": "first witness book 5 the chain"
+      }
+    ],
+    "rank_score": 218,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 2,
+      "mention_count": 0,
+      "category": "core",
+      "category_priority": 10,
+      "has_description": true,
+      "article_word_count": 542,
+      "keyword_bag_size": 16,
+      "heading_count": 5,
+      "list_count": 0,
+      "internal_link_count": 6,
+      "paragraph_count": 29,
+      "section_count": 3,
+      "lore_paragraph_count": 28,
+      "content_quality_score": 66,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 50,
+      "word_count_points": 27,
+      "keyword_bag_points": 16,
+      "content_quality_points": 74,
+      "authority_points": 21,
+      "final_rank_score": 218,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "book v the chain crypto moonboys wiki",
+      "tokens": [
+        "book",
+        "v",
+        "the",
+        "chain",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "book",
+        "v",
+        "the",
+        "chain",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "continuity",
+        "distributed",
+        "records",
+        "technology",
+        "and",
+        "dependency",
+        "first",
+        "witness",
+        "5"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 22,
+      "existing_outbound_count": 5,
+      "suggested_outbound_count": 17,
+      "authority": 8.5
     },
     "brand": null
   },
@@ -19367,9 +20176,9 @@
     },
     "link_score": {
       "inbound_count": 10,
-      "outbound_count": 35,
+      "outbound_count": 36,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 23,
+      "suggested_outbound_count": 24,
       "authority": 26
     },
     "brand": null
@@ -19468,6 +20277,98 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 36,
       "authority": 36
+    },
+    "brand": null
+  },
+  {
+    "title": "Book IX — The Unwritten Block",
+    "desc": "Book IX: the unfinished ending that denies any generation humanity",
+    "url": "/wiki/first-witness-book-9-the-unwritten-block.html",
+    "tags": [
+      "book",
+      "ix",
+      "unwritten",
+      "block"
+    ],
+    "category": "core",
+    "aliases": [
+      {
+        "title": "book ix unwritten block"
+      },
+      {
+        "title": "first witness book 9 the unwritten block"
+      }
+    ],
+    "rank_score": 217,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "core",
+      "category_priority": 10,
+      "has_description": true,
+      "article_word_count": 448,
+      "keyword_bag_size": 18,
+      "heading_count": 5,
+      "list_count": 0,
+      "internal_link_count": 6,
+      "paragraph_count": 28,
+      "section_count": 3,
+      "lore_paragraph_count": 27,
+      "content_quality_score": 66,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 50,
+      "word_count_points": 22,
+      "keyword_bag_points": 18,
+      "content_quality_points": 76,
+      "authority_points": 21,
+      "final_rank_score": 217,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "book ix the unwritten block crypto moonboys wiki",
+      "tokens": [
+        "book",
+        "ix",
+        "the",
+        "unwritten",
+        "block",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "book",
+        "ix",
+        "the",
+        "unwritten",
+        "block",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "unfinished",
+        "ending",
+        "that",
+        "denies",
+        "any",
+        "generation",
+        "humanity",
+        "first",
+        "witness",
+        "9"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 21,
+      "existing_outbound_count": 5,
+      "suggested_outbound_count": 16,
+      "authority": 8.5
     },
     "brand": null
   },
@@ -19646,6 +20547,94 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 36,
       "authority": 36
+    },
+    "brand": null
+  },
+  {
+    "title": "Book I — The First Witness",
+    "desc": "Book I: testimony, evidence, memory, uncertainty and honest witness.",
+    "url": "/wiki/first-witness-book-1-the-first-witness.html",
+    "tags": [
+      "book",
+      "first",
+      "witness"
+    ],
+    "category": "core",
+    "aliases": [
+      {
+        "title": "book first witness"
+      },
+      {
+        "title": "first witness book 1 the first witness"
+      }
+    ],
+    "rank_score": 216,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 3,
+      "mention_count": 0,
+      "category": "core",
+      "category_priority": 10,
+      "has_description": true,
+      "article_word_count": 576,
+      "keyword_bag_size": 15,
+      "heading_count": 5,
+      "list_count": 0,
+      "internal_link_count": 6,
+      "paragraph_count": 29,
+      "section_count": 3,
+      "lore_paragraph_count": 28,
+      "content_quality_score": 62,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 50,
+      "word_count_points": 29,
+      "keyword_bag_points": 15,
+      "content_quality_points": 71,
+      "authority_points": 21,
+      "final_rank_score": 216,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "book i the first witness crypto moonboys wiki",
+      "tokens": [
+        "book",
+        "i",
+        "the",
+        "first",
+        "witness",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "book",
+        "i",
+        "the",
+        "first",
+        "witness",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "testimony",
+        "evidence",
+        "memory",
+        "uncertainty",
+        "and",
+        "honest",
+        "1"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 17,
+      "existing_outbound_count": 5,
+      "suggested_outbound_count": 12,
+      "authority": 8.5
     },
     "brand": null
   },
@@ -20469,6 +21458,93 @@
     "brand": null
   },
   {
+    "title": "Book VII — The Hold",
+    "desc": "Book VII: endurance, loyalty, sacrifice and preservation.",
+    "url": "/wiki/first-witness-book-7-the-hold.html",
+    "tags": [
+      "book",
+      "vii",
+      "hold"
+    ],
+    "category": "core",
+    "aliases": [
+      {
+        "title": "book vii hold"
+      },
+      {
+        "title": "first witness book 7 the hold"
+      }
+    ],
+    "rank_score": 211,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 3,
+      "mention_count": 0,
+      "category": "core",
+      "category_priority": 10,
+      "has_description": true,
+      "article_word_count": 473,
+      "keyword_bag_size": 15,
+      "heading_count": 5,
+      "list_count": 0,
+      "internal_link_count": 6,
+      "paragraph_count": 29,
+      "section_count": 3,
+      "lore_paragraph_count": 28,
+      "content_quality_score": 62,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 50,
+      "word_count_points": 24,
+      "keyword_bag_points": 15,
+      "content_quality_points": 71,
+      "authority_points": 21,
+      "final_rank_score": 211,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "book vii the hold crypto moonboys wiki",
+      "tokens": [
+        "book",
+        "vii",
+        "the",
+        "hold",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "book",
+        "vii",
+        "the",
+        "hold",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "endurance",
+        "loyalty",
+        "sacrifice",
+        "and",
+        "preservation",
+        "first",
+        "witness",
+        "7"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 17,
+      "existing_outbound_count": 5,
+      "suggested_outbound_count": 12,
+      "authority": 8.5
+    },
+    "brand": null
+  },
+  {
     "title": "Snipey 'D-Man' Sirus",
     "desc": "Snipey",
     "url": "/wiki/snipey-d-man-sirus.html",
@@ -20540,6 +21616,185 @@
       "existing_outbound_count": 10,
       "suggested_outbound_count": 4,
       "authority": 5
+    },
+    "brand": null
+  },
+  {
+    "title": "The Long Transmission",
+    "desc": "How the Covenant survived centuries of translation, censorship, commentary and wall memory.",
+    "url": "/wiki/first-witness-long-transmission.html",
+    "tags": [
+      "long",
+      "transmission"
+    ],
+    "category": "core",
+    "aliases": [
+      {
+        "title": "Long Transmission"
+      },
+      {
+        "title": "first witness long transmission"
+      }
+    ],
+    "rank_score": 211,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 2,
+      "mention_count": 0,
+      "category": "core",
+      "category_priority": 10,
+      "has_description": true,
+      "article_word_count": 401,
+      "keyword_bag_size": 19,
+      "heading_count": 7,
+      "list_count": 0,
+      "internal_link_count": 6,
+      "paragraph_count": 10,
+      "section_count": 5,
+      "lore_paragraph_count": 9,
+      "content_quality_score": 63,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 50,
+      "word_count_points": 20,
+      "keyword_bag_points": 19,
+      "content_quality_points": 71,
+      "authority_points": 21,
+      "final_rank_score": 211,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "the long transmission crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "long",
+        "transmission",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "long",
+        "transmission",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "how",
+        "covenant",
+        "survived",
+        "centuries",
+        "of",
+        "translation",
+        "censorship",
+        "commentary",
+        "and",
+        "wall",
+        "memory",
+        "first",
+        "witness"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 15,
+      "existing_outbound_count": 5,
+      "suggested_outbound_count": 10,
+      "authority": 8.5
+    },
+    "brand": null
+  },
+  {
+    "title": "The World Chain Error",
+    "desc": "Why civilisation concentrated identity and truth into the World Chain despite the Covenant.",
+    "url": "/wiki/first-witness-world-chain-error.html",
+    "tags": [
+      "world",
+      "chain",
+      "error"
+    ],
+    "category": "core",
+    "aliases": [
+      {
+        "title": "World Chain Error"
+      },
+      {
+        "title": "first witness world chain error"
+      }
+    ],
+    "rank_score": 211,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 3,
+      "mention_count": 0,
+      "category": "core",
+      "category_priority": 10,
+      "has_description": true,
+      "article_word_count": 405,
+      "keyword_bag_size": 18,
+      "heading_count": 7,
+      "list_count": 0,
+      "internal_link_count": 6,
+      "paragraph_count": 10,
+      "section_count": 5,
+      "lore_paragraph_count": 9,
+      "content_quality_score": 63,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 50,
+      "word_count_points": 20,
+      "keyword_bag_points": 18,
+      "content_quality_points": 72,
+      "authority_points": 21,
+      "final_rank_score": 211,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "the world chain error crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "world",
+        "chain",
+        "error",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "world",
+        "chain",
+        "error",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "why",
+        "civilisation",
+        "concentrated",
+        "identity",
+        "and",
+        "truth",
+        "into",
+        "despite",
+        "covenant",
+        "first",
+        "witness"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 14,
+      "existing_outbound_count": 5,
+      "suggested_outbound_count": 9,
+      "authority": 8.5
     },
     "brand": null
   },
@@ -20890,10 +22145,102 @@
     },
     "link_score": {
       "inbound_count": 8,
-      "outbound_count": 30,
+      "outbound_count": 31,
       "existing_outbound_count": 10,
-      "suggested_outbound_count": 20,
+      "suggested_outbound_count": 21,
       "authority": 21
+    },
+    "brand": null
+  },
+  {
+    "title": "The Triple Fork and Chainfire",
+    "desc": "The 2880 Triple Fork, collapse of consensus and Great Unravelling.",
+    "url": "/wiki/first-witness-triple-fork-chainfire.html",
+    "tags": [
+      "triple",
+      "fork",
+      "chainfire"
+    ],
+    "category": "core",
+    "aliases": [
+      {
+        "title": "Triple Fork and Chainfire"
+      },
+      {
+        "title": "first witness triple fork chainfire"
+      },
+      {
+        "title": "triple fork chainfire"
+      }
+    ],
+    "rank_score": 208,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 3,
+      "tag_count": 3,
+      "mention_count": 0,
+      "category": "core",
+      "category_priority": 10,
+      "has_description": true,
+      "article_word_count": 423,
+      "keyword_bag_size": 16,
+      "heading_count": 7,
+      "list_count": 0,
+      "internal_link_count": 6,
+      "paragraph_count": 10,
+      "section_count": 5,
+      "lore_paragraph_count": 9,
+      "content_quality_score": 58,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 50,
+      "word_count_points": 21,
+      "keyword_bag_points": 16,
+      "content_quality_points": 70,
+      "authority_points": 21,
+      "final_rank_score": 208,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "the triple fork and chainfire crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "triple",
+        "fork",
+        "and",
+        "chainfire",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "triple",
+        "fork",
+        "and",
+        "chainfire",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "2880",
+        "collapse",
+        "of",
+        "consensus",
+        "great",
+        "unravelling",
+        "first",
+        "witness"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 21,
+      "existing_outbound_count": 5,
+      "suggested_outbound_count": 16,
+      "authority": 8.5
     },
     "brand": null
   },
@@ -21082,6 +22429,106 @@
     "brand": null
   },
   {
+    "title": "The Child of Fire Interpretation",
+    "desc": "Why Year 3008 factions connect Alfie Blaze to Book VIII—and why others reject it.",
+    "url": "/wiki/first-witness-child-of-fire.html",
+    "tags": [
+      "child",
+      "fire",
+      "interpretation"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "Child of Fire Interpretation"
+      },
+      {
+        "title": "child fire interpretation"
+      },
+      {
+        "title": "first witness child of fire"
+      }
+    ],
+    "rank_score": 207,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 3,
+      "tag_count": 3,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 368,
+      "keyword_bag_size": 24,
+      "heading_count": 7,
+      "list_count": 0,
+      "internal_link_count": 6,
+      "paragraph_count": 10,
+      "section_count": 5,
+      "lore_paragraph_count": 9,
+      "content_quality_score": 67,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 18,
+      "keyword_bag_points": 24,
+      "content_quality_points": 79,
+      "authority_points": 21,
+      "final_rank_score": 207,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "the child of fire interpretation crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "child",
+        "of",
+        "fire",
+        "interpretation",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "child",
+        "of",
+        "fire",
+        "interpretation",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "why",
+        "year",
+        "3008",
+        "factions",
+        "connect",
+        "alfie",
+        "blaze",
+        "to",
+        "book",
+        "viii",
+        "and",
+        "others",
+        "reject",
+        "it",
+        "first",
+        "witness"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 26,
+      "existing_outbound_count": 5,
+      "suggested_outbound_count": 21,
+      "authority": 8.5
+    },
+    "brand": null
+  },
+  {
     "title": "WE ARE VANDALS NOT VANDULS ⚡️⚡️⚡️",
     "desc": "WE ARE VANDALS NOT VANDULS ⚡️⚡️⚡️ is an NFT in the gkniftyheads WAX AtomicAssets collection.",
     "url": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-775999.html",
@@ -21253,9 +22700,9 @@
     },
     "link_score": {
       "inbound_count": 14,
-      "outbound_count": 40,
+      "outbound_count": 41,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 28,
+      "suggested_outbound_count": 29,
       "authority": 34
     },
     "brand": null
@@ -21517,9 +22964,9 @@
     },
     "link_score": {
       "inbound_count": 5,
-      "outbound_count": 34,
+      "outbound_count": 35,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 22,
+      "suggested_outbound_count": 23,
       "authority": 16
     },
     "brand": null
@@ -21707,6 +23154,264 @@
     "brand": null
   },
   {
+    "title": "Alfie 'Bitcoin Kid' Blaze",
+    "desc": "Alfie",
+    "url": "/wiki/alfie-bitcoin-kid-blaze.html",
+    "tags": [
+      "alfie",
+      "bitcoin",
+      "kid",
+      "blaze",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [],
+    "rank_score": 205,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 7,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 667,
+      "keyword_bag_size": 7,
+      "heading_count": 11,
+      "list_count": 2,
+      "internal_link_count": 12,
+      "paragraph_count": 10,
+      "section_count": 8,
+      "lore_paragraph_count": 8,
+      "content_quality_score": 60,
+      "authority_score": 16
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 33,
+      "keyword_bag_points": 7,
+      "content_quality_points": 67,
+      "authority_points": 33,
+      "final_rank_score": 205,
+      "authority_graph_points": 17
+    },
+    "search_index": {
+      "normalized_title": "alfie bitcoin kid blaze crypto moonboys wiki",
+      "tokens": [
+        "alfie",
+        "bitcoin",
+        "kid",
+        "blaze",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "alfie",
+        "bitcoin",
+        "kid",
+        "blaze",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 6,
+      "outbound_count": 29,
+      "existing_outbound_count": 10,
+      "suggested_outbound_count": 19,
+      "authority": 17
+    },
+    "brand": null
+  },
+  {
+    "title": "First Witness Source Register",
+    "desc": "The source hierarchy used to reconcile the First Witness canon without erasing older lore.",
+    "url": "/wiki/first-witness-source-register.html",
+    "tags": [
+      "first",
+      "witness",
+      "source",
+      "register"
+    ],
+    "category": "characters",
+    "aliases": [],
+    "rank_score": 205,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 457,
+      "keyword_bag_size": 17,
+      "heading_count": 8,
+      "list_count": 0,
+      "internal_link_count": 10,
+      "paragraph_count": 12,
+      "section_count": 6,
+      "lore_paragraph_count": 11,
+      "content_quality_score": 67,
+      "authority_score": 16
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 23,
+      "keyword_bag_points": 17,
+      "content_quality_points": 71,
+      "authority_points": 24,
+      "final_rank_score": 205,
+      "authority_graph_points": 8
+    },
+    "search_index": {
+      "normalized_title": "first witness source register crypto moonboys wiki",
+      "tokens": [
+        "first",
+        "witness",
+        "source",
+        "register",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "first",
+        "witness",
+        "source",
+        "register",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "hierarchy",
+        "used",
+        "to",
+        "reconcile",
+        "canon",
+        "without",
+        "erasing",
+        "older",
+        "lore"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 2,
+      "outbound_count": 17,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 10,
+      "authority": 7.5
+    },
+    "brand": null
+  },
+  {
+    "title": "Street Kingdoms and the Living Reading",
+    "desc": "How walls, crews and the Paint Path preserve a rival memory system outside official records.",
+    "url": "/wiki/first-witness-street-kingdoms-reading.html",
+    "tags": [
+      "street",
+      "kingdoms",
+      "living",
+      "reading"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "first witness street kingdoms reading"
+      },
+      {
+        "title": "street kingdoms living reading"
+      }
+    ],
+    "rank_score": 205,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 352,
+      "keyword_bag_size": 24,
+      "heading_count": 7,
+      "list_count": 0,
+      "internal_link_count": 6,
+      "paragraph_count": 10,
+      "section_count": 5,
+      "lore_paragraph_count": 9,
+      "content_quality_score": 67,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 18,
+      "keyword_bag_points": 24,
+      "content_quality_points": 77,
+      "authority_points": 21,
+      "final_rank_score": 205,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "street kingdoms and the living reading crypto moonboys wiki",
+      "tokens": [
+        "street",
+        "kingdoms",
+        "and",
+        "the",
+        "living",
+        "reading",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "street",
+        "kingdoms",
+        "and",
+        "the",
+        "living",
+        "reading",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "how",
+        "walls",
+        "crews",
+        "paint",
+        "path",
+        "preserve",
+        "a",
+        "rival",
+        "memory",
+        "system",
+        "outside",
+        "official",
+        "records",
+        "first",
+        "witness"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 18,
+      "existing_outbound_count": 5,
+      "suggested_outbound_count": 13,
+      "authority": 8.5
+    },
+    "brand": null
+  },
+  {
     "title": "⚡️⚡️⚡️ WAXP BOBBY $TORM 👀",
     "desc": "⚡️⚡️⚡️ WAXP BOBBY $TORM 👀 is an NFT in the gkniftyheads WAX AtomicAssets collection.",
     "url": "/wiki/gkniftyheads-waxp-bobby-torm-784340.html",
@@ -21873,9 +23578,9 @@
     },
     "link_score": {
       "inbound_count": 4,
-      "outbound_count": 33,
+      "outbound_count": 34,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 21,
+      "suggested_outbound_count": 22,
       "authority": 14
     },
     "brand": null
@@ -21974,82 +23679,6 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 37,
       "authority": 22
-    },
-    "brand": null
-  },
-  {
-    "title": "Alfie 'Bitcoin Kid' Blaze",
-    "desc": "Alfie",
-    "url": "/wiki/alfie-bitcoin-kid-blaze.html",
-    "tags": [
-      "alfie",
-      "bitcoin",
-      "kid",
-      "blaze",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 203,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 7,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 667,
-      "keyword_bag_size": 7,
-      "heading_count": 11,
-      "list_count": 2,
-      "internal_link_count": 12,
-      "paragraph_count": 10,
-      "section_count": 8,
-      "lore_paragraph_count": 8,
-      "content_quality_score": 60,
-      "authority_score": 16
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 33,
-      "keyword_bag_points": 7,
-      "content_quality_points": 67,
-      "authority_points": 31,
-      "final_rank_score": 203,
-      "authority_graph_points": 15
-    },
-    "search_index": {
-      "normalized_title": "alfie bitcoin kid blaze crypto moonboys wiki",
-      "tokens": [
-        "alfie",
-        "bitcoin",
-        "kid",
-        "blaze",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "alfie",
-        "bitcoin",
-        "kid",
-        "blaze",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 5,
-      "outbound_count": 28,
-      "existing_outbound_count": 10,
-      "suggested_outbound_count": 18,
-      "authority": 15
     },
     "brand": null
   },
@@ -22317,9 +23946,9 @@
     },
     "link_score": {
       "inbound_count": 7,
-      "outbound_count": 66,
+      "outbound_count": 67,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 54,
+      "suggested_outbound_count": 55,
       "authority": 20
     },
     "brand": null
@@ -23552,9 +25181,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 33,
+      "outbound_count": 34,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 21,
+      "suggested_outbound_count": 22,
       "authority": 8
     },
     "brand": null
@@ -23653,6 +25282,284 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 36,
       "authority": 16
+    },
+    "brand": null
+  },
+  {
+    "title": "Block Topia and the Controlled Reading",
+    "desc": "How Block Topia uses the Covenant to justify verified order and disciplined survival.",
+    "url": "/wiki/first-witness-block-topia-reading.html",
+    "tags": [
+      "block",
+      "topia",
+      "controlled",
+      "reading"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "block topia controlled reading"
+      },
+      {
+        "title": "first witness block topia reading"
+      }
+    ],
+    "rank_score": 197,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 361,
+      "keyword_bag_size": 20,
+      "heading_count": 7,
+      "list_count": 0,
+      "internal_link_count": 6,
+      "paragraph_count": 10,
+      "section_count": 5,
+      "lore_paragraph_count": 9,
+      "content_quality_score": 63,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 18,
+      "keyword_bag_points": 20,
+      "content_quality_points": 73,
+      "authority_points": 21,
+      "final_rank_score": 197,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "block topia and the controlled reading crypto moonboys wiki",
+      "tokens": [
+        "block",
+        "topia",
+        "and",
+        "the",
+        "controlled",
+        "reading",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "block",
+        "topia",
+        "and",
+        "the",
+        "controlled",
+        "reading",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "how",
+        "uses",
+        "covenant",
+        "to",
+        "justify",
+        "verified",
+        "order",
+        "disciplined",
+        "survival",
+        "first",
+        "witness"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 17,
+      "existing_outbound_count": 5,
+      "suggested_outbound_count": 12,
+      "authority": 8.5
+    },
+    "brand": null
+  },
+  {
+    "title": "NULL and the Theology of Erasure",
+    "desc": "Why NULL threatens every tradition by attacking names, records, memories and meaning.",
+    "url": "/wiki/first-witness-null-erasure.html",
+    "tags": [
+      "null",
+      "theology",
+      "erasure"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "first witness null erasure"
+      },
+      {
+        "title": "null theology erasure"
+      }
+    ],
+    "rank_score": 197,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 3,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 353,
+      "keyword_bag_size": 21,
+      "heading_count": 7,
+      "list_count": 0,
+      "internal_link_count": 6,
+      "paragraph_count": 10,
+      "section_count": 5,
+      "lore_paragraph_count": 9,
+      "content_quality_score": 63,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 18,
+      "keyword_bag_points": 21,
+      "content_quality_points": 72,
+      "authority_points": 21,
+      "final_rank_score": 197,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "null and the theology of erasure crypto moonboys wiki",
+      "tokens": [
+        "null",
+        "and",
+        "the",
+        "theology",
+        "of",
+        "erasure",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "null",
+        "and",
+        "the",
+        "theology",
+        "of",
+        "erasure",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "why",
+        "threatens",
+        "every",
+        "tradition",
+        "by",
+        "attacking",
+        "names",
+        "records",
+        "memories",
+        "meaning",
+        "first",
+        "witness"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 19,
+      "existing_outbound_count": 5,
+      "suggested_outbound_count": 14,
+      "authority": 8.5
+    },
+    "brand": null
+  },
+  {
+    "title": "The Sacred Fork",
+    "desc": "How the witnessed Covenant entered the Sacred Chain tradition without losing Bitcoin provenance.",
+    "url": "/wiki/first-witness-sacred-fork.html",
+    "tags": [
+      "sacred",
+      "fork"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "Sacred Fork"
+      },
+      {
+        "title": "first witness sacred fork"
+      }
+    ],
+    "rank_score": 197,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 2,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 439,
+      "keyword_bag_size": 18,
+      "heading_count": 7,
+      "list_count": 0,
+      "internal_link_count": 6,
+      "paragraph_count": 10,
+      "section_count": 5,
+      "lore_paragraph_count": 9,
+      "content_quality_score": 63,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 22,
+      "keyword_bag_points": 18,
+      "content_quality_points": 71,
+      "authority_points": 21,
+      "final_rank_score": 197,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "the sacred fork crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "sacred",
+        "fork",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "sacred",
+        "fork",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "how",
+        "witnessed",
+        "covenant",
+        "entered",
+        "chain",
+        "tradition",
+        "without",
+        "losing",
+        "bitcoin",
+        "provenance",
+        "first",
+        "witness"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 41,
+      "existing_outbound_count": 5,
+      "suggested_outbound_count": 36,
+      "authority": 8.5
     },
     "brand": null
   },
@@ -23835,6 +25742,99 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 9,
       "authority": 20
+    },
+    "brand": null
+  },
+  {
+    "title": "Concordance of Broken Records",
+    "desc": "The master register for conflicting dates, names and origin stories across the archive.",
+    "url": "/wiki/first-witness-concordance.html",
+    "tags": [
+      "concordance",
+      "broken",
+      "records"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "concordance broken records"
+      },
+      {
+        "title": "first witness concordance"
+      }
+    ],
+    "rank_score": 196,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 3,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 576,
+      "keyword_bag_size": 21,
+      "heading_count": 5,
+      "list_count": 0,
+      "internal_link_count": 6,
+      "paragraph_count": 4,
+      "section_count": 3,
+      "lore_paragraph_count": 3,
+      "content_quality_score": 51,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 29,
+      "keyword_bag_points": 21,
+      "content_quality_points": 60,
+      "authority_points": 21,
+      "final_rank_score": 196,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "concordance of broken records crypto moonboys wiki",
+      "tokens": [
+        "concordance",
+        "of",
+        "broken",
+        "records",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "concordance",
+        "of",
+        "broken",
+        "records",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "master",
+        "register",
+        "for",
+        "conflicting",
+        "dates",
+        "names",
+        "and",
+        "origin",
+        "stories",
+        "across",
+        "archive",
+        "first",
+        "witness"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 25,
+      "existing_outbound_count": 5,
+      "suggested_outbound_count": 20,
+      "authority": 8.5
     },
     "brand": null
   },
@@ -24278,9 +26278,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 18,
+      "outbound_count": 19,
       "existing_outbound_count": 11,
-      "suggested_outbound_count": 7,
+      "suggested_outbound_count": 8,
       "authority": 5.5
     },
     "brand": null
@@ -25864,6 +27864,93 @@
     "brand": null
   },
   {
+    "title": "The HODL Doctrine",
+    "desc": "How Book VII became later HODL language and collective defence.",
+    "url": "/wiki/first-witness-hodl-doctrine.html",
+    "tags": [
+      "hodl",
+      "doctrine"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "HODL Doctrine"
+      },
+      {
+        "title": "first witness hodl doctrine"
+      }
+    ],
+    "rank_score": 188,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 2,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 372,
+      "keyword_bag_size": 17,
+      "heading_count": 7,
+      "list_count": 0,
+      "internal_link_count": 6,
+      "paragraph_count": 10,
+      "section_count": 5,
+      "lore_paragraph_count": 9,
+      "content_quality_score": 58,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 19,
+      "keyword_bag_points": 17,
+      "content_quality_points": 66,
+      "authority_points": 21,
+      "final_rank_score": 188,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "the hodl doctrine crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "hodl",
+        "doctrine",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "hodl",
+        "doctrine",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "how",
+        "book",
+        "vii",
+        "became",
+        "later",
+        "language",
+        "and",
+        "collective",
+        "defence",
+        "first",
+        "witness"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 25,
+      "existing_outbound_count": 5,
+      "suggested_outbound_count": 20,
+      "authority": 8.5
+    },
+    "brand": null
+  },
+  {
     "title": "⚡️⚡️⚡️ Binary Blitzer 🌬🌬🌬",
     "desc": "⚡️⚡️⚡️ Binary Blitzer 🌬🌬🌬 is an NFT in the gkniftyheads WAX AtomicAssets collection.",
     "url": "/wiki/gkniftyheads-binary-blitzer-784277.html",
@@ -26212,9 +28299,9 @@
     },
     "link_score": {
       "inbound_count": 6,
-      "outbound_count": 38,
+      "outbound_count": 39,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 26,
+      "suggested_outbound_count": 27,
       "authority": 18
     },
     "brand": null
@@ -27170,6 +29257,255 @@
       "existing_outbound_count": 12,
       "suggested_outbound_count": 11,
       "authority": 18
+    },
+    "brand": null
+  },
+  {
+    "title": "First Witness Glossary",
+    "desc": "Definitions for the core sacred and historical terms used across the First Witness.",
+    "url": "/wiki/first-witness-glossary.html",
+    "tags": [
+      "first",
+      "witness",
+      "glossary"
+    ],
+    "category": "factions",
+    "aliases": [],
+    "rank_score": 184,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 3,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 562,
+      "keyword_bag_size": 16,
+      "heading_count": 5,
+      "list_count": 0,
+      "internal_link_count": 6,
+      "paragraph_count": 4,
+      "section_count": 3,
+      "lore_paragraph_count": 3,
+      "content_quality_score": 51,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 28,
+      "keyword_bag_points": 16,
+      "content_quality_points": 54,
+      "authority_points": 21,
+      "final_rank_score": 184,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "first witness glossary crypto moonboys wiki",
+      "tokens": [
+        "first",
+        "witness",
+        "glossary",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "first",
+        "witness",
+        "glossary",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "definitions",
+        "for",
+        "the",
+        "core",
+        "sacred",
+        "and",
+        "historical",
+        "terms",
+        "used",
+        "across"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 19,
+      "existing_outbound_count": 5,
+      "suggested_outbound_count": 14,
+      "authority": 8.5
+    },
+    "brand": null
+  },
+  {
+    "title": "The Forty Paths",
+    "desc": "How one Covenant became forty decentralised faction traditions.",
+    "url": "/wiki/first-witness-forty-paths.html",
+    "tags": [
+      "forty",
+      "paths"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "Forty Paths"
+      },
+      {
+        "title": "first witness forty paths"
+      }
+    ],
+    "rank_score": 184,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 2,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 413,
+      "keyword_bag_size": 15,
+      "heading_count": 7,
+      "list_count": 0,
+      "internal_link_count": 6,
+      "paragraph_count": 10,
+      "section_count": 5,
+      "lore_paragraph_count": 9,
+      "content_quality_score": 54,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 21,
+      "keyword_bag_points": 15,
+      "content_quality_points": 62,
+      "authority_points": 21,
+      "final_rank_score": 184,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "the forty paths crypto moonboys wiki",
+      "tokens": [
+        "the",
+        "forty",
+        "paths",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "the",
+        "forty",
+        "paths",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "how",
+        "one",
+        "covenant",
+        "became",
+        "decentralised",
+        "faction",
+        "traditions",
+        "first",
+        "witness"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 13,
+      "existing_outbound_count": 5,
+      "suggested_outbound_count": 8,
+      "authority": 8.5
+    },
+    "brand": null
+  },
+  {
+    "title": "First Witness Master Chronology",
+    "desc": "The reconciled chronology from the 2030 Covenant to the Year 3008 HODL WARS era.",
+    "url": "/wiki/first-witness-master-chronology.html",
+    "tags": [
+      "first",
+      "witness",
+      "master",
+      "chronology"
+    ],
+    "category": "factions",
+    "aliases": [],
+    "rank_score": 183,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 471,
+      "keyword_bag_size": 18,
+      "heading_count": 5,
+      "list_count": 0,
+      "internal_link_count": 6,
+      "paragraph_count": 4,
+      "section_count": 3,
+      "lore_paragraph_count": 3,
+      "content_quality_score": 51,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 24,
+      "keyword_bag_points": 18,
+      "content_quality_points": 55,
+      "authority_points": 21,
+      "final_rank_score": 183,
+      "authority_graph_points": 9
+    },
+    "search_index": {
+      "normalized_title": "first witness master chronology crypto moonboys wiki",
+      "tokens": [
+        "first",
+        "witness",
+        "master",
+        "chronology",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "first",
+        "witness",
+        "master",
+        "chronology",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "reconciled",
+        "from",
+        "2030",
+        "covenant",
+        "to",
+        "year",
+        "3008",
+        "hodl",
+        "wars",
+        "era"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 3,
+      "outbound_count": 26,
+      "existing_outbound_count": 5,
+      "suggested_outbound_count": 21,
+      "authority": 8.5
     },
     "brand": null
   },
@@ -28472,9 +30808,9 @@
     },
     "link_score": {
       "inbound_count": 1,
-      "outbound_count": 32,
+      "outbound_count": 33,
       "existing_outbound_count": 12,
-      "suggested_outbound_count": 20,
+      "suggested_outbound_count": 21,
       "authority": 8
     },
     "brand": null
@@ -30678,9 +33014,9 @@
     },
     "link_score": {
       "inbound_count": 4,
-      "outbound_count": 20,
+      "outbound_count": 21,
       "existing_outbound_count": 0,
-      "suggested_outbound_count": 20,
+      "suggested_outbound_count": 21,
       "authority": 8
     },
     "brand": null
