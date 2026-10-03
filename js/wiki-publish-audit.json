@@ -1,8 +1,8 @@
 {
   "_generated": "2026-09-17T11:52:29.971Z",
   "summary": {
-    "total": 333,
-    "approved": 333,
+    "total": 334,
+    "approved": 334,
     "blocked": 0,
     "needs_review": 0,
     "blocked_synthetic_slug": 0,
@@ -2102,6 +2102,13 @@
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1544
+    },
+    {
+      "slug": "the-first-witness",
+      "file": "the-first-witness.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 1422
     },
     {
       "slug": "the-gasless-ghosts",
