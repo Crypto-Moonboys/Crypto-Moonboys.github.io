@@ -216,7 +216,9 @@ identities. No pet ownership, lifetime progress or paid receipt is reset.
 
 Both rewards use the existing atomic ledger, fixed server reward values and
 1200 daily Pet XP cap. Daily/weekly leaderboards count settlement-time Pet XP;
-seasonal XP follows the award-day competition quarter and all-time includes retained pets. Reserved awards keep their saved earning day.
+Daily Completion seasonal XP follows the award-day competition quarter; Finale
+seasonal XP stays in the Finale's saved competition quarter, including claims
+after rollover. All-time includes retained pets. Reserved awards keep their saved earning day.
 Public activity names the two rewards. These payouts add no Journey objectives
 or specialist/material bonuses.
 
@@ -1082,6 +1084,45 @@ progress. Recovery requires intact source-pet ownership; ambiguous evidence stay
 stored and appears as an audit/recovery notice without awarding progress. Replays
 also cannot transfer that care's personality evidence to the selected pet.
 Existing receipts, earned progression and reward history are retained.
+
+## Post-PR #1421 ending and recovery audit (2 October 2026)
+
+Earned account season tiers remain claimable with a replacement egg selected,
+including original-quarter rewards after rollover. Egg claims settle only the
+server's fixed currencies and claim-time evolution Style bonus, with intact
+owner/quarter/tier eligibility and one payout. They do not apply pet decay, XP,
+needs, streak, lifecycle or identity progress. The settlement transaction rechecks
+the selected owned egg; concurrent hatch, switch or deletion requires a refresh.
+
+The Play Options script is required for Standard and Daily Run controls. Failed
+downloads lock run entry and decisions while retaining the saved run on screen.
+Refresh retries that dependency and authoritative state; it never replays Start
+or another gameplay mutation. Other available panels remain usable.
+
+Kaiju enforces its existing 20-minute idle deadline inside each mutation that
+admits new input, including card locks, category initialization and Telegram
+join/CPU transitions. Equality at the deadline preserves the existing rule;
+later input is rejected. Cards already committed before expiry may finish and
+settle interrupted rewards afterward exactly once.
+
+Legacy Weekly Boss account attempts have no pet attribution. Recovery uses only
+the exact winning attack joined to the saved owner, pet, immutable ownership
+season, week and boss. Earlier unattributed attempts and any old incorrect
+backfills stay stored and cannot produce new pet-specific Journey progress.
+The same proof guards Journey reads, qualification and background recovery.
+
+A validated winning backfill is accepted by memory and bounded victory recovery.
+Recovery restores its memory, achievement, base specialist progress and Crest
+using the original source/day and existing idempotency keys. Legacy account
+evidence cannot prove original equipment: recovery uses no equipment bonus and
+never substitutes current gear. The completed finish receipt records
+`legacy_equipment_unavailable`; Explore shows this limitation only for the
+selected pet. Proven follow-ups have an ending and release their deletion
+blocker; missing or conflicting source evidence still requires audit and cannot
+fabricate completion. Existing history and paid rewards are never rewritten.
+
+See [the post-PR #1421 fix and deployment notes](moonpet-post1421-fixes-2026-10-02.md)
+for regression commands and release steps. No schema migration is required.
 
 
 ## Audit recovery and command consistency (2 October 2026)

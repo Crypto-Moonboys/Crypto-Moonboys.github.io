@@ -119,6 +119,96 @@ async function createFixtureContext(options) {
 }
 try {
   browser = await chromium.launch(launch);
+  // Required run controls fail closed and Refresh retries the asset itself.
+  // Existing Standard/Daily sources survive both a failed and healthy retry.
+  for (const saved of ['none', 'standard', 'daily']) {
+    const id = 'browser-required-asset-' + saved;
+    await seed(id, 'young');
+    const act = body => dispatchRenderedPetAction(db, id, { id }, body, token);
+    let sourceRunId = null;
+    if (saved !== 'none') {
+      const result = await act({ action: saved === 'daily' ? 'daily_run_start' : 'run_start', request_id: 'seed-saved-run' });
+      assert.equal(result.accepted, true);
+      sourceRunId = sqlite.prepare('SELECT run_id FROM telegram_pet_runs WHERE telegram_id=? AND status=\'active\'').get(id).run_id;
+    }
+    const before = sqlite.prepare('SELECT run_id,pet_id,status,depth,current_room FROM telegram_pet_runs WHERE telegram_id=?').all(id);
+    const context = await createFixtureContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+    const page = await context.newPage(), errors = [], actions = [];
+    let helperRequests = 0;
+    page.on('pageerror', error => errors.push(error.message));
+    await page.addInitScript(() => localStorage.setItem('moonpet-radio-preference', 'off'));
+    await page.route('**/*', async route => {
+      const url = new URL(route.request().url());
+      if (url.hostname === 'telegram.org') return route.fulfill({contentType:'text/javascript',body:"window.Telegram={WebApp:{initData:'fixture',ready(){},expand(){},onEvent(){},setHeaderColor(){},setBackgroundColor(){}}};"});
+      if (url.pathname.endsWith('/js/moonpet-play-options.js') && ++helperRequests <= 2) return route.abort('failed');
+      if (url.pathname.endsWith('/telegram-pets/app/performance')) return route.fulfill({ json: { ok: true } });
+      if (url.pathname.includes('/telegram-pets/app/')) {
+        const body = route.request().postDataJSON();
+        const result = url.pathname.endsWith('/action') ? (actions.push(body.action), await act(body)) : undefined;
+        const state = body.mode === 'core' ? await hooks.buildPetMiniAppCoreState(db,id) : await hooks.buildPetMiniAppState(db,id,token);
+        return route.fulfill({status:result?.accepted === false ? 409 : 200,json:{state,result}});
+      }
+      if (url.hostname === '127.0.0.1') return route.continue();
+      return route.abort();
+    });
+    await page.goto(`${fixtureOrigin}/moonpet-game.html?screen=explore&focus=moon-run`);
+    const control = saved === 'none' ? 'run_start' : 'run_step';
+    await page.waitForSelector(`[data-action="${control}"]:disabled`);
+    assert.match(await page.locator('[data-panel="moon-run"]').innerText(), /controls.*unavailable/i);
+    assert.equal(helperRequests,1);
+    await page.locator('[data-utility="sync"]').click();
+    await page.waitForFunction(() => document.querySelector('#terminal-output').innerText.includes('RUN CONTROLS UNAVAILABLE'));
+    assert.equal(helperRequests,2);
+    assert.equal(await page.locator(`[data-action="${control}"]:enabled`).count(),0);
+    assert.deepEqual(sqlite.prepare('SELECT run_id,pet_id,status,depth,current_room FROM telegram_pet_runs WHERE telegram_id=?').all(id),before);
+    await page.locator('[data-utility="sync"]').click();
+    await page.waitForSelector(`[data-action="${control}"]:enabled`);
+    assert.equal(helperRequests,3);
+    assert.equal(actions.some(action => /^(run_|daily_run_)/.test(action)),false,'retry never replays gameplay');
+    assert.deepEqual(sqlite.prepare('SELECT run_id,pet_id,status,depth,current_room FROM telegram_pet_runs WHERE telegram_id=?').all(id),before);
+    if (saved === 'none') {
+      const response = page.waitForResponse(r => r.url().endsWith('/action') && r.request().postDataJSON().action === 'run_start');
+      await page.locator('[data-action="run_start"]').click();
+      assert.equal((await (await response).json()).result.accepted,true);
+      await page.waitForSelector('[data-action="run_step"]:enabled');
+    } else {
+      assert.equal(JSON.parse(await page.locator('[data-action="run_step"]').first().getAttribute('data-payload')).run_id,sourceRunId);
+      assert.equal(await page.locator('[data-action="run_extract"]').count(),1);
+    }
+    assert.deepEqual(errors,[],'asset failure must not throw or strand rendering');
+    assert.equal(sqlite.prepare('SELECT COUNT(*) n FROM telegram_pet_runs WHERE telegram_id=?').get(id).n,1);
+    await context.close();
+  }
+
+  // The actual egg Profile claim button and dispatcher recover account currency.
+  {
+    const id = 'browser-egg-earned-tier'; await seed(id,'egg');
+    sqlite.prepare('INSERT INTO telegram_pet_season_state(telegram_id,season_key,season_xp) VALUES(?,?,300)').run(id,'pet-s2026-003');
+    const context = await createFixtureContext({viewport:{width:390,height:844},reducedMotion:'reduce'});
+    const page = await context.newPage();
+    await page.addInitScript(() => localStorage.setItem('moonpet-radio-preference','off'));
+    await page.route('**/*',async route => {
+      const url = new URL(route.request().url());
+      if(url.hostname === 'telegram.org')return route.fulfill({contentType:'text/javascript',body:"window.Telegram={WebApp:{initData:'fixture',ready(){},expand(){},onEvent(){},setHeaderColor(){},setBackgroundColor(){}}};"});
+      if(url.pathname.endsWith('/telegram-pets/app/performance'))return route.fulfill({json:{ok:true}});
+      if(url.pathname.includes('/telegram-pets/app/')) {
+        const body=route.request().postDataJSON();
+        const result=url.pathname.endsWith('/action')?await dispatchRenderedPetAction(db,id,{id},body,token):undefined;
+        const state=body.mode === 'core'?await hooks.buildPetMiniAppCoreState(db,id):await hooks.buildPetMiniAppState(db,id,token);
+        return route.fulfill({status:result?.accepted === false?409:200,json:{state,result}});
+      }
+      if(url.hostname === '127.0.0.1')return route.continue();return route.abort();
+    });
+    await page.goto(`${fixtureOrigin}/moonpet-game.html?screen=profile&focus=season`);
+    const claim = page.locator('[data-action="season_claim"]:enabled').filter({hasText:'STREET'}).first();
+    await claim.waitFor();
+    assert.equal(JSON.parse(await claim.getAttribute('data-payload')).season_key,'pet-s2026-003');
+    const response=page.waitForResponse(r => r.url().endsWith('/action') && r.request().postDataJSON().action === 'season_claim');
+    await claim.click();assert.equal((await (await response).json()).result.accepted,true);
+    assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM telegram_pet_reward_claims WHERE telegram_id=? AND source='pet_season_reward' AND status='awarded'").get(id).n,1);
+    await context.close();
+  }
+
   // Claim/cancel controls stay bound to the activity the player reviewed,
   // even when another session replaces it before the click reaches the server.
   for (const action of ['activity_claim', 'activity_cancel']) {

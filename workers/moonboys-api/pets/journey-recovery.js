@@ -3,6 +3,7 @@ import { PET_DAILY_CHALLENGES, DAILY_JOURNEY_REQUIRED_OBJECTIVES, DAILY_JOURNEY_
 import { PET_WEEKLY_JOURNEY_OBJECTIVES, WEEKLY_JOURNEY_REQUIRED_OBJECTIVES, WEEKLY_JOURNEY_SOURCE_OBJECTIVES, finalizeWeeklyJourneyCrest, recordWeeklyJourneyObjectiveEvidence } from './weekly-journey.js';
 import { finalizePetSeasonCompletionIfEligible } from './season-completion.js';
 import { getPetOwnershipPeriod, getPetJourneyWeek } from './ownership-period.js';
+import { weeklyBossLegacySourceProofSql } from './weekly-boss-evidence.js';
 
 const types = Object.keys(WEEKLY_JOURNEY_SOURCE_OBJECTIVES).map((type) => `'${type}'`).join(',');
 const objectives = Object.entries(WEEKLY_JOURNEY_SOURCE_OBJECTIVES).map(([type, objective]) => `WHEN '${type}' THEN '${objective}'`).join(' ');
@@ -32,7 +33,7 @@ const sourceJoins = `JOIN telegram_pet_instances i ON i.pet_id=e.pet_id AND i.te
   JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id AND s.season_key=i.season_key AND s.slot_number=i.slot_number`;
 const validSource = `e.status='accepted' AND e.event_key<>'' AND e.event_key=trim(e.event_key) AND length(e.event_key)<=180
   AND e.event_type IN (${types}) AND length(e.day_key)=10 AND date(e.day_key,'+0 days')=e.day_key
-  AND e.day_key>=${sourceStart}`;
+  AND e.day_key>=${sourceStart} AND ${weeklyBossLegacySourceProofSql()}`;
 
 async function claimJourneyRecoveryBatch(db, owner, queue, candidates) {
   if (!candidates.length) return false;
@@ -104,7 +105,8 @@ export async function recoverPetJourneyAwards(db, telegramId, options = {}) {
     // Apply the same source authority before LIMIT and when deriving the date.
     // Missing sources must not consume every slot in the recovery budget.
     const sourceJoin = kind === 'weekly' ? `JOIN telegram_pet_events e ON e.event_key=o.source_event_key AND e.telegram_id=o.telegram_id
-      AND e.pet_id=o.pet_id AND e.season_key=o.season_key AND e.status='accepted' AND e.day_key<>''` : '';
+      AND e.pet_id=o.pet_id AND e.season_key=o.season_key AND e.status='accepted' AND e.day_key<>''
+      AND ${weeklyBossLegacySourceProofSql()}` : '';
     // A partial evidence batch must not freeze a later earning date while an
     // earlier action for this same week is still waiting. Other scopes proceed.
     const evidenceReady = kind === 'weekly' ? `AND NOT EXISTS (

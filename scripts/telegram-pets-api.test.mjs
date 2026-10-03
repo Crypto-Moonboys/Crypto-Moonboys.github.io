@@ -1693,7 +1693,7 @@ assert.ok(!worker.includes('Card locked: ${escapeHtml(getPetKaijuCard(cardKey)?.
 // in moonpet-combat-sanity.test.mjs for both Mini App and Telegram entry points.
 assert.ok(worker.includes("score?.result === 'player2_win' && opponent.telegram_id === 'app'"), 'Kaiju solo app wins must render as an app win instead of a draw');
 assert.ok(worker.includes('roll=CASE WHEN roll IS NULL OR roll=0 THEN ? ELSE roll END'), 'Kaiju rolled category number must persist even when the default roll is 0');
-assert.ok(worker.includes("joinResult?.meta?.changes"), 'Kaiju join race handling must check update changes before announcing players');
+assert.ok(worker.includes('Number(joinResult?.meta?.changes) !== 1'), 'Kaiju join race handling must check validated update changes before announcing players');
 assert.ok(worker.includes('async function getFreshPetKaijuMatch'), 'Kaiju callbacks must expire stale matches before acting');
 assert.ok(worker.includes("WHERE match_id = ? AND status IN ('open', 'selecting') AND updated_at < datetime('now', ?)"), 'Kaiju stale callback handling must cancel expired open/selecting matches by match id');
 assert.ok(worker.includes('This Kaiju table expired. Tap Kaiju or run /petkaiju to start a fresh battle.'), 'Kaiju stale Join/Start/Card callbacks must return a clear expired-table message');
@@ -2152,6 +2152,10 @@ for (const [label, query] of [
 {
   const telegramId = 'season-saved-reward';
   const db = seedRepeatRewardPlayer(telegramId);
+  const petId = db.database.prepare('SELECT pet_id FROM telegram_pet_active_slots WHERE telegram_id=?').get(telegramId).pet_id;
+  db.database.prepare(`INSERT INTO telegram_pet_lifecycle_by_pet
+    (pet_id,telegram_id,identity_seed,phase,incubation_json,innate_traits_json) VALUES (?,?,?,'young','{}','[]')`)
+    .run(petId,telegramId,'known-season-claim-pet');
   const season = (await __petMediaTestHooks.getPetSeasonRewardState(db, telegramId)).season;
   db.database.prepare('INSERT INTO telegram_pet_season_state (telegram_id, season_key, season_xp) VALUES (?, ?, 250)')
     .run(telegramId, season.key);

@@ -34,6 +34,7 @@
   var activeScreen = SCREEN_ORDER.includes(requestedScreen) ? requestedScreen : 'home';
   var requestedFocusScreen = activeScreen;
   var busy = false;
+  var playOptionsLoadPromise = null;
   var petActionRefreshRequired = false;
   var fastActionStateDirty = false;
   var fastActionStateRefreshTimer = 0;
@@ -757,8 +758,44 @@
   }
   // TEST-EXPORT: actionAvailability:end
 
+  // TEST-EXPORT: playOptionsRecovery:start
+  function playOptionsReady() {
+    return Boolean(window.MoonpetPlayOptions && typeof window.MoonpetPlayOptions.runAvailability === 'function');
+  }
+
+  function reloadPlayOptions() {
+    if (playOptionsReady()) return Promise.resolve();
+    if (playOptionsLoadPromise) return playOptionsLoadPromise;
+    playOptionsLoadPromise = new Promise(function (resolve, reject) {
+      var original = document.querySelector('script[src*="/js/moonpet-play-options.js"]');
+      if (!original) { reject(new Error('RUN CONTROLS UNAVAILABLE. REOPEN THE APP TO RETRY.')); return; }
+      var script = document.createElement('script');
+      var timeout = window.setTimeout(function () { finish(false); }, 8000);
+      function finish(loaded) {
+        window.clearTimeout(timeout);
+        script.onload = script.onerror = null;
+        if (!loaded || !playOptionsReady()) {
+          script.remove();
+          reject(new Error('RUN CONTROLS UNAVAILABLE. TAP REFRESH TO RETRY.'));
+        } else resolve();
+      }
+      var source = new URL(original.src, window.location.href);
+      source.searchParams.set('moonpet_retry', Date.now());
+      script.src = source.href;
+      script.setAttribute('data-cfasync', 'false');
+      script.onload = function () { finish(true); };
+      script.onerror = function () { finish(false); };
+      document.head.appendChild(script);
+    }).finally(function () { playOptionsLoadPromise = null; });
+    return playOptionsLoadPromise;
+  }
+  // TEST-EXPORT: playOptionsRecovery:end
+
   function button(label, action, payload, options) {
     options = careActionButtonOptions(action, actionCooldownButtonOptions(action, options));
+    if (['run_start', 'daily_run_start', 'run_step', 'run_extract', 'daily_run_tactic'].includes(action) && !playOptionsReady()) {
+      options = Object.assign({}, options, { disabled: true, cooldown: null, statusLabel: 'REFRESH REQUIRED', detail: 'Run controls unavailable. Tap Refresh to retry.' });
+    }
     if (petActionRefreshRequired) {
       options = Object.assign({}, options, { disabled: true, statusLabel: 'REFRESH REQUIRED' });
     }
@@ -766,7 +803,7 @@
       options = Object.assign({}, options, { disabled: true, statusLabel: 'ARCADE XP REQUIRED' });
     }
     var accountActions = ['adopt', 'guidance_ack', 'notification_set', 'season_slots', 'buy_pet_slot', 'switch_pet_slot', 'delete_pet_slot', 'arena_queue_cancel', 'arena_forfeit', 'kaiju_queue_cancel', 'kaiju_match_cancel'];
-    var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles', 'bounty_claim', 'weekly_boss_claim', 'contract_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim']);
+    var eggActions = accountActions.concat(['incubate', 'hatch', 'energy_drink', 'dance', 'cuddles', 'bounty_claim', 'season_claim', 'weekly_boss_claim', 'contract_claim', 'style_equip', 'seasonal_boss_claim', 'daily_completion_claim', 'finale_start', 'finale_retry', 'finale_step', 'finale_claim']);
     if (state && state.lifecycle && state.lifecycle.phase === 'egg' && !eggActions.includes(action)) {
       options = Object.assign({}, options, { disabled: true, cooldown: null, statusLabel: 'HATCH REQUIRED' });
     } else if (state && state.adopted === false && !accountActions.includes(action)) {
@@ -962,12 +999,17 @@
     busy = true;
     tell('REFRESHING LIVE SAVE...');
     try {
+      // Retry the required asset without replaying a saved gameplay action.
+      var dependencyError = null;
+      if (!playOptionsReady()) {
+        try { await reloadPlayOptions(); } catch (error) { dependencyError = error; }
+      }
       var requestGeneration = beginStateRequest();
       var data = await post('/telegram-pets/app/state', stateRefreshPayload(state, activeScreen));
       if (!setStateSnapshot(data.state, requestGeneration)) return;
       fastActionStateDirty = false;
       render();
-      tell('LIVE SAVE REFRESHED.');
+      tell(dependencyError ? 'LIVE SAVE REFRESHED. RUN CONTROLS UNAVAILABLE. TAP REFRESH TO RETRY.' : 'LIVE SAVE REFRESHED.', dependencyError ? 'danger' : '');
       haptic('success');
     } catch (error) {
       tell(error.message || 'REFRESH FAILED', 'danger');
@@ -2179,7 +2221,7 @@
     var runBody;
     if (run) {
       var runRoom = run.room || {};
-      var playableRun = window.MoonpetPlayOptions.runAvailability(state);
+      var playableRun = playOptionsReady() ? window.MoonpetPlayOptions.runAvailability(state) : { step: false, extract: false };
       var opponent = runRoom.opponent || {};
       var unbankedSummary = number(run.unbanked_pet_xp) + ' XP // ' + number(run.unbanked_moon_gold) + ' GOLD // ' + number(run.unbanked_moon_crystals) + ' GEMS // ' + number(run.unbanked_style_tokens) + ' STYLE';
       var roomBrief = '<div class="run-brief"><div class="line complete">ROOM SIGNAL // ' + escapeHtml(words(runRoom.title || run.checkpoint || 'street')) + '</div>' +
@@ -2201,6 +2243,7 @@
       var runPetCopy = run.source_pet && !run.source_pet.active ? '<div class="line signal">RUN BELONGS TO ' + escapeHtml(run.source_pet.callsign || 'YOUR ORIGINAL RUN PET') + ' // ENERGY ' + number(run.source_pet.energy) + '</div><div class="line muted">Choices and rewards use this saved pet, even while another pet is selected.</div>' : '';
       if (run.source_available === false) runPetCopy = '<div class="line locked">This saved run has no available source pet. Contact support to recover it. Other game panels remain available.</div>';
       else if (run.settlement_pending) runPetCopy += '<div class="line complete">FINAL BOSS ROOM SAVED</div><div class="line muted">Reward delivery or completion is pending. Refresh or finish below to retry the saved result without another fight.</div>';
+      else if (!playOptionsReady()) runPetCopy += '<div class="line locked">Your run is saved. Run controls are unavailable. Tap Refresh to retry loading them.</div>';
       else if (!playableRun.step) runPetCopy += '<div class="line locked">Your original run pet has no energy for another room. ' + (playableRun.extract ? 'Extract below to bank this run, or recover that pet first.' : 'Recover that pet to continue. Contracts remain available while you wait.') + '</div>';
       runBody = '<div class="line complete">' + (run.daily ? 'OFFICIAL DAILY MOON RUN' : 'ENDLESS MOON RUN // DISTRICT TIER ' + number(run.difficulty)) + '</div><div class="line">ROOM ' + number(run.settlement_pending ? run.max_room : Number(run.current_room != null ? run.current_room : run.depth || 0) + 1) + '/' + number(run.max_room || run.max_depth) + ' // SCORE ' + number(run.score) + (run.daily ? '' : ' // NEXT CHECKPOINT ' + number(run.next_checkpoint)) + '</div>' +
         runPetCopy + roomBrief + tacticCopy +
@@ -2210,7 +2253,7 @@
     } else {
       var dailyRun = state.daily_run || {};
       var dailyUsed = dailyRun.attempted === true;
-      runBody = '<div class="line">NO ACTIVE RUN.</div><div class="button-grid">' + button('START MOON RUN', 'run_start', {}, { disabled: Number(state.pet && state.pet.energy) < 12, resourceRequired: Number(state.pet && state.pet.energy) < 12, detail: '12 energy required to enter. Repeatable; rewards capped.' }) + button('DAILY RUN', 'daily_run_start', {}, { disabled: dailyRun.available !== true, statusLabel: dailyUsed ? 'ATTEMPT USED' : dailyRun.available ? '' : 'UNAVAILABLE', cooldown: dailyUsed ? dailyRun.cooldown : null, detail: dailyUsed ? words(dailyRun.status) + ' // Depth ' + number(dailyRun.depth) + ' // Score ' + number(dailyRun.score) : 'One official attempt per account / UTC day.' }) + '</div>';
+      runBody = '<div class="line">NO ACTIVE RUN.</div>' + (!playOptionsReady() ? '<div class="line locked">Run controls unavailable. Tap Refresh to retry.</div>' : '') + '<div class="button-grid">' + button('START MOON RUN', 'run_start', {}, { disabled: Number(state.pet && state.pet.energy) < 12, resourceRequired: Number(state.pet && state.pet.energy) < 12, detail: '12 energy required to enter. Repeatable; rewards capped.' }) + button('DAILY RUN', 'daily_run_start', {}, { disabled: dailyRun.available !== true, statusLabel: dailyUsed ? 'ATTEMPT USED' : dailyRun.available ? '' : 'UNAVAILABLE', cooldown: dailyUsed ? dailyRun.cooldown : null, detail: dailyUsed ? words(dailyRun.status) + ' // Depth ' + number(dailyRun.depth) + ' // Score ' + number(dailyRun.score) : 'One official attempt per account / UTC day.' }) + '</div>';
     }
     var arena = state.arena;
     var arenaQueue = state.arena_queue;
@@ -2332,6 +2375,9 @@
     var weeklyClaims = savedWeeklyBossButtons(boss);
     var bossBody = '<div class="line">' + (participationChallenge ? 'TARGET DEFEATED. COMPLETE THIS PET’S PARTICIPATION CHALLENGE.' : boss.defeated ? 'TARGET DEFEATED. THIS PET’S ATTEMPT IS RECORDED.' : boss.attempt_used ? 'DAILY ATTEMPT USED.' : 'SELECT AN ATTACK ROUTINE.') + '</div>' +
       (weeklyClaims ? '<div class="button-grid one">' + weeklyClaims + '</div>' : '') +
+      (boss.recovery_history || []).map(function (entry) {
+        return '<div class="line signal">EARLIER VICTORY RECOVERED // ' + escapeHtml(entry.week_key) + '</div><div class="line muted">The original equipment bonuses could not be verified. Base progress is recovered; current equipment was not used.</div>';
+      }).join('') +
       '<div class="line muted">HP ' + number(boss.remaining_hp) + '/' + number(boss.hp) + ' // DAMAGE ' + number(boss.damage) + ' // ATTEMPTS ' + number(boss.attempts) + '/' + number(boss.max_attempts || 7) + '</div>' +
       '<div class="line muted">WEAKNESS ' + escapeHtml(words(boss.weakness || 'unknown')) + ' // REWARD ' + escapeHtml(bossReward) + '</div>' +
       '<div class="line muted">Level 5 after hatching. All moves cost 12 energy and share one account attempt per UTC day. Damage ranges include the listed bonuses; Endure does not heal or apply a defensive buff.</div>' +
@@ -3109,6 +3155,10 @@
 
   async function runAction(action, payload, buttonElement) {
     if (busy) return;
+    if (['run_start', 'daily_run_start', 'run_step', 'run_extract', 'daily_run_tactic'].includes(action) && !playOptionsReady()) {
+      tell('RUN CONTROLS UNAVAILABLE. TAP REFRESH TO RETRY.', 'danger');
+      return;
+    }
     if (petActionRefreshRequired) {
       tell('LIVE SAVE REFRESH REQUIRED. TAP REFRESH.', 'danger');
       return;

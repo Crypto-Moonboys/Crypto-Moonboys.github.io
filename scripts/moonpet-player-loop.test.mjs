@@ -414,7 +414,9 @@ for (const { reason, accepted, refreshState, pet } of [
 
 // A failed projection cannot turn a committed action into a rejected action or
 // allow another mutation from the stale view. Refresh retries only the read.
-const syncStateSource = client.slice(client.indexOf('  async function syncState('), client.indexOf('  function applyRequestedFocus('));
+// These isolated action/refresh tests assume a healthy required asset; the
+// browser suite separately exercises real failed downloads and recovery.
+const syncStateSource = 'function playOptionsReady() { return true; }\n' + client.slice(client.indexOf('  async function syncState('), client.indexOf('  function applyRequestedFocus('));
 const setStateSnapshotSource = client.slice(client.indexOf('  function setStateSnapshot('), client.indexOf('  // TEST-EXPORT: cooldownRefresh:start'));
 const buttonSource = client.slice(client.indexOf('  function button('), client.indexOf('  var panelOpenState'));
 for (const accepted of [true, false]) {

@@ -1,6 +1,7 @@
 import { requirePetReadResult, requirePetFirstReadResult } from './read-result.js';
 import { awardPetWeeklyCrest } from './season-completion.js';
 import { getPetOwnershipPeriod, getPetJourneyWeek, getPetJourneyWeekBounds } from './ownership-period.js';
+import { weeklyBossLegacySourceProofSql } from './weekly-boss-evidence.js';
 
 export const WEEKLY_JOURNEY_REQUIRED_OBJECTIVES = 5;
 
@@ -77,8 +78,8 @@ async function ownedPet(db, petId, telegramId, seasonKey) {
 
 async function readSourceEvent(db, telegramId, eventKey) {
   return db.prepare(`SELECT pet_id, telegram_id, event_type, event_key, season_key, day_key, week_key, status, metadata, created_at
-    FROM telegram_pet_events
-    WHERE telegram_id=? AND event_key=? AND status='accepted' LIMIT 1`)
+    FROM telegram_pet_events e
+    WHERE telegram_id=? AND event_key=? AND status='accepted' AND ${weeklyBossLegacySourceProofSql()} LIMIT 1`)
     .bind(telegramId, eventKey).first();
 }
 
@@ -142,6 +143,7 @@ export async function readWeeklyJourneyObjectiveProgress(db, request) {
     JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id
       AND s.season_key=i.season_key AND s.slot_number=i.slot_number
     WHERE o.pet_id=? AND o.telegram_id=? AND o.season_key=? AND o.qualification_week=? AND o.status='accepted'
+      AND ${weeklyBossLegacySourceProofSql()}
     GROUP BY o.objective_id`)
     .bind(request.pet_id, request.telegram_id, request.season_key, request.qualification_week).all().then(requirePetReadResult);
 }
@@ -170,6 +172,7 @@ export async function readWeeklyJourneyQualificationDay(db, request) {
         JOIN telegram_pet_season_slots s ON s.pet_id=i.pet_id AND s.telegram_id=i.telegram_id
           AND s.season_key=i.season_key AND s.slot_number=i.slot_number
         WHERE o.telegram_id=? AND o.pet_id=? AND o.season_key=? AND o.qualification_week=? AND o.status='accepted'
+          AND ${weeklyBossLegacySourceProofSql()}
         GROUP BY o.objective_id,e.day_key
       ) WINDOW objective_progress AS (PARTITION BY objective_id ORDER BY day
         ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)
@@ -190,6 +193,7 @@ async function hasPendingWeeklyJourneyEvidence(db, request) {
     WHERE e.telegram_id=? AND e.pet_id=? AND e.season_key=? AND e.status='accepted'
       AND e.event_key<>'' AND e.event_key=trim(e.event_key) AND length(e.event_key)<=180
       AND e.event_type IN (${sourceTypesSql}) AND length(e.day_key)=10 AND date(e.day_key,'+0 days')=e.day_key
+      AND ${weeklyBossLegacySourceProofSql()}
       AND e.day_key>=? AND e.day_key<?
       AND NOT EXISTS (SELECT 1 FROM telegram_pet_weekly_journey_objectives o
         WHERE o.telegram_id=e.telegram_id AND o.pet_id=e.pet_id AND o.season_key=e.season_key
