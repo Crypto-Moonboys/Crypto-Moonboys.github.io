@@ -37,6 +37,7 @@ import { DAILY_RUN_CONDITIONS, DAILY_RUN_RULES_ID, DAILY_RUN_TACTICS, chooseDail
 const schema = fs.readFileSync(new URL('../workers/moonboys-api/schema.sql', import.meta.url), 'utf8');
 const migration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/044_telegram_pet_daily_runs.sql', import.meta.url), 'utf8');
 const journeyMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/067_moonpet_daily_journey_authority.sql', import.meta.url), 'utf8');
+const playerExpansionMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/048_telegram_pet_player_expansion.sql', import.meta.url), 'utf8');
 const seasonCompletionMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/058_telegram_pet_season_completion.sql', import.meta.url), 'utf8');
 const seasonEconomyMigration = fs.readFileSync(new URL('../workers/moonboys-api/migrations/061_moonpet_season_economy_calibration.sql', import.meta.url), 'utf8');
 const dailySource = fs.readFileSync(new URL('../workers/moonboys-api/pets/daily-moon-run.js', import.meta.url), 'utf8');
@@ -71,6 +72,7 @@ class D1 {
   constructor() {
     this.database = new DatabaseSync(':memory:');
     this.database.exec(schema);
+    this.database.exec(playerExpansionMigration);
     this.database.exec(seasonCompletionMigration);
     this.database.exec(seasonEconomyMigration);
     this.database.exec(journeyMigration);
@@ -1483,7 +1485,6 @@ assert.equal(competingResults[1].outcome.score, 0, 'losing request cannot invent
 
 // Endless-run previews must use the same source-pet equipment as resolution.
 const previewDb = new D1();
-previewDb.database.exec(fs.readFileSync(new URL('../workers/moonboys-api/migrations/048_telegram_pet_player_expansion.sql', import.meta.url), 'utf8'));
 const previewOwner = 'source-preview-player';
 const previewSeason = getDailySeasonId(new Date().toISOString().slice(0, 10));
 seedPlayer(previewDb, previewOwner, previewSeason);
@@ -1529,7 +1530,6 @@ assert.deepEqual(orphanPreview.run.choices, []);
 // after the account has moved to a new pet/season. No new gameplay is needed.
 {
   const recoveryDb = new D1();
-  recoveryDb.database.exec(fs.readFileSync(new URL('../workers/moonboys-api/migrations/048_telegram_pet_player_expansion.sql', import.meta.url), 'utf8'));
   seedPlayer(recoveryDb, 'journey-refresh', 'pet-s2026-002');
   seedPlayer(recoveryDb, 'other-journey-owner', 'pet-s2026-002');
   for (const owner of ['journey-refresh', 'other-journey-owner']) {
@@ -1569,7 +1569,6 @@ async function endingFixture(owner, options = {}) {
   const adapter = options.adapter || new D1();
   const now = options.now || new Date('2026-08-20T12:00:00Z');
   if (!options.adapter) {
-    adapter.database.exec(fs.readFileSync(new URL('../workers/moonboys-api/migrations/048_telegram_pet_player_expansion.sql', import.meta.url), 'utf8'));
     seedPlayer(adapter, owner);
     adapter.database.prepare("UPDATE telegram_pet_instances SET stage='young',source_profile_updated_at='0001-01-01 00:00:00' WHERE telegram_id=?").run(owner);
     adapter.database.prepare("INSERT INTO telegram_pet_lifecycle_by_pet (pet_id,telegram_id,identity_seed,phase,incubation_json,innate_traits_json) VALUES (?,?,?,'young','{}','[]')").run(`pet-${owner}`,owner,owner);

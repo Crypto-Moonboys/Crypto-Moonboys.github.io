@@ -364,10 +364,14 @@ export async function awardPetReward(db, request = {}) {
   const reason = String(request.reason || 'reward_awarded').trim().slice(0, 120);
   const profileDeltas = normalizeProfileDeltas(petlessReservation ? {} : request.profile_deltas);
   const currencyCosts = normalizeCurrencyCosts(request.currency_costs);
-  // Only the server's verified egg-bounty recovery path may skip pet state.
+  // Only verified earned bounty/season currency claims may skip egg state.
   // Keep its immutable pet receipt while paying account currencies alone.
-  const eggCurrencyOnly = request.currency_only_egg_bounty === true;
-  if (Object.hasOwn(request, 'currency_only_egg_bounty') && (!eggCurrencyOnly || source !== 'pet_bounty' || !petId || reservationId
+  const eggCurrencyOnly = request.currency_only_egg_bounty === true || request.currency_only_egg_season_reward === true;
+  const hasEggPolicy = Object.hasOwn(request, 'currency_only_egg_bounty') || Object.hasOwn(request, 'currency_only_egg_season_reward');
+  const validEggPolicy = source === 'pet_bounty'
+    ? request.currency_only_egg_bounty === true && !Object.hasOwn(request, 'currency_only_egg_season_reward')
+    : source === 'pet_season_reward' && request.currency_only_egg_season_reward === true && !Object.hasOwn(request, 'currency_only_egg_bounty');
+  if (hasEggPolicy && (!eggCurrencyOnly || !validEggPolicy || !petId || reservationId
     || rewards.pet_xp || rewards.community_xp || request.touch_streak === true
     || Object.keys(rewards.items).length || Object.keys(rewards.materials).length || Object.keys(rewards.relics).length
     || Object.values(profileDeltas).some(Boolean) || Object.values(currencyCosts).some(Boolean))) {

@@ -53,7 +53,11 @@ assert(leaderboardWorker.includes('"kaiju"'), 'leaderboard worker includes kaiju
 assert(leaderboardWorker.includes('VARIETY_BONUS_GAMES'), 'leaderboard worker keeps variety bonus roster versioned');
 assert(leaderboardUi.includes("key: 'kaiju'"), 'leaderboard UI includes kaiju raw tab');
 assert(leaderboardUi.includes("kaiju:      'K Kaiju'"), 'leaderboard UI includes kaiju label');
-assert(leaderboardUi.includes("BREAKDOWN_GAMES = ['snake', 'blocktopia', 'invaders', 'pacchain', 'asteroids', 'breakout', 'tetris', 'kaiju']"), 'leaderboard UI includes kaiju in breakdown tabs');
+const breakdown = leaderboardUi.match(/const BREAKDOWN_GAMES\s*=\s*\[([^\]]+)\]/);
+assert(breakdown, 'leaderboard declares breakdown games');
+const breakdownGames = [...breakdown[1].matchAll(/'([^']+)'/g)].map(match => match[1]);
+assert(breakdownGames.includes('kaiju'), 'leaderboard UI includes canonical kaiju in breakdown tabs');
+assert.equal(new Set(breakdownGames).size, breakdownGames.length, 'breakdown game keys are unique');
 assert(arcadeSync.includes('"kaiju-sticker-battle": "kaiju"'), 'ArcadeSync normalizes kaiju route key');
 
 console.log('kaiju-sticker-battle-contract.test: PASS');

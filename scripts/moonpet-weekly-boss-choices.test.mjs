@@ -219,7 +219,7 @@ for (const failure of ['acknowledgement', 'victory progression']) {
     }
   };
   else beforeFirst = statement => {
-    if (statement.sql.includes('SELECT id, event_key, day_key, metadata FROM telegram_pet_events')) {
+    if (/SELECT e\.\* FROM telegram_pet_events e\s+JOIN telegram_pet_weekly_boss_victories_by_pet/.test(statement.sql)) {
       injected = true; throw Error('weekly_paid_claim_progression_failed');
     }
   };

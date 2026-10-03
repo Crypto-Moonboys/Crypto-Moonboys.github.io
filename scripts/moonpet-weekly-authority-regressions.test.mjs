@@ -86,7 +86,7 @@ for (const historical of [false, true]) {
     beforeBatch = null;
     mock.timers.setTime(Date.now() + 100);
     beforeFirst = statement => {
-      if (!statement.sql.includes('SELECT id, event_key, day_key, metadata FROM telegram_pet_events')) return;
+      if (!/SELECT e\.\* FROM telegram_pet_events e\s+JOIN telegram_pet_weekly_boss_victories_by_pet/.test(statement.sql)) return;
       beforeFirst = null; interrupted = true;
       throw new Error('interrupted_after_payment_before_progression');
     };

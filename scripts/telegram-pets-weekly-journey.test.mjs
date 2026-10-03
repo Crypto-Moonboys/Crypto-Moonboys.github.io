@@ -135,8 +135,8 @@ assert.ok(workerSource.includes(".replace(/%/g, '\\\\%')"),
   'LIKE helper must escape literal percent signs for SQLite LIKE');
 assert.ok(workerSource.includes(".replace(/_/g, '\\\\_')"),
   'LIKE helper must escape literal underscores for SQLite LIKE');
-assert.ok(workerSource.includes("metadata LIKE ? ESCAPE '\\\\'"),
-  'weekly boss recovery must bind escaped metadata patterns with SQLite LIKE ESCAPE');
+assert.match(workerSource, /ensureWeeklyBossVictoryEvent\(db, telegramId, weekKey, bossId\)/,
+  'weekly boss recovery must require the exact saved victory source rather than a metadata substring');
 assert.doesNotMatch(workerSource, /OR\s+reason\s*=\s*['"]weekly_boss_attempt['"]/,
   'weekly boss recovery must not broaden accepted source matching by reason');
 for (const [eventType, objectiveId] of Object.entries({
@@ -1010,11 +1010,13 @@ bossDuplicateDb.database.prepare(`DELETE FROM telegram_pet_weekly_journey_object
 bossDuplicateDb.database.prepare(`UPDATE telegram_pet_weekly_boss_progress
   SET defeated_at='2026-08-20T12:00:00.000Z', reward_claimed_at='2026-08-20T12:00:00.000Z'
   WHERE telegram_id=?`).run(bossDuplicateTelegramId);
+// Legacy victory attribution must identify the exact account winning attack.
+// A synthetic week/boss key cannot prove which pet made an earlier attempt.
 bossDuplicateDb.database.prepare(`INSERT INTO telegram_pet_weekly_boss_victories_by_pet
   (telegram_id, week_key, boss_id, pet_id, season_key, victory_event_key, defeated_at)
   VALUES (?, ?, ?, ?, ?, ?, '2026-08-20T12:00:00.000Z')`)
   .run(bossDuplicateTelegramId, bossOriginalEvent.week_key, bossOriginalMetadata.boss_id, bossDuplicatePet, bossDuplicateSeasonKey,
-    `${bossOriginalEvent.week_key}:${bossOriginalMetadata.boss_id}`);
+    'weekly-boss-original-key');
 switchActivePet(bossDuplicateDb, bossDuplicateTelegramId, bossDuplicatePetB, bossDuplicateSeasonKey);
 // Replay the original shared attack after switching. A fresh request from an
 // eligible second pet now starts its own participation challenge instead.
@@ -1091,7 +1093,7 @@ bossDefeatedBackfillDb.database.prepare(`INSERT OR IGNORE INTO telegram_pet_week
   (telegram_id, week_key, boss_id, pet_id, season_key, victory_event_key, defeated_at)
   VALUES (?, ?, ?, ?, ?, ?, '2026-08-20T12:00:00.000Z')`)
   .run(bossDefeatedTelegramId, bossDefeatedOriginalEvent.week_key, bossDefeatedMetadata.boss_id, bossDefeatedPet, bossDefeatedSeasonKey,
-    `${bossDefeatedOriginalEvent.week_key}:${bossDefeatedMetadata.boss_id}`);
+    'weekly-boss-defeated-original-key');
 bossDefeatedBackfillDb.database.prepare(`DELETE FROM telegram_pet_events
   WHERE telegram_id=? AND event_type='weekly_boss'`).run(bossDefeatedTelegramId);
 bossDefeatedBackfillDb.database.prepare(`DELETE FROM telegram_pet_weekly_journey_objectives
@@ -1573,7 +1575,7 @@ for (const [failWrite, earnedAt] of [
   const sourceEventKey = 'weekly-source-read-outage:feed';
   insertSourceEvent(db, { telegramId: owner, petId, eventKey: sourceEventKey, eventType: 'feed' });
   db.beforeFirst = (sql) => {
-    if (/FROM telegram_pet_events\s+WHERE telegram_id=\? AND event_key=\?/i.test(sql)) throw new Error('injected_weekly_source_read_failure');
+    if (/FROM telegram_pet_events(?:\s+e)?\s+WHERE telegram_id=\? AND event_key=\?/i.test(sql)) throw new Error('injected_weekly_source_read_failure');
   };
   await assert.rejects(recordWeeklyJourneyObjectiveEvidence(db, {
     telegram_id: owner,
