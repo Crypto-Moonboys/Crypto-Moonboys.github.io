@@ -31,7 +31,11 @@ const requiredTags = [
   'forty paths',
   'HODL WARS',
   'Year 3008',
-  '2030 Concord'
+  '2030 Concord',
+  'religion',
+  'philosophy',
+  'ethics',
+  'theology'
 ];
 
 for (const file of sourcePages) {
@@ -64,6 +68,23 @@ for (const alias of ['First Witness Bible', 'Crypto Moonboys Bible', 'Graffiti K
 }
 
 const minRank = Math.min(...sourcePages.map(file => indexByUrl.get(`/wiki/${file}`).rank_score));
-assert.ok(minRank >= 190, `First Witness cluster minimum rank unexpectedly low: ${minRank}`);
+assert.ok(minRank >= 240, `First Witness cluster minimum rank unexpectedly low: ${minRank}`);
+
+const specificTags = new Map([
+  ['/wiki/first-witness-child-of-fire.html', ['Alfie Blaze', 'Bitcoin KiD', 'Alfie Blaze prophecy']],
+  ['/wiki/first-witness-null-erasure.html', ['NULL THE PROPHET', 'Antichain']],
+  ['/wiki/first-witness-block-topia-reading.html', ['Block Topia religion', 'Queen Sarah P-fly']],
+  ['/wiki/first-witness-hodl-doctrine.html', ['HODL Warriors', 'HODL X Warriors']],
+  ['/wiki/first-witness-triple-fork-chainfire.html', ['2880 Triple Fork', 'Chainfire']],
+]);
+
+for (const [url, expectedTags] of specificTags) {
+  const entry = indexByUrl.get(url);
+  assert.ok(entry, `missing specific First Witness page: ${url}`);
+  const tags = new Set(entry.tags || []);
+  for (const tag of expectedTags) {
+    assert.ok(tags.has(tag), `${url} missing intent tag "${tag}"`);
+  }
+}
 
 console.log(`First Witness publishing/search contract OK: ${sourcePages.length} pages; minimum rank ${minRank}.`);
