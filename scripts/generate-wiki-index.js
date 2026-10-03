@@ -43,8 +43,102 @@ const FIRST_WITNESS_COMMON_KEYWORDS = Object.freeze([
   '2030 Concord',
   'no single keeper',
   'Crypto Moonboys lore',
-  'Graffiti Kings lore'
+  'Graffiti Kings lore',
+  'religion',
+  'religious philosophy',
+  'philosophy',
+  'ethics',
+  'moral philosophy',
+  'spirituality',
+  'faith tradition',
+  'theology',
+  'belief system'
 ]);
+
+const FIRST_WITNESS_PAGE_KEYWORDS = Object.freeze({
+  'the-first-witness': [
+    'First Witness religion',
+    'First Witness philosophy',
+    'Crypto Moonboys religion',
+    'Graffiti Kings religion',
+    'GK religion'
+  ],
+  'first-witness-bitcoin-witness': [
+    'minted on Bitcoin',
+    'Bitcoin scripture',
+    'Bitcoin bible',
+    'Bitcoin provenance',
+    'First Witness mint'
+  ],
+  'first-witness-sacred-fork': [
+    'Sacred Chain origin',
+    'Aether-Chain origin',
+    'Sacred Fork',
+    'Sacred Chain scripture'
+  ],
+  'first-witness-triple-fork-chainfire': [
+    '2880 Triple Fork',
+    'Chainfire',
+    'Great Unravelling',
+    'World Chain collapse'
+  ],
+  'first-witness-master-chronology': [
+    'First Witness timeline',
+    '2030 2880 2930 3008',
+    'Crypto Moonboys chronology'
+  ],
+  'first-witness-forty-paths': [
+    '40 factions',
+    '40 GK factions',
+    'Graffiti Kings factions',
+    'Forty Paths religion'
+  ],
+  'first-witness-faction-commentaries': [
+    '40 faction interpretations',
+    'GK faction bible commentary',
+    'faction theology'
+  ],
+  'first-witness-hodl-doctrine': [
+    'HODL Warriors',
+    'HODL X Warriors',
+    'HODL doctrine',
+    'Hold doctrine'
+  ],
+  'first-witness-child-of-fire': [
+    'Alfie Blaze',
+    'Bitcoin KiD',
+    'Bitcoin Kid',
+    'Alfie Blaze prophecy',
+    'Bitcoin Kid prophecy',
+    'Child of Fire prophecy',
+    'messiah interpretation'
+  ],
+  'first-witness-null-erasure': [
+    'NULL',
+    'NULL THE PROPHET',
+    'Antichain',
+    'NULL erasure',
+    'erasure theology'
+  ],
+  'first-witness-block-topia-reading': [
+    'Block Topia religion',
+    'Block Topia theology',
+    'Queen Sarah P-fly',
+    'True Bitcoin Fork religion'
+  ],
+  'first-witness-street-kingdoms-reading': [
+    'Street Kingdoms religion',
+    'GraffPUNKS religion',
+    'Paint Path',
+    'wall memory'
+  ],
+  'first-witness-ai-synthetic-minds': [
+    'AI religion',
+    'synthetic minds',
+    'AI theology',
+    'machine consciousness'
+  ]
+});
 
 function isFirstWitnessSlug(slug) {
   const normalized = String(slug || '').toLowerCase().trim();
@@ -52,7 +146,11 @@ function isFirstWitnessSlug(slug) {
 }
 
 function getFirstWitnessKeywords(slug) {
-  return isFirstWitnessSlug(slug) ? FIRST_WITNESS_COMMON_KEYWORDS : [];
+  if (!isFirstWitnessSlug(slug)) return [];
+  return [
+    ...FIRST_WITNESS_COMMON_KEYWORDS,
+    ...(FIRST_WITNESS_PAGE_KEYWORDS[slug] || [])
+  ];
 }
 
 function getFirstWitnessAliases(slug) {
@@ -63,7 +161,12 @@ function getFirstWitnessAliases(slug) {
     { title: 'Graffiti Kings Bible' },
     { title: 'GK Bible' },
     { title: 'The Covenant' },
-    { title: 'Covenant of the First Witness' }
+    { title: 'Covenant of the First Witness' },
+    { title: 'First Witness Religion' },
+    { title: 'First Witness Philosophy' },
+    { title: 'Crypto Moonboys Religion' },
+    { title: 'Graffiti Kings Religion' },
+    { title: 'GK Religion' }
   ];
 }
 
