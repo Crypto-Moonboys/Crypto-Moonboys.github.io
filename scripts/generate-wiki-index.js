@@ -31,14 +31,6 @@ const FIRST_WITNESS_COMMON_KEYWORDS = Object.freeze([
   'covenant',
   'scripture',
   'sacred text',
-  'bitcoin witness',
-  'bitcoin provenance',
-  'sacred chain',
-  'aether-chain',
-  'forty paths',
-  '40 GK factions',
-  'HODL WARS',
-  'Block Topia',
   'Year 3008',
   '2030 Concord',
   'no single keeper',
@@ -61,9 +53,19 @@ const FIRST_WITNESS_PAGE_KEYWORDS = Object.freeze({
     'First Witness philosophy',
     'Crypto Moonboys religion',
     'Graffiti Kings religion',
-    'GK religion'
+    'GK religion',
+    'Bitcoin witness',
+    'Bitcoin provenance',
+    'Sacred Chain',
+    'Aether-Chain',
+    'Forty Paths',
+    '40 GK factions',
+    'HODL WARS',
+    'Block Topia'
   ],
   'first-witness-bitcoin-witness': [
+    'Bitcoin witness',
+    'Bitcoin provenance',
     'minted on Bitcoin',
     'Bitcoin scripture',
     'Bitcoin bible',
@@ -71,6 +73,8 @@ const FIRST_WITNESS_PAGE_KEYWORDS = Object.freeze({
     'First Witness mint'
   ],
   'first-witness-sacred-fork': [
+    'Sacred Chain',
+    'Aether-Chain',
     'Sacred Chain origin',
     'Aether-Chain origin',
     'Sacred Fork',
@@ -88,23 +92,29 @@ const FIRST_WITNESS_PAGE_KEYWORDS = Object.freeze({
     'Crypto Moonboys chronology'
   ],
   'first-witness-forty-paths': [
+    'Forty Paths',
     '40 factions',
     '40 GK factions',
     'Graffiti Kings factions',
     'Forty Paths religion'
   ],
   'first-witness-faction-commentaries': [
+    'Forty Paths',
+    '40 GK factions',
     '40 faction interpretations',
     'GK faction bible commentary',
     'faction theology'
   ],
   'first-witness-hodl-doctrine': [
+    'HODL WARS',
     'HODL Warriors',
     'HODL X Warriors',
     'HODL doctrine',
     'Hold doctrine'
   ],
   'first-witness-child-of-fire': [
+    'HODL WARS',
+    '40 GK factions',
     'Alfie Blaze',
     'Bitcoin KiD',
     'Bitcoin Kid',
@@ -114,6 +124,7 @@ const FIRST_WITNESS_PAGE_KEYWORDS = Object.freeze({
     'messiah interpretation'
   ],
   'first-witness-null-erasure': [
+    'HODL WARS',
     'NULL',
     'NULL THE PROPHET',
     'Antichain',
@@ -121,12 +132,15 @@ const FIRST_WITNESS_PAGE_KEYWORDS = Object.freeze({
     'erasure theology'
   ],
   'first-witness-block-topia-reading': [
+    'Block Topia',
     'Block Topia religion',
     'Block Topia theology',
     'Queen Sarah P-fly',
     'True Bitcoin Fork religion'
   ],
   'first-witness-street-kingdoms-reading': [
+    'Street Kingdoms',
+    'Sacred Chain',
     'Street Kingdoms religion',
     'GraffPUNKS religion',
     'Paint Path',

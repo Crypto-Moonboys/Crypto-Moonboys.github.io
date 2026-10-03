@@ -26,6 +26,7 @@ const GROUPS = {
     ['npm', 'run', 'test:wiki-structure'],
     ['node', 'scripts/wiki-index-drift-regression.test.mjs'],
     ['node', 'scripts/first-witness-publishing-search.test.mjs'],
+    ['node', 'scripts/first-witness-query-ranking.test.mjs'],
     ['node', 'scripts/audit-published-vs-index.js'],
   ],
   'worker-api': [
