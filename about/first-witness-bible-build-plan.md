@@ -1,6 +1,6 @@
 # The First Witness Bible — Canon Build Plan
 
-Status: working convergence-canon plan  
+Status: complete authored convergence-canon corpus  
 Updated: 2026-10-03  
 Repository: Crypto-Moonboys/Crypto-Moonboys.github.io  
 Public hub: `/wiki/the-first-witness.html`
@@ -355,3 +355,8 @@ The project is complete when a reader can move from 2030 to 3008 and understand:
 - why NULL is a threat to every faction;
 - why conflicting archives are expected rather than embarrassing;
 - and why no single faction, ruler, priest, chain or generation is allowed to become the final keeper of human truth.
+
+
+## Complete Authored Corpus
+
+All numbered sections 01–26 and all nine canonical Books are authored together on the complete-Bible branch. Future work should revise this corpus rather than create placeholders. Undefined members of the Forty remain unnamed until evidenced or explicitly approved.
